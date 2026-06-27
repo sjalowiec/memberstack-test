@@ -114,7 +114,7 @@ if (
           </div>
           <select id="course-editor-course" class="course-editor__course-select" aria-label="Select course"></select>
         </div>
-        <details id="course-editor-settings-panel" class="course-editor__settings-panel" open>
+        <details id="course-editor-settings-panel" class="course-editor__settings-panel">
           <summary class="course-editor__settings-summary">Course settings</summary>
           <div class="course-editor__course-settings">
             <label class="course-editor__status-field" for="course-editor-content-status">
@@ -161,6 +161,36 @@ if (
             <p id="course-editor-thumbnail-preview-empty" class="course-editor__field-hint" hidden>
               No preview — enter a path above or clear to use the catalog placeholder.
             </p>
+            <label class="course-editor__sidebar-label" for="course-editor-catalog-description">
+              Catalog description
+            </label>
+            <p
+              id="course-editor-catalog-description-source"
+              class="course-editor__catalog-description-source"
+              aria-live="polite"
+            ></p>
+            <textarea
+              id="course-editor-catalog-description"
+              class="course-editor__input course-editor__textarea course-editor__catalog-description"
+              rows="3"
+              placeholder="Uses catalog fallback when left unchanged"
+              aria-label="Catalog description"
+              aria-describedby="course-editor-catalog-description-source course-editor-catalog-description-hint"
+              spellcheck="true"
+            ></textarea>
+            <p id="course-editor-catalog-description-hint" class="course-editor__field-hint">
+              Shows the description used on
+              <a href="/courses/" target="_blank" rel="noopener noreferrer">/courses</a>.
+              Edit only to override; otherwise the catalog fallback applies automatically.
+            </p>
+            <button
+              type="button"
+              id="course-editor-catalog-description-clear"
+              class="kbm-btn kbm-btn-outline course-editor__catalog-description-clear"
+              disabled
+            >
+              Clear custom description
+            </button>
             <button
               type="button"
               id="course-editor-settings-save"

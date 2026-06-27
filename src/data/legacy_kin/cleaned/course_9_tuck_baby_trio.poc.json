@@ -1,0 +1,1819 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 9,
+    "title": "Tuck Baby Trio",
+    "slug": "tuck-baby-trio",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_9_tuck_baby_trio.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/tuck_baby.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Introduction",
+      "slug": "introduction",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 42,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div>\r\n                \r\n<div class=\"lead\">Welcome, {First}!</div>\r\n\r\n\r\n\r\n                \r\nThis cute-as-a-button baby set is from a vintage magazine.  Knit it Now has converted the pattern to our dynamic format, allowing you to use any yarn, any stitch pattern and any gauge machine.<br>This course is designed to walk you though knitting the sweater, leggings and blanket and offers options for making the set your own. It is an opportunity for you to gain confidence in your knitting.\r\n<blockquote class=\"smallblock\">\r\nA little planning can go a long way!\r\n<ul class=”Instruction-list”>\r\n<li>Have you ever started a project unsure of the techniques needed to finish it?</li>\r\n<li>Want to create something that you will be proud of... good enough to give as a gift?</li>\r\n</ul>\r\n</blockquote>\r\nThis course will walk you through all the planning steps. It shows techniques that may be new to you and helps you record your progress. As you knit, you can refer to the videos as often as you like. Work the practice swatches and following the actual pattern will be a breeze!<br>If this is your first machine knitted project or your tenth, follow along, the skills you gain here will be invaluable for future knitting projects .. not just knitting for baby!\r\n<blockquote class=\"smallblock\">\r\n\r\n<em>If you are new here, the next lesson will help you learn to navigate this course so you can get the most benefit from the material that is included.  Help is as close as the help icon above. <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></em>\r\n</blockquote>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/9/baby_tuck/tuck_baby_retro.jpg\">\r\n",
+              "legacyComponentId": 529,
+              "order": 1
+            }
+          ],
+          "title": "Start Here",
+          "slug": "start-here",
+          "order": 1,
+          "legacy": {
+            "assignId": 184,
+            "blockType": "Questions"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The video will walk you through how to access the lessons and navigate to get the most out of your course.<br /> Don't skip lessons ... you may feel that you know about a certain technique ... but sometimes you will pick up a new tip that you can use while watching a video.<br><blockquote class=\"smallblock\"><em>Another reason to follow the course material in order - Throughout the lessons, you'll be making decisions about your project.  We will record your decisions to create your Custom Pattern and your Course Binder that you can download to refer back to again and again.</em></blockquote>\r\n",
+              "legacyComponentId": 535,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "221120492",
+              "title": "Machine Knitting Courses",
+              "legacyComponentId": 536,
+              "order": 2
+            }
+          ],
+          "title": "How to use this course site",
+          "slug": "how-to-use-this-course-site",
+          "order": 2,
+          "legacy": {
+            "assignId": 187,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Swatching is NOT optional",
+      "slug": "swatching-is-not-optional",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 49,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "For the original design, the leggings and the sweater are knit at different gauges.<br>\r\n<b>It is critical that you swatch for ALL the stitch patterns you will be using.</b><br>\r\n<hr>\r\n\r\n<ul>\r\n<li>In the image below, the top example shows 80 stitches knit at 7 stitches per inch.  The finished size is a bit over 11\"</li>\r\n<li>The lower example is 80 stitches knit at 8 stitches per inch in pattern.  The difference is over an inch!</li>\r\n</ul>\r\n\r\nIf you build your pattern and generate your knitting instructions at the same gauge, your knitted pieces will not be correct.  (think ... poorly fitting sweaters here)<br>\r\n<hr>\r\n<img src=\"/challenge/images/v2/9/baby_tuck/gauge_compare_stitches.jpg\">\r\n\r\nThe same holds true for the row gauge.  The original sweater was knit in tuck.  \r\n<ul>\r\n<li>On the left shows 50 rows knit at 16 rows per inch</li>\r\n<li>On the right is 50 rows knit at 10 rows per inch.  Almost 2\" difference in this small sample</li>\r\n</ul>\r\n\r\n                \r\n\r\n<img src=\"/challenge/images/v2/9/baby_tuck/gauge_compare_rows.jpg\">\r\n\r\n",
+              "legacyComponentId": 612,
+              "order": 1
+            }
+          ],
+          "title": "Your Choice of Stitch Patterns",
+          "slug": "your-choice-of-stitch-patterns",
+          "order": 1,
+          "legacy": {
+            "assignId": 204,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n                \r\n<img src=\"/challenge/images/v2/9/baby_tuck/hang_tag_body.jpg\">\r\n\r\n<img src=\"/challenge/images/v2/9/baby_tuck/hang_tag2.jpg\">\r\n\r\n\r\n<div class=\"lead\">\r\nYour Turn: Examine the differences between stitch patterns\r\n</div>\r\n<blockquote class=\"smallblock\"><em>If you don't know the answers below, guess ... we'll show you the math.</em></blockquote>\r\n\r\n",
+              "legacyComponentId": 613,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<b>The pattern instructs us to cast on 80 stitches.</b>",
+              "legacyComponentId": 615,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "205",
+                "CHALLENGE_COMPONENTID": "616",
+                "QUESTION_ANSWER": "10",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 80 divided by 8 = 10 inches",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "Knit at our Tuck Lace gauge (8 sts per inch), the knitted piece will be how wide?"
+              },
+              "legacyComponentId": 616,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "205",
+                "CHALLENGE_COMPONENTID": "617",
+                "QUESTION_ANSWER": "10.51",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 80 divided by 7.61=10.51 inches",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "Knit at our Stockinette gauge (7.61 sts per inch), the piece will be how wide?"
+              },
+              "legacyComponentId": 617,
+              "order": 5
+            },
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"smallblock\"><b>1/2\" of an inch doesn't seem like a lot, but for a 40\" sweater that's 2 full inches!</b></blockquote>",
+              "legacyComponentId": 618,
+              "order": 6
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "205",
+                "QUESTION_ANSWER": "7.5",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 100 DIVIDED by 13.33 = 7.5 Inches</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "Knit 100 rows at the Tuck Lace Gauge (13.33 rows per inch), what will be the finished length?",
+                "TYPEOF": "Questions"
+              },
+              "legacyComponentId": 621,
+              "order": 9
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "205",
+                "QUESTION_ANSWER": "9.17",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 100 DIVIDED by 10.9 = 9.17</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "Knit 100 rows at the Stockinette Stitch Gauge (10.9 rows per inch), what will be the finished length?",
+                "TYPEOF": "Questions"
+              },
+              "legacyComponentId": 622,
+              "order": 10
+            },
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"smallblock\"><b>Do you see why even a SMALL change in gauge makes a BIG difference?</b></blockquote>",
+              "legacyComponentId": 623,
+              "order": 11
+            }
+          ],
+          "title": "Your Turn: Check this out!",
+          "slug": "your-turn-check-this-out",
+          "order": 2,
+          "legacy": {
+            "assignId": 205,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">The original stitch pattern</div>\r\n\r\n<blockquote class=\"smallblock\"><em>Don't forget ... with the Knit it Now Dynamic Patterns, you can use any stitch pattern of your choice!</em></blockquote>",
+              "legacyComponentId": 690,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "StitchPattern",
+              "notes": [
+                "Unmapped legacy component type: StitchPattern"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "225",
+                "STITCHPATTERNID": "154",
+                "STITCHPATTERN_IMAGE": "569",
+                "TYPEOF": "StitchPattern"
+              },
+              "legacyComponentId": 689,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "\r\n<div align=\"center\" class=\"center-block\"> <img src=\"/challenge/images/v2/9/baby_tuck/tuck_baby_retro.jpg\" class=\"img-thumbnail\"></div>\r\n",
+              "legacyComponentId": 686,
+              "order": 3
+            }
+          ],
+          "title": "Original Stitch Pattern",
+          "slug": "original-stitch-pattern",
+          "order": 3,
+          "legacy": {
+            "assignId": 225,
+            "blockType": "Imageslideshow"
+          }
+        }
+      ]
+    },
+    {
+      "title": "The Sweater",
+      "slug": "the-sweater",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 44,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Selectsize",
+              "notes": [
+                "Unmapped legacy component type: Selectsize"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "193",
+                "CHALLENGE_COMPONENTID": "573",
+                "DATAMODEL_ELEMENT": "Size",
+                "DATAMODEL_REQEST_TEXT": "Choose your size *",
+                "SIZINGTYPEID": "3"
+              },
+              "legacyComponentId": 573,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"smallblock\"><em>If you don't know your gauge yet, don't worry.  You'll be able to change it before you build your custom pattern.</em></blockquote>",
+              "legacyComponentId": 647,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "193",
+                "CHALLENGE_COMPONENTID": "544",
+                "DATAMODEL_ELEMENT": "stitchgauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "Sweater Stitch Gauge * <small>(4 in/10cm)</small>",
+                "DATAMODEL_VALIDATION_EXTRA": "4",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 544,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "193",
+                "CHALLENGE_COMPONENTID": "545",
+                "DATAMODEL_ELEMENT": "rowgauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "Sweater Row Gauge * <small>(4 in/10cm)</small>",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 545,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "193",
+                "DATAMODEL_ELEMENT": "Sweater_notes",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Sweater notes (stitch pattern, colors, etc)",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 674,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "SizingChart",
+              "notes": [
+                "Unmapped legacy component type: SizingChart"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "193",
+                "SIZINGTYPEID": "3",
+                "TYPEOF": "SizingChart"
+              },
+              "legacyComponentId": 547,
+              "order": 6
+            }
+          ],
+          "title": "Tell us about your sweater",
+          "slug": "tell-us-about-your-sweater",
+          "order": 1,
+          "legacy": {
+            "assignId": 193,
+            "blockType": "DataEntry"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n                A common alternative to shaping a neckline while knitting in pattern is to use cut 'n sew. (Actually many knitters use cut 'n sew exclusively.)\r\n<br>Even if you are a \"purist\" and feel that you MUST shape a neckline, we encourage you to try the cut 'n sew exercise for practice.\r\n                <img class=\"img-thumbnail\" src=\"/challenge/images/v2/9/baby_tuck/baby_tuck_slides2.jpg\">\r\n\r\n\r\n\r\n<blockquote class=\"smallblock\"><em>Once you get over the fear of cutting your knitting, you may become a convert to the technique. </em></blockquote>\r\n\r\n\r\n",
+              "legacyComponentId": 610,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151819909",
+              "title": "Introduction to Cut and Sew",
+              "legacyComponentId": 611,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<br><div class=\"lead\">Template for Cut 'n Sew Neckline for this pattern.</div>",
+              "legacyComponentId": 645,
+              "order": 3
+            },
+            {
+              "type": "download",
+              "label": "Download Template",
+              "filename": "/downloads/neckline_template.pdf",
+              "showInline": true,
+              "legacy": {
+                "assignId": "203",
+                "componentId": "637",
+                "viewHeight": "400",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 637,
+              "order": 4
+            }
+          ],
+          "title": "Neckline - Cut 'n Sew",
+          "slug": "neckline-cut-n-sew",
+          "order": 2,
+          "legacy": {
+            "assignId": 203,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Use an existing swatch or knit a swatch approx 8\" x 8\".  This will mimic knitting the front of your sweater with no neck shaping.<br>If you've never cut your knitting, take a deep breath and cut away!  You'll be surprised how stable most knitting is. Careful sewing and handling will ensure that the stitches don't run.<br><ol class=\"instruction-list\">\r\n<li>Block your swatch to tame any curling edges and set the stitches.</li>\r\n<li>Mark a curved neckline along the bind off edge of the swatch. Use a fabric marker, pencil or marker (this will be covered by your band)</li>\r\n<li>Using a sewing machine or serger, stitch along the marked line, securing the knitting.  Stitch multiple times if needed to make sure the stitches are secure.</li>\r\n<li>Cut along the inside of the sewing</li>\r\n<li>Don't like the shape? Go ahead and re-stitch till you get it right</li>\r\n</ol>\r\n<blockquote class=\"smallblock\"><em>Use the template provided in this course, the <a href=\"/store/product/474/cut-n-sew-neckline-template/digitialdownload\"> Knit it Now Templates</a> in our store, a plate, cup, or bowl ... anything to get a nice looking neckline opening.</em></blockquote>",
+              "legacyComponentId": 676,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "upload_cutnsew",
+                "BUTTONLABLE": "Upload a photo of your practice swatch",
+                "CHALLENGE_ASSIGNID": "223",
+                "CHALLENGE_COMPONENTID": "677",
+                "QTY": "1",
+                "SUCCESSMESSAGE": "Thank you"
+              },
+              "legacyComponentId": 677,
+              "order": 2
+            }
+          ],
+          "title": "Cut 'n Sew Practice",
+          "slug": "cut-n-sew-practice",
+          "order": 3,
+          "legacy": {
+            "assignId": 223,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "When knitting in pattern, shaping a neckline can be a challenge. A little planning and a bit of practice and you'll will no longer be intimidated.<br><div class=\"lead\">Part 1 - Start and Stop Automatic Patterning</div>",
+              "legacyComponentId": 580,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "189252754",
+              "title": "Interrupted Patterning Part 1",
+              "legacyComponentId": 607,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<br><div class=\"lead\">Part 2 - Start and Stop Automatic Patterning</div>",
+              "legacyComponentId": 609,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "189252743",
+              "title": "Interrupted Patterning Part 2",
+              "legacyComponentId": 608,
+              "order": 4
+            }
+          ],
+          "title": "Neckline - Stitch Patterning",
+          "slug": "neckline-stitch-patterning",
+          "order": 4,
+          "legacy": {
+            "assignId": 196,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "There are many methods of shaping a neckline.  Here's our favorite.<br>",
+              "legacyComponentId": 649,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859107",
+              "title": "Neckline Shaping Perfection",
+              "legacyComponentId": 650,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<div>\r\n\r\n                <i class=\"fa fa-refresh\" aria-hidden=\"true\"></i> Your turn ... Enter in your information and use the practice pattern. Use the practice pattern as many times as you like.<br>\r\nTry shaping a neckline before you start your sweater.</b>\r\n\r\n                <img class=\"img-thumbnail\" src=\"/images/garments/practice_necklines.jpg\">\r\n\r\n<blockquote class=\"smallblock\"><em>If you've never shaped a neckline in pattern, now's a good time to try it ... perfect your skills with small manageable necklines ... and no tears!</em></blockquote>\r\n\r\n",
+              "legacyComponentId": 691,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment 'Practice Pattern' (legacy garmentId 679).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "206",
+                "CHALLENGE_COMPONENTID": "651",
+                "GARMENTID": "679",
+                "GARMENTTITLE": "Practice Pattern",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "practice_neckline_pattern",
+                "REDIRECT_TO": "/challenge/9/Group/218/item|The Sweater: Practice Neckline Pattern",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "rowgauge",
+                "SIZING_DATAMODEL_ELEMENT": "PracticeNeckline_size",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "stitchgauge",
+                "SWATCHROWS": "rowgauge",
+                "SWATCHSTITCHES": "rowgauge",
+                "SWATCHWEIGHT": "rowgauge",
+                "USESWATCHLOGIC": "no"
+              },
+              "legacyComponentId": 651,
+              "order": 4
+            }
+          ],
+          "title": "Neckline shaping Practice",
+          "slug": "neckline-shaping-practice",
+          "order": 5,
+          "legacy": {
+            "assignId": 206,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): practice_neckline_pattern",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 206 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "218",
+                "DATAMODEL_ELEMENTS": "practice_neckline_pattern",
+                "DATAMODEL_REDIRECT": "206",
+                "DATAMODEL_VALIDATION_MESSAGE": "Enter your data",
+                "TYPEOF": "DataValidation"
+              },
+              "legacyComponentId": 653,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'practice_neckline_pattern'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "218",
+                "CHALLENGE_COMPONENTID": "652",
+                "DATAMODEL_ICON": "fa fa-download",
+                "LABLE": "Print your practice pattern",
+                "PATTERN_DATAMODEL_ELEMENT": "practice_neckline_pattern",
+                "VIEWHEIGHT": "600"
+              },
+              "legacyComponentId": 652,
+              "order": 2
+            }
+          ],
+          "title": "Practice Neckline Pattern",
+          "slug": "practice-neckline-pattern",
+          "order": 6,
+          "legacy": {
+            "assignId": 218,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "This neck opening has a bit of an unusual shape. Because the sweater  a pullover, we are unable to pick up stitches around the neck opening and knit a band in one piece (as we would a cardigan).<br>\r\nWhether you shaped your neckline or used Cut 'n Sew here's a neat method of knitting and attaching the neckband.\r\n\r\n",
+              "legacyComponentId": 641,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"smallblock\"><em>NOTE: It's always best to measure and double check the stitch count for the band in any pattern.</em></blockquote>\r\n\r\n\r\n<ol class=\"instruction-list\">\r\n<li>Knit the front and back</li>\r\n<li>Join the shoulders</li>\r\n<li>Measure your neck opening and multiply that measurement by your band stitch gauge</li>\r\n<li>Reduce the stitch count by approx 10%</li>\r\n<li>Use a closed cast on method and knit the first half of your band at a slightly tighter tension than your garment tension.</li>\r\n<li>Knit a turning row</li>\r\n<li>Knit the second half of the band</li>\r\n<li>Scrap Off</li>\r\n<li>Sandwich the cut edge of the garment between the 2 halves of the band and neatly stitch the band in place.</li>\r\n</ol>\r\n\r\n<blockquote class=\"smallblock\"><em>TIP: Attach the inside of the band first, then neatly backstitch through the live stitches (on scrap) for a beautiful finish.</em></blockquote>",
+              "legacyComponentId": 648,
+              "order": 3
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/9/baby_tuck/baby_tuck_slides1.jpg",
+                  "caption": "Front neck is ready for cut 'n sew. Notice the waste yarn on the back"
+                },
+                {
+                  "src": "/challenge/images/v2/9/baby_tuck/baby_tuck_slides2.jpg",
+                  "caption": "Sewing machine or serger. Be sure to secure the stitches."
+                },
+                {
+                  "src": "/challenge/images/v2/9/baby_tuck/baby_tuck_slides3.jpg",
+                  "caption": "Join the shoulders. Notice the back neck is not joined."
+                },
+                {
+                  "src": "/challenge/images/v2/9/baby_tuck/baby_tuck_slides4.jpg",
+                  "caption": "Cut and  joined and ready for the neckband."
+                },
+                {
+                  "src": "/challenge/images/v2/9/baby_tuck/baby_tuck_slides5.jpg",
+                  "caption": "This neckline can't be attached by machine.  We'll need to measure, calculate, knit the band separately and attach it by hand."
+                },
+                {
+                  "src": "/challenge/images/v2/9/baby_tuck/baby_tuck_slides6.jpg",
+                  "caption": "<ul>\r\n<li>Fold the sweater in half and measure the neckline opening</li>\r\n<li> Multiply the total neck opening times the band stitch gauge</li>\r\n<li>Reduce by 10%</li>\r\n<li>The result is the number of band stitches to cast on</li>\r\n</ul>"
+                },
+                {
+                  "src": "/challenge/images/v2/9/baby_tuck/baby_tuck_slides7.jpg",
+                  "caption": "<ul>\r\n<li>Ewrap cast on</li>\r\n<li>Knit the first half of the band</li>\r\n<li>Knit a turning row</li>\r\n<li>Knit the second half of the band</li>\r\n</ul>"
+                },
+                {
+                  "src": "/challenge/images/v2/9/baby_tuck/baby_tuck_slides8.jpg",
+                  "caption": "The waste yarn edge is folded to the public side."
+                },
+                {
+                  "src": "/challenge/images/v2/9/baby_tuck/baby_tuck_slides9.jpg",
+                  "caption": "Neatly stitch the e-wrap edge to the inside of the neck opening."
+                },
+                {
+                  "src": "/challenge/images/v2/9/baby_tuck/baby_tuck_slides10.jpg",
+                  "caption": "Neatly backstitch the live stitches in place on the public side of the neck opening."
+                },
+                {
+                  "src": "/challenge/images/v2/9/baby_tuck/baby_tuck_slides11.jpg",
+                  "caption": "The finished neck band ... ready to work the back neck opening."
+                }
+              ],
+              "legacy": {
+                "enableAudio": "1",
+                "playAudio": null
+              },
+              "legacyComponentId": 654,
+              "order": 4
+            }
+          ],
+          "title": "Neck Band",
+          "slug": "neck-band",
+          "order": 7,
+          "legacy": {
+            "assignId": 217,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Use the neckline shaping swatch you knit previously and add a neckband following the examples in the video from the previous lesson.<br>DON'T SKIP THIS STEP<br>You are taking this course to improve your knitting skills.   Whether you use cut 'n sew, or shape your necklines, please try AT LEAST 1 band method before starting your project sweater.<br><blockquote class=\"smallblock\"><em>Adding neckbands can be one of the more challenging part of  knitting sweaters.</em></blockquote>\r\nThere are so many variables: Stitch patterns, garment size, yarn types, techniques ... take time to discover a method that works for you, so there will be no panic when it comes time to finish your project sweater.<br><p class=\"lead\">Practice Suggestions</p>\r\n<ol class=\"instruction-list\">\r\n     <li>Shape a neckline<br>- With the public side of the neckline facing, rehang the neck opening on the machine<br>\r\n- Knit a band and loosely bind off<br>\r\n- Fold the band to the private side of the neckline and stitch in place\r\n</li>\r\n       <li> Shape or cut 'n sew a neckline<br>- With the private side of the neckline facing, rehang the neck opening on the machine<br>\r\n    - Create a band ending with scrap yarn.<br>\r\n       -  Fold the scrap edge to the public side of the sweater<br>\r\n     - Neatly backstitch the live stitches in place and remove the scrap<br>\r\n</li>\r\n       \r\n<li>Shape or cut 'n sew a neckline and add a \"sandwiched band\" as shown in the <a href=\"/challenge/9/Group/209/item#section44\">button band lesson</a> in this course.<br></li>\r\n<li>Shape a neckline and work a row of single crochet, then a decorative crochet edge.  You may be surprised at how quickly this works up and what a beautiful addition it will be to your sweater (especially for girls)</li>\r\n   </ul>\r\n\r\n<blockquote class=\"smallblock\"><em>Although this infant sweater neckline is small and can't be hung directly on the machine, the following video gives an excellent overview of necklines.  While you are practicing, try the techniques presented.  You'll apply them again and again in your knitting.</em></blockquote>\r\n\r\n\r\n",
+              "legacyComponentId": 627,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860086",
+              "title": "One Piece Neckband Perfection",
+              "legacyComponentId": 678,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "Neck_band_practice",
+                "BUTTONLABLE": "Upload a photo of your practice neckband",
+                "CHALLENGE_ASSIGNID": "208",
+                "QTY": "1",
+                "SUCCESSMESSAGE": "Thank you",
+                "TYPEOF": "ImageUpload"
+              },
+              "legacyComponentId": 655,
+              "order": 3
+            }
+          ],
+          "title": "Neck Band Practice",
+          "slug": "neck-band-practice",
+          "order": 8,
+          "legacy": {
+            "assignId": 208,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\n                These little bands are a perfect opportunity to try a new band technique.<br>  \r\nWatch as we create a \"sandwiched\" band that is beautiful on both the inside and the outside.\r\n                <img class=\"img-thumbnail\" src=\"/challenge/images/v2/9/baby_tuck/my_baby_tuck2.jpg\">\r\n\r\n\r\n",
+              "legacyComponentId": 666,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "223374072",
+              "title": "Reversible Band",
+              "legacyComponentId": 665,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<br><hr><br>Adding buttonholes shouldn't be intimidating.  The following video shows a number of different buttonhole techniques.  For this small sweater, one or two stitch eyelet will probably be your best bet.<br>You'll work the buttonhole on both sides of the button band. When the band is complete, stitch around each buttonhole to join them together.<br>",
+              "legacyComponentId": 668,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859614",
+              "title": "Basic Buttonholes",
+              "legacyComponentId": 669,
+              "order": 4
+            }
+          ],
+          "title": "Perfect Button Bands",
+          "slug": "perfect-button-bands",
+          "order": 9,
+          "legacy": {
+            "assignId": 209,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<b>Before starting your sweater:</b>\r\nUsing the edge of a swatch, practice creating a 2 piece band.<br>As you are working the band, try working 2 stitch eyelet buttonholes.<br>\r\n<small>Instructions are for standard gauge <em>(mid/bulky gauge) machines.</em></small><br><div class=\"lead\">2 Stitch Eyelet Buttonhole Practice</div>\r\n<ol class=\"instruction-list\">\r\n<li>Cast on 40 <em>(20) </em>stitches with any method </li>\r\n<li>Knit for 16 <em>(8) </em>rows</li>\r\n<li>Identify your buttonhole placement and mark your needlebed </li>\r\n<li>Buttonhole Row 1: Transfer one stitch left and one stitch right</li>\r\n<li>Leave emptied needles in out of work position</li>\r\n<li>Knit across</li>\r\n<li>Pick up the loose loop and hang it on one of the buttonhole needles. Put this needle in working position</li>\r\n<li>Knit across</li>\r\n<li>Pick up the loose strand from the previous row and hang it on the emptied needle. Put this needle in working position</li>\r\n<li>Knit for 16 <em>(8) </em>rows</li>\r\n<li>Repeat the buttonhole rows for the second side of the band</li>\r\n<li>Knit for 16 <em>(8) </em>rows</li>\r\n<li>Bind off</li>\r\n<li>Fold the sample band in half, line up the buttonholes and neatly stitch around each buttonhole to secure them together</li>\r\n\r\n</ol>\r\n\r\n\r\n\r\n \r\n<img src=\"/challenge/images/v2/9/baby_tuck/buttonhole_practice.jpg\">",
+              "legacyComponentId": 670,
+              "order": 1
+            }
+          ],
+          "title": "Button Band Practice",
+          "slug": "button-band-practice",
+          "order": 10,
+          "legacy": {
+            "assignId": 210,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n                \r\nKnit the sleeves from the top down or the bottom up ... it's your choice.<br>\r\nKnit them in the same yarn and stitch pattern as the body ... or mix it up!<br>\r\n                <img class=\"img-thumbnail\" src=\"/challenge/images/v2/9/baby_tuck/my_baby_tuck1.jpg\">\r\n\r\n",
+              "legacyComponentId": 667,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858849",
+              "title": "Streamlined Sleeve Seam",
+              "legacyComponentId": 634,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<br>However you choose to knit your sleeves, use the same ribbed cuff techniques as the leggings cuffs.",
+              "legacyComponentId": 657,
+              "order": 3
+            }
+          ],
+          "title": "The Sleeves",
+          "slug": "the-sleeves",
+          "order": 11,
+          "legacy": {
+            "assignId": 214,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "The Dynamic Pattern",
+      "slug": "the-dynamic-pattern",
+      "displayOrder": 45,
+      "legacy": {
+        "itemId": 48,
+        "lessonOrder": 45
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"smallblock\"><em>NOTE:  If your gauge is different for the different pieces in this project, change your gauge information here and \"Generate your Pattern\" multiple times.  Don't forget that you don't have to print the entire pattern each time.  Use your PDF reader to print only the pages you want.</em></blockquote>",
+              "legacyComponentId": 671,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "200",
+                "DATAMODEL_ELEMENT": "Sweater_notes",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Sweater notes (stitch pattern, colors, etc)",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 675,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment 'Tuck Baby' (legacy garmentId 883).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "200",
+                "CHALLENGE_COMPONENTID": "593",
+                "GARMENTID": "883",
+                "GARMENTTITLE": "Tuck Baby",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "Pattern_File_Name",
+                "REDIRECT_TO": "/challenge/9/Group/192/item|The Dynamic Pattern: Tuck Baby Pattern",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "rowgauge",
+                "SIZING_DATAMODEL_ELEMENT": "Size",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "stitchgauge"
+              },
+              "legacyComponentId": 593,
+              "order": 4
+            }
+          ],
+          "title": "Create your Dynamic Sweater Pattern",
+          "slug": "create-your-dynamic-sweater-pattern",
+          "order": 1,
+          "legacy": {
+            "assignId": 200,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): Pattern_File_Name",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 200 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "192",
+                "DATAMODEL_ELEMENTS": "Pattern_File_Name",
+                "DATAMODEL_REDIRECT": "200",
+                "TYPEOF": "DataValidation"
+              },
+              "legacyComponentId": 688,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'Pattern_File_Name'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "192",
+                "CHALLENGE_COMPONENTID": "543",
+                "DATAMODEL_ICON": "fa fa-download",
+                "LABLE": "Print your Pattern",
+                "PATTERN_DATAMODEL_ELEMENT": "Pattern_File_Name",
+                "VIEWHEIGHT": "600"
+              },
+              "legacyComponentId": 543,
+              "order": 2
+            }
+          ],
+          "title": "Dynamic Tuck Baby Pattern",
+          "slug": "dynamic-tuck-baby-pattern",
+          "order": 2,
+          "legacy": {
+            "assignId": 192,
+            "blockType": "Pattern"
+          }
+        }
+      ]
+    },
+    {
+      "title": "The Original Pattern",
+      "slug": "the-original-pattern",
+      "displayOrder": 94,
+      "legacy": {
+        "itemId": 47,
+        "lessonOrder": 94
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<img src=\"/challenge/images/v2/9/baby_tuck/baby_collection_cover.jpg\">\r\n\r\n \r\nReading a vintage pattern can be interesting, instructional and sometimes a bit amusing/confusing.\r\n<br>Here are 2 \"head-scratchers\" from the pattern that made us smile:\r\n<img src=\"/challenge/images/v2/9/baby_tuck/pattern_abbreviation1.jpg\"><br>We can intuit that \"Set HCL Lever to H\" means set your carriage to hold.  (710 must be a REALLY old machine)<br>\r\n<img src=\"/challenge/images/v2/9/baby_tuck/pattern_abbreviation2.jpg\"><br>\r\nCOBH???  (Cast on by hand)  <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i>\r\n\r\n\r\n\r\n\r\n<h3>Here is the original pattern for your enjoyment</h3>\r\n\r\n\r\n",
+              "legacyComponentId": 541,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Download the original (traditional style) pattern",
+              "filename": "/downloads/baby_tuck1.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "191",
+                "componentId": "542",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 542,
+              "order": 2
+            }
+          ],
+          "title": "The Retro Pattern",
+          "slug": "the-retro-pattern",
+          "order": 1,
+          "legacy": {
+            "assignId": 191,
+            "blockType": "Document"
+          }
+        }
+      ]
+    },
+    {
+      "title": "The Leggings",
+      "slug": "the-leggings",
+      "displayOrder": 101,
+      "legacy": {
+        "itemId": 45,
+        "lessonOrder": 101
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The dynamic pattern for the leggings is written to be knit from waist to hem.<br>\r\n<blockquote class=\"smallblock\"><em>BUT ....  you may want to start with the cuffs and finish with the waistband ... no problem!  The pattern is simple enough that you can easily reverse the knitting instructions.</em></blockquote>\r\n<br>The order for knitting:\r\n\r\n\r\n<div class=col-md-4 col-xs-12 col-md-offset-1 center-block\">\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/9/baby_tuck/leggings1.jpg\">\r\n</div>\r\n<div class=col-md-4 col-xs-12 col-md-offset-2 center-block\">\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/9/baby_tuck/leggings_reverse.jpg\">\r\n</div>\r\n\r\n\r\n",
+              "legacyComponentId": 539,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<small><em>Note: The following 3 choices will be displayed in your course binder ONLY.\r\n If your leggings gauge is different than your sweater gauge, you'll need to create your pattern multiple times. If you choose to knit your leggings from cuff to hem, you'll need to follow the pattern instructions in reverse</em></small>",
+              "legacyComponentId": 682,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntryOptions",
+              "notes": [
+                "Unmapped legacy component type: DataEntryOptions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "190",
+                "CHALLENGE_COMPONENTID": "591",
+                "DATAMODEL_ELEMENT": "topdown_bottomup",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_OPTIONLIST": "Top Down,Cuff Up",
+                "DATAMODEL_REQEST_TEXT": "Which do you prefer? Top Down or Cuff Up?",
+                "DATAMODEL_TYPE": "Radio",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 591,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "190",
+                "DATAMODEL_ELEMENT": "leggings_stitch_gauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Leggings Stitch Gauge: <small><em>This will be displayed in your course binder ONLY</em></small>",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 680,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "190",
+                "CHALLENGE_COMPONENTID": "681",
+                "DATAMODEL_ELEMENT": "Leggings_row_gauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Leggings Row Gauge: <small><em>This will be displayed in your course binder ONLY</em></small>",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 681,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "190",
+                "DATAMODEL_ELEMENT": "Leggings_notes",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Notes about your leggings: <small><em>For your course binder only</em></small>",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 702,
+              "order": 6
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">TOP DOWN</div>\r\n<ul class=\"instruction-list\">\r\n<li>Cast on and hang a hem for the waistband elastic</li>\r\n<li>Knit the body of the leggings and each leg separately</li>\r\n<li>Complete the cuffs ... (lots of options here)</li>\r\n</ul>\r\n<hr>\r\n\r\n<div class=\"lead\">CUFF UP</div>\r\n<ul class=\"instruction-list\">\r\n<li>Cast on and knit a cuff</li>\r\n<li>Knit the first leg and remove the knitting on waste yarn (or garter bar)</li>\r\n<li>Cast on and knit the second cuff and leg</li>\r\n<li>Rehang the first leg and add stitches in the crotch area (cast on instead of binding off the crotch stitches)</li>\r\n<li>Knit the body of the leggings</li>\r\n<li>Create a casing for elastic by working a Reverse Hung Hem</li>\r\n</ul>",
+              "legacyComponentId": 592,
+              "order": 7
+            }
+          ],
+          "title": "Leggings Decisions",
+          "slug": "leggings-decisions",
+          "order": 1,
+          "legacy": {
+            "assignId": 190,
+            "blockType": "DataEntry"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">Top Down Option:</div>\r\nHang a hem to form a casing for the waistband.  2 versions are offered in the video. Which do you prefer?",
+              "legacyComponentId": 553,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860039",
+              "title": "Hung Hem Basics",
+              "legacyComponentId": 537,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<br><div class=\"lead\">Cuff Up Option\r\n</div>\r\nWhen knitting from the cuff up a reverse hung hem is needed to form the casing.",
+              "legacyComponentId": 554,
+              "order": 6
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857423",
+              "title": "Reverse Hung Hem",
+              "legacyComponentId": 550,
+              "order": 7
+            },
+            {
+              "type": "richText",
+              "html": "<br><div class=\"lead\">Less Bulk Option </div>\r\n\r\n\r\n                For a much neater waistband, use mock ribbing to create the casing.\r\n                <img class=\"img-thumbnail\" src=\"/challenge/images/v2/9/baby_tuck/compare_waistbands.jpg\">\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 555,
+              "order": 10
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357056",
+              "title": "mock ribbing from bootcamp",
+              "legacyComponentId": 562,
+              "order": 11
+            }
+          ],
+          "title": "Waistband Options",
+          "slug": "waistband-options",
+          "order": 2,
+          "legacy": {
+            "assignId": 188,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Blanket with Binding",
+      "slug": "blanket-with-binding",
+      "displayOrder": 102,
+      "legacy": {
+        "itemId": 43,
+        "lessonOrder": 102
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The blanket in the original project is knit in the tuck stitch pattern included with the pattern. To neatly finish the edges, a binding was created in the same tuck stitch pattern alternating 3 colors.<br><center>\r\n</center><br>\r\n\r\nYou can choose to knit your blanket in any stitch pattern, but the binding technique is priceless!  So many knitters struggle with curled and/or unfinished edges on blankets.  Although not a beginner technique, it is one you should consider for your knitting.<br>The following video explores some options for creating a binding for your blanket.<br>You'll need to understand short row increases and short row decreases. The next lesson includes instruction and practice for these techniques. ",
+              "legacyComponentId": 672,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "221921841",
+              "title": "binding video",
+              "legacyComponentId": 522,
+              "order": 2
+            }
+          ],
+          "title": "Blanket Binding",
+          "slug": "blanket-binding",
+          "order": 1,
+          "legacy": {
+            "assignId": 175,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Practice before knitting the binding for your blanket<br>\r\n<ul>\r\n<li>Establish how wide you want to your binding</li>\r\n<li>Play with stitch patterns and color</li>\r\n<li>Experiment with sew-as-you-go verses an independent binding</li>\r\n<li>Master mitered corners</li>\r\n</ul>\r\n\r\n<hr>\r\n<b>Follow the video in the previous lesson.</b><br>\r\n<small>Instructions are for standard gauge<em> (mid/bulky gauge) </em>machines.</small><br>\r\n<ul class=\"instruction-list\">\r\n<li>Cast on 31<em>(17)</em> stitches</li>\r\n<li>Knit even for 3-4\"</li>\r\n<li>Set your carriage to hold</li>\r\n<li>*On the carriage side pull one end needle to hold position - KNIT ACROSS*</li>\r\n<li>Repeat from * to * until 3 needles are in working position</li>\r\n<li>*On the carriage side push one  middle needle to working position- KNIT ACROSS*</li>\r\n<li>Repeat from * to * until all needles are in working position</li>\r\n<li>Knit 3\" - 4\"</li>\r\n<li>Bind off</li>\r\n</ul>\r\n\r\n \r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/9/baby_tuck/short_row_example.jpg\">\r\n<br>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/9/baby_tuck/binding2.jpg\">",
+              "legacyComponentId": 574,
+              "order": 2
+            }
+          ],
+          "title": "Try turning a corner",
+          "slug": "try-turning-a-corner",
+          "order": 2,
+          "legacy": {
+            "assignId": 176,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntryOptions",
+              "notes": [
+                "Unmapped legacy component type: DataEntryOptions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "174",
+                "CHALLENGE_COMPONENTID": "582",
+                "DATAMODEL_ELEMENT": "in_cm",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_OPTIONLIST": "inches,centimeters",
+                "DATAMODEL_REQEST_TEXT": "Inches or cm *",
+                "DATAMODEL_TYPE": "Radio",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 582,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "174",
+                "CHALLENGE_COMPONENTID": "511",
+                "DATAMODEL_ELEMENT": "Blanket_width",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "Width of your blanket? *",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 511,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "174",
+                "CHALLENGE_COMPONENTID": "512",
+                "DATAMODEL_ELEMENT": "Blanket_length",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "Length of your blanket? *",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 512,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "174",
+                "CHALLENGE_COMPONENTID": "692",
+                "DATAMODEL_ELEMENT": "Blanket_stitch_gauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "What is your BLANKET stitch gauge? *<br><small>(4 in/ 10cm)</small>",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 692,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "174",
+                "CHALLENGE_COMPONENTID": "693",
+                "DATAMODEL_ELEMENT": "Blanket_Row_Gauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "What is your BLANKET row gauge? *<br><small>(4 in/ 10cm)</small>",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 693,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "174",
+                "CHALLENGE_COMPONENTID": "509",
+                "DATAMODEL_ELEMENT": "binding_st_gauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "What is your BINDING stitch gauge? *<br><small>(4 in/ 10cm)</small>",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 509,
+              "order": 6
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "174",
+                "CHALLENGE_COMPONENTID": "510",
+                "DATAMODEL_ELEMENT": "binding_row_gauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "What is your BINDING row gauge? *<br><small>(4 in/ 10cm)</small>",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 510,
+              "order": 7
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "174",
+                "CHALLENGE_COMPONENTID": "515",
+                "DATAMODEL_ELEMENT": "binding_width",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "Binding Width? *(before folding)",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 515,
+              "order": 8
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "174",
+                "DATAMODEL_ELEMENT": "Blanket_notes",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Notes about your blanket: <small><em>For your course binder only</em></small>",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 703,
+              "order": 9
+            }
+          ],
+          "title": "Tell us about your blanket",
+          "slug": "tell-us-about-your-blanket",
+          "order": 3,
+          "legacy": {
+            "assignId": 174,
+            "blockType": "DataEntry"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The pattern is generated based on the the information you entered. <br /><em>Your answers are shown in italics.</em><br>NOTE: If you don't have enough needles to knit the blanket size you want at your gauge, consider making a narrower blanket. <br>For a more detailed blanket course, check out our <a href=\"/challenge/3/course/diy-blanket\"><b> DIY Blanket Course.</b></a><br>It will help you create ANY blanket size ... with no math AND lots of tips and tricks for determining yarn needed and more ....",
+              "legacyComponentId": 584,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): in_cm,binding_row_gauge,binding_st_gauge,Blanket_Row_Gauge,Blanket_stitch_gauge,Blanket_width,stitchgauge",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 174 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "198",
+                "CHALLENGE_COMPONENTID": "586",
+                "DATAMODEL_ELEMENTS": "in_cm,binding_row_gauge,binding_st_gauge,Blanket_Row_Gauge,Blanket_stitch_gauge,Blanket_width,stitchgauge",
+                "DATAMODEL_REDIRECT": "174",
+                "DATAMODEL_VALIDATION_MESSAGE": "Enter your custom information"
+              },
+              "legacyComponentId": 586,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: TuckBlanket_instructions.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "198",
+                "CHALLENGE_COMPONENTID": "588",
+                "CUSTOMCFM": "TuckBlanket_instructions.cfm"
+              },
+              "legacyComponentId": 588,
+              "order": 6
+            }
+          ],
+          "title": "Create Blanket Instructions",
+          "slug": "create-blanket-instructions",
+          "order": 4,
+          "legacy": {
+            "assignId": 198,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Techniques",
+      "slug": "techniques",
+      "displayOrder": 110,
+      "legacy": {
+        "itemId": 46,
+        "lessonOrder": 110
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Seaming from the purl side<br>",
+              "legacyComponentId": 571,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151850342",
+              "title": "Grafting on the Machine - Purl Side",
+              "legacyComponentId": 518,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<br>Seaming from the knit side",
+              "legacyComponentId": 572,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "151849234",
+              "title": "Grafting on the Machine - Knit Side",
+              "legacyComponentId": 520,
+              "order": 4
+            }
+          ],
+          "title": "Kitchener Stitch Seaming",
+          "slug": "kitchener-stitch-seaming",
+          "order": 1,
+          "legacy": {
+            "assignId": 177,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Joining a panel of knitting to another panel as you knit, makes for fast finishing.  Using this technique will speed up the finishing of the blanket binding for this project.<br>\r\n<blockquote class=\"smallblock\">If you've never tried sew-as-you-go, we recommend you take this opportunity to try it along the edge of a swatch.  This is a technique that you will use again and again in your knitting... not just for blankets.",
+              "legacyComponentId": 701,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "169798401",
+              "title": "Sew-as-you-go Tricks",
+              "legacyComponentId": 521,
+              "order": 2
+            }
+          ],
+          "title": "Sew-as-you-Go Tricks",
+          "slug": "sew-as-you-go-tricks",
+          "order": 2,
+          "legacy": {
+            "assignId": 178,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858422",
+              "title": "Seaming - Putting It All Together",
+              "legacyComponentId": 570,
+              "order": 1
+            }
+          ],
+          "title": "Seaming on the Machine",
+          "slug": "seaming-on-the-machine",
+          "order": 3,
+          "legacy": {
+            "assignId": 195,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\nRibbed cuffs on the leggings help keep the pants in place (and little legs warm). Ribbed cuffs on the sweater add a nice touch as well.\r\n<blockquote class=\"smallblock\"><em>No matter what direction you are knitting the leggings or the sleeves, one option is to put the cuff stitches on waste yarn. Finish the knitting and seam the front and back pieces of the leggings (or the underarm seam of the sleeve).  Then pick up the live stitches from waste yarn on hand knitting needles and hand knit the ribbing the ribbing in the round (no seams). </em></blockquote>\r\n<h3>On the machine, you have many options for cuffs:</h3>\r\n\r\n\r\n\r\n<div class=\"cleanwell\">\r\n<div class=\"lead\">Top Down</div>\r\n<ol class=\"instruction-list\">\r\n<li>As you finish each leg or sleeve, transfer every other stitch to the ribber and knit ribbing. You'll need to insert a cast on comb to successfully knit the ribbing.  <small><em>See the video below.</em></small></li>\r\n<li>Cast on and knit your ribbed cuffs first, removing them on waste yarn. When both the front and back leggings pieces (or the sleeves) are finished and the cuffs are scrapped off, join the seams. Rehang the ribbing on the main bed, rehang the cuff edge on the same needles and loosely bind off.</li>\r\n</ol>\r\n</div>\r\n\r\n<div class=\"cleanwell\">\r\n<div class=\"lead\">Cuff Up</div>\r\n<ol class=\"instruction-list\">\r\n<li>Start your leg or sleeves pieces with ribbing and knit up to the waist or shoulder.</li>\r\n<li>Start your leg or sleeves pieces with mock ribbing and knit up to the waist or shoulder.</li>\r\n<li>Start your leggings or sleeves with scrap yarn and attach a pre-knit ribbed cuff as above.</li>\r\n</ol>\r\n</div>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 630,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "You have knitting on the main bed and you want to switch to ribbing.  It's critical to have even weight on the work for the ribbing to knit properly.\r\n<ul>\r\n<li>Transfer the stitches to the ribber in the needle arrangement of your choice, then insert the ribber cast on comb as normal</li>\r\n</ul>\r\n~~~~ or ~~~~\r\n<ul>\r\n<li>Scrap off the knitting, hang the ribber cast on comb in some scrap knitting and ravel cord. Rehang the knitting, transfer the stitches and knit your ribbing.\r\n</ul>\r\n",
+              "legacyComponentId": 632,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859199",
+              "title": "Ribber Cast On Comb for Single Bed Knitting",
+              "legacyComponentId": 679,
+              "order": 5
+            }
+          ],
+          "title": "Ribbed Cuffs - You Have Options",
+          "slug": "ribbed-cuffs-you-have-options",
+          "order": 4,
+          "legacy": {
+            "assignId": 213,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Course Binder",
+      "slug": "course-binder",
+      "displayOrder": 111,
+      "legacy": {
+        "itemId": 51,
+        "lessonOrder": 111
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "sweater_photo",
+                "BUTTONLABLE": "Upload Photos of your Sweater<br><small>They will be included in your Course Binder</small>",
+                "CHALLENGE_ASSIGNID": "229",
+                "CHALLENGE_COMPONENTID": "696",
+                "QTY": "2",
+                "SUCCESSMESSAGE": "Got it!"
+              },
+              "legacyComponentId": 696,
+              "order": 1
+            }
+          ],
+          "title": "Show off your finished Sweater",
+          "slug": "show-off-your-finished-sweater",
+          "order": 1,
+          "legacy": {
+            "assignId": 229,
+            "blockType": "ImageUpload"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "230",
+                "DATAMODEL_ELEMENT": "Leggings_notes",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Your Leggings Notes:",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 704,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "leggings_photo",
+                "BUTTONLABLE": "Upload Photos of your Leggings<br><small>They will be included in your Course Binder</small>",
+                "CHALLENGE_ASSIGNID": "230",
+                "QTY": "2",
+                "SUCCESSMESSAGE": "got it!",
+                "TYPEOF": "ImageUpload"
+              },
+              "legacyComponentId": 699,
+              "order": 2
+            }
+          ],
+          "title": "Show off your finished Leggings",
+          "slug": "show-off-your-finished-leggings",
+          "order": 2,
+          "legacy": {
+            "assignId": 230,
+            "blockType": "ImageUpload"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "231",
+                "DATAMODEL_ELEMENT": "Blanket_notes",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Your Blanket Notes:",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 705,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "blanket_photo",
+                "BUTTONLABLE": "Upload Photos of your Blanket<br><small>They will be included in your Course Binder</small>",
+                "CHALLENGE_ASSIGNID": "231",
+                "QTY": "2",
+                "SUCCESSMESSAGE": "Got it!",
+                "TYPEOF": "ImageUpload"
+              },
+              "legacyComponentId": 700,
+              "order": 2
+            }
+          ],
+          "title": "Show off your finished Blanket",
+          "slug": "show-off-your-finished-blanket",
+          "order": 3,
+          "legacy": {
+            "assignId": 231,
+            "blockType": "ImageUpload"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n                Your Course Binder contains all of the information and images provided by you during the course.\r\n                <img src=\"/challenge/images/v2/9/course_binder_logo.png\"\">\r\n\r\n\r\n",
+              "legacyComponentId": 684,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Binder",
+              "notes": [
+                "Unmapped legacy component type: Binder"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "224",
+                "CHALLENGE_COMPONENTID": "683",
+                "LABLE": "Download and print your course binder"
+              },
+              "legacyComponentId": 683,
+              "order": 2
+            }
+          ],
+          "title": "You did it {first}! Download your course binder",
+          "slug": "you-did-it-first-download-your-course-binder",
+          "order": 4,
+          "legacy": {
+            "assignId": 224,
+            "blockType": "Binder"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Survay",
+              "notes": [
+                "Unmapped legacy component type: Survay"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "227",
+                "CHALLENGE_COMPONENTID": "694",
+                "DATAMODEL_ICON": "ffa fa-pencil",
+                "LABLE": "Thank you for your response",
+                "REDIRECT_TO": "/challenge/9/coursefinal/tuck-baby",
+                "SURVEY": "CC74F444-5056-A02D-DF2D-512F9FE969F3|Tuck Baby Course Survey"
+              },
+              "legacyComponentId": 694,
+              "order": 1
+            }
+          ],
+          "title": "{First}, Your feedback is appreciated",
+          "slug": "first-your-feedback-is-appreciated",
+          "order": 5,
+          "legacy": {
+            "assignId": 227,
+            "blockType": "Survay"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 18,
+    "videos": [
+      {
+        "vimeoId": "221120492",
+        "title": "Machine Knitting Courses",
+        "lessonSlug": "introduction",
+        "blockSlug": "how-to-use-this-course-site"
+      },
+      {
+        "vimeoId": "151819909",
+        "title": "Introduction to Cut and Sew",
+        "lessonSlug": "the-sweater",
+        "blockSlug": "neckline-cut-n-sew"
+      },
+      {
+        "vimeoId": "189252754",
+        "title": "Interrupted Patterning Part 1",
+        "lessonSlug": "the-sweater",
+        "blockSlug": "neckline-stitch-patterning"
+      },
+      {
+        "vimeoId": "189252743",
+        "title": "Interrupted Patterning Part 2",
+        "lessonSlug": "the-sweater",
+        "blockSlug": "neckline-stitch-patterning"
+      },
+      {
+        "vimeoId": "151859107",
+        "title": "Neckline Shaping Perfection",
+        "lessonSlug": "the-sweater",
+        "blockSlug": "neckline-shaping-practice"
+      },
+      {
+        "vimeoId": "151860086",
+        "title": "One Piece Neckband Perfection",
+        "lessonSlug": "the-sweater",
+        "blockSlug": "neck-band-practice"
+      },
+      {
+        "vimeoId": "223374072",
+        "title": "Reversible Band",
+        "lessonSlug": "the-sweater",
+        "blockSlug": "perfect-button-bands"
+      },
+      {
+        "vimeoId": "151859614",
+        "title": "Basic Buttonholes",
+        "lessonSlug": "the-sweater",
+        "blockSlug": "perfect-button-bands"
+      },
+      {
+        "vimeoId": "151858849",
+        "title": "Streamlined Sleeve Seam",
+        "lessonSlug": "the-sweater",
+        "blockSlug": "the-sleeves"
+      },
+      {
+        "vimeoId": "151860039",
+        "title": "Hung Hem Basics",
+        "lessonSlug": "the-leggings",
+        "blockSlug": "waistband-options"
+      },
+      {
+        "vimeoId": "151857423",
+        "title": "Reverse Hung Hem",
+        "lessonSlug": "the-leggings",
+        "blockSlug": "waistband-options"
+      },
+      {
+        "vimeoId": "178357056",
+        "title": "mock ribbing from bootcamp",
+        "lessonSlug": "the-leggings",
+        "blockSlug": "waistband-options"
+      },
+      {
+        "vimeoId": "221921841",
+        "title": "binding video",
+        "lessonSlug": "blanket-with-binding",
+        "blockSlug": "blanket-binding"
+      },
+      {
+        "vimeoId": "151850342",
+        "title": "Grafting on the Machine - Purl Side",
+        "lessonSlug": "techniques",
+        "blockSlug": "kitchener-stitch-seaming"
+      },
+      {
+        "vimeoId": "151849234",
+        "title": "Grafting on the Machine - Knit Side",
+        "lessonSlug": "techniques",
+        "blockSlug": "kitchener-stitch-seaming"
+      },
+      {
+        "vimeoId": "169798401",
+        "title": "Sew-as-you-go Tricks",
+        "lessonSlug": "techniques",
+        "blockSlug": "sew-as-you-go-tricks"
+      },
+      {
+        "vimeoId": "151858422",
+        "title": "Seaming - Putting It All Together",
+        "lessonSlug": "techniques",
+        "blockSlug": "seaming-on-the-machine"
+      },
+      {
+        "vimeoId": "151859199",
+        "title": "Ribber Cast On Comb for Single Bed Knitting",
+        "lessonSlug": "techniques",
+        "blockSlug": "ribbed-cuffs-you-have-options"
+      }
+    ],
+    "downloadCount": 2,
+    "downloads": [
+      {
+        "filename": "/downloads/neckline_template.pdf",
+        "label": "Download Template",
+        "lessonSlug": "the-sweater",
+        "blockSlug": "neckline-cut-n-sew"
+      },
+      {
+        "filename": "/downloads/baby_tuck1.pdf",
+        "label": "Download the original (traditional style) pattern",
+        "lessonSlug": "the-original-pattern",
+        "blockSlug": "the-retro-pattern"
+      }
+    ]
+  }
+}

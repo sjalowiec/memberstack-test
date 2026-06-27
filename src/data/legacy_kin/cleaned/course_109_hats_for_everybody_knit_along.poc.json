@@ -1,0 +1,592 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 109,
+    "title": "Hats for Everybody Knit-Along",
+    "slug": "hats-for-everybody-knit-along",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_109_hats_for_everybody_knit_along.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:10+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Plan your hat",
+      "slug": "plan-your-hat",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 704,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .play1 {\r\n        position: relative;\r\n        width: 100%;\r\n        max-width: 400px;\r\n    }\r\n\r\n    .play1 img {\r\n        width: 100%;\r\n        height: auto;\r\n    }\r\n\r\n    .play1 .btn {\r\n        position: absolute;\r\n        top: 50%;\r\n        left: 50%;\r\n        transform: translate(-50%, -50%);\r\n        -ms-transform: translate(-50%, -50%);\r\n        background-color: #555;\r\n        color: white;\r\n        font-size: 16px;\r\n        padding: 12px 24px;\r\n        border: none;\r\n        cursor: pointer;\r\n        border-radius: 5px;\r\n        text-align: center;\r\n    }\r\n\r\n    .play1 .btn:hover {\r\n        background-color: black;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n\r\n    \r\n        <div class=\"videopopup\" data-videotitle=\"hat_knit-along.mp4\" data-vimeoid=\"766662638\">\r\n\r\n            <div class=\"play1\">\r\n                <img src=\"https://i.vimeocdn.com/video/1539373239-cb68fa20543264fb9bc0f3376c3c9a932babb202d2be5690a3bea89b1de7ce9a-d_617x501?r=pad\" alt=\"Hat Knit-Along\" style=\"width:100%\">\r\n                <button class=\"btn\"><i class=\"fa fa-youtube-play fa-2x\"></i></button>\r\n            </div>\r\n\r\n\r\n        </div>\r\n    \r\n\r\n    \r\n        <h3>Join us LIVE!</h3><br>\r\n        List live events here\r\n    \r\n\r\n",
+              "legacyComponentId": 9158,
+              "order": 1
+            }
+          ],
+          "title": "Welcome",
+          "slug": "welcome",
+          "order": 1,
+          "legacy": {
+            "assignId": 6012,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    div.list {\r\n        font-size: 20px;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n    \r\n\r\n        <div class=\"list\">\r\n            <ul>\r\n                <li><a class=\"pattermpopup\" data-garmentid=\"2251\" data-garmenttitle=\"Mile a Minute Hat\">Basic Hat</a></li>\r\n                <li><a class=\"pattermpopup\" data-garmentid=\"2236\" data-garmenttitle=\"Mile a Minute Hat\">Mile-a-Minute Basic Hat</a></li>\r\n                <li><a class=\"pattermpopup\" data-garmentid=\"2247\" data-garmenttitle=\"Inside Out Hat\">Inside Out Hat</a></li>\r\n                <li><a class=\"pattermpopup\" data-garmentid=\"2242\" data-garmenttitle=\"Earflap Hat\">Earflap Hat</a></li>\r\n                <li><a class=\"pattermpopup\" data-garmentid=\"2245\" data-garmenttitle=\"Fisherman Rib Hat\">Fisherman Rib Hat</a></li>\r\n                <li><a class=\"pattermpopup\" data-garmentid=\"2248\" data-garmenttitle=\"Rib n Roll Slouchy Hat\">Rib 'n Roll Slouchy Hat</a></li>\r\n                <li><a class=\"pattermpopup\" data-garmentid=\"2249\" data-garmenttitle=\"Machine Knit Beret\">Machine Knit Beret</a></li>\r\n                <li><a class=\"pattermpopup\" data-garmentid=\"2246\" data-garmenttitle=\"Lucky Clochet\">Lucky Cloche</a></li>\r\n                <li><a class=\"pattermpopup\" data-garmentid=\"2249\" data-garmenttitle=\"Machine Knit Berett\">Machine Knit Beret</a> with band or hem</li>\r\n                <li><a class=\"pattermpopup\" data-garmentid=\"2243\" data-garmenttitle=\"Watch Cap\">Watch Cap</a> with band or hem</li>\r\n                <li><a class=\"pattermpopup\" data-garmentid=\"2237\" data-garmenttitle=\"Shaped Crown Beanie\">Shaped Crown Beanie</a> with band or hem</li>\r\n                <li><a class=\"pattermpopup\" data-garmentid=\"2250\" data-garmenttitle=\"Santa hat\">Santa hat</a> with band or hem</li>\r\n            </ul>\r\n        </div>\r\n    \r\n        <img src=\"/challenge/images/v2/109/hat_computer.png\">\r\n    \r\n\r\n\r\n\r\n<script language=\"JavaScript\">\r\n    $(\".pattermpopup\").click(function() {\r\n        $('#Popupcontentdiv').load('/path/actions/patterninfo.cfm?garmentid=' + $(this).attr('data-garmentid'));\r\n        $('#PopupcontentTitle').html($(this).attr('data-garmenttitle'));\r\n        $('#popupContentwindow').modal('show');\r\n        //event.preventDefault();\r\n        return false;\r\n    });\r\n\r\n</script>\r\n",
+              "legacyComponentId": 9159,
+              "order": 2
+            }
+          ],
+          "title": "Knit it Now Patterns",
+          "slug": "knit-it-now-patterns",
+          "order": 3,
+          "legacy": {
+            "assignId": 5999,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .handwriting {'Handlee', cursive;\r\n        color: #7675C9;\r\n        font-weight: 600;\r\n    }\r\n\r\n    .container-border1 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px 50px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        background-color: white;\r\n        max-width: 700px;\r\n        margin: auto;\r\nbackground-color: #DCDCDC;\r\n    }\r\n\r\n    .img1 {\r\n        border: 3px solid #ccc;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n    \r\n\r\n        <span class=\"handwriting\" style=\"font-size:2em\">Make sure it stays on!</span><br>When knitting sweaters, we add \"ease\" so the sweater doesn't cling.<br>For hats, it's important to make them smaller and incorporate <a data-GlossaryId=\"715\" class=\"glossaryhelp\">Negative Ease <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>.<br>\r\n        <span class=\"yellow_highlight\"> By making the circumference of a hat smaller than the head size, we rely on the stretch of knitting to keep the hat on the head in the strongest wind.</span><br><b>The Knit it Now Hat sizing chart</b> helps you select your hat size and lists the head (actual) measurements.<br>\r\n        By default our hat patterns include 2\" of negative ease AND you can further adjust the FINISHED circumference with the Perfect Fit Dimensions.<br>\r\n\r\n    <img class=\"img1\" alt=\"\" src=\"/path/images/2764/hat1.jpg\"><br><em>Ribbing may need more negative ease because of the stretch</em><br>\r\n<br><div class=\"container-border1 text-center\"><span style=\"font-size:1.25em\"> Body measurement <b>minus</b> Finished Measurement <b>equals</b> Negative Ease</span></div>\r\n\r\n\r\n\r\n<h3>Default Negative Ease of Knit it Now Hat Patterns (Minus 2\" <em><small>5cm</small></em>)</h3>\r\n\r\n<div class=\"btn-group btn-sm\" role=\"group\" aria-label=\"...\">\r\n  <button data-show=\"inchinfo\" type=\"button\" class=\"btn btn-primary btn-sm groupbuttons\">Inches</button>\r\n  <button data-show=\"cminfo\" type=\"button\" class=\"btn btn-default btn-sm groupbuttons\">CM</button>\r\n</div>\r\n\r\n\r\n\r\n\r\n<div>\r\n\r\n<img id=\"inchinfo\" class=\"showinfo\" alt=\"\" src=\"/path/images/2764/inches2.png\">\r\n<img id=\"cminfo\" class=\"showinfo\" style=\"display:none;\" alt=\"\" src=\"/path/images/2764/cm.png\">\r\n\r\n\r\n<script language=\"JavaScript\">\r\n$('.groupbuttons').click(function() {\r\n  $('.showinfo').hide();\r\n  $('#'+$(this).attr('data-show')).show();\r\n  $('.groupbuttons').removeClass('btn-primary');\r\n\t$('.groupbuttons').addClass('btn-default ');\r\n\t$(this).addClass('btn-primary ');\r\n});\r\n</script>\r\n\r\n\r\n",
+              "legacyComponentId": 9145,
+              "order": 1
+            }
+          ],
+          "title": "Negative Ease",
+          "slug": "negative-ease",
+          "order": 4,
+          "legacy": {
+            "assignId": 6005,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Hem / band/ Ribbing",
+      "slug": "hem-band-ribbing",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 705,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151860039",
+              "title": "Hung Hem Basics",
+              "legacySlot": 1,
+              "legacyComponentId": 9153,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "265978737",
+              "title": "Hung Hem with Cast on Comb",
+              "legacySlot": 2,
+              "legacyComponentId": 9153,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859552",
+              "title": "I-Cord Cast On",
+              "legacySlot": 3,
+              "legacyComponentId": 9153,
+              "order": 1
+            }
+          ],
+          "title": "Hem/Band",
+          "slug": "hem-band",
+          "order": 1,
+          "legacy": {
+            "assignId": 6011,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858398",
+              "title": "Decorative Cabled Ribbing on the Machine",
+              "legacySlot": 1,
+              "legacyComponentId": 9151,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "174422220",
+              "title": "Cable Eyelet Ribbing",
+              "legacySlot": 2,
+              "legacyComponentId": 9151,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859224",
+              "title": "2x2 Ribbing Cast On",
+              "legacySlot": 3,
+              "legacyComponentId": 9151,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859346",
+              "title": "2x2 Half Pitch Rib Cast On",
+              "legacySlot": 4,
+              "legacyComponentId": 9151,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859818",
+              "title": "Crrugated Rib on the Machine",
+              "legacySlot": 5,
+              "legacyComponentId": 9151,
+              "order": 1
+            }
+          ],
+          "title": "Ribbing",
+          "slug": "ribbing",
+          "order": 2,
+          "legacy": {
+            "assignId": 6001,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858404",
+              "title": "Hand Knit Ribbing with Machine Knitting",
+              "legacySlot": 1,
+              "legacyComponentId": 9148,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "308428091",
+              "title": "No Ribber? Ribbing Cast on Options",
+              "legacySlot": 2,
+              "legacyComponentId": 9148,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858391",
+              "title": "Ribbing without a Ribber",
+              "legacySlot": 3,
+              "legacyComponentId": 9148,
+              "order": 1
+            }
+          ],
+          "title": "Ribbing without a Ribber",
+          "slug": "ribbing-without-a-ribber",
+          "order": 3,
+          "legacy": {
+            "assignId": 6007,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "178357056",
+              "title": "Mock Ribbing How To",
+              "legacySlot": 1,
+              "legacyComponentId": 9149,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859815",
+              "title": "Mock Ribbing Variations",
+              "legacySlot": 2,
+              "legacyComponentId": 9149,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "286440921",
+              "title": "Seaming Mock Ribbing",
+              "legacySlot": 3,
+              "legacyComponentId": 9149,
+              "order": 1
+            }
+          ],
+          "title": "Mock Ribbing",
+          "slug": "mock-ribbing",
+          "order": 4,
+          "legacy": {
+            "assignId": 6008,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "761692456",
+              "title": "Faux Ribbing",
+              "legacySlot": 1,
+              "legacyComponentId": 9150,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859822",
+              "title": "Mock Corregated Ribbing",
+              "legacySlot": 2,
+              "legacyComponentId": 9150,
+              "order": 1
+            }
+          ],
+          "title": "Faux Ribbing",
+          "slug": "faux-ribbing",
+          "order": 5,
+          "legacy": {
+            "assignId": 6009,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857723",
+              "title": "Seaming Ribbing",
+              "legacySlot": 1,
+              "legacyComponentId": 9152,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "764344052",
+              "title": "Perfect 1x1 Ribbed Seams",
+              "legacySlot": 2,
+              "legacyComponentId": 9152,
+              "order": 1
+            }
+          ],
+          "title": "Seaming Ribbing",
+          "slug": "seaming-ribbing",
+          "order": 6,
+          "legacy": {
+            "assignId": 6010,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Body of the hat",
+      "slug": "body-of-the-hat",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 706,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Because hats are \"tubes\" it's important to plan stitch patterns to match at the seam.<br>If necessary, adjust the stitch count of your hat to accommodate your chosen stitch pattern",
+              "legacyComponentId": 9157,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857799",
+              "title": "Stitch Multiples",
+              "legacyComponentId": 9155,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n\r\n<hr class=\"style13\">\r\n\r\n\r\n    \r\n\r\n<span class=\"handwriting\" style=\"font-size:2em\"> Need help with stitch patterning? </span><br><span class=\"yellow_highlight\"> Learn to knit in pattern in 3 steps</span><br>One of the many advantages of machine knitting is the ability to quickly and easily knit in pattern. Textured stitch patterns, multi-color patterns can all be quickly produced with the help of automatic patterning devices. Using Punchcard or electronics, the machine automatically selects needles for pattern knitting.<br>If you've been stumped by knitting in pattern on your machine, this course will take away the fear and confusion.<br>Using fill-in-the-blanks tutorials, we'll walk you through all the settings for YOUR machine, creating a cheat-sheet that you can use again and again.<br>Once you finish the exercises you will have an UNDERSTANDING of what is going on with all the levers and buttons and you will be confident to sit down and work the stitch pattern of your choice.\r\n    \r\n\r\n        <figure>\r\n            <a href=\"/challenge/72/automatic-stitch-patterning\"><img class=\"center-block\" src=\"/challenge/images/v2/109/v2/72/automatic_stitch.jpg\">\r\n            <figcaption align=\"center\"><br><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> <b>Course: Automatic Stitch Patterning</b></figcaption>\r\n        </figure></a>\r\n    \r\n\r\n",
+              "legacyComponentId": 9154,
+              "order": 3
+            }
+          ],
+          "title": "Stitch patterns",
+          "slug": "stitch-patterns",
+          "order": 1,
+          "legacy": {
+            "assignId": 6002,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Top shaping",
+      "slug": "top-shaping",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 707,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "When knitting mile-a-minute hats, the quickest way to finish the \"tube\" is to run a tail of yarn through the last open stitches and gather the top of the Hat.\r\n\r\n",
+              "legacyComponentId": 9142,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859005",
+              "title": "Gathered Top for Mittens and Hats",
+              "legacyComponentId": 9143,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<h2 id=\"lecture_heading\" class=\"section-title MachineknittingColor\"><i></i> Modified Gathers</h2> For reduced bulk at the top of the hat.\r\n\r\n\r\nApprox 2\" before the end of a basic hat (for adults):<br>\r\n<ol>\r\n<li>Rransfer every other needle to it's neighbor, leaving the emptied needles in out of work position.</li>\r\n<li>Leave at least 2 needles in work on the edges for seaming</li>\r\n<li>Knit 2\" of rows over every  other needle</li>\r\n<li>Gather top with live stitches</li>\r\n<li>Fasten tail and use for seaming<?li>\r\n</ol>\r\n\r\n<img src=\"/images/patterns/eon_gather.jpg\">\r\n\r\n\r\n",
+              "legacyComponentId": 9160,
+              "order": 3
+            }
+          ],
+          "title": "Gathers",
+          "slug": "gathers",
+          "order": 1,
+          "legacy": {
+            "assignId": 6004,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858447",
+              "title": "Basic Increasing and Decreasing",
+              "legacySlot": 1,
+              "legacyComponentId": 9144,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "305566131",
+              "title": "Shaped Crown Hat on the Machine",
+              "legacySlot": 2,
+              "legacyComponentId": 9144,
+              "order": 1
+            }
+          ],
+          "title": "Shaping",
+          "slug": "shaping",
+          "order": 2,
+          "legacy": {
+            "assignId": 6003,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "In the Round",
+      "slug": "in-the-round",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 708,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nIf you have a ribber, why not knit the body of your hat in the round?<br>\r\nKnit the ribbing flat (or by hand) and knit the body in a tube.<br><em>\r\nRemember, stitch patterning is only done on the main bed. So any stitch patterning (texture or color) has to be hand-manipulated when knitting in the round.</em><br>\r\n<img class=\"img-thumbnail\" src=\"/images/glossary/tubular_knitting.jpg\">\r\n\r\n\r\n",
+              "legacyComponentId": 9146,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858632",
+              "title": "Circular / Tubular Knitting",
+              "legacySlot": 1,
+              "legacyComponentId": 9147,
+              "order": 2
+            }
+          ],
+          "title": "Circular (Tubular) Knitting",
+          "slug": "circular-tubular-knitting",
+          "order": 1,
+          "legacy": {
+            "assignId": 6006,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 23,
+    "videos": [
+      {
+        "vimeoId": "151860039",
+        "title": "Hung Hem Basics",
+        "lessonSlug": "hem-band-ribbing",
+        "blockSlug": "hem-band"
+      },
+      {
+        "vimeoId": "265978737",
+        "title": "Hung Hem with Cast on Comb",
+        "lessonSlug": "hem-band-ribbing",
+        "blockSlug": "hem-band"
+      },
+      {
+        "vimeoId": "151859552",
+        "title": "I-Cord Cast On",
+        "lessonSlug": "hem-band-ribbing",
+        "blockSlug": "hem-band"
+      },
+      {
+        "vimeoId": "151858398",
+        "title": "Decorative Cabled Ribbing on the Machine",
+        "lessonSlug": "hem-band-ribbing",
+        "blockSlug": "ribbing"
+      },
+      {
+        "vimeoId": "174422220",
+        "title": "Cable Eyelet Ribbing",
+        "lessonSlug": "hem-band-ribbing",
+        "blockSlug": "ribbing"
+      },
+      {
+        "vimeoId": "151859224",
+        "title": "2x2 Ribbing Cast On",
+        "lessonSlug": "hem-band-ribbing",
+        "blockSlug": "ribbing"
+      },
+      {
+        "vimeoId": "151859346",
+        "title": "2x2 Half Pitch Rib Cast On",
+        "lessonSlug": "hem-band-ribbing",
+        "blockSlug": "ribbing"
+      },
+      {
+        "vimeoId": "151859818",
+        "title": "Crrugated Rib on the Machine",
+        "lessonSlug": "hem-band-ribbing",
+        "blockSlug": "ribbing"
+      },
+      {
+        "vimeoId": "151858404",
+        "title": "Hand Knit Ribbing with Machine Knitting",
+        "lessonSlug": "hem-band-ribbing",
+        "blockSlug": "ribbing-without-a-ribber"
+      },
+      {
+        "vimeoId": "308428091",
+        "title": "No Ribber? Ribbing Cast on Options",
+        "lessonSlug": "hem-band-ribbing",
+        "blockSlug": "ribbing-without-a-ribber"
+      },
+      {
+        "vimeoId": "151858391",
+        "title": "Ribbing without a Ribber",
+        "lessonSlug": "hem-band-ribbing",
+        "blockSlug": "ribbing-without-a-ribber"
+      },
+      {
+        "vimeoId": "178357056",
+        "title": "Mock Ribbing How To",
+        "lessonSlug": "hem-band-ribbing",
+        "blockSlug": "mock-ribbing"
+      },
+      {
+        "vimeoId": "151859815",
+        "title": "Mock Ribbing Variations",
+        "lessonSlug": "hem-band-ribbing",
+        "blockSlug": "mock-ribbing"
+      },
+      {
+        "vimeoId": "286440921",
+        "title": "Seaming Mock Ribbing",
+        "lessonSlug": "hem-band-ribbing",
+        "blockSlug": "mock-ribbing"
+      },
+      {
+        "vimeoId": "761692456",
+        "title": "Faux Ribbing",
+        "lessonSlug": "hem-band-ribbing",
+        "blockSlug": "faux-ribbing"
+      },
+      {
+        "vimeoId": "151859822",
+        "title": "Mock Corregated Ribbing",
+        "lessonSlug": "hem-band-ribbing",
+        "blockSlug": "faux-ribbing"
+      },
+      {
+        "vimeoId": "151857723",
+        "title": "Seaming Ribbing",
+        "lessonSlug": "hem-band-ribbing",
+        "blockSlug": "seaming-ribbing"
+      },
+      {
+        "vimeoId": "764344052",
+        "title": "Perfect 1x1 Ribbed Seams",
+        "lessonSlug": "hem-band-ribbing",
+        "blockSlug": "seaming-ribbing"
+      },
+      {
+        "vimeoId": "151857799",
+        "title": "Stitch Multiples",
+        "lessonSlug": "body-of-the-hat",
+        "blockSlug": "stitch-patterns"
+      },
+      {
+        "vimeoId": "151859005",
+        "title": "Gathered Top for Mittens and Hats",
+        "lessonSlug": "top-shaping",
+        "blockSlug": "gathers"
+      },
+      {
+        "vimeoId": "151858447",
+        "title": "Basic Increasing and Decreasing",
+        "lessonSlug": "top-shaping",
+        "blockSlug": "shaping"
+      },
+      {
+        "vimeoId": "305566131",
+        "title": "Shaped Crown Hat on the Machine",
+        "lessonSlug": "top-shaping",
+        "blockSlug": "shaping"
+      },
+      {
+        "vimeoId": "151858632",
+        "title": "Circular / Tubular Knitting",
+        "lessonSlug": "in-the-round",
+        "blockSlug": "circular-tubular-knitting"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

@@ -56,3 +56,5 @@ src/data/legacy_kin/exports/course_*.csv
 # Python cache
 __pycache__/
 *.pyc
+
+public/challenge/

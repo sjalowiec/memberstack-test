@@ -1,0 +1,894 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 73,
+    "title": "Cuff-to-Cuff Sweaters",
+    "slug": "cuff-to-cuff-sweaters",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_73_cuff_to_cuff_sweaters.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Plan your sweater",
+      "slug": "plan-your-sweater",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 472,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<div class=\"offset-1\">\r\n\r\n  <span class=\"handwriting\">Hand Knit Inspiration</span>\r\n  Knitting for baby may not be on your agenda, but this cute-as-can-be sweater, got us thinking about sideways knitting.<br>We've gathered together a number of Knit it Now \"Sideways\" patterns so you can knit any size and have lots of choices for your Cuff-to-Cuff.<br><a href=\"https://universalyarn.com/products/crosscut-pullover\">\r\n\t\t\t<center><figure><img class=\"img-thumbnail zoom\" width=\"300\" src=\"/challenge/images/v2/73/crosscut_with_logo.jpg\">\r\n\t\t\t\t<figcaption align=\"center\"><br><a href=\"https://universalyarn.com/products/crosscut-pullover\">Crosscut from Universal Yarns</a></figcaption>\r\n\t\t\t</figure></center>\r\n\t\t</a>\r\n\r\n\r\n</div>\r\n<div class=\"offset-1\">\r\n\r\n  <span class=\"handwriting\">Inspired by Ready-to-Wear</span>\r\n  <center><figure>\r\n\t\t<figcaption align=\"center\"><br>Fellow knitter, Cynthia shared this inspiration ...<br> who says sweaters with simple shapes have to be boring?<br><em><small> Roll over for a closer look<br></small></em></figcaption><img class=\"img-thumbnail zoom\" width=\"300\" src=\"/challenge/images/v2/73/unnamed (1).jpg\">\r\n\t</figure><center>\r\n<br><em>Notice the ribbing.  Even though this was knit side-to-side, the designer picked up ribbing along the hem.</em><br>\r\nCut 'n Sew anyone?\r\n<br>\r\n</div>\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 6046,
+              "order": 1
+            }
+          ],
+          "title": "The Inspiration",
+          "slug": "the-inspiration",
+          "order": 1,
+          "legacy": {
+            "assignId": 4009,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/v2/73/karenb.jpg",
+                  "caption": "Karen B"
+                },
+                {
+                  "src": "/v2/73/sideways2a.jpeg",
+                  "caption": "Mary K."
+                },
+                {
+                  "src": "/v2/73/sideways3a.jpg",
+                  "caption": "Carol"
+                },
+                {
+                  "src": "/v2/73/sideways4a.jpeg",
+                  "caption": "Mary K"
+                },
+                {
+                  "src": "/v2/73/sideways5b.jpg",
+                  "caption": "Cynthia P"
+                },
+                {
+                  "src": "/v2/73/karenb1.jpg",
+                  "caption": "Karen B"
+                },
+                {
+                  "src": "/v2/73/sideways6a.jpg",
+                  "caption": "Kris H"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 6083,
+              "order": 1
+            }
+          ],
+          "title": "Shares from knitters",
+          "slug": "shares-from-knitters",
+          "order": 2,
+          "legacy": {
+            "assignId": 4020,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859104",
+              "title": "Sideways Knits Inspiration",
+              "legacyComponentId": 6078,
+              "order": 1
+            }
+          ],
+          "title": "About Sideways Knits",
+          "slug": "about-sideways-knits",
+          "order": 3,
+          "legacy": {
+            "assignId": 4017,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n/* The container */\r\n.container {\r\n  display: block;\r\n  position: relative;\r\n  padding-left: 35px;\r\n  margin-bottom: 12px;\r\n  cursor: pointer;\r\n  font-size: 18px;\r\n  -webkit-user-select: none;\r\n  -moz-user-select: none;\r\n  -ms-user-select: none;\r\n  user-select: none;\r\n}\r\n\r\n/* Hide the browser's default checkbox */\r\n.container input {\r\n  position: absolute;\r\n  opacity: 0;\r\n  cursor: pointer;\r\n  height: 0;\r\n  width: 0;\r\n}\r\n\r\n/* Create a custom checkbox */\r\n.checkmark {\r\n  position: absolute;\r\n  top: 0;\r\n  left: 0;\r\n  height: 25px;\r\n  width: 25px;\r\n  background-color: #eee;\r\n}\r\n\r\n/* On mouse-over, add a grey background color */\r\n.container:hover input ~ .checkmark {\r\n  background-color: #ccc;\r\n}\r\n\r\n/* When the checkbox is checked, add a course color */\r\n.container input:checked ~ .checkmark {\r\n  background-color: #9e2065;\r\n}\r\n\r\n/* Create the checkmark/indicator (hidden when not checked) */\r\n.checkmark:after {\r\n  content: \"\";\r\n  position: absolute;\r\n  display: none;\r\n}\r\n\r\n/* Show the checkmark when checked */\r\n.container input:checked ~ .checkmark:after {\r\n  display: block;\r\n}\r\n\r\n/* Style the checkmark/indicator */\r\n.container .checkmark:after {\r\n  left: 9px;\r\n  top: 5px;\r\n  width: 5px;\r\n  height: 10px;\r\n  border: solid white;\r\n  border-width: 0 3px 3px 0;\r\n  -webkit-transform: rotate(45deg);\r\n  -ms-transform: rotate(45deg);\r\n  transform: rotate(45deg);\r\n}\r\n\r\n.bump \r\n{padding-left: 35px;\r\nmargin-bottom: 12px;\r\n}\r\n\r\n.rotated {\r\ntransform: rotate(15deg);\r\n}\r\n</style>\r\n",
+              "legacyComponentId": 6056,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\t\r\n\r\n\t\t<label class=\"container\"><span href=\"#one\" data-toggle=\"collapse\">Use a Knit it Now Pattern</span>\r\n\t\t\t<input type=\"checkbox\" checked=\"checked\" onchange=\"$('#one').toggle()\">\r\n\t\t\t<span class=\"checkmark\"></span>\r\n\t\t</label>\r\n\t\t<div id=\"one\" class=\"collapse bump\">\r\n\t\t\tWith the dynamic patterns, you can use any yarn, any machine and any stitch pattern. You don't have to match gauge.\r\n\t\t</div>\r\n\r\n\t\t<label class=\"container\"><span href=\"#two\" data-toggle=\"collapse\">Adult or baby?</span>\r\n\t\t\t<input type=\"checkbox\" onchange=\"$('#two').toggle()\">\r\n\t\t\t<span class=\"checkmark\"></span>\r\n\t\t</label>\r\n\t\t<div id=\"two\" class=\"collapse bump\">\r\n\t\t\tKeep in mind our needlebed limitations. A one-piece sweater can only be as large as the needlebed\r\n\t\t</div>\r\n\r\n\r\n\r\n\t\t<label class=\"container\"><span href=\"#four\" data-toggle=\"collapse\">Round or V-Neck?</span>\r\n\t\t\t<input type=\"checkbox\" onchange=\"$('#four').toggle()\">\r\n\t\t\t<span class=\"checkmark\"></span>\r\n\t\t</label>\r\n\t\t<div id=\"four\" class=\"collapse bump\">\r\n\t\t\tYour choice\r\n\t\t</div>\r\n\r\n\t\t<label class=\"container\"><span href=\"#five\" data-toggle=\"collapse\">Cardigan or Pullover?</span>\r\n\t\t\t<input type=\"checkbox\" onchange=\"$('#five').toggle()\">\r\n\t\t\t<span class=\"checkmark\"></span>\r\n\t\t</label>\r\n\t\t<div id=\"five\" class=\"collapse bump\">\r\n\t\t\tYour choice\r\n\t\t</div>\r\n\r\n\t\t<label class=\"container\"><span href=\"#six\" data-toggle=\"collapse\">Short or Long Sleeve?</span>\r\n\t\t\t<input type=\"checkbox\" onchange=\"$('#six').toggle()\">\r\n\t\t\t<span class=\"checkmark\"></span>\r\n\t\t</label>\r\n\t\t<div id=\"six\" class=\"collapse bump\">\r\n\t\t\tYour choice\r\n\t\t</div>\r\n\r\n\t\t<label class=\"container\"><span href=\"#seven\" data-toggle=\"collapse\">Stitch pattern?</span>\r\n\t\t\t<input type=\"checkbox\" onchange=\"$('#seven').toggle()\">\r\n\t\t\t<span class=\"checkmark\"></span>\r\n\t\t</label>\r\n\t\t<div id=\"seven\" class=\"collapse bump\">\r\n\t\t\tFor the on-piece baby pattern, there is a lot of starting and stopping. It would be good practice for stopping and re-starting stitch patterns.\r\n\t\t</div>\r\n\r\n\t\t<label class=\"container\"><span href=\"#eight\" data-toggle=\"collapse\">Cuff/Sleeve Finishing?</span>\r\n\t\t\t<input type=\"checkbox\" onchange=\"$('#eight').toggle()\">\r\n\t\t\t<span class=\"checkmark\"></span>\r\n\t\t</label>\r\n\t\t<div id=\"eight\" class=\"collapse bump\">\r\n\t\t\tOptions:\r\n\t\t\t<ul>\r\n\t\t\t\t<li>Hand knit garter stitch, or ribbing, hang the work on the machine to continue knitting the sleeve</li>\r\n\t\t\t\t<li><a data-GlossaryId='284' class='glossaryhelp'>Hang a hem <i class='fa fa-question-circle' aria-hidden='true'></i></a></li>\r\n\t\t\t\t<li><a data-GlossaryId='313' class='glossaryhelp'>Let it roll <i class='fa fa-question-circle' aria-hidden='true'></i></a></li>\r\n\t\t\t</ul>\r\n\t\t</div>\r\n\r\n\t\t<label class=\"container\"><span href=\"#nine\" data-toggle=\"collapse\">Neckline Finishing?</span>\r\n\t\t\t<input type=\"checkbox\" onchange=\"$('#nine').toggle()\">\r\n\t\t\t<span class=\"checkmark\"></span>\r\n\t\t</label>\r\n\t\t<div id=\"nine\" class=\"collapse bump\">\r\n\t\t\tYour choice<br><em>NOTE: The baby Cuff-to-Cuff does not include a band. It is designed for the \"band\" to be worked as you knit. You can choose to add crochet or another finish, but the opening is not large enough to add an additional band</em>\r\n\t\t</div>\r\n\t\t<label class=\"container\"><span href=\"#ten\" data-toggle=\"collapse\">Waist Shaping/ Swing?</span>\r\n\t\t\t<input type=\"checkbox\" onchange=\"$('#ten').toggle()\">\r\n\t\t\t<span class=\"checkmark\"></span>\r\n\t\t</label>\r\n\t\t<div id=\"ten\" class=\"collapse bump\">\r\n\t\t\t<ul>\r\n\t\t\t\t<li>Add some shaping or swing to your sweater<br>\r\n\t\t\t\t\t<a href=\"/challenge/73/Group/4045/item#section480\">A-Line shaping</a></li>\r\n\t\t\t\t<li>Add <a data-vimeoid=\"373265681\" class=\"videopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Waist Shaping</a>\r\n\r\n\t\t\t\t</li>\r\n\t\t\t</ul>\r\n\t\t</div>\r\n\r\n<label class=\"container\"><span href=\"#eleven\" data-toggle=\"collapse\">Bust Darts?</span>\r\n\t\t\t<input type=\"checkbox\" onchange=\"$('#eleven').toggle()\">\r\n\t\t\t<span class=\"checkmark\"></span>\r\n\t\t</label>\r\n\t\t<div id=\"eleven\" class=\"collapse bump\">\r\n\t\t\tAlthough they involve lots of stitch transfers, adding <a href=\"/challenge/73/Group/4027/item#section475\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> bust darts</a> can really improve the fit of your sweater\r\n\t\t</div>\r\n\r\n\r\n\r\n\t\t<br>\r\n\t\tIn the next section you'll chose your pattern - Lots of choices\r\n\t\r\n\t<div class=\"text-center\"><span class=\"handwriting\" style=\"font-size:2em\">A baby size is a good place to start ...<br>\r\n\t\t\tFeeling ambitious?<br>\r\n\t\t\tJump right in and knit a cuff-to-cuff for yourself</span></div>\r\n\r\n",
+              "legacyComponentId": 6051,
+              "order": 2
+            }
+          ],
+          "title": "Decisions, decisions, decisions",
+          "slug": "decisions-decisions-decisions",
+          "order": 4,
+          "legacy": {
+            "assignId": 3999,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n</style>\r\n\r\n<em>Use the arrows below to flip the pages\t<img src=\"/challenge/images/v2/73/arrows.jpg\"> <small>No sound</small></em>  <hr class=\"style13\">",
+              "legacyComponentId": 6068,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/73/v2/73/construct1.jpg",
+                  "caption": "<b>Back</b><br><br>\r\n\r\n<ul>\r\n<li>Start at the side seam of the back.</li><br>\r\n<li>We suggest using an <a data-GlossaryId='264' class='glossaryhelp'>Open Cast On <i class='fa fa-question-circle' aria-hidden='true'></i></a> (scrap and ravel) to leave open stitches.</li><br>\r\n<li>You can then graft the sweater side seams with <a data-GlossaryId='521' class='glossaryhelp'>Kitchener Stitch <i class='fa fa-question-circle' aria-hidden='true'></i></a> for a seamless finish.</li><br>\r\n<li>Hate grafting?  Use a <a data-GlossaryId='263' class='glossaryhelp'>Closed Cast On <i class='fa fa-question-circle' aria-hidden='true'></i></a>.</li>\r\n</ul>"
+                },
+                {
+                  "src": "/challenge/images/v2/73/v2/73/construct21.jpg",
+                  "caption": "<b>Back neck</b><br><br>\r\n<ul>\r\n<li>The adult patterns have back neck shaping. If you prefer ignore that shaping and knit straight. depending on your neckline finish, you may not need to shape the back neck. </li><br>\r\n<li>\r\nEither way, <a data-GlossaryId='310' class='glossaryhelp'>Place marker <i class='fa fa-question-circle' aria-hidden='true'></i></a> at the center back to help in finishing. </li>\r\n</ul>"
+                },
+                {
+                  "src": "/challenge/images/v2/73/v2/73/construct3.jpg",
+                  "caption": "<b>Front(s)</b><br><br>\r\n<ul><li>Follow the pattern instructions. </li></ul>"
+                },
+                {
+                  "src": "/challenge/images/v2/73/v2/73/construct4.jpg",
+                  "caption": "<b>Neck Band</b><br><br><ul>\r\n<li>\r\nJoin the front and back at one shoulder.</li><br>\r\n<li>Work the neckband of your choice.</li><br>\r\n<li>When the neckband is complete, join the second shoulder</li>\r\n</ul>"
+                },
+                {
+                  "src": "/challenge/images/v2/73/v2/73/construct5.jpg",
+                  "caption": "<b>Sleeves</b><br><br>\r\n<ul>\r\n<li>Top down: Pick up the armhole opening and knit the sleeves down to the cuff. <br><i class=\"fa fa-youtube- play aria-hidden=\"true\"></i> Streamlined Sleeve Seam video.</li><br>\r\n<li>\r\nBottom up: If you prefer to cast on at the cuff, reverse the shaping in the pattern.</li>\r\n</ul>"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 6067,
+              "order": 2
+            }
+          ],
+          "title": "The Order of knitting",
+          "slug": "the-order-of-knitting",
+          "order": 5,
+          "legacy": {
+            "assignId": 4013,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "The patterns",
+      "slug": "the-patterns",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 476,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Knit it Now Dynamic patterns are different than what you've used before.<br><ul>\r\n<li>Use any machine</li>\r\n<li>Use any yarn - no more matching the designer's gauge!</li>\r\n<li>You choose the stitch pattern</li>\r\n<li>No abbreviations</li>\r\n<li>Instruction and links to tutorials right in the pattern</li>\r\n<li>PERFECT FIT - adjust the sizing to fit YOU</li>\r\n</ul><br><i class=\"fa fa-arrow-down\" aria-hidden=\"true\"></i> <span class=\"handwriting\"> Please watch the videos for an introduction to our patterns ....<br>then play with the pattern that is in your library to get a feel for how they work.</span> <i class=\"fa fa-arrow-down\" aria-hidden=\"true\"></i>",
+              "legacyComponentId": 6060,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "402313052",
+              "title": "Build Knit it Now Dynamic Patterns",
+              "legacySlot": 1,
+              "legacyComponentId": 6059,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "374009611",
+              "title": "Interactive Patterns",
+              "legacySlot": 2,
+              "legacyComponentId": 6059,
+              "order": 2
+            }
+          ],
+          "title": "New to Knit it Now Patterns?",
+          "slug": "new-to-knit-it-now-patterns",
+          "order": 1,
+          "legacy": {
+            "assignId": 4011,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<b>If you are having trouble accessing the patterns from the big links below. Use these buttons:</b><br>\r\n\r\n\r\n\r\n\r\n\r\n\r\n<hr>\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 6097,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "PatternGroup",
+              "notes": [
+                "Unmapped legacy component type: PatternGroup"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4005",
+                "CHALLENGE_COMPONENTID": "6039",
+                "DATAMODEL_ELEMENT": "garmentid",
+                "GARMENTGROUPTITLE": "<h2 class='handwriting'>Options To Choose From</h2>",
+                "GARMENTIDLIST": "1003,1005,1006",
+                "REDIRECT_TO": "/challenge/73/Group/4006/item|The patterns: Birch Pullover"
+              },
+              "legacyComponentId": 6039,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "PatternGroup",
+              "notes": [
+                "Unmapped legacy component type: PatternGroup"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4005",
+                "CHALLENGE_COMPONENTID": "6085",
+                "DATAMODEL_ELEMENT": "garmentid",
+                "GARMENTGROUPTITLE": "<h2 class='handwriting'>Designer Patterns</h2>",
+                "GARMENTIDLIST": "1002,804",
+                "REDIRECT_TO": "/challenge/73/Group/4006/item|The patterns: Enter Pattern Dimensions"
+              },
+              "legacyComponentId": 6085,
+              "order": 3
+            }
+          ],
+          "title": "Choose  your style",
+          "slug": "choose-your-style",
+          "order": 2,
+          "legacy": {
+            "assignId": 4005,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): garmentid",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 4005 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4006",
+                "DATAMODEL_ELEMENTS": "garmentid",
+                "DATAMODEL_REDIRECT": "4005",
+                "TYPEOF": "DataValidation"
+              },
+              "legacyComponentId": 6043,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment 'title here' (legacy garmentId ).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4006",
+                "CHALLENGE_COMPONENTID": "6037",
+                "DYNAMICGARMENTVARIABLE": "garmentid",
+                "GARMENTTITLE": "title here",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "pattern_name",
+                "REDIRECT_TO": "/challenge/73/Group/4007/item|The patterns: Your Custom Pattern",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "rows",
+                "SHOWPATTERNNAME": "1",
+                "SIZING_DATAMODEL_ELEMENT": "pattern_size",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "stitches",
+                "SWATCHROWS": "swatch_rows",
+                "SWATCHSTITCHES": "swatch_stitches",
+                "SWATCHWEIGHT": "swatich_weight",
+                "USESWATCHLOGIC": "no"
+              },
+              "legacyComponentId": 6037,
+              "order": 2
+            }
+          ],
+          "title": "Enter Pattern Dimensions",
+          "slug": "enter-pattern-dimensions",
+          "order": 3,
+          "legacy": {
+            "assignId": 4006,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): garmentid",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 4005 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4007",
+                "DATAMODEL_ELEMENTS": "garmentid",
+                "DATAMODEL_REDIRECT": "4005",
+                "TYPEOF": "DataValidation"
+              },
+              "legacyComponentId": 6042,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): pattern_name",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 4006 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4007",
+                "CHALLENGE_COMPONENTID": "6041",
+                "DATAMODEL_ELEMENTS": "pattern_name",
+                "DATAMODEL_REDIRECT": "4006"
+              },
+              "legacyComponentId": 6041,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'pattern_name'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4007",
+                "CHALLENGE_COMPONENTID": "6040",
+                "DATAMODEL_ICON": "fa fa-download",
+                "LABLE": "Download your pattern",
+                "PATTERN_DATAMODEL_ELEMENT": "pattern_name",
+                "VIEWHEIGHT": "525"
+              },
+              "legacyComponentId": 6040,
+              "order": 3
+            }
+          ],
+          "title": "Your Custom Pattern",
+          "slug": "your-custom-pattern",
+          "order": 4,
+          "legacy": {
+            "assignId": 4007,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Mix 'n Match Stitch Patterns",
+      "slug": "mix-n-match-stitch-patterns",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 473,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<em>Use the arrows below to flip the pages</em> \t<img src=\"/challenge/images/v2/73/arrows.jpg\"><hr>",
+              "legacyComponentId": 6065,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/73/v2/73/2flipbook1.jpg",
+                  "caption": "Fact: Not all stitch patterns knit at the same gauge.  <small><em>duhhh..</em></small><br><br>Yes, we can mix 'n match stitch patterns, but there are considerations."
+                },
+                {
+                  "src": "/challenge/images/v2/73/v2/73/1flipbook2.jpg",
+                  "caption": "It's tempting to plan to put a different stitch pattern up the sleeve of our cuff-to-cuff baby sweater or a section of a sweater. But .. consider this ..."
+                },
+                {
+                  "src": "/challenge/images/v2/73/v2/73/1flipbook3.jpg",
+                  "caption": "If there is a considerable difference in gauge (especially row gauge) the center section will be \"wonky\". <br><br><em> OK - that's not a technical term <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i> </em><br><br>\r\nIn this example, our stockinette gauge is 6 rows to 4\" and we knit 24 rows in stockinette to knit a 4\" piece."
+                },
+                {
+                  "src": "/challenge/images/v2/73/v2/73/1flipbook4.jpg",
+                  "caption": "Let's say I chose a stitch pattern for the center that is 9 rows to the inch.<br>\r\nI knit 24 rows in pattern. <br>\r\nHolding up the 2 pieces you can see that the decorative section is much shorter and would have to stretch quite a bit to match with the stockinette piece."
+                },
+                {
+                  "src": "/challenge/images/v2/73/v2/73/1flipbook5.jpg",
+                  "caption": "Another way to look at this ... the longest length of my sweater is 20\".<br><br>\r\n\r\n<i class=\"fa fa-check\" aria-hidden=\"true\"></i> Knit at my stockinette gauge I'll need to knit 120 rows.<br>\r\n<i class=\"fa fa-check\" aria-hidden=\"true\"></i>  Knit 20\" at my pattern gauge, I'd need to knit 180 rows.<br><br>\r\nThat's a big difference if you are knitting them both at the same time<br><br>\r\n<b> What's the solution?</b>"
+                },
+                {
+                  "src": "/challenge/images/v2/73/v2/73/1flipbook6.jpg",
+                  "caption": "<div class=\"row\">\r\n<div class=\"col-sm-8 col-xs-12\">\r\nIf your gauge isn't as extreme as this example you could mix stitch patterns and gauges, and block the piece into shape ... it's knitting for heaven's sakes, not wood working or diamond cutting that require absolute precision.<br><br>\r\nHand knitting patterns do this all the time.  They rely on blocking to even out the differences.<br><br>\r\nBecause machine knitters have easy access to more stitch patterns (with a variety of gauges) it's important to understand the impact of mixing and matching stitch patterns and gauges.</div>\r\n<div class=\"handwriting\"><center>Swatching<br>Is NOT<br>optional!</center></div>\r\n</div>"
+                },
+                {
+                  "src": "/challenge/images/v2/73/v2/73/1flipbook7.jpg",
+                  "caption": "Another solution is to knit panels.<br>  In my example, I'd knit the fronts and backs at 120 rows, then knit the center section at 180 rows. <br><br> Neatly seam the panels and even the most extreme gauges will match up."
+                }
+              ],
+              "legacy": {
+                "enableAudio": "1",
+                "playAudio": "0"
+              },
+              "legacyComponentId": 6062,
+              "order": 2
+            }
+          ],
+          "title": "Consider This",
+          "slug": "consider-this",
+          "order": 1,
+          "legacy": {
+            "assignId": 4000,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "222275090",
+              "title": "Multiple Stitch Patterns with Dynamic Patterns",
+              "legacyComponentId": 6064,
+              "order": 1
+            }
+          ],
+          "title": "More than One Stitch Pattern",
+          "slug": "more-than-one-stitch-pattern",
+          "order": 2,
+          "legacy": {
+            "assignId": 4012,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Lengthen your sweater",
+      "slug": "lengthen-your-sweater",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 474,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div id=\"bs-largewindow\" class=\"modal fade bs-example-modal-lg\" tabindex=\"-1\" role=\"dialog\">\r\n <div class=\"modal-dialog modal-lg\" role=\"document\">\r\n    <div class=\"modal-content\">\r\n      <div class=\"modal-header\"><span class=\"subrequired\"></span>\r\n        <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\">×</span></button>\r\n        <h4 class=\"modal-title\" id=\"bs-largetitle\"></h4>\r\n      </div>\r\n      <div class=\"modal-body\" id=\"bs-largewindow-content\"></div>\r\n      <div class=\"modal-footer\">\r\n        <button type=\"button\" class=\"btn btn-default\" data-dismiss=\"modal\">Close</button>\r\n      </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n\r\n\r\n<style>\r\n\tul li {\r\n\t\tpadding: 10px;\r\n\t}\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n</style>\r\n\r\n\t<div class=\"offset-1\">\r\n\t\tIf you've knit for any time, you've probably realized that because we only have a fixed number of needles, we can only knit a limited width with our machines.<br>With cuff-to-cuff designs knit sideways, this limits the length of our sweaters.<br><b>Knitting wider pieces:</b>\r\n\t\t<ul>\r\n\t\t\t<li>Knit more loosely - use the tool below to explore the difference in a gauge of 16 stitches/4\" and 15 stitches/4\" <br>\r\n\t\t\t\tWhich will produce a wider knitted piece?</li>\r\n\t\t\t<li>Consider adding a few needles out of work. It will not only give you interesting texture, it will knit a wider piece</li>\r\n\t\t\t<li>Knit in <a data-GlossaryId='277' class='glossaryhelp'>Tuck | Pull Up <i class='fa fa-question-circle' aria-hidden='true'></i></a> Tuck stitch knits considerably wider than other stitch patterns</li>\r\n\t\t\t<li>Knit in lace. The holes can also add width</li>\r\n\t\t\t<li>Knit panels. Sometimes the only solution is to add a seam. Use the seam as a design element</li>\r\n\t\t\t<li>If you have a ribber and you're interested in plain knitting, consider <a data-GlossaryId='579' class='glossaryhelp'>U-Knitting | Half Circular <i class='fa fa-question-circle' aria-hidden='true'></i></a></li>\r\n\t\t</ul>\r\n\t</div>\r\n\r\n\t\r\n\t\t\r\n\t\t\t<div class=\"handwriting\">Challenge</div>\r\n\t\t\tYou have 150 needles available<br>\r\nHow wide can you knit at these gauges?<br><a href=\"#15\" data-toggle=\"collapse\"><i class=\"fa fa-arrow-down\" aria-hidden=\"true\"></i> 15 stitches per 4\"/<em><small><small>10cm</small></small></em></a>\r\n    <div id=\"15\" class=\"collapse hidden-print\">\r\n        <span style=\"padding-bottom:25px;\">40\"<em><small>(106.6cm)</small></em></span>\r\n    </div>\t\r\n    <br>\r\n    <a href=\"#16\" data-toggle=\"collapse\"><i class=\"fa fa-arrow-down\" aria-hidden=\"true\"></i> 16 stitches per 4\"/<em><small><small>10cm</small></small></em></a>\r\n    <div id=\"16\" class=\"collapse hidden-print\">\r\n        <span style=\"padding-bottom:25px;\">37.5\"<em><small>(95.25cm)</small></em></span>\r\n    </div>\r\n     <br>\r\n\r\n<a href=\"#165\" data-toggle=\"collapse\"><i class=\"fa fa-arrow-down\" aria-hidden=\"true\"></i> 16.5 stitches per 4\"/<em><small><small>10cm</small></small></em></a>\r\n<div id=\"165\" class=\"collapse hidden-print\">\r\n<span>36.4\"<em><small>(92.46cm)</small></em></span>\r\n</div>\t\t\t\t\t\r\n <br>Put away your calculator!  Use this tool designed just for machine knitters\r\n<br>\r\n<button class=\"btn btn-success btn-block toolitem toolembed\" data-tooltitle=\"Maximum Knitted Width\" data-tool=\"howmanyneedles.cfm\">Max width</button>\r\n\r\n\t\t\r\n\r\n\t\r\n\r\n\r\n<hr class=\"style13\">\r\n<script language=\"JavaScript\">\r\n<!--- toolembed --->\r\n$( \".toolembed\" ).click(function(e) {\r\n \tconsole.log('hit tool '+$(this).attr('data-tool'));\r\n\t\r\n\t$('#bs-largetitle').html($(this).attr('data-tooltitle'));\r\n\t$('#bs-largewindow-content').load('/tools/embed/'+$(this).attr('data-tool'));\r\n\t$('#bs-largewindow').modal('show');\r\n\t\r\n\tconsole.log('hit maker');\r\n\te.preventDefault();\r\n\treturn false;\r\n});\r\n</script>\r\n",
+              "legacyComponentId": 6066,
+              "order": 1
+            }
+          ],
+          "title": "Needlebed Limitations",
+          "slug": "needlebed-limitations",
+          "order": 1,
+          "legacy": {
+            "assignId": 4001,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n</style>\r\n\r\n\r\n\r\nIf you'd like your cuff-to-cuff longer than the width you have available, consider knitting panels to create a yoke and \"skirt\".<br>The seam can be placed just below the bust (empire style) or the seam could be at the waist with panels below (peplum).\r\n\r\n<hr class=\"style13\">\r\n\r\n<img src=\"/challenge/images/v2/73/lengthen1.jpg\">\r\n\r\n<span class=\"handwriting\">A-Line</span>\r\n<ul>\r\n<li>Knit the bodice cuff-to-cuff with the length to just below the bust</li>\r\n<li>Add side-to-side panels to add the desired sweater length</li>\r\n<li>Use short row shaping to create the A-line shape</li>\r\n</ul>\r\n\r\n\r\n\r\n<hr class=\"style13\">\r\n\r\n<img src=\"/challenge/images/v2/73/lengthen2.jpg\">\r\n\r\n<span class=\"handwriting\">Peplum</span>\r\n<ul>\r\n<li>Knit the bodice cuff-to-cuff to the waist</li>\r\n<li>Add panels (either direction) to add the desired sweater length</li>\r\n<li>Make the panels wide enough to add a bit of gathers</li>\r\n</ul>\r\n\r\n\r\n<hr class=\"style13\">\r\n\r\n<img src=\"/challenge/images/v2/73/lengthen3.jpg\">\r\n\r\n<span class=\"handwriting\">A-Line Panel</span>\r\n<ul>\r\n<li>Knit the bodice cuff-to-cuff to just below the bust</li>\r\n<li>Panels to add the desired sweater length</li>\r\n<li>Knit the panels horizontally or vertically to create the A-line shape with or without gathers</li>\r\n</ul>\r\n\r\n",
+              "legacyComponentId": 6070,
+              "order": 1
+            }
+          ],
+          "title": "Yoke/Skirt",
+          "slug": "yoke-skirt",
+          "order": 2,
+          "legacy": {
+            "assignId": 4014,
+            "blockType": "Imageslideshow"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Add some Swing",
+      "slug": "add-some-swing",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 480,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/v2/1/flip1.jpg",
+                  "caption": "Add a little swing to your sideways sweater."
+                },
+                {
+                  "src": "/v2/1/flip2.jpg",
+                  "caption": "As you are knitting the body of the sweater, add some godets with short row shaping."
+                },
+                {
+                  "src": "/v2/1/shaped_hem_gif2.gif",
+                  "caption": "Depending on how much width you add to the hem, you might want to consider adding length to the center front and back with darts or increases along the hem edge.  The Knit it Now Pattern does not include this instruction."
+                },
+                {
+                  "src": "/v2/1/flip3.jpg",
+                  "caption": "Here's an example of how the godets can be inserted to add more width at the hem of your sweater."
+                },
+                {
+                  "src": "/v2/1/flip4.jpg",
+                  "caption": "In the Knit it Now pattern, click the green button to design your own godet instructions<br>\r\n<img class=\"img-responsive\" src=\"/challenge/images/v2/1/button1.jpg\">"
+                },
+                {
+                  "src": "/v2/1/flip5.jpg",
+                  "caption": "<br><br><b>Step 1:</b> Enter the ADDITIONAL amount of width you want to add<br><br>\r\n<b>Step 2:</b> Enter the debth of the godet. Depending on the length of your sweater, it could be few inches o come up to just below the bust<br><br>\r\n<b>Step 3:</b> Choose 3 - 5 godets<br>"
+                },
+                {
+                  "src": "/v2/1/instructions_gif.gif",
+                  "caption": "The swing shaping instructions will be created for you. Including the dimensions you entered for the number of gores you need.<br><br>\r\n<img class=\"img-responsive\" src=\"/challenge/images/v2/1/button2.jpg\"><br>\r\n- Use the knitting instructions as shown <br>\r\nOR<br>\r\n- Click the orange button to embed the instructions with the rest of the pattern instructions.<br><br>\r\n<h3><b>NOTE: The hem shaping takes place AT THE SAME TIME as the shoulder and neckline shaping.<br> Read the pattern completely before starting to knit</b></h3>"
+                },
+                {
+                  "src": "/v2/1/flip11.jpg",
+                  "caption": "<h3><b>NOTE: The hem shaping takes place AT THE SAME TIME as the shoulder and neckline shaping.<br> Read the pattern completely before starting to knit</b></h3>"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 6135,
+              "order": 1
+            }
+          ],
+          "title": "A-Line Shaping",
+          "slug": "a-line-shaping",
+          "order": 1,
+          "legacy": {
+            "assignId": 4045,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Stuff you Should Know",
+      "slug": "stuff-you-should-know",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 475,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n/* The container */\r\n.container {\r\n  display: block;\r\n  position: relative;\r\n  padding-left: 35px;\r\n  margin-bottom: 12px;\r\n  cursor: pointer;\r\n  font-size: 18px;\r\n  -webkit-user-select: none;\r\n  -moz-user-select: none;\r\n  -ms-user-select: none;\r\n  user-select: none;\r\n}\r\n\r\n/* Hide the browser's default checkbox */\r\n.container input {\r\n  position: absolute;\r\n  opacity: 0;\r\n  cursor: pointer;\r\n  height: 0;\r\n  width: 0;\r\n}\r\n\r\n/* Create a custom checkbox */\r\n.checkmark {\r\n  position: absolute;\r\n  top: 0;\r\n  left: 0;\r\n  height: 25px;\r\n  width: 25px;\r\n  background-color: #eee;\r\n}\r\n\r\n/* On mouse-over, add a grey background color */\r\n.container:hover input ~ .checkmark {\r\n  background-color: #ccc;\r\n}\r\n\r\n/* When the checkbox is checked, add a course color */\r\n.container input:checked ~ .checkmark {\r\n  background-color: #9e2065;\r\n}\r\n\r\n/* Create the checkmark/indicator (hidden when not checked) */\r\n.checkmark:after {\r\n  content: \"\";\r\n  position: absolute;\r\n  display: none;\r\n}\r\n\r\n/* Show the checkmark when checked */\r\n.container input:checked ~ .checkmark:after {\r\n  display: block;\r\n}\r\n\r\n/* Style the checkmark/indicator */\r\n.container .checkmark:after {\r\n  left: 9px;\r\n  top: 5px;\r\n  width: 5px;\r\n  height: 10px;\r\n  border: solid white;\r\n  border-width: 0 3px 3px 0;\r\n  -webkit-transform: rotate(45deg);\r\n  -ms-transform: rotate(45deg);\r\n  transform: rotate(45deg);\r\n}\r\n\r\n.bump \r\n{padding-left: 35px;\r\nmargin-bottom: 12px;\r\n}\r\n\r\n.rotated {\r\ntransform: rotate(15deg);\r\n}\r\n</style>\r\n",
+              "legacyComponentId": 6072,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\t\r\n\r\n\t\t<label class=\"container\"><span href=\"#one\" data-toggle=\"collapse\">Neckline</span>\r\n\t\t\t<input type=\"checkbox\" checked=\"checked\" onchange=\"$('#one').toggle()\">\r\n\t\t\t<span class=\"checkmark\"></span>\r\n\t\t</label>\r\n\t\t<div id=\"one\" class=\"collapse bump\"> Add bands, ribbing, i-cord, crochet or hand knit, (How about a rolled edge?) The sky's the limit!<br>If you are knitting a cardigan with a high neckline, be sure any neckline finish is LOOSE enough to go over the head<br><em>NOTE: The neck opening for the Cuff-to-Cuff Baby pattern is not large enough to add a band. It is designed to have garter stitch or seed stitch knit as the garment it knit. You can substitute crochet or an  <a href=\"/learn/tutorial/784/easy-lazy-edge-finish\"> <i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> \"Easy, Lazy Edge Finish\"</a> <br>Just be sure that whatever you use it is LOOSE, so the neck opening can go over the child's head.</em>\r\n\t\t</div>\r\n\r\n\t\t<label class=\"container\"><span href=\"#two\" data-toggle=\"collapse\">Sleeve cuffs/hems</span>\r\n\t\t\t<input type=\"checkbox\" onchange=\"$('#two').toggle()\">\r\n\t\t\t<span class=\"checkmark\"></span>\r\n\t\t</label>\r\n\t\t<div id=\"two\" class=\"collapse bump\">\r\n\t\t\tYour choice: Hang hems, use your garter bar to create garter stitch, hand manipulate, add ribbing, hand knit and re-hang the stitches on the machine<br>Ribbing: If you don't like to bind off ribbing, knit your sleeves from cuff up and join them to the body of the adult sweaters<br>Hung hems: Knit your sleeves from the cuff up for easier, neater hems.<br>If you prefer to pick up the sleeves from the garment and knit to the cuff, you can also knit <a data-GlossaryId='285' class='glossaryhelp'>reverse Hung Hems <i class='fa fa-question-circle' aria-hidden='true'></i></a>\r\n\t\t</div>\r\n\r\n\t\t<label class=\"container\"><span href=\"#three\" data-toggle=\"collapse\">Side Seams</span>\r\n\t\t\t<input type=\"checkbox\" onchange=\"$('#three').toggle()\">\r\n\t\t\t<span class=\"checkmark\"></span>\r\n\t\t</label>\r\n\t\t<div id=\"three\" class=\"collapse bump\">\r\n\t\t\tFor invisible side seams, start and end the side seam areas with scrap yarn. Leave those stitches open and <a data-GlossaryId='521' class='glossaryhelp'>Kitchener Stitch (weave) <i class='fa fa-question-circle' aria-hidden='true'></i></a> the side seams for an \"invisible\" finish.\r\n\t\t</div>\r\n\r\n\t\t<label class=\"container\"><span href=\"#four\" data-toggle=\"collapse\">Cardigan</span>\r\n\t\t\t<input type=\"checkbox\" onchange=\"$('#four').toggle()\">\r\n\t\t\t<span class=\"checkmark\"></span>\r\n\t\t</label>\r\n\t\t<div id=\"four\" class=\"collapse bump\">\r\n\t\t\tAn easy sideways cardigan band can be created with <a data-GlossaryId='284' class='glossaryhelp'>Hung Hem <i class='fa fa-question-circle' aria-hidden='true'></i></a>.<ol>\r\n<li> Cast on one side, hang a hem and complete the front piece.</li>\r\n<li> Cast on the other side, hang a hem, reverse the neckline and armhole shaping and knit the second piece. </li>\r\n<li>Add <a data-GlossaryId='282' class='glossaryhelp'>Buttonholes <i class='fa fa-question-circle' aria-hidden='true'></i></a> as appropriate.</li>\r\n</ol>\r\n\t\t</div>\r\n\r\n\t\t<label class=\"container\"><span href=\"#five\" data-toggle=\"collapse\">Sweater hem</span>\r\n\t\t\t<input type=\"checkbox\" onchange=\"$('#five').toggle()\">\r\n\t\t\t<span class=\"checkmark\"></span>\r\n\t\t</label>\r\n\t\t<div id=\"five\" class=\"collapse bump\">\r\n\t\t\tBecause these sweaters are knit sideways, consideration needs to be given to finishing the lower edge.<br>\r\n\t\t\t<ul>\r\n\t\t\t\t<li> The standard crochet edge, or I-cord </li>\r\n\t\t\t\t<li> Pick up and knit an edge by hand</li>\r\n\t\t\t\t<li> As you are knitting the garment, leave a needle out of work 1-2\" from the edge. When the knitting is complete, turn up the \"hem\" and stitch it in place.</li>\r\n\t\t\t</ul>\r\n\t\t</div>\r\n\r\n\r\n\t\r\n\t<div class=\"text-center\"><span class=\"handwriting\" style=\"font-size:2em\">Any pattern is just a blueprint...<br>you are the designer<br>make it your own!</span></div>\r\n\r\n",
+              "legacyComponentId": 6073,
+              "order": 3
+            }
+          ],
+          "title": "Finishing choices",
+          "slug": "finishing-choices",
+          "order": 1,
+          "legacy": {
+            "assignId": 4002,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858849",
+              "title": "Streamlined Sleeve Seam",
+              "legacySlot": 1,
+              "legacyComponentId": 6071,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858940",
+              "title": "Seaming Stitches to Rows",
+              "legacySlot": 2,
+              "legacyComponentId": 6071,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859614",
+              "title": "Basic Buttonholes",
+              "legacySlot": 3,
+              "legacyComponentId": 6071,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "232901142",
+              "title": "Easy, Lacy Edge Finish",
+              "legacySlot": 4,
+              "legacyComponentId": 6071,
+              "order": 1
+            }
+          ],
+          "title": "Tutorials - Skills you Should Know",
+          "slug": "tutorials-skills-you-should-know",
+          "order": 2,
+          "legacy": {
+            "assignId": 4015,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151850342",
+              "title": "Kitchener Stitch on the Machine - Purl Side",
+              "legacySlot": 1,
+              "legacyComponentId": 6091,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151849234",
+              "title": "Kitchener Stitch on the Machine - Knit Side",
+              "legacySlot": 2,
+              "legacyComponentId": 6091,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "339846501",
+              "title": "Kitchener Stitch off the machine",
+              "legacySlot": 3,
+              "legacyComponentId": 6091,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "373265681",
+              "title": "Sideways Sweater Waist Shaping",
+              "legacySlot": 4,
+              "legacyComponentId": 6091,
+              "order": 1
+            }
+          ],
+          "title": "More Stuff You Should Know",
+          "slug": "more-stuff-you-should-know",
+          "order": 3,
+          "legacy": {
+            "assignId": 4025,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "189252754",
+              "title": "Interrupted Patterning Part 1",
+              "legacySlot": 1,
+              "legacyComponentId": 6079,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "189252743",
+              "title": "Interrupted Patterning Part 2",
+              "legacySlot": 2,
+              "legacyComponentId": 6079,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "255619285",
+              "title": "Interrupted Patterning Part 3",
+              "legacySlot": 3,
+              "legacyComponentId": 6079,
+              "order": 1
+            }
+          ],
+          "title": "Interrupted patterning",
+          "slug": "interrupted-patterning",
+          "order": 4,
+          "legacy": {
+            "assignId": 4018,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "371221633",
+              "title": null,
+              "legacyComponentId": 6087,
+              "order": 1
+            }
+          ],
+          "title": "Sideways in DAK",
+          "slug": "sideways-in-dak",
+          "order": 5,
+          "legacy": {
+            "assignId": 4022,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "454539776",
+              "title": "Sideways Bust Darts",
+              "legacyComponentId": 6096,
+              "order": 1
+            }
+          ],
+          "title": "Sideways Bust Darts",
+          "slug": "sideways-bust-darts",
+          "order": 6,
+          "legacy": {
+            "assignId": 4027,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 17,
+    "videos": [
+      {
+        "vimeoId": "151859104",
+        "title": "Sideways Knits Inspiration",
+        "lessonSlug": "plan-your-sweater",
+        "blockSlug": "about-sideways-knits"
+      },
+      {
+        "vimeoId": "402313052",
+        "title": "Build Knit it Now Dynamic Patterns",
+        "lessonSlug": "the-patterns",
+        "blockSlug": "new-to-knit-it-now-patterns"
+      },
+      {
+        "vimeoId": "374009611",
+        "title": "Interactive Patterns",
+        "lessonSlug": "the-patterns",
+        "blockSlug": "new-to-knit-it-now-patterns"
+      },
+      {
+        "vimeoId": "222275090",
+        "title": "Multiple Stitch Patterns with Dynamic Patterns",
+        "lessonSlug": "mix-n-match-stitch-patterns",
+        "blockSlug": "more-than-one-stitch-pattern"
+      },
+      {
+        "vimeoId": "151858849",
+        "title": "Streamlined Sleeve Seam",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "tutorials-skills-you-should-know"
+      },
+      {
+        "vimeoId": "151858940",
+        "title": "Seaming Stitches to Rows",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "tutorials-skills-you-should-know"
+      },
+      {
+        "vimeoId": "151859614",
+        "title": "Basic Buttonholes",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "tutorials-skills-you-should-know"
+      },
+      {
+        "vimeoId": "232901142",
+        "title": "Easy, Lacy Edge Finish",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "tutorials-skills-you-should-know"
+      },
+      {
+        "vimeoId": "151850342",
+        "title": "Kitchener Stitch on the Machine - Purl Side",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "more-stuff-you-should-know"
+      },
+      {
+        "vimeoId": "151849234",
+        "title": "Kitchener Stitch on the Machine - Knit Side",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "more-stuff-you-should-know"
+      },
+      {
+        "vimeoId": "339846501",
+        "title": "Kitchener Stitch off the machine",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "more-stuff-you-should-know"
+      },
+      {
+        "vimeoId": "373265681",
+        "title": "Sideways Sweater Waist Shaping",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "more-stuff-you-should-know"
+      },
+      {
+        "vimeoId": "189252754",
+        "title": "Interrupted Patterning Part 1",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "interrupted-patterning"
+      },
+      {
+        "vimeoId": "189252743",
+        "title": "Interrupted Patterning Part 2",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "interrupted-patterning"
+      },
+      {
+        "vimeoId": "255619285",
+        "title": "Interrupted Patterning Part 3",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "interrupted-patterning"
+      },
+      {
+        "vimeoId": "371221633",
+        "title": null,
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "sideways-in-dak"
+      },
+      {
+        "vimeoId": "454539776",
+        "title": "Sideways Bust Darts",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "sideways-bust-darts"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

@@ -3,6 +3,10 @@ import {
   isAccordionLayoutBlock,
 } from "./courseAccordionLayout";
 import {
+  getEmbeddedToolLayoutParts,
+  isEmbeddedToolLayoutBlock,
+} from "./courseEmbeddedToolLayout";
+import {
   TEXT_IMAGE_LAYOUT_TYPE,
   TEXT_VIDEO_LAYOUT_TYPE,
   THREE_VIDEOS_LAYOUT_TYPE,
@@ -254,6 +258,24 @@ export function flattenLessonContent(lesson: CourseLesson): FlatContentItem[] {
           : undefined,
         component: {
           ...(parts.accordion as Record<string, unknown>),
+          introText: parts.introText,
+        },
+      });
+      continue;
+    }
+
+    if (isEmbeddedToolLayoutBlock(block)) {
+      const parts = getEmbeddedToolLayoutParts(block);
+      if (!parts) continue;
+      items.push({
+        blockSlug: String(block.slug ?? ""),
+        legacyComponentId: Number(parts.tool.legacyComponentId),
+        type: "embeddedTool",
+        introLegacyComponentId: parts.introText
+          ? Number(parts.introText.legacyComponentId)
+          : undefined,
+        component: {
+          ...(parts.tool as Record<string, unknown>),
           introText: parts.introText,
         },
       });

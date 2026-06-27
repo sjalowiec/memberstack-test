@@ -1,0 +1,838 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 42,
+    "title": "Soft Sideways Cardigan",
+    "slug": "soft-sideways-cardigan",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_42_soft_sideways_cardigan.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Plan Ahead",
+      "slug": "plan-ahead",
+      "displayOrder": 10,
+      "legacy": {
+        "itemId": 288,
+        "lessonOrder": 10
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nThe key to success with this sweater is  planning.  The knitting is relatively easy, but the finished product will be greatly improved by planning the techniques you will use.\r\n\r\n<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/323922483' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\r\n\r\n<br>",
+              "legacyComponentId": 4624,
+              "order": 1
+            },
+            {
+              "type": "exerciseAccordion",
+              "sections": [
+                {
+                  "title": "<h3>Size Decisions - Perfect Fit</h3>",
+                  "bodyHtml": "The pattern is offered in 2 size ranges - choose one and adjust for you!<br>\r\nWhen you build your custom pattern, you'll want to know the following. Don't worry, once you choose your size, you will be shown the standard dimensions.  You won't have to make any changes unless you choose to!<br>\r\n<hr>\r\n\r\n\r\nStart by printing a worksheet for your size (use it to make notes):<br>\r\n\r\n\r\n\r\n\r\n<br><ol class=\"instruction-list\">\r\n<li><b>How long? (E)</b> Measure from center back to hem</li>\r\n<li><b>Upper Arm (G)</b> Check a sweater you love</li>\r\n<li><b>Sleeve Length (C)</b> Long, 3/4 or short sleeve - it's your choice!</li>\r\n<li><b>Finished Wrist (A)</b> We'll decide on cuff finish later</li>\r\n</ol>\r\n\r\n<img src=\"/challenge/images/v2/42/sideways_cardigan_PF.jpg\">\r\n",
+                  "iconSrc": "/challenge/images/v2/42/arrow1.png"
+                },
+                {
+                  "title": "<h3>Design Decisions</h3>",
+                  "bodyHtml": "<style>\r\nmark { \r\n  background-color: yellow;\r\n  color: black;\r\n}\r\n</style>\r\n\r\n<b>Before you go any further ..... what yarn will you use?  What stitch pattern will you use?  These decisions may influence the following choices.</b><br>\r\n\r\n<ol class=\"instruction-list\">\r\n<li><mark>Side Slit:</mark> Consider adding slits on the sides of the cardigan for an updated look</li>\r\n<li><mark>Asymmetric Hem:</mark> Plan to add length to the back of the sweater at the side \"seams\"</li>\r\n<li><mark>Pockets:</mark> Pockets can add a practical finishing touch</li>\r\n<li><mark>Cuffs:</mark> What finishing technique do you want for the sleeves?</li>\r\n<li><mark>Curved hem:</mark> Add a designer touch</li>\r\n</ol>\r\n\r\n<img src=\"/challenge/images/v2/42/design_decisions.gif\">",
+                  "iconSrc": "/challenge/images/v2/42/arrow2.png"
+                },
+                {
+                  "title": "<h3>Techniques</h3>",
+                  "bodyHtml": "We will cover techniques you need to know in the course. But for now, consider your previous choices and think through knitting this sweater.<br><ul>\r\n<li>Picture EVERY STEP</li>\r\n<li>Plan how you are going to do things BEFORE YOU START KNITTING!</li>\r\n<li>Be comfortable with new-to-you techniques BEFORE YOU START KNITTING!</li>\r\n</ul>\r\n<hr>\r\n<ol class=\"instruction-list\">\r\n\r\n<li>Casting on: We recommend shaping the v-neck with short row increases and decreases. A tutorial on this technique will be included next week</li>\r\n<li>Front edge opening: How are you going to finish this? Crochet? I-Cord? Narrow Band? Wide Band? Knit on the machine? By Hand?  Decisions, decisions, decisions ... plan ahead!\r\n<li>Binding off: The armholes are shaped with Casting On and Binding Off. These need to be stretchy (but not sloppy).<br>If you only know 1 technique, plan to learn (and practice) some different methods that may be appropriate for your yarn and stitch pattern choices. these can be used for side slits if you choose</li>\r\n<li>Sleeve shaping: Do you want the decreases of the sleeve to be a design element? Consider Full-Fashioned Decreases.  Maybe you prefer to knit your sleeves from the top down (Some knitters feel that this is faster)</li>\r\n<li>Hem: How are you going to finish the hem of the sweater? Crochet? I-Cord? By hand? What about a sideways hem/facing? (A tutorial will be included)</li>\r\n</ol>\r\n<hr>\r\n<b>At the very minimum, here are skills you MUST know:</b><br>\r\n<em>If you are unsure of your skills, practice BEFORE YOU START KNITTING</em><br>\r\n<ul class=\"lightlist\" style=\"list-style:none;\">\r\n<li>Knit, dress and accurately measure a swatch</li>\r\n<li>Casting on and binding off loosely</li>\r\n<li>Knitting in pattern (if you choose - a plain stockinette sweater can be beautiful!)</li>\r\n<li>Increasing (for the sleeves)</li>\r\n</ul>",
+                  "iconSrc": "/challenge/images/v2/42/arrow3.png"
+                }
+              ],
+              "legacy": {
+                "showText": null,
+                "size": null
+              },
+              "legacyComponentId": 4625,
+              "order": 2
+            }
+          ],
+          "title": "Plan Ahead",
+          "slug": "plan-ahead",
+          "order": 1,
+          "legacy": {
+            "assignId": 3340,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859805",
+              "title": "Yarn Estimator Tool",
+              "legacySlot": 1,
+              "legacyComponentId": 4705,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857735",
+              "title": "How much yarn?",
+              "legacySlot": 2,
+              "legacyComponentId": 4705,
+              "order": 2
+            }
+          ],
+          "title": "How Much Yarn do I Need?",
+          "slug": "how-much-yarn-do-i-need",
+          "order": 8,
+          "legacy": {
+            "assignId": 3380,
+            "blockType": "Practice"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Your Success Depends on this",
+      "slug": "your-success-depends-on-this",
+      "displayOrder": 15,
+      "legacy": {
+        "itemId": 290,
+        "lessonOrder": 15
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "we've spent a lot of time planning, practicing and thinking about knitting ... are you ready to do some \"real knitting\"?<br><strong>DON'T SKIP THIS SECTION!</strong> <br>Your success with this course AND your success with your knitting machine depends on your understanding and mastering the art of knitting gauge swatches.<br>Without a swatch we are knitting in the dark.\r\n<ul>\r\n<li>How is the final sweater going to feel in the yarn and stitch pattern you've chosen?</li>\r\n<li>Do you have enough yarn?</li>\r\n<li>Do you have enough needles on your machine for the size you chose?</li>\r\n</ul>\r\n\r\n\r\n<div class=\"text-center\">\r\n<p style=\"text-align: center;\"><strong>SWATCHING IS NOT OPTIONAL</strong></p>\r\n<img class=\"img-thumbnail\" src=\"https://www.knititnow.com/images/blog_images/2017/swatching_is_not_optional.jpg\" /></div>\r\n",
+              "legacyComponentId": 4634,
+              "order": 1
+            }
+          ],
+          "title": "Swatching is NOT optional",
+          "slug": "swatching-is-not-optional",
+          "order": 1,
+          "legacy": {
+            "assignId": 3346,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "293143036",
+              "title": "SWATCH!",
+              "legacySlot": 1,
+              "legacyComponentId": 4662,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858429",
+              "title": "Knit a Gauge Swatch in less than 10 minutes",
+              "legacySlot": 2,
+              "legacyComponentId": 4662,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859471",
+              "title": "Swatching in Pattern Knitting",
+              "legacySlot": 3,
+              "legacyComponentId": 4662,
+              "order": 1
+            }
+          ],
+          "title": "Just  DO IT!",
+          "slug": "just-do-it",
+          "order": 2,
+          "legacy": {
+            "assignId": 3354,
+            "blockType": "VimeoMultiple"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\nMeasuring a swatch flat isn't always the best way to measure gauge.  Your knitting is going to be hanging on your body. Consider the weight of the entire piece of knitting. A 4\" square isn't representative of a 23\" long sweater.<br>This concept is <b>especially important</b> for our sideways knit cardigan.<br>I hung my tuck swatch, added a bit of weight and let it hang for a couple of days. By doing this, I can be confident in the stitch gauge and my sweater won't end up dragging on the floor when I wear it. <i class=\"fa fa-smile-o aria-hidden=\"true\"></i>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/42/tuck_swatch.jpg\">\r\n\r\n\r\n\t<img src=\"/challenge/images/v2/42/please_watch.gif\">",
+              "legacyComponentId": 4678,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "245117927",
+              "title": "Gauge and Drop",
+              "legacyComponentId": 4677,
+              "order": 2
+            }
+          ],
+          "title": "Gauge and Drop",
+          "slug": "gauge-and-drop",
+          "order": 3,
+          "legacy": {
+            "assignId": 3364,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\nI've used this diagonal tuck stitch for the body of my sweater and plain knitting for the sleeves.<br>\r\n\r\nThe pattern allows me to enter a different gauge for the body and the sleeves.<br>\r\n<img src=\"/challenge/images/v2/42/multiple_gauge.jpg\">\r\n\r\n\r\n<img class=\"img-thumbnail zoom\" src=\"/challenge/images/v2/42/plain_swatch.jpg\"><br>\r\n\r\n<hr>",
+              "legacyComponentId": 4674,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "StitchPattern",
+              "notes": [
+                "Unmapped legacy component type: StitchPattern"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3355",
+                "STITCHPATTERNID": "164",
+                "STITCHPATTERN_IMAGE": "603",
+                "TYPEOF": "StitchPattern"
+              },
+              "legacyComponentId": 4675,
+              "order": 2
+            }
+          ],
+          "title": "Sue's Swatches",
+          "slug": "sue-s-swatches",
+          "order": 4,
+          "legacy": {
+            "assignId": 3355,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Perfect Fit for YOU",
+      "slug": "perfect-fit-for-you",
+      "displayOrder": 17,
+      "legacy": {
+        "itemId": 292,
+        "lessonOrder": 17
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Knit it Now Dynamic Patterns were created to give you the freedom to knit any pattern YOUR WAY!<br>\r\n<ul>\r\n<li>ANY yarn!  Don't be limited to the yarn the designer chose</li>\r\n<li>Use ANY machine!</li>\r\n<li>ANY stitch pattern!  Easily substitute your favorite stitch pattern .. with NO MATH!</li>\r\n<li>Perfect Fit!   Adjust the dimensions of the pattern to fit YOU</li>\r\n</ul>\r\n<br>\r\nUnlike software, Knit it Now Patterns are generated completely online.  Nothing to install, maintain, upgrade or learn!<br>\r\nEnter YOUR gauge, select your size and GET KNITTING!<br><ul>\r\n<li>Single size per printout (no more highlighting your size)</li>\r\n<li>Limited abbreviations ... written in plain terms!</li>\r\n<li>Custom sizing</li>\r\n<li>NO MATH</li>\r\n</ul>\r\n",
+              "legacyComponentId": 4663,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858983",
+              "title": "Using the Basic Blueprints",
+              "legacyComponentId": 4664,
+              "order": 2
+            }
+          ],
+          "title": "{first} are you new to Knit it Now Dynamic Patterns?",
+          "slug": "first-are-you-new-to-knit-it-now-dynamic-patterns",
+          "order": 1,
+          "legacy": {
+            "assignId": 3356,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "277783617",
+              "title": "Armed with our dimensions, watch as we create our custom pattern",
+              "legacyComponentId": 4665,
+              "order": 1
+            }
+          ],
+          "title": "How to Build a Pattern",
+          "slug": "how-to-build-a-pattern",
+          "order": 2,
+          "legacy": {
+            "assignId": 3357,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<div class=\"col-12-xs\"><br>\r\n<em>When I am packing cones of yarn in a box, I know the the size of the cones, but will the cones will fit in the available box?  To be able to mail your yarn order, <b>the BOX size is more important than the cone dimensions!</b><br>If the box is too big the cones will rattle around and the box will get crushed.  If the packaging is too small, the box could split in transit.<br><b>It doesn't matter what your bust, waist and hip measurements are ... what matters is the size of the package!</b></em><br></div>\r\n\r\n<div class=\"col-12-xs\"><img src=\"/challenge/images/v2/42/nothing_fits/body_measure.jpg\"</div>\r\n\r\n</div>\r\n\r\n<div class=\"col-12-xs\">\r\n<blockquote class=\"smallblock\"> <i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> INSTEAD OF MAKING A PATTERN FIT OUR DIMENSIONS, LETS DETERMINE A COMFORTABLE SIZE FOR OUR SWEATER AND KNIT THE SWEATER TO THOSE DIMENSIONS!</blockquote>\r\n</div>\r\n\r\n\r\n<div class=\"col-12-xs\">\r\nPrint and complete your Perfect Fit Template and record the dimensions of your favorite sweater.<br>Armed with your preferred garment measurements, you will create a knitting pattern to match your sweater.\r\n</div>\r\n\r\n\r\n",
+              "legacyComponentId": 4668,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/worksheet3.pdf",
+              "showInline": true,
+              "legacy": {
+                "assignId": "3358",
+                "componentId": "4686",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4686,
+              "order": 2
+            }
+          ],
+          "title": "Don't Measure your Body!",
+          "slug": "don-t-measure-your-body",
+          "order": 2,
+          "legacy": {
+            "assignId": 3358,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Build Your Pattern",
+      "slug": "build-your-pattern",
+      "displayOrder": 20,
+      "legacy": {
+        "itemId": 289,
+        "lessonOrder": 20
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment 'Soft Sideways Misses' (legacy garmentId 195).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3341",
+                "CHALLENGE_COMPONENTID": "4626",
+                "GARMENTID": "195",
+                "GARMENTTITLE": "Soft Sideways Misses",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "pattern_file_name",
+                "REDIRECT_TO": "/challenge/42/Group/3342/item|***** Build Your Pattern: Print your Pattern",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "rowgauge",
+                "SIZING_DATAMODEL_ELEMENT": "sizingid",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "stitchgauge",
+                "SWATCHROWS": "swatch_length",
+                "SWATCHSTITCHES": "swatch_width",
+                "SWATCHWEIGHT": "swatch_weight",
+                "USESWATCHLOGIC": "no"
+              },
+              "legacyComponentId": 4626,
+              "order": 1
+            }
+          ],
+          "title": "MISSES size - Build",
+          "slug": "misses-size-build",
+          "order": 1,
+          "legacy": {
+            "assignId": 3341,
+            "blockType": "Pattern"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): pattern_file_name",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 3341 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3342",
+                "CHALLENGE_COMPONENTID": "4628",
+                "DATAMODEL_ELEMENTS": "pattern_file_name",
+                "DATAMODEL_REDIRECT": "3341"
+              },
+              "legacyComponentId": 4628,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'pattern_file_name'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3342",
+                "DATAMODEL_ICON": "fa fa-print",
+                "LABLE": "Print Your Pattern",
+                "PATTERN_DATAMODEL_ELEMENT": "pattern_file_name",
+                "TYPEOF": "DocumentPattern",
+                "VIEWHEIGHT": "600"
+              },
+              "legacyComponentId": 4629,
+              "order": 2
+            }
+          ],
+          "title": "Print MISSES Size",
+          "slug": "print-misses-size",
+          "order": 2,
+          "legacy": {
+            "assignId": 3342,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment 'Soft Sideways Women' (legacy garmentId 208).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3344",
+                "CHALLENGE_COMPONENTID": "4630",
+                "GARMENTID": "208",
+                "GARMENTTITLE": "Soft Sideways Women",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "pattern_file_name_p2",
+                "REDIRECT_TO": "/challenge/42/Group/3345/item|Build Your Pattern: Print WOMEN size",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "rowgauge_p2",
+                "SIZING_DATAMODEL_ELEMENT": "sizingid_p2",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "stitchgauge_p2",
+                "SWATCHROWS": "swatch_length",
+                "SWATCHSTITCHES": "swatch_width",
+                "SWATCHWEIGHT": "swatch_weight",
+                "USESWATCHLOGIC": "no"
+              },
+              "legacyComponentId": 4630,
+              "order": 1
+            }
+          ],
+          "title": "WOMEN size - Build",
+          "slug": "women-size-build",
+          "order": 3,
+          "legacy": {
+            "assignId": 3344,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): pattern_file_name_p2",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 3344 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3345",
+                "CHALLENGE_COMPONENTID": "4632",
+                "DATAMODEL_ELEMENTS": "pattern_file_name_p2",
+                "DATAMODEL_REDIRECT": "3344"
+              },
+              "legacyComponentId": 4632,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'pattern_file_name_p2'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3345",
+                "CHALLENGE_COMPONENTID": "4633",
+                "DATAMODEL_ICON": "fa fa-print",
+                "LABLE": "Print Your Pattern",
+                "PATTERN_DATAMODEL_ELEMENT": "pattern_file_name_p2",
+                "VIEWHEIGHT": "600"
+              },
+              "legacyComponentId": 4633,
+              "order": 2
+            }
+          ],
+          "title": "Print WOMEN size",
+          "slug": "print-women-size",
+          "order": 4,
+          "legacy": {
+            "assignId": 3345,
+            "blockType": "Pattern"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Tutorials - Skills you Should Know",
+      "slug": "tutorials-skills-you-should-know",
+      "displayOrder": 21,
+      "legacy": {
+        "itemId": 291,
+        "lessonOrder": 21
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nThe front band of this pattern is designed to be knit in one LONG piece and attached by hand.  The pattern offers points to place markers corresponding with the sections of the body.<br>Depending on your yarn, stitch pattern(s) and gauge, you'll need to take time to complete this step carefully. <br><b>Options</b>\r\n\r\n<ul>\r\n<li>Knit a long stockinette band, with a needle out of work in the center for a crisp turning row</li>\r\n<li>Use the purl side for contrast if you like</li>\r\n<li>Knit a Full needle Rib band</li>\r\n<li>Pick up around the front edges and neckline with a hand knitting needle and knit your band in ribbing, garter stitch, seed stitch or stitch pattern of your choice</li>\r\n<li>Use sew-as-you go to attach the band as you knit it (practice on your swatch first).</li>\r\n<li>Add a small (or large) ruffled edge</li>\r\n<li>Work a decorative crochet edge</li>\r\n\r\n</ul>\r\n\r\n<img class=\"img-thumbnail zoom\" src=\"/challenge/images/v2/42/5.jpg\">\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4687,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857756",
+              "title": "Shortrow Ruffle",
+              "legacyComponentId": 4690,
+              "order": 2
+            }
+          ],
+          "title": "Front edge finishing",
+          "slug": "front-edge-finishing",
+          "order": 1,
+          "legacy": {
+            "assignId": 3353,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/42/hem.jpg\">\r\n\r\nBecause this is a sideways knit, the lower hem may need some attention.  <br><ul>\r\n<li>Depending on your stitch pattern, you may be able to just use the selvage edge of your knitting</li>\r\n<li>Work a crochet edge </li>\r\n<li>Knit a LONG band and attach it by hand, similar to the front edge</li>\r\n<li>Work a \"built-in\" I-cord edge as you knit the body of the sweater</li>\r\n<li>Create a sawtooth edge and attach to the edges</li>\r\n<li>Depending on your stitch pattern, create a hem as you knit.\r\nLeave a needle out of work along the hem edge as you knit. Fold along this needle out of work and stitch in place to create a hem facing.<br></li>\r\n</ul>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4688,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859733",
+              "title": "Sawtooth Edges on the Machine",
+              "legacySlot": 1,
+              "legacyComponentId": 4689,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859707",
+              "title": "Knit-in I-Cord",
+              "legacySlot": 2,
+              "legacyComponentId": 4689,
+              "order": 2
+            }
+          ],
+          "title": "Hem finishing",
+          "slug": "hem-finishing",
+          "order": 2,
+          "legacy": {
+            "assignId": 3361,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n    No matter how you are going to finish the front edges of your sweater, for best results, you'll want the edge to be as smooth as possible. <br>My pattern Is telling me to cast on 54 (the A dimension), then increase 6 stitches 2 times, and increase 5 stitches 8 times. This will create stairsteps that will be difficult to join to a band or finish.<br><b>For a smooth front edge:</b><br><ol class=\"instruction-list\">\r\n            <li>Cast on the ENTIRE WIDTH (the \"E\" Dimension)</li>\r\n            <li>Put all needles except the \"A\" needles in hold</li>\r\n            <li>Substitute Short Row Increases for the increases indicated in the pattern</li>\r\n            <li>At the end of the sweater (the matching front) work Short Row Decreases for a smooth edge before binding off.</li>\r\n        </ol>\r\n        <img src=\"/challenge/images/v2/42/legend.jpg\">\r\n    \r\n    \r\n        <img src=\"/challenge/images/v2/42/stair_steps.jpg\"><br>\r\n        <img src=\"/challenge/images/v2/42/v_neck_pattern.jpg\">\r\n<br>\r\n<img src=\"/challenge/images/v2/42/please_watch.gif\"><br>\r\n",
+              "legacyComponentId": 4676,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860040",
+              "title": "Short Row Increases and Decreases",
+              "legacyComponentId": 4673,
+              "order": 2
+            }
+          ],
+          "title": "Cast on the Front Edge",
+          "slug": "cast-on-the-front-edge",
+          "order": 3,
+          "legacy": {
+            "assignId": 3363,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "When casting on stitches at the edge of your knitting, the best way to prevent headaches is to use a cast on rag.<br><i class=\"fa fa-lightbulb-o aria-hidden=\"true\"></i> Use this for the front edge cast on and the cast on at the armhole openings.",
+              "legacyComponentId": 4682,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860044",
+              "title": "Creating a Cast on Rag",
+              "legacyComponentId": 4681,
+              "order": 2
+            }
+          ],
+          "title": "Cast on Rag",
+          "slug": "cast-on-rag",
+          "order": 4,
+          "legacy": {
+            "assignId": 3366,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859504",
+              "title": "Patch Pockets",
+              "legacyComponentId": 4671,
+              "order": 1
+            }
+          ],
+          "title": "Patch Pockets",
+          "slug": "patch-pockets",
+          "order": 5,
+          "legacy": {
+            "assignId": 3360,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858422",
+              "title": "Seaming - Putting It All Together",
+              "legacyComponentId": 4672,
+              "order": 1
+            }
+          ],
+          "title": "Seaming",
+          "slug": "seaming",
+          "order": 6,
+          "legacy": {
+            "assignId": 3362,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\nWhen you get to the side seam, you may want to add a slit to your sweater.<br>Simply bind off 6-8\" at the hem edge and immediately cast on the same number of stitches again. Using a cast on rag helps make this easier.<br>Repeat on the other side seam for a designer touch.<br>\r\n<i class=\"fa fa-lightbulb-o fa-2x aria-hidden=\"true\"></i> TIP: Make room for finishing by binding off, knitting a few rows, THEN cast back on.  This will create an opening so a crochet or I-cord edge will lay flat within the opening.\r\n\r\n\r\n<img src=\"/challenge/images/v2/42/side_slit.jpg\">\r\n\r\n\r\n\r\n\r\n\t",
+              "legacyComponentId": 4680,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859058",
+              "title": "Edges for Slit Skirts, Sweaters and Necklines",
+              "legacyComponentId": 4679,
+              "order": 2
+            }
+          ],
+          "title": "Side Seam Slit",
+          "slug": "side-seam-slit",
+          "order": 7,
+          "legacy": {
+            "assignId": 3365,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Inspiration",
+      "slug": "inspiration",
+      "displayOrder": 22,
+      "legacy": {
+        "itemId": 300,
+        "lessonOrder": 22
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>NOTE</h3>\r\nSince the original Knit-Along, we added a sideways sleeve to the pattern itself.  This worksheet is no longer needed ... (unless you LOVE to do your own  math) <i class=\"fa fa-smile-o aria-hidden=\"true\"></i> <br>\r\n<img src=\"/challenge/images/v2/42/sideway_sleeve.jpg\">\r\n\r\n\r\n<br>\r\n\r\nBecause this is a sideways knit, stripes (or self-striping yarn) will be vertical in the body of the sweater.  Knit as written, the sleeves will have horizontal stripes.<br>Prefer the stripes to match the body?  You can easily chart the sleeves to be knit sideways as well.<br><ul>\r\n<li>Establish your sleeve dimensions</li>\r\n<li>Use the Knit it Now Slope tool for the shaping math</li>\r\n<li>Use Short Row Increases and Decreases to knit the sleeves</li>\r\n</ul>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4719,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Sideways Sleeve Worksheet",
+              "filename": "/downloads/sleeve_worksheet.pdf",
+              "showInline": true,
+              "legacy": {
+                "assignId": "3382",
+                "componentId": "4720",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4720,
+              "order": 2
+            }
+          ],
+          "title": "Sideways Sleeve",
+          "slug": "sideways-sleeve",
+          "order": 1,
+          "legacy": {
+            "assignId": 3382,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "327821309",
+              "title": "Let it roll!",
+              "legacyComponentId": 4726,
+              "order": 1
+            }
+          ],
+          "title": "Sue's Funky Collar",
+          "slug": "sue-s-funky-collar",
+          "order": 2,
+          "legacy": {
+            "assignId": 3388,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 17,
+    "videos": [
+      {
+        "vimeoId": "151859805",
+        "title": "Yarn Estimator Tool",
+        "lessonSlug": "plan-ahead",
+        "blockSlug": "how-much-yarn-do-i-need"
+      },
+      {
+        "vimeoId": "151857735",
+        "title": "How much yarn?",
+        "lessonSlug": "plan-ahead",
+        "blockSlug": "how-much-yarn-do-i-need"
+      },
+      {
+        "vimeoId": "293143036",
+        "title": "SWATCH!",
+        "lessonSlug": "your-success-depends-on-this",
+        "blockSlug": "just-do-it"
+      },
+      {
+        "vimeoId": "151858429",
+        "title": "Knit a Gauge Swatch in less than 10 minutes",
+        "lessonSlug": "your-success-depends-on-this",
+        "blockSlug": "just-do-it"
+      },
+      {
+        "vimeoId": "151859471",
+        "title": "Swatching in Pattern Knitting",
+        "lessonSlug": "your-success-depends-on-this",
+        "blockSlug": "just-do-it"
+      },
+      {
+        "vimeoId": "245117927",
+        "title": "Gauge and Drop",
+        "lessonSlug": "your-success-depends-on-this",
+        "blockSlug": "gauge-and-drop"
+      },
+      {
+        "vimeoId": "151858983",
+        "title": "Using the Basic Blueprints",
+        "lessonSlug": "perfect-fit-for-you",
+        "blockSlug": "first-are-you-new-to-knit-it-now-dynamic-patterns"
+      },
+      {
+        "vimeoId": "277783617",
+        "title": "Armed with our dimensions, watch as we create our custom pattern",
+        "lessonSlug": "perfect-fit-for-you",
+        "blockSlug": "how-to-build-a-pattern"
+      },
+      {
+        "vimeoId": "151857756",
+        "title": "Shortrow Ruffle",
+        "lessonSlug": "tutorials-skills-you-should-know",
+        "blockSlug": "front-edge-finishing"
+      },
+      {
+        "vimeoId": "151859733",
+        "title": "Sawtooth Edges on the Machine",
+        "lessonSlug": "tutorials-skills-you-should-know",
+        "blockSlug": "hem-finishing"
+      },
+      {
+        "vimeoId": "151859707",
+        "title": "Knit-in I-Cord",
+        "lessonSlug": "tutorials-skills-you-should-know",
+        "blockSlug": "hem-finishing"
+      },
+      {
+        "vimeoId": "151860040",
+        "title": "Short Row Increases and Decreases",
+        "lessonSlug": "tutorials-skills-you-should-know",
+        "blockSlug": "cast-on-the-front-edge"
+      },
+      {
+        "vimeoId": "151860044",
+        "title": "Creating a Cast on Rag",
+        "lessonSlug": "tutorials-skills-you-should-know",
+        "blockSlug": "cast-on-rag"
+      },
+      {
+        "vimeoId": "151859504",
+        "title": "Patch Pockets",
+        "lessonSlug": "tutorials-skills-you-should-know",
+        "blockSlug": "patch-pockets"
+      },
+      {
+        "vimeoId": "151858422",
+        "title": "Seaming - Putting It All Together",
+        "lessonSlug": "tutorials-skills-you-should-know",
+        "blockSlug": "seaming"
+      },
+      {
+        "vimeoId": "151859058",
+        "title": "Edges for Slit Skirts, Sweaters and Necklines",
+        "lessonSlug": "tutorials-skills-you-should-know",
+        "blockSlug": "side-seam-slit"
+      },
+      {
+        "vimeoId": "327821309",
+        "title": "Let it roll!",
+        "lessonSlug": "inspiration",
+        "blockSlug": "sue-s-funky-collar"
+      }
+    ],
+    "downloadCount": 2,
+    "downloads": [
+      {
+        "filename": "/downloads/worksheet3.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "perfect-fit-for-you",
+        "blockSlug": "don-t-measure-your-body"
+      },
+      {
+        "filename": "/downloads/sleeve_worksheet.pdf",
+        "label": "Sideways Sleeve Worksheet",
+        "lessonSlug": "inspiration",
+        "blockSlug": "sideways-sleeve"
+      }
+    ]
+  }
+}

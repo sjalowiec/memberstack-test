@@ -1,0 +1,1352 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 18,
+    "title": "2x2 Ribbing",
+    "slug": "2x2-ribbing",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_18_2x2_ribbing.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/2x2_rib.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "1. Dust Off your Ribber",
+      "slug": "1-dust-off-your-ribber",
+      "displayOrder": 10,
+      "legacy": {
+        "itemId": 109,
+        "lessonOrder": 10
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<img src=\"/challenge/images/v2/18/2x2ribbing/2x2_logo.jpg\">\r\nDo you like to add welts to the hems of your knitting or are you looking to knit entire garments in ribbing?<br>Have you struggled with this needle setup in the past? <br>This course is designed for you to <b>get experience</b> with using your ribber to knit 2x2 ribbing (k2p2). <br>\r\n\r\n\r\n\r\n\r\n<div class=\"lead\"> <i class=\"fa fa-check\" aria-hidden=\"true\"></i> You will:</div>\r\n<ol class=\"instruction-nolist\">\r\n<li>Learn the basic techniques of this needle arrangement</li>\r\n<li>Explore options for casting on and binding off</li>\r\n<li>Dispel the myth that this is too hard</li>\r\n<li>Your results will be a launching point for you to <b>get creative with your ribber</b></li>\r\n</ol>\r\n<div class=\"lead\"> <i class=\"fa fa-check\" aria-hidden=\"true\"></i>You need:</div>\r\n<ol class=\"instruction-nolist\">\r\n<li>Basic understanding of how your ribber works. <b>It is required that  you can cast on 1x1 or full needle rib</b> and want to master 2x2.</li>\r\n<li>A fully functioning ribber. We won't spend time troubleshooting machine issues</li>\r\n<li>Ribber Cast on comb and weights</li>\r\n<li>Double eye needle and general MK tools</li>\r\n<li>Light color, appropriate weight practice yarn</li>\r\n<li>Your ribber manual. <br>\r\n<em><small>Free copies of manuals can be found <a href=\"\">here</a></small></em></li>\r\n</ol>\r\n<blockquote class=\"blockquote_style\">A commitment to dedicate time to this subject will go a long way.  Promise that you will set aside time to work through each lesson ... not just watch and read ... but KNIT!</blockquote>\r\n",
+              "legacyComponentId": 1485,
+              "order": 1
+            }
+          ],
+          "title": "Start Here",
+          "slug": "start-here",
+          "order": 1,
+          "legacy": {
+            "assignId": 484,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "221120492",
+              "title": "Machine Knitting Courses",
+              "legacyComponentId": 1758,
+              "order": 1
+            }
+          ],
+          "title": "New to Knit it Now Courses?",
+          "slug": "new-to-knit-it-now-courses",
+          "order": 4,
+          "legacy": {
+            "assignId": 609,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "2. Basic Terms and Concepts",
+      "slug": "2-basic-terms-and-concepts",
+      "displayOrder": 20,
+      "legacy": {
+        "itemId": 112,
+        "lessonOrder": 20
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Before starting this course, you should be familiar with your ribber ... just in case, watch as we attach our ribber.<br>Yours may be different, but the concepts are the same. It's not hard, don't be intimidated by confusing instructions translated from Japanese.<br><blockquote class=\"blockquote_style\">Once set up, please consider leaving your ribber in place.  Yes, it can get in the way ... but ... you will be surprised how much you will use your ribber if it's in place and ready to go.  Why save it for \"special occasions\"?  There is so much more that you can do with your ribber than plain 'ol ribbing!</blockquote>",
+              "legacyComponentId": 1500,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859429",
+              "title": "Setting Up Your Ribber",
+              "legacyComponentId": 1499,
+              "order": 2
+            }
+          ],
+          "title": "Setting up your ribber",
+          "slug": "setting-up-your-ribber",
+          "order": 1,
+          "legacy": {
+            "assignId": 498,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859701",
+              "title": "Ribber: Full vs Half Pitch",
+              "legacyComponentId": 1487,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<br><div class=\"well-sm\"><i class=\"fa fa-refresh fa-spin fa-2x fa-fw\"></i>Practice</div>\r\n\r\n<ol class=\"instruction-list\">\r\n    <li>\"P\" Pitch</li>\r\n     Every Needle:\r\n           <ol class=\"instruction-nolist\">\r\n                <li>Engage your ribber</li>\r\n                 <li>Set to \"P\" - Rack to 5</li>\r\n                 <li>Carefully pull out 10 needles (every needle) on each bed</li>\r\n                  <li>Notice the position of the needles and how they touch</li>\r\n            </ol>\r\n     Every other Needle:\r\n           <ol class=\"instruction-nolist\">\r\n                 <li>Engage your ribber</li>\r\n                  <li>Set to \"P\" - Rack to 5</li>\r\n                 <li>Carefully pull out 10 needles (EVERY OTHER NEEDLE) on each bed</li>\r\n                <li>Notice the position of the needles and how are positioned</li>\r\n              </ol>\r\n    <li>\"H\" Half Pitch</li>\r\n  Every Needle:\r\n           <ol class=\"instruction-nolist\">\r\n                <li>Engage your ribber</li>\r\n                 <li>Set to \"H\" - Rack to 5</li>\r\n                 <li>Carefully pull out 10 needles (every needle) on each bed</li>\r\n                  <li>Notice that the needles won't touch</li>\r\n            </ol>\r\n     Alternate Needle Arrangement:\r\n           <ol class=\"instruction-nolist\">\r\n                 <li>Engage your ribber</li>\r\n                  <li>Set to \"P\" - Rack to 5</li>\r\n                 <li>Pull out 10 needles (every needle) on the main bed</li>\r\n                 <li>Pull out every 3rd  needle on the ribber</li>\r\n                <li>Notice the position of the needles ... No crashing!</li>\r\n              </ol>\r\n\r\n</ol>\r\n\r\n<blockquote class=\"blockquote_style\" align=\"center\">P=\"Please be careful!\" <Br>H= Safe</blockquote>\r\n\r\n\r\n",
+              "legacyComponentId": 1518,
+              "order": 2
+            }
+          ],
+          "title": "Full Pitch Vs Half Pitch",
+          "slug": "full-pitch-vs-half-pitch",
+          "order": 2,
+          "legacy": {
+            "assignId": 487,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859491",
+              "title": "Transfer without a Double Eye Needle",
+              "legacyComponentId": 1489,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<br><div class=\"well-sm\"><i class=\"fa fa-refresh fa-spin fa-2x fa-fw\"></i>Try this for those times when your double eye needle is \"hiding\"</div>",
+              "legacyComponentId": 1519,
+              "order": 2
+            }
+          ],
+          "title": "Transfer without a double eye needle",
+          "slug": "transfer-without-a-double-eye-needle",
+          "order": 3,
+          "legacy": {
+            "assignId": 488,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858404",
+              "title": "Hand Knit Ribbing with Machine Knitting",
+              "legacyComponentId": 1490,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<br><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i>\r\n<br>\r\nA discussion of ribbing would not be complete without considering hand knitting.<br>\r\nThere are so many decorative and fun ribbing techniques that would be impossible or tedious on the machine.<br>Please consider:\r\n<OL>\r\n<li>Start your machine knitting with waste yarn, then pick up the live stitches and hand knit ribbing</li>\r\n<li>Hand knit ribbing (cuffs, hems) first, then hang the stitches on the machine to finish knitting the piece</li>\r\n<li>Consider blocks or stripes of hand knitting within your machine knitted piece. Get the best of both worlds by combining the 2 knitting techniques</li>\r\n</ol>",
+              "legacyComponentId": 1491,
+              "order": 2
+            }
+          ],
+          "title": "Combine Hand Knitting",
+          "slug": "combine-hand-knitting",
+          "order": 4,
+          "legacy": {
+            "assignId": 489,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857723",
+              "title": "Seaming Ribbing - Plan Ahead!",
+              "legacyComponentId": 1495,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i><br>\r\nAs you work through this course, you will be knitting lots of swatches.<br>\r\nTake time to use them to practice seaming techniques. Perfect your stitching BEFORE you start knitting that expensive designer yarn.  <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i>",
+              "legacyComponentId": 1520,
+              "order": 2
+            }
+          ],
+          "title": "Seaming Tips",
+          "slug": "seaming-tips",
+          "order": 5,
+          "legacy": {
+            "assignId": 496,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i><br>\r\n\r\nThe ribber cast on comb was designed to distribute weight across your knitting. It can be used for single bed knitting too!<br>The following is one of the best tips I've learned over the years ... it isn't directly related to ribbing, but it's worth learning. There are many times it will come in handy!<br>\r\n",
+              "legacyComponentId": 1521,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859199",
+              "title": "Ribber Cast On Comb for Single Bed Knitting",
+              "legacyComponentId": 1497,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<br><div class=\"lead\"><i class=\"fa fa-refresh\" aria-hidden=\"true\"></i>Try it yourself\r\n</div>\r\n<blockquote class=\"blockquote_style\">Consider this technique whenever you want/need even weight across your knitting or when you will be switching between single bed knitting and double bed knitting in the same knitted piece.</blockquote>\r\n<ol class=\"instruction-list\">\r\n<li>Ribber set to cast on for 1x1 ribbing <br>\r\n           <ul class=\"instruction-nolist\">\r\n                     <li>Full Pitch (P)</li>\r\n                     <li>Rack 5</li>\r\n                     <li>Every other needle in work on both beds</li>\r\n           </ul>\r\n</li>\r\n<li>Knit a zig zag row with waste yarn</li>\r\n\r\n<li>Hang your cast on comb (centered and balanced) in the loops</li>\r\n\r\n<li>Run the ribber carriage only (no yarn) dropping the ribber stitches</li>\r\n<li>The cast on comb will be hanging in the main bed loops</li>\r\n<li>Remove the ribber connecting arm and set your carriage for plain knitting</li>\r\n<li>Knit a few rows of waste yarn</li>\r\n<li>KNIT A ROW OF RAVEL CORD</LI>\r\n<li>Carriage on the right</li>\r\n<li>With garment yarn, work a closed cast on (e-wrap, chain cast on, etc)</li>\r\n<li>Continue knitting your piece</li>\r\n<li>When the knitting is complete remove the ravel cord and scrap knitting</li>\r\n</ol>\r\n",
+              "legacyComponentId": 1749,
+              "order": 3
+            }
+          ],
+          "title": "Ribber Cast on Comb",
+          "slug": "ribber-cast-on-comb",
+          "order": 6,
+          "legacy": {
+            "assignId": 497,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<br><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i><br>\r\nEven when the knitting gets long, you still need to maintain weight on your work.  Here are some tips.<br>",
+              "legacyComponentId": 1750,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859192",
+              "title": "Ribber Weights on the Floor?",
+              "legacyComponentId": 1751,
+              "order": 2
+            }
+          ],
+          "title": "Ribber Weights on the Floor?",
+          "slug": "ribber-weights-on-the-floor",
+          "order": 7,
+          "legacy": {
+            "assignId": 607,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"blockquote_style\">A prerequisite for this course is the ability to cast on in 1x1 ribbing with YOUR machine.</blockquote><br>\r\n<b> If you aren't comfortable with casting in 1x1 needle setup:</b>\r\n<Ul>\r\n<li>Review the instructions in your manual</li>\r\n<li>Practice cast in on in 1x1 setup</li>\r\n<li>Pay specific attention to the 3 circular rows suggested in the video below</li>\r\n</ul>\r\n<blockquote class=\"blockquote_style\">Take time to practice 1x1 before attempting 2x2 </blockquote>",
+              "legacyComponentId": 1757,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "255815629",
+              "title": "1x1 Rib Cast on Refresher",
+              "legacyComponentId": 1756,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">Circular Knitting Refresher</div>\r\nCircular knitting is used to create a beautiful cast on edge in ribbing.<br>\r\n\r\nCircular knitting is performed using the slip (skip) technique on your machine. You need to set the carriage so needles that are in working position will not knit.<br><div class=\"lead\">Overview of a 1x1 ribbing cast on:</div>\r\n<ol>\r\n<li>Knit a zig zag row (any needle arrangement)</li>\r\n<li>Hang a cast on comb and weight</li>\r\n<li>Circular Rows:<Br> - Knit the stitches on the main bed only and slip the stitches on the ribber<br>\r\n- Knit the stitches on the ribber and slip the stitches on the main bed</br>\r\n- Knit the stitches on the main bed only and slip the stitches on the ribber (3 slip rows)</li>\r\n\r\n<li>Set the carriages to knit both ways and complete your ribbing.</li>\r\n</ol>\r\n<em>NOTE: Casting on for 2x2 ribbing is similar, but it has a couple of more steps involved. <b> It's critical that you master 1x1 before moving forward.</b><br></em><br>\r\n\r\n<div class=\"lead\">How to slip on your machine?</div>\r\n\r\n\r\nThe device(s) to slip are located on the knitting carriages (main bed and ribber)<br>Some machines have button to push in or pull out, others have a knob or knobs to turn to \"slip\" position, and others have a lever to set to \"slip\" or \"S\" position.<br>There may be 2 buttons or levers to control the movement of the carriage to the left and right only, or a single control for the movement of the carriage in both direction.<br>Check your machine manual for YOUR slip settings.\r\n\r\n<img src=\"/challenge/images/v2/18/2x2Ribbing/slip_settings.png\">\r\n",
+              "legacyComponentId": 1510,
+              "order": 3
+            }
+          ],
+          "title": "1x1 Cast on Refresher",
+          "slug": "1x1-cast-on-refresher",
+          "order": 8,
+          "legacy": {
+            "assignId": 500,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "3. Easiest Cast on Ever!",
+      "slug": "3-easiest-cast-on-ever",
+      "displayOrder": 30,
+      "legacy": {
+        "itemId": 110,
+        "lessonOrder": 30
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858586",
+              "title": "Easiest, Best Ribber Cast On",
+              "legacyComponentId": 1486,
+              "order": 1
+            }
+          ],
+          "title": "No brain cells needed",
+          "slug": "no-brain-cells-needed",
+          "order": 1,
+          "legacy": {
+            "assignId": 485,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Try this \"no brainer\" cast on method for yourself.<br>\r\n<ul>\r\n<li>Remember there is a right and wrong side to the cast on edge .. plan accordingly</li>\r\n<li>I prefer to start with waste yarn ... do you?</li>\r\n<li>Don't forget to plan seaming stitches ... this is a good time to practice working out your cast on numbers</li>\r\n</ul>\r\n\r\n\r\n<ol class=\"instruction-list\">\r\n\r\n\r\n</ol>",
+              "legacyComponentId": 1523,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">Practice 1</div>\r\n<ol class=\"instruction-list\">\r\n\r\n<li>Ribber not engaged, ribber carriage on the left</li> \r\n<li>Main Carriage on the right</li>\r\n<li>Main Carriage set to plain knitting (ribber coupler in place)</li>\r\n<li>Loosely e-wrap cast on over the the desired number of needles</li>\r\n<li>Knit 1 row. Right to left</li>\r\n<li>Engage the ribber and join the 2 carriages\r\n<li>Using a double eye needle - transfer stitches to the ribber in the desired needle arrangement</li>\r\n<li>Carefully insert the ribber comb between the beds to add even weight across the knitting</li>\r\n<li>Set the carriages to knit as desired</li>\r\n<li>Knit your ribbing</li>\r\n</ol>\r\n<br><div class=\"lead\">Practice 2 </div>\r\nFor more exercise, try this technique by starting with waste yarn and ravel cord.  This will allow you to hang the ribber comb in waste yarn and not run the risk of distorting or damaging the cast on edge of your garment.<br><ol class=\"instruction-list\">\r\n<li>Start with waste yarn and ravel cord on the main bed only. Use the method shown in the previous lesson <a href=\"https://www.knititnow.com/challenge/18/Group/497/item#section112\">\"Ribber Cast on Comb\"</a></li>\r\n<li>Knit a row of ravel cord</li>\r\n<li>With the garment yarn work a Closed Cast On over the ravel cord</li>\r\n<li>Optional: Knit 1 row</li>\r\n<li>Transfer stitches to the ribber in the desired needle set up (2x2, 5x5 etc)</li>\r\n<li>Continue knitting your ribbing</li>\r\n<li>When complete, remove the ravel cord and waste yarn for a beautiful cast on edge</li>\r\n\r\n</ol>",
+              "legacyComponentId": 1752,
+              "order": 3
+            }
+          ],
+          "title": "Try the Easy Cast On yourself",
+          "slug": "try-the-easy-cast-on-yourself",
+          "order": 2,
+          "legacy": {
+            "assignId": 486,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "4. 2x2 Basic Cast on",
+      "slug": "4-2x2-basic-cast-on",
+      "displayOrder": 40,
+      "legacy": {
+        "itemId": 111,
+        "lessonOrder": 40
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859224",
+              "title": "2x2 Ribbing Cast On",
+              "legacyComponentId": 1573,
+              "order": 1
+            }
+          ],
+          "title": "2x2 Ribbing Cast on",
+          "slug": "2x2-ribbing-cast-on",
+          "order": 1,
+          "legacy": {
+            "assignId": 492,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/2x2Ribbing/2x2_1.jpg",
+                  "caption": "<div class=\"row\">\r\n         <div class=\"col-md-6 col-xs-12\">\r\n                  <div class=\"lead\">Engage Ribber and put needles into work </div><em>Needles in </em><B>WORKING POSITION</B> <EM><SMALL>(Not all the way out)</small></em>\r\n                           <ol>\r\n                                <li>Pitch P</li>\r\n                                <li>Rack 5</li>\r\n                                <li>End needles on the main bed</li>\r\n                            </ol>\r\n        </div>\r\n     <div class=\"col-md-6 col-xs-12\"><img class=\"img-responsive\" src=\"/challenge/images/2x2Ribbing/knitting_position.png\"></div>\r\n</div>"
+                },
+                {
+                  "src": "/2x2Ribbing/single_needle_caston.jpg",
+                  "caption": "<div class=\"col-xs-12\"><ol>\r\n<div class=\"lead\">Set up for Cast on</div>\r\n<li>Pitch H</li>\r\n<Li>Rack to 4</li>\r\n<li>Push single needle on ribber into work <img src=\"/challenge/images/2x2Ribbing/single_co_needle.png\"</li>\r\n</ol>\r\n<br>\r\n\r\n<img src=\"/challenge/images/2x2ribbing/Cast_on_position.png\">\r\n</div>"
+                },
+                {
+                  "src": "/2x2ribbing/tension_settings.png",
+                  "caption": "<div class=\"col-xs-12\"><ol>\r\n<div class=\"lead\">Adjust Tension for Cast on Edge</div>\r\n<li>Tighten tension on both carriages as tight as possible for your yarn<br>\r\n<em><small><i class=\"fa fa-long-arrow-right\" style=\"color:red\" aria-hidden=\"true\"></i> Brother Knitters: move Slide lever to II (2 for Tiny)</small></em></li>\r\n</ol>\r\n</div>"
+                },
+                {
+                  "src": "/2x2ribbing/2x2_6.jpg",
+                  "caption": "<div class=\"col-xs-12\"><ol>\r\n<div class=\"lead\">Knit Zig-Zag Row</div>\r\n<li>Maintain settings (Pitch H | Rack 4)</li>\r\n<Li>Knit 1 row right to left - Both beds should knit and a zig-zag should form.</li>\r\n\r\n</ol>\r\n (That extra needle on the left will help cast on the left 2 stitches. It will be removed when the cast on is done)\r\n\r\n</div>"
+                },
+                {
+                  "src": "/2x2ribbing/2x2_8.jpg",
+                  "caption": "<div class=\"col-xs-12\"><ol>\r\n<div class=\"lead\">Insert Cast on Comb</div>\r\n<li>Carefully ensure the loops are engaged</li>\r\n<Li>Be sure to include the loop of the working yarn <i class=\"fa fa-long-arrow-left\" style=\"color:red\" aria-hidden=\"true\"></i></li>\r\n<li>TIP: Mark the center of the comb with color, so the comb is centered in the work and the weights hang evenly</li>\r\n<li>Hang some weight appropriate for your yarn and width of knitting</li>\r\n</ol>\r\n<blockquote class=\"blockquote_style\">Does your zig-zag row look like this? If not, start over and follow each step exactly.</blockquote>\r\n\r\n</div>"
+                },
+                {
+                  "src": "/2x2ribbing/2x2_10.jpg",
+                  "caption": "<div class=\"col-xs-12\"></div>\r\n<div class=\"col-xs-12\">\r\n<blockquote class=\"blockquote_style\">Some machines have separate buttons to slip from right to left, others do not.  Check your manual and practice slipping in one direction before starting. </blockquote>\r\n<ol>\r\n<div class=\"lead\">Knit First Circular Row</div> <small><em>(1 of 3)</em></small>\r\n<li>Carriage is on the LEFT</li>\r\n<Li>Set Main Bed to knit to the right<br>\r\nAND<br>\r\nSet Ribber to slip</li>\r\n<li><i class=\"fa fa-long-arrow-right\" style=\"color:red\" aria-hidden=\"true\"></i>Knit 1 row from left to right ON THE MAIN BED ONLY</li>\r\n</ol>\r\n</div>"
+                },
+                {
+                  "src": "/2x2ribbing/2x2_11.jpg",
+                  "caption": "<div class=\"col-xs-12\">\r\n<ol>\r\n<div class=\"lead\">Knit Second Circular Row</div> <small><em>(2 of 3)</em></small>)\r\n<li>Carriage is on the RIGHT</li>\r\n<Li>Set Main Bed to knit to slip<br>\r\nAND<br>\r\nSet Ribber to knit to the LEFT</li>\r\n<li><i class=\"fa fa-long-arrow-left\" style=\"color:red\" aria-hidden=\"true\"></i>Knit 1 row from right to left ON THE RIBBER BED ONLY</li>\r\n</ol>\r\n</div>"
+                },
+                {
+                  "src": "/2x2ribbing/magnify_circular.png",
+                  "caption": "<div class=\"col-xs-12\">\r\n<ol>\r\n<div class=\"lead\">Knit Last Circular Row </div><small><em>(3 of 3)</em></small>\r\n<li>Carriage is on the LEFT</li>\r\n<Li>Set Main Bed to knit to the right<br>\r\nAND<br>\r\nSet Ribber to slip</li>\r\n<li><i class=\"fa fa-long-arrow-right\" style=\"color:red\" aria-hidden=\"true\"></i>Knit 1 row from left to right ON THE MAIN BED ONLY</li>\r\n</ol>\r\n<blockquote class=\"blockquote_style\">You will have knit 2 rows on the main bed and 1 row on the ribber.  Note that the yarn isn't traveling between the beds at this point.</blockquote>\r\n</div>"
+                },
+                {
+                  "src": "/2x2Ribbing/magnify_single_stitch.jpg",
+                  "caption": "<div class=\"col-xs-12\">\r\n<ol>\r\n<li>Transfer the single stitch from the ribber to the main bed</li>\r\n<li>Put the emptied needle into out of work position</li>\r\n</ol>\r\n</div>"
+                },
+                {
+                  "src": "/2x2ribbing/tension_settings_2.png",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"lead\">Adjust to Garment Tension </div>\r\n<ol>\r\n<li>Set the carriage tensions to your garment tensions</li>\r\n<li>Brother Knitters - set slide lever to I</li>\r\n</ol>\r\n</div>"
+                },
+                {
+                  "src": "/2x2ribbing/magnify_ribbing.jpg",
+                  "caption": "<div class=\"col-xs-12\">\r\n<div class=\"lead\">Set carriage to Knitting Position (Pitch P - Rack 5) </div>\r\n<ol>\r\n<li>Knit the ribbing for your desired length</li>\r\n\r\n</ol>\r\n<blockquote class=\"blockquote_style\">Notice that both beds are knitting and the yarn is zig-zagging between the beds.</blockquote><br>\r\n<img src=\"/challenge/images/2x2ribbing/knitting_position.png\">\r\n\r\n</div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 1503,
+              "order": 2
+            }
+          ],
+          "title": "2x2 Step by Step",
+          "slug": "2x2-step-by-step",
+          "order": 2,
+          "legacy": {
+            "assignId": 493,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "download",
+              "label": "Don't miss a step! Download and print a checklist",
+              "filename": "/downloads/2x2_checklist3.pdf",
+              "showInline": true,
+              "legacy": {
+                "assignId": "580",
+                "componentId": "1767",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 1767,
+              "order": 1
+            }
+          ],
+          "title": "Step-by-Step Cheatsheet",
+          "slug": "step-by-step-cheatsheet",
+          "order": 3,
+          "legacy": {
+            "assignId": 580,
+            "blockType": "Document"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/18/2x2Ribbing/troubleshoot.jpg",
+                  "caption": "<div class=\"row\">\r\n            <div class=\"col-md-4 col-xs-12\"><img class=\"img-responsive\"  src=\"/challenge/images/2x2ribbing/oops.png\">\r\n             </div>\r\n              <div class=\"col-md-6 col-xs-12\"> This zig zag row has a problem ....\r\n                      <ul>\r\n                     <li>Can you see what's wrong?</li>\r\n                     <li>What needs to be changed?</li></ul>\r\n              </div>\r\n</div>"
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2Ribbing/troubleshoot1.jpg",
+                  "caption": "The right side isn't right ... \r\n<ul>\r\n<li>The cast on comb can't be hung</li>"
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2Ribbing/troubleshoot2.jpg",
+                  "caption": "<div class=\"lead\">AH HA!</div>\r\nThe needles sequence on the ribber is not correct!<br>\r\n<em>Gotta start over .....</em>"
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2Ribbing/oops2.jpg",
+                  "caption": "Forget to raise that extra needle on the ribber?  You'll know immediately when you try to hang the cast on comb."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2Ribbing/oops3.jpg",
+                  "caption": "Not to worry!  Just pick up the loop between the 2 main bed stitches and pick up the single needle on the ribber.  Now you'll be able to secure those stitches with the cast on comb."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2Ribbing/between_beds.jpg",
+                  "caption": "Changing colors or adding a new yarn? <br>\r\nUse a double-eye needle to drop the tail between the beds."
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 1697,
+              "order": 1
+            }
+          ],
+          "title": "Troubleshoot",
+          "slug": "troubleshoot",
+          "order": 4,
+          "legacy": {
+            "assignId": 582,
+            "blockType": "Imageslideshow"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859346",
+              "title": "2x2 Half Pitch Rib Cast On",
+              "legacyComponentId": 1494,
+              "order": 1
+            }
+          ],
+          "title": "2x2 (2x1) Half Pitch Cast on",
+          "slug": "2x2-2x1-half-pitch-cast-on",
+          "order": 5,
+          "legacy": {
+            "assignId": 494,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<ol class=\"instruction-list\">\r\n<li>Engage ribber\r\n\r\n<ul class=\"instruction-nolist\">\r\n<li>Pitch \"H\" (half pitch)</li>\r\n<li>Rack 5</li>\r\n</ul>\r\n</li>\r\n\r\n<li>Select needles as shown: <em><small>(note there are 2 needles on the main bed on each edge)</em></small><br>\r\n<img src=\"/challenge/images/v2/18/2x2ribbing/2x2_half_pitch.jpg\" width=\"250px\"></li>\r\n<li>Run the carriages without yarn to align the needles to working position </li>\r\n<li>Swing the ribber to the right 1 number (4)<br>\r\n<img src=\"/challenge/images/v2/18/2x2ribbing/2x2_half_pitch_swing.jpg\" width=\"250px\">\r\n</li>\r\n<li>Bring up one needle on the ribber to working position<br>\r\n<img src=\"/challenge/images/v2/18/2x2Ribbing/single_needle_caston.jpg\" width=\"250px\"></li>\r\n<li>Tighten the tension on both beds</li>\r\n<li>Knit a Zig Zag row</li>\r\n<li>Hang cast on comb and weights</li>\r\n<li>Knit 3 rows of tubular knitting</li>\r\n<li>Rack back to the left (5)</li>\r\n<li>Transfer the added ribber stitch on the left to the main bed<br>Cast on Complete - Start Knitting</li>\r\n<li>Set tension on both carriages to garment tension</li>\r\n<li>Set row counter to 000</li>\r\n<li>Set both carriages to plain knitting</li>\r\n</ol>\r\n\r\n<div class=\"lead\"><i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> Compare this sample to your 2x2 sample.</div>\r\n\r\n</ol>",
+              "legacyComponentId": 1753,
+              "order": 1
+            }
+          ],
+          "title": "Try the 2x2 (2x1) Cast On",
+          "slug": "try-the-2x2-2x1-cast-on",
+          "order": 6,
+          "legacy": {
+            "assignId": 608,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/18/2x2Ribbing/finish5.jpg",
+                  "caption": "When you remove the cast on comb, the edge is flared and a bit distorted."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2Ribbing/finish2.jpg",
+                  "caption": "Insert a blocking wire (or the wire from the cast on comb) in each of the loops across the edges and steam. Then block your ribbing as desired."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2Ribbing/finish3.jpg",
+                  "caption": "This beautiful \"tubular\" edge is the end result. <br>\r\nNotice that this is the \"right\" or public side of the cast on.  It is the edge that had only 1 slipped row."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2Ribbing/finish1.jpg",
+                  "caption": "This is the \"wrong\" or private side of the cast on.  It is the edge that had 2 slipped rows.<br>\r\nHow would you control which side is which?<br>\r\n<em>(Hint: It has to do with where the carriage starts for the initial zig-zag row. Pay attention when making your samples)</em>"
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2Ribbing/finish4.jpg",
+                  "caption": "Examine your samples to identify the right and wrong side of the cast on edge."
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 1769,
+              "order": 1
+            }
+          ],
+          "title": "Finishing Tips",
+          "slug": "finishing-tips",
+          "order": 7,
+          "legacy": {
+            "assignId": 630,
+            "blockType": "Imageslideshow"
+          }
+        }
+      ]
+    },
+    {
+      "title": "5. Binding off",
+      "slug": "5-binding-off",
+      "displayOrder": 50,
+      "legacy": {
+        "itemId": 113,
+        "lessonOrder": 50
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857401",
+              "title": "Easy Ribber Bind Off",
+              "legacyComponentId": 1492,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "490",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 1693,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\"><i class=\"fa fa-refresh fa-spin fa-2x fa-fw\"></i>Try it yourself</div>\r\n\r\n<ol class=\"instruction-list\">\r\n<li>Practice any cast on method and knit a few inches. </li>\r\n<li>Knit the last row LOOSELY</li>\r\n<li>Work the stitch by stitch bind off demonstrated, alternating the angle of the latch tool. (This is similar to \"bind off in pattern\" in hand knitting)</li>\r\n<li>Edge too tight? Edge sloppy?  TRY AGAIN!</li>\r\n</ol>",
+              "legacyComponentId": 1754,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<br>Binding off in ribbing can be problematic and tedious.<br>\r\n\r\n<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Consider:\r\n<ol>\r\n<li>Start your knitting with the public edge.<br>For example, knit your sleeves from the cuff up.  Start with a nice neat cast on, knit your sleeve and bind off.  When knitting top down sleeves, you'll have to create nice bind off edge that will be very visible at the wrist.<br></li>\r\n<li>Instead of binding off your ribbing, transfer all the needles to the main bed and knit a few rows.  Bind off and let the edge roll</li>\r\n</ol>\r\n<br><div align=\"center\">\r\n<a href=\"http://www.knititnow.com/knit/DynamicPattern/706/rib-n-roll-slouchy-hat\"><img class=\"img-thumbnail\" src=\"http://www.knititnow.com/KIN_images/garments/pattern_main_image1.jpg\"></a></a>",
+              "legacyComponentId": 1493,
+              "order": 4
+            }
+          ],
+          "title": "Easy Bind off",
+          "slug": "easy-bind-off",
+          "order": 1,
+          "legacy": {
+            "assignId": 490,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858299",
+              "title": "Stretchiest Bind Off Ever!",
+              "legacyComponentId": 1687,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\"><i class=\"fa fa-refresh fa-spin fa-2x fa-fw\"></i>Try it yourself</div>\r\nThis method is stretchy and strong ... great for socks!<br>\r\n<ol class=\"instruction-list\">\r\n<li>Practice any cast on method and knit a few inches. </li>\r\n<li>Transfer all the stitches to the main bed</li>\r\n<li>Work a back stitch bind off to secure the stitches</li>\r\n<li>Edge too tight? Edge sloppy?  TRY AGAIN!</li>\r\n<li>Try removing the work on scrap yarn and work the back stitch bind off away from the machine\r\n</ol><br>\r\n\r\n<img src=\"/challenge/images/v2/18/2x2ribbing/back_stitch.jpg\">\r\n",
+              "legacyComponentId": 1755,
+              "order": 2
+            }
+          ],
+          "title": "Stretchy Sewn Bind Off",
+          "slug": "stretchy-sewn-bind-off",
+          "order": 2,
+          "legacy": {
+            "assignId": 491,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Often when working in ribbing, you want an extra-stretchy bind off.  This method can be just the answer.<br>\r\nTransfer all the ribber stitches to the main bed, then work the Figure 8 Bind Off over all the stitches.",
+              "legacyComponentId": 1824,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "258782290",
+              "title": "Figure 8 Bind Off",
+              "legacyComponentId": 1823,
+              "order": 2
+            }
+          ],
+          "title": "Figure 8 Bind Off",
+          "slug": "figure-8-bind-off",
+          "order": 3,
+          "legacy": {
+            "assignId": 655,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/fig8_1.jpg",
+                  "caption": "Wrap the working yarn over the first needle."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/fig8_2.jpg",
+                  "caption": "Manually knit a large loop."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/fig8_3.jpg",
+                  "caption": "Holding down the loop to keep it in place, pull the needle all the way out."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/fig8_4.jpg",
+                  "caption": "Insert a single prong transfer tool through the loop from back to front."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/fig8_5.jpg",
+                  "caption": "Turn the tool 180 degrees to form the loop into a figure 8. Snug up the loop so it's not sloppy."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/fig8_6.jpg",
+                  "caption": "Wrap the working yarn over the next needle."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/fig8_7.jpg",
+                  "caption": "Manually knit a second large loop."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/fig8_8.jpg",
+                  "caption": "Hold the loop down so it doesn't pop off."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/fig8_9.jpg",
+                  "caption": "Carefully pull the needle all the way out."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/fig8_10.jpg",
+                  "caption": "Insert a single prong transfer tool through the loop from back to front."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/fig8_11.jpg",
+                  "caption": "Turn the tool 180 degrees to form the loop into a figure 8. Snug up the loop so it's not sloppy."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/fig8_12.jpg",
+                  "caption": "Repeat this sequence across all the needles."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/fig8_13.jpg",
+                  "caption": "Break the yarn and pull the tail through the last loop to finish.."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/fig8_14.jpg",
+                  "caption": "Practice this technique to keep an even tension, snugging the loops so they are stretchy, but not sloppy."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/fig8_15.jpg",
+                  "caption": "The reverse side resembles a crochet edge."
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 1821,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-refresh fa-spin fa-2x fa-fw\"></i><div class=\"lead\">Try this yourself</div><br>\r\n<ol class=\"instruction-list\">\r\n<li>Practice casting on and knit in 2x2 rib</li>\r\n<li>Transfer the ribber stitches to the main bed</li>\r\n<li>Drop and cover the ribber</li>\r\n<li>Work the Figure 8 Bind Off over all the needles</li>\r\n<li>Compare this method to other bind off methods ... what do you think?</li>\r\n</ol>",
+              "legacyComponentId": 1822,
+              "order": 2
+            }
+          ],
+          "title": "Figure 8  Step-By-Step",
+          "slug": "figure-8-step-by-step",
+          "order": 4,
+          "legacy": {
+            "assignId": 657,
+            "blockType": "Imageslideshow"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858966",
+              "title": "Double Bed Bind Off",
+              "legacyComponentId": 1825,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">\r\n<i class=\"fa fa-refresh fa-spin fa-2x fa-fw\"></i> Tubular Bind off for 2x2 ribbing\r\n</div>\r\nAlthough the Kitchener Bind off works best on Full Needle Rib or 1x1 ribbing, we can also use it with 2x2 ribbing.<br>\r\nThe secret is to re-arrange the needle arrangement on the last row to 1x1.<br><ol class=\"instruction-list\">\r\n<li>Knit a swatch in 2x2 ribbing - cast on with any method</li>\r\n<li>Knit for a few inches</li>\r\n<li>End with the carriage on the right</li>\r\n<li>Transfer stitches between beds, so the needles are arranged for 1x1 ribbing.</li>\r\n<li>Set your carriage for circular knitting (Slip the ribber stitches in one direction and slip the main bed stitches in the opposite direction.</li>\r\n<li>Set the carriages to a tight tension</li>\r\n<li>Knit 2 passes of the carriage</li>\r\n<li>Break the yarn, leaving a tail approx 3x the width of the knitting</li>\r\n<li>Thread up a contrasting waste yarn.</li>\r\n<li>Set the carriages to a looser tension for the scrap knitting</li>\r\n<li>Continuing to knit circular, scrap off with 1\" or so of scrap knit tubular</li>\r\n<li>Drop the work from the machine.</li>\r\n<li>Using a darning needle, use the tail to graft the stitches (Kitchener Stitch the edge)</li>\r\n\r\n</ol>\r\n",
+              "legacyComponentId": 1826,
+              "order": 2
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/kitchener1.jpg",
+                  "caption": "Transfer the stitches to an 1x1 arrangement.<br>\r\nKnit 2 circular rows<br>\r\nContinue in circular knitting, scrap off with waste yarn"
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/kitchener2.jpg",
+                  "caption": "Use the tail of yarn and following the scrap stitches, Kitchener bind off (remember the smiles and frowns)"
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/kitchener3.jpg",
+                  "caption": "This is a neat alternative to other bind off methods"
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/kitchener4.jpg",
+                  "caption": "Although not as clean as Full Needle Rib or 1x1 Kitchener bind off, it may be just what's needed for your project"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 1827,
+              "order": 3
+            }
+          ],
+          "title": "Tubular Bind Off",
+          "slug": "tubular-bind-off",
+          "order": 5,
+          "legacy": {
+            "assignId": 658,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "6. Swatching in Ribbing",
+      "slug": "6-swatching-in-ribbing",
+      "displayOrder": 55,
+      "legacy": {
+        "itemId": 134,
+        "lessonOrder": 55
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859184",
+              "title": "Swatching on the Double Bed",
+              "legacyComponentId": 1759,
+              "order": 1
+            }
+          ],
+          "title": "Swatching in Ribbing",
+          "slug": "swatching-in-ribbing",
+          "order": 2,
+          "legacy": {
+            "assignId": 610,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Measuring gauge for ribbing can be tricky.<br>What's the gauge for this swatch?<br>The images below indicate 3 different gauges:<br>13.33 sts / 9.25 rows ?<br>\r\n9.99 sts / 9.25 rows ?<br>\r\n5.51 sts / 10 rows ? <br>How much ease do you want? For hats you want then tight enough to stay on the head. For sweaters, it depends on how curvy you want to look.<br>\r\nMake a large enough swatch to get a feel for the stretch of the swatch (and consider the of your yarn) and determine how much ease you want.",
+              "legacyComponentId": 1760,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/18/2x2Ribbing/ribswatch1.jpg",
+                  "caption": "By the nature of knit and purl stitches, right off the machine ribbing pulls in quite a bit.  This swatch is 40 sts and 60 rows between the markers. <br><br>\r\nMeasured without any blocking per inch:<br>\r\n13.33 sts / 9.25 rows"
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2Ribbing/ribswatch2.jpg",
+                  "caption": "Blocked, (but still retaining some rib stretch), the same swatch measures:<br><br>\r\n8.88 sts / 9.25 rows<br><br>\r\nIn my opinion, this would be comfortable for a hat and perfect (and sexy) for my slim daughter-in-law."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2Ribbing/ribswatch3.jpg",
+                  "caption": "Blocked almost to the max (very little stretch), the same swatch measures:<br><br>\r\n5.5 sts / 10 rows<br>Notice how the row gauge also changed."
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 1761,
+              "order": 2
+            }
+          ],
+          "title": "Measuring Ribbing Gauge?",
+          "slug": "measuring-ribbing-gauge",
+          "order": 3,
+          "legacy": {
+            "assignId": 611,
+            "blockType": "Imageslideshow"
+          }
+        }
+      ]
+    },
+    {
+      "title": "7. Bonus challenge",
+      "slug": "7-bonus-challenge",
+      "displayOrder": 100,
+      "legacy": {
+        "itemId": 115,
+        "lessonOrder": 100
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/corregated_rib1.jpg",
+                  "caption": "Why should hand knitters have all the fun?  This technique takes some work ... but it is well worth the effort!"
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/corregated_rib2.jpg",
+                  "caption": "Both public and private sides are interesting."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/corregated_rib3.jpg",
+                  "caption": "The private side is pretty enough to stand alone.  Reversible fabric anyone?"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 1694,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<nbsp;>",
+              "legacyComponentId": 1695,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "499",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 1696,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859818",
+              "title": "Corrugated Rib on the Machine",
+              "legacyComponentId": 1501,
+              "order": 4
+            }
+          ],
+          "title": "2 Color Corrugated Ribbing",
+          "slug": "2-color-corrugated-ribbing",
+          "order": 1,
+          "legacy": {
+            "assignId": 499,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> Before starting, please make sure you understand how to set your carriages to slip. The basis of this exercise is to knit on one bed at a time.<br>",
+              "legacyComponentId": 1747,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<ol class=\"instruction-list\">\r\n\r\n<li>Using your <mark>main color</mark>, cast on for 2x2 ribbing with any method</li>\r\n<li>When cast on is complete, knit 2 rows in main color (teal)</li>\r\n<li>Set both main bed and ribber to slip in both directions<br><b>First Sequence:</b></li>\r\n<li>* Pull the ribber stitches out (so they will knit). The main bed stitches remain in working position and will slip</li>\r\n<li>Thread carriage with <mark>contrasting color</mark> yarn (white)</li>\r\n<li>Knit across *</li>\r\n<li>Repeat from * to * 4 times (knit 4 rows on ribber only)</li>\r\n<li>Transfer all the ribber stitches to the main bed <br><b>Second Sequence:</b></li>\r\n<li>*Pull out the main bed needles. <em>(Keep the transferred Rib stitches in working position so they will slip.)</em></li>\r\n<li>With the<mark>main color</mark> (teal), knit the main bed stitches*</li>\r\n<li>Repeat from * to * 4 times.<br><b>Third Sequence:</b></li>\r\n<li>Transfer the ribber stitches (white) to the ribber</li>\r\n<li>With the <mark>contrasting color</mark> (white), knit 4 rows on the ribber only as before</li>\r\n<li>Transfer the ribber stitches back to the main bed</li>\r\n<li>Keep repeating these sequences until you have the desired length</li>\r\n</ol><br><i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> LOST? CONFUSED?\r\n\r\n\r\n\r\n\r\n\r\n</ol>",
+              "legacyComponentId": 1746,
+              "order": 3
+            }
+          ],
+          "title": "Try it Yourself",
+          "slug": "try-it-yourself",
+          "order": 2,
+          "legacy": {
+            "assignId": 606,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "6. Messy Bun Hat Project",
+      "slug": "6-messy-bun-hat-project",
+      "displayOrder": 100,
+      "legacy": {
+        "itemId": 125,
+        "lessonOrder": 100
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Also called a \"Ponytail\" Hat, this hat not only keeps your ears warm, but helps keep your hair under control. <em><small> (Our model, Elsa could use some hair control)</small></em><br>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/18/2x2ribbing/messy_elsa.jpg\">\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/18/2x2ribbing/messy_bun_diagram.jpg\">\r\n\r\n\r\n",
+              "legacyComponentId": 1699,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: rectangle_Tool.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "584",
+                "CHALLENGE_COMPONENTID": "1741",
+                "CUSTOMCFM": "rectangle_Tool.cfm"
+              },
+              "legacyComponentId": 1741,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "\r\n<div class=\"lead\">\r\n\r\n<i class=\"fa fa-refresh\"></i> Messy Bun Hat</div>\r\n\r\n\r\n\r\n<ol class=\"instruction-list\">\r\n<li>Enter your gauge and the dimensions for your hat</li>\r\n<li>Click \"Create Instructions\"</li>\r\n<li>Using the math shown, cast on and knit the required number of stitches for your size.</li>\r\n<li>Bind off loosely</li>\r\n<li>Neatly seam the edges and hide ends.</li>\r\n\r\n</ol>",
+              "legacyComponentId": 1742,
+              "order": 3
+            }
+          ],
+          "title": "Knit a Messy Bun Hat",
+          "slug": "knit-a-messy-bun-hat",
+          "order": 1,
+          "legacy": {
+            "assignId": 584,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Bonus",
+      "slug": "bonus",
+      "displayOrder": 500,
+      "legacy": {
+        "itemId": 137,
+        "lessonOrder": 500
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "256341635",
+              "title": "2x2 Ribbed Lace",
+              "legacyComponentId": 1929,
+              "order": 1
+            }
+          ],
+          "title": "2x2 \"Lace\"",
+          "slug": "2x2-lace",
+          "order": 1,
+          "legacy": {
+            "assignId": 703,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "There is no law that says ribbing has to be worked across the entire needlebed.  Here are some inspiration samples for you to try.\r\n",
+              "legacyComponentId": 1932,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/flipbook/20180311_081856.jpg",
+                  "caption": "Transfer stitches from one bed to the other on alternating rows creates a graphic diagonal design."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/flipbook/20180311_082037.jpg",
+                  "caption": "Transfer every 2 rows - shown from the knit side."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/flipbook/20180311_082046.jpg",
+                  "caption": "Transfer every 2 rows - shown from the knit side. The sample is in acrylic yarn and steamed heavily to lay flat."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/flipbook/20180311_082123.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/flipbook/20180311_082136.jpg",
+                  "caption": "Transfer every 4th row - shown from the knit side."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/flipbook/20180311_082147.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/flipbook/20180311_082200.jpg",
+                  "caption": "Transfer every 4th row shown from the purl side ... beautiful!"
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/flipbook/20180311_082209.jpg",
+                  "caption": "Which do you prefer, the knit side or the purl side?"
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/flipbook/20180311_082223.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/flipbook/20180311_082227.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/flipbook/20180311_082254.jpg",
+                  "caption": "What about working a bit of vertical ribbing along the front edge of a cardigan? No extra band needed.   This is shown from the purl side.  Notice how there are 4 knit stitches curling away from you on the edge.  A very nice finish!"
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/flipbook/20180311_082259.jpg",
+                  "caption": "Maybe working a bit of ribbing along both edges for a scarf with plain stockinette in the middle?"
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/flipbook/20180311_082309.jpg",
+                  "caption": "Edge ribbing shown from the knit side.  Notice the 4 edge stitches are curling to the knit side ... hmmmm... plan ahead to position the edge stitches correctly based on which side you choose to be public or private."
+                },
+                {
+                  "src": "/challenge/images/v2/18/2x2ribbing/flipbook/20180311_082323.jpg",
+                  "caption": null
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 1931,
+              "order": 2
+            }
+          ],
+          "title": "Partial Bed Ribbing",
+          "slug": "partial-bed-ribbing",
+          "order": 1,
+          "legacy": {
+            "assignId": 705,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<div class=\"col-12-xs\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/18/2x2ribbing/flipbook/diagonal_transfer1.jpg\"></div>\r\n<div class=\"col-12-xs\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/18/2x2ribbing/flipbook/diagonal_transfer2.jpg\"></div>\r\n\r\n",
+              "legacyComponentId": 1933,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<em>NOTE: Any time you are working partial bed ribbing, keep a consistent weight on your work.  Ribber hanger and weights, or claw weights to keep the stitches in place to knit properly.</em>\r\n<br><ol class=\"instruction-list\">\r\n    <li>\r\n           <ol class=\"instruction-nolist\">\r\n           <li>Cast on for 2x2 ribbing with the method of your choice</li>\r\n          <li>Knit for 2-3\" in 2x2 rib</li>\r\n           <li>Working from the right side of the bed, transfer the outermost 2 ribber stitches to the main bed</li>\r\n           <li>Knit 2 rows</li>\r\n                <li>Continue transferring 2 ribber stitches on the right to the main bed and knit 2 rows between transfers</li>\r\n             <li>Bind off</li>\r\n         </ol>\r\n  </li>\r\n<li>\r\n         <ol class=\"instruction-nolist\">\r\n        <li>Cast on for 2x2 ribbing with the method of your choice</li>\r\n           <li>Knit for 2-3\" in 2x2 rib</li>\r\n        <li>Working from the right side of the bed, transfer the outermost 2 ribber stitches to the main bed  <b>AND</b> 2 stitches from the left side of the bed to the main bed</li>\r\n           <li>Knit 4 rows</li>\r\n           <li>Continue transferring 2 ribber stitches on the right <b>AND</b>2 ribber stitches on the left to the main bed and knit 4 rows between transfers</li>\r\n<li>Continue until all needles are on the main bed</li>\r\n<li>Knit for 2-3\"</li>\r\n<li>Beginning at the center, transfer 2 stitches from the main bed to the ribber</li>\r\n<li>Maintaining the 2x2 needle setup, continue to transfer stitches from the main bed to the ribber to create a decorative diagonal pattern</li>\r\n</ol>\r\n</li>\r\n</ol>",
+              "legacyComponentId": 1934,
+              "order": 2
+            }
+          ],
+          "title": "Challenges",
+          "slug": "challenges",
+          "order": 2,
+          "legacy": {
+            "assignId": 706,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "849757905",
+              "title": "Ribbing Turning Row",
+              "legacyComponentId": 9522,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "Transfer stitches to create a crisp fold when doubling your ribbing.",
+              "legacyComponentId": 9523,
+              "order": 2
+            }
+          ],
+          "title": "Ribbing Turning Row",
+          "slug": "ribbing-turning-row",
+          "order": 3,
+          "legacy": {
+            "assignId": 6217,
+            "blockType": "Video"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 20,
+    "videos": [
+      {
+        "vimeoId": "221120492",
+        "title": "Machine Knitting Courses",
+        "lessonSlug": "1-dust-off-your-ribber",
+        "blockSlug": "new-to-knit-it-now-courses"
+      },
+      {
+        "vimeoId": "151859429",
+        "title": "Setting Up Your Ribber",
+        "lessonSlug": "2-basic-terms-and-concepts",
+        "blockSlug": "setting-up-your-ribber"
+      },
+      {
+        "vimeoId": "151859701",
+        "title": "Ribber: Full vs Half Pitch",
+        "lessonSlug": "2-basic-terms-and-concepts",
+        "blockSlug": "full-pitch-vs-half-pitch"
+      },
+      {
+        "vimeoId": "151859491",
+        "title": "Transfer without a Double Eye Needle",
+        "lessonSlug": "2-basic-terms-and-concepts",
+        "blockSlug": "transfer-without-a-double-eye-needle"
+      },
+      {
+        "vimeoId": "151858404",
+        "title": "Hand Knit Ribbing with Machine Knitting",
+        "lessonSlug": "2-basic-terms-and-concepts",
+        "blockSlug": "combine-hand-knitting"
+      },
+      {
+        "vimeoId": "151857723",
+        "title": "Seaming Ribbing - Plan Ahead!",
+        "lessonSlug": "2-basic-terms-and-concepts",
+        "blockSlug": "seaming-tips"
+      },
+      {
+        "vimeoId": "151859199",
+        "title": "Ribber Cast On Comb for Single Bed Knitting",
+        "lessonSlug": "2-basic-terms-and-concepts",
+        "blockSlug": "ribber-cast-on-comb"
+      },
+      {
+        "vimeoId": "151859192",
+        "title": "Ribber Weights on the Floor?",
+        "lessonSlug": "2-basic-terms-and-concepts",
+        "blockSlug": "ribber-weights-on-the-floor"
+      },
+      {
+        "vimeoId": "255815629",
+        "title": "1x1 Rib Cast on Refresher",
+        "lessonSlug": "2-basic-terms-and-concepts",
+        "blockSlug": "1x1-cast-on-refresher"
+      },
+      {
+        "vimeoId": "151858586",
+        "title": "Easiest, Best Ribber Cast On",
+        "lessonSlug": "3-easiest-cast-on-ever",
+        "blockSlug": "no-brain-cells-needed"
+      },
+      {
+        "vimeoId": "151859224",
+        "title": "2x2 Ribbing Cast On",
+        "lessonSlug": "4-2x2-basic-cast-on",
+        "blockSlug": "2x2-ribbing-cast-on"
+      },
+      {
+        "vimeoId": "151859346",
+        "title": "2x2 Half Pitch Rib Cast On",
+        "lessonSlug": "4-2x2-basic-cast-on",
+        "blockSlug": "2x2-2x1-half-pitch-cast-on"
+      },
+      {
+        "vimeoId": "151857401",
+        "title": "Easy Ribber Bind Off",
+        "lessonSlug": "5-binding-off",
+        "blockSlug": "easy-bind-off"
+      },
+      {
+        "vimeoId": "151858299",
+        "title": "Stretchiest Bind Off Ever!",
+        "lessonSlug": "5-binding-off",
+        "blockSlug": "stretchy-sewn-bind-off"
+      },
+      {
+        "vimeoId": "258782290",
+        "title": "Figure 8 Bind Off",
+        "lessonSlug": "5-binding-off",
+        "blockSlug": "figure-8-bind-off"
+      },
+      {
+        "vimeoId": "151858966",
+        "title": "Double Bed Bind Off",
+        "lessonSlug": "5-binding-off",
+        "blockSlug": "tubular-bind-off"
+      },
+      {
+        "vimeoId": "151859184",
+        "title": "Swatching on the Double Bed",
+        "lessonSlug": "6-swatching-in-ribbing",
+        "blockSlug": "swatching-in-ribbing"
+      },
+      {
+        "vimeoId": "151859818",
+        "title": "Corrugated Rib on the Machine",
+        "lessonSlug": "7-bonus-challenge",
+        "blockSlug": "2-color-corrugated-ribbing"
+      },
+      {
+        "vimeoId": "256341635",
+        "title": "2x2 Ribbed Lace",
+        "lessonSlug": "bonus",
+        "blockSlug": "2x2-lace"
+      },
+      {
+        "vimeoId": "849757905",
+        "title": "Ribbing Turning Row",
+        "lessonSlug": "bonus",
+        "blockSlug": "ribbing-turning-row"
+      }
+    ],
+    "downloadCount": 1,
+    "downloads": [
+      {
+        "filename": "/downloads/2x2_checklist3.pdf",
+        "label": "Don't miss a step! Download and print a checklist",
+        "lessonSlug": "4-2x2-basic-cast-on",
+        "blockSlug": "step-by-step-cheatsheet"
+      }
+    ]
+  }
+}

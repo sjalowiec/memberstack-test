@@ -325,6 +325,18 @@ describe("saveCourseMetadata contentStatus", () => {
       });
     }
   });
+
+  it("writes catalog description to course JSON", () => {
+    const before = readCourseContentFile(66).course.description;
+    const sample = "Catalog blurb for admin save test.";
+    try {
+      const result = saveCourseMetadata(66, { description: sample });
+      expect(result.description).toBe(sample);
+      expect(readCourseContentFile(66).course.description).toBe(sample);
+    } finally {
+      saveCourseMetadata(66, { description: before ?? null });
+    }
+  });
 });
 
 describe("readCourseContentFile discovery", () => {

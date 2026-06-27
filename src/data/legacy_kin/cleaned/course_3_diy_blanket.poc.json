@@ -1,0 +1,1821 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 3,
+    "title": "DIY Blanket",
+    "slug": "diy-blanket",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_3_diy_blanket.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:08+00:00"
+    },
+    "thumbnail": "/images/courses/blanket.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Hello, {First}! Welcome to the DIY Blanket Course",
+      "slug": "hello-first-welcome-to-the-diy-blanket-course",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 11,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">Welcome, {First}!</div>\r\nMaking blankets is one of the more satisfying things we can do with our knitting machine.  Who doesn't love a knitted blanket?  They are great for gifts, they keep babies warm and snugly and are great for charity knitting.<br>\r\nAs machine knitters, blankets allow us to try new techniques, play with yarn and stitch patterns. They offer an opportunity for us to gain confidence in our knitting.\r\n<blockquote class=\"smallblock\">\r\nAlthough blankets are \"just rectangles\", a little planning can go a long way!\r\n<ul class=”Instruction-list”>\r\n<li>Have you ever started a project unsure if you have enough yarn?</li>\r\n<li>Why guess at how many stitches to cast on?</li>\r\n<li>Want to create something that you will be proud of... good enough to enter in the fair?</li>\r\n</ul>\r\n</blockquote>\r\nThis course will walk you through all the planning steps. It shows techniques that may be new to you and helps you record your progress.<br>If this is your first blanket or your tenth, follow along, the skills you gain here will be invaluable for future knitting projects .. not just blankets!\r\n<blockquote class=\"smallblock\">\r\nIf you are new here, the next lesson will help you learn to navigate this course so you can get the most benefit from the material that is included.\r\n</blockquote>",
+              "legacyComponentId": 431,
+              "order": 1
+            }
+          ],
+          "title": "Start Here",
+          "slug": "start-here",
+          "order": 1,
+          "legacy": {
+            "assignId": 48,
+            "blockType": "Questions"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The video will walk you through how to access the lessons and navigate to get the most out of your course.<br /> Don't skip lessons ... you may feel that you know how to cast on ... but sometimes you will pick up a tip that you can use while watching a video.<br><blockquote class=\"smallblock\"><em>Another reason to follow the course material in order - Throughout the lessons, you'll be making decisions about your blanket.  We will record your decisions to create your custom pattern.</em></blockquote>\r\n",
+              "legacyComponentId": 533,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "221120492",
+              "title": "Machine Knitting Courses",
+              "legacyComponentId": 534,
+              "order": 2
+            }
+          ],
+          "title": "How to use this course site",
+          "slug": "how-to-use-this-course-site",
+          "order": 2,
+          "legacy": {
+            "assignId": 186,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Lesson 1: Plan your project",
+      "slug": "lesson-1-plan-your-project",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 9,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Selectsize",
+              "notes": [
+                "Unmapped legacy component type: Selectsize"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "51",
+                "CHALLENGE_COMPONENTID": "160",
+                "DATAMODEL_ELEMENT": "Blanket_size",
+                "DATAMODEL_REQEST_TEXT": "<i class=",
+                "DATAMODEL_VALIDATION_MESSAGE": "Choose your size",
+                "SIZINGTYPEID": "19"
+              },
+              "legacyComponentId": 160,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"table-responsive\">\r\n<table class=\"table table-bordered table-condensed\" align=\"center\">\r\n<tbody class=\"small\">\r\n<tr>\r\n<th>Small Preemie</th>\r\n<th>Large Preemie</th>\r\n<th>Bassinet</th>\r\n<th>Cradle</th>\r\n<th>Crib</th>\r\n<th>Toddler or Lapghan</th>\r\n<th>Child</th>\r\n<th>Standard Throw</th>\r\n<th>Adult Throw</th>\r\n</tr>\r\n<tr>\r\n<td>24x24\"</td>\r\n<td>36x36\"</td>\r\n<td>16x36\"</td>\r\n<td>20x36\"</td>\r\n<td>30x54\"</td>\r\n<td>36x48\"</td>\r\n<td>42x48\"</td>\r\n<td>48x60\"</td>\r\n<td>48x72\"</td>\r\n</tr>\r\n<tr>\r\n<td><em>60x60 cm</em></td>\r\n<td><em>90x90 cm</em></td>\r\n<td><em>40x90</em></td>\r\n<td><em>50x90</em></td>\r\n<td><em>76x137cm</em></td>\r\n<td><em>90x122cm</em></td>\r\n<td><em>106x122cm</em></td>\r\n<td><em>122x152cm</em></td>\r\n<td><em>122x198cm</em></td>\r\n</tr>\r\n</tbody>\r\n</table>\r\n</div>",
+              "legacyComponentId": 247,
+              "order": 4
+            },
+            {
+              "type": "richText",
+              "html": "<b>TIP:</b><br>\r\nFor this course, plan to knit a standard size blanket. With the skills you learn here, you'll be able to create any size square or rectangle. Think poncho, prayer shawls, scarves .... any rectangle!",
+              "legacyComponentId": 432,
+              "order": 5
+            }
+          ],
+          "title": "Step 1: Plan your project",
+          "slug": "step-1-plan-your-project",
+          "order": 1,
+          "legacy": {
+            "assignId": 51,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "For success in machine knitting, using the appropriate yarn for your machine is critical.<br>Also consider the care of the finished blanket.  You may be looking to make an heirloom christening blanket and want to use an exquisite natural fiber.  More than likely you want to knit a hard wearing, easy care blanket. Consider the recipient when you make your yarn choice.<br><blockquote class=\"smallblock\"><b>TIP:</b><br><em>If your blanket will be a gift, you may want to include a note with the fiber content of the yarn used and suggested care instructions.</em></blockquote>",
+              "legacyComponentId": 433,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858444",
+              "title": "Yarns for Machine Knitting",
+              "legacyComponentId": 131,
+              "order": 3
+            }
+          ],
+          "title": "Step 2: What yarn will you use?",
+          "slug": "step-2-what-yarn-will-you-use",
+          "order": 2,
+          "legacy": {
+            "assignId": 52,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Knitting your blanket is the easy part.  What will make (or break) your blanket are the edges. There are many, many cast on and bind off methods.  Let's take a look at three techniques, based on how you are going to finish the edges. <br>\r\n<table class=\"table table-bordered table-condensed\">\r\n<thead class=\"small\">\r\n<tr>\r\n<td><strong>Cast On Method</strong></td>\r\n<td><strong>Notes</strong></td>\r\n</tr>\r\n</thead>\r\n<tbody>\r\n<tr>\r\n<td>E-Wrap </td>\r\n<td>Stretchy and fast.  Good with a crochet edge finish</td>\r\n</tr>\r\n<tr>\r\n<td>Chain </td>\r\n<td>Depending on your yarn and stitch pattern, you may not need any other finish. Be sure to cast on loosely so the edge isn't tight.</td>\r\n</tr>\r\n<tr>\r\n<td>Open </td>\r\n<td>Leave \"live\" stitches to pickup later. This works well if you are going to pick up your blanket edges with a hand knitting needle and knit a border by hand.</td>\r\n</tr>\r\n</tbody>\r\n</table>\r\n",
+              "legacyComponentId": 434,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860058",
+              "title": "E-Wrap Cast On",
+              "legacySlot": 1,
+              "legacyComponentId": 157,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860053",
+              "title": "Chain Cast On",
+              "legacySlot": 2,
+              "legacyComponentId": 157,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357365",
+              "title": "Open Cast On",
+              "legacySlot": 3,
+              "legacyComponentId": 157,
+              "order": 2
+            }
+          ],
+          "title": "Step 3: Casting On (don't skip this!)",
+          "slug": "step-3-casting-on-don-t-skip-this",
+          "order": 3,
+          "legacy": {
+            "assignId": 106,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "If you aren't going to add a knitted or crochet border to your blanket, you may want to match your bind off edge to the cast on edge. <br>\r\n<blockquote class=\"smallblock\"><b>TIP:</b> <em>This is something to consider when knitting scarves.</em></blockquote>\r\n\r\n\r\n\r\n<table class=\"table table-bordered table-condensed\">\r\n<tbody class=\"small\">\r\n<tr>\r\n<td><strong>Cast On Method</strong></td>\r\n<td><strong>Similar Bind Off Method</strong></td>\r\n</tr>\r\n<tr>\r\n<td>E-Wrap </td>\r\n<td>Sewn Bind Off (Backstitch)</td>\r\n</tr>\r\n<tr>\r\n<td>Chain </td>\r\n<td>Stitch thru Stitch </td>\r\n</tr>\r\n<tr>\r\n<td>Open </td>\r\n<td>Scrap off with waste yarn</td>\r\n</tr>\r\n</tbody>\r\n</table>\r\n\r\n               \r\n",
+              "legacyComponentId": 435,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858299",
+              "title": "Sewn (backstitch) Bind off",
+              "legacySlot": 1,
+              "legacyComponentId": 161,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858975",
+              "title": "Scrap Off",
+              "legacySlot": 2,
+              "legacyComponentId": 161,
+              "order": 2
+            }
+          ],
+          "title": "Step 4: Bind Off to Match Cast On",
+          "slug": "step-4-bind-off-to-match-cast-on",
+          "order": 4,
+          "legacy": {
+            "assignId": 107,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Take time to practice some cast on  and bind off combinations. Use scrap yarn appropriate for your machine.\r\n<br><b>Don't skip this step!</b>  Practice a technique that you've never used before.  You will use these swatches to experiment with borders and finishing.<br><small>Instructions are for <em>standard gauge (mid/bulky gauge).</em></small>",
+              "legacyComponentId": 248,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"container\">\r\n<div class=\"lead\"><i class='fa fa-refresh' aria-hidden='true'></i> Practice 1</div>\r\n<ol class=\"instruction-list\">\r\n<li><b>E-wrap cast on</b> 40<em>(20)</em> stitches</li>\r\n<li>Knit 20 rows</li>\r\n<li>Bind off (loosely) with the <b>Back Stitch Bind Off</b> method</li>\r\n</ol>\r\n</div>\r\n\r\n",
+              "legacyComponentId": 141,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"container\">\r\n<div class=\"lead\"><i class='fa fa-refresh' aria-hidden='true'></i> Practice 2</div>\r\n<ol class=\"instruction-list\">\r\n<li><b>Chain Cast On</b> over 40<em>(20)</em> stitches</li>\r\n<li>Knit 20 rows</li>\r\n<li>Bind off (loosely) with the <b>Stitch-thru-Stitch</b> method</li>\r\n</ol>\r\n</div>\r\n",
+              "legacyComponentId": 252,
+              "order": 6
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "practice_co_BO",
+                "BUTTONLABLE": "Share photos of your samples</small>",
+                "CHALLENGE_ASSIGNID": "108",
+                "CHALLENGE_COMPONENTID": "138",
+                "QTY": "2",
+                "SUCCESSMESSAGE": "Looking good!  Keep going!"
+              },
+              "legacyComponentId": 138,
+              "order": 10
+            }
+          ],
+          "title": "Step 5: Cast on and Bind Off Practice",
+          "slug": "step-5-cast-on-and-bind-off-practice",
+          "order": 5,
+          "legacy": {
+            "assignId": 108,
+            "blockType": "Practice"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Lesson 2: Decisions, Decisions, Decisions",
+      "slug": "lesson-2-decisions-decisions-decisions",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 20,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<smallblock><b>TIP:</b><br><em> As you are knitting practice swatches, also practice turning the work.  This skill is essential for machine knitters.  Gain confidence in adding a bit of garter stitch or purl rows as turning rows as you are creating swatches.</em></blockquote>",
+              "legacyComponentId": 436,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "169016269",
+              "title": "Remove, Turn and Rehang",
+              "legacySlot": 1,
+              "legacyComponentId": 162,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859654",
+              "title": "Using a Garter Bar",
+              "legacySlot": 2,
+              "legacyComponentId": 162,
+              "order": 2
+            }
+          ],
+          "title": "Step 1: Add Texture",
+          "slug": "step-1-add-texture",
+          "order": 5,
+          "legacy": {
+            "assignId": 97,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The fun part of knitting blankets is the finishing.  We have SO MANY choices!<br><ul>\r\n<li>If you crochet, there are unlimited possibilities</li>\r\n<li>If you hand knit there are also a wide range of techniques</li>\r\n<li>Machine knit borders can be fun and FAST!</li>\r\n</ol><br>Adding I-cord edges to blankets is a long-time favorite.  Let's look at some variations.",
+              "legacyComponentId": 437,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857129",
+              "title": "I-Cord Trims",
+              "legacySlot": 1,
+              "legacyComponentId": 163,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151856550",
+              "title": "Knitting I-Cord",
+              "legacySlot": 2,
+              "legacyComponentId": 163,
+              "order": 2
+            }
+          ],
+          "title": "Step 2: Finishing Options",
+          "slug": "step-2-finishing-options",
+          "order": 6,
+          "legacy": {
+            "assignId": 96,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Use one of your swatches and try your choice of finishing technique<br>Better to practice and master a technique on a swatch (with no pressure) than be stressed when finishing your Course Blanket.",
+              "legacyComponentId": 438,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "Finishing_photo",
+                "BUTTONLABLE": "Share Photos of your Practice Swatches",
+                "CHALLENGE_ASSIGNID": "102",
+                "CHALLENGE_COMPONENTID": "103",
+                "QTY": "2",
+                "SUCCESSMESSAGE": "Looking good!  Keep going!"
+              },
+              "legacyComponentId": 103,
+              "order": 3
+            }
+          ],
+          "title": "Step 3: Practice - Finishing",
+          "slug": "step-3-practice-finishing",
+          "order": 7,
+          "legacy": {
+            "assignId": 102,
+            "blockType": "Practice"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Lesson 3: Swatching is NOT optional",
+      "slug": "lesson-3-swatching-is-not-optional",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 12,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<strong>You are making progress!</strong> ... we've spent a lot of time planning, practicing and thinking about knitting ... are you ready to do some \"real knitting\"?<br><strong>DON'T SKIP THIS SECTION!</strong> <br>Your success with this course AND your success with your knitting machine depends on your understanding and mastering the art of knitting gauge swatches.<br>Without a swatch we are knitting in the dark.\r\n<ul>\r\n<li>How is the final sweater going to feel in the yarn and stitch pattern you've chosen?</li>\r\n<li>Do you have enough yarn?</li>\r\n<li>Do you have enough needles on your machine for the size you chose?</li>\r\n</ul>\r\n\r\n\r\n<div class=\"text-center\">\r\n<p style=\"text-align: center;\"><strong>SWATCHING IS NOT OPTIONAL</strong></p>\r\n<img class=\"img-thumbnail\" src=\"https://www.knititnow.com/images/blog_images/2017/swatching_is_not_optional.jpg\" /></div>\r\n",
+              "legacyComponentId": 439,
+              "order": 1
+            }
+          ],
+          "title": "Step 1: Your Success Depends on this",
+          "slug": "step-1-your-success-depends-on-this",
+          "order": 1,
+          "legacy": {
+            "assignId": 89,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\"><b>If you haven't used your chosen yarn before, how do you know the best tension to knit your blanket? </div></b>\r\n\r\nKnitters tend to use the terms \"tension swatch\" and \"gauge swatch\" interchangeably, lets take a look at both.",
+              "legacyComponentId": 440,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"cleanwell\">\r\n\r\n<h4><strong>GAUGE SWATCH</strong></h4>\r\nThe <strong>gauge swatch</strong> is the \"official\" swatch used when designing a garment.\r\n<br>\r\nIt is knit at a specific size, marked for accurate stitch and row measurement and \"dressed\" as the final garment will be treated.<br>\r\n<blockquote class=\"smallblock\">\r\n<em>TIP: Whatever method you use to create a swatch, the key is to correctly measure it and calculate your gauge.</em></blockquote>\r\n<img src=\"/challenge/images/v2/3/swatch_measure.jpg\" />\r\n</div>",
+              "legacyComponentId": 156,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"cleanwell\">\r\n\r\n<h4><strong>TENSION SWATCH</strong></h4>\r\n<em>When I pick up a new cone of yarn, I can't wait to thread up my machine and see what the yarn looks like.   From the initial cast on, I start guessing what setting on my tension dial I need to use.  I knit a few inches and reach down and start to feel the resulting fabric. <br>Once I get a feel for the yarn (what machine, general tension setting at stockinette, etc) I create a<strong> tension swatch</strong>.  This helps me fine-tune the tension needed to achieve the fabric I like and allows me to play with various techniques.  <strong>I'm often very surprised that a yarn looks great in tuck, and awful in slip</strong>, for example.  Adding a few eyelets here and there tells me if the yarn will work up in lace.</em><br>Let's practice knitting a <strong>tension swatch.</strong>\r\n</div>",
+              "legacyComponentId": 258,
+              "order": 5
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<ol class=\"instruction-list\">\r\n<li>Play!</li>\r\n<li>Start knitting stockenette at the tightest tension that will knit.  (If the tension is too tight, you'll see stitches that don't form properly.</li>\r\n<li>Knit 2-4 inches. Knit a marker row (change colors, work a few eyelets across the row or knit a sewing thread in with the main yarn)</li>\r\n<li>Keep knitting sections, marking the tension dial number in each section.  Knit the last section as loosely as possiblle, even if you think this will be too loose ... I'm often very pleasantly surprised at the result.</li>\r\n<li>Transfer every other needle to out of work postion and knit a section - put all needles back into work.</li>\r\n<li>Work a simple tuck, or slip, or any stitch pattern of your choice ... base your tension dial setting on the stockinette sections you just knit.</li>\r\n</ol>\r\n<blockquote class=\"smallblock\">The point of this exercise is to put the yarn through it's paces ... ignite your creativity, and get a feel for what the yarn can do.  If you don't have a huge cone, you can always re-wind this knitting. At this point, you probably know exactly what you want to do with this yarn.  Knit your Gauge Swatch, dress it and and you are ready to design and knit your sweater.</blockquote>\r\n\r\n<img src=\"/challenge/images/v2/3/tension_swatch.jpg\" />\r\n\r\n",
+              "legacyComponentId": 259,
+              "order": 7
+            }
+          ],
+          "title": "Step 2: Gauge swatch verses Tension Swatch",
+          "slug": "step-2-gauge-swatch-verses-tension-swatch",
+          "order": 3,
+          "legacy": {
+            "assignId": 58,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Hand knitters use the excuse \"It takes too much time to knit a swatch\", then they are often disappointed that their knitting doesn't fit.<br>\r\n<b>Machine knitters, rejoice!</b>  Knitting a swatch is fast and the information it supplies is invaluable ...even for something as simple as a blanket.",
+              "legacyComponentId": 441,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357273",
+              "title": null,
+              "legacyComponentId": 155,
+              "order": 2
+            }
+          ],
+          "title": "Step 3: Knitting swatches",
+          "slug": "step-3-knitting-swatches",
+          "order": 4,
+          "legacy": {
+            "assignId": 59,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<div class=\"lead\">Time to get knitting!</div>\r\n<ol class=\"Instruction-list\">\r\n<li>Knit a swatch using any method.</li>\r\n<li>Let it rest</li>\r\n<li>Dress the swatch (treat it as you will treat your blanket)</li>\r\n<li>Accurately measure YOUR stitch and row gauge</li>\r\n<li>Record your gauge below</li>\r\n</ol>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/3/2hr/swatch_example.jpg\" /><br />Does your swatch look similar to this one?\r\n\r\n",
+              "legacyComponentId": 263,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "85",
+                "CHALLENGE_COMPONENTID": "223",
+                "DATAMODEL_ELEMENT": "stitchgauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": " <b>What is your stitch gauge? <small>(4 in/10cm)</small></b>",
+                "DATAMODEL_VALIDATION": "min",
+                "DATAMODEL_VALIDATION_EXTRA": "12",
+                "DATAMODEL_VALIDATION_MESSAGE": "Enter gauge for 4 in /10 cm",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 223,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "85",
+                "CHALLENGE_COMPONENTID": "224",
+                "DATAMODEL_ELEMENT": "rowgauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "<b> What is your row gauge? <small>(4 in/10cm)</small></b>",
+                "DATAMODEL_VALIDATION": "min",
+                "DATAMODEL_VALIDATION_EXTRA": "0",
+                "DATAMODEL_VALIDATION_MESSAGE": "Enter gauge for 4 in /10 cm",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 224,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"smallblock\"><em><b>TIP:</b> attach a string tag to your swatch recording all the details ... it's funny how easy it is to forget. Include yarn name, machine, tension, measurements, and stitch pattern number (if appropriate)</em></blockquote>",
+              "legacyComponentId": 264,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "swatch",
+                "BUTTONLABLE": "Share Photos of your Swatch",
+                "CHALLENGE_ASSIGNID": "85",
+                "CHALLENGE_COMPONENTID": "71",
+                "QTY": "1",
+                "SUCCESSMESSAGE": "Looks great!"
+              },
+              "legacyComponentId": 71,
+              "order": 5
+            }
+          ],
+          "title": "Step 4: Your turn ... Get Knitting",
+          "slug": "step-4-your-turn-get-knitting",
+          "order": 5,
+          "legacy": {
+            "assignId": 85,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "It is important that you know how to estimate yarn for all of your knitting projects <small>(hint: it's based on your swatch and a little math)</small>",
+              "legacyComponentId": 442,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857735",
+              "title": "How Much Yarn Do I Need?",
+              "legacyComponentId": 164,
+              "order": 2
+            }
+          ],
+          "title": "Step 5: How Much Yarn Do You Need?",
+          "slug": "step-5-how-much-yarn-do-you-need",
+          "order": 6,
+          "legacy": {
+            "assignId": 110,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/3/yarn_estimate_example.jpg\" alt=\"\" />\r\n\r\n\r\n\r\n\r\nUsing the dimensions of the sample swatch shown above,  and the instructions from the video,<br />calculate how much yarn you would need for a <strong>36x36 baby blanket.</strong>\r\n<em><small>Not sure? Take a guess and we'll show you the math</small></em>\r\n\r\n",
+              "legacyComponentId": 166,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "167",
+                "QUESTION_ANSWER": "63",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply 9 x 7 = 63</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many square inches in the sample swatch?"
+              },
+              "legacyComponentId": 167,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "168",
+                "QUESTION_ANSWER": "3.5",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Divide weight (22) / square inches (63)=.35 </b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Calculate weight per square inch <small>(round up)</small>"
+              },
+              "legacyComponentId": 168,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "169",
+                "QUESTION_ANSWER": "1296",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply 36 x 36 = 1296</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many square inches in the blanket?"
+              },
+              "legacyComponentId": 169,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "170",
+                "QUESTION_ANSWER": "454",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply the blanket square inches(1296) x multiplier (.35)= 454 grams</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many grams are needed (approximate) for the 36 x 36 inch blanket?"
+              },
+              "legacyComponentId": 170,
+              "order": 6
+            },
+            {
+              "type": "richText",
+              "html": "\r\n              Hate math?<br>Try the Knit it Now tool\r\n                <img src=\"/challenge/images/v2/3/tools/yarn_estimator_tool_sticky.gif\">\r\n\r\n\r\n",
+              "legacyComponentId": 171,
+              "order": 8
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859805",
+              "title": "Yarn Estimator Video",
+              "legacyComponentId": 173,
+              "order": 9
+            }
+          ],
+          "title": "Step 6: Practice - Yarn Estimate",
+          "slug": "step-6-practice-yarn-estimate",
+          "order": 7,
+          "legacy": {
+            "assignId": 111,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Selectsize",
+              "notes": [
+                "Unmapped legacy component type: Selectsize"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "144",
+                "CHALLENGE_COMPONENTID": "274",
+                "DATAMODEL_ELEMENT": "Blanket_size",
+                "DATAMODEL_REQEST_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Select size * <a href='/challenge/3/Group/51/item#section9'> <i class='fa fa-question-circle' aria-hidden='true'></i> </a>",
+                "SIZINGTYPEID": "19"
+              },
+              "legacyComponentId": 274,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "144",
+                "CHALLENGE_COMPONENTID": "268",
+                "DATAMODEL_ELEMENT": "your_swatch_width",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Enter YOUR swatch <B>WIDTH *</B><SMALL> (entire swatch)</SMALL>",
+                "DATAMODEL_VALIDATION_MESSAGE": "Numbers only",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 268,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "144",
+                "CHALLENGE_COMPONENTID": "269",
+                "DATAMODEL_ELEMENT": "Your_swatch_length",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Enter YOUR swatch <B>LENGTH *</B><small>(entire swatch)</small>",
+                "DATAMODEL_VALIDATION": "number",
+                "DATAMODEL_VALIDATION_EXTRA": "Numbers only",
+                "DATAMODEL_VALIDATION_MESSAGE": "Numbers only",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 269,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "144",
+                "CHALLENGE_COMPONENTID": "270",
+                "DATAMODEL_ELEMENT": "Your_swatch_weight",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Enter YOUR swatch <B>WEIGHT* </B><SMALL> (grams)</SMALL>",
+                "DATAMODEL_VALIDATION": "number",
+                "DATAMODEL_VALIDATION_MESSAGE": "Numbers only",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 270,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Equation",
+              "notes": [
+                "Unmapped legacy component type: Equation"
+              ],
+              "legacyFields": {
+                "BUTTONTEXT": "Calculate",
+                "CHALLENGE_ASSIGNID": "144",
+                "CHALLENGE_COMPONENTID": "276",
+                "CUSTOMCFM": "Blanket_YarnUsage.cfm",
+                "USEDELEMENT": "Your_swatch_length,your_swatch_width,Blanket_size_SelectionLable,Your_swatch_weight,Blanket_size"
+              },
+              "legacyComponentId": 276,
+              "order": 5
+            }
+          ],
+          "title": "Step 7: Practice - YOUR yarn needs",
+          "slug": "step-7-practice-your-yarn-needs",
+          "order": 8,
+          "legacy": {
+            "assignId": 144,
+            "blockType": "Practice"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Lesson 4: Stitch Patterns",
+      "slug": "lesson-4-stitch-patterns",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 10,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "{first},\r\nIf you are brand new to machine knitting, or are returning after a break, we encourage you to knit your  first course blanket in plain stockinette.  This will let you focus on following the course material and doing your best work with the knitting and finishing.  With a completed project under your belt, adding a stitch pattern to your blanket will add to your growing confidence with your knitting machine.<br>If you are more experienced and can't resist the beautiful stitch patterns that are available, go for it! Practice your stitch pattern first, then be sure to knit and measure a swatch in your stitch pattern. ",
+              "legacyComponentId": 443,
+              "order": 1
+            }
+          ],
+          "title": "Are you experienced / adventurous?",
+          "slug": "are-you-experienced-adventurous",
+          "order": 1,
+          "legacy": {
+            "assignId": 88,
+            "blockType": "Questions"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857799",
+              "title": "Stitch Multiples",
+              "legacyComponentId": 77,
+              "order": 3
+            }
+          ],
+          "title": "Step 1: Stitch multiples",
+          "slug": "step-1-stitch-multiples",
+          "order": 2,
+          "legacy": {
+            "assignId": 86,
+            "blockType": "VimeoMultiple"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859471",
+              "title": "Swatching in Pattern Knitting",
+              "legacyComponentId": 82,
+              "order": 1
+            }
+          ],
+          "title": "Step 2: Swatching in Pattern",
+          "slug": "step-2-swatching-in-pattern",
+          "order": 3,
+          "legacy": {
+            "assignId": 93,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<strong>GOAL:</strong> Position your stitch pattern so the repeats are attractive and complete.  This isn't critical on all stitch patterns, but it's best if you take the time to consider the overall, finished appearance of your blanket (or sweater).<br>If you choose to knit your project blanket in pattern, you will be prompted to enter your stitch multiple. Your custom pattern will take into account your stitch multiple and calculate your knitting pattern for you (no math!)<br>BUT .... It's important that you understand how to account for stitch multiples when you are machine knitting.  Let's practice!",
+              "legacyComponentId": 444,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<p style=\"text-align: left;\"><strong><span style=\"background-color: #999999;\">- - - - - - - - - - - - - - - PRACTICE - - - - - - - - - - - - - - - - -&nbsp;</span></strong><img src=\"/challenge/images/v2/3/st_row_multiple_example.jpg\" alt=\"\" width=\"427\" height=\"360\" /></p>",
+              "legacyComponentId": 110,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<ul style=\"list-style-type: square;\">\r\n<li>Stitch Gauge: 16 sts and 26 rows per 4\"/10cm<small> (4 sts / 6.5 rows = 1\")<small></small></small></li>\r\n<li>Stitch Multiple: 8 sts and 12 rows</li>\r\n<li>Blanket size: 36\" x 36\"&nbsp;</li>\r\n</ul>\r\n<p><small><em>TIP: Guess at the numbers below and we'll show you the math</em></small></p>",
+              "legacyComponentId": 240,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "92",
+                "CHALLENGE_COMPONENTID": "175",
+                "QUESTION_ANSWER": "144",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i>Multiply the stitch gauge (in inches) 4 x 36 = 144</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "How many <b>stitches</b> are needed to knit the blanket (without stitch multiples)?"
+              },
+              "legacyComponentId": 175,
+              "order": 7
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "92",
+                "CHALLENGE_COMPONENTID": "177",
+                "QUESTION_ANSWER": "144",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 144/8=18 | 144 is evenly divided 8</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "For complete pattern repeats, how many <b>stitches</b> would you cast on with this stitch pattern?<br><small>HINT: Divide the total stitches by the stitch multiple</small>"
+              },
+              "legacyComponentId": 177,
+              "order": 8
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "92",
+                "CHALLENGE_COMPONENTID": "176",
+                "QUESTION_ANSWER": "234",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply the row gauge (in inches)6.5 x 36 = 234</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "How many <b>rows</b> are needed to knit the blanket (without stitch multiples)?"
+              },
+              "legacyComponentId": 176,
+              "order": 9
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "92",
+                "CHALLENGE_COMPONENTID": "174",
+                "QUESTION_ANSWER": "228",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 234/12=19.5 Remove the decimal, 19 x 12 = 228</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "For complete pattern repeats, how many <b>rows</b> would you knit with this stitch pattern?<br><small>HINT: Divide the total rows by the row multiple</small>"
+              },
+              "legacyComponentId": 174,
+              "order": 10
+            }
+          ],
+          "title": "Step 3: Practice - Stitch Multiples",
+          "slug": "step-3-practice-stitch-multiples",
+          "order": 4,
+          "legacy": {
+            "assignId": 92,
+            "blockType": "Practice"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Lesson 5: Needlebed Limitations and Panels",
+      "slug": "lesson-5-needlebed-limitations-and-panels",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 13,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<img src=\"/challenge/images/v2/3/not_enough_needles1.jpg\" />\r\n\r\nWhen knitting wide pieces on the knitting machine, we need to get creative. Whether it's blankets or garments, often we don't have enough needles to knit the width we need.<br>Part of the planning and design process of blankets is deciding how many panels we want to knit and how to join them to make our blanket.<br><blockquote class=\"smallblock\"><b>TIP:</b><em> If needed, your custom blanket pattern will be created with 3 panels.</em></blockquote>\r\n\r\n",
+              "legacyComponentId": 200,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "\r\n<h2 style=\"text-align: center;\"><strong>What's the maximum width for your machine?</strong></h2>\r\n<div class=\"align=\"center\"><img src=\"/challenge/images/v2/3/110_needles.png\" alt=\"\" /></div>\r\n<img src=\"/challenge/images/v2/3/150_needles.png\" alt=\"\" />\r\n<img src=\"/challenge/images/v2/3/200_needles.png\" alt=\"\" />\r\n",
+              "legacyComponentId": 279,
+              "order": 4
+            }
+          ],
+          "title": "Not Enough Needles?",
+          "slug": "not-enough-needles",
+          "order": 1,
+          "legacy": {
+            "assignId": 90,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Here's a fast way to join panels as you knit. No hand seaming when you are done knitting!<br>",
+              "legacyComponentId": 445,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151856919",
+              "title": "Join (Sew) As You Go",
+              "legacyComponentId": 26,
+              "order": 3
+            }
+          ],
+          "title": "Step 1: Sew as you go",
+          "slug": "step-1-sew-as-you-go",
+          "order": 2,
+          "legacy": {
+            "assignId": 61,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The hairpin lace join is a long-time favorite.  It creates a decorative braid between the panels and is especially nice when knitting panels in contrasting colors.",
+              "legacyComponentId": 245,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151856969",
+              "title": "Hairpin Lace Seam",
+              "legacyComponentId": 27,
+              "order": 2
+            }
+          ],
+          "title": "Step 2: Hairpin lace join",
+          "slug": "step-2-hairpin-lace-join",
+          "order": 3,
+          "legacy": {
+            "assignId": 62,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Lesson 6: GET KNITTING!",
+      "slug": "lesson-6-get-knitting",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 14,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Selectsize",
+              "notes": [
+                "Unmapped legacy component type: Selectsize"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "65",
+                "CHALLENGE_COMPONENTID": "93",
+                "DATAMODEL_ELEMENT": "Blanket_size",
+                "DATAMODEL_REQEST_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Select size * <a href='/challenge/3/Group/51/item#section9'> <i class='fa fa-question-circle' aria-hidden='true'></i> </a>",
+                "DATAMODEL_VALIDATION_MESSAGE": "Choose your size",
+                "SIZINGTYPEID": "19"
+              },
+              "legacyComponentId": 93,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "65",
+                "CHALLENGE_COMPONENTID": "43",
+                "DATAMODEL_ELEMENT": "stitchgauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "Stitch Gauge * <small>(4 in/10cm)</small>",
+                "DATAMODEL_VALIDATION": "min",
+                "DATAMODEL_VALIDATION_EXTRA": "12",
+                "DATAMODEL_VALIDATION_MESSAGE": "Enter gauge for 4 in /10 cm",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 43,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "65",
+                "CHALLENGE_COMPONENTID": "44",
+                "DATAMODEL_ELEMENT": "rowgauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "Row Gauge * <small>(4 in/10 cm)</small>",
+                "DATAMODEL_VALIDATION": "number",
+                "DATAMODEL_VALIDATION_MESSAGE": "Enter your gauge in numbers",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 44,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "65",
+                "CHALLENGE_COMPONENTID": "49",
+                "DATAMODEL_ELEMENT": "Needles_available",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Needles Available *",
+                "DATAMODEL_VALIDATION": "range",
+                "DATAMODEL_VALIDATION_EXTRA": "100,200",
+                "DATAMODEL_VALIDATION_MESSAGE": "Enter the number of needles on your needlebed",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 49,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "65",
+                "CHALLENGE_COMPONENTID": "75",
+                "DATAMODEL_ELEMENT": "Stitch_Pattern_Stitch_Multiple",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Stitch Multiple",
+                "DATAMODEL_VALIDATION": "digits",
+                "DATAMODEL_VALIDATION_EXTRA": "How many stitches in one repeat of your stitch pattern?",
+                "DATAMODEL_VALIDATION_MESSAGE": "Enter 0 if no stitch multiple ",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 75,
+              "order": 6
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "65",
+                "CHALLENGE_COMPONENTID": "76",
+                "DATAMODEL_ELEMENT": "Stitch_Pattern_Row_Multiple",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Row Multiple",
+                "DATAMODEL_VALIDATION": "digits",
+                "DATAMODEL_VALIDATION_EXTRA": "How many rows in one repeat of your stitch pattern?",
+                "DATAMODEL_VALIDATION_MESSAGE": "Enter 0 if no stitch multiple ",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 76,
+              "order": 7
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "65",
+                "CHALLENGE_COMPONENTID": "128",
+                "DATAMODEL_ELEMENT": "Yarn_Choice",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Your Yarn Choice",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 128,
+              "order": 8
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "65",
+                "CHALLENGE_COMPONENTID": "185",
+                "DATAMODEL_ELEMENT": "Edge_finish",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Edge Finish",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 185,
+              "order": 9
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "65",
+                "CHALLENGE_COMPONENTID": "186",
+                "DATAMODEL_ELEMENT": "Cast_on_method",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Cast On Method",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 186,
+              "order": 10
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "65",
+                "CHALLENGE_COMPONENTID": "188",
+                "DATAMODEL_ELEMENT": "Panel_join_method",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Panel Join Method",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 188,
+              "order": 11
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "65",
+                "CHALLENGE_COMPONENTID": "184",
+                "DATAMODEL_ELEMENT": "Personal_Notes",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Personal Notes",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 184,
+              "order": 12
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "65",
+                "CHALLENGE_COMPONENTID": "191",
+                "DATAMODEL_ELEMENT": "knitting_machine",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Knitting Machine",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 191,
+              "order": 13
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "65",
+                "CHALLENGE_COMPONENTID": "192",
+                "DATAMODEL_ELEMENT": "Bind_off_method",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Bind Off Method",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 192,
+              "order": 14
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "65",
+                "CHALLENGE_COMPONENTID": "280",
+                "DATAMODEL_ELEMENT": "Your_swatch_length",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Your Swatch LENGTH inches <small>(to calculate yarn needed)</small>",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 280,
+              "order": 15
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "65",
+                "CHALLENGE_COMPONENTID": "281",
+                "DATAMODEL_ELEMENT": "your_swatch_width",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Your Swatch WIDTH inches <small>(to calculate yarn needed)</small>",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 281,
+              "order": 16
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "65",
+                "CHALLENGE_COMPONENTID": "282",
+                "DATAMODEL_ELEMENT": "Your_swatch_weight",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Your Swatch WEIGHT <small>grams (To calculate yarn needed)</small>",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 282,
+              "order": 17
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageLibrary",
+              "notes": [
+                "Unmapped legacy component type: ImageLibrary"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "65",
+                "TYPEOF": "ImageLibrary"
+              },
+              "legacyComponentId": 231,
+              "order": 20
+            }
+          ],
+          "title": "Step 1: Tell us about your machine and project",
+          "slug": "step-1-tell-us-about-your-machine-and-project",
+          "order": 2,
+          "legacy": {
+            "assignId": 65,
+            "blockType": "DataEntry"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): Needles_available,stitchgauge,rowgauge,Blanket_size",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 65 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "64",
+                "CHALLENGE_COMPONENTID": "92",
+                "DATAMODEL_ELEMENTS": "Needles_available,stitchgauge,rowgauge,Blanket_size",
+                "DATAMODEL_REDIRECT": "65",
+                "DATAMODEL_VALIDATION_MESSAGE": "Enter your custom information"
+              },
+              "legacyComponentId": 92,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "The pattern is generated based on the the information you entered. <br /><em>Your answers are shown in italics.</em>",
+              "legacyComponentId": 242,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: Blanket_instructions.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "64",
+                "CHALLENGE_COMPONENTID": "74",
+                "CUSTOMCFM": "Blanket_instructions.cfm"
+              },
+              "legacyComponentId": 74,
+              "order": 6
+            }
+          ],
+          "title": "Step 2: Create your custom pattern",
+          "slug": "step-2-create-your-custom-pattern",
+          "order": 3,
+          "legacy": {
+            "assignId": 64,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "Finished_photo",
+                "BUTTONLABLE": "Upload an image of your finished blanket",
+                "CHALLENGE_ASSIGNID": "98",
+                "CHALLENGE_COMPONENTID": "90",
+                "QTY": "1",
+                "SUCCESSMESSAGE": "Great Work!"
+              },
+              "legacyComponentId": 90,
+              "order": 1
+            }
+          ],
+          "title": "Step 3: Show Off Your Blanket",
+          "slug": "step-3-show-off-your-blanket",
+          "order": 4,
+          "legacy": {
+            "assignId": 98,
+            "blockType": "ImageUpload"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "download",
+              "label": "Download",
+              "filename": "/downloads/DIY_Beginner_blanket.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "113",
+                "componentId": "183",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 183,
+              "order": 1
+            }
+          ],
+          "title": "BONUS: Inspiration Blanket",
+          "slug": "bonus-inspiration-blanket",
+          "order": 6,
+          "legacy": {
+            "assignId": 113,
+            "blockType": "Document"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Lesson 7: - Right Angles Blanket",
+      "slug": "lesson-7-right-angles-blanket",
+      "displayOrder": 8,
+      "legacy": {
+        "itemId": 127,
+        "lessonOrder": 8
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"blockquote_style\">\r\nIf you can cast on, bind off, pick up stitches and sew a neat seam... you can knit this!<br>Use the techniques practiced in this course to make a one-of a kind blanket!<br></blockquote>\r\n\r\n<div class=\"col-12-xs\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/3/diy_blanket/right_angle.jpg\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/3/diy_blanket/pre_blocking.jpg\"></div>\r\n<div class=\"col-12-xs\"></div>\r\n\r\n",
+              "legacyComponentId": 1711,
+              "order": 1
+            }
+          ],
+          "title": "Fun, Fun, Fun!",
+          "slug": "fun-fun-fun",
+          "order": 1,
+          "legacy": {
+            "assignId": 593,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "To have success with this design, you must have accurate gauge measurements.<br>\r\nYou will be knitting 2 different size rectangles. They fit together like puzzle pieces and your gauge MUST BE ACCURATE!\r\n\r\n",
+              "legacyComponentId": 1707,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "Don't forget, most knitting stitch pattern are wider than tall.<br>\r\n\r\nHere's an example at 4 sts and 6 rows per inch.<br>\r\n\r\nThis is a preview of how this blanket is constructed.  Notice that it takes fewer stitches to equal 1\" than rows per inch.<br>\r\n\r\n<img src=\"/challenge/images/v2/3/diy_blanket/one_seam_sts_rows.jpg\">",
+              "legacyComponentId": 1709,
+              "order": 3
+            }
+          ],
+          "title": "Swatching is not optional",
+          "slug": "swatching-is-not-optional",
+          "order": 2,
+          "legacy": {
+            "assignId": 588,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\nOrder of knitting:\r\n<ol class=\"instruction-list\">\r\n<li>Section 1\r\n<ul class=\"instruction-nolist\">\r\n<Li>Cast the short edge dimension</li>\r\n<li>Knit the long edge dimension</li>\r\n<li>Bind off</li></ul>\r\n</li>\r\n<li>Section 2\r\n<ul class=\"instruction-nolist\">\r\n<Li>Pick up the long edge of Section 1</li>\r\n<li>Knit the short edge dimension</li>\r\n<li>Bind off</li></ul>\r\n</li>\r\n<li>Section 3\r\n<ul class=\"instruction-nolist\">\r\n<li>Pick up the short edge of Section 2</li>\r\n<li>Knit for the long edge dimension</li>\r\n<li>Bind off</li>\r\n</ul>\r\n</li>\r\n\r\n<li>Section 4\r\n<ul class=\"instruction-nolist\">\r\n<li>Pick up the long edge of Section 3</li>\r\n<li>Knit for the short edge dimension</li>\r\n<li>Bind off</li>\r\n</ul>\r\n</li>\r\n</ol>\r\nTo finish - Neatly seam the short edge of section 4 for to the short edge of section 1\r\n\r\n\r\n<img src=\"/challenge/images/v2/3/diy_blanket/one_seam.jpg\">\r\n\r\n\r\n",
+              "legacyComponentId": 1710,
+              "order": 1
+            }
+          ],
+          "title": "Construction in a nutshell",
+          "slug": "construction-in-a-nutshell",
+          "order": 3,
+          "legacy": {
+            "assignId": 589,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/3/diy_blanket/right_angle1.jpg",
+                  "caption": "Couldn't resist trying the \"cake\" yarn - loonnnngggg color repeats, 300 gram balls and minimal ends to work in!"
+                },
+                {
+                  "src": "/challenge/images/v2/3/diy_blanket/construction_slide.jpg",
+                  "caption": "The blanket is knit in 4 sections - picking up as you go ... leaving a single seam to finish at the end."
+                },
+                {
+                  "src": "/challenge/images/v2/3/diy_blanket/rehang1.jpg",
+                  "caption": "After the first rectangle is knit and bound off, pick up the long edge (private/wrong side facing)."
+                },
+                {
+                  "src": "/challenge/images/v2/3/diy_blanket/rehang2.jpg",
+                  "caption": "<i class=\"far fa-lightbulb\"></i>Because we aren't picking up one stitch for every row, hang the edge evenly on the needles in sections.\r\n<ul>\r\n<li>Hang each edge</li>\r\n<li>Divide in half and hang a few stitches</li>\r\n<li>Keep dividing sections in half</li>\r\n</Ul>"
+                },
+                {
+                  "src": "/challenge/images/v2/3/diy_blanket/rehang3.jpg",
+                  "caption": "To make knitting the first row easier, pull all the needles out. <br>\r\nClose the latches if you are working with a thick or fuzzy yarn<br><br>\r\n<i class=\"fa fa-lightbulb-o\"></i>\r\nConsider knitting the first row at a slightly tighter tension than blanket tension"
+                },
+                {
+                  "src": "/challenge/images/v2/3/diy_blanket/rehang4.jpg",
+                  "caption": "Get knitting and watch the colors change!"
+                },
+                {
+                  "src": "/challenge/images/v2/3/diy_blanket/rehang5.jpg",
+                  "caption": "When Section 2 is done, bind off"
+                },
+                {
+                  "src": "/challenge/images/v2/3/diy_blanket/tails2.jpg",
+                  "caption": "If you need to join a new end of yarn, join at the edge of the knitting. Wrap the tails over and under needles in work. They will be secured on the next row."
+                },
+                {
+                  "src": "/challenge/images/v2/3/diy_blanket/tails1.jpg",
+                  "caption": "Reduce finishing by cutting the tails now."
+                },
+                {
+                  "src": "/challenge/images/v2/3/diy_blanket/section3.jpg",
+                  "caption": "Pick up edge of Section 2 to start Section 3"
+                },
+                {
+                  "src": "/challenge/images/v2/3/diy_blanket/right_angle5.jpg",
+                  "caption": "3 down ... 1 to go!"
+                },
+                {
+                  "src": "/challenge/images/v2/3/diy_blanket/ready_to_seam.jpg",
+                  "caption": "One seam and you're done!"
+                },
+                {
+                  "src": "/challenge/images/v2/3/diy_blanket/right_angle_seam.jpg",
+                  "caption": "Neatly join stitches to rows ... beautiful!"
+                },
+                {
+                  "src": "/challenge/images/v2/3/diy_blanket/pre_blocking.jpg",
+                  "caption": "Ready to Block"
+                },
+                {
+                  "src": "/challenge/images/v2/3/diy_blanket/blocking.jpg",
+                  "caption": "Block in sections and use blocking wires to keep the sections square"
+                },
+                {
+                  "src": "/challenge/images/v2/3/diy_blanket/crochet.jpg",
+                  "caption": "Finish by hand or on the machine ... fancy or plain ... we simple worked 2 rounds of single crochet"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "1",
+                "playAudio": null
+              },
+              "legacyComponentId": 1712,
+              "order": 1
+            }
+          ],
+          "title": "Watch",
+          "slug": "watch",
+          "order": 4,
+          "legacy": {
+            "assignId": 590,
+            "blockType": "Imageslideshow"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "DIY!  With NO MATH!<br>\r\nEnter your desired blanket size and your gauge .... generate your own custom pattern.",
+              "legacyComponentId": 1716,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: DYI_BlanketTool.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "518",
+                "CHALLENGE_COMPONENTID": "1698",
+                "CUSTOMCFM": "DYI_BlanketTool.cfm"
+              },
+              "legacyComponentId": 1715,
+              "order": 3
+            }
+          ],
+          "title": "Create your own pattern",
+          "slug": "create-your-own-pattern",
+          "order": 4,
+          "legacy": {
+            "assignId": 594,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/diy_blanket/oops1.jpg",
+                  "caption": "When picking up along the rows, be sure you pick up individual rows. Don't pick up 2 stitches in the same row."
+                },
+                {
+                  "src": "/diy_blanket/oops5.jpg",
+                  "caption": "Pick up along the same column of stitches"
+                },
+                {
+                  "src": "/diy_blanket/open_latches.jpg",
+                  "caption": "Open the latches to make it easier to pick up along the edge.  A credit card or business card cut at an angle works great!"
+                },
+                {
+                  "src": "/diy_blanket/oops3.jpg",
+                  "caption": "When working with yarn in balls or cakes, knit slowly and keep an eye out for any tangles."
+                },
+                {
+                  "src": "/diy_blanket/sayg2.jpg",
+                  "caption": "Thinking of taking a shortcut, sew-as-you-go sounded like a good way to finish the blanket on the machines .... but ....."
+                },
+                {
+                  "src": "/diy_blanket/sayg1.jpg",
+                  "caption": "Needless to say ... sew as you go was a bad idea ... <i class=\"fa fa-smile-o\"></i>"
+                },
+                {
+                  "src": "/diy_blanket/hand_seam.jpg",
+                  "caption": "Stitch by hand ... much better!"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "1",
+                "playAudio": null
+              },
+              "legacyComponentId": 1713,
+              "order": 1
+            }
+          ],
+          "title": "When bad things happen to good knitters",
+          "slug": "when-bad-things-happen-to-good-knitters",
+          "order": 6,
+          "legacy": {
+            "assignId": 591,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 18,
+    "videos": [
+      {
+        "vimeoId": "221120492",
+        "title": "Machine Knitting Courses",
+        "lessonSlug": "hello-first-welcome-to-the-diy-blanket-course",
+        "blockSlug": "how-to-use-this-course-site"
+      },
+      {
+        "vimeoId": "151858444",
+        "title": "Yarns for Machine Knitting",
+        "lessonSlug": "lesson-1-plan-your-project",
+        "blockSlug": "step-2-what-yarn-will-you-use"
+      },
+      {
+        "vimeoId": "151860058",
+        "title": "E-Wrap Cast On",
+        "lessonSlug": "lesson-1-plan-your-project",
+        "blockSlug": "step-3-casting-on-don-t-skip-this"
+      },
+      {
+        "vimeoId": "151860053",
+        "title": "Chain Cast On",
+        "lessonSlug": "lesson-1-plan-your-project",
+        "blockSlug": "step-3-casting-on-don-t-skip-this"
+      },
+      {
+        "vimeoId": "178357365",
+        "title": "Open Cast On",
+        "lessonSlug": "lesson-1-plan-your-project",
+        "blockSlug": "step-3-casting-on-don-t-skip-this"
+      },
+      {
+        "vimeoId": "151858299",
+        "title": "Sewn (backstitch) Bind off",
+        "lessonSlug": "lesson-1-plan-your-project",
+        "blockSlug": "step-4-bind-off-to-match-cast-on"
+      },
+      {
+        "vimeoId": "151858975",
+        "title": "Scrap Off",
+        "lessonSlug": "lesson-1-plan-your-project",
+        "blockSlug": "step-4-bind-off-to-match-cast-on"
+      },
+      {
+        "vimeoId": "169016269",
+        "title": "Remove, Turn and Rehang",
+        "lessonSlug": "lesson-2-decisions-decisions-decisions",
+        "blockSlug": "step-1-add-texture"
+      },
+      {
+        "vimeoId": "151859654",
+        "title": "Using a Garter Bar",
+        "lessonSlug": "lesson-2-decisions-decisions-decisions",
+        "blockSlug": "step-1-add-texture"
+      },
+      {
+        "vimeoId": "151857129",
+        "title": "I-Cord Trims",
+        "lessonSlug": "lesson-2-decisions-decisions-decisions",
+        "blockSlug": "step-2-finishing-options"
+      },
+      {
+        "vimeoId": "151856550",
+        "title": "Knitting I-Cord",
+        "lessonSlug": "lesson-2-decisions-decisions-decisions",
+        "blockSlug": "step-2-finishing-options"
+      },
+      {
+        "vimeoId": "178357273",
+        "title": null,
+        "lessonSlug": "lesson-3-swatching-is-not-optional",
+        "blockSlug": "step-3-knitting-swatches"
+      },
+      {
+        "vimeoId": "151857735",
+        "title": "How Much Yarn Do I Need?",
+        "lessonSlug": "lesson-3-swatching-is-not-optional",
+        "blockSlug": "step-5-how-much-yarn-do-you-need"
+      },
+      {
+        "vimeoId": "151859805",
+        "title": "Yarn Estimator Video",
+        "lessonSlug": "lesson-3-swatching-is-not-optional",
+        "blockSlug": "step-6-practice-yarn-estimate"
+      },
+      {
+        "vimeoId": "151857799",
+        "title": "Stitch Multiples",
+        "lessonSlug": "lesson-4-stitch-patterns",
+        "blockSlug": "step-1-stitch-multiples"
+      },
+      {
+        "vimeoId": "151859471",
+        "title": "Swatching in Pattern Knitting",
+        "lessonSlug": "lesson-4-stitch-patterns",
+        "blockSlug": "step-2-swatching-in-pattern"
+      },
+      {
+        "vimeoId": "151856919",
+        "title": "Join (Sew) As You Go",
+        "lessonSlug": "lesson-5-needlebed-limitations-and-panels",
+        "blockSlug": "step-1-sew-as-you-go"
+      },
+      {
+        "vimeoId": "151856969",
+        "title": "Hairpin Lace Seam",
+        "lessonSlug": "lesson-5-needlebed-limitations-and-panels",
+        "blockSlug": "step-2-hairpin-lace-join"
+      }
+    ],
+    "downloadCount": 1,
+    "downloads": [
+      {
+        "filename": "/downloads/DIY_Beginner_blanket.pdf",
+        "label": "Download",
+        "lessonSlug": "lesson-6-get-knitting",
+        "blockSlug": "bonus-inspiration-blanket"
+      }
+    ]
+  }
+}

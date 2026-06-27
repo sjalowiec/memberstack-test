@@ -1,0 +1,1871 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 34,
+    "title": "Master LK-150 Patterning",
+    "slug": "master-lk-patterning",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_34_master_lk150_patterning.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/lk-150_patterning.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "INTRO TO PATTERNING",
+      "slug": "intro-to-patterning",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 242,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n   <div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/290792798' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/levers_both.jpg\">\r\n\r\n<br>See the \"H\" on my carriage? In my frustration when I first got my machine, I took a Sharpie and marked the hold (Russel) levers ... <i class=\"fa fa-smile-o\"></i><br>Maybe seeing my handwritten \"H\" in this course will help you remember which is which.\r\n",
+              "legacyComponentId": 4133,
+              "order": 2
+            }
+          ],
+          "title": "WELCOME!",
+          "slug": "welcome",
+          "order": 1,
+          "legacy": {
+            "assignId": 1110,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<img src=\"/challenge/images/v2/34/levers_both.jpg\">\r\n<br>One of the many good things about the LK-150 is the fact that there are only 2 sets levers to learn!<br>\r\n<ul><li>Russel Levers</li><li>Side Levers</li></ul>\r\nBut you can do SO MUCH with these levers!\r\n<br>\r\n<img src=\"/challenge/images/v2/34/watch_the_video.gif\">\r\n\r\n",
+              "legacyComponentId": 4052,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "290802964",
+              "title": "Gain a better understanding of what's happening with the knitting carriage",
+              "legacyComponentId": 2983,
+              "order": 2
+            }
+          ],
+          "title": "Under the Hood",
+          "slug": "under-the-hood",
+          "order": 2,
+          "legacy": {
+            "assignId": 1111,
+            "blockType": "VimeoID"
+          }
+        }
+      ]
+    },
+    {
+      "title": "SELECTING NEEDLES FOR STITCH PATTERNING",
+      "slug": "selecting-needles-for-stitch-patterning",
+      "displayOrder": 15,
+      "legacy": {
+        "itemId": 247,
+        "lessonOrder": 15
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The LK-150 is a manual knitting machine. This means there are no punchards or electronics to \"select\" and position needles.<br>Don't let this stop you from exploring stitch patterning on this machine!<br><div>\r\n\r\n<figure>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/LK150_patterning/tuck_exercises/needle_pusher.jpg\"><figcaption><br>Use your needle pushers to select needles</figcaption>\r\n</figure>\r\n</div<hr>\r\n",
+              "legacyComponentId": 2987,
+              "order": 1
+            }
+          ],
+          "title": "Selecting Needles",
+          "slug": "selecting-needles",
+          "order": 1,
+          "legacy": {
+            "assignId": 1113,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>Use a cheat sheet to make selecting needles easier</h3>",
+              "legacyComponentId": 4020,
+              "order": 3
+            },
+            {
+              "type": "download",
+              "label": "Download a Cheat Sheet",
+              "filename": "/downloads/6_5mmCheatSheet2.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "1113",
+                "componentId": "2992",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4021,
+              "order": 4
+            },
+            {
+              "type": "video",
+              "vimeoId": "290872211",
+              "title": "Make Hand Manipulating Easier",
+              "legacyComponentId": 4022,
+              "order": 5
+            }
+          ],
+          "title": "Use a Cheat Sheet",
+          "slug": "use-a-cheat-sheet",
+          "order": 1,
+          "legacy": {
+            "assignId": 3123,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "746202286",
+              "title": null,
+              "legacyComponentId": 9065,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "This clever device makes quick work of manually selecting needles.<br>It is available from <a href=\"https://www.kriskrafter.com/product-page/needle-beetle-needle-selector\">Kriskrafter</a>",
+              "legacyComponentId": 9066,
+              "order": 2
+            }
+          ],
+          "title": "Needle Beetle Needle Selector",
+          "slug": "needle-beetle-needle-selector",
+          "order": 2,
+          "legacy": {
+            "assignId": 5949,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "TUCK",
+      "slug": "tuck",
+      "displayOrder": 20,
+      "legacy": {
+        "itemId": 243,
+        "lessonOrder": 20
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<center><img src=\"/challenge/images/v2/34/lk150_patterning/tuck_drawing.jpg\"></center>\r\n<br>\r\nA tuck is a stitch that is not knitted, but looped over the needle.  If we tuck over the same needle for a number of rows, the loops gather on those needles, instead of knitting. This creates raised bundles. When the bundles are gathered and knit, the fabric is distorted from plain knitting, resulting in texture.<br>The fun comes in various needle arrangements alternating with plain knitting. Tucking while alternating colors and even tucking with needles out of work.<br>The yarn and the tension play a role in creating beautiful tuck patterns.<br>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/intro_tuck.jpg\">\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 2985,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "Because the LK-150 is a manual machine, we need to pull needles to Hold Position \"D\" when working in stitch pattern. \r\n<br><b>TO SELECT NEEDLES:</B>\r\n<ul>\r\n<li>Use needle pushers</LI>\r\n<LI>Mark the needlebed</li>\r\n<li> Use a cheat sheet to make selecting the needles easier.</li>\r\n</ul>",
+              "legacyComponentId": 4048,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"section-title MachineknittingColor\">Knitting Charts and Punchcards</div>\r\nTuck charts for hand manipulated machines often look like this.\r\n\r\n<div class=\"col-12-xs\"><img src=\"/challenge/images/v2/34/lk150_patterning/tuck_symbol.jpg\"></div>\r\n<div class=\"col-12-xs\"><img width=\"125px\" src=\"/challenge/images/v2/34/lk150_patterning/tucked_blocks_pattern.jpg\"></div>\r\n\r\n<br>\r\nLK150 knitters can also use punchcard designs. <b> A tuck punchcard will be mostly holes (black)</b> <em><small>(see below)</em></small>. <br> To hand manipulate needles, you will be pulling needles to correspond with the  white spaces.<br>\r\n\r\n\r\n<img src=\"/challenge/images/v2/34/LK150_patterning/tuck_exercises/good_punchcard.bmp\">\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4050,
+              "order": 5
+            }
+          ],
+          "title": "What is Tuck? The Mechanics",
+          "slug": "what-is-tuck-the-mechanics",
+          "order": 1,
+          "legacy": {
+            "assignId": 1095,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/tuck_samples/440tuck.jpg",
+                  "caption": "Beautiful texture with tuck<br>Use the 1x1 needle pusher | Engage both Russel levers\r\n<ul>\r\n<li>Row 1: Pull every other needle to D position. Knit across, tucking every other needle</li>\r\n<li>Row 2: Repeat row 1 (tucking the same needles)</li>\r\n<li>Row 3: Pull the opposite needles to D position . Knit across, tucking every other needle</li>\r\n<lI.Row 4: Repeat row 2</li>\r\n</ul>\r\n\r\n\r\n<a href=\"https://www.knititnow.com/swatches/5/kin440_tuck_punchcard.pdf\" target=\"_blank\">Tuck 440 Punchcard</a>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/tuck_samples/tuck_baby1.jpg",
+                  "caption": "Combine with color changes for an interesting effect.<Br>\r\nChange colors every 6 rows<br>\r\n<a href=\"/swatches/5/tuck_baby.pdf\" target=_blank>Tuck Baby Punchcard</a>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/tuck_samples/diagonal_tuck3.jpg",
+                  "caption": "Tuck doesn't have to be all-over. Tuck stitches can be grouped to create interesting texture.<br>\r\n\r\nPlace tuck stitches in diagonal columns<br>\r\n<a href=\"/swatches/5/KIN_61616.pdf\" target=\"_blank\">Diagonal Tuck punchcard</a>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/tuck_samples/heart_tuck_single.jpg",
+                  "caption": "Knit tuck as \"motifs\"<br>\r\n<a href=\"/swatches/5/hearts_tuck1_Punchcard.pdf\" target=_blank\">Heart Tuck Punchcard</a>"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 4010,
+              "order": 1
+            }
+          ],
+          "title": "Tuck Examples and Possibilities",
+          "slug": "tuck-examples-and-possibilities",
+          "order": 2,
+          "legacy": {
+            "assignId": 1097,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img class=\"pull-left\" src=\"/challenge/images/v2/34/course_1.png\"><b>Exercise #1 - plain knitting</b>\r\n\r\n\r\n    \r\n        <ol>\r\n            <li>No yarn in the carriage</li>\r\n            <li>Pull 20 needles to \"D\" Position</li>\r\n            <li>Carriage Set for Plain Knitting (Both side levers and Russel Levers are dis-engaged)<br /></li>\r\n            <li>Push carriage from right to left. <i class=\"fa fa-arrow-left\"></i> What Happens?</li>\r\n            <li>Push carriage from left to right. <i class=\"fa fa-arrow-right\"></i> What Happens?</li>\r\n        </ol>\r\n    \r\n\r\n<!--- hidden answer. --->\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#theanswer').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>show</small></button>\r\n    \r\n\r\n<br>\r\n<!--- hidden answer. --->\r\n\r\n    \r\n        \r\n            <figure>\r\n                <img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/1_a.jpg\" />\r\n                <figcaption align=\"center\">Set the carriage for Plain Knitting<br>Needles in hold\r\n                    <figcaption>\r\n            </figure>\r\n        \r\n        \r\n            <figure>\r\n                <img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/1_b.jpg\" />\r\n                <figcaption align=\"center\"><i class=\"fa fa-arrow-left\"></i> Knit right to left. <br>The needles are returned to working position. Even though the needles were in hold, the Carriage was not set to hold. <br>BOTH must be set to hold.</figcaption>\r\n            </figure>\r\n\r\n        \r\n\r\n    \r\n\r\n\r\n<!-- *********************end of exercise 1 -->\r\n<hr>\r\n\r\n<img class=\"pull-left\" src=\"/challenge/images/v2/34/course_2.png\"><b>Exercise #2 - Hold all Needles</b>\r\n\r\n    \r\n        <ol>\r\n            <li>No yarn in the carriage</li>\r\n            <li>Pull 20 needles to \"D\" Position</li>\r\n            <li>Carriage Set to HOLD (Both Russel Levers are engaged)<br /></li>\r\n            <li>Push carriage from right to left. <i class=\"fa fa-arrow-left\"></i> What Happens?</li>\r\n            <li>Push carriage from left to right. <i class=\"fa fa-arrow-right\"></i> What Happens?</li>\r\n        </ol>\r\n    \r\n\r\n<!--- hidden answer. --->\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#exercise2').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>show</small></button>\r\n    \r\n\r\n<br>\r\n<!--- hidden answer. --->\r\n\r\n\r\n    \r\n        \r\n            <figure><img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/2_a.jpg\" />\r\n                <figcaption>Both Russel Levers engaged (hold)<br>needles in \"D\" (hold)</figcaption>\r\n            </figure>\r\n        \r\n        \r\n            <figure><img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/2_b.jpg\" />\r\n                <figcaption><i class=\"fa fa-arrow-left\"></i> Knit right to left<br>Needles remain in \"D\" (hold)</figcaption>\r\n            </figure>\r\n        \r\n        \r\n            <figure><img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/2_c.jpg\" />\r\n                <figcaption><i class=\"fa fa-arrow-right\"></i> Knit left to right<br>Needles remain in \"D\" (hold)</figcaption>\r\n            </figure>\r\n        \r\n    \r\n\r\n\r\n<!-- *********************end of exercise 2 -->\r\n<hr>\r\n<img class=\"pull-left\" src=\"/challenge/images/v2/34/course_3.png\"><b>Exercise #3 - Hold Individual needles - The basis of patterning</b>\r\n\r\n\r\n\r\n    \r\n        <ol>\r\n            <li>No yarn in the carriage</li>\r\n            <li>Pull 20 needles to \"D\" Position</li>\r\n            <li>Using the 1x1 needle pusher, push every other needle to \"B\" (working) position</li>\r\n            <li>Set the LEFT Russel Lever to HOLD<br /></li>\r\n            <li>Push carriage from right to left.  What Happens?</li>\r\n            <li>Push carriage from left to Right  What Happens?</li>\r\n        </ol>\r\n    \r\n\r\n<!--- hidden answer. --->\r\n\r\n    \r\n    <button class=\"btn btn-info\" onclick=\"$('#exercise3').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>show</small></button>\r\n    \r\n\r\n\r\n<!--- hidden answer. --->\r\n\r\n\r\n    \r\n        <figure>\r\n            <img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/3_a.jpg\" />\r\n            <figcaption>Pull every other needle to \"D\" (hold)</figcaption>\r\n        </figure>\r\n    \r\n    \r\n        <figure>\r\n            <img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/3_b.jpg\" />\r\n            <figcaption>Engage the left Russel Lever (hold) Right lever NOT engaged</figcaption>\r\n        </figure>\r\n    \r\n    \r\n        <figure>\r\n            <img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/3_c.jpg\" />\r\n            <figcaption><i class=\"fa fa-arrow-left\"></i> Pass the carriage from right to left<br> Needles in \"D\" (hold) position remain in \"D\"</figcaption>\r\n        </figure>\r\n    \r\n    \r\n        <figure>\r\n            <img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/3_d.jpg\" />\r\n            <figcaption><i class=\"fa fa-arrow-right\"></i> Pass the carriage from left to right<br>Needles are returned to working position.<br> Remember BOTH the carriage setting AND the needles must be set for hold/tuck to occur)</figcaption>\r\n        </figure>\r\n    \r\n\r\n<!-- *********************end of exercise3 -->\r\n\r\n<hr>\r\n\r\n<img class=\"pull-left\" src=\"/challenge/images/v2/34/course_4.png\"><b>Exercise #4 hold groups of needles - The basis of Partial Knitting and Short Row shaping</b><br><ol>\r\n    <li>No yarn in the carriage</li>\r\n    <li>Carriage on the right</li>\r\n    <li>Pull 20 needles to \"B\" (Working) Position</li>\r\n    <li>Using the flat edge of the needle pusher, pull 10 needles (on the left) to \"D\" (hold) position</li>\r\n    <li>Set BOTH Russel Levers to HOLD<br /></li>\r\n    <li>Push carriage from <i class=\"fa fa-arrow-left\"></i> right to left.  What Happens?</li>\r\n    <li>Push carriage from <i class=\"fa fa-arrow-right\"></i> left to right  What Happens?</li>\r\n</ol>\r\n</div>\r\n</div>\r\n<!--- hidden answer. --->\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#exercise4').toggle()\"><i class=\"fa fa-arrows-v\"></i><small> show</small></button>\r\n    \r\n\r\n<br>\r\n<!--- hidden answer. --->\r\n\r\n\r\n    \r\n        <figure>\r\n            <img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/4_b.jpg\" />\r\n            <figcaption><i class=\"fa fa-arrow-right\"></i> Pull needles opposite the carriage to \"D\" (hold) <br>Both Russel levers engaged (hold)position </figcaption>\r\n        </figure>\r\n    \r\n    \r\n        <figure>\r\n            <img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/4_c.jpg\" />\r\n            <figcaption>\r\n                <i class=\"fa fa-arrow-left\"></i> Pass the carriage from right to left<br> Held needles remain in \"D\" (hold position)</figcaption>\r\n        </figure>\r\n    \r\n    \r\n        <figure>\r\n            <img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/4_d.jpg\" />\r\n            <figcaption><i class=\"fa fa-arrow-right\"></i> Pass the carriage from left to right<br> Held needles remain in \"D\" (hold position)</figcaption>\r\n        </figure>\r\n    \r\n\r\n",
+              "legacyComponentId": 2994,
+              "order": 1
+            }
+          ],
+          "title": "Tuck Stitch Dry Run",
+          "slug": "tuck-stitch-dry-run",
+          "order": 3,
+          "legacy": {
+            "assignId": 2114,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "    \r\n        \r\n            <p>Cast on 20 stitches with any method, hang some weight and knit a few rows<br /></p>\r\n            <img class=\"pull-left\" src=\"/challenge/images/v2/34/course_1.png\"><b>Exercise #1- plain knitting - Carriage Setting</b>\r\n        \r\n    \r\n    \r\n         <br> \r\nPart 1: Plain Knitting (stockinette)          \r\n<ol>\r\n                <li>All needles in \"B\" working position</li>\r\n                <li>Carriage Set for Plain Knitting (Both side levers and Russel Levers are disengaged)<br /></li>\r\n                <li>Knit from <i class=\"fa fa-arrow-left\"></i> Right to Left then <i class=\"fa fa-arrow-right\"></i> Left to Right (plain/normal knitting)</li>\r\n</ol>\r\nPart 2:\r\n<ol>\r\n                 <li>All needles in \"B\" working position</li>\r\n                <li>Carriage on the right, engage  the Left Russel lever. <i class=\"fa-fa-arrow_left\"></i><i class=\"fa fa-arrow-left\"></i> Knit to the Left. <em> What happens?  Why?</em></li>\r\n                <li><i class=\"fa fa-arrow-right\"></i> Knit back to the right</li> </ol>\r\n            \r\n        \r\n    \r\n<!--- hidden answer. --->\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#exercise1').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>show</small></button>\r\n     \r\n\r\n<br>\r\n\r\n    \r\n<!--- hidden answer. --->\r\n\r\n        <figure><img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/yarn1a.jpg\" /><figcaption align='center'><br>All needles in \"B\" (Working Position)<br>Left Russel (Hold) Lever ENGAGED</br>Right Russel (Hold) Lever NOT engaged  (plain)</figcaption></figure> \r\n\r\n        <figure align=\"center\"><img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/yarn1b.jpg\" /><figcaption align='center'><br><i class=\"fa fa-arrow-left\"></i> Knit Right to Left <br>All needles Knit</figcaption></figure>\r\n        <figure align=\"center\"><img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/yarn1c.jpg\" /><figcaption align='center'><br><i class=\"fa fa-arrow-right\"></i> Knit back to the right<br>All needles Knit</figcaption></figure>\r\n\r\n\r\n<p class=\"bg-info\"><b>NOTE: To hold needles, the carriage needs to be set to hold AND the needles need to be in \"D\" Hold position.</b></p>\r\n\r\n   \r\n\r\n\r\n\r\n \r\n\r\n<!--- *******************************End of exercise 1 -->\r\n<hr>\r\n    \r\n        <img class=\"pull-left\" src=\"/challenge/images/v2/34/course_2.png\"><b>\r\n            Exercise #2 -Needle settings</b>\r\n        \r\n    </div>\r\n    \r\n        \r\n            <ol>\r\n                <li>Carriage Set for Plain Knitting (Both side levers and Russel Levers are dis-engaged)<br /></li>\r\n                <li>Pull all the needles to \"D\" Hold position<br /></li>\r\n                <li>Push carriage from <i class=\"fa fa-arrow-left\"></i> Right to Left. <em> What Happens?</em></li>\r\n                <li>Push carriage from <i class=\"fa fa-arrow-right\"></i> Left to Right <em> What Happens?</em><br><b>  It takes BOTH the carriage setting and the needle position to tuck.</b></li>\r\n            </ol>\r\n        \r\n    \r\n<!--- hidden answer. --->\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#exercise2').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>show</small></button>\r\n     \r\n\r\n<br>\r\n\r\n  \r\n<!--- hidden answer. --->\r\n   \r\n        \r\n<figure>\r\n\r\n<img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/yarn2a.jpg\" /><figcaption align=\"center\"><br>Carriage set to Plain knitting<br>All Needles in hold \"D\"</figcaption>\r\n<figure>\r\n        \r\n</figure>\r\n<img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/yarn2b.jpg\" /><figcaption align=\"center\"><br><i class=\"fa fa-arrow-left\"></i> Knit Right to Left<br>NEEDLES ARE RETURNED TO WORKING POSITION</figcaption>\r\n</figure>\r\n        \r\n<figure>\r\n<img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/yarn2c.jpg\" /><figcaption align=\"center\"><br><i class=\"fa fa-arrow-right\"></i> Knit Left  to Right<br>NEEDLES REMAIN IN WORKING POSITION</figcaption>\r\n</figure>\r\n<p class=\"bg-info\"><b>NOTE: To hold needles, the carriage needs to be set to hold AND the needles need to be in \"D\" Hold position.</b></p>\r\n    \r\n<!--- *******************************End of exercise 2 -->\r\n<hr>\r\n    \r\n  <img class=\"pull-left\" src=\"/challenge/images/v2/34/course_3.png\"><b>\r\n           Exercise #3 - Hold all needles - free pass</b>\r\n        \r\n    </div>\r\n    \r\n        \r\n            <ol>\r\n                <li>Carriage on the right Pull ALL needles to \"D\" Position</li>\r\n                <li>Carriage set to \"hold\" (Both Russel Levers engaged)</li>\r\n                <li>Push carriage from <i class=\"fa fa-arrow-left\"></i> Right to Left.  <em>What Happens?</em></li>\r\n                <li>Push carriage from <i class=\"fa fa-arrow-right\"></i> Left to Right. <em>  What Happens? </em> <br>Notice that the working yarn travels across the needles and nothing knits BUT no stitches drop either. <br><em>This can be used for \"free pass\" to position the carriage  <a href=\"/challenge/34/Group/1094/item#section243\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Why free pass?</a></em></li>\r\n            </ol>\r\n        \r\n    \r\n<!--- hidden answer. --->\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#exercise3').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>show</small></button>\r\n     \r\n\r\n<br>\r\n\r\n  \r\n<!--- hidden answer. --->\r\n   \r\n        \r\n<figure>\r\n<img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/yarn3_a.jpg\" />\r\n<figcaption align=\"center\"><br>All needles in hold<br> Carriage set to HOLD (Russel lever ENGAGED)</figcaption>\r\n</figure>\r\n\r\n        \r\n<figure>\r\n<img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/yarn3_b.jpg\" />\r\n<figcaption align=\"center\"><br>No needles knit <br> yarn passes across needles</figcaption>\r\n</figure>\r\n        \r\n<figure>\r\n<img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/yarn3_c.jpg\" />\r\n<figcaption align=\"center\"><br>No needles knit - yarn passes and may be loose and sloppy - adjust yarn tension before knitting.</figcaption>\r\n</figure>\r\n    \r\n\r\n<!--- *******************************End of exercise 3 -->\r\n<hr>\r\n    \r\n        <img class=\"pull-left\" src=\"/challenge/images/v2/34/course_4.png\"><b>\r\n            Exercise #4 hold groups of needles - The basis of partial knitting and short row shaping</b><br><ol>\r\n                <li>Knit 2 rows plain to make sure needles are in working position.</li>\r\n                <li>Using the flat edge of the needle pusher, pull 10 needles to \"D\" (hold) position</li>\r\n                <li>Set BOTH Russel Levers to HOLD<br /></li>\r\n                <li>Push carriage from <i class=\"fa fa-arrow-left\"></i> Right to Left. What Happens?</li>\r\n                <li>Push carriage from <i class=\"fa fa-arrow-right\"></i> Left to Right. What Happens?</li>\r\n            </ol>\r\n    <!--- hidden answer. --->\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#exercise4').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>show</small></button>\r\n     \r\n\r\n<br>\r\n\r\n  \r\n<!--- hidden answer. --->\r\n   \r\n                \r\n<figure>\r\n<img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/yarn4a.jpg\" /><figcaption align=\"center\"><br>Carriage set to hold (BOTH Russel Levers)<br>Pull needles opposite the carriage to HOLD \"D\"</figcaption>\r\n</figure>\r\n                \r\n<figure>\r\n<img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/yarn4b.jpg\" /><figcaption align=\"center\"><br><i class=\"fa fa-arrow-left\"></i> Knit to the left - only the needles in working position knit.</figcaption>\r\n</figure>\r\n                \r\n<figure>\r\n<img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/yarn4c.jpg\" /><figcaption align=\"center\"><br><i class=\"fa fa-arrow-right\"></i> Knit to the right- only the needles in working position knit.</figcaption>\r\n</figure>\r\n            \r\n        \r\n\r\n<!--- *******************************End of exercise4-->\r\n<hr>\r\n   <img class=\"pull-left\" src=\"/challenge/images/v2/34/course_5.png\"><b>\r\n            Exercise #5 hold individual needles - The basis stitch patterning</b><br><ol>\r\n                <li>Knit a few rows across all needles</li>\r\n                <li>Use the 1x1 needle pusher and push every other needle to \"D\" (hold) position</li>\r\n                <li>Set BOTH Russel Levers to HOLD<br /></li>\r\n                <li>Push carriage from <i class=\"fa fa-arrow-left\"></i> Right to Left.  <em>What Happens?</em></li>\r\n                <li>Push carriage from <i class=\"fa fa-arrow-right\"></i> Left to Right.  <em>What Happens?</em></li>\r\n                <li>Cancel hold (set for plain knitting  - disengage the Russel Levers)</li>\r\n                <li>Knit across all needles</li>\r\n                <li>Knit a few rows</li>\r\n            </ol>\r\n      <!--- hidden answer. --->\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#exercise5').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>show</small></button>\r\n     \r\n\r\n<br>\r\n\r\n  \r\n<!--- hidden answer. --->\r\n\r\n\r\n                \r\n                    <figure>\r\n                    <img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/yarn5A.jpg\" /><figcaption align=\"center\"><br>EON(every other needle) in HOLD \"D\"</figcaption>\r\n                    </figure>\r\n                \r\n                \r\n                    <figure>\r\n                    <img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/yarn5c.jpg\" /> <figcaption align=\"center\"><br><i class=\"fa fa-arrow-left\"></i> Knit to the Left<br>notice the loops over the out of work (held) needles</figcaption>\r\n                     </figure>\r\n                \r\n               \r\n                    <figure>\r\n                    <img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/yarn5d.jpg\" /><figcaption align=\"center\"><br><i class=\"fa fa-arrow-right\"></i> Knit to the Right<br>notice there are 2 loops over the out of work (held) needles</figcaption>\r\n                    </figure>\r\n                \r\n                \r\n                    <figure>\r\n                    <img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/yarn5e.jpg\" /><figcaption align=\"center\"><br>Cancel hold<br><i class=\"fa fa-arrow-left\"></i> Knit to the Left<br>All needles should knit, securing the tuck loops</figcaption>\r\n                    </figure>\r\n                \r\n    \r\n    ",
+              "legacyComponentId": 3994,
+              "order": 1
+            }
+          ],
+          "title": "MORE Tuck practice (with yarn)",
+          "slug": "more-tuck-practice-with-yarn",
+          "order": 4,
+          "legacy": {
+            "assignId": 3114,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<div class=\"offset-2\">\r\n\r\nThe previous exercises were designed to help you UNDERSTAND the concept of putting needle in hold for Free Pass, Partial Knitting, Short Row shaping and Tuck Stitch patterns.<br>Instead of referring to (or memorizing) the chart in your manual, remember:<br>There are <b>2 steps</b> to using \"hold\"<br>\r\n\r\n<li>The carriage setting with the Russel Levers <b>|</b> and <b>||</b></li>\r\n<li>The needle positions \"D\" position (all the way out)</li>\r\n</ol><br><img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/Russel_Lever_gifs.gif\">\r\n\r\n</div>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/LK150_patterning/tuck_exercises/dposition.gif\">\r\n\r\n\r\n",
+              "legacyComponentId": 3996,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-refresh fa-spin fa-2x fa-fw\"></i> Knitting patterns may give you the following instructions.  'Translate' to your LK-150 machine.<br>\r\n<em>Choose your answer from the white boxes below each question</em>",
+              "legacyComponentId": 4005,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "2115",
+                "CHALLENGE_COMPONENTID": "3995",
+                "OPTION_1": "Put Needles in 'A'",
+                "OPTION_2": "Put Needles in 'C'",
+                "OPTION_3": "Put Needles in 'D'",
+                "OPTION_MESSAGE_1": "<i class='fa fa-times' style='color:red' aria-hidden='true'></i> 'A' position is out-of-work position - needles will not knit\r\n\r\n",
+                "OPTION_MESSAGE_2": "<i class=\"fa fa-times\" style=\"color:red\" aria-hidden=\"true\"></i> 'C' is middle position NOT hold",
+                "OPTION_MESSAGE_3": "<i class='fa fa-check' aria-hidden='true'></i><b>CORRECT!</b>  'D' is HOLD position - Needles will not knit (if the carriage is set to hold)",
+                "QUESTION_MANDITORY": "1",
+                "QUESTION_TEXT": "<ol class=\"instruction-list\"><li> 'Put all needles in hold'<ol class=\"instruction-list\"></li></ol>"
+              },
+              "legacyComponentId": 3995,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "2115",
+                "CHALLENGE_COMPONENTID": "3999",
+                "OPTION_1": "Engage LEFT Russel Lever",
+                "OPTION_2": "Engage RIGHT Russel Lever",
+                "OPTION_3": "Engage BOTH Russel Levers",
+                "OPTION_MESSAGE_1": "<i class='fa fa-times' style='color:red' aria-hidden='true'></i> Needles in 'D' hold position will not knit when the carriage passes to the Left",
+                "OPTION_MESSAGE_2": "<i class='fa fa-times' style='color:red' aria-hidden='true'></i> Needles in 'D' hold position will not knit when the carriage passes to the Right",
+                "OPTION_MESSAGE_3": "<i class='fa fa-check' aria-hidden='true'></i><b>CORRECT!</b> Unless otherwise instructed engage both levers",
+                "QUESTION_MANDITORY": "1",
+                "QUESTION_TEXT": "Set Carriage to Hold"
+              },
+              "legacyComponentId": 3999,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "2115",
+                "CHALLENGE_COMPONENTID": "4000",
+                "OPTION_1": "Use your 1x1 Needle pusher an put needles to 'D' position",
+                "OPTION_2": "What's EON?",
+                "OPTION_MESSAGE_1": "<i class='fa fa-check' aria-hidden='true'></i><b>CORRECT!</b> Along with setting the carriage to Hold, this will allow alternating needles to tuck.",
+                "OPTION_MESSAGE_2": "Every other needle",
+                "QUESTION_MANDITORY": "1",
+                "QUESTION_TEXT": "Place EON in HOLD"
+              },
+              "legacyComponentId": 4000,
+              "order": 6
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "2115",
+                "CHALLENGE_COMPONENTID": "4001",
+                "OPTION_1": "Engage <b>|</b> Russel Levers ",
+                "OPTION_2": "Dis-Engage <b>||</b> Russel levers",
+                "OPTION_3": "What is plain knitting?",
+                "OPTION_MESSAGE_1": "<i class='fa fa-times' style='color:red' aria-hidden='true'></i> With the Russel Levers engaged <b>|</b> , any needles in 'D' position will not knit.",
+                "OPTION_MESSAGE_2": "<i class='fa fa-check' aria-hidden='true'></i><b>CORRECT!</b> Knit Plain knitting with the Russel Levers dis-engaged <b>||</b><b>||</b>  ",
+                "OPTION_MESSAGE_3": "Stockinette - no patterning.",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_TEXT": "Set Carriage to Plain Knitting"
+              },
+              "legacyComponentId": 4001,
+              "order": 7
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "2115",
+                "CHALLENGE_COMPONENTID": "4002",
+                "OPTION_1": "<b>A:</B> Disengage <b>||</b> both Russel levers",
+                "OPTION_2": "<b>B:</b> Leave the Russel Levers engaged <b>|</b> AND take all needles out of 'D' (Hold) position",
+                "OPTION_3": "Both A and B",
+                "OPTION_MESSAGE_1": "<i class='fa fa-check' aria-hidden='true'></i> With the Russel Levers set to <b>||</b>, all needles will knit",
+                "OPTION_MESSAGE_2": "<i class='fa fa-check' aria-hidden='true'></i> By putting needles into working or middle position, the  needles will knit no matter how the Russel Levers are set",
+                "OPTION_MESSAGE_3": "<i class='fa fa-check' aria-hidden='true'></i> Both methods will cancel hold ... your choice!",
+                "QUESTION_MANDITORY": "1",
+                "QUESTION_TEXT": "Cancel Hold"
+              },
+              "legacyComponentId": 4002,
+              "order": 8
+            }
+          ],
+          "title": "Check your Understanding",
+          "slug": "check-your-understanding",
+          "order": 5,
+          "legacy": {
+            "assignId": 2115,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<img src=\"/challenge/images/v2/34/lk150_patterning/tuck_drawing.jpg\"><br><i class=\"fa fa-check-square fa-2x\" style=\"color:#9E2065\" aria-hidden=\"true\"></i> <b>Use even weight to help keep the tuck strands taut enough to knit smoothly.</b>\r\n<br>When establishing your stitch pattern,\r\nCheck to confirm the tuck stitches knit correctly on the closing row.<br><i class=\"fa fa-check-square fa-2x\" style=\"color:#9E2065\" aria-hidden=\"true\"></i> \r\n<b>As you are knitting, pull the work down now and then.</b><br>  Even if you have the work weighted properly, the tuck stitches tend to gather up and get caught.<br><i class=\"fa fa-check-square fa-2x\" style=\"color:#9E2065\" aria-hidden=\"true\"></i> \r\n<b>Which side is the right side???</b><br>  Your choice!  That's the beauty of many tuck stitch patterns, they are reversible!\r\n<br><i class=\"fa fa-check-square fa-2x\" style=\"color:#9E2065\" aria-hidden=\"true\"></i> \r\n\r\n<del><b>You can't tuck 2 needles side by side</del></b><br>  This is true for many automatic patterning machines (punchcard or electronic), but the LK-150 WILL allow you to tuck across 2 stitches.  Notice how the tuck travels between the 2 needles.  Knit carefully for success.<br><i class=\"fa fa-check-square fa-2x\" style=\"color:#9E2065\" aria-hidden=\"true\"></i> \r\n<b>Having trouble knitting with tuck?</b>\r\n<ul>\r\n<li>Knit fewer tuck rows - less strands = easier knitting</li>\r\n<li>Knit the closing row manually.  Hand knit each stitch to ensure  the tucks knit properly.  After manually knitting one row, Cancel hold on the carriage,  pull the needles all the way out and carefully knit the next row.</li>\r\n</ul><br>\r\n\r\n<i class=\"fa fa-check-square fa-2x\" style=\"color:#9E2065\" aria-hidden=\"true\"></i> \r\n<b>Tuck stitch patterns are wider than stockinette.</b> <br> They allow you to knit wider pieces, minimizing the needlebed size limitations (total number of needles available).<br><i class=\"fa fa-check-square fa-2x\" style=\"color:#9E2065\" aria-hidden=\"true\"></i> \r\n<b>Tuck stitch patterns are shorter than stockinette.</b><br> You'll need to knit more rows for the same length.<br><i class=\"fa fa-check-square fa-2x\" style=\"color:#9E2065\" aria-hidden=\"true\"></i> \r\n<b>Tuck stitch takes more yarn than other stitch patterns</b><br>Plan accordingly\r\n<br><i class=\"fa fa-check-square fa-2x\" style=\"color:#9E2065\" aria-hidden=\"true\"></i> \r\n\r\n<b>When manually tucking on your machine, avoid the end needles.</b><br>  Do not tuck the end 1-2 needles for easier seaming and a neater edge.\r\n\r\n",
+              "legacyComponentId": 4004,
+              "order": 1
+            }
+          ],
+          "title": "Tuck Notes",
+          "slug": "tuck-notes",
+          "order": 6,
+          "legacy": {
+            "assignId": 3117,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "292616094",
+              "title": "Watch as we knit Tuck Lace .. then try it yourself!",
+              "legacyComponentId": 4011,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "Try out this beautiful stitch pattern. <em>(Remember the needles out of work remain out of work throughout the entire sample)</em><br>\r\n    <ol class=\"instruction-list\">\r\n<li>Pull out 39 stitches (or an odd number)</li>\r\n<li>Push every other needle to \"A\" (out of work position) keeping the edge needles in working position</li>\r\n<li>Cast on over the needles in work (every other needle)</li>\r\n<li>Hang your cast on comb</li>\r\n<li>Knit 2 rows</li>\r\n<li>Hang claw weight</li>\r\n<li>From the needles that are in working position, pull every other needle  to hold position</li>\r\n<li>Set the carriage to hold in both directions</li>\r\n<li>Knit 4 rows</li>\r\n<li>Cancel Hold</li>\r\n<li>Knit 1 row (all needles should knit)</li>\r\n<li>Working with the needles in work, pull out the opposite set of every other needles to hold position</li>\r\n<li>Set carriage to hold</li>\r\n<li>Knit 4 rows</li>\r\n<li>Cancel Hold</li>\r\n<li>Knit 1 row</li>\r\n</ol>\r\nRepeat this sequence 8-10 times. Bind off or drop the swatch from the machine.\r\n    <img src=\"/challenge/images/v2/34/LK150_patterning/tuck_demo_pattern.jpg\">\r\n\r\n</div>",
+              "legacyComponentId": 4012,
+              "order": 2
+            }
+          ],
+          "title": "Demo and Challenge",
+          "slug": "demo-and-challenge",
+          "order": 7,
+          "legacy": {
+            "assignId": 3118,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Sometimes you just want a LITTLE texture to your knitting. Simple tuck stitches can add bulk (and width).<br>Here are 3 variations, I'll bet you'll be surprised (as I was) to compare the knit side of these tuck samples)\r\n\r\n<div class=\"col-md-8-offset-1 pull-right\"><img src=\"/challenge/images/v2/34/tuck1_blog.jpg\"></div>\r\n<p class=\"text-right\"><br>In this sample, you are tucking every other needle and tucking on every row.  The fabric is quite dense, but look at the interesting columns of knit stitches!</p>\r\n\r\n\r\n<br>\r\n\r\n\r\n<i class=\"fa fa-lightbulb-o\"></i> Search \"tuck\" in the <a href=\"http://www.knititnow.com/learn/catalog.cfm\" target=\"_blank\" rel=\"noopener noreferrer\">Knit it Now Learning Library</a>, you'll find over 30 tutorials about this versatile technique.\r\n\r\n<hr />\r\n\r\n<div class=\"col-md-8-offset-1\">\r\n<img src=\"/challenge/images/v2/34/tuck2_blog.jpg\">\r\n</div>\r\n\r\n<p><br>This time, alternate the tucked needles again, but add a plain row of knitting between.  This makes a much less dense fabric, and IMHO (in my humble opinion) the knit side looks best!</p>\r\n\r\n\r\n<hr />\r\n\r\n<i class=\"fa fa-lightbulb-o\"></i> For some tuck \"eye candy\" take a look at <a href=\"http://www.knititnow.com/knit/stitchlibrary/5/tuck\">tuck in the Knit it Now Stitch Library</a> - imagine all the variations!\r\n\r\n<div class=\"col-md-8-offset-1 pull-right\">\r\n\r\n<img src=\"/challenge/images/v2/34/tuck3_blog.jpg\">\r\n</div>\r\n\r\n\r\n<p class=\"text-right\"><br>Tuck the same needles every other row .... wow!  I can see the knit side of this substituting for ribbing.  There isn't any stretch, but the look would be a great contrast to plain 'ol stockinette or reverse stockinette.</p>\r\n",
+              "legacyComponentId": 2986,
+              "order": 1
+            }
+          ],
+          "title": "More Possibilities",
+          "slug": "more-possibilities",
+          "order": 8,
+          "legacy": {
+            "assignId": 1112,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Hand manipulated knit and purl stitches PLUS tuck EQUALS Fisherman rib.  This classic stitch pattern is thick, warm, textured, reversible and stretchy.<br>It's perfect for scarves, earwarmers, hats, fingerless mitts ... whatever you can imagine. <br>With this technique you can work this on any manual machine, including the LK-150",
+              "legacyComponentId": 5549,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "372652228",
+              "title": "Fisherman Rib on the LK-150",
+              "legacyComponentId": 5548,
+              "order": 2
+            }
+          ],
+          "title": "Fisherman Rib",
+          "slug": "fisherman-rib",
+          "order": 9,
+          "legacy": {
+            "assignId": 3740,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859832",
+              "title": "Blister Stitch Tips",
+              "legacyComponentId": 4013,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<br>Although this video is showing a standard gauge machine, it is demonstrating manual needle selection as you would work on your LK-150 machine.<br>",
+              "legacyComponentId": 4015,
+              "order": 2
+            }
+          ],
+          "title": "Multi-Color Tuck",
+          "slug": "multi-color-tuck",
+          "order": 10,
+          "legacy": {
+            "assignId": 1098,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/34/handwriting/try_it_yourself.gif\">\r\n              <img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/LK150_patterning/tuck_exercises/diagonal_tuck4.jpg\">\r\n\r\n\r\n                  <img src=\"/challenge/images/v2/34/LK150_patterning/tuck_exercises/diagonal_2color_tuck.jpg\">\r\n</div>\r\n<br>\r\n<hr><br><img src=\"/challenge/images/v2/34/handwriting/check_this_out.gif\"><br>This is is the same tuck pattern in 1 color!  Great visual interest and texture!\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/LK150_patterning/tuck_exercises/diagonal_tuck3.jpg\">\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4014,
+              "order": 1
+            }
+          ],
+          "title": "Multi-Color Practice",
+          "slug": "multi-color-practice",
+          "order": 11,
+          "legacy": {
+            "assignId": 3120,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/lk150_patterning/russel_levers.png\">\r\n    When your needles are all the way out to \"D\" position<br><b>AND</b><br> the Russel Levers are engaged <b>|</b>,<br> the needles don't knit and nothing happens.<br>\r\n\r\n\r\n<br><h3><i class=\"fa fa-lightbulb-o fa-2x\"></i> Here are 5 reasons for using this setting</h3><br>\r\n\r\n<h3><img class=\"img class=\"img-responsive pull-left\" src=\"/challenge/images/v2/34/lk150_patterning/course_1.png\">   Free Pass</h3><br>\r\n For some reason you need to position your carriage on the opposite side of the bed.  Let's say you ripped out a row or two. Your working yarn is on the left side of the bed and the carriage is on the right.  Use hold to get the carriage back into position.<br>\r\n<ol><li>Pull all needles to \"D\" hold</li><li>Set the carriage to hold (both Russel Levers engaged <b>|</b> )</li><li><b>FREE PASS</b> to the opposite side of the bed</li><li>Reset your row counter</li></ol>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/lk150_patterning/split_bed1.jpg\">\r\n\r\n\r\n\r\n\r\n\r\n<h3><img class=\"pull-left\" src=\"/challenge/images/v2/34/lk150_patterning/course_2.png\">   Partial Knitting</h3>\r\nYou may be knitting a child's sweater and want to put a slit at the back neck opening to make it easier to pull over the head.<br>\r\n\r\nYour pattern may tell you to \"hold 25 needles left of 0\" and continue knitting for 15 rows. You would use hold to knit one side of the back without taking the other side off the needlebed.\r\n<ol>\r\n<li>Pull 25 needles left of 0 to \"D\" hold</li>\r\n<li>Set the carriage to hold (Both Russel levers engaged <b>|</b>)</li>\r\n<li>Follow the pattern for one side of the knitting</li>\r\n<li>Bind off as instructed and take those needles out of work</li>\r\n<li>Break the working yarn<br></li>\r\n<li>Cancel Hold (Both Russel Levers NOT engaged) <b>||</b></li>\r\n<li>Re-thread the carriage</li>\r\n<li>Follow the pattern instructions for the remaining side</li>\r\n<li>Bind off as instructed</li>\r\n</ol>\r\n\r\n\r\n\r\n<br>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/lk150_patterning/split_back.jpg\">\r\n\r\n\r\n\r\n<h3> <img class=\"pull-left\" src=\"/challenge/images/v2/34/lk150_patterning/course_3.png\">   Short Row Shaping</h3><br>Short row shaping (also called partial knitting) is use to create curves in your knitting.  From bust darts to sock toes and heels, shaping mittens to shaping necklines, short rows are a staple in a machine knitter's bag of tricks. Although outside the scope of this course, Knit it Now has extensive information about using short row shaping. \r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/lk150_patterning/short_row_toes_thumb.jpg\">\r\n\r\n\r\n\r\n\r\n<h3><img class=\"pull-left\" src=\"/challenge/images/v2/34/lk150_patterning/course_4.png\"> \r\n  Stitch Patterning</h3><br>This is where the fun stuff happens! The possibilities for putting needles in hold to create stitch patterns are practically endless!<br>Please take time to explore tuck stitch and all its variations.\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/lk150_patterning/tuck_examples.png\">\r\n\r\n\r\n\r\n<h3><img class=\"pull-left\" src=\"/challenge/images/v2/34/lk150_patterning/course_5.png\"> \r\n      <i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Super-Fast, Closed Cast On</h3><br>Not only is this cast on fast AND easy to remember, it provides <b>instant gathers</b><br>\r\n<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/151858742' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\r\n</div>\r\n\r\n",
+              "legacyComponentId": 2984,
+              "order": 1
+            }
+          ],
+          "title": "Free Pass, Hold, Tuck",
+          "slug": "free-pass-hold-tuck",
+          "order": 12,
+          "legacy": {
+            "assignId": 1094,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "SLIP (Skip)",
+      "slug": "slip-skip",
+      "displayOrder": 30,
+      "legacy": {
+        "itemId": 244,
+        "lessonOrder": 30
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<img src=\"/challenge/images/v2/34/LK150_patterning/slip/slip2.png\">\r\nSlipped (or skipped) stitch patterns are created by slipping or skipping individual needles. The slipped needles do not form stitches and the working yarn strand is carried UNDER the needles (as opposed to Tuck, where the working  yarn is carried OVER the needles)<br>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/LK150_patterning/slip/slip_strand.jpg\">\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/intro_slip.jpg\">\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4025,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "Machine knitting charts will often use these symbols to indicate SLIP\r\n\r\n<img src=\"/challenge/images/v2/34/slip_symbol1.jpg\">\r\n<img src=\"/challenge/images/v2/34/slip_symbol2.jpg\">\r\n<img src=\"/challenge/images/v2/34/slip_chart2.jpg\">\r\n\r\n\r\n",
+              "legacyComponentId": 4029,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<Div class=\"section-title MachineknittingColor\">Punchcards</div>\r\n\r\nBecause multiple needles can be slipped, a variety of punchcards can be used.<br>As an LK-150 knitter, you will need to \"translate\" the black and white holes in punchards for your machine. We will cover this in a following lesson.<br><b>HINT</b><br>For Slip, needles in \"B\" (working position) DO NOT Knit. Needles in \"C\" or \"D\" knit. (this differs from tuck). So the logic for hand selecting needles is different for slip than tuck.<br><img src=\"/challenge/images/v2/34/dont_freak_out.gif\">\r\n\r\n<div>\r\n<img src=\"/challenge/images/v2/34/slip_punchcard1.jpg\">\r\n<img src=\"/challenge/images/v2/34/slip_punchcard2.jpg\">\r\n</div\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4051,
+              "order": 5
+            }
+          ],
+          "title": "What is Slip? The Mechanics",
+          "slug": "what-is-slip-the-mechanics",
+          "order": 1,
+          "legacy": {
+            "assignId": 1099,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Because the strands are carried across the purl side of the work, the obvious choice for the \"right side\" (public side) of the knitting is the purl side. But this versatile stitch has more uses!\r\n\r\n<img src=\"/challenge/images/v2/34/course_1.png\">\r\n\r\n<figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/slip_sample_purple1.jpg\">\r\n\r\n<figcaption align=\"center\"><br>Purl side facing with slipped floats</figcaption>\r\n</figure><br>\r\n\r\n<hr>\r\n\r\n<img src=\"/challenge/images/v2/34/course_2.png\">\r\n\r\n<figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/slip_sample_purple2.jpg\">\r\n\r\n<figcaption align=\"center\"><br>Same sample as above: Knit side facing with \"embossed\" texture.</figcaption>\r\n</figure><br>\r\n\r\n<hr>\r\n\r\n<img src=\"/challenge/images/v2/course_3.png\">\r\n\r\n<figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/slip_sample_color.jpg\">\r\n\r\n<figcaption align=\"center\"><br>Colorwork with no floats!.</figcaption>\r\n</figure>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4032,
+              "order": 1
+            }
+          ],
+          "title": "Right Side? Wrong Side?",
+          "slug": "right-side-wrong-side",
+          "order": 2,
+          "legacy": {
+            "assignId": 1100,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/slip/slip_sample1.jpg",
+                  "caption": "<a href=\"/knit/swatch/47/167/kin-slip\"><i class=\"fa fa-search\" aria-hidden=\"true\"></i> Single color slip stitch in the Knit it Now Stitch Pattern Library</a>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/slip/slip_sample2.jpg",
+                  "caption": "<a href=\"/knit/swatch/46/164/kin-slip\"><i class=\"fa fa-search\" aria-hidden=\"true\"></i> Diagonals</a>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/slip/slip_sample3.jpg",
+                  "caption": "<a href=\"/knit/swatch/43/155/kin-slip\"><i class=\"fa fa-search\" aria-hidden=\"true\"></i> Zig Zags</a>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/slip/slip_sample4.jpg",
+                  "caption": "<a href=\"/knit/swatch/42/151/kin-slip\"><i class=\"fa fa-search\" aria-hidden=\"true\"></i> More Zig Zags</a>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/slip/slip_sample5.jpg",
+                  "caption": "<a href=\"/knit/swatch/39/143/kin-slip\"><i class=\"fa fa-search\" aria-hidden=\"true\"></i> Blocks</a>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/slip/slip_sample6.jpg",
+                  "caption": "<a href=\"/knit/swatch/38/139/kin-slip\"><i class=\"fa fa-search\" aria-hidden=\"true\"></i> Texture!</a>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/slip/slip_color1.jpg",
+                  "caption": "<a href=\"/knit/swatch/67/247/kin-multi-slip\"><i class=\"fa fa-search\" aria-hidden=\"true\"></i> Color with no floats!</a>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/slip/slip_color2.jpg",
+                  "caption": "<a href=\"/knit/swatch/66/244/kin-multi-slip\"><i class=\"fa fa-search\" aria-hidden=\"true\"></i> Diamonds</a>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/slip/slip_color3.jpg",
+                  "caption": "<a href=\"/knit/swatch/63/232/kin-multi-slip\"><i class=\"fa fa-search\" aria-hidden=\"true\"></i> Columns + Color</a>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/slip/slip_color4.jpg",
+                  "caption": "<a href=\"/knit/swatch/59/211/kin-multi-slip\"><i class=\"fa fa-search\" aria-hidden=\"true\"></i> Do you see robots?</a>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/slip/slip_color5.jpg",
+                  "caption": "<a href=\"/knit/swatch/61/215/kin-multi-slip\"><i class=\"fa fa-search\" aria-hidden=\"true\"></i> Wild 'n Crazy</a>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/slip/slip_color6.jpg",
+                  "caption": "<a href=\"/knit/swatch/57/200/kin-multi-slip\"><i class=\"fa fa-search\" aria-hidden=\"true\"></i> So many possibilities!</a>"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 4027,
+              "order": 1
+            }
+          ],
+          "title": "Slip Possibilities",
+          "slug": "slip-possibilities",
+          "order": 3,
+          "legacy": {
+            "assignId": 1102,
+            "blockType": "Imageslideshow"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/34/course_1.png\"><b>Exercise #1 - plain knitting</b>\r\n\r\n\r\n    \r\n        <ol>\r\n            <li>No yarn in the carriage</li>\r\n            <li>Pull 20 needles to \"D\" Position</li>\r\n            <li>Carriage Set for Plain Knitting (<b>BOTH</b> side levers <i class=\"fa fa-caret-up fa-2x\" aria-hidden=\"true\"></i> and Russel Levers<b>||</b> are dis-engaged)</li>\r\n            <li>Push carriage from right to left. <i class=\"fa fa-arrow-left\"></i> What Happens?</li>\r\n            <li>Push carriage from left to right. <i class=\"fa fa-arrow-right\"></i> What Happens?</li>\r\n        </ol>\r\n    \r\n\r\n<!--- hidden answer. --->\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#theanswer').toggle()\"><i class=\"fa fa-arrows-v\"></i> <small>show</small></button>\r\n    \r\n\r\n<br>\r\n<!--- hidden answer. --->\r\n\r\n    \r\n        \r\n            <figure>\r\n                <img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/1_a.jpg\" />\r\n                <figcaption align=\"center\">Set the carriage for Plain Knitting<br>Needles in \"D\" (hold)</figcaption>\r\n            </figure>\r\n        \r\n        \r\n            <figure>\r\n                <img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/1_b.jpg\" />\r\n                <figcaption align=\"center\"><i class=\"fa fa-arrow-left\"></i> Knit right to left. <br>The needles are returned to working position. Even though the needles were in hold, the Carriage levers were dis-engaged (not set). </figcaption>\r\n            </figure>\r\n\r\n        \r\n\r\n    \r\n\r\n    <!-- *********************end of exercise 1 -->\r\n    <hr>\r\n\r\n    <img src=\"/challenge/images/v2/34/course_2.png\"><b>Exercise #2 - Engage Side Levers <i class=\"fa fa-circle\" aria-hidden=\"true\"></i></b>\r\n\r\n    \r\n        \r\n            <ol>\r\n                <li>No yarn in the carriage</li>\r\n                <li>Pull 20 needles to \"D\" Position</li>\r\n                <li>Both Side Levers are engaged <i class=\"fa fa-circle\" aria-hidden=\"true\"></i><br /></li>\r\n                <li>Push carriage from right to left. <i class=\"fa fa-arrow-left\"></i> What Happens?</li>\r\n                <li>Push carriage from left to right. <i class=\"fa fa-arrow-right\"></i> What Happens?</li>\r\n            </ol>\r\n        \r\n    \r\n    <!--- hidden answer. --->\r\n    \r\n        \r\n            <button class=\"btn btn-info\" onclick=\"$('#exercise2').toggle()\"><i class=\"fa fa-arrows-v\"></i> <small> show</small></button>\r\n        \r\n    \r\n    <br>\r\n    <!--- hidden answer. --->\r\n\r\n\r\n<br>\r\n\r\n\r\n    \r\n        \r\n            <figure><img src=\"/challenge/images/v2/34/slipD1.jpg\">\r\n                <figcaption>Both Side Levers engaged <i class=\"fa fa-circle\" aria-hidden=\"true\"></i><br>needles in \"D\" (hold)</figcaption>\r\n            </figure>\r\n        \r\n        \r\n            <figure><img src=\"/challenge/images/v2/34/slipD2.jpg\">\r\n                <figcaption><i class=\"fa fa-arrow-left\"></i> Knit right to left<br>Needles are moved to \"B\" (working position)</figcaption>\r\n            </figure>\r\n        \r\n        \r\n            <figure><img src=\"/challenge/images/v2/34/slipD3.jpg\">\r\n                <figcaption><i class=\"fa fa-arrow-right\"></i> Knit left to right<br>Needles remain in \"B\" position</figcaption>\r\n            </figure>\r\n        \r\n    \r\n\r\n\r\n<!-- *********************end of exercise 2 -->\r\n<hr>\r\n<img src=\"/challenge/images/v2/34/course_3.png\"><b>Exercise #3 - Slip Individual needles - The basis of patterning</b>\r\n\r\n\r\n\r\n    \r\n        <ol>\r\n            <li>No yarn in the carriage</li>\r\n            <li>Position 20 needles in \"B\" Position</li>\r\n            <li>Using the 1x1 needle pusher, push every other needle to \"D\" position</li>\r\n            <li>Set the BOTH Side Levers <i class=\"fa fa-circle\" aria-hidden=\"true\"></i> <br /></li>\r\n            <li>Push carriage from right to left.  What Happens to the needles in D position?</li>\r\n            <li>Push carriage from left to Right.  Does anything change?</li>\r\n        </ol>\r\n    \r\n\r\n<!--- hidden answer. --->\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#exercise3').toggle()\"><i class=\"fa fa-arrows-v\"></i><small> show</small></button>\r\n    \r\n\r\n\r\n<!--- hidden answer. --->\r\n\r\n\r\n    \r\n        <figure>\r\n            <img src=\"/challenge/images/v2/34/slip_eon1.jpg\">\r\n            <figcaption>Pull every other needle to \"D\" position<br>Both Side Levers engaged\r\n                <i class=\"fa fa-circle\" aria-hidden=\"true\"></i>\r\n            </figcaption>\r\n        </figure>\r\n    \r\n    \r\n        <figure>\r\n            <img src=\"/challenge/images/v2/34/slip_eon2.jpg\">\r\n            <figcaption><i class=\"fa fa-arrow-left\"></i> Pass the carriage from right to left.<br>The needles in \"D\" are moved to \"B\"</figcaption>\r\n        </figure>\r\n    \r\n    \r\n        <figure>\r\n            <img src=\"/challenge/images/v2/34/slip_eon3.jpg\">\r\n            <figcaption><i class=\"fa fa-arrow-left\"></i> Pass the carriage from right to left<br> Needles in \"B\" (working) position remain in \"B\"</figcaption>\r\n        </figure>\r\n    \r\n\r\n\r\n<!-- *********************end of exercise3 -->\r\n\r\n<hr>\r\n<img src=\"/challenge/images/v2/34/course_4.png\"><b>Exercise #4 - Slip groups of needles - The basis of Slip</b>\r\n\r\n\r\n\r\n    \r\n        <ol>\r\n            <li>No yarn in the carriage</li>\r\n            <li>Position 20 needles in \"B\" Position</li>\r\n            <li>Pull sets of 3 needles to \"D\" position</li>\r\n            <li>Disengage the LEFT Side Lever <i class=\"fa fa-carat-up fa-2x\" aria-hidden=\"true\"></i> </li>\r\n            <li>Engage the RIGHT Side Lever <i class=\"fa fa-circle\" aria-hidden=\"true\"></i> <br /></li>\r\n            <li><i class=\"fa fa-arrow-left\"></i> Push carriage from right to left.  What Happens to the needles in D position?</li>\r\n            <li>Pull sets of 3 needles to \"D\" position</li>\r\n            <li><i class=\"fa fa-arrow-right\"></i> Push carriage from left to Right.  What Happens?</li>\r\n        </ol>\r\n    \r\n\r\n<!--- hidden answer. --->\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#exercise4').toggle()\"><i class=\"fa fa-arrows-v\"></i><small> show</small></button>\r\n    \r\n\r\n\r\n<!--- hidden answer. --->\r\n\r\n\r\n    \r\n        <figure>\r\n            <img src=\"/challenge/images/v2/34/slip_group1.jpg\">\r\n            <figcaption>Pull groups of needles to \"D\" position<br> Edit\r\n                Formatting cheat sheet\r\n                <i class=\"fa fa-circle\"></i> LEFT Side Lever DISENGAGED\r\n                <i class=\"fa fa-circle\" aria-hidden=\"true\"></i>\r\n            </figcaption>\r\n        </figure>\r\n    \r\n    \r\n        <figure>\r\n            <img src=\"/challenge/images/v2/34/slip_group2.jpg\">\r\n            <figcaption><i class=\"fa fa-arrow-left\"></i> Pass the carriage from right to left.<br>The needles in \"D\" are moved to \"B\"</figcaption>\r\n        </figure>\r\n    \r\n    \r\n        <figure>\r\n            <img src=\"/challenge/images/v2/34/slip_group3.jpg\">\r\n            <figcaption><i class=\"fa fa-arrow-left\"></i> Pull groups of needles to \"D\" position<br> Edit\r\n                Formatting cheat sheet\r\n                <i class=\"fa fa-carat-up fa-3x\"></i> RIGHT Side Lever ENGAGED\r\n            </figcaption>\r\n        </figure>\r\n    \r\n\r\n    \r\n        <figure>\r\n            <img src=\"/challenge/images/v2/34/slip_group4.jpg\">\r\n            <figcaption><i class=\"fa fa-arrow-right\"></i> Pass the carriage from left to right<br> Needles in \"D\" position move to \"B\"</figcaption>\r\n        </figure>\r\n    \r\n\r\n\r\n\r\n\r\n\r\n    <img src=\"/challenge/images/v2/34/dont_worry_yarn_stitches.gif\">\r\n\r\n\r\n\r\n<!-- *********************end of exercise4 -->\r\n",
+              "legacyComponentId": 4035,
+              "order": 1
+            }
+          ],
+          "title": "Slip Stitch Dry  Run",
+          "slug": "slip-stitch-dry-run",
+          "order": 4,
+          "legacy": {
+            "assignId": 3124,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "    \r\n        \r\n            <ol>\r\n<li>Cast on 20 stitches with any method</li>\r\n<li>Hang some weight</li>\r\n<li><b>Knit a few rows </b></ol><br>\r\n<em><b>NOTE:</b> Throughout these exercises the Russel Levers are NOT engaged.</em>\r\n            <img src=\"/challenge/images/v2/34/course_1.png\"><b>Exercise #1- Basic Slip</b>\r\n        \r\n    \r\n    \r\n          \r\n<ol>\r\n                 <li>Arrange every other needle (EON) to \"D\" position</li>\r\n                <li>Carriage on the right, <i class=\"fa fa-circle\"></i> engage BOTH Side Levers. <i class=\"fa-fa-arrow_left\"></i><i class=\"fa fa-arrow-left\"></i> Knit to the Left. <em> Notice the stitches and the position of the needles</em></li>\r\n               <li>Arrange THE SAME NEEDLES (EON) to \"D\" position</li>\r\n                <li><i class=\"fa fa-arrow-right\"></i> Knit back to the right. What happened? Why?</li> </ol>\r\n                    \r\n    \r\n<!--- hidden answer. --->\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#exercise1').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>show</small></button>\r\n     \r\n\r\n<br>\r\n\r\n    \r\n<!--- hidden answer. --->\r\n\r\n        <figure><img src=\"/challenge/images/v2/34/yarn_eon1.jpg\"><figcaption align='center'><br>Every other needle in \"D\"<br>BOTH Side Levers <i class=\"fa fa-circle\"></i> ENGAGED </br>Russel Levers NOT engaged  \r\n</figcaption></figure> \r\n\r\n        <figure align=\"center\"><img src=\"/challenge/images/v2/34/yarn_eon2.jpg\"><figcaption align='center'><br><i class=\"fa fa-arrow-left\"></i> Knit Right to Left <br>The needles that were in \"B\" position SLIP<br>\r\nThe needles that were in \"D\" position KNIT AND are returned to \"B\" position</figcaption></figure>\r\n        <figure align=\"center\"><img src=\"/challenge/images/v2/34/yarn_eon3.jpg\"><figcaption align='center'><br>Return the SAME needles to \"D\" position. (Carriage Side Levers remain engaged)</figcaption></figure>\r\n <figure align=\"center\"><img src=\"/challenge/images/v2/34/yarn_eon4.jpg\"><figcaption align='center'><br><i class=\"fa fa-arrow-right\"></i> Knit  to the right<br> \"B\" needles slip - \"D\" needles knit (and return to \"B\") <br><em><small>Notice the 2 slipped strands</small></em></figcaption></figure>\r\n\r\n<div>\r\n<b>NOTE: To slip stitches, the carriage needs to be set to SLIP (Side levers) AND the needles need to be in \"D\"position.</b></div>\r\n\r\n\r\n   \r\n\r\n\r\n\r\n \r\n\r\n<!--- *******************************End of exercise 1 -->\r\n<hr>\r\n    \r\n        <img src=\"/challenge/images/v2/34/course_2.png\"><b>\r\n            Exercise #2 - Slip multiple Needles</b>\r\n        \r\n    </div>\r\n    \r\n        \r\n            <ol>\r\n                <li>Set carriage for plain knitting (dis-engage Side Levers <i class=\"fa fa-caret-up fa-2x\" aria-hidden=\"true\"></i>)</li>\r\n                <li>Knit a few plain rows - end with carriage on the right</li>\r\n                <li>Set Carriage for Slip (Both Side Levers Engaged) <i class=\"fa fa-circle\" aria-hidden=\"true\"></i><br /></li>\r\n                <li>Pull groups of needles to \"D\" position</li>\r\n                <li>Knit from <i class=\"fa fa-arrow-left\"></i> Right to Left. <em> What Happens?</em></li>\r\n<li>Pull DIFFERENT groups of needles to \"D\" position</li>\r\n                <li>Push carriage from <i class=\"fa fa-arrow-right\"></i> Left to Right <em> What Happens?</em><br><b> Notice the slipped strands</b></li>\r\n            </ol>\r\n        \r\n    \r\n<!--- hidden answer. --->\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#exercise2').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>show</small></button>\r\n     \r\n\r\n<br>\r\n\r\n  \r\n<!--- hidden answer. --->\r\n   \r\n        \r\n<figure>\r\n\r\n<img src=\"/challenge/images/v2/34/yarn_groups1.jpg\"><figcaption align=\"center\"><br>Carriage set to Slip<br>Groups of needles in \"D\" position</figcaption>\r\n<figure>\r\n        \r\n</figure>\r\n<img src=\"/challenge/images/v2/34/yarn_groups1a.jpg\"><figcaption align=\"center\"><br><i class=\"fa fa-arrow-left\"></i> Knit Right to Left<br>NEEDLES ARE RETURNED TO \"D\" (working position)</figcaption>\r\n</figure>\r\n         \r\n<figure>\r\n<img src=\"/challenge/images/v2/34/yarn_groups3.jpg\"><figcaption align=\"center\"><br><i class=\"fa fa-arrow-right\"></i> Knit Left  to Right<br>NEEDLES ARE RETURNED TO \"D\" (working position)</figcaption>\r\n</figure>\r\n\r\n    \r\n<!--- *******************************End of exercise 2 -->\r\n<hr>\r\n    \r\n  <img src=\"/challenge/images/v2/34/course_3.png\"><b>\r\n           Exercise #3 - Free Pass</b>\r\n        \r\n    </div>\r\n    \r\n        \r\n            <ol>\r\n                <li>All needles in \"B\" (working) Position</li>\r\n                <li>Carriage set to <i class=\"fa fa-caret-up fa-2x\" aria-hidden=\"true\"></i> Slip (BOTH side levers engaged)</li>\r\n                <li>Knit carriage from <i class=\"fa fa-arrow-left\"></i> Right to Left.  <em>What Happens?</em></li>\r\n                <li>Knit carriage from <i class=\"fa fa-arrow-right\"></i> Left to Right. <em>  What Happens? </em> <br>Notice that the working yarn travels across the needles and nothing knits BUT  no stitches drop either.  * * * * link to lesson * * * * This can be used for \"free pass\" to position the carriage  Why free pass????</li>\r\n            </ol>\r\n        \r\n    \r\n<!--- hidden answer. --->\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#exercise3').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>show</small></button>\r\n     \r\n\r\n<br>\r\n\r\n  \r\n<!--- hidden answer. --->\r\n   \r\n        \r\n<figure>\r\n<img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/yarn3_a.jpg\" />\r\n<figcaption align=\"center\"><br>All needles in hold<br> Carriage set to HOLD (Russel lever ENGAGED)</figcaption>\r\n</figure>\r\n\r\n        \r\n<figure>\r\n<img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/yarn3_b.jpg\" />\r\n<figcaption align=\"center\"><br>No needles knit <br> yarn passes across needles</figcaption>\r\n</figure>\r\n        \r\n<figure>\r\n<img src=\"/challenge/images/v2/34/lk150_patterning/tuck_exercises/yarn3_c.jpg\" />\r\n<figcaption align=\"center\"><br>No needles knit - yarn passes and may be loose and sloppy - adjust yarn tension before knitting.</figcaption>\r\n</figure>\r\n    \r\n\r\n<!--- *******************************End of exercise 3 -->\r\n\r\n",
+              "legacyComponentId": 4036,
+              "order": 1
+            }
+          ],
+          "title": "MORE Slip practice (with yarn)",
+          "slug": "more-slip-practice-with-yarn",
+          "order": 5,
+          "legacy": {
+            "assignId": 3125,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n \r\n<h4>Slip stitch has a variety of uses</h4>\r\nin addition to adding texture to your knitting and color work with NO FLOATS. <br>\r\n\r\n \r\n<center><img src=\"/challenge/images/v2/34/Dont_skip.gif\"></center>\r\n\r\n\r\n",
+              "legacyComponentId": 4064,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<img style=\"float:left\" src=\"/challenge/images/v2/course_1.png\">\r\n<h3>Free Pass</h3>\r\nYour working yarn is on one side of the knitting and your carriage is on the other. Maybe you've ripped out some rows or just need to move the carriage across the knitting WITHOUT dropping stitches.<br>\r\n\r\n\r\n\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#theanswer1').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>show</small></button>\r\n    \r\n\r\n<br>\r\n<!--- hidden answer. --->\r\n\r\n\r\n<i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Check out the <a href=\"/challenge/34/Group/3115/item#section248\"> \"Free Pass Refresher\" </a>lesson in this course.<br><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Also watch the \"Single Row Stripes\" lesson <i class=\"fa fa-hand-o-down\" aria-hidden=\"true\"></i> below.\r\n",
+              "legacyComponentId": 4057,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<img style=\"float:left\" src=\"/challenge/images/v2/course_2.png\">\r\n<h3>Single Row Stripes </h3>\r\n<i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Add color interest to your knitting with single row stripes using Slip Free Pass<br>\r\n\r\n\r\n\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#theanswer2').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>show</small></button>\r\n    \r\n\r\n<br>\r\n<!--- hidden answer. --->\r\n\r\n\r\n\r\n<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/294953374' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\r\n\r\n",
+              "legacyComponentId": 4060,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<img style=\"float:left\" src=\"/challenge/images/v2/course_3.png\">\r\n<h3>Marker Row </h3>\r\n<i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i>  Here are 3 methods of creating a marker row - including slip stitch\r\n<br>\r\n\r\n\r\n\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#theanswer3').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>show</small></button>\r\n    \r\n\r\n<br>\r\n<!--- hidden answer. --->\r\n\r\n\r\n\r\n<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/204717429' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\r\n\r\n",
+              "legacyComponentId": 4061,
+              "order": 4
+            },
+            {
+              "type": "richText",
+              "html": "<img style=\"float:left\" src=\"/challenge/images/v2/course_4.png\">\r\n<h3>Slip Cord (I-Cord) </h3>\r\n<i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i>  I-cord (or slip cord) can be used in many ways to embellish your knitting. It can be used as shoulder straps for girls dresses, belts and decorative ties … the list is endless! Machine knitters can quickly make I-cord and it is an essential technique for beginners to learn.<br>\r\nThis technique can also be used for decorative finishing edge for your knitting.\r\n\r\n\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#theanswer4').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>show</small></button>\r\n    \r\n\r\n<br>\r\n<!--- hidden answer. --->\r\n\r\n\r\n\r\n<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/151856550' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\r\n\r\n",
+              "legacyComponentId": 4062,
+              "order": 5
+            },
+            {
+              "type": "richText",
+              "html": "<img style=\"float:left\" src=\"/challenge/images/v2/course_5.png\">\r\n<h3>Slip Cast on </h3>\r\n<i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i>  Here's a fast, closed cast on that can be worked on any machine. Use the slip setting, your cast on comb and get knitting FAST!\r\n\r\n\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#theanswer5').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>show</small></button>\r\n    \r\n\r\n<br>\r\n<!--- hidden answer. --->\r\n\r\n\r\n\r\n<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/294969382' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\r\n\r\n",
+              "legacyComponentId": 4063,
+              "order": 6
+            }
+          ],
+          "title": "Why Slip?",
+          "slug": "why-slip",
+          "order": 6,
+          "legacy": {
+            "assignId": 3128,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nThe previous exercises were designed to help you UNDERSTAND the concepts of the Slip settings on your machine.<br>Instead of referring to (or memorizing) the chart in your manual, remember:<br><b>There are 2 parts to using \"slip\" (needles AND side levers)</b><br><em><small>NOTE: Russel levers are DIS-ENGAGED</small></em><br>\r\n\r\n<div class=\"table-responsive\">\r\n    <table class=\"table table-striped table-bordered\">\r\n        <thead>\r\n            <tr>\r\n                <th>Side Lever(s) Engaged</th>\r\n                <th>Side Lever(s) Dis-Engaged</th>\r\n            </tr>\r\n        </thead>\r\n        <tbody>\r\n            <tr>\r\n                <td>Needles in \"B\" (working position) will SLIP</td>\r\n                <td>Needles In \"B\" (working position) will KNIT</td>\r\n            </tr>\r\n            <tr>\r\n                <td>Needles in \"C\" or \"D\" will KNIT<br /></td>\r\n                <td>Needles in \"C\" or \"D\" will KNIT<br /></td>\r\n            </tr>\r\n        </tbody>\r\n    </table>\r\n</div>\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/Side_Lever_gif.gif\">\r\n\r\n<!-- end row-->\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4037,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-refresh fa-spin fa-2x fa-fw\"></i>Test yourself:\r\n<em>Choose your answer from the white boxes below each question</em>",
+              "legacyComponentId": 4039,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3126",
+                "CHALLENGE_COMPONENTID": "4040",
+                "OPTION_1": "Left side lever engaged <i class='fa fa-circle' aria-hidden='true'></i>",
+                "OPTION_2": "Both side levers engaged <i class='fa fa-circle' aria-hidden='true'></i><i class='fa fa-circle' aria-hidden='true'></i>",
+                "OPTION_3": "Engage Russel Levers",
+                "OPTION_MESSAGE_1": "<i class='fa fa-check' aria-hidden='true'></i><b>CORRECT!</b> As you knit to the right, any needles in working position \"B\" WILL NOT Knit\r\n\r\n",
+                "OPTION_MESSAGE_2": "Yes and No - when knitting to the left, the right side lever position doesn't matter.  The direction of knitting PLUS the side lever engaged is what counts.",
+                "OPTION_MESSAGE_3": "<i class='fa fa-times style='color:red' aria-hidden='true'></i>Nope ... The Russel Levers control Tuck, not Slip - The Side Levers <i class='fa fa-circle' aria-hidden='true'></i> and <i class='fa fa-caret-up fa-2x' aria-hidden='true'></i> control slip.",
+                "QUESTION_MANDITORY": "1",
+                "QUESTION_TEXT": "<img class=\"img-responsive\" src=\"/challenge/images/v2/course_1.png\"> 'Set your carriage to slip to the left'<ol class=\"instruction-list\"></li></ol>"
+              },
+              "legacyComponentId": 4040,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3126",
+                "CHALLENGE_COMPONENTID": "4041",
+                "OPTION_1": "Put needles into 'D' Position",
+                "OPTION_2": "Dis-Engage the Side Levers ",
+                "OPTION_MESSAGE_1": "<i class='fa fa-times' style='color:red' aria-hidden='true'></i>Nope, you need to Dis-Engage the Side Levers  <i class='fa fa-caret-up fa-2x' aria-hidden='true'></i>",
+                "OPTION_MESSAGE_2": "<i class='fa fa-check' aria-hidden='true'></i><b>CORRECT!</b> Dis-Engage the Side Levers  <i class='fa fa-caret-up fa-2x' aria-hidden='true'></i>",
+                "QUESTION_MANDITORY": "1",
+                "QUESTION_TEXT": "<img class=\"img-responsive\" src=\"/challenge/images/v2/course_2.png\">'Cancel Slip'"
+              },
+              "legacyComponentId": 4041,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3126",
+                "CHALLENGE_COMPONENTID": "4042",
+                "OPTION_1": "A: Use your 1x1 Needle pusher an put needles to 'D'",
+                "OPTION_2": "B: Set the carriage to SLIP",
+                "OPTION_3": "Both A and B",
+                "OPTION_MESSAGE_1": "<i class='fa fa-times' style='color:red' aria-hidden='true'></i><b>2 STEPS<b> - put needles in 'D\" AND set the carriage to slip",
+                "OPTION_MESSAGE_2": "<i class='fa fa-times' style='color:red' aria-hidden='true'></i><b>2 STEPS<b> - put needles in 'D\" AND set the carriage to slip",
+                "OPTION_MESSAGE_3": "<i class='fa fa-check' style='color:red' aria-hidden='true'></i><b> Correct! </b><b>2 STEPS<b> - put needles in 'D\" AND set the carriage to slip",
+                "QUESTION_MANDITORY": "1",
+                "QUESTION_TEXT": "<img class=\"img-responsive\" src=\"/challenge/images/v2/course_3.png\"> 'Knit a Marker Row with slip'"
+              },
+              "legacyComponentId": 4042,
+              "order": 6
+            }
+          ],
+          "title": "Check your Understanding",
+          "slug": "check-your-understanding",
+          "order": 7,
+          "legacy": {
+            "assignId": 3126,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "PLATING",
+      "slug": "plating",
+      "displayOrder": 40,
+      "legacy": {
+        "itemId": 246,
+        "lessonOrder": 40
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Plating (also called plaiting or platting) is the process where 2 different yarns are knitted together.  It is more than running 2 ends together, the machine separates the strands so one strand appears on the knit side and the other strand appears on the purl side of the knitting.<br>\r\n\r\n<h3 class=\"section-title MachineknittingColor\">Why use Plating?</h3>\r\n\r\n<ol class=\"instruction-list\">\r\n\r\n<li>Knit reversible fabric with 2 different kind of yarn. Consider using different colors and/or textures.</li>\r\n<li>Give body to thin, wimpy yarn. Combine the thin yarn or plait it with a more substantial yarn.</li>\r\n<li><i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> Reinforce heels, knees, elbows</li>\r\n<li>Create unusual fabrics mixing plating with tuck</li>\r\n\r\n</ol>\r\n",
+              "legacyComponentId": 4065,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/plating2.jpg",
+                  "caption": "2 strands of equal weight \"held together\" in the same yarn feeder slot<br>\r\nKnit side<br><center>\r\n<img class=\"img-responsive\" src=\"https://www.knititnow.com/challenge/images/lk150_patterning/yarn3.jpg\"></center>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/plating2a.jpg",
+                  "caption": "2 strands of equal weight \"held together\" in the same yarn feeder slot<br>\r\nPurl side<br><center>\r\n<img class=\"img-responsive\" src=\"https://www.knititnow.com/challenge/images/lk150_patterning/yarn3.jpg\"></center>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/plating1.jpg",
+                  "caption": "2 yarns of equal weight - plated - White in #2 slot - Teal in #1 slot<br>\r\nPurl side<br><center>\r\n<img class=\"img-responsive\" src=\"https://www.knititnow.com/challenge/images/lk150_patterning/yarn3.jpg\"></center>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/plating1a.jpg",
+                  "caption": "2 yarns of equal weight - plated - White in #2 slot - Teal in #1 slot<br>\r\nKnit side<br><center>\r\n<img class=\"img-responsive\" src=\"https://www.knititnow.com/challenge/images/lk150_patterning/yarn3.jpg\"></center>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/plating3.jpg",
+                  "caption": "Textured yarn + Plain yarn (different weights) \"held together\" in the same feeder slot<br>\r\nPurl side<br><center>\r\n<img class=\"img-responsive\" src=\"https://www.knititnow.com/challenge/images/lk150_patterning/yarn2.jpg\"></center>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/plating3a.jpg",
+                  "caption": "Textured yarn + Plain yarn (different weights) \"held together\" in the same feeder slot<br>\r\nKnit side<br><br><center>\r\n<img class=\"img-responsive\" src=\"https://www.knititnow.com/challenge/images/lk150_patterning/yarn2.jpg\"></center>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/plating4a.jpg",
+                  "caption": "Textured yarn + Plain yarn White in #2 Feeder Slot (notice how the gimps pop through NICE!)<br>\r\nKnit side<br><br><center>\r\n<img class=\"img-responsive\" src=\"https://www.knititnow.com/challenge/images/lk150_patterning/yarn2.jpg\"></center>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/plating4.jpg",
+                  "caption": "Textured yarn + Plain yarn White in #2 Feeder Slot<br>\r\nPurl side<br><br><center>\r\n<img class=\"img-responsive\" src=\"https://www.knititnow.com/challenge/images/lk150_patterning/yarn2.jpg\"></center>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/plating5.jpg",
+                  "caption": "Textured yarns plated. Notice how the \"hairy\" yarn overpowers the other yarn.<br>\r\nPurl side.<br><center>\r\n<img class=\"img-responsive\" src=\"https://www.knititnow.com/challenge/images/lk150_patterning/yarn1.jpg\"></center>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/plating5a.jpg",
+                  "caption": "Textured yarns plated. Notice how the \"hairy\" yarn overpowers the other yarn.<br>\r\nKnit side.<br><center>\r\n<img class=\"img-responsive\" src=\"https://www.knititnow.com/challenge/images/lk150_patterning/yarn1.jpg\"></center>"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 4066,
+              "order": 2
+            }
+          ],
+          "title": "What is Plating?",
+          "slug": "what-is-plating",
+          "order": 1,
+          "legacy": {
+            "assignId": 1104,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nPlating is controlled by the feeder carriage. It positions the working yarn to create the technique.<br><img src=\"/challenge/images/v2/34/plating_feeder.jpg\">\r\n<img src=\"/challenge/images/v2/34/no_levers.gif\">\r\n\r\n\r\n<img class=\"pull-left\" \"img-responsive\" src=\"/challenge/images/v2/course_1.png\"> <h4>Consider the yarn weight:</h4><br>\r\nWhen plating, 2 strands are being knit together. Choose 2 yarns that COMBINED total a weight appropriate for your machine.  Remember that the 2 yarns together need to fit in the hooks of the needles.<br>\r\nWe choosing yarn, also consider the finished weight of the garment.<br><img class=\"pull-left\" \"img-responsive\" src=\"/challenge/images/v2/course_2.png\"> <h4>Knit at a looser tension</h4><br>\r\nBecause you are \"bulking-up\" the yarn plan to set your tension dial 1-2 numbers looser.\r\n<br><img class=\"pull-left\" \"img-responsive\" src=\"/challenge/images/v2/course_3.png\"> Mix 'n Match<br>Consider:\r\n<ul>\r\n<li>Combine a thicker yarn with a thin yarn</li>\r\n<li>2 fine yarns together</li>\r\n<li>A textured yarn with a plain yarn</li>\r\n<li>A variegated yarn with a plain color yarn</li>\r\n</ul>\r\n<br>\r\n\r\n<img class=\"pull-left\" img-responsive\" src=\"/challenge/images/v2/course_4.png\">\r\n<img src=\"/challenge/images/v2/swatch_NOT_optional.gif\">\r\nSwatch the same way you would for any other stitch pattern ... you do swatch... don't you???",
+              "legacyComponentId": 4067,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "295051516",
+              "title": "Threading the carriage for plating can be a bit tricky.",
+              "legacyComponentId": 4068,
+              "order": 4
+            }
+          ],
+          "title": "Plating Mechanics",
+          "slug": "plating-mechanics",
+          "order": 2,
+          "legacy": {
+            "assignId": 1105,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n    \r\nTo better understand plating and to get inspired to use this technique, try the following exercise with different yarns.<br><img src=\"/challenge/images/v2/ready_set_GetKnitting.gif\"><br>\r\n\r\n\r\n\r\n\r\n    \r\n        <i class=\"fa fa-hand-o-right fa-2x\" aria-hidden=\"true\"></i>Set your tension dial to a looser tension (how loose? It depends on the yarn you've chosen)<br><i class=\"fa fa-hand-o-right fa-2x\" aria-hidden=\"true\"></i>Using 2 strands of yarn,(not too heavy! - 1/2 the weight you'd usually use with your machine)<br><i class=\"fa fa-hand-o-right fa-2x\" aria-hidden=\"true\"></i>Cast on 30 stitches. Use any method you'd like, but add even weight.\r\n\r\n \r\n<img style=\"float:left\" src=\"/challenge/images/v2/course_1.png\">\r\nWith BOTH STRANDS in the #1 (main) yarn feeder, knit a few inches.<br><ul>\r\n<li>Is it hard to knit?  - USE a thinner yarn</li>\r\n<li>As you knit, feel the resulting knitting and judge the tension - adjust as you like.</li></ul>\r\n\r\n<img style=\"float:left\" src=\"/challenge/images/v2/course_2.png\">\r\nRe-thread the carriage - putting one yarn in each slot<br><ul>\r\n<li>Knit a few inches</li>\r\n<li>Note which color yarn is facing you as you knit (the purl side of the knitting)</li>\r\n</ul>\r\n\r\n<img style=\"float:left\" src=\"/challenge/images/v2/course_3.png\">Reverse the yarns in the feeders<br><ul>\r\n<li>Knit a few inches</li>\r\n<li>Note which color yarn is facing you as you knit (the purl side of the knitting)</li>\r\n</ul>\r\n<img style=\"float:left\" src=\"/challenge/images/v2/course_4.png\"><br> Repeat this exercise with different yarns in both color, weight and texture.  <b>Get Creative!</b>\r\n\r\n\r\n    \r\n    <img src=\"/challenge/images/v2/34/plating_practice.jpg\">\r\n",
+              "legacyComponentId": 4072,
+              "order": 2
+            }
+          ],
+          "title": "Plating Practice",
+          "slug": "plating-practice",
+          "order": 3,
+          "legacy": {
+            "assignId": 1106,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3134",
+                "CHALLENGE_COMPONENTID": "4073",
+                "OPTION_1": "True",
+                "OPTION_2": "False",
+                "OPTION_MESSAGE_1": "<i class='fa fa-times style='color:red' aria-hidden='true'></i>NO!  You can use any yarn that is appropriately sized for your machine. Remember you are knitting both strands at the same time. So the combination of the 2 strands must equal (or be less than) what you would normally knit on your machine.",
+                "OPTION_MESSAGE_2": "<i class='fa fa-check' aria-hidden='true'></i> <b>CORRECT!</b> You can use any yarn that is appropriately sized for your machine. Remember you are knitting both strands at the same time. So the combination of the 2 strands must equal (or be less than) what you would normally knit on your machine.",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_TEXT": "You MUST use really skinny yarn for plating."
+              },
+              "legacyComponentId": 4073,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3134",
+                "CHALLENGE_COMPONENTID": "4074",
+                "OPTION_1": "True",
+                "OPTION_2": "False",
+                "OPTION_MESSAGE_1": "<i class='fa fa-times style='color:red' aria-hidden='true'></i> Nope ... Unlike other machines, the plating feeder is built into the regular knitting carriage.",
+                "OPTION_MESSAGE_2": "<i class='fa fa-check' aria-hidden='true'></i><b>CORRECT!</b> Unlike other machines, the plating feeder is built into the regular knitting carriage.",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_TEXT": "The plating device is a separate attachment on the LK 150 machine<br>"
+              },
+              "legacyComponentId": 4074,
+              "order": 3
+            }
+          ],
+          "title": "Check your Understanding",
+          "slug": "check-your-understanding",
+          "order": 4,
+          "legacy": {
+            "assignId": 3134,
+            "blockType": "Questions"
+          }
+        }
+      ]
+    },
+    {
+      "title": "FAIRISLE | STRANDED KNITTING",
+      "slug": "fairisle-stranded-knitting",
+      "displayOrder": 45,
+      "legacy": {
+        "itemId": 250,
+        "lessonOrder": 45
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Fairisle (or stranded) knitting can be worked on your LK-150 machine.<br>Although this is a manual machine (no punchcards or electronics), knitting simple fairisle patterns is still A LOT quicker than knitting by hand.<br>In addition, with practice,  your knitting will be a lot more even and stitches more uniform that knitting by hand.<br>The key to successful Fairisle knitting on this machine is not so much learning the levers, but being able to read and follow charts to hand select needles.\r\n<br><div>\r\nIf you've followed this course from the beginning, you should already know how to set the machine for Fairisle!<br>\r\n<h3>If you skipped the section on Slip Stitch - go back and work through all the exercises!</h3>",
+              "legacyComponentId": 4077,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "295851387",
+              "title": "Step by Step Fairisle",
+              "legacyComponentId": 4079,
+              "order": 3
+            }
+          ],
+          "title": "What is Fairisle?",
+          "slug": "what-is-fairisle",
+          "order": 1,
+          "legacy": {
+            "assignId": 3131,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3146",
+                "CHALLENGE_COMPONENTID": "4122",
+                "OPTION_1": "B",
+                "OPTION_2": "D",
+                "OPTION_3": "A",
+                "OPTION_MESSAGE_1": "<i class='fa fa-check' aria-hidden='true'></i> Correct!  With the carriage set to slip (Side Levers engaged) all needles in work should now be in 'B' position.\r\n",
+                "OPTION_MESSAGE_2": "<i class='fa fa-times' style='color:red' aria-hidden='true'></i> NO!  With the carriage set to slip (Side Levers engaged) all needles in work should now be in 'B' position.",
+                "OPTION_MESSAGE_3": "<i class='fa fa-times' style='color:red' aria-hidden='true'></i> Seriously??  <i class='fa fa-smile-o' aria-hidden='true'></i> Go back and study the slip section. The 'A' position is out of work position.",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_TEXT": "<img class='img-responsive pull-left' src='/challenge/images/course_1.png'>\r\nNo Yarn in the feeder<br><br>\r\n\r\n<img class='img-responsive pull-left' src='/challenge/images/course_2.png'>\r\nCarriage on the right<br><br>\r\n\r\n<img class='img-responsive pull-left' src='/challenge/images/course_3.png'>\r\nPull out 30 needles<br><br>\r\n\r\n<img class='img-responsive pull-left' src='/challenge/images/course_4.png'>\r\nWith carriage set to plain knitting, pass it to the left and right (to align the needles in 'B' working position)<br><br>\r\n\r\n<img class='img-responsive pull-left' src='/challenge/images/course_5.png'>\r\nEngage BOTH Side Levers<br><br>\r\n\r\n<img class='img-responsive pull-left' src='/challenge/images/course_6.png'>\r\nPull every 3rd needle to 'D' position<br><br>\r\n\r\n<img class='img-responsive pull-left' src='/challenge/images/course_7.png'>\r\nPass the carriage to the LEFT<br><br>\r\n<div class='well'>\r\nIn what position are ALL of the needles?</div>"
+              },
+              "legacyComponentId": 4122,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3146",
+                "CHALLENGE_COMPONENTID": "4123",
+                "OPTION_1": "B",
+                "OPTION_2": "D",
+                "OPTION_MESSAGE_1": "<i class='fa fa-check' aria-hidden='true'></i> You got it!  With the carriage set to slip (Side Levers engaged) all needles in work should now be in 'B' position.\r\n",
+                "OPTION_MESSAGE_2": "<i class='fa fa-times' style='color:red' aria-hidden='true'></i> NO!  With the carriage set to slip (Side Levers engaged) all needles in work should now be in 'B' position.",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_TEXT": "<img class='img-responsive pull-left' src='/challenge/images/course_8.png'>Pull the same needles to 'D' \r\npass the carriage to the right.<br><br>\r\n\r\n<div class='well'>  In what position are ALL of the needles this time?</div>"
+              },
+              "legacyComponentId": 4123,
+              "order": 3
+            }
+          ],
+          "title": "Fairisle Dry Run",
+          "slug": "fairisle-dry-run",
+          "order": 2,
+          "legacy": {
+            "assignId": 3146,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Duplicate the exercise demonstrated in the video in the previous lesson.  2 rows of 3 stitch dashes.<br>Try this practice more than once with different needle combinations until you get comfortable with reading your knitting and following a chart.<br>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/lk150_patterning/fairisle_practice_thumb.jpg\">\r\n<br>Choose 2 contrasting colors of yarn of similar weight.  Name them Color A and Color B<br>\r\n\r\n\r\n<img class=\"pull-left\" src=\"/challenge/images/v2/34/course_1.png\"><b>Get started</b>\r\n\r\n\r\n    \r\n        <ol>\r\n            <li>With Color A, cast on 33 stitches (multiple of 6 plus 3)</li>\r\n            <li>Use any cast on method of your choice</li>\r\n            <li>Knit for 2\", end with the carriage on the right</li>\r\n        </ol>\r\n    \r\n\r\n<!--- hidden answer. --->\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#theanswer').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>Tips</small></button>\r\n    \r\n\r\n<br>\r\n<!--- hidden answer. --->\r\n\r\n    \r\n        \r\n         <em> If you aren't familiar with <b>stitch multiples</b> check the tutorial in the \"Miscellaneous\" section below</em>\r\n\r\n        \r\n\r\n    \r\n\r\n<hr>",
+              "legacyComponentId": 4102,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<img class=\"pull-left\" src=\"/challenge/images/v2/34/course_2.png\">\r\n\r\n    \r\n        <ol>\r\n            <li>Engage the SIDE LEVERS <i class=\"fa fa-circle\"></i></li>\r\n            <li>Starting at the right edge, pull groups of 3 needles to \"D\" position</li>\r\n            <lI>Remove color A from the carriage and secure it in the yarn rest</li>\r\n            <li>Thread the carriage with color B</li>\r\n            <li>Knit from right to left</li>\r\n        </ol>\r\n    \r\n\r\n<!--- hidden answer. --->\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#theanswer1').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>Tips</small></button>\r\n    \r\n\r\n<br>\r\n<!--- hidden answer. --->\r\n\r\n    \r\n        \r\n <em> Be sure both end needles are in \"D\" position</em>\r\n\r\n        \r\n\r\n    \r\n\r\n\r\n<!-- *********************end of exercise 1 -->\r\n<hr>",
+              "legacyComponentId": 4104,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<img class=\"pull-left\" src=\"/challenge/images/v2/34/course_3.png\">\r\n\r\n\r\n    \r\n        <ol>\r\n            \r\n            <li>Starting at the right edge, pull THE SAME GROUPS of 3 needles to \"D\" position</li>\r\n    <li>With Color B still threaded, knit from LEFT to RIGHT</li>\r\n        </ol>\r\n    \r\n\r\n<!--- hidden answer. --->\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#theanswer2').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>Tips</small></button>\r\n    \r\n\r\n<br>\r\n<!--- hidden answer. --->\r\n\r\n    \r\n        \r\n<em>Before knitting the row, confirm the Side Levers are engaged and the Russel Levers are dis-engaged</em>\r\n\r\n        \r\n\r\n    \r\n\r\n\r\n\r\n<hr>",
+              "legacyComponentId": 4105,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<img class=\"pull-left\" src=\"/challenge/images/v2/34/course_4.png\">\r\n\r\n\r\n    \r\n        <ol>\r\n            \r\n            <li>Pull the OPPOSITE groups of 3 needles to \"D\" position</li>\r\n    <li>Change to color A and knit from RIGHT to LEFT</li>\r\n        </ol>\r\n    \r\n\r\n<!--- hidden answer. --->\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#theanswer7').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>Tips</small></button>\r\n    \r\n\r\n<br>\r\n<!--- hidden answer. --->\r\n\r\n    \r\n        \r\n<em>Note that the color B stitches are not knitting</em>\r\n\r\n        \r\n\r\n    \r\n\r\n\r\n\r\n<hr>",
+              "legacyComponentId": 4106,
+              "order": 4
+            },
+            {
+              "type": "richText",
+              "html": "<img class=\"pull-left\" src=\"/challenge/images/v2/34/course_5.png\">\r\n\r\n\r\n    \r\n        <ol>\r\n            \r\n            <li>Pull the THE SAME groups of 3 needles to \"D\" position</li>\r\n    <li>With Color A still threaded knit from LEFT to RIGHT</li>\r\n        </ol>\r\n    \r\n\r\n<!--- hidden answer. --->\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#theanswer9').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>Tips</small></button>\r\n    \r\n\r\n<br>\r\n<!--- hidden answer. --->\r\n\r\n    \r\n        \r\n<em>When changing colors and both working yarns are on the same side, release both of them and allow the take up spring to untangle.  Be sure to \"Milk the Cow\" to prevent sloppy edges.</em>\r\n\r\n        \r\n\r\n    \r\n\r\n\r\n\r\n<hr>",
+              "legacyComponentId": 4107,
+              "order": 5
+            },
+            {
+              "type": "richText",
+              "html": "<img class=\"pull-left\" src=\"/challenge/images/v2/34/course_6.png\">\r\n\r\n\r\n    \r\n        <ol>\r\n            \r\n            <li>Break color B and weave the tails over the needles in work</li>\r\n    <li>Change to color A and knit a few inches</li>\r\n<li>Bind off or drop the work from the machine</li>\r\n        </ol>\r\n    \r\n\r\n</div>\r\n<!--- hidden answer. --->\r\n\r\n    \r\n        <button class=\"btn btn-info\" onclick=\"$('#theanswer11').toggle()\"><i class=\"fa fa-arrows-v\"></i>  <small>Tips</small></button>\r\n    \r\n\r\n<br>\r\n<!--- hidden answer. --->\r\n\r\n    \r\n        \r\n <em> Stretch the knitting both ways to \"pop\" the stitches in place this will create uniform stitches.</em>\r\n\r\n        \r\n\r\n    \r\n\r\n\r\n\r\n<hr>",
+              "legacyComponentId": 4108,
+              "order": 6
+            }
+          ],
+          "title": "Basic Fairisle Practice",
+          "slug": "basic-fairisle-practice",
+          "order": 3,
+          "legacy": {
+            "assignId": 3139,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n    \r\nTo better understand fairisle and to get inspired to use this technique, try the following exercise.<br>What you should know:\r\n<ul>\r\n<li>Set your carriage for Fairisle (slip)</li>\r\n<li>Select needles for Fairisle</li>\r\n<li>Free pass</li>\r\n</ul>\r\n<img src=\"/challenge/images/v2/ready_set_GetKnitting.gif\"><br>\r\n<i class=\"fa fa-hand-o-right fa-2x\" aria-hidden=\"true\"></i>Cast on 30 stitches. Use any method you'd like, add some weight and knit a few rows.<br><i class=\"fa fa-hand-o-right fa-2x\" aria-hidden=\"true\"></i>Create a \"to-scale\" cheat sheet if you'd like.<br><i class=\"fa fa-hand-o-right fa-2x\" aria-hidden=\"true\"></i>The following lesson will be following this punchcard diagram. A printable to-scale cheat sheet is provided below<br>\r\n\r\n<img src=\"/challenge/images/v2/34/fairisle_practice2.jpg\">\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/34/fairisle_practice1.jpg\">\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4080,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Remember - you are selecting and pulling to \"D\" position, the needles that are going to knit.</h3>",
+              "legacyComponentId": 4081,
+              "order": 2
+            },
+            {
+              "type": "download",
+              "label": "Print a Zig-Zag Cheat Sheet",
+              "filename": "/downloads/fairisle_practice_cheat_sheet.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3135",
+                "componentId": "4101",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4101,
+              "order": 3
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/lk150_patterning/fairisle_chart1.jpg",
+                  "caption": "<div class=\"row\">\r\n<div class=\"col-md-6 col-md-offset-2 col-xs-12\">\r\n<span style=\"font-size: 20px;\"><b>Row1</b></span><em><small>(2 passes of the carriage)</small></em><br>\r\nCarriage on RIGHT<br>\r\nBLUE yarn<br>\r\nKnit LEFT<br>\r\n~~~~~~~~~~~~<br>\r\nCarriage on the LEFT<br>\r\nGREEN yarn<br>\r\nKnit RIGHT\r\n</div>\r\n</div>"
+                },
+                {
+                  "src": "/lk150_patterning/fairisle_chart2.jpg",
+                  "caption": "<div class=\"row\">\r\n<div class=\"col-md-6 col-md-offset-2 col-xs-12\">\r\n<span style=\"font-size: 20px;\"><b>Row2</b></span><em><small>(2 passes of the carriage)</small></em><br>\r\nCarriage on RIGHT<br>\r\nGREEN yarn<br>\r\nKnit LEFT<br>\r\n~~~~~~~~~~~~<br>\r\nCarriage on the LEFT<br>\r\nBLUE yarn<br>\r\nKnit RIGHT\r\n</div>\r\n</div>"
+                },
+                {
+                  "src": "/lk150_patterning/fairisle_chart3.jpg",
+                  "caption": "<div class=\"row\">\r\n<div class=\"col-md-6 col-md-offset-2 col-xs-12\">\r\n<span style=\"font-size: 20px;\"><b>Row 3</b></span><em><small>(2 passes of the carriage)</small></em><br>\r\nCarriage on RIGHT<br>\r\nBLUE yarn<br>\r\nKnit LEFT<br>\r\n~~~~~~~~~~~~<br>\r\nCarriage on the LEFT<br>\r\nGREEN yarn<br>\r\nKnit RIGHT\r\n</div>\r\n</div>"
+                },
+                {
+                  "src": "/lk150_patterning/fairisle_chart4.jpg",
+                  "caption": "<div class=\"row\">\r\n<div class=\"col-md-6 col-md-offset-2 col-xs-12\">\r\n<span style=\"font-size: 20px;\"><b>Row 4</b></span><em><small>(2 passes of the carriage)</small></em><br>\r\nCarriage on RIGHT<br>\r\nGREEN yarn<br>\r\nKnit LEFT<br>\r\n~~~~~~~~~~~~<br>\r\nCarriage on the LEFT<br>\r\nBLUE yarn<br>\r\nKnit RIGHT\r\n</div>\r\n</div>"
+                },
+                {
+                  "src": "/lk150_patterning/fairisle_chart5.jpg",
+                  "caption": "<div class=\"row\">\r\n<div class=\"col-md-6 col-md-offset-2 col-xs-12\">\r\n<span style=\"font-size: 20px;\"><b>Rows 5 & 6</b></span><br>\r\nCarriage on RIGHT<br>\r\nBLUE yarn<br>\r\n~~~~~~~~~~~~<br>\r\nFREE PASS<br>\r\n~~~~~~~~~~~~<br>\r\nCarriage on the LEFT<br>\r\nGREEN yarn<br>\r\nKnit rows 5 and 6 with green yarn\r\n</div>\r\n</div>"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "1",
+                "playAudio": "0"
+              },
+              "legacyComponentId": 4132,
+              "order": 5
+            }
+          ],
+          "title": "Advanced Fairisle Practice",
+          "slug": "advanced-fairisle-practice",
+          "order": 4,
+          "legacy": {
+            "assignId": 3135,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3138",
+                "CHALLENGE_COMPONENTID": "4099",
+                "OPTION_1": "True",
+                "OPTION_2": "False",
+                "OPTION_MESSAGE_1": "<i class='fa fa-times' style='color:red' aria-hidden='true'></i> NO!  Use only the #1 Feeder Slot for Fairisle. The #2 Slot is for Plating",
+                "OPTION_MESSAGE_2": "<i class='fa fa-check' aria-hidden='true'></i> Correct! Use only the #1 Feeder Slot for Fairisle. The #2 Slot is for Plating",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_TEXT": "Both Feeder Slots are used to knit Fairisle"
+              },
+              "legacyComponentId": 4099,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3138",
+                "CHALLENGE_COMPONENTID": "4100",
+                "OPTION_1": "True",
+                "OPTION_2": "False",
+                "OPTION_MESSAGE_1": "<i class='fa fa-check' aria-hidden='true'></i> Correct! ",
+                "OPTION_MESSAGE_2": "<i class='fa fa-times' style='color:red' aria-hidden='true'></i> Only the Side Levers are used for Fairisle",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_TEXT": "The SIDE LEVERS are used for Fairisle"
+              },
+              "legacyComponentId": 4100,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3138",
+                "OPTION_1": "True",
+                "OPTION_2": "False",
+                "OPTION_MESSAGE_1": "<i class='fa fa-check' aria-hidden='true'></i> Correct! ",
+                "OPTION_MESSAGE_2": "<i class='fa fa-times' style='color:red' aria-hidden='true'></i> NO! You MUST select the end needles on every row, so they knit.",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_TEXT": "For neat edges and easier seaming, you MUST select the end needles on every row, so they knit.",
+                "TYPEOF": "Question-Multi"
+              },
+              "legacyComponentId": 4110,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3138",
+                "OPTION_1": "Yes",
+                "OPTION_2": "No",
+                "OPTION_MESSAGE_1": "<i class='fa fa-check' aria-hidden='true'></i> Correct! <br>\r\nThat's an advantage of a manual machine.  Using the manual Fairisle techniques you've learned you CAN knit more than 2 colors per row.",
+                "OPTION_MESSAGE_2": "YES YOU CAN! That's an advantage of a manual machine.  Using the manual Fairisle techniques you've learned you CAN knit more than 2 colors per row.",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_TEXT": "Can you knit more than 2 colors in a row with Fairisle?",
+                "TYPEOF": "Question-Multi"
+              },
+              "legacyComponentId": 4111,
+              "order": 4
+            }
+          ],
+          "title": "Check your Understanding",
+          "slug": "check-your-understanding",
+          "order": 6,
+          "legacy": {
+            "assignId": 3138,
+            "blockType": "Question-Multi"
+          }
+        }
+      ]
+    },
+    {
+      "title": "INTARSIA",
+      "slug": "intarsia",
+      "displayOrder": 70,
+      "legacy": {
+        "itemId": 249,
+        "lessonOrder": 70
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\n\r\nKnit blocks of color with your machine without floats and without additional seams.<br>\r\n\r\nThe Intarsia technique allows knitters to knit multiple colors across a row without long floats.  It's also known as Picture Knitting, Bobbin Knitting or Motif Patterning. A separate carriage is NOT required to knit Intarsia on your machine.<br>\r\n\r\n\r\n<img src=\"/challenge/images/v2/34/possibilities_endless.gif\">\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4112,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/intarsia_slider/intarsia1.jpg",
+                  "caption": "Blocks of color for sweaters, blankets, pillow covers"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/intarsia_slider/intarsia2.png",
+                  "caption": "Make 2 yarns look like SO MUCH MORE - twist the colors for a marled appearance, knit intarsia color blocks and felt."
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/intarsia_slider/intarsia3.jpg",
+                  "caption": "Combine Intarsia with cables ... beautiful!<br>\r\n<a href=\"/path/17/color-block-cable-pillow\">Check out the Quick Win Project</a>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/intarsia_slider/intarsia4.jpg",
+                  "caption": "Just for fun!"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/intarsia_slider/intarsia5.jpg",
+                  "caption": "<br><br>Yep!  This is Intarsia ... WOW!<br>\r\nThese are from the downloadable book from Knit-1<br>\r\n<a href=\"/store/product/517/learn-inventive-intarsia/digitialdownload\">Learn Inventive Intarsia</a>"
+                },
+                {
+                  "src": "/challenge/images/v2/34/LK150_patterning/intarsia_slider/getting_inspired.gif",
+                  "caption": null
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 4118,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<div>\r\nIf you've followed this course from the beginning, you should already know how to set the machine for Intarsia!<br>\r\n<h3>If you skipped the section on Tuck Stitch (using the hold position)- go back and work through all the exercises!</h3>",
+              "legacyComponentId": 4136,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "296202807",
+              "title": "Watch as we knit a simple Intarsia pattern",
+              "legacyComponentId": 4135,
+              "order": 5
+            }
+          ],
+          "title": "What is Intarsia? The Mechanics",
+          "slug": "what-is-intarsia-the-mechanics",
+          "order": 1,
+          "legacy": {
+            "assignId": 3132,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The lessons in this course focus on manually creating Intarsia with your machine. But an accessory for the LK-150 is available, an Intarsia Carriage. This device speeds up the process of knitting this technique.<br>If you LOVE the creativity of working blocks of color and plan to use this technique often, you may want to make an investment in this accessory.<br>Although the following video is demonstrating on a different machine, the process of using an Intarsia Carriage on your machine is the same. <br>Check out the jumplinks below for tips that you can use even if aren't using an Intarsia Carriage.",
+              "legacyComponentId": 4116,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "295990384",
+              "title": null,
+              "legacyComponentId": 4115,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "VimeoJumpLinks",
+              "notes": [
+                "Unmapped legacy component type: VimeoJumpLinks"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3143",
+                "LINKTIME_1": "00:02:43",
+                "LINKTIME_2": "00:03:24",
+                "LINKTIME_3": "00:04:57",
+                "LINKTITLE_1": "No holes!",
+                "LINKTITLE_2": "Bobbins to prevent tangles as you are working",
+                "LINKTITLE_3": "Inspiration",
+                "TYPEOF": "VimeoJumpLinks"
+              },
+              "legacyComponentId": 4117,
+              "order": 3
+            }
+          ],
+          "title": "Intarsia Carriage",
+          "slug": "intarsia-carriage",
+          "order": 2,
+          "legacy": {
+            "assignId": 3143,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "296002048",
+              "title": null,
+              "legacyComponentId": 4119,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<h2 class=\"section-title MachineknittingColor\"><i class=\"fa fa-lightbulb-o\"></i> Perfect Joins</h2>\r\n\r\nWhen working intarsia, the challenge is keeping the edges of the adjoining colors uniform and neat.<br><b>Here are 3 methods for you to try:</b><br>\r\n\r\n<ol class=\"instruction-list\">\r\n<li><b>Twist the working yarns</b><br>Just like in hand knitting, Any time 2 working yarns are next to each other, twist the yarns to prevent a hole.<br></li>\r\n<li><b>Wrap the working yarns</b><br>Similar to wrapping when working short rows, wrap the working yarn around the held needle next to it.  You can see this demonstrated in the video in the section \"What is Intarsia? The Mechanics\" <br> </li>\r\n\r\n<li><b>Carry a separate \"binding\" yarn up the join</b><br>\r\nBefore you start knitting, reserve a strand of the main color yarn. At the join of 2 colors, lay the binding yarn across the end needles of the adjoining sections.  Zig Zag this yarn back and forth \"binding\" the edges as you knit.  Some knitters will e-wrap this binding yarn.  Others will use a binding yarn IN ADDITION to another method.\r\n</li>\r\n\r\n\r\n</ol>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/holes 2.jpg\">\r\n\r\n\r\n<div class=\"col-12-xs col-md-4-offset-2\">\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/intarsia_sample1.jpg\"></div>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4141,
+              "order": 2
+            }
+          ],
+          "title": "No Tangles - No Holes",
+          "slug": "no-tangles-no-holes",
+          "order": 3,
+          "legacy": {
+            "assignId": 3144,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3147",
+                "CHALLENGE_COMPONENTID": "4124",
+                "OPTION_1": "<i class='fa fa-hand-o-down' aria-hidden='true'></i> They are still in hold",
+                "OPTION_2": "<i class='fa fa-hand-o-down' aria-hidden='true'></i> They were moved out of 'D' position",
+                "OPTION_MESSAGE_1": "<i class='fa fa-check' aria-hidden='true'></i> Correct!  You got it!  Any needles in 'D' position will remain in 'D' hold when the Russel Levers are engaged.",
+                "OPTION_MESSAGE_2": "<i class='fa fa-times' style='color:red' aria-hidden='true'></i> NO! Try again .... Check to make sure your Russel levers are engaged AND needles are in 'D' position.",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_TEXT": "<h3>Practice the needle positions BEFORE you add yarn</h3>This is the basis for knitting Intarsia on your machine<br><br><hr>\r\n<img class='img-responsive pull-left' src='/challenge/images/course_1.png'>\r\nCarriage on the right, no yarn, set for plain knitting.<br><br>\r\n\r\n<img class='img-responsive pull-left' src='/challenge/images/course_2.png'>\r\nPut 30 needles to work. Pass the carriage back an forth (to align the needles)<br><br>\r\n<img class='img-responsive pull-left' src='/challenge/images/course_3.png'>\r\nCarriage on the right, put 15 needles opposite the carriage to 'D' hold position<br><br>\r\n\r\n<img class='img-responsive pull-left' src='/challenge/images/course_4.png'>\r\nSet the carriage to HOLD (Russel Levers)<br><br>\r\n\r\n<img class='img-responsive pull-left' src='/challenge/images/course_5.png'>\r\nPass the carriage from RIGHT to LEFT<br><br>\r\n<div class='well'>What happened to the needles that were in hold?</div>\r\n"
+              },
+              "legacyComponentId": 4124,
+              "order": 1
+            }
+          ],
+          "title": "Intarsia Dry Run",
+          "slug": "intarsia-dry-run",
+          "order": 4,
+          "legacy": {
+            "assignId": 3147,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/34/try_it_yourself.gif\"><br>\r\n\r\n\r\n<div class=\"col-md-2-offset-2\"><img src=\"/challenge/images/v2/34/intarsia_example.jpg\"></div>\r\n\r\nPractice with 2 colors to create a colorblock sample.<br><ul>\r\n<li>Practice different techniques for neat, clean joins</li>\r\n<li>Practice \"milking the cow\" for neat edges</li>\r\n<li>Knit AT LEAST a few inches to get a feel for the rhythm of knitting intarsia on your machine</li>\r\n</ul>\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n<div class=\"table-responsive\">\r\n    <table class=\"table\">\r\n        <thead>\r\n            <tr>\r\n                <th>Rows</th>\r\n                <th>Carriage Position</th>\r\n                <th>Needles in<br />WORKING POSITION</th>\r\n                <th>Instruction</th>\r\n            </tr>\r\n        </thead>\r\n        <tbody>\r\n            <tr>\r\n                <td>Row 1 White</td>\r\n                <td>RIGHT</td>\r\n                <td>RIGHT 20 needles</td>\r\n                <td>\r\n                     <ul>\r\n                          <li>With WHITE, knit from RIGHT to LEFT</li>\r\n                         <li>Remove yarn from the feeder and secure it under the needles</li>\r\n                          <li>Pull all needles to \"D\" hold position</li>\r\n                         <li>Free pass to position the carriage on the RIGHT</li>\r\n</ul></td>\r\n            </tr>\r\n            <tr style=\"background-color: #787ce0;color: rgb(255,255,255);\">\r\n                <td>Row 1 Blue</td>\r\n                <td>RIGHT</td>\r\n                <td>LEFT 20 needles</td>\r\n                <td>\r\n                  <ul>\r\n                      <li>With BLUE, pass the yarn over the needles in hold.</li>\r\n                      <li>Knit from RIGHT to LEFT (right needles are in hold</li>\r\n                      </ul>\r\n                   </td>\r\n            </tr>\r\n            <tr style=\"background-color: #787ce0;color: rgb(255,255,255);\">\r\n                <td>Row 2 Blue</td>\r\n                <td>LEFT</td>\r\n                <td>LEFT 20 needles</td>\r\n                <td>\r\n                     <ul>\r\n                        <li>With BLUE, knit from LEFT to RIGHT</li>\r\n                        <li>Cross the blue and white working yarns</li>\r\n                        <li>Remove the BLUE yarn from the feeder and secure it under the needles</li>\r\n                           <li>Pull all needles to \"D\" hold position<br />Free pass to position thecarriage on the LEFT</li>\r\n                     </ul>\r\n                              </td>\r\n            </tr>\r\n            <tr>\r\n                <td>Row 2 White</td>\r\n                <td>LEFT</td>\r\n                <td>RIGHT 20 needles</td>\r\n                <td><ul><li>With WHITE, knit from LEFT to RIGHT</li></ul></td>\r\n            </tr>\r\n        </tbody>\r\n    </table>\r\n</div><br><p>Repeat these rows, until you get in the rhythm of the intarsia pattern.</p>\r\n\r\n<hr>\r\n<h2 id=\"lecture_heading\" class=\"section-title MachineknittingColor\"><i class=\"fa fa-refresh\"></i> BONUS Practice</h2>\r\n\r\n\r\n<div class=\"col-md-4-offset-1\"><p>Create a chart or use this chart to practice following an intarsia design.<br><i class=\"fa fa-lightbulb-o aria-hidden=\"true\"></i> Use a <a href=\"/challenge/34/Group/3121/item#section248\">Cheat Sheet </a>to create a simple design for practice\r\n</p></div>\r\n<img src=\"/challenge/images/v2/34/intarsia.jpg\">\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4143,
+              "order": 3
+            }
+          ],
+          "title": "Intarsia Practice",
+          "slug": "intarsia-practice",
+          "order": 5,
+          "legacy": {
+            "assignId": 3141,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3142",
+                "OPTION_1": "True",
+                "OPTION_2": "False",
+                "OPTION_MESSAGE_1": "<i class='fa fa-check' aria-hidden='true'></i> Correct! With intarsia you can knit blocks of colors without having long strands across the back of your knitting.",
+                "OPTION_MESSAGE_2": "<i class='fa fa-times' style='color:red' aria-hidden='true'></i> This is True. With intarsia you can knit blocks of colors without having long strands across the back of your knitting.",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_TEXT": "Fairisle has floats, Intarsia does not.",
+                "TYPEOF": "Question-Multi"
+              },
+              "legacyComponentId": 4125,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3142",
+                "OPTION_1": "True",
+                "OPTION_2": "False",
+                "OPTION_MESSAGE_1": "<i class='fa fa-check' aria-hidden='true'></i> Correct!  You got it!",
+                "OPTION_MESSAGE_2": "<i class='fa fa-times' style='color:red' aria-hidden='true'></i> Intarsia IS created by engaging the Side Levers",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_TEXT": "Intarsia is created by engaging the Side Levers",
+                "TYPEOF": "Question-Multi"
+              },
+              "legacyComponentId": 4126,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3142",
+                "OPTION_1": "True",
+                "OPTION_2": "False",
+                "OPTION_MESSAGE_1": "<i class='fa fa-times' style='color:red' aria-hidden='true'></i> NO!  With your LK-150 you can use the hold setting and the techniques outlined in these lessons to knit beautiful intarsia. Although an Intarsia Carriage makes the knitting faster it is not required.",
+                "OPTION_MESSAGE_2": "<i class='fa fa-check' aria-hidden='true'></i> Correct! Although an Intarsia Carriage makes the knitting faster it is not required.",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_TEXT": "You NEED an Intarsia Carriage to successfully knit blocks of color",
+                "TYPEOF": "Question-Multi"
+              },
+              "legacyComponentId": 4127,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3142",
+                "CHALLENGE_COMPONENTID": "4128",
+                "OPTION_1": "True",
+                "OPTION_2": "False",
+                "OPTION_MESSAGE_1": "<i class='fa fa-check' aria-hidden='true'></i> Yes!  If worked in Fairisle, there would be LONG floats across the back",
+                "OPTION_MESSAGE_2": "<i class='fa fa-times' style='color:red' aria-hidden='true'></i> This is a perfect design for Intarsia.   If worked in Fairisle, there would be LONG floats across the back",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_TEXT": "<div class='row'>\r\n<div class='col-12-xs col-md-6'>This is a good example of a design for INTARSIA<br><br>\r\n<center><img class=\"img-responsive\" src=\"/challenge/images/v2/34/intarsia.jpg\"></center></div>\r\n<div>\r\n"
+              },
+              "legacyComponentId": 4128,
+              "order": 4
+            }
+          ],
+          "title": "Check your Understanding",
+          "slug": "check-your-understanding",
+          "order": 6,
+          "legacy": {
+            "assignId": 3142,
+            "blockType": "Question-Multi"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n    \r\n    Although demonstrated on a different machine and using an intarsia carriage, this video by the talented knitters at Knit-1 is a unique opportunity to see Intarsia in action.\r\n<em>Sadly, Knit-1 is no longer in business and their books are no longer available</em>\r\n    <br>Here is an updated take on traditional Intarsia knitting. Also known as picture knitting, Knit-1 has done it again in bringing this technique into the 21st century!<br><center>\r\n<iframe width=\"500\" height=\"280\" src=\"https://www.youtube.com/embed/Nt98lMYwY6o?feature=player_detailpage\" frameborder=\"0\" allowfullscreen=\"\"></iframe></center>\r\n        \r\n    \r\n    <img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/intarsia1.jpg\">\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4134,
+              "order": 1
+            }
+          ],
+          "title": "Watch an Expert!",
+          "slug": "watch-an-expert",
+          "order": 7,
+          "legacy": {
+            "assignId": 3149,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<div class=\"offset-1\">A skull pillow cover may not be in your future, but these 2 videos walk through methods of creating complex intarsia designs on the LK-150</div>\r\n<img src=\"/challenge/images/v2/34/skull_800.jpg\">\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4140,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859850",
+              "title": "Method 1",
+              "legacySlot": 1,
+              "legacyComponentId": 4139,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859855",
+              "title": "Method 2",
+              "legacySlot": 2,
+              "legacyComponentId": 4139,
+              "order": 2
+            }
+          ],
+          "title": "Intarsia Challenge",
+          "slug": "intarsia-challenge",
+          "order": 8,
+          "legacy": {
+            "assignId": 3150,
+            "blockType": "VimeoMultiple"
+          }
+        }
+      ]
+    },
+    {
+      "title": "MISCELLANEOUS",
+      "slug": "miscellaneous",
+      "displayOrder": 90,
+      "legacy": {
+        "itemId": 248,
+        "lessonOrder": 90
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Although the demonstration below is on a standard gauge machine, by this time <b>you should be familiar</b> with setting YOUR Lk-150 to hold and slip.<br>\r\n<figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/intro_slip.jpg\"><figcaption align=\"center\"><br>Russel Levers engaged AND all Needles in \"D\"<br> stitches will NOT knit (and won't drop)</figcaption>\r\n</figure>\r\n<figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/intro_tuck.jpg\"><figcaption align=\"center\"><br>Side Levers engaged AND all Needles in \"B\"<br> Stitches will NOT knit ( and won't drop)</figcaption>\r\n</figure>\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4059,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "171417494",
+              "title": "Move your carriage, without dropping stitches",
+              "legacyComponentId": 4058,
+              "order": 2
+            }
+          ],
+          "title": "Free Pass Refresher",
+          "slug": "free-pass-refresher",
+          "order": 1,
+          "legacy": {
+            "assignId": 3115,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "294441633",
+              "title": "Use cheat sheets to make needle selection easier (no counting needles!)",
+              "legacyComponentId": 4017,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Cheat Sheet",
+              "filename": "/downloads/6_5mmCheatSheet3.pdf",
+              "showInline": true,
+              "legacy": {
+                "assignId": "3121",
+                "componentId": "4016",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4016,
+              "order": 2
+            }
+          ],
+          "title": "Cheat Sheet",
+          "slug": "cheat-sheet",
+          "order": 3,
+          "legacy": {
+            "assignId": 3121,
+            "blockType": "Document"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857740",
+              "title": "How do stitch patterns compare?  Which stitches use more yarn?",
+              "legacyComponentId": 4055,
+              "order": 1
+            }
+          ],
+          "title": "Stitch Types and Yarn Usage",
+          "slug": "stitch-types-and-yarn-usage",
+          "order": 4,
+          "legacy": {
+            "assignId": 3129,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857799",
+              "title": "Stitch Multiples",
+              "legacyComponentId": 4103,
+              "order": 1
+            }
+          ],
+          "title": "Stitch Multiples",
+          "slug": "stitch-multiples",
+          "order": 5,
+          "legacy": {
+            "assignId": 3140,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "239179511",
+              "title": "No matter what knitting machine you use, keeping tension on the working yarn is critical. For successful knitting ALWAYS keep an eye on your working yarn.",
+              "legacyComponentId": 4130,
+              "order": 1
+            }
+          ],
+          "title": "Milk the Cow (yarn tension)",
+          "slug": "milk-the-cow-yarn-tension",
+          "order": 6,
+          "legacy": {
+            "assignId": 3148,
+            "blockType": "VimeoID"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 18,
+    "videos": [
+      {
+        "vimeoId": "290802964",
+        "title": "Gain a better understanding of what's happening with the knitting carriage",
+        "lessonSlug": "intro-to-patterning",
+        "blockSlug": "under-the-hood"
+      },
+      {
+        "vimeoId": "290872211",
+        "title": "Make Hand Manipulating Easier",
+        "lessonSlug": "selecting-needles-for-stitch-patterning",
+        "blockSlug": "use-a-cheat-sheet"
+      },
+      {
+        "vimeoId": "746202286",
+        "title": null,
+        "lessonSlug": "selecting-needles-for-stitch-patterning",
+        "blockSlug": "needle-beetle-needle-selector"
+      },
+      {
+        "vimeoId": "292616094",
+        "title": "Watch as we knit Tuck Lace .. then try it yourself!",
+        "lessonSlug": "tuck",
+        "blockSlug": "demo-and-challenge"
+      },
+      {
+        "vimeoId": "372652228",
+        "title": "Fisherman Rib on the LK-150",
+        "lessonSlug": "tuck",
+        "blockSlug": "fisherman-rib"
+      },
+      {
+        "vimeoId": "151859832",
+        "title": "Blister Stitch Tips",
+        "lessonSlug": "tuck",
+        "blockSlug": "multi-color-tuck"
+      },
+      {
+        "vimeoId": "295051516",
+        "title": "Threading the carriage for plating can be a bit tricky.",
+        "lessonSlug": "plating",
+        "blockSlug": "plating-mechanics"
+      },
+      {
+        "vimeoId": "295851387",
+        "title": "Step by Step Fairisle",
+        "lessonSlug": "fairisle-stranded-knitting",
+        "blockSlug": "what-is-fairisle"
+      },
+      {
+        "vimeoId": "296202807",
+        "title": "Watch as we knit a simple Intarsia pattern",
+        "lessonSlug": "intarsia",
+        "blockSlug": "what-is-intarsia-the-mechanics"
+      },
+      {
+        "vimeoId": "295990384",
+        "title": null,
+        "lessonSlug": "intarsia",
+        "blockSlug": "intarsia-carriage"
+      },
+      {
+        "vimeoId": "296002048",
+        "title": null,
+        "lessonSlug": "intarsia",
+        "blockSlug": "no-tangles-no-holes"
+      },
+      {
+        "vimeoId": "151859850",
+        "title": "Method 1",
+        "lessonSlug": "intarsia",
+        "blockSlug": "intarsia-challenge"
+      },
+      {
+        "vimeoId": "151859855",
+        "title": "Method 2",
+        "lessonSlug": "intarsia",
+        "blockSlug": "intarsia-challenge"
+      },
+      {
+        "vimeoId": "171417494",
+        "title": "Move your carriage, without dropping stitches",
+        "lessonSlug": "miscellaneous",
+        "blockSlug": "free-pass-refresher"
+      },
+      {
+        "vimeoId": "294441633",
+        "title": "Use cheat sheets to make needle selection easier (no counting needles!)",
+        "lessonSlug": "miscellaneous",
+        "blockSlug": "cheat-sheet"
+      },
+      {
+        "vimeoId": "151857740",
+        "title": "How do stitch patterns compare?  Which stitches use more yarn?",
+        "lessonSlug": "miscellaneous",
+        "blockSlug": "stitch-types-and-yarn-usage"
+      },
+      {
+        "vimeoId": "151857799",
+        "title": "Stitch Multiples",
+        "lessonSlug": "miscellaneous",
+        "blockSlug": "stitch-multiples"
+      },
+      {
+        "vimeoId": "239179511",
+        "title": "No matter what knitting machine you use, keeping tension on the working yarn is critical. For successful knitting ALWAYS keep an eye on your working yarn.",
+        "lessonSlug": "miscellaneous",
+        "blockSlug": "milk-the-cow-yarn-tension"
+      }
+    ],
+    "downloadCount": 3,
+    "downloads": [
+      {
+        "filename": "/downloads/6_5mmCheatSheet2.pdf",
+        "label": "Download a Cheat Sheet",
+        "lessonSlug": "selecting-needles-for-stitch-patterning",
+        "blockSlug": "use-a-cheat-sheet"
+      },
+      {
+        "filename": "/downloads/fairisle_practice_cheat_sheet.pdf",
+        "label": "Print a Zig-Zag Cheat Sheet",
+        "lessonSlug": "fairisle-stranded-knitting",
+        "blockSlug": "advanced-fairisle-practice"
+      },
+      {
+        "filename": "/downloads/6_5mmCheatSheet3.pdf",
+        "label": "Cheat Sheet",
+        "lessonSlug": "miscellaneous",
+        "blockSlug": "cheat-sheet"
+      }
+    ]
+  }
+}

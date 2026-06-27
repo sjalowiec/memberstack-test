@@ -15,6 +15,12 @@ import {
   richTextHasVisibleContent,
 } from "../lib/legacy_kin/courseAccordionLayout";
 import {
+  embeddedToolLayoutSummary,
+  EMBEDDED_TOOL_INTRO_ROLE,
+  getEmbeddedToolLayoutParts,
+  isEmbeddedToolLayoutBlock,
+} from "../lib/legacy_kin/courseEmbeddedToolLayout";
+import {
   getTextVideoLayoutParts,
   isTextVideoLayoutBlock,
   textVideoLayoutSummary,
@@ -79,7 +85,7 @@ import {
   moveSectionAtIndex,
   splitBlockIntoStandaloneSections,
 } from "../lib/legacy_kin/courseContentEditorBlocks";
-import type { CourseLesson } from "../lib/legacy_kin/coursePreviewPoc";
+import { getCatalogOverlayDescription } from "../lib/coursesCatalogOverlay";
 import {
   combineTextVideoWithNextPlainText,
   getNextPlainTextItem as getNextPlainTextItemInLesson,
@@ -94,6 +100,7 @@ import {
   formatSectionBlockCount,
   sectionNavLabel,
 } from "../lib/legacy_kin/courseContentEditorView";
+import type { CourseLesson } from "../lib/legacy_kin/coursePreviewPoc";
 
 const API_URL = "/api/admin/course-content";
 const SNIPPETS_OPEN_KEY = "course-editor-snippets-open";
@@ -120,6 +127,8 @@ type CourseCatalogEntry = {
 let courseCatalog: CourseCatalogEntry[] = [];
 let currentCourseId: number | null = null;
 let savedCourseThumbnail: string | null = null;
+let savedCustomCatalogDescription = "";
+let fallbackCatalogDescription = "";
 let savedCourseActive = true;
 let savedCoursePublished = true;
 let savedCourseContentStatus: "in_progress" | "cleaned" = "in_progress";
@@ -151,6 +160,9 @@ const dom = {
   saveHint: null as HTMLElement | null,
   courseSelect: null as HTMLSelectElement | null,
   courseTitle: null as HTMLInputElement | null,
+  courseCatalogDescription: null as HTMLTextAreaElement | null,
+  catalogDescriptionSource: null as HTMLElement | null,
+  catalogDescriptionClearBtn: null as HTMLButtonElement | null,
   courseThumbnail: null as HTMLInputElement | null,
   courseContentStatus: null as HTMLSelectElement | null,
   coursePublished: null as HTMLSelectElement | null,
@@ -267,6 +279,85 @@ function readCourseActive(course: Record<string, unknown> | undefined): boolean 
   return course.active !== false;
 }
 
+function readCustomCatalogDescription(course: Record<string, unknown> | undefined): string {
+  const value =
+    course && "description" in course && typeof course.description === "string"
+      ? course.description
+      : "";
+  return value.trim();
+}
+
+function readCourseSlug(course: Record<string, unknown> | undefined): string {
+  return course && typeof course.slug === "string" ? course.slug.trim() : "";
+}
+
+function resolvedCatalogDescriptionDisplay(custom: string, fallback: string): string {
+  return custom || fallback;
+}
+
+function updateCatalogDescriptionSourceUi() {
+  const input = dom.courseCatalogDescription?.value.trim() ?? "";
+  const hasSavedCustom = Boolean(savedCustomCatalogDescription);
+  const matchesSavedCustom = hasSavedCustom && input === savedCustomCatalogDescription;
+  const matchesFallback = Boolean(fallbackCatalogDescription) && input === fallbackCatalogDescription;
+  const isEmpty = input.length === 0;
+
+  if (dom.catalogDescriptionSource) {
+    dom.catalogDescriptionSource.classList.remove(
+      "course-editor__catalog-description-source--custom",
+      "course-editor__catalog-description-source--fallback",
+      "course-editor__catalog-description-source--none",
+      "course-editor__catalog-description-source--pending",
+    );
+
+    if (isCourseCatalogDescriptionDirty()) {
+      dom.catalogDescriptionSource.textContent =
+        hasSavedCustom && (matchesFallback || isEmpty)
+          ? "Will revert to catalog fallback when you save."
+          : "Unsaved catalog description changes.";
+      dom.catalogDescriptionSource.classList.add(
+        "course-editor__catalog-description-source--pending",
+      );
+    } else if (hasSavedCustom && matchesSavedCustom) {
+      dom.catalogDescriptionSource.textContent =
+        "Custom override saved in course JSON.";
+      dom.catalogDescriptionSource.classList.add(
+        "course-editor__catalog-description-source--custom",
+      );
+    } else if (matchesFallback) {
+      dom.catalogDescriptionSource.textContent =
+        "Using catalog fallback from courses-catalog.json.";
+      dom.catalogDescriptionSource.classList.add(
+        "course-editor__catalog-description-source--fallback",
+      );
+    } else if (isEmpty && !fallbackCatalogDescription) {
+      dom.catalogDescriptionSource.textContent = "No catalog description configured.";
+      dom.catalogDescriptionSource.classList.add(
+        "course-editor__catalog-description-source--none",
+      );
+    } else {
+      dom.catalogDescriptionSource.textContent =
+        "Using catalog fallback from courses-catalog.json.";
+      dom.catalogDescriptionSource.classList.add(
+        "course-editor__catalog-description-source--fallback",
+      );
+    }
+  }
+
+  if (dom.catalogDescriptionClearBtn) {
+    dom.catalogDescriptionClearBtn.disabled =
+      !savedCustomCatalogDescription && !isCourseCatalogDescriptionDirty();
+  }
+}
+
+function clearCustomCatalogDescription() {
+  if (dom.courseCatalogDescription) {
+    dom.courseCatalogDescription.value = fallbackCatalogDescription;
+  }
+  updateCatalogDescriptionSourceUi();
+  updateCourseSettingsSaveState();
+}
+
 function readCourseThumbnail(course: Record<string, unknown> | undefined): string {
   const value =
     course && "thumbnail" in course && typeof course.thumbnail === "string"
@@ -300,9 +391,18 @@ function readCourseContentStatus(course: Record<string, unknown> | undefined): "
 
 function syncCourseSettingsFields(course: Record<string, unknown> | undefined) {
   savedCourseThumbnail = readCourseThumbnail(course) || null;
+  savedCustomCatalogDescription = readCustomCatalogDescription(course);
+  const slug = readCourseSlug(course);
+  fallbackCatalogDescription = slug ? (getCatalogOverlayDescription(slug) ?? "") : "";
   savedCourseActive = readCourseActive(course);
   savedCoursePublished = readCoursePublished(course);
   savedCourseContentStatus = readCourseContentStatus(course);
+  if (dom.courseCatalogDescription) {
+    dom.courseCatalogDescription.value = resolvedCatalogDescriptionDisplay(
+      savedCustomCatalogDescription,
+      fallbackCatalogDescription,
+    );
+  }
   if (dom.courseThumbnail) {
     dom.courseThumbnail.value = thumbnailInputValueFromPath(savedCourseThumbnail);
   }
@@ -318,6 +418,7 @@ function syncCourseSettingsFields(course: Record<string, unknown> | undefined) {
   updateCourseThumbnailPreview();
   updateCourseStatusSelectStyles();
   updateCourseContentStatusSelectStyles();
+  updateCatalogDescriptionSourceUi();
   updateCourseSettingsSaveState();
 }
 
@@ -346,6 +447,23 @@ function isCourseThumbnailDirty(): boolean {
   return current !== saved;
 }
 
+function isCourseCatalogDescriptionDirty(): boolean {
+  const input = dom.courseCatalogDescription?.value.trim() ?? "";
+  if (savedCustomCatalogDescription) {
+    return input !== savedCustomCatalogDescription;
+  }
+  return input !== fallbackCatalogDescription;
+}
+
+function catalogDescriptionPayloadIfDirty(): string | null | undefined {
+  if (!isCourseCatalogDescriptionDirty()) return undefined;
+  const input = dom.courseCatalogDescription?.value.trim() ?? "";
+  if (input === "" || input === fallbackCatalogDescription) {
+    return null;
+  }
+  return input;
+}
+
 function isCourseActiveDirty(): boolean {
   const current = dom.courseActive?.value === "true";
   return current !== savedCourseActive;
@@ -371,13 +489,20 @@ function isCourseSidebarMetadataDirty(): boolean {
 }
 
 function isCourseSettingsDirty(): boolean {
-  return isCourseThumbnailDirty() || isCourseSidebarMetadataDirty();
+  return (
+    isCourseThumbnailDirty() ||
+    isCourseCatalogDescriptionDirty() ||
+    isCourseSidebarMetadataDirty()
+  );
 }
 
 function buildCourseMetadataPayload(): Record<string, unknown> {
   const payload: Record<string, unknown> = {};
   if (isCourseThumbnailDirty()) {
     payload.thumbnail = readThumbnailInputPath();
+  }
+  if (isCourseCatalogDescriptionDirty()) {
+    payload.description = catalogDescriptionPayloadIfDirty();
   }
   if (isCourseActiveDirty()) {
     payload.active = dom.courseActive?.value === "true";
@@ -393,10 +518,14 @@ function buildCourseMetadataPayload(): Record<string, unknown> {
 }
 
 function shouldCourseSettingsPanelOpen(
-  _course: Record<string, unknown> | undefined,
+  course: Record<string, unknown> | undefined,
 ): boolean {
-  // TEMP: keep course settings expanded so thumbnail preview is visible in admin.
-  return true;
+  if (isCourseSettingsDirty()) return true;
+  const thumbnail =
+    course && "thumbnail" in course && typeof course.thumbnail === "string"
+      ? course.thumbnail.trim()
+      : "";
+  return !thumbnail;
 }
 
 function updateCourseSettingsPanelOpen() {
@@ -460,6 +589,15 @@ function bindDom() {
   dom.saveHint = document.getElementById("course-editor-save-hint");
   dom.courseSelect = document.getElementById("course-editor-course") as HTMLSelectElement | null;
   dom.courseTitle = document.getElementById("course-editor-course-title") as HTMLInputElement | null;
+  dom.courseCatalogDescription = document.getElementById(
+    "course-editor-catalog-description",
+  ) as HTMLTextAreaElement | null;
+  dom.catalogDescriptionSource = document.getElementById(
+    "course-editor-catalog-description-source",
+  );
+  dom.catalogDescriptionClearBtn = document.getElementById(
+    "course-editor-catalog-description-clear",
+  ) as HTMLButtonElement | null;
   dom.courseThumbnail = document.getElementById("course-editor-thumbnail") as HTMLInputElement | null;
   dom.courseContentStatus = document.getElementById(
     "course-editor-content-status",
@@ -885,6 +1023,24 @@ function flattenLessonContent(lesson: LessonRecord): FlatContentItem[] {
       continue;
     }
 
+    if (isEmbeddedToolLayoutBlock(block)) {
+      const parts = getEmbeddedToolLayoutParts(block);
+      if (!parts) continue;
+      items.push({
+        blockSlug: String(block.slug ?? ""),
+        legacyComponentId: Number(parts.tool.legacyComponentId),
+        type: "embeddedTool",
+        introLegacyComponentId: parts.introText
+          ? Number(parts.introText.legacyComponentId)
+          : undefined,
+        component: {
+          ...(parts.tool as Record<string, unknown>),
+          introText: parts.introText,
+        },
+      });
+      continue;
+    }
+
     for (const component of sortedComponents(block)) {
       items.push({
         blockSlug: String(block.slug ?? ""),
@@ -979,7 +1135,15 @@ function contentSummary(component: Record<string, unknown>) {
     case "embeddedTool": {
       const toolKey = String(component.toolKey ?? "").trim();
       const entry = getEmbeddedToolByKey(toolKey);
-      return entry ? entry.name : toolKey || "Embedded tool";
+      const toolName = entry ? entry.name : toolKey || "Embedded tool";
+      const introText = component.introText as Record<string, unknown> | null | undefined;
+      if (introText) {
+        return embeddedToolLayoutSummary({
+          introText,
+          tool: component,
+        });
+      }
+      return toolName;
     }
     case "exerciseAccordion": {
       const introText = component.introText as Record<string, unknown> | null | undefined;
@@ -1362,6 +1526,35 @@ function createAccordionLayoutBlock(lesson: LessonRecord): LessonRecord {
   };
 }
 
+function createEmbeddedToolLayoutBlock(lesson: LessonRecord): LessonRecord {
+  const timestamp = Date.now();
+  const introId = maxLegacyComponentIdInCourse();
+  const toolId = introId + 1;
+  const availableTools = availableEmbeddedToolsForContext("course");
+  const defaultKey = availableTools[0]?.key ?? "maximum-knitted-width";
+  return {
+    title: "Tool",
+    slug: `embedded-tool-${timestamp}`,
+    order: nextBlockOrder(lesson),
+    legacy: { assignId: nextAssignId(lesson), blockType: "HTML", editorLayout: "embeddedTool" },
+    components: [
+      {
+        type: "richText",
+        html: "",
+        legacyComponentId: introId,
+        order: 1,
+        layoutRole: EMBEDDED_TOOL_INTRO_ROLE,
+      },
+      {
+        type: "embeddedTool",
+        toolKey: defaultKey,
+        legacyComponentId: toolId,
+        order: 2,
+      },
+    ],
+  };
+}
+
 function createTextVideoLayoutBlock(lesson: LessonRecord): LessonRecord {
   const timestamp = Date.now();
   const richTextId = maxLegacyComponentIdInCourse();
@@ -1625,6 +1818,12 @@ function isAccordionLayoutItem(ref: ComponentRef, lesson: LessonRecord): boolean
   return block ? isAccordionLayoutBlock(block) : false;
 }
 
+function isEmbeddedToolLayoutItem(ref: ComponentRef, lesson: LessonRecord): boolean {
+  if (ref.type !== "embeddedTool") return false;
+  const block = findBlock(lesson, ref.blockSlug);
+  return block ? isEmbeddedToolLayoutBlock(block) : false;
+}
+
 function removeIntroIfEmpty(block: LessonRecord) {
   const parts = getAccordionLayoutParts(block);
   if (!parts?.introText) return;
@@ -1690,6 +1889,75 @@ function applyAccordionPatch(patch: { introHtml?: string; sections?: Record<stri
   setLessonDraft(selectedLessonSlug, lesson);
   renderContentList();
   updateCombinePreviousButton();
+  updateSaveState();
+}
+
+function removeEmbeddedToolIntroIfEmpty(block: LessonRecord) {
+  const parts = getEmbeddedToolLayoutParts(block);
+  if (!parts?.introText) return;
+  const html = String(parts.introText.html ?? "");
+  if (richTextHasVisibleContent(html)) return;
+
+  const components = block.components as Record<string, unknown>[];
+  const index = components.findIndex(
+    (c) =>
+      c.legacyComponentId === parts.introText!.legacyComponentId && c.type === "richText",
+  );
+  if (index !== -1) components.splice(index, 1);
+}
+
+function ensureEmbeddedToolIntroComponent(block: LessonRecord): Record<string, unknown> {
+  const parts = getEmbeddedToolLayoutParts(block);
+  if (!parts) throw new Error("Not an embedded tool layout block.");
+  if (parts.introText) return parts.introText;
+
+  const introId = maxLegacyComponentIdInCourse();
+  const toolOrder = Number(parts.tool.order ?? 2);
+  const intro = {
+    type: "richText",
+    html: "",
+    legacyComponentId: introId,
+    order: Math.max(1, toolOrder - 1),
+    layoutRole: EMBEDDED_TOOL_INTRO_ROLE,
+  };
+  if (!Array.isArray(block.components)) block.components = [];
+  const components = block.components as Record<string, unknown>[];
+  const toolIndex = components.findIndex(
+    (c) =>
+      c.legacyComponentId === parts.tool.legacyComponentId && c.type === "embeddedTool",
+  );
+  components.splice(toolIndex === -1 ? components.length : toolIndex, 0, intro);
+  return intro;
+}
+
+function applyEmbeddedToolPatch(patch: {
+  introHtml?: string;
+  toolKey?: string;
+}) {
+  if (!selectedLessonSlug || !contentEditingRef) return;
+  const lesson = getLessonDraft(selectedLessonSlug);
+  if (!lesson) return;
+  const block = findBlock(lesson, contentEditingRef.blockSlug);
+  if (!block || !isEmbeddedToolLayoutBlock(block)) return;
+  const parts = getEmbeddedToolLayoutParts(block);
+  if (!parts) return;
+
+  if (patch.introHtml !== undefined) {
+    if (richTextHasVisibleContent(patch.introHtml)) {
+      const intro = ensureEmbeddedToolIntroComponent(block);
+      intro.html = patch.introHtml;
+      intro.layoutRole = EMBEDDED_TOOL_INTRO_ROLE;
+    } else {
+      removeEmbeddedToolIntroIfEmpty(block);
+    }
+  }
+
+  if (patch.toolKey !== undefined) {
+    parts.tool.toolKey = patch.toolKey.trim();
+  }
+
+  setLessonDraft(selectedLessonSlug, lesson);
+  renderContentList();
   updateSaveState();
 }
 
@@ -2284,6 +2552,14 @@ function openContentEdit(ref: ComponentRef) {
     }
   }
 
+  if (ref.type === "embeddedTool" && selectedLessonSlug) {
+    const lesson = getLessonDraft(selectedLessonSlug);
+    if (lesson && isEmbeddedToolLayoutItem(ref, lesson)) {
+      openEmbeddedToolLayoutEdit(ref);
+      return;
+    }
+  }
+
   const component = getContentComponent(ref);
   if (!component || !dom.editForm || !dom.editEmpty || !dom.editFields || !dom.editHead) return;
 
@@ -2368,51 +2644,6 @@ function openContentEdit(ref: ComponentRef) {
     fileEl.addEventListener("input", () =>
       applyContentPatch({ label: labelEl.value, filename: fileEl.value }),
     );
-  } else if (component.type === "embeddedTool") {
-    const availableTools = availableEmbeddedToolsForContext("course");
-    const block = lesson ? findBlock(lesson, ref.blockSlug) : null;
-    const currentKey = String(component.toolKey ?? "").trim();
-    const optionsHtml = availableTools
-      .map(
-        (tool) =>
-          `<option value="${escapeHtml(tool.key)}"${tool.key === currentKey ? " selected" : ""}>${escapeHtml(tool.name)}</option>`,
-      )
-      .join("");
-    const selectedEntry = getEmbeddedToolByKey(currentKey);
-
-    dom.editFields.innerHTML = `
-      <label class="course-editor__field"><span class="course-editor__field-label">Section title</span>
-        <input class="course-editor__input" id="ce-et-section-title" type="text" placeholder="Optional heading shown above this block">
-        <span class="course-editor__field-hint">Shown as the block heading on the lesson page. Leave blank for no heading.</span></label>
-      <label class="course-editor__field"><span class="course-editor__field-label">Tool</span>
-        <select class="course-editor__input" id="ce-et-tool-key"${availableTools.length === 0 ? " disabled" : ""}>
-          ${optionsHtml || `<option value="">No available tools</option>`}
-        </select>
-        <span class="course-editor__field-hint">Only tools marked available in the embedded tools registry.</span></label>
-      ${
-        selectedEntry
-          ? `<p class="course-editor__field-hint" style="margin:0">
-              Standalone page: <a href="${escapeHtml(selectedEntry.standalonePath)}" target="_blank" rel="noopener noreferrer">${escapeHtml(selectedEntry.standalonePath)}</a>
-              · <a href="/admin/embedded-tools" target="_blank" rel="noopener noreferrer">View registry</a>
-            </p>`
-          : `<p class="course-editor__field-hint" style="margin:0">
-              <a href="/admin/embedded-tools" target="_blank" rel="noopener noreferrer">View embedded tools registry</a>
-            </p>`
-      }
-    `;
-
-    const sectionTitleEl = dom.editFields.querySelector("#ce-et-section-title") as HTMLInputElement;
-    const toolKeyEl = dom.editFields.querySelector("#ce-et-tool-key") as HTMLSelectElement;
-    sectionTitleEl.value = block ? blockTitleForEditing(block.title) : "";
-    sectionTitleEl.addEventListener("input", () => {
-      applyBlockSectionTitle(ref.blockSlug, sectionTitleEl.value);
-    });
-
-    const syncTool = () => {
-      applyContentPatch({ toolKey: toolKeyEl.value.trim() });
-      renderContentList();
-    };
-    toolKeyEl.addEventListener("change", syncTool);
   } else if (component.type === "image") {
     dom.editFields.innerHTML = `
       <label class="course-editor__field"><span class="course-editor__field-label">Image path</span>
@@ -2780,6 +3011,83 @@ function openAccordionLayoutEdit(ref: ComponentRef) {
   });
 
   updateCombinePreviousButton();
+  renderContentList();
+}
+
+function openEmbeddedToolLayoutEdit(ref: ComponentRef) {
+  if (!selectedLessonSlug || !dom.editForm || !dom.editEmpty || !dom.editFields || !dom.editHead) return;
+  const lesson = getLessonDraft(selectedLessonSlug);
+  const block = lesson ? findBlock(lesson, ref.blockSlug) : null;
+  const parts = block ? getEmbeddedToolLayoutParts(block) : null;
+  if (!parts) return;
+
+  contentEditingRef = { ...ref };
+  dom.editEmpty.hidden = true;
+  dom.editForm.hidden = false;
+  refreshSnippetInsertButtons();
+
+  const availableTools = availableEmbeddedToolsForContext("course");
+  const currentKey = String(parts.tool.toolKey ?? "").trim();
+  const optionsHtml = availableTools
+    .map(
+      (tool) =>
+        `<option value="${escapeHtml(tool.key)}"${tool.key === currentKey ? " selected" : ""}>${escapeHtml(tool.name)}</option>`,
+    )
+    .join("");
+  const selectedEntry = getEmbeddedToolByKey(currentKey);
+  const meta = typeMeta("embeddedTool");
+
+  dom.editHead.innerHTML = `
+    <span class="course-editor__item-icon" style="background:${meta.color}22;color:${meta.color}">${meta.abbrev}</span>
+    <h3 class="course-editor__panel-title">Editing ${meta.label.toLowerCase()}</h3>
+  `;
+
+  dom.editFields.innerHTML = `
+    <label class="course-editor__field"><span class="course-editor__field-label">Section title</span>
+      <input class="course-editor__input" id="ce-et-section-title" type="text" placeholder="Optional heading shown above this block">
+      <span class="course-editor__field-hint">Shown as the block heading on the lesson page. Leave blank for no heading.</span></label>
+    <div class="course-editor__field">
+      <span class="course-editor__field-label">Optional intro text</span>
+      <span class="course-editor__field-hint" style="margin-bottom:0.35rem">Shown above the tool on the lesson page. Leave blank to hide.</span>
+      <div id="ce-et-intro-editor"></div>
+    </div>
+    <label class="course-editor__field"><span class="course-editor__field-label">Tool</span>
+      <select class="course-editor__input" id="ce-et-tool-key"${availableTools.length === 0 ? " disabled" : ""}>
+        ${optionsHtml || `<option value="">No available tools</option>`}
+      </select>
+      <span class="course-editor__field-hint">Only tools marked available in the embedded tools registry.</span></label>
+    ${
+      selectedEntry
+        ? `<p class="course-editor__field-hint" style="margin:0">
+            Standalone page: <a href="${escapeHtml(selectedEntry.standalonePath)}" target="_blank" rel="noopener noreferrer">${escapeHtml(selectedEntry.standalonePath)}</a>
+            · <a href="/admin/embedded-tools" target="_blank" rel="noopener noreferrer">View registry</a>
+          </p>`
+        : `<p class="course-editor__field-hint" style="margin:0">
+            <a href="/admin/embedded-tools" target="_blank" rel="noopener noreferrer">View embedded tools registry</a>
+          </p>`
+    }
+  `;
+
+  const sectionTitleEl = dom.editFields.querySelector("#ce-et-section-title") as HTMLInputElement;
+  sectionTitleEl.value = block ? blockTitleForEditing(block.title) : "";
+  sectionTitleEl.addEventListener("input", () => {
+    applyBlockSectionTitle(ref.blockSlug, sectionTitleEl.value);
+  });
+
+  const introWrap = dom.editFields.querySelector("#ce-et-intro-editor") as HTMLElement;
+  mountRichTextEditor(
+    introWrap,
+    String(parts.introText?.html ?? ""),
+    (html) => applyEmbeddedToolPatch({ introHtml: html }),
+    { tabs: ["html", "preview"] },
+  );
+
+  const toolKeyEl = dom.editFields.querySelector("#ce-et-tool-key") as HTMLSelectElement;
+  toolKeyEl.addEventListener("change", () => {
+    applyEmbeddedToolPatch({ toolKey: toolKeyEl.value.trim() });
+    openEmbeddedToolLayoutEdit(ref);
+  });
+
   renderContentList();
 }
 
@@ -3461,6 +3769,16 @@ function moveContentItem(fromIndex: number, toIndex: number) {
     return;
   }
 
+  if (isEmbeddedToolLayoutItem(current, lesson)) {
+    moveBlockRelativeToTarget(lesson, current.blockSlug, target.blockSlug, moveDown);
+    reassignAllContentOrders(lesson);
+    setLessonDraft(selectedLessonSlug, lesson);
+    contentEditingRef = { ...current };
+    renderContentList();
+    updateSaveState();
+    return;
+  }
+
   if (target.type === TEXT_VIDEO_LAYOUT_TYPE) {
     const comp = removeComponentFromBlock(
       lesson,
@@ -3540,6 +3858,32 @@ function moveContentItem(fromIndex: number, toIndex: number) {
   }
 
   if (isAccordionLayoutItem(target, lesson)) {
+    const comp = removeComponentFromBlock(
+      lesson,
+      current.blockSlug,
+      current.legacyComponentId,
+      current.type,
+    );
+    if (!comp) return;
+    pruneEmptyBlocks(lesson);
+    insertComponentBesideBlock(lesson, comp, target.blockSlug, moveDown);
+    setLessonDraft(selectedLessonSlug, lesson);
+    const host = findBlockContainingComponent(
+      lesson as CourseLesson,
+      Number(comp.legacyComponentId),
+      String(comp.type),
+    );
+    contentEditingRef = {
+      blockSlug: String(host?.slug ?? target.blockSlug),
+      legacyComponentId: Number(comp.legacyComponentId),
+      type: String(comp.type),
+    };
+    renderContentList();
+    updateSaveState();
+    return;
+  }
+
+  if (isEmbeddedToolLayoutItem(target, lesson)) {
     const comp = removeComponentFromBlock(
       lesson,
       current.blockSlug,
@@ -3743,6 +4087,48 @@ function duplicateContentItem(ref: ComponentRef) {
     return;
   }
 
+  if (isEmbeddedToolLayoutItem(ref, lesson)) {
+    const block = findBlock(lesson, ref.blockSlug);
+    if (!block) return;
+    const clone = JSON.parse(JSON.stringify(block)) as LessonRecord;
+    const timestamp = Date.now();
+    clone.slug = `embedded-tool-${timestamp}`;
+    clone.order = nextBlockOrder(lesson);
+    clone.legacy = {
+      ...(clone.legacy as Record<string, unknown>),
+      assignId: nextAssignId(lesson),
+      editorLayout: "embeddedTool",
+    };
+    const parts = getEmbeddedToolLayoutParts(clone);
+    if (!parts) return;
+    const baseId = maxLegacyComponentIdInCourse();
+    if (parts.introText) {
+      parts.introText.legacyComponentId = baseId;
+      parts.introText.layoutRole = EMBEDDED_TOOL_INTRO_ROLE;
+    }
+    parts.tool.legacyComponentId = parts.introText ? baseId + 1 : baseId;
+
+    const blocks = (lesson.blocks ?? []) as LessonRecord[];
+    const index = blocks.findIndex((item) => item.slug === ref.blockSlug);
+    blocks.splice(index + 1, 0, clone);
+    lesson.blocks = blocks;
+    reassignAllContentOrders(lesson);
+    setLessonDraft(selectedLessonSlug, lesson);
+
+    contentEditingRef = {
+      blockSlug: String(clone.slug),
+      legacyComponentId: Number(parts.tool.legacyComponentId),
+      type: "embeddedTool",
+      introLegacyComponentId: parts.introText
+        ? Number(parts.introText.legacyComponentId)
+        : undefined,
+    };
+    openContentEdit(contentEditingRef);
+    flashToast("Duplicated");
+    updateSaveState();
+    return;
+  }
+
   const items = flattenLessonContent(lesson);
   const index = items.findIndex(
     (i) =>
@@ -3818,6 +4204,19 @@ function deleteContentItem(ref: ComponentRef) {
   }
 
   if (isAccordionLayoutItem(ref, lesson)) {
+    removeBlockFromLesson(lesson, ref.blockSlug);
+    reassignAllContentOrders(lesson);
+    setLessonDraft(selectedLessonSlug, lesson);
+    if (contentItemMatches(contentEditingRef, ref)) {
+      contentEditingRef = null;
+      hideEditFormPanel();
+    }
+    renderContentList();
+    updateSaveState();
+    return;
+  }
+
+  if (isEmbeddedToolLayoutItem(ref, lesson)) {
     removeBlockFromLesson(lesson, ref.blockSlug);
     reassignAllContentOrders(lesson);
     setLessonDraft(selectedLessonSlug, lesson);
@@ -3958,6 +4357,28 @@ function appendContentItem(kind: string) {
     openContentEdit(contentEditingRef);
     updateSaveState();
     flashToast(`Added ${typeMeta("exerciseAccordion").label}`);
+    return;
+  }
+
+  if (kind === "embeddedTool") {
+    if (!Array.isArray(lesson.blocks)) lesson.blocks = [];
+    const block = createEmbeddedToolLayoutBlock(lesson);
+    (lesson.blocks as LessonRecord[]).push(block);
+    setLessonDraft(selectedLessonSlug, lesson);
+
+    const parts = getEmbeddedToolLayoutParts(block);
+    if (!parts) return;
+    contentEditingRef = {
+      blockSlug: String(block.slug),
+      legacyComponentId: Number(parts.tool.legacyComponentId),
+      type: "embeddedTool",
+      introLegacyComponentId: parts.introText
+        ? Number(parts.introText.legacyComponentId)
+        : undefined,
+    };
+    openContentEdit(contentEditingRef);
+    updateSaveState();
+    flashToast(`Added ${typeMeta("embeddedTool").label}`);
     return;
   }
 
@@ -4531,6 +4952,13 @@ export function initCourseContentEditor() {
   dom.courseThumbnail?.addEventListener("input", () => {
     updateCourseThumbnailPreview();
     updateCourseSettingsSaveState();
+  });
+  dom.courseCatalogDescription?.addEventListener("input", () => {
+    updateCatalogDescriptionSourceUi();
+    updateCourseSettingsSaveState();
+  });
+  dom.catalogDescriptionClearBtn?.addEventListener("click", () => {
+    clearCustomCatalogDescription();
   });
   dom.coursePublished?.addEventListener("change", () => {
     updateCourseStatusSelectStyles();

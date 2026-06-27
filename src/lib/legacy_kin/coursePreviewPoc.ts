@@ -142,7 +142,7 @@ export type CoursePreviewData = {
     /** `published` or omitted = public when no explicit publish flags. `draft` hides from public routes. */
     status?: string;
     published?: boolean;
-    /** Short catalog blurb for course overview pages. */
+    /** Optional custom override for /courses catalog cards. When omitted, courses-catalog.json applies. */
     description?: string;
     /** Root-relative or absolute path to the course catalog card image. */
     thumbnail?: string;

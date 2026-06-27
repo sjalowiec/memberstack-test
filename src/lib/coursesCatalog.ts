@@ -1,4 +1,5 @@
 import catalogFile from "../data/courses-catalog.json";
+import { getCatalogOverlayDescription } from "./coursesCatalogOverlay";
 import { readCourseContentStatus } from "./legacy_kin/courseContentAdmin";
 import { courseLandingHref } from "./legacy_kin/courseLanding";
 import { getLegacyCourseBySlug } from "./legacy_kin/legacyCourseLoader";
@@ -65,20 +66,72 @@ function resolveTitle(slug: string, catalogStatus: CourseCatalogStatus): string 
   return legacyCourseForEntry(slug, catalogStatus)?.course.title ?? slug;
 }
 
-function resolveDescription(
+function readCustomCatalogDescription(
   slug: string,
   catalogStatus: CourseCatalogStatus,
-  fallback?: string,
-): string | undefined {
-  if (fallback?.trim()) return fallback.trim();
+): string {
   const legacy = legacyCourseForEntry(slug, catalogStatus);
-  const legacyDescription =
+  if (
     legacy &&
     "description" in legacy.course &&
     typeof legacy.course.description === "string"
-      ? legacy.course.description
-      : undefined;
-  return legacyDescription?.trim() || undefined;
+  ) {
+    return legacy.course.description.trim();
+  }
+  return "";
+}
+
+export { getCatalogOverlayDescription } from "./coursesCatalogOverlay";
+
+export type CourseCatalogDescriptionSource = "custom" | "fallback" | "none";
+
+export type ResolvedCourseCatalogDescription = {
+  /** Text shown on the /courses catalog card. */
+  description?: string;
+  source: CourseCatalogDescriptionSource;
+  /** Non-empty only when source is "custom". */
+  customDescription?: string;
+  /** Non-empty only when source is "fallback" (or when custom is absent). */
+  fallbackDescription?: string;
+};
+
+/** Resolve catalog card copy: optional course JSON override, else courses-catalog.json. */
+export function resolveCourseCatalogDescription(
+  slug: string,
+  catalogStatus: CourseCatalogStatus,
+  catalogOverlayDescription?: string,
+): ResolvedCourseCatalogDescription {
+  const customDescription = readCustomCatalogDescription(slug, catalogStatus);
+  const fallbackDescription =
+    catalogOverlayDescription?.trim() || getCatalogOverlayDescription(slug);
+
+  if (customDescription) {
+    return {
+      description: customDescription,
+      source: "custom",
+      customDescription,
+      fallbackDescription,
+    };
+  }
+
+  if (fallbackDescription) {
+    return {
+      description: fallbackDescription,
+      source: "fallback",
+      fallbackDescription,
+    };
+  }
+
+  return { source: "none" };
+}
+
+function resolveDescription(
+  slug: string,
+  catalogStatus: CourseCatalogStatus,
+  catalogOverlayDescription?: string,
+): string | undefined {
+  return resolveCourseCatalogDescription(slug, catalogStatus, catalogOverlayDescription)
+    .description;
 }
 
 /** Course JSON thumbnail wins; catalog overlay thumbnail is a legacy fallback only. */

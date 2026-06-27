@@ -1,7 +1,7 @@
 export const LEGACY_ASSET_ORIGIN = "https://www.knititnow.com";
 export const LEGACY_DOWNLOAD_BASE = `${LEGACY_ASSET_ORIGIN}/KIN_Images/Challenges`;
 
-/** Root-relative paths served from Astro public/ on this site. */
+/** Root-relative paths served from Astro public/ at deploy time (see public/challenge/, public/images/courses/). */
 export const LOCAL_PUBLIC_PATH_PREFIXES = [
   "/challenge/",
   "/downloads/",

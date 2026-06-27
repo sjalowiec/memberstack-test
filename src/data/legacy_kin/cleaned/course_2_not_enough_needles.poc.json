@@ -5,8 +5,8 @@
     "legacyChallengeId": 2,
     "title": "Not Enough Needles?",
     "slug": "not-enough-needles",
-    "status": "draft",
-    "published": false,
+    "status": "published",
+    "published": true,
     "legacy": {
       "sourceExport": "course_2_not_enough_needles.csv",
       "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
@@ -28,26 +28,16 @@
         {
           "components": [
             {
+              "type": "embeddedTool",
+              "toolKey": "maximum-knitted-width",
+              "legacyComponentId": 6153,
+              "order": 2
+            },
+            {
               "type": "richText",
               "html": "<p data-start=\"392\" data-end=\"563\" class=\"PDq2pG_selectionAnchorContainer\">Whether you're knitting a blanket or a plus size garment, every knitting machine has a limited number of needles. That limits the widest piece you can knit in one section.<span aria-hidden=\"true\" class=\"PDq2pG_selectionAnchor\"></span></p>\n<p data-start=\"565\" data-end=\"760\">Unlike hand knitting, we can't simply use a longer needle cable and add more stitches. When a project is too wide, we need to get creative by knitting panels or using another construction method.</p>\n<p data-start=\"762\" data-end=\"846\"><strong data-start=\"762\" data-end=\"846\">Use the calculator below to find the maximum width you can knit on your machine.</strong></p>\n<p data-start=\"848\" data-end=\"889\">Continue to the next lesson when you're finished exploring the calculator.</p>",
               "legacyComponentId": 780,
               "order": 1
-            },
-            {
-              "type": "migrationPending",
-              "legacyType": "CustomCFM",
-              "notes": [
-                "Legacy ColdFusion tool: Howmanyneedles.cfm",
-                "Legacy ColdFusion interactive tool.",
-                "Replace with equivalent KBM interactive tool."
-              ],
-              "legacyFields": {
-                "CHALLENGE_ASSIGNID": "70",
-                "CUSTOMCFM": "Howmanyneedles.cfm",
-                "TYPEOF": "CustomCFM"
-              },
-              "legacyComponentId": 5558,
-              "order": 2
             }
           ],
           "title": "Start Here",
@@ -59,52 +49,75 @@
           }
         },
         {
+          "title": "Overcome the Limits of the Machine",
+          "slug": "three-videos-1782584571811",
+          "order": 3,
+          "legacy": {
+            "assignId": 72,
+            "blockType": "HTML",
+            "editorLayout": "threeVideosWithText"
+          },
           "components": [
+            {
+              "type": "richText",
+              "html": "<p>\n    Optional introductory text goes here. Explain what students should watch for before viewing the videos.\n</p>",
+              "legacyComponentId": 6154,
+              "order": 3,
+              "layoutRole": "threeVideosIntro"
+            },
             {
               "type": "video",
               "vimeoId": "151859115",
-              "title": "Not Enough Needles? - Tips for Plus Knitters",
-              "legacyComponentId": 45,
-              "order": 1
+              "title": "Tips for Plus Knitters",
+              "legacyComponentId": 6155,
+              "order": 5,
+              "layoutRole": "threeVideosVideo1"
             },
             {
               "type": "richText",
-              "html": "<br>",
-              "legacyComponentId": 781,
-              "order": 2
+              "html": "",
+              "legacyComponentId": 6156,
+              "order": 4,
+              "layoutRole": "threeVideosCaption1"
             },
             {
               "type": "video",
               "vimeoId": "151859136",
-              "title": "Not Enough Needles? Part 2",
-              "legacyComponentId": 46,
-              "order": 3
-            }
-          ],
-          "title": "Not Enough Needles?",
-          "slug": "not-enough-needles",
-          "order": 2,
-          "legacy": {
-            "assignId": 71,
-            "blockType": "Video"
-          }
-        },
-        {
-          "components": [
+              "title": "Not Enough Needles Part 2",
+              "legacyComponentId": 6157,
+              "order": 7,
+              "layoutRole": "threeVideosVideo2"
+            },
             {
               "type": "richText",
-              "html": "Based on your gauge, \r\nhow wide can you knit with \r\nthe needles available on your machine?<br>\r\n\r\n\r\nThis is just one of the many Knit it Now charting tools available.<br>\r\n\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/2/tools.jpg\">\r\n\r\n\r\n\r\n",
-              "legacyComponentId": 6152,
-              "order": 1
+              "html": "",
+              "legacyComponentId": 6158,
+              "order": 6,
+              "layoutRole": "threeVideosCaption2"
+            },
+            {
+              "type": "video",
+              "vimeoId": "",
+              "title": null,
+              "legacyComponentId": 6159,
+              "order": 9,
+              "layoutRole": "threeVideosVideo3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6160,
+              "order": 8,
+              "layoutRole": "threeVideosCaption3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6161,
+              "order": 10,
+              "layoutRole": "threeVideosOutro"
             }
-          ],
-          "title": "Use the Knit it Now Tool",
-          "slug": "use-the-knit-it-now-tool",
-          "order": 3,
-          "legacy": {
-            "assignId": 4057,
-            "blockType": "tools"
-          }
+          ]
         }
       ]
     },
@@ -118,47 +131,38 @@
       },
       "blocks": [
         {
+          "title": "Compare Stitch Patterns",
+          "slug": "text-video-1782585048979",
+          "order": 1,
+          "legacy": {
+            "assignId": 254,
+            "blockType": "HTML",
+            "editorLayout": "textVideo"
+          },
           "components": [
+            {
+              "type": "richText",
+              "html": "<p>Different stitch patterns produce different widths.</p><p>  Sometimes changing the stitch pattern will give you the width you need\n</p>\n",
+              "legacyComponentId": 6163,
+              "order": 1,
+              "layoutRole": "textVideoLeft"
+            },
             {
               "type": "video",
               "vimeoId": "151857740",
-              "title": "Stitch Types and Yarn Usage",
-              "legacyComponentId": 47,
-              "order": 1
+              "title": "For more width Consider a Different Stitch Pattern",
+              "legacyComponentId": 6164,
+              "order": 2
             }
-          ],
-          "title": "Compare Stitch patterns",
-          "slug": "compare-stitch-patterns",
-          "order": 1,
-          "legacy": {
-            "assignId": 72,
-            "blockType": "Video"
-          }
+          ]
         },
         {
           "components": [
             {
               "type": "richText",
-              "html": "<blockquote class=\"smallblock\"><small>Stitches and rows shown are for standard machine <em>(Mid-gauge/bulky)</em></small></blockquote>\r\n<b>Swatch 1:</b><br>\r\n<ol class=”Instruction-list”>\r\n<li>Cast on 60 (30) stitches and knit in plain knitting for 60(30) rows</li>\r\n<li>Bind off loosely</li>\r\n</ol>\r\n<b>Swatch 2:</b><br>\r\n<li>Cast on 60 (30) stitches and knit in a tuck stitch knitting for 60(30) rows<br><small>If you don't have an automatic patterning machine (punchcard or electronics)\r\n follow your manual for manually creating a tuck or Pull-up stitch</small></li>\r\n<li>Bind off loosely</li>\r\n</ol>\r\n<br>Compare and measure the 2 swatches - notice that both the width and length vary quite a bit.  Simply using a tuck stitch can sometimes solve the problem of not having enough needles to knit a piece.<br>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/2/not_enough_needles/compare.jpg\">\r\n\r\n",
+              "html": "Note: Stitches and rows shown are for standard machine <em>(Mid-gauge/bulky)</em><br>\n\nIf you don't have an automatic patterning machine (punchcard or electronics)\n follow your manual for manually creating a tuck or Pull-up stitch<br><br>\n<b>Swatch 1:</b><br>\n<ol>\n<li>Cast on 60<i>(30)</i> stitches and knit in plain knitting for 60<i>(30)</i> rows</li>\n<li>Bind off loosely</li>\n</ol>\n<b>Swatch 2:</b><br>\n<ol><li>Cast on 60<i>(30)</i> stitches and knit in a tuck stitch knitting for 60<i style=\"font-size: 0.85rem;\">(30)</i><span style=\"font-size: 0.85rem;\"> rows</span></li><li>Bind off loosely</li></ol>\n\n\n<br>Compare and measure the 2 swatches - notice that both the width and length vary quite a bit.  Simply using a tuck stitch can sometimes solve the problem of not having enough needles to knit a piece.<div><br>\n\n<img class=\"img-thumbnail\" src=\"/images/course-content/2/compare.jpg\">\n\n</div>",
               "legacyComponentId": 764,
-              "order": 1
-            },
-            {
-              "type": "migrationPending",
-              "legacyType": "ImageUpload",
-              "notes": [
-                "Unmapped legacy component type: ImageUpload"
-              ],
-              "legacyFields": {
-                "ACTION": "stitchPatternPractice",
-                "BUTTONLABLE": "Upload Photos of your Practice Swatches<br><small>They will be included in your Course Binder</small>",
-                "CHALLENGE_ASSIGNID": "252",
-                "CHALLENGE_COMPONENTID": "765",
-                "QTY": "2",
-                "SUCCESSMESSAGE": "Got it!"
-              },
-              "legacyComponentId": 765,
-              "order": 2
+              "order": 3
             }
           ],
           "title": "Stitch Pattern Practice",
@@ -175,14 +179,14 @@
               "type": "richText",
               "html": "If you have a ribber, you can utilize both beds. This is also called \"U\" knitting.<br>\r\nBut remember, on Japanese machines automatic stitch patterning only occurs on the main bed. This solution will produce a wide piece of plain stockinette knitting. <br>You can use a textured or variegated yarn ... or even stripes to jazz up the plain knitting and create a wide knitted piece - get creative!",
               "legacyComponentId": 782,
-              "order": 1
+              "order": 4
             },
             {
               "type": "video",
               "vimeoId": "151859462",
               "title": "Half Circular U-Knitting",
               "legacyComponentId": 757,
-              "order": 2
+              "order": 5
             }
           ],
           "title": "Half Circular Knitting with the Ribber",
@@ -197,26 +201,9 @@
           "components": [
             {
               "type": "richText",
-              "html": "<b>Practice:</b><br>\r\nIf you have a ribber, following the video and your manual cast on 30 stitches on each bed and set your machine to knit half tubular (U knitting).<br>Once you get in the rhythm, the knitting isn't difficult and the advantage is a wide piece of knitting with no seams.<br>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/2/not_enough_needles/half1.jpg\">\r\n",
+              "html": "<b>Practice:</b><br>\nIf you have a ribber, following the video and your manual cast on 30 stitches on each bed and set your machine to knit half tubular (U knitting).<br>Once you get in the rhythm, the knitting isn't difficult and the advantage is a wide piece of knitting with no seams.<br>\n\n<img class=\"img-thumbnail\" src=\"/images/course-content/2/half1.jpg\" width=\"500\">\n",
               "legacyComponentId": 766,
-              "order": 1
-            },
-            {
-              "type": "migrationPending",
-              "legacyType": "ImageUpload",
-              "notes": [
-                "Unmapped legacy component type: ImageUpload"
-              ],
-              "legacyFields": {
-                "ACTION": "halfCircSwatch",
-                "BUTTONLABLE": "Upload Photos of your Practice Swatches<br><small>They will be included in your Course Binder</small>",
-                "CHALLENGE_ASSIGNID": "253",
-                "QTY": "2",
-                "SUCCESSMESSAGE": "Got it!",
-                "TYPEOF": "ImageUpload"
-              },
-              "legacyComponentId": 767,
-              "order": 2
+              "order": 6
             }
           ],
           "title": "Half Circular Practice",
@@ -232,10 +219,10 @@
     {
       "title": "Decorative Seams",
       "slug": "decorative-seams",
-      "displayOrder": 25,
+      "displayOrder": 3,
       "legacy": {
         "itemId": 64,
-        "lessonOrder": 25
+        "lessonOrder": 3
       },
       "blocks": [
         {
@@ -246,6 +233,12 @@
               "title": "Hairpin Lace Seam",
               "legacyComponentId": 758,
               "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<span style=\"color: rgb(43, 54, 54); font-family: &quot;Lucida Sans Unicode&quot;; font-size: 14px;\">A machine knitters staple, this join gives the appearance of hairpin lace or a cable between 2 pieces of knitting, adding a decorative touch.</span><p></p>",
+              "legacyComponentId": 6165,
+              "order": 2
             }
           ],
           "title": "Hairpin Lace Seam",
@@ -260,26 +253,9 @@
           "components": [
             {
               "type": "richText",
-              "html": "Follow the video to create 2 swatches that you will join with a hairpin seam.  It is helpful to use a contrasting color for each swatch, making it easier to work the join until you get the hang of it.<br><blockquote class=\"smallblock\"><small>Stitches and rows shown are for standard machine <em>(Mid-gauge/bulky)</em></small></blockquote>\r\n\r\n<b>Swatch 1:</b>\r\n<ul>\r\n<li>Cast on 60 <em>(30)</em> needles</li>\r\n<Li>On the RIGHT side, leave a needle out of work as indicated in the video<br>\r\n<img src=\"/challenge/images/v2/2/not_enough_needles/left.png\">\r\n</li>\r\n</ul>\r\n<br><b>Swatch 2:</b>\r\n<ul>\r\n<li>Cast on 60 <em>(30)</em> needles, on the LEFT side, leave a needle out of work as indicated in the video<br>\r\n<img src=\"/challenge/images/v2/2/not_enough_needles/right.png\">\r\n</li>\r\n</ul>\r\nJoin the swatches following the video taking care to catch all strands and secure the stitches at the end.\r\n<br>\r\nDoes your swatch look like ours?<br>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/2/not_enough_needles/hairpin_intro.jpg\"><br>\r\n\r\n<b>TIP:</b><br>Use this join to create belts and straps.  Knit a single piece, leaving a needle out of work on each edge.  Fold the band in half and work the Hairpin Lace technique to join.\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/2/not_enough_needles/belt.jpg\">",
+              "html": "Follow the video to create 2 swatches that you will join with a hairpin seam.  It is helpful to use a contrasting color for each swatch, making it easier to work the join until you get the hang of it.<br><blockquote class=\"smallblock\"><small>Stitches and rows shown are for standard machine <em>(Mid-gauge/bulky)</em></small></blockquote>\n\n<b>Swatch 1:</b>\n<ul>\n<li>Cast on 60 <em>(30)</em> needles</li>\n<li>On the RIGHT side, leave a needle out of work as indicated in the video<br>\n<img src=\"/images/course-content/2/left.png\">\n</li>\n</ul>\n<br><b>Swatch 2:</b>\n<ul>\n<li>Cast on 60 <em>(30)</em> needles, on the LEFT side, leave a needle out of work as indicated in the video<br>\n<img src=\"/images/course-content/2/right.png\">\n</li>\n</ul>\nJoin the swatches following the video taking care to catch all strands and secure the stitches at the end.\n<br><br><span class=\"handwriting\">Does your swatch look like ours?</span><Br>\n<img class=\"img-thumbnail\" src=\"/images/course-content/2/hairpin_intro.jpg\" width=\"500\"><br>\n\n<b>TIP:</b><br>Use this join to create belts and straps.  Knit a single piece, leaving a needle out of work on each edge.  Fold the band in half and work the Hairpin Lace technique to join.<br>\n\n<img class=\"img-thumbnail\" src=\"/images/course-content/2/belt.jpg\" width=\"500\"></div>",
               "legacyComponentId": 783,
-              "order": 1
-            },
-            {
-              "type": "migrationPending",
-              "legacyType": "ImageUpload",
-              "notes": [
-                "Unmapped legacy component type: ImageUpload"
-              ],
-              "legacyFields": {
-                "ACTION": "hairpin_swatch",
-                "BUTTONLABLE": "Upload Photos of your Practice Swatches<br><small>They will be included in your Course Binder</small>",
-                "CHALLENGE_ASSIGNID": "257",
-                "QTY": "2",
-                "SUCCESSMESSAGE": "Got it!",
-                "TYPEOF": "ImageUpload"
-              },
-              "legacyComponentId": 784,
-              "order": 2
+              "order": 3
             }
           ],
           "title": "Hairpin Lace Practice",
@@ -297,7 +273,7 @@
               "vimeoId": "151858984",
               "title": "Show off Seams",
               "legacyComponentId": 771,
-              "order": 1
+              "order": 4
             }
           ],
           "title": "Show off Seams",
@@ -312,26 +288,9 @@
           "components": [
             {
               "type": "richText",
-              "html": "<center><img src=\"/challenge/images/v2/2/practice_makes_perfect.png\"></center><br>Choose  your favorite technique from the video and knit 2 swatches, working the seam as shown.<br>The more you practice, the more likely you will remember to use these techniques to create your own designs.\r\n\r\n",
+              "html": "<img src=\"/images/course-content/2/practice_makes_perfect.png\"><br>Choose  your favorite technique from the video and knit 2 swatches, working the seam as shown.<br>The more you practice, the more likely you will remember to use these techniques to create your own designs.\n\n",
               "legacyComponentId": 786,
-              "order": 1
-            },
-            {
-              "type": "migrationPending",
-              "legacyType": "ImageUpload",
-              "notes": [
-                "Unmapped legacy component type: ImageUpload"
-              ],
-              "legacyFields": {
-                "ACTION": "show_off_swatch",
-                "BUTTONLABLE": "Upload Photos of your Practice Swatches<br><small>They will be included in your Course Binder</small>",
-                "CHALLENGE_ASSIGNID": "258",
-                "QTY": "2",
-                "SUCCESSMESSAGE": "Got it!",
-                "TYPEOF": "ImageUpload"
-              },
-              "legacyComponentId": 785,
-              "order": 2
+              "order": 5
             }
           ],
           "title": "Show off Seams Practice",
@@ -349,7 +308,7 @@
               "vimeoId": "151859092",
               "title": "Twisted Join",
               "legacyComponentId": 775,
-              "order": 1
+              "order": 6
             }
           ],
           "title": "Twisted Join",
@@ -366,24 +325,7 @@
               "type": "richText",
               "html": "Following the instruction in the video, practice the Twisted Join technique yourself.<br>\r\nIt knits up quickly and is easier than the Hairpin Lace technique.  The join has a cable appearance that is attractive when both pieces are knit in the same color or in contrasting colors.",
               "legacyComponentId": 788,
-              "order": 1
-            },
-            {
-              "type": "migrationPending",
-              "legacyType": "ImageUpload",
-              "notes": [
-                "Unmapped legacy component type: ImageUpload"
-              ],
-              "legacyFields": {
-                "ACTION": "Twistedjoin_swatch",
-                "BUTTONLABLE": "Upload Photos of your Practice Swatches<br><small>They will be included in your Course Binder</small>",
-                "CHALLENGE_ASSIGNID": "259",
-                "CHALLENGE_COMPONENTID": "787",
-                "QTY": "2",
-                "SUCCESSMESSAGE": "Got it!"
-              },
-              "legacyComponentId": 787,
-              "order": 2
+              "order": 7
             }
           ],
           "title": "Twisted Join Practice",
@@ -399,67 +341,90 @@
     {
       "title": "Sew as you go",
       "slug": "sew-as-you-go",
-      "displayOrder": 31,
+      "displayOrder": 4,
       "legacy": {
         "itemId": 65,
-        "lessonOrder": 31
+        "lessonOrder": 4
       },
       "blocks": [
         {
+          "title": "Quick Seams",
+          "slug": "three-videos-1782587266499",
+          "order": 1,
+          "legacy": {
+            "assignId": 261,
+            "blockType": "HTML",
+            "editorLayout": "threeVideosWithText"
+          },
           "components": [
+            {
+              "type": "richText",
+              "html": "<p>\n   Quickly \"seam\" knitted pieces as you knit.<br>\n\nThis technique is often used to quickly join blanket panels, eliminating the need to seam the panels when the knitting is complete.<br>\nIt can also be used to join other seams, cutting down on finishing time.\n</p>",
+              "legacyComponentId": 6166,
+              "order": 1,
+              "layoutRole": "threeVideosIntro"
+            },
             {
               "type": "video",
               "vimeoId": "151856919",
-              "title": "Join (Sew) As You Go",
-              "legacyComponentId": 761,
-              "order": 1
+              "title": "Watch How It's Done",
+              "legacyComponentId": 6167,
+              "order": 3,
+              "layoutRole": "threeVideosVideo1"
             },
             {
               "type": "richText",
-              "html": "<br>",
-              "legacyComponentId": 789,
-              "order": 2
+              "html": "",
+              "legacyComponentId": 6168,
+              "order": 2,
+              "layoutRole": "threeVideosCaption1"
             },
             {
               "type": "video",
               "vimeoId": "169798401",
               "title": "Sew-as-you-go Tricks",
-              "legacyComponentId": 762,
-              "order": 3
+              "legacyComponentId": 6169,
+              "order": 5,
+              "layoutRole": "threeVideosVideo2"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6170,
+              "order": 4,
+              "layoutRole": "threeVideosCaption2"
+            },
+            {
+              "type": "video",
+              "vimeoId": "",
+              "title": null,
+              "legacyComponentId": 6171,
+              "order": 7,
+              "layoutRole": "threeVideosVideo3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6172,
+              "order": 6,
+              "layoutRole": "threeVideosCaption3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6173,
+              "order": 8,
+              "layoutRole": "threeVideosOutro"
             }
-          ],
-          "title": "Seam as you go",
-          "slug": "seam-as-you-go",
-          "order": 1,
-          "legacy": {
-            "assignId": 251,
-            "blockType": "Video"
-          }
+          ]
         },
         {
           "components": [
             {
               "type": "richText",
-              "html": "<div>\r\n\r\n\r\nIf you have never tried Sew-as-you-go, please take time to try the technique.  Not only is it good for joining panels, you will find many other uses. Often socks knit on the flatbed knitting machine are seamed using this method. <br>It's a neat, attractive, strong seam, that SAVES TIME!<br>Follow the video as you are practicing. Use light color yarn (and contrasting colors if possible) so you can see the formation of the sew-as-you-go stitches.<br><b>Swatch 1:</b><br>\r\nKnit a small swatch or use the edge of a previously knit swatch for this sample.<br>\r\n<b>Swatch 2:</b><br>\r\n<ul>\r\n<Li>Cast on a new swatch</li>\r\n<li>On the side opposite the carriage pick up and hang the cast on edge stitch of Swatch 1. Be sure to have the Private/wrong side of Swatch 1 facing you. (purl side facing on both pieces)</li>\r\n<li>Be sure to hang the stitch from swatch one ON THE SAME NEEDLE as the end needle of Swatch 2.  Don't increase, double up the stitches as you join to create the seam.</li>\r\n<li>To reduce bulk,  pick up a single strand (one leg) of the edge stitch</li>\r\n<li>Knit across and back (carriage is on the opposite side of the seam)</li>\r\n<li>Continue picking up stitches from Swatch 1 as you knit Swatch 2</li>\r\n</ul><br>\r\n<b>TIP:</B><br>\r\nPlacing yarn markers at regular intervals can be helpful in seaming with any method. For example, as you are knitting the first piece place a yarn marker along the edges every 10, 20 or 25 rows (whatever interval you will remember).<br>\r\nAs you knit the second piece and sew-as-you-go, the markers will help you match the rows of both pieces perfectly.\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/2/not_enough_needles/sew_You_go2.png\">\r\n\r\n\r\n",
+              "html": "<div>\n\n\nIf you have never tried Sew-as-you-go, please take time to try the technique.  Not only is it good for joining panels, you will find many other uses. Often socks knit on the flatbed knitting machine are seamed using this method. <br>It's a neat, attractive, strong seam, that SAVES TIME!<br>Follow the video as you are practicing. Use light color yarn (and contrasting colors if possible) so you can see the formation of the sew-as-you-go stitches.<br><b>Swatch 1:</b><br>\nKnit a small swatch or use the edge of a previously knit swatch for this sample.<br>\n<b>Swatch 2:</b><br>\n<ul>\n<li>Cast on a new swatch</li>\n<li>On the side opposite the carriage pick up and hang the cast on edge stitch of Swatch 1. Be sure to have the Private/wrong side of Swatch 1 facing you. (purl side facing on both pieces)</li>\n<li>Be sure to hang the stitch from swatch one ON THE SAME NEEDLE as the end needle of Swatch 2.  Don't increase, double up the stitches as you join to create the seam.</li>\n<li>To reduce bulk,  pick up a single strand (one leg) of the edge stitch</li>\n<li>Knit across and back (carriage is on the opposite side of the seam)</li>\n<li>Continue picking up stitches from Swatch 1 as you knit Swatch 2</li>\n</ul><br>\n<b>TIP:</b><br>\nPlacing yarn markers at regular intervals can be helpful in seaming with any method. For example, as you are knitting the first piece place a yarn marker along the edges every 10, 20 or 25 rows (whatever interval you will remember).<br>\nAs you knit the second piece and sew-as-you-go, the markers will help you match the rows of both pieces perfectly.&lt;br&gt;&nbsp;&nbsp;<img class=\"img-thumbnail\" src=\"/images/course-content/2/sew_You_go2.png\">\n\n\n</div>",
               "legacyComponentId": 790,
-              "order": 1
-            },
-            {
-              "type": "migrationPending",
-              "legacyType": "ImageUpload",
-              "notes": [
-                "Unmapped legacy component type: ImageUpload"
-              ],
-              "legacyFields": {
-                "ACTION": "sewasyougo_swatch",
-                "BUTTONLABLE": "Upload Photos of your Practice Swatches<br><small>They will be included in your Course Binder</small>",
-                "CHALLENGE_ASSIGNID": "260",
-                "QTY": "2",
-                "SUCCESSMESSAGE": "Got it!",
-                "TYPEOF": "ImageUpload"
-              },
-              "legacyComponentId": 791,
-              "order": 2
+              "order": 9
             }
           ],
           "title": "You HAVE to try this!",
@@ -474,85 +439,29 @@
     },
     {
       "title": "Pattern Hacking Practice",
-      "slug": "pattern-hacking-practice",
-      "displayOrder": 70,
-      "legacy": {
-        "itemId": 5,
-        "lessonOrder": 70
-      },
-      "blocks": [
-        {
-          "components": [
-            {
-              "type": "richText",
-              "html": "<center><img src=\"http://kin.knititnow.com/wp-content/uploads/2017/03/Not_enough_pinterest-300x168.jpg\"></center><br>\r\n<p>Just because a pattern tells us to cast on the entire width of the back of a sweater, doesn't mean we have to do that.  Often with Knit it Now Dynamic Patterns, you will be instructed to cast on more stitches than you have available. (The engine does it's math thing, but doesn't know how many needles you have available.)<br>As shown in the previous \"Not Enough Needles II\" video, we have options for adding seams.</p>\r\n<p>Let's do a little math and explore 5 possibilities.</p>",
-              "legacyComponentId": 792,
-              "order": 2
-            },
-            {
-              "type": "download",
-              "label": "Download",
-              "filename": "/downloads/pattern_hack_exercise2.pdf",
-              "showInline": true,
-              "legacy": {
-                "assignId": "74",
-                "componentId": "793",
-                "viewHeight": "600",
-                "icon": "fa fa-download"
-              },
-              "legacyComponentId": 793,
-              "order": 3
-            }
-          ],
-          "title": "Pattern Hacking Practice",
-          "slug": "pattern-hacking-practice",
-          "order": 1,
-          "legacy": {
-            "assignId": 74,
-            "blockType": "Document"
-          }
-        }
-      ]
-    },
-    {
-      "title": "Course Binder",
-      "slug": "course-binder",
-      "displayOrder": 71,
+      "slug": "lesson-1782588375955",
+      "displayOrder": 5,
       "legacy": {
         "itemId": 66,
-        "lessonOrder": 71
+        "lessonOrder": 5
       },
       "blocks": [
         {
+          "title": "Make it your own",
+          "slug": "content-1782588426794",
+          "order": 2,
+          "legacy": {
+            "assignId": 2,
+            "blockType": "HTML"
+          },
           "components": [
             {
               "type": "richText",
-              "html": "\r\n                Your Course Binder contains all of the photos you uploaded during this course.\r\n                <img src=\"/challenge/images/v2/2/course_binder_logo.png\"\">\r\n\r\n\r\n",
-              "legacyComponentId": 794,
+              "html": "Just because a pattern tells us to cast on the entire width of the back of a sweater, doesn't mean we have to do that.\n<br>\nOften with Knit it Now Dynamic Patterns, you will be instructed to cast on more stitches than you have available. (The engine does it's math thing, but doesn't know how many needles you have available.)<br>\n\nAs shown in the previous \"Not Enough Needles II\" video, we have options for adding seams.<br>\n\n<span class=\"handwriting-accent\">Let's do a little math and explore 5 possibilities.</span><br><br>\n\n<a href=\"/downloads/pattern_hack_exercise2.pdf\" class=\"kbm-btn kbm-btn-primary\" target=\"_blank\" rel=\"noopener noreferrer\">Download Pattern Hacking Practice</a>",
+              "legacyComponentId": 6174,
               "order": 1
-            },
-            {
-              "type": "migrationPending",
-              "legacyType": "Binder",
-              "notes": [
-                "Unmapped legacy component type: Binder"
-              ],
-              "legacyFields": {
-                "CHALLENGE_ASSIGNID": "261",
-                "LABLE": "Binder",
-                "TYPEOF": "Binder"
-              },
-              "legacyComponentId": 795,
-              "order": 2
             }
-          ],
-          "title": "Download your printable course Binder",
-          "slug": "download-your-printable-course-binder",
-          "order": 1,
-          "legacy": {
-            "assignId": 261,
-            "blockType": "Binder"
-          }
+          ]
         }
       ]
     }

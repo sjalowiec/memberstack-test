@@ -1,0 +1,844 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 89,
+    "title": "Crossover V-Neckband",
+    "slug": "crossover-v-neckband",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_89_crossover_v_neckband.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Getting started",
+      "slug": "getting-started",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 546,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\t\r\n<a class='videopopup' data-vimeoid='587198832'><img class='img-thumbnail' src='/challenge/images/v2/89/intro (Time 0_00_00;00).png'>\r\n<div class=\"imagecenter text-center\"><button class=\"btn btn-success\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i></button></div></a>\r\n<img src=\"/challenge/images/v2/89/crossover_gif2.gif\" width=\"50%\"><br>\r\n\r\n<!-- replace this video after the Knitalong is over  587199093-->\r\n",
+              "legacyComponentId": 6542,
+              "order": 1
+            }
+          ],
+          "title": "Introduction",
+          "slug": "introduction",
+          "order": 1,
+          "legacy": {
+            "assignId": 4322,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<span class=\"handwriting\" style=\"font-size:2em\">Take time to practice and master this technique.</span>",
+              "legacyComponentId": 6581,
+              "order": 1
+            },
+            {
+              "type": "exerciseAccordion",
+              "sections": [
+                {
+                  "title": "Knit and measure an accurate swatch",
+                  "bodyHtml": "No matter what you want to knit, <b>knitting a gauge swatch is NOT OPTIONAL!</b><br>Without knowing gauge:<ul>\r\n\t<li>How do you know how much yarn you need?</li>\r\n\t<li>How are you going to know if the finished item will fit?</li>\r\n\t<li>Determine if you are even going to LIKE the resulting fabric</li>\r\n\t<li>Try out the chosen stitch pattern, maybe it's too tedious... learn this BEFORE starting to knit</li>\r\n\t<li>Dress the swatch and check for shrinkage, pilling, fading</li>\r\n\t<li>Save time by knowing AHEAD if the yarn will knit easily</li>\r\n</ul>\r\n<br>\r\n\r\n\t<img src=\"/path/images/87/measure_rows.jpg\">\r\n\t<img src=\"/path/images/87/measure_stitches.jpg\">\r\n",
+                  "iconSrc": "/challenge/images/v2/89/arrow1.png"
+                },
+                {
+                  "title": "Build the Knit it Now Practice Pattern",
+                  "bodyHtml": " <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i> <a data-vimeoid=\"402313052\" class=\"videopopup\"> Are you new to Knit it Now Patterns? </a><br><a href=\"/knit/DynamicPattern/679/practice-necklines\"><img width=\"500\" src=\"/challenge/images/v2/89/pattern.jpg\"></a>",
+                  "iconSrc": "/challenge/images/v2/89/arrow2.png"
+                },
+                {
+                  "title": "Knit and block the front and back pieces",
+                  "bodyHtml": "I've scrapped off the center front stitches (you can bind them off, or hold them with a stitch holder).<br>\r\nI've also scrapped off the shoulders.<br><img class=\"img-thumbnail\" src=\"/challenge/images/v2/89/front and back.jpg\">",
+                  "iconSrc": "/challenge/images/v2/89/arrow3.png"
+                },
+                {
+                  "title": "Join the shoulder(s)",
+                  "bodyHtml": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border\"><b>Option1: Knit the band in 2 pieces</b>\r\n\t\t<ul>\r\n\t\t\t<li>Seam the right shoulder (as worn)</li>\r\n\t\t\t<li>#1 Knit a band piece for the back and right side of the V</li>\r\n\t\t\t<li>#2 Knit a second band piece for the left side of the V</li>\r\n\t\t\t<li>Join the left shoulder and neatly seam the band</li>\r\n\t\t</ul>\r\n\t<img src=\"/challenge/images/v2/89/band1.jpg\">\r\n\t</div>\r\n\t<div class=\"container-border\"><b>Option2: Knit the band in one piece</b>\r\n\t\t<ul>\r\n\t\t\t<li>Join both shoulders</li>\r\n\t\t\t<li>Calculate and knit the band in one piece for the entire neck opening</li>\r\n\t\t\t<li>Join the band to the garment in sections:\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>Join the band over as many stitches as possible and bind off</li>\r\n\t\t\t\t\t<li>Repeat joining and binding off in sections until the entire band is joined to the neck opening</li>\r\n\t\t\t\t</ul>\r\n\t\t\t</li>\r\n\t\t</ul>\r\n\t<img src=\"/challenge/images/v2/89/band2.jpg\">\r\n\r\n\t</div>\r\n",
+                  "iconSrc": "/challenge/images/v2/89/arrow4.png"
+                },
+                {
+                  "title": "Measure and Calculate",
+                  "bodyHtml": "<img class=\"img-thumbnail\" src=\"/challenge/images/v2/89/measure11.jpg\">\r\n\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/89/measure21.jpg\">",
+                  "iconSrc": "/challenge/images/v2/89/arrow5.png"
+                },
+                {
+                  "title": "Knit the band(s)",
+                  "bodyHtml": "<img src=\"/challenge/images/v2/89/band.jpg\">",
+                  "iconSrc": "/challenge/images/v2/89/arrow6.png"
+                },
+                {
+                  "title": "Hang the garment edge",
+                  "bodyHtml": "Right side facing\r\n\r\n<img src=\"/challenge/images/v2/89/hang1.jpg\">\r\n<img src=\"/challenge/images/v2/89/hang2.jpg\">\r\n<img src=\"/challenge/images/v2/89/hang3.jpg\">\r\n",
+                  "iconSrc": "/challenge/images/v2/89/arrow7.png"
+                },
+                {
+                  "title": "Re-hang the band from scrap",
+                  "bodyHtml": "<ol>\r\n<li>Push the neck edge behind the latches</li>\r\n<li>Position the band stitches in the hooks of the needles</li>\r\n</ol>\r\n<img src=\"/challenge/images/v2/89/hang4.jpg\">",
+                  "iconSrc": "/challenge/images/v2/89/arrow8.png"
+                },
+                {
+                  "title": "Attach the band to the neck edge",
+                  "bodyHtml": "<ol>\r\n\t<li>Pull the band stitches through the garment edge</li>\r\n\t<li>Bind off LOOSELY</li>\r\n</ol>\r\n<div>\r\n\t\r\n\t\t <div class=\"subvideopopup\" data-videotitle=\"attach_band\" data-vimeoid=\"586457429\">\r\n\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/1213385709-698e628544231623efc61750bb2f9b93317c65aa2822f3a238e98a5ae42c5b45-d_1280x720?r=pad\">\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div>\r\n",
+                  "iconSrc": "/challenge/images/v2/89/arrow9.png"
+                },
+                {
+                  "title": "Overlap the band at the center front and secure the band to the open stitches at the bottom of the V",
+                  "bodyHtml": "<img src=\"/challenge/images/v2/89/overlap1.jpg\"><br><img src=\"/challenge/images/v2/89/overlap.jpg\">",
+                  "iconSrc": "/challenge/images/v2/89/arrow10.png"
+                }
+              ],
+              "legacy": {
+                "showText": "below",
+                "size": null
+              },
+              "legacyComponentId": 6558,
+              "order": 2
+            }
+          ],
+          "title": "The Steps",
+          "slug": "the-steps",
+          "order": 2,
+          "legacy": {
+            "assignId": 4330,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<script>\r\nfunction PrintElem()\r\n\t\t{\r\n                   $('.notesinfo').show();\r\n\t\t    var mywindow = window.open('', 'PRINT', 'height=500,width=800');\r\n\t\t\r\n\t\t    mywindow.document.write('<html><head><title>Rectangle | Square Tool</title>');\r\n\t\t    mywindow.document.write('</head><body >');\r\n\t\t    mywindow.document.write('<h1>Check List</h1>');\r\n\t\t    mywindow.document.write(document.getElementById('printable').innerHTML);\r\n\t\t    mywindow.document.write('</body></html>');\r\n\t\t\r\n\t\t    mywindow.document.close(); // necessary for IE >= 10\r\n\t\t    mywindow.focus(); // necessary for IE >= 10*/\r\n\t\t\r\n\t\t    mywindow.print();\r\n\t\t    //mywindow.close();\r\n\t\t    return true;\r\n\t\t}\r\n</SCRIPT>\t\t\r\n<button onclick=\"PrintElem()\">print</button>\r\n\r\n\r\n<div id=\"printable\">\r\n<span class=\"handwriting\" style=\"font-size:2em\">Crossover V Checklist</span>\r\n<div class=\"table-responsive\">\r\n\t<table class=\"table\">\r\n\t\t<tbody>\r\n\t\t\t<thead>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<th></th>\r\n\t\t\t\t\t<th></th>\r\n\t\t\t\t\t<th></th>\r\n\t\t\t\t\t<th style=\"display:none\" class=\"notesinfo\">Notes</th>\r\n\t\t\t\t</tr>\r\n\t\t\t</thead>\r\n\t\t\t<tr>\r\n\t\t\t\t<td><img src=\"/challenge/images/v2/89/arrow1.png\"></td>\r\n\t\t\t\t<td>Knit and Measure an ACCURATE SWATCH</td>\r\n\t\t\t\t<td><em>Swatching is NOT Optional. <br>\r\n\t\t\t\t\t\t<ul>\r\n\t\t\t\t\t\t\t<li> How will you know how many stitches you need for your band? </li>\r\n\t\t\t\t\t\t\t<li> You need to know your gauge to create your custom practice pattern\r\n\t\t\t\t\t\t</ul>\r\n\t\t\t\t\t</em>\r\n\t\t\t\t</td>\r\n\t\t\t\t<td style=\"display:none\" class=\"notesinfo\"></td>\r\n\t\t\t</tr>\r\n\t\t\t<tr>\r\n\t\t\t\t<td><img src=\"/challenge/images/v2/89/arrow2.png\"></td>\r\n\t\t\t\t<td>Build your Knit it Now practice Pattern with YOUR gauge</td>\r\n\t\t\t\t<td><em>Use pieces 9 and 10 in the pattern for this Knit-Along</em></td>\r\n\t\t\t\t<td style=\"display:none\" class=\"notesinfo\"><img src=\"/images/blank.gif\" width=\"150px\"></td>\r\n\t\t\t</tr>\r\n\t\t\t<tr>\r\n\t\t\t\t<td><img src=\"/challenge/images/v2/89/arrow3.png\"></td>\r\n\t\t\t\t<td>Knit and block the front and back pieces</td>\r\n\t\t\t\t<td><em>Feeling adventurous? Knit in a stitch pattern and practice<br> starting and stopping the stitch pattern to knit  the necklines </em></td>\r\n\t\t\t\t<td style=\"display:none\" class=\"notesinfo\"></td>\r\n\t\t\t</tr>\r\n\t\t\t<tr>\r\n\t\t\t\t<td><img src=\"/challenge/images/v2/89/arrow4.png\"></td>\r\n\t\t\t\t<td>Join the shoulder(s)</td>\r\n\t\t\t\t<td><em>Decision time. Are you knitting the band in one piece or 2?</em></td>\r\n\t\t\t\t<td style=\"display:none\" class=\"notesinfo\"></td>\r\n\t\t\t</tr>\r\n\t\t\t<tr>\r\n\t\t\t\t<td><img src=\"/challenge/images/v2/89/arrow5.png\"></td>\r\n\t\t\t\t<td>Measure and calculate your band instructions</td>\r\n\t\t\t\t<td><em>Don't forget to add seaming stitches</em></td>\r\n\t\t\t\t<td style=\"display:none\" class=\"notesinfo\"></td>\r\n\t\t\t</tr>\r\n\t\t\t<tr>\r\n\t\t\t\t<td><img src=\"/challenge/images/v2/89/arrow6.png\"></td>\r\n\t\t\t\t<td>Knit the bands and scrap off</td>\r\n\t\t\t\t<td><em>Knit in ribbing - try 1x1 or 2x2 .. try adding a stripe.</em></td>\r\n\t\t\t\t<td style=\"display:none\" class=\"notesinfo\"></td>\r\n\t\t\t</tr>\r\n\t\t\t<tr>\r\n\t\t\t\t<td><img src=\"/challenge/images/v2/89/arrow7.png\"></td>\r\n\t\t\t\t<td>Hang the garment edge</td>\r\n\t\t\t\t<td><em>Right side (knit side) facing- push the knitting behind the latches</em></td>\r\n\t\t\t\t<td style=\"display:none\" class=\"notesinfo\"></td>\r\n\t\t\t</tr>\r\n\t\t\t<tr>\r\n\t\t\t\t<td><img src=\"/challenge/images/v2/89/arrow8.png\"></td>\r\n\t\t\t\t<td>Rehang the ribbed bands</td>\r\n\t\t\t\t<td><em>\r\n\t\t\t\t\t\t<ul>\r\n\t\t\t\t\t\t\t<li>Be sure to pick up EVERY stitch from the waste yarn</li>\r\n\t\t\t\t\t\t\t<li>Put the stitches in the hooks of the needles</li>\r\n\t\t\t\t\t\t</ul>\r\n\t\t\t\t\t</em>\r\n\t\t\t\t</td>\r\n\t\t\t\t<td style=\"display:none\" class=\"notesinfo\"></td>\r\n\t\t\t</tr>\r\n\t\t\t<tr>\r\n\t\t\t\t<td><img src=\"/challenge/images/v2/89/arrow9.png\"></td>\r\n\t\t\t\t<td>Attach the band</td>\r\n\t\t\t\t<td><em>\r\n\t\t\t\t\t\t<ul>\r\n\t\t\t\t\t\t\t<li>Close the latches</li>\r\n\t\t\t\t\t\t\t<li>Pull the band stitches through the garment edge</li>\r\n\t\t\t\t\t\t\t<li>Bind off LOOSELY</li>\r\n\t\t\t\t\t\t</ul>\r\n\t\t\t\t\t</em>\r\n\t\t\t\t</td>\r\n\t\t\t\t<td style=\"display:none\" class=\"notesinfo\"></td>\r\n\t\t\t</tr>\r\n\t\t\t<tr>\r\n\t\t\t\t<td><img src=\"/challenge/images/v2/89/arrow10.png\"></td>\r\n\t\t\t\t<td>Overlap the bands at the center front<br> and secure the center front garment stitches</td>\r\n\t\t\t\t<td><em>Right over left for the ladies, left over right for the guys</em></td>\r\n\t\t\t\t<td style=\"display:none\" class=\"notesinfo\"></td>\r\n\t\t\t</tr>\r\n\r\n\t\t</tbody>\r\n\t</table>\r\n</div>\r\n</div>\r\n",
+              "legacyComponentId": 6586,
+              "order": 1
+            }
+          ],
+          "title": "Printable checklist",
+          "slug": "printable-checklist",
+          "order": 3,
+          "legacy": {
+            "assignId": 4349,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Forum",
+              "notes": [
+                "Unmapped legacy component type: Forum"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4344",
+                "TYPEOF": "Forum"
+              },
+              "legacyComponentId": 6587,
+              "order": 1
+            }
+          ],
+          "title": "Knit-Along Forum",
+          "slug": "knit-along-forum",
+          "order": 4,
+          "legacy": {
+            "assignId": 4350,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "The Practice Pattern",
+      "slug": "the-practice-pattern",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 547,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "* * * Oops ... it appears there is a problem access the pattern from this page.<br>\r\nIf you get an error, here's <a href=\"/knit/DynamicPattern/679/practice-necklines\">the direct link</a> to the pattern<br><br>",
+              "legacyComponentId": 6591,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern_option",
+              "notes": [
+                "Unmapped legacy component type: Pattern_option"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4343",
+                "CHALLENGE_COMPONENTID": "6579",
+                "GARMENTID": "679",
+                "LABLE": "<i class='fa fa-cubes' aria-hidden='true'></i>",
+                "TOPTEXT": "<div class=\"well\">The Practice Necklines pattern has many pieces.  For the Crossover neckline use pieces 9 and 10.<br><center> <img class=\"img-responsive\" src=\"/challenge/images/v2/89/pattern_pieces.jpg\"></center></div>"
+              },
+              "legacyComponentId": 6579,
+              "order": 2
+            }
+          ],
+          "title": "The Practice Pattern",
+          "slug": "the-practice-pattern",
+          "order": 1,
+          "legacy": {
+            "assignId": 4343,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<b>You can modify any V-neck pattern for the Crossover band finish.</b><br><ol>\r\n<li>\r\nAt the point of the V remove 1\" of stitches.  This is equal to the desired width of your band.<br>Don't forget <a data-GlossaryId='605' class='glossaryhelp'>Seaming Stitches <i class='fa fa-question-circle' aria-hidden='true'></i></a> </li><br>\r\n\r\n<li>Use the <a data-GlossaryId='333' class='glossaryhelp'>Magic Formula <i class='fa fa-question-circle' aria-hidden='true'></i></a> to re-calculate the v-neck decreases.</li>\r\n</ol><br>",
+              "legacyComponentId": 6560,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "585552117",
+              "title": null,
+              "legacyComponentId": 6561,
+              "order": 2
+            }
+          ],
+          "title": "Use ANY Pattern",
+          "slug": "use-any-pattern",
+          "order": 2,
+          "legacy": {
+            "assignId": 4331,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Striving for Perfection",
+      "slug": "striving-for-perfection",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 550,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "My sample neckband is far from perfect <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i><br>Before I tackle that gorgeous (and expensive) wool silk yarn for my next sweater, I'm going to try again.<br><b>Here are the critical points to focus on.</b><mark>Click the dots</mark><br>",
+              "legacyComponentId": 6572,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Hotspot",
+              "notes": [
+                "Unmapped legacy component type: Hotspot"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4338",
+                "CHALLENGE_COMPONENTID": "6573",
+                "HOTSPOTCOUNT": "6",
+                "IMAGE_HEIGHT": "449.77778",
+                "IMAGE_WIDTH": "599.77778",
+                "SECONDDIV": "padding-bottom: 74.99073740277608%",
+                "SPOTT_IMAGE": "/challenge/images/v2/89/main_image.jpg",
+                "SPOT_ACTIONID_1": "151860051",
+                "SPOT_ACTIONID_2": "4342",
+                "SPOT_ACTIONID_3": "4339",
+                "SPOT_ACTIONID_4": "4340",
+                "SPOT_ACTIONID_5": "4341",
+                "SPOT_ACTIONID_6": "151857723",
+                "SPOT_CORD_1": "top: 5.803790706622657%;  left: 70.87288870326742%;  width: 3.297517957400822%;  height: 4.397233673926712%;",
+                "SPOT_CORD_2": "top: 38.23879383454924%;  left: 52.85116889295806%;  width: 3.297517957400822%;  height: 4.397233673926712%;",
+                "SPOT_CORD_3": "top: 36.930276158791735%;  left: 28.69580938565749%;  width: 3.297517957400822%;  height: 4.397233673926712%;",
+                "SPOT_CORD_4": "top: 81.149646167874%;  left: 76.52603427914325%;  width: 3.297517957400822%;  height: 4.397233673926712%;",
+                "SPOT_CORD_5": "top: 71.81247334766748%;  left: 36.511203947289964%;  width: 3.297517957400822%;  height: 4.397233673926712%;",
+                "SPOT_CORD_6": "top: 9.559504139587958%;  left: 61.68835505945896%;  width: 3.297517957400822%;  height: 4.397233673926712%;",
+                "SPOT_FUNCTION_1": "videopopup",
+                "SPOT_FUNCTION_2": "contentpopup",
+                "SPOT_FUNCTION_3": "contentpopup",
+                "SPOT_FUNCTION_4": "contentpopup",
+                "SPOT_FUNCTION_5": "contentpopup",
+                "SPOT_FUNCTION_6": "videopopup",
+                "SPOT_LOCATION_1": "top",
+                "SPOT_LOCATION_2": "top",
+                "SPOT_LOCATION_3": "top",
+                "SPOT_LOCATION_4": "top",
+                "SPOT_LOCATION_5": "top",
+                "SPOT_LOCATION_6": "top",
+                "SPOT_TEXT_1": "Neat Shoulder Seams",
+                "SPOT_TEXT_2": "1 piece or 2 piece band?",
+                "SPOT_TEXT_3": "Right side / wrong side cast on",
+                "SPOT_TEXT_4": "Needle Arrangment",
+                "SPOT_TEXT_5": "Decorative decreases?",
+                "SPOT_TEXT_6": "Plan ahead: Needle Arrangement",
+                "TOPDIV": "max-width: 599.77778px"
+              },
+              "legacyComponentId": 6573,
+              "order": 3
+            }
+          ],
+          "title": "Critical Points",
+          "slug": "critical-points",
+          "order": 1,
+          "legacy": {
+            "assignId": 4338,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nDepending on the cast on method you choose, there may be a right and wrong side to the cast on edge. Since the cast on edge of the neck band is so visible, take time to determine which side looks best.\r\n\t<img src=\"/challenge/images/v2/89/compare_ribbing.png\">\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 6574,
+              "order": 1
+            }
+          ],
+          "title": "hidden: right/wrong",
+          "slug": "hidden-right-wrong",
+          "order": 2,
+          "legacy": {
+            "assignId": 4339,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "When you position your ribbing at the center front opening, you'll want to plan what stitch will be along the seamed edge. <Br>\r\n<img src=\"/challenge/images/v2/89/needle_arrangment.png\">",
+              "legacyComponentId": 6575,
+              "order": 1
+            }
+          ],
+          "title": "hidden: needle arrangement",
+          "slug": "hidden-needle-arrangement",
+          "order": 3,
+          "legacy": {
+            "assignId": 4340,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Although the video focuses on raglan shaping, get inspired to add decorative decreases to your V-neck.",
+              "legacyComponentId": 6576,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859783",
+              "title": null,
+              "legacyComponentId": 6577,
+              "order": 2
+            }
+          ],
+          "title": "hidden: decorative decreases",
+          "slug": "hidden-decorative-decreases",
+          "order": 4,
+          "legacy": {
+            "assignId": 4341,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border\"><b>Option1: Knit the band in 2 pieces</b>\r\n\t\t<ul>\r\n\t\t\t<li>Seam the right shoulder (as worn)</li>\r\n\t\t\t<li>#1 Knit a band piece for the back and right side of the V</li>\r\n\t\t\t<li>#2 Knit a second band piece for the left side of the V</li>\r\n\t\t\t<li>Join the left shoulder and neatly seam the band</li>\r\n\t\t</ul>\r\n\t<img src=\"/challenge/images/v2/89/band1.jpg\">\r\n\t</div>\r\n\t<div class=\"container-border\"><b>Option2: Knit the band in one piece</b>\r\n\t\t<ul>\r\n\t\t\t<li>Join both shoulders</li>\r\n\t\t\t<li>Calculate and knit the band in one piece for the entire neck opening</li>\r\n\t\t\t<li>Join the band to the garment in sections:\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>Join the band over as many stitches as possible and bind off</li>\r\n\t\t\t\t\t<li>Repeat joining and binding off in sections until the entire band is joined to the neck opening</li>\r\n\t\t\t\t</ul>\r\n\t\t\t</li>\r\n\t\t</ul>\r\n\t<img src=\"/challenge/images/v2/89/band2.jpg\">\r\n\r\n\t</div>\r\n\r\n",
+              "legacyComponentId": 6578,
+              "order": 1
+            }
+          ],
+          "title": "hidden: 1 or 2 pieces?",
+          "slug": "hidden-1-or-2-pieces",
+          "order": 5,
+          "legacy": {
+            "assignId": 4342,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Single Bed Inspiration",
+      "slug": "single-bed-inspiration",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 551,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Your bands don't have to be knit in ribbing.<br>\r\n<ul>\r\n<li>Purl side facing, pick up the garment edge</li>\r\n<li>At garment tension knit for 1\"</li>\r\n<li>Tighten tension and knit 4-6 rows (for the rolled edge)</li>\r\n<li>Bind off loosely</li>\r\n<li>Don't forget <a data-GlossaryId='605' class='glossaryhelp'>Seaming Stitches <i class='fa fa-question-circle' aria-hidden='true'></i></a></li>\r\n</ul>\r\n\t<img src=\"/challenge/images/v2/89/rolled.jpg\">\r\n\r\n",
+              "legacyComponentId": 6584,
+              "order": 1
+            }
+          ],
+          "title": "Stockinette Option",
+          "slug": "stockinette-option",
+          "order": 1,
+          "legacy": {
+            "assignId": 4347,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Stuff you should know",
+      "slug": "stuff-you-should-know",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 548,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151860035",
+              "title": "Full Fashioned Decreases",
+              "legacySlot": 1,
+              "legacyComponentId": 6549,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "252565241",
+              "title": "Shallow Round Neck Shaping",
+              "legacySlot": 2,
+              "legacyComponentId": 6549,
+              "order": 1
+            }
+          ],
+          "title": "Tutorials - Skills you Should Know",
+          "slug": "tutorials-skills-you-should-know",
+          "order": 1,
+          "legacy": {
+            "assignId": 4325,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857723",
+              "title": "Seaming Ribbing - Plan Ahead!",
+              "legacySlot": 1,
+              "legacyComponentId": 6556,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857516",
+              "title": "Bickford Seams",
+              "legacySlot": 2,
+              "legacyComponentId": 6556,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860051",
+              "title": "Shoulder Seams",
+              "legacySlot": 3,
+              "legacyComponentId": 6556,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857806",
+              "title": "Add Seaming Stitches",
+              "legacySlot": 4,
+              "legacyComponentId": 6556,
+              "order": 1
+            }
+          ],
+          "title": "Seaming",
+          "slug": "seaming",
+          "order": 2,
+          "legacy": {
+            "assignId": 4329,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Which comes first the chicken or the egg? <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i><br>When creating this style of V-Neckband you have choices:<br>\r\n\r\n<ol>\r\n<li>Knit a band piece  and hang the neck opening on the needles and bind off loosely<br></li><br><li>Knit the band pieces, remove them on scrap.  Then rehang the neck edge, pull the band stitches through and loosely bind off.</li>\r\n<li>Hang the garment edges, knit a row and use a g-carriage (bind off edge will be public)</li>\r\n<li>Hang the garment edges, knit a row, transfer stitches to the ribber, hang weights and knit the ribbing (bind off edge will be public),</li>\r\n</ol>\r\n",
+              "legacyComponentId": 6551,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "202105212",
+              "title": "Band Perfection",
+              "legacyComponentId": 6552,
+              "order": 2
+            }
+          ],
+          "title": "Band Options",
+          "slug": "band-options",
+          "order": 4,
+          "legacy": {
+            "assignId": 4327,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Although the following video was created with raglan seams in mind, the decorative decreases can be put to use for V-neck shaping as well.<br>Make the decreases the focal point of your sweater.",
+              "legacyComponentId": 6555,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859783",
+              "title": null,
+              "legacyComponentId": 6553,
+              "order": 2
+            }
+          ],
+          "title": "Decorative Decrease Inspiration",
+          "slug": "decorative-decrease-inspiration",
+          "order": 5,
+          "legacy": {
+            "assignId": 4328,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "exerciseAccordion",
+              "sections": [
+                {
+                  "title": "Right and wrong side of cast on",
+                  "bodyHtml": "\r\nDepending on the cast on method you choose, there may be a right and wrong side to the cast on edge. Since the cast on edge of the neck band is so visible, take time to determine which side looks best.\r\n\t<img src=\"/challenge/images/v2/89/compare_ribbing.png\">\r\n",
+                  "iconSrc": "/challenge/images/v2/89/arrow1.png"
+                },
+                {
+                  "title": "Protect your cast on edge",
+                  "bodyHtml": "\r\n\r\n<ul>\r\n<li>Work a zig zag row with waste yarn</li><br>\r\n<li>Hang the cast on comb in the waste yarn (this will protect your garment yarn edge)</li><br>\r\n<li>Switch to the garment yarn and knit another zig zag row</li><br>\r\n<li>Continue with your cast on</li><br>\r\n<li>When the knitting is complete, remove the comb and the ravel cord</li>\r\n</ul>\r\n\r\n\r\n\r\n\t<img src=\"/challenge/images/v2/89/ravelcord2.jpg\">\r\n",
+                  "iconSrc": "/challenge/images/v2/89/arrow2.png"
+                },
+                {
+                  "title": "Our favorite cast on",
+                  "bodyHtml": "Our favorite cast on is the \"broken toe\" cast on - it adds a strand of yarn that can be used to keep the edge from ruffling<br>\r\n\r\n\r\n\r\n<a class='videopopup' data-vimeoid='151859232'><img class='img-thumbnail' src='https://i.vimeocdn.com/video/1212348843_1280x720?r=pad'>\r\n<div class=\"imagecenter text-center\"><button class=\"btn btn-success\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i></button></div>\r\n</a>\r\n\r\n",
+                  "iconSrc": "/challenge/images/v2/89/arrow3.png"
+                },
+                {
+                  "title": "Check the row count (depth) of your ribbing.",
+                  "bodyHtml": "If you've held 1\" of stitches at the bottom of the V - make sure you knit enough rows to make the band fit the opening.<br>You may not want to knit a swatch in ribbing, but make sure that you knit enough rows!",
+                  "iconSrc": "/challenge/images/v2/89/arrow4.png"
+                },
+                {
+                  "title": "Plan your needle arrangement",
+                  "bodyHtml": "When you position your ribbing at the center front opening, you'll want to plan what stitch will be along the seamed edge. <Br>\r\n<img src=\"/challenge/images/v2/89/needle_arrangment.png\">",
+                  "iconSrc": "/challenge/images/v2/89/arrow5.png"
+                }
+              ],
+              "legacy": {
+                "showText": "below",
+                "size": null
+              },
+              "legacyComponentId": 6568,
+              "order": 2
+            }
+          ],
+          "title": "Band Tips",
+          "slug": "band-tips",
+          "order": 6,
+          "legacy": {
+            "assignId": 4335,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859232",
+              "title": "3 Perfect Ribbing Cast Ons",
+              "legacyComponentId": 6567,
+              "order": 1
+            }
+          ],
+          "title": "Broken Toe Cast on",
+          "slug": "broken-toe-cast-on",
+          "order": 7,
+          "legacy": {
+            "assignId": 4336,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nWhen dividing a neckline (V or round) you'll want to protect those stitches in hold from damage.  As you are knitting one side of the neckline, the carriage passes over the held stitches repeatedly and cause wear or create a dirty line in your knitting.<br>Over the years knitters, have devised a number of ways to protect those held stitches.\r\n<ul>\r\n<li>Scrap off the stitches </li>\r\n<li>Manually knit the held stitches with ravel cord, pulling them all the way back to \"A\" position</li>\r\n<li>Hang a rag over the stitches</li>\r\n<li>When you are ready to knit the 2nd half of the neck opening, remove the rag.  Voila! No damage!</li>\r\n\r\n</ul>\r\n<span class=\"handwriting\" style=\"font-size:2em\">Whatever method you use, make it a habit to protect those stitches!</span>\r\n<center>\r\n<figure>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/89/protect_held_stitches.jpg\"><br>\r\n<figcaption><br>Rag over held needles</figcaption></figure></center>\r\n\r\n\r\n\r\n\r\n\t<center><img class=\"zoom\" src=\"/challenge/images/v2/89/short_row_damage_thumb.jpg\"><br>\r\nDamage/dirt from the carriage passing repeatedly over held stitches.\r\n</center>\r\n\r\n\r\n",
+              "legacyComponentId": 6582,
+              "order": 1
+            }
+          ],
+          "title": "Protect Held Stitches",
+          "slug": "protect-held-stitches",
+          "order": 8,
+          "legacy": {
+            "assignId": 4345,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n.container-border {\r\nborder: 1px solid #ccc;\r\nborder-radius: 15px;\r\npadding-top: 20px;\r\npadding-right: 20px;\r\npadding-bottom: 20px;\r\npadding-left: 20px;\r\n}\r\n\r\n</style>\r\n\r\n\r\nIf your pattern instructions or your Magic Formula results look like this, you may want to alternate your decreases for a straighter line.<br><img class=\"img-thumbnail\" src=\"/challenge/images/v2/89/dak99.jpg\"><br>In this example, decreases are worked every other row, then every 3rd row.  <mark>Notice that the shaping is not straight.</mark><br><img class=\"img-thumbnail\" src=\"/challenge/images/v2/89/dak6.png\">\r\n\r\n<hr class=\"style13\">\r\n\r\nMixing a few \"every 3rd row\" instructions can <mark>make the diagonal straight</mark>. <br><img class=\"img-thumbnail\" src=\"/challenge/images/v2/89/dak5.png\">\r\n\r\n<div class=\"container-border\"><span class=\"handwriting\" style=\"font-size:2em\">As long as you start and end with the correct number of stitches, you have permission to alternate the shaping as you see fit.</span><br><em>Just be sure to make both sides of your v-neck the same <i class=\"fa fa-smile-o fa-2x\" aria-hidden=\"true\"></i></em> </div>\r\n\r\n",
+              "legacyComponentId": 6583,
+              "order": 1
+            }
+          ],
+          "title": "Even out the shaping",
+          "slug": "even-out-the-shaping",
+          "order": 9,
+          "legacy": {
+            "assignId": 4346,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "More Useful Skills",
+      "slug": "more-useful-skills",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 549,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nEven for a sample exercise, you must accurately establish YOUR gauge. <br>You will be using the stockinette gauge to calculate the number of stitches and rows for your ribbed band.<br>If you choose to knit your sample in a stitch pattern for practice, you will need to swatch in both the stitch pattern and stockinette.<br><center></center>\r\n<center><a href=\"/classrooms/87/swatching-is-not-optional\"><img src=\"/path/images/87/swatch_thumb.jpg\"></a></center><br>Visit the Classroom: Swatching is NOT Optional\r\n\r\n\r\n",
+              "legacyComponentId": 6550,
+              "order": 1
+            }
+          ],
+          "title": "Classroom: Swatching",
+          "slug": "classroom-swatching",
+          "order": 1,
+          "legacy": {
+            "assignId": 4326,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nAnytime you modify a pattern in an area that is diagonal (sleeve shaping, shoulder shaping, waist shaping) you need to create knitting instructions to evenly place increases or decreases evenly along the knitting. <br>Use the Magic Formula (Diophantine dquation) for gradual shaping.<br><center></center>\r\n<center><a href=\"/classrooms/172/diagonals-magic-formula\"><img src=\"/path/images/172/diagonals_thumb.jpg\"></a><br>Visit the Classroom: Swatching is NOT Optional</center>\r\n\r\n\r\n",
+              "legacyComponentId": 6562,
+              "order": 1
+            }
+          ],
+          "title": "Classroom: Diagonals and the Magic Formula",
+          "slug": "classroom-diagonals-and-the-magic-formula",
+          "order": 2,
+          "legacy": {
+            "assignId": 4332,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Forum",
+              "notes": [
+                "Unmapped legacy component type: Forum"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4344",
+                "TYPEOF": "Forum"
+              },
+              "legacyComponentId": 6580,
+              "order": 1
+            }
+          ],
+          "title": "Knit-Along Forum",
+          "slug": "knit-along-forum",
+          "order": 3,
+          "legacy": {
+            "assignId": 4344,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Video Replays",
+      "slug": "video-replays",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 554,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>Kick-off LIVE:<br></h3>",
+              "legacyComponentId": 6594,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "601873034",
+              "title": null,
+              "legacyComponentId": 6592,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\n\theight: 10px;\r\n\tborder: 0;\r\n\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n\r\n<hr class=\"style13\">\r\n\r\nMy apologies for the confusion with the Zoom link.  Here's the replay:<br>",
+              "legacyComponentId": 6593,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "611967628",
+              "title": null,
+              "legacyComponentId": 6595,
+              "order": 4
+            }
+          ],
+          "title": "Replays",
+          "slug": "replays",
+          "order": 1,
+          "legacy": {
+            "assignId": 4355,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 13,
+    "videos": [
+      {
+        "vimeoId": "585552117",
+        "title": null,
+        "lessonSlug": "the-practice-pattern",
+        "blockSlug": "use-any-pattern"
+      },
+      {
+        "vimeoId": "151859783",
+        "title": null,
+        "lessonSlug": "striving-for-perfection",
+        "blockSlug": "hidden-decorative-decreases"
+      },
+      {
+        "vimeoId": "151860035",
+        "title": "Full Fashioned Decreases",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "tutorials-skills-you-should-know"
+      },
+      {
+        "vimeoId": "252565241",
+        "title": "Shallow Round Neck Shaping",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "tutorials-skills-you-should-know"
+      },
+      {
+        "vimeoId": "151857723",
+        "title": "Seaming Ribbing - Plan Ahead!",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "seaming"
+      },
+      {
+        "vimeoId": "151857516",
+        "title": "Bickford Seams",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "seaming"
+      },
+      {
+        "vimeoId": "151860051",
+        "title": "Shoulder Seams",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "seaming"
+      },
+      {
+        "vimeoId": "151857806",
+        "title": "Add Seaming Stitches",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "seaming"
+      },
+      {
+        "vimeoId": "202105212",
+        "title": "Band Perfection",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "band-options"
+      },
+      {
+        "vimeoId": "151859783",
+        "title": null,
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "decorative-decrease-inspiration"
+      },
+      {
+        "vimeoId": "151859232",
+        "title": "3 Perfect Ribbing Cast Ons",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "broken-toe-cast-on"
+      },
+      {
+        "vimeoId": "601873034",
+        "title": null,
+        "lessonSlug": "video-replays",
+        "blockSlug": "replays"
+      },
+      {
+        "vimeoId": "611967628",
+        "title": null,
+        "lessonSlug": "video-replays",
+        "blockSlug": "replays"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

@@ -1,0 +1,212 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 123,
+    "title": "Short Row Skill Builder",
+    "slug": "short-row-skill-builder",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_123_short_row_skill_builder.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:10+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Why Shaped Shoulders?",
+      "slug": "why-shaped-shoulders",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 830,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/123/nothing_fits/explore_shaped_shoulders.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/123/shoulderANDneckline/flipbook2.jpg",
+                  "caption": "Most bodies have some slope to their shoulders.... some more than others."
+                },
+                {
+                  "src": "/challenge/images/v2/123/shoulderANDneckline/flipbook3.jpg",
+                  "caption": "Putting a square shoulder on a slope can cause fit issues"
+                },
+                {
+                  "src": "/challenge/images/v2/123/shoulderANDneckline/flipbook2a.jpg",
+                  "caption": "You'll notice wrinkles near the underarm"
+                },
+                {
+                  "src": "/challenge/images/v2/123/shoulderANDneckline/warning.jpg",
+                  "caption": "<i class=\"fa fa-exclamation-triangle\" aria-hidden=\"true\"></i> Warning!  Don't try this at home <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i>"
+                },
+                {
+                  "src": "/challenge/images/v2/123/shoulderANDneckline/flipbook4.jpg",
+                  "caption": "If you just make this adjustment on an existing pattern ..... the armhole may be too short AND your sleeves won't fit in the armhole."
+                },
+                {
+                  "src": "/challenge/images/v2/123/shoulderANDneckline/flipbook5.jpg",
+                  "caption": "If you just make this adjustment on an existing pattern ..... the neckline AND center front will be too long."
+                },
+                {
+                  "src": "/challenge/images/v2/123/shoulderandneckline/shoulder_gif.gif",
+                  "caption": "A well designed knitting pattern will adjust the shape of the armhole AND the shape of the sleeve cap to accommodate the shaped shoulder."
+                },
+                {
+                  "src": "/challenge/images/v2/123/shoulderANDneckline/flipbook7.jpg",
+                  "caption": "<i class=\"fa fa-lightbulb\" aria-hidden=\"true\"></i>  Use a knitting pattern that already has shaped shoulders."
+                }
+              ],
+              "legacy": {
+                "enableAudio": "1",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 9735,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "268091842",
+              "title": "Wrinkles Examples",
+              "legacyComponentId": 9734,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\r\n    <b><i class=\"fa fa-hand-o-down\" aria-hidden=\"true\"></i> Use the tabs below to explore different methods for adding shaped shoulders. <i class=\"fa fa-hand-o-down fa-2x\" aria-hidden=\"true\"></i></b>\r\n\r\n<!--col -->\r\n\r\n<!--row -->\r\n<!-- Nav tabs -->\r\n<ul class=\"nav nav-tabs\" role=\"tablist\">\r\n    <li role=\"presentation\" class=\"active\"><a href=\"#kinSection\" aria-controls=\"kinSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right fa-2x\" aria-hidden=\"true\"></i> <span style=\"font-size:1.5em\">Knit it Now Patterns</span></a></li>\r\n    <li role=\"presentation\"><a href=\"#mathSection\" aria-controls=\"mathSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right fa-2x\" aria-hidden=\"true\"></i><span style=\"font-size:1.5em\"> Commercial Patterns + Math</span></a></li>\r\n    <li role=\"presentation\"><a href=\"#deviceSection\" aria-controls=\"deviceSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right fa-2x\" aria-hidden=\"true\"></i> <span style=\"font-size:1.5em\">Charting Device</span></a></li>\r\n    <li role=\"presentation\"><a href=\"#dakSection\" aria-controls=\"dakSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right fa-2x\" aria-hidden=\"true\"></i> <span style=\"font-size:1.5em\">DesignaKnit</span></a></li>\r\n</ul>\r\n\r\n<div class=\"tab-content\">\r\n\r\n    <!--- inital wording \r\n\t <div role=\"tabpanel\" class=\"tab-pane active\" id=\"welcome\">\r\n\t\t\r\n\t\t\t<br>\r\n\t\t\r\n\t</div>\r\n\t--->\r\n    <!--- kinSection --->\r\n    <div role=\"tabpanel\" class=\"tab-pane active\" id=\"kinSection\">\r\n        <br><blockquote class=\"smallblock\">Knit it Now Dynamic Patterns offer shaped shoulder versions.\r\n                If you need more shaping, think of the armhole as a block of instructions to be adjusted without changing the depth of the armhole or impacting the fit of the sleeves. Use the Magic Formula to calculate the shoulder shaping. </blockquote>\r\n            <div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/268097987' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n        \r\n    </div>\r\n\r\n    <!--- mathSection --->\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"mathSection\">\r\n        <br><blockquote class=\"smallblock\">To add shoulder shaping to a commercial pattern, think of the armhole as a block of instructions to be adjusted without changing the depth of the armhole or impacting the fit of the sleeves.Use the Magic Formula to accurately calculate the shaping. </blockquote>\r\n        \r\n\r\n            <div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/268099100' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n        \r\n    </div>\r\n\r\n    <!--- deviceSection --->\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"deviceSection\">\r\n        \r\n            <br><blockquote class=\"smallblock\">Using a Charting Device is probably the easiest way to add shaped shoulders ... just be sure that the armhole opening and sleeve cap match!</blockquote><br>\r\n        \r\n\r\n        \r\n            <img width=\"300\" src=\"/challenge/images/v2/123/nothing_fits/add_a_dart.jpg\">\r\n        \r\n    </div>\r\n\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"dakSection\">\r\n\r\n        <br><blockquote class=\"smallblock\">Explore a couple of methods of using DAK to adjust your sleeve length.</blockquote>\r\n            <div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/268039723' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n        \r\n    </div>\r\n</div>\r\n\r\n\r\n\r\n<div class=\"clearfix\"></div>\r\n",
+              "legacyComponentId": 9736,
+              "order": 3
+            }
+          ],
+          "title": "Wrinkles at the Front Armhole",
+          "slug": "wrinkles-at-the-front-armhole",
+          "order": 7,
+          "legacy": {
+            "assignId": 6358,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Exercise 1: Manual Wrap Short Rows",
+      "slug": "exercise-1-manual-wrap-short-rows",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 831,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<Style>\r\n.lightlist ul { padding-left:20px; list-style:none; }\r\n.lightlist li { margin-bottom:10px; }\r\n.lightlist li:before {'FontAwesome';\r\ncontent: '\\f00c';\r\nmargin:0 5px 0 -15px;\r\n}\r\n</style>\r\n\r\n\r\n<b>NOTE:</b>\r\nThe goal of the manual wrap:<br>\r\n<ul class=\"lightlist\" style=\"list-style:none;\">\r\n<li>Put the instructed number of needles in hold OPPOSITE the carriage</li>\r\n<li>Knit across and WRAP</li>\r\n<li>Knit back</li>\r\n<li>Repeat this as instructed</li>\r\n</ul>\r\n\r\n\r\n<img src=\"/challenge/images/v2/123/manual_wrap.jpg\">\r\n\r\n<hr class=\"style13\">\r\n\r\n<div>\r\n\r\n<ol>\r\n<li>Cast on 20 (40) stitches</li>\r\n<li> Knit 10 (20) rows</li>\r\n<li><b>End with the carriage on the LEFT</b></li>\r\n<li> Set carriage to Hold </li>\r\n<hr class=\"style13\">\r\n<li><i class=\"fa-solid fa-asterisk\"></i> Opposite the carriage, put  5 (8) needles in <a data-GlossaryId='185' class='glossaryhelp'>Holding position <i class='fa fa-question-circle-o' aria-hidden='true'></i></a></i>\r\n<li>Knit LEFT to RIGHT</li>\r\n<li>Wrap the last needle (to prevent a hole)</li>\r\n<lI>Knit back (right to left) <i class=\"fa-solid fa-asterisk\"></i></li>\r\n\r\n<hr class=\"style13\">\r\n<li>Repeat from <i class=\"fa-solid fa-asterisk\"></i> to  <i class=\"fa-solid fa-asterisk\"></i> until all needles are in hold</li>\r\n<li>Tip: Cancel hold and knit 1 row across all needles \r\n<div style=\"padding-left: 10px;\"><em>  This row makes it easier to rehang the stitches from scrap and can be removed before binding off the shoulders if desired</em>\r\n\r\n</li>\r\n<li>Scrap off</li>\r\n\r\n</ol>\r\n\r\n\r\n\r\n</div>\r\n <div class=\"videopopup\" data-videotitle=\"short row refresher\" data-vimeoid=\"251895484\">\r\n\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/678388736-7309600a83dd8fd82b8e1db2523f64b6c0b827ca8d3e9626b1d5383f83cdea3b-d_1280x720?r=pad\">\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div>\r\n\r\n\r\n",
+              "legacyComponentId": 9737,
+              "order": 1
+            }
+          ],
+          "title": "Manual Wrap Practice",
+          "slug": "manual-wrap-practice",
+          "order": 1,
+          "legacy": {
+            "assignId": 6359,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Exercise 2: Automatic Short Rows",
+      "slug": "exercise-2-automatic-short-rows",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 832,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<Style>\r\n.lightlist ul { padding-left:20px; list-style:none; }\r\n.lightlist li { margin-bottom:10px; }\r\n.lightlist li:before {'FontAwesome';\r\ncontent: '\\f00c';\r\nmargin:0 5px 0 -15px;\r\n}\r\n</style>\r\n\r\n\r\n<b>NOTE:</b>\r\nThe goal of the AUTOMATIC wrap:<br>\r\n<ul class=\"lightlist\" style=\"list-style:none;\">\r\n<li>Put the instructed number of needles <b>LESS 1 needle</b> in hold OPPOSITE the carriage</li>\r\n<li>Knit across</li>\r\n<li><b>Pull one more needle into hold</b></li>\r\n<li>Knit back</li>\r\n<li>Repeat this as instructed</li>\r\n</ul>\r\n\r\n\r\n<img src=\"/challenge/images/v2/123/automatic-wrap1.jpg\">\r\n\r\n<hr class=\"style13\">\r\n\r\n\r\n\r\n\r\n    \r\n<em>Your pattern instructions may tell you to hold 5 (8) needles, but for automatic wrap, you will initially hold 1 less stitch 4 (8).  Knit across, then pull one more stitch into hold and knit back (creating an automatic wrap)<br></em><br><b>By starting with the carriage on the right and holding the needles on the opposite side from the previous sample, this sample will be slanting in the opposite direction.</b><Br>\r\n        <ol>\r\n            <li>Cast on 20 (40) stitches</li>\r\n            <li>End with the carriage on the RIGHT</li>\r\n            <li>Set carriage to hold</li>\r\n<hr class=\"style13\">\r\n            <li><i class=\"fa-solid fa-asterisk\"></i> Opposite the carriage, put 4 (7) needles in holding position</li>\r\n            <li>Knit RIGHT to LEFT</li>\r\n            <li>Pull one more needle to hold (this needle will wrap automatically)</li>\r\n            <li>Knit LEFT to RIGHT <i class=\"fa-solid fa-asterisk\"></i></li>\r\n<hr class=\"style13\">\r\n            <li>Repeat from <i class=\"fa-solid fa-asterisk\"></i> to <i class=\"fa-solid fa-asterisk\"></i> until all needles are in hold</li>\r\n            <li>Tip: Cancel hold and knit1 row across all needles *</li>\r\n\r\n            <div style=\"padding-left: 10px;\"><em>*This row makes it easier to rehang the stitches from scrap and can be removed before binding off the shoulders if desired</em></div>\r\n            <li>Scrap off</li>\r\n        </ol>\r\n    \r\n    \r\n        <div class=\"videopopup\" data-videotitle=\"automatic-wrap\" data-vimeoid=\"990836499\">\r\n            <img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/1906648648-611a14f79d31c222ac6bc7f7a4fe333f07fa7060b292ee0a0f98aaa94ab54cdb-d_1280x720?r=pad\">\r\n            <div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n        </div>\r\n    \r\n\r\n",
+              "legacyComponentId": 9739,
+              "order": 1
+            }
+          ],
+          "title": "Automatic Wrap Practice",
+          "slug": "automatic-wrap-practice",
+          "order": 1,
+          "legacy": {
+            "assignId": 6360,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Exercise 3 : Seam the Shoulders",
+      "slug": "exercise-3-seam-the-shoulders",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 833,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Joining shoulders seams on the machine creates a tidy seam and stabilizes the garment shoulders.\r\nThis is the machine knitting version of the hand knitting 3-needle bind off.<br><ol>\r\n<li>Swatch 1: With the <b>public (right) side facing</b>, rehang the held stitches on the machine. Push the stitches behind the latches</li>\r\n<li>Swatch 2: With the <b>private (wrong) side facing</b>, rehang the held stitches IN THE LATCHES.</li>\r\n<li>Close the latches</li>\r\n<li>Carefully pull the stitches in the latches thru the other stitches</li>\r\n<li>Loosely bind off with the method of your choice</li>\r\n</ol>\r\n\r\n\r\n<figure><img src=\"/challenge/images/v2/123/seam1.jpg\">\r\n<figcaption align=\"center\">Seam with Right (public) sides together</figcaption>\r\n</figure>",
+              "legacyComponentId": 9738,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860051",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 9738,
+              "order": 1
+            }
+          ],
+          "title": "Join your shoulders on the machine",
+          "slug": "join-your-shoulders-on-the-machine",
+          "order": 1,
+          "legacy": {
+            "assignId": 6361,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 2,
+    "videos": [
+      {
+        "vimeoId": "268091842",
+        "title": "Wrinkles Examples",
+        "lessonSlug": "why-shaped-shoulders",
+        "blockSlug": "wrinkles-at-the-front-armhole"
+      },
+      {
+        "vimeoId": "151860051",
+        "title": null,
+        "lessonSlug": "exercise-3-seam-the-shoulders",
+        "blockSlug": "join-your-shoulders-on-the-machine"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

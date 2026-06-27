@@ -2,6 +2,7 @@ import type { CourseLesson } from "./coursePreviewPoc";
 import { sortedBlocks, sortedComponents } from "./coursePreviewPoc";
 import { maxLegacyComponentIdFromLessons } from "./courseContentSplitIds";
 import { isAccordionLayoutBlock } from "./courseAccordionLayout";
+import { isEmbeddedToolLayoutBlock } from "./courseEmbeddedToolLayout";
 import { isTextImageLayoutBlock } from "./courseTextImageLayout";
 import { isTextVideoLayoutBlock } from "./courseTextVideoLayout";
 import { isThreeVideosLayoutBlock } from "./courseThreeVideosLayout";
@@ -115,7 +116,8 @@ export function isEditorLayoutBlock(block: LessonRecord): boolean {
     isTextVideoLayoutBlock(block) ||
     isTextImageLayoutBlock(block) ||
     isThreeVideosLayoutBlock(block) ||
-    isAccordionLayoutBlock(block)
+    isAccordionLayoutBlock(block) ||
+    isEmbeddedToolLayoutBlock(block)
   );
 }
 

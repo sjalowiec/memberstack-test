@@ -1,0 +1,776 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 100,
+    "title": "Button Bands",
+    "slug": "button-bands",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_100_button_bands.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:10+00:00"
+    },
+    "thumbnail": "/images/courses/button_band_course.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Calculating Bands",
+      "slug": "calculating-bands",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 648,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Calculating stitches for neckbands or front bands for cardigans is mysterious for many knitters.<br>We are often instructed to “pick up 2 stitches for every 3 rows” or “pick up 3 stitches for every 4 rows”. You may be surprised that these methods are often quite inaccurate.<br>The general convention is to try one of these “rules” and rip out the band and try again until we are satisfied.<br>Here’s a better way. In this tutorial we will explore 4 methods of calculating the number of stitches to pick up and determine the BEST way.<br>",
+              "legacyComponentId": 8461,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857646",
+              "title": "Calculating Bands",
+              "legacyComponentId": 8462,
+              "order": 2
+            }
+          ],
+          "title": "Using Math",
+          "slug": "using-math",
+          "order": 1,
+          "legacy": {
+            "assignId": 5701,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Let Knit it Now Calculate your band Pick Up.<br><div class=\"videopopup\" data-videotitle=\"Band Pickup Tool for Machine Knitters\" data-vimeoid=\"345981696\">\r\n\t\t<figure><figcaption align=\"center\"><br><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i> How to use the tool</figcaption><img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/795899429-3257f6fa737aa58d0382d40c680e25ec6eea1dea3271cff16ff5abc28ca8619f-d_1280x720?r=pad\"></figure>\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div>\r\n",
+              "legacyComponentId": 8465,
+              "order": 1
+            }
+          ],
+          "title": "Knit it Now Tool",
+          "slug": "knit-it-now-tool",
+          "order": 2,
+          "legacy": {
+            "assignId": 5704,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<span class=\"handwriting\">The front is 120 rows long. <br> If knitting the band in the same stitch pattern (and gauge), how many stitches should be picked up? </span>\r\n<img src=\"/challenge/images/v2/100/swatch_drawing2.png\">\r\n\r\n\r\n\t<br>",
+              "legacyComponentId": 8467,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\nspan.blue {\r\nbackground: #9E2065;\r\nborder-radius: 0.8em;\r\n-moz-border-radius: 0.8em;\r\n-webkit-border-radius: 0.8em;\r\ncolor: #ffffff;\r\ndisplay: inline-block;\r\nfont-weight: bold;\r\nline-height: 1.6em;\r\nmargin-right: 15px;\r\ntext-align: center;\r\nwidth: 1.6em;\r\n}\r\n</style>\r\n<div>\r\n\r\n<div><span class=\"yellow_highlight\">Enter your results below</span>",
+              "legacyComponentId": 8820,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "5703",
+                "CHALLENGE_COMPONENTID": "8817",
+                "QUESTION_ANSWER": "80",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Try again. Multiply 120 x 2/3 (.66) = 80 stitches</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<span class='blue'>1</span> Use the 2/3 method (Pick up 2 stitches for every 3 rows)"
+              },
+              "legacyComponentId": 8817,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "5703",
+                "CHALLENGE_COMPONENTID": "8818",
+                "QUESTION_ANSWER": "90",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Try again. Multiply 120 x 3/4 (.75) = 90 stitches</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<span class='blue'>2</span> Use the 3/4 method (pick up 3 stitches for every 4 rows)"
+              },
+              "legacyComponentId": 8818,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "5703",
+                "CHALLENGE_COMPONENTID": "8819",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Try again. 12 x 6.5=78</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<span class='blue'>3</span> Use the measure method (length x stitch gauge)"
+              },
+              "legacyComponentId": 8819,
+              "order": 5
+            },
+            {
+              "type": "richText",
+              "html": "<span class=\"handwriting\">Compare the difference between the results of the the methods.</span><br>",
+              "legacyComponentId": 8837,
+              "order": 6
+            }
+          ],
+          "title": "Exercise",
+          "slug": "exercise",
+          "order": 3,
+          "legacy": {
+            "assignId": 5703,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Off the Machine",
+      "slug": "off-the-machine",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 682,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n.flex-container {\r\ndisplay: flex;\r\njustify-content: center;\r\n}\r\n\r\n.flex-child:first-child {\r\nmargin-right: 20px;\r\nborder: 1px solid;\r\npadding: 20px;\r\nmargin-bottom: 20px;\r\n}\r\n\r\n.flex-child2 {\r\nmargin-right: 20px;\r\nborder: 1px solid;\r\npadding: 20px;\r\nmargin-bottom: 20px;\r\n}\r\n\r\n@media (max-width: 800px) {\r\n.flex-container {\r\nflex-direction: column;\r\n}\r\n\r\n</style>\r\n<span class=\"yellow_highlight\">There is no rule that says everything needs to be done on the machine.</span>  Sometimes picking up a crochet hook or hand knitting needles can be rewarding, especially in finishing hems and edges of our knitting.<br>\r\n<ul>\r\n<li>\r\nA band of single crochet stitches may be just the finish you need.</li><br>\r\n<li>Pick up and knit <a data-GlossaryId=\"694\" class=\"glossaryhelp\">Garter Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> (knit every row) or <a data-GlossaryId=\"603\" class=\"glossaryhelp\">Seed Stitch / Moss Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> (alternating k1, p1)</li>\r\n</ul>\r\n\r\nEither way, remember gauge. You don't want to stretch out the front edge of your sweater. For example garter stitch knits much wider than stockinette.<br>\r\nYou can always swatch in your band stitch technique and do the math, Or use the edge of your gauge swatch and experiment till you get it just right.<br><div class=\"flex-container\">\r\n<div class=\"flex-child\"><figure><img src=\"/challenge/images/v2/100/crochet_band.jpg\"><figcaption align=\"center\"><br>Rows of single crochet</figcaption>\r\n</figure>\r\n\r\n\r\n</div>\r\n<div class=\"flex-child2\">\t<figure><img src=\"/challenge/images/v2/100/garter_band.jpg\"><figcaption align=\"center\"><br>Garter Stitch</figcaption>\r\n</figure>\r\n</div>\r\n</div>",
+              "legacyComponentId": 8821,
+              "order": 1
+            }
+          ],
+          "title": "Hand Finishing",
+          "slug": "hand-finishing",
+          "order": 1,
+          "legacy": {
+            "assignId": 5840,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    /* styling paper */\r\n    #paper {\r\n        width: 400px;\r\n        height: 500px;\r\n        position: relative;\r\n        margin: 20px auto;\r\n        padding-top: 40px;\r\n        padding-bottom: 40px;\r\n        background-color: white;\r\n        box-shadow: 0px 0px 5px 0px #888;\r\n    }\r\n\r\n    /* styling red vertical line */\r\n    #paper::before {\r\n        content: '';\r\n        width: 2px;\r\n        height: 100%;\r\n        position: absolute;\r\n        top: 0;\r\n        left: 40px;\r\n        background-color: rgba(255, 0, 0, 0.6);\r\n    }\r\n\r\n    /* styling blue horizontal lines */\r\n    #pattern {\r\n        height: 100%;\r\n        background-image: repeating-linear-gradient(white 0px, white 24px, teal 25px);\r\n    }\r\n\r\n    /* styling text content */\r\n    #content {\r\n        padding-top: 6px;\r\n        padding-left: 56px;\r\n        padding-right: 16px;\r\n        line-height: 25px;\r\n        font-size: 19px;\r\n        letter-spacing: 1px;\r\n        word-spacing: 5px;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n<div id=\"paper\">\r\n    <div id=\"pattern\">\r\n        <div id=\"content\">\r\n            <b>Using crochet hook or hand knitting needles:</b>\r\n            <br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i> Is this finish worth the effort?<br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i> Does the finish compliment the garment stitch pattern?<br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i> Does the gauge match? No stretching or gathers<br></div>\r\n    </div>\r\n</div>\r\n",
+              "legacyComponentId": 8846,
+              "order": 1
+            }
+          ],
+          "title": "Try it yourself",
+          "slug": "try-it-yourself",
+          "order": 2,
+          "legacy": {
+            "assignId": 5853,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Single Layer Bands",
+      "slug": "single-layer-bands",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 642,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "When knitting with heavier  yarn on a mid-gauge or bulky machine, a  single layer of knitting for your bands may be preferred.\r\n<br>Here is a hand-manipulated No-roll edge shared by Diana Sullivan.<br>\r\n",
+              "legacyComponentId": 8456,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "672100555",
+              "title": null,
+              "legacyComponentId": 8457,
+              "order": 2
+            }
+          ],
+          "title": "Single Bed - No roll",
+          "slug": "single-bed-no-roll",
+          "order": 1,
+          "legacy": {
+            "assignId": 5698,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>Let it roll!</h3>\r\n<ol>\r\n<li.Wrong side facing</li>\r\n<li>Pick up and the desired band width, adding buttonholes if needed</li>\r\n<li>Knit a few extra rows</li>\r\n<li>Loosely Bind off</li>\r\n<li>Let it roll!</li>\r\n</ol>\r\n\t<img src=\"/challenge/images/v2/100/rolled_with_buttons.jpg\">\r\n",
+              "legacyComponentId": 8829,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858926",
+              "title": null,
+              "legacyComponentId": 8830,
+              "order": 2
+            }
+          ],
+          "title": "Single Bed - Embrace the Roll",
+          "slug": "single-bed-embrace-the-roll",
+          "order": 2,
+          "legacy": {
+            "assignId": 5845,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n    Use a simple tuck stitch for a single layer band.<br><h3>Facts:</h3>\r\n        <ul>\r\n            <li>Tuck doesn't curl as much as plain stockinette (good for a single layer band)</li>\r\n            <li>The purl side of tuck shows the most texture (hang your garment with the RIGHT side facing)</li>\r\n            <li>Tuck stitch gauge is considerably wider than other stitch types (swatch in tuck and calculate the band pickup)</li>\r\n        </ul>\r\n      <img src=\"/challenge/images/v2/100/tuck.jpg\">\r\n\r\n     \r\n\r\n\r\n       <img class=\"img-thumbnail\" src=\"/challenge/images/v2/100/tuck6.jpg\"><br>\r\n      <img class=\"img-thumbnail\" src=\"/challenge/images/v2/100/tuck5.jpg\">\r\n    \r\n\r\n",
+              "legacyComponentId": 8838,
+              "order": 1
+            }
+          ],
+          "title": "Single Bed - Tuck",
+          "slug": "single-bed-tuck",
+          "order": 3,
+          "legacy": {
+            "assignId": 5846,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nAdd a single layer ribbed band.<br><h3>Steps for knitting a single layer ribbed band (Method 1)</h3>\r\n<ol>\r\n<li>Determine the number of stitches needed</li>\r\n<li>Main Bed: scrap on with <a data-vimeoid=\"151859199\" class=\"videopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Ribber cast on comb for Single Bed Knitting</a></li>\r\n<li>Wrong side facing, hang the garment edge on the main bed</li>\r\n<li>Knit 1 row over all stitches</li>\r\n<li>Engage the ribber</li>\r\n<li>Transfer stitches to the ribber in the needle arrangement of your choice</li>\r\n<li>Knit in ribbing for the desired band width </li>\r\n<li>Bind off neatly <a data-vimeoid=\"151857401\" class=\"videopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Neat and Easy Ribbing Bind Off</a></li>\r\n</ol>\r\n\r\n<h3>FACTS</h3>\r\n<ul>\r\n<li>Ribbing pulls in. (Be prepared for your band to appear shorter than your garment)</li>\r\n<li>Ribbing requires even weight - a ribber cast on comb is best (take steps to add a cast on comb)</li>\r\n<li>Ribbing can be a challenge to bind off neatly (consider Method 2)</li>\r\n<li>Single layer  bands on standard gauge machines can feel \"wimpy\".  Many knitters prefer double layer bands (plain or ribbing)</li>\r\n</ul>\r\n\r\n<hr class=\"style13\">\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 8823,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "722761899",
+              "title": null,
+              "legacyComponentId": 8840,
+              "order": 2
+            }
+          ],
+          "title": "Double Bed - Method 1",
+          "slug": "double-bed-method-1",
+          "order": 4,
+          "legacy": {
+            "assignId": 5841,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Add a single layer ribbed band - Method 2.<br>Add a tubular cast on edge for your ribbed bands.  Many knitters do not like the appearance of the bound off edge that is used in Method 1.\r\n\r\n<h3>Steps for knitting a single layer ribbed band with improved edge.(Method 2)</h3>\r\n<ol>\r\n<li>Determine the number of stitches needed</li>\r\n<li>Cast with a tubular cast on with your preferred method (<a data-GlossaryId=\"647\" class=\"glossaryhelp\">Broken Toe Cast On <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> / Slip Cast on)</li>\r\n<li>Transfer the ribber needles to the main bed and scrap off.</li>\r\n<li>Drop the ribber</li>\r\n<li>RIGHT SIDE facing, rehang the garment edge on the main bed. Push the knitting behind the latches</li>\r\n<li>Hang the ribbing stitches on the same needles, keeping the stitches in the hooks of the needles</li>\r\n<li>Pull the ribbing stitches through and loosely bind off (consider a <a data-vimeoid=\"151858299\" class=\"videopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Back Stitch (sewn) Bind Off</a>\r\n\r\n)</li>\r\n</ol>\r\n\r\n<hr class=\"style13\">\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 8841,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "723016463",
+              "title": null,
+              "legacyComponentId": 8843,
+              "order": 2
+            }
+          ],
+          "title": "Double Bed -  Method 2",
+          "slug": "double-bed-method-2",
+          "order": 5,
+          "legacy": {
+            "assignId": 5850,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div id=\"paper\">\r\n    <div id=\"pattern\">\r\n        <div id=\"content\">\r\n            <b>Use a sample swatch:</b><br>\r\nChoose one of the single layer band methods\r\n            <br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i> Is this finish worth the effort?<br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i> Does the finish compliment the garment stitch pattern?<br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i> Does the gauge match? No stretching or gathers<br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i> Do you like the bind off edge? Can it be improved?<br></div>\r\n    </div>\r\n</div>",
+              "legacyComponentId": 8847,
+              "order": 1
+            }
+          ],
+          "title": "Try it yourself",
+          "slug": "try-it-yourself",
+          "order": 6,
+          "legacy": {
+            "assignId": 5854,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Doubled Bands",
+      "slug": "doubled-bands",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 643,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\nspan.blue {\r\nbackground: #9e2065;\r\nborder-radius: 0.8em;\r\n-moz-border-radius: 0.8em;\r\n-webkit-border-radius: 0.8em;\r\ncolor: #ffffff;\r\ndisplay: inline-block;\r\nfont-weight: bold;\r\nline-height: 1.6em;\r\nmargin-right: 15px;\r\ntext-align: center;\r\nwidth: 1.6em;\r\n}\r\n .container-border1 {\r\nborder: 2px solid #ccc;\r\nborder-radius: 15px 50px;\r\npadding-top: 20px;\r\npadding-right: 20px;\r\npadding-bottom: 20px;\r\npadding-left: 20px;\r\nbackground-color: white;\r\n}\r\n</style>\r\n\r\n\r\n\r\n\r\nTraditionally machine knitters will rehang the edge of their sweater on the machine and knit a doubled band with a turning row.<br>Even if the body of the sweater is knit in pattern, traditionally the bands are knit in stockinette.  It is critical that you can accurately calculate the number of stitches you need to pick up.<br><span class=\"yellow_highlight\">Doubled bands can also be knit in ribbing using <a href=\"/challenge/100/Group/5841/item#section642\">Method 1</a></span>\r\n<h3>Steps for knitting a traditional band:</h3><ol>\r\n<li>Determine the number of stitches needed for your band (or hold the knitting up to the machine)</li>\r\n<li>WRONG SIDE FACING: hang the edge on the needles</li>\r\n<li>Knit the public side of the band</li>\r\n<li>Knit a <a data-GlossaryId=\"324\" class=\"glossaryhelp\">Turning Row <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n<li>Knit the private side of the band (knit at a slightly tighter tension)</li>\r\n<li>Close the band:\r\n<ul>\r\n<li>Method 1: Pick up the edge and loosely bind off</li>\r\n<li>Method2: Scrap off the band and stitch in place (preferred method)</li>\r\n</ul>\r\n</li>\r\n</ol>\r\n\r\n<div class=\"container-border1\"><span class=\"handwriting\">2 keys to success:</span><br>\r\n<span class=\"blue\" style=\"font-size: 1.25em\">1</span>Grading the tension so the band doesn't flip out<br><span class=\"blue\" style=\"font-size: 1.25em\">2</span>Picking up the correct  number of stitches so the band isn't too long or short<br>\r\n</div>\r\n\r\n",
+              "legacyComponentId": 8822,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "722352486",
+              "title": null,
+              "legacyComponentId": 8824,
+              "order": 2
+            }
+          ],
+          "title": "Traditional Band Finish",
+          "slug": "traditional-band-finish",
+          "order": 1,
+          "legacy": {
+            "assignId": 5842,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nFor a \"perfect\" finish on both sides of the button band, consider an \"industrial\" band.<br>\r\nIn the previous example, the band is knit in one piece separated by a turning row.  The final edge is bound off or sewn off.  <br>With the industrial method, the band is knit in 2 pieces, each side of the band is neatly joined to the body of the sweater and there is a \"seam\" instead of a turning row.<br>\r\n\r\n<h3>Steps for knitting an industrial band:</h3><ol>\r\n<li>Determine how many stitches are needed for the band</li>\r\n<li>Scrap on and knit 1/2 of the band (Part 1)</li>\r\n<li>Scrap off and set aside</li>\r\n<li>Wrong side facing, hang the sweater edge over the same number of needles</li>\r\n<li>Wrong side facing, re-hang the scrapped off edge of Part 1 band</li>\r\n<li>Knit the 2nd half of the band (Part 2)</li>\r\n<li>Neatly seam the 2 pieces\r\n<ul>\r\n<li><a data-GlossaryId=\"521\" class=\"glossaryhelp\">Kitchener Graft <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> the live stitches</li>\r\n<li>Neatly <a data-GlossaryId=\"210\" class=\"glossaryhelp\">Bind Off <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n<li>Use a <a data-vimeoid=\"151858299\" class=\"videopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Sewn (Backstitch) Bind off</a></li>\r\n</li>\r\n</ul>\r\n</li>\r\n</ol><br><em>In the following video, this method is used for a neckline, but it can also be applied for a beautifully finished button band.<br></em>\r\n\r\n<img src=\"/challenge/images/v2/100/industrial.png\">\r\n\r\n",
+              "legacyComponentId": 8825,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "345492301",
+              "title": null,
+              "legacyComponentId": 8826,
+              "order": 2
+            }
+          ],
+          "title": "Industrial Band",
+          "slug": "industrial-band",
+          "order": 2,
+          "legacy": {
+            "assignId": 5843,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nBands don't have to be plain .. dress 'em up!<br>\r\n\r\nConsider:<ul>\r\n<li>Stripes</li>\r\n<li>Fairisle</li>\r\n<li.Textured stitch patterns </li>\r\n<li>Contrasting Colors</li>\r\n</ul>\r\n<br><div class=\"videopopup\" data-videotitle=\"Button Band Finishes\" data-vimeoid=\"151858696\">\r\n\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/551702345-ceefbcdf8f507daf77a4e4a0e1342ec4995b6c86aae3293ac4993fde4c16319c-d_1280x720?r=pad\">\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div>\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/100/fariisle band.jpg\"><br><img class=\"img-thumbnail\" src=\"/challenge/images/v2/100/ewrap_example.jpg\">\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 8845,
+              "order": 1
+            }
+          ],
+          "title": "Dress 'em Up",
+          "slug": "dress-em-up",
+          "order": 3,
+          "legacy": {
+            "assignId": 5844,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Sometimes a single layer of ribbing isn't enough.\r\nUsing the Traditional Band Finish method, knit your bands in ribbing (or any stitch pattern).  Add a turning row, fold the band in half and secure it.<br>Consider:<ul>\r\n<li>2x1 ribbing</li>\r\n<li>3x1 ribbing</li>\r\n<li>3x2 ribbing</li>\r\n<li><a data-GlossaryId=\"321\" class=\"glossaryhelp\">Flat Rib <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n</ul><br>Although Full Needle Rib (FNR) is technically a single layer, the fullness makes for a \"weighty\" band that is perfect for Farisle, Knitweave or other multi-color stitch patterns. <a href=\"/challenge/100/Group/5850/item#section642\">See  the Double Bed Method 2.</a>\r\n",
+              "legacyComponentId": 8844,
+              "order": 1
+            }
+          ],
+          "title": "Ribbed Bands",
+          "slug": "ribbed-bands",
+          "order": 4,
+          "legacy": {
+            "assignId": 5851,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div id=\"paper\">\r\n    <div id=\"pattern\">\r\n        <div id=\"content\">\r\n            <b>Use a sample swatch:</b><br>\r\nChoose one of the single layer band methods\r\n            <br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i> Is this finish worth the effort?<br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i> Does the finish compliment the garment stitch pattern?<br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i> Does the gauge match? No stretching or gathers<br><i class=\"fa fa-check\" aria-hidden=\"true\" style=\"color: #9E2065\"></i> How do the private and public sides look? Can they be improved?<br></div>\r\n    </div>\r\n</div>",
+              "legacyComponentId": 8848,
+              "order": 1
+            }
+          ],
+          "title": "Try it yourself",
+          "slug": "try-it-yourself",
+          "order": 5,
+          "legacy": {
+            "assignId": 5855,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Specialty Bands",
+      "slug": "specialty-bands",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 644,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div>\r\n\r\n\r\n\r\nVertical bands for cardigan fronts are beautiful. This style of band is fast - no picking up stitches to form a separate band, but you do need to plan ahead a bit for a beautiful finish.<br>Let's explore 4 different techniques for creating a crisp, neat edge for your buttonhole and button bands knit at the same time as your cardigan fronts.\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/100/vertical_bands.jpg\">\r\n</div\r\n\r\n",
+              "legacyComponentId": 8839,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859536",
+              "title": null,
+              "legacyComponentId": 8454,
+              "order": 2
+            }
+          ],
+          "title": "Vertical Bands",
+          "slug": "vertical-bands",
+          "order": 1,
+          "legacy": {
+            "assignId": 5696,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img class=\"img-thumbnail\" src=\"/challenge/images/v2/100/vertical_bands.jpg\">",
+              "legacyComponentId": 8849,
+              "order": 1
+            }
+          ],
+          "title": "Try a Vertical Band",
+          "slug": "try-a-vertical-band",
+          "order": 2,
+          "legacy": {
+            "assignId": 5856,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Tips for adding a zipper to your knitting",
+              "legacyComponentId": 8455,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "168771780",
+              "title": null,
+              "legacyComponentId": 8834,
+              "order": 2
+            }
+          ],
+          "title": "Zipper",
+          "slug": "zipper",
+          "order": 3,
+          "legacy": {
+            "assignId": 5697,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<h3>Enclose a Zipper with a 2 piece (Industrial / Sandwich) Band</h3>\r\n\r\nIn the previous Zipper Video I resorted to using crochet to even out the edges for a beautiful zipper finish.<br>Consider adding a 'sandwich' band on each side to enclose the zipper tape.<br><a data-vimeoid=\"345492301\" class=\"videopopup\"><i class=\"fa fa-youtube-play fa-2x\" aria-hidden=\"true\"></i> 2 Piece Industrial Band</a> \r\n\r\n\r\n<ol>\r\n<h3>Steps for creating a zipper sandwich</h3>\r\n<ol>\r\n<li>Determine how many stitches are needed for the band</li>\r\n<li>Scrap on and knit 1/2 of the band (Part 1)</li>\r\n<li>Neatly bind off</li>\r\n<li>Wrong side facing, hang the sweater edge over the same number of needles</li>\r\n<li>Wrong side facing, re-hang the cast on edge of Part 1 band</li>\r\n<li>Knit the 2nd half of the band (Part 2)</li>\r\n<li>Neatly bind off Part 2</li>\r\n<li>Repeat for the other side of the cardigan</li>\r\n<li>Insert the zipper tape between parts 1 and 2 and stitch in place (by hand or machine)</li>\r\n</ol>\r\n<img src=\"/challenge/images/v2/100/zipper_insert1.png\">\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 8836,
+              "order": 1
+            }
+          ],
+          "title": "Zipper Sandwich",
+          "slug": "zipper-sandwich",
+          "order": 4,
+          "legacy": {
+            "assignId": 5849,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n.yellow_highlight {\r\n\r\nbackground: linear-gradient(rgba(255,255,255,0) 55%,#ffff00 45%,#ffff00);\r\n}\r\n</style>\r\n\r\n<div id=\"paper\">\r\n<div id=\"pattern\">\r\n<div id=\"content\">\r\n\r\n<span class=\"yellow_highlight\"><b>You CAN do it!</b></span>\r\n<br>If you've never added a zipper to a garment, it isn't as difficult as you may think.<br>Grab a swatch and a zipper, using the method of your choice, give it a try!<br>For the most control, hand baste the zipper tape in place before securing by hand or with  sewing machine<br>Practice until you get enough confidence to try it on a \"real\" sweater.\r\n<br><em><small>Consider pre-washing the zipper ... just in case</small></em>\r\n\r\n</div>\r\n</div>\r\n</div>",
+              "legacyComponentId": 8850,
+              "order": 1
+            }
+          ],
+          "title": "Try a Zipper",
+          "slug": "try-a-zipper",
+          "order": 5,
+          "legacy": {
+            "assignId": 5857,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Buttonholes",
+      "slug": "buttonholes",
+      "displayOrder": 8,
+      "legacy": {
+        "itemId": 647,
+        "lessonOrder": 8
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Plain or fancy, remember buttonholes just allow the wearer to close their garment.  It's important to plan and practice the method you will be using before you start knitting your sweater.<br>A popular option is to create your buttonholes with the sewing machine.  Use a stabilizer and treat your knitting as you would any other fabric to make openings for your buttons.",
+              "legacyComponentId": 8459,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859614",
+              "title": "Basic Buttonholes",
+              "legacySlot": 1,
+              "legacyComponentId": 8458,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859561",
+              "title": "Jodi's Buttonholes for Vertical Bands",
+              "legacySlot": 2,
+              "legacyComponentId": 8458,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858690",
+              "title": "In the Ditch Buttonholes",
+              "legacySlot": 3,
+              "legacyComponentId": 8458,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "180259417",
+              "title": "Vertical Buttonholes",
+              "legacySlot": 4,
+              "legacyComponentId": 8458,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "406025735",
+              "title": "2 Step Buttonholes",
+              "legacySlot": 5,
+              "legacyComponentId": 8458,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "183218959",
+              "title": "No-Math Trick",
+              "legacySlot": 6,
+              "legacyComponentId": 8458,
+              "order": 2
+            }
+          ],
+          "title": "They are just holes",
+          "slug": "they-are-just-holes",
+          "order": 1,
+          "legacy": {
+            "assignId": 5699,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<a href=\"/tools/buttonholes.cfm\"><img src=\"/challenge/images/v2/100/buttonhole_tool_thumb.jpg\"></a>",
+              "legacyComponentId": 8833,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "Plan the placement of your buttonholes for your project and let Knit It Now do all the math!<br><div class=\"videopopup\" data-videotitle=\"Buttonhole Position Tool\" data-vimeoid=\"220500964\">\r\n\t\t<figure><figcaption align=\"center\"><br><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i> How to use the tool</figcaption><img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/638524436-25cabd28cb3b76b9cc9501d9f9b1b8cbb82babeaff9163ccd181651f280e9a3f-d_1280x720?r=pad\">\r\n</figure><br>\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div>",
+              "legacyComponentId": 8831,
+              "order": 2
+            }
+          ],
+          "title": "Knit it Now Buttonhole Tool",
+          "slug": "knit-it-now-buttonhole-tool",
+          "order": 3,
+          "legacy": {
+            "assignId": 5847,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\t<a href=\"/classrooms/99/buttonholes\"><img class=\"img-thumbnail center-block\" src=\"/challenge/images/v2/100/buttonhole_classroom_thumb1.jpg\"></a>\r\n\r\n\r\n<a href=\"/classrooms/99/buttonholes\"> <img class=\"thumbnail center-block\" width=\"300\" src=\"/path/images/99/buttonhole_class_thumb.jpg\"></a>\r\n\r\n\r\n",
+              "legacyComponentId": 8832,
+              "order": 1
+            }
+          ],
+          "title": "Visit the Buttonholes Classroom",
+          "slug": "visit-the-buttonholes-classroom",
+          "order": 4,
+          "legacy": {
+            "assignId": 5848,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 15,
+    "videos": [
+      {
+        "vimeoId": "151857646",
+        "title": "Calculating Bands",
+        "lessonSlug": "calculating-bands",
+        "blockSlug": "using-math"
+      },
+      {
+        "vimeoId": "672100555",
+        "title": null,
+        "lessonSlug": "single-layer-bands",
+        "blockSlug": "single-bed-no-roll"
+      },
+      {
+        "vimeoId": "151858926",
+        "title": null,
+        "lessonSlug": "single-layer-bands",
+        "blockSlug": "single-bed-embrace-the-roll"
+      },
+      {
+        "vimeoId": "722761899",
+        "title": null,
+        "lessonSlug": "single-layer-bands",
+        "blockSlug": "double-bed-method-1"
+      },
+      {
+        "vimeoId": "723016463",
+        "title": null,
+        "lessonSlug": "single-layer-bands",
+        "blockSlug": "double-bed-method-2"
+      },
+      {
+        "vimeoId": "722352486",
+        "title": null,
+        "lessonSlug": "doubled-bands",
+        "blockSlug": "traditional-band-finish"
+      },
+      {
+        "vimeoId": "345492301",
+        "title": null,
+        "lessonSlug": "doubled-bands",
+        "blockSlug": "industrial-band"
+      },
+      {
+        "vimeoId": "151859536",
+        "title": null,
+        "lessonSlug": "specialty-bands",
+        "blockSlug": "vertical-bands"
+      },
+      {
+        "vimeoId": "168771780",
+        "title": null,
+        "lessonSlug": "specialty-bands",
+        "blockSlug": "zipper"
+      },
+      {
+        "vimeoId": "151859614",
+        "title": "Basic Buttonholes",
+        "lessonSlug": "buttonholes",
+        "blockSlug": "they-are-just-holes"
+      },
+      {
+        "vimeoId": "151859561",
+        "title": "Jodi's Buttonholes for Vertical Bands",
+        "lessonSlug": "buttonholes",
+        "blockSlug": "they-are-just-holes"
+      },
+      {
+        "vimeoId": "151858690",
+        "title": "In the Ditch Buttonholes",
+        "lessonSlug": "buttonholes",
+        "blockSlug": "they-are-just-holes"
+      },
+      {
+        "vimeoId": "180259417",
+        "title": "Vertical Buttonholes",
+        "lessonSlug": "buttonholes",
+        "blockSlug": "they-are-just-holes"
+      },
+      {
+        "vimeoId": "406025735",
+        "title": "2 Step Buttonholes",
+        "lessonSlug": "buttonholes",
+        "blockSlug": "they-are-just-holes"
+      },
+      {
+        "vimeoId": "183218959",
+        "title": "No-Math Trick",
+        "lessonSlug": "buttonholes",
+        "blockSlug": "they-are-just-holes"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

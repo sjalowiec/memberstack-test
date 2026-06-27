@@ -1,0 +1,946 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 48,
+    "title": "Socks Knit-Along",
+    "slug": "socks-knit-along",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_48_socks_knit_along.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Introduction",
+      "slug": "introduction",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 309,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>This Knit-Along is not a beginner project.</h3><br>\r\n\r\n\r\n<b>Stuff you should know:</b>\r\n<ul>\r\n<li>Casting on and binding off</li>\r\n<li>Scrap on and scrap off</li>\r\n<li>Swatching and ACCURATELY measuring gauge</li>\r\n</ul>\r\n<br>\r\n<b>Stuff you will learn/practice/master:</b>\r\n<ul>\r\n<li>Short Row shaping (including programmed short row shaping)</li>\r\n<li>Kitchener Stitch seaming</li>\r\n</ul>\r\n<br>\r\n<b>Overachiever? <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i></b>\r\n<ul>\r\n<li>Practice adding ribbing (hand and machine)</li>\r\n<li>Explore adding stitch patterning</li>\r\n</ul>\r\n\r\nWe will be using the material in the Knit it Now <a href=\"/classrooms/38/socks-on-a-knitting-machine\">Classroom: Socks on a Knitting Machine.</a><br><a href=\"/classrooms/38/socks-on-a-knitting-machine\"><img src=\"/path/images/38/topics_socks.jpg\"></a>\r\n\r\n<br>\r\n<hr>\r\n<br>\r\n\r\n<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/757349292' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n</div>",
+              "legacyComponentId": 4826,
+              "order": 1
+            }
+          ],
+          "title": "Are you ready?  Let's get Knitting!",
+          "slug": "are-you-ready-let-s-get-knitting",
+          "order": 1,
+          "legacy": {
+            "assignId": 3432,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n\r\nVisit the <a href=\"/knitclub/48/Knitalong/socks-knit-along\">main Knit-Along Page</a>--- for an event listing (and replays)<br><a href=\"/knitclub/48/Knitalong/socks-knit-along\"><img src=\"/challenge/images/v2/48/live1.jpg\"></a>\r\n\r\n<hr class=\"style13\">\r\n\r\n\r\n",
+              "legacyComponentId": 9079,
+              "order": 1
+            }
+          ],
+          "title": "LIVE meet-ups",
+          "slug": "live-meet-ups",
+          "order": 2,
+          "legacy": {
+            "assignId": 5954,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .list li {\r\n        margin-bottom: 10px;\r\n    }\r\n    .turn1 {\r\n        transform: rotate(20deg);\r\n    }\r\n</style>\r\n\r\n\r\n    Depending on the style of sock you choose, socks require sets of very specific skills.<br>Please take time to practice before attempting to knit a sock with your \"real\" yarn.<br>\r\n    <div class=\"handwriting turn1 text-center\" style=\"font-size:1.5em\"><span class=\"yellow_highlight\">Read and Understand<br>your pattern<br>BEFORE you start Knitting</span></div>\r\n\r\n\r\n\r\n\r\n    <div class=\"table-responsive\">\r\n        <table class=\"table table-bordered table-sm\">\r\n            <thead>\r\n                <tr>\r\n                    <th>Style</th>\r\n\r\n                    <th>Skills Needed</th>\r\n\r\n                </tr>\r\n            </thead>\r\n            <tbody>\r\n                <tr>\r\n                    <td><a href=\"/knit/DynamicPattern/2226/basic-sock\">Basic Sock - Toe Up (cuff last)</a>\r\n                        <a href=\"#1\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i></a>\r\n                        <div id=\"1\" class=\"collapse hidden-print\">\r\n                            <img src=\"/path/images/2740/basic_toe_up.jpg\">\r\n                        </div>\r\n                    </td>\r\n                    <td>\r\n                        <ul class=\"list\">\r\n                            <li><a data-GlossaryId=\"265\" class=\"glossaryhelp\">Scrap and Ravel Cast On <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> or Use a <a data-GlossaryId=\"339\" class=\"glossaryhelp\">Cast on Rag <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n\r\n                            <li><a data-GlossaryId=\"250\" class=\"glossaryhelp\">Short Row | Partial Knitting <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> for toes and heels</li>\r\n                            <li><a data-GlossaryId=\"311\" class=\"glossaryhelp\">Scrap Off <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                            <li>Seaming: <a data-GlossaryId=\"314\" class=\"glossaryhelp\">Mattress Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"717\" class=\"glossaryhelp\">Bickford Seam <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"521\" class=\"glossaryhelp\">Kitchener Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                            <li>Bind off in Ribbing\r\n                                <ul>\r\n                                    <li>Tubular Bind off</li>\r\n                                    <li> <a class=\"subvideopopup\" data-videotitle=\"Stretchiest Bind Off Ever!\" data-vimeoid=\"151858299\">\r\n                                            <i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Stretchy (Backstitch) Bind off</a>\r\n                                    </li>\r\n                                    <li> <a class=\"subvideopopup\" data-videotitle=\"Figure 8 Bind Off\" data-vimeoid=\"258782290\">\r\n                                            <i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Figure 8 Bind Off</a>\r\n                                    </li>\r\n                                    <li>\r\n                                        <a class=\"subvideopopup\" data-videotitle=\"Easy Ribber Bind Off\" data-vimeoid=\"151857401\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Easy Ribber Bind off\r\n                                        </a>\r\n                                    </li>\r\n                                </ul>\r\n\r\n                            </li>\r\n\r\n\r\n                            <li>Position Stitch Pattern</li>\r\n                        </ul>\r\n                    </td>\r\n\r\n                </tr>\r\n                <tr>\r\n                    <td><a href=\"/knit/DynamicPattern/2226/basic-sock\">Basic Sock Cuff to Toe</a>\r\n                        <a href=\"#2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i></a>\r\n                        <div id=\"2\" class=\"collapse hidden-print\">\r\n                            <img src=\"/path/images/2740/basic.jpg\">\r\n                        </div>\r\n\r\n                    </td>\r\n                    <td>\r\n                        <ul class=\"list\">\r\n\r\n                            <li><a data-GlossaryId=\"250\" class=\"glossaryhelp\">Short Row | Partial Knitting <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> for toes and heels</li>\r\n                            <li><a data-GlossaryId=\"311\" class=\"glossaryhelp\">Scrap Off <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                            <li>Seaming: <a data-GlossaryId=\"314\" class=\"glossaryhelp\">Mattress Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"717\" class=\"glossaryhelp\">Bickford Seam <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"521\" class=\"glossaryhelp\">Kitchener Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                            <li>Ribbing, hand or machine\r\n\r\n                            </li>\r\n\r\n\r\n                            <li>Position Stitch Pattern</li>\r\n                        </ul>\r\n                    </td>\r\n\r\n\r\n                </tr>\r\n                <tr>\r\n                    <td><a href=\"/knit/DynamicPattern/2228/fancy-sock\">Fancy Sock - Heel Up (cuff last)</a>\r\n\r\n                        <a href=\"#3\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i></a>\r\n                        <div id=\"3\" class=\"collapse hidden-print\">\r\n                            <img src=\"/path/images/2740/fancy_cuff_to_heel.jpg\">\r\n                        </div>\r\n                    </td>\r\n                    <td>\r\n                        <ul class=\"list\">\r\n\r\n                            <li><a data-GlossaryId=\"250\" class=\"glossaryhelp\">Short Row | Partial Knitting <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> for toes and heels</li>\r\n                            <li><a data-GlossaryId=\"311\" class=\"glossaryhelp\">Scrap Off <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                            <li>Seaming: <a data-GlossaryId=\"314\" class=\"glossaryhelp\">Mattress Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"717\" class=\"glossaryhelp\">Bickford Seam <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"521\" class=\"glossaryhelp\">Kitchener Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                            <li>Ribbing, hand or machine\r\n\r\n                            </li>\r\n\r\n\r\n                            <li>Position Stitch Pattern</li>\r\n                        </ul>\r\n                    </td>\r\n\r\n\r\n                </tr>\r\n                <tr>\r\n                    <td><a href=\"/knit/DynamicPattern/2228/fancy-sock\">Fancy Sock - Cuff to heel</a>\r\n\r\n                        <a href=\"#4\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i></a>\r\n                        <div id=\"4\" class=\"collapse hidden-print\">\r\n                            <img src=\"/path/images/2740/fancy_heel_up.jpg\">\r\n                        </div>\r\n\r\n                    </td>\r\n                    <td>\r\n                        <ul class=\"list\">\r\n                            <li><a data-GlossaryId=\"250\" class=\"glossaryhelp\">Short Row | Partial Knitting <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> for toes and heels</li>\r\n                            <li><a data-GlossaryId=\"311\" class=\"glossaryhelp\">Scrap Off <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                            <li>Seaming: <a data-GlossaryId=\"314\" class=\"glossaryhelp\">Mattress Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"717\" class=\"glossaryhelp\">Bickford Seam <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"521\" class=\"glossaryhelp\">Kitchener Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                            <li>Bind off in Ribbing\r\n                                <ul>\r\n                                    <li>Tubular Bind off</li>\r\n                                    <li> <a class=\"subvideopopup\" data-videotitle=\"Stretchiest Bind Off Ever!\" data-vimeoid=\"151858299\">\r\n                                            <i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Stretchy (Backstitch) Bind off</a>\r\n                                    </li>\r\n                                    <li> <a class=\"subvideopopup\" data-videotitle=\"Figure 8 Bind Off\" data-vimeoid=\"258782290\">\r\n                                            <i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Figure 8 Bind Off</a>\r\n                                    </li>\r\n                                    <li>\r\n                                        <a class=\"subvideopopup\" data-videotitle=\"Easy Ribber Bind Off\" data-vimeoid=\"151857401\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Easy Ribber Bind off\r\n                                        </a>\r\n                                    </li>\r\n                                </ul>\r\n                            </li>\r\n                            <li>Position Stitch Pattern</li>\r\n\r\n                        </ul>\r\n                    </td>\r\n\r\n\r\n                </tr>\r\n                <tr>\r\n                    <td><a href=\"/knit/DynamicPattern/2235/swan-sock\">Swan Sock - Gusseted Heel</a>\r\n\r\n                        <a href=\"#5\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i></a>\r\n                        <div id=\"5\" class=\"collapse hidden-print\">\r\n                            <img src=\"/path/images/2740/swan_sock1.jpg\">\r\n\r\n                        </div>\r\n                    </td>\r\n                    <td>\r\n                        <ul class=\"list\">\r\n                            <li><a data-GlossaryId=\"265\" class=\"glossaryhelp\">Scrap and Ravel Cast On <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> or Use a <a data-GlossaryId=\"339\" class=\"glossaryhelp\">Cast on Rag <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n\r\n                            <li><a data-GlossaryId=\"250\" class=\"glossaryhelp\">Short Row | Partial Knitting <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> for toes and heels</li>\r\n                            <li><a data-GlossaryId=\"311\" class=\"glossaryhelp\">Scrap Off <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                            <li>Seaming: <a data-GlossaryId=\"314\" class=\"glossaryhelp\">Mattress Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"717\" class=\"glossaryhelp\">Bickford Seam <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"521\" class=\"glossaryhelp\">Kitchener Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                            <li>Position Stitch Pattern</li>\r\n\r\n                        </ul>\r\n                    </td>\r\n                </tr>\r\n            </tbody>\r\n        </table>\r\n    </div>\r\n\r\n",
+              "legacyComponentId": 9084,
+              "order": 1
+            }
+          ],
+          "title": "Skills Needed",
+          "slug": "skills-needed",
+          "order": 3,
+          "legacy": {
+            "assignId": 5959,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Week 1: Decisions, Decisions, Decisions",
+      "slug": "week-1-decisions-decisions-decisions",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 310,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857395",
+              "title": "Anatomy of a Sock",
+              "legacyComponentId": 4855,
+              "order": 1
+            }
+          ],
+          "title": "Anatomy of a flat bed sock",
+          "slug": "anatomy-of-a-flat-bed-sock",
+          "order": 1,
+          "legacy": {
+            "assignId": 3445,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    th,\r\n    td {\r\n        border: 1px solid black;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n\r\n\r\n<figure><a href=\"/knit/DynamicPattern/2226/basic-sock\"><img src=\"/path/images/2740/basic_toe_up1.jpg\"></a>\r\n\r\n<figcaption align=\"center\"><br><a href=\"/knit/DynamicPattern/2226/basic-sock\">Basic sock toe up<br>and cuff up</a></figcaption>\r\n</figure>\r\n\r\n<figure><a href=\"/knit/DynamicPattern/2228/fancy-sock\"><img src=\"/path/images/2740/fancy_cuff_to_heel1.jpg\"></a>\r\n\r\n<figcaption align=\"center\"><br><a href=\"/knit/DynamicPattern/2228/fancy-sock\">Fancy Sock heel up<br>and cuff up</a></figcaption>\r\n</figure>\r\n\r\n<figure><a href=\"/knit/DynamicPattern/2235/swan-sock\"><img src=\"/path/images/2740/swan_sock3.jpg\"></a>\r\n<figcaption align=\"center\"><br><a href=\"/knit/DynamicPattern/2235/swan-sock\">Swan Sock</a></figcaption>\r\n</figure>\r\n\r\n\r\n\r\n   <h3> Knit it Now offers many sock styles. Each with their own advantages.</h3><br><div class=\"table-responsive\">\r\n        <table class=\"table table-bordered table-sm\">\r\n            <thead>\r\n                <tr>\r\n                    <th>Style</th>\r\n\r\n                    <th>Pro</th>\r\n                    <th>Con</th>\r\n                </tr>\r\n            </thead>\r\n            <tbody>\r\n                <tr>\r\n                    <td><a href=\"/knit/DynamicPattern/2226/basic-sock\">Basic Sock - Toe Up (cuff last)</a>\r\n                        <a href=\"#1\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i></a>\r\n                        <div id=\"1\" class=\"collapse hidden-print\">\r\n                            <img src=\"/path/images/2740/basic_toe_up.jpg\">\r\n                        </div>\r\n                    </td>\r\n                    <td>\r\n                        <ul>\r\n                            <li>Foot knit in one piece - only one side seam</li>\r\n                            <li>Not sure if you have enough yarn?<br>Start at the toe and weigh your yarn as you go. <br>Adjust the leg length if you are running short of yarn<br></li><br>\r\n                            \r\n                        </ul>\r\n                    </td>\r\n\r\n                    <td>\r\n                        <ul>\r\n                            <li>Many knitters don't like to bind off in ribbing.<br>\r\n                                <em> Hand knit the ribbing or use a stretchy bind off.</em></li>\r\n                        </ul>\r\n                    </td>\r\n                </tr>\r\n                <tr>\r\n                    <td><a href=\"/knit/DynamicPattern/2226/basic-sock\">Basic Sock Cuff to Toe</a>\r\n                        <a href=\"#2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i></a>\r\n                        <div id=\"2\" class=\"collapse hidden-print\">\r\n                            <img src=\"/path/images/2740/basic.jpg\">\r\n                        </div>\r\n\r\n                    </td>\r\n                    <td>\r\n                        <ul>\r\n                            <li>Foot knit in one piece - only one side seam</li>\r\n                            <li>Stretchy, tubular cast on available for ribbing</li>\r\n                            \r\n                        </ul>\r\n                    </td>\r\n\r\n                    <td>\r\n                        <ul>\r\n                            <li>Not as easy to estimate yarn usage</li>\r\n                        </ul>\r\n                    </td>\r\n                </tr>\r\n                <tr>\r\n                    <td><a href=\"/knit/DynamicPattern/2228/fancy-sock\">Fancy Sock - Heel Up (cuff last)</a>\r\n\r\n                        <a href=\"#3\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i></a>\r\n                        <div id=\"3\" class=\"collapse hidden-print\">\r\n                            <img src=\"/path/images/2740/fancy_cuff_to_heel.jpg\">\r\n                        </div>\r\n                    </td>\r\n                    <td>\r\n                        <ul>\r\n                            <li>Not sure if you have enough yarn? Start at the heel and weigh your yarn as you go. Adjust the leg length if you are running short of yarn</li>\r\n                            <li>Foot knit in 2 pieces for different stitch pattern on sole and gusset</li>\r\n                        </ul>\r\n                    </td>\r\n\r\n                    <td>\r\n                        <ul>\r\n                            <li>Many knitters don't like to bind off in ribbing.<br>\r\n                             <em> Hand knit the ribbing or use a stretchy bind off.</em></li><br>\r\n                            <li>2 seams</li>\r\n                        </ul>\r\n                    </td>\r\n                </tr>\r\n                <tr>\r\n                    <td><a href=\"/knit/DynamicPattern/2228/fancy-sock\">Fancy Sock - Cuff to heel</a>\r\n\r\n                        <a href=\"#4\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i></a>\r\n                        <div id=\"4\" class=\"collapse hidden-print\">\r\n                            <img src=\"/path/images/2740/fancy_heel_up.jpg\">\r\n                        </div>\r\n\r\n                    </td>\r\n                    <td>\r\n                        <ul>\r\n                            <li>Stretchy, tubular cast on available for ribbing</li>\r\n                            <li>Foot knit in 2 pieces for different stitch pattern on sole and gusset</li>\r\n                        </ul>\r\n                    </td>\r\n\r\n                    <td>\r\n                        <ul>\r\n                            <li>Not as easy to estimate yarn usage</li>\r\n                            <li>2 seams</li>\r\n                        </ul>\r\n                    </td>\r\n                </tr>\r\n                <tr>\r\n                    <td><a href=\"/knit/DynamicPattern/2235/swan-sock\">Swan Sock - Gusseted Heel</a>\r\n\r\n                        <a href=\"#5\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i></a>\r\n                        <div id=\"5\" class=\"collapse hidden-print\">\r\n                            <img src=\"/path/images/2740/swan_sock1.jpg\">\r\n\r\n                        </div>\r\n                    </td>\r\n                    <td>\r\n                        <ul>\r\n                            <li>Hand knit-like gusseted heel (for good fit)</li>\r\n                            <li>Foot knit in 2 pieces for different stitch pattern on sole and gusset</li>\r\n                        </ul>\r\n                    </td>\r\n\r\n                    <td>\r\n                        <ul>\r\n                            <li>4 seams (side seams and gussets)</li>\r\n                            <li>Not a beginner sock, more skills needed</li>\r\n                        </ul>\r\n                    </td>\r\n                </tr>\r\n            </tbody>\r\n        </table>\r\n    </div>\r\n\r\n",
+              "legacyComponentId": 9075,
+              "order": 1
+            }
+          ],
+          "title": "Choose your sock style",
+          "slug": "choose-your-sock-style",
+          "order": 2,
+          "legacy": {
+            "assignId": 3433,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<b>Ribbing Options:</b><br><span class=\"handwriting\" style=\"font-size:1.5em\"> No matter which style of sock you choose, you have options for adding ribbing if you choose.</span><br>\r\n\r\n\r\n\r\n\r\n            <h3>Hand Knitting</h3><br><b>Toe up</b> <em>Ribbing in the round</em>\r\n                <ol class=\"instruction-nolist\">\r\n                    <li>Start the \"body\" of the sock on waste yarn</li>\r\n<li>When the body is complete and seamed,<br> pick up the live stitches on hand knitting needles and knit the ribbing by hand in the round</li></ol>\r\n\r\n<ol class=\"instruction-nolist\">\r\n<b>Cuff to Toe</b><em> Ribbing Flat</em>\r\n<li>Cast on and hand knit the ribbing flat</li>\r\n<li>Re-hang the ribbing on the machine and continue knitting the sock</li>\r\n                </ol>\r\n\r\n            </li>\r\n\r\n\r\n          <h3>Ribbing on the machine</h3><br><ol class=\"instruction-nolist\">\r\n<b>Toe/Heel up: </b><em>Ribbing flat</em>\r\n<li>Knit the \"body\" of the sock</li>\r\n<li>Transfer stitches to the ribber</li>\r\n<li>Knit the ribbing flat</li>\r\n</ol>\r\n<b>Cuff up:</b> <em>Ribbing Flat</em>\r\n<ol class=\"instruction-nolist\">\r\n                <li>Cast on stitches on the ribber</li>\r\n<li>Knit the ribbing flat</li>\r\n<li>Transfer stitches to the main bed and continue knitting the sock as instructed</lil>\r\n\r\n            </ol>\r\n   \r\n       \r\n\r\n<h3>Circular Socks</h3>\r\nEven if you knit the body of the sock in the round with the ribber, it is not possible to knit ribbing in the round.<br>\r\n<ol>\r\n<li>\r\nScrap on for circular knitting, knit the \"body\" of the sock in a tube.</li>\r\n<li>Pick up the cast on stitches on hand knitting needles and hand knit the ribbing in the round</li>\r\n</ol>\r\n~or~ <em>(fussy but do-able)</em>\r\n<ol>\r\n<li>Knit the ribbing flat on the machine</li>\r\n<li>Transfer stitches to the main bed</li>\r\n<li>Knit 1-2 rows plain</li>\r\n<li>Scrap off 1/2 of the stitches</li>\r\n<li>Fold the knitting and rehang the scrapped off stitches on the main bed (doubling up the stitches)</li>\r\n<li>Raise the ribber</li>\r\n<li>Transfer 1 set of stitches to the ribber, hang a ribber cast on comb, and continue knitting in the round</li>\r\n</ol>\r\n\r\n\r\n\r\n\r\n  \r\n",
+              "legacyComponentId": 4842,
+              "order": 1
+            }
+          ],
+          "title": "To rib or not to rib?",
+          "slug": "to-rib-or-not-to-rib",
+          "order": 3,
+          "legacy": {
+            "assignId": 3441,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "757378302",
+              "title": null,
+              "legacyComponentId": 9076,
+              "order": 1
+            }
+          ],
+          "title": "Build your Custom Dynamic Pattern",
+          "slug": "build-your-custom-dynamic-pattern",
+          "order": 4,
+          "legacy": {
+            "assignId": 5953,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "The patterns",
+      "slug": "the-patterns",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 694,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "    \r\n        \r\n            <figure><a href=\"/knit/DynamicPattern/2226/basic-sock\"><img src=\"/path/images/2740/basic_toe_up1.jpg\"></a>\r\n\r\n                <figcaption align=\"center\"><br><a href=\"/knit/DynamicPattern/2226/basic-sock\">Basic sock toe up<br>and cuff up</a></figcaption>\r\n            </figure>\r\n        \r\n        \r\n            <figure><a href=\"/knit/DynamicPattern/2228/fancy-sock\"><img src=\"/path/images/2740/fancy_cuff_to_heel1.jpg\"></a>\r\n\r\n                <figcaption align=\"center\"><br><a href=\"/knit/DynamicPattern/2228/fancy-sock\">Fancy Sock heel up<br>and cuff up</a></figcaption>\r\n            </figure>\r\n        \r\n        \r\n            <figure><a href=\"/knit/DynamicPattern/2235/swan-sock\"><img src=\"/path/images/2740/swan_sock3.jpg\"></a>\r\n                <figcaption align=\"center\"><br><a href=\"/knit/DynamicPattern/2235/swan-sock\">Swan Sock</a></figcaption>\r\n            </figure>\r\n        \r\n    ",
+              "legacyComponentId": 9088,
+              "order": 1
+            }
+          ],
+          "title": "Choose your sock style",
+          "slug": "choose-your-sock-style",
+          "order": 1,
+          "legacy": {
+            "assignId": 5963,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "755126615",
+              "title": "Toe Up Basic Socks",
+              "legacySlot": 1,
+              "legacyComponentId": 9089,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "288739130",
+              "title": "Fancy Sock Start-to-Finish",
+              "legacySlot": 2,
+              "legacyComponentId": 9089,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "756763233",
+              "title": "Swan Sock Start-to-Finish",
+              "legacySlot": 3,
+              "legacyComponentId": 9089,
+              "order": 1
+            }
+          ],
+          "title": "Start-to-Finish",
+          "slug": "start-to-finish",
+          "order": 2,
+          "legacy": {
+            "assignId": 5964,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Week 2: Toes and Heels",
+      "slug": "week-2-toes-and-heels",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 311,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Let's perfect our short row shaping techniques.",
+              "legacyComponentId": 4828,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "286256671",
+              "title": "Shaping Toes and Heels - Automatic Wrap",
+              "legacyComponentId": 4835,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "342579794",
+              "title": "Toes and Heels - Manual Wrap",
+              "legacyComponentId": 4911,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<br><hr>\r\n<br>",
+              "legacyComponentId": 4837,
+              "order": 4
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857333",
+              "title": "Short Rows - Automatic Wrap verses Manual Wrap",
+              "legacyComponentId": 4836,
+              "order": 5
+            }
+          ],
+          "title": "Turn the corner for heels and tootsies",
+          "slug": "turn-the-corner-for-heels-and-tootsies",
+          "order": 1,
+          "legacy": {
+            "assignId": 3434,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "download",
+              "label": "Print the Practice Worksheet",
+              "filename": "/downloads/short_row_worksheet.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3439",
+                "componentId": "4851",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4851,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/48/shortrow_examples.png\">",
+              "legacyComponentId": 4839,
+              "order": 2
+            },
+            {
+              "type": "exerciseAccordion",
+              "sections": [
+                {
+                  "title": "Start with plain knitting",
+                  "bodyHtml": "<small>Standard Gauge <em>(Mid-Gauge, Bulky)</em></small><br>\r\n<ol>\r\n<li>With main yarn, cast on 40<em>(30,20)</em> Stitches with any method</li>\r\n<li>Knit for 1-2 inches</li>\r\n</ol>",
+                  "iconSrc": "/challenge/images/v2/48/arrow1.png"
+                },
+                {
+                  "title": "Start shaping toe/heel",
+                  "bodyHtml": "<ol start=\"3\">\r\n<li>Opposite the carriage, put half the needles in hold position</li>\r\n<li>Set the carriage to hold</li>\r\n</ol>",
+                  "iconSrc": "/challenge/images/v2/48/arrow2.png"
+                },
+                {
+                  "title": "Work short row automatic DECREASES",
+                  "bodyHtml": "<small>Standard Gauge <em>(Mid-Gauge, Bulky)</em></small><br>\r\n<ol start=\"5\">\r\n<li>Next to the carriage put the first needle into hold position</li>\r\n<li>Knit across</li>\r\n<li>Repeat until 10<em>(6,4)</em> stitches are in working position</li>\r\n</ol>",
+                  "iconSrc": "/challenge/images/v2/48/arrow3.png"
+                },
+                {
+                  "title": "Work short row automatic INCREASES",
+                  "bodyHtml": "<ol start=\"8\">\r\n<li>OPPOSITE the carriage put 2 needles into working position<br>\r\nAND<br>\r\nOn the carriage side, put 1 needle in hold position</li>\r\n<li>Knit across</li>\r\n<li>Repeat until all needles are back in work</li>\r\n</ol><br>\r\nNOTE: When putting the first needle back into working position, don't forget to wrap!",
+                  "iconSrc": "/challenge/images/v2/48/arrow4.png"
+                },
+                {
+                  "title": "Finish the Practice Swatch",
+                  "bodyHtml": "<ol start=\"11\">\r\n<li>Knit across all needles for a few inches.</li>\r\n<li>Scrap off or bind off or try the next exercise using the Manual Wrap short row technique</li>\r\n</ol>",
+                  "iconSrc": "/challenge/images/v2/48/arrow5.png"
+                }
+              ],
+              "legacy": {
+                "showText": null,
+                "size": null
+              },
+              "legacyComponentId": 4838,
+              "order": 3
+            }
+          ],
+          "title": "Practice: Automatic Wrap",
+          "slug": "practice-automatic-wrap",
+          "order": 2,
+          "legacy": {
+            "assignId": 3439,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\t<img src=\"/challenge/images/v2/48/shortrow_examples.png\">",
+              "legacyComponentId": 4841,
+              "order": 1
+            },
+            {
+              "type": "exerciseAccordion",
+              "sections": [
+                {
+                  "title": "Start with plain knitting",
+                  "bodyHtml": "<small>Standard Gauge <em>(Mid-Gauge, Bulky)</em></small><br>\r\n<ol>\r\n<li>With main yarn, cast on 40<em>(30,20)</em> Stitches with any method</li>\r\n<li>Knit for 1-2 inches</li>\r\n</ol>",
+                  "iconSrc": "/challenge/images/v2/48/arrow1.png"
+                },
+                {
+                  "title": "Start shaping toe/heel",
+                  "bodyHtml": "<ol start=\"3\">\r\n<li>Opposite the carriage, put half the needles in hold position</li>\r\n<li>Set the carriage to hold</li>\r\n</ol>",
+                  "iconSrc": "/challenge/images/v2/48/arrow2.png"
+                },
+                {
+                  "title": "Work short row manual DECREASES",
+                  "bodyHtml": "<small>Standard Gauge <em>(Mid-Gauge, Bulky)</em></small><br>\r\n<ol start=\"5\">\r\n<li>Opposite the carriage put the first needle into hold position</li>\r\n<li>Knit across</li>\r\n<li>Wrap the needle next to the working yarn</li>\r\n<li>Repeat until 10<em>(6,4)</em> stitches are in working position</li>\r\n</ol>",
+                  "iconSrc": "/challenge/images/v2/48/arrow3.png"
+                },
+                {
+                  "title": "Work short row manual INCREASES",
+                  "bodyHtml": "<ol start=\"9\">\r\n<li>OPPOSITE the carriage put the first needle into working position</li>\r\n<li>Knit across</li>\r\n<li>Repeat until all needles are back in work</li>\r\n</ol><br>\r\nNOTE: Do you prefer to wrap a second time?  Try it both ways.",
+                  "iconSrc": "/challenge/images/v2/48/arrow4.png"
+                },
+                {
+                  "title": "Finish Practice Swatch",
+                  "bodyHtml": "<ol start=\"12\">\r\n<li>Knit across all needles for a few inches.</li>\r\n<li>Scrap off or bind off or try the next exercise using the Manual Wrap short row technique</li>\r\n</ol>",
+                  "iconSrc": "/challenge/images/v2/48/arrow5.png"
+                }
+              ],
+              "legacy": {
+                "showText": null,
+                "size": null
+              },
+              "legacyComponentId": 4840,
+              "order": 2
+            }
+          ],
+          "title": "Practice: Manual Wrap",
+          "slug": "practice-manual-wrap",
+          "order": 3,
+          "legacy": {
+            "assignId": 3440,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "284263164",
+              "title": "Improved Sock Toe Shaping",
+              "legacySlot": 1,
+              "legacyComponentId": 9133,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "759564870",
+              "title": "Faux Peasant Heel/Toe",
+              "legacySlot": 2,
+              "legacyComponentId": 9133,
+              "order": 3
+            }
+          ],
+          "title": "Alternate Toe Shaping",
+          "slug": "alternate-toe-shaping",
+          "order": 4,
+          "legacy": {
+            "assignId": 3447,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\nspan.blue {\r\nbackground: #9e2065;\r\nborder-radius: 0.8em;\r\n-moz-border-radius: 0.8em;\r\n-webkit-border-radius: 0.8em;\r\ncolor: #ffffff;\r\ndisplay: inline-block;\r\nfont-weight: bold;\r\nline-height: 1.6em;\r\nmargin-right: 15px;\r\ntext-align: center;\r\nwidth: 1.6em;\r\n}\r\n</style>\r\n\r\n\r\n<h3>Optional: Add a stitch pattern to the heel flap (Swan Sock Gusset heel)</h3>\r\n    Lucy's original design included a suggestion for adding a \"padded\" heel stitch patten in the heel flap. This can provide extra comfort and durability for your sock.<br><span class=\"yellow_highlight\">Consideration needs to be made for the difference in gauge</span> between the heel stitch (or Eye of Partridge stitch) gauge.<br><div class=\"text-center\">\r\n        \r\n            <h3>Heel Stitch</h3><br><img class=\"center-block\" alt=\"\" src=\"/path/images/2740/heel_stitch2.jpg\"><br>\r\n            <img class=\"center-block\" alt=\"\" src=\"/path/images/2740/heel_stitch2_a.jpg\"><br>\r\n        \r\n        \r\n            <h3>Eye of Partridge Stitch</h3><br><img class=\"center-block\" alt=\"\" src=\"/path/images/2740/heel_stitch1.jpg\"><br>\r\n            <img class=\"center-block\" alt=\"\" src=\"/path/images/2740/heel_stitch1_a.jpg\"><br>\r\n        \r\n    </div>\r\n    <hr class=\"style13\">\r\n <h4> <span class=\"blue\">1</span></h4> <span style=\"font-size:1.5em\">Compare the diffference in gauge</span><br>\r\n    Calculate the difference in rows between the 2 stitch patterns and adjust the heel flap so the cast on gusset edge will match the heel flap edge.\r\n    \r\n    <img class=\"center-block\" alt=\"\" src=\"/path/images/2740/compare1.jpg\"><br><div class=\"text-center\">Notice the difference between the Heel stitch and the stockintte gauges</div><br>\r\n<hr class=\"style13\">\r\n <h4> <span class=\"blue\">2</span></h4> <span style=\"font-size:1.5em\">Adjust the heel flap to fit the gusset</span><br>\r\n    The blue lines are seamed. Adjust the heel flap rows to match the length of the gusset cast on edges. In this example, I would add an additional 4 rows to the heel flap.\r\n<img class=\"center-block\" alt=\"\" src=\"/path/images/2740/join.jpg\">\r\n\r\n",
+              "legacyComponentId": 9087,
+              "order": 1
+            }
+          ],
+          "title": "Heel Stitch",
+          "slug": "heel-stitch",
+          "order": 5,
+          "legacy": {
+            "assignId": 5962,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Week 3: Finishing",
+      "slug": "week-3-finishing",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 312,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nFinishing can make or break any project.<br>\r\nPractice makes perfect!\r\n<img src=\"/challenge/images/v2/48/practice_makes_perfect.png\">\r\n\r\n\r\n\r\n\r\n<hr>\r\nFor a beautiful finish on the cuff down style socks, you'll need to graft the stitches to finish the toes.<br>\r\nWorking Kitchener stitch on the machine is a great way to make an invisible seam.  Having the stitches on the machine allows you to more easily control the stitches as you graft.",
+              "legacyComponentId": 4829,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151849234",
+              "title": "Kitchener grafting on the machine: Knit Side",
+              "legacySlot": 1,
+              "legacyComponentId": 4853,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151850342",
+              "title": "Kitchener grafting on the machine: Purl Side",
+              "legacySlot": 2,
+              "legacyComponentId": 4853,
+              "order": 2
+            }
+          ],
+          "title": "Grafting the Toes",
+          "slug": "grafting-the-toes",
+          "order": 1,
+          "legacy": {
+            "assignId": 3435,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857750",
+              "title": "Duplicate Stitch",
+              "legacyComponentId": 4857,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<br><h3>Here's a great way to practice Kitchener Stitch grafting.</h3><br>",
+              "legacyComponentId": 4859,
+              "order": 2
+            },
+            {
+              "type": "exerciseAccordion",
+              "sections": [
+                {
+                  "title": "<b>Create a Practice Swatch</b>",
+                  "bodyHtml": "\r\n\r\n\r\n<ol class=\"instruction-list\" style=\"line-height:200%\">\r\n   <li>Bulky / Mid-gauge machine</li>\r\n    <li>Yarn: Peaches 'n Cream (or any light color, smooth yarn)</li>\r\n    <li>Small quantity of contrasting color yarn of a similar weight (We used the same Peaches 'n Cream)</li>\r\n    <li>Cast on about 6\" in width (26 stitches) with a closed cast on (we used a loose <a href=\"/learn/tutorial/205/chain-cast-on\">crochet/chain cast on</a>)\r\n    <li>Knit 4-6\"</li>\r\n    <li>Break the main yarn</li>\r\n    <li>Knit 1 row with the contrasting color, leaving tails</li>\r\n    <li>With the main yarn, k nit 4-6\"</li>\r\n    <li>Loosely bind off (we used a <a href=\"/learn/tutorial/582/bind-off-basics\"> stitch-thru-stitch bind off</a> </li>\r\n    <li>Work in the tails of the main color along the edges of the knitting</li>\r\n    <li>Leave the contrasting tails</li>\r\n    <li>Using a sewing machine, stitch along the row above the joining row to secure the knitting. </em>This allows you to use the piece over and over without raveling</em></li>\r\n</ol><br>\r\n\r\n\r\n<figure>\r\n<img class=\"zoom\" src=\"/challenge/images/v2/48/practice1.jpg\">\r\n<figcaption align=\"center\"><br>Knit a single practice piece with a contrasting row</figcaption>\r\n</figure><br>\r\n<figure>\r\n<img class=\"zoom\" src=\"/challenge/images/v2/48/practice4.jpg\">\r\n<figcaption align=\"center\"><br>Machine stitch (or hand back-stitch) the rows above the joining rows to secure the stitches</figcaption>\r\n</figure>\r\n\r\n",
+                  "iconSrc": "/challenge/images/v2/48/arrow1.png"
+                },
+                {
+                  "title": "<b>Practice Duplicate Stitch</b>",
+                  "bodyHtml": "\r\nTo get a feel for the grafting, start by working a bit of duplicate stitch on your practice piece.  Follow the stitches in a single row, adjusting the tension and training your eye to look for the correct stitch formation<br>\r\n\r\n\r\n<img class=\"zoom\" src=\"/challenge/images/v2/48/duplicate_stitch.jpg\">\r\n",
+                  "iconSrc": "/challenge/images/v2/48/arrow2.png"
+                },
+                {
+                  "title": "<b>Study the stitch construction</b>",
+                  "bodyHtml": "\r\nCarefully remove half of the contrasting row of stitches.  Observe the shape of each stitch as you remove it<br>You should be able to picture the shape of each stitch as if you were doing the reverse of the duplicate stitch\r\n<img class=\"zoom\" src=\"/challenge/images/v2/48/remove_sts.jpg\">\r\n",
+                  "iconSrc": "/challenge/images/v2/48/arrow3.png"
+                },
+                {
+                  "title": "<b>Graft the edges by hand</b>",
+                  "bodyHtml": "\r\n\r\n\r\nWith a darning needle, pick up the contrasting tail and begin to graft the edges together. Use either the knit side or the purl side (try both).<br>Watch your tension and stitch formation. <br>Take time to make each joining stitch the same size as the stitches above and below it.\r\n\r\n\r\n\r\n<img class=\"zoom\" src=\"/challenge/images/v2/48/graft.jpg\">\r\n\r\n\r\n\r\n<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/339846501' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>",
+                  "iconSrc": "/challenge/images/v2/48/arrow4.png"
+                },
+                {
+                  "title": "<b>Graft on the machine - Purl Side</b>",
+                  "bodyHtml": "Refer to the <a href=\"/challenge/48/Group/3435/item#section312\">videos in the previous section</a>\r\n                <ol class=\"instruction-list\">\r\n                    <li>Remove the grafting row completely.</li>\r\n                    <li> Take the practice piece to the machine.</li>\r\n                    <li>With the knit side facing, hang each stitch of one piece on the machine</li>\r\n                    <li>With the purl side facing, hang each stitch of the other piece on the machine</li>\r\n                    <li>With 2 stitches on each machine needle, practice grafting on the machine with the purl side facing you</li>\r\n                </ol>",
+                  "iconSrc": "/challenge/images/v2/48/arrow5.png"
+                },
+                {
+                  "title": "<b>Graft on the machine - Knit Side</b>",
+                  "bodyHtml": "<ol class=\"instruction-list\">\r\n                    <li>Remove the grafting row completely.</li>\r\n                    <li> Take the practice piece to the machine.</li>\r\n                    <li>With the purl side facing, hang each stitch of one piece on the machine</li>\r\n                    <li>With the knit side facing, hang each stitch of the other piece on the machine</li>\r\n                    <li>With 2 stitches on each machine needle, practice grafting on the machine with the knit side facing you</li>\r\n                </ol>",
+                  "iconSrc": "/challenge/images/v2/48/arrow6.png"
+                }
+              ],
+              "legacy": {
+                "showText": null,
+                "size": null
+              },
+              "legacyComponentId": 4858,
+              "order": 3
+            }
+          ],
+          "title": "Grafting (Kitchener Stitch) Practice",
+          "slug": "grafting-kitchener-stitch-practice",
+          "order": 2,
+          "legacy": {
+            "assignId": 3446,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857516",
+              "title": "Bickford Seams - The Flattest Seams EVER!",
+              "legacySlot": 1,
+              "legacyComponentId": 4860,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857723",
+              "title": "Seaming Ribbing - Plan Ahead!",
+              "legacySlot": 2,
+              "legacyComponentId": 4860,
+              "order": 2
+            }
+          ],
+          "title": "Seams",
+          "slug": "seams",
+          "order": 3,
+          "legacy": {
+            "assignId": 3444,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\nimg.ctr{\r\ndisplay: block;\r\nmargin-left: auto;\r\nmargin-right: auto; }\r\n</style>\r\nFellow sock knitter, Silvia suggests using the seam as a \"design element\".  She adds a small cable along the edge to draw attention away from the fact there is a seam in the sock.<br><span class=\"handwriting\" style=\"font-size:1.5em\"> Do as I say, not as I did <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i></span>\r\n\r\n<br>\r\nIf you like the idea of a cable or another decorative addition along the seam edge, pay attention to the orienation of the sole and foot.<br>If you look closely at my striped sock, the cables on on the foot side and would look a whole lot better on the top of the sock. Even better would be to carry the cable up the leg as well.<br>\t<img class=\"ctr\" src=\"/challenge/images/v2/48/cable_seam2.jpg\">\r\n\r\n<img class=\"ctr\" src=\"/challenge/images/v2/48/cables2.jpg\">\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/48/cables.jpg\">\r\n<img src=\"/challenge/images/v2/48/cables1.jpg\">\r\n",
+              "legacyComponentId": 9086,
+              "order": 1
+            }
+          ],
+          "title": "Embrace the seam",
+          "slug": "embrace-the-seam",
+          "order": 4,
+          "legacy": {
+            "assignId": 5961,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Socks in the Round",
+      "slug": "socks-in-the-round",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 702,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "490449687",
+              "title": "Socks in the Round",
+              "legacySlot": 1,
+              "legacyComponentId": 9134,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858632",
+              "title": "Circular (Tubular) Knitting",
+              "legacySlot": 2,
+              "legacyComponentId": 9134,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "358379693",
+              "title": "Provisional Knitting",
+              "legacySlot": 3,
+              "legacyComponentId": 9134,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "557357787",
+              "title": "Toe Up Seamless Sock",
+              "legacySlot": 4,
+              "legacyComponentId": 9134,
+              "order": 1
+            }
+          ],
+          "title": "Circular Knitting",
+          "slug": "circular-knitting",
+          "order": 1,
+          "legacy": {
+            "assignId": 5993,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Tips and Techniques",
+      "slug": "tips-and-techniques",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 693,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151856919",
+              "title": "Sew-as-you-go",
+              "legacySlot": 1,
+              "legacyComponentId": 9081,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "169798401",
+              "title": "Sew-as-you-go Tricks",
+              "legacySlot": 2,
+              "legacyComponentId": 9081,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "553393641",
+              "title": "Decorative Sew-as-you-go",
+              "legacySlot": 3,
+              "legacyComponentId": 9081,
+              "order": 1
+            }
+          ],
+          "title": "Sew-as-you-go",
+          "slug": "sew-as-you-go",
+          "order": 1,
+          "legacy": {
+            "assignId": 5956,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151860044",
+              "title": "Creating a Cast on Rag",
+              "legacyComponentId": 9082,
+              "order": 1
+            }
+          ],
+          "title": "Cast on Rag",
+          "slug": "cast-on-rag",
+          "order": 2,
+          "legacy": {
+            "assignId": 5957,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "757981579",
+              "title": null,
+              "legacyComponentId": 9083,
+              "order": 1
+            }
+          ],
+          "title": "Adding Stitch Patterns",
+          "slug": "adding-stitch-patterns",
+          "order": 3,
+          "legacy": {
+            "assignId": 5958,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .list li {\r\n        margin-bottom: 10px;\r\n    }\r\n    .turn1 {\r\n        transform: rotate(20deg);\r\n    }\r\n</style>\r\n\r\n\r\n    Depending on the style of sock you choose, socks require sets of very specific skills.<br>Please take time to practice before attempting to knit a sock with your \"real\" yarn.<br>\r\n    <div class=\"handwriting turn1 text-center\" style=\"font-size:1.5em\"><span class=\"yellow_highlight\">Read and Understand<br>your pattern<br>BEFORE you start Knitting</span></div>\r\n\r\n\r\n\r\n\r\n    <div class=\"table-responsive\">\r\n        <table class=\"table table-bordered table-sm\">\r\n            <thead>\r\n                <tr>\r\n                    <th>Style</th>\r\n\r\n                    <th>Skills Needed</th>\r\n\r\n                </tr>\r\n            </thead>\r\n            <tbody>\r\n                <tr>\r\n                    <td><a href=\"/knit/DynamicPattern/2226/basic-sock\">Basic Sock - Toe Up (cuff last)</a>\r\n                        <a href=\"#1\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i></a>\r\n                        <div id=\"1\" class=\"collapse hidden-print\">\r\n                            <img src=\"/path/images/2740/basic_toe_up.jpg\">\r\n                        </div>\r\n                    </td>\r\n                    <td>\r\n                        <ul class=\"list\">\r\n                            <li><a data-GlossaryId=\"265\" class=\"glossaryhelp\">Scrap and Ravel Cast On <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> or Use a <a data-GlossaryId=\"339\" class=\"glossaryhelp\">Cast on Rag <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n\r\n                            <li><a data-GlossaryId=\"250\" class=\"glossaryhelp\">Short Row | Partial Knitting <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> for toes and heels</li>\r\n                            <li><a data-GlossaryId=\"311\" class=\"glossaryhelp\">Scrap Off <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                            <li>Seaming: <a data-GlossaryId=\"314\" class=\"glossaryhelp\">Mattress Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"717\" class=\"glossaryhelp\">Bickford Seam <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"521\" class=\"glossaryhelp\">Kitchener Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                            <li>Bind off in Ribbing\r\n                                <ul>\r\n                                    <li>Tubular Bind off</li>\r\n                                    <li> <a class=\"subvideopopup\" data-videotitle=\"Stretchiest Bind Off Ever!\" data-vimeoid=\"151858299\">\r\n                                            <i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Stretchy (Backstitch) Bind off</a>\r\n                                    </li>\r\n                                    <li> <a class=\"subvideopopup\" data-videotitle=\"Figure 8 Bind Off\" data-vimeoid=\"258782290\">\r\n                                            <i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Figure 8 Bind Off</a>\r\n                                    </li>\r\n                                    <li>\r\n                                        <a class=\"subvideopopup\" data-videotitle=\"Easy Ribber Bind Off\" data-vimeoid=\"151857401\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Easy Ribber Bind off\r\n                                        </a>\r\n                                    </li>\r\n                                </ul>\r\n\r\n                            </li>\r\n\r\n\r\n                            <li>Position Stitch Pattern</li>\r\n                        </ul>\r\n                    </td>\r\n\r\n                </tr>\r\n                <tr>\r\n                    <td><a href=\"/knit/DynamicPattern/2226/basic-sock\">Basic Sock Cuff to Toe</a>\r\n                        <a href=\"#2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i></a>\r\n                        <div id=\"2\" class=\"collapse hidden-print\">\r\n                            <img src=\"/path/images/2740/basic.jpg\">\r\n                        </div>\r\n\r\n                    </td>\r\n                    <td>\r\n                        <ul class=\"list\">\r\n\r\n                            <li><a data-GlossaryId=\"250\" class=\"glossaryhelp\">Short Row | Partial Knitting <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> for toes and heels</li>\r\n                            <li><a data-GlossaryId=\"311\" class=\"glossaryhelp\">Scrap Off <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                            <li>Seaming: <a data-GlossaryId=\"314\" class=\"glossaryhelp\">Mattress Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"717\" class=\"glossaryhelp\">Bickford Seam <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"521\" class=\"glossaryhelp\">Kitchener Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                            <li>Ribbing, hand or machine\r\n\r\n                            </li>\r\n\r\n\r\n                            <li>Position Stitch Pattern</li>\r\n                        </ul>\r\n                    </td>\r\n\r\n\r\n                </tr>\r\n                <tr>\r\n                    <td><a href=\"/knit/DynamicPattern/2228/fancy-sock\">Fancy Sock - Heel Up (cuff last)</a>\r\n\r\n                        <a href=\"#3\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i></a>\r\n                        <div id=\"3\" class=\"collapse hidden-print\">\r\n                            <img src=\"/path/images/2740/fancy_cuff_to_heel.jpg\">\r\n                        </div>\r\n                    </td>\r\n                    <td>\r\n                        <ul class=\"list\">\r\n\r\n                            <li><a data-GlossaryId=\"250\" class=\"glossaryhelp\">Short Row | Partial Knitting <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> for toes and heels</li>\r\n                            <li><a data-GlossaryId=\"311\" class=\"glossaryhelp\">Scrap Off <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                            <li>Seaming: <a data-GlossaryId=\"314\" class=\"glossaryhelp\">Mattress Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"717\" class=\"glossaryhelp\">Bickford Seam <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"521\" class=\"glossaryhelp\">Kitchener Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                            <li>Ribbing, hand or machine\r\n\r\n                            </li>\r\n\r\n\r\n                            <li>Position Stitch Pattern</li>\r\n                        </ul>\r\n                    </td>\r\n\r\n\r\n                </tr>\r\n                <tr>\r\n                    <td><a href=\"/knit/DynamicPattern/2228/fancy-sock\">Fancy Sock - Cuff to heel</a>\r\n\r\n                        <a href=\"#4\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i></a>\r\n                        <div id=\"4\" class=\"collapse hidden-print\">\r\n                            <img src=\"/path/images/2740/fancy_heel_up.jpg\">\r\n                        </div>\r\n\r\n                    </td>\r\n                    <td>\r\n                        <ul class=\"list\">\r\n                            <li><a data-GlossaryId=\"250\" class=\"glossaryhelp\">Short Row | Partial Knitting <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> for toes and heels</li>\r\n                            <li><a data-GlossaryId=\"311\" class=\"glossaryhelp\">Scrap Off <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                            <li>Seaming: <a data-GlossaryId=\"314\" class=\"glossaryhelp\">Mattress Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"717\" class=\"glossaryhelp\">Bickford Seam <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"521\" class=\"glossaryhelp\">Kitchener Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                            <li>Bind off in Ribbing\r\n                                <ul>\r\n                                    <li>Tubular Bind off</li>\r\n                                    <li> <a class=\"subvideopopup\" data-videotitle=\"Stretchiest Bind Off Ever!\" data-vimeoid=\"151858299\">\r\n                                            <i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Stretchy (Backstitch) Bind off</a>\r\n                                    </li>\r\n                                    <li> <a class=\"subvideopopup\" data-videotitle=\"Figure 8 Bind Off\" data-vimeoid=\"258782290\">\r\n                                            <i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Figure 8 Bind Off</a>\r\n                                    </li>\r\n                                    <li>\r\n                                        <a class=\"subvideopopup\" data-videotitle=\"Easy Ribber Bind Off\" data-vimeoid=\"151857401\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Easy Ribber Bind off\r\n                                        </a>\r\n                                    </li>\r\n                                </ul>\r\n                            </li>\r\n                            <li>Position Stitch Pattern</li>\r\n\r\n                        </ul>\r\n                    </td>\r\n\r\n\r\n                </tr>\r\n                <tr>\r\n                    <td><a href=\"/knit/DynamicPattern/2235/swan-sock\">Swan Sock - Gusseted Heel</a>\r\n\r\n                        <a href=\"#5\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i></a>\r\n                        <div id=\"5\" class=\"collapse hidden-print\">\r\n                            <img src=\"/path/images/2740/swan_sock1.jpg\">\r\n\r\n                        </div>\r\n                    </td>\r\n                    <td>\r\n                        <ul class=\"list\">\r\n                            <li><a data-GlossaryId=\"265\" class=\"glossaryhelp\">Scrap and Ravel Cast On <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> or Use a <a data-GlossaryId=\"339\" class=\"glossaryhelp\">Cast on Rag <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n\r\n                            <li><a data-GlossaryId=\"250\" class=\"glossaryhelp\">Short Row | Partial Knitting <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> for toes and heels</li>\r\n                            <li><a data-GlossaryId=\"311\" class=\"glossaryhelp\">Scrap Off <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                            <li>Seaming: <a data-GlossaryId=\"314\" class=\"glossaryhelp\">Mattress Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"717\" class=\"glossaryhelp\">Bickford Seam <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"521\" class=\"glossaryhelp\">Kitchener Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                            <li>Position Stitch Pattern</li>\r\n\r\n                        </ul>\r\n                    </td>\r\n                </tr>\r\n            </tbody>\r\n        </table>\r\n    </div>\r\n\r\n",
+              "legacyComponentId": 9085,
+              "order": 1
+            }
+          ],
+          "title": "Skills Needed",
+          "slug": "skills-needed",
+          "order": 4,
+          "legacy": {
+            "assignId": 5960,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Bonus: Christmas Stockings",
+      "slug": "bonus-christmas-stockings",
+      "displayOrder": 8,
+      "legacy": {
+        "itemId": 692,
+        "lessonOrder": 8
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern_option",
+              "notes": [
+                "Unmapped legacy component type: Pattern_option"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "5955",
+                "GARMENTID": "1010",
+                "LABLE": "<i class='fa fa-cubes' aria-hidden='true'></i>",
+                "TOPTEXT": "Jazz up a sock with Christmas motifs for an extra-special holiday decoration. <br><br>\r\nThe Christmas Stocking pattern moves the sock seam to the center back, so it can be hung facing either way with no visible seam.",
+                "TYPEOF": "Pattern_option"
+              },
+              "legacyComponentId": 9080,
+              "order": 1
+            }
+          ],
+          "title": "Christmas Stocking Pattern",
+          "slug": "christmas-stocking-pattern",
+          "order": 1,
+          "legacy": {
+            "assignId": 5955,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 24,
+    "videos": [
+      {
+        "vimeoId": "151857395",
+        "title": "Anatomy of a Sock",
+        "lessonSlug": "week-1-decisions-decisions-decisions",
+        "blockSlug": "anatomy-of-a-flat-bed-sock"
+      },
+      {
+        "vimeoId": "757378302",
+        "title": null,
+        "lessonSlug": "week-1-decisions-decisions-decisions",
+        "blockSlug": "build-your-custom-dynamic-pattern"
+      },
+      {
+        "vimeoId": "755126615",
+        "title": "Toe Up Basic Socks",
+        "lessonSlug": "the-patterns",
+        "blockSlug": "start-to-finish"
+      },
+      {
+        "vimeoId": "288739130",
+        "title": "Fancy Sock Start-to-Finish",
+        "lessonSlug": "the-patterns",
+        "blockSlug": "start-to-finish"
+      },
+      {
+        "vimeoId": "756763233",
+        "title": "Swan Sock Start-to-Finish",
+        "lessonSlug": "the-patterns",
+        "blockSlug": "start-to-finish"
+      },
+      {
+        "vimeoId": "286256671",
+        "title": "Shaping Toes and Heels - Automatic Wrap",
+        "lessonSlug": "week-2-toes-and-heels",
+        "blockSlug": "turn-the-corner-for-heels-and-tootsies"
+      },
+      {
+        "vimeoId": "342579794",
+        "title": "Toes and Heels - Manual Wrap",
+        "lessonSlug": "week-2-toes-and-heels",
+        "blockSlug": "turn-the-corner-for-heels-and-tootsies"
+      },
+      {
+        "vimeoId": "151857333",
+        "title": "Short Rows - Automatic Wrap verses Manual Wrap",
+        "lessonSlug": "week-2-toes-and-heels",
+        "blockSlug": "turn-the-corner-for-heels-and-tootsies"
+      },
+      {
+        "vimeoId": "284263164",
+        "title": "Improved Sock Toe Shaping",
+        "lessonSlug": "week-2-toes-and-heels",
+        "blockSlug": "alternate-toe-shaping"
+      },
+      {
+        "vimeoId": "759564870",
+        "title": "Faux Peasant Heel/Toe",
+        "lessonSlug": "week-2-toes-and-heels",
+        "blockSlug": "alternate-toe-shaping"
+      },
+      {
+        "vimeoId": "151849234",
+        "title": "Kitchener grafting on the machine: Knit Side",
+        "lessonSlug": "week-3-finishing",
+        "blockSlug": "grafting-the-toes"
+      },
+      {
+        "vimeoId": "151850342",
+        "title": "Kitchener grafting on the machine: Purl Side",
+        "lessonSlug": "week-3-finishing",
+        "blockSlug": "grafting-the-toes"
+      },
+      {
+        "vimeoId": "151857750",
+        "title": "Duplicate Stitch",
+        "lessonSlug": "week-3-finishing",
+        "blockSlug": "grafting-kitchener-stitch-practice"
+      },
+      {
+        "vimeoId": "151857516",
+        "title": "Bickford Seams - The Flattest Seams EVER!",
+        "lessonSlug": "week-3-finishing",
+        "blockSlug": "seams"
+      },
+      {
+        "vimeoId": "151857723",
+        "title": "Seaming Ribbing - Plan Ahead!",
+        "lessonSlug": "week-3-finishing",
+        "blockSlug": "seams"
+      },
+      {
+        "vimeoId": "490449687",
+        "title": "Socks in the Round",
+        "lessonSlug": "socks-in-the-round",
+        "blockSlug": "circular-knitting"
+      },
+      {
+        "vimeoId": "151858632",
+        "title": "Circular (Tubular) Knitting",
+        "lessonSlug": "socks-in-the-round",
+        "blockSlug": "circular-knitting"
+      },
+      {
+        "vimeoId": "358379693",
+        "title": "Provisional Knitting",
+        "lessonSlug": "socks-in-the-round",
+        "blockSlug": "circular-knitting"
+      },
+      {
+        "vimeoId": "557357787",
+        "title": "Toe Up Seamless Sock",
+        "lessonSlug": "socks-in-the-round",
+        "blockSlug": "circular-knitting"
+      },
+      {
+        "vimeoId": "151856919",
+        "title": "Sew-as-you-go",
+        "lessonSlug": "tips-and-techniques",
+        "blockSlug": "sew-as-you-go"
+      },
+      {
+        "vimeoId": "169798401",
+        "title": "Sew-as-you-go Tricks",
+        "lessonSlug": "tips-and-techniques",
+        "blockSlug": "sew-as-you-go"
+      },
+      {
+        "vimeoId": "553393641",
+        "title": "Decorative Sew-as-you-go",
+        "lessonSlug": "tips-and-techniques",
+        "blockSlug": "sew-as-you-go"
+      },
+      {
+        "vimeoId": "151860044",
+        "title": "Creating a Cast on Rag",
+        "lessonSlug": "tips-and-techniques",
+        "blockSlug": "cast-on-rag"
+      },
+      {
+        "vimeoId": "757981579",
+        "title": null,
+        "lessonSlug": "tips-and-techniques",
+        "blockSlug": "adding-stitch-patterns"
+      }
+    ],
+    "downloadCount": 1,
+    "downloads": [
+      {
+        "filename": "/downloads/short_row_worksheet.pdf",
+        "label": "Print the Practice Worksheet",
+        "lessonSlug": "week-2-toes-and-heels",
+        "blockSlug": "practice-automatic-wrap"
+      }
+    ]
+  }
+}

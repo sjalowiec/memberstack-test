@@ -1,0 +1,1124 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 110,
+    "title": "Slip Stitch Challenge",
+    "slug": "slip-stitch-challenge",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_110_slip_stitch_challenge.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:10+00:00"
+    },
+    "thumbnail": "/images/courses/slip_challenge.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Getting Started",
+      "slug": "getting-started",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 709,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<span class=\"handwriting\" style=\"font-size:1.5em\"><i class=\"fa fa-quote-left fa-3x fa-pull-left\"></i> Please, make the time to work through all the exercises in this course. </span><br><em>You may have played with slip in the past following your manual, but understanding what slip stitch does on your machine will go a long way towards your putting to use this amazing technique for your knitting</em><br>\r\n\r\n<h3>The pieces of the patterning puzzle:</h3>\r\n\r\n\r\n<div class=\"text-center\"><span style=\"font-size:1.5em\"><b>Manual Machines</b></span><Br>\r\n<img src=\"/challenge/images/v2/110/puzzle_pieces_manual.png\"></div>\r\n<div class=\"text-center\"><span style=\"font-size:1.5em\"><b>Automatic Patterning Machines</b></span><br>\r\n<img src=\"/challenge/images/v2/110/puzzle_pieces.png\"></div>\r\n",
+              "legacyComponentId": 9246,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "785779636",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 9246,
+              "order": 2
+            }
+          ],
+          "title": "Introduction",
+          "slug": "introduction",
+          "order": 1,
+          "legacy": {
+            "assignId": 6053,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div>\r\n    \r\n        <b>SLIP</b> is a stitch pattern that provides texture to both sides of the knitting. Commonly slip is used \"wrong-side facing\", but often both sides are beautiful. Slip can also be combined with stripes creating amazing fabric.<br>Depending on your machine, there may be a single setting or left/right settings available<br>\r\n        <center>\r\n            <figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/slip.jpg\">\r\n                <figcaption align=\"center\"><em><font color=\"#9e2065\">Slipped strands are passed UNDER the needles</font></em></figcaption>\r\n            </figure>\r\n        </center>\r\n    \r\n    \r\n        \r\n            \r\n            <div class=\"table-responsive\">\r\n                <table class=\"table\">\r\n                    <thead>\r\n                        <tr>\r\n                            <th class=\"text-center\" colspan=\"2\"><span style=\"color:#9E2065\" ;>Cam (Carriage) Setting</span></th>\r\n                        </tr>\r\n                    </thead>\r\n                    <tbody>\r\n                        <tr>\r\n                            <td>\r\n                                <a href=\"#brother2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i> \r\n                                 <b>Brother/Knit King</b>\r\n                                </a>\r\n                                <div id=\"brother2\" class=\"collapse hidden-print\">\r\n                                    <img class=\"zoom\" src=\"/challenge/images/v2/72/slip1_brother.jpg\">\r\n                                </div>\r\n                               </td>\r\n                            <td>PART buttons<i class=\"fa fa-arrow-left\" aria-hidden=\"true\"></i><i class=\"fa fa-arrow-right\" aria-hidden=\"true\"></i> IN</td>\r\n                        </tr>\r\n                        <tr>\r\n                            <td>\r\n                                <a href=\"#singer2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i> \r\n                                <b>Singer/Silver</b>\r\n                                </a>\r\n                                <div id=\"singer2\" class=\"collapse hidden-print\">\r\n                                    <img class=\"zoom\" src=\"/challenge/images/v2/72/Plain1_silver.jpg\">\r\n                                </div>\r\n                                </td>\r\n                            <td>Cam lever to SLIP</td>\r\n                        </tr>\r\n                        <tr>\r\n                            <td>\r\n                                <a href=\"#toyota2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i>\r\n                                <b>Toyota</b>\r\n                                </a>\r\n                                <div id=\"toyota2\" class=\"collapse hidden-print\">\r\n                                    <img class=\"zoom\" src=\"/challenge/images/v2/72/Plain1_toyota.jpg\">\r\n                                </div>\r\n                                </td>\r\n                            <td>Pattern Dial on EMPTY</td>\r\n                        </tr>\r\n                    </tbody>\r\n                </table>\r\n            </div>\r\n        \r\n    \r\n",
+              "legacyComponentId": 9248,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "\r\n    \r\n        The slipped \"floats\" can be decorative when the purl side is used as the public side of the knitting.<br>The same process can be used to create Multi-color slip. Needles are missed (slipped) and colors are changed creating colorful, graphic designs.\r\n\r\n\r\n\r\n        <img class=\"img-thumbnail\" src=\"/images/glossary/kin_820_MultiSlip1.jpg\"><br><a href=\"/knit/swatch/63/235/kin-multi-slip\">KIN_820</a>\r\n\r\n\r\n        \r\n        <img class=\"img-thumbnail\" src=\"/swatches/7/KIn_4405_1.jpg\"><br>\r\n            <a href=\"/knit/swatch/1273/1792/kin\">KIN_4405 </a>\r\n        \r\n    \r\n</div>\r\n",
+              "legacyComponentId": 9171,
+              "order": 2
+            }
+          ],
+          "title": "What is Slip Stitch?",
+          "slug": "what-is-slip-stitch",
+          "order": 2,
+          "legacy": {
+            "assignId": 6015,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\nTo pass the carriage across the bed without knitting or dropping stitches depends on the correct carriage settings and the needle positions.<br>Some machines have buttons to push in, others have knobs or levers.\r\n<br>Slip means to knit only the stitches in D-E-F (middle and hold positions) and NOT knit the stitches in B (working) position.<br><a href=\"/ManualAndDocuments/\"> <i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Download a free manual for your machine</a><br><span class=\"handwriting\" style=\"font-size:2em\">How do you set your machine to slip?</span>\r\n<hr class=\"style13\">\r\n",
+              "legacyComponentId": 9241,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HTML_note",
+              "notes": [
+                "Unmapped legacy component type: HTML_note"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6020",
+                "CHALLENGE_COMPONENTID": "9242",
+                "NOTEPAPER": "<ol>\r\n    <li><b>What is the name of the slip mechanism on your machine?</b></li>\r\n    <li><b>Where is it located?</b>\r\n        <ul class=\"lightlist\" style=\"list-style:none;\">\r\n            <li>In the front of the carriage</li>\r\n            <li>On the sides of the carriage</li>\r\n            <li>Under the handle in the middle of the carriage</li>\r\n        </ul>\r\n    </li>\r\n    <li><b>Do you have 1 or 2 controls? Button(s), knob(s), lever(s)</b>\r\n        <ul class=\"lightlist\" style=\"list-style:none;\">\r\n            <li>One control (both left and right)\r\n            </li>\r\n            <li>Two controls (left or right individually)</li>\r\n        </ul>\r\n    </li>\r\n    <li><b>How do you CANCEL slip?</b>\r\n        <ul class=\"lightlist\" style=\"list-style:none;\">\r\n            <li>By returning the lever to another position\r\n            </li>\r\n            <li>By pushing in some other button(s)</li>\r\n            <li>By pushing/pulling the same button(s) into another position</li>\r\n        </ul>\r\n    </li>\r\n\r\n</ol>\r\n",
+                "NOTEPLACED": "pull-left"
+              },
+              "legacyComponentId": 9242,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<hr class=\"style13\">\r\n\r\n\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t \tPrint these cards and record the settings on your machine for future reference.<br>Use colored pencils, highlighters or markers and make notes. \r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t<br><img src=\"/tools/technique_card_gif1.gif\" class=\"img-thumbnail\" alt=\"Sample Technique Reference Card\"><br>\r\n\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\r\n\r\n\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t</div>\r\n\r\n",
+              "legacyComponentId": 9174,
+              "order": 3
+            }
+          ],
+          "title": "Quick! Set YOUR machine to slip",
+          "slug": "quick-set-your-machine-to-slip",
+          "order": 3,
+          "legacy": {
+            "assignId": 6020,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    ul.no-bullets {\r\n        list-style-type: none;\r\n        /* Remove bullets */\r\n        padding: 0;\r\n        /* Remove padding */\r\n        margin: 0;\r\n        /* Remove margins */\r\n    }\r\n\r\n    .circle {\r\n        width: 25px;\r\n        height: 25px;\r\n        border-radius: 50%;\r\n        box-sizing: border-box;\r\n        text-align: center;\r\n        display: inline-block;\r\n        line-height: 25px;\r\n        background-color: #9E2065;\r\n    }\r\n\r\n    .circle a {\r\n        text-decoration: none;\r\n        color: #fff;\r\n        font-size: 16px;\r\n    }\r\n\r\n</style>\r\n<h3>What can you do with the slip setting on your machine?</h3>\r\n\r\n\r\n    \r\n        <ul class=\"no-bullets\">\r\n\r\n            <li><i class=\"fa fa-check fa-3x\" style=\"color:#9E2065\" aria-hidden=\"true\"></i>\r\n                <span class=\"imagepopup\" data-imagetitle=\"KIN4308\" data-image=\"/swatches/7/KIn_4308.jpg\"><i class=\"fa fa-picture-o\" aria-hidden=\"true\"></i> <b>Add Texture</b></span><br>\r\n                <span style=\"margin-left: 2.5em;\">\r\n                    Slipping stitches carries strands across the PURL SIDE of the knitting, creating interesting texture.<br></span>\r\n\r\n            </li>\r\n            <li>\r\n<i class=\"fa fa-check fa-3x\" style=\"color:#9E2065\" aria-hidden=\"true\"></i>\r\n                <span class=\"imagepopup\" data-imagetitle=\"KIN806\" data-image=\"/challenge/images/v2/110/806_plus.jpg\"><i class=\"fa fa-picture-o\" aria-hidden=\"true\"></i> <b>\r\n                        \r\n                        Add Color\r\n                    </b></span><br>\r\n                <span style=\"margin-left: 2.5em;\">Slipping stitches extends stitches of opposite colors across subsequent rows.</span><br></li>\r\n            <li><i class=\"fa fa-check fa-3x\" style=\"color:#9E2065\" aria-hidden=\"true\"></i><b> Construction:</b>\r\n                <ul>\r\n                    <li><a data-GlossaryId=\"388\" class=\"glossaryhelp\">Marker Rows <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                    <li><a data-GlossaryId=\"292\" class=\"glossaryhelp\">I-Cord <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                    <li><span class=\"imagepopup\" data-imagetitle=\"Single Row Stripes\" data-image=\"/swatches/9/kin_st703_12.jpg\"><i class=\"fa fa-picture-o\" aria-hidden=\"true\"></i> Textured Stripes with Slip</li>\r\n                    <li><span class=\"imagepopup\" data-imagetitle=\"Single Row Stripes\" data-image=\"/challenge/images/v2/110/single_row_stripe1.jpg\"><i class=\"fa fa-picture-o\" aria-hidden=\"true\"></i> Single Row Stripes of color</span></li>\r\n                    <li><a data-GlossaryId=\"723\" class=\"glossaryhelp\">Pintuck <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> (ribber)</li>\r\n                    <li><a data-GlossaryId=\"355\" class=\"glossaryhelp\">Free Pass <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n                    <li>Slip Cast On</li>\r\n                </ul>\r\n\r\n\r\n            </li>\r\n        </ul>\r\n    \r\n    <img class=\"img-thumbnail\" src=\"/challenge/images/v2/110/slip_demo_gif.gif\">\r\n\r\n",
+              "legacyComponentId": 9172,
+              "order": 1
+            }
+          ],
+          "title": "What can you do with Slip Stitch on Your Machine?",
+          "slug": "what-can-you-do-with-slip-stitch-on-your-machine",
+          "order": 4,
+          "legacy": {
+            "assignId": 6019,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Because the strands are carried across the purl side of the work, the obvious choice for the \"right side\" (public side) of the knitting is the purl side. But this versatile stitch has more uses!\r\n\r\n<img src=\"/challenge/images/v2/34/course_1.png\">\r\n\r\n<figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/slip_sample_purple1.jpg\">\r\n\r\n<figcaption align=\"center\"><br>Purl side facing with slipped floats</figcaption>\r\n</figure><br>\r\n\r\n<hr>\r\n\r\n<img src=\"/challenge/images/v2/34/course_2.png\">\r\n\r\n<figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/slip_sample_purple2.jpg\">\r\n\r\n<figcaption align=\"center\"><br>Same sample as above: Knit side facing with \"embossed\" texture.</figcaption>\r\n</figure><br>\r\n\r\n<hr>\r\n\r\n<img src=\"/challenge/images/v2/course_3.png\">\r\n\r\n<figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/34/slip_sample_color.jpg\">\r\n\r\n<figcaption align=\"center\"><br>Colorwork with fewer floats!.</figcaption>\r\n</figure>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 9178,
+              "order": 1
+            }
+          ],
+          "title": "Right Side? Wrong Side?",
+          "slug": "right-side-wrong-side",
+          "order": 5,
+          "legacy": {
+            "assignId": 6024,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .circle {\r\n        width: 25px;\r\n        height: 25px;\r\n        border-radius: 50%;\r\n        box-sizing: border-box;\r\n        text-align: center;\r\n        display: inline-block;\r\n        line-height: 25px;\r\n        background-color: #9E2065;\r\n    }\r\n\r\n    .circle a {\r\n        text-decoration: none;\r\n        color: #fff;\r\n        font-size: 16px;\r\n    }\r\n\r\n    hr.style13 {\r\n        height: 10px;\r\n        border: 0;\r\n        box-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n    }\r\n\r\n    .hint {\r\n        height: 200px;\r\n background-color: white;\r\n        /* fixed height in pixels */\r\n    }\r\n\r\n    .container-border1 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        background-color: white;\r\n        max-width: 500px;\r\n        margin: auto;\r\n        background-color: #ebecf0;\r\n    }\r\n\r\n    .container-border2 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        background-color: white;\r\n\r\n        margin: auto;\r\n        background-color: #ebecf0;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n    \r\n        <div class=\"container-border1 text-center\">\r\n            <h3>Before you start</h3>\r\n            <i class=\"fa fa-check\" aria-hidden=\"true\"></i> How do you set your machine to slip?<br>\r\n            <i class=\"fa fa-check\" aria-hidden=\"true\"></i> What are your \"plain knitting\" settings?\r\n\r\n        </div>\r\n    \r\n    <span class=\"handwriting\" style=\"font-size:2em\"> This 10 minute exercise will go a long way towards UNDERSTANDING slip on YOUR machine</span>\r\n\r\n\r\n<Br>\r\n<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> <span style=\"font-size:1.5em\"><b>TIP:</b><em> Remove the sinker plate from your carriage and observe the action of the needles</em></span><br>Work Exercises 1-4 with NO YARN\r\n\r\n\r\n\r\n\r\n\r\n<div class=\"container-border2\">\r\n\r\n    \r\n        <div class=\"circle\"><a href=\"#\">1</a></div><b> Exercise #1 - plain knitting</b><br><ol>\r\n            <li><u>No yarn in the carriage</u></li>\r\n            <li>Pull 20 needles to \"D\" Position</li>\r\n            <li>Carriage Set for Plain Knitting</li>\r\n            <li>Push carriage from right to left. <i class=\"fa fa-long-arrow-left\" aria-hidden=\"true\"></i> <b><em>What Happens?</em></b></li>\r\n            <li>Push carriage from left to right. <i class=\"fa fa-long-arrow-right\" aria-hidden=\"true\"></i> <b><em>What Happens?</em></b></li>\r\n        </ol>\r\n    \r\n    <div class=\"hint\" style=\"border: 1px solid #000; width: 500px;\">\r\n        <br><em>Watch (feel) as the needles are engaged and return to working position</em>\r\n    </div>\r\n\r\n</div>\r\n\r\n\r\n<br>\r\n\r\n\r\n\r\n<div class=\"container-border2\">\r\n    \r\n        <div class=\"circle\"><a href=\"#\">2</a></div><b> Exercise #2 - Free Pass</b><br><ol>\r\n            <li><u>No yarn in the carriage</u></li>\r\n            <li>Pull 20 needles to \"B\" (working) Position</li>\r\n            <li>Engage slip levers/buttons </li>\r\n            <li>Push carriage from right to left. <i class=\"fa fa-long-arrow-left\" aria-hidden=\"true\"></i> <b><em>What Happens?</em></b></li>\r\n            <li>Push carriage from left to right. <i class=\"fa fa-long-arrow-right\" aria-hidden=\"true\"></i> <b><em>What Happens?</em></b></li>\r\n        </ol>\r\n    \r\n    <div class=\"hint\" style=\"border: 1px solid #000; width: 500px;\">\r\n        <br><em>Needles remain in working position.<br>If your machine has right and left slip buttons/ levers, repeat this exercise engaging them separately.<br>NOTE: Singer SK840 will not \"free pass\" using the slip setting. \"Pop\" the carriage with the release lever to free pass\r\n            <span class=\"imagepopup\" data-imagetitle=\"SK840 Pop the carriage for free pass\" data-image=\"/images/blog/1124/free_pass_gif.gif\"><i class=\"fa fa-play\" aria-hidden=\"true\"></i></span>\r\n\r\n        </em>\r\n    </div>\r\n</div>\r\n\r\n<br>\r\n\r\n\r\n\r\n\r\n<div class=\"container-border2\">\r\n    \r\n        <div class=\"circle\"><a href=\"#\">3</a></div><b> Exercise #3 - Slip Individual needles - The basis of slip stitch</b><br><ol>\r\n            <li><u>No yarn in the carriage</u></li>\r\n            <li>Position 20 needles in \"B\" Position</li>\r\n            <li>Using the 1x1 needle pusher, pull every other needle to \"D\" position</li>\r\n            <li>Set the BOTH Slip Levers / Buttons</li>\r\n            <li>Push carriage from right to left. <i class=\"fa fa-long-arrow-left\" aria-hidden=\"true\"></i> <b><em>What Happens to the needles in D position?</em></b></li>\r\n            <li>Push carriage from left to right. <i class=\"fa fa-long-arrow-right\" aria-hidden=\"true\"></i><b><em>Does anything change?</em></b></li>\r\n        </ol>\r\n    \r\n    <div class=\"hint\" style=\"border: 1px solid #000; width: 500px;\">\r\n        <br><em>All Needles are returned to working position.<br>If your machine has right and left slip buttons/ levers, repeat this exercise engaging them separately.</em>\r\n    </div>\r\n</div>\r\n\r\n\r\n<br>\r\n\r\n<div class=\"container-border2\">\r\n    \r\n        <div class=\"circle\"><a href=\"#\">4</a></div><b> Exercise #4 - Slip groups of needles - The basis of Slip Stitch patterns</b><br><ol>\r\n            <li><u>No yarn in the carriage</u></li>\r\n            <li>Position 20 needles in \"B\" Position</li>\r\n            <li>Pull sets of 3 needles to \"D\" position</li>\r\n            <li>Disengage the LEFT Slip Lever/Button </li>\r\n            <li>Engage the RIGHT Slip Lever/Button </li>\r\n            <li>Push carriage from right to left. <i class=\"fa fa-long-arrow-left\" aria-hidden=\"true\"></i> <b><em>What Happens to the needles in D position?</em></b></li>\r\n            <li>Pull sets of 3 needles to \"D\" position</li>\r\n            <li>Push carriage from left to right. <i class=\"fa fa-long-arrow-right\" aria-hidden=\"true\"></i><b><em>What happens?</em></b></li>\r\n        </ol>\r\n    \r\n    <div class=\"hint\" style=\"border: 1px solid #000; width: 500px;\">\r\n        <br><em>All Needles are returned to working position.<br>If your machine has right and left slip buttons/ levers, repeat this exercise engaging them separately.</em>\r\n    </div>\r\n</div>\r\n\r\n\r\n\r\n\r\n    <img src=\"/challenge/images/v2/34/dont_worry_yarn_stitches.gif\">\r\n\r\n",
+              "legacyComponentId": 9185,
+              "order": 3
+            }
+          ],
+          "title": "CHALLENGE: Understand YOUR machine",
+          "slug": "challenge-understand-your-machine",
+          "order": 6,
+          "legacy": {
+            "assignId": 6028,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .circle {\r\n        width: 25px;\r\n        height: 25px;\r\n        border-radius: 50%;\r\n        box-sizing: border-box;\r\n        text-align: center;\r\n        display: inline-block;\r\n        line-height: 25px;\r\n        background-color: #9E2065;\r\n    }\r\n\r\n    .circle a {\r\n        text-decoration: none;\r\n        color: #fff;\r\n        font-size: 16px;\r\n    }\r\n\r\n    hr.style13 {\r\n        height: 10px;\r\n        border: 0;\r\n        box-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n    }\r\n\r\n    .hint {\r\n        height: 200px;\r\n        /* fixed height in pixels */\r\n    }\r\n\r\n    .container-border1 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px 50px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        background-color: white;\r\n        max-width: 500px;\r\n        margin: auto;\r\n        background-color: #ebecf0;\r\n    }\r\n\r\n    .container-border2 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        background-color: white;\r\n\r\n        margin: auto;\r\n        background-color: #ebecf0;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n    \r\n        <div class=\"container-border1 text-center\">\r\n            <h3>Before you start</h3>\r\n            Did you try these exercises WITHOUT Yarn?<br>It is important that you can visualize (and feel) how the slip settings control the needles.\r\n\r\n        </div>\r\n    \r\n    <span class=\"handwriting\" style=\"font-size:2em\"> This 30 minute exercise will go a long way towards UNDERSTANDING slip on YOUR machine</span>\r\n\r\n\r\n<Br>\r\n<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> <span style=\"font-size:1.5em\"><b>TIP:</b><em> Repeat the previous exercises WITH YARN</em></span><br><div class=\"container-border2\">\r\n    \r\n        <div class=\"circle\"><a href=\"#\">5</a></div><b> Exercise #5 - plain knitting</b><br><ol>\r\n            <li>Cast on 20 stitches and knit a few rows (add weights if needed)</li>\r\n            <li>Pull 20 needles to \"D\" Position</li>\r\n            <li>Carriage Set for Plain Knitting</li>\r\n            <li>Push carriage from right to left. <i class=\"fa fa-long-arrow-left\" aria-hidden=\"true\"></i> <b><em>What Happens?</em></b></li>\r\n            <li>Pull 20 needles to \"D\" Position</li>\r\n            <li>Push carriage from left to right. <i class=\"fa fa-long-arrow-right\" aria-hidden=\"true\"></i> <b><em>What Happens?</em></b></li>\r\n        </ol>\r\n    \r\n    \r\n        \r\n            <em>All stitches will knit and the needles will be returned to working position. The concept of the \"plain knitting setting\" is important to remember. Create a \"plain knitting\" reference card and keep it near your machine.</em>\r\n        \r\n    \r\n</div>\r\n\r\n<br>\r\n\r\n<div class=\"container-border2\">\r\n    \r\n        <div class=\"circle\"><a href=\"#\">6</a></div><b> Exercise #6 - Free Pass</b><br><ol>\r\n            <li>With the knitting on the machine and stitches in the needles</li>\r\n            <li>20 stitches in work and in \"B\" (working) Position</li>\r\n            <li>Engage slip levers/buttons </li>\r\n            <li>Push carriage from right to left. <i class=\"fa fa-long-arrow-left\" aria-hidden=\"true\"></i> <b><em>What Happens?</em></b></li>\r\n            <li>Push carriage from left to right. <i class=\"fa fa-long-arrow-right\" aria-hidden=\"true\"></i> <b><em>What Happens?</em></b></li>\r\n        </ol>\r\n    \r\n\r\n    \r\n        <em>Needles remain in working position, but the stitches WILL NOT knit<br>NOTE: Singer SK840 will not \"free pass\" using the slip setting. \"Pop\" the carriage with the release lever to free pass\r\n                <span class=\"imagepopup\" data-imagetitle=\"SK840 Pop the carriage for free pass\" data-image=\"/images/blog/1124/free_pass_gif.gif\"><i class=\"fa fa-play\" aria-hidden=\"true\"></i></span>\r\n\r\n            </em>\r\n            <img src=\"/images/glossary/free_pass_2020_gif.gif\">\r\n        \r\n    \r\n</div>\r\n\r\n<Br>\r\n\r\n<div class=\"container-border2\">\r\n    \r\n        <div class=\"circle\"><a href=\"#\">7</a></div><b> Exercise #7 - Slip Individual needles - The basis of slip stitch</b><br><ol>\r\n\r\n            <li>Position 20 needles in \"B\" Position</li>\r\n            <li>Using the 1x1 needle pusher, pull every other needle to \"D\" position</li>\r\n            <li>Set the BOTH Slip Levers / Buttons</li>\r\n            <li>Push carriage from right to left. <i class=\"fa fa-long-arrow-left\" aria-hidden=\"true\"></i> <b><em>What Happens to the needles in D position?</em></b></li>\r\n            <li>Push carriage from left to right. <i class=\"fa fa-long-arrow-right\" aria-hidden=\"true\"></i><b><em>Does anything change?</em></b></li>\r\n        </ol>\r\n    \r\n    \r\n        \r\n            <em>Needles in \"D\" will knit and Needles in \"B\" will slip. Note the slip strands UNDER the needles.All Needles are returned to working position.<br>If your machine has right and left slip buttons/ levers, repeat this exercise engaging them separately.</em>\r\n            <img src=\"/challenge/images/v2/110/slip_single.jpg\">\r\n        \r\n    \r\n</div>\r\n<br>\r\n<div class=\"container-border2\">\r\n    \r\n        <div class=\"circle\"><a href=\"#\">8</a></div><b> Exercise #8 - Slip groups of needles - The basis of Slip Stitch patterns</b><br><ol>\r\n            <li><u>No yarn in the carriage</u></li>\r\n            <li>Position 20 needles in \"B\" Position</li>\r\n            <li>Pull sets of 3 needles to \"D\" position</li>\r\n            <li>Disengage the LEFT Slip Lever/Button </li>\r\n            <li>Engage the RIGHT Slip Lever/Button </li>\r\n            <li>Push carriage from right to left. <i class=\"fa fa-long-arrow-left\" aria-hidden=\"true\"></i> <b><em>What Happens to the needles in D position?</em></b></li>\r\n            <li>Pull every 4th needle to \"D\" position</li>\r\n            <li>Push carriage from left to right. <i class=\"fa fa-long-arrow-right\" aria-hidden=\"true\"></i><b><em>What happens?</em></b></li>\r\n        </ol>\r\n    \r\n    \r\n        \r\n            <em>All Needles are returned to working position.<br>the groups of 3 needles in \"B\" slip and a 3 stitch float is formed UNDER the needels.\r\n\r\n                If your machine has right and left slip buttons/ levers, repeat this exercise engaging them separately.</em>\r\n            <img src=\"/challenge/images/v2/110/slip_3x.jpg\">\r\n        \r\n\r\n    \r\n</div>\r\n",
+              "legacyComponentId": 9200,
+              "order": 1
+            }
+          ],
+          "title": "CHALLENGE: Practice with Yarn",
+          "slug": "challenge-practice-with-yarn",
+          "order": 7,
+          "legacy": {
+            "assignId": 6037,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Adding Texture",
+      "slug": "adding-texture",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 740,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<em>Your manual can also guide you as to the slip settings for YOUR machine.</em><br>\r\n<a href=\"/ManualAndDocuments/\"><i class=\"fa fa-caret-right\" aria-hidden=\"true\"></i> Get a free copy of your manual</a><br><span class=\"handwriting\" style=\"font-size:2.5em\">Don't skip these</span>\r\n<img style=\"float:left;\" src=\"/challenge/images/v2/110/curved_arrow1.png\">\r\n<br>",
+              "legacyComponentId": 9201,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "327588087",
+              "title": "Slip Stitch on Brother Machines",
+              "legacySlot": 1,
+              "legacyComponentId": 9176,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "327604741",
+              "title": "Slip Stitch on Silver/Singer/Studio Machines",
+              "legacySlot": 2,
+              "legacyComponentId": 9176,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "332703571",
+              "title": "Slip Stitch on Non-Patterning Machines",
+              "legacySlot": 3,
+              "legacyComponentId": 9176,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "767093877",
+              "title": "Slip on Taitexma TH160",
+              "legacySlot": 4,
+              "legacyComponentId": 9176,
+              "order": 2
+            }
+          ],
+          "title": "Slip Basics",
+          "slug": "slip-basics",
+          "order": 1,
+          "legacy": {
+            "assignId": 6022,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "To keep the edges from getting distorted and to make seaming easier, pay attention to what needles are being selected.  You don't want to slip the very edge needles.<br>",
+              "legacyComponentId": 9229,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "533647469",
+              "title": "End Needle Selection: Slip",
+              "legacySlot": 1,
+              "legacyComponentId": 9228,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "718492073",
+              "title": "End Needle Selection: Brother Machines",
+              "legacySlot": 2,
+              "legacyComponentId": 9228,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "718396283",
+              "title": "End Needle Selection: Silver/Singer/Studio",
+              "legacySlot": 3,
+              "legacyComponentId": 9228,
+              "order": 2
+            }
+          ],
+          "title": "End Needle Selection",
+          "slug": "end-needle-selection",
+          "order": 2,
+          "legacy": {
+            "assignId": 6047,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nViewed as a printed pattern or a punchcard, slip stitch patterns are mostly black.<br>The white squares represent the needles that remain in working position and are the needles that slip.<br><img src=\"/images/stitchSymbols/SlipSkipStitch.jpg\">\r\nIn vintage pattern books, this symbol was used to represent slip\r\n\r\n\r\n<img src=\"/challenge/images/v2/110/vintage_slip.jpg\">\r\n<br><img src=\"/challenge/images/v2/110/dak_symbol.jpg\"> In DesignaKnit this symbol represents slip. <Br>\r\n<img src=\"/challenge/images/v2/110/107.jpg\">\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/110/slip_patterns_stitch_world1.jpg\">\r\n\r\n\r\n",
+              "legacyComponentId": 9179,
+              "order": 1
+            }
+          ],
+          "title": "About Slip Stitch Patterns",
+          "slug": "about-slip-stitch-patterns",
+          "order": 3,
+          "legacy": {
+            "assignId": 6025,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\n    \r\n        \r\n\r\n\r\n            There are many sources for slip stitch patterns. Check out some samples in the Knit it Now Stitch Technique Library. They are grouped by technique and include clear photos, punchcard diagrams (when applicable) and DAK STP files.<br>Don't forget to mark your favorites.<br><img src=\"/challenge/images/v2/110/favorites.jpg\">\r\n  <br><div class=\"btn-group\" style=\"width:100%\">\r\n                \r\n \r\n \r\n \r\n\r\n\r\n            </div>\r\n\r\n        \r\n\r\n        <img src=\"https://www.knititnow.com/images/free_for_subscribers_170.png\"><br> <img src=\"/challenge/images/v2/110/stitch_library_gif.gif\"><br>\r\n<div class=\"text-center\"> <i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Main menu <i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Knit <i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i>  Stitch library</div>\r\n    \r\n\r\n",
+              "legacyComponentId": 9177,
+              "order": 1
+            }
+          ],
+          "title": "Knit it Now Stitch Library",
+          "slug": "knit-it-now-stitch-library",
+          "order": 4,
+          "legacy": {
+            "assignId": 6023,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .turn {\r\n        transform: rotate(-15deg);\r\n        text-align: center;\r\n    }\r\n\r\n    .btn-group button {\r\n        background-color: #04AA6D;\r\n        /* Green background */\r\n        border: 1px solid green;\r\n        /* Green border */\r\n        color: white;\r\n        /* White text */\r\n        padding: 10px 24px;\r\n        /* Some padding */\r\n        cursor: pointer;\r\n        /* Pointer/hand icon */\r\n        float: left;\r\n        /* Float the buttons side by side */\r\n    }\r\n\r\n    /* Clear floats (clearfix hack) */\r\n    .btn-group:after {\r\n        content: \"\";\r\n        clear: both;\r\n        display: table;\r\n    }\r\n\r\n    .btn-group button:not(:last-child) {\r\n        border-right: none;\r\n        /* Prevent double borders */\r\n    }\r\n\r\n    /* Add a background color on hover */\r\n    .btn-group button:hover {\r\n        background-color: #3e8e41;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n\r\n\r\n\r\n    <span class=\"handwriting\" style=\"font-size:2em\">Try slip Stitch</span><br>Here are 4 simple stitch patterns that are easy to punch, program or hand manipulate. <br>These textures can be use for any project and will give you experience with knitting with slip stitch.<br>Following are instructions for manual and automatic patterning machines.\r\n        <br><div class=\"btn-group\">\r\n\r\n            \r\n        </div>\r\n         <br><div class=\"turn\"><span class=\"handwriting\" style=\"font-size:2em\">Don't just watch videos ... <br>get knitting!</span></div>\r\n    \r\n\r\n\r\n\r\n   \r\n\r\n    \r\n\r\n\r\n    <img src=\"/challenge/images/v2/110/stitches_thumb1.jpg\">\r\n\r\n",
+              "legacyComponentId": 9203,
+              "order": 1
+            }
+          ],
+          "title": "Basic Texture Challenge",
+          "slug": "basic-texture-challenge",
+          "order": 5,
+          "legacy": {
+            "assignId": 6029,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Combine 2 techniques for even more texture!<br>\r\n\r\n\r\n\t<img src=\"/challenge/images/v2/110/slip_n_tuck.jpg\">\r\n\t<img src=\"/challenge/images/v2/110/slip_n_tuck1.jpg\">\r\n",
+              "legacyComponentId": 9249,
+              "order": 1
+            }
+          ],
+          "title": "Slip 'n Tuck",
+          "slug": "slip-n-tuck",
+          "order": 6,
+          "legacy": {
+            "assignId": 6054,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n    \r\n        When using manual machine (without a punchcard or electronics) we need to hand select needles. <br><ul class=\"fa-ul\">\r\n            <li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Keep the stitch pattern simple</li>\r\n            <li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Use <a href=\"/store/DigitialDownload_process.cfm?itemid=416\">Cheet Sheets for Hand Manipulation</a></li>\r\n            <li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Use a Needle Beetle <em><small>LK-150/140/100/Zippy 90 and GK-370 knitters</small></em> Visit <a href=\"https://www.kriskrafter.com/product-page/needle-beetle-needle-selector\">Kris Krafter</a></li>\r\n        </ul>\r\n\r\n    \r\n    <center>\r\n\r\n        \r\n            <h3>The pieces of the stitch patterning puzzle:</h3>\r\n\r\n            <img class=\"img-thumbnail\" src=\"/challenge/images/v2/110/puzzle_pieces_manual.png\">\r\n        \r\n",
+              "legacyComponentId": 9188,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "294441633",
+              "title": "Cheat Sheets for hand Manipulation",
+              "legacySlot": 1,
+              "legacyComponentId": 9189,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "746202286",
+              "title": "Needle Beetle",
+              "legacySlot": 2,
+              "legacyComponentId": 9189,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .circle {\r\n        width: 25px;\r\n        height: 25px;\r\n        border-radius: 50%;\r\n        box-sizing: border-box;\r\n        text-align: center;\r\n        display: inline-block;\r\n        line-height: 25px;\r\n        background-color: #9E2065;\r\n    }\r\n\r\n    .circle a {\r\n        text-decoration: none;\r\n        color: #fff;\r\n        font-size: 16px;\r\n    }\r\n\r\n    hr.style13 {\r\n        height: 10px;\r\n        border: 0;\r\n        box-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n    }\r\n\r\n    .container-border2 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        background-color: white;\r\n\r\n        margin: auto;\r\n        background-color: #ebecf0;\r\n    }\r\n\r\n</style>\r\n<hr class=\"style13\">\r\n<div class=\"container-border2\">\r\n    <span class=\"handwriting\" style=\"font-size:2em\"> Try these stitch patterns by using a <a data-GlossaryId=\"290\" class=\"glossaryhelp\">Needle Pusher </span><sup><i class=\"fa fa-question-circle fa-2x\" aria-hidden=\"true\"> </i></sup></a><span class=\"handwriting\" style=\"font-size:2em\"> to select needles</span><br>\r\n        \r\n            <div class=\"circle\"><a href=\"#\">9</a></div> KIN_490<br><a href=\"/downloads/kin490_punchcard.pdf\" download><i class=\"fa fa-download\" aria-hidden=\"true\"></i> Full Size Punchcard </a><br><img src=\"/challenge/images/v2/110/490_punch_small.jpg\">\r\n        \r\n\r\n        \r\n            <div class=\"circle\"><a href=\"#\">10</a></div> Linen Stitch<br><a href=\"/downloads/linen_stitch_punchcard.pdf\" download><i class=\"fa fa-download\" aria-hidden=\"true\"></i> Full Size Punchcard </a><br><img src=\"/challenge/images/v2/110/linen_punch_small.jpg\">\r\n        \r\n        \r\n            <div class=\"circle\"><a href=\"#\">11</a></div> KIN_431<br><a href=\"/downloads/kin431_punchcard.pdf\" download><i class=\"fa fa-download\" aria-hidden=\"true\"></i> Full Size Punchcard </a><br><img src=\"/challenge/images/v2/110/431_punch_small.jpg\">\r\n\r\n        \r\n\r\n        \r\n            <div class=\"circle\"><a href=\"#\">12</a></div> KIN_421<br><a href=\"/downloads/kin_421_punchcard.pdf\" download><i class=\"fa fa-download\" aria-hidden=\"true\"></i> Full Size Punchcard </a><br><img src=\"/challenge/images/v2/110/421_punch_small.jpg\">\r\n        \r\n    \r\n</div>\r\n",
+              "legacyComponentId": 9204,
+              "order": 4
+            }
+          ],
+          "title": "CHALLENGE: Texture | Manual machines",
+          "slug": "challenge-texture-manual-machines",
+          "order": 7,
+          "legacy": {
+            "assignId": 6030,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\nimg.ctr{\r\ndisplay: block;\r\nmargin-left: auto;\r\nmargin-right: auto; }\r\n</style>\r\n\r\n\r\n<h3>The pieces of the automatic patterning puzzle:</h3><br>\r\n<img class=\"ctr\" src=\"/challenge/images/v2/110/puzzle_pieces.png\">\r\n\r\n\r\n\r\n <div class=\"videopopup\" data-videotitle=\"intro_video\" data-vimeoid=\"434198371\">\r\n\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/917163930-37a66916b1159b195e7062a6fbc41fda9805d6c61d785c47ccbadaf2cc7bded4-d_1280x720?r=pad\">\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div>\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 9208,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\n    hr.style13 {\r\n        height: 10px;\r\n        border: 0;\r\n        box-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n    }\r\n\r\n    .circle {\r\n        width: 25px;\r\n        height: 25px;\r\n        border-radius: 50%;\r\n        box-sizing: border-box;\r\n        text-align: center;\r\n        display: inline-block;\r\n        line-height: 25px;\r\n        background-color: #9E2065;\r\n    }\r\n\r\n    .circle a {\r\n        text-decoration: none;\r\n        color: #fff;\r\n        font-size: 16px;\r\n    }\r\n\r\n    hr.style13 {\r\n        height: 10px;\r\n        border: 0;\r\n        box-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n    }\r\n .container-border2 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        background-color: white;\r\n\r\n        margin: auto;\r\n        background-color: #ebecf0;\r\n    }\r\n</style>\r\n<hr class=\"style13\">\r\n\r\n<span class=\"handwriting\" style=\"font-size:2em\"> Choose stitch patterns that are mostly black.<br>\r\n    Pay attention to how many white squares are next to each other - that indicates the size of the slipped floats<br></span>\r\n\r\n<div class=\"container-border2\">\r\n    \r\n        <div class=\"circle\"><a href=\"#\">13</a></div><b> KIN 490</b><br><a href=\"/challenge/images/v2/110/kin_490.stp\" download><i class=\"fa fa-download\" aria-hidden=\"true\"></i> DesignaKnit STP file </a><br>\r\n        <a href=\"/downloads/kin490_punchcard.pdf\" download><i class=\"fa fa-download\" aria-hidden=\"true\"></i> Full Size Punchcard </a><br><img src=\"/challenge/images/v2/110/490_punch_small.jpg\">\r\n    \r\n\r\n\r\n    \r\n        <div class=\"circle\"><a href=\"#\">14</a></div><b> Linen Stitch</b><br><a href=\"/challenge/images/v2/110/linen_stitch.stp\" download><i class=\"fa fa-download\" aria-hidden=\"true\"></i> DesignaKnit STP file </a><br>\r\n        <a href=\"/downloads/linen_stitch_punchcard.pdf\" download><i class=\"fa fa-download\" aria-hidden=\"true\"></i> Full Size Punchcard </a><br><img src=\"/challenge/images/v2/110/linen_punch_small.jpg\">\r\n    \r\n\r\n    \r\n        <div class=\"circle\"><a href=\"#\">15</a></div> <b>KIN_431</b><br><a href=\"/challenge/images/v2/110/kin_431.stp\" download><i class=\"fa fa-download\" aria-hidden=\"true\"></i> DesignaKnit STP file </a><br>\r\n        <a href=\"/downloads/kin431_punchcard.pdf\" download><i class=\"fa fa-download\" aria-hidden=\"true\"></i> Full Size Punchcard </a><br><img src=\"/challenge/images/v2/110/431_punch_small.jpg\">\r\n\r\n    \r\n\r\n    \r\n        <div class=\"circle\"><a href=\"#\">16</a></div><b> KIN_421</b><br><a href=\"/challenge/images/v2/110/kin_421.stp\" download><i class=\"fa fa-download\" aria-hidden=\"true\"></i> DesignaKnit STP file </a><br>\r\n        <a href=\"/downloads/kin_421_punchcard.pdf\" download><i class=\"fa fa-download\" aria-hidden=\"true\"></i> Full Size Punchcard </a><br>\r\n\r\n\r\n\r\n        <img src=\"/challenge/images/v2/110/421_punch_small.jpg\">\r\n\r\n    \r\n</div>\r\n",
+              "legacyComponentId": 9190,
+              "order": 3
+            }
+          ],
+          "title": "CHALLENGE: Texture | Automatic Patterning Machines",
+          "slug": "challenge-texture-automatic-patterning-machines",
+          "order": 8,
+          "legacy": {
+            "assignId": 6031,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Adding Color",
+      "slug": "adding-color",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 741,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "294953374",
+              "title": null,
+              "legacyComponentId": 9225,
+              "order": 1
+            }
+          ],
+          "title": "Single Row Stripes",
+          "slug": "single-row-stripes",
+          "order": 1,
+          "legacy": {
+            "assignId": 6045,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n.container-border {\r\nborder: 1px solid #ccc;\r\nborder-radius: 15px;\r\npadding-top: 20px;\r\npadding-right: 20px;\r\npadding-bottom: 20px;\r\npadding-left: 20px;\r\n}\r\n\r\n</style>\r\n\r\n\t<b>From Wikipedia</b><br>\r\n\t<em>In jacquard fabric, the pattern and colors are incorporated into the weave instead of being printed or dyed onto the surface of the fabric. The term \"jacquard\" indicates how the pattern is woven, not the specific pattern itself. </em><br>As machine knitters, we tend associate \"jacquard\" with double bed jacquard (DBJ) and overlook other ways of creating multi-color fabrics on our machines.<br><ul>\r\n\t\t<li>Fairisle (stranded knitting)</li>\r\n\t\t<li>Multi-color tuck</li>\r\n\t\t<li>Multi-color slip</li>\r\n\t\t<li>Knit-weave</li>\r\n\t\t<li>Plaiting</li>\r\n\t</ul>\r\n\t<br>\r\n\t<hr class=\"style13\">\r\n\t\r\n\t\tIn this example, we used a very simple stitch pattern.<br>\r\n\r\n\r\n\r\n\t\t\t<center><img src=\"/path/images/1481/slip_example_325.png\"> \t\r\n\r\n\r\n<img src=\"/challenge/images/v2/110/325_memo.jpg\" width=\"209\">\r\n\r\n\r\n\r\n\r\n\t\t\t<em><small>This is stitch #325 from the Stitch World III book. (20 stitches x 12 rows)</small></em></center><br><a href=\"/challenge/images/v2/110/325.stp\" download><i class=\"fa fa-download\" aria-hidden=\"true\"></i> DAK STP File</a><br>The advantage of multi-color slip is fewer floats. Looking at this stitch pattern, you can see that if this was stranded with fairisle, there would be floats as long as 6 stitches.<br>\r\n\t\t<div class=\"container-border\">In 2 color slip, each row is knit with multiple passes of the carriage, employing the slip settings on your machine. Although it can be done without a color changer, (swapping the colors as needed), a color changer makes fast work of this technique.<br>For every 2 rows there are 4 passes of the carriage:\r\n\t\t\t<br>Rows 1 and 2:<ul>\r\n\t\t\t\t<li>\r\n\t\t\t\t\tColor 1 (purple) - pass 1 and 2 - the white needles are slipped and the working needles are knit with purple</li>\r\n\t\t\t\t<li>Color 2 (white) - pass 3 and 4 - the purple needles are slipped and the previously slipped needles are knit with white<br></li>\r\n\t\t\t</ul>\r\n\t\t\tThis process is repeated to create the pattern, reducing the floats.\r\n\t\t</div>\r\n\r\n\t\t<img class=\"img-thumbnail\" src=\"/path/images/1481/2color_slip.jpg\">\r\n\r\n\t\r\n\r\n",
+              "legacyComponentId": 9180,
+              "order": 1
+            }
+          ],
+          "title": "2-Color Slip (2-Color Jacquard)",
+          "slug": "2-color-slip-2-color-jacquard",
+          "order": 2,
+          "legacy": {
+            "assignId": 6026,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "742452827",
+              "title": null,
+              "legacyComponentId": 9214,
+              "order": 1
+            }
+          ],
+          "title": "Multi-Color slip",
+          "slug": "multi-color-slip",
+          "order": 3,
+          "legacy": {
+            "assignId": 6039,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "There are many models of color changers available for the different machines.<br> The buttons and setup may be different from this Brother color changer, but the concept is the same.<br>Remember, if you don't have a color changer, you can still work multi-color slip by simply swapping out the colors manually.<br>",
+              "legacyComponentId": 9230,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "274199831",
+              "title": null,
+              "legacyComponentId": 9192,
+              "order": 2
+            }
+          ],
+          "title": "Color Changer",
+          "slug": "color-changer",
+          "order": 4,
+          "legacy": {
+            "assignId": 6032,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    hr.style13 {\r\n        height: 10px;\r\n        border: 0;\r\n        box-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n    }\r\n\r\n    .circle {\r\n        width: 25px;\r\n        height: 25px;\r\n        border-radius: 50%;\r\n        box-sizing: border-box;\r\n        text-align: center;\r\n        display: inline-block;\r\n        line-height: 25px;\r\n        background-color: #9E2065;\r\n    }\r\n\r\n    .circle a {\r\n        text-decoration: none;\r\n        color: #fff;\r\n        font-size: 16px;\r\n    }\r\n\r\n    .container-border1 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px 15px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        background-color: white;\r\n        margin: auto;\r\n        background-color: #DCDCDC;\r\n    }\r\n\r\n    .container-border2 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px 15px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        background-color: white;\r\n\r\n        margin: auto;\r\n\r\n    }\r\n\r\n</style>\r\n\r\n<h3>Manual machines</h3><br>\r\nUse <a href=\"/store/DigitialDownload_process.cfm?itemid=416\">Cheet Sheets for Hand Manipulation copying the stitch patterns below</a><br><hr class=\"style13\">\r\n\r\n<h3>Punchcard / Electronic Machines</h3><br>\r\nPunch or program the following stitch patterns. (DesignaKnit Users - save time and download the stitch pattern to your machine)<br><div class=\"container-border1\">\r\n    <div class=\"circle\"><a href=\"#\">20</a></div> <b>KIN_820</b><br>\r\n        <img class=\"img-thumbnail\" src=\"/swatches/8/kin_820_MultiSlipBW.jpg\" width=\"300\">\r\n        <img src=\"/challenge/images/v2/110/820_small.jpg\">\r\n        \r\n        <a href=\"/challenge/images/v2/110/kin_820.stp\" download><i class=\"fa fa-download\" aria-hidden=\"true\"></i> DesignaKnit STP file</a><br><a href=\"/downloads/kin_820_punchcard.pdf\" download><i class=\"fa fa-download\" aria-hidden=\"true\"></i> Full-size punchcard</a>\r\n        \r\n    \r\n</div>\r\n<br>\r\n\r\n<div class=\"container-border1\">\r\n    <div class=\"circle\"><a href=\"#\">21</a></div> <b>KIN_806</b><br>\r\n        <img class=\"img-thumbnail\" src=\"/swatches/8/thumb_KIN806_mult_slip_BW.jpg\" width=\"300\">\r\n        <img src=\"/challenge/images/v2/110/806_small.jpg\">\r\n        \r\n        <a href=\"KIN_806_Multi_Slip.stp\" download><i class=\"fa fa-download\" aria-hidden=\"true\"></i> DesignaKnit STP file</a><br><a href=\"/downloads/KIN_806_punchcard1.pdf\" download><i class=\"fa fa-download\" aria-hidden=\"true\"></i> Full-size punchcard</a>\r\n        \r\n    \r\n</div>\r\n<br>\r\n\r\n<div class=\"container-border1\">\r\n    <div class=\"circle\"><a href=\"#\">22</a></div><b> Choose your own stitch pattern</b><br><b>Free Stitch World Pattern Books</b><br>\r\n        \r\n            <a href=\"https://www.knititnow.com/ManualAndDocuments/BEDC6CBB-5056-A02D-DF3C-78CAD67BEA42/brother-stitchworld-i-pattern-book\" target=\"_blank\">\r\n                <figure> <img class=\"img-thumbnail\" src=\"/images/glossary/stitch_world1_cover.jpg\">\r\n                    <figcaption align=\"center\"><br>Brother 930/940 machines</figcaption>\r\n                </figure>\r\n            </a>\r\n        \r\n\r\n        \r\n            <a href=\"https://www.knititnow.com/ManualAndDocuments/BEDC6CC5-5056-A02D-DF5B-418ED8B5285D/brother-stitchworld-ii-pattern-book-for-kh-and-kh-i\" target=\"_blank\">\r\n                <figure><img class=\"img-thumbnail\" src=\"/images/glossary/stitch_world2_cover1.jpg\">\r\n                    <figcaption align=\"center\"><br>Brother 965/965I machines</figcaption>\r\n                </figure>\r\n            </a>\r\n        \r\n        \r\n            <a href=\"https://www.knititnow.com/ManualAndDocuments/BEDC6CCF-5056-A02D-DFDB-7F11E4B953D6/brother-stitchworld-iii-pattern-book\" target=\"_blank\">\r\n                <figure><img class=\"img-thumbnail\" src=\"/images/glossary/stitch_world3_cover.jpg\">\r\n                    <figcaption align=\"center\"><br>Brother 970 machines</figcaption>\r\n                </figure>\r\n            </a>\r\n\r\n        <br>\r\n    <hr class=\"style13\">\r\n    The stitch patterns in <b>PDF format</b> are available at <a href=\"https://mkmanuals.com/brother-knitking/patterns-and-magazines/stitchworld.html\" target=\"_blank\">MKmanuals.com.com </a><br>\r\n    <hr class=\"style13\">\r\n    \r\n        <div class=\"offset-sm-1\">\r\n\r\n\r\n            The stitch patterns in <b>DesignaKnit format</b> are installed with the DesignaKnit program.<br>Depending on the installation, they can be found in the local drive:\r\n            <ul style=\"list-style-type:none;\">\r\n                <li> >User</li>\r\n                <li> >Document</li>\r\n                <li> >Brother</li>\r\n                <li> >DesignaKnit 8(9)</li>\r\n                <li> >Brother</li>\r\n                <li> >Stitch World</li>\r\n            </ul>\r\n        </div>\r\n        <div class=\"offset-sm-1\">\r\n            <img src=\"/images/glossary/file_directory11.png\">\r\n        </div>\r\n    \r\n\r\n\r\n</div>\r\n\r\n",
+              "legacyComponentId": 9215,
+              "order": 1
+            }
+          ],
+          "title": "CHALLENGE: Multiple Colors",
+          "slug": "challenge-multiple-colors",
+          "order": 5,
+          "legacy": {
+            "assignId": 6040,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "StitchPattern",
+              "notes": [
+                "Unmapped legacy component type: StitchPattern"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6055",
+                "STITCHPATTERNID": "1288",
+                "STITCHPATTERN_IMAGE": "1830",
+                "TYPEOF": "StitchPattern"
+              },
+              "legacyComponentId": 9253,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "StitchPattern",
+              "notes": [
+                "Unmapped legacy component type: StitchPattern"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6055",
+                "CHALLENGE_COMPONENTID": "9254",
+                "STITCHPATTERNID": "1276",
+                "STITCHPATTERN_IMAGE": "1797"
+              },
+              "legacyComponentId": 9254,
+              "order": 2
+            }
+          ],
+          "title": "examples",
+          "slug": "examples",
+          "order": 6,
+          "legacy": {
+            "assignId": 6055,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Techniques using Slip",
+      "slug": "techniques-using-slip",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 742,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Slip Cast on- Extra FAST!<br>This may not be the prettiest cast on method, but it's closed and FAST.  <br>\r\nConsider it for knitting swatches or any time you use a <a data-GlossaryId=\"265\" class=\"glossaryhelp\">Scrap and Ravel Cast On <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> method.<br>",
+              "legacyComponentId": 9232,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "294969382",
+              "title": null,
+              "legacyComponentId": 9231,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n<hr class=\"style13\">\r\n<b>Slipped Edge Stitch Technique</b>\r\nAlthough this is technically not a slip stitch technique (it uses the hold setting), this technique can add a beautiful chain edge to your knitting.<br>",
+              "legacyComponentId": 9233,
+              "order": 4
+            },
+            {
+              "type": "video",
+              "vimeoId": "305148159",
+              "title": null,
+              "legacyComponentId": 9234,
+              "order": 5
+            }
+          ],
+          "title": "More than just stitch patterns",
+          "slug": "more-than-just-stitch-patterns",
+          "order": 1,
+          "legacy": {
+            "assignId": 6027,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    span.blue {\r\n        background: #9e2065;\r\n        border-radius: 0.8em;\r\n        -moz-border-radius: 0.8em;\r\n        -webkit-border-radius: 0.8em;\r\n        color: #ffffff;\r\n        display: inline-block;\r\n        font-weight: bold;\r\n        line-height: 1.6em;\r\n        margin-right: 15px;\r\n        text-align: center;\r\n        width: 1.6em;\r\n    }\r\n\r\n    img.ctr {\r\n        display: block;\r\n        margin-left: auto;\r\n        margin-right: auto;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n<div class=\"blog_container\">\r\n\r\n    \r\n        \r\n            <br>You just ripped out a row of knitting or you put some knitting back on the bed from the garter bar or you did a bit of shaping and now your carriage is on the opposite side of the working yarn. <br><span class=\"yellow_highlight\"><b>Positioning the carriage is an essential skill for machine knitters.</b></span>\r\n        \r\n        \r\n <div class=\"videopopup\" data-videotitle=\"Free Pass (Position the carriage)\" data-vimeoid=\"171417494\">\r\n\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/576961024-2e43f92f61aa051217938795d3422e3915311469a277da2f1d572ecc1d100c6c-d_1280x720?r=pad\">\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div>\r\n\r\n\r\n          \r\n        \r\n    \r\n    <br>Here are 4 ways to \"free pass\"; getting the carriage to the same side as the working yarn without knitting or dropping stitches.\r\n\r\n\r\n            <h3><span class=\"blue\">1</span>Remove the carriage</h3>\r\n        <div style=\"margin-left: 3.5em;\">    Sure, you could take the carriage off the machine, run to the other end and replace the carriage ... but that's a \"rookie move\". Take control of your machine and use the carriage settings.<br></div>\r\n            <h3><span class=\"blue\">2</span>Use the hold setting</h3>\r\n    <div style=\"margin-left: 3.5em;\">  \r\n            2 steps:\r\n            <ol>\r\n                <li>Put all needles in hold position</li>\r\n                <li>Set the carriage to hold</li>\r\n            </ol>\r\n\r\n            When you pass the carriage, the needles will not move and stitches will not drop or knit.\r\n</div>\r\n            <h3><span class=\"blue\">3</span>Use the slip setting</h3>\r\n          \r\n    <div style=\"margin-left: 3.5em;\">  \r\n  With many machines, the slip setting will also allow for a free pass.\r\n\r\n            <ol>\r\n                <li>The stitches are in the hooks of the needles</li>\r\n                <li>The needles are in working position</li>\r\n                <li>The carriage is set to slip</li>\r\n            </ol>\r\n            When you pass the carriage, the needles will not move and stitches will not drop or knit.\r\n</div>\r\n            <h3><span class=\"blue\">4</span>\"Pop\" the carriage (Silver Reed/ Singer/Studio machines)</h3>\r\n            <div style=\"margin-left: 3.5em;\">      Pop the carriage (silver machines). Use the release lever and raise the top section of the carriage. <br>\r\n            The carriage will pass across without knitting or dropping stitches.<br><figure><img class=\"img-thumbnail ctr\" src=\"/images/blog/1124/free_pass_gif.gif\">\r\n                <figcaption align=\"center\"><em>Use the Release lever and \"pop\" the carriage</em></figcaption>\r\n            </figure>\r\n            <br></div>\r\n      \r\n      <div class=\"text-center\">  <span class=\"handwriting\" style=\"font-size:2em\">Don't forget to reset your row counter after a free pass.</span></div>\r\n        \r\n   \r\n</div>\r\n",
+              "legacyComponentId": 9198,
+              "order": 1
+            }
+          ],
+          "title": "Free Pass",
+          "slug": "free-pass",
+          "order": 2,
+          "legacy": {
+            "assignId": 6034,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "204717429",
+              "title": null,
+              "legacyComponentId": 9209,
+              "order": 1
+            }
+          ],
+          "title": "Marker Row",
+          "slug": "marker-row",
+          "order": 3,
+          "legacy": {
+            "assignId": 6035,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151856550",
+              "title": "I-cord on the machine",
+              "legacySlot": 1,
+              "legacyComponentId": 9220,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "584011979",
+              "title": "I-cord Perfection",
+              "legacySlot": 2,
+              "legacyComponentId": 9220,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "I-cord (or slip cord) can be used in many ways to embellish your knitting.<br>It can be used as shoulder straps for girls dresses, belts and decorative ties … the list is endless!<br>Machine knitters can quickly make I-cord and it is an essential technique for beginners to learn.\r\n\r\n\r\n",
+              "legacyComponentId": 9221,
+              "order": 2
+            }
+          ],
+          "title": "i-Cord and Slip",
+          "slug": "i-cord-and-slip",
+          "order": 4,
+          "legacy": {
+            "assignId": 6043,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .container-border2 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        background-color: white;\r\n\r\n        margin: auto;\r\n        background-color: #ebecf0;\r\n    }\r\n\r\n    .circle {\r\n        width: 25px;\r\n        height: 25px;\r\n        border-radius: 50%;\r\n        box-sizing: border-box;\r\n        text-align: center;\r\n        display: inline-block;\r\n        line-height: 25px;\r\n        background-color: #9E2065;\r\n    }\r\n\r\n    .circle a {\r\n        text-decoration: none;\r\n        color: #fff;\r\n        font-size: 16px;\r\n    }\r\n\r\n</style>\r\n<div class=\"container-border2\">\r\n    \r\n        <div class=\"circle\"><a href=\"#\">23</a></div><b> Exercise #23 - Experiment with I-Cord</b><br><ol>\r\n            <li>Typically knitters knit I-cord over 3 needles.\r\n                <ul>\r\n                    <li>Cast on over 3 needles</li>\r\n                    <li>Set the carriage to slip in one direction</li>\r\n                    <li>Knit a few inches of I-Cord</li>\r\n                </ul>\r\n            </li>\r\n\r\n\r\n            <li>Cast on over 4 needles\r\n                <ul>\r\n                    <li>Set the carriage to slip in one direction</li>\r\n                    <li>Knit a few inches of I-Cord</li>\r\n                </ul>\r\n            </li>\r\n            <li>Cast on over 5 needles\r\n                <ul>\r\n                    <li>Set the carriage to slip in one direction</li>\r\n                    <li>Knit a few inches of I-Cord</li>\r\n                </ul>\r\n            </li>\r\n\r\n            <li>Often knitters will rely on the natural curl of the knitting instead of using slip.\r\n                <ul>\r\n                    <li>Cancel Slip</li>\r\n                    <li>Knit a few inches of plain knitting over 3-5 needles</li>\r\n                </ul>\r\n            </li>\r\n\r\n        </ol>\r\nCompare each section of cord.<br>\r\n       <span class=\"handwriting\" style=\"font-size:2em\">  Which method do you prefer?</span>\r\n    \r\n    \r\n        \r\n            <img src=\"/images/i_cord_gif.gif\">\r\n        \r\n    \r\n</div>\r\n\r\n<br>\r\n",
+              "legacyComponentId": 9239,
+              "order": 1
+            }
+          ],
+          "title": "CHALLENGE: I-cord experiment",
+          "slug": "challenge-i-cord-experiment",
+          "order": 5,
+          "legacy": {
+            "assignId": 6051,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Slip and the Ribber",
+      "slug": "slip-and-the-ribber",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 743,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Use slip for a beautiful, tubular, ribbed cast on",
+              "legacyComponentId": 9218,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859232",
+              "title": null,
+              "legacyComponentId": 9217,
+              "order": 2
+            }
+          ],
+          "title": "Cast on",
+          "slug": "cast-on",
+          "order": 1,
+          "legacy": {
+            "assignId": 6041,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "In order to work these techniques, be sure to know how to slip with your ribber.",
+              "legacyComponentId": 9219,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858632",
+              "title": "Circular (Tubular) Knitting",
+              "legacySlot": 1,
+              "legacyComponentId": 9216,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859462",
+              "title": "half Circular | U-Knitting",
+              "legacySlot": 2,
+              "legacyComponentId": 9216,
+              "order": 2
+            }
+          ],
+          "title": "Circular and U Knitting",
+          "slug": "circular-and-u-knitting",
+          "order": 2,
+          "legacy": {
+            "assignId": 6042,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Add texture with full needle rib by working slip on the main bed (controlled by punchcard or electronics) WITH ribber stitches in work at the same time.<br>On Japanese machines, the ribber stitches knit plain stitches and the main bed stitches are selected with automatic patterning and are slipped to produce texture.\r\n\r\nIt's the ribber stitches that will be the \"right/public\" side of the knitting.  <br>In the main bed, selected needles (determined by the holes in a punchcard) will knit plain and non-selected  (B position) needles will slip.  When the same needles slip over several rows a ripple is produced in the fabric being created on the ribber.\r\n\r\n<h3>Tips:</h3>\r\n<ul>\r\n<li>Because this is basically full-needle rib, use a fine yarn</li>\r\n<li>Use a fine <a data-GlossaryId=\"340\" class=\"glossaryhelp\">Fine Knit Bar <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> to help the stitches knit properly</li>\r\n<li>Set the ribber tension looser than the main bed to accentuate the ripple effect</li>\r\n</ul>",
+              "legacyComponentId": 9255,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859981",
+              "title": "Ribber Pintucks",
+              "legacySlot": 1,
+              "legacyComponentId": 9212,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "465425233",
+              "title": "Automatic pintucks",
+              "legacySlot": 2,
+              "legacyComponentId": 9212,
+              "order": 2
+            }
+          ],
+          "title": "Double bed pintucks",
+          "slug": "double-bed-pintucks",
+          "order": 3,
+          "legacy": {
+            "assignId": 6038,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "511340616",
+              "title": "Puffy Stitch",
+              "legacySlot": 1,
+              "legacyComponentId": 9223,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "312186999",
+              "title": "Waffle Slip Stitch",
+              "legacySlot": 2,
+              "legacyComponentId": 9223,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "Half Milano (Long Stitch)<br>\r\n\r\n\r\n",
+              "legacyComponentId": 9224,
+              "order": 2
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/v2/110/5.jpg",
+                  "caption": "A variation of Full Needle Rib, Long Stitch is the basis for a number of interesting ribber stitch pattern techniques."
+                },
+                {
+                  "src": "/v2/110//1.jpg",
+                  "caption": "Long Stitch (also known as Half Milano) is a variation of full needle rib.  All needles on both beds are in work.<br>\r\n\r\nCast on and establish for Full needle rib."
+                },
+                {
+                  "src": "/v2/110//2.jpg",
+                  "caption": "I've set my ribber carriage to slip in one direction. As I knit across,  you'll see that the main bed stitches knit and the ribber stitches do not knit.<br><br>\r\nThe ribber stitches slip.<br>\r\nKnit back and the needles on both beds knit.<br>\r\nContinue knitting, alternating knit on one bed and slip on the other. Slip - Knit - Slip - Knit\r\n\r\n\r\nContinue alternating slip in one direction and knit all needles in the other direction."
+                },
+                {
+                  "src": "/v2/110//3.jpg",
+                  "caption": "The side of the knitting where the rows were knit looks like stockinette."
+                },
+                {
+                  "src": "/v2/110//4.jpg",
+                  "caption": "The side of the knitting that had needles slip for one row, have stitches that are elongated."
+                },
+                {
+                  "src": "/v2/110//5.jpg",
+                  "caption": "You can slip on either the main bed or the ribber, just keep in mind which side you want to use as the public side of your knitting"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 9245,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<b>Slip Flat Rib</b> from the Knit it Now Stitch Library<br><a href=\"/knit/swatch/1286/1826/slip-flat-rib\" target=\"_blank\"><img class=\"img-thumbnail\" src=\"/swatches/18/flat_rib_slip21.jpg\"></a>",
+              "legacyComponentId": 9252,
+              "order": 4
+            }
+          ],
+          "title": "Ribber Stitch Patterns",
+          "slug": "ribber-stitch-patterns",
+          "order": 4,
+          "legacy": {
+            "assignId": 6044,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "There are many models of color changers available for the different machines.<br>\r\nThe buttons and setup may be different from this Brother color changer, but the concept is the same.<br>Remember, if you don't have a color changer, you can still work multi-color slip by simply swapping out the colors manually.<br><a href=\"http://www.knititnow.com/learn/launch.cfm?contentid=2079&inpattern=23C3CEF6\" target=\"_blank\"><img src=\"/contentlibrary/2079//setup5.jpg\"><br><i class=\"fa fa-caret-right\" aria-hidden=\"true\"></i> Brother KRC900 Color Changer</a>\r\n\r\n",
+              "legacyComponentId": 9227,
+              "order": 1
+            }
+          ],
+          "title": "Double Bed Color Changer",
+          "slug": "double-bed-color-changer",
+          "order": 5,
+          "legacy": {
+            "assignId": 6046,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style> \r\n .container-border2 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        background-color: white;\r\n\r\n        margin: auto;\r\n        background-color: #ebecf0;\r\n    }\r\n  .circle {\r\n        width: 25px;\r\n        height: 25px;\r\n        border-radius: 50%;\r\n        box-sizing: border-box;\r\n        text-align: center;\r\n        display: inline-block;\r\n        line-height: 25px;\r\n        background-color: #9E2065;\r\n    }\r\n\r\n    .circle a {\r\n        text-decoration: none;\r\n        color: #fff;\r\n        font-size: 16px;\r\n    }\r\n</style>\r\n<div class=\"container-border2\">\r\n    \r\n        <div class=\"circle\"><a href=\"#\">24</a></div><b> Exercise #24 - Experiment with (learn) YOUR Carriage Settings</b><br><ol>\r\n            <li>Swing the ribber to \"P\"</li>\r\n<li>Pull every other needle to work</li>\r\n<li>Pass the carriage to align all needles in working position</li>\r\n<li>Pass the carriage and observe the action of the needles</li>\r\n<li>Set the ribber carriage to SLIP</li>\r\n<li>Pass the carriage and observe the action of the needles</li>\r\n<li>If your carriage has both left and right slip settings, repeat observing slip left only and slip right only</li>\r\n\r\n        </ol>\r\n    \r\n    \r\n        \r\n         <img src=\"/challenge/images/v2/110/ribber_challenge_gif.gif\">\r\n        \r\n    \r\n</div>\r\n\r\n<br>",
+              "legacyComponentId": 9235,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<style> \r\n .container-border2 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        background-color: white;\r\n\r\n        margin: auto;\r\n        background-color: #ebecf0;\r\n    }\r\n  .circle {\r\n        width: 25px;\r\n        height: 25px;\r\n        border-radius: 50%;\r\n        box-sizing: border-box;\r\n        text-align: center;\r\n        display: inline-block;\r\n        line-height: 25px;\r\n        background-color: #9E2065;\r\n    }\r\n\r\n    .circle a {\r\n        text-decoration: none;\r\n        color: #fff;\r\n        font-size: 16px;\r\n    }\r\n</style>\r\n<div class=\"container-border2\">\r\n\r\n    \r\n<div class=\"circle\"><a href=\"#\">25</a></div><b> Exercise #25 - Put slip to work</b><br>Using Half circular ribbing, practice using slip with your ribber.  Take it step-by-step and apply the settings to other ribber techniques<br><ol>\r\n<li>Cast on for full needle rib</li>\r\n<li>Set the main bed to slip in one direction (left)</li>\r\n<li>Set the ribber to slip in the opposite direction (right)</li>\r\n<li>Knit left (only the ribber stitches knit)</li>\r\n<li> Knit right (only the main bed stitches knit)</li>\r\n<li>REVERSE the settings and repeat</li>\r\n</ol><br>\r\n\r\n  \r\n\r\n    <br><div class=\"videopopup\" data-videotitle=\"Half Circular U-Knitting\" data-vimeoid=\"151859462\">\r\n\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/647333280-47c3c4bf482051ca46c92950121c52edda016ca0d1cbd3fa3b73231f0fd442cf-d_1280x720?r=pad\">\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div>\r\n    \r\n</div>\r\n\r\n<br>",
+              "legacyComponentId": 9236,
+              "order": 2
+            }
+          ],
+          "title": "CHALLENGE: Set your ribber to slip",
+          "slug": "challenge-set-your-ribber-to-slip",
+          "order": 6,
+          "legacy": {
+            "assignId": 6048,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style> \r\n .container-border2 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        background-color: white;\r\n\r\n        margin: auto;\r\n        background-color: #ebecf0;\r\n    }\r\n  .circle {\r\n        width: 25px;\r\n        height: 25px;\r\n        border-radius: 50%;\r\n        box-sizing: border-box;\r\n        text-align: center;\r\n        display: inline-block;\r\n        line-height: 25px;\r\n        background-color: #9E2065;\r\n    }\r\n\r\n    .circle a {\r\n        text-decoration: none;\r\n        color: #fff;\r\n        font-size: 16px;\r\n    }\r\nimg.ctr{\r\ndisplay: block;\r\nmargin-left: auto;\r\nmargin-right: auto; }\r\n</style>\r\n<div class=\"container-border2\">\r\n    \r\n        <div class=\"circle\"><a href=\"#\">26</a></div><b> Exercise #26- No pattern pintucks</b><br><ol>\r\n            <li>Setup and cast on for full needle rib</li>\r\n<li><i class=\"fa fa-asterisk\" aria-hidden=\"true\"></i>Knit 10 rows</li>\r\n<li>Set the main bed to slip in both directions</li>\r\n<li>Knit 4-6 rows</li>\r\n<li>Cancel Slip</li>\r\n<li>Knit 10 rows</li>\r\n<li>Set the ribber to slip in both directions</li>\r\n<li>Knit 4-6 rows</li>\r\n<li>Cancel slip</li>\r\n<li>Knit 10 rows<i class=\"fa fa-asterisk\" aria-hidden=\"true\"></i></li>\r\n<li>Repeat from <i class=\"fa fa-asterisk\" aria-hidden=\"true\"></i> to <i class=\"fa fa-asterisk\" aria-hidden=\"true\"></i> 3 times</li>\r\n\r\n\r\n        </ol>\r\n    \r\n    \r\n        \r\n         <img class=\"ctr\" src=\"/challenge/images/v2/110/ribber_instructions.jpg\">\r\n        \r\n    \r\n</div>\r\n\r\n<br>",
+              "legacyComponentId": 9237,
+              "order": 1
+            }
+          ],
+          "title": "CHALLENGE: No pattern Pintucks",
+          "slug": "challenge-no-pattern-pintucks",
+          "order": 7,
+          "legacy": {
+            "assignId": 6049,
+            "blockType": "Imageslideshow"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .container-border2 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        background-color: white;\r\n\r\n        margin: auto;\r\n        background-color: #ebecf0;\r\n    }\r\n\r\n    .circle {\r\n        width: 25px;\r\n        height: 25px;\r\n        border-radius: 50%;\r\n        box-sizing: border-box;\r\n        text-align: center;\r\n        display: inline-block;\r\n        line-height: 25px;\r\n        background-color: #9E2065;\r\n    }\r\n\r\n    .circle a {\r\n        text-decoration: none;\r\n        color: #fff;\r\n        font-size: 16px;\r\n    }\r\n\r\n    img.ctr {\r\n        display: block;\r\n        margin-left: auto;\r\n        margin-right: auto;\r\n    }\r\n\r\n</style>\r\n<div class=\"container-border1\">\r\n    <span class=\"yellow_highlight\"><b>Remember: Automatic patterning only controls the needles on the main bed.</b></span><br>But patterning can be combined with the ribber. Ribber needles remain in work, while slip (or tuck) takes place AT THE SAME TIME on the main bed.<br><h3>Punchcard / Electronic Machines</h3><br>\r\n    Punch or program the following stitch pattern. (DesignaKnit Users - save time and download the stitch pattern to your machine)<br><div class=\"container-border2\">\r\n        <div class=\"circle\"><a href=\"#\">27</a></div> <b>Exercise: 27 Knit Lattice Pintuck</b><br>\r\n            <img class=\"img-thumbnail\" src=\"https://www.knititnow.com/swatches/22/thumb_pintuck_lattice.jpg\" width=\"300\">\r\n            <img src=\"/challenge/images/v2/110/lattice_pintuck_small.jpg\">\r\n            \r\n            <a href=\"/challenge/images/v2/110/lattice_pintuck.stp\" download><i class=\"fa fa-download\" aria-hidden=\"true\"></i> DesignaKnit STP file</a><br><a href=\"/downloads/lattice_pintuck_punchcard.pdf\" download><i class=\"fa fa-download\" aria-hidden=\"true\"></i> Full-size punchcard</a>\r\n            \r\n        \r\n    </div>\r\n    <br>\r\n</div><br>\r\n <div class=\"container-border2\">\r\n        <div class=\"circle\"><a href=\"#\">28</a></div> <b>Exercise 28 Try other Ribber Pintuck stitch patterns</b><br><i class=\"fa fa-eye\" aria-hidden=\"true\"></i><i class=\"fa fa-eye\" aria-hidden=\"true\"></i>Look in the <a href=\"https://www.knititnow.com/knit/stitchlibrary/22/ribber-pintucks\">Knit it Now Stitch library</a> for more inspiration. \r\n<a href=\"https://www.knititnow.com/knit/stitchlibrary/22/ribber-pintucks\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/110/stitch_library.jpg\"></a>\r\n\r\n    </div>\r\n\r\n",
+              "legacyComponentId": 9238,
+              "order": 1
+            }
+          ],
+          "title": "CHALLENGE: Pintucks in Pattern",
+          "slug": "challenge-pintucks-in-pattern",
+          "order": 8,
+          "legacy": {
+            "assignId": 6050,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<span class=\"handwriting\" style=\"font-size:2em\">\r\n\r\nThe best way to understand this technique is to try it. </span>\r\n<br>\r\nBe sure you have all the \"pieces\" in place and you are familiar with each of them:<br>",
+              "legacyComponentId": 9240,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\n.circle{\r\ncolor: #ffffff;\r\nwidth:25px;\r\nheight:25px;\r\nborder-radius:50%;\r\nbox-sizing:border-box;\r\ntext-align:center;\r\ndisplay:inline-block;\r\nline-height:25px;\r\nbackground-color:#9E2065;\r\n}\r\n</style>\r\n\r\n\r\n<div id=\"practice\">\r\n\r\n    \r\n        <div id=\"paper\">\r\n            <div id=\"pattern\">\r\n                <div id=\"content\">\r\n\r\n\r\n                    <div class=\"circle\">1</div> Cast on the single bed and knit a one-color slip stitch pattern <br><div class=\"circle\">2</div> Practice knitting in 2 color slip (single bed only) <br><div class=\"circle\">3</div> Engage the ribber and set up for Full Needle Rib\r\n                    <br><div class=\"circle\">4</div> Attach the ribber color changer and  knit 2 row stripes with the color changer (full needle rib)\r\n\r\n                                       <br><div class=\"circle\">5</div>\r\n                    Choose a ribber Jacquard stitch pattern and knit in 2 colors (2 colors per row)\r\n                    <br><div class=\"circle\">6</div>\r\n                    Knit a 3 or 4 color color Ribber Jacquard stitch pattern - More than 2 colors per row\r\n                    <br></div>\r\n            </div>\r\n        </div>\r\n    \r\n\r\n</div>\r\n\r\n",
+              "legacyComponentId": 9247,
+              "order": 2
+            }
+          ],
+          "title": "CHALLENGE: Double Bed Jacquard",
+          "slug": "challenge-double-bed-jacquard",
+          "order": 9,
+          "legacy": {
+            "assignId": 6052,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 25,
+    "videos": [
+      {
+        "vimeoId": "785779636",
+        "title": null,
+        "lessonSlug": "getting-started",
+        "blockSlug": "introduction"
+      },
+      {
+        "vimeoId": "327588087",
+        "title": "Slip Stitch on Brother Machines",
+        "lessonSlug": "adding-texture",
+        "blockSlug": "slip-basics"
+      },
+      {
+        "vimeoId": "327604741",
+        "title": "Slip Stitch on Silver/Singer/Studio Machines",
+        "lessonSlug": "adding-texture",
+        "blockSlug": "slip-basics"
+      },
+      {
+        "vimeoId": "332703571",
+        "title": "Slip Stitch on Non-Patterning Machines",
+        "lessonSlug": "adding-texture",
+        "blockSlug": "slip-basics"
+      },
+      {
+        "vimeoId": "767093877",
+        "title": "Slip on Taitexma TH160",
+        "lessonSlug": "adding-texture",
+        "blockSlug": "slip-basics"
+      },
+      {
+        "vimeoId": "533647469",
+        "title": "End Needle Selection: Slip",
+        "lessonSlug": "adding-texture",
+        "blockSlug": "end-needle-selection"
+      },
+      {
+        "vimeoId": "718492073",
+        "title": "End Needle Selection: Brother Machines",
+        "lessonSlug": "adding-texture",
+        "blockSlug": "end-needle-selection"
+      },
+      {
+        "vimeoId": "718396283",
+        "title": "End Needle Selection: Silver/Singer/Studio",
+        "lessonSlug": "adding-texture",
+        "blockSlug": "end-needle-selection"
+      },
+      {
+        "vimeoId": "294441633",
+        "title": "Cheat Sheets for hand Manipulation",
+        "lessonSlug": "adding-texture",
+        "blockSlug": "challenge-texture-manual-machines"
+      },
+      {
+        "vimeoId": "746202286",
+        "title": "Needle Beetle",
+        "lessonSlug": "adding-texture",
+        "blockSlug": "challenge-texture-manual-machines"
+      },
+      {
+        "vimeoId": "294953374",
+        "title": null,
+        "lessonSlug": "adding-color",
+        "blockSlug": "single-row-stripes"
+      },
+      {
+        "vimeoId": "742452827",
+        "title": null,
+        "lessonSlug": "adding-color",
+        "blockSlug": "multi-color-slip"
+      },
+      {
+        "vimeoId": "274199831",
+        "title": null,
+        "lessonSlug": "adding-color",
+        "blockSlug": "color-changer"
+      },
+      {
+        "vimeoId": "294969382",
+        "title": null,
+        "lessonSlug": "techniques-using-slip",
+        "blockSlug": "more-than-just-stitch-patterns"
+      },
+      {
+        "vimeoId": "305148159",
+        "title": null,
+        "lessonSlug": "techniques-using-slip",
+        "blockSlug": "more-than-just-stitch-patterns"
+      },
+      {
+        "vimeoId": "204717429",
+        "title": null,
+        "lessonSlug": "techniques-using-slip",
+        "blockSlug": "marker-row"
+      },
+      {
+        "vimeoId": "151856550",
+        "title": "I-cord on the machine",
+        "lessonSlug": "techniques-using-slip",
+        "blockSlug": "i-cord-and-slip"
+      },
+      {
+        "vimeoId": "584011979",
+        "title": "I-cord Perfection",
+        "lessonSlug": "techniques-using-slip",
+        "blockSlug": "i-cord-and-slip"
+      },
+      {
+        "vimeoId": "151859232",
+        "title": null,
+        "lessonSlug": "slip-and-the-ribber",
+        "blockSlug": "cast-on"
+      },
+      {
+        "vimeoId": "151858632",
+        "title": "Circular (Tubular) Knitting",
+        "lessonSlug": "slip-and-the-ribber",
+        "blockSlug": "circular-and-u-knitting"
+      },
+      {
+        "vimeoId": "151859462",
+        "title": "half Circular | U-Knitting",
+        "lessonSlug": "slip-and-the-ribber",
+        "blockSlug": "circular-and-u-knitting"
+      },
+      {
+        "vimeoId": "151859981",
+        "title": "Ribber Pintucks",
+        "lessonSlug": "slip-and-the-ribber",
+        "blockSlug": "double-bed-pintucks"
+      },
+      {
+        "vimeoId": "465425233",
+        "title": "Automatic pintucks",
+        "lessonSlug": "slip-and-the-ribber",
+        "blockSlug": "double-bed-pintucks"
+      },
+      {
+        "vimeoId": "511340616",
+        "title": "Puffy Stitch",
+        "lessonSlug": "slip-and-the-ribber",
+        "blockSlug": "ribber-stitch-patterns"
+      },
+      {
+        "vimeoId": "312186999",
+        "title": "Waffle Slip Stitch",
+        "lessonSlug": "slip-and-the-ribber",
+        "blockSlug": "ribber-stitch-patterns"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

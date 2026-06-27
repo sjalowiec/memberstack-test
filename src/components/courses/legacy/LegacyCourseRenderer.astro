@@ -4,6 +4,7 @@ import LegacyCourseTextVideoLayout from "./LegacyCourseTextVideoLayout.astro";
 import LegacyCourseTextImageLayout from "./LegacyCourseTextImageLayout.astro";
 import LegacyCourseThreeVideosLayout from "./LegacyCourseThreeVideosLayout.astro";
 import LegacyCourseAccordionLayout from "./LegacyCourseAccordionLayout.astro";
+import LegacyCourseEmbeddedToolLayout from "./LegacyCourseEmbeddedToolLayout.astro";
 import type { CourseComponent, CourseLesson } from "../../../lib/legacy_kin/coursePreviewPoc";
 import {
   TEXT_IMAGE_LAYOUT_TYPE,
@@ -17,6 +18,7 @@ import {
   type FlatContentItem,
 } from "../../../lib/legacy_kin/courseLessonContentItems";
 import { isAccordionLayoutBlock } from "../../../lib/legacy_kin/courseAccordionLayout";
+import { isEmbeddedToolLayoutBlock } from "../../../lib/legacy_kin/courseEmbeddedToolLayout";
 
 interface Props {
   lesson: CourseLesson;
@@ -55,6 +57,10 @@ const items = item ? [item] : flattenLessonContent(lesson);
           block &&
           isAccordionLayoutBlock(block) ? (
           <LegacyCourseAccordionLayout block={block} />
+        ) : entry.type === "embeddedTool" &&
+          block &&
+          isEmbeddedToolLayoutBlock(block) ? (
+          <LegacyCourseEmbeddedToolLayout block={block} />
         ) : (
           <div class="course-preview__components legacy-course__components">
             <LegacyCourseBlock component={entry.component as CourseComponent} />

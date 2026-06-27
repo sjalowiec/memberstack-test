@@ -1,0 +1,1183 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 41,
+    "title": "5 day Cast On | Bind Off | Hem Challenge",
+    "slug": "5-day-cast-on-bind-off-hem-challenge",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_41_5_day_cast_on_bind_off_hem_challenge.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/hem.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Welcome to the Challenge",
+      "slug": "welcome-to-the-challenge",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 275,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Quick!  How many cast on methods can you name? \r\n When would you use each of them?<br>At the end of this Challenge, you should be able to answer these questions and have a good feel for what cast on to choose for your next project.<br>I confess, Knit it Now patterns are vague about casting on .... That's by design!<br>There are so many different cast on methods, not to mention hem treatments, who am I to tell you to \"E-wrap cast on\" or \"chain cast on\"?\r\n<br>Let's devote the next few days to exploring the possibilities!",
+              "legacyComponentId": 4325,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "312560421",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 4325,
+              "order": 1
+            }
+          ],
+          "title": "Introduction to the Challenge",
+          "slug": "introduction-to-the-challenge",
+          "order": 1,
+          "legacy": {
+            "assignId": 3238,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<div class=\"lead\"><b>Open  Cast on</b></div>\r\nBy definition, an open cast on will have stitches that may unravel if given the chance.<br>Some machine manuals will give instruction for this type of cast on.<br> Here are some variations:\r\n<ul>\r\n<li>Open Cast on with a cast on Comb</li>\r\n<li>Open Cast on with a wire</li>\r\n<li>Open Cast on with Ravel cord</li>\r\n</ul>\r\n<b>Most knitters graduate beyond these methods pretty quickly.</b><br>The most often used open cast on methods are:\r\n<ul>\r\n<li>Scrap and Ravel</li>\r\n<li>Using a Cast on Rag</li>\r\n</ul>\r\n<b>You will use these again and again</b>\r\n\r\n\r\n\r\n <div class=\"videopopup\" data-videotitle=\"cast_on_intro\" data-vimeoid=\"312574558\">\r\n\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/1017601723-2ac90c175aeaf0a07b94e562638d2bea1c90a9b438afd1a2079ddad9c965d1e2-d_1280x720?r=pad\">\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div>\r\n\r\n\r\n<br><hr>\r\n\r\n<div class=\"lead\"><b>Closed Cast on</b></div>\r\nWith a closed cast on, the starting stitches are secure. \r\n<br>These techniques can be categorized:\r\n<ul>\r\n<li> <b>Closed but temporary</b><br> These cast on methods are quick and have their place ... they just wouldn't be appropriate for the finished edge of your next sweater.<br>\r\nUses:\r\n<ul>\r\n<li>Cast on for swatching</li>\r\n<li>Scrap 'n Ravel Cast on</li>\r\n<li>Cut 'n Sew</li>\r\n</ul>\r\n\r\n</li>\r\n<li><b>Closed and Functional</b><br> These techniques can be used for the edges of your knitting, without any additional finishing.\r\n<ul><li>We'll cover a few of these techniques in the following section</li></ul>\r\n</li>\r\n</ul>\r\n\r\n\r\n",
+              "legacyComponentId": 4329,
+              "order": 1
+            }
+          ],
+          "title": "Closed vs Open Cast On",
+          "slug": "closed-vs-open-cast-on",
+          "order": 2,
+          "legacy": {
+            "assignId": 3242,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Day 1:  Closed Cast on",
+      "slug": "day-1-closed-cast-on",
+      "displayOrder": 10,
+      "legacy": {
+        "itemId": 280,
+        "lessonOrder": 10
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<b>Fast Closed Cast Ons</b> are used when you want to get knitting fast and you will be finishing the edge with another technique.<br>They are for \"your eyes only\" and should be considered a raw edge that needs finishing.",
+              "legacyComponentId": 6406,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "294969382",
+              "title": "Slip Cast on - Extra FAST! (Brother/Knit King)",
+              "legacySlot": 1,
+              "legacyComponentId": 6405,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858742",
+              "title": "Super Fast Closed Cast On",
+              "legacySlot": 2,
+              "legacyComponentId": 6405,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858716",
+              "title": "Every other needle cast on",
+              "legacySlot": 3,
+              "legacyComponentId": 6405,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "Every other needle cast on",
+              "title": null,
+              "legacySlot": 4,
+              "legacyComponentId": 6405,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "1022707004",
+              "title": "Slip Cast on - Extra FAST! (Singer/Silver/Studio)",
+              "legacySlot": 5,
+              "legacyComponentId": 6405,
+              "order": 2
+            }
+          ],
+          "title": "Fast Closed Cast Ons",
+          "slug": "fast-closed-cast-ons",
+          "order": 1,
+          "legacy": {
+            "assignId": 4214,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<b>Fast Closed Cast Ons</b> are used when you want to get knitting fast and you will be finishing the edge with another technique.<br>They are for \"your eyes only\" and should be considered a raw edge that needs finishing.",
+              "legacyComponentId": 4339,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860028",
+              "title": "Weaving Cast On",
+              "legacyComponentId": 4333,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<br><h3><b>No Weaving Brushes?  No Problem!</h3></b><br>This is not a video - use the arrows to flip through the images. Turn on the audio for instruction<br>",
+              "legacyComponentId": 4336,
+              "order": 4
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/41/ewrap/picture1.png",
+                  "caption": "Often patterns will instruct you to work a weaving cast on. This is a quick and easy way to get started knitting.\r\nIf you don’t have weaving brushes on your machine, you can still work this cast on."
+                },
+                {
+                  "src": "/challenge/images/v2/41/ewrap/picture2.png",
+                  "caption": "With no brushes, you simply need to weave your cast on yarn manually."
+                },
+                {
+                  "src": "/challenge/images/v2/41/ewrap/picture3.png",
+                  "caption": "To make the weaving easier, have your needles in working position and then position every other needle as shown. Alternating the positions makes it easier to weave the strand."
+                },
+                {
+                  "src": "/challenge/images/v2/41/ewrap/picture4.png",
+                  "caption": "Weave yarn over and under, over and under across the row."
+                },
+                {
+                  "src": "/challenge/images/v2/41/ewrap/picture5.png",
+                  "caption": "Hang a cast on comb to help form those first stitches"
+                },
+                {
+                  "src": "/challenge/images/v2/41/ewrap/picture6.png",
+                  "caption": "Then knit the first row."
+                },
+                {
+                  "src": "/challenge/images/v2/41/ewrap/picture8.png",
+                  "caption": "Continue Knitting"
+                },
+                {
+                  "src": "/challenge/images/v2/41/ewrap/picture9.png",
+                  "caption": "You'll notice that there is a single strand of yarn that runs through that first row of stitches"
+                },
+                {
+                  "src": "/challenge/images/v2/41/ewrap/picture9.png",
+                  "caption": "This single strand can be used to quickly gather a knitted piece."
+                },
+                {
+                  "src": "/challenge/images/v2/41/ewrap/picture10.png",
+                  "caption": "For example, knit a hat from the top down and use the weaving cast on to gather up the top.<br><i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> Create a flower:  Cast on over 6\"-8\" knit for 1\" and then bind off. Pull that cast on yarn strand to gather up the knitting really quickly to form a flower shape and use this to embellish a garment."
+                }
+              ],
+              "legacy": {
+                "enableAudio": "1",
+                "playAudio": "0"
+              },
+              "legacyComponentId": 4335,
+              "order": 5
+            }
+          ],
+          "title": "Weaving Cast ons",
+          "slug": "weaving-cast-ons",
+          "order": 2,
+          "legacy": {
+            "assignId": 3244,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<img src=\"/challenge/images/v2/41/arrow1.png\" style=\"float:left;padding-right:10px;\">\r\nSlip Cast On\r\n\r\n\r\n\r\n\r\n    \r\n\r\n        \r\n            \r\n\r\n                <ol class=\"instruction-list\">\r\n                    <li>Carriage set for Plain Knitting</li>\r\n                    <li>Pull out 30 - 60 needles</li>\r\n                    <li>Align the needles in Working Position</li>\r\n                    <li>Pull every other needle all the way out (D-E-F)</li>\r\n                    <li>Set your carriage to slip to the left</li>\r\n                    <li>Knit left (every other needle will knit)</li>\r\n                    <li>Hang a cast on comb</li>\r\n                    <li>Carriage on the left - Cancel Slip</li>\r\n                    <li>Confirm all stitches are knitting</li>\r\n                    <li>Continue Knitting</li>\r\n                    <li>Drop the knitting from the machine or practice binding off</li>\r\n                </ol>\r\n            \r\n\r\n            <img src=\"/challenge/images/v2/41/slip_setting_png.png\">\r\n        \r\n    \r\n\r\n<!-- ****************end 1*****************-->\r\n\r\n\r\n<img src=\"/challenge/images/v2/41/arrow2.png\" style=\"float:left;padding-right:10px;\">\r\nSuper Fast Closed Cast on PLUS\r\n\r\n\r\n\r\n\r\n\r\n<ol class=\"instruction-list\">\r\n<li>Carriage set to Plain Knitting</li>\r\n<li>Pull out 30-60 needles</li>\r\n<li>Put every other needle in out of work position</li>\r\n<li>Hang a cast on comb in the loops</li>\r\n<li>Pull the out of work needles into working position</li>\r\n<li>Continue Knitting</li>\r\n<li>Drop the knitting from the machine or practice binding off</li>\r\n</ol>\r\n<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> <em>Notice that when you pull on the tail of yarn from the cast on, you can quickly gather up the kntiting.  Lots of possibilities with this method!</em>\r\n\r\n\r\n<!-- ****************end 2*****************-->\r\n\r\n\r\n<img src=\"/challenge/images/v2/41/arrow3.png\" style=\"float:left;padding-right:10px;\">\r\nWeaving Cast On\r\n\r\n\r\n\r\n\r\n\r\nFor machines with weaving brushes\r\n<ol class=\"instruction-list\">\r\n<li>Carriage set for Plain Knitting</li>\r\n<li>Pull out 30 - 60 needles</li>\r\n<li>Align the needles in Working Position</li>\r\n<li>Pull every other needle all the way out (D-E-F)</li>\r\n<li>Engage both weaving brushes (check your manual)</li>\r\n<li>Carriage on the right</li>\r\n<li>Thread your carriage</li>\r\n<li>Lay the tail of yarn OVER the needles</li>\r\n<li>Hold the tail securely on the left and knit from right to left</li>\r\n<li>Hang a cast on comb and weight</li>\r\n<li>Continue knitting</li>\r\n<li>Drop the knitting from the machine or practice binding off. </li>\r\n</ol>\r\n\r\n\r\n<!-- ***************end 3 ******************-->\r\n\r\n\r\n<img src=\"/challenge/images/v2/41/arrow4.png\" style=\"float:left;padding-right:10px;\">\r\nWeaving Cast on 2 (without brushes)\r\n\r\n\r\n\r\n\r\n\r\n<ol class=\"instruction-list\">\r\n<li>Carriage set to Plain Knitting</li>\r\n<li>Pull out 30-60 needles</li>\r\n<li>Put needles into position as shown (to make it easier to weave over and under)</li>\r\n<li>Carriage on the right</li>\r\n<li>Starting on the left, weave the tail of yarn over and under the needles in work.</li>\r\n<li>Hang a cast on comb</li>\r\n<li>Thread the carriage</li>\r\n<li>Knit across the needles in work</li>\r\n</ol>\r\n\r\n\r\n<!-- ***************end 4 ******************-->\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4340,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/Fast_Caston_Exercises1.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3246",
+                "componentId": "4376",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4376,
+              "order": 2
+            }
+          ],
+          "title": "Fast Cast On Exercises",
+          "slug": "fast-cast-on-exercises",
+          "order": 3,
+          "legacy": {
+            "assignId": 3246,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<b>Functional Closed Cast Ons</b> can be used as the start of any knitting project.  They are closed, secure and pretty enough for public view.<br>The chain cast on isn't as stretchy as e-wrap, but the chained edge matches a stitch-thru-stitch bind off making the start and finish of scarves and blankets match.<br>E-wrap cast on is probably the most used method for machine knitters.  It can be used for hems and other techniques as well.",
+              "legacyComponentId": 4338,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860053",
+              "title": "Chain Cast On",
+              "legacySlot": 1,
+              "legacyComponentId": 4337,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860058",
+              "title": "Basic E-Wrap Cast On",
+              "legacySlot": 2,
+              "legacyComponentId": 4337,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "312708147",
+              "title": "Double E-wrap 3 techniques",
+              "legacySlot": 3,
+              "legacyComponentId": 4337,
+              "order": 2
+            }
+          ],
+          "title": "Functional Closed Cast Ons",
+          "slug": "functional-closed-cast-ons",
+          "order": 4,
+          "legacy": {
+            "assignId": 3243,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<img src=\"/challenge/images/v2/41/arrow5.png\" style=\"float:left;padding-right:10px;\">\r\nChain Cast On\r\n\r\n\r\n\r\n\r\n\r\nPopular cast on. Firm, not stretchy.  Appearance matches a stitch-through-stitch bind off so both ends of a knitted piece match\r\n<ol class=\"instruction-list\">\r\n<li>Carriage set for Plain Knitting</li>\r\n<li>Pull out 30 - 60 needles</li>\r\n<li>Pull every needle all the way out (D-E-F)</li>\r\n<li>Form a slip knot and place it in the hook of your latch tool</li>\r\n<li>Starting on the left (if you are right handed) position the working yarn (from the mast) to the left of the first needle.</li>\r\n<li>Place the tool between the 2 end needles</li>\r\n<li>Reach up and grab the working yarn with the hook of the tool.</li>\r\n<li>Pull down and pull the strand through the loop on the tool</li>\r\n<li>Position the tool between the next 2 needles.</li>\r\n<li>Continue across all needles</li>\r\n<li>Secure the loop on the last needle</li>\r\n<li>Knit Across</li>\r\n</ol>\r\n<i class=\"fa fa-lightbulb-o fa-2x aria-hidden=\"true\"></i>\r\n<em>It might be difficult to knit across this single chain ... especially if you’ve worked it tightly.<br>As shown in the video - using waste yarn and weights helps.  Try this cast on again when you are familiar with these techniques</em>\r\n\r\n\r\n\r\n<!-- *********End 1 **********************-->\r\n\r\n\r\n<img src=\"/challenge/images/v2/41/arrow6.png\" style=\"float:left;padding-right:10px;\">\r\nE-Wrap Cast on (Don't Skip this one!)\r\n\r\n\r\n\r\n\r\n\r\nOne of the most popular cast on methods.  It’s easy to remember, easy to work, stretchy and has many uses.\r\n<ol class=\"instruction-list\">\r\n<li>Carriage set for Plain Knitting</li>\r\n<li>Pull out 30 - 60 needles</li>\r\n<li>Pull every needle all the way out (D-E-F)</li>\r\n<li>Starting on the left, use the tail of yarn and wrap each needle in a counter-clockwise direction</li>\r\n<li>Keep the loops pushed back against the edge of the machine</li>\r\n</ol>\r\n<i class=\"fa fa-lightbulb-o fa-2x aria-hidden=\"true\"></i><em>It might be difficult to knit across this single cast on edge ... especially if you’ve worked it tightly.<br>As shown in the video - using waste yarn and weights helps.  Try this cast on again when you are familiar with these techniques</em><br>\r\n\r\n\r\n<!-- *************End 2 *******************-->\r\n\r\n\r\n<img src=\"/challenge/images/v2/41/arrow7.png\" style=\"float:left;padding-right:10px;\">\r\nDouble Strand E-Wrap Cast On\r\n\r\n\r\n\r\n\r\n\r\n<ol class=\"instruction-list\">\r\n<li>Try the e-wrap cast on with a doubled strand of yarn.</li>\r\n\r\n<li>Use a contrasting color of yarn doubled</li>\r\n\r\n<li>Using scrap and ravel with weights helps to knit this.</li>\r\n</ol>\r\n\r\n\r\n<!-- *************End 3 *******************-->\r\n\r\n\r\n<img src=\"/challenge/images/v2/41/arrow8.png\" style=\"float:left;padding-right:10px;\">\r\nDouble E-Wrap\r\n\r\n\r\n\r\n\r\n\r\nWrap each needle twice, adding stability<br>\r\n<ol class=\"instruction-list\">\r\n\r\n<li>Carriage set for Plain Knitting</li>\r\n<li>Pull out 30 - 60 needles</li>\r\n<li>Pull every needle all the way out (D-E-F)</li>\r\n<li>Starting on the left, use the tail of yarn and wrap the first needle in a counter-clockwise direction</li>\r\n<li> Wrap the same needle a second time</li>\r\n<li>Pull the second wrap through the first</li>\r\n<li>Repeat over each needle as needed</li>\r\n<li>Keep the finished cast on stitches near the needlebed</li>\r\n<li>Knit a few inches and drop the work from the machine or practice a bind off technique</li>\r\n</ol>\r\n\r\n\r\n<!-- *************End 3 *******************-->\r\n\r\n\r\n<img src=\"/challenge/images/v2/41/arrow9.png\" style=\"float:left;padding-right:10px;\">\r\nLong Tail Cast On\r\n\r\n\r\n\r\n\r\n\r\n<ol class=\"instruction-list\">\r\n<li>Carriage set for Plain Knitting</li>\r\n<li>Pull out 30 - 60 needles</li>\r\n<li>Pull every needle all the way out (D-E-F)</li>\r\n<li>Starting on the left, use the tail of yarn and wrap the first needle</li>\r\n<li>Keep the strand behind the latch, wrap the 2nd needle</li>\r\n<li>Lay the working yarn over the first needle, positioning it in the hook of the first needle.</li>\r\n<li>Pull the loop in the hook through the loop behind the latch to form your first cast on stitch.</li>\r\n<li>Wrap the 3rd needle</li>\r\n<li>Lay the working yarn over the 2nd needle, positioning it in the hook of the second needle</li>\r\n<li>Pull the loop through, creating the 2nd cast on stitch</li>\r\n<li>Repeat across until all needles are cast on</li>\r\n<li>Knit a few inches and drop the work from the machine or practice a bind off method.</li>\r\n</ol>\r\n\r\n",
+              "legacyComponentId": 4342,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/functional_co_exercises1.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3247",
+                "componentId": "4377",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4377,
+              "order": 2
+            }
+          ],
+          "title": "Functional Closed Cast On Exercises",
+          "slug": "functional-closed-cast-on-exercises",
+          "order": 5,
+          "legacy": {
+            "assignId": 3247,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Day 2: Playing Catch up",
+      "slug": "day-2-playing-catch-up",
+      "displayOrder": 20,
+      "legacy": {
+        "itemId": 277,
+        "lessonOrder": 20
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/Bindoff_worksheet1.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3249",
+                "componentId": "4378",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4378,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "312795973",
+              "title": null,
+              "legacyComponentId": 4349,
+              "order": 2
+            }
+          ],
+          "title": "More Practice",
+          "slug": "more-practice",
+          "order": 1,
+          "legacy": {
+            "assignId": 3249,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "No matter what cast on method you choose, it's recommended that you use the Scrap 'n Ravel technique.<br><b>For the Scrap: </b>Use a yarn that is similar in weight to your garment yarn<br><b>For the <a data-GlossaryId='249' class='glossaryhelp'>Ravel Cord <i class='fa fa-question-circle' aria-hidden='true'></i></a>: </b> Use a strong, smooth yarn in a contrasting color<br>",
+              "legacyComponentId": 4347,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "237470165",
+              "title": "Scrap on",
+              "legacySlot": 1,
+              "legacyComponentId": 4348,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "234233904",
+              "title": "Ravel Cord Tips",
+              "legacySlot": 2,
+              "legacyComponentId": 4348,
+              "order": 3
+            }
+          ],
+          "title": "Scrap 'n Ravel",
+          "slug": "scrap-n-ravel",
+          "order": 2,
+          "legacy": {
+            "assignId": 3245,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151860044",
+              "title": "Creating a Cast on Rag",
+              "legacyComponentId": 4346,
+              "order": 1
+            }
+          ],
+          "title": "Cast on Rag",
+          "slug": "cast-on-rag",
+          "order": 3,
+          "legacy": {
+            "assignId": 3248,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "252258022",
+              "title": "Favorite Bind Off",
+              "legacySlot": 1,
+              "legacyComponentId": 4354,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "258782290",
+              "title": "Figure 8 Bind Off",
+              "legacySlot": 2,
+              "legacyComponentId": 4354,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "284532122",
+              "title": "Partial Bind Off",
+              "legacySlot": 3,
+              "legacyComponentId": 4354,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "283833919",
+              "title": "Scrap Off",
+              "legacySlot": 4,
+              "legacyComponentId": 4354,
+              "order": 1
+            }
+          ],
+          "title": "Basic Bind Offs",
+          "slug": "basic-bind-offs",
+          "order": 4,
+          "legacy": {
+            "assignId": 3250,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858299",
+              "title": "Stretchiest Bind Off Ever!",
+              "legacySlot": 1,
+              "legacyComponentId": 4355,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857732",
+              "title": "Stretchy Bind Off without Gate Pegs",
+              "legacySlot": 2,
+              "legacyComponentId": 4355,
+              "order": 1
+            }
+          ],
+          "title": "Stretchy Bind Off",
+          "slug": "stretchy-bind-off",
+          "order": 5,
+          "legacy": {
+            "assignId": 3256,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Day 3: Basic Hems",
+      "slug": "day-3-basic-hems",
+      "displayOrder": 30,
+      "legacy": {
+        "itemId": 276,
+        "lessonOrder": 30
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\nPlain or Fancy, hems can add the perfect touch to any knitting project.<br>If you are knitting a sweater, a simple cast on edge may be the casual look you want.  Traditional ribbed hems and cuffs have their place ... but you can do so much more! <br>No matter what your pattern says, take charge and plan for hems for your next project!\r\n\r\n\t<figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/41/hems_thumb.jpg\"><figcaption align=\"center\"><br><b>Want more hem inspiration? Check out the classroom \"Hems for all Occasions\"</b></figcaption>\r\n</figure>\r\n\r\n",
+              "legacyComponentId": 4358,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858757",
+              "title": "Rolled Hem Study",
+              "legacySlot": 1,
+              "legacyComponentId": 4359,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860039",
+              "title": "Hung Hem Basics",
+              "legacySlot": 2,
+              "legacyComponentId": 4359,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857416",
+              "title": "Basic Turning Rows",
+              "legacySlot": 3,
+              "legacyComponentId": 4359,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "265978737",
+              "title": "Hung Hem with Cast on Comb",
+              "legacySlot": 4,
+              "legacyComponentId": 4359,
+              "order": 2
+            }
+          ],
+          "title": "Break out of the Ribbing Rut",
+          "slug": "break-out-of-the-ribbing-rut",
+          "order": 1,
+          "legacy": {
+            "assignId": 3258,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/hem_exercises1.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3260",
+                "componentId": "4379",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4379,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\n<!-- ************ column wrapper*********************-->\r\n\r\n\r\n<img src=\"/challenge/images/v2/41/arrow10.png\" style=\"float:left;padding-right:10px;\">\r\nRolled Hem Study\r\n\r\n\r\n\r\n\r\n\r\n<div class=\"lead\"><b>Challenge 1:</b></div>\r\nKnit 3 swatches with rolled hems, experiment with the tensions as shown in the video\r\n\r\n<div class=\"lead\"><b>Challenge 2:</b></div>\r\nSeam two of the swatches, focusing on perfection. Even if this is a quick “cheater’s”  hem, there’s no reason for the seam to scream “home-made”.<br>\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/41/seam_ugly.jpg\">\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/41/seam1.jpg\">\r\n\r\n\r\n\r\n\r\n\r\n\r\n<!-- ************end 1*********************-->\r\n\r\n\r\n<img src=\"/challenge/images/v2/41/arrow11.png\" style=\"float:left;padding-right:10px;\">\r\nBasic Hung Hem #1\r\n\r\n\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/41/basic_hem1.png\">\r\n<ol class=\"instruction-list\">\r\n<li>Cast on 30 - 60 stitches with waste yarn </li>\r\n<li> Knit 6-10 rows</li>\r\n<li> Knit a row of contrasting color ravel cord</li>\r\n<li> Set tension to garment tension MINUS 1</li>\r\n<li> Knit 10 rows</li>\r\n<li> Knit a turning row</li>\r\n<li> Set tension to garment tension</li>\r\n<li> Knit 10 rows </li>\r\n<li> Pick up the open cast on stitches</li>\r\n<li> Make sure you’ve picked up EVERY stitch</li>\r\n<li> Pull out all the needles</li>\r\n<li> Close the latches</li>\r\n<li> Knit a few inches</li>\r\n<li> Drop the work or practice a bind off</li>\r\n<li> Place a ruler or pencil in the hem and pull to “pop” the stitches</li>\r\n</ol>\r\n\r\n\r\n\r\n\r\n\r\n\r\n<!-- ***************end 2 *****************-->\r\n\r\n\r\n<img src=\"/challenge/images/v2/41/arrow12.png\" style=\"float:left;padding-right:10px;\">\r\nBasic Hung Hem #2 (tension change)\r\n\r\n\r\n\r\n\r\n\r\n<ol class=\"instruction-list\">\r\n<li> Cast on 30 - 60 stitches with waste yarn </li>\r\n<li> Knit 6-10 rows</li>\r\n<li> Knit a row of contrasting color ravel cord</li>\r\n<li> Set tension to garment tension MINUS 2</li>\r\n<li> Knit 10 rows</li>\r\n<li> Knit a turning row</li>\r\n<li> Set tension to garment tension MINUS 1</li>\r\n<li> Knit 10 rows</li>\r\n<li> Pick up the open cast on stitches</li>\r\n<li> Make sure you’ve picked up EVERY stitch</li>\r\n<li> Pull out all the needles</li>\r\n<li> Close the latches</li>\r\n<li> Knit a few inches at GARMENT TENSION</li>\r\n<li> Drop the work or practice a bind off</li>\r\n<li> Place a ruler or pencil in the hem and pull to “pop” the stitches</li>\r\n</ol>\r\n\r\n\t<img src=\"/challenge/images/v2/41/basic_hem2.png\">\r\n\r\n\r\n<!-- *****************end 3 ****************-->\r\n\r\n\r\n<img src=\"/challenge/images/v2/41/arrow13.png\" style=\"float:left;padding-right:10px;\">\r\nBasic Hung Hem #3 (e-wrap)\r\n\r\n\r\n\r\n\r\n\r\n<ol class=\"instruction-list\">\r\n<li> E-wrap Cast on\r\n<li> Set tension to garment tension MINUS 2\r\n<li> Knit 10 rows\r\n<li> Knit a turning row\r\n<li> Set tension to garment tension MINUS 1\r\n<li> Knit 10 rows\r\n<li> Pick up the e-wrap loops\r\n<li> Make sure you’ve picked up EVERY stitch\r\n<li> Pull out all the needles\r\n<li> Close the latches\r\n<li> Knit a few inches at GARMENT TENSION\r\n<li> Drop the work or practice a bind off\r\n<li> Place a ruler or pencil in the hem and pull to “pop” the stitches\r\n</ol>\r\n<img src=\"/challenge/images/v2/41/basic_hem3.png\">\r\n\r\n\r\n\r\n<!-- ************End 4*********************-->\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/41/arrow14.png\" style=\"float:left;padding-right:10px;\">\r\nHung Hem Basics #4 (every other needle)\r\n\r\n\r\n\r\n\r\n\r\n<ol class=\"instruction-list\">\r\n<li> Cast on 30 - 60 stitches over every other needle with waste yarn </li>\r\n<li> Knit a few rows in waste yarn</li>\r\n<li> Knit a row of contrasting color ravel cord</li>\r\n<li> Set tension to garment tension MINUS 2</li>\r\n<li> Change to garment yarn</li>\r\n<li> Knit 4 rows</li>\r\n<li> Pull all needles into working position</li>\r\n<li> Knit 4 rows over all needles</li>\r\n<li> Knit a turning row</li>\r\n<li> Set tension to garment tension MINUS 1</li>\r\n<li> Knit 8 rows</li>\r\n<li> Pick up the open cast on stitches</li>\r\n<li> Make sure you’ve picked up EVERY stitch</li>\r\n<li> Pull out all the needles</li>\r\n<li> Close the latches</li>\r\n<li> Knit a few inches at GARMENT TENSION</li>\r\n<li> Drop the work or practice a bind off</li>\r\n<li> Place a ruler or pencil in the hem and pull to “pop” the stitches</li>\r\n</ol>\r\n<img src=\"/challenge/images/v2/41/basic_hem4.png\">\r\n\r\n\r\n\r\n<!-- ************End wrapper*********************-->\r\n\r\n\t<img src=\"/challenge/images/v2/41/dont_skip_this.gif\">\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4364,
+              "order": 2
+            }
+          ],
+          "title": "Hem Exercises",
+          "slug": "hem-exercises",
+          "order": 2,
+          "legacy": {
+            "assignId": 3260,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859061",
+              "title": "Perfect Designer Hems",
+              "legacyComponentId": 4361,
+              "order": 1
+            }
+          ],
+          "title": "Designer Hem",
+          "slug": "designer-hem",
+          "order": 3,
+          "legacy": {
+            "assignId": 3259,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/perfect_designer_hem2.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3261",
+                "componentId": "4380",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4380,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<img src=\"/challenge/images/v2/41/arrow14.png\" style=\"float:left;padding-right:10px;\">\r\nOnce you've worked this gorgeous designer hem, you'll never look back! It takes a bit more work, but there is no flair or flipping! <br><b> Please, don't just watch the video ... give it a try!</b><br>\r\n\r\n\r\n\r\n<br><ol class=\"instruction-list\">\r\n<li> Starting with scrap and ravel cast on 30-60 stitches.</li>\r\n<li> With garment yarn at garment tension knit for 4-6”</li>\r\n<li> Drop the work (or practice a bind off)</li>\r\n<li> With the private (purl) side facing fold the waste yarn back</li>\r\n<li> Reducing the number of stitches by about 15%, rehang the garment stitches on the machine.</li>\r\n<li> Remove the scrap and confirm all stitches are in the hooks<hr></li>\r\n<li> Knit 1 row at garment tension</li>\r\n<li> Knit a marker row*</li>\r\n<li> At garment tension MINUS 1, knit 8-10 rows.</li>\r\n<li> Knit a turning row</li>\r\n<li> At garment tension MINUS 1, knit 8-10 rows</li>\r\n<li> Pick up the marker row</li>\r\n<li> Loosely bind off</li>\r\n<li> Block well.</li>\r\n\r\n\r\n</ol>\r\n\r\n\t<img src=\"/challenge/images/v2/41/basic_hem5.png\">\r\n\r\n\r\n\r\n<!-- *********************************-->\r\n",
+              "legacyComponentId": 4362,
+              "order": 2
+            }
+          ],
+          "title": "Try the Designer Hem",
+          "slug": "try-the-designer-hem",
+          "order": 4,
+          "legacy": {
+            "assignId": 3261,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857423",
+              "title": null,
+              "legacyComponentId": 9137,
+              "order": 1
+            }
+          ],
+          "title": "Reverse Hung Hem",
+          "slug": "reverse-hung-hem",
+          "order": 5,
+          "legacy": {
+            "assignId": 5996,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Day 4: Get Fancy",
+      "slug": "day-4-get-fancy",
+      "displayOrder": 40,
+      "legacy": {
+        "itemId": 278,
+        "lessonOrder": 40
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858536",
+              "title": "Picot Bind Off",
+              "legacySlot": 1,
+              "legacyComponentId": 4367,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859516",
+              "title": "Chained Hem",
+              "legacySlot": 2,
+              "legacyComponentId": 4367,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859900",
+              "title": "Scalloped Eyelet Hem",
+              "legacySlot": 3,
+              "legacyComponentId": 4367,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858833",
+              "title": "Faux Garter Stitch Hems",
+              "legacySlot": 4,
+              "legacyComponentId": 4367,
+              "order": 1
+            }
+          ],
+          "title": "Add your own touch",
+          "slug": "add-your-own-touch",
+          "order": 2,
+          "legacy": {
+            "assignId": 3262,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/fancy_exercises1.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3263",
+                "componentId": "4381",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4381,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<img src=\"/challenge/images/v2/41/arrow15.png\" style=\"float:left;padding-right:10px;\">\r\nPicot Bind Off\r\n\r\n\r\n\r\n\r\n    \r\n<!-- 2 column-->\r\n        \r\n            \r\n\r\n                <ol class=\"instruction-list\">\r\n<li> Carriage on the right</li>\r\n<li> Bind off 2-3 stitches (for easier seaming)</li>\r\n<li> Pull out 3 empty needles</li>\r\n<li> Use your latch tool and pull the working yarn down between the first 2 empty needles</li>\r\n<li> Chain Cast On*  3 stitches  by working a chain loosely over the first 2 needles, then hang the loop over the 3rd needle.</li>\r\n<li> Hand knit 5 stitches loosely (including the 3 you just cast on)</li>\r\n<li> Bind off the 5 stitches, stitch-through-stitch and hang the loop on the next needle in work.</li>\r\n<li> The first picot is complete. Repeat across the piece. Binding off the last few stitches without a picot for easier seaming</li>\r\n</ol>\r\n            \r\n            <img src=\"/challenge/images/v2/41/picot_bo.jpg\">          \r\n            \r\n        \r\n\r\n    \r\n\r\n\r\n<!-- * * * * * * * * * end 1 * * * * ** * -->\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/41/arrow16.png\" style=\"float:left;padding-right:10px;\">\r\nChained hem\r\n\r\n\r\n\r\n\r\n    \r\n<!-- 2 column-->\r\n     \r\n\r\n                <ol class=\"instruction-list\">\r\n<li> Cast on with waste yarn and ravel cord.</li>\r\n<li> Using the garment yarn (not in the feeder)</li>\r\n<li> Loosely, Chain Cast On over the ravel cord across the row</li>\r\n<li> For the last stitch, loop the working yarn under the last needle and hang the loop from the latch tool on the last needle.</li>\r\n<li> Push the chain back against the machine</li>\r\n<li> Close the Latches</li>\r\n<li> Free pass*  the carriage if needed)</li>\r\n<li> Knit 1 row</li>\r\n<li> Remove the yarn from the carriage and tension mast (to make it easier to chain loosely)</li>\r\n<li> Carefully pull the work away from the needlebed.</li>\r\n<li> Reach under the knitting and chain cast on again, positioning the chain between the knitting and the needlebed. (The chains will present on the knit side of the work)</li>\r\n<li> Free pass the carriage</li>\r\n<li>Repeat steps 3-9 as many times as you like.</li>\r\n</ol>\r\n<img src=\"/challenge/images/v2/41/chained_hem_example.JPG\">\r\n            \r\n     \r\n</div>\r\n<!-- * * * * * * * * * end 2 * * * * ** * -->\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/41/arrow17.png\" style=\"float:left;padding-right:10px;\">\r\nScalloped Eyelet Hem\r\n\r\n\r\n\r\n\r\n    \r\n                <ol class=\"instruction-list\">\r\n<li> Cast on over every other needle with waste yarn and ravel cord.</li>\r\n<li> With main yarn, knit 2 rows (every other needle)</li>\r\n<li> Put all  needles into working position</li>\r\n<li> Knit 1 row</li>\r\n<li> Hang the very first row of garment yarn on every other needle (small hung hem)</li>\r\n<li> Pull out all needles. Knit 1 row</li>\r\n<li> Transfer every other stitch to create row of eyelets.  </li>\r\n<li> Confirm that all needles are in work. knit 1 row</li>\r\n<li> Set carriage to hold in both directions</li>\r\n<li> Pull every 8-10 needle to hold position</li>\r\n<li> Knit 6-8 rows (tucking the needles in hold). Knit slowly and confirm that the needles adjacent to the held needles are knitting</li>\r\n<li> Pull all the needles out</li>\r\n<li> Cancel hold, weight each scallop knit 1 row</li>\r\n<li> Pull the needles out again and knit 1 row</li>\r\n<li> Continue knitting</li>\r\n</ol>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/41/630-240.jpg\">\r\n            \r\n   \r\n</div>\r\n<!-- * * * * * * * * * end 3 * * * * ** * -->\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/41/arrow18.png\" style=\"float:left;padding-right:10px;\">\r\nScalloped Eyelet Hem -Variation 1\r\n\r\n\r\n\r\n    \r\n                <ol class=\"instruction-list\">\r\n<li> Cast on with waste yarn and ravel cord</lil>\r\n<li> E-wrap cast on with double strand</li>\r\n<li> Continue as the Scalloped Eyelet Hem above</li>\r\n</ol>\r\n<img src=\"/challenge/images/v2/41/double_e_scallop.jpg\">\r\n           \r\n       \r\n\r\n<!-- * * * * * * * * * end 4 * * * * ** * -->\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/41/arrow19.png\" style=\"float:left;padding-right:10px;\">\r\nScalloped Eyelet Hem -Variation 2\r\n\r\n\r\n\r\n\r\n    \r\n                <ol class=\"instruction-list\">\r\n<li> Use either cast on method (small hem or double e-wrap)</li>\r\n<li> Knit the Scalloped Eyelet Hem</li>\r\n<li> Add a row of eyelets after completing the scalloped tucks</li>\r\n</ol>\r\n<img src=\"/challenge/images/v2/41/double_eyelet_scallop.jpg\">\r\n            \r\n      \r\n",
+              "legacyComponentId": 4368,
+              "order": 2
+            }
+          ],
+          "title": "Fancy Exercises",
+          "slug": "fancy-exercises",
+          "order": 3,
+          "legacy": {
+            "assignId": 3263,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859907",
+              "title": "Best EVER Picot Hem",
+              "legacyComponentId": 4407,
+              "order": 1
+            }
+          ],
+          "title": "BONUS - my FAV!",
+          "slug": "bonus-my-fav",
+          "order": 4,
+          "legacy": {
+            "assignId": 3277,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "All this talk about casting on and hems ... what about adding a decorative edge AFTER you knit the piece?<br>Consider decorative afterthought edges.",
+              "legacyComponentId": 4409,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859733",
+              "title": "Sawtooth Edges on the Machine",
+              "legacyComponentId": 4408,
+              "order": 2
+            }
+          ],
+          "title": "Afterthought Edges",
+          "slug": "afterthought-edges",
+          "order": 5,
+          "legacy": {
+            "assignId": 3278,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Day 5 - Pull it all together",
+      "slug": "day-5-pull-it-all-together",
+      "displayOrder": 60,
+      "legacy": {
+        "itemId": 279,
+        "lessonOrder": 60
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n.lightlist ul { padding-left:20px; list-style:none; }\r\n.lightlist li { margin-bottom:10px; }\r\n.lightlist li:before {'FontAwesome';\r\n    content: '\\f00c';\r\n    margin:0 5px 0 -15px;\r\n}\r\n</style>\r\n\r\n\r\n\r\nNow that you have these skills under your belt, let's knit something more than  just swatches! \r\n<br>Use the Knit it Now pattern (in the next section) to knit your own Squirrel Cardigan on any machine, with any yarn or stitch pattern!<br>\r\n<ul class=\"lightlist\" style=\"list-style:none;\">\r\n<li>Knit and measure a swatch</li>\r\n<li>Choose your size</li>\r\n<li>Enter your gauge</li>\r\n<li>Build your custom pattern</li>\r\n<li>Get knitting!</li>\r\n</ul>\r\n<b>Are you a brand new knitter?</b><br>\r\nKnit your Squirrel in plain knitting and concentrate on following the pattern and using your new cast on and bind off skills.\r\n<br><b>More Experienced?</b><br>\r\nKnit your Squirrel in a stitch pattern or add stripes.  Focus on a new-to-you cast on and bind off method.  Experiment with different finishing techniques.\r\n\r\n<br><center><img src=\"/challenge/images/v2/41/get_inspired.gif\"></center>\r\n\r\n\r\n<img src=\"/challenge/images/v2/41/squirrel.jpg\"><br><img src=\"/challenge/images/v2/41/squirrel_cardi_1.jpg\">\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4370,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pinterest",
+              "notes": [
+                "Legacy Pinterest embed; replace with static content or omit."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3253",
+                "PINTERESTID": "9",
+                "TYPEOF": "Pinterest"
+              },
+              "legacyComponentId": 4372,
+              "order": 2
+            }
+          ],
+          "title": "Practical practice",
+          "slug": "practical-practice",
+          "order": 1,
+          "legacy": {
+            "assignId": 3253,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator (legacy garment workflow).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3254",
+                "CHALLENGE_COMPONENTID": "4351",
+                "GARMENTID": "890",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "pattern_name",
+                "REDIRECT_TO": "/challenge/41/Group/3255/item|Day 5 - Pull it all together: Your Pattern",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "rows",
+                "SIZING_DATAMODEL_ELEMENT": "size",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "stitches",
+                "SWATCHROWS": "swatch_rows",
+                "SWATCHSTITCHES": "swatch_stitches",
+                "SWATCHWEIGHT": "swatch_weight",
+                "USESWATCHLOGIC": "yes"
+              },
+              "legacyComponentId": 4351,
+              "order": 1
+            }
+          ],
+          "title": "Squirrel Pattern",
+          "slug": "squirrel-pattern",
+          "order": 2,
+          "legacy": {
+            "assignId": 3254,
+            "blockType": "Pattern"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): pattern_name",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 3254 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3255",
+                "DATAMODEL_ELEMENTS": "pattern_name",
+                "DATAMODEL_REDIRECT": "3254",
+                "TYPEOF": "DataValidation"
+              },
+              "legacyComponentId": 4352,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'pattern_name'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3255",
+                "DATAMODEL_ICON": "fa fa-download",
+                "LABLE": "Download Your Pattern",
+                "PATTERN_DATAMODEL_ELEMENT": "pattern_name",
+                "TYPEOF": "DocumentPattern",
+                "VIEWHEIGHT": "600"
+              },
+              "legacyComponentId": 4353,
+              "order": 2
+            }
+          ],
+          "title": "Your Pattern",
+          "slug": "your-pattern",
+          "order": 3,
+          "legacy": {
+            "assignId": 3255,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\t<img src=\"/challenge/images/v2/41/share_your_success.gif\">\r\n",
+              "legacyComponentId": 4375,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "squirrel",
+                "BUTTONLABLE": "Upload",
+                "CHALLENGE_ASSIGNID": "3264",
+                "QTY": "2",
+                "SUCCESSMESSAGE": "Thank you",
+                "TYPEOF": "ImageUpload"
+              },
+              "legacyComponentId": 4373,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageGallary",
+              "notes": [
+                "Unmapped legacy component type: ImageGallary"
+              ],
+              "legacyFields": {
+                "ACTION": "squirrel",
+                "CHALLENGE_ASSIGNID": "3264",
+                "TYPEOF": "ImageGallary",
+                "WORKSHOPONLY": "0"
+              },
+              "legacyComponentId": 4374,
+              "order": 3
+            }
+          ],
+          "title": "Share",
+          "slug": "share",
+          "order": 4,
+          "legacy": {
+            "assignId": 3264,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 32,
+    "videos": [
+      {
+        "vimeoId": "312560421",
+        "title": null,
+        "lessonSlug": "welcome-to-the-challenge",
+        "blockSlug": "introduction-to-the-challenge"
+      },
+      {
+        "vimeoId": "294969382",
+        "title": "Slip Cast on - Extra FAST! (Brother/Knit King)",
+        "lessonSlug": "day-1-closed-cast-on",
+        "blockSlug": "fast-closed-cast-ons"
+      },
+      {
+        "vimeoId": "151858742",
+        "title": "Super Fast Closed Cast On",
+        "lessonSlug": "day-1-closed-cast-on",
+        "blockSlug": "fast-closed-cast-ons"
+      },
+      {
+        "vimeoId": "151858716",
+        "title": "Every other needle cast on",
+        "lessonSlug": "day-1-closed-cast-on",
+        "blockSlug": "fast-closed-cast-ons"
+      },
+      {
+        "vimeoId": "Every other needle cast on",
+        "title": null,
+        "lessonSlug": "day-1-closed-cast-on",
+        "blockSlug": "fast-closed-cast-ons"
+      },
+      {
+        "vimeoId": "1022707004",
+        "title": "Slip Cast on - Extra FAST! (Singer/Silver/Studio)",
+        "lessonSlug": "day-1-closed-cast-on",
+        "blockSlug": "fast-closed-cast-ons"
+      },
+      {
+        "vimeoId": "151860028",
+        "title": "Weaving Cast On",
+        "lessonSlug": "day-1-closed-cast-on",
+        "blockSlug": "weaving-cast-ons"
+      },
+      {
+        "vimeoId": "151860053",
+        "title": "Chain Cast On",
+        "lessonSlug": "day-1-closed-cast-on",
+        "blockSlug": "functional-closed-cast-ons"
+      },
+      {
+        "vimeoId": "151860058",
+        "title": "Basic E-Wrap Cast On",
+        "lessonSlug": "day-1-closed-cast-on",
+        "blockSlug": "functional-closed-cast-ons"
+      },
+      {
+        "vimeoId": "312708147",
+        "title": "Double E-wrap 3 techniques",
+        "lessonSlug": "day-1-closed-cast-on",
+        "blockSlug": "functional-closed-cast-ons"
+      },
+      {
+        "vimeoId": "312795973",
+        "title": null,
+        "lessonSlug": "day-2-playing-catch-up",
+        "blockSlug": "more-practice"
+      },
+      {
+        "vimeoId": "237470165",
+        "title": "Scrap on",
+        "lessonSlug": "day-2-playing-catch-up",
+        "blockSlug": "scrap-n-ravel"
+      },
+      {
+        "vimeoId": "234233904",
+        "title": "Ravel Cord Tips",
+        "lessonSlug": "day-2-playing-catch-up",
+        "blockSlug": "scrap-n-ravel"
+      },
+      {
+        "vimeoId": "151860044",
+        "title": "Creating a Cast on Rag",
+        "lessonSlug": "day-2-playing-catch-up",
+        "blockSlug": "cast-on-rag"
+      },
+      {
+        "vimeoId": "252258022",
+        "title": "Favorite Bind Off",
+        "lessonSlug": "day-2-playing-catch-up",
+        "blockSlug": "basic-bind-offs"
+      },
+      {
+        "vimeoId": "258782290",
+        "title": "Figure 8 Bind Off",
+        "lessonSlug": "day-2-playing-catch-up",
+        "blockSlug": "basic-bind-offs"
+      },
+      {
+        "vimeoId": "284532122",
+        "title": "Partial Bind Off",
+        "lessonSlug": "day-2-playing-catch-up",
+        "blockSlug": "basic-bind-offs"
+      },
+      {
+        "vimeoId": "283833919",
+        "title": "Scrap Off",
+        "lessonSlug": "day-2-playing-catch-up",
+        "blockSlug": "basic-bind-offs"
+      },
+      {
+        "vimeoId": "151858299",
+        "title": "Stretchiest Bind Off Ever!",
+        "lessonSlug": "day-2-playing-catch-up",
+        "blockSlug": "stretchy-bind-off"
+      },
+      {
+        "vimeoId": "151857732",
+        "title": "Stretchy Bind Off without Gate Pegs",
+        "lessonSlug": "day-2-playing-catch-up",
+        "blockSlug": "stretchy-bind-off"
+      },
+      {
+        "vimeoId": "151858757",
+        "title": "Rolled Hem Study",
+        "lessonSlug": "day-3-basic-hems",
+        "blockSlug": "break-out-of-the-ribbing-rut"
+      },
+      {
+        "vimeoId": "151860039",
+        "title": "Hung Hem Basics",
+        "lessonSlug": "day-3-basic-hems",
+        "blockSlug": "break-out-of-the-ribbing-rut"
+      },
+      {
+        "vimeoId": "151857416",
+        "title": "Basic Turning Rows",
+        "lessonSlug": "day-3-basic-hems",
+        "blockSlug": "break-out-of-the-ribbing-rut"
+      },
+      {
+        "vimeoId": "265978737",
+        "title": "Hung Hem with Cast on Comb",
+        "lessonSlug": "day-3-basic-hems",
+        "blockSlug": "break-out-of-the-ribbing-rut"
+      },
+      {
+        "vimeoId": "151859061",
+        "title": "Perfect Designer Hems",
+        "lessonSlug": "day-3-basic-hems",
+        "blockSlug": "designer-hem"
+      },
+      {
+        "vimeoId": "151857423",
+        "title": null,
+        "lessonSlug": "day-3-basic-hems",
+        "blockSlug": "reverse-hung-hem"
+      },
+      {
+        "vimeoId": "151858536",
+        "title": "Picot Bind Off",
+        "lessonSlug": "day-4-get-fancy",
+        "blockSlug": "add-your-own-touch"
+      },
+      {
+        "vimeoId": "151859516",
+        "title": "Chained Hem",
+        "lessonSlug": "day-4-get-fancy",
+        "blockSlug": "add-your-own-touch"
+      },
+      {
+        "vimeoId": "151859900",
+        "title": "Scalloped Eyelet Hem",
+        "lessonSlug": "day-4-get-fancy",
+        "blockSlug": "add-your-own-touch"
+      },
+      {
+        "vimeoId": "151858833",
+        "title": "Faux Garter Stitch Hems",
+        "lessonSlug": "day-4-get-fancy",
+        "blockSlug": "add-your-own-touch"
+      },
+      {
+        "vimeoId": "151859907",
+        "title": "Best EVER Picot Hem",
+        "lessonSlug": "day-4-get-fancy",
+        "blockSlug": "bonus-my-fav"
+      },
+      {
+        "vimeoId": "151859733",
+        "title": "Sawtooth Edges on the Machine",
+        "lessonSlug": "day-4-get-fancy",
+        "blockSlug": "afterthought-edges"
+      }
+    ],
+    "downloadCount": 6,
+    "downloads": [
+      {
+        "filename": "/downloads/Fast_Caston_Exercises1.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "day-1-closed-cast-on",
+        "blockSlug": "fast-cast-on-exercises"
+      },
+      {
+        "filename": "/downloads/functional_co_exercises1.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "day-1-closed-cast-on",
+        "blockSlug": "functional-closed-cast-on-exercises"
+      },
+      {
+        "filename": "/downloads/Bindoff_worksheet1.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "day-2-playing-catch-up",
+        "blockSlug": "more-practice"
+      },
+      {
+        "filename": "/downloads/hem_exercises1.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "day-3-basic-hems",
+        "blockSlug": "hem-exercises"
+      },
+      {
+        "filename": "/downloads/perfect_designer_hem2.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "day-3-basic-hems",
+        "blockSlug": "try-the-designer-hem"
+      },
+      {
+        "filename": "/downloads/fancy_exercises1.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "day-4-get-fancy",
+        "blockSlug": "fancy-exercises"
+      }
+    ]
+  }
+}

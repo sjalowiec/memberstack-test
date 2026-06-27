@@ -1,0 +1,787 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 12,
+    "title": "Swatches, Tension and Gauge",
+    "slug": "swatches-tension-and-gauge",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_12_swatches_tension_and_gauge.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/swatch.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Guarantee your success with swatches",
+      "slug": "guarantee-your-success-with-swatches",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 70,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<center><img class=\"img-thumbnail\" width=\"300\" src=\"/challenge/images/v2/12/gauge_swatch_tension/swatching_is_not_optional.jpg\"></center>\r\nThere are many variables when knitting (both by hand and by machine).\r\n\r\n <br><ul>\r\n \t<li>Different colors of the SAME yarn may knit to a different gauge</li>\r\n \t<li>Different dye lots of the SAME color of the SAME yarn may knit to a different gauge</li>\r\n \t<li>Different models of the SAME gauge knitting machine may knit to a different gauge.</li>\r\n \t<li>The SAME size knitting needle from a different manufacturer may knit to a different gauge</li>\r\n \t<li>Different people, using the exactly the SAME needles, machines, and yarns may get get different gauges</li>\r\n</ul>\r\n\r\n<div><strong>SWATCHING IS NOT OPTIONAL!</strong></div>\r\n\r\nHow many times have you knit something that just didn't fit?  Have you ever had colors run or fade when you washed your sweater?<br>So many knitting disasters can be avoided by swatching and dressing your swatch.  Machine knitters have NO EXCUSE for not swatching!  We can knit multiple swatches quickly, testing stitch patterns and tensions.  Since we don't have a lot of time invested, we can do the \"throw-the-swatch-in-the-wash-with-jeans\" test to see if a washable yarn will hold up.<br>",
+              "legacyComponentId": 893,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357273",
+              "title": "Knit a Swatch (Don't Skip This!)",
+              "legacySlot": 1,
+              "legacyComponentId": 890,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151856465",
+              "title": "Importance of Gauge",
+              "legacySlot": 2,
+              "legacyComponentId": 890,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859471",
+              "title": "Swatch in Pattern Knitting",
+              "legacySlot": 3,
+              "legacyComponentId": 890,
+              "order": 2
+            }
+          ],
+          "title": "Swatching is NOT optional",
+          "slug": "swatching-is-not-optional",
+          "order": 1,
+          "legacy": {
+            "assignId": 287,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<strong>DRESSING A SWATCH</strong><br>To dress a swatch, wash/steam/block the swatch as you will care for the finished garment.<br>Dressing gives you a feel for how the fiber in the yarn will appear in the finished garment. It allows you to check for colorfastness and hand. \r\n\r\n<blockquote class=\"smallblock\"><em>\r\nThe ONLY way to get an accurate knitting gauge is to dress your swatches. Only then will you get an accurate gauge.</em></blockquote><br>",
+              "legacyComponentId": 958,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858072",
+              "title": "Wet Blocking",
+              "legacyComponentId": 959,
+              "order": 2
+            }
+          ],
+          "title": "Dressing a Swatch",
+          "slug": "dressing-a-swatch",
+          "order": 2,
+          "legacy": {
+            "assignId": 302,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<b>Don't panic!</b><br>Every machine knitter has experienced this:<br>\r\n<div class=\"col-1-xs\"> </div>\r\n<div class=\"col-12-xs\">\r\n<UL>\r\n<li>You dutifully knit, dress and measure your swatch.<br></li>\r\n\r\n\r\n\r\n<li>You cast on and knit the back of your sweater<br></li>\r\n<li>You bind off that last stitch and are really excited<br></li>\r\n<li>The piece looks a bit funny and you start to measure.<br></li>\r\n</ul>\r\n<b>UH OH!  The dimensions aren't right .....</b><br></div>\r\n\r\n\r\n<b>Don't panic!</b><br><blockquote class=\"smallblock\"><em>When we knit on the machine, the stitches are stretched between the needles.  We also add weight.  All of this distorts the knitting.</em></blockquote>\r\nRemember\r\n<ul class=\"fa-ul\">\r\n  <li><i class=\"fa-li fa fa-exclamation\"></i>You let the swatch rest before you measured.... let the piece rest as well. <br></li>\r\n  <li><i class=\"fa-li fa-li fa fa-exclamation\"></i>You dressed your swatch and there may have been some shrinkage ... you won't have accurate measurements of your piece until it's washed.</li>\r\n  </ul>\r\n\r\n",
+              "legacyComponentId": 982,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"section-title MachineknittingColor\"><i class=\"fa fa-refresh fa-spin\" aria-hidden=\"true\"></i> Try it yourself</div><br>\r\nThe next time you knit a swatch:\r\n<ol class=”instruction-list”>\r\n<li>Measure it immediately after it comes off the machine and record the length and width.</li>  \r\n\r\n<li>Wait a few hours and measure and record again</li>\r\n\r\n<li>Wait overnight and measure one more time.</li>\r\n</ol>\r\n\r\nYou will be surprised at the difference!",
+              "legacyComponentId": 984,
+              "order": 2
+            }
+          ],
+          "title": "Let it Rest",
+          "slug": "let-it-rest",
+          "order": 3,
+          "legacy": {
+            "assignId": 308,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/12/gauge_swatch_tension/ruler_r.jpg\"><br>\r\n<img src=\"/challenge/images/v2/12/gauge_swatch_tension/ruler_S.jpg\">\r\n<br>\r\nMeasuring your swatch to find the correct gauge is the most  important step in making sure your garment will fit. \r\nGauge rulers make it easier to measure gauge from your swatch.<br>\r\n\r\nFollow your manual and knit a swatch with stitches and rows marked as instructed.\r\n<br>\r\n<b>Stitches:</b>\r\n<ul>\r\n<li>Place the ruler with the \"S\" side up aligned with the STITCHES of your swatch</li>\r\n<li>Place the edge of the ruler against the stitch yarn mark</li>\r\n<li>Read across the ruler to the opposite yarn mark</li>\r\n<li>This indicates the stitches in 4\" (10cm)</li>\r\n</ul>\r\n\r\n<img src=\"/challenge/images/v2/12/gauge_swatch_tension/measure3.jpg\">\r\n\r\n\r\n<b>Rows:</b>\r\n<ul>\r\n<li>Place the ruler with the \"R\" side up aligned with the ROWS of your swatch</li>\r\n<li>Place the edge of the ruler against the row yarn mark where the contrasting color meets the main color</li>\r\n<li>Read across the ruler to the opposite row marker (where the contrasting color meets the main color)</li>\r\n<li>The number indicates the Rows in 4\" (10cm)</li>\r\n </ul>\r\n\r\n<table class=\"table table-bordered\">\r\n<tr>\r\n<td>\r\nFor 4.5 standard gauge use the GREEN gauge ruler.</td>\r\n<td>Isolate 40 stitches and 60 rows</td>\r\n</tr>\r\n<tr>\r\n<td>For Mid-gauge Machines use the YELLOW gauge ruler.</td>\r\n<td>Isolate 30 stitches and 40 rows</td>\r\n</tr>\r\n<tr>\r\n<td>\r\nFor 9.0 Bulky Gauge use the BLUE gauge ruler.</td>\r\n<td>Isolate 20 stitches and 30 rows</td>\r\n</tr>\r\n</table>\r\n",
+              "legacyComponentId": 917,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "292",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 960,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"smallblock\"><em>Of course, a regular ruler works too!</em></blockquote>\r\n<img width=\"250\" src=\"/challenge/images/v2/12/gauge_swatch_tension/measureboth.png\">\r\n\r\n",
+              "legacyComponentId": 961,
+              "order": 4
+            }
+          ],
+          "title": "Using Gauge Rulers",
+          "slug": "using-gauge-rulers",
+          "order": 4,
+          "legacy": {
+            "assignId": 292,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h4>GAUGE SWATCH</span></strong> for <span style=\"text-decoration: underline;\">matching</span> gauge\r\n</h4>\r\n\r\nI recently had an epiphany about swatching when I'm trying to MATCH gauge.  In the past I've knit my gauge swatches as I learned as a machine knitter.   I never use the gauge rulers that came with my machines, but I've always knit my swatches according to the \"rules\". (DUH)<br>On my standard machine, I've dutifully cast on 60 stitches and knit 60 rows between marked rows .  I marked off 40 stitches and got out my regular ruler, measured and did the math.<br>Being a total non-math person, I can't tell you how many times I've messed up the calculation of my gauge ... even when using a calculator.<br>\r\n\r\n<img src=\"/challenge/images/v2/12/gauge_swatch_tension/lightbulb_guy_100.jpg\">\r\n\r\n\r\n<strong>THE EPIPHANY:</strong> I was hand knitting a HK pattern.  Hand knitting the complicated sections of the pattern was fun, but I decided that knitting a whole lot of stockinette (the boring stuff by hand) was dumb.  So I threaded up my machine and started to knit a swatch.\r\n\r\nThe gauge I needed to match was 24 sts and 30 rows per 4\".\r\n<ul>\r\n \t<li> I cast 60 stitches (so I could easily measure 24 stitches)</li>\r\n \t<li> I knit a few rows with my main yarn (recording the tension with eyelets)</li>\r\n \t<li> 2 rows of a contrasting color</li>\r\n \t<li> Knit 30 rows</li>\r\n \t<li> 2 rows of a contrasting color</li>\r\n \t<li> A few main yarn rows and bound off</li>\r\n \t<li>AT THE SAME TIME I also marked  the stitches that were framing my desired 24 stitches.</li>\r\n</ul>\r\n\r\n\r\n\r\n<blockquote class=\"smallblock\"> <em>In other words, instead of marking the traditional number of stitches and rows, I broke the \"rules\" and marked my DESIRED GAUGE  of 24 stitches and 30 rows as I knit the swatch.</em></blockquote>\r\n\r\nI let the swatch rest, then wet blocked it and let it sit overnight.\r\n\r\nThe next day, I put my handy-dandy 4\" measuring tool down on my swatch.  (see below about my DIY 4\" tool)<br>\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/12/gauge_swatch_tension/swatch_compare1.jpg\"><br><center>Stitch Gauge is close - but the row gauge is off</center>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/12/gauge_swatch_tension/swatch_compare2.jpg\"><br><center>Success!</center>\r\n\r\n\r\nAs you can see, by the first photo, my stitch gauge was good, but my row gauge needed to be adjusted.  It was easy to see through my tool that I had too many rows to 4\".   I adjusted my mast tension, knit another swatch and VOILA!  I was able to match my gauge EXACTLY --- with NO MATH!<br><div class=\"section-title MachineknittingColor\">DIY 4\" Swatch tool</div>\r\n\r\nFor my tool, I cut a 4\" x 4\" square of quilters template plastic (readily available at craft stores) to create my Handy-dandy tool. Because it's see-through, I can see my marked stitches and rows on my swatch.<br>You could use a square of any material (cardboard, paper, clear plastic of any kind).\r\n<br>We've created a to-scale template for you to print. Print the template on paper, a transparency or card stock and try it.  I think you will be amazed at how much easier it is to measure gauge (for both hand and machine knitting).\r\n \r\n\r\n \r\n\r\n \r\n\r\n \r\n\r\n \r\n\r\n ",
+              "legacyComponentId": 919,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Download Template",
+              "filename": "/downloads/swatch_template.pdf",
+              "showInline": true,
+              "legacy": {
+                "assignId": "294",
+                "componentId": "951",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 951,
+              "order": 2
+            }
+          ],
+          "title": "Matching Gauge",
+          "slug": "matching-gauge",
+          "order": 5,
+          "legacy": {
+            "assignId": 294,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "288",
+                "CHALLENGE_COMPONENTID": "920",
+                "OPTION_1": "True",
+                "OPTION_2": "False",
+                "OPTION_MESSAGE_1": "<i class='fa fa-exclamation-triangle' style='color:red' aria-hidden='true'></i><em> <b>Swatching is NOT optional! How will you know how much yarn you need?  How will you know the finished size?</b></em>\r\n\r\n",
+                "OPTION_MESSAGE_2": "<i class='fa fa-check-square' aria-hidden='true'></i><b> Correct! </b><em> Swatching is the ONLY way to ensure your success.</em>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_TEXT": "? To be successful with machine knitting, swatching is optional."
+              },
+              "legacyComponentId": 920,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "288",
+                "CHALLENGE_COMPONENTID": "921",
+                "OPTION_1": "True",
+                "OPTION_2": "False",
+                "OPTION_MESSAGE_1": "<i class='fa fa-exclamation-triangle' style='color:red' aria-hidden='true'></i><em> Unless you are using a gauge ruler, <b>there is no rule</b> about the number of stitches and rows to knit. Do whatever works for you AND gives you an accurate gauge measurement.</em>",
+                "OPTION_MESSAGE_2": "<i class='fa fa-check-square' aria-hidden='true'></i><em> <b>Correct!</b> Unless you are using a gauge ruler, knit your swatch at least 5-6 inches square (just guess). Measure in the center of the swatch and be consistent.</em>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_TEXT": "? You must cast on 100 stitches and knit 100 rows for any swatch."
+              },
+              "legacyComponentId": 921,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "288",
+                "CHALLENGE_COMPONENTID": "922",
+                "OPTION_1": "True",
+                "OPTION_2": "False",
+                "OPTION_MESSAGE_1": "<i class='fa fa-exclamation-triangle' style='color:red' aria-hidden='true'></i><em> Let your swatch rest (overnight), DRESS IT and THEN measure.</em>",
+                "OPTION_MESSAGE_2": "<i class='fa fa-check-square' aria-hidden='true'></i><b> Correct! </b><em>Let your swatch rest (overnight), dress it and THEN measure.</em>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_TEXT": "? It's OK to measure your gauge swatch as soon as it comes off the machine."
+              },
+              "legacyComponentId": 922,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "288",
+                "CHALLENGE_COMPONENTID": "923",
+                "OPTION_1": "True",
+                "OPTION_2": "False",
+                "OPTION_MESSAGE_1": "<i class='fa fa-exclamation-triangle' style='color:red' aria-hidden='true'></i><em><B>NO!</b> All stitch patterns have their own unique gauge. If you combine stitch patterns in a garment, you need to knit multiple swatches and adjust your stitch and row counts accordingly</em> ",
+                "OPTION_MESSAGE_2": "<i class='fa fa-check-square' aria-hidden='true'></i><b> Correct! </b><em>All stitch patterns have their own unique gauge. If you combine stitch patterns in a garment, you need to knit multiple swatches and adjust your stitch and row counts accordingly</em>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_TEXT": "? When knitting in fairisle, tuck or slip, just measure a stockinette swatch."
+              },
+              "legacyComponentId": 923,
+              "order": 6
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "288",
+                "CHALLENGE_COMPONENTID": "928",
+                "OPTION_1": "True",
+                "OPTION_2": "False",
+                "OPTION_MESSAGE_1": "<i class='fa fa-exclamation-triangle' style='color:red' aria-hidden='true'></i><em>False ... A plain 'ol ruler works great! The goal of a gauge swatch is to determine the stitch and row gauge of YOUR yarn on YOUR machine.</em>",
+                "OPTION_MESSAGE_2": "<i class='fa fa-check-square' aria-hidden='true'></i><b> Correct! </b><em></em> Use whatever method you like.  The goal of a gauge swatch is to determine the stitch and row gauge of YOUR yarn on YOUR machine.",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_TEXT": "? You MUST use a gauge ruler to measure successfully"
+              },
+              "legacyComponentId": 928,
+              "order": 7
+            }
+          ],
+          "title": "Review",
+          "slug": "review",
+          "order": 6,
+          "legacy": {
+            "assignId": 288,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div>\r\n\r\n<small>Instructions are for suggestions for <b>standard gauge</b><em> (mid-gauge, bulky)</em> and for using gauge rulers.</small><br>\r\n<blockquote class=\"smallblock\"><em>  Remember, you can knit swatches any size (as long as they are at least 5-6\" square.) Be sure to be consistent and establish a template for yourself for every time you knit a swatch.</em></blockquote>\r\n\r\n\r\n<ol class=\"instruction-list\">\r\n<li>Cast on <b>60</b><em>(50,30)</em> stitches <small><em>(add extra stitches so you can measure the center without edge distortion.)</em></small></li>\r\n<li>Knit a few rows in pattern</li>\r\n<li>Knit 2 rows in waste yarn (or weave a marker row)</li>\r\n<li>Set row counter to 000</li>\r\n<li>Knit the center section<br><div style=\"margin-left:30px\">\r\n<b>Standard gauge: total of 60 rows)</b>\r\n<ul class=\"instruction-nolist-tight\">\r\n<li>Knit 20  rows and knit in a yarn marker isolating the center 40 stitches</li>\r\n<li>Knit 20 more rows and place a marker on the same needles</li>\r\n<li>Knit 20 more rows</li>\r\n</ul >\r\n<b>Mid-Gauge: (total of 40 rows)</b>\r\n<ul class=\"instruction-nolist-tight\">\r\n<li>Knit 20  rows and knit in a yarn marker isolating the center 30 stitches</li>\r\n<li>Knit 20 more rows and place a marker on the same needles</li>\r\n</ul >\r\n<b>Bulky (total of 30 rows)</b>\r\n<ul class=\"instruction-nolist-tight\">\r\n<li>Knit 15 rows and knit in a yarn marker isolating the center 40 stitches</li>\r\n<li>Knit 15 more rows</li>\r\n</ul>\r\n</div>\r\n<li>Confirm and record the total number of rows you knit for the center <b>60</b><em>(40, 30)</em></li>\r\n<li>Knit 2 rows in waste yarn (or weave a marker row)</li>\r\n<li>Knit a few rows and bind off <small><em>(or drop the work from the machine)</em></small></li>\r\n</ol>\r\nLet the swatch rest<br>\r\n<ol>\r\n<li>Dress the swatch as you will treat the finished item</li>\r\n<li>Measure the size of the <b>40</b><em>(30, 20)</em> stitches in the center of the swatch (between the yarn markers)</li>\r\n<li>Measure the size of the <b>60</b><em>(40,30)</em> rows between the waste yarn (or marker rows)</li>\r\n<li>The math\r\n<ul><li>Divide the stitches in the middle by your measurement to get <b>Stitches Per Inch/cm</b></li>\r\n<li>Divide the rows in the middle by your measurement to get <b>Rows Per Inch/cm</b></li>\r\n<li>Multiply your stitches/rows per inch/cm times 4 to calculate stitches per 4\" (10cm)</li>\r\n</ul>\r\n</ol>\r\n\r\n<br>\r\n<img src=\"/challenge/images/v2/12/gauge_swatch_tension/swatch_info.jpg\">\r\n<img src=\"/challenge/images/v2/12/gauge_swatch_tension/swatch_info1.jpg\">\r\n\r\n\r\n",
+              "legacyComponentId": 927,
+              "order": 2
+            }
+          ],
+          "title": "Knit YOUR Swatch",
+          "slug": "knit-your-swatch",
+          "order": 7,
+          "legacy": {
+            "assignId": 295,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Tension Settings",
+      "slug": "tension-settings",
+      "displayOrder": 20,
+      "legacy": {
+        "itemId": 73,
+        "lessonOrder": 20
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h1>Knitting Machine Gauge and Tension</h1>\r\n<h3>Carriage and Mast Tension Dials</h3>\r\n<ul>\r\n<li>Maybe you want to keep out the cold with a thick, tight knitted fabric for warm hats and mittens. </li>\r\n<li> A loose, open, drapey fabric may be just the ticket for a sweater or shawl</li>\r\n</ul>\r\nWith a little experimenting you can have these and everything in between<br><div>\r\n\r\n\r\n<blockquote class=\"blockquote_style\">\r\nThink of the <b>Carriage Tension Dial</b> as the hand knitting needle size.<br>Think of the <b>Mast Tension Dial</b> as the tension a hand knitter would apply to the yarn with her fingers\r\n\r\n</blockquote>\r\n\r\n<br>\r\n\r\nThe Stitch Dial on your carriage controls how the yarn passes through the carriage and is placed in the hooks of the needles.  A smaller number makes a tight stitch, a larger number makes a loose stitch.\r\n<figure><img src=\"/challenge/images/v2/50/carriage_tension_dial.png\"><figcaption align=\"center\"><br>Carriage Stitch Dial</figcaption>\r\n</figure>\r\n\r\n<br>\r\n<hr>\r\n<br>\r\n\r\n<figure><img src=\"/challenge/images/v2/50/Tension_mast_dial.jpg\"><figcaption align=\"center\"><br>Mast Tension Dial</figcaption>\r\n</figure>\r\nThe Mast Tension Dial, along with the yarn guides/tension springs (antennae) control the tension of the yarn as it's fed into the carriage.\r\n\r\n",
+              "legacyComponentId": 4879,
+              "order": 1
+            }
+          ],
+          "title": "What Controls Tension?",
+          "slug": "what-controls-tension",
+          "order": 1,
+          "legacy": {
+            "assignId": 3467,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858564",
+              "title": "Tension Settings",
+              "legacySlot": 1,
+              "legacyComponentId": 956,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859457",
+              "title": "Ribber Tension Settings",
+              "legacySlot": 2,
+              "legacyComponentId": 956,
+              "order": 3
+            }
+          ],
+          "title": "Tension Setting Essentials",
+          "slug": "tension-setting-essentials",
+          "order": 2,
+          "legacy": {
+            "assignId": 301,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Take time to play with tension on your machine.  You'll be surprised with the results.  Try in Stockinette, but also try different extreme tensions with stitch patterns as well.  Get creative!<br>",
+              "legacyComponentId": 968,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<small>Instruction are for standard gauge <em>(mid/bulky gauge)</em></small><br><ol class=\"instruction-list\">\r\n<li>Cast on 60 <em>(30)</em> Stitches</li>\r\n<li>Knit 10 rows at a middle tension appropriate for your machine <small>(i.e. tension 5)</small></br></li>\r\n<li>Mark the row (eyelets or a yarn marker) </li>\r\n<li>Change the tension -2 full numbers <small>(i.e. tension 3)</small></li>\r\n<li>Knit 30 rows</li>\r\n<li>Mark the row (eyelets or a yarn marker) </li>\r\n<li>Change the tension +4 full numbers <small>(i.e. tension 7)</small></li>\r\n<li>Knit 30 rows</li>\r\n<li>Continue playing with the tension if desired</li>\r\n<li>Drop the work from the machine or bind off</li>\r\n</ul>\r\nExamine the differences in the tensions and determine which you prefer. <br><blockquote class=\"smallblock\"><em>Can you see design possibilities here?</em></blockquote>",
+              "legacyComponentId": 967,
+              "order": 3
+            }
+          ],
+          "title": "Tension Setting Practice",
+          "slug": "tension-setting-practice",
+          "order": 3,
+          "legacy": {
+            "assignId": 303,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\"><b>If you haven't used your chosen yarn before, how do you know the best tension to knit your sweater?</div> </b>\r\n\r\nKnitters tend to use the terms \"tension swatch\" and \"gauge swatch\" interchangeably, lets take a look at both.",
+              "legacyComponentId": 969,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"cleanwell\">\r\n\r\n<h4><strong>GAUGE SWATCH</strong></h4>\r\nThe <strong>gauge swatch</strong> is the \"official\" swatch used when designing a garment.\r\n<br>\r\nIt is knit at a specific size, marked for accurate stitch and row measurement and \"dressed\" as the final garment will be treated.<br>\r\n<blockquote class=\"smallblock\">\r\n<em>TIP: Whatever method you use to create a swatch, the key is to correctly measure it and calculate your gauge.</em></blockquote>\r\n<img src=\"/challenge/images/v2/12/swatch_measure.jpg\" />\r\n</div>",
+              "legacyComponentId": 970,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"cleanwell\">\r\n\r\n<h4><strong>TENSION SWATCH</strong></h4>\r\n<em>When I pick up a new cone of yarn, I can't wait to thread up my machine and see what the yarn looks like.   From the initial cast on, I start guessing what setting on my tension dial I need to use.  I knit a few inches and reach down and start to feel the resulting fabric. <br>Once I get a feel for the yarn (what machine, general tension setting at stockinette, etc) I create a<strong> tension swatch</strong>.  This helps me fine-tune the tension needed to achieve the fabric I like and allows me to play with various techniques.  <strong>I'm often very surprised that a yarn looks great in tuck, and awful in slip</strong>, for example.  Adding a few eyelets here and there tells me if the yarn will work up in lace.</em><br>Let's practice knitting a <strong>tension swatch.</strong>\r\n</div>",
+              "legacyComponentId": 971,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"section-title MachineknittingColor\"><i class=\"fa fa-refresh\" aria-hidden=\"true\"></i> Try it yourself</div>\r\n\r\n\r\n<ol class=\"instruction-list\">\r\n<li>Play!</li>\r\n<li>Start knitting stockenette at the tightest tension that will knit.  (If the tension is too tight, you'll see stitches that don't form properly.</li>\r\n<li>Knit 2-4 inches. Knit a marker row (change colors, work a few eyelets across the row or knit a sewing thread in with the main yarn)</li>\r\n<li>Keep knitting sections, marking the tension dial number in each section.  Knit the last section as loosely as possiblle, even if you think this will be too loose ... I'm often very pleasantly surprised at the result.</li>\r\n<li>Transfer every other needle to out of work postion and knit a section - put all needles back into work.</li>\r\n<li>Work a simple tuck, or slip, or any stitch pattern of your choice ... base your tension dial setting on the stockinette sections you just knit.</li>\r\n</ol>\r\n<blockquote class=\"smallblock\"><em>The point of this exercise is to put the yarn through it's paces ... ignite your creativity, and get a feel for what the yarn can do.  If you don't have a huge cone, you can always re-wind this knitting. At this point, you probably know exactly what you want to do with this yarn.  Knit your Gauge Swatch, dress it and and you are ready to design and knit your sweater.</em></blockquote>\r\n\r\n<img src=\"/challenge/images/v2/12/tension_swatch.jpg\" />\r\n\r\n",
+              "legacyComponentId": 972,
+              "order": 4
+            }
+          ],
+          "title": "Gauge swatch verses Tension Swatch",
+          "slug": "gauge-swatch-verses-tension-swatch",
+          "order": 4,
+          "legacy": {
+            "assignId": 304,
+            "blockType": "Practice"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Yarn Usage",
+      "slug": "yarn-usage",
+      "displayOrder": 50,
+      "legacy": {
+        "itemId": 72,
+        "lessonOrder": 50
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "It is important that you know how to estimate yarn for all of your knitting projects <br><small>(hint: it's based on your swatch and a little math)</small>",
+              "legacyComponentId": 929,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857735",
+              "title": "How Much Yarn Do I Need?",
+              "legacyComponentId": 930,
+              "order": 2
+            }
+          ],
+          "title": "How Much Yarn Do You Need?",
+          "slug": "how-much-yarn-do-you-need",
+          "order": 6,
+          "legacy": {
+            "assignId": 297,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/12/yarn_estimate_example.jpg\" alt=\"\" />\r\n\r\n\r\n\r\n\r\nUsing the dimensions of the sample swatch shown above,  and the instructions from the video,<br />calculate how much yarn you would need for a <strong>36x36 baby blanket.</strong>\r\n<em><small>Not sure? Take a guess and we'll show you the math</small></em>\r\n\r\n",
+              "legacyComponentId": 931,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "167",
+                "QUESTION_ANSWER": "63",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply 9 x 7 = 63</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many square inches in the sample swatch?"
+              },
+              "legacyComponentId": 933,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "168",
+                "QUESTION_ANSWER": "3.5",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Divide weight (22) / square inches (63)=.35 </b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Calculate weight per square inch <small>(round up)</small>"
+              },
+              "legacyComponentId": 934,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "169",
+                "QUESTION_ANSWER": "1296",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply 36 x 36 = 1296</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many square inches in the blanket?"
+              },
+              "legacyComponentId": 935,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "170",
+                "QUESTION_ANSWER": "454",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply the blanket square inches(1296) x multiplier (.35)= 454 grams</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many grams are needed (approximate) for the 36 x 36 inch blanket?"
+              },
+              "legacyComponentId": 936,
+              "order": 6
+            },
+            {
+              "type": "richText",
+              "html": "\r\n              Hate math?<br>Try the Knit it Now tool\r\n                <img src=\"/challenge/images/v2/12/tools/yarn_estimator_tool_sticky.gif\">\r\n\r\n\r\n",
+              "legacyComponentId": 938,
+              "order": 8
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859805",
+              "title": "Watch how it works",
+              "legacyComponentId": 939,
+              "order": 9
+            }
+          ],
+          "title": "Practice - Yarn Estimate",
+          "slug": "practice-yarn-estimate",
+          "order": 7,
+          "legacy": {
+            "assignId": 298,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<i class='fa fa-youtube-play' aria-hidden='true'></i> <b> Slip, Tuck, Lace, Stockinette ... which one uses more yarn?</b>",
+              "legacyComponentId": 946,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857740",
+              "title": "Stitch Types and Yarn Usage",
+              "legacyComponentId": 945,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "300",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 957,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<DIV class=\"section-title MachineknittingColor\">\r\n<i class=\"fa fa-question-circle-o\" aria-hidden=\"true\"></i> Review</div>",
+              "legacyComponentId": 950,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "300",
+                "CHALLENGE_COMPONENTID": "947",
+                "OPTION_1": "Slip",
+                "OPTION_2": "Tuck",
+                "OPTION_3": "Lace",
+                "OPTION_4": "Stockinette",
+                "OPTION_MESSAGE_1": "In our test, our lace pattern used the least amount of yarn",
+                "OPTION_MESSAGE_2": "In our test, our lace pattern used the least amount of yarn",
+                "OPTION_MESSAGE_3": "<i class='fa fa-check-square' aria-hidden='true'></i><b> Correct! </b><em></em> In our test, our lace pattern used the least amount of yarn.<br>\r\n",
+                "OPTION_MESSAGE_4": "In our test, our lace pattern used the least amount of yarn",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_TEXT": "You have a cone in your stash that you want to use for a project ... do you have enough yarn?  What stitch type will go the furthest?"
+              },
+              "legacyComponentId": 947,
+              "order": 6
+            }
+          ],
+          "title": "Stitch Types and Yarn usage",
+          "slug": "stitch-types-and-yarn-usage",
+          "order": 9,
+          "legacy": {
+            "assignId": 300,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Helpful Tools from Knit it Now",
+      "slug": "helpful-tools-from-knit-it-now",
+      "displayOrder": 51,
+      "legacy": {
+        "itemId": 74,
+        "lessonOrder": 51
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/12/gauge_swatch_tension/gaugeconversion.png\"><small><em>This tool (and more) can also be used on the website on the  \"tools\" page.<br> knititnow.com/tools</em></small><br><i class=\"fa fa-refresh fa-spin\"></i>\r\nKnit your swatch, enter your details and let Knit it Now calculate your gauge.<br>",
+              "legacyComponentId": 973,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: GaugeCalulator.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "305",
+                "CUSTOMCFM": "GaugeCalulator.cfm",
+                "TYPEOF": "CustomCFM"
+              },
+              "legacyComponentId": 975,
+              "order": 3
+            }
+          ],
+          "title": "Gauge Calculator Tool",
+          "slug": "gauge-calculator-tool",
+          "order": 1,
+          "legacy": {
+            "assignId": 305,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/12/gauge_swatch_tension/gauge_generator.gif\"><small><em>This tool (and more) can also be used on the website on the  \"tools\" page. <br>knititnow.com/tools</em></small><br><i class=\"fa fa-refresh fa-spin\"></i> Interested in using a different yarn than the pattern calls for? <br>\r\nLet Knit it Now do the math for you.",
+              "legacyComponentId": 974,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: GaugeConversion.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "306",
+                "CUSTOMCFM": "GaugeConversion.cfm",
+                "TYPEOF": "CustomCFM"
+              },
+              "legacyComponentId": 977,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859608",
+              "title": "Gauge Conversion Tool",
+              "legacyComponentId": 976,
+              "order": 5
+            }
+          ],
+          "title": "Gauge Conversion Tool",
+          "slug": "gauge-conversion-tool",
+          "order": 2,
+          "legacy": {
+            "assignId": 306,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 10,
+    "videos": [
+      {
+        "vimeoId": "178357273",
+        "title": "Knit a Swatch (Don't Skip This!)",
+        "lessonSlug": "guarantee-your-success-with-swatches",
+        "blockSlug": "swatching-is-not-optional"
+      },
+      {
+        "vimeoId": "151856465",
+        "title": "Importance of Gauge",
+        "lessonSlug": "guarantee-your-success-with-swatches",
+        "blockSlug": "swatching-is-not-optional"
+      },
+      {
+        "vimeoId": "151859471",
+        "title": "Swatch in Pattern Knitting",
+        "lessonSlug": "guarantee-your-success-with-swatches",
+        "blockSlug": "swatching-is-not-optional"
+      },
+      {
+        "vimeoId": "151858072",
+        "title": "Wet Blocking",
+        "lessonSlug": "guarantee-your-success-with-swatches",
+        "blockSlug": "dressing-a-swatch"
+      },
+      {
+        "vimeoId": "151858564",
+        "title": "Tension Settings",
+        "lessonSlug": "tension-settings",
+        "blockSlug": "tension-setting-essentials"
+      },
+      {
+        "vimeoId": "151859457",
+        "title": "Ribber Tension Settings",
+        "lessonSlug": "tension-settings",
+        "blockSlug": "tension-setting-essentials"
+      },
+      {
+        "vimeoId": "151857735",
+        "title": "How Much Yarn Do I Need?",
+        "lessonSlug": "yarn-usage",
+        "blockSlug": "how-much-yarn-do-you-need"
+      },
+      {
+        "vimeoId": "151859805",
+        "title": "Watch how it works",
+        "lessonSlug": "yarn-usage",
+        "blockSlug": "practice-yarn-estimate"
+      },
+      {
+        "vimeoId": "151857740",
+        "title": "Stitch Types and Yarn Usage",
+        "lessonSlug": "yarn-usage",
+        "blockSlug": "stitch-types-and-yarn-usage"
+      },
+      {
+        "vimeoId": "151859608",
+        "title": "Gauge Conversion Tool",
+        "lessonSlug": "helpful-tools-from-knit-it-now",
+        "blockSlug": "gauge-conversion-tool"
+      }
+    ],
+    "downloadCount": 1,
+    "downloads": [
+      {
+        "filename": "/downloads/swatch_template.pdf",
+        "label": "Download Template",
+        "lessonSlug": "guarantee-your-success-with-swatches",
+        "blockSlug": "matching-gauge"
+      }
+    ]
+  }
+}

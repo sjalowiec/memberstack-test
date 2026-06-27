@@ -1,0 +1,801 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 81,
+    "title": "Poncho",
+    "slug": "poncho",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_81_poncho.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "The Goal",
+      "slug": "the-goal",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 496,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n\t.kin {\r\n\t\tfont-size: 1.5em;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n</style>\r\n\r\n\r\n\t\r\n\t\tPonchos are timeless alternatives to sweaters. Easy on / easy off warmth they are a perfect project if you are just getting started with your knitting machine, or if you are ready to spread your wings and try new-to-you techniques.<br>Play with yarn and stitch patterns, add designer touches ... use the basic rectangle shapes as a canvas for your creativity.<br>No matter where you are on your journey, from the all-important planning stage to finishing, this course will help you gain confidence with your machine and you will end up with more than just swatches.<br><div class=\"text-center\"><span class=\"handwriting\" style=\"font-size:2em\">The goal of this knit-along is for you to have success. </span><br><span class=\"handwriting\" style=\"font-size:1.5em\">Please work to your current skill level<br> and build your confidence with a finished poncho that you can be proud of!</span><br></div><br>\r\n\t\t\r\n\t\t\tBe honest with yourself. Approach this project based on where you are on your journey to master your machine. <br><ul>\r\n\t\t\t\t\t<li><b>Just getting started?</b> Stick to Level 1 tasks. </li><br>\r\n\t\t\t\t\t<li><b>Feeling adventurous?</b> Add more challenges for yourself. </li>\r\n\t\t\t\t</ul>\r\n\t\t\t\r\n\t\t\r\n\t\r\n\t\r\n\t\t<div class=\"videopopup\" data-videotitle=\"success1\" data-vimeoid=\"511799734\">\r\n\t\t\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/81/welcome_gif.gif\"><br>\r\n<center><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> click to play the video</center>\r\n\t\t\t\r\n\t\t</div>\r\n\t\r\n\r\n\r\n<hr class=\"style13\">\r\n<div class=\"text-center\"><span class=\"handwriting\" style=\"font-size:2em\">Where are you on your journey to mastering your machine?</span></div>\r\n\r\n\t\r\n\t\t<center><img width=\"200\" src=\"/challenge/images/v2/81/1_level1.svg\"></center>\r\n\t\t<br>\r\n\t\t<ul style=\"line-height:200%\">\r\n\t\t\t<li><b><span class=\"kin\">Planning</span></b></li>\r\n\t\t\t<li><b><span class=\"kin\">Choices</span></b></li>\r\n\t\t\t<li><b><span class=\"kin\">Swatching</span></b></li>\r\n\t\t</ul>\r\n\t\r\n\t\r\n\t\t<center><img width=\"200\" src=\"/challenge/images/v2/81/1_level2.svg\"></center>\r\n\t\t<br>\r\n\t\t<ul style=\"line-height:200%\">\r\n\t\t\t<li>Planning</li>\r\n\t\t\t<li>Choices</li>\r\n\t\t\t<li>Swatching</li>\r\n\t\t\t<li><span class=\"kin\"><b>Hems / Edges</b></span></li>\r\n\t\t</ul>\r\n\r\n\t\r\n\t\r\n\t\t<center><img width=\"200\" src=\"/challenge/images/v2/81/1_level3.svg\"></center>\r\n\r\n\t\t<br>\r\n\t\t<ul style=\"line-height:200%\">\r\n\t\t\t<li>Planning</li>\r\n\t\t\t<li>Choices</li>\r\n\t\t\t<li>Swatching</li>\r\n\t\t\t<li>Hems / Edges</li>\r\n\t\t\t<li><span class=\"kin\"><b>Stripes / Stitch patterns</b></span></li>\r\n\t\t</ul>\r\n\r\n\r\n\r\n\t\r\n\t\r\n\t\t<center><img width=\"200\" src=\"/challenge/images/v2/81/1_level4.svg\"></center>\r\n\t\t<br>\r\n\t\t<ul style=\"line-height:200%\">\r\n\t\t\t<li>Planning</li>\r\n\t\t\t<li>Choices</li>\r\n\t\t\t<li>Swatching</li>\r\n\t\t\t<li>Hems / Edges</li>\r\n\t\t\t<li>Stripes / Stitch patterns</li>\r\n\t\t\t<li><span class=\"kin\"><b>Ribbing</b></span></li>\r\n\t\t</ul>\r\n\t\r\n\t\r\n\t\t<center><img width=\"200\" src=\"/challenge/images/v2/81/1_level5.svg\"></center>\r\n\r\n\t\t<br>\r\n\t\t<ul style=\"line-height:200%\">\r\n\t\t\t<li>Planning</li>\r\n\t\t\t<li>Choices</li>\r\n\t\t\t<li>Swatching</li>\r\n\t\t\t<li>Hems / Edges</li>\r\n\t\t\t<li>Stripes / Stitch patterns</li>\r\n\t\t\t<li>Ribbing</li>\r\n\t\t\t<li><span class=\"kin\"><b>Collar</b></span></li>\r\n\t\t</ul>\r\n\t\r\n\r\n",
+              "legacyComponentId": 6211,
+              "order": 1
+            }
+          ],
+          "title": "The Goal",
+          "slug": "the-goal",
+          "order": 1,
+          "legacy": {
+            "assignId": 4108,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: help.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4133",
+                "CUSTOMCFM": "help.cfm",
+                "TYPEOF": "CustomCFM"
+              },
+              "legacyComponentId": 6261,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "\r\n<div class=\"text-center\"></div>",
+              "legacyComponentId": 6266,
+              "order": 2
+            }
+          ],
+          "title": "Do you need help?",
+          "slug": "do-you-need-help",
+          "order": 2,
+          "legacy": {
+            "assignId": 4133,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Forum",
+              "notes": [
+                "Unmapped legacy component type: Forum"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4140",
+                "TYPEOF": "Forum"
+              },
+              "legacyComponentId": 6272,
+              "order": 1
+            }
+          ],
+          "title": "Forum Support",
+          "slug": "forum-support",
+          "order": 3,
+          "legacy": {
+            "assignId": 4140,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Planning",
+      "slug": "planning",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 498,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 18px;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n</style>\r\n\r\n\r\n\t <img width=\"50%\" src=\"/challenge/images/v2/81/all_levels.png\"><br>ALL LEVELS\r\n\r\n\t\t<hr class=\"style13\">\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">1</a></div> PLAN\r\n\t\t\t\t<ul style=\"line-height:200%\">\r\n\t\t\t\t\t<li>What yarn are you going to use? (Be sure it's an appropriate weight for your machine)\r\n\t\t\t\t\t\t<a data-vimeoid=\"151858444\" class=\"videopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Yarn refresher</a>\r\n\t\t\t\t\t</li>\r\n\t\t\t\t\t<li>Size: Who are you knitting for? The Poncho pattern has some suggested dimensions, but you can make this any size you like</li>\r\n\t\t\t\t\t<li>Finishing: How are you going to finish the edges? Crochet? I-Cord? No finish?</li>\r\n\t\t\t\t</ul>\r\n\t\t\t</div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">2</a></div> SWATCH<br>\r\n\t\t\t\t<ul style=\"line-height:200%\">\r\n\t\t\t\t\t<li>Using the garment yarn, <a data-vimeoid=\"178357273\" class=\"videopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> knit a \"proper\" swatch</a></li>\r\n\t\t\t\t\t<li> Dress it and treat it as you will treat the finished poncho</li>\r\n\t\t\t\t\t<li><a href=\"/classrooms/87/swatching-is-not-optional\" target=\"_blank\">Visit the swatching classroom</a></li>\r\n\t\t\t\t</ul>\r\n\t\t\t</div>\r\n\t\t\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom\">\r\n\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">3</a></div> HOW MUCH YARN? Determine if you have enough yarn:<br>\r\n\r\n\t\t\t\t<ul style=\"line-height:200%\">\r\n\t\t\t\t\t<li>Use the built-in calculator in the pattern. After you've build your pattern <a href=\"#estimate\" data-toggle=\"collapse\"> click the icon <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i> to use the estimator</a>\r\n\t\t\t\t\t\t<div id=\"estimate\" class=\"collapse hidden-print\">\r\n\t\t\t\t\t\t\t<img src=\"/challenge/images/v2/81/yarn_estimator1.png\">\r\n\t\t\t\t\t\t</div>\r\n\t\t\t\t\t</li>\r\n\t\t\t\t\t<li>If aren't using yarn from your stash, <a href=\"/howmuchyarn/\" target=\"_blank\">here are some tips.</a>\r\n\t\t\t\t\t</li>\r\n\t\t\t\t</ul>\r\n\r\n\t\t\t</div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">4</a></div> GET KNITTING<br>\r\n\t\t\t\t<ul style=\"list-style:none;\">\r\n\t\t\t\t\t<li>Making all your choices BEFORE you start knitting will prevent headaches later. Record your plan in the next section</li>\r\n\t\t\t\t</ul>\r\n\r\n\t\t\t</div>\r\n\t\t\r\n\r\n\t\r\n\t<br><img class=\"img-thumbnail\" src=\"/challenge/images/v2/81/plan_ahead_machine_500.jpg\">\r\n\r\n<hr class=\"style13\">\r\n<div class=\"container\">\r\n\t<span class=\"handwriting\" style=\"font-size:1.5em\">Are you ready to challenge your self with techniques from the Success Path?</span>\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<h4>\r\n\t\t\t\t\t<a data-toggle=\"collapse\" data-parent=\"#accordion\" href=\"#collapse1\"> Level 2 <img src=\"/challenge/images/v2/81/arrow_level2.png\"></a>\r\n\t\t\t\t</h4>\r\n\t\t\t\r\n\t\t\t<div id=\"collapse1\" class=\"collapse\">\r\n\t\t\t\tBecause this poncho is simple knitting, it's a good opportunity to play with hems and edges. <br>\r\n\t\t\t\t\tCheck out the options in\r\n\t\t\t\t\t<a href=\"/success/1389/Level-2?id=7494\" target=\"_blank\">Level 2</a> of the Success path.\r\n\t\t\t\t\r\n\t\t\t</div>\r\n\t\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<h4>\r\n\t\t\t\t\t<a data-toggle=\"collapse\" data-parent=\"#accordion\" href=\"#collapse2\">Level 3 <img src=\"/challenge/images/v2/81/arrow_level3.png\"></a>\r\n\t\t\t\t</h4>\r\n\t\t\t\r\n\t\t\t<div id=\"collapse2\" class=\"collapse\">\r\n\t\t\t\tAdd texture and color to your poncho. The simple panels with no shaping are a great way to build your confidence in working in pattern. Visit all the inspiration in <a href=\"/success/1390/Level-3\" target=\"_blank\">Level 3</a> of the Success path \r\n\t\t\t</div>\r\n\t\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<h4>\r\n\t\t\t\t\t<a data-toggle=\"collapse\" data-parent=\"#accordion\" href=\"#collapse3\">Level 4 <img src=\"/challenge/images/v2/81/arrow_level4.png\"></a>\r\n\t\t\t\t</h4>\r\n\t\t\t\r\n\t\t\t<div id=\"collapse3\" class=\"collapse\">\r\n\t\t\t\tRibber anyone? Suggestions:<br>\r\n\t\t\t\t\t<ul>\r\n\t\t\t\t\t\t<li>Knit the poncho in a <a href=\"/success/1391/Level-4?id=7725\" target=\"_blank\">ribber fabric</a>. There are so many options from lacy, open, designs to reversible fabrics.</li>\r\n\t\t\t\t\t\t<li>Knit the collar in ribbing</li>\r\n\t\t\t\t\t</ul>\r\n\t\t\t\t\r\n\t\t\t</div>\r\n\t\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<h4>\r\n\t\t\t\t\t<a data-toggle=\"collapse\" data-parent=\"#accordion\" href=\"#collapse4\">Level 5 <img src=\"/challenge/images/v2/81/arrow_level5.png\"></a>\r\n\t\t\t\t</h4>\r\n\t\t\t\r\n\t\t\t<div id=\"collapse4\" class=\"collapse\">\r\n\t\t\t\tGet creative with inspiration from Level 5<br>\r\n\t\t\t\t\t<ul>\r\n\t\t\t\t\t\t<li>Add a\r\n\t\t\t\t\t\t\t<a href=\"/success/1392/Level-5?id=7733\" target=\"_blank\"> Hood</a>\r\n\t\t\t\t\t\t</li>\r\n\t\t\t\t\t\t<li>Add <a href=\"/success/1392/Level-5?id=7742\" target=\"_blank\">Pockets </a></li>\r\n\t\t\t\t\t</ul>\r\n\t\t\t\t\r\n\t\t\t</div>\r\n\t\t\r\n\t\r\n</div>\r\n",
+              "legacyComponentId": 6216,
+              "order": 1
+            }
+          ],
+          "title": "Make a Plan",
+          "slug": "make-a-plan",
+          "order": 1,
+          "legacy": {
+            "assignId": 4111,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 18px;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n\r\n</style>\r\n\r\n\r\n\t<img src=\"/challenge/images/v2/81/tape_measure.png\" width=\"200\">\r\n\t\r\n\t\t<span class=\"handwriting\">You are in control of the size and measurements of your poncho</span>\r\n\t\r\n\t<div class=\"container-border\"><center>Take time to understand the assembly: <br>Do a little origami.<br><a href=\"/downloads/poncho_worksheet_final1.pdf\" target=\"_blank\"><img src=\"/challenge/images/v2/81/origami.jpg\"></a></center></div>\r\n\t\t\r\n\t\r\n\r\n\r\n<hr class=\"style13\">\r\n\r\n\r\n\t\r\n\t\t<div class=\"circle\"><a href=\"#\">1</a></div> When building your pattern, you have control over the finished sizing. <br>The pattern asks for 2 dimensions \"L\" and \"N\". <br>The Arm Length from is mathematically calculated based on these 2 dimensions. <br><b><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> If you want a longer or shorter arm length, adjust the \"L\" and \"N\" dimensions.</b><br>\r\n<center><img src=\"/challenge/images/v2/81/poncho_sizing1.jpg\"></center>\r\n\t\r\n\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/81/sizing.jpg\">\r\n\r\n<hr class=\"style13\">\r\n\r\n<div class=\"circle\"><a href=\"#\">2</a></div>\r\n\r\n\t\r\n\t\t<h3>BEFORE STARTING TO KNIT</h3><br>\r\n\t\t<b>Double check the FINISHED MEASUREMENTS of the poncho.</b><br>In the example, the \"C\" dimension is 14\" (37 cm). when the poncho is assembled, the C dimension is folded over, with half of that section creating the front neck and half creating the back neckline.<br><b><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> If you want a smaller neckline, make the \"N\" dimension smaller when entering your Perfect Fit measurements.</b>\r\n\r\n\r\n\t\r\n\t<div class=\"text-center\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/81/sizing1.jpg\"><br><img class=\"img-thumbnail\" src=\"/challenge/images/v2/81/cm.jpg\"></div>\r\n\r\n",
+              "legacyComponentId": 6274,
+              "order": 1
+            }
+          ],
+          "title": "Sizing and Assembly",
+          "slug": "sizing-and-assembly",
+          "order": 2,
+          "legacy": {
+            "assignId": 4142,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\r\n\tlabel.with-square-checkbox {\r\n\t\tcursor: pointer;\r\n\t}\r\n\r\n\tlabel.with-square-checkbox span {\r\n\t\tline-height: 24px;\r\n\t}\r\n\r\n\tlabel.with-square-checkbox span::before {\r\n\t\tmargin-right: 4px;\r\n\t\tpadding-left: 1px;\r\n\t\twidth: 21px;\r\n\t\theight: 21px;\r\n\t\tborder: 2px solid grey;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 15px;\r\n\t\tcontent: '';\r\n\t\tfloat: left;\r\n\t}\r\n\r\n\tlabel.with-square-checkbox input[type=\"checkbox\"] {\r\n\t\tdisplay: none;\r\n\t}\r\n\r\n\tlabel.with-square-checkbox input[type=\"checkbox\"]:checked+span::before {'FontAwesome';\r\n\t\tcontent: '\\f00c ';\r\n\t\tcolor: #9e2065;\r\n\t}\r\n\r\n\tmain {\r\n\t\twidth: 300px;\r\n\t\tmargin: 8px auto;\r\n\t}\r\n\r\n\tli {\r\n\t\tlist-style-type: none;\r\n\t}\r\n\r\n</style>\r\n\r\n\r\n\r\n\r\n<ul>\r\n\t<li>\r\n\t\t<label class='with-square-checkbox'>\r\n\t\t\t<input type='checkbox'>\r\n\t\t\t<span>Choose your yarn</span>\r\n\t\t</label>\r\n\t</li><br>\r\n\t<li>\r\n\t\t<label class='with-square-checkbox'>\r\n\t\t\t<input type='checkbox'>\r\n\t\t\t<span>Choose your size</span>\r\n\t\t</label>\r\n\t</li><br>\r\n<li>\r\n\t\t<label class='with-square-checkbox'>\r\n\t\t\t<input type='checkbox'>\r\n\t\t\t<span>Cast on / Bind Off</span>\r\n\t\t</label>\r\n\t</li><br>\r\n\t<li>\r\n\t\t<label class='with-square-checkbox'>\r\n\t\t\t<input type='checkbox'>\r\n\t\t\t<span>Edge Finishing</span>\r\n\t\t</label>\r\n\t</li><br>\r\n\t<li>\r\n\t\t<label class='with-square-checkbox'>\r\n\t\t\t<input type='checkbox'>\r\n\t\t\t<span>Swatch and Accurate Gauge</span>\r\n\t\t</label>\r\n\t</li><br>\r\n\t<li>\r\n\t\t<label class='with-square-checkbox'>\r\n\t\t\t<input type='checkbox'>\r\n\t\t\t<span>How Much Yarn</span>\r\n\t\t</label>\r\n\t</li><br>\r\n\t<li>\r\n\t\t<label class='with-square-checkbox'>\r\n\t\t\t<input type='checkbox'>\r\n\t\t\t<span>Stitch Pattern and Color</span>\r\n\t\t</label>\r\n\t</li><br>\r\n\t<li>\r\n\t\t<label class='with-square-checkbox'>\r\n\t\t\t<input type='checkbox'>\r\n\t\t\t<span>Ribber</span>\r\n\t\t</label>\r\n\t</li><br>\r\n\t<li>\r\n\t\t<label class='with-square-checkbox'>\r\n\t\t\t<input type='checkbox'>\r\n\t\t\t<span>Hood</span>\r\n\t\t</label>\r\n\t</li><br>\r\n\t<li>\r\n\t\t<label class='with-square-checkbox'>\r\n\t\t\t<input type='checkbox'>\r\n\t\t\t<span>Pocket</span>\r\n\t\t</label>\r\n\t</li><br>\r\n</ul>\r\n\r\n<div class=\"text-center\"><span class=\"handwriting\" style=\"font-size:2em\"><br>Before anything else, <br>PREPARATION<BR>IS THE KEY<BR> to success</span></div>\r\n\r\n\r\n",
+              "legacyComponentId": 6217,
+              "order": 1
+            }
+          ],
+          "title": "What's Your Plan?",
+          "slug": "what-s-your-plan",
+          "order": 3,
+          "legacy": {
+            "assignId": 4112,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pinterest",
+              "notes": [
+                "Legacy Pinterest embed; replace with static content or omit."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4128",
+                "PINTERESTID": "20",
+                "TYPEOF": "Pinterest"
+              },
+              "legacyComponentId": 6255,
+              "order": 1
+            }
+          ],
+          "title": "Pinterest Inspiration",
+          "slug": "pinterest-inspiration",
+          "order": 4,
+          "legacy": {
+            "assignId": 4128,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "shareButton",
+              "notes": [
+                "Unmapped legacy component type: shareButton"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4134",
+                "GARMENTID": "921",
+                "TYPEOF": "shareButton"
+              },
+              "legacyComponentId": 6268,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "PatternsharedImages",
+              "notes": [
+                "Unmapped legacy component type: PatternsharedImages"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4134",
+                "GARMENTID": "921",
+                "TYPEOF": "PatternsharedImages"
+              },
+              "legacyComponentId": 6269,
+              "order": 2
+            }
+          ],
+          "title": "Shares from Fellow Knitters",
+          "slug": "shares-from-fellow-knitters",
+          "order": 5,
+          "legacy": {
+            "assignId": 4134,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Swatching is not Optional!",
+      "slug": "swatching-is-not-optional",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 500,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<strong>You are making progress!</strong> ... we've spent a lot of time planning, practicing and thinking about knitting ... are you ready to do some \"real knitting\"?<br><strong>DON'T SKIP THIS SECTION!</strong> <br>Your success with this course AND your success with your knitting machine depends on your understanding and mastering the art of knitting gauge swatches.<br>Without a swatch we are knitting in the dark.\r\n<ul>\r\n<li>How is the final sweater going to feel in the yarn and stitch pattern you've chosen?</li>\r\n<li>Do you have enough yarn?</li>\r\n<li>Do you have enough needles on your machine for the size you chose?</li>\r\n</ul>\r\n\r\n\r\n<div class=\"text-center\">\r\n<p style=\"text-align: center;\"><strong>SWATCHING IS NOT OPTIONAL</strong></p>\r\n<img class=\"img-thumbnail\" src=\"https://www.knititnow.com/images/blog_images/2017/swatching_is_not_optional.jpg\" /></div>\r\n\r\n<div class=\"text-center\">  <div class=\"videopopup\" data-videotitle=\"success2\" data-vimeoid=\"511970759\">\r\n\t\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/81/success1_gif.gif\"><br>\r\n\t\t<i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Click to view the video\t\r\n</div>\t\t\r\n</div>\r\n</div>",
+              "legacyComponentId": 6219,
+              "order": 1
+            }
+          ],
+          "title": "Step 1: Your Success Depends on this",
+          "slug": "step-1-your-success-depends-on-this",
+          "order": 1,
+          "legacy": {
+            "assignId": 4114,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\"><b>If you haven't used your chosen yarn before, how do you know the best tension to knit your poncho? </div></b>\r\n\r\n<span class=\"handwriting\" style=\"font-size:2em\">Knitters tend to use the terms \"tension swatch\" and \"gauge swatch\" interchangeably, lets take a look at both.</span>",
+              "legacyComponentId": 6220,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"cleanwell\">\r\n\r\n<h4><strong>GAUGE SWATCH</strong></h4>\r\nThe <strong>gauge swatch</strong> is the \"official\" swatch used when designing a garment.\r\n<br>\r\nIt is knit at a specific size, marked for accurate stitch and row measurement and \"dressed\" as the final garment will be treated.<br>\r\n<blockquote class=\"smallblock\">\r\n<em>TIP: Whatever method you use to create a swatch, the key is to correctly measure it and calculate your gauge.</em></blockquote>\r\n<img src=\"/challenge/images/v2/81/swatch_measure.jpg\" />\r\n</div>",
+              "legacyComponentId": 6221,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"cleanwell\">\r\n\r\n<h4><strong>TENSION SWATCH</strong></h4>\r\n<em>When I pick up a new cone of yarn, I can't wait to thread up my machine and see what the yarn looks like.   From the initial cast on, I start guessing what setting on my tension dial I need to use.  I knit a few inches and reach down and start to feel the resulting fabric. <br>Once I get a feel for the yarn (what machine, general tension setting at stockinette, etc) I create a<strong> tension swatch</strong>.  This helps me fine-tune the tension needed to achieve the fabric I like and allows me to play with various techniques.  <strong>I'm often very surprised that a yarn looks great in tuck, and awful in slip</strong>, for example.  Adding a few eyelets here and there tells me if the yarn will work up in lace.</em><br>Let's practice knitting a <strong>tension swatch.</strong>\r\n</div>",
+              "legacyComponentId": 6222,
+              "order": 5
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<ol class=\"instruction-list\">\r\n<li>Play!</li>\r\n<li>Start knitting stockenette at the tightest tension that will knit.  (If the tension is too tight, you'll see stitches that don't form properly.</li>\r\n<li>Knit 2-4 inches. Knit a marker row (change colors, work a few eyelets across the row or knit a sewing thread in with the main yarn)</li>\r\n<li>Keep knitting sections, marking the tension dial number in each section.  Knit the last section as loosely as possiblle, even if you think this will be too loose ... I'm often very pleasantly surprised at the result.</li>\r\n<li>Transfer every other needle to out of work postion and knit a section - put all needles back into work.</li>\r\n<li>Work a simple tuck, or slip, or any stitch pattern of your choice ... base your tension dial setting on the stockinette sections you just knit.</li>\r\n</ol>\r\n<blockquote class=\"smallblock\">The point of this exercise is to put the yarn through it's paces ... ignite your creativity, and get a feel for what the yarn can do.  If you don't have a huge cone, you can always re-wind this knitting. At this point, you probably know exactly what you want to do with this yarn.  Knit your Gauge Swatch, dress it and and you are ready to design and knit your sweater.</blockquote>\r\n\r\n<img src=\"/challenge/images/v2/81/tension_swatch.jpg\" />\r\n\r\n",
+              "legacyComponentId": 6223,
+              "order": 7
+            }
+          ],
+          "title": "Step 2: Gauge swatch verses Tension Swatch",
+          "slug": "step-2-gauge-swatch-verses-tension-swatch",
+          "order": 3,
+          "legacy": {
+            "assignId": 4115,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Hand knitters use the excuse \"It takes too much time to knit a swatch\", then they are often disappointed that their knitting doesn't fit.<br>\r\n<b>Machine knitters, rejoice!</b>  Knitting a swatch is fast and the information it supplies is invaluable ...even for something as simple as a rectangle.",
+              "legacyComponentId": 6224,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357273",
+              "title": null,
+              "legacyComponentId": 6225,
+              "order": 2
+            }
+          ],
+          "title": "Step 3: Knitting swatches",
+          "slug": "step-3-knitting-swatches",
+          "order": 4,
+          "legacy": {
+            "assignId": 4116,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<div class=\"lead\">Time to get knitting!</div>\r\n<ol class=\"Instruction-list\">\r\n<li>Knit a swatch using any method.</li>\r\n<li>Let it rest</li>\r\n<li>Dress the swatch (treat it as you will treat your blanket)</li>\r\n<li>Accurately measure YOUR stitch and row gauge</li>\r\n<li>Record your gauge below</li>\r\n</ol>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/81/2hr/swatch_example.jpg\" /><br />Does your swatch look similar to this one?\r\n\r\n",
+              "legacyComponentId": 6226,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4117",
+                "CHALLENGE_COMPONENTID": "6227",
+                "DATAMODEL_ELEMENT": "stitchgauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": " <b>What is your stitch gauge? <small>(4 in/10cm)</small></b>",
+                "DATAMODEL_VALIDATION": "min",
+                "DATAMODEL_VALIDATION_EXTRA": "12",
+                "DATAMODEL_VALIDATION_MESSAGE": "Enter gauge for 4 in /10 cm",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 6227,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4117",
+                "CHALLENGE_COMPONENTID": "6228",
+                "DATAMODEL_ELEMENT": "rowgauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "<b> What is your row gauge? <small>(4 in/10cm)</small></b>",
+                "DATAMODEL_VALIDATION": "min",
+                "DATAMODEL_VALIDATION_EXTRA": "0",
+                "DATAMODEL_VALIDATION_MESSAGE": "Enter gauge for 4 in /10 cm",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 6228,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"smallblock\"><em><b>TIP:</b> attach a string tag to your swatch recording all the details ... it's funny how easy it is to forget. Include yarn name, machine, tension, measurements, and stitch pattern number (if appropriate)</em></blockquote>",
+              "legacyComponentId": 6229,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "swatch",
+                "BUTTONLABLE": "Share Photos of your Swatch",
+                "CHALLENGE_ASSIGNID": "4117",
+                "CHALLENGE_COMPONENTID": "6230",
+                "QTY": "2",
+                "SUCCESSMESSAGE": "Looks great!"
+              },
+              "legacyComponentId": 6230,
+              "order": 5
+            }
+          ],
+          "title": "Step 4: Your turn ... Get Knitting",
+          "slug": "step-4-your-turn-get-knitting",
+          "order": 5,
+          "legacy": {
+            "assignId": 4117,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "It is important that you know how to estimate yarn for all of your knitting projects <small>(hint: it's based on your swatch and a little math)</small>",
+              "legacyComponentId": 6231,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857735",
+              "title": "How Much Yarn Do I Need?",
+              "legacyComponentId": 6232,
+              "order": 2
+            }
+          ],
+          "title": "Step 5: How Much Yarn Do You Need?",
+          "slug": "step-5-how-much-yarn-do-you-need",
+          "order": 6,
+          "legacy": {
+            "assignId": 4118,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/81/yarn_estimate_example.jpg\" alt=\"\" />\r\n\r\n\r\n\r\n\r\nUsing the dimensions of the sample swatch shown above,  and the instructions from the video,<br />calculate how much yarn you would need for a <strong>36x36 baby blanket.</strong>\r\n<em><small>Not sure? Take a guess and we'll show you the math</small></em>\r\n\r\n",
+              "legacyComponentId": 6233,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "167",
+                "QUESTION_ANSWER": "63",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply 9 x 7 = 63</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many square inches in the sample swatch?"
+              },
+              "legacyComponentId": 6235,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "168",
+                "QUESTION_ANSWER": "3.5",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Divide weight (22) / square inches (63)=.35 </b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Calculate weight per square inch <small>(round up)</small>"
+              },
+              "legacyComponentId": 6236,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "169",
+                "QUESTION_ANSWER": "1296",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply 36 x 36 = 1296</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many square inches in the blanket?"
+              },
+              "legacyComponentId": 6237,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "170",
+                "QUESTION_ANSWER": "454",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply the blanket square inches(1296) x multiplier (.35)= 454 grams</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many grams are needed (approximate) for the 36 x 36 inch blanket?"
+              },
+              "legacyComponentId": 6238,
+              "order": 6
+            },
+            {
+              "type": "richText",
+              "html": "\r\n              Hate math?<br>Try the Knit it Now tool\r\n                <img src=\"/challenge/images/v2/81/tools/yarn_estimator_tool_sticky.gif\">\r\n\r\n\r\n",
+              "legacyComponentId": 6240,
+              "order": 8
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859805",
+              "title": "Yarn Estimator Video",
+              "legacyComponentId": 6241,
+              "order": 9
+            }
+          ],
+          "title": "Step 6: Practice - Yarn Estimate",
+          "slug": "step-6-practice-yarn-estimate",
+          "order": 7,
+          "legacy": {
+            "assignId": 4119,
+            "blockType": "Practice"
+          }
+        }
+      ]
+    },
+    {
+      "title": "The Pattern",
+      "slug": "the-pattern",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 497,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Knit it Now Patterns are unlike any patterns you've used in the past.<br>Instead of forcing you to use a specific machine, yarn and stitch pattern, you can build your own custom pattern based on your choices.<br>Watch as we build a pattern in just 3 steps.",
+              "legacyComponentId": 6213,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "402313052",
+              "title": "Building Knit it Now Custom Patterns",
+              "legacyComponentId": 6214,
+              "order": 2
+            }
+          ],
+          "title": "About Knit it Now Patterns",
+          "slug": "about-knit-it-now-patterns",
+          "order": 1,
+          "legacy": {
+            "assignId": 4110,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n.btn-mine { \r\n  color: #ffffff; \r\n  background-color: #9e2065; \r\n \r\n} \r\n</style>\r\n\r\n\r\n\t<center><h3><B>4 WAYS TO FIND YOUR PATTERN:</B></h3></center>\r\n\tIn addition to the button below, the poncho pattern can be found in your personal library.\r\n\t\t<br><ol class=\"bullets col padding-50px-left\">\r\n\t\t\t<li>Use the shortcut: <b>www.knititnow.com/PONCHO</b></li><br>\r\n\t\t\t<li>Go to the Knit it Now Home page. If the Poncho pattern is the last one you used, it will be listed under \"patterns\"\r\n\t\t\t\t<a href=\"#one\" data-toggle=\"collapse\"><i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>\r\n\t\t\t\t<div id=\"one\" class=\"collapse hidden-print\">\r\n\t\t\t\t\t<img src=\"/challenge/images/v2/81/pattern1.jpg\">\r\n\t\t\t\t</div>\r\n\t\t\t</li><br>\r\n\t\t\t<li>Click KNIT from the main menu - if you've used the pattern recently, you'll see it on the list\r\n\t\t\t\t<a href=\"#two\" data-toggle=\"collapse\"><i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>\r\n\t\t\t\t<div id=\"two\" class=\"collapse hidden-print\">\r\n\t\t\t\t\t<img src=\"/challenge/images/v2/81/pattern2.jpg\">\r\n\t\t\t\t</div>\r\n\t\t\t</li><br>\r\n\t\t\t<li>Click KNIT and use the search functions\r\n\t\t\t\t<a href=\"#three\" data-toggle=\"collapse\"><i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>\r\n\t\t\t\t<div id=\"three\" class=\"collapse hidden-print\">\r\n\t\t\t\t\t<img src=\"/challenge/images/v2/81/pattern3.jpg\">\r\n\t\t\t\t</div>\r\n\t\t\t</li>\r\n\t\t</ol>\r\n\t\t<div class=\"text-center\"></div>\r\n\t\r\n\r\n<center><a href=\"/knit/DynamicPattern/921/basic-poncho\"><img src=\"/challenge/images/v2/81/poncho-pattern.jpg\"></a></center>\r\n",
+              "legacyComponentId": 6254,
+              "order": 1
+            }
+          ],
+          "title": "The Basic Poncho Pattern",
+          "slug": "the-basic-poncho-pattern",
+          "order": 2,
+          "legacy": {
+            "assignId": 4127,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 18px;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n\r\n</style>\r\n\r\n\r\n\t<img src=\"/challenge/images/v2/81/tape_measure.png\" width=\"200\">\r\n\t\r\n\t\t<span class=\"handwriting\">You are in control of the size and measurements of your poncho</span>\r\n\t\r\n\t<div class=\"container-border\"><center>Take time to understand the assembly: <br>Do a little origami.<br><a href=\"/downloads/poncho_worksheet_final1.pdf\" target=\"_blank\"><img src=\"/challenge/images/v2/81/origami.jpg\"></a></center></div>\r\n\t\t\r\n\t\r\n\r\n\r\n<hr class=\"style13\">\r\n\r\n\r\n\t\r\n\t\t<div class=\"circle\"><a href=\"#\">1</a></div> When building your pattern, you have control over the finished sizing. <br>The pattern asks for 2 dimensions \"L\" and \"N\". <br>The Arm Length from is mathematically calculated based on these 2 dimensions. <br><b><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> If you want a longer or shorter arm length, adjust the \"L\" and \"N\" dimensions.</b><br>\r\n<center><img src=\"/challenge/images/v2/81/poncho_sizing1.jpg\"></center>\r\n\t\r\n\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/81/sizing.jpg\">\r\n\r\n<hr class=\"style13\">\r\n\r\n<div class=\"circle\"><a href=\"#\">2</a></div>\r\n\r\n\t\r\n\t\t<h3>BEFORE STARTING TO KNIT</h3><br>\r\n\t\t<b>Double check the FINISHED MEASUREMENTS of the poncho.</b><br>In the example, the \"C\" dimension is 14\" (37 cm). when the poncho is assembled, the C dimension is folded over, with half of that section creating the front neck and half creating the back neckline.<br><b><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> If you want a smaller neckline, make the \"N\" dimension smaller when entering your Perfect Fit measurements.</b>\r\n\r\n\r\n\t\r\n\t<div class=\"text-center\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/81/sizing1.jpg\"><br><img class=\"img-thumbnail\" src=\"/challenge/images/v2/81/cm.jpg\"></div>\r\n\r\n",
+              "legacyComponentId": 6273,
+              "order": 1
+            }
+          ],
+          "title": "No Sizing Surprises",
+          "slug": "no-sizing-surprises",
+          "order": 3,
+          "legacy": {
+            "assignId": 4141,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Techniques",
+      "slug": "techniques",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 499,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\t\t\tClassroom: Cast on Methods\r\n\t\t\t<a href=\"/classrooms/44/cast-on-methods\"><img src=\"/path/images/44/classroom_caston.jpg\"></a>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\tClassroom: Bind Off Methods\r\n\t\t\t<a href=\"/classrooms/81/bind-off-methods\"><img src=\"/path/images/81/bind-off_thumb.jpg\"></a>\r\n\t\t",
+              "legacyComponentId": 6218,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860058",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 6218,
+              "order": 1
+            }
+          ],
+          "title": "Cast on  / Bind Off",
+          "slug": "cast-on-bind-off",
+          "order": 1,
+          "legacy": {
+            "assignId": 4113,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n    \r\n        Every knitter has their own opinions about blocking.  About the only thing they can agree on is the fact that blocking can improve the finished appearance of our knitting. The methods of blocking vary from knitter to knitter.<br><h3> Steam</h3>\r\n        Using steam with a steam iron or a dedicate steamer is a popular way to \"set\" the knitting.<br><ul>\r\n        <li>Lay the knitting on a flat, protected surface and gently steam.  (Be extra careful with man-made fibers, steam, don't iron)</li><br>\r\n        <li>Pin the knitting to a flat surface with or without <a data-GlossaryId=\"300\" class=\"glossaryhelp\">Blocking Wires <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> and gently steam</li>\r\n        </ul>\r\n        <br>\r\n        <h3> Wet Blocking</h3>\r\n        Another popular method of blocking is to wash the knitting (if appropriate for your fiber).  This cleans the item as well as blocking it.<br><ul>\r\n        <li>With the piece towel dried, gently lay it on a protected surface  and let it dry</li><br>\r\n        <li>Use blocking wires if desired, pin the piece into shape and let dry</li>\r\n        </ul>\r\n    \r\n    \r\n        <span class=\"handwriting\">Although blocking can be used to shape the knitting and adjust the size, it is not a replacement for knitting the garment to the correct size.<br>Accurate gauge measurement and garment planning is preferable to stretching and forcing a piece to size with any blocking method. </span>\r\n    \r\n\r\n\r\n    \r\n        <div class=\"videopopup\" data-videotitle=\"Wet Blocking\" data-vimeoid=\"151858072\">\r\n\t\t    <img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/649574476_1280x960.jpg?r=pad\">\r\n\t\t    <div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n        </div>    \r\n    \r\n",
+              "legacyComponentId": 6247,
+              "order": 1
+            }
+          ],
+          "title": "Blocking",
+          "slug": "blocking",
+          "order": 2,
+          "legacy": {
+            "assignId": 4121,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\t\r\n\t\t<div class=\"text-center\"><span class=\"handwriting\" style=\"font-size:2em\"><br>A well executed seam means the difference<br> between \"home made\" and \"hand made\"</span><br></div>\r\n\t\r\n\t\r\n\t\t<div class=\"videopopup\" data-videotitle=\"success3\" data-vimeoid=\"511974091\">\r\n\t\t\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/81/hows_it_going_gif.gif\"><br>\r\n\t\t\t<center><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> click to play the video</center>\r\n\t\t</div>\r\n\t\r\n\r\n\r\n\r\n<br>The construction of this poncho requires us to seam stitches to rows. Remember knitting is not square, so you will not be joining one stitch to one row.<br>\r\n\r\n\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t\r\n\t\t\t\t\tSpectacular Seams\r\n\t\t\t\t\t\r\n\t\t\t\t\t\t<div class=\"videopopup\" data-videotitle=\"Seaming - Putting It All Together\" data-vimeoid=\"151858422\">\r\n\t\t\t\t\t\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/551702394_1280x960.jpg?r=pad\">\r\n\t\t\t\t\t\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n\t\t\t\t\t\t</div>\r\n\t\t\t\t\t\r\n\t\t\t\t\r\n\t\t\t\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t\r\n\t\t\t\t\tSeaming Stitches to rows\r\n\t\t\t\t\t\r\n\t\t\t\t\t\t<div class=\"videopopup\" data-videotitle=\"Seaming Stitches to Rows\" data-vimeoid=\"151858940\">\r\n\t\t\t\t\t\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/1019577148_800x600.jpg?r=pad\">\r\n\t\t\t\t\t\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n\t\t\t\t\t\t</div>\r\n\t\t\t\t\t\r\n\t\t\t\t\r\n\t\t\t\r\n\t\t\r\n\t\r\n\r\n\t\r\n\t\t\r\n\t\t\tClassroom: Seaming Perfection\r\n\t\t\t<a href=\"/classrooms/85/seaming-perfection\"><img src=\"/path/images/85/seaming_classroom1.jpg\"></a>\r\n\t\t\r\n\t\r\n\r\n",
+              "legacyComponentId": 6248,
+              "order": 1
+            }
+          ],
+          "title": "Seaming",
+          "slug": "seaming",
+          "order": 3,
+          "legacy": {
+            "assignId": 4122,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n</style>\r\n\r\n<h3> Hems and Edges</h3>\r\n\r\n\r\n\r\n\r\n\r\n\t\r\n\t\t<div class=\"circle\"><a href=\"#\">1</a></div> <b>Crochet</b>\r\n\t\r\n\tCrochet can be a quick and beautiful way to finish the edges of your poncho.<br>\r\n\r\n<div class=\"videopopup\" data-videotitle=\"success3\" data-vimeoid=\"511984973\">\r\n\t\t\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/81/home_stretch_gif.gif\"><br>\r\n\t\t\t<center><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> click to play the video</center><br>\r\n\t\t</div>\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\t\r\n\t\t<div class=\"circle\"><a href=\"#\">2</a></div> <b>Designer Hems</b>\r\n\t\r\n\t\r\n\r\n\t\t\r\n\t\t\tExplore Hem options in the <a href=\"/classrooms/82/hems-and-edges\">Hems and Edges Classroom</a>\r\n\t\t\t<a href=\"/classrooms/82/hems-and-edges\"><img class=\"img-thumbnail\" src=\"/path/images/82/hems_thumb.jpg\"></a>\r\n\t\t\r\n\t\r\n\r\n\r\n\t\r\n\t\t<div class=\"circle\"><a href=\"#\">3</a></div> <b>I-Cord (Slip cord)</b>\r\n\t\r\n\t\r\n\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<div class=\"videopopup\" data-videotitle=\"I-Cord Bind off and Cast on\" data-vimeoid=\"151859552\">\r\n\t\t\t\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/551703939_1280x960.jpg?r=pad\">\r\n\t\t\t\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n\t\t\t\t</div>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\t<div class=\"videopopup\" data-videotitle=\"I-Cord Trims\" data-vimeoid=\"151857129\">\r\n\t\t\t\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/551700589_1280x960.jpg?r=pad\">\r\n\t\t\t\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n\t\t\t\t</div>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\t<div class=\"videopopup\" data-videotitle=\"Knit-in I-Cord\" data-vimeoid=\"151859707\">\r\n\t\t\t\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/1058907102_800x600.jpg?r=pad\">\r\n\t\t\t\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n\t\t\t\t</div>\r\n\t\t\t\r\n\t\t\r\n\t\r\n\r\n",
+              "legacyComponentId": 6270,
+              "order": 1
+            }
+          ],
+          "title": "Finishing",
+          "slug": "finishing",
+          "order": 5,
+          "legacy": {
+            "assignId": 4138,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Make it Your Own",
+      "slug": "make-it-your-own",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 501,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n</style>\r\n<h3> Hems and Edges</h3>\r\n\r\n\t\r\n\t\t<div class=\"circle\"><a href=\"#\">1</a></div> <b>Crochet</b>\r\n\t\r\n\tCrochet can be a quick and beautiful way to finish the edges of your poncho.<br>\r\n\r\n\r\n\t\r\n\t\t<div class=\"circle\"><a href=\"#\">2</a></div> <b>Designer Hems</b>\r\n\t\r\n\t\r\n\r\n\t\t\r\n\t\t\tExplore Hem options in the <a href=\"/classrooms/82/hems-and-edges\">Hems and Edges Classroom</a>\r\n\t\t\t<a href=\"/classrooms/82/hems-and-edges\"><img class=\"img-thumbnail\" src=\"/path/images/82/hems_thumb.jpg\"></a>\r\n\t\t\r\n\t\r\n\r\n\r\n\t\r\n\t\t<div class=\"circle\"><a href=\"#\">3</a></div> <b>I-Cord (Slip cord)</b>\r\n\t\r\n\t\r\n\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<div class=\"videopopup\" data-videotitle=\"I-Cord Bind off and Cast on\" data-vimeoid=\"151859552\">\r\n\t\t\t\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/551703939_1280x960.jpg?r=pad\">\r\n\t\t\t\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n\t\t\t\t</div>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\t<div class=\"videopopup\" data-videotitle=\"I-Cord Trims\" data-vimeoid=\"151857129\">\r\n\t\t\t\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/551700589_1280x960.jpg?r=pad\">\r\n\t\t\t\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n\t\t\t\t</div>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\t<div class=\"videopopup\" data-videotitle=\"Knit-in I-Cord\" data-vimeoid=\"151859707\">\r\n\t\t\t\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/1058907102_800x600.jpg?r=pad\">\r\n\t\t\t\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n\t\t\t\t</div>\r\n\t\t\t\r\n\t\t\r\n\t\r\n\r\n",
+              "legacyComponentId": 6249,
+              "order": 1
+            }
+          ],
+          "title": "Level 2 <img src='/challenge/images/v2/81/arrow_level2.png'>",
+          "slug": "level-2-img-src-challenge-images-v2-81-arrow-level2-png",
+          "order": 1,
+          "legacy": {
+            "assignId": 4123,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n</style>\r\n<h3> Add Texture and Color</h3>\r\n\r\n\t\r\n\t\t<div class=\"circle\"><a href=\"#\">1</a></div><b> Explore Level 3</b>\r\n\t\r\n\t\r\n\r\n\r\nPut the power of your machine to work by adding stitch patterns and color to your poncho.<br><div class=\"text-center\"></div>\r\n\r\n\r\n<a href=\"/success/1390/Level-3\" target=\"_blank\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/81/level3.jpg\"></a>\r\n\r\n\r\n\r\n\r\n\r\n<div class=\"circle\"><a href=\"#\">2</a></div> <b>Knit it Now Stitch Library</b>\r\n<div class=\"text-center\"><img class=\"img-thumbnail\" src=\"/swatches/Techniques/gallery1.jpg\"></div>\r\n\r\n\r\n\r\n<div class=\"circle\"><a href=\"#\">3</a></div> <b>Classroom: Hand Manipulation</b>\r\n\r\n\r\n\r\nNo automatic patterning?  No problem!<br>Expand the possibilities of your machine with hand manipulation. \r\n<ul>\r\n<li>Reform, move, twist stitches.</li>\r\n<li> Knit them out of order</li>\r\n<li>Create beautiful stitch pattern by taking time to hand manipulate.</li>\r\n</ul>\r\n<div class=\"text-center\"></div>\r\n\r\n\r\n<a href=\"/classrooms/1455/hand-manipulation\" target=\"_blank\"><img class=\"img-thumbnail\" src=\"/path/images/1455/hand_manipulate_thumb1.jpg\"></a>\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 6251,
+              "order": 1
+            }
+          ],
+          "title": "Level 3 <img src='/challenge/images/v2/81/arrow_level3.png'>",
+          "slug": "level-3-img-src-challenge-images-v2-81-arrow-level3-png",
+          "order": 2,
+          "legacy": {
+            "assignId": 4124,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<h3>Double Bed Fabrics</h3>\r\nWith no shaping, this is the perfect project to get more comfortable with your ribber. <br>The possibilities for ribbed fabric are practically unlimited!<br><div class=\"text-center\"></div>\r\n\r\n<a href=\"/classrooms/228/ribber-fabric\" target=\"_blank\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/81/ribber_fabric.jpg\"></a>\r\n\r\n",
+              "legacyComponentId": 6252,
+              "order": 1
+            }
+          ],
+          "title": "Level 4 <img src='/challenge/images/v2/81/arrow_level4.png'>",
+          "slug": "level-4-img-src-challenge-images-v2-81-arrow-level4-png",
+          "order": 3,
+          "legacy": {
+            "assignId": 4125,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n</style>\r\n<h3>Are you ready for a challenge? Get Creative!</h3>\r\n\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">1</a></div> <b> Add a Hood</b>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\t\r\n\t\t\t\t\t With a little planning and the Knit it Now tools, you can add a practical,\"designer\" touch to your poncho<br><center></center>\r\n\t\t\t\t\t\r\n\t\t\t\t\t\r\n\t\t\t\t\t\t<a href=\" /classrooms/133/hoods\" target=\"_blank\"><img src=\"/path/images/133/hood_thumb.jpg\"></a><br>\r\n\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\r\n\t\t\t\t\r\n\t\t\t\tFill in the \"V\" necks with short rows and add a hood. <div class=\"videopopup\" data-videotitle=\"poncho_hood\" data-vimeoid=\"518818285\">\r\n\t\t\t\t\t\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/1074470940_640x360.jpg?r=pad\">\r\n\t\t\t\t\t\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n\t\t\t</div>\r\n\t\t\r\n\t\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">2</a></div> <b> Add Pockets</b>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\t\r\n\t\t\t\t\tFun, practical and warm! Consider pockets for your poncho<br><div class=\"text-center\"></div>\r\n\t\t\t\t\t\r\n\t\t\t\t\t<img src=\"/path/images/100/pocket_thumb.jpg\">\r\n\t\t\t\t\t\r\n\t\t\t\t\r\n\t\t\t\r\n\t\t\r\n\t\r\n\r\n\r\n\r\n\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">3</a></div> <b> Add a Turtleneck or Cowl</b>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\t\r\n\t\t\t\t\tJoin both seams and close up the neck opening<br>\r\n\t\t\t\t\t\t<ol>\r\n\t\t\t\t\t\t\t<li>Pick up the neck opening with hand knitting needles and knit a collar in the round</li>\r\n\t\t\t\t\t\t\t<li>Knit a collar flat on the machine, join the seam and hand stitch it to the poncho neck opening, keeping the seaming loose enough to go over the head</li>\r\n\t\t\t\t\t\t</ol>\r\n\t\t\t\t\t\r\n\t\t\t\t\t<img src=\"/challenge/images/v2/81/poncho_turtleneck.jpg\">\r\n\t\t\t\t\t\r\n\t\t\t\t\r\n\t\t\t\r\n\t\t\r\n\t\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">4</a></div> <b> Add a split collar</b>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\t\r\n\t\t\t\t\tJoin one seam<br>\r\n\t\t\t\t\t\t<ol>\r\n\t\t\t\t\t\t\t<li>Pick up the neck opening flat and knit a rectangle (double bed works best)</li>\r\n\t\t\t\t\t\t\t<li>Knit a collar flat on the machine, join the seam and hand stitch it to the poncho neck opening, keeping the seaming loose enough to go over the head</li>\r\n\t\t\t\t\t\t</ol>\r\n\t\t\t\t\t\r\n\t\t\t\t\t<img src=\"/challenge/images/v2/81/poncho_collar_single.jpg\">\r\n\t\t\t\t\t\r\n\t\t\t\t\r\n\t\t\t\r\n\t\t\r\n\t\r\n\r\n",
+              "legacyComponentId": 6253,
+              "order": 1
+            }
+          ],
+          "title": "Level 5 <img src='/challenge/images/v2/81/arrow_level5.png'>",
+          "slug": "level-5-img-src-challenge-images-v2-81-arrow-level5-png",
+          "order": 4,
+          "legacy": {
+            "assignId": 4126,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 5,
+    "videos": [
+      {
+        "vimeoId": "178357273",
+        "title": null,
+        "lessonSlug": "swatching-is-not-optional",
+        "blockSlug": "step-3-knitting-swatches"
+      },
+      {
+        "vimeoId": "151857735",
+        "title": "How Much Yarn Do I Need?",
+        "lessonSlug": "swatching-is-not-optional",
+        "blockSlug": "step-5-how-much-yarn-do-you-need"
+      },
+      {
+        "vimeoId": "151859805",
+        "title": "Yarn Estimator Video",
+        "lessonSlug": "swatching-is-not-optional",
+        "blockSlug": "step-6-practice-yarn-estimate"
+      },
+      {
+        "vimeoId": "402313052",
+        "title": "Building Knit it Now Custom Patterns",
+        "lessonSlug": "the-pattern",
+        "blockSlug": "about-knit-it-now-patterns"
+      },
+      {
+        "vimeoId": "151860058",
+        "title": null,
+        "lessonSlug": "techniques",
+        "blockSlug": "cast-on-bind-off"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

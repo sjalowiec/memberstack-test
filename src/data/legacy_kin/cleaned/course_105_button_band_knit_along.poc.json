@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 105,
+    "title": "Button Band Knit-Along",
+    "slug": "button-band-knit-along",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_105_button_band_knit_along.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:10+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Button Bands",
+      "slug": "button-bands",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 683,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The Knit Along will Start September 1.<br>It will be based on the <a href=\"https://www.knititnow.com/challenge/100/button-bands\">Course: Explore Button Bands</a><br>",
+              "legacyComponentId": 8851,
+              "order": 1
+            }
+          ],
+          "title": "Explore Button Bands",
+          "slug": "explore-button-bands",
+          "order": 1,
+          "legacy": {
+            "assignId": 5858,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 0,
+    "videos": [],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

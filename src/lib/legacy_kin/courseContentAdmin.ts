@@ -182,6 +182,8 @@ export type SaveLessonResult = {
 
 export type CourseMetadataUpdate = {
   thumbnail?: string | null;
+  /** Short blurb for /courses catalog cards and course landing pages. */
+  description?: string | null;
   active?: boolean;
   published?: boolean;
   contentStatus?: CourseContentStatus;
@@ -190,6 +192,7 @@ export type CourseMetadataUpdate = {
 export type SaveCourseMetadataResult = {
   backupPath: string;
   thumbnail: string | null;
+  description: string | null;
   active: boolean;
   published: boolean;
   contentStatus: CourseContentStatus;
@@ -474,6 +477,15 @@ function normalizeCourseThumbnail(value: unknown): string | null {
   return trimmed || null;
 }
 
+function normalizeCourseDescription(value: unknown): string | null {
+  if (value == null) return null;
+  if (typeof value !== "string") {
+    throw new Error("description must be a string or null.");
+  }
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
 function normalizeCourseActive(value: unknown): boolean {
   if (typeof value !== "boolean") {
     throw new Error("active must be a boolean.");
@@ -513,12 +525,21 @@ export function readCourseActive(
   return isLegacyCourseActive(course);
 }
 
+function readCourseDescriptionFromData(data: CoursePreviewData): string | null {
+  const value =
+    "description" in data.course && typeof data.course.description === "string"
+      ? data.course.description.trim()
+      : "";
+  return value || null;
+}
+
 export function saveCourseMetadata(
   courseId: number,
   update: CourseMetadataUpdate,
 ): SaveCourseMetadataResult {
   if (
     !("thumbnail" in update) &&
+    !("description" in update) &&
     !("active" in update) &&
     !("published" in update) &&
     !("contentStatus" in update)
@@ -528,6 +549,7 @@ export function saveCourseMetadata(
 
   const data = readCourseContentFile(courseId);
   let thumbnail = readCourseThumbnailFromData(data);
+  let description = readCourseDescriptionFromData(data);
 
   if ("thumbnail" in update) {
     thumbnail = normalizeCourseThumbnail(update.thumbnail);
@@ -535,6 +557,15 @@ export function saveCourseMetadata(
       data.course.thumbnail = thumbnail;
     } else {
       delete data.course.thumbnail;
+    }
+  }
+
+  if ("description" in update) {
+    description = normalizeCourseDescription(update.description);
+    if (description) {
+      data.course.description = description;
+    } else {
+      delete data.course.description;
     }
   }
 
@@ -567,7 +598,7 @@ export function saveCourseMetadata(
   }
 
   const backupPath = writeCourseContentFile(courseId, data);
-  return { backupPath, thumbnail, active, published, contentStatus };
+  return { backupPath, thumbnail, description, active, published, contentStatus };
 }
 
 function readCourseThumbnailFromData(data: CoursePreviewData): string | null {

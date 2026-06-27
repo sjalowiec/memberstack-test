@@ -1,0 +1,656 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 58,
+    "title": "3 Part Lace Workshop",
+    "slug": "3-part-lace-workshop",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_58_3_part_lace_workshop.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Week 1: Alternative to Stitch Transfers",
+      "slug": "week-1-alternative-to-stitch-transfers",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 373,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Tuck lace (AKA tuck with needles out of work) is an often-overlooked technique for machine knitters.<br>It can produce and open work fabric that resembles lace ... without transferring stitches!<br>No matter what machine you have, you can work tuck lace.",
+              "legacyComponentId": 5479,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "168293720",
+              "title": "Tuck Lace",
+              "legacySlot": 1,
+              "legacyComponentId": 5485,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "292616094",
+              "title": "Tuck Lace on a Manual Machine",
+              "legacySlot": 2,
+              "legacyComponentId": 5485,
+              "order": 2
+            }
+          ],
+          "title": "Tuck Lace",
+          "slug": "tuck-lace",
+          "order": 1,
+          "legacy": {
+            "assignId": 3708,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857799",
+              "title": "Stitch Multiples",
+              "legacyComponentId": 5487,
+              "order": 1
+            }
+          ],
+          "title": "Stitch Multiples",
+          "slug": "stitch-multiples",
+          "order": 2,
+          "legacy": {
+            "assignId": 3713,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nNo matter what machine you have (manual or automatic patterning), the Stitch World Books are a great resource for Tuck Lace examples.<br><center><img class=\"zoom\" src=\"/challenge/images/v2/58/symbols.jpg\"></center><br>\r\nLook for these symbols below the stitch pattern diagrams. Notice the \"O\".  It indicates needles out of work.\r\n\r\n\r\n\r\n<a href=\"/downloads/stitch_world1.pdf\"><figure><img src=\"/challenge/images/v2/58/stitch_world1.png\"><figcaption align=\"center\"><br>Download Stitch World 1 PDF (large file)</figcaption>\r\n</figure></a>\r\n\r\n\r\n\r\n<br>\r\n\r\nIn the examples below, notice the \"O\" that indicates the needles out of work.<br>\r\nThe light grey boxes indicate the needles that will be tucking.  Notice there are only single columns of grey boxes (not including the needles out of work). <br>Remember <b>you can't tuck 2 needles side by side</b>, so be careful with the stitch patterns you choose for tuck.<br><img src=\"/challenge/images/v2/58/tuck_lace_choices1.jpg\">\r\n\r\n",
+              "legacyComponentId": 5489,
+              "order": 1
+            }
+          ],
+          "title": "Tuck Lace Examples",
+          "slug": "tuck-lace-examples",
+          "order": 3,
+          "legacy": {
+            "assignId": 3715,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Follow the video below<br>\r\n\r\n<div class=\"table-responsive\">\r\n    <table class=\"table table-striped\">\r\n        <thead>\r\n            <tr>\r\n                <th></th>\r\n                <th>Instruction</th>\r\n                <th>Notes</th>\r\n            </tr>\r\n        </thead>\r\n        <tbody class=\"small\">\r\n            <tr>\r\n                <td>\r\n                    <span class=\"fa-stack\">\r\n                        <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                        <strong class=\"fa-stack-1x\">\r\n                            <p class=\"text-muted small\">1</p>\r\n                        </strong>\r\n                    </span>\r\n                </td>\r\n                <td>Cast on over every-other-needle\r\n                 </td>\r\n                <td class=\"small\"><em>The needles that are initially out of work will remain out of work for this exercise</em></td>\r\n            </tr>\r\n            <tr>\r\n                <td>\r\n                    <span class=\"fa-stack\">\r\n                        <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                        <strong class=\"fa-stack-1x\">\r\n                            <p class=\"text-muted small\">2</p>\r\n                        </strong>\r\n                    </span>\r\n                </td>\r\n                <td>Knit 2 rows\r\n                </td>\r\n                <td class=\"small\"><em>Don't forget that tuck needs even weight</em></td>\r\n            </tr>\r\n            <tr>\r\n                <td>\r\n                    <span class=\"fa-stack\">\r\n                        <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                        <strong class=\"fa-stack-1x\">\r\n                            <p class=\"text-muted small\">3</p>\r\n                        </strong>\r\n                    </span>\r\n                </td>\r\n                <td>Pull every other WORKING needle to hold position - <b>Set the carriage to hold</b>\r\n                </td>\r\n                <td class=\"small\"><em>Don't tuck the end needles</em></td>\r\n            </tr>\r\n            <tr>\r\n                <td>\r\n                    <span class=\"fa-stack\">\r\n                        <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                        <strong class=\"fa-stack-1x\">\r\n                            <p class=\"text-muted small\">4</p>\r\n                        </strong>\r\n                    </span>\r\n                </td>\r\n                <td>Knit 4 rows (every other working needle will tuck)\r\n                </td>\r\n                <td class=\"small\"></td>\r\n            </tr>\r\n            <tr>\r\n                <td>\r\n                    <span class=\"fa-stack\">\r\n                        <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                        <strong class=\"fa-stack-1x\">\r\n                            <p class=\"text-muted small\">5</p>\r\n                        </strong>\r\n                    </span>\r\n                </td>\r\n                <td>Cancel hold and knit 1 row\r\n                </td>\r\n                <td class=\"small\"></td>\r\n            </tr>\r\n            <tr>\r\n                <td>\r\n                    <span class=\"fa-stack\">\r\n                        <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                        <strong class=\"fa-stack-1x\">\r\n                            <p class=\"text-muted small\">6</p>\r\n                        </strong>\r\n                    </span>\r\n                </td>\r\n                <td>Pull the opposite needles in work into hold position (needles remain out of work)\r\n                </td>\r\n                <td class=\"small\"></td>\r\n            </tr>\r\n            <tr>\r\n                <td>\r\n                    <span class=\"fa-stack\">\r\n                        <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                        <strong class=\"fa-stack-1x\">\r\n                            <p class=\"text-muted small\">7</p>\r\n                        </strong>\r\n                    </span>\r\n                </td>\r\n                <td>Set carriage to hold and knit 4 rows\r\n                </td>\r\n                <td class=\"small\"></td>\r\n            </tr>\r\n            <tr>\r\n                <td>\r\n                    <span class=\"fa-stack\">\r\n                        <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                        <strong class=\"fa-stack-1x\">\r\n                            <p class=\"text-muted small\">8</p>\r\n                        </strong>\r\n                    </span>\r\n                </td>\r\n                <td>Cancel hold and knit 1 row\r\n                </td>\r\n                <td class=\"small\"></td>\r\n            </tr>\r\n            <tr>\r\n                <td>\r\n                    <span class=\"fa-stack\">\r\n                        <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                        <strong class=\"fa-stack-1x\">\r\n                            <p class=\"text-muted small\">9</p>\r\n                        </strong>\r\n                    </span>\r\n                </td>\r\n                <td>Repeat steps 3 through 8 for the desired length, ending with row 8\r\n                </td>\r\n                <td class=\"small\"></td>\r\n            </tr>\r\n            <tr>\r\n                <td>\r\n                    <span class=\"fa-stack\">\r\n                        <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                        <strong class=\"fa-stack-1x\">\r\n                            <p class=\"text-muted small\">10</p>\r\n                        </strong>\r\n                    </span>\r\n                </td>\r\n                <td>Knit a few rows and drop the work from the machine (or bind off)\r\n                </td>\r\n                <td class=\"small\"></td>\r\n            </tr>\r\n<tr>\r\n                <td>\r\n                    <span class=\"fa-stack\">\r\n                        <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                        <strong class=\"fa-stack-1x\">\r\n                            <p class=\"text-muted small\">11</p>\r\n                        </strong>\r\n                    </span>\r\n                </td>\r\n                <td>Challenge: Chose a stitch pattern from the Stitch World book and follow the diagram, manually selecting the needles to tuck.\r\n                </td>\r\n                <td class=\"small\"><em>Alternately, repeat this exercise with a different needle arrangement.  <br>The more you play, you will discover many stitch patterns of your own.</td>\r\n            </tr>\r\n        </tbody>\r\n    </table>\r\n<div class='embed-video-container no-print'>\n<iframe src='https://player.vimeo.com/video/292616094' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>",
+              "legacyComponentId": 5486,
+              "order": 2
+            }
+          ],
+          "title": "Tuck Lace Practice: Manual Machines",
+          "slug": "tuck-lace-practice-manual-machines",
+          "order": 4,
+          "legacy": {
+            "assignId": 3712,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Tuck lace on any machine is simply tuck with needles out of work.<br>\r\nTo knit Tuck Lace on your Electronic or Punchcard machine:\r\n<ol>\r\n<li>You MUST understand how to set your machine to knit in tuck. \r\nRemember there are 4 elements in play:<ul>\r\n<li>The patterning device (electronics or punchard)</li>\r\n<li>The needle positions</li>\r\n<li>The pattern instructions (specific stitch pattern considerations)</li>\r\n<li>The Carriage (or Cam) setting</li></ul>\r\n</li>\r\n<li>Select a pattern that is appropriate for tuck (no 2 needles tucking side by side)</li>\r\n<li>Some machines are fussy about tucking the stitch directly next to the needle out of work.  If you struggle, try a stitch pattern with needles that are knitting next to the needles out of work. (For Brother machines try using KCII)</li>\r\n<li>Don't forget tuck brushes!</li>\r\n<li>Plan for the position of the needles out of work... you don't want them right at the edge of your knitting</li>\r\n<li>Don't let your machine tuck the edge stitches. Learn about end needle selection on your machine</li>\r\n</ol>\r\n<b>The Challenge:</b><br>\r\n<ol>\r\n<li>Choose a tuck lace pattern from the punchcards or stitch patterns that came with your machine. Your manual will have a number of choices</li>\r\n<li>Get advenurous and find something new in the <a href=\"https://www.knititnow.com/knit/stitchlibrary/4/tuck-lace\">Knit it Now Stitch Library</a> or one of the many stitch pattern books available online</li>\r\n</ol>\r\n\r\n",
+              "legacyComponentId": 5492,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "249931924",
+              "title": "Tuck Refresher",
+              "legacyComponentId": 5491,
+              "order": 2
+            }
+          ],
+          "title": "Tuck Lace Practice: Automatic Patterning Machines",
+          "slug": "tuck-lace-practice-automatic-patterning-machines",
+          "order": 5,
+          "legacy": {
+            "assignId": 3716,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "As you play with Tuck Lace, you'll get inspired to use this technique for a knitting project. <br>Don't forget ... Swatching is NOT Optional!<br>The concepts of swatching are the same for Tuck Lace as they are for plain knitting<br>\r\n<ol class=\"li_7px\">\r\n    <li>Knit swatch large enough to measure AT LEAST 4\" square in the center</li>\r\n    <li>Depending on your machine, mark off a specific number of stitches and rows to measure</li>\r\n    <li>Let the swatch rest before doing any measuring</li>\r\n    <li>Dress your swatch (wash it and block it as you will your final garment</li>\r\n    <li>To establish YOUR gauge, measure flat ... AND measure hanging up - especially with \"lace\" the measurements will differ</li>\r\n</ol>\r\n<br>\r\n<b>Don't forget! With Knt it Now Dynamic patterns you can use ANY stitch pattern. Establish YOUR gauge and build your own custom pattern.</b>",
+              "legacyComponentId": 5495,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859471",
+              "title": "Swatching in Pattern Knitting",
+              "legacyComponentId": 5494,
+              "order": 2
+            }
+          ],
+          "title": "Swatching in Pattern",
+          "slug": "swatching-in-pattern",
+          "order": 6,
+          "legacy": {
+            "assignId": 3717,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "StitchPattern",
+              "notes": [
+                "Unmapped legacy component type: StitchPattern"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3718",
+                "CHALLENGE_COMPONENTID": "5496",
+                "STITCHPATTERNID": "10",
+                "STITCHPATTERN_IMAGE": "43"
+              },
+              "legacyComponentId": 5496,
+              "order": 1
+            }
+          ],
+          "title": "pattern",
+          "slug": "pattern",
+          "order": 7,
+          "legacy": {
+            "assignId": 3718,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<a data-vimeoid=\"365369882\" class=\"videopopup\">\r\n\r\n<i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Week 1: Q&A</b></a><br><b>Links discussed today:</b><br>\r\n\r\n<a href=\"http://knitty.com/ISSUEsummer09/FEATsum09SIT.php\"><i class=\"fa fa-arrow-right\" aria-hidden=\"true\"></i> Lace Sampler</a><br>\r\n<a data-vimeoid=\"151858307\" class=\"videopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Hold position when using a lace carriage</a>\r\n\r\n",
+              "legacyComponentId": 5497,
+              "order": 1
+            }
+          ],
+          "title": "Week1: Q&A",
+          "slug": "week1-q-a",
+          "order": 8,
+          "legacy": {
+            "assignId": 3719,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Week 2: Simple Lace Transfers",
+      "slug": "week-2-simple-lace-transfers",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 379,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i><em>Eyelets are formed by transferring stitches to double up stitches on specific needles and leaving the emptied needles in working position.<br>This is true whether you move the stitches by hand or use a lace carriage to transfer the stitches</em><br>\r\n\r\n<br>In the hand knitting world to create eyelets, we work variations of <b>yo and k2tog</b> (yarn over / knit 2 together).<br>For machine knitters, we transfer stitches (doubling multiple stitches on a  needle) and <b>leave the emptied needle in working position</b> to create the yarn over on the next pass of the carriage.<br>\r\n\r\n\r\n\r\n\r\n\r\n\r\nIn both hand and machine knitting, there are about a zillion variations on this technique to create open work (lace) knitting.\r\n<h3> LACE FACTS</h3>\r\n<ol>\r\n<li>Eyelets and lace can be worked on any knitting machine</li>\r\n<li>Hand selecting and manually transferring stitches can be a fast way to incorporate motifs and small inserts of eyelets</li>\r\n<li>Lace Carriages are only available on standard machines</li>\r\n</ol>\r\n\r\n",
+              "legacyComponentId": 5499,
+              "order": 1
+            },
+            {
+              "type": "exerciseAccordion",
+              "sections": [
+                {
+                  "title": "Hand Manipulating Lace (Manual Machine)",
+                  "bodyHtml": "\r\n\r\n<ul>\r\n<li>Use your transfer tools to move stitches and empty needles. </li>\r\n<li>The trick to success is being able to read and understand the various lace charting methods that you will find in both the hand knitting and machine knitting worlds</li>\r\n<li>Creating <a href=\"https://www.knititnow.com/store/product/416/cheat-sheets-for-hand-manipulated-stitch-patterns/digitialdownload\" target=\"_blank\"><i class=\"fa fa-shopping-cart\" aria-hidden=\"true\"></i> Cheat Sheets</a> is a timesaver in following your stitch pattern</li>\r\n</ul>\r\n<a data-vimeoid=\"294441633\" class=\"videopopup\"> <i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Watch how Cheat Sheets make quick work of selecting needles<br><img src=\"/challenge/images/v2/58/cheat_shee4.jpg\"></a>\r\n\r\n\r\n<a data-vimeoid=\"216102871\" class=\"videopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i>  An example of hand transferring stitches for lace<br><img class=\"img-thumbnail\" src=\"/challenge/images/v2/58/zig_zag_lace2.jpg\"></a>\r\n",
+                  "iconSrc": "/challenge/images/v2/58/arrow1.png"
+                },
+                {
+                  "title": "Automatic Patterning (Punchcard or Electronics)",
+                  "bodyHtml": "<b>No Lace Carriage:</b>\r\n<ul>\r\n    <li>\r\n        Because Brother machines select needles on the row before patterning takes place, you can program your Brother machine to select needles, then manually transfer them</li>\r\n</ul><br>\r\n<b>Lace Carriages:</b><br>\r\n<ul>\r\n    <li>When knitting lace on a Brother standard gauge machine with a lace carriage, you alternate between the K-Carriage and the L-Carriage. In other words, following your punchcard or electronic instructions, you knit with the K-Carriage and the machine selects the needles for your pattern. You then switch to the L-Carriage and allow it to transfer those selected needles to form eyelets. When the transfers are complete, you use the K-Carriage to finish forming the stitches and eyelets in a row<br></li>\r\n    <li>\r\n        The Lace carriage of Silver/Studio/Singer machines is used INSTEAD of the normal knitting carriage. It transfers AND knits the rows at the same time.</li>\r\n<li>There are other 24 stitch punchcard machines with lace carriages.  Some reverse the direction of stitch transfers (important to know if you exchange punchcards from different brands.<br> Some lace carriages only transfer stitches and rely on the main knitting carriage to select the needles.<br><b>It's critical that you rely on the manual for your machine for success with lace</b><br><a href=\"/ManualAndDocuments/\">Download a free copy of the manual for your machine here</a></li>\r\n</ul>\r\n\r\n    \r\n\r\n        <div class='embed-video-container'><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i><b> Studio Lace Carriage in Action</b><br>\n<iframe src='https://player.vimeo.com/video/365853260' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n    \r\n        \r\n            <div class='embed-video-container'><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i><b> Brother / Knit King Lace Carriage in Action</b><br>\n<iframe src='https://player.vimeo.com/video/365889318' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\r\n        \r\n",
+                  "iconSrc": "/challenge/images/v2/58/arrow2.png"
+                },
+                {
+                  "title": "Lace Carriage Tips and Tricks",
+                  "bodyHtml": "<ol class=\"li_7px\">\r\n<li>Use a yarn that is compatible with your machine - not too thin, not to thick ... just right</li>\r\n<li>When first trying lace, use an acrylic, natural fiber or blend. Keep away from cotton or linen at first</li>\r\n<li>Lace requires EVEN weight. If you are having trouble knitting lace with a lace carriage, be sure you have the work evenly weighted. We suggest using a <a data-vimeoid=\"151859199\" class=\"videopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Ribber cast on comb</a> for even weight.</li>\r\n<li>It's critical that your machine is in tip-top condition:\r\n<ul>\r\n<li>Sponge bar in good condition</li>\r\n<li>No bent or wonky needles</li>\r\n<li>No bent gate pegs</li>\r\n</ul>\r\n</li>\r\n\r\n<li>If you have your ribber attached, be sure to hang the lace knitting over the ribber, not between the beds. Another suggestion is to remove your ribber</li>\r\n<li>You don't want the end needles to transfer when knitting lace (stitches will drop). Explore your manual for the method of canceling \"end needle selection\".<br>\r\n<a data-vimeoid=\"210067276\" class=\"videopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> End Needle Selection on Brother Machines</a>\r\n\r\n  </li>\r\n</ul>",
+                  "iconSrc": "/challenge/images/v2/58/arrow3.png"
+                }
+              ],
+              "legacy": {
+                "showText": null,
+                "size": null
+              },
+              "legacyComponentId": 5498,
+              "order": 2
+            }
+          ],
+          "title": "Week 2: Making Holes",
+          "slug": "week-2-making-holes",
+          "order": 1,
+          "legacy": {
+            "assignId": 3709,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/58/LIFELINES_HANDWRITING.gif\"><BR>\r\n\r\nWhen knitting lace (by hand or machine), it's important that you get in the habit of using lifelines.  Mistakes happen and picking up stitches when working in lace is nearly \r\n\r\n\r\n<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/151859753' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>",
+              "legacyComponentId": 5502,
+              "order": 1
+            }
+          ],
+          "title": "Don't Skip This",
+          "slug": "don-t-skip-this",
+          "order": 2,
+          "legacy": {
+            "assignId": 3723,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\n\r\nYou will find many different styles of printed lace charts. The biggest thing to identify is if the chart is for hand knitting or machine knitting.<br>\r\nHand knitting charts are normally written with the knit (public) side facing. <br>Machine knitting charts are normally displayed with the purl side facing, which makes it easier to envision the direction of the stitch transfers.<br>For most designs it isn't critical which way the transferred stitches lean, but you should be aware of the difference.\r\n\r\n<img src=\"/challenge/images/v2/58/lace_sample_circle.jpg\">\r\n\r\n\r\n<div class=\"table-responsive\">\r\n<table class=\"table\">\r\n<tr>\r\n<td><img class=\"zoom\" width=\"300\" src=\"/challenge/images/v2/58/simple_lace9.jpg\"><br></td>\r\n<td><br>This is a lace punchcard from a Singer pack. Notice there are arrows along the margin of the card, indicating the direction of knitting. (Remember Singer machines use 1 carriage that both selects needles and knits)<br>Picture this:<br>\r\nStart with the carriage on the right<br>\r\nRow 1: Knit AND transfer every other needle to the left (carriage is on the left)<br>\r\nRow 2: Knit (carriage on the right)<br>\r\nRow 3: Knit (Carriage on the left)<br>\r\nRow 4: Knit AND transfer every other needle to the right (carriage is on the right)\r\nRow 5: Knit (carriage on the left)<br>\r\nRow 6: Knit (Carriage on the right)<br>Repeat this sequence\r\n\r\n</td>\r\n</tr>\r\n\r\n<tr>\r\n<td><br><center><img src=\"/challenge/images/v2/58/simple_lace1.jpg\"><center></td>\r\n<td><br>This represents a single repeat of this stitch pattern. You might see this in a hand or machine knitting magazine. <br>The leaning symbols indicate the direction of the stitch transfer<br>\r\nNotice that the direction of transfer isn't critical for this design, so it isn't important if this is a right side facing (hand knitting) or wrong side facing (machine knitting) image.<br>It would be easy to hand manipulate this stitch pattern.  It is easy to remember and 'read' on the machine as you knit. <br></td>\r\n</tr>\r\n<tr>\r\n<td><br><center><img src=\"/challenge/images/v2/58/simple_lace5.jpg\"></center></td>\r\n<td><br>This is an example of a machine knitting chart that you might find in a MK magazine or book. Notice the horizontal lines indicating purl stitches (this is shown as wrong side facing)</td>\r\n</tr>\r\n</table>\r\n</div>",
+              "legacyComponentId": 5503,
+              "order": 1
+            }
+          ],
+          "title": "Reading Lace Charts and Punchcards",
+          "slug": "reading-lace-charts-and-punchcards",
+          "order": 3,
+          "legacy": {
+            "assignId": 3724,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<img src=\"/challenge/images/v2/58/simple_lace5.jpg\">\r\n\r\n\r\n\r\nHere's a simple, all-over lace pattern that will help introduce you to knitting lace.<br>Features of this pattern:<br>\r\n<ul class=\"li_7px\">\r\n<li>On the transfer rows, every other needle is transferred, leaving an empty needle to form an eyelet.  This creates a very open mesh-like fabric</li>\r\n<li>The transfers are worked on alternating needles, creating an open work fabric.  If the eyelets were aligned (the same needles transferred each time, columns would form (a completely different look)</li>\r\n<li>The transfers are worked in opposite directions.  In other words on the first transfer row the needles are moved to the right, on the next transfer row the needles are moved to the left. Alternating left and right prevents the work from biasing.</li>\r\n<li>The stitch pattern is easily memorized and needles easily selected with your every-other-needle pusher</li>\r\n<li>The stitch multiple is 2 (+2 end stitches) making it easy to incorporate in a design</li>\r\n\r\n</uL>\r\n<img src=\"/challenge/images/v2/58/lace_sample_circle.jpg\">\r\n\r\n\r\n",
+              "legacyComponentId": 5501,
+              "order": 1
+            },
+            {
+              "type": "exerciseAccordion",
+              "sections": [
+                {
+                  "title": "<h3>Hand Manipulated Challenge</h3>",
+                  "bodyHtml": "<ol class=\"instruction-list\">\r\n<li>Cast on an even number of stitches using any method</li>\r\n<li>Knit 2 rows</li>\r\n<li>Work Row 1 of the chart by transferring every other needle to it's neighbor (right or left)</li>\r\n<li>Keeping the emptied needles in work, knit 3 rows (rows 1,2,3)</li>\r\n<li>Transfer the alternate stitches to their neighbors (the opposite direction)</li>\r\n<li>Keeping the emptied needles in work, knit 3 rows</li>\r\n<li>Repeat this sequence - being careful not to transfer the edge stitches</li>\r\n</ol>\r\n<br><b>In other words</b>\r\n<ol class=\"instruction-list\">\r\n<li>Cast on an even number of stitches on the right side of 0</li>\r\n<li>Knit 2 rows</li>\r\n<li>Transfer needles 2,4,6, 8 .... to the right</li>\r\n<li>Keeping the emptied needles in work, knit 3 rows</li>\r\n<li>Transfer needles 3,5,7,9 .... to the left</li>\r\n<li>Keeping the emptied needles in work, knit 3 rows</li>\r\n<li>Repeat this sequence - being careful not to transfer the edge stitches</li>\r\n</ol>\r\n<h3>Challenge 2</h3>\r\nTransfer the SAME needles each time, alternating the direction\r\n<ol class=\"instruction-list\">\r\n<li>Cast on an even number of stitches using any method</li>\r\n<li>Knit 2 rows</li>\r\n<li>Work Row 1 of the chart by transferring every other needle to it's neighbor (right or left)</li>\r\n<li>Keeping the emptied needles in work, knit 3 rows (rows 1,2,3)</li>\r\n<li>Transfer the same needles to their neighbors (the opposite direction)</li>\r\n<li>Keeping the emptied needles in work, knit 3 rows</li>\r\n<li>Repeat this sequence - being careful not to transfer the edge stitches</li>\r\n</ol>",
+                  "iconSrc": "/challenge/images/v2/58/arrow1.png"
+                },
+                {
+                  "title": "Brother / Knit King",
+                  "bodyHtml": "Locate a simple lace stitch pattern that came with your machine. Look for a simple punchcard that is designed for lace.  You can identify lace punchcards by having plain rows between the holes.<br>For now, keep the stitch pattern as simple as possible.<br>For electronic machines, look in the Stitch World books for lace patterns.  The one we're using for this exercise is <a href=\"/challenge/images/v2/58/lace_workshop_brother.stp\"> #112 in the Stitch World 3</a><br><ol class=\"instruction-list\">\r\n<li>Cast on an even number of stitches</li>\r\n<li>Follow your manual and set your machine to knit lace</li>\r\n<li>Knit for a few inches - paying attention to the end needle selection</li>\r\n</ol>",
+                  "iconSrc": "/challenge/images/v2/58/arrow2.png"
+                },
+                {
+                  "title": "Silver/Singer/Studio",
+                  "bodyHtml": "Locate a simple lace stitch pattern that came with your machine. Look for a simple punchcard that is designed for lace.  You can identify lace punchcards by having plain rows between the holes.<br>\r\nFor electronic machines, look in the Stitch World books for lace patterns.  The one we're using for this exercise is <a href=\"/challenge/images/v2/58/lace_workshop_silver.stp\"> #112 in the Stitch World 3</a><br><ol class=\"instruction-list\">\r\n<li>Cast on an even number of stitches</li>\r\n<li>Follow your manual and set your machine to knit lace</li>\r\n<li>Knit for a few inches - paying attention to the end needle selection</li>\r\n</ol>",
+                  "iconSrc": "/challenge/images/v2/58/arrow3.png"
+                }
+              ],
+              "legacy": {
+                "showText": "below",
+                "size": null
+              },
+              "legacyComponentId": 5500,
+              "order": 2
+            }
+          ],
+          "title": "Simple Lace Practice",
+          "slug": "simple-lace-practice",
+          "order": 4,
+          "legacy": {
+            "assignId": 3722,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\nAs you play with different stitch patterns:\r\n<ul class=\"li_7px\">\r\n<li>Make your swatches large enough to use as gauge swatches. </Li>\r\n<li>Compare the various stitch patterns, number and position of the eyelets and notice the effect on the gauge</li>\r\n<li>By knitting a long piece as in the example, you can also watch the effect of \"drop\" on your knitting.  Drop has a big impact on lace - notice the change in both stitches and rows when measuring lace flt and hanging</li>\r\n</ul>\r\n<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/151859471' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\r\n\r\n\r\n\r\n\t<img class=\"img-thumbnail zoom\" src=\"/challenge/images/v2/58/gauge_drop1.jpg\">\r\n\r\n",
+              "legacyComponentId": 5504,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "245117927",
+              "title": "Gauge and Drop",
+              "legacyComponentId": 5506,
+              "order": 2
+            }
+          ],
+          "title": "Swatching practice",
+          "slug": "swatching-practice",
+          "order": 5,
+          "legacy": {
+            "assignId": 3725,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<a data-vimeoid=\"366822262\" class=\"videopopup\">\r\n\r\n<i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Week 2: Q&A</b></a><br>",
+              "legacyComponentId": 5529,
+              "order": 1
+            }
+          ],
+          "title": "Week 2: Q&A",
+          "slug": "week-2-q-a",
+          "order": 6,
+          "legacy": {
+            "assignId": 3730,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Week 3: Multiple Stitch Transfers and MORE",
+      "slug": "week-3-multiple-stitch-transfers-and-more",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 380,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "exerciseAccordion",
+              "sections": [
+                {
+                  "title": "<b>Simple Single Transfers</b>",
+                  "bodyHtml": "\r\n\t<img src=\"/challenge/images/v2/58/simple_lace5.jpg\">\r\n\t\r\n\t\t<h3>Simple Single Transfers</h3>\r\n\t\tSo far we've talked about single rows of lace transfers. As we've seen you can create beautiful designs by simply transferring 1 row of eyelets, then knitting 2 or more rows.<br>We discovered that transferring the stitches in the opposite direction prevents biasing when knitting this style of stitch pattern.<br>The punchcard or electronics would look like this. Notice the unpunched (or plain) rows between the holes (stitch transfers)<br><img width=\"300\" src=\"/challenge/images/v2/58/simple_lace9.jpg\"><br>\r\n\t\r\n\r\n",
+                  "iconSrc": "/challenge/images/v2/58/arrow1.png"
+                },
+                {
+                  "title": "<b>Multiple Stitch Transfers (k3tog)</b>",
+                  "bodyHtml": "\r\n\t\r\n\r\n\t\tMore complex lace patterns require multiple stitch transfers. From a machine knitter's perspective, k3tog (knit 3 together) would require 2 passes of the carriage; transfer 1 stitch right, then 1 stitch left, without knitting any rows between the transfers.<br>\r\n\t\t<center>\r\n\t\t\t<figure><img src=\"/challenge/images/v2/58/knit3-tog1.jpg\">\r\n\t\t\t\t<figcaption align=\"center\"><br>classic k3tog (knit 3 together)<br>AKA center double decrease</figcaption>\r\n\t\t\t</figure><br><figure>\r\n\r\n\t\t\t\t<img src=\"/challenge/images/v2/58/knit3-tog_machine1.jpg\">\r\n\t\t\t\t<figcaption align=\"center\"><br>Machine knitter's translation</figcaption>\r\n\t\t\t</figure>\r\n\t\t</center>\r\n\t\r\n\t\r\n\t\t<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/369201126' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\t\r\n",
+                  "iconSrc": "/challenge/images/v2/58/arrow2.png"
+                },
+                {
+                  "title": "<b>Multiple Stitch Transfers (part 2)</b>",
+                  "bodyHtml": "\r\n\r\nWhen thinking about knitting lace, we think of transferring one stitch to it's neighbor, leaving the emptied needle in working position and creating an eyelet.<br>But another way to create lace is to have the stitch transfer occur a few stitches away from the eyelet. This opens up the possibilities of lace even further.<br>This technique is easy enough with hand manipulation, but it's important to understand how to \"translate\" this to machine knitting when using a lace carriage<br><img src=\"/challenge/images/v2/58/multi_transfer1.jpg\">\r\n<img src=\"/challenge/images/v2/58/multi_transfer2b.jpg\">\r\n\r\n\r\n<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/369332867' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n",
+                  "iconSrc": "/challenge/images/v2/58/arrow3.png"
+                }
+              ],
+              "legacy": {
+                "showText": null,
+                "size": null
+              },
+              "legacyComponentId": 5539,
+              "order": 2
+            }
+          ],
+          "title": "Week 3: Multiple Stitch Transfers",
+          "slug": "week-3-multiple-stitch-transfers",
+          "order": 1,
+          "legacy": {
+            "assignId": 3710,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Brother lace carriages can create a unique stitch type that they call \"fine lace\".<br>\r\nInstead of the lace carriage transferred the entire stitch from one needle to the next, it transfers only one leg of the stitch, opening the stitch across 2 needles.<br>This produces an unusual texture that has lots of applications.",
+              "legacyComponentId": 5538,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "156893849",
+              "title": null,
+              "legacyComponentId": 5537,
+              "order": 2
+            }
+          ],
+          "title": "Brother Fine Lace",
+          "slug": "brother-fine-lace",
+          "order": 2,
+          "legacy": {
+            "assignId": 3731,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<figure><img src=\"/challenge/images/v2/58/studioL10.jpg\">\r\n\r\n<figcaption align=\"center\"><br>Singer Fashion Lace punchcard</figcaption>\r\n</figure>",
+              "legacyComponentId": 5541,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "369332867",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 5541,
+              "order": 1
+            }
+          ],
+          "title": "Studio Fashion Lace",
+          "slug": "studio-fashion-lace",
+          "order": 3,
+          "legacy": {
+            "assignId": 3735,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\nDon't be disappointed when your beautiful  lace comes off the machine. Blocking is essential. Blocking wires are a great alternative to using a zillion pins.\r\n<br>If you are knitting with acrylic or acrylic blends, steaming may be enough to hold the lace in shape. But with natural fibers, wet blocking is the best.\r\n\r\n\r\n<a href=\"http://shrsl.com/1w4w1\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/58/blocking_kit.jpg\">\"></a><br>\r\nThis Blocking Kit from Knit Picks has everything you need to block your knitting.<br><small><em>affiliate link</em></small>\r\n\r\n",
+              "legacyComponentId": 5534,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858072",
+              "title": "Wet Blocking",
+              "legacyComponentId": 5533,
+              "order": 2
+            }
+          ],
+          "title": "Blocking",
+          "slug": "blocking",
+          "order": 4,
+          "legacy": {
+            "assignId": 3732,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "DesignaKnit offers a lace tool to help you create lace patterns.  The advantage of this tool is the intelligence built into DAK that will help prevent mistakes.<br>\r\nDAK recognizes what machine you've selected and prompts you if you are trying to do something that isn't available for your machine. It also prevents basic boo-boo's like trying to create 2 eyelets side by side.<br>\r\nThis module is not required to create lace patterns, but it is very helpful.<br>",
+              "legacyComponentId": 5536,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "253649528",
+              "title": "Intro to the DAK Lace Tool",
+              "legacyComponentId": 5535,
+              "order": 2
+            }
+          ],
+          "title": "DesignaKnit and Lace",
+          "slug": "designaknit-and-lace",
+          "order": 5,
+          "legacy": {
+            "assignId": 3733,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/58/lace/1.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/58/lace/2.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/58/lace/3.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/58/lace/4.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/58/lace/5.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/58/lace/6.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/58/lace/7.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/58/lace/8.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/58/lace/9.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/58/lace/10.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/58/lace/11.jpg",
+                  "caption": null
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 5542,
+              "order": 1
+            }
+          ],
+          "title": "Conclusion",
+          "slug": "conclusion",
+          "order": 6,
+          "legacy": {
+            "assignId": 3736,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 10,
+    "videos": [
+      {
+        "vimeoId": "168293720",
+        "title": "Tuck Lace",
+        "lessonSlug": "week-1-alternative-to-stitch-transfers",
+        "blockSlug": "tuck-lace"
+      },
+      {
+        "vimeoId": "292616094",
+        "title": "Tuck Lace on a Manual Machine",
+        "lessonSlug": "week-1-alternative-to-stitch-transfers",
+        "blockSlug": "tuck-lace"
+      },
+      {
+        "vimeoId": "151857799",
+        "title": "Stitch Multiples",
+        "lessonSlug": "week-1-alternative-to-stitch-transfers",
+        "blockSlug": "stitch-multiples"
+      },
+      {
+        "vimeoId": "249931924",
+        "title": "Tuck Refresher",
+        "lessonSlug": "week-1-alternative-to-stitch-transfers",
+        "blockSlug": "tuck-lace-practice-automatic-patterning-machines"
+      },
+      {
+        "vimeoId": "151859471",
+        "title": "Swatching in Pattern Knitting",
+        "lessonSlug": "week-1-alternative-to-stitch-transfers",
+        "blockSlug": "swatching-in-pattern"
+      },
+      {
+        "vimeoId": "245117927",
+        "title": "Gauge and Drop",
+        "lessonSlug": "week-2-simple-lace-transfers",
+        "blockSlug": "swatching-practice"
+      },
+      {
+        "vimeoId": "156893849",
+        "title": null,
+        "lessonSlug": "week-3-multiple-stitch-transfers-and-more",
+        "blockSlug": "brother-fine-lace"
+      },
+      {
+        "vimeoId": "369332867",
+        "title": null,
+        "lessonSlug": "week-3-multiple-stitch-transfers-and-more",
+        "blockSlug": "studio-fashion-lace"
+      },
+      {
+        "vimeoId": "151858072",
+        "title": "Wet Blocking",
+        "lessonSlug": "week-3-multiple-stitch-transfers-and-more",
+        "blockSlug": "blocking"
+      },
+      {
+        "vimeoId": "253649528",
+        "title": "Intro to the DAK Lace Tool",
+        "lessonSlug": "week-3-multiple-stitch-transfers-and-more",
+        "blockSlug": "designaknit-and-lace"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

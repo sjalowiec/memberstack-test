@@ -93,8 +93,16 @@ body.course-editor-body {
 }
 
 .course-editor__settings-panel {
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   border-bottom: 1px solid #f1f5f9;
+  overflow: hidden;
+}
+
+.course-editor__settings-panel[open] {
+  max-height: min(42vh, 26rem);
 }
 
 .course-editor__settings-summary {
@@ -110,6 +118,8 @@ body.course-editor-body {
   cursor: pointer;
   list-style: none;
   user-select: none;
+  flex-shrink: 0;
+  background: #fff;
 }
 
 .course-editor__settings-summary::-webkit-details-marker {
@@ -138,6 +148,9 @@ body.course-editor-body {
 
 .course-editor__course-settings {
   padding: 0.75rem 1rem 0.85rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-height: 0;
 }
 
 .course-editor__sidebar-label {
@@ -225,6 +238,39 @@ body.course-editor-body {
 .course-editor__thumbnail-input:focus {
   border: none;
   box-shadow: none;
+}
+
+.course-editor__catalog-description {
+  width: 100%;
+  min-height: 4.5rem;
+  resize: vertical;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.course-editor__catalog-description-source {
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: #64748b;
+}
+
+.course-editor__catalog-description-source--custom {
+  color: #52682d;
+}
+
+.course-editor__catalog-description-source--fallback {
+  color: #64748b;
+}
+
+.course-editor__catalog-description-source--pending {
+  color: #b45309;
+}
+
+.course-editor__catalog-description-clear {
+  margin-top: 0.45rem;
+  width: 100%;
+  font-size: 0.78rem;
 }
 
 .course-editor__thumbnail-preview-wrap {

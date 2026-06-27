@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 63,
+    "title": "Hat Challenge Links",
+    "slug": "hat-challenge-links",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_63_hat_challenge_links.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Pinterest Inspiration",
+      "slug": "pinterest-inspiration",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 397,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pinterest",
+              "notes": [
+                "Legacy Pinterest embed; replace with static content or omit."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3778",
+                "PINTERESTID": "26",
+                "TYPEOF": "Pinterest"
+              },
+              "legacyComponentId": 5656,
+              "order": 1
+            }
+          ],
+          "title": "Pinterest Inspiration",
+          "slug": "pinterest-inspiration",
+          "order": 1,
+          "legacy": {
+            "assignId": 3778,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pinterest",
+              "notes": [
+                "Legacy Pinterest embed; replace with static content or omit."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3807",
+                "PINTERESTID": "30",
+                "TYPEOF": "Pinterest"
+              },
+              "legacyComponentId": 5672,
+              "order": 1
+            }
+          ],
+          "title": "Pinterest Inspiration",
+          "slug": "pinterest-inspiration",
+          "order": 2,
+          "legacy": {
+            "assignId": 3807,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pinterest",
+              "notes": [
+                "Legacy Pinterest embed; replace with static content or omit."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3808",
+                "PINTERESTID": "34",
+                "TYPEOF": "Pinterest"
+              },
+              "legacyComponentId": 5673,
+              "order": 1
+            }
+          ],
+          "title": "",
+          "slug": "untitled",
+          "order": 3,
+          "legacy": {
+            "assignId": 3808,
+            "blockType": "Pinterest"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 0,
+    "videos": [],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

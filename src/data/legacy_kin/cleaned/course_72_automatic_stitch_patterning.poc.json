@@ -1,0 +1,1203 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 72,
+    "title": "Automatic Stitch Patterning",
+    "slug": "automatic-stitch-patterning",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_72_automatic_stitch_patterning.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/automatic_stitch.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Introduction",
+      "slug": "introduction",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 463,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<b>The purpose:</b><br>\r\n\t\tIt is our goal to help you learn and understand stitch patterning on YOUR machine.<br>There are many makes and models of knitting machines in use. It would be impossible to create courses and exercises for each machine. <br>Although the names and position of the buttons and levers vary from machine to machine, the functionality of these machines is very much the same. <br>\r\n\t\t<b>It is important for you to identify, learn and master each of the available techniques for YOUR machine.</b> Armed with that knowledge, you can add stitch patterning to your machine knitting toolbox to create the knitwear of your dreams.<br><b>The format:</b><br>\r\n\t\t<ol>\r\n\t\t\t<li>\r\n\t\t\t\tUsing your machine manual, explore and discover all of the buttons and levers on your machine. Record the names and location of each item as related to automatic stitch patterning\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>The Automatic Needle Selection Device</li>\r\n\t\t\t\t\t<li>Cam/Carriage Levers and buttons</li>\r\n\t\t\t\t</ul>\r\n\t\t\t</li>\r\n\t\t\t<li>Practice each of the most common stitch patterns\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>Use the suggested stitch patterns or patterns provided with your machine</li>\r\n\t\t\t\t\t<li>Put each of the previously identified buttons/levers to work and record YOUR settings for each technique</li>\r\n\t\t\t\t</ul>\r\n\t\t\t</li>\r\n\t\t</ol>\r\n\r\n\t\t<b>Terminology:</b><br>Being US based, the terms we use may differ from those you know. (we spell color without a U) We will provide photos and video as much as possible to help with any language barrier. One term that we tend to use interchangeably is Cam/Carriage. <br><b>Abbreviations:</b><br>Although common in vintage machine knitting manuals, patterns, and documents, we do not use abbreviations. Check the <a href=\"/Glossary/\">Knit it Now Glossary</a> for any \"mystery\" abbreviations you may encounter on your journey to master your machine.<br><blockquote>We encourage you to work through all the exercises .. don't just watch videos.\r\n\t\tStudy YOUR manual step by step. Answer the questions presented here in this course. Sit down at your machine and try the exercises. The best way to learn something new (and have it stick in your mind) is to DO IT!</blockquote\r\n\t\t<br><em>As you are probably aware, the Brand names of machines have changed over the years. We will use the terms Brother, Silver/Singer throughout this course. Substitute the name of your machine where appropriate.</em>",
+              "legacyComponentId": 5935,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "434198371",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 5935,
+              "order": 1
+            }
+          ],
+          "title": "About This Course",
+          "slug": "about-this-course",
+          "order": 1,
+          "legacy": {
+            "assignId": 3967,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "One of the many advantages of machine knitting is the ability to quickly and easily knit in pattern. Textured stitch patterns, multi-color patterns can all be quickly produced with the help of automatic patterning devices. Using Punchcard or electronics, the machine automatically selects needles for pattern knitting.<br>\r\n\t\r\n\t\t<b>FACT: To create stitch patterns on any machine, it is a combination of the position of the needles PLUS the carriage settings.</b>\r\n\t<br>\r\n\tIn order to work in pattern on any machine (manual or automatic) you must remember (AND UNDERSTAND) this fact. <br>It doesn't matter if the needles are being positioned by hand or by a patterning device, the correct setting on the carriage (cam) will produce stitch patterns.<br>\r\n\t\t\r\n\t\t\t<h4><b>Your Challenge:</b></h4>\r\n\t\t\t<ul class=\"fa-ul\" style=\"line-height:30px\">\r\n\t\t\t\t<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Locate and identify the levers and buttons on your machine (use your manual)</li>\r\n\t\t\t\t<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Learn about needle positions and their impact on knitting in pattern</li>\r\n\t\t\t\t<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Learn the differences between the various stitch techniques</li>\r\n\t\t\t\t<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Apply the settings for YOUR machine to produce the stitch techniques</li>\r\n<li><span class=\"fa-li\"><i class=\"fa fa-check-square-o fa-2x\"></i></span>Fill-in-the-blanks as you work through the investigative part of this course.  Your answers will be remembered and used in the practice part of the course.  This will help you apply YOUR specific notes and customize the practices</li>\r\n\t\t\t</ul>\r\n\t\t\r\n\t\r\n\tDo this before getting started:\r\n\t<ul style=\"line-height:30px\">\r\n\t\t<li>Have your manual handy (<a href=\"https://www.knititnow.com/ManualAndDocuments/\">get a free copy here</a>)</li>\r\n\t\t<li>Make sure your machine is in good working order\r\n\t\t\t<ul style=\"line-height:30px\">\r\n\t\t\t\t<li>Clean and oiled (see your manual)</li>\r\n\t\t\t\t<li><button data-GlossaryId='524' class='glossaryhelp btn btn-xs btn-default'>Sponge Bar | Presser Bar <i class='fa fa-question-circle' aria-hidden='true'></i></button>\r\n\t\t\t\t\tis in good shape. (A flat sponge bar will cause any number of problems, especially when knitting in pattern)</li>\r\n\t\t\t</ul>\r\n\t\t</li>\r\n\t\t<li>Have available lots of yarn appropriate for your machine. Choose smooth, light color yarn</li>\r\n\t</ul>\r\n</div>\r\n",
+              "legacyComponentId": 5918,
+              "order": 1
+            }
+          ],
+          "title": "Stitch Patterning on Knitting Machines",
+          "slug": "stitch-patterning-on-knitting-machines",
+          "order": 2,
+          "legacy": {
+            "assignId": 3952,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "As you work through the sections of this course you will be prompted with fill-in-the-blanks questions.<br>Provided are the most common names and descriptions for various machines, but you are encouraged to use your manual to find the answer.<br>Enter in the answer that will make sense to you when you use your Cheat Sheet.<br>After completing the material in the course, you'll be able to print out your personal Cheat Sheet for future reference.<br>Let's get started:",
+              "legacyComponentId": 5959,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3969",
+                "CHALLENGE_COMPONENTID": "5960",
+                "DATAMODEL_ELEMENT": "machine_name",
+                "DATAMODEL_ICON": "fa fa-check-square-o fa-3x",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "What machine are you using?<br><em><small>You don't have to enter the 'official' words. Just enter what makes sense to you</small></em>",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 5960,
+              "order": 2
+            }
+          ],
+          "title": "Create Your Own Cheat Sheet",
+          "slug": "create-your-own-cheat-sheet",
+          "order": 3,
+          "legacy": {
+            "assignId": 3969,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t \tPrint these cards and record the settings on your machine for future reference.<br>Use colored pencils, highlighters or markers and make notes. \r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t<!--- buttons --->\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t<cfif client.subscriptionExpires lt now()>\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t<div class=\"text-center\" style=\"margin-top:10px;\">\r\n\t\t\t\t\t\t\t\t\t\t\t\tUnlock with a Knit It Now Membership\r\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t</cfif>\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\t<br><img src=\"/tools/technique_card_gif1.gif\" class=\"img-thumbnail\" alt=\"Sample Technique Reference Card\"><br>\r\n\t\t\t\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t",
+              "legacyComponentId": 10176,
+              "order": 1
+            }
+          ],
+          "title": "Technique Referance Cards",
+          "slug": "technique-referance-cards",
+          "order": 4,
+          "legacy": {
+            "assignId": 6517,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Get familiar with your machine",
+      "slug": "get-familiar-with-your-machine",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 461,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div>\r\n    \r\n        The first step to knitting in pattern WITH your automatic patterning device, is to tell your machine that you want use the punchcard or electronics<br>The device to \"engage\" patterning varies from machine to machine.<br>\r\n    \r\n     \r\n        \r\n            \r\n                <table class=\"table table-responsive\">\r\n                <thead>\r\n                    <tr>\r\n                        <th colspan=\"2\">\r\n                            <center><span style=\"color:#9E2065\" ;>Common Terms</span></center>\r\n                        </th>\r\n                    </tr>\r\n                </thead>\r\n                <tbody>\r\n                    <tr>\r\n                        <td>\r\n                            <a href=\"#brother\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i>\r\n                              <b>Brother/Knit King</b>\r\n                              </a>\r\n                            <div id=\"brother\" class=\"collapse hidden-print\">\r\n                                <img class=\"zoom\" src=\"/challenge/images/v2/72/patterning1_brother.jpg\">\r\n                            </div>\r\n                          \r\n                        </td>\r\n                        <td>Change Knob</td>\r\n                    </tr>\r\n                    <tr>\r\n                        <td>\r\n                            <a href=\"#silver\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i> \r\n                            <b>Singer/Silver</b>\r\n                            </a>\r\n                            <div id=\"silver\" class=\"collapse hidden-print\">\r\n                                <img class=\"zoom\" src=\"/challenge/images/v2/72/patterning1_silver.jpg\">\r\n                            </div>\r\n                            \r\n                        </td>\r\n                        <td>Side Levers</td>\r\n                    </tr>\r\n                    <tr>\r\n                        <td><a href=\"#toyota\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i>\r\n                           <b>Toyota</b></a>\r\n                            <div id=\"toyota\" class=\"collapse hidden-print\">\r\n                                <img class=\"zoom\" src=\"/challenge/images/v2/72/patterning1_toyota.jpg\">\r\n                            </div>\r\n                        </td>\r\n                        <td>Card Levers</td>\r\n                    </tr>\r\n                </tbody>\r\n            </table>\r\n        \r\n    \r\n\r\n<br><h2 class=\"section-title MachineknittingColor\">\r\n    It's the setting of this lever or dial that instructs the machine that you are going to be engaging the automatic patterning. <br>This device IN ADDITION to other carriage settings will create stitch patterns.</h2>\r\n",
+              "legacyComponentId": 5923,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3954",
+                "CHALLENGE_COMPONENTID": "5938",
+                "DATAMODEL_ELEMENT": "selection_mechanism",
+                "DATAMODEL_ICON": "fa fa-check-square-o fa-3x",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "What is the name of your Selection Mechanism?<br> <em><small>Click the buttons to choose or enter your own</small></em>",
+                "REMOVEALERT": "0",
+                "SUGGESTEDOPTIONS": "Change Knob,Side Levers,Card Levers"
+              },
+              "legacyComponentId": 5938,
+              "order": 2
+            }
+          ],
+          "title": "STEP 1: Automatic Needle Selection Mechanism",
+          "slug": "step-1-automatic-needle-selection-mechanism",
+          "order": 1,
+          "legacy": {
+            "assignId": 3954,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "These devices tell the knitting carriage (cam) to knit stitches or not knit stitches on the needles in different knitting positions.<br><b>No matter how the needles get into specific positions (with punchcard, electronics or  by hand), these devices will control how the stitches are formed.</></b><br>\r\nImagine the underside of your knitting carriage.<br>There are tracks that the butt of the needles follow.<br>The  Cam levers/buttons open and close gates that allow the needle butts to travel through specific channels. <br>It's the movement of the needles thru these channels that either knit the stitch, tuck the stitch (yarn over the needle), slip the stitch (yarn under the needle), transfer the stitch(lace)  or knit in a second color (fairisle)\r\n<br>\r\n\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/underside_of_carriage1.gif\">\r\n\r\n\r\n<h2 id=\"lecture_heading\" class=\"section-title MachineknittingColor\">\r\n\r\nThe is the heart of the magic of patterning with a knitting machine.</h2>\r\n\r\n<i class=\"fa fa-check-square-o fa-3x\" aria-hidden=\"true\"></i>\r\n<span class=\"lead\">TRY THIS</span><br>\r\n\r\n\r\n<ol>\r\n<li>\r\nRemove your carriage and engage the Cam buttons/levers.<br></li>\r\n<li>Turn the carriage over<br></li>\r\n<li>Observe what happens underneath and imagine the movement of the needles through the tracks.</li>\r\n</ol>\r\n\r\n\r\n",
+              "legacyComponentId": 5924,
+              "order": 1
+            }
+          ],
+          "title": "STEP 2:  Cam Levers / Buttons",
+          "slug": "step-2-cam-levers-buttons",
+          "order": 2,
+          "legacy": {
+            "assignId": 3955,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/needle_positions1.jpg\">\r\n\r\n\t\r\n\r\n<span class=\"lead\"><font color=\"#9e2065\"><b>Why care about needle positions?</b></font></span><br>With automatic patterning, your machine (as instructed by the patterning device) will automatically select needles. The black/white, hole/no hole, on/off settings of the patterning device, positions the needles for stitch patterning. <br>But is is important that you understand needle positions on your machine.  You may want to set up manual patterning for a few rows. With Brother/Knit King Machines, you may need to re-position needles after ripping rows.<br>Take time to understand the positions and the terminology of the positions.<br>Depending on your machine there are 4 or more needle positions. There are letters engraved on the needlebed indicating the various positions. These letters can differ between machines, but more importantly you must recognize what they represent.<br><em>Throughout this course we will try to refer to the function of each position, rather than the letter. In vintage machine knitting documentation, abbreviations are often used for these settings.  We will not use these in this course.<br></em>\r\n\t\r\n\t\r\n\t\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/needle_positions.jpg\">\r\n\r\n<center>\r\n",
+              "legacyComponentId": 5919,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: NeedlePosition_DataEntry.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3953",
+                "CUSTOMCFM": "NeedlePosition_DataEntry.cfm",
+                "TYPEOF": "CustomCFM"
+              },
+              "legacyComponentId": 5944,
+              "order": 2
+            }
+          ],
+          "title": "STEP 3: Needle Positions",
+          "slug": "step-3-needle-positions",
+          "order": 3,
+          "legacy": {
+            "assignId": 3953,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Although the terms, buttons, dials and levers differ between the various brands of machines, the results are the same. We can knit beautiful, colorful and textured fabrics \"automatically\".<br>The Patterning device takes \"input\" from a punchcard, or electronically and \"translates\" on/off, 0/1, hole/no hole to an action that will position needles on the needlebed to create stitch patterns.<br>However, the basic knitting logic of creating stitch patterns is approached somewhat differently by Brother/Knit King and Singer/Silver/Studio machines.<br>Once the stitch pattern is set up and the carriages are set correctly, the actual knitting differs slightly. <br><b>It is important that you to understand YOUR machine.</b><br>Once you are familiar with your machine this difference is only obvious and impact-ful if you have multiple machines from different brands.\r\n\r\nTHE DIFFERENCE:<br>\r\n<ul class=\"col padding-50px-left\">\r\n\t<li>Brother machines <b>pre-select needles for the following row</b>. You can see the position of the needles.<br></li>\r\n\t<li> Silver/Singer machines <b>memorize the pattern internally</b> and the needles move into their assigned positions the pass of the carriage. (no previewing)</li>\r\n</ul><br>\r\n\t\r\n\t\t\r\n\t\t\t<span class=\"lead\">\r\n\t\t\t\t\t<font color=\"#9e2065\">Brother/Knit King</font>\r\n\t\t\t\t</span>\r\n\t\t\t\r\n\t\t\tBrother machines pre-select the needles in the positions that are dictated by the patterning device.<br>\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>On the initial, set up row, the needles are selected, but the stitches are knit plain and are not formed in the stitch pattern.<br></li>\r\n\t\t\t\t\t<li>On the next pass of the carriage, the stitches will be formed according to the pattern and carriage settings.<br></li>\r\n\t\t\t\t\t<li>Subsequent rows will form the stitches according to pattern AND pre-select the needles for the next row.</li>\r\n\t\t\t\t</ul>\r\n\t\t\t\r\n\t\t\r\n\t\r\n\t\r\n\t\t\r\n\t\t\t<span class=\"lead\">\r\n\t\t\t\t\t<font color=\"#9e2065\">Singer/Silver/Studio</font>\r\n\t\t\t\t</span>\r\n\t\t\t\r\n\t\t\tThese machines have a memory wheel on the carriage, that memorizes the stitch pattern for the next row.<br>\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>On the first pass of the carriage (the setup row), the knitting is plain and the memory wheel records the pattern. <br></li> \r\n\t\t\t\t\t<li>On the next pass of the carriage, the stitches are formed in pattern AND the <b>memory wheel</b> prepares for the following row.\r\n\t\t\t\t\t</li>\r\n\t\t\t\t</ul><br>\r\n\t\t\t\r\n\t\t\r\n\t\r\n\r\n",
+              "legacyComponentId": 5973,
+              "order": 1
+            }
+          ],
+          "title": "Brother vs Silver/Singer",
+          "slug": "brother-vs-silver-singer",
+          "order": 4,
+          "legacy": {
+            "assignId": 3974,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Plain (Stockinette)",
+      "slug": "plain-stockinette",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 462,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n    \r\n        There is an arrangement of the needle selection mechanism, and the cam levers and buttons that is specific to knitting plain knitting on your machine.<br>You've probably already discovered this setting, but if you are new, let's identify YOUR settings.<br>Many a new knitter gets frustrated when a button or lever is changed in error and they have a problem knitting in plain stockinette.<br>This will become second nature to you, but while you are still learning, take time EVERY TIME to double check your settings.<br>Keep a cheat sheet near your machine and double check before knitting.<br><center>\r\n            <figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/stockinette_200.png\">\r\n                <figcaption align=\"center\"><br>\r\n                    <font color=\"#9e2065\"><em>Plain knitting (stockinette)</em></font>\r\n                </figcaption>\r\n            </figure>\r\n        </center>\r\n    \r\n    \r\n        \r\n            \r\n                <div class=\"table-responsive\">\r\n                    <table class=\"table\">\r\n                        <thead>\r\n                            <tr>\r\n                                <th colspan=\"2\" class=\"text-center\"><span style=\"color:#9E2065\" ;>Cam (Carriage) Setting</span></th>\r\n                            </tr>\r\n                        </thead>\r\n                        <tbody>\r\n                            <tr>\r\n                                <td>\r\n                                    <a href=\"#brother2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i> \r\n                                    <b>Brother/Knit King</b>\r\n                                    </a>\r\n                                    <div id=\"brother2\" class=\"collapse hidden-print\">\r\n                                        <img class=\"zoom\" src=\"/challenge/images/v2/72/Plain1_brother.jpg\">\r\n                                    </div>\r\n                                </td>\r\n                                <td>Push Release lever <i class=\"fa fa-arrow-right\" aria-hidden=\"true\"></i><br><em><small>(this releases any pattern buttons that may be engaged)</small></em></td>\r\n                            </tr>\r\n                            <tr>\r\n                                <td>\r\n                                    <a href=\"#singer2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i> \r\n                                     <b>Singer/Silver</b>\r\n                                    </a>\r\n                                    <div id=\"singer2\" class=\"collapse hidden-print\">\r\n                                        <img class=\"zoom\" src=\"/challenge/images/v2/72/Plain1_silver.jpg\">\r\n                                    </div>\r\n                                </td>\r\n                                <td>Cam lever to STOCKINETTE</td>\r\n                            </tr>\r\n                            <tr>\r\n                                <td>\r\n                                    <a href=\"#toyota2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i> \r\n                                     <b>Toyota</b>\r\n                                    </a>\r\n                                    <div id=\"toyota2\" class=\"collapse hidden-print\">\r\n                                        <img class=\"zoom\" src=\"/challenge/images/v2/72/Plain1_toyota.jpg\">\r\n                                    </div>\r\n                                </td>\r\n                                <td>Pattern Dial on PLAIN</td>\r\n                            </tr>\r\n                        </tbody>\r\n                    </table>\r\n                </div>\r\n            \r\n        \r\n    \r\n\r\n",
+              "legacyComponentId": 5925,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3959",
+                "CHALLENGE_COMPONENTID": "5945",
+                "DATAMODEL_ELEMENT": "cam_lever_plain",
+                "DATAMODEL_ICON": "fa fa-check-square-o fa-3x",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "What is your Cam setting for Plain Knitting?<br> <em><small>Click the buttons to choose or enter your own</small></em>",
+                "DATAMODEL_VALIDATION_MESSAGE": "Enter the setting",
+                "REMOVEALERT": "0",
+                "SUGGESTEDOPTIONS": "Push Release lever, Cam lever to STOCKINETTE,Pattern Dial on PLAIN"
+              },
+              "legacyComponentId": 5945,
+              "order": 2
+            }
+          ],
+          "title": "Plain (Stockinette)",
+          "slug": "plain-stockinette",
+          "order": 1,
+          "legacy": {
+            "assignId": 3959,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "As you work through the exercises in this course, make it a habit to return your machine back to plain settings.<br>You might want to do this and knit a few more rows, or do this before you walk away from the machine.<br>This habit will save you grief in the future.  Many a tear has been shed because a knitter sits down to knit and didn't check all the patterning settings. <br><br\r\nEstablishing the habit of always returning your settings to \"plain\", when you are finished with pattern work.<br>Your settings:\r\n<ol>\r\n<li> Selection mechanism {selection_mechanism}<br>\r\nAlthough it's possible to knit plain with the {selection_mechanism} engaged, if needles are moved out of working position, you might be in for a surprise.</li>\r\n<li>Cam lever/button {cam_lever_plain}</li>\r\n<li>Needle Positions if the patterning setting are all disengaged, there won't be any surprises, no matter what your needle positions</li>\r\n</ol>",
+              "legacyComponentId": 6006,
+              "order": 1
+            }
+          ],
+          "title": "Stockinette Practice",
+          "slug": "stockinette-practice",
+          "order": 2,
+          "legacy": {
+            "assignId": 3985,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Cam (carriage) levers for hold",
+      "slug": "cam-carriage-levers-for-hold",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 466,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<b>HOLD</b> is a versatile setting that can be used for patterning and <button data-GlossaryId='250' class='glossaryhelp btn btn-xs btn-default'>Short Row Shaping <i class='fa fa-question-circle' aria-hidden='true'></i></button><br>\r\n    \r\n\r\n        Depending on your machine, you may have one hold setting for both directions or a separate setting for hold left or right.<br><span class=\"lead\" style=\"color:#9E2065\">In order to knit the pattern stitches as desired:</span><br><ol class=\"col padding-50px-left\">\r\n            <li>The HOLD buttons/levers must be set correctly</li>\r\n            <b>~ AND ~</b>\r\n            <li>The needles must be in HOLD position.<br><em><small><span class=\"upper_no_bold\"><i class=\"fa fa-hand-o-right\" style=\"color:#9E2065\" aria-hidden=\"true\"></i> \"{Position_hold}\" position on your {machine_name}</span></small></em></li>\r\n        </ol><br> <b>NOTES:</b>\r\n\r\n        <br>\r\n        <ul>\r\n<li>The HOLD setting is separate from the other stitch pattern settings.You can hold needles while knitting in pattern.<br></li>\r\n<li>When knitting with a Lace Carriage or a Garter Carriage (Brother) you cannot use the hold setting. Needles pulled to HOLD will crash into these carriages.  Stitches to be held must be taken back to \"A\" position.<br><a data-vimeoid=\"151858307\" class=\"videopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Hold with the Lace Carriage</a>\r\n    \r\n    \r\n        \r\n            \r\n                <div class=\"table-responsive\">\r\n                    <table class=\"table\">\r\n                        <thead>\r\n                            <tr>\r\n                                <th colspan=\"2\">\r\n                                    <center><span style=\"color:#9E2065\" ;>Common Terms</span></center>\r\n                                </th>\r\n\r\n                            </tr>\r\n                        </thead>\r\n                        <tbody>\r\n                            <tr>\r\n                                <td>\r\n                                    <a href=\"#brother1\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i> \r\n                                    <b>Brother/Knit King</b></a>\r\n                                    <div id=\"brother1\" class=\"collapse hidden-print\">\r\n                                        <img class=\"zoom\" src=\"/challenge/images/v2/72/hold1_brother.jpg\">\r\n                                    </div>\r\n                                </td>\r\n                                <td>Holding Cam Lever(s)</td>\r\n                            </tr>\r\n                            <tr>\r\n                                <td>\r\n                                    <a href=\"#silver1\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i> \r\n                                    <b>Singer/Silver</b></a>\r\n                                     <div id=\"silver1\" class=\"collapse hidden-print\">\r\n                                        <img class=\"zoom\" src=\"/challenge/images/v2/72/hold1_silver.jpg\">\r\n                                    </div>\r\n                                </td>\r\n                                <td>Russel Levers</td>\r\n                            </tr>\r\n                            <tr>\r\n                                <td><a href=\"#toyota1\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i>\r\n                                   <b>Toyota</b></a>\r\n                                    <div id=\"toyota1\" class=\"collapse hidden-print\">\r\n                                        <img class=\"zoom\" src=\"/challenge/images/v2/72/hold1_toyota.jpg\">\r\n                                    </div>\r\n                                </td>\r\n                                <td>Partial Knit Levers</td>\r\n                            </tr>\r\n                        </tbody>\r\n                    </table>\r\n                </div>\r\n            \r\n        \r\n    \r\n\r\n",
+              "legacyComponentId": 5955,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3968",
+                "CHALLENGE_COMPONENTID": "5942",
+                "DATAMODEL_ELEMENT": "hold_lever",
+                "DATAMODEL_ICON": "fa fa-check-square-o fa-3x",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "What is your hold lever/button called?<br> <em><small>Click the buttons to choose or enter your own</small></em>",
+                "DATAMODEL_VALIDATION_MESSAGE": "please enter the name of your hold lever/button",
+                "REMOVEALERT": "0",
+                "SUGGESTEDOPTIONS": "Holding Cam Lever(s),Russel Levers,Partial Knit Levers"
+              },
+              "legacyComponentId": 5942,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntryOptions",
+              "notes": [
+                "Unmapped legacy component type: DataEntryOptions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3968",
+                "CHALLENGE_COMPONENTID": "5962",
+                "DATAMODEL_ELEMENT": "hold_style",
+                "DATAMODEL_ICON": "fa fa-check-square-o fa-3x",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_OPTIONLIST": "ONE button,LEFT and RIGHT controls",
+                "DATAMODEL_REQEST_TEXT": "Do you have ONE button/lever or LEFT and RIGHT controls?",
+                "DATAMODEL_TYPE": "Radio",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 5962,
+              "order": 3
+            }
+          ],
+          "title": "Hold Buttons",
+          "slug": "hold-buttons",
+          "order": 1,
+          "legacy": {
+            "assignId": 3968,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\t\r\n\t\t<i class=\"fa fa-check-square-o fa-2x\" aria-hidden=\"true\"></i> <span class=\"uppercase\">YOUR SETTINGS:</span>\r\n\t\t<ul class=\"uppercase\">\r\n\t\t\t<li>{hold_lever}</li>\r\n\t\t\t<li>{hold_style}</li>\r\n\t\t\t<li>Hold position: {Position_hold}</li>\r\n\t\t</ul>\r\n\t\tThe HOLD setting has many uses in machine knitting.<br>From\r\n\t\t<a data-GlossaryId='355' class='glossaryhelp'>Free Pass <i class='fa fa-question-circle' aria-hidden='true'></i></a> to\r\n\t\t<a data-GlossaryId='250' class='glossaryhelp'>Short Row shaping <i class='fa fa-question-circle' aria-hidden='true'></i></a>,\r\n\t\tusing HOLD is an essential skill.\r\n\t\r\n",
+              "legacyComponentId": 5985,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<hr>\r\n\r\n    \r\n        \r\n            <i class=\"fa fa-check-square-o fa-3x\" aria-hidden=\"true\"></i> <span class=\"lead\">\r\n\t\t\t\t\t<font color=\"#A8A8A8\">TRY THIS</font>\r\n\t\t\t\t</span> (Single hold button)\r\n            \r\n            \r\n                <ol class=\"instruction-list\">\r\n                    <li>With no yarn in your carriage, set the carriage for plain knitting</li>\r\n                    <li>Pull a few needles to <span class=\"uppercase\"> \"{Position_hold}\" (hold) position</span></li>\r\n                    <li>Set your carriage to hold in both directions</li>\r\n                    <li>Pass the carriage left and right</li>\r\n                </ol>\r\n                The needles should remain in hold position.<br>\r\n        \r\n    \r\n    \r\n        \r\n            <i class=\"fa fa-check-square-o fa-3x\" aria-hidden=\"true\"></i> <span class=\"lead\">\r\n\t\t\t\t\t<font color=\"#A8A8A8\">TRY THIS</font>\r\n\t\t\t\t</span> (Left/Right hold button)\r\n            \r\n                <ol class=\"instruction-list\">\r\n                    <li>With no yarn in your carriage, set the carriage for plain knitting</li>\r\n                    <li>Carriage on the right</li>\r\n                    <li>Pull a few needles to <span class=\"uppercase\"> \"{Position_hold}\" (hold) position</span></li>\r\n                    <li>Set the carriage to HOLD LEFT</li>\r\n\r\n                    <li>Pass the carriage left <br>\r\n                        <em>The needles should remain in hold position</em></li>\r\n                    <li>Pass the carriage right <br>\r\n                        <em>The needles should return to working position</em></li>\r\n                    <li>Repeat, alternating left and right until you are comfortable with the settings</li>\r\n                </ol>\r\n            \r\n        \r\n    \r\n",
+              "legacyComponentId": 5987,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<hr>\r\n\r\n    \r\n        \r\n         <i class=\"fa fa-check-square-o fa-3x\" aria-hidden=\"true\"></i> <span class=\"lead\">\r\n\t\t\t\t\t<font color=\"#A8A8A8\">Try this with yarn</font>\r\n\t\t\t\t</span>\r\n        \r\n            \r\n                <ol class=\"instruction-list\">\r\n                    <li>Cast on and knit for a few rows</li>\r\n                    <li>Carriage on the right</li>\r\n                    <li>Pull a few needles to <span class=\"uppercase\"> \"{Position_hold}\" (hold) position</span></li>\r\n                    <li>Set the carriage to HOLD</li>\r\n\r\n                    <li>Pass the carriage left <br>\r\n                        <em>The held needles should remain in hold position</em></li>\r\n\r\n                    <li>Notice that the working yarn travels OVER the needles in hold</li>\r\n                </ol>\r\n                <center><img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/hold_example_gif.gif\"></center>\r\n            \r\n        \r\n    \r\n",
+              "legacyComponentId": 5988,
+              "order": 3
+            }
+          ],
+          "title": "Hold Practice",
+          "slug": "hold-practice",
+          "order": 2,
+          "legacy": {
+            "assignId": 3977,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<b>Knit it Now CLASSROOMS are a collection of tutorials, links to courses, patterns, LIVE replays and inspiration on specific topics.</b><br>\t\r\n\r\n\r\n\r\n\r\n\t\t<center><b>Learn more about short row shaping:\r\n\t\t\t</b><br>\r\n\t\t\t<a href=\"/classrooms/48/all-about-short-rows\" target=\"_blank\"><img src=\"/path/images/48/classroom_short_row.jpg\"><br>\r\n\t\t\t\t<b>All about Short Rows Classroom:</b></a>\r\n\t\t</center>\r\n\r\n",
+              "legacyComponentId": 6005,
+              "order": 4
+            }
+          ],
+          "title": "Learn More",
+          "slug": "learn-more",
+          "order": 3,
+          "legacy": {
+            "assignId": 3984,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Tuck",
+      "slug": "tuck",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 467,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n    \r\n        <b>TUCK</b> is a stitch pattern that provides texture to both sides of the knitting.<br>Commonly tuck is used \"wrong-side facing\", but often both sides are beautiful. Tuck can also be combined with stripes creating amazing fabric.<br><button data-GlossaryId='277' class='glossaryhelp btn btn-xs btn-default'>Tuck | Pull Up on the machine <i class='fa fa-question-circle' aria-hidden='true'></i></button>\r\n        <br>Depending on your machine, there may be a single setting or left/right settings available<br>\r\n        <center>\r\n            <figure><img class=\"img-thumbnail\" src=\"/images/glossary/anatomy_thumbnail.jpg\">\r\n                <figcaption align=\"center\"><em><font color=\"#9e2065\">Tucked strands are carried OVER the needles</font></em></figcaption>\r\n            </figure>\r\n        </center>\r\n    \r\n    \r\n        \r\n            \r\n                <div class=\"table-responsive\">\r\n                    <table class=\"table\">\r\n                        <thead>\r\n                            <tr>\r\n                                <th class=\"text-center\" colspan=\"2\"><span style=\"color:#9E2065\" ;>Cam (Carriage) Setting</span></th>\r\n                            </tr>\r\n                        </thead>\r\n                        <tbody>\r\n                            <tr>\r\n                                <td>\r\n                                    <a href=\"#brother2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i>\r\n                                    <b>Brother/Knit King</b>\r\n                                    </a>\r\n                                    <div id=\"brother2\" class=\"collapse hidden-print\">\r\n                                        <img class=\"zoom\" src=\"/challenge/images/v2/72/tuck1_brother.jpg\">\r\n                                    </div>\r\n                                    </td>\r\n                                <td>TUCK buttons<i class=\"fa fa-arrow-left\" aria-hidden=\"true\"></i><i class=\"fa fa-arrow-right\" aria-hidden=\"true\"></i> IN</td>\r\n                            </tr>\r\n                            <tr>\r\n                                <td>\r\n                                    <a href=\"#singer2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i> \r\n                                     <b>Singer/Silver</b>\r\n                                    </a>\r\n                                    <div id=\"singer2\" class=\"collapse hidden-print\">\r\n                                        <img class=\"zoom\" src=\"/challenge/images/v2/72/Plain1_silver.jpg\">\r\n                                    </div>\r\n                                   </td>\r\n                                <td>Cam lever to TUCK</td>\r\n                            </tr>\r\n                            <tr>\r\n                                <td>\r\n                                    <a href=\"#toyota2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i> \r\n                                    <b>Toyota</b>\r\n                                    </a>\r\n                                    <div id=\"toyota2\" class=\"collapse hidden-print\">\r\n                                        <img class=\"zoom\" src=\"/challenge/images/v2/72/Plain1_toyota.jpg\">\r\n                                    </div>\r\n                                    </td>\r\n                                <td>Pattern Dial on TUCK</td>\r\n                            </tr>\r\n                        </tbody>\r\n                    </table>\r\n                </div>\r\n            \r\n        \r\n    \r\n\r\n",
+              "legacyComponentId": 5926,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3956",
+                "CHALLENGE_COMPONENTID": "5946",
+                "DATAMODEL_ELEMENT": "cam_lever_tuck",
+                "DATAMODEL_ICON": "fa fa-check-square-o fa-3x",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "What is your Cam Setting for TUCK?<br> <em><small>Click the buttons to choose or enter your own</small></em>",
+                "DATAMODEL_VALIDATION_MESSAGE": "tuck setting",
+                "REMOVEALERT": "0",
+                "SUGGESTEDOPTIONS": "TUCK buttons IN,Cam lever to TUCK,Pattern Dial on TUCK"
+              },
+              "legacyComponentId": 5946,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntryOptions",
+              "notes": [
+                "Unmapped legacy component type: DataEntryOptions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3956",
+                "CHALLENGE_COMPONENTID": "5971",
+                "DATAMODEL_ELEMENT": "tuck_style",
+                "DATAMODEL_ICON": "fa fa-check-square-o fa-3x",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_OPTIONLIST": "ONE button,LEFT and RIGHT controls",
+                "DATAMODEL_REQEST_TEXT": "Do you have ONE button/lever or LEFT and RIGHT controls?",
+                "DATAMODEL_TYPE": "Radio",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 5971,
+              "order": 3
+            }
+          ],
+          "title": "Tuck",
+          "slug": "tuck",
+          "order": 1,
+          "legacy": {
+            "assignId": 3956,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\t\r\n\t\t<i class=\"fa fa-check-square-o fa-2x\" aria-hidden=\"true\"></i> <span class=\"uppercase\">YOUR SETTINGS:</span>\r\n\t\t<ul>\r\n\t\t\t<li>{cam_lever_tuck}</li>\r\n\t\t\t<li>{tuck_style}</li>\r\n\t\t</ul>\r\n\t\t<button data-GlossaryId='277' class='glossaryhelp btn btn-xs btn-default no-print'>Tuck | Pull Up <i class='fa fa-question-circle' aria-hidden='true'></i></button>\r\n\t\r\n\r\n\t<div class=\"text-center no-print\">\r\n<center><b>Don't Skip This Video</b></center>\r\n <a data-vimeoid=\"249931924\" class=\"videopopup\">\r\n    <img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/tuck_play12.jpg\">\r\n    </a>\r\n</div>\r\n",
+              "legacyComponentId": 5980,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<hr class=\"no-print\">",
+              "legacyComponentId": 10166,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\t\r\n\t\t\r\n\t\t\t<i class=\"fa fa-check-square-o fa-3x\" aria-hidden=\"true\"></i> <span class=\"lead\">\r\n\t\t\t\t\t<font color=\"#9e2065\">Tuck Practice 1</font>\r\n\t\t\t\t</span>\r\n<button class=\"no-print pull-right btn btn-xs btn-default\" onclick=\"window.print()\"><i class=\"fa fa-print\" aria-hidden=\"true\"></i> Print</button>\r\n\r\n\t\t\t\r\n\t\t\t\t<ol class=\"instruction-list\">\r\n\t\t\t\t\t<li> Choose an stitch pattern for tuck (mostly black, no 2 white squares next to each other)</li>\r\n\t\t\t\t\t<li>Using a lightweight, light color yarn, cast on 40-60 stitches with any method</li>\r\n\t\t\t\t\t<li>Hang weights</li>\r\n\t\t\t\t\t<li>Knit a few rows, ending with the carriage on the LEFT.</li>\r\n\t\t\t\t\t<li>Be sure to bring your carriage far enough out, so the pattern is \"read\"</li>\r\n\t\t\t\t\t<li>Insert your punchcard or start your electronic stitch pattern</li>\r\n\t\t\t\t\t<li>Set your {selection_mechanism} selection mechanism</li>\r\n\t\t\t\t\t<li>With the pattern \"locked\" on the first row, knit 1 row LEFT to RIGHT</li>\r\n\t\t\t\t\t<li>Using your {cam_lever_tuck} set the carriage to tuck in both directions</li>\r\n\t\t\t\t\t<li>Begin to pattern by moving the carriage to the LEFT.</li>\r\n\t\t\t\t\t<li>Continue to knit in pattern for 20-40 rows</li>\r\n\t\t\t\t\t<li>Cancel the {cam_lever_tuck} tuck setting</li>\r\n\t\t\t\t\t<li>Cancel the {selection_mechanism} selection mechanism</li>\r\n\t\t\t\t\t<li>Knit a few rows plain and bind off</li>\r\n\t\t\t\t</ol>\r\n\t\t\t\tNotes:<br>\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>Tuck requires weight</li>\r\n\t\t\t\t\t<li>Be sure to take the carriage past the point where the automatic patterning device can \"read/memorize\" the pattern (see your manual)</li>\r\n\t\t\t\t\t<li>For success, knit at a slower pace than plain knitting</li>\r\n\t\t\t\t\t<li>Maintain an even rhythm</li>\r\n\r\n\t\t\t\t</ul>\r\n\t\t\t\r\n\t\t\r\n\t\r\n\t<div class=\"no-print\">\r\n\t\t\r\n\t\t\t<i class=\"fa fa-check-square-o fa-3x\" aria-hidden=\"true\"></i><span class=\"lead\">\r\n\t\t\t\t\t<font color=\"#9e2065\">Practice 1 Suggested Patterns</font>\r\n\t\t\t\t</span>\r\n\t\t\t<em><small>click the small image for a \"to-scale\" punchcard template</small></em><br>\r\n\t\t\t\t\t\r\n\t\t\t\t\t\t<center><a href=\"/downloads/tuck1.pdf\" target=\"_blank\"><img src=\"/challenge/images/v2/72/tuck1.jpg\"></a></center>\r\n\t\t\t\t\t\r\n\t\t\t\t\tNotice row 4 is all black - no tucks on this row\r\n\t\t\t\t\r\n\t\t\t\t<hr>\r\n\t\t\t\t\r\n\t\t\t\t\tWhite squares will tuck\r\n\t\t\t\t\t\r\n\t\t\t\t\t\t<center><a href=\"/downloads/tuck2.pdf\" target=\"_blank\"><img src=\"/challenge/images/v2/72/tuck2.jpg\"></a></center>\r\n\t\t\t\t\t\r\n\t\t\t\t\t<hr>\r\n\t\t\t\t\t\r\n\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t<center><a href=\"/downloads/tuck3.pdf\" target=\"_blank\"><img src=\"/challenge/images/v2/72/tuck3.jpg\"></a></center>\r\n\t\t\t\t\t\t\r\n\t\t\t\t\t\tLeave needles out of work for<br> <a data-GlossaryId='382' class='glossaryhelp'>Tuck Lace<i class='fa fa-question-circle' aria-hidden='true'></i></a>\r\n\t\t\t\t\t\r\n\t\t\t\t\r\n\t\t\t\r\n\t\t\r\n\t</div>\r\n\r\n\r\n<div class=\"no-print\">\r\n <hr>\r\n</div>",
+              "legacyComponentId": 5982,
+              "order": 3
+            }
+          ],
+          "title": "Tuck Practice 1",
+          "slug": "tuck-practice-1",
+          "order": 2,
+          "legacy": {
+            "assignId": 3978,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div>\r\n\t\r\n\t\t<i class=\"fa fa-check-square-o fa-2x\" aria-hidden=\"true\"></i> <span class=\"uppercase\">YOUR SETTINGS:</span>\r\n\t\t<ul>\r\n\t\t\t<li>{cam_lever_tuck}</li>\r\n\t\t\t<li>{tuck_style}</li>\r\n\t\t</ul>\r\n\t\t<button data-GlossaryId='277' class='glossaryhelp btn btn-xs btn-default no-print'>Tuck | Pull Up <i class='fa fa-question-circle' aria-hidden='true'></i></button>\r\n\t\r\n\r\n\t<div class=\"text-center no-print\">\r\n<center><b>Don't Skip This Video</b></center>\r\n <a data-vimeoid=\"249931924\" class=\"videopopup\">\r\n    <img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/tuck_play12.jpg\">\r\n    </a>\r\n</div>",
+              "legacyComponentId": 5993,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "\r\n            <i class=\"fa fa-check-square-o fa-3x\" aria-hidden=\"true\"></i><span class=\"lead\">\r\n\t\t\t\t\t<font color=\"#9e2065\">Bubble Stitch Pattern</font>\r\n\t\t\t\t</span>\r\n            <em><small>click the small image for a \"to-scale\" punchcard template</small></em><br>\r\n                    \r\n                        <center><a href=\"/downloads/tuck4.pdf\" target=\"_blank\"><img src=\"/challenge/images/v2/72/tuck4.jpg\"></a></center>\r\n                    \r\n                    \r\n                        <ul>\r\n                            <li>Vary the number of rows (within limits) and vary the stitches between the tucked columns</li>\r\n                            <li>Notice the 2 plain rows between the tucked sections (black color in the sample)</li>\r\n                        </ul>\r\n                    \r\n                \r\n            \r\n        ",
+              "legacyComponentId": 5995,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859832",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 5995,
+              "order": 3
+            }
+          ],
+          "title": "Tuck Practice 2",
+          "slug": "tuck-practice-2",
+          "order": 3,
+          "legacy": {
+            "assignId": 3980,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<b>Knit it Now CLASSROOMS are a collection of tutorials, links to courses, patterns, LIVE replays and inspiration on specific topics.</b><br>\t\r\n\r\n\r\n\r\n\t<center><b>Learn more about the possibilities with TUCK:\r\n\t\t\t</b><br>\r\n\t\t\t<a href=\"/classrooms/91/tuck-talk\" target=\"_blank\"><img src=\"https://www.knititnow.com/path/images/91/classroom_tuck1.jpg\"><br>\r\n\t\t\t\t<b>Tuck Talk Classroom:</b></a></center>\r\n\t\r\n\r\n",
+              "legacyComponentId": 5997,
+              "order": 1
+            }
+          ],
+          "title": "Learn More",
+          "slug": "learn-more",
+          "order": 4,
+          "legacy": {
+            "assignId": 3981,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Slip (Skip)",
+      "slug": "slip-skip",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 468,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div>\r\n    \r\n        <b>SLIP</b> is a stitch pattern that provides texture to both sides of the knitting. Commonly tuck is used \"wrong-side facing\", but often both sides are beautiful. Tuck can also be combined with stripes creating amazing fabric.<br><button data-GlossaryId='278' class='glossaryhelp btn btn-xs btn-default'>Slip | Skip <i class='fa fa-question-circle' aria-hidden='true'></i></button>\r\n        <br>Depending on your machine, there may be a single setting or left/right settings available<br>\r\n        <center>\r\n            <figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/slip.jpg\">\r\n                <figcaption align=\"center\"><em><font color=\"#9e2065\">Slipped strands are passed UNDER the needles</font></em></figcaption>\r\n            </figure>\r\n        </center>\r\n    \r\n    \r\n        \r\n            \r\n            <div class=\"table-responsive\">\r\n                <table class=\"table\">\r\n                    <thead>\r\n                        <tr>\r\n                            <th class=\"text-center\" colspan=\"2\"><span style=\"color:#9E2065\" ;>Cam (Carriage) Setting</span></th>\r\n                        </tr>\r\n                    </thead>\r\n                    <tbody>\r\n                        <tr>\r\n                            <td>\r\n                                <a href=\"#brother2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i> \r\n                                 <b>Brother/Knit King</b>\r\n                                </a>\r\n                                <div id=\"brother2\" class=\"collapse hidden-print\">\r\n                                    <img class=\"zoom\" src=\"/challenge/images/v2/72/slip1_brother.jpg\">\r\n                                </div>\r\n                               </td>\r\n                            <td>PART buttons<i class=\"fa fa-arrow-left\" aria-hidden=\"true\"></i><i class=\"fa fa-arrow-right\" aria-hidden=\"true\"></i> IN</td>\r\n                        </tr>\r\n                        <tr>\r\n                            <td>\r\n                                <a href=\"#singer2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i> \r\n                                <b>Singer/Silver</b>\r\n                                </a>\r\n                                <div id=\"singer2\" class=\"collapse hidden-print\">\r\n                                    <img class=\"zoom\" src=\"/challenge/images/v2/72/Plain1_silver.jpg\">\r\n                                </div>\r\n                                </td>\r\n                            <td>Cam lever to SLIP</td>\r\n                        </tr>\r\n                        <tr>\r\n                            <td>\r\n                                <a href=\"#toyota2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i>\r\n                                <b>Toyota</b>\r\n                                </a>\r\n                                <div id=\"toyota2\" class=\"collapse hidden-print\">\r\n                                    <img class=\"zoom\" src=\"/challenge/images/v2/72/Plain1_toyota.jpg\">\r\n                                </div>\r\n                                </td>\r\n                            <td>Pattern Dial on EMPTY</td>\r\n                        </tr>\r\n                    </tbody>\r\n                </table>\r\n            </div>\r\n        \r\n    \r\n\r\n",
+              "legacyComponentId": 5927,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3957",
+                "CHALLENGE_COMPONENTID": "5947",
+                "DATAMODEL_ELEMENT": "cam_lever_slip",
+                "DATAMODEL_ICON": "fa fa-check-square-o fa-3x",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "What is your Cam Setting for Slip (Skip)?<br> <em><small>Click the buttons to choose or enter your own</small></em>",
+                "DATAMODEL_VALIDATION_MESSAGE": "enter the setting",
+                "REMOVEALERT": "0",
+                "SUGGESTEDOPTIONS": "PART buttons IN,Cam lever to SLIP,Pattern Dial on EMPTY"
+              },
+              "legacyComponentId": 5947,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntryOptions",
+              "notes": [
+                "Unmapped legacy component type: DataEntryOptions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3957",
+                "DATAMODEL_ELEMENT": "slip_style",
+                "DATAMODEL_ICON": "fa fa-check-square-o fa-3x",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_OPTIONLIST": "ONE button,LEFT and RIGHT controls",
+                "DATAMODEL_REQEST_TEXT": "Do you have ONE button/lever or LEFT and RIGHT controls?",
+                "DATAMODEL_TYPE": "Radio",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntryOptions"
+              },
+              "legacyComponentId": 5972,
+              "order": 3
+            }
+          ],
+          "title": "Slip (Skip)",
+          "slug": "slip-skip",
+          "order": 1,
+          "legacy": {
+            "assignId": 3957,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n    \r\n        <i class=\"fa fa-check-square-o fa-2x\" aria-hidden=\"true\"></i> <span class=\"uppercase\"> YOUR SETTINGS:</span>\r\n        <ul>\r\n            <li>{cam_lever_slip}</li>\r\n            <li>{slip_style}</li>\r\n        </ul>\r\n        <button data-GlossaryId='251' class='glossaryhelp btn btn-xs btn-default no-print'>Skip | Slip <i class='fa fa-question-circle' aria-hidden='true'></i></button><span class=\"no-print\"><br>Create pattern work with SLIP stitches by combining the cam lever setting, and varying the number of stitches and rows.</span>\r\n    \r\n    <div class=\"text-center no-print\">\r\n        \r\n            \r\n                <figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/413slipBW.jpg\">\r\n                    <figcaption align=\"center\"><br>Exercise 1:Purl Side Facing</figcaption>\r\n                </figure>\r\n            \r\n            \r\n                <figure> <img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/kin806_b_2.jpg\">\r\n                    <figcaption align=\"center\"><br>Exercise 2: Multi-Color Slip</figcaption>\r\n                </figure>\r\n            \r\n        \r\n    </div>\r\n\r\n",
+              "legacyComponentId": 5989,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<hr class=\"no-print\">\r\n\r\n    \r\n        \r\n            <i class=\"fa fa-check-square-o fa-3x\" aria-hidden=\"true\"></i> <span class=\"lead\">\r\n\t\t\t\t\t<font color=\"#9e2065\">Slip Practice 1: Purl Side Facing</font>\r\n\t\t\t\t</span>\r\n<button class=\"no-print pull-right btn btn-xs btn-default\" onclick=\"window.print()\"><i class=\"fa fa-print\" aria-hidden=\"true\"></i> Print</button>\r\n\r\n            \r\n                <ol class=\"instruction-list\">\r\n                    <li> Choose an stitch pattern for <b>SLIP</b></li>\r\n                    <li>Using a lightweight, light color yarn, cast on 40-60 stitches with any method</li>\r\n                    <li>Hang weights</li>\r\n                    <li>Knit a few rows, ending with the carriage on the LEFT.</li>\r\n                    <li>Be sure to bring your carriage far enough out, so the pattern is \"read\"</li>\r\n                    <li>Insert your punchcard or start your electronic stitch pattern</li>\r\n                    <li>Set your {selection_mechanism} selection mechanism</li>\r\n                    <li>With the pattern \"locked\" on the first row, knit 1 row LEFT to RIGHT(to memorize/record the pattern)</li>\r\n                    <li>Using your {cam_lever_slip} SLIP setting, set the carriage to SLIP in both directions</li>\r\n                    <li>Begin to pattern by moving the carriage to the LEFT.</li>\r\n                    <li>Continue to knit in pattern for 20-40 rows</li>\r\n                    <li>Cancel the {cam_lever_slip} SLIP setting</li>\r\n                    <li>Cancel the {selection_mechanism} selection mechanism</li>\r\n                    <li>Knit a few rows plain and bind off</li>\r\n                </ol><br>\r\n                <b>Notes:</b><br>\r\n                <ul>\r\n                    <li>The slipped \"floats\" are carried across the purl side of the knitting.</li>\r\n                    <li>There is no limit to the number of slipped stitches (within reason)</li>\r\n                    <li>Alternating the needles that are slipped and varying the number of rows can create beautiful designs</li>\r\n                </ul>\r\n            \r\n        \r\n    \r\n    <div class=\"no-print\">\r\n        \r\n            <i class=\"fa fa-check-square-o fa-3x\" aria-hidden=\"true\"></i><span class=\"lead\">\r\n\t\t\t\t\t<font color=\"#9e2065\">Practice 1: Suggested Pattern</font>\r\n\t\t\t\t</span>\r\n            <em><small>click the small image for a \"to-scale\" punchcard template</small></em><br>\r\n                    \r\n                        <center><a href=\"/downloads/kin413_slip_PDF.pdf\" target=\"_blank\"> <img src=\"/challenge/images/v2/72/413_slip_small1.jpg\"><br></a></center>\r\n                    \r\n                    White squares will slip \r\n                \r\n            \r\n        \r\n    </div>\r\n\r\n",
+              "legacyComponentId": 5990,
+              "order": 3
+            }
+          ],
+          "title": "Slip Practice 1",
+          "slug": "slip-practice-1",
+          "order": 2,
+          "legacy": {
+            "assignId": 3971,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n    \r\n        <i class=\"fa fa-check-square-o fa-2x\" aria-hidden=\"true\"></i> <span class=\"uppercase\"> YOUR SETTINGS:</span>\r\n        <ul>\r\n            <li>{cam_lever_slip}</li>\r\n            <li>{slip_style}</li>\r\n        </ul>\r\n        <button data-GlossaryId='251' class='glossaryhelp btn btn-xs btn-default no-print'>Skip | Slip <i class='fa fa-question-circle' aria-hidden='true'></i></button><span class='no-print'><br>Create pattern work with SLIP stitches by combining the cam lever setting, and varying the number of stitches and rows.</span>\r\n    \r\n    <div class=\"text-center no-print\">\r\n        \r\n            \r\n                <figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/413slipBW.jpg\">\r\n                    <figcaption align=\"center\"><br>Exercise 1:Purl Side Facing</figcaption>\r\n                </figure>\r\n                </figure>\r\n            \r\n            \r\n                <figure> <img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/kin806_b_2.jpg\">\r\n                    <figcaption align=\"center\"><br>Exercise 2: Multi-Color Slip</figcaption>\r\n                </figure>\r\n            \r\n        \r\n    </div>\r\n",
+              "legacyComponentId": 5998,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "\r\n    \r\n        \r\n            <i class=\"fa fa-check-square-o fa-3x\" aria-hidden=\"true\"></i> <span class=\"lead\">\r\n\t\t\t\t\t<font color=\"#9e2065\">Slip Practice 2: Multi-color slip</font>\r\n\t\t\t\t</span>\r\n<button class=\"no-print pull-right btn btn-xs btn-default\" onclick=\"window.print()\"><i class=\"fa fa-print\" aria-hidden=\"true\"></i> Print</button>\r\n\r\n            \r\n                <ol class=\"instruction-list\">\r\n                    <li> Choose an stitch pattern for <b>SLIP</b></li>\r\n                    <li>Using 1 of 2 contrasting color yarns cast on 40-60 stitches with any method</li>\r\n                    <li>Hang weights</li>\r\n                    <li>Knit a few rows, ending with the carriage on the LEFT.</li>\r\n                    <li>Be sure to bring your carriage far enough out, so the pattern is \"read\"</li>\r\n                    <li>Insert your punchcard or start your electronic stitch pattern</li>\r\n                    <li>Set your {selection_mechanism} selection mechanism</li>\r\n                    <li>With the pattern \"locked\" on the first row, knit 1 row LEFT to RIGHT(to memorize/record the pattern)</li>\r\n                    <li>Using your {cam_lever_slip} SLIP setting, set the carriage to SLIP in both directions</li>\r\n                    <li>With color A, begin to pattern by moving the carriage to the LEFT.</li>\r\n                    <li>With color A, begin to pattern by moving the carriage to the RIGHT. (2 rows knit in slip)</li>\r\n                    <li>Change to color B and knit 2 rows</li>\r\n                    <li>Continue to knit in pattern for 20-40 rows, alternating colors</li>\r\n                    <li>Cancel the {cam_lever_slip} SLIP setting</li>\r\n                    <li>Cancel the {selection_mechanism} selection mechanism</li>\r\n                    <li>Knit a few rows plain and bind off</li>\r\n                </ol>\r\n            \r\n        \r\n    \r\n    <div class=\"no-print\">\r\n        \r\n            <i class=\"fa fa-check-square-o fa-3x\" aria-hidden=\"true\"></i><span class=\"lead\">\r\n\t\t\t\t\t<font color=\"#9e2065\">Practice 2: Suggested Pattern</font>\r\n\t\t\t\t</span>\r\n            <em><small>click the small image for a \"to-scale\" punchcard template</small></em><br>\r\n                    \r\n                        <center><a href=\"/downloads/KIN_806_punchcard.pdf\" target=\"_blank\"> <img src=\"/challenge/images/v2/72/slip_2_color.jpg\"><br></a></center>\r\n                    \r\n                    \r\n                        <ul>\r\n                            <li>White squares will slip</li>\r\n                            <li>The sequence of color changes will be indicated with numbers on the punchcard or memos on electronic machines</li>\r\n                        </ul>\r\n                    \r\n                \r\n            \r\n        \r\n    </div>\r\n",
+              "legacyComponentId": 6000,
+              "order": 4
+            }
+          ],
+          "title": "Slip Practice 2",
+          "slug": "slip-practice-2",
+          "order": 3,
+          "legacy": {
+            "assignId": 3982,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<b>Knit it Now CLASSROOMS are a collection of tutorials, links to courses, patterns, LIVE replays and inspiration on specific topics.</b><br>\t\r\n\r\n\r\n\r\n\r\n\t<center><b>Learn more about the possibilities with SLIP\r\n\t\t\t</b><br>\r\n\t\t\t<a href=\"/classrooms/118/slip-stitch target=\"_blank\"\"><img src=\"/path/images/118/slip_thumnail.jpg\"><br>\r\n\t\t\t\t<b>Slip Stitch Classroom:</b></a></center>\r\n\t\r\n\r\n\r\n",
+              "legacyComponentId": 6001,
+              "order": 1
+            }
+          ],
+          "title": "Learn More",
+          "slug": "learn-more",
+          "order": 4,
+          "legacy": {
+            "assignId": 3983,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Fairisle (Stranded Knitting)",
+      "slug": "fairisle-stranded-knitting",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 469,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n    \r\n        <b>FAIRISLE</b> allows you to knit 2 colors in a row with one pass of the carriage. <br><button data-GlossaryId='217' class='glossaryhelp btn btn-xs btn-default'>Fair Isle | Knit-In <i class='fa fa-question-circle' aria-hidden='true'></i></button>\r\n        <br><center> <img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/fairisle1.jpg\"></center>\r\n    \r\n    \r\n        \r\n            \r\n                <table class=\"table table-responsive\">\r\n                    <thead>\r\n                        <tr>\r\n                            <th class=\"text-center\" colspan=\"2\"><span style=\"color:#9E2065\" ;>Cam (Carriage) Setting</span></th>\r\n                        </tr>\r\n                    </thead>\r\n                    <tbody>\r\n                        <tr>\r\n                            <td>\r\n                                <a href=\"#brother2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i> \r\n                                 <b>Brother/Knit King</b>\r\n                                </a>\r\n                                <div id=\"brother2\" class=\"collapse hidden-print\">\r\n                                    <img class=\"zoom\" src=\"/challenge/images/v2/72/fair_isle_1_brother.jpg\">\r\n                                </div>\r\n                               </td>\r\n                            <td>MC button IN</td>\r\n                        </tr>\r\n                        <tr>\r\n                            <td>\r\n                                <a href=\"#singer2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i>\r\n                                 <b>Singer/Silver</b>\r\n                                </a>\r\n                                <div id=\"singer2\" class=\"collapse hidden-print\">\r\n                                    <img class=\"zoom\" src=\"/challenge/images/v2/72/Plain1_silver.jpg\">\r\n                                </div>\r\n                               </td>\r\n                            <td>Cam lever on KNIT-IN</td>\r\n                        </tr>\r\n                        <tr>\r\n                            <td>\r\n                                <a href=\"#toyota2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i>\r\n                                <b>Toyota</b>\r\n                                </a>\r\n                                <div id=\"toyota2\" class=\"collapse hidden-print\">\r\n                                    <img class=\"zoom\" src=\"/challenge/images/v2/72/Plain1_toyota.jpg\">\r\n                                </div>\r\n                            </td>\r\n                            <td>Pattern Dial on COLOR</td>\r\n                        </tr>\r\n                    </tbody>\r\n                </table>\r\n            \r\n        \r\n    \r\n\r\n",
+              "legacyComponentId": 5928,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3958",
+                "CHALLENGE_COMPONENTID": "5948",
+                "DATAMODEL_ELEMENT": "cam_lever_fairisle",
+                "DATAMODEL_ICON": "fa fa-check-square-o fa-3x",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "What is your Cam Setting for Fairisle?<br> <em><small>Click the buttons to choose or enter your own</small></em>",
+                "DATAMODEL_VALIDATION_MESSAGE": "your setting",
+                "REMOVEALERT": "0",
+                "SUGGESTEDOPTIONS": "MC button IN,Cam lever on KNIT-IN,Pattern Dial on COLOR"
+              },
+              "legacyComponentId": 5948,
+              "order": 2
+            }
+          ],
+          "title": "Fair Isle",
+          "slug": "fair-isle",
+          "order": 1,
+          "legacy": {
+            "assignId": 3958,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div>\r\n\t\r\n\t\t<i class=\"fa fa-check-square-o fa-2x\" aria-hidden=\"true\"></i> <span class=\"uppercase\">YOUR SETTINGS:</span>\r\n\t\t<ul>\r\n\t\t\t<li>{cam_lever_fairisle}</li>\r\n\t\t</ul>\r\n\t\t<button data-GlossaryId='217' class='glossaryhelp btn btn-xs btn-default no-print'>Fair Isle | Knit-In <i class='fa fa-question-circle' aria-hidden='true'></i></button><span class=\"no-print\"><br>Sometimes machine knitters over complicate things ... get back to basics and practice the built-in capabilities of your machine.<br>Painless, stranded knitting, 2 color knitting, fairisle.</span>\r\n\t\r\n\r\n\t<div class=\"text-center no-print\">\r\n<center><b>Don't Skip This Video</b></center>\r\n <a data-vimeoid=\"151859794\" class=\"videopopup\">\r\n    <img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/best_fairisle1.jpg\">\r\n    </a>\r\n</div>",
+              "legacyComponentId": 5992,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<hr class=\"no-print\">\r\n\r\n    \r\n        \r\n            <i class=\"fa fa-check-square-o fa-3x\" aria-hidden=\"true\"></i> <span class=\"lead\">\r\n\t\t\t\t\t<font color=\"#9e2065\">FAIRISLE Practice 1</font>\r\n\t\t\t\t</span>\r\n<button class=\"no-print pull-right btn btn-xs btn-default\" onclick=\"window.print()\"><i class=\"fa fa-print\" aria-hidden=\"true\"></i> Print</button>\r\n\r\n            \r\n                <ol class=\"instruction-list\">\r\n                    <li> Choose an stitch pattern for <b>FAIRISLE</b></li>\r\n                    <li>Choose 2 contrasing color of yarn. Using one cast on 40-60 stitches with any method</li>\r\n                    <li>Hang weights</li>\r\n                    <li>Knit a few rows, ending with the carriage on the LEFT.</li>\r\n                    <li>Be sure to bring your carriage far enough out, so the pattern is \"read\"</li>\r\n                    <li>Insert your punchcard or start your electronic stitch pattern</li>\r\n                    <li>Set your {selection_mechanism} selection mechanism</li>\r\n                    <li>With the pattern \"locked\" on the first row, knit 1 row LEFT to RIGHT(to memorize/record the pattern)</li>\r\n                    <li>Engage your {cam_lever_fairisle} FAIRISLE setting</li>\r\n                    <li>Begin to pattern by moving the carriage to the LEFT.</li>\r\n                    <li>Continue to knit in pattern for 20-40 rows</li>\r\n                    <li>Cancel the{cam_lever_fairisle} FAIRISLE setting</li>\r\n                    <li>Cancel the {selection_mechanism} selection mechanism</li>\r\n                    <li>Knit a few rows plain and bind off</li>\r\n                </ol><br>\r\n                \r\n            \r\n        \r\n    \r\n    <div class=\"no-print\">\r\n        \r\n            <i class=\"fa fa-check-square-o fa-3x\" aria-hidden=\"true\"></i><span class=\"lead\">\r\n\t\t\t\t\t<font color=\"#9e2065\">Practice 1: Suggested Pattern</font>\r\n\t\t\t\t</span>\r\n            <em><small>click the small image for a \"to-scale\" punchcard template</small></em><br>\r\n                    \r\n                        <center><a href=\"/downloads/FAIRISLE.pdf\" target=\"_blank\"> <img src=\"/challenge/images/v2/72/fairisle_SMALL.jpg\"><br></a></center>\r\n                    \r\n                    \r\n                \r\n            \r\n        \r\n    </div>\r\n\r\n\r\n\r\n    \r\n        <hr>\r\n    \r\n\r\n",
+              "legacyComponentId": 6008,
+              "order": 2
+            }
+          ],
+          "title": "Fair Isle Practice 1",
+          "slug": "fair-isle-practice-1",
+          "order": 2,
+          "legacy": {
+            "assignId": 3979,
+            "blockType": "HTMLDynamic"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div>\r\n\t\r\n\t\t<i class=\"fa fa-check-square-o fa-2x\" aria-hidden=\"true\"></i> <span class=\"uppercase\">YOUR SETTINGS:</span>\r\n\t\t<ul>\r\n\t\t\t<li>{cam_lever_fairisle}</li>\r\n\t\t</ul>\r\n\t\t<button data-GlossaryId='217' class='glossaryhelp btn btn-xs btn-default no-print'>Fair Isle | Knit-In <i class='fa fa-question-circle' aria-hidden='true'></i></button><span class=\"no-print\"><br>Sometimes machine knitters over complicate things ... get back to basics and practice the built-in capabilities of your machine.<br>Painless, stranded knitting, 2 color knitting, fairisle.</span>\r\n\t\r\n\r\n\t<div class=\"text-center no-print\">\r\n<center><b>Don't Skip This Video</b></center>\r\n <a data-vimeoid=\"151859794\" class=\"videopopup\">\r\n    <img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/best_fairisle1.jpg\">\r\n    </a>\r\n</div>",
+              "legacyComponentId": 6009,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<hr>\r\n\r\n    \r\n        \r\n            <i class=\"fa fa-check-square-o fa-3x\" aria-hidden=\"true\"></i> <span class=\"lead\">\r\n\t\t\t\t\t<font color=\"#9e2065\">FAIRISLE Practice 2</font>\r\n\t\t\t\t</span>\r\n<button class=\"no-print pull-right btn btn-xs btn-default\" onclick=\"window.print()\"><i class=\"fa fa-print\" aria-hidden=\"true\"></i> Print</button>\r\n\r\n            \r\n                <ol class=\"instruction-list\">\r\n                    <li> Choose an stitch pattern for <b>FAIRISLE</b></li>\r\n                    <li>Choose 2 contrasing color of yarn. Using one cast on 40-60 stitches with any method</li>\r\n                    <li>Hang weights</li>\r\n                    <li>Knit a few rows, ending with the carriage on the LEFT.</li>\r\n                    <li>Be sure to bring your carriage far enough out, so the pattern is \"read\"</li>\r\n                    <li>Insert your punchcard or start your electronic stitch pattern</li>\r\n                    <li>Set your {selection_mechanism} selection mechanism</li>\r\n                    <li>With the pattern \"locked\" on the first row, knit 1 row LEFT to RIGHT(to memorize/record the pattern)</li>\r\n                    <li>Engage your {cam_lever_fairisle} FAIRISLE setting</li>\r\n                    <li>Begin to pattern by moving the carriage to the LEFT.</li>\r\n                    <li>Continue to knit in pattern for 20-40 rows</li>\r\n                    <li>Cancel the{cam_lever_fairisle} FAIRISLE setting</li>\r\n                    <li>Cancel the {selection_mechanism} selection mechanism</li>\r\n                    <li>Knit a few rows plain and bind off</li>\r\n                </ol><br>\r\n                \r\n            \r\n        \r\n    \r\n    <div class=\"no-print\">\r\n        \r\n            <i class=\"fa fa-check-square-o fa-3x\" aria-hidden=\"true\"></i><span class=\"lead\">\r\n\t\t\t\t\t<font color=\"#9e2065\">Practice 2: Suggested Pattern</font>\r\n\t\t\t\t</span>\r\n            <em><small>click the small image for a \"to-scale\" punchcard template</small></em><br>\r\n                    \r\n                        <center><a target=\"_blank\" href=\"/downloads/fairisle2_pdf.pdf\"> <img src=\"/challenge/images/v2/72/randomizer_small.jpg\"><br></a></center>\r\n                    \r\n                    \r\n                \r\n            \r\n        \r\n    </div>\r\n\r\n\r\n\r\n    \r\n        <hr>\r\n    \r\n\r\n",
+              "legacyComponentId": 6010,
+              "order": 2
+            }
+          ],
+          "title": "Fair Isle Practice 2",
+          "slug": "fair-isle-practice-2",
+          "order": 2,
+          "legacy": {
+            "assignId": 3988,
+            "blockType": "HTMLDynamic"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<b>Knit it Now CLASSROOMS are a collection of tutorials, links to courses, patterns, LIVE replays and inspiration on specific topics.</b><br>\t\r\n\r\n\t<center><b>Learn more about the possibilities with FAIRISLE:\r\n\t\t\t</b><br>\r\n\t\t\t<a href=\"/classrooms/169/fairisle-stranded-knitting target=\"_blank\"\" target=\"_blank\"><img src=\"/path/images/169/fairisle_classroom_thumb.jpg\"><br>\r\n\t\t\t\t<b>Fairisle (Stranded Knitting)</b></a></center>\r\n\t\r\n\r\n",
+              "legacyComponentId": 6007,
+              "order": 1
+            }
+          ],
+          "title": "Learn More",
+          "slug": "learn-more",
+          "order": 3,
+          "legacy": {
+            "assignId": 3986,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Knit-Weave",
+      "slug": "knit-weave",
+      "displayOrder": 8,
+      "legacy": {
+        "itemId": 470,
+        "lessonOrder": 8
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n    \r\n        WEAVING is a technique that places decorative strands across a base of knitting (usually stockinette). Built-in weaving brushes keep the weaving yarn in place and prevents it from floating up and jamming the carriage while knitting in pattern.<br>Automatic patterning machines will select needles and put them in position for the weaving yarn to \"lay-in\" across the needles. The weaving yarn does not form stitches, but is secured by the knitting in decorative sequences.<br>Weaving is a great way to use novelty yarns or yarn that may be too thick for your machine.<br><button data-GlossaryId='348' class='glossaryhelp btn btn-xs btn-default'>Weaving | Knit Weave | Lay-In <i class='fa fa-question-circle' aria-hidden='true'></i></button><br><center> <img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/weaving_brushes.jpg\"></center>\r\n    \r\n    <div class=\"text-center\">\r\n        <center><b>Don't Skip This Video</b></center>\r\n        <a data-vimeoid=\"151857907\" class=\"videopopup\">\r\n\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/knit_weave_play.png\">\r\n    </a>\r\n    </div>\r\n<br>",
+              "legacyComponentId": 6011,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntryOptions",
+              "notes": [
+                "Unmapped legacy component type: DataEntryOptions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3960",
+                "CHALLENGE_COMPONENTID": "5949",
+                "DATAMODEL_ELEMENT": "weaving_brushes",
+                "DATAMODEL_ICON": "fa fa-check-square-o fa-3x",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_OPTIONLIST": "Yes,No",
+                "DATAMODEL_REQEST_TEXT": "Do you have weaving brushes?",
+                "DATAMODEL_TYPE": "Radio",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 6012,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<h3>No Brushes?</h3>\r\nYou can work Knit Weave on manual machines and machines with no brushes<br><a data-vimeoid=\"151859743\" class=\"videopopup\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/knit_weave_no_brushes_gif.gif\"></a>",
+              "legacyComponentId": 6018,
+              "order": 3
+            }
+          ],
+          "title": "Knit Weave",
+          "slug": "knit-weave",
+          "order": 1,
+          "legacy": {
+            "assignId": 3989,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n    \r\n        \r\n            <i class=\"fa fa-check-square-o fa-3x\" aria-hidden=\"true\"></i> <span class=\"lead\">\r\n\t\t\t\t\t<font color=\"#9e2065\">Knit WeavePractice 1</font>\r\n\t\t\t\t</span>\r\n<button class=\"no-print pull-right btn btn-xs btn-default\" onclick=\"window.print()\"><i class=\"fa fa-print\" aria-hidden=\"true\"></i> Print</button>\r\n\r\n            \r\n                \r\n                    \r\n                        <ol class=\"instruction-list\" start=\"1\">\r\n                            <li> Choose a stitch pattern for <b>KNIT WEAVE</b></li>\r\n                            <li>Using a lightweight, light color yarn, cast on 40-60 stitches with any method</li>\r\n                            <li>Hang weights</li>\r\n                            <li>Knit a few rows, ending with the carriage on the LEFT.</li>\r\n                            <li>Be sure to bring your carriage far enough out, so the pattern is \"read\"</li>\r\n                            <li>Insert your punchcard or start your electronic stitch pattern</li>\r\n                            <li>Set your {selection_mechanism} selection mechanism</li>\r\n                            <li>With the pattern \"locked\" on the first row, knit 1 row LEFT to RIGHT(to memorize/record the pattern)</li>\r\n                            <li>Engage your Weaving Brushes</li>\r\n                            <li>Position the weaving yarn on the LEFT as shown in your manual * (the weaving yarn will be on the side of the carriage in the direction of knitting)</li>\r\n                            <li>Begin to pattern by moving the carriage to the LEFT.</li>\r\n                            <li>Switch the weaving yarn to the opposite side (RIGHT)</li>\r\n                            <li>Knit to the RIGHT</li>\r\n                            <li>Continue to knit in pattern, alternating the weaving yarn left and right for 20-40 rows</li>\r\n                            <li>Cancel the {selection_mechanism} selection mechanism</li>\r\n                            <li>Knit a few rows plain and bind off</li>\r\n                        </ol>\r\n                        <b>Notes:</b><br>\r\n                        <ul>\r\n                            <li>* Most manuals advise you to thread the weaving yarn thru the tension mast. Many machine knitters place their weaving yarn on the floor at their feet and manually tension the yarn</li>\r\n                            <li>Notice that you are not using any Cam/Carriage settings, you have just engaged your {selection_mechanism} Selection mechanism to select needles.\r\n                        </ul>\r\n                    \r\n                \r\n            \r\n        \r\n    \r\n     <div class=\"no-print\">\r\n        <img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/knitweave_practice1.jpg\">\r\n    </div>\r\n\r\n<hr class=\"no-print\">\r\n<div class=\"no-print\">\r\n    \r\n        \r\n            <i class=\"fa fa-check-square-o fa-3x\" aria-hidden=\"true\"></i><span class=\"lead\">\r\n\t\t\t\t\t<font color=\"#9e2065\">Practice 1: Suggested Pattern</font>\r\n\t\t\t\t</span>\r\n            <em><small>click the small image for a \"to-scale\" punchcard template</small></em><br>\r\n                    \r\n                        <center>\r\n                            <a target=\"_blank\" href=\"/downloads/416_knitweave.pdf\">  <img src=\"/challenge/images/v2/72/416_knitweave_small.jpg\"></a></center>\r\n                    \r\n                    <img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/knitweave_L_R_gif.gif\"> \r\n                \r\n            \r\n        \r\n    \r\n</div>\r\n",
+              "legacyComponentId": 6015,
+              "order": 3
+            }
+          ],
+          "title": "Knit Weave Practice 1",
+          "slug": "knit-weave-practice-1",
+          "order": 2,
+          "legacy": {
+            "assignId": 3992,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<b>Knit it Now CLASSROOMS are a collection of tutorials, links to courses, patterns, LIVE replays and inspiration on specific topics.</b><br>\t\r\n\r\n\r\n\r\n\t<center><b>Learn more about the possibilities with KNIT WEAVE:\r\n\t\t\t</b><br>\r\n\t\t\t<a href=\"/classrooms/34/knitweave\" target=\"_blank\"><img src=\"https://dev.knititnow.com/path/images/34/topics_knitweave1.jpg\"><br>\r\n\t\t\t\t<b>KNIT WEAVE Classroom</b></a></center>\r\n\t\r\n\r\n",
+              "legacyComponentId": 6013,
+              "order": 1
+            }
+          ],
+          "title": "Learn More",
+          "slug": "learn-more",
+          "order": 3,
+          "legacy": {
+            "assignId": 3991,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n    \r\nYou can create interesting designs by leaving long floats and cutting them.<br>Felting wool strands adds another dimension\r\n           \r\n    \r\n    <div class=\"text-center\">\r\n        \r\n\r\n            \r\n            \r\n             <figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/butteryfly_bolster1.jpg\">\r\n                    <figcaption align=\"center\"><br><a href=\"/knit/DynamicPattern/743/bolster-pillow-one-piece\">Bolster Pillow</a></figcaption>\r\n                </figure>\r\n            \r\n        \r\n        \r\n    </div>\r\n",
+              "legacyComponentId": 6016,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "\r\n    \r\n        \r\n            <i class=\"fa fa-check-square-o fa-3x\" aria-hidden=\"true\"></i><span class=\"lead\">\r\n\t\t\t\t\t<font color=\"#9e2065\">Practice 2: Butterfly Floats</font>\r\n\t\t\t\t</span>\r\n            <em><small>click the small image for a \"to-scale\" punchcard template</small></em><br>\r\n                    \r\n                        <center><a target=\"_blank\" href=\"/downloads/butterfly_stitch.pdf\"> <img src=\"/challenge/images/v2/72/butterfly_stitch_small.png\"><br></a></center>\r\n                    \r\n                    \r\n                          <figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/butterfly_sample.jpg\">\r\n                    <figcaption align=\"center\"><br>Cut floats</figcaption>\r\n                </figure>\r\n                    \r\n                \r\n            \r\n        \r\n    \r\n",
+              "legacyComponentId": 6017,
+              "order": 4
+            }
+          ],
+          "title": "Knit Weave Practice 2",
+          "slug": "knit-weave-practice-2",
+          "order": 3,
+          "legacy": {
+            "assignId": 3993,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Thread (Punch) Lace",
+      "slug": "thread-punch-lace",
+      "displayOrder": 9,
+      "legacy": {
+        "itemId": 471,
+        "lessonOrder": 9
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n    \r\n        Depending on your machine, this is a setting (or stop) on the cam lever on the carriage to enable you to knit lace-like patterns with a very thin yarn or thread.\r\nTHREAD (PUNCH) LACE creates a lace appearance without transferring stitches to make holes. It also knits with NO FLOATS.<br><button data-GlossaryId='526' class='glossaryhelp btn btn-xs btn-default'>Thread Lace | Punch Lace <i class='fa fa-question-circle' aria-hidden='true'></i></button><br><center><b>How does it work?</b><br>\r\nIn the solid sections of the design, both yarns knit together.<br> In the \"lace\" sections, only the fine yarn knits forming the appearance of holes<br>\r\n<figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/thread_lace_compare.jpg\"><figcaption align=\"center\"><font color=\"#9e2065\"><br>Top: Contrasting color thread<br>\r\nBottom: Matching color thread</font></figcaption>\r\n</figure></center>\r\n    \r\n    \r\n        \r\n            \r\n                <table class=\"table table-responsive\">\r\n                    <thead>\r\n                        <tr>\r\n                            <th class=\"text-center\" colspan=\"2\"><span style=\"color:#9E2065\" ;>Cam (Carriage) Setting</span></th>\r\n                        </tr>\r\n                    </thead>\r\n                    <tbody>\r\n                        <tr>\r\n                            <td>\r\n                                <a href=\"#brother2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i> \r\n                                 <b>Brother/Knit King</b>\r\n                                </a>\r\n                                <div id=\"brother2\" class=\"collapse hidden-print\">\r\n                                    <img class=\"zoom\" src=\"/challenge/images/v2/72/fair_isle_1_brother.jpg\">\r\n                                </div>\r\n                               </td>\r\n                            <td>MC and L buttons IN</td>\r\n                        </tr>\r\n                        <tr>\r\n                            <td>\r\n                                <a href=\"#singer2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i>\r\n                                 <b>Singer/Silver</b>\r\n                                </a>\r\n                                <div id=\"singer2\" class=\"collapse hidden-print\">\r\n                                    <img class=\"zoom\" src=\"/challenge/images/v2/72/Plain1_silver.jpg\">\r\n                                </div>\r\n                               </td>\r\n                            <td>Cam lever on Punch Lace</td>\r\n                        </tr>\r\n                       \r\n                    </tbody>\r\n                </table>\r\n            \r\n        \r\n    \r\n\r\n",
+              "legacyComponentId": 6022,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3994",
+                "CHALLENGE_COMPONENTID": "6021",
+                "DATAMODEL_ELEMENT": "punch_lace",
+                "DATAMODEL_ICON": "fa fa-check-square-o fa-3x",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "What is your Cam Setting for Thread (Punch) Lace?<br> <em><small>Click the buttons to choose or enter your own</small></em>",
+                "REMOVEALERT": "0",
+                "SUGGESTEDOPTIONS": "MC and L buttons IN, Cam Lever to Punch Lace"
+              },
+              "legacyComponentId": 6021,
+              "order": 2
+            }
+          ],
+          "title": "Thread (Punch) Lace",
+          "slug": "thread-punch-lace",
+          "order": 1,
+          "legacy": {
+            "assignId": 3994,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div>\r\n\t\r\n\t\t<i class=\"fa fa-check-square-o fa-2x\" aria-hidden=\"true\"></i> <span class=\"uppercase\">YOUR SETTINGS:</span>\r\n\t\t<ul>\r\n\t\t\t<li>{punch_lace}</li>\r\n\t\t</ul>\r\n\r\n\t\t<button data-GlossaryId='526' class='glossaryhelp btn btn-xs btn-default no-print'>Thread Lace | Punch Lace <i class='fa fa-question-circle' aria-hidden='true'></i></button><span class=\"no-print\"><br><ul>\r\n<li>No stitch transfers</li>\r\n<li>No floats</li>\r\n<li>Lacy look with minimal fuss</li>\r\n</ul></span>\r\n\t\r\n\r\n\t<div class=\"text-center no-print\">\r\n<img src=\"/challenge/images/v2/72/thread_lace_example.jpg\">\r\n</div>",
+              "legacyComponentId": 6023,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<hr class=\"no-print\">\r\n\r\n    \r\n        \r\n            <i class=\"fa fa-check-square-o fa-3x\" aria-hidden=\"true\"></i> <span class=\"lead\">\r\n\t\t\t\t\t<font color=\"#9e2065\">THREAD (PUNCH) LACE  Practice</font>\r\n\t\t\t\t</span>\r\n<button class=\"no-print pull-right btn btn-xs btn-default\" onclick=\"window.print()\"><i class=\"fa fa-print\" aria-hidden=\"true\"></i>\r\nPrint</button>\r\n\r\n            \r\n                <ol class=\"instruction-list\">\r\n                    <li> Choose an stitch pattern for <b>THREAD (PUNCH) LACE</b></li>\r\n                    <li>Choose 2 yarns (one thread weight). Using the heavier yarn, cast on 40-60 stitches with any method</li>\r\n                    <li>Hang weights</li>\r\n                    <li>Knit a few rows, ending with the carriage on the LEFT.</li>\r\n                    <li>Be sure to bring your carriage far enough out, so the pattern is \"read\"</li>\r\n                    <li>Insert your punchcard or start your electronic stitch pattern</li>\r\n                    <li>Set your {selection_mechanism} selection mechanism</li>\r\n<li>Thread the fine yarns in separate feeders on the carriage (see your manual)</li>\r\n                    <li>With the pattern \"locked\" on the first row, knit 1 row LEFT to RIGHT(to memorize/record the pattern)</li>\r\n                    <li>Engage your {punch_lace} Cam setting</li>\r\n                    <li>Begin to pattern by moving the carriage to the LEFT.</li>\r\n                    <li>Continue to knit in pattern for 20-40 rows</li>\r\n                    <li>Cancel the {punch_lace} Cam setting</li>\r\n                    <li>Cancel the {selection_mechanism} selection mechanism</li>\r\n                    <li>Knit a few rows plain and bind off</li>\r\n                </ol><br>\r\n                \r\n            \r\n        \r\n    \r\n    <div class=\"no-print\">\r\n        \r\n            <i class=\"fa fa-check-square-o fa-3x\" aria-hidden=\"true\"></i><span class=\"lead\">\r\n\t\t\t\t\t<font color=\"#9e2065\">Practice: Suggested Pattern</font>\r\n\t\t\t\t</span>\r\n            <em><small>click the small image for a \"to-scale\" punchcard template</small></em><br>\r\n                    \r\n                        <center><a target=\"_blank\" href=\"/downloads/thread_lace_414.pdf\">  <img src=\"/challenge/images/v2/72/thread_lace414_small.png\"><br></a></center>\r\n                    \r\n                    \r\n                \r\n            \r\n        \r\n    </div>\r\n",
+              "legacyComponentId": 6024,
+              "order": 2
+            }
+          ],
+          "title": "Thread (Punch) Lace Practice",
+          "slug": "thread-punch-lace-practice",
+          "order": 2,
+          "legacy": {
+            "assignId": 3996,
+            "blockType": "HTMLDynamic"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Other Features Related to Patterns",
+      "slug": "other-features-related-to-patterns",
+      "displayOrder": 10,
+      "legacy": {
+        "itemId": 464,
+        "lessonOrder": 10
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Single Motif is also referred to as \"Isolation\". It is a technique to knit in pattern in isolated areas of the needle bed. <br>\r\n    \r\n        <b>Single Motif</b> allows you to create a single repeat of a stich pattern, surrounded by solid color. <br><button data-GlossaryId='525' class='glossaryhelp btn btn-xs btn-default'>Single Motif | Isolation <i class='fa fa-question-circle' aria-hidden='true'></i></button>\r\n        <br><center> <img src=\"/challenge/images/v2/72/isolation.jpg\"></center>\r\n    \r\n    \r\n        \r\n            \r\n                <table class=\"table table-responsive\">\r\n                    <thead>\r\n                        <tr>\r\n                            <th class=\"text-center\" colspan=\"2\"><span style=\"color:#9E2065\";>Cam (Carriage) Setting</span></th>\r\n                        </tr>\r\n                    </thead>\r\n                    <tbody>\r\n                        <tr>\r\n                            <td>\r\n                                <a href=\"#brother2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i> \r\n                                 <b>Brother/Knit King</b>\r\n                                </a>\r\n                                <div id=\"brother2\" class=\"collapse hidden-print\">\r\n                                    <img class=\"zoom\" src=\"/challenge/images/v2/72/brother_sm1.jpg\">\r\n                                </div>\r\n                               </td>\r\n                            <td>Change Knob to SM <em>and</em> plastic bar(s) on the needlebed</td>\r\n                        </tr>\r\n                        <tr>\r\n                            <td>\r\n                                <a href=\"#singer2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i>\r\n                                 <b>Singer/Silver</b>\r\n                                </a>\r\n                                <div id=\"singer2\" class=\"collapse hidden-print\">\r\n                                    <img class=\"zoom\" src=\"/challenge/images/v2/72/single_motif_singer1.jpg\">\r\n                                </div>\r\n                               </td>\r\n                            <td>Point cams, Magic Cams and yarn separator</td>\r\n                        </tr>\r\n                        <tr>\r\n                            <td>\r\n                                <a href=\"#toyota2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i>\r\n                                <b>Toyota</b>\r\n                                </a>\r\n                                <div id=\"toyota2\" class=\"collapse hidden-print\">\r\n                                    <img class=\"zoom\" src=\"/challenge/images/v2/72/single_motif_toyota.jpg\">\r\n                                </div>\r\n                            </td>\r\n                            <td>Motif Magic Knob</td>\r\n                        </tr>\r\n                    </tbody>\r\n                </table>\r\n            \r\n        \r\n    \r\n\r\n",
+              "legacyComponentId": 5930,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntryOptions",
+              "notes": [
+                "Unmapped legacy component type: DataEntryOptions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3961",
+                "CHALLENGE_COMPONENTID": "5950",
+                "DATAMODEL_ELEMENT": "Isolation",
+                "DATAMODEL_ICON": "fa fa-check-square-o fa-3x",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_OPTIONLIST": "Yes,No",
+                "DATAMODEL_REQEST_TEXT": "According to your manual, can you isolate stitch patterns?",
+                "DATAMODEL_TYPE": "Radio",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 5950,
+              "order": 2
+            }
+          ],
+          "title": "Single Motif",
+          "slug": "single-motif",
+          "order": 2,
+          "legacy": {
+            "assignId": 3961,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Knitting with 2 yarns at the same time, this yarn feeder always feeds one yarn in front of the other and prevents the two colors from twisting and changing positions.<br>One color shows as the predominant color on one side of the knitting, the other color is solid on the reverse.<br>Depending on your machine, the plaiting unit may be built into your carriage, or it may be a separate unit to be attached to  your carriage.<br>Automatic patterning is performed as usual, the plaiting device, just positions the yarns in relation to each other.<br><button data-GlossaryId='366' class='glossaryhelp btn btn-xs btn-default'>Plaiting  <i class='fa fa-question-circle' aria-hidden='true'></i></button>\r\n\r\n<center>\t<figure><img src=\"/challenge/images/v2/72/plaiting_feeder.png\">\r\n\r\n<figcaption align=\"center\"><font color=\"#9e2065\"><em>Plaiting feeder exchanged in the main carriage (Brother)</em></font></figcaption>\r\n</figure></center>",
+              "legacyComponentId": 5931,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntryOptions",
+              "notes": [
+                "Unmapped legacy component type: DataEntryOptions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3962",
+                "CHALLENGE_COMPONENTID": "5951",
+                "DATAMODEL_ELEMENT": "plaiting",
+                "DATAMODEL_ICON": "fa fa-check-square-o fa-3x",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_OPTIONLIST": "Yes,No",
+                "DATAMODEL_REQEST_TEXT": "According to your manual, can you work plaiting?",
+                "DATAMODEL_TYPE": "Radio",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 5951,
+              "order": 2
+            }
+          ],
+          "title": "Plaiting",
+          "slug": "plaiting",
+          "order": 3,
+          "legacy": {
+            "assignId": 3962,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Some standard gauge (4.5mm) machines have an optional carriage that automatically transfers stitches to create eyelet holes.<br><em>NOTE: Only Standard Gauge machines have lace carriages</em><br><button data-GlossaryId='190' class='glossaryhelp btn btn-xs btn-default'>Lace Carriage <i class='fa fa-question-circle' aria-hidden='true'></i></button><br>Because of the way the stitch patterns are formed, stitch patterns (punchcard or electronic) for lace carriages differ from other stitch patterns (tuck, slip, fairisle). <br>The patterning device selects and positions the needles. Combined with the correct carriage settings PLUS the lace carriage \"automatic\" lace is magical.<br>\r\n<h3>Different models have different approaches to lace carriages:</h3><br>\r\n    \r\n        \r\n            Brother Lace Carriage\r\n            Brother lace carriage is used alternately with the main knitting carriage. Based on instruction from the patterning device (electronic or punchcard), the lace carriage selects and transfers stitches. The main carriage is then used to knit the row<br>\r\n                <img class=\"img-thumbnail\" src=\"/images/glossary/brother_lace_carriage2.jpg\">\r\n        \r\n    \r\n    \r\n        \r\n            Singer/Silver Lace Carriage\r\n            Silver/Singer lace carriages work independently of the main knitting carriage. The lace carriage, selects, transfers and knits the row.\r\n                <Br>\r\n                <img class=\"img-thumbnail\" src=\"/challenge/images/v2/72/lace_carriage_singer.jpg\">\r\n        \r\n    \r\n\r\n",
+              "legacyComponentId": 5933,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntryOptions",
+              "notes": [
+                "Unmapped legacy component type: DataEntryOptions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3964",
+                "CHALLENGE_COMPONENTID": "5953",
+                "DATAMODEL_ELEMENT": "lace_carriage",
+                "DATAMODEL_ICON": "fa fa-check-square-o fa-3x",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_OPTIONLIST": "Yes,No",
+                "DATAMODEL_REQEST_TEXT": "Do you have a lace carriage?",
+                "DATAMODEL_TYPE": "Radio",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 5953,
+              "order": 2
+            }
+          ],
+          "title": "Lace Carriage",
+          "slug": "lace-carriage",
+          "order": 5,
+          "legacy": {
+            "assignId": 3964,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The Garter Carriage is a <b>Brother/KnitKing Standard Gauge Accessory</b>. This fabulous motorized knitting carriage allows you to incorporate purl stitches on the flat bed knitting machine without using a ribber. <br>There were different models of G-Carriages manufactured for specific machines. If you are unsure do some research to confirm your G-carriage is compatible with your knitting machine. Both punch card and electronic machines were offered G-carriages as optional accessories.<br><button data-vimeoid=\"151858662\" class='videopopup btn btn-xs btn-default'>What's a Garter Carriage? <i class='fa fa-question-circle' aria-hidden='true'></i></button>\r\n\r\n<br>As with any other stitch patterns, forming knit an purl stitches on the same row is controlled by the Patterning Device, and the Carriage buttons. Black/white, hole/no-hole, on/off the logic is the same.  Automatic patterning sends instruction to the machine to position the patterning needles to be transferred to the G-carriage needle to form purl stitches.<br><center><img class=\"img-thumbnail\" src=\"/images/glossary/g_carriage.jpg\"></center>",
+              "legacyComponentId": 5975,
+              "order": 1
+            }
+          ],
+          "title": "Garter Carriage (G-Carriage)",
+          "slug": "garter-carriage-g-carriage",
+          "order": 6,
+          "legacy": {
+            "assignId": 3976,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Cheat Sheet",
+      "slug": "cheat-sheet",
+      "displayOrder": 11,
+      "legacy": {
+        "itemId": 465,
+        "lessonOrder": 11
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntrytextarea",
+              "notes": [
+                "Unmapped legacy component type: DataEntrytextarea"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3997",
+                "DATAMODEL_ELEMENT": "notes",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Notes",
+                "DATAMODEL_TEXTAREAROWS": "20",
+                "DATAMODEL_VALIDATION_CHARS": "500",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntrytextarea"
+              },
+              "legacyComponentId": 6027,
+              "order": 1
+            }
+          ],
+          "title": "Your Notes",
+          "slug": "your-notes",
+          "order": 1,
+          "legacy": {
+            "assignId": 3997,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\ttable,\r\n\tth,\r\n\ttd {\r\n\t\tborder: 1px solid black;\r\n\t}\r\n\ttable {\r\n\t\tborder-collapse: collapse;\r\n\t}\r\n\tcol {\r\n\t\tdisplay: table-column;\r\n\t}\r\n\tth,\r\n\ttd {\r\n\t\tpadding: 15px;\r\n\t}\r\n\r\n</style>\r\n<div class=\"no-print\"> If <span class=\"missingdefault\">\"Missing - Not provided\" </span> is displayed, go back <i class=\"fa fa-pencil\" aria-hidden=\"true\"></i> and enter your answers</div>\r\n<span class=\"lead\">\r\n\t<font color=\"#9e2065\">{machine_name}</font>\r\n</span> <span class=\"no-print\"><a href=\"/challenge/72/Group/3969/item#section463\"><i class=\"fa fa-pencil\" aria-hidden=\"true\"></i></a></span><br>\r\n\r\n\t\r\n\t\t<table>\r\n\t\t\t<font color=\"#9e2065\">Needle Positions:</font> <span class=\"no-print\"><a href=\"/challenge/72/Group/3953/item#section461\"> <i class=\"fa fa-pencil\" aria-hidden=\"true\"></i></a></span><br>\r\n\t\t\t<tr>\r\n\t\t\t\t<td>{Position_non_working}</td>\r\n\t\t\t\t<td>Non-working position</td>\r\n\t\t\t</tr>\r\n\t\t\t<tr>\r\n\t\t\t\t<td>{Position_working}</td>\r\n\t\t\t\t<td>Working Position</td>\r\n\t\t\t</tr>\r\n\t\t\t<tr>\r\n\t\t\t\t<td>{Position_middle}</td>\r\n\t\t\t\t<td>Middle Position</td>\r\n\t\t\t</tr>\r\n\t\t\t<tr>\r\n\t\t\t\t<td>{Position_hold}</td>\r\n\t\t\t\t<td>Hold Position</td>\r\n\t\t\t</tr>\r\n\t\t</table>\r\n\t\r\n\t\r\n\t\t<br>\r\n\t\t<table>\r\n\t\t\t<tr>\r\n\t\t\t\t<td>Weaving Brushes:</td>\r\n\t\t\t\t<td> {weaving_brushes} <span class=\"no-print\"><a href=\"/challenge/72/Group/3989/item#section470\"><i class=\"fa fa-pencil\" aria-hidden=\"true\"></i></a></span></td>\r\n\t\t\t</tr>\r\n\r\n\t\t\t<tr>\r\n\t\t\t\t<td>Single Motif:</td>\r\n\t\t\t\t<td> {Isolation} <span class=\"no-print\"><a href=\"/challenge/72/Group/3961/item#section464\"><i class=\"fa fa-pencil\" aria-hidden=\"true\"></i></a></span>\r\n\r\n\t\t\t\t</td>\r\n\t\t\t</tr>\r\n\t\t\t<tr>\r\n\t\t\t\t<td>Plaiting:</td>\r\n\t\t\t\t<td>{plaiting} <span class=\"no-print\"><a href=\"/challenge/72/Group/3962/item#section464\"><i class=\"fa fa-pencil\" aria-hidden=\"true\"></i></a></span></td>\r\n\t\t\t</tr>\r\n\t\t\t<tr>\r\n\t\t\t\t<td>Lace Carriage:</td>\r\n\t\t\t\t<td>{lace_carriage} <span class=\"no-print\"><a href=\"/challenge/72/Group/3964/item#section464\"><i class=\"fa fa-pencil\" aria-hidden=\"true\"></i></a> </span></td>\r\n\t\t\t</tr>\r\n\t\t\t<tr>\r\n\t\t\t\t<td>Garter Carriage:</td>\r\n\t\t\t\t<td>{garter_carriage} <span class=\"no-print\"><a href=\"/challenge/72/Group/3976/item#section464\"><i class=\"fa fa-pencil\" aria-hidden=\"true\"></i></a> </span></td>\r\n\t\t\t</tr>\r\n\t\t</table>\r\n\t\r\n\r\n<br>\r\n<table>\r\n\t<tr>\r\n\t\t<td>To use automatic patterning you'll set your</td>\r\n\t\t<td>{selection_mechanism} <span class=\"no-print\"><a href=\"/challenge/72/Group/3954/item#section461\"><i class=\"fa fa-pencil\" aria-hidden=\"true\"></i></a></span></td>\r\n\t</tr>\r\n\t<tr>\r\n\t\t<td>Plain Knitting settings:</td>\r\n\t\t<td>{cam_lever_plain} <span class=\"no-print\"><a href=\"/challenge/72/Group/3959/item#section462\"><i class=\"fa fa-pencil\" aria-hidden=\"true\"></i></a></span></td>\r\n\t</tr>\r\n\t<tr>\r\n\t\t<td>Hold Setting:<br>Needle Position: {Position_hold}</td>\r\n\t\t<td>{hold_lever} | {hold_style}<span class=\"no-print\"> <a href=\"/challenge/72/Group/3968/item#section466\"> <i class=\"fa fa-pencil\" aria-hidden=\"true\"></i></a></span></td>\r\n\t</tr>\r\n\t<tr>\r\n\t\t<td>To Knit Tuck:</td>\r\n\t\t<td>{cam_lever_tuck} | {tuck_style} <span class=\"no-print\"><a href=\"/challenge/72/Group/3956/item#section467\"><i class=\"fa fa-pencil\" aria-hidden=\"true\"></i></a></span></td>\r\n\t</tr>\r\n\t<tr>\r\n\t\t<td>To Knit Slip:</td>\r\n\t\t<td>{cam_lever_slip} | {slip_style} <span class=\"no-print\"><a href=\"/challenge/72/Group/3957/item#section468\"><i class=\"fa fa-pencil\" aria-hidden=\"true\"></i></a></span></td>\r\n\t</tr>\r\n\t<tr>\r\n\t\t<td>To Knit Fairisle:</td>\r\n\t\t<td>{cam_lever_fairisle} <span class=\"no-print\"><a href=\"/challenge/72/Group/3958/item#section469\"><i class=\"fa fa-pencil\" aria-hidden=\"true\"></i></a></span></td>\r\n\t</tr>\r\n\t<tr>\r\n\t\t<td>To Knit Thread lace:</td>\r\n\t\t<td>{punch_lace} <span class=\"no-print\"><a href=\"/challenge/72/Group/3994/item#section471\"><i class=\"fa fa-pencil\" aria-hidden=\"true\"></i></a></span></td>\r\n\t</tr>\r\n</table>\r\n<br>\r\n\tNOTES: <span class=\"no-print\"><a href=\"/challenge/72/Group/3997/item#section465\"><i class=\"fa fa-pencil\" aria-hidden=\"true\"></i></a></span>\r\n\t<span class=\"text-transform: none;\"> {notes}</span>\r\n\r\n",
+              "legacyComponentId": 5961,
+              "order": 2
+            }
+          ],
+          "title": "Personalized Cheat Sheet",
+          "slug": "personalized-cheat-sheet",
+          "order": 2,
+          "legacy": {
+            "assignId": 3970,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 2,
+    "videos": [
+      {
+        "vimeoId": "434198371",
+        "title": null,
+        "lessonSlug": "introduction",
+        "blockSlug": "about-this-course"
+      },
+      {
+        "vimeoId": "151859832",
+        "title": null,
+        "lessonSlug": "tuck",
+        "blockSlug": "tuck-practice-2"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

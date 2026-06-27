@@ -1,0 +1,40 @@
+---
+import EmbeddedTool from "../../embedded/EmbeddedTool.astro";
+import type { CourseBlock } from "../../../lib/legacy_kin/coursePreviewPoc";
+import { rewriteLegacyHtml } from "../../../lib/legacy_kin/coursePreviewPoc";
+import {
+  getEmbeddedToolLayoutParts,
+  richTextHasVisibleContent,
+} from "../../../lib/legacy_kin/courseEmbeddedToolLayout";
+
+interface Props {
+  block: CourseBlock;
+}
+
+const { block } = Astro.props;
+const parts = getEmbeddedToolLayoutParts(block);
+---
+
+{
+  parts ? (
+    <div class="course-preview__embedded-tool-layout legacy-course__embedded-tool-layout">
+      {parts.introText &&
+      richTextHasVisibleContent(String(parts.introText.html ?? "")) ? (
+        <div
+          class="course-preview__richtext legacy-course__richtext course-preview__embedded-tool-intro"
+          set:html={rewriteLegacyHtml(String(parts.introText.html ?? ""))}
+          data-legacy-component={parts.introText.legacyComponentId}
+        />
+      ) : null}
+      <div
+        class="course-preview__embedded-tool legacy-course__embedded-tool"
+        data-legacy-component={parts.tool.legacyComponentId}
+      >
+        <EmbeddedTool
+          toolKey={String(parts.tool.toolKey ?? "")}
+          instanceId={`lc-${parts.tool.legacyComponentId}`}
+        />
+      </div>
+    </div>
+  ) : null
+}

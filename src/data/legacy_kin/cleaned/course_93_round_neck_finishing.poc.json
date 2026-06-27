@@ -1,0 +1,496 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 93,
+    "title": "Round Neck Finishing",
+    "slug": "round-neck-finishing",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_93_round_neck_finishing.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "intro",
+      "slug": "intro",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 563,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n</style>\r\n\r\n\t\r\n\r\n\t\tFinishing round necklines is always a challenge for knitters. Neckbands add the finishing touch to your sweaters. No part of the sweater is more visible, so it's important to master the ART of knitting bands.\r\n\t\t<ul class=\"fa-ul\">\r\n\r\n\t\t\t<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>We're picking up stitches along a round shape</li><br>\r\n\t\t\t<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>The neckline consists of both stitches and rows</li><br>\r\n\t\t\t<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>The neckline needs to stay stretchy to fit over the head (for a pullover)</li><br>\r\n\t\t\t<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Keeping the band flat against the body is the goal for a professional finish</li><br>\r\n\t\t</ul>\r\n\t\t\r\n\t\t\r\n\t\r\n\t<div class=\"text-center\"><span class=\"handwriting\" style=\"font-size:2em\">\"Finishing necklines<br> is an ART<br> not a science.\"</span></div>\r\n\r\nI want you to take time to practice some of these techniques BEFORE putting a lot of time into a full sweater. The confidence you gain will go a long way to success with EVERY sweater you knit in the future.<br>\r\n<h1>Options:</h1><br>\r\n<b>The focus of this knit-along is round neck FINISHING. We will be exploring different band finishes.<br> If you aren't comfortable with shaping necklines, please take time to practice first.</b><br><mark>To save time and focus on neck bands, I suggest trying Cut 'n Sew. Even if you would never use this method on a \"real\" sweater. It will give you the opportunity to spend your knit-along time working with bands. The techniques we will cover can be used for both shaped and cut 'n sew methods.<br>\r\n\r\n\t<hr class=\"style13\">\r\n\t\r\n\t\t<div class=\"container-border\">\r\n\r\n\t\t\t<h3>Need practice with Cut 'n Sew?<br></h3>\r\n\t\t\t<br> Previous Knit-along:<b>Fearless Cut 'n Sew finishing</b> <small><em>Free for subscribers</em></small><br><center><a href=\"/knitclub/71/Knitalong/fearless-cut-n-sew-finishing\"> <img src=\"/challenge/images/v2/93//v2/71/cut_n_sew_KAL.png\" width=\"200\"></a><br><div class=\"text-center\"></div>\r\n\t\t\t</center>\r\n\r\n\t\t</div>\r\n\t\t<div class=\"container-border\">\r\n\t\t\t<h3>Need practice perfecting shaped necklines? </h3>\r\n\t\t\t<br>Previous Knit-along: <b>Neckbands and Collars</b> <small><em>Free for subscribers</em></small><br><center><a href=\"/knitclub/77/Knitalong/neckbands-and-collars\"> <img src=\"/challenge/images/v2/93//v2/77/collars.png\" width=\"200\"></a><br><div class=\"text-center\"></div>\r\n\r\n\t\t\t</center>\r\n\t\t</div>\r\n\r\n\t\r\n",
+              "legacyComponentId": 6629,
+              "order": 1
+            }
+          ],
+          "title": "Introduction",
+          "slug": "introduction",
+          "order": 1,
+          "legacy": {
+            "assignId": 4375,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n\r\n<span class=\"handwriting\" style=\"font-size:2em\">If you are new:</span><br>\r\n <b>Start small and gain confidence. Work the exercises in order, focusing on:<br></b><br>\r\n<ul class=\"fa-ul li_7px\">\r\n<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span> Neat Pickup with no holes or gathers</li>\r\n<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span> Picking up the right number of stitches for a neckband that lays flat with no puckering or ripples</li>\r\n<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span> Neat, secure finishing for a long-wearing sweater</li>\r\n<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span> For your first practice, consider knitting a single round front (as one side of a cardigan) instead of an entire sweater front</li>\r\n</ul>\r\n\r\n<span class=\"handwriting\" style=\"font-size:2em\">If you've \"been there .... done that\":</span><br>\r\n<b>Try something new!</b><br>\r\n<ul class=\"fa-ul li_7px\">\r\n<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span> Try a new-to-you technique</li>\r\n<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span> Incorporate a stitch pattern</li>\r\n<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span> Challenge yourself and knit a front and back sample, practicing joining 1 shoulder, adding the band and neatly joining the other shoulder and band.\r\n<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span> Put your ribber to work</li>\r\n</ul><br>\r\n<hr class=\"style13\">",
+              "legacyComponentId": 6631,
+              "order": 1
+            },
+            {
+              "type": "exerciseAccordion",
+              "sections": [
+                {
+                  "title": "Knit and measure an accurate swatch",
+                  "bodyHtml": "No matter what you want to knit, <b>knitting a gauge swatch is NOT OPTIONAL!</b><br>Without knowing gauge:<ul>\r\n\t<li>How do you know how much yarn you need?</li>\r\n\t<li>How are you going to know if the finished item will fit?</li>\r\n\t<li>Determine if you are even going to LIKE the resulting fabric</li>\r\n\t<li>Try out the chosen stitch pattern, maybe it's too tedious... learn this BEFORE starting to knit</li>\r\n\t<li>Dress the swatch and check for shrinkage, pilling, fading</li>\r\n\t<li>Save time by knowing AHEAD if the yarn will knit easily</li>\r\n</ul>\r\n<br>\r\n\r\n\t<img src=\"/path/images/87/measure_rows.jpg\">\r\n\t<img src=\"/path/images/87/measure_stitches.jpg\">\r\n",
+                  "iconSrc": "/challenge/images/v2/93/arrow1.png"
+                },
+                {
+                  "title": "Decisions, Decisions, Decisions",
+                  "bodyHtml": "<ul>\r\n<li>Cut 'n Sew or Shaped neckline?</li>\r\n<li>Practice with just a front, or with both front and back?\r\n<li>Single bed neckband or ribber?</li>\r\n<li>Are you ready to add stitch patterning?</li>\r\n</ul>",
+                  "iconSrc": "/challenge/images/v2/93/arrow2.png"
+                },
+                {
+                  "title": "Shaping your neckline? Here's a practice pattern",
+                  "bodyHtml": " <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i> <a data-vimeoid=\"402313052\" class=\"videopopup\"> Are you new to Knit it Now Patterns? </a><br><a href=\"/knit/DynamicPattern/679/practice-necklines\"><img src=\"/challenge/images/v2/93/practice_necklines.jpg\" width=\"300\">\r\n</a>",
+                  "iconSrc": "/challenge/images/v2/93/arrow3.png"
+                },
+                {
+                  "title": "Try more than one band method",
+                  "bodyHtml": "If you are new to necklines, Knit a One-Piece neckline and perfect the picking, grading and finishing techniques.<br>\r\nOnce you gain confidence try other techniques. \r\n<br><b>The more time you devote to this, the better your finishing will be.</b>",
+                  "iconSrc": "/challenge/images/v2/93/arrow4.png"
+                }
+              ],
+              "legacy": {
+                "showText": "below",
+                "size": null
+              },
+              "legacyComponentId": 6632,
+              "order": 2
+            }
+          ],
+          "title": "Ready ... Set ...",
+          "slug": "ready-set",
+          "order": 2,
+          "legacy": {
+            "assignId": 4377,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Get Knitting",
+      "slug": "get-knitting",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 564,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": " <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i> <a data-vimeoid=\"402313052\" class=\"videopopup\"> Are you new to Knit it Now Patterns? </a><br><a href=\"/knit/DynamicPattern/679/practice-necklines\"><img src=\"/challenge/images/v2/93/practice_necklines.jpg\">\r\n</a>\r\n",
+              "legacyComponentId": 6633,
+              "order": 1
+            }
+          ],
+          "title": "The Pattern",
+          "slug": "the-pattern",
+          "order": 1,
+          "legacy": {
+            "assignId": 4378,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "To create a smooth neckline shape, you can use a plate or bowl or any circular shape.<br>Just position the round shape on your knitted piece and mark it with chalk, or a washable marker. If it's difficult to draw on your knitting, you can hand baste with a contrasting yarn or thread.<br><mark>As a subscriber bonus, download our Neckline template </mark>\r\n\t\t<center><a href=\"/store/DigitialDownload_process.cfm?itemid=474\"><img src=\"/challenge/images/v2/93/subscriber_bonus.png\"></a>\r\n\t\t\t\r\n\t\t</center>",
+              "legacyComponentId": 6634,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "537425558",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 6634,
+              "order": 1
+            }
+          ],
+          "title": "Cut 'n Sew Template",
+          "slug": "cut-n-sew-template",
+          "order": 2,
+          "legacy": {
+            "assignId": 4379,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Calculating Bands",
+      "slug": "calculating-bands",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 566,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/93/neckband_tool.jpg\">",
+              "legacyComponentId": 6640,
+              "order": 1
+            }
+          ],
+          "title": "Use the Knit it Now Tool",
+          "slug": "use-the-knit-it-now-tool",
+          "order": 1,
+          "legacy": {
+            "assignId": 4383,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "One Piece Bands",
+      "slug": "one-piece-bands",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 565,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151860086",
+              "title": "One Piece Neckband Perfection",
+              "legacySlot": 1,
+              "legacyComponentId": 6641,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "186498698",
+              "title": "Small Scallops (ribber)",
+              "legacySlot": 2,
+              "legacyComponentId": 6641,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "187686648",
+              "title": "Faux Crochet Edge",
+              "legacySlot": 3,
+              "legacyComponentId": 6641,
+              "order": 1
+            }
+          ],
+          "title": "Try These First",
+          "slug": "try-these-first",
+          "order": 1,
+          "legacy": {
+            "assignId": 4384,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Two Piece Bands",
+      "slug": "two-piece-bands",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 568,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "223374072",
+              "title": "Reversible Band",
+              "legacySlot": 1,
+              "legacyComponentId": 6642,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "345492301",
+              "title": "2 Piece Industrial Band",
+              "legacySlot": 2,
+              "legacyComponentId": 6642,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858842",
+              "title": "Faux Garter Stitch Bands",
+              "legacySlot": 3,
+              "legacyComponentId": 6642,
+              "order": 1
+            }
+          ],
+          "title": "Ready for More?",
+          "slug": "ready-for-more",
+          "order": 1,
+          "legacy": {
+            "assignId": 4385,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Neckband Perfection",
+      "slug": "neckband-perfection",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 569,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "202105212",
+              "title": "Band Perfection",
+              "legacySlot": 1,
+              "legacyComponentId": 6643,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857806",
+              "title": "Seaming Bands",
+              "legacySlot": 2,
+              "legacyComponentId": 6643,
+              "order": 1
+            }
+          ],
+          "title": "Fine Tune your Bands",
+          "slug": "fine-tune-your-bands",
+          "order": 1,
+          "legacy": {
+            "assignId": 4386,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "0",
+              "title": "Bands: Jazz em up!",
+              "legacyComponentId": 6753,
+              "order": 1
+            }
+          ],
+          "title": "Jazz em up!",
+          "slug": "jazz-em-up",
+          "order": 2,
+          "legacy": {
+            "assignId": 4420,
+            "blockType": "Imageslideshow"
+          }
+        }
+      ]
+    },
+    {
+      "title": "DesignaKnit and Bands",
+      "slug": "designaknit-and-bands",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 570,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "230305713",
+              "title": null,
+              "legacyComponentId": 6644,
+              "order": 1
+            }
+          ],
+          "title": "Let DAK do the Math",
+          "slug": "let-dak-do-the-math",
+          "order": 1,
+          "legacy": {
+            "assignId": 4387,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Neckbands LIVE replay",
+      "slug": "neckbands-live-replay",
+      "displayOrder": 8,
+      "legacy": {
+        "itemId": 567,
+        "lessonOrder": 8
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "283466678",
+              "title": null,
+              "legacyComponentId": 6638,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "VimeoJumpLinks",
+              "notes": [
+                "Unmapped legacy component type: VimeoJumpLinks"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4382",
+                "CHALLENGE_COMPONENTID": "6639",
+                "LINKTIME_1": "00:04:31",
+                "LINKTIME_10": "00:39:18",
+                "LINKTIME_11": "00:45:40",
+                "LINKTIME_2": "00:05:38",
+                "LINKTIME_3": "00:09:56",
+                "LINKTIME_4": "00:10:55",
+                "LINKTIME_5": "00:16:38",
+                "LINKTIME_6": "00:19:17",
+                "LINKTIME_7": "00:22:37",
+                "LINKTIME_8": "00:25:59",
+                "LINKTIME_9": "00:27:32",
+                "LINKTITLE_1": "Shaping Neckbands",
+                "LINKTITLE_10": "2 Piece Bands",
+                "LINKTITLE_11": "PRACTICE!",
+                "LINKTITLE_2": "How many stitches to pick up? Measure",
+                "LINKTITLE_3": "How many stitches to pick up? Hang on the machine",
+                "LINKTITLE_4": "Use the Knit it Now Tool",
+                "LINKTITLE_5": "Band First?",
+                "LINKTITLE_6": "Ribbing",
+                "LINKTITLE_7": "Rolled Edge Band",
+                "LINKTITLE_8": "Single Layer Bands Summary",
+                "LINKTITLE_9": "Double Layer Bands"
+              },
+              "legacyComponentId": 6639,
+              "order": 2
+            }
+          ],
+          "title": "Previous LIVE Replay",
+          "slug": "previous-live-replay",
+          "order": 1,
+          "legacy": {
+            "assignId": 4382,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 12,
+    "videos": [
+      {
+        "vimeoId": "537425558",
+        "title": null,
+        "lessonSlug": "get-knitting",
+        "blockSlug": "cut-n-sew-template"
+      },
+      {
+        "vimeoId": "151860086",
+        "title": "One Piece Neckband Perfection",
+        "lessonSlug": "one-piece-bands",
+        "blockSlug": "try-these-first"
+      },
+      {
+        "vimeoId": "186498698",
+        "title": "Small Scallops (ribber)",
+        "lessonSlug": "one-piece-bands",
+        "blockSlug": "try-these-first"
+      },
+      {
+        "vimeoId": "187686648",
+        "title": "Faux Crochet Edge",
+        "lessonSlug": "one-piece-bands",
+        "blockSlug": "try-these-first"
+      },
+      {
+        "vimeoId": "223374072",
+        "title": "Reversible Band",
+        "lessonSlug": "two-piece-bands",
+        "blockSlug": "ready-for-more"
+      },
+      {
+        "vimeoId": "345492301",
+        "title": "2 Piece Industrial Band",
+        "lessonSlug": "two-piece-bands",
+        "blockSlug": "ready-for-more"
+      },
+      {
+        "vimeoId": "151858842",
+        "title": "Faux Garter Stitch Bands",
+        "lessonSlug": "two-piece-bands",
+        "blockSlug": "ready-for-more"
+      },
+      {
+        "vimeoId": "202105212",
+        "title": "Band Perfection",
+        "lessonSlug": "neckband-perfection",
+        "blockSlug": "fine-tune-your-bands"
+      },
+      {
+        "vimeoId": "151857806",
+        "title": "Seaming Bands",
+        "lessonSlug": "neckband-perfection",
+        "blockSlug": "fine-tune-your-bands"
+      },
+      {
+        "vimeoId": "0",
+        "title": "Bands: Jazz em up!",
+        "lessonSlug": "neckband-perfection",
+        "blockSlug": "jazz-em-up"
+      },
+      {
+        "vimeoId": "230305713",
+        "title": null,
+        "lessonSlug": "designaknit-and-bands",
+        "blockSlug": "let-dak-do-the-math"
+      },
+      {
+        "vimeoId": "283466678",
+        "title": null,
+        "lessonSlug": "neckbands-live-replay",
+        "blockSlug": "previous-live-replay"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

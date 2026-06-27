@@ -1,0 +1,1017 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 99,
+    "title": "Round Neck Shaping Practice",
+    "slug": "round-neck-shaping-practice",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_99_round_neck_shaping_practice.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:10+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Getting Started",
+      "slug": "getting-started",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 634,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\nimg.ctr{\r\n    display: block;\r\n    margin-left: auto;\r\n    margin-right: auto;\r\n }\r\n</style>\r\n\r\n<img class=\"ctr\" src=\"/challenge/images/v2/99/knit-along1.jpg\">\r\n<br>The purpose of this Knit-Along is to help you get practice in shaping necklines BEFORE you knit a sweater.<br>The best way gain confidence is to practice different shaping methods. There is no one \"perfect\" solution.  Your stitch pattern plays a big role in deciding which method to use.<br>The time spent practicing will go a long way towards success with your knitting.  Beautiful neckline shaping leads helps make adding neckbands easier.\r\n\r\n<br><div class=\"text-center\"><span class=\"handwriting\" style=\"font-size:2em\">\r\n Beautiful necklines can be the difference between hand-made and home-made.<br></span></div>\r\n<br>The Knit-Along is self-paced and we've scheduled live events so you can meet with other knitters to share your successes and ask questions.<br>If you can't make it LIVE, recordings will be available here on this page and on the <a href=\"/knitclub/99/Knitalong/round-neck-shaping-practicecurrent\">Knit-along home page</a> for the Knit-along.<br><b><a href=\"https://www.knititnow.com/elements/contactus.cfm\"><i class=\"question-o\" aria-hidden=\"true\"></i> Submit questions in advance </a></b>",
+              "legacyComponentId": 8350,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "KnitalongEvents",
+              "notes": [
+                "Unmapped legacy component type: KnitalongEvents"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "5648",
+                "CHALLENGE_COMPONENTID": "8351"
+              },
+              "legacyComponentId": 8351,
+              "order": 2
+            }
+          ],
+          "title": "How does this work?",
+          "slug": "how-does-this-work",
+          "order": 1,
+          "legacy": {
+            "assignId": 5648,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "490775796",
+              "title": null,
+              "legacyComponentId": 8391,
+              "order": 1
+            }
+          ],
+          "title": "Using Knit it Now Charts",
+          "slug": "using-knit-it-now-charts",
+          "order": 2,
+          "legacy": {
+            "assignId": 5671,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Part 1 - Single Side",
+      "slug": "part-1-single-side",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 628,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t{\r\n\t\tbox-sizing: border-box;\r\n\t}\r\n\r\n\t.flex-container {\r\n\t\tdisplay: flex;\r\n\t\tflex-wrap: wrap;\r\n\t\tmax-width: 80%;\r\n\t}\r\n\r\n\t.flex-item {\r\n\t\tpadding: 30px 10px;\r\n\t\tborder: 1px solid grey;\r\n\r\n\t\tmargin: 5px;\r\n\t\twidth: 150px;\r\n\t\tflex-basis: 150px;\r\n\t\tflex-grow: 1;\r\n\t}\r\n\r\n\t.flex-placeholder {\r\n\t\twidth: 150px;\r\n\t\theight: 2px;\r\n\t\tmargin: 5px;\r\n\t\tbackground-color: red;\r\n\r\n\t\tflex-basis: 150px;\r\n\t\tflex-grow: 1;\r\n\t}\r\n\r\n\timg.ctr {\r\n\t\tdisplay: block;\r\n\t\tmargin-left: auto;\r\n\t\tmargin-right: auto\r\n\t}\r\n\r\n\t.yellow_highlight {\r\n\t\tbackground: linear-gradient(rgba(255, 255, 255, 0) 55%, #ffff00 45%, #ffff00);\r\n\t}\r\n\r\n\t.list li {\r\n\t\tmargin-bottom: 8px;\r\n\t}\r\n\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n</style>\r\n<h3>Start with one side (cardigan)</h3>\r\n<span class=\"yellow_highlight\">Before trying to shape a both sides of a round neckline at the same time, take time to focus only on the shaping techniques and perfecting the appearance of your neckline shaping.</span><br>\r\n\t\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom\">\r\n\t\t\t\t<div class=\"circle\">1</div> <b>Build your pattern</b>\r\n\t\t\t\t<ul class=\"list\">\r\n\t\t\t\t\t<li>Following your pattern, cast on and knit a few inches (plain or in pattern)</li>\r\n\t\t\t\t\t<li>Work the neckline shaping using one of the techniques (bind off, decrease, short row) or a combination of these</li>\r\n\t\t\t\t\t<li>Continue to follow the pattern and scrap off, bind off or drop the shoulder stitches from the machine </li>\r\n\t\t\t\t</ul>\r\n\t\t\t</div>\r\n\t\t\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom\">\r\n\t\t\t\t<div class=\"circle\">2</div><b> Neckline shaping</b>\r\n\t\t\t\t<ul class=\"list\">\r\n\t\t\t\t\t<li>Following your pattern, cast on and knit a few inches (plain or in pattern)</li>\r\n\t\t\t\t\t<li>Work the neckline shaping using one of the techniques (bind off, decrease, short row) or a combination of these</li>\r\n\t\t\t\t\t<li>Continue to follow the pattern and scrap off, bind off or drop the shoulder stitches from the machine </li>\r\n\t\t\t\t</ul>\r\n\t\t\t</div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom\">\r\n\t\t\t\t<div class=\"circle\">3</div><b> Shoulder Shaping</b>\r\n\t\t\t\t<ul class=\"list\">\r\n\t\t\t\t\t<li>For shoulder shaping practice, work the different shaping techniques (bind off, decrease, short row) to shape the shoulders</li>\r\n\t\t\t\t\t<li>Scrap off the shoulders</li>\r\n\t\t\t\t\t<li>As you knit more swatches, practice neatly joining the shoulders from the scrapped off pieces</li>\r\n\t\t\t\t</ul>\r\n\t\t\t</div>\r\n\t\t\r\n\r\n\t\r\n\t\r\n\t\t<img src=\"/challenge/images/v2/99/cardigan_neck.jpg\">\r\n\t\r\n\r\n\r\n\r\n<div class=\"flex-container\">\r\n\t<div class=\"flex-item\">\r\n\t\t<div class=\"text-center\"><b>Are you just getting started?</b></div>\r\n\t\t<br>\r\n\t\tUse a light color yarn Knit in Plain Stockinette<br><hr>Exercises:\r\n\t\t<ol>\r\n\t\t\t<li>Use binding off for shaping</li>\r\n\t\t\t<li>Use decreases for shaping</li>\r\n\t\t\t<li>Short row shape (don't forget to wrap)</li>\r\n\t\t</ol>\r\n\t</div>\r\n\t<div class=\"flex-item\">\r\n\t\t<div class=\"text-center\"><b>Do you have some experience?</b></div><br>\r\n\t\tKnit in a stitch pattern (slip, tuck, fairisle) Pay attention to the end needles to keep the edges smooth\r\n\t\t<hr>Exercises:\r\n\t\t<ol>\r\n\t\t\t<li>Use binding off for shaping</li>\r\n\t\t\t<li>Use decreases for shaping</li>\r\n\t\t\t<li>Short row shape (don't forget to wrap)</li>\r\n\t\t</ol>\r\n\r\n\t</div>\r\n\t<div class=\"flex-item\">\r\n\t\t<div class=\"text-center\"><b>Ready for a Challenge?</b></div><br>\r\n\t\tTry shaping a neckline on the ribber. (<a data-GlossaryId=\"321\" class=\"glossaryhelp\">Flat Rib <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"184\" class=\"glossaryhelp\">Full Needle Rib <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>, <a data-GlossaryId=\"624\" class=\"glossaryhelp\">English Rib <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>,<a data-GlossaryId=\"373\" class=\"glossaryhelp\">Racking <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>)<br><hr>\r\n\t\tExercises:\r\n\t\t<ol>\r\n\t\t\t<li>Use binding off for shaping</li>\r\n\t\t\t<li>Use decreases for shaping</li>\r\n\t\t\t<li>Short row shape (don't forget to wrap)</li>\r\n\t\t</ol>\r\n\t</div>\r\n\r\n</div>\r\n",
+              "legacyComponentId": 8353,
+              "order": 3
+            }
+          ],
+          "title": "One side shaping (cardigan)",
+          "slug": "one-side-shaping-cardigan",
+          "order": 1,
+          "legacy": {
+            "assignId": 5583,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Here are 3 shaping methods you must know.  Binding off and decreasing are useful when working in pattern.  Knitting Lace? these may be the preferred techniques.<br>Even though it creates a beautiful edge, short row shaping has its limitations.  Mastering (and combining) all 3 methods will go a long way towards your success in shaping necklines, no matter what pattern you are using.",
+              "legacyComponentId": 8354,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857916",
+              "title": "Part 1: Binding off and Decreasing Methods",
+              "legacySlot": 1,
+              "legacyComponentId": 8355,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857928",
+              "title": "Part 2: Short Row Shaping",
+              "legacySlot": 2,
+              "legacyComponentId": 8355,
+              "order": 2
+            }
+          ],
+          "title": "Videos: Compare Shaping Methods",
+          "slug": "videos-compare-shaping-methods",
+          "order": 2,
+          "legacy": {
+            "assignId": 5649,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n    \r\n        \r\n            <div class=\"text-center\"><h3> \"Decrease 1 stitch every other row 10 times\"<br>But what method is best?</h3><br></div>\r\n            Explore and compare methods below. Roll over for a closer look <i class=\"fa fa-search fa-2x\" aria-hidden=\"true\"></i><br>\r\n        \r\n            <br>\r\n            <br>\r\n        \r\n    \r\n\r\n\r\n\r\n\r\n    <a href=\"#1\" data-toggle=\"collapse\">\r\n\r\n\r\n        <div class=\"lead\">Simple Decrease - on the edge <i class=\"fa fa-caret-down\" aria-hidden=\"true\"></i></div>\r\n    </a>\r\n    <div id=\"1\" class=\"collapse hidden-print\">\r\n        \r\n             <img class=\"zoom\" src=\"/path/images/2631/plainx1.jpg\">\r\n            Decreasing directly on the edge makes it difficult to pick up stitches for a band. <br><img class=\"center-block\" src=\"/path/images/2631/1_prong.jpg\">\r\n            \r\n            <img class=\"zoom\" src=\"/path/images/2631/1stitch.jpg\">\r\n        \r\n    </div>\r\n\r\n    <hr class=\"style13\">\r\n\r\n    <a href=\"#2\" data-toggle=\"collapse\">\r\n        <div class=\"lead\">Simple Decrease - 2 stitches from the edge <i class=\"fa fa-caret-down\" aria-hidden=\"true\"></i></div>\r\n    </a>\r\n    <div id=\"2\" class=\"collapse hidden-print\">\r\n        \r\n             <img class=\"zoom\" src=\"/path/images/2631/plainx2.jpg\">\r\n            Transferring with a 2 prong tool leaves a clean edge to pick up for a band<br><img class=\"center-block\" src=\"/path/images/2631/2_prong.jpg\">\r\n            \r\n            <img class=\"zoom\" src=\"/path/images/2631/2stitch.jpg\">\r\n        \r\n    </div>\r\n\r\n\r\n    <hr class=\"style13\">\r\n    <a href=\"#3\" data-toggle=\"collapse\">\r\n        <div class=\"lead\">Simple Decrease - 3 stitches from the edge <i class=\"fa fa-caret-down\" aria-hidden=\"true\"></i></div>\r\n    </a>\r\n    <div id=\"3\" class=\"collapse hidden-print\">\r\n        \r\n             <img class=\"zoom\" src=\"/path/images/2631/plainx3.jpg\">\r\n            Transferring with a 3 prong tool also leaves a clean edge PLUS an additional decorative column of stitches<br><img class=\"center-block\" src=\"/path/images/2631/3_prong.jpg\">\r\n            \r\n            <img class=\"zoom\" src=\"/path/images/2631/3stitch.jpg\">\r\n        \r\n    </div>\r\n    <hr class=\"style13\">\r\n    <a href=\"#4\" data-toggle=\"collapse\">\r\n        <div class=\"lead\">Full Fashion Decrease - on the edge <i class=\"fa fa-caret-down\" aria-hidden=\"true\"></i></div>\r\n    </a>\r\n    <div id=\"4\" class=\"collapse hidden-print\">\r\n         \r\n             <img class=\"zoom\" src=\"/path/images/2631/ff_single.jpg\">\r\n            Transferring with a 1 prong tool creates a neat edge, if left unfinished. But could be difficult to pick up along this edge for a band. <br><img class=\"center-block\" src=\"/path/images/2631/1_prong.jpg\">\r\n            \r\n            <img class=\"zoom\" src=\"/path/images/2631/ffx1.jpg\">\r\n        \r\n    </div>\r\n    <hr class=\"style13\">\r\n    <a href=\"#5\" data-toggle=\"collapse\">\r\n        <div class=\"lead\"> Full Fashion Decrease - 2 stitches from the edge <i class=\"fa fa-caret-down\" aria-hidden=\"true\"></i></div>\r\n    </a>\r\n    <div id=\"5\" class=\"collapse hidden-print\">\r\n         \r\n             <img class=\"zoom\" src=\"/path/images/2631/ff2.jpg\">\r\n            Transferring with a 2 prong tool leaves a clean edge PLUS an additional decorative column of stitches<br><img class=\"center-block\" src=\"/path/images/2631/2_prong.jpg\">\r\n            \r\n            <img class=\"zoom\" src=\"/path/images/2631/ffx2.jpg\">\r\n        \r\n    </div>\r\n    <hr class=\"style13\">\r\n    <a href=\"#6\" data-toggle=\"collapse\">\r\n        <div class=\"lead\">Full Fashion Decrease - 3 stitches from the edge <i class=\"fa fa-caret-down\" aria-hidden=\"true\"></i></div>\r\n    </a>\r\n    <div id=\"6\" class=\"collapse hidden-print\">\r\n       \r\n             <img class=\"zoom\" src=\"/path/images/2631/ff_3.jpg\">\r\n            Transferring with a 3 prong tool also leaves a clean edge PLUS 2 additional decorative columns of stitches<br><img class=\"center-block\" src=\"/path/images/2631/3_prong.jpg\">\r\n            \r\n            <img class=\"zoom\" src=\"/path/images/2631/ffx3.jpg\">\r\n        \r\n    </div>\r\n    <hr class=\"style13\">\r\n\r\n\r\n",
+              "legacyComponentId": 8448,
+              "order": 1
+            }
+          ],
+          "title": "Best Shaping Method?",
+          "slug": "best-shaping-method",
+          "order": 3,
+          "legacy": {
+            "assignId": 5693,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "677422340",
+              "title": null,
+              "legacyComponentId": 8384,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n\r\n<h3>Check it out!</h3><br>\r\n\tLooking closely at the knitting in the video you'll notice where the shaping section ends and the knit straight section begins is a \"wonky\" spot.\r\n\r\n\t\r\n\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/99/flipbook31.jpg\">\r\n\r\n<hr class=\"style13\">\r\n\r\n\tThis stretched out section is from that last held needle and wrap being stretched as the knit-straight section is being knit.\r\n\t\r\n\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/99/flipbook4.jpg\">\r\n\r\n<hr class=\"style13\">\r\n\r\n\tAfter the knitting \"rested\" (and adding a little steam) the wonky spot wasn't as noticeable\r\n\t\r\n\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/99/flipbook2.jpg\">\r\n\r\n<hr class=\"style13\">\r\n\r\n\tA solution to this wonky spot is to scrap off the shaped stitches before knitting the knit-straight section.<br>This method has 2 benefits:<br>\r\n<ol>\r\n<li>It prevents the last held stitches and wraps from stretching out</li>\r\n<li>It prevents any damage from the carriage passing over the stitches in hold repeatedly</li>\r\n</ol>\r\n\t\r\n\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/99/flipbook1.jpg\">\r\n\r\n<hr class=\"style13\">\r\nNo matter what shaping method you use, there will always be a noticeable divide were the shaping ends and the straight section starts.  Be aware of this and do what you can to eliminate it.\r\n",
+              "legacyComponentId": 8385,
+              "order": 2
+            }
+          ],
+          "title": "Short Row Demo",
+          "slug": "short-row-demo",
+          "order": 4,
+          "legacy": {
+            "assignId": 5665,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">GAUGE SUGGESTIONS FOR PRACTICE:<br></DIV>\r\nGauge isn't critical for knitting these samples. (but it helps) <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i> <br>If you don't yet know your gauge, build your pattern with these generic gauges:<br><em>Standard: 28/44 | Mid-Gauge: 18/26 | Bulky: 16/24</em>\r\n\r\n",
+              "legacyComponentId": 8325,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "544",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 8326,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">ENTER YOUR NUMBERS TO BUILD <b>YOUR</b> CUSTOM PATTERN:</DIV>\r\n<i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> <em>Don't yet know your gauge? Use the suggestions above to practice generating a pattern.</em>",
+              "legacyComponentId": 8327,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment 'Cardigan Practice' (legacy garmentId 2169).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "5630",
+                "CHALLENGE_COMPONENTID": "8328",
+                "GARMENTID": "2169",
+                "GARMENTTITLE": "Cardigan Practice",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "pattern1_name",
+                "REDIRECT_TO": "/challenge/99/Group/5631/item|Getting Started: Preview/Download your Custom pattern",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "pattern1_rows",
+                "SHOWPATTERNNAME": "1",
+                "SIZING_DATAMODEL_ELEMENT": "pattern1_size",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "pattern1_sts",
+                "SWATCHROWS": "pattern1_rows",
+                "SWATCHSTITCHES": "pattern1_sts",
+                "SWATCHWEIGHT": "pattern1_size",
+                "USESWATCHLOGIC": "no"
+              },
+              "legacyComponentId": 8328,
+              "order": 4
+            }
+          ],
+          "title": "Build your Practice One Side Pattern",
+          "slug": "build-your-practice-one-side-pattern",
+          "order": 5,
+          "legacy": {
+            "assignId": 5630,
+            "blockType": "DataEntry"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): pattern1_name",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 5630 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "5631",
+                "CHALLENGE_COMPONENTID": "8331",
+                "DATAMODEL_ELEMENTS": "pattern1_name",
+                "DATAMODEL_REDIRECT": "5630",
+                "DATAMODEL_VALIDATION_MESSAGE": "Make sure to enter your gauge information first to build your custom pattern"
+              },
+              "legacyComponentId": 8331,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'pattern1_name'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "5631",
+                "CHALLENGE_COMPONENTID": "8332",
+                "DATAMODEL_ICON": "fa fa-download",
+                "LABLE": "Download your pattern",
+                "PATTERN_DATAMODEL_ELEMENT": "pattern1_name",
+                "VIEWHEIGHT": "600"
+              },
+              "legacyComponentId": 8332,
+              "order": 2
+            }
+          ],
+          "title": "Preview/Download your Custom pattern",
+          "slug": "preview-download-your-custom-pattern",
+          "order": 6,
+          "legacy": {
+            "assignId": 5631,
+            "blockType": "DocumentPattern"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Part 2: Shoulder Shaping",
+      "slug": "part-2-shoulder-shaping",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 632,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "268091842",
+              "title": "Wrinkles Examples",
+              "legacyComponentId": 8340,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/99/nothing_fits/explore_shaped_shoulders.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/99/shoulderANDneckline/flipbook2.jpg",
+                  "caption": "Most bodies have some slope to their shoulders.... some more than others."
+                },
+                {
+                  "src": "/challenge/images/v2/99/shoulderANDneckline/flipbook3.jpg",
+                  "caption": "Putting a square shoulder on a slope can cause fit issues"
+                },
+                {
+                  "src": "/challenge/images/v2/99/shoulderANDneckline/flipbook2a.jpg",
+                  "caption": "You'll notice wrinkles near the underarm"
+                },
+                {
+                  "src": "/challenge/images/v2/99/shoulderANDneckline/warning.jpg",
+                  "caption": "<i class=\"fa fa-exclamation-triangle\" aria-hidden=\"true\"></i> Warning!  Don't try this at home <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i>"
+                },
+                {
+                  "src": "/challenge/images/v2/99/shoulderANDneckline/flipbook4.jpg",
+                  "caption": "If you just make this adjustment on an existing pattern ..... the armhole may be too short AND your sleeves won't fit in the armhole."
+                },
+                {
+                  "src": "/challenge/images/v2/99/shoulderANDneckline/flipbook5.jpg",
+                  "caption": "If you just make this adjustment on an existing pattern ..... the neckline AND center front will be too long."
+                },
+                {
+                  "src": "/challenge/images/v2/99/shoulderandneckline/shoulder_gif.gif",
+                  "caption": "A well designed knitting pattern will adjust the shape of the armhole AND the shape of the sleeve cap to accommodate the shaped shoulder."
+                },
+                {
+                  "src": "/challenge/images/v2/99/shoulderANDneckline/flipbook7.jpg",
+                  "caption": "<i class=\"fa fa-lightbulb\" aria-hidden=\"true\"></i>  Use a knitting pattern that already has shaped shoulders."
+                }
+              ],
+              "legacy": {
+                "enableAudio": "1",
+                "playAudio": null
+              },
+              "legacyComponentId": 8341,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\n\t\r\n\t\t<b><i class=\"fa fa-hand-o-down\" aria-hidden=\"true\"></i> Use the tabs below to explore different methods for adding shaped shoulders. <i class=\"fa fa-hand-o-down\" aria-hidden=\"true\"></i></b>\r\n\t   <!--col -->\r\n   <!--row -->  \r\n  <!-- Nav tabs -->\r\n  <ul class=\"nav nav-tabs\" role=\"tablist\">\r\n    <li role=\"presentation\" class=\"active\"><a href=\"#kinSection\" aria-controls=\"kinSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Knit it Now Patterns</a></li>\r\n    <li role=\"presentation\"><a href=\"#mathSection\" aria-controls=\"mathSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Commercial Patterns + Math</a></li>\r\n    <li role=\"presentation\"><a href=\"#deviceSection\" aria-controls=\"deviceSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Charting Device</a></li>\r\n    <li role=\"presentation\"><a href=\"#dakSection\" aria-controls=\"dakSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> DesignaKnit</a></li>\r\n  </ul>\r\n\r\n  <div class=\"tab-content\">\r\n\t\r\n\t<!--- inital wording \r\n\t <div role=\"tabpanel\" class=\"tab-pane active\" id=\"welcome\">\r\n\t\t\r\n\t\t\t<br>\r\n\t\t\r\n\t</div>\r\n\t--->\r\n   <!--- kinSection --->\r\n    <div role=\"tabpanel\" class=\"tab-pane active\" id=\"kinSection\">\r\n\t\t<br><blockquote class=\"smallblock\">Knit it Now Dynamic Patterns offer shaped shoulder versions.\r\nIf you need more shaping, think of the armhole as a block of instructions to be adjusted without changing the depth of the armhole or impacting the fit of the sleeves. Use the Magic Formula to calculate the shoulder shaping. </blockquote>\r\n\t\t\t<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/268097987' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\t\t\r\n\t</div>\r\n\r\n\t<!--- mathSection --->\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"mathSection\">\r\n<br><blockquote class=\"smallblock\">To add shoulder shaping to a commercial pattern, think of the armhole as a block of instructions to be adjusted without changing the depth of the armhole or impacting the fit of the sleeves.Use the Magic Formula to accurately calculate the shaping. </blockquote>\r\n\t\t\r\n\r\n   \t\t\t<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/268099100' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n \t\t\r\n    \t</div>\r\n\r\n\t<!--- deviceSection --->\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"deviceSection\">\r\n\t\t\r\n\t\t   \t<br><blockquote class=\"smallblock\">Using a Charting Device is probably the easiest way to add shaped shoulders ... just be sure that the armhole opening and sleeve cap match!</blockquote><br>\t\r\n\t\t\r\n\t\t\r\n\t\t\r\n\t\t\t\t<img width=\"300\" src=\"/challenge/images/v2/99/nothing_fits/add_a_dart.jpg\">\r\n\t\t\r\n\t</div>\r\n    \r\n\t<div role=\"tabpanel\" class=\"tab-pane\" id=\"dakSection\">\r\n\r\n\t\t <br><blockquote class=\"smallblock\">Explore a couple of methods of using DAK to adjust your sleeve length.</blockquote>\r\n   <div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/268039723' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n  \r\n\t</div>\r\n  </div>\r\n\r\n</div>\r\n<div class=\"clearfix\"></div>",
+              "legacyComponentId": 8342,
+              "order": 3
+            }
+          ],
+          "title": "Why shoulder shaping?",
+          "slug": "why-shoulder-shaping",
+          "order": 7,
+          "legacy": {
+            "assignId": 5641,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nShoulders can be shaped by binding off, decreasing or using short rows. <br><ol class=\"instruction-list\">\r\n\r\n<li>Using the techniques practiced in Part 1 (One side shaping), use the shaped shoulder pattern piece in your practice pattern and shape a 1/2 neckline AND shoulder.</li>\r\n<li>Knit a 2nd shoulder using the same method reversing the shaping (knit one left and one right neckline).</li>\r\n\r\n</ol>\r\n\r\n<h3><span class=\"yellow_highlight\"> Before moving forward, be sure you understand shoulder shaping</span></h3>  In the next section you will be shaping the neckline AND shoulder AT THE SAME TIME\r\n\r\n\r\n<img src=\"/challenge/images/v2/99/half_shoulder.gif\">\r\n",
+              "legacyComponentId": 8343,
+              "order": 1
+            }
+          ],
+          "title": "Practice",
+          "slug": "practice",
+          "order": 8,
+          "legacy": {
+            "assignId": 5642,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Part 3: Shallow Round Neck",
+      "slug": "part-3-shallow-round-neck",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 631,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\r\n.indent{\r\nmargin-left: 20px;\r\n}\r\n\r\n</style>\r\n\r\n\r\n\r\nSpecial care needs to be taken when knitting the back of a sweater or the front of a pullover. Machine knitters stop their knitting and shape each side separately.  It takes focus to get it right the first time.<br>In this series of exercises, you will shape a shallow neckline, commonly used for the back of a sweater.<br><div class=\"indent\">\r\n<ol class=\"instruction-list\">\r\n\r\n\r\n<li>Knit a shallow neckline using your preferred method (bind off, decrease or short rows) with no shoulder shaping</li><br>\r\n<li>Knit a shallow neckline using your preferred method WITH shoulder shaping</li>\r\n\r\n\r\n</ol>\r\n</div>\r\n\r\n\r\n<img src=\"/challenge/images/v2/99/back_neck.jpg\">\r\n\r\n",
+              "legacyComponentId": 8339,
+              "order": 1
+            }
+          ],
+          "title": "The Goal",
+          "slug": "the-goal",
+          "order": 1,
+          "legacy": {
+            "assignId": 5639,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<span class=\"yellow_highlight\"><b>When knitting a neck opening here are 2 critical things to consider:</b></span><br><ol>\r\n<li>Lifelines:<br>\r\nIt's sooo easy to make a mistake when shaping necklines.  Add a lifeline before you start shaping.  If disaster strikes you can rip back to your lifeline and start again with fewer tears.<br></li>\r\n<li>Instead of scrapping off the opposite side, many knitters will put the stitches in hold (especially when shaping shallow necklines).<br>\r\nRepeatedly passing the carriage over the stitches in hold can damage the yarn on the needles. Be sure to take steps to prevent this</li>\r\n</ol>",
+              "legacyComponentId": 8364,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859753",
+              "title": "Lifelines:A Knitter's Best Friend",
+              "legacySlot": 1,
+              "legacyComponentId": 8347,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "239362382",
+              "title": "Prevent Damage",
+              "legacySlot": 2,
+              "legacyComponentId": 8347,
+              "order": 2
+            }
+          ],
+          "title": "Don't Skip These",
+          "slug": "don-t-skip-these",
+          "order": 2,
+          "legacy": {
+            "assignId": 5646,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "252565241",
+              "title": null,
+              "legacyComponentId": 8365,
+              "order": 1
+            }
+          ],
+          "title": "Video: Shallow Round Neck Shaping",
+          "slug": "video-shallow-round-neck-shaping",
+          "order": 3,
+          "legacy": {
+            "assignId": 5653,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">GAUGE SUGGESTIONS FOR PRACTICE:<br></DIV>\r\nGauge isn't critical for knitting these samples. (but it helps) <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i> <br>If you don't yet know your gauge, build your pattern with these generic gauges:<br><em>Standard: 28/44 | Mid-Gauge: 18/26 | Bulky: 16/24</em>\r\n\r\n",
+              "legacyComponentId": 8358,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "544",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 8359,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">ENTER YOUR NUMBERS TO BUILD <b>YOUR</b> CUSTOM PATTERN:</DIV>\r\n<i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> <em>Don't yet know your gauge? Use the suggestions above to practice generating a pattern.</em>",
+              "legacyComponentId": 8360,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment 'Shallow Neck Practice' (legacy garmentId 2170).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "5651",
+                "CHALLENGE_COMPONENTID": "8361",
+                "GARMENTID": "2170",
+                "GARMENTTITLE": "Shallow Neck Practice",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "pattern2_name",
+                "REDIRECT_TO": "/challenge/99/Group/5652/item|Section 3: Shaping Both Sides: Preview/Download your Custom pattern",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "pattern2_rows",
+                "SHOWPATTERNNAME": "1",
+                "SIZING_DATAMODEL_ELEMENT": "pattern2_size",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "pattern2_sts",
+                "SWATCHROWS": "pattern1_rows",
+                "SWATCHSTITCHES": "pattern2_sts",
+                "SWATCHWEIGHT": "pattern1_size",
+                "USESWATCHLOGIC": "no"
+              },
+              "legacyComponentId": 8361,
+              "order": 4
+            }
+          ],
+          "title": "Build your Shallow Round Neck",
+          "slug": "build-your-shallow-round-neck",
+          "order": 4,
+          "legacy": {
+            "assignId": 5651,
+            "blockType": "DataEntry"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): pattern1_name",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 5630 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "5631",
+                "CHALLENGE_COMPONENTID": "8331",
+                "DATAMODEL_ELEMENTS": "pattern1_name",
+                "DATAMODEL_REDIRECT": "5630",
+                "DATAMODEL_VALIDATION_MESSAGE": "Make sure to enter your gauge information first to build your custom pattern"
+              },
+              "legacyComponentId": 8362,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'pattern2_name'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "5652",
+                "CHALLENGE_COMPONENTID": "8363",
+                "DATAMODEL_ICON": "fa fa-download",
+                "LABLE": "Download your pattern",
+                "PATTERN_DATAMODEL_ELEMENT": "pattern2_name",
+                "VIEWHEIGHT": "600"
+              },
+              "legacyComponentId": 8363,
+              "order": 2
+            }
+          ],
+          "title": "Preview/Download your Custom pattern",
+          "slug": "preview-download-your-custom-pattern",
+          "order": 5,
+          "legacy": {
+            "assignId": 5652,
+            "blockType": "DocumentPattern"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Seaming Shoulders",
+      "slug": "seaming-shoulders",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 635,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Once you have a perfect neckline, here are some finishing tips.<br>",
+              "legacyComponentId": 8357,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860051",
+              "title": "Joining Shoulder Seams on the Machine",
+              "legacySlot": 1,
+              "legacyComponentId": 8356,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858538",
+              "title": "Show off Shoulder Seams",
+              "legacySlot": 2,
+              "legacyComponentId": 8356,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "432339172",
+              "title": "No-Bulk Seam",
+              "legacySlot": 3,
+              "legacyComponentId": 8356,
+              "order": 2
+            }
+          ],
+          "title": "Beautiful Shoulder Seams",
+          "slug": "beautiful-shoulder-seams",
+          "order": 1,
+          "legacy": {
+            "assignId": 5650,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Part 4 Deep Round Neck",
+      "slug": "part-4-deep-round-neck",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 637,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\r\n.indent{\r\nmargin-left: 20px;\r\n}\r\n\r\n</style>\r\n\r\n\r\n\r\n\r\nWith a \"normal\" depth neck opening, we can't take shortcuts like the shallow neckline.  We need to split the knitting, knit one side to the shoulder, then knit the 2nd side. <br>Putting to work all the skills you've practiced so far, moving to a deep round neckline should be easy sailing for you.<br><div class=\"indent\">\r\n<ol class=\"instruction-list\">\r\n\r\n\r\n<li>Knit a deep round neckline using your preferred method (bind off, decrease or short rows) with no shoulder shaping</li><br>\r\n<li>Knit a deep round neckline using your preferred method WITH shoulder shaping</li>\r\n\r\n\r\n</ol>\r\n</div>\r\n\r\n\r\n\r\n\t<img src=\"/challenge/images/v2/99/deep_round1.jpg\">\r\n\r\n\r\n",
+              "legacyComponentId": 8369,
+              "order": 1
+            }
+          ],
+          "title": "The Goal",
+          "slug": "the-goal",
+          "order": 1,
+          "legacy": {
+            "assignId": 5656,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858551",
+              "title": null,
+              "legacyComponentId": 8368,
+              "order": 1
+            }
+          ],
+          "title": "Video: Deep Round Neck",
+          "slug": "video-deep-round-neck",
+          "order": 2,
+          "legacy": {
+            "assignId": 5655,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">GAUGE SUGGESTIONS FOR PRACTICE:<br></DIV>\r\nGauge isn't critical for knitting these samples. (but it helps) <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i> <br>If you don't yet know your gauge, build your pattern with these generic gauges:<br><em>Standard: 28/44 | Mid-Gauge: 18/26 | Bulky: 16/24</em>\r\n\r\n",
+              "legacyComponentId": 8370,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "544",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 8371,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">ENTER YOUR NUMBERS TO BUILD <b>YOUR</b> CUSTOM PATTERN:</DIV>\r\n<i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> <em>Don't yet know your gauge? Use the suggestions above to practice generating a pattern.</em>",
+              "legacyComponentId": 8372,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment 'Deep Round Neck Practice' (legacy garmentId 2172).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "5657",
+                "CHALLENGE_COMPONENTID": "8373",
+                "GARMENTID": "2172",
+                "GARMENTTITLE": "Deep Round Neck Practice",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "pattern3_name",
+                "REDIRECT_TO": "/challenge/99/Group/5658/item|Part 4 Deep Round Neck: Preview/Download your Custom pattern",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "pattern3_rows",
+                "SHOWPATTERNNAME": "1",
+                "SIZING_DATAMODEL_ELEMENT": "pattern3_size",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "pattern3_sts",
+                "SWATCHROWS": "pattern1_rows",
+                "SWATCHSTITCHES": "pattern2_sts",
+                "SWATCHWEIGHT": "pattern1_size",
+                "USESWATCHLOGIC": "no"
+              },
+              "legacyComponentId": 8373,
+              "order": 4
+            }
+          ],
+          "title": "Build your Deep Round Neck Pattern",
+          "slug": "build-your-deep-round-neck-pattern",
+          "order": 4,
+          "legacy": {
+            "assignId": 5657,
+            "blockType": "DataEntry"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): pattern3_name",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 5658 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "5658",
+                "CHALLENGE_COMPONENTID": "8374",
+                "DATAMODEL_ELEMENTS": "pattern3_name",
+                "DATAMODEL_REDIRECT": "5658",
+                "DATAMODEL_VALIDATION_MESSAGE": "Make sure to enter your gauge information first to build your custom pattern"
+              },
+              "legacyComponentId": 8374,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'pattern3_name'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "5658",
+                "CHALLENGE_COMPONENTID": "8375",
+                "DATAMODEL_ICON": "fa fa-download",
+                "LABLE": "Download your pattern",
+                "PATTERN_DATAMODEL_ELEMENT": "pattern3_name",
+                "VIEWHEIGHT": "600"
+              },
+              "legacyComponentId": 8375,
+              "order": 2
+            }
+          ],
+          "title": "Preview/Download your Custom pattern",
+          "slug": "preview-download-your-custom-pattern",
+          "order": 5,
+          "legacy": {
+            "assignId": 5658,
+            "blockType": "DocumentPattern"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Center Stitches: Bind off or Scrap off?",
+      "slug": "center-stitches-bind-off-or-scrap-off",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 639,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n.yellow_highlight {\r\nbackground: linear-gradient(rgba(255, 255, 255, 0) 55%, #ffff00 45%, #ffff00);\r\n}\r\n\r\n</style>\r\n<div class=\"text-center\"><span class=\"handwriting\" style=\"font-size:2em\">Which do you prefer?</span><br>\r\n<span class=\"yellow_highlight\">The center of a round neckline has stitches that can either be bound off or scrapped off.</span><br>Is either method \"right\"?<br>\r\nDepending on your band technique and your desired results, it's your choice.<br></div>\r\n\r\n\r\n\r\n\t<div class=\"col margin-10px-bottom\">\r\n\t\t<div class=\"circle\"><a href=\"#\"><b>1</b></a> </div> <span style=\"font-size:1.5em\"><b>Scrap off the center stitches</b></span>\r\n\t</div>\r\n\t<br>\r\n\tNotice that when you pick up \"live\" stitches for the band, the body stitches flow neatly to the band. There is no interruption. This is especially obvious with a stockinette band or ribbing<br>\r\n\r\n\t\t<figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/99/bindoff_scrap_off1.jpg\"><figcaption align=\"center\"><em>Center stitches scrapped off</em></figcaption>\r\n</figure>\r\n\r\n\r\n\t\t<div class=\"col-sm-5col-xs-12\"><figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/99/bindoff_scrap_off2.jpg\"><figcaption align=\"center\"><em>No transition between garment and band</em></figcaption>\r\n</figure>\r\n</div>\r\n\t\r\n\r\n<br>\r\n\t<div class=\"col margin-10px-bottom\">\r\n\t\t<div class=\"circle\"><a href=\"#\"><b>2</b></a></div> <span style=\"font-size:1.5em\"><b>Bind off the center stitches</b></span>\r\n\t</div>\r\n\t<br>\r\n\tNotice that when you pick up stitches that have been bound off there is a definite division between the band and the body of the sweater<br>\r\n\r\n\t\t<figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/99/bindoff_scrap)off4.jpg\"><figcaption align=\"center\"><em>Bound off center stitches</em></figcaption>\r\n</figure>\r\n\r\n\t\t<figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/99/bindoff_scrap_off99.jpg\"><figcaption align=\"center\"><em>Obvious translon between garment and band</em></figcaption>\r\n</figure>\r\n\r\n\t\r\n\r\n\r\n",
+              "legacyComponentId": 8389,
+              "order": 1
+            }
+          ],
+          "title": "Your choice",
+          "slug": "your-choice",
+          "order": 1,
+          "legacy": {
+            "assignId": 5670,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Alterations",
+      "slug": "alterations",
+      "displayOrder": 8,
+      "legacy": {
+        "itemId": 636,
+        "lessonOrder": 8
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Take control of the depth of a round neckline. <br>\r\n<ol>\r\n<li>No Math method with graph paper</li>\r\n<li>Chart a perfect neckline</li>\r\n</ol>",
+              "legacyComponentId": 8366,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Download the Worksheet",
+              "filename": "/downloads/round_neck_alteration1.pdf",
+              "showInline": true,
+              "legacy": {
+                "assignId": "595",
+                "componentId": "1719",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 8367,
+              "order": 2
+            }
+          ],
+          "title": "Adjusting the depth of a round neckline",
+          "slug": "adjusting-the-depth-of-a-round-neckline",
+          "order": 1,
+          "legacy": {
+            "assignId": 5654,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Print your to-scale graph paper based on your gauge",
+              "legacyComponentId": 8376,
+              "order": 1
+            }
+          ],
+          "title": "Full Size Graph Paper",
+          "slug": "full-size-graph-paper",
+          "order": 2,
+          "legacy": {
+            "assignId": 5659,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Where to go from here?",
+      "slug": "where-to-go-from-here",
+      "displayOrder": 9,
+      "legacy": {
+        "itemId": 638,
+        "lessonOrder": 9
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\t\tIf neckline shaping just doesn't appeal to you, consider cut 'n sew.<br>In the video I talk about a Cut 'n Sew course, it became a classroom instead.\r\n<br>\r\n\r\n\t\t<a href=\"/classrooms/101/cut-n-sew\"><img src=\"/path/images/101/cutNsew_classroom_thumb.jpg\"></a><br>\r\n\t\t\t<a href=\"/classrooms/101/cut-n-sew\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Classroom: Cut 'n Sew</a>\r\n\r\n",
+              "legacyComponentId": 8378,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "252371883",
+              "title": "Consider this ...",
+              "legacyComponentId": 8377,
+              "order": 2
+            }
+          ],
+          "title": "Now that you are an expert ....",
+          "slug": "now-that-you-are-an-expert",
+          "order": 1,
+          "legacy": {
+            "assignId": 5662,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\t\r\nYour next step is to use all the samples you've made and practice joining the shoulders and adding bands.<br>There are  many, many options for knitted bands.  Please visit the Classroom:Neckbands and take the next steps on your journey to achieve Neckline Perfection! <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i>\r\n\r\n\t\r\n\t\r\n\t\t<a href=\"/classrooms/101/cut-n-sew\"><img src=\"/path/images/193/neckband_thumb.jpg\"></a><br>\r\n\t\t\t<a href=\"/classrooms/101/cut-n-sew\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Classroom: Neckbands</a>\r\n\t\r\n\r\n",
+              "legacyComponentId": 8379,
+              "order": 1
+            }
+          ],
+          "title": "Neckband Options",
+          "slug": "neckband-options",
+          "order": 3,
+          "legacy": {
+            "assignId": 5661,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 13,
+    "videos": [
+      {
+        "vimeoId": "490775796",
+        "title": null,
+        "lessonSlug": "getting-started",
+        "blockSlug": "using-knit-it-now-charts"
+      },
+      {
+        "vimeoId": "151857916",
+        "title": "Part 1: Binding off and Decreasing Methods",
+        "lessonSlug": "part-1-single-side",
+        "blockSlug": "videos-compare-shaping-methods"
+      },
+      {
+        "vimeoId": "151857928",
+        "title": "Part 2: Short Row Shaping",
+        "lessonSlug": "part-1-single-side",
+        "blockSlug": "videos-compare-shaping-methods"
+      },
+      {
+        "vimeoId": "677422340",
+        "title": null,
+        "lessonSlug": "part-1-single-side",
+        "blockSlug": "short-row-demo"
+      },
+      {
+        "vimeoId": "268091842",
+        "title": "Wrinkles Examples",
+        "lessonSlug": "part-2-shoulder-shaping",
+        "blockSlug": "why-shoulder-shaping"
+      },
+      {
+        "vimeoId": "151859753",
+        "title": "Lifelines:A Knitter's Best Friend",
+        "lessonSlug": "part-3-shallow-round-neck",
+        "blockSlug": "don-t-skip-these"
+      },
+      {
+        "vimeoId": "239362382",
+        "title": "Prevent Damage",
+        "lessonSlug": "part-3-shallow-round-neck",
+        "blockSlug": "don-t-skip-these"
+      },
+      {
+        "vimeoId": "252565241",
+        "title": null,
+        "lessonSlug": "part-3-shallow-round-neck",
+        "blockSlug": "video-shallow-round-neck-shaping"
+      },
+      {
+        "vimeoId": "151860051",
+        "title": "Joining Shoulder Seams on the Machine",
+        "lessonSlug": "seaming-shoulders",
+        "blockSlug": "beautiful-shoulder-seams"
+      },
+      {
+        "vimeoId": "151858538",
+        "title": "Show off Shoulder Seams",
+        "lessonSlug": "seaming-shoulders",
+        "blockSlug": "beautiful-shoulder-seams"
+      },
+      {
+        "vimeoId": "432339172",
+        "title": "No-Bulk Seam",
+        "lessonSlug": "seaming-shoulders",
+        "blockSlug": "beautiful-shoulder-seams"
+      },
+      {
+        "vimeoId": "151858551",
+        "title": null,
+        "lessonSlug": "part-4-deep-round-neck",
+        "blockSlug": "video-deep-round-neck"
+      },
+      {
+        "vimeoId": "252371883",
+        "title": "Consider this ...",
+        "lessonSlug": "where-to-go-from-here",
+        "blockSlug": "now-that-you-are-an-expert"
+      }
+    ],
+    "downloadCount": 1,
+    "downloads": [
+      {
+        "filename": "/downloads/round_neck_alteration1.pdf",
+        "label": "Download the Worksheet",
+        "lessonSlug": "alterations",
+        "blockSlug": "adjusting-the-depth-of-a-round-neckline"
+      }
+    ]
+  }
+}

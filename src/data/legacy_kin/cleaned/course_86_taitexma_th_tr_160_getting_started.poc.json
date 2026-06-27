@@ -1,0 +1,1868 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 86,
+    "title": "Taitexma TH/TR-160: Getting Started",
+    "slug": "taitexma-th-tr-160-getting-started",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_86_taitexma_th_tr_160_getting_started.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/taitexma_160.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Unboxing",
+      "slug": "unboxing",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 515,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "526615684",
+              "title": null,
+              "legacyComponentId": 6400,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "VimeoJumpLinks",
+              "notes": [
+                "Unmapped legacy component type: VimeoJumpLinks"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4212",
+                "CHALLENGE_COMPONENTID": "6401",
+                "LINKTIME_1": "00:00:12",
+                "LINKTIME_10": "00:05:25",
+                "LINKTIME_11": "00:06:20",
+                "LINKTIME_12": "00:06:52",
+                "LINKTIME_2": "00:00:35",
+                "LINKTIME_3": "00:01:00",
+                "LINKTIME_4": "00:01:05",
+                "LINKTIME_5": "00:01:45",
+                "LINKTIME_6": "00:02:12",
+                "LINKTIME_7": "00:02:42",
+                "LINKTIME_8": "00:02:59",
+                "LINKTIME_9": "00:04:01",
+                "LINKTITLE_1": "The term Mid-Gauge?",
+                "LINKTITLE_10": "The Knitting Carriage",
+                "LINKTITLE_11": "Cast on Comb",
+                "LINKTITLE_12": "Checklist/Review",
+                "LINKTITLE_2": "The Needlebed",
+                "LINKTITLE_3": "The Carriage",
+                "LINKTITLE_4": "Packed in the Cover",
+                "LINKTITLE_5": "Critical:  The Table",
+                "LINKTITLE_6": "Secure the machine to the table",
+                "LINKTITLE_7": "The Row Counter",
+                "LINKTITLE_8": "The Carriage Lock",
+                "LINKTITLE_9": "Tension Mast"
+              },
+              "legacyComponentId": 6401,
+              "order": 2
+            }
+          ],
+          "title": "Unbox the machine",
+          "slug": "unbox-the-machine",
+          "order": 1,
+          "legacy": {
+            "assignId": 4212,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n\r\nBelow are 2 issues that have been reported.  They are not typical of the quality of the machines, but ... mistakes happen in manufacturing.<br>\r\n\r\n\r\n<img src=\"/challenge/images/v2/86/warning.png\">\r\n\r\n\r\n\r\n<br>Not every machine has this issue. <br>Inside the machine bed is a METAL holder that will control the \"wings\" of the mast.<br>If your mast sits high and twists inside the plastic holder, it needs to be positioned low enough so the \"wings\" of the mast sit IN THE SLOTS of the metal holder.<br><img src=\"/challenge/images/v2/86/mast1.jpg\">\r\n\r\n\r\n<hr class=\"style13\">\r\n</ul>\r\n<li>\r\nMain Bed: All needles are in \"A\" position (all the way back)</li>\r\n<li>If <b>Needle LEFT #10</b> does not align with the other needles</li>\r\n<li>That ONE needle needs to be replaced with a shorter needle</li>\r\n</ul>\r\n<em>That single needle can hit the bracket inside the machine that holds the tension mast. This is only an issue on select machines.</em><br>\r\n\r\n\r\n<img src=\"/challenge/images/v2/86/short_needle1.jpg\">\r\n<img src=\"/challenge/images/v2/86/short_needles1.jpg\">\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 6526,
+              "order": 1
+            }
+          ],
+          "title": "Heads up! x2",
+          "slug": "heads-up-x2",
+          "order": 2,
+          "legacy": {
+            "assignId": 4312,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Download a searchable PDF version of the manual for your  machine.<br>\r\nUse your PDF reader search feature to find terms and instruction in the PDF.<br>NOTE:<em>To make the PDF searchable and keep the file size low, the images may be distorted</em><br>\r\n\r\n\r\n\t\r\n\t\t<a href=\"/downloads/160main.pdf\" target=\"_blank\">\r\n\t\t\t<figure>\r\n\t\t\t\t<figcaption align=\"center\"><br><h3>Main Bed Manual</h3></figcaption>\r\n\t\t\t\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/86/main_manual_cover.jpg\">\r\n\t\t\t</figure>\r\n\t\r\n\t<div class=\"col-offset-1\"><a href=\"/downloads/160ribber.pdf\" target=\"_blank\">\r\n\t\t\t<figure>\r\n\t\t\t\t<figcaption align=\"center\"><br><h3>Ribber Manual</h3></figcaption>\r\n\r\n\t\t\t\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/86/ribber_manual_cover.jpg\">\r\n\t\t</a></figure>\r\n\t</div>\r\n\r\n\r\n",
+              "legacyComponentId": 6507,
+              "order": 1
+            }
+          ],
+          "title": "Searchable Machine manuals",
+          "slug": "searchable-machine-manuals",
+          "order": 3,
+          "legacy": {
+            "assignId": 4287,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<a target=\"_blank\" href=\"/downloads/taitexma_160_reference_card.pdf\"><i class=\"fa fa-print\" aria-hidden=\"true\"></i> Download and print \"cheat sheets\" for quick reference.</a>\r\n\r\n\r\n\r\n\r\n\r\n<a target=\"_blank\" href=\"/downloads/reference-cards.pdf\"> <img src=\"/challenge/images/v2/86/reference-cards1.jpg\"></a>\r\n\r\n\r\n<a target=\"_blank\" href=\"/downloads/reference-cards.pdf\"> <img src=\"/challenge/images/v2/86/reference-cards2.jpg\"></a>\r\n\r\n\r\n<a target=\"_blank\" href=\"/downloads/reference-cards.pdf\"> <img src=\"/challenge/images/v2/86/reference-cards3.jpg\"></a>\r\n\r\n\r\n<a target=\"_blank\" href=\"/downloads/reference-cards.pdf\"> <img src=\"/challenge/images/v2/86/reference-cards4.jpg\"></a>\r\n",
+              "legacyComponentId": 9441,
+              "order": 1
+            }
+          ],
+          "title": "Printable Reference Cards",
+          "slug": "printable-reference-cards",
+          "order": 4,
+          "legacy": {
+            "assignId": 6159,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .circle {\r\n        width: 25px;\r\n        height: 25px;\r\n        border-radius: 50%;\r\n        box-sizing: border-box;\r\n        text-align: center;\r\n        display: inline-block;\r\n        line-height: 25px;\r\n        background-color: #9e2065;\r\n    }\r\n\r\n    .circle a {\r\n        text-decoration: none;\r\n        color: #fff;\r\n        font-size: 16px;\r\n    }\r\n\r\n</style>\r\nThe printed manuals provided with the TH/TR 160 were \"cobbled together\" from bits and pieces of previous Brother manuals.<br>They are not as clear as we would expect them to be.  This is the reason this course was created.\r\n<h3>NOTES</h3>\r\n<div class=\"circle\"><a href=\"#\">1</a></div>\r\nPages 13 and 14 of the ribber manual refer to \"needle Stoppers\", \"Presser holders\" and \"extension racks\". These accessories are not included with the TR-160 ribber.\r\n\r\n<br>\r\n    \r\n        <div class=\"circle\"><a href=\"#\">2</a></div> Some machines are shipping with a sub take up spring on the yarn mast. \r\n        Previous Brother manuals refer to this extra spring for 2 uses (both of which aren't applicable to this machine):<br><ol>\r\n            <li><b><a data-GlossaryId=\"654\" class=\"glossaryhelp\">Punch Lace | Thread Lace <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></b> (this is not a possible with the TH-160 machine)</li>\r\n            <li><b><a data-GlossaryId=\"713\" class=\"glossaryhelp\">Isolated Motif <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></b> (this is helpful when automatic patterning - also not available on this machine)</li>\r\n        </ol>\r\n    \r\n    <img src=\"/challenge/images/v2/86/sub_take_up_spring.jpg\">\r\n\r\n",
+              "legacyComponentId": 9067,
+              "order": 1
+            }
+          ],
+          "title": "Notes about the manual",
+          "slug": "notes-about-the-manual",
+          "order": 5,
+          "legacy": {
+            "assignId": 5950,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Learn about the Machine",
+      "slug": "learn-about-the-machine",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 516,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Hotspot",
+              "notes": [
+                "Unmapped legacy component type: Hotspot"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4231",
+                "CHALLENGE_COMPONENTID": "6444",
+                "HOTSPOTCOUNT": "8",
+                "IMAGE_HEIGHT": "426.77778",
+                "IMAGE_WIDTH": "999.77778",
+                "SECONDDIV": "padding-bottom: 42.68726396379803%",
+                "SPOTT_IMAGE": "/challenge/images/v2/86/taitexma_main_spott1.jpg",
+                "SPOT_ACTIONID_1": "8242",
+                "SPOT_ACTIONID_2": "8243",
+                "SPOT_ACTIONID_3": "8247",
+                "SPOT_ACTIONID_4": "8246",
+                "SPOT_ACTIONID_5": "8245",
+                "SPOT_ACTIONID_6": "8248",
+                "SPOT_ACTIONID_7": "524",
+                "SPOT_ACTIONID_8": "8244",
+                "SPOT_CORD_1": "top: 9.370922726239977%;  left: 3.8977385538989475%;  width: 1.9782175995149642%;  height: 4.6342103377546975%;",
+                "SPOT_CORD_2": "top: 11.034717876918275%;  left: 37.31662424926411%;  width: 1.9782175995149642%;  height: 4.6342103377546975%;",
+                "SPOT_CORD_3": "top: 32.358920371202885%;  left: 52.62037294869072%;  width: 1.9782175995149642%;  height: 4.6342103377546975%;",
+                "SPOT_CORD_4": "top: 69.6132199061425%;  left: 63.92497245913768%;  width: 1.9782175995149642%;  height: 4.6342103377546975%;",
+                "SPOT_CORD_5": "top: 44.30648778867276%;  left: 90.4273950306065%;  width: 1.9782175995149642%;  height: 4.399896358240581%;",
+                "SPOT_CORD_6": "top: 70.31697702393487%;  left: 87.0290690538267%;  width: 1.9782175995149642%;  height: 4.399896358240581%;",
+                "SPOT_CORD_7": "top: 67.50195570346058%;  left: 27.71379450765768%;  width: 1.9782175995149642%;  height: 4.6342103377546975%;",
+                "SPOT_CORD_8": "top: 41.25960517712958%;  left: 27.314401555337064%;  width: 1.8781953725756937%;  height: 4.6342103377546975%;",
+                "SPOT_FUNCTION_1": "pathpopup",
+                "SPOT_FUNCTION_2": "pathpopup",
+                "SPOT_FUNCTION_3": "pathpopup",
+                "SPOT_FUNCTION_4": "pathpopup",
+                "SPOT_FUNCTION_5": "pathpopup",
+                "SPOT_FUNCTION_6": "pathpopup",
+                "SPOT_FUNCTION_7": "glossaryhelp",
+                "SPOT_FUNCTION_8": "pathpopup",
+                "SPOT_LOCATION_1": "top",
+                "SPOT_LOCATION_2": "top",
+                "SPOT_LOCATION_3": "top",
+                "SPOT_LOCATION_4": "top",
+                "SPOT_LOCATION_5": "top",
+                "SPOT_LOCATION_6": "top",
+                "SPOT_LOCATION_7": "top",
+                "SPOT_LOCATION_8": "top",
+                "SPOT_TEXT_1": "Yarn Mast Assembly",
+                "SPOT_TEXT_2": "Row Counter",
+                "SPOT_TEXT_3": "Main Knitting Carriage",
+                "SPOT_TEXT_4": "Sinker Plate",
+                "SPOT_TEXT_5": "Needle Position Indicator",
+                "SPOT_TEXT_6": "Number Strip",
+                "SPOT_TEXT_7": "Sponge Bar (Needle Presser Bar)",
+                "SPOT_TEXT_8": "Main Needlebed",
+                "TOPDIV": "max-width: 999.77778px"
+              },
+              "legacyComponentId": 6444,
+              "order": 1
+            }
+          ],
+          "title": "Terms you must know",
+          "slug": "terms-you-must-know",
+          "order": 1,
+          "legacy": {
+            "assignId": 4231,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>Click the flashing \"hotspots\" below for more details</h3>",
+              "legacyComponentId": 10173,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Hotspot",
+              "notes": [
+                "Unmapped legacy component type: Hotspot"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4221",
+                "CHALLENGE_COMPONENTID": "6410",
+                "HOTSPOTCOUNT": "11",
+                "IMAGE_HEIGHT": "769.77778",
+                "IMAGE_WIDTH": "999.77778",
+                "SECONDDIV": "padding-bottom: 76.9948878039678%",
+                "SPOTT_IMAGE": "/challenge/images/v2/86/tax_tools.jpg",
+                "SPOT_ACTIONID_1": "8227",
+                "SPOT_ACTIONID_10": "8231",
+                "SPOT_ACTIONID_11": "8240",
+                "SPOT_ACTIONID_2": "8234",
+                "SPOT_ACTIONID_3": "8230",
+                "SPOT_ACTIONID_4": "8236",
+                "SPOT_ACTIONID_5": "8233",
+                "SPOT_ACTIONID_6": "8241",
+                "SPOT_ACTIONID_7": "8232",
+                "SPOT_ACTIONID_8": "8235",
+                "SPOT_ACTIONID_9": "8237",
+                "SPOT_CORD_1": "top: 8.961822592996409%;  left: 35.406476875924184%;  width: 1.9782175995149642%;  height: 2.569284345931627%;",
+                "SPOT_CORD_10": "top: 81.97171530182649%;  left: 59.81295028713311%;  width: 1.9782175995149642%;  height: 2.569284345931627%;",
+                "SPOT_CORD_11": "top: 66.25198927806252%;  left: 23.804942484123508%;  width: 1.9782175995149642%;  height: 2.569284345931627%;",
+                "SPOT_CORD_2": "top: 22.73293232144602%;  left: 26.904587586086194%;  width: 1.9782175995149642%;  height: 2.569284345931627%;",
+                "SPOT_CORD_3": "top: 28.57877526069012%;  left: 42.10935799172824%;  width: 1.9782175995149642%;  height: 2.569284345931627%;",
+                "SPOT_CORD_4": "top: 20.6535104537176%;  left: 49.71000330595809%;  width: 1.9782175995149642%;  height: 2.569284345931627%;",
+                "SPOT_CORD_5": "top: 21.43385611272511%;  left: 69.81517298106016%;  width: 1.9782175995149642%;  height: 2.569284345931627%;",
+                "SPOT_CORD_6": "top: 40.78919168889173%;  left: 21.10469033448144%;  width: 1.9782175995149642%;  height: 2.569284345931627%;",
+                "SPOT_CORD_7": "top: 46.375671335512116%;  left: 49.01019569510143%;  width: 1.9782175995149642%;  height: 2.569284345931627%;",
+                "SPOT_CORD_8": "top: 53.00186389822969%;  left: 67.71401025989901%;  width: 1.9782175995149642%;  height: 2.569284345931627%;",
+                "SPOT_CORD_9": "top: 71.44829411294617%;  left: 80.01708604627527%;  width: 1.9782175995149642%;  height: 2.569284345931627%;",
+                "SPOT_FUNCTION_1": "pathpopup",
+                "SPOT_FUNCTION_10": "pathpopup",
+                "SPOT_FUNCTION_11": "pathpopup",
+                "SPOT_FUNCTION_2": "pathpopup",
+                "SPOT_FUNCTION_3": "pathpopup",
+                "SPOT_FUNCTION_4": "pathpopup",
+                "SPOT_FUNCTION_5": "pathpopup",
+                "SPOT_FUNCTION_6": "pathpopup",
+                "SPOT_FUNCTION_7": "pathpopup",
+                "SPOT_FUNCTION_8": "pathpopup",
+                "SPOT_FUNCTION_9": "pathpopup",
+                "SPOT_LOCATION_1": "top",
+                "SPOT_LOCATION_10": "top",
+                "SPOT_LOCATION_11": "top",
+                "SPOT_LOCATION_2": "top",
+                "SPOT_LOCATION_3": "top",
+                "SPOT_LOCATION_4": "top",
+                "SPOT_LOCATION_5": "top",
+                "SPOT_LOCATION_6": "top",
+                "SPOT_LOCATION_7": "top",
+                "SPOT_LOCATION_8": "top",
+                "SPOT_LOCATION_9": "top",
+                "SPOT_TEXT_1": "Cleaning Brush",
+                "SPOT_TEXT_10": "Weight(s)",
+                "SPOT_TEXT_11": "Transfer Tools",
+                "SPOT_TEXT_2": "Ravel Cord",
+                "SPOT_TEXT_3": "Wax",
+                "SPOT_TEXT_4": "Oil",
+                "SPOT_TEXT_5": "Needle Pushers",
+                "SPOT_TEXT_6": "Carriage Lock",
+                "SPOT_TEXT_7": "Cast on comb and connecting plate",
+                "SPOT_TEXT_8": "Machine Clamps",
+                "SPOT_TEXT_9": "Latch Tool",
+                "TOPDIV": "max-width: 999.77778px"
+              },
+              "legacyComponentId": 6410,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "699787852",
+              "title": "Using the Latch Tool",
+              "legacySlot": 1,
+              "legacyComponentId": 9073,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "699191838",
+              "title": "Transfer Tool Basics",
+              "legacySlot": 2,
+              "legacyComponentId": 9073,
+              "order": 3
+            }
+          ],
+          "title": "Tools and Accessories",
+          "slug": "tools-and-accessories",
+          "order": 2,
+          "legacy": {
+            "assignId": 4221,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nIn working with the TH160 we discovered that the claw weights didn't match up with the spacing on the cast on comb.<br>In order to hang the weights cleanly on the cast on comb, we bent back 4 of the teeth. <br>Even if you use this weight to hang in your knitting, the remaining teeth will work as well as the original arrangement.\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/86/claw_weights1.jpg\">\r\n\r\n\r\n",
+              "legacyComponentId": 6528,
+              "order": 1
+            }
+          ],
+          "title": "Claw Weight Tip",
+          "slug": "claw-weight-tip",
+          "order": 3,
+          "legacy": {
+            "assignId": 4313,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n\r\n\r\n\r\n\t\r\n\t\t\r\n\t\t\t<img src=\"/challenge/images/v2/86/1.png\">\r\n\t\t\t<img src=\"/challenge/images/v2/86/2.png\">\r\n\t\t\t<img src=\"/challenge/images/v2/86/3.png\">\r\n\t\t\t <img src=\"/challenge/images/v2/86/4.png\"><br>\r\n\t\t<br>\r\n\t\tThe 6mm gauge of this machine gives a lot of flexibility in the yarn we can use. It's your choice! you can choose a lightweight yarn and knit it at a very loose tension for a lightweight fabric. You can knit the same yarn at a tighter tension for a very different look. The fiber, color and texture of the yarn is up to you.<br>The only limit is the size of the needles. If the yarn is too thick and doesn't fit in the hooks of the needles, it can split and/or jam the machine.\r\n\t\r\n\t\r\n <div class=\"videopopup\" data-videotitle=\"Yarn for Knitting Machines\" data-vimeoid=\"527759119\">\r\n\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/1338069709-034f196bd22a8f02940e3220839ccf157ac3e09a75b3ee3ab61f8dd9ab7dde81-d_1280x720?r=pad\">\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div>\r\n\r\n\r\n\r\n\t\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n\t\t\r\n\t\r\n</div>Use the arrows below to scroll through some yarn examples\r\n<hr class=\"style13\"><br>",
+              "legacyComponentId": 6429,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/86/v2/86/sock1.jpg",
+                  "caption": "Self-Patterning sock yarn, knit at tension 1-2"
+                },
+                {
+                  "src": "/challenge/images/v2/86/v2/86/sock2.jpg",
+                  "caption": "Self-Patterning sock yarn, knit at tension 1-2"
+                },
+                {
+                  "src": "/challenge/images/v2/86/v2/86/blue1.jpg",
+                  "caption": "Medium weight cotton knit at tension 9"
+                },
+                {
+                  "src": "/challenge/images/v2/86/v2/86/fine.jpg",
+                  "caption": "A fine coned yarn (2/8) knit loosely at tension 9 creates open, lacy knitting."
+                },
+                {
+                  "src": "/challenge/images/v2/86/v2/86/pink1.jpg",
+                  "caption": "Medium weight cotton knit at tension 7-8. Even though this is listed as a 4 it is lighter than the previous blue yarn"
+                },
+                {
+                  "src": "/challenge/images/v2/86/v2/86/pink2.jpg",
+                  "caption": "Medium weight cotton knit at tension 7-8. Even though this is listed as a 4 it is lighter than the previous blue yarn"
+                },
+                {
+                  "src": "/challenge/images/v2/86/v2/86/purple1.jpg",
+                  "caption": "#4 Acrylic knit at tension 7"
+                },
+                {
+                  "src": "/challenge/images/v2/86/v2/86/purple2.jpg",
+                  "caption": "#4 Acrylic knit at tension 7"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 6430,
+              "order": 2
+            }
+          ],
+          "title": "Yarn for Your Machine",
+          "slug": "yarn-for-your-machine",
+          "order": 4,
+          "legacy": {
+            "assignId": 4220,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 50px;\r\n\t}\r\n\r\n\t.abc {\r\n\t\tfont-size: 200%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\t.def {\r\n\t\tfont-size: 150%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n</style>\r\n\r\n\tWe can knit so much more than plain stockinette with this machine. With just a few carriage settings, quickly add texture and color.<br>This is a manual machine. There is no automatic needle selection (punchcard or electronics). Needles are positioned manually.<br>It is critical that you understand the 3 elements that create stitch patterns.\r\n\r\n\t\r\n\r\n\t<div class=\"container-border\">\r\n\t\t<center><span class=\"handwriting\" style=\"font-size:1.5em\">3 settings control stitch patterning:</span><br></center>\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span><br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">2</a></div> <span class=\"def\">Change Lever </span><br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">3</a></div> <span class=\"def\">Cam Lever(s) </span>\r\n\t\t\t</div>\r\n\r\n\t\t\r\n\t</div>\r\n\r\n\r\n<hr class=\"style13\">\r\n\r\n<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span><br>\r\n\t\r\n\t\tMarked on the side of the needlebed A-B-D-E represent:<br>\r\n\t\t<div class=\"table-responsive table-sm table-bordered\">\r\n\t\t\t<table class=\"table\">\r\n\t\t\t\t<tbody>\r\n\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t<td><span class=\"abc\">A</span></td>\r\n\t\t\t\t\t\t<td>Out of Work Position (Non-working Position |NWP)</td>\r\n\t\t\t\t\t\t<td><em>Unused Needles</em></td>\r\n\t\t\t\t\t</tr>\r\n\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t<td><span class=\"abc\">B</span></td>\r\n\t\t\t\t\t\t<td>Working Position (WP)</td>\r\n\t\t\t\t\t\t<td><em>Needles lined up to knit in stockinette and most stitch patterns</em></td>\r\n\t\t\t\t\t</tr>\r\n\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t<td><span class=\"abc\">D </span></td>\r\n\t\t\t\t\t\t<td>Middle Position(MP) (Pattern Position)</td>\r\n\t\t\t\t\t\t<td><em>Bring the needles from holding position into working and pattern work positions</em></td>\r\n\t\t\t\t\t</tr>\r\n\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t<td><span class=\"abc\">E</span></td>\r\n\t\t\t\t\t\t<td>Holding Position (HP)</td>\r\n\t\t\t\t\t\t<td><em>The farthest position from \"A\" on the needlebed</em></td>\r\n\t\t\t\t\t</tr>\r\n\t\t\t\t</tbody>\r\n\t\t\t</table>\r\n\t\t</div>\r\n\t\r\n\t<center><img class=\"img-thumbnail\" src=\"/path/images/1480/needle_position.jpg\" width=\"150\"></center>\r\n\t\r\n\r\n<hr class=\"style13\">\r\n\r\n\r\n\t\r\n\t\t<div class=\"circle\"><a href=\"#\">2</a></div><span class=\"def\"> Change Lever</span><br>The Change Lever controls the action of the needles for specific stitch types.\r\n\t\r\n\t<center><img class=\"img-thumbnail\" src=\"/challenge/images/v2/86/change_lever_gif.gif\"></center>\r\n\r\n<hr class=\"style13\">\r\n\r\n\r\n\t\r\n\t\t<div class=\"circle\"><a href=\"#\">3</a></div><span class=\"def\"> Cam Lever(s)</span><br>The Cam Levers are also called the hold levers <br>and control the action of needles in \"E\" position.  Often used for short row shaping.\r\n\t\r\n\t<center><img class=\"img-thumbnail\" src=\"/challenge/images/v2/86/cam_levers_gif1.gif\"></center>\r\n\r\n",
+              "legacyComponentId": 6424,
+              "order": 1
+            }
+          ],
+          "title": "Carriage Settings",
+          "slug": "carriage-settings",
+          "order": 5,
+          "legacy": {
+            "assignId": 4225,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\">\r\nExplore the carriage settings.<br>\r\nCast on and have some knitting on the needles.",
+              "legacyComponentId": 6450,
+              "order": 1
+            },
+            {
+              "type": "exerciseAccordion",
+              "sections": [
+                {
+                  "title": "<style>\r\nhr.style13 {\r\nheight: 5px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n<hr class=\"style13\">\r\n<div class=\"row\">\r\n\t<div class=\"col-lg-1 col-md-1 col-sm-2 col-xs-1\">\r\n\t\t<img src=\"/challenge/images/arrow1.png\">\r\n\t</div>\r\n\t<div class=\"col-md-8 col-sm-10 col-xs-10\">Cam Levers: <ol>\r\n\t\t\t<li>Set both cam levers to \"H\"</li>\r\n\t\t\t<li>Needles in A-B-D-E</li>\r\n\t\t\t<li>Pass the carriage</li>\r\n\t\t</ol>\r\n\t\t\r\n\t</div>\r\n</div>\r\n\r\n<button class=\"btn btn-default\" role=\"button\"><span class=\"handwriting\">What happens?</span></button>",
+                  "bodyHtml": "\r\n<ul class=\"lightlist\" style=\"list-style:none;\">\r\n<li>A - Needles do not knit (no matter what the carriage settings)</li>\r\n<li>B - Needles Knit</li>\r\n<li>D - Needles Knit</li>\r\n<li>E - Needles do not knit</li>\r\n</ul>\r\n",
+                  "iconSrc": "/challenge/images/v2/86/arrow1.png"
+                },
+                {
+                  "title": "<hr class=\"style13\">\r\n<div class=\"row\">\r\n\t<div class=\"col-lg-1 col-md-1 col-sm-2 col-xs-1\">\r\n\t\t<img src=\"/challenge/images/arrow2.png\">\r\n\t</div>\r\n\t<div class=\"col-md-8 col-sm-10 col-xs-11\">Cam Levers: <ol>\r\n\t\t\t<li>Set both cam levers to \"H\"</li>\r\n\t\t\t<li>Opposite the carriage, place 10 needles in E</li>\r\n\t\t\t<li>Pass the carriage</li>\r\n\t\t</ol>\r\n\t\t\r\n\t</div>\r\n</div>\r\n<button class=\"btn btn-default\" role=\"button\"><span class=\"handwriting\">What happens?</span></button>",
+                  "bodyHtml": "All needles EXCEPT the needles in hold position will knit.<br>This is the technique behind <a data-GlossaryId='250' class='glossaryhelp'>short row shaping/partial knitting.<i class='fa fa-question-circle-o' aria-hidden='true'></i></a>\r\n\r\n<ul class=\"lightlist\" style=\"list-style:none;\">\r\n<li>A - Needles do not knit (no matter what the carriage settings)</li>\r\n<li>B - Needles Knit</li>\r\n<li>D - Needles Knit</li>\r\n<li>E - Needles do not knit (hold | yarn passes over these needles)</li>\r\n</ul>\r\nBecause the yarn passes over the needles in hold, this setting is also used for <a data-GlossaryId='277' class='glossaryhelp'>TUCK<i class='fa fa-question-circle-o' aria-hidden='true'></i></a> on this machine.\r\n",
+                  "iconSrc": "/challenge/images/v2/86/arrow2.png"
+                },
+                {
+                  "title": "<hr class=\"style13\">\r\n<div class=\"row\">\r\n\t<div class=\"col-lg-1 col-md-1 col-sm-2 col-xs-1\">\r\n\t\t<img src=\"/challenge/images/arrow3.png\">\r\n\t</div>\r\n\t<div class=\"col-md-8 col-sm-10 col-xs-11\">Change Lever: <ol>\r\n\t\t\t<li>Change Lever to \"PLAIN\"</li>\r\n\t\t\t<li>Cam Levers to \"N\"</li>\r\n\t\t\t<li>Needles in A-B-D-E</li>\r\n\t\t</ol>\r\n\t\t\r\n\t</div>\r\n</div>\r\n<button class=\"btn btn-default\" role=\"button\"><span class=\"handwriting\">What happens?</span></button>",
+                  "bodyHtml": "This is the setting for plain knitting (stockinette)<br><ul class=\"lightlist\" style=\"list-style:none;\">\r\n<li>A - Needles do not knit (no matter what the carriage settings)</li>\r\n<li>B - Needles Knit</li>\r\n<li>D - Needles Knit</li>\r\n<li>E - Needles Knit</li>\r\n</ul>\r\n",
+                  "iconSrc": "/challenge/images/v2/86/arrow3.png"
+                },
+                {
+                  "title": "<hr class=\"style13\">\r\n<div class=\"row\">\r\n\t<div class=\"col-lg-1 col-md-1 col-sm-2 col-xs-1\">\r\n\t\t<img src=\"/challenge/images/arrow4.png\">\r\n\t</div>\r\n\t<div class=\"col-md-8 col-sm-10 col-xs-11\">Change Lever: <ol>\r\n\t\t\t<li>Change Lever to \"PART\"</li>\r\n\t\t\t<li>Cam Levers to \"N\"</li>\r\n\t\t\t<li>Needles in B </li>\r\n\t\t</ol>\r\n\t\t\r\n\t</div>\r\n</div>\r\n<button class=\"btn btn-default\" role=\"button\"><span class=\"handwriting\">What happens?</span></button>",
+                  "bodyHtml": "This is the setting for <a data-GlossaryId='251' class='glossaryhelp'>slip/skip<i class='fa fa-question-circle-o' aria-hidden='true'></i></a> and <a data-GlossaryId='355' class='glossaryhelp'>FREE PASS<i class='fa fa-question-circle' aria-hidden='true'></i></a><br>\r\n<ul class=\"lightlist\" style=\"list-style:none;\">\r\n<li>A - Needles do not knit (no matter what the carriage settings)</li>\r\n<li>B - Needles do not knit (slip/skip)</li>\r\n<li>D - Needles Knit</li>\r\n<li>E - Needles Knit</li>\r\n</ul>\r\n",
+                  "iconSrc": "/challenge/images/v2/86/arrow4.png"
+                },
+                {
+                  "title": "<hr class=\"style13\">\r\n<div class=\"row\">\r\n\t<div class=\"col-lg-1 col-md-1 col-sm-2 col-xs-1\">\r\n\t\t<img src=\"/challenge/images/arrow5.png\">\r\n\t</div>\r\n\t<div class=\"col-md-8 col-sm-10 col-xs-11\">Change Lever: <ol>\r\n\t\t\t<li>Change Lever to \"INTAR\"</li>\r\n\t\t\t<li>Cam Levers to \"N\"</li>\r\n\t\t\t<li>Needles in B</li>\r\n<li><b>NO YARN in the feeder</b></li>\r\n\t\t</ol>\r\n\t\t\r\n\t</div>\r\n</div>\r\n<button class=\"btn btn-default\" role=\"button\"><span class=\"handwriting\">What happens?</span></button>",
+                  "bodyHtml": "All needles will be positioned to \"D\" with the latches open.<br>This is a specific setting to prepare for  <a data-GlossaryId='352' class='glossaryhelp'>INTARSIA KNITTING <i class='fa fa-question-circle' aria-hidden='true'></i></a>. All 4 steps must be in place.",
+                  "iconSrc": "/challenge/images/v2/86/arrow5.png"
+                }
+              ],
+              "legacy": {
+                "showText": "below",
+                "size": null
+              },
+              "legacyComponentId": 6449,
+              "order": 2
+            }
+          ],
+          "title": "Check your understanding",
+          "slug": "check-your-understanding",
+          "order": 6,
+          "legacy": {
+            "assignId": 4233,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"> <span class=\"handwriting\" style=\"font-size:1.5em\">Save your back, neck and shoulders</span><br>In these videos, you'll see me pushing the carriage with one hand.   BAD!!!!  I'm reaching around the camera.<br>When you are knitting <b>use both hands</b> and push and pull alternately to move the carriage.<br>Many knitters also adjust their knitting table so they can stand while knitting.",
+              "legacyComponentId": 6462,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "530014000",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 6462,
+              "order": 1
+            }
+          ],
+          "title": "The Proper Way to Knit",
+          "slug": "the-proper-way-to-knit",
+          "order": 7,
+          "legacy": {
+            "assignId": 4243,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "NOTE:<br>\r\nOn this machine the ribber and main bed needles are the same.",
+              "legacyComponentId": 9535,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "569614718",
+              "title": null,
+              "legacyComponentId": 6532,
+              "order": 2
+            }
+          ],
+          "title": "Replace Needle and Sponge Bar",
+          "slug": "replace-needle-and-sponge-bar",
+          "order": 8,
+          "legacy": {
+            "assignId": 4316,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Casting On and Binding Off",
+      "slug": "casting-on-and-binding-off",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 520,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"></center> For many more cast-on tips and techniques, visit:<br>\r\n\t\tthe <a href=\"/classrooms/44/cast-on-methods\"><b>Knit it Now Classroom: Cast on Methods</b></a>\r\n\t</div>\r\n\r\n",
+              "legacyComponentId": 6416,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "527016660",
+              "title": null,
+              "legacyComponentId": 6413,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "VimeoJumpLinks",
+              "notes": [
+                "Unmapped legacy component type: VimeoJumpLinks"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4222",
+                "CHALLENGE_COMPONENTID": "6417",
+                "LINKTIME_1": "00:00:18",
+                "LINKTIME_2": "00:00:59",
+                "LINKTIME_3": "00:01:27",
+                "LINKTIME_4": "00:02:16",
+                "LINKTIME_5": "00:02:31",
+                "LINKTIME_6": "00:04:24",
+                "LINKTIME_7": "00:06:01",
+                "LINKTITLE_1": "Yarn on cones only? No!",
+                "LINKTITLE_2": "Thread the mast",
+                "LINKTITLE_3": "Mast Tension Dial",
+                "LINKTITLE_4": "Cast on (my method)",
+                "LINKTITLE_5": "Carriage settings (don't skip this)",
+                "LINKTITLE_6": "Use the cast-on comb",
+                "LINKTITLE_7": "Essential knitting tips"
+              },
+              "legacyComponentId": 6417,
+              "order": 3
+            }
+          ],
+          "title": "Casting on Stitches",
+          "slug": "casting-on-stitches",
+          "order": 1,
+          "legacy": {
+            "assignId": 4222,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>img.ctr{\r\ndisplay: block;\r\nmargin-left: auto;\r\nmargin-right: auto; }\r\n</style>\r\n\r\n\r\n<image src=\"/images/glossary/ewrap.jpg\"><Br>\r\nHere is a fast way to create  a closed, e-wrap cast on by using the knitting carriage.<br>This method is helpful if you want to avoid manually wrapping each needle. <br>Using the \"slip\" setting:\r\n\r\nNeedles in \"B\" position don't knit<br>\r\nA single needle in \"E\" position (next to the carriage) will wrap.\r\n<br><ol>\r\n<li>Set the cam to \"slip\"</li>\r\n\r\n<li> Carriage on the left, pull 1 needle to \"E\" Position</li>\r\n<li> Pass the carriage right (the yarn will wrap and the needle will return to \"B\" position)\r\n<li>Pass the carriage left (the needle will not knit)</li>\r\n<li>repeat for the number of needles needed</li>\r\n<li>Hang a cast on comb</li>\r\n<li>Continue knitting</li>\r\n</ol>\r\n\r\n\r\n\r\n <div class=\"videopopup\" data-videotitle=\"wrapping\" data-vimeoid=\"827046152\">\r\n\t\t<img class=\"img-thumbnail ctr\" width=\"300\" src=\"https://i.vimeocdn.com/video/1670264450-c1133bedc76a507b731867eb04304025adb9df76fb46594172b76372da996b39-d\"><br><div class=\"text-center\"><img class=\"ctr\" src=\"/challenge/images/v2/86/no-sound-icon.png\" width=\"35\"> No sound</div>\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 9511,
+              "order": 1
+            }
+          ],
+          "title": "Automatic Cast On",
+          "slug": "automatic-cast-on",
+          "order": 2,
+          "legacy": {
+            "assignId": 6207,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"></center> For with many more bind-off techniques, visit:<br>\r\n\t\t<a href=\"/classrooms/81/bind-off-methods\"> the Knit it Now Classroom: Bind off Methods</a>\r\n\t</div>\r\n\r\n",
+              "legacyComponentId": 6415,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "527303259",
+              "title": null,
+              "legacyComponentId": 6412,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "VimeoJumpLinks",
+              "notes": [
+                "Unmapped legacy component type: VimeoJumpLinks"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4223",
+                "CHALLENGE_COMPONENTID": "6414",
+                "LINKTIME_1": "00:00:10",
+                "LINKTIME_2": "00:01:08",
+                "LINKTIME_3": "00:01:19",
+                "LINKTIME_4": "00:01:25",
+                "LINKTITLE_1": "Manually knit a loose row",
+                "LINKTITLE_2": "Break/cut the working yarn",
+                "LINKTITLE_3": "Pull out all the needles",
+                "LINKTITLE_4": "Pull stitch-through-stitch"
+              },
+              "legacyComponentId": 6414,
+              "order": 3
+            }
+          ],
+          "title": "Binding Off",
+          "slug": "binding-off",
+          "order": 3,
+          "legacy": {
+            "assignId": 4223,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Tuck (Pull-up) Stitch",
+      "slug": "tuck-pull-up-stitch",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 517,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 50px;\r\n\t}\r\n\r\n\t.abc {\r\n\t\tfont-size: 200%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\t.def {\r\n\t\tfont-size: 150%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n</style>\r\n\r\n\r\n\t\r\n\t\tTuck is a great way to add texture and interest to your knitting.<br>\r\n\t\tWhen knitting tuck, certain needles do not knit and the working yarn travels OVER the needles out of work.\r\n\t\t<br>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>Change the number of rows tucked</li>\r\n\t\t\t\t\t<li>Change the needles selected</li>\r\n\t\t\t\t\t<li>Change the number of rows between tucks</li>\r\n\t\t\t\t\t<li>Put some needles out of work</li>\r\n\t\t\t\t\t<li>Add color</li>\r\n\t\t\t\t\t<li>Mix 'n match stitch patterns</li>\r\n\t\t\t\t</ul>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\t<center><img src=\"/challenge/images/v2/45/anatomy_thumbnail.jpg\"></center>\r\n\t\t\t\r\n\t\t\r\n\t\tOnce you understand how tuck stitch is created on your machine, the sky's the limit!<br>\r\n\t<div class=\"container-border\">\r\n\t\t<center><span class=\"handwriting\" style=\"font-size:1.75em\">3 settings control TUCK:</span><br></center>\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\" style=\"padding-left:20px\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span> (\"E\")<br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom\" style=\"padding-left:20px\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">2</a></div> <span class=\"def\">Change Lever </span>PLAIN<br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom\" style=\"padding-left:20px\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">3</a></div> <span class=\"def\">Cam Lever(s) </span>\"H\" (hold/tuck)\r\n\t\t\t</div>\r\n\t\t\r\n\t</div>\r\n\r\n\r\n<hr class=\"style13\">\r\n",
+              "legacyComponentId": 6432,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"></center> For tuck inspiration, tips and techniques, visit:<br>\r\n\t\tthe <a href=\"/classrooms/91/tuck-talk\"><b>Knit it Now Classroom: Tuck Talk</b></a>\r\n\t</div>\r\n\r\n",
+              "legacyComponentId": 6422,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "527476073",
+              "title": null,
+              "legacyComponentId": 6418,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "VimeoJumpLinks",
+              "notes": [
+                "Unmapped legacy component type: VimeoJumpLinks"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4216",
+                "CHALLENGE_COMPONENTID": "6423",
+                "LINKTIME_1": "00:00:10",
+                "LINKTIME_2": "00:00:31",
+                "LINKTIME_3": "00:00:35",
+                "LINKTIME_4": "00:01:07",
+                "LINKTIME_5": "00:03:16",
+                "LINKTITLE_1": "What is Tuck?",
+                "LINKTITLE_2": "Tuck on the TH-160",
+                "LINKTITLE_3": "3 settings for stitch patterns",
+                "LINKTITLE_4": "Watch as we knit tuck",
+                "LINKTITLE_5": "Use a Cheat Sheet"
+              },
+              "legacyComponentId": 6423,
+              "order": 4
+            }
+          ],
+          "title": "About Tuck Stitch",
+          "slug": "about-tuck-stitch",
+          "order": 2,
+          "legacy": {
+            "assignId": 4216,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Check out the <a href=\"/knit/stitchlibrary.cfm\" target=\"_blank\">Knit it Now Stitch Library</a> for Tuck and Tuck lace Inspiration!  Here are a few samples:<br>",
+              "legacyComponentId": 6420,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/86/v2/86/tuck2.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/86/v2/86/tuck3.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/86/v2/86/tuck4.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/86/v2/86/tuck5.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/86/v2/86/tuck1.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/86/v2/86/tuck6.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/86/v2/86/tuck7.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/86/v2/86/tuck8.jpg",
+                  "caption": null
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 6421,
+              "order": 2
+            }
+          ],
+          "title": "Tuck Inspiration",
+          "slug": "tuck-inspiration",
+          "order": 3,
+          "legacy": {
+            "assignId": 4224,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Slip (Skip) Stitch",
+      "slug": "slip-skip-stitch",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 521,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 50px;\r\n\t}\r\n\r\n\t.abc {\r\n\t\tfont-size: 200%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\t.def {\r\n\t\tfont-size: 150%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n.col-margin-20px-left{\r\npadding-left:20px;\r\n}\r\n</style>\r\n\r\n\r\n\t\r\n\t\tSlip is a great way to add texture and interest to your knitting.<br>\r\n\t\tWhen knitting slip, certain needles do not knit and the working yarn travels UNDER the needles out of work.\r\n\t\t<br>\r\n\t\t\t\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>Change the number of rows slipped</li>\r\n\t\t\t\t\t<li>Change the needles selected</li>\r\n\t\t\t\t\t<li>Change the number of rows between slip rows</li>\r\n\t\t\t\t\t<li>Put some needles out of work</li>\r\n\t\t\t\t\t<li>Add color</li>\r\n\t\t\t\t\t<li>Mix 'n match stitch patterns</li>\r\n\t\t\t\t</ul>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\t<center>\t<img src=\"/challenge/images/v2/86/taitexma_slip.jpg\"></center>\r\n\t\t\t\r\n\t\t\r\n\t\tOnce you understand how tuck stitch is created on your machine, the sky's the limit!<br>\r\n\t<div class=\"container-border\">\r\n\t\t<center><span class=\"handwriting\" style=\"font-size:1.75em\">3 settings control SLIP:</span><br></center>\r\n\r\n\t\t\r\n\t\t\t<div class=\"margin-10px-bottom col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span> (\"D\")<br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col-xs-12margin-10px-bottom col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">2</a></div> <span class=\"def\">Change Lever </span>PART<br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">3</a></div> <span class=\"def\">Cam Lever(s) </span>\"N\" (normal)\r\n\t\t\t</div>\r\n\t\t\r\n\t</div>\r\n\r\n\r\n<hr class=\"style13\">\r\n",
+              "legacyComponentId": 6433,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"></center> For slip inspiration, tips and techniques, visit:<br>\r\n\t\tthe <a href=\"/classrooms/118/slip-stitch\"><b>Knit it Now Classroom: Slip Stitch</b></a>\r\n\t</div>\r\n",
+              "legacyComponentId": 6437,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "527924763",
+              "title": null,
+              "legacyComponentId": 6435,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "VimeoJumpLinks",
+              "notes": [
+                "Unmapped legacy component type: VimeoJumpLinks"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4229",
+                "LINKTIME_1": "00:00:11",
+                "LINKTIME_2": "00:00:45",
+                "LINKTIME_3": "00:01:08",
+                "LINKTIME_4": "00:03:50",
+                "LINKTIME_5": "00:04:10",
+                "LINKTITLE_1": "The stitch pattern",
+                "LINKTITLE_2": "Start Slipping",
+                "LINKTITLE_3": "Quick Tip",
+                "LINKTITLE_4": "Add weights",
+                "LINKTITLE_5": "Knit Side Example",
+                "TYPEOF": "VimeoJumpLinks"
+              },
+              "legacyComponentId": 6436,
+              "order": 4
+            }
+          ],
+          "title": "About Slip (Skip) Stitch",
+          "slug": "about-slip-skip-stitch",
+          "order": 1,
+          "legacy": {
+            "assignId": 4229,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<br>\r\nCheck out the Knit it Now Stitch Library for <a href=\"/knit/stitchlibrary/7/slip-stitch\">Slip</a> and <a href=\"/knit/stitchlibrary/8/multi-color-slip\">Multi-Color Slip Stitch</a> inspiration!<br>",
+              "legacyComponentId": 6426,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/86/v2/86/415slip.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/86/v2/86/kin0319_3.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/86/v2/86/KIN406_slip.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/86/v2/86/KIN454_Slip.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/86/v2/86/kin_422_slip.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/86/v2/86/thumb_KIN442_Slip1.jpg",
+                  "caption": null
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 6425,
+              "order": 2
+            }
+          ],
+          "title": "Slip Inspiration",
+          "slug": "slip-inspiration",
+          "order": 2,
+          "legacy": {
+            "assignId": 4226,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Since this machine has only 1 cam setting for slip (part) to work I-cord or circular knitting means flipping the cam lever from Part to Plain with every pass of the carrriage.<br>\r\nThis can get tedious.  Explore a work around, by putting needles into D or E position.",
+              "legacyComponentId": 9162,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "767093877",
+              "title": null,
+              "legacyComponentId": 9161,
+              "order": 2
+            }
+          ],
+          "title": "i-Cord and Slip",
+          "slug": "i-cord-and-slip",
+          "order": 3,
+          "legacy": {
+            "assignId": 6013,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Intarsia",
+      "slug": "intarsia",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 523,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 50px;\r\n\t}\r\n\r\n\t.abc {\r\n\t\tfont-size: 200%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\t.def {\r\n\t\tfont-size: 150%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\t.col-margin-20px-left{\r\n\t\tpadding-left:20px;\r\n\t}\r\n</style>\r\n\r\n\r\n\t\r\n\t\tAlso called \"Picture Knitting\", Intarsia is a technique that allows color changes in the middle of the row without having floats across the back of the knitting.\r\n\t\t<br>\r\n\t\t\t<a href=\"/classrooms/191/intarsia\"><img class=\"img-thumbnail\" src=\"/images/glossary/intarsia_sample2.jpg\" width=\"300\"></a> \r\n\t\t\r\n\t\t<span class=\"handwriting\" style=\"font-size:2em\">Once you understand how Intarsia is created on your machine, the sky's the limit!</span><br>\r\n\r\n\r\n\t\r\n\t<div class=\"container-border\">\r\n\t\t<center><span class=\"handwriting\" style=\"font-size:1.75em\">3 settings control INTARSIA:</span><br></center>\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span> (\"D\") <br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">2</a></div> <span class=\"def\">Change Lever </span>INTAR<br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">3</a></div> <span class=\"def\">Cam Lever(s) </span>\"N\" (normal)\r\n\t\t\t</div>\r\n\t\t\r\n\t</div>\r\n\r\n\t\t\r\n\r\n<hr class=\"style13\">\r\n",
+              "legacyComponentId": 6445,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"></center> For intarsia inspiration, tips and techniques, visit:<br>\r\n\t\tthe <a href=/classrooms/191/intarsia\"><b>Knit it Now Classroom: Intarsia</b></a>\r\n\t</div>\r\n",
+              "legacyComponentId": 6447,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "528316951",
+              "title": null,
+              "legacyComponentId": 6446,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "VimeoJumpLinks",
+              "notes": [
+                "Unmapped legacy component type: VimeoJumpLinks"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4232",
+                "LINKTIME_1": "00:00:24",
+                "LINKTIME_2": "00:00:38",
+                "LINKTIME_3": "00:00:57",
+                "LINKTIME_4": "00:01:19",
+                "LINKTIME_5": "00:02:39",
+                "LINKTIME_6": "00:04:06 ",
+                "LINKTITLE_1": "Get Started",
+                "LINKTITLE_2": "Remove yarn and Free Pass",
+                "LINKTITLE_3": "INTAR - position the needles",
+                "LINKTITLE_4": "Lay in the yarns",
+                "LINKTITLE_5": "IMPORTANT: Cross the Yarns",
+                "LINKTITLE_6": "Voila!",
+                "TYPEOF": "VimeoJumpLinks"
+              },
+              "legacyComponentId": 6448,
+              "order": 4
+            }
+          ],
+          "title": "About Intarsia",
+          "slug": "about-intarsia",
+          "order": 1,
+          "legacy": {
+            "assignId": 4232,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Plaiting",
+      "slug": "plaiting",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 525,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 50px;\r\n\t}\r\n\r\n\t.abc {\r\n\t\tfont-size: 200%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\t.def {\r\n\t\tfont-size: 150%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\t.col-margin-20px-left{\r\n\t\tpadding-left:20px;\r\n\t}\r\n</style>\r\n\r\n\t\r\n\t\tKnit 2 strands of yarn together and let the machine position them so you view one color on one side of the knitting<br> and the 2nd color on the other side of the knitting.<br>\r\n\t\t\t<div class=\"text-center\">\r\n\r\n\t\t\t\t<img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\">\r\n\t\t\t</div>\r\n\t\t\t\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>When choosing the yarn for plaiting, remember both strands are knitting at the same time. The combined strands must fit in the hooks of the needles. This technique is best used with a thinner yarn than you would normally choose for this machine.</li><br>\r\n\t\t\t\t\t<li>Key to plaiting is positioning the yarns correctly in the yarn feeder</li>\r\n\t\t\t\t</ul>\r\n\t\t\t\r\n\t\t\r\n\r\n\t\t<br>\r\n\t\r\n\t<div class=\"container-border\">\r\n\t\t<center><span class=\"handwriting\" style=\"font-size:1.75em\">Settings for Plaiting:</span><br></center>\r\n\r\n\t\t\r\n\t\t\t<div class=\"col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span> B-C-D<br></div>\r\n\t\t\r\n\t\t\r\n\t\t\t<div class=\"col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">2</a></div> <span class=\"def\">Change Lever </span>PLAIN<br></div>\r\n\t\t\r\n\t\t\r\n\t\t\t<div class=\"col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">3</a></div> <span class=\"def\">Cam Lever(s) </span>\"N\" (normal)\r\n\t\t\t</div>\r\n\t\t\r\n\t</div>\r\n\r\n",
+              "legacyComponentId": 6438,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\n\r\nimg.mine {\r\n  border-radius:50%;\r\n  border:solid #A7A9AC 2px ;\r\n  padding: 3px;\r\n}\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n</style>\r\n\r\n\r\n\r\n\r\n\t\r\n\t\t<figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/86/thread_carriage_gif.gif\">\r\n\r\n\t\t\t<figcaption align=\"center\"><br>Place the plaiting yarn in the back (plaiting) slot and the main yarn in the front (normal) yarn feeder</figcaption>\r\n\t\t</figure>\r\n\t\r\n\t\r\n\t\t<figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/86/plaiting_gif.gif\">\r\n\t\t\t<figcaption align=\"center\"><br>Switch the yarns to see the results</figcaption>\r\n\t\t</figure>\r\n\r\n\t\r\n\r\n<hr class=\"style13\">\r\n\r\n\t<img class=\"img-circle mine\" src=\"/challenge/images/v2/86/plaiting1.jpg\">\r\n\t<img class=\"img-circle mine\" src=\"/challenge/images/v2/86/plaiting2.jpg\">\r\n\r\n",
+              "legacyComponentId": 6427,
+              "order": 2
+            }
+          ],
+          "title": "Control the colors",
+          "slug": "control-the-colors",
+          "order": 1,
+          "legacy": {
+            "assignId": 4227,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Knit Weave",
+      "slug": "knit-weave",
+      "displayOrder": 8,
+      "legacy": {
+        "itemId": 777,
+        "lessonOrder": 8
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "This machine does not have weaving brushes.  But the beautiful technique of Knit Weave can be manually worked.<br>Weaving on the knitting machine can produce beautifully textured fabric. it's a fun way to use small amounts of novelty or luxury yarns on your machine knit projects.<br>Also possible are some interesting \"lifted\" techniques to add even more options to using the Knit Weave technique.<Br>\r\n\r\n\r\n\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/images/glossary/knitweave1.jpg\"> \r\n<img class=\"img-thumbnail\" src=\"/swatches/6/1017Swatch.jpg\">\r\n",
+              "legacyComponentId": 9534,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859743",
+              "title": "Knitweave Without Brushes",
+              "legacyComponentId": 9533,
+              "order": 2
+            }
+          ],
+          "title": "Knit Weave on this Machine",
+          "slug": "knit-weave-on-this-machine",
+          "order": 1,
+          "legacy": {
+            "assignId": 6219,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Unboxing the Ribber",
+      "slug": "unboxing-the-ribber",
+      "displayOrder": 9,
+      "legacy": {
+        "itemId": 518,
+        "lessonOrder": 9
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "529371144",
+              "title": null,
+              "legacyComponentId": 6452,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "VimeoJumpLinks",
+              "notes": [
+                "Unmapped legacy component type: VimeoJumpLinks"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4235",
+                "LINKTIME_1": "00:00:34",
+                "LINKTIME_10": "00:06:10",
+                "LINKTIME_2": "00:00:52",
+                "LINKTIME_3": "00:01:33",
+                "LINKTIME_4": "00:01:41",
+                "LINKTIME_5": "00:02:33",
+                "LINKTIME_6": "00:03:36",
+                "LINKTIME_7": "00:04:34",
+                "LINKTIME_8": "00:04:49 ",
+                "LINKTIME_9": "00:05:45",
+                "LINKTITLE_1": "Un-Boxing",
+                "LINKTITLE_10": "Attach the Ribber Carriage",
+                "LINKTITLE_2": "Quick Overview",
+                "LINKTITLE_3": "Tools, Parts and Accessories",
+                "LINKTITLE_4": "Setting Plates",
+                "LINKTITLE_5": "Table Clamps",
+                "LINKTITLE_6": "Joining Brackets and Reinforcing Arms",
+                "LINKTITLE_7": "Grip (Racking) Handle",
+                "LINKTITLE_8": "Tension Mast Assembly",
+                "LINKTITLE_9": "Dropping the Ribber",
+                "TYPEOF": "VimeoJumpLinks"
+              },
+              "legacyComponentId": 6453,
+              "order": 2
+            }
+          ],
+          "title": "About the Ribber",
+          "slug": "about-the-ribber",
+          "order": 1,
+          "legacy": {
+            "assignId": 4235,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Hotspot",
+              "notes": [
+                "Unmapped legacy component type: Hotspot"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4238",
+                "CHALLENGE_COMPONENTID": "6459",
+                "HOTSPOTCOUNT": "16",
+                "IMAGE_HEIGHT": "716.77778",
+                "IMAGE_WIDTH": "999.77778",
+                "SECONDDIV": "padding-bottom: 71.69370977618647%",
+                "SPOTT_IMAGE": "/challenge/images/v2/86/tools3.jpg",
+                "SPOT_ACTIONID_1": "384",
+                "SPOT_ACTIONID_10": "249",
+                "SPOT_ACTIONID_11": "8284",
+                "SPOT_ACTIONID_12": "357",
+                "SPOT_ACTIONID_15": "356",
+                "SPOT_ACTIONID_16": "8285",
+                "SPOT_ACTIONID_2": "524",
+                "SPOT_ACTIONID_3": "372",
+                "SPOT_ACTIONID_5": "8283",
+                "SPOT_ACTIONID_8": "8283",
+                "SPOT_CORD_1": "top: 11.857656426534396%;  left: 20.703557493569658%;  width: 1.9782175995149642%;  height: 2.7592624313772673%;",
+                "SPOT_CORD_10": "top: 57.75655029427757%;  left: 60.01264065842117%;  width: 1.9782175995149642%;  height: 2.7592624313772673%;",
+                "SPOT_CORD_11": "top: 72.82446702070095%;  left: 66.91347836179436%;  width: 1.9782175995149642%;  height: 2.7592624313772673%;",
+                "SPOT_CORD_12": "top: 77.42888974763122%;  left: 58.61302543670786%;  width: 1.9782175995149642%;  height: 2.7592624313772673%;",
+                "SPOT_CORD_13": "top: 83.56650215969393%;  left: 41.308832198495836%;  width: 1.9782175995149642%;  height: 2.7592624313772673%;",
+                "SPOT_CORD_14": "top: 70.73176822080232%;  left: 33.00663938481816%;  width: 1.9782175995149642%;  height: 2.7592624313772673%;",
+                "SPOT_CORD_15": "top: 85.10211868059284%;  left: 25.70466884053318%;  width: 1.9782175995149642%;  height: 2.7592624313772673%;",
+                "SPOT_CORD_16": "top: 83.84747013496026%;  left: 11.602578775250748%;  width: 1.9782175995149642%;  height: 2.7592624313772673%;",
+                "SPOT_CORD_2": "top: 15.066946620198914%;  left: 92.6205825960598%;  width: 1.9782175995149642%;  height: 2.7592624313772673%;",
+                "SPOT_CORD_3": "top: 33.341730962126945%;  left: 38.60858004885377%;  width: 1.9782175995149642%;  height: 2.7592624313772673%;",
+                "SPOT_CORD_4": "top: 24.135312344032894%;  left: 32.706224726282116%;  width: 1.9782175995149642%;  height: 2.7592624313772673%;",
+                "SPOT_CORD_5": "top: 34.7368634953927%;  left: 12.001971727571362%;  width: 1.9782175995149642%;  height: 2.7592624313772673%;",
+                "SPOT_CORD_6": "top: 40.87690274322189%;  left: 72.9148119781506%;  width: 1.9782175995149642%;  height: 2.7592624313772673%;",
+                "SPOT_CORD_7": "top: 55.66385149437893%;  left: 29.405143259567957%;  width: 1.9782175995149642%;  height: 2.7592624313772673%;",
+                "SPOT_CORD_8": "top: 66.68685460863824%;  left: 45.6101359346027%;  width: 1.9782175995149642%;  height: 2.7592624313772673%;",
+                "SPOT_CORD_9": "top: 61.106324475575256%;  left: 52.41026156047241%;  width: 1.9782175995149642%;  height: 2.7592624313772673%;",
+                "SPOT_FUNCTION_1": "glossaryhelp",
+                "SPOT_FUNCTION_10": "glossaryhelp",
+                "SPOT_FUNCTION_11": "pathpopup",
+                "SPOT_FUNCTION_12": "glossaryhelp",
+                "SPOT_FUNCTION_15": "glossaryhelp",
+                "SPOT_FUNCTION_16": "pathpopup",
+                "SPOT_FUNCTION_2": "glossaryhelp",
+                "SPOT_FUNCTION_3": "glossaryhelp",
+                "SPOT_FUNCTION_5": "pathpopup",
+                "SPOT_FUNCTION_8": "pathpopup",
+                "SPOT_LOCATION_1": "top",
+                "SPOT_LOCATION_10": "top",
+                "SPOT_LOCATION_11": "top",
+                "SPOT_LOCATION_12": "top",
+                "SPOT_LOCATION_13": "top",
+                "SPOT_LOCATION_14": "top",
+                "SPOT_LOCATION_15": "top",
+                "SPOT_LOCATION_16": "top",
+                "SPOT_LOCATION_2": "top",
+                "SPOT_LOCATION_3": "top",
+                "SPOT_LOCATION_4": "top",
+                "SPOT_LOCATION_5": "top",
+                "SPOT_LOCATION_6": "top",
+                "SPOT_LOCATION_7": "top",
+                "SPOT_LOCATION_8": "top",
+                "SPOT_LOCATION_9": "top",
+                "SPOT_TEXT_1": "Cast on Combs",
+                "SPOT_TEXT_10": "Ravel Cord",
+                "SPOT_TEXT_11": "Ribber Table Clamps",
+                "SPOT_TEXT_12": "Work Hook",
+                "SPOT_TEXT_13": "Spare Needles",
+                "SPOT_TEXT_14": "Setting Plates (left & right)",
+                "SPOT_TEXT_15": "Wire Weight Hangers (7 hangers)",
+                "SPOT_TEXT_16": "Racking (Grip) Handle",
+                "SPOT_TEXT_2": "Sponge Bar",
+                "SPOT_TEXT_3": "Double Eye Needle (Bodkin)",
+                "SPOT_TEXT_4": "Ribber Carriage",
+                "SPOT_TEXT_5": "Ribber Weights",
+                "SPOT_TEXT_6": "Connecting Arm Assembly",
+                "SPOT_TEXT_7": "2x1 | 2x2 Needle Pusher",
+                "SPOT_TEXT_8": "Claw Weight Hangers",
+                "SPOT_TEXT_9": "Spanner Tool",
+                "TOPDIV": "max-width: 999.77778px"
+              },
+              "legacyComponentId": 6459,
+              "order": 1
+            }
+          ],
+          "title": "Tools and Accessories",
+          "slug": "tools-and-accessories",
+          "order": 2,
+          "legacy": {
+            "assignId": 4238,
+            "blockType": "Hotspot"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Get Familiar with Your Ribber",
+      "slug": "get-familiar-with-your-ribber",
+      "displayOrder": 10,
+      "legacy": {
+        "itemId": 527,
+        "lessonOrder": 10
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Practice dropping and raising the ribber.  It's noisy and intimidating at first, but it's important that you get comfortable with this.<br>\r\n",
+              "legacyComponentId": 6477,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "529529046",
+              "title": "Connect the carriages",
+              "legacySlot": 1,
+              "legacyComponentId": 7914,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "529480393",
+              "title": "Raise and Lower the Ribber",
+              "legacySlot": 2,
+              "legacyComponentId": 7914,
+              "order": 3
+            }
+          ],
+          "title": "Drop and raise the ribber",
+          "slug": "drop-and-raise-the-ribber",
+          "order": 1,
+          "legacy": {
+            "assignId": 4247,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<span class=\"yellow_highlight\">When using  the ribber, position the mast so it's leaning toward you.</span><br><ul>\r\n<li>Look for the bend in the lower section of the mast</li>\r\n<li>Turn it as shown in the video</li>\r\n<li>Swivel the yarn guide to the back</li>\r\n<li>Rotate the tension mast assembly</li>\r\n</ul>\r\n<br>\r\nWhen working on the main bed only, reverse the setup so the mast is leaning away from you.<br>This is not critical, but the most important thing is that your yarn flows smoothly no matter how you set up the mast.",
+              "legacyComponentId": 9470,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "796788140",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 9470,
+              "order": 2
+            }
+          ],
+          "title": "Tension Mast",
+          "slug": "tension-mast",
+          "order": 2,
+          "legacy": {
+            "assignId": 6179,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "529504538",
+              "title": null,
+              "legacyComponentId": 6478,
+              "order": 1
+            }
+          ],
+          "title": "Attach and remove the ribber carriage",
+          "slug": "attach-and-remove-the-ribber-carriage",
+          "order": 3,
+          "legacy": {
+            "assignId": 4248,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<ol>\r\n<li>Join the Main Bed and Ribber Carriage</li>\r\n<li>Move the carriages independently</li><br>\r\n\r\n</ol>",
+              "legacyComponentId": 6480,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "529529046",
+              "title": null,
+              "legacyComponentId": 6479,
+              "order": 2
+            }
+          ],
+          "title": "Join the Carriages",
+          "slug": "join-the-carriages",
+          "order": 4,
+          "legacy": {
+            "assignId": 4249,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The ribber carriage controls the movement of the needles on the ribber needlebed. Similar to the main bed it has settings for various stitch types.<br>",
+              "legacyComponentId": 6474,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Hotspot",
+              "notes": [
+                "Unmapped legacy component type: Hotspot"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4246",
+                "CHALLENGE_COMPONENTID": "6475",
+                "HOTSPOTCOUNT": "5",
+                "IMAGE_HEIGHT": "570.77778",
+                "IMAGE_WIDTH": "999.77778",
+                "SECONDDIV": "padding-bottom: 57.09046464305298%",
+                "SPOTT_IMAGE": "/challenge/images/v2/86/ribber_carraige21.jpg",
+                "SPOT_ACTIONID_1": "529529046",
+                "SPOT_ACTIONID_2": "8288",
+                "SPOT_ACTIONID_3": "203",
+                "SPOT_ACTIONID_4": "8289",
+                "SPOT_ACTIONID_5": "8289",
+                "SPOT_CORD_1": "top: 5.0783518141013015%;  left: 50.409817021687%;  width: 1.9782175995149642%;  height: 3.4650578023552354%;",
+                "SPOT_CORD_2": "top: 33.63648506937733%;  left: 52.31127716181558%;  width: 1.9782175995149642%;  height: 3.4650578023552354%;",
+                "SPOT_CORD_3": "top: 56.58884281669757%;  left: 50.111136146869875%;  width: 1.9782175995149642%;  height: 3.4650578023552354%;",
+                "SPOT_CORD_4": "top: 65.69860896703611%;  left: 11.401142410499274%;  width: 1.9782175995149642%;  height: 3.4650578023552354%;",
+                "SPOT_CORD_5": "top: 64.82261130644042%;  left: 85.4175903455594%;  width: 1.9782175995149642%;  height: 3.4650578023552354%;",
+                "SPOT_FUNCTION_1": "videopopup",
+                "SPOT_FUNCTION_2": "pathpopup",
+                "SPOT_FUNCTION_3": "glossaryhelp",
+                "SPOT_FUNCTION_4": "pathpopup",
+                "SPOT_FUNCTION_5": "pathpopup",
+                "SPOT_LOCATION_1": "top",
+                "SPOT_LOCATION_2": "top",
+                "SPOT_LOCATION_3": "top",
+                "SPOT_LOCATION_4": "top",
+                "SPOT_LOCATION_5": "top",
+                "SPOT_TEXT_1": "Connecting Pin",
+                "SPOT_TEXT_2": "Tuck Lever",
+                "SPOT_TEXT_3": "Tension Dial",
+                "SPOT_TEXT_4": "Cam Lever (left)",
+                "SPOT_TEXT_5": "Cam Lever (right)",
+                "TOPDIV": "max-width: 999.77778px"
+              },
+              "legacyComponentId": 6475,
+              "order": 2
+            }
+          ],
+          "title": "Ribber Carriage",
+          "slug": "ribber-carriage",
+          "order": 5,
+          "legacy": {
+            "assignId": 4246,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "529710215",
+              "title": null,
+              "legacyComponentId": 6481,
+              "order": 3
+            }
+          ],
+          "title": "The Ribber Carriage Settings",
+          "slug": "the-ribber-carriage-settings",
+          "order": 6,
+          "legacy": {
+            "assignId": 4250,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\t<br>Racking refers to the position of the ribber needles in relation to the main bed needles.\r\n\t<img src=\"https://www.knititnow.com/images/glossary/racking.jpg\" width=\"300\">\r\n\r\n",
+              "legacyComponentId": 6485,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "529743068",
+              "title": null,
+              "legacyComponentId": 6482,
+              "order": 2
+            }
+          ],
+          "title": "Explore Racking",
+          "slug": "explore-racking",
+          "order": 7,
+          "legacy": {
+            "assignId": 4251,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n</style>\r\n\r\n<hr class=\"style13\">\r\n\r\n\t<div class=\"container-border\">\r\n\r\n\r\n\t\t<img src=\"/challenge/images/v2/86/adjust_ribber1.jpg\">\r\n\r\n\t</div>\r\n\t<div class=\"container-border\">\r\n\r\n\t\t<img src=\"/challenge/images/v2/86/adjust_ribber1a.jpg\">\r\n\r\n\t</div>\r\n\r\n\r\n\t<div class=\"container-border\"><img src=\"/challenge/images/v2/86/adjust_ribber2.jpg\"></div>\r\n\r\n",
+              "legacyComponentId": 6534,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "569969867",
+              "title": null,
+              "legacySlot": 1,
+              "legacyComponentId": 7915,
+              "order": 4
+            },
+            {
+              "type": "video",
+              "vimeoId": "570008581",
+              "title": null,
+              "legacySlot": 2,
+              "legacyComponentId": 7915,
+              "order": 4
+            },
+            {
+              "type": "video",
+              "vimeoId": "313811525",
+              "title": null,
+              "legacySlot": 3,
+              "legacyComponentId": 7915,
+              "order": 4
+            }
+          ],
+          "title": "Adjust the Ribber",
+          "slug": "adjust-the-ribber",
+          "order": 8,
+          "legacy": {
+            "assignId": 4317,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Using the Ribber",
+      "slug": "using-the-ribber",
+      "displayOrder": 11,
+      "legacy": {
+        "itemId": 519,
+        "lessonOrder": 11
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "529958837",
+              "title": null,
+              "legacyComponentId": 6460,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "VimeoJumpLinks",
+              "notes": [
+                "Unmapped legacy component type: VimeoJumpLinks"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4239",
+                "CHALLENGE_COMPONENTID": "6461",
+                "LINKTIME_1": "00:00:31",
+                "LINKTIME_2": "00:01:23",
+                "LINKTIME_3": "00:01:40",
+                "LINKTIME_4": "00:02:05",
+                "LINKTIME_5": "00:02:33",
+                "LINKTIME_6": "00:02:42",
+                "LINKTIME_7": "00:04:17",
+                "LINKTIME_8": "00:04:54",
+                "LINKTIME_9": "00:05:22",
+                "LINKTITLE_1": "Overview",
+                "LINKTITLE_2": "Raise ribber and set for plain knitting",
+                "LINKTITLE_3": "Rack to P3 and align needles",
+                "LINKTITLE_4": "Thread the carriage",
+                "LINKTITLE_5": "Knit a zig-zag row",
+                "LINKTITLE_6": "Hang the ribber cast on comb",
+                "LINKTITLE_7": "Step 1: Knit on the main bed only",
+                "LINKTITLE_8": "Step 2: Knit on the ribber only",
+                "LINKTITLE_9": "Step 3: Knit on the main bed only"
+              },
+              "legacyComponentId": 6461,
+              "order": 2
+            }
+          ],
+          "title": "Casting On & 1x1 Ribbing",
+          "slug": "casting-on-1x1-ribbing",
+          "order": 1,
+          "legacy": {
+            "assignId": 4239,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Hold on the ribber if this machine is different from other machines.  There is no hold lever or button on the ribber.<br>Needles in \"E\" position are AUTOMATICALLY held.  Manually push them back to work or use the trick in this video to get held needles back to working position.<br>",
+              "legacyComponentId": 6531,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "568580581",
+              "title": null,
+              "legacyComponentId": 6530,
+              "order": 2
+            }
+          ],
+          "title": "Hold  Setting",
+          "slug": "hold-setting",
+          "order": 2,
+          "legacy": {
+            "assignId": 4315,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"></center> For tuck inspiration, tips and techniques, visit:<br>\r\n\t\tthe <a href=\"/path/328/dust-off-that-ribber\"><b>Knit it Now Classrooms: Ribbers</b></a>\r\n\t</div>\r\n\r\n",
+              "legacyComponentId": 6465,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "530087616",
+              "title": null,
+              "legacyComponentId": 6463,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "VimeoJumpLinks",
+              "notes": [
+                "Unmapped legacy component type: VimeoJumpLinks"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4241",
+                "LINKTIME_1": "00:05:25",
+                "LINKTIME_2": "00:01:27",
+                "LINKTIME_3": "00:01:33",
+                "LINKTIME_4": "00:01:38",
+                "LINKTIME_5": "00:01:49",
+                "LINKTIME_6": "00:02:08",
+                "LINKTITLE_1": "Don't Skip This! (Yarn Weight)",
+                "LINKTITLE_2": "Cast on: Rack \"H\" all needles in work",
+                "LINKTITLE_3": "Cast on: Knit a zig zag row",
+                "LINKTITLE_4": "Cast on: Hang comb and weights",
+                "LINKTITLE_5": "Cast on:: Knit 3 slip rows",
+                "LINKTITLE_6": "Get Knitting",
+                "TYPEOF": "VimeoJumpLinks"
+              },
+              "legacyComponentId": 6464,
+              "order": 3
+            }
+          ],
+          "title": "Full Needle Rib (FNR)",
+          "slug": "full-needle-rib-fnr",
+          "order": 3,
+          "legacy": {
+            "assignId": 4241,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "With English Rib, (Half-Fisherman Rib) one needlebed tucks every other row.  ",
+              "legacyComponentId": 7917,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "530337447",
+              "title": null,
+              "legacyComponentId": 6466,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<b>English Rib Carriage Settings:  Tuck on the ribber to the RIGHT</b><br>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/86/1ribber_tuck.jpg\">\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/86/1main_plain.jpg\">\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 6467,
+              "order": 3
+            }
+          ],
+          "title": "English Rib",
+          "slug": "english-rib",
+          "order": 4,
+          "legacy": {
+            "assignId": 4244,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Alternating tuck on each needlebed produces Fisherman Rib.  Working this stitch pattern on this machine is a little different than other machines, so watch this video to make sure you understand this difference before trying this technique.<br>",
+              "legacyComponentId": 7918,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "664914333",
+              "title": null,
+              "legacyComponentId": 7916,
+              "order": 2
+            }
+          ],
+          "title": "Fisherman Rib",
+          "slug": "fisherman-rib",
+          "order": 5,
+          "legacy": {
+            "assignId": 5465,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\tWith the ribber, you can set your machine to knit in the round and eliminate seaming tubular pieces. Yes, there are some limitations, but this technique is very useful for a number of applications.\r\n\t\t<ul>\r\n\t\t\t<li>\r\n\t\t\t\tWhat about quickly knitting hats and caps without a seam?</li>\r\n\t\t\t<li>Knit socks in the round</li>\r\n\t\t\t<li>You can even knit the body of a plain garment to the armholes, then split the fronts and backs and knit them on the single bed, eliminating the side seams</li>\r\n\t\t</ul>\r\n\r\n\t\t<a href=\"#steps\" data-toggle=\"collapse\"><b>Steps for Circular Knitting on the TH160</b> <i class=\"fa fa-caret-down\" aria-hidden=\"true\"></i></a>\r\n\t\t<div id=\"steps\" class=\"collapse hidden-print\">\r\n\t\t\t<ol>\r\n\t\t\t\t<li>Cast on as for full needle rib:\r\n\t\t\t\t\t<ul>\r\n\t\t\t\t\t\t<li>Ribber set to Half Pitch \"H\"</li>\r\n\t\t\t\t\t\t<li>All needles in work</li>\r\n\t\t\t\t\t\t<li>Zig Zag with Ravel cord - right to left (end with the carriage on the left)*</li>\r\n\t\t\t\t\t\t<li>Hang the Cast On Comb and weights</li>\r\n\t\t\t\t\t\t<li>Change to main yarn </li>\r\n\t\t\t\t\t</ul>\r\n\t\t\t\t</li>\r\n\t\t\t\t<li><b>Row 1 (carriage on the left)</b>\r\n\t\t\t\t\t<ul>\r\n\t\t\t\t\t\t<li>Main bed set to plain knitting</li>\r\n\t\t\t\t\t\t<li>Ribber (Tuck lever \"R\"  AND right Cam Lever \"P-R\")\r\n\t\t\t\t\t\t<li>Knit right <em>(All needles on the main bed knit only)</em>\r\n<span class=\"imagepopup\" data-imagetitle=\"slip right, knit left\" data-image=\"/challenge/images/v2/86/carriage_circular1.jpg\"><i class=\"fa fa-question-circle-o\" aria-hidden=\"true\"></i></span>\r\n\r\n\r\n\r\n\r\n</li>\r\n\r\n\t\t\t\t\t</ul>\r\n\t\t\t\t</li>\r\n\t\t\t\t<li><b>Row 2 (carriage on the right)</b>\r\n\t\t\t\t\t<ul>\r\n\t\t\t\t\t\t<li>Main bed set to slip (part)</li>\r\n\t\t\t\t\t\t<li>Ribber set to knit to the left (Tuck lever \"R\"  AND left Cam Lever \"N\") <span class=\"imagepopup\" data-imagetitle=\"slip right, knit left\" data-image=\"/challenge/images/v2/86/carriage_circular1.jpg\"><i class=\"fa fa-question-circle-o\" aria-hidden=\"true\"></i></li>\r\n\t\t\t\t\t\t<li>Knit Left <em>(All needles on the ribber knit only)</em></li>\r\n\t\t\t\t\t</ul>\r\n\t\t\t\t</li>\r\n\t\t\t</ol>\r\n\t\t\tRepeat these 2 rows alternating the main bed part button on every other row<br>\r\n\t\t\t<b> Note that the only setting change is the main bed \"part\" button every other row. The ribber setting remains the same for the entire pattern</br><br>\r\n\t\t\t\t*Also note that this creates an open cast on. Other steps need to be taken to create a closed cast on and to bind off\r\n\t\t</div>\r\n\t\r\n\t<img class=\"img-thumbnail\" src=\"/images/glossary/tubular_knitting.jpg\">\r\n\r\n<br>\r\n",
+              "legacyComponentId": 6468,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "945903166",
+              "title": null,
+              "legacyComponentId": 6469,
+              "order": 2
+            }
+          ],
+          "title": "Circular (Tubular) Knitting",
+          "slug": "circular-tubular-knitting",
+          "order": 6,
+          "legacy": {
+            "assignId": 4245,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 29,
+    "videos": [
+      {
+        "vimeoId": "526615684",
+        "title": null,
+        "lessonSlug": "unboxing",
+        "blockSlug": "unbox-the-machine"
+      },
+      {
+        "vimeoId": "699787852",
+        "title": "Using the Latch Tool",
+        "lessonSlug": "learn-about-the-machine",
+        "blockSlug": "tools-and-accessories"
+      },
+      {
+        "vimeoId": "699191838",
+        "title": "Transfer Tool Basics",
+        "lessonSlug": "learn-about-the-machine",
+        "blockSlug": "tools-and-accessories"
+      },
+      {
+        "vimeoId": "530014000",
+        "title": null,
+        "lessonSlug": "learn-about-the-machine",
+        "blockSlug": "the-proper-way-to-knit"
+      },
+      {
+        "vimeoId": "569614718",
+        "title": null,
+        "lessonSlug": "learn-about-the-machine",
+        "blockSlug": "replace-needle-and-sponge-bar"
+      },
+      {
+        "vimeoId": "527016660",
+        "title": null,
+        "lessonSlug": "casting-on-and-binding-off",
+        "blockSlug": "casting-on-stitches"
+      },
+      {
+        "vimeoId": "527303259",
+        "title": null,
+        "lessonSlug": "casting-on-and-binding-off",
+        "blockSlug": "binding-off"
+      },
+      {
+        "vimeoId": "527476073",
+        "title": null,
+        "lessonSlug": "tuck-pull-up-stitch",
+        "blockSlug": "about-tuck-stitch"
+      },
+      {
+        "vimeoId": "527924763",
+        "title": null,
+        "lessonSlug": "slip-skip-stitch",
+        "blockSlug": "about-slip-skip-stitch"
+      },
+      {
+        "vimeoId": "767093877",
+        "title": null,
+        "lessonSlug": "slip-skip-stitch",
+        "blockSlug": "i-cord-and-slip"
+      },
+      {
+        "vimeoId": "528316951",
+        "title": null,
+        "lessonSlug": "intarsia",
+        "blockSlug": "about-intarsia"
+      },
+      {
+        "vimeoId": "151859743",
+        "title": "Knitweave Without Brushes",
+        "lessonSlug": "knit-weave",
+        "blockSlug": "knit-weave-on-this-machine"
+      },
+      {
+        "vimeoId": "529371144",
+        "title": null,
+        "lessonSlug": "unboxing-the-ribber",
+        "blockSlug": "about-the-ribber"
+      },
+      {
+        "vimeoId": "529529046",
+        "title": "Connect the carriages",
+        "lessonSlug": "get-familiar-with-your-ribber",
+        "blockSlug": "drop-and-raise-the-ribber"
+      },
+      {
+        "vimeoId": "529480393",
+        "title": "Raise and Lower the Ribber",
+        "lessonSlug": "get-familiar-with-your-ribber",
+        "blockSlug": "drop-and-raise-the-ribber"
+      },
+      {
+        "vimeoId": "796788140",
+        "title": null,
+        "lessonSlug": "get-familiar-with-your-ribber",
+        "blockSlug": "tension-mast"
+      },
+      {
+        "vimeoId": "529504538",
+        "title": null,
+        "lessonSlug": "get-familiar-with-your-ribber",
+        "blockSlug": "attach-and-remove-the-ribber-carriage"
+      },
+      {
+        "vimeoId": "529529046",
+        "title": null,
+        "lessonSlug": "get-familiar-with-your-ribber",
+        "blockSlug": "join-the-carriages"
+      },
+      {
+        "vimeoId": "529710215",
+        "title": null,
+        "lessonSlug": "get-familiar-with-your-ribber",
+        "blockSlug": "the-ribber-carriage-settings"
+      },
+      {
+        "vimeoId": "529743068",
+        "title": null,
+        "lessonSlug": "get-familiar-with-your-ribber",
+        "blockSlug": "explore-racking"
+      },
+      {
+        "vimeoId": "569969867",
+        "title": null,
+        "lessonSlug": "get-familiar-with-your-ribber",
+        "blockSlug": "adjust-the-ribber"
+      },
+      {
+        "vimeoId": "570008581",
+        "title": null,
+        "lessonSlug": "get-familiar-with-your-ribber",
+        "blockSlug": "adjust-the-ribber"
+      },
+      {
+        "vimeoId": "313811525",
+        "title": null,
+        "lessonSlug": "get-familiar-with-your-ribber",
+        "blockSlug": "adjust-the-ribber"
+      },
+      {
+        "vimeoId": "529958837",
+        "title": null,
+        "lessonSlug": "using-the-ribber",
+        "blockSlug": "casting-on-1x1-ribbing"
+      },
+      {
+        "vimeoId": "568580581",
+        "title": null,
+        "lessonSlug": "using-the-ribber",
+        "blockSlug": "hold-setting"
+      },
+      {
+        "vimeoId": "530087616",
+        "title": null,
+        "lessonSlug": "using-the-ribber",
+        "blockSlug": "full-needle-rib-fnr"
+      },
+      {
+        "vimeoId": "530337447",
+        "title": null,
+        "lessonSlug": "using-the-ribber",
+        "blockSlug": "english-rib"
+      },
+      {
+        "vimeoId": "664914333",
+        "title": null,
+        "lessonSlug": "using-the-ribber",
+        "blockSlug": "fisherman-rib"
+      },
+      {
+        "vimeoId": "945903166",
+        "title": null,
+        "lessonSlug": "using-the-ribber",
+        "blockSlug": "circular-tubular-knitting"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

@@ -175,6 +175,7 @@ export const POST: APIRoute = async ({ request }) => {
     if (action === "saveCourseMetadata") {
       if (
         !("thumbnail" in body) &&
+        !("description" in body) &&
         !("active" in body) &&
         !("published" in body) &&
         !("contentStatus" in body)
@@ -182,18 +183,20 @@ export const POST: APIRoute = async ({ request }) => {
         return jsonResponse(
           {
             ok: false,
-            error: "saveCourseMetadata requires thumbnail, active, published, and/or contentStatus.",
+            error: "saveCourseMetadata requires thumbnail, description, active, published, and/or contentStatus.",
           },
           400,
         );
       }
       const update: {
         thumbnail?: unknown;
+        description?: unknown;
         active?: unknown;
         published?: unknown;
         contentStatus?: unknown;
       } = {};
       if ("thumbnail" in body) update.thumbnail = body.thumbnail;
+      if ("description" in body) update.description = body.description;
       if ("active" in body) update.active = body.active;
       if ("published" in body) update.published = body.published;
       if ("contentStatus" in body) update.contentStatus = body.contentStatus;
@@ -205,6 +208,7 @@ export const POST: APIRoute = async ({ request }) => {
         courseId,
         course,
         thumbnail: result.thumbnail,
+        description: result.description,
         active: result.active,
         published: result.published,
         contentStatus: result.contentStatus,

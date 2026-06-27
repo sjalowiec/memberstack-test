@@ -1,0 +1,418 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 122,
+    "title": "Visual Knitting with the KR10: Design Without Numbers",
+    "slug": "visual-knitting-with-the-kr10-design-without-numbers",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_122_visual_knitting_with_the_kr10_design_without_numbers.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:10+00:00"
+    },
+    "thumbnail": "/images/courses/kr10_thumb.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Getting Started",
+      "slug": "getting-started",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 824,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n\r\n\r\n\r\n\r\nThe KR10 (or KR11) Knit Contour is used with Silver/Singer/Studio machines. <br>This charting device is a mechanical device that allows the knitter to follow a drawing indicating where shaping should occur. <br><img class=\"ctr\" src=\"/images/glossary/silver_charting_device.jpg\">\r\n\r\n\r\n\r\n<img src=\"https://www.knititnow.com/images/glossary/charting_device_gif.gif\">\r\n\r\n<hr class=\"style13_pink\">\r\n<br><i class=\"fa fa-hand-o-down fa-2x\" aria-hidden=\"true\"></i><b> Click the \"spots\" below for the terms describing each part of the device</b>",
+              "legacyComponentId": 9714,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Hotspot",
+              "notes": [
+                "Unmapped legacy component type: Hotspot"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6348",
+                "CHALLENGE_COMPONENTID": "9716",
+                "HOTSPOTCOUNT": "16",
+                "IMAGE_HEIGHT": "552",
+                "IMAGE_WIDTH": "1000",
+                "RETURNTOEDIT": "yes",
+                "SECONDDIV": "padding-bottom: 55.2%",
+                "SPOTT_IMAGE": "/path/images/4194/kr10_12.jpg",
+                "SPOT_CORD_1": "top: 73.18840579710145%;  left: 8.799999999999999%;  width: 2%;  height: 3.6231884057971016%;",
+                "SPOT_CORD_10": "top: 56.15942028985508%;  left: 78.9%;  width: 2%;  height: 3.6231884057971016%;",
+                "SPOT_CORD_11": "top: 61.23188405797102%;  left: 72.1%;  width: 2%;  height: 3.6231884057971016%;",
+                "SPOT_CORD_12": "top: 47.28260869565217%;  left: 55.800000000000004%;  width: 2%;  height: 3.6231884057971016%;",
+                "SPOT_CORD_13": "top: 53.2608695652174%;  left: 47.099999999999994%;  width: 2%;  height: 3.6231884057971016%;",
+                "SPOT_CORD_14": "top: 55.79710144927537%;  left: 36.8%;  width: 2%;  height: 3.6231884057971016%;",
+                "SPOT_CORD_15": "top: 59.05797101449275%;  left: 24.2%;  width: 2%;  height: 3.6231884057971016%;",
+                "SPOT_CORD_16": "top: 24.818840579710145%;  left: 73%;  width: 2%;  height: 3.6231884057971016%;",
+                "SPOT_CORD_2": "top: 81.70289855072464%;  left: 34.2%;  width: 2%;  height: 3.6231884057971016%;",
+                "SPOT_CORD_3": "top: 85.86956521739131%;  left: 45.2%;  width: 2%;  height: 3.6231884057971016%;",
+                "SPOT_CORD_4": "top: 86.59420289855072%;  left: 54.6%;  width: 2%;  height: 3.6231884057971016%;",
+                "SPOT_CORD_5": "top: 87.31884057971014%;  left: 60.699999999999996%;  width: 2%;  height: 3.6231884057971016%;",
+                "SPOT_CORD_6": "top: 88.22463768115942%;  left: 66%;  width: 2%;  height: 3.6231884057971016%;",
+                "SPOT_CORD_7": "top: 87.5%;  left: 70.89999999999999%;  width: 2%;  height: 3.6231884057971016%;",
+                "SPOT_CORD_8": "top: 73.36956521739131%;  left: 79%;  width: 2%;  height: 3.6231884057971016%;",
+                "SPOT_CORD_9": "top: 73.55072463768117%;  left: 86.7%;  width: 2%;  height: 3.6231884057971016%;",
+                "SPOT_LOCATION_1": "top",
+                "SPOT_LOCATION_10": "top",
+                "SPOT_LOCATION_11": "top",
+                "SPOT_LOCATION_12": "top",
+                "SPOT_LOCATION_13": "top",
+                "SPOT_LOCATION_14": "top",
+                "SPOT_LOCATION_15": "top",
+                "SPOT_LOCATION_16": "top",
+                "SPOT_LOCATION_2": "top",
+                "SPOT_LOCATION_3": "top",
+                "SPOT_LOCATION_4": "top",
+                "SPOT_LOCATION_5": "top",
+                "SPOT_LOCATION_6": "top",
+                "SPOT_LOCATION_7": "top",
+                "SPOT_LOCATION_8": "top",
+                "SPOT_LOCATION_9": "top",
+                "SPOT_TEXT_1": "Select Lever",
+                "SPOT_TEXT_10": "Feeding Dial",
+                "SPOT_TEXT_11": "Clip",
+                "SPOT_TEXT_12": "Paper Stand",
+                "SPOT_TEXT_13": "Paper Slot",
+                "SPOT_TEXT_14": "Stitch Scale",
+                "SPOT_TEXT_15": "Clip",
+                "SPOT_TEXT_16": "Electronic Row Counter",
+                "SPOT_TEXT_2": "Display",
+                "SPOT_TEXT_3": "Pause Key",
+                "SPOT_TEXT_4": "Reset Key",
+                "SPOT_TEXT_5": "Plus Key",
+                "SPOT_TEXT_6": "Minus Key",
+                "SPOT_TEXT_7": "Set Key",
+                "SPOT_TEXT_8": "Connecting Cord",
+                "SPOT_TEXT_9": "ON/OFF Switch",
+                "TOPDIV": "max-width: 1000px"
+              },
+              "legacyComponentId": 9716,
+              "order": 2
+            }
+          ],
+          "title": "{First}, Get Acquainted<br> with your device",
+          "slug": "first-get-acquainted-br-with-your-device",
+          "order": 1,
+          "legacy": {
+            "assignId": 6348,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\nThe KR10 included a set of pattern styles for you to use.  They are drawn on paper at various sizes at 1/2 and 1/4 scale.<br>Copy these pattern styles to the  mylar and make any sizing or style changes you need.<br>NOTE:  If you don't have the paper Knit Pattern Set, you can draw your own from hand knitting patterns, or use sewing patterns.<br>\r\nIf using digital a sewing pattern, set the print to 25-50% scale. Then copy the scaled pieces to your mylar.<br><img class=\"ctr\" src=\"/challenge/images/v2/122/knit_pattern_set.jpg\">\r\n\r\n\r\n\r\n\r\n\t<img src=\"/challenge/images/v2/122/draw.jpg\"><br>\r\nUse a soft pencil or erasable marker to copy/trace the design to your mylar.\r\n",
+              "legacyComponentId": 9722,
+              "order": 1
+            }
+          ],
+          "title": "Knit Pattern Set",
+          "slug": "knit-pattern-set",
+          "order": 2,
+          "legacy": {
+            "assignId": 6355,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .container-border1 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px 50px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        background-color: white;\r\n    }\r\n\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n\r\n\r\n</style>\r\n\r\n\r\n    \r\n\r\n        <div class=\"container-border1\">\r\n\r\n<h4>Stitch Gauge</h4> The stitch gauge is reflected by the <a data-GlossaryId='829' class='glossaryhelp'>Stitch Scale <i class='fa fa-question-circle-o' aria-hidden='true'></i></a>\r\n<h4>Row Gauge</h4>\r\nThe row gauge is controlled by the <span class=\"imagepopup\" data-imagetitle=\"Electronics\" data-image=\"/challenge/images/v2/122/electronics.jpg\"><i class=\"fa fa-picture-o\" aria-hidden=\"true\"></i> Electronics </span>\r\n\r\n\r\n in the device\r\n\r\n<hr class=\"style13\">\r\n            <ol>\r\n                <li>\r\n                    Establish your stitch and row gauge.</li>\r\n                <li>Use a sewing pattern, dimensions from a knitting pattern, or the included <a data-GlossaryId='831' class='glossaryhelp'>Knit Pattern Set <i class='fa fa-question-circle-o' aria-hidden='true'></i></a>\r\n and draw the shape of the piece you want to knit at either ½ or ¼ scale.</li>\r\n<li>Set the\r\n<span class=\"imagepopup\" data-imagetitle=\"¼ | ½ switch\" data-image=\"/challenge/images/v2/122/quarter.jpg\" width=\"200\"><i class=\"fa fa-picture-o\" aria-hidden=\"true\"></i><b> ¼\r\n | ½\r\nswitch</b></span> </li>\r\n\r\n                <li>Draw the outline of the piece shape on the gridded mylar</li>\r\n<li>Choose the stitch scale to match your stitch gauge in 4\" <em>(10cm)</em></li>\r\n <li>The Stitch scale represents stitches and the needles in work.</li>\r\n                <li>Set your Knit Radar for your row gauge in 4\" <em>(10cm)</em>.</li>\r\n               \r\n                <li>Using the plus and minus key sets the electronics of the device so it advances the mylar as you knit according to your row gauge.<br>\r\n                <li>Follow along where the line matches the divisions on the stitch scale.\r\n                <li>As you knit, the row counter on the device advances the drawing.\r\n            </ol>\r\n        </div>\r\n    <h3>Example</h3>\r\n\r\n<ul>\r\n<li>I'm planning a newborn baby sweater with a finished chest of 16\" (41cm). I'm using a drawing of the cardigan front that is drawn at 1/2 scale</li>\r\n<li>\r\nMy gauge is 28 stitches and 44 rows = 4\" (10cm)</li>\r\n<li>I'll use the H9 stitch scale and insert it so the 28 sts edge is showing</li>\r\n<li>I'll set my Knit Radar to 44 rows</li>\r\n</ul>\r\n\r\n\r\n\r\n\t<img src=\"/challenge/images/v2/122/scale.jpg\">\r\n\r\n\r\n\r\n    \r\n    <img src=\"/challenge/images/v2/122/rulers1.jpg\" width=\"300\">\r\n\r\n",
+              "legacyComponentId": 9715,
+              "order": 1
+            }
+          ],
+          "title": "How does this work?",
+          "slug": "how-does-this-work",
+          "order": 3,
+          "legacy": {
+            "assignId": 6349,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<b>NOTE 1:</b>As you are kntiting, if you need to adjust the position of the mylar, use the Plus and Minus Keys. Don't adjust manually<br><b>NOTE 2: </b>If you turn off the device (to save batteries) you'll need to reprogram the row gauge and re-position the row count on the device.<br><b>NOTE 3: </b>If you scrap off or rip rows, use the Pause key to stop the row counter temporarily.<br>",
+              "legacyComponentId": 9725,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/122/v2/122/12.jpg",
+                  "caption": "Turn on the power to the unit with the switch on the right side"
+                },
+                {
+                  "src": "/challenge/images/v2/122/v2/122/22.jpg",
+                  "caption": "Press the \"set key\" and the Icon will display"
+                },
+                {
+                  "src": "/v2/122/32.jpg",
+                  "caption": "Set your row gauge using the Plus and Minus keys"
+                },
+                {
+                  "src": "/challenge/images/v2/122/v2/122/42.jpg",
+                  "caption": "Finish by pressing the set key and the display will show \"0\". You are ready to start knitting"
+                },
+                {
+                  "src": "/challenge/images/v2/122/v2/122/62.jpg",
+                  "caption": "If you need to scrap off or rip rows, use the Pause Key."
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 9723,
+              "order": 2
+            }
+          ],
+          "title": "Set the Row Gauge",
+          "slug": "set-the-row-gauge",
+          "order": 4,
+          "legacy": {
+            "assignId": 6350,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Quarter vs Half Scale",
+      "slug": "quarter-vs-half-scale",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 826,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>Set the ¼ / ½ Select Lever only when the device is off</h3><br>\r\n<h3>The ¼ scale mylar is oriented with 0 in the center of the sheet</h3>\r\n\r\n\t<img src=\"/challenge/images/v2/122/quarter_vs_half1.jpg\">\r\n<h3>The ½ scale mylar is oriented with 0 in the left of the sheet</h3><br><hr class=\"style13_pink\">\r\n\t<img src=\"/challenge/images/v2/122/quarter.jpg\">\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 9718,
+              "order": 1
+            }
+          ],
+          "title": "&#188; vs &#189;",
+          "slug": "188-vs-189",
+          "order": 1,
+          "legacy": {
+            "assignId": 6351,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style type=\"text/css\">\r\n\ttable.tableizer-table {\r\n\t\tfont-size: 12px;\r\n\t\tborder: 1px solid #CCC;\r\n\t} \r\n\t.tableizer-table td {\r\n\t\tpadding: 12px;\r\n\t\tmargin: 6px;\r\n\t\tborder: 1px solid #CCC;\r\n\t}\r\n\t.tableizer-table th {\r\n\t\tbackground-color: #5E9DED; \r\n\t\tcolor: #FFF;\r\n\t\tfont-weight: bold;\r\n\t}\r\n</style>\r\nEvery knitting machine has a set number of needles available to knit.  This limits the width of the knitting we can produce.\r\n<h3>How many needles do you have on your machine?</h3>\r\n<div class=\"container\">\r\n\r\n<div class=\"btn-group\">\r\n      <button type=\"button\" class=\"btn btn-default dropdown-toggle\" data-toggle=\"dropdown\">\r\n      100 <span class=\"caret\"></span></button>\r\n\r\n<table class=\"tableizer-table table table-striped table-bordered table-condensed table-hover dropdown-menu\" role=\"menu\">\r\n\r\n      <thead><tr class=\"tableizer-firstrow\"><th>Sts per Inch</th><th>4\" / 10cm</th><th>Max Inches</th><th>Max cm</th></tr></thead>\r\n <tr><td>3.5</td><td>14</td><td>29</td><td><em>73</em></td></tr>\r\n <tr><td>4</td><td>16</td><td>25</td><td><em>64</em></td></tr>\r\n <tr><td>4.5</td><td>18</td><td>22</td><td><em>56</em></td></tr>\r\n <tr><td>5</td><td>20</td><td>20</td><td><em>51</em></td></tr>\r\n <tr><td>5.5</td><td>22</td><td>18</td><td><em>46</em></td></tr>\r\n <tr><td>6</td><td>24</td><td>17</td><td><em>42</em></td></tr>\r\n <tr><td>6.5</td><td>26</td><td>15</td><td><em>39</em></td></tr>\r\n <tr><td>7</td><td>28</td><td>14</td><td><em>36</em></td></tr>\r\n <tr><td>7.5</td><td>30</td><td>13</td><td><em>34</em></td></tr>\r\n</tbody></table>\r\n    </div>\r\n<div class=\"btn-group\">\r\n      <button type=\"button\" class=\"btn btn-default dropdown-toggle\" data-toggle=\"dropdown\">\r\n      110 <span class=\"caret\"></span></button>\r\n<table class=\"tableizer-table table table-striped table-bordered table-condensed table-hover dropdown-menu\" role=\"menu\">\r\n<thead><tr class=\"tableizer-firstrow\"><th>Sts per Inch</th><th>4\" / 10cm</th><th>Max Inches</th><th>Max cm</th></tr></thead>\r\n <tr><td>3.5</td><td>14</td><td>31</td><td>80</em></td></tr>\r\n <tr><td>4</td><td>16</td><td>28</td><td><em>70</em></td></tr>\r\n <tr><td>4.5</td><td>18</td><td>24</td><td><em>62</em></td></tr>\r\n <tr><td>5</td><td>20</td><td>22</td><td>v56</em></td></tr>\r\n <tr><td>5.5</td><td>22</td><td>20</td><td><em>51</em></td></tr>\r\n <tr><td>6</td><td>24</td><td>18</td><td><em>47</em></td></tr>\r\n <tr><td>6.5</td><td>26</td><td>17</td><td><em>43</em></td></tr>\r\n <tr><td>7</td><td>28</td><td>16</td><td><em>40</em></td></tr>\r\n <tr><td>7.5</td><td>30</td><td>15</td><td><em>37</em></td></tr>\r\n</tbody></table>\r\n    </div>\r\n<div class=\"btn-group\">\r\n      <button type=\"button\" class=\"btn btn-default dropdown-toggle\" data-toggle=\"dropdown\">\r\n      150 <span class=\"caret\"></span></button>\r\n<table class=\"tableizer-table table table-striped table-bordered table-condensed table-hover dropdown-menu\" role=\"menu\">\r\n<thead><tr class=\"tableizer-firstrow\"><th>Sts per Inch</th><th>4\" / 10cm</th><th>Max Inches</th><th>Max cm</th></tr></thead>\r\n <tr><td>3.5</td><td>14</td><td>43</td><td><em>109</em></td></tr>\r\n <tr><td>4</td><td>16</td><td>38</td><td><em>95</em></td></tr>\r\n <tr><td>4.5</td><td>18</td><td>33</td><td><em>85</em></td></tr>\r\n <tr><td>5</td><td>20</td><td>30</td><td><em>76</em></td></tr>\r\n <tr><td>5.5</td><td>22</td><td>27</td><td><em>69</em></td></tr>\r\n <tr><td>6</td><td>24</td><td>25</td><td><em>64</em></td></tr>\r\n <tr><td>6.5</td><td>26</td><td>23</td><td><em>59</em></td></tr>\r\n <tr><td>7</td><td>28</td><td>21</td><td><em>54</em></td></tr>\r\n <tr><td>7.5</td><td>30</td><td>20</td><td><em>51</em></td></tr>\r\n</tbody></table>\r\n\r\n    </div>\r\n<div class=\"btn-group\">\r\n      <button type=\"button\" class=\"btn btn-default dropdown-toggle\" data-toggle=\"dropdown\">\r\n      200 <span class=\"caret\"></span></button>\r\n\r\n\r\n<table class=\"tableizer-table table table-striped table-bordered table-condensed table-hover dropdown-menu\" role=\"menu\">\r\n\r\n<thead><tr class=\"tableizer-firstrow\"><th>Sts per Inch</th><th>4\" / 10cm</th><th>Max Inches</th><th>Max cm</th></tr></thead>\r\n <tr><td>5</td><td>20</td><td>40</td><td><em>102</em></td></tr>\r\n <tr><td>5.5</td><td>22</td><td>36</td><td><em>92</em></td></tr>\r\n <tr><td>6</td><td>24</td><td>33</td><td><em>85</em></td></tr>\r\n <tr><td>6.5</td><td>26</td><td>31</td><td><em>78</em></td></tr>\r\n <tr><td>7</td><td>28</td><td>29</td><td><em>73</em></td></tr>\r\n <tr><td>7.5</td><td>30</td><td>27</td><td><em>68</em></td></tr>\r\n <tr><td>8</td><td>32</td><td>25</td><td><em>64</em></td></tr>\r\n <tr><td>8.5</td><td>34</td><td>24</td><td><em>60</em></td></tr>\r\n <tr><td>9</td><td>36</td><td>22</td><td><em>56</em></td></tr>\r\n <tr><td>9.5</td><td>38</td><td>21</td><td><em>53</em></td></tr>\r\n</tbody></table>\r\n\r\n    </div>\r\n<div class=\"btn-group\">\r\n      <button type=\"button\" class=\"btn btn-default dropdown-toggle\" data-toggle=\"dropdown\">\r\n      272 <span class=\"caret\"></span></button>\r\n<table class=\"tableizer-table table table-striped table-bordered table-condensed table-hover dropdown-menu\" role=\"menu\">\r\n\r\n<thead><tr class=\"tableizer-firstrow\"><th>Sts per Inch</th><th>4\" / 10cm</th><th>Max Inches</th><th>Max cm</th></tr></thead>\r\n <tr><td>5</td><td>20</td><td>54</td><td><em>138</em></td></tr>\r\n <tr><td>5.5</td><td>22</td><td>49</td><td><em>126</em></td></tr>\r\n <tr><td>6</td><td>24</td><td>45</td><td><em>115</em></td></tr>\r\n <tr><td>6.5</td><td>26</td><td>42</td><td><em>106</em></td></tr>\r\n <tr><td>7</td><td>28</td><td>39</td><td><em>99</em></td></tr>\r\n <tr><td>7.5</td><td>30</td><td>36</td><td><em>92</em></td></tr>\r\n <tr><td>8</td><td>32</td><td>34</td><td><em>86</em></td></tr>\r\n <tr><td>8.5</td><td>34</td><td>32</td><td><em>81</em></td></tr>\r\n <tr><td>9</td><td>36</td><td>30</td><td><em>77</em></td></tr>\r\n <tr><td>9.5</td><td>38</td><td>29</td><td><em>73</em></td></tr>\r\n</tbody></table>\r\n    </div>\r\n</div>\r\n<br>\r\n\r\n\t<img class=\"img-thumbnail\" src=\"/path/images/183/not_enough110.jpg\">\r\n\t<img class=\"img-thumbnail\" src=\"/path/images/183/not_enough_150.jpg\">\r\n\t<img class=\"img-thumbnail\" src=\"/path/images/183/not_enough_200.jpg\">\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 9720,
+              "order": 1
+            }
+          ],
+          "title": "How wide can you knit?",
+          "slug": "how-wide-can-you-knit",
+          "order": 2,
+          "legacy": {
+            "assignId": 6353,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Knit a Cardigan Front",
+      "slug": "knit-a-cardigan-front",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 828,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "988120195",
+              "title": null,
+              "legacyComponentId": 9719,
+              "order": 1
+            }
+          ],
+          "title": "Follow Along",
+          "slug": "follow-along",
+          "order": 1,
+          "legacy": {
+            "assignId": 6352,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Your Turn",
+      "slug": "your-turn",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 829,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .container-border1 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px 50px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        background-color: white;\r\n        max-width: 500px;\r\n\r\n    }\r\n\r\n</style>\r\n\r\n\r\n    \r\n\r\n        <div class=\"container-border1\">\r\n            The goal:<br>\r\n            <ul>\r\n                <li>Design a triangular scarf</li>\r\n                <li>Gauge: 16/24</li>\r\n                <li>16\" x 16\" (40cm x 40cm)</li>\r\n            </ul>\r\n\r\n        </div>\r\n        <hr class=\"style13_pink\">\r\n        <div style=\"padding-left: 30px;\">\r\n<span class=\"fa-solid fa-circle-1 fa-xl\" style=\"color: #9E2065; vertical-align: middle;\"></span>\r\n<h4 style=\"display: inline; margin-left: 5px;\">Draw the scarf shape at ¼ scale.<a href=\"/downloads/scarf_exercise_download.pdf\"> <i class=\"fa-regular fa-download\"></i> download</a></h4><br>\r\n<a href=\"#hint1\" data-toggle=\"collapse\">Hint:</a>\r\n<div id=\"hint1\" class=\"collapse hidden-print\">\r\n    <em> Divide the finished size by 25% ( 16 * 25% = 4\")<br>Use the 1/4 mylar with 0 in the center</em>\r\n</div>\r\n<br>\r\n\r\n<span class=\"fa-solid fa-circle-2 fa-xl\" style=\"color: #9E2065; vertical-align: middle;\"></span>\r\n<h4 style=\"display: inline; margin-left: 5px;\">Choose the correct Stitch Scale for the gauge 16/24</h4><br>\r\n<a href=\"#hint2\" data-toggle=\"collapse\">Hint:</a>\r\n<div id=\"hint2\" class=\"collapse hidden-print\">\r\n    <em> Use the \"Q4\" scale</em>\r\n</div>\r\n<br>\r\n\r\n<span class=\"fa-solid fa-circle-3 fa-xl\" style=\"color: #9E2065; vertical-align: middle;\"></span>\r\n<h4 style=\"display: inline; margin-left: 5px;\">Set the ¼ | ½ switch to ¼</h4><br>\r\n        <a href=\"#hint3\" data-toggle=\"collapse\">Hint:</a>\r\n        <div id=\"hint3\" class=\"collapse hidden-print\">\r\n            <img src=\"/challenge/images/v2/122/switch1.jpg\">\r\n        </div>\r\n        <br>\r\n        <span class=\"fa-solid fa-circle-4 fa-xl\" style=\"color: #9E2065; vertical-align: middle;\"></span>\r\n        <h4 style=\"display: inline; margin-left: 5px;\">Set the row count to the row gauge (24)</h4><br>\r\n        <a href=\"#hint4\" data-toggle=\"collapse\">Hint:</a>\r\n        <div id=\"hint4\" class=\"collapse hidden-print\">\r\n            <em>Use the set key, the plus and minus buttons, then use the set key again to complete (row counter set to 0)</em>\r\n            <img src=\"/challenge/images/v2/122/set_key.jpg\">\r\n        </div>\r\n        <br>\r\n        <span class=\"fa-solid fa-circle-5 fa-xl\" style=\"color: #9E2065; vertical-align: middle;\"></span>\r\n        <h4 style=\"display: inline; margin-left: 5px;\">Insert the mylar in the device and align to the bottom edge of the drawing.</h4>\r\n    <hr class=\"style13_pink\">\r\n</div>\r\n    \r\n    <img src=\"/challenge/images/v2/122/exercise.jpg\">\r\n\r\n\r\n\r\n\r\n\r\n    \r\n<h3> Questions:</h3>",
+              "legacyComponentId": 9724,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6356",
+                "CHALLENGE_COMPONENTID": "9726",
+                "QUESTION_ANSWER": "64",
+                "QUESTION_ERROR_MESSAGE": "<h3><b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> no ...!</h3></b>Try again. <i class=",
+                "QUESTION_MANDITORY": "1",
+                "QUESTION_SIZE": "col-xs-12 col-md-4",
+                "QUESTION_SUCCESS_MESSAGE": "<h3><b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b></h3>",
+                "QUESTION_TEXT": "How many stitches to cast on? <em>(read the stitch scale)</em>"
+              },
+              "legacyComponentId": 9726,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6356",
+                "CHALLENGE_COMPONENTID": "9728",
+                "QUESTION_ANSWER": "96",
+                "QUESTION_ERROR_MESSAGE": "<h3><b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> no ...!</h3></b>Try again. <i class=",
+                "QUESTION_MANDITORY": "1",
+                "QUESTION_SIZE": "col-xs-12 col-md-4",
+                "QUESTION_SUCCESS_MESSAGE": "<h3><b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b></h3>",
+                "QUESTION_TEXT": "How many rows to knit? <em> (use the Plus key to advance the mylar)</em>"
+              },
+              "legacyComponentId": 9728,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Do the math</h3>\r\n\r\n<img src=\"/challenge/images/v2/122/math.png\">\r\n\r\n",
+              "legacyComponentId": 9729,
+              "order": 4
+            }
+          ],
+          "title": "Try it Yourself - Exercise 1",
+          "slug": "try-it-yourself-exercise-1",
+          "order": 1,
+          "legacy": {
+            "assignId": 6356,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n    \r\n      <b>  <span style=\"font-size:1.5em\">Use the same mylar as the previous exercise, for a 16\" triangular scarf. Change the gauge to 15 sts / 22 rows = 4\" <em>(10cm)</em><br></span></b>\r\n        <hr class=\"style13_pink\">\r\n        <span class=\"fa-solid fa-circle-1 fa-xl\" style=\"color: #9E2065; vertical-align: middle;\"></span>\r\n        <h4 style=\"display: inline; margin-left: 5px;\">Choose the correct Stitch Scale for the gauge 15/22</h4><br>\r\n        <a href=\"#hint7\" data-toggle=\"collapse\">Hint:</a>\r\n        <div id=\"hint7\" class=\"collapse hidden-print\">\r\n            <em> Use the \"Q4\" scale</em>\r\n        </div>\r\n        <br>\r\n\r\n        <span class=\"fa-solid fa-circle-2 fa-xl\" style=\"color: #9E2065; vertical-align: middle;\"></span>\r\n        <h4 style=\"display: inline; margin-left: 5px;\">Set the ¼ | ½ switch to ¼</h4><br><span class=\"fa-solid fa-circle-3 fa-xl\" style=\"color: #9E2065; vertical-align: middle;\"></span>\r\n        <h4 style=\"display: inline; margin-left: 5px;\">Set the row count to the row gauge (22)</h4><br><span class=\"fa-solid fa-circle-4 fa-xl\" style=\"color: #9E2065; vertical-align: middle;\"></span>\r\n        <h4 style=\"display: inline; margin-left: 5px;\">Insert the mylar in the device and align to the bottom edge of the drawing.</h4>\r\n        <hr class=\"style13_pink\">\r\n    \r\n\r\n\r\n    \r\n        <img src=\"/challenge/images/v2/122/scarf.jpg\">\r\n    \r\n\r\n<h3> Questions:</h3>",
+              "legacyComponentId": 9730,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6357",
+                "CHALLENGE_COMPONENTID": "9731",
+                "QUESTION_ANSWER": "60",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> no ...!</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-4",
+                "QUESTION_SUCCESS_MESSAGE": "<h3><b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b></h3>",
+                "QUESTION_TEXT": "How many stitches to cast on?"
+              },
+              "legacyComponentId": 9731,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6357",
+                "CHALLENGE_COMPONENTID": "9732",
+                "QUESTION_ANSWER": "88",
+                "QUESTION_ERROR_MESSAGE": "<h3><b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> no ...!</h3></b>Try again. <i class=",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-4",
+                "QUESTION_SUCCESS_MESSAGE": "<h3><b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b></h3>",
+                "QUESTION_TEXT": "How many rows to knit?"
+              },
+              "legacyComponentId": 9732,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<h3> Do the math</h3><br>\r\n\t<img src=\"/challenge/images/v2/122/math21.png\">",
+              "legacyComponentId": 9733,
+              "order": 4
+            }
+          ],
+          "title": "{First},<br>  Challenge Yourself",
+          "slug": "first-br-challenge-yourself",
+          "order": 2,
+          "legacy": {
+            "assignId": 6357,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 1,
+    "videos": [
+      {
+        "vimeoId": "988120195",
+        "title": null,
+        "lessonSlug": "knit-a-cardigan-front",
+        "blockSlug": "follow-along"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

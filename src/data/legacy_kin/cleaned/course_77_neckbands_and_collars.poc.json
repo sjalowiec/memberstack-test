@@ -1,0 +1,727 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 77,
+    "title": "Neckbands and Collars",
+    "slug": "neckbands-and-collars",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_77_neckbands_and_collars.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Neckline shaping Perfection",
+      "slug": "neckline-shaping-perfection",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 489,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nFor this Knit-along, we are assuming that you have perfected neckline shaping (or cut 'n sew).<br>There's no point in exploring neckbands and collars before you are ready.<br>We've included some helpful tutorials with this Knit-along, but the <a href=\"/challenge/21/course/neckline-shaping-practice\" target=\"_blank\">Neckline Practice course</a> goes into depth on the subject.\r\n<a href=\"/challenge/21/course/neckline-shaping-practice  target=\"_blank\"><img src=\"/challenge/images/v2/77/neckline_course.png\"></a>\r\nIf necklines have you stumped ... please consider the complete Neckline Practice course<br>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 6171,
+              "order": 1
+            }
+          ],
+          "title": "Are you confident?",
+          "slug": "are-you-confident",
+          "order": 1,
+          "legacy": {
+            "assignId": 4077,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<center><a href=\"/knit/DynamicPattern/679/practice-necklines\" target=\"_blank\"> <img src=\"/challenge/images/v2/77/practice_necklines400.jpg\"><br>Use the Knit it Now practice neckline pattern to knit full size or mini necklines and experiment with neckbands and collars in this knitalong<br><center></center></center>\r\n\r\n",
+              "legacyComponentId": 6173,
+              "order": 1
+            }
+          ],
+          "title": "The Practice Pattern",
+          "slug": "the-practice-pattern",
+          "order": 2,
+          "legacy": {
+            "assignId": 4078,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859107",
+              "title": "Neckline Shaping Perfection",
+              "legacySlot": 1,
+              "legacyComponentId": 6174,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "252565241",
+              "title": "Shallow Round Neck Shaping",
+              "legacySlot": 2,
+              "legacyComponentId": 6174,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858551",
+              "title": "Easy Round Neck Shaping",
+              "legacySlot": 3,
+              "legacyComponentId": 6174,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151819909",
+              "title": "Introduction to Cut 'n Sew",
+              "legacySlot": 4,
+              "legacyComponentId": 6174,
+              "order": 1
+            }
+          ],
+          "title": "Neckline shaping tips",
+          "slug": "neckline-shaping-tips",
+          "order": 3,
+          "legacy": {
+            "assignId": 4079,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Neckbands",
+      "slug": "neckbands",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 488,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "There are many options for adding doubled bands to the edges of our sweaters.<br><ol>\r\n<li>One-piece bands\r\n<ul>\r\n<li>Rehang the garment edge with the WRONG side facing. When the band is complete, secure it to the wrong side of the knitting by binding off or stitching it down</li>\r\n<li>Rehang the garment edge with the RIGHT side facing.  When the band is complete, secure it to the right side of the knitting by neatly stitching it in place</li>\r\n</ul>\r\n</li><br>\r\n<li>\"Sandwich\" bands<br>\r\nKnit the band in 2 pieces \"sandwiching\" the edge of the sweater between the layers.  This is often called an Industrial Band</li>\r\n</ul>\r\n</ol>",
+              "legacyComponentId": 6191,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860086",
+              "title": "One Piece Neckband Perfection",
+              "legacySlot": 1,
+              "legacyComponentId": 6175,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "223374072",
+              "title": "Reversible Band",
+              "legacySlot": 2,
+              "legacyComponentId": 6175,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "345492301",
+              "title": "2 Piece Industrial Band",
+              "legacySlot": 3,
+              "legacyComponentId": 6175,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> Jump to the 4:38 point in this video<br> for bands folded to and finished from the right (public side) ",
+              "legacyComponentId": 6192,
+              "order": 3
+            }
+          ],
+          "title": "Neckband Options",
+          "slug": "neckband-options",
+          "order": 2,
+          "legacy": {
+            "assignId": 4080,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "326660382",
+              "title": "LIve Replay",
+              "legacyComponentId": 6170,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Jumplinks</h3>\r\n<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> <a class=\"jumplink\" data-jumptime=\"71\">00:01:11 - The 'dreaded dimple'</a><br>\r\n<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> <a class=\"jumplink\" data-jumptime=\"214\">00:03:34 - Not Enough Needles</a><br>\r\n<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> <a class=\"jumplink\" data-jumptime=\"314\">00:05:14 - Bind off or scrap off?</a><br>\r\n<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> <a class=\"jumplink\" data-jumptime=\"770\">00:12:50 - Turning Row</a><br>\r\n<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> <a class=\"jumplink\" data-jumptime=\"915\">00:15:15 - Grading the Tension of bands</a><br>\r\n<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> <a class=\"jumplink\" data-jumptime=\"1055\">00:17:35 - Decorative Decreases</a><br>\r\n<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> <a class=\"jumplink\" data-jumptime=\"1420\">00:23:40 - Picking up stitches to rows</a><br>\r\n<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> <a class=\"jumplink\" data-jumptime=\"1818\">00:30:18 - Picking up the V-Neck</a><br>\r\n<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> <a class=\"jumplink\" data-jumptime=\"2060\">00:34:20 - Practice pattern - Any yarn - Any machine</a><br>",
+              "legacyComponentId": 6181,
+              "order": 2
+            }
+          ],
+          "title": "Replay Ugliest V-Neck.... EVER!",
+          "slug": "replay-ugliest-v-neck-ever",
+          "order": 3,
+          "legacy": {
+            "assignId": 4075,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Collars for Machine Knitters",
+      "slug": "collars-for-machine-knitters",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 490,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "377383857",
+              "title": "Collar options",
+              "legacyComponentId": 6176,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<h2>Jumplinks</h2>\r\n\r\n<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> <a class=\"jumplink\" data-jumptime=\"94\">00:01:34 - Collar Classroom</a><br>\r\n<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> <a class=\"jumplink\" data-jumptime=\"167\">00:02:47 - KIIS Collar</a><br>\r\n<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> <a class=\"jumplink\" data-jumptime=\"274\">00:04:34 - KIIS Collar - extended</a><br>\r\n<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> <a class=\"jumplink\" data-jumptime=\"604\">00:10:04 - Turtleneck knit separately</a><br>\r\n<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> <a class=\"jumplink\" data-jumptime=\"854\">00:14:14 - Turtleneck in the Round?</a><br>\r\n<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> <a class=\"jumplink\" data-jumptime=\"964\">00:16:04 - Gauge Disaster</a><br>\r\n<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> <a class=\"jumplink\" data-jumptime=\"1435\">00:23:55 - Split Cowl</a><br>\r\n<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> <a class=\"jumplink\" data-jumptime=\"1470\">00:24:30 - Full Cowl</a><br>\r\n \r\n",
+              "legacyComponentId": 6180,
+              "order": 2
+            }
+          ],
+          "title": "Collars (replay)",
+          "slug": "collars-replay",
+          "order": 1,
+          "legacy": {
+            "assignId": 4082,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "377065178",
+              "title": null,
+              "legacyComponentId": 6206,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "VimeoJumpLinks",
+              "notes": [
+                "Unmapped legacy component type: VimeoJumpLinks"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4104",
+                "CHALLENGE_COMPONENTID": "6207",
+                "LINKTIME_1": "00:00:20",
+                "LINKTIME_2": "00:01:17",
+                "LINKTIME_3": "00:04:47",
+                "LINKTIME_4": "00:05:20",
+                "LINKTIME_5": "00:06:28",
+                "LINKTITLE_1": "Funnel Necks",
+                "LINKTITLE_2": "Turtleneck",
+                "LINKTITLE_3": "Cheater's Cowl Neck",
+                "LINKTITLE_4": "Split Cowl Neck",
+                "LINKTITLE_5": "Full Cowl"
+              },
+              "legacyComponentId": 6207,
+              "order": 2
+            }
+          ],
+          "title": "Collars For Machine Knitters",
+          "slug": "collars-for-machine-knitters",
+          "order": 3,
+          "legacy": {
+            "assignId": 4104,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "230305713",
+              "title": null,
+              "legacyComponentId": 6204,
+              "order": 1
+            }
+          ],
+          "title": "Collars in DesignaKnit",
+          "slug": "collars-in-designaknit",
+          "order": 4,
+          "legacy": {
+            "assignId": 4102,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n\r\n\t\t<h3>Add a hood to any pattern</h3><img class=\"videopopup\" data-vimeoid=\"203390158\" src=\"/challenge/images/v2/77/hood_thumb.jpg\">\r\n\t\r\n<hr class=\"style13\">\r\n\t\t<h3>Hood Classroom</h3>\r\n\t\t<a href=\"/classrooms/133/add-a-hood-to-any-pattern\"><img class=\"responsive\" src=\"/path/images/133/hood_thumb.jpg\"></a><br>\r\n\t\r\n\t\t\t\r\n\r\n",
+              "legacyComponentId": 6179,
+              "order": 2
+            }
+          ],
+          "title": "Hoods",
+          "slug": "hoods",
+          "order": 5,
+          "legacy": {
+            "assignId": 4084,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Create a hood for your sweater - let Knit it Now do the math for you",
+              "legacyComponentId": 6190,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "tools",
+              "notes": [
+                "Unmapped legacy component type: tools"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4089",
+                "CHALLENGE_COMPONENTID": "6189",
+                "MAINCONTENT": "pull-left",
+                "TOOLBUTTON1": "Hood Tool",
+                "TOOLID_1": "16"
+              },
+              "legacyComponentId": 6189,
+              "order": 2
+            }
+          ],
+          "title": "Hood Tool",
+          "slug": "hood-tool",
+          "order": 6,
+          "legacy": {
+            "assignId": 4089,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nSandwiched Cardigan Collar\r\n<ol>\r\n<li>Knit the neckline (shaped or cut 'n sew)</li>\r\n<li>Join the shoulders</li><br>\r\n<li>Hold the neckline up to the needlebed to establish the size of the collar</li>\r\n<li>Full Needle Rib Cast on that number of needles</li>\r\n<li>Knit the collar grading it if desired</li><br>\r\n<li>Set the carriage for tubular knitting</li>\r\n<li>Set tensions -2 numbers (tighter than garment tension)</li>\r\n<li>knit 12 rows (6 rounds) grading until you have reached the garment tension</li>\r\n<li>Do not cut the yarn</li><br>\r\n<li>Set the main bed carriage to slip (Brother KC buttons in - Silver Side levers)</li>\r\n<li>With scrap yarn, knitting only on the ribber, scrap off the ribber stitches</li>\r\n<li>Lay the sweater with the public (right) side facing, on top of the needlebed with the neckline facing</li>\r\n<li>Push the neck edge onto the gatepegs</li>\r\n<li>Push the main bed needles through the knitting</li>\r\n<li>Unhook the knitting from the gate pegs</li>\r\n<li>Hang the ribber stitches in the hooks of the needles</li>\r\n<li>If desired, remove the waste yarn to confirm all stitches are picked up</li><br>\r\n<li>Closing the latches, carefully pull the stitches in the hooks through the knitting, forming LONG stitches</li>\r\n<li>Pull stitch-through-stitch to bind off</li>\r\n</ul>\r\n\r\n<img src=\"/challenge/Images/v2/77/9.jpg\">\r\n\r\n\r\n",
+              "legacyComponentId": 6208,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/v2/77/1.jpg",
+                  "caption": "Full needle rib collar, \"sandwiched\"  to enclose the shaped or cut 'n sew neckline"
+                },
+                {
+                  "src": "/v2/77/1b.jpg",
+                  "caption": "Hold up the neckline to the needlebed to establish the number of needles needed for the collar"
+                },
+                {
+                  "src": "/v2/77/2.jpg",
+                  "caption": "Knit the collar the desired length in full needle Rib"
+                },
+                {
+                  "src": "/v2/77/3.jpg",
+                  "caption": "Form the \"sandwich\" by knitting circular (tubular) for 6 rows (12 passes of the carriage)"
+                },
+                {
+                  "src": "/v2/77/scrap_off_gif.gif",
+                  "caption": "Scrap off the ribber stitches only"
+                },
+                {
+                  "src": "/v2/77/4.jpg",
+                  "caption": "Lay the sweater on top of the needlebed\r\n<ul>\r\n<li>Right (public) side up</li>\r\n<li>Neck edge facing you</li>\r\n</ul>\r\nPoke the gate pegs through the knitting"
+                },
+                {
+                  "src": "/v2/77/pull_thru_gif.gif",
+                  "caption": "Pull the main bed needles through the neck edge."
+                },
+                {
+                  "src": "/v2/77/5.jpg",
+                  "caption": "Pull the needles all the way through, clearing the latches.<br>\r\n*** carefully pop the knitting off the gate pegs"
+                },
+                {
+                  "src": "/v2/77/6.jpg",
+                  "caption": "Hang the ribber stitches on the needles in work.<br>\r\nRemove the waste yarn if desired"
+                },
+                {
+                  "src": "/v2/77/pull_thru_2_gif.gif",
+                  "caption": "Being careful to clear the latches, pull the ribber stitches through."
+                },
+                {
+                  "src": "/v2/77/large_loops_gif.gif",
+                  "caption": "Fold the knitting toward you, revealing the hooks and the stitches.<br>\r\nManually create large loops."
+                },
+                {
+                  "src": "/v2/77/bind_off_gif.gif",
+                  "caption": "Bind off by pulling stitch-through-stitch"
+                },
+                {
+                  "src": "/v2/77/7.jpg",
+                  "caption": "Remove the waste yarn if it's still in place"
+                },
+                {
+                  "src": "/v2/77/8.jpg",
+                  "caption": "Reveal a neat join on the public side of the knitting"
+                },
+                {
+                  "src": "/v2/77/99.jpg",
+                  "caption": "The \"sandwich\" is more noticeable on the private side along with the chain bind off.<br>Another option would be to scrap off and hand sew the stitches in place, eliminating the chain"
+                },
+                {
+                  "src": "/v2/77/9.jpg",
+                  "caption": null
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 6209,
+              "order": 2
+            }
+          ],
+          "title": "Johnny / Polo Collar",
+          "slug": "johnny-polo-collar",
+          "order": 7,
+          "legacy": {
+            "assignId": 4105,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Shawl Collars",
+      "slug": "shawl-collars",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 491,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "488705208",
+              "title": null,
+              "legacyComponentId": 6187,
+              "order": 1
+            }
+          ],
+          "title": "Shawl Collar",
+          "slug": "shawl-collar",
+          "order": 1,
+          "legacy": {
+            "assignId": 4088,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "490251157",
+              "title": null,
+              "legacyComponentId": 6193,
+              "order": 1
+            }
+          ],
+          "title": "Pullover Shawl Collar",
+          "slug": "pullover-shawl-collar",
+          "order": 2,
+          "legacy": {
+            "assignId": 4090,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pinterest",
+              "notes": [
+                "Legacy Pinterest embed; replace with static content or omit."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4087",
+                "PINTERESTID": "35",
+                "TYPEOF": "Pinterest"
+              },
+              "legacyComponentId": 6185,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pinterest",
+              "notes": [
+                "Legacy Pinterest embed; replace with static content or omit."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4087",
+                "PINTERESTID": "38",
+                "TYPEOF": "Pinterest"
+              },
+              "legacyComponentId": 6186,
+              "order": 2
+            }
+          ],
+          "title": "Pinterest Inspiration",
+          "slug": "pinterest-inspiration",
+          "order": 3,
+          "legacy": {
+            "assignId": 4087,
+            "blockType": "Pinterest"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859235",
+              "title": "2x2 Full Fashion Ribber Decrease",
+              "legacySlot": 1,
+              "legacyComponentId": 6194,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859295",
+              "title": "2x2 Ribbing Simple Increase",
+              "legacySlot": 2,
+              "legacyComponentId": 6194,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859425",
+              "title": "Full Needle Rib Increases",
+              "legacySlot": 3,
+              "legacyComponentId": 6194,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859435",
+              "title": "1x1 Ribbing Increases",
+              "legacySlot": 4,
+              "legacyComponentId": 6194,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "318312175",
+              "title": "Short Row Decreasing in 1x1 Ribbing",
+              "legacySlot": 5,
+              "legacyComponentId": 6194,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "316467548",
+              "title": "Shaping in 1x1 Ribbing",
+              "legacySlot": 6,
+              "legacyComponentId": 6194,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "322059864",
+              "title": "Short Rows in Full Needle Rib",
+              "legacySlot": 1,
+              "legacyComponentId": 6195,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "318312175",
+              "title": "Short Row Decreasing in 1x1 Ribbing",
+              "legacySlot": 2,
+              "legacyComponentId": 6195,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "320558407",
+              "title": "Short Row Increasing in 1x1 Ribbing",
+              "legacySlot": 3,
+              "legacyComponentId": 6195,
+              "order": 2
+            }
+          ],
+          "title": "Shaping in Ribbing",
+          "slug": "shaping-in-ribbing",
+          "order": 5,
+          "legacy": {
+            "assignId": 4093,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 21,
+    "videos": [
+      {
+        "vimeoId": "151859107",
+        "title": "Neckline Shaping Perfection",
+        "lessonSlug": "neckline-shaping-perfection",
+        "blockSlug": "neckline-shaping-tips"
+      },
+      {
+        "vimeoId": "252565241",
+        "title": "Shallow Round Neck Shaping",
+        "lessonSlug": "neckline-shaping-perfection",
+        "blockSlug": "neckline-shaping-tips"
+      },
+      {
+        "vimeoId": "151858551",
+        "title": "Easy Round Neck Shaping",
+        "lessonSlug": "neckline-shaping-perfection",
+        "blockSlug": "neckline-shaping-tips"
+      },
+      {
+        "vimeoId": "151819909",
+        "title": "Introduction to Cut 'n Sew",
+        "lessonSlug": "neckline-shaping-perfection",
+        "blockSlug": "neckline-shaping-tips"
+      },
+      {
+        "vimeoId": "151860086",
+        "title": "One Piece Neckband Perfection",
+        "lessonSlug": "neckbands",
+        "blockSlug": "neckband-options"
+      },
+      {
+        "vimeoId": "223374072",
+        "title": "Reversible Band",
+        "lessonSlug": "neckbands",
+        "blockSlug": "neckband-options"
+      },
+      {
+        "vimeoId": "345492301",
+        "title": "2 Piece Industrial Band",
+        "lessonSlug": "neckbands",
+        "blockSlug": "neckband-options"
+      },
+      {
+        "vimeoId": "326660382",
+        "title": "LIve Replay",
+        "lessonSlug": "neckbands",
+        "blockSlug": "replay-ugliest-v-neck-ever"
+      },
+      {
+        "vimeoId": "377383857",
+        "title": "Collar options",
+        "lessonSlug": "collars-for-machine-knitters",
+        "blockSlug": "collars-replay"
+      },
+      {
+        "vimeoId": "377065178",
+        "title": null,
+        "lessonSlug": "collars-for-machine-knitters",
+        "blockSlug": "collars-for-machine-knitters"
+      },
+      {
+        "vimeoId": "230305713",
+        "title": null,
+        "lessonSlug": "collars-for-machine-knitters",
+        "blockSlug": "collars-in-designaknit"
+      },
+      {
+        "vimeoId": "488705208",
+        "title": null,
+        "lessonSlug": "shawl-collars",
+        "blockSlug": "shawl-collar"
+      },
+      {
+        "vimeoId": "490251157",
+        "title": null,
+        "lessonSlug": "shawl-collars",
+        "blockSlug": "pullover-shawl-collar"
+      },
+      {
+        "vimeoId": "151859235",
+        "title": "2x2 Full Fashion Ribber Decrease",
+        "lessonSlug": "shawl-collars",
+        "blockSlug": "shaping-in-ribbing"
+      },
+      {
+        "vimeoId": "151859295",
+        "title": "2x2 Ribbing Simple Increase",
+        "lessonSlug": "shawl-collars",
+        "blockSlug": "shaping-in-ribbing"
+      },
+      {
+        "vimeoId": "151859425",
+        "title": "Full Needle Rib Increases",
+        "lessonSlug": "shawl-collars",
+        "blockSlug": "shaping-in-ribbing"
+      },
+      {
+        "vimeoId": "151859435",
+        "title": "1x1 Ribbing Increases",
+        "lessonSlug": "shawl-collars",
+        "blockSlug": "shaping-in-ribbing"
+      },
+      {
+        "vimeoId": "318312175",
+        "title": "Short Row Decreasing in 1x1 Ribbing",
+        "lessonSlug": "shawl-collars",
+        "blockSlug": "shaping-in-ribbing"
+      },
+      {
+        "vimeoId": "316467548",
+        "title": "Shaping in 1x1 Ribbing",
+        "lessonSlug": "shawl-collars",
+        "blockSlug": "shaping-in-ribbing"
+      },
+      {
+        "vimeoId": "322059864",
+        "title": "Short Rows in Full Needle Rib",
+        "lessonSlug": "shawl-collars",
+        "blockSlug": "shaping-in-ribbing"
+      },
+      {
+        "vimeoId": "320558407",
+        "title": "Short Row Increasing in 1x1 Ribbing",
+        "lessonSlug": "shawl-collars",
+        "blockSlug": "shaping-in-ribbing"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}
