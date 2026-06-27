@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   getCourseCatalogEntries,
   resolveCatalogStatus,
+  resolveCourseCatalogDescription,
   resolveCourseThumbnail,
 } from "./coursesCatalog";
 
@@ -20,6 +21,12 @@ describe("resolveCourseThumbnail", () => {
 
   it("returns undefined when no thumbnail is configured", () => {
     expect(resolveCourseThumbnail("missing-course-slug", "coming-soon")).toBeUndefined();
+  });
+
+  it("resolves not-enough-needles thumbnail from course JSON metadata", () => {
+    expect(resolveCourseThumbnail("not-enough-needles", "in-progress")).toBe(
+      "/images/courses/not_enough.webp",
+    );
   });
 });
 
@@ -41,21 +48,51 @@ describe("getCourseCatalogEntries href", () => {
       }
     }
   });
+
+  it("shows not-enough-needles with its course JSON thumbnail on the catalog card", () => {
+    const entry = getCourseCatalogEntries().find((course) => course.slug === "not-enough-needles");
+    expect(entry?.hasThumbnail).toBe(true);
+    expect(entry?.thumbnail).toBe("/images/courses/not_enough.webp");
+  });
+
+  it("uses courses-catalog.json fallback when course JSON has no custom description", () => {
+    const entry = getCourseCatalogEntries().find((course) => course.slug === "beginner-workshop");
+    expect(entry?.description).toBe("A guided start-to-finish path for new machine knitters.");
+    const resolved = resolveCourseCatalogDescription("beginner-workshop", "coming-soon");
+    expect(resolved.source).toBe("fallback");
+  });
+
+  it("uses custom course JSON description when set", () => {
+    const resolved = resolveCourseCatalogDescription("ribber-basic-bootcamp", "available");
+    if (resolved.customDescription) {
+      expect(resolved.source).toBe("custom");
+      expect(resolved.description).toBe(resolved.customDescription);
+    } else {
+      expect(resolved.source).toBe("fallback");
+      expect(resolved.description).toContain("Get comfortable with your ribber");
+    }
+    expect(resolved.description).not.toContain("\uFFFD");
+  });
 });
 
 describe("resolveCatalogStatus", () => {
   it("shows in-progress for active draft courses with contentStatus in_progress", () => {
-    expect(resolveCatalogStatus("beginner-workshop", "coming-soon")).toBe("in-progress");
-    const entry = getCourseCatalogEntries().find((course) => course.slug === "beginner-workshop");
+    expect(resolveCatalogStatus("not-enough-needles", "coming-soon")).toBe("in-progress");
+    const entry = getCourseCatalogEntries().find((course) => course.slug === "not-enough-needles");
     expect(entry?.status).toBe("in-progress");
     expect(entry?.buttonLabel).toBe("In progress");
   });
 
   it("shows available for published cleaned courses", () => {
     expect(resolveCatalogStatus("ribber-basic-bootcamp", "coming-soon")).toBe("available");
-    const entry = getCourseCatalogEntries().find((course) => course.slug === "ribber-basic-bootcamp");
-    expect(entry?.status).toBe("available");
-    expect(entry?.buttonLabel).toBe("Start course");
+    const ribberEntry = getCourseCatalogEntries().find((course) => course.slug === "ribber-basic-bootcamp");
+    expect(ribberEntry?.status).toBe("available");
+    expect(ribberEntry?.buttonLabel).toBe("Start course");
+
+    expect(resolveCatalogStatus("beginner-workshop", "coming-soon")).toBe("available");
+    const beginnerEntry = getCourseCatalogEntries().find((course) => course.slug === "beginner-workshop");
+    expect(beginnerEntry?.status).toBe("available");
+    expect(beginnerEntry?.buttonLabel).toBe("Start course");
   });
 
   it("keeps static catalogStatus when no course JSON exists", () => {
