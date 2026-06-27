@@ -45,7 +45,7 @@ src/data/*.csv
 *.backup
 *.bak.json
 #course images
-public/images/courses/
+
 public/challenge/images/v2/
 public/images/v2/
 # Adobe temporary files
