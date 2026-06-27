@@ -9,7 +9,10 @@ import {
   buildContentListGroups,
   countLessonSectionsAndBlocks,
   formatLessonSidebarMeta,
+  formatSectionBlockCount,
+  resolveExpandedSectionSlug,
   sectionGroupMetaLabel,
+  sectionNavLabel,
   sectionTitleForBlock,
 } from "./courseContentEditorView";
 import { flattenLessonContent } from "./courseLessonContentItems";
@@ -62,6 +65,41 @@ describe("courseContentEditorView", () => {
     expect(groups[0]!.blockCount).toBe(1);
     expect(groups[1]!.blockCount).toBe(1);
     expect(sectionGroupMetaLabel(groups[0]!)).toBe("Combined layout");
+  });
+
+  it("resolves expanded section for outline navigation", () => {
+    const groups = [
+      { blockSlug: "intro", blockTitle: "Intro", sectionNumber: 1, totalSections: 2, canSplit: false, isLayout: false, blockCount: 1, entries: [] },
+      { blockSlug: "wrap", blockTitle: "Wrap", sectionNumber: 2, totalSections: 2, canSplit: false, isLayout: false, blockCount: 1, entries: [] },
+    ];
+
+    expect(
+      resolveExpandedSectionSlug(groups, {
+        currentExpanded: null,
+        selectedBlockSectionSlug: null,
+      }),
+    ).toBe("intro");
+
+    expect(
+      resolveExpandedSectionSlug(groups, {
+        currentExpanded: "intro",
+        selectedBlockSectionSlug: "wrap",
+      }),
+    ).toBe("wrap");
+
+    expect(
+      resolveExpandedSectionSlug(groups, {
+        currentExpanded: "missing",
+        selectedBlockSectionSlug: null,
+      }),
+    ).toBe("intro");
+  });
+
+  it("formats section outline labels", () => {
+    expect(formatSectionBlockCount(1)).toBe("1 block");
+    expect(formatSectionBlockCount(3)).toBe("3 blocks");
+    expect(sectionNavLabel("")).toBe("Untitled section");
+    expect(sectionNavLabel("Cast On")).toBe("Cast On");
   });
 
   it("displays section titles for editing", () => {

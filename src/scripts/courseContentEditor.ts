@@ -91,7 +91,9 @@ import {
   buildContentListGroups,
   countLessonSectionsAndBlocks,
   formatLessonSidebarMeta,
-  sectionGroupMetaLabel,
+  formatSectionBlockCount,
+  resolveExpandedSectionSlug,
+  sectionNavLabel,
 } from "../lib/legacy_kin/courseContentEditorView";
 
 const API_URL = "/api/admin/course-content";
@@ -124,6 +126,7 @@ let contentEditingRef: ComponentRef | null = null;
 let renamingLessonSlug: string | null = null;
 let advancedOpen = false;
 let focusLessonTitlePending = false;
+let expandedSectionSlug: string | null = null;
 
 const lessonDrafts = new Map<string, LessonRecord>();
 const lessonSavedJson = new Map<string, string>();
@@ -930,16 +933,27 @@ function maxLegacyComponentIdInCourse() {
   return max + 1;
 }
 
-function renderSectionAddBlockMenu(blockSlug: string) {
+function expandSection(blockSlug: string | null) {
+  expandedSectionSlug = blockSlug;
+}
+
+function syncExpandedSectionForLesson(groups: ReturnType<typeof buildContentListGroups>) {
+  expandedSectionSlug = resolveExpandedSectionSlug(groups, {
+    currentExpanded: expandedSectionSlug,
+    selectedBlockSectionSlug: contentEditingRef?.blockSlug ?? null,
+  });
+}
+
+function renderSectionAddBlockRow(blockSlug: string) {
   const buttons = SECTION_BLOCK_ADD_KINDS.map(
     ({ kind, label }) =>
-      `<button type="button" class="course-editor__section-add-btn" data-add-to-section="${escapeHtml(blockSlug)}" data-add-kind="${escapeHtml(kind)}">${escapeHtml(label)}</button>`,
+      `<button type="button" class="course-editor__outline-add-block-btn" data-add-to-section="${escapeHtml(blockSlug)}" data-add-kind="${escapeHtml(kind)}">${escapeHtml(label)}</button>`,
   ).join("");
   return `
-    <details class="course-editor__add-block-menu">
-      <summary class="course-editor__add-block-summary">+ Add Block</summary>
-      <div class="course-editor__section-add">${buttons}</div>
-    </details>
+    <div class="course-editor__outline-add-block">
+      <span class="course-editor__outline-add-block-label">+ Add Block</span>
+      <div class="course-editor__outline-add-block-types">${buttons}</div>
+    </div>
   `;
 }
 
@@ -955,6 +969,7 @@ function appendBlockToSection(blockSlug: string, kind: string) {
   if (!added) return;
 
   setLessonDraft(selectedLessonSlug, lesson);
+  expandSection(blockSlug);
   contentEditingRef = {
     blockSlug,
     legacyComponentId: Number(component.legacyComponentId),
@@ -980,6 +995,10 @@ function deleteContentSection(blockSlug: string) {
     contentEditingRef = null;
     hideEditFormPanel();
   }
+
+  syncExpandedSectionForLesson(
+    buildContentListGroups(lesson, flattenLessonContent(lesson as CourseLesson)),
+  );
 
   renderContentList();
   renderLessonList();
@@ -1026,6 +1045,18 @@ function bindContentListActions() {
 
   dom.itemsList.addEventListener("click", (e) => {
     const target = e.target as HTMLElement;
+
+    const toggleSection = target.closest("[data-toggle-section]") as HTMLButtonElement | null;
+    if (toggleSection) {
+      e.preventDefault();
+      e.stopPropagation();
+      const blockSlug = toggleSection.getAttribute("data-toggle-section");
+      if (blockSlug) {
+        expandSection(expandedSectionSlug === blockSlug ? null : blockSlug);
+        renderContentList();
+      }
+      return;
+    }
 
     const sectionUp = target.closest("[data-move-section-up]") as HTMLButtonElement | null;
     if (sectionUp && !sectionUp.disabled) {
@@ -2060,6 +2091,7 @@ function renderListEditor(
 }
 
 function openContentEdit(ref: ComponentRef) {
+  expandSection(ref.blockSlug);
   if (ref.type === TEXT_VIDEO_LAYOUT_TYPE) {
     openTextVideoLayoutEdit(ref);
     return;
@@ -2986,7 +3018,7 @@ function renderContentList() {
     if (dom.itemsList) dom.itemsList.innerHTML = "";
     if (dom.itemsEmpty) {
       dom.itemsEmpty.hidden = false;
-      dom.itemsEmpty.textContent = "Select a lesson to view its content.";
+      dom.itemsEmpty.textContent = "Select a lesson to view its outline.";
     }
     syncLessonTitleInput();
     return;
@@ -3002,85 +3034,101 @@ function renderContentList() {
   if (dom.itemsEmpty) {
     dom.itemsEmpty.hidden = sectionCount > 0;
     dom.itemsEmpty.textContent =
-      "This lesson has no sections yet. Add a section to start building content.";
+      "This lesson has no sections yet. Add a section to start building the outline.";
   }
   if (!dom.itemsList) return;
 
   const groups = buildContentListGroups(lesson, items);
+  syncExpandedSectionForLesson(groups);
+
   const sectionHtml = groups
     .map((group, groupIndex) => {
+      const isExpanded = expandedSectionSlug === group.blockSlug;
+      const navTitle = sectionNavLabel(
+        group.blockTitle === "Untitled section" ? "" : group.blockTitle,
+      );
       const sectionMoveBtns = `
-        <div class="course-editor__section-actions" aria-label="Move section ${group.sectionNumber}">
-          <button type="button" class="course-editor__section-move" data-move-section-up="${groupIndex}" ${groupIndex === 0 ? "disabled" : ""} title="Move section up">↑</button>
-          <button type="button" class="course-editor__section-move" data-move-section-down="${groupIndex}" ${groupIndex === groups.length - 1 ? "disabled" : ""} title="Move section down">↓</button>
-          ${
-            group.canSplit
-              ? `<button type="button" class="course-editor__section-split" data-split-section="${escapeHtml(group.blockSlug)}" title="Give each block its own section heading">Split</button>`
-              : ""
-          }
-          <button type="button" class="course-editor__section-delete" data-delete-section="${escapeHtml(group.blockSlug)}" title="Delete section">Delete section</button>
-        </div>
+        <button type="button" class="course-editor__outline-action" data-move-section-up="${groupIndex}" ${groupIndex === 0 ? "disabled" : ""} title="Move section up">↑</button>
+        <button type="button" class="course-editor__outline-action" data-move-section-down="${groupIndex}" ${groupIndex === groups.length - 1 ? "disabled" : ""} title="Move section down">↓</button>
+        ${
+          group.canSplit
+            ? `<button type="button" class="course-editor__outline-action" data-split-section="${escapeHtml(group.blockSlug)}" title="Split into separate sections">Split</button>`
+            : ""
+        }
+        <button type="button" class="course-editor__outline-action is-danger" data-delete-section="${escapeHtml(group.blockSlug)}" title="Delete section">✕</button>
       `;
-      const itemsHtml = group.entries
-        .map(({ item, index }, blockIndex) => {
-          const meta = typeMeta(
-            item.type === TEXT_VIDEO_LAYOUT_TYPE ||
-              item.type === TEXT_IMAGE_LAYOUT_TYPE ||
-              item.type === THREE_VIDEOS_LAYOUT_TYPE
-              ? (item.type as EditorContentKind)
-              : imageEditorKind(item.component),
-          );
-          const typeLabel = contentItemTypeLabel(item);
-          const selected = contentItemMatches(contentEditingRef, item);
-          const prevInSection = group.entries[blockIndex - 1];
-          const nextInSection = group.entries[blockIndex + 1];
-          const blockLabel =
-            group.blockCount > 1
-              ? `<span class="course-editor__item-block-label">Block ${blockIndex + 1} of ${group.blockCount}</span>`
-              : "";
-          return `
-            <article class="course-editor__item course-editor__item--nested ${selected ? "is-selected" : ""}" data-item-index="${index}" draggable="true">
-              <span class="course-editor__item-grip" title="Drag to reorder">⋮⋮</span>
-              <span class="course-editor__item-icon" style="background:${meta.color}1c;color:${meta.color}">${meta.abbrev}</span>
-              <div class="course-editor__item-body">
-                ${blockLabel}
-                <div class="course-editor__item-type" style="color:${meta.color}">${escapeHtml(typeLabel)}</div>
-                <div class="course-editor__item-summary">${escapeHtml(contentSummary(item.component))}</div>
-              </div>
-              <div class="course-editor__item-actions">
-                <button type="button" class="course-editor__icon-btn" data-action="edit" data-index="${index}" title="Edit block">Edit</button>
-                <button type="button" class="course-editor__icon-btn" data-action="up" data-index="${index}" data-swap-index="${prevInSection ? prevInSection.index : index}" ${blockIndex === 0 ? "disabled" : ""} title="Move block up">↑</button>
-                <button type="button" class="course-editor__icon-btn" data-action="down" data-index="${index}" data-swap-index="${nextInSection ? nextInSection.index : index}" ${blockIndex === group.entries.length - 1 ? "disabled" : ""} title="Move block down">↓</button>
-                <button type="button" class="course-editor__icon-btn" data-action="dup" data-index="${index}" title="Duplicate block">⧉</button>
-                <button type="button" class="course-editor__icon-btn is-danger" data-action="del" data-index="${index}" title="Delete block">✕</button>
-              </div>
-            </article>
-          `;
-        })
-        .join("");
+
+      const blocksHtml = isExpanded
+        ? group.entries
+            .map(({ item, index }, blockIndex) => {
+              const meta = typeMeta(
+                item.type === TEXT_VIDEO_LAYOUT_TYPE ||
+                  item.type === TEXT_IMAGE_LAYOUT_TYPE ||
+                  item.type === THREE_VIDEOS_LAYOUT_TYPE
+                  ? (item.type as EditorContentKind)
+                  : imageEditorKind(item.component),
+              );
+              const typeLabel = contentItemTypeLabel(item);
+              const selected = contentItemMatches(contentEditingRef, item);
+              const prevInSection = group.entries[blockIndex - 1];
+              const nextInSection = group.entries[blockIndex + 1];
+              return `
+                <div class="course-editor__outline-block ${selected ? "is-selected" : ""}" data-item-index="${index}" draggable="true">
+                  <span class="course-editor__outline-block-icon" style="background:${meta.color}1c;color:${meta.color}">${meta.abbrev}</span>
+                  <div class="course-editor__outline-block-body">
+                    <span class="course-editor__outline-block-type" style="color:${meta.color}">${escapeHtml(typeLabel)}</span>
+                    <span class="course-editor__outline-block-summary">${escapeHtml(contentSummary(item.component))}</span>
+                  </div>
+                  <div class="course-editor__outline-block-actions">
+                    <button type="button" class="course-editor__outline-action" data-action="edit" data-index="${index}" title="Edit block">Edit</button>
+                    <button type="button" class="course-editor__outline-action" data-action="up" data-index="${index}" data-swap-index="${prevInSection ? prevInSection.index : index}" ${blockIndex === 0 ? "disabled" : ""} title="Move block up">↑</button>
+                    <button type="button" class="course-editor__outline-action" data-action="down" data-index="${index}" data-swap-index="${nextInSection ? nextInSection.index : index}" ${blockIndex === group.entries.length - 1 ? "disabled" : ""} title="Move block down">↓</button>
+                    <button type="button" class="course-editor__outline-action" data-action="dup" data-index="${index}" title="Duplicate block">⧉</button>
+                    <button type="button" class="course-editor__outline-action is-danger" data-action="del" data-index="${index}" title="Delete block">✕</button>
+                  </div>
+                </div>
+              `;
+            })
+            .join("")
+        : "";
+
+      const addBlockRow =
+        isExpanded && !group.isLayout ? renderSectionAddBlockRow(group.blockSlug) : "";
 
       return `
-        <section class="course-editor__section-card" data-block-slug="${escapeHtml(group.blockSlug)}">
-          <header class="course-editor__section-header">
-            <div class="course-editor__section-heading">
-              <span class="course-editor__hierarchy-label course-editor__hierarchy-label--section">Section ${group.sectionNumber}</span>
+        <div class="course-editor__outline-section ${isExpanded ? "is-expanded" : ""}" data-block-slug="${escapeHtml(group.blockSlug)}">
+          <div class="course-editor__outline-section-row">
+            <button
+              type="button"
+              class="course-editor__outline-caret"
+              data-toggle-section="${escapeHtml(group.blockSlug)}"
+              aria-expanded="${isExpanded ? "true" : "false"}"
+              title="${isExpanded ? "Collapse section" : "Expand section"}"
+            >${isExpanded ? "▾" : "▸"}</button>
+            <div class="course-editor__outline-section-main">
               <input
                 type="text"
-                class="course-editor__input course-editor__section-title-input"
+                class="course-editor__input course-editor__outline-section-title"
                 data-section-title="${escapeHtml(group.blockSlug)}"
                 value="${escapeHtml(group.blockTitle === "Untitled section" ? "" : group.blockTitle)}"
-                placeholder="Section title"
-                aria-label="Section ${group.sectionNumber} title"
+                placeholder="${escapeHtml(navTitle)}"
+                aria-label="${escapeHtml(navTitle)} title"
                 autocomplete="off"
                 spellcheck="true"
               />
-              <p class="course-editor__section-meta">${escapeHtml(sectionGroupMetaLabel(group))}</p>
+              <span class="course-editor__outline-section-meta">
+                <span class="course-editor__outline-section-num">Section ${group.sectionNumber}</span>
+                <span class="course-editor__outline-section-count">${escapeHtml(formatSectionBlockCount(group.blockCount))}</span>
+              </span>
             </div>
-            ${sectionMoveBtns}
-          </header>
-          <div class="course-editor__section-items">${itemsHtml}</div>
-          ${group.isLayout ? "" : renderSectionAddBlockMenu(group.blockSlug)}
-        </section>
+            <div class="course-editor__outline-section-actions">${sectionMoveBtns}</div>
+          </div>
+          ${
+            isExpanded
+              ? `<div class="course-editor__outline-blocks">${blocksHtml}${addBlockRow}</div>`
+              : ""
+          }
+        </div>
       `;
     })
     .join("");
@@ -3091,11 +3139,11 @@ function renderContentList() {
 
   const deleteConfirm = new Set<number>();
 
-  dom.itemsList.querySelectorAll(".course-editor__item").forEach((card) => {
+  dom.itemsList.querySelectorAll(".course-editor__outline-block").forEach((card) => {
     const index = Number(card.getAttribute("data-item-index"));
 
     card.addEventListener("click", (e) => {
-      if ((e.target as HTMLElement).closest(".course-editor__item-actions")) return;
+      if ((e.target as HTMLElement).closest(".course-editor__outline-block-actions")) return;
       const current = flattenLessonContent(getLessonDraft(selectedLessonSlug!)!)[index];
       if (current) openContentEdit(current);
     });
@@ -4018,6 +4066,7 @@ function selectLesson(slug: string, force = false) {
   selectedLessonSlug = slug;
   contentEditingRef = null;
   renamingLessonSlug = null;
+  expandedSectionSlug = null;
 
   if (currentCourseId != null) {
     persistSelectedLesson(currentCourseId, slug);

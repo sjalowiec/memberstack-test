@@ -91,6 +91,43 @@ export function sectionGroupMetaLabel(group: ContentListGroup): string {
   return `${group.blockCount} blocks`;
 }
 
+export function formatSectionBlockCount(blockCount: number): string {
+  return `${blockCount} block${blockCount === 1 ? "" : "s"}`;
+}
+
+export function sectionNavLabel(title: string): string {
+  const trimmed = title.trim();
+  return trimmed || "Untitled section";
+}
+
+/** Pick which section row should be expanded in the lesson outline. */
+export function resolveExpandedSectionSlug(
+  groups: ContentListGroup[],
+  options: {
+    currentExpanded: string | null;
+    selectedBlockSectionSlug: string | null;
+    preferFirstWhenUnset?: boolean;
+  },
+): string | null {
+  if (groups.length === 0) return null;
+
+  const slugs = new Set(groups.map((group) => group.blockSlug));
+
+  if (options.selectedBlockSectionSlug && slugs.has(options.selectedBlockSectionSlug)) {
+    return options.selectedBlockSectionSlug;
+  }
+
+  if (options.currentExpanded && slugs.has(options.currentExpanded)) {
+    return options.currentExpanded;
+  }
+
+  if (options.preferFirstWhenUnset !== false) {
+    return groups[0]!.blockSlug;
+  }
+
+  return null;
+}
+
 /** Simple block types that can be added inside an existing section. */
 export const SECTION_BLOCK_ADD_KINDS: { kind: string; label: string }[] = [
   { kind: "richText-blank", label: "Text" },
