@@ -2,7 +2,16 @@
 export type LegacyCoursePublicationFields = {
   status?: string;
   published?: boolean;
+  /** When false, the course is hidden from the public catalog and legacy routes. Omitted = active. */
+  active?: boolean;
 };
+
+/** True when a course is enabled for public listing (catalog + routes when also published). */
+export function isLegacyCourseActive(
+  course: LegacyCoursePublicationFields,
+): boolean {
+  return course.active !== false;
+}
 
 /**
  * True when a course should appear on public legacy course routes.
@@ -11,6 +20,7 @@ export type LegacyCoursePublicationFields = {
 export function isLegacyCoursePublic(
   course: LegacyCoursePublicationFields,
 ): boolean {
+  if (!isLegacyCourseActive(course)) return false;
   if (course.status === "draft") return false;
   if (course.published === false) return false;
   if (course.status === "published") return true;

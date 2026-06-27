@@ -4,6 +4,7 @@ import {
   isCourseContentAdminAllowed,
   listAdminCourseSummaries,
   readCourseContentFile,
+  saveCourseMetadata,
   saveLessonUpdate,
 } from "../../../lib/legacy_kin/courseContentAdmin";
 import {
@@ -166,6 +167,33 @@ export const POST: APIRoute = async ({ request }) => {
         course: result.course,
         lesson: result.lesson,
         lessonSlug: result.lessonSlug,
+        backupPath: result.backupPath,
+        savedAt: new Date().toISOString(),
+      });
+    }
+
+    if (action === "saveCourseMetadata") {
+      if (!("thumbnail" in body) && !("active" in body)) {
+        return jsonResponse(
+          {
+            ok: false,
+            error: "saveCourseMetadata requires thumbnail and/or active.",
+          },
+          400,
+        );
+      }
+      const update: { thumbnail?: unknown; active?: unknown } = {};
+      if ("thumbnail" in body) update.thumbnail = body.thumbnail;
+      if ("active" in body) update.active = body.active;
+      const result = saveCourseMetadata(courseId, update);
+      const course = readCourseContentFile(courseId);
+      return jsonResponse({
+        ok: true,
+        action,
+        courseId,
+        course,
+        thumbnail: result.thumbnail,
+        active: result.active,
         backupPath: result.backupPath,
         savedAt: new Date().toISOString(),
       });

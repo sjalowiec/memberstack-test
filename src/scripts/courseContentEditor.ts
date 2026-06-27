@@ -68,6 +68,31 @@ import {
   parseEditorNavigationState,
   resolveInitialLessonSlug,
 } from "../lib/legacy_kin/courseContentEditorNavigation";
+import {
+  appendComponentToBlock,
+  appendStandaloneComponentBlock,
+  findBlockContainingComponent,
+  insertStandaloneComponentBlockRelative,
+  isEditorLayoutBlock,
+  moveBlockRelativeToTarget as moveBlockRelativeToTargetInLesson,
+  movePlainContentComponent,
+  moveSectionAtIndex,
+  splitBlockIntoStandaloneSections,
+} from "../lib/legacy_kin/courseContentEditorBlocks";
+import type { CourseLesson } from "../lib/legacy_kin/coursePreviewPoc";
+import {
+  combineTextVideoWithNextPlainText,
+  getNextPlainTextItem as getNextPlainTextItemInLesson,
+} from "../lib/legacy_kin/courseTextVideoCombine";
+import {
+  NEW_SECTION_ADD_KINDS,
+  SECTION_BLOCK_ADD_KINDS,
+  blockTitleForEditing,
+  buildContentListGroups,
+  countLessonSectionsAndBlocks,
+  formatLessonSidebarMeta,
+  sectionGroupMetaLabel,
+} from "../lib/legacy_kin/courseContentEditorView";
 
 const API_URL = "/api/admin/course-content";
 const SNIPPETS_OPEN_KEY = "course-editor-snippets-open";
@@ -84,12 +109,15 @@ type CourseCatalogEntry = {
   slug?: string;
   lessonCount?: number;
   isDraft?: boolean;
+  isActive?: boolean;
   status?: string;
   published?: boolean;
 };
 
 let courseCatalog: CourseCatalogEntry[] = [];
 let currentCourseId: number | null = null;
+let savedCourseThumbnail: string | null = null;
+let savedCourseActive = true;
 let courseData: CourseRecord | null = null;
 let selectedLessonSlug: string | null = null;
 let contentEditingRef: ComponentRef | null = null;
@@ -110,15 +138,22 @@ const dom = {
   saveHint: null as HTMLElement | null,
   courseSelect: null as HTMLSelectElement | null,
   courseTitle: null as HTMLInputElement | null,
+  courseThumbnail: null as HTMLInputElement | null,
+  courseActive: null as HTMLSelectElement | null,
+  courseThumbnailPreviewWrap: null as HTMLElement | null,
+  courseThumbnailPreview: null as HTMLImageElement | null,
+  courseThumbnailPreviewEmpty: null as HTMLElement | null,
+  courseSettingsSaveBtn: null as HTMLButtonElement | null,
+  courseSettingsPanel: null as HTMLDetailsElement | null,
   draftBadge: null as HTMLElement | null,
+  inactiveBadge: null as HTMLElement | null,
   previewLink: null as HTMLAnchorElement | null,
   lessonList: null as HTMLElement | null,
   addLessonBtn: null as HTMLButtonElement | null,
   deleteLessonBtn: null as HTMLButtonElement | null,
   lessonTitleInput: null as HTMLInputElement | null,
-  sectionTitleWrap: null as HTMLElement | null,
-  sectionTitleInput: null as HTMLInputElement | null,
-  sectionTitleHint: null as HTMLElement | null,
+  addSectionBtn: null as HTMLButtonElement | null,
+  addSectionTypes: null as HTMLElement | null,
   itemsList: null as HTMLElement | null,
   itemsEmpty: null as HTMLElement | null,
   editEmpty: null as HTMLElement | null,
@@ -147,7 +182,8 @@ function courseIsDraft(course: Record<string, unknown> | undefined): boolean {
 function formatCourseCatalogLabel(entry: CourseCatalogEntry): string {
   const label = entry.title?.trim() || entry.filename || `Course ${entry.id}`;
   const draftSuffix = entry.isDraft ? " · draft" : "";
-  return `${label} (${entry.id})${draftSuffix}`;
+  const inactiveSuffix = entry.isActive === false ? " · inactive" : "";
+  return `${label} (${entry.id})${draftSuffix}${inactiveSuffix}`;
 }
 
 function updateCoursePreviewLink(course: Record<string, unknown> | undefined, lessonSlug?: string | null) {
@@ -168,6 +204,123 @@ function updateCourseDraftBadge(course: Record<string, unknown> | undefined) {
   dom.draftBadge.hidden = !courseIsDraft(course);
 }
 
+function readCourseActive(course: Record<string, unknown> | undefined): boolean {
+  if (!course) return true;
+  return course.active !== false;
+}
+
+function updateCourseInactiveBadge(course: Record<string, unknown> | undefined) {
+  if (!dom.inactiveBadge) return;
+  dom.inactiveBadge.hidden = readCourseActive(course);
+}
+
+function readCourseThumbnail(course: Record<string, unknown> | undefined): string {
+  const value =
+    course && "thumbnail" in course && typeof course.thumbnail === "string"
+      ? course.thumbnail
+      : "";
+  return value.trim();
+}
+
+function syncCourseSettingsFields(course: Record<string, unknown> | undefined) {
+  savedCourseThumbnail = readCourseThumbnail(course) || null;
+  savedCourseActive = readCourseActive(course);
+  if (dom.courseThumbnail) {
+    dom.courseThumbnail.value = savedCourseThumbnail ?? "";
+  }
+  if (dom.courseActive) {
+    dom.courseActive.value = savedCourseActive ? "true" : "false";
+  }
+  updateCourseThumbnailPreview();
+  updateCourseInactiveBadge(course);
+  updateCourseSettingsSaveState();
+}
+
+function updateCourseThumbnailPreview() {
+  const raw = dom.courseThumbnail?.value.trim() ?? "";
+  const previewSrc = raw ? legacyAssetUrl(raw) : "";
+
+  if (dom.courseThumbnailPreview && dom.courseThumbnailPreviewWrap) {
+    if (previewSrc) {
+      dom.courseThumbnailPreview.src = previewSrc;
+      dom.courseThumbnailPreviewWrap.hidden = false;
+      if (dom.courseThumbnailPreviewEmpty) dom.courseThumbnailPreviewEmpty.hidden = true;
+    } else {
+      dom.courseThumbnailPreview.removeAttribute("src");
+      dom.courseThumbnailPreviewWrap.hidden = true;
+      if (dom.courseThumbnailPreviewEmpty) dom.courseThumbnailPreviewEmpty.hidden = false;
+    }
+  } else if (dom.courseThumbnailPreviewEmpty) {
+    dom.courseThumbnailPreviewEmpty.hidden = Boolean(previewSrc);
+  }
+}
+
+function isCourseThumbnailDirty(): boolean {
+  const current = dom.courseThumbnail?.value.trim() ?? "";
+  const saved = savedCourseThumbnail ?? "";
+  return current !== saved;
+}
+
+function isCourseActiveDirty(): boolean {
+  const current = dom.courseActive?.value === "true";
+  return current !== savedCourseActive;
+}
+
+function isCourseSettingsDirty(): boolean {
+  return isCourseThumbnailDirty() || isCourseActiveDirty();
+}
+
+function shouldCourseSettingsPanelOpen(
+  course: Record<string, unknown> | undefined,
+): boolean {
+  if (!course) return false;
+  if (courseIsDraft(course)) return true;
+  if (!readCourseActive(course)) return true;
+  if (!readCourseThumbnail(course)) return true;
+  if (isCourseSettingsDirty()) return true;
+  return false;
+}
+
+function updateCourseSettingsPanelOpen() {
+  if (!dom.courseSettingsPanel) return;
+  dom.courseSettingsPanel.open = shouldCourseSettingsPanelOpen(courseData?.course);
+}
+
+function updateCourseSettingsSaveState() {
+  if (!dom.courseSettingsSaveBtn) return;
+  dom.courseSettingsSaveBtn.disabled =
+    !isCourseSettingsDirty() || currentCourseId == null;
+  updateCourseSettingsPanelOpen();
+}
+
+async function saveCourseSettings() {
+  if (currentCourseId == null) return;
+  if (!isCourseSettingsDirty()) return;
+
+  const payload: Record<string, unknown> = {};
+  if (isCourseThumbnailDirty()) {
+    payload.thumbnail = dom.courseThumbnail?.value.trim() || null;
+  }
+  if (isCourseActiveDirty()) {
+    payload.active = dom.courseActive?.value === "true";
+  }
+
+  setStatus("Saving course settings…");
+
+  try {
+    const result = await postCourseAction("saveCourseMetadata", payload);
+    if (result.course) {
+      courseData = result.course;
+      syncCourseSettingsFields(courseData.course);
+      updateCourseDraftBadge(courseData.course);
+    }
+    setStatus("");
+    flashToast("Course settings saved");
+  } catch (err) {
+    setStatus(err instanceof Error ? err.message : "Could not save course settings.", "is-error");
+  }
+}
+
 function bindDom() {
   dom.loading = document.getElementById("course-editor-loading");
   dom.app = document.getElementById("course-editor-app");
@@ -176,15 +329,22 @@ function bindDom() {
   dom.saveHint = document.getElementById("course-editor-save-hint");
   dom.courseSelect = document.getElementById("course-editor-course") as HTMLSelectElement | null;
   dom.courseTitle = document.getElementById("course-editor-course-title") as HTMLInputElement | null;
+  dom.courseThumbnail = document.getElementById("course-editor-thumbnail") as HTMLInputElement | null;
+  dom.courseActive = document.getElementById("course-editor-active") as HTMLSelectElement | null;
+  dom.courseThumbnailPreviewWrap = document.getElementById("course-editor-thumbnail-preview-wrap");
+  dom.courseThumbnailPreview = document.getElementById("course-editor-thumbnail-preview") as HTMLImageElement | null;
+  dom.courseThumbnailPreviewEmpty = document.getElementById("course-editor-thumbnail-preview-empty");
+  dom.courseSettingsSaveBtn = document.getElementById("course-editor-settings-save") as HTMLButtonElement | null;
+  dom.courseSettingsPanel = document.getElementById("course-editor-settings-panel") as HTMLDetailsElement | null;
   dom.draftBadge = document.getElementById("course-editor-draft-badge");
+  dom.inactiveBadge = document.getElementById("course-editor-inactive-badge");
   dom.previewLink = document.getElementById("course-editor-preview-link") as HTMLAnchorElement | null;
   dom.lessonList = document.getElementById("course-editor-lessons");
   dom.addLessonBtn = document.getElementById("course-editor-add-lesson") as HTMLButtonElement | null;
   dom.deleteLessonBtn = document.getElementById("course-editor-delete-lesson") as HTMLButtonElement | null;
   dom.lessonTitleInput = document.getElementById("course-editor-lesson-title") as HTMLInputElement | null;
-  dom.sectionTitleWrap = document.getElementById("course-editor-section-title-wrap");
-  dom.sectionTitleInput = document.getElementById("course-editor-section-title") as HTMLInputElement | null;
-  dom.sectionTitleHint = document.getElementById("course-editor-section-title-hint");
+  dom.addSectionBtn = document.getElementById("course-editor-add-section") as HTMLButtonElement | null;
+  dom.addSectionTypes = document.getElementById("course-editor-add-section-types");
   dom.itemsList = document.getElementById("course-editor-items");
   dom.itemsEmpty = document.getElementById("course-editor-items-empty");
   dom.editEmpty = document.getElementById("course-editor-edit-empty");
@@ -282,9 +442,6 @@ function readPersistedCourseId(allowedCourseIds: number[]): number | null {
   return null;
 }
 
-function countLessonContentItems(lesson: LessonRecord): number {
-  return flattenLessonContent(lesson).length;
-}
 
 type CourseActionPayload = {
   ok?: boolean;
@@ -294,6 +451,13 @@ type CourseActionPayload = {
   lessonSlug?: string;
   backupPath?: string;
 };
+
+function allLessonsForIdScope(): LessonRecord[] {
+  const out: LessonRecord[] = [];
+  if (courseData?.lessons) out.push(...(courseData.lessons as LessonRecord[]));
+  for (const draft of lessonDrafts.values()) out.push(draft);
+  return out;
+}
 
 async function postCourseAction(
   action: string,
@@ -362,6 +526,7 @@ function applyCourseFromServer(
 
   renderLessonList();
   updateSaveState();
+  syncCourseSettingsFields(courseData?.course);
   if (scrollSnapshot) restoreScrollSnapshot(scrollSnapshot);
   syncEditorUrl();
 }
@@ -765,6 +930,194 @@ function maxLegacyComponentIdInCourse() {
   return max + 1;
 }
 
+function renderSectionAddBlockMenu(blockSlug: string) {
+  const buttons = SECTION_BLOCK_ADD_KINDS.map(
+    ({ kind, label }) =>
+      `<button type="button" class="course-editor__section-add-btn" data-add-to-section="${escapeHtml(blockSlug)}" data-add-kind="${escapeHtml(kind)}">${escapeHtml(label)}</button>`,
+  ).join("");
+  return `
+    <details class="course-editor__add-block-menu">
+      <summary class="course-editor__add-block-summary">+ Add Block</summary>
+      <div class="course-editor__section-add">${buttons}</div>
+    </details>
+  `;
+}
+
+function appendBlockToSection(blockSlug: string, kind: string) {
+  if (!selectedLessonSlug) return;
+  const lesson = getLessonDraft(selectedLessonSlug);
+  if (!lesson) return;
+  const block = findBlock(lesson, blockSlug);
+  if (!block || isEditorLayoutBlock(block)) return;
+
+  const component = createComponent(kind);
+  const added = appendComponentToBlock(lesson as CourseLesson, blockSlug, component);
+  if (!added) return;
+
+  setLessonDraft(selectedLessonSlug, lesson);
+  contentEditingRef = {
+    blockSlug,
+    legacyComponentId: Number(component.legacyComponentId),
+    type: String(component.type),
+  };
+  openContentEdit(contentEditingRef);
+  updateSaveState();
+  flashToast(`Added ${typeMeta(imageEditorKind(component)).label} block`);
+}
+
+function deleteContentSection(blockSlug: string) {
+  if (!selectedLessonSlug) return;
+  const lesson = getLessonDraft(selectedLessonSlug);
+  if (!lesson) return;
+
+  const removed = removeBlockFromLesson(lesson, blockSlug);
+  if (!removed) return;
+
+  reassignAllContentOrders(lesson);
+  setLessonDraft(selectedLessonSlug, lesson);
+
+  if (contentEditingRef?.blockSlug === blockSlug) {
+    contentEditingRef = null;
+    hideEditFormPanel();
+  }
+
+  renderContentList();
+  renderLessonList();
+  updateSaveState();
+  flashToast("Section deleted");
+}
+
+function splitContentSection(blockSlug: string) {
+  if (!selectedLessonSlug) return;
+  const lesson = getLessonDraft(selectedLessonSlug);
+  if (!lesson) return;
+  const split = splitBlockIntoStandaloneSections(
+    lesson as CourseLesson,
+    blockSlug,
+    allLessonsForIdScope(),
+  );
+  if (!split) return;
+  setLessonDraft(selectedLessonSlug, lesson);
+  contentEditingRef = null;
+  hideEditFormPanel();
+  renderContentList();
+  updateSaveState();
+  flashToast("Split into separate sections — each block now has its own heading");
+}
+
+function moveContentSectionByIndex(sectionIndex: number, delta: -1 | 1) {
+  if (!selectedLessonSlug) return;
+  const lesson = getLessonDraft(selectedLessonSlug);
+  if (!lesson) return;
+  if (!moveSectionAtIndex(lesson, sectionIndex, delta)) {
+    flashToast("Could not move section — try saving and reloading the lesson");
+    return;
+  }
+  reassignAllContentOrders(lesson);
+  setLessonDraft(selectedLessonSlug, lesson);
+  renderContentList();
+  updateSaveState();
+  flashToast(delta < 0 ? "Section moved up" : "Section moved down");
+}
+
+function bindContentListActions() {
+  if (!dom.itemsList || dom.itemsList.dataset.actionsBound === "1") return;
+  dom.itemsList.dataset.actionsBound = "1";
+
+  dom.itemsList.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+
+    const sectionUp = target.closest("[data-move-section-up]") as HTMLButtonElement | null;
+    if (sectionUp && !sectionUp.disabled) {
+      e.preventDefault();
+      e.stopPropagation();
+      const sectionIndex = Number(sectionUp.getAttribute("data-move-section-up"));
+      if (Number.isFinite(sectionIndex)) moveContentSectionByIndex(sectionIndex, -1);
+      return;
+    }
+
+    const sectionDown = target.closest("[data-move-section-down]") as HTMLButtonElement | null;
+    if (sectionDown && !sectionDown.disabled) {
+      e.preventDefault();
+      e.stopPropagation();
+      const sectionIndex = Number(sectionDown.getAttribute("data-move-section-down"));
+      if (Number.isFinite(sectionIndex)) moveContentSectionByIndex(sectionIndex, 1);
+      return;
+    }
+
+    const splitBtn = target.closest("[data-split-section]") as HTMLButtonElement | null;
+    if (splitBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const blockSlug = splitBtn.getAttribute("data-split-section");
+      if (blockSlug) splitContentSection(blockSlug);
+      return;
+    }
+
+    const deleteSectionBtn = target.closest("[data-delete-section]") as HTMLButtonElement | null;
+    if (deleteSectionBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const blockSlug = deleteSectionBtn.getAttribute("data-delete-section");
+      if (blockSlug) {
+        if (deleteSectionBtn.dataset.confirm === "1") {
+          deleteContentSection(blockSlug);
+        } else {
+          deleteSectionBtn.dataset.confirm = "1";
+          deleteSectionBtn.textContent = "Delete?";
+          deleteSectionBtn.classList.add("course-editor__item-delete-confirm");
+          window.setTimeout(() => {
+            delete deleteSectionBtn.dataset.confirm;
+            deleteSectionBtn.textContent = "Delete section";
+            deleteSectionBtn.classList.remove("course-editor__item-delete-confirm");
+          }, 3000);
+        }
+      }
+      return;
+    }
+
+    const addBlockBtn = target.closest("[data-add-to-section]") as HTMLButtonElement | null;
+    if (addBlockBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const blockSlug = addBlockBtn.getAttribute("data-add-to-section");
+      const kind = addBlockBtn.getAttribute("data-add-kind");
+      if (blockSlug && kind) appendBlockToSection(blockSlug, kind);
+    }
+  });
+
+  dom.itemsList.addEventListener("input", (e) => {
+    const target = e.target as HTMLElement;
+    const titleInput = target.closest("[data-section-title]") as HTMLInputElement | null;
+    if (!titleInput) return;
+    const blockSlug = titleInput.getAttribute("data-section-title");
+    if (blockSlug) applyBlockSectionTitle(blockSlug, titleInput.value, false);
+  });
+}
+
+function populateAddSectionTypes() {
+  if (!dom.addSectionTypes) return;
+  dom.addSectionTypes.innerHTML = NEW_SECTION_ADD_KINDS.map(
+    ({ kind, label }) =>
+      `<button type="button" class="course-editor__add-section-type-btn" data-add-section-kind="${escapeHtml(kind)}">${escapeHtml(label)}</button>`,
+  ).join("");
+}
+
+function bindAddSectionControls() {
+  dom.addSectionBtn?.addEventListener("click", () => {
+    appendContentItem("richText-blank");
+  });
+
+  if (!dom.addSectionTypes || dom.addSectionTypes.dataset.bound === "1") return;
+  dom.addSectionTypes.dataset.bound = "1";
+  dom.addSectionTypes.addEventListener("click", (e) => {
+    const btn = (e.target as HTMLElement).closest("[data-add-section-kind]") as HTMLButtonElement | null;
+    if (!btn) return;
+    const kind = btn.getAttribute("data-add-section-kind");
+    if (kind) appendContentItem(kind);
+  });
+}
+
 function nextAssignId(lesson: LessonRecord) {
   let max = 0;
   for (const block of sortedBlocks(lesson)) {
@@ -781,15 +1134,6 @@ function nextBlockOrder(lesson: LessonRecord) {
     if (Number.isFinite(order) && order > max) max = order;
   }
   return max + 1;
-}
-
-function maxComponentOrder(block: LessonRecord) {
-  let max = 0;
-  for (const component of sortedComponents(block)) {
-    const order = Number(component.order);
-    if (Number.isFinite(order) && order > max) max = order;
-  }
-  return max;
 }
 
 function createAccordionLayoutBlock(lesson: LessonRecord): LessonRecord {
@@ -1016,23 +1360,6 @@ function createComponent(kind: string): Record<string, unknown> {
   }
 }
 
-function getOrCreateContentBlock(lesson: LessonRecord) {
-  if (!Array.isArray(lesson.blocks)) lesson.blocks = [];
-  const blocks = lesson.blocks as LessonRecord[];
-  if (blocks.length === 0) {
-    const block: LessonRecord = {
-      title: "Content",
-      slug: `${String(lesson.slug ?? "lesson")}-content`,
-      order: 1,
-      legacy: { assignId: nextAssignId(lesson), blockType: "HTML" },
-      components: [],
-    };
-    blocks.push(block);
-    return block;
-  }
-  return sortedBlocks(lesson)[sortedBlocks(lesson).length - 1]!;
-}
-
 function reassignAllContentOrders(lesson: LessonRecord) {
   let order = 1;
   for (const block of sortedBlocks(lesson)) {
@@ -1232,47 +1559,26 @@ function removeBottomTextIfEmpty(block: LessonRecord) {
 }
 
 function getNextPlainTextItem(ref: ComponentRef): FlatContentItem | null {
-  if (!selectedLessonSlug || ref.type !== TEXT_VIDEO_LAYOUT_TYPE) return null;
+  if (!selectedLessonSlug) return null;
   const lesson = getLessonDraft(selectedLessonSlug);
   if (!lesson) return null;
-  const items = flattenLessonContent(lesson);
-  const index = items.findIndex((item) => contentItemMatches(item, ref));
-  if (index === -1 || index >= items.length - 1) return null;
-  const next = items[index + 1]!;
-  if (next.type !== "richText") return null;
-  return next;
+  return getNextPlainTextItemInLesson(lesson as CourseLesson, ref);
 }
 
 function combineWithNextTextItem(ref: ComponentRef) {
   if (!selectedLessonSlug) return;
-  const next = getNextPlainTextItem(ref);
-  if (!next) return;
-
   const lesson = getLessonDraft(selectedLessonSlug);
   if (!lesson) return;
-  const block = findBlock(lesson, ref.blockSlug);
-  if (!block) return;
 
-  const nextHtml = String(next.component.html ?? "");
-  const parts = getTextVideoLayoutParts(block);
-  if (!parts) return;
+  const bottomId = maxLegacyComponentIdInCourse();
+  const { lesson: updated, combined } = combineTextVideoWithNextPlainText(
+    lesson as CourseLesson,
+    ref,
+    bottomId,
+  );
+  if (!combined) return;
 
-  let bottomHtml = nextHtml;
-  if (parts.bottomText && richTextHasVisibleContent(String(parts.bottomText.html ?? ""))) {
-    bottomHtml = `${String(parts.bottomText.html ?? "")}\n${nextHtml}`;
-  }
-
-  const bottom = ensureBottomTextComponent(block);
-  bottom.html = bottomHtml;
-
-  setLessonDraft(selectedLessonSlug, lesson);
-
-  deleteContentItem({
-    blockSlug: next.blockSlug,
-    legacyComponentId: next.legacyComponentId,
-    type: next.type,
-  });
-
+  setLessonDraft(selectedLessonSlug, updated);
   openTextVideoLayoutEdit(ref);
   flashToast("Combined with next text item");
   updateSaveState();
@@ -1590,7 +1896,6 @@ function hideEditFormPanel() {
   if (dom.editForm) dom.editForm.hidden = true;
   if (dom.editEmpty) dom.editEmpty.hidden = false;
   refreshSnippetInsertButtons();
-  syncSectionTitleField();
 }
 
 function mountRichTextEditor(
@@ -2546,7 +2851,6 @@ function openThreeVideosLayoutEdit(ref: ComponentRef) {
   sectionTitleEl.value = blockTitleForEditing(block.title);
   sectionTitleEl.addEventListener("input", () => {
     applyBlockSectionTitle(String(block.slug), sectionTitleEl.value);
-    syncSectionTitleField();
     updateThreeVideosLayoutPreview();
   });
 
@@ -2608,18 +2912,6 @@ function openThreeVideosLayoutEdit(ref: ComponentRef) {
   renderContentList();
 }
 
-function blockTitleForEditing(title: unknown): string {
-  const trimmed = typeof title === "string" ? title.trim() : "";
-  if (!trimmed || /^\(untitled assign \d+\)$/i.test(trimmed)) return "";
-  return trimmed;
-}
-
-function contentItemBlockTitle(lesson: LessonRecord, blockSlug: string): string {
-  const block = findBlock(lesson, blockSlug);
-  if (!block) return "";
-  return blockTitleForEditing(block.title);
-}
-
 function contentItemTypeLabel(item: FlatContentItem): string {
   const kind =
     item.type === TEXT_VIDEO_LAYOUT_TYPE ||
@@ -2630,140 +2922,7 @@ function contentItemTypeLabel(item: FlatContentItem): string {
   return typeMeta(kind).label;
 }
 
-function contentBlocks(lesson: LessonRecord) {
-  return sortedBlocks(lesson).filter(
-    (block) =>
-      Array.isArray(block.components) && (block.components as unknown[]).length > 0,
-  );
-}
-
-function getEditableSectionBlock(): LessonRecord | null {
-  if (!selectedLessonSlug) return null;
-  const lesson = getLessonDraft(selectedLessonSlug);
-  if (!lesson) return null;
-
-  if (contentEditingRef) {
-    const block = findBlock(lesson, contentEditingRef.blockSlug);
-    if (!block || isTextImageLayoutBlock(block)) return null;
-    return block;
-  }
-
-  const blocks = contentBlocks(lesson);
-  if (blocks.length === 1 && !isTextImageLayoutBlock(blocks[0]!)) {
-    return blocks[0]!;
-  }
-  return null;
-}
-
-function syncSectionTitleField() {
-  if (!dom.sectionTitleInput || !dom.sectionTitleWrap) return;
-
-  if (!selectedLessonSlug) {
-    dom.sectionTitleWrap.hidden = true;
-    dom.sectionTitleInput.value = "";
-    dom.sectionTitleInput.disabled = true;
-    if (dom.sectionTitleHint) dom.sectionTitleHint.hidden = true;
-    return;
-  }
-
-  const lesson = getLessonDraft(selectedLessonSlug);
-  const blocks = lesson ? contentBlocks(lesson) : [];
-  const selectedBlock =
-    contentEditingRef && lesson ? findBlock(lesson, contentEditingRef.blockSlug) : null;
-
-  if (selectedBlock && isTextImageLayoutBlock(selectedBlock)) {
-    dom.sectionTitleWrap.hidden = false;
-    dom.sectionTitleInput.disabled = true;
-    dom.sectionTitleInput.value = blockTitleForEditing(getLayoutHeader(selectedBlock));
-    if (dom.sectionTitleHint) {
-      dom.sectionTitleHint.hidden = false;
-      dom.sectionTitleHint.textContent =
-        "For Text + Image items, edit the section title in the Layout heading field on the right.";
-    }
-    return;
-  }
-
-  if (selectedBlock && isThreeVideosLayoutBlock(selectedBlock)) {
-    dom.sectionTitleWrap.hidden = false;
-    dom.sectionTitleInput.disabled = false;
-    dom.sectionTitleInput.value = blockTitleForEditing(selectedBlock.title);
-    if (dom.sectionTitleHint) {
-      dom.sectionTitleHint.hidden = false;
-      dom.sectionTitleHint.textContent =
-        "Shown as the block heading on the lesson page. You can also edit it in the Section title field on the right.";
-    }
-    return;
-  }
-
-  if (
-    selectedBlock &&
-    contentEditingRef?.type === "embeddedTool"
-  ) {
-    dom.sectionTitleWrap.hidden = false;
-    dom.sectionTitleInput.disabled = false;
-    dom.sectionTitleInput.value = blockTitleForEditing(selectedBlock.title);
-    if (dom.sectionTitleHint) {
-      dom.sectionTitleHint.hidden = false;
-      dom.sectionTitleHint.textContent =
-        "Shown as the block heading on the lesson page. You can also edit it in the Section title field on the right.";
-    }
-    return;
-  }
-
-  if (
-    selectedBlock &&
-    contentEditingRef?.type === "richText" &&
-    !isTextImageLayoutBlock(selectedBlock) &&
-    !isThreeVideosLayoutBlock(selectedBlock)
-  ) {
-    dom.sectionTitleWrap.hidden = false;
-    dom.sectionTitleInput.disabled = false;
-    dom.sectionTitleInput.value = blockTitleForEditing(selectedBlock.title);
-    if (dom.sectionTitleHint) {
-      dom.sectionTitleHint.hidden = false;
-      dom.sectionTitleHint.textContent =
-        "Shown as the block heading on the lesson page. You can also edit it in the Section title field on the right.";
-    }
-    return;
-  }
-
-  if (selectedBlock && isTextVideoLayoutBlock(selectedBlock)) {
-    dom.sectionTitleWrap.hidden = false;
-    dom.sectionTitleInput.disabled = false;
-    dom.sectionTitleInput.value = blockTitleForEditing(selectedBlock.title);
-    if (dom.sectionTitleHint) {
-      dom.sectionTitleHint.hidden = false;
-      dom.sectionTitleHint.textContent =
-        "Shown as the block heading on the lesson page. You can also edit it in the Section title field on the right.";
-    }
-    return;
-  }
-
-  const block = getEditableSectionBlock();
-  if (!block) {
-    dom.sectionTitleWrap.hidden = blocks.length === 0;
-    dom.sectionTitleInput.disabled = true;
-    dom.sectionTitleInput.value = "";
-    if (dom.sectionTitleHint) {
-      if (blocks.length > 1) {
-        dom.sectionTitleHint.hidden = false;
-        dom.sectionTitleHint.textContent =
-          "Select a content item below to edit its section title.";
-      } else {
-        dom.sectionTitleHint.hidden = true;
-        dom.sectionTitleHint.textContent = "";
-      }
-    }
-    return;
-  }
-
-  dom.sectionTitleWrap.hidden = false;
-  dom.sectionTitleInput.disabled = false;
-  dom.sectionTitleInput.value = blockTitleForEditing(block.title);
-  if (dom.sectionTitleHint) dom.sectionTitleHint.hidden = true;
-}
-
-function applyBlockSectionTitle(blockSlug: string, value: string) {
+function applyBlockSectionTitle(blockSlug: string, value: string, refreshList = true) {
   if (!selectedLessonSlug) return;
   const lesson = getLessonDraft(selectedLessonSlug);
   if (!lesson) return;
@@ -2773,7 +2932,7 @@ function applyBlockSectionTitle(blockSlug: string, value: string) {
   setLessonDraft(selectedLessonSlug, lesson);
   updateSaveState();
   syncRawTextarea();
-  renderContentList();
+  if (refreshList) renderContentList();
   for (const selector of [
     "#ce-3v-section-title",
     "#ce-rt-section-title",
@@ -2786,12 +2945,6 @@ function applyBlockSectionTitle(blockSlug: string, value: string) {
     }
   }
   updateThreeVideosLayoutPreview();
-}
-
-function applySectionTitleFromInput(value: string) {
-  const block = getEditableSectionBlock();
-  if (!block?.slug || !selectedLessonSlug) return;
-  applyBlockSectionTitle(String(block.slug), value);
 }
 
 function syncLessonTitleInput() {
@@ -2836,7 +2989,6 @@ function renderContentList() {
       dom.itemsEmpty.textContent = "Select a lesson to view its content.";
     }
     syncLessonTitleInput();
-    syncSectionTitleField();
     return;
   }
 
@@ -2844,46 +2996,98 @@ function renderContentList() {
   if (!lesson) return;
 
   syncLessonTitleInput();
-  syncSectionTitleField();
   const items = flattenLessonContent(lesson);
+  const { sectionCount } = countLessonSectionsAndBlocks(lesson);
 
   if (dom.itemsEmpty) {
-    dom.itemsEmpty.hidden = items.length > 0;
-    dom.itemsEmpty.textContent = "This lesson is empty. Add your first item below.";
+    dom.itemsEmpty.hidden = sectionCount > 0;
+    dom.itemsEmpty.textContent =
+      "This lesson has no sections yet. Add a section to start building content.";
   }
   if (!dom.itemsList) return;
 
-  dom.itemsList.innerHTML = items
-    .map((item, index) => {
-      const meta = typeMeta(
-        item.type === TEXT_VIDEO_LAYOUT_TYPE ||
-          item.type === TEXT_IMAGE_LAYOUT_TYPE ||
-          item.type === THREE_VIDEOS_LAYOUT_TYPE
-          ? (item.type as EditorContentKind)
-          : imageEditorKind(item.component),
-      );
-      const blockTitle = contentItemBlockTitle(lesson, item.blockSlug);
-      const typeLabel = contentItemTypeLabel(item);
-      const selected = contentItemMatches(contentEditingRef, item);
+  const groups = buildContentListGroups(lesson, items);
+  const sectionHtml = groups
+    .map((group, groupIndex) => {
+      const sectionMoveBtns = `
+        <div class="course-editor__section-actions" aria-label="Move section ${group.sectionNumber}">
+          <button type="button" class="course-editor__section-move" data-move-section-up="${groupIndex}" ${groupIndex === 0 ? "disabled" : ""} title="Move section up">↑</button>
+          <button type="button" class="course-editor__section-move" data-move-section-down="${groupIndex}" ${groupIndex === groups.length - 1 ? "disabled" : ""} title="Move section down">↓</button>
+          ${
+            group.canSplit
+              ? `<button type="button" class="course-editor__section-split" data-split-section="${escapeHtml(group.blockSlug)}" title="Give each block its own section heading">Split</button>`
+              : ""
+          }
+          <button type="button" class="course-editor__section-delete" data-delete-section="${escapeHtml(group.blockSlug)}" title="Delete section">Delete section</button>
+        </div>
+      `;
+      const itemsHtml = group.entries
+        .map(({ item, index }, blockIndex) => {
+          const meta = typeMeta(
+            item.type === TEXT_VIDEO_LAYOUT_TYPE ||
+              item.type === TEXT_IMAGE_LAYOUT_TYPE ||
+              item.type === THREE_VIDEOS_LAYOUT_TYPE
+              ? (item.type as EditorContentKind)
+              : imageEditorKind(item.component),
+          );
+          const typeLabel = contentItemTypeLabel(item);
+          const selected = contentItemMatches(contentEditingRef, item);
+          const prevInSection = group.entries[blockIndex - 1];
+          const nextInSection = group.entries[blockIndex + 1];
+          const blockLabel =
+            group.blockCount > 1
+              ? `<span class="course-editor__item-block-label">Block ${blockIndex + 1} of ${group.blockCount}</span>`
+              : "";
+          return `
+            <article class="course-editor__item course-editor__item--nested ${selected ? "is-selected" : ""}" data-item-index="${index}" draggable="true">
+              <span class="course-editor__item-grip" title="Drag to reorder">⋮⋮</span>
+              <span class="course-editor__item-icon" style="background:${meta.color}1c;color:${meta.color}">${meta.abbrev}</span>
+              <div class="course-editor__item-body">
+                ${blockLabel}
+                <div class="course-editor__item-type" style="color:${meta.color}">${escapeHtml(typeLabel)}</div>
+                <div class="course-editor__item-summary">${escapeHtml(contentSummary(item.component))}</div>
+              </div>
+              <div class="course-editor__item-actions">
+                <button type="button" class="course-editor__icon-btn" data-action="edit" data-index="${index}" title="Edit block">Edit</button>
+                <button type="button" class="course-editor__icon-btn" data-action="up" data-index="${index}" data-swap-index="${prevInSection ? prevInSection.index : index}" ${blockIndex === 0 ? "disabled" : ""} title="Move block up">↑</button>
+                <button type="button" class="course-editor__icon-btn" data-action="down" data-index="${index}" data-swap-index="${nextInSection ? nextInSection.index : index}" ${blockIndex === group.entries.length - 1 ? "disabled" : ""} title="Move block down">↓</button>
+                <button type="button" class="course-editor__icon-btn" data-action="dup" data-index="${index}" title="Duplicate block">⧉</button>
+                <button type="button" class="course-editor__icon-btn is-danger" data-action="del" data-index="${index}" title="Delete block">✕</button>
+              </div>
+            </article>
+          `;
+        })
+        .join("");
+
       return `
-        <article class="course-editor__item ${selected ? "is-selected" : ""}" data-item-index="${index}" draggable="true">
-          <span class="course-editor__item-grip" title="Drag to reorder">⋮⋮</span>
-          <span class="course-editor__item-icon" style="background:${meta.color}1c;color:${meta.color}">${meta.abbrev}</span>
-          <div class="course-editor__item-body">
-            ${blockTitle ? `<div class="course-editor__item-title">${escapeHtml(blockTitle)}</div>` : ""}
-            <div class="course-editor__item-type" style="color:${meta.color}">${escapeHtml(typeLabel)}</div>
-            <div class="course-editor__item-summary">${escapeHtml(contentSummary(item.component))}</div>
-          </div>
-          <div class="course-editor__item-actions">
-            <button type="button" class="course-editor__icon-btn" data-action="up" data-index="${index}" ${index === 0 ? "disabled" : ""} title="Move up">↑</button>
-            <button type="button" class="course-editor__icon-btn" data-action="down" data-index="${index}" ${index === items.length - 1 ? "disabled" : ""} title="Move down">↓</button>
-            <button type="button" class="course-editor__icon-btn" data-action="dup" data-index="${index}" title="Duplicate">⧉</button>
-            <button type="button" class="course-editor__icon-btn is-danger" data-action="del" data-index="${index}" title="Delete">✕</button>
-          </div>
-        </article>
+        <section class="course-editor__section-card" data-block-slug="${escapeHtml(group.blockSlug)}">
+          <header class="course-editor__section-header">
+            <div class="course-editor__section-heading">
+              <span class="course-editor__hierarchy-label course-editor__hierarchy-label--section">Section ${group.sectionNumber}</span>
+              <input
+                type="text"
+                class="course-editor__input course-editor__section-title-input"
+                data-section-title="${escapeHtml(group.blockSlug)}"
+                value="${escapeHtml(group.blockTitle === "Untitled section" ? "" : group.blockTitle)}"
+                placeholder="Section title"
+                aria-label="Section ${group.sectionNumber} title"
+                autocomplete="off"
+                spellcheck="true"
+              />
+              <p class="course-editor__section-meta">${escapeHtml(sectionGroupMetaLabel(group))}</p>
+            </div>
+            ${sectionMoveBtns}
+          </header>
+          <div class="course-editor__section-items">${itemsHtml}</div>
+          ${group.isLayout ? "" : renderSectionAddBlockMenu(group.blockSlug)}
+        </section>
       `;
     })
     .join("");
+
+  dom.itemsList.innerHTML = sectionHtml;
+
+  bindContentListActions();
 
   const deleteConfirm = new Set<number>();
 
@@ -2917,12 +3121,16 @@ function renderContentList() {
       e.stopPropagation();
       const action = btn.getAttribute("data-action");
       const index = Number(btn.getAttribute("data-index"));
+      const swapIndex = Number(btn.getAttribute("data-swap-index"));
       const currentItems = flattenLessonContent(getLessonDraft(selectedLessonSlug!)!);
       const item = currentItems[index];
       if (!item) return;
 
-      if (action === "up") moveContentItem(index, index - 1);
-      else if (action === "down") moveContentItem(index, index + 1);
+      if (action === "edit") openContentEdit(item);
+      else if (action === "up" && Number.isFinite(swapIndex) && swapIndex !== index)
+        moveContentItem(index, swapIndex);
+      else if (action === "down" && Number.isFinite(swapIndex) && swapIndex !== index)
+        moveContentItem(index, swapIndex);
       else if (action === "dup") duplicateContentItem(item);
       else if (action === "del") {
         if (deleteConfirm.has(index)) {
@@ -2942,6 +3150,8 @@ function renderContentList() {
       }
     });
   });
+
+  renderLessonList();
 }
 
 function removeBlockFromLesson(lesson: LessonRecord, blockSlug: string) {
@@ -2958,24 +3168,7 @@ function moveBlockRelativeToTarget(
   targetBlockSlug: string,
   moveDown: boolean,
 ) {
-  if (!Array.isArray(lesson.blocks)) return;
-  const blocks = lesson.blocks as LessonRecord[];
-  const fromIndex = blocks.findIndex((block) => block.slug === blockSlug);
-  if (fromIndex === -1) return;
-  const [moved] = blocks.splice(fromIndex, 1);
-  if (!moved) return;
-
-  let targetIndex = blocks.findIndex((block) => block.slug === targetBlockSlug);
-  if (targetIndex === -1) {
-    blocks.push(moved);
-    return;
-  }
-  if (moveDown) targetIndex += 1;
-  blocks.splice(targetIndex, 0, moved);
-
-  blocks.forEach((block, index) => {
-    block.order = index + 1;
-  });
+  moveBlockRelativeToTargetInLesson(lesson, blockSlug, targetBlockSlug, moveDown);
 }
 
 function insertComponentBesideBlock(
@@ -2984,24 +3177,8 @@ function insertComponentBesideBlock(
   targetBlockSlug: string,
   after: boolean,
 ) {
-  const timestamp = Date.now();
-  const newBlock: LessonRecord = {
-    title: "Content",
-    slug: `content-${timestamp}`,
-    order: nextBlockOrder(lesson),
-    legacy: { assignId: nextAssignId(lesson), blockType: "HTML" },
-    components: [component],
-  };
-  component.order = 1;
-
-  const blocks = (lesson.blocks ?? []) as LessonRecord[];
-  const targetIndex = blocks.findIndex((block) => block.slug === targetBlockSlug);
-  const insertAt = targetIndex === -1 ? blocks.length : after ? targetIndex + 1 : targetIndex;
-  blocks.splice(insertAt, 0, newBlock);
-  lesson.blocks = blocks;
-  blocks.forEach((block, index) => {
-    block.order = index + 1;
-  });
+  insertStandaloneComponentBlockRelative(lesson, component, targetBlockSlug, after);
+  reassignAllContentOrders(lesson);
 }
 
 function moveContentItem(fromIndex: number, toIndex: number) {
@@ -3066,10 +3243,14 @@ function moveContentItem(fromIndex: number, toIndex: number) {
     if (!comp) return;
     pruneEmptyBlocks(lesson);
     insertComponentBesideBlock(lesson, comp, target.blockSlug, moveDown);
-    reassignAllContentOrders(lesson);
     setLessonDraft(selectedLessonSlug, lesson);
+    const host = findBlockContainingComponent(
+      lesson as CourseLesson,
+      Number(comp.legacyComponentId),
+      String(comp.type),
+    );
     contentEditingRef = {
-      blockSlug: current.blockSlug,
+      blockSlug: String(host?.slug ?? target.blockSlug),
       legacyComponentId: Number(comp.legacyComponentId),
       type: String(comp.type),
     };
@@ -3088,10 +3269,14 @@ function moveContentItem(fromIndex: number, toIndex: number) {
     if (!comp) return;
     pruneEmptyBlocks(lesson);
     insertComponentBesideBlock(lesson, comp, target.blockSlug, moveDown);
-    reassignAllContentOrders(lesson);
     setLessonDraft(selectedLessonSlug, lesson);
+    const host = findBlockContainingComponent(
+      lesson as CourseLesson,
+      Number(comp.legacyComponentId),
+      String(comp.type),
+    );
     contentEditingRef = {
-      blockSlug: current.blockSlug,
+      blockSlug: String(host?.slug ?? target.blockSlug),
       legacyComponentId: Number(comp.legacyComponentId),
       type: String(comp.type),
     };
@@ -3110,10 +3295,14 @@ function moveContentItem(fromIndex: number, toIndex: number) {
     if (!comp) return;
     pruneEmptyBlocks(lesson);
     insertComponentBesideBlock(lesson, comp, target.blockSlug, moveDown);
-    reassignAllContentOrders(lesson);
     setLessonDraft(selectedLessonSlug, lesson);
+    const host = findBlockContainingComponent(
+      lesson as CourseLesson,
+      Number(comp.legacyComponentId),
+      String(comp.type),
+    );
     contentEditingRef = {
-      blockSlug: current.blockSlug,
+      blockSlug: String(host?.slug ?? target.blockSlug),
       legacyComponentId: Number(comp.legacyComponentId),
       type: String(comp.type),
     };
@@ -3132,10 +3321,14 @@ function moveContentItem(fromIndex: number, toIndex: number) {
     if (!comp) return;
     pruneEmptyBlocks(lesson);
     insertComponentBesideBlock(lesson, comp, target.blockSlug, moveDown);
-    reassignAllContentOrders(lesson);
     setLessonDraft(selectedLessonSlug, lesson);
+    const host = findBlockContainingComponent(
+      lesson as CourseLesson,
+      Number(comp.legacyComponentId),
+      String(comp.type),
+    );
     contentEditingRef = {
-      blockSlug: current.blockSlug,
+      blockSlug: String(host?.slug ?? target.blockSlug),
       legacyComponentId: Number(comp.legacyComponentId),
       type: String(comp.type),
     };
@@ -3144,35 +3337,16 @@ function moveContentItem(fromIndex: number, toIndex: number) {
     return;
   }
 
-  const comp = removeComponentFromBlock(
-    lesson,
-    current.blockSlug,
-    current.legacyComponentId,
-    current.type,
+  const movedRef = movePlainContentComponent(
+    lesson as CourseLesson,
+    current,
+    target,
+    moveDown,
   );
-  if (!comp) return;
+  if (!movedRef) return;
 
-  const targetBlock = findBlock(lesson, target.blockSlug);
-  if (!targetBlock) return;
-  const targetIdx = findComponentIndex(
-    targetBlock,
-    target.legacyComponentId,
-    target.type,
-  );
-  if (targetIdx === -1) return;
-
-  const components = targetBlock.components as Record<string, unknown>[];
-  const insertAt = moveDown ? targetIdx + 1 : targetIdx;
-  components.splice(insertAt, 0, comp);
-
-  pruneEmptyBlocks(lesson);
-  reassignAllContentOrders(lesson);
   setLessonDraft(selectedLessonSlug, lesson);
-  contentEditingRef = {
-    blockSlug: targetBlock.slug as string,
-    legacyComponentId: Number(comp.legacyComponentId),
-    type: String(comp.type),
-  };
+  contentEditingRef = movedRef;
   renderContentList();
   updateSaveState();
 }
@@ -3535,14 +3709,12 @@ function appendContentItem(kind: string) {
     return;
   }
 
-  const block = getOrCreateContentBlock(lesson);
   const component = createComponent(kind);
-  component.order = maxComponentOrder(block) + 1;
-  (block.components as Record<string, unknown>[]).push(component);
+  const newBlock = appendStandaloneComponentBlock(lesson, component);
   setLessonDraft(selectedLessonSlug, lesson);
 
   contentEditingRef = {
-    blockSlug: String(block.slug),
+    blockSlug: String(newBlock.slug),
     legacyComponentId: Number(component.legacyComponentId),
     type: String(component.type),
   };
@@ -3563,8 +3735,8 @@ function renderLessonList() {
       const active = slug === selectedLessonSlug;
       const dirty = isLessonDirty(slug);
       const renaming = renamingLessonSlug === slug;
-      const itemCount = countLessonContentItems(draft);
-      const itemLabel = `${itemCount} item${itemCount === 1 ? "" : "s"}`;
+      const { sectionCount, blockCount } = countLessonSectionsAndBlocks(draft);
+      const metaLabel = formatLessonSidebarMeta(sectionCount, blockCount);
       return `
         <div class="course-editor__lesson-row ${active ? "is-active" : ""} ${dirty ? "is-dirty" : ""}"
           data-lesson-slug="${escapeHtml(slug)}" data-lesson-index="${index}" draggable="true">
@@ -3576,7 +3748,7 @@ function renderLessonList() {
                 ? `<input class="course-editor__lesson-rename" data-rename-input value="${escapeHtml(lessonTitleForEditing(draft.title))}">`
                 : `<span class="course-editor__lesson-title">${escapeHtml(lessonDisplayTitle(draft.title))}</span>`
             }
-            <span class="course-editor__lesson-meta">${itemLabel}</span>
+            <span class="course-editor__lesson-meta">${metaLabel}</span>
           </div>
           <span class="course-editor__lesson-actions">
             <button type="button" class="course-editor__icon-btn" data-lesson-edit="${index}" title="Edit lesson">Edit</button>
@@ -4031,6 +4203,7 @@ async function loadCourse(
     updateCoursePreviewLink(courseData.course);
     if (dom.courseTitle) dom.courseTitle.value = String(courseData.course?.title ?? "");
     updateCourseDraftBadge(courseData.course);
+    syncCourseSettingsFields(courseData.course);
 
     if (dom.loading) dom.loading.hidden = true;
     if (dom.app) dom.app.hidden = false;
@@ -4063,15 +4236,11 @@ function toggleAdvanced() {
 
 export function initCourseContentEditor() {
   bindDom();
+  bindContentListActions();
+  populateAddSectionTypes();
+  bindAddSectionControls();
   setCourseHtmlSnippetsToast(flashToast);
   initCourseHtmlSnippetsPanel();
-
-  document.querySelectorAll("[data-add-kind]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const kind = btn.getAttribute("data-add-kind");
-      if (kind) appendContentItem(kind);
-    });
-  });
 
   dom.saveBtn?.addEventListener("click", () => saveLesson(false));
   dom.revertBtn?.addEventListener("click", revertLesson);
@@ -4082,10 +4251,6 @@ export function initCourseContentEditor() {
   dom.lessonTitleInput?.addEventListener("blur", () => {
     if (!dom.lessonTitleInput) return;
     applyLessonTitleFromInput(dom.lessonTitleInput.value, true);
-  });
-  dom.sectionTitleInput?.addEventListener("input", () => {
-    if (!dom.sectionTitleInput || dom.sectionTitleInput.disabled) return;
-    applySectionTitleFromInput(dom.sectionTitleInput.value);
   });
   dom.addLessonBtn?.addEventListener("click", () => {
     void addLesson();
@@ -4110,6 +4275,17 @@ export function initCourseContentEditor() {
     if (Number.isFinite(courseId)) {
       void loadCourse(courseId, { lessonSlug: null, lessonIndex: null, advancedOpen: false });
     }
+  });
+
+  dom.courseThumbnail?.addEventListener("input", () => {
+    updateCourseThumbnailPreview();
+    updateCourseSettingsSaveState();
+  });
+  dom.courseActive?.addEventListener("change", () => {
+    updateCourseSettingsSaveState();
+  });
+  dom.courseSettingsSaveBtn?.addEventListener("click", () => {
+    void saveCourseSettings();
   });
 
   dom.snippetsPanel?.addEventListener("toggle", () => {

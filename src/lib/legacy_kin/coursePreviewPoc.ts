@@ -138,7 +138,12 @@ export type CoursePreviewData = {
     /** `published` or omitted = public when no explicit publish flags. `draft` hides from public routes. */
     status?: string;
     published?: boolean;
+    /** Short catalog blurb for course overview pages. */
     description?: string;
+    /** Root-relative or absolute path to the course catalog card image. */
+    thumbnail?: string;
+    /** When false, hidden from the public /courses catalog and legacy routes. Omitted = active. */
+    active?: boolean;
     legacy: { sourceExport: string; sourceCsv?: string; migratedAt?: string };
   };
   lessons: CourseLesson[];

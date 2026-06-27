@@ -1,9 +1,13 @@
 ---
 /* Centered Logo Header for Knit it Now — soft launch (simplified nav) */
 
+import { MEMBER_PLAN_IDS } from "../config/memberships";
+
 /* Temporary beta "What's New" banner. Set to false to hide site-wide
    (no leftover spacing — the fixed-header offset re-measures automatically). */
 const SHOW_BETA_BANNER = true;
+
+const memberPlanIds = [...MEMBER_PLAN_IDS];
 ---
 <style is:global>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
@@ -1760,12 +1764,9 @@ div[data-ms-modal-overlay] {
   </div>
 </div>
 
-<script is:inline>
+<script is:inline define:vars={{ memberPlanIds }}>
   (function () {
-    const PAID_PLAN_IDS = [
-      "pln_kin-membership-annual-qf9g01et",
-      "pln_kin-membership-monthly-a59701wy",
-    ];
+    const PAID_PLAN_IDS = memberPlanIds;
 
     const pill = document.getElementById("auth-pill");
     const authMsg = document.getElementById("auth-msg");

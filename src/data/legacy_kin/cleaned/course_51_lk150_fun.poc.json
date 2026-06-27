@@ -5,6 +5,7 @@
     "legacyChallengeId": 51,
     "title": "LK-150 Fun",
     "slug": "lk-150-fun",
+    "thumbnail": "/images/courses/lk-150_fun.webp",
     "legacy": {
       "sourceExport": "course_51_lk150_fun.csv"
     }

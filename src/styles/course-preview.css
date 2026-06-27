@@ -1009,3 +1009,79 @@ main.site-content:has(.course-preview--reader) {
     font-size: 0.875rem;
   }
 }
+
+/* ============================================
+   Course content: two-column text + card (.kin-grid-2, .kin-card)
+   ============================================ */
+.kin-grid-2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+  margin: 1rem 0 1.25rem;
+}
+
+.kin-grid-2 > * {
+  min-width: 0;
+}
+
+.kin-card {
+  margin: 0;
+  padding: 1rem 1.1rem;
+  border: 1px solid #d8dfd0;
+  border-radius: 10px;
+  background: #f8faf5;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.kin-card > :first-child {
+  margin-top: 0;
+}
+
+.kin-card > :last-child {
+  margin-bottom: 0;
+}
+
+.kin-card h4 {
+  margin: 0 0 0.65rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--kbm-green, #52682d);
+}
+
+.kin-card table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.kin-card th,
+.kin-card td {
+  padding: 0.45rem 0.5rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid #e2e8dc;
+}
+
+.kin-card tr:last-child th,
+.kin-card tr:last-child td {
+  border-bottom: none;
+}
+
+.kin-card th {
+  width: 38%;
+  font-weight: 600;
+  color: #374151;
+}
+
+.kin-card td {
+  color: #4b5563;
+}
+
+@media (max-width: 768px) {
+  .kin-grid-2 {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+}

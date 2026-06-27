@@ -1,0 +1,42 @@
+{
+  "categories": [
+    "Getting Started",
+    "LK-150",
+    "Ribber",
+    "Skill Builders",
+    "Projects",
+    "DesignaKnit / Software"
+  ],
+  "entries": [
+    {
+      "slug": "lk-150-quick-start",
+      "category": "LK-150",
+      "catalogStatus": "available",
+      "description": "Introduce yourself to the LK-150, understand how it works, and build confidence with step-by-step exercises."
+    },
+    {
+      "slug": "lk-150-fun",
+      "category": "LK-150",
+      "catalogStatus": "available",
+      "description": "Build on your LK-150 basics with texture, shaping, and creative techniques you can use in any project."
+    },
+    {
+      "slug": "ribber-basic-bootcamp",
+      "category": "Ribber",
+      "catalogStatus": "available",
+      "description": "Get comfortable with your ribber through hands-on practice—cast on, bind off, needle arrangements, and double-bed fabrics."
+    },
+    {
+      "slug": "beginner-workshop",
+      "category": "Getting Started",
+      "catalogStatus": "coming-soon",
+      "description": "A guided start-to-finish path for new machine knitters."
+    },
+    {
+      "slug": "not-enough-needles",
+      "category": "Skill Builders",
+      "catalogStatus": "in-progress",
+      "description": "Strategies for when your machine does not have enough needles for the width you want to knit."
+    }
+  ]
+}

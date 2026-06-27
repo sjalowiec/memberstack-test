@@ -1,91 +1,369 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import {
+  courseCatalogStatusLabel,
+  getCourseCatalogEntriesByCategory,
+} from "../../lib/coursesCatalog";
 
-const title = "Courses | Knit it Now";
-const description =
-  "Temporary courses placeholder page for the original Knit it Now course library.";
+const categorySections = getCourseCatalogEntriesByCategory();
+const availableCount = categorySections
+  .flatMap((section) => section.courses)
+  .filter((course) => course.status === "available").length;
+
+const pageTitle = "Courses | Knit it Now";
+const pageDescription =
+  "Structured machine knitting courses with step-by-step lessons, exercises, and video guidance.";
 ---
 
-<Layout {title} {description}>
-  <section class="courses-placeholder-wrap">
-    <div class="courses-placeholder-card">
-      <h1>Courses Are Coming Soon</h1>
-
-      <p>
-        We're reorganizing the original Knit It Now course library and preparing
-        it for the new site.
-      </p>
-
-      <p>
-        Course access will be available here soon. In the meantime, you can
-        explore videos, patterns, and other machine knitting resources.
-      </p>
-
-      <div class="courses-actions">
-        <a href="/videos/" class="kbm-btn kbm-btn-accent">Explore Videos</a>
-        <a href="/patterns/" class="kbm-btn">Browse Patterns</a>
+<Layout title={pageTitle} description={pageDescription} bodyClass="page--tight-header">
+  <div class="courses-page">
+    <header class="courses-hero">
+      <div class="courses-hero__text">
+        <h1 class="courses-hero__title">Courses</h1>
+        <p class="courses-hero__subtitle">
+          Follow guided lessons at your own pace. Work the exercises, build skills, and
+          return anytime to review a technique.
+        </p>
       </div>
-
-      <p class="courses-note">More course information will be added soon.</p>
-    </div>
-  </section>
-
-  <style>
-    .courses-placeholder-wrap {
-      min-height: 58vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px 16px;
-    }
-
-    .courses-placeholder-card {
-      width: 100%;
-      max-width: 760px;
-      background: #fff;
-      border: 1px solid #e6e6e6;
-      border-radius: 12px;
-      padding: 28px;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
-      text-align: center;
-    }
-
-    .courses-placeholder-card h1 {
-      margin-top: 0;
-      margin-bottom: 14px;
-    }
-
-    .courses-placeholder-card p {
-      margin: 0 0 14px;
-      line-height: 1.6;
-    }
-
-    .courses-actions {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin: 20px 0 16px;
-    }
-
-    .courses-note {
-      margin-bottom: 0;
-      font-size: 0.95rem;
-      color: #5a5a5a;
-    }
-
-    @media (max-width: 640px) {
-      .courses-placeholder-card {
-        padding: 22px 16px;
+      {
+        availableCount > 0 ? (
+          <p class="courses-hero__meta">
+            {availableCount} course{availableCount === 1 ? "" : "s"} available now
+          </p>
+        ) : null
       }
+    </header>
 
-      .courses-actions {
-        flex-direction: column;
-      }
+    {
+      categorySections.map(({ category, courses }) => (
+        <section
+          class="courses-catalog"
+          aria-labelledby={`courses-category-${category.replace(/\s+/g, "-").toLowerCase()}`}
+        >
+          <h2
+            id={`courses-category-${category.replace(/\s+/g, "-").toLowerCase()}`}
+            class="courses-section-title"
+          >
+            {category}
+          </h2>
+          <div class="courses-grid">
+            {
+              courses.map((course) => {
+                const statusLabel = courseCatalogStatusLabel(course.status);
+                const statusClass =
+                  course.status === "available"
+                    ? "course-card__status--available"
+                    : course.status === "in-progress"
+                      ? "course-card__status--progress"
+                      : "course-card__status--soon";
+                const isLink = course.status === "available" && Boolean(course.href);
 
-      .courses-actions a {
-        width: 100%;
-      }
+                return isLink ? (
+                  <a href={course.href} class="course-card course-card--link">
+                    <div class="course-card__media">
+                      {
+                        course.hasThumbnail && course.thumbnail ? (
+                          <img
+                            src={course.thumbnail}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        ) : (
+                          <div class="course-card__placeholder" aria-hidden="true">
+                            <span class="course-card__placeholder-label">Course</span>
+                          </div>
+                        )
+                      }
+                      <span class={`course-card__status ${statusClass}`}>{statusLabel}</span>
+                    </div>
+                    <div class="course-card__body">
+                      <h3 class="course-card__title">{course.title}</h3>
+                      <p class="course-card__copy">{course.description ?? "\u00a0"}</p>
+                      <div class="course-card__footer">
+                        <span class="course-card__cta kbm-btn kbm-btn-primary">
+                          {course.buttonLabel}
+                        </span>
+                      </div>
+                    </div>
+                  </a>
+                ) : (
+                  <div class="course-card course-card--disabled" aria-disabled="true">
+                    <div class="course-card__media">
+                      {
+                        course.hasThumbnail && course.thumbnail ? (
+                          <img
+                            src={course.thumbnail}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                          />
+                        ) : (
+                          <div class="course-card__placeholder" aria-hidden="true">
+                            <span class="course-card__placeholder-label">Course</span>
+                          </div>
+                        )
+                      }
+                      <span class={`course-card__status ${statusClass}`}>{statusLabel}</span>
+                    </div>
+                    <div class="course-card__body">
+                      <h3 class="course-card__title">{course.title}</h3>
+                      <p class="course-card__copy">{course.description ?? "\u00a0"}</p>
+                      <div class="course-card__footer">
+                        <span class="course-card__cta kbm-btn kbm-btn-outline course-card__cta--disabled">
+                          {course.buttonLabel}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            }
+          </div>
+        </section>
+      ))
     }
-  </style>
+  </div>
 </Layout>
+
+<style>
+  .courses-page {
+    --course-card-height: 26rem;
+    --course-card-media-height: 10.5rem;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  .courses-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin: 0 0 28px;
+  }
+
+  .courses-hero__text {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .courses-hero__title {
+    margin: 0 0 8px;
+    font-size: clamp(1.6rem, 3vw, 2rem);
+    font-weight: 600;
+    color: #52682d;
+    line-height: 1.2;
+  }
+
+  .courses-hero__subtitle {
+    margin: 0;
+    max-width: 42rem;
+    font-size: 1.02rem;
+    line-height: 1.55;
+    color: #4d5a48;
+  }
+
+  .courses-hero__meta {
+    flex: 0 0 auto;
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #52682d;
+    white-space: nowrap;
+  }
+
+  .courses-catalog {
+    margin: 0 0 36px;
+  }
+
+  .courses-section-title {
+    margin: 0 0 16px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #52682d;
+  }
+
+  .courses-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-rows: var(--course-card-height);
+    gap: 20px;
+    align-items: stretch;
+  }
+
+  .course-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: var(--course-card-height);
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid #d6dbc9;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+  }
+
+  .course-card--link {
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  }
+
+  .course-card--link:hover,
+  .course-card--link:focus-visible {
+    border-color: #52682d;
+    box-shadow: 0 6px 16px rgba(82, 104, 45, 0.14);
+    transform: translateY(-2px);
+  }
+
+  .course-card--link:focus-visible {
+    outline: 2px solid #52682d;
+    outline-offset: 2px;
+  }
+
+  .course-card--disabled {
+    opacity: 0.94;
+  }
+
+  .course-card__media {
+    position: relative;
+    flex: 0 0 var(--course-card-media-height);
+    height: var(--course-card-media-height);
+    overflow: hidden;
+    background: #f9f9f6;
+    border-bottom: 1px solid #eef0e6;
+  }
+
+  .course-card__media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .course-card__placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background:
+      repeating-linear-gradient(
+        135deg,
+        #f3f4ec,
+        #f3f4ec 14px,
+        #eceee2 14px,
+        #eceee2 28px
+      );
+  }
+
+  .course-card__placeholder-label {
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #7a8468;
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid #d6dbc9;
+  }
+
+  .course-card__status {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1;
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 999px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  }
+
+  .course-card__status--available {
+    color: #52682d;
+    background: #eef2e3;
+  }
+
+  .course-card__status--progress {
+    color: #8a6d1f;
+    background: #f7f0da;
+  }
+
+  .course-card__status--soon {
+    color: #6b7280;
+    background: #f0f1ee;
+  }
+
+  .course-card__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 16px 18px 18px;
+  }
+
+  .course-card__title {
+    margin: 0 0 8px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: #2f3a28;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    min-height: 2.7em;
+  }
+
+  .course-card__copy {
+    margin: 0;
+    font-size: 0.94rem;
+    line-height: 1.5;
+    color: #4d5a48;
+    flex: 1 1 auto;
+    min-height: 4.5em;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
+
+  .course-card__footer {
+    margin-top: auto;
+    padding-top: 14px;
+    text-align: center;
+  }
+
+  .course-card__cta {
+    pointer-events: none;
+  }
+
+  .course-card__cta--disabled {
+    opacity: 0.78;
+    cursor: default;
+  }
+
+  @media (max-width: 1024px) {
+    .courses-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .courses-hero {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .courses-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -277,6 +277,14 @@ describe("listAdminCourseSummaries", () => {
     expect(fun?.isDraft).toBe(false);
     expect(fun?.isPublic).toBe(true);
   });
+
+  it("sorts courses alphabetically by title for the admin picker", () => {
+    const titles = listAdminCourseSummaries().map((item) => item.title);
+    const sorted = [...titles].sort((a, b) =>
+      a.localeCompare(b, undefined, { sensitivity: "base" }),
+    );
+    expect(titles).toEqual(sorted);
+  });
 });
 
 describe("getAllowedCourseIds", () => {

@@ -80,8 +80,58 @@ if (
           <span id="course-editor-draft-badge" class="course-editor__draft-badge" hidden>
             Draft / unpublished
           </span>
+          <span id="course-editor-inactive-badge" class="course-editor__inactive-badge" hidden>
+            Inactive
+          </span>
           <select id="course-editor-course" class="course-editor__course-select" aria-label="Select course"></select>
         </div>
+        <details id="course-editor-settings-panel" class="course-editor__settings-panel">
+          <summary class="course-editor__settings-summary">Course settings</summary>
+          <div class="course-editor__course-settings">
+            <label class="course-editor__field-label" for="course-editor-active">Catalog visibility</label>
+            <select id="course-editor-active" class="course-editor__input course-editor__active-select" aria-label="Course active or inactive">
+              <option value="true">Active — listed on /courses</option>
+              <option value="false">Inactive — hidden from public site</option>
+            </select>
+            <p class="course-editor__field-hint">
+              Inactive courses are removed from the public catalog and course pages. Staging preview still works.
+            </p>
+            <label class="course-editor__sidebar-label" for="course-editor-thumbnail">
+              Course thumbnail
+            </label>
+            <input
+              id="course-editor-thumbnail"
+              class="course-editor__input course-editor__thumbnail-input"
+              type="text"
+              placeholder="/challenge/images/v2/… or /images/courses/…"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <p class="course-editor__field-hint">
+              Root-relative path used on the public <a href="/courses/" target="_blank" rel="noopener noreferrer">/courses</a> catalog card.
+            </p>
+            <div id="course-editor-thumbnail-preview-wrap" class="course-editor__thumbnail-preview-wrap" hidden>
+              <img
+                id="course-editor-thumbnail-preview"
+                class="course-editor__thumbnail-preview"
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+            <p id="course-editor-thumbnail-preview-empty" class="course-editor__field-hint" hidden>
+              No preview — enter a path above or clear to use the catalog placeholder.
+            </p>
+            <button
+              type="button"
+              id="course-editor-settings-save"
+              class="kbm-btn kbm-btn-outline course-editor__settings-save"
+              disabled
+            >
+              Save course settings
+            </button>
+          </div>
+        </details>
         <div class="course-editor__lessons-head">
           <span class="course-editor__sidebar-label">Lessons</span>
           <button type="button" id="course-editor-add-lesson" class="course-editor__add-lesson-btn">
@@ -93,91 +143,67 @@ if (
 
       <main class="course-editor__center">
         <div class="course-editor__center-inner">
-          <div class="course-editor__lesson-toolbar">
-            <div class="course-editor__lesson-title-wrap">
-              <label class="course-editor__field-label" for="course-editor-lesson-title">Lesson title</label>
-              <input
-                id="course-editor-lesson-title"
-                class="course-editor__input course-editor__lesson-title-input"
-                type="text"
-                placeholder="Untitled Lesson"
-                autocomplete="off"
-                spellcheck="true"
-                disabled
-              />
+          <header class="course-editor__lesson-header">
+            <span class="course-editor__hierarchy-label">Lesson</span>
+            <div class="course-editor__lesson-toolbar">
+              <div class="course-editor__lesson-title-wrap">
+                <input
+                  id="course-editor-lesson-title"
+                  class="course-editor__input course-editor__lesson-title-input"
+                  type="text"
+                  placeholder="Untitled lesson"
+                  aria-label="Lesson title"
+                  autocomplete="off"
+                  spellcheck="true"
+                  disabled
+                />
+              </div>
+              <button
+                type="button"
+                id="course-editor-delete-lesson"
+                class="kbm-btn kbm-btn-outline course-editor__delete-lesson-btn"
+                hidden
+              >
+                Delete lesson
+              </button>
             </div>
-            <div id="course-editor-section-title-wrap" class="course-editor__section-title-wrap" hidden>
-              <label class="course-editor__field-label" for="course-editor-section-title">Section title</label>
-              <input
-                id="course-editor-section-title"
-                class="course-editor__input course-editor__section-title-input"
-                type="text"
-                placeholder="Optional heading within this lesson"
-                autocomplete="off"
-                spellcheck="true"
-                disabled
-              />
-              <p id="course-editor-section-title-hint" class="course-editor__field-hint" hidden></p>
-            </div>
-            <button
-              type="button"
-              id="course-editor-delete-lesson"
-              class="kbm-btn kbm-btn-outline course-editor__delete-lesson-btn"
-              hidden
-            >
-              Delete lesson
+          </header>
+
+          <div class="course-editor__section-toolbar">
+            <button type="button" id="course-editor-add-section" class="course-editor__add-section-btn">
+              + Add Section
             </button>
+            <details class="course-editor__add-section-menu" id="course-editor-add-section-menu">
+              <summary class="course-editor__add-section-menu-summary">More section types</summary>
+              <div class="course-editor__add-section-types" id="course-editor-add-section-types"></div>
+            </details>
           </div>
+
           <p id="course-editor-items-empty" class="course-editor__empty-lesson" hidden>
-            This lesson is empty. Add your first item below.
+            This lesson has no sections yet. Add a section to start building content.
           </p>
           <div id="course-editor-items" class="course-editor__items"></div>
-
-          <div class="course-editor__add-row">
-            <button type="button" class="course-editor__add-btn" data-add-kind="richText-blank">+ Text</button>
-            <button type="button" class="course-editor__add-btn" data-add-kind="textVideoLayout">
-              + Add Text + Video
-            </button>
-            <button type="button" class="course-editor__add-btn" data-add-kind="threeVideosLayout">
-              + Three Videos with Text
-            </button>
-            <button type="button" class="course-editor__add-btn" data-add-kind="textImageLayout">
-              + Text + Image
-            </button>
-            <button type="button" class="course-editor__add-btn" data-add-kind="video">+ Video</button>
-            <button type="button" class="course-editor__add-btn" data-add-kind="image">+ Image</button>
-            <button type="button" class="course-editor__add-btn" data-add-kind="imageWithCaption">
-              + Image with Caption
-            </button>
-            <button type="button" class="course-editor__add-btn" data-add-kind="download">+ Download</button>
-            <button type="button" class="course-editor__add-btn" data-add-kind="embeddedTool">
-              + Embedded Tool
-            </button>
-            <button type="button" class="course-editor__add-btn" data-add-kind="exerciseAccordion">+ Accordion</button>
-            <button type="button" class="course-editor__add-btn" data-add-kind="imageGallery">+ Gallery</button>
-            <button type="button" class="course-editor__add-btn" data-add-kind="imageCarousel">+ Carousel</button>
-          </div>
         </div>
       </main>
 
       <aside class="course-editor__panel" id="course-editor-edit-panel">
-        <details class="course-editor__snippets" id="course-editor-snippets">
-          <summary class="course-editor__snippets-summary">Common HTML Snippets</summary>
-          <p class="course-editor__snippets-hint">
-            Copy common patterns while cleaning lesson HTML. Insert adds to the field that is focused below.
-          </p>
-          <div id="course-editor-snippets-list" class="course-editor__snippets-list"></div>
-        </details>
-
         <div class="course-editor__panel-main">
           <div id="course-editor-edit-empty" class="course-editor__panel-empty">
-            <p>Pick an item in the lesson to edit it here.</p>
+            <p>Select a block to edit</p>
           </div>
           <div id="course-editor-edit-form" hidden>
             <div id="course-editor-edit-head" class="course-editor__panel-head"></div>
             <div id="course-editor-edit-fields" class="course-editor__panel-body"></div>
           </div>
         </div>
+
+        <details class="course-editor__snippets" id="course-editor-snippets">
+          <summary class="course-editor__snippets-summary">Common HTML Snippets</summary>
+          <p class="course-editor__snippets-hint">
+            Copy common patterns while cleaning lesson HTML. Insert adds to the focused field above.
+          </p>
+          <div id="course-editor-snippets-list" class="course-editor__snippets-list"></div>
+        </details>
       </aside>
     </div>
 

@@ -1,3 +1,5 @@
+import { MEMBER_PLAN_IDS } from "../../config/memberships";
+
 /**
  * Pure access rules for the Sleeveless Pattern System (no DOM / Memberstack imports).
  *
@@ -20,11 +22,7 @@
  */
 
 /** Paid membership plans that grant full Sleeveless Pattern System access. */
-export const SLEEVELESS_SYSTEM_MEMBERSHIP_PLAN_IDS = [
-  "pln_kin-membership-annual-qf9g01et",
-  "pln_kin-membership-monthly-a59701wy",
-  "pln_kin-beta-access-vyek0a38",
-] as const;
+export const SLEEVELESS_SYSTEM_MEMBERSHIP_PLAN_IDS = MEMBER_PLAN_IDS;
 
 /**
  * Standalone "unlock the Sleeveless Pattern System" plan/price ids.

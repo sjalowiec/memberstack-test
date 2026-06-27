@@ -5,6 +5,7 @@
     "legacyChallengeId": 50,
     "title": "LK-150 Quick Start",
     "slug": "lk-150-quick-start",
+    "thumbnail": "/images/courses/lk-150_quick.webp",
     "legacy": {
       "sourceExport": "course_50_lk150_quick.csv"
     }

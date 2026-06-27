@@ -1,6 +1,9 @@
 ---
 export const prerender = true;
 import Layout from "../layouts/Layout.astro";
+import { MEMBERSHIPS } from "../config/memberships";
+
+const betaPlanId = MEMBERSHIPS.beta.memberstackPlanId;
 
 const pageTitle = "Access Your New Knit It Now Account";
 const description =
@@ -131,8 +134,7 @@ const description =
               </p>
             </div>
 
-            <!-- TODO: Replace PLAN_OR_PRICE_ID with the actual Memberstack ID for KIN Beta Access if needed -->
-            <input type="hidden" data-ms-plan:add="pln_kin-beta-access-vyek0a38" />
+            <input type="hidden" data-ms-plan:add={betaPlanId} />
 
             <button type="submit" class="kbm-btn kbm-btn-outline beta-signup-page__submit">
               Create account

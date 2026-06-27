@@ -189,14 +189,12 @@ const enableVideoChapterControls = hasCatalogChapters;
         </article>
 
         <script>
+          import { MEMBER_PLAN_IDS } from "../../config/memberships";
           import { hasKinVideoAccess, logKinVideoAccessDebug } from "../../lib/kinVideoAccess";
 
           // --- Memberstack: client-side unlock for jump links (hasVideoAccess / kin-access) ---
           /* Paid-tier plan IDs: used only for isMember. Unlock uses hasVideoAccess (kin-access only). */
-          const MEMBER_PLAN_IDS = new Set([
-            "pln_kin-membership-annual-qf9g01et",
-            "pln_kin-membership-monthly-a59701wy",
-          ]);
+          const memberPlanIds = new Set<string>(MEMBER_PLAN_IDS);
 
           async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
             for (let i = 0; i < attempts; i++) {
@@ -220,7 +218,7 @@ const enableVideoChapterControls = hasCatalogChapters;
             );
 
             const isLoggedIn = Boolean(member);
-            const isMember = [...activePlanIds].some((id) => MEMBER_PLAN_IDS.has(id));
+            const isMember = [...activePlanIds].some((id) => memberPlanIds.has(id));
 
             const rawKinAccess = member?.customFields?.["kin-access"];
             const hasVideoAccess =

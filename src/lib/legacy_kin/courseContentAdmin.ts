@@ -4,6 +4,7 @@ import type { CoursePreviewData, CourseLesson } from "./coursePreviewPoc";
 import { isCoursePreviewProductionBlocked } from "./coursePreviewProductionAccess";
 import type { DetectSiteEnvironmentOptions } from "../env/siteEnvironment";
 import {
+  isLegacyCourseActive,
   isLegacyCourseDraft,
   isLegacyCoursePublic,
   type LegacyCoursePublicationFields,
@@ -33,8 +34,10 @@ export type AdminCourseSummary = {
   lessonCount: number;
   status?: string;
   published?: boolean;
+  active?: boolean;
   isDraft: boolean;
   isPublic: boolean;
+  isActive: boolean;
 };
 
 type DiscoveredCourseFile = {
@@ -45,6 +48,7 @@ type DiscoveredCourseFile = {
   lessonCount: number;
   status?: string;
   published?: boolean;
+  active?: boolean;
 };
 
 function readDiscoveredCourseFile(filename: string): DiscoveredCourseFile | null {
@@ -59,6 +63,7 @@ function readDiscoveredCourseFile(filename: string): DiscoveredCourseFile | null
     const course = data.course as LegacyCoursePublicationFields & {
       title?: string;
       slug?: string;
+      active?: boolean;
     };
     return {
       id,
@@ -68,6 +73,7 @@ function readDiscoveredCourseFile(filename: string): DiscoveredCourseFile | null
       lessonCount: Array.isArray(data.lessons) ? data.lessons.length : 0,
       status: course.status,
       published: course.published,
+      active: course.active,
     };
   } catch {
     return null;
@@ -101,17 +107,25 @@ function getDiscoveredCourseFile(courseId: number): DiscoveredCourseFile {
 }
 
 export function listAdminCourseSummaries(): AdminCourseSummary[] {
-  return discoverAdminCourseCatalog().map((entry) => ({
-    id: entry.id,
-    title: entry.title,
-    slug: entry.slug,
-    filename: entry.filename,
-    lessonCount: entry.lessonCount,
-    status: entry.status,
-    published: entry.published,
-    isDraft: isLegacyCourseDraft(entry),
-    isPublic: isLegacyCoursePublic(entry),
-  }));
+  return discoverAdminCourseCatalog()
+    .map((entry) => ({
+      id: entry.id,
+      title: entry.title,
+      slug: entry.slug,
+      filename: entry.filename,
+      lessonCount: entry.lessonCount,
+      status: entry.status,
+      published: entry.published,
+      active: entry.active,
+      isDraft: isLegacyCourseDraft(entry),
+      isPublic: isLegacyCoursePublic(entry),
+      isActive: isLegacyCourseActive(entry),
+    }))
+    .sort(
+      (a, b) =>
+        a.title.localeCompare(b.title, undefined, { sensitivity: "base" }) ||
+        a.id - b.id,
+    );
 }
 
 export type HtmlCleanupAction =
@@ -159,6 +173,17 @@ export type SaveLessonResult = {
   backupPath: string;
   lessonSlug: string;
   removedEmptyBlocks: string[];
+};
+
+export type CourseMetadataUpdate = {
+  thumbnail?: string | null;
+  active?: boolean;
+};
+
+export type SaveCourseMetadataResult = {
+  backupPath: string;
+  thumbnail: string | null;
+  active: boolean;
 };
 
 export function isCourseContentAdminAllowed(
@@ -429,6 +454,70 @@ export function writeCourseContentFile(
   const targetPath = getCourseContentPath(courseId);
   writeFileSync(targetPath, `${JSON.stringify(data, null, 2)}\n`, "utf-8");
   return backupPath;
+}
+
+function normalizeCourseThumbnail(value: unknown): string | null {
+  if (value == null) return null;
+  if (typeof value !== "string") {
+    throw new Error("thumbnail must be a string path or null.");
+  }
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
+function normalizeCourseActive(value: unknown): boolean {
+  if (typeof value !== "boolean") {
+    throw new Error("active must be a boolean.");
+  }
+  return value;
+}
+
+export function readCourseActive(
+  course: LegacyCoursePublicationFields,
+): boolean {
+  return isLegacyCourseActive(course);
+}
+
+export function saveCourseMetadata(
+  courseId: number,
+  update: CourseMetadataUpdate,
+): SaveCourseMetadataResult {
+  if (!("thumbnail" in update) && !("active" in update)) {
+    throw new Error("No course metadata fields to save.");
+  }
+
+  const data = readCourseContentFile(courseId);
+  let thumbnail = readCourseThumbnailFromData(data);
+
+  if ("thumbnail" in update) {
+    thumbnail = normalizeCourseThumbnail(update.thumbnail);
+    if (thumbnail) {
+      data.course.thumbnail = thumbnail;
+    } else {
+      delete data.course.thumbnail;
+    }
+  }
+
+  let active = readCourseActive(data.course);
+  if ("active" in update) {
+    active = normalizeCourseActive(update.active);
+    if (active) {
+      delete data.course.active;
+    } else {
+      data.course.active = false;
+    }
+  }
+
+  const backupPath = writeCourseContentFile(courseId, data);
+  return { backupPath, thumbnail, active };
+}
+
+function readCourseThumbnailFromData(data: CoursePreviewData): string | null {
+  const value =
+    "thumbnail" in data.course && typeof data.course.thumbnail === "string"
+      ? data.course.thumbnail.trim()
+      : "";
+  return value || null;
 }
 
 export function saveRichTextUpdates(

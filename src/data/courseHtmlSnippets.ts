@@ -78,6 +78,55 @@ export const COURSE_HTML_SNIPPETS: CourseHtmlSnippet[] = [
 </div>`,
   },
   {
+    id: "text-reference-card",
+    name: "Text + Reference Card",
+    category: "layout",
+    html: `<div class="kin-grid-2">
+
+<div>
+
+<h3>Section Heading</h3>
+
+<p>
+Add your lesson text here.
+</p>
+
+<p>
+💡 <em>Add a helpful tip or comparison here.</em>
+</p>
+
+</div>
+
+<div>
+
+<div class="kin-card">
+
+<h4>Reference Card</h4>
+
+<table>
+<tbody>
+<tr>
+    <th>Term</th>
+    <td>Definition or value</td>
+</tr>
+<tr>
+    <th>Term</th>
+    <td>Definition or value</td>
+</tr>
+<tr>
+    <th>Term</th>
+    <td>Definition or value</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+</div>
+
+</div>`,
+  },
+  {
     id: "text-image-row",
     name: "Text + Image Row",
     category: "layout",

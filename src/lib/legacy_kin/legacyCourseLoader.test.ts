@@ -16,6 +16,7 @@ describe("getLegacyCourses public visibility", () => {
     const slugs = getLegacyCourses().map((course) => course.slug);
     expect(slugs).toContain("lk-150-quick-start");
     expect(slugs).toContain("lk-150-fun");
+    expect(slugs).toContain("ribber-basic-bootcamp");
   });
 
   it("includes draft courses when includeDrafts is true", () => {

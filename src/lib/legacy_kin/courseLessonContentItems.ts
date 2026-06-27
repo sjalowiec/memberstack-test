@@ -295,7 +295,7 @@ export function findLessonContentItemBySlug(
   );
 }
 
-function contentItemMatchesRef(
+export function contentItemMatchesRef(
   item: FlatContentItem,
   ref: Pick<FlatContentItem, "blockSlug" | "legacyComponentId" | "type">,
 ): boolean {

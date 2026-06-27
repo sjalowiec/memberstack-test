@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  isLegacyCourseActive,
   isLegacyCourseDraft,
   isLegacyCoursePublic,
 } from "./legacyCoursePublication";
@@ -25,6 +26,22 @@ describe("isLegacyCoursePublic", () => {
 
   it("draft status wins over published: true", () => {
     expect(isLegacyCoursePublic({ status: "draft", published: true })).toBe(false);
+  });
+
+  it("hides inactive courses from public routes", () => {
+    expect(isLegacyCoursePublic({ active: false, status: "published", published: true })).toBe(
+      false,
+    );
+  });
+});
+
+describe("isLegacyCourseActive", () => {
+  it("treats missing active as active", () => {
+    expect(isLegacyCourseActive({})).toBe(true);
+  });
+
+  it("treats active: false as inactive", () => {
+    expect(isLegacyCourseActive({ active: false })).toBe(false);
   });
 });
 

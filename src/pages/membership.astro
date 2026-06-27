@@ -1,62 +1,520 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import PatternsFeaturesSection from "../components/patterns/PatternsFeaturesSection.astro";
+import PatternHeaderImage from "../components/patterns/PatternHeaderImage.astro";
+import MembershipPricing from "../components/membership/MembershipPricing.astro";
+import wisdomData from "../data/wisdom-from-machine-knitters.json";
+
+type WisdomEntry = {
+  id: string;
+  name: string;
+  lead: string;
+};
+
+const storyIds = ["w-04", "w-05", "w-01"];
+const memberStories = storyIds
+  .map((id) => (wisdomData.entries as WisdomEntry[]).find((entry) => entry.id === id))
+  .filter((entry): entry is WisdomEntry => Boolean(entry));
+
+const audienceCards = [
+  {
+    title: "New to machine knitting",
+    copy: "Follow guided lessons, build skills step by step, and spend less time guessing what to try next.",
+  },
+  {
+    title: "Returning after a break",
+    copy: "Refresh techniques, troubleshoot setup issues, and get practical help when something does not look right.",
+  },
+  {
+    title: "Customizing garments",
+    copy: "Use interactive pattern systems, planning tools, and calculators built for your gauge and measurements.",
+  },
+  {
+    title: "Stuck mid-project",
+    copy: "Find troubleshooting help, technique videos, and help hubs focused on real machine knitting problems.",
+  },
+];
+
+const memberOutcomes = [
+  "Customize supported pattern systems for your gauge, fit, and style choices",
+  "Plan yarn, sizing, and project details with interactive tools and calculators",
+  "Troubleshoot machine problems with practical fixes and technique guidance",
+  "Follow courses and video lessons at your own pace (Premium includes all courses)",
+  "Track rows, shaping, and progress inside supported pattern workflows",
+  "Print knit-ready layouts designed to work beside your machine",
+];
+
+const includedItems = [
+  "Access to Knit it Now pattern systems",
+  "Full customization tools for supported pattern systems",
+  "Project planning tools and calculators",
+  "Troubleshooting help and practical machine knitting fixes",
+  "Technique guides and instructional videos",
+  "Help hubs focused on real machine knitting problems",
+  "Ongoing updates, new tools, and future learning resources",
+  "Access to new releases as they are added",
+];
 ---
 
 <Layout
   title="Membership | Knit it Now"
   description="Knit it Now membership gives machine knitters access to pattern systems, project tools, troubleshooting help, and practical guidance for the full knitting process."
+  bodyClass="page--tight-header"
 >
+  <div class="membership-sales-page page-wrap">
+    <!-- 1. Hero -->
+    <section class="membership-hero" aria-labelledby="membership-hero-heading">
+      <h1 id="membership-hero-heading">Knit it Now Membership</h1>
+      <p>
+        Knit it Now membership gives machine knitters access to pattern systems, project tools,
+        troubleshooting help, and practical guidance designed to make knitting easier to understand
+        and easier to manage.
+      </p>
+      <p>
+        Whether you're following a pattern, customizing a garment, solving a machine problem, or
+        planning your next project, the goal is to help you keep moving forward with confidence.
+      </p>
+      <div class="membership-hero__actions">
+        <a href="#pricing" class="kbm-btn kbm-btn-accent">View membership options</a>
+        <a href="#see-inside" class="kbm-btn kbm-btn-outline">See what's inside</a>
+      </div>
+      <p class="kbm-member-note">
+        Already a member?
+        <a href="#" data-ms-modal="login" data-ms-redirect="current-url">Log in</a>.
+      </p>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- 2. Who this is for -->
+    <section class="membership-section" aria-labelledby="membership-audience-heading">
+      <header class="membership-section__header">
+        <h2 id="membership-audience-heading">Who this is for</h2>
+        <p class="membership-section__lead">
+          Membership supports the full knitting process — not just a single pattern download.
+        </p>
+      </header>
+      <div class="membership-audience-grid">
+        {
+          audienceCards.map((card) => (
+            <article class="kbm-card membership-audience-card">
+              <h3 class="kbm-card__title">{card.title}</h3>
+              <p class="kbm-card__desc">{card.copy}</p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- 3. See inside / tour -->
+    <section
+      id="see-inside"
+      class="membership-section membership-section--anchor"
+      aria-labelledby="membership-tour-heading"
+    >
+      <header class="membership-section__header">
+        <h2 id="membership-tour-heading">See what's inside</h2>
+        <p class="membership-section__lead">
+          Explore pattern tools, member videos, and practical help — the same resources members use
+          every day.
+        </p>
+      </header>
+
+      <PatternsFeaturesSection
+        sectionId="membership-pattern-features"
+        headingId="membership-patterns-features-heading"
+        subtitle="Interactive pattern tools designed to make machine knitting easier to follow, customize, and track."
+      />
+
+      <div class="membership-tour-split">
+        <div class="membership-tour-split__media">
+          <PatternHeaderImage
+            src="/images/patterns/build-steps.jpg"
+            alt="Guided sweater pattern builder showing style, neckline, fit, and gauge steps"
+            hintText="Click to enlarge"
+            hintStyle="overlay"
+            modalFit="readable"
+            loading="lazy"
+          />
+        </div>
+        <div class="membership-tour-split__content">
+          <h3>Build a custom pattern in guided steps</h3>
+          <p>
+            Choose your style, enter your gauge and measurements, and generate a knit-ready pattern
+            without rewriting instructions by hand.
+          </p>
+        </div>
+      </div>
+
+      <div class="reference-quick-links">
+        <p class="reference-quick-links__label">Explore member areas</p>
+        <div class="reference-quick-links__list">
+          <a href="/patterns" class="reference-quick-links__item">Patterns</a>
+          <a href="/tools" class="reference-quick-links__item">Tools</a>
+          <a href="/videos" class="reference-quick-links__item">Videos</a>
+          <a href="/help-hub" class="reference-quick-links__item">Help Hub</a>
+          <a href="/courses" class="reference-quick-links__item">Courses</a>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- 4. What members can do -->
+    <section class="membership-section" aria-labelledby="membership-outcomes-heading">
+      <header class="membership-section__header">
+        <h2 id="membership-outcomes-heading">What members can do</h2>
+        <p class="membership-section__lead">
+          Practical support for planning, knitting, troubleshooting, and finishing with confidence.
+        </p>
+      </header>
+      <ul class="membership-outcomes">
+        {memberOutcomes.map((item) => <li>{item}</li>)}
+      </ul>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- 5. What's included -->
+    <section class="membership-section" aria-labelledby="membership-included-heading">
+      <header class="membership-section__header">
+        <h2 id="membership-included-heading">What's included</h2>
+      </header>
+      <div class="membership-included-grid">
+        <ul class="membership-included-list">
+          {includedItems.map((item) => <li>{item}</li>)}
+        </ul>
+        <div class="kbm-intro-callout">
+          <strong>More than just patterns</strong>
+          <p>
+            Knit it Now is designed to support the entire knitting process. Members can explore
+            pattern systems, customize supported garments, use planning tools, troubleshoot problems,
+            and access practical resources designed specifically for machine knitters.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- 6. Member stories -->
+    <section class="membership-section" aria-labelledby="membership-stories-heading">
+      <header class="membership-section__header">
+        <h2 id="membership-stories-heading">Member stories</h2>
+        <p class="membership-section__lead">
+          Real machine knitters share what helped them keep going — you may see yourself in more than
+          one.
+        </p>
+      </header>
+      <div class="membership-stories">
+        {
+          memberStories.map((story) => (
+            <article class="kbm-card membership-story-card">
+              <h3 class="kbm-card__title">{story.name}</h3>
+              <p class="kbm-card__desc">{story.lead}</p>
+            </article>
+          ))
+        }
+      </div>
+      <p class="membership-stories-closing">If you saw yourself in these, you're in the right place.</p>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- 7. Pricing -->
+    <section
+      id="pricing"
+      class="membership-section membership-section--anchor"
+      aria-labelledby="membership-pricing-heading"
+    >
+      <header class="membership-section__header">
+        <h2 id="membership-pricing-heading">Pricing</h2>
+        <p class="membership-section__lead">
+          Choose the membership that fits how you knit. Checkout is handled securely through
+          Memberstack.
+        </p>
+      </header>
+      <MembershipPricing />
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- 8. FAQ -->
+    <section class="membership-section" aria-labelledby="membership-faq-heading">
+      <header class="membership-section__header">
+        <h2 id="membership-faq-heading">Frequently asked questions</h2>
+      </header>
+      <div class="faq-accordion">
+        <details class="faq-item">
+          <summary>What's the difference between Basic and Premium?</summary>
+          <p>
+            Basic includes member videos, patterns, tools, reference resources, glossary, and member
+            features. Premium includes everything in Basic, plus all Knit It Now courses.
+          </p>
+        </details>
+        <details class="faq-item">
+          <summary>Can I switch plans or cancel?</summary>
+          <p>
+            Yes. After you join, you can manage billing from your workspace or the billing portal
+            link on this page.
+          </p>
+        </details>
+        <details class="faq-item">
+          <summary>Do I keep access to free patterns?</summary>
+          <p>
+            Free patterns you have already saved to your account remain available. Membership unlocks
+            editing, customization, and the broader library of member tools and resources.
+          </p>
+        </details>
+        <details class="faq-item">
+          <summary>What if I'm not logged in when I choose a plan?</summary>
+          <p>
+            You'll be prompted to create an account or log in first, then checkout continues with
+            your selected plan.
+          </p>
+        </details>
+        <details class="faq-item">
+          <summary>Is everything on the site included?</summary>
+          <p>
+            Membership covers the core Knit It Now library — pattern systems, tools, videos, help
+            hubs, and reference resources. Some individual shop items or specialty content may be
+            sold separately.
+          </p>
+        </details>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- 9. Final CTA -->
+    <section class="membership-final-cta" aria-labelledby="membership-final-cta-heading">
+      <h2 id="membership-final-cta-heading">Ready to join?</h2>
+      <p>
+        Take the next step with a membership built for machine knitters — pattern systems, practical
+        tools, troubleshooting help, and guidance when you need it.
+      </p>
+      <div class="membership-final-cta__actions">
+        <a href="#pricing" class="kbm-btn kbm-btn-accent">View membership options</a>
+        <a href="/patterns/sleeveless-express/" class="kbm-btn kbm-btn-outline">Try a free pattern first</a>
+      </div>
+      <p class="kbm-member-note">
+        Already a member?
+        <a href="#" data-ms-modal="login" data-ms-redirect="current-url">Log in</a>.
+      </p>
+    </section>
+  </div>
+
+  <script>
+    import "../scripts/joinCheckout.ts";
+  </script>
+
   <style>
-    /* Override global .page-wrap top padding; Layout already supplies header clearance */
-    .membership-page-wrap.page-wrap {
+    .membership-sales-page.page-wrap {
       padding-top: 8px;
+      max-width: 56rem;
+    }
+
+    .membership-section--anchor {
+      scroll-margin-top: calc(var(--header-height, 7rem) + 1rem);
+    }
+
+    .membership-hero {
+      margin-bottom: 0;
+      padding: 1.25rem 1.5rem 1.5rem;
+      border-radius: 1rem;
+      background: linear-gradient(135deg, #f9f9f6 0%, #fff 55%);
+      border: 1px solid #d6dbc9;
+      box-shadow: 0 4px 16px rgba(82, 104, 45, 0.1);
+      text-align: center;
+    }
+
+    .membership-hero h1 {
+      margin: 0 0 0.75rem;
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      line-height: 1.25;
+    }
+
+    .membership-hero p {
+      max-width: 38rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .membership-hero__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      margin: 1.25rem 0 0.75rem;
+    }
+
+    .membership-section {
+      margin: 0;
+    }
+
+    .membership-section__header {
+      text-align: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .membership-section__header h2 {
+      margin: 0 0 0.5rem;
+    }
+
+    .membership-section__lead {
+      margin: 0 auto;
+      max-width: 38rem;
+      color: #4d5a48;
+      line-height: 1.55;
+    }
+
+    .membership-audience-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+      gap: 1rem;
+    }
+
+    .membership-audience-card {
+      cursor: default;
+      padding: 1.5rem;
+    }
+
+    .membership-audience-card:hover {
+      transform: none;
+    }
+
+    .membership-tour-split {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      align-items: center;
+      margin: 1.5rem 0;
+      padding: 1.25rem;
+      border-radius: 1rem;
+      background: #fff;
+      border: 1px solid #d6dbc9;
+    }
+
+    .membership-tour-split__content h3 {
+      margin: 0 0 0.5rem;
+      font-size: var(--text-lg, 1.125rem);
+      color: #2c3a57;
+    }
+
+    .membership-tour-split__content p {
+      margin: 0;
+      color: #4d5a48;
+      line-height: 1.55;
+    }
+
+    @media (min-width: 720px) {
+      .membership-tour-split {
+        grid-template-columns: 1.1fr 1fr;
+      }
+    }
+
+    .membership-outcomes {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .membership-outcomes li {
+      margin: 0 0 0.6rem;
+      padding: 0.6rem 0.75rem;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: #4d5a48;
+      border-radius: 0.75rem;
+      background: rgba(82, 104, 45, 0.06);
+      border: 1px solid rgba(82, 104, 45, 0.18);
+    }
+
+    .membership-outcomes li:last-child {
+      margin-bottom: 0;
+    }
+
+    .membership-included-grid {
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    @media (min-width: 720px) {
+      .membership-included-grid {
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+      }
+    }
+
+    .membership-included-list {
+      margin: 0;
+      padding-left: 1.25rem;
+      line-height: 1.6;
+    }
+
+    .membership-included-list li {
+      margin-bottom: 0.4rem;
+    }
+
+    .membership-stories {
+      display: grid;
+      gap: 1rem;
+    }
+
+    @media (min-width: 640px) {
+      .membership-stories {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    .membership-story-card {
+      cursor: default;
+      padding: 1.5rem;
+    }
+
+    .membership-story-card:hover {
+      transform: none;
+    }
+
+    .membership-stories-closing {
+      margin: 1.25rem 0 0;
+      text-align: center;
+      font-weight: 600;
+      color: #4d5a48;
+    }
+
+    .faq-accordion p {
+      margin: 0.5rem 0 0;
+      line-height: 1.55;
+      color: #4d5a48;
+    }
+
+    .membership-final-cta {
+      text-align: center;
+      padding: 1.5rem 1.25rem;
+      border-radius: 1rem;
+      background: #fff;
+      border: 1px solid #d6dbc9;
+    }
+
+    .membership-final-cta h2 {
+      margin: 0 0 0.65rem;
+    }
+
+    .membership-final-cta p {
+      max-width: 34rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .membership-final-cta__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      margin: 1.25rem 0 0.75rem;
     }
   </style>
-
-  <div class="membership-page-wrap page-wrap">
-    <h1>Knit it Now Membership</h1>
-
-    <p>
-      Knit it Now membership gives machine knitters access to pattern systems, project tools, troubleshooting help, and practical guidance designed to make knitting easier to understand and easier to manage.
-    </p>
-
-    <p>
-      Whether you're following a pattern, customizing a garment, solving a machine problem, or planning your next project, the goal is to help you keep moving forward with confidence.
-    </p>
-
-    <h2>What members will get</h2>
-
-    <ul>
-      <li>Access to Knit it Now pattern systems</li>
-      <li>Full customization tools for supported pattern systems</li>
-      <li>Project planning tools and calculators</li>
-      <li>Troubleshooting help and practical machine knitting fixes</li>
-      <li>Technique guides and instructional videos</li>
-      <li>Help hubs focused on real machine knitting problems</li>
-      <li>Ongoing updates, new tools, and future learning resources</li>
-      <li>Access to new releases as they are added</li>
-    </ul>
-
-    <h2>More than just patterns</h2>
-
-    <p>
-      Knit it Now is designed to support the entire knitting process, not just provide a single pattern download.
-    </p>
-
-    <p>
-      Members will be able to explore pattern systems, customize supported garments, use planning tools, troubleshoot problems, and access practical resources designed specifically for machine knitters.
-    </p>
-
-    <h2>During beta testing</h2>
-
-    <p>
-      Current beta members already have access while we finish setting up membership options. Plans and pricing are still being finalized.
-    </p>
-
-    <p>
-      <a href="/membership" class="kbm-btn kbm-btn-accent">
-        Membership Options Coming Soon
-      </a>
-    </p>
-  </div>
 </Layout>

@@ -47,6 +47,13 @@ declare global {
       /** Auth lifecycle events (`member.login`, `member.logout`, …). */
       on?: (event: string, handler: (...args: unknown[]) => void) => void;
       openModal?: (type: string, opts?: Record<string, unknown>) => Promise<unknown>;
+      purchasePlansWithCheckout?: (opts: {
+        priceId: string;
+        successUrl?: string;
+        cancelUrl?: string;
+        autoRedirect?: boolean;
+      }) => Promise<{ data?: { url?: string } }>;
+      launchStripeCustomerPortal?: (opts?: { returnUrl?: string }) => Promise<{ data?: { url?: string } }>;
       hideModal?: () => void;
       init?: () => void;
       onReady?: Promise<unknown>;
