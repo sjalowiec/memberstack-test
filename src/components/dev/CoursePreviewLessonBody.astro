@@ -95,6 +95,8 @@ const { lesson } = Astro.props;
               return (
                 <LegacyCourseImageCarousel
                   legacyComponentId={component.legacyComponentId}
+                  introHtml={component.introHtml}
+                  title={component.title}
                   slides={component.slides.map((slide) => ({
                     src: slide.src,
                     alt: slide.caption ?? "",

@@ -239,9 +239,18 @@ if (
           </header>
 
           <div class="course-editor__section-toolbar">
+            <details class="course-editor__add-block-toolbar-menu" id="course-editor-add-block-menu">
+              <summary class="course-editor__add-block-toolbar-btn">+ Add Block</summary>
+              <p id="course-editor-add-block-target" class="course-editor__add-block-target-hint">
+                Expand a section in the outline below, then pick a block type.
+              </p>
+              <div class="course-editor__add-block-types" id="course-editor-add-block-types"></div>
+            </details>
             <details class="course-editor__add-section-menu" id="course-editor-add-section-menu">
-              <summary class="course-editor__add-section-btn">+ Add Section</summary>
-              <p class="course-editor__add-section-hint">Choose the first block for the new section.</p>
+              <summary class="course-editor__add-section-btn">+ New Section</summary>
+              <p class="course-editor__add-section-hint">
+                Adds a new heading to the lesson with one starting block. Use this for a new topic — not for adding more content under an existing heading.
+              </p>
               <div class="course-editor__add-section-types" id="course-editor-add-section-types"></div>
             </details>
           </div>

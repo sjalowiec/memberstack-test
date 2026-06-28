@@ -1011,6 +1011,33 @@ main.site-content:has(.course-preview--reader) {
   }
 }
 
+/* Two-column layout for course content */
+.two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+  margin: 1.5rem 0;
+}
+
+.two-column > div {
+  min-width: 0;
+}
+
+.two-column img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Stack on tablets and phones */
+@media (max-width: 768px) {
+  .two-column {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
 /* ============================================
    Course content: two-column text + card (.kin-grid-2, .kin-card)
    ============================================ */

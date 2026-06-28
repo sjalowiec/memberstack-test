@@ -132,6 +132,10 @@ let fallbackCatalogDescription = "";
 let savedCourseActive = true;
 let savedCoursePublished = true;
 let savedCourseContentStatus: "in_progress" | "cleaned" = "in_progress";
+let lessonSaveInFlight = false;
+let courseMetadataSaveInFlight = false;
+let toastHideTimer: number | undefined;
+let saveHintResetTimer: number | undefined;
 let courseData: CourseRecord | null = null;
 let selectedLessonSlug: string | null = null;
 let contentEditingRef: ComponentRef | null = null;
@@ -178,6 +182,9 @@ const dom = {
   addLessonBtn: null as HTMLButtonElement | null,
   deleteLessonBtn: null as HTMLButtonElement | null,
   lessonTitleInput: null as HTMLInputElement | null,
+  addBlockMenu: null as HTMLDetailsElement | null,
+  addBlockTypes: null as HTMLElement | null,
+  addBlockTargetHint: null as HTMLElement | null,
   addSectionMenu: null as HTMLDetailsElement | null,
   addSectionTypes: null as HTMLElement | null,
   itemsList: null as HTMLElement | null,
@@ -545,11 +552,18 @@ function updateCourseSettingsSaveState() {
   updateCourseSettingsPanelOpen();
 }
 
-async function saveCourseMetadataFromSidebar(statusMessage: string, successToast: string) {
-  if (currentCourseId == null) return;
+async function saveCourseMetadataFromSidebar(
+  statusMessage: string,
+  successToast: string,
+  button: HTMLButtonElement | null,
+  idleLabel: string,
+) {
+  if (currentCourseId == null || courseMetadataSaveInFlight) return;
   const payload = buildCourseMetadataPayload();
   if (Object.keys(payload).length === 0) return;
 
+  courseMetadataSaveInFlight = true;
+  setSaveButtonSaving(button, idleLabel);
   setStatus(statusMessage);
 
   try {
@@ -559,17 +573,27 @@ async function saveCourseMetadataFromSidebar(statusMessage: string, successToast
       syncCourseSettingsFields(courseData.course);
       refreshCourseCatalogEntry(courseData.course);
     }
-    setStatus("");
-    flashToast(successToast);
+    setSaveButtonSaved(button);
+    confirmSaveSuccess(successToast, `${successToast}.`);
   } catch (err) {
+    resetSaveButtonSaving(button);
+    updateCourseSettingsSaveState();
     setStatus(err instanceof Error ? err.message : "Could not save course settings.", "is-error");
+    flashToast("Save failed", { kind: "error", duration: 4000 });
+  } finally {
+    courseMetadataSaveInFlight = false;
   }
 }
 
 async function saveCourseSettings() {
   if (currentCourseId == null) return;
   if (!isCourseSettingsDirty()) return;
-  await saveCourseMetadataFromSidebar("Saving course settings…", "Course settings saved");
+  await saveCourseMetadataFromSidebar(
+    "Saving course settings…",
+    "Course settings saved",
+    dom.courseSettingsSaveBtn,
+    "Save course settings",
+  );
 }
 
 async function saveCourseVisibilitySettings() {
@@ -578,6 +602,8 @@ async function saveCourseVisibilitySettings() {
   await saveCourseMetadataFromSidebar(
     "Saving visibility settings…",
     "Visibility settings saved",
+    dom.courseStatusSaveBtn,
+    "Save visibility settings",
   );
 }
 
@@ -615,6 +641,9 @@ function bindDom() {
   dom.addLessonBtn = document.getElementById("course-editor-add-lesson") as HTMLButtonElement | null;
   dom.deleteLessonBtn = document.getElementById("course-editor-delete-lesson") as HTMLButtonElement | null;
   dom.lessonTitleInput = document.getElementById("course-editor-lesson-title") as HTMLInputElement | null;
+  dom.addBlockMenu = document.getElementById("course-editor-add-block-menu") as HTMLDetailsElement | null;
+  dom.addBlockTypes = document.getElementById("course-editor-add-block-types");
+  dom.addBlockTargetHint = document.getElementById("course-editor-add-block-target");
   dom.addSectionMenu = document.getElementById("course-editor-add-section-menu") as HTMLDetailsElement | null;
   dom.addSectionTypes = document.getElementById("course-editor-add-section-types");
   dom.itemsList = document.getElementById("course-editor-items");
@@ -1157,8 +1186,15 @@ function contentSummary(component: Record<string, unknown>) {
       return `${sections.length} section${sections.length === 1 ? "" : "s"}`;
     }
     case "imageGallery": {
+      const introHtml = String(component.introHtml ?? component.title ?? "");
       const slides = Array.isArray(component.slides) ? component.slides : [];
-      return `${slides.length} image${slides.length === 1 ? "" : "s"}`;
+      const slideLabel = `${slides.length} image${slides.length === 1 ? "" : "s"}`;
+      if (richTextHasVisibleContent(introHtml)) {
+        const text = introHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+        const preview = text.length > 40 ? `${text.slice(0, 40)}…` : text;
+        return `${preview} · ${slideLabel}`;
+      }
+      return slideLabel;
     }
     case "image": {
       const src = String(component.src ?? "").trim();
@@ -1187,16 +1223,83 @@ function setStatus(message: string, kind: "" | "is-error" | "is-success" = "") {
   if (kind) dom.status.classList.add(kind);
 }
 
-function flashToast(message: string) {
+function flashToast(
+  message: string,
+  options: { kind?: "default" | "success" | "error"; duration?: number } = {},
+) {
   if (!dom.toast) return;
+  const kind = options.kind ?? "default";
+  const duration = options.duration ?? (kind === "success" ? 3500 : 1800);
+
+  if (toastHideTimer) window.clearTimeout(toastHideTimer);
+
   dom.toast.textContent = message;
+  dom.toast.classList.remove("is-visible", "is-success", "is-error");
+  if (kind === "success") dom.toast.classList.add("is-success");
+  if (kind === "error") dom.toast.classList.add("is-error");
   dom.toast.classList.add("is-visible");
-  window.setTimeout(() => dom.toast?.classList.remove("is-visible"), 1800);
+
+  toastHideTimer = window.setTimeout(() => {
+    dom.toast?.classList.remove("is-visible", "is-success", "is-error");
+  }, duration);
+}
+
+function pulseSaveHint(message = "Saved") {
+  if (!dom.saveHint) return;
+  if (saveHintResetTimer) window.clearTimeout(saveHintResetTimer);
+  dom.saveHint.textContent = message;
+  dom.saveHint.classList.add("is-saved");
+  saveHintResetTimer = window.setTimeout(() => {
+    dom.saveHint?.classList.remove("is-saved");
+    updateSaveHint();
+  }, 4000);
+}
+
+function confirmSaveSuccess(toastMessage: string, statusMessage?: string) {
+  flashToast(toastMessage, { kind: "success" });
+  pulseSaveHint("Saved");
+  if (statusMessage) {
+    setStatus(statusMessage, "is-success");
+  }
+}
+
+function setSaveButtonSaving(button: HTMLButtonElement | null, idleLabel: string) {
+  if (!button) return;
+  button.dataset.idleLabel = idleLabel;
+  button.disabled = true;
+  button.textContent = "Saving…";
+  button.classList.add("is-saving");
+  button.setAttribute("aria-busy", "true");
+}
+
+function setSaveButtonSaved(button: HTMLButtonElement | null) {
+  if (!button) return;
+  const idleLabel = button.dataset.idleLabel ?? "Save";
+  button.textContent = "Saved ✓";
+  button.classList.remove("is-saving");
+  button.classList.add("is-saved");
+  button.removeAttribute("aria-busy");
+  window.setTimeout(() => {
+    if (button.dataset.idleLabel === idleLabel) {
+      button.textContent = idleLabel;
+    }
+    button.classList.remove("is-saved");
+  }, 2500);
+}
+
+function resetSaveButtonSaving(button: HTMLButtonElement | null) {
+  if (!button) return;
+  const idleLabel = button.dataset.idleLabel;
+  if (idleLabel) button.textContent = idleLabel;
+  button.classList.remove("is-saving", "is-saved");
+  button.removeAttribute("aria-busy");
 }
 
 function updateSaveHint() {
   if (!dom.saveHint || !selectedLessonSlug) return;
+  if (dom.saveHint.classList.contains("is-saved")) return;
   dom.saveHint.textContent = isLessonDirty(selectedLessonSlug) ? "Unsaved changes" : "Saved";
+  dom.saveHint.classList.toggle("is-dirty", isLessonDirty(selectedLessonSlug));
 }
 
 function updateSaveState() {
@@ -1263,17 +1366,103 @@ function validateExpandedSectionSlug(groups: ReturnType<typeof buildContentListG
   }
 }
 
-function renderSectionAddBlockRow(blockSlug: string) {
-  const buttons = SECTION_BLOCK_ADD_KINDS.map(
+function renderSectionAddBlockButtons(blockSlug: string) {
+  return SECTION_BLOCK_ADD_KINDS.map(
     ({ kind, label }) =>
       `<button type="button" class="course-editor__outline-add-block-btn" data-add-to-section="${escapeHtml(blockSlug)}" data-add-kind="${escapeHtml(kind)}">${escapeHtml(label)}</button>`,
   ).join("");
+}
+
+/** Compact dropdown on the section row — works even when the section is collapsed. */
+function renderSectionAddBlockMenu(blockSlug: string) {
+  return `
+    <details class="course-editor__add-block-menu">
+      <summary class="course-editor__add-block-summary">+ Block</summary>
+      <div class="course-editor__add-block-panel">
+        <div class="course-editor__outline-add-block-types">${renderSectionAddBlockButtons(blockSlug)}</div>
+      </div>
+    </details>
+  `;
+}
+
+function renderSectionAddBlockRow(blockSlug: string) {
   return `
     <div class="course-editor__outline-add-block">
       <span class="course-editor__outline-add-block-label">+ Add Block</span>
-      <div class="course-editor__outline-add-block-types">${buttons}</div>
+      <div class="course-editor__outline-add-block-types">${renderSectionAddBlockButtons(blockSlug)}</div>
     </div>
   `;
+}
+
+function closeSectionAddBlockMenus() {
+  dom.itemsList?.querySelectorAll(".course-editor__add-block-menu[open]").forEach((menu) => {
+    (menu as HTMLDetailsElement).open = false;
+  });
+}
+
+function resolveAddBlockTargetSection(lesson: LessonRecord): {
+  blockSlug: string;
+  title: string;
+  isLayout: boolean;
+} | null {
+  const groups = buildContentListGroups(lesson, flattenLessonContent(lesson as CourseLesson));
+  const candidates = [
+    expandedSectionSlug,
+    contentEditingRef?.blockSlug ?? null,
+  ].filter(Boolean) as string[];
+
+  for (const blockSlug of candidates) {
+    const group = groups.find((entry) => entry.blockSlug === blockSlug);
+    if (group && !group.isLayout) {
+      return {
+        blockSlug: group.blockSlug,
+        title: sectionNavLabel(group.blockTitle === "Untitled section" ? "" : group.blockTitle),
+        isLayout: false,
+      };
+    }
+    if (group?.isLayout) {
+      return { blockSlug: group.blockSlug, title: sectionNavLabel(group.blockTitle), isLayout: true };
+    }
+  }
+
+  const firstPlain = groups.find((group) => !group.isLayout);
+  if (firstPlain) {
+    return {
+      blockSlug: firstPlain.blockSlug,
+      title: sectionNavLabel(firstPlain.blockTitle === "Untitled section" ? "" : firstPlain.blockTitle),
+      isLayout: false,
+    };
+  }
+
+  return null;
+}
+
+function syncAddBlockToolbarTarget() {
+  if (!dom.addBlockTargetHint) return;
+  if (!selectedLessonSlug) {
+    dom.addBlockTargetHint.textContent = "Select a lesson first.";
+    return;
+  }
+  const lesson = getLessonDraft(selectedLessonSlug);
+  if (!lesson) {
+    dom.addBlockTargetHint.textContent = "Select a lesson first.";
+    return;
+  }
+
+  const target = resolveAddBlockTargetSection(lesson);
+  if (!target) {
+    dom.addBlockTargetHint.textContent =
+      "No plain section yet — use + New Section and choose Text (or Video, etc.) first.";
+    return;
+  }
+
+  if (target.isLayout) {
+    dom.addBlockTargetHint.textContent =
+      "The open section is a combined layout (Text+Video, etc.) and cannot hold extra blocks. Expand a different section below, or use + New Section.";
+    return;
+  }
+
+  dom.addBlockTargetHint.textContent = `Adds to: ${target.title}`;
 }
 
 function appendBlockToSection(blockSlug: string, kind: string) {
@@ -1294,7 +1483,9 @@ function appendBlockToSection(blockSlug: string, kind: string) {
     legacyComponentId: Number(component.legacyComponentId),
     type: String(component.type),
   };
+  closeSectionAddBlockMenus();
   openContentEdit(contentEditingRef);
+  renderContentList();
   updateSaveState();
   flashToast(`Added ${typeMeta(imageEditorKind(component)).label} block`);
 }
@@ -1380,7 +1571,9 @@ function bindContentListActions() {
     const sectionRow = target.closest("[data-outline-section-row]") as HTMLElement | null;
     if (
       sectionRow &&
-      !target.closest("input, button, .course-editor__outline-section-actions, a")
+      !target.closest(
+        "input, button, .course-editor__outline-section-actions, .course-editor__outline-section-add, .course-editor__add-block-menu, a",
+      )
     ) {
       e.preventDefault();
       const blockSlug = sectionRow.getAttribute("data-outline-section-row");
@@ -1459,12 +1652,47 @@ function bindContentListActions() {
   });
 }
 
+function populateAddBlockTypes() {
+  if (!dom.addBlockTypes) return;
+  dom.addBlockTypes.innerHTML = SECTION_BLOCK_ADD_KINDS.map(
+    ({ kind, label }) =>
+      `<button type="button" class="course-editor__add-block-type-btn" data-add-block-kind="${escapeHtml(kind)}">${escapeHtml(label)}</button>`,
+  ).join("");
+}
+
 function populateAddSectionTypes() {
   if (!dom.addSectionTypes) return;
   dom.addSectionTypes.innerHTML = NEW_SECTION_ADD_KINDS.map(
     ({ kind, label }) =>
       `<button type="button" class="course-editor__add-section-type-btn" data-add-section-kind="${escapeHtml(kind)}">${escapeHtml(label)}</button>`,
   ).join("");
+}
+
+function bindAddBlockToolbarControls() {
+  if (!dom.addBlockTypes || dom.addBlockTypes.dataset.bound === "1") return;
+  dom.addBlockTypes.dataset.bound = "1";
+  dom.addBlockTypes.addEventListener("click", (e) => {
+    const btn = (e.target as HTMLElement).closest("[data-add-block-kind]") as HTMLButtonElement | null;
+    if (!btn) return;
+    const kind = btn.getAttribute("data-add-block-kind");
+    if (!kind || !selectedLessonSlug) return;
+
+    const lesson = getLessonDraft(selectedLessonSlug);
+    if (!lesson) return;
+    const target = resolveAddBlockTargetSection(lesson);
+    if (!target) {
+      flashToast("Add a plain section first (+ New Section → Text)");
+      return;
+    }
+    if (target.isLayout) {
+      flashToast("Combined layouts can't hold extra blocks — expand a different section or add a new one");
+      return;
+    }
+
+    appendBlockToSection(target.blockSlug, kind);
+    if (dom.addBlockMenu) dom.addBlockMenu.open = false;
+    if (dom.addSectionMenu?.open) dom.addSectionMenu.open = false;
+  });
 }
 
 function bindAddSectionControls() {
@@ -1477,6 +1705,7 @@ function bindAddSectionControls() {
     if (kind) {
       appendContentItem(kind);
       if (dom.addSectionMenu) dom.addSectionMenu.open = false;
+      if (dom.addBlockMenu?.open) dom.addBlockMenu.open = false;
     }
   });
 }
@@ -1735,6 +1964,7 @@ function createComponent(kind: string): Record<string, unknown> {
     case "imageGallery":
       return {
         type: "imageGallery",
+        introHtml: null,
         slides: [{ src: "", caption: "" }],
         legacyComponentId,
         order: 1,
@@ -2369,9 +2599,10 @@ function mountRichTextEditor(
   container: HTMLElement,
   html: string,
   onChange: (html: string) => void = (value) => applyContentPatch({ html: value }),
-  options: { tabs?: ("visual" | "html" | "preview")[] } = {},
+  options: { tabs?: ("visual" | "html" | "preview")[]; prosePreview?: boolean } = {},
 ) {
   const allowedTabs = options.tabs ?? ["visual", "html", "preview"];
+  const prosePreview = options.prosePreview !== false;
   let tab: "visual" | "html" | "preview" = allowedTabs.includes("visual")
     ? "visual"
     : allowedTabs[0] ?? "html";
@@ -2441,7 +2672,10 @@ function mountRichTextEditor(
         onChange(value);
       });
     } else {
-      body.innerHTML = `<div class="course-editor__rt-preview course-editor__prose">${rewriteLegacyHtml(value) || "<p class='text-slate-400'>Nothing yet.</p>"}</div>`;
+      const previewClass = prosePreview
+        ? "course-editor__rt-preview course-editor__prose"
+        : "course-editor__rt-preview course-editor__rt-preview--raw";
+      body.innerHTML = `<div class="${previewClass}">${rewriteLegacyHtml(value) || "<span class='text-slate-400'>Nothing yet.</span>"}</div>`;
     }
 
     container.querySelectorAll("[data-rt-tab]").forEach((btn) => {
@@ -2746,6 +2980,25 @@ function openContentEdit(ref: ComponentRef) {
     };
     paintAccordion([...sections]);
   } else if (component.type === "imageGallery") {
+    const introField = document.createElement("div");
+    introField.className = "course-editor__field";
+    introField.innerHTML = `
+      <span class="course-editor__field-label">Text above gallery</span>
+      <span class="course-editor__field-hint" style="margin-bottom:0.35rem">Optional HTML shown above the gallery. Rendered as entered — no extra styling applied.</span>
+      <div id="ce-gallery-intro-editor"></div>
+    `;
+    dom.editFields.appendChild(introField);
+    mountRichTextEditor(
+      introField.querySelector("#ce-gallery-intro-editor") as HTMLElement,
+      String(component.introHtml ?? component.title ?? ""),
+      (html) =>
+        applyContentPatch({
+          introHtml: richTextHasVisibleContent(html) ? html : null,
+          title: null,
+        }),
+      { tabs: ["html", "preview"], prosePreview: false },
+    );
+
     const wrap = document.createElement("div");
     dom.editFields.appendChild(wrap);
     const slides = (Array.isArray(component.slides) ? component.slides : []) as Record<
@@ -3524,6 +3777,9 @@ function renderContentList() {
       const navTitle = sectionNavLabel(
         group.blockTitle === "Untitled section" ? "" : group.blockTitle,
       );
+      const sectionAddBlockMenu = group.isLayout
+        ? ""
+        : `<div class="course-editor__outline-section-add">${renderSectionAddBlockMenu(group.blockSlug)}</div>`;
       const sectionMoveBtns = `
         <button type="button" class="course-editor__outline-action" data-move-section-up="${groupIndex}" ${groupIndex === 0 ? "disabled" : ""} title="Move section up">↑</button>
         <button type="button" class="course-editor__outline-action" data-move-section-down="${groupIndex}" ${groupIndex === groups.length - 1 ? "disabled" : ""} title="Move section down">↓</button>
@@ -3573,11 +3829,11 @@ function renderContentList() {
         isExpanded && !group.isLayout ? renderSectionAddBlockRow(group.blockSlug) : "";
       const layoutHint =
         isExpanded && group.isLayout
-          ? `<p class="course-editor__outline-layout-hint">This section is one combined layout. Click <strong>Edit</strong> on the block below to add content. For a separate block under its own heading, use <strong>+ Add Section</strong> above.</p>`
+          ? `<p class="course-editor__outline-layout-hint">This is a combined layout (Text+Video, etc.) — it holds one fixed layout, not extra blocks. Click <strong>Edit</strong> to change it, or use <strong>+ New Section</strong> for a new heading.</p>`
           : "";
       const emptyBlocksHint =
         isExpanded && group.blockCount === 0 && !group.isLayout
-          ? `<p class="course-editor__outline-empty">No blocks yet. Add one below.</p>`
+          ? `<p class="course-editor__outline-empty">No blocks yet — use <strong>+ Block</strong> on this section.</p>`
           : "";
 
       return `
@@ -3609,6 +3865,7 @@ function renderContentList() {
                 <span class="course-editor__outline-section-count">${escapeHtml(formatSectionBlockCount(group.blockCount))}</span>
               </span>
             </div>
+            ${sectionAddBlockMenu}
             <div class="course-editor__outline-section-actions">${sectionMoveBtns}</div>
           </div>
           ${
@@ -3623,6 +3880,7 @@ function renderContentList() {
 
   dom.itemsList.innerHTML = sectionHtml;
 
+  syncAddBlockToolbarTarget();
   bindContentListActions();
 
   const deleteConfirm = new Set<number>();
@@ -4741,11 +4999,14 @@ function findEmptyBlockSlugs(lesson: LessonRecord) {
 
 async function saveLesson(fromRaw = false) {
   if (!selectedLessonSlug || currentCourseId == null) return;
+  if (lessonSaveInFlight) return;
 
   const savedLessonSlug = selectedLessonSlug;
   const editingRef = contentEditingRef ? { ...contentEditingRef } : null;
   const scrollSnapshot = captureScrollSnapshot();
   captureSnippetsOpen();
+  const saveButton = fromRaw ? dom.advancedSaveBtn : dom.saveBtn;
+  const saveButtonLabel = fromRaw ? "Save lesson from JSON" : "Save lesson";
 
   if (fromRaw && dom.rawLesson) {
     try {
@@ -4776,6 +5037,13 @@ async function saveLesson(fromRaw = false) {
     if (!ok) return;
   }
 
+  lessonSaveInFlight = true;
+  setSaveButtonSaving(saveButton, saveButtonLabel);
+  if (!fromRaw && dom.advancedSaveBtn) {
+    dom.advancedSaveBtn.disabled = true;
+  } else if (fromRaw && dom.saveBtn) {
+    dom.saveBtn.disabled = true;
+  }
   setStatus("Saving lesson…");
   syncEditorUrl();
 
@@ -4813,10 +5081,15 @@ async function saveLesson(fromRaw = false) {
     const backupName = payload.backupPath
       ? String(payload.backupPath).split(/[/\\]/).pop()
       : "created";
-    setStatus(`Lesson saved. Backup: ${backupName}`, "is-success");
-    flashToast("Lesson saved");
+    setSaveButtonSaved(saveButton);
+    confirmSaveSuccess("Lesson saved", `Lesson saved. Backup: ${backupName}`);
   } catch (err) {
+    resetSaveButtonSaving(saveButton);
+    updateSaveState();
     setStatus(err instanceof Error ? err.message : "Save failed.", "is-error");
+    flashToast("Save failed", { kind: "error", duration: 4000 });
+  } finally {
+    lessonSaveInFlight = false;
   }
 }
 
@@ -4909,7 +5182,9 @@ function toggleAdvanced() {
 export function initCourseContentEditor() {
   bindDom();
   bindContentListActions();
+  populateAddBlockTypes();
   populateAddSectionTypes();
+  bindAddBlockToolbarControls();
   bindAddSectionControls();
   setCourseHtmlSnippetsToast(flashToast);
   initCourseHtmlSnippetsPanel();

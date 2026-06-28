@@ -73,8 +73,31 @@ export const COURSE_HTML_SNIPPETS: CourseHtmlSnippet[] = [
     id: "callout-box",
     name: "Callout Box",
     category: "layout",
-    html: `<div class="callout">
+    html: `<div class="course-callout">
   Important information goes here.
+</div>`,
+  },
+  {
+    id: "center-text",
+    name: "Center Text",
+    category: "layout",
+    html: `<p style="text-align:center;">Centered text here.</p>`,
+  },
+  {
+    id: "center-image",
+    name: "Center Image",
+    category: "layout",
+    html: `<div style="text-align:center;margin:1.5rem 0;">
+  <img src="/images/example.webp" alt="" style="max-width:100%;height:auto;">
+</div>`,
+  },
+  {
+    id: "center-text-and-image",
+    name: "Center Text + Image",
+    category: "layout",
+    html: `<div style="text-align:center;margin:1.5rem 0;">
+  <p>Centered text above the image.</p>
+  <img src="/images/example.webp" alt="" style="max-width:100%;height:auto;">
 </div>`,
   },
   {

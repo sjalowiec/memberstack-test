@@ -60,6 +60,17 @@ body.course-editor-body {
   font-size: 0.75rem;
   color: #94a3b8;
   margin-left: 0.35rem;
+  transition: color 0.2s ease;
+}
+
+.course-editor__save-hint.is-dirty {
+  color: #b45309;
+  font-weight: 600;
+}
+
+.course-editor__save-hint.is-saved {
+  color: #166534;
+  font-weight: 700;
 }
 
 .course-editor__header-actions {
@@ -506,9 +517,76 @@ body.course-editor-body {
   border-bottom: 1px solid #e2e8f0;
 }
 
+.course-editor__add-block-toolbar-menu,
 .course-editor__add-section-menu {
-  width: 100%;
+  flex: 1 1 14rem;
+  min-width: 0;
+  max-width: 100%;
   font-size: 0.82rem;
+}
+
+.course-editor__add-block-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--course-brand);
+  border-radius: 0.5rem;
+  background: var(--course-brand);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.course-editor__add-block-toolbar-btn::-webkit-details-marker {
+  display: none;
+}
+
+.course-editor__add-block-toolbar-btn:hover {
+  background: var(--course-brand-dark);
+}
+
+.course-editor__add-block-toolbar-menu[open] > .course-editor__add-block-toolbar-btn {
+  margin-bottom: 0.35rem;
+}
+
+.course-editor__add-block-target-hint {
+  margin: 0 0 0.4rem;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+.course-editor__add-block-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background: #fff;
+}
+
+.course-editor__add-block-type-btn {
+  border: 1px solid #cbd5e1;
+  border-radius: 0.45rem;
+  background: #fff;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #475569;
+  cursor: pointer;
+}
+
+.course-editor__add-block-type-btn:hover {
+  border-color: var(--course-brand);
+  color: var(--course-brand-dark);
+}
+
+.course-editor__add-section-menu {
+  width: auto;
 }
 
 .course-editor__add-section-btn {
@@ -802,6 +880,48 @@ body.course-editor-body {
   gap: 0.1rem;
   opacity: 0;
   transition: opacity 0.15s;
+}
+
+.course-editor__outline-section-add {
+  position: relative;
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 0.12rem;
+}
+
+.course-editor__outline-section-add .course-editor__add-block-menu {
+  margin-top: 0;
+}
+
+.course-editor__outline-section-add .course-editor__add-block-summary {
+  border-color: var(--course-brand);
+  background: var(--course-brand-soft);
+  color: var(--course-brand-dark);
+  font-weight: 600;
+}
+
+.course-editor__add-block-panel {
+  position: absolute;
+  top: calc(100% + 0.2rem);
+  right: 0;
+  z-index: 20;
+  min-width: 11rem;
+  padding: 0.45rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.45rem;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+}
+
+.course-editor__add-block-panel .course-editor__outline-add-block-types {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.course-editor__add-block-panel .course-editor__outline-add-block-btn {
+  width: 100%;
+  text-align: left;
+  border-radius: 0.35rem;
 }
 
 .course-editor__outline-section-row:hover .course-editor__outline-section-actions,
@@ -1714,6 +1834,11 @@ body.course-editor-body {
   min-height: var(--course-editor-rt-min-height);
 }
 
+.course-editor__rt-preview--raw {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
 .course-editor__prose h2 {
   font-size: 1.05rem;
   font-weight: 700;
@@ -1834,23 +1959,51 @@ body.course-editor-body {
 
 .course-editor__toast {
   position: fixed;
-  bottom: 1rem;
+  bottom: 5rem;
   left: 50%;
   transform: translateX(-50%);
   z-index: 100;
-  padding: 0.45rem 1rem;
+  padding: 0.65rem 1.25rem;
   border-radius: 999px;
   background: #1e293b;
   color: #fff;
-  font-size: 0.85rem;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+  font-size: 0.9rem;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.25);
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.2s;
 }
 
+.course-editor__toast.is-success {
+  background: #166534;
+}
+
+.course-editor__toast.is-error {
+  background: #b91c1c;
+}
+
 .course-editor__toast.is-visible {
   opacity: 1;
+}
+
+.course-editor__header-actions .kbm-btn.is-saving {
+  opacity: 0.75;
+  cursor: wait;
+}
+
+.course-editor__header-actions .kbm-btn.is-saved,
+.course-editor__status-save.is-saved,
+.course-editor__settings-save.is-saved {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #86efac;
+}
+
+.course-editor__status-save.is-saving,
+.course-editor__settings-save.is-saving {
+  opacity: 0.75;
+  cursor: wait;
 }
 
 .course-editor__status-bar {

@@ -44,7 +44,8 @@ function stepLabel(step: CourseContentItemStep): string {
       {
         prev ? (
           <a class="legacy-course__item-nav-link legacy-course__item-nav-link--prev" href={stepHref(prev)}>
-            ← {stepLabel(prev)}
+            <span class="legacy-course__item-nav-arrow" aria-hidden="true">←</span>
+            <span class="legacy-course__item-nav-label">{stepLabel(prev)}</span>
           </a>
         ) : (
           <span />
@@ -53,7 +54,8 @@ function stepLabel(step: CourseContentItemStep): string {
       {
         next ? (
           <a class="legacy-course__item-nav-link legacy-course__item-nav-link--next" href={stepHref(next)}>
-            {stepLabel(next)} →
+            <span class="legacy-course__item-nav-label">{stepLabel(next)}</span>
+            <span class="legacy-course__item-nav-arrow" aria-hidden="true">→</span>
           </a>
         ) : null
       }
@@ -64,8 +66,10 @@ function stepLabel(step: CourseContentItemStep): string {
 <style>
   .legacy-course__item-nav {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
-    gap: 1rem;
+    align-items: center;
+    gap: 0.75rem 1rem;
   }
 
   .legacy-course__item-nav--top {
@@ -79,18 +83,59 @@ function stepLabel(step: CourseContentItemStep): string {
   }
 
   .legacy-course__item-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    max-width: min(100%, calc(50% - 0.5rem));
+    padding: 0.5rem 0.85rem;
+    border: 1px solid #d8dfd0;
+    border-radius: 8px;
+    background: #fff;
     color: var(--kbm-green, #52682d);
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.35;
     text-decoration: none;
-    max-width: 46%;
-    line-height: 1.4;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
   }
 
   .legacy-course__item-nav-link:hover {
-    text-decoration: underline;
+    border-color: var(--kbm-green, #52682d);
+    background: #f3f6ee;
+    box-shadow: 0 1px 3px rgba(82, 104, 45, 0.12);
+    text-decoration: none;
+  }
+
+  .legacy-course__item-nav-link:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+    border-color: var(--kbm-green, #52682d);
+    background: #f3f6ee;
   }
 
   .legacy-course__item-nav-link--next {
-    text-align: right;
     margin-left: auto;
+  }
+
+  .legacy-course__item-nav-arrow {
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .legacy-course__item-nav-label {
+    min-width: 0;
+  }
+
+  @media (max-width: 540px) {
+    .legacy-course__item-nav-link {
+      max-width: 100%;
+    }
+
+    .legacy-course__item-nav-link--next {
+      margin-left: auto;
+    }
   }
 </style>

@@ -44,10 +44,23 @@ html {
 .tab-panel.active {
   display: block;
 }
+
 .zoom {
-  transition: transform 0.7s ease-in-out;
-  transform-origin: center center;
+  display: block;
+  max-width: 100%;
+  height: auto;
+  cursor: zoom-in;
+  transition: width 0.25s ease, max-width 0.25s ease;
 }
+
+.zoom:focus,
+.zoom:active {
+  width: 100%;
+  max-width: 100%;
+  cursor: zoom-out;
+  outline: none;
+}
+
 /* SOFT LAUNCH: hide homepage “Where are you right now?” block. Remove .kbm-hidden-softlaunch from #where-are-you when re-enabling. */
 .kbm-hidden-softlaunch {
   display: none !important;
@@ -2289,6 +2302,82 @@ p {
   border-left: 4px solid currentColor;
   opacity: 0.8;
 }
+
+.instruction-list {
+  list-style: none;
+  margin: 1.5rem 0;
+  padding: 0;
+  counter-reset: step;
+}
+
+.instruction-list li {
+  counter-increment: step;
+  position: relative;
+  padding-left: 3rem;
+  margin-bottom: 1rem;
+  min-height: 2rem;
+  line-height: 1.5;
+}
+
+.instruction-list li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--kbm-green, #52682d);
+  color: #fff;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.instruction-sublist {
+  margin-top: 1rem;
+  margin-left: 2rem;
+}
+
+.instruction-sublist li {
+  margin-bottom: 0.75rem;
+}
+
+.instruction-sublist li::before {
+  background: var(--kbm-green-2, #738c52);
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 0.9rem;
+}
+
+.course-callout {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  margin: 1.5rem 0;
+  padding: 1rem 1.25rem;
+  background: #f8faf5;
+  border-left: 5px solid var(--kbm-green, #52682d);
+  border-radius: 8px;
+}
+
+.course-callout i {
+  color: var(--kbm-green, #52682d);
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.course-callout h4,
+.course-callout p:last-child {
+  margin-bottom: 0;
+}
+
+.course-callout h4 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
 .page-wrap {
   max-width: 860px;
   margin: 0 auto;

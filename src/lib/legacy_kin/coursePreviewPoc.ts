@@ -48,6 +48,9 @@ export type ImageGallerySlide = {
 
 export type ImageGalleryComponent = {
   type: "imageGallery";
+  introHtml?: string | null;
+  /** Plain-text heading saved by an earlier editor version; prefer introHtml */
+  title?: string | null;
   slides: ImageGallerySlide[];
   legacyComponentId: number;
   order: number;

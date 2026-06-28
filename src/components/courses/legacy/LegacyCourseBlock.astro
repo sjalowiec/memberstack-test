@@ -57,6 +57,8 @@ const { component } = Astro.props;
   ) : component.type === "imageGallery" ? (
     <LegacyCourseImageCarousel
       legacyComponentId={component.legacyComponentId}
+      introHtml={component.introHtml}
+      title={component.title}
       slides={component.slides.map((slide) => ({
         src: slide.src,
         alt: slide.caption ?? "",
