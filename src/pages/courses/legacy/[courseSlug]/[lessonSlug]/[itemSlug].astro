@@ -59,6 +59,14 @@ const previewQuery = loaderOptions.includeDrafts ? "?preview=true" : "";
         <h1 class="course-preview__content-title">{sectionTitle}</h1>
       </header>
 
+      <LegacyCourseItemNav
+        {courseSlug}
+        {previewQuery}
+        {prev}
+        {next}
+        placement="top"
+      />
+
       <LegacyCourseRenderer lesson={lesson} item={item} showItemTitles={false} />
 
       <LegacyCourseItemNav
@@ -66,6 +74,7 @@ const previewQuery = loaderOptions.includeDrafts ? "?preview=true" : "";
         {previewQuery}
         {prev}
         {next}
+        placement="bottom"
       />
     </article>
   </LegacyCourseShell>

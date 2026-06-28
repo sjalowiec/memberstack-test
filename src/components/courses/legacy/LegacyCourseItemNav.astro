@@ -10,9 +10,17 @@ interface Props {
   previewQuery?: string;
   prev?: CourseContentItemStep | null;
   next?: CourseContentItemStep | null;
+  /** Top placement: compact spacing below the title. Bottom: existing separator styling. */
+  placement?: "top" | "bottom";
 }
 
-const { courseSlug, previewQuery = "", prev = null, next = null } = Astro.props;
+const {
+  courseSlug,
+  previewQuery = "",
+  prev = null,
+  next = null,
+  placement = "bottom",
+} = Astro.props;
 
 function stepHref(step: CourseContentItemStep): string {
   return `${legacyLessonItemHref(courseSlug, step.lesson.slug, step.item.itemSlug)}${previewQuery}`;
@@ -25,7 +33,14 @@ function stepLabel(step: CourseContentItemStep): string {
 
 {
   prev || next ? (
-    <nav class="legacy-course__item-nav" aria-label="Section navigation">
+    <nav
+      class:list={[
+        "legacy-course__item-nav",
+        placement === "top" && "legacy-course__item-nav--top",
+        placement === "bottom" && "legacy-course__item-nav--bottom",
+      ]}
+      aria-label="Section navigation"
+    >
       {
         prev ? (
           <a class="legacy-course__item-nav-link legacy-course__item-nav-link--prev" href={stepHref(prev)}>
@@ -51,6 +66,13 @@ function stepLabel(step: CourseContentItemStep): string {
     display: flex;
     justify-content: space-between;
     gap: 1rem;
+  }
+
+  .legacy-course__item-nav--top {
+    margin: 1rem 0;
+  }
+
+  .legacy-course__item-nav--bottom {
     margin-top: 2rem;
     padding-top: 1.25rem;
     border-top: 1px solid #e0e6d8;
