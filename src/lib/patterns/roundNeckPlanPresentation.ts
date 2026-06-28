@@ -24,6 +24,7 @@ import {
   formatStitchCountValidation,
   NEEDLE_RANGE_CLASS,
 } from "./legoBlocks/shallowBackNeckNeedleLayout";
+import { consolidateConsecutiveJapaneseNotationLines } from "./shapingNotationCompress";
 import { formatHoldNotation, formatShapingSegment } from "./sleevelessBackJapaneseNotation";
 
 export type RoundNeckBackShallowExecutionOptions = {
@@ -288,21 +289,22 @@ export function roundNeckPlanOneSideNeckEdgeJpLines(
   plan: RoundNecklinePlanResult | RoundNecklineShapingResult,
   side: RoundNeckPlanSide = "right",
 ): string[] {
+  let lines: string[];
   if (isShallowHoldRoundPlan(plan)) {
-    return roundNeckPlanHoldGroupsJpLines(plan, side);
-  }
-
-  const { stairSteps, singleDecreaseCount } = sidePlan(plan, side);
-  const lines: string[] = [];
-  for (const amount of stairSteps) {
-    if (amount > 0) {
-      lines.push(formatShapingSegment(amount, 2, 1));
+    lines = roundNeckPlanHoldGroupsJpLines(plan, side);
+  } else {
+    const { stairSteps, singleDecreaseCount } = sidePlan(plan, side);
+    lines = [];
+    for (const amount of stairSteps) {
+      if (amount > 0) {
+        lines.push(formatShapingSegment(amount, 2, 1));
+      }
+    }
+    if (singleDecreaseCount > 0) {
+      lines.push(formatShapingSegment(1, 2, singleDecreaseCount));
     }
   }
-  if (singleDecreaseCount > 0) {
-    lines.push(formatShapingSegment(1, 2, singleDecreaseCount));
-  }
-  return lines;
+  return consolidateConsecutiveJapaneseNotationLines(lines);
 }
 
 /** Full one-side JP block: center hold/bind-off + edge shaping lines. */

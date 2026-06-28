@@ -307,6 +307,16 @@ describe("calculateDocumentedShallowRoundNecklineShaping", () => {
       "At the neck edge, put 1 stitch in hold every other row 2 times.",
     ]);
   });
+
+  it("deep round-neck JP merges consecutive identical stair bind-off segments", () => {
+    const plan = calculateRoundNecklineShaping({ necklineStitches: 52 });
+    expect(plan.left.stairSteps).toEqual([3, 3, 3]);
+    expect(roundNeckPlanOneSideFullJpLines(plan, "right")).toEqual([
+      "bo16",
+      "3s-2r-3x",
+      "1s-2r-9x",
+    ]);
+  });
 });
 
 describe("shallow round-neck written instructions", () => {

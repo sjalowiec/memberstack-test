@@ -17,7 +17,35 @@
   },
   "lessons": [
     {
-      "title": "1. Swatching and your Pattern",
+      "title": "Welcome!",
+      "slug": "lesson-1782659892807",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 133,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "title": "You can do this!",
+          "slug": "content-1782659901683",
+          "order": 1,
+          "legacy": {
+            "assignId": 1,
+            "blockType": "HTML"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h1>Neckline Shaping Practice</h1><p>If there's one skill that intimidates machine knitters, it's shaping a neckline.</p><p>Unlike straight edges or simple decreases, necklines require you to keep track of rows, stitches, and shaping all at the same time. It's easy to wonder if you're doing it correctly.</p><p>The good news is that neckline shaping isn't difficult because it's complicated. It's difficult because it takes practice.</p><p>In this course, you'll work through several neckline shaping exercises step by step. As you repeat the process, you'll begin to recognize the patterns behind the shaping, and before long you'll find yourself following the instructions with confidence.</p><p>Take your time. Keep good notes. Don't worry if your first sample isn't perfect. Every practice piece builds your skills, and each one brings you closer to knitting beautiful sweaters with necklines you'll be proud of.</p><h1 style=\"text-align: center;\"><span class=\"handwriting-accent\">You really can do this!</span></h1>",
+              "legacyComponentId": 9669,
+              "order": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Swatching and your Pattern",
       "slug": "1-swatching-and-your-pattern",
       "displayOrder": 1,
       "legacy": {
@@ -28,31 +56,13 @@
         {
           "components": [
             {
-              "type": "video",
-              "vimeoId": "221120492",
-              "title": "Machine Knitting Courses",
-              "legacyComponentId": 1679,
-              "order": 2
-            }
-          ],
-          "title": "Welcome {first}! Start Here",
-          "slug": "welcome-first-start-here",
-          "order": 1,
-          "legacy": {
-            "assignId": 575,
-            "blockType": "HTML"
-          }
-        },
-        {
-          "components": [
-            {
               "type": "richText",
-              "html": "For this course, we are NOT going to be the swatch police.  Swatch, don't swatch it's your choice!<br>\r\n<div class=\"lead\">BUT . . .</div>\r\nHowever .... in order to build your custom practice pattern. YOU NEED TO KNOW YOUR GAUGE.<br>\r\n   \r\n             <blockquote class=\"blockquote_style\">\r\n                          <i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> If you aren't 100% familiar with knitting swatches to obtain your gauge, \r\nplease consider the Knit it Now Course <a href=\"/challenge/12/course/swatches-tension-and-gauge\"> \"Swatches, Tensions and Gauge\"</a>\r\n              </blockquote>\r\n\r\n\r\n\r\n\r\n \r\n<img src=\"/challenge/images/v2/21/sleeve_practice/measure_rows.jpg\">\r\n\r\n\r\n<img src=\"/challenge/images/v2/21/sleeve_practice/measure_stitches.jpg\">\r\n\r\n",
+              "html": "<br><br>For this course, we are NOT going to be the swatch police.  Swatch, don't swatch it's your choice!<br>\n<div class=\"lead\">BUT . . .</div>\nHowever .... in order to build your custom practice pattern. YOU NEED TO KNOW YOUR GAUGE.<br>\n   \n<div class=\"two-column\">\n\n  <div>\n    <img class=\"Zoom\" src=\"/images/course-content/21/measure_rows.jpg\" width=\"300\" alt=\"Front neckline shaping\">\n    <p><strong>Front Neckline</strong></p>\n  </div>\n\n  <div>\n    <img class=\"Zoom\" src=\"/images/course-content/21/measure_stitches.jpg\" width=\"300\" alt=\"Back neckline shaping\">\n    <p><strong>Back Neckline</strong></p>\n  </div>\n\n</div>\n\n",
               "legacyComponentId": 1580,
               "order": 1
             }
           ],
-          "title": "Lesson 1: Swatching is not Optional",
+          "title": "Swatching is not Optional",
           "slug": "lesson-1-swatching-is-not-optional",
           "order": 2,
           "legacy": {
@@ -66,7 +76,7 @@
               "type": "richText",
               "html": "<div class=\"lead\">GAUGE SUGGESTIONS FOR PRACTICE:<br></DIV>\r\nGauge isn't critical for knitting these samples.  If you don't yet know your gauge, you can practice with these sample patterns.<br><a href=\"/downloads/sample_standard.pdf\"><i class=\"fa fa-download\"></i> Standard Gauge Sample Pattern (28sts/44rows) </a><br><a href=\"/downloads/sample_bulky.pdf\"><i class=\"fa fa-download\"></i> Bulky Gauge Sample Pattern (16sts/24rows)</a><br>",
               "legacyComponentId": 1609,
-              "order": 1
+              "order": 2
             },
             {
               "type": "migrationPending",
@@ -79,13 +89,13 @@
                 "TYPEOF": "HRline"
               },
               "legacyComponentId": 1639,
-              "order": 2
+              "order": 3
             },
             {
               "type": "richText",
               "html": "<div class=\"lead\">ENTER YOUR NUMBERS TO BUILD <b>YOUR</b> CUSTOM PATTERN:</DIV>\r\n<i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> <em>Don't yet know your gauge? Use the suggestions above to practice generating a pattern.</em>",
               "legacyComponentId": 1640,
-              "order": 3
+              "order": 4
             },
             {
               "type": "migrationPending",
@@ -110,13 +120,13 @@
                 "USESWATCHLOGIC": "no"
               },
               "legacyComponentId": 1606,
-              "order": 4
+              "order": 5
             },
             {
               "type": "richText",
               "html": "<blockquote class=\"blockquote_style\">\r\n\r\n<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Hate math?  Use the calculator below to determine YOUR gauge in 4\" /10cm\r\n\r\n</blockquote>",
               "legacyComponentId": 1642,
-              "order": 5
+              "order": 6
             },
             {
               "type": "migrationPending",
@@ -132,7 +142,7 @@
                 "TYPEOF": "CustomCFM"
               },
               "legacyComponentId": 1641,
-              "order": 6
+              "order": 7
             }
           ],
           "title": "Lesson 2: Build your Practice Neckline Pattern",
@@ -161,7 +171,7 @@
                 "DATAMODEL_VALIDATION_MESSAGE": "Make sure to enter your gauge information first to build your custom pattern"
               },
               "legacyComponentId": 1644,
-              "order": 1
+              "order": 8
             },
             {
               "type": "migrationPending",
@@ -180,7 +190,7 @@
                 "VIEWHEIGHT": "600"
               },
               "legacyComponentId": 1638,
-              "order": 2
+              "order": 9
             }
           ],
           "title": "Lesson 3: Preview/Download your Custom pattern",
@@ -198,7 +208,7 @@
               "vimeoId": "151858911",
               "title": "Dynamic Patterns in Action",
               "legacyComponentId": 1611,
-              "order": 1
+              "order": 10
             }
           ],
           "title": "Lesson 4: Using Dynamic Patterns",
@@ -216,27 +226,27 @@
               "vimeoId": "252368462",
               "title": "Let me share a secret",
               "legacyComponentId": 1675,
-              "order": 1
+              "order": 11
             },
             {
               "type": "video",
               "vimeoId": "151859753",
               "title": "Lifelines: A Knitter's Best Friend",
               "legacyComponentId": 1674,
-              "order": 2
+              "order": 12
             },
             {
               "type": "video",
               "vimeoId": "254877048",
               "title": "LIfelines: Scrap off Method",
               "legacyComponentId": 1721,
-              "order": 3
+              "order": 13
             },
             {
               "type": "richText",
               "html": "<br><i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> Similar to hand knitting lifelines, this method adds a temporary strand that secures a row of stitches.<br>",
               "legacyComponentId": 1727,
-              "order": 4
+              "order": 14
             },
             {
               "type": "migrationPending",
@@ -252,7 +262,7 @@
                 "TYPEOF": "CustomCFM"
               },
               "legacyComponentId": 1726,
-              "order": 5
+              "order": 15
             }
           ],
           "title": "Best Advice Ever!",
@@ -268,10 +278,10 @@
     {
       "title": "Techniques",
       "slug": "techniques",
-      "displayOrder": 2,
+      "displayOrder": 3,
       "legacy": {
         "itemId": 121,
-        "lessonOrder": 2
+        "lessonOrder": 3
       },
       "blocks": [
         {
@@ -481,10 +491,10 @@
     {
       "title": "2. Vneck Shaping",
       "slug": "2-vneck-shaping",
-      "displayOrder": 40,
+      "displayOrder": 4,
       "legacy": {
         "itemId": 123,
-        "lessonOrder": 40
+        "lessonOrder": 4
       },
       "blocks": [
         {
@@ -676,10 +686,10 @@
     {
       "title": "Day 2 WORKSHOP BONUS",
       "slug": "day-2-workshop-bonus",
-      "displayOrder": 41,
+      "displayOrder": 5,
       "legacy": {
         "itemId": 126,
-        "lessonOrder": 41
+        "lessonOrder": 5
       },
       "blocks": [
         {
@@ -723,10 +733,10 @@
     {
       "title": "3. Round neck Shaping",
       "slug": "3-round-neck-shaping",
-      "displayOrder": 51,
+      "displayOrder": 6,
       "legacy": {
         "itemId": 122,
-        "lessonOrder": 51
+        "lessonOrder": 6
       },
       "blocks": [
         {
@@ -924,10 +934,10 @@
     {
       "title": "Day 3: Workshop Bonus",
       "slug": "day-3-workshop-bonus",
-      "displayOrder": 53,
+      "displayOrder": 7,
       "legacy": {
         "itemId": 128,
-        "lessonOrder": 53
+        "lessonOrder": 7
       },
       "blocks": [
         {
@@ -966,10 +976,10 @@
     {
       "title": "4. Shoulder  Shaping",
       "slug": "4-shoulder-shaping",
-      "displayOrder": 60,
+      "displayOrder": 8,
       "legacy": {
         "itemId": 120,
-        "lessonOrder": 60
+        "lessonOrder": 8
       },
       "blocks": [
         {
@@ -1233,10 +1243,10 @@
     {
       "title": "Day 4 Workshop Bonus",
       "slug": "day-4-workshop-bonus",
-      "displayOrder": 61,
+      "displayOrder": 9,
       "legacy": {
         "itemId": 129,
-        "lessonOrder": 61
+        "lessonOrder": 9
       },
       "blocks": [
         {
@@ -1280,10 +1290,10 @@
     {
       "title": "5. AT THE SAME TIME",
       "slug": "5-at-the-same-time",
-      "displayOrder": 70,
+      "displayOrder": 10,
       "legacy": {
         "itemId": 124,
-        "lessonOrder": 70
+        "lessonOrder": 10
       },
       "blocks": [
         {
@@ -1536,10 +1546,10 @@
     {
       "title": "What's Next for you?",
       "slug": "what-s-next-for-you",
-      "displayOrder": 80,
+      "displayOrder": 11,
       "legacy": {
         "itemId": 131,
-        "lessonOrder": 80
+        "lessonOrder": 11
       },
       "blocks": [
         {
@@ -1565,10 +1575,10 @@
     {
       "title": "Workshop Survey",
       "slug": "workshop-survey",
-      "displayOrder": 81,
+      "displayOrder": 12,
       "legacy": {
         "itemId": 132,
-        "lessonOrder": 81
+        "lessonOrder": 12
       },
       "blocks": [
         {
