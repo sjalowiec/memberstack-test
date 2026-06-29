@@ -6,6 +6,7 @@ import {
   createCustomPatternProject,
   listCustomPatternProjects,
   loadCustomPatternProject,
+  logSavedPatternUpdateFlowDiagnostics,
   shouldBlockDropShoulderConstructionSaveToActiveProject,
   updateCustomPatternProject,
 } from "./customPatternProjectClient";
@@ -150,6 +151,8 @@ export type SmartSaveCustomPatternProjectOptions = {
   mode?: CustomPatternProjectSaveMode;
   /** Scope for diagram measurement inputs when flushing overrides before save. */
   root?: ParentNode;
+  /** Pin the saved project id for update — avoids re-read after sync/detach during save. */
+  activeProjectId?: string;
 };
 
 /** Suffix appended to a copied saved project's name: `"My Sweater" -> "My Sweater - Copy"`. */
@@ -276,7 +279,7 @@ export async function smartSaveCustomPatternProject(
   const base = buildSavePayloadFromWorkingDraft(name, { family, flushRoot });
 
   if (mode === "update") {
-    const activeId = readActiveCustomPatternProjectId();
+    const activeId = options.activeProjectId?.trim() || readActiveCustomPatternProjectId();
     if (!activeId) {
       return {
         ok: false,
@@ -290,22 +293,32 @@ export async function smartSaveCustomPatternProject(
           "This session has drop-shoulder settings, but the open saved project is sleeveless. Use Save New Project instead.",
       };
     }
+    logSavedPatternUpdateFlowDiagnostics("smart-save-update-before-api", {
+      payloadSavedProjectId: activeId,
+      workingDraftPatternRecordId: base.pattern.id,
+    });
     options.onStatus?.("Updating…");
     const res = await updateCustomPatternProject({ ...base, id: activeId });
     if (!res.ok) return { ok: false, error: res.error };
-    writeActiveCustomPatternProjectId(res.project.id, res.project.name);
-    writeHydratedConstructionBaseline(res.project);
-    prepareCustomBuildPatternGeneration({
-      root: resolveCustomBuildSaveMeasureFlushRoot(flushRoot),
-      rehydrateSavedProject: false,
+    logSavedPatternUpdateFlowDiagnostics("smart-save-update-after-api", {
+      requestedSavedProjectId: activeId,
+      returnedSavedProjectId: res.project.id,
     });
+    if (res.project.id !== activeId) {
+      console.warn("[kbm] saved-pattern update returned unexpected project id", {
+        requested: activeId,
+        returned: res.project.id,
+      });
+    }
+    writeActiveCustomPatternProjectId(activeId, res.project.name);
+    writeHydratedConstructionBaseline(res.project);
     captureSavedCustomPatternDirtyBaseline();
     notifySavedProjectLinkChanged(options.root ?? undefined);
     logSleevelessPatternActivity("pattern_updated", {
-      patternId: res.project.id,
+      patternId: activeId,
       patternTitle: res.project.name,
     });
-    return { ok: true, project: res.project, created: false };
+    return { ok: true, project: { ...res.project, id: activeId }, created: false };
   }
 
   options.onStatus?.("Saving…");

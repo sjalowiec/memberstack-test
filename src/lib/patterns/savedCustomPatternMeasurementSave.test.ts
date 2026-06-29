@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { writeActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
+import { clearActiveCustomPatternProjectId, readActiveCustomPatternProjectId, writeActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
 import { runUpdateActiveSavedCustomPattern } from "./customPatternEditingBannerActions";
 import { resolveEffectiveHemDepthInches } from "./customBuildEffectiveHemDepth";
 import {
@@ -666,5 +666,36 @@ describe("saved custom-build measurement save", () => {
       hemDepth: "3",
       chestBust: "41",
     });
+  });
+
+  it("smartSave update uses pinned activeProjectId when the localStorage link was cleared", async () => {
+    const project = customBuildProject({
+      chestBust: "40",
+      finishedLength: "24",
+      armholeDepth: "8",
+      shoulderWidth: "14",
+      finishedNeckOpeningWidth: "6",
+      neckDepth: "3",
+      hip: "40",
+    });
+    hydrateSavedCustomPatternProjectSession(project);
+    writeActiveCustomPatternProjectId(project.id, project.name);
+
+    vi.mocked(updateCustomPatternProject).mockResolvedValue({
+      ok: true,
+      project: { ...project, pattern: getCurrentPattern() },
+    });
+
+    clearActiveCustomPatternProjectId();
+
+    const saveRes = await smartSaveCustomPatternProject({
+      mode: "update",
+      activeProjectId: project.id,
+      resolveName: () => project.name,
+    });
+
+    expect(saveRes.ok).toBe(true);
+    expect(vi.mocked(updateCustomPatternProject).mock.calls.at(-1)?.[0].id).toBe(project.id);
+    expect(readActiveCustomPatternProjectId()).toBe(project.id);
   });
 });

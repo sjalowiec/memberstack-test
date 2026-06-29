@@ -6,6 +6,7 @@ import { clearSavedCustomPatternDirtyBaseline } from "./customPatternSavedProjec
 import { isEditingSavedCustomPatternProject } from "./customPatternEditingUx";
 import { prepareCustomBuildPatternGeneration } from "./prepareCustomBuildPatternGeneration";
 import { resolveCustomBuildSaveMeasureFlushRoot } from "./sleevelessCustomMeasurementStorage";
+import { logSavedPatternUpdateFlowDiagnostics } from "./customPatternProjectClient";
 import { smartSaveCustomPatternProject } from "./customPatternSavedProjectsPanel";
 import { refreshCustomPatternSavedProjectsPanelUi } from "./customPatternSavedProjectsPanel";
 import { syncCustomBuildCustomizeAccessChrome } from "./customBuildCustomizeAccess";
@@ -62,9 +63,19 @@ export async function runUpdateActiveSavedCustomPattern(
   root?: ParentNode,
   options?: {
     onStatus?: (message: string, isError?: boolean) => void;
+    /** Pin the saved project id for this update (set when opening / starting edit). */
+    activeProjectId?: string;
+    /** When true, caller already flushed diagram inputs and synced storage (Edit Pattern apply). */
+    skipPreSavePrepare?: boolean;
   },
 ): Promise<UpdateActiveSavedCustomPatternResult> {
-  if (!readActiveCustomPatternProjectId()) {
+  const pinnedActiveId = options?.activeProjectId?.trim() || readActiveCustomPatternProjectId();
+  logSavedPatternUpdateFlowDiagnostics("run-update-start", {
+    pinnedSavedProjectId: pinnedActiveId,
+    skipPreSavePrepare: options?.skipPreSavePrepare === true,
+  });
+
+  if (!pinnedActiveId) {
     const error = "Open a saved project before updating.";
     options?.onStatus?.(error, true);
     return { ok: false, error };
@@ -82,13 +93,20 @@ export async function runUpdateActiveSavedCustomPattern(
     return { ok: false, error };
   }
 
-  prepareCustomBuildPatternGeneration({
-    root: measureRoot,
-    rehydrateSavedProject: false,
+  if (!options?.skipPreSavePrepare) {
+    prepareCustomBuildPatternGeneration({
+      root: measureRoot,
+      rehydrateSavedProject: false,
+    });
+  }
+
+  logSavedPatternUpdateFlowDiagnostics("run-update-before-smart-save", {
+    pinnedSavedProjectId: pinnedActiveId,
   });
 
   const res = await smartSaveCustomPatternProject({
     mode: "update",
+    activeProjectId: pinnedActiveId,
     resolveName: () => name,
     onStatus: options?.onStatus,
     root: measureRoot,
@@ -97,6 +115,11 @@ export async function runUpdateActiveSavedCustomPattern(
   if (!res.ok) {
     return { ok: false, error: res.error };
   }
+
+  logSavedPatternUpdateFlowDiagnostics("run-update-after-smart-save", {
+    pinnedSavedProjectId: pinnedActiveId,
+    returnedSavedProjectId: res.project.id,
+  });
 
   dispatchCustomPatternEditingStateChanged();
   return { ok: true, projectName: res.project.name };

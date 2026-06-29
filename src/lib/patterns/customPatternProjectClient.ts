@@ -8,7 +8,7 @@ import {
   draftHasUnsavedDropShoulderConstructionDrift,
   writeHydratedConstructionBaseline,
 } from "./customPatternProjectConstructionBaseline";
-import { readActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
+import { readActiveCustomPatternProjectId, readActiveCustomPatternProjectLinkedName } from "./customPatternProjectActiveId";
 import {
   hasAuthoritativeDropShoulderConstruction,
   isActiveDropShoulderConstruction,
@@ -317,6 +317,22 @@ function patternSectionRecord(section: unknown): Record<string, unknown> {
   return section && typeof section === "object" && !Array.isArray(section)
     ? (section as Record<string, unknown>)
     : {};
+}
+
+/** Temporary diagnostics for saved-pattern update identity (remove after production verification). */
+export function logSavedPatternUpdateFlowDiagnostics(
+  label: string,
+  extra: Record<string, unknown> = {},
+): void {
+  if (typeof console === "undefined" || typeof console.info !== "function") return;
+  const pattern = getCurrentPattern();
+  console.info("[kbm] saved-pattern update flow", {
+    label,
+    activeSavedProjectId: readActiveCustomPatternProjectId(),
+    activeSavedProjectLinkedName: readActiveCustomPatternProjectLinkedName(),
+    workingDraftPatternRecordId: pattern.id,
+    ...extra,
+  });
 }
 
 /** Dev logging for saved-pattern update/create payload diagnostics. */
