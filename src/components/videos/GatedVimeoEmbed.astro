@@ -39,6 +39,11 @@ const iframeSrc = enableVimeoPlayerApi
   data-access-level={access_level}
   data-video-id={videoId}
   data-iframe-src={iframeSrc}
+  data-video-title={title}
+  data-video-dev-bypass={videoDevBypass ? "true" : "false"}
+  data-enable-vimeo-player-api={enableVimeoPlayerApi ? "true" : "false"}
+  data-cta-href={ctaHref}
+  data-cta-text={ctaText}
 >
   <div class="kbm-video__frame" style={`padding-top:${pad}%;`}>
     <div
@@ -64,147 +69,10 @@ const iframeSrc = enableVimeoPlayerApi
   </div>
 </div>
 
-<script define:vars={{ videoId, access_level, iframeSrc, title, videoDevBypass, enableVimeoPlayerApi, iframePlayerId, ctaHref, ctaText }}>
-  import { hasKinVideoAccess, logKinVideoAccessDebug } from "../../lib/kinVideoAccess";
+<script>
+  import { runGatedVimeoEmbedBoot } from "../../scripts/gatedVimeoEmbedClient";
 
-  async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
-    for (let i = 0; i < attempts; i++) {
-      try {
-        const api = window.$memberstackDom?.getAppAndMember;
-        if (typeof api === "function") return await api();
-      } catch {
-        /* keep polling until Memberstack is ready */
-      }
-      await new Promise((r) => setTimeout(r, delayMs));
-    }
-    return null;
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    if (access_level !== "member") return;
-
-    const slot = document.getElementById(`kbm-vimeo-slot-${videoId}`);
-    if (!slot) return;
-
-    const iframeIdAttr =
-      enableVimeoPlayerApi && iframePlayerId ? ` id="${iframePlayerId}"` : "";
-    let authListenersBound = false;
-
-    function buildLockedMarkup(showLogin) {
-      const loginBtn = showLogin
-        ? `<button type="button" class="kbm-video__cta kbm-video__cta--login" data-kbm-video-login>Log in to watch</button>`
-        : "";
-      return `
-  <div class="kbm-video__locked">
-    <div class="kbm-video__overlay">
-      <div class="kbm-video__lockline">
-        🔒 <strong>Members only</strong>
-      </div>
-      <p>This video is available with membership.</p>
-      <div class="kbm-video__actions">
-        ${loginBtn}
-        <a href="${ctaHref}" class="kbm-video__cta">${ctaText}</a>
-      </div>
-    </div>
-  </div>
-`;
-    }
-
-    function wireVideoLoginButton() {
-      const btn = slot.querySelector("[data-kbm-video-login]");
-      if (!(btn instanceof HTMLElement)) return;
-      btn.addEventListener("click", (e) => {
-        e.preventDefault();
-        if (typeof window.kbmOpenMemberstackLoginModal === "function") {
-          window.kbmOpenMemberstackLoginModal();
-          return;
-        }
-        const ms = window.$memberstackDom;
-        if (ms && typeof ms.openModal === "function") {
-          void ms.openModal("LOGIN");
-        }
-      });
-    }
-
-    function showLocked(showLogin) {
-      slot.innerHTML = buildLockedMarkup(showLogin);
-      if (showLogin) wireVideoLoginButton();
-      slot.setAttribute("data-state", "ready");
-    }
-
-    function showUnlockedIframe() {
-      slot.innerHTML = `
-        <iframe${iframeIdAttr}
-          src="${iframeSrc}"
-          title="${title}"
-          loading="lazy"
-          frameborder="0"
-          allow="autoplay; fullscreen; picture-in-picture"
-          allowfullscreen
-          style="position:absolute; inset:0; width:100%; height:100%; border:0;"
-        ></iframe>
-      `;
-      slot.setAttribute("data-state", "ready");
-    }
-
-    async function resolveAccessAndRender() {
-      if (videoDevBypass) {
-        console.log("[KBM video access debug]", "GatedVimeoEmbed.unlock", {
-          videoId,
-          reason: "videoDevBypass(PUBLIC_DEV_BYPASS_GATING=true)",
-        });
-        showUnlockedIframe();
-        return;
-      }
-
-      const res = await waitForMemberstackReady();
-      const member = res?.data?.member ?? null;
-      const isLoggedIn = Boolean(member);
-      const rawKinAccess = member?.customFields?.["kin-access"];
-      const hasVideoAccess = res ? hasKinVideoAccess(res) : false;
-
-      logKinVideoAccessDebug("GatedVimeoEmbed.iframe", {
-        member: res,
-        rawKinAccess,
-        finalHasVideoAccess: hasVideoAccess,
-      });
-
-      if (!hasVideoAccess) {
-        showLocked(!isLoggedIn);
-        return;
-      }
-
-      showUnlockedIframe();
-    }
-
-    function bindMemberstackAuthRefresh() {
-      if (authListenersBound) return;
-      const ms = window.$memberstackDom;
-      if (!ms || typeof ms.on !== "function") return;
-      authListenersBound = true;
-      ms.on("member.login", () => {
-        void resolveAccessAndRender();
-      });
-      ms.on("member.logout", () => {
-        void resolveAccessAndRender();
-      });
-    }
-
-    async function initGatedVideo() {
-      await resolveAccessAndRender();
-
-      bindMemberstackAuthRefresh();
-      void window.$memberstackDom?.onReady?.then(() => {
-        bindMemberstackAuthRefresh();
-      });
-
-      window.addEventListener("auth:updated", () => {
-        void resolveAccessAndRender();
-      });
-    }
-
-    void initGatedVideo();
-  });
+  runGatedVimeoEmbedBoot();
 </script>
 
 
