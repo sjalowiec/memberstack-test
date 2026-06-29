@@ -1,0 +1,238 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import { QUICK_HELP_SESSION } from "../../../config/quickHelpSession";
+---
+
+<Layout
+  title="Schedule Your Quick Help Session | Knit it Now"
+  description="Thank you for your purchase. Choose a convenient time for your 15-minute Quick Help session with Sue."
+>
+  <section class="quick-help-schedule">
+    <div class="quick-help-schedule-inner">
+      <div id="quick-help-schedule-loading" class="quick-help-schedule-panel">
+        <p class="quick-help-schedule-eyebrow">Quick Help Session</p>
+        <h1>Checking your purchaseù</h1>
+        <p class="quick-help-schedule-lead">One moment while we confirm your session.</p>
+      </div>
+
+      <div id="quick-help-schedule-entitled" class="quick-help-schedule-panel" hidden>
+        <p class="quick-help-schedule-eyebrow">Thank you for your purchase</p>
+        <h1>Choose a time for your session</h1>
+        <p class="quick-help-schedule-lead">
+          Your payment was received. Pick a convenient time below for your private 15-minute Zoom
+          session with Sue.
+        </p>
+
+        <iframe
+          id="quick-help-tidycal-embed"
+          class="quick-help-schedule-embed"
+          title="Schedule your Quick Help session"
+          width="100%"
+          height="880"
+          loading="lazy"
+        />
+
+        <p class="quick-help-schedule-fallback">
+          Calendar not loading?
+          <a
+            href={QUICK_HELP_SESSION.tidycalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Open scheduling in a new tab
+          </a>.
+        </p>
+      </div>
+
+      <div id="quick-help-schedule-gate" class="quick-help-schedule-panel" hidden>
+        <p class="quick-help-schedule-eyebrow">Quick Help Session</p>
+        <h1>Purchase required to schedule</h1>
+        <p class="quick-help-schedule-lead">
+          Scheduling is available after checkout. If you just paid, wait a moment and refresh ù it can
+          take a few seconds for your purchase to appear.
+        </p>
+        <div class="quick-help-schedule-gate-actions">
+          <a href={QUICK_HELP_SESSION.landingPath} class="kbm-button">Book My Session ù $49</a>
+          <a href="/help-hub/work-with-sue" class="quick-help-schedule-link">Back to Work with Sue</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    import { QUICK_HELP_SESSION } from "../../../config/quickHelpSession";
+    import { hasQuickHelpSessionAccess } from "../../../lib/quickHelpSessionAccess";
+
+    async function waitForMemberstackDom() {
+      for (let i = 0; i < 35; i++) {
+        const ms = window.$memberstackDom;
+        if (ms?.getCurrentMember) {
+          if (ms.onReady) await ms.onReady;
+          return ms;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+      return window.$memberstackDom;
+    }
+
+    function showPanel(id: "loading" | "entitled" | "gate"): void {
+      const panels = {
+        loading: document.getElementById("quick-help-schedule-loading"),
+        entitled: document.getElementById("quick-help-schedule-entitled"),
+        gate: document.getElementById("quick-help-schedule-gate"),
+      };
+
+      (Object.keys(panels) as Array<keyof typeof panels>).forEach((key) => {
+        const el = panels[key];
+        if (!el) return;
+        el.hidden = key !== id;
+      });
+
+      if (id === "entitled") {
+        const iframe = document.getElementById("quick-help-tidycal-embed") as HTMLIFrameElement | null;
+        if (iframe && !iframe.src) {
+          iframe.src = QUICK_HELP_SESSION.tidycalEmbedUrl;
+        }
+      }
+    }
+
+    async function resolveScheduleAccess(): Promise<void> {
+      const ms = await waitForMemberstackDom();
+      if (!ms?.getCurrentMember) {
+        showPanel("gate");
+        return;
+      }
+
+      try {
+        const payload = await ms.getCurrentMember();
+        showPanel(hasQuickHelpSessionAccess(payload) ? "entitled" : "gate");
+      } catch (error) {
+        console.error("[quick help schedule] access check failed:", error);
+        showPanel("gate");
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("fromCheckout") === "true") {
+        window.location.replace(QUICK_HELP_SESSION.tidycalUrl);
+        return;
+      }
+
+      void resolveScheduleAccess();
+    });
+  </script>
+
+  <style>
+    .quick-help-schedule {
+      padding: 2.5rem 0 3.5rem;
+    }
+
+    .quick-help-schedule-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding-inline: clamp(1rem, 3vw, 2rem);
+    }
+
+    .quick-help-schedule-panel[hidden] {
+      display: none;
+    }
+
+    .quick-help-schedule-eyebrow {
+      margin: 0 0 0.75rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #52682d;
+    }
+
+    .quick-help-schedule-panel h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(1.75rem, 4vw, 2.35rem);
+      line-height: 1.2;
+      color: var(--kbm-green, #52682d);
+    }
+
+    .quick-help-schedule-lead {
+      margin: 0 0 2rem;
+      max-width: 52rem;
+      font-size: 1.05rem;
+      line-height: 1.65;
+      color: #374151;
+    }
+
+    .quick-help-schedule-embed {
+      display: block;
+      width: 100%;
+      min-height: 880px;
+      height: 880px;
+      margin: 0 0 1.25rem;
+      border: 0;
+    }
+
+    .quick-help-schedule-fallback {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #6b7280;
+    }
+
+    .quick-help-schedule-fallback a {
+      color: var(--kbm-green, #52682d);
+      font-weight: 600;
+    }
+
+    .quick-help-schedule-gate-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.85rem;
+    }
+
+    .quick-help-schedule-gate-actions .kbm-button {
+      background-color: #c96a4a;
+      color: #fff;
+      padding: 0.75rem 1.35rem;
+      border-radius: 8px;
+      text-decoration: none;
+      display: inline-flex;
+      font-weight: 600;
+    }
+
+    .quick-help-schedule-gate-actions .kbm-button:hover {
+      background-color: #b85c3e;
+    }
+
+    .quick-help-schedule-link {
+      color: var(--kbm-green, #52682d);
+      font-weight: 600;
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .quick-help-schedule {
+        padding: 2rem 0 3rem;
+      }
+
+      .quick-help-schedule-embed {
+        min-height: 850px;
+        height: 850px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .quick-help-schedule {
+        padding: 1.5rem 0 2.5rem;
+      }
+
+      .quick-help-schedule-lead {
+        margin-bottom: 1.5rem;
+      }
+
+      .quick-help-schedule-embed {
+        min-height: 820px;
+        height: 820px;
+      }
+    }
+  </style>
+</Layout>

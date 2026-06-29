@@ -1,391 +1,175 @@
 ---
-import SalesLayout from "../../layouts/SalesLayout.astro";
+import Layout from "../../layouts/Layout.astro";
+import { QUICK_HELP_SESSION } from "../../config/quickHelpSession";
 
+const priceDisplay = "$" + QUICK_HELP_SESSION.price;
 ---
 
-<SalesLayout
-  title="15-Minute Quick Help"
-  description="Get unstuck fast with a focused 15-minute session where we figure out exactly what’s going on and map out your next steps."
+<Layout
+  title="Quick Help Session | Knit it Now"
+  description="Book a focused 15-minute Zoom session with Sue for one machine knitting question. $49."
+  bodyClass="page--tight-header"
 >
-  <div class="container">
-    <div class="quick-help-hero">
+  <section class="quick-help-page">
+    <div class="quick-help-inner">
+      <p class="quick-help-eyebrow">Work with Sue</p>
+      <h1>Quick Help Session</h1>
+      <p class="quick-help-meta">15 minutes · Zoom · {priceDisplay} one-time</p>
 
-      <div class="quick-help-hero-text">
-        <h1>15-Minute Quick Help</h1>
+      <div class="quick-help-card">
+        <p class="quick-help-card-lead">
+          Pay below, then choose a time on the appointment calendar.
+        </p>
 
-        <p class="lead">
-          <b></b>Stop guessing. Get back to knitting in 15 minutes.</b><br>
-          Point your camera, show me the problem, and let’s get you moving again.        </p>
-
-        <div class="quick-help-cta">
-          <a href="https://tidycal.com/quick-help/one-2-one-with-sue" class="kbm-button">Book Your 15-Minute Quick Help Session</a>
-          <p class="quick-help-reassurance">
-            No small talk, no sales pitches—just 15 minutes of pure troubleshooting.
-          </p>
-          <p class="quick-help-availability">
-            I only open 5 Quick Help sessions each month.
-          </p>
-        </div>
-      </div>
-
-      <div class="quick-help-image-card">
-        <img
-          src="/images/knit-by-machine-sue.png"
-          alt="Sue helping with a knitting machine"
+        <div
+          id="quick-help-checkout-status"
+          class="quick-help-checkout-status quick-help-checkout-status--info"
+          role="status"
+          aria-live="polite"
+          hidden
         />
+
+        <button type="button" class="quick-help-cta" data-quick-help-checkout>
+          Book My Session — {priceDisplay}
+        </button>
       </div>
 
+      <p class="quick-help-back">
+        <a href="/help-hub/work-with-sue">← Back to Work with Sue</a>
+      </p>
     </div>
+  </section>
 
-    <div class="quick-help-facts-row">
-      <div class="fact">
-        <strong>Supported Machines:</strong><br />
-        Japanese, Silver Reed, Brother, Taitexma
-      </div>
-
-      <div class="fact">
-        <strong>Experience:</strong><br />
-        20+ years of machine knitting<br />
-        15+ years teaching
-      </div>
-
-      <div class="fact">
-        <strong>Guarantee:</strong><br />
-        If we can’t identify the issue, your next session is free.
-      </div>
-    </div>
-
-    <div class="quick-help-body">
-      <div class="quick-help-section">
-        <h2 class="text-primary">This is for you if…</h2>
-        <ul>
-          <li><strong>Something isn’t working</strong> (and you don’t know why)</li>
-          <li><strong>You’re stuck mid-project</strong> (and don’t want to make it worse)</li>
-          <li><strong>Your machine is doing something unexpected</strong> (and you’re not sure what to do next)</li>
-          <li><strong>You just need a second set of eyes</strong></li>
-        </ul>
-      </div>
-
-      <div class="quick-help-section">
-        <h2 class="text-primary">What Happens in 15 Minutes?</h2>
-        <p>It’s fast, it’s focused, and it’s designed to get you back to your machine.</p>
-
-        <div class="quick-help-steps">
-          <div class="step">
-            <div class="step-number">1</div>
-            <div class="step-text">Show Me</div>
-          </div>
-
-          <div class="step-arrow">→</div>
-
-          <div class="step">
-            <div class="step-number">2</div>
-            <div class="step-text">Quick Questions</div>
-          </div>
-
-          <div class="step-arrow">→</div>
-
-          <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-text">Identify Issue</div>
-          </div>
-
-          <div class="step-arrow">→</div>
-
-          <div class="step">
-            <div class="step-number">4</div>
-            <div class="step-text">Get Your Plan</div>
-          </div>
-        </div>
-
-        <p><em>You don’t need to have it all figured out before we start — just show me what’s happening.</em></p>
-      </div>
-    </div>
-
-    <div class="prep-checklist">
-
-      <h2>3 Things to Do Before We Start</h2>
-
-      <ul>
-    
-        <li>
-          <label>
-            <input type="checkbox" />
-            Have your machine set up and ready to show
-          </label>
-        </li>
-
-        <li>
-          <label>
-            <input type="checkbox" />
-            Be ready to describe what’s happening (or not happening)
-          </label>
-        </li>
-
-        <li>
-          <label>
-            <input type="checkbox" />
-            Have a photo or swatch nearby if that helps explain the issue
-          </label>
-        </li>
-      </ul>
-
-    </div>
-
-    <p class="quick-help-final">
-      Still stuck? Let’s fix it together.
-    </p>
-
-    <div class="quick-help-cta">
-      <a href="https://tidycal.com/quick-help/quick-help-session" class="kbm-button">Book Your 15-Minute Quick HelpSession</a>
-    </div>
-  </div>
+  <script>
+    import "../../scripts/quickHelpCheckout.ts";
+  </script>
 
   <style>
-    .quick-help-hero {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 40px;
-      align-items: center;
-      margin-bottom: 24px;
+    .quick-help-page {
+      padding: 0.5rem 1.5rem 3rem;
     }
 
-    .quick-help-hero-image img {
-  width: 100%;
-  display: block;
-  border-radius: 12px;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
-}
-
-    .quick-help-facts-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-bottom: 40px;
-    }
-
-    .fact {
-      background: #f5f5f5;
-      padding: 14px 16px;
-      border-radius: 10px;
-      font-size: 14px;
-      line-height: 1.45;
-    }
-
-    @media (max-width: 768px) {
-      .quick-help-hero {
-        grid-template-columns: 1fr;
-      }
-
-      .quick-help-facts-row {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .container .lead {
-      font-size: 1.1rem;
-      line-height: 1.7;
-      margin: 0 0 1rem;
-      color: #374151;
-    }
-
-    .container .text-primary {
-      color: var(--kbm-green, #52682d);
-      margin-top: 1.75rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .container .text-primary:first-of-type {
-      margin-top: 0.5rem;
-    }
-
-    .container p {
-      margin: 0 0 1rem;
-      line-height: 1.65;
-      color: #374151;
-    }
-
-    .container .kbm-button {
-      background-color: #c96a4a;
-      color: #fff;
-      padding: 10px 18px;
-      border-radius: 8px;
-      text-decoration: none;
-      display: inline-block;
-      white-space: nowrap;
-    }
-
-    .container .kbm-button:hover {
-      background-color: #b85c3e;
-    }
-
-    .prep-checklist {
-      background: #fff8d6; /* soft yellow */
-      border: 1px solid #f0e2a0;
-      border-radius: 12px;
-      padding: 20px 24px;
-      margin: 30px 0;
-    }
-
-    .prep-checklist h2 {
-      margin-top: 0;
-      font-size: 20px;
-      color: #52682d;
-    }
-
-    .prep-checklist ul {
-      list-style: none;
-      padding: 0;
-      margin: 15px 0 0;
-    }
-
-    .prep-checklist li {
-      margin-bottom: 10px;
-    }
-
-    .prep-checklist input[type="checkbox"] {
-      margin-right: 8px;
-      transform: scale(1.1);
-    }
-
-    .prep-checklist label {
-      cursor: pointer;
-    }
-
-    .quick-help-steps {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin: 20px 0 30px;
-}
-
-.step {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #f5f5f5;
-  padding: 10px 14px;
-  border-radius: 999px;
-  font-weight: 600;
-}
-
-.step-number {
-  background: #52682D;
-  color: white;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-}
-
-.step-text {
-  white-space: nowrap;
-}
-
-.step-arrow {
-  font-size: 18px;
-  color: #999;
-}
-
-/* Mobile: stack nicely */
-@media (max-width: 768px) {
-  .quick-help-steps {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .step-arrow {
-    display: none;
-  }
-}
-
-    .quick-help-body {
-      max-width: 860px;
+    .quick-help-inner {
+      max-width: 34rem;
       margin: 0 auto;
     }
 
-    .quick-help-section {
-      margin: 40px 0;
-      padding-left: 24px;
-      padding-right: 24px;
+    .quick-help-eyebrow {
+      margin: 0 0 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--kbm-green, #52682d);
     }
 
-    .quick-help-section ul {
-      padding-left: 24px;
-      margin-top: 12px;
+    .quick-help-inner h1 {
+      margin: 0 0 0.35rem;
+      font-size: clamp(1.75rem, 5vw, 2.25rem);
+      font-weight: 600;
+      line-height: 1.2;
+      color: var(--kbm-green, #52682d);
     }
 
-    .quick-help-section li {
-      margin-bottom: 12px;
-      line-height: 1.6;
+    .quick-help-meta {
+      margin: 0 0 1.5rem;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #4d5a48;
+    }
+
+    .quick-help-card {
+      padding: 1.5rem 1.75rem;
+      background: #fff;
+      border: 1px solid #d6dbc9;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(82, 104, 45, 0.08);
+    }
+
+    .quick-help-card-lead {
+      margin: 0 0 1.25rem;
+      font-size: 1.05rem;
+      line-height: 1.55;
+      color: #243015;
+    }
+
+    .quick-help-checkout-status {
+      margin: 0 0 1rem;
+      padding: 0.75rem 0.85rem;
+      border-radius: 10px;
+      font-size: var(--text-base, 1rem);
+      line-height: 1.5;
+    }
+
+    .quick-help-checkout-status[hidden] {
+      display: none;
+    }
+
+    .quick-help-checkout-status--info {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e3a8a;
+    }
+
+    .quick-help-checkout-status--success {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+    }
+
+    .quick-help-checkout-status--error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #991b1b;
     }
 
     .quick-help-cta {
-      text-align: center;
-      margin: 24px 0;
-    }
-
-    .quick-help-cta .kbm-button {
-      display: inline-block;
-    }
-
-    .quick-help-cta .quick-help-reassurance {
-      margin-top: 8px;
-      font-size: 14px;
-      color: #777;
-      font-style: italic;
-    }
-
-    .quick-help-cta .quick-help-availability {
-      margin-top: 6px;
-      font-size: 14px;
-      color: #52682d;
-      font-weight: 500;
-    }
-
-    .container .quick-help-final {
-      text-align: center;
-      font-size: 18px;
-      margin: 20px 0 10px;
+      display: block;
+      width: 100%;
+      background-color: #c96a4a;
+      color: #fff;
+      padding: 0.85rem 1.5rem;
+      border-radius: 8px;
+      border: none;
+      font: inherit;
       font-weight: 600;
+      font-size: 1.05rem;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(201, 106, 74, 0.35);
     }
-    .quick-help-image-card {
-  background: #ffffff;
-  padding: 8px;
-  border-radius: 14px;
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.18);
-}
 
-.quick-help-image-card img {
-  width: 100%;
-  display: block;
-  border-radius: 10px;
-}
-  </style>
+    .quick-help-cta:hover {
+      background-color: #b85c3e;
+    }
 
-  <script is:inline>
-    (function () {
-      var bookUrl = "https://tidycal.com/quick-help/quick-help-session";
-      function wireCard(el) {
-        if (!el) return;
-        el.addEventListener("click", function () {
-          window.location.href = bookUrl;
-        });
-        el.setAttribute("role", "link");
-        el.setAttribute("tabindex", "0");
-        el.addEventListener("keydown", function (e) {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            window.location.href = bookUrl;
-          }
-        });
+    .quick-help-cta:disabled {
+      opacity: 0.65;
+      cursor: wait;
+    }
+
+    .quick-help-back {
+      margin: 1.25rem 0 0;
+      font-size: 0.95rem;
+    }
+
+    .quick-help-back a {
+      color: var(--kbm-green, #52682d);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .quick-help-back a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 640px) {
+      .quick-help-page {
+        padding: 0.25rem 1.25rem 2.5rem;
       }
-      document.querySelectorAll(".quick-help-facts-row .fact").forEach(wireCard);
-      document.querySelectorAll(".quick-help-image-card").forEach(wireCard);
-    })();
-  </script>
-</SalesLayout>
+
+      .quick-help-card {
+        padding: 1.25rem 1.35rem;
+      }
+    }
+  </style>
+</Layout>

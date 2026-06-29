@@ -35,7 +35,6 @@ import CardRibbon from "../../components/ui/CardRibbon.astro";
       </div>
 
       <div class="work-cards">
-        <div class="work-with-sue-grid__col col-md-4">
           <div class="kbm-card work-with-sue-card work-card">
             <img src="/images/help.svg" alt="" class="card-icon" width="60" height="60" />
             <h2>Quick Help Session</h2>
@@ -52,9 +51,7 @@ import CardRibbon from "../../components/ui/CardRibbon.astro";
               <a href="/help-hub/quick-help" class="kbm-button">Book a 15-Minute Call</a>
             </div>
           </div>
-        </div>
 
-        <div class="work-with-sue-grid__col col-md-4">
           <div class="kbm-card work-with-sue-card work-card work-card--featured">
             <CardRibbon label="Most Popular" className="kbm-card-ribbon--popular" />
             <div class="work-card__icon" aria-hidden="true">
@@ -75,9 +72,7 @@ import CardRibbon from "../../components/ui/CardRibbon.astro";
               <a href="/contact" class="kbm-button">Get Help With Your Pattern</a>
             </div>
           </div>
-        </div>
 
-        <div class="work-with-sue-grid__col col-md-4">
           <div class="kbm-card work-with-sue-card work-card">
             <img src="/images/help.svg" alt="" class="card-icon" width="60" height="60" />
             <h2>Project Support Sprint</h2>
@@ -97,14 +92,6 @@ import CardRibbon from "../../components/ui/CardRibbon.astro";
               </a>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div class="work-with-sue__below-text">
-        <p class="work-with-sue-closing">
-          Not sure which option is the best fit? Start with the one that feels closest to the help
-          you need right now.
-        </p>
       </div>
     </div>
   </section>
@@ -113,6 +100,8 @@ import CardRibbon from "../../components/ui/CardRibbon.astro";
     .work-with-sue-inner {
       max-width: 1080px;
       margin: 0 auto;
+      display: flow-root;
+      padding-bottom: 3rem;
     }
 
     .work-with-sue-hero {
@@ -207,27 +196,33 @@ import CardRibbon from "../../components/ui/CardRibbon.astro";
       font-size: var(--text-base);
     }
 
-    /* Three-up on desktop (~Bootstrap col-md-4); stack on small screens */
+    /* Three-up on desktop; stack on small screens */
     .work-cards {
       display: flex;
-      flex-wrap: wrap;
-      align-items: stretch;
+      flex-direction: column;
       gap: 2rem;
-      margin-bottom: 3rem;
+      width: 100%;
+      margin: 0;
     }
 
-    .work-with-sue-grid__col {
-      flex: 1 1 100%;
-      min-width: 0;
-    }
-
-    .work-with-sue-grid__col .kbm-card {
-      height: 100%;
+    .work-with-sue-page .work-cards > .kbm-card {
+      flex: 1 1 auto;
+      width: 100%;
+      height: auto;
+      min-height: 0;
+      margin: 0;
+      transform: none;
     }
 
     @media (min-width: 768px) {
-      .work-with-sue-grid__col.col-md-4 {
+      .work-cards {
+        flex-direction: row;
+        align-items: stretch;
+      }
+
+      .work-with-sue-page .work-cards > .kbm-card {
         flex: 1 1 0;
+        min-width: 0;
       }
     }
 
@@ -242,6 +237,7 @@ import CardRibbon from "../../components/ui/CardRibbon.astro";
 
     .work-with-sue-page .work-with-sue-card.kbm-card:hover {
       transform: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
     .work-with-sue-page .work-card--featured:hover {
@@ -316,13 +312,38 @@ import CardRibbon from "../../components/ui/CardRibbon.astro";
     .work-with-sue-card .card-button .kbm-button {
       display: inline-flex;
     }
+  </style>
 
-    .work-with-sue-closing {
+  <style is:global>
+    .work-with-sue-page .work-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      width: 100%;
       margin: 0;
-      max-width: 44rem;
-      color: #243015;
-      line-height: 1.6;
-      font-size: var(--text-base);
+    }
+
+    @media (min-width: 768px) {
+      .work-with-sue-page .work-cards {
+        flex-direction: row;
+        align-items: stretch;
+      }
+
+      .work-with-sue-page .work-cards > .kbm-card {
+        flex: 1 1 0;
+        min-width: 0;
+      }
+    }
+
+    .work-with-sue-page .work-cards > .kbm-card {
+      height: auto !important;
+      min-height: 0 !important;
+      transform: none !important;
+      margin: 0;
+    }
+
+    .work-with-sue-page .work-cards > .kbm-card:hover {
+      transform: none !important;
     }
   </style>
 </Layout>
