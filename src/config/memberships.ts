@@ -42,6 +42,12 @@ export const MEMBERSHIPS = {
       memberstackPlanId: "pln_kin-membership-annual-premium-tn5b0cxj",
       memberstackPriceId: "prc_pemium-annual-membership-vh4g0cr7",
     },
+
+    /** Grandfathered annual basic plan still attached to some live Memberstack members. */
+    legacyBasicAnnual: {
+      name: "KIN Membership Annual (legacy)",
+      memberstackPlanId: "pln_kin-membership-annual-qf9g01et",
+    },
   } as const;
   
   export const MEMBER_PLAN_IDS = [
@@ -50,6 +56,7 @@ export const MEMBERSHIPS = {
     MEMBERSHIPS.basicAnnual.memberstackPlanId,
     MEMBERSHIPS.premiumMonthly.memberstackPlanId,
     MEMBERSHIPS.premiumAnnual.memberstackPlanId,
+    MEMBERSHIPS.legacyBasicAnnual.memberstackPlanId,
   ] as const;
   
   export const PREMIUM_PLAN_IDS = [
@@ -58,13 +65,8 @@ export const MEMBERSHIPS = {
     MEMBERSHIPS.premiumAnnual.memberstackPlanId,
   ] as const;
 
-  /** Basic + premium plans that grant catalog video access (excludes beta). */
-  export const VIDEO_MEMBERSHIP_PLAN_IDS = [
-    MEMBERSHIPS.basicMonthly.memberstackPlanId,
-    MEMBERSHIPS.basicAnnual.memberstackPlanId,
-    MEMBERSHIPS.premiumMonthly.memberstackPlanId,
-    MEMBERSHIPS.premiumAnnual.memberstackPlanId,
-  ] as const;
+  /** Beta, basic, premium, and legacy plans that grant catalog video access. */
+  export const VIDEO_MEMBERSHIP_PLAN_IDS = MEMBER_PLAN_IDS;
   
   export const MEMBERSHIP_PRICE_IDS = {
     basicMonthly: MEMBERSHIPS.basicMonthly.memberstackPriceId,

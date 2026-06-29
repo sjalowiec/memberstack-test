@@ -221,10 +221,10 @@ const enableVideoChapterControls = hasCatalogChapters;
             const isMember = [...activePlanIds].some((id) => memberPlanIds.has(id));
 
             const rawKinAccess = member?.customFields?.["kin-access"];
-            const hasVideoAccess = hasKinVideoAccess(member);
+            const hasVideoAccess = hasKinVideoAccess(res);
 
             logKinVideoAccessDebug("videos/[id].jumpLinks", {
-              member,
+              member: res,
               rawKinAccess,
               finalHasVideoAccess: hasVideoAccess,
             });

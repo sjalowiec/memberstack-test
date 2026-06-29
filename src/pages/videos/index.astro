@@ -233,11 +233,11 @@ const forceMemberView =
         const rawKinAccess = member.customFields?.["kin-access"];
         const hasVideoAccess =
           typeof window.kbmHasKinVideoAccess === "function"
-            ? window.kbmHasKinVideoAccess(member)
+            ? window.kbmHasKinVideoAccess(res)
             : false;
         const finalHasVideoAccess = hasVideoAccess;
         window.kbmLogKinVideoAccessDebug?.("videos/index.catalog", {
-          member,
+          member: res,
           rawKinAccess,
           finalHasVideoAccess: finalHasVideoAccess,
         });

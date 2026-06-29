@@ -416,12 +416,14 @@ const isProduction =
         if (!window.$memberstackDom) return;
 
         try {
-          const { data: member } = await window.$memberstackDom.getCurrentMember();
+          const res = await window.$memberstackDom.getCurrentMember();
+          const data = res?.data;
+          const member = (data?.member ?? data) || null;
           const rawKinAccess = member?.customFields?.["kin-access"];
-          const hasVideoAccess = window.kbmHasKinVideoAccess?.(member) ?? false;
+          const hasVideoAccess = window.kbmHasKinVideoAccess?.(res) ?? false;
 
           window.kbmLogKinVideoAccessDebug?.("BaseLayout.ms-logged-in", {
-            member,
+            member: res,
             rawKinAccess,
             finalHasVideoAccess: hasVideoAccess,
           });

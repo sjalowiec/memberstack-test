@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { MEMBERSHIPS } from "../config/memberships";
-import { hasKinVideoAccess } from "./kinVideoAccess";
+import {
+  activeVideoPlanIdsFromMemberPayload,
+  hasKinVideoAccess,
+  VIDEO_MEMBERSHIP_PLAN_IDS,
+} from "./kinVideoAccess";
 
 describe("hasKinVideoAccess", () => {
   it("returns false for logged-in members with no plan", () => {
@@ -20,6 +24,7 @@ describe("hasKinVideoAccess", () => {
     expect(
       hasKinVideoAccess({
         data: {
+          auth: { email: "membertest@knititnow.com" },
           planConnections: [
             { planId: MEMBERSHIPS.basicMonthly.memberstackPlanId, status: "ACTIVE" },
           ],
@@ -32,6 +37,7 @@ describe("hasKinVideoAccess", () => {
     expect(
       hasKinVideoAccess({
         data: {
+          auth: { email: "sue@knititnow.com" },
           planConnections: [
             { planId: MEMBERSHIPS.premiumAnnual.memberstackPlanId, status: "ACTIVE" },
           ],
@@ -40,16 +46,56 @@ describe("hasKinVideoAccess", () => {
     ).toBe(true);
   });
 
-  it("returns false for beta plan only", () => {
+  it("returns true for active beta plan", () => {
     expect(
       hasKinVideoAccess({
         data: {
+          auth: { email: "betatest@knititnow.com" },
           planConnections: [
             { planId: MEMBERSHIPS.beta.memberstackPlanId, status: "ACTIVE" },
           ],
         },
       }),
-    ).toBe(false);
+    ).toBe(true);
+  });
+
+  it("returns true for legacy annual basic plan", () => {
+    expect(
+      hasKinVideoAccess({
+        data: {
+          planConnections: [
+            { planId: MEMBERSHIPS.legacyBasicAnnual.memberstackPlanId, status: "ACTIVE" },
+          ],
+        },
+      }),
+    ).toBe(true);
+  });
+
+  it("returns true when plan connection uses active=true without status", () => {
+    expect(
+      hasKinVideoAccess({
+        data: {
+          planConnections: [
+            { planId: MEMBERSHIPS.basicMonthly.memberstackPlanId, active: true },
+          ],
+        },
+      }),
+    ).toBe(true);
+  });
+
+  it("returns true for nested data.member payloads from getCurrentMember", () => {
+    expect(
+      hasKinVideoAccess({
+        data: {
+          member: {
+            auth: { email: "member@example.com" },
+            planConnections: [
+              { planId: MEMBERSHIPS.premiumMonthly.memberstackPlanId, status: "ACTIVE" },
+            ],
+          },
+        },
+      }),
+    ).toBe(true);
   });
 
   it("returns false for inactive basic plan", () => {
@@ -64,18 +110,31 @@ describe("hasKinVideoAccess", () => {
     ).toBe(false);
   });
 
-  it("returns true when member record is passed directly", () => {
-    expect(
-      hasKinVideoAccess({
-        planConnections: [
-          { planId: MEMBERSHIPS.basicAnnual.memberstackPlanId, status: "TRIALING" },
-        ],
-      }),
-    ).toBe(true);
-  });
-
   it("returns false for empty payload", () => {
     expect(hasKinVideoAccess(null)).toBe(false);
     expect(hasKinVideoAccess(undefined)).toBe(false);
+  });
+});
+
+describe("activeVideoPlanIdsFromMemberPayload", () => {
+  it("reads plan ids from plan, id, or planId fields", () => {
+    expect(
+      activeVideoPlanIdsFromMemberPayload({
+        data: {
+          planConnections: [{ plan: MEMBERSHIPS.beta.memberstackPlanId, status: "ACTIVE" }],
+        },
+      }),
+    ).toEqual([MEMBERSHIPS.beta.memberstackPlanId]);
+  });
+
+  it("lists every configured video membership plan id", () => {
+    expect(VIDEO_MEMBERSHIP_PLAN_IDS).toEqual([
+      MEMBERSHIPS.beta.memberstackPlanId,
+      MEMBERSHIPS.basicMonthly.memberstackPlanId,
+      MEMBERSHIPS.basicAnnual.memberstackPlanId,
+      MEMBERSHIPS.premiumMonthly.memberstackPlanId,
+      MEMBERSHIPS.premiumAnnual.memberstackPlanId,
+      MEMBERSHIPS.legacyBasicAnnual.memberstackPlanId,
+    ]);
   });
 });
