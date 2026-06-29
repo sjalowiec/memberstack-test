@@ -1,5 +1,10 @@
-import { getPatternData, normalizeSleevelessAudience } from "./patternStorage";
+import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
+import { getCurrentPattern, getPatternData, normalizeSleevelessAudience } from "./patternStorage";
 import { patternBuilderAvailableNeedlesRaw } from "./availableNeedlesMirrors";
+import { mergedPatternForDisplayFromSources } from "./sleevelessPatternBuilderMerge";
+
+/** Sleeveless tops default to hip length when older saves omit `style.length`. */
+const DEFAULT_SLEEVELESS_BUILDER_LENGTH = "top";
 
 /** Stable id per required check; extend when adding new rules. */
 export type PatternBuilderRequiredCheckId =
@@ -119,14 +124,13 @@ export function isSleevelessExpressFlowComplete(
   if (style.patternMode !== "express") return false;
 
   const fit = fitSection(patternData);
-  const sm = selectedMeasurements(fit);
   const audience =
     normalizeSleevelessAudience(style.recipientCategory) ||
     normalizeSleevelessAudience(fit.sizingChart);
   if (!audience) return false;
   if (!nonEmptyTrimmed(fit.selectedSize)) return false;
   if (!isFitEaseChoiceComplete(fit)) return false;
-  if (!isPositiveNumericMeasurement(sm.finished_bust_chest)) return false;
+  if (!hasPositiveFinishedBustChest(patternData)) return false;
 
   const stitchRaw = patternBuilderStitchGaugeRaw(patternData);
   const rowRaw = patternBuilderRowGaugeRaw(patternData);
@@ -139,7 +143,7 @@ export function isSleevelessExpressFlowComplete(
 
 /**
  * Custom Build (`style.patternMode` === `"custom-build"`) — same readiness rules as Express;
- * chart-derived `fit.selectedMeasurements` only (not `cbMeasurementOverrides`).
+ * bust may come from chart `selectedMeasurements` or diagram `cbMeasurementOverrides.chestBust`.
  */
 export function isSleevelessCustomBuildFlowComplete(
   patternData: Record<string, unknown> = typeof localStorage !== "undefined" ? getPatternData() : {},
@@ -148,14 +152,13 @@ export function isSleevelessCustomBuildFlowComplete(
   if (style.patternMode !== "custom-build") return false;
 
   const fit = fitSection(patternData);
-  const sm = selectedMeasurements(fit);
   const audience =
     normalizeSleevelessAudience(style.recipientCategory) ||
     normalizeSleevelessAudience(fit.sizingChart);
   if (!audience) return false;
   if (!nonEmptyTrimmed(fit.selectedSize)) return false;
   if (!isFitEaseChoiceComplete(fit)) return false;
-  if (!isPositiveNumericMeasurement(sm.finished_bust_chest)) return false;
+  if (!hasPositiveFinishedBustChest(patternData)) return false;
 
   const stitchRaw = patternBuilderStitchGaugeRaw(patternData);
   const rowRaw = patternBuilderRowGaugeRaw(patternData);
@@ -182,6 +185,28 @@ function selectedMeasurements(fit: Record<string, unknown>): Record<string, unkn
   return {};
 }
 
+function hasPositiveFinishedBustChest(patternData: Record<string, unknown>): boolean {
+  return resolveEffectiveFinishedBustInches(patternData) !== undefined;
+}
+
+/**
+ * Builder validation must see canonical draft + `patternBuilderData` mirrors — saved projects
+ * often store bust in `cbMeasurementOverrides.chestBust` while the diagram shows Finished Bust Circ.
+ */
+function resolvePatternBuilderValidationData(
+  patternBuilderData: Record<string, unknown>,
+): Record<string, unknown> {
+  if (typeof localStorage === "undefined") return patternBuilderData;
+  try {
+    return mergedPatternForDisplayFromSources(
+      getCurrentPattern() as unknown as Record<string, unknown>,
+      patternBuilderData,
+    );
+  } catch {
+    return patternBuilderData;
+  }
+}
+
 /**
  * Required fields for building / running pattern math (design, fit, gauge, needles).
  * Optional yarn notes / weight are never listed as missing.
@@ -189,10 +214,13 @@ function selectedMeasurements(fit: Record<string, unknown>): Record<string, unkn
 export function validatePatternBuilderRequired(
   patternData: Record<string, unknown> = typeof localStorage !== "undefined" ? getPatternData() : {},
 ): PatternBuilderRequiredValidation {
-  const fit = fitSection(patternData);
-  const sm = selectedMeasurements(fit);
-  const stitchRaw = patternBuilderStitchGaugeRaw(patternData);
-  const rowRaw = patternBuilderRowGaugeRaw(patternData);
+  const data =
+    typeof localStorage !== "undefined"
+      ? resolvePatternBuilderValidationData(patternData)
+      : patternData;
+  const fit = fitSection(data);
+  const stitchRaw = patternBuilderStitchGaugeRaw(data);
+  const rowRaw = patternBuilderRowGaugeRaw(data);
 
   const checks: {
     id: PatternBuilderRequiredCheckId;
@@ -205,9 +233,9 @@ export function validatePatternBuilderRequired(
       label: "Complete required design choices",
       href: PATTERN_BUILDER_DESIGN_HREF,
       complete:
-        isSleevelessBuilderNavStyleComplete(patternData) ||
-        isSleevelessExpressFlowComplete(patternData) ||
-        isSleevelessCustomBuildFlowComplete(patternData),
+        isSleevelessBuilderNavStyleComplete(data) ||
+        isSleevelessExpressFlowComplete(data) ||
+        isSleevelessCustomBuildFlowComplete(data),
     },
     {
       id: "selected_size",
@@ -225,7 +253,7 @@ export function validatePatternBuilderRequired(
       id: "finished_bust_chest",
       label: "Confirm your bust/chest measurement",
       href: PATTERN_BUILDER_FINE_TUNE_HREF,
-      complete: isPositiveNumericMeasurement(sm.finished_bust_chest),
+      complete: hasPositiveFinishedBustChest(data),
     },
     {
       id: "gaugeStitchesPerInch",
@@ -243,7 +271,7 @@ export function validatePatternBuilderRequired(
       id: "availableNeedles",
       label: "Enter available needles",
       href: PATTERN_BUILDER_YARN_NEEDLES_HREF,
-      complete: isPositiveNumericMeasurement(patternBuilderAvailableNeedlesRaw(patternData)),
+      complete: isPositiveNumericMeasurement(patternBuilderAvailableNeedlesRaw(data)),
     },
   ];
 
@@ -291,8 +319,7 @@ export function isPatternBuilderFitComplete(
   if (!fit.selectedSize || String(fit.selectedSize).trim() === "") return false;
   const ease = fit.easeChoice ?? fit.fitChoice;
   if (ease !== "close" && ease !== "standard" && ease !== "relaxed") return false;
-  const sm = selectedMeasurements(fit);
-  return isPositiveNumericMeasurement(sm.finished_bust_chest);
+  return hasPositiveFinishedBustChest(patternData);
 }
 
 function yarnGaugeMachineRaw(data: Record<string, unknown>): Record<string, unknown> {
@@ -318,7 +345,8 @@ export function isSleevelessBuilderNavStyleComplete(
   if (!audience) return false;
   if (!nonEmptyTrimmed(style.bodyShape)) return false;
   if (!nonEmptyTrimmed(style.frontStyle)) return false;
-  if (!nonEmptyTrimmed(style.length)) return false;
+  const length = nonEmptyTrimmed(style.length) ? style.length : DEFAULT_SLEEVELESS_BUILDER_LENGTH;
+  if (!nonEmptyTrimmed(length)) return false;
   if (!nonEmptyTrimmed(style.neckline)) return false;
   return true;
 }
