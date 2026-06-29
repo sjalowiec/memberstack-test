@@ -1,0 +1,708 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 68,
+    "title": "Ear Flap Collection",
+    "slug": "ear-flap-collection",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_68_ear_flap_collection.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Join the fun!",
+      "slug": "join-the-fun",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 427,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n\r\n</style>\r\n\r\n\t\r\n\t\tPlan, knit and complete an Ear Flap Hat. This collection is designed for all knitters, no matter what your skill level.<br>Included is the Ear Flap Hat Collection of patterns<br>More than just a rectangle, this hat isn't hard to knit. The plan is to take it step-by-step. The goal is to FINISH\r\n\r\n\t\t<ul>\r\n\t\t\t<li>Choose your size</li>\r\n\t\t\t<li>Choose your yarn</li>\r\n\t\t\t<li>Plan YOUR design (no changes mid-stream)</li>\r\n\t\t\t<li>Focus on each section</li>\r\n\t\t\t<li>Learn/practice techniques</li>\r\n\t\t\t<li>FINISH your hat</li>\r\n\t\t</ul>\r\n\t\r\n\t<div class=\"zoom\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/68/eon.jpg\">\r\n</div>\r\n\r\n<br>\r\n\t<div class=\"container-border\">\r\n\t\t<span class=\"section-title MachineknittingColor\">Are you NEW?</span><br>Knit the pattern \"as is\" focusing on learning/perfecting techniques used for the design. Don't over-complicate things. <br><b>The goal is to FINISH the hat, learn and practice new techniques and build your confidence with your machine</b><br>We suggest you knit one of gathered crown styles.<br></div>\r\n\t<div class=\"container-border\">\r\n\t\t<span class=\"section-title MachineknittingColor\">Ready for an adventure?</span><br>Use this simple pattern as a canvas for your creativity.<br>Challenge yourself to try a new-to-you stitch pattern technique. How about Fairisle?<br>How about combining hand and machine knitting? <br>Because the shaping is basic, you can <b>focus on the new technique and expand your skills.</b><br></div>\r\n\r\n\r\n<br>\r\n<h4>Don't forget the Knit it Now <a href=\"/knit/challenge/164/hat-challenge\">2020 Hat challenge</h4><center>Knit for charity and WIN.</center>\r\n<img class=\"img-thumbnail\" src=\"https://www.knititnow.com/path/images/56/classroom_hat.jpg\"></a>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 5781,
+              "order": 1
+            }
+          ],
+          "title": "Get knitting!",
+          "slug": "get-knitting",
+          "order": 2,
+          "legacy": {
+            "assignId": 3869,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Swatching is not Optional!",
+      "slug": "swatching-is-not-optional",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 430,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n\r\n</style>\r\n\r\n\r\n\r\n<strong>You are making progress!</strong> ... we've spent a lot of time planning, practicing and thinking about knitting ... are you ready to do some \"real knitting\"?<br><strong><h3>DON'T SKIP THIS SECTION!</h3></strong>Your success with this course AND your success with your knitting machine depends on your understanding and mastering the art of knitting gauge swatches.<br><b>Without a swatch we are knitting in the dark.</b>\r\n<ul>\r\n<li>How is the final sweater going to feel in the yarn and stitch pattern you've chosen?</li>\r\n<li>Do you have enough yarn?</li>\r\n<li>Do you have enough needles on your machine for the size you chose?</li>\r\n</ul>\r\n<b>PLUS you must know YOUR gauge to create your custom pattern</b>\r\n\r\n<div class=\"text-center container-border\">\r\nDo you struggle with swatching?  Can you knit to the correct size every time?<br>You need the complete Swatching Course<br>\r\n<span class=\"label label-warning\">FREE for subscribers</span><br><a href=\"/challenge/12/course/swatches-tension-and-gauge\"><img src=\"/challenge/images/v2/68/gauge_swatch_tension/gauge.png\"></a>\r\n</div>\r\n\r\n\r\n</div>\r\n\r\n\r\n\r\n\r\n\r\n<div class=\"text-center\">\r\n<p style=\"text-align: center;\"><strong>SWATCHING IS NOT OPTIONAL</strong></p>\r\n<img class=\"img-thumbnail\" src=\"https://www.knititnow.com/images/blog_images/2017/swatching_is_not_optional.jpg\" /></div>\r\n\r\n\r\n</div>\r\n",
+              "legacyComponentId": 5786,
+              "order": 1
+            }
+          ],
+          "title": "Step 1: Your Success Depends on this",
+          "slug": "step-1-your-success-depends-on-this",
+          "order": 1,
+          "legacy": {
+            "assignId": 3872,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\"><b>If you haven't used your chosen yarn before, how do you know the best tension to knit your blanket? </div></b>\r\n\r\nKnitters tend to use the terms \"tension swatch\" and \"gauge swatch\" interchangeably, lets take a look at both.",
+              "legacyComponentId": 5787,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"cleanwell\">\r\n\r\n<h4><strong>GAUGE SWATCH</strong></h4>\r\nThe <strong>gauge swatch</strong> is the \"official\" swatch used when designing a garment.\r\n<br>\r\nIt is knit at a specific size, marked for accurate stitch and row measurement and \"dressed\" as the final garment will be treated.<br>\r\n<blockquote class=\"smallblock\">\r\n<em>TIP: Whatever method you use to create a swatch, the key is to correctly measure it and calculate your gauge.</em></blockquote>\r\n<img src=\"/challenge/images/v2/68/swatch_measure.jpg\" />\r\n</div>",
+              "legacyComponentId": 5788,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"cleanwell\">\r\n\r\n<h4><strong>TENSION SWATCH</strong></h4>(AKA \"Get Acquainted Swatch)<br><em>When I pick up a new cone of yarn, I can't wait to thread up my machine and see what the yarn looks like.   From the initial cast on, I start guessing what setting on my tension dial I need to use.  I knit a few inches and reach down and start to feel the resulting fabric. <br>Once I get a feel for the yarn (what machine, general tension setting at stockinette, etc) I create a<strong> tension swatch</strong>.  This helps me fine-tune the tension needed to achieve the fabric I like and allows me to play with various techniques.  <strong>I'm often very surprised that a yarn looks great in tuck, and awful in slip</strong>, for example.  Adding a few eyelets here and there tells me if the yarn will work up in lace.</em><br>Let's practice knitting a <strong>tension swatch.</strong>\r\n</div>",
+              "legacyComponentId": 5789,
+              "order": 5
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<ol class=\"instruction-list\">\r\n<li>Play!</li>\r\n<li>Start knitting stockenette at the tightest tension that will knit.  (If the tension is too tight, you'll see stitches that don't form properly.</li>\r\n<li>Knit 2-4 inches. Knit a marker row (change colors, work a few eyelets across the row or knit a sewing thread in with the main yarn)</li>\r\n<li>Keep knitting sections, marking the tension dial number in each section.  Knit the last section as loosely as possiblle, even if you think this will be too loose ... I'm often very pleasantly surprised at the result.</li>\r\n<li>Transfer every other needle to out of work postion and knit a section - put all needles back into work.</li>\r\n<li>Work a simple tuck, or slip, or any stitch pattern of your choice ... base your tension dial setting on the stockinette sections you just knit.</li>\r\n</ol>\r\n<blockquote class=\"smallblock\">The point of this exercise is to put the yarn through it's paces ... ignite your creativity, and get a feel for what the yarn can do.  If you don't have a huge cone, you can always re-wind this knitting. At this point, you probably know exactly what you want to do with this yarn.  Knit your Gauge Swatch, dress it and and you are ready to design and knit your sweater.</blockquote>\r\n\r\n<img src=\"/challenge/images/v2/68/tension_swatch.jpg\" />\r\n\r\n",
+              "legacyComponentId": 5790,
+              "order": 7
+            },
+            {
+              "type": "video",
+              "vimeoId": "391663684",
+              "title": "Watch as we knit a 'Get Acquainted' Swatch",
+              "legacyComponentId": 5791,
+              "order": 8
+            }
+          ],
+          "title": "Step 2: Gauge swatch verses Tension Swatch",
+          "slug": "step-2-gauge-swatch-verses-tension-swatch",
+          "order": 3,
+          "legacy": {
+            "assignId": 3873,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Hand knitters use the excuse \"It takes too much time to knit a swatch\", then they are often disappointed that their knitting doesn't fit.<br>\r\n<b>Machine knitters, rejoice!</b>  Knitting a swatch is fast and the information it supplies is invaluable ...even for something as simple as a blanket.",
+              "legacyComponentId": 5792,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357273",
+              "title": null,
+              "legacyComponentId": 5793,
+              "order": 2
+            }
+          ],
+          "title": "Step 3: Knitting swatches",
+          "slug": "step-3-knitting-swatches",
+          "order": 4,
+          "legacy": {
+            "assignId": 3874,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Ear Flaps",
+      "slug": "ear-flaps",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 428,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nEar Flap hats are worn differently than other hat styles.<br>\r\n<div class=\"lead\">Take a few minutes to review these differences BEFORE you size your pattern</div>\r\n",
+              "legacyComponentId": 5783,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/68/earflap/flipbook4.jpg",
+                  "caption": "The body of an Ear Flap Hat needs to be shorter than the other styles."
+                },
+                {
+                  "src": "/challenge/images/v2/68/earflap/flipbook1.jpg",
+                  "caption": "<ol>\r\n<li>Measure the circumference (not too tight, but snug enough to stay on in the wind)</li>\r\n<li>Determine the desired length (long enough to cover the ears, extra long for fashion)</li>\r\n</ol>"
+                },
+                {
+                  "src": "/challenge/images/v2/68/earflap/flipbook2.jpg",
+                  "caption": "Without Ear Flaps, the hat needs to be long enough to cover the ears.  It can also be adjustable by folding up the brim"
+                },
+                {
+                  "src": "/challenge/images/v2/68/earflap/flipbook3.jpg",
+                  "caption": "The body of an Ear Flap Hat doesn't cover the ears.  It also rides higher on the head, exposing more of the face and neck."
+                },
+                {
+                  "src": "/challenge/images/v2/68/earflap/flipbook4.jpg",
+                  "caption": "The body of an Ear Flap Hat needs to be shorter than the other styles."
+                },
+                {
+                  "src": "/challenge/images/v2/68/earflap/flipbook5.jpg",
+                  "caption": "Considering how this hat is worn, adjust your Perfect Fit pattern with your measurements. <br>\r\nAlso consider the position of the flaps as you re-hang them on the machine. Measure to make sure the flaps cover the ears."
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 5794,
+              "order": 2
+            }
+          ],
+          "title": "Ear Flap Hat Sizing",
+          "slug": "ear-flap-hat-sizing",
+          "order": 1,
+          "legacy": {
+            "assignId": 3867,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The pattern suggests decreasing 3 stitches from the edge of the flap and allowing the edge to roll. Use whatever decrease method you like.<br>",
+              "legacyComponentId": 5798,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "401472745",
+              "title": "Knit the Flaps and Ties",
+              "legacyComponentId": 5795,
+              "order": 2
+            }
+          ],
+          "title": "Single Flaps and Ties",
+          "slug": "single-flaps-and-ties",
+          "order": 2,
+          "legacy": {
+            "assignId": 3875,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\n<b>Knit doubled ear flaps in one piece, using short row shaping</b><br>\r\n<ul>\r\n<li>Scrap on according to your pattern</li>\r\n<li>Knit straight as instructed (for length)</li>\r\n<li>Shape the flap with short row decreases and increases</li>\r\n<li>Knit straight as instructed</li>\r\n<li>Pick up the live cast on stitches</li>\r\n<li>Knit 1 row</li>\r\n<li>Scrap off</li>\r\n</ul>\r\n\r\n<b>When it comes time to re-hang the flaps on the machine:</b>\r\n<ul>\r\n<li>If you knit the extra row, notice the purl bumps and identify the public and private sides of the flaps.</li>\r\n<li>You may choose to rip out the extra row after re-hanging the flaps</li>\r\n</ul>\r\n\r\n<b>Finishing:</b><br>\r\nNeatly seam the straight edges<br><b>Options:</b><br>\r\nIf you prefer a less pointed flap, knit fewer rows in the short row decrease/increase sections.  Be sure to add rows to the straight section for overall flap length<br><b>Ties:</b><br>\r\n<ul>\r\n<li>\r\nPick up 3-4 stitches from the \"point\" of the flap and knit I-Cord ties.</li>\r\n<li>OR Knit the I-Cord and neatly stitch to the points</li>\r\n</ul>\r\n\r\n\r\n\r\n<center><img src=\"/challenge/images/v2/68/earflap2_legend.jpg\"><br>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/68/sr_earflap2.jpg\"></center>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 5810,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "407719543",
+              "title": "Ear Flaps with Short Rows",
+              "legacyComponentId": 5814,
+              "order": 2
+            }
+          ],
+          "title": "Double (Short Row) Flaps",
+          "slug": "double-short-row-flaps",
+          "order": 3,
+          "legacy": {
+            "assignId": 3893,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nBy starting the flap with an open cast on, you can rehang the live stitches on the needlebed, then cast on and knit the body of the hat for a seam less join.<br><img class=\"img-thumbnail\" src=\"/challenge/images/v2/68/hang_hat.jpg\">\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/68/flap_example.jpg\">\r\n\r\n\r\n",
+              "legacyComponentId": 5796,
+              "order": 1
+            },
+            {
+              "type": "exerciseAccordion",
+              "sections": [
+                {
+                  "title": "Tip 1: Right and Wrong Side",
+                  "bodyHtml": "When re-hanging the flaps take care to hang them with the wrong side (private side) facing.<br>If you look closely in the image above, My flaps are hanging with the right side (public side) facing.  <br>\r\nI chose to work a few rows of garter stitch (with a garter bar) between the ear flap and hat body.<br>\r\n<img src=\"/challenge/images/v2/68/garter_ridges.jpg\">",
+                  "iconSrc": "/challenge/images/v2/68/arrow1.png"
+                },
+                {
+                  "title": "Tip 2: <i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Re-Hang Cast on Stitches",
+                  "bodyHtml": "Have you ever noticed that when you rehang the cast on stitches (hung hem or these earflaps) there is one less stitch than you cast on? Mystery solved!  Watch and see why.<br><div class=\"row-fluid\">\r\n\r\n<div class='embed-responsive embed-responsive-16by9'>\n<iframe src='https://player.vimeo.com/video/401989093' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\r\n</div>",
+                  "iconSrc": "/challenge/images/v2/68/arrow2.png"
+                },
+                {
+                  "title": "Tip 3: Modified Cast On",
+                  "bodyHtml": "After rehanging the ear flaps, you may want to ONLY cast on over the empty needles. In other words, if you are working an e-wrap cast on for the hat edge, don't e-wrap over the flap needles.  This will ensure uninterrupted knitting between the flap and the body of the hat.<br><em>Notice in the image above, there are green <a data-GlossaryId='339' class='glossaryhelp'>Cast on Rags <i class='fa fa-question-circle' aria-hidden='true'></i></a>\r\n over the hat edge needles and the flap stitches are hung and ready to knit.</em>",
+                  "iconSrc": "/challenge/images/v2/68/arrow3.png"
+                },
+                {
+                  "title": "Tip 4: Hem Options",
+                  "bodyHtml": "Design your own pattern by choosing an optional cuff for the hat body.\r\n<ol>\r\n<li>Simply E-wrap cast on and let the hem roll</li>\r\n<li>Work an e-wrap cast on and knit a few rows BEFORE hanging the ear flaps</li>\r\n<li>Hang the ear flaps, then cast on in ribbing. Knit 1-3\" in ribbing, then transfer the stitches to the stitch pattern of your choice</li>\r\n<li>Cast on and hang a hem BEFORE hanging the ear flaps</li>\r\n<li>Knit a simple (stretchy) cast on and finish the brim edge with crochet</li>\r\n<li>knit a simple (stretchy) cast on and finish the brim edge with I-cord</li>\r\n</ol>",
+                  "iconSrc": "/challenge/images/v2/68/arrow4.png"
+                },
+                {
+                  "title": "Tip 5: Ties",
+                  "bodyHtml": "<ul>\r\n<li>We used\r\n<a data-GlossaryId='292' class='glossaryhelp'> I-Cord <i class='fa fa-question-circle' aria-hidden='true'></i></a>  for our samples</li>\r\n<li>If you crochet, you may want to crochet the ties</li>\r\n<li>Consider a \r\n<a data-GlossaryId='345' class='glossaryhelp'>Twisted Cord <i class='fa fa-question-circle' aria-hidden='true'></i></a> for the ties</li>\r\n<li>Add a small pompom to the ends of the ties</li>\r\n</ul>",
+                  "iconSrc": "/challenge/images/v2/68/arrow5.png"
+                }
+              ],
+              "legacy": {
+                "showText": null,
+                "size": null
+              },
+              "legacyComponentId": 5797,
+              "order": 2
+            }
+          ],
+          "title": "Join the Flaps to the Hat",
+          "slug": "join-the-flaps-to-the-hat",
+          "order": 4,
+          "legacy": {
+            "assignId": 3877,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h4>If you choose to knit a hung hem for the lower edge of your hat</h4>\r\n<div>\r\n\r\n    \r\n        When building your pattern be sure to add to the length \"E\". <br>In other words, if you want your finished hat to be 10\" with a 1\" hem, build your pattern so \"E\" equals 11\"\r\n        \r\n        <img src=\"/challenge/images/v2/68/hat_temp1.jpg\">\r\n        \r\n    \r\n",
+              "legacyComponentId": 5813,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<h4>Knit a hem and insert the earflaps</h4>\r\n\r\n\t\t\t\r\n\r\n\t\t\t\t<ol style=\"line-height:140%\">\r\n\t\t\t\t\t<li>Cast on with waste yarn and ravel cord (open cast on)</li>\r\n\t\t\t\t\t<li>Knit the desired hem depth (1st half of the hem)</li>\r\n\t\t\t\t\t<li>Knit a turning row</li>\r\n\t\t\t\t\t<li>Remove the knitting from the machine (scrap off or garter bar)</li>\r\n\t\t\t\t\t<li>Hang the flaps according to the pattern (Note the public and private sides)</li>\r\n\t\t\t\t\t<li>Rehang the hem stitches</li>\r\n\t\t\t\t\t<li>Knit the 2nd half of the band</li>\r\n\t\t\t\t\t<li>Pick up the open hem stitches to complete the hem</li>\r\n\t\t\t\t\t<li>Continue knitting the hat</li>\r\n\t\t\t\t</ol>\r\n\t\t\t\r\n\r\n\t\t\t <img src=\"/challenge/images/v2/68/hung_hem_earflap1.jpg\">\r\n\t\t\r\n<br>\r\n<h4>Although the following images show the doubled ear flaps, the single ear flaps can be inserted in a hung hem in exactly the same manner</h4>",
+              "legacyComponentId": 5812,
+              "order": 2
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/68/earflap_hung_hem/1.jpg",
+                  "caption": "<ul>\r\n<li>The ear flaps were knit separately and scrapped off. Notice the orange scrap yarn.</li>\r\n<li>The hung hem was started with waste yarn (orange) and ravel cord</li>\r\n<li>The ear flaps were inserted in the hem turning row</li>\r\n<li>The hem was then completed and picked up</li>\r\n</ul>"
+                },
+                {
+                  "src": "/challenge/images/v2/68/earflap_hung_hem/1a.jpg",
+                  "caption": "Start by knitting the first half of the band (not shown). I removed the band on a garter bar, but you could use a circular hand knitting needle or scrap off."
+                },
+                {
+                  "src": "/challenge/images/v2/68/earflap_hung_hem/2.jpg",
+                  "caption": "Position the ear flaps with the PRIVATE (wrong) side facing.<br>I suggest you remove the waste yarn to confirm all the stitches have been picked up."
+                },
+                {
+                  "src": "/challenge/images/v2/68/earflap_hung_hem/3.jpg",
+                  "caption": "Rehang the first half of the band OVER the flaps. Make sure the PRIVATE (wrong) side is facing)"
+                },
+                {
+                  "src": "/challenge/images/v2/68/earflap_hung_hem/4.jpg",
+                  "caption": "Knit the 2nd half of the hem"
+                },
+                {
+                  "src": "/challenge/images/v2/68/earflap_hung_hem/9.jpg",
+                  "caption": "Pick up the open cast on stitches to close the hem. I recommend removing the waste yarn to confirm that all the stitches have been picked up."
+                },
+                {
+                  "src": "/challenge/images/v2/68/earflap_hung_hem/6.jpg",
+                  "caption": "Knit the remainder of the hat"
+                },
+                {
+                  "src": "/challenge/images/v2/68/earflap_hung_hem/1.jpg",
+                  "caption": "The flaps are inserted in the turning row of the hem."
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 5815,
+              "order": 3
+            }
+          ],
+          "title": "Flaps with Hung Hem",
+          "slug": "flaps-with-hung-hem",
+          "order": 5,
+          "legacy": {
+            "assignId": 3894,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Build your Custom Pattern",
+      "slug": "build-your-custom-pattern",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 429,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Knit it Now Perfect Fit™ Patterns are the next-generation of machine knitting patterns. <br><ul>\r\n<li>You choose the machine</li>\r\n<li>Your yarn choice</li>\r\n<li>Use YOUR gauge</li>\r\n<li>Use ANY stitch pattern</li>\r\n<li>Wide range of sizes, Perfect Fit™ for you</li>\r\n</ul>\r\n\r\nThe patterns are designed to display on an iPad or tablet, but can also be downloaded and printed in a clear PDF format.<br>We don't use cryptic abbreviations.  We take you step by step through the knitting process.  <b>Included are tips and tricks and videos embedded right where you need them.</b><br>Please take 2 minutes to watch this walk through, and get an overview of our patterns so you will be ready to hit the ground running when you start knitting.",
+              "legacyComponentId": 5784,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "402313052",
+              "title": "Building a Custom Pattern",
+              "legacyComponentId": 5785,
+              "order": 2
+            }
+          ],
+          "title": "New to Perfect Fit Patterns?",
+          "slug": "new-to-perfect-fit-patterns",
+          "order": 1,
+          "legacy": {
+            "assignId": 3871,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment 'Ear Flap Hat' (legacy garmentId 968).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3868",
+                "CHALLENGE_COMPONENTID": "5779",
+                "GARMENTID": "968",
+                "GARMENTTITLE": "Ear Flap Hat",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "pattern_name",
+                "REDIRECT_TO": "/challenge/68/Group/3870/item|Build your Custom Pattern: ",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "rows",
+                "SHOWPATTERNNAME": "1",
+                "SIZING_DATAMODEL_ELEMENT": "pattern_size",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "stitches",
+                "SWATCHROWS": "swatch_rows",
+                "SWATCHSTITCHES": "swatch_stitches",
+                "SWATCHWEIGHT": "swatch_weight",
+                "USESWATCHLOGIC": "no"
+              },
+              "legacyComponentId": 5779,
+              "order": 1
+            }
+          ],
+          "title": "Build your Custom Pattern",
+          "slug": "build-your-custom-pattern",
+          "order": 2,
+          "legacy": {
+            "assignId": 3868,
+            "blockType": "Pattern"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): pattern_name",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 3868 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3870",
+                "DATAMODEL_ELEMENTS": "pattern_name",
+                "DATAMODEL_REDIRECT": "3868",
+                "TYPEOF": "DataValidation"
+              },
+              "legacyComponentId": 5805,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'pattern_name'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3870",
+                "CHALLENGE_COMPONENTID": "5782",
+                "DATAMODEL_ICON": "fa fa-download",
+                "LABLE": "Your Pattern",
+                "PATTERN_DATAMODEL_ELEMENT": "pattern_name",
+                "VIEWHEIGHT": "0"
+              },
+              "legacyComponentId": 5782,
+              "order": 2
+            }
+          ],
+          "title": "Your Pattern",
+          "slug": "your-pattern",
+          "order": 3,
+          "legacy": {
+            "assignId": 3870,
+            "blockType": "DocumentPattern"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Crown Options",
+      "slug": "crown-options",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 431,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859005",
+              "title": "Gathered Top Finish",
+              "legacyComponentId": 5801,
+              "order": 1
+            }
+          ],
+          "title": "Gathered Top",
+          "slug": "gathered-top",
+          "order": 1,
+          "legacy": {
+            "assignId": 3878,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Although this classic crown top style is a bit tedious on the knitting machine, the resulting fit and decorative swirl are well worth the effort!",
+              "legacyComponentId": 5804,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "305566131",
+              "title": "Swirl Top Shaping",
+              "legacyComponentId": 5802,
+              "order": 2
+            }
+          ],
+          "title": "Swirl Top Shaping",
+          "slug": "swirl-top-shaping",
+          "order": 2,
+          "legacy": {
+            "assignId": 3880,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<center><img src=\"/supportingfiles/shaped_hat_diagram1.jpg\"><br>\r\nEach gore is worked individually and shaped with decreases. Plain or fancy decrease ... it's up to you!<br>Remember to work your decreases so there is a seaming stitch on the edge for neat seaming.\r\n<center><button data-vimeoid=\"151858447\" class=\"videopopup btn btn-default\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Basic Decreases</button>\r\n</center>\r\n<br>\r\n<div class=\"zoom\">\r\n<figure><img class=\"img-thumbnail\" src=\"/supportingfiles/shaping_example3.jpg\">\r\n<figcaption align=\"center\"><br>Basic stitch transfer 1 stitch from the edge</figcaption>\r\n</figure>\r\n</div>\r\n<div class=\"zoom\">\r\n<figure><img class=\"img-thumbnail\" src=\"/supportingfiles/shaping_example11.jpg\"><figcaption align=\"center\"><br>Full Fashioned Decrease 2 stitches from the edge</figcaption>\r\n</figure>\r\n</div>\r\n\r\n\r\n",
+              "legacyComponentId": 5803,
+              "order": 1
+            }
+          ],
+          "title": "4 Gore Shaping",
+          "slug": "4-gore-shaping",
+          "order": 3,
+          "legacy": {
+            "assignId": 3881,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Top Finishing",
+      "slug": "top-finishing",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 436,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/v2/68/untitled_first_frame.png",
+                  "caption": "<br><br>No matter what crown style, here are some fun embellishments for your hat tops.<br>\r\n<br>\r\nYarn Pompoms are classic.<br><br>\r\nCrochet corkscrews add a touch of whimsey."
+                },
+                {
+                  "src": "/v2/68/gathered_top.png",
+                  "caption": "<br><br>Gather the top and add a ruffle for a fast finish!<br><br>\r\n<ol>\r\n<li>Knit the desired length of the hat</li>\r\n<li>Create a row of eyelets  transferring every other stitch to it's neighbor</li>\r\n<li>Knit for 1\" - 1½\"</li>\r\n<li>Bind off</li>\r\n<li>Run a ribbon or I-cord thru the eyelets to gather</li>\r\n</ol>"
+                },
+                {
+                  "src": "/v2/68/loopy1.png",
+                  "caption": "<br><br>Make a loopy top:<br>\r\n1. Knit a length of I-Cord 10\"-12\" long ....."
+                },
+                {
+                  "src": "/v2/68/loopy.png",
+                  "caption": "<br><br>2. Gather the cord into loops and attach it to the top of the hat"
+                },
+                {
+                  "src": "/v2/68/dreadlocks.png",
+                  "caption": "<br><br>\"Dreadlocks\" can be fun!<br>\r\n1. Knit a long length of I-Cord  ....."
+                },
+                {
+                  "src": "/v2/68/dreadlocks1.png",
+                  "caption": "<br><br>2. Tie knots every 4\" - 6\"<br>\r\n3. Cut between the knots<br>\r\n4. Gather and attach the strands to the top of the hat"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 5819,
+              "order": 1
+            }
+          ],
+          "title": "Fun Finishing Ideas",
+          "slug": "fun-finishing-ideas",
+          "order": 1,
+          "legacy": {
+            "assignId": 3897,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/v2/68/hope5.jpg",
+                  "caption": "<br><br>Fellow knitter, Hope, shared her cute-as-can-be hat finished with a top knot."
+                },
+                {
+                  "src": "/v2/68/hope1a.jpg",
+                  "caption": "<br><br>Here's another with a smaller knot."
+                },
+                {
+                  "src": "/v2/68/hope2.jpg",
+                  "caption": "<br><br><ol>\r\n<li>Knit your hat for the desired length less about 1\"</li>\r\n<li>Transfer every other needle, putting the empty needles out of work</li>\r\n<li>Knit for 1\"</li>\r\n<li>Create eyelets by transferring every other needle, keeping the emptied needles in working position</li>\r\n<li>Hope reduced the bulk by transferring again, then moving all the stitches, filling the empty needles</li>\r\n<li>Knit for about 1\"</li>\r\n<li>Bind off</li>\r\n</ol>"
+                },
+                {
+                  "src": "/v2/68/hope3.jpg",
+                  "caption": "<br><br>Run a cord through the eyelets"
+                },
+                {
+                  "src": "/v2/68/hope4.jpg",
+                  "caption": "<br><br>Pull the cord tight and fasten to form the knot.<br><br>\r\nVoila!  A fast, fun embellishment to finish your gathered hat<br><br>\r\n<h4>Thank you, Hope, for the inspiration!</h4>"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 5820,
+              "order": 1
+            }
+          ],
+          "title": "Hope's Top Knot",
+          "slug": "hope-s-top-knot",
+          "order": 2,
+          "legacy": {
+            "assignId": 3896,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 7,
+    "videos": [
+      {
+        "vimeoId": "391663684",
+        "title": "Watch as we knit a 'Get Acquainted' Swatch",
+        "lessonSlug": "swatching-is-not-optional",
+        "blockSlug": "step-2-gauge-swatch-verses-tension-swatch"
+      },
+      {
+        "vimeoId": "178357273",
+        "title": null,
+        "lessonSlug": "swatching-is-not-optional",
+        "blockSlug": "step-3-knitting-swatches"
+      },
+      {
+        "vimeoId": "401472745",
+        "title": "Knit the Flaps and Ties",
+        "lessonSlug": "ear-flaps",
+        "blockSlug": "single-flaps-and-ties"
+      },
+      {
+        "vimeoId": "407719543",
+        "title": "Ear Flaps with Short Rows",
+        "lessonSlug": "ear-flaps",
+        "blockSlug": "double-short-row-flaps"
+      },
+      {
+        "vimeoId": "402313052",
+        "title": "Building a Custom Pattern",
+        "lessonSlug": "build-your-custom-pattern",
+        "blockSlug": "new-to-perfect-fit-patterns"
+      },
+      {
+        "vimeoId": "151859005",
+        "title": "Gathered Top Finish",
+        "lessonSlug": "crown-options",
+        "blockSlug": "gathered-top"
+      },
+      {
+        "vimeoId": "305566131",
+        "title": "Swirl Top Shaping",
+        "lessonSlug": "crown-options",
+        "blockSlug": "swirl-top-shaping"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

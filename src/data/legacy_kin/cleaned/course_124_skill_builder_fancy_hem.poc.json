@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 124,
+    "title": "Skill builder: Fancy Hem",
+    "slug": "skill-builder-fancy-hem",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_124_skill_builder_fancy_hem.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:10+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "",
+      "slug": "untitled",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 834,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n.background-div {\r\n    background-image: url('/path/images/4165/bullseye.png');\r\n    background-size: 50%; /* Ensures the image covers the entire div */\r\n    background-position: right center; /* Positions the background image to the right */\r\n    background-repeat: no-repeat; /* Prevents repeating the image */\r\n    width: 100%; /* Sets the width to 100% of the parent element */\r\n    height: 500px; /* Sets the height to 500px */\r\n    display: block; /* Allows the width to adjust based on the parent */\r\n}\r\n\r\n@media (max-width: 768px) {\r\n    .background-div {\r\n        background-size: contain; /* Adjusts background size for smaller screens */\r\n        background-position: right; /* Centers the background image */\r\n        height: auto; /* Adjust height automatically based on content */\r\n    }\r\n}\r\n</style>\r\n<div class=\"background-div\">\r\n\r\n\r\n\r\nIn this challenge you will knit at least 3 Fancy Hems. Each exercise will use different skills that may be new to you.<br><ul style=\"list-style-type: none; padding-left: 30; >\r\n    <li style=\"margin-right: 15px;\"><i class=\"fa-solid fa-circle-1 fa-xl learn\" style=\"vertical-align: middle;\"></i> The No-Transfer Picot Hem uses needles out of work to create a feminine edge for hems and bands. </li><br><li style=\"margin-right: 15px;\"><i class=\"fa-solid fa-circle-2 fa-xl learn\" style=\"vertical-align: middle;\"></i>  \"Best-Ever Picot Hem\" (the name says it all!)  It is created with manual transfers, but the results are worth the extra effort!<br></li>\r\n    <li style=\"margin-right: 15px;\"><i class=\"fa-solid fa-circle-3 fa-xl learn\" style=\"vertical-align: middle;\"></i> Scalloped hems use the hold or tuck setting on your machine and offer lots of options for being creative.</li><br></ul>\r\n<span class=\"handwriting\" style=\"font-size:2em\">Ditch the ribbing, try a hem</span>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/124/best_ever.jpg\"> Best Ever Picot Hem\r\n\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/124/thumb_163.jpg\"><br>No Transfer Picot Hem\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/124/scalloped.jpg\"><br>Scalloped Hem\r\n\r\n\t\r\n\r\n</div>\r\n</div>",
+              "legacyComponentId": 9740,
+              "order": 1
+            }
+          ],
+          "title": "The Goal of this Challenge:",
+          "slug": "the-goal-of-this-challenge",
+          "order": 1,
+          "legacy": {
+            "assignId": 6362,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<button class=\"btn btn-default\" onclick=\"window.print();\">Print</button><Br>\r\n    \r\n        \r\n            \r\n                <div style=\"padding-left: 50px;\">\r\n                    <span class=\"yellow_highlight\"><em>Picots without transferring stitches!</em></span>\r\n                    <br>A basic picot hem that lays flat by using every other needle on the private side. A staple hem for every knitter.<br></div>\r\n                <ol>\r\n                    <li><a data-GlossaryId=\"265\" class=\"glossaryhelp\">Scrap On <i class=\"fa fa-question-circle course\" aria-hidden=\"true\"></i></a> 40-60 stitches <b>Over EVERY OTHER NEEDLE</b></li>\r\n                    <li>Knit a few rows of scrap</li>\r\n                    <li>Knit 1 row of ravel cord</li>\r\n                    <hr>\r\n                    <li>Remove Scrap yarn and switch to main yarn</li>\r\n                    <li>At <a data-GlossaryId=\"225\" class=\"glossaryhelp\">Main Tension -1 <i class=\"fa fa-question-circle course\" aria-hidden=\"true\"></i></a> knit 3 rows</li>\r\n                    <li>Pull all needles into work</li>\r\n                    <li>At main tension knit 5 rows</li>\r\n                    <hr>\r\n                    <li>Pick up the main yarn loops from between the ravel cord stitches (2 stitches on each needle) to close the hem</li>\r\n                    <li>At a loose tension: knit 1 row across all stitches</li>\r\n                    <li><b>RETURN TO MAIN TENSION</b></li>\r\n                    <hr>\r\n                    <li>Continue knitting 10-20 rows</li>\r\n                    <li>Bind off or drop the knitting from the machine</li>\r\n                    <li>Mark the swatch and examine the hem</li>\r\n                </ol>\r\n                <em> Adjust the number of rows for the desired hem depth.</em>\r\n            \r\n            \r\n                <div class=\"subvideopopup\" data-videotitle=\"Flat Picot Hem\" data-vimeoid=\"151860001\">\r\n                    <img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/551703960-c90c4fd7ba7505d16009f0aa6b09536b1bd3c9e9c75a0e08fc5342652747752d-d_1280x720?r=pad\">\r\n                    <figure>\r\n                        <figcaption align=\"center\">\r\n                            <span class=\"fa-solid fa-circle-1 fa-xl course\" style=\"vertical-align: middle;\"></span>\r\n                            No Transfer Picot Hem\r\n                        </figcaption>\r\n                    </figure>\r\n                    <div class=\"imagecenter text-center\">\r\n                        <button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x course\" aria-hidden=\"true\"></i></button>\r\n                    </div>\r\n                </div>\r\n            \r\n        \r\n    \r\n",
+              "legacyComponentId": 9741,
+              "order": 1
+            }
+          ],
+          "title": "<i class=\"fa-solid fa-circle-1 fa-xl learn\" style=\"vertical-align: middle;\"></i> No-Transfer Picot Hem",
+          "slug": "i-class-fa-solid-fa-circle-1-fa-xl-learn-style-vertical-align-middle-i-no-transfer-picot-hem",
+          "order": 2,
+          "legacy": {
+            "assignId": 6363,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<button class=\"btn btn-default\" onclick=\"window.print();\">Print</button>\r\n    \r\n        \r\n            \r\n                <ol>\r\n                    <li>\r\n                        <a data-GlossaryId=\"265\" class=\"glossaryhelp\">Scrap On <i class=\"fa fa-question-circle course\" aria-hidden=\"true\"></i></a> 40-60 stitches <b>Over Every other Needle</b><br>The out of work needles are identified as the <b><span style=\"color:red\">RED</span></b> needles\r\n                    </li>\r\n                    <li>Knit 1 row of ravel cord</li>\r\n                    <li>Change to garment yarn</li>\r\n                    <li>At <a data-GlossaryId=\"225\" class=\"glossaryhelp\">Main Tension -1 <i class=\"fa fa-question-circle course\" aria-hidden=\"true\"></i></a> Knit 8 rows over yellow needles (every other needle) for the desired hem length</li>\r\n                    <hr>\r\n                    <li>Transfer <b><span class=\"yellow_highlight\">YELLOW</span></b> stitches left and right to <b><span style=\"color:red\">RED</span></b> out of work needles (see video)\r\n                        <span class=\"imagepopup\" data-imagetitle=\"Transfer stitches to form the picots\" data-image=\"/path/images/4145/transfer.jpg\"><i class=\"fa fa-picture-o\" aria-hidden=\"true\"></i></span>\r\n                    </li>\r\n                    <hr>\r\n                    <li>Pick up the main yarn loops from between the ravel cord stitches (2 stitches on each needle) to close the hem</li>\r\n\r\n                    <li>At a loose tension: knit 1 row across all stitches</li>\r\n                    <hr>\r\n                    <li><b>RETURN TO MAIN TENSION</b></li>\r\n                    <li>Continue knitting 10-20 rows</li>\r\n                    <li>Bind off or drop the knitting from the machine</li>\r\n                    <li>Mark the swatch and examine the hem</li>\r\n                </ol>\r\n                <img alt=\"\" src=\"/path/images/4145/best_ever_diagram1.webp\">\r\n            \r\n            <div class=\"no-print\">\r\n                <figure>\r\n                     <div class=\"videopopup\" data-videotitle=\"Best Ever Picot Hem\" data-vimeoid=\"151859907\">\r\n\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/554707915-e483465a5ec618672e677d23829cd28e4bab18bd99285b0a3e182697499e590a-d_1280x720?r=pad\">\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div>\r\n                </figure>\r\n            </div>\r\n        \r\n    \r\n\r\n",
+              "legacyComponentId": 9742,
+              "order": 1
+            }
+          ],
+          "title": "<i class=\"fa-solid fa-circle-2 fa-xl learn\" style=\"vertical-align: middle;\"></i> Best-Ever Picot Hem",
+          "slug": "i-class-fa-solid-fa-circle-2-fa-xl-learn-style-vertical-align-middle-i-best-ever-picot-hem",
+          "order": 3,
+          "legacy": {
+            "assignId": 6364,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<button class=\"btn btn-default\" onclick=\"window.print();\">Print</button><br>\r\n    \r\n        \r\n            \r\n                <div style=\"padding-left: 50px;\">\r\n                    <em> Eyelets and scallops make this feminine hem special<br>Follow variation 2 from the video (03:37)</em><br>\r\n                </div><br>\r\n                <ol>\r\n                    <li><a data-GlossaryId=\"265\" class=\"glossaryhelp\">Scrap On <i class=\"fa fa-question-circle course\" aria-hidden=\"true\"></i></a> 40-60 stitches</li>\r\n                    <li>Knit a few rows of scrap</li>\r\n                    <li>Knit 1 row of ravel cord</li>\r\n                    <hr>\r\n                    <li>Remove Scrap yarn and switch to main yarn</li>\r\n                    <li>Using 2 strands of yarn e-Wrap every needle</li>\r\n                    <li> Knit 1 row</li>\r\n                    <li>Transfer every other needle to create eyelets</li>\r\n                    <hr>\r\n                    <li>Knit 1 row</li>\r\n                    <li>Hold every 8th needle</li>\r\n                    <li> Carefully knit 6-8 rows in tuck</li>\r\n                    <em>Check the stitch formation</em>\r\n                    <hr>\r\n                    <li>Pull all needles out</li>\r\n                    <li>Cancel hold and knit 1 row</li>\r\n                    <li> Pull needles out again</li>\r\n                    <li> Continue knitting 20-30 rows</li>\r\n                    <li> Bind off or drop the work from the machine</li>\r\n                    <li>Mark the swatch and examine the hem</li>\r\n                </ol>\r\n\r\n            \r\n            <div class=\"no-print\">\r\n                <div class=\"subvideopopup\" data-videotitle=\"Scalloped Eyelet Hem\" data-vimeoid=\"151859900\">\r\n                    <img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/551703837-ca24c50faabddc69ef49483d3a5fb474294f163b0d6dd411cece10dee28f9185-d_1280x720?r=pad\">\r\n                    <div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n                    <figcaption align=\"center\">\r\n                        <span class=\"fa-solid fa-circle-3 fa-xl course\" style=\"vertical-align: middle;\"></span>\r\n                        Scalloped Eyelet Hem\r\n                    </figcaption>\r\n                </div>\r\n            </div>\r\n        \r\n    \r\n",
+              "legacyComponentId": 9743,
+              "order": 1
+            }
+          ],
+          "title": "<i class=\"fa-solid fa-circle-3 fa-xl learn\" style=\"vertical-align: middle;\"></i> Scalloped Eyelet Hem",
+          "slug": "i-class-fa-solid-fa-circle-3-fa-xl-learn-style-vertical-align-middle-i-scalloped-eyelet-hem",
+          "order": 4,
+          "legacy": {
+            "assignId": 6365,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\nPlain or Fancy, hems can add the perfect touch to any knitting project.<br>If you are knitting a sweater, a simple cast on edge may be the casual look you want.  Traditional ribbed hems and cuffs have their place ... but you can do so much more! <br>No matter what your pattern says, take charge and plan for hems for your next project!<br><div class=\"text-center\"></div>\r\n\r\n\t<img class=\"img-thumbnail\" src=\"/path/images/82/hems_thumb.jpg\">\r\n\r\n",
+              "legacyComponentId": 9745,
+              "order": 1
+            }
+          ],
+          "title": "Classroom: Hems and Edges",
+          "slug": "classroom-hems-and-edges",
+          "order": 5,
+          "legacy": {
+            "assignId": 6367,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 0,
+    "videos": [],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

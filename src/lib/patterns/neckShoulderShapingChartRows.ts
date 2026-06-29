@@ -20,7 +20,13 @@ function fmt(v: number): string {
 }
 
 function toChartAction(entry: RowEntry): string {
-  const hasNeck = entry.events.some((e) => e.side !== "center" && e.edge === "inner" && e.amount > 0);
+  const hasNeck = entry.events.some(
+    (e) =>
+      e.side !== "center" &&
+      e.edge === "inner" &&
+      e.amount > 0 &&
+      (e.kind === "bindOff" || e.kind === "decrease" || e.kind === "hold"),
+  );
   const hasShoulder = entry.events.some(
     (e) =>
       e.side !== "center" &&
@@ -139,7 +145,7 @@ function annotateSplitCarriageShoulderDisplay(
     let n = 0;
     for (const e of entry.events) {
       if (e.edge !== "inner" || e.amount <= 0) continue;
-      if (e.kind !== "bindOff" && e.kind !== "decrease") continue;
+      if (e.kind !== "bindOff" && e.kind !== "decrease" && e.kind !== "hold") continue;
       n += e.amount;
     }
     return n;
@@ -147,7 +153,12 @@ function annotateSplitCarriageShoulderDisplay(
 
   function centerBindRow(entry: RowEntry): number {
     return entry.events
-      .filter((e) => e.side === "center" && e.edge === "center")
+      .filter(
+        (e) =>
+          e.side === "center" &&
+          e.edge === "center" &&
+          (e.kind === "bindOff" || e.kind === "hold"),
+      )
       .reduce((s, e) => s + e.amount, 0);
   }
 

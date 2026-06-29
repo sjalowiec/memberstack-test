@@ -128,10 +128,16 @@
   white-space: nowrap;
 }
 
-/* Row Counter cell: left-aligned so values sit directly under the left-aligned RC header. */
+/* Row Counter cell: left-aligned under the RC header (neck/shoulder checklists). */
 .ns-shaping-chart__td-rc {
   text-align: left;
   white-space: nowrap;
+}
+
+/* Body / sleeve shaping charts: RC column centered under its header. */
+.ns-shaping-chart--body .ns-shaping-chart__th-row,
+.ns-shaping-chart--body .ns-shaping-chart__td-rc {
+  text-align: center;
 }
 
 .ns-shaping-chart__row-counter-number {

@@ -8,11 +8,19 @@ import * as workflowModule from "./patternReadingWorkflow";
 import type { CustomPatternProject } from "./customPatternProjectTypes";
 import {
   CUSTOM_BUILD_EDIT_WORKSPACE_HREF,
+  DROP_SHOULDER_CONTINUE_EDITING_HREF,
+  DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF,
+  DROP_SHOULDER_OPEN_PATTERN_HREF,
   EXPRESS_CONTINUE_EDITING_HREF,
   EXPRESS_EDIT_WORKSPACE_HREF,
   OPEN_PATTERN_EDIT_WORKSPACE_HREF,
   OPEN_PATTERN_HREF,
 } from "./customPatternProjectNavigation";
+import {
+  CONSTRUCTION_FAMILY_OVERRIDE_KEY,
+  DROP_SHOULDER_CONSTRUCTION,
+  withDropShoulderConstructionAuthored,
+} from "./patternConstructionIdentity";
 import {
   PATTERN_STORAGE_KEY,
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
@@ -96,6 +104,89 @@ describe("loadSavedCustomPatternProject", () => {
     }
     expect(readActiveCustomPatternProjectId()).toBe(PROJECT_ID);
     expect(localStorage.getItem(PATTERN_STORAGE_KEY)).toContain("For Aubrie");
+  });
+
+  it("views a saved drop-shoulder pattern on the drop-shoulder workspace", async () => {
+    loadCustomPatternProjectMock.mockResolvedValue({
+      ok: true,
+      project: sampleProject({
+        customOverrides: { [CONSTRUCTION_FAMILY_OVERRIDE_KEY]: DROP_SHOULDER_CONSTRUCTION },
+        pattern: {
+          ...sampleProject().pattern,
+          style: withDropShoulderConstructionAuthored(
+            { ...(sampleProject().pattern.style as Record<string, unknown>) },
+            "long",
+          ),
+        },
+      }),
+    });
+
+    const result = await loadSavedCustomPatternProject(PROJECT_ID, "view");
+
+    expect(result).toEqual({ ok: true, redirectHref: DROP_SHOULDER_OPEN_PATTERN_HREF });
+    if (result.ok) {
+      expect(result.redirectHref).not.toBe(OPEN_PATTERN_HREF);
+    }
+  });
+
+  it("continues a saved drop-shoulder express project on the drop-shoulder review page", async () => {
+    loadCustomPatternProjectMock.mockResolvedValue({
+      ok: true,
+      project: sampleProject({
+        customOverrides: { [CONSTRUCTION_FAMILY_OVERRIDE_KEY]: DROP_SHOULDER_CONSTRUCTION },
+        pattern: {
+          ...sampleProject().pattern,
+          style: withDropShoulderConstructionAuthored(
+            { ...(sampleProject().pattern.style as Record<string, unknown>) },
+            "long",
+          ),
+        },
+      }),
+    });
+
+    const result = await loadSavedCustomPatternProject(PROJECT_ID, "continue");
+
+    expect(result).toEqual({ ok: true, redirectHref: DROP_SHOULDER_CONTINUE_EDITING_HREF });
+    if (result.ok) {
+      expect(result.redirectHref).not.toBe(EXPRESS_CONTINUE_EDITING_HREF);
+    }
+  });
+
+  it("continues a saved sleeveless express project on the sleeveless review page", async () => {
+    loadCustomPatternProjectMock.mockResolvedValue({
+      ok: true,
+      project: sampleProject(),
+    });
+
+    const result = await loadSavedCustomPatternProject(PROJECT_ID, "continue");
+
+    expect(result).toEqual({ ok: true, redirectHref: EXPRESS_CONTINUE_EDITING_HREF });
+    if (result.ok) {
+      expect(result.redirectHref).not.toBe(DROP_SHOULDER_CONTINUE_EDITING_HREF);
+    }
+  });
+
+  it("opens a saved drop-shoulder express project on the drop-shoulder edit workspace", async () => {
+    loadCustomPatternProjectMock.mockResolvedValue({
+      ok: true,
+      project: sampleProject({
+        customOverrides: { [CONSTRUCTION_FAMILY_OVERRIDE_KEY]: DROP_SHOULDER_CONSTRUCTION },
+        pattern: {
+          ...sampleProject().pattern,
+          style: withDropShoulderConstructionAuthored(
+            { ...(sampleProject().pattern.style as Record<string, unknown>) },
+            "long",
+          ),
+        },
+      }),
+    });
+
+    const result = await loadSavedCustomPatternProject(PROJECT_ID, "open");
+
+    expect(result).toEqual({ ok: true, redirectHref: DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF });
+    if (result.ok) {
+      expect(result.redirectHref).not.toContain("/patterns/sleeveless/pattern/");
+    }
   });
 
   it("views a saved pattern by routing to the read-only pattern page, never the edit workspace", async () => {

@@ -1,0 +1,1489 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 15,
+    "title": "Set-in Sleeve Perfection",
+    "slug": "set-in-sleeve-perfection",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_15_set_in_sleeve_perfection.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/sleeve.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Day 1:  Let's get Started!",
+      "slug": "day-1-let-s-get-started",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 93,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Do you hesitate to knit sweaters with set in sleeves?  Have struggled with them in the past?<br>\r\n\r\n\r\n<div class=\"lead\">Get some practice setting in sleeves.</div>\r\nOver the next few days, we will get laser focused. Here's what to expect:<br>\r\n\r\n\r\n<ul class=\"li_10px\">\r\n<li>Using the Knit it Now Practice pattern you will knit a sample armhole and sleeve</li>\r\n<li>You will explore different shaping methods to perfect your knitting</li>\r\n<li>You will learn multiple techniques for setting in the sleeves to the armhole</li>\r\n<li>We will explore knitting and joining sleeves from the top down.</li>\r\n</ul>\r\nAfter all that practice, you will no longer hesitate to knit sweaters with set in sleeves AND you'll knit sweaters that you can be proud to wear.<br><div class=\"lead\">How does this work?</div>\r\n<ul class=\"li_10px\">\r\n<li>Watch the How-To video on each topic</li>\r\n<li>Spend time working the exercise for the topic</li>\r\n<li>Invest at least 30 minutes of knitting time each day to learn/practice new techniques</li>\r\n<li>Take notes as you practice</li>\r\n<li>Take photos and share your success</li>\r\n<li><mark><b>Practice! Practice! Practice!</b></mark></li>\r\n</ul>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/15/sleeve_practice/knit_the_sleeve.jpg\">\r\n\r\n\r\n",
+              "legacyComponentId": 1295,
+              "order": 1
+            }
+          ],
+          "title": "Welcome {first}! Start Here",
+          "slug": "welcome-first-start-here",
+          "order": 1,
+          "legacy": {
+            "assignId": 402,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "221120492",
+              "title": "Machine Knitting Courses",
+              "legacyComponentId": 1477,
+              "order": 1
+            }
+          ],
+          "title": "Lesson 1: New to Knit it Now Courses?",
+          "slug": "lesson-1-new-to-knit-it-now-courses",
+          "order": 2,
+          "legacy": {
+            "assignId": 467,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\nEven though we are knitting practice pieces, Swatching is critical to establish YOUR gauge.  Guessing at your gauge will only lead to tears, because the sleeves won't fit into the armholes.<br>\r\n\r\nThere are many variables when knitting (both by hand and by machine).\r\n\r\n <br><ul>\r\n \t<li>Different colors of the SAME yarn may knit to a different gauge</li>\r\n \t<li>Different dye lots of the SAME color of the SAME yarn may knit to a different gauge</li>\r\n \t<li>Different models of the SAME gauge knitting machine may knit to a different gauge.</li>\r\n \t<li>The SAME size knitting needle from a different manufacturer may knit to a different gauge</li>\r\n \t<li>Different people, using the exactly the SAME needles, machines, and yarns may get get different gauges</li>\r\n</ul>\r\n<img class=\"img-thumbnail\" width=\"300\" src=\"/challenge/images/v2/15/gauge_swatch_tension/swatching_is_not_optional.jpg\">\r\n\r\n\r\n<div><strong>SWATCHING IS NOT OPTIONAL!</strong></div>\r\n\r\nHow many times have you knit something that just didn't fit?  Have you ever had colors run or fade when you washed your sweater?<br>So many knitting disasters can be avoided by swatching and dressing your swatch.  Machine knitters have NO EXCUSE for not swatching!  We can knit multiple swatches quickly, testing stitch patterns and tensions.  Since we don't have a lot of time invested, we can do the \"throw-the-swatch-in-the-wash-with-jeans\" test to see if a washable yarn will hold up.<BR>\r\n\r\n",
+              "legacyComponentId": 1283,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357273",
+              "title": "Even though we are knitting samples - take time to swatch.",
+              "legacyComponentId": 1284,
+              "order": 2
+            }
+          ],
+          "title": "Lesson 2: Swatching is NOT Optional!",
+          "slug": "lesson-2-swatching-is-not-optional",
+          "order": 3,
+          "legacy": {
+            "assignId": 403,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<small>Instructions are for suggestions for <b>standard gauge</b><em> (mid-gauge, bulky)</em> and for using gauge rulers.</small><br>\r\n<blockquote class=\"smallblock\"><em>  Remember, you can knit swatches any size (as long as they are at least 5-6\" square.) Be sure to be consistent and establish a template for yourself for every time you knit a swatch.</em></blockquote>",
+              "legacyComponentId": 1285,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/15/gauge_swatch_tension/swatch_info.jpg\">\r\n<img src=\"/challenge/images/v2/15/gauge_swatch_tension/swatch_info1.jpg\">\r\n</div>\r\n",
+              "legacyComponentId": 1289,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<br><ol class=\"instruction-list\">\r\n          <li>According to the chart above, cast on enough stitches so you can isolate the center stitches as shown for your machine. You want to be able to measure in the CENTER of the knitting. </li>\r\n           <li>Knit a few rows in pattern</li>\r\n          <li>Knit 2 rows in waste yarn (or weave a marker row)</li>\r\n          <li>Set row counter to 000</li>\r\n           <li>Knit the center section<br><div style=\"margin-left:30px\">\r\n<b>Standard gauge:</b>\r\n    <ul class=\"instruction-nolist-tight\">\r\n         <li>Knit 20 rows and knit in a yarn marker isolating the center 40 stitches</li>\r\n       <li>Knit 20 more rows and place a marker on the same needles</li>\r\n         <li>Knit 20 more rows</li>\r\n    </ul >\r\n<b>Mid-Gauge:</b>\r\n    <ul class=\"instruction-nolist-tight\">\r\n       <li>Knit 20 rows and knit in a yarn marker isolating the center 30 stitches</li>\r\n       <li>Knit 20 more rows and place a marker on the same needles</li>\r\n    </ul >\r\n<b>Bulky</b>\r\n    <ul class=\"instruction-nolist-tight\">\r\n          <li>Knit 15 rows and knit in a yarn marker isolating the center 20 stitches</li>\r\n            <li>Knit 15 more rows</li>\r\n</ul>\r\n</div>\r\n<li>Confirm and record the total number of rows you knit for the center <b>60</b><em>(40, 30)</em></li>\r\n<li>Knit 2 rows in waste yarn (or weave a marker row)</li>\r\n<li>Knit a few rows and bind off <small><em>(or drop the work from the machine)</em></small></li>\r\n</ol>\r\nLet the swatch rest<br>\r\n<ol>\r\n<li>Dress the swatch as you will treat the finished item</li>\r\n<li>Measure the size of the <b>40</b><em>(30, 20)</em> stitches in the center of the swatch (between the yarn markers)</li>\r\n<li>Measure the size of the <b>60</b><em>(40,30)</em> rows between the waste yarn (or marker rows)</li>\r\n<li>The math\r\n<ul><li>Divide the stitches in the middle by your measurement to get <b>Stitches Per Inch/cm</b></li>\r\n<li>Divide the rows in the middle by your measurement to get <b>Rows Per Inch/cm</b></li>\r\n<li>Multiply your stitches/rows per inch/cm times 4 to calculate stitches per 4\" (10cm)</li>\r\n</ul>\r\n</ol>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 1287,
+              "order": 4
+            },
+            {
+              "type": "richText",
+              "html": "<div>\r\n<img src=\"/challenge/images/v2/15/sleeve_practice/measure_stitches.jpg\"></div\r\n<img src=\"/challenge/images/v2/15/sleeve_practice/measure_rows.jpg\">\r\n",
+              "legacyComponentId": 1571,
+              "order": 6
+            }
+          ],
+          "title": "Lesson 3: Knit Your Swatch",
+          "slug": "lesson-3-knit-your-swatch",
+          "order": 4,
+          "legacy": {
+            "assignId": 404,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<div class=\"lead\">Time to get knitting!</div>\r\n<ol class=\"Instruction-list\">\r\n<li>Knit a swatch using any method.</li>\r\n<li>Let it rest</li>\r\n<li>Accurately measure YOUR stitch and row gauge</li>\r\n<li>Record your gauge below</li>\r\n</ol>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/15/2hr/swatch_example.jpg\" /><br />Does your swatch look similar to this one?\r\n\r\n",
+              "legacyComponentId": 1290,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "406",
+                "CHALLENGE_COMPONENTID": "1291",
+                "DATAMODEL_ELEMENT": "StitchGauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": " <b>What is your stitch gauge? <small>(4 in/10cm)</small></b>",
+                "DATAMODEL_VALIDATION": "min",
+                "DATAMODEL_VALIDATION_EXTRA": "12",
+                "DATAMODEL_VALIDATION_MESSAGE": "ENTER YOUR GAUGE IN 4\" / 10cm",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 1291,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "406",
+                "CHALLENGE_COMPONENTID": "1292",
+                "DATAMODEL_ELEMENT": "RowGauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "<b> What is your row gauge? <small>(4 in/10cm)</small></b>",
+                "DATAMODEL_VALIDATION": "min",
+                "DATAMODEL_VALIDATION_EXTRA": "0",
+                "DATAMODEL_VALIDATION_MESSAGE": "ENTER YOUR GAUGE IN 4\" / 10cm",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 1292,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"smallblock\"><em><b>TIP:</b> attach a string tag to your swatch recording all the details ... it's funny how easy it is to forget. Include yarn name, machine, tension, measurements, and stitch pattern number (if appropriate)</em></blockquote>",
+              "legacyComponentId": 1293,
+              "order": 4
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\"> <i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Hate Math?<br>  Use the calculator below to determine YOUR gauge in 4\"/10cm</div>",
+              "legacyComponentId": 1508,
+              "order": 6
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: gaugeCalulator.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "406",
+                "CUSTOMCFM": "gaugeCalulator.cfm",
+                "TYPEOF": "CustomCFM"
+              },
+              "legacyComponentId": 1505,
+              "order": 8
+            }
+          ],
+          "title": "Lesson 4: Today's Challenge: Your Swatch",
+          "slug": "lesson-4-today-s-challenge-your-swatch",
+          "order": 5,
+          "legacy": {
+            "assignId": 406,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "download",
+              "label": "Don't know your gauge yet?  Preview a sample pattern",
+              "filename": "/downloads/practice_sleeve_sample.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "407",
+                "componentId": "1473",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 1473,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment 'Practice Set in Sleeves' (legacy garmentId 606).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "407",
+                "GARMENTID": "606",
+                "GARMENTTITLE": "Practice Set in Sleeves",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "patternfile",
+                "REDIRECT_TO": "/challenge/15/Group/411/item|Day 2 Knit the Armholes: View Your Pattern",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "RowGauge",
+                "SIZING_DATAMODEL_ELEMENT": "size",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "StitchGauge",
+                "TYPEOF": "Pattern"
+              },
+              "legacyComponentId": 1323,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "407",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 1525,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "772256112",
+              "title": "Building Knit it Now Custom Patterns",
+              "legacyComponentId": 1524,
+              "order": 4
+            }
+          ],
+          "title": "Lesson 5: Create your Practice Sleeve Pattern",
+          "slug": "lesson-5-create-your-practice-sleeve-pattern",
+          "order": 6,
+          "legacy": {
+            "assignId": 407,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): patternfile",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 407 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "411",
+                "DATAMODEL_ELEMENTS": "patternfile",
+                "DATAMODEL_REDIRECT": "407",
+                "DATAMODEL_VALIDATION_MESSAGE": "Make sure to enter your gauge information first to build your custom pattern",
+                "TYPEOF": "DataValidation"
+              },
+              "legacyComponentId": 1474,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'patternfile'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "411",
+                "CHALLENGE_COMPONENTID": "1301",
+                "DATAMODEL_ICON": "fa fa-download",
+                "LABLE": "Download Your Pattern",
+                "PATTERN_DATAMODEL_ELEMENT": "patternfile",
+                "VIEWHEIGHT": "600"
+              },
+              "legacyComponentId": 1301,
+              "order": 2
+            }
+          ],
+          "title": "Lesson 6: View Your Pattern",
+          "slug": "lesson-6-view-your-pattern",
+          "order": 7,
+          "legacy": {
+            "assignId": 411,
+            "blockType": "DocumentPattern"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "249303939",
+              "title": "Tips for Understanding Sleeve Construction",
+              "legacyComponentId": 1475,
+              "order": 1
+            }
+          ],
+          "title": "Lesson 7: Does your Pattern look \"wonky\"? Tips for understanding sleeve construction",
+          "slug": "lesson-7-does-your-pattern-look-wonky-tips-for-understanding-sleeve-construction",
+          "order": 8,
+          "legacy": {
+            "assignId": 466,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Upload your images here to share with the workshop members.  Your image will be added to a gallery for inspiration.",
+              "legacyComponentId": 1542,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "swatch",
+                "BUTTONLABLE": "Share your swatch",
+                "CHALLENGE_ASSIGNID": "506",
+                "QTY": "3",
+                "SUCCESSMESSAGE": "Thank you",
+                "TYPEOF": "ImageUpload"
+              },
+              "legacyComponentId": 1543,
+              "order": 2
+            }
+          ],
+          "title": "Share your progress!",
+          "slug": "share-your-progress",
+          "order": 9,
+          "legacy": {
+            "assignId": 506,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageGallary",
+              "notes": [
+                "Unmapped legacy component type: ImageGallary"
+              ],
+              "legacyFields": {
+                "ACTION": "Swatch",
+                "CHALLENGE_ASSIGNID": "507",
+                "TYPEOF": "ImageGallary",
+                "WORKSHOPONLY": "1"
+              },
+              "legacyComponentId": 1544,
+              "order": 1
+            }
+          ],
+          "title": "Shared Gallery | Swatches",
+          "slug": "shared-gallery-swatches",
+          "order": 10,
+          "legacy": {
+            "assignId": 507,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Day 2:  Knit the Armholes",
+      "slug": "day-2-knit-the-armholes",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 94,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857916",
+              "title": "Compare Shaping Methods",
+              "legacyComponentId": 1304,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857928",
+              "title": "Compare Shaping Methods - Part  2",
+              "legacyComponentId": 1305,
+              "order": 3
+            }
+          ],
+          "title": "Lesson 1: Shaping Options",
+          "slug": "lesson-1-shaping-options",
+          "order": 1,
+          "legacy": {
+            "assignId": 408,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h2>WORKSHOP FEEDBACK </H2>\r\n\r\nA number of knitters have commented that the following video is WAY TOO FAST!\r\n<br>\r\nIt was created as an overview of the steps for today ... not an instructional video on short row shaping.<br>\r\nIf you aren't familiar with using short rows for decreasing/shaping, please review Lesson 6: Technique | Basic Short Row Shaping",
+              "legacyComponentId": 1526,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "248074162",
+              "title": null,
+              "legacyComponentId": 1463,
+              "order": 3
+            }
+          ],
+          "title": "Lesson 2: Watch as we knit our practice armholes",
+          "slug": "lesson-2-watch-as-we-knit-our-practice-armholes",
+          "order": 2,
+          "legacy": {
+            "assignId": 462,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The pattern includes both full size sleeves and Mini-sleeves. For quick results we recommend trying the mini-sleeves first, then hone your skills on a full size version.<br><b>Follow your pattern:</b><br><ol class=\"instruction-list\">\r\n<li>Cast on with any method. (Use this as an opportunity to try something new)</li>\r\n<li>Knit the armhole pieces as instructed, using your choice of shaping method (as shown below)\r\n<li>Bind off the piece</li>\r\n<li>Let it rest and block it (makes setting in the sleeve easier)",
+              "legacyComponentId": 1530,
+              "order": 1
+            }
+          ],
+          "title": "Lesson 3: Your turn ... Get Knitting!",
+          "slug": "lesson-3-your-turn-get-knitting",
+          "order": 3,
+          "legacy": {
+            "assignId": 503,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i>\r\n\r\nAlthough the pattern instructions tell you to bind off the shoulder stitches, many knitters will scrap off the shoulder stitches, then join them on the machine.  (This is our preferred method of joining shoulders)\r\n<br>NOTE: There is no shoulder shaping or necklines in the practice patterns.  Focus and master the armholes and sleeves.",
+              "legacyComponentId": 1324,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860051",
+              "title": "Shoulder Seams",
+              "legacyComponentId": 1307,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<br><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i>\r\nPicking up those \"teeny-tiny\" stitches difficult?\r\n<ul>\r\n<li>Use a highly contrasting color, smooth yarn for your waste yarn</li>\r\n<li>You will be picking up the garment yarn loop.(green)</li>\r\n<li>All of the white stitches (and loops) will eventually be discarded. Be sure to pick up the GARMENT YARN loops</li>\r\n</uL>\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/15/sleeve_practice/rehang1.jpg\">\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/15/sleeve_practice/rehang2.jpg\">>\r\n\r\n\r\n",
+              "legacyComponentId": 1529,
+              "order": 3
+            }
+          ],
+          "title": "Lesson 4: Join the Shoulders",
+          "slug": "lesson-4-join-the-shoulders",
+          "order": 4,
+          "legacy": {
+            "assignId": 416,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Using your custom pattern, knit your armhole and join the shoulders.<br>Remember, there is no neckline or shoulder shaping to these samples ... just focus on knitting a nice armhole sample (or two) to use in practicing to set in sleeves.<br><div align=\"center\"><img class=\"Img-thumbnail\" src= \"/challenge/images/sleeve_practice/pieces.jpg\"></div>\r\n\r\n",
+              "legacyComponentId": 1471,
+              "order": 3
+            }
+          ],
+          "title": "Lesson 5: Today's Challenge: Your Armhole and Shoulder",
+          "slug": "lesson-5-today-s-challenge-your-armhole-and-shoulder",
+          "order": 5,
+          "legacy": {
+            "assignId": 425,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/sleeve_practice/shortrow_flipbook1.jpg",
+                  "caption": "Pattern instruction (single armhole)<br>\r\nAt armhole edge, decrease 3 stitches every other row 2 times, decrease 1 stitch every other row 5 times"
+                },
+                {
+                  "src": "/sleeve_practice/shortrow_flipbook2.jpg",
+                  "caption": "<br><br>\r\n<ul><li>Set Carriage to Hold</li>\r\n<li>Opposite the carriage, place 3 needles at armhole edge into hold position</li>\r\n<li>With this technique the short row shaping takes place opposite the carriage</li>\r\n</ul>"
+                },
+                {
+                  "src": "/sleeve_practice/shortrow_flipbook3.jpg",
+                  "caption": "<b>Knit left</b> across the row,.<br>Notice that the working yarn is carried across the top of the needles in hold position."
+                },
+                {
+                  "src": "/sleeve_practice/shortrow_flipbook4.jpg",
+                  "caption": "To prevent a hole in your knitting, slip the working yarn under the first needle in hold (wrap).<br>\r\nCarefully pull the needle back so the working yarn slips under the hook of the needle without dropping the stitch."
+                },
+                {
+                  "src": "/sleeve_practice/shortrow_flipbook5.jpg",
+                  "caption": "<br><br>\r\n<ul>\r\n<Li>\r\nPlace that SAME NEEDLE back in hold position</li>\r\n<Li>Knit back to the RIGHT</li>\r\n<Li>Notice the needle now has a \"wrap\" that will prevent a hold in the knitting.</li>\r\n</ul>"
+                },
+                {
+                  "src": "/sleeve_practice/shortrow_flipbook6.jpg",
+                  "caption": "Place 3 more needles in hold position"
+                },
+                {
+                  "src": "/sleeve_practice/shortrow_flipbook7.jpg",
+                  "caption": "Knit to the LEFT (working yarn on top of the held needles)"
+                },
+                {
+                  "src": "/sleeve_practice/shortrow_flipbook8.jpg",
+                  "caption": "Wrap the end needle as before (to prevent a hole)."
+                },
+                {
+                  "src": "/sleeve_practice/shortrow_flipbook9.jpg",
+                  "caption": "Knit back to the RIGHT - Notice there are 2 wrapped needles at this point."
+                },
+                {
+                  "src": "/sleeve_practice/shortrow_flipbook10.jpg",
+                  "caption": "According to the pattern, hold a single stitch.<br>\r\nKnit across to the left.<br>\r\nNotice that the stitch in the hook is threatening to pop off.<br>\r\nAdd weight at this point as needed."
+                },
+                {
+                  "src": "/sleeve_practice/shortrow_flipbook11.jpg",
+                  "caption": "Continue to follow the pattern and hold the last set of stitches one at a time.<br>\r\n Move the weight as you knit to keep weight on this stitch between held needles and working needles."
+                },
+                {
+                  "src": "/sleeve_practice/shortrow_flipbook12.jpg",
+                  "caption": "<i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> Sometimes you can skip the weight and just use your hand to hold the stitches in place.  The goal is to prevent dropped or misshaped stitches."
+                },
+                {
+                  "src": "/sleeve_practice/shortrow_flipbook13.jpg",
+                  "caption": "According to the pattern, eleven needles are now in hold position.<br>\r\nNotice the wraps over the needles (counting the wraps is a good way to keep track of your pattern)"
+                },
+                {
+                  "src": "/sleeve_practice/shortrow_flipbook14.jpg",
+                  "caption": "Using any method, loosely bind off the held stitches.<br>\r\nPlace the last stitch on the end needle in work, doubling up the stitches."
+                },
+                {
+                  "src": "/sleeve_practice/shortrow_flipbook15.jpg",
+                  "caption": "Continue following your pattern instruction.<br>\r\nNo Stairsteps!"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 1533,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "To work this type of short row shaping on both sides for your armholes (or sleeves), remember that that shaping is worked OPPOSITE the carriage each time.<br>Our previous example:<br>\r\nAt armhole edge, decrease 3 stitches every other row 2 times, decrease 1 stitch every other row 5 times<br>Carriage is set to hold and positioned on the RIGHT<br>\r\n\r\nRC:000 <ul><li>Pull 3 needles on the left (opposite the carriage) into hold position</li>\r\n<li> Knit to the LEFT</li>\r\n</ul>\r\nRC:001\r\n<ul><li>Wrap the first held needle</li>\r\n<li>Pull 3 needles on the right into hold position (opposite the carriage)</li>\r\n<li>Knit from LEFT to RIGHT</li></ul>\r\nRC:002<ul><li>Wrap the first held needle of the group nearest the carriage</li>\r\n<li>Pull 3 needles on the left into hold position</li>\r\n<li>Knit RIGHT to LEFT</li></ul>\r\nContinue following your pattern, working the shaping on both sides OPPOSITE the carriage.\r\n",
+              "legacyComponentId": 1535,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "250279065",
+              "title": "Work Shaping on Both Sides",
+              "legacySlot": 1,
+              "legacyComponentId": 1536,
+              "order": 4
+            },
+            {
+              "type": "video",
+              "vimeoId": "250279967",
+              "title": "Neat bind off for these edges",
+              "legacySlot": 2,
+              "legacyComponentId": 1536,
+              "order": 4
+            }
+          ],
+          "title": "Lesson 6: Technique | Basic Short Row Shaping",
+          "slug": "lesson-6-technique-basic-short-row-shaping",
+          "order": 6,
+          "legacy": {
+            "assignId": 504,
+            "blockType": "Imageslideshow"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i>  Here's a bind off that allows you to have complete control over the tension of your bind off. Even if you are an \"around-the-gatepegs\" fan ... please try this one.<br>\r\nIt takes some practice, but it may become your favorite too!",
+              "legacyComponentId": 1649,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite1.jpg",
+                  "caption": "If you are right handed, end your knitting on the right."
+                },
+                {
+                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite2.jpg",
+                  "caption": "Pull out a few (or all) of the needles to hold position and open the latches."
+                },
+                {
+                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite3.jpg",
+                  "caption": "Needles out and latches open ..."
+                },
+                {
+                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite4.jpg",
+                  "caption": "Remove the working yarn from the carriage and carefully lay it in the hooks of the needles."
+                },
+                {
+                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite5.jpg",
+                  "caption": "Carefully pull the needles back, keeping the working yarn in the hooks.<br>\r\nNotice that I've put some tension on the working yarn to keep it in the hooks until the next step."
+                },
+                {
+                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite6.jpg",
+                  "caption": "\"Hand knit\" each stitch loosely. <br>This takes PRACTICE, not too tight, not too loose ... .just right!<br>\r\nThe size of the hand knit stitches depends on your yarn and how this bind off edge will be finished."
+                },
+                {
+                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite7.jpg",
+                  "caption": "Continue across the entire bind off edge.  The idea is to keep the hand-formed stitches uniform and under control."
+                },
+                {
+                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite8.jpg",
+                  "caption": "Break the working and and carefully pull all the needles out again."
+                },
+                {
+                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite9.jpg",
+                  "caption": "Working from the right, with the latch tool, carefully pull stitch through stitch to bind off."
+                },
+                {
+                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite12.jpg",
+                  "caption": "Work across the bind off edge, being careful not to drop any stitches on the left."
+                },
+                {
+                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite14.jpg",
+                  "caption": "Pull the tail of yarn through the last stitch."
+                },
+                {
+                  "src": "/challenge/images/v2/15/sleeve_practice/caston_favorite15.jpg",
+                  "caption": "The result: A nice chained edge that is stretchy and just right!"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 1650,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "252258022",
+              "title": "Favorite Bind off",
+              "legacyComponentId": 1651,
+              "order": 3
+            }
+          ],
+          "title": "Lesson 7: Favorite Bind off",
+          "slug": "lesson-7-favorite-bind-off",
+          "order": 7,
+          "legacy": {
+            "assignId": 564,
+            "blockType": "Imageslideshow"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Upload your images here to share with the workshop members.  Your image will be added to a gallery for inspiration.",
+              "legacyComponentId": 1546,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "armhole",
+                "BUTTONLABLE": "Share your progress",
+                "CHALLENGE_ASSIGNID": "508",
+                "CHALLENGE_COMPONENTID": "1547",
+                "QTY": "3",
+                "SUCCESSMESSAGE": "Thank you"
+              },
+              "legacyComponentId": 1547,
+              "order": 2
+            }
+          ],
+          "title": "Share your progress!",
+          "slug": "share-your-progress",
+          "order": 8,
+          "legacy": {
+            "assignId": 508,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageGallary",
+              "notes": [
+                "Unmapped legacy component type: ImageGallary"
+              ],
+              "legacyFields": {
+                "ACTION": "Armhole",
+                "CHALLENGE_ASSIGNID": "509",
+                "CHALLENGE_COMPONENTID": "1549",
+                "WORKSHOPONLY": "1"
+              },
+              "legacyComponentId": 1549,
+              "order": 1
+            }
+          ],
+          "title": "Shared Gallery | Armholes",
+          "slug": "shared-gallery-armholes",
+          "order": 9,
+          "legacy": {
+            "assignId": 509,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Day 3:  Knit the sleeve",
+      "slug": "day-3-knit-the-sleeve",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 95,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "248191946",
+              "title": null,
+              "legacyComponentId": 1464,
+              "order": 1
+            }
+          ],
+          "title": "Lesson 1: Watch as we knit our sleeves",
+          "slug": "lesson-1-watch-as-we-knit-our-sleeves",
+          "order": 1,
+          "legacy": {
+            "assignId": 463,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Let's take a look at some options for shaping your sleeves.<br>If you are the kind of knitter who follows a pattern to a \"T\", please stop now and do your own thing. If you are willing to \"bend the rules\" a bit, let's play!<br>I've found that in hand knitting and machine knitting sleeves, there are some techniques that work better than others.  It all depends on the pattern, the shaping sequence, the stitch pattern and your yarn.<br>For example, if I'm knitting a fuzzy yarn, I don't mess with decorative decreases, they won't show.  But if the style of the sweater and the yarn warrant a bit of detail,  I'll take time to work full fashioned decreases.<br>Let's walk thru my sleeve pattern and examine some alternate techniques you can try.<br><blockquote class=\"blockquote_style\">I hope you'll try some of these ideas and establish your own \"rules\" for knitting sleeves.</blockquote>",
+              "legacyComponentId": 1469,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "248482806",
+              "title": "Explore Shaping Options",
+              "legacyComponentId": 1470,
+              "order": 3
+            }
+          ],
+          "title": "Lesson 2: Explore Shaping Options",
+          "slug": "lesson-2-explore-shaping-options",
+          "order": 2,
+          "legacy": {
+            "assignId": 465,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "When shaping the cap of a set in sleeve, this one trick will create a smoother shape, making it easier to set in the sleeve to the armhole",
+              "legacyComponentId": 9072,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "362897865",
+              "title": null,
+              "legacyComponentId": 9071,
+              "order": 2
+            }
+          ],
+          "title": "No Joggies!",
+          "slug": "no-joggies",
+          "order": 3,
+          "legacy": {
+            "assignId": 5951,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Following your pattern, knit a sleeve.\r\n\r\n<div class=\"lead\">Are you happy with your sleeve?</div><br>  If not ... try again ... the point of this exercise is to knit the most beautiful sleeve possible ... try different shaping methods until you get it just right.<br>",
+              "legacyComponentId": 1339,
+              "order": 2
+            }
+          ],
+          "title": "Lesson 3: Today's Challenge: Knit your Practice Sleeve(s)",
+          "slug": "lesson-3-today-s-challenge-knit-your-practice-sleeve-s",
+          "order": 4,
+          "legacy": {
+            "assignId": 427,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Upload your images here to share with the workshop members.  Your image will be added to a gallery for inspiration.",
+              "legacyComponentId": 1550,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "sleeve",
+                "BUTTONLABLE": "Share your progress",
+                "CHALLENGE_ASSIGNID": "510",
+                "CHALLENGE_COMPONENTID": "1551",
+                "QTY": "3",
+                "SUCCESSMESSAGE": "Thank you"
+              },
+              "legacyComponentId": 1551,
+              "order": 2
+            }
+          ],
+          "title": "Share your progress!",
+          "slug": "share-your-progress",
+          "order": 5,
+          "legacy": {
+            "assignId": 510,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageGallary",
+              "notes": [
+                "Unmapped legacy component type: ImageGallary"
+              ],
+              "legacyFields": {
+                "ACTION": "Sleeve",
+                "CHALLENGE_ASSIGNID": "511",
+                "CHALLENGE_COMPONENTID": "1553",
+                "WORKSHOPONLY": "1"
+              },
+              "legacyComponentId": 1553,
+              "order": 1
+            }
+          ],
+          "title": "Shared Gallery | Sleeves",
+          "slug": "shared-gallery-sleeves",
+          "order": 6,
+          "legacy": {
+            "assignId": 511,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Day 4:  Set in the sleeve",
+      "slug": "day-4-set-in-the-sleeve",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 96,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858956",
+              "title": "Set In Sleeve Perfection",
+              "legacyComponentId": 1302,
+              "order": 1
+            }
+          ],
+          "title": "Lesson 1: Set in sleeve perfection",
+          "slug": "lesson-1-set-in-sleeve-perfection",
+          "order": 1,
+          "legacy": {
+            "assignId": 414,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858422",
+              "title": "Seaming - Putting It All Together",
+              "legacyComponentId": 1563,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858940",
+              "title": "Seaming Stitches to Rows",
+              "legacyComponentId": 1566,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "251402187",
+              "title": "Setting In Sleeves on the Machine",
+              "legacyComponentId": 1572,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<br><div class=\"lead\">Which method do you prefer?</div>\r\n<table class=\"table\">\r\n<tr>\r\n\t<th></th>\r\n\t<th>Pros</th>\r\n\t<th>Cons</th>\r\n</tr>\r\n<tr>\r\n\t<td><b>Backstitch</b></td>\r\n\t<td>- Secure seam<br>\r\n- Control with sewing needle</td>\r\n\t<td>- Difficult to remove mistakes<br>\r\n- Easy to get sloppy stitches</td>\r\n</tr>\r\n<tr>\r\n\t<td><b>Latch Tool (Crochet) Slip Stitch</b></td>\r\n\t<td> - Easy to fix boo-boos<br>- Lots of control</td>\r\n\t<td>\"I don’t crochet\"</td>\r\n</tr>\r\n<tr>\r\n\t<td><b>Sewing machine or serger</b></td>\r\n\t<td>- Fast</td>\r\n\t<td>- Sewing experience essential</td>\r\n</tr>\r\n<tr>\r\n\t<td><b>Join on the machine or with a linker</b></td>\r\n\t<td>- Fast<br>- Neat</td>\r\n\t<td>- Takes practice to get tension correct<br>- Takes practice to hang pieces  neatly</td>\r\n</tr>\r\n<tr>\r\n\t<td><b><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i>  Combine methods</b></td>\r\n\t<td colspan=\"2\"><br>Use the methods you are comfortable with for joining stitches to stitches, stitches to rows and rows to rows</td>\r\n</tr>\r\n</table>",
+              "legacyComponentId": 1565,
+              "order": 4
+            }
+          ],
+          "title": "Lesson 2: Seaming Tips",
+          "slug": "lesson-2-seaming-tips",
+          "order": 2,
+          "legacy": {
+            "assignId": 517,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nThere are a number of ways you can set in a sleeve. Try different methods to get a feel for the pros and cons of each.\r\n<ul>\r\n<li>Backstitch</li>\r\n<li>Slip Stich crochet</li>\r\n<li>Mattress Stitch (along the rows to rows edges)</li>\r\n<li>Use your sewing machine or serger</li>\r\n<li>Join on the machine or with a linker</li>\r\n</ul>\r\n\r\n<img src=\"/challenge/images/v2/15/sleeve_practice/sleeve_pinned.jpg\">\r\n<br>Use your sample pieces and try some different methods of setting in your sleeves.  If you already have a favorite method, try something new ... you may be surprised!\r\n\r\n<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Don't forget ... it's ok to mix 'n match techniques.   Mattress stitch along the rows to rows area and use something else for the \"hard parts\". ",
+              "legacyComponentId": 1465,
+              "order": 1
+            }
+          ],
+          "title": "Lesson 3: Today's Challenge: Set in your Sleeve",
+          "slug": "lesson-3-today-s-challenge-set-in-your-sleeve",
+          "order": 3,
+          "legacy": {
+            "assignId": 428,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Upload your images here to share with the workshop members.  Your image will be added to a gallery for inspiration.",
+              "legacyComponentId": 1554,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "setin",
+                "BUTTONLABLE": "Share your progress",
+                "CHALLENGE_ASSIGNID": "512",
+                "CHALLENGE_COMPONENTID": "1555",
+                "QTY": "3",
+                "SUCCESSMESSAGE": "Thank you"
+              },
+              "legacyComponentId": 1555,
+              "order": 2
+            }
+          ],
+          "title": "Share your progress!",
+          "slug": "share-your-progress",
+          "order": 4,
+          "legacy": {
+            "assignId": 512,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageGallary",
+              "notes": [
+                "Unmapped legacy component type: ImageGallary"
+              ],
+              "legacyFields": {
+                "ACTION": "Sleeve",
+                "CHALLENGE_ASSIGNID": "511",
+                "CHALLENGE_COMPONENTID": "1553",
+                "WORKSHOPONLY": "1"
+              },
+              "legacyComponentId": 1557,
+              "order": 1
+            }
+          ],
+          "title": "Shared Gallery |  Sleeves Seaming",
+          "slug": "shared-gallery-sleeves-seaming",
+          "order": 5,
+          "legacy": {
+            "assignId": 513,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Day 5:  Top Down Sleeves",
+      "slug": "day-5-top-down-sleeves",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 97,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "163732444",
+              "title": "Top Down Set In Sleeves",
+              "legacyComponentId": 1318,
+              "order": 1
+            }
+          ],
+          "title": "Lesson 1: Top Down Sleeves",
+          "slug": "lesson-1-top-down-sleeves",
+          "order": 1,
+          "legacy": {
+            "assignId": 415,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">Try it yourself!</div>\r\n\r\n<ol class=\"instruction-list\">\r\n<li>Knit 2 armhole openings and join at the shoulder</li>\r\n<li>Following your pattern, put into work, the number total number of needles for the widest part of the sleeve.</li>\r\n<li>With wrong side facing, rehang the armhole opening on these needles</li>\r\n<li>Knit 1 row across all needles (tighten tension)</li>\r\n<li>Put all needles in hold. Position carriage on the right</li>\r\n<li>Set carriage to hold</li>\r\n<li>Put center sleeve cap needles into working position</li>\r\n<li>Drape the yarn tail over the needles in hold</li>\r\n<li>Knit across the center needles</li>\r\n<li>Wrap to prevent a hole</li>\r\n<li>Following the pattern as closely as possible, put needles into working position opposite the carriage every other row</li>\r\n<li>When all needles are in work, continue knitting for a few inches to finish the sleeve</li>\r\n<li>Bind off</li>\r\n</ol>\r\n",
+              "legacyComponentId": 1320,
+              "order": 1
+            }
+          ],
+          "title": "Lesson 2: Try Top Down and Judge for Yourself",
+          "slug": "lesson-2-try-top-down-and-judge-for-yourself",
+          "order": 2,
+          "legacy": {
+            "assignId": 422,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Upload your images here to share with the workshop members.  Your image will be added to a gallery for inspiration.",
+              "legacyComponentId": 1558,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "TopDown",
+                "BUTTONLABLE": "Share your progress",
+                "CHALLENGE_ASSIGNID": "514",
+                "CHALLENGE_COMPONENTID": "1559",
+                "QTY": "3",
+                "SUCCESSMESSAGE": "Thank you"
+              },
+              "legacyComponentId": 1559,
+              "order": 2
+            }
+          ],
+          "title": "Share your progress!",
+          "slug": "share-your-progress",
+          "order": 9,
+          "legacy": {
+            "assignId": 514,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageGallary",
+              "notes": [
+                "Unmapped legacy component type: ImageGallary"
+              ],
+              "legacyFields": {
+                "ACTION": "TopDown",
+                "CHALLENGE_ASSIGNID": "515",
+                "CHALLENGE_COMPONENTID": "1561",
+                "WORKSHOPONLY": "1"
+              },
+              "legacyComponentId": 1561,
+              "order": 1
+            }
+          ],
+          "title": "Shared Gallery | Top Down",
+          "slug": "shared-gallery-top-down",
+          "order": 10,
+          "legacy": {
+            "assignId": 515,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Upper Arm Charting",
+      "slug": "upper-arm-charting",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 783,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "178357836",
+              "title": null,
+              "legacyComponentId": 9552,
+              "order": 1
+            }
+          ],
+          "title": "The Mechanics",
+          "slug": "the-mechanics",
+          "order": 1,
+          "legacy": {
+            "assignId": 6233,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "178357818",
+              "title": null,
+              "legacyComponentId": 9553,
+              "order": 1
+            }
+          ],
+          "title": "Chart your changes - Pencil and Paper",
+          "slug": "chart-your-changes-pencil-and-paper",
+          "order": 2,
+          "legacy": {
+            "assignId": 6234,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "178357810",
+              "title": null,
+              "legacyComponentId": 9554,
+              "order": 1
+            }
+          ],
+          "title": "Chart your changes with Math Part 1",
+          "slug": "chart-your-changes-with-math-part-1",
+          "order": 3,
+          "legacy": {
+            "assignId": 6235,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "178357802",
+              "title": null,
+              "legacyComponentId": 9555,
+              "order": 1
+            }
+          ],
+          "title": "Chart your changes with Math Part 2",
+          "slug": "chart-your-changes-with-math-part-2",
+          "order": 4,
+          "legacy": {
+            "assignId": 6236,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "tools",
+              "notes": [
+                "Unmapped legacy component type: tools"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6237",
+                "MAINCONTENT": "pull-left",
+                "TOOLBUTTON1": "Knitters Graph Paper Tool",
+                "TOOLID_1": "8",
+                "TYPEOF": "tools"
+              },
+              "legacyComponentId": 9557,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Download Practice Exercises",
+              "filename": "/downloads/Modify sleeve practice.pdf",
+              "showInline": true,
+              "legacy": {
+                "assignId": "6237",
+                "componentId": "9556",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 9556,
+              "order": 2
+            }
+          ],
+          "title": "Practice",
+          "slug": "practice",
+          "order": 5,
+          "legacy": {
+            "assignId": 6237,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Bonus Challenge",
+      "slug": "bonus-challenge",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 98,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nNow that you've gained some experience with knitting set in sleeves in plain knitting .... Try the exercises again in a stitch pattern.  <br><ol class=\"instruction-list\">\r\n<li>Swatch in the stitch pattern of your choice</li>\r\n<li>Using your new gauge, create the pattern</li>\r\n<li>Choose Mini or Full Size</li>\r\n<li>Make your shaping choices based on your stitch pattern</li>\r\n<li>Get Knitting!</li>\r\n</ol>\r\n<br><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> If you work on multiple machines, these exercises are great to repeat at different gauges.  You may be surprised that you prefer different techniques on different machines.\r\n<br>\r\n<b>The only way to know is to try it!</b>\r\n\r\n\r\n",
+              "legacyComponentId": 1336,
+              "order": 1
+            }
+          ],
+          "title": "{first} Stretch your new skills",
+          "slug": "first-stretch-your-new-skills",
+          "order": 1,
+          "legacy": {
+            "assignId": 426,
+            "blockType": "Practice"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 23,
+    "videos": [
+      {
+        "vimeoId": "221120492",
+        "title": "Machine Knitting Courses",
+        "lessonSlug": "day-1-let-s-get-started",
+        "blockSlug": "lesson-1-new-to-knit-it-now-courses"
+      },
+      {
+        "vimeoId": "178357273",
+        "title": "Even though we are knitting samples - take time to swatch.",
+        "lessonSlug": "day-1-let-s-get-started",
+        "blockSlug": "lesson-2-swatching-is-not-optional"
+      },
+      {
+        "vimeoId": "772256112",
+        "title": "Building Knit it Now Custom Patterns",
+        "lessonSlug": "day-1-let-s-get-started",
+        "blockSlug": "lesson-5-create-your-practice-sleeve-pattern"
+      },
+      {
+        "vimeoId": "249303939",
+        "title": "Tips for Understanding Sleeve Construction",
+        "lessonSlug": "day-1-let-s-get-started",
+        "blockSlug": "lesson-7-does-your-pattern-look-wonky-tips-for-understanding-sleeve-construction"
+      },
+      {
+        "vimeoId": "151857916",
+        "title": "Compare Shaping Methods",
+        "lessonSlug": "day-2-knit-the-armholes",
+        "blockSlug": "lesson-1-shaping-options"
+      },
+      {
+        "vimeoId": "151857928",
+        "title": "Compare Shaping Methods - Part  2",
+        "lessonSlug": "day-2-knit-the-armholes",
+        "blockSlug": "lesson-1-shaping-options"
+      },
+      {
+        "vimeoId": "248074162",
+        "title": null,
+        "lessonSlug": "day-2-knit-the-armholes",
+        "blockSlug": "lesson-2-watch-as-we-knit-our-practice-armholes"
+      },
+      {
+        "vimeoId": "151860051",
+        "title": "Shoulder Seams",
+        "lessonSlug": "day-2-knit-the-armholes",
+        "blockSlug": "lesson-4-join-the-shoulders"
+      },
+      {
+        "vimeoId": "250279065",
+        "title": "Work Shaping on Both Sides",
+        "lessonSlug": "day-2-knit-the-armholes",
+        "blockSlug": "lesson-6-technique-basic-short-row-shaping"
+      },
+      {
+        "vimeoId": "250279967",
+        "title": "Neat bind off for these edges",
+        "lessonSlug": "day-2-knit-the-armholes",
+        "blockSlug": "lesson-6-technique-basic-short-row-shaping"
+      },
+      {
+        "vimeoId": "252258022",
+        "title": "Favorite Bind off",
+        "lessonSlug": "day-2-knit-the-armholes",
+        "blockSlug": "lesson-7-favorite-bind-off"
+      },
+      {
+        "vimeoId": "248191946",
+        "title": null,
+        "lessonSlug": "day-3-knit-the-sleeve",
+        "blockSlug": "lesson-1-watch-as-we-knit-our-sleeves"
+      },
+      {
+        "vimeoId": "248482806",
+        "title": "Explore Shaping Options",
+        "lessonSlug": "day-3-knit-the-sleeve",
+        "blockSlug": "lesson-2-explore-shaping-options"
+      },
+      {
+        "vimeoId": "362897865",
+        "title": null,
+        "lessonSlug": "day-3-knit-the-sleeve",
+        "blockSlug": "no-joggies"
+      },
+      {
+        "vimeoId": "151858956",
+        "title": "Set In Sleeve Perfection",
+        "lessonSlug": "day-4-set-in-the-sleeve",
+        "blockSlug": "lesson-1-set-in-sleeve-perfection"
+      },
+      {
+        "vimeoId": "151858422",
+        "title": "Seaming - Putting It All Together",
+        "lessonSlug": "day-4-set-in-the-sleeve",
+        "blockSlug": "lesson-2-seaming-tips"
+      },
+      {
+        "vimeoId": "151858940",
+        "title": "Seaming Stitches to Rows",
+        "lessonSlug": "day-4-set-in-the-sleeve",
+        "blockSlug": "lesson-2-seaming-tips"
+      },
+      {
+        "vimeoId": "251402187",
+        "title": "Setting In Sleeves on the Machine",
+        "lessonSlug": "day-4-set-in-the-sleeve",
+        "blockSlug": "lesson-2-seaming-tips"
+      },
+      {
+        "vimeoId": "163732444",
+        "title": "Top Down Set In Sleeves",
+        "lessonSlug": "day-5-top-down-sleeves",
+        "blockSlug": "lesson-1-top-down-sleeves"
+      },
+      {
+        "vimeoId": "178357836",
+        "title": null,
+        "lessonSlug": "upper-arm-charting",
+        "blockSlug": "the-mechanics"
+      },
+      {
+        "vimeoId": "178357818",
+        "title": null,
+        "lessonSlug": "upper-arm-charting",
+        "blockSlug": "chart-your-changes-pencil-and-paper"
+      },
+      {
+        "vimeoId": "178357810",
+        "title": null,
+        "lessonSlug": "upper-arm-charting",
+        "blockSlug": "chart-your-changes-with-math-part-1"
+      },
+      {
+        "vimeoId": "178357802",
+        "title": null,
+        "lessonSlug": "upper-arm-charting",
+        "blockSlug": "chart-your-changes-with-math-part-2"
+      }
+    ],
+    "downloadCount": 2,
+    "downloads": [
+      {
+        "filename": "/downloads/practice_sleeve_sample.pdf",
+        "label": "Don't know your gauge yet?  Preview a sample pattern",
+        "lessonSlug": "day-1-let-s-get-started",
+        "blockSlug": "lesson-5-create-your-practice-sleeve-pattern"
+      },
+      {
+        "filename": "/downloads/Modify sleeve practice.pdf",
+        "label": "Download Practice Exercises",
+        "lessonSlug": "upper-arm-charting",
+        "blockSlug": "practice"
+      }
+    ]
+  }
+}

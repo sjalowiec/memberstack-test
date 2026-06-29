@@ -1,0 +1,53 @@
+---
+/**
+ * Reusable Skill Builder schematic: load an SVG template and replace {{TOKEN}} placeholders.
+ * Generic renderer — pass any placeholder map; no skill-specific logic here.
+ */
+import { readFileSync } from "node:fs";
+import { renderSkillBuilderDiagramSvg } from "../../lib/skillBuilders/skillBuilderDiagram";
+
+interface Props {
+  /** SVG filename without path or extension (e.g. "round-neckline"). */
+  svg: string;
+  values?: Record<string, string | number>;
+  class?: string;
+  id?: string;
+}
+
+const { svg, values, class: className = "", id } = Astro.props;
+
+let innerHtml = "";
+if (values && Object.keys(values).length > 0) {
+  try {
+    const svgFile = new URL(
+      `../../../public/images/skill-builders/${svg.replace(/\.svg$/i, "")}.svg`,
+      import.meta.url,
+    );
+    const svgText = readFileSync(svgFile, "utf8");
+    innerHtml = renderSkillBuilderDiagramSvg(svgText, values);
+  } catch (error) {
+    console.error(`SkillBuilderDiagram: failed to load ${svg}`, error);
+  }
+}
+---
+
+<div
+  class:list={["skill-builder-diagram", className]}
+  id={id}
+  data-sb-diagram={svg}
+  set:html={innerHtml || undefined}
+/>
+
+<style>
+  .skill-builder-diagram {
+    width: 100%;
+    max-width: 22rem;
+    margin: 0 auto 1.25rem;
+  }
+
+  .skill-builder-diagram :global(svg) {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+</style>

@@ -382,7 +382,7 @@ describe("center neckline divide/setup row moved out of the online checklist", (
       activeSideRcStart: rcStart,
       includeCenterNecklineSetupRow: true,
     });
-    expect(printMini).toMatch(/to divide/i);
+    expect(printMini).toMatch(/Place center \d+ neckline stitches in hold/i);
   });
 });
 

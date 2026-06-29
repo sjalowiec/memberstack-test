@@ -1,0 +1,141 @@
+---
+import {
+  legacyLessonItemHref,
+} from "../../../lib/legacy_kin/legacyCourseLoader";
+import type { CourseContentItemStep } from "../../../lib/legacy_kin/courseLessonContentItems";
+import { contentItemDisplayTitle } from "../../../lib/legacy_kin/courseLessonContentItems";
+
+interface Props {
+  courseSlug: string;
+  previewQuery?: string;
+  prev?: CourseContentItemStep | null;
+  next?: CourseContentItemStep | null;
+  /** Top placement: compact spacing below the title. Bottom: existing separator styling. */
+  placement?: "top" | "bottom";
+}
+
+const {
+  courseSlug,
+  previewQuery = "",
+  prev = null,
+  next = null,
+  placement = "bottom",
+} = Astro.props;
+
+function stepHref(step: CourseContentItemStep): string {
+  return `${legacyLessonItemHref(courseSlug, step.lesson.slug, step.item.itemSlug)}${previewQuery}`;
+}
+
+function stepLabel(step: CourseContentItemStep): string {
+  return contentItemDisplayTitle(step.lesson, step.item) || step.item.itemSlug;
+}
+---
+
+{
+  prev || next ? (
+    <nav
+      class:list={[
+        "legacy-course__item-nav",
+        placement === "top" && "legacy-course__item-nav--top",
+        placement === "bottom" && "legacy-course__item-nav--bottom",
+      ]}
+      aria-label="Section navigation"
+    >
+      {
+        prev ? (
+          <a class="legacy-course__item-nav-link legacy-course__item-nav-link--prev" href={stepHref(prev)}>
+            <span class="legacy-course__item-nav-arrow" aria-hidden="true">←</span>
+            <span class="legacy-course__item-nav-label">{stepLabel(prev)}</span>
+          </a>
+        ) : (
+          <span />
+        )
+      }
+      {
+        next ? (
+          <a class="legacy-course__item-nav-link legacy-course__item-nav-link--next" href={stepHref(next)}>
+            <span class="legacy-course__item-nav-label">{stepLabel(next)}</span>
+            <span class="legacy-course__item-nav-arrow" aria-hidden="true">→</span>
+          </a>
+        ) : null
+      }
+    </nav>
+  ) : null
+}
+
+<style>
+  .legacy-course__item-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem 1rem;
+  }
+
+  .legacy-course__item-nav--top {
+    margin: 1rem 0;
+  }
+
+  .legacy-course__item-nav--bottom {
+    margin-top: 2rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #e0e6d8;
+  }
+
+  .legacy-course__item-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    max-width: min(100%, calc(50% - 0.5rem));
+    padding: 0.5rem 0.85rem;
+    border: 1px solid #d8dfd0;
+    border-radius: 8px;
+    background: #fff;
+    color: var(--kbm-green, #52682d);
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.35;
+    text-decoration: none;
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .legacy-course__item-nav-link:hover {
+    border-color: var(--kbm-green, #52682d);
+    background: #f3f6ee;
+    box-shadow: 0 1px 3px rgba(82, 104, 45, 0.12);
+    text-decoration: none;
+  }
+
+  .legacy-course__item-nav-link:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+    border-color: var(--kbm-green, #52682d);
+    background: #f3f6ee;
+  }
+
+  .legacy-course__item-nav-link--next {
+    margin-left: auto;
+  }
+
+  .legacy-course__item-nav-arrow {
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .legacy-course__item-nav-label {
+    min-width: 0;
+  }
+
+  @media (max-width: 540px) {
+    .legacy-course__item-nav-link {
+      max-width: 100%;
+    }
+
+    .legacy-course__item-nav-link--next {
+      margin-left: auto;
+    }
+  }
+</style>

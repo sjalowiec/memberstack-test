@@ -1,10 +1,10 @@
 import type { APIRoute } from "astro";
 import {
-  COURSE_CONTENT_FILES,
-  getAllowedCourseIds,
   isAllowedCourseId,
   isCourseContentAdminAllowed,
+  listAdminCourseSummaries,
   readCourseContentFile,
+  saveCourseMetadata,
   saveLessonUpdate,
 } from "../../../lib/legacy_kin/courseContentAdmin";
 import {
@@ -13,6 +13,10 @@ import {
   duplicateLessonInCourse,
   moveLessonInCourse,
 } from "../../../lib/legacy_kin/courseLessonAdmin";
+import {
+  formatCourseSplitReport,
+  runCourseContentSplit,
+} from "../../../lib/legacy_kin/courseContentSplit";
 
 export const prerender = false;
 
@@ -55,15 +59,7 @@ export const GET: APIRoute = async ({ url, request }) => {
   const courseId = parseCourseId(url.searchParams.get("courseId"));
 
   try {
-    const courses = getAllowedCourseIds().map((id) => {
-      const data = readCourseContentFile(id);
-      return {
-        id,
-        title: data.course.title,
-        filename: COURSE_CONTENT_FILES[id],
-        lessonCount: data.lessons.length,
-      };
-    });
+    const courses = listAdminCourseSummaries();
 
     if (courseId === null) {
       return jsonResponse({ ok: true, courses });
@@ -98,7 +94,7 @@ export const POST: APIRoute = async ({ request }) => {
   const courseId = Number.parseInt(String(body.courseId ?? ""), 10);
   if (!Number.isFinite(courseId) || !isAllowedCourseId(courseId)) {
     return jsonResponse(
-      { ok: false, error: "courseId must be a supported legacy course id (50 or 51)." },
+      { ok: false, error: "courseId must be a supported legacy course id." },
       400,
     );
   }
@@ -172,6 +168,79 @@ export const POST: APIRoute = async ({ request }) => {
         lesson: result.lesson,
         lessonSlug: result.lessonSlug,
         backupPath: result.backupPath,
+        savedAt: new Date().toISOString(),
+      });
+    }
+
+    if (action === "saveCourseMetadata") {
+      if (
+        !("thumbnail" in body) &&
+        !("description" in body) &&
+        !("active" in body) &&
+        !("published" in body) &&
+        !("contentStatus" in body)
+      ) {
+        return jsonResponse(
+          {
+            ok: false,
+            error: "saveCourseMetadata requires thumbnail, description, active, published, and/or contentStatus.",
+          },
+          400,
+        );
+      }
+      const update: {
+        thumbnail?: unknown;
+        description?: unknown;
+        active?: unknown;
+        published?: unknown;
+        contentStatus?: unknown;
+      } = {};
+      if ("thumbnail" in body) update.thumbnail = body.thumbnail;
+      if ("description" in body) update.description = body.description;
+      if ("active" in body) update.active = body.active;
+      if ("published" in body) update.published = body.published;
+      if ("contentStatus" in body) update.contentStatus = body.contentStatus;
+      const result = saveCourseMetadata(courseId, update);
+      const course = readCourseContentFile(courseId);
+      return jsonResponse({
+        ok: true,
+        action,
+        courseId,
+        course,
+        thumbnail: result.thumbnail,
+        description: result.description,
+        active: result.active,
+        published: result.published,
+        contentStatus: result.contentStatus,
+        backupPath: result.backupPath,
+        savedAt: new Date().toISOString(),
+      });
+    }
+
+    if (action === "splitLessonContent") {
+      const lessonSlug =
+        typeof body.lessonSlug === "string" ? body.lessonSlug.trim() : undefined;
+      const blockSlug =
+        typeof body.blockSlug === "string" ? body.blockSlug.trim() : undefined;
+      const dryRun = body.apply !== true;
+      const force = body.force === true;
+      const allowHandCleaned = body.allowHandCleaned === true;
+      const report = runCourseContentSplit({
+        courseId,
+        lessonSlug,
+        blockSlug,
+        dryRun,
+        force,
+        allowHandCleaned,
+      });
+      const course = readCourseContentFile(courseId);
+      return jsonResponse({
+        ok: true,
+        action,
+        courseId,
+        course,
+        report,
+        reportText: formatCourseSplitReport(report),
         savedAt: new Date().toISOString(),
       });
     }

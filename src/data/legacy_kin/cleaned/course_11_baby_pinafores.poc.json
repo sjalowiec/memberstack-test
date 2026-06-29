@@ -1,0 +1,1374 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 11,
+    "title": "Baby Pinafores",
+    "slug": "baby-pinafores",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_11_baby_pinafores.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/pinafore.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Start Here",
+      "slug": "start-here",
+      "displayOrder": 10,
+      "legacy": {
+        "itemId": 61,
+        "lessonOrder": 10
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Welcome {first}!<br>\r\n\r\nDo you have a little girl in your life who NEEDS a knitted dress?\r\n<br> What could be cuter than a little dress with flowers, ruffles, color and fun texture?\r\n<br>A fellow knitter recently challenged me to create a baby pinafore pattern. Having sons, my experience in this area is lacking, but she sent me some examples and I really got excited. <small><em>(thank you, Jill!)</em></small><br><img src=\"/challenge/images/v2/11/pinafore/pinafore_image7.jpg\">\r\n\r\n\r\n\r\n<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/230285859' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\r\n\r\nAs I created a new Pinterest board to store all the fun examples, I found that I couldn't decide which one I liked best!  So we created 2 styles in one pattern.  <br><ul>\r\n<li>A simple 2 piece a-line style.  Think of this one as a blank canvas for playing with color and adding embellishments.<br></li>\r\n\r\n<li>The Empire style has a yoke and skirt.  The separate pieces allow us to knit the yoke and skirt in different stitch patterns... plus opens up even more possibilities for embellishment and awesome cuteness!!!<br></li>\r\n</ul>\r\n\r\nIt's your choice... make this a fast and easy project or add a bunch of color changes, lace and hand manipulation for an heirloom project.<br>With the included Knit it Now Dynamic pattern, you can use any machine, any yarn, any stitch pattern to reproduce something you've seen or your own design.<br><center>\r\nScroll through our <a href=\"https://www.pinterest.com/knititnow/machine-knit-pinafore-inspiration/\">Pinterest Board</a> below for Pinafore Inspiration.<br>\r\n\r\n<a href=\"https://www.pinterest.com/knititnow/machine-knit-pinafore-inspiration/\"><img width=\"100\" src=\"http://www.knititnow.com/images/blog_images/2017/pinterest_script.png\"></a></center>\r\n",
+              "legacyComponentId": 1043,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntryOptions",
+              "notes": [
+                "Unmapped legacy component type: DataEntryOptions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "326",
+                "CHALLENGE_COMPONENTID": "1044",
+                "DATAMODEL_ELEMENT": "Pinafore_style",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_OPTIONLIST": "A-Line,Yoke and Skirt",
+                "DATAMODEL_REQEST_TEXT": "Which style do you prefer?<br><em><small>It's a hard decision. You don't have to answer now</small></em>",
+                "DATAMODEL_TYPE": "Radio",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 1044,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pinterest",
+              "notes": [
+                "Legacy Pinterest embed; replace with static content or omit."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "326",
+                "PINTERESTID": "1",
+                "TYPEOF": "Pinterest"
+              },
+              "legacyComponentId": 1045,
+              "order": 3
+            }
+          ],
+          "title": "Pinafore Inspiration",
+          "slug": "pinafore-inspiration",
+          "order": 1,
+          "legacy": {
+            "assignId": 326,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The video will walk you through how to access the lessons and navigate to get the most out of your course.<br /> Don't skip lessons ... you may feel that you know how to cast on ... but sometimes you will pick up a tip that you can use while watching a video.<br><blockquote class=\"smallblock\"><em>Another reason to follow the course material in order - Throughout the lessons, you'll be making decisions about your project.  We will record your decisions to create your custom pattern.</em></blockquote>\r\n",
+              "legacyComponentId": 754,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "221120492",
+              "title": "Machine Knitting Courses",
+              "legacyComponentId": 755,
+              "order": 2
+            }
+          ],
+          "title": "How To Use This Course Site",
+          "slug": "how-to-use-this-course-site",
+          "order": 2,
+          "legacy": {
+            "assignId": 249,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Decisions, Decisions, Decisions",
+      "slug": "decisions-decisions-decisions",
+      "displayOrder": 20,
+      "legacy": {
+        "itemId": 59,
+        "lessonOrder": 20
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nLet's plan our project from the start.<br>The Techniques Lesson in the course offers some suggestions, but the possibilities for customizing this pattern are endless.\r\n<em><blockquote class=\"smallblock\">Think of the pattern as a basic blueprint, ready for you to add your own designer touches</blockquote></em>\r\n\r\n<img src=\"/challenge/images/v2/11/pinafore/pinafore_image7.jpg\">\r\n\r\n<hr />\r\n<div class=\"lead\">{first}, Tell us about your machine, your yarn and your plan for your sweater.</div>\r\nIf you don't yet have a plan or know your gauge, no problem!  This information can be changed at any time.<br>\r\nThis answers you enter below will be used to create your custom pattern and in your course binder. <small><em><br>\r\nThe items with * will be required before you can create your custom pattern.</em></small>",
+              "legacyComponentId": 826,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "127",
+                "CHALLENGE_COMPONENTID": "210",
+                "DATAMODEL_ELEMENT": "machine",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "What machine will you use?",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 827,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "127",
+                "CHALLENGE_COMPONENTID": "212",
+                "DATAMODEL_ELEMENT": "Your_yarn",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "What yarn will you use?",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 828,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntryOptions",
+              "notes": [
+                "Unmapped legacy component type: DataEntryOptions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "275",
+                "DATAMODEL_ELEMENT": "Pinafore_style",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_OPTIONLIST": "A-Line,Yoke and Skirt",
+                "DATAMODEL_REQEST_TEXT": "Which style do you prefer?",
+                "DATAMODEL_TYPE": "Radio",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntryOptions"
+              },
+              "legacyComponentId": 836,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "275",
+                "DATAMODEL_ELEMENT": "Hem_Style",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "What Hem Finish will you use?",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 834,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "275",
+                "CHALLENGE_COMPONENTID": "837",
+                "DATAMODEL_ELEMENT": "Shaping_method",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "What shaping method? <small><em>(Full Fashioned Decreases? Simple Decreases? Your choice?)</em></small>",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 837,
+              "order": 6
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "275",
+                "DATAMODEL_ELEMENT": "Bands",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "What neckline and armhole bands?<small><em> (Don't forget cut 'n sew is a fast way to shape)</em></small>",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 838,
+              "order": 7
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "275",
+                "CHALLENGE_COMPONENTID": "841",
+                "DATAMODEL_ELEMENT": "Personal_notes",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Notes about your project: ",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 841,
+              "order": 8
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Selectsize",
+              "notes": [
+                "Unmapped legacy component type: Selectsize"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "127",
+                "CHALLENGE_COMPONENTID": "374",
+                "DATAMODEL_ELEMENT": "PatternSize",
+                "DATAMODEL_REQEST_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Select size *",
+                "SIZINGTYPEID": "3"
+              },
+              "legacyComponentId": 831,
+              "order": 9
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "SizingChart",
+              "notes": [
+                "Unmapped legacy component type: SizingChart"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "275",
+                "CHALLENGE_COMPONENTID": "833",
+                "SIZINGTYPEID": "3"
+              },
+              "legacyComponentId": 833,
+              "order": 10
+            }
+          ],
+          "title": "Tell us about your project",
+          "slug": "tell-us-about-your-project",
+          "order": 1,
+          "legacy": {
+            "assignId": 275,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "If you want to lengthen or shorten your Pinafore:\r\n<ul>\r\n<li>\r\n<b>A-Line:</b>  Because of the A-line shape you'll need to do a little math.\r\n<blockquote class=\"blockquote_style\"><em><i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i> Don't panic. We include a tool in the pattern to make it easy (see the video below)</em></blockquote></li>\r\n<li><b>Empire Style:</b> Add or subtract rows from the skirt length</li>\r\n</ul>\r\n",
+              "legacyComponentId": 822,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "273",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 986,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "The video below walks you through using the built-in length adjustment tool.  Even though the video discusses sleeves, the idea is the same.  The tool will help you adjust the length of a shaped piece and re-calculate the shaping instructions for you.<br><img width=\"80%\" src=\"/challenge/images/v2/11/pinafore/length_adjust_tool.jpg\"><br>",
+              "legacyComponentId": 985,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "163901749",
+              "title": "Dynamic Pattern Sleeve Length Adjustments",
+              "legacyComponentId": 823,
+              "order": 4
+            }
+          ],
+          "title": "Adjust the length",
+          "slug": "adjust-the-length",
+          "order": 2,
+          "legacy": {
+            "assignId": 273,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<center><img class=\"img-thumbnail\" width=\"250\" src=\"/challenge/images/v2/11/pinafore/back_neck.jpg\"></center>\r\nThe Pinafore Patterns in this course are designed with a back neck opening.  But because of the size, it can be a bit of a challenge attaching a neckband to this opening on the machine.  <br>\r\n",
+              "legacyComponentId": 842,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "276",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 1037,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Here's an alternative to the back neck opening. Eliminate the back neck split in the pattern and join the shoulders as shown below.<br>\r\n<center><img class=\"img-thumbnail\" src=\"http://www.knititnow.com/images/blog_images/2013/kids_necklines.jpg\" alt=\"kids necklines for machine knitting\" width=\"250\" /></center>\r\nWhen knitting pullover sweaters for babies and kids, it's important to make sure the neck opening will fit over the head.  Looking at <a title=\"babies sizing chart for knitting\" href=\"http://www.knititnow.com/knit/sizingtable/3/Infant-Size-charts\" target=\"_blank\" rel=\"noopener noreferrer\">sizing charts</a>, 3 month heads are 15\". Neck openings are 4.5\".  Yes, knitting stretches, but leaving one shoulder open is the answer for a sweater that will be worn.<br>Knitters have 2 choices:<br>\r\n\r\n\r\n<img src=\"http://www.knititnow.com/images/blog_images/2013/kids_necklines1.gif\" alt=\"neckline finished for kids sweaters\" /><br />\r\n<ul>\r\n<li>Knit the front and back pieces as instructed</li>\r\n<li>Join the right shoulder</li>\r\n<li>Knit and attach the neck band per the pattern</li>\r\n<li>On the left back shoulder pick up stitches and knit a band. Knit in ribbing and bind off or knit a doubled band, fold over and secure.</li>\r\n<li>On the left front shoulder work the same style of band, adding buttonholes</li>\r\n</ul>\r\n\r\n\r\n<img src=\"http://www.knititnow.com/images/blog_images/2013/kids_necklines2.gif\" alt=\"neckbands for child's pullover\" /><br />\r\n<ul>\r\n<li>Knit the front and back pieces as instructed, removing the left shoulders on waste yarn.</li>\r\n<li>Join the right shoulder</li>\r\n<li>re-hang the left back shoulder stitches and knit in ribbing or a doubled band</li>\r\n<li>re-hang the left front shoulder stitches and work the same style of band, adding buttonholes</li>\r\n<li>Pick up the neck band, including the edge of the shoulder bands and work as directed in your pattern.</li>\r\n</ul>\r\n\r\n",
+              "legacyComponentId": 1036,
+              "order": 4
+            }
+          ],
+          "title": "Kids Necklines",
+          "slug": "kids-necklines",
+          "order": 3,
+          "legacy": {
+            "assignId": 276,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Guarantee your success with swatches",
+      "slug": "guarantee-your-success-with-swatches",
+      "displayOrder": 25,
+      "legacy": {
+        "itemId": 69,
+        "lessonOrder": 25
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<center><img class=\"img-thumbnail\" width=\"300\" src=\"/challenge/images/v2/11/gauge_swatch_tension/swatching_is_not_optional.jpg\"></center>\r\nThere are many variables when knitting (both by hand and by machine).\r\n\r\n <br><ul>\r\n \t<li>Different colors of the SAME yarn may knit to a different gauge</li>\r\n \t<li>Different dye lots of the SAME color of the SAME yarn may knit to a different gauge</li>\r\n \t<li>Different models of the SAME gauge knitting machine may knit to a different gauge.</li>\r\n \t<li>The SAME size knitting needle from a different manufacturer may knit to a different gauge</li>\r\n \t<li>Different people, using the exactly the SAME needles, machines, and yarns may get get different gauges</li>\r\n</ul>\r\n\r\n<div><strong>SWATCHING IS NOT OPTIONAL!</strong></div>\r\n\r\nHow many times have you knit something that just didn't fit?  Have you ever had colors run or fade when you washed your sweater?<br>So many knitting disasters can be avoided by swatching and dressing your swatch.  Machine knitters have NO EXCUSE for not swatching!  We can knit multiple swatches quickly, testing stitch patterns and tensions.  Since we don't have a lot of time invested, we can do the \"throw-the-swatch-in-the-wash-with-jeans\" test to see if a washable yarn will hold up.<br>",
+              "legacyComponentId": 987,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357273",
+              "title": "Knit a Swatch (Don't Skip This!)",
+              "legacySlot": 1,
+              "legacyComponentId": 988,
+              "order": 2
+            }
+          ],
+          "title": "Swatching is NOT optional",
+          "slug": "swatching-is-not-optional",
+          "order": 1,
+          "legacy": {
+            "assignId": 309,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "It is important that you know how to estimate yarn for all of your knitting projects <br><small>(hint: it's based on your swatch and a little math)</small>",
+              "legacyComponentId": 991,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857735",
+              "title": "How Much Yarn Do I Need?",
+              "legacyComponentId": 992,
+              "order": 2
+            }
+          ],
+          "title": "How Much Yarn Do You Need?",
+          "slug": "how-much-yarn-do-you-need",
+          "order": 6,
+          "legacy": {
+            "assignId": 311,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/11/yarn_estimate_example.jpg\" alt=\"\" />\r\n\r\n\r\n\r\n\r\nUsing the dimensions of the sample swatch shown above,  and the instructions from the video,<br />calculate how much yarn you would need for a <strong>36x36 baby blanket.</strong>\r\n<em><small>Not sure? Take a guess and we'll show you the math</small></em>\r\n\r\n",
+              "legacyComponentId": 993,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "167",
+                "QUESTION_ANSWER": "63",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply 9 x 7 = 63</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many square inches in the sample swatch?"
+              },
+              "legacyComponentId": 995,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "168",
+                "QUESTION_ANSWER": "3.5",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Divide weight (22) / square inches (63)=.35 </b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Calculate weight per square inch <small>(round up)</small>"
+              },
+              "legacyComponentId": 996,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "169",
+                "QUESTION_ANSWER": "1296",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply 36 x 36 = 1296</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many square inches in the blanket?"
+              },
+              "legacyComponentId": 997,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "170",
+                "QUESTION_ANSWER": "454",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply the blanket square inches(1296) x multiplier (.35)= 454 grams</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many grams are needed (approximate) for the 36 x 36 inch blanket?"
+              },
+              "legacyComponentId": 998,
+              "order": 6
+            },
+            {
+              "type": "richText",
+              "html": "\r\n              Hate math?<br>Try the Knit it Now tool\r\n                <img src=\"/challenge/images/v2/11/tools/yarn_estimator_tool_sticky.gif\">\r\n\r\n\r\n",
+              "legacyComponentId": 1000,
+              "order": 8
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859805",
+              "title": "Watch how it works",
+              "legacyComponentId": 1001,
+              "order": 9
+            }
+          ],
+          "title": "Practice - Yarn Estimate",
+          "slug": "practice-yarn-estimate",
+          "order": 7,
+          "legacy": {
+            "assignId": 312,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<small>Instructions are for suggestions for <b>standard gauge</b><em> (mid-gauge, bulky)</em> and for using gauge rulers.</small><br>\r\n<blockquote class=\"smallblock\"><em>  Remember, you can knit swatches any size (as long as they are at least 5-6\" square.) Be sure to be consistent and establish a template for yourself for every time you knit a swatch.</em></blockquote>",
+              "legacyComponentId": 1025,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\r\n     <ol class=\"instruction-list\">\r\n          <li>Cast on <b>60</b><em>(50,30)</em> stitches <small><em>(add extra stitches so you can measure the center without edge distortion.)</em></small></li>\r\n           <li>Knit a few rows in pattern</li>\r\n          <li>Knit 2 rows in waste yarn (or weave a marker row)</li>\r\n          <li>Set row counter to 000</li>\r\n           <li>Knit the center section<br><div style=\"margin-left:30px\">\r\n<b>Standard gauge:</b>\r\n    <ul class=\"instruction-nolist-tight\">\r\n         <li>Knit 20  rows and knit in a yarn marker isolating the center 40 stitches</li>\r\n       <li>Knit 20 more rows and place a marker on the same needles</li>\r\n         <li>Knit 20 more rows</li>\r\n    </ul >\r\n<b>Mid-Gauge:</b>\r\n    <ul class=\"instruction-nolist-tight\">\r\n       <li>Knit 10  rows and knit in a yarn marker isolating the center 30 stitches</li>\r\n       <li>Knit 10 more rows and place a marker on the same needles</li>\r\n    </ul >\r\n<b>Bulky</b>\r\n    <ul class=\"instruction-nolist-tight\">\r\n          <li>Knit 15 rows and knit in a yarn marker isolating the center 40 stitches</li>\r\n            <li>Knit 15 more rows</li>\r\n</ul>\r\n</div>\r\n<li>Confirm and record the total number of rows you knit for the center <b>60</b><em>(40, 30)</em></li>\r\n<li>Knit 2 rows in waste yarn (or weave a marker row)</li>\r\n<li>Knit a few rows and bind off <small><em>(or drop the work from the machine)</em></small></li>\r\n</ol>\r\nLet the swatch rest<br>\r\n<ol>\r\n<li>Dress the swatch as you will treat the finished item</li>\r\n<li>Measure the size of the <b>40</b><em>(30, 20)</em> stitches in the center of the swatch (between the yarn markers)</li>\r\n<li>Measure the size of the <b>60</b><em>(40,30)</em> rows between the waste yarn (or marker rows)</li>\r\n<li>The math\r\n<ul><li>Divide the stitches in the middle by your measurement to get <b>Stitches Per Inch/cm</b></li>\r\n<li>Divide the rows in the middle by your measurement to get <b>Rows Per Inch/cm</b></li>\r\n<li>Multiply your stitches/rows per inch/cm times 4 to calculate stitches per 4\" (10cm)</li>\r\n</ul>\r\n</ol>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 1003,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/11/gauge_swatch_tension/swatch_info.jpg\">\r\n<img src=\"/challenge/images/v2/11/gauge_swatch_tension/swatch_info1.jpg\">\r\n</div>\r\n",
+              "legacyComponentId": 1038,
+              "order": 5
+            }
+          ],
+          "title": "Knit YOUR Swatch",
+          "slug": "knit-your-swatch",
+          "order": 7,
+          "legacy": {
+            "assignId": 313,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Practice makes Perfect!",
+      "slug": "practice-makes-perfect",
+      "displayOrder": 26,
+      "legacy": {
+        "itemId": 62,
+        "lessonOrder": 26
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Plain or fancy, you have lots of choices with increases and decreases",
+              "legacyComponentId": 1005,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858447",
+              "title": "Basic Increasing and Decreasing",
+              "legacyComponentId": 801,
+              "order": 2
+            }
+          ],
+          "title": "Basic Shaping",
+          "slug": "basic-shaping",
+          "order": 1,
+          "legacy": {
+            "assignId": 263,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Neckline shaping doesn't have to be difficult.<br>\r\n<blockquote class=\"smallblock\"><em>Practice and master shaping necklines BEFORE you start your sweater project</em></blockquote>",
+              "legacyComponentId": 1006,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858551",
+              "title": "Easy Round Neck Shaping",
+              "legacyComponentId": 802,
+              "order": 2
+            }
+          ],
+          "title": "Neck Shaping",
+          "slug": "neck-shaping",
+          "order": 2,
+          "legacy": {
+            "assignId": 264,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "211136246",
+              "title": "Neck Band Tool and Tips",
+              "legacyComponentId": 805,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "266",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 1007,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<br>\r\nFor fast, casual garments, rolled hems are perfect. Work a closed cast on and just start knitting! No muss or fuss! Embrace the roll!\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/11/pinafore/scalloped_rolled_edge.jpg\">\r\n\r\n<hr>\r\nWith just a little bit of hand sewing, you can quickly add a pretty scalloped edge to your rolled edges.\r\n\r\n<img class=\"img-thumbnail\"src=\"http://www.knititnow.com/challenge/images/pinafore/scalloped_rolled_edge.gif\"><Br>\r\n",
+              "legacyComponentId": 804,
+              "order": 3
+            }
+          ],
+          "title": "Neckline Finishing",
+          "slug": "neckline-finishing",
+          "order": 3,
+          "legacy": {
+            "assignId": 266,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "This picot hem includes stitch transfers, but the effort is so worth it!  The hem lays flat and is beautiful!<br>\r\n<blockquote class=\"smallblock\"><em><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i>\r\n\r\n Use a garter bar to turn a few garter rows immediately above this hem for completely different look.</em>",
+              "legacyComponentId": 1008,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859907",
+              "title": "Best Ever Picot Hem",
+              "legacyComponentId": 803,
+              "order": 2
+            }
+          ],
+          "title": "Best Ever Picot Hem",
+          "slug": "best-ever-picot-hem",
+          "order": 4,
+          "legacy": {
+            "assignId": 265,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Delicate scalloped hem. 3 variations with eyelets for a beautiful beginning.",
+              "legacyComponentId": 1009,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859900",
+              "title": "Scalloped Eyelet Hem",
+              "legacyComponentId": 1010,
+              "order": 2
+            }
+          ],
+          "title": "Scalloped Hem",
+          "slug": "scalloped-hem",
+          "order": 5,
+          "legacy": {
+            "assignId": 267,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Don't let this happen to you!<br>Get in the habit of adding lifelines when you are knitting.<br>\r\n\r\n\r\n<blockquote class=\"smallblock\">\r\n\r\n<div style=\"text-align: left;\"><em><strong><span style=\"font-size:59px\"><span>\"</span></span></strong>\"I knit 600 rows with hand manipulation, dropped a stitch and had to rip the whole thing\" <i class=\"fa fa-frown-o fa-1x\" aria-hidden=\"true\"></i></em></div>\r\n\r\n<div style=\"text-align: right;\"><em><strong><span style=\"font-size:59px\"><span>\"</span></span></strong></em></div>\r\n</blockquote\r\n\r\n",
+              "legacyComponentId": 1011,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859753",
+              "title": "Lifelines: A Knitter's Best Friend",
+              "legacyComponentId": 1012,
+              "order": 2
+            }
+          ],
+          "title": "{first}, No Tears Allowed!",
+          "slug": "first-no-tears-allowed",
+          "order": 6,
+          "legacy": {
+            "assignId": 314,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Instead of binding off your shoulder seams, scrap off and leave live stitches. Join the seams on the machine for a beautiful finish. (This is similar to a 3 needle bind off in hand knitting)",
+              "legacyComponentId": 1026,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860051",
+              "title": "Shoulder Seams",
+              "legacyComponentId": 1013,
+              "order": 2
+            }
+          ],
+          "title": "Professional Shoulder Join",
+          "slug": "professional-shoulder-join",
+          "order": 7,
+          "legacy": {
+            "assignId": 315,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Careful seaming can mean the difference between \"home made\" and \"hand made\". Take time to practice different seaming techniques for your project.",
+              "legacyComponentId": 1027,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858422",
+              "title": "Seaming - Putting It All Together",
+              "legacyComponentId": 1018,
+              "order": 2
+            }
+          ],
+          "title": "Spectacular Seams",
+          "slug": "spectacular-seams",
+          "order": 8,
+          "legacy": {
+            "assignId": 320,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859058",
+              "title": "Edges for Slit Skirts, Sweaters and Necklines",
+              "legacyComponentId": 1046,
+              "order": 1
+            }
+          ],
+          "title": "Back Neck Opening",
+          "slug": "back-neck-opening",
+          "order": 9,
+          "legacy": {
+            "assignId": 327,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "A-line Start-to-Finish",
+      "slug": "a-line-start-to-finish",
+      "displayOrder": 30,
+      "legacy": {
+        "itemId": 67,
+        "lessonOrder": 30
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/11/pinafore/step0_a.jpg",
+                  "caption": "<div class=\"col-xs-12\">The basic pinafore: Simple stockinette knitting, picot hem, contrasting bands of single crochet and crochet flower. </div>"
+                },
+                {
+                  "src": "/challenge/images/v2/11/pinafore/step1_a.jpg",
+                  "caption": "<div class=\"col-xs-12\"><a class=\"btn btn-default btn-xs\" href=\"http://www.knititnow.com/challenge/11/Group/265/item#section62\" role=\"button\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i>  Best Ever Picot Hem</a> This is one of our favorite hems.\r\n\r\n</div>"
+                },
+                {
+                  "src": "/challenge/images/v2/11/pinafore/step2_a.jpg",
+                  "caption": "<div class=\"col-xs-12\"><a class=\"btn btn-default  btn-xs\" href=\"http://www.knititnow.com/challenge/11/Group/263/item#section62\" role=\"button\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Basic Shaping</a>\r\nTo make seaming easier, decrease at least 2 stitches from the edge.</div>"
+                },
+                {
+                  "src": "/challenge/images/v2/11/pinafore/step3_a.jpg",
+                  "caption": "<div class=\"col-xs-12\"><a class=\"btn btn-default  btn-xs\" href=\"http://www.knititnow.com/challenge/11/Group/314/item#section62\" role=\"button\" <i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> <i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Lifelines</a>\r\n\r\n\r\n<i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> Add a LIFELINE <small>(scrap off and rehang)</small> before starting the armhole shaping and/or before starting the neckline shaping.\r\n\r\n</div>"
+                },
+                {
+                  "src": "/challenge/images/v2/11/pinafore/step4_a.jpg",
+                  "caption": "<div class=\"col-xs-12\">Knitting each side separately, scrap off each shoulder.</div>"
+                },
+                {
+                  "src": "/challenge/images/v2/11/pinafore/step5_a.jpg",
+                  "caption": "<div class=\"col-xs-12\">Knit the back the same as the front to the back neck split.  Work each side separately. Scrap off the shoulders.</div>"
+                },
+                {
+                  "src": "/challenge/images/v2/11/pinafore/step6.jpg",
+                  "caption": "<div class=\"col-xs-12\">Block your pieces before finishing. <small>(Remove the lifeline first)</small></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "1",
+                "playAudio": null
+              },
+              "legacyComponentId": 843,
+              "order": 1
+            }
+          ],
+          "title": "Knit the front and back",
+          "slug": "knit-the-front-and-back",
+          "order": 1,
+          "legacy": {
+            "assignId": 277,
+            "blockType": "Imageslideshow"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "229776337",
+              "title": "The best shoulder join",
+              "legacyComponentId": 1015,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"smallblock\"><em><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> After knitting the shoulder, leave a tail at least 3x the width of the shoulder to use for this seam.</em></blockquote>\r\n\r\n\r\n<br><b><i class=\"fa fa-refresh fa-2x\" aria-hidden=\"true\"></i> Best Shoulder Join:</b><br><ol class='instruction-list'>\r\n<li>With right side facing, hang stitches of one shoulder from waste yarn</li>\r\n<li>Remove the scrap to confirm all stitches are in place (if desired)</li>\r\n<li>Push stitches behind the latches</li>\r\n<li>With wrong side facing, hang the stitches of the other shoulder in the hooks of the needles</li>\r\n<li>Remove the scrap if desired</li>\r\n<li>Carefully pull the stitches in the hooks through the first set of stitches</li>\r\n<li>Bind off</li>\r\n</ol>\r\n\r\n",
+              "legacyComponentId": 1014,
+              "order": 3
+            }
+          ],
+          "title": "Join the Shoulders",
+          "slug": "join-the-shoulders",
+          "order": 2,
+          "legacy": {
+            "assignId": 316,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "There are many ways to seam the side seams of your pinafore.<br>\r\nFor a fast finish, try seaming on the machine.  With a little practice, joining seams will become easy and your go-to method.\r\n",
+              "legacyComponentId": 1020,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "229784154",
+              "title": "Fast finishing with seams on the machine",
+              "legacyComponentId": 1021,
+              "order": 3
+            }
+          ],
+          "title": "Join the Side Seams",
+          "slug": "join-the-side-seams",
+          "order": 3,
+          "legacy": {
+            "assignId": 321,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"smallblock\"><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i><em> For a FAST finish, work 2 rows of single crochet around the neck and armhole openings.\r\nKnit a chain loop for a button at the back neck. We chose to leave the back neck opening unfinished.<br>Consider a knit or crochet flower, buttons, iron-on sparkles .... you name it!  What about a pocket or two?</em></blockquote>\r\n\r\n<img class=\"img-thumbnail\" width=\"400\" src=\"/challenge/images/v2/11/pinafore/crochet.jpg\">",
+              "legacyComponentId": 1016,
+              "order": 1
+            }
+          ],
+          "title": "Embellish Away!",
+          "slug": "embellish-away",
+          "order": 4,
+          "legacy": {
+            "assignId": 317,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Empire Start-to-Finish",
+      "slug": "empire-start-to-finish",
+      "displayOrder": 40,
+      "legacy": {
+        "itemId": 60,
+        "lessonOrder": 40
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/11/pinafore/empire_step0_a.jpg",
+                  "caption": "<div class=\"col-xs-12\">Knit 4 pieces for a different style. We knit ours plain.  You may choose to knit the skirt and the bodice in different stitch patterns ... or colors!</div>"
+                },
+                {
+                  "src": "/challenge/images/v2/11/pinafore/empire_step1_a.jpg",
+                  "caption": "<div class=\"col-xs-12\">Knit the skirt sections first. We chose an easy contrasting color rolled hem.</div>"
+                },
+                {
+                  "src": "/challenge/images/v2/11/pinafore/empire_step2_a.jpg",
+                  "caption": "<div class=\"col-xs-12\">Re-hang a skirt section over the number of needles needed for the yoke <small>(private/wrong side facing).</small> Gather the skirt section by evenly doubling up stitches across the row.</div>"
+                },
+                {
+                  "src": "/challenge/images/v2/11/pinafore/empire_step3_a.jpg",
+                  "caption": "<div class=\"col-xs-12\">With the skirt stitches on the needles, follow your pattern to knit and shape the yoke</div>"
+                },
+                {
+                  "src": "/challenge/images/v2/11/pinafore/empire_step4_a.jpg",
+                  "caption": "<div class=\"col-xs-12\">An easy rolled hem to finish the armholes.</div>"
+                },
+                {
+                  "src": "/challenge/images/v2/11/pinafore/empire_step5_a.jpg",
+                  "caption": "<div class=\"col-xs-12\">Knit the neckband separately and join to the sweater. We chose to leave the back neck opening unfinished.</div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "1",
+                "playAudio": null
+              },
+              "legacyComponentId": 1017,
+              "order": 1
+            }
+          ],
+          "title": "Get Knitting!",
+          "slug": "get-knitting",
+          "order": 1,
+          "legacy": {
+            "assignId": 318,
+            "blockType": "Imageslideshow"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Even with the split opening in the center back, this is a small neckline and we aren't able to pick up, attach and knit the band as you would the armholes.<br>\r\nHere are some tips for adding a neckband to a round neck opening, without a seam in the band.",
+              "legacyComponentId": 1033,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "229920982",
+              "title": "Small neckband tips",
+              "legacyComponentId": 1034,
+              "order": 3
+            }
+          ],
+          "title": "Neck Band Tips",
+          "slug": "neck-band-tips",
+          "order": 2,
+          "legacy": {
+            "assignId": 324,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The seam between the skirt and yoke of this dress is a perfect place to add a designer touch.  We used an e-wrap cast on between the 2 pieces . <br>This technique is also beautiful between the neckline and neckband of a sweater. You'll probably be able to find other exciting uses!<br>\r\n\r\nWatch how it's done.\r\n\r\n<img class= \"img-thumbnail\" src=\"/challenge/images/v2/11/pinafore/decorative_seam_example.jpg\">",
+              "legacyComponentId": 1022,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "229791401",
+              "title": "Show off Seam",
+              "legacyComponentId": 1023,
+              "order": 2
+            }
+          ],
+          "title": "Decorative Seam",
+          "slug": "decorative-seam",
+          "order": 3,
+          "legacy": {
+            "assignId": 319,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "This technique is so useful that it's worth taking time to learn it and practice. <br>",
+              "legacyComponentId": 1031,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<ol class=\"instruction-list\">\r\n<li>Using any swatch you have handy,  e-wrap with a contrasting yarn 2 or 3 strands. Consider multi color yarn or textured yarn for interest.</li>\r\n<li>Rehang the edge of the swatch on some needles (you don't have to gather to get a feel for this)</li>\r\n<li>Close the latches and slowly and carefully knit 1 row.  There is extra bulk, so make sure all the stitches knit correctly</li>\r\n<li>Knit a for a few inches and drop the work from the machine to admire your beautiful decorative seam!</li>\r\n</ol>\r\n<blockquote class=\"blockquote_style\">\r\n<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> For a different look, Try this exercise and use a chain cast on instead of e-wrap. Consider where you use this, because the seam may not have as much stretch as an e-wrap.</blockquote>",
+              "legacyComponentId": 1024,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/11/pinafore/ewrap_seam2.jpg\"><br>\r\n<ul>\r\n<li>2 strands of a multi color boucle</li>\r\n<li>Alternate knit and purl sices</li>\r\n</ul>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/11/pinafore/ewrap_seam1.jpg\"><br>\r\n<ul>\r\n<li>When knitting the previous swatch, the waste yarn \"ruffle\" looks great!</li>\r\n<li><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> What about adding a machine knit lace insert or pre-made lace yardage?</li>\r\n</ul>\r\n\r\n\r\n",
+              "legacyComponentId": 1032,
+              "order": 5
+            }
+          ],
+          "title": "Decorative Seam Practice",
+          "slug": "decorative-seam-practice",
+          "order": 4,
+          "legacy": {
+            "assignId": 322,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "The Dynamic Pattern",
+      "slug": "the-dynamic-pattern",
+      "displayOrder": 50,
+      "legacy": {
+        "itemId": 63,
+        "lessonOrder": 50
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment 'Pretty Pinafores' (legacy garmentId 885).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "271",
+                "CHALLENGE_COMPONENTID": "816",
+                "GARMENTID": "885",
+                "GARMENTTITLE": "Pretty Pinafores",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "pattern",
+                "REDIRECT_TO": "/challenge/11/Group/269/item|The Dynamic Pattern: Download Your Pattern",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "RowGauge",
+                "SIZING_DATAMODEL_ELEMENT": "patternSize",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "StitchGauge"
+              },
+              "legacyComponentId": 816,
+              "order": 14
+            }
+          ],
+          "title": "{first}, Create Your Personalized Pattern",
+          "slug": "first-create-your-personalized-pattern",
+          "order": 1,
+          "legacy": {
+            "assignId": 271,
+            "blockType": "DataEntry"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): pattern",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 271 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "269",
+                "CHALLENGE_COMPONENTID": "806",
+                "DATAMODEL_ELEMENTS": "pattern",
+                "DATAMODEL_REDIRECT": "271",
+                "DATAMODEL_VALIDATION_MESSAGE": "Please create your Pattern First"
+              },
+              "legacyComponentId": 806,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'pattern'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "269",
+                "CHALLENGE_COMPONENTID": "807",
+                "DATAMODEL_ICON": "fa fa-download",
+                "LABLE": "Download your pattern",
+                "PATTERN_DATAMODEL_ELEMENT": "pattern",
+                "VIEWHEIGHT": "600"
+              },
+              "legacyComponentId": 807,
+              "order": 2
+            }
+          ],
+          "title": "Download Your Pattern",
+          "slug": "download-your-pattern",
+          "order": 2,
+          "legacy": {
+            "assignId": 269,
+            "blockType": "DocumentPattern"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 18,
+    "videos": [
+      {
+        "vimeoId": "221120492",
+        "title": "Machine Knitting Courses",
+        "lessonSlug": "start-here",
+        "blockSlug": "how-to-use-this-course-site"
+      },
+      {
+        "vimeoId": "163901749",
+        "title": "Dynamic Pattern Sleeve Length Adjustments",
+        "lessonSlug": "decisions-decisions-decisions",
+        "blockSlug": "adjust-the-length"
+      },
+      {
+        "vimeoId": "178357273",
+        "title": "Knit a Swatch (Don't Skip This!)",
+        "lessonSlug": "guarantee-your-success-with-swatches",
+        "blockSlug": "swatching-is-not-optional"
+      },
+      {
+        "vimeoId": "151857735",
+        "title": "How Much Yarn Do I Need?",
+        "lessonSlug": "guarantee-your-success-with-swatches",
+        "blockSlug": "how-much-yarn-do-you-need"
+      },
+      {
+        "vimeoId": "151859805",
+        "title": "Watch how it works",
+        "lessonSlug": "guarantee-your-success-with-swatches",
+        "blockSlug": "practice-yarn-estimate"
+      },
+      {
+        "vimeoId": "151858447",
+        "title": "Basic Increasing and Decreasing",
+        "lessonSlug": "practice-makes-perfect",
+        "blockSlug": "basic-shaping"
+      },
+      {
+        "vimeoId": "151858551",
+        "title": "Easy Round Neck Shaping",
+        "lessonSlug": "practice-makes-perfect",
+        "blockSlug": "neck-shaping"
+      },
+      {
+        "vimeoId": "211136246",
+        "title": "Neck Band Tool and Tips",
+        "lessonSlug": "practice-makes-perfect",
+        "blockSlug": "neckline-finishing"
+      },
+      {
+        "vimeoId": "151859907",
+        "title": "Best Ever Picot Hem",
+        "lessonSlug": "practice-makes-perfect",
+        "blockSlug": "best-ever-picot-hem"
+      },
+      {
+        "vimeoId": "151859900",
+        "title": "Scalloped Eyelet Hem",
+        "lessonSlug": "practice-makes-perfect",
+        "blockSlug": "scalloped-hem"
+      },
+      {
+        "vimeoId": "151859753",
+        "title": "Lifelines: A Knitter's Best Friend",
+        "lessonSlug": "practice-makes-perfect",
+        "blockSlug": "first-no-tears-allowed"
+      },
+      {
+        "vimeoId": "151860051",
+        "title": "Shoulder Seams",
+        "lessonSlug": "practice-makes-perfect",
+        "blockSlug": "professional-shoulder-join"
+      },
+      {
+        "vimeoId": "151858422",
+        "title": "Seaming - Putting It All Together",
+        "lessonSlug": "practice-makes-perfect",
+        "blockSlug": "spectacular-seams"
+      },
+      {
+        "vimeoId": "151859058",
+        "title": "Edges for Slit Skirts, Sweaters and Necklines",
+        "lessonSlug": "practice-makes-perfect",
+        "blockSlug": "back-neck-opening"
+      },
+      {
+        "vimeoId": "229776337",
+        "title": "The best shoulder join",
+        "lessonSlug": "a-line-start-to-finish",
+        "blockSlug": "join-the-shoulders"
+      },
+      {
+        "vimeoId": "229784154",
+        "title": "Fast finishing with seams on the machine",
+        "lessonSlug": "a-line-start-to-finish",
+        "blockSlug": "join-the-side-seams"
+      },
+      {
+        "vimeoId": "229920982",
+        "title": "Small neckband tips",
+        "lessonSlug": "empire-start-to-finish",
+        "blockSlug": "neck-band-tips"
+      },
+      {
+        "vimeoId": "229791401",
+        "title": "Show off Seam",
+        "lessonSlug": "empire-start-to-finish",
+        "blockSlug": "decorative-seam"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

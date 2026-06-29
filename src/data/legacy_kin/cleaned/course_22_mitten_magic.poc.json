@@ -1,0 +1,984 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 22,
+    "title": "Mitten Magic",
+    "slug": "mitten-magic",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_22_mitten_magic.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/mittens.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Introducing ... Knit it Now Courses!",
+      "slug": "introducing-knit-it-now-courses",
+      "displayOrder": 10,
+      "legacy": {
+        "itemId": 135,
+        "lessonOrder": 10
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<img src=\"/challenge/images/v2/22/mitten_magic/mitten_course_thumb.png\">\r\n\r\nMittens are fun,quick and useful projects.<br>They give lots of opportunity to get creative with color and pattern. They are great for brushing up on your knitting skills<br>... and the best part? They are FAST!\r\n\r\n\n<iframe src='https://player.vimeo.com/video/264160581' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n\r\n\r\nThis course is designed for you to <b>get experience with knitting mittens.</b> <br>\r\n\r\n\r\n\r\n\r\n<div class=\"lead\"> <i class=\"fa fa-check\" aria-hidden=\"true\"></i> You will:</div>\r\n<ol class=\"instruction-nolist\">\r\n<li>Use the Knit Now Dynamic Mitten Pattern to create a custom pattern for YOUR machine, YOUR yarn and YOUR gauge</li>\r\n<li>Experiment with different mitten styles</li>\r\n<li>Learn/practice techniques used to create beautiful mittens that will be treasured by your friends and family.</li>\r\n<li>Your results will be a launching point for you to <b>get creative with color, texture, stitch patterns and design.</b></li>\r\n</ol>\r\n<div class=\"lead\"> <i class=\"fa fa-check\" aria-hidden=\"true\"></i>You need:</div>\r\n<ol class=\"instruction-nolist\">\r\n<li>Flat bed knitting machine (any gauge)</li>\r\n<li>Smooth, light colored yarn appropriate for your machine. (get fancy after you learn the basics</li>\r\n<li>Your knitting manual. <br>\r\n<em><small>Free copies of manuals can be found <a href=\"\">here</a></small></em></li>\r\n</ol>\r\n<blockquote class=\"blockquote_style\">A commitment to dedicate time to this subject will go a long way.  Promise that you will set aside time to work through each lesson ... not just watch and read ... but KNIT!</blockquote>\r\n",
+              "legacyComponentId": 1801,
+              "order": 1
+            }
+          ],
+          "title": "Start Here",
+          "slug": "start-here",
+          "order": 1,
+          "legacy": {
+            "assignId": 644,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "221120492",
+              "title": "Machine Knitting Courses",
+              "legacyComponentId": 1802,
+              "order": 1
+            }
+          ],
+          "title": "New to Knit it Now Courses?",
+          "slug": "new-to-knit-it-now-courses",
+          "order": 2,
+          "legacy": {
+            "assignId": 645,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Construction Overview",
+      "slug": "construction-overview",
+      "displayOrder": 20,
+      "legacy": {
+        "itemId": 146,
+        "lessonOrder": 20
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Here's an overview of a basic mitten:<br>\r\nIn the course we will:<br>\r\n<ul>\r\n<li>Go into detail for each section of the mitten</li>\r\n<li>Explore options for each section</li>\r\n<li>Discuss adding stitch patterns and texture</li>\r\n<li>Offer lots of exercises and practice</li>\r\n<li>Put in the time and you'll be a mitten expert in no time!</li>\r\n</ul>",
+              "legacyComponentId": 1804,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857559",
+              "title": "Gorgeous Gored Mittens",
+              "legacyComponentId": 1803,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">Let's get started!</div>\r\n",
+              "legacyComponentId": 1805,
+              "order": 3
+            }
+          ],
+          "title": "Overview",
+          "slug": "overview",
+          "order": 1,
+          "legacy": {
+            "assignId": 646,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "With Knit it Now Dynamic Patterns you can:<ul>\r\n<li>Use any knitting machine</li>\r\n<li>Use any yarn <em><small>(appropriate for your machine)</small></em></li>\r\n<li>Choose from a wide range of sizes</li>\r\n<li>Use the pattern again and again</li>\r\n</ul>",
+              "legacyComponentId": 1810,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858911",
+              "title": "Dynamic Patterns in Action",
+              "legacyComponentId": 1808,
+              "order": 2
+            }
+          ],
+          "title": "New to Knit it Now Dynamic Patterns?",
+          "slug": "new-to-knit-it-now-dynamic-patterns",
+          "order": 2,
+          "legacy": {
+            "assignId": 648,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "SizingChart",
+              "notes": [
+                "Unmapped legacy component type: SizingChart"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "622",
+                "CHALLENGE_COMPONENTID": "2169",
+                "HIDECHART": "Yes",
+                "SIZINGTYPEID": "16"
+              },
+              "legacyComponentId": 2169,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment 'Mitten Collection' (legacy garmentId 953).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "622",
+                "CHALLENGE_COMPONENTID": "1807",
+                "GARMENTID": "953",
+                "GARMENTTITLE": "Mitten Collection",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "patternfilename",
+                "REDIRECT_TO": "/challenge/22/Group/647/item|Construction Overview: Print your Pattern",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "RowGauge",
+                "SIZING_DATAMODEL_ELEMENT": "size",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "StitchGauge",
+                "SWATCHROWS": "RowGauge",
+                "SWATCHSTITCHES": "StitchGauge",
+                "SWATCHWEIGHT": "StitchGauge",
+                "USESWATCHLOGIC": "no"
+              },
+              "legacyComponentId": 1807,
+              "order": 3
+            }
+          ],
+          "title": "Create your Custom Mitten Pattern",
+          "slug": "create-your-custom-mitten-pattern",
+          "order": 4,
+          "legacy": {
+            "assignId": 622,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): patternfilename",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 622 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "647",
+                "DATAMODEL_ELEMENTS": "patternfilename",
+                "DATAMODEL_REDIRECT": "622",
+                "TYPEOF": "DataValidation"
+              },
+              "legacyComponentId": 1817,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'patternfilename'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "647",
+                "CHALLENGE_COMPONENTID": "1811",
+                "DATAMODEL_ICON": "fa fa-download",
+                "LABLE": "Download your Pattern",
+                "PATTERN_DATAMODEL_ELEMENT": "patternfilename",
+                "VIEWHEIGHT": "600"
+              },
+              "legacyComponentId": 1811,
+              "order": 2
+            }
+          ],
+          "title": "Print your Pattern",
+          "slug": "print-your-pattern",
+          "order": 5,
+          "legacy": {
+            "assignId": 647,
+            "blockType": "DocumentPattern"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Cuff",
+      "slug": "cuff",
+      "displayOrder": 30,
+      "legacy": {
+        "itemId": 139,
+        "lessonOrder": 30
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<img src=\"/challenge/images/v2/22/mitten_magic/cuff1.png\">\r\n<img src=\"/challenge/images/v2/22/mitten_magic/cuff2.png\">\r\n<img src=\"/challenge/images/v2/22/mitten_magic/cuff4.png\">\r\n<img src=\"/challenge/images/v2/22/mitten_magic/cuff3.png\">\r\n",
+              "legacyComponentId": 2186,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "So many options for creating the cuff of your mittens!<br>\r\n<ul>\r\n<li>Use your ribber. 1x1, 2x2, 2x1 ... the sky's the limit!</li>\r\n<li>Hand knit some ribbing and hang the stitches on the machine</li>\r\n<li>No Ribber?\r\n<ul>\r\n<li>Reform stitches to create ribbing</li>\r\n<li>Work Mock Ribbing</li>\r\n</ul>\r\n\r\n</li>\r\n</ul>\r\n\r\n",
+              "legacyComponentId": 2170,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858377",
+              "title": "No ribber needed",
+              "legacySlot": 1,
+              "legacyComponentId": 1813,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859815",
+              "title": "Explore more Mock Ribbing",
+              "legacySlot": 2,
+              "legacyComponentId": 1813,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859822",
+              "title": "2 Color Pretend Ribbing",
+              "legacySlot": 3,
+              "legacyComponentId": 1813,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858398",
+              "title": "Get fancy with a cabled rib",
+              "legacySlot": 4,
+              "legacyComponentId": 1813,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858391",
+              "title": "Basic Ribbing without a Ribber",
+              "legacySlot": 5,
+              "legacyComponentId": 1813,
+              "order": 3
+            }
+          ],
+          "title": "Cuff Options",
+          "slug": "cuff-options",
+          "order": 1,
+          "legacy": {
+            "assignId": 649,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "A favorite cuff finish is to combine a rolled edge with ribbing. Not only is this method practical, you don't have to bother with a ribbing cast on.<br>\r\n<ol class=\"instruction-list\">\r\n<li>Use a stretchy method to cast on</lI>\r\n<li>Knit a few rows</li>\r\n<li>Transfer stitches to the ribber</li>\r\n<li>Knit the cuff <em><small>No ribber? Reform the stitches by hand</small></em></li>\r\n<li>Transfer the stitches to the main bed and continue knitting your mitten</li>\r\n\r\n</ol>\r\n<img src=\"/challenge/images/v2/22/mitten_magic/ribnroll.jpg\"><br>\r\n<b>Use a contrasting color for fun.</b>\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 1814,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859199",
+              "title": "Ribber Cast On Comb for Single Bed Knitting",
+              "legacyComponentId": 1828,
+              "order": 2
+            }
+          ],
+          "title": "Rib 'n Roll Cuff",
+          "slug": "rib-n-roll-cuff",
+          "order": 2,
+          "legacy": {
+            "assignId": 614,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Hand",
+      "slug": "hand",
+      "displayOrder": 40,
+      "legacy": {
+        "itemId": 140,
+        "lessonOrder": 40
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Think of the hand section of the mitten as a canvas.<br>\r\n<ul>\r\n<li>Small Fairisle Stitch patterns</li>\r\n<li>Stripes</li>\r\n<li>Stitch texture</li>\r\n<li>Embroidery</li>\r\n<li>Embellishments</li>\r\n<li>Isolated Motifs</li>\r\n</ul>\r\n",
+              "legacyComponentId": 1829,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pinterest",
+              "notes": [
+                "Legacy Pinterest embed; replace with static content or omit."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "650",
+                "PINTERESTID": "3",
+                "TYPEOF": "Pinterest"
+              },
+              "legacyComponentId": 1830,
+              "order": 2
+            }
+          ],
+          "title": "Your Design Canvas",
+          "slug": "your-design-canvas",
+          "order": 1,
+          "legacy": {
+            "assignId": 650,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857799",
+              "title": "Stitch Multiples",
+              "legacyComponentId": 1833,
+              "order": 1
+            }
+          ],
+          "title": "Plan Ahead",
+          "slug": "plan-ahead",
+          "order": 2,
+          "legacy": {
+            "assignId": 660,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomButton",
+              "notes": [
+                "Unmapped legacy component type: CustomButton"
+              ],
+              "legacyFields": {
+                "BUTTONTARGET": "blank",
+                "CHALLENGE_ASSIGNID": "662",
+                "CHALLENGE_COMPONENTID": "2173",
+                "HREF": "/tools/KnititnowPaper.cfm",
+                "LABLE": "Print your own Graph Paper"
+              },
+              "legacyComponentId": 2173,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">Knitter's Graph Paper</Div><br>If you are planning to add a stitch pattern to your mittens, you need to use knitter's graph paper to plan your design.<br>If you are adding a single motif or an all over stitch pattern the ONLY way to position them correctly is to chart things out in advance.<br>Knitter's graph paper is designed to represent the shape of knitting stitches (which are normally wider than tall).<br><div class=\"lead\">To position a single motif on your mitten:</div>\r\n<ol class=\"instruction-list\">\r\n<li>Use the pattern instructions to mark off the hand section of your mitten (outlined in blue below). </li>\r\n<li>Determine how many stitches and rows are in the hand section.</li>\r\n<li>Sketch the position of your motif in that section</li>\r\n<li>Use the sketch to hand manipulate or embroider the motif</li>\r\n<li>Use stitch and row counts from the graph paper sketch to position the motif on your punchcard or electronic machine</li>\r\n\r\n\r\n</ol>\r\n<em><small>Don't forget that we are generally looking at the knitting from the private (wrong) side.  Position your motif accordingly</small></em>\r\n\r\n<img src=\"/challenge/images/v2/22/mitten_magic/position_motif.jpg\">",
+              "legacyComponentId": 2172,
+              "order": 2
+            }
+          ],
+          "title": "The ONE must-have tool you need",
+          "slug": "the-one-must-have-tool-you-need",
+          "order": 3,
+          "legacy": {
+            "assignId": 662,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Mitten Top",
+      "slug": "mitten-top",
+      "displayOrder": 85,
+      "legacy": {
+        "itemId": 142,
+        "lessonOrder": 85
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/22/mitten_magic/shortrow.png\"><br>\r\n\r\nTo shape the top of the mitten we will make a short row \"pocket\".  This is neat way to have a nicely curved top with no visible seam.\r\n\r\n\r\n",
+              "legacyComponentId": 2197,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "263966757",
+              "title": "Watch as we knit a sample",
+              "legacyComponentId": 2193,
+              "order": 2
+            }
+          ],
+          "title": "Short Rowed Mitten Top",
+          "slug": "short-rowed-mitten-top",
+          "order": 1,
+          "legacy": {
+            "assignId": 780,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "251895484",
+              "title": "ShortRow Refresher",
+              "legacySlot": 1,
+              "legacyComponentId": 2199,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857333",
+              "title": "Automatic Wrap vs. Manual Wrap",
+              "legacySlot": 2,
+              "legacyComponentId": 2199,
+              "order": 2
+            }
+          ],
+          "title": "Short Row Review",
+          "slug": "short-row-review",
+          "order": 2,
+          "legacy": {
+            "assignId": 785,
+            "blockType": "VimeoMultiple"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Fingerless mittens are a fun and fashionable way to show off your knitting!<br>\r\nThey are fast to knit and offer the opportunity to play with color and texture without a lot of fuss.\r\n<img class=\"thumbnail\" src=\"/challenge/images/v2/22/mitten_magic/fingerless_overview.gif\"><br><img class=\"thumbnail\" src=\"/challenge/images/v2/22/mitten_magic/mitten_main.jpg\"><br><ul>\r\n<li>To use your pattern for a fingerless mitten, simply stop knitting the hand before the top shaping begins and stop shaping the thumb 1/2\" - 1\" less rows.</li>\r\n<li>You can choose to add ribbing to the openings, or bind off and just let the knitting roll.</li>\r\n<li>Adjust the length as you like.  Notice that some of the examples below have even left off the thumb completely.</li></ul>\r\n<br>\r\n\r\n<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> <b>It's your turn ... get creative!</b><br>",
+              "legacyComponentId": 2177,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pinterest",
+              "notes": [
+                "Legacy Pinterest embed; replace with static content or omit."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "615",
+                "CHALLENGE_COMPONENTID": "2178",
+                "PINTERESTID": "14"
+              },
+              "legacyComponentId": 2178,
+              "order": 2
+            }
+          ],
+          "title": "Fingerless Options",
+          "slug": "fingerless-options",
+          "order": 3,
+          "legacy": {
+            "assignId": 615,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nAnother option for the fingertips of your mitten is to shape with decreases instead of short row shaping. <br><ol class=\"instruction-list\">\r\n<li>Scrap off 1/2 of the stitches (or put them in hold)</li>\r\n<li>TIP: Increase 1 stitch on each edge for a seaming stitch</li>\r\n<li>Work the top sections separately</li>\r\n<li>Decrease every row for about 1\" <a data-vimeoid=\"359283792\" class=\"videopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i>  Use a full-fashioned decrease</a></li>\r\n<li>Scrap off each section</li>\r\n<li><a data-popupcontentid=\"783\" class=\"contentpopup\"> Kitchener stitch</a> the live stitches</li>\r\n<li>Seam the decreased edges and the mitten seam with <a data-vimeoid=\"359287929\" class=\"videopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i>  Mattress Stitch</a></li>\r\n</ol>\r\n\r\n<img src=\"/challenge/images/v2/22/Decreased_top.jpg\">\r\n",
+              "legacyComponentId": 5445,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/v2/22/flipbook1.jpg",
+                  "caption": "Work each side of the \"J\" section separately."
+                },
+                {
+                  "src": "/v2/22/flipbook2.jpg",
+                  "caption": "Adding a seaming stitch on each edge will prevent a \"dimple\" when the sections are seamed<br><br>\r\nWe used a \r\n<a data-vimeoid=\"359283792\" class=\"videopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> 2-prong, full-fashioned decorative decrease</a>"
+                },
+                {
+                  "src": "/v2/22/flipbook3.jpg",
+                  "caption": "<a data-popupcontentid=\"783\" class=\"contentpopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Kitchener join</a> the live stitches"
+                },
+                {
+                  "src": "/v2/22/flipbook4.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/v2/22/flipbook5.jpg",
+                  "caption": "Neatly <a data-vimeoid=\"359287929\" class=\"videopopup\"> <i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Mattress Stitch</a> the seams to finish"
+                },
+                {
+                  "src": "/v2/22/flipbook6.jpg",
+                  "caption": null
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 5446,
+              "order": 2
+            }
+          ],
+          "title": "Decreased Mitten Top",
+          "slug": "decreased-mitten-top",
+          "order": 4,
+          "legacy": {
+            "assignId": 3691,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\n\r\n<img width =\"300\" src=\"/challenge/images/v2/22/mitten_magic/gathered_top.jpg\"><br>\r\n<h3>In a hurry?  Want a really fast project?</h3><br>\r\n<img src=\"/challenge/images/v2/56/mitten_gathered_top1.jpg\">\r\n\r\n\r\nOne of the pattern options is to simply gather the fingertips of the mitten. Watch some finishing tips for this option in the video below",
+              "legacyComponentId": 5451,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859005",
+              "title": "Gathered Top Finish",
+              "legacyComponentId": 5452,
+              "order": 2
+            }
+          ],
+          "title": "Quick 'n Easy Gathered Top",
+          "slug": "quick-n-easy-gathered-top",
+          "order": 5,
+          "legacy": {
+            "assignId": 3694,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Thumb",
+      "slug": "thumb",
+      "displayOrder": 90,
+      "legacy": {
+        "itemId": 141,
+        "lessonOrder": 90
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<div class=\"col-12-xs\">After the hand of the mitten is finished, the gored thumb is attached to the mitten as you knit the thumb. Using short rows we can shape and sew-as-you go for a neat, fast and good fitting thumb.<br><b>Read your pattern instructions through completely before starting to knit your thumb</b>\r\n\r\n<div align=\"center\"><img src=\"/challenge/images/v2/22/mitten_magic/mitten_thumb2.gif\"></div>\r\n\r\n</div>\r\n\r\n<div class=\"col-12-xs\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/22/mitten_magic/mitten1.jpg\"></div>\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 2174,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859000",
+              "title": "Mitten Gore Thumb",
+              "legacyComponentId": 1839,
+              "order": 2
+            }
+          ],
+          "title": "Gored thumb",
+          "slug": "gored-thumb",
+          "order": 2,
+          "legacy": {
+            "assignId": 618,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div>\r\nA Slotted or Peasant Thumb is another option for mittens.  <br><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i>Add a slotted thumb to any of the mitten patterns in this collection, by adding the slotted instructions \"P\" at the red marker position in the pattern.  In other words mix 'n match tops and thumbs.\r\n\r\n<ul>\r\n<li>It may be easier for you to knit (no short row pickup as the gored thumb)</li>\r\n<li>It creates a right and left mitten</li>\r\n<li>Good when knitting in pattern</li>\r\n</ul>\r\n\r\n<img src=\"/challenge/images/v2/56/peasant_thumb.jpg\">\r\n</div\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 5441,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "358494664",
+              "title": "Slotted Thumb",
+              "legacyComponentId": 5442,
+              "order": 2
+            }
+          ],
+          "title": "Slotted Thumb",
+          "slug": "slotted-thumb",
+          "order": 3,
+          "legacy": {
+            "assignId": 3689,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Finishing",
+      "slug": "finishing",
+      "displayOrder": 99,
+      "legacy": {
+        "itemId": 147,
+        "lessonOrder": 99
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857723",
+              "title": "Seaming Ribbing - Plan Ahead!",
+              "legacyComponentId": 1816,
+              "order": 1
+            }
+          ],
+          "title": "Seaming Ribbing - Plan Ahead",
+          "slug": "seaming-ribbing-plan-ahead",
+          "order": 1,
+          "legacy": {
+            "assignId": 651,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Many knitters will graft stitches by rehanging them on the machine.  This makes it easier to stitch and easier to control the size of the stitches, making for an invisible seam.\r\n\r\n",
+              "legacyComponentId": 2200,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151849234",
+              "title": "Grafting on the Machine - Knit Side",
+              "legacySlot": 1,
+              "legacyComponentId": 2192,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151850342",
+              "title": "Grafting on the Machine - Purl Side",
+              "legacySlot": 2,
+              "legacyComponentId": 2192,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"smallblock\"><em>TIP: Use a contrasting color yarn for the seaming.</em></blockquote>\r\n\r\n<i class=\"fa fa-refresh fa-spin fa-2x fa-fw\"></i><h3> Practice 1:Graft from the Purl Side</h3><br>\r\n\r\n<ol class=\"instruction-list\">\r\n<li>Knit 2 swatches and scrap off</li>\r\n<li>If you like, steam the swatches to tame the curl</li>\r\n<li>With the knit side facing, hang the first swatch on the machine</li>\r\n<li>With the purl side facing, hang the second swatch on the machine (the knit sides will be sandwiched together</li>\r\n<li>Follow the video instruction, graft the 2 pieces together, keeping an even tension on the stitches .. mimicking  the size and shape of the knitted stitches</li>\r\n</ol>\r\n<br> <i class=\"fa fa-refresh fa-spin fa-2x fa-fw\"></i> <h3>Practice 2: Graft from the Knit Side </h3><em><small>(reverse of the previous exercise)</small></em><br><ol class=\"instruction-list\">\r\n<li>Knit 2 swatches and scrap off</li>\r\n<li>If you like, steam the swatches to tame the curl</li>\r\n<li>With the purl side facing, hang the first swatch on the machine</li>\r\n<li>With the knit side facing, hang the second swatch on the machine (the purlsides will be sandwiched together</li>\r\n<li>Follow the video instruction, graft the 2 pieces together, keeping an even tension on the stitches .. mimicking  the size and shape of the knitted stitches</li>\r\n</ol>\r\n",
+              "legacyComponentId": 2201,
+              "order": 3
+            }
+          ],
+          "title": "Kitchner Stitch (Grafting Stitches)",
+          "slug": "kitchner-stitch-grafting-stitches",
+          "order": 4,
+          "legacy": {
+            "assignId": 783,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Mittens in the Round",
+      "slug": "mittens-in-the-round",
+      "displayOrder": 101,
+      "legacy": {
+        "itemId": 375,
+        "lessonOrder": 101
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Is it possible to knit mittens in the round?  YES!  But ... The gore style mitten may not be the best choice.<br>\r\n\r\n\r\n<b>Picture this:</b>\r\n\r\n<ul class=\"li_7px\">\r\n<li>Ribbing can't be knit in the round. But you could cast on with waste yarn and add ribbing by hand later</li>\r\n<li>You start at the wrist and knit in the round to the thumb opening (see videos below)</li>\r\n<li>Switch to \"U\" Knitting to leave the thumb opening</li>\r\n<li>Change back to circular knitting to work the hand</li>\r\n<li>Scrap off the ribber stitches and drop the ribber</li>\r\n<li>Work the Short row top on the main bed only</li>\r\n<li><b>The challenge</b>:  How to pick up and knit the thumb?\r\n<ul>\r\n<li>Slip the mitten between the beds and hang both edges of the gore opening on the main bed needles, then transfer half to the ribber and knit the thumb in the round</li>\r\n<li>Knit the thumb separately, either flat or in the round and sew it to the mitten opening</ll>\r\n<li>Hand knit the thumb in the round</li>\r\n</li>\r\n</ul>\r\n<img src=\"/challenge/images/v2/56/circular_mitten.jpg\">\r\n",
+              "legacyComponentId": 5443,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858632",
+              "title": "Circular (tubular) Knitting with the Ribber",
+              "legacySlot": 1,
+              "legacyComponentId": 5444,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859462",
+              "title": "Half Circular U-Knitting",
+              "legacySlot": 2,
+              "legacyComponentId": 5444,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "358379693",
+              "title": "Provisional Knitting for a Slotted Thumb",
+              "legacySlot": 3,
+              "legacyComponentId": 5444,
+              "order": 2
+            }
+          ],
+          "title": "Seamless Possibilities",
+          "slug": "seamless-possibilities",
+          "order": 1,
+          "legacy": {
+            "assignId": 3690,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Trigger Mittens",
+      "slug": "trigger-mittens",
+      "displayOrder": 106,
+      "legacy": {
+        "itemId": 377,
+        "lessonOrder": 106
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    mark {\r\n        background-color: #F8DEEC;\r\n        color: black;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n\r\n    \r\n        Trigger mittens (AKA Glittens) can easily be created from our basic Mitten Collection patterns.<br>Because everyone's hand is shaped a bit differently, it's best to custom position the finger for your mitten.\r\n  <div class=\"table-responsive\">\r\n     <table class=\"table table-striped\">\r\n         <tbody class=\"small\">\r\n             <tr>\r\n                 <td>\r\n                     <span class=\"fa-stack\">\r\n                         <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                         <strong class=\"fa-stack-1x\">\r\n                             <p class=\"text-muted small\">1</p>\r\n                         </strong>\r\n                     </span>\r\n                 </td>\r\n                 <td>Determine the length of \"Q\": Multiply it by your row gauge  _______________</td>\r\n             </tr>\r\n\r\n <tr>\r\n                 <td>\r\n                     <span class=\"fa-stack\">\r\n                         <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                         <strong class=\"fa-stack-1x\">\r\n                             <p class=\"text-muted small\">2</p>\r\n                         </strong>\r\n                     </span>\r\n                 </td>\r\n                 <td>Determine the length of \"M\": Multiply it by your row gauge _______________</td>\r\n             </tr>\r\n\r\n <tr>\r\n                 <td>\r\n                     <span class=\"fa-stack\">\r\n                         <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                         <strong class=\"fa-stack-1x\">\r\n                             <p class=\"text-muted small\">3</p>\r\n                         </strong>\r\n                     </span>\r\n                 </td>\r\n                 <td>Determine the desired finger circumference \"C\": Multiply it by your stitch gauge  _______________</td>\r\n             </tr>\r\n <tr>\r\n                 <td>\r\n                     <span class=\"fa-stack\">\r\n                         <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                         <strong class=\"fa-stack-1x\">\r\n                             <p class=\"text-muted small\">4</p>\r\n                         </strong>\r\n                     </span>\r\n                 </td>\r\n                 <td>After placing the red markers in the pattern, Knit for \"Q\" rows</td>\r\n             </tr>\r\n<tr>\r\n                 <td>\r\n                     <span class=\"fa-stack\">\r\n                         <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                         <strong class=\"fa-stack-1x\">\r\n                             <p class=\"text-muted small\">5</p>\r\n                         </strong>\r\n                     </span>\r\n                 </td>\r\n                 <td>At each side of the knitting, scrap off 1/2 of \"C\" stitches</td>\r\n             </tr>\r\n<tr>\r\n                 <td>\r\n                     <span class=\"fa-stack\">\r\n                         <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                         <strong class=\"fa-stack-1x\">\r\n                             <p class=\"text-muted small\">6</p>\r\n                         </strong>\r\n                     </span>\r\n                 </td>\r\n                 <td>Continue knitting the mitten as instructed</td>\r\n             </tr>\r\n<tr>\r\n                 <td>\r\n                     <span class=\"fa-stack\">\r\n                         <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                         <strong class=\"fa-stack-1x\">\r\n                             <p class=\"text-muted small\">7</p>\r\n                         </strong>\r\n                     </span>\r\n                 </td>\r\n                 <td>Seam the lower part of the mitten and thumb</td>\r\n             </tr>\r\n<tr>\r\n                 <td>\r\n                     <span class=\"fa-stack\">\r\n                         <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                         <strong class=\"fa-stack-1x\">\r\n                             <p class=\"text-muted small\">7</p>\r\n                         </strong>\r\n                     </span>\r\n                 </td>\r\n                 <td>Pick up the \"T\" stitches to form the finger. <B>Add a seaming stitch at each side</b></td>\r\n             </tr>\r\n<tr>\r\n                 <td>\r\n                     <span class=\"fa-stack\">\r\n                         <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                         <strong class=\"fa-stack-1x\">\r\n                             <p class=\"text-muted small\">8</p>\r\n                         </strong>\r\n                     </span>\r\n                 </td>\r\n                 <td>Knit the finger for \"M\" rows</td>\r\n             </tr>\r\n<tr>\r\n                 <td>\r\n                     <span class=\"fa-stack\">\r\n                         <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                         <strong class=\"fa-stack-1x\">\r\n                             <p class=\"text-muted small\">9</p>\r\n                         </strong>\r\n                     </span>\r\n                 </td>\r\n                 <td>Gather the finger tip as instructed for the thumb</td>\r\n             </tr>\r\n<tr>\r\n                 <td>\r\n                     <span class=\"fa-stack\">\r\n                         <span class=\"fa fa-square-o fa-stack-2x\"></span>\r\n                         <strong class=\"fa-stack-1x\">\r\n                             <p class=\"text-muted small\">9</p>\r\n                         </strong>\r\n                     </span>\r\n                 </td>\r\n                 <td>Seam the mitten and work in all ends</td>\r\n             </tr>\r\n\r\n\r\n\r\n     </table>\r\n\r\n </div>\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n       \r\n        <img src=\"/challenge/images/v2/56/Trigger_mitten2.jpg\">\r\n    \r\n\r\n<img class=\"zoom\" src=\"/challenge/images/v2/56/trigger_mitten01.jpg\">\r\n",
+              "legacyComponentId": 5457,
+              "order": 1
+            }
+          ],
+          "title": "Custom Fit Glitten Instructions",
+          "slug": "custom-fit-glitten-instructions",
+          "order": 1,
+          "legacy": {
+            "assignId": 3697,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Your Turn - Get Inspired!",
+      "slug": "your-turn-get-inspired",
+      "displayOrder": 110,
+      "legacy": {
+        "itemId": 173,
+        "lessonOrder": 110
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "264161565",
+              "title": null,
+              "legacyComponentId": 2204,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pinterest",
+              "notes": [
+                "Legacy Pinterest embed; replace with static content or omit."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "787",
+                "PINTERESTID": "3",
+                "TYPEOF": "Pinterest"
+              },
+              "legacyComponentId": 2205,
+              "order": 3
+            }
+          ],
+          "title": "You did it!",
+          "slug": "you-did-it",
+          "order": 1,
+          "legacy": {
+            "assignId": 787,
+            "blockType": "VimeoID"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 23,
+    "videos": [
+      {
+        "vimeoId": "221120492",
+        "title": "Machine Knitting Courses",
+        "lessonSlug": "introducing-knit-it-now-courses",
+        "blockSlug": "new-to-knit-it-now-courses"
+      },
+      {
+        "vimeoId": "151857559",
+        "title": "Gorgeous Gored Mittens",
+        "lessonSlug": "construction-overview",
+        "blockSlug": "overview"
+      },
+      {
+        "vimeoId": "151858911",
+        "title": "Dynamic Patterns in Action",
+        "lessonSlug": "construction-overview",
+        "blockSlug": "new-to-knit-it-now-dynamic-patterns"
+      },
+      {
+        "vimeoId": "151858377",
+        "title": "No ribber needed",
+        "lessonSlug": "cuff",
+        "blockSlug": "cuff-options"
+      },
+      {
+        "vimeoId": "151859815",
+        "title": "Explore more Mock Ribbing",
+        "lessonSlug": "cuff",
+        "blockSlug": "cuff-options"
+      },
+      {
+        "vimeoId": "151859822",
+        "title": "2 Color Pretend Ribbing",
+        "lessonSlug": "cuff",
+        "blockSlug": "cuff-options"
+      },
+      {
+        "vimeoId": "151858398",
+        "title": "Get fancy with a cabled rib",
+        "lessonSlug": "cuff",
+        "blockSlug": "cuff-options"
+      },
+      {
+        "vimeoId": "151858391",
+        "title": "Basic Ribbing without a Ribber",
+        "lessonSlug": "cuff",
+        "blockSlug": "cuff-options"
+      },
+      {
+        "vimeoId": "151859199",
+        "title": "Ribber Cast On Comb for Single Bed Knitting",
+        "lessonSlug": "cuff",
+        "blockSlug": "rib-n-roll-cuff"
+      },
+      {
+        "vimeoId": "151857799",
+        "title": "Stitch Multiples",
+        "lessonSlug": "hand",
+        "blockSlug": "plan-ahead"
+      },
+      {
+        "vimeoId": "263966757",
+        "title": "Watch as we knit a sample",
+        "lessonSlug": "mitten-top",
+        "blockSlug": "short-rowed-mitten-top"
+      },
+      {
+        "vimeoId": "251895484",
+        "title": "ShortRow Refresher",
+        "lessonSlug": "mitten-top",
+        "blockSlug": "short-row-review"
+      },
+      {
+        "vimeoId": "151857333",
+        "title": "Automatic Wrap vs. Manual Wrap",
+        "lessonSlug": "mitten-top",
+        "blockSlug": "short-row-review"
+      },
+      {
+        "vimeoId": "151859005",
+        "title": "Gathered Top Finish",
+        "lessonSlug": "mitten-top",
+        "blockSlug": "quick-n-easy-gathered-top"
+      },
+      {
+        "vimeoId": "151859000",
+        "title": "Mitten Gore Thumb",
+        "lessonSlug": "thumb",
+        "blockSlug": "gored-thumb"
+      },
+      {
+        "vimeoId": "358494664",
+        "title": "Slotted Thumb",
+        "lessonSlug": "thumb",
+        "blockSlug": "slotted-thumb"
+      },
+      {
+        "vimeoId": "151857723",
+        "title": "Seaming Ribbing - Plan Ahead!",
+        "lessonSlug": "finishing",
+        "blockSlug": "seaming-ribbing-plan-ahead"
+      },
+      {
+        "vimeoId": "151849234",
+        "title": "Grafting on the Machine - Knit Side",
+        "lessonSlug": "finishing",
+        "blockSlug": "kitchner-stitch-grafting-stitches"
+      },
+      {
+        "vimeoId": "151850342",
+        "title": "Grafting on the Machine - Purl Side",
+        "lessonSlug": "finishing",
+        "blockSlug": "kitchner-stitch-grafting-stitches"
+      },
+      {
+        "vimeoId": "151858632",
+        "title": "Circular (tubular) Knitting with the Ribber",
+        "lessonSlug": "mittens-in-the-round",
+        "blockSlug": "seamless-possibilities"
+      },
+      {
+        "vimeoId": "151859462",
+        "title": "Half Circular U-Knitting",
+        "lessonSlug": "mittens-in-the-round",
+        "blockSlug": "seamless-possibilities"
+      },
+      {
+        "vimeoId": "358379693",
+        "title": "Provisional Knitting for a Slotted Thumb",
+        "lessonSlug": "mittens-in-the-round",
+        "blockSlug": "seamless-possibilities"
+      },
+      {
+        "vimeoId": "264161565",
+        "title": null,
+        "lessonSlug": "your-turn-get-inspired",
+        "blockSlug": "you-did-it"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

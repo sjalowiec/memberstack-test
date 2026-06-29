@@ -1,0 +1,1245 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 13,
+    "title": "One Piece Start to Finish Kids Cardigans",
+    "slug": "one-piece-start-to-finish-kids-cardigans",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_13_one_piece_start_to_finish_kids_cardigans.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/one_piece.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Start Here",
+      "slug": "start-here",
+      "displayOrder": 10,
+      "legacy": {
+        "itemId": 77,
+        "lessonOrder": 10
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The video will walk you through how to access the lessons and navigate to get the most out of your course.<br /> Don't skip lessons ... you may feel that you know how to cast on ... but sometimes you will pick up a tip that you can use while watching a video.<br><blockquote class=\"smallblock\"><em>Another reason to follow the course material in order - Throughout the lessons, you'll be making decisions about your project.  We will record your decisions to create your custom pattern.</em></blockquote>\r\n",
+              "legacyComponentId": 1072,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "221120492",
+              "title": "Machine Knitting Courses",
+              "legacyComponentId": 1073,
+              "order": 2
+            }
+          ],
+          "title": "How To Use This Course Site",
+          "slug": "how-to-use-this-course-site",
+          "order": 2,
+          "legacy": {
+            "assignId": 337,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "237010382",
+              "title": null,
+              "legacyComponentId": 1079,
+              "order": 1
+            }
+          ],
+          "title": "Construction Overview",
+          "slug": "construction-overview",
+          "order": 3,
+          "legacy": {
+            "assignId": 338,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pinterest",
+              "notes": [
+                "Legacy Pinterest embed; replace with static content or omit."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "361",
+                "PINTERESTID": "9",
+                "TYPEOF": "Pinterest"
+              },
+              "legacyComponentId": 1153,
+              "order": 1
+            }
+          ],
+          "title": "Inspiration",
+          "slug": "inspiration",
+          "order": 4,
+          "legacy": {
+            "assignId": 361,
+            "blockType": "Pinterest"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Techniques Used",
+      "slug": "techniques-used",
+      "displayOrder": 20,
+      "legacy": {
+        "itemId": 75,
+        "lessonOrder": 20
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "For machine knitters, ravel cord is used in many situations. Let's talk a bit about ravel cord and it's uses.<br>",
+              "legacyComponentId": 1145,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<img src=\"http://kin.knititnow.com/wp-content/uploads/2016/10/scrap_ravel-1024x540.jpg\" alt=\"scrap_ravel\" / width=\"600\">\r\n<br>\r\nStarting your knitting with waste yarn and ravel cord is a machine knitting staple technique.\r\n<h3>Why Scrap and Ravel?</h3>\r\n<ul>\r\n \t<li>Use waste knitting to hang cast on comb and/or weights</li>\r\n \t<li>Protect delicate/fine yarns</li>\r\n \t<li>Immediately start patterning (tuck, lace, etc) with weights in place</li>\r\n \t<li>Leave waste knitting in place to make blocking easier - especially for edges that roll</li>\r\n</ul>\r\n\r\n<hr />\r\n\r\n\r\n<h3>Scrap and Ravel Cast on</h3>\r\n<ol class=\"instruction-list\">\r\n \t<li>Chose a yarn that is appropriate for your machine</li>\r\n \t<li>Cast on with any method</li>\r\n \t<li>Knit a few rows - end with the carriage on the left.</li>\r\n \t<li>Knit 1 row of ravel cord (smooth, slippery yarn - crochet cotton works great)</li>\r\n \t<li>Cast on over the ravel cord with your garment yarn</li>\r\n \t<li>Knit your piece</li>\r\n \t<li>After blocking, pull out the ravel cord and remove the waste yarn.</li>\r\n</ol>\r\n<br>\r\n<img class=\"img-thumbnail\"src=\"http://www.knititnow.com/images/blog_images/2014/waste_yarn1.jpg\" alt=\"scrap and ravel for machine knitting\" width=\"200\" /></td>\r\n<td width=\"20\"></td>\r\n<td><img class=\"img-thumbnail\"src=\"http://www.knititnow.com/images/blog_images/2014/waste_yarn2.jpg\" alt=\"waste knitting for machine knitting\" width=\"200\" />\r\n<br><img src=\"/challenge/images/v2/13/no_sound.jpg\" width=\"50\"> <em>NOTE:  There is no sound with the video below</em><br>",
+              "legacyComponentId": 1049,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "188372160",
+              "title": null,
+              "legacyComponentId": 1125,
+              "order": 3
+            }
+          ],
+          "title": "Ravel Cord",
+          "slug": "ravel-cord",
+          "order": 6,
+          "legacy": {
+            "assignId": 329,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Instead of using scrap yarn to cast on (especially at the underarms and neck openings of this sweater), consider using cast on rags and ravel cord.  The rag offers a place to hang weights and prevents problems when adding stitches.<br>",
+              "legacyComponentId": 1143,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860044",
+              "title": "Creating a Cast on Rag",
+              "legacyComponentId": 1082,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<br>",
+              "legacyComponentId": 1142,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-question fa-3x\" aria-hidden=\"true\"></i>\r\n<h3>Once you hang your cast on rag ... what's the next step?</h3>\r\n<br><ol class=\"instruction-list\">\r\n<li>Just start knitting with your garment yarn<br><div style=\"margin-left:30px\">\r\n<em>Oops!  How will you remove the cast on rag?  What about all of those live stitches?</em><br></div>\r\n</li>\r\n<li>Knit a single row of ravel cord, then start knitting with your garment yarn<br><div style=\"margin-left:30px\">\r\n<em>That will leave live stitches ... is that really what you want?</em><br></div></li>\r\n<li>Knit a single row of ravel cord, then create a closed cast on with your garment yarn\r\n<br><div style=\"margin-left:30px\">\r\n<em>For a closed finished edge for your garment, use any cast on method of your choice OVER the ravel cord. </em><br></div>\r\n</li>\r\n</ol>\r\n\r\n",
+              "legacyComponentId": 1126,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "328",
+                "CHALLENGE_COMPONENTID": "1070",
+                "QUESTION_ANSWER": "False",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> A cast on rag is just ONE popular cast on method you should practice.</b>",
+                "QUESTION_MANDITORY": "1",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct! A cast on rag is just ONE popular cast on method you should practice.</b>",
+                "QUESTION_TEXT": "<i class='fa fa-question fa-3x' aria-hidden='true'></i> <h3>True / False: </h3><br>You MUST use a Cast on Rag for every cast on."
+              },
+              "legacyComponentId": 1070,
+              "order": 8
+            },
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-refresh fa-2x\" aria-hidden=\"true\"></i>\r\n<h3>Practice:</h3>\r\n<ol class=\"instruction-list\">\r\n<li>On the far left side of your machine cast on 5-10 stitches (any method)</li>\r\n<li>Knit 2 rows</li>\r\n<li>On the carriage side, pull one needle into working position</li>\r\n<li>Opposite the carriage, decrease 1 stitch</li>\r\n<li>Repeat until you have the length you want.</li>\r\n</ol>\r\nNOTE: The work will be \"traveling\" across the bed.  If you run out of needles, move the work back to the far left side of the bed and continue knitting.",
+              "legacyComponentId": 1071,
+              "order": 11
+            }
+          ],
+          "title": "Cast on Rag",
+          "slug": "cast-on-rag",
+          "order": 7,
+          "legacy": {
+            "assignId": 328,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151860058",
+              "title": "E-Wrap Cast On",
+              "legacyComponentId": 1081,
+              "order": 1
+            }
+          ],
+          "title": "E-Wrap Cast on",
+          "slug": "e-wrap-cast-on",
+          "order": 8,
+          "legacy": {
+            "assignId": 330,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "237470165",
+              "title": "Scrap on Scrap Off",
+              "legacyComponentId": 1084,
+              "order": 1
+            }
+          ],
+          "title": "Scrap on Scrap Off",
+          "slug": "scrap-on-scrap-off",
+          "order": 9,
+          "legacy": {
+            "assignId": 331,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Swatching and Yarn Needed",
+      "slug": "swatching-and-yarn-needed",
+      "displayOrder": 25,
+      "legacy": {
+        "itemId": 80,
+        "lessonOrder": 25
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\nThere are many variables when knitting (both by hand and by machine).\r\n\r\n <br><ul>\r\n \t<li>Different colors of the SAME yarn may knit to a different gauge</li>\r\n \t<li>Different dye lots of the SAME color of the SAME yarn may knit to a different gauge</li>\r\n \t<li>Different models of the SAME gauge knitting machine may knit to a different gauge.</li>\r\n \t<li>The SAME size knitting needle from a different manufacturer may knit to a different gauge</li>\r\n \t<li>Different people, using the exactly the SAME needles, machines, and yarns may get get different gauges</li>\r\n</ul>\r\n<img class=\"img-thumbnail\" width=\"300\" src=\"/challenge/images/v2/13/gauge_swatch_tension/swatching_is_not_optional.jpg\">\r\n\r\n\r\n<div><strong>SWATCHING IS NOT OPTIONAL!</strong></div>\r\n\r\nHow many times have you knit something that just didn't fit?  Have you ever had colors run or fade when you washed your sweater?<br>So many knitting disasters can be avoided by swatching and dressing your swatch.  Machine knitters have NO EXCUSE for not swatching!  We can knit multiple swatches quickly, testing stitch patterns and tensions.  Since we don't have a lot of time invested, we can do the \"throw-the-swatch-in-the-wash-with-jeans\" test to see if a washable yarn will hold up.<br>",
+              "legacyComponentId": 1107,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357273",
+              "title": null,
+              "legacyComponentId": 1108,
+              "order": 2
+            }
+          ],
+          "title": "Swatching is NOT Optional!",
+          "slug": "swatching-is-not-optional",
+          "order": 1,
+          "legacy": {
+            "assignId": 349,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<small>Instructions are for suggestions for <b>standard gauge</b><em> (mid-gauge, bulky)</em> and for using gauge rulers.</small><br>\r\n<blockquote class=\"smallblock\"><em>  Remember, you can knit swatches any size (as long as they are at least 5-6\" square.) Be sure to be consistent and establish a template for yourself for every time you knit a swatch.</em></blockquote>",
+              "legacyComponentId": 1109,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\r\n     <ol class=\"instruction-list\">\r\n          <li>Cast on <b>60</b><em>(50,30)</em> stitches <small><em>(add extra stitches so you can measure the center without edge distortion.)</em></small></li>\r\n           <li>Knit a few rows in pattern</li>\r\n          <li>Knit 2 rows in waste yarn (or weave a marker row)</li>\r\n          <li>Set row counter to 000</li>\r\n           <li>Knit the center section<br><div style=\"margin-left:30px\">\r\n<b>Standard gauge:</b>\r\n    <ul class=\"instruction-nolist-tight\">\r\n         <li>Knit 20  rows and knit in a yarn marker isolating the center 40 stitches</li>\r\n       <li>Knit 20 more rows and place a marker on the same needles</li>\r\n         <li>Knit 20 more rows</li>\r\n    </ul >\r\n<b>Mid-Gauge:</b>\r\n    <ul class=\"instruction-nolist-tight\">\r\n       <li>Knit 10  rows and knit in a yarn marker isolating the center 30 stitches</li>\r\n       <li>Knit 10 more rows and place a marker on the same needles</li>\r\n    </ul >\r\n<b>Bulky</b>\r\n    <ul class=\"instruction-nolist-tight\">\r\n          <li>Knit 15 rows and knit in a yarn marker isolating the center 40 stitches</li>\r\n            <li>Knit 15 more rows</li>\r\n</ul>\r\n</div>\r\n<li>Confirm and record the total number of rows you knit for the center <b>60</b><em>(40, 30)</em></li>\r\n<li>Knit 2 rows in waste yarn (or weave a marker row)</li>\r\n<li>Knit a few rows and bind off <small><em>(or drop the work from the machine)</em></small></li>\r\n</ol>\r\nLet the swatch rest<br>\r\n<ol>\r\n<li>Dress the swatch as you will treat the finished item</li>\r\n<li>Measure the size of the <b>40</b><em>(30, 20)</em> stitches in the center of the swatch (between the yarn markers)</li>\r\n<li>Measure the size of the <b>60</b><em>(40,30)</em> rows between the waste yarn (or marker rows)</li>\r\n<li>The math\r\n<ul><li>Divide the stitches in the middle by your measurement to get <b>Stitches Per Inch/cm</b></li>\r\n<li>Divide the rows in the middle by your measurement to get <b>Rows Per Inch/cm</b></li>\r\n<li>Multiply your stitches/rows per inch/cm times 4 to calculate stitches per 4\" (10cm)</li>\r\n</ul>\r\n</ol>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 1111,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/13/gauge_swatch_tension/swatch_info.jpg\">\r\n<img src=\"/challenge/images/v2/13/gauge_swatch_tension/swatch_info1.jpg\">\r\n</div>\r\n",
+              "legacyComponentId": 1113,
+              "order": 5
+            }
+          ],
+          "title": "Knit Your Swatch",
+          "slug": "knit-your-swatch",
+          "order": 2,
+          "legacy": {
+            "assignId": 350,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Understanding how to estimate yarn needed is essential for all of your knitting projects.<br>Take time to learn how.<br>",
+              "legacyComponentId": 1134,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857735",
+              "title": "How Much Yarn Do I Need?",
+              "legacyComponentId": 1133,
+              "order": 2
+            }
+          ],
+          "title": "Estimating yarn needed",
+          "slug": "estimating-yarn-needed",
+          "order": 3,
+          "legacy": {
+            "assignId": 353,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/13/yarn_estimate_example.jpg\" alt=\"\" />\r\n\r\n\r\n\r\n\r\nUsing the dimensions of the sample swatch shown above,  and the instructions from the video,<br />calculate how much yarn you would need for a <strong>36x36 baby blanket.</strong>\r\n<em><small>Not sure? Take a guess and we'll show you the math</small></em>\r\n\r\n",
+              "legacyComponentId": 1114,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "167",
+                "QUESTION_ANSWER": "63",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply 9 x 7 = 63</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many square inches in the sample swatch?"
+              },
+              "legacyComponentId": 1116,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "168",
+                "QUESTION_ANSWER": "3.5",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Divide weight (22) / square inches (63)=.35 </b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Calculate weight per square inch <small>(round up)</small>"
+              },
+              "legacyComponentId": 1117,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "169",
+                "QUESTION_ANSWER": "1296",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply 36 x 36 = 1296</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many square inches in the blanket?"
+              },
+              "legacyComponentId": 1118,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "170",
+                "QUESTION_ANSWER": "454",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply the blanket square inches(1296) x multiplier (.35)= 454 grams</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many grams are needed (approximate) for the 36 x 36 inch blanket?"
+              },
+              "legacyComponentId": 1119,
+              "order": 6
+            },
+            {
+              "type": "richText",
+              "html": "\r\n              Hate math?<br>Try the Knit it Now tool\r\n                <img src=\"/challenge/images/v2/13/tools/yarn_estimator_tool_sticky.gif\">\r\n\r\n\r\n",
+              "legacyComponentId": 1121,
+              "order": 8
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859805",
+              "title": "Yarn Estimator Video",
+              "legacyComponentId": 1122,
+              "order": 9
+            }
+          ],
+          "title": "Practice - Yarn Estimate",
+          "slug": "practice-yarn-estimate",
+          "order": 4,
+          "legacy": {
+            "assignId": 351,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Based on your swatch, here's a tool to help you estimate how much yarn you will need for your sweater.<br><em>Plan accordingly, the estimate DOES NOT include yarn needed for swatching or finishing.</em>",
+              "legacyComponentId": 1124,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "YarnEstimator",
+              "notes": [
+                "Unmapped legacy component type: YarnEstimator"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "352",
+                "GARMENTID": "890",
+                "TYPEOF": "YarnEstimator"
+              },
+              "legacyComponentId": 1123,
+              "order": 2
+            }
+          ],
+          "title": "How much Yarn for the Squirrel Sweater?",
+          "slug": "how-much-yarn-for-the-squirrel-sweater",
+          "order": 5,
+          "legacy": {
+            "assignId": 352,
+            "blockType": "Practice"
+          }
+        }
+      ]
+    },
+    {
+      "title": "{first}, Create your Custom Squirrel Pattern",
+      "slug": "first-create-your-custom-squirrel-pattern",
+      "displayOrder": 30,
+      "legacy": {
+        "itemId": 76,
+        "lessonOrder": 30
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment 'Kids One Piece Squirrel Cardigan' (legacy garmentId 890).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "359",
+                "CHALLENGE_COMPONENTID": "1150",
+                "GARMENTID": "890",
+                "GARMENTTITLE": "Kids One Piece Squirrel Cardigan",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "Pattern_File_Name",
+                "REDIRECT_TO": "/challenge/13/Group/360/item|{first}, Create your Custom Pattern: Download Your Pattern",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "Row_Gauge",
+                "SIZING_DATAMODEL_ELEMENT": "PatternSize",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "Stitch_gauge"
+              },
+              "legacyComponentId": 1150,
+              "order": 14
+            }
+          ],
+          "title": "Create Your Personalized Pattern",
+          "slug": "create-your-personalized-pattern",
+          "order": 1,
+          "legacy": {
+            "assignId": 359,
+            "blockType": "DataEntry"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): Pattern_File_Name",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 359 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "360",
+                "CHALLENGE_COMPONENTID": "1151",
+                "DATAMODEL_ELEMENTS": "Pattern_File_Name",
+                "DATAMODEL_REDIRECT": "359",
+                "DATAMODEL_VALIDATION_MESSAGE": "Please create your Pattern First"
+              },
+              "legacyComponentId": 1151,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'Pattern_File_Name'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "360",
+                "CHALLENGE_COMPONENTID": "1152",
+                "DATAMODEL_ICON": "fa fa-download",
+                "LABLE": "Download your pattern",
+                "PATTERN_DATAMODEL_ELEMENT": "Pattern_File_Name",
+                "VIEWHEIGHT": "600"
+              },
+              "legacyComponentId": 1152,
+              "order": 2
+            }
+          ],
+          "title": "Download Your Pattern",
+          "slug": "download-your-pattern",
+          "order": 2,
+          "legacy": {
+            "assignId": 360,
+            "blockType": "DocumentPattern"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Chipmunk Version (Shaped Sleeves)",
+      "slug": "chipmunk-version-shaped-sleeves",
+      "displayOrder": 31,
+      "legacy": {
+        "itemId": 92,
+        "lessonOrder": 31
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The Squirrel Sweater has straight (boxy) sleeves for easy knitting.<br>\r\nThe Chipmunk Sweater has shaped sleeves.  \r\n\r\n<blockquote><em><small>If you are brand-new, please knit the Squirrel first. Get familiar with the construction before attempting to work the shaping.</small></em></blockquote> ",
+              "legacyComponentId": 1309,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "246179592",
+              "title": "Short Row Increases",
+              "legacySlot": 1,
+              "legacyComponentId": 1308,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "246313312",
+              "title": "Short Row Decreases",
+              "legacySlot": 2,
+              "legacyComponentId": 1308,
+              "order": 2
+            },
+            {
+              "type": "download",
+              "label": "Download the worksheet",
+              "filename": "/downloads/sleeve_shaping4.pdf",
+              "showInline": true,
+              "legacy": {
+                "assignId": "417",
+                "componentId": "1317",
+                "viewHeight": "600",
+                "icon": "fa fa-download "
+              },
+              "legacyComponentId": 1317,
+              "order": 3
+            }
+          ],
+          "title": "Shaped Sleeves Shaping Techniques",
+          "slug": "shaped-sleeves-shaping-techniques",
+          "order": 1,
+          "legacy": {
+            "assignId": 417,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Don't skip practicing this technique.  You will use it again and again in your knitting.",
+              "legacyComponentId": 1310,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860040",
+              "title": "Short Row Increases and Decreases",
+              "legacyComponentId": 1311,
+              "order": 2
+            }
+          ],
+          "title": "Short Row Increases and Decreases",
+          "slug": "short-row-increases-and-decreases",
+          "order": 2,
+          "legacy": {
+            "assignId": 419,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/13/2hr/sr_inc_dec_example.jpg\" /><br>\r\n\r\n\r\n\r\n\r\n<strong>Practice: </strong> Use 2 colors of yarn to make this technique more clear.<br /> <small>Instructions are for <em>standard gauge (mid/bulky gauge).</em></small>\r\n\r\n\r\n\r\n<div class=\"cleanwell\">\r\n<h4>Part 1: Short Row increase</h4>\r\n<ol class=\"instruction-list\">\r\n<li>With waste yarn and ravel cord, cast on 60 <em>(30)</em> stitches</li>\r\n<li>With color 1 e-wrap cast on over all needles</li>\r\n<li>Carriage on the right, knit 1 row</li>\r\n<li>Carriage on the left, push 20<em>(10)</em> stitches on the right into hold position. Keep 40<em>(20)</em> stitches next to the carriage in working position.</li>\r\n<li>Carriage set to hold.</li>\r\n<li>Knit 1 row to the right</li>\r\n<li>Wrap to prevent a hole</li>\r\n<li>Knit back to the left</li>\r\n<li>*Put 10<em>(5)</em> held needles into working position</li>\r\n<li>Knit, wrap, knit*</li>\r\n<li>Repeat from * to * a total of 4 times (until all needles are in working position)</li>\r\n</ol>\r\nChange colors and knit 30<em>(15)</em> rows ending with the carriage on the right.<br><b>Continue knitting Short Row Decreases</b>\r\n</div>\r\n \r\n<div class=\"cleanwell\">\r\n<h4>Part 2: Short Row Decrease</h4>\r\n<ol class=\"instruction-list\">\r\n<li>Change back to first color</li>\r\n<li>Knit 1 row (carriage on the left) (Carriage still set to hold)</li>\r\n<li>*Opposite the carriage, pull 10<em>(5)</em> needles into hold position</li>\r\n<li>Knit, wrap knit*</li>\r\n<li>Repeat from * to * a total of 4 times, ending with the carriage on the left</li>\r\n<li>Cancel hold (or put all needles in working position)</li>\r\n<li>Knit 1 row</li>\r\n<li>Bind off</li>\r\n</ol>\r\n</div>\r\n",
+              "legacyComponentId": 1312,
+              "order": 1
+            }
+          ],
+          "title": "Practice - Short Row Increase and Decrease",
+          "slug": "practice-short-row-increase-and-decrease",
+          "order": 3,
+          "legacy": {
+            "assignId": 420,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment 'Kids One Piece Chipmunk Cardi' (legacy garmentId 894).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "400",
+                "CHALLENGE_COMPONENTID": "1280",
+                "GARMENTID": "894",
+                "GARMENTTITLE": "Kids One Piece Chipmunk Cardi",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "Pattern_File_Name",
+                "REDIRECT_TO": "/challenge/13/Group/401/item|Create your Custom Chipmunk Pattern: Download your Pattern",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "Row_Gauge",
+                "SIZING_DATAMODEL_ELEMENT": "PatternSize",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "Stitch_gauge"
+              },
+              "legacyComponentId": 1280,
+              "order": 1
+            }
+          ],
+          "title": "Create Your Personalized Pattern",
+          "slug": "create-your-personalized-pattern",
+          "order": 4,
+          "legacy": {
+            "assignId": 400,
+            "blockType": "DataEntry"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): Pattern_File_Name",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 400 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "401",
+                "DATAMODEL_ELEMENTS": "Pattern_File_Name",
+                "DATAMODEL_REDIRECT": "400",
+                "DATAMODEL_VALIDATION_MESSAGE": "Please create your Pattern First",
+                "TYPEOF": "DataValidation"
+              },
+              "legacyComponentId": 1281,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'Pattern_File_Name'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "401",
+                "DATAMODEL_ICON": "fa fa-download",
+                "LABLE": "Download your pattern",
+                "PATTERN_DATAMODEL_ELEMENT": "Pattern_File_Name",
+                "TYPEOF": "DocumentPattern",
+                "VIEWHEIGHT": "600"
+              },
+              "legacyComponentId": 1282,
+              "order": 2
+            }
+          ],
+          "title": "Download your Pattern",
+          "slug": "download-your-pattern",
+          "order": 5,
+          "legacy": {
+            "assignId": 401,
+            "blockType": "DocumentPattern"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Watch as We Knit Our Squirrel Sweater",
+      "slug": "watch-as-we-knit-our-squirrel-sweater",
+      "displayOrder": 39,
+      "legacy": {
+        "itemId": 78,
+        "lessonOrder": 39
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "This is an especially fast knit, (even for machine knitters).<br><b>The secret:</b> Be prepared!<br><em>Gather all your tools and supplies BEFORE you start knitting and you'll be finished in no time!</em><br><b><img src=\"/challenge/images/v2/13/no_sound.jpg\" width=\"50\"> NOTE:  There is no sound with the video below<br></b>",
+              "legacyComponentId": 1144,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "237829315",
+              "title": "Ready, Set, KNIT!",
+              "legacyComponentId": 1086,
+              "order": 2
+            }
+          ],
+          "title": "Ready, Set, KNIT!",
+          "slug": "ready-set-knit",
+          "order": 1,
+          "legacy": {
+            "assignId": 346,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"alert alert-info\">Watch as we knit this sweater in less than 40 minutes.... The secret?</div>\r\n<ul>\r\n<li>Be prepared</li>\r\n<li>Stay focused</li>\r\n<li>. . . and don't get distracted <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i></li>\r\n</ul>\r\n\r\n",
+              "legacyComponentId": 1093,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "238205955",
+              "title": "Part : Knit the back and both sleves",
+              "legacySlot": 1,
+              "legacyComponentId": 5773,
+              "order": 6
+            },
+            {
+              "type": "video",
+              "vimeoId": "238457576",
+              "title": "Part 2: Knit the Left Side",
+              "legacySlot": 2,
+              "legacyComponentId": 5773,
+              "order": 6
+            },
+            {
+              "type": "video",
+              "vimeoId": "238505918",
+              "title": "Part 3: Finish the Right Side",
+              "legacySlot": 3,
+              "legacyComponentId": 5773,
+              "order": 6
+            }
+          ],
+          "title": "Start To Finish",
+          "slug": "start-to-finish",
+          "order": 2,
+          "legacy": {
+            "assignId": 342,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Finishing",
+      "slug": "finishing",
+      "displayOrder": 40,
+      "legacy": {
+        "itemId": 79,
+        "lessonOrder": 40
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Everyone has their favorite seaming method. Which do you prefer?<br>",
+              "legacyComponentId": 1137,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858422",
+              "title": "Seaming - Putting It All Together",
+              "legacyComponentId": 1136,
+              "order": 2
+            }
+          ],
+          "title": "Side Seam Seaming Choices",
+          "slug": "side-seam-seaming-choices",
+          "order": 1,
+          "legacy": {
+            "assignId": 356,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151860051",
+              "title": "3-needle Bind Off",
+              "legacySlot": 1,
+              "legacyComponentId": 10165,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151850342",
+              "title": "Kitchener Stitch on the Machine (purl Side)",
+              "legacySlot": 2,
+              "legacyComponentId": 10165,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151849234",
+              "title": "Kitchener Stitch on the machine (knit side)",
+              "legacySlot": 3,
+              "legacyComponentId": 10165,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "339846501",
+              "title": "Kitchener Join (Grafting)",
+              "legacySlot": 4,
+              "legacyComponentId": 10165,
+              "order": 1
+            }
+          ],
+          "title": "Sleeve Seaming choices",
+          "slug": "sleeve-seaming-choices",
+          "order": 2,
+          "legacy": {
+            "assignId": 6513,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "By hand or machine,  1x1 ribbing gives a traditional finish to the Squirrel Cardigan.<br>Use the garment yarn or choose a contrasting yarn.<br>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/13/squirrel/ribbing_example.jpg\">",
+              "legacyComponentId": 1139,
+              "order": 1
+            }
+          ],
+          "title": "Ribbing Edges",
+          "slug": "ribbing-edges",
+          "order": 3,
+          "legacy": {
+            "assignId": 357,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Plain or fancy, crochet is a fast and pretty finish for the Squirrel Cardigan.<br>Row 1: sc around edges<br>\r\nRow 2: *ch3 skip 1 sc, sc in the next sc* Repeat for pattern<br><img img class=\"img-thumbnail\" src=\"/challenge/images/v2/13/squirrel/crochet_chart.png\" width=\"200\">\r\n<br><div class=\"col-12-xs\"><img img class=\"img-thumbnail\" src=\"/challenge/images/v2/13/squirrel/crochet_example.jpg\"> </div>\r\n<br><div class=\"col-12-xs\"><img img class=\"img-thumbnail\" src=\"/challenge/images/v2/13/squirrel/crochet_example2.jpg\"> </div>\r\n",
+              "legacyComponentId": 1138,
+              "order": 1
+            }
+          ],
+          "title": "Crochet Edge",
+          "slug": "crochet-edge",
+          "order": 4,
+          "legacy": {
+            "assignId": 345,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Wet blocking not only sets the shape of your knitted piece, it removes any grime that may have collected in the construction of your sweater.\r\n<br>\r\n\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/13/squirrel/blocking1.jpg\">\r\n\r\n\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/13/squirrel/blocking2.jpg\">\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 1088,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858072",
+              "title": "Wet Blocking",
+              "legacyComponentId": 1094,
+              "order": 2
+            }
+          ],
+          "title": "Blocking",
+          "slug": "blocking",
+          "order": 5,
+          "legacy": {
+            "assignId": 343,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859761",
+              "title": "Designer I-Cord Seams and Edges",
+              "legacyComponentId": 1135,
+              "order": 1
+            }
+          ],
+          "title": "I-Cord Edge",
+          "slug": "i-cord-edge",
+          "order": 6,
+          "legacy": {
+            "assignId": 354,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Make it your own! (Hack the pattern)",
+      "slug": "make-it-your-own-hack-the-pattern",
+      "displayOrder": 50,
+      "legacy": {
+        "itemId": 81,
+        "lessonOrder": 50
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<ol class=\"instruction-list\">\r\n     <li>Stitch patterns\r\n           <ul class=\"instruction-nolist\">\r\n           <li>With the Dynamic pattern you can substitute any stitch pattern. Just enter \r\nYOUR gauge.</li>\r\n            <li>Add a cable up the center fronts or center back. Remember cables will impact your stitch gauge by approx 10%.  If you add a 6 stitch cable add 1-2 extra stitches to the cast on.</li>\r\n            <li>Add a bit of lace up the fronts or center back. Lace will require fewer stitches at cast on</li>\r\n          </ul>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/13/squirrel/hack1.jpg\" </li>\r\n      <li>Stripes \r\n    <ul class=\"instruction-nolist\"> \r\n  <Li>If adding stripes on one side as in the sample, remember that the work is reversed on the machine.  We added stripes on the right side of the machine to have them appear on the left side of the garment (as worn)</li>\r\n </ul>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/13/squirrel/hack2.jpg\" </li>\r\n\r\n   </li>\r\n      <li>Overlap the fronts \r\n    <ul class=\"instruction-nolist\"> \r\n  <Li>To overlap the fronts, cast on additional stitches for the front neck openings.\r\n Add buttonholes and buttons to make it double-breasted</li>\r\n </ul>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/13/squirrel/hack3.jpg\" </li>\r\n   </li>\r\n      <li>Shape the sleeves\r\n    <ul class=\"instruction-nolist\"> \r\n  <Li>To reduce bulk, shape the sleeves slightly.<br>\r\nUse the Knit it Now <a href=\r\n\"/tools/sholderslope.cfm\"><b>\"Triangle Formula (Slope Tool)\"</b></a> to calculate the shaping.<br>\r\n<div align=\"center><img src=\"/images/tools/slope.gif\"></div></li>\r\n<li>\r\nFor smooth seams, use \r\n<i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> \r\n\r\n<a href=\"/learn/launch.cfm?contentid=199&inpattern=20CAC0\"><b>short row increases and decreases</B></a> for the shaping</li>\r\n </ul>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/13/squirrel/hack4.jpg\" </li>\r\n\r\n   </li>\r\n      <li>Lengthen the back \r\n    <ul class=\"instruction-nolist\"> \r\n  <Li>For a modern shape, lengthen the back of the sweater.  We worked a hung hem for 1\", then started the row counter and knit according to the pattern.</li>\r\n </ul>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/13/squirrel/hack6.jpg\" </li>\r\n\r\n</ol>\r\n\r\n",
+              "legacyComponentId": 1154,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "Create a completely different sweater by adding V-Neck shaping.\r\n\r\n<img src=\"\">\r\n",
+              "legacyComponentId": 1158,
+              "order": 2
+            }
+          ],
+          "title": "Hack the Pattern",
+          "slug": "hack-the-pattern",
+          "order": 1,
+          "legacy": {
+            "assignId": 362,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h1>One-Piece Squirrel Cardi: V-Neck Hack</h1>\r\nChange the look of this simple sweater by knitting a V-Neck.  <b>No Math!</b>\r\n<br>\r\n\r\n<h2 id=\"lecture_heading\" class=\"section-title machineknittingcolor\">First Side:</H2>\r\n\r\n\r\n\r\n<ol class=\"instruction-list\">\r\n    <li>Knit as instructed to the front neck opening</li>\r\n    <li>Determine <mark>\"N1\"</mark> the front neck opening width in stitches</li>\r\n    <li>INCREASE 1 stitch every other row on the neck edge <mark>\"N1\"</mark> times.</li>\r\n    <li>When you've added <mark>\"N1\"</mark> stitches continue knitting according to the pattern</li>\r\n</ol>\r\n<h2 id=\"lecture_heading\" class=\"section-title machineknittingcolor\">Second Side:</H2>\r\n<ol class=\"instruction-list\">\r\n<li>Knit as instructed to the front neck opening</li>\r\n<li>INCREASE 1 stitch every other row on the neck edge <mark>\"N1\"</mark> times.</li>\r\n<li>When you've added <mark>\"N1\"</mark> stitches continue knitting according to the pattern</li>\r\n</ol>\r\n<img src=\"/challenge/images/v2/13/squirrel/v-neck_hack_illustration.jpg\">\r\n\r\n<img src=\"/challenge/images/v2/13/squirrel/v_neck_hack.jpg\">\r\n\r\n\r\n",
+              "legacyComponentId": 1159,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "363",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 1161,
+              "order": 2
+            },
+            {
+              "type": "download",
+              "label": "Print this worksheet",
+              "filename": "/downloads/v-neck_hack1.pdf",
+              "showInline": true,
+              "legacy": {
+                "assignId": "363",
+                "componentId": "1160",
+                "viewHeight": "200",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 1160,
+              "order": 3
+            }
+          ],
+          "title": "V-Neck Hack",
+          "slug": "v-neck-hack",
+          "order": 2,
+          "legacy": {
+            "assignId": 363,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "242106176",
+              "title": "Take 1 Live video",
+              "legacyComponentId": 1162,
+              "order": 1
+            }
+          ],
+          "title": "Let's talk about Hacking the Pattern",
+          "slug": "let-s-talk-about-hacking-the-pattern",
+          "order": 3,
+          "legacy": {
+            "assignId": 364,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "243223873",
+              "title": "More live discussion about the hacking the squirrel pattern",
+              "legacyComponentId": 1279,
+              "order": 1
+            }
+          ],
+          "title": "Take 2 - Hack the Pattern",
+          "slug": "take-2-hack-the-pattern",
+          "order": 4,
+          "legacy": {
+            "assignId": 399,
+            "blockType": "Video"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 25,
+    "videos": [
+      {
+        "vimeoId": "221120492",
+        "title": "Machine Knitting Courses",
+        "lessonSlug": "start-here",
+        "blockSlug": "how-to-use-this-course-site"
+      },
+      {
+        "vimeoId": "237010382",
+        "title": null,
+        "lessonSlug": "start-here",
+        "blockSlug": "construction-overview"
+      },
+      {
+        "vimeoId": "188372160",
+        "title": null,
+        "lessonSlug": "techniques-used",
+        "blockSlug": "ravel-cord"
+      },
+      {
+        "vimeoId": "151860044",
+        "title": "Creating a Cast on Rag",
+        "lessonSlug": "techniques-used",
+        "blockSlug": "cast-on-rag"
+      },
+      {
+        "vimeoId": "151860058",
+        "title": "E-Wrap Cast On",
+        "lessonSlug": "techniques-used",
+        "blockSlug": "e-wrap-cast-on"
+      },
+      {
+        "vimeoId": "237470165",
+        "title": "Scrap on Scrap Off",
+        "lessonSlug": "techniques-used",
+        "blockSlug": "scrap-on-scrap-off"
+      },
+      {
+        "vimeoId": "178357273",
+        "title": null,
+        "lessonSlug": "swatching-and-yarn-needed",
+        "blockSlug": "swatching-is-not-optional"
+      },
+      {
+        "vimeoId": "151857735",
+        "title": "How Much Yarn Do I Need?",
+        "lessonSlug": "swatching-and-yarn-needed",
+        "blockSlug": "estimating-yarn-needed"
+      },
+      {
+        "vimeoId": "151859805",
+        "title": "Yarn Estimator Video",
+        "lessonSlug": "swatching-and-yarn-needed",
+        "blockSlug": "practice-yarn-estimate"
+      },
+      {
+        "vimeoId": "246179592",
+        "title": "Short Row Increases",
+        "lessonSlug": "chipmunk-version-shaped-sleeves",
+        "blockSlug": "shaped-sleeves-shaping-techniques"
+      },
+      {
+        "vimeoId": "246313312",
+        "title": "Short Row Decreases",
+        "lessonSlug": "chipmunk-version-shaped-sleeves",
+        "blockSlug": "shaped-sleeves-shaping-techniques"
+      },
+      {
+        "vimeoId": "151860040",
+        "title": "Short Row Increases and Decreases",
+        "lessonSlug": "chipmunk-version-shaped-sleeves",
+        "blockSlug": "short-row-increases-and-decreases"
+      },
+      {
+        "vimeoId": "237829315",
+        "title": "Ready, Set, KNIT!",
+        "lessonSlug": "watch-as-we-knit-our-squirrel-sweater",
+        "blockSlug": "ready-set-knit"
+      },
+      {
+        "vimeoId": "238205955",
+        "title": "Part : Knit the back and both sleves",
+        "lessonSlug": "watch-as-we-knit-our-squirrel-sweater",
+        "blockSlug": "start-to-finish"
+      },
+      {
+        "vimeoId": "238457576",
+        "title": "Part 2: Knit the Left Side",
+        "lessonSlug": "watch-as-we-knit-our-squirrel-sweater",
+        "blockSlug": "start-to-finish"
+      },
+      {
+        "vimeoId": "238505918",
+        "title": "Part 3: Finish the Right Side",
+        "lessonSlug": "watch-as-we-knit-our-squirrel-sweater",
+        "blockSlug": "start-to-finish"
+      },
+      {
+        "vimeoId": "151858422",
+        "title": "Seaming - Putting It All Together",
+        "lessonSlug": "finishing",
+        "blockSlug": "side-seam-seaming-choices"
+      },
+      {
+        "vimeoId": "151860051",
+        "title": "3-needle Bind Off",
+        "lessonSlug": "finishing",
+        "blockSlug": "sleeve-seaming-choices"
+      },
+      {
+        "vimeoId": "151850342",
+        "title": "Kitchener Stitch on the Machine (purl Side)",
+        "lessonSlug": "finishing",
+        "blockSlug": "sleeve-seaming-choices"
+      },
+      {
+        "vimeoId": "151849234",
+        "title": "Kitchener Stitch on the machine (knit side)",
+        "lessonSlug": "finishing",
+        "blockSlug": "sleeve-seaming-choices"
+      },
+      {
+        "vimeoId": "339846501",
+        "title": "Kitchener Join (Grafting)",
+        "lessonSlug": "finishing",
+        "blockSlug": "sleeve-seaming-choices"
+      },
+      {
+        "vimeoId": "151858072",
+        "title": "Wet Blocking",
+        "lessonSlug": "finishing",
+        "blockSlug": "blocking"
+      },
+      {
+        "vimeoId": "151859761",
+        "title": "Designer I-Cord Seams and Edges",
+        "lessonSlug": "finishing",
+        "blockSlug": "i-cord-edge"
+      },
+      {
+        "vimeoId": "242106176",
+        "title": "Take 1 Live video",
+        "lessonSlug": "make-it-your-own-hack-the-pattern",
+        "blockSlug": "let-s-talk-about-hacking-the-pattern"
+      },
+      {
+        "vimeoId": "243223873",
+        "title": "More live discussion about the hacking the squirrel pattern",
+        "lessonSlug": "make-it-your-own-hack-the-pattern",
+        "blockSlug": "take-2-hack-the-pattern"
+      }
+    ],
+    "downloadCount": 2,
+    "downloads": [
+      {
+        "filename": "/downloads/sleeve_shaping4.pdf",
+        "label": "Download the worksheet",
+        "lessonSlug": "chipmunk-version-shaped-sleeves",
+        "blockSlug": "shaped-sleeves-shaping-techniques"
+      },
+      {
+        "filename": "/downloads/v-neck_hack1.pdf",
+        "label": "Print this worksheet",
+        "lessonSlug": "make-it-your-own-hack-the-pattern",
+        "blockSlug": "v-neck-hack"
+      }
+    ]
+  }
+}

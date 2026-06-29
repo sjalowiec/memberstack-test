@@ -8,6 +8,34 @@ export type StitchDecreasePoint = {
   amount: number;
 };
 
+/** Shaping segment token, e.g. `3s-2r-1x` (not `bo12`, `hold18`, etc.). */
+const SHAPING_SEGMENT_PATTERN = /^(\d+)s-(\d+)r-(\d+)x$/;
+
+/**
+ * Merge consecutive identical shaping segments by summing repeat counts.
+ * Non-shaping lines (`bo…`, `hold…`, etc.) pass through unchanged and break runs.
+ */
+export function consolidateConsecutiveJapaneseNotationLines(lines: readonly string[]): string[] {
+  const out: string[] = [];
+  for (const line of lines) {
+    const match = line.match(SHAPING_SEGMENT_PATTERN);
+    if (!match) {
+      out.push(line);
+      continue;
+    }
+    const [, stitches, rows, times] = match;
+    const prev = out[out.length - 1];
+    const prevMatch = prev?.match(SHAPING_SEGMENT_PATTERN);
+    if (prevMatch && prevMatch[1] === stitches && prevMatch[2] === rows) {
+      const mergedTimes = Number(prevMatch[3]) + Number(times);
+      out[out.length - 1] = `${stitches}s-${rows}r-${mergedTimes}x`;
+    } else {
+      out.push(line);
+    }
+  }
+  return out;
+}
+
 /** Group consecutive decreases with the same stitch amount and the same row spacing. */
 export function compressStitchDecreasePointsToNotationLines(
   points: readonly StitchDecreasePoint[],
@@ -40,5 +68,7 @@ export function compressStitchDecreasePointsToNotationLines(
     out.push({ stitches, rows, times });
     i = j;
   }
-  return out.map((r) => `${r.stitches}s-${r.rows}r-${r.times}x`);
+  return consolidateConsecutiveJapaneseNotationLines(
+    out.map((r) => `${r.stitches}s-${r.rows}r-${r.times}x`),
+  );
 }

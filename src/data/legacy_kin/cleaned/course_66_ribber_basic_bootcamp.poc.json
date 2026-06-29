@@ -1,0 +1,1380 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 66,
+    "title": "Ribber Basic Bootcamp",
+    "slug": "ribber-basic-bootcamp",
+    "status": "published",
+    "published": true,
+    "thumbnail": "/images/courses/ribber.webp",
+    "legacy": {
+      "sourceExport": "course_66_ribber_basic_bootcamp.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "contentStatus": "cleaned"
+  },
+  "lessons": [
+    {
+      "title": "Get Started",
+      "slug": "get-started",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 422,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/39/expert_beginner.gif\"><p>\n\tThe goal of this course is to get you using your ribber! Don't just watch videos .... get knitting!<br>The more samples you knit, your skills will continue to grow. Get started by, practicing to cast on AND bind off.<br>In the following lessons, you will repeat and adapt these skills as you explore other needle arrangements and stitch patterns.<br><em>This course assumes that you've had success with your main bed and you have a yarn that is appropriate for your machine. If you have trouble as you are getting started, you might want to try a thinner yarn for double bed work (especially\n\t\t\tfull needle rib \n\t\t\tknitting)\n</p>",
+              "legacyComponentId": 5839,
+              "order": 1
+            }
+          ],
+          "title": "Ready ... Set ... Go!",
+          "slug": "ready-set-go",
+          "order": 1,
+          "legacy": {
+            "assignId": 3908,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "title": "A bit of Advice",
+          "slug": "content-1782469647594",
+          "order": 2,
+          "legacy": {
+            "assignId": 3927,
+            "blockType": "HTML"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "<em>If you are just getting started with machine knitting and have a ribber, <b> be kind to yourself and take this advice.</b><br>Put the ribber aside for a while ... <b>master the single bed BEFORE adding the ribber to the equation.</b><br>Learn and understand the settings for your machine. Practice with a few different yarns, learn to read and follow patterns ... get some successes under your belt before adding the ribber. </em><br>Trust me  .... been there ... done that <i class=\"fa fa-smile-o fa-2x\" aria-hidden=\"true\"></i>\n\n\n",
+              "legacyComponentId": 6542,
+              "order": 2
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/path/images/93/what_is_ribber3.jpg\">\n<p>\n\nPicture this:<br><ul>\n<li>You have a knitting machine with 100+ needles.</li><br>\n<li>You use a carriage to quickly knit 100+ needles with the pass of the carriage</li><br>\n<li>Imagine cloning that needlebed, turning it 180° and positioning the needles facing each other.</li><br></ul>\nNow you have a setup that can not only create purl stitches, but knit stitches as well.<br>That the basic idea of a knitting machine ribber.<br>Imagine being able to knit k1, p1 ribbing with the pass of the carriage ... but wait!  There's so much more!</p>\n\n\n\n",
+              "legacyComponentId": 5720,
+              "order": 3,
+              "layoutRole": "textVideoLeft"
+            },
+            {
+              "type": "richText",
+              "html": "<b>Watch as we attach our ribber. Yours may be different, but the concepts are the same. It's easy, don't be intimidated by confusing instructions translated from Japanese</b>",
+              "legacyComponentId": 5832,
+              "order": 4
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859443",
+              "title": "Ribber Basics",
+              "legacyComponentId": 5831,
+              "order": 5
+            }
+          ],
+          "title": "Set up your ribber",
+          "slug": "set-up-your-ribber",
+          "order": 3,
+          "legacy": {
+            "assignId": 3835,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The practical uses of the ribber position (racking) will be shown when working with different stitch patterns. <br>BUT, it's critical that you understand this concept before passing your carriages across the beds, with or without yarn.",
+              "legacyComponentId": 5846,
+              "order": 6,
+              "layoutRole": "textVideoLeft"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859701",
+              "title": "Ribber: Full vs Half Pitch",
+              "legacyComponentId": 5845,
+              "order": 7
+            }
+          ],
+          "title": "Don't Skip This",
+          "slug": "don-t-skip-this",
+          "order": 4,
+          "legacy": {
+            "assignId": 3911,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "download",
+              "label": "Download",
+              "filename": "/downloads/ribber_basics_bootcamp.pdf",
+              "legacyComponentId": 6543,
+              "order": 8
+            }
+          ],
+          "title": "Download the worksheets",
+          "slug": "download-the-worksheets",
+          "order": 5,
+          "legacy": {
+            "assignId": 3926,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Casting On",
+      "slug": "casting-on",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 438,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "title": "Text + Video",
+          "slug": "text-video-1782469980553",
+          "order": 1,
+          "legacy": {
+            "assignId": 3910,
+            "blockType": "HTML",
+            "editorLayout": "textVideo"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "Casting on with your ribber can be intimidating. Have you followed the instructions with your machine and not been happy with the results? Are there too many steps to remember?<br><br>Here's an easy-to-remember cast on that's not only fast, but it's versatile and can be used for 1x1, 2x2, 5x5, or any stitch combination. In addition, it has plenty of elasticity for armholes, neckbands ... anywhere you want stretch.<br>Quick, easy, fast, stretchy, versatile, pretty Ribber Cast On .. what more could you want?<br><br><i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> <em>This technique uses a \n\n<a href=\"/glossary/bodkin-double-eye-needle\" class=\"glossary-link\">Bodkin | Double Eye Needle</a><br>\nIf you don't have a double eye needle ... <b>buy one</b> (or buy 2 they tend to play hide-and-seek    <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i>).</em><br>",
+              "legacyComponentId": 6544,
+              "order": 1,
+              "layoutRole": "textVideoLeft"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858586",
+              "title": "Easiest, Best Ribber Cast On",
+              "legacyComponentId": 6545,
+              "order": 2
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<br>\r\n<b>There are many methods for both casting on and binding off when working with the double bed.<br>Your best bet is to try multiple techniques and determine which work for you</b>",
+              "legacyComponentId": 5841,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859232",
+              "title": "3 Perfect Ribbing Cast Ons",
+              "legacySlot": 4,
+              "legacyComponentId": 5842,
+              "order": 4
+            }
+          ],
+          "title": "Try These",
+          "slug": "try-these",
+          "order": 2,
+          "legacy": {
+            "assignId": 3909,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "title": "Three Videos with Text",
+          "slug": "three-videos-1782472841809",
+          "order": 3,
+          "legacy": {
+            "assignId": 3911,
+            "blockType": "HTML",
+            "editorLayout": "threeVideosWithText"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "<p>\nThere are many methods for both casting on and binding off when working with the double bed.\nYour best bet is to try multiple techniques and determine which work for you</p>",
+              "legacyComponentId": 6546,
+              "order": 5,
+              "layoutRole": "threeVideosIntro"
+            },
+            {
+              "type": "video",
+              "vimeoId": "311353131",
+              "title": "Ribber E-wrap Cast On",
+              "legacyComponentId": 6547,
+              "order": 7,
+              "layoutRole": "threeVideosVideo1"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6548,
+              "order": 6,
+              "layoutRole": "threeVideosCaption1"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859346",
+              "title": " 2x2 Half Pitch Rib Cast On",
+              "legacyComponentId": 6549,
+              "order": 9,
+              "layoutRole": "threeVideosVideo2"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6550,
+              "order": 8,
+              "layoutRole": "threeVideosCaption2"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859224",
+              "title": "2x2 Ribbing Cast On",
+              "legacyComponentId": 6551,
+              "order": 11,
+              "layoutRole": "threeVideosVideo3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6552,
+              "order": 10,
+              "layoutRole": "threeVideosCaption3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6553,
+              "order": 12,
+              "layoutRole": "threeVideosOutro"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Swatching on the Double Bed",
+      "slug": "swatching-on-the-double-bed",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 439,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Swatching for a double bed fabric is the same as swatching single bed fabrics.<br>The goal is to mark a specific number of stitches and rows in the middle of the knitted piece to accurately measure your gauge.\r\n<br>Here are some tips for perfect double bed swatches ... no matter what stitch pattern you choose.<br>",
+              "legacyComponentId": 5843,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859184",
+              "title": "Swatching on the Double Bed",
+              "legacyComponentId": 5844,
+              "order": 2
+            }
+          ],
+          "title": "Swatching is NOT optional",
+          "slug": "swatching-is-not-optional",
+          "order": 1,
+          "legacy": {
+            "assignId": 3910,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Binding Off",
+      "slug": "binding-off",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 440,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "This is an easy bind off, finished on the machine, that requires no hand sewing with a tapestry needle to complete.<br>This tutorial assumes that you have basic knowledge of the ribber and can cast on and knit 1 x 1 rib.",
+              "legacyComponentId": 5849,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857401",
+              "title": "Easy Ribber Bind Off",
+              "legacyComponentId": 5850,
+              "order": 2
+            }
+          ],
+          "title": "Easy Ribber Bind Off",
+          "slug": "easy-ribber-bind-off",
+          "order": 1,
+          "legacy": {
+            "assignId": 3912,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "title": "More Bind off Options",
+          "slug": "three-videos-1782473674912",
+          "order": 2,
+          "legacy": {
+            "assignId": 3914,
+            "blockType": "HTML",
+            "editorLayout": "threeVideosWithText"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "<p>\n    Optional introductory text goes here. Explain what students should watch for before viewing the videos.\n</p>",
+              "legacyComponentId": 6556,
+              "order": 3,
+              "layoutRole": "threeVideosIntro"
+            },
+            {
+              "type": "video",
+              "vimeoId": "258782290",
+              "title": "Figure 8 Bind Off",
+              "legacyComponentId": 6557,
+              "order": 5,
+              "layoutRole": "threeVideosVideo1"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6558,
+              "order": 4,
+              "layoutRole": "threeVideosCaption1"
+            },
+            {
+              "type": "video",
+              "vimeoId": "258782290",
+              "title": "Figure 8 Bind Off",
+              "legacyComponentId": 6559,
+              "order": 7,
+              "layoutRole": "threeVideosVideo2"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6560,
+              "order": 6,
+              "layoutRole": "threeVideosCaption2"
+            },
+            {
+              "type": "video",
+              "vimeoId": "258782290",
+              "title": "Ribber Bind Off",
+              "legacyComponentId": 6561,
+              "order": 9,
+              "layoutRole": "threeVideosVideo3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6562,
+              "order": 8,
+              "layoutRole": "threeVideosCaption3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6563,
+              "order": 10,
+              "layoutRole": "threeVideosOutro"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Troubleshooting Tips",
+      "slug": "troubleshooting-tips",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 442,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "title": "Mistakes Happen",
+          "slug": "three-videos-1782473875408",
+          "order": 1,
+          "legacy": {
+            "assignId": 3917,
+            "blockType": "HTML",
+            "editorLayout": "threeVideosWithText"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6564,
+              "order": 1,
+              "layoutRole": "threeVideosIntro"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859192",
+              "title": "Ribber Weights on the Floor",
+              "legacyComponentId": 6565,
+              "order": 3,
+              "layoutRole": "threeVideosVideo1"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6566,
+              "order": 2,
+              "layoutRole": "threeVideosCaption1"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859438",
+              "title": "Troubleshooting Ribbing",
+              "legacyComponentId": 6567,
+              "order": 5,
+              "layoutRole": "threeVideosVideo2"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6568,
+              "order": 4,
+              "layoutRole": "threeVideosCaption2"
+            },
+            {
+              "type": "video",
+              "vimeoId": "",
+              "title": null,
+              "legacyComponentId": 6569,
+              "order": 7,
+              "layoutRole": "threeVideosVideo3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6570,
+              "order": 6,
+              "layoutRole": "threeVideosCaption3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6571,
+              "order": 8,
+              "layoutRole": "threeVideosOutro"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Knitting in the Round",
+      "slug": "knitting-in-the-round",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 443,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "title": "Three Videos with Text",
+          "slug": "three-videos-1782474092000",
+          "order": 1,
+          "legacy": {
+            "assignId": 3918,
+            "blockType": "HTML",
+            "editorLayout": "threeVideosWithText"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "<p>With a ribber and a standard gauge machine you can have up to 400 needles at your fingertips!\nDid you know that you can knit in the round? (no seams). BUT, remember automatic patterning (punchcard or electronics) only happens on the main bed. So knitting in the round is strictly for stockinette only</p>",
+              "legacyComponentId": 6572,
+              "order": 1,
+              "layoutRole": "threeVideosIntro"
+            },
+            {
+              "type": "video",
+              "vimeoId": "178356914",
+              "title": "Circular (tubular) Knitting",
+              "legacyComponentId": 6573,
+              "order": 3,
+              "layoutRole": "threeVideosVideo1"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6574,
+              "order": 2,
+              "layoutRole": "threeVideosCaption1"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859457",
+              "title": "Matching Ribber and Main Bed Tension",
+              "legacyComponentId": 6575,
+              "order": 5,
+              "layoutRole": "threeVideosVideo2"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6576,
+              "order": 4,
+              "layoutRole": "threeVideosCaption2"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859462",
+              "title": "Half Circular / Tubular",
+              "legacyComponentId": 6577,
+              "order": 7,
+              "layoutRole": "threeVideosVideo3"
+            },
+            {
+              "type": "richText",
+              "html": "Another option is to create WIDE fabrics with both beds in work.  Instead of a tube, you can create a single piece of knitting that is up to 400 needles wide!  It takes a bit of concentration, and it will only produce stockinette.",
+              "legacyComponentId": 6578,
+              "order": 6,
+              "layoutRole": "threeVideosCaption3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6579,
+              "order": 8,
+              "layoutRole": "threeVideosOutro"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Full Needle Rib",
+      "slug": "full-needle-rib",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 444,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "title": "Full Needle Rib Cast On Techniques",
+          "slug": "text-video-1782474934952",
+          "order": 1,
+          "legacy": {
+            "assignId": 3919,
+            "blockType": "HTML",
+            "editorLayout": "textVideo"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "By putting all needles in work and knitting them at the same time you will produce a dense fabric that has knit stitches showing on both sides. True<a data-GlossaryId='184' class='glossaryhelp'> full-needle rib <i class='fa fa-question-circle' aria-hidden='true'></i></a>\nis completely reversible.<br><br>\nYou will want to use a thinner yarn.<br><br>\nBy adding stitch patterning on the main bed (color and/or texture) you can produce beautiful fabrics.<br><br>\nAdding multi-color knitting on the main bed while working full needle rib is called\n<a data-GlossaryId='268' class='glossaryhelp'> Double Bed Jacquard <i class='fa fa-question-circle' aria-hidden='true'></i></a>\nDouble Bed Jacquard. This technique is outside the scope of this course, but you MUST know how to set up and knit in full needle rib before attempting Jacquard.\n",
+              "legacyComponentId": 6581,
+              "order": 1,
+              "layoutRole": "textVideoLeft"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859303",
+              "title": null,
+              "legacyComponentId": 6582,
+              "order": 2
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The best bind off technique for full needle rib is a \"Kitchener\" bind off by hand. Yes it's tedious, but done correctly you won't be able to tell a tubular cast on from this tubular bind off method.<br>Don't be afraid of this technique, practice makes perfection!",
+              "legacyComponentId": 5870,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858966",
+              "title": "Double Bed Bind Off",
+              "legacyComponentId": 5871,
+              "order": 4
+            }
+          ],
+          "title": "Full Needle Rib Bind Off",
+          "slug": "fnr",
+          "order": 2,
+          "legacy": {
+            "assignId": 3918,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Flat Ribs",
+      "slug": "flat-ribs",
+      "displayOrder": 8,
+      "legacy": {
+        "itemId": 446,
+        "lessonOrder": 8
+      },
+      "blocks": [
+        {
+          "title": "You have to try this",
+          "slug": "three-videos-1782475269432",
+          "order": 2,
+          "legacy": {
+            "assignId": 4322,
+            "blockType": "HTML",
+            "editorLayout": "threeVideosWithText"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "Do you love the look of both knit and purl stitches? Do you love the look of ribbing, but don't need or want the stretch?<br>Maybe your yarn isn't suited for ribbing, but you still want the texture ....\n\n<b>Flat Ribs are the answer!</b><br>Using the full needle rib setup as the basis, flat ribs fabric and hems have unlimited possibilities!<br>This video introduces you to the technique. The follow up video takes you step by step to mastering it.\n<br>You won't look at \"plain 'ol\" ribbing the same way again!<br>",
+              "legacyComponentId": 6583,
+              "order": 1,
+              "layoutRole": "threeVideosIntro"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858934",
+              "title": "Fun with Flat Ribs",
+              "legacyComponentId": 6584,
+              "order": 3,
+              "layoutRole": "threeVideosVideo1"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6585,
+              "order": 2,
+              "layoutRole": "threeVideosCaption1"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858938",
+              "title": "Fun with Flat Ribs 2",
+              "legacyComponentId": 6586,
+              "order": 5,
+              "layoutRole": "threeVideosVideo2"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6587,
+              "order": 4,
+              "layoutRole": "threeVideosCaption2"
+            },
+            {
+              "type": "video",
+              "vimeoId": "",
+              "title": null,
+              "legacyComponentId": 6588,
+              "order": 7,
+              "layoutRole": "threeVideosVideo3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6589,
+              "order": 6,
+              "layoutRole": "threeVideosCaption3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6590,
+              "order": 8,
+              "layoutRole": "threeVideosOutro"
+            }
+          ]
+        },
+        {
+          "components": [
+            {
+              "type": "download",
+              "label": "Download Flat Rib Challenges Worksheet",
+              "filename": "flat_rib_challenges.pdf",
+              "legacyComponentId": 6591,
+              "order": 9
+            }
+          ],
+          "title": "challenge Yourself",
+          "slug": "challenge-yourself",
+          "order": 4,
+          "legacy": {
+            "assignId": 4321,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Shaping in Ribbing",
+      "slug": "shaping-in-ribbing",
+      "displayOrder": 9,
+      "legacy": {
+        "itemId": 447,
+        "lessonOrder": 9
+      },
+      "blocks": [
+        {
+          "title": "1x1 Shaping",
+          "slug": "three-videos-1782475739055",
+          "order": 1,
+          "legacy": {
+            "assignId": 3924,
+            "blockType": "HTML",
+            "editorLayout": "threeVideosWithText"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "Shaping while knitting on the double bed shouldn't be intimidating. Practice these methods BEFORE you start knitting the sweater you will be submitting the fair.",
+              "legacyComponentId": 6592,
+              "order": 1,
+              "layoutRole": "threeVideosIntro"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859427",
+              "title": "1x1 Ribbing Decrease Techniques",
+              "legacyComponentId": 6593,
+              "order": 3,
+              "layoutRole": "threeVideosVideo1"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6594,
+              "order": 2,
+              "layoutRole": "threeVideosCaption1"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859435",
+              "title": "1x1 Ribbing Increase Techniques",
+              "legacyComponentId": 6595,
+              "order": 5,
+              "layoutRole": "threeVideosVideo2"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6596,
+              "order": 4,
+              "layoutRole": "threeVideosCaption2"
+            },
+            {
+              "type": "video",
+              "vimeoId": "",
+              "title": null,
+              "legacyComponentId": 6597,
+              "order": 7,
+              "layoutRole": "threeVideosVideo3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6598,
+              "order": 6,
+              "layoutRole": "threeVideosCaption3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6599,
+              "order": 8,
+              "layoutRole": "threeVideosOutro"
+            }
+          ]
+        },
+        {
+          "title": "2x2 Decreases",
+          "slug": "three-videos-1782475848111",
+          "order": 2,
+          "legacy": {
+            "assignId": 3925,
+            "blockType": "HTML",
+            "editorLayout": "threeVideosWithText"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6600,
+              "order": 9,
+              "layoutRole": "threeVideosIntro"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859290",
+              "title": "2x2 Ribbing Simple Decrease",
+              "legacyComponentId": 6601,
+              "order": 11,
+              "layoutRole": "threeVideosVideo1"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6602,
+              "order": 10,
+              "layoutRole": "threeVideosCaption1"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859235",
+              "title": " 2x2 Full Fashion Ribber Decrease",
+              "legacyComponentId": 6603,
+              "order": 13,
+              "layoutRole": "threeVideosVideo2"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6604,
+              "order": 12,
+              "layoutRole": "threeVideosCaption2"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859282",
+              "title": "2x2 Ribbing Edge Bind Off",
+              "legacyComponentId": 6605,
+              "order": 15,
+              "layoutRole": "threeVideosVideo3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6606,
+              "order": 14,
+              "layoutRole": "threeVideosCaption3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6607,
+              "order": 16,
+              "layoutRole": "threeVideosOutro"
+            }
+          ]
+        },
+        {
+          "title": "2x2 Increases",
+          "slug": "three-videos-1782476009239",
+          "order": 3,
+          "legacy": {
+            "assignId": 3926,
+            "blockType": "HTML",
+            "editorLayout": "threeVideosWithText"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6608,
+              "order": 17,
+              "layoutRole": "threeVideosIntro"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859295",
+              "title": "2x2 Ribbing Simple Increase",
+              "legacyComponentId": 6609,
+              "order": 19,
+              "layoutRole": "threeVideosVideo1"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6610,
+              "order": 18,
+              "layoutRole": "threeVideosCaption1"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859269",
+              "title": "2x2 Full Fashion Ribber Increase",
+              "legacyComponentId": 6611,
+              "order": 21,
+              "layoutRole": "threeVideosVideo2"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6612,
+              "order": 20,
+              "layoutRole": "threeVideosCaption2"
+            },
+            {
+              "type": "video",
+              "vimeoId": "",
+              "title": null,
+              "legacyComponentId": 6613,
+              "order": 23,
+              "layoutRole": "threeVideosVideo3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6614,
+              "order": 22,
+              "layoutRole": "threeVideosCaption3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6615,
+              "order": 24,
+              "layoutRole": "threeVideosOutro"
+            }
+          ]
+        },
+        {
+          "title": "Full Needle Rib Shaping",
+          "slug": "three-videos-1782476192295",
+          "order": 4,
+          "legacy": {
+            "assignId": 3927,
+            "blockType": "HTML",
+            "editorLayout": "threeVideosWithText"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6616,
+              "order": 25,
+              "layoutRole": "threeVideosIntro"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859353",
+              "title": "Full Needle Rib Decreases\t",
+              "legacyComponentId": 6617,
+              "order": 27,
+              "layoutRole": "threeVideosVideo1"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6618,
+              "order": 26,
+              "layoutRole": "threeVideosCaption1"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859425",
+              "title": "Full Needle Rib Increases",
+              "legacyComponentId": 6619,
+              "order": 29,
+              "layoutRole": "threeVideosVideo2"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6620,
+              "order": 28,
+              "layoutRole": "threeVideosCaption2"
+            },
+            {
+              "type": "video",
+              "vimeoId": "",
+              "title": null,
+              "legacyComponentId": 6621,
+              "order": 31,
+              "layoutRole": "threeVideosVideo3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6622,
+              "order": 30,
+              "layoutRole": "threeVideosCaption3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6623,
+              "order": 32,
+              "layoutRole": "threeVideosOutro"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Tuck Rib",
+      "slug": "tuck-rib",
+      "displayOrder": 10,
+      "legacy": {
+        "itemId": 448,
+        "lessonOrder": 10
+      },
+      "blocks": [
+        {
+          "title": "Expand Your Knitting Horizons",
+          "slug": "three-videos-1782476359183",
+          "order": 1,
+          "legacy": {
+            "assignId": 3925,
+            "blockType": "HTML",
+            "editorLayout": "threeVideosWithText"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "<p>All the various combinations of k1, p1 ribbing can add so much to your knitting. But adding tuck opens even more possibilities. </p>\n\n<p>Also known as <a href=\"/glossary/fisherman-rib\" class=\"glossary-link\">Fisherman Rib</a>, <a href=\"/glossary/half-fisherman-rib\" class=\"glossary-link\">Half Fisherman Rib</a> and <a href=\"/glossary/english-rib-half-fisherman-rib\" class=\"glossary-link\">English Rib | Half Fisherman Rib</a>, these techniques and all of their variations can produce amazing fabrics.</p>",
+              "legacyComponentId": 6624,
+              "order": 1,
+              "layoutRole": "threeVideosIntro"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859178",
+              "title": "Experiment with English rib",
+              "legacyComponentId": 6625,
+              "order": 3,
+              "layoutRole": "threeVideosVideo1"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6626,
+              "order": 2,
+              "layoutRole": "threeVideosCaption1"
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859450",
+              "title": " Try Fisherman Rib",
+              "legacyComponentId": 6627,
+              "order": 5,
+              "layoutRole": "threeVideosVideo2"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6628,
+              "order": 4,
+              "layoutRole": "threeVideosCaption2"
+            },
+            {
+              "type": "video",
+              "vimeoId": "",
+              "title": null,
+              "legacyComponentId": 6629,
+              "order": 7,
+              "layoutRole": "threeVideosVideo3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6630,
+              "order": 6,
+              "layoutRole": "threeVideosCaption3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 6631,
+              "order": 8,
+              "layoutRole": "threeVideosOutro"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Bands, Belts and Straps",
+      "slug": "bands-belts-and-straps",
+      "displayOrder": 11,
+      "legacy": {
+        "itemId": 449,
+        "lessonOrder": 11
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "In addition to adding ribbing to hems and cuffs, and producing amazing double bed fabrics, your ribber can help you create those little finishing touches for your garments.",
+              "legacyComponentId": 5878,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858989",
+              "title": "Bands, Belts and Straps",
+              "legacyComponentId": 5879,
+              "order": 2
+            }
+          ],
+          "title": "It's the little things ...",
+          "slug": "it-s-the-little-things",
+          "order": 1,
+          "legacy": {
+            "assignId": 3925,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 36,
+    "videos": [
+      {
+        "vimeoId": "151859443",
+        "title": "Ribber Basics",
+        "lessonSlug": "get-started",
+        "blockSlug": "set-up-your-ribber"
+      },
+      {
+        "vimeoId": "151859701",
+        "title": "Ribber: Full vs Half Pitch",
+        "lessonSlug": "get-started",
+        "blockSlug": "don-t-skip-this"
+      },
+      {
+        "vimeoId": "151858586",
+        "title": "Easiest, Best Ribber Cast On",
+        "lessonSlug": "casting-on",
+        "blockSlug": "easist-best-ribber-cast-on"
+      },
+      {
+        "vimeoId": "151859491",
+        "title": "Transfer without a Double Eye Needle",
+        "lessonSlug": "casting-on",
+        "blockSlug": "easist-best-ribber-cast-on"
+      },
+      {
+        "vimeoId": "151859232",
+        "title": "3 Perfect Ribbing Cast Ons",
+        "lessonSlug": "casting-on",
+        "blockSlug": "try-these"
+      },
+      {
+        "vimeoId": "311353131",
+        "title": "Ribber E-wrap Cast On",
+        "lessonSlug": "casting-on",
+        "blockSlug": "try-these"
+      },
+      {
+        "vimeoId": "151859346",
+        "title": "2x2 Half Pitch Rib Cast On",
+        "lessonSlug": "casting-on",
+        "blockSlug": "try-these"
+      },
+      {
+        "vimeoId": "151859224",
+        "title": "2x2 Ribbing Cast On",
+        "lessonSlug": "casting-on",
+        "blockSlug": "try-these"
+      },
+      {
+        "vimeoId": "151859184",
+        "title": "Swatching on the Double Bed",
+        "lessonSlug": "swatching-on-the-double-bed",
+        "blockSlug": "swatching-is-not-optional"
+      },
+      {
+        "vimeoId": "151857401",
+        "title": "Easy Ribber Bind Off",
+        "lessonSlug": "binding-off",
+        "blockSlug": "easy-ribber-bind-off"
+      },
+      {
+        "vimeoId": "258782290",
+        "title": "Figure 8 Bind Off",
+        "lessonSlug": "binding-off",
+        "blockSlug": "more-bind-off-options"
+      },
+      {
+        "vimeoId": "151859282",
+        "title": "2x2 Ribbing Bind Off",
+        "lessonSlug": "binding-off",
+        "blockSlug": "more-bind-off-options"
+      },
+      {
+        "vimeoId": "151858966",
+        "title": "Double Bed Bind Off",
+        "lessonSlug": "binding-off",
+        "blockSlug": "more-bind-off-options"
+      },
+      {
+        "vimeoId": "151859192",
+        "title": "Ribber Weights on the Floor",
+        "lessonSlug": "troubleshooting-tips",
+        "blockSlug": "mistakes-happen"
+      },
+      {
+        "vimeoId": "151859438",
+        "title": "Troubleshooting Tips - Ribbing",
+        "lessonSlug": "troubleshooting-tips",
+        "blockSlug": "mistakes-happen"
+      },
+      {
+        "vimeoId": "178356914",
+        "title": "Circular (tubular) Knitting",
+        "lessonSlug": "knitting-in-the-round",
+        "blockSlug": "put-both-beds-to-work"
+      },
+      {
+        "vimeoId": "151859457",
+        "title": "Matching Ribber and Main Bed Tension",
+        "lessonSlug": "knitting-in-the-round",
+        "blockSlug": "put-both-beds-to-work"
+      },
+      {
+        "vimeoId": "151859462",
+        "title": "Half Circular / \"U\" Knitting",
+        "lessonSlug": "knitting-in-the-round",
+        "blockSlug": "put-both-beds-to-work"
+      },
+      {
+        "vimeoId": "151859303",
+        "title": "Full Needle Rib Cast On Techniques",
+        "lessonSlug": "full-needle-rib",
+        "blockSlug": "fnr"
+      },
+      {
+        "vimeoId": "151858966",
+        "title": "Double Bed Bind Off",
+        "lessonSlug": "full-needle-rib",
+        "blockSlug": "fnr"
+      },
+      {
+        "vimeoId": "151859981",
+        "title": "Double Bed Pintucks",
+        "lessonSlug": "practice-makes-progress",
+        "blockSlug": "double-bed-pintucks"
+      },
+      {
+        "vimeoId": "151859229",
+        "title": "100% Reversible Scarf",
+        "lessonSlug": "practice-makes-progress",
+        "blockSlug": "double-bed-pintucks"
+      },
+      {
+        "vimeoId": "151858934",
+        "title": "Fun with Flat Ribs",
+        "lessonSlug": "flat-ribs",
+        "blockSlug": "flat-rib-fun"
+      },
+      {
+        "vimeoId": "151858938",
+        "title": "Fun with Flat Ribs Part 2",
+        "lessonSlug": "flat-ribs",
+        "blockSlug": "flat-rib-fun"
+      },
+      {
+        "vimeoId": "151859427",
+        "title": "1x1 Ribbing Decrease Techniques",
+        "lessonSlug": "shaping-in-ribbing",
+        "blockSlug": "1x1-shaping"
+      },
+      {
+        "vimeoId": "151859435",
+        "title": "1x1 Ribbing Increase Techniques",
+        "lessonSlug": "shaping-in-ribbing",
+        "blockSlug": "1x1-shaping"
+      },
+      {
+        "vimeoId": "151859290",
+        "title": "2x2 Ribbing Simple Decrease",
+        "lessonSlug": "shaping-in-ribbing",
+        "blockSlug": "2x2-shaping"
+      },
+      {
+        "vimeoId": "151859295",
+        "title": "2x2 Ribbing Simple Increase",
+        "lessonSlug": "shaping-in-ribbing",
+        "blockSlug": "2x2-shaping"
+      },
+      {
+        "vimeoId": "151859282",
+        "title": "2x2 Ribbing Edge Bind Off",
+        "lessonSlug": "shaping-in-ribbing",
+        "blockSlug": "2x2-shaping"
+      },
+      {
+        "vimeoId": "151859235",
+        "title": "2x2 Full Fashion Ribber Decrease",
+        "lessonSlug": "shaping-in-ribbing",
+        "blockSlug": "2x2-shaping"
+      },
+      {
+        "vimeoId": "151859269",
+        "title": "2x2 Full Fashion Ribber Increase",
+        "lessonSlug": "shaping-in-ribbing",
+        "blockSlug": "2x2-shaping"
+      },
+      {
+        "vimeoId": "151859353",
+        "title": "Full Needle Rib Decreases",
+        "lessonSlug": "shaping-in-ribbing",
+        "blockSlug": "full-needle-rib-shaping"
+      },
+      {
+        "vimeoId": "151859425",
+        "title": "Full Needle Rib Increases",
+        "lessonSlug": "shaping-in-ribbing",
+        "blockSlug": "full-needle-rib-shaping"
+      },
+      {
+        "vimeoId": "151859178",
+        "title": "Experiment with English rib",
+        "lessonSlug": "tuck-rib",
+        "blockSlug": "expand-your-ribbing-horizons"
+      },
+      {
+        "vimeoId": "151859450",
+        "title": "try Fisherman Rib",
+        "lessonSlug": "tuck-rib",
+        "blockSlug": "expand-your-ribbing-horizons"
+      },
+      {
+        "vimeoId": "151858989",
+        "title": "Bands, Belts and Straps",
+        "lessonSlug": "bands-belts-and-straps",
+        "blockSlug": "it-s-the-little-things"
+      }
+    ],
+    "downloadCount": 1,
+    "downloads": [
+      {
+        "filename": "/downloads/ribber_basics_bootcamp.pdf",
+        "label": "Download Your Worksheet",
+        "lessonSlug": "get-started",
+        "blockSlug": "download-the-worksheets"
+      }
+    ]
+  }
+}

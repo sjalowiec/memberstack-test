@@ -29,6 +29,9 @@ import {
   readAvailableNeedlesFromAllSources,
   syncAvailableNeedlesMirrorsFromAllSources,
 } from "../lib/patterns/availableNeedlesMirrors";
+import { runUpdateActiveSavedCustomPattern } from "../lib/patterns/customPatternEditingBannerActions";
+import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
+import { logSavedPatternUpdateFlowDiagnostics } from "../lib/patterns/customPatternProjectClient";
 import { isDropShoulderWorkspaceMeasurementSummaryPage } from "../lib/patterns/measurementBlueprintSvgUrl";
 import { applySleevelessPatternOnlineProjectHeader } from "./sleevelessPatternOnlineProjectHeader";
 import {
@@ -43,8 +46,10 @@ import {
 } from "../lib/patterns/patternStorage";
 import {
   LEGACY_STANDALONE_MEASUREMENTS_KEY,
+  flushCustomBuildMeasurementOverridesToCanonical,
   loadMeasurementOverrides,
   persistMeasurementOverrides,
+  resolveCustomBuildSaveMeasureFlushRoot,
 } from "../lib/patterns/sleevelessCustomMeasurementStorage";
 import { computeFitDerivedMeasurementOverrides } from "../lib/patterns/sleevelessEditFitRecalc";
 import { deriveSleevelessEditWorkspaceBodyShape } from "../lib/patterns/sleevelessEditWorkspaceBodyShape";
@@ -560,6 +565,9 @@ function initSleevelessPatternEditDrawer(): void {
     // Snapshot measurement storage now (before any lazy init writes) so Cancel discards
     // measurement edits made in this session, while Apply keeps them.
     measureStorageBaseline = snapshotMeasureStorage();
+    logSavedPatternUpdateFlowDiagnostics("edit-drawer-opened", {
+      openedSavedProjectId: readActiveCustomPatternProjectId(),
+    });
     syncPanelTop();
     drawer!.classList.add("is-open");
     drawer!.setAttribute("aria-hidden", "false");
@@ -657,7 +665,11 @@ function initSleevelessPatternEditDrawer(): void {
         });
       }
 
-      // 2) Map wizard selections into canonical + patternBuilderData (re-derives measurements).
+      // 2) Flush diagram inputs, then map wizard selections into canonical + patternBuilderData.
+      const measureFlushRoot = resolveCustomBuildSaveMeasureFlushRoot(
+        measureBody ?? measurePane ?? drawer ?? undefined,
+      );
+      flushCustomBuildMeasurementOverridesToCanonical({ root: measureFlushRoot ?? undefined });
       syncCustomBuildToPatternStorage({ awaitCharts: false });
 
       // 3) Gauge → same canonical + patternBuilderData sections the gauge step / Express write.
@@ -698,19 +710,50 @@ function initSleevelessPatternEditDrawer(): void {
         availableNeedles: needles,
       });
 
-      // Defensive: confirm the shared validator agrees before regenerating.
+      // Defensive: confirm the shared validator agrees before persisting.
       const validation = validatePatternBuilderRequired(getPatternData());
       if (!validation.ok) {
         showErrors(validation.missingItems.map((m) => m.label));
         return;
       }
 
-      // 4) Refresh the visible title, then regenerate using the existing pipeline only.
+      const pinnedSavedProjectId = readActiveCustomPatternProjectId();
+      logSavedPatternUpdateFlowDiagnostics("edit-drawer-before-update", {
+        openedSavedProjectId: pinnedSavedProjectId,
+        pinnedSavedProjectId,
+      });
+
+      // 4) Persist linked saved project first — keeps the active project id stable, then regenerate once.
+      if (pinnedSavedProjectId) {
+        const saveRes = await runUpdateActiveSavedCustomPattern(measureFlushRoot, {
+          activeProjectId: pinnedSavedProjectId,
+          skipPreSavePrepare: true,
+          onStatus: (message, isError) => {
+            if (isError) showErrors([message]);
+          },
+        });
+        if (!saveRes.ok) {
+          showErrors([saveRes.error]);
+          return;
+        }
+        logSavedPatternUpdateFlowDiagnostics("edit-drawer-after-update", {
+          pinnedSavedProjectId,
+          activeSavedProjectIdAfterUpdate: readActiveCustomPatternProjectId(),
+        });
+      }
+
+      // 5) Refresh the visible title and pattern output once from the saved working draft.
       applySleevelessPatternOnlineProjectHeader();
       const refresh = getRequestRefresh();
       if (refresh) await refresh();
 
-      // 5) Return to the updated pattern view.
+      logSavedPatternUpdateFlowDiagnostics("edit-drawer-after-reload", {
+        pinnedSavedProjectId,
+        renderedActiveSavedProjectId: readActiveCustomPatternProjectId(),
+        renderedPatternRecordId: getCurrentPattern().id,
+      });
+
+      // 6) Return to the updated pattern view.
       if (savedNote) savedNote.hidden = false;
       closeDrawer({ discardEdits: false });
       const top = document.getElementById("sleeveless-pattern-top");

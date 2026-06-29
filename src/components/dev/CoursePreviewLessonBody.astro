@@ -5,6 +5,7 @@ import LegacyCourseImage from "../courses/legacy/LegacyCourseImage.astro";
 import LegacyCourseAccordionLayout from "../courses/legacy/LegacyCourseAccordionLayout.astro";
 import LegacyCourseTextVideoLayout from "../courses/legacy/LegacyCourseTextVideoLayout.astro";
 import LegacyCourseTextImageLayout from "../courses/legacy/LegacyCourseTextImageLayout.astro";
+import LegacyCourseThreeVideosLayout from "../courses/legacy/LegacyCourseThreeVideosLayout.astro";
 import type { CourseLesson } from "../../lib/legacy_kin/coursePreviewPoc";
 import {
   downloadUrl,
@@ -16,6 +17,7 @@ import {
 import { isAccordionLayoutBlock } from "../../lib/legacy_kin/courseAccordionLayout";
 import { isTextVideoLayoutBlock } from "../../lib/legacy_kin/courseTextVideoLayout";
 import { isTextImageLayoutBlock } from "../../lib/legacy_kin/courseTextImageLayout";
+import { isThreeVideosLayoutBlock } from "../../lib/legacy_kin/courseThreeVideosLayout";
 
 interface Props {
   lesson: CourseLesson;
@@ -42,6 +44,8 @@ const { lesson } = Astro.props;
         <div class="course-preview__components">
           {isTextVideoLayoutBlock(block) ? (
             <LegacyCourseTextVideoLayout block={block} />
+          ) : isThreeVideosLayoutBlock(block) ? (
+            <LegacyCourseThreeVideosLayout block={block} />
           ) : isTextImageLayoutBlock(block) ? (
             <LegacyCourseTextImageLayout block={block} />
           ) : isAccordionLayoutBlock(block) ? (
@@ -91,6 +95,8 @@ const { lesson } = Astro.props;
               return (
                 <LegacyCourseImageCarousel
                   legacyComponentId={component.legacyComponentId}
+                  introHtml={component.introHtml}
+                  title={component.title}
                   slides={component.slides.map((slide) => ({
                     src: slide.src,
                     alt: slide.caption ?? "",

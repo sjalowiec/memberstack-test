@@ -19,7 +19,7 @@ export const COURSE_HTML_SNIPPETS: CourseHtmlSnippet[] = [
     id: "download-button",
     name: "Download Button",
     category: "links",
-    html: `<a href="/downloads/file.pdf" class="btn btn-primary">Download PDF</a>`,
+    html: `<a href="/downloads/file.pdf" class="kbm-btn kbm-btn-primary" target="_blank" rel="noopener noreferrer">Download PDF</a>`,
   },
   {
     id: "external-link-button",
@@ -28,6 +28,12 @@ export const COURSE_HTML_SNIPPETS: CourseHtmlSnippet[] = [
     html: `<a href="https://example.com" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
   Visit Website
 </a>`,
+  },
+  {
+    id: "glossary-entry",
+    name: "Glossary Entry",
+    category: "links",
+    html: `<a href="/glossary/TERM-SLUG" class="glossary-link">TERM NAME</a>`,
   },
   {
     id: "image",
@@ -67,8 +73,108 @@ export const COURSE_HTML_SNIPPETS: CourseHtmlSnippet[] = [
     id: "callout-box",
     name: "Callout Box",
     category: "layout",
-    html: `<div class="callout">
+    html: `<div class="course-callout">
   Important information goes here.
+</div>`,
+  },
+  {
+    id: "center-text",
+    name: "Center Text",
+    category: "layout",
+    html: `<p style="text-align:center;">Centered text here.</p>`,
+  },
+  {
+    id: "center-image",
+    name: "Center Image",
+    category: "layout",
+    html: `<div style="text-align:center;margin:1.5rem 0;">
+  <img src="/images/example.webp" alt="" style="max-width:100%;height:auto;">
+</div>`,
+  },
+  {
+    id: "center-text-and-image",
+    name: "Center Text + Image",
+    category: "layout",
+    html: `<div style="text-align:center;margin:1.5rem 0;">
+  <p>Centered text above the image.</p>
+  <img src="/images/example.webp" alt="" style="max-width:100%;height:auto;">
+</div>`,
+  },
+  {
+    id: "text-reference-card",
+    name: "Text + Reference Card",
+    category: "layout",
+    html: `<div class="kin-grid-2">
+
+<div>
+
+<h3>Section Heading</h3>
+
+<p>
+Add your lesson text here.
+</p>
+
+<p>
+💡 <em>Add a helpful tip or comparison here.</em>
+</p>
+
+</div>
+
+<div>
+
+<div class="kin-card">
+
+<h4>Reference Card</h4>
+
+<table>
+<tbody>
+<tr>
+    <th>Term</th>
+    <td>Definition or value</td>
+</tr>
+<tr>
+    <th>Term</th>
+    <td>Definition or value</td>
+</tr>
+<tr>
+    <th>Term</th>
+    <td>Definition or value</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+
+</div>
+
+</div>`,
+  },
+  {
+    id: "text-image-row",
+    name: "Text + Image Row",
+    category: "layout",
+    html: `<div style="
+    display:flex;
+    gap:2rem;
+    align-items:flex-start;
+    flex-wrap:wrap;
+    margin:1.5rem 0;
+">
+    <div style="flex:1;">
+        <h3>Your Heading Here</h3>
+
+        <p>
+            Add your text here.
+        </p>
+    </div>
+
+    <div style="width:40%; min-width:250px;">
+        <img
+            src="/challenge/images/v2/50/example.jpg"
+            alt=""
+            style="width:100%; height:auto; display:block;"
+        >
+    </div>
 </div>`,
   },
 ];

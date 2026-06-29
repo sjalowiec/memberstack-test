@@ -4,6 +4,8 @@ import {
   type SleevelessCardiganFrontEdgeFinishingMode,
   type SleevelessFinishingStepId,
 } from "./sleevelessPatternFinishing";
+import type { DropShoulderSleeveDirection } from "./dropShoulderSleeveConstruction";
+import { DROP_SHOULDER_SLEEVE_DIRECTION_DEFAULT } from "./dropShoulderSleeveConstruction";
 
 export type SleevelessFinishingHtmlDeps = {
   escapeHtml: (s: string) => string;
@@ -136,12 +138,51 @@ function finishNecklineBody(deps: SleevelessFinishingHtmlDeps): string {
     ${necklineFinishingHelpBody()}`;
 }
 
+function dropShoulderSleeveArmholeAttachStepsHtml(): string {
+  return `<ul>
+      <li>Hang the armhole edge with the right side facing.</li>
+      <li>Hang the live sleeve stitches.</li>
+      <li>Pull the sleeve stitches through the armhole edge.</li>
+      <li>Knit 1 row.</li>
+      <li>Bind off.</li>
+    </ul>`;
+}
+
+function attachSleevesBody(sleeveDirection: DropShoulderSleeveDirection): string {
+  if (sleeveDirection === "top-down") {
+    return `<p>If you picked up stitches from the armhole, your sleeve is already attached.</p>
+    <p>If you began the sleeve with a scrap cast-on, attach the sleeve to the armhole as follows:</p>
+    ${dropShoulderSleeveArmholeAttachStepsHtml()}`;
+  }
+  return `<p>If you bound off the sleeve, sew the sleeve into the armhole.</p>
+    <p>If the sleeve stitches are on waste yarn, attach the sleeve to the armhole as follows:</p>
+    ${dropShoulderSleeveArmholeAttachStepsHtml()}`;
+}
+
+function attachSleevesPrintLine(
+  stepNumber: number,
+  sleeveDirection: DropShoulderSleeveDirection,
+): string {
+  const attachSteps =
+    "hang the armhole edge with the right side facing; hang the live sleeve stitches; pull the sleeve stitches through the armhole edge; knit 1 row; bind off";
+  if (sleeveDirection === "top-down") {
+    return `${stepNumber}. Attach sleeves: if you picked up stitches from the armhole, the sleeve is already attached; if you began with a scrap cast-on, ${attachSteps}.`;
+  }
+  return `${stepNumber}. Attach sleeves: if you bound off the sleeve, sew it into the armhole; if the sleeve stitches are on waste yarn, ${attachSteps}.`;
+}
+
 function joinSideSeamsBody(isDropShoulder: boolean): string {
-  const seamDirection = isDropShoulder ? "Seam from cuff to hem." : "Seam from hem to underarm.";
+  if (isDropShoulder) {
+    return `<ul>
+      <li>Match armhole edges and hem.</li>
+      <li>Match markers (if added).</li>
+      <li>Join side seams from cuff to hem.</li>
+    </ul>`;
+  }
   return `<ul>
       <li>Match armhole edges and hem.</li>
       <li>Match markers (if added).</li>
-      <li>${seamDirection}</li>
+      <li>Seam from hem to underarm.</li>
     </ul>
     <p class="pattern-finishing-video-help pattern-help-link no-print">
       <span class="pattern-finishing-video-help__lead"><i class="fa-solid fa-play"></i> Helpful video for seaming:</span>
@@ -165,6 +206,7 @@ function stepBodyHtml(
   cardiganFrontEdgeFinishingMode: SleevelessCardiganFrontEdgeFinishingMode | undefined,
   frontEdgePickupSts: number | undefined,
   isDropShoulder: boolean,
+  dropShoulderSleeveDirection: DropShoulderSleeveDirection,
 ): string {
   switch (id) {
     case "blockPieces":
@@ -181,6 +223,8 @@ function stepBodyHtml(
       );
     case "finishNeckline":
       return finishNecklineBody(deps);
+    case "attachSleeves":
+      return attachSleevesBody(dropShoulderSleeveDirection);
     case "joinSideSeams":
       return joinSideSeamsBody(isDropShoulder);
     case "finalPressing":
@@ -193,11 +237,14 @@ function stepBodyHtml(
 export function buildSleevelessFinishingStepsHtml(options: {
   isCardigan: boolean;
   isDropShoulder?: boolean;
+  dropShoulderSleeveDirection?: DropShoulderSleeveDirection;
   cardiganFrontEdgeFinishingMode?: SleevelessCardiganFrontEdgeFinishingMode;
   frontEdgePickupSts?: number;
   deps: SleevelessFinishingHtmlDeps;
 }): string {
   const isDropShoulder = options.isDropShoulder === true;
+  const dropShoulderSleeveDirection =
+    options.dropShoulderSleeveDirection ?? DROP_SHOULDER_SLEEVE_DIRECTION_DEFAULT;
   const ids = buildSleevelessFinishingStepIds({ isCardigan: options.isCardigan, isDropShoulder });
   const frontEdgeMode =
     options.isCardigan ? (options.cardiganFrontEdgeFinishingMode ?? "pickup") : undefined;
@@ -206,7 +253,14 @@ export function buildSleevelessFinishingStepsHtml(options: {
       index + 1,
       id,
       SLEEVELESS_FINISHING_STEP_TITLES[id],
-      stepBodyHtml(id, options.deps, frontEdgeMode, options.frontEdgePickupSts, isDropShoulder),
+      stepBodyHtml(
+        id,
+        options.deps,
+        frontEdgeMode,
+        options.frontEdgePickupSts,
+        isDropShoulder,
+        dropShoulderSleeveDirection,
+      ),
     ),
   );
   const inner = sections.join("\n\n");
@@ -233,10 +287,13 @@ function finishFrontEdgesPrintLine(
 export function buildSleevelessFinishingPrintListHtml(options: {
   isCardigan: boolean;
   isDropShoulder?: boolean;
+  dropShoulderSleeveDirection?: DropShoulderSleeveDirection;
   cardiganFrontEdgeFinishingMode?: SleevelessCardiganFrontEdgeFinishingMode;
   frontEdgePickupSts?: number;
 }): string {
   const isDropShoulder = options.isDropShoulder === true;
+  const dropShoulderSleeveDirection =
+    options.dropShoulderSleeveDirection ?? DROP_SHOULDER_SLEEVE_DIRECTION_DEFAULT;
   const ids = buildSleevelessFinishingStepIds({ isCardigan: options.isCardigan, isDropShoulder });
   const items: string[] = [];
 
@@ -269,10 +326,13 @@ export function buildSleevelessFinishingPrintListHtml(options: {
           `${n}. Finish the neckline (work trim or neckband, finish as desired, join the remaining shoulder and neckband seams).`,
         );
         break;
+      case "attachSleeves":
+        items.push(attachSleevesPrintLine(n, dropShoulderSleeveDirection));
+        break;
       case "joinSideSeams":
         items.push(
           isDropShoulder
-            ? `${n}. Join side seams: match armhole edges and hem; match markers (if added); seam from cuff to hem.`
+            ? `${n}. Join side seams: match armhole edges and hem; match markers (if added); join side seams from cuff to hem.`
             : `${n}. Join side seams from hem toward underarm, matching edges.`,
         );
         break;

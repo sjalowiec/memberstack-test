@@ -1,0 +1,1915 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 98,
+    "title": "Singer/Studio SK360",
+    "slug": "singer-studio-sk360",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_98_singer_studio_sk360.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:10+00:00"
+    },
+    "thumbnail": "/images/courses/360_course_thumb1.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Learn About the Machine",
+      "slug": "learn-about-the-machine",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 615,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\t<a href=\"/downloads/silver_reed_360_knitting_manual.pdf\" target=\"_blank\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/98/360km1.png\"></a>\r\n\t<a href=\"/downloads/knitmaster_360-260_operation_manual.pdf\" target=\"_blank\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/98/360om1.png\"></a>\r\n\t<a href=\"/downloads/360pattern_book.pdf\" target=\"_blank\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/98/360pm1.png\"></a>\r\n<a href=\"/downloads/silver_reed_360_standard_punch_cards.pdf\">Original Punchcards<br><img src=\"/challenge/images/v2/98/punchcard.jpg\"></a>\r\n<a href=\"/downloads/studio-silver_reed_lace_punchcards_for_lc2_and_lc360-260.pdf\">Lace Punchcards<br><img src=\"/challenge/images/v2/98/lace_card.jpg\"></a>\r\n\r\n<br>\r\n\r\n\r\nSRP60 Ribber<br>\r\n<a target=\"_blank\" href=\"/downloads/srp60_ribber.pdf\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/98/srp60_ribber.png\"></a>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 8108,
+              "order": 1
+            }
+          ],
+          "title": "Your manuals",
+          "slug": "your-manuals",
+          "order": 1,
+          "legacy": {
+            "assignId": 5542,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .flex-container {\r\n        display: flex;\r\n        justify-content: space-around;\r\n        width: 80%;\r\n    }\r\n\r\n    .flex-child:first-child {\r\n        margin-right: 20px;\r\n    }\r\n\r\n</style>\r\n<div class=\"flex-container\">\r\n    <div class=\"flex-child\">As you learn about the different techniques available with your machine, create your own reference cards to easily remember the carriage settings.\r\n<div class=\"text-center\"></div>\r\n\r\n\r\n</div>\r\n    <div class=\"flex-child\"><a target=\"_blank\" href=\"/downloads/Knititnow_technique_card_silver.pdf\"><img src=\"/challenge/images/v2/98/technique_cards.jpg\"></a></div>\r\n</div>\r\n",
+              "legacyComponentId": 8399,
+              "order": 1
+            }
+          ],
+          "title": "Printable Reference Cards",
+          "slug": "printable-reference-cards",
+          "order": 2,
+          "legacy": {
+            "assignId": 5673,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "At first glance, any knitting machine seems complicated.  Think about the dashboard in a car.  There are lots of dials and buttons and levers, but once you learn the names of things you'll quickly discover what you need to make the car go.<br>Examine the hotspots below and learn the names of the elements that make up your knitting machine.  As you work through this course, these terms will be come second-nature and you will associate the terms with the functions of the machine.<br>",
+              "legacyComponentId": 8109,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Hotspot",
+              "notes": [
+                "Unmapped legacy component type: Hotspot"
+              ],
+              "legacyFields": {
+                "IMAGE_HEIGHT": "357",
+                "IMAGE_WIDTH": "1000",
+                "SPOTT_IMAGE": "/challenge/images/v2/98/intro_machine1.jpg",
+                "SPOT_CORD_1": "top: 51.26050420168067%;  left: 65.10000000000001%;  width: 2%;  height: 5.602240896358544%;",
+                "SPOT_CORD_10": "top: 20.72829131652661%;  left: 74.5%;  width: 2%;  height: 5.602240896358544%;",
+                "SPOT_CORD_11": "top: 83.75350140056022%;  left: 19.2%;  width: 2%;  height: 5.602240896358544%;",
+                "SPOT_CORD_2": "top: 49.57983193277311%;  left: 86.9%;  width: 2%;  height: 5.602240896358544%;",
+                "SPOT_CORD_3": "top: 71.98879551820728%;  left: 54%;  width: 2%;  height: 5.602240896358544%;",
+                "SPOT_CORD_4": "top: 78.15126050420169%;  left: 1.7999999999999998%;  width: 2%;  height: 5.602240896358544%;",
+                "SPOT_CORD_5": "top: 91.03641456582633%;  left: 16.1%;  width: 2%;  height: 5.602240896358544%;",
+                "SPOT_CORD_6": "top: 13.725490196078432%;  left: 16.2%;  width: 2%;  height: 5.602240896358544%;",
+                "SPOT_CORD_7": "top: 17.366946778711483%;  left: 54.1%;  width: 2%;  height: 5.602240896358544%;",
+                "SPOT_CORD_8": "top: 19.607843137254903%;  left: 92%;  width: 2%;  height: 5.602240896358544%;",
+                "SPOT_CORD_9": "top: 13.445378151260504%;  left: 83.39999999999999%;  width: 2%;  height: 5.602240896358544%;",
+                "SPOT_LOCATION_1": "top",
+                "SPOT_LOCATION_10": "top",
+                "SPOT_LOCATION_11": "top",
+                "SPOT_LOCATION_2": "top",
+                "SPOT_LOCATION_3": "top",
+                "SPOT_LOCATION_4": "top",
+                "SPOT_LOCATION_5": "top",
+                "SPOT_LOCATION_6": "top",
+                "SPOT_LOCATION_7": "top",
+                "SPOT_LOCATION_8": "top",
+                "SPOT_LOCATION_9": "top",
+                "SPOT_TEXT_1": "Main Carriage",
+                "SPOT_TEXT_10": "Knit Contour Dials",
+                "SPOT_TEXT_11": "Needles",
+                "SPOT_TEXT_2": "Needlebed",
+                "SPOT_TEXT_3": "Arm (Presser/Pressure Plate)",
+                "SPOT_TEXT_4": "Spongebar (Presser/Pressure Bar)",
+                "SPOT_TEXT_5": "Gate Pegs",
+                "SPOT_TEXT_6": "Pattern Card Panel (Punchcard Mechanism)",
+                "SPOT_TEXT_7": "Knit Contour (Radar)",
+                "SPOT_TEXT_8": "Tool Holder",
+                "SPOT_TEXT_9": "Row Counter",
+                "SecondDiv": "padding-bottom: 35.699999999999996%",
+                "TopDiv": "max-width: 1000px"
+              },
+              "legacyComponentId": 8395,
+              "order": 2
+            }
+          ],
+          "title": "Terms you must know",
+          "slug": "terms-you-must-know",
+          "order": 3,
+          "legacy": {
+            "assignId": 5543,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Before you start to set up your machine, identify the tools and accessories that came with your machine. <br>If you don't have the tools marked \"essential\" you'll be able to get started knitting, but ask Mr. Google to help you find them. <br>\r\nWhen looking for tools and fun accessories, keep in mind that this is a Singer/Silver/Studio 4.5mm (standard) machine.<br>\r\n\r\n<mark><b><span style=\"font-size:1.5em\">Essential:<span></b></mark>\r\n<ul class=\"fa-ul\">\r\n<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Table Clamps</li>\r\n<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Needle Pusher</li>\r\n<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Latch Tool</li>\r\n<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Transfer Tools</li>\r\n<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Claw weights</li>\r\n<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Oil (sewing machine oil works great)</li>\r\n</ul>\r\n\r\n\r\n\r\n<b><span style=\"font-size:1.5em\">Consider Locating:<span></b>\r\n<ul>\r\n<li>Punchcards and snaps - must have for automatic patterning.<br><em>If you don't have the original punchcards, digital copies are included in this course and you can punch your own. </em></li>\r\n<li>Carriage lock - good for securing the carriage when packing it</li>\r\n<li>Ravel Cord - \"must have\" for certain techniques</li>\r\n\r\n<li>Magic Cams - required for the Single Motif technique</li>\r\n\r\n<li>Extra needles - Nice to have on hand - you won't break needles often, but ...</li>\r\n<li>If you plan to use the Knit Contour, you will need the pattern cards (or blanks to draw your own), the Scale Set and the Auxiliary Feeding Cam </li>\r\n</ul>\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 8112,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Hotspot",
+              "notes": [
+                "Unmapped legacy component type: Hotspot"
+              ],
+              "legacyFields": {
+                "IMAGE_HEIGHT": "675",
+                "IMAGE_WIDTH": "999",
+                "SPOTT_IMAGE": "/challenge/images/v2/98/tools2.jpg",
+                "SPOT_CORD_1": "top: 11.25925925925926%;  left: 29.929929929929934%;  width: 2.002002002002002%;  height: 2.9629629629629632%;",
+                "SPOT_CORD_10": "top: 81.33333333333333%;  left: 28.628628628628626%;  width: 2.002002002002002%;  height: 2.9629629629629632%;",
+                "SPOT_CORD_11": "top: 77.77777777777779%;  left: 36.63663663663664%;  width: 2.002002002002002%;  height: 2.9629629629629632%;",
+                "SPOT_CORD_12": "top: 80.2962962962963%;  left: 50.35035035035035%;  width: 2.002002002002002%;  height: 2.9629629629629632%;",
+                "SPOT_CORD_13": "top: 65.33333333333333%;  left: 63.96396396396396%;  width: 2.002002002002002%;  height: 2.9629629629629632%;",
+                "SPOT_CORD_14": "top: 51.25925925925926%;  left: 80.28028028028028%;  width: 2.002002002002002%;  height: 2.9629629629629632%;",
+                "SPOT_CORD_15": "top: 36.888888888888886%;  left: 72.27227227227228%;  width: 2.002002002002002%;  height: 2.9629629629629632%;",
+                "SPOT_CORD_16": "top: 22.37037037037037%;  left: 83.38338338338338%;  width: 2.002002002002002%;  height: 2.9629629629629632%;",
+                "SPOT_CORD_17": "top: 51.85185185185185%;  left: 49.14914914914915%;  width: 2.002002002002002%;  height: 2.9629629629629632%;",
+                "SPOT_CORD_18": "top: 31.703703703703706%;  left: 46.546546546546544%;  width: 2.002002002002002%;  height: 2.9629629629629632%;",
+                "SPOT_CORD_19": "top: 33.77777777777778%;  left: 26.026026026026027%;  width: 2.002002002002002%;  height: 2.9629629629629632%;",
+                "SPOT_CORD_2": "top: 37.77777777777778%;  left: 17.217217217217218%;  width: 2.002002002002002%;  height: 2.9629629629629632%;",
+                "SPOT_CORD_3": "top: 22.666666666666664%;  left: 32.33233233233233%;  width: 2.002002002002002%;  height: 2.9629629629629632%;",
+                "SPOT_CORD_4": "top: 25.185185185185183%;  left: 7.007007007007007%;  width: 2.002002002002002%;  height: 2.9629629629629632%;",
+                "SPOT_CORD_5": "top: 49.48148148148148%;  left: 4.004004004004004%;  width: 2.002002002002002%;  height: 2.9629629629629632%;",
+                "SPOT_CORD_6": "top: 53.629629629629626%;  left: 18.21821821821822%;  width: 2.002002002002002%;  height: 2.9629629629629632%;",
+                "SPOT_CORD_7": "top: 67.55555555555556%;  left: 6.806806806806807%;  width: 2.002002002002002%;  height: 2.9629629629629632%;",
+                "SPOT_CORD_8": "top: 65.33333333333333%;  left: 16.316316316316314%;  width: 2.002002002002002%;  height: 2.9629629629629632%;",
+                "SPOT_CORD_9": "top: 84.44444444444444%;  left: 16.416416416416414%;  width: 2.002002002002002%;  height: 2.9629629629629632%;",
+                "SPOT_LOCATION_1": "top",
+                "SPOT_LOCATION_10": "top",
+                "SPOT_LOCATION_11": "top",
+                "SPOT_LOCATION_12": "top",
+                "SPOT_LOCATION_13": "top",
+                "SPOT_LOCATION_14": "top",
+                "SPOT_LOCATION_15": "top",
+                "SPOT_LOCATION_16": "top",
+                "SPOT_LOCATION_17": "top",
+                "SPOT_LOCATION_18": "top",
+                "SPOT_LOCATION_19": "top",
+                "SPOT_LOCATION_2": "top",
+                "SPOT_LOCATION_3": "top",
+                "SPOT_LOCATION_4": "top",
+                "SPOT_LOCATION_5": "top",
+                "SPOT_LOCATION_6": "top",
+                "SPOT_LOCATION_7": "top",
+                "SPOT_LOCATION_8": "top",
+                "SPOT_LOCATION_9": "top",
+                "SPOT_TEXT_1": "Edge Pins (single motif | lace carriage)",
+                "SPOT_TEXT_10": "Tappet (Latch) Tool",
+                "SPOT_TEXT_11": "Transfer tools (1x1, 2x1, 3x2)",
+                "SPOT_TEXT_12": "Claw Weights",
+                "SPOT_TEXT_13": "Main Bed Clamps",
+                "SPOT_TEXT_14": "Gauge Scale (Gauge Ruler)",
+                "SPOT_TEXT_15": "Knit Contour Scale Set",
+                "SPOT_TEXT_16": "Knit Contour Patterns",
+                "SPOT_TEXT_17": "Magic Cams (Isolated Stitch Patterns)",
+                "SPOT_TEXT_18": "Punchcard Snaps",
+                "SPOT_TEXT_19": "Auxiliary Feeding Cam (Knit Contour)",
+                "SPOT_TEXT_2": "Punchcards",
+                "SPOT_TEXT_3": "1x1 Needle Pusher",
+                "SPOT_TEXT_4": "Ravel Cord",
+                "SPOT_TEXT_5": "Carriage Lock",
+                "SPOT_TEXT_6": "Point Cams",
+                "SPOT_TEXT_7": "Spare Main Bed Needles",
+                "SPOT_TEXT_8": "Yarn Separators",
+                "SPOT_TEXT_9": "Cleaning Brush",
+                "SecondDiv": "padding-bottom: 67.56756756756756%",
+                "TopDiv": "max-width: 999px"
+              },
+              "legacyComponentId": 8409,
+              "order": 3
+            }
+          ],
+          "title": "Tools and Accessories",
+          "slug": "tools-and-accessories",
+          "order": 4,
+          "legacy": {
+            "assignId": 5544,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "680655225",
+              "title": null,
+              "legacyComponentId": 8114,
+              "order": 1
+            }
+          ],
+          "title": "Setting up your machine",
+          "slug": "setting-up-your-machine",
+          "order": 5,
+          "legacy": {
+            "assignId": 5545,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .flex-container {\r\n        display: flex;\r\n        justify-content: space-around;\r\n        width: 50%;\r\n\r\n</style>\r\n\r\n    \r\n        <div class=\"flex-container center-block\">\r\n            <div class=\"flex-child\"><img src=\"/challenge/images/v2/98/0.png\"></div>\r\n            <div class=\"flex-child\"><img src=\"/challenge/images/v2/98/1.png\"></div>\r\n            <div class=\"flex-child\"><img src=\"/challenge/images/v2/98/2.png\"></div>\r\n            <div class=\"flex-child\"><img src=\"/challenge/images/v2/98/3.png\"></div>\r\n        </div>\r\n        <br>The 4.5 mm gauge of this machine is perfect for lightweight yarns.\r\n        The only limit is the size of the needles. If the yarn is too thick and doesn't fit in the hooks of the needles, it can split and/or jam the machine.\r\n    \r\n  \r\n        <h3><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Don't Skip This</h3>\r\n        \r\n            <div class=\"videopopup\" data-videotitle=\"Yarn for Knitting Machines\" data-vimeoid=\"527759119\">\r\n                <img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/1092470097-1c5353bb6555501e8273f58fad80247f1a1625732f095e498ecf755db86f8e54-d_1280x720?r=pad\">\r\n                <div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n\r\n\r\n        </div>\r\n    \r\n\r\n",
+              "legacyComponentId": 8115,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\n\r\n.yellow_highlight {\r\nbackground: linear-gradient(rgba(255, 255, 255, 0) 55%, #ffff00 45%, #ffff00);\r\n}\r\n\r\n\r\n</style>\r\n\r\n<table class=\"table table-responsive center-block\" style=\"width: 50%; border: 1px solid black\">\r\n\t\t\t\t\t\t\t\t<tbody><tr id=\"YYP0\" class=\"yardrow\">\r\n\t\t\t\t\t\t\t\t\t<td><img src=\"/images/tools/yarn_standards/0.png\" width=\"42\" height=\"42\" alt=\"\"></td>\r\n\t\t\t\t\t\t\t\t\t<td>Lace</td>\r\n\t\t\t\t\t\t\t\t\t<td>4000 - 10,000 ypp</td>\r\n\t\t\t\t\t\t\t\t\t<td>33-40 sts</td>\r\n\t\t\t\t\t\t\t\t\t<td><span class=\"yellow_highlight\">Standard (stranded)<span></td>\r\n\t\t\t\t\t\t\t\t</tr>\r\n\t\t\t\t\t\t\t\t<tr id=\"YYP1\" class=\"yardrow\">\r\n\t\t\t\t\t\t\t\t\t<td><img src=\"/images/tools/yarn_standards/1.png\" width=\"42\" height=\"42\" alt=\"\"></td>\r\n\t\t\t\t\t\t\t\t\t<td>Super fine</td>\r\n\t\t\t\t\t\t\t\t\t<td>3000-4000 ypp</td>\r\n\t\t\t\t\t\t\t\t\t<td>27-32 sts</td>\r\n\t\t\t\t\t\t\t\t\t<td><span class=\"yellow_highlight\">Standard (stranded)</span></td>\r\n\t\t\t\t\t\t\t\t</tr>\r\n\t\t\t\t\t\t\t\t<tr id=\"YYP2\" class=\"yardrow\">\r\n\t\t\t\t\t\t\t\t\t<td><img src=\"/images/tools/yarn_standards/2.png\" width=\"42\" height=\"42\" alt=\"\"></td>\r\n\t\t\t\t\t\t\t\t\t<td>Fine</td>\r\n\t\t\t\t\t\t\t\t\t<td>2000-3000</td>\r\n\t\t\t\t\t\t\t\t\t<td>23-26</td>\r\n\t\t\t\t\t\t\t\t\t<td><span class=\"yellow_highlight\"> Standard / Double Bed</span></td>\r\n\t\t\t\t\t\t\t\t</tr>\r\n\t\t\t\t\t\t\t\t<tr id=\"YYP3\" class=\"yardrow\">\r\n\t\t\t\t\t\t\t\t\t<td><img src=\"/images/tools/yarn_standards/3.png\" width=\"42\" height=\"42\" alt=\"\"></td>\r\n\t\t\t\t\t\t\t\t\t<td>Light</td>\r\n\t\t\t\t\t\t\t\t\t<td>1000-2000</td>\r\n\t\t\t\t\t\t\t\t\t<td>21-24</td>\r\n\t\t\t\t\t\t\t\t\t<td>Mid-Gauge/<span class=\"yellow_highlight\">Standard</span></td>\r\n\t\t\t\t\t\t\t\t</tr>\r\n\t\t\t\t\t\t\t\t<tr id=\"YYP4\" class=\"yardrow\">\r\n\t\t\t\t\t\t\t\t\t<td><img src=\"/images/tools/yarn_standards/4.png\" width=\"42\" height=\"42\" alt=\"\"></td>\r\n\t\t\t\t\t\t\t\t\t<td>Medium</td>\r\n\t\t\t\t\t\t\t\t\t<td>800-1000</td>\r\n\t\t\t\t\t\t\t\t\t<td>16-20</td>\r\n\t\t\t\t\t\t\t\t\t<td>Mid-Gauge/Bulky</td>\r\n\t\t\t\t\t\t\t\t</tr>\r\n\t\t\t\t\t\t\t\t<tr id=\"YYP5\" class=\"yardrow\">\r\n\t\t\t\t\t\t\t\t\t<td><img src=\"/images/tools/yarn_standards/5.png\" width=\"42\" height=\"42\" alt=\"\"></td>\r\n\t\t\t\t\t\t\t\t\t<td>Bulky</td>\r\n\t\t\t\t\t\t\t\t\t<td>500-800</td>\r\n\t\t\t\t\t\t\t\t\t<td>12-15</td>\r\n\t\t\t\t\t\t\t\t\t<td>Bulky</td>\r\n\t\t\t\t\t\t\t\t</tr>\r\n\t\t\t\t\t\t\t\t<tr id=\"YYP6\" class=\"yardrow\">\r\n\t\t\t\t\t\t\t\t\t<td><img src=\"/images/tools/yarn_standards/6.png\" width=\"42\" height=\"42\" alt=\"\"></td>\r\n\t\t\t\t\t\t\t\t\t<td>Super Bulky</td>\r\n\t\t\t\t\t\t\t\t\t<td>100-500</td>\r\n\t\t\t\t\t\t\t\t\t<td>6-11</td>\r\n\t\t\t\t\t\t\t\t\t<td>May not be appropriate.</td>\r\n\t\t\t\t\t\t\t</tr></tbody></table>\r\n",
+              "legacyComponentId": 8398,
+              "order": 2
+            }
+          ],
+          "title": "Yarn for Your Machine",
+          "slug": "yarn-for-your-machine",
+          "order": 6,
+          "legacy": {
+            "assignId": 5546,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n.container-border {\r\nborder: 1px solid #ccc;\r\nborder-radius: 15px;\r\npadding-top: 20px;\r\npadding-right: 20px;\r\npadding-bottom: 20px;\r\npadding-left: 20px;\r\n}\r\n\r\n</style>\r\n<h3>Take a moment to get familiar with the terminology and location of items on the carriage\r\n</h3>\r\n\r\n\t\r\n\r\n\t\tDon't be overwhelmed by all the buttons, dials and levers on the carriage. As we cover the various techniques available, we will walk through each setting and explore it's impact on your knitting.<br>Instead of forming each stitch one-at-a-time like in hand knitting, the carriage acts as your hands and fingers.<br><ul>\r\n\t\t\t<li>Using the <b>butts of the needle</b> and <b>the channels underneath the carriage</b>, select which needles will knit.</li><br>\r\n\t\t\t<li><b>The Tension dial</b> controls how the yarn is fed and how large the stitches will be.</li><br>\r\n\t\t\t<li><b>The Side Levers</b> Tells the machine that you want to knit in pattern</li><br>\r\n\t\t\t<li><b>The Cam Lever</b> instruct the machine about what type of stitch pattern you want to create</li><br>\r\n<li><b>The punchcard along with the Memory Drums</b> automatically select needles\r\n\t\t</ul>\r\n\r\n\t\tAs you continue on your journey to master your machine, all of the other settings will become second nature to you. <br><em><small>Mouse over the spots to see the names of the buttons and levers</small></em><br>\r\n\t\r\n\r\n\t<div class=\"container-border\"><span class=\"handwriting\" style=\"font-size:2em\">\r\n\t\t\tTo create stitch patterns:\r\n\t\t\t<ol>\r\n\t\t\t\t<li>Cam Lever</li>\r\n\t\t\t\t<li>Side Levers</li>\r\n\t\t\t\t<li>Russel Levers</li>\r\n<li>Needle Positions (punchcard</li>\r\n\t\t\t</ol>\r\n\t\t</span>\r\n\t</div>\r\n\r\n",
+              "legacyComponentId": 8116,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Hotspot",
+              "notes": [
+                "Unmapped legacy component type: Hotspot"
+              ],
+              "legacyFields": {
+                "IMAGE_HEIGHT": "627.77778",
+                "IMAGE_WIDTH": "999.77778",
+                "SPOTT_IMAGE": "/images/machines/details/singer360/singer_360_carriage.jpg",
+                "SPOT_CORD_1": "top: 3.820795273307879%;  left: 13.901698083981035%;  width: 1.9782175995149642%;  height: 3.150442820706397%;",
+                "SPOT_CORD_10": "top: 81.71626284014638%;  left: 70.01486335234821%;  width: 1.9782175995149642%;  height: 3.150442820706397%;",
+                "SPOT_CORD_11": "top: 76.61947190305813%;  left: 49.61102501217351%;  width: 1.9782175995149642%;  height: 3.150442820706397%;",
+                "SPOT_CORD_12": "top: 94.45962562689554%;  left: 38.20744720794199%;  width: 1.9782175995149642%;  height: 3.150442820706397%;",
+                "SPOT_CORD_13": "top: 93.50277478508073%;  left: 61.712676643542785%;  width: 1.9782175995149642%;  height: 3.150442820706397%;",
+                "SPOT_CORD_14": "top: 90.63496398045075%;  left: 14.20211274251708%;  width: 1.9782175995149642%;  height: 3.150442820706397%;",
+                "SPOT_CORD_15": "top: 89.83850380627894%;  left: 84.11869330622181%;  width: 1.9782175995149642%;  height: 3.150442820706397%;",
+                "SPOT_CORD_16": "top: 81.87390206456071%;  left: 13.002193996964067%;  width: 1.9782175995149642%;  height: 3.150442820706397%;",
+                "SPOT_CORD_17": "top: 82.67036223873254%;  left: 85.4175903455594%;  width: 1.9782175995149642%;  height: 3.150442820706397%;",
+                "SPOT_CORD_18": "top: 8.281526426281507%;  left: 48.40937248290159%;  width: 1.9782175995149642%;  height: 3.150442820706397%;",
+                "SPOT_CORD_19": "top: 69.60895983751183%;  left: 38.60858004885377%;  width: 1.9782175995149642%;  height: 3.150442820706397%;",
+                "SPOT_CORD_2": "top: 29.1498913448061%;  left: 2.300163692180364%;  width: 1.9782175995149642%;  height: 3.150442820706397%;",
+                "SPOT_CORD_3": "top: 28.989490954748888%;  left: 96.32106311996682%;  width: 1.9782175995149642%;  height: 3.150442820706397%;",
+                "SPOT_CORD_4": "top: 39.50387360903979%;  left: 50.409817021687%;  width: 1.9782175995149642%;  height: 3.150442820706397%;",
+                "SPOT_CORD_5": "top: 56.86559705076267%;  left: 73.31595092393462%;  width: 1.9782175995149642%;  height: 3.150442820706397%;",
+                "SPOT_CORD_6": "top: 61.96238798785091%;  left: 50.810943757726534%;  width: 1.9782175995149642%;  height: 3.150442820706397%;",
+                "SPOT_CORD_7": "top: 63.411504107237334%;  left: 15.414186288719268%;  width: 1.9782175995149642%;  height: 3.150442820706397%;",
+                "SPOT_CORD_8": "top: 63.715708726251776%;  left: 83.21745543548593%;  width: 1.9782175995149642%;  height: 3.150442820706397%;",
+                "SPOT_CORD_9": "top: 84.26328258707618%;  left: 29.705557918104%;  width: 1.9782175995149642%;  height: 3.150442820706397%;",
+                "SPOT_LOCATION_1": "top",
+                "SPOT_LOCATION_10": "top",
+                "SPOT_LOCATION_11": "top",
+                "SPOT_LOCATION_12": "top",
+                "SPOT_LOCATION_13": "top",
+                "SPOT_LOCATION_14": "top",
+                "SPOT_LOCATION_15": "top",
+                "SPOT_LOCATION_16": "top",
+                "SPOT_LOCATION_17": "top",
+                "SPOT_LOCATION_18": "top",
+                "SPOT_LOCATION_19": "top",
+                "SPOT_LOCATION_2": "top",
+                "SPOT_LOCATION_3": "top",
+                "SPOT_LOCATION_4": "top",
+                "SPOT_LOCATION_5": "top",
+                "SPOT_LOCATION_6": "top",
+                "SPOT_LOCATION_7": "top",
+                "SPOT_LOCATION_8": "top",
+                "SPOT_LOCATION_9": "top",
+                "SPOT_TEXT_1": "Memory Drums",
+                "SPOT_TEXT_10": "Weaving brush(es)",
+                "SPOT_TEXT_11": "Yarn Feeder",
+                "SPOT_TEXT_12": "Tuck Knob(s)",
+                "SPOT_TEXT_13": "Tuck Knob(s)",
+                "SPOT_TEXT_14": "Weaving Knob(s)",
+                "SPOT_TEXT_15": "Weaving Knob(s)",
+                "SPOT_TEXT_16": "Weaving Yarn Holder(s)",
+                "SPOT_TEXT_17": "Weaving Yarn Holder(s)",
+                "SPOT_TEXT_18": "Main Carriage",
+                "SPOT_TEXT_19": "Arm (presser/pressure plate)",
+                "SPOT_TEXT_2": "Side Lever (left)",
+                "SPOT_TEXT_3": "Side Lever (right)",
+                "SPOT_TEXT_4": "Stitch / Tension Dial",
+                "SPOT_TEXT_5": "Release Lever",
+                "SPOT_TEXT_6": "Cam Lever",
+                "SPOT_TEXT_7": "Russel / Front Lever (left)",
+                "SPOT_TEXT_8": "Russel / Front Lever (right)",
+                "SPOT_TEXT_9": "Weaving brush(es)",
+                "SecondDiv": "padding-bottom: 62.791731578591396%",
+                "TopDiv": "max-width: 999.77778px"
+              },
+              "legacyComponentId": 8393,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n<hr class=\"style13\">\r\n\r\n<img class=\"img-thumbnail\" src=\"/images/glossary/memory_wheel.jpg\">\r\n<h3>Memory Wheel</h3>This is the heart of automatic patterning on a Silver/Singer/Studio punchcard machine. As the carriage passes the punchcard mechanism, the Memory Wheels record the position of the holes in the card.  On the return pass of the carriage, the appropriate needles are selected and positioned according to the Cam Setting (stitch technique).<br>NOTE: <em>Often on machines that have been stored for a long time the memory wheels can be locked up.  The wheel should turn freely for stitch patterning to occur.</em><br>\r\n<img class=\"img-thumbnail center-block\" src=\"/images/glossary/memory_wheel_gif.gif\">\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 8411,
+              "order": 3
+            }
+          ],
+          "title": "Your Knitting Carriage",
+          "slug": "your-knitting-carriage",
+          "order": 7,
+          "legacy": {
+            "assignId": 5547,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<span class=\"handwriting\">Understanding how to set your carriage for <b>PLAIN KNITTING</b> is essential</span><br>It is a good habit to always check your carriage settings before starting a new technique or a new piece of knitting.  It's easy to have your carriage set for patterning, then come back days later and be surprised that the machine isn't knitting as expected.<br><b>\r\nEvery time you sit down to knit, take time to double check the settings.</b>\r\n\r\n<br>",
+              "legacyComponentId": 8118,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"center-block\">\r\n\r\n\t\t\r\n\t\t\t<div class=\"table-responsive\">\r\n    <table class=\"table table-bordered\">\r\n       \r\n        <tbody>\r\n            <tr>\r\n                <td><i class=\"fa fa-check\"></i> Cam Lever</td>\r\n                <td><center><img src=\"/images/machines/details/360cam_plain.png\"></center></td>\r\n            </tr>\r\n             <tr>\r\n                <td><i class=\"fa fa-check\"></i> Russel Lever(s)</td>\r\n                   <td><center><img src=\"/challenge/images/v2/98/russel_lever3.jpg\"></center></td>\r\n            </tr>\r\n <tr>\r\n                <td><i class=\"fa fa-check\"></i> Side Lever</td>\r\n               <td><center><img src=\"/challenge/images/v2/98/side_lever4.jpg\"></center></td>\r\n            </tr>\r\n <tr>\r\n                <td><i class=\"fa fa-check\"></i> Tuck Knob(s)</td>\r\n               <td><center><img src=\"/challenge/images/v2/98/tuck_weaving_color.jpg\"></center></td>\r\n            </tr>\r\n <tr>\r\n                <td><i class=\"fa fa-check\"></i> Weaving Knob(s)</td>\r\n                <td><center><img src=\"/challenge/images/v2/98/tuck_weaving_color.jpg\"></center></td>\r\n            </tr>\r\n <tr>\r\n                <td><i class=\"fa fa-check\"></i> Yarn Feeder</td>\r\n                <td><center><img src=\"/images/machines/details/360_Icon7.png\"></center></td>\r\n            </tr>\r\n        </tbody>\r\n    </table>\r\n</div>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\t<img src=\"/challenge/images/v2/98/plain_knitting1.jpg\">\r\n\t\t\t\r\n\t\t\r\n</div>",
+              "legacyComponentId": 8400,
+              "order": 2
+            }
+          ],
+          "title": "Plain Knitting",
+          "slug": "plain-knitting",
+          "order": 8,
+          "legacy": {
+            "assignId": 5548,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"> <span class=\"handwriting\" style=\"font-size:1.5em\">Save your back, neck and shoulders</span><br>In the videos in this course, you'll see me pushing the carriage with one hand.   BAD!!!!  I'm reaching around the camera.<br>When you are knitting <b>use both hands</b> and push and pull alternately to move the carriage.<br>Many knitters also adjust their knitting table so they can stand while knitting.",
+              "legacyComponentId": 8119,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "530014000",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 8119,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<img width=\"250\" src=\"/path/images/1558/woman_silhouette1.gif\">\r\n\t\t<h3> Arm, hand and wrist position</h3>\r\n\t\t<b>STOP! LOOK AT THE POSITION OF YOUR\r\n\t\t\tHAND AND WRIST IN RELATION TO YOUR\r\n\t\t\tELBOW.</b>Many knitters will find their elbow is\r\n\t\tbelow the level of the wrist and hand. <br><b>Knitting\r\n\t\t\tin this position, after a time, will create an ache\r\n\t\t\tand pain through the neck and across the\r\n\t\t\tshoulders.</b>\r\n\t\t\tTry sitting higher so that your elbow\r\n\t\tis <b>slightly above</b> the wrist and hand.\r\n\t",
+              "legacyComponentId": 8120,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<h3>More tips</h3>\r\n\t<ul class=\"fa-ul\">\r\n\t\t<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>A stool for your feet may be needed or your machine table or stand may have to be lowered. </li><br>\r\n\t\t<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span> If you\r\n\t\t\thave a stand to use your machine,\r\n\t\t\tthe same elbow position is needed. <em>(elbows slightly above the hands)</em></li><br>\r\n\t\t<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Try standing to knit. Use an adjustable table to keep the elbow position correct.\r\n\r\n\t\t\t<a data-popupcontentid=\"10005\" class=\"pathpopup\"><i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> Here's what I use<br></a>\r\n\t\t</li><br>\r\n\t\t<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>\r\n\t\t\t<a href=\"#light\" data-toggle=\"collapse\"><b><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Good lighting is a must</b></a>\r\n\t\t\t<div id=\"light\" class=\"collapse hidden-print\">\r\n\t\t\t\t<div class=\"subvideopopup\" data-videotitle=\"Knitting Machine Lighting Fixture\" data-vimeoid=\"151858745\">\r\n\t\t\t\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/551702337-37ad84787c7c2b538e8e57a7297fe7a73c9ccec35eab752146eece8a322b0b56-d_1280x720?r=pad\">\r\n\t\t\t\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\t\t</li><br>\r\n\t\t<li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>A clean (and oiled) machine bed and carriage are essential.</li>\r\n\t\t<br>\r\n\t</ul>\r\n</div>\r\n<hr class=\"style13\">\r\n",
+              "legacyComponentId": 8121,
+              "order": 3
+            }
+          ],
+          "title": "The Proper Way to Knit",
+          "slug": "the-proper-way-to-knit",
+          "order": 9,
+          "legacy": {
+            "assignId": 5549,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Casting On",
+      "slug": "casting-on",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 616,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "681013133",
+              "title": "Tension Mast Assembly - Control the yarn",
+              "legacySlot": 1,
+              "legacyComponentId": 8122,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "681026361",
+              "title": "Carriage and yarn feeder(s)",
+              "legacySlot": 2,
+              "legacyComponentId": 8122,
+              "order": 2
+            }
+          ],
+          "title": "Thread your machine",
+          "slug": "thread-your-machine",
+          "order": 1,
+          "legacy": {
+            "assignId": 5550,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-thumbs-o-down fa-2x\" aria-hidden=\"true\"></i> <i class=\"fa fa-thumbs-o-up fa-2x\" aria-hidden=\"true\"></i> No matter what cast on method you use, it's important to secure the yarn tail when casting on so the first few stitches knit correctly. <br>\r\n<mark>Use the arrows <i class=\"fa fa-arrow-left fa-2x\" aria-hidden=\"true\"></i> <i class=\"fa fa-arrow-right fa-2x\" aria-hidden=\"true\"></i> to navigate</mark> \r\n\r\n\r\n\r\n",
+              "legacyComponentId": 8126,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/v2/87/tail1a.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/v2/87/tail1.jpg",
+                  "caption": "Some knitters will tie the yarn tail to the table clamp.<br><br>\r\n<i class=\"fa fa-thumbs-o-down fa-2x\" aria-hidden=\"true\"></i><em>You have to remember to remove this as you knit</em>"
+                },
+                {
+                  "src": "/v2/87/tail2.jpg",
+                  "caption": "The manual suggests securing the tail to the cast on comb<br><br>\r\n<i class=\"fa fa-thumbs-o-down fa-2x\" aria-hidden=\"true\"></i> Some cast on combs don't have clips and this can be fiddly."
+                },
+                {
+                  "src": "/v2/87/tail3.jpg",
+                  "caption": "<i class=\"fa fa-thumbs-o-up fa-2x\" aria-hidden=\"true\"></i> Use a chip clip to not only secure the tail, but it adds a little weight as well.<br>It's easily removed as you knit.<br>This method can be used any time you have a yarn tail (knitting stripes)."
+                },
+                {
+                  "src": "/v2/87/tail4.jpg",
+                  "caption": "<i class=\"fa fa-thumbs-o-upfa-2x\" aria-hidden=\"true\"></i> A spring-type clothes pin works great too!"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 8127,
+              "order": 2
+            }
+          ],
+          "title": "Secure the yarn tail",
+          "slug": "secure-the-yarn-tail",
+          "order": 2,
+          "legacy": {
+            "assignId": 5552,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.demo {\r\n\t\twidth:70%;\r\n\t\tborder:1px solid #C0C0C0;\r\n\t\tborder-collapse:collapse;\r\n\t\tpadding:5px;\r\n\t}\r\n\t.demo th {\r\n\t\tborder:1px solid #C0C0C0;\r\n\t\tpadding:5px;\r\n\t}\r\n\t.demo td {\r\n\t\tborder:1px solid #C0C0C0;\r\n\t\tpadding:5px;\r\n\t}\r\n</style>\r\nWhether aligned by the punchcard or manually positioned, the needle position along with the carriage settings create stitch patterns.<br>Vintage machine knitting patterns and instructions will refer often to these positions with abbreviations<br>\r\n\r\n\t<img src=\"/challenge/images/v2/98/needle_position.jpg\">\r\n\r\n\r\n\r\n\r\n<table class=\"demo\">\r\n\t\r\n\t<tbody>\r\n\t<tr>\r\n\t\t<td><span style=\"font-size:2em\"><b>A</b></span></td>\r\n\t\t<td>Non-working position  (NWP)</td>\r\n\t\t<td> Unused needles</td>\r\n\t</tr>\r\n\t<tr>\r\n\t\t<td><span style=\"font-size:2em\"><b>B</b></span></td>\r\n\t\t<td> Working Position (WP)</td>\r\n\t\t<td> Needles lined up to knit in stockinette and most pattern work</td>\r\n\t</tr>\r\n\t<tr>\r\n\t\t<td><span style=\"font-size:2em\"><b>C</b></span></td>\r\n\t\t<td> Middle Position (MP)</td>\r\n\t\t<td> Bring the needles from holding position into working and pattern work positions</td>\r\n\t</tr>\r\n\t<tr>\r\n\t\t<td><span style=\"font-size:2em\"><b>D</b></span></td>\r\n\t\t<td> Holding Position (HP/Hold)</td>\r\n\t\t<td> The farthest position from \"A\" on the needlebed</td>\r\n\t</tr>\r\n\t</tbody>\r\n</table>\r\n\r\n",
+              "legacyComponentId": 8403,
+              "order": 2
+            }
+          ],
+          "title": "Needle Positions",
+          "slug": "needle-positions",
+          "order": 3,
+          "legacy": {
+            "assignId": 5674,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"></center> For many more cast-on tips and techniques, visit:<br>\r\n\t\tthe <a href=\"/classrooms/44/cast-on-methods\"><b>Knit it Now Classroom: Cast on Methods</b></a>\r\n\t</div>\r\n\r\n",
+              "legacyComponentId": 8123,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "681544407",
+              "title": "Weaving Cast On",
+              "legacySlot": 1,
+              "legacyComponentId": 9757,
+              "order": 4
+            },
+            {
+              "type": "video",
+              "vimeoId": "1022707004",
+              "title": "Super Fast Slip Cast on",
+              "legacySlot": 2,
+              "legacyComponentId": 9757,
+              "order": 4
+            }
+          ],
+          "title": "Casting on Stitches",
+          "slug": "casting-on-stitches",
+          "order": 4,
+          "legacy": {
+            "assignId": 5551,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n.yellow_highlight {\r\n\r\nbackground: linear-gradient(rgba(255,255,255,0) 55%,#ffff00 45%,#ffff00);\r\n}\r\n</style>\r\n\r\n\r\n\r\n<div class=\"lead\"><b>Open  Cast on</b></div>\r\nBy definition, <span class=\"yellow_highlight\">an open cast on will have stitches that will unravel if given the chance.</span><br>Some machine manuals will give instruction for this type of cast on<br> The Cast on demonstrated in the previous video is an open cast on.<br>Here are some variations:\r\n<ul>\r\n<li>Open Cast on with a cast on Comb (shown in the video)</li>\r\n<li>Open Cast on with a wire</li>\r\n<li>Open Cast on with Ravel cord</li>\r\n</ul>\r\n<b>Most knitters graduate beyond these methods pretty quickly.</b><br>The following cast on methods leave open stitches to be worked later. For example, leave open stitches, then pick them up and hand knit some ribbing. Or turn the knitting, pick up open stitches and knit reverse stockinette.\r\n<ul>\r\n<li>Scrap and Ravel</li>\r\n<li>Using a Cast on Rag</li>\r\n</ul>\r\n<b>You will use these again and again</b>\r\n\r\n\r\n\r\n\r\n\r\n\r\n<div class='embed-responsive embed-responsive-16by9'>\n<iframe src='https://player.vimeo.com/video/312574558' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\r\n\r\n<br><hr class=\"style13\">\r\n\r\n<div class=\"lead\"><b>Closed Cast on</b></div>\r\n<span class=\"yellow_highlight\">With a closed cast on, the starting stitches are secure. </span><br>These techniques can be categorized:\r\n<ul>\r\n<li> <b>Closed but temporary.</b><br> These cast on methods are quick and have their place ... they just wouldn't be appropriate for the finished edge of your next sweater.<br>\r\nUses:\r\n<ul>\r\n<li>Cast on for swatching</li>\r\n<li>Scrap 'n Ravel Cast on</li>\r\n<li>Cut 'n Sew</li>\r\n</ul>\r\n\r\n</li>\r\n<li><b>Closed and Functional</b><br> These techniques can be used for the edges of your knitting, without any additional finishing.\r\n<ul><li>E-wrap cast on (lots of variations)</li>\r\n<li>Chain Cast on</li>\r\n\r\n</ul>\r\n</li>\r\n</ul>\r\n\r\n",
+              "legacyComponentId": 8128,
+              "order": 1
+            }
+          ],
+          "title": "Open vs Closed Cast On",
+          "slug": "open-vs-closed-cast-on",
+          "order": 5,
+          "legacy": {
+            "assignId": 5553,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Bind off",
+      "slug": "bind-off",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 617,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"></center> For with many more bind-off techniques, visit:<br>\r\n\t\t<a href=\"/classrooms/81/bind-off-methods\"> the Knit it Now Classroom: Bind off Methods</a>\r\n\t</div>\r\n\r\n",
+              "legacyComponentId": 8129,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "527303259",
+              "title": null,
+              "legacyComponentId": 8130,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "VimeoJumpLinks",
+              "notes": [
+                "Unmapped legacy component type: VimeoJumpLinks"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4223",
+                "CHALLENGE_COMPONENTID": "6414",
+                "LINKTIME_1": "00:00:10",
+                "LINKTIME_2": "00:01:08",
+                "LINKTIME_3": "00:01:19",
+                "LINKTIME_4": "00:01:25",
+                "LINKTITLE_1": "Manually knit a loose row",
+                "LINKTITLE_2": "Break/cut the working yarn",
+                "LINKTITLE_3": "Pull out all the needles",
+                "LINKTITLE_4": "Pull stitch-through-stitch"
+              },
+              "legacyComponentId": 8131,
+              "order": 3
+            }
+          ],
+          "title": "Binding Off",
+          "slug": "binding-off",
+          "order": 2,
+          "legacy": {
+            "assignId": 5554,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Automatic Stitch Patterning",
+      "slug": "automatic-stitch-patterning",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 618,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nAlmost magical, stitch patterning on this machine happens with a combination of the carriage settings, the punchcard and the memory drum.<br><h3>Overview:</h3>\r\nThe settings for each stitch pattern are a little different, but the overall  steps for creating a stitch pattern are as follows:<br><ol>\r\n<li>Insert and lock the punchcard</li>\r\n<li>Carriage on the left and set for plain knitting</li>\r\n<li>Pass the carriage from left to right, memorizing the stitch pattern</li>\r\n<li>Carriage on the right</li>\r\n<li>Release the punchcard</li>\r\n<li>Set the carriage for the desired stitch pattern</li>\r\n<li>Continue knitting</li>\r\n</ul>\r\n\r\n<img class=\"img-thumbnail center-block\" src=\"/challenge/images/v2/98/memory_drum.jpg\">\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 8410,
+              "order": 1
+            }
+          ],
+          "title": "About Automatic Patterning on this Machine",
+          "slug": "about-automatic-patterning-on-this-machine",
+          "order": 1,
+          "legacy": {
+            "assignId": 5678,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 50px;\r\n\t}\r\n\r\n\t.abc {\r\n\t\tfont-size: 175%;\r\n\t\tfont-weight: bold;\r\ntext-align: right;\r\n     \t}\r\n\r\n\t.def {\r\n\t\tfont-size: 150%;\r\n\t\tfont-weight: bold;\r\n\t}\r\n\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n</style>\r\n\r\n\tWe can knit so much more than plain stockinette with this machine. The punchcard mechanism can automatically create textured and multi-color stitch patterns.<br>It is critical that you understand the 3 elements that create stitch patterns.\r\n\r\n\t\r\n\r\n\t<div class=\"container-border\">\r\n\t\t<center><span class=\"handwriting\" style=\"font-size:1.5em\">3 settings control stitch patterning:</span><br></center>\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom col-margin-20px-left\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span><br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">2</a></div> <span class=\"def\">Side Levers </span><br></div>\r\n\t\t\r\n\r\n\t\t\r\n\t\t\t<div class=\"col margin-10px-bottom\">\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">3</a></div> <span class=\"def\">Cam Lever</span>\r\n\t\t\t</div>\r\n\r\n\t\t\r\n\t</div>\r\n\r\n\r\n<hr class=\"style13\">\r\n\r\n\r\n",
+              "legacyComponentId": 8132,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Needle position</span><br>Letters marked on the side of the needlebed <b>A-B-C-D</b> represent:<br><style>\r\n\t.demo {\r\n\t\twidth:70%;\r\n\t\tborder:1px solid #C0C0C0;\r\n\t\tborder-collapse:collapse;\r\n\t\tpadding:5px;\r\n\t}\r\n\t.demo th {\r\n\t\tborder:1px solid #C0C0C0;\r\n\t\tpadding:5px;\r\n\t}\r\n\t.demo td {\r\n\t\tborder:1px solid #C0C0C0;\r\n\t\tpadding:5px;\r\n\t}\r\n</style>\r\n\r\n\r\n\r\n\t<img class=\"img-thumbnail\" width=\"200\" src=\"/challenge/images/v2/98/needle_position.jpg\">\r\n\r\n\r\n\r\n\r\n<table class=\"demo\">\r\n\t\r\n\t<tbody>\r\n\t<tr>\r\n\t\t<td><span style=\"font-size:2em\"><b>A</b></span></td>\r\n\t\t<td>Non-working position  (NWP)</td>\r\n\t\t<td> Unused needles</td>\r\n\t</tr>\r\n\t<tr>\r\n\t\t<td><span style=\"font-size:2em\"><b>B</b></span></td>\r\n\t\t<td> Working Position (WP)</td>\r\n\t\t<td> Needles lined up to knit in stockinette and most pattern work</td>\r\n\t</tr>\r\n\t<tr>\r\n\t\t<td><span style=\"font-size:2em\"><b>C</b></span></td>\r\n\t\t<td> Middle Position (MP)</td>\r\n\t\t<td> Bring the needles from holding position into working and pattern work positions</td>\r\n\t</tr>\r\n\t<tr>\r\n\t\t<td><span style=\"font-size:2em\"><b>D</b></span></td>\r\n\t\t<td> Holding Position (HP/Hold)</td>\r\n\t\t<td> The farthest position from \"A\" on the needlebed</td>\r\n\t</tr>\r\n\t</tbody>\r\n</table>\r\n\r\n\r\n<hr class=\"style13\">\r\n",
+              "legacyComponentId": 8133,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "\r\n    \r\n        <div class=\"circle\"><a href=\"#\">2</a></div><span class=\"def\"> Side Levers</span><br>The Side Levers direct the butts of the needles through the channels under the carriage. It instructs the machine that you are going to be <b>knitting in pattern.</b> <br><mark>This setting <b>COMBINED WITH the Cam Lever</b> create stitch patterning on your machine.</mark>\r\n    \r\n    <img class=\"img-thumbnail center-block\" src=\"/challenge/images/v2/98/sidelevers_gif.gif\">\r\n\r\n<hr class=\"style13\">\r\n",
+              "legacyComponentId": 8134,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .demo {\r\n        border: 1px solid #C0C0C0;\r\n        border-collapse: collapse;\r\n        padding: 5px;\r\n    }\r\n\r\n\r\n    .demo td {\r\n        border: 1px solid #C0C0C0;\r\n        padding: 5px;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n<div class=\"circle\"><a href=\"#\">3</a></div>\r\n\r\n<span class=\"def\"> Cam Buttons</span><br>The Cam Lever tells the machine which stitch type you want to knit. Along with the Side Levers, the Cam Lever controls the action of the needles for specific stitch types.<br><div class=\"center-block\">\r\n\r\n    \r\n        <table class=\"demo\">\r\n         \r\n            <tbody>\r\n                <tr>\r\n                    <td><img class=\"center-block\" src=\"/challenge/images/v2/98/tuck.jpg\"> </td>\r\n                    <td><a data-GlossaryId='277' class='glossaryhelp'>Tuck <i class='fa fa-question-circle' aria-hidden='true'></i></a></td>\r\n\r\n                </tr>\r\n                <tr>\r\n        <td><img class=\"center-block\" src=\"/challenge/images/v2/98/slip.jpg\"> </td>\r\n                    <td> <a data-GlossaryId='251' class='glossaryhelp'>Skip | Slip <i class='fa fa-question-circle' aria-hidden='true'></i></a></td>\r\n            \r\n                </tr>\r\n                <tr>\r\n         <td><img class=\"center-block\" src=\"/challenge/images/v2/98/cam_lever1.jpg\"></td>\r\n                    <td><a data-GlossaryId='205' class='glossaryhelp'>Stockinette <i class='fa fa-question-circle' aria-hidden='true'></i></a></td>\r\n           \r\n                </tr>\r\n                <tr>\r\n  <td> <img class=\"center-block\" src=\"/challenge/images/v2/98/punch_lace.jpg\"></td>\r\n                    <td><a data-GlossaryId='526' class='glossaryhelp'>Thread Lace | Punch Lace <i class='fa fa-question-circle' aria-hidden='true'></i></a></td>\r\n                  \r\n                </tr>\r\n                <tr>\r\n <td> <img class=\"center-block\" src=\"/challenge/images/v2/98/knit-in.jpg\"></td>\r\n                    <td><a data-GlossaryId='347' class='glossaryhelp'>Knit-In | Fairisle <i class='fa fa-question-circle' aria-hidden='true'></i></a></td>\r\n                   \r\n                </tr>\r\n            <tbody>\r\n        </table>\r\n    \r\n\r\n\r\n\r\n    <center> <img class=\"img-thumbnail center-block\" src=\"/challenge/images/v2/98/cam_lever_gif.gif\"></center>\r\n\r\n    \r\n</div>\r\n\r\n",
+              "legacyComponentId": 8135,
+              "order": 4
+            }
+          ],
+          "title": "Carriage Settings",
+          "slug": "carriage-settings",
+          "order": 2,
+          "legacy": {
+            "assignId": 5555,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n</style>\r\n\r\n\t<div class=\"container-border text-center\">\r\n\t\t<center><img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"></center> For more about punchcards, visit:<br>\r\n\t\tthe <a href=\"/classrooms/126/punchcards\"><b>Knit it Now Classroom: Punchcards</b></a>\r\n\t</div>\r\n\r\n",
+              "legacyComponentId": 8136,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .circle {\r\n        width: 25px;\r\n        height: 25px;\r\n        border-radius: 50%;\r\n        box-sizing: border-box;\r\n        text-align: center;\r\n        display: inline-block;\r\n        line-height: 25px;\r\n        background-color: #9E2065;\r\n    }\r\n\r\n    .circle a {\r\n        text-decoration: none;\r\n        color: #fff;\r\n        font-size: 16px;\r\n    }\r\n\r\n    .container-border {\r\n        border: 1px solid #ccc;\r\n        border-radius: 15px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 50px;\r\n    }\r\n\r\n    .abc {\r\n        font-size: 175%;\r\n        font-weight: bold;\r\n        text-align: right;\r\n    }\r\n\r\n    .def {\r\n        font-size: 125%;\r\n        font-weight: bold;\r\n    }\r\n\r\n    hr.style13 {\r\n        height: 10px;\r\n        border: 0;\r\n        box-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n    }\r\n\r\n</style>\r\n\r\n<div>\r\n    <img class=\"img-thumbnail\" src=\"/challenge/images/v2/98/punchcard_mechanism.jpg\">\r\n    \r\n\r\n        <h3>The punchcard mechanism:</h3>\r\n        <div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Punchcard snaps</span>\r\n\r\n\r\n        <div style=\"padding-left: 30px;\">These snaps hold the card in a circle so it can rotate and repeat the stitch pattern.<br>Be sure to lap the card so there is no interruption of the pattern and the card flows smoothly in the mechanism</div><br><div class=\"circle\"><a href=\"#\">2</a></div><span class=\"def\"> Stop Knob</span>\r\n        <div style=\"padding-left: 30px;\"><i class=\"fa fa-caret-down fa-2x\" aria-hidden=\"true\"> </i>Allows the advancement of the punchcard either manually or with the carriage<br><i class=\"fa fa-circle\" aria-hidden=\"true\"> </i> Locks the rotation of the card<br></div>\r\n\r\n\r\n        <br>\r\n\r\n        <div class=\"circle\"><a href=\"#\">3</a></div><span class=\"def\"> L Knob</span><br><div style=\"padding-left: 30px;\">\r\n\r\n            The L Knob controls the advancement of the card\r\n            <ul>\r\n                <li> \"S\": The card advances 1 row at a time (Normal knitting)</li>\r\n                <li> \"L\": The card advances with 2 passes of the carriage (double high)</li>\r\n            </ul>\r\n        </div>\r\n        <div class=\"circle\"><a href=\"#\">4</a></div><span class=\"def\"> Card Feeding Dial</span><br>\r\n        <div style=\"padding-left: 30px;\">Use to manually advance the card\r\n        </div>\r\n\r\n    \r\n\r\n    <hr class=\"style13\">\r\n   \r\n",
+              "legacyComponentId": 8137,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "681615851",
+              "title": null,
+              "legacyComponentId": 8405,
+              "order": 3
+            }
+          ],
+          "title": "The Punchcard",
+          "slug": "the-punchcard",
+          "order": 3,
+          "legacy": {
+            "assignId": 5556,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nThe default setting for the L Knob is \"S\". With this setting the punchcard  will advance 1 row with each pass of the carriage.<br><span class=\"yellow_highlight\">By setting the L  Knob to \"L\" you instruct the punchcard mechanism to expand the stitch pattern design to \"double high\".</span><br>Instead of the card advancing once for each pass of the carriage, the card advances once for every 2 passes of the carriage.<br>With this setting, this stitch pattern is distorted which can produce interesting results WITHOUT punching a new card.<br>This technique can be applied to other stitch pattern types, slip, weaving, etc.  Care should be taken with tuck stitch, too many tucks can cause problems.\r\n\r\n\t\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/98/l_knob.jpg\">\r\n\r\n\r\n\r\n\r\n\r\n\r\n<figure>\r\n<figcaption align=\"center\"><br>\"S\" Advances one row for each pass of the carriage</figcaption><img src=\"/challenge/images/v2/98/double_high1.jpg\"></figure>\r\n\r\n<figure>\r\n<figcaption align=\"center\"><br><span class=\"yellow_highlight\">\"L\" Advances every second pass of the carriage</span></figcaption><img src=\"/challenge/images/v2/98/double_high2.jpg\"></figure>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 8139,
+              "order": 1
+            }
+          ],
+          "title": "Pattern Variations (double high)",
+          "slug": "pattern-variations-double-high",
+          "order": 4,
+          "legacy": {
+            "assignId": 5557,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nIf you are using an asymmetric design, be aware of how you are inserting the card. The final orientation of the design will depend on how you are knitting your garment.<br>\r\nConsiderations:<ul>\r\n<li>Top down or hem up knitting</li>\r\n<li>Right Side or wrong side facing stitch patterns</li>\r\n</ul>\r\n\r\nTest the design and the orientation of the card before starting your garment.<br>Some of the original punchcards had A-B-C-D markings on the card.  Pattern instructions may have read \"Insert Card 9B\".  This insured that you inserted the card #9 with the letter B at the lower corner and your design would match the pattern.\r\n\r\n\r\n\r\n\r\n<img src=\"/path/images/126/mushroom_cards.png\">\r\n",
+              "legacyComponentId": 8406,
+              "order": 1
+            }
+          ],
+          "title": "Design Orientation",
+          "slug": "design-orientation",
+          "order": 5,
+          "legacy": {
+            "assignId": 5675,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "You may  have the original punchcards for your machine, but you also may have \"inherited\" other cards. Here is something to consider.<br>The different brands of machines have different punchcard mechanisms.  Although many cards are interchangable, lining up the first row of knitting can be different for each machine.<br>When you insert the card, the first row of the design \"disappears\" into the punchcard opening.  You need to establish where the first row of the stitch pattern is located inside the mechanism.<br>Once you determine the location for your machine, mark your own line on your card so there's no guessing the next time.<br>\r\n\r\n<div class='embed-responsive embed-responsive-16by9'>\n<iframe src='https://player.vimeo.com/video/340003841' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\r\n\r\n\r\n\r\n<figure>\r\n\r\n\r\n<img class=\"zoom\" src=\"/path/images/126/punchcard_start_row_compare.png\">\r\n<figcaption align=\"center\"><br><i class=\"fa fa-search\" aria-hidden=\"true\"></i> Click for larger image</figcaption>\r\n</figure>\r\n\r\n\r\n\r\n<br><div class='embed-responsive embed-responsive-16by9'>\n<iframe src='https://player.vimeo.com/video/340024038' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n",
+              "legacyComponentId": 8407,
+              "order": 1
+            }
+          ],
+          "title": "Where to start knitting?",
+          "slug": "where-to-start-knitting",
+          "order": 6,
+          "legacy": {
+            "assignId": 5676,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\t\r\n\r\n\t\tThe 360 came with a set of punchcards and the manual refers to them by number. <br><ul class=\"fa-ul\">\r\n\r\n\t\t\t<li><span class=\"fa-li\"><i class=\"fa fa-download\"></i></span><a target=\"_blank\" href=\"/downloads/standard_cards.pdf\">Standard Punchcards</a></li>\r\n\r\n\t\t\t<li><span class=\"fa-li\"><i class=\"fa fa-download\"></i></span><a target=\"_blank\" href=\"/downloads/lace_cards.pdf\">Lace Punchcards</a></li>\r\n\r\n\t\t\t<li><span class=\"fa-li\"><i class=\"fa fa-download\"></i></span><a target=\"_blank\" href=\"/downloads/ribber_cards.pdf\">\"Ribber\" cards</a></li>\r\n\t\t</ul>\r\n\t\t<b>NOTE:</b> <em>The ribber does not select needles. \"Ribber\" cards are designed for Double Bed Jacquard\r\n\t\t\t<?em>\r\n\t\r\n\t<img src=\"/challenge/images/v2/87/5p.jpg\">\r\n\r\n",
+              "legacyComponentId": 8142,
+              "order": 1
+            }
+          ],
+          "title": "Original Punchcards",
+          "slug": "original-punchcards",
+          "order": 7,
+          "legacy": {
+            "assignId": 5559,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    hr.style13 {\r\n        height: 10px;\r\n        border: 0;\r\n        box-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n    }\r\n\r\n</style>\r\n\r\nHere are 4 accessories that are needed for automatic patterning.<br>We will discuss them in detail in the associated techniques sections.\r\n<hr class=\"style13\">\r\n\r\n    \r\n        <h3>Yarn Separators</h3>\r\n        If your yarn tangles with the round brushes under the carriage, try using the Yarn Separators on each side. This is especially recommended when knitting Fairisle.\r\n\r\n    \r\n    \r\n        <div class=\"videopopup\" data-videotitle=\"punchcard\" data-vimeoid=\"681919546\">\r\n         <figure>   <img class=\"img-thumbnail center-block\" width=\"300\" src=\"/images/glossary/yarn_separator1.png\">\r\n\r\n<figcaption align=\"center\"><br>Yarn Separator</figcaption>\r\n</figure>\r\n\r\n            <div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n        </div>\r\n    \r\n\r\n<hr class=\"style13\">\r\n\r\n<h3>Point Cams</h3>\r\n\r\n    Used for single motif knitting, position left and right point cams to isolate a stitch pattern. For example, knit a single repeat of a stitch pattern in the middle of the knitting.<br>Pattern knitting only happens between 2 point cams.\r\n        <ul>\r\n            <li>When setting Point cams at both edges of the knitting, the pattern will be knitted across the entire row.</li>\r\n\r\n            <li>When knitting isolated motif, position the point cam on each side of where you want the motif to knit, keeping the other sections in plain knitting.</li>\r\n        </ul>\r\n    \r\n    <figure><img class=\"img-thumbnail center-block\" src=\"/challenge/images/v2/98/point_cams.jpg\"><figcaption align=\"center\"><br>Point Cams</figcaption>\r\n</figure>\r\n\r\n<hr class=\"style13\">\r\n<h3>Edge Pins (lace carriage)</h3>\r\n\r\n\r\n\r\nUsed in conjunction with the Point Cams and Magic Cams the Edge Pins helps isolate the needle selection for Single Motif Lace.<br>\r\n<figure><img class=\"img-thumbnail center-block\" src=\"/challenge/images/v2/98/edge_pin.jpg\"><figcaption align=\"center\"><br>Edge Pin</figcaption>\r\n</figure>\r\n<hr class=\"style13\">\r\n<h3>Magic Cams</h3>\r\n\r\n\r\nUsed along with the Point Cams and Edge Pins (lace) the Magic Cams control the needle selection when knitting isolated motifs\r\n<figure><img class=\"img-thumbnail center-block\" src=\"/challenge/images/v2/98/magic_cams.jpg\"><figcaption align=\"center\"><br>Magic Cam</figcaption>\r\n</figure>\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 8408,
+              "order": 1
+            }
+          ],
+          "title": "Bits and Pieces",
+          "slug": "bits-and-pieces",
+          "order": 8,
+          "legacy": {
+            "assignId": 5677,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .demo {\r\n        padding: 5px;\r\n  border: 1px solid black;\r\n  border-collapse: collapse;\r\n  margin-left: auto;\r\n  margin-right: auto;\r\n    }\r\n\r\n    .demo th {\r\n        border: 1px solid #C0C0C0;\r\n        padding: 5px;\r\n        background: #F0F0F0;\r\n    }\r\n\r\n    .demo td {\r\n        border: 1px solid #C0C0C0;\r\n        padding: 5px;\r\n    }\r\n\r\n\r\n</style>\r\n\r\n<h3>End needle selection</h3>\r\nConsideration needs to be give to the end needles when working in patten.<br>To keep the edge stitches tidy (and make seaming easier) be aware of the end needle instructions in each stitch pattern technique.<br>Manually putting the end needle(s) into \"D\" position forces the carriage to knit those stitches and not tuck, slip or mis-pattern along the edge.<br><span class=\"yellow_highlight\">If you are finding long floats or edge stitches aren't knitting properly, consider manually selecting the end needle according to the following:</span><br>\r\n\r\n   \r\n<br><table class=\"table table-responsive table-striped demo\">\r\n        <tbody>\r\n            <tr>\r\n                <td>Tuck</td>\r\n                <td>2 end needles to \"D\" on CARRIAGE SIDE</td>\r\n            </tr>\r\n            <tr>\r\n                <td>Fairisle</td>\r\n                <td>End needle to \"D\" on CARRIAGE SIDE</td>\r\n            </tr>\r\n            <tr>\r\n                <td>Slip</td>\r\n                <td>End needle to \"D\" OPPOSITE the CARRIAGE</td>\r\n            </tr>\r\n            <tr>\r\n                <td>Punch Lace</td>\r\n                <td>End needle to \"D\" BOTH SIDES</td>\r\n            </tr>\r\n            <tr>\r\n                <td>Knit Weave</td>\r\n                <td>1 needles to \"D\" on CARRIAGE SIDE</td>\r\n            </tr>\r\n            <tr>\r\n                <td>Plaiting</td>\r\n                <td>Not needed</td>\r\n            </tr>\r\n            <tr>\r\n                <td>Single Motif</td>\r\n                <td>Not needed</td>\r\n            </tr>\r\n\r\n        <tbody>\r\n    </table>\r\n\r\n</div>\r\n",
+              "legacyComponentId": 8416,
+              "order": 1
+            }
+          ],
+          "title": "Heads up!",
+          "slug": "heads-up",
+          "order": 9,
+          "legacy": {
+            "assignId": 5680,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "For easier seaming and neater edges, prevent the end needles from patterning.<br>Having a tuck or slip stitch on the edge of the knitting distorts the edge.<br>Use this one little trick for neat edges.",
+              "legacyComponentId": 8545,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "718396283",
+              "title": null,
+              "legacyComponentId": 8544,
+              "order": 2
+            }
+          ],
+          "title": "End Needle Selection",
+          "slug": "end-needle-selection",
+          "order": 10,
+          "legacy": {
+            "assignId": 5744,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Tuck Stitch",
+      "slug": "tuck-stitch",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 619,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .container-border {\r\n        border: 1px solid #ccc;\r\n        border-radius: 15px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        text-align: center;\r\n    }\r\n\r\n    .lightbulb {\r\n        display: block;\r\n        margin-left: auto;\r\n        margin-right: auto;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n    \r\n\r\n\r\n        <span class=\"handwriting\">Tuck is a great way<br>to add texture and interest to your knitting.</span><br>\r\n        When knitting tuck, certain needles do not knit and the working yarn travels OVER the needles out of work.\r\n        <br>Once you understand how tuck stitch is created on your machine, the sky's the limit!<br><ul>\r\n            <li>Change the number of rows tucked</li>\r\n            <li>Change the needles selected</li>\r\n            <li>Change the number of rows between tucks</li>\r\n            <li>Put some needles out of work</li>\r\n            <li>Add color</li>\r\n            <li>Mix 'n match stitch patterns</li>\r\n        </ul>\r\n\r\n\r\n\r\n    \r\n    <img class=\"lightbulb\" src=\"/challenge/images/v2/45/anatomy_thumbnail.jpg\"><br><div class=\"container-border\"><img class=\"lightbulb\" src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"><br> For more about Tuck, visit:<br>\r\n            the <a href=\"/classrooms/91/tuck-talk\"><b>Knit it Now Classroom: Tuck Talk</b></a></div>\r\n    \r\n\r\n\r\n<br>",
+              "legacyComponentId": 8143,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n<hr class=\"style13\">\r\n<span class=\"handwriting\" style=\"font-size:2em\"> Check out the Knit it Now Stitch Library\r\n\r\n\r\n for Tuck and Tuck Lace Inspiration! </span><br>\r\n\r\n<br>\r\n<div class=\"text-center\">Here are a few samples:<br></div>",
+              "legacyComponentId": 8145,
+              "order": 3
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/v2/87/tuck1.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/v2/87/tuck2.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/v2/87/tuck3.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/v2/87/tuck4.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/v2/87/tuck5.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/v2/87/tuck6.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/v2/87/tuck7.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/v2/87/tuck8.jpg",
+                  "caption": null
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 8146,
+              "order": 4
+            }
+          ],
+          "title": "About Tuck Stitch",
+          "slug": "about-tuck-stitch",
+          "order": 3,
+          "legacy": {
+            "assignId": 5560,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n.flex-container {\r\ndisplay: flex;\r\njustify-content: center;\r\nwidth=\"60%\";\r\n}\r\n\r\n.flex-child:first-child {\r\nmargin-right: 20px;\r\nborder: 1px solid;\r\npadding: 20px;\r\nmargin-bottom: 20px;\r\n}\r\n\r\n.flex-child2 {\r\nmargin-right: 20px;\r\nborder: 1px solid;\r\npadding: 20px;\r\nmargin-bottom: 20px;\r\n}\r\n\r\n@media (max-width: 800px) {\r\n.flex-container {\r\nflex-direction: column;\r\n}\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n</style>\r\n<div class=\"flex-container no-print\">\r\n<div class=\"flex-child\">\r\n\r\n\r\n<img src=\"/challenge/images/v2/98/card_stop.jpg\" width=\"50px\">\r\n<h3>Step 1</h3>Plain Knitting\r\n\r\n\r\n\r\n<img class=\"center-block\" width=\"300\" src=\"/challenge/images/v2/98/plain_knitting1.jpg\"></figure>\r\n</div>\r\n\r\n<div class=\"flex-child2\">\r\n\r\n\r\n<img src=\"/challenge/images/v2/98/card_go.jpg\" width=\"50px\">\r\n<h3>Step 2</h3>Set for TUCK\r\n\r\n\r\n\r\n<img class=\"center-block\" width=\"300\" src=\"/challenge/images/v2/98/tuck12.jpg\">\r\n</div>\r\n</div>\r\n\r\n\r\n<div class=\"no-print\">\r\n\t<img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\">\r\n\r\n\t<a target=\"_blank\" href=\"/downloads/Page33_tuck.pdf\"> <i class=\"fa fa-download\" aria-hidden=\"true\"></i> Your manual </a> (page 29) contains excellent step-by-step instructions for tuck.<br>Don't forget <b>End needle selection:</b> If the edges aren't knitting properly, put 2 end needles to \"D\" on CARRIAGE SIDE\r\n<hr class=\"style13\">\r\n\r\n\tUse the checklist below: <button onclick=\"window.print()\"><i class=\"fa fa-print\" aria-hidden=\"true\"></i> Print this page</button> <br>\r\n</div>",
+              "legacyComponentId": 8147,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Step 1:</h3>",
+              "legacyComponentId": 8148,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Step 2:</h3>",
+              "legacyComponentId": 8149,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntrytextarea",
+              "notes": [
+                "Unmapped legacy component type: DataEntrytextarea"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4425",
+                "CHALLENGE_COMPONENTID": "6782",
+                "DATAMODEL_ELEMENT": "tuck_notes",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Your notes about TUCK STITCH",
+                "DATAMODEL_TEXTAREAROWS": "4",
+                "DATAMODEL_VALIDATION_CHARS": "500",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 8152,
+              "order": 7
+            }
+          ],
+          "title": "Tuck Checklist",
+          "slug": "tuck-checklist",
+          "order": 4,
+          "legacy": {
+            "assignId": 5561,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Slip Stitch",
+      "slug": "slip-stitch",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 620,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .container-border {\r\n        border: 1px solid #ccc;\r\n        border-radius: 15px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        text-align: center;\r\n    }\r\n\r\n    .ctr {\r\n        text-align: center;\r\n    }\r\n\r\n    .lightbulb {\r\n        display: block;\r\n        margin-left: auto;\r\n        margin-right: auto;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n    <span class=\"handwriting\">Slip Stitch is a great way <br>to add texture and interest to your knitting.</span><br>\r\n        When knitting slip, certain needles do not knit and the working yarn travels UNDER the needles.<br>Once you understand how slip stitch is created on your machine, the sky's the limit!<br><ul>\r\n            <li>Change the number of rows slipped</li>\r\n            <li>Change the needles selected</li>\r\n            <li>Change the number of rows between slipped stitches</li>\r\n            <li>Put some needles out of work</li>\r\n            <li>Add color</li>\r\n            <li>Mix 'n match stitch patterns</li>\r\n        </ul>\r\n        <br>\r\n    \r\n    <img class=\"lightbulb\" src=\"/path/images/118/slip_stitch.jpg\"><br><div class=\"container-border\"><img class=\"lightbulb\" src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"><br> For more about Slip Stitch, visit:<br>\r\n            the <a href=\"/classrooms/118/slip-stitch\"><b>Knit it Now Classroom: Slip Stitch</b></a>\r\n        </div>\r\n    \r\n\r\n\r\n",
+              "legacyComponentId": 8153,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "327604741",
+              "title": null,
+              "legacyComponentId": 8154,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<br>\r\nCheck out the Knit it Now Stitch Library for <a href=\"/knit/stitchlibrary/7/slip-stitch\">Slip</a> and <a href=\"/knit/stitchlibrary/8/multi-color-slip\">Multi-Color Slip Stitch</a> inspiration!<br>\r\n\t <img class=\"img-thumbnail\" src=\"/path/images/118/kin405_slip_3.jpg\">\r\n\t<img class=\"img-thumbnail\" src=\"/path/images/118/kin0319_4BW.jpg\">\r\n\r\n",
+              "legacyComponentId": 8155,
+              "order": 3
+            }
+          ],
+          "title": "About Slip (Skip) Stitch",
+          "slug": "about-slip-skip-stitch",
+          "order": 1,
+          "legacy": {
+            "assignId": 5562,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n.flex-container {\r\ndisplay: flex;\r\njustify-content: center;\r\nwidth=\"60%\";\r\n}\r\n\r\n.flex-child:first-child {\r\nmargin-right: 20px;\r\nborder: 1px solid;\r\npadding: 20px;\r\nmargin-bottom: 20px;\r\n}\r\n\r\n.flex-child2 {\r\nmargin-right: 20px;\r\nborder: 1px solid;\r\npadding: 20px;\r\nmargin-bottom: 20px;\r\n}\r\n\r\n@media (max-width: 800px) {\r\n.flex-container {\r\nflex-direction: column;\r\n}\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n</style>\r\n<div class=\"flex-container no-print\">\r\n<div class=\"flex-child\">\r\n\r\n\r\n<img src=\"/challenge/images/v2/98/card_stop.jpg\" width=\"50px\">\r\n<h3>Step 1</h3>Plain Knitting\r\n\r\n\r\n\r\n<img class=\"center-block\" width=\"300\" src=\"/challenge/images/v2/98/plain_knitting1.jpg\"></figure>\r\n</div>\r\n\r\n<div class=\"flex-child2\">\r\n\r\n\r\n<img src=\"/challenge/images/v2/98/card_go.jpg\" width=\"50px\">\r\n<h3>Step 2</h3>Set for SLIP\r\n\r\n\r\n\r\n<img class=\"center-block\" width=\"300\" src=\"/challenge/images/v2/98/slip1.jpg\">\r\n</div>\r\n</div>\r\n\r\n\r\n<div class=\"no-print\">\r\n\t<img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\">\r\n\r\n\t<a target=\"_blank\" href=\"/downloads/page27-28_slip.pdf\"> <i class=\"fa fa-download\" aria-hidden=\"true\"></i> Your manual </a> (page 27-28) contains excellent step-by-step instructions for tuck.<br>Don't forget <b>End needle selection:</b> If the edges aren't knitting properly, put 1 end needle to \"D\" on OPPOSITE the carriage.\r\n<hr class=\"style13\">\r\n\tUse the checklist below: <button onclick=\"window.print()\"><i class=\"fa fa-print\" aria-hidden=\"true\"></i> Print this page</button> <br>\r\n</div>\r\n\r\n",
+              "legacyComponentId": 8156,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Step 1</h3>",
+              "legacyComponentId": 8157,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Step 2:</h3>",
+              "legacyComponentId": 8158,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntrytextarea",
+              "notes": [
+                "Unmapped legacy component type: DataEntrytextarea"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4428",
+                "CHALLENGE_COMPONENTID": "6785",
+                "DATAMODEL_ELEMENT": "slip_notes",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Your notes about SLIP STITCH",
+                "DATAMODEL_TEXTAREAROWS": "4",
+                "DATAMODEL_VALIDATION_CHARS": "500",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 8161,
+              "order": 6
+            }
+          ],
+          "title": "Slip Stitch Checklist",
+          "slug": "slip-stitch-checklist",
+          "order": 4,
+          "legacy": {
+            "assignId": 5563,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Knit Weave",
+      "slug": "knit-weave",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 621,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t\ttext-align: center;\r\n\t}\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\t.ctr {\r\n\t\ttext-align: center;\r\n\t}\r\n\r\n\t.lightbulb {\r\n\t\tdisplay: block;\r\n\t\tmargin-left: auto;\r\n\t\tmargin-right: auto;\r\n\t}\r\n\r\n</style>\r\n\r\n\r\n\r\n\t\r\n\t\t<img class=\"img-thumbnail\" src=\"/path/images/34/a_example_weave.jpg\">\r\n\r\n\t\tThe often over-looked technique of <b>Knitweave</b> creates beautiful knitted fabrics with lots of possibilities.<br>Unlike traditional weaving, think of weaving on the machine as \"laying-in\" a second yarn on top of the knitting. <br>It is a decorative technique that can be used to create interesting textures and incorporate yarn that may not be suitable for your machine.\r\n\r\n\t\t<br><span class=\"handwriting\">Have a small amount thick, fancy (possibly expensive) yarn? Use it in your machine knitting with Knitweave!<br></span><br>\r\n\t\t\r\n\t\t\t<div class=\"zoom\"><img class=\"img-thumbnail\" src=\"/path/images/34/a_weave3.jpg\"></div>\r\n\t\t\t<div class=\"zoom\"><img class=\"img-thumbnail\" src=\"/path/images/34/a_weave.jpg\"></div>\r\n\t\t\r\n\r\n\t\r\n\t<div class=\"container-border\"><img class=\"lightbulb\" src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"><br> For more about Knit Weave, visit:<br>\r\n\t\tthe <a href=\"/classrooms/34/knitweave\"><b>Knit it Now Classroom: Knit Weave</b></a>\r\n\t</div>\r\n\r\n\r\n<hr class=\"style13\">\r\n\r\n",
+              "legacyComponentId": 8162,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857907",
+              "title": null,
+              "legacyComponentId": 8163,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<br>\r\nCheck out the Knit it Now Stitch Library for <a href=\"/knit/stitchlibrary/6/knitweave\">Knit Weave inspiration!<br>\r\n\t <img class=\"img-thumbnail\" src=\"/swatches/6/thumb_1017Swatch.jpg\">\r\n\t<img class=\"img-thumbnail\" src=\"/swatches/6/thumb_knitweave_thumb1.jpg\">\r\n",
+              "legacyComponentId": 8164,
+              "order": 3
+            }
+          ],
+          "title": "About Knit Weave",
+          "slug": "about-knit-weave",
+          "order": 1,
+          "legacy": {
+            "assignId": 5564,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n.flex-container {\r\ndisplay: flex;\r\njustify-content: center;\r\nwidth=\"60%\";\r\n}\r\n\r\n.flex-child:first-child {\r\nmargin-right: 20px;\r\nborder: 1px solid;\r\npadding: 20px;\r\nmargin-bottom: 20px;\r\n}\r\n\r\n.flex-child2 {\r\nmargin-right: 20px;\r\nborder: 1px solid;\r\npadding: 20px;\r\nmargin-bottom: 20px;\r\n}\r\n\r\n@media (max-width: 800px) {\r\n.flex-container {\r\nflex-direction: column;\r\n}\r\n\r\n</style>\r\n<div class=\"flex-container no-print\">\r\n<div class=\"flex-child\">\r\n\r\n\r\n<img src=\"/challenge/images/v2/98/card_stop.jpg\" width=\"50px\">\r\n<h3>Step 1</h3>Plain Knitting\r\n\r\n\r\n\r\n<img class=\"center-block\" width=\"300\" src=\"/challenge/images/v2/98/plain_knitting1.jpg\"></figure>\r\n</div>\r\n\r\n<div class=\"flex-child2\">\r\n\r\n\r\n<img src=\"/challenge/images/v2/98/card_go.jpg\" width=\"50px\">\r\n<h3>Step 2</h3>Set for KNIT WEAVE\r\n\r\n\r\n\r\n<img class=\"center-block\" width=\"300\" src=\"/challenge/images/v2/98/weaving.jpg\">\r\n</div>\r\n</div>\r\n\r\n\r\n<div class=\"no-print\">\r\n\t<img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\">\r\n\r\n\t<a target=\"_blank\" href=\"/downloads/page27-28_slip.pdf\"> <i class=\"fa fa-download\" aria-hidden=\"true\"></i> Your manual </a> (page 27-28) contains excellent step-by-step instructions for tuck.<br>Don't forget <b>End needle selection:</b> If the edges aren't knitting properly, put 1 end needle to \"D\" on CARRIAGE SIDE\r\n<hr class=\"style13\">\r\n\r\n\tUse the checklist below: <button onclick=\"window.print()\"><i class=\"fa fa-print\" aria-hidden=\"true\"></i> Print this page</button> <br>\r\n</div>\r\n\r\n",
+              "legacyComponentId": 8412,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Step 1</h3>",
+              "legacyComponentId": 8413,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Step 2:</h3>",
+              "legacyComponentId": 8414,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntrytextarea",
+              "notes": [
+                "Unmapped legacy component type: DataEntrytextarea"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "5679",
+                "CHALLENGE_COMPONENTID": "8415",
+                "DATAMODEL_ELEMENT": "weaving_notes",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Your notes about Knit Weave",
+                "DATAMODEL_TEXTAREAROWS": "4",
+                "DATAMODEL_VALIDATION_CHARS": "500",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 8415,
+              "order": 6
+            }
+          ],
+          "title": "Knit Weave Checklist",
+          "slug": "knit-weave-checklist",
+          "order": 4,
+          "legacy": {
+            "assignId": 5679,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Fairisle",
+      "slug": "fairisle",
+      "displayOrder": 8,
+      "legacy": {
+        "itemId": 622,
+        "lessonOrder": 8
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .container-border {\r\n        border: 1px solid #ccc;\r\n        border-radius: 15px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        text-align: center;\r\n    }\r\n\r\n    hr.style13 {\r\n        height: 10px;\r\n        border: 0;\r\n        box-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n    }\r\n\r\n    .ctr {\r\n        text-align: center;\r\n    }\r\n\r\n    .lightbulb {\r\n        display: block;\r\n        margin-left: auto;\r\n        margin-right: auto;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n\r\n    \r\n        <img class=\"img-thumbnail center-block\" src=\"https://www.knititnow.com/contentlibrary/previewimages/thumb_693.jpg\"><br>\r\n        Knitting 2 colors in a row with one pass of the carriage is known as Fairisle. When machine knitting place both colors in the yarn feeder of the carriage, let the punchcard instruct the machine to select needles and both colors will knit as instructed.<br><div class=\"ctr\"><span class=\"handwriting\" style=\"font-size:2em\">Tell a hand knitter that you can knit a fairisle hat in an afternoon and they will be amazed.</span><br> (PLUS your fairisle will look sooooo much better than hand knitting. <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i> )</div>\r\n\r\n    \r\n    <div class=\"container-border\"><img class=\"lightbulb\" src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"><br> For more about Fairisle, visit:<br>\r\n        the <a href=\"/classrooms/169/fairisle-stranded-knitting\"><b>Knit it Now Classroom: Fairisle (Stranded Knitting)</b></a>\r\n    </div>\r\n\r\n\r\n\r\n\r\n<hr class=\"style13\">\r\n",
+              "legacyComponentId": 8170,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<br>\r\nCheck out the Knit it Now Stitch Library for <a href=\"/knit/stitchlibrary/11/fair-isle\"> Fairisle</a> inspiration!<br>\r\n\t <img class=\"img-thumbnail\" src=\"/swatches/11/thumb_randomizer3.jpg\">\r\n\t<img class=\"img-thumbnail\" src=\"/swatches/11/thumb_122a.jpg\">\r\n\r\n",
+              "legacyComponentId": 8172,
+              "order": 3
+            }
+          ],
+          "title": "About Fairsle",
+          "slug": "about-fairsle",
+          "order": 1,
+          "legacy": {
+            "assignId": 5566,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n.flex-container {\r\ndisplay: flex;\r\njustify-content: center;\r\nwidth=\"60%\";\r\n}\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n.flex-child:first-child {\r\nmargin-right: 20px;\r\nborder: 1px solid;\r\npadding: 20px;\r\nmargin-bottom: 20px;\r\n}\r\n\r\n.flex-child2 {\r\nmargin-right: 20px;\r\nborder: 1px solid;\r\npadding: 20px;\r\nmargin-bottom: 20px;\r\n}\r\n\r\n@media (max-width: 800px) {\r\n.flex-container {\r\nflex-direction: column;\r\n}\r\n\r\n</style>\r\n<div class=\"flex-container no-print\">\r\n<div class=\"flex-child\">\r\n\r\n\r\n<img src=\"/challenge/images/v2/98/card_stop.jpg\" width=\"50px\">\r\n<h3>Step 1</h3>Plain Knitting\r\n\r\n\r\n\r\n<img class=\"center-block\" width=\"300\" src=\"/challenge/images/v2/98/plain_knitting1.jpg\"></figure>\r\n</div>\r\n\r\n<div class=\"flex-child2\">\r\n\r\n\r\n<img src=\"/challenge/images/v2/98/card_go.jpg\" width=\"50px\">\r\n<h3>Step 2</h3>Set for KNIT-IN (FAIRISLE)\r\n\r\n\r\n\r\n<img class=\"center-block\" width=\"300\" src=\"/challenge/images/v2/98/fairisle1.jpg\">\r\n</div>\r\n</div>\r\n\r\n<div class=\"no-print\">\r\n\t<img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\">\r\n\r\n\t<a href=\"/downloads/page25-26_fairisle.pdf\"  target=\"_blank\">Your manual</a> (pages 25-26) contains excellent step-by-step instructions for Fairisle.<br>Don't forget <b>End needle selection</b>: If the edges aren't knitting properly, put 1 end needle to \"D\" on CARRIAGE SIDE<br><hr class=\"style13\">\r\n\tUse the checklist below: <button onclick=\"window.print()\"><i class=\"fa fa-print\" aria-hidden=\"true\"></i> Print this page</button> <br>\r\n</div>",
+              "legacyComponentId": 8173,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Step 1:</h3>",
+              "legacyComponentId": 8174,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Step 2:</h3>",
+              "legacyComponentId": 8175,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntrytextarea",
+              "notes": [
+                "Unmapped legacy component type: DataEntrytextarea"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4448",
+                "CHALLENGE_COMPONENTID": "6868",
+                "DATAMODEL_ELEMENT": "Fairisle_notes",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Your notes about FAIRISLE",
+                "DATAMODEL_TEXTAREAROWS": "4",
+                "DATAMODEL_VALIDATION_CHARS": "500",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 8178,
+              "order": 7
+            }
+          ],
+          "title": "Fairisle Checklist",
+          "slug": "fairisle-checklist",
+          "order": 4,
+          "legacy": {
+            "assignId": 5567,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Thread (Punch) Lace",
+      "slug": "thread-punch-lace",
+      "displayOrder": 9,
+      "legacy": {
+        "itemId": 623,
+        "lessonOrder": 9
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\r\n\t}\r\n</style>\r\n\r\n\r\n\r\nOften overlooked, Thread Lace is an easy technique to create openwork \"lace\" fabrics. <br>It's not fairisle, it's not true lace, but it's a unique stitch pattern that can create beautiful knit fabrics.<br>Knit with a thick yarn and a very fine yarn, there are lots of possibilities with your machine<br>\r\n\r\n\r\n\r\n<div class=\"container-border\">\r\n<b>NOTE:</b><br>Thread lace is knitting is very similar to Fairisle knitting with 2 differences:\r\n<ol>\r\n<li>Choose a stitch pattern with short floats (1-2 stitches) The yarn is carried behind the \"lace\" openings. If the floats are too long, the appearance of lace is lost</li><br>\r\n<li>Don't forget End needle selection: If the edges aren't knitting properly, put 1  end needle to \"D\" on BOTH SIDES with each pass of the carriage</li>\r\n</ol>\r\n</div>\r\n<br>\r\n",
+              "legacyComponentId": 8179,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "444375575",
+              "title": null,
+              "legacyComponentId": 8180,
+              "order": 2
+            }
+          ],
+          "title": "About Thread Lace",
+          "slug": "about-thread-lace",
+          "order": 1,
+          "legacy": {
+            "assignId": 5568,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n.flex-container {\r\ndisplay: flex;\r\njustify-content: center;\r\nwidth=\"60%\";\r\n}\r\n\r\n.flex-child:first-child {\r\nmargin-right: 20px;\r\nborder: 1px solid;\r\npadding: 20px;\r\nmargin-bottom: 20px;\r\n}\r\n\r\n.flex-child2 {\r\nmargin-right: 20px;\r\nborder: 1px solid;\r\npadding: 20px;\r\nmargin-bottom: 20px;\r\n}\r\n\r\n@media (max-width: 800px) {\r\n.flex-container {\r\nflex-direction: column;\r\n}\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n</style>\r\n<div class=\"flex-container no-print\">\r\n<div class=\"flex-child\">\r\n\r\n\r\n<img src=\"/challenge/images/v2/98/card_stop.jpg\" width=\"50px\">\r\n<h3>Step 1</h3>Plain Knitting\r\n\r\n\r\n\r\n<img class=\"center-block\" width=\"300\" src=\"/challenge/images/v2/98/plain_knitting1.jpg\"></figure>\r\n</div>\r\n\r\n<div class=\"flex-child2\">\r\n\r\n\r\n<img src=\"/challenge/images/v2/98/card_go.jpg\" width=\"50px\">\r\n<h3>Step 2</h3>Set for Punch (Thread) Lace\r\n\r\n\r\n\r\n<img class=\"center-block\" width=\"300\" src=\"/challenge/images/v2/98/punch_lace1.jpg\">\r\n</div>\r\n</div>\r\n\r\n\r\n<div class=\"no-print\">\r\n\t<img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\">\r\n\r\n\t<a href=\"/downloads/page32_threadlace.pdf\"  target=\"_blank\">Your manual</a> (pages 32) contains excellent step-by-step instructions for  Punch (Thread Lace).<br>Don't forget End needle selection: Place 1 needle into \"D\" position on both sides each pass of the carriage\r\n<hr class=\"style13\">\r\n\tUse the checklist below: <button onclick=\"window.print()\"><i class=\"fa fa-print\" aria-hidden=\"true\"></i> Print this page</button> <br>\r\n</div>",
+              "legacyComponentId": 8181,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Step 1:</h3>",
+              "legacyComponentId": 8182,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Step 2:</h3>",
+              "legacyComponentId": 8183,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntrytextarea",
+              "notes": [
+                "Unmapped legacy component type: DataEntrytextarea"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "5569",
+                "CHALLENGE_COMPONENTID": "8186",
+                "DATAMODEL_ELEMENT": "Thread_lace_notes",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Your notes about  PUNCH (thread) LACE",
+                "DATAMODEL_TEXTAREAROWS": "4",
+                "DATAMODEL_VALIDATION_CHARS": "500",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 8186,
+              "order": 7
+            }
+          ],
+          "title": "Thread Lace Checklist",
+          "slug": "thread-lace-checklist",
+          "order": 4,
+          "legacy": {
+            "assignId": 5569,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Plaiting",
+      "slug": "plaiting",
+      "displayOrder": 10,
+      "legacy": {
+        "itemId": 624,
+        "lessonOrder": 10
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n\r\n    Knit 2 strands of yarn together and let the machine position them so you view one color on one side of the knitting and the 2nd color on the other side of the knitting.<BR>This technique is also called Platting or Plating.<BR>\r\n        This technique can be used on both the single and double bed. It's a great way to bulk up finer yarns and play with color and texture<br><img class=\"img-thumbnail center-block\" src=\"/challenge/images/v2/98/plaiting_feeder.jpg\">\r\n    \r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/87/plaiting1.jpg\">\r\n\r\n<hr class=\"style13\">\r\n",
+              "legacyComponentId": 8187,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "682083432",
+              "title": "Thread the Singer 360 / 260 for Plaiting",
+              "legacySlot": 1,
+              "legacyComponentId": 8417,
+              "order": 4
+            },
+            {
+              "type": "video",
+              "vimeoId": "342471298",
+              "title": "General Plaiting Info",
+              "legacySlot": 2,
+              "legacyComponentId": 8417,
+              "order": 4
+            }
+          ],
+          "title": "About Plaiting",
+          "slug": "about-plaiting",
+          "order": 1,
+          "legacy": {
+            "assignId": 5570,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"no-print\">\r\n\t<img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\">\r\n\r\n\t<a href=\"/downloads/brother_260.pdf\"  target=\"_blank\">Your manual</a> (pages 41-42) contains excellent step-by-step instructions for Plaiting.<br>Use the checklist below: <button onclick=\"window.print()\">Print this page</button> <i class=\"fa fa-print\" aria-hidden=\"true\"></i><br>\r\n</div>",
+              "legacyComponentId": 8190,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Step 1</h3>",
+              "legacyComponentId": 8191,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Step 2:</h3",
+              "legacyComponentId": 8192,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Step 3:</h3>",
+              "legacyComponentId": 8193,
+              "order": 4
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Step 4:</h3>",
+              "legacyComponentId": 8194,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntrytextarea",
+              "notes": [
+                "Unmapped legacy component type: DataEntrytextarea"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4450",
+                "CHALLENGE_COMPONENTID": "6880",
+                "DATAMODEL_ELEMENT": "plaiting_notes",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Your notes about PLAITING",
+                "DATAMODEL_TEXTAREAROWS": "4",
+                "DATAMODEL_VALIDATION_CHARS": "500",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 8195,
+              "order": 6
+            }
+          ],
+          "title": "Plaiting Checklist",
+          "slug": "plaiting-checklist",
+          "order": 4,
+          "legacy": {
+            "assignId": 5571,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Lace",
+      "slug": "lace",
+      "displayOrder": 11,
+      "legacy": {
+        "itemId": 640,
+        "lessonOrder": 11
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Hotspot",
+              "notes": [
+                "Unmapped legacy component type: Hotspot"
+              ],
+              "legacyFields": {
+                "IMAGE_HEIGHT": "433",
+                "IMAGE_WIDTH": "600",
+                "SPOTT_IMAGE": "https://dev.knititnow.com/challenge/images/v2/98/lace_carriage.jpg",
+                "SPOT_CORD_1": "top: 51.96304849884527%;  left: 47.833333333333336%;  width: 3.3333333333333335%;  height: 4.618937644341801%;",
+                "SPOT_CORD_2": "top: 65.1270207852194%;  left: 48.16666666666667%;  width: 3.3333333333333335%;  height: 4.618937644341801%;",
+                "SPOT_CORD_3": "top: 38.799076212471135%;  left: 3.6666666666666665%;  width: 3.3333333333333335%;  height: 4.618937644341801%;",
+                "SPOT_CORD_4": "top: 38.56812933025404%;  left: 93.5%;  width: 3.3333333333333335%;  height: 4.618937644341801%;",
+                "SPOT_CORD_5": "top: 19.399538106235568%;  left: 11.166666666666666%;  width: 3.3333333333333335%;  height: 4.618937644341801%;",
+                "SPOT_CORD_6": "top: 19.861431870669747%;  left: 83%;  width: 3.3333333333333335%;  height: 4.618937644341801%;",
+                "SPOT_CORD_7": "top: 78.06004618937644%;  left: 54.666666666666664%;  width: 3.3333333333333335%;  height: 4.618937644341801%;",
+                "SPOT_LOCATION_1": "top",
+                "SPOT_LOCATION_2": "top",
+                "SPOT_LOCATION_3": "top",
+                "SPOT_LOCATION_4": "top",
+                "SPOT_LOCATION_5": "top",
+                "SPOT_LOCATION_6": "top",
+                "SPOT_LOCATION_7": "top",
+                "SPOT_TEXT_1": "Tension Dial",
+                "SPOT_TEXT_2": "Cam Lever",
+                "SPOT_TEXT_3": "Side Lever(s)",
+                "SPOT_TEXT_4": "Side Lever(s)",
+                "SPOT_TEXT_5": "Memory Drum",
+                "SPOT_TEXT_6": "Memory Drum(s)",
+                "SPOT_TEXT_7": "Yarn Feeder",
+                "SecondDiv": "padding-bottom: 72.16666666666667%",
+                "TopDiv": "max-width: 600px"
+              },
+              "legacyComponentId": 8419,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n</style>\r\n<div class=\"alert alert-danger text-center\">\r\n<h3>Do not attempt to use the lace carriage until you have mastered stitch patterning.</h3>\r\n</div>\r\n\r\n\r\n\r\n\r\n\r\nTo create eyelet lace with transferred stitches, this machines uses a separate lace carriage.  The lace carriage transfers stitches and knits a row in one pass of the carriage. It replaces the main bed carriage.<br> This is unlike Brother/Knit King machines that have separate carriages for transferring and knitting.<br>Setting up for lace knitting is similar to setting up for other stitch types using punchcards.  Lace punchcards are unique, however. <br>Looking at the example punchcard, you'll notice that the holes are spaced differently than a card used for tuck.\r\n\r\n<ul>\r\n<li> Each hole represents a stitch transfer</li>\r\n<li> Stitch tranfers  happen individually (no 2 holes next to each other)</li>\r\n<li>Stitch transfers occur with AT LEAST 1 row of plan knitting between</li>\r\n</ul>\r\n<br>There are 2 styles of lace:<br><b>Plain Lace:</b> Eyelets are formed and are transferred in one direction per row of knitting.<br><b>Fashion Lace:</b> Multiple eyelets are formed with transfers happening with <b>multiple passes of the carriage</b> per row of knitting.\r\n\r\n\r\n\r\n\r\n<a href=\"/downloads/studio-silver_reed_lace_punchcards_for_lc2_and_lc360-260.pdf\"><figure> <figcaption align=\"center\"><i class=\"fa fa-download\" aria-hidden=\"true\"></i> Original Lace Punchcards</figcaption><img class=\"center-block\" src=\"/challenge/images/v2/98/lace_card.jpg\" width=\"200\"></figure></a>\r\n\r\n<hr class=\"style13\">\r\n\t\r\n\r\n",
+              "legacyComponentId": 8418,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<h3> Threading the lace carriage</h3>\r\n\r\n\r\n\r\nUnlike the main bed carriage, the Yarn Feeder on the lace carriage moves. <br><b>Ensure that you thread it correctly</b><br>\r\n<ul>\r\n<li>Manually slide the Yarn Feeder to the left</li>\r\n<li>Position the yarn so that it is completely engaged. \r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/98/thread_lace_carriage_gif.gif\">\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 8429,
+              "order": 3
+            }
+          ],
+          "title": "Lace Carriage",
+          "slug": "lace-carriage",
+          "order": 1,
+          "legacy": {
+            "assignId": 5681,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n.flex-container {\r\ndisplay: flex;\r\njustify-content: center;\r\nwidth=\"60%\";\r\n}\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n.flex-child:first-child {\r\nmargin-right: 20px;\r\nborder: 1px solid;\r\npadding: 20px;\r\nmargin-bottom: 20px;\r\n}\r\n\r\n.flex-child2 {\r\nmargin-right: 20px;\r\nborder: 1px solid;\r\npadding: 20px;\r\nmargin-bottom: 20px;\r\n}\r\n\r\n@media (max-width: 800px) {\r\n.flex-container {\r\nflex-direction: column;\r\n}\r\n\r\n</style>\r\n<div class=\"flex-container no-print\">\r\n<div class=\"flex-child\">\r\n\r\n\r\n<img src=\"/challenge/images/v2/98/card_stop.jpg\" width=\"50px\">\r\n<h3>Step 1</h3>Memorize the stitch pattern\r\n\r\n\r\n\r\n<img class=\"center-block\" width=\"300\" src=\"/challenge/images/v2/98/lace2.jpg\"></figure>\r\n</div>\r\n\r\n<div class=\"flex-child2\">\r\n\r\n\r\n<img src=\"/challenge/images/v2/98/card_go.jpg\" width=\"50px\">\r\n<h3>Step 2</h3>Set for Plain Lace<br>\r\n\r\n\r\n\r\n<img class=\"center-block\" width=\"300\" src=\"/challenge/images/v2/98/lace12.jpg\">\r\n</div>\r\n</div>\r\n\r\n<div class=\"no-print\">\r\n\t<img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\">\r\n\r\n\t<a href=\"/downloads/plain_lace_manual.pdf\" target=\"_blank\">Your manual</a> (pages 54-55-56) contains excellent step-by-step instructions for Lace and Plain Lace.<br>Don't forget <b>End needle selection</b>:<span class=\"yellow_highlight\">Use the <span class=\"imagepopup\" data-imagetitle=\"Orange Edge Pins\" data-image=\"/challenge/images/v2/98/edge_pins.jpg\">orange edge pins <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i> </span>\r\n\r\n\r\n\r\n to cancel stitch transfers along the edge of your knitting</span><br><hr class=\"style13\">\r\n\tUse the checklist below: <button onclick=\"window.print()\"><i class=\"fa fa-print\" aria-hidden=\"true\"></i> Print this page</button> <br>\r\n</div>",
+              "legacyComponentId": 8421,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Step 1:</h3>",
+              "legacyComponentId": 8422,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Step 2:</h3>",
+              "legacyComponentId": 8423,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "Continue to knit Plain Lace with the carriage set in this manner. The punchcard will indicate the direction that the carriage should be passing.",
+              "legacyComponentId": 8430,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntrytextarea",
+              "notes": [
+                "Unmapped legacy component type: DataEntrytextarea"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "5683",
+                "CHALLENGE_COMPONENTID": "8424",
+                "DATAMODEL_ELEMENT": "plain_lace",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Your notes about PLAIN LACE",
+                "DATAMODEL_TEXTAREAROWS": "4",
+                "DATAMODEL_VALIDATION_CHARS": "500",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 8424,
+              "order": 5
+            }
+          ],
+          "title": "Plain Lace Checklist",
+          "slug": "plain-lace-checklist",
+          "order": 2,
+          "legacy": {
+            "assignId": 5683,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "354284181",
+              "title": "Simple Eyelet Transfers - Silver/Singer/Studio",
+              "legacyComponentId": 8810,
+              "order": 1
+            }
+          ],
+          "title": "Simple Eyelet Transfers",
+          "slug": "simple-eyelet-transfers",
+          "order": 3,
+          "legacy": {
+            "assignId": 5838,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n    .flex-container {\r\n        display: flex;\r\n        justify-content: center;\r\n    }\r\n\r\n    .flex-child:first-child {\r\n        margin-right: 20px;\r\n        border: 1px solid;\r\n        padding: 20px;\r\n        margin-bottom: 20px;\r\n    }\r\n\r\n    .flex-child2 {\r\n        margin-right: 20px;\r\n        border: 1px solid;\r\n        padding: 20px;\r\n        margin-bottom: 20px;\r\n    }\r\n\r\n    @media (max-width: 800px) {\r\n        .flex-container {\r\n            flex-direction: column;\r\n        }\r\n\r\n</style>\r\n\r\n\r\n        \r\n        <br>Unlike Plain Lace, Fashion Lace has stitches transferred in multiple directions on the same row of knitting.<br>Following the punchcard, the Lace Carriage Cam Lever is moved between <img src=\"/challenge/images/v2/98/cam_lever1.jpg\"> and <img src=\"/challenge/images/v2/98/transfer_only.jpg\"> to control if the carriage is knitting or transferring stitches.\r\n<img class=\"img-thumbnail center-block\" src=\"/challenge/images/v2/98/fashion_lace_gif.gif\">\r\n\r\n\r\n<br><div class=\"flex-container\">\r\n            <div class=\"flex-child\"><figure><img class=\"center-block\" src=\"/challenge/images/v2/98/plain_lace.jpg\" width=\"400\">\r\n<figcaption align=\"center\"><br>Plain lace: Transfers occur in the same direction on each row</figcaption>\r\n</figure>\r\n\r\n            </div>\r\n            <div class=\"flex-child2\">\r\n\r\n<figure><img class=\"center-block\" src=\"/challenge/images/v2/98/fashion_lace1.jpg\" width=\"400\">\r\n<figcaption align=\"center\"><br>\r\nFashion lace: Transfers occur in different directions<br> on the same row, <b>requiring multiple passes</b><br> of the carriage per row.</figcaption></figure>\r\n\r\n            </div>\r\n        </div>\r\n<hr class=\"style13\">\r\n\r\n\r\n\r\n\r\n\r\n<img class=\"center-block\" src=\"/challenge/images/v2/98/fashion_lace9.jpg\"><br>Fashion lace cards have indicators for the rows where only transfers are occurring:\r\n<ul>\r\n<li><span class=\"yellow_highlight\"><b>Remove the yarn from the carriage</b></span></li>\r\n<li><span class=\"yellow_highlight\">Move the Cam lever to <img src=\"/challenge/images/v2/98/transfer_only.jpg\"></span></li>\r\n<li><span class=\"yellow_highlight\">Pass the carriage and transfer stitches for the indicated section only</li></span></span>\r\n<li>Return the cam lever to <img src=\"/challenge/images/v2/98/cam_lever1.jpg\"></li>\r\n<li>Thread the carriage</li>\r\n<li>Continue Knitting</li>\r\n</ul>\r\n\r\n\r\n\r\n  <img class=\"center-block\" width=\"300\" src=\"/challenge/images/v2/98/fashion_lace.jpg\">\r\n\r\n     \r\n    \r\n\r\n\r\n",
+              "legacyComponentId": 8434,
+              "order": 1
+            }
+          ],
+          "title": "About Fashion Lace",
+          "slug": "about-fashion-lace",
+          "order": 4,
+          "legacy": {
+            "assignId": 5686,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Fashion Lace is created with multiple passes of the lace carriage. Depending on the carriage setting (and the punchcard) some passes of the carriage will transfer stitches only and other passes of the carriage will transfer and knit.<br><span class=\"yellow_highlight\"> Please practice Plain Lace before attempting Fashion Lace</span><br>Follow the steps carefully for success",
+              "legacyComponentId": 8431,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .flex-container {\r\n        display: flex;\r\n        justify-content: center;\r\n        width=\"60%\";\r\n    }\r\n\r\n    hr.style13 {\r\n        height: 10px;\r\n        border: 0;\r\n        box-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n    }\r\n\r\n    .flex-child:first-child {\r\n        margin-right: 20px;\r\n        border: 1px solid;\r\n        padding: 20px;\r\n        margin-bottom: 20px;\r\n    }\r\n\r\n    .flex-child2 {\r\n        margin-right: 20px;\r\n        border: 1px solid;\r\n        padding: 20px;\r\n        margin-bottom: 20px;\r\n    }\r\n\r\n    @media (max-width: 800px) {\r\n        .flex-container {\r\n            flex-direction: column;\r\n        }\r\n\r\n</style>\r\n<div class=\"flex-container no-print\">\r\n    <div class=\"flex-child\">\r\n\r\n        \r\n            <img src=\"/challenge/images/v2/98/card_stop.jpg\" width=\"50px\">\r\n            \r\n                <h3>Step 1</h3>Memorize the stitch pattern\r\n            \r\n        \r\n\r\n\r\n        <img class=\"center-block\" width=\"300\" src=\"/challenge/images/v2/98/lace2.jpg\"></figure>\r\n    </div>\r\n\r\n    <div class=\"flex-child2\">\r\n\r\n        \r\n            <img src=\"/challenge/images/v2/98/card_go.jpg\" width=\"50px\">\r\n            \r\n                <h3>Step 2</h3>Set for Lace<br>\r\n        \r\n\r\n\r\n        <img class=\"center-block\" width=\"300\" src=\"/challenge/images/v2/98/lace12.jpg\">\r\n    </div>\r\n    <div class=\"flex-child2\">\r\n\r\n        \r\n            <img src=\"/challenge/images/v2/98/card_go.jpg\" width=\"50px\">\r\n            \r\n                <h3>Step 2</h3>Set for TRANSFERS ONLY<br>\r\n        \r\n\r\n\r\n        <img class=\"center-block\" width=\"300\" src=\"/challenge/images/v2/98/lace_fashion.jpg\">\r\n    </div>\r\n</div>\r\n\r\n<div class=\"no-print\">\r\n    <img src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\">\r\n\r\n    <a href=\"/downloads/fashion_lace_manual.pdf\" target=\"_blank\">Your manual</a> (pages 57-58) contains excellent step-by-step instructions for Fashion Lace.<br>Don't forget <b>End needle selection</b>:<span class=\"yellow_highlight\">Use the <span class=\"imagepopup\" data-imagetitle=\"Orange Edge Pins\" data-image=\"/challenge/images/v2/98/edge_pins.jpg\">orange edge pins <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i> to cancel stitch transfers along the edges of your knitting</span> \r\n    <hr class=\"style13\">\r\n    Use the checklist below: <button onclick=\"window.print()\"><i class=\"fa fa-print\" aria-hidden=\"true\"></i> Print this page</button> <br>\r\n</div>\r\n",
+              "legacyComponentId": 8425,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Step 1:</h3>",
+              "legacyComponentId": 8426,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Step 2:</h3>",
+              "legacyComponentId": 8427,
+              "order": 4
+            },
+            {
+              "type": "richText",
+              "html": "<a href=\"#memo\" data-toggle=\"collapse\">Knit until the punchcard indicates \"transfer only\" rows <i class=\"fa fa-caret-down\" aria-hidden=\"true\"></i></a>\r\n<div id=\"memo\" class=\"collapse hidden-print\">\r\n<img class=\"center-block\" src=\"/challenge/images/v2/98/fashion_lace9.jpg\">\r\n</div>",
+              "legacyComponentId": 8432,
+              "order": 5
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Step 3:</h3>",
+              "legacyComponentId": 8433,
+              "order": 6
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntrytextarea",
+              "notes": [
+                "Unmapped legacy component type: DataEntrytextarea"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "5685",
+                "CHALLENGE_COMPONENTID": "8428",
+                "DATAMODEL_ELEMENT": "Fashion_lace",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Your notes about FASHION LACE",
+                "DATAMODEL_TEXTAREAROWS": "4",
+                "DATAMODEL_VALIDATION_CHARS": "500",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 8428,
+              "order": 7
+            }
+          ],
+          "title": "Fashion Lace Checklist",
+          "slug": "fashion-lace-checklist",
+          "order": 5,
+          "legacy": {
+            "assignId": 5685,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Knit Contour Charting Device",
+      "slug": "knit-contour-charting-device",
+      "displayOrder": 12,
+      "legacy": {
+        "itemId": 641,
+        "lessonOrder": 12
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .container-border {\r\n        border: 1px solid #ccc;\r\n        border-radius: 15px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        text-align: center;\r\n    }\r\n\r\n    hr.style13 {\r\n        height: 10px;\r\n        border: 0;\r\n        box-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n    }\r\n\r\n    .ctr {\r\n        text-align: center;\r\n    }\r\n\r\n    .lightbulb {\r\n        display: block;\r\n        margin-left: auto;\r\n        margin-right: auto;\r\n    }\r\n\r\n\r\n    .flex-container {\r\n        display: flex;\r\n        justify-content: space-around;\r\n        width: 50%;\r\n    }\r\n\r\n    .flex-child:first-child {\r\n        margin-right: 20px;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n    <b>Charting devices allow the knitter to follow a schematic for the shaping of their knitting.</b> Instead of following written text instructions or a chart, follow the lines to know when to increase and decrease to shape your knitting.<br>This machine is unusual in that the Knit Contour is built into the machine instead of being a separate device.<br><b>With a charting device you can use the provided garment outlines or draw your own outlines of garment pieces at half scale.</b> For example, use a sewing pattern and duplicate the shape (at half scale) on a Knit Contour Pattern Paper and duplicate the design with your machine.<br>As you knit, the machine advances the Pattern Paper and the drawing according to your row gauge. You follow the lines on a scale that represents your stitch gauge.<br><div class=\"text-center\"><span class=\"handwriting\" style=\"font-size:2em\">The secret to success with a charting device (and all knitting)<br> is accurately measuring and recording gauge.</span></div><br><div class=\"flex-container center-block\">\r\n            <div class=\"flex-child\">\r\n                <div class=\"container-border\"><img class=\"lightbulb\" src=\"/challenge/images/v2/86/lightbulb_icon_40x40.png\"><br> For more about Swatching, visit:<br>\r\n                    the <a href=\"/classrooms/87/swatching-is-not-optional\" target=\"_blank\"><b>Knit it Now Classroom: Swatching is NOT Optional</b></a>\r\n                </div>\r\n            </div>\r\n\r\n        </div>\r\n    \r\n    <img src=\"/challenge/images/v2/98/charting_device_gif.gif\">\r\n<br>\r\n<hr class=\"style13\">\r\n\r\nRoll over the \"spots\" to see the names of the Knit Contour parts<br>",
+              "legacyComponentId": 8392,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Hotspot",
+              "notes": [
+                "Unmapped legacy component type: Hotspot"
+              ],
+              "legacyFields": {
+                "IMAGE_HEIGHT": "326",
+                "IMAGE_WIDTH": "1000",
+                "SPOTT_IMAGE": "/challenge/images/v2/98/knit_contour.jpg",
+                "SPOT_CORD_1": "top: 34.355828220858896%;  left: 5.1%;  width: 2%;  height: 6.134969325153374%;",
+                "SPOT_CORD_2": "top: 42.331288343558285%;  left: 9.6%;  width: 2%;  height: 6.134969325153374%;",
+                "SPOT_CORD_3": "top: 42.944785276073624%;  left: 34.1%;  width: 2%;  height: 6.134969325153374%;",
+                "SPOT_CORD_4": "top: 49.693251533742334%;  left: 64.1%;  width: 2%;  height: 6.134969325153374%;",
+                "SPOT_CORD_5": "top: 24.539877300613497%;  left: 67.5%;  width: 2%;  height: 6.134969325153374%;",
+                "SPOT_CORD_6": "top: 23.92638036809816%;  left: 75.7%;  width: 2%;  height: 6.134969325153374%;",
+                "SPOT_CORD_7": "top: 24.846625766871167%;  left: 82.6%;  width: 2%;  height: 6.134969325153374%;",
+                "SPOT_CORD_8": "top: 69.6319018404908%;  left: 11.4%;  width: 2%;  height: 6.134969325153374%;",
+                "SPOT_CORD_9": "top: 54.90797546012271%;  left: 92.60000000000001%;  width: 2%;  height: 6.134969325153374%;",
+                "SPOT_LOCATION_1": "top",
+                "SPOT_LOCATION_2": "top",
+                "SPOT_LOCATION_3": "top",
+                "SPOT_LOCATION_4": "top",
+                "SPOT_LOCATION_5": "top",
+                "SPOT_LOCATION_6": "top",
+                "SPOT_LOCATION_7": "top",
+                "SPOT_LOCATION_8": "top",
+                "SPOT_LOCATION_9": "top",
+                "SPOT_TEXT_1": "Paper Lever",
+                "SPOT_TEXT_2": "Clip",
+                "SPOT_TEXT_3": "Paper Holder",
+                "SPOT_TEXT_4": "Row Number Window",
+                "SPOT_TEXT_5": "Row Number Dial",
+                "SPOT_TEXT_6": "Feeding Dial",
+                "SPOT_TEXT_7": "Change Dial",
+                "SPOT_TEXT_8": "Feed Lever (Knit Contour AND Row Counter)",
+                "SPOT_TEXT_9": "Row Counter",
+                "SecondDiv": "padding-bottom: 32.6%",
+                "TopDiv": "max-width: 1000px"
+              },
+              "legacyComponentId": 8436,
+              "order": 2
+            }
+          ],
+          "title": "Visual Knitting Patterns",
+          "slug": "visual-knitting-patterns",
+          "order": 1,
+          "legacy": {
+            "assignId": 5672,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .circle {\r\n        width: 25px;\r\n        height: 25px;\r\n        border-radius: 50%;\r\n        box-sizing: border-box;\r\n        text-align: center;\r\n        display: inline-block;\r\n        line-height: 25px;\r\n        background-color: #9E2065;\r\nmargin-left:25px;\r\n    }\r\n\r\n    .circle a {\r\n        text-decoration: none;\r\n        color: #fff;\r\n        font-size: 16px;\r\n    }\r\n\r\n    .container-border {\r\n        border: 1px solid #ccc;\r\n        border-radius: 15px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 50px;\r\n    }\r\n\r\n    .abc {\r\n        font-size: 175%;\r\n        font-weight: bold;\r\n        text-align: right;\r\n    }\r\n\r\n    .def {\r\n        font-size: 150%;\r\n        font-weight: bold;\r\n    }\r\n\r\n    hr.style13 {\r\n        height: 10px;\r\n        border: 0;\r\n        box-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n    }\r\n\r\n\r\n    .center {\r\n        margin: auto;\r\n        width: 50%;\r\n        padding: 10px;\r\n    }\r\n\r\n</style>\r\n\r\n<div class=\"center container-border\">\r\n    <center><span class=\"handwriting\" style=\"font-size:2em\">4 steps:</span><br></center>\r\n\r\n    \r\n        \r\n            <div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Establish YOUR gauge</span><br>\r\n\r\n  \r\n    \r\n        \r\n            <div class=\"circle\"><a href=\"#\">2</a></div><span class=\"def\"> Set up the Row Gauge Scale</span><br>\r\n    \r\n       \r\n            <div class=\"circle\"><a href=\"#\">3</a></div><span class=\"def\"> Select and insert Stitch Scale</span><br>\r\n  \r\n    \r\n            <div class=\"circle\"><a href=\"#\">4</a></div><span class=\"def\"> Set the Paper Pattern</span><br>\r\n</div>\r\n\r\n<hr class=\"style13\">\r\n\r\n\r\n",
+              "legacyComponentId": 8437,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\n.flex-container {\r\ndisplay: flex;\r\njustify-content: center;\r\nwidth=\"50%\";\r\n}\r\n\r\n.flex-child:first-child {\r\nmargin-right: 20px;\r\npadding: 20px;\r\nmargin-bottom: 20px;\r\n}\r\n\r\n.flex-child2 {\r\nmargin-right: 20px;\r\nborder: 1px solid;\r\npadding: 20px;\r\nmargin-bottom: 20px;\r\n}\r\n\r\n@media (max-width: 800px) {\r\n.flex-container {\r\nflex-direction: column;\r\n}\r\n\r\n</style>\r\n\r\n                    <div class=\"circle\"><a href=\"#\">1</a></div><span class=\"def\"> Establish YOUR gauge</span><br></div>\r\n\r\nEstablish your gauge over 40 stitches and 60 rows <br><img src=\"/challenge/images/v2/98/swatch_row.jpg\">\r\n<img src=\"/challenge/images/v2/98/swatch_stitches.jpg\">\r\n\r\n<hr class=\"style13\">\r\n",
+              "legacyComponentId": 8441,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"circle\"><a href=\"#\">2</a></div><span class=\"def\"> Once you establish YOUR row gauge (in 4\"/10cm) use these dials to set the machine.</span><br>\r\n\r\n\t<ol>\r\n<li>Set the <b>Change Dial</b> to <i class=\"fa fa-caret-left fa-2x\" aria-hidden=\"true\"></i><br><em>The Row Number Dial will turn freely</em>\r\n<li>Turn the row number dial until your ROW GAUGE is displayed in the <b>Row Number Window</b></li>\r\n<li>Set the <b>Change Dial</b><br>If your row gauge is between 30-60:<br> set the <b>Change Dial</b> to 30-60<br>If your row gauge is between 61-120:<br> set the <b>Change Dial</b> to 30-60<br><em>This will instruct the device to advance the pattern paper accordingly</em></li>\r\n</ol>\r\n\r\n\r\n\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/98/row_gauge4.jpg\">\r\n\r\n\r\n<hr class=\"style13\">\r\n",
+              "legacyComponentId": 8438,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"circle\"><a href=\"#\">3</a></div><span class=\"def\"> Select and Insert a Stitch Scale</span><br>\r\n    \r\n        The <b>Stitch Scales</b> are designed to represent different stitch gauges (4\"/10cm) measured by the Gauge Scale (ruler) or with a regular ruler.\r\n        <ol>\r\n            <li>Choose the scale for your stitch gauge</li>\r\n            <li>Set the paper lever to <i class=\"fa fa-caret-down fa-2x\" aria-hidden=\"true\"></i> (up)</li>\r\n            <li>Insert the scale behind the clips</li>\r\n        </ol>\r\n\r\n        <em>NOTE: Some scales have the zero in the center of the scale. These are used for garment pieces that are shaped on both sides, like slacks and leggings. <br>In general the scales with zero on the left are used and the shaping is mirrored as needed<br></em><br>\r\n        <img class=\"img-thumbnail\" src=\"/challenge/images/v2/98/zero.jpg\">\r\n    \r\n    \r\n        <img class=\"img-thumbnail\" src=\"/challenge/images/v2/98/insert_scale_gif.gif\">\r\n    \r\n\r\n\r\n<hr class=\"style13\">\r\n",
+              "legacyComponentId": 8442,
+              "order": 4
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"circle\"><a href=\"#\">4</a></div><span class=\"def\"> Insert and set the Paper Pattern</span><br>\r\n\r\n   <ol>\r\n           \r\n            <li>Set the paper lever to <i class=\"fa fa-circle\" aria-hidden=\"true\"></i> (down) to release it</li>\r\n            <li>Slip the paper pattern into the slot</li>\r\n<li>Pull the paper through to align it (use the center lines on front and back)</li>\r\n <li>Set the paper lever to <i class=\"fa fa-caret-down fa-2x\" aria-hidden=\"true\"></i> (up) to engage it.</li>\r\n        </ol>\r\n\r\n\r\n\r\n\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/98/insert_paper_gif.gif\">\r\n\r\n\r\n\r\n\r\n\r\n\r\n   <ol start=\"5\">\r\n          <br><li>Use the <b>Feeding Dial</b> to position the paper</li>\r\n        </ol>\r\n\r\n\r\n\r\n\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/98/insert_paper1_gif.gif\">\r\n\r\n\r\n\r\n<hr class=\"style13\">",
+              "legacyComponentId": 8443,
+              "order": 5
+            }
+          ],
+          "title": "Set up the Knit Contour",
+          "slug": "set-up-the-knit-contour",
+          "order": 2,
+          "legacy": {
+            "assignId": 5688,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "With the Knit Contour set up correctly, as the carriage moves back and forth, the pattern sheet advances giving us visual instructions for our knitting.<br>The  lines on the sheet align with the stitch scale and indicate the needles in work.  When the line on the sheet \"moves\", we will increase or decrease stitches, keeping the number of stitches on the needlebed equal to the numbers on the scale.<br>",
+              "legacyComponentId": 8445,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/v2/98/1.jpg",
+                  "caption": "The supplied knitting diagrams have multiple sizes on a page.<br>\r\n<b>TIP:</b> Use a highlighter to note your size and make it easier to follow"
+                },
+                {
+                  "src": "/v2/98/2.jpg",
+                  "caption": "This line indicates that I should have 67 stitches in work on the right side of zero."
+                },
+                {
+                  "src": "/v2/98/31.jpg",
+                  "caption": "As the knitting progresses and the pattern sheet advances we follow the lines. <br><br>\r\n<ul><li>Row numbers on the left (follow your row counter)</li>\r\n<li>For the armhole we would bind off 13 stitches according to the scale</li>\r\n</ul>"
+                },
+                {
+                  "src": "/v2/98/4.jpg",
+                  "caption": "Following the line, on this row, we'd decrease 1 stitch"
+                },
+                {
+                  "src": "/v2/98/5.jpg",
+                  "caption": "At the neckline we would work decreases following the lines on both sides"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 8444,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<span class=\"yellow_highlight\">As you are knitting, it is important that the carriage hits the Feed Lever. </span> This feed lever controls both the Knit Leader advancement AND the row counter advancement.\r\n\r\n<img class=\"img-thumbnail center-block\" src=\"/challenge/images/v2/98/feed lever.jpg\">",
+              "legacyComponentId": 8446,
+              "order": 3
+            }
+          ],
+          "title": "Using the Knit Contour",
+          "slug": "using-the-knit-contour",
+          "order": 3,
+          "legacy": {
+            "assignId": 5691,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 15,
+    "videos": [
+      {
+        "vimeoId": "680655225",
+        "title": null,
+        "lessonSlug": "learn-about-the-machine",
+        "blockSlug": "setting-up-your-machine"
+      },
+      {
+        "vimeoId": "530014000",
+        "title": null,
+        "lessonSlug": "learn-about-the-machine",
+        "blockSlug": "the-proper-way-to-knit"
+      },
+      {
+        "vimeoId": "681013133",
+        "title": "Tension Mast Assembly - Control the yarn",
+        "lessonSlug": "casting-on",
+        "blockSlug": "thread-your-machine"
+      },
+      {
+        "vimeoId": "681026361",
+        "title": "Carriage and yarn feeder(s)",
+        "lessonSlug": "casting-on",
+        "blockSlug": "thread-your-machine"
+      },
+      {
+        "vimeoId": "681544407",
+        "title": "Weaving Cast On",
+        "lessonSlug": "casting-on",
+        "blockSlug": "casting-on-stitches"
+      },
+      {
+        "vimeoId": "1022707004",
+        "title": "Super Fast Slip Cast on",
+        "lessonSlug": "casting-on",
+        "blockSlug": "casting-on-stitches"
+      },
+      {
+        "vimeoId": "527303259",
+        "title": null,
+        "lessonSlug": "bind-off",
+        "blockSlug": "binding-off"
+      },
+      {
+        "vimeoId": "681615851",
+        "title": null,
+        "lessonSlug": "automatic-stitch-patterning",
+        "blockSlug": "the-punchcard"
+      },
+      {
+        "vimeoId": "718396283",
+        "title": null,
+        "lessonSlug": "automatic-stitch-patterning",
+        "blockSlug": "end-needle-selection"
+      },
+      {
+        "vimeoId": "327604741",
+        "title": null,
+        "lessonSlug": "slip-stitch",
+        "blockSlug": "about-slip-skip-stitch"
+      },
+      {
+        "vimeoId": "151857907",
+        "title": null,
+        "lessonSlug": "knit-weave",
+        "blockSlug": "about-knit-weave"
+      },
+      {
+        "vimeoId": "444375575",
+        "title": null,
+        "lessonSlug": "thread-punch-lace",
+        "blockSlug": "about-thread-lace"
+      },
+      {
+        "vimeoId": "682083432",
+        "title": "Thread the Singer 360 / 260 for Plaiting",
+        "lessonSlug": "plaiting",
+        "blockSlug": "about-plaiting"
+      },
+      {
+        "vimeoId": "342471298",
+        "title": "General Plaiting Info",
+        "lessonSlug": "plaiting",
+        "blockSlug": "about-plaiting"
+      },
+      {
+        "vimeoId": "354284181",
+        "title": "Simple Eyelet Transfers - Silver/Singer/Studio",
+        "lessonSlug": "lace",
+        "blockSlug": "simple-eyelet-transfers"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

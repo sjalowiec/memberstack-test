@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   LEGACY_ASSET_ORIGIN,
+  LEGACY_DOWNLOAD_BASE,
+  downloadUrl,
   legacyAssetUrl,
   LOCAL_PUBLIC_PATH_PREFIXES,
   rewriteLegacyHtml,
@@ -45,6 +47,27 @@ describe("legacyAssetUrl", () => {
     expect(legacyAssetUrl("//www.knititnow.com/challenge/images/swatch_measure.jpg")).toBe(
       "https://www.knititnow.com/challenge/images/swatch_measure.jpg",
     );
+  });
+});
+
+describe("downloadUrl", () => {
+  it("keeps local public download paths as entered (with or without leading slash)", () => {
+    expect(downloadUrl("downloads/swatch_challenge1.pdf")).toBe(
+      "/downloads/swatch_challenge1.pdf",
+    );
+    expect(downloadUrl("/downloads/swatch_challenge1.pdf")).toBe(
+      "/downloads/swatch_challenge1.pdf",
+    );
+  });
+
+  it("uses legacy challenge URLs for bare filenames", () => {
+    expect(downloadUrl("swatch_challenge1.pdf")).toBe(
+      `${LEGACY_DOWNLOAD_BASE}/swatch_challenge1.pdf`,
+    );
+  });
+
+  it("preserves absolute URLs", () => {
+    expect(downloadUrl("https://example.com/file.pdf")).toBe("https://example.com/file.pdf");
   });
 });
 

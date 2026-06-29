@@ -1,0 +1,1104 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 65,
+    "title": "IK Pattern Links",
+    "slug": "ik-pattern-links",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_65_ik_pattern_links.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T09:45:32+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Introduction",
+      "slug": "introduction",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 420,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3828",
+                "TYPEOF": "CustomCFM"
+              },
+              "legacyComponentId": 5713,
+              "order": 1
+            }
+          ],
+          "title": "Dart Tool",
+          "slug": "dart-tool",
+          "order": 1,
+          "legacy": {
+            "assignId": 3828,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"row\">\r\n<div class=\"col-xs-12 text-center\">Quick instructions for you to build your patterns</div>\r\n</div>\r\n<div class=\"row\">\r\n<div class=\"col-xs-12\" align=\"center\"><img class=\"img-responsive\" src=\"/challenge/images/v2/65/new_build_gif1.gif\"></div>\r\n</div>\r\n",
+              "legacyComponentId": 5719,
+              "order": 1
+            }
+          ],
+          "title": "Pattern Help Info",
+          "slug": "pattern-help-info",
+          "order": 2,
+          "legacy": {
+            "assignId": 3833,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "download",
+              "label": "Print Your template",
+              "filename": "/downloads/inside_out_hat_template.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3845",
+                "componentId": "5742",
+                "viewHeight": "0",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 5742,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "This hat is knit in one piece and folded so the brim is 4 layers over the ears.  Because of the construction, you can mix 'n match the colors and design for 2 completely differnt hats, depending on how it's worn.<br>Use this template to plan how the brim will fold up and appear on each side.<br>\r\n<div class=\"row\">\r\n<div class=\"col-sm-4 col-sm-offset-2 col-xs-12\"><img class=\"img-responsive\" src=\"/path/images/180/template1.jpg\"></div>\r\n<div class=\"col-sm-4 col-xs-12 content-center\"><img class=\"img-responsive zoom\" src=\"/path/images/180/template2.jpg\"><br>\r\n<img class=\"img-responsive zoom\" src=\"/path/images/180/template3.jpg\"><br>\r\n<img class=\"img-responsive zoom\" src=\"/path/images/180/template4.jpg\"><br>\r\n<img class=\"img-responsive zoom\" src=\"/path/images/180/template5.jpg\">\r\n\r\n</div>\r\n</div>\r\n\r\n",
+              "legacyComponentId": 5741,
+              "order": 2
+            }
+          ],
+          "title": "inside-out hat template",
+          "slug": "inside-out-hat-template",
+          "order": 4,
+          "legacy": {
+            "assignId": 3845,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/65/earflap/flipbook1.jpg",
+                  "caption": "<ol>\r\n<li>Measure the circumference (not too tight, but snug enough to stay on in the wind)</li>\r\n<li>Determine the desired length (long enough to cover the ears, extra long for fashion)</li>\r\n</ol>"
+                },
+                {
+                  "src": "/challenge/images/v2/65/earflap/flipbook2.jpg",
+                  "caption": "Without Ear Flaps, the hat needs to be long enough to cover the ears.  It can also be adjustable by folding up the brim"
+                },
+                {
+                  "src": "/challenge/images/v2/65/earflap/flipbook3.jpg",
+                  "caption": "The body of an Ear Flap Hat doesn't cover the ears.  It also rides higher on the head, exposing more of the face and neck."
+                },
+                {
+                  "src": "/challenge/images/v2/65/earflap/flipbook4.jpg",
+                  "caption": "The body of an Ear Flap Hat needs to be shorter than the other styles."
+                },
+                {
+                  "src": "/challenge/images/v2/65/earflap/flipbook5.jpg",
+                  "caption": "Considering how this hat is worn, adjust your Perfect Fit pattern with your measurements. <br>\r\nAlso consider the position of the flaps as you re-hang them on the machine. Measure to make sure the flaps cover the ears."
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 5777,
+              "order": 1
+            }
+          ],
+          "title": "Earflap hat",
+          "slug": "earflap-hat",
+          "order": 6,
+          "legacy": {
+            "assignId": 3866,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<b>PATTERN OVERVIEW:</b><BR>\r\n<ul>\r\n<Li>Sweater is knit in one piece, from front edge to front edge.</li>\r\n<li>It is written (rights and lefts) as if you are knitting a wrong side facing stitch pattern.<br>\"Right and Left Front\" indicates the front pieces as worn. If you are knitting a wrong-side facing pattern (like slip) the left and right fronts (as worn) would be reversed.<br>\r\nNOTE: Create \"boy\" and \"girl\" buttonholes as appropriate. <br>\r\n<a href=\"http://www.knititnow.com/learn/launch.cfm?contentid=747&inpattern=26C7CE\">Video: Spacing Button Holes (no math)</a>\r\n</li>\r\n<li>Short rows are used to create the raglan sleeves shaping, eliminating some seaming</li>\r\n<li>The body of the sweater is knit in one piece.</li>\r\n<li>The side \"seams\" are removed from the machine (to free up needles to knit the sleeves)</li>\r\n<li>\r\nAfter the each sleeve is finished, the side \"seams\" are picked up again to continue the seamless body.(Green dotted lines)</li>\r\n<li>The underarm seams can be joined on the machine or Kitchener stitched for a \"seamless\" appearance.</li>  \r\n</ul>\r\n\r\n<b>SLEEVE OPTIONS:</b>\r\n<ol>\r\n<li>Use a cast on rag and a row of ravel cord for a quick open cast on.\r\nScrap off the opposite sleeve edge. When the garment is complete, rehang the underarm seams on the machine and bind off. </li>\r\n<Li>Use a closed cast on method and bind off the underarm seams.  Neatly join the seams on the machine or by hand</li>\r\n<li>Use an open cast on and bind off method and Kitchener stitch the underarm seams</li>\r\n</ol>\r\n<b>FINISHING INSTRUCTIONS:</b><br>\r\n\r\nNECKLINE,SLEEVE EDGES and BOTTOM EDGE\r\n<ol>\r\n\r\n<li>With the private (wrong) side facing, pick up the neckline stitches.</li>\r\n<li>Knit for 1\" of rows and bind off</li>\r\n<li>Neatly seam the rolled edges at where the neckline, front edge and hems join</li>\r\n<li>With the private side facing, pick up along the cuff edges</li>\r\n<li>Knit for 1\" of rows and bind off</li>\r\n<li>Join underarm Seams</li>\r\n<li>Neatly work in all ends</li>\r\n<li>Attach buttons</li>\r\n<li>Block</li>\r\n</ol>\r\n<center><img width=\"500\" src=\"http://www.knititnow.com/supportingfiles/2_hour_baby_sweater_legend_600.png\"></td></center>\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 5808,
+              "order": 1
+            }
+          ],
+          "title": "1 piece raglan",
+          "slug": "1-piece-raglan",
+          "order": 7,
+          "legacy": {
+            "assignId": 3891,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"row\">\r\n\t<div class=\"col-sm-8 col-xs-12\">\r\n\t\tThe unusual construction of this sweater isn't difficult. But it's important you understand the construction before knitting.<br><ul>\r\n\t\t\t<li>\r\n\t\t\t\tThe shoulder seam is shifted to the back.</li>\r\n\t\t\t<li>This change does not impact the armhole depth. Enter your Perfect Fit measurements as for any other sweater.</li>\r\n\t\t\t<li>BACK\r\n\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li> All of the shoulder shaping is performed on the sweater back shoulders. </li>\r\n\t\t\t\t\t<li>Draw attention to the seam by working decorative decreases</li>\r\n\r\n\t\t\t\t</ul>\r\n\t\t\t</li>\r\n\r\n\t\t\t<li> FRONT\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>The front shoulder is not shaped.</li>\r\n\t\t\t\t\t<li>The red markers indicate the \"normal\" shoulder seam placement. Use this marker to position the top of the sleeve cap.</li>\r\n\t\t\t\t\t<li>Additional stitches are added (wings) to match the back slope measurement </li>\r\n\t\t\t\t</ul>\r\n\t\t\t</li>\r\n\t\t</ul>\r\n\t\t<br>\r\n\t\t<center><img class=\"img-thumbnail\" src=\"/challenge/images/v2/65/shoulder_example2.jpg\"></center>\r\n\r\n\t</div>\r\n\t<div class=\"col-sm-4 col-xs-12\"> <img class=\"img-thumbnail\" src=\"/challenge/images/v2/65/shoulder_drawing1.jpg\">\r\n\t</div>\r\n</div>\r\n",
+              "legacyComponentId": 6044,
+              "order": 1
+            }
+          ],
+          "title": "European Shoulders",
+          "slug": "european-shoulders",
+          "order": 8,
+          "legacy": {
+            "assignId": 4008,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>Lifelines: A knitters best friend</h3>\r\n<div class=\"row\">\r\n<div class=\"col-sm-6 col-xs-12\">A row where you've secured your stitches either with scrap yarn, or ravel cord.<br> You can rip back to this row, easily pick up the stitches and start knitting again without starting from the beginning of your piece.<br><img class=\"img-thumbnail ctr\" src=\"/contentlibrary/previewimages/thumb_822.jpg\"><br></div>\r\n<div class=\"col-sm-4 col-xs-12\"><div class=\"videopopup\" data-videotitle=\"Lifelines: Best Advice EVER!\" data-vimeoid=\"252368462\">\r\n\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/678986076-24a0cc2b5bf45b255528ed3f585a49ac9f1292c28a70665141a3c0007a1e4506-d_1280x720?r=pad\">\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div></div>\r\n</div>",
+              "legacyComponentId": 9712,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "252368462",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 9712,
+              "order": 1
+            }
+          ],
+          "title": "lifeline glossary entry",
+          "slug": "lifeline-glossary-entry",
+          "order": 9,
+          "legacy": {
+            "assignId": 6346,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<table class=\"table table-striped\">\r\n<tr>\r\n\r\n<td></td>\r\n<td></td>\r\n<td>Chest</td>\r\n<td>Imperial</td>\r\n<td>Metric</td>\r\n</tr>\r\n \r\n    <tr>\r\n<td></td>\r\n        <td><b>Small Preemie:</b></td>\r\n<td>12\" <small><em>(30.5)</em></small></td>\r\n        <td>3-4 Pounds</td>\r\n\r\n        <td>1360 - 1814g</td>\r\n    </tr>\r\n    <tr>\r\n<td></td>\r\n        <td><b>Medium Preemie:</b></td>\r\n<td> 13\" <small><em>(33.5)</em></small></td>\r\n     \r\n        <td>6-8 pounds</td>\r\n\r\n        <td>2721 - 3628g</td>\r\n    </tr>\r\n     <tr>\r\n<td></td>\r\n        <td><b>Large preemie:</b></td>\r\n<td>14\" <small><em>(36)</em></small></td>\r\n      \r\n        <td>8-11 pounds</td>\r\n\r\n        <td>3628 - 4989g</td>\r\n    </tr>\r\n</table>\r\n",
+              "legacyComponentId": 9713,
+              "order": 1
+            }
+          ],
+          "title": "preemie sizing popup",
+          "slug": "preemie-sizing-popup",
+          "order": 10,
+          "legacy": {
+            "assignId": 6347,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "misc individual pages",
+      "slug": "misc-individual-pages",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 434,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"row\">\r\n<div class=\"col-sm-3 col-xs-10 col-xs-offset-1\"></div>\r\n<div class=\"col-sm-3 col-xs-10 col-xs-offset-1\"></div>\r\n<div class=\"col-sm-3 col-xs-10 col-xs-offset-1\"></div>\r\n\r\n\r\n</div>\r\n",
+              "legacyComponentId": 5809,
+              "order": 1
+            }
+          ],
+          "title": "Lifelines",
+          "slug": "lifelines",
+          "order": 1,
+          "legacy": {
+            "assignId": 3892,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\" row well_white\">\r\n\t<div class=\"col-sm-4 col-xs-12\">This is a soft, graceful waterfall jacket that is easy knitting. The soft hemline is created with simple pieces and assembled with an unusual construction method.<br><h4>Please read and understand the following before entering your measurements for Perfect fit</h4><br>\r\n\t\t\r\n\t</div>\r\n\t<div class=\"col-sm-6 col-xs-12\">\r\n\t\t<div class='embed-responsive embed-responsive-16by9'>\n<iframe src='https://player.vimeo.com/video/412489948' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\t</div>\r\n</div>\r\n<ul>\r\n\t\t\t<li>\r\n\t\t\t\tThe fronts, sleeves and yoke are knit similarly to a traditional cardigan pattern.</li>\r\n\t\t\t<li>The front waterfall draping is created by the Overlaps \"M\"</li>\r\n\t\t\t<li>The side and back draping come from the sideways knit Lower Bodice Rectangle. The rectangle is joined to the side seam of the fronts. The cast on and bind off edges of the lower bodice are allowed to loosely hang and drape</li>\r\n\t\t</ul><br><!--************************ -->\r\n\r\n<div class=\"row well_white\">\r\n\r\n\t<a href=\"#measure\" data-toggle=\"collapse\">\r\n\t\t<div class=\"well\"<h4>The Measurements <i class=\"fa fa-arrow-down fa-2x\" aria-hidden=\"true\"></i> </h4></div>\r\n\t</a>\r\n\r\n\t<div id=\"measure\" class=\"collapse hidden-print\">\r\n\t\tChoose your bust size and accept the default measurements for a beautifully duster. If you choose to \"Perfect Fit\", examine the measurements before starting to knit.<br>\r\n\t\t<table class=\"table table-striped small\">\r\n\t\t\t<tbody>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<td><b>L</b></td>\r\n\t\t\t\t\t<td>Center Back length</td>\r\n\t\t\t\t\t<td>This is measured from the neck to hem. It is the total of the yoke rows and the lower bodice stitches that are seamed at \"D\". Note adjustment to the \"L\" dimension will only impact the lower Bodice length (knit sideways). Shorten \"L\" if you want the center back shorter. This will also impact the draping on the sides.</td>\r\n\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<td><b>K</b></td>\r\n\t\t\t\t\t<td>Cross Shoulder</td>\r\n\t\t\t\t\t<td>This shapes the armholes and determines the finished back size between the sleeves</td>\r\n\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<td><b>D</b></td>\r\n\t\t\t\t\t<td>Bust</td>\r\n\t\t\t\t\t<td>This measurement is 1/2 of your desired finished bust size</td>\r\n\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<td><b>J</b></td>\r\n\t\t\t\t\t<td>Back neck opening </td>\r\n\t\t\t\t\t<td>There is no back neck shaping</td>\r\n\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<td><b>P</b></td>\r\n\t\t\t\t\t<td>Armhole Depth </td>\r\n\t\t\t\t\t<td>The finished armhole depth including the shaping</td>\r\n\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<td><b>A </b></td>\r\n\t\t\t\t\t<td>Wrist </td>\r\n\t\t\t\t\t<td>Adjust the cuff dimension</td>\r\n\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<td><b>E</b></td>\r\n\t\t\t\t\t<td>Upper Arm</td>\r\n\t\t\t\t\t<td>Adjust as needed. If this will be worn as a jacket, leave room to wear over another garment</td>\r\n\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<td><b>F</b></td>\r\n\t\t\t\t\t<td>Sleeve length</td>\r\n\t\t\t\t\t<td>Measure from the underarm to the cuff. If you will be adding ribbing, adjust F accordingly</td>\r\n\t\t\t\t</tr>\r\n\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<td><b>B</b></td>\r\n\t\t\t\t\t<td>Side Seams</td>\r\n\t\t\t\t\t<td>Shorten or Lengthen to adjust the Sweater side length</td>\r\n\t\t\t\t</tr>\r\n\t\t\t\t<tr>\r\n\t\t\t\t\t<td><b>M</b></td>\r\n\t\t\t\t\t<td>Waterfall overlap</td>\r\n\t\t\t\t\t<td> 1. consider the number of needles you have available 2. A very wide \"M\" overlap will hang long in the front\r\n\t\t\t\t\t</td>\r\n\t\t\t\t</tr>\r\n\t\t\t</tbody>\r\n\t\t</table>\r\n\t</div>\r\n\r\n</div>\r\n<!--************************ -->\r\n\r\n<hr>\r\n\r\n\r\n<div class=\"row well_white\">\r\n\t<div class=\"col-sm-5 col-xs-12\">\r\n\t\t<h4>Order of knitting:</h4><br>\r\n\t\t<ol class=\"instruction-list\">\r\n\r\n\t\t\t<li><b>Lower Bodice</b> <em>Knit side to side, the lower bodice drapes gracefully.</em></li>\r\n\t\t\t<li><b>Yoke</b> <em>The yoke is picked up from the lower bodice at \"D\" and the armholes are shaped immediately</em></li>\r\n\t\t\t<li><b>Fronts</b> <em>The fronts are knit from hem to neckline and include an overlap \"M\" that becomes the lapel and adds draped length </em></li>\r\n\t\t\t<li><b>Sleeves</b><em> The sleeves are knit traditionally from cuff up. </em></li>\r\n\t\t</ol>\r\n\t</div>\r\n\t<div class=\"col-sm-5 col-xs-12\"><img class=\"img-responsive\" src=\"/supportingfiles/niagra_waterfall_construction1.jpg\"></div>\r\n</div>",
+              "legacyComponentId": 5825,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "412489948",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 5825,
+              "order": 1
+            }
+          ],
+          "title": "waterfall",
+          "slug": "waterfall",
+          "order": 3,
+          "legacy": {
+            "assignId": 3901,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"well\">The length of your shawlette is based on the number of rows you knit. As you increase, the width grows AND the length grows as well.<br>Follow the chart to determine the your finished size.\r\n\r\n<br>In the example below, knitting to row 238 will produce a piece 10\" wide by 40\" long.<br></div>\r\n<img class=\"img-responsive\" src=\"/challenge/images/v2/65/swirl_shawl_pattern_details2.jpg\">",
+              "legacyComponentId": 5828,
+              "order": 1
+            }
+          ],
+          "title": "swirl pattern explanation",
+          "slug": "swirl-pattern-explanation",
+          "order": 4,
+          "legacy": {
+            "assignId": 3904,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\t<img class=\"img-responsive\" src=\"/challenge/images/v2/65/swirl_pattern.jpg\">",
+              "legacyComponentId": 5829,
+              "order": 1
+            }
+          ],
+          "title": "swirl_shawlette_pattern",
+          "slug": "swirl-shawlette-pattern",
+          "order": 5,
+          "legacy": {
+            "assignId": 3905,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>Plan ahead</h3>\r\n\r\n<div class=\"row\">\r\n<div class=\"col-sm-7 col-sm-offset-1 col-xs-12\">\r\n<b>This pattern offers lots of options. Make some decisions BEFORE going any further</b><br><i class=\"fa fa-square-o fa-2x\" aria-hidden=\"true\"></i> <b>NECKLINE</b>\r\n<ul>\r\n<li>V-neck, round neck or no-neck (boat neck)</li>\r\n<li>If knitting boat neck check the neck opening width</li>\r\n<li>Neck opening does not include any finishing bands or trim. Adjust the neck opening accordingly</li>\r\n</ul>\r\n\r\n\r\n\r\n\t<i class=\"fa fa-square-o fa-2x\" aria-hidden=\"true\"></i> <b>SLEEVES</b>\r\n\t\r\n\t\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>Sleeves or Sleeveless</li>\r\n\t\t\t\t\t<li>Hem or ribbing [E]</li>\r\n\t\t\t\t\t<li>Sleeve length [C]</li>\r\n\t\t\t\t\t<li>Don't forget to adjust the wrist [A] if you are making a short sleeve or cap sleeve</li>\r\n\t\t\t\t\t<li>The upper arm size is determined by the armhole depth [C]</li>\r\n<li>Top down or bottom up?</li>\r\n\r\n\t\t\t\t</ul>\r\n\t\t\r\n\r\n\t\t<i class=\"fa fa-square-o fa-2x\" aria-hidden=\"true\"></i> <b>BODY</b>\r\n\t\t\t\r\n\t\t\t<ul>\r\n\t\t\t\t<li>Hem or ribbing?</li>\r\n\t\t\t\t<li>Hip wider than the bust? Shape the lower hem</li>\r\n\t\t\t\t<li>Sweater length from underarm [B]</li>\r\n<li>Side split</li>\r\n<lI>Curved Hems</li>\r\n\t\t\t</ul>\r\n\r\n\r\n\t\t<i class=\"fa fa-square-o fa-2x\" aria-hidden=\"true\"></i> <b>ARMHOLES</B>\r\n\t\t\t<ul>\r\n\t\t\t\t<li>If making sleeveless, double check the armhole depth [C] <small><em>No unmentionables showing</em></small></li>\r\n\t\t\t\t<li>Don't forget the upper arm size is determined by the armhole depth</li>\r\n\t\t\t\r\n\t\t\t</ul>\r\n\r\n<center>\r\n<img class=\"img-responsive\" src=\"/challenge/images/v2/swatch_NOT_optional1.gif\"><br></center>\r\n</div>\r\n<img class=\"img-responsive\" src=\"/challenge/images/v2/65/possibilities_endless.gif\"><br><div class=\"col-sm-4 col-xs-12\">\r\n\r\n<img class=\"img-responsive\" src=\"/images/legend/luna_dropped_pf.jpg\"></div>\r\n</div>\r\n\r\n\r\n",
+              "legacyComponentId": 5830,
+              "order": 1
+            }
+          ],
+          "title": "1-2-3 Tee READ THIS",
+          "slug": "1-2-3-tee-read-this",
+          "order": 6,
+          "legacy": {
+            "assignId": 3906,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>REMEMBER: The pattern measurements are FINISHED measurements</h3>\r\n<ol class=\"instruction-list\">\r\n\t<li>This cuff-to-cuff design is worked by <a data-GlossaryId='311' class='glossaryhelp'>scrapping off <i class='fa fa-question-circle' aria-hidden='true'></i></a> sections around the neck opening and working the sections separately. Be sure to be familiar with the technique before starting to knit.</li>\r\n\t<li>To give the appearance of \"knitting in the round\" the side seams are started with an <a data-GlossaryId='264' class='glossaryhelp'>Open Cast On <i class='fa fa-question-circle' aria-hidden='true'></i></a> and scrapped off. The seams are then grafted with <a data-GlossaryId='521' class='glossaryhelp'>Kitchener Stitch <i class='fa fa-question-circle' aria-hidden='true'></i></a>. If you aren't comfortable with grafting, use a closed cast on and bind off the side seams.</li>\r\n\r\n\t<li>\r\n\t\t<b>The neck opening of this pattern does NOT call for a neck band.</b>\r\n\t\tThe original pattern had garter stitch hems and the neckband was created with garter stitches as the body of the sweater was knit.<br><b>Options:</b>\r\n\t\t<ul class=\"instruction-nolist\">\r\n\t\t\t<li>Hand manipulate garter or seed stitch around the neckline as you are knitting</li>\r\n\t\t\t<li>Eliminate the hand manipulation and work a round of single crochet around the neck opening</li>\r\n\t\t\t<li>If you want a band, you'll need to calculate and enlarge the neck opening in the pattern</li>\r\n\t\t</ul>\r\n\r\n\t\t<em> Whatever your finishing method you choose, make sure it is LOOSE and the opening will go over the baby's head.(Remember, babies heads are almost as large as adults)</em>\r\n\t</li>\r\n</ol>\r\n<hr><br>\r\n<div style='background-color:#9E2065; color:white' ;>\r\n\t<center><i class='fa fa-arrow-down' aria-hidden='true'></i> Flip through step-by-step for a construction overview <i class='fa fa-arrow-down' aria-hidden='true'></i></center>\r\n</div>\r\n",
+              "legacyComponentId": 6047,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/v2/65/cuff_to_cuff2.jpg",
+                  "caption": "Cast on and knit the shaped sleeve. <em>Be sure to align the knitting to the center of the needlebed.</em>"
+                },
+                {
+                  "src": "/v2/65/cuff_to_cuff31.jpg",
+                  "caption": "<ul class=\"padding-50px-left\">\r\n<li>Cast on stitches on both sides for the front and back.  <br><em>We suggest using an <a data-GlossaryId='264' class='glossaryhelp'>Open Cast on <i class='fa fa-question-circle' aria-hidden='true'></i></a>, leaving open stitches to join for the side seams</em></li>\r\n\r\n<li>Knit across all the stitches</li>\r\n<li>Knit in pattern to the start of the neck opening</li>\r\n</ul>"
+                },
+                {
+                  "src": "/v2/65/cuff_to_cuff41.jpg",
+                  "caption": "<ul><li>Put the back section AND the neck stitches in hold. (we recommend scrapping off)</li>\r\n<li>Knit the front section to the edge of the neck opening</li>\r\n<li>Scrap off the Front stitches</li>\r\n</ul>"
+                },
+                {
+                  "src": "/v2/65/cuff_to_cuff5.jpg",
+                  "caption": "<ul>\r\n<li>Rehang the Back stitches AND the Neck Stitches</li>\r\n<li>Bind off the neck stitches (this starts the neck opening)</li>\r\n<li>Knit the back section</li>\r\n</ul>"
+                },
+                {
+                  "src": "/v2/65/cuff_to_cuff6.jpg",
+                  "caption": "<ul>\r\n<li>Cast on Neck stitches as instructed (use a stretchy cast on method like <a data-GlossaryId='312' class='glossaryhelp'>e-Wrap <i class='fa fa-question-circle' aria-hidden='true'></i></a>)</li>\r\n<li>Re-hang the front stitches next to the cast on stitches (note your stitch count)</li>\r\n<li>Knit over all the stitches to complete the body</li>\r\n<li>Scrap off (or bind off) the front and back stitches, leaving the sleeve stitches in work</li>\r\n</ul>"
+                },
+                {
+                  "src": "/v2/65/cuff_to_cuff7.jpg",
+                  "caption": "Finish knitting the sleeve as instructed and Bind off"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 6049,
+              "order": 2
+            }
+          ],
+          "title": "Cuff-to-cuff baby",
+          "slug": "cuff-to-cuff-baby",
+          "order": 7,
+          "legacy": {
+            "assignId": 4010,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "As machine knitters, we need to knit this style of collar separately, then attach it to the neck opening of the sweater.<br><div class=\"row\">\r\n\t<div class=\"col-sm-8 col-xs-12\">\r\n\r\n\r\n\t\t<b>Options:</b><br>\r\n\t\t<ul>\r\n\t\t\t<li>Collar knit by hand:<br>\r\n\t\t\t\t<ol>\r\n\t\t\t\t\t<li>Pick up along the neck edge and knit the length of the collar.</li>\r\n\t\t\t\t\t<li>Use the short row - shaped collar instructions if desired<br><em>This lengthens the center back of the collar helping it fold over neatly</em></li>\r\n\t\t\t\t\t<li>Neatly bind off the neck edge</li>\r\n\t\t\t\t\t<li>Complete as instructed (See collar finishing instructions)</li>\r\n\t\t\t\t</ol>\r\n\t\t\t</li>\r\n\t\t\t<li>\r\n\t\t\t\tCollar knit by machine:\r\n\t\t\t\t<ol>\r\n\t\t\t\t\t<li>Cast on the collar stitches</li>\r\n\t\t\t\t\t<li>Knit the length as instructed</li>\r\n\t\t\t\t\t<li>Use the short row - shaped collar instructions if desired <em>This lengthens the center back of the collar helping it fold over neatly</em></li>\r\n\t\t\t\t\t<li>Bind off loosely or scrap off</li>\r\n\t\t\t\t\t<li>Neatly stitch the bind off edge to the neck opening</li>\r\n\t\t\t\t\t<li>Complete as instructed (See collar finishing instructions)</li>\r\n\t\t\t\t</ol>\r\n\t\t\t</li>\r\n\t\t</ul>\r\n\t</div>\r\n\t<div class=\"col-sm-4 col-xs-12\"><br><div class=\"well\">Choose a REVERSIBLE stitch pattern for your collar. 1x1, 2x2 will look the same on both sides. 2x1 is not reversible.</div>\r\n\t</div>\r\n</div>\r\n\r\n<b>Collar Notes:</b>\r\nWhether you work the collar by hand or machine, keep stitch multiples in mind<br><ul>\r\n\t<li>When casting on or picking up consider your stitch multiple. For example, for a 2x2 ribbing cast on or pick up a multiple of 4 plus 2</li>\r\n\r\n\t<li>Also consider the ribbing arrangement you've chosen. The collar looks best if the collar is started with knit stitches</li>\r\n</ul>\r\n<center><img class=\"img-responsive\" src=\"/challenge/images/v2/65/ribbing_example.jpg\"><br>\r\n\t<img class=\"img-responsive\" src=\"/challenge/images/v2/65/2x2-multiple.jpg\"></center>\r\n",
+              "legacyComponentId": 6136,
+              "order": 1
+            }
+          ],
+          "title": "shawl collar readme",
+          "slug": "shawl-collar-readme",
+          "order": 8,
+          "legacy": {
+            "assignId": 4047,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"row\">\r\n<div class=\"col-sm-6 col-xs-12\">\r\n\r\n\r\nIf you didn't swatch your ribbing and enter your ribbing gauge for the collar:<br>\r\n<ul>\r\n<li>Ribbing row gauge can be considerably different than Stockinette row gauge.</li>\r\n<li>The length of the ribbed collar MUST be the same as the \"K\" neck opening.</li>\r\n<li>Be sure to knit enough collar rows to fill that neck opening</li>\r\n</ul>\r\n</div>\r\n<div class=\"col-sm-6 col-xs-12\"><img class=\"img-responsive\" src=\"/challenge/images/v2/65/collar.jpg\">\r\n</div>\r\n</div>\r\n<img class=\"img-responsive\" src=\"/challenge/images/v2/65/ribbing_example.jpg\">\r\n/challenge/images/v2/65/ribbing_example.jpg",
+              "legacyComponentId": 6137,
+              "order": 1
+            }
+          ],
+          "title": "Shawl Collar readme2",
+          "slug": "shawl-collar-readme2",
+          "order": 9,
+          "legacy": {
+            "assignId": 4048,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n</style>\r\n\r\n\r\n\r\n\r\n<div class=\"mybox well_white\">\r\n\r\n<div class=\"row\">\r\n<div class=\"col-sm-6 col-xs-12\">\r\n\r\n\r\nThe shoulder seam on this sweater is shifted towards the back, so the seam is not at the top of the shoulder. <br><b>Special consideration needs to be made when knitting the front and back of this sweater</b><br>Traditionally, both shoulders have the same number of stitches.  To create a shaped shoulder many knitters will use short row shaping, scrap off each shoulder, then pulling stitch-through-stitch, join the shoulders on the machine.\r\n\r\n<a data-vimeoid=\"151860051\" class=\"videopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Shoulder Seams on the machine</a><br><h3>Do not use short row shaping for the back shoulders in this pattern.</h3>\r\n\r\n<a data-vimeoid=\"484835250\" class=\"videopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i>Single, Double and Triple decrease techniques </a>are perfect for shaping this seam.\r\n\r\n\r\n\r\n</div>\r\n\r\n<div class=\"col-sm-6 col-xs-12\"><img class=\"img-responsive\" src=\"/path/images/1339/compare1.jpg\"></div>\r\n</div>\r\n<hr class=\"style13\">\r\n\r\n<div class=\"row\">\r\n<div class=\"col-sm-6 col-xs-12\"><center><img class=\"img-responsive\" src=\"/path/images/1339/compare23.jpg\"></center></div>\r\n<div class=\"col-sm-6 col-xs-12\">\r\n<br>In shifting the shoulder shaping to the back garment piece, an angle is formed.<br>Going back to your 5th grade geometry class, the YELLOW line is longer than the GREEN line. (no it's not an optical illusion)<br>NOTE: The back neck is straight\r\n\r\n</div>\r\n\r\n</div>\r\n<hr class=\"style13\">\r\n<div class=\"row\">\r\n<div class=\"col-sm-6 col-xs-12\">\r\nLook closely at the Maria pattern front and you are instructed to add some \"wings\" (yellow) to accommodate this difference in length. That means the front shoulder will have a different number of STITCHES than the back shoulder ... but the dimensions will match.<br><h3>Do not use short row shaping for the back shoulders in this pattern.</h3><br>\r\nThese added \"wings\" will make for a smooth shape for the armhole and a beautiful seam for the sleeve cap.\r\n\r\n\r\n\r\n</div>\r\n<div class=\"col-sm-6 col-xs-12\"><center><img class=\"img-responsive\" src=\"/path/images/1339/wings.jpg\"></center></div>\r\n</div>\r\n<hr class=\"style13\">\r\n<h3>TIP</h3>\r\nConsider highlighting the angle in the back with <a data-GlossaryId='219' class='glossaryhelp'>Full Fashioned Decreases<i class='fa fa-question-circle' aria-hidden='true'></i></a><br><a data-vimeoid=\"484835250\" class=\"videopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i>Single, Double and Triple decrease techniques </a>are perfect for shaping this seam.\r\n<br>\r\n\r\nWhen it's time to join the front shoulder to that angled back shoulder, the shoulders will match (although the stitch counts won't be the same)<br><center><img class=\"img-thumbnail\" src=\"/path/images/1339/shoulder_example2.jpg\"></center>\r\n\r\n\r\n</div>",
+              "legacyComponentId": 6159,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860051",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 6159,
+              "order": 1
+            }
+          ],
+          "title": "European readme",
+          "slug": "european-readme",
+          "order": 10,
+          "legacy": {
+            "assignId": 4066,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n\r\n<div class=\"row\">\r\n<div class=\"col-sm-8 col-xs-12\">\r\n\r\n\r\n<h3>Did you knit 2 swatches?</h3><br>\r\n\r\nDifferent stitch patterns knit at different gauges.  It is critical when knitting the front panel in a different stitch pattern, you need to generate your pattern using both stitch patterns.<br></div>\r\n<div class=\"col-sm-4 col-xs-12\"> <div class=\"videopopup\" data-videotitle=\"Multiple Stitch Patterns with Dynamic Patterns\" data-vimeoid=\"222275090\">\r\n\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/640764758_1280x1110.jpg?r=pad\">\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div></div>\r\n</div>\r\n<hr class=\"style13\">\r\n\r\n<div class=\"row\">\r\n<div class=\"col-sm-8 col-xs-12\"><h3>Take Stitch Multiples into consideration</h3><br>\r\nAdjust the number of cast on stitches so you have full repeats of your chosen stitch pattern.<br>\r\n\r\nStitch Multiples need to be considered when working in pattern.  <br>For a professional finish, plan for a complete repeat of a stitch pattern at the seams if possible.<br><img class=\"img-thumbnail\" src=\"/images/glossary/stitch_multiples_gif.gif\">\r\n\r\n\r\n\r\n</div>\r\n<div class=\"col-sm-4 col-xs-12\"> <div class=\"videopopup\" data-videotitle=\"Stitch Multiples\" data-vimeoid=\"151857799\">\r\n\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/637021546_1280x960.jpg?r=pad\">\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div></div>\r\n</div>",
+              "legacyComponentId": 6265,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "222275090",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 6265,
+              "order": 1
+            }
+          ],
+          "title": "Bib N tucker Read me",
+          "slug": "bib-n-tucker-read-me",
+          "order": 11,
+          "legacy": {
+            "assignId": 4135,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<b>Before you start knitting:<br></b>\r\n<ol>\r\n\t<li>\r\n\t\t<b>Check the dimensions.</b>\r\n\t\t<ul>\r\n\t\t\t<li>Is the bust size correct? (measure something you wear)</li>\r\n\t\t\t<li> Are the armholes deep enough?</li>\r\n\t\t\t<li>Want longer sleeves? If you have enough needles, cast on more stitches for the \"S\" dimension</li>\r\n\t\t</ul>\r\n\t</li>\r\n\t<li><b>READ Pattern completely!!!</b>\r\n\t\t<ul>\r\n\t\t\t<li>Note the total number of stitches needed to form the sleeves</li>\r\n\t\t\t<li>Note the row counts for the neckline. The neck shaping is worked AT THE SAME TIME as the sleeves.</li>\r\n\t\t</ul>\r\n\t</li>\r\n\t<li>\r\n\t\t<b> New to shaping necklines?</b>\r\n\t\t<ul>\r\n\t\t\t<li><a data-vimeoid=\"151858551\" class=\"videopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Easy Round Neck shaping</a></li>\r\n\t\t</ul>\r\n\r\n\t</li>\r\n</ol>",
+              "legacyComponentId": 6529,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858551",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 6529,
+              "order": 1
+            }
+          ],
+          "title": "seraina summer tee",
+          "slug": "seraina-summer-tee",
+          "order": 12,
+          "legacy": {
+            "assignId": 4314,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"row\">\r\n\t<div class=\"col-sm-6 col-xs-12\">Sock is knit from the cuff to the toe.<br><ul>\r\n\t\t\t<li>\r\n\t\t\t\tTo position the final seam of your sock UNDER the toes, shape the heel and toes on opposite sides as in the drawing.<br></li>\r\n\r\n\t\t\t<li>For the 2nd sock, position the seam so you have a left and right sock\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>\r\n\t\t\t\t\t\t<b>If you previously worked the heel on the left: </b>for the second sock, work the heel on the right<br></li>\r\n\t\t\t\t\t<li><b>If you previously worked the toe on the right: </b>for the second sock, work the toe on the left</li>\r\n\t\t\t\t</ul>\r\n\t\t\t</li>\r\n\t\t</ul>\r\n\t</div>\r\n\t<div class=\"col-sm-6 col-xs-12\"><img class=\"img-responsive\" src=\"/challenge/images/v2/65/sock_readme1.gif\">\r\n\t\t</div>\r\n</div>\r\n",
+              "legacyComponentId": 6537,
+              "order": 1
+            }
+          ],
+          "title": "Sock Readme",
+          "slug": "sock-readme",
+          "order": 13,
+          "legacy": {
+            "assignId": 4318,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"row\">\r\n\t<div class=\"col-sm-6 col-xs-12\">Sock is knit from the cuff to the toe. <br>\r\n\t\t<ul>\r\n\t\t\t<li>\r\n\t\t\t\tTo position the final seam of your sock ON TOP of the toes, shape the heel and toes on the same side as in the drawing.<br></li>\r\n\r\n\t\t\t<li>For the 2nd sock work the heel and toe on the opposite side as the first sock.  This will position the seams so you have a left and right sock.\r\n\t\t\t\t\r\n\t\t\t</li>\r\n\t\t</ul>\r\n\t</div>\r\n\t<div class=\"col-sm-6 col-xs-12\"><img class=\"img-responsive\" src=\"/challenge/images/v2/65/sock_readme2.gif\">\r\n\t\t</div>\r\n</div>\r\n",
+              "legacyComponentId": 6538,
+              "order": 1
+            }
+          ],
+          "title": "Sock1 Readme",
+          "slug": "sock1-readme",
+          "order": 14,
+          "legacy": {
+            "assignId": 4319,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"well_white\">\r\n\r\n<img class=\"img-responsive\" alt=\"\" src=\"/path/images/2836/custom_sleeve.png\">\r\n<div class=\"row\">\r\n<div class=\"col-sm-8 col-xs-12\">\r\nYou find a beautiful top with lots of design interest.  It has drop shoulders or square armholes, but it's sleeveless.<br>Not to worry, you can easily add short, 3/4 or full length sleeves.<br><b><span class=\"yellow_highlight\">Does your sweater shape look like these?</span></b>\r\n<img class=\"img-responsive\" alt=\"\" src=\"/path/images/2836/sleeveless.jpg\"><br><ul>\r\n<li> If the sweater is a vest: Check the armhole depth before planning sleeves. Because they are worn over another garment the armhole is commonly deeper than a sleeveless sweater.</li>\r\n<li>NOTE: The sleeves in this pattern are not for armholes designed for sleeves with \r\n<a class=\"imagepopup\" data-imagetitle=\"Set in Sleeve Caps\" data-image=\"/path/images/2836/set_in.jpg\">set-in sleeve caps <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>\r\n\r\n\r\n</li>\r\n</ul>\r\n\r\n</div>\r\n<div class=\"col-sm-4 col-xs-12\"><img class=\"img-responsive\" src=\"/path/images/1519/Untitled-1.jpg\"><br><a href=\"/knit/MachineKnitable.cfm?group=Sleeveless\"><b><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Click for more sleeveless Examples and Inspiration</b></a></div>\r\n</div>\r\n<h3>To create your custom sleeves, use the measurements from a finished sleeveless sweater or the original pattern diagram or knitting instructions</h3>\r\n</div>\r\n<script>\r\n$(\".imagepopup\").click(function() {\r\n\t$('#Popupcontentdiv').html('<img src=\"'+$(this).attr('data-image')+'\">');\r\n\t//alert($(this).attr('data-imagetitle'));\r\n\t$('#PopupcontentTitle').html($(this).attr('data-imagetitle'));\r\n\t$('#popupContentwindow').modal('show');\r\n});\r\n</script>\r\n",
+              "legacyComponentId": 9369,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "799143778",
+              "title": null,
+              "legacyComponentId": 9370,
+              "order": 2
+            }
+          ],
+          "title": "Custom Sleeves for sleeveless sweaters",
+          "slug": "custom-sleeves-for-sleeveless-sweaters",
+          "order": 15,
+          "legacy": {
+            "assignId": 6122,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"well_white\">\r\n\r\n<img class=\"img-responsive\" alt=\"\" src=\"/path/images/2836/custom_sleeve.png\">\r\n<div class=\"row\">\r\n<div class=\"col-sm-8 col-xs-12\">\r\nYou find a beautiful top with lots of design interest.  It has drop shoulders or square armholes, but it's sleeveless.<br>Not to worry, you can easily add short, 3/4 or full length sleeves.<br><b><span class=\"yellow_highlight\">Does your sweater shape look like these?</span></b>\r\n<img class=\"img-responsive\" alt=\"\" src=\"/path/images/2836/sleeveless.jpg\"><br><ul>\r\n<li> If the sweater is a vest: Check the armhole depth before planning sleeves. Because they are worn over another garment the armhole is commonly deeper than a sleeveless sweater.</li>\r\n<li>NOTE: The sleeves in this pattern are not for armholes designed for sleeves with \r\n<a class=\"imagepopup\" data-imagetitle=\"Set in Sleeve Caps\" data-image=\"/path/images/2836/set_in.jpg\">set-in sleeve caps <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>\r\n\r\n\r\n</li>\r\n</ul>\r\n\r\n</div>\r\n<div class=\"col-sm-4 col-xs-12\"><img class=\"img-responsive\" src=\"/path/images/1519/Untitled-1.jpg\"><br><a href=\"/knit/MachineKnitable.cfm?group=Sleeveless\"><b><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Click for more sleeveless Examples and Inspiration</b></a></div>\r\n</div>\r\n<h3>To create your custom sleeves, use the measurements from a finished sleeveless sweater or the original pattern diagram or knitting instructions</h3>\r\n</div>\r\n<script>\r\n$(\".imagepopup\").click(function() {\r\n\t$('#Popupcontentdiv').html('<img src=\"'+$(this).attr('data-image')+'\">');\r\n\t//alert($(this).attr('data-imagetitle'));\r\n\t$('#PopupcontentTitle').html($(this).attr('data-imagetitle'));\r\n\t$('#popupContentwindow').modal('show');\r\n});\r\n</script>\r\n",
+              "legacyComponentId": 9371,
+              "order": 1
+            }
+          ],
+          "title": "Custom Sleeves where to use",
+          "slug": "custom-sleeves-where-to-use",
+          "order": 16,
+          "legacy": {
+            "assignId": 6123,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .yellow_highlight {\r\n\r\n        background: linear-gradient(rgba(255, 255, 255, 0) 55%, #ffff00 45%, #ffff00);\r\n    }\r\n\r\n</style>\r\n<h3><span class=\"yellow_highlight\"> Please READ and UNDERSTAND <br>the ENTIRE pattern before starting</span></h3>\r\n\r\n<div class=\"row\">\r\n    <div class=\"col-sm-6 col-xs-12\">\r\n\r\n        <br>Because this sweater is knit in one piece, there is a lot going on at one time (especially when shaping the sleeves). It is CRITICAL that you understand the construction before starting to knit.\r\n\r\n\r\n    </div>\r\n    <div class=\"col-sm-6 col-xs-12 text-center\">\r\n        <h3>Need help?</h3><img class=\"img-responsive\" src=\"/challenge/images/v2/65/pattern_help.jpg\">\r\n    </div>\r\n</div>\r\n\r\n<hr class=\"style13\">\r\n\r\n<b>PATTERN OVERVIEW:</b><BR>\r\n<ul>\r\n<Li>Sweater is knit in one piece, from front edge to front edge.</li>\r\n<li>It is written (rights and lefts) as if you are knitting a wrong side facing stitch pattern.<br>\"Right and Left Front\" indicates the front pieces as worn. If you are knitting a wrong-side facing pattern (like slip) the left and right fronts (as worn) would be reversed.<br>\r\nNOTE: Create \"boy\" and \"girl\" buttonholes as appropriate. <br>\r\n<a href=\"http://www.knititnow.com/learn/launch.cfm?contentid=747&inpattern=26C7CE\">Video: Spacing Button Holes (no math)</a>\r\n</li>\r\n<li>Short rows are used to create the raglan sleeves shaping, eliminating some seaming</li>\r\n<li>The body of the sweater is knit in one piece.</li>\r\n<li>The side \"seams\" are removed from the machine (to free up needles to knit the sleeves)</li>\r\n<li>\r\nAfter the each sleeve is finished, the side \"seams\" are picked up again to continue the seamless body.(Green dotted lines)</li>\r\n<li>The underarm seams can be joined on the machine or Kitchener stitched for a \"seamless\" appearance.</li>  \r\n</ul>\r\n\r\n<b>SLEEVE OPTIONS:</b>\r\n<ol>\r\n<li>Use a cast on rag and a row of ravel cord for a quick open cast on.\r\nScrap off the opposite sleeve edge. When the garment is complete, rehang the underarm seams on the machine and bind off. </li>\r\n<Li>Use a closed cast on method and bind off the underarm seams.  Neatly join the seams on the machine or by hand</li>\r\n<li>Use an open cast on and bind off method and Kitchener stitch the underarm seams</li>\r\n</ol>\r\n<b>FINISHING INSTRUCTIONS:</b><br>\r\n\r\nNECKLINE,SLEEVE EDGES and BOTTOM EDGE\r\n<ol>\r\n\r\n<li>With the private (wrong) side facing, pick up the neckline stitches.</li>\r\n<li>Knit for 1\" of rows and bind off</li>\r\n<li>Neatly seam the rolled edges at where the neckline, front edge and hems join</li>\r\n<li>With the private side facing, pick up along the cuff edges</li>\r\n<li>Knit for 1\" of rows and bind off</li>\r\n<li>Join underarm Seams</li>\r\n<li>Neatly work in all ends</li>\r\n<li>Attach buttons</li>\r\n<li>Block</li>\r\n</ol>\r\n<center><img width=\"500\" src=\"http://www.knititnow.com/supportingfiles/2_hour_baby_sweater_legend_600.png\"></td></center>\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 9504,
+              "order": 1
+            }
+          ],
+          "title": "2 hour cardigan notes",
+          "slug": "2-hour-cardigan-notes",
+          "order": 17,
+          "legacy": {
+            "assignId": 6203,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "For a professional finish, make sure your ribbing matches when seaming.  It's Ok to adjust your cast on stitch count to make this happen.",
+              "legacyComponentId": 9631,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857723",
+              "title": "Seaming Ribbing - Plan Ahead!",
+              "legacyComponentId": 9630,
+              "order": 2
+            }
+          ],
+          "title": "rib seaming - plan ahead",
+          "slug": "rib-seaming-plan-ahead",
+          "order": 18,
+          "legacy": {
+            "assignId": 6287,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "a fdafd",
+              "legacyComponentId": 9632,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "a sad sadf",
+              "legacyComponentId": 9634,
+              "order": 2
+            }
+          ],
+          "title": "Plaid Blanket Finishing",
+          "slug": "plaid-blanket-finishing",
+          "order": 19,
+          "legacy": {
+            "assignId": 6288,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Perfect Fit Info",
+      "slug": "perfect-fit-info",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 486,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n.yellow_highlight {\r\n\r\nbackground: linear-gradient(rgba(255,255,255,0) 55%,#ffff00 45%,#ffff00);\r\n}\r\n</style>\r\n\r\n<div class=\"row\">\r\n<div class=\"col-sm-6 col-xs-12\">\r\n<ul>\r\n\t<li>Sleeve is measured from the underarm to the cuff</li><br>\r\n\r\n\t<li>\"C\" Sleeve Length DOES NOT include the cuff\r\n\t\t<ul>\r\n\t\t\t<li>To knit a 20\" sleeve with 2\" of ribbing, enter C=18 and E= 2</li>\r\n\t\t</ul>\r\n\t</li><br>\r\n\t<li><span class=\"yellow_highlight\"> For 3/4, elbow or short sleeves, remember to adjust BOTH the length (C/E) AND the wrist (A)</span></li>\r\n</ul></div>\r\n<div class=\"col-sm-6 col-xs-12\">\t<img class=\"img-responsive\" src=\"/challenge/images/v2/65/shorten_sleeve_gif1.gif\"></div>\r\n</div>\r\n\r\n",
+              "legacyComponentId": 6160,
+              "order": 1
+            }
+          ],
+          "title": "sleeve info",
+          "slug": "sleeve-info",
+          "order": 1,
+          "legacy": {
+            "assignId": 4067,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"row\">\r\n<div class=\"col-sm-8 col-xs-12\">The neck opening does not include bands.  Allow for the band on each side for your finished neck opening.</div>\r\n<div class=\"col-sm-4 col-xs-12\"><img class=\"img-responsive\" src=\"/challenge/images/v2/65/neckband.jpg\"></div>\r\n</div>",
+              "legacyComponentId": 6161,
+              "order": 1
+            }
+          ],
+          "title": "neck opening",
+          "slug": "neck-opening",
+          "order": 2,
+          "legacy": {
+            "assignId": 4068,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"row\">\r\n<div class=\"col-sm-8 col-xs-12\">With the shaped side seams, work the OPTIONAL shaped hem to prevent the center front and back from creeping up.<Br>\r\n<center><button data-vimeoid=\"398070112\" class=\"videopopup btn btn-xs btn-default\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Hip and Tummy Shaping</button></center><br></div>\r\n<div class=\"col-sm-4 col-xs-12\"><img class=\"img-responsive\" src=\"/images/blog_images/2020/shaped_hem_gif.gif\"></div>\r\n</div",
+              "legacyComponentId": 6162,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "398070112",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 6162,
+              "order": 1
+            }
+          ],
+          "title": "Optional Shaped Hem",
+          "slug": "optional-shaped-hem",
+          "order": 3,
+          "legacy": {
+            "assignId": 4069,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Measured at side seam. Does not include hem or ribbing.",
+              "legacyComponentId": 6163,
+              "order": 1
+            }
+          ],
+          "title": "hem to armhole",
+          "slug": "hem-to-armhole",
+          "order": 4,
+          "legacy": {
+            "assignId": 4070,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"row\">\r\n<div class=\"col-sm-4  col-sm-offset-2 col-xs-12\">For the smaller sizes, we recommend adding a shoulder opening for kids pullovers. <br></div>\r\n<div class=\"col-sm-2 col-xs-12\"><img class=\"img-responsive zoom\" src=\"/challenge/images/v2/65/shoulder_opening1.jpg\"></div>\r\n</div>\r\n\r\n\r\n",
+              "legacyComponentId": 6166,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "396776651",
+              "title": "Shoulder Opening for Kids Pullovers",
+              "legacyComponentId": 6164,
+              "order": 2
+            }
+          ],
+          "title": "Kids heads are big!",
+          "slug": "kids-heads-are-big",
+          "order": 5,
+          "legacy": {
+            "assignId": 4071,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"row\">\r\n<div class=\"col-sm-6 col-sm-offset-1 col-xs-12\">\r\nThe measurement of the upper arm determines the armhole depth. Make the upper arm comfortable and the armhole will be automatically adjusted.</div>\r\n<div class=\"col-sm-4 col-xs-12\"><img class=\"img-responsive\" src=\"/challenge/images/v2/65/armhole_pf_adustment.jpg\">\r\n</div>\r\n</div>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 6167,
+              "order": 1
+            }
+          ],
+          "title": "Upper Arm",
+          "slug": "upper-arm",
+          "order": 6,
+          "legacy": {
+            "assignId": 4072,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Be sure to adjust the \"cuff\" measurement when shortening sleeves.<br>\r\n<img class=\"img-responsive\" src=\"/challenge/images/v2/65/shorten_sleeve_gif.gif\">",
+              "legacyComponentId": 9364,
+              "order": 1
+            }
+          ],
+          "title": "sleeve Length adjustment",
+          "slug": "sleeve-length-adjustment",
+          "order": 7,
+          "legacy": {
+            "assignId": 6120,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Pattern picker Info",
+      "slug": "pattern-picker-info",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 528,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "With Knit it Now Dynamic patterns you can build patterns with your choice of sleeve/armhole styles<br>\r\nYour choice depends on your knitting skill level, and preferences.<br><center>\r\n\t<div class=\"row\">\r\n\t\t<div class=\"col-sm-4 col-sm-offset-1 col-xs-12\">\r\n\t\t\t<div class=\"panel panel-default\">\r\n\t\t\t\t<div class=\"panel-heading\">Easiest Knitting</div>\r\n\t\t\t\t<div class=\"panel-body\">\r\n\t\t\t\t\t<center><img class=\"img-responsive\" src=\"/challenge/images/v2/65/dropped.jpg\"></center>\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\t\t</div>\r\n\t\t<div class=\"col-sm-4 col-xs-12\">\r\n\t\t\t<div class=\"panel panel-default\">\r\n\t\t\t\t<div class=\"panel-heading\">Easy Knittting - simple armhole bind off</div>\r\n\t\t\t\t<div class=\"panel-body\">\r\n\t\t\t\t\t<center><img class=\"img-responsive\" src=\"/challenge/images/v2/65/square.jpg\"></center>\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\t\t</div>\r\n\t</div>\r\n\t<div class=\"row\">\r\n\t\t<div class=\"col-sm-4 col-sm-offset-1 col-xs-12\">\r\n\t\t\t<div class=\"panel panel-default\">\r\n\t\t\t\t<div class=\"panel-heading\">Armhole and Sleeve Cap shaping</div>\r\n\t\t\t\t<div class=\"panel-body\">\r\n\t\t\t\t\t<center><img class=\"img-responsive\" src=\"/challenge/images/v2/65/set-In.jpg\"></center>\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\t\t</div>\r\n\t\t<div class=\"col-sm-4 col-xs-12\">\r\n\t\t\t<div class=\"panel panel-default\">\r\n\t\t\t\t<div class=\"panel-heading\">Armhole and Sleeve Cap Shaping with decreases</div>\r\n\t\t\t\t<div class=\"panel-body\">\r\n\t\t\t\t\t<center><img class=\"img-responsive\" src=\"/challenge/images/v2/65/raglan.jpg\"></center>\r\n\t\t\t\t</div>\r\n\t\t\t</div>\r\n\t\t</div>\r\n\t</div>\r\n</center>\r\n",
+              "legacyComponentId": 6486,
+              "order": 1
+            }
+          ],
+          "title": "Sleeve Styles",
+          "slug": "sleeve-styles",
+          "order": 1,
+          "legacy": {
+            "assignId": 4252,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"row\">\r\n<div class=\"col-sm-3 col-sm-offset-1 col-xs-12\"><img class=\"img-responsive\" src=\"/challenge/images/v2/65/a-Line.jpg\"></div>\r\n<div class=\"col-sm-3 col-xs-12\"><img class=\"img-responsive\" src=\"/challenge/images/v2/65/fitted.jpg\"></div>\r\n<div class=\"col-sm-3 col-xs-12\"><img class=\"img-responsive\" src=\"/challenge/images/v2/65/non_fitted.jpg\"></div>\r\n</div>\r\n",
+              "legacyComponentId": 6487,
+              "order": 1
+            }
+          ],
+          "title": "Body Styling",
+          "slug": "body-styling",
+          "order": 2,
+          "legacy": {
+            "assignId": 4253,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"row\">\r\n<div class=\"col-sm-3 col-sm-offset-1 col-xs-12\"><img class=\"img-responsive\" src=\"/challenge/images/v2/65/panels1.jpg\"></div>\r\n<div class=\"col-sm-3 col-xs-12\"><img class=\"img-responsive\" src=\"/challenge/images/v2/65/center_seam1.jpg\"></div>\r\n<div class=\"col-sm-3 col-xs-12\"><img class=\"img-responsive\" src=\"/challenge/images/v2/65/sideways1.jpg\"></div>\r\n</div>\r\n",
+              "legacyComponentId": 6488,
+              "order": 1
+            }
+          ],
+          "title": "style",
+          "slug": "style",
+          "order": 3,
+          "legacy": {
+            "assignId": 4254,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Classrooms",
+      "slug": "classrooms",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 782,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Classroom_Link_info",
+              "notes": [
+                "Unmapped legacy component type: Classroom_Link_info"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6232",
+                "CHALLENGE_COMPONENTID": "9558",
+                "CLASSROOMID": "44"
+              },
+              "legacyComponentId": 9558,
+              "order": 2
+            }
+          ],
+          "title": "Cast on",
+          "slug": "cast-on",
+          "order": 1,
+          "legacy": {
+            "assignId": 6232,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Classroom_Link_info",
+              "notes": [
+                "Unmapped legacy component type: Classroom_Link_info"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6238",
+                "CLASSROOMID": "87",
+                "TYPEOF": "Classroom_Link_info"
+              },
+              "legacyComponentId": 9559,
+              "order": 1
+            }
+          ],
+          "title": "Swatching is not Optional!",
+          "slug": "swatching-is-not-optional",
+          "order": 2,
+          "legacy": {
+            "assignId": 6238,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Classroom_Link_info",
+              "notes": [
+                "Unmapped legacy component type: Classroom_Link_info"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6250",
+                "CLASSROOMID": "38",
+                "TYPEOF": "Classroom_Link_info"
+              },
+              "legacyComponentId": 9573,
+              "order": 1
+            }
+          ],
+          "title": "Socks on the machine",
+          "slug": "socks-on-the-machine",
+          "order": 3,
+          "legacy": {
+            "assignId": 6250,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Classroom_Link_info",
+              "notes": [
+                "Unmapped legacy component type: Classroom_Link_info"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6251",
+                "CLASSROOMID": "104",
+                "TYPEOF": "Classroom_Link_info"
+              },
+              "legacyComponentId": 9574,
+              "order": 1
+            }
+          ],
+          "title": "I-Cord on the Machine",
+          "slug": "i-cord-on-the-machine",
+          "order": 4,
+          "legacy": {
+            "assignId": 6251,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "pattern read me",
+      "slug": "pattern-read-me",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 804,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<b>BEFORE YOU START KNITTING:</b> Please read the pattern completely and double check your dimensions.<br> NOTE: This pattern offers 2 dress versions:\r\n<ol>\r\n<li> A-line, tunic style, with optional shaped hem and split back neck opening\r\n<ul>\r\n<li>Knit sections #1-2 -6-7</li>\r\n</ul>\r\n\r\n</li>\r\n<li>Empire Style with gathered skirt and split back neck opening\r\n<ul>\r\n<li>Knit sections 3-4-5-6-7</li>\r\n</ul>\r\n\r\n\r\n</li>\r\n</ol>\r\n <br><span class=\"yellow_highlight\">Remember dimensions listed are FINISHED dimensions based on your choices when you created your pattern (not body dimensions)</span><br>",
+              "legacyComponentId": 9669,
+              "order": 1
+            }
+          ],
+          "title": "Pinafore",
+          "slug": "pinafore",
+          "order": 1,
+          "legacy": {
+            "assignId": 6311,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h4><b>BEFORE YOU START KNITTING</h4> Please read the pattern completely and double check your dimensions.</b><br><span class=\"yellow_highlight\">Remember: dimensions listed are FINISHED dimensions based on your choices when you created your pattern (not body dimensions)</span><br><b> TIPS</b><br>\r\n<ul>\r\n\r\n    <li>Not Enough needles at your size and gauge? Consider using a tuck stitch for more width.</li><br>\r\n    <li>The fronts of the garment are picked up and knit separately from the body</li><br>\r\n    <li>A zipper is inserted in the front edge of the body. Plan the edge finish before you start knitting.</li><br>\r\n<li> The original pattern has large, wide sleeves that look a bit dated, so we've added a shaped sleeve option. For sleeves that are not shaped, make the wrist measurement the same as the upper arm.\r\n\r\n<span class=\"imagepopup\" data-imagetitle=\"Straight Sleeves\" data-image=\"/challenge/images/v2/65/sleeves.jpg\"><i class=\"fa fa-picture-o\" aria-hidden=\"true\"></i></span>\r\n\r\n\r\n</li>\r\n</ul>\r\n<b>Edge Finishing suggestions:</b><br><div class=\"text-center\">\r\n    <div class=\"row\">\r\n        <div class=\"col-sm-4 col-sm-offset-2 col-xs-12\">\r\n            <div class=\"videopopup\" data-videotitle=\"Zippers in Knitting\" data-vimeoid=\"168771780\">\r\n                <img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/573332442-71f61abcf703b69dba5d27e719a2b5dc675b3e213c2127574a3917942d7ff191-d_1280x720?r=pad\">\r\n                <div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n            </div>\r\n            <em>Zippers in Knitting</em>\r\n        </div>\r\n        <div class=\"col-sm-4 col-xs-12\">\r\n            <div class=\"videopopup\" data-videotitle=\"No Roll Edges\" data-vimeoid=\"672100555\">\r\n                <img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/1361969355-344f049e11e81818f9d8e50ed540e9c5a762d005d6ce0b9f7e610c01cebe214c-d_1280x720?r=pad\">\r\n                <div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n            </div>\r\n            <em>No roll Edge</em>\r\n        </div>\r\n\r\n    </div>\r\n<br><div class=\"row\">\r\n       <div class=\"col-sm-4 col-sm-offset-2 col-xs-12\">\r\n            <div class=\"videopopup\" data-videotitle=\"Slipped Chain Edge  Finish\" data-vimeoid=\"305148159\">\r\n                <img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/1009979954-45788a21fcafa4521b42e76a9a2d3d259fcb3092f6eebf9681b58de33a95b986-d_1280x720?r=pad\">\r\n                <div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n            </div>\r\n            <em>Slipped Edge Stitch</em>\r\n        </div>\r\n        <div class=\"col-sm-4 col-xs-12\">\r\n            <div class=\"videopopup\" data-videotitle=\"Knit-in I-Cord\" data-vimeoid=\"151859707\">\r\n                <img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/1058907102-f605520decb004ad76b94a4037a7c873ffd0fe3a44060ec4368cd1e5bb747d3d-d_1280x720?r=pad\">\r\n                <div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n            </div>\r\n            <em>Knit-in I-Cord</em>\r\n        </div>\r\n    </div>\r\n</div>",
+              "legacyComponentId": 9670,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "168771780",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 9670,
+              "order": 1
+            }
+          ],
+          "title": "baby sleeping bag",
+          "slug": "baby-sleeping-bag",
+          "order": 2,
+          "legacy": {
+            "assignId": 6312,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Because preemie sweaters are small, this pattern is designed to eliminate the side seams by knitting the body in one piece to the armholes. Then split the sections and knit the sweater yoke back and fronts separately.<br><ol>\r\n<li>Knit the back to the armholes</li>\r\n<li>Scrap off the center back stitches (D)</li>\r\n<li>Opposite the carriage,  scrap off the front yoke stitches (X)</li>\r\n<li>On the carriage side: continue knitting and shaping the front yoke (X)</li>\r\n<li>Bind off front yoke</li>\r\n<li>Pick up back stitches and knit the back</li>\r\n<li>Bind off the back</li>\r\n<li>Rehang the other front yoke stitches</li>\r\n<li>continue knitting and shaping the front yoke</li>\r\n</ol><br>\r\n\r\n\r\n<h4>Techniques to consider / learn / practice</h4>\r\n\r\nScrapping off: The fronts and back are scrapped off \"X\" and \"D\" then picked up to complete, creating the armholes.  If knitting in pattern, be sure you can start and stop your stitch pattern correctly so there are no interruptions to the pattern. vimeo 750<br>\r\n\r\n",
+              "legacyComponentId": 9711,
+              "order": 1
+            }
+          ],
+          "title": "preemie instructions",
+          "slug": "preemie-instructions",
+          "order": 3,
+          "legacy": {
+            "assignId": 6345,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "If your pillow measures 16\", consider knitting the cover slightly smaller. This will help create a snug fit and allow the pillow to plump up nicely.",
+              "legacyComponentId": 10167,
+              "order": 1
+            }
+          ],
+          "title": "One and Done Pillow",
+          "slug": "one-and-done-pillow",
+          "order": 4,
+          "legacy": {
+            "assignId": 6514,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 10,
+    "videos": [
+      {
+        "vimeoId": "252368462",
+        "title": null,
+        "lessonSlug": "introduction",
+        "blockSlug": "lifeline-glossary-entry"
+      },
+      {
+        "vimeoId": "412489948",
+        "title": null,
+        "lessonSlug": "misc-individual-pages",
+        "blockSlug": "waterfall"
+      },
+      {
+        "vimeoId": "151860051",
+        "title": null,
+        "lessonSlug": "misc-individual-pages",
+        "blockSlug": "european-readme"
+      },
+      {
+        "vimeoId": "222275090",
+        "title": null,
+        "lessonSlug": "misc-individual-pages",
+        "blockSlug": "bib-n-tucker-read-me"
+      },
+      {
+        "vimeoId": "151858551",
+        "title": null,
+        "lessonSlug": "misc-individual-pages",
+        "blockSlug": "seraina-summer-tee"
+      },
+      {
+        "vimeoId": "799143778",
+        "title": null,
+        "lessonSlug": "misc-individual-pages",
+        "blockSlug": "custom-sleeves-for-sleeveless-sweaters"
+      },
+      {
+        "vimeoId": "151857723",
+        "title": "Seaming Ribbing - Plan Ahead!",
+        "lessonSlug": "misc-individual-pages",
+        "blockSlug": "rib-seaming-plan-ahead"
+      },
+      {
+        "vimeoId": "398070112",
+        "title": null,
+        "lessonSlug": "perfect-fit-info",
+        "blockSlug": "optional-shaped-hem"
+      },
+      {
+        "vimeoId": "396776651",
+        "title": "Shoulder Opening for Kids Pullovers",
+        "lessonSlug": "perfect-fit-info",
+        "blockSlug": "kids-heads-are-big"
+      },
+      {
+        "vimeoId": "168771780",
+        "title": null,
+        "lessonSlug": "pattern-read-me",
+        "blockSlug": "baby-sleeping-bag"
+      }
+    ],
+    "downloadCount": 1,
+    "downloads": [
+      {
+        "filename": "/downloads/inside_out_hat_template.pdf",
+        "label": "Print Your template",
+        "lessonSlug": "introduction",
+        "blockSlug": "inside-out-hat-template"
+      }
+    ]
+  }
+}

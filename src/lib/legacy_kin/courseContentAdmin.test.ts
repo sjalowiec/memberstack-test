@@ -2,8 +2,16 @@ import { describe, expect, it } from "vitest";
 import {
   applyComponentRemovals,
   applyRichTextUpdates,
+  COURSE_CONTENT_FILES,
+  discoverAdminCourseCatalog,
   findEmptyBlockSlugs,
+  getAllowedCourseIds,
+  isAllowedCourseId,
+  listAdminCourseSummaries,
+  readCourseContentFile,
+  readCourseContentStatus,
   removeEmptyBlocksFromLesson,
+  saveCourseMetadata,
   saveLessonUpdate,
   validateLessonInput,
 } from "./courseContentAdmin";
@@ -234,5 +242,121 @@ describe("saveLessonUpdate", () => {
     expect(() =>
       saveLessonUpdate(50, "lesson-one", { title: "Broken lesson" }),
     ).toThrow("Lesson requires a non-empty slug string.");
+  });
+});
+
+describe("discoverAdminCourseCatalog", () => {
+  it("discovers all generated course-poc files on disk", () => {
+    const catalog = discoverAdminCourseCatalog();
+    expect(catalog.length).toBeGreaterThanOrEqual(73);
+  });
+
+  it("includes hand-cleaned courses 50 and 51", () => {
+    const ids = discoverAdminCourseCatalog().map((entry) => entry.id);
+    expect(ids).toContain(50);
+    expect(ids).toContain(51);
+  });
+
+  it("includes migrated draft courses", () => {
+    const entry = discoverAdminCourseCatalog().find((item) => item.id === 2);
+    expect(entry?.title).toBe("Not Enough Needles?");
+    expect(entry?.filename).toBe("course_2_not_enough_needles.poc.json");
+  });
+});
+
+describe("listAdminCourseSummaries", () => {
+  it("marks migrated courses as draft in admin summaries", () => {
+    const draft = listAdminCourseSummaries().find((item) => item.id === 2);
+    expect(draft?.isDraft).toBe(true);
+    expect(draft?.isPublic).toBe(false);
+  });
+
+  it("keeps hand-cleaned courses editable and public in admin summaries", () => {
+    const quickStart = listAdminCourseSummaries().find((item) => item.id === 50);
+    const fun = listAdminCourseSummaries().find((item) => item.id === 51);
+    expect(quickStart?.isDraft).toBe(false);
+    expect(quickStart?.isPublic).toBe(true);
+    expect(fun?.isDraft).toBe(false);
+    expect(fun?.isPublic).toBe(true);
+  });
+
+  it("sorts courses alphabetically by title for the admin picker", () => {
+    const titles = listAdminCourseSummaries().map((item) => item.title);
+    const sorted = [...titles].sort((a, b) =>
+      a.localeCompare(b, undefined, { sensitivity: "base" }),
+    );
+    expect(titles).toEqual(sorted);
+  });
+});
+
+describe("getAllowedCourseIds", () => {
+  it("allows admin access to every discovered course id", () => {
+    const ids = getAllowedCourseIds();
+    expect(ids).toContain(50);
+    expect(ids).toContain(51);
+    expect(ids).toContain(2);
+    expect(isAllowedCourseId(2)).toBe(true);
+    expect(isAllowedCourseId(999999)).toBe(false);
+  });
+});
+
+describe("readCourseContentStatus", () => {
+  it('returns "cleaned" only when course.contentStatus is exactly "cleaned"', () => {
+    expect(readCourseContentStatus({ contentStatus: "cleaned" })).toBe("cleaned");
+    expect(readCourseContentStatus({ contentStatus: "in_progress" })).toBe("in_progress");
+    expect(readCourseContentStatus({})).toBe("in_progress");
+    expect(readCourseContentStatus({ contentStatus: undefined })).toBe("in_progress");
+    expect(readCourseContentStatus({ status: "published" } as { contentStatus?: string })).toBe(
+      "in_progress",
+    );
+  });
+});
+
+describe("saveCourseMetadata contentStatus", () => {
+  it('writes the exact value "cleaned" to course JSON', () => {
+    const before = readCourseContentFile(66).course.contentStatus;
+    try {
+      const result = saveCourseMetadata(66, { contentStatus: "cleaned" });
+      expect(result.contentStatus).toBe("cleaned");
+      expect(readCourseContentFile(66).course.contentStatus).toBe("cleaned");
+    } finally {
+      saveCourseMetadata(66, {
+        contentStatus: before === "cleaned" ? "cleaned" : "in_progress",
+      });
+    }
+  });
+
+  it("writes catalog description to course JSON", () => {
+    const before = readCourseContentFile(66).course.description;
+    const sample = "Catalog blurb for admin save test.";
+    try {
+      const result = saveCourseMetadata(66, { description: sample });
+      expect(result.description).toBe(sample);
+      expect(readCourseContentFile(66).course.description).toBe(sample);
+    } finally {
+      saveCourseMetadata(66, { description: before ?? null });
+    }
+  });
+});
+
+describe("readCourseContentFile discovery", () => {
+  it("still loads course 50 from the known filename", () => {
+    expect(COURSE_CONTENT_FILES[50]).toBe("course_50_lk150_quick.poc.json");
+    const data = readCourseContentFile(50);
+    expect(data.course.slug).toBe("lk-150-quick-start");
+    expect(data.lessons.length).toBeGreaterThan(0);
+  });
+
+  it("loads migrated draft course 2 for admin editing", () => {
+    const data = readCourseContentFile(2);
+    expect(data.course.status).toBe("draft");
+    expect(data.course.published).toBe(false);
+  });
+
+  it("loads ribber basic bootcamp as cleaned for landing-ready behavior", () => {
+    const data = readCourseContentFile(66);
+    expect(data.course.slug).toBe("ribber-basic-bootcamp");
+    expect(data.course.contentStatus).toBe("cleaned");
+    expect(readCourseContentStatus(data.course)).toBe("cleaned");
   });
 });

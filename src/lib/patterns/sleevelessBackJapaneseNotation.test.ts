@@ -6,6 +6,7 @@ import {
   armholeBindOffDecreaseFromEachSide,
   buildBackJapaneseNotationReplacements,
   formatBindOffNotation,
+  formatHoldNotation,
   formatCastOnNotation,
   formatRcNotation,
   formatRcResetNotation,
@@ -76,7 +77,7 @@ describe("buildBackJapaneseNotationReplacements", () => {
 
     const center = result.debug.centerNeckBindOffStitches;
     if (center != null && center > 0) {
-      expect(repl["jp-neckline-bo"]).toBe(formatBindOffNotation(center));
+      expect(repl["jp-neckline-bo"]).toBe(formatHoldNotation(center));
     }
 
     expect(Object.keys(repl).sort()).toEqual([...JP_BACK_NOTATION_SVG_TOKEN_KEYS].sort());

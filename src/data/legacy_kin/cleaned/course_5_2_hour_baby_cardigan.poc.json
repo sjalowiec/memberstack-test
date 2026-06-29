@@ -1,0 +1,1489 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 5,
+    "title": "2 Hour Baby Cardigan",
+    "slug": "2-hour-baby-cardigan",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_5_2_hour_baby_cardigan.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/2_hour_baby.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Start Here",
+      "slug": "start-here",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 26,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Knit this quick project in one piece. Work as much or as little finishing as you wish and you'll be done in no time!<br>Watch the videos Parts 1 - 4 as we knit our sweater. <br>Then view the accompanying technique videos to brush up on your skills or learn new ones. <br><ul>\r\n<li><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> \r\n<mark>Watch</mark> the start-to-finish videos</li>\r\n<li><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> <mark>Follow</mark> the technique instructions</li>\r\n<li><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i><mark> Practice</mark></li>\r\n<li><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> <mark>Get knitting!</mark></li>\r\n</ul><br>\r\n\r\n\r\n",
+              "legacyComponentId": 378,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "219444890",
+              "title": "intro video",
+              "legacyComponentId": 201,
+              "order": 2
+            }
+          ],
+          "title": "2 hour sweater?  Yep!",
+          "slug": "2-hour-sweater-yep",
+          "order": 1,
+          "legacy": {
+            "assignId": 114,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nThe video will walk you through how to access the lessons and navigate to get the most out of your course.<br /> \r\n<img src=\"/challenge/images/v2/5/course_clipboard.jpg\"/>\r\n\r\n<div class=\".col-md-5\">\r\n<blockquote class=\"smallblock\"><b><em>TIP: </b>Don't skip lessons ... you may feel that you know all about a technique ... but sometimes you will pick up a tip that you can use while watching a video.</em></blockquote></div>\r\n\r\n\r\n",
+              "legacyComponentId": 397,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "221120492",
+              "title": "Machine Knitting Courses",
+              "legacyComponentId": 396,
+              "order": 2
+            }
+          ],
+          "title": "How to use this course site",
+          "slug": "how-to-use-this-course-site",
+          "order": 2,
+          "legacy": {
+            "assignId": 152,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Start-to-Finish",
+      "slug": "start-to-finish",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 24,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "184444434",
+              "title": null,
+              "legacyComponentId": 357,
+              "order": 1
+            }
+          ],
+          "title": "Part 1 Start-to-Finish",
+          "slug": "part-1-start-to-finish",
+          "order": 2,
+          "legacy": {
+            "assignId": 115,
+            "blockType": "VimeoMultiple"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "184438257",
+              "title": null,
+              "legacyComponentId": 358,
+              "order": 1
+            }
+          ],
+          "title": "Part 2 Start-to-Finish",
+          "slug": "part-2-start-to-finish",
+          "order": 3,
+          "legacy": {
+            "assignId": 116,
+            "blockType": "VimeoMultiple"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "184542369",
+              "title": null,
+              "legacyComponentId": 359,
+              "order": 1
+            }
+          ],
+          "title": "Part 3 Start-to-Finish",
+          "slug": "part-3-start-to-finish",
+          "order": 4,
+          "legacy": {
+            "assignId": 117,
+            "blockType": "VimeoMultiple"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "184587335",
+              "title": null,
+              "legacyComponentId": 360,
+              "order": 1
+            }
+          ],
+          "title": "Part 4 Start-to-Finish",
+          "slug": "part-4-start-to-finish",
+          "order": 5,
+          "legacy": {
+            "assignId": 118,
+            "blockType": "VimeoMultiple"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Plan your project",
+      "slug": "plan-your-project",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 21,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">These sweaters can be knit again and again.  Each one can be completely different than the others.</div>\r\n<dl class=\"dl-horizontal\" style=\"line-height:1.7\">\r\n  <dt class=\"ddspacing\">Yarn choice</dt>\r\n  <dd class=\"ddspacing\">Solid colors, stripes and variegated yarns work great.</dd>\r\n  <dt class=\"ddspacing\">Buttons</dt>\r\n  <dd class=\"ddspacing\">We chose to add only 3 buttons, add as many as you like. A zipper would look great!.</dd>\r\n  <dt class=\"ddspacing\">Stitch Pattern</dt>\r\n  <dd class=\"ddspacing\">Although we knit in plain stockinette, this pattern can be knit in almost any stitch pattern.  Think Lace, tuck, fairisle, slip, multicolor patternining ... the sky is the limit!</dd>\r\n <dt class=\"ddspacing\">Finishing</dt>\r\n  <dd class=\"ddspacing\">For fast finishing .... let the edges roll.  Or pick up hand knitting needles or a crochet hook for your finishing</dd>\r\n <dt class=\"ddspacing\">Add a collar or hood</dt>\r\n  <dd class=\"ddspacing\">Check out the Knit it Now digital download <a target=\"_blank\" href=\"http://www.knititnow.com/store/product/728/add-a-hood-to-any-knitting-pattern/digitialdownload\">\"Add a Hood to Any Sweater\"</a></dd>\r\n</dl>\r\nCan you see the possibilities? \r\n<hr />\r\n<div class=\"lead\">{first}, Tell us about your machine and your plan for your sweater.</div>\r\nIf you don't yet have a plan or know your gauge, no problem!  This information can be changed at any time.<br>\r\nThis information will be used to create your custom pattern and in your course binder. <small><em>The items with * will be required before you can create your custom pattern.</em></small>",
+              "legacyComponentId": 217,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "127",
+                "CHALLENGE_COMPONENTID": "210",
+                "DATAMODEL_ELEMENT": "machine",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "What machine will you use?",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 210,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "127",
+                "CHALLENGE_COMPONENTID": "212",
+                "DATAMODEL_ELEMENT": "Your_yarn",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "What yarn will you use?",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 212,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "127",
+                "CHALLENGE_COMPONENTID": "215",
+                "DATAMODEL_ELEMENT": "number_buttonholes",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "How many buttonholes do you want to add?",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 215,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Selectsize",
+              "notes": [
+                "Unmapped legacy component type: Selectsize"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "127",
+                "CHALLENGE_COMPONENTID": "374",
+                "DATAMODEL_ELEMENT": "PatternSize",
+                "DATAMODEL_REQEST_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Select size *",
+                "SIZINGTYPEID": "3"
+              },
+              "legacyComponentId": 374,
+              "order": 7
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "SizingChart",
+              "notes": [
+                "Unmapped legacy component type: SizingChart"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "127",
+                "CHALLENGE_COMPONENTID": "372",
+                "HIDECHART": "Yes",
+                "SIZINGTYPEID": "3"
+              },
+              "legacyComponentId": 372,
+              "order": 9
+            }
+          ],
+          "title": "Choices, Choices, Choices",
+          "slug": "choices-choices-choices",
+          "order": 1,
+          "legacy": {
+            "assignId": 127,
+            "blockType": "Practice"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Swatching is NOT optional",
+      "slug": "swatching-is-not-optional",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 22,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<strong>You are making progress!</strong> ... we've spent a lot of time planning, practicing and thinking about knitting ... are you ready to do some \"real knitting\"?<br><strong>DON'T SKIP THIS SECTION!</strong> <br>Your success with this course AND your success with your knitting machine depends on your understanding and mastering the art of knitting gauge swatches.<br>Without a swatch we are knitting in the dark.\r\n<ul>\r\n<li>How is the final sweater going to feel in the yarn and stitch pattern you've chosen?</li>\r\n<li>Do you have enough yarn?</li>\r\n<li>Do you have enough needles on your machine for the size you chose?</li>\r\n</ul>\r\n\r\n\r\n<div class=\"text-center\">\r\n<p style=\"text-align: center;\"><strong>SWATCHING IS NOT OPTIONAL</strong></p>\r\n<img class=\"img-thumbnail\" src=\"https://www.knititnow.com/images/blog_images/2017/swatching_is_not_optional.jpg\" /></div>\r\n",
+              "legacyComponentId": 370,
+              "order": 2
+            }
+          ],
+          "title": "Step 1: Your Success Depends on this Lesson",
+          "slug": "step-1-your-success-depends-on-this-lesson",
+          "order": 1,
+          "legacy": {
+            "assignId": 129,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\"><b>If you haven't used your chosen yarn before, how do you know the best tension to knit your sweater?</div> </b>\r\n\r\nKnitters tend to use the terms \"tension swatch\" and \"gauge swatch\" interchangeably, lets take a look at both.",
+              "legacyComponentId": 428,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"cleanwell\">\r\n\r\n<h4><strong>GAUGE SWATCH</strong></h4>\r\nThe <strong>gauge swatch</strong> is the \"official\" swatch used when designing a garment.\r\n<br>\r\nIt is knit at a specific size, marked for accurate stitch and row measurement and \"dressed\" as the final garment will be treated.<br>\r\n<blockquote class=\"smallblock\">\r\n<em>TIP: Whatever method you use to create a swatch, the key is to correctly measure it and calculate your gauge.</em></blockquote>\r\n<img src=\"/challenge/images/v2/5/swatch_measure.jpg\" />\r\n</div>",
+              "legacyComponentId": 309,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"cleanwell\">\r\n\r\n<h4><strong>TENSION SWATCH</strong></h4>\r\n<em>When I pick up a new cone of yarn, I can't wait to thread up my machine and see what the yarn looks like.   From the initial cast on, I start guessing what setting on my tension dial I need to use.  I knit a few inches and reach down and start to feel the resulting fabric. <br>Once I get a feel for the yarn (what machine, general tension setting at stockinette, etc) I create a<strong> tension swatch</strong>.  This helps me fine-tune the tension needed to achieve the fabric I like and allows me to play with various techniques.  <strong>I'm often very surprised that a yarn looks great in tuck, and awful in slip</strong>, for example.  Adding a few eyelets here and there tells me if the yarn will work up in lace.</em><br>Let's practice knitting a <strong>tension swatch.</strong>\r\n</div>",
+              "legacyComponentId": 313,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<ol class=\"instruction-list\">\r\n<li>Play!</li>\r\n<li>Start knitting stockenette at the tightest tension that will knit.  (If the tension is too tight, you'll see stitches that don't form properly.</li>\r\n<li>Knit 2-4 inches. Knit a marker row (change colors, work a few eyelets across the row or knit a sewing thread in with the main yarn)</li>\r\n<li>Keep knitting sections, marking the tension dial number in each section.  Knit the last section as loosely as possiblle, even if you think this will be too loose ... I'm often very pleasantly surprised at the result.</li>\r\n<li>Transfer every other needle to out of work postion and knit a section - put all needles back into work.</li>\r\n<li>Work a simple tuck, or slip, or any stitch pattern of your choice ... base your tension dial setting on the stockinette sections you just knit.</li>\r\n</ol>\r\n<blockquote class=\"smallblock\">The point of this exercise is to put the yarn through it's paces ... ignite your creativity, and get a feel for what the yarn can do.  If you don't have a huge cone, you can always re-wind this knitting. At this point, you probably know exactly what you want to do with this yarn.  Knit your Gauge Swatch, dress it and and you are ready to design and knit your sweater.</blockquote>\r\n\r\n<img src=\"/challenge/images/v2/5/tension_swatch.jpg\" />\r\n\r\n",
+              "legacyComponentId": 311,
+              "order": 4
+            }
+          ],
+          "title": "Step 2: Gauge swatch verses Tension Swatch",
+          "slug": "step-2-gauge-swatch-verses-tension-swatch",
+          "order": 2,
+          "legacy": {
+            "assignId": 130,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Hand knitters use the excuse \"It takes too much time to knit a swatch\", then they are often disappointed that their knitting doesn't fit.<br>\r\n<b>Machine knitters, rejoice!</b>  Knitting a swatch is fast and the information it supplies is invaluable ...even for something as simple as a blanket.<br>",
+              "legacyComponentId": 421,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357273",
+              "title": "swatch from bootcamp",
+              "legacyComponentId": 315,
+              "order": 2
+            }
+          ],
+          "title": "Step 3: Knitting swatches",
+          "slug": "step-3-knitting-swatches",
+          "order": 3,
+          "legacy": {
+            "assignId": 131,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<div class=\"lead\">Time to get knitting!</div>\r\n<ol class=\"Instruction-list\">\r\n<li>Knit a swatch using any method.</li>\r\n<li>Let it rest</li>\r\n<li>Dress the swatch (treat it as you will treat your sweater)</li>\r\n<li>Accurately measure YOUR stitch and row gauge</li>\r\n<li>Record your gauge below</li>\r\n</ol>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/5/2hr/swatch_example.jpg\" /><br />Does your swatch look similar to this one?\r\n\r\n",
+              "legacyComponentId": 317,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "132",
+                "CHALLENGE_COMPONENTID": "322",
+                "DATAMODEL_ELEMENT": "stitchgauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": " <b>What is your stitch gauge? <small>(4 in/10cm)</small></b>",
+                "DATAMODEL_VALIDATION_EXTRA": "12",
+                "DATAMODEL_VALIDATION_MESSAGE": "Enter gauge for 4 in /10 cm",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 322,
+              "order": 7
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "132",
+                "CHALLENGE_COMPONENTID": "323",
+                "DATAMODEL_ELEMENT": "rowgauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": " <b>What is your row gauge? <small>(4 in/10cm)</small></b>",
+                "DATAMODEL_VALIDATION_MESSAGE": "Enter gauge for 4 in /10 cm",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 323,
+              "order": 8
+            },
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"smallblock\"><em><b>TIP:</b> attach a string tag to your swatch recording all the details ... it's funny how easy it is to forget. Include yarn name, machine, tension, measurements, and stitch pattern number (if appropriate)</em></blockquote>",
+              "legacyComponentId": 384,
+              "order": 9
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "swatch",
+                "BUTTONLABLE": "Upload a Photo of your GAUGE SWATCH<br><small>It will be included in your Course Binder</small>",
+                "CHALLENGE_ASSIGNID": "132",
+                "CHALLENGE_COMPONENTID": "398",
+                "QTY": "1",
+                "SUCCESSMESSAGE": "Done!"
+              },
+              "legacyComponentId": 398,
+              "order": 10
+            }
+          ],
+          "title": "Step 4: Your turn ... Get Knitting",
+          "slug": "step-4-your-turn-get-knitting",
+          "order": 4,
+          "legacy": {
+            "assignId": 132,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "It is important that you know how to estimate yarn for all of your knitting projects <small>(hint: it's based on your swatch and a little math)</small>",
+              "legacyComponentId": 420,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857735",
+              "title": "How Much Yarn Do I Need?",
+              "legacyComponentId": 326,
+              "order": 2
+            }
+          ],
+          "title": "Step 5: How Much Yarn Do You Need?",
+          "slug": "step-5-how-much-yarn-do-you-need",
+          "order": 5,
+          "legacy": {
+            "assignId": 133,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/5/yarn_estimate_example.jpg\" alt=\"\" />\r\n\r\n\r\n\r\n\r\nUsing the dimensions of the sample swatch shown above,  and the instructions from the video,<br />calculate how much yarn you would need for a <strong>36x36 baby blanket.</strong>\r\n<em><small>Not sure? Take a guess and we'll show you the math</small></em>\r\n\r\n",
+              "legacyComponentId": 327,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "134",
+                "CHALLENGE_COMPONENTID": "371",
+                "QUESTION_ANSWER": "63",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply 9 x 7 = 63!</b",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-4",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many square inches in the example swatch?"
+              },
+              "legacyComponentId": 371,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "134",
+                "CHALLENGE_COMPONENTID": "330",
+                "QUESTION_ANSWER": ".35",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Divide weight (22) / square inches (63)=.35 </b></b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-4",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Calculate weight per square inch <small>(round up)</small>"
+              },
+              "legacyComponentId": 330,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "134",
+                "CHALLENGE_COMPONENTID": "331",
+                "QUESTION_ANSWER": "1296",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply 36 x 36 = 1296</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-4",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many square inches in the blanket?"
+              },
+              "legacyComponentId": 331,
+              "order": 6
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "134",
+                "CHALLENGE_COMPONENTID": "332",
+                "QUESTION_ANSWER": "454",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply the blanket square inches(1296) x multiplier (.35)= 454 grams</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-4",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many grams are needed (approximate) for the 36 x 36 inch blanket?"
+              },
+              "legacyComponentId": 332,
+              "order": 7
+            },
+            {
+              "type": "richText",
+              "html": "\r\n              Hate math?<br>Try the Knit it Now tool\r\n                <img src=\"/challenge/images/v2/5/tools/yarn_estimator_tool_sticky.gif\">\r\n\r\n\r\n",
+              "legacyComponentId": 334,
+              "order": 9
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859805",
+              "title": "Yarn Estimator tool video",
+              "legacyComponentId": 335,
+              "order": 10
+            }
+          ],
+          "title": "Step 6: Practice - Yarn Estimate",
+          "slug": "step-6-practice-yarn-estimate",
+          "order": 6,
+          "legacy": {
+            "assignId": 134,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\tBecause this pattern is knit in one piece, laid flat it's an odd shape.  The easiest way to estimate yarn usage is to calculate the garment squre inches over the total size as shown.  The \"extra\" yarn calculated (for the raglan openings) will be needed for bands, and swatches.<br>If you prefer, follow the suggestions in the video and calculate each section separately for a more accurate yarn estimate.\r\n<blockquote class=\"smallblock\"><br /> <strong>TIP:</strong><em><small> Use the tool below to estimate the yarn needed for your yarn and size</small></em></blockquote>\r\n<img src=\"/challenge/images/v2/5/2hr/2_hour_yarn_estimate.png\" />\r\n",
+              "legacyComponentId": 356,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Selectsize",
+              "notes": [
+                "Unmapped legacy component type: Selectsize"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "148",
+                "CHALLENGE_COMPONENTID": "340",
+                "DATAMODEL_ELEMENT": "PatternSize",
+                "DATAMODEL_REQEST_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Select size *",
+                "SIZINGTYPEID": "3"
+              },
+              "legacyComponentId": 340,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "148",
+                "CHALLENGE_COMPONENTID": "336",
+                "DATAMODEL_ELEMENT": "Your_Swatch_Width",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Enter YOUR swatch <B>WIDTH*</B><SMALL> (entire swatch)</SMALL>",
+                "DATAMODEL_VALIDATION_MESSAGE": "Numbers only",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 336,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "148",
+                "CHALLENGE_COMPONENTID": "337",
+                "DATAMODEL_ELEMENT": "Your_Swatch_Length",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Enter YOUR swatch <B>LENGTH*</B><SMALL> (entire swatch)</SMALL>",
+                "DATAMODEL_VALIDATION_MESSAGE": "Numbers only",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 337,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "148",
+                "CHALLENGE_COMPONENTID": "338",
+                "DATAMODEL_ELEMENT": "Your_Swatch_Weight",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Enter YOUR swatch <B>Weight*</B><SMALL> (grams)</SMALL>",
+                "DATAMODEL_VALIDATION": "number",
+                "DATAMODEL_VALIDATION_MESSAGE": "Numbers Only",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 338,
+              "order": 6
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Equation",
+              "notes": [
+                "Unmapped legacy component type: Equation"
+              ],
+              "legacyFields": {
+                "BUTTONTEXT": "Calculate",
+                "CHALLENGE_ASSIGNID": "148",
+                "CHALLENGE_COMPONENTID": "339",
+                "CUSTOMCFM": "2hrCardigian_yarnNeeded.cfm",
+                "USEDELEMENT": "Your_Swatch_Width,Your_Swatch_Length,PatternSize,PatternSize_SelectionLable,Your_Swatch_Weight"
+              },
+              "legacyComponentId": 339,
+              "order": 7
+            }
+          ],
+          "title": "Step 7: Practice - Your Yarn Estimate",
+          "slug": "step-7-practice-your-yarn-estimate",
+          "order": 7,
+          "legacy": {
+            "assignId": 148,
+            "blockType": "Practice"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Techniques",
+      "slug": "techniques",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 23,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Here are 3 basic techniques that will allow you to create buttonholes for any size button. Included is a valuable 2 stitch buttonhole.<br />Follow along and try putting holes in your knitting ... on purpose!",
+              "legacyComponentId": 422,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859614",
+              "title": "Basic Buttonholes",
+              "legacyComponentId": 203,
+              "order": 2
+            }
+          ],
+          "title": "Step 1: Basic Buttonholes",
+          "slug": "step-1-basic-buttonholes",
+          "order": 1,
+          "legacy": {
+            "assignId": 120,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Visually position buttonholes across the needlebed.",
+              "legacyComponentId": 385,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "183218959",
+              "title": "Spacing Button Holes (no math)",
+              "legacyComponentId": 204,
+              "order": 2
+            }
+          ],
+          "title": "Step 2: Spacing Buttonholes (no math)",
+          "slug": "step-2-spacing-buttonholes-no-math",
+          "order": 2,
+          "legacy": {
+            "assignId": 121,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n    <div class=\"pull-left\"><img src=\"/challenge/images/v2/5/tools/buttonhole_placement_tool.gif\"></div>\r\n    Let the Knit it Now Buttonhole Placement tool help you alter patterns and create your own designs with perfectly placed buttonholes .... and no tears!\r\n\r\n<blockquote class=\"smallblock\" style=\"margin-top:5px\">\r\nEliminate any guesswork: Enter the size and number of buttons, and the start and end position. Using YOUR stitch and row gauge, the tool will provide you with exact knitting instructions.</blockquote>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 423,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "220500964",
+              "title": "Buttonhole Position Tool",
+              "legacyComponentId": 361,
+              "order": 2
+            }
+          ],
+          "title": "Step 3: Buttonhole Tool",
+          "slug": "step-3-buttonhole-tool",
+          "order": 3,
+          "legacy": {
+            "assignId": 151,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "For this sweater you won't need large buttons.  Simple eyelet buttonholes (1 or 2 stitch) will be perfect (and easy!)<br>\r\n<strong>Practice: </strong>\r\nKnit a swatch and practice eyelet buttonholes. Use your practice swatch to determine the hole size for the buttons you will be using for your sweater.<br>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/5/2hr/buttonhole_practice.jpg\" alt=\"\" />\r\n",
+              "legacyComponentId": 377,
+              "order": 2
+            }
+          ],
+          "title": "Step 4: Practice - Knitting Buttonholes",
+          "slug": "step-4-practice-knitting-buttonholes",
+          "order": 4,
+          "legacy": {
+            "assignId": 124,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "A cast on rag is invaluable for this project.  Use this technique for the underarm seams, leaving \"live\" stitches to kitchener stitch later.  By joining the seams in this way, the sweater will be \"seamless\".",
+              "legacyComponentId": 424,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860044",
+              "title": "Creating a Cast on Rag",
+              "legacyComponentId": 206,
+              "order": 2
+            }
+          ],
+          "title": "Step 5: Creating a Cast on Rag",
+          "slug": "step-5-creating-a-cast-on-rag",
+          "order": 5,
+          "legacy": {
+            "assignId": 122,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nUsing one of the methods shown, create 2 or 3 cast on rags.  Once you get in the habit, you will find you use these all the time!  No more scrap and ravel cast on.",
+              "legacyComponentId": 365,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<p><strong>Practice: </strong>Knit a Cast on rag (try it .. you will like it!)</p>\r\n<ol class=\"instruction-list\">\r\n<li>Using a closed cast on method of your choice, cast on 5 stitches</li>\r\n<li>Knit a few rows</li>\r\n<li>Carriage on the right</li>\r\n<li>Opposite the carriage, decrease 1 stitch (any method). Push the emptied needle to out of work position.</li>\r\n<li>Pull a needle into working position next to the carriage.</li>\r\n<li>Knit 2 rows</li>\r\n<li>Repeat for the length desired - moving the stitches across the bed as needed</li>\r\n<li>Bind off</li>\r\n</ol>\r\n",
+              "legacyComponentId": 341,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<div>\r\n\r\n<p><img class=\"img-thumbnail\" src=\"/challenge/images/v2/5/cast_on_rag_example.jpg\" /></p>\r\n\r\n<div class=\"pull-left\"> \r\n<p><em>Does your cast on rag look similar to this?  As long as you have loops that can be picked up easily, it's perfect!</em></p></div>\r\n\r\n\r\n",
+              "legacyComponentId": 388,
+              "order": 5
+            }
+          ],
+          "title": "Step 6: Practice - Cast on Rag",
+          "slug": "step-6-practice-cast-on-rag",
+          "order": 6,
+          "legacy": {
+            "assignId": 125,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Don't skip practicing this technique.  You will use it again and again in your knitting.",
+              "legacyComponentId": 425,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860040",
+              "title": "Short Row Increases and Decreases",
+              "legacyComponentId": 207,
+              "order": 2
+            }
+          ],
+          "title": "Step 7: Short Row Increases and Decreases",
+          "slug": "step-7-short-row-increases-and-decreases",
+          "order": 7,
+          "legacy": {
+            "assignId": 123,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/5/2hr/sr_inc_dec_example.jpg\" /><br>\r\n\r\n\r\n\r\n\r\n<strong>Practice: </strong> Use 2 colors of yarn to make this technique more clear.<br /> <small>Instructions are for <em>standard gauge (mid/bulky gauge).</em></small>\r\n\r\n\r\n\r\n<div class=\"cleanwell\">\r\n<h4>Part 1: Short Row increase</h4>\r\n<ol class=\"instruction-list\">\r\n<li>With waste yarn and ravel cord, cast on 60 <em>(30)</em> stitches</li>\r\n<li>With color 1 e-wrap cast on over all needles</li>\r\n<li>Carriage on the right, knit 1 row</li>\r\n<li>Carriage on the left, push 20<em>(10)</em> stitches on the right into hold position. Keep 40<em>(20)</em> stitches next to the carriage in working position.</li>\r\n<li>Carriage set to hold.</li>\r\n<li>Knit 1 row to the right</li>\r\n<li>Wrap to prevent a hole</li>\r\n<li>Knit back to the left</li>\r\n<li>*Put 10<em>(5)</em> held needles into working position</li>\r\n<li>Knit, wrap, knit*</li>\r\n<li>Repeat from * to * a total of 4 times (until all needles are in working position)</li>\r\n</ol>\r\nChange colors and knit 30<em>(15)</em> rows ending with the carriage on the right.<br><b>Continue knitting Short Row Decreases</b>\r\n</div>\r\n \r\n<div class=\"cleanwell\">\r\n<h4>Part 2: Short Row Decrease</h4>\r\n<ol class=\"instruction-list\">\r\n<li>Change back to first color</li>\r\n<li>Knit 1 row (carriage on the left) (Carriage still set to hold)</li>\r\n<li>*Opposite the carriage, pull 10<em>(5)</em> needles into hold position</li>\r\n<li>Knit, wrap knit*</li>\r\n<li>Repeat from * to * a total of 4 times, ending with the carriage on the left</li>\r\n<li>Cancel hold (or put all needles in working position)</li>\r\n<li>Knit 1 row</li>\r\n<li>Bind off</li>\r\n</ol>\r\n</div>\r\n",
+              "legacyComponentId": 364,
+              "order": 1
+            }
+          ],
+          "title": "Step 8: Practice - Short Row Increase and Decrease",
+          "slug": "step-8-practice-short-row-increase-and-decrease",
+          "order": 8,
+          "legacy": {
+            "assignId": 126,
+            "blockType": "Practice"
+          }
+        }
+      ]
+    },
+    {
+      "title": "More Techniques",
+      "slug": "more-techniques",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 25,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "This entire sweater is knit in one piece. I'd hate to see you get to the center back and have disaster strike ....<mark>lifelines to the rescue!</mark>................<br>How many times have you tirelessly worked on a technique or a large section of knitting, then had disaster strike and you had to start all over?<br>This has happened to us all!<br><strong>Lifelines to the rescue!</strong> <br>This tutorial covers 2 methods of preventing disaster.",
+              "legacyComponentId": 429,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859753",
+              "title": "Lifelines: A Knitter's Best Friend",
+              "legacyComponentId": 218,
+              "order": 2
+            }
+          ],
+          "title": "Lesson 1: Lifelines",
+          "slug": "lesson-1-lifelines",
+          "order": 1,
+          "legacy": {
+            "assignId": 135,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Knitting short rows or partial knitting is a large part of the construction of this baby sweater.<br>If you are adventurous and are thinking of knitting this sweater in lace, (it would be gorgeous)! please take time to practice working short rows while using the lace carriage.<br>\r\n",
+              "legacyComponentId": 379,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858307",
+              "title": "Shortrow Shaping with the Lace Carriage",
+              "legacyComponentId": 220,
+              "order": 2
+            }
+          ],
+          "title": "Lesson 2: Shortrows with the Lace carriage",
+          "slug": "lesson-2-shortrows-with-the-lace-carriage",
+          "order": 2,
+          "legacy": {
+            "assignId": 136,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Rolled hems are a quick and easy way to put a casual hem on a sweater. The rule of thumb is to gradually change the tension so the roll is more pronounced. Is this true?<br>Watch as we experiment, you may be surprised at the results.",
+              "legacyComponentId": 380,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858757",
+              "title": "Rolled Hem Study",
+              "legacyComponentId": 221,
+              "order": 2
+            }
+          ],
+          "title": "Lesson 3: Rolled hem study",
+          "slug": "lesson-3-rolled-hem-study",
+          "order": 3,
+          "legacy": {
+            "assignId": 137,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Neatly joining the side seams of this sweater adds a professional touch.<br>",
+              "legacyComponentId": 430,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151849234",
+              "title": "Grafting from the Knit Side",
+              "legacySlot": 1,
+              "legacyComponentId": 222,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151850342",
+              "title": "Grafting from the Purl Side",
+              "legacySlot": 2,
+              "legacyComponentId": 222,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858422",
+              "title": "Spectacular Seams",
+              "legacySlot": 3,
+              "legacyComponentId": 222,
+              "order": 2
+            }
+          ],
+          "title": "Lesson 4: Grafting on the Machine",
+          "slug": "lesson-4-grafting-on-the-machine",
+          "order": 4,
+          "legacy": {
+            "assignId": 138,
+            "blockType": "VimeoMultiple"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<img class=\"img-circle\" src=\"/challenge/images/v2/5/2hr/grafting_example2.jpg\" alt=\"\" />\r\n<img class=\"img-circle\" src=\"/challenge/images/v2/5/2hr/grafting_example1.jpg\" alt=\"\" />\r\n",
+              "legacyComponentId": 368,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<br><strong>PRACTICE:</strong> Try grafting on the machine.<br>\r\nInstructions are for standard gauge <em>(mid/bulky gauge).</em><br>\r\n\r\n<h4><i class='fa fa-refresh' aria-hidden='true'></i> Swatch 1</h4>\r\n<ol class=\"instruction-list\">\r\n<li>Cast on 60<em>(30)</em> stitches with any method</li>\r\n<li>Knit for 40<em>(20)</em> rows in plain knitting</li>\r\n<li>Scrap off or remove on garter bar or hand knitting needle</li>\r\n</ol>\r\n\r\n\r\n \r\n\r\n<h4><i class='fa fa-refresh' aria-hidden='true'></i> Swatch 2</h4>\r\n<ol class=\"instruction-list\">\r\n<li>Cast on 60<em>(30)</em> stitches with any method</li>\r\n<li>Knit for 40<em>(20)</em> rows in plain knitting</li>\r\n<li>Scrap off or remove on garter bar or hand knitting needle</li>\r\n</ol>\r\n\r\n\r\n\r\n\r\n<h4><i class='fa fa-refresh' aria-hidden='true'></i> Grafting exercise</h4>\r\n<ol class=\"instruction-list\">\r\n<li>With the knit side (public side, right side) facing you, rehang Swatch 1 on the machine, being sure to pick up all the stitches</li>\r\n<li>With the purl side (private side, wrong side) facing you, rehang Swatch 2 on the same needles. (the knit sides will be facing each other</li>\r\n<li>Using a tapestry needle and contrasting yarn neatly graft the pieces together as shown in the video</li>\r\n</ol>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 362,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "\r\n<h4><i class='fa fa-refresh' aria-hidden='true'></i> BONUS PRACTICE</h4>Knit 2 swatches as above.\r\n<ol class=\"Instruction-list\">\r\n<li>With the purl side facing you, rehang one of the swatches on the machine</li>\r\n<li>With the knit side facing you, rehang the other swatch on the machine (the purl sides will be facing each other)</li>\r\n<li>Using a tapestry needle and contrasting yarn neatly graft the pieces together</li>\r\n</ol>\r\n",
+              "legacyComponentId": 389,
+              "order": 6
+            },
+            {
+              "type": "richText",
+              "html": "<div>\r\n                \r\n<blockquote class=\"smallblock\"><em><strong>TIP:</strong><br>If grafting on the machine is a challenge, try scrapping off the pieces as above. With the scrap yarn in place, using a tapestry needle graft (Kitchener stitch) the pieces together. Be sure to keep your tension the same as your knitting.<br>\r\nWhen the seam is joined, remove the scrap yarn from both pieces.<br>Keeping the scrap yarn in place makes it much easier to visualize how to form the stitches for a neat, uniform seam.</em>\r\n</blockquote>\r\n   \r\n\r\n\r\n",
+              "legacyComponentId": 394,
+              "order": 9
+            }
+          ],
+          "title": "Lesson 5: Practice: Grafting on the Machine",
+          "slug": "lesson-5-practice-grafting-on-the-machine",
+          "order": 5,
+          "legacy": {
+            "assignId": 149,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\n<ol>\r\n<li>Work 1- 2 rows of single crochet</li>\r\n<lI>chain 2 (to turn the row)</li>\r\n<li>(Single crochet in the next single crochet , chain 1) Repeat across the row</li>\r\n<li>chain 2 (to turn the row)</li>\r\n<li>*Skip 1 single crochet, 1 chain and 1 single crochet</li>\r\n<li>Work 5 double crochet in the next chain.</li>\r\n<li>Skip 1 single crochet, 1 chain and 1 single crochet</li>\r\n<li>Single crochet in the next chain*</li>\r\n<li>Repeat from * to * across the row</li>\r\n</ol><br>\r\n<img src=\"/challenge/images/v2/5/crochet.jpg\">\r\n\r\n<ul class=\"style13\">\r\n<img src=\"/challenge/images/v2/5/crochet-edge.jpg\"><br>",
+              "legacyComponentId": 9747,
+              "order": 1
+            }
+          ],
+          "title": "Crochet Edge",
+          "slug": "crochet-edge",
+          "order": 6,
+          "legacy": {
+            "assignId": 6368,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Get Knitting!",
+      "slug": "get-knitting",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 34,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<em>* Items are required before you can create your pattern.</em>",
+              "legacyComponentId": 408,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Selectsize",
+              "notes": [
+                "Unmapped legacy component type: Selectsize"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "157",
+                "DATAMODEL_ELEMENT": "PatternSize",
+                "DATAMODEL_REQEST_TEXT": "Select size *",
+                "SIZINGTYPEID": "3",
+                "TYPEOF": "Selectsize"
+              },
+              "legacyComponentId": 405,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "157",
+                "CHALLENGE_COMPONENTID": "404",
+                "DATAMODEL_ELEMENT": "stitchgauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "What is your stitch gauge* <small>(4in/10cm)</small>?",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 404,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "157",
+                "CHALLENGE_COMPONENTID": "406",
+                "DATAMODEL_ELEMENT": "rowgauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "What is your row gauge* <small>(4in/10cm)</small>?",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 406,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "157",
+                "CHALLENGE_COMPONENTID": "401",
+                "DATAMODEL_ELEMENT": "machine",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "What machine will you use?",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 401,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "157",
+                "DATAMODEL_ELEMENT": "Your_yarn",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "What yarn will you use?",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 402,
+              "order": 6
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "157",
+                "DATAMODEL_ELEMENT": "number_buttonholes",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "How many buttonholes do you want to add?",
+                "DATAMODEL_VALIDATION_EXTRA": "1,20",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 403,
+              "order": 7
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "157",
+                "DATAMODEL_ELEMENT": "personal_notes",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Personal Notes",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 407,
+              "order": 8
+            }
+          ],
+          "title": "Confirm your Information",
+          "slug": "confirm-your-information",
+          "order": 1,
+          "legacy": {
+            "assignId": 157,
+            "blockType": "DataEntry"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment '2 Hour Infant Cardigan' (legacy garmentId 818).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "150",
+                "GARMENTID": "818",
+                "GARMENTTITLE": "2 Hour Infant Cardigan",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "Pattern_File_Name",
+                "REDIRECT_TO": "/challenge/5/Group/145/item|2 Hour Baby Cardigan Pattern: Download Pattern",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "rowgauge",
+                "SIZING_DATAMODEL_ELEMENT": "PatternSize",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "stitchgauge",
+                "TYPEOF": "Pattern"
+              },
+              "legacyComponentId": 395,
+              "order": 14
+            }
+          ],
+          "title": "Create Your Personalized Pattern",
+          "slug": "create-your-personalized-pattern",
+          "order": 2,
+          "legacy": {
+            "assignId": 150,
+            "blockType": "DataEntry"
+          }
+        }
+      ]
+    },
+    {
+      "title": "2 Hour Baby Cardigan Pattern",
+      "slug": "2-hour-baby-cardigan-pattern",
+      "displayOrder": 10,
+      "legacy": {
+        "itemId": 31,
+        "lessonOrder": 10
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): Pattern_File_Name",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 150 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "145",
+                "DATAMODEL_ELEMENTS": "Pattern_File_Name",
+                "DATAMODEL_REDIRECT": "150",
+                "DATAMODEL_VALIDATION_MESSAGE": "Please create your Pattern First",
+                "TYPEOF": "DataValidation"
+              },
+              "legacyComponentId": 419,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'Pattern_File_Name'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "145",
+                "CHALLENGE_COMPONENTID": "283",
+                "DATAMODEL_ICON": "fa fa-download",
+                "LABLE": "Download your pattern",
+                "PATTERN_DATAMODEL_ELEMENT": "Pattern_File_Name",
+                "VIEWHEIGHT": "600"
+              },
+              "legacyComponentId": 283,
+              "order": 2
+            }
+          ],
+          "title": "Download Pattern",
+          "slug": "download-pattern",
+          "order": 2,
+          "legacy": {
+            "assignId": 145,
+            "blockType": "Document"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Your Course Binder",
+      "slug": "your-course-binder",
+      "displayOrder": 11,
+      "legacy": {
+        "itemId": 27,
+        "lessonOrder": 11
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "Finished_photo",
+                "BUTTONLABLE": "Upload images of your finished sweater<br><small>This will be included in your Course Binder</br>",
+                "CHALLENGE_ASSIGNID": "153",
+                "CHALLENGE_COMPONENTID": "399",
+                "QTY": "2",
+                "SUCCESSMESSAGE": "You did it!  Great Work!"
+              },
+              "legacyComponentId": 399,
+              "order": 1
+            }
+          ],
+          "title": "{first}, show off your finished Sweater",
+          "slug": "first-show-off-your-finished-sweater",
+          "order": 2,
+          "legacy": {
+            "assignId": 153,
+            "blockType": "ImageUpload"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n                Your Course Binder contains all of the information provided by you during the course.\r\n                <img src=\"/challenge/images/v2/5/course_binder_logo.png\"\">\r\n\r\n\r\n",
+              "legacyComponentId": 410,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Binder",
+              "notes": [
+                "Unmapped legacy component type: Binder"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "155",
+                "LABLE": "Binder",
+                "TYPEOF": "Binder"
+              },
+              "legacyComponentId": 400,
+              "order": 2
+            }
+          ],
+          "title": "Download your printable course Binder",
+          "slug": "download-your-printable-course-binder",
+          "order": 3,
+          "legacy": {
+            "assignId": 155,
+            "blockType": "Binder"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 20,
+    "videos": [
+      {
+        "vimeoId": "219444890",
+        "title": "intro video",
+        "lessonSlug": "start-here",
+        "blockSlug": "2-hour-sweater-yep"
+      },
+      {
+        "vimeoId": "221120492",
+        "title": "Machine Knitting Courses",
+        "lessonSlug": "start-here",
+        "blockSlug": "how-to-use-this-course-site"
+      },
+      {
+        "vimeoId": "184444434",
+        "title": null,
+        "lessonSlug": "start-to-finish",
+        "blockSlug": "part-1-start-to-finish"
+      },
+      {
+        "vimeoId": "184438257",
+        "title": null,
+        "lessonSlug": "start-to-finish",
+        "blockSlug": "part-2-start-to-finish"
+      },
+      {
+        "vimeoId": "184542369",
+        "title": null,
+        "lessonSlug": "start-to-finish",
+        "blockSlug": "part-3-start-to-finish"
+      },
+      {
+        "vimeoId": "184587335",
+        "title": null,
+        "lessonSlug": "start-to-finish",
+        "blockSlug": "part-4-start-to-finish"
+      },
+      {
+        "vimeoId": "178357273",
+        "title": "swatch from bootcamp",
+        "lessonSlug": "swatching-is-not-optional",
+        "blockSlug": "step-3-knitting-swatches"
+      },
+      {
+        "vimeoId": "151857735",
+        "title": "How Much Yarn Do I Need?",
+        "lessonSlug": "swatching-is-not-optional",
+        "blockSlug": "step-5-how-much-yarn-do-you-need"
+      },
+      {
+        "vimeoId": "151859805",
+        "title": "Yarn Estimator tool video",
+        "lessonSlug": "swatching-is-not-optional",
+        "blockSlug": "step-6-practice-yarn-estimate"
+      },
+      {
+        "vimeoId": "151859614",
+        "title": "Basic Buttonholes",
+        "lessonSlug": "techniques",
+        "blockSlug": "step-1-basic-buttonholes"
+      },
+      {
+        "vimeoId": "183218959",
+        "title": "Spacing Button Holes (no math)",
+        "lessonSlug": "techniques",
+        "blockSlug": "step-2-spacing-buttonholes-no-math"
+      },
+      {
+        "vimeoId": "220500964",
+        "title": "Buttonhole Position Tool",
+        "lessonSlug": "techniques",
+        "blockSlug": "step-3-buttonhole-tool"
+      },
+      {
+        "vimeoId": "151860044",
+        "title": "Creating a Cast on Rag",
+        "lessonSlug": "techniques",
+        "blockSlug": "step-5-creating-a-cast-on-rag"
+      },
+      {
+        "vimeoId": "151860040",
+        "title": "Short Row Increases and Decreases",
+        "lessonSlug": "techniques",
+        "blockSlug": "step-7-short-row-increases-and-decreases"
+      },
+      {
+        "vimeoId": "151859753",
+        "title": "Lifelines: A Knitter's Best Friend",
+        "lessonSlug": "more-techniques",
+        "blockSlug": "lesson-1-lifelines"
+      },
+      {
+        "vimeoId": "151858307",
+        "title": "Shortrow Shaping with the Lace Carriage",
+        "lessonSlug": "more-techniques",
+        "blockSlug": "lesson-2-shortrows-with-the-lace-carriage"
+      },
+      {
+        "vimeoId": "151858757",
+        "title": "Rolled Hem Study",
+        "lessonSlug": "more-techniques",
+        "blockSlug": "lesson-3-rolled-hem-study"
+      },
+      {
+        "vimeoId": "151849234",
+        "title": "Grafting from the Knit Side",
+        "lessonSlug": "more-techniques",
+        "blockSlug": "lesson-4-grafting-on-the-machine"
+      },
+      {
+        "vimeoId": "151850342",
+        "title": "Grafting from the Purl Side",
+        "lessonSlug": "more-techniques",
+        "blockSlug": "lesson-4-grafting-on-the-machine"
+      },
+      {
+        "vimeoId": "151858422",
+        "title": "Spectacular Seams",
+        "lessonSlug": "more-techniques",
+        "blockSlug": "lesson-4-grafting-on-the-machine"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

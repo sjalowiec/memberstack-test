@@ -1,0 +1,717 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 91,
+    "title": "Custom Christmas Stockings",
+    "slug": "custom-christmas-stockings",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_91_custom_christmas_stockings.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Getting Started",
+      "slug": "getting-started",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 555,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Custom Christmas stockings can become much-loved heirlooms, appreciated hostess gifts, re-usable gift wrap or money-making craft fair items.<br>In this knit-along we will explore 2 styles of socks with the patterns in multiple sizes from mini to jumbo.<br>Mix 'n Match Stitch pattern version is designed to incorporate a different stitch pattern on the top and bottom of the foot.<br>The Basic stocking is a bit easier to knit and has less finishing.<br>Options:<br>\r\n\r\nGather up the toe for an even faster project.\r\n\r\n<br>Don't like to short row?  consider shaping toes and heels with increases and decreases and neatly seam them to form the correct shape.<br>If you are new to knitting socks, try a mini to perfect your skills.  Don't mess with stitch patterns at first ... or just add some simple stripes.  Once you've \"got it\" consider adding fairisle, initarsia or isolated motifs.",
+              "legacyComponentId": 6603,
+              "order": 1
+            }
+          ],
+          "title": "Introduction",
+          "slug": "introduction",
+          "order": 1,
+          "legacy": {
+            "assignId": 4357,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<span class=\"handwriting\" style=\"font-size:2em\">If you are new:</span><br>\r\n Start small and gain confidence<br><span class=\"handwriting\" style=\"font-size:2em\">If you've \"been there .... done that\":</span><br>\r\nTry incorporating a new stitch pattern technique or knit a seamless stocking<br>",
+              "legacyComponentId": 6604,
+              "order": 1
+            },
+            {
+              "type": "exerciseAccordion",
+              "sections": [
+                {
+                  "title": "Knit and measure an accurate swatch",
+                  "bodyHtml": "No matter what you want to knit, <b>knitting a gauge swatch is NOT OPTIONAL!</b><br>Without knowing gauge:<ul>\r\n\t<li>How do you know how much yarn you need?</li>\r\n\t<li>How are you going to know if the finished item will fit?</li>\r\n\t<li>Determine if you are even going to LIKE the resulting fabric</li>\r\n\t<li>Try out the chosen stitch pattern, maybe it's too tedious... learn this BEFORE starting to knit</li>\r\n\t<li>Dress the swatch and check for shrinkage, pilling, fading</li>\r\n\t<li>Save time by knowing AHEAD if the yarn will knit easily</li>\r\n</ul>\r\n<br>\r\n\r\n\t<img src=\"/path/images/87/measure_rows.jpg\">\r\n\t<img src=\"/path/images/87/measure_stitches.jpg\">\r\n",
+                  "iconSrc": "/challenge/images/v2/91/arrow1.png"
+                },
+                {
+                  "title": "Decisions, Decisions, Decisions",
+                  "bodyHtml": "<b><mark>Leg:</mark></b>\r\n<ul>\r\n<li>Ribbing, Mock Rib, Plain or stitch pattern?</li>\r\n<li>Cuff, Rolled Edge, Ribbing or ???</li>\r\n</ul>\r\n<b><mark>Heel / Toe:</mark></b>\r\n<ul>\r\n<li>Short rows</li>\r\n<li>Decrease/Increase method</li>\r\n<li>Gathered toe???</li>\r\n</ul>\r\n<b><mark>Stitch Patterns:</mark></b>\r\n<ul>\r\n<li>Stripes</li>\r\n<li>Fairisle</li>\r\n<li>Isolated Motif</li>\r\n<li>Intarsia</li>\r\n</ul>",
+                  "iconSrc": "/challenge/images/v2/91/arrow2.png"
+                },
+                {
+                  "title": "Build the Knit it Now Stocking Pattern",
+                  "bodyHtml": " <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i> <a data-vimeoid=\"402313052\" class=\"videopopup\"> Are you new to Knit it Now Patterns? </a><br><a href=\"\"><img src=\"/challenge/images/v2/91/pattern_thumb.jpg\">\r\n</a>",
+                  "iconSrc": "/challenge/images/v2/91/arrow3.png"
+                },
+                {
+                  "title": "Follow the pattern and knit your stocking",
+                  "bodyHtml": "\r\n\r\n\r\n<br>Make notes in the pattern as you go.... any time you see<br> a pencil icon <i class=\"fa fa-pencil\" aria-hidden=\"true\"></i> you can type.<br>Save your notes directly in your pattern.<br>\r\n\r\n<img src=\"/challenge/images/v2/91/notes.jpg\">\r\n",
+                  "iconSrc": "/challenge/images/v2/91/arrow4.png"
+                },
+                {
+                  "title": "Finishing",
+                  "bodyHtml": "Seaming can make or break your project ... take time to make the seams perfect!",
+                  "iconSrc": "/challenge/images/v2/91/arrow5.png"
+                }
+              ],
+              "legacy": {
+                "showText": "below",
+                "size": null
+              },
+              "legacyComponentId": 6605,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "KnitalongEvents",
+              "notes": [
+                "Unmapped legacy component type: KnitalongEvents"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4358",
+                "TYPEOF": "KnitalongEvents"
+              },
+              "legacyComponentId": 8352,
+              "order": 3
+            }
+          ],
+          "title": "The Steps",
+          "slug": "the-steps",
+          "order": 2,
+          "legacy": {
+            "assignId": 4358,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "The Pattern",
+      "slug": "the-pattern",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 556,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern_option",
+              "notes": [
+                "Unmapped legacy component type: Pattern_option"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4359",
+                "CHALLENGE_COMPONENTID": "6616",
+                "GARMENTID": "1010",
+                "LABLE": "<i class='fa fa-cubes' aria-hidden='true'></i>",
+                "TOPTEXT": "Naughty or nice, here's a stocking for anyone on your list. <br><br>Knit in any yarn on any machine, the short row toes and heel construction provides a canvas for your creativity. <br><br>Choose mini, small, standard and jumbo sizes.<br><br>2 variations are offered: \r\n<ul>\r\n<li>The Basic Stocking has fewer seams</li><br>\r\n<li>Mix 'n Match version allows for a different stitch pattern to be worked on the top and bottom of the foot. Plus the leg seam offers more support for filled stocking</li>\r\n</ul>\r\n\r\n\r\n<em>NOTE: The mini size should be worked on a standard gauge machine<</em>"
+              },
+              "legacyComponentId": 6616,
+              "order": 2
+            }
+          ],
+          "title": "Create your Custom Pattern",
+          "slug": "create-your-custom-pattern",
+          "order": 1,
+          "legacy": {
+            "assignId": 4359,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "616268811",
+              "title": "Mix 'n Match Version:Seam on the hanger loop side and different stitch pattern top and bottom",
+              "legacySlot": 1,
+              "legacyComponentId": 6615,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857408",
+              "title": "Basic Sock: Easier knitting",
+              "legacySlot": 2,
+              "legacyComponentId": 6615,
+              "order": 1
+            }
+          ],
+          "title": "How to knit socks",
+          "slug": "how-to-knit-socks",
+          "order": 2,
+          "legacy": {
+            "assignId": 4369,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Classrooms",
+      "slug": "classrooms",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 557,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nClassrooms are a collection of tutorials, tips, and patterns covering a specific topic. <br>\r\n\t\t\r\n\t\t<a href=\"/classrooms/38/socks-on-your-machine\"><center><img class=\"img-thumbnail\" width=\"300\" src=\"/path/images/38/topics_socks.jpg\"></a><br>Classroom: Socks</center>\r\n\t\r\n\t<a href=\"/classrooms/48/short-row-shaping-partial-knitting\"><center><img class=\"img-thumbnail\" width=\"300\" src=\"https://www.knititnow.com/path/images/48/classroom_short_row.jpg\"><br></a> Classroom: Short Rows </center>\r\n\r\n\r\n\t",
+              "legacyComponentId": 6607,
+              "order": 1
+            }
+          ],
+          "title": "Knitting Socks",
+          "slug": "knitting-socks",
+          "order": 1,
+          "legacy": {
+            "assignId": 4360,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Stuff You Should Know",
+      "slug": "stuff-you-should-know",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 558,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "613786178",
+              "title": "Quick Scrap Off",
+              "legacySlot": 1,
+              "legacyComponentId": 6608,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "251895484",
+              "title": "Short Row Refresher",
+              "legacySlot": 2,
+              "legacyComponentId": 6608,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "294953374",
+              "title": "Single Row Stripes with Free Pass",
+              "legacySlot": 3,
+              "legacyComponentId": 6608,
+              "order": 1
+            }
+          ],
+          "title": "Helpful tips",
+          "slug": "helpful-tips",
+          "order": 1,
+          "legacy": {
+            "assignId": 4361,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857516",
+              "title": "Flat seams",
+              "legacySlot": 1,
+              "legacyComponentId": 6612,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151849234",
+              "title": "Kitchener Stitch on the Machine - Knit Side",
+              "legacySlot": 2,
+              "legacyComponentId": 6612,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151850342",
+              "title": "Kitchener Stitch on the Machine - Purl Side",
+              "legacySlot": 3,
+              "legacyComponentId": 6612,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "339846501",
+              "title": "Kitchener Join (Grafting)",
+              "legacySlot": 4,
+              "legacyComponentId": 6612,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151856919",
+              "title": "For the Mix-N-Match Sock, consider sew-as-you-go",
+              "legacySlot": 5,
+              "legacyComponentId": 6612,
+              "order": 1
+            }
+          ],
+          "title": "Seaming",
+          "slug": "seaming",
+          "order": 2,
+          "legacy": {
+            "assignId": 4366,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151856550",
+              "title": "Knitted I-Cord (Slip Cord)",
+              "legacySlot": 1,
+              "legacyComponentId": 6614,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "407205568",
+              "title": "Twisted Cord",
+              "legacySlot": 2,
+              "legacyComponentId": 6614,
+              "order": 1
+            }
+          ],
+          "title": "Loop for Hanging",
+          "slug": "loop-for-hanging",
+          "order": 3,
+          "legacy": {
+            "assignId": 4368,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "About Toes and Heels",
+      "slug": "about-toes-and-heels",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 559,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "342579794",
+              "title": "Toes and Heels - Manual Wrap",
+              "legacySlot": 1,
+              "legacyComponentId": 6609,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "286256671",
+              "title": "Toes and Heels - Automatic Wrap",
+              "legacySlot": 2,
+              "legacyComponentId": 6609,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "284263164",
+              "title": "Sock Toe Shaping - Improved",
+              "legacySlot": 3,
+              "legacyComponentId": 6609,
+              "order": 1
+            }
+          ],
+          "title": "Options",
+          "slug": "options",
+          "order": 1,
+          "legacy": {
+            "assignId": 4362,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Socks in the Round",
+      "slug": "socks-in-the-round",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 561,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "490449687",
+              "title": "Socks in the Round",
+              "legacySlot": 1,
+              "legacyComponentId": 6610,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "557357787",
+              "title": "Seamless Sock",
+              "legacySlot": 2,
+              "legacyComponentId": 6610,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858632",
+              "title": "Circular (Tubular) Knitting",
+              "legacySlot": 3,
+              "legacyComponentId": 6610,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "358379693",
+              "title": "Provisional Knitting",
+              "legacySlot": 4,
+              "legacyComponentId": 6610,
+              "order": 1
+            }
+          ],
+          "title": "Do you have a ribber?",
+          "slug": "do-you-have-a-ribber",
+          "order": 1,
+          "legacy": {
+            "assignId": 4364,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Stitch Patterning",
+      "slug": "stitch-patterning",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 562,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "exerciseAccordion",
+              "sections": [
+                {
+                  "title": "Planning",
+                  "bodyHtml": "<style>\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n</style>\r\n\r\n\t\r\n\t\t<i class=\"fa fa-check\" aria-hidden=\"true\"></i><b> Consider Stitch Multiples:</b>\r\n\t\t<ul>\r\n\t\t\t<li>Do you have enough stitches so the pattern can repeat evenly? (including seaming stitches)<br>If not, can you \"fudge\" one or 2 stitches? (add more or less stitches to the cast on)</li><br>\r\n\t\t\t<li>For punchcard knitters: Is the cast on (or section where you are adding your stitch pattern) divisible by 24 to accommodate your punchcard design? (don't forget seaming stitches)</li>\r\n\t\t\t<li>Use knitters graph paper to plan your design</li>\r\n\t\t</ul>\r\n\t\t<div class=\"videopopup\" data-videotitle=\"Stitch Multiples\" data-vimeoid=\"151857799\">\r\n\t\t\t<img class=\"img-thumbnail\" width=\"300\" src=\"https://i.vimeocdn.com/video/637021546-eb939b841562b4b11cd89544115c17fcb7c18b5389273aa2452b3fc6322558f5-d_1280x720?r=pad\">\r\n\t\t\t<br><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Video: Stitch Multiples\r\n\t\t</div>\r\n\r\n\t\r\n\t\r\n\r\n\t\t<img class=\"zoom\" width=\"300\" src=\"/challenge/images/v2/91/stitch_multiple.jpg\">\r\n\r\n\t\r\n\r\n<hr class=\"style13\">\r\n\r\n\t\r\n\r\n\t\t<i class=\"fa fa-check\" aria-hidden=\"true\"></i>\r\n\t\t<b>Plan your stitch pattern</b><br>\r\n\t\tIn addition to considering stitch multiples, consider floats.\r\n\r\n\t\tAlthough there are many ways to deal with them, examine your stitch pattern closely.<br>Notice how there are random \"snowflakes\" (single stitches) surrounding the central motif. These will make this snowman easier to knit with smaller floats<br>\r\n\t\r\n\t\t<img src=\"/challenge/images/v2/91/snowman.jpg\">\r\n\t\r\n",
+                  "iconSrc": "/challenge/images/v2/91/arrow1.png"
+                },
+                {
+                  "title": "Tension",
+                  "bodyHtml": "\r\nEven though it's appears to be stockinette, fairisle knits at a very different gauge. <br>\r\nFor a small stocking this difference may not be noticeable, but it is something to consider.<br>If you are planning a fairisle border on a small piece, you might loosen the tension in the fairisle section to prevent pulling in.<br>\r\nfor a fairisle border on a large piece, consider adding stitches for the fairisle section, then decrease these stitches for the plain section.\r\n\t<img src=\"/challenge/images/v2/91/2021-09-29_14-38-01.jpg\" width=\"300\"><br>\r\nNotice how the fairisle border distorts the knitting.\r\n\r\n\r\n<img src=\"/challenge/images/v2/91/2021-09-29_14-37-18.jpg\">\r\n<br>\r\nStockinette: 25sts x 40 rows = 4\"<br>\r\nFairisle: 29 sts x 37 rows = 4\"\r\n",
+                  "iconSrc": "/challenge/images/v2/91/arrow2.png"
+                },
+                {
+                  "title": "Floats",
+                  "bodyHtml": "\r\n\r\nFairisle stitch patterns are created by carrying a strand of yarn across the knitting, alternating colors. these strands are called floats.<br>The more stitches between the color changes, the longer the floats.<br>Watch as we explore 10 ways to manage floats.\r\n\r\n <div class=\"videopopup\" data-videotitle=\"Managing Floats\" data-vimeoid=\"475492261\">\r\n\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/988244244-1801b21cd167065fd204fa0491fdf02bcf768a71dd510e2cecfcd39a0d1a1cc6-d_1280x720?r=pad\"><br><center><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> 10 ways to manage floats</center>\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div>\r\n",
+                  "iconSrc": "/challenge/images/v2/91/arrow3.png"
+                }
+              ],
+              "legacy": {
+                "showText": "below",
+                "size": null
+              },
+              "legacyComponentId": 6622,
+              "order": 2
+            }
+          ],
+          "title": "Explore Fairisle",
+          "slug": "explore-fairisle",
+          "order": 1,
+          "legacy": {
+            "assignId": 4370,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<a href=\"/classrooms/169/fairisle-stranded-knitting\">\r\n\t<img src=\"/path/images/169/fairisle_classroom_thumb.jpg\">\r\n</a><br>\r\n\r\n\r\n",
+              "legacyComponentId": 6621,
+              "order": 1
+            }
+          ],
+          "title": "Classroom: Fairisle",
+          "slug": "classroom-fairisle",
+          "order": 2,
+          "legacy": {
+            "assignId": 4372,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<a href=\"/classrooms/169/fairisle-stranded-knitting\">\r\n\t<img src=\"/path/images/126/punchcard_classroom_thumb.jpg\">\r\n</a><br>\r\n\r\n\r\n",
+              "legacyComponentId": 6623,
+              "order": 1
+            }
+          ],
+          "title": "Classroom: Punchcards",
+          "slug": "classroom-punchcards",
+          "order": 3,
+          "legacy": {
+            "assignId": 4373,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\nOne of the many advantages of machine knitting is the ability to quickly and easily knit in pattern.<br>Textured stitch patterns, multi-color patterns can all be quickly produced with the help of automatic patterning devices. <b>Using a punchcard or electronics, the machine automatically selects needles for pattern knitting.</b>\r\n<br>If you've been stumped by knitting in pattern on your machine, this course will take away the fear and confusion.\r\n<br>Using fill-in-the-blanks tutorials, we'll walk you through all the settings for YOUR machine, creating a cheat-sheet that you can use again and again.\r\n<br>Once you finish the exercises <b>you will have an UNDERSTANDING of what is going on with all the levers and buttons</b> and you will be confident to sit down and work the stitch pattern of your choice.<br><div class=\"text-center\"></div>\r\n\r\n\r\n<a href=\"/challenge/72/course/automatic-stitch-patterning\"><img src=\"/challenge/images/v2/91/v2/72/automatic_patterning_thumb.png\"></a>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 6613,
+              "order": 1
+            }
+          ],
+          "title": "New to Automatic Patterning?",
+          "slug": "new-to-automatic-patterning",
+          "order": 4,
+          "legacy": {
+            "assignId": 4367,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>Stitch Inspiration from Knit it Now</h3>\r\nOver 50 Christmas-themed stitch patterns that include DAK Stitch Designer files, printable patterns and printable punchcard patterns (for 24 stitch repeat designs)<br>Mix 'n Match these designs for your stocking<br>\r\n\t<a href=\"/knit/stitchlibrary/15/christmas\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/91/thumb_300.jpg\"></a><br><center></center>\r\n\t\r\n\r\n\t<a href=\"/knit/stitchlibrary/19/christmas\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/91/thumb2_300.jpg\"></a><br><center></center>\r\n\t\r\n\t<a href=\"/knit/stitchlibrary/20/christmas\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/91/thumb3_300.jpg\"></a><br><center></center>\r\n\t\r\n\r\n",
+              "legacyComponentId": 6618,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n\r\n</style>\r\n\r\n<hr class=\"style13\">\r\n<br>\r\n<h3><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Use full-scale graph paper to plan your design</h3><br>\r\n",
+              "legacyComponentId": 6620,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "tools",
+              "notes": [
+                "Unmapped legacy component type: tools"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4371",
+                "CHALLENGE_COMPONENTID": "6619",
+                "MAINCONTENT": "pull-left",
+                "TOOLBUTTON1": "Knitters Graph Paper Tool",
+                "TOOLID_1": "8"
+              },
+              "legacyComponentId": 6619,
+              "order": 3
+            }
+          ],
+          "title": "80+ Stitch Patterns",
+          "slug": "80-stitch-patterns",
+          "order": 5,
+          "legacy": {
+            "assignId": 4371,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Video Replays",
+      "slug": "video-replays",
+      "displayOrder": 8,
+      "legacy": {
+        "itemId": 560,
+        "lessonOrder": 8
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The replay of LIVE meetings will be available here",
+              "legacyComponentId": 6611,
+              "order": 1
+            }
+          ],
+          "title": "Watch the Replay",
+          "slug": "watch-the-replay",
+          "order": 1,
+          "legacy": {
+            "assignId": 4365,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 19,
+    "videos": [
+      {
+        "vimeoId": "616268811",
+        "title": "Mix 'n Match Version:Seam on the hanger loop side and different stitch pattern top and bottom",
+        "lessonSlug": "the-pattern",
+        "blockSlug": "how-to-knit-socks"
+      },
+      {
+        "vimeoId": "151857408",
+        "title": "Basic Sock: Easier knitting",
+        "lessonSlug": "the-pattern",
+        "blockSlug": "how-to-knit-socks"
+      },
+      {
+        "vimeoId": "613786178",
+        "title": "Quick Scrap Off",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "helpful-tips"
+      },
+      {
+        "vimeoId": "251895484",
+        "title": "Short Row Refresher",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "helpful-tips"
+      },
+      {
+        "vimeoId": "294953374",
+        "title": "Single Row Stripes with Free Pass",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "helpful-tips"
+      },
+      {
+        "vimeoId": "151857516",
+        "title": "Flat seams",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "seaming"
+      },
+      {
+        "vimeoId": "151849234",
+        "title": "Kitchener Stitch on the Machine - Knit Side",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "seaming"
+      },
+      {
+        "vimeoId": "151850342",
+        "title": "Kitchener Stitch on the Machine - Purl Side",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "seaming"
+      },
+      {
+        "vimeoId": "339846501",
+        "title": "Kitchener Join (Grafting)",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "seaming"
+      },
+      {
+        "vimeoId": "151856919",
+        "title": "For the Mix-N-Match Sock, consider sew-as-you-go",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "seaming"
+      },
+      {
+        "vimeoId": "151856550",
+        "title": "Knitted I-Cord (Slip Cord)",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "loop-for-hanging"
+      },
+      {
+        "vimeoId": "407205568",
+        "title": "Twisted Cord",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "loop-for-hanging"
+      },
+      {
+        "vimeoId": "342579794",
+        "title": "Toes and Heels - Manual Wrap",
+        "lessonSlug": "about-toes-and-heels",
+        "blockSlug": "options"
+      },
+      {
+        "vimeoId": "286256671",
+        "title": "Toes and Heels - Automatic Wrap",
+        "lessonSlug": "about-toes-and-heels",
+        "blockSlug": "options"
+      },
+      {
+        "vimeoId": "284263164",
+        "title": "Sock Toe Shaping - Improved",
+        "lessonSlug": "about-toes-and-heels",
+        "blockSlug": "options"
+      },
+      {
+        "vimeoId": "490449687",
+        "title": "Socks in the Round",
+        "lessonSlug": "socks-in-the-round",
+        "blockSlug": "do-you-have-a-ribber"
+      },
+      {
+        "vimeoId": "557357787",
+        "title": "Seamless Sock",
+        "lessonSlug": "socks-in-the-round",
+        "blockSlug": "do-you-have-a-ribber"
+      },
+      {
+        "vimeoId": "151858632",
+        "title": "Circular (Tubular) Knitting",
+        "lessonSlug": "socks-in-the-round",
+        "blockSlug": "do-you-have-a-ribber"
+      },
+      {
+        "vimeoId": "358379693",
+        "title": "Provisional Knitting",
+        "lessonSlug": "socks-in-the-round",
+        "blockSlug": "do-you-have-a-ribber"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

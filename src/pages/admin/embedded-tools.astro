@@ -1,0 +1,209 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import {
+  EMBEDDED_TOOL_REGISTRY,
+  formatEmbeddedToolContexts,
+  type EmbeddedToolStatus,
+} from "../../lib/tools/embeddedToolRegistry";
+
+const statusLabel: Record<EmbeddedToolStatus, string> = {
+  available: "Available",
+  planned: "Planned",
+  retired: "Retired",
+};
+---
+
+<BaseLayout
+  title="Embedded Tools | Admin"
+  description="Reference registry of site tools that can be embedded in course lessons"
+  skipGlobalHyvor={true}
+  bodyClass="embedded-tools-admin-body"
+>
+  <main class="embedded-tools-admin">
+    <header class="embedded-tools-admin__head">
+      <div>
+        <h1 class="embedded-tools-admin__title">Embedded Tools</h1>
+        <p class="embedded-tools-admin__intro">
+          Read-only reference for tools that can appear inside course lessons. Edit the registry in
+          <code>src/lib/tools/embeddedToolRegistry.ts</code>.
+        </p>
+      </div>
+      <div class="embedded-tools-admin__actions">
+        <a href="/admin" class="kbm-btn kbm-btn-outline">Admin</a>
+        <a href="/admin/course-content" class="kbm-btn kbm-btn-outline">Course editor</a>
+      </div>
+    </header>
+
+    <div class="embedded-tools-admin__table-wrap">
+      <table class="embedded-tools-admin__table">
+        <thead>
+          <tr>
+            <th scope="col">Tool name</th>
+            <th scope="col">Tool key</th>
+            <th scope="col">Standalone URL</th>
+            <th scope="col">Where it can be embedded</th>
+            <th scope="col">Description</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            EMBEDDED_TOOL_REGISTRY.map((tool) => (
+              <tr>
+                <td>{tool.name}</td>
+                <td>
+                  <code>{tool.key}</code>
+                </td>
+                <td>
+                  <a href={tool.standalonePath}>{tool.standalonePath}</a>
+                </td>
+                <td>{formatEmbeddedToolContexts(tool.allowedContexts)}</td>
+                <td>{tool.description}</td>
+                <td>
+                  <span class:list={["embedded-tools-admin__status", `is-${tool.status}`]}>
+                    {statusLabel[tool.status]}
+                  </span>
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <p class="embedded-tools-admin__note">
+      Only tools with status <strong>available</strong> appear in the course editor Embedded Tool
+      dropdown. Planned tools are listed here for reference until their embedded versions are built.
+    </p>
+  </main>
+</BaseLayout>
+
+<style>
+  :global(body.embedded-tools-admin-body) {
+    margin: 0;
+    background: #f8fafc;
+  }
+
+  .embedded-tools-admin {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 2.5rem;
+  }
+
+  .embedded-tools-admin__head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+  }
+
+  .embedded-tools-admin__title {
+    margin: 0 0 0.35rem;
+    font-size: 1.65rem;
+    color: #1e293b;
+  }
+
+  .embedded-tools-admin__intro {
+    margin: 0;
+    max-width: 42rem;
+    color: #64748b;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .embedded-tools-admin__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .embedded-tools-admin__table-wrap {
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  }
+
+  .embedded-tools-admin__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+  }
+
+  .embedded-tools-admin__table th,
+  .embedded-tools-admin__table td {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid #eef2f7;
+  }
+
+  .embedded-tools-admin__table th {
+    background: #f8fafc;
+    font-size: 0.78rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+
+  .embedded-tools-admin__table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .embedded-tools-admin__table code {
+    font-size: 0.85em;
+    background: #f1f5f9;
+    padding: 0.12rem 0.35rem;
+    border-radius: 4px;
+  }
+
+  .embedded-tools-admin__table a {
+    color: #52682d;
+    word-break: break-all;
+  }
+
+  .embedded-tools-admin__status {
+    display: inline-block;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .embedded-tools-admin__status.is-available {
+    background: #ecfdf3;
+    color: #166534;
+  }
+
+  .embedded-tools-admin__status.is-planned {
+    background: #eff6ff;
+    color: #1d4ed8;
+  }
+
+  .embedded-tools-admin__status.is-retired {
+    background: #f8fafc;
+    color: #64748b;
+  }
+
+  .embedded-tools-admin__note {
+    margin: 1rem 0 0;
+    color: #64748b;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 720px) {
+    .embedded-tools-admin {
+      padding-inline: 1rem;
+    }
+
+    .embedded-tools-admin__table {
+      min-width: 760px;
+    }
+  }
+</style>

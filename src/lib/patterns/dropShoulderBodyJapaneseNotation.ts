@@ -13,28 +13,39 @@ import {
 } from "./customBuildEffectiveNeckDepth";
 import { resolveEffectiveNeckOpeningWidthInches } from "./customBuildEffectiveNeckOpeningWidth";
 import { positiveMeasurementInches } from "./customBuildEffectiveArmholeDepth";
-import {
-  calculateRoundNecklineShaping,
-  initialCenterNeckStitches,
-} from "./legoBlocks/roundNeckline";
+import { calculateRoundNecklinePlan, isShallowHoldRoundPlan } from "./legoBlocks/roundNeckline";
 import { neckDecreaseStitchesPerSideFromOpening } from "./legoBlocks/vNeckline";
 import {
+  cardiganFrontInitialNeckBindOffStitches,
   cardiganFrontNeckOpeningStitches,
 } from "./roundNeckNotation";
 import {
-  compressStitchDecreasePointsToNotationLines,
-  type StitchDecreasePoint,
-} from "./shapingNotationCompress";
+  backRoundNeckPlanForDepth,
+  roundNeckPlanOneSideBackNeckEdgeJpLines,
+  roundNeckPlanOneSideNeckEdgeJpLines,
+} from "./roundNeckPlanPresentation";
+import {
+  resolveCardiganHalfFrontWidths,
+  splitBodyBackCastOnToSymmetricCardiganHalves,
+} from "./cardiganFrontBlock";
 import {
   formatBindOffNotation,
+  formatHoldNotation,
   formatBodyRowsNotation,
   formatCastOnNotation,
   formatRcNotation,
   formatRcResetNotation,
   formatShapingSegment,
+  bodyShapingJapaneseNotationFromAlinePlan,
   JP_BACK_NOTATION_SVG_TOKEN_KEYS,
+  resolveAlineBodyShapingPlanForNotation,
   type JpBackNotationSvgTokenKey,
 } from "./sleevelessBackJapaneseNotation";
+import {
+  scaleAlineBodyShapingPlanForCardiganHalf,
+  type SleevelessAlineBodyShapingPlan,
+} from "./sleevelessAlineShaping";
+import { isSleevelessVNeckChoice } from "./sleevelessFrontDiagramSrc";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 
 function section(obj: unknown): Record<string, unknown> {
@@ -168,45 +179,24 @@ function resolveDropShoulderFrontNeckDepthRows(
   return 0;
 }
 
-/**
- * Pullover round-neck edge notation — stair bind-offs first, then singles (matches
- * {@link dropShoulderPatternOutput} `roundNeckEdgeLines` / written front instructions).
- */
-function dropShoulderPulloverRoundNeckEdgeNotationLines(fullNecklineSts: number): string[] {
-  const neckSts = Math.max(0, Math.round(fullNecklineSts));
-  if (neckSts <= 2) return [];
-
-  const plan = calculateRoundNecklineShaping({ necklineStitches: neckSts });
-  const stair = plan.right.stairSteps;
-  const singles = plan.right.singleDecreaseCount;
-
-  const points: StitchDecreasePoint[] = [];
-  let relRow = 1;
-  for (const amount of stair) {
-    if (amount > 0) {
-      points.push({ row: relRow, amount });
-      relRow += 2;
-    }
-  }
-  for (let i = 0; i < singles; i++) {
-    points.push({ row: relRow, amount: 1 });
-    relRow += 2;
-  }
-  return compressStitchDecreasePointsToNotationLines(points);
-}
-
-/** Cardigan half-front round neck — matches `buildCardiganFrontRows` CF bind-off + singles. */
-function dropShoulderCardiganRoundNeckEdgeNotationLines(neckPerFront: number): {
+/** Cardigan half-front round neck — matches `buildCardiganFrontRows` CF bind-off + shaping. */
+function dropShoulderCardiganRoundNeckEdgeNotationLines(
+  fullNecklineSts: number,
+  frontNeckDepthRows: number,
+): {
   centerBindOff: number;
   shapingLines: string[];
 } {
-  const n = Math.max(0, Math.round(neckPerFront));
-  if (n <= 0) return { centerBindOff: 0, shapingLines: [] };
-  const cfBindOff = Math.min(n, Math.max(2, Math.round(n / 3)));
-  const remaining = Math.max(0, n - cfBindOff);
-  const shapingLines =
-    remaining > 0 ? [formatShapingSegment(1, 2, remaining)] : [];
-  return { centerBindOff: cfBindOff, shapingLines };
+  const fullNeck = Math.max(0, Math.round(fullNecklineSts));
+  if (fullNeck <= 0) return { centerBindOff: 0, shapingLines: [] };
+  const plan = calculateRoundNecklinePlan({
+    necklineStitches: fullNeck,
+    necklineDepthRows: frontNeckDepthRows,
+  });
+  return {
+    centerBindOff: cardiganFrontInitialNeckBindOffStitches(fullNeck, frontNeckDepthRows),
+    shapingLines: roundNeckPlanOneSideNeckEdgeJpLines(plan, "right"),
+  };
 }
 
 function emptyReplacements(): Record<JpBackNotationSvgTokenKey, string> {
@@ -221,6 +211,59 @@ function dropShoulderStraightBodyRows(d: SleevelessBackPatternResult["debug"]): 
   const body = isFiniteNumber(d.bodyRows) ? Math.max(0, Math.floor(d.bodyRows)) : 0;
   const aboveMarker = isFiniteNumber(d.armholeRows) ? Math.max(0, Math.floor(d.armholeRows)) : 0;
   return body + aboveMarker;
+}
+
+function dropShoulderAlineBodyShapingPlan(
+  result: SleevelessBackPatternResult,
+  patternData: unknown,
+): SleevelessAlineBodyShapingPlan | null {
+  return resolveAlineBodyShapingPlanForNotation(result, patternData);
+}
+
+/** JP body-row count beside the diagram — straight rows after A-line side shaping when applicable. */
+function dropShoulderJpBodyRowsNotation(
+  d: SleevelessBackPatternResult["debug"],
+  alinePlan: SleevelessAlineBodyShapingPlan | null,
+): string {
+  if (alinePlan && alinePlan.shapingType !== "straight") {
+    if (alinePlan.straightRowsBeforeArmhole > 0) {
+      return formatBodyRowsNotation(alinePlan.straightRowsBeforeArmhole);
+    }
+    const armholeRc = armholeMarkerGarmentRc(d);
+    const shapingEnd = alinePlan.shapingEndRow;
+    if (armholeRc !== undefined && shapingEnd > 0) {
+      return formatBodyRowsNotation(Math.max(0, Math.floor(armholeRc) - Math.floor(shapingEnd)));
+    }
+  }
+  return formatBodyRowsNotation(dropShoulderStraightBodyRows(d));
+}
+
+function dropShoulderFrontAlineBodyShapingPlan(
+  result: SleevelessBackPatternResult,
+  patternData: unknown,
+  castOnSts: number,
+): SleevelessAlineBodyShapingPlan | null {
+  let plan = dropShoulderAlineBodyShapingPlan(result, patternData);
+  if (!plan || !isDropShoulderCardigan(patternData)) return plan;
+
+  const d = result.debug;
+  const hemBase =
+    isFiniteNumber(d.hemCastOnStitches) && d.hemCastOnStitches > 0
+      ? d.hemCastOnStitches
+      : (d.backStitches ?? 0);
+  const bustBase =
+    isFiniteNumber(d.bustBodyStitches) && d.bustBodyStitches > 0
+      ? d.bustBodyStitches
+      : hemBase;
+  const halfWidths = resolveCardiganHalfFrontWidths(
+    {
+      hemCastOnSts: hemBase,
+      bustBodySts: bustBase,
+      stitchesAfterArmhole: d.stitchesAfterArmhole ?? 0,
+    },
+    "left",
+  );
+  return scaleAlineBodyShapingPlanForCardiganHalf(plan, castOnSts, halfWidths.bustBodySts);
 }
 
 function armholeMarkerGarmentRc(d: SleevelessBackPatternResult["debug"]): number | undefined {
@@ -252,14 +295,19 @@ export function buildDropShoulderBackJapaneseNotationReplacements(
   const mergedPatternData = mergeDropShoulderNotationPatternData(generatorPatternData, patternData);
   const d = result.debug;
   const castOnSts = d.hemCastOnStitches ?? d.backStitches ?? 0;
-  const bodyRows = dropShoulderStraightBodyRows(d);
+  const alineBodyPlan = dropShoulderAlineBodyShapingPlan(result, mergedPatternData);
   const fullNecklineSts = resolveDropShoulderFullNecklineStitches(result, mergedPatternData);
-  const centerBackNeckBindOff =
-    fullNecklineSts > 0 ? initialCenterNeckStitches(fullNecklineSts) : 0;
-  const backNecklineShapingLines =
-    fullNecklineSts > 0 ? dropShoulderPulloverRoundNeckEdgeNotationLines(fullNecklineSts) : [];
-  const armholeMarkerRc = armholeMarkerGarmentRc(d);
   const backNeckDepthRows = resolveDropShoulderBackNeckDepthRows(result, mergedPatternData);
+  const backRoundNeckPlan =
+    fullNecklineSts > 0
+      ? backRoundNeckPlanForDepth(fullNecklineSts, Math.max(1, backNeckDepthRows))
+      : null;
+  const centerBackNeckBindOff = backRoundNeckPlan?.centerBindOff ?? 0;
+  const backNecklineShapingLines =
+    backRoundNeckPlan !== null
+      ? roundNeckPlanOneSideBackNeckEdgeJpLines(backRoundNeckPlan, "right")
+      : [];
+  const armholeMarkerRc = armholeMarkerGarmentRc(d);
   const finalGarmentRc = isFiniteNumber(d.finalRC)
     ? Math.max(0, Math.floor(d.finalRC))
     : isFiniteNumber(d.backNecklineStartRC)
@@ -268,16 +316,22 @@ export function buildDropShoulderBackJapaneseNotationReplacements(
         ? Math.max(0, Math.floor(d.totalCalculatedRows))
         : undefined;
   const necklineRc =
-    backNeckDepthRows > 0 && finalGarmentRc !== undefined
-      ? Math.max(armholeMarkerRc ?? 0, finalGarmentRc - backNeckDepthRows)
-      : finalGarmentRc;
+    isFiniteNumber(d.backNecklineStartRC)
+      ? Math.max(armholeMarkerRc ?? 0, Math.floor(d.backNecklineStartRC))
+      : backNeckDepthRows > 0 && finalGarmentRc !== undefined
+        ? Math.max(armholeMarkerRc ?? 0, finalGarmentRc - backNeckDepthRows)
+        : finalGarmentRc;
 
   return {
     "jp-caston": formatCastOnNotation(castOnSts),
-    "jp-body-rows": formatBodyRowsNotation(bodyRows),
+    "jp-body-rows": dropShoulderJpBodyRowsNotation(d, alineBodyPlan),
+    "jp-body-shaping": bodyShapingJapaneseNotationFromAlinePlan(alineBodyPlan),
     "jp-armhole-bo": "",
     "jp-armhole-shaping": "",
-    "jp-neckline-bo": formatBindOffNotation(centerBackNeckBindOff),
+    "jp-neckline-bo":
+      backRoundNeckPlan !== null && isShallowHoldRoundPlan(backRoundNeckPlan)
+        ? formatHoldNotation(centerBackNeckBindOff)
+        : formatBindOffNotation(centerBackNeckBindOff),
     "jp-neckline-shaping": joinNotationLines(backNecklineShapingLines),
     "jp-shoulder-shaping": "",
     "rc-caston": formatRcNotation(0),
@@ -293,7 +347,7 @@ function isDropShoulderCardigan(patternData: unknown): boolean {
 }
 
 function isDropShoulderVNeck(patternData: unknown): boolean {
-  return String(section(patternData?.style).neckline || "") === "v";
+  return isSleevelessVNeckChoice(patternData);
 }
 
 function dropShoulderFrontCastOnSts(
@@ -302,8 +356,13 @@ function dropShoulderFrontCastOnSts(
 ): number {
   const d = result.debug;
   if (isDropShoulderCardigan(patternData)) {
-    const bodyWidth = d.backStitches ?? d.hemCastOnStitches ?? 0;
-    return bodyWidth > 0 ? Math.max(1, Math.round(bodyWidth / 2)) : 0;
+    if (isFiniteNumber(d.cardiganHalfLeftCastOnSts) && d.cardiganHalfLeftCastOnSts > 0) {
+      return d.cardiganHalfLeftCastOnSts;
+    }
+    const bodyWidth = d.hemCastOnStitches ?? d.backStitches ?? 0;
+    return bodyWidth > 0
+      ? splitBodyBackCastOnToSymmetricCardiganHalves(bodyWidth).leftFrontWidthSts
+      : 0;
   }
   return d.hemCastOnStitches ?? d.backStitches ?? 0;
 }
@@ -330,7 +389,11 @@ export function buildDropShoulderFrontJapaneseNotationReplacements(
   const mergedPatternData = mergeDropShoulderNotationPatternData(generatorPatternData, patternData);
   const d = result.debug;
   const castOnSts = dropShoulderFrontCastOnSts(result, mergedPatternData);
-  const bodyRows = dropShoulderStraightBodyRows(d);
+  const alineBodyPlan = dropShoulderFrontAlineBodyShapingPlan(
+    result,
+    mergedPatternData,
+    castOnSts,
+  );
   const fullNecklineSts = resolveDropShoulderFullNecklineStitches(result, mergedPatternData);
   const isCardigan = isDropShoulderCardigan(mergedPatternData);
   const isVNeck = isDropShoulderVNeck(mergedPatternData);
@@ -342,6 +405,7 @@ export function buildDropShoulderFrontJapaneseNotationReplacements(
 
   let centerNeckBindOff = 0;
   let necklineShapingLines: string[] = [];
+  let frontRoundPlan: ReturnType<typeof calculateRoundNecklinePlan> | null = null;
 
   if (isVNeck) {
     const neckOpening = isCardigan
@@ -350,23 +414,36 @@ export function buildDropShoulderFrontJapaneseNotationReplacements(
     necklineShapingLines = dropShoulderVNeckEdgeNotationLines(neckOpening, frontNeckDepthRows);
   } else if (fullNecklineSts > 0) {
     if (isCardigan) {
-      const neckPerFront = cardiganFrontNeckOpeningStitches(fullNecklineSts);
-      const cardiganRound = dropShoulderCardiganRoundNeckEdgeNotationLines(neckPerFront);
+      const cardiganRound = dropShoulderCardiganRoundNeckEdgeNotationLines(
+        fullNecklineSts,
+        frontNeckDepthRows,
+      );
       centerNeckBindOff = cardiganRound.centerBindOff;
       necklineShapingLines = cardiganRound.shapingLines;
     } else {
-      const plan = calculateRoundNecklineShaping({ necklineStitches: fullNecklineSts });
-      centerNeckBindOff = plan.centerBindOff;
-      necklineShapingLines = dropShoulderPulloverRoundNeckEdgeNotationLines(fullNecklineSts);
+      frontRoundPlan = calculateRoundNecklinePlan({
+        necklineStitches: fullNecklineSts,
+        necklineDepthRows: frontNeckDepthRows,
+      });
+      centerNeckBindOff = frontRoundPlan.centerBindOff;
+      necklineShapingLines = roundNeckPlanOneSideNeckEdgeJpLines(frontRoundPlan, "right");
     }
   }
 
+  const frontCenterIsHold =
+    !isVNeck && !isCardigan && frontRoundPlan !== null && isShallowHoldRoundPlan(frontRoundPlan);
+
   return {
     "jp-caston": formatCastOnNotation(castOnSts),
-    "jp-body-rows": formatBodyRowsNotation(bodyRows),
+    "jp-body-rows": dropShoulderJpBodyRowsNotation(d, alineBodyPlan),
+    "jp-body-shaping": bodyShapingJapaneseNotationFromAlinePlan(alineBodyPlan),
     "jp-armhole-bo": "",
     "jp-armhole-shaping": "",
-    "jp-neckline-bo": isVNeck ? "" : formatBindOffNotation(centerNeckBindOff),
+    "jp-neckline-bo": isVNeck
+      ? ""
+      : frontCenterIsHold
+        ? formatHoldNotation(centerNeckBindOff)
+        : formatBindOffNotation(centerNeckBindOff),
     "jp-neckline-shaping": joinNotationLines(necklineShapingLines),
     "jp-shoulder-shaping": "",
     "rc-caston": formatRcNotation(0),

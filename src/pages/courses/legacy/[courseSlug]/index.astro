@@ -4,11 +4,17 @@ import LegacyCourseShell from "../../../../components/courses/legacy/LegacyCours
 import {
   getLegacyCourseBySlug,
   getSortedLessonsForCourse,
+  legacyCourseLoadOptionsFromPreviewRequest,
   legacyLessonHref,
 } from "../../../../lib/legacy_kin/legacyCourseLoader";
 
 const courseSlug = Astro.params.courseSlug ?? "";
-const course = getLegacyCourseBySlug(courseSlug);
+const loaderOptions = legacyCourseLoadOptionsFromPreviewRequest(
+  Astro.url.searchParams.get("preview"),
+  Astro.url.hostname,
+  { isViteDev: import.meta.env.DEV, publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV },
+);
+const course = getLegacyCourseBySlug(courseSlug, loaderOptions);
 
 if (!course) {
   return new Response("Course not found", { status: 404 });
@@ -25,7 +31,7 @@ const firstLesson = lessons[0];
 ---
 
 <Layout title={pageTitle} {description} skipGlobalHyvor>
-  <LegacyCourseShell courseSlug={courseSlug}>
+  <LegacyCourseShell courseSlug={courseSlug} includeDrafts={loaderOptions.includeDrafts}>
     <article class="course-preview__content legacy-course__overview">
       <header class="course-preview__section-header">
         <h1 class="course-preview__content-title">{course.course.title}</h1>

@@ -1,27 +1,17 @@
 ---
 /**
- * Dev-only single-lesson preview for legacy KIN course POC JSON.
+ * Dev-only lesson entry — redirects to the customer-facing item route.
  * Route: /dev/course-preview/[courseId]/[lesson]
  */
-import Layout from "../../../../layouts/Layout.astro";
-import CoursePreviewBlockList from "../../../../components/dev/CoursePreviewBlockList.astro";
-import Lk150CourseSidebar from "../../../../components/dev/Lk150CourseSidebar.astro";
 import {
-  DEFAULT_PREVIEW_COURSE_ID,
-  formatSectionQueryIndex,
   getCoursePreviewData,
   getPreviewCourseIds,
   getSortedLessons,
-  groupBlocksBySection,
   parseCourseId,
-  parseSectionQueryIndex,
-  sectionAnchorId,
-  sectionTitleForDisplay,
-  sectionTitleForNav,
-  sortedBlocks,
   type CourseLesson,
 } from "../../../../lib/legacy_kin/coursePreviewPoc";
-import "../../../../styles/course-preview.css";
+import { getFirstLessonContentItemSlug } from "../../../../lib/legacy_kin/courseLessonContentItems";
+import { legacyLessonItemHref } from "../../../../lib/legacy_kin/legacyCourseLoader";
 
 export const prerender = true;
 
@@ -45,128 +35,13 @@ interface Props {
 const { courseId: rawCourseId, lesson } = Astro.props;
 const courseId = parseCourseId(rawCourseId);
 const course = getCoursePreviewData(courseId)!.course;
-const blocks = sortedBlocks(lesson);
-const sections = groupBlocksBySection(blocks);
+const firstItemSlug = getFirstLessonContentItemSlug(lesson);
 
-const sectionsWithOffsets = sections.map((section) => ({
-  section,
-  anchorId: sectionAnchorId(lesson.slug, section),
-  heading: sectionTitleForDisplay(section.title, lesson.title),
-  navTitle: sectionTitleForNav(section.title, lesson.title),
-}));
+if (firstItemSlug) {
+  return Astro.redirect(
+    legacyLessonItemHref(course.slug, lesson.slug, firstItemSlug),
+  );
+}
 
-const sidebarSections = sectionsWithOffsets.map(({ navTitle }, sectionIndex) => ({
-  title: navTitle,
-  oneBasedIndex: sectionIndex + 1,
-}));
-
-const showSectionPicker = sections.length > 1;
-const initialSectionIndex = parseSectionQueryIndex(
-  Astro.url.searchParams.get("section"),
-  sections.length,
-);
-const pageTitle = `DEV Preview: ${course.title} — ${lesson.title}`;
+return Astro.redirect(`/dev/course-preview/${courseId}`);
 ---
-
-<Layout title={pageTitle} description="Internal dev preview of legacy KIN course POC JSON." skipGlobalHyvor>
-  <div class="course-preview course-preview--reader">
-    <p class="course-preview__banner course-preview__banner--compact" role="status">
-      <strong>Dev preview</strong> — legacy KIN course POC JSON. Not production content.
-    </p>
-
-    <div class="course-preview__layout">
-      <Lk150CourseSidebar
-        courseId={courseId}
-        currentLessonSlug={lesson.slug}
-        currentSections={sidebarSections}
-        activeSectionIndex={initialSectionIndex}
-      />
-
-      <div class="course-preview__main">
-        {
-          showSectionPicker ? (
-            <div
-              class="course-preview__section-picker"
-              data-lk150-section-picker
-              data-section-count={sections.length}
-            >
-              <article class="course-preview__content" data-lk150-section-content>
-                <div class="course-preview__section-panels">
-                  {sectionsWithOffsets.map(({ section, anchorId, heading }, sectionIndex) => (
-                    <section
-                      class="course-preview__section"
-                      id={anchorId}
-                      data-lk150-section-panel
-                      data-section-index={formatSectionQueryIndex(sectionIndex)}
-                      hidden={sectionIndex !== initialSectionIndex}
-                      aria-labelledby={heading ? `${anchorId}-title` : `${anchorId}-label`}
-                    >
-                      <header class="course-preview__section-header">
-                        <p class="course-preview__content-lesson" id={`${anchorId}-label`}>
-                          Lesson {lesson.displayOrder}: {lesson.title}
-                        </p>
-                        {
-                          heading ? (
-                            <h1 class="course-preview__content-title" id={`${anchorId}-title`}>
-                              {heading}
-                            </h1>
-                          ) : null
-                        }
-                      </header>
-
-                      <div class="course-preview__section-blocks">
-                        <CoursePreviewBlockList
-                          blocks={section.blocks}
-                          lessonSlug={lesson.slug}
-                          compact
-                        />
-                      </div>
-                    </section>
-                  ))}
-                </div>
-              </article>
-
-            </div>
-          ) : (
-            <article class="course-preview__content">
-              {sectionsWithOffsets.map(({ section, anchorId, heading }) => (
-                <section
-                  class="course-preview__section"
-                  id={anchorId}
-                  aria-labelledby={heading ? `${anchorId}-title` : `${anchorId}-label`}
-                >
-                  <header class="course-preview__section-header">
-                    <p class="course-preview__content-lesson" id={`${anchorId}-label`}>
-                      Lesson {lesson.displayOrder}: {lesson.title}
-                    </p>
-                    {
-                      heading ? (
-                        <h1 class="course-preview__content-title" id={`${anchorId}-title`}>
-                          {heading}
-                        </h1>
-                      ) : null
-                    }
-                  </header>
-
-                  <div class="course-preview__section-blocks">
-                    <CoursePreviewBlockList
-                      blocks={section.blocks}
-                      lessonSlug={lesson.slug}
-                      compact
-                    />
-                  </div>
-                </section>
-              ))}
-            </article>
-          )
-        }
-      </div>
-    </div>
-  </div>
-
-  {showSectionPicker ? (
-    <script>
-      import "../../../../scripts/lk150LessonSectionPreview.ts";
-    </script>
-  ) : null}
-</Layout>

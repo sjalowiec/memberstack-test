@@ -1,0 +1,731 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 10,
+    "title": "Knitting in Circles",
+    "slug": "knitting-in-circles",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_10_knitting_in_circles.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/circles.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Introduction",
+      "slug": "introduction",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 52,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/10/circles/circles.jpg\">",
+              "legacyComponentId": 732,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">Welcome, {First}!</div>\r\n<b>Break out of the mold of rectangles and squares and try knitting in circles!</b><br><blockquote class=\"smallblock\">\r\n<i class=\"fa fa-check\" aria-hidden=\"true\"></i>Machine knitted tree skirts are a great way to learn new techniques and improve your skills. (With a knitting machine, It’s never too early or late to think about Christmas knitting)<Br>\r\n<i class=\"fa fa-check\" aria-hidden=\"true\"></i>Colorful knitted Circular pillows and throws make great gifts and will quickly spruce up your home.<br></blockquote>\r\n\r\nMake your circular knitting simple or as intricate as you like … you’re the designer! Incorporate color and stitch patterns for unique designs. The actual knitting isn’t hard, the fun comes in adding your own personal touches.<br>\r\n\r\nThis course includes 2 methods of creating circles. Use simple increases or decreases to create wedges. Or incorporate short row shaping and knit a skirt in one piece!<br>\r\n\r\nOnce you understand the techniques, you may even be inspired to knit a traditional hand knit style circular yoke sweater.<br>\r\n<blockquote class=\"smallblock\">\r\n\r\n<ul class=”Instruction-list”>\r\n<li>Pinwheel Circle (with shortrows)</li>\r\n<li>Increase Wedges</li>\r\n<li>Decrease Wedges</li>\r\n<li>Finishing Tips</li>\r\n<li>Inspiration</li>\r\n</ul>\r\n</blockquote>\r\nThis course will walk you through all the planning steps. It shows techniques that may be new to you and helps you record your progress.<br>If this is your first project or your tenth, follow along, the skills you gain here will be invaluable for future knitting projects .. not just circles!\r\n<blockquote class=\"smallblock\">\r\nIf you are new here, the next lesson will help you learn to navigate this course so you can get the most benefit from the material that is included.\r\n</blockquote>",
+              "legacyComponentId": 706,
+              "order": 2
+            }
+          ],
+          "title": "Start Here",
+          "slug": "start-here",
+          "order": 1,
+          "legacy": {
+            "assignId": 232,
+            "blockType": "Questions"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The video will walk you through how to access the lessons and navigate to get the most out of your course.<br /> Don't skip lessons ... you may feel that you know how to cast on ... but sometimes you will pick up a tip that you can use while watching a video.<br><blockquote class=\"smallblock\"><em>Another reason to follow the course material in order - Throughout the lessons, you'll be making decisions about your blanket.  We will record your decisions to create your custom pattern and Course Binder.</em></blockquote>\r\n",
+              "legacyComponentId": 708,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "221120492",
+              "title": "Machine Knitting Courses",
+              "legacyComponentId": 709,
+              "order": 2
+            }
+          ],
+          "title": "How to use this course site",
+          "slug": "how-to-use-this-course-site",
+          "order": 2,
+          "legacy": {
+            "assignId": 233,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Blanket, Shawl, Tree Skirt, Pillow Cover -  your choice",
+      "slug": "blanket-shawl-tree-skirt-pillow-cover-your-choice",
+      "displayOrder": 30,
+      "legacy": {
+        "itemId": 53,
+        "lessonOrder": 30
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Create a one-piece circular shape with short-rows. The bonus is a pinwheel design that is formed automatically! \r\n\r\n            \r\n\r\n<blockquote class=\"smallblock\"><em>Watch as we knit a pillow-top and discuss options for creating your own circles.</em></blockquote>\r\n\r\n                \r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/10/circles/pinwheel_pillow_400.jpg\">   \r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/10/circles/6wedge_shortrow.png\">   \r\n<br>",
+              "legacyComponentId": 713,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859578",
+              "title": "Pinwheel Circles - Shortrow Fun",
+              "legacyComponentId": 714,
+              "order": 2
+            }
+          ],
+          "title": "Pinwheel Circles - Shortrow Fun",
+          "slug": "pinwheel-circles-shortrow-fun",
+          "order": 2,
+          "legacy": {
+            "assignId": 235,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Learn to create circular shapes with wedges. Knit each wedge in a different color, add motifs, cables or stitch patterns ...  the sky is the limit!<br>\r\n\r\n<blockquote class=\"smallblock\"><em>The tutorial includes using short-rows for curved edges. creating a more rounded shaped finished piece.</em></blockquote>\r\n\r\n                \r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/10/circles/decrease_pillow.jpg\">   \r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/10/circles/wedges_thumb.jpg\">\r\n\r\n\r\n<br>",
+              "legacyComponentId": 715,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859583",
+              "title": "Circles - Decreased Wedges",
+              "legacyComponentId": 716,
+              "order": 2
+            }
+          ],
+          "title": "Circles - Decrease Wedges",
+          "slug": "circles-decrease-wedges",
+          "order": 3,
+          "legacy": {
+            "assignId": 236,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Learn to create circular shapes with wedges. Knit each wedge in a different color, add motifs, cables or stitch patterns ...  the sky is the limit!<br>\r\n\r\n<blockquote class=\"smallblock\"><em>The tutorial includes using short-rows for curved edges. creating a more rounded shaped finished piece.</em></blockquote>\r\n\r\n                \r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/10/circles/circle.png\">   \r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/10/circles/8wedge_INcrease.png\">\r\n\r\n\r\n<br>",
+              "legacyComponentId": 717,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859605",
+              "title": "Circles - Increased Wedges",
+              "legacyComponentId": 718,
+              "order": 2
+            }
+          ],
+          "title": "Circles - Increased Wedges",
+          "slug": "circles-increased-wedges",
+          "order": 4,
+          "legacy": {
+            "assignId": 237,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Techniques",
+      "slug": "techniques",
+      "displayOrder": 40,
+      "legacy": {
+        "itemId": 55,
+        "lessonOrder": 40
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Kitchener Stitch is the best way to join stitches to stitches. When knitting the short row pinwheel style circle, you will start and end with waste yarn.<br>\r\nNeatly join the 2 edges with Kitchener Stitch and no one will be know how you knit the circle in one piece on the machine!<br>\r\nYou may be familiar with Kitchener Stitch by hand, but have you tried working it on the machine?<br>\r\n\r\n<blockquote class=\"smallblock\"><em>Mastering this technique (on or off the machine) will be invaluable in your knitting learning journey</em></blockquote>\r\n<hr>\r\n<p class=\"lead\">Seaming from the purl side<br></p>",
+              "legacyComponentId": 721,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151850342",
+              "title": "Grafting on the Machine - Purl Side",
+              "legacyComponentId": 722,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<hr>\r\n<p class=\"lead\">Seaming from the knit side</p>",
+              "legacyComponentId": 723,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "151849234",
+              "title": "Grafting on the Machine - Knit Side",
+              "legacyComponentId": 724,
+              "order": 4
+            }
+          ],
+          "title": "Kitchener Stitch Seaming",
+          "slug": "kitchener-stitch-seaming",
+          "order": 1,
+          "legacy": {
+            "assignId": 239,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Joining a panel of knitting to another panel as you knit, makes for fast finishing.  Using this technique will speed up the finishing of the blanket binding for this project.<br>\r\n<blockquote class=\"smallblock\"><em>If you've never tried sew-as-you-go, we recommend you take this opportunity to try it along the edge of a swatch.  This is a technique that you will use again and again in your knitting... not just for circles.</em>",
+              "legacyComponentId": 725,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "169798401",
+              "title": "Sew-as-you-go Tricks",
+              "legacyComponentId": 726,
+              "order": 2
+            }
+          ],
+          "title": "Sew-as-you-Go Tricks",
+          "slug": "sew-as-you-go-tricks",
+          "order": 2,
+          "legacy": {
+            "assignId": 240,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "A decorative sew-as-you-go method.\r\nJoin knitted panels neatly without sewing! This cable-look join is easy, adds dimension and style to your knitting. Great for machine knit afghans.<br>",
+              "legacyComponentId": 728,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859092",
+              "title": "Twisted Join",
+              "legacyComponentId": 729,
+              "order": 2
+            }
+          ],
+          "title": "Twisted Join",
+          "slug": "twisted-join",
+          "order": 3,
+          "legacy": {
+            "assignId": 242,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858422",
+              "title": "Seaming - Putting It All Together",
+              "legacyComponentId": 727,
+              "order": 1
+            }
+          ],
+          "title": "Seaming on the Machine",
+          "slug": "seaming-on-the-machine",
+          "order": 4,
+          "legacy": {
+            "assignId": 241,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "One Piece Pillow",
+      "slug": "one-piece-pillow",
+      "displayOrder": 50,
+      "legacy": {
+        "itemId": 54,
+        "lessonOrder": 50
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<p class=\"lead\">\r\nCan you work short rows? You can finish this in a weekend!</p>\r\n<blockquote class=\"smallblock\"><em>Quickly knit a 3 dimensional, pillow cover in one piece! Use variegated yarn, stripes or alternating colors to make it your own!</em></blockquote>\r\n\r\n\r\n                \r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/10/circles/slideshow/circles7.jpg\">   \r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/10/circles/pillow_drawing.jpg\">\r\n\r\n\r\n<br>",
+              "legacyComponentId": 735,
+              "order": 3
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/10/circles/slideshow/circles1.jpg",
+                  "caption": "Use a variegated yarn with long color repeats."
+                },
+                {
+                  "src": "/challenge/images/v2/10/circles/slideshow/circles2.jpg",
+                  "caption": "Knit both sides of the pillow cover at the same time.  The \"points\" are the outside edge."
+                },
+                {
+                  "src": "/challenge/images/v2/10/circles/slideshow/circles3.jpg",
+                  "caption": "Looking a bit strange ... but you are creating a large \"pocket\" to insert the pillow form."
+                },
+                {
+                  "src": "/challenge/images/v2/10/circles/slideshow/circles4.jpg",
+                  "caption": "Off the machine ... only 1 opening to finish."
+                },
+                {
+                  "src": "/challenge/images/v2/10/circles/slideshow/circles5.jpg",
+                  "caption": "Instead of scrapping off, the stitches were removed on a circular hand knitting needle.<br><small>(Lesson learned: Using a hand knitting needle to temporarily hold stitches is a nifty trick, in this case scrapping off would have been better for easier Kitchener stitch joining ... <em>live and learn ... </em>)</small>"
+                },
+                {
+                  "src": "/challenge/images/v2/10/circles/slideshow/circles6.jpg",
+                  "caption": "Take time to neatly join the seam with the pillow form inserted"
+                },
+                {
+                  "src": "/challenge/images/v2/10/circles/slideshow/circles7.jpg",
+                  "caption": "Close the center hole on both sides and embellish with a button or flowers. The variegated yarn is really highlighted with the construction of this pillow."
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 734,
+              "order": 4
+            }
+          ],
+          "title": "1 piece pillow cover",
+          "slug": "1-piece-pillow-cover",
+          "order": 1,
+          "legacy": {
+            "assignId": 238,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Quickly knit a 3 dimensional, pillow cover in one piece! Use variegated yarn, stripes or alternating colors to make it your own!<br>Can you work short rows? You can finish this in a weekend!",
+              "legacyComponentId": 736,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859618",
+              "title": "Shortrow Pinwheel Pillow Cover",
+              "legacyComponentId": 737,
+              "order": 2
+            }
+          ],
+          "title": "Watch how it's knit",
+          "slug": "watch-how-it-s-knit",
+          "order": 2,
+          "legacy": {
+            "assignId": 245,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Create your Custom Circle Pattern",
+      "slug": "create-your-custom-circle-pattern",
+      "displayOrder": 55,
+      "legacy": {
+        "itemId": 57,
+        "lessonOrder": 55
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "* Questions are required to create your pattern.  Don't worry, you can change your answers.",
+              "legacyComponentId": 743,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "246",
+                "DATAMODEL_ELEMENT": "machine",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "What machine are you using for the course?",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 742,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "246",
+                "DATAMODEL_ELEMENT": "Yarn_choice",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "What yarn will you use?",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 740,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntryOptions",
+              "notes": [
+                "Unmapped legacy component type: DataEntryOptions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "246",
+                "CHALLENGE_COMPONENTID": "744",
+                "DATAMODEL_ELEMENT": "circle_style",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_OPTIONLIST": "Flat Short Row Pinwheel,Short Row Pillow (3 dimension),Decrease Wedges,Increase Wedges",
+                "DATAMODEL_REQEST_TEXT": "What style of Circle are you knitting?",
+                "DATAMODEL_TYPE": "Radio",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 744,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntryOptions",
+              "notes": [
+                "Unmapped legacy component type: DataEntryOptions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "246",
+                "DATAMODEL_ELEMENT": "wedges",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_OPTIONLIST": "6,8",
+                "DATAMODEL_REQEST_TEXT": "How many Wedges?",
+                "DATAMODEL_TYPE": "Radio",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntryOptions"
+              },
+              "legacyComponentId": 747,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntryOptions",
+              "notes": [
+                "Unmapped legacy component type: DataEntryOptions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "246",
+                "DATAMODEL_ELEMENT": "gauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_OPTIONLIST": "inches,centimeters",
+                "DATAMODEL_REQEST_TEXT": "inches or centimeters?",
+                "DATAMODEL_TYPE": "Radio",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntryOptions"
+              },
+              "legacyComponentId": 748,
+              "order": 6
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "246",
+                "CHALLENGE_COMPONENTID": "739",
+                "DATAMODEL_ELEMENT": "StitchGauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "What is your stitch gauge? *",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 739,
+              "order": 7
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "246",
+                "CHALLENGE_COMPONENTID": "741",
+                "DATAMODEL_ELEMENT": "RowGauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "What is your row gauge *",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 741,
+              "order": 8
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "246",
+                "DATAMODEL_ELEMENT": "diameter",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "What is the DIAMETER of your circle? (in inches)",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 746,
+              "order": 9
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "246",
+                "DATAMODEL_ELEMENT": "Personal_notes",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Personal Notes",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 745,
+              "order": 10
+            }
+          ],
+          "title": "Tell us about your project",
+          "slug": "tell-us-about-your-project",
+          "order": 1,
+          "legacy": {
+            "assignId": 246,
+            "blockType": "DataEntry"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "circle_photos",
+                "BUTTONLABLE": "Upload",
+                "CHALLENGE_ASSIGNID": "248",
+                "QTY": "2",
+                "SUCCESSMESSAGE": "Got it!",
+                "TYPEOF": "ImageUpload"
+              },
+              "legacyComponentId": 751,
+              "order": 1
+            }
+          ],
+          "title": "Upload Photo(s)",
+          "slug": "upload-photo-s",
+          "order": 2,
+          "legacy": {
+            "assignId": 248,
+            "blockType": "ImageUpload"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Let Knit it Now do the math for you",
+      "slug": "let-knit-it-now-do-the-math-for-you",
+      "displayOrder": 60,
+      "legacy": {
+        "itemId": 56,
+        "lessonOrder": 60
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<p class=\"lead\">Make your choices, enter your gauge and VOILA!  NO MATH!</p><br>",
+              "legacyComponentId": 730,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859576",
+              "title": "Circle Calculator Tool",
+              "legacyComponentId": 731,
+              "order": 2
+            }
+          ],
+          "title": "Circle Calculator Tool",
+          "slug": "circle-calculator-tool",
+          "order": 1,
+          "legacy": {
+            "assignId": 243,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Short Row Blanket: Knit flat<br>\r\nShort Row Pillow: Knit with shaping on both edges to make a dimensional piece to cover a pillow form</br>\r\n<br>\r\n\r\nNot enough needles for the pinwheel style?  Consider knitting wedges with the Increase/Decrease method instead.",
+              "legacyComponentId": 733,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: circle.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "244",
+                "CUSTOMCFM": "circle.cfm",
+                "TYPEOF": "CustomCFM"
+              },
+              "legacyComponentId": 738,
+              "order": 3
+            }
+          ],
+          "title": "**** Try the calculator - it's easy to use!",
+          "slug": "try-the-calculator-it-s-easy-to-use",
+          "order": 2,
+          "legacy": {
+            "assignId": 244,
+            "blockType": "Practice"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 11,
+    "videos": [
+      {
+        "vimeoId": "221120492",
+        "title": "Machine Knitting Courses",
+        "lessonSlug": "introduction",
+        "blockSlug": "how-to-use-this-course-site"
+      },
+      {
+        "vimeoId": "151859578",
+        "title": "Pinwheel Circles - Shortrow Fun",
+        "lessonSlug": "blanket-shawl-tree-skirt-pillow-cover-your-choice",
+        "blockSlug": "pinwheel-circles-shortrow-fun"
+      },
+      {
+        "vimeoId": "151859583",
+        "title": "Circles - Decreased Wedges",
+        "lessonSlug": "blanket-shawl-tree-skirt-pillow-cover-your-choice",
+        "blockSlug": "circles-decrease-wedges"
+      },
+      {
+        "vimeoId": "151859605",
+        "title": "Circles - Increased Wedges",
+        "lessonSlug": "blanket-shawl-tree-skirt-pillow-cover-your-choice",
+        "blockSlug": "circles-increased-wedges"
+      },
+      {
+        "vimeoId": "151850342",
+        "title": "Grafting on the Machine - Purl Side",
+        "lessonSlug": "techniques",
+        "blockSlug": "kitchener-stitch-seaming"
+      },
+      {
+        "vimeoId": "151849234",
+        "title": "Grafting on the Machine - Knit Side",
+        "lessonSlug": "techniques",
+        "blockSlug": "kitchener-stitch-seaming"
+      },
+      {
+        "vimeoId": "169798401",
+        "title": "Sew-as-you-go Tricks",
+        "lessonSlug": "techniques",
+        "blockSlug": "sew-as-you-go-tricks"
+      },
+      {
+        "vimeoId": "151859092",
+        "title": "Twisted Join",
+        "lessonSlug": "techniques",
+        "blockSlug": "twisted-join"
+      },
+      {
+        "vimeoId": "151858422",
+        "title": "Seaming - Putting It All Together",
+        "lessonSlug": "techniques",
+        "blockSlug": "seaming-on-the-machine"
+      },
+      {
+        "vimeoId": "151859618",
+        "title": "Shortrow Pinwheel Pillow Cover",
+        "lessonSlug": "one-piece-pillow",
+        "blockSlug": "watch-how-it-s-knit"
+      },
+      {
+        "vimeoId": "151859576",
+        "title": "Circle Calculator Tool",
+        "lessonSlug": "let-knit-it-now-do-the-math-for-you",
+        "blockSlug": "circle-calculator-tool"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

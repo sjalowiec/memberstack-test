@@ -1,0 +1,346 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 101,
+    "title": "Hand Knit Yoke Sweaters",
+    "slug": "hand-knit-yoke-sweaters",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_101_hand_knit_yoke_sweaters.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:10+00:00"
+    },
+    "thumbnail": "/images/courses/circular_yoke_thumb.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "About Circular Yoke Sweaters on the Machine",
+      "slug": "about-circular-yoke-sweaters-on-the-machine",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 653,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\nIf you are a hand knitter, the best solution is to knit knit the yoke (with all the beautiful stitch patterning) by hand, leaving live stitches.<br>Then pick up the live stitches and knit the body and sleeves on the machine<br><span class=\"yellow_highlight\">The trick is to \"translate\" the hand knitting pattern instructions</span><br>Follow our example using the <a href=\"https://tincanknits.com/pattern/love-note\" target=\"_blank\">Love Note sweater by Tin Can Knits</a><small><em> (used with permission)</em></small><br><img src=\"/challenge/images/v2/101/LoveNoteSweater-TCK-47171.jpg\">\r\n\r\n<span class=\"handwriting\" style=\"font-size:1.5em\"> Do the fun stuff by hand<br>and the boring stuff on the machine</span>\r\n",
+              "legacyComponentId": 8484,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "The Steps:<br>\r\n",
+              "legacyComponentId": 8485,
+              "order": 2
+            }
+          ],
+          "title": "Combine Hand Knitting and  Machine Knitting",
+          "slug": "combine-hand-knitting-and-machine-knitting",
+          "order": 1,
+          "legacy": {
+            "assignId": 5718,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "As tempting as it may be, this is not a project if you are new to machine knitting.<br><b>Required skills:</b><br><ul>\r\n<li>Understanding of your machine</li>\r\n<li><b>Swatching and matching gauge</b></li>\r\n<li>Picking up stitches</li>\r\n<li>Understanding <a data-GlossaryId=\"605\" class=\"glossaryhelp\">Seaming Stitches <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n<li>Ability to \"translate\" HK pattern instructions to machine knitting (ie. convert \"knit for 4\"  to number of rows)</li>\r\n<li>Options for \"top down\" ribbing:\r\n<ul>\r\n<li>Transfer stitches to the ribber</li>\r\n<li>Scrap off and hand knit</lI>\r\n<li>Hand manipulate ribbing</li>\r\n</ul>\r\n</li>\r\n</ul>\r\n",
+              "legacyComponentId": 8499,
+              "order": 1
+            }
+          ],
+          "title": "Not a beginner project",
+          "slug": "not-a-beginner-project",
+          "order": 2,
+          "legacy": {
+            "assignId": 5725,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nBecause of the limits of our flat bed knitting machines, knitting circular yokes is nearly impossible.  Yes, you could knit a sideways circle, with short rows, but that limits the stitch patterning that is typical for this style of yoke.  Not to mention the math involved to get the neck opening just right!<br>If you like a challenge, use our <a href=\"/challenge/14/christmas-tree-skirt\">Christmas Tree Skirt on the Machine Course</a> for inspiration. It uses <a data-GlossaryId=\"320\" class=\"glossaryhelp\">Cut 'n Sew <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> for the center opening.<br><a href=\"/challenge/14/christmas-tree-skirt\"><figure><img class=\"center-block\" src=\"/challenge/images/v2/101/v2/14/tree-skirt.jpg\"width=\"200\"><figcaption align=\"center\"><br>Inspiration: Christmas Tree Skirt Course</figcaption>\r\n</figure></a>\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/101/tree_skirt/wedge_example_200.jpg\">\r\n<img src=\"/challenge/images/v2/101/tree_skirt/Pinwheel_example_200.jpg\">\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 8478,
+              "order": 1
+            }
+          ],
+          "title": "Circles on the Machine",
+          "slug": "circles-on-the-machine",
+          "order": 3,
+          "legacy": {
+            "assignId": 5713,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Solution 1: Yoke by Hand",
+      "slug": "solution-1-yoke-by-hand",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 650,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Combine hand knitting and machine knitting to duplicate a circular yoke sweater<br>The key is to match your machine knitting gauge to the gauge of the yoke.<br>If knitting the yoke in fairisle, be sure to take into consideration the considerable difference in gauge from stockinette.<br><figure><img class=\"center-block\" src=\"/challenge/images/v2/101/circular1.jpg\"><figcaption align=\"center\"><em>my yoke includes lace</em></figcaption>\r\n</figure>",
+              "legacyComponentId": 8481,
+              "order": 1
+            }
+          ],
+          "title": "Knit the Yoke by Hand",
+          "slug": "knit-the-yoke-by-hand",
+          "order": 1,
+          "legacy": {
+            "assignId": 5715,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "exerciseAccordion",
+              "sections": [
+                {
+                  "title": "Swatch both hand and machine and MATCH the pattern gauge",
+                  "bodyHtml": "<style>\r\n    .flex-container {\r\n        display: flex;\r\n        justify-content: center;\r\n    }\r\n\r\n    .flex-child:first-child {\r\n        margin-right: 20px;\r\n        border: 1px solid;\r\n        padding: 10px;\r\n        margin-bottom: 20px;\r\n    }\r\n\r\n    .flex-child2 {\r\n        margin-right: 20px;\r\n        border: 1px solid;\r\n        padding: 10px;\r\n        margin-bottom: 20px;\r\n    }\r\n\r\n    @media (max-width: 800px) {\r\n        .flex-container {\r\n            flex-direction: column;\r\n        }\r\n\r\n</style>\r\nSwatching to establish gauge is essential to your success with your knitting. Experienced knitters have their preferred methods. Here are some suggestions for establishing your gauge <b>without counting stitches</b>.<br><div class=\"flex-container\">\r\n    <div class=\"flex-child\">\r\n        <h3>Traditional Method:</h3>\r\n        Measure a specific number of stitches and rows based on your <a data-GlossaryId=\"363\" class=\"glossaryhelp\">Needle Pitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a><br><ul>\r\n            <li><b>Standard gauge:</b>40 stitches and 60 rows</li><br>\r\n            <li><b>Mid-Gauge:</b> 30 stitches and 40 rows</li><br>\r\n            <li><b>Bulky/Chunky:</b> 20 stitches and 30 rows</li>\r\n        </ul><br><em>These \"rules\" are based on using knitting machine gauge rulers</em>\r\n        <img class=\"center-block\" width=\"300\" src=\"/images/blog/1063/swatch.jpg\">\r\n    </div>\r\n    <div class=\"flex-child2\">\r\n        <h3>Visual Method</h3>\r\n        Mark the required stitches and rows as you knit.<br>Place a 4\" x 4\" template to confirm gauge.<br>No math!\r\n        <img class=\"center-block\" width=\"300\" src=\"/images/blog/1063/swatch1.jpg\">\r\n    </div>\r\n</div><br>\r\n<div class=\"text-center\"></div>",
+                  "iconSrc": "/challenge/images/v2/101/arrow1.png"
+                },
+                {
+                  "title": "Hand Knit the Yoke in the round",
+                  "bodyHtml": "\r\n\r\n\r\n<br>\r\nFollow the pattern (top down or bottom up) leaving the yoke stitches \"LIVE\" to re-hang on the machine.<br>\r\n</br>\r\n\r\n<img class=\"center-block\" src=\"/challenge/images/v2/101/circular1.jpg\">\r\n",
+                  "iconSrc": "/challenge/images/v2/101/arrow2.png"
+                },
+                {
+                  "title": "Study the pattern to determine the stitches for the front, back and sleeves.<br>",
+                  "bodyHtml": "Note any increases (cast on) at the underarms.<br>Note:  I marked the front, back and sleeves with different colors to help keep things straight. <br>\r\nSuggestion: <em>Do as I say, not as I did ...</em> Scrap off the sections (knit a few rows with scrap). This helps to prevent the stitches from twisting when hanging on the machine.  See \"Lessons Learned' below.",
+                  "iconSrc": "/challenge/images/v2/101/arrow3.png"
+                },
+                {
+                  "title": "Hang each section and knit on the Machine following the pattern instructions for each section",
+                  "bodyHtml": "\r\nCarefully hang each section on the machine.<br>\r\n<ul>\r\n<li>Double check the stitch count</li>\r\n<li>Follow the pattern instructions</li>\r\n<li>Don't twist the stitches</li>\r\n<li>Add <a data-GlossaryId=\"605\" class=\"glossaryhelp\">Seaming Stitches <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n<li> TIP: Keep the waste yarn or yarn stitch holder in place until the piece is complete</li>\r\n</ul>\r\n\r\n\r\n<img src=\"/challenge/images/v2/101/hang_on_the_machine.jpg\">\r\n",
+                  "iconSrc": "/challenge/images/v2/101/arrow4.png"
+                },
+                {
+                  "title": "Following the pattern, knit to the ribbing/hem",
+                  "bodyHtml": "<style>\r\n    .flex-container {\r\n        display: flex;\r\n        justify-content: center;\r\n    }\r\n\r\n    .flex-child:first-child {\r\n        margin-right: 20px;\r\n        border: 1px solid;\r\n        padding: 20px;\r\n        margin-bottom: 20px;\r\n    }\r\n\r\n    .flex-child2 {\r\n        margin-right: 20px;\r\n        border: 1px solid;\r\n        padding: 20px;\r\n        margin-bottom: 20px;\r\n    }\r\n\r\n    @media (max-width: 800px) {\r\n        .flex-container {\r\n            flex-direction: column;\r\n        }\r\n\r\n</style>\r\n\r\nKnit each section to the ribbing/hem <br>\r\nOptions:\r\n<ol>\r\n    <li>Scrap off, then pick up the stitches and hand knit ribbing</li>\r\n    <li>Hand manipulate ribbing on the machine</li>\r\n<li>Transfer stitches to the ribber</li>\r\n    <li>Knit the length of the ribbing plain and bind off for <a data-GlossaryId=\"313\" class=\"glossaryhelp\">Rolled Hems <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n</ol>\r\n<div class=\"flex-container\">\r\n    <div class=\"flex-child\">\r\n        <figure><img src=\"/challenge/images/v2/101/back.jpg\">\r\n            <figcaption align=\"center\"><br>Scrap off - ready for hand knit ribbing.</figcaption>\r\n        </figure>\r\n    </div>\r\n    <div class=\"flex-child2\">\r\n        <figure><img class=\"img-thumbnail center-block\" src=\"/challenge/images/v2/101/2022-05-10_13-10-32.jpg\">\r\n            <figcaption align=\"center\"><br>Hems ready for hand knit finishing</figcaption>\r\n        </figure>\r\n    </div>\r\n</div>",
+                  "iconSrc": "/challenge/images/v2/101/arrow5.png"
+                },
+                {
+                  "title": "Finishing",
+                  "bodyHtml": "<ol>\r\n    <li>Block the pieces</li>\r\n    <li>Neatly join the side seams</li>\r\n    <li>After seaming, hand knit the ribbing in the round</li>\r\n    <li>Work in all ends</li>\r\n</ol>\r\n\r\n<div class=\"flex-container\">\r\n    <div class=\"flex-child\">\r\n        <figure><img class=\"center-block\" src=\"/challenge/images/v2/101/seaming.jpg\">\r\n            <figcaption align=\"center\"><br>Neatly seam</figcaption>\r\n        </figure>\r\n    </div>\r\n    <div class=\"flex-child2\">\r\n        <figure><img src=\"/challenge/images/v2/101/2022-05-10_14-08-13.jpg\">\r\n            <figcaption align=\"center\"><br>Hand Knit sleeve ribbing in the round</figcaption>\r\n        </figure>\r\n    </div>\r\n    <div class=\"flex-child2\">\r\n        <figure><img src=\"/challenge/images/v2/101/body_ribbing.jpg\">\r\n            <figcaption align=\"center\"><br>Hand Knit body ribbing in the round</figcaption>\r\n        </figure>\r\n    </div>\r\n    \r\n</div>",
+                  "iconSrc": "/challenge/images/v2/101/arrow6.png"
+                }
+              ],
+              "legacy": {
+                "showText": "below",
+                "size": null
+              },
+              "legacyComponentId": 8496,
+              "order": 1
+            }
+          ],
+          "title": "The Steps",
+          "slug": "the-steps",
+          "order": 2,
+          "legacy": {
+            "assignId": 5723,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\n<figure><img class=\"center-block zoom\" src=\"/challenge/images/v2/101/finished.jpg\" width=\"300\"><br>\r\n<figcaption align=\"center\"><br>\r\n</figure><em>Our sample was knit with <a href=\"https://yeoman-yarns.co.uk/products/category/25/fanciescrepes/productlist/151/fleecy---3ply---fine-4ply---nylon-viscose\">Fleecy </a>from Yeoman Yarrns.  It's soft and light-as-a-feather.  Be sure to dress your swatch thoroughly before establishing gauge</em></figcaption>\r\n\r\n\r\n",
+              "legacyComponentId": 8492,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/v2/101/elsa1.png",
+                  "caption": "Elsa LOVES her new Top down Sweater!"
+                },
+                {
+                  "src": "/challenge/images/v2/101/v2/101/swatch.jpg",
+                  "caption": "Knit swatches by hand and machine to establish / match the pattern gauge."
+                },
+                {
+                  "src": "/challenge/images/v2/101/v2/101/circular1.jpg",
+                  "caption": "Hand knit the yoke and remove live stitches on holders (front, back, sleeves) according to the pattern instructions. <br>\r\n<em>To help keep things straight, I used blue for the back and front, yellow for the sleeves. (see the \"lessons learned\" section below)</em>"
+                },
+                {
+                  "src": "/challenge/images/v2/101/v2/101/back.jpg",
+                  "caption": "Rehang the back stitches on the machine and knit the rows indicated in the pattern.<br>Repeat for the front.<br><br>\r\n<em>Most hand knitting patterns will say \"Continue knitting for 5 inches\".  Machine knitters need to \"translate\" this.  For example, multiply 5\" x your 1\" row gauge.<br>\r\nAfter knitting 30 rows, I scrapped off and will pick up these stitches and hand knit some ribbing.</em>"
+                },
+                {
+                  "src": "/challenge/images/v2/101/v2/101/2022-05-10_13-09-18.jpg",
+                  "caption": "Re-hang the sleeve stitches according to the pattern and knit according to the pattern.<br>\r\n<em>This pattern did not shape the sleeves, just decreased evenly across the last row to \"gather\" the sleeve at the cuff</em>"
+                },
+                {
+                  "src": "/challenge/images/v2/101/v2/101/2022-05-10_13-10-32.jpg",
+                  "caption": "Front, back and sleeves complete... waste yarn waiting for ribbing."
+                },
+                {
+                  "src": "/challenge/images/v2/101/v2/101/2022-05-10_14-09-33.jpg",
+                  "caption": "Join the back and front side seams and underarm seams."
+                },
+                {
+                  "src": "/challenge/images/v2/101/v2/101/2022-05-10_14-08-13.jpg",
+                  "caption": "Hand knit the sleeve ribbing in the round."
+                },
+                {
+                  "src": "/v2/101/body_ribbing.jpg",
+                  "caption": "Hand knit the body ribbing in the round"
+                },
+                {
+                  "src": "/v2/101/elsa2.png",
+                  "caption": "Elsa LOVES her new sweater!"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 8490,
+              "order": 2
+            }
+          ],
+          "title": "Watch as we knit ours",
+          "slug": "watch-as-we-knit-ours",
+          "order": 3,
+          "legacy": {
+            "assignId": 5720,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .container-border1 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px;\r\n        padding: 20px;\r\n\r\n        background-color: white;\r\n    }\r\n\r\n    .flex-container {\r\n        display: flex;\r\n        justify-content: center;\r\n    }\r\n\r\n    .flex-child:first-child {\r\n        margin-right: 20px;\r\n\r\n        padding: 20px;\r\n        margin-bottom: 20px;\r\n    }\r\n\r\n    .flex-child2 {\r\n        margin-right: 20px;\r\n        padding: 20px;\r\n        margin-bottom: 20px;\r\n    }\r\n\r\n    @media (max-width: 800px) {\r\n        .flex-container {\r\n            flex-direction: column;\r\n        }\r\n\r\n        .circle {\r\n            width: 25px;\r\n            height: 25px;\r\n            border-radius: 50%;\r\n            box-sizing: border-box;\r\n            text-align: center;\r\n            display: inline-block;\r\n            line-height: 25px;\r\n            background-color: #9e2065;\r\n        }\r\n\r\n        .circle a {\r\n            text-decoration: none;\r\n            color: #fff;\r\n            font-size: 16px;\r\n        }\r\n\r\n</style>\r\n\r\n<div class=\"container-border1\">\r\n<img src=\"/challenge/images/v2/course_1.png\">\r\n     <span style=\"font-size:2em\"> Add Seaming Stitches <a data-GlossaryId='605' class='glossaryhelp'><i class='fa fa-question-circle-o' aria-hidden='true'></i></a></span><br>Because the hand knit pattern is written to be knit in the round, when we knit the body and sleeves we need to add a seaming stitch.<br><em> At a gauge of 4 stitches to the inch, if you don't add a stitch on each side of the front and back, your sweater can be a full 1\" smaller than you planned.</em>\r\n</div>\r\n\r\n\r\n\r\n<br><div class=\"container-border1\">\r\n    <span style=\"font-size:2em\">\r\n        <img src=\"/challenge/images/v2/course_2.png\"> Upside Down Ribbing\r\n    </span><br>Knitting top down and finishing the hems with ribbing means we need to bind off in ribbing. Many knitters avoid doing this.<br>\r\n    <div class=\"flex-container\">\r\n\r\n        <div class=\"flex-child\">\r\n            <div class=\"videopopup\" data-videotitle=\"Easy Ribber Bind Off\" data-vimeoid=\"151857401\">\r\n                <figure><img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/680394459-c2254b7c45521ee31952031c97c8cfd372fd6c1625dbaf623a2bf58e79939a8f-d_1280x720?r=pad\">\r\n                    <figcaption align=\"center\"><br><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Easy Ribber Bind Off</figcaption>\r\n                </figure>\r\n\r\n            </div><br>\r\n        </div>\r\n        <div class=\"flex-child2\">\r\n\r\n            <div class=\"videopopup\" data-videotitle=\"Stretchiest Bind Off Ever!\" data-vimeoid=\"151858299\">\r\n                <figure> <img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/564146402-c0bd06d49fdf54aed630d489f4cb46357345cf52f5c49e24c51d36c314a92a40-d_1280x720?r=pad\">\r\n                    <figcaption align=\"center\"><br><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Stretchy Sewn Bind Off (Backstitch Bind off)</figcaption>\r\n                </figure>\r\n            </div>\r\n            <br>\r\n        </div>\r\n    </div>\r\n</div><br>\r\n<div class=\"container-border1\">\r\n\r\n\r\n    <b><span style=\"font-size:2em\">\r\n            <img src=\"/challenge/images/v2/course_3.png\"> For the Perfectionist: Graft the ribbing to the sleeve\r\n        </span></b><br>\r\n    <ul>\r\n        <li>Cast on for your ribbing with a tubular cast on.</li>\r\n\r\n        <li>Knit your ribbing</li>\r\n        <li>Transfer the stitches to the main bed</li>\r\n        <li>Knit a few rows in stockinette</li>\r\n        <li>Scrap off</li><br>\r\n\r\n        <li>Scrap off the sleeve and neatly <a data-GlossaryId='521' class='glossaryhelp'>Kitchener Join<i class='fa fa-question-circle' aria-hidden='true'></i></a> the sleeve and the ribbing</li>\r\n        <br></ul>\r\n</div>\r\n<br>\r\n<div class=\"container-border1\">\r\n    <span style=\"font-size:2em\">\r\n       <img src=\"/challenge/images/v2/course_4.png\"> Twisted Stitches\r\n    </span><br>\r\n\r\n    \r\n         In knitting our sample, Instead of scrapping off the yoke stitches, I removed them on a strand of yarn.\r\n            This was a mistake. it made it difficult to rehang the stitches without twisting them.<br><em> Lesson Learned: Even when hand knitting, take time to scrap off. This will ensure the stitches are easier to hang and will not be twisted.</em>\r\n            <figure><img src=\"/challenge/images/v2/101/twisted1.jpg\">\r\n                <figcaption align=\"center\"><br>Stitches twisted when re-hanging them.</figcaption>\r\n            </figure>\r\n        \r\n        \r\n            <figure><img src=\"/challenge/images/v2/101/twisted.jpg\">\r\n                <figcaption align=\"center\"><br>Stitches held on a yarn strand made it difficult to rehang them without twisting.</figcaption>\r\n            </figure>\r\n        \r\n    \r\n</div>\r\n",
+              "legacyComponentId": 8491,
+              "order": 1
+            }
+          ],
+          "title": "Lessons Learned",
+          "slug": "lessons-learned",
+          "order": 4,
+          "legacy": {
+            "assignId": 5721,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Solution 2: Botttom up",
+      "slug": "solution-2-botttom-up",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 651,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Combine hand knitting and machine knitting to duplicate the circular yoke sweater<br>The key is to match your machine knitting gauge to the gauge of the yoke.<br>If knitting the yoke in fairisle, be sure to take into consideration the considerable difference in gauge from stockinette.<br><img src=\"/challenge/images/v2/101/bottom_up.jpg\">",
+              "legacyComponentId": 8482,
+              "order": 1
+            }
+          ],
+          "title": "Start on the Machine",
+          "slug": "start-on-the-machine",
+          "order": 2,
+          "legacy": {
+            "assignId": 5717,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Knit Flat",
+      "slug": "knit-flat",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 652,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nConsider this:<br>\r\nIf you examine a round yoke sweater it's basically a raglan sweater. Hand knitters get satisfaction (and a unique style) from knitting the yoke in the round. <br>If you can't be bothered with either of the previous methods, consider knitting a raglan sweater and adding the stitch patterning to each piece.<br>The challenge is to work out the <a data-GlossaryId=\"329\" class=\"glossaryhelp\">Stitch Multiples | Stitch Repeats <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> so the stitch design is seamless.<br>2 options:<br>\r\n<ol>\r\n    <li>Convert a HK top down sweater by \"breaking out\" the raglan shaping from the knitting instructions.\r\n        <ul>\r\n            <li>Chart out the sleeve and body stitch and row counts from the original pattern and knit the piece flat</li>\r\n        </ul>\r\n    </li>\r\n    <li>Machine knit the <a href=\"https://www.knititnow.com/challenge/55/top-down-raglan-collection\">Knit it Now Top Down Raglan Collection</a> and add stitch patterning to the raglan section.</li>\r\n    <li>Use a flat raglan pattern and add a stitch pattern to the yoke section</li>\r\n</ol><br>\r\n<img src=\"/challenge/images/v2/101/bottom_up.jpg\">\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 8476,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857799",
+              "title": "Stitch Multiples",
+              "legacyComponentId": 8493,
+              "order": 2
+            }
+          ],
+          "title": "It's just a raglan",
+          "slug": "it-s-just-a-raglan",
+          "order": 1,
+          "legacy": {
+            "assignId": 5711,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Use the <a href=\"/challenge/55/top-down-raglan-collection\"><b> Knit it Now Top Down Raglan Collection</a></b> and add stitch patterning to the raglan sections<br>\r\n    <a href=\"/challenge/55/top-down-raglan-collection\"><img class=\"center-block\" src=\"/challenge/images/v2/101//v2/55/upside_down.jpg\" width=\"300\"></a><br><div class=\"text-center\"></div>\r\n\r\n    <br>Machine Knit Top Down Raglan Collection <br>\r\n        <ul>\r\n            <li>Round Neck and V-Neck Versions</li>\r\n            <li>Cardigan and Pullover</li>\r\n            <li>5 Gauges</li>\r\n            <li>16 sizes</li>\r\n            <li>Start-to-finish knitting instructions and videos</li>\r\n        </ul>\r\n    \r\n",
+              "legacyComponentId": 8486,
+              "order": 1
+            }
+          ],
+          "title": "Machine Knit Top Down Raglan",
+          "slug": "machine-knit-top-down-raglan",
+          "order": 2,
+          "legacy": {
+            "assignId": 5719,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 1,
+    "videos": [
+      {
+        "vimeoId": "151857799",
+        "title": "Stitch Multiples",
+        "lessonSlug": "knit-flat",
+        "blockSlug": "it-s-just-a-raglan"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

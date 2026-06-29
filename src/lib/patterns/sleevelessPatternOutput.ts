@@ -89,11 +89,20 @@ import {
 } from "./shapingTimeline";
 import {
   initialCenterNeckStitches,
+  initialBackCenterNeckStitches,
+  backNeckEdgeDecreasesPerSide,
+  calculateBackRoundNecklinePlan,
+  calculateRoundNecklinePlan,
   neckEdgeDecreasesPerSide,
+  normalizeRoundNecklineDepthRows,
 } from "./legoBlocks/roundNeckline";
 import {
   cardiganFrontInitialNeckBindOffStitches,
 } from "./roundNeckNotation";
+import {
+  roundNeckBackShallowSleevelessSummaryWrittenLines,
+  type RoundNecklinePlanResult,
+} from "./roundNeckPlanPresentation";
 import { buildGlossaryTooltipPlaceholderHtml } from "../glossary/glossaryTooltipPrint";
 import { buildPatternHelpCardInnerHtml } from "./patternHelpCard";
 import { buildPatternQuickTipInnerHtml } from "./patternQuickTip";
@@ -406,6 +415,9 @@ export type SleevelessBackPatternDebug = {
   necklineStitches: number | undefined;
   /** Initial center bind-off/hold on the back / full neckline (round-neck formula on full N). */
   centerNeckBindOffStitches: number | undefined;
+  /** Round back: always shallow-round; front uses deep-round when depth allows. */
+  backNeckRoundNecklineStrategy?: "deep-round" | "shallow-round";
+  frontNeckRoundNecklineStrategy?: "deep-round" | "shallow-round";
   /**
    * Round cardigan left front: first CF-edge neckline bind-off (from front chart/timeline),
    * not {@link centerNeckBindOffStitches}.
@@ -1166,7 +1178,12 @@ export function initialNeckBindOffFromNeckShoulderChart(
     const first = [...chart.timeline].sort((a, b) => a.row - b.row)[0];
     if (first) {
       const centerBo = first.events
-        .filter((e) => e.kind === "bindOff" && e.side === "center" && e.edge === "center")
+        .filter(
+          (e) =>
+            (e.kind === "bindOff" || e.kind === "hold") &&
+            e.side === "center" &&
+            e.edge === "center",
+        )
         .reduce((s, e) => s + e.amount, 0);
       if (centerBo > 0) return centerBo;
     }
@@ -1177,13 +1194,24 @@ export function initialNeckBindOffFromNeckShoulderChart(
   return parseChartCellDelta(String(r0.centerNeck ?? ""));
 }
 
-/** Sum center bind-off stitches on the first timeline row (partial or full neckline width). */
+/** Sum center hold or bind-off stitches on the first timeline row (partial or full neckline width). */
 function centerBindOffAmountFirstTimelineRow(timeline: readonly RowEntry[]): number {
   const row0 = timeline[0];
   if (!row0) return 0;
   return row0.events
-    .filter((e) => e.kind === "bindOff" && e.side === "center" && e.edge === "center")
+    .filter(
+      (e) =>
+        (e.kind === "bindOff" || e.kind === "hold") &&
+        e.side === "center" &&
+        e.edge === "center",
+    )
     .reduce((s, e) => s + e.amount, 0);
+}
+
+function timelineCenterUsesHold(timeline: readonly RowEntry[]): boolean {
+  const row0 = timeline[0];
+  if (!row0) return false;
+  return row0.events.some((e) => e.kind === "hold" && e.side === "center" && e.edge === "center");
 }
 
 function stitchCountPhrase(n: number): string {
@@ -1192,17 +1220,22 @@ function stitchCountPhrase(n: number): string {
 }
 
 /**
- * Parenthetical for how the center bind-off spans needle 0 — floor/ceil split when N is odd
- * (matches common machine-bed convention).
+ * Parenthetical for how the center bind-off spans the bed center — floor/ceil split on L/R needles
+ * when N is odd (needle 0 is never a working needle).
  */
 export function formatCenterNecklineBindOffAroundZeroPhrase(totalCenterBindOff: number): string {
   const N = Math.max(0, Math.floor(totalCenterBindOff));
   if (N <= 0) return "";
-  if (N === 1) return "1 stitch at the center (needle 0)";
-  const leftOf = Math.floor(N / 2);
-  const rightOf = N - leftOf;
-  if (leftOf === rightOf) return `${leftOf} stitches on each side of 0`;
-  return `${leftOf} stitches left of 0, ${rightOf} stitches right of 0`;
+  if (N === 1) return "1 stitch on R1";
+  const onLeft = Math.floor(N / 2);
+  const onRight = N - onLeft;
+  if (onLeft === onRight) {
+    const word = onLeft === 1 ? "stitch" : "stitches";
+    return `${onLeft} ${word} on L needles and ${onRight} on R needles`;
+  }
+  const leftWord = onLeft === 1 ? "stitch" : "stitches";
+  const rightWord = onRight === 1 ? "stitch" : "stitches";
+  return `${onLeft} ${leftWord} on L needles and ${onRight} ${rightWord} on R needles`;
 }
 
 /** Remaining shoulder-side stitches after the center bind-off (from chart row 0). */
@@ -1248,6 +1281,52 @@ export function formatCenterNecklineBindOffShapingExecution(args: {
   return `Bind off the center ${N} ${centerWord} (${around}). You now have ${shoulders}. Work each side separately.`;
 }
 
+/** RC-targeted shallow back hold divide — three-stage workflow (stage 1 setup at neckline row). */
+export function formatShallowBackHoldCenterDivideExecution(args: {
+  totalCenterHold: number;
+  stitchesLeftAfter: number;
+  stitchesRightAfter: number;
+}): string {
+  const N = Math.max(0, Math.floor(args.totalCenterHold));
+  const L = Math.max(0, Math.floor(args.stitchesLeftAfter));
+  const R = Math.max(0, Math.floor(args.stitchesRightAfter));
+  const centerWord = N === 1 ? "stitch" : "stitches";
+  const parts = [
+    `Place the center ${N} ${centerWord} in hold.`,
+    "Place the opposite (left) shoulder stitches in hold.",
+    "Place the opposite (left) neckline stitches in hold.",
+    `Work the right shoulder (${stitchCountPhrase(R)}) and right neck edge; left shoulder (${stitchCountPhrase(L)}) remains parked.`,
+  ];
+  return parts.join(" ");
+}
+
+/** Preamble-style shallow back hold divide (knit to center before RC-targeted line). */
+export function formatShallowBackHoldCenterDividePreamble(args: {
+  totalCenterHold: number;
+  stitchesLeftAfter: number;
+  stitchesRightAfter: number;
+}): string {
+  return `Knit to center. ${formatShallowBackHoldCenterDivideExecution(args)}`;
+}
+
+/** RC-targeted shaping sentence for shallow hold center divide. */
+export function formatCenterNecklineHoldShapingExecution(args: {
+  totalCenterHold: number;
+  stitchesLeftAfter: number;
+  stitchesRightAfter: number;
+}): string {
+  return formatShallowBackHoldCenterDivideExecution(args);
+}
+
+/** Preamble-style execution for shallow hold center divide. */
+export function formatCenterNecklineHoldPreambleExecution(args: {
+  totalCenterHold: number;
+  stitchesLeftAfter: number;
+  stitchesRightAfter: number;
+}): string {
+  return formatShallowBackHoldCenterDividePreamble(args);
+}
+
 function centerBindOffExecutionTextFromChartRow(
   timeline: readonly RowEntry[],
   chartRow0: NeckShoulderShapingChartRow | undefined
@@ -1255,17 +1334,29 @@ function centerBindOffExecutionTextFromChartRow(
   if (!timeline.length || !chartRow0) return undefined;
   const nCenter = centerBindOffAmountFirstTimelineRow(timeline);
   if (nCenter <= 0) return undefined;
+  const useHold = timelineCenterUsesHold(timeline);
+  const args = {
+    totalCenterBindOff: nCenter,
+    stitchesLeftAfter: chartRow0.leftStitchCount,
+    stitchesRightAfter: chartRow0.rightStitchCount,
+  };
+  if (useHold) {
+    return {
+      preambleLine: formatCenterNecklineHoldPreambleExecution({
+        totalCenterHold: nCenter,
+        stitchesLeftAfter: chartRow0.leftStitchCount,
+        stitchesRightAfter: chartRow0.rightStitchCount,
+      }),
+      shapingAtRcLine: formatCenterNecklineHoldShapingExecution({
+        totalCenterHold: nCenter,
+        stitchesLeftAfter: chartRow0.leftStitchCount,
+        stitchesRightAfter: chartRow0.rightStitchCount,
+      }),
+    };
+  }
   return {
-    preambleLine: formatCenterNecklineBindOffPreambleExecution({
-      totalCenterBindOff: nCenter,
-      stitchesLeftAfter: chartRow0.leftStitchCount,
-      stitchesRightAfter: chartRow0.rightStitchCount,
-    }),
-    shapingAtRcLine: formatCenterNecklineBindOffShapingExecution({
-      totalCenterBindOff: nCenter,
-      stitchesLeftAfter: chartRow0.leftStitchCount,
-      stitchesRightAfter: chartRow0.rightStitchCount,
-    }),
+    preambleLine: formatCenterNecklineBindOffPreambleExecution(args),
+    shapingAtRcLine: formatCenterNecklineBindOffShapingExecution(args),
   };
 }
 
@@ -1299,16 +1390,6 @@ function parseRcBoundsFromExecutionLines(lines: readonly string[]): {
 }
 
 /**
- * Pre-table neckline/shoulder prose (placed before the one-shoulder shaping table).
- * The "repeat for the second shoulder" wording is rendered inside the one-shoulder checklist
- * HTML (see {@link renderNeckShoulderShapingChartTableOnlyHtml}) AFTER the final bind-off
- * line, so it is intentionally absent here.
- */
-const NECKLINE_SHOULDER_INSTRUCTION_PARAGRAPHS: readonly string[] = [
-  "Use the checklist below to work the neckline and shoulder shaping.",
-];
-
-/**
  * Final shoulder bind-off instruction sentence. Returns `null` when no stitches remain
  * (so callers can omit the line entirely instead of emitting "Bind off remaining 0 stitches.").
  * Uses singular wording for exactly one stitch.
@@ -1337,6 +1418,13 @@ function backNecklineShoulderSummaryParagraphs(args: {
   /** Full garment neck opening N — used for cardigan CF initial bind-off in summary validation. */
   fullNecklineStitches?: number;
   shoulderStitches?: number;
+  /** Shoulder-line stitch count B at the neckline row — enables needle-range setup prose. */
+  stitchesAfterArmhole?: number;
+  /** Shallow back round-neck plan — when set, emits hold setup overview (checklist handles shaping). */
+  backRoundNeckPlan?: RoundNecklinePlanResult | null;
+  /** Garment RC where back neckline shaping begins (with {@link firstArmholeRC} for Armhole RC label). */
+  backNecklineStartRC?: number;
+  firstArmholeRC?: number | null;
 }): string[] | null {
   let leftS: number | undefined;
   let rightS: number | undefined;
@@ -1350,7 +1438,7 @@ function backNecklineShoulderSummaryParagraphs(args: {
   }
 
   let bindOffCenter =
-    nFit !== undefined && nFit > 0 ? initialCenterNeckStitches(nFit) : undefined;
+    nFit !== undefined && nFit > 0 ? initialBackCenterNeckStitches(nFit) : undefined;
 
   if (args.neckChartRows.length > 0) {
     const r0 = args.neckChartRows[0];
@@ -1378,7 +1466,32 @@ function backNecklineShoulderSummaryParagraphs(args: {
     return null;
   }
 
-  return [...NECKLINE_SHOULDER_INSTRUCTION_PARAGRAPHS];
+  const necklineStartRcLabel =
+    args.backNecklineStartRC !== undefined &&
+    args.firstArmholeRC !== null &&
+    args.firstArmholeRC !== undefined
+      ? formatArmholeLocalRc(args.backNecklineStartRC, args.firstArmholeRC)
+      : undefined;
+
+  if (args.backRoundNeckPlan?.strategy === "shallow-round") {
+    return roundNeckBackShallowSleevelessSummaryWrittenLines(args.backRoundNeckPlan, {
+      bodyWidthStitches: args.stitchesAfterArmhole ?? 0,
+      necklineStartRcLabel,
+    });
+  }
+
+  return ["Use the checklist below for row-by-row neckline and shoulder shaping."];
+}
+
+/** Routes needle-range HTML lines to {@link trustedParagraphs} for trusted rendering. */
+function backNeckSummaryInstructionFields(summary: string[]): {
+  paragraphs?: string[];
+  trustedParagraphs?: string[];
+} {
+  if (summary.some((line) => line.includes('class="needle-range"'))) {
+    return { trustedParagraphs: summary };
+  }
+  return { paragraphs: summary };
 }
 
 export function buildSleevelessBackDisplayRows(args: {
@@ -1405,6 +1518,8 @@ export function buildSleevelessBackDisplayRows(args: {
   useNeckChartRows: boolean;
   necklineStitches?: number;
   shoulderStitches?: number;
+  /** Shallow back round-neck plan for three-stage execution prose in the neckline summary. */
+  backRoundNeckPlan?: RoundNecklinePlanResult | null;
   /**
    * Full-width back uses symmetric armhole bind-offs; round cardigan **left** half uses one outer
    * armhole edge only (same bind-off / decrease counts as one side of the back plan).
@@ -1494,6 +1609,7 @@ export function buildSleevelessBackDisplayRows(args: {
         aline.shapingType,
         aline.shapingRowNumbers,
         alineEdgeScope,
+        aline.hemCastOnSts,
       );
       const bustSts = aline.bustBodySts > 0 ? aline.bustBodySts : undefined;
       // Heading + summary sit ABOVE the chart; the per-row counters that were the
@@ -1838,11 +1954,15 @@ export function buildSleevelessBackDisplayRows(args: {
       neckChartRows: args.neckChartRows,
       necklineStitches: args.necklineStitches,
       shoulderStitches: args.shoulderStitches,
+      stitchesAfterArmhole: args.stitchesAfterArmhole,
+      backRoundNeckPlan: args.backRoundNeckPlan,
+      backNecklineStartRC: args.backNecklineStartRC,
+      firstArmholeRC: args.firstArmholeRC,
     });
     if (summary) {
       rows.push({
         kind: "block",
-        paragraphs: summary,
+        ...backNeckSummaryInstructionFields(summary),
         tipHtml: necklineShoulderOrientationHelpCardInnerHtml(),
         tipHtmlIsFull: true,
         tipPresentation: "help-card",
@@ -1867,14 +1987,20 @@ export function buildSleevelessBackDisplayRows(args: {
       neckChartRows: args.neckChartRows,
       necklineStitches: args.necklineStitches,
       shoulderStitches: args.shoulderStitches,
+      stitchesAfterArmhole: args.stitchesAfterArmhole,
+      backRoundNeckPlan: args.backRoundNeckPlan,
+      backNecklineStartRC: args.backNecklineStartRC,
+      firstArmholeRC: args.firstArmholeRC,
     });
     rows.push({
       kind: "block",
-      paragraphs:
-        summary ??
-        [
-          "Neckline summary could not be generated. Confirm neck opening and shoulder width in Fit, then open this tab again.",
-        ],
+      ...(summary
+        ? backNeckSummaryInstructionFields(summary)
+        : {
+            paragraphs: [
+              "Neckline summary could not be generated. Confirm neck opening and shoulder width in Fit, then open this tab again.",
+            ],
+          }),
       ...(summary
         ? {
             tipHtml: necklineShoulderOrientationHelpCardInnerHtml(),
@@ -2082,6 +2208,7 @@ export function generateSleevelessBackPattern(
   const isCardiganHalfFrontBody = isCardigan;
   /** Half-panel neck/shoulder chart math — round cardigan only (V-neck cardigan uses full-width V timeline). */
   const isCardiganRoundHalfFront = isCardigan && !isSleevelessVNeckChoice(patternData);
+  const isFrontVNeck = isSleevelessVNeckChoice(patternData);
   const {
     stitchesPerInch,
     rowsPerInch,
@@ -2214,7 +2341,7 @@ export function generateSleevelessBackPattern(
   let sideNeckShapingStitchesPerSide = 0;
   let sideNeckShapingStitchesPerSideFrontPiece = 0;
   if (necklineStitches !== undefined && necklineStitches > 0) {
-    sideNeckShapingStitchesPerSide = neckEdgeDecreasesPerSide(necklineStitches);
+    sideNeckShapingStitchesPerSide = backNeckEdgeDecreasesPerSide(necklineStitches);
     const neckOpeningForFrontPiece =
       isCardiganRoundHalfFront ? Math.max(1, Math.round(necklineStitches / 2)) : necklineStitches;
     sideNeckShapingStitchesPerSideFrontPiece = neckEdgeDecreasesPerSide(neckOpeningForFrontPiece);
@@ -2424,11 +2551,13 @@ export function generateSleevelessBackPattern(
    */
   const frontNeckDepthRows =
     rowGauge > 0 && frontNeckDepthIn !== undefined
-      ? Math.max(1, Math.round(frontNeckDepthIn * rowGauge))
+      ? normalizeRoundNecklineDepthRows(Math.max(1, Math.round(frontNeckDepthIn * rowGauge)))
       : 0;
   /** Back neckline vertical depth in rows (single budget for unified neck + shoulder timeline). */
   const backNeckDepthRows =
-    rowGauge > 0 ? Math.max(1, Math.round((backNeckDepthIn ?? 2.5) * rowGauge)) : 0;
+    rowGauge > 0
+      ? normalizeRoundNecklineDepthRows(Math.max(1, Math.round((backNeckDepthIn ?? 2.5) * rowGauge)))
+      : 0;
   const shoulderBindoffRows =
     rowGauge > 0 ? Math.max(1, Math.round(rowGauge * 1)) : 1;
 
@@ -2484,10 +2613,11 @@ export function generateSleevelessBackPattern(
    * so the live timeline / text chart align with `rc-neckline-start` on the JP schematic
    * (e.g. rc014). Extend depth so the piece still ends at the same shoulder line.
    */
-  const frontNeckTimelineDepthRows =
+  const frontNeckTimelineDepthRows = normalizeRoundNecklineDepthRows(
     shoulderEndRC !== undefined
       ? Math.max(effectiveFrontNeckDepthRows, shoulderEndRC - frontNecklineStartRC)
-      : effectiveFrontNeckDepthRows;
+      : effectiveFrontNeckDepthRows,
+  );
   const shoulderStartRC =
     shoulderEndRC !== undefined && shoulderBindoffRows > 0
       ? Math.max(0, shoulderEndRC - shoulderBindoffRows)
@@ -2547,6 +2677,13 @@ export function generateSleevelessBackPattern(
   let backNeckShoulderTimeline: RowEntry[] | undefined;
   let frontNeckShoulderTimeline: RowEntry[] | undefined;
 
+  let backRoundNeckPlan:
+    | ReturnType<typeof calculateBackRoundNecklinePlan>
+    | null = null;
+  let frontRoundNeckPlan:
+    | ReturnType<typeof calculateRoundNecklinePlan>
+    | null = null;
+
   /** Timeline drives chart + row-accurate execution (front RC-shift only). */
   if (
     castOnSts > 0 &&
@@ -2556,7 +2693,7 @@ export function generateSleevelessBackPattern(
     shoulderStitches > 0
   ) {
     const shoulderSts = shoulderStitches;
-    const initialCenterSts = initialCenterNeckStitches(necklineStitches);
+    const initialCenterSts = initialBackCenterNeckStitches(necklineStitches);
     const necklineOpeningStsForFrontPiece = isCardiganRoundHalfFront
       ? Math.max(1, Math.round(necklineStitches / 2))
       : necklineStitches;
@@ -2599,7 +2736,10 @@ export function generateSleevelessBackPattern(
       centerNeckBindOff: necklineOpeningStsForFrontPiece,
       ...(isCardiganRoundHalfFront
         ? {
-            cardiganCfInitialBindOff: cardiganFrontInitialNeckBindOffStitches(necklineStitches),
+            cardiganCfInitialBindOff: cardiganFrontInitialNeckBindOffStitches(
+              necklineStitches,
+              effectiveFrontNeckDepthRows,
+            ),
           }
         : {}),
       neckDepthRows:
@@ -2609,7 +2749,24 @@ export function generateSleevelessBackPattern(
       shoulderBindoffRows,
     };
 
-    const isFrontVNeck = isSleevelessVNeckChoice(patternData);
+    backRoundNeckPlan = calculateBackRoundNecklinePlan({
+      necklineStitches: necklineStitches,
+      necklineDepthRows: backNeckDepthRows,
+    });
+    if (backRoundNeckPlan.warnings.length > 0) {
+      warnings.push(...backRoundNeckPlan.warnings);
+    }
+
+    frontRoundNeckPlan =
+      !isFrontVNeck && necklineStitches > 0 && effectiveFrontNeckDepthRows > 0
+        ? calculateRoundNecklinePlan({
+            necklineStitches,
+            necklineDepthRows: effectiveFrontNeckDepthRows,
+          })
+        : null;
+    if (frontRoundNeckPlan && frontRoundNeckPlan.warnings.length > 0) {
+      warnings.push(...frontRoundNeckPlan.warnings);
+    }
 
     const patternNumbers: NeckShoulderShapingPatternNumbers = {
       firstShapingRow: neckStartRC,
@@ -2804,7 +2961,7 @@ export function generateSleevelessBackPattern(
       const firstRowCenterBo = centerBindOffAmountFirstTimelineRow(frontTimeline);
       const cardiganCfInitialBo =
         isCardiganRoundHalfFront && necklineStitches !== undefined
-          ? cardiganFrontInitialNeckBindOffStitches(necklineStitches)
+          ? cardiganFrontInitialNeckBindOffStitches(necklineStitches, effectiveFrontNeckDepthRows)
           : 0;
       const frontVNeckCenterPreamble: CenterBindOffExecutionText = {
         preambleLine:
@@ -2853,7 +3010,7 @@ export function generateSleevelessBackPattern(
               {
                 startRC: neckStartRC,
                 endRC: neckStartRC + backNeckDepthRows - 1,
-                text: `At neck edge, decrease toward center — ${sideNeckShapingStitchesPerSide} stitch${
+                text: `At neck edge, decrease toward center every other row — ${sideNeckShapingStitchesPerSide} stitch${
                   sideNeckShapingStitchesPerSide === 1 ? "" : "es"
                 } per side.`,
               },
@@ -3020,6 +3177,25 @@ export function generateSleevelessBackPattern(
   )?.row;
   const shoulderStartRow = timelineShoulderStartRow ?? shoulderStartRC;
 
+  if (necklineStitches !== undefined && necklineStitches > 0 && backRoundNeckPlan === null) {
+    backRoundNeckPlan = calculateBackRoundNecklinePlan({
+      necklineStitches,
+      necklineDepthRows: backNeckDepthRows,
+    });
+  }
+  if (
+    necklineStitches !== undefined &&
+    necklineStitches > 0 &&
+    frontRoundNeckPlan === null &&
+    !isFrontVNeck &&
+    effectiveFrontNeckDepthRows > 0
+  ) {
+    frontRoundNeckPlan = calculateRoundNecklinePlan({
+      necklineStitches,
+      necklineDepthRows: effectiveFrontNeckDepthRows,
+    });
+  }
+
   const debug: SleevelessBackPatternDebug = {
     finishedBustChest:
       finishedBust > 0 ? finishedBust : undefined,
@@ -3057,13 +3233,17 @@ export function generateSleevelessBackPattern(
     necklineWidthInches: neckWidthIn,
     necklineStitches,
     centerNeckBindOffStitches:
-      necklineStitches !== undefined ? initialCenterNeckStitches(necklineStitches) : undefined,
+      necklineStitches !== undefined ? initialBackCenterNeckStitches(necklineStitches) : undefined,
+    backNeckRoundNecklineStrategy: backRoundNeckPlan?.strategy,
+    frontNeckRoundNecklineStrategy: frontRoundNeckPlan?.strategy,
     ...(isCardiganRoundHalfFront &&
     frontNeckShoulderChartUsesLiveRows &&
     necklineStitches !== undefined
       ? {
-          cardiganFrontInitialNeckBindOffStitches:
-            cardiganFrontInitialNeckBindOffStitches(necklineStitches),
+          cardiganFrontInitialNeckBindOffStitches: cardiganFrontInitialNeckBindOffStitches(
+            necklineStitches,
+            effectiveFrontNeckDepthRows,
+          ),
         }
       : {}),
     sideNeckShapingStitchesPerSide,
@@ -3188,6 +3368,7 @@ export function generateSleevelessBackPattern(
     necklineStitches,
     shoulderStitches,
     alineBodyShaping,
+    backRoundNeckPlan,
   });
 
   const cardiganFrontAlineShaping =

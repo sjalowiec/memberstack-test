@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import GlossaryTermModal from "../../components/glossary/GlossaryTermModal.astro";
 import { isCourseContentAdminAllowed } from "../../lib/legacy_kin/courseContentAdmin";
 import "../../styles/course-preview.css";
 import "../../styles/course-content-editor.css";
@@ -15,7 +16,12 @@ if (
   return Astro.redirect("/admin/");
 }
 ---
-
+<style>
+  /* Room to scroll add-item buttons above the fixed Memberstack badge */
+  body.course-editor-body .course-editor__center {
+    padding-bottom: 6rem;
+  }
+</style>
 <BaseLayout
   title="Course Content Editor | Admin"
   description="Edit legacy KIN course lesson content"
@@ -71,8 +77,130 @@ if (
             aria-readonly="true"
             title="Course title (read-only — edit in source file if needed)"
           />
+          <div class="course-editor__course-status">
+            <label class="course-editor__status-field" for="course-editor-published">
+              <span class="course-editor__status-label">Publication</span>
+              <select
+                id="course-editor-published"
+                class="course-editor__input course-editor__status-select"
+                aria-label="Publication status"
+              >
+                <option value="false">Draft / unpublished</option>
+                <option value="true">Published</option>
+              </select>
+            </label>
+            <label class="course-editor__status-field" for="course-editor-active">
+              <span class="course-editor__status-label">Catalog</span>
+              <select
+                id="course-editor-active"
+                class="course-editor__input course-editor__status-select"
+                aria-label="Catalog visibility"
+              >
+                <option value="true">Active — listed on /courses</option>
+                <option value="false">Inactive — hidden from public site</option>
+              </select>
+            </label>
+            <p class="course-editor__field-hint course-editor__status-hint">
+              Staging preview still works when inactive. Save after changing visibility.
+            </p>
+            <button
+              type="button"
+              id="course-editor-status-save"
+              class="kbm-btn kbm-btn-outline course-editor__status-save"
+              disabled
+            >
+              Save visibility settings
+            </button>
+          </div>
           <select id="course-editor-course" class="course-editor__course-select" aria-label="Select course"></select>
         </div>
+        <details id="course-editor-settings-panel" class="course-editor__settings-panel">
+          <summary class="course-editor__settings-summary">Course settings</summary>
+          <div class="course-editor__course-settings">
+            <label class="course-editor__status-field" for="course-editor-content-status">
+              <span class="course-editor__status-label">Content status</span>
+              <select
+                id="course-editor-content-status"
+                class="course-editor__input course-editor__status-select"
+                aria-label="Editorial content status"
+              >
+                <option value="in_progress">In progress — migration / cleanup ongoing</option>
+                <option value="cleaned">Cleaned — hand-edited and ready</option>
+              </select>
+            </label>
+            <p class="course-editor__field-hint">
+              Tracks editorial cleanup only. Does not control public publication or catalog visibility.
+            </p>
+            <label class="course-editor__sidebar-label" for="course-editor-thumbnail">
+              Course thumbnail
+            </label>
+            <div class="course-editor__thumbnail-path">
+              <span class="course-editor__thumbnail-prefix" aria-hidden="true">/images/courses/</span>
+              <input
+                id="course-editor-thumbnail"
+                class="course-editor__input course-editor__thumbnail-input"
+                type="text"
+                placeholder="beginner.webp"
+                autocomplete="off"
+                spellcheck="false"
+              />
+            </div>
+            <p class="course-editor__field-hint">
+              Enter the filename only. Saved as <code>/images/courses/…</code> on the public
+              <a href="/courses/" target="_blank" rel="noopener noreferrer">/courses</a> catalog card.
+            </p>
+            <div id="course-editor-thumbnail-preview-wrap" class="course-editor__thumbnail-preview-wrap" hidden>
+              <img
+                id="course-editor-thumbnail-preview"
+                class="course-editor__thumbnail-preview"
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+            <p id="course-editor-thumbnail-preview-empty" class="course-editor__field-hint" hidden>
+              No preview — enter a path above or clear to use the catalog placeholder.
+            </p>
+            <label class="course-editor__sidebar-label" for="course-editor-catalog-description">
+              Catalog description
+            </label>
+            <p
+              id="course-editor-catalog-description-source"
+              class="course-editor__catalog-description-source"
+              aria-live="polite"
+            ></p>
+            <textarea
+              id="course-editor-catalog-description"
+              class="course-editor__input course-editor__textarea course-editor__catalog-description"
+              rows="3"
+              placeholder="Uses catalog fallback when left unchanged"
+              aria-label="Catalog description"
+              aria-describedby="course-editor-catalog-description-source course-editor-catalog-description-hint"
+              spellcheck="true"
+            ></textarea>
+            <p id="course-editor-catalog-description-hint" class="course-editor__field-hint">
+              Shows the description used on
+              <a href="/courses/" target="_blank" rel="noopener noreferrer">/courses</a>.
+              Edit only to override; otherwise the catalog fallback applies automatically.
+            </p>
+            <button
+              type="button"
+              id="course-editor-catalog-description-clear"
+              class="kbm-btn kbm-btn-outline course-editor__catalog-description-clear"
+              disabled
+            >
+              Clear custom description
+            </button>
+            <button
+              type="button"
+              id="course-editor-settings-save"
+              class="kbm-btn kbm-btn-outline course-editor__settings-save"
+              disabled
+            >
+              Save course settings
+            </button>
+          </div>
+        </details>
         <div class="course-editor__lessons-head">
           <span class="course-editor__sidebar-label">Lessons</span>
           <button type="button" id="course-editor-add-lesson" class="course-editor__add-lesson-btn">
@@ -84,85 +212,75 @@ if (
 
       <main class="course-editor__center">
         <div class="course-editor__center-inner">
-          <div class="course-editor__lesson-toolbar">
-            <div class="course-editor__lesson-title-wrap">
-              <label class="course-editor__field-label" for="course-editor-lesson-title">Lesson title</label>
-              <input
-                id="course-editor-lesson-title"
-                class="course-editor__input course-editor__lesson-title-input"
-                type="text"
-                placeholder="Untitled Lesson"
-                autocomplete="off"
-                spellcheck="true"
-                disabled
-              />
+          <header class="course-editor__lesson-header">
+            <span class="course-editor__hierarchy-label">Lesson</span>
+            <div class="course-editor__lesson-toolbar">
+              <div class="course-editor__lesson-title-wrap">
+                <input
+                  id="course-editor-lesson-title"
+                  class="course-editor__input course-editor__lesson-title-input"
+                  type="text"
+                  placeholder="Untitled lesson"
+                  aria-label="Lesson title"
+                  autocomplete="off"
+                  spellcheck="true"
+                  disabled
+                />
+              </div>
+              <button
+                type="button"
+                id="course-editor-delete-lesson"
+                class="kbm-btn kbm-btn-outline course-editor__delete-lesson-btn"
+                hidden
+              >
+                Delete lesson
+              </button>
             </div>
-            <div id="course-editor-section-title-wrap" class="course-editor__section-title-wrap" hidden>
-              <label class="course-editor__field-label" for="course-editor-section-title">Section title</label>
-              <input
-                id="course-editor-section-title"
-                class="course-editor__input course-editor__section-title-input"
-                type="text"
-                placeholder="Optional heading within this lesson"
-                autocomplete="off"
-                spellcheck="true"
-                disabled
-              />
-              <p id="course-editor-section-title-hint" class="course-editor__field-hint" hidden></p>
-            </div>
-            <button
-              type="button"
-              id="course-editor-delete-lesson"
-              class="kbm-btn kbm-btn-outline course-editor__delete-lesson-btn"
-              hidden
-            >
-              Delete lesson
-            </button>
-          </div>
-          <p id="course-editor-items-empty" class="course-editor__empty-lesson" hidden>
-            This lesson is empty. Add your first item below.
-          </p>
-          <div id="course-editor-items" class="course-editor__items"></div>
+          </header>
 
-          <div class="course-editor__add-row">
-            <button type="button" class="course-editor__add-btn" data-add-kind="richText-blank">+ Text</button>
-            <button type="button" class="course-editor__add-btn" data-add-kind="textVideoLayout">
-              + Add Text + Video
-            </button>
-            <button type="button" class="course-editor__add-btn" data-add-kind="textImageLayout">
-              + Text + Image
-            </button>
-            <button type="button" class="course-editor__add-btn" data-add-kind="video">+ Video</button>
-            <button type="button" class="course-editor__add-btn" data-add-kind="image">+ Image</button>
-            <button type="button" class="course-editor__add-btn" data-add-kind="imageWithCaption">
-              + Image with Caption
-            </button>
-            <button type="button" class="course-editor__add-btn" data-add-kind="download">+ Download</button>
-            <button type="button" class="course-editor__add-btn" data-add-kind="exerciseAccordion">+ Accordion</button>
-            <button type="button" class="course-editor__add-btn" data-add-kind="imageGallery">+ Gallery</button>
-            <button type="button" class="course-editor__add-btn" data-add-kind="imageCarousel">+ Carousel</button>
+          <div class="course-editor__section-toolbar">
+            <details class="course-editor__add-block-toolbar-menu" id="course-editor-add-block-menu">
+              <summary class="course-editor__add-block-toolbar-btn">+ Add Block</summary>
+              <p id="course-editor-add-block-target" class="course-editor__add-block-target-hint">
+                Expand a section in the outline below, then pick a block type.
+              </p>
+              <div class="course-editor__add-block-types" id="course-editor-add-block-types"></div>
+            </details>
+            <details class="course-editor__add-section-menu" id="course-editor-add-section-menu">
+              <summary class="course-editor__add-section-btn">+ New Section</summary>
+              <p class="course-editor__add-section-hint">
+                Adds a new heading to the lesson with one starting block. Use this for a new topic — not for adding more content under an existing heading.
+              </p>
+              <div class="course-editor__add-section-types" id="course-editor-add-section-types"></div>
+            </details>
           </div>
+
+          <p class="course-editor__outline-label">Lesson outline</p>
+          <p id="course-editor-items-empty" class="course-editor__empty-lesson" hidden>
+            This lesson has no sections yet. Add a section to start building the outline.
+          </p>
+          <div id="course-editor-items" class="course-editor__outline"></div>
         </div>
       </main>
 
       <aside class="course-editor__panel" id="course-editor-edit-panel">
-        <details class="course-editor__snippets" id="course-editor-snippets">
-          <summary class="course-editor__snippets-summary">Common HTML Snippets</summary>
-          <p class="course-editor__snippets-hint">
-            Copy common patterns while cleaning lesson HTML. Insert adds to the field that is focused below.
-          </p>
-          <div id="course-editor-snippets-list" class="course-editor__snippets-list"></div>
-        </details>
-
         <div class="course-editor__panel-main">
           <div id="course-editor-edit-empty" class="course-editor__panel-empty">
-            <p>Pick an item in the lesson to edit it here.</p>
+            <p>Select a block from the lesson outline.</p>
           </div>
           <div id="course-editor-edit-form" hidden>
             <div id="course-editor-edit-head" class="course-editor__panel-head"></div>
             <div id="course-editor-edit-fields" class="course-editor__panel-body"></div>
           </div>
         </div>
+
+        <details class="course-editor__snippets" id="course-editor-snippets">
+          <summary class="course-editor__snippets-summary">Common HTML Snippets</summary>
+          <p class="course-editor__snippets-hint">
+            Copy common patterns while cleaning lesson HTML. Insert adds to the focused field above.
+          </p>
+          <div id="course-editor-snippets-list" class="course-editor__snippets-list"></div>
+        </details>
       </aside>
     </div>
 
@@ -193,6 +311,8 @@ if (
   </div>
 
   <div id="course-editor-toast" class="course-editor__toast" aria-live="polite"></div>
+
+  <GlossaryTermModal />
 
   <script>
     import { initCourseContentEditor } from "../../scripts/courseContentEditor.ts";

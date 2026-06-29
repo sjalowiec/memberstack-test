@@ -566,6 +566,11 @@
     line-height: 1.55;
   }
 
+  .sleeveless-print-root .print-line .needle-range {
+    font-weight: 700;
+    font-size: 1.05em;
+  }
+
   /* Row Counter Reset — required action marker; keep border + accent in print. */
   .sleeveless-print-root .row-counter-reset {
     display: inline-flex;

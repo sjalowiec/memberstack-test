@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import "../../components/talk-bubbles.css";
 import helpHubData from "../../data/help-hub.json";
+import { helpHubTipIsPublic } from "../../lib/helpHubPublic";
 
 function helpHubTipSortOrder(item: { sortOrder?: unknown; id?: unknown }): number {
   const v = item.sortOrder;
@@ -25,12 +26,28 @@ function helpHubTipId(item: { id?: unknown }): number {
 
 /** Live entries for the top “New in the Help Hub” section (isNew === true). */
 const newHelpHubItems = helpHubData
-  .filter((item) => item.isNew === true)
+  .filter((item) => item.isNew === true && helpHubTipIsPublic(item))
   .sort((a, b) => {
     const c = helpHubTipSortOrder(a) - helpHubTipSortOrder(b);
     if (c !== 0) return c;
     return helpHubTipId(a) - helpHubTipId(b);
   });
+
+const debugHelpHubTip = (Array.isArray(helpHubData) ? helpHubData : []).find(
+  (item) => typeof item.slug === "string" && item.slug.trim() === "change-colors-lk150",
+);
+if (debugHelpHubTip) {
+  console.log("[KBM catalog debug] help-hub/index loader", {
+    source: "src/data/help-hub.json",
+    slug: debugHelpHubTip.slug,
+    status: debugHelpHubTip.status,
+    isNew: debugHelpHubTip.isNew,
+    helpHubTipIsPublic: helpHubTipIsPublic(debugHelpHubTip),
+    inNewHelpHubItems: newHelpHubItems.some(
+      (item) => typeof item.slug === "string" && item.slug.trim() === "change-colors-lk150",
+    ),
+  });
+}
 
 /** Placeholder grouped data — lower catalog until more entries go live. */
 const fixCategories = [

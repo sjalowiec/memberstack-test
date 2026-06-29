@@ -1,0 +1,356 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCourseLandingBySlug } from "../../lib/legacy_kin/courseLanding";
+
+export const prerender = false;
+
+const courseSlug = Astro.params.courseSlug ?? "";
+const landing = getCourseLandingBySlug(courseSlug);
+
+if (!landing) {
+  return new Response("Course not found", { status: 404 });
+}
+
+const pageTitle = `${landing.title} | Knit it Now`;
+const isInProgress = landing.contentStatus === "in_progress";
+const statusClass =
+  landing.contentStatus === "cleaned"
+    ? "course-landing__badge--cleaned"
+    : "course-landing__badge--in-progress";
+---
+
+<Layout title={pageTitle} description={landing.description} bodyClass="page--tight-header">
+  <div class="course-landing">
+    <p class="course-landing__back">
+      <a href="/courses/">? All courses</a>
+    </p>
+
+    <article class="course-landing__card">
+      <div class="course-landing__media">
+        {
+          landing.thumbnailUrl ? (
+            <img
+              src={landing.thumbnailUrl}
+              alt=""
+              class="course-landing__thumbnail"
+              loading="eager"
+              decoding="async"
+            />
+          ) : (
+            <div class="course-landing__thumbnail course-landing__thumbnail--placeholder" aria-hidden="true">
+              <span>Course</span>
+            </div>
+          )
+        }
+        <span class={`course-landing__badge ${statusClass}`}>
+          {landing.contentStatusLabel}
+        </span>
+      </div>
+
+      <div class="course-landing__body">
+        <header class="course-landing__header">
+          <h1 class="course-landing__title">{landing.title}</h1>
+          {
+            landing.description ? (
+              <p class="course-landing__description">{landing.description}</p>
+            ) : null
+          }
+          <p class="course-landing__meta">
+            {landing.lessonCount} lesson{landing.lessonCount === 1 ? "" : "s"}
+          </p>
+        </header>
+
+        {
+          isInProgress ? (
+            <section class="course-landing__update" aria-labelledby="course-landing-update-heading">
+              <h2 id="course-landing-update-heading" class="course-landing__update-heading">
+                Course update in progress
+              </h2>
+              <p class="course-landing__update-copy">
+                This course is being updated for the new Knit It Now learning platform. The
+                lessons are being reviewed, cleaned up, and reorganized for a better learning
+                experience.
+              </p>
+              <p class="course-landing__update-copy">
+                If you previously purchased this course, your access will continue as the updated
+                lessons become available.
+              </p>
+
+              <div class="course-landing__interest-wrap">
+                <form
+                  class="course-landing__interest"
+                  id="course-landing-interest-form"
+                  data-course-interest-form
+                  data-course-slug={landing.slug}
+                  data-course-title={landing.title}
+                  data-ac-tag={landing.interestTag}
+                >
+                  <label class="course-landing__interest-label" for="course-landing-interest-email">
+                    Email
+                  </label>
+                  <div class="course-landing__interest-row">
+                    <input
+                      id="course-landing-interest-email"
+                      class="course-landing__interest-input"
+                      type="email"
+                      name="email"
+                      autocomplete="email"
+                      placeholder="you@example.com"
+                      required
+                    />
+                    <button
+                      class="kbm-btn kbm-btn-accent course-landing__interest-btn"
+                      type="submit"
+                      id="course-landing-interest-submit"
+                    >
+                      Let me know when this course is ready
+                    </button>
+                  </div>
+                  <p
+                    class="course-landing__interest-error"
+                    hidden
+                    data-interest-error
+                    role="alert"
+                  ></p>
+                </form>
+                <p class="course-landing__interest-thanks" hidden data-interest-thanks role="status">
+                  Thank you! We&apos;ll let you know as soon as this course is ready.
+                </p>
+              </div>
+            </section>
+          ) : (
+            <section class="course-landing__access">
+              <a class="kbm-btn kbm-btn-accent course-landing__start" href={landing.startHref}>
+                Start course
+              </a>
+              <p class="course-landing__access-note">
+                Opens the lesson player for this course.
+              </p>
+            </section>
+          )
+        }
+      </div>
+    </article>
+  </div>
+</Layout>
+
+<style>
+  .course-landing {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 1.25rem 1rem 2.5rem;
+  }
+
+  .course-landing__back {
+    margin: 0 0 1rem;
+    font-size: 0.92rem;
+  }
+
+  .course-landing__back a {
+    color: #52682d;
+    text-decoration: none;
+  }
+
+  .course-landing__back a:hover {
+    text-decoration: underline;
+  }
+
+  .course-landing__card {
+    display: grid;
+    grid-template-columns: minmax(0, 18rem) minmax(0, 1fr);
+    gap: 1.5rem;
+    padding: 1.25rem;
+    border: 1px solid #d6dbc9;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .course-landing__media {
+    position: relative;
+    min-width: 0;
+  }
+
+  .course-landing__thumbnail {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid #eef0e6;
+    background: #f9f9f6;
+  }
+
+  .course-landing__thumbnail--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #7a8468;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background:
+      repeating-linear-gradient(
+        135deg,
+        #f3f4ec,
+        #f3f4ec 14px,
+        #eceee2 14px,
+        #eceee2 28px
+      );
+  }
+
+  .course-landing__badge {
+    position: absolute;
+    top: 0.65rem;
+    left: 0.65rem;
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  }
+
+  .course-landing__badge--in-progress {
+    color: #8a6d1f;
+    background: #f7f0da;
+  }
+
+  .course-landing__badge--cleaned {
+    color: #166534;
+    background: #dcfce7;
+  }
+
+  .course-landing__body {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .course-landing__title {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    line-height: 1.2;
+    color: #2f3a28;
+  }
+
+  .course-landing__description {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #4d5a48;
+  }
+
+  .course-landing__meta {
+    margin: 0;
+    font-size: 0.92rem;
+    color: #64748b;
+  }
+
+  .course-landing__update-heading {
+    margin: 0 0 0.65rem;
+    font-size: 1.05rem;
+    color: #52682d;
+  }
+
+  .course-landing__update-copy {
+    margin: 0 0 0.75rem;
+    line-height: 1.6;
+    color: #4d5a48;
+  }
+
+  .course-landing__update-copy:last-of-type {
+    margin-bottom: 1rem;
+  }
+
+  .course-landing__interest {
+    margin: 0;
+    padding: 0.9rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fafc;
+  }
+
+  .course-landing__interest-label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+
+  .course-landing__interest-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+  }
+
+  .course-landing__interest-input {
+    flex: 1 1 12rem;
+    min-width: 0;
+    padding: 0.55rem 0.65rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+  }
+
+  .course-landing__interest-input:focus {
+    outline: none;
+    border-color: #94a3b8;
+    box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.25);
+  }
+
+  .course-landing__interest-btn {
+    flex: 1 1 14rem;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .course-landing__interest-error {
+    margin: 0.55rem 0 0;
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #b91c1c;
+  }
+
+  .course-landing__interest-thanks {
+    margin: 0.65rem 0 0;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #166534;
+  }
+
+  .course-landing__access {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.55rem;
+  }
+
+  .course-landing__start {
+    text-decoration: none;
+  }
+
+  .course-landing__access-note {
+    margin: 0;
+    font-size: 0.88rem;
+    color: #64748b;
+  }
+
+  @media (max-width: 768px) {
+    .course-landing__card {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  import { initCourseLandingInterestForms } from "../../scripts/courseLandingInterestForm.ts";
+  initCourseLandingInterestForms();
+</script>

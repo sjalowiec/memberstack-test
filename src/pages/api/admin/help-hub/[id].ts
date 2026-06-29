@@ -4,8 +4,7 @@ import {
   writeHelpHubFile,
   sortHelpHubTipsBySortOrder,
   getTipId,
-  normalizeRelatedLessons,
-  stripLegacyHelpHubTipFields,
+  mergeHelpHubPutUpdate,
 } from "../../../../lib/helpHubAdminFile";
 
 export const prerender = false;
@@ -87,17 +86,13 @@ export const PUT: APIRoute = async ({ params, request }) => {
   }
 
   const existing = tips[idx];
-  const row: Record<string, unknown> = {
-    ...existing,
-    ...body,
-  };
-  row.id = urlId;
-  row.title = title;
-  row.slug = slug;
-  row.category = category;
-  row.status = status;
-  stripLegacyHelpHubTipFields(row);
-  row.relatedLessons = normalizeRelatedLessons(body.relatedLessons);
+  const row = mergeHelpHubPutUpdate(existing, body, {
+    id: urlId,
+    title,
+    slug,
+    category,
+    status,
+  });
 
   tips[idx] = row;
 

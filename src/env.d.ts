@@ -7,6 +7,10 @@
 interface ImportMetaEnv {
   /** Server-only: Memberstack Admin API key for token verification (My Library APIs). */
   readonly MEMBERSTACK_SECRET_KEY?: string;
+  /** Server-only: Resend API key for transactional email. */
+  readonly RESEND_API_KEY?: string;
+  /** Server-only: verified sender for Resend (defaults to hello@knititnow.com). */
+  readonly CONTACT_FROM_EMAIL?: string;
 }
 
 declare global {
@@ -47,6 +51,13 @@ declare global {
       /** Auth lifecycle events (`member.login`, `member.logout`, …). */
       on?: (event: string, handler: (...args: unknown[]) => void) => void;
       openModal?: (type: string, opts?: Record<string, unknown>) => Promise<unknown>;
+      purchasePlansWithCheckout?: (opts: {
+        priceId: string;
+        successUrl?: string;
+        cancelUrl?: string;
+        autoRedirect?: boolean;
+      }) => Promise<{ data?: { url?: string } }>;
+      launchStripeCustomerPortal?: (opts?: { returnUrl?: string }) => Promise<{ data?: { url?: string } }>;
       hideModal?: () => void;
       init?: () => void;
       onReady?: Promise<unknown>;

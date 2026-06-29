@@ -9,6 +9,8 @@ export type PublicVideoRow = {
   vimeo_id?: number;
   vimeo_id_public?: number;
   access_level?: string;
+  /** `draft`, `published`, or `archived`. Omitted = legacy published. */
+  status?: string;
   /** Public exception: featured Tuesday Tip plays for everyone. */
   isTipOfWeek?: boolean;
   /** Alias used by admin editing; mirrored with isTipOfWeek. */

@@ -48,6 +48,9 @@ export type ImageGallerySlide = {
 
 export type ImageGalleryComponent = {
   type: "imageGallery";
+  introHtml?: string | null;
+  /** Plain-text heading saved by an earlier editor version; prefer introHtml */
+  title?: string | null;
   slides: ImageGallerySlide[];
   legacyComponentId: number;
   order: number;
@@ -95,6 +98,13 @@ export type MigrationPendingComponent = {
   order: number;
 };
 
+export type EmbeddedToolComponent = {
+  type: "embeddedTool";
+  toolKey: string;
+  legacyComponentId: number;
+  order: number;
+};
+
 export type CourseComponent =
   | RichTextComponent
   | VideoComponent
@@ -103,6 +113,7 @@ export type CourseComponent =
   | ImageCarouselComponent
   | ImageComponent
   | ExerciseAccordionComponent
+  | EmbeddedToolComponent
   | MigrationPendingComponent;
 
 export type CourseBlock = {
@@ -122,14 +133,33 @@ export type CourseLesson = {
   blocks: CourseBlock[];
 };
 
+export type CourseContentStatus = "in_progress" | "cleaned";
+
 export type CoursePreviewData = {
   course: {
     legacyChallengeId: number;
     title: string;
     slug: string;
-    legacy: { sourceExport: string };
+    /** Editorial workflow: migrated content still being cleaned vs hand-cleaned ready. */
+    contentStatus?: CourseContentStatus;
+    /** `published` or omitted = public when no explicit publish flags. `draft` hides from public routes. */
+    status?: string;
+    published?: boolean;
+    /** Optional custom override for /courses catalog cards. When omitted, courses-catalog.json applies. */
+    description?: string;
+    /** Root-relative or absolute path to the course catalog card image. */
+    thumbnail?: string;
+    /** When false, hidden from the public /courses catalog and legacy routes. Omitted = active. */
+    active?: boolean;
+    legacy: { sourceExport: string; sourceCsv?: string; migratedAt?: string };
   };
   lessons: CourseLesson[];
+  manifest?: {
+    videoCount?: number;
+    videos?: unknown[];
+    downloadCount?: number;
+    downloads?: unknown[];
+  };
 };
 
 const previewCourses: Record<number, CoursePreviewData> = {

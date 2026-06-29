@@ -2,19 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   buildDropShoulderQaMatrix,
   collectDropShoulderCrossScenarioFlags,
-  DROP_SHOULDER_KNOWN_CARDIGAN_FRONT_CAST_ON_DRIFT,
   DROP_SHOULDER_QA_SCENARIOS,
   findForbiddenDropShoulderInstructionViolations,
   formatDropShoulderQaFailureReport,
   printDropShoulderQaMatrixReport,
 } from "./testScenarios/dropShoulderPatternQaMatrix";
 
-const PULLOVER_SCENARIO_IDS = DROP_SHOULDER_QA_SCENARIOS.filter((s) => !s.id.includes("cardigan")).map(
-  (s) => s.id,
-);
-const CARDIGAN_SCENARIO_IDS = DROP_SHOULDER_QA_SCENARIOS.filter((s) => s.id.includes("cardigan")).map(
-  (s) => s.id,
-);
+const SCENARIO_IDS = DROP_SHOULDER_QA_SCENARIOS.map((s) => s.id);
 
 describe("drop-shoulder pattern QA matrix", () => {
   const rows = buildDropShoulderQaMatrix();
@@ -27,23 +21,11 @@ describe("drop-shoulder pattern QA matrix", () => {
     expect(rows).toHaveLength(DROP_SHOULDER_QA_SCENARIOS.length);
   });
 
-  it.each(PULLOVER_SCENARIO_IDS.map((id) => [id, rowsById[id]!] as const))(
-    "%s: pullover math and instruction audit checks pass",
+  it.each(SCENARIO_IDS.map((id) => [id, rowsById[id]!] as const))(
+    "%s: math and instruction audit checks pass",
     (scenarioId, row) => {
       expect(row.scenarioId, failureReport || undefined).toBe(scenarioId);
       expect(row.flags, `[${scenarioId}] ${row.flags.join("; ")}`).toEqual([]);
-    },
-  );
-
-  it.each(CARDIGAN_SCENARIO_IDS.map((id) => [id, rowsById[id]!] as const))(
-    "%s: cardigan passes except known front cast-on JP/diagram drift bug",
-    (scenarioId, row) => {
-      const otherFlags = row.flags.filter((f) => !f.startsWith(DROP_SHOULDER_KNOWN_CARDIGAN_FRONT_CAST_ON_DRIFT));
-      expect(otherFlags, `[${scenarioId}] unexpected flags: ${otherFlags.join("; ")}`).toEqual([]);
-      expect(
-        row.flags.some((f) => f.startsWith(DROP_SHOULDER_KNOWN_CARDIGAN_FRONT_CAST_ON_DRIFT)),
-        `[${scenarioId}] expected documented cardigan front cast-on drift`,
-      ).toBe(true);
     },
   );
 
@@ -83,6 +65,8 @@ describe("drop-shoulder pattern QA matrix", () => {
       pulloverV: rows.some((r) => r.scenarioId.includes("pullover-v")),
       cardiganRound: rows.some((r) => r.scenarioId.includes("cardigan-round")),
       cardiganV: rows.some((r) => r.scenarioId.includes("cardigan-v")),
+      kids: rows.some((r) => r.scenarioId.includes("kids")),
+      baby: rows.some((r) => r.scenarioId.includes("baby")),
       topDown: rows.some((r) => r.sleeveDirection === "top-down"),
     };
     expect(styles).toEqual({
@@ -90,6 +74,8 @@ describe("drop-shoulder pattern QA matrix", () => {
       pulloverV: true,
       cardiganRound: true,
       cardiganV: true,
+      kids: true,
+      baby: true,
       topDown: true,
     });
   });

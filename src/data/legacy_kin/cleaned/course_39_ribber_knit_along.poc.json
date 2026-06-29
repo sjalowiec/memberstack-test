@@ -1,0 +1,1198 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 39,
+    "title": "Ribber Knit-along",
+    "slug": "ribber-knit-along",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_39_ribber_knit_along.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Ribber Basics",
+      "slug": "ribber-basics",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 273,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<div class=\"col-12-xs\">The goal of this knit-along is to get you using your ribber!  Don't just watch videos .... get knitting!<br>The more samples you knit, your skills will continue to grow.  In this first week, practice casting on AND binding off.<br>In the following weeks, repeat and adapt these skills as you explore other needle arrangements and stitch patterns.</div>\r\n<div class=\"col-12-xs\"><img src=\"/challenge/images/v2/39/expert_beginner.gif\"></div>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4229,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntryOptions",
+              "notes": [
+                "Unmapped legacy component type: DataEntryOptions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3185",
+                "CHALLENGE_COMPONENTID": "4215",
+                "DATAMODEL_ELEMENT": "have_manual",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_OPTIONLIST": "Yes,No",
+                "DATAMODEL_REQEST_TEXT": "Do you have the manual for your machine and ribber?<br> <a href='http://www.knititnow.com/ManualAndDocuments/'>Download a copy here</a>",
+                "DATAMODEL_TYPE": "Radio",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 4230,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntryOptions",
+              "notes": [
+                "Unmapped legacy component type: DataEntryOptions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3185",
+                "CHALLENGE_COMPONENTID": "4213",
+                "DATAMODEL_ELEMENT": "Initial_confidence",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_OPTIONLIST": "1 Just getting started,2,3,4,5 Used it bit want to learn more",
+                "DATAMODEL_REQEST_TEXT": "What is your current confidence in your ribber skills?",
+                "DATAMODEL_TYPE": "Radio",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 4231,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859443",
+              "title": "Ribber Basics",
+              "legacyComponentId": 4232,
+              "order": 4
+            }
+          ],
+          "title": "Introduction to the Knit-Along",
+          "slug": "introduction-to-the-knit-along",
+          "order": 1,
+          "legacy": {
+            "assignId": 3196,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "If you haven't yet touched (or attached) your ribber ... <b>hold your horses! </b> <i class=\"fa fa-smile-o aria-hidden=\"true\"></i><br>If you've been able to follow the instructions, cast on and confirm that the ribber is set up correctly and working, you should be good.  We aren't going to create a wardrobe in ribbing (yet <i class=\"fa fa-smile-o aria-hidden=\"true\"></i>\r\n) but <b>the goal is to just take some concentrated time to play and gain confidence.</b><br>With that being said, I normally tell newer knitters to master the single bed first.  Learn a couple of cast on methods, be comfortable with stitch patterning ... learn shaping techniques ... learn about what yarns you  like and work best with your machine ... make a few things before attempting the ribber.  With the ribber there are so many more things going on than with just the single bed. <br>It's like learning to play the piano.  Start with your dominant hand and pick out a few notes.  Learn the layout of the keys.  Learn to read the music. Practice reading the music and playing without looking .... then add the other hand ....   at some point your feet get in the act. (OK - you can tell that I don't teach piano, but you get the idea) <br><b>With a double bed setup, you need to keep track of 2 machines and UNDERSTAND what's going on with BOTH of them (at the same time).</b><br>If you feel you aren't for the Knit-along right now, you might want to take time to watch the videos and start getting a picture of what the ribber is all about. <b> It's not hard!</b>  But we don't want to cause any tears because you aren't ready.<br>Although participating \"live\" gives you access to the forum and hopefully encourages you to MAKE TIME to knit, <b>the content will be available in the Learning Library for you to follow later (when you are ready)</b><br><b>PS</b><br>\r\n<em>If this initial Knit-along seems to basic for you ... we have more scheduled.  The whole topic of using your ribber is HUGE! (and we couldn't start with double bed jacquard in good conscience <i class=\"fa fa-smile-o aria-hidden=\"true\"></i>)</em> Stay tuned!",
+              "legacyComponentId": 4260,
+              "order": 1
+            }
+          ],
+          "title": "Are you ready?",
+          "slug": "are-you-ready",
+          "order": 2,
+          "legacy": {
+            "assignId": 3209,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Week 1: Cast on - Bind Off",
+      "slug": "week-1-cast-on-bind-off",
+      "displayOrder": 10,
+      "legacy": {
+        "itemId": 269,
+        "lessonOrder": 10
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nYou may have already played with your ribber and have a cast on method you like, but as in all things machine knitting, there are many ways to accomplish the same thing.<br>We're starting this knit-along with 1x1 ribbing and will build on that knowledge.<br>Even if you've used your ribber, promise that you will work the exercises, focusing on understanding the steps and improving your confidence and skills. <br><ul>\r\n<li>\r\nDon't just drop the work from the machine, practice a bind off method.</li>\r\n<li>Try different yarns and tensions</li>\r\n<li>If you are lucky enough to have more than one machine, practice on different machines</li>\r\n</ul>\r\nThe ultimate goal is to be able to sit down and cast on without having to refer to your manual. <br><em><small>(or create a cheat sheet that makes sense to YOU <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i>) </small></em>\r\n\r\n\r\n<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/310214623' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\r\n<img src=\"/challenge/images/v2/39/needles.jpg\">\r\n",
+              "legacyComponentId": 4247,
+              "order": 1
+            }
+          ],
+          "title": "Don't Skip This One!",
+          "slug": "don-t-skip-this-one",
+          "order": 1,
+          "legacy": {
+            "assignId": 3201,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Here's some inspiration ... No more flared ribbing or rippled edges! Perfect your cast on edges to the point of being confident in submitting them to the judges at the county fair.",
+              "legacyComponentId": 4248,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/39/ribber_kal/cast_on1.jpg",
+                  "caption": "Tubular Cast On - Right and Wrong sides are practically identical"
+                },
+                {
+                  "src": "/challenge/images/v2/39/ribber_kal/cast_on2.jpg",
+                  "caption": "Tubular Cast On - Right and Wrong sides are practically identical"
+                },
+                {
+                  "src": "/challenge/images/v2/39/ribber_kal/cast_on3.jpg",
+                  "caption": "'Cheater's Cast On' - Ewrap on main bed, knit 1 row,  then transfer stitches to the ribber<br>\r\nPurl bumps are showing on this side"
+                },
+                {
+                  "src": "/challenge/images/v2/39/ribber_kal/cast_on4.jpg",
+                  "caption": "'Cheater's Cast On' - Ewrap on main bed, then transfer stitches to the ribber<br>\r\nE-wrap is visible on this side"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 4220,
+              "order": 2
+            }
+          ],
+          "title": "Cast on Examples",
+          "slug": "cast-on-examples",
+          "order": 2,
+          "legacy": {
+            "assignId": 3189,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "This week we will try out some different cast on methods.  You will find your favorites.<br>\r\n<ul>\r\n<li>  Fast 'n easy may not give you the professional edge you want.</li>\r\n<li> A tubular cast on may be too complicated for your project.</li><br>\r\n\r\n<em>Don't discard any method until you've tried it ... each has it's uses.</em>",
+              "legacyComponentId": 4219,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859232",
+              "title": "Perfect Ribbing Cast Ons Broken Toe Method | Ravel Cord Variation",
+              "legacySlot": 1,
+              "legacyComponentId": 4214,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858586",
+              "title": "'Cheaters' Ribbing Cast onTransfer Stitches Method",
+              "legacySlot": 2,
+              "legacyComponentId": 4214,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859199",
+              "title": "Hmmmm ... Check this one out! Use the Ribber Comb and start on the single bed",
+              "legacySlot": 3,
+              "legacyComponentId": 4214,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "311353131",
+              "title": "Ribber E-wrap Cast on - Super Stretchy",
+              "legacySlot": 4,
+              "legacyComponentId": 4214,
+              "order": 2
+            }
+          ],
+          "title": "1x1 Cast on Methods",
+          "slug": "1x1-cast-on-methods",
+          "order": 3,
+          "legacy": {
+            "assignId": 3190,
+            "blockType": "VimeoMultiple"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "As you work through all the exercises, it's good practice to mark each swatch.  Record the machine settings and any notes about the technique.  Give it a  <i class=\"fa fa-thumbs-up fa-2x\" aria-hidden=\"true\"></i> or <i class=\"fa fa-thumbs-down fa-2x\" aria-hidden=\"true\"></i><br>Below are some tags for Brother and Silver machines.  You can print and use these to document each swatch.  Circle / note the carriage settings that you used.  This visual record will be helpful when re-creating a technique.",
+              "legacyComponentId": 4316,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Print Swatch Tags",
+              "filename": "/downloads/swatch tags.pdf",
+              "showInline": true,
+              "legacy": {
+                "assignId": "3232",
+                "componentId": "4317",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4317,
+              "order": 2
+            }
+          ],
+          "title": "Swatch Tags",
+          "slug": "swatch-tags",
+          "order": 4,
+          "legacy": {
+            "assignId": 3232,
+            "blockType": "Document"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "These Exercises are based on the Videos in the previous section<br>\r\n\r\n\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/39/arrow1.png\" style=\"float:left;padding-right:10px;\">\r\nUse your manual and cast on for 1x1 ribbing according to the instructions for your machine\r\n\r\n\r\n\r\n\r\n\r\n<em>Don't stress out ..... sometimes the manual can be confusing.... try a different cast on method</em><br>\r\n<br>\r\n<! * * * * * * *-->\r\n\r\n\r\n<img src=\"/challenge/images/v2/39/arrow2.png\" style=\"float:left;padding-right:10px;\">\r\nBroken Toe Cast on\r\n\r\n\r\n\r\n\r\n\r\n<em>The extra strand in this method is invaluable in perfecting the edge<br>Be sure to hang your cast on comb correctly to prevent a \"Broken Toe\" \r\n<i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i>\r\n</em><br>\r\n<br>\r\n<! * * * * * * *-->\r\n\r\n\r\n\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/39/arrow3.png\" style=\"float:left;padding-right:10px;\">\r\nRavel Cord Method\r\n\r\n\r\n\r\n\r\n\r\n<em>This offers the advantage of the extra strand to perfect the edge but eliminates the extra step in the Broken Toe Method (and the possibility of a broken toe)<br></em>\r\n\r\n<br>\r\n<! * * * * * * *-->\r\n\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/39/arrow4.png\" style=\"float:left;padding-right:10px;\">\r\nTry the \"Cheater's Cast on\" (Cast on the main bed and transfer stitches to the ribber)\r\n\r\n\r\n\r\n\r\n\r\n<em>This is a fast method, but the edge is not as professional as tubular cast on methods</em><br>\r\n<br>\r\n<! * * * * * * *-->\r\n\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/39/arrow5.png\" style=\"float:left;padding-right:10px;\">\r\nTry the \"Cheater's Cast on (with scrap)\" (Cast on the main bed and transfer stitches to the ribber)\r\n\r\n\r\n\r\n\r\n\r\n<em>It's easier to hang the cast on comb with this method and the comb is not directly in the cast on edge. This is a fast method, but the edge is not as professional as tubular cast on methods. </em><br>\r\n\r\n\r\n\r\n\r\n<! * * * * * * *--><br>\r\n\r\n\r\n<img src=\"/challenge/images/v2/39/arrow6.png\" style=\"float:left;padding-right:10px;\">\r\nRibber Cast on Comb Trick\r\n\r\n\r\n\r\n\r\n\r\n<em>Give this method a try and you'll discover lots of uses for it. Use it any time you want even weight on your knitting or you will be transferring stitches to the ribber.</em><br>\r\n\r\n<! * * * * * * *--><br>\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/39/Insta_practice (Time 0_00_08;10).png\">\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4252,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/Cast_on_worksheet.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3204",
+                "componentId": "4264",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4264,
+              "order": 2
+            }
+          ],
+          "title": "Cast on Exercises",
+          "slug": "cast-on-exercises",
+          "order": 5,
+          "legacy": {
+            "assignId": 3204,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Neatly binding off in ribbing can be one of the more challenging tasks in knitting.<br>Like casting on in ribbing, you have choices for finishing a ribbed piece.<br>\r\nAs you work your cast on samples, take time to practice binding off",
+              "legacyComponentId": 4221,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857401",
+              "title": "Easy  Ribber Bind Off",
+              "legacySlot": 1,
+              "legacyComponentId": 4222,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858299",
+              "title": "Backstitch Bind Off - Stretchiest BO Ever!",
+              "legacySlot": 2,
+              "legacyComponentId": 4222,
+              "order": 2
+            }
+          ],
+          "title": "Ribbing Bind Off",
+          "slug": "ribbing-bind-off",
+          "order": 6,
+          "legacy": {
+            "assignId": 3191,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/39/arrow7.png\" style=\"float:left;padding-right:10px;\">\r\nEasy  Ribber Bind Off\r\n\r\n\r\n\r\n\r\n\r\n<em>Fast 'n Easy ... do you like the results?</em><br>\r\n<br>\r\n<! * * * * * * *-->\r\n\r\n\r\n<img src=\"/challenge/images/v2/39/arrow8.png\" style=\"float:left;padding-right:10px;\">\r\nBackstitch Bind Off\r\n\r\n\r\n\r\n\r\n\r\n<em>This is perfect for a VERY stretchy edge - good for sock tops\r\n<i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i>\r\n</em><br>\r\n<br>\r\n<! * * * * * * *-->\r\n\r\n\r\n\r\n\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/39/PRACTICE_LEARNING_PROCESS.png\">\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4251,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/Bind_off_worksheet1.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3203",
+                "componentId": "4291",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4291,
+              "order": 2
+            }
+          ],
+          "title": "Bind Off Exercises",
+          "slug": "bind-off-exercises",
+          "order": 7,
+          "legacy": {
+            "assignId": 3203,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\n<a href=\"/path/39/ohmmm-yoga-socks\"><img src=\"/path/images/39/project_thumb.jpg\"></a>\r\n<h4>Now that you can cast on and bind off .....</h4>Instead of knitting swatches, why not knit something more practical? <br>Check out the <b>Knit it Now Yoga Socks Quick Win</b> - it includes a \"blueprint\" for making your own. Great Stash Buster and Ribber practice. Get Creative! <br><center></center>\r\n\r\n<br><hr>",
+              "legacyComponentId": 4262,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pinterest",
+              "notes": [
+                "Legacy Pinterest embed; replace with static content or omit."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3210",
+                "PINTERESTID": "24",
+                "TYPEOF": "Pinterest"
+              },
+              "legacyComponentId": 4261,
+              "order": 2
+            }
+          ],
+          "title": "Challenge",
+          "slug": "challenge",
+          "order": 8,
+          "legacy": {
+            "assignId": 3210,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Week 2: Tuck Rib",
+      "slug": "week-2-tuck-rib",
+      "displayOrder": 20,
+      "legacy": {
+        "itemId": 270,
+        "lessonOrder": 20
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nEvery ribber manual has instruction for <b>Tuck Rib</b>. Set your machine for 1x1 rib (you're an expert at this now) and add your machine's tuck capability.<br>You will be surprised at the resulting fabric!  No electronics, no punchcards, no manual needle selection ... just amazing texture!<br>Depending on the setup, it's called <b>Fisherman rib</b> or <b>English Rib</b><br>These stitch patterns are beautiful for many garments.  Hats, mittens, scarves, sweaters, even blankets!  They can be soft, stretchy and have drape.  The extra width they offer is a bonus. <em>(Remember tuck knits wider than stockinette - even on the double bed)</em>\r\n\r\n\r\n\r\n\r\n<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/310218332' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\r\n\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/39/english_rib_1.png\">\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4246,
+              "order": 1
+            }
+          ],
+          "title": "No Patterning - Amazing Texture!",
+          "slug": "no-patterning-amazing-texture",
+          "order": 1,
+          "legacy": {
+            "assignId": 3200,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nSet up for 1x1 ribbing ... tuck on one bed and you get English Rib <br>If you haven't tried this, you will be amazed at the resulting fabric.<br>\r\n<img src=\"/challenge/images/v2/39/tuck_rib1.png\">\r\n\r\n\r\n",
+              "legacyComponentId": 4224,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859178",
+              "title": "Experiment with English Rib",
+              "legacyComponentId": 4245,
+              "order": 4
+            }
+          ],
+          "title": "English Rib",
+          "slug": "english-rib",
+          "order": 2,
+          "legacy": {
+            "assignId": 3186,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859184",
+              "title": "Swatching on the Double Bed",
+              "legacyComponentId": 4318,
+              "order": 1
+            }
+          ],
+          "title": "Swatching on the Double  Bed",
+          "slug": "swatching-on-the-double-bed",
+          "order": 3,
+          "legacy": {
+            "assignId": 3233,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<img src=\"/challenge/images/v2/39/arrow10.png\" style=\"float:left;padding-right:10px;\">\r\nThis exercise will give you practice in setting up and knitting English Rib.  Note that the direction of the tuck and the choice of beds to tuck is up to you.<br><ul>\r\n<li>Take note of the difference between the sides of the knitting. <b>Generally the tucked side is the \"right\" side of your work</b>. \r\n<ul>\r\n<li>Tuck on the ribber and the \"right\" side if the knitting will be facing you</li>\r\n<li>Tuck on the main bed and the \"wrong\" side of the knitting will be facing you</li>\r\n</ul>\r\n\r\n</li>\r\n<li>You can set either bed to tuck in either direction. While you are knitting your swatch, alternate the direction and see what happens</li>\r\n\r\n</ul>\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n<ol>\r\n<li>Set up:\r\n<ul>\r\n<li>Cast on for 1x1 rib</li>\r\n<li>Main Bed: Set for plain knitting</li>\r\n<li>Ribber: Set to tuck to the right</li>\r\n<li>Carriage on the right</li>\r\n</ul>\r\n</li>\r\n<li>Knit to the left <i class=\"fa fa-arrow-left\" aria-hidden=\"true\"></i> (needles on both beds knit)</li>\r\n<li>Knit to the right <i class=\"fa fa-arrow-right\" aria-hidden=\"true\"></i> (needles on main bed knit - ribber needles tuck)</li>\r\n<li>Repeat these 2 rows for a few inches<br><hr></li>\r\n\r\n<li>Cancel Tuck and knit in 1x1 a ribbing for a few rows, end with the carriage on the right <br><hr>\r\n<li>Change set up:<br>\r\n<ul>\r\n<li>Main Bed: Set to tuck to the right</li>\r\n<li>Ribber: Set for plain knitting</li>\r\n</ul>\r\n\r\n\r\n</li>\r\n<li>Knit to the left <i class=\"fa fa-arrow-left\" aria-hidden=\"true\"></i> (needles on both beds knit)</li>\r\n<li>Knit to the right <i class=\"fa fa-arrow-right\" aria-hidden=\"true\"></i> (needles on main bed tuck- ribber needles knit)</li>\r\n<li>Repeat these 2 rows for a few inches</li>\r\n\r\n</ol>\r\n<br><em>Continue to play with the settings and examine the resulting swatch carefully. Which side do you prefer?  Can you imagine using this stitch pattern?</em>\r\n\r\n\r\n            <img src=\"/challenge/images/v2/39/tuck_rib1.png\">\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4253,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/English_rib_practice1.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3205",
+                "componentId": "4270",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4270,
+              "order": 2
+            }
+          ],
+          "title": "English Rib Practice",
+          "slug": "english-rib-practice",
+          "order": 4,
+          "legacy": {
+            "assignId": 3205,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nSet up for 1x1 ribbing ... alternate the tuck on each bed and you get Fisherman Rib<br>If you haven't tried this, you will be amazed at the resulting fabric.<br>\r\n<img src=\"/challenge/images/v2/39/tuck_rib2.png\">\r\n\r\n\r\n",
+              "legacyComponentId": 4254,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859450",
+              "title": "Fisherman Rib",
+              "legacyComponentId": 4256,
+              "order": 2
+            }
+          ],
+          "title": "Fisherman Rib",
+          "slug": "fisherman-rib",
+          "order": 5,
+          "legacy": {
+            "assignId": 3199,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<img src=\"/challenge/images/v2/39/arrow11.png\" style=\"float:left;padding-right:10px;\">\r\n\r\nThis exercise will give you practice in setting up and knitting Fisherman Rib. As you saw in the video, you will be tucking in one direction on the main bed and tucking in the opposite direction on the ribber.  This creates a truly reversible fabric. <br>\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n<ol>\r\n<li>Set up:\r\n<ul>\r\n<li>Cast on for 1x1 Rib</li>\r\n<li>Main Bed: Tuck to the right</li>\r\n<li>Ribber: Tuck to the left</li>\r\n<li>Carriage on the right</li></ul>\r\n</li>\r\n<li>Knit to the left <i class=\"fa fa-arrow-left aria-hidden=\"true\"></i> (needles on the main bed knit)</li>\r\n\r\n<li>Knit to the right <i class=\"fa fa-arrow-right aria-hidden=\"true\"></i> (needles on the ribber knit)</li>\r\n<li>Repeat these 2 rows for about 6\"</li>\r\n<li>Note the end needles - are they knitting well?</li>\r\n<li>change the position of the end needles and observe how they are formed on each edge</li>\r\n\r\n</ol>\r\n\r\n\r\n<img src=\"/challenge/images/v2/39/tuck_rib2.png\">\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4257,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/Fisherman_rib_practice.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3206",
+                "componentId": "4271",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4271,
+              "order": 2
+            }
+          ],
+          "title": "Fisherman Rib Practice",
+          "slug": "fisherman-rib-practice",
+          "order": 6,
+          "legacy": {
+            "assignId": 3206,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<img src=\"/challenge/images/v2/course_1.png\">\r\nWhen working these stitch patterns, to make binding off easier, cancel tuck for 1 or 2 rows, then use the 1x1 bind off method of your choice.\r\n\r\n<br>\r\n<img src=\"/challenge/images/v2/course_2.png\">\r\nFor the ends of a scarf, leave open stitches at the cast on and bind off edges.  Gather the ends for a \"designer\" finish\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/39/end_example.jpg\">\r\n\r\n<br>\r\n<img src=\"/challenge/images/v2/course_3.png\">\r\nFor the cast on and bind off edge, work plain knitting and simply let it roll. \r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/39/rolled_edge.jpg\">\r\n\r\n\r\n\r\n\r\n\t\r\n\r\nThese are perfect for the ends of scarves - and make quick work of finishing.\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4227,
+              "order": 1
+            }
+          ],
+          "title": "Binding off and Finishing",
+          "slug": "binding-off-and-finishing",
+          "order": 7,
+          "legacy": {
+            "assignId": 3192,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "312186999",
+              "title": "Waffle Stitch (Ribber)",
+              "legacyComponentId": 4320,
+              "order": 1
+            }
+          ],
+          "title": "Waffle Stitch (no calories)",
+          "slug": "waffle-stitch-no-calories",
+          "order": 8,
+          "legacy": {
+            "assignId": 3234,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\nThe goals of this Knit-along:<ol>\r\n<li>Gain an UNDERSTANDING of your double bed setup</li>\r\n<li>Get practice with new-to-you techniques and concepts</li>\r\n<li>MASTER the settings of your machine.</li>\r\n<li>Acquire confidence in your skills so you can apply them to any project</li>\r\n</ol>\r\n<br>\r\nIn the spirit of #3 above, you need to learn and UNDERSTAND how to set your machine for some of the basic functions (like tuck and slip).<br>The goal is for you to KNOW your buttons and levers.<br>\r\n<br><i class=\"fa fa-question-circle aria-hidden=\"true\"></i> If a pattern or instruction says <b>\"Set your main bed to tuck\" </b><br>What buttons/levers do you need to engage?<br><i class=\"fa fa-question-circle aria-hidden=\"true\"></i> If asked to <b>\"Set your ribber to slip\"</b><br> What buttons/levers control slip?<br>\r\n\r\n<hr>\r\n<br>\r\n\r\n\r\n<h3><i class=\"fa fa-arrow-circle-down fa-2x\"></i>Try the Waffle Pattern</h3>\r\n\r\n\r\n\r\n\r\n\r\n<ol class=\"instruction-list\">\r\n<li>Cast on for 1x1 rib</li>\r\n<li>Set your main bed only to tuck in BOTH directions</li>\r\n<li>Knit 2 rows (tuck)</li>\r\n<li>Cancel tuck</li>\r\n<li>Knit 2 rows (plain)</li>\r\n<li>Repeat these 4 rows for the pattern</li>\r\n<li>Bind off</li>\r\n<li>Block well to show off the waffle pattern</li>\r\n</ol>\r\n\r\n",
+              "legacyComponentId": 4323,
+              "order": 1
+            }
+          ],
+          "title": "Quick! Set your Machine to Tuck",
+          "slug": "quick-set-your-machine-to-tuck",
+          "order": 9,
+          "legacy": {
+            "assignId": 3236,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Week 3: Full Needle Rib",
+      "slug": "week-3-full-needle-rib",
+      "displayOrder": 30,
+      "legacy": {
+        "itemId": 271,
+        "lessonOrder": 30
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "So far, in the last 2 weeks, we've been working with a 1x1 needle setup.  You've set your machine according to your manual.<br>It's time to take another step - <b>Full Needle Rib</b>.<br>This is the basis for the \"holy grail\" for machine knitters Double Bed Jacquard (full needle rib, with multi color patterning).<br><b>But we need to walk before we run ...  let's master Full Needle Rib.</b><br>You may NEVER knit a garment in Full Needle Rib, but the cast on methods are invaluable to your machine knitting skill set.  Think about Full Needle Rib Hems instead of hung hems.  Think about beautiful, professional edges for lace or other stitch patterns.<br>The possibilities are endless! <br>\r\n<h3>Let's get knitting!</h3>",
+              "legacyComponentId": 4293,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "310221666",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 4293,
+              "order": 1
+            }
+          ],
+          "title": "Every Needle In Work",
+          "slug": "every-needle-in-work",
+          "order": 1,
+          "legacy": {
+            "assignId": 3222,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "For success with your ribber it's important to UNDERSTAND the workings of your machine.<br><b>The concept of PITCH and HALF PITCH when positioning your ribber in relation to the main bed is critical.</b>\r\n\r\n<b>We're repeating this here, in case you skipped it in the previous section.</b>\r\n<center><h3>Don't skip this</h3></center>",
+              "legacyComponentId": 4294,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859701",
+              "title": "Ribber: Full vs Half Pitch",
+              "legacyComponentId": 4295,
+              "order": 2
+            }
+          ],
+          "title": "Full Pitch vs Half Pitch",
+          "slug": "full-pitch-vs-half-pitch",
+          "order": 2,
+          "legacy": {
+            "assignId": 3223,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nFull Needle Rib (aka Double Rib) is worked with <b>every needle in work on both beds</b>. Because all needles are in work, you may want to choose a lighter weight yarn for this technique.<br>The resulting fabric  is reversible and resembles stockinette on both sides (knit stitches on both sides).<br>This setup is the basis of the \"holy grail\" of machine knitters - Double Bed Jacquard.  Jacquard is simply Full Needle Rib, with multi-color slip worked on the main bed at the same time.  Because the purl stitches are (enclosed) any are also enclosed. Double Bed Jacquard is an entire subject on its own and will not be covered in this knit-along. BUT if you want to pursue Double Bed Jacquard you MUST FIRST master Full Needle Rib.<br>\r\n<img src=\"/challenge/images/v2/39/needles2.jpg\"><br><img class=\"img-thumbnail\" src=\"/challenge/images/v2/39/racked_caston.jpg\">\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4296,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859303",
+              "title": "3 Methods to Cast on in Full Needle Rib",
+              "legacySlot": 1,
+              "legacyComponentId": 4297,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858966",
+              "title": "Kitchener Bind Off - The Ultimate Finish!",
+              "legacySlot": 2,
+              "legacyComponentId": 4297,
+              "order": 2
+            }
+          ],
+          "title": "Full Needle Rib",
+          "slug": "full-needle-rib",
+          "order": 3,
+          "legacy": {
+            "assignId": 3224,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Refer to the Videos and practice Full Needle Rib Cast on and knitting in Full Needle Rib.<br>\r\n\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/39/arrow12.png\" style=\"float:left;padding-right:10px;\">\r\n<b>Tubular Cast on</b>\r\n\r\n\r\n\r\n\r\n\r\nThis is similar to the tubular cast on you practiced in 1x1 needle setup. Your manual has a description of this method\r\n<ol>\r\n<li>Setup:\r\n<ul>\r\n<li>ALL needles in Work, Rack to \"H\" (half pitch)</li>\r\n<li>Carriage on the right</li>\r\n<li>Both Carriages set to plain knitting</li>\r\n</ul>\r\n</li>\r\n<li>Knit from right to left, creating a zig zag row</li>\r\n<li>Hang the cast on comb</li>\r\n<li>Set the main bed to slip to the right</li>\r\n<li>Set the ribber to slip to the left</li>\r\n<li>Knit right (ribber stitches knit)</li>\r\n<li>Knit left (main bed stitches knit)</li>\r\n<li>Knit right </li>\r\n<li>Cancel slip and continue to knit over all needles (both beds at the same time)</li>\r\n<li>Knit a few inches in double rib</li>\r\n<li>Drop the knitting from the machine </li>\r\n</ol>\r\n\r\n<br>\r\n\r\n<img src=\"/challenge/images/v2/39/arrow13.png\" style=\"float:left;padding-right:10px;\">\r\n<b>Quick Racking Cast on</b>\r\n\r\n\r\n\r\n\r\n\r\n<ol>\r\n<li>Setup:\r\n<ul>\r\n<li>ALL needles in Work, Rack to \"H\" (half pitch)</li>\r\n<li>Carriage on the right</li>\r\n<li>Both Carriages set to plain knitting</li>\r\n</ul>\r\n</li>\r\n\r\n<li>Swing the ribber to the left by 1 position</li>\r\n<li>Knit a zig zag row</li>\r\n<li>Hang the cast on comb</li>\r\n<li>Swing the ribber back to the original position on the racking indicator</li>\r\n<li>Knit to the right</li>\r\n<li>Continue knitting in Full Needle Rib for a few inches</li>\r\n<li>Transfer all ribber needles to the main bed</li>\r\n<li>Loosely bind off with a latch tool</li>\r\n</ol><br>\r\n\r\n<br>\r\n\r\n<img src=\"/challenge/images/v2/39/arrow14.png\" style=\"float:left;padding-right:10px;\">\r\n<b>More Practice</b>\r\n\r\n\r\n\r\n\r\n\r\n<b>CHALLENGE</b><br>\r\n<i class=\"fa fa-lightbulb-o fa-2x aria-hidden=\"true\"></i> Protect the edge of your cast on by starting with a row of ravel cord.<br><ul>\r\n<li>Set your machine for tubular or racking cast on</li>\r\n<li>Knit 1 zig zag row with ravel cord</li>\r\n<li>Change to the garment yarn and knit another zig zag row</li>\r\n<li>Continue to follow the cast in steps</Li>\r\n</ul>\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/39/needles2.jpg\">\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4298,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/Full_Needle_Rib_Practice.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3225",
+                "componentId": "4310",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4310,
+              "order": 2
+            }
+          ],
+          "title": "Full Needle Rib Exercises",
+          "slug": "full-needle-rib-exercises",
+          "order": 4,
+          "legacy": {
+            "assignId": 3225,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "310226067",
+              "title": "Striped Scarf in Full Needle Rib",
+              "legacyComponentId": 4299,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "\r\n<center></center>\r\n\r\n",
+              "legacyComponentId": 4300,
+              "order": 2
+            }
+          ],
+          "title": "Full Needle Rib Challenge",
+          "slug": "full-needle-rib-challenge",
+          "order": 5,
+          "legacy": {
+            "assignId": 3226,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "With all those needles in work ... what else can we do? <br>With the correct settings, we can knit in the round and knit double wide pieces!<br>Remember, automatic stitch patterns occurs on the main bed only ... so any stitch patterning \"in the round\" needs to be hand manipulated .... but ... think of the possibilities!<br><i class=\"fa fa-lightbulb-o fa-2x aria-hidden=\"true\"></i> NOTE: You may not be interested in knitting in the round, but DON'T SKIP this technique.  It can be used for biding off in full needle rib and other techniques.  This is a \"must know\" for knitters with ribbers.",
+              "legacyComponentId": 4305,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859457",
+              "title": "Matching Ribber and Main Bed Tension",
+              "legacySlot": 1,
+              "legacyComponentId": 4306,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858632",
+              "title": "Circular (Tubular) Knitting",
+              "legacySlot": 2,
+              "legacyComponentId": 4306,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859462",
+              "title": "Half-Circular Knitting",
+              "legacySlot": 3,
+              "legacyComponentId": 4306,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "313480756",
+              "title": "Knitting Sleeves in the round - Shaping in Circular Knitting",
+              "legacySlot": 4,
+              "legacyComponentId": 4306,
+              "order": 2
+            }
+          ],
+          "title": "Tubular and 'U' Knitting",
+          "slug": "tubular-and-u-knitting",
+          "order": 6,
+          "legacy": {
+            "assignId": 3229,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<figure>\r\n<figcaption align=\"center\"><br>Yarn travels between beds to join the edge</figcaption><img class=\"img-thumbnail\" src=\"/challenge/images/v2/39/circular1.JPG\"></figure>\r\n\r\n<div class=\"md-3-offset-1\">\r\n<figure>\r\n<figcaption align=\"center\"><br>Open edge between pieces</figcaption> <img class=\"img-thumbnail\" src=\"/challenge/images/v2/39/circular2.JPG\"></figure></div>\r\n\r\n<br>\r\n\r\n\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/39/arrow15.png\" style=\"float:left;padding-right:10px;\">\r\nCircular (Tubular) Knitting\r\n\r\n\r\n\r\n\r\n\r\n<ol>\r\n<li>Setup:\r\n<ul>\r\n<li>ALL needles in Work, Rack to \"H\" (half pitch)</li>\r\n<li>Carriage on the right</li>\r\n<li>Both Carriages set to plain knitting</li>\r\n</ul>\r\n</li>\r\n<li>Knit from right to left, creating a zig zag row</li>\r\n<li>Hang the cast on comb</li>\r\n<li>Set the main bed to slip to the right</li>\r\n<li>Set the ribber to slip to the left</li>\r\n<li>Knit right (ribber stitches knit)</li>\r\n<li>Knit left (main bed stitches knit)</li>\r\n<li>Continue knitting, alternating knitting on each bed</li>\r\n<li>Knit a few inches in circular knitting</li>\r\n<li>Drop the knitting from the machine </li>\r\n</ol>\r\n\r\n<br>\r\n\r\n<!-- ******************** -->\r\n\r\n\r\n<img src=\"/challenge/images/v2/39/arrow16.png\" style=\"float:left;padding-right:10px;\">\r\nHalf Circular (U) Knitting\r\n\r\n\r\n\r\n\r\n\r\n\r\nThis takes a little more attention.  To keep one edge open, the carriage settings are changed every other pass of the carriage.\r\n<ol>\r\n<li>Setup:\r\n<ul>\r\n<li>ALL needles in Work, Rack to \"H\" (half pitch)</li>\r\n<li>Carriage on the right</li>\r\n<li>Both Carriages set to plain knitting</li>\r\n</ul>\r\n</li>\r\n<li>Knit from right to left, creating a zig zag row</li>\r\n<li>Hang the cast on comb</li>\r\n<li>Set the main bed to slip to the right</li>\r\n<li>Set the ribber to slip to the left</li>\r\n<li>Knit right (ribber stitches knit)</li>\r\n<li>Knit left (main bed stitches knit)<br></li>\r\n<li>Reverse the slip settings: Slip Ribber to slip right, Main Bed to slip left</li>\r\n<li>Knit right (main bed stitches knit)</li>\r\n<li>Knit left (ribber stitches knit)</li>\r\n\r\n<li>Continue knitting, alternating knitting on each bed</li>\r\n<li>Knit a few inches in tubular knitting</li>\r\n<li>Drop the knitting from the machine </li>\r\n</ol>\r\nNOTE:  The goal is to have an open edge.  You MUST reverse the slip settings on BOTH carriages every other row (when the carriages are on the side of the open edge). Forgetting to change the settings will close up the edge.\r\n\r\n\r\n\r\n\r\n<br>\r\n\r\n<!-- **************-->\r\n\r\n\r\n<img src=\"/challenge/images/v2/39/arrow17.png\" style=\"float:left;padding-right:10px;\">\r\nAdjust your tensions\r\n\r\n\r\n\r\n\r\n\r\nMore than likely, the tension settings on your beds will be different. After knitting the previous samples, compare the tension of the main bed verses the ribber.<br>Cast on again and adjust the tension.  You should not be able to tell where the main bed stops and the ribber starts.  Make a note of the difference for YOUR machine and adjust accordingly whenever you are ribbing.  <br><em>NOTE: This difference between beds is noticeable when working in tubular knitting, but it also impact any ribber stitches.  It's a good practice to adjust your tensions correctly any time you are using your ribber</em>\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4309,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/circular_practice.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3230",
+                "componentId": "4311",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4311,
+              "order": 2
+            }
+          ],
+          "title": "Tubular Practice",
+          "slug": "tubular-practice",
+          "order": 7,
+          "legacy": {
+            "assignId": 3230,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Combine Full Needle Rib and Tubular knitting for a gorgeous bind off.  Working Kitchener Stitch may not be the most fun, but it's SO worth the effort!",
+              "legacyComponentId": 4289,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858966",
+              "title": "Double Bed Bind Off  | Kitchener Bind off",
+              "legacySlot": 1,
+              "legacyComponentId": 4290,
+              "order": 4
+            },
+            {
+              "type": "video",
+              "vimeoId": "151849234",
+              "title": "Kitchener on the Machine - Knit Side",
+              "legacySlot": 2,
+              "legacyComponentId": 4290,
+              "order": 4
+            },
+            {
+              "type": "video",
+              "vimeoId": "151850342",
+              "title": "Kitchener on the Machine - Purl Side",
+              "legacySlot": 3,
+              "legacyComponentId": 4290,
+              "order": 4
+            },
+            {
+              "type": "richText",
+              "html": "<hr>\r\n\r\n\r\n<img src=\"/challenge/images/v2/39/arrow18.png\" style=\"float:left;padding-right:10px;\">\r\nPractice this Bind Off\r\n\r\n\r\n\r\n\r\n\r\n<ol>\r\n<li>Repeat the Full Needle Rib Exercise (12 - 13 - or 14)</li>\r\n<li>Change to ravel cord and knit 1 row circular</li>\r\n<li>Change to scrap yarn and knit a few rows circular</li>\r\n<li>Drop the work from the machine</li>\r\n<li>Use the tail or use the trick in the video and Kitchener stitch the edge closed.</li>\r\n<li>Take care to keep the stitches even for a beautiful tubular edge</li>\r\n<ol>\r\n\r\n",
+              "legacyComponentId": 4312,
+              "order": 5
+            },
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/FNR_Bind_Off.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3221",
+                "componentId": "4313",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4313,
+              "order": 6
+            }
+          ],
+          "title": "Full Needle Rib Bind Off",
+          "slug": "full-needle-rib-bind-off",
+          "order": 8,
+          "legacy": {
+            "assignId": 3221,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Week 4: Flat Rib",
+      "slug": "week-4-flat-rib",
+      "displayOrder": 40,
+      "legacy": {
+        "itemId": 272,
+        "lessonOrder": 40
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Do you love the look of both knit and purl stitches? Do you love the look of ribbing, but don't need or want the stretch?<br>\r\n\r\nMaybe your yarn isn't suited for ribbing, but you still want the texture ....<br>\r\n\r\nFlat Ribs are the answer!\r\n<br>\r\nUsing the full needle rib setup as the basis, flat ribs fabric and hems have unlimited possibilities!<br><img class=\"img-thumbnail\" src=\"/challenge/images/v2/39/flat_rib_example1.JPG\">",
+              "legacyComponentId": 4314,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "310402517",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 4314,
+              "order": 1
+            }
+          ],
+          "title": "Knit 'n Purl Contrast",
+          "slug": "knit-n-purl-contrast",
+          "order": 1,
+          "legacy": {
+            "assignId": 3231,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858934",
+              "title": "Fun with Flat Ribs",
+              "legacySlot": 1,
+              "legacyComponentId": 4302,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858938",
+              "title": "Flat Rib Fun Part 2",
+              "legacySlot": 2,
+              "legacyComponentId": 4302,
+              "order": 2
+            }
+          ],
+          "title": "Flat Rib",
+          "slug": "flat-rib",
+          "order": 2,
+          "legacy": {
+            "assignId": 3227,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Take time to play with flat ribs.  There are so many variations on this technique, it is important for you to get comfortable with it. <br>\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/39/arrow19.png\" style=\"float:left;padding-right:10px;\"><img src=\"/challenge/images/v2/39/flat_rib_chart3.png\">\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n<ol>\r\n<li>Cast on in Full needle Rib using any method</li>\r\n<li>Transfer needles from the ribber to the main bed in the arrangement shown (Every other needle on the ribber out of work)</li>\r\n<li>Knit for a few inches</li>\r\n<li>Don't bind off or drop the work from the machine</li>\r\n</ol>\r\n\r\n\r\n\r\n<br>\r\n\r\n<!--  +++++++++++++++++++++-->\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/39/arrow20.png\" style=\"float:left;padding-right:10px;\">\r\n<img src=\"/challenge/images/v2/39/flat_rib_chart1.png\">\r\n\r\n\r\n\r\n\r\n\r\n<ol>\r\n\r\n<li>Change the needle arrangement as shown above (4 needles out of work on the ribber)</li>\r\n<li>Knit for a few inches</li>\r\n<li>Don't bind off or drop the work from the machine</li>\r\n</ol>\r\n\r\n\r\n\r\n<br>\r\n\r\n<!--  +++++++++++++++++++++-->\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/39/arrow21.png\" style=\"float:left;padding-right:10px;\">\r\n<h3>Extra Credit</h3>\r\n\r\n\r\n\r\n\r\n\r\n<ol>\r\n\r\n<li>Maintain the same needle arrangement</li>\r\n<li>Set the ribber to slip in one direction</li>\r\n<li>Knit for a few inches</li>\r\n<li>Drop the work from the machine</li>\r\n<lI>Examine the difference in the ribber stitches between the last 2 sections, The ribber stitches should be 'elongated' opening up design possibilities</li>\r\n</ol>\r\n<img src=\"/challenge/images/v2/39/slip_flat_rib.jpg\">\r\n\r\n\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/39/stitch_transfer.JPG\">\r\n\r\n",
+              "legacyComponentId": 4304,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/flat_rib_exercises.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3228",
+                "componentId": "4315",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4315,
+              "order": 2
+            }
+          ],
+          "title": "Flat Rib Exercises",
+          "slug": "flat-rib-exercises",
+          "order": 3,
+          "legacy": {
+            "assignId": 3228,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 26,
+    "videos": [
+      {
+        "vimeoId": "151859443",
+        "title": "Ribber Basics",
+        "lessonSlug": "ribber-basics",
+        "blockSlug": "introduction-to-the-knit-along"
+      },
+      {
+        "vimeoId": "151859232",
+        "title": "Perfect Ribbing Cast Ons Broken Toe Method | Ravel Cord Variation",
+        "lessonSlug": "week-1-cast-on-bind-off",
+        "blockSlug": "1x1-cast-on-methods"
+      },
+      {
+        "vimeoId": "151858586",
+        "title": "'Cheaters' Ribbing Cast onTransfer Stitches Method",
+        "lessonSlug": "week-1-cast-on-bind-off",
+        "blockSlug": "1x1-cast-on-methods"
+      },
+      {
+        "vimeoId": "151859199",
+        "title": "Hmmmm ... Check this one out! Use the Ribber Comb and start on the single bed",
+        "lessonSlug": "week-1-cast-on-bind-off",
+        "blockSlug": "1x1-cast-on-methods"
+      },
+      {
+        "vimeoId": "311353131",
+        "title": "Ribber E-wrap Cast on - Super Stretchy",
+        "lessonSlug": "week-1-cast-on-bind-off",
+        "blockSlug": "1x1-cast-on-methods"
+      },
+      {
+        "vimeoId": "151857401",
+        "title": "Easy  Ribber Bind Off",
+        "lessonSlug": "week-1-cast-on-bind-off",
+        "blockSlug": "ribbing-bind-off"
+      },
+      {
+        "vimeoId": "151858299",
+        "title": "Backstitch Bind Off - Stretchiest BO Ever!",
+        "lessonSlug": "week-1-cast-on-bind-off",
+        "blockSlug": "ribbing-bind-off"
+      },
+      {
+        "vimeoId": "151859178",
+        "title": "Experiment with English Rib",
+        "lessonSlug": "week-2-tuck-rib",
+        "blockSlug": "english-rib"
+      },
+      {
+        "vimeoId": "151859184",
+        "title": "Swatching on the Double Bed",
+        "lessonSlug": "week-2-tuck-rib",
+        "blockSlug": "swatching-on-the-double-bed"
+      },
+      {
+        "vimeoId": "151859450",
+        "title": "Fisherman Rib",
+        "lessonSlug": "week-2-tuck-rib",
+        "blockSlug": "fisherman-rib"
+      },
+      {
+        "vimeoId": "312186999",
+        "title": "Waffle Stitch (Ribber)",
+        "lessonSlug": "week-2-tuck-rib",
+        "blockSlug": "waffle-stitch-no-calories"
+      },
+      {
+        "vimeoId": "310221666",
+        "title": null,
+        "lessonSlug": "week-3-full-needle-rib",
+        "blockSlug": "every-needle-in-work"
+      },
+      {
+        "vimeoId": "151859701",
+        "title": "Ribber: Full vs Half Pitch",
+        "lessonSlug": "week-3-full-needle-rib",
+        "blockSlug": "full-pitch-vs-half-pitch"
+      },
+      {
+        "vimeoId": "151859303",
+        "title": "3 Methods to Cast on in Full Needle Rib",
+        "lessonSlug": "week-3-full-needle-rib",
+        "blockSlug": "full-needle-rib"
+      },
+      {
+        "vimeoId": "151858966",
+        "title": "Kitchener Bind Off - The Ultimate Finish!",
+        "lessonSlug": "week-3-full-needle-rib",
+        "blockSlug": "full-needle-rib"
+      },
+      {
+        "vimeoId": "310226067",
+        "title": "Striped Scarf in Full Needle Rib",
+        "lessonSlug": "week-3-full-needle-rib",
+        "blockSlug": "full-needle-rib-challenge"
+      },
+      {
+        "vimeoId": "151859457",
+        "title": "Matching Ribber and Main Bed Tension",
+        "lessonSlug": "week-3-full-needle-rib",
+        "blockSlug": "tubular-and-u-knitting"
+      },
+      {
+        "vimeoId": "151858632",
+        "title": "Circular (Tubular) Knitting",
+        "lessonSlug": "week-3-full-needle-rib",
+        "blockSlug": "tubular-and-u-knitting"
+      },
+      {
+        "vimeoId": "151859462",
+        "title": "Half-Circular Knitting",
+        "lessonSlug": "week-3-full-needle-rib",
+        "blockSlug": "tubular-and-u-knitting"
+      },
+      {
+        "vimeoId": "313480756",
+        "title": "Knitting Sleeves in the round - Shaping in Circular Knitting",
+        "lessonSlug": "week-3-full-needle-rib",
+        "blockSlug": "tubular-and-u-knitting"
+      },
+      {
+        "vimeoId": "151858966",
+        "title": "Double Bed Bind Off  | Kitchener Bind off",
+        "lessonSlug": "week-3-full-needle-rib",
+        "blockSlug": "full-needle-rib-bind-off"
+      },
+      {
+        "vimeoId": "151849234",
+        "title": "Kitchener on the Machine - Knit Side",
+        "lessonSlug": "week-3-full-needle-rib",
+        "blockSlug": "full-needle-rib-bind-off"
+      },
+      {
+        "vimeoId": "151850342",
+        "title": "Kitchener on the Machine - Purl Side",
+        "lessonSlug": "week-3-full-needle-rib",
+        "blockSlug": "full-needle-rib-bind-off"
+      },
+      {
+        "vimeoId": "310402517",
+        "title": null,
+        "lessonSlug": "week-4-flat-rib",
+        "blockSlug": "knit-n-purl-contrast"
+      },
+      {
+        "vimeoId": "151858934",
+        "title": "Fun with Flat Ribs",
+        "lessonSlug": "week-4-flat-rib",
+        "blockSlug": "flat-rib"
+      },
+      {
+        "vimeoId": "151858938",
+        "title": "Flat Rib Fun Part 2",
+        "lessonSlug": "week-4-flat-rib",
+        "blockSlug": "flat-rib"
+      }
+    ],
+    "downloadCount": 9,
+    "downloads": [
+      {
+        "filename": "/downloads/swatch tags.pdf",
+        "label": "Print Swatch Tags",
+        "lessonSlug": "week-1-cast-on-bind-off",
+        "blockSlug": "swatch-tags"
+      },
+      {
+        "filename": "/downloads/Cast_on_worksheet.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "week-1-cast-on-bind-off",
+        "blockSlug": "cast-on-exercises"
+      },
+      {
+        "filename": "/downloads/Bind_off_worksheet1.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "week-1-cast-on-bind-off",
+        "blockSlug": "bind-off-exercises"
+      },
+      {
+        "filename": "/downloads/English_rib_practice1.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "week-2-tuck-rib",
+        "blockSlug": "english-rib-practice"
+      },
+      {
+        "filename": "/downloads/Fisherman_rib_practice.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "week-2-tuck-rib",
+        "blockSlug": "fisherman-rib-practice"
+      },
+      {
+        "filename": "/downloads/Full_Needle_Rib_Practice.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "week-3-full-needle-rib",
+        "blockSlug": "full-needle-rib-exercises"
+      },
+      {
+        "filename": "/downloads/circular_practice.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "week-3-full-needle-rib",
+        "blockSlug": "tubular-practice"
+      },
+      {
+        "filename": "/downloads/FNR_Bind_Off.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "week-3-full-needle-rib",
+        "blockSlug": "full-needle-rib-bind-off"
+      },
+      {
+        "filename": "/downloads/flat_rib_exercises.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "week-4-flat-rib",
+        "blockSlug": "flat-rib-exercises"
+      }
+    ]
+  }
+}

@@ -1,0 +1,776 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 31,
+    "title": "Basic Socks",
+    "slug": "basic-socks",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_31_basic_socks.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/basic_socks.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Introduction",
+      "slug": "introduction",
+      "displayOrder": 0,
+      "legacy": {
+        "itemId": 214,
+        "lessonOrder": 0
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<img src=\"/challenge/images/v2/31//basic_socks/basic_socks_thumb.png\">\r\nKnitting socks on a flatbed knitting machine doesn't have to be intimidating.<br>If you can knit short rows, you can knit these socks. (If you haven't tried short row shaping ... here's a great place to learn!) <br><i class=\"fa fa-check\" aria-hidden=\"true\"></i> Use any knitting machine, any yarn.<br>\r\n <i class=\"fa fa-check\" aria-hidden=\"true\"></i> Once you master this basic sock construction, you'll be ready to get creative!\r\n<br><blockquote><em>Don't just watch videos, take action and GET KNITTING!</em></blockquote>\r\n\r\n<br>\r\n\r\n",
+              "legacyComponentId": 2904,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "287494701",
+              "title": null,
+              "legacyComponentId": 2914,
+              "order": 2
+            }
+          ],
+          "title": "Ready to Master Socks?",
+          "slug": "ready-to-master-socks",
+          "order": 1,
+          "legacy": {
+            "assignId": 1044,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    th,\r\n    td {\r\n        border: 1px solid black;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n\r\n\r\n<figure><a href=\"/knit/DynamicPattern/2226/basic-sock\"><img src=\"/path/images/2740/basic_toe_up1.jpg\"></a>\r\n\r\n<figcaption align=\"center\"><br><a href=\"/knit/DynamicPattern/2226/basic-sock\">Basic sock toe up<br>and cuff up</a></figcaption>\r\n</figure>\r\n\r\n<figure><a href=\"/knit/DynamicPattern/2228/fancy-sock\"><img src=\"/path/images/2740/fancy_cuff_to_heel1.jpg\"></a>\r\n\r\n<figcaption align=\"center\"><br><a href=\"/knit/DynamicPattern/2228/fancy-sock\">Fancy Sock heel up<br>and cuff up</a></figcaption>\r\n</figure>\r\n\r\n<figure><a href=\"/knit/DynamicPattern/2235/swan-sock\"><img src=\"/path/images/2740/swan_sock3.jpg\"></a>\r\n<figcaption align=\"center\"><br><a href=\"/knit/DynamicPattern/2235/swan-sock\">Swan Sock</a></figcaption>\r\n</figure>\r\n\r\n\r\n\r\n   <h3> Knit it Now offers many sock styles. Each with their own advantages.</h3><br><div class=\"table-responsive\">\r\n        <table class=\"table table-bordered table-sm\">\r\n            <thead>\r\n                <tr>\r\n                    <th>Style</th>\r\n\r\n                    <th>Pro</th>\r\n                    <th>Con</th>\r\n                </tr>\r\n            </thead>\r\n            <tbody>\r\n                <tr>\r\n                    <td><a href=\"/knit/DynamicPattern/2226/basic-sock\">Basic Sock - Toe Up (cuff last)</a>\r\n                        <a href=\"#1\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i></a>\r\n                        <div id=\"1\" class=\"collapse hidden-print\">\r\n                            <img src=\"/path/images/2740/basic_toe_up.jpg\">\r\n                        </div>\r\n                    </td>\r\n                    <td>\r\n                        <ul>\r\n                            <li>Foot knit in one piece - only one side seam</li>\r\n                            <li>Not sure if you have enough yarn?<br>Start at the toe and weigh your yarn as you go. <br>Adjust the leg length if you are running short of yarn<br></li><br>\r\n                            \r\n                        </ul>\r\n                    </td>\r\n\r\n                    <td>\r\n                        <ul>\r\n                            <li>Many knitters don't like to bind off in ribbing.<br>\r\n                                <em> Hand knit the ribbing or use a stretchy bind off.</em></li>\r\n                        </ul>\r\n                    </td>\r\n                </tr>\r\n                <tr>\r\n                    <td><a href=\"/knit/DynamicPattern/2226/basic-sock\">Basic Sock Cuff to Toe</a>\r\n                        <a href=\"#2\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i></a>\r\n                        <div id=\"2\" class=\"collapse hidden-print\">\r\n                            <img src=\"/path/images/2740/basic.jpg\">\r\n                        </div>\r\n\r\n                    </td>\r\n                    <td>\r\n                        <ul>\r\n                            <li>Foot knit in one piece - only one side seam</li>\r\n                            <li>Stretchy, tubular cast on available for ribbing</li>\r\n                            \r\n                        </ul>\r\n                    </td>\r\n\r\n                    <td>\r\n                        <ul>\r\n                            <li>Not as easy to estimate yarn usage</li>\r\n                        </ul>\r\n                    </td>\r\n                </tr>\r\n                <tr>\r\n                    <td><a href=\"/knit/DynamicPattern/2228/fancy-sock\">Fancy Sock - Heel Up (cuff last)</a>\r\n\r\n                        <a href=\"#3\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i></a>\r\n                        <div id=\"3\" class=\"collapse hidden-print\">\r\n                            <img src=\"/path/images/2740/fancy_cuff_to_heel.jpg\">\r\n                        </div>\r\n                    </td>\r\n                    <td>\r\n                        <ul>\r\n                            <li>Not sure if you have enough yarn? Start at the heel and weigh your yarn as you go. Adjust the leg length if you are running short of yarn</li>\r\n                            <li>Foot knit in 2 pieces for different stitch pattern on sole and gusset</li>\r\n                        </ul>\r\n                    </td>\r\n\r\n                    <td>\r\n                        <ul>\r\n                            <li>Many knitters don't like to bind off in ribbing.<br>\r\n                             <em> Hand knit the ribbing or use a stretchy bind off.</em></li><br>\r\n                            <li>2 seams</li>\r\n                        </ul>\r\n                    </td>\r\n                </tr>\r\n                <tr>\r\n                    <td><a href=\"/knit/DynamicPattern/2228/fancy-sock\">Fancy Sock - Cuff to heel</a>\r\n\r\n                        <a href=\"#4\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i></a>\r\n                        <div id=\"4\" class=\"collapse hidden-print\">\r\n                            <img src=\"/path/images/2740/fancy_heel_up.jpg\">\r\n                        </div>\r\n\r\n                    </td>\r\n                    <td>\r\n                        <ul>\r\n                            <li>Stretchy, tubular cast on available for ribbing</li>\r\n                            <li>Foot knit in 2 pieces for different stitch pattern on sole and gusset</li>\r\n                        </ul>\r\n                    </td>\r\n\r\n                    <td>\r\n                        <ul>\r\n                            <li>Not as easy to estimate yarn usage</li>\r\n                            <li>2 seams</li>\r\n                        </ul>\r\n                    </td>\r\n                </tr>\r\n                <tr>\r\n                    <td><a href=\"/knit/DynamicPattern/2235/swan-sock\">Swan Sock - Gusseted Heel</a>\r\n\r\n                        <a href=\"#5\" data-toggle=\"collapse\"><i class=\"fa fa-camera\" aria-hidden=\"true\"></i></a>\r\n                        <div id=\"5\" class=\"collapse hidden-print\">\r\n                            <img src=\"/path/images/2740/swan_sock1.jpg\">\r\n\r\n                        </div>\r\n                    </td>\r\n                    <td>\r\n                        <ul>\r\n                            <li>Hand knit-like gusseted heel (for good fit)</li>\r\n                            <li>Foot knit in 2 pieces for different stitch pattern on sole and gusset</li>\r\n                        </ul>\r\n                    </td>\r\n\r\n                    <td>\r\n                        <ul>\r\n                            <li>4 seams (side seams and gussets)</li>\r\n                            <li>Not a beginner sock, more skills needed</li>\r\n                        </ul>\r\n                    </td>\r\n                </tr>\r\n            </tbody>\r\n        </table>\r\n    </div>\r\n\r\n",
+              "legacyComponentId": 2952,
+              "order": 1
+            }
+          ],
+          "title": "Compare Construction Methods",
+          "slug": "compare-construction-methods",
+          "order": 1,
+          "legacy": {
+            "assignId": 1077,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Anatomy of a Sock",
+      "slug": "anatomy-of-a-sock",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 205,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857395",
+              "title": "Knitting Overview",
+              "legacyComponentId": 2871,
+              "order": 2
+            }
+          ],
+          "title": "Anatomy of a Flat Bed Sock",
+          "slug": "anatomy-of-a-flat-bed-sock",
+          "order": 1,
+          "legacy": {
+            "assignId": 1030,
+            "blockType": "VimeoID"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Start to Finish",
+      "slug": "start-to-finish",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 206,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857408",
+              "title": "Watch to get a feel for the sock construction ... don't worry ... each step will be covered in the following lessons",
+              "legacyComponentId": 2872,
+              "order": 1
+            }
+          ],
+          "title": "Watch as we knit our sock",
+          "slug": "watch-as-we-knit-our-sock",
+          "order": 1,
+          "legacy": {
+            "assignId": 1031,
+            "blockType": "VimeoID"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Create your pattern",
+      "slug": "create-your-pattern",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 211,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment 'Adult Sock with Short Rows' (legacy garmentId 2226).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "1048",
+                "CHALLENGE_COMPONENTID": "2898",
+                "GARMENTID": "2226",
+                "GARMENTTITLE": "Adult Sock with Short Rows",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "PatternFileName",
+                "REDIRECT_TO": "/challenge/31/Group/1049/item|Create your pattern: Your Custom Pattern",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "rows",
+                "SHOWPATTERNNAME": "0",
+                "SIZING_DATAMODEL_ELEMENT": "size",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "stitches",
+                "SWATCHROWS": "rows",
+                "SWATCHSTITCHES": "stitches",
+                "SWATCHWEIGHT": "notes",
+                "USESWATCHLOGIC": "no"
+              },
+              "legacyComponentId": 2898,
+              "order": 2
+            }
+          ],
+          "title": "Build Your Pattern",
+          "slug": "build-your-pattern",
+          "order": 1,
+          "legacy": {
+            "assignId": 1048,
+            "blockType": "Pattern"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): PatternFileName",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 1048 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "1049",
+                "DATAMODEL_ELEMENTS": "PatternFileName",
+                "DATAMODEL_REDIRECT": "1048",
+                "TYPEOF": "DataValidation"
+              },
+              "legacyComponentId": 2902,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'PatternFileName'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "1049",
+                "DATAMODEL_ICON": "fa fa-download",
+                "LABLE": "Download Your Pattern",
+                "PATTERN_DATAMODEL_ELEMENT": "PatternFileName",
+                "TYPEOF": "DocumentPattern",
+                "VIEWHEIGHT": "600"
+              },
+              "legacyComponentId": 2900,
+              "order": 2
+            }
+          ],
+          "title": "Your Custom Pattern",
+          "slug": "your-custom-pattern",
+          "order": 2,
+          "legacy": {
+            "assignId": 1049,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Cuff Techniques",
+      "slug": "cuff-techniques",
+      "displayOrder": 30,
+      "legacy": {
+        "itemId": 207,
+        "lessonOrder": 30
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Feeling ambitious?  Ribbing is probably the most popular type of cuff for a sock.<br>Even if you don't have a ribber, you can create ribbing.<br><blockquote class=\"smallblock\"><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i>\r\nStart your sock with waste yarn and ravel cord. Knit the sock and sew up the seam.\r\n<br>Go back and pick up the live stitches on hand knitting needles and knit your ribbing in the round ... <b> no seam in the ribbing!</b>\r\n\r\n</blockquote>",
+              "legacyComponentId": 2880,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858391",
+              "title": "Basic Ribbing without a Ribber",
+              "legacySlot": 1,
+              "legacyComponentId": 2879,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858586",
+              "title": "Easiest Best Ribber Cast on",
+              "legacySlot": 2,
+              "legacyComponentId": 2879,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858404",
+              "title": "Hand knit ribbing with machine knitting",
+              "legacySlot": 3,
+              "legacyComponentId": 2879,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857723",
+              "title": "Seaming Ribbing - Plan Ahead",
+              "legacySlot": 4,
+              "legacyComponentId": 2879,
+              "order": 2
+            }
+          ],
+          "title": "Ribbing",
+          "slug": "ribbing",
+          "order": 1,
+          "legacy": {
+            "assignId": 1036,
+            "blockType": "VimeoMultiple"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Heel and Toe Techniques",
+      "slug": "heel-and-toe-techniques",
+      "displayOrder": 40,
+      "legacy": {
+        "itemId": 208,
+        "lessonOrder": 40
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Machine knitting instructors and patterns will often assume that you know what \"place needles in hold\" means.<br>For new machine knitters (especially those who hand knit) this can be a mysterious instruction.<br>Watch as we explore this basic skill on different machines. Then work the practice exercises before you start working the toes and heels of your socks.",
+              "legacyComponentId": 2906,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "287184263",
+              "title": "Back to Basics: Hold Positon",
+              "legacyComponentId": 2909,
+              "order": 2
+            }
+          ],
+          "title": "Place Needles in Hold",
+          "slug": "place-needles-in-hold",
+          "order": 1,
+          "legacy": {
+            "assignId": 1052,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "download",
+              "label": "Download",
+              "filename": "/downloads/hold_exercises2.pdf",
+              "showInline": true,
+              "legacy": {
+                "assignId": "1053",
+                "componentId": "2911",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 2911,
+              "order": 1
+            }
+          ],
+          "title": "Practice Hold with your machine",
+          "slug": "practice-hold-with-your-machine",
+          "order": 2,
+          "legacy": {
+            "assignId": 1053,
+            "blockType": "Document"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Both the heel and toe of our socks are formed with short rows. <br>\r\n<img src=\"/challenge/images/v2/31/stocking/shortrow_examples.png\">\r\n\r\n\r\n\r\n<br>Hand knitter might shape the toes and heels using a series of increases and decreases. \r\n\r\nBUT knit this way on a flat bed knitting machine, you'd need to seam the edges to create the pocket shape.\r\n<img width=\"50%\" src=\"/challenge/images/v2/31/stocking/increase_decrease_practice.png\">\r\n\r\n<h3>The more common way to shape the heels and toes is to use short rows.</h3>",
+              "legacyComponentId": 2877,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "251895484",
+              "title": null,
+              "legacyComponentId": 2876,
+              "order": 2
+            }
+          ],
+          "title": "Short Row Refresher",
+          "slug": "short-row-refresher",
+          "order": 3,
+          "legacy": {
+            "assignId": 1034,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857333",
+              "title": "Short Rows - Automatic Wrap verses Manual Wrap",
+              "legacyComponentId": 2890,
+              "order": 1
+            }
+          ],
+          "title": "Why use Short Row Shaping?",
+          "slug": "why-use-short-row-shaping",
+          "order": 4,
+          "legacy": {
+            "assignId": 1043,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "286256671",
+              "title": "Use short row shaping for toes and heels",
+              "legacyComponentId": 2903,
+              "order": 1
+            }
+          ],
+          "title": "Shape Toes and Heels",
+          "slug": "shape-toes-and-heels",
+          "order": 5,
+          "legacy": {
+            "assignId": 1050,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "759564870",
+              "title": null,
+              "legacyComponentId": 9131,
+              "order": 1
+            }
+          ],
+          "title": "Faux Peasant Heel",
+          "slug": "faux-peasant-heel",
+          "order": 6,
+          "legacy": {
+            "assignId": 5992,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Finishing Techniques",
+      "slug": "finishing-techniques",
+      "displayOrder": 50,
+      "legacy": {
+        "itemId": 209,
+        "lessonOrder": 50
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151849234",
+              "title": "Kitchener Stitch on the Machine - Knit Side",
+              "legacySlot": 1,
+              "legacyComponentId": 2878,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151850342",
+              "title": "Kitchener Stitch on the Machine - Purl Side",
+              "legacySlot": 2,
+              "legacyComponentId": 2878,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857516",
+              "title": "Bickford Seams - The Flattest Seams Ever!",
+              "legacySlot": 3,
+              "legacyComponentId": 2878,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858422",
+              "title": "Seaming Savvy",
+              "legacySlot": 4,
+              "legacyComponentId": 2878,
+              "order": 1
+            }
+          ],
+          "title": "Seaming Essentials",
+          "slug": "seaming-essentials",
+          "order": 1,
+          "legacy": {
+            "assignId": 1035,
+            "blockType": "VimeoMultiple"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Socks don't take a lot of yardage.  If you are knitting on a standard gauge machine, a 100gram ball of yarn will easily knit a pair of socks.<br>A food or postal scale is a knitters best friend!<br>If you are worried about having enough to finish your second sock, divide the ball in half before you start knitting.  Use a food scale to weigh the balls you create and there will be no worry about running out.<br>If you've already knit one sock, you can weigh it and compare the weight of the remaining yarn to confirm you have enough.",
+              "legacyComponentId": 2918,
+              "order": 1
+            }
+          ],
+          "title": "Do I have enough yarn?",
+          "slug": "do-i-have-enough-yarn",
+          "order": 2,
+          "legacy": {
+            "assignId": 1054,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "258782290",
+              "title": null,
+              "legacyComponentId": 9074,
+              "order": 1
+            }
+          ],
+          "title": "Figure 8 Bind Off",
+          "slug": "figure-8-bind-off",
+          "order": 3,
+          "legacy": {
+            "assignId": 5952,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Where do I go from here?",
+      "slug": "where-do-i-go-from-here",
+      "displayOrder": 60,
+      "legacy": {
+        "itemId": 210,
+        "lessonOrder": 60
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<br>Sock inspiration is EVERYWHERE! Master the basic construction and get creative!<br><i class=\"fa fa-hand-o-down fa-2x\"\" aria-hidden=\"true\"></i>    \r\n<i class=\"fa fa-hand-o-down fa-3x\"\" aria-hidden=\"true\"></i>     \r\n<i class=\"fa fa-hand-o-down fa-4x\"\" aria-hidden=\"true\"></i>    \r\n<i class=\"fa fa-hand-o-down fa-5x\"\" aria-hidden=\"true\"></i>     \r\n<i class=\"fa fa-hand-o-down fa-6x\"\" aria-hidden=\"true\"></i>     \r\n<i class=\"fa fa-hand-o-down fa-5x\"\" aria-hidden=\"true\"></i>     \r\n<i class=\"fa fa-hand-o-down fa-4x\"\" aria-hidden=\"true\"></i>     \r\n<i class=\"fa fa-hand-o-down fa-3x\"\" aria-hidden=\"true\"></i>     \r\n<i class=\"fa fa-hand-o-down fa-2x\"\" aria-hidden=\"true\"></i>     <br>",
+              "legacyComponentId": 2886,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pinterest",
+              "notes": [
+                "Legacy Pinterest embed; replace with static content or omit."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "1041",
+                "PINTERESTID": "19",
+                "TYPEOF": "Pinterest"
+              },
+              "legacyComponentId": 2887,
+              "order": 2
+            }
+          ],
+          "title": "Inspiration",
+          "slug": "inspiration",
+          "order": 2,
+          "legacy": {
+            "assignId": 1041,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "285823544",
+              "title": "Get Knitting!",
+              "legacyComponentId": 2888,
+              "order": 1
+            }
+          ],
+          "title": "Practice = Success!",
+          "slug": "practice-success",
+          "order": 3,
+          "legacy": {
+            "assignId": 1042,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>Are you interested in taking socks to the next level? </h3>\r\nThedownloadable Ultimate Machine Knit Socks ebook is your next step!<br><h4 style=\"color:#4FABD8;\">www.knititnow.com/link/UltimateSocks</h4><br>\r\n \r\n\r\n<img src=\"/challenge/images/v2/31/stocking/swan_sock_cover1080.png\">\r\n\r\n",
+              "legacyComponentId": 2897,
+              "order": 2
+            }
+          ],
+          "title": "Take your Sock Knitting to the Next Level",
+          "slug": "take-your-sock-knitting-to-the-next-level",
+          "order": 3,
+          "legacy": {
+            "assignId": 1047,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntrytextarea",
+              "notes": [
+                "Unmapped legacy component type: DataEntrytextarea"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "1045",
+                "CHALLENGE_COMPONENTID": "2893",
+                "DATAMODEL_ELEMENT": "notes",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Store your personal notes here for easy reference.",
+                "DATAMODEL_TEXTAREAROWS": "15",
+                "DATAMODEL_VALIDATION_CHARS": "500",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 2893,
+              "order": 1
+            }
+          ],
+          "title": "Personal Notes:",
+          "slug": "personal-notes",
+          "order": 4,
+          "legacy": {
+            "assignId": 1045,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<table align=\"center\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"50%\" style=\"background-color:#9B2764; border:1px solid #353535; border-radius:10px;\">\r\n  <tr>\r\n    <td align=\"center\" valign=\"middle\" style=\"color:#FFFFFF; font-size:16px; font-weight:bold; letter-spacing:-.5px; line-height:150%; padding-top:5px; padding-right:30px; padding-bottom:5px; padding-left:30px;\">\r\n      <a href=\"/elements/contactus.cfm\" target=\"_blank\" style=\"color:#FFFFFF; text-decoration:none;\">Contact Us</a>\r\n    </td>\r\n  </tr>\r\n</table>",
+              "legacyComponentId": 2895,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Survay",
+              "notes": [
+                "Unmapped legacy component type: Survay"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "1046",
+                "DATAMODEL_ICON": "ffa fa-pencil",
+                "LABLE": "questions",
+                "REDIRECT_TO": "/challenge/31/Group/1045/item|Where do I go from here?: Notes:",
+                "SURVEY": "6A252D5B-5056-A02D-DF58-2F3390837421|Basic Socks",
+                "TYPEOF": "Survay"
+              },
+              "legacyComponentId": 2894,
+              "order": 2
+            }
+          ],
+          "title": "Please help us improve",
+          "slug": "please-help-us-improve",
+          "order": 5,
+          "legacy": {
+            "assignId": 1046,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 18,
+    "videos": [
+      {
+        "vimeoId": "287494701",
+        "title": null,
+        "lessonSlug": "introduction",
+        "blockSlug": "ready-to-master-socks"
+      },
+      {
+        "vimeoId": "151857395",
+        "title": "Knitting Overview",
+        "lessonSlug": "anatomy-of-a-sock",
+        "blockSlug": "anatomy-of-a-flat-bed-sock"
+      },
+      {
+        "vimeoId": "151857408",
+        "title": "Watch to get a feel for the sock construction ... don't worry ... each step will be covered in the following lessons",
+        "lessonSlug": "start-to-finish",
+        "blockSlug": "watch-as-we-knit-our-sock"
+      },
+      {
+        "vimeoId": "151858391",
+        "title": "Basic Ribbing without a Ribber",
+        "lessonSlug": "cuff-techniques",
+        "blockSlug": "ribbing"
+      },
+      {
+        "vimeoId": "151858586",
+        "title": "Easiest Best Ribber Cast on",
+        "lessonSlug": "cuff-techniques",
+        "blockSlug": "ribbing"
+      },
+      {
+        "vimeoId": "151858404",
+        "title": "Hand knit ribbing with machine knitting",
+        "lessonSlug": "cuff-techniques",
+        "blockSlug": "ribbing"
+      },
+      {
+        "vimeoId": "151857723",
+        "title": "Seaming Ribbing - Plan Ahead",
+        "lessonSlug": "cuff-techniques",
+        "blockSlug": "ribbing"
+      },
+      {
+        "vimeoId": "287184263",
+        "title": "Back to Basics: Hold Positon",
+        "lessonSlug": "heel-and-toe-techniques",
+        "blockSlug": "place-needles-in-hold"
+      },
+      {
+        "vimeoId": "251895484",
+        "title": null,
+        "lessonSlug": "heel-and-toe-techniques",
+        "blockSlug": "short-row-refresher"
+      },
+      {
+        "vimeoId": "151857333",
+        "title": "Short Rows - Automatic Wrap verses Manual Wrap",
+        "lessonSlug": "heel-and-toe-techniques",
+        "blockSlug": "why-use-short-row-shaping"
+      },
+      {
+        "vimeoId": "286256671",
+        "title": "Use short row shaping for toes and heels",
+        "lessonSlug": "heel-and-toe-techniques",
+        "blockSlug": "shape-toes-and-heels"
+      },
+      {
+        "vimeoId": "759564870",
+        "title": null,
+        "lessonSlug": "heel-and-toe-techniques",
+        "blockSlug": "faux-peasant-heel"
+      },
+      {
+        "vimeoId": "151849234",
+        "title": "Kitchener Stitch on the Machine - Knit Side",
+        "lessonSlug": "finishing-techniques",
+        "blockSlug": "seaming-essentials"
+      },
+      {
+        "vimeoId": "151850342",
+        "title": "Kitchener Stitch on the Machine - Purl Side",
+        "lessonSlug": "finishing-techniques",
+        "blockSlug": "seaming-essentials"
+      },
+      {
+        "vimeoId": "151857516",
+        "title": "Bickford Seams - The Flattest Seams Ever!",
+        "lessonSlug": "finishing-techniques",
+        "blockSlug": "seaming-essentials"
+      },
+      {
+        "vimeoId": "151858422",
+        "title": "Seaming Savvy",
+        "lessonSlug": "finishing-techniques",
+        "blockSlug": "seaming-essentials"
+      },
+      {
+        "vimeoId": "258782290",
+        "title": null,
+        "lessonSlug": "finishing-techniques",
+        "blockSlug": "figure-8-bind-off"
+      },
+      {
+        "vimeoId": "285823544",
+        "title": "Get Knitting!",
+        "lessonSlug": "where-do-i-go-from-here",
+        "blockSlug": "practice-success"
+      }
+    ],
+    "downloadCount": 1,
+    "downloads": [
+      {
+        "filename": "/downloads/hold_exercises2.pdf",
+        "label": "Download",
+        "lessonSlug": "heel-and-toe-techniques",
+        "blockSlug": "practice-hold-with-your-machine"
+      }
+    ]
+  }
+}

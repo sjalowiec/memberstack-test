@@ -1,1 +1,422 @@
-<?xml version="1.0" encoding="UTF-8"?><svg id="full" xmlns="http://www.w3.org/2000/svg" width="3.73in" height="4.2in" viewBox="0 0 268.64 302.28"><g id="back-body_only"><g id="back"><polyline points="69.26 257.53 69.26 270.73 193.96 270.73 193.96 257.53" fill="none" stroke="#020202" stroke-linecap="round" stroke-linejoin="round"/><path d="M67.16,125.93c.8,8.9,4.5,35.3,3.4,50.2-1,14.9-2.1,76.3-1.4,81.9" fill="none" stroke="#020202"/><path d="M196.16,125.93c-.8,8.9-4.5,35.3-3.4,50.2,1,14.9,2.1,76.3,1.4,81.9" fill="none" stroke="#020202"/><path d="M65.56,46.92l1.49,79.51" fill="none" stroke="#020202" stroke-linejoin="round"/><path d="M195.84,46.57l.22,79.86" fill="none" stroke="#020202" stroke-linejoin="round"/><path d="M100.26,46.73s6.1,6.9,31,6.9,31-6.9,31-6.9l33.58-.16" fill="none" stroke="#020202" stroke-linejoin="round"/></g><line x1="65.03" y1="46.92" x2="100.66" y2="46.83" fill="none" stroke="#020202" stroke-linejoin="round"/><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><text transform="translate(109.66 181.13)" fill="#010101" font-family="Arial-BoldMT, Arial" font-size="15" font-weight="700" isolation="isolate"><tspan x="0" y="0">BACK</tspan></text></g></g></g></g></g></g></g></g><g id="back-measurement"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><text transform="translate(215.16 218.13) rotate(-90)" fill="#010101" font-family="ArialMT, Arial" font-size="12" isolation="isolate"><tspan x="0" y="0">{{SIDE_LENGTH_ROWS}} rows</tspan></text></g></g></g></g></g></g></g><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><text transform="translate(226.06 210.53) rotate(-90)" fill="#565656" font-family="ArialMT, Arial" font-size="9" isolation="isolate"><tspan x="0" y="0">({{SIDE_LENGTH}} {{UNIT}})</tspan></text></g></g></g></g></g></g></g><g id="NECKWIDTH"><line x1="102.26" y1="43.83" x2="159.26" y2="43.83" fill="none" stroke="#536930" stroke-miterlimit="10" stroke-width="2"/><rect x="101.46" y="38.93" width="1.5" height="9.8" fill="#536930"/><rect x="158.46" y="38.93" width="1.5" height="9.8" fill="#536930"/></g><g id="HEIGHT_LINE"><line x1="46.36" y1="268.33" x2="46.36" y2="49.93" fill="none" stroke="#536930" stroke-miterlimit="10" stroke-width="2"/><rect x="41.46" y="267.63" width="9.8" height="1.5" fill="#536930"/><rect x="41.46" y="49.13" width="9.8" height="1.5" fill="#536930"/></g><g id="HEIGHT_UNIT"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><text transform="translate(39.06 172.13) rotate(-90)" fill="#565656" font-family="ArialMT, Arial" font-size="9" isolation="isolate"><tspan x="0" y="0">({{HEIGHT}} {{UNIT}})</tspan></text></g></g></g></g></g></g></g></g><g id="BUST_STS" isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><text transform="translate(105.26 145.43)" fill="#010101" font-family="ArialMT, Arial" font-size="12" isolation="isolate"><tspan x="0" y="0" xml:space="preserve"> {{BUST_STS}}sts</tspan></text></g></g></g></g></g></g></g></g><g id="HEM_MEASUREMENT" isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><text transform="translate(19.53 255.38)" fill="#010101" font-family="ArialMT, Arial" font-size="12" isolation="isolate"><tspan x="0" y="0" xml:space="preserve"> {{HEM_ROWS}} rows</tspan></text></g></g></g></g></g></g><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><text transform="translate(15.13 266.18)" fill="#565656" font-family="ArialMT, Arial" font-size="9" isolation="isolate"><tspan x="0" y="0" xml:space="preserve">      ({{HEM_INCHES}} {{UNIT}})</tspan></text></g></g></g></g></g></g></g></g><g id="BUST_UNIT"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><text transform="translate(111.36 155.93)" fill="#565656" font-family="ArialMT, Arial" font-size="9" isolation="isolate"><tspan x="0" y="0">({{BUST_WIDTH}} {{UNIT}})</tspan></text></g></g></g></g></g></g></g></g><g id="BUST_LINE"><line x1="74.46" y1="130.83" x2="193.26" y2="130.83" fill="none" stroke="#536930" stroke-miterlimit="10" stroke-width="2"/><rect x="73.66" y="125.93" width="1.5" height="9.8" fill="#536930"/><rect x="192.46" y="125.93" width="1.5" height="9.8" fill="#536930"/></g><g id="HEM_BAND_TOP_LINE"><line x1="71.33" y1="246.19" x2="190.85" y2="246.19" fill="none" stroke="#536930" stroke-miterlimit="10" stroke-width="1.97"/><rect x="70.65" y="241.29" width="1.55" height="9.8" fill="#536930"/><rect x="190.07" y="241.29" width="1.55" height="9.8" fill="#536930"/></g><g id="CROSS_SHOULDER_UNIT"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><text transform="translate(114.96 112.83)" fill="#565656" font-family="ArialMT, Arial" font-size="9" isolation="isolate"><tspan x="0" y="0">({{cross-shoulder}} {{UNIT}})</tspan></text></g></g></g></g></g></g></g></g><g id="CROSS_SHOULDER_STS" isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><text transform="translate(105.26 101.93)" fill="#010101" font-family="ArialMT, Arial" font-size="12" isolation="isolate"><tspan x="0" y="0" xml:space="preserve"> {{cross-shoulder-width}}sts</tspan></text></g></g></g></g></g></g></g></g><g id="CROSS_SHOULDER"><line x1="79.76" y1="89.73" x2="183.46" y2="89.73" fill="none" stroke="#536930" stroke-miterlimit="10" stroke-width="2"/><rect x="79.06" y="84.83" width="1.5" height="9.8" fill="#536930"/><rect x="182.76" y="84.83" width="1.5" height="9.8" fill="#536930"/></g><g id="NECK_WIDTH_STS" isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><text transform="translate(115.66 28.33)" fill="#010101" font-family="ArialMT, Arial" font-size="12" isolation="isolate"><tspan x="0" y="0">{{NECK_STS}}sts</tspan></text></g></g></g></g></g></g></g></g><g id="NECK_WIDTH_UNITS"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><text transform="translate(116.66 38.33)" fill="#565656" font-family="ArialMT, Arial" font-size="9" isolation="isolate"><tspan x="0" y="0">({{NECK_WIDTH}} {{UNIT}})</tspan></text></g></g></g></g></g></g></g></g><line x1="130.34" y1="43.97" x2="130.34" y2="51.85" fill="none" stroke="#536930" stroke-miterlimit="10" stroke-width="1.99"/><rect x="125.83" y="51.16" width="9.03" height="1.39" fill="#536930"/><g id="ARMHOLE_LINE"><line x1="202.16" y1="59.73" x2="202.16" y2="125.53" fill="none" stroke="#536930" stroke-miterlimit="10" stroke-width="2"/><rect x="197.26" y="59.03" width="9.8" height="1.5" fill="#536930"/><rect x="197.26" y="124.73" width="9.8" height="1.5" fill="#536930"/></g><g id="ARMHOLE" isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><text transform="translate(215.36 118.63) rotate(-90)" fill="#010101" font-family="ArialMT, Arial" font-size="12" isolation="isolate"><tspan x="0" y="0">{{ARMHOLE_ROWS}} rows</tspan></text></g></g></g></g></g></g><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><text transform="translate(226.16 111.33) rotate(-90)" fill="#565656" font-family="ArialMT, Arial" font-size="9" isolation="isolate"><tspan x="0" y="0">({{ARMHOLE_DEPTH}} {{UNIT}})</tspan></text></g></g></g></g></g></g></g></g><g id="HIP_MEASUREMENT" isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><text transform="translate(104.68 257.45)" fill="#010101" font-family="ArialMT, Arial" font-size="12" isolation="isolate"><tspan x="0" y="0" xml:space="preserve"> {{HIP_STS}}sts</tspan></text></g></g></g></g></g></g><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><text transform="translate(104.68 268.25)" fill="#565656" font-family="ArialMT, Arial" font-size="9" isolation="isolate"><tspan x="0" y="0" xml:space="preserve">   ({{HIP_INCHES}} {{UNIT}})</tspan></text></g></g></g></g></g></g></g></g><g id="NECK_DEPTH_ROWS" isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><text transform="translate(97.74 68.31)" fill="#010101" font-family="ArialMT, Arial" font-size="12" isolation="isolate"><tspan x="0" y="0">{{NECK_DEPTH_ROWS}} rows</tspan></text></g></g></g></g></g></g></g></g><g id="NECK_DEPTH_UNITS"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><text transform="translate(98.39 76.49)" fill="#565656" font-family="ArialMT, Arial" font-size="9" isolation="isolate"><tspan x="0" y="0">({{NECK_DEPTH}} {{UNIT}})</tspan></text></g></g></g></g></g></g></g></g><line x1="70.49" y1="240.96" x2="192.39" y2="240.96" fill="none" stroke="#939598" stroke-dasharray="2.9 2.9" stroke-miterlimit="10"/><g id="NECK_DEPTH-2"><line x1="61.45" y1="240.2" x2="61.45" y2="270.29" fill="none" stroke="#536930" stroke-miterlimit="10" stroke-width="2"/><rect x="56.58" y="239.45" width="9.75" height="1.5" fill="#536930"/><rect x="56.58" y="269.54" width="9.75" height="1.5" fill="#536930"/></g><g id="SIDE_SEAM"><line x1="202.02" y1="128.22" x2="202.02" y2="238.96" fill="none" stroke="#536930" stroke-miterlimit="10" stroke-width="1.78"/><rect x="197.15" y="127.63" width="9.75" height="1.19" fill="#536930"/><rect x="197.15" y="238.37" width="9.75" height="1.19" fill="#536930"/></g><g id="NECK_WIDTH_STS-2" isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><g isolation="isolate"><text transform="translate(163.66 43.29)" fill="#010101" font-family="ArialMT, Arial" font-size="12" isolation="isolate"><tspan x="0" y="0">{{shoulder-stitches}}sts</tspan></text></g></g></g></g></g></g></g></g><path d="M118.14,69.56c-8.44-11.57,2.97-18.31,8.59-20.78" fill="none" stroke="#bdbec0" stroke-dasharray="2.91 2.91" stroke-miterlimit="10"/><path d="M129.54,47.7c-1.13,1.01-2.44,2.49-3.11,3.78l-.07-2.53-1.67-1.9c1.36.49,3.33.68,4.85.65Z" fill="#bdbec0"/></g><g id="markers"><polygon points="62.06 119.4 67.1 124.44 62.06 129.48 62.06 119.4" fill="#53682f"/><polygon points="200.85 130.2 195.81 125.15 200.85 120.11 200.85 130.2" fill="#53682f"/></g></svg>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" width="3.5in" height="4.2in" version="1.1" viewBox="0 0 254.3 301.2">
+  <!-- Generator: Adobe Illustrator 30.5.1, SVG Export Plug-In . SVG Version: 2.1.4 Build 3)  -->
+  <defs>
+    <style>
+      .st0, .st1, .st2, .st3, .st4, .st5, .st6, .st7 {
+        fill: none;
+      }
+
+      .st0, .st2, .st3, .st7 {
+        stroke-width: 1px;
+      }
+
+      .st0, .st2, .st7 {
+        stroke: #020202;
+      }
+
+      .st0, .st7 {
+        stroke-linejoin: round;
+      }
+
+      .st8 {
+        fill: #536930;
+      }
+
+      .st1 {
+        stroke-width: 1.8px;
+      }
+
+      .st1, .st3, .st4, .st5, .st6 {
+        stroke-miterlimit: 10;
+      }
+
+      .st1, .st4, .st5, .st6 {
+        stroke: #536930;
+      }
+
+      .st2 {
+        stroke-miterlimit: 4;
+      }
+
+      .st3 {
+        stroke: #939598;
+        stroke-dasharray: 2.9 2.9;
+      }
+
+      .st9 {
+        fill: #565656;
+        font-size: 9px;
+      }
+
+      .st9, .st10 {
+        font-family: ArialMT, Arial;
+      }
+
+      .st9, .st10, .st11, .st12 {
+        isolation: isolate;
+      }
+
+      .st4 {
+        stroke-width: 2px;
+      }
+
+      .st13 {
+        fill: #53682f;
+      }
+
+      .st10 {
+        font-size: 12px;
+      }
+
+      .st10, .st12 {
+        fill: #010101;
+      }
+
+      .st5 {
+        stroke-width: 2px;
+      }
+
+      .st6 {
+        stroke-width: 2px;
+      }
+
+      .st7 {
+        stroke-linecap: round;
+      }
+
+      .st12 {
+        font-family: Arial-BoldMT, Arial;
+        font-size: 15px;
+        font-weight: 700;
+      }
+    </style>
+  </defs>
+  <g id="measurements">
+    <g class="st11">
+      <g class="st11">
+        <g class="st11">
+          <g class="st11">
+            <g class="st11">
+              <g class="st11">
+                <g class="st11">
+                  <g class="st11">
+                    <text class="st10" transform="translate(183.8 247.5) rotate(-90)"><tspan x="0" y="0">{{SIDE_LENGTH_ROWS}} rows</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g class="st11">
+      <g class="st11">
+        <g class="st11">
+          <g class="st11">
+            <g class="st11">
+              <g class="st11">
+                <g class="st11">
+                  <g class="st11">
+                    <text class="st9" transform="translate(194.7 239.9) rotate(-90)"><tspan x="0" y="0">({{SIDE_LENGTH}} {{UNIT}})</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g id="HEIGHT_UNIT">
+      <g class="st11">
+        <g class="st11">
+          <g class="st11">
+            <g class="st11">
+              <g class="st11">
+                <g class="st11">
+                  <g class="st11">
+                    <g class="st11">
+                      <text class="st9" transform="translate(7.7 201.5) rotate(-90)"><tspan x="0" y="0">({{HEIGHT}} {{UNIT}})</tspan></text>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g id="CROSS_SHOULDER_UNIT">
+      <g class="st11">
+        <g class="st11">
+          <g class="st11">
+            <g class="st11">
+              <g class="st11">
+                <g class="st11">
+                  <g class="st11">
+                    <g class="st11">
+                      <text class="st9" transform="translate(83.6 142.2)"><tspan x="0" y="0">({{cross-shoulder}} {{UNIT}})</tspan></text>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g id="CROSS_SHOULDER_STS" class="st11">
+      <g class="st11">
+        <g class="st11">
+          <g class="st11">
+            <g class="st11">
+              <g class="st11">
+                <g class="st11">
+                  <g class="st11">
+                    <g class="st11">
+                      <text class="st10" transform="translate(73.9 131.3)"><tspan x="0" y="0" xml:space="preserve"> {{cross-shoulder-width}}sts</tspan></text>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g id="NECK_WIDTH_STS" class="st11">
+      <g class="st11">
+        <g class="st11">
+          <g class="st11">
+            <g class="st11">
+              <g class="st11">
+                <g class="st11">
+                  <g class="st11">
+                    <g class="st11">
+                      <text class="st10" transform="translate(84.3 57.7)"><tspan x="0" y="0">{{NECK_STS}}sts</tspan></text>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g id="NECK_WIDTH_UNITS">
+      <g class="st11">
+        <g class="st11">
+          <g class="st11">
+            <g class="st11">
+              <g class="st11">
+                <g class="st11">
+                  <g class="st11">
+                    <g class="st11">
+                      <text class="st9" transform="translate(85.3 67.7)"><tspan x="0" y="0">({{NECK_WIDTH}} {{UNIT}})</tspan></text>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g id="ARMHOLE" class="st11">
+      <g class="st11">
+        <g class="st11">
+          <g class="st11">
+            <g class="st11">
+              <g class="st11">
+                <g class="st11">
+                  <g class="st11">
+                    <g class="st11">
+                      <text class="st10" transform="translate(184 148) rotate(-90)"><tspan x="0" y="0">{{ARMHOLE_ROWS}} rows</tspan></text>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+        <g class="st11">
+          <g class="st11">
+            <g class="st11">
+              <g class="st11">
+                <g class="st11">
+                  <g class="st11">
+                    <g class="st11">
+                      <text class="st9" transform="translate(194.8 140.7) rotate(-90)"><tspan x="0" y="0">({{ARMHOLE_DEPTH}} {{UNIT}})</tspan></text>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g id="NECK_DEPTH_ROWS" class="st11">
+      <g class="st11">
+        <g class="st11">
+          <g class="st11">
+            <g class="st11">
+              <g class="st11">
+                <g class="st11">
+                  <g class="st11">
+                    <g class="st11">
+                      <text class="st10" transform="translate(66.4 97.7)"><tspan x="0" y="0">{{NECK_DEPTH_ROWS}} rows</tspan></text>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g id="NECK_DEPTH_UNITS">
+      <g class="st11">
+        <g class="st11">
+          <g class="st11">
+            <g class="st11">
+              <g class="st11">
+                <g class="st11">
+                  <g class="st11">
+                    <g class="st11">
+                      <text class="st9" transform="translate(67 105.9)"><tspan x="0" y="0">({{NECK_DEPTH}} {{UNIT}})</tspan></text>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g id="NECK_WIDTH_STS-2" class="st11">
+      <g class="st11">
+        <g class="st11">
+          <g class="st11">
+            <g class="st11">
+              <g class="st11">
+                <g class="st11">
+                  <g class="st11">
+                    <g class="st11">
+                      <text class="st10" transform="translate(132.3 72.7)"><tspan x="0" y="0">{{shoulder-stitches}}sts</tspan></text>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+    <g id="HIP_MEASUREMENT" class="st11">
+      <g class="st11">
+        <g class="st11">
+          <g class="st11">
+            <g class="st11">
+              <g class="st11">
+                <g class="st11">
+                  <g class="st11">
+                    <g class="st11">
+                      <text class="st10" transform="translate(69.1 287.5)"><tspan x="0" y="0" xml:space="preserve"> {{HIP_STS}}sts</tspan></text>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+        <g class="st11">
+          <g class="st11">
+            <g class="st11">
+              <g class="st11">
+                <g class="st11">
+                  <g class="st11">
+                    <g class="st11">
+                      <text class="st9" transform="translate(69.1 298.3)"><tspan x="0" y="0" xml:space="preserve">   ({{HIP_INCHES}} {{UNIT}})</tspan></text>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+  <g id="lines">
+    <g id="HEIGHT_LINE">
+      <line class="st4" x1="15" y1="297.7" x2="15" y2="79.3"/>
+      <rect class="st8" x="10.1" y="297" width="9.8" height="1.5"/>
+      <rect class="st8" x="10.1" y="78.5" width="9.8" height="1.5"/>
+    </g>
+    <g id="CROSS_SHOULDER">
+      <line class="st4" x1="48.4" y1="119.1" x2="152.1" y2="119.1"/>
+      <rect class="st8" x="47.7" y="114.2" width="1.5" height="9.8"/>
+      <rect class="st8" x="151.4" y="114.2" width="1.5" height="9.8"/>
+    </g>
+    <g id="NECKWIDTH">
+      <line class="st4" x1="70.9" y1="73.2" x2="127.9" y2="73.2"/>
+      <rect class="st8" x="70.1" y="68.3" width="1.5" height="9.8"/>
+      <rect class="st8" x="127.1" y="68.3" width="1.5" height="9.8"/>
+    </g>
+    <g id="hem_line">
+      <line class="st4" x1="29.8" y1="268.1" x2="29.8" y2="298.2"/>
+      <rect class="st8" x="24.9" y="267.4" width="9.7" height="1.5"/>
+      <rect class="st8" x="24.9" y="297.4" width="9.7" height="1.5"/>
+    </g>
+    <g id="HEM_BAND_TOP_LINE">
+      <line class="st5" x1="40" y1="275.5" x2="159.5" y2="275.5"/>
+      <rect class="st8" x="39.3" y="270.6" width="1.5" height="9.8"/>
+      <rect class="st8" x="158.7" y="270.6" width="1.5" height="9.8"/>
+    </g>
+    <g id="SIDE_SEAM">
+      <line class="st1" x1="170.6" y1="157.6" x2="170.6" y2="268.3"/>
+      <rect class="st8" x="165.8" y="157" width="9.7" height="1.2"/>
+      <rect class="st8" x="165.8" y="267.7" width="9.7" height="1.2"/>
+    </g>
+    <g id="ARMHOLE_LINE">
+      <line class="st4" x1="170.8" y1="89.1" x2="170.8" y2="154.9"/>
+      <rect class="st8" x="165.9" y="88.4" width="9.8" height="1.5"/>
+      <rect class="st8" x="165.9" y="154.1" width="9.8" height="1.5"/>
+    </g>
+    <line class="st6" x1="99" y1="75.3" x2="99" y2="87.1"/>
+    <rect class="st8" x="94.5" y="74.6" width="9" height="1.4"/>
+    <rect class="st8" x="94.5" y="86.4" width="9" height="1.4"/>
+    <line class="st3" x1="39.2" y1="270.3" x2="161" y2="270.3"/>
+    <g id="underarm_markers">
+      <polygon class="st13" points="30.7 148.8 35.8 153.8 30.7 158.9 30.7 148.8"/>
+      <polygon class="st13" points="169.5 159.6 164.4 154.5 169.5 149.5 169.5 159.6"/>
+    </g>
+  </g>
+  <g id="bodies">
+    <g id="straight_back">
+      <polyline class="st7" points="35.7 286.9 35.7 300.1 166 300.1 166 286.9"/>
+      <path class="st2" d="M35.7,155.3v132.1"/>
+      <path class="st2" d="M166,155.3v132.1"/>
+      <path class="st0" d="M35.7,155.8v-80.1l33.2.4c30.9,30.9,62,0,62,0h35.1"/>
+      <path class="st0" d="M166,76.2v79.6"/>
+    </g>
+    <g class="st11">
+      <g class="st11">
+        <g class="st11">
+          <g class="st11">
+            <g class="st11">
+              <g class="st11">
+                <g class="st11">
+                  <g class="st11">
+                    <text class="st12" transform="translate(78.3 210.5)"><tspan x="0" y="0">BACK</tspan></text>
+                  </g>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

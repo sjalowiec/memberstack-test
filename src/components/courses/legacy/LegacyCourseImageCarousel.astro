@@ -1,14 +1,19 @@
 ---
 import type { ImageCarouselSlide } from "../../../lib/legacy_kin/coursePreviewPoc";
+import { rewriteLegacyHtml } from "../../../lib/legacy_kin/coursePreviewPoc";
+import { richTextHasVisibleContent } from "../../../lib/legacy_kin/courseTextVideoLayout";
 import LegacyCourseLinkedImage from "./LegacyCourseLinkedImage.astro";
 
 interface Props {
   legacyComponentId: number;
   slides: ImageCarouselSlide[];
   title?: string | null;
+  introHtml?: string | null;
 }
 
-const { legacyComponentId, slides, title = null } = Astro.props;
+const { legacyComponentId, slides, title = null, introHtml = null } = Astro.props;
+const galleryIntroHtml = String(introHtml ?? "");
+const galleryIntroVisible = richTextHasVisibleContent(galleryIntroHtml);
 ---
 
 <div
@@ -16,7 +21,13 @@ const { legacyComponentId, slides, title = null } = Astro.props;
   data-legacy-component={legacyComponentId}
   data-carousel
 >
-  {title ? <h4 class="course-preview__carousel-title">{title}</h4> : null}
+  {
+    galleryIntroVisible ? (
+      <div set:html={rewriteLegacyHtml(galleryIntroHtml)} />
+    ) : title ? (
+      <h4 class="course-preview__carousel-title">{title}</h4>
+    ) : null
+  }
 
   {
     slides.length === 0 ? (

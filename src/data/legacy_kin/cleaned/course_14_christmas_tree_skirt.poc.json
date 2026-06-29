@@ -1,0 +1,1240 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 14,
+    "title": "Christmas Tree Skirt",
+    "slug": "christmas-tree-skirt",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_14_christmas_tree_skirt.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/tree-skirt.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Start Here",
+      "slug": "start-here",
+      "displayOrder": 10,
+      "legacy": {
+        "itemId": 82,
+        "lessonOrder": 10
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h4>If you've never taken Knit it Now course ... you are in for a treat!</h4><br>\r\n\r\nThis video will walk you through how to access the lessons and navigate to get the most out of your course.<br /> Don't skip lessons ... you may feel that you know how to cast on ... but sometimes you will pick up a tip that you can use while watching a video.<br>",
+              "legacyComponentId": 1163,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "221120492",
+              "title": "Machine Knitting Courses",
+              "legacyComponentId": 1164,
+              "order": 2
+            }
+          ],
+          "title": "How To Use This Course Site",
+          "slug": "how-to-use-this-course-site",
+          "order": 2,
+          "legacy": {
+            "assignId": 365,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Below is a hand-curated Pinterest board with ideas for creating your tree skirt.  Knitting, sewing and crochet are all represented to get your creative juices going.<br>\r\nLook for\r\n<ul>\r\n<li>Color choices</li>\r\n<li>Stitch patterns - cables, fairisle, stripes, etc</li>\r\n<li>Embellishments</li>\r\n<li>The sky's the limit!</li>\r\n</ul><br>",
+              "legacyComponentId": 1275,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pinterest",
+              "notes": [
+                "Legacy Pinterest embed; replace with static content or omit."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "367",
+                "CHALLENGE_COMPONENTID": "1166",
+                "PINTERESTID": "10"
+              },
+              "legacyComponentId": 1166,
+              "order": 2
+            }
+          ],
+          "title": "Inspiration",
+          "slug": "inspiration",
+          "order": 4,
+          "legacy": {
+            "assignId": 367,
+            "blockType": "Pinterest"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Included in this course are 2 styles of circular tree skirts. You'll be able to choose your preferred style to knit.<br>Neither style is difficult to knit. With both you'll create your own personalized pattern based on the size you need.<br>\r\n\r\n<div class=\"col-12-xs\"><h3>\r\nShort Row Pinwheel Style</h3><br>\r\n\r\n\r\n<img src=\"/challenge/images/v2/14/tree_skirt/pinwheel_example.jpg\">\r\n\r\n<ul>\r\n<li>Knit in ONE PIECE - no seaming</li>\r\n<li>Use Short Row shaping to form the sections</li>\r\n<Li>Cut 'n sew for an exact trunk opening</li>\r\n<li>Get creative with colors swirling around the skirt. </li>\r\n<li><i class=\"fa fa-exclamation-triangle\" aria-hidden=\"true\"></i>  Size is limited to needles available on the needlebed</li>\r\n</ul>\r\n\r\n\r\n\r\n</div>\r\n<div class=\"col-12-xs\"><h3>Wedge Style</h3><br>\r\n<img src=\"/challenge/images/v2/14/tree_skirt/wedge_example.jpg\">\r\n\r\n<ul>\r\n<li>Mix and match yarn, and/or stitch pattern in each wedge <small><br><em>Swatch and build the pattern for each wedge based on EACH gauge</em></small></li>\r\n<li>No short row shaping</li>\r\n<li>No Cut 'n Sew</li>\r\n<li>Use sew-as you go to join wedges or neatly seam by hand</li>\r\n<li>Choose increases or decreases to form the wedges\r\n</li>\r\n</ul>\r\n\r\n</div>\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 1219,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntryOptions",
+              "notes": [
+                "Unmapped legacy component type: DataEntryOptions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "386",
+                "DATAMODEL_ELEMENT": "circle_style",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_OPTIONLIST": "Short Row Pinwheel Style,Wedge Style",
+                "DATAMODEL_REQEST_TEXT": "Which Style do you Prefer?",
+                "DATAMODEL_TYPE": "Radio",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntryOptions"
+              },
+              "legacyComponentId": 1243,
+              "order": 2
+            }
+          ],
+          "title": "Compare Skirt Styles",
+          "slug": "compare-skirt-styles",
+          "order": 5,
+          "legacy": {
+            "assignId": 386,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Swatching and Yarn Needed",
+      "slug": "swatching-and-yarn-needed",
+      "displayOrder": 20,
+      "legacy": {
+        "itemId": 83,
+        "lessonOrder": 20
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\nThere are many variables when knitting (both by hand and by machine).\r\n\r\n <br><ul>\r\n \t<li>Different colors of the SAME yarn may knit to a different gauge</li>\r\n \t<li>Different dye lots of the SAME color of the SAME yarn may knit to a different gauge</li>\r\n \t<li>Different models of the SAME gauge knitting machine may knit to a different gauge.</li>\r\n \t<li>The SAME size knitting needle from a different manufacturer may knit to a different gauge</li>\r\n \t<li>Different people, using the exactly the SAME needles, machines, and yarns may get get different gauges</li>\r\n</ul>\r\n<img class=\"img-thumbnail\" width=\"300\" src=\"/challenge/images/v2/14/gauge_swatch_tension/swatching_is_not_optional.jpg\">\r\n\r\n\r\n<div><strong>SWATCHING IS NOT OPTIONAL!</strong></div>\r\n\r\nHow many times have you knit something that just didn't fit?  Have you ever had colors run or fade when you washed your sweater?<br>So many knitting disasters can be avoided by swatching and dressing your swatch.  Machine knitters have NO EXCUSE for not swatching!  We can knit multiple swatches quickly, testing stitch patterns and tensions.  Since we don't have a lot of time invested, we can do the \"throw-the-swatch-in-the-wash-with-jeans\" test to see if a washable yarn will hold up.<BR>\r\n\r\n",
+              "legacyComponentId": 1167,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357273",
+              "title": "Even though we are knitting a tree skirt - take time to swatch.Guessing your gauge will impact the finished size AND the amount of yarn needed.",
+              "legacyComponentId": 1168,
+              "order": 2
+            }
+          ],
+          "title": "Swatching is NOT Optional!",
+          "slug": "swatching-is-not-optional",
+          "order": 1,
+          "legacy": {
+            "assignId": 368,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<small>Instructions are for suggestions for <b>standard gauge</b><em> (mid-gauge, bulky)</em> and for using gauge rulers.</small><br>\r\n<blockquote class=\"smallblock\"><em>  Remember, you can knit swatches any size (as long as they are at least 5-6\" square.) Be sure to be consistent and establish a template for yourself for every time you knit a swatch.</em></blockquote>",
+              "legacyComponentId": 1169,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\r\n     <ol class=\"instruction-list\">\r\n          <li>Cast on <b>60</b><em>(50,30)</em> stitches <small><em>(add extra stitches so you can measure the center without edge distortion.)</em></small></li>\r\n           <li>Knit a few rows in pattern</li>\r\n          <li>Knit 2 rows in waste yarn (or weave a marker row)</li>\r\n          <li>Set row counter to 000</li>\r\n           <li>Knit the center section<br><div style=\"margin-left:30px\">\r\n<b>Standard gauge:</b>\r\n    <ul class=\"instruction-nolist-tight\">\r\n         <li>Knit 20  rows and knit in a yarn marker isolating the center 40 stitches</li>\r\n       <li>Knit 20 more rows and place a marker on the same needles</li>\r\n         <li>Knit 20 more rows</li>\r\n    </ul >\r\n<b>Mid-Gauge:</b>\r\n    <ul class=\"instruction-nolist-tight\">\r\n       <li>Knit 10  rows and knit in a yarn marker isolating the center 30 stitches</li>\r\n       <li>Knit 10 more rows and place a marker on the same needles</li>\r\n    </ul >\r\n<b>Bulky</b>\r\n    <ul class=\"instruction-nolist-tight\">\r\n          <li>Knit 15 rows and knit in a yarn marker isolating the center 40 stitches</li>\r\n            <li>Knit 15 more rows</li>\r\n</ul>\r\n</div>\r\n<li>Confirm and record the total number of rows you knit for the center <b>60</b><em>(40, 30)</em></li>\r\n<li>Knit 2 rows in waste yarn (or weave a marker row)</li>\r\n<li>Knit a few rows and bind off <small><em>(or drop the work from the machine)</em></small></li>\r\n</ol>\r\nLet the swatch rest<br>\r\n<ol>\r\n<li>Dress the swatch as you will treat the finished item</li>\r\n<li>Measure the size of the <b>40</b><em>(30, 20)</em> stitches in the center of the swatch (between the yarn markers)</li>\r\n<li>Measure the size of the <b>60</b><em>(40,30)</em> rows between the waste yarn (or marker rows)</li>\r\n<li>The math\r\n<ul><li>Divide the stitches in the middle by your measurement to get <b>Stitches Per Inch/cm</b></li>\r\n<li>Divide the rows in the middle by your measurement to get <b>Rows Per Inch/cm</b></li>\r\n<li>Multiply your stitches/rows per inch/cm times 4 to calculate stitches per 4\" (10cm)</li>\r\n</ul>\r\n</ol>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 1171,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/14/gauge_swatch_tension/swatch_info.jpg\">\r\n<img src=\"/challenge/images/v2/14/gauge_swatch_tension/swatch_info1.jpg\">\r\n</div>\r\n",
+              "legacyComponentId": 1173,
+              "order": 5
+            }
+          ],
+          "title": "Knit Your Swatch",
+          "slug": "knit-your-swatch",
+          "order": 2,
+          "legacy": {
+            "assignId": 369,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Even though we provide a tool for you to estimate the yarn needed for your skirt, understanding how to estimate yarn needed is ESSENTIAL for all of your knitting projects.<br><b>Take time to learn the basics.</b><br>",
+              "legacyComponentId": 1174,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857735",
+              "title": "How Much Yarn Do I Need?",
+              "legacyComponentId": 1175,
+              "order": 2
+            }
+          ],
+          "title": "Estimating yarn needed",
+          "slug": "estimating-yarn-needed",
+          "order": 3,
+          "legacy": {
+            "assignId": 370,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/14/yarn_estimate_example.jpg\" alt=\"\" />\r\n\r\n\r\n\r\n\r\nUsing the dimensions of the sample swatch shown above,  and the instructions from the video,<br />calculate how much yarn you would need for a <strong>36x36 baby blanket.</strong>\r\n<em><small>Not sure? Take a guess and we'll show you the math</small></em>\r\n\r\n",
+              "legacyComponentId": 1176,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "167",
+                "QUESTION_ANSWER": "63",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply 9 x 7 = 63</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many square inches in the sample swatch?"
+              },
+              "legacyComponentId": 1178,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "168",
+                "QUESTION_ANSWER": "3.5",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Divide weight (22) / square inches (63)=.35 </b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Calculate weight per square inch <small>(round up)</small>"
+              },
+              "legacyComponentId": 1179,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "169",
+                "QUESTION_ANSWER": "1296",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply 36 x 36 = 1296</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many square inches in the blanket?"
+              },
+              "legacyComponentId": 1180,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "170",
+                "QUESTION_ANSWER": "454",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply the blanket square inches(1296) x multiplier (.35)= 454 grams</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many grams are needed (approximate) for the 36 x 36 inch blanket?"
+              },
+              "legacyComponentId": 1181,
+              "order": 6
+            },
+            {
+              "type": "richText",
+              "html": "\r\n              Hate math?<br>Try the Knit it Now tool\r\n                <img src=\"/challenge/images/v2/14/tools/yarn_estimator_tool_sticky.gif\">\r\n\r\n\r\n",
+              "legacyComponentId": 1183,
+              "order": 8
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859805",
+              "title": "Yarn Estimator Video",
+              "legacyComponentId": 1184,
+              "order": 9
+            }
+          ],
+          "title": "Practice - Yarn Estimate",
+          "slug": "practice-yarn-estimate",
+          "order": 4,
+          "legacy": {
+            "assignId": 371,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Based on your swatch, here's a tool to help you estimate how much yarn you will need for your Tree Skirt.<br>",
+              "legacyComponentId": 1185,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: TreeSkirtYarnEstimater.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "372",
+                "CUSTOMCFM": "TreeSkirtYarnEstimater.cfm",
+                "TYPEOF": "CustomCFM"
+              },
+              "legacyComponentId": 1244,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"clearfix\"></div>\r\n<em>Plan accordingly, the estimate DOES NOT include yarn needed for swatching or finishing or embellishment.</em>",
+              "legacyComponentId": 1267,
+              "order": 3
+            }
+          ],
+          "title": "How much Yarn for Your Tree Skirt",
+          "slug": "how-much-yarn-for-your-tree-skirt",
+          "order": 5,
+          "legacy": {
+            "assignId": 372,
+            "blockType": "Practice"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Suggested Techniques",
+      "slug": "suggested-techniques",
+      "displayOrder": 30,
+      "legacy": {
+        "itemId": 84,
+        "lessonOrder": 30
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "For machine knitters, ravel cord is used in many situations. Let's talk a bit about ravel cord and it's uses.<br>",
+              "legacyComponentId": 1198,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<img src=\"http://kin.knititnow.com/wp-content/uploads/2016/10/scrap_ravel-1024x540.jpg\" alt=\"scrap_ravel\" / width=\"600\">\r\n<br>\r\nStarting your knitting with waste yarn and ravel cord is a machine knitting staple technique.\r\n<h3>Why Scrap and Ravel?</h3>\r\n<ul>\r\n \t<li>Use waste knitting to hang cast on comb and/or weights</li>\r\n \t<li>Protect delicate/fine yarns</li>\r\n \t<li>Immediately start patterning (tuck, lace, etc) with weights in place</li>\r\n \t<li>Leave waste knitting in place to make blocking easier - especially for edges that roll</li>\r\n</ul>\r\n\r\n<hr />\r\n\r\n\r\n<h3>Scrap and Ravel Cast on</h3>\r\n<ol class=\"instruction-list\">\r\n \t<li>Chose a yarn that is appropriate for your machine</li>\r\n \t<li>Cast on with any method</li>\r\n \t<li>Knit a few rows - end with the carriage on the left.</li>\r\n \t<li>Knit 1 row of ravel cord (smooth, slippery yarn - crochet cotton works great)</li>\r\n \t<li>Cast on over the ravel cord with your garment yarn</li>\r\n \t<li>Knit your piece</li>\r\n \t<li>After blocking, pull out the ravel cord and remove the waste yarn.</li>\r\n</ol>\r\n<br>\r\n<img class=\"img-thumbnail\"src=\"http://www.knititnow.com/images/blog_images/2014/waste_yarn1.jpg\" alt=\"scrap and ravel for machine knitting\" width=\"200\" /></td>\r\n<td width=\"20\"></td>\r\n<td><img class=\"img-thumbnail\"src=\"http://www.knititnow.com/images/blog_images/2014/waste_yarn2.jpg\" alt=\"waste knitting for machine knitting\" width=\"200\" />\r\n<br><img src=\"/challenge/images/v2/14/no_sound.jpg\" width=\"50\"> <em>NOTE:  There is no sound with the video below</em><br>",
+              "legacyComponentId": 1199,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "188372160",
+              "title": null,
+              "legacyComponentId": 1200,
+              "order": 3
+            }
+          ],
+          "title": "Ravel Cord",
+          "slug": "ravel-cord",
+          "order": 6,
+          "legacy": {
+            "assignId": 377,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Instead of using scrap yarn to cast on, consider using cast on rags and ravel cord.  The rag offers a place to hang weights and can make the knitting easier.<br>",
+              "legacyComponentId": 1201,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860044",
+              "title": "Creating a Cast on Rag",
+              "legacyComponentId": 1202,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<br>",
+              "legacyComponentId": 1203,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-question fa-3x\" aria-hidden=\"true\"></i>\r\n<h3>Once you hang your cast on rag ... what's the next step?</h3>\r\n<br><ol class=\"instruction-list\">\r\n<li>Just start knitting with your garment yarn<br><div style=\"margin-left:30px\">\r\n<em>Oops!  How will you remove the cast on rag?  What about all of those live stitches?</em><br></div>\r\n</li>\r\n<li>Knit a single row of ravel cord, then start knitting with your garment yarn<br><div style=\"margin-left:30px\">\r\n<em>That will leave live stitches ... is that really what you want?</em><br></div></li>\r\n<li>Knit a single row of ravel cord, then create a closed cast on with your garment yarn\r\n<br><div style=\"margin-left:30px\">\r\n<em>For a closed finished edge for your garment, use any cast on method of your choice OVER the ravel cord. </em><br></div>\r\n</li>\r\n</ol>\r\n\r\n",
+              "legacyComponentId": 1205,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "328",
+                "CHALLENGE_COMPONENTID": "1070",
+                "QUESTION_ANSWER": "False",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> A cast on rag is just ONE popular cast on method you should practice.</b>",
+                "QUESTION_MANDITORY": "1",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct! A cast on rag is just ONE popular cast on method you should practice.</b>",
+                "QUESTION_TEXT": "<i class='fa fa-question fa-3x' aria-hidden='true'></i> <h3>True / False: </h3><br>You MUST use a Cast on Rag for every cast on."
+              },
+              "legacyComponentId": 1208,
+              "order": 8
+            },
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-refresh fa-2x\" aria-hidden=\"true\"></i>\r\n<h3>Practice:</h3>\r\n<ol class=\"instruction-list\">\r\n<li>On the far left side of your machine cast on 5-10 stitches (any method)</li>\r\n<li>Knit 2 rows</li>\r\n<li>On the carriage side, pull one needle into working position</li>\r\n<li>Opposite the carriage, decrease 1 stitch</li>\r\n<li>Repeat until you have the length you want.</li>\r\n</ol>\r\nNOTE: The work will be \"traveling\" across the bed.  If you run out of needles, move the work back to the far left side of the bed and continue knitting.",
+              "legacyComponentId": 1211,
+              "order": 11
+            }
+          ],
+          "title": "Cast on Rag",
+          "slug": "cast-on-rag",
+          "order": 7,
+          "legacy": {
+            "assignId": 378,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151860058",
+              "title": "E-Wrap Cast On",
+              "legacyComponentId": 1213,
+              "order": 1
+            }
+          ],
+          "title": "E-Wrap Cast on",
+          "slug": "e-wrap-cast-on",
+          "order": 8,
+          "legacy": {
+            "assignId": 379,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857333",
+              "title": "Short Rows - Automatic Wrap verses Manual Wrap",
+              "legacyComponentId": 1188,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859578",
+              "title": "Pinwheel Circles - Shortrow Fun",
+              "legacyComponentId": 1191,
+              "order": 4
+            }
+          ],
+          "title": "Prevent holes in Short Rows",
+          "slug": "prevent-holes-in-short-rows",
+          "order": 9,
+          "legacy": {
+            "assignId": 374,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "237470165",
+              "title": "Scrap on Scrap Off",
+              "legacyComponentId": 1214,
+              "order": 1
+            }
+          ],
+          "title": "Scrap on Scrap Off",
+          "slug": "scrap-on-scrap-off",
+          "order": 9,
+          "legacy": {
+            "assignId": 380,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858975",
+              "title": "Bind off Basics",
+              "legacyComponentId": 1215,
+              "order": 1
+            }
+          ],
+          "title": "Bind off Basics",
+          "slug": "bind-off-basics",
+          "order": 10,
+          "legacy": {
+            "assignId": 381,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "242620662",
+              "title": "Fixing Mistakes - Ripping Tips",
+              "legacyComponentId": 1217,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "\r\n<h2>Subscribers:<br>Look for the series \"OOPS! Fixing Mistakes\" in the Learning Library</h2>\r\n          \r\n              \r\n<ul>\r\n<li>Do you need to Rip?</li>\r\n<li>Tink (knit backwards)? </li>\r\n<li>Frog (rip-it,rip-it,rip-it)?</li>\r\n</ul>\r\n\r\nMistakes happen ... be prepared to fix mistakes. Learn and practice techniques to make your finished garment perfect... with no tears!\r\n                <img width=\"200\" src=\"http://www.knititnow.com/contentlibrary/series/TINK_KNIT.jpg\">\r\n           \r\n\r\n",
+              "legacyComponentId": 1218,
+              "order": 2
+            }
+          ],
+          "title": "Fixing Mistakes",
+          "slug": "fixing-mistakes",
+          "order": 11,
+          "legacy": {
+            "assignId": 382,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Create your Custom Pattern",
+      "slug": "create-your-custom-pattern",
+      "displayOrder": 31,
+      "legacy": {
+        "itemId": 85,
+        "lessonOrder": 31
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Short Row Blanket: Knit flat<br>\r\nShort Row Pillow: Knit with shaping on both edges to make a dimensional piece to cover a pillow form</br>\r\n<br>\r\n\r\nNot enough needles for the pinwheel style?  Consider knitting wedges with the Increase/Decrease method instead.",
+              "legacyComponentId": 1195,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: Treecircle.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "376",
+                "CHALLENGE_COMPONENTID": "1197",
+                "CUSTOMCFM": "Treecircle.cfm"
+              },
+              "legacyComponentId": 1197,
+              "order": 3
+            }
+          ],
+          "title": "Build your Pattern",
+          "slug": "build-your-pattern",
+          "order": 2,
+          "legacy": {
+            "assignId": 376,
+            "blockType": "Practice"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Pinwheel Start-to-Finish 1 | Get Knitting",
+      "slug": "pinwheel-start-to-finish-1-get-knitting",
+      "displayOrder": 32,
+      "legacy": {
+        "itemId": 86,
+        "lessonOrder": 32
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "242661707",
+              "title": null,
+              "legacyComponentId": 1220,
+              "order": 1
+            }
+          ],
+          "title": "Knit the one-piece Tree Skirt",
+          "slug": "knit-the-one-piece-tree-skirt",
+          "order": 1,
+          "legacy": {
+            "assignId": 383,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Pinwheel Start-to-Finish 2 | Embellish the Edge",
+      "slug": "pinwheel-start-to-finish-2-embellish-the-edge",
+      "displayOrder": 33,
+      "legacy": {
+        "itemId": 89,
+        "lessonOrder": 33
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "You have lots of options for finishing the edge of your skirt.\r\n<ol class=\"instruction-list\">\r\n<li>Crochet - Plain or fancy, crochet is fast and can give a beautiful finish</li>\r\n<li>Fold ribbon and stitch along the edge</li>\r\n<li>Foldover Elastic</li>\r\n<li>Fabric Bias Binding</li>\r\n<li>Knitting binding (bias or straight)</li>\r\n<li>Single or double i-Cord Edge</li>\r\n<li>We chose a braided i-Cord Edge</li>\r\n</ul>",
+              "legacyComponentId": 1252,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857129",
+              "title": "i-Cord Trims",
+              "legacySlot": 1,
+              "legacyComponentId": 1253,
+              "order": 4
+            },
+            {
+              "type": "video",
+              "vimeoId": "151856550",
+              "title": "i-Cord on the Machine",
+              "legacySlot": 2,
+              "legacyComponentId": 1253,
+              "order": 4
+            }
+          ],
+          "title": "Finish the Outside Edge",
+          "slug": "finish-the-outside-edge",
+          "order": 1,
+          "legacy": {
+            "assignId": 385,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<Img src=\"/challenge/images/v2/14/tree_skirt/braided_cord_edge.jpg\">",
+              "legacyComponentId": 1277,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "243046961",
+              "title": "Braided i-Cord Edge",
+              "legacyComponentId": 1255,
+              "order": 2
+            }
+          ],
+          "title": "Braided i-Cord Edge",
+          "slug": "braided-i-cord-edge",
+          "order": 2,
+          "legacy": {
+            "assignId": 393,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Pinwheel Start-to-Finish 3 | Cut the Center Opening",
+      "slug": "pinwheel-start-to-finish-3-cut-the-center-opening",
+      "displayOrder": 38,
+      "legacy": {
+        "itemId": 90,
+        "lessonOrder": 38
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151819909",
+              "title": "Introduction to Cut and Sew",
+              "legacyComponentId": 1248,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/14/tree_skirt/PracticeMakesPerfect.jpg\"><br>\r\n<div class=\"col-12-xs\">\r\n<h3><i class=\"fa fa-refresh\" aria-hidden=\"true\"></i> Try your hand at Cut 'n Sew</h3><br>\r\n<ol class=\"instruction-list\">\r\n<li>Take a swatch from a previous project or a practice swatch</li>\r\n<li>Mark a curved shape (1/2 or 1/4 circle)</li>\r\n<li>Stitch along the marking</li>\r\n<li>Be sure to secure the knitting well</li>\r\n<li>Take a deep breath and cut along the stitch line</li>\r\n<li>Carefully hang the edge on the machine and knit a few rows</li>\r\n<li>Bind off and admire your results</li>\r\n</ol>\r\n</div>\r\n<div class=\"col-12-xs\">Want to learn more about Cut 'n Sew? Check out the Subscriber Series in the Knit it Now Library<br>\r\n<a href=\"/learn/series/13/cut-n-sew-introduction-Tutorial\" target=\"_blank\"><img src=\"/challenge/images/v2/14/tree_skirt/c&S_intro_series.jpg\"></a></div>\r\n",
+              "legacyComponentId": 1249,
+              "order": 3
+            }
+          ],
+          "title": "Introduction to Cut 'n Sew",
+          "slug": "introduction-to-cut-n-sew",
+          "order": 1,
+          "legacy": {
+            "assignId": 392,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">\r\nDownload and print the template and cut it to size to fit your tree trunk dimension\r\n\r\n\r\n</div>",
+              "legacyComponentId": 1246,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Download the Template",
+              "filename": "/downloads/tree_skirt_template.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "384",
+                "componentId": "1242",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 1242,
+              "order": 2
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/tree_skirt/template_cut.jpg",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div>Download, print and cut out your opening size</div></div>"
+                },
+                {
+                  "src": "/tree_skirt/template3_800.jpg",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\">Block the skirt and pin the slit opening closed</div></div></div>"
+                },
+                {
+                  "src": "/tree_skirt/template4_800.jpg",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div>Use a fabric marker (or what you have available) and mark your opening.  Take a deep breath .... and GET READY TO CUT! </div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 1241,
+              "order": 3
+            }
+          ],
+          "title": "Prepare the Center Opening",
+          "slug": "prepare-the-center-opening",
+          "order": 2,
+          "legacy": {
+            "assignId": 384,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "243031662",
+              "title": "Watch as we cut 'n sew, then finish the center opening.",
+              "legacyComponentId": 1247,
+              "order": 1
+            }
+          ],
+          "title": "Cut 'n Sew the Center Opening",
+          "slug": "cut-n-sew-the-center-opening",
+          "order": 3,
+          "legacy": {
+            "assignId": 391,
+            "blockType": "VimeoID"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Wedges",
+      "slug": "wedges",
+      "displayOrder": 55,
+      "legacy": {
+        "itemId": 88,
+        "lessonOrder": 55
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h4>If you plan to knit your tree skirt with wedges, the increase/decrease technique you choose is critical to the finished appearance of your skirt.</h4>",
+              "legacyComponentId": 1278,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858447",
+              "title": "Basic Increasing and Decreasing",
+              "legacyComponentId": 1256,
+              "order": 2
+            }
+          ],
+          "title": "Basic Increasing and Decreasing",
+          "slug": "basic-increasing-and-decreasing",
+          "order": 1,
+          "legacy": {
+            "assignId": 395,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"smallblock\">\r\nIncreasing and decreasing are essential skills for machine knitters.  Take time to practice different techniques. <br>\r\n\r\n\r\n</blockquote>",
+              "legacyComponentId": 1259,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<div>\r\n\r\n\r\n<small>Instruction are for standard gauge <em>(mid/bulky gauge)</em></small><br><ol class=\"instruction-list\">\r\n<li>Cast on 60<em>(30) Stitches</em></li>\r\n<li>INCREASES: *Using a 2 prong transfer tool, transfer 2 stitches on each edge over 1 needle (doubling up 2 stitches) towards the center of the knitting</li>\r\n<li>Knit 2 rows*</li>\r\n<li>Repeat from * to * 6 times total</li>\r\n<li>Knit 4 rows</li>\r\n<li>DECREASES: *Using a 2 prong transfer tool, on the left side of the work, move 2 stitches one needle to the left (emptying a needle)</li>\r\n<li>Pick up the purl bump from the row below and fill the emptied needle (1 stitch increased)</li>\r\n<li>Repeat the increase on the right side of the needlebed</li>\r\n<li>Knit 2 rows*</li>\r\n<li>Repeat from * to* 6 times total</li>\r\n<li>Knit 2 rows</li>\r\n<li>Bind off</li>\r\n</ol>\r\n<br><img src=\"/challenge/images/v2/14/tree_skirt/increase_decrease_practice.png\">\r\n",
+              "legacyComponentId": 1257,
+              "order": 2
+            }
+          ],
+          "title": "Shaping Practice",
+          "slug": "shaping-practice",
+          "order": 2,
+          "legacy": {
+            "assignId": 396,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Here's a fast way to join panels as you knit. Use this technique to join the wedges of your tree skirt. <br>No hand seaming when you are done knitting!<br>",
+              "legacyComponentId": 1237,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151856919",
+              "title": "Join (Sew) As You Go",
+              "legacyComponentId": 1238,
+              "order": 3
+            }
+          ],
+          "title": "Suggestion: Sew as you go",
+          "slug": "suggestion-sew-as-you-go",
+          "order": 3,
+          "legacy": {
+            "assignId": 388,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Watch as we knit DECREASED wedges.  This video refers to knitting a complete circle for a blanket.<br>\r\nYour pattern for your tree skirt leaves a hole in the center, but the knitting is exactly the same.<br>\r\nAlso note the optional curved edge, so your skirt is rounded and not a hexagon or octagon.<BR>\r\n<blockquote class=\"smallblock\"><em>Some knitters feel that decreasing is faster than increasing.<br>\r\nYour choice to work your wedges from the center out or from the edge in<br>depends on the shaping technique you use and the stitch pattern you choose to knit.</em></blockquote>",
+              "legacyComponentId": 1262,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859583",
+              "title": "Circles - Decreased Wedges",
+              "legacyComponentId": 1260,
+              "order": 2
+            }
+          ],
+          "title": "Wedges: Decreases",
+          "slug": "wedges-decreases",
+          "order": 4,
+          "legacy": {
+            "assignId": 390,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Watch as we knit INCREASED wedges.  This video refers to knitting a complete circle for a blanket.<br>\r\nYour pattern for your tree skirt leaves a hole in the center, but the knitting is exactly the same.<br>\r\nAlso note the optional curved edge, so your skirt is rounded and not a hexagon or octagon.<br><blockquote class=\"smallblock\"><em>Some knitters feel that decreasing is faster than increasing.<br>\r\nYour choice to work your wedges from the center out or from the edge in<br>depends on the shaping technique you use and the stitch pattern you choose to knit.</em></blockquote>",
+              "legacyComponentId": 1263,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859605",
+              "title": "Circles - Increased Wedges",
+              "legacyComponentId": 1261,
+              "order": 2
+            }
+          ],
+          "title": "Wedges: Increases",
+          "slug": "wedges-increases",
+          "order": 5,
+          "legacy": {
+            "assignId": 394,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "152228985",
+              "title": "Show Off Seams 2",
+              "legacyComponentId": 1266,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "&nbsp;",
+              "legacyComponentId": 1274,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<br>\r\n<div class=\"col-12-xs\"><img src=\"/challenge/images/v2/14/tree_skirt/wedge_seam.jpg\"></div>\r\n<div class=\"col-12-xs\"><h3>Make your skirt special with decorative seams</h3>\r\n<ol class=\"instruction-list\">\r\n<li>Right (public) side facing, hang one wedge edge</li>\r\n<li>e-Wrap cast on over all the needles (double or single strand of contrasting yarn)</li>\r\n<li>Push all strands behind the latches</li>\r\n<li>Wrong (private) side facing, hang the second wedge edge in the hooks of the needles</li>\r\n<li>Pull the strands through</li>\r\n<li>Loosely bind off</li>\r\n</ul>\r\n </div>\r\n<div class=\"col-12-xs\"><img src=\"/challenge/images/v2/14/tree_skirt/wedge_seam_stripes.jpg\"></div>\r\n",
+              "legacyComponentId": 1272,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<br>\r\n\r\n<blockquote class=\"smallblock\"><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> \r\n Interested in more decorative seam techniques?\r\nDiscover an unlimited number of decorative seam decreases for raglan sweaters. Mix and match techniques to create plain or fancy raglan seams.<br></blockquote>\r\n<h3>Decorative Raglan Seams for Machine Knitters</h3><em><small>By Knit it Now</small></em>\r\n<ul>\r\n<li>Simple Decreases</li>\r\n<li>Transferred Decreases</li>\r\n<li>Eyelet Decreases</li>\r\n<li>Fancy Decreases</li>\r\n<li>Seaming Tips</li>\r\n<li>Written instructions, charts, diagrams and knitted samples for each technique. \r\n<small>eBook | 22 pages</small>\r\n<div align=\"center\"><br>\r\n</div>\r\n</li>\r\n</ul>\r\n\r\n\r\n\r\n\r\n<a href=\"/store/product/675/decorative-raglan-seams-for-machine-knitters/digitialdownload\" target=\"_blank\"><img src=\"/store/thumbnails/raglan_seam_cover.jpg\"></a>\r\n",
+              "legacyComponentId": 1268,
+              "order": 5
+            }
+          ],
+          "title": "Show off Seams",
+          "slug": "show-off-seams",
+          "order": 6,
+          "legacy": {
+            "assignId": 398,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Share your Creation!",
+      "slug": "share-your-creation",
+      "displayOrder": 56,
+      "legacy": {
+        "itemId": 91,
+        "lessonOrder": 56
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "tree_skirt_share",
+                "BUTTONLABLE": "Upload",
+                "CHALLENGE_ASSIGNID": "397",
+                "QTY": "2",
+                "SUCCESSMESSAGE": "Great Job - thanks for sharing!",
+                "TYPEOF": "ImageUpload"
+              },
+              "legacyComponentId": 1264,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "Our Tree Skirt is not the most creative .... I'll bet yours will be 100 times better!<br>Show it off and inspire other knitters! Use the \"Upload\" button above.<br> \r\n<img src=\"/challenge/images/v2/14/tree_skirt/tie_closure.jpg\">",
+              "legacyComponentId": 1265,
+              "order": 2
+            }
+          ],
+          "title": "Inspire other knitters",
+          "slug": "inspire-other-knitters",
+          "order": 1,
+          "legacy": {
+            "assignId": 397,
+            "blockType": "Practice"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 23,
+    "videos": [
+      {
+        "vimeoId": "221120492",
+        "title": "Machine Knitting Courses",
+        "lessonSlug": "start-here",
+        "blockSlug": "how-to-use-this-course-site"
+      },
+      {
+        "vimeoId": "178357273",
+        "title": "Even though we are knitting a tree skirt - take time to swatch.Guessing your gauge will impact the finished size AND the amount of yarn needed.",
+        "lessonSlug": "swatching-and-yarn-needed",
+        "blockSlug": "swatching-is-not-optional"
+      },
+      {
+        "vimeoId": "151857735",
+        "title": "How Much Yarn Do I Need?",
+        "lessonSlug": "swatching-and-yarn-needed",
+        "blockSlug": "estimating-yarn-needed"
+      },
+      {
+        "vimeoId": "151859805",
+        "title": "Yarn Estimator Video",
+        "lessonSlug": "swatching-and-yarn-needed",
+        "blockSlug": "practice-yarn-estimate"
+      },
+      {
+        "vimeoId": "188372160",
+        "title": null,
+        "lessonSlug": "suggested-techniques",
+        "blockSlug": "ravel-cord"
+      },
+      {
+        "vimeoId": "151860044",
+        "title": "Creating a Cast on Rag",
+        "lessonSlug": "suggested-techniques",
+        "blockSlug": "cast-on-rag"
+      },
+      {
+        "vimeoId": "151860058",
+        "title": "E-Wrap Cast On",
+        "lessonSlug": "suggested-techniques",
+        "blockSlug": "e-wrap-cast-on"
+      },
+      {
+        "vimeoId": "151857333",
+        "title": "Short Rows - Automatic Wrap verses Manual Wrap",
+        "lessonSlug": "suggested-techniques",
+        "blockSlug": "prevent-holes-in-short-rows"
+      },
+      {
+        "vimeoId": "151859578",
+        "title": "Pinwheel Circles - Shortrow Fun",
+        "lessonSlug": "suggested-techniques",
+        "blockSlug": "prevent-holes-in-short-rows"
+      },
+      {
+        "vimeoId": "237470165",
+        "title": "Scrap on Scrap Off",
+        "lessonSlug": "suggested-techniques",
+        "blockSlug": "scrap-on-scrap-off"
+      },
+      {
+        "vimeoId": "151858975",
+        "title": "Bind off Basics",
+        "lessonSlug": "suggested-techniques",
+        "blockSlug": "bind-off-basics"
+      },
+      {
+        "vimeoId": "242620662",
+        "title": "Fixing Mistakes - Ripping Tips",
+        "lessonSlug": "suggested-techniques",
+        "blockSlug": "fixing-mistakes"
+      },
+      {
+        "vimeoId": "242661707",
+        "title": null,
+        "lessonSlug": "pinwheel-start-to-finish-1-get-knitting",
+        "blockSlug": "knit-the-one-piece-tree-skirt"
+      },
+      {
+        "vimeoId": "151857129",
+        "title": "i-Cord Trims",
+        "lessonSlug": "pinwheel-start-to-finish-2-embellish-the-edge",
+        "blockSlug": "finish-the-outside-edge"
+      },
+      {
+        "vimeoId": "151856550",
+        "title": "i-Cord on the Machine",
+        "lessonSlug": "pinwheel-start-to-finish-2-embellish-the-edge",
+        "blockSlug": "finish-the-outside-edge"
+      },
+      {
+        "vimeoId": "243046961",
+        "title": "Braided i-Cord Edge",
+        "lessonSlug": "pinwheel-start-to-finish-2-embellish-the-edge",
+        "blockSlug": "braided-i-cord-edge"
+      },
+      {
+        "vimeoId": "151819909",
+        "title": "Introduction to Cut and Sew",
+        "lessonSlug": "pinwheel-start-to-finish-3-cut-the-center-opening",
+        "blockSlug": "introduction-to-cut-n-sew"
+      },
+      {
+        "vimeoId": "243031662",
+        "title": "Watch as we cut 'n sew, then finish the center opening.",
+        "lessonSlug": "pinwheel-start-to-finish-3-cut-the-center-opening",
+        "blockSlug": "cut-n-sew-the-center-opening"
+      },
+      {
+        "vimeoId": "151858447",
+        "title": "Basic Increasing and Decreasing",
+        "lessonSlug": "wedges",
+        "blockSlug": "basic-increasing-and-decreasing"
+      },
+      {
+        "vimeoId": "151856919",
+        "title": "Join (Sew) As You Go",
+        "lessonSlug": "wedges",
+        "blockSlug": "suggestion-sew-as-you-go"
+      },
+      {
+        "vimeoId": "151859583",
+        "title": "Circles - Decreased Wedges",
+        "lessonSlug": "wedges",
+        "blockSlug": "wedges-decreases"
+      },
+      {
+        "vimeoId": "151859605",
+        "title": "Circles - Increased Wedges",
+        "lessonSlug": "wedges",
+        "blockSlug": "wedges-increases"
+      },
+      {
+        "vimeoId": "152228985",
+        "title": "Show Off Seams 2",
+        "lessonSlug": "wedges",
+        "blockSlug": "show-off-seams"
+      }
+    ],
+    "downloadCount": 1,
+    "downloads": [
+      {
+        "filename": "/downloads/tree_skirt_template.pdf",
+        "label": "Download the Template",
+        "lessonSlug": "pinwheel-start-to-finish-3-cut-the-center-opening",
+        "blockSlug": "prepare-the-center-opening"
+      }
+    ]
+  }
+}

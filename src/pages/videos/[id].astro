@@ -1,20 +1,21 @@
 ---
-import videos from "../../data/videos-public.json";
+import videosRaw from "../../data/videos-public.json";
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
 import LoginNudge from "../../components/auth/LoginNudge.astro";
 import GatedVimeoEmbed from "../../components/videos/GatedVimeoEmbed.astro";
 import { catalogChaptersFromVideoRow, type CatalogChapterRow } from "../../lib/catalogVideoChapters";
+import { filterPublicCatalogVideos, findPublicCatalogVideoByContentId } from "../../lib/videoPublic";
 export const prerender = true;
 
 export function getStaticPaths() {
-  return videos.map((v) => ({
+  return filterPublicCatalogVideos(videosRaw).map((v) => ({
     params: { id: String(v.content_id) },
   }));
 }
 
 const id = String(Astro.params.id);
-const video = videos.find((v) => String(v.content_id) === id);
+const video = findPublicCatalogVideoByContentId(videosRaw, id);
 
 const contentIdForJumplinks = Number((video as any)?.content_id ?? Astro.params?.id ?? NaN);
 const contentIdAttr = !Number.isNaN(contentIdForJumplinks) ? String(contentIdForJumplinks) : "";
@@ -188,14 +189,12 @@ const enableVideoChapterControls = hasCatalogChapters;
         </article>
 
         <script>
+          import { MEMBER_PLAN_IDS } from "../../config/memberships";
           import { hasKinVideoAccess, logKinVideoAccessDebug } from "../../lib/kinVideoAccess";
 
           // --- Memberstack: client-side unlock for jump links (hasVideoAccess / kin-access) ---
           /* Paid-tier plan IDs: used only for isMember. Unlock uses hasVideoAccess (kin-access only). */
-          const MEMBER_PLAN_IDS = new Set([
-            "pln_kin-membership-annual-qf9g01et",
-            "pln_kin-membership-monthly-a59701wy",
-          ]);
+          const memberPlanIds = new Set<string>(MEMBER_PLAN_IDS);
 
           async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
             for (let i = 0; i < attempts; i++) {
@@ -219,7 +218,7 @@ const enableVideoChapterControls = hasCatalogChapters;
             );
 
             const isLoggedIn = Boolean(member);
-            const isMember = [...activePlanIds].some((id) => MEMBER_PLAN_IDS.has(id));
+            const isMember = [...activePlanIds].some((id) => memberPlanIds.has(id));
 
             const rawKinAccess = member?.customFields?.["kin-access"];
             const hasVideoAccess =

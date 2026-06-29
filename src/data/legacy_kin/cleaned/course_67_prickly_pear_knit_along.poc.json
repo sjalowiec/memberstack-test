@@ -1,0 +1,315 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 67,
+    "title": "Prickly Pear Knit-Along",
+    "slug": "prickly-pear-knit-along",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_67_prickly_pear_knit_along.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "",
+      "slug": "untitled",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 426,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<a href=\"/LiveEvent/143/prickly-pear-qanda-live-03-11-2020\"><img src=\"/challenge/images/v2/67/prickly_live1.jpg\"></a><br><a href=\"/LiveEvent/144/prickly-pear-qanda-live-03-18-2020\"><img src=\"/challenge/images/v2/67/prickly_live2.jpg\"></a><br><a href=\"/LiveEvent/145/prickly-pear-qanda-live-03-25-2020\"><img src=\"/challenge/images/v2/67/prickly_live3.jpg\"></a>",
+              "legacyComponentId": 5768,
+              "order": 1
+            }
+          ],
+          "title": "LIVE Q&A meetings",
+          "slug": "live-q-a-meetings",
+          "order": 1,
+          "legacy": {
+            "assignId": 3853,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n\r\n</style>\r\n\r\n\t\r\n\t\tPlanning, knitting and comple a basic pullover sweater. This course is designed for all knitters, no matter what your skill level.<br>Included is the updated Prickly Pear Pullover pattern (formerly known as the Child's Simple Rolled Neck Pullover)<br>The sweater shape is simple. The plan is to take it step-by-step. The goal is to FINISH\r\n\r\n\t\t<ul>\r\n\t\t\t<li>Choose your size</li>\r\n\t\t\t<li>Choose your yarn</li>\r\n\t\t\t<li>Plan YOUR design (no changes mid-stream)</li>\r\n\t\t\t<li>Focus on each section</li>\r\n\t\t\t<li>Learn/practice techniques</li>\r\n\t\t\t<li>FINISH your sweater</li>\r\n\t\t</ul>\r\n\t\r\n\t<img class=\"img-thumbnail zoom\" src=\"/challenge/images/v2/64/child_rolled_nile.jpg\">\r\n\r\n<br><div>\r\n\t<div class=\"container-border\">\r\n\t\t<span class=\"section-title MachineknittingColor\">Are you NEW?</span><br>Knit the pattern \"as is\" focusing on learning/perfecting techniques used for the design. Don't over-complicate things.<br><b>The goal is to FINISH the sweater and build your confidence with your machine</b><br></div>\r\n\t<div class=\"container-border\">\r\n\t\t<span class=\"section-title MachineknittingColor\">Ready for an adventure?</span><br>Use this simple pattern as a canvas for your creativity. Challenge yourself to try a new-to-you stitch pattern technique. How about Intarsia? Color Blocks? Knit the entire garment in Fisherman Rib. <br>\r\n\t\tBecause the shaping is basic, you can <b>focus on the new technique and expand your skills.</b><br></div>\r\n",
+              "legacyComponentId": 5766,
+              "order": 1
+            }
+          ],
+          "title": "Join the fun!",
+          "slug": "join-the-fun",
+          "order": 2,
+          "legacy": {
+            "assignId": 3858,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "392986594",
+              "title": "Get the \"Big Picture\" before you go any further",
+              "legacyComponentId": 5767,
+              "order": 1
+            }
+          ],
+          "title": "Knitting Overview",
+          "slug": "knitting-overview",
+          "order": 3,
+          "legacy": {
+            "assignId": 3859,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858757",
+              "title": "Grade the hem tension?",
+              "legacyComponentId": 5770,
+              "order": 1
+            }
+          ],
+          "title": "Rolled Hem Study",
+          "slug": "rolled-hem-study",
+          "order": 4,
+          "legacy": {
+            "assignId": 3861,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "396776651",
+              "title": "Because this pattern is a pullover, you might want to consider leaving one (or both) shoulders open to make it easier to dress a baby or small child.",
+              "legacyComponentId": 5772,
+              "order": 1
+            }
+          ],
+          "title": "Open Shoulder Video",
+          "slug": "open-shoulder-video",
+          "order": 5,
+          "legacy": {
+            "assignId": 3863,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Knit it Now Perfect Fit™ Patterns are the next-generation of machine knitting patterns. <br><ul>\r\n<li>You choose the machine</li>\r\n<li>Your yarn choice</li>\r\n<li>Use YOUR gauge</li>\r\n<li>Use ANY stitch pattern</li>\r\n<li>Wide range of sizes, Perfect Fit™ for you</li>\r\n</ul>\r\n\r\nThe patterns are designed to display on an iPad or tablet, but can also be downloaded and printed in a clear PDF format.<br>We don't use cryptic abbreviations.  We take you step by step through the knitting process.  <b>Included are tips and tricks and videos embedded right where you need them.</b><br>Please take 2 minutes to watch this walk through, and get an overview of our patterns so you will be ready to hit the ground running when you start knitting your Prickly Pear.",
+              "legacyComponentId": 5757,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "374009611",
+              "title": null,
+              "legacyComponentId": 5758,
+              "order": 2
+            }
+          ],
+          "title": "New to Perfect Fit Patterns?",
+          "slug": "new-to-perfect-fit-patterns",
+          "order": 6,
+          "legacy": {
+            "assignId": 3854,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "You have your choice of patterns<br>\r\n<em>NOTE: The adult size patterns have back neck shaping.  The Kids Prickly Pear does not. If you are a new knitter and want to knit an easier adult sweater, simply ignore the back neck shaping. Questions? <a href=\"/elements/contactus.cfm\">Contact Us</a></em>",
+              "legacyComponentId": 5759,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataSelectJson",
+              "notes": [
+                "Unmapped legacy component type: DataSelectJson"
+              ],
+              "legacyFields": {
+                "BUTTONLABEL": "Let's Build Your Pattern",
+                "CHALLENGE_ASSIGNID": "3855",
+                "CHALLENGE_COMPONENTID": "5760",
+                "DATAMODEL_ELEMENT": "garment_ID",
+                "JSONDATA": "{\r\n \"Kids - Prickly Pear Pullover\" :  \"2173\",\r\n \"Man's - Flint Pullover\" :  \"430\",\r\n\"Women's Plus - Pepper\" : \"1121\",\r\n\"Misses's - Carnation \":\"1048\"\r\n }",
+                "SHOWCONTINUE": "yes"
+              },
+              "legacyComponentId": 5760,
+              "order": 2
+            }
+          ],
+          "title": "Choose your Pattern",
+          "slug": "choose-your-pattern",
+          "order": 7,
+          "legacy": {
+            "assignId": 3855,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): garment_ID",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 3855 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3856",
+                "CHALLENGE_COMPONENTID": "5761",
+                "DATAMODEL_ELEMENTS": "garment_ID",
+                "DATAMODEL_REDIRECT": "3855"
+              },
+              "legacyComponentId": 5761,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<button data-vimeoid=\"374009611\" class=\"videopopup btn btn btn-primary\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> About Knit it Now Patterns</button>",
+              "legacyComponentId": 5762,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment 'Prickly Pear Pullover' (legacy garmentId 128).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3856",
+                "CHALLENGE_COMPONENTID": "5763",
+                "DYNAMICGARMENTVARIABLE": "garment_ID",
+                "GARMENTID": "128",
+                "GARMENTTITLE": "Prickly Pear Pullover",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "pattern_name",
+                "REDIRECT_TO": "/challenge/67/Group/3857/item|: Your Custom Pattern",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "pattern_rows",
+                "SHOWPATTERNNAME": "1",
+                "SIZING_DATAMODEL_ELEMENT": "pattern_size",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "pattern_stitches",
+                "SWATCHROWS": "swatch_rows",
+                "SWATCHSTITCHES": "swatch_stitches",
+                "SWATCHWEIGHT": "swatch_weight",
+                "USESWATCHLOGIC": "no"
+              },
+              "legacyComponentId": 5763,
+              "order": 3
+            }
+          ],
+          "title": "Build your Custom Pattern",
+          "slug": "build-your-custom-pattern",
+          "order": 8,
+          "legacy": {
+            "assignId": 3856,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): pattern_name,garment_ID",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 3856 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3857",
+                "CHALLENGE_COMPONENTID": "5764",
+                "DATAMODEL_ELEMENTS": "pattern_name,garment_ID",
+                "DATAMODEL_REDIRECT": "3856"
+              },
+              "legacyComponentId": 5764,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'pattern_name'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3827",
+                "CHALLENGE_COMPONENTID": "5712",
+                "DATAMODEL_ICON": "fa fa-download",
+                "LABLE": "Print Your Pattern",
+                "PATTERN_DATAMODEL_ELEMENT": "pattern_name",
+                "VIEWHEIGHT": "600"
+              },
+              "legacyComponentId": 5765,
+              "order": 2
+            }
+          ],
+          "title": "Your Custom Pattern",
+          "slug": "your-custom-pattern",
+          "order": 9,
+          "legacy": {
+            "assignId": 3857,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 4,
+    "videos": [
+      {
+        "vimeoId": "392986594",
+        "title": "Get the \"Big Picture\" before you go any further",
+        "lessonSlug": "untitled",
+        "blockSlug": "knitting-overview"
+      },
+      {
+        "vimeoId": "151858757",
+        "title": "Grade the hem tension?",
+        "lessonSlug": "untitled",
+        "blockSlug": "rolled-hem-study"
+      },
+      {
+        "vimeoId": "396776651",
+        "title": "Because this pattern is a pullover, you might want to consider leaving one (or both) shoulders open to make it easier to dress a baby or small child.",
+        "lessonSlug": "untitled",
+        "blockSlug": "open-shoulder-video"
+      },
+      {
+        "vimeoId": "374009611",
+        "title": null,
+        "lessonSlug": "untitled",
+        "blockSlug": "new-to-perfect-fit-patterns"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

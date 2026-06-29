@@ -1,0 +1,1951 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 24,
+    "title": "Nothing Fits DRAFT",
+    "slug": "nothing-fits-draft",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_24_nothing_fits_draft.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Section 1: \"Nothing I Knit Fits!\" ... Consider This:",
+      "slug": "section-1-nothing-i-knit-fits-consider-this",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 151,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>Welcome {first}!</h3>\r\n\r\nA knitter recently shared with me me how disappointed she was with her knitting machine because \"nothing fits\". <br>\r\nThis entire course is a result of my trying to convince her that <b>her machine isn't the issue ... it's patterns!</b>\r\n\r\n\r\nOur goal is to get your brain cells working and spark your creativity. It's up to you to learn how to knit sweaters that fit.\r\n\r\n<blockquote class=\"blockquote_style\">\r\nDon't just follow knitting patterns and hope that the designer had your body in mind when they did the math! <i class=\"fa fa-smile-o fa-spin fa-2x fa-fw\"></i>\r\n</blockquote>\r\n",
+              "legacyComponentId": 2329,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "268292946",
+              "title": "\"Nothing Fits!\"",
+              "legacyComponentId": 2330,
+              "order": 2
+            }
+          ],
+          "title": "Can you Relate to this Knitter?",
+          "slug": "can-you-relate-to-this-knitter",
+          "order": 1,
+          "legacy": {
+            "assignId": 842,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "All knitting patterns use generic sizing charts. <b>It’s up to you to learn how to adapt them to yourself and your preferences.</b> <br><blockquote class=\"smallblock\">\r\n<i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i> <em> I like ease in my sweaters (I pretend that it covers up the lumps and bumps).  My slim daughter-in-law likes to show off her curves.  We may have the same bust size, but she has a great figure and likes less ease.</em></span></p>\r\nNO ready-made knitting pattern is going to give <b>both of us</b> the results we want.</blockquote><br>Knit it Now Patterns use one set of sizing charts. Other designers use different charts.  <b>It's CRITICAL for you to examine the dimensions before you start knitting.</b><br>Knit it Now Sizing Charts display body dimensions. (no ease) www.knititnow.com/sizing<br><a href=\"http://www.knititnow.com/knit/sizing.cfm\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/24/nothing_fits/sizing_chart.jpg\"</a> ",
+              "legacyComponentId": 2331,
+              "order": 1
+            }
+          ],
+          "title": "NO pattern is one-size-fits-all",
+          "slug": "no-pattern-is-one-size-fits-all",
+          "order": 2,
+          "legacy": {
+            "assignId": 843,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3><span style=\"color: #9B2764;\"><strong><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Focus on one machine</strong></span></h3>\r\nDo you have more than one knitting machine?  Which is your favorite? Perhaps it’s the gauge and the and the electronics.  Maybe you LOVE your punchcard machine.<br>No matter the reason, mastering ONE  machine will go a long way towards knitting sweaters that fit.<br>Why?  If you aren’t burdened with figuring out which buttons to push, you’ll be able to focus on techniques that will add to your satisfaction with your finished item.<br><p style=\"padding-left: 30px;\"><span style=\"font-weight: 400; color: #9B2764;\"><b>Best advice … put all but one machine away for a while and focus on your favorite.</b></span></p>\r\n\r\n\r\n<h3><strong><span style=\"color: #9B2764;\"><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Use the same yarn for a while</span></strong></h3>\r\nIf you are a sewist, you probably wouldn’t use the same sewing pattern with denim and with a knit. Each has its own properties.<br>The same for yarn.  Take a natural fiber. Knit 2 swatches.  Let one rest and wet block the other.  When you measure for gauge, you’ll get very different numbers.  If your swatches have any man-made fiber content, hit one with steam and compare …. Lots of variables, with one yarn.<br>Switch to a different yarn and do the same thing.  The differences may be even greater.<br>The point is, each yarn has its own characteristics.  <span style=\"color: #9B2764;\">Once you learn the “personality” of a particular yarn, stick with it.</span> I know a professional designer who only uses one yarn.  She knits hundreds of custom designer garments.<br>When she knits a sleeve, she KNOWS what size it is going to be.  This also allows her to get creative.  She can play with color, she can make colorblock pieces … plus she KNOWS that the sweater is going to fit!</span></p>\r\n",
+              "legacyComponentId": 2332,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "268294596",
+              "title": "Best machine knitting advice (IMHO)",
+              "legacyComponentId": 2333,
+              "order": 2
+            }
+          ],
+          "title": "Machine(s) and Yarn",
+          "slug": "machine-s-and-yarn",
+          "order": 4,
+          "legacy": {
+            "assignId": 844,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "268296128",
+              "title": "Up on the 'ol soapbox!",
+              "legacyComponentId": 2334,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<h3><strong><span style=\"color: #9b2764;\"><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Swatch</span></strong></h3>\r\n<p style=\"padding-left: 30px;\"><span style=\"font-weight: 400;\">At the risk of sounding like a broken record “<span style=\"color: #9b2764;\">Swatching is NOT optional”</span>.</span></p>\r\n<p style=\"padding-left: 30px;\"><span style=\"font-weight: 400;\">If you are working with the same yarn every time and you have an accurate gauge swatch you won’t be surprised by the size of a finished piece.</span></p>\r\n<p style=\"padding-left: 30px;\"><span style=\"font-weight: 400;\"><span style=\"color: #9b2764;\">BUT .. one thing to consider is “drop”.</span> Knitters often will knit a 6” square for a gauge swatch.  We then knit a garment back that is 23” long.  We put in on our body and we’re surprised that it’s too long.  Maybe it hugs around the body because the weight of the yarn is narrowing the garment piece.</span></p>\r\n<p style=\"padding-left: 30px;\">Knit large swatches, let them hang AND measure them hanging.  This is especially true for lace and some openwork stitch patterns. (You aren't wasting yarn ... how much yarn will be wasted on a sweater that doesn't fit and won't be worn?)</p>\r\n\r\n<i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i><em> We will talk more about swatching and gauge and offer some practice exercises further along in the course.</em><br>",
+              "legacyComponentId": 2335,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "\r\n<h3><strong><span style=\"color: #9b2764;\"><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Knit in one stitch pattern until you gain experience and confidence</span></strong></h3>\r\n<p style=\"padding-left: 30px;\"><span style=\"font-weight: 400;\">As tempting as it is, don’t play with stitch patterning until you establish a good fit for you. </span></p>\r\n<p style=\"padding-left: 30px;\"><span style=\"font-weight: 400;\">For example, tuck and lace knit up very differently than stockinette. They will hang on the body differently as well, affecting fit. Once you find a pattern that you love, it may not “translate” well to a different stitch pattern.  Think of denim and knit fabric.  You probably wouldn’t sew a t-shirt with bottom-weight denim. </span></p>\r\n<p style=\"padding-left: 30px;\"><span style=\"font-weight: 400;\">Yes, as knitters we can successfully substitute stitch patterns, but until you establish YOUR fit style, you will be frustrated.  Unlike fabric, when we start out we don’t have yards of fabric to touch, feel and observe the drape.  <span style=\"color: #9b2764;\">It’s not until we’ve used the yarn and stitch pattern for a while that we can KNOW the end result BEFORE knitting.</span></span></p>\r\n",
+              "legacyComponentId": 2337,
+              "order": 4
+            }
+          ],
+          "title": "Knitting",
+          "slug": "knitting",
+          "order": 5,
+          "legacy": {
+            "assignId": 845,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "268297056",
+              "title": "Another rant ... but this is important!",
+              "legacyComponentId": 2338,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "\r\n<h3><strong><span style=\"color: #9b2764;\"><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Read a pattern completely before starting to knit</span></strong></h3>\r\n<br>Why would you knit an entire sweater before knowing exactly the sleeve length or the depth of the armhole?\r\n<br>Hopefully you wouldn’t purchase a garment online without at AT LEAST checking the sizing chart.<br>Starting to knit without knowing what the designer had in mind is just plain silly! My idea of a \"comfy\" fit is a lot different than my daughter-in-law. <br>\r\nIn addition to fit, don't you want to know (and practice) knitting techniques BEFORE you use that beautiful, expensive garment yarn?<br>Read (and understand) the pattern completely before starting to knit.\r\n<br>\r\n<img width=\"300\" src=\"/challenge/images/v2/24/nothing_fits/fork_in_the_road.jpg\">\r\n\r\n</i><em>If your pattern doesn't have a diagram, you'll need to create one before you start knitting.  We will learn to do this down the road in this course.</em>\r\n",
+              "legacyComponentId": 2339,
+              "order": 2
+            }
+          ],
+          "title": "Silly Question: Do you read?",
+          "slug": "silly-question-do-you-read",
+          "order": 6,
+          "legacy": {
+            "assignId": 846,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "268298382",
+              "title": "I hereby give you permission ....",
+              "legacyComponentId": 2341,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<h4><b>\r\n<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Find/measure a sweater that you LOVE</b></h4>\r\n\r\n<b>Why measure your body?</b><br>Look in your closet. If you have a sweater that you love, start there. It may take a shopping trip to find the perfect sweater.  <br>Another option is to determine what you DON'T like about garments you own. Love that sweater, but the sleeves are too long?  Measure them! Love the length of that woven jacket?  Measure it!<br><ol class=\"instruction-list\">\r\n<li>\r\nTake a pen and paper and a TAPE MEASURE with you to document what you like. </li>\r\n<li>Measure every inch of the sweater.</li>\r\n<li> Record the length, record the armhole depth, record the sleeve length, record the neck depth.</li>\r\n<li> Make notes about WHY you like this sweater.</li></ol>\r\n<br><i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i><em> We will walk through measuring a sample sweater later in the course</em>\r\n<br>\r\n<img src=\"/challenge/images/v2/24/nothing_fits/body_measure.jpg\">\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 2342,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<h4><b><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Arm yourself with  knowledge BEFORE you start to knit.</b></h4>\r\nIn this course we will discuss methods of adjusting knitting patterns to fit YOU!  Use whatever method makes sense to you ... combine techniques!<br><ol class=\"instruction-list\">\r\n \t<li>Use software to chart your own sweater pattern (DesignaKnit, Garment Designer etc)<br></li>\r\n \t<li>Modify an existing pattern based on your personal fit (Knit it Now Dynamic patterns or any pattern)<br><ul class=\"instruction-nolist\"><li>Use Basic Math</li>\r\n<li>Use the Knit it Now Tools<br></li>\r\n</ul>\r\n</li>\r\n \t<li>Use a charting device (Knit Leader - Knit Radar)</li>\r\n</ol>\r\n<blockquote class=\"blockquote_style\">Is there math in involved?  A bit … but nothing that a 5th grader can’t do.   Honestly, I’m math -challenged and I can do this … so can you!<br></blockquote>\r\n<h2 class=\"section-title MachineknittingColor\">Are you ready? Let's get Started!</h2>",
+              "legacyComponentId": 2344,
+              "order": 4
+            }
+          ],
+          "title": "The Secret to Determining to Good Fit",
+          "slug": "the-secret-to-determining-to-good-fit",
+          "order": 7,
+          "legacy": {
+            "assignId": 847,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 2: What's the problem?",
+      "slug": "section-2-what-s-the-problem",
+      "displayOrder": 10,
+      "legacy": {
+        "itemId": 152,
+        "lessonOrder": 10
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/24/nothing_fits/nothing_fits_speech_bubble.jpg\"><br>What's the biggest issue? Over all size of the sweater? Bust? Shoulders? Sleeve Length?<br>Let's not get hung up on measurements for now.  Just identify what you see as your issues. ",
+              "legacyComponentId": 2345,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntrytextarea",
+              "notes": [
+                "Unmapped legacy component type: DataEntrytextarea"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "732",
+                "CHALLENGE_COMPONENTID": "2019",
+                "DATAMODEL_ELEMENT": "FitIssue",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "What is your biggest fit issue? Please record some notes here.",
+                "DATAMODEL_TEXTAREAROWS": "8",
+                "DATAMODEL_VALIDATION_CHARS": "500",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 2346,
+              "order": 2
+            }
+          ],
+          "title": "Sound Familiar?",
+          "slug": "sound-familiar",
+          "order": 1,
+          "legacy": {
+            "assignId": 848,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Let's face it, our knitting machines were designed when people were much smaller than they are today. Many knitters find that they don't have enough needles on the needlebed to knit the width they need.<br>We have to get creative.",
+              "legacyComponentId": 2347,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859115",
+              "title": "Part 1",
+              "legacySlot": 1,
+              "legacyComponentId": 2348,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859136",
+              "title": "Part 2",
+              "legacySlot": 2,
+              "legacyComponentId": 2348,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "Have you ever looked at a vintage Japanese machine knitting magazine or book?  Notice that the patterns are all in diagram format ... but in only 1 or 2 sizes! <br>Were all Japanese ladies of that time the same size? <i class=\"fa fa-smile-o fa-2x\" aria-hidden=\"true\"></i> ",
+              "legacyComponentId": 2349,
+              "order": 5
+            }
+          ],
+          "title": "Not Enough Needles",
+          "slug": "not-enough-needles",
+          "order": 3,
+          "legacy": {
+            "assignId": 849,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Knit it Now Dynamic patterns are a perfect example of the issue of choosing a size by your body measurements.<br>\r\n\r\n<a href=\"http://www.knititnow.com/knit/sizing.cfm\"><img src=\"http://www.knititnow.com/images/sizing/xxs_XXL.jpg\"></a>\r\n\r\n\r\n\r\n\r\n\r\n<blockquote smallblock\"><strong>Sizing and Ease: (we are all different)</strong>\r\n<ul>\r\n \t<li>Some like it hot (no ease)</li>\r\n \t<li>Some like it cold (roomy)</li>\r\n \t<li>Some like it just right (It's your choice!)</li>\r\n</ul>\r\n</blockquote>\r\nWhen choosing a size to knit with any knitting pattern, <strong>choose based on the finished garment size</strong>.<br>With Knit it Now Dynamic patterns, on the build page of the pattern (where you enter your gauge and select the size) is an interactive chart that shows the finished garment size.  Measure a sweater that you like to determine how much ease you want in your sweater. Chose your size based on the finished size.<br>Examine the image below. The measurements on the sizing charts are <strong>body measurements.  BUT the finished size of the garment includes ease.</strong><br>It's confusing ... do you agree?<br>\r\n<h3>Body size + Ease = Finished Garment Size</h3>\r\n<a href=\"http://kin.knititnow.com/wp-content/uploads/2017/03/select_sizing.gif\"><img class=\"aligncenter size-full wp-image-1987\" src=\"http://kin.knititnow.com/wp-content/uploads/2017/03/select_sizing.gif\" alt=\"\" width=\"776\" height=\"436\" /></a>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 2350,
+              "order": 1
+            }
+          ],
+          "title": "Knit it Now Patterns: Sizing and Ease",
+          "slug": "knit-it-now-patterns-sizing-and-ease",
+          "order": 4,
+          "legacy": {
+            "assignId": 850,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 3: Your Success Depends on This",
+      "slug": "section-3-your-success-depends-on-this",
+      "displayOrder": 20,
+      "legacy": {
+        "itemId": 153,
+        "lessonOrder": 20
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"blockquote_style\"><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> These concepts are so important that they are worth repeating.</blockquote><br><ul class=\"li_7px\">\r\n<li>Decide on ONE machine for the next few projects - get to know (and master) this machine.  Understand it's quirks and personality.</li>\r\n<li>Decide on ONE yarn type for the next few projects.\r\n\r\n<ul class=\"li_7px\">\r\n<li> Determine the gauge in ONE stitch pattern. Use it again and again</li>\r\n<li> Learn how the yarn knits ... does it have knots to look out for? Are there plys that can be problematic if you have to rip rows?</li>\r\n<li> Learn how the knitting washes and wears. Give your swatch the \"throw in the wash with jeans\" test and see what happens.</li>\r\n<li>Is the color and fiber something you would wear?  Don't spend time perfecting the fit of your sweater with junk yarn in a terrible color that you won't enjoy working with or wearing</li>\r\n</ul>\r\n\r\n</li>\r\n<li>To test out the wear-ability, wash-ability and work-ability of a yarn, knit a small blanket with your yarn and chosen stitch pattern.  You can always donate it to your local animal shelter as a \"blankie\" for a pet looking for a home. </li>\r\n</ul>\r\n\r\n<blockquote class=\"blockquote_style\">Before even THINKING about knitting a sweater ... get experience with your chosen yarn. Once you create a \"blueprint\" of the perfect sweater for yourself, you can try different yarns.  Why complicate the fit process by adding all the variables that yarn and stitch patterns bring into the picture?</blockquote>",
+              "legacyComponentId": 2351,
+              "order": 1
+            }
+          ],
+          "title": "Are you on board?",
+          "slug": "are-you-on-board",
+          "order": 1,
+          "legacy": {
+            "assignId": 851,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "We spend a lot of time planning, practicing and thinking about knitting. We spend money on yarn and patterns. Even though machine knitting is fast, we all have limited time to devote to knitting.<br>\r\nWhy invest all that time, money and energy and not be happy with the results?  The ONLY WAY to ensure success is to establish correct gauge.\r\n\r\n\r\n<br><strong>DON'T SKIP THIS SECTION!</strong> <br>Your success with this course AND your success with your knitting machine depends on your understanding and mastering the art of knitting gauge swatches.<br>Without a swatch we are knitting in the dark.<br>\r\n<ul class=\"li_7px\">\r\n<li>Is it going to fit?</li>\r\n<li>How is the final sweater going to feel in the yarn and stitch pattern you've chosen?</li>\r\n<li>Do you have enough yarn?</li>\r\n<li>Do you have enough needles on your machine for the size you chose?</li>\r\n</ul>\r\n\r\n\r\n<div class=\"text-center\">\r\n<p style=\"text-align: center;\"><strong>SWATCHING IS NOT OPTIONAL</strong></p>\r\n<img class=\"img-thumbnail\" src=\"https://www.knititnow.com/images/blog_images/2017/swatching_is_not_optional.jpg\" /></div>\r\n",
+              "legacyComponentId": 2352,
+              "order": 1
+            }
+          ],
+          "title": "Swatching is NOT Optional",
+          "slug": "swatching-is-not-optional",
+          "order": 2,
+          "legacy": {
+            "assignId": 852,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Let's double check your gauge ... let's MAKE SURE  you are on track, before you start knitting another sweater.<br>We won't bore you with instruction for knitting gauge swatches.  Your manual will give you good instructions for the mechanics of knitting a swatch.<br>The important thing for this course is MEASURING GAUGE (accurately)",
+              "legacyComponentId": 2353,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "260683875",
+              "title": "Accurately Measure Gauge - 2 methods",
+              "legacyComponentId": 2354,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151856465",
+              "title": "Importance of Correct Gauge",
+              "legacyComponentId": 2355,
+              "order": 3
+            }
+          ],
+          "title": "Gauge",
+          "slug": "gauge",
+          "order": 3,
+          "legacy": {
+            "assignId": 853,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\"><b>If you haven't used your chosen yarn before, how do you know the best tension to knit your sweater?</div> </b>\r\n\r\nKnitters tend to use the terms \"tension swatch\" and \"gauge swatch\" interchangeably, lets take a look at both.",
+              "legacyComponentId": 2449,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"cleanwell\">\r\n\r\n<h4><strong>GAUGE SWATCH</strong></h4>\r\nThe <strong>gauge swatch</strong> is the \"official\" swatch used when designing a garment.\r\n<br>\r\nIt is knit at a specific size, marked for accurate stitch and row measurement and \"dressed\" as the final garment will be treated.<br>\r\n<blockquote class=\"smallblock\">\r\n<em>TIP: Whatever method you use to create a swatch, the key is to correctly measure it and calculate your gauge.</em></blockquote>\r\n<img src=\"/challenge/images/v2/24/swatch_measure.jpg\" />\r\n</div>",
+              "legacyComponentId": 2450,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"cleanwell\">\r\n\r\n<h4><strong>TENSION SWATCH</strong></h4>\r\n<em>When I pick up a new cone of yarn, I can't wait to thread up my machine and see what the yarn looks like.   From the initial cast on, I start guessing what setting on my tension dial I need to use.  I knit a few inches and reach down and start to feel the resulting fabric. <br>Once I get a feel for the yarn (what machine, general tension setting at stockinette, etc) I create a<strong> tension swatch</strong>.  This helps me fine-tune the tension needed to achieve the fabric I like and allows me to play with various techniques.  <strong>I'm often very surprised that a yarn looks great in tuck, and awful in slip</strong>, for example.  Adding a few eyelets here and there tells me if the yarn will work up in lace.</em><br>Let's practice knitting a <strong>tension swatch.</strong>\r\n</div>",
+              "legacyComponentId": 2451,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"section-title MachineknittingColor\"><i class=\"fa fa-refresh\" aria-hidden=\"true\"></i> Try it yourself</div>\r\n\r\n\r\n<ol class=\"instruction-list\">\r\n<li>Play!</li>\r\n<li>Start knitting stockenette at the tightest tension that will knit.  (If the tension is too tight, you'll see stitches that don't form properly.</li>\r\n<li>Knit 2-4 inches. Knit a marker row (change colors, work a few eyelets across the row or knit a sewing thread in with the main yarn)</li>\r\n<li>Keep knitting sections, marking the tension dial number in each section.  Knit the last section as loosely as possiblle, even if you think this will be too loose ... I'm often very pleasantly surprised at the result.</li>\r\n<li>Transfer every other needle to out of work postion and knit a section - put all needles back into work.</li>\r\n<li>Work a simple tuck, or slip, or any stitch pattern of your choice ... base your tension dial setting on the stockinette sections you just knit.</li>\r\n</ol>\r\n<blockquote class=\"smallblock\"><em>The point of this exercise is to put the yarn through it's paces ... ignite your creativity, and get a feel for what the yarn can do.  If you don't have a huge cone, you can always re-wind this knitting. At this point, you probably know exactly what you want to do with this yarn.  Knit your Gauge Swatch, dress it and and you are ready to design and knit your sweater.</em></blockquote>\r\n\r\n<img src=\"/challenge/images/v2/24/tension_swatch.jpg\" />\r\n\r\n",
+              "legacyComponentId": 2452,
+              "order": 4
+            }
+          ],
+          "title": "Gauge swatch verses Tension Swatch",
+          "slug": "gauge-swatch-verses-tension-swatch",
+          "order": 4,
+          "legacy": {
+            "assignId": 881,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "245117927",
+              "title": "Gauge and Drop",
+              "legacyComponentId": 2357,
+              "order": 1
+            }
+          ],
+          "title": "Gauge and Drop",
+          "slug": "gauge-and-drop",
+          "order": 5,
+          "legacy": {
+            "assignId": 854,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"blockquote_style\">There are many ways to knit a gauge swatch.\r\n  At this point you probably have your favorite method.  Work the next 2 exercises with whatever method you prefer.<br><b>The method used isn't as important as learning to measure accurately. </b></blockquote>\r\n\r\n\r\n\r\n<div class=\"lead\">Time to get knitting!</div>\r\n<ol class=\"Instruction-list\">\r\n<li>Knit a swatch using any method.</li>\r\n<li>Place markers at the center of the swatch as you did with the previous swatch</li>\r\n<li>Let it rest</li>\r\n<li>Dress the swatch (treat it as you will treat your finished sweater)</li>\r\n<li>Accurately measure YOUR stitch and row gauge LAYING FLAT</li>\r\n<li>Accurately measure YOUR stitch and row gauge AFTER HANGING</li>\r\n<li>Record your gauge.</li>\r\n</ol>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/24/2hr/swatch_example.jpg\" /><br />Does your swatch look similar to this one?\r\n\r\n",
+              "legacyComponentId": 2358,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"smallblock\"><em><b><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Attach a string tag to your swatch recording all the details ... it's funny how easy it is to forget. Include yarn name, machine, tension, measurements, and stitch pattern number (if appropriate)</em></blockquote>\r\n<blockquote class=\"smallblock\">\r\n<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i>To hang your swatch: Insert  a blocking wire or a straight hand knitting along the cast on or bind off edge of the swatch. Pin it to a corkboard or clip it in a skirt hanger and hang in a doorway.</blockquote><br>\r\n<img src=\"/challenge/images/v2/24/nothing_fits/gauge_drop5.jpg\">",
+              "legacyComponentId": 2359,
+              "order": 4
+            }
+          ],
+          "title": "Swatch #1",
+          "slug": "swatch-1",
+          "order": 6,
+          "legacy": {
+            "assignId": 855,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"blockquote_style\">\r\nPlease take time to knit this swatch ... you may be surprised at the difference between the swatches with your yarn and your stitch pattern.</blockquote>\r\n\r\n\r\n<div class=\"lead\">Compare using a larger swatch</div>\r\n\r\n<ol class=\"Instruction-list\">\r\n\r\n<li>Knit a LARGE swatch using any method.</li>\r\n<li>Place markers at the center of the swatch as you did with the previous swatch (measure the same number of stitches and rows)</li>\r\n<li>Let it rest</li>\r\n<li>Dress the swatch (treat it as you will treat your finished sweater)</li>\r\n<li>Accurately measure YOUR stitch and row gauge</li>\r\n<li>Record your gauge and compare to swatch 1</li>\r\n</ol><br>\r\n<blockquote class=\"smallblock\"><em><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i>  Knit at least 100 sts x 100 rows for a standard gauge machine and 50 sts x 50 rows for bulky.  The point is to duplicate the weight of a larger piece and examine the impact on gauge.</em></blockquote>\r\n",
+              "legacyComponentId": 2360,
+              "order": 1
+            }
+          ],
+          "title": "Swatch #2",
+          "slug": "swatch-2",
+          "order": 7,
+          "legacy": {
+            "assignId": 856,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Things to consider when measuring\r\n<ul class=\"li_7px\">\r\n<li>Rest and dress your swatch before measuring</li>\r\n<li>These swatches are flat ... probably not the most accurate for larger pieces. You will want to hang your swatch (and possibly add a bit of weight) to account for drop</li>\r\n<li>Most hand knitters think we are crazy to calculate out 2 decimal places.  Is \"close enough\" good enough for you?  This is knitting after all <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i></li>\r\n<li>These swatches are both the same number of stitches and rows. Don't forget to swatch for each stitch pattern you will be using, including combinations of stitch patterns within a piece</li>\r\n</ul>\r\n",
+              "legacyComponentId": 2361,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/24/nothing_fits/swatch_measure1.jpg",
+                  "caption": "I'd \"average\" this out to 6\" or 18 cm."
+                },
+                {
+                  "src": "/challenge/images/v2/24/nothing_fits/swatch_measure2.jpg",
+                  "caption": "5.5\" / 14cm"
+                },
+                {
+                  "src": "/challenge/images/v2/24/nothing_fits/swatch_measure3.jpg",
+                  "caption": "7\" / 18 cm"
+                },
+                {
+                  "src": "/challenge/images/v2/24/nothing_fits/swatch_measure4.jpg",
+                  "caption": "4.125\" / 10.5 cm"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 2362,
+              "order": 2
+            }
+          ],
+          "title": "Swatching: Up close",
+          "slug": "swatching-up-close",
+          "order": 8,
+          "legacy": {
+            "assignId": 857,
+            "blockType": "Imageslideshow"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "download",
+              "label": "Print the worksheet to follow along",
+              "filename": "/downloads/worksheet.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "883",
+                "componentId": "2461",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 2463,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "\r\n<div class=\"col-12-xs\">Let's use this pattern to practice creating a schematic/diagram from a hand knitting pattern.<br>This is the basic shape of the sample sweater - it's long-sleeved, drop shoulder with a small funnel neck collar.<br>Next we will start filling in the blanks based on the written pattern. </div>\r\n<div class=\"col-12-xs\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/24/big_hug/big_hug_diagram1.jpg\"</div>\r\n\r\n\r\n<br>",
+              "legacyComponentId": 2464,
+              "order": 2
+            },
+            {
+              "type": "download",
+              "label": "Print the worksheet to follow along",
+              "filename": "/downloads/worksheet1.pdf",
+              "showInline": true,
+              "legacy": {
+                "assignId": "883",
+                "componentId": "2462",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 2465,
+              "order": 3
+            }
+          ],
+          "title": "Create your Schematic",
+          "slug": "create-your-schematic",
+          "order": 9,
+          "legacy": {
+            "assignId": 884,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/24/big_hug/finished_measurements.jpg\"><br><blockquote class=\"blockquote_style\">The Designer gave us these 3 finished measurements and we've filled them in on our worksheet</blockquote>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/24/big_hug/big_hug_diagram2.jpg\">",
+              "legacyComponentId": 2366,
+              "order": 1
+            }
+          ],
+          "title": "Info from the Pattern Notes",
+          "slug": "info-from-the-pattern-notes",
+          "order": 10,
+          "legacy": {
+            "assignId": 859,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "259414061",
+              "title": "Translate the Body Pieces",
+              "legacyComponentId": 2367,
+              "order": 1
+            }
+          ],
+          "title": "Uncover your MK Pattern Instructions",
+          "slug": "uncover-your-mk-pattern-instructions",
+          "order": 11,
+          "legacy": {
+            "assignId": 860,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">Your Turn! </div>\r\nUncover the stitches and row instructions for the sleeves.<br>\r\n\r\n\r\n\r\n<div class=\"col-12-xs\">Using your <a href=\"https://www.knititnow.com/challenge/25/Group/682/item#section157\">Worksheet</a> and the <a href=\"https://www.knititnow.com/challenge/25/Group/680/item#section156\">original pattern</a>, do the math to calculate the stitches and rows for the sleeves.<br>Remember the 1\" and 1 cm stitch and row multipliers that we established earlier.<br><table border=\"1\">\r\n<tr>\r\n<th>4\" / 10 cm</th>\r\n<th>1 inch</th>\r\n<th>1 cm</th>\r\n</tr>\r\n<tr>\r\n<td>13 sts</td>\r\n<td>3.25 sts</td>\r\n<td>1.3 sts</td>\r\n</tr>\r\n<tr>\r\n<td>18 rows</td>\r\n<td>4.5 rows</td>\r\n<td>1.8 rows</td>\r\n</tr>\r\n</table>\r\n\r\n\r\n</div>\r\n<div class=\"col-12-xs\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/24/big_hug/big_hug_sleeve.jpg\"</div>\r\n",
+              "legacyComponentId": 2368,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "685",
+                "QUESTION_ANSWER": "28",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> The pattern calls for 28 stitches to be cast on</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "How many stitches will you cast on? (W)",
+                "TYPEOF": "Questions"
+              },
+              "legacyComponentId": 2369,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "685",
+                "CHALLENGE_COMPONENTID": "1896",
+                "QUESTION_ANSWER": "58",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i>Follow the pattern to 58 stitches</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "How many stitches at the top of the sleeve? (U)"
+              },
+              "legacyComponentId": 2370,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "685",
+                "CHALLENGE_COMPONENTID": "1897",
+                "QUESTION_ANSWER": "14",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 14 rows",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "How many rows of ribbing? (R) <em><small>(Round up)</small></em>"
+              },
+              "legacyComponentId": 2371,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "685",
+                "CHALLENGE_COMPONENTID": "1898",
+                "QUESTION_ANSWER": "82",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 82 rows (rounded)</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "How many total rows will be knit for the sleeve? (R + L) <em><small>Round to even number</small></em>"
+              },
+              "legacyComponentId": 2372,
+              "order": 5
+            },
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"blockquote_style\">You are ready to knit this sweater if:\r\n<ul>\r\n<li>You can match the designer's gauge</li>\r\n<li>You can wear this size</li></ul>\r\nComing up .... we'll discuss some alternative ways of using this hand knitting pattern on the machine.\r\n</blockquote>\r\n\r\n\r\n",
+              "legacyComponentId": 2373,
+              "order": 6
+            }
+          ],
+          "title": "Practice Reading/Translating a HK Pattern",
+          "slug": "practice-reading-translating-a-hk-pattern",
+          "order": 12,
+          "legacy": {
+            "assignId": 861,
+            "blockType": "Practice"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 4: Your PERFECT Sweater",
+      "slug": "section-4-your-perfect-sweater",
+      "displayOrder": 40,
+      "legacy": {
+        "itemId": 154,
+        "lessonOrder": 40
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858368",
+              "title": "Analyzing Sweater Styles",
+              "legacyComponentId": 2374,
+              "order": 1
+            }
+          ],
+          "title": "Analyze Sweater Styles",
+          "slug": "analyze-sweater-styles",
+          "order": 1,
+          "legacy": {
+            "assignId": 862,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The secret to knitting your PERFECT sweater is to identify what you want.<br>\r\nWould you blindly follow a recipe without checking out the ingredients?  Maybe you HATE turnips.  If a recipe calls for turnips, you will probably eliminate or substitute something else.<br>\r\n<div class=\"smallblock\">No knitting pattern written by someone else will ever be PERFECT for YOU!<br></div><br><b>Let's look at 4 basic sweater styles. Your favorite may be styled a little differently, but we'll use these basic shapes to establish measurement. We'll address styling later.</b>",
+              "legacyComponentId": 2375,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/24/nothing_fits/nothing_fits_measure2.jpg",
+                  "caption": "The drop shoulder sweater is the easiest and fastest style to knit. With minimal shaping, it's often recommended for beginner knitters. It's perfect if you are doing a lot of hand manipulation, adding complicated stitch patterns or color work, or using the g-carriage.<br>\r\nThis style is very common in ready-to-wear because it can easily fit a wide range of sizes."
+                },
+                {
+                  "src": "/challenge/images/v2/24/nothing_fits/nothing_fits_measure3.jpg",
+                  "caption": "Square armhole is also called \"modified drop shoulder\" shaping.  Again, there is minimal shaping, that makes for easy knitting.  Because the sleeve seams are higher on the shoulders, this style can be more flattering, but still fit a range of sizes and body types.<br>\r\nNotice the bind off edges at the underarms and the matching straight knitting on the sleeves. This makes it a bit more difficult to set in the sleeve, but nothing you can't master."
+                },
+                {
+                  "src": "/challenge/images/v2/24/nothing_fits/nothing_fits_measure4.jpg",
+                  "caption": "A variation on the Square armhole is the Full Fashioned sleeve.  Notice the diagonal shaping at the underarm.  This provides a better fit with less bulk at the underarm. Simple decreases create the shaping on both body and sleeve."
+                },
+                {
+                  "src": "/challenge/images/v2/24/nothing_fits/nothing_fits_measure1.jpg",
+                  "caption": "The classic set in sleeve has shaped armholes and a shaped sleeve cap.  This is a very popular and flattering style for all figures.<br>\r\nBUT it has the most shaping.  If you are short on time, or just getting started with your machine, you may want to consider another style.<br>\r\n<blockquote>This style of sleeve isn't hard to knit, it just takes more time and knitting experience. Knit it Now offers a complete course \"Set in Sleeve Perfection\" to help you master this style with practice BEFORE you start knitting your perfect sweater .</blockquote>"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 2376,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Question-Multi",
+              "notes": [
+                "Unmapped legacy component type: Question-Multi"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "642",
+                "OPTION_1": "Set in Sleeves",
+                "OPTION_2": "Drop Shoulder",
+                "OPTION_3": "Square Armhole",
+                "OPTION_4": "Full Fashipned",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_TEXT": "Which Style do you prefer?",
+                "TYPEOF": "Question-Multi"
+              },
+              "legacyComponentId": 2378,
+              "order": 4
+            }
+          ],
+          "title": "Sweater Styles Part 2",
+          "slug": "sweater-styles-part-2",
+          "order": 2,
+          "legacy": {
+            "assignId": 863,
+            "blockType": "Imageslideshow"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<div class=\"col-12-xs\"><br>\r\n<em>When I am packing cones of yarn in a box, I know the the size of the cones, but will the cones will fit in the available box?  To be able to mail your yarn order, <b>the BOX size is more important than the cone dimensions!</b><br>If the box is too big the cones will rattle around and the box will get crushed.  If the packaging is too small, the box could split in transit.<br><b>It doesn't matter what your bust, waist and hip measurements are ... what matters is the size of the package!</b></em><br><blockquote class=\"smallblock\"> <i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> INSTEAD OF MAKING A PATTERN FIT OUR DIMENSIONS, LETS DETERMINE A COMFORTABLE SIZE FOR OUR SWEATER AND KNIT THE SWEATER TO THOSE DIMENSIONS!</blockquote><br>\r\n\r\n</div>\r\n\r\n<div class=\"col-12-xs\"><img src=\"/challenge/images/v2/24/nothing_fits/body_measure.jpg\"</div>\r\n\r\n</div>\r\n<h3>Up next:</h3>\r\n\r\nThe secret to custom fit ... copy the packaging that fits YOU!\r\n",
+              "legacyComponentId": 2381,
+              "order": 1
+            }
+          ],
+          "title": "Don't Measure your Body!",
+          "slug": "don-t-measure-your-body",
+          "order": 3,
+          "legacy": {
+            "assignId": 864,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "After analyzing your sweater style, your sweater should fit into one of these categories.<br> <a href=\"https://www.knititnow.com/challenge/23/Group/661/item#section145\">Review \"Analyze Sweater  Styles\" Video </a><br><b><i class=\"fa fa-pencil-square-o\"></i> Click on the image below that is closest to your sweater model.</b><br>\r\n<em>For now, don't worry about neck shaping, length or body style.  For now we want to match the armhole style only.</em><br>",
+              "legacyComponentId": 2382,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: modelsweater.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "865",
+                "CHALLENGE_COMPONENTID": "2383",
+                "CUSTOMCFM": "modelsweater.cfm"
+              },
+              "legacyComponentId": 2383,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Up Next:</h3> Record the dimensions of your sweater",
+              "legacyComponentId": 2384,
+              "order": 3
+            }
+          ],
+          "title": "Select your sweater model",
+          "slug": "select-your-sweater-model",
+          "order": 5,
+          "legacy": {
+            "assignId": 865,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": " <br><Small><em>Be sure to select your sweater model first</em></small>",
+              "legacyComponentId": 2386,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): SweaterStyle",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 663 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "676",
+                "CHALLENGE_COMPONENTID": "1860",
+                "DATAMODEL_ELEMENTS": "SweaterStyle",
+                "DATAMODEL_REDIRECT": "663"
+              },
+              "legacyComponentId": 2387,
+              "order": 2
+            },
+            {
+              "type": "download",
+              "label": "Print your worksheet",
+              "filename": "/downloads/measure_worksheet1.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "676",
+                "componentId": "2121",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 2388,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"smallblock\">By entering the numbers below, you will be armed with the information needed to create your own sweater design with each of the methods suggested in the next section of the course.</blockquote>",
+              "legacyComponentId": 2389,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: modelsweater_DynamicImage.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "676",
+                "CUSTOMCFM": "modelsweater_DynamicImage.cfm",
+                "TYPEOF": "CustomCFM"
+              },
+              "legacyComponentId": 2390,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "676",
+                "CHALLENGE_COMPONENTID": "1861",
+                "DATAMODEL_ELEMENT": "A",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "A  - <b>Width</b> of the bottom hem",
+                "DATAMODEL_VALIDATION": "number",
+                "DATAMODEL_VALIDATION_MESSAGE": "Enter the A witdh",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 2391,
+              "order": 6
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "676",
+                "DATAMODEL_ELEMENT": "B",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "B - <b>Length</b> to Underarm",
+                "REMOVEALERT": "1",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 2392,
+              "order": 7
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "676",
+                "DATAMODEL_ELEMENT": "C",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "C - <b>Length</b> of Armhole",
+                "REMOVEALERT": "1",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 2393,
+              "order": 8
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "676",
+                "CHALLENGE_COMPONENTID": "2054",
+                "DATAMODEL_ELEMENT": "D",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "D - <b>Width</b> of shoulder seam",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 2394,
+              "order": 9
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "676",
+                "CHALLENGE_COMPONENTID": "2053",
+                "DATAMODEL_ELEMENT": "E",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "E - <b>Width</b> of neck opening<em><small>(without band or collar)</small></em>",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 2395,
+              "order": 10
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "676",
+                "CHALLENGE_COMPONENTID": "2061",
+                "DATAMODEL_ELEMENT": "F1",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "F1 - <b>Depth</b> of Front Neck <em><small>without band or collar</small></em>",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 2396,
+              "order": 11
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "676",
+                "CHALLENGE_COMPONENTID": "2120",
+                "DATAMODEL_ELEMENT": "F2",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "F2 - <b>Depth</b> of Back Neck <em><small>without band or collar</small></em>",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 2397,
+              "order": 12
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "676",
+                "CHALLENGE_COMPONENTID": "2066",
+                "DATAMODEL_ELEMENT": "G",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "G - <B>Width</b> at Bust / Chest",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 2398,
+              "order": 13
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "676",
+                "CHALLENGE_COMPONENTID": "2052",
+                "DATAMODEL_ELEMENT": "K",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "K - <b>Width</b> between sleeve seams",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 2399,
+              "order": 14
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "676",
+                "CHALLENGE_COMPONENTID": "2060",
+                "DATAMODEL_ELEMENT": "S",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "S - <b>Depth</b> of Shoulder Slope",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 2400,
+              "order": 15
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "676",
+                "CHALLENGE_COMPONENTID": "2132",
+                "DATAMODEL_ELEMENT": "M",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "M - <b>Length</b> at center back",
+                "DATAMODEL_VALIDATION": "number",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 2401,
+              "order": 16
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "676",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 2402,
+              "order": 17
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "676",
+                "CHALLENGE_COMPONENTID": "2062",
+                "DATAMODEL_ELEMENT": "L",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "L - <b>Length</b> of Sleeve <em><small>(underarm)</small></em>",
+                "DATAMODEL_VALIDATION": "number",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 2403,
+              "order": 18
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "676",
+                "CHALLENGE_COMPONENTID": "2056",
+                "DATAMODEL_ELEMENT": "U",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "U - <b>Width</b> of sleeve top <em><small>(upper arm)</small></em>",
+                "REMOVEALERT": "1"
+              },
+              "legacyComponentId": 2404,
+              "order": 19
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "676",
+                "DATAMODEL_ELEMENT": "W",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "W - <b>Width</b> of lower edge of sleeve",
+                "REMOVEALERT": "1",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 2405,
+              "order": 20
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Up next:</h3>\r\nArmed with the measurements, explore methods available to create your custom fit sweater.",
+              "legacyComponentId": 2406,
+              "order": 21
+            }
+          ],
+          "title": "Measure and Record",
+          "slug": "measure-and-record",
+          "order": 6,
+          "legacy": {
+            "assignId": 866,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 5: Baby Steps: A Man's Vest",
+      "slug": "section-5-baby-steps-a-man-s-vest",
+      "displayOrder": 50,
+      "legacy": {
+        "itemId": 170,
+        "lessonOrder": 50
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "262297068",
+              "title": "Finally the meat of the course ... in small steps :-)",
+              "legacyComponentId": 2408,
+              "order": 1
+            }
+          ],
+          "title": "Let's keep things simple ... for now",
+          "slug": "let-s-keep-things-simple-for-now",
+          "order": 1,
+          "legacy": {
+            "assignId": 867,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> To make measuring easier, place the sweater on a gridded surface.  A gridded blocking board or a cutting board with lines would be most accurate.\r\n",
+              "legacyComponentId": 2409,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/nothing_fits/vest1.png",
+                  "caption": "Measure the sweater flat in inches or cm."
+                },
+                {
+                  "src": "/challenge/images/v2/24/nothing_fits/vest2.png",
+                  "caption": "To accurately measure the armhole, place a straight edge (wood ruler) at the bottom of the armhole opening (ignore the band).  Measure from the straight edge to the shoulder seam."
+                },
+                {
+                  "src": "/challenge/images/v2/24/nothing_fits/vest3.png",
+                  "caption": "Record all your measurements of the sweater, not including the bands."
+                },
+                {
+                  "src": "/challenge/images/v2/24/nothing_fits/vest4.png",
+                  "caption": "This neck opening is 7.25\" from seam to seam."
+                },
+                {
+                  "src": "/challenge/images/v2/24/nothing_fits/vest5.png",
+                  "caption": "Use a straight edge to measure from the bottom most point of the neck opening to the shoulder seam. This sample is 6.5\"."
+                },
+                {
+                  "src": "/challenge/images/v2/24/nothing_fits/vest6.png",
+                  "caption": "The back neck depth for this sweater is 3/4\"."
+                },
+                {
+                  "src": "/challenge/images/v2/24/nothing_fits/vest7.png",
+                  "caption": "Measure from seam to seam."
+                },
+                {
+                  "src": "/challenge/images/v2/24/nothing_fits/vest9.png",
+                  "caption": "Use a straight edge again to determine the shoulder slope"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 2410,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "756",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 2411,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "Here are the the golf sweater measurements.  We'll use these to practice<br>\r\n<div class=\"col-12-xs\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/24/nothing_fits/vest_measure.jpg\"></div>\r\n<div class=\"col-12-xs\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/24/nothing_fits/vest_measure1.jpg\"></div>\r\n",
+              "legacyComponentId": 2412,
+              "order": 4
+            }
+          ],
+          "title": "Measure the golf sweater",
+          "slug": "measure-the-golf-sweater",
+          "order": 2,
+          "legacy": {
+            "assignId": 868,
+            "blockType": "Imageslideshow"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "262858951",
+              "title": "A \"Perfect\" Hand Knitting Pattern?",
+              "legacyComponentId": 2413,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "Download the hand knitting vest pattern if you'd like to follow along.  <em><small>This pattern is being used with permission from Berroco</small></em>",
+              "legacyComponentId": 2414,
+              "order": 2
+            },
+            {
+              "type": "download",
+              "label": "Download the Hand Knitting Pattern",
+              "filename": "/downloads/Peter Easy (1).pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "759",
+                "componentId": "2144",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 2415,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "259467980",
+              "title": "Slope Tool",
+              "legacyComponentId": 2416,
+              "order": 4
+            }
+          ],
+          "title": "The \"Perfect\"  Hand Knitting Pattern",
+          "slug": "the-perfect-hand-knitting-pattern",
+          "order": 4,
+          "legacy": {
+            "assignId": 869,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "263260805",
+              "title": "What's a Charting Device?",
+              "legacyComponentId": 2417,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<div align=\"center\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/24/nothing_fits/charting_device_vest.jpg\"></div>",
+              "legacyComponentId": 2418,
+              "order": 2
+            }
+          ],
+          "title": "Create the Vest with a Charting Device",
+          "slug": "create-the-vest-with-a-charting-device",
+          "order": 5,
+          "legacy": {
+            "assignId": 870,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">Your Turn! </div>\r\nUncover the stitches and row instructions for the sleeves.<br>\r\n\r\n\r\n\r\n<div class=\"col-12-xs\">Using your <a href=\"https://www.knititnow.com/challenge/25/Group/682/item#section157\">Worksheet</a> and the <a href=\"https://www.knititnow.com/challenge/25/Group/680/item#section156\">original pattern</a>, do the math to calculate the stitches and rows for the sleeves.<br>Remember the 1\" and 1 cm stitch and row multipliers that we established earlier.<br><table border=\"1\">\r\n<tr>\r\n<th>4\" / 10 cm</th>\r\n<th>1 inch</th>\r\n<th>1 cm</th>\r\n</tr>\r\n<tr>\r\n<td>13 sts</td>\r\n<td>3.25 sts</td>\r\n<td>1.3 sts</td>\r\n</tr>\r\n<tr>\r\n<td>18 rows</td>\r\n<td>4.5 rows</td>\r\n<td>1.8 rows</td>\r\n</tr>\r\n</table>\r\n\r\n\r\n</div>\r\n<div class=\"col-12-xs\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/24/big_hug/big_hug_sleeve.jpg\"</div>\r\n",
+              "legacyComponentId": 2419,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "685",
+                "QUESTION_ANSWER": "28",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> The pattern calls for 28 stitches to be cast on</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "How many stitches will you cast on? (W)",
+                "TYPEOF": "Questions"
+              },
+              "legacyComponentId": 2420,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "685",
+                "CHALLENGE_COMPONENTID": "1896",
+                "QUESTION_ANSWER": "58",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i>Follow the pattern to 58 stitches</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "How many stitches at the top of the sleeve? (U)"
+              },
+              "legacyComponentId": 2421,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "685",
+                "CHALLENGE_COMPONENTID": "1897",
+                "QUESTION_ANSWER": "14",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 14 rows",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "How many rows of ribbing? (R) <em><small>(Round up)</small></em>"
+              },
+              "legacyComponentId": 2422,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "685",
+                "CHALLENGE_COMPONENTID": "1898",
+                "QUESTION_ANSWER": "82",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 82 rows (rounded)</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "How many total rows will be knit for the sleeve? (R + L) <em><small>Round to even number</small></em>"
+              },
+              "legacyComponentId": 2423,
+              "order": 5
+            },
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"blockquote_style\">You are ready to knit this sweater if:\r\n<ul>\r\n<li>You can match the designer's gauge</li>\r\n<li>You can wear this size</li></ul>\r\nComing up .... we'll discuss some alternative ways of using this hand knitting pattern on the machine.\r\n</blockquote>\r\n\r\n\r\n",
+              "legacyComponentId": 2424,
+              "order": 6
+            }
+          ],
+          "title": "Practice Reading/Translating a HK Pattern",
+          "slug": "practice-reading-translating-a-hk-pattern",
+          "order": 5,
+          "legacy": {
+            "assignId": 871,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "If you use DesignaKnit, please don't skip this tutorial.</br><br>\r\n\r\nThis exercise may seem a little silly because DAK has Standard Garment Shaping built in. But the skills presented will go a long way towards creating more complex garment shapes.<br>The concept of using ZERO EASE to duplicate the vest may be new to you. All of the edits are done in Standard Garment Shaping only.",
+              "legacyComponentId": 2425,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "262418226",
+              "title": "DAK - Duplicate a Sweater",
+              "legacyComponentId": 2426,
+              "order": 2
+            }
+          ],
+          "title": "Create the Vest in DesignaKnit",
+          "slug": "create-the-vest-in-designaknit",
+          "order": 6,
+          "legacy": {
+            "assignId": 872,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "263371997",
+              "title": "What's next?",
+              "legacyComponentId": 2427,
+              "order": 1
+            }
+          ],
+          "title": "Can't find YOUR Perfect Sweater?",
+          "slug": "can-t-find-your-perfect-sweater",
+          "order": 7,
+          "legacy": {
+            "assignId": 873,
+            "blockType": "VimeoID"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 6: Common Fit Issues",
+      "slug": "section-6-common-fit-issues",
+      "displayOrder": 80,
+      "legacy": {
+        "itemId": 155,
+        "lessonOrder": 80
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nNo matter what shape of sleeve, you don't need to settle for sleeves being too long or too short. Determine your perfect length and adjust your pattern accordingly.\r\n<img width=\"200\" src=\"/challenge/images/v2/24/nothing_fits/sleeves.jpg\">\r\n\r\n<div>\r\n\r\n<b><i class=\"fa fa-hand-o-down\" aria-hidden=\"true\"></i> Use the tabs below to explore different methods for adjusting your sleeve length. <i class=\"fa fa-hand-o-down\" aria-hidden=\"true\"></i> </b>",
+              "legacyComponentId": 2428,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": " \r\n  <!-- Nav tabs -->\r\n  <ul class=\"nav nav-tabs\" role=\"tablist\">\r\n    <li role=\"presentation\" class=\"active\"><a href=\"#kinSection\" aria-controls=\"kinSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Knit it Now Patterns</a></li>\r\n    <li role=\"presentation\"><a href=\"#mathSection\" aria-controls=\"mathSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Commercial Patterns + Math</a></li>\r\n    <li role=\"presentation\"><a href=\"#deviceSection\" aria-controls=\"deviceSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Charting Device</a></li>\r\n    <li role=\"presentation\"><a href=\"#dakSection\" aria-controls=\"dakSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> DesignaKnit</a></li>\r\n  </ul>\r\n\r\n  <div class=\"tab-content\">\r\n\t\r\n\t<!--- inital wording \r\n\t <div role=\"tabpanel\" class=\"tab-pane active\" id=\"welcome\">\r\n\t\t\r\n\t\t\t<br>\r\n\t\t\r\n\t</div>\r\n\t--->\r\n   <!--- kinSection --->\r\n    <div role=\"tabpanel\" class=\"tab-pane active\" id=\"kinSection\">\r\n\t\t<br><blockquote class=\"smallblock\">Knit it Now Dynamic Patterns include a link to a tool to help you adjust your sleeves.  Watch how it's done.</blockquote>\r\n\t\t\t<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/163901749' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\t\t\r\n\t</div>\r\n\r\n\t<!--- mathSection --->\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"mathSection\">\r\n<br><blockquote class=\"smallblock\">Use the Magic Formula to accurately calculate the shaping when using any knitting pattern. Here are 2 Knit it Now tools you can use to  make it easier. </blockquote>\r\n\t\t\r\n\r\n   \t\t\t<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/196648775' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n \t\t\r\n   \t\t\r\n    \t\t<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/196656033' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n  \t\t\r\n \t</div>\r\n\r\n\t<!--- deviceSection --->\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"deviceSection\">\r\n\t\t\r\n\t\t   \t<br>Using a Charting Device is probably the easiest way to adjust your sleeve length ... just draw the sleeve to the correct size at scale.<br>\t\r\n\t\t\r\n\t\t\r\n\t\t\r\n\t\t\t\t<blockquote class=\"smallblock\"><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i>TIP: Once you establish your sleeve cap, draw multiple sleeve lengths and styles on the same mylar.  Mark each style with a different color to make it easier to follow as you knit. </blockquote><img width=\"300\" src=\"/challenge/images/v2/24/nothing_fits/charting_device_sleeve.jpg\">\r\n\t\t\r\n\t</div>\r\n    \r\n\t<div role=\"tabpanel\" class=\"tab-pane\" id=\"dakSection\">\r\n\r\n\t\t <br><blockquote class=\"smallblock\">Explore a couple of methods of using DAK to adjust your sleeve length.</blockquote>\r\n   <div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/265467922' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n  \r\n\t</div>\r\n  </div>\r\n\r\n</div>\r\n<div class=\"clearfix\"></div>",
+              "legacyComponentId": 2429,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<br>",
+              "legacyComponentId": 2430,
+              "order": 3
+            }
+          ],
+          "title": "Sleeves too Long",
+          "slug": "sleeves-too-long",
+          "order": 1,
+          "legacy": {
+            "assignId": 874,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<div class=\"col-12-xs\">Do you find that the back of your sweaters are too short? Feel like you have to tug down all the time? Adding extra length in just the center back can help.<br>The video below discusses adding the length across the shoulder area.  You could also consider gradually adding a few rows over the length of the garment.<br>\r\nEither way, add length without changing the row counts of the side seams or armholes.<br>It doesn't make sense to change any pattern for this alteration.  Simply lengthen the center of the garment piece with short rows as you are knitting.<br> </div>\r\n<div class=\"col-12-xs\">\r\n <div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/193919281' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\r\n</div>\r\n\r\n\r\n",
+              "legacyComponentId": 2431,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<h3><i class=\"fa fa-refresh fa-spin fa-2x fa-fw\"></i> Practice</h3>\r\nYour Gauge: 18 sts / 24 rows = 4\" / 10cm<br>\r\n",
+              "legacyComponentId": 2433,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "807",
+                "CHALLENGE_COMPONENTID": "2246",
+                "QUESTION_ANSWER": "12",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Answer: 12 rows (6 rows X 2 inches)",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "How many rows should you add to make the back of your sweater 2 inches longer?"
+              },
+              "legacyComponentId": 2434,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "807",
+                "CHALLENGE_COMPONENTID": "2250",
+                "QUESTION_ANSWER": "N",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> The goal is to add additional length at the center back</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "Do you have to add all the rows below the neckline? Y/ N"
+              },
+              "legacyComponentId": 2435,
+              "order": 5
+            },
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Men, women, new mammas can need additional length in front. <br>\r\n",
+              "legacyComponentId": 2437,
+              "order": 7
+            },
+            {
+              "type": "richText",
+              "html": " There are many ways to add length and width to the front of a sweater.  The secret is keeping in mind that you are adding length to the center, but not changing the row counts at the side seams<br><!-- Nav tabs -->\r\n  <ul class=\"nav nav-tabs\" role=\"tablist\">\r\n    <li role=\"presentation\" class=\"active\"><a href=\"#kinSection\" aria-controls=\"kinSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Knit it Now Patterns</a></li>\r\n    <li role=\"presentation\"><a href=\"#mathSection\" aria-controls=\"mathSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Commercial Patterns + Math</a></li>\r\n    <li role=\"presentation\"><a href=\"#deviceSection\" aria-controls=\"deviceSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Charting Device</a></li>\r\n    <li role=\"presentation\"><a href=\"#dakSection\" aria-controls=\"dakSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> DesignaKnit</a></li>\r\n  </ul>\r\n\r\n  <div class=\"tab-content\">\r\n\t\r\n\t<!--- inital wording --->\r\n\t <div role=\"tabpanel\" class=\"tab-pane active\" id=\"welcome\">\r\n\t\t\r\n\t\t\t<br>\r\n\t\t\r\n\t</div>\r\n\t\r\n   <!--- kinSection --->\r\n    <div role=\"tabpanel\" class=\"tab-pane active\" id=\"kinSection\">\r\n\t\t<br><blockquote class=\"smallblock\">Here's a short row knitting tip to use with Knit it Now patterns, or other purchased patterns.</blockquote>\r\n\t\t\t<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/269733214' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\t\t\r\n\t</div>\r\n\r\n\t<!--- mathSection --->\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"mathSection\">\r\n<br><blockquote class=\"smallblock\">Use the Magic Formula tools to add width to the front. </blockquote>\r\n\t\t\r\n\r\n   \t\t\t<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/196648775' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n \t\t\r\n   \t\t\r\n    \t\t<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/196656033' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n  \t\t\r\n \t</div>\r\n\r\n\t<!--- deviceSection --->\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"deviceSection\">\r\n\t\t\r\n\t\t   \t<br>\r\n\t\t\r\n\t\t\r\n\t\t\t\t<blockquote class=\"smallblock\"><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i>Include the additional length and width when drawing your design for your charting device.\r\n<img src=\"/challenge/images/v2/24/nothing_fits/alter.jpg\">\r\n\r\n\t\t\r\n\t</div>\r\n    \r\n\t<div role=\"tabpanel\" class=\"tab-pane\" id=\"dakSection\">\r\n\r\n\t\t <br><blockquote class=\"smallblock\">Use Original Pattern Drafting to add both length and width to the front of your sweater.</blockquote>\r\n   <div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/269968737' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n  \r\n\t</div>\r\n  </div>\r\n\r\n</div>\r\n<div class=\"clearfix\"></div>",
+              "legacyComponentId": 2467,
+              "order": 8
+            }
+          ],
+          "title": "Back / Front Too Short",
+          "slug": "back-front-too-short",
+          "order": 2,
+          "legacy": {
+            "assignId": 875,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"clearfix\"></div>\r\n\r\n\tMost knitting patterns do not include bust darts.  Many knitters simply rely on the stretch of the knitted fabric.<br>\r\n\t<b>BUT</b> . . . Simply adding a few rows of knitting to the center front of your sweaters will add comfort and allow your sweaters to hang parallel to the floor.<br>\r\n\tUnlike adding rows for a rounded back or tummy, darts are positioned to point to the fullest part of the bust, adding length and shape to a sweater.\r\n\t<img src=\"/challenge/images/v2/24/nothing_fits/bust_dart_illustration.jpg\">\r\n   <!--row -->\r\n",
+              "legacyComponentId": 2438,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859486",
+              "title": "Adding Bust Darts",
+              "legacySlot": 1,
+              "legacyComponentId": 2439,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\t\r\n\t\t<b><i class=\"fa fa-hand-o-down\" aria-hidden=\"true\"></i> Use the tabs below to explore different methods for adjusting your sleeve length. <i class=\"fa fa-hand-o-down\" aria-hidden=\"true\"></i></b>\r\n\t   <!--col -->\r\n   <!--row -->  \r\n\r\n<!-- Nav tabs -->\r\n  <ul class=\"nav nav-tabs\" role=\"tablist\">\r\n    <li role=\"presentation\"><a href=\"#section1\" aria-controls=\"section1\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Knit it Now Patterns</a></li>\r\n    <li role=\"presentation\"><a href=\"#section2\" aria-controls=\"section2\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Commercial Patterns + Math</a></li>\r\n    <li role=\"presentation\"><a href=\"#section3\" aria-controls=\"section3\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Charting Device</a></li>\r\n    <li role=\"presentation\"><a href=\"#section4\" aria-controls=\"section4\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> DesignaKnit</a></li>\r\n  </ul>\r\n\r\n  <div class=\"tab-content\" style=\"padding-top:20px;\">\r\n\t\r\n\t<!--- inital wording --->\r\n\t <div role=\"tabpanel\" class=\"tab-pane active\" id=\"welcome\">\r\n\t\t\r\n\t\t\t\r\n\t\t\r\n\t</div>\r\n\t\r\n   <!--- section1 --->\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"section1\">\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<blockquote class=\"smallblock\">Knit it Now Dynamic Patterns include a link to a tool to help you add bust darts.  Watch how it's done.</blockquote>\r\n\t\t\t\r\n\t\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/151859480' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\t\t\t\r\n\t\t\r\n\t</div>\r\n\r\n\t<!--- section2 --->\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"section2\">\r\n\t\t<blockquote class=\"smallblock\">Use the Knit it Now Tool to calculate your Bust Dart Shaping </blockquote>\r\n\t\t\r\n   \t\t\t<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/151859480' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n \t\t\r\n   </div>\r\n\r\n\t<!--- section3 --->\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"section3\">\r\n\r\n\t\t\r\n\t\t   Add bust dart shaping to your mylar to be used with a charting device.<br>\r\n\t\t\t<ol class=\"instruction-list\">\r\n\t\t\t\t<li>Draw the front piece as desired (without darts)</li>\r\n\t\t\t\t<li>Determine the positioning and depth of your dart</li>\r\n\t\t\t\t<li>Add the dart to the mylar (just draw a line)</li>\r\n                              \r\n\t\t\t\t<li>When you reach the start of the dart, note the row counter</li>\r\n  <li>Use the Knit it Now Dart Tool (the magic formula or graph paper) to determine the knitting instructions</li>\r\n\t\t\t\t<li>Pause the charting device</li>\r\n<li>Work the dart(s) with short row shaping</li>\r\n\t\t\t\t<li>Finish by knitting 1 row across all held needles</li>\r\n\t\t\t\t<li>RESET YOUR ROW COUNTER to the count before starting the dart</li>\r\n\t\t\t\t<li>Continue knitting the front</li>\r\n\t\t\t</ol>\r\n\t\t<b>NOTE:</b> Remember you are adding length (rows) to the center of the front piece, but not to the side seams.  When done, the row counter should match the row count for the back of your knitting.\r\n\t\t\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/24/nothing_fits/add_a_dart.jpg\">\r\n\r\n\r\n<div class=\"col-12-xs\">\r\n<br><img class=\"img-thumbnail\" src=\"/challenge/images/v2/24/nothing_fits/thumb_642.jpg\"></div>\r\n\r\n\t</div>\r\n    \r\n\t<div role=\"tabpanel\" class=\"tab-pane\" id=\"section4\">\r\n\t\t \r\n\t\t\t<blockquote class=\"smallblock\">Explore 2 methods of using DAK to create bust darts.</blockquote><br>\r\n   \t\t\t<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/265670278' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n<br></div>\r\n\t\t\t<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/265689791' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n  \t\t<!--- col --->\t\r\n\t</div><!--- section4 --->\r\n\r\n</div><!--- tab-content --->\r\n\r\n</div> <!--- tab end - last item --->\r\n\r\n",
+              "legacyComponentId": 2440,
+              "order": 3
+            }
+          ],
+          "title": "Make Room for 'The Girls'",
+          "slug": "make-room-for-the-girls",
+          "order": 3,
+          "legacy": {
+            "assignId": 876,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "This topic falls more into the \"Design Element\" category than fit.<br>Some patterns are designed with very wide necklines.  Have you ever had a top that felt like it was falling off your shoulders?<br>Unless you have a collar or other design element around the neckline, you don't have to completely re-chart the neckline. Just one small change can make a huge difference.",
+              "legacyComponentId": 2441,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\t\r\n\t\t<b><i class=\"fa fa-hand-o-down\" aria-hidden=\"true\"></i> Use the tabs below to explore different methods for adjusting your neck opening width. <i class=\"fa fa-hand-o-down\" aria-hidden=\"true\"></i></b>\r\n\t   <!--col -->\r\n   <!--row -->  \r\n\r\n<!-- Nav tabs -->\r\n  <ul class=\"nav nav-tabs\" role=\"tablist\">\r\n    <li role=\"presentation\"><a href=\"#section1\" aria-controls=\"section1\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Knit it Now Patterns</a></li>\r\n    <li role=\"presentation\"><a href=\"#section2\" aria-controls=\"section2\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Commercial Patterns</a></li>\r\n    <li role=\"presentation\"><a href=\"#section3\" aria-controls=\"section3\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Charting Device</a></li>\r\n    <li role=\"presentation\"><a href=\"#section4\" aria-controls=\"section4\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> DesignaKnit</a></li>\r\n  </ul>\r\n\r\n  <div class=\"tab-content\" style=\"padding-top:20px;\">\r\n\t\r\n\t<!--- inital wording --->\r\n\t <div role=\"tabpanel\" class=\"tab-pane active\" id=\"welcome\">\r\n\t\t\r\n\t\t\t\r\n\t\t\r\n\t</div>\r\n\t\r\n   <!--- section1 --->\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"section1\">\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<blockquote class=\"smallblock\">With Knit it Now Dynamic Patterns, check the legend image for the neck opening width to determine if you want to make a change.</blockquote>\r\n\t\t\t\r\n\t\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t\r\nThis pattern for a round neckline is instructing us to bind off 32 stitches at the center front.  Looking at the diagram (or doing the math) I've determined that I want the neck opening to be 2\" narrower.<br><b>Instead of making big pattern changes:</b>\r\n<ol>\r\n<Li>Bind off fewer stitches at the center front</li>\r\n<li>Continue following the pattern and work the neckline shaping as instructed</li>\r\n<li>You will have more stitches at the shoulder seams</li>\r\n<li>The neck opening will be narrower</li>\r\n<li>Don't forget to repeat this on the back as well, so the shoulders match</li>\r\n</ol>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/24/nothing_fits/neck_too_big2.jpg\">\r\n\r\n\t\t\t\r\n\t\t\r\n\t</div>\r\n\r\n\t<!--- section2 --->\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"section2\">\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<blockquote class=\"smallblock\">Read the pattern or use a diagram to establish the neck opening width in the pattern. Determine if you want to make a change.</blockquote>\r\n\t\t\t\r\n\t\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t\r\nThis pattern for a round neckline is instructing us to bind off 32 stitches at the center front.  Looking at the diagram (or doing the math) I've determined that I want the neck opening to be 2\" narrower.<br><b>Instead of making big pattern changes:</b>\r\n<ol>\r\n<Li>Bind off fewer stitches at the center front</li>\r\n<li>Continue following the pattern and work the neckline shaping</li>\r\n<li>You will have more stitches at the shoulder seams</li>\r\n<li>The neck opening will be narrower</li>\r\n<li>Don't forget to repeat this on the back as well, so the shoulders match</li>\r\n</ol>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/24/nothing_fits/neck_too_big2.jpg\">\r\n\r\n\t\t\t\r\n\t\t\r\n\t</div>\r\n\r\n\r\n\t<!--- section3 --->\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"section3\">\r\n<blockquote class=\"smallblock\">When using a charting device, simply draw the neckline to your desired size.  Be sure to make the adjustment to both back and front so the shoulder stitch counts match.</blockquote>\r\n\t\t<img src=\"/challenge/images/v2/24/nothing_fits/neckline_charting_device.jpg\">\r\n</div>\r\n    \r\n\t<div role=\"tabpanel\" class=\"tab-pane\" id=\"section4\">\r\n\t\t \r\n\t\t\t<blockquote class=\"smallblock\">The best place to make neckline changes in within Standard Garment Shaping.<br>If altering the neck opening in Original Pattern Drafting, be sure to duplicate the change on both back and front pieces</blockquote><br>\r\n   \t\t\t<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/265808687' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\t\t\t\r\n  \t\t<!--- col --->\t\r\n\t</div><!--- section4 --->\r\n\r\n</div><!--- tab-content --->\r\n\r\n</div> <!--- tab end - last item --->\r\n\r\n",
+              "legacyComponentId": 2442,
+              "order": 2
+            }
+          ],
+          "title": "Neck Opening Too Wide",
+          "slug": "neck-opening-too-wide",
+          "order": 4,
+          "legacy": {
+            "assignId": 877,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img class=\"img-thumbnail\" src=\"/challenge/images/v2/24/nothing_fits/sweater_close.jpg\"><br>\r\n\r\n\r\n    \r\n        <b><i class=\"fa fa-hand-o-down\" aria-hidden=\"true\"></i> Use the tabs below to explore different methods for enlarging the sleeve. <i class=\"fa fa-hand-o-down\" aria-hidden=\"true\"></i></b>\r\n    \r\n    <!--col -->\r\n\r\n<!--row -->\r\n\r\n<!-- Nav tabs -->\r\n<ul class=\"nav nav-tabs\" role=\"tablist\">\r\n    <li role=\"presentation\"><a href=\"#section1\" aria-controls=\"section1\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Knit it Now Patterns</a></li>\r\n    <li role=\"presentation\"><a href=\"#section2\" aria-controls=\"section2\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Commercial Patterns</a></li>\r\n    <li role=\"presentation\"><a href=\"#section3\" aria-controls=\"section3\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Charting Device</a></li>\r\n    <li role=\"presentation\"><a href=\"#section4\" aria-controls=\"section4\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> DesignaKnit</a></li>\r\n</ul>\r\n\r\n<div class=\"tab-content\" style=\"padding-top:20px;\">\r\n\r\n    <!--- inital wording --->\r\n    <div role=\"tabpanel\" class=\"tab-pane active\" id=\"welcome\">\r\n        \r\n\r\n        \r\n    </div>\r\n\r\n    <!--- section1 --->\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"section1\">\r\n        \r\n            \r\n                With <b>Knit it Now Dynamic Patterns</b>, check the legend image for the upper arm width to determine if you want to make a change.\r\n            \r\n        \r\n        \r\n            \r\n                If you need more width, build the pattern at a larger size.<br> Combine the knitting instructions of your original pattern and the sleeve and armhole instructions of the larger size.<br> Remember that the armhole and sleeve caps MUST MATCH. <br><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i>Watch This<br>\r\n                <div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/267650067' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n            \r\n\r\n\r\n        \r\n    </div>\r\n\r\n\r\n    <!--- section2 --->\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"section2\">\r\n        \r\n            \r\n                <blockquote class=\"smallblock\">Watch the video about <a href=\"#section1\" aria-controls=\"section1\" role=\"tab\" data-toggle=\"tab\">Knit it Now Patterns</a></blockquote>\r\n                As with Dynamic Patterns, use the armhole and sleeve from a larger size. Knit the garment to the armhole opening, then use the larger size instructions for the armhole. Knit the neckline shaping according to the original size.<br>The shoulder stitch counts will be impacted, but just make sure the front and back shoulders match.\r\n            \r\n        \r\n    </div>\r\n\r\n\r\n    <!--- section3 --->\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"section3\">\r\n        Re-charting a set in sleeve for a charting device can be tricky. Watch the following videos for tips.\r\n        <!--- Video 1   --->     \r\n        \r\n\t\t\t<!-- Attachment: Video -->\r\n\t\t    <h5><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i>Part 1</h5>\r\n\t\t\t<div class='embed-container'>\n<iframe id=\"vimeoplayer\" src=\"https://player.vimeo.com/video/151858349\" frameborder=\"0\" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>\n</div><!--- embed-container --->\r\n\t\t\t<!-- Video actions -->\r\n\t\t<!--- col-lg-4 col-xs-12 --->\r\n     \r\n\r\n\r\n        <!--- Video 2   --->     \r\n        \r\n\t\t\t<!-- Attachment: Video -->\r\n\t\t    <h5><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i>Part 2</h5>\r\n\t\t\t<div class='embed-container'>\n<iframe id=\"vimeoplayer\" src=\"https://player.vimeo.com/video/151858312\" frameborder=\"0\" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>\n</div><!--- embed-container --->\r\n\t\t\t<!-- Video actions -->\r\n\t\t<!--- col-lg-4 col-xs-12 --->\r\n     \r\n        <!--- Video 3   --->     \r\n        \r\n\t\t\t<!-- Attachment: Video -->\r\n\t\t    <h5><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i>Part 3</h5>\r\n\t\t\t<div class='embed-container'>\n<iframe id=\"vimeoplayer\" src=\"https://player.vimeo.com/video/151858332\" frameborder=\"0\" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>\n</div><!--- embed-container --->\r\n\t\t\t<!-- Video actions -->\r\n\t\t<!--- col-lg-4 col-xs-12 --->\r\n     \r\n       \r\n        <!--- Video 4   --->     \r\n        \r\n\t\t\t<!-- Attachment: Video -->\r\n\t\t    <h5><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i>Part 4</h5>\r\n\t\t\t<div class='embed-container'>\n<iframe id=\"vimeoplayer\" src=\"https://player.vimeo.com/video/151858343\" frameborder=\"0\" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>\n</div><!--- embed-container --->\r\n\t\t\t<!-- Video actions -->\r\n\t\t<!--- col-lg-4 col-xs-12 --->\r\n      \r\n    </div>\r\n\r\n<!--- section4 --->\r\n<div role=\"tabpanel\" class=\"tab-pane\" id=\"section4\">\r\n    \r\n        <div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/267659312' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n    \r\n</div>\r\n<!--- tab end - last item --->\r\n\r\n</div>\r\n<!--- col --->\r\n\r\n",
+              "legacyComponentId": 2443,
+              "order": 1
+            }
+          ],
+          "title": "Upper arm too tight",
+          "slug": "upper-arm-too-tight",
+          "order": 5,
+          "legacy": {
+            "assignId": 878,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "268091842",
+              "title": "Wrinkles Examples",
+              "legacyComponentId": 2444,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/24/nothing_fits/explore_shaped_shoulders.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/24/shoulderANDneckline/flipbook2.jpg",
+                  "caption": "Most bodies have some slope to their shoulders.... some more than others."
+                },
+                {
+                  "src": "/challenge/images/v2/24/shoulderANDneckline/flipbook3.jpg",
+                  "caption": "Putting a square shoulder on a slope can cause fit issues"
+                },
+                {
+                  "src": "/challenge/images/v2/24/shoulderANDneckline/flipbook2a.jpg",
+                  "caption": "You'll notice wrinkles near the underarm"
+                },
+                {
+                  "src": "/challenge/images/v2/24/shoulderANDneckline/warning.jpg",
+                  "caption": "<i class=\"fa fa-exclamation-triangle\" aria-hidden=\"true\"></i> Warning!  Don't try this at home <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i>"
+                },
+                {
+                  "src": "/challenge/images/v2/24/shoulderANDneckline/flipbook4.jpg",
+                  "caption": "If you just make this adjustment on an existing pattern ..... the armhole may be too short AND your sleeves won't fit in the armhole."
+                },
+                {
+                  "src": "/challenge/images/v2/24/shoulderANDneckline/flipbook5.jpg",
+                  "caption": "If you just make this adjustment on an existing pattern ..... the neckline AND center front will be too long."
+                },
+                {
+                  "src": "/challenge/images/v2/24/shoulderandneckline/shoulder_gif.gif",
+                  "caption": "A well designed knitting pattern will adjust the shape of the armhole AND the shape of the sleeve cap to accommodate the shaped shoulder."
+                },
+                {
+                  "src": "/challenge/images/v2/24/shoulderANDneckline/flipbook7.jpg",
+                  "caption": "<i class=\"fa fa-lightbulb\" aria-hidden=\"true\"></i>  Use a knitting pattern that already has shaped shoulders."
+                }
+              ],
+              "legacy": {
+                "enableAudio": "1",
+                "playAudio": null
+              },
+              "legacyComponentId": 2445,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\n\t\r\n\t\t<b><i class=\"fa fa-hand-o-down\" aria-hidden=\"true\"></i> Use the tabs below to explore different methods for adding shaped shoulders. <i class=\"fa fa-hand-o-down\" aria-hidden=\"true\"></i></b>\r\n\t   <!--col -->\r\n   <!--row -->  \r\n  <!-- Nav tabs -->\r\n  <ul class=\"nav nav-tabs\" role=\"tablist\">\r\n    <li role=\"presentation\" class=\"active\"><a href=\"#kinSection\" aria-controls=\"kinSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Knit it Now Patterns</a></li>\r\n    <li role=\"presentation\"><a href=\"#mathSection\" aria-controls=\"mathSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Commercial Patterns + Math</a></li>\r\n    <li role=\"presentation\"><a href=\"#deviceSection\" aria-controls=\"deviceSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Charting Device</a></li>\r\n    <li role=\"presentation\"><a href=\"#dakSection\" aria-controls=\"dakSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> DesignaKnit</a></li>\r\n  </ul>\r\n\r\n  <div class=\"tab-content\">\r\n\t\r\n\t<!--- inital wording \r\n\t <div role=\"tabpanel\" class=\"tab-pane active\" id=\"welcome\">\r\n\t\t\r\n\t\t\t<br>\r\n\t\t\r\n\t</div>\r\n\t--->\r\n   <!--- kinSection --->\r\n    <div role=\"tabpanel\" class=\"tab-pane active\" id=\"kinSection\">\r\n\t\t<br><blockquote class=\"smallblock\">Knit it Now Dynamic Patterns offer shaped shoulder versions.\r\nIf you need more shaping, think of the armhole as a block of instructions to be adjusted without changing the depth of the armhole or impacting the fit of the sleeves. Use the Magic Formula to calculate the shoulder shaping. </blockquote>\r\n\t\t\t<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/268097987' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\t\t\r\n\t</div>\r\n\r\n\t<!--- mathSection --->\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"mathSection\">\r\n<br><blockquote class=\"smallblock\">To add shoulder shaping to a commercial pattern, think of the armhole as a block of instructions to be adjusted without changing the depth of the armhole or impacting the fit of the sleeves.Use the Magic Formula to accurately calculate the shaping. </blockquote>\r\n\t\t\r\n\r\n   \t\t\t<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/268099100' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n \t\t\r\n    \t</div>\r\n\r\n\t<!--- deviceSection --->\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"deviceSection\">\r\n\t\t\r\n\t\t   \t<br><blockquote class=\"smallblock\">Using a Charting Device is probably the easiest way to add shaped shoulders ... just be sure that the armhole opening and sleeve cap match!</blockquote><br>\t\r\n\t\t\r\n\t\t\r\n\t\t\r\n\t\t\t\t<img width=\"300\" src=\"/challenge/images/v2/24/nothing_fits/add_a_dart.jpg\">\r\n\t\t\r\n\t</div>\r\n    \r\n\t<div role=\"tabpanel\" class=\"tab-pane\" id=\"dakSection\">\r\n\r\n\t\t <br><blockquote class=\"smallblock\">Explore a couple of methods of using DAK to adjust your sleeve length.</blockquote>\r\n   <div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/268039723' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n  \r\n\t</div>\r\n  </div>\r\n\r\n</div>\r\n<div class=\"clearfix\"></div>",
+              "legacyComponentId": 2446,
+              "order": 3
+            }
+          ],
+          "title": "Wrinkles at the Front Armhole",
+          "slug": "wrinkles-at-the-front-armhole",
+          "order": 7,
+          "legacy": {
+            "assignId": 879,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\t\r\n\t\t<b><i class=\"fa fa-hand-o-down\" aria-hidden=\"true\"></i> Use the tabs below to explore different methods for adding shaped shoulders. <i class=\"fa fa-hand-o-down\" aria-hidden=\"true\"></i></b>\r\n\t   <!--col -->\r\n   <!--row -->  \r\n<br>Armholes that are too deep or shallow can cause many fit issues. Examine your favorite sweater to determine the depth of the armhole. <br>\r\nBecause the sleeve cap must match the armhole, this adjustment can be the most challenging. <br><div class=\"tab-content\">\r\n\t\r\n  <!-- Nav tabs -->\r\n  <ul class=\"nav nav-tabs\" role=\"tablist\">\r\n    <li role=\"presentation\" class=\"active\"><a href=\"#kinSection\" aria-controls=\"kinSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Knit it Now Patterns</a></li>\r\n    <li role=\"presentation\"><a href=\"#mathSection\" aria-controls=\"mathSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Commercial Patterns + Math</a></li>\r\n    <li role=\"presentation\"><a href=\"#deviceSection\" aria-controls=\"deviceSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Charting Device</a></li>\r\n    <li role=\"presentation\"><a href=\"#dakSection\" aria-controls=\"dakSection\" role=\"tab\" data-toggle=\"tab\"><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> DesignaKnit</a></li>\r\n  </ul>\r\n\r\n  \r\n\r\n\t\r\n   <!--- kinSection --->\r\n    <div role=\"tabpanel\" class=\"tab-pane active\" id=\"kinSection\">\r\n\t\t<br>For many sleeve styles, adjusting the depth of the armhole \r\nrequires an equal adjustment to the sleeve.  For example, if you raise your armhole by 1 inch that would be 1 inch in front and 1 inch in back.  You would then make your sleeve cap a total of 2\" narrower (so the sleeve fits in the adjusted shortened armhole.<br>\r\nBUT:  This adjustment is not easily accomplished with set in sleeve patterns. To raise the armhole for set in sleeves:<br>\r\n<ul>\r\n<li>Use a smaller size pattern<li>\r\n<li>Substitute the smaller armhole depth from the smaller pattern</li>\r\n<li>Knit the corresponding sleeve from the smaller patter</li>\r\n</ul>\r\n<blockquote class=\"smallblock\">\r\nIn other words, <b>DO NOT</b> adjust the armhole depth without re-charting the set in sleeve cap.</blockquote>\r\n\r\n\t\t</div>\r\n\r\n\r\n\t<!--- mathSection --->\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"mathSection\">\r\n<br><br>For many sleeve styles, adjusting the depth of the armhole \r\nrequires an equal adjustment to the sleeve.  For example, if you raise your armhole by 1 inch that would be 1 inch in front and 1 inch in back.  You would then make your sleeve cap a total of 2\" narrower (so the sleeve fits in the adjusted shortened armhole.<br>\r\nBUT:  This adjustment is not easily accomplished with set in sleeve patterns. To raise the armhole for set in sleeves:<br>\r\n<ul>\r\n<li>Use a smaller size pattern<li>\r\n<li>Substitute the smaller armhole depth from the smaller pattern</li>\r\n<li>Knit the corresponding sleeve from the smaller patter</li>\r\n</ul><blockquote class=\"smallblock\">\r\nIn other words, <b>DO NOT</b> adjust the armhole depth without re-charting the set in sleeve cap.</blockquote>\r\n\t\t</div>\r\n\r\n\t<!--- deviceSection --->\r\n    <div role=\"tabpanel\" class=\"tab-pane\" id=\"deviceSection\">\r\n\t\t\r\n\t\t   \t<br><blockquote class=\"smallblock\">Using a Charting Device is probably the easiest way modify the armhole depth ... just be sure that the armhole opening and sleeve cap match!</blockquote><br>\t\r\n\t\t\r\n\t\t\r\n\t\t\r\n\t</div>\r\n    \r\n\t<div role=\"tabpanel\" class=\"tab-pane\" id=\"dakSection\">\r\n\r\n\t\t <br><blockquote class=\"smallblock\">Explore a couple of methods of using DAK to adjust your armhole depth.</blockquote>\r\n   <div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/271940729' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n  \r\n\t</div>\r\n  </div>\r\n\r\n</div>\r\n<div class=\"clearfix\"></div>",
+              "legacyComponentId": 2476,
+              "order": 1
+            }
+          ],
+          "title": "Armhole Depth",
+          "slug": "armhole-depth",
+          "order": 8,
+          "legacy": {
+            "assignId": 887,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Section 7: Your Turn - Make it Fit!",
+      "slug": "section-7-your-turn-make-it-fit",
+      "displayOrder": 81,
+      "legacy": {
+        "itemId": 182,
+        "lessonOrder": 81
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"blockquote_style\">\r\nDon't just follow knitting patterns and hope that the designer had your body in mind when they did the math! <i class=\"fa fa-smile-o fa-spin fa-2x fa-fw\"></i>\r\n</blockquote>\r\n<ol class=\"instruction-list\">\r\n<li>Use pencil and paper</li>\r\n<li>Use Knit it Now Tools</li>\r\n<li>Use a Charting Device</li>\r\n<li>Use software</li>\r\n</ol>",
+              "legacyComponentId": 2447,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "268291766",
+              "title": "Thanks for Watching!",
+              "legacyComponentId": 2448,
+              "order": 3
+            }
+          ],
+          "title": "4 Ways to Address Fit Issues",
+          "slug": "4-ways-to-address-fit-issues",
+          "order": 1,
+          "legacy": {
+            "assignId": 880,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 21,
+    "videos": [
+      {
+        "vimeoId": "268292946",
+        "title": "\"Nothing Fits!\"",
+        "lessonSlug": "section-1-nothing-i-knit-fits-consider-this",
+        "blockSlug": "can-you-relate-to-this-knitter"
+      },
+      {
+        "vimeoId": "268294596",
+        "title": "Best machine knitting advice (IMHO)",
+        "lessonSlug": "section-1-nothing-i-knit-fits-consider-this",
+        "blockSlug": "machine-s-and-yarn"
+      },
+      {
+        "vimeoId": "268296128",
+        "title": "Up on the 'ol soapbox!",
+        "lessonSlug": "section-1-nothing-i-knit-fits-consider-this",
+        "blockSlug": "knitting"
+      },
+      {
+        "vimeoId": "268297056",
+        "title": "Another rant ... but this is important!",
+        "lessonSlug": "section-1-nothing-i-knit-fits-consider-this",
+        "blockSlug": "silly-question-do-you-read"
+      },
+      {
+        "vimeoId": "268298382",
+        "title": "I hereby give you permission ....",
+        "lessonSlug": "section-1-nothing-i-knit-fits-consider-this",
+        "blockSlug": "the-secret-to-determining-to-good-fit"
+      },
+      {
+        "vimeoId": "151859115",
+        "title": "Part 1",
+        "lessonSlug": "section-2-what-s-the-problem",
+        "blockSlug": "not-enough-needles"
+      },
+      {
+        "vimeoId": "151859136",
+        "title": "Part 2",
+        "lessonSlug": "section-2-what-s-the-problem",
+        "blockSlug": "not-enough-needles"
+      },
+      {
+        "vimeoId": "260683875",
+        "title": "Accurately Measure Gauge - 2 methods",
+        "lessonSlug": "section-3-your-success-depends-on-this",
+        "blockSlug": "gauge"
+      },
+      {
+        "vimeoId": "151856465",
+        "title": "Importance of Correct Gauge",
+        "lessonSlug": "section-3-your-success-depends-on-this",
+        "blockSlug": "gauge"
+      },
+      {
+        "vimeoId": "245117927",
+        "title": "Gauge and Drop",
+        "lessonSlug": "section-3-your-success-depends-on-this",
+        "blockSlug": "gauge-and-drop"
+      },
+      {
+        "vimeoId": "259414061",
+        "title": "Translate the Body Pieces",
+        "lessonSlug": "section-3-your-success-depends-on-this",
+        "blockSlug": "uncover-your-mk-pattern-instructions"
+      },
+      {
+        "vimeoId": "151858368",
+        "title": "Analyzing Sweater Styles",
+        "lessonSlug": "section-4-your-perfect-sweater",
+        "blockSlug": "analyze-sweater-styles"
+      },
+      {
+        "vimeoId": "262297068",
+        "title": "Finally the meat of the course ... in small steps :-)",
+        "lessonSlug": "section-5-baby-steps-a-man-s-vest",
+        "blockSlug": "let-s-keep-things-simple-for-now"
+      },
+      {
+        "vimeoId": "262858951",
+        "title": "A \"Perfect\" Hand Knitting Pattern?",
+        "lessonSlug": "section-5-baby-steps-a-man-s-vest",
+        "blockSlug": "the-perfect-hand-knitting-pattern"
+      },
+      {
+        "vimeoId": "259467980",
+        "title": "Slope Tool",
+        "lessonSlug": "section-5-baby-steps-a-man-s-vest",
+        "blockSlug": "the-perfect-hand-knitting-pattern"
+      },
+      {
+        "vimeoId": "263260805",
+        "title": "What's a Charting Device?",
+        "lessonSlug": "section-5-baby-steps-a-man-s-vest",
+        "blockSlug": "create-the-vest-with-a-charting-device"
+      },
+      {
+        "vimeoId": "262418226",
+        "title": "DAK - Duplicate a Sweater",
+        "lessonSlug": "section-5-baby-steps-a-man-s-vest",
+        "blockSlug": "create-the-vest-in-designaknit"
+      },
+      {
+        "vimeoId": "263371997",
+        "title": "What's next?",
+        "lessonSlug": "section-5-baby-steps-a-man-s-vest",
+        "blockSlug": "can-t-find-your-perfect-sweater"
+      },
+      {
+        "vimeoId": "151859486",
+        "title": "Adding Bust Darts",
+        "lessonSlug": "section-6-common-fit-issues",
+        "blockSlug": "make-room-for-the-girls"
+      },
+      {
+        "vimeoId": "268091842",
+        "title": "Wrinkles Examples",
+        "lessonSlug": "section-6-common-fit-issues",
+        "blockSlug": "wrinkles-at-the-front-armhole"
+      },
+      {
+        "vimeoId": "268291766",
+        "title": "Thanks for Watching!",
+        "lessonSlug": "section-7-your-turn-make-it-fit",
+        "blockSlug": "4-ways-to-address-fit-issues"
+      }
+    ],
+    "downloadCount": 4,
+    "downloads": [
+      {
+        "filename": "/downloads/worksheet.pdf",
+        "label": "Print the worksheet to follow along",
+        "lessonSlug": "section-3-your-success-depends-on-this",
+        "blockSlug": "create-your-schematic"
+      },
+      {
+        "filename": "/downloads/worksheet1.pdf",
+        "label": "Print the worksheet to follow along",
+        "lessonSlug": "section-3-your-success-depends-on-this",
+        "blockSlug": "create-your-schematic"
+      },
+      {
+        "filename": "/downloads/measure_worksheet1.pdf",
+        "label": "Print your worksheet",
+        "lessonSlug": "section-4-your-perfect-sweater",
+        "blockSlug": "measure-and-record"
+      },
+      {
+        "filename": "/downloads/Peter Easy (1).pdf",
+        "label": "Download the Hand Knitting Pattern",
+        "lessonSlug": "section-5-baby-steps-a-man-s-vest",
+        "blockSlug": "the-perfect-hand-knitting-pattern"
+      }
+    ]
+  }
+}

@@ -160,7 +160,7 @@ export function renderDropShoulderSleeveShapingChartHtml(
         rcAttr,
       )}"><td class="ns-shaping-chart__td-complete"><label class="ns-shaping-chart__row-check-label"><input type="checkbox" class="ns-shaping-chart__row-check" aria-label="Mark sleeve shaping row RC ${escapeHtml(
         rcCell,
-      )} complete" /></label></td><td class="ns-shaping-chart__td-num">${escapeHtml(
+      )} complete" /></label></td><td class="ns-shaping-chart__td-rc">${escapeHtml(
         rcCell,
       )}</td><td>${escapeHtml(row.action)}</td><td>${escapeHtml(
         row.edge,

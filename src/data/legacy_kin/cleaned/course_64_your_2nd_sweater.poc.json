@@ -1,0 +1,837 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 64,
+    "title": "Your 2nd Sweater",
+    "slug": "your-2nd-sweater",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_64_your_2nd_sweater.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/prickly.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Introduction",
+      "slug": "introduction",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 417,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n\r\n</style>\r\n\r\n\t\r\n\t\tPlanning, knitting and comple a basic pullover sweater. This course is designed for all knitters, no matter what your skill level.<br>Included is the Prickly Pear Pullover pattern (formerly known as the Child's Simple Rolled Neck Pullover)<br>Also included are adult versions of the SAME DESIGN. (a basic drop shoulder pullover with a round neckline.<br>To keep the knitting simple there are no bands or ribbing, just keep it casual and let the edges roll.\r\n\r\n\t\tThe sweater shape is simple. The plan is to take it step-by-step. The goal is to FINISH the sweater and learn as you knit.<br><ul>\r\n\t\t\t<li>Choose your size</li>\r\n\t\t\t<li>Choose your yarn</li>\r\n\t\t\t<li>Plan YOUR design (no changes mid-stream)</li>\r\n\t\t\t<li>Focus on each section</li>\r\n\t\t\t<li>Learn/practice techniques</li>\r\n\t\t\t<li>FINISH your sweater</li>\r\n\t\t</ul>\r\n\t\r\n\t<img class=\"img-thumbnail zoom\" src=\"/challenge/images/v2/64/child_rolled_nile.jpg\">\r\n\r\n<br><div>\r\n\t<div class=\"container-border\">\r\n\t\t<span class=\"section-title MachineknittingColor\">Are you NEW?</span><br>Knit the pattern \"as is\" focusing on learning/perfecting techniques used for the design. Don't over-complicate things.<br><b>The goal is to FINISH the sweater and build your confidence with your machine</b><br></div>\r\n\t<div class=\"container-border\">\r\n\t\t<span class=\"section-title MachineknittingColor\">Ready for an adventure?</span><br>Use this simple pattern as a canvas for your creativity. Challenge yourself to try a new-to-you stitch pattern technique. How about Intarsia? Color Blocks? Knit the entire garment in Fisherman Rib. <br>\r\n\t\tBecause the shaping is basic, you can <b>focus on the new technique and expand your skills.</b><br></div>\r\n",
+              "legacyComponentId": 5700,
+              "order": 1
+            }
+          ],
+          "title": "Join the fun!",
+          "slug": "join-the-fun",
+          "order": 1,
+          "legacy": {
+            "assignId": 3820,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "392986594",
+              "title": "Get the \"Big Picture\" before you go any further",
+              "legacyComponentId": 5726,
+              "order": 1
+            }
+          ],
+          "title": "Knitting Overview",
+          "slug": "knitting-overview",
+          "order": 2,
+          "legacy": {
+            "assignId": 3838,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Part 1: Decisions, Decisions, Decisions",
+      "slug": "part-1-decisions-decisions-decisions",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 412,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "exerciseAccordion",
+              "sections": [
+                {
+                  "title": "<h3>Pattern Features</h3>",
+                  "bodyHtml": "<ul>\r\n\t\t\t<li>drop shoulder style (easy knitting)</li>\r\n\t\t\t<li>round front neck and straight back neck</li>\r\n\t\t\t<li>shaped sleeves (knit top down or bottom up)</li>\r\n\t\t\t<li>rolled hems (easy knitting)\r\n\t\t</ul>",
+                  "iconSrc": "/challenge/images/v2/64/arrow1.png"
+                },
+                {
+                  "title": "<h3>Sizes</h3>",
+                  "bodyHtml": "The Prickly Pear pattern is offered in kids sizes 2-16 (21\"-34\" bust)\r\n\t\t<ul class=\"lightlist\" style=\"list-style:none;\">\r\n\t\t\t<a href=\"#size\" data-toggle=\"collapse\"><i class=\"fa fa-arrow-down\" aria-hidden=\"true\"></i>Want a different size? Also included are adult sizes</a>\r\n\t\t\t<div id=\"size\" class=\"collapse hidden-print\">\r\n\t\t\t\tMen's | Flint Pullover<br>\r\n\t\t\t\tMisses | Geranium Pullover<br>\r\n\t\t\t\tWomens Plus | Pepper Pullover\r\n\t\t\t</div> <br><b><i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> Don't forget the patterns are Perfect Fit ™ - you can adjust them as needed</b>",
+                  "iconSrc": "/challenge/images/v2/64/arrow2.png"
+                },
+                {
+                  "title": "<h3>Yarn</h3>",
+                  "bodyHtml": "<b>If you already have yarn:</b><br>Each of the patterns has a built-in  \r\n<a href=\"#calc\" data-toggle=\"collapse\"> Yarn Calculator <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i> </a>\r\n<div id=\"calc\" class=\"collapse hidden-print\">\r\n<img src=\"/challenge/images/v2/64/yarn_calculator.jpg\">\r\n</div>\r\n\r\n\r\n\r\n\r\n\r\nbased on your swatch. Knit and weigh your swatch to confirm you have enough yarn for the size you've chosen.<br><b>If you need to purchase yarn:</b><br><table cellpadding=\"10\">\r\n\t<tbody>\r\n\t\t<tr>\r\n\t\t\t<td style=\"vertical-align: top;\" width=\"50\"><img src=\"/challenge/images/v2/course_1.png\"></td>\r\n\t\t\t<td width=\"10\"></td>\r\n\t\t\t<td style=\"text-align: left;\">Use <a href=\"http://www.knititnow.com/store/product/601/knitters-handy-guide-to-yarn-requirements/Amazondetails\" target=\"_blank\" rel=\"noopener\">\"The Knitter's Handy Guide to Yarn Requirements\"</a>.  This inexpensive, classic leaflet helps you determine \"how much yarn?\" The included charts are for a number of knitting shapes (hats, vests, sweater, mittens).   The chart will you an idea of how many yards/meters you will need.\r\n\r\n\t\t\t\t<em>BUT .... it doesn't take into account the desired length</em><br></td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t\t<td style=\"vertical-align: top;\"><img src=\"/challenge/images/v2/course_2.png\"></td>\r\n\t\t\t<td width=\"10\"></td>\r\n\t\t\t<td style=\"text-align: left;\">Search Ravelry or other pattern sources for a similar sweater shape, knit in a yarn of similar weight as you plan to use.  Examine the sizing, stitch pattern, length and use their yarn estimate for your project.\r\n</td>\r\n\t\t</tr>\r\n\t\t\r\n\t\t\t\t\t</tbody>\r\n\t\t\t\t</table>",
+                  "iconSrc": "/challenge/images/v2/64/arrow3.png"
+                },
+                {
+                  "title": "<h3>Get Creative</h3>",
+                  "bodyHtml": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n\r\n</style>\r\n\r\n\r\n\t<div class=\"container-border\">\r\n\t\t<h4><b>Are you NEW? ....</b></h4>\r\n\t\t<b>We strongly suggest you knit the Prickly Pear Pullover \"as is\".</b>\r\n<br><ul>\r\n<li> Knit it in plain knitting with the rolled edges.</li>\r\n<li> Focus on the knitting, neckline shaping, sleeve shaping and finishing. </li><li>This simple pattern was chosen so you can enjoy success. </li>\r\n</ul><br><b> Don't complicate things!</b> KISS (keep it simple silly!) <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i><br></div>\r\n\t<div class=\"container-border\">\r\n\t\t<h4><b>Ready for an adventure?</b></h4>\r\n\t\tUse this worksheet to make some decisions about what elements you will add to the Prickly Pear pattern to make it your own.<br>Stretch your skills:<ul>\r\n<li>Knit in pattern (slip, tuck, fairisle)</li>\r\n<li>Add an intarsia motif</li>\r\n<li>Knit decorative hems</li>\r\n<li>Knit in fisherman rib</li>\r\n<li>Mix 'n Match stitch patterns</li>\r\n</ul><b> ... the sky is the limit!</b>\r\n\t</div>\r\n",
+                  "iconSrc": "/challenge/images/v2/64/arrow4.png"
+                }
+              ],
+              "legacy": {
+                "showText": null,
+                "size": null
+              },
+              "legacyComponentId": 5699,
+              "order": 1
+            }
+          ],
+          "title": "Decisions, decisions, decisions",
+          "slug": "decisions-decisions-decisions",
+          "order": 2,
+          "legacy": {
+            "assignId": 3818,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3><i class=\"fa fa-square-o\" aria-hidden=\"true\"></i> Determine the size you want to knit</h3>\r\n\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<font color=\"#9E2065\"><b>Are you NEW?</b></font>\r\n\t\t\t\r\n\t\t\tWe suggest you knit a small size using the Prickly Pear Pullover pattern. This takes off the pressure of hours of knitting and allows you to relax and enjoy practicing the techniques.\r\n\t\t\r\n\r\n\t\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<font color=\"#9E2065\"><b>Ready for Adventure?</b></font>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\tThe Prickly Pear Pullover kids pattern is offered in sizes 2-16 (21\"-34\" bust)<br>\r\n\t\t\t\tOther choices:<br>\r\n\t\t\t\tNote: The tutorials and interactive-knitting notes are more detailed in the Prickly Pear pattern. The following are from the \"Basics\" collection.<br>\r\n\t\t\t\tMen's | Flint Pullover<br>\r\n\t\t\t\tMisses | Ginger Pullover<br>\r\n\t\t\t\tWomens Plus | Pepper Pullover\r\n\t\t\t\t<br><b><i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> Don't forget the patterns are Perfect Fit ™ - you can adjust them as needed</b>\r\n\t\t\t\r\n\t\t\r\n\t\r\n\r\n\r\n\r\n\r\n<h3><i class=\"fa fa-square-o\" aria-hidden=\"true\"></i> Choose your Yarn</h3>\r\n\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<font color=\"#9E2065\"><b>Are you NEW?</b></font>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>Choose the yarn that is appropriate for your machine.</li>\r\n\t\t\t\t\t<li>Start with light colors (save your eyes!)</li>\r\n\t\t\t\t\t<li>Buy extra to have on hand for boo-boo's</li>\r\n\t\t\t\t</ul>\r\n\t\t\t\r\n\t\t\r\n\r\n\t\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<font color=\"#9E2065\"><b>Ready for Adventure?</b></font>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\tTry something new! Mix 'n match yarns and colors\r\n\r\n\t\t\t\r\n\t\t\r\n\t\r\n\r\n\r\n\r\n\r\n\r\n<h3><i class=\"fa fa-square-o\" aria-hidden=\"true\"></i> Swatching is NOT Optional</h3>\r\n\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<font color=\"#9E2065\"><b>Are you NEW?</b></font>\r\n\t\t\t\r\n\t\t\tYou WILL knit a swatch. <B>PERIOD</b> <br>You will build your pattern based on YOUR swatch (we won't tell you what yarn to use or what gauge to knit)<br><center></center><br>\r\n\t\t\t\t<center><button data-vimeoid=\"323575618\" class=\"videopopup btn btn-xs btn-default no-print\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> About the Classroom</button></center>\r\n\t\t\t\r\n\t\t\r\n\r\n\t\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<font color=\"#9E2065\"><b>Ready for Adventure?</b></font>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\tAre you a believer in swatching?<br>\r\n\t\t\t\t<center></center><br>\r\n\t\t\t\t<center><button data-vimeoid=\"151859471\" class=\"videopopup btn btn-xs btn-default\"><i class=\"fa fa-youtube-play no-print\" aria-hidden=\"true\"></i> Swatch in pattern knitting</button></center>\r\n\t\t\t\r\n\t\t\r\n\t\r\n\r\n\r\n<h3><i class=\"fa fa-square-o\" aria-hidden=\"true\"></i> Cuffs, Hems and necklines</h3>\r\n\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<font color=\"#9E2065\"><b>Are you NEW?</b></font>\r\n\t\t\t\r\n\t\t\t<b>Please knit rolled hems for your first Prickly Pear Sweater.</b><br> Save your precious knitting time (and patience) for the more difficult parts of the sweater, the neckline and sleeve shaping.\r\n\t\t\r\n\r\n\t\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<font color=\"#9E2065\"><b>Ready for Adventure?</b></font>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\tGet creative! Try Something new!<br>\r\n\t\t\t\tThere are 26 <a href=\"https://www.knititnow.com/learn/catagory/2/hems\" target=\"_blank\">hem tutorials</a> in the Learning Library\r\n\t\t\t\r\n\t\t\r\n\t\r\n\r\n\r\n\r\n<h3><i class=\"fa fa-square-o\" aria-hidden=\"true\"></i> Stitch Patterns</h3>\r\n\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<font color=\"#9E2065\"><b>Are you NEW?</b></font>\r\n\t\t\t\r\n\t\t\tPLEASE knit your first Prickly Pear Pullover in plain knitting (stockinette)<br>When you gain some experience (and confidence) then substitute a fun stitch pattern.\r\n\t\t\r\n\r\n\t\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<font color=\"#9E2065\"><b>Ready for Adventure?</b></font>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\tHave you ever done shaping in tuck, slip or fairisle?\r\n\t\t\t\t<br>Have you knit a complete sweater in lace?<br>\r\n\t\t\t\tConsider mix 'n match stitch patterns - body in lace, sleeves in plain knitting<br>\r\n\t\t\t\tNow's the time to try something new!\r\n\r\n\t\t\t\r\n\t\t\r\n\t\r\n\r\n\r\n<h3><i class=\"fa fa-square-o\" aria-hidden=\"true\"></i> Sleeve Decision</h3>\r\n\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<font color=\"#9E2065\"><b>Are you NEW?</b></font>\r\n\t\t\t\r\n\t\t\tKnit the sleeves top down. It's faster to decrease for the sleeve shaping and it's easier to pick up the the sleeve from the armhole opening instead of casting on and setting in the sleeve when the sleeve knitting is done.\r\n\t\t\r\n\r\n\t\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<font color=\"#9E2065\"><b>Ready for Adventure?</b></font>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\tYour choice! Which would you prefer?<br><b>Top Down Pro/Con <i class=\"fa fa-thumbs-o-up\" aria-hidden=\"true\"></i> <i class=\"fa fa-thumbs-o-down\" aria-hidden=\"true\"></i></b><br><b><i class=\"fa fa-thumbs-o-up\" aria-hidden=\"true\"></i> Pro:</b>\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>Many knitters find decreases to be faster than increases.</li>\r\n\t\t\t\t\t<li>Picking up stitches is faster than seaming sleeve to armhole</li>\r\n\t\t\t\t</ul>\r\n\r\n\r\n\t\t\t\t<b><i class=\"fa fa-thumbs-o-down\" aria-hidden=\"true\"></i> Con:</b>\r\n\t\t\t\t<ul>\r\n\t\t\t\t\t<li>If you add knitting to the cuff, binding off in knitting can be difficult.</li>\r\n\t\t\t\t\t<li>If you knit in a stitch pattern with a definite up and down orientation, you may need to reverse the stitch pattern so the body and sleeves match</li>\r\n\t\t\t\t</ul>\r\n\r\n\t\t\t\r\n\t\t\r\n\r\n\r\n\r\n<h3><i class=\"fa fa-square-o\" aria-hidden=\"true\"></i> Open Shoulder for Kids</h3><br>Because this pattern is a pullover, you might want to consider leaving one (or both) shoulders open to make it easier to dress a baby or small child.<br><button data-vimeoid=\"396776651\" class=\"videopopup btn btn-xs btn-default\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Open Shoulder Video</button><br><div>\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<font color=\"#9E2065\"><b>Are you NEW?</b></font>\r\n\t\t\t\r\n\t\t\tAlthough finishing an open shoulder isn't hard, this is an extra \"wrinkle\" to consider when choosing the size you want to knit. \r\n\t\t\r\n\r\n\t\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<font color=\"#9E2065\"><b>Ready for Adventure?</b></font>\r\n\t\t\t\r\n\t\t\t\r\n\t\t\t\tThe steps:<ul>\r\n\t\t\t\t<li>Extend one back shoulder at the seam approx 1\"</li>\r\n\t\t\t\t<li>Knit the extension in garter stitch or ribbing (for a no-roll finish)</li>\r\n\t\t\t\t<li>Knit the last 1\" of the corresponding front shoulder in a no-roll stitch pattern</li>\r\n\t\t\t\t<li>Add buttonholes to the front section</li>\r\n\t\t\t\t</ul>\r\n\t\t\t\r\n\t\t\r\n\r\n\r\n\t\r\n\r\n",
+              "legacyComponentId": 5706,
+              "order": 3
+            }
+          ],
+          "title": "Planning Worksheet",
+          "slug": "planning-worksheet",
+          "order": 3,
+          "legacy": {
+            "assignId": 3825,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Don't Skip This",
+      "slug": "don-t-skip-this",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 424,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n\r\n</style>\r\n\r\n\r\n\r\n<strong>You are making progress!</strong> ... we've spent a lot of time planning, practicing and thinking about knitting ... are you ready to do some \"real knitting\"?<br><strong><h3>DON'T SKIP THIS SECTION!</h3></strong>Your success with this course AND your success with your knitting machine depends on your understanding and mastering the art of knitting gauge swatches.<br><b>Without a swatch we are knitting in the dark.</b>\r\n<ul>\r\n<li>How is the final sweater going to feel in the yarn and stitch pattern you've chosen?</li>\r\n<li>Do you have enough yarn?</li>\r\n<li>Do you have enough needles on your machine for the size you chose?</li>\r\n</ul>\r\n<b>PLUS you must know YOUR gauge to create your custom pattern</b>\r\n\r\n<div class=\"text-center container-border\">\r\nDo you struggle with swatching?  Can you knit to the correct size every time?<br>You need the complete Swatching Course<br>\r\n<span class=\"label label-warning\">FREE for subscribers</span><br><a href=\"/challenge/12/course/swatches-tension-and-gauge\"><img src=\"/challenge/images/v2/64/gauge_swatch_tension/gauge.png\"></a>\r\n</div>\r\n\r\n\r\n</div>\r\n\r\n\r\n\r\n\r\n\r\n<div class=\"text-center\">\r\n<p style=\"text-align: center;\"><strong>SWATCHING IS NOT OPTIONAL</strong></p>\r\n<img class=\"img-thumbnail\" src=\"https://www.knititnow.com/images/blog_images/2017/swatching_is_not_optional.jpg\" /></div>\r\n\r\n\r\n</div>\r\n",
+              "legacyComponentId": 5743,
+              "order": 1
+            }
+          ],
+          "title": "Step 1: Your Success Depends on this",
+          "slug": "step-1-your-success-depends-on-this",
+          "order": 1,
+          "legacy": {
+            "assignId": 3846,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\"><b>If you haven't used your chosen yarn before, how do you know the best tension to knit your blanket? </div></b>\r\n\r\nKnitters tend to use the terms \"tension swatch\" and \"gauge swatch\" interchangeably, lets take a look at both.",
+              "legacyComponentId": 5744,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"cleanwell\">\r\n\r\n<h4><strong>GAUGE SWATCH</strong></h4>\r\nThe <strong>gauge swatch</strong> is the \"official\" swatch used when designing a garment.\r\n<br>\r\nIt is knit at a specific size, marked for accurate stitch and row measurement and \"dressed\" as the final garment will be treated.<br>\r\n<blockquote class=\"smallblock\">\r\n<em>TIP: Whatever method you use to create a swatch, the key is to correctly measure it and calculate your gauge.</em></blockquote>\r\n<img src=\"/challenge/images/v2/64/swatch_measure.jpg\" />\r\n</div>",
+              "legacyComponentId": 5745,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"cleanwell\">\r\n\r\n<h4><strong>TENSION SWATCH</strong></h4>(AKA \"Get Acquainted Swatch)<br><em>When I pick up a new cone of yarn, I can't wait to thread up my machine and see what the yarn looks like.   From the initial cast on, I start guessing what setting on my tension dial I need to use.  I knit a few inches and reach down and start to feel the resulting fabric. <br>Once I get a feel for the yarn (what machine, general tension setting at stockinette, etc) I create a<strong> tension swatch</strong>.  This helps me fine-tune the tension needed to achieve the fabric I like and allows me to play with various techniques.  <strong>I'm often very surprised that a yarn looks great in tuck, and awful in slip</strong>, for example.  Adding a few eyelets here and there tells me if the yarn will work up in lace.</em><br>Let's practice knitting a <strong>tension swatch.</strong>\r\n</div>",
+              "legacyComponentId": 5746,
+              "order": 5
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<ol class=\"instruction-list\">\r\n<li>Play!</li>\r\n<li>Start knitting stockenette at the tightest tension that will knit.  (If the tension is too tight, you'll see stitches that don't form properly.</li>\r\n<li>Knit 2-4 inches. Knit a marker row (change colors, work a few eyelets across the row or knit a sewing thread in with the main yarn)</li>\r\n<li>Keep knitting sections, marking the tension dial number in each section.  Knit the last section as loosely as possiblle, even if you think this will be too loose ... I'm often very pleasantly surprised at the result.</li>\r\n<li>Transfer every other needle to out of work postion and knit a section - put all needles back into work.</li>\r\n<li>Work a simple tuck, or slip, or any stitch pattern of your choice ... base your tension dial setting on the stockinette sections you just knit.</li>\r\n</ol>\r\n<blockquote class=\"smallblock\">The point of this exercise is to put the yarn through it's paces ... ignite your creativity, and get a feel for what the yarn can do.  If you don't have a huge cone, you can always re-wind this knitting. At this point, you probably know exactly what you want to do with this yarn.  Knit your Gauge Swatch, dress it and and you are ready to design and knit your sweater.</blockquote>\r\n\r\n<img src=\"/challenge/images/v2/64/tension_swatch.jpg\" />\r\n\r\n",
+              "legacyComponentId": 5747,
+              "order": 7
+            },
+            {
+              "type": "video",
+              "vimeoId": "391663684",
+              "title": "Watch as we knit a 'Get Acquainted' Swatch",
+              "legacyComponentId": 5755,
+              "order": 8
+            }
+          ],
+          "title": "Step 2: Gauge swatch verses Tension Swatch",
+          "slug": "step-2-gauge-swatch-verses-tension-swatch",
+          "order": 3,
+          "legacy": {
+            "assignId": 3847,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Hand knitters use the excuse \"It takes too much time to knit a swatch\", then they are often disappointed that their knitting doesn't fit.<br>\r\n<b>Machine knitters, rejoice!</b>  Knitting a swatch is fast and the information it supplies is invaluable ...even for something as simple as a blanket.",
+              "legacyComponentId": 5748,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357273",
+              "title": null,
+              "legacyComponentId": 5749,
+              "order": 2
+            }
+          ],
+          "title": "Step 3: Knitting swatches",
+          "slug": "step-3-knitting-swatches",
+          "order": 4,
+          "legacy": {
+            "assignId": 3848,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858757",
+              "title": "Rolled Hem Study",
+              "legacyComponentId": 5769,
+              "order": 1
+            }
+          ],
+          "title": "Rolled Hem Study",
+          "slug": "rolled-hem-study",
+          "order": 5,
+          "legacy": {
+            "assignId": 3860,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "396776651",
+              "title": "Because this pattern is a pullover, you might want to consider leaving one (or both) shoulders open to make it easier to dress a baby or small child.",
+              "legacyComponentId": 5771,
+              "order": 1
+            }
+          ],
+          "title": "Open Shoulder Video",
+          "slug": "open-shoulder-video",
+          "order": 6,
+          "legacy": {
+            "assignId": 3862,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Your Pattern",
+      "slug": "your-pattern",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 413,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Knit it Now Perfect Fit™ Patterns are the next-generation of machine knitting patterns. <br><ul>\r\n<li>You choose the machine</li>\r\n<li>Your yarn choice</li>\r\n<li>Use YOUR gauge</li>\r\n<li>Use ANY stitch pattern</li>\r\n<li>Wide range of sizes, Perfect Fit™ for you</li>\r\n</ul>\r\n\r\nThe patterns are designed to display on an iPad or tablet, but can also be downloaded and printed in a clear PDF format.<br>We don't use cryptic abbreviations.  We take you step by step through the knitting process.  <b>Included are tips and tricks and videos embedded right where you need them.</b><br>Please take 2 minutes to watch this walk through, and get an overview of our patterns so you will be ready to hit the ground running when you start knitting your Prickly Pear.",
+              "legacyComponentId": 5722,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "374009611",
+              "title": null,
+              "legacyComponentId": 5721,
+              "order": 2
+            }
+          ],
+          "title": "New to Perfect Fit Patterns?",
+          "slug": "new-to-perfect-fit-patterns",
+          "order": 1,
+          "legacy": {
+            "assignId": 3836,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "You have your choice of patterns<br>\r\n<em>NOTE: The adult size patterns have back neck shaping.  The Kids Prickly Pear does not. If you are a new knitter and want to knit an easier adult sweater, simply ignore the back neck shaping. Questions? <a href=\"/elements/contactus.cfm\">Contact Us</a></em>",
+              "legacyComponentId": 5715,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataSelectJson",
+              "notes": [
+                "Unmapped legacy component type: DataSelectJson"
+              ],
+              "legacyFields": {
+                "BUTTONLABEL": "Let's Build Your Pattern",
+                "CHALLENGE_ASSIGNID": "3832",
+                "CHALLENGE_COMPONENTID": "5716",
+                "DATAMODEL_ELEMENT": "garmentID",
+                "JSONDATA": "{\r\n \"Kids - Prickly Pear\" :  \"2173\",\r\n \"Man's - Diamond\" :  \"2188\",\r\n\"Women's Plus - Pepper\" : \"2261\",\r\n\"Misses's - Carnation\":\"2196\"\r\n }",
+                "SHOWCONTINUE": "yes"
+              },
+              "legacyComponentId": 5716,
+              "order": 2
+            }
+          ],
+          "title": "Choose your Pattern",
+          "slug": "choose-your-pattern",
+          "order": 2,
+          "legacy": {
+            "assignId": 3832,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): garmentID",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 3832 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3819",
+                "DATAMODEL_ELEMENTS": "garmentID",
+                "DATAMODEL_REDIRECT": "3832",
+                "TYPEOF": "DataValidation"
+              },
+              "legacyComponentId": 5717,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<button data-vimeoid=\"374009611\" class=\"videopopup btn btn btn-primary\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> About Knit it Now Patterns</button>",
+              "legacyComponentId": 5710,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment 'Prickly Pear Pullover' (legacy garmentId 128).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3819",
+                "CHALLENGE_COMPONENTID": "5697",
+                "DYNAMICGARMENTVARIABLE": "garmentID",
+                "GARMENTID": "128",
+                "GARMENTTITLE": "Prickly Pear Pullover",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "pattern_name",
+                "REDIRECT_TO": "/challenge/64/Group/3827/item|The Prickly Pear Pattern: The pattern:  Prickly Pear Pullover",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "pattern_rows",
+                "SHOWPATTERNNAME": "1",
+                "SIZING_DATAMODEL_ELEMENT": "pattern_size",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "pattern_stitches",
+                "SWATCHROWS": "swatch_rows",
+                "SWATCHSTITCHES": "swatch_stitches",
+                "SWATCHWEIGHT": "swatch_weight",
+                "USESWATCHLOGIC": "no"
+              },
+              "legacyComponentId": 5697,
+              "order": 3
+            }
+          ],
+          "title": "Build your Custom Pattern",
+          "slug": "build-your-custom-pattern",
+          "order": 3,
+          "legacy": {
+            "assignId": 3819,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): pattern_name",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 3819 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3827",
+                "DATAMODEL_ELEMENTS": "pattern_name",
+                "DATAMODEL_REDIRECT": "3819",
+                "TYPEOF": "DataValidation"
+              },
+              "legacyComponentId": 5718,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'pattern_name'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3827",
+                "CHALLENGE_COMPONENTID": "5712",
+                "DATAMODEL_ICON": "fa fa-download",
+                "LABLE": "Print Your Pattern",
+                "PATTERN_DATAMODEL_ELEMENT": "pattern_name",
+                "VIEWHEIGHT": "600"
+              },
+              "legacyComponentId": 5712,
+              "order": 2
+            }
+          ],
+          "title": "Your Custom Pattern",
+          "slug": "your-custom-pattern",
+          "order": 4,
+          "legacy": {
+            "assignId": 3827,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Part 2: Back",
+      "slug": "part-2-back",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 414,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\t<img src=\"/challenge/images/v2/64/You_can_do_this.gif\">\r\n\r\n\t\r\n\t\t<h4>The back is pretty straight forward knitting .... just a rectangle </h4><br><em> <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i> I know ... sometimes it's easier said than done ... but <b>you CAN do this!</b></em>\r\n\t\r\n\r\n<br>\r\n\t\r\n\t\t<span class=\"section-title MachineknittingColor\">HIGHLIGHTS:</span><br><ul class=\"lightlist\" style=\"list-style:none;\">\r\n\t\t\t<li>Cast on (A): Be sure the cast on is loose... we like an\r\n\t\t\t\t<a href=\"#ewrap\" data-toggle=\"collapse\">e-Wrap Cast on <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>\r\n\t\t\t\t<div id=\"ewrap\" class=\"collapse hidden-print\">\r\n\t\t\t\t\t\r\n<img class=\"zoom\" width=\"200\" src=\"/images/glossary/ewrap.jpg\">\r\n\r\n\r\n<div class='embed-responsive embed-responsive-16by9'>\n<iframe src='https://player.vimeo.com/video/343343552' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\r\n\r\n\r\n\r\n\r\n\r\n\t\t\t\t</div>\r\n\t\t\t</li>\r\n\t\t\t<li>\r\n\t\t\t\t<a href=\"#rolledhem\" data-toggle=\"collapse\">Rolled Hem (B): <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>\r\n\t\t\t\t<div id=\"rolledhem\" class=\"collapse hidden-print\">\r\n\t\t\t\t\r\n\r\n\r\n<img class=\"zoom\" width=\"200\" src=\"/images/glossary/rolled_hem.jpg\">\r\n\r\n\r\n\r\n\r\n<i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> <em>In this example, we used the purl side as the \"right\" side of the sweater.<br> we knit the hem, removed it, turned it, rehung the hem and continued knitting the sweater.</em>\r\n\r\n\t\t\t\t\t\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\tEmphasize the roll by knitting the hem rows a 1 full number tighter. (The smaller the number the tighter the stitch <a href=\"#\" data-toggle=\"tooltip\" data-placement=\"auto\" title=\"Size 0 hand knitting needle = tiny stitch | Size 13 hand knitting needle = large stitch\"> <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>)\r\n\t\t\t</li>\r\n\t\t\t<li>Knit the body (C): Knit at a steady pace (the way you knit your swatch)</li>\r\n\t\t\t<li>Be sure to watch your row counter and stop where the pattern indicates \"place markers\"<br> <a data-GlossaryId='310' class='glossaryhelp'>Place marker <i class='fa fa-question-circle' aria-hidden='true'></i></a>\r\n\r\n\t\t\t</li>\r\n\t\t\t<li>Knit the Armholes (D): Even steady knitting</li>\r\n\t\t\t<li>\r\n\t\t\t\tScrap off the shoulders (E) and neck opening (F) as described in the pattern <a href=\"#scrap\" data-toggle=\"collapse\"><i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>\r\n\t\t\t\t<div id=\"scrap\" class=\"collapse hidden-print\">\r\n\t\t\t\t\t<figure><img class=\"zoom\" width=\"200\" src=\"/images/glossary/scrap_off.jpg\">\r\n\t\t\t\t\t\t<figcaption><br><em><small>Use a contrasting color<br>and similar weight of waste yarn</small></em></figcaption>\r\n\t\t\t\t\t</figure>\r\n\t\t\t\t</div>\r\n<br>Scrapping off leaves live (open) stitches that can be picked up later.  The live stitches on the shoulders will be neatly joined (on the machine) to the live stitches on the sweater front.<br>Some knitters prefer to bind off the neck stitches, but for a pullover of this style, picking up live stitches for the neckband adds stretch so the sweater will fit over the head.\r\n\t\t\t</li>\r\n\t\t</ul>\r\n\t\r\n\t <img src=\"/images/legend/childs_back.jpg\">\r\n\r\n",
+              "legacyComponentId": 5701,
+              "order": 2
+            }
+          ],
+          "title": "Knit the Back",
+          "slug": "knit-the-back",
+          "order": 1,
+          "legacy": {
+            "assignId": 3821,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "393050658",
+              "title": "Scrap 'n Ravel, eWrap cast on Place markers Scrap off neck and shoulders",
+              "legacyComponentId": 5725,
+              "order": 1
+            }
+          ],
+          "title": "Watch as we knit our back",
+          "slug": "watch-as-we-knit-our-back",
+          "order": 2,
+          "legacy": {
+            "assignId": 3837,
+            "blockType": "VimeoMultiple"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Part 3: Front",
+      "slug": "part-3-front",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 415,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\t<img src=\"/challenge/images/v2/64/an_expert_was_beginner.gif\">\r\n\r\n\t\r\n\t\t<h4>Don't let the neckline shaping intimidate you. Take it in steps and you'll be fine. </h4><br><em>( I always plan to work my necklines in the morning when I'm fresh.... it takes uninterrupted concentration)</em>\r\n\t\r\n\r\n<br><div>\r\n\t\r\n\r\n\t\tIf you've never shaped a neckline or you've struggled, we suggest knitting a practice neckline (or 2) before using your \"good\" yarn. Just cast on the \"A\" dimension and knit for a few inches. Then work the neckline shaping according to the pattern. The concept of removing some stitches, knitting a section, replacing the stitches, knitting another section may seem difficult, but you just need to take it in steps.<br><span class=\"section-title MachineknittingColor\">HIGHLIGHTS:</span><br><ul class=\"lightlist\" style=\"list-style:none;\">\r\n\t\t\t<li>Knit the front exactly like you knit the back up to the start of the neckline shaping</li>\r\n\t\t\t<li>ADD a <a href=\"#\" data-toggle=\"tooltip\" data-placement=\"auto\" title=\"If you make a mistake in shaping, a LIFELINE offers an easier do-over\"><i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> Lifeline</a> for a sure-fire way to easily recover from mistakes.<br>\r\n\r\n\t\t\t\t<button data-vimeoid=\"151859753\" class=\"videopopup btn btn-xs btn-default\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Add lifelines</button>\r\n\r\n\t\t\t</li>\r\n\t\t\t<li>Don't be intimidated by the Neck Opening instructions in the pattern.<br>The instructions are displayed 2 ways: Written instructions AND\r\n\t\t\t\t<a href=\"#chart\" data-toggle=\"collapse\">Chart Format <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>\r\n\t\t\t\t<div id=\"chart\" class=\"collapse hidden-print\">\r\n\t\t\t\t\t<img src=\"/challenge/images/v2/64/chart_format.jpg\">\r\n\t\t\t\t</div>\r\n\t\t\t</li>\r\n\t\t\t<li>By scrapping off the shoulders (E), you'll leave live stitches to neatly join to the back shoulders</li>\r\n\r\n\t\t</ul>\r\n\r\n\r\n",
+              "legacyComponentId": 5702,
+              "order": 1
+            }
+          ],
+          "title": "Knit the Front",
+          "slug": "knit-the-front",
+          "order": 1,
+          "legacy": {
+            "assignId": 3822,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\t<img src=\"/challenge/images/v2/64/watch_these_before_knitting.gif\"><br>",
+              "legacyComponentId": 5728,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858551",
+              "title": "Easy Round Neck Shaping",
+              "legacySlot": 1,
+              "legacyComponentId": 5727,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859107",
+              "title": "Neckline Shaping Perfection",
+              "legacySlot": 2,
+              "legacyComponentId": 5727,
+              "order": 2
+            }
+          ],
+          "title": "Neckline Shaping",
+          "slug": "neckline-shaping",
+          "order": 2,
+          "legacy": {
+            "assignId": 3839,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "393080348",
+              "title": "Just a rectangle ... adding neckline shaping",
+              "legacyComponentId": 5729,
+              "order": 1
+            }
+          ],
+          "title": "Watch as we knit our front",
+          "slug": "watch-as-we-knit-our-front",
+          "order": 3,
+          "legacy": {
+            "assignId": 3840,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Part 4: Neckband",
+      "slug": "part-4-neckband",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 418,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\t<img src=\"/challenge/images/v2/64/on_the_home_stretch.gif\">\r\n\r\n<span class=\"section-title MachineknittingColor\">HIGHLIGHTS:</span><br>\r\n<h3><b>Neckband</b></h3>\r\n\r\n<ul class=\"lightlist\" style=\"list-style:none;\">\r\n\t<li><b>Note:</b>The number of stitches to pick up is approximate. Yarn and gauge can vary this number, use your judgment in calculating the number of stitches.</li>\r\n\t<li>If you don't have enough needles, you may need to knit the band in 2 pieces.</li>\r\n\t<li>OPTIONAL: If you scrapped off the back neck stitches:<br>\r\n\t\tTo keep the back neck from getting sloppy, pick up about 10% fewer stitches than you scrapped off. For example, if you scrapped off 40 stitches double up 4-5 stitches and pick up 35 - 36 stitches instead. This will ease the back neck slightly and allow it to lay flat.</li>\r\n\t<li>Knit whatever depth of band you like, keeping the roll in mind</li>\r\n<li>Bind off loosely, the band needs to stretch over the head</li>\r\n</ul>\r\n<br>\r\n\r\n\r\n<h3><b>Sleeves</b></h3>\r\n\r\n<ul class=\"lightlist\" style=\"list-style:none;\">\r\n\t<li>If possible, knit both sleeves in the same day.</li>\r\n\t<li>Whether you are knitting top down or bottom up,work the increases/decreases AT LEAST one stitch from the edge of your knitting. This will keep a neat stitch on each edge, making for easier seaming.</li>\r\n<li>Your cuffs don't have to match the hem of your sweater ... you're the designer!</li>\r\n</ul>\r\n\r\n\r\n<img src=\"/challenge/images/v2/64/sleeves.png\">\r\n\r\n<h3><b>Finishing</b></h3><br>\r\n\r\n\r\n\r\n\r\n<ul class=\"lightlist\" style=\"list-style:none;\">\r\n<li>Take time to block your pieces and seams</li>\r\n<li>Seam neatly</li>\r\n<li>When seaming the sleeves and side seams, the 'rule of thumb' is to sew from the most public area to the most hidden area.  In other words, start seaming at the cuff and work towards the underarm.  Start seaming from the hem and work toward the underarm. We like to use <a href=\"#mattress\" data-toggle=\"collapse\">Mattress Stitch <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>\r\n<div id=\"mattress\" class=\"collapse hidden-print\">\r\n<img class=\"responsive zoom\" width= \"300\" src=\"/images/glossary/mattress_stitch.jpg\">\r\n</div>\r\n\r\n</li>\r\n<li>When seaming the rolled edges, take care to neatly stitch so the seam on the public side of the roll is hidden <a href=\"#roll\" data-toggle=\"collapse\"> <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>\r\n<div id=\"roll\" class=\"collapse hidden-print\">\r\n<img class=\"responsive zoom\" width= \"300\" src=\"/challenge/images/v2/64/rolled_hem_seam_800.jpg\">\r\n</div></lI>\r\n</ul>\r\n\r\n<img src=\"/challenge/images/v2/64/well_executed_seam.gif\">\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 5709,
+              "order": 2
+            }
+          ],
+          "title": "Neckband",
+          "slug": "neckband",
+          "order": 1,
+          "legacy": {
+            "assignId": 3824,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "393138040",
+              "title": "Join one shoulder Knit the band Join the other shoulder",
+              "legacyComponentId": 5730,
+              "order": 1
+            }
+          ],
+          "title": "Watch as we knit the neckband",
+          "slug": "watch-as-we-knit-the-neckband",
+          "order": 2,
+          "legacy": {
+            "assignId": 3841,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Part 5: Sleeves | Finishing",
+      "slug": "part-5-sleeves-finishing",
+      "displayOrder": 8,
+      "legacy": {
+        "itemId": 423,
+        "lessonOrder": 8
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Two options are offered for knitting the sleeves: Top Down or Cuff Up.\r\nThe choice is yours.<br>To knit this style of sleeve from the top down, you will pick up the armhole stitches and work decreases down to the cuff.<br>\r\n\r\n\r\n <h3><i class=\"fa fa-thumbs-o-up\" aria-hidden=\"true\"></i> <i class=\"fa fa-thumbs-o-down\" aria-hidden=\"true\"></i> TOP DOWN? </h3>\r\n\r\n\r\n<h3><i class=\"fa fa-thumbs-o-up\" aria-hidden=\"true\"></i> Pro:</h3>\r\n<ul>\r\n\t\t\t<li>Many knitters find decreases to be faster than increases.</li>\r\n\t\t\t<li>Picking up stitches is faster than seaming sleeve to armhole</li>\r\n\t\t</ul>\r\n\r\n<img src=\"/challenge/images/v2/64/sleeves.png\">\r\n<h3><i class=\"fa fa-thumbs-o-down\" aria-hidden=\"true\"></i> Con:</h3><ul>\r\n\t\t\t<li>If you add knitting to the cuff, binding off in knitting can be difficult.</li>\r\n\t\t\t<li>If you knit in a stitch pattern with a definite up and down orientation, you may need to reverse the stitch pattern so the body and sleeves match</li>\r\n\t\t</ul>\r\n\r\n\r\n\r\n<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> We prefer knitting this style of sleeve from the top down. Watch the video below for tips for perfection\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 5731,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858940",
+              "title": "Seaming Stitches to Rows",
+              "legacyComponentId": 5732,
+              "order": 2
+            }
+          ],
+          "title": "Knit the Sleeves",
+          "slug": "knit-the-sleeves",
+          "order": 1,
+          "legacy": {
+            "assignId": 3842,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "393147725",
+              "title": "We knit ours Top Down",
+              "legacyComponentId": 5733,
+              "order": 1
+            }
+          ],
+          "title": "Watch as we knit our sleeves",
+          "slug": "watch-as-we-knit-our-sleeves",
+          "order": 2,
+          "legacy": {
+            "assignId": 3843,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858422",
+              "title": "Seaming - Putting It All Together",
+              "legacyComponentId": 5734,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<br><h3>Make those rolled hems beautiful<h3>\r\n<br>",
+              "legacyComponentId": 5740,
+              "order": 2
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/kal_prickly_pear/seam_good.jpg",
+                  "caption": "Because the purl side rolls to the public side, take extra care to make your seams beautiful"
+                },
+                {
+                  "src": "/kal_prickly_pear/seam_ugly.jpg",
+                  "caption": "You don't want that seam to show"
+                },
+                {
+                  "src": "/kal_prickly_pear/seam1.jpg",
+                  "caption": "That's Better"
+                },
+                {
+                  "src": "/kal_prickly_pear/seam3.jpg",
+                  "caption": "As you are stitching the seam, reverse your sewing at about 3/4\" - 1\" from the edge of the knitting"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 5739,
+              "order": 3
+            }
+          ],
+          "title": "Finishing",
+          "slug": "finishing",
+          "order": 3,
+          "legacy": {
+            "assignId": 3844,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "What's Next?",
+      "slug": "what-s-next",
+      "displayOrder": 9,
+      "legacy": {
+        "itemId": 419,
+        "lessonOrder": 9
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n.btn-custom {\r\n  background-color: #9E2065;\r\n  border-color: #9E2065;\r\n}\r\n.btn-custom:hover,\r\n.btn-custom:focus,\r\n.btn-custom:active,\r\n.btn-custom.active {\r\n  background-color: #891c57;\r\n  border-color: #74174a;\r\n}\r\n.btn-custom.disabled:hover,\r\n.btn-custom.disabled:focus,\r\n.btn-custom.disabled:active,\r\n.btn-custom.disabled.active,\r\n.btn-custom[disabled]:hover,\r\n.btn-custom[disabled]:focus,\r\n.btn-custom[disabled]:active,\r\n.btn-custom[disabled].active,\r\nfieldset[disabled] .btn-custom:hover,\r\nfieldset[disabled] .btn-custom:focus,\r\nfieldset[disabled] .btn-custom:active,\r\nfieldset[disabled] .btn-custom.active {\r\n  background-color: #9E2065;\r\n  border-color: #9E2065;\r\n}\r\n</style>\r\n\r\n\r\n<center><a  href=\"/challenge/28/course/fit-once-get-knitting\"><img src=\"/challenge/images/v2/64/sleeveless_workshop/fit_once.png\"></a><br><div class=\"lead\">Knit a sweater that fits and is shaped and designed for YOU</div><br>Re-use this pattern again and again with different machines, different yarns and different stitch patterns. <br>With your \"muslin\" established you can get creative<br> and add designer touches or copy designs you've seen.<br><span class=\"label label-warning\">Subscriber Discount</span><br>\r\n</center>\r\n\r\n<center><a href=\"/challenge/25/course/big-hug-use-a-hk-pattern-with-your-machine\"><img src=\"/challenge/images/v2/64/big_hug/big_hug.png\"></a> <br>\r\n<div class=\"lead\">\"I can knit that on the machine!\"</div><br>Does that sound familiar?<br><b>Learn 3 ways of using a hand knitting pattern for machine knitting</b>.<br>Duplicate the designer details and use any yarn, any machine and your own creativity!<br><span class=\"label label-warning\">Subscriber Discount</span><br>\r\n</center>\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 5711,
+              "order": 1
+            }
+          ],
+          "title": "Continue the Journey",
+          "slug": "continue-the-journey",
+          "order": 1,
+          "legacy": {
+            "assignId": 3826,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 14,
+    "videos": [
+      {
+        "vimeoId": "392986594",
+        "title": "Get the \"Big Picture\" before you go any further",
+        "lessonSlug": "introduction",
+        "blockSlug": "knitting-overview"
+      },
+      {
+        "vimeoId": "391663684",
+        "title": "Watch as we knit a 'Get Acquainted' Swatch",
+        "lessonSlug": "don-t-skip-this",
+        "blockSlug": "step-2-gauge-swatch-verses-tension-swatch"
+      },
+      {
+        "vimeoId": "178357273",
+        "title": null,
+        "lessonSlug": "don-t-skip-this",
+        "blockSlug": "step-3-knitting-swatches"
+      },
+      {
+        "vimeoId": "151858757",
+        "title": "Rolled Hem Study",
+        "lessonSlug": "don-t-skip-this",
+        "blockSlug": "rolled-hem-study"
+      },
+      {
+        "vimeoId": "396776651",
+        "title": "Because this pattern is a pullover, you might want to consider leaving one (or both) shoulders open to make it easier to dress a baby or small child.",
+        "lessonSlug": "don-t-skip-this",
+        "blockSlug": "open-shoulder-video"
+      },
+      {
+        "vimeoId": "374009611",
+        "title": null,
+        "lessonSlug": "your-pattern",
+        "blockSlug": "new-to-perfect-fit-patterns"
+      },
+      {
+        "vimeoId": "393050658",
+        "title": "Scrap 'n Ravel, eWrap cast on Place markers Scrap off neck and shoulders",
+        "lessonSlug": "part-2-back",
+        "blockSlug": "watch-as-we-knit-our-back"
+      },
+      {
+        "vimeoId": "151858551",
+        "title": "Easy Round Neck Shaping",
+        "lessonSlug": "part-3-front",
+        "blockSlug": "neckline-shaping"
+      },
+      {
+        "vimeoId": "151859107",
+        "title": "Neckline Shaping Perfection",
+        "lessonSlug": "part-3-front",
+        "blockSlug": "neckline-shaping"
+      },
+      {
+        "vimeoId": "393080348",
+        "title": "Just a rectangle ... adding neckline shaping",
+        "lessonSlug": "part-3-front",
+        "blockSlug": "watch-as-we-knit-our-front"
+      },
+      {
+        "vimeoId": "393138040",
+        "title": "Join one shoulder Knit the band Join the other shoulder",
+        "lessonSlug": "part-4-neckband",
+        "blockSlug": "watch-as-we-knit-the-neckband"
+      },
+      {
+        "vimeoId": "151858940",
+        "title": "Seaming Stitches to Rows",
+        "lessonSlug": "part-5-sleeves-finishing",
+        "blockSlug": "knit-the-sleeves"
+      },
+      {
+        "vimeoId": "393147725",
+        "title": "We knit ours Top Down",
+        "lessonSlug": "part-5-sleeves-finishing",
+        "blockSlug": "watch-as-we-knit-our-sleeves"
+      },
+      {
+        "vimeoId": "151858422",
+        "title": "Seaming - Putting It All Together",
+        "lessonSlug": "part-5-sleeves-finishing",
+        "blockSlug": "finishing"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

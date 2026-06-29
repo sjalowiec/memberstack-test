@@ -1,0 +1,750 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 60,
+    "title": "Triangle Scarf or Shawl",
+    "slug": "triangle-scarf-or-shawl",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_60_triangle_scarf_or_shawl.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/triangle.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "DIY Triangle Scarf and Shawls",
+      "slug": "diy-triangle-scarf-and-shawls",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 394,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "These scarves and shawls are easy knitting and can be used as a canvas for your creativity. Knit in lace (automatic or hand manipulated), stitch patterns, or stripes. Consider knitting them on the ribber.<br>This Knit it Now Collection gives you a variety of styles to choose, each with it's own features.<br><b>Triangular scarves</b> are a fun way to try new stitch patterns and create quick gifts or craft fair items using a small amount of yarn. Because they are small, the needlebed limitations of our machines don't come into play as much as with a full shawl.<br>Knit <b>triangular shawls</b> in different directions for a different look.<br>All of these designs are shaped working increases and/or decreases over every-other-row. You don't need to follow a chart and keep track of your row counts. But shaping this way forces the dimensions of your shawl/scarf to specific sizes based on your gauge. <br>",
+              "legacyComponentId": 5649,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "408632659",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 5649,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\t\t\t<b>Once you establish YOUR gauge, it's important to note the finished dimensions of your chosen style based on the number of needles you put into work.</b><br><em> In other words, take time to examine the diagram for the finished dimensions BEFORE you start knitting.</em><br>\r\n\t\tThe patterns also include <b>yarn calculations</b> based on your swatch. Even though you are knitting \"just a shawl\" is critical that you knit and dress your swatch and build your pattern based on the accurate measurements of your gauge.<br>\r\n\t\t\r\n\t\t\t\r\n\r\n\t\t\t\t<div class=\"table-responsive\">\r\n\t\t\t\t\t<table class=\"table-striped table\">\r\n\t\t\t\t\t\t<thead>\r\n\t\t\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t\t\t<th></th>\r\n\t\t\t\t\t\t\t\t<th></th>\r\n\t\t\t\t\t\t\t\t<th>Notes</th>\r\n\t\t\t\t\t\t\t\t<th>Scarf</th>\r\n\t\t\t\t\t\t\t\t<th>Shawl</th>\r\n\t\t\t\t\t\t\t</tr>\r\n\t\t\t\t\t\t</thead>\r\n\t\t\t\t\t\t<tbody>\r\n\t\t\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t\t\t<td><img src=\"/challenge/images/v2/60/icon_triangle.jpg\">\r\n\t\t\t\t\t\t\t\t</td>\r\n\r\n\r\n\t\t\t\t\t\t\t\t<td><b>Triangle Scarf</b></td>\r\n\t\t\t\t\t\t\t\t<td>Knit from the widest edge to the point (using decreases). Stripes run parallel to the cast on edge. Limited Width</td>\r\n\t\t\t\t\t\t\t\t<td align=\"center\"><i class=\"fa fa-check\" aria-hidden=\"true\"></i></td>\r\n\t\t\t\t\t\t\t\t<td align=\"center\"><i class=\"fa fa-times\" aria-hidden=\"true\"></i></td>\r\n\t\t\t\t\t\t\t</tr>\r\n\t\t\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t\t\t<td> <img src=\"/challenge/images/v2/60/icon_fastneasy.jpg\">\r\n\t\t\t\t\t\t\t\t</td>\r\n\t\t\t\t\t\t\t\t<td><b>Fast 'n Easy</b></td>\r\n\t\t\t\t\t\t\t\t<td>Knit from the max needles and decreased to a point, stripes run parallel to the cast on edge. This style may be more appropriate for a scarf or shoulder warmer. Check the dimensions before knitting.</td>\r\n\t\t\t\t\t\t\t\t<td align=\"center\"><i class=\"fa fa-check\" aria-hidden=\"true\"></i></td>\r\n\t\t\t\t\t\t\t\t<td align=\"center\"><i class=\"fa fa-check\" aria-hidden=\"true\"></i></td>\r\n\t\t\t\t\t\t\t</tr>\r\n\t\t\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t\t\t<td>\r\n\t\t\t\t\t\t\t\t\t<img src=\"/challenge/images/v2/60/icon_pointtopoint.jpg\">\r\n\t\t\t\t\t\t\t\t</td>\r\n\t\t\t\t\t\t\t\t<td><b>Point-to-Point</b></td>\r\n\t\t\t\t\t\t\t\t<td>Start at a point, increase to the max needles, then decrease to a point. This style allows for a wider shawl (fingertip to fingertip). the back length is limited to the number of needles on the needlebed. Stripes appear vertically at center back</td>\r\n\t\t\t\t\t\t\t\t<td align=\"center\"><i class=\"fa fa-check\" aria-hidden=\"true\"></i></td>\r\n\t\t\t\t\t\t\t\t<td align=\"center\"><i class=\"fa fa-check\" aria-hidden=\"true\"></i></td>\r\n\t\t\t\t\t\t\t</tr>\r\n\t\t\t\t\t\t\t<tr>\r\n\r\n\t\t\t\t\t\t\t\t<td><img src=\"/challenge/images/v2/60/icon_chevron.jpg\">\r\n\t\t\t\t\t\t\t\t</td>\r\n\r\n\t\t\t\t\t\t\t\t<td><b>Chevron</b></td>\r\n\t\t\t\t\t\t\t\t<td>Knit in 2 pieces, this allows you to create the largest of these styles. Knit from point to point, stripes create a decorative chevron design at the center back. </td>\r\n\t\t\t\t\t\t\t\t<td align=\"center\"><i class=\"fa fa-check\" aria-hidden=\"true\"></i></td>\r\n\t\t\t\t\t\t\t\t<td align=\"center\"><i class=\"fa fa-check\" aria-hidden=\"true\"></i></td>\r\n\t\t\t\t\t\t\t</tr>\r\n\t\t\t\t\t\t</tbody>\r\n\t\t\t\t\t</table>\r\n\t\t\t\t</div>\r\n\t\t\t\r\n\r\n\t\t\r\n",
+              "legacyComponentId": 5818,
+              "order": 2
+            }
+          ],
+          "title": "About Triangle Scarves / Shawls",
+          "slug": "about-triangle-scarves-shawls",
+          "order": 1,
+          "legacy": {
+            "assignId": 3773,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Triangle Scarf",
+      "slug": "triangle-scarf",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 395,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .container-border1 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px 50px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        background-color: white;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n    \r\n\r\n        Do you have a single ball or skein of yarn? Want a quick scarf?\r\n        This version is a quick knit that can be worked in any stitch pattern.<br>Because of our needlebed limitations, this style is appropriate for scarves only. If you'd like a larger shawl, consider one of choices below.<br><div class=\"container-border1\">\r\n            <i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> <b>TIP: </b> <em>For even faster knitting, flip this around and start with 2-3 needles and INCREASE to the widest part of the scarf.</em> Use a <a data-vimeoid=\"151858451\" class=\"videopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> KISS increase</a> on the carriage side EVERY ROW.\r\n        </div>\r\n    \r\n\r\n    <img src=\"/challenge/images/v2/60/scarf_as_worn.jpg\">\r\n\r\n",
+              "legacyComponentId": 5651,
+              "order": 1
+            }
+          ],
+          "title": "Simple Triangle Scarf",
+          "slug": "simple-triangle-scarf",
+          "order": 1,
+          "legacy": {
+            "assignId": 3774,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<span class=\"handwriting\" style=\"font-size:2em\">Simple, Quick Shaping </span><br>\r\n<span class=\"handwriting\" style=\"font-size:1.5em\">Every 2 rows, Every 3 rows, or Every 4 rows .. your choice.</span>\r\n\r\n<div class=\"no-print\"><br><i class=\"fa fa-hand-o-right no-print\" aria-hidden=\"true\"></i> Control the finished size of your scarf by adjusting the number of needles used.</div> \r\n",
+              "legacyComponentId": 5652,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: TriangleScarforShawl/tringlescarf.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3775",
+                "CUSTOMCFM": "TriangleScarforShawl/tringlescarf.cfm",
+                "TYPEOF": "CustomCFM"
+              },
+              "legacyComponentId": 5650,
+              "order": 2
+            }
+          ],
+          "title": "Triangle Scarf Instructions",
+          "slug": "triangle-scarf-instructions",
+          "order": 2,
+          "legacy": {
+            "assignId": 3775,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Fast 'n Easy",
+      "slug": "fast-n-easy",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 388,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\tOur machines have a limited number of needles, which limits the width of our knitting. We have to be creative in planning to knit large pieces.<br>This one-piece design can be used for a scarf or shawl. <br>It is designed for easy knitting with decreases every-other-row, forming the triangle shape.<br>If adding stripes, using self-striping yarn or adding horizontal stitch pattern, the pattern will run parallel to the cast on edge.<br><em><i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i><b>TIP:</b><br> For even faster knitting, flip this around. Start with 1-3 stitches and INCREASE every-other-row\r\n\t\t Use a <a data-vimeoid=\"151858451\" class=\"videopopup\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> KISS increase</a> on the carriage side EVERY ROW.<br>\r\n\t\t</em><br>\r\n\t\r\n\t<img src=\"/path/images/158/easy_version_as_worn.jpg\">\r\n\r\nNOTE: The shaping is worked over every-other-row. Depending on your stitch pattern, the shawl may not be symmetrical. If the difference is too great, you may want to work a different shaping sequence. Use the Magic Formula to calculate your shaping instructions",
+              "legacyComponentId": 5611,
+              "order": 1
+            }
+          ],
+          "title": "Fast 'n Easy Shawl",
+          "slug": "fast-n-easy-shawl",
+          "order": 1,
+          "legacy": {
+            "assignId": 3758,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Control the finished size of your shawl by adjusting the number of needles used. <br>\r\n<i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Want a scarf? Reduce the number of needles and check the <b>H</b><small><em> (Height)</em></small> and <b>W</b><small><em> (Width)</em></small> dimensions",
+              "legacyComponentId": 5645,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: TriangleScarforShawl/FastnEasy.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3759",
+                "CHALLENGE_COMPONENTID": "5612",
+                "CUSTOMCFM": "TriangleScarforShawl/FastnEasy.cfm"
+              },
+              "legacyComponentId": 5612,
+              "order": 2
+            }
+          ],
+          "title": "Fast 'n Easy Instructions",
+          "slug": "fast-n-easy-instructions",
+          "order": 2,
+          "legacy": {
+            "assignId": 3759,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Point-to-Point Shawl",
+      "slug": "point-to-point-shawl",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 390,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nWith this design, the widest point of the shawl is across the shoulders. The knitting is easy with increases and decreases worked every-other-row.<br>Depending on your gauge, with this version, you can make a generous shawl that will cover your shoulders and keep you warm.<br>By starting at a point, horizontal stripes or stitch patterns will run vertically as the shawl is worn.<br>Get creative!  Use stripes, mix 'n match stitch patterns ... you are the designer!\r\n\r\n\t<img src=\"/path/images/158/to-the-point_as_worn.jpg\">\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 5622,
+              "order": 1
+            }
+          ],
+          "title": "Point-to-Point Shawl",
+          "slug": "point-to-point-shawl",
+          "order": 1,
+          "legacy": {
+            "assignId": 3764,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Control the finished size of your shawl by adjusting the number of needles used. <br><i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Want a scarf? Reduce the number of needles and check the <b>H</b><small><em> (Height)</em></small> and <b>W</b><small><em> (Width)</em></small> dimensions",
+              "legacyComponentId": 5647,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: TriangleScarforShawl/Point-to-Point.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3765",
+                "CUSTOMCFM": "TriangleScarforShawl/Point-to-Point.cfm",
+                "TYPEOF": "CustomCFM"
+              },
+              "legacyComponentId": 5623,
+              "order": 2
+            }
+          ],
+          "title": "Point-to-Point Instructions",
+          "slug": "point-to-point-instructions",
+          "order": 2,
+          "legacy": {
+            "assignId": 3765,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Chevron",
+      "slug": "chevron",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 391,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\tThis 2-piece design, knit with horizontal stripes or stitch patterns, creates a lovely chevron shape at the center back. Because it's knit in 2 pieces, you shouldn't run into any needlebed limitations and you can make it any size you like!<br>\r\nUnlike the other versions in this collection, to keep the proportions correct, the shaping is worked according to the Magic Formula (not every-other-row).<br>\r\n\r\n\t\t<em><i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i><b>TIP:</b><br> To match the chevron color repeats, be sure to reverse the shaping. Start one piece on the far left of the needlebed working the increases and decreases on the right. Knit the other piece by starting on the far right of the needlebed and work the shaping on the left.\r\n\t\t</em><br>\r\n\t\r\n\t<img src=\"/path/images/158/chevron_version_text.jpg\">\r\n\r\n",
+              "legacyComponentId": 5624,
+              "order": 1
+            }
+          ],
+          "title": "Chevron Shawl",
+          "slug": "chevron-shawl",
+          "order": 1,
+          "legacy": {
+            "assignId": 3766,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Control the finished size of your shawl by adjusting the number of needles used. <br>\r\n<i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i> Want a scarf? Reduce the number of needles and check the <b>L</b><small><em> (Length)</em></small> and <b>C</b><small><em> (Width)</em></small> dimensions",
+              "legacyComponentId": 5648,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: TriangleScarforShawl/Chevron.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3767",
+                "CUSTOMCFM": "TriangleScarforShawl/Chevron.cfm",
+                "TYPEOF": "CustomCFM"
+              },
+              "legacyComponentId": 5625,
+              "order": 2
+            }
+          ],
+          "title": "Chevron Shawl Instructions",
+          "slug": "chevron-shawl-instructions",
+          "order": 2,
+          "legacy": {
+            "assignId": 3767,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Asymmetric Shawl",
+      "slug": "asymmetric-shawl",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 437,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\n\t\r\n<img class=\"img-thumbnail videopopup\" data-vimeoid=\"247816849\" src=\"/challenge/images/v2/60/swirl_play1.png\">\r\n\t\t\r\n\r\n\t\r\n\t\r\nInspired by a hand knitting pattern, this adorable Shawlette/Scarf is quick to knit and uses a small amount of yarn. Great gift idea and stash buster, it can be knit on any machine.<br>If you can count to 8, cast on and bind off ... you CAN KNIT THIS!<br>Using your stitch and row gauge, choose the depth you want to knit.<br><b>Included:</b>\r\n\t\t<ul>\r\n\t\t\t<li>Easy to use <b>tool</b> that will help you determine how much yarn you will need for the size you want to knit.</li>\r\n\t\t\t<li><b>Pattern</b> to knit in any yarn AND on any machine</li>\r\n\t\t\t<li><b>Tutorials</b> for all the techniques used to knit our shawlette</li>\r\n\t\t\t<li><b>Start to finish video</b></li>\r\n\t\t</ul>\r\n\t\tWe knit ours in self-striping yarn that shows off the asymmetric construction.<br>\r\n\r\n\t\r\n\r\n\r\n<a href=/challenge/16/course/machine-knit-asymmetric-shawlette\"><img src=\"/challenge/images/v2/60/swirl_shawl_thumb.jpg\"></a>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 5827,
+              "order": 1
+            }
+          ],
+          "title": "Swirl Shawl",
+          "slug": "swirl-shawl",
+          "order": 1,
+          "legacy": {
+            "assignId": 3903,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pinterest",
+              "notes": [
+                "Legacy Pinterest embed; replace with static content or omit."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3902",
+                "PINTERESTID": "11",
+                "TYPEOF": "Pinterest"
+              },
+              "legacyComponentId": 5826,
+              "order": 1
+            }
+          ],
+          "title": "'Lopsided' Shawl <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i>",
+          "slug": "lopsided-shawl-i-class-fa-fa-smile-o-aria-hidden-true-i",
+          "order": 2,
+          "legacy": {
+            "assignId": 3902,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Stuff You Should Know",
+      "slug": "stuff-you-should-know",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 389,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Even though you are knitting a scarf or shawl, it's important to swatch in your stitch pattern.<br>\r\nMeasuring accurate gauge and dressing your swatch will ensure:\r\n<ul>\r\n<li>You will have enough yarn</li>\r\n<li>You will know the finished size</li>\r\n<li>You will know how the yarn washes (stretches, bleeds, shrinks, felts etc)</li>\r\n</ul>\r\n\r\n\r\n",
+              "legacyComponentId": 5615,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859471",
+              "title": "Swatching in Pattern Knitting",
+              "legacySlot": 1,
+              "legacyComponentId": 5614,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858429",
+              "title": "Knit a Gauge Swatch in Less than 10 Minutes",
+              "legacySlot": 2,
+              "legacyComponentId": 5614,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "245117927",
+              "title": "Gauge and Drop",
+              "legacySlot": 3,
+              "legacyComponentId": 5614,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "260683875",
+              "title": "Accurate Gauge Measurement",
+              "legacySlot": 4,
+              "legacyComponentId": 5614,
+              "order": 2
+            }
+          ],
+          "title": "Swatching is not Optional!",
+          "slug": "swatching-is-not-optional",
+          "order": 1,
+          "legacy": {
+            "assignId": 3760,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Plain or fancy, there are many ways to work increases and decreases on the machine.  Here are some basics.",
+              "legacyComponentId": 5617,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858451",
+              "title": "KISS Increases (automatic)",
+              "legacySlot": 1,
+              "legacyComponentId": 5616,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858447",
+              "title": "Basic Increasing and Decreasing",
+              "legacySlot": 2,
+              "legacyComponentId": 5616,
+              "order": 2
+            }
+          ],
+          "title": "Increases and Decreases",
+          "slug": "increases-and-decreases",
+          "order": 2,
+          "legacy": {
+            "assignId": 3761,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "As with all techniques in machine knitting, there are many ways to cast on stitches.",
+              "legacyComponentId": 5619,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860058",
+              "title": "E-Wrap Cast On",
+              "legacySlot": 1,
+              "legacyComponentId": 5618,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858358",
+              "title": "Troubleshooting Tips - Casting On",
+              "legacySlot": 2,
+              "legacyComponentId": 5618,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "232583690",
+              "title": "Ugly Cast On?",
+              "legacySlot": 3,
+              "legacyComponentId": 5618,
+              "order": 2
+            }
+          ],
+          "title": "Cast On",
+          "slug": "cast-on",
+          "order": 3,
+          "legacy": {
+            "assignId": 3762,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "You're the designer!<br>\r\nIf you are brand new to your machine, knit your first shawl in plain knitting.  Choose a beautiful yarn and concentrated on the knitting techniques used to shape your triangle.<br>\r\nOnce you gain some confidence, incorporate stitch patterns, lace, double bed techniques or mix 'n match stitch patterns.",
+              "legacyComponentId": 5621,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857939",
+              "title": "Yipes! Stripes!",
+              "legacySlot": 1,
+              "legacyComponentId": 5620,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "294953374",
+              "title": "Single Row Stripes with Free Pass",
+              "legacySlot": 2,
+              "legacyComponentId": 5620,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858474",
+              "title": "Taming Variegated Yarns",
+              "legacySlot": 3,
+              "legacyComponentId": 5620,
+              "order": 2
+            }
+          ],
+          "title": "Stripes",
+          "slug": "stripes",
+          "order": 4,
+          "legacy": {
+            "assignId": 3763,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "315996687",
+              "title": "Diagonal Shaping",
+              "legacyComponentId": 9761,
+              "order": 1
+            }
+          ],
+          "title": "Knitting Diagonals",
+          "slug": "knitting-diagonals",
+          "order": 5,
+          "legacy": {
+            "assignId": 6377,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Inspiration",
+      "slug": "inspiration",
+      "displayOrder": 8,
+      "legacy": {
+        "itemId": 393,
+        "lessonOrder": 8
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pinterest",
+              "notes": [
+                "Legacy Pinterest embed; replace with static content or omit."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3772",
+                "PINTERESTID": "33",
+                "TYPEOF": "Pinterest"
+              },
+              "legacyComponentId": 5646,
+              "order": 1
+            }
+          ],
+          "title": "Inspiration",
+          "slug": "inspiration",
+          "order": 1,
+          "legacy": {
+            "assignId": 3772,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Share your Success",
+      "slug": "share-your-success",
+      "displayOrder": 9,
+      "legacy": {
+        "itemId": 435,
+        "lessonOrder": 9
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<h4>Shrae your work here</h4>\r\n\r\n\r\n",
+              "legacyComponentId": 5821,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "ContestEntery",
+                "BUTTONLABLE": "Upload",
+                "CHALLENGE_ASSIGNID": "3895",
+                "CHALLENGE_COMPONENTID": "5817",
+                "QTY": "3",
+                "SUCCESSMESSAGE": "Thank you"
+              },
+              "legacyComponentId": 5817,
+              "order": 2
+            }
+          ],
+          "title": "Upload a photo",
+          "slug": "upload-a-photo",
+          "order": 1,
+          "legacy": {
+            "assignId": 3895,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageGallary",
+              "notes": [
+                "Unmapped legacy component type: ImageGallary"
+              ],
+              "legacyFields": {
+                "ACTION": "ContestEntery",
+                "CHALLENGE_ASSIGNID": "3899",
+                "CHALLENGE_COMPONENTID": "5822",
+                "WORKSHOPONLY": "0"
+              },
+              "legacyComponentId": 5822,
+              "order": 1
+            }
+          ],
+          "title": "Shared Projects",
+          "slug": "shared-projects",
+          "order": 2,
+          "legacy": {
+            "assignId": 3899,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 14,
+    "videos": [
+      {
+        "vimeoId": "408632659",
+        "title": null,
+        "lessonSlug": "diy-triangle-scarf-and-shawls",
+        "blockSlug": "about-triangle-scarves-shawls"
+      },
+      {
+        "vimeoId": "151859471",
+        "title": "Swatching in Pattern Knitting",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "swatching-is-not-optional"
+      },
+      {
+        "vimeoId": "151858429",
+        "title": "Knit a Gauge Swatch in Less than 10 Minutes",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "swatching-is-not-optional"
+      },
+      {
+        "vimeoId": "245117927",
+        "title": "Gauge and Drop",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "swatching-is-not-optional"
+      },
+      {
+        "vimeoId": "260683875",
+        "title": "Accurate Gauge Measurement",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "swatching-is-not-optional"
+      },
+      {
+        "vimeoId": "151858451",
+        "title": "KISS Increases (automatic)",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "increases-and-decreases"
+      },
+      {
+        "vimeoId": "151858447",
+        "title": "Basic Increasing and Decreasing",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "increases-and-decreases"
+      },
+      {
+        "vimeoId": "151860058",
+        "title": "E-Wrap Cast On",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "cast-on"
+      },
+      {
+        "vimeoId": "151858358",
+        "title": "Troubleshooting Tips - Casting On",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "cast-on"
+      },
+      {
+        "vimeoId": "232583690",
+        "title": "Ugly Cast On?",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "cast-on"
+      },
+      {
+        "vimeoId": "151857939",
+        "title": "Yipes! Stripes!",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "stripes"
+      },
+      {
+        "vimeoId": "294953374",
+        "title": "Single Row Stripes with Free Pass",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "stripes"
+      },
+      {
+        "vimeoId": "151858474",
+        "title": "Taming Variegated Yarns",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "stripes"
+      },
+      {
+        "vimeoId": "315996687",
+        "title": "Diagonal Shaping",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "knitting-diagonals"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

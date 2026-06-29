@@ -182,8 +182,7 @@ function resolveHipFieldsForSleevelessDiagram(
   };
 }
 
-/**
- * Vertical side-seam label above the hem: cast-on-to-armhole rows minus hem rows
+/** Vertical side-seam label above the hem: cast-on-to-armhole rows minus hem rows
  * (body only — does not include the hem band).
  */
 function resolveSideSeamAboveHemRows(d: SleevelessBackPatternResult["debug"]): number | undefined {
@@ -200,6 +199,60 @@ function resolveSideSeamAboveHemRows(d: SleevelessBackPatternResult["debug"]): n
     return Math.max(0, Math.round(d.bodyRows));
   }
   return undefined;
+}
+
+/**
+ * Drop-shoulder garment diagrams label straight knitting from the armhole marker to neckline
+ * start separately from {@link NECK_DEPTH_ROWS}. Full derived armhole depth (marker → shoulder)
+ * double-counts the neck band when both labels appear on the schematic.
+ */
+export function resolveArmholeRowsForGarmentDiagram(
+  result: SleevelessBackPatternResult,
+  measurementPiece: SleevelessDiagramReplacementPiece,
+  d: SleevelessBackPatternResult["debug"],
+): number | undefined {
+  if (!result.isDropShoulder) {
+    return isFiniteNumber(d.armholeRows) ? Math.round(d.armholeRows) : undefined;
+  }
+
+  const markerRc = isFiniteNumber(d.rowsFromCastOnToArmholeStart)
+    ? Math.round(d.rowsFromCastOnToArmholeStart)
+    : isFiniteNumber(d.hemRows) && isFiniteNumber(d.bodyRows)
+      ? Math.round(d.hemRows + d.bodyRows)
+      : undefined;
+
+  const necklineStartRc =
+    measurementPiece === "front"
+      ? isFiniteNumber(d.frontNecklineStartRC)
+        ? Math.round(d.frontNecklineStartRC)
+        : undefined
+      : isFiniteNumber(d.backNecklineStartRC)
+        ? Math.round(d.backNecklineStartRC)
+        : isFiniteNumber(d.finalRC)
+          ? Math.round(d.finalRC)
+          : undefined;
+
+  if (markerRc !== undefined && necklineStartRc !== undefined) {
+    return Math.max(0, necklineStartRc - markerRc);
+  }
+
+  const fullArmholeRows = isFiniteNumber(d.armholeRows) ? Math.round(d.armholeRows) : undefined;
+  const neckDepthRows =
+    measurementPiece === "front"
+      ? isFiniteNumber(d.frontNeckDepthRows)
+        ? Math.round(d.frontNeckDepthRows)
+        : undefined
+      : isFiniteNumber(d.backNeckDepthRows)
+        ? Math.round(d.backNeckDepthRows)
+        : isFiniteNumber(d.reservedNecklineShoulderRows)
+          ? Math.round(d.reservedNecklineShoulderRows)
+          : undefined;
+
+  if (fullArmholeRows !== undefined && neckDepthRows !== undefined) {
+    return Math.max(0, fullArmholeRows - neckDepthRows);
+  }
+
+  return fullArmholeRows;
 }
 
 /** Hem band rows + depth for `{{HEM_ROWS}}` / `{{HEM_INCHES}}` diagram labels. */
@@ -359,7 +412,11 @@ export function buildSleevelessGarmentDiagramReplacements(
     rpiForDiagram > 0
       ? lengthFromRowsForDiagram(totalInstructionRows, rpiForDiagram, unit)
       : undefined;
-  const armholeRowsForDiagram = isFiniteNumber(d.armholeRows) ? Math.round(d.armholeRows) : undefined;
+  const armholeRowsForDiagram = resolveArmholeRowsForGarmentDiagram(
+    result,
+    options.measurementPiece,
+    d,
+  );
   const armholeDepthFromRows =
     isFiniteNumber(armholeRowsForDiagram) &&
     isFiniteNumber(rpiForDiagram) &&
@@ -378,7 +435,7 @@ export function buildSleevelessGarmentDiagramReplacements(
     ARMHOLE_DEPTH: fmtNumber(
       armholeDepthFromRows ?? inchesToUnit(d.armholeDepth, unit) ?? Number.NaN,
     ),
-    ARMHOLE_ROWS: isFiniteNumber(d.armholeRows) ? String(Math.round(d.armholeRows)) : "",
+    ARMHOLE_ROWS: isFiniteNumber(armholeRowsForDiagram) ? String(armholeRowsForDiagram) : "",
     BUST_STS: isFiniteNumber(d.backStitches) ? String(Math.round(d.backStitches)) : "",
     BUST_WIDTH: fmtNumber(inchesToUnit(bustWidthIn, unit) ?? NaN),
     SHOULDER_STS: crossBack.sts !== undefined ? String(crossBack.sts) : "",

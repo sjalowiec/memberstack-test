@@ -238,7 +238,9 @@
     "featured": false,
     "metaTitle": "How to change colors on the LK150",
     "metaDescription": "Learn how to change yarn colors on the LK150 without dropping your knitting from the machine.",
-    "appliesTo": ["LK150"],
+    "appliesTo": [
+      "LK150"
+    ],
     "allMachines": false,
     "category": "color-texture",
     "categoryPill": "LK150",
@@ -271,7 +273,7 @@
     "relatedLessons": [
       "colorwork-first-steps"
     ],
-    "status": "published",
+    "status": "draft",
     "id": 1006,
     "sortOrder": 31
   },
@@ -280,7 +282,9 @@
     "metaTitle": "How to Knit Tuck Stitch on the LK150 Knitting Machine",
     "metaDescription": "Learn how to knit tuck stitch on the LK150 using manual needle selection and Russell levers to create texture.",
     "allMachines": false,
-    "appliesTo": ["LK150"],
+    "appliesTo": [
+      "LK150"
+    ],
     "slug": "how-do-i-knit-tuck-stitch-on-my-lk150",
     "status": "published",
     "featured": false,
@@ -360,7 +364,8 @@
       "Pull the next set of needles according to the stitch chart (needles in work will slip)",
       "Knit right",
       "Continue following the chart, keeping both Side levers set to ● and both Russell levers set to II",
-      "Knit a few rows and bind off"   ],
+      "Knit a few rows and bind off"
+    ],
     "tryNote": "👉 Needle selection is made on each row.<br>👉 <strong>DO NOT slip edge needles</strong><br>👉 <strong>Needles in work will slip</strong>",
     "tryImage": "/images/help-hub/slip-card.jpg",
     "tryImageAlt": "slip stitch chart example",

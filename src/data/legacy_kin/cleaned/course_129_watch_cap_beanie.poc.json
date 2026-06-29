@@ -1,0 +1,859 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 129,
+    "title": "Watch Cap / Beanie",
+    "slug": "watch-cap-beanie",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_129_watch_cap_beanie.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:10+00:00"
+    },
+    "thumbnail": "/images/courses/watch_cap_thumb.jpg",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "4 Gore Hat",
+      "slug": "4-gore-hat",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 856,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<b>Looking for a hat pattern that actually fits well?</b><br>This 4 gore design is your answer! The shaped sections eliminate that annoying bulk at the crown while creating a more tailored look. <br>It's the perfect project to level up your machine knitting skills while making something truly useful.<br>Whether you're knitting for charity or making gifts, this pattern works beautifully with any yarn and lets you get creative with stitch patterns and colors. <br>Once you try this construction method, you'll never look back!\r\n\r\nMaster gore shaping techniques that create a better-fitting hat\r\n<ul>\r\n<li>Explore methods for adding ribbing, no matter what machine you are using</li>\r\n\r\n<li>Scrapping off for knitting separate sections (gores)</li>\r\n<li>Gore shaping using decrease techniques</li>\r\n<li>Following decrease instructions</li>\r\n<li>Neat Seaming</li>\r\n<lI>Finishing</li>\r\n</ul>\r\n",
+              "legacyComponentId": 9899,
+              "order": 1
+            }
+          ],
+          "title": "Introduction",
+          "slug": "introduction",
+          "order": 1,
+          "legacy": {
+            "assignId": 6417,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Establish YOUR Gauge",
+      "slug": "establish-your-gauge",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 857,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3> <i class=\"fa-solid fa-hand-back-point-right fa-beat fa-xl\"></i>  Record your machine model <br></h3>\r\n<ul>\r\n<li>This helps ensure you have enough needles</li>\r\n<li>Provides machine-specific instruction in  this guide</li>\r\n</ul>\r\n",
+              "legacyComponentId": 9972,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "SelectMachine",
+              "notes": [
+                "Unmapped legacy component type: SelectMachine"
+              ],
+              "legacyFields": {
+                "BUTTONCSS": "btn-primary",
+                "BUTTONWORDS": "Mark as Complete and Continue",
+                "CHALLENGE_ASSIGNID": "6438",
+                "CHALLENGE_COMPONENTID": "9973",
+                "SELECTITLE": "Select the machine you will be using"
+              },
+              "legacyComponentId": 9973,
+              "order": 2
+            }
+          ],
+          "title": "Your Machine?",
+          "slug": "your-machine",
+          "order": 1,
+          "legacy": {
+            "assignId": 6438,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n        <h3>{First}</h3>\r\n        Swatching is NOT OPTIONAL<br>\r\n\r\n        Using YOUR gauge, you will create custom knitting instructions.<br>Don't count stitches and rows, mark specific stitch and row counts AS YOU KNIT to easily measure and calculate your gauge\r\n    </div>\r\n\r\n        \r\n",
+              "legacyComponentId": 9998,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "1032499533",
+              "title": null,
+              "legacyComponentId": 10001,
+              "order": 2
+            }
+          ],
+          "title": "Your Swatch",
+          "slug": "your-swatch",
+          "order": 1,
+          "legacy": {
+            "assignId": 6449,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<h2>Have you finished your swatch?</h2>\r\n<h3>Click an option to continue</h3>\r\n\r\n\r\n",
+              "legacyComponentId": 9904,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Gauge_Calculator",
+              "notes": [
+                "Unmapped legacy component type: Gauge_Calculator"
+              ],
+              "legacyFields": {
+                "BUTTONCSS": "btn-primary",
+                "BUTTONWORDS": "I've knit my swatch, help me calculate MY gauge",
+                "CHALLENGE_ASSIGNID": "6398",
+                "CHALLENGE_COMPONENTID": "9852",
+                "MAINTITLE": "Calculate Your Gauge",
+                "SAVEROWVAR": "rows",
+                "SAVESTITCHVAR": "stitches"
+              },
+              "legacyComponentId": 9906,
+              "order": 4
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\n    table td,\r\n    table th {\r\n        font-size: smaller;\r\n        border: 1px solid black;\r\n        line-height: 1.4;\r\n        padding: 10px 10px;\r\n    }\r\n\r\n    /* Highlight the middle column */\r\n    table tr th:nth-child(2),\r\n    table tr td:nth-child(2) {\r\n        background-color: #ffffcc;\r\n    }\r\n#table1 {\r\n    border: 2px solid #333;\r\n    border-radius: 10px;\r\n    margin: 20px;\r\n    padding: 15px;\r\n    text-align: center;  /* This is new */\r\n}\r\n\r\n#table1 table {\r\n    margin: 0 auto;  /* This is new */\r\n}\r\n</style>\r\n<br>\r\n\r\n<button class=\"btn btn-primary\" onclick=\"$('#helpme').toggle()\">I need help with creating my swatch</button>\r\n\r\n\r\n\r\n    \r\n\r\n        <h3>{First}</h3>\r\n        Swatching is NOT OPTIONAL<br>\r\n\r\n        Using YOUR gauge, you will create custom knitting instructions for your Triangular Cowl by knitting a <a data-GlossaryId=\"843\" class=\"glossaryhelp\"><b>Proper Swatch </b><i class=\"fa fa-question-circle-o\" aria-hidden=\"true\"></i></a><br><h3>Don't count stitches and rows,</h3> <span class=\"yellow_highlight\">mark specific stitch and row counts <b>AS YOU KNIT</b></span><br> then you can easily measure and calculate your gauge.\r\n<div id=\"table1\">\r\n        <h3>Stitches and Rows to MEASURE</h3>\r\n        Cast on and knit enough stitches and rows to MEASURE as follows:\r\n        <table>\r\n            <tbody>\r\n                <tr>\r\n                    <th>Standard Gauge</th>\r\n                    <th>Mid-Gauge</th>\r\n                    <th>Bulky Gauge</th>\r\n                </tr>\r\n                <tr>\r\n                    <td>40 stitches</td>\r\n                    <td>30 stitches</td>\r\n                    <td>20 stitches</td>\r\n                </tr>\r\n                <tr>\r\n                    <td>60 rows</td>\r\n                    <td>40 rows</td>\r\n                    <td>30 rows</td>\r\n                </tr>\r\n            </tbody>\r\n        </table>\r\n    </div>\r\n\r\n    \r\n        <div class=\"videopopup\" data-videotitle=\"Knit a Gauge Swatch in Less than 10 Minutes\" data-vimeoid=\"151858429\">\r\n            <figure><img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/551702088-fb8f9ff692a6f99176cce61e1efe3653b41e87cb23bc93848365f06ac8e21e26-d_1280x720?r=pad\">\r\n\r\n                <figcaption align=\"center\"><br>How to knit a <a data-GlossaryId=\"843\" class=\"glossaryhelp\"><b>\"Proper\" Swatch</b> <i class=\"fa fa-question-circle-o\" aria-hidden=\"true\"></i></a></figcaption>\r\n            </figure>\r\n            <div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n        </div>\r\n    \r\n    \r\n        <div class=\"videopopup\" data-videotitle=\"Accurate Gauge Measurement\" data-vimeoid=\"260683875\">\r\n            <figure><img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/689477228-1ce05cd1cd42a24287bb49d746fdebbe7cf7eb07a607590360047c25ee03fe21-d_1280x720?r=pad\">\r\n\r\n                <figcaption align=\"center\"><br><b>How to Accurately Measure Gauge</b> </figcaption>\r\n            </figure>\r\n\r\n            <div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n        </div>\r\n    \r\n\r\n",
+              "legacyComponentId": 9907,
+              "order": 5
+            }
+          ],
+          "title": "Need Swatch Help?",
+          "slug": "need-swatch-help",
+          "order": 3,
+          "legacy": {
+            "assignId": 6419,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3> Enter YOUR Gauge</h3>\r\n",
+              "legacyComponentId": 9908,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6380",
+                "CHALLENGE_COMPONENTID": "9777",
+                "DATAMODEL_ELEMENT": "stitches",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "STITCHES: 4&quot; (10cm)",
+                "DATAMODEL_VALIDATION": "range",
+                "DATAMODEL_VALIDATION_EXTRA": "8,40",
+                "DATAMODEL_VALIDATION_MESSAGE": "Please check your gauge. ",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 9909,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6380",
+                "CHALLENGE_COMPONENTID": "9778",
+                "DATAMODEL_ELEMENT": "rows",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "ROWS: 4&quot; (10cm)",
+                "DATAMODEL_VALIDATION": "range",
+                "DATAMODEL_VALIDATION_EXTRA": "8,40",
+                "DATAMODEL_VALIDATION_MESSAGE": "Please check your gauge. ",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 9910,
+              "order": 3
+            }
+          ],
+          "title": "Enter / Confirm Your Gauge",
+          "slug": "enter-confirm-your-gauge",
+          "order": 4,
+          "legacy": {
+            "assignId": 6420,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Snap a photo of your work at this stage - it's not just for sharing, it's for you!<br>These progress shots become a helpful reference library for your future projects. They're also a great way to track your growing skills and celebrate your progress.",
+              "legacyComponentId": 9912,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "swatch",
+                "BUTTONLABLE": "Upload",
+                "CHALLENGE_ASSIGNID": "6408",
+                "CHALLENGE_COMPONENTID": "9855",
+                "CONTIUNEBUTTONLABLE": "Continue",
+                "DISABLECONTINUE": "yes",
+                "QTY": "2",
+                "SUCCESSMESSAGE": "<H3>Got it!</H3> <i class='fa-regular fa-face-smile fa-2xl'></i>"
+              },
+              "legacyComponentId": 9913,
+              "order": 2
+            }
+          ],
+          "title": "Take a photo of your swatch",
+          "slug": "take-a-photo-of-your-swatch",
+          "order": 5,
+          "legacy": {
+            "assignId": 6421,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Build your pattern",
+      "slug": "build-your-pattern",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 858,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .handwriting {'Handlee', cursive;\r\n        color: #9E2065;\r\n        font-weight: 600;\r\n    }\r\n\r\n    .container-border1 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px 50px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        background-color: white;\r\n        max-width: 700px;\r\n        margin: auto;\r\n        background-color: #DCDCDC;\r\n    }\r\n\r\n    .img1 {\r\n        border: 3px solid #ccc;\r\n    }\r\n\r\n</style>\r\n\r\n    \r\n        \r\n\r\n            <span class=\"handwriting\" style=\"font-size:2em\">Make sure it stays on!</span><br>When knitting sweaters, we add \"ease\" so the sweater doesn't cling.<br>For hats, it's important to make them smaller and incorporate <a data-GlossaryId=\"715\" class=\"glossaryhelp\">Negative Ease <i class=\"fa fa-question-circle-o\" aria-hidden=\"true\"></i></a>.<br>\r\n            <span class=\"yellow_highlight\"> By making the circumference of a hat smaller than the head size, we rely on the stretch of knitting to keep the hat on the head in the strongest wind.</span><br><b>The Knit it Now Hat sizing chart</b> helps you select your hat size and lists the head (actual) measurements.<br>\r\n            You can further adjust the FINISHED circumference when you build your custom pattern.<br><div class=\"container-border1 text-center\"><span style=\"font-size:1.25em\">Negative ease =  Body measurement <b>minus</b> Finished Measurement </span></div>\r\n<br>\r\n\r\n        \r\n\r\n        <figure><img class=\"img1\" alt=\"\" src=\"/challenge/images/v2/129/measure.jpg\"><br><em><figcaption align=\"center\">Don't forget NEGATIVE EASE</em></figcaption>\r\n</figure><br>\r\n    <br>\r\n",
+              "legacyComponentId": 9962,
+              "order": 1
+            }
+          ],
+          "title": "Get the fit just right",
+          "slug": "get-the-fit-just-right",
+          "order": 1,
+          "legacy": {
+            "assignId": 6437,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .handwriting {'Handlee', cursive;\r\n        color: #9E2065;\r\n        font-weight: 600;\r\n    }\r\n\r\n    .container-border1 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px 50px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        background-color: white;\r\n        max-width: 700px;\r\n        margin: auto;\r\n        background-color: #DCDCDC;\r\n    }\r\n\r\n    .img1 {\r\n        border: 3px solid #ccc;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n  \r\n\r\n<hr class=\"style13\">\r\n\r\nWith this hat,  you have complete control over the size you will knit.<br>Choose a size below and check all 3 measurements.<br><ol>\r\n<li>Choose a size below</li>\r\n<li>Click the button \"Customize your Pattern\"</li>\r\n<li>Double Check your measurements</li>\r\n<li>Enter YOUR gauge</li>\r\n<li>Click the button to \"Create Your custom pattern</li>\r\n\r\n</ol>\r\n<br>\r\nNOTE: Enter the FINAL Ribbing depth you want when wearing the hat. The pattern will instruct you to knit the ribbing section twice as long as this measurement, since it will be folded in half when worn.<br><a class=\"videopopup\" data-videotitle=\"KIN_Pattern_overview\" data-vimeoid=\"772256112\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Are you new to Knit it Now Patterns?\"</a>\r\n\r\n\r\n<hr class=\"style13\">",
+              "legacyComponentId": 9914,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment '4 Gore Watch Cap' (legacy garmentId 2341).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6422",
+                "CHALLENGE_COMPONENTID": "9915",
+                "GARMENTID": "2341",
+                "GARMENTTITLE": "4 Gore Watch Cap",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "pattern_name",
+                "REDIRECT_TO": "/challenge/129/Group/6423/item|Build your pattern: Do you have enough yarn?",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "rows",
+                "SHOWPATTERNNAME": "1",
+                "SIZING_DATAMODEL_ELEMENT": "pattern_name",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "stitches",
+                "SWATCHROWS": "pattern_rows",
+                "SWATCHSTITCHES": "swatch_stitches",
+                "SWATCHWEIGHT": "swatch_weight",
+                "USESWATCHLOGIC": "no"
+              },
+              "legacyComponentId": 9915,
+              "order": 3
+            }
+          ],
+          "title": "Create your CUSTOM Pattern",
+          "slug": "create-your-custom-pattern",
+          "order": 2,
+          "legacy": {
+            "assignId": 6422,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): pattern_name",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 6422 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6423",
+                "DATAMODEL_ELEMENTS": "pattern_name",
+                "DATAMODEL_REDIRECT": "6422",
+                "TYPEOF": "DataValidation"
+              },
+              "legacyComponentId": 9936,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "YarnEstimator_pattern",
+              "notes": [
+                "Unmapped legacy component type: YarnEstimator_pattern"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6423",
+                "CHALLENGE_COMPONENTID": "9916",
+                "REDIRECT_TO": "/challenge/129/Group/6422/item|Build your pattern: Create your CUSTOM Pattern"
+              },
+              "legacyComponentId": 9916,
+              "order": 2
+            }
+          ],
+          "title": "Do you have enough yarn?",
+          "slug": "do-you-have-enough-yarn",
+          "order": 3,
+          "legacy": {
+            "assignId": 6423,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"no-print\"><h3>Ready to start knitting? Your custom pattern is ready to print.</h3>\r\nIn the next sections, we'll walk through each part of the pattern step-by-step. <b>Take a moment to review it before we begin</b> - this will help you understand how all the pieces fit together.</div><br>\r\n<button class=\"btn btn-primary no-print\" onclick=\"window.print()\"><i class=\"fa fa-print\"></i> Print Pattern</button>\r\n",
+              "legacyComponentId": 9917,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Patternshowinline",
+              "notes": [
+                "Unmapped legacy component type: Patternshowinline"
+              ],
+              "legacyFields": {
+                "AUTOPLAY": "false",
+                "CHALLENGE_ASSIGNID": "6424",
+                "CHALLENGE_COMPONENTID": "9918",
+                "CONTINUEBUTTONWORDING": "Continue",
+                "EXAMPLE_LENGTH": "10",
+                "SHOWPIECE": "9249",
+                "SHOWVIDEOEND": "Yes",
+                "TIMESHOWBUTTON": "30"
+              },
+              "legacyComponentId": 9918,
+              "order": 2
+            }
+          ],
+          "title": "Your Pattern",
+          "slug": "your-pattern",
+          "order": 4,
+          "legacy": {
+            "assignId": 6424,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Brim/Ribbing",
+      "slug": "brim-ribbing",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 859,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3><i class=\"fa-solid fa-hand-point-right fa-beat-fade fa-xl\"></i> Choose your ribbing method below</h3><br>\r\n\r\n",
+              "legacyComponentId": 9939,
+              "order": 1
+            }
+          ],
+          "title": "Ribbing Method",
+          "slug": "ribbing-method",
+          "order": 1,
+          "legacy": {
+            "assignId": 6433,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Patternshowinline",
+              "notes": [
+                "Unmapped legacy component type: Patternshowinline"
+              ],
+              "legacyFields": {
+                "AUTOPLAY": "false",
+                "CHALLENGE_ASSIGNID": "6425",
+                "CHALLENGE_COMPONENTID": "9920",
+                "CONTINUEBUTTONWORDING": "Continue",
+                "CUSTOMLEGIONIMAGE": "/challenge/images/v2/129/brim.gif",
+                "CUSTOMTITLE": "Brim/Ribbing",
+                "EXAMPLE_LENGTH": "10",
+                "SHOWPIECE": "9249",
+                "SHOWRANGE_FROM": "61349",
+                "SHOWRANGE_TO": "61352",
+                "SHOWVIDEOEND": "Yes",
+                "TIMESHOWBUTTON": "5"
+              },
+              "legacyComponentId": 9920,
+              "order": 3
+            }
+          ],
+          "title": "Your pattern (Brim/Ribbing)",
+          "slug": "your-pattern-brim-ribbing",
+          "order": 2,
+          "legacy": {
+            "assignId": 6425,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "I chose to knit my ribbing on the machine.  I used a broken toe cast on for a beautiful tubular edge.\r\n",
+              "legacyComponentId": 9943,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859232",
+              "title": "Cast on Options",
+              "legacySlot": 1,
+              "legacyComponentId": 9945,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "1036872392",
+              "title": "My Broken Toe",
+              "legacySlot": 2,
+              "legacyComponentId": 9945,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857723",
+              "title": "Neat Ribbing Seam",
+              "legacySlot": 3,
+              "legacyComponentId": 9945,
+              "order": 2
+            }
+          ],
+          "title": "Machine Ribbing",
+          "slug": "machine-ribbing",
+          "order": 3,
+          "legacy": {
+            "assignId": 6434,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Body",
+      "slug": "body",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 860,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<h3>Here's where you can get creative ... add stripes or a stitch pattern<br><img src=\"/challenge/images/v2/129/hat_body-gif.gif\">\r\n\r\n\r\n<img width=\"300\" src=\"/challenge/images/v2/129/watch_cap_thumb.jpg\"> \t\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 9946,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Patternshowinline",
+              "notes": [
+                "Unmapped legacy component type: Patternshowinline"
+              ],
+              "legacyFields": {
+                "AUTOPLAY": "false",
+                "CHALLENGE_ASSIGNID": "6426",
+                "CHALLENGE_COMPONENTID": "9925",
+                "CONTINUEBUTTONWORDING": "Continue",
+                "CUSTOMLEGIONIMAGE": "/challenge/images/v2/129/body.gif",
+                "CUSTOMTITLE": "Knit Hat Body Section",
+                "EXAMPLE_LENGTH": "10",
+                "HIDEINTERACTIVE": "1",
+                "SHOWPIECE": "9249",
+                "SHOWRANGE_FROM": "61353",
+                "SHOWRANGE_TO": "62610",
+                "SHOWVIDEOEND": "Yes",
+                "TIMESHOWBUTTON": "30"
+              },
+              "legacyComponentId": 9925,
+              "order": 3
+            }
+          ],
+          "title": "Body of the hat",
+          "slug": "body-of-the-hat",
+          "order": 1,
+          "legacy": {
+            "assignId": 6426,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Wedges (Gores)",
+      "slug": "wedges-gores",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 864,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Each wedge is shaped separately, then neatly seamed to form the top of the hat. <br><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Scrap off each section<br><blockquote style=\"background-color: #f8f9fa; padding: 15px; border-left: 5px solid #ccc; font-style: italic;\">\r\n  NOTE: To eliminate counting stitches, the pattern suggests scrapping off each wedge separately.  If you prefer, scrap off all the stitches for 3 wedges, keeping the stitches for the first wedge in work (next to the carriage). <br>\r\nAfter the first wedge has been completed, pick up another set of stitches for the next wedge and knit the 2nd wedge. Continue for all 4 wedges\r\n</blockquote>\r\n\r\n\r\n<br><button data-Machine_Tax_id='3' class='technique btn btn-primary'>Need help? Setting your machine to HOLD</button>",
+              "legacyComponentId": 9948,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "1037066197",
+              "title": null,
+              "legacyComponentId": 9957,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Patternshowinline",
+              "notes": [
+                "Unmapped legacy component type: Patternshowinline"
+              ],
+              "legacyFields": {
+                "AUTOPLAY": "false",
+                "CHALLENGE_ASSIGNID": "6430",
+                "CHALLENGE_COMPONENTID": "9933",
+                "CONTINUEBUTTONWORDING": "Continue",
+                "CUSTOMLEGIONIMAGE": "/challenge/images/v2/129/wedges1.gif",
+                "CUSTOMTITLE": "Wedges",
+                "EXAMPLE_LENGTH": "10",
+                "SHOWPIECE": "9249",
+                "SHOWRANGE_FROM": "61366",
+                "SHOWRANGE_TO": "61386",
+                "SHOWVIDEOEND": "Yes",
+                "TIMESHOWBUTTON": "30"
+              },
+              "legacyComponentId": 9933,
+              "order": 4
+            }
+          ],
+          "title": "Wedges",
+          "slug": "wedges",
+          "order": 1,
+          "legacy": {
+            "assignId": 6430,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Before picking up the scrapped off stitches and shaping the wedges, choose a shaping method.<br>Following your pattern, you will work decreases every other row For a professional finish, be consistent with your shaping method.<br><img width=\"25\" src=\"/challenge/images/v2/129/icon3.gif\"> Swipe the image below to explore the options. ",
+              "legacyComponentId": 9959,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "before_after",
+              "notes": [
+                "Unmapped legacy component type: before_after"
+              ],
+              "legacyFields": {
+                "AFTERIMAGE": "/challenge/images/v2/129/shaping_example6.jpg",
+                "ARROWCOLOR": "#000000",
+                "BEFOREIMAGE": "/challenge/images/v2/129/shaping_example5.jpg",
+                "BULLETCOLOR": "#ffffff",
+                "CHALLENGE_ASSIGNID": "6435",
+                "CHALLENGE_COMPONENTID": "9951",
+                "IMAGEWIDTH": "5",
+                "POSTITION": "90",
+                "SEPARATORCOLOR": "#ffffff",
+                "TEXTINFO": "<div class='well_white'>\r\n<div class=\"col-xs-12 col-sm-10 col-md-6 text-center\">\r\n<h3> Choose simple or decorative decreases</h3>\r\n <div class=\"videopopup\" data-videotitle=\"decrease_choices\" data-vimeoid=\"1037523987\">\r\n<img class=\"img-thumbnail\" width=\"400\" src=\"https://i.vimeocdn.com/video/1959526498-e0dd522dce77a98a85af3a6ca2544d9b0df05e31572711e3b77d5096f40df83b-d_1280x720?r=pad\">\r\n\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div>\r\n</div>\r\n</div>"
+              },
+              "legacyComponentId": 9951,
+              "order": 2
+            }
+          ],
+          "title": "Shaping Method Choices",
+          "slug": "shaping-method-choices",
+          "order": 2,
+          "legacy": {
+            "assignId": 6435,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Use decreases to shape the wedges. <br>\r\n<b>TIP:</b> Decrease AT LEAST 1 stitch from the edge for easier seaming<br>",
+              "legacyComponentId": 9969,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "1037514226",
+              "title": null,
+              "legacyComponentId": 9956,
+              "order": 2
+            }
+          ],
+          "title": "Shaping the Wedges",
+          "slug": "shaping-the-wedges",
+          "order": 3,
+          "legacy": {
+            "assignId": 6436,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Finishing",
+      "slug": "finishing",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 861,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>The Magic of Finishing</h3>\r\nDon't rush these last steps! Taking your time with blocking and seaming makes all the difference. These finishing touches are what turn your knitting into pieces that look polished and professional - items you'll be proud to wear, gift or sell.<br><b>Finishing Instructions:</b>\r\n<ul>\r\n<li>Block with <a data-GlossaryId=\"300\" class=\"glossaryhelp\">Blocking Wires <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a></li>\r\n<li>Using the extra seaming stitches you added,<span data-GlossaryId=\"314\" class=\"glossaryhelp underlineit\"> Mattress Stitch</span> the wedges and hat seam</li>\r\n<li>To close the center top, run a tail of yarn through the last few stitches at the top of the cap</li>\r\n<li>Seam the ribbing so the seam is hidden when the brim is folded up </li>\r\n</ul>\r\n\r\n\r\n",
+              "legacyComponentId": 9970,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/v2/129/finishing41.jpg",
+                  "caption": "Reverse the right and wrong side of the ribbing seam so when the ribbing is folded up the seam does not show."
+                },
+                {
+                  "src": "/v2/129/finishing2.jpg",
+                  "caption": "Neatly mattress stitch the side seam - aligning the markers at the beginning of the shaping."
+                },
+                {
+                  "src": "/v2/129/finishing31.jpg",
+                  "caption": "By working the decrease AT LEAST 1 stitch from the edge, the edge stitch can be used for neat seaming"
+                },
+                {
+                  "src": "/v2/129/finishing.jpg",
+                  "caption": "Use that extra stitch for a neat seam"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 9971,
+              "order": 2
+            }
+          ],
+          "title": "The Final Touch",
+          "slug": "the-final-touch",
+          "order": 1,
+          "legacy": {
+            "assignId": 6427,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Share your Success",
+      "slug": "share-your-success",
+      "displayOrder": 8,
+      "legacy": {
+        "itemId": 862,
+        "lessonOrder": 8
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3><i class=\"fa-sharp-duotone fa-regular fa-camera-retro fa-2xl\"></i>  Record and share your success.</h3>\r\n",
+              "legacyComponentId": 9928,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "SharedImage",
+                "BUTTONLABLE": "Upload",
+                "CHALLENGE_ASSIGNID": "6428",
+                "CHALLENGE_COMPONENTID": "9929",
+                "CONTIUNEBUTTONLABLE": "Continue",
+                "QTY": "3",
+                "SUCCESSMESSAGE": "<H3>Got it!</H3> <i class='fa-regular fa-face-smile fa-2xl'></i>"
+              },
+              "legacyComponentId": 9929,
+              "order": 2
+            }
+          ],
+          "title": "Share your Success",
+          "slug": "share-your-success",
+          "order": 1,
+          "legacy": {
+            "assignId": 6428,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Share your thoughts",
+      "slug": "share-your-thoughts",
+      "displayOrder": 9,
+      "legacy": {
+        "itemId": 863,
+        "lessonOrder": 9
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Survay",
+              "notes": [
+                "Unmapped legacy component type: Survay"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6429",
+                "CHALLENGE_COMPONENTID": "9930",
+                "DATAMODEL_ICON": "fa fa-question",
+                "LABLE": "Thank You For Your Feedback",
+                "REDIRECT_TO": "/challenge/129/coursefinal/watch-cap/9930/complete",
+                "SURVEY": "299F62A1-C572-FC99-830B-A116E354507E|Make and Master: Watch Cap"
+              },
+              "legacyComponentId": 9930,
+              "order": 1
+            }
+          ],
+          "title": "Help Shape the Future of Knit it Now",
+          "slug": "help-shape-the-future-of-knit-it-now",
+          "order": 1,
+          "legacy": {
+            "assignId": 6429,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 6,
+    "videos": [
+      {
+        "vimeoId": "1032499533",
+        "title": null,
+        "lessonSlug": "establish-your-gauge",
+        "blockSlug": "your-swatch"
+      },
+      {
+        "vimeoId": "151859232",
+        "title": "Cast on Options",
+        "lessonSlug": "brim-ribbing",
+        "blockSlug": "machine-ribbing"
+      },
+      {
+        "vimeoId": "1036872392",
+        "title": "My Broken Toe",
+        "lessonSlug": "brim-ribbing",
+        "blockSlug": "machine-ribbing"
+      },
+      {
+        "vimeoId": "151857723",
+        "title": "Neat Ribbing Seam",
+        "lessonSlug": "brim-ribbing",
+        "blockSlug": "machine-ribbing"
+      },
+      {
+        "vimeoId": "1037066197",
+        "title": null,
+        "lessonSlug": "wedges-gores",
+        "blockSlug": "wedges"
+      },
+      {
+        "vimeoId": "1037514226",
+        "title": null,
+        "lessonSlug": "wedges-gores",
+        "blockSlug": "shaping-the-wedges"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

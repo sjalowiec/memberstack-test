@@ -5,6 +5,7 @@
  */
 import { catalogChaptersFromVideoRow } from "../catalogVideoChapters";
 import { vimeoNumericIdFromPublicVideo, type PublicVideoRow } from "../lessonVideo";
+import { catalogVideoIsPublic } from "../videoPublic";
 
 export type GlossaryEntryWithVideos = {
   videoIds?: unknown;
@@ -75,7 +76,7 @@ export function resolveGlossaryCatalogVideos(
   const rows: ResolvedGlossaryCatalogVideo[] = [];
   for (const id of ids) {
     const v = catalog.find((x) => String(x.content_id ?? "").trim() === id);
-    if (!v) continue;
+    if (!v || !catalogVideoIsPublic(v)) continue;
     const vimeoNumericId = vimeoNumericIdFromPublicVideo(v);
     const access = effectiveCatalogVideoAccess(v);
     const rawTitle = typeof v.title === "string" ? v.title.trim() : "";

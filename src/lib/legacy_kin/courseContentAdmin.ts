@@ -1,8 +1,15 @@
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import type { CoursePreviewData, CourseLesson } from "./coursePreviewPoc";
+import type { CoursePreviewData, CourseLesson, CourseContentStatus } from "./coursePreviewPoc";
 import { isCoursePreviewProductionBlocked } from "./coursePreviewProductionAccess";
 import type { DetectSiteEnvironmentOptions } from "../env/siteEnvironment";
+import {
+  isLegacyCourseActive,
+  isLegacyCourseDraft,
+  isLegacyCoursePublic,
+  readLegacyCoursePublished,
+  type LegacyCoursePublicationFields,
+} from "./legacyCoursePublication";
 
 export const COURSE_CONTENT_DIR = join(
   process.cwd(),
@@ -14,11 +21,117 @@ export const COURSE_CONTENT_DIR = join(
 
 export const COURSE_CONTENT_BACKUP_DIR = join(COURSE_CONTENT_DIR, "backups");
 
-/** Legacy challenge id → POC filename on disk. */
+/** @deprecated Use discoverAdminCourseCatalog() — kept for tests referencing known filenames. */
 export const COURSE_CONTENT_FILES: Record<number, string> = {
   50: "course_50_lk150_quick.poc.json",
   51: "course_51_lk150_fun.poc.json",
 };
+
+export type AdminCourseSummary = {
+  id: number;
+  title: string;
+  slug: string;
+  filename: string;
+  lessonCount: number;
+  status?: string;
+  published?: boolean;
+  active?: boolean;
+  isDraft: boolean;
+  isPublic: boolean;
+  isActive: boolean;
+  contentStatus: CourseContentStatus;
+};
+
+type DiscoveredCourseFile = {
+  id: number;
+  filename: string;
+  title: string;
+  slug: string;
+  lessonCount: number;
+  status?: string;
+  published?: boolean;
+  active?: boolean;
+  contentStatus?: CourseContentStatus;
+};
+
+function readDiscoveredCourseFile(filename: string): DiscoveredCourseFile | null {
+  const path = join(COURSE_CONTENT_DIR, filename);
+  if (!existsSync(path)) return null;
+
+  try {
+    const raw = readFileSync(path, "utf-8");
+    const data = JSON.parse(raw) as CoursePreviewData;
+    const id = Number(data?.course?.legacyChallengeId);
+    if (!Number.isFinite(id)) return null;
+    const course = data.course as LegacyCoursePublicationFields & {
+      title?: string;
+      slug?: string;
+      active?: boolean;
+    };
+    return {
+      id,
+      filename,
+      title: String(course.title ?? `Course ${id}`),
+      slug: String(course.slug ?? ""),
+      lessonCount: Array.isArray(data.lessons) ? data.lessons.length : 0,
+      status: course.status,
+      published: course.published,
+      active: course.active,
+      contentStatus: course.contentStatus,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function cleanedPocFilenames(): string[] {
+  if (!existsSync(COURSE_CONTENT_DIR)) return [];
+  return readdirSync(COURSE_CONTENT_DIR)
+    .filter((name) => name.endsWith(".poc.json"))
+    .sort();
+}
+
+/** Scan cleaned/ for course-poc JSON files keyed by legacyChallengeId. */
+export function discoverAdminCourseCatalog(): DiscoveredCourseFile[] {
+  const byId = new Map<number, DiscoveredCourseFile>();
+  for (const filename of cleanedPocFilenames()) {
+    const entry = readDiscoveredCourseFile(filename);
+    if (!entry) continue;
+    byId.set(entry.id, entry);
+  }
+  return [...byId.values()].sort((a, b) => a.id - b.id);
+}
+
+function getDiscoveredCourseFile(courseId: number): DiscoveredCourseFile {
+  const entry = discoverAdminCourseCatalog().find((item) => item.id === courseId);
+  if (!entry) {
+    throw new Error(`Unsupported course id ${courseId}.`);
+  }
+  return entry;
+}
+
+export function listAdminCourseSummaries(): AdminCourseSummary[] {
+  return discoverAdminCourseCatalog()
+    .map((entry) => ({
+      id: entry.id,
+      title: entry.title,
+      slug: entry.slug,
+      filename: entry.filename,
+      lessonCount: entry.lessonCount,
+      status: entry.status,
+      published: entry.published,
+      active: entry.active,
+      isDraft: isLegacyCourseDraft(entry),
+      isPublic: isLegacyCoursePublic(entry),
+      isActive: isLegacyCourseActive(entry),
+      contentStatus: readCourseContentStatus({ contentStatus: entry.contentStatus }),
+    }))
+    .sort(
+      (a, b) =>
+        a.title.localeCompare(b.title, undefined, { sensitivity: "base" }) ||
+        a.id - b.id,
+    );
+}
 
 export type HtmlCleanupAction =
   | "emptyParagraphs"
@@ -67,6 +180,24 @@ export type SaveLessonResult = {
   removedEmptyBlocks: string[];
 };
 
+export type CourseMetadataUpdate = {
+  thumbnail?: string | null;
+  /** Short blurb for /courses catalog cards and course landing pages. */
+  description?: string | null;
+  active?: boolean;
+  published?: boolean;
+  contentStatus?: CourseContentStatus;
+};
+
+export type SaveCourseMetadataResult = {
+  backupPath: string;
+  thumbnail: string | null;
+  description: string | null;
+  active: boolean;
+  published: boolean;
+  contentStatus: CourseContentStatus;
+};
+
 export function isCourseContentAdminAllowed(
   hostname: string | null | undefined,
   options: DetectSiteEnvironmentOptions = {},
@@ -75,21 +206,16 @@ export function isCourseContentAdminAllowed(
 }
 
 export function getAllowedCourseIds(): number[] {
-  return Object.keys(COURSE_CONTENT_FILES)
-    .map(Number)
-    .sort((a, b) => a - b);
+  return discoverAdminCourseCatalog().map((entry) => entry.id);
 }
 
 export function isAllowedCourseId(courseId: number): boolean {
-  return Object.prototype.hasOwnProperty.call(COURSE_CONTENT_FILES, courseId);
+  return discoverAdminCourseCatalog().some((entry) => entry.id === courseId);
 }
 
 export function getCourseContentPath(courseId: number): string {
-  const filename = COURSE_CONTENT_FILES[courseId];
-  if (!filename) {
-    throw new Error(`Unsupported course id ${courseId}.`);
-  }
-  return join(COURSE_CONTENT_DIR, filename);
+  const entry = getDiscoveredCourseFile(courseId);
+  return join(COURSE_CONTENT_DIR, entry.filename);
 }
 
 export function readCourseContentFile(courseId: number): CoursePreviewData {
@@ -119,7 +245,7 @@ function backupTimestamp(): string {
 export function backupCourseContentFile(courseId: number): string {
   const sourcePath = getCourseContentPath(courseId);
   mkdirSync(COURSE_CONTENT_BACKUP_DIR, { recursive: true });
-  const filename = COURSE_CONTENT_FILES[courseId]!;
+  const filename = getDiscoveredCourseFile(courseId).filename;
   const backupName = `${filename}.${backupTimestamp()}.bak.json`;
   const backupPath = join(COURSE_CONTENT_BACKUP_DIR, backupName);
   copyFileSync(sourcePath, backupPath);
@@ -340,6 +466,147 @@ export function writeCourseContentFile(
   const targetPath = getCourseContentPath(courseId);
   writeFileSync(targetPath, `${JSON.stringify(data, null, 2)}\n`, "utf-8");
   return backupPath;
+}
+
+function normalizeCourseThumbnail(value: unknown): string | null {
+  if (value == null) return null;
+  if (typeof value !== "string") {
+    throw new Error("thumbnail must be a string path or null.");
+  }
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
+function normalizeCourseDescription(value: unknown): string | null {
+  if (value == null) return null;
+  if (typeof value !== "string") {
+    throw new Error("description must be a string or null.");
+  }
+  const trimmed = value.trim();
+  return trimmed || null;
+}
+
+function normalizeCourseActive(value: unknown): boolean {
+  if (typeof value !== "boolean") {
+    throw new Error("active must be a boolean.");
+  }
+  return value;
+}
+
+function normalizeCoursePublished(value: unknown): boolean {
+  if (typeof value !== "boolean") {
+    throw new Error("published must be a boolean.");
+  }
+  return value;
+}
+
+function normalizeCourseContentStatus(value: unknown): CourseContentStatus {
+  if (value !== "in_progress" && value !== "cleaned") {
+    throw new Error('contentStatus must be "in_progress" or "cleaned".');
+  }
+  return value;
+}
+
+export function readCourseContentStatus(
+  course: Pick<CoursePreviewData["course"], "contentStatus">,
+): CourseContentStatus {
+  return course.contentStatus === "cleaned" ? "cleaned" : "in_progress";
+}
+
+export function readCoursePublished(
+  course: LegacyCoursePublicationFields,
+): boolean {
+  return readLegacyCoursePublished(course);
+}
+
+export function readCourseActive(
+  course: LegacyCoursePublicationFields,
+): boolean {
+  return isLegacyCourseActive(course);
+}
+
+function readCourseDescriptionFromData(data: CoursePreviewData): string | null {
+  const value =
+    "description" in data.course && typeof data.course.description === "string"
+      ? data.course.description.trim()
+      : "";
+  return value || null;
+}
+
+export function saveCourseMetadata(
+  courseId: number,
+  update: CourseMetadataUpdate,
+): SaveCourseMetadataResult {
+  if (
+    !("thumbnail" in update) &&
+    !("description" in update) &&
+    !("active" in update) &&
+    !("published" in update) &&
+    !("contentStatus" in update)
+  ) {
+    throw new Error("No course metadata fields to save.");
+  }
+
+  const data = readCourseContentFile(courseId);
+  let thumbnail = readCourseThumbnailFromData(data);
+  let description = readCourseDescriptionFromData(data);
+
+  if ("thumbnail" in update) {
+    thumbnail = normalizeCourseThumbnail(update.thumbnail);
+    if (thumbnail) {
+      data.course.thumbnail = thumbnail;
+    } else {
+      delete data.course.thumbnail;
+    }
+  }
+
+  if ("description" in update) {
+    description = normalizeCourseDescription(update.description);
+    if (description) {
+      data.course.description = description;
+    } else {
+      delete data.course.description;
+    }
+  }
+
+  let active = readCourseActive(data.course);
+  if ("active" in update) {
+    active = normalizeCourseActive(update.active);
+    if (active) {
+      delete data.course.active;
+    } else {
+      data.course.active = false;
+    }
+  }
+
+  let published = readCoursePublished(data.course);
+  if ("published" in update) {
+    published = normalizeCoursePublished(update.published);
+    if (published) {
+      data.course.status = "published";
+      data.course.published = true;
+    } else {
+      data.course.status = "draft";
+      data.course.published = false;
+    }
+  }
+
+  let contentStatus = readCourseContentStatus(data.course);
+  if ("contentStatus" in update) {
+    contentStatus = normalizeCourseContentStatus(update.contentStatus);
+    data.course.contentStatus = contentStatus;
+  }
+
+  const backupPath = writeCourseContentFile(courseId, data);
+  return { backupPath, thumbnail, description, active, published, contentStatus };
+}
+
+function readCourseThumbnailFromData(data: CoursePreviewData): string | null {
+  const value =
+    "thumbnail" in data.course && typeof data.course.thumbnail === "string"
+      ? data.course.thumbnail.trim()
+      : "";
+  return value || null;
 }
 
 export function saveRichTextUpdates(

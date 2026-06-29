@@ -7,8 +7,8 @@ import { logSleevelessPatternActivity } from "./sleevelessPatternActivity";
 import type { CustomPatternFamily } from "./customPatternProjectTypes";
 import {
   getContinueEditingHref,
+  getOpenPatternHrefForProject,
   getSavedCustomPatternOpenHref,
-  OPEN_PATTERN_HREF,
 } from "./customPatternProjectNavigation";
 
 /**
@@ -56,12 +56,11 @@ export async function loadSavedCustomPatternProject(
 
   let redirectHref: string;
   if (action === "view") {
-    // Saved pattern's instructions page — same destination regardless of how it was built.
-    redirectHref = OPEN_PATTERN_HREF;
+    redirectHref = getOpenPatternHrefForProject(res.project);
   } else if (action === "open") {
-    redirectHref = getSavedCustomPatternOpenHref(res.project.source);
+    redirectHref = getSavedCustomPatternOpenHref(res.project.source, res.project);
   } else {
-    redirectHref = getContinueEditingHref(res.project.source);
+    redirectHref = getContinueEditingHref(res.project.source, res.project);
   }
 
   return { ok: true, redirectHref };

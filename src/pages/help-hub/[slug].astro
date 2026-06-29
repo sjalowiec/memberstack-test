@@ -11,6 +11,8 @@ import {
   vimeoNumericIdFromPublicVideo,
   type PublicVideoRow,
 } from "../../lib/lessonVideo";
+import { filterPublicCatalogVideos, catalogVideoIsPublic } from "../../lib/videoPublic";
+import { helpHubTipIsPublic } from "../../lib/helpHubPublic";
 // at the top of [slug].astro
 
 const reservedPaths = ["guided-workshops"];
@@ -77,9 +79,9 @@ type LessonRecord = {
   status?: string;
 };
 
-const catalogVideosHelpHub = Array.isArray(videosPublic)
-  ? (videosPublic as PublicVideoRow[])
-  : [];
+const catalogVideosHelpHub = filterPublicCatalogVideos(
+  Array.isArray(videosPublic) ? (videosPublic as PublicVideoRow[]) : [],
+);
 
 /** Vimeo numeric id from catalog `videoSlug` or legacy `vimeoEmbedUrl` (matching relatedLessons refs). */
 function vimeoNumericIdFromLesson(l: LessonRecord): string | null {
@@ -149,12 +151,6 @@ function resolveLessonFromRelatedRef(
   return undefined;
 }
 
-function tipIsActive(t: HelpHubRecord): boolean {
-  if (typeof t.active === "boolean") return t.active;
-  const s = typeof t.status === "string" ? t.status.trim().toLowerCase() : "";
-  return s === "published" || s === "";
-}
-
 /** Server-rendered so `?preview=true` can show draft tips; search params are not available at static build time. */
 export const prerender = false;
 
@@ -167,8 +163,40 @@ const tip: HelpHubRecord | undefined = slugParam
   ? tips.find((t) => typeof t.slug === "string" && t.slug.trim() === slugParam)
   : undefined;
 
-if (!tip || (!tipIsActive(tip) && !isPreview)) {
+if (!tip || (!helpHubTipIsPublic(tip) && !isPreview)) {
+  if (slugParam === "change-colors-lk150" && tip) {
+    console.log("[KBM catalog debug] help-hub/[slug] blocked or allowed", {
+      source: "src/data/help-hub.json",
+      slug: tip.slug,
+      status: tip.status,
+      active: tip.active,
+      helpHubTipIsPublic: helpHubTipIsPublic(tip),
+      isPreview,
+      action: helpHubTipIsPublic(tip) || isPreview ? "render" : "404",
+    });
+  }
   return await Astro.rewrite("/404");
+}
+
+if (slugParam === "change-colors-lk150") {
+  const debugVideo5001 = (Array.isArray(videosPublic) ? videosPublic : []).find(
+    (v) => String(v.content_id) === "5001",
+  );
+  console.log("[KBM catalog debug] help-hub/[slug] render", {
+    helpHub: {
+      slug: tip.slug,
+      status: tip.status,
+      helpHubTipIsPublic: helpHubTipIsPublic(tip),
+    },
+    linkedVideo5001: debugVideo5001
+      ? {
+          content_id: debugVideo5001.content_id,
+          slug: debugVideo5001.slug,
+          status: (debugVideo5001 as { status?: string }).status,
+          catalogVideoIsPublic: catalogVideoIsPublic(debugVideo5001),
+        }
+      : null,
+  });
 }
 
 const lessonRecords = Array.isArray(lessons)

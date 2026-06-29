@@ -1,0 +1,812 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 36,
+    "title": "L'Enveloppe",
+    "slug": "l-enveloppe",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_36_l_enveloppe.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/L_enveloppe.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Let's get Started!",
+      "slug": "let-s-get-started",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 255,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n    <center><img class=\"img-thumbnail\" src=\"/challenge/images/v2/36/l_enveloppe.png\"></center>\r\n    \r\n <h3> Hi {First}!</h3>  Adapted from a hand knitting pattern by Sally Melville (with her permission), this unusual garment is quick knitting ... once you understand the construction and make some decisions.<br>Use the <b>Knit it Now Dynamic pattern</b> to knit this on ANY machine, with ANY yarn in YOUR CHOICE of stitch pattern!<br>\r\n   \r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/36/new_photos.gif\">\r\n\r\n\r\n\r\n\r\n<blockquote class=\"blockquote_style\"> it’s not a cape, not a poncho, not a shrug, not a shawl, not a cowl <em><small>Sally</em></small></blockquote>\r\n\r\n\r\n\r\n <em><B>  From Sally:</B><br>\r\n    Every time I wear this and everywhere I go, I’ve had it commented on—by strangers on the street, by shop owners or customers, by knitters or non. And each time they say something like “I love that … thing you’re wearing!” No-one knows what to call it, and—frankly—neither do I. <br>Because one arm goes through (as does the neck) but the other arm is free, it’s not a cape, not a poncho, not a shrug, not a shawl, not a cowl. It’s small enough to wear under a coat but big enough to wear instead of one. And it envelops us in style. And so here’s its moniker: L’Enveloppe. (As you might imagine, this is French for envelope. Its style led me there.\r\n<br>I suppose its name could have been “That thing you wear on an airplane in case the AC is turned too high,” but that didn’t sit as well on the page.)</em>\r\n<br><center><img src=\"/challenge/images/v2/36/ready_to_get_started.gif\"></center>\r\n\r\n",
+              "legacyComponentId": 4165,
+              "order": 1
+            }
+          ],
+          "title": "Overview",
+          "slug": "overview",
+          "order": 1,
+          "legacy": {
+            "assignId": 3159,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The hardest part of this project (and it's not hard!) is understanding the origami-like construction.",
+              "legacyComponentId": 4149,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/36/enveloppe/fit_slideshow1.jpg",
+                  "caption": "Start by knitting the main body piece. \"N\" is the neck opening."
+                },
+                {
+                  "src": "/challenge/images/v2/36/enveloppe/fit_slideshow2.jpg",
+                  "caption": "Fold the main body in half along the \"N\" line.<br><br>The neck opening \"N\" is created by binding off and immediately casting on.<br><br>\r\n\r\n<i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> It is helpful if you place a marker on the long edge as you form the slit for the neck opening. This helps establish the fold line for seaming."
+                },
+                {
+                  "src": "/challenge/images/v2/36/enveloppe/fit_slideshow3.jpg",
+                  "caption": "With the piece folded, visualize the orientation. The neck opening allows the front and back to drape over the body at the shoulder."
+                },
+                {
+                  "src": "/challenge/images/v2/36/enveloppe/fit_slideshow4.jpg",
+                  "caption": "Stitching the shoulder seam (red line) forms the fold over collar.<br><br>\r\nNote how the piece drapes over the shoulders."
+                },
+                {
+                  "src": "/challenge/images/v2/36/enveloppe/fit_slideshow5.jpg",
+                  "caption": "Stitching the side seam (green line) creates the right armhole and sleeve"
+                },
+                {
+                  "src": "/challenge/images/v2/36/enveloppe/fit_slideshow6.jpg",
+                  "caption": "The left side is knit in one piece and is open (like a poncho)"
+                },
+                {
+                  "src": "/challenge/images/v2/36/enveloppe/fit_slideshow7.jpg",
+                  "caption": "The pieces are knit in this direction"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "1",
+                "playAudio": "0"
+              },
+              "legacyComponentId": 4148,
+              "order": 2
+            }
+          ],
+          "title": "Putting it together",
+          "slug": "putting-it-together",
+          "order": 2,
+          "legacy": {
+            "assignId": 3153,
+            "blockType": "Imageslideshow"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Swatching is Not Optional!",
+      "slug": "swatching-is-not-optional",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 256,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859471",
+              "title": "Swatching in Pattern Knitting",
+              "legacyComponentId": 4164,
+              "order": 1
+            }
+          ],
+          "title": "Swatching in Pattern Knitting",
+          "slug": "swatching-in-pattern-knitting",
+          "order": 1,
+          "legacy": {
+            "assignId": 3158,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Getting Started",
+      "slug": "getting-started",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 252,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<img src=\"/challenge/images/v2/36/yarn_calculator.png\">\r\nEstimate how much yarn you will need for your garment by using the calculator below.<br>\r\n<ul>\r\n<li>Knit and dress your swatch</li>\r\n<li>Measure the ENTIRE swatch width and length</li>\r\n<li>Weigh the swatch in grams</li>\r\n<li>Enter your data in the calculator</li>\r\n</ul>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4162,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "YarnEstimator",
+              "notes": [
+                "Unmapped legacy component type: YarnEstimator"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3154",
+                "GARMENTID": "926",
+                "TYPEOF": "YarnEstimator"
+              },
+              "legacyComponentId": 4160,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857740",
+              "title": "What uses more yarn? Lace or Tuck? Compare stitch types and the amount of yarn needed",
+              "legacyComponentId": 4161,
+              "order": 3
+            }
+          ],
+          "title": "How Much Yarn?",
+          "slug": "how-much-yarn",
+          "order": 2,
+          "legacy": {
+            "assignId": 3154,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Sizing and Options",
+      "slug": "sizing-and-options",
+      "displayOrder": 10,
+      "legacy": {
+        "itemId": 259,
+        "lessonOrder": 10
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<br>Because of the unusual shapes, determining your size can be a bit of a challenge. <br>Here are some facts to help you make a decision.<br>The Knit it Now Dynamic pattern is based on Sally's original dimensions. Use the measurements below along with the legend images in the pattern to determine your size.<br><em>\r\nThe Knit it Now Pattern sizes are:<br>\r\nXSmall, Small, Medium, Large, XLarge</em>\r\n<center><h3>From Sally's original pattern</h3><br><img class=\"img-thumbnail\" src=\"/challenge/images/v2/36/sally_sizing.png\">\t</center><br>\r\n\r\n\r\n",
+              "legacyComponentId": 4156,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<!-- BUST -->\r\n\r\n\r\n    <div style=\"background-color: #9E2065;color: rgb(255,255,255);padding: 20px;\">\r\n    Body Size <button class=\"btn btn-outline-light\" onclick=\"$('#theanswer').toggle()\"> <i class=\"fa fa-arrows-v\" aria-hidden=\"true\"></i></button>\r\n    </div>\r\n\r\n\r\n<!--- hidden answer. --->\r\n\r\n    \r\n        \r\n              <img src=\"/challenge/images/v2/36/body_size.gif\">\r\n               \r\n          \r\n            <br><b>NOTE: The dimensions below are 1/2 of the total finished body circumference </b><br> Xsmall, Small, Medium, Large, XLarge <small><em>Knit it Now Pattern Sizing</em></small><br>\r\n            <img src=\"/challenge/images/v2/36/body_sizing.gif\">\r\n        \r\n    \r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4159,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<!-- shoulder -->\r\n\r\n    <div style=\"background-color: #9E2065;color: rgb(255,255,255);padding: 20px;\">\r\n    <h2<i class=\"arrows\"></i> Shoulder Width</h2> <button class=\"btn btn-outline-light\" onclick=\"$('#shoulder').toggle()\"> <i class=\"fa fa-arrows-v\" aria-hidden=\"true\"></i></button>\r\n    </div>\r\n\r\n\r\n<!--- hidden answer. --->\r\n\r\n    \r\n\r\n <img class=\"img-thumbnail\" src=\"/challenge/images/v2/36/cross-shoulder.gif\">\r\n<br><span style=\"color:#8DC63F;\"><strong style=\"font-size: 20px;\">Cross Shoulders</strong></span><br>\r\nThe green cross shoulder measurements shown are an estimate based on the shoulder seam (solid green line). Because this is a loose-fitting poncho, the shoulders will fit a wide range of sizes.<br>\r\n\r\n\r\n\r\n   \r\n    \r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4157,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<!--neck opening -->\r\n\r\n    <div style=\"background-color: #9E2065;color: rgb(255,255,255);padding: 20px;\">\r\n    <h2<i class=\"arrows\"></i> Neck Opening</h2> <button class=\"btn btn-outline-light\" onclick=\"$('#neck').toggle()\"> <i class=\"fa fa-arrows-v\" aria-hidden=\"true\"></i></button>\r\n    </div>\r\n\r\n\r\n<!--- hidden answer. --->\r\n\r\n    \r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/36/neck_opening.gif\">\r\n <br><strong style=\"font-size: 20px;\">Neck Opening</strong><br>\r\nThe size of the neck opening is controlled by the bind off and cast on edge on the main piece (the \"N\" dimension).\r\n<br><b>To make a smaller neck opening, bind off fewer stitches for \"N\".</b>\r\n\r\n<ul><li> (This has to go over the head ... don't make it too small) </li>\r\n<li>Remember that this will also result in a smaller folded collar.</li></ul>\r\n\r\n<img src=\"/challenge/images/v2/36/Ndimension.gif\">\r\n\r\n\r\n\r\n\r\n\r\n\r\n   \r\n    \r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4158,
+              "order": 4
+            }
+          ],
+          "title": "Sizing",
+          "slug": "sizing",
+          "order": 1,
+          "legacy": {
+            "assignId": 3156,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "The pattern - <b>{first} -</b> Create your own L'Enveloppe",
+      "slug": "the-pattern-b-first-b-create-your-own-l-enveloppe",
+      "displayOrder": 15,
+      "legacy": {
+        "itemId": 260,
+        "lessonOrder": 15
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment 'L somehting' (legacy garmentId 926).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3157",
+                "CHALLENGE_COMPONENTID": "4163",
+                "GARMENTID": "926",
+                "GARMENTTITLE": "L somehting",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "PaternFileName",
+                "REDIRECT_TO": "/challenge/36/Group/3160/item|The pattern - Create your own L'Enveloppe: Download your pattern",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "rowgauge",
+                "SIZING_DATAMODEL_ELEMENT": "sizingid",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "stitchgauge",
+                "SWATCHROWS": "swatch_length",
+                "SWATCHSTITCHES": "swatch_width",
+                "SWATCHWEIGHT": "swatchweight",
+                "USESWATCHLOGIC": "no"
+              },
+              "legacyComponentId": 4163,
+              "order": 2
+            }
+          ],
+          "title": "The Pattern",
+          "slug": "the-pattern",
+          "order": 3,
+          "legacy": {
+            "assignId": 3157,
+            "blockType": "Pattern"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): PaternFileName",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 3157 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3160",
+                "DATAMODEL_ELEMENTS": "PaternFileName",
+                "DATAMODEL_REDIRECT": "3157",
+                "TYPEOF": "DataValidation"
+              },
+              "legacyComponentId": 4187,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'PaternFileName'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3160",
+                "DATAMODEL_ICON": "fa fa-download",
+                "LABLE": "Download your Pattern",
+                "PATTERN_DATAMODEL_ELEMENT": "PaternFileName",
+                "TYPEOF": "DocumentPattern",
+                "VIEWHEIGHT": "600"
+              },
+              "legacyComponentId": 4166,
+              "order": 2
+            }
+          ],
+          "title": "Download your pattern",
+          "slug": "download-your-pattern",
+          "order": 4,
+          "legacy": {
+            "assignId": 3160,
+            "blockType": "DocumentPattern"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Knit the Body",
+      "slug": "knit-the-body",
+      "displayOrder": 16,
+      "legacy": {
+        "itemId": 264,
+        "lessonOrder": 16
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "299105747",
+              "title": "Use Short Row Shaping for beautiful edges and easier knitting",
+              "legacyComponentId": 4189,
+              "order": 1
+            }
+          ],
+          "title": "Knit the Body",
+          "slug": "knit-the-body",
+          "order": 1,
+          "legacy": {
+            "assignId": 3172,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "301845123",
+              "title": "Short Rows in Knitweave",
+              "legacySlot": 1,
+              "legacyComponentId": 4202,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "299683876",
+              "title": "Short Rows in Tuck",
+              "legacySlot": 2,
+              "legacyComponentId": 4202,
+              "order": 2
+            }
+          ],
+          "title": "Short Rows in Pattern",
+          "slug": "short-rows-in-pattern",
+          "order": 2,
+          "legacy": {
+            "assignId": 3173,
+            "blockType": "VimeoID"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Neckline and collar",
+      "slug": "neckline-and-collar",
+      "displayOrder": 20,
+      "legacy": {
+        "itemId": 253,
+        "lessonOrder": 20
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n     Because the collar is a simple fold-over, the \"wrong\" side of your knitting will \r\n              show. <br>\r\n\r\n\r\n       <figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/36/neckline.jpg\"><br><figcaption align=\"center\"> \r\n          <em>In this sample, the purl side of the collar is the public side. The yarn makes it interesting and the crochet edge adds a finishing touch.</em></figcaption>\r\n          </figure>\r\n         \r\n\r\n<hr>\r\n\r\n              \r\n   <h2 class=\"section-title MachineknittingColor\">Suggestions:</h2>      \r\n\r\n \r\n<ol class=\"instruction-list\">\r\n<li>Knit a reversible or nearly reversible fabric. Use your ribber or a garter carriage<br></li>\r\n<li>Many single bed stitch patterns look great on both sides<br></li>\r\n<li>Hand manipulate the collar section</li>\r\n</ol>\r\n\r\n\r\n\r\n\r\n<figure><center><img src=\"/challenge/images/v2/36/collar_fold.gif\"></center><figcaption align=\"center\"><br><em>The grey dotted lines indicate the fold for the collar. To avoid the purl side showing, reform stitches in this area.</em></figcaption>\r\n</figure>\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4167,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/36/neck_opening.gif\">\r\n <br><strong style=\"font-size: 20px;\">Adjust the size of the Neck Opening</strong><br>\r\nThe size of the neck opening is controlled by the bind off and cast on edge on the main piece (the \"N\" dimension).\r\n<br><b>To make a smaller neck opening, bind off fewer stitches for \"N\".</b>\r\n\r\n<ul><li> (This has to go over the head ... don't make it too small) </li>\r\n<li>Remember that this will also result in a smaller folded collar.</li></ul>\r\n\r\n<img src=\"/challenge/images/v2/36/Ndimension.gif\">\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4168,
+              "order": 2
+            }
+          ],
+          "title": "A little planning for a beautiful collar",
+          "slug": "a-little-planning-for-a-beautiful-collar",
+          "order": 1,
+          "legacy": {
+            "assignId": 3161,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<div class=\"col-12-xs\">Thanks To Nancy Mangeri for sharing the instructions for her beautiful collar addition to her L'Envelope<br><b>Nancy's Collar</b><br>\r\n<em>Stitch multiple 8 sts x 16 rows</em><br>\r\n<ol class=\"instruction-list\">\r\n<li>Block the body and rehang the neck stitches. <em>Be sure to pick up a multiple of 8 stitches.</em></li>\r\n\r\n\r\n<li>Transfer stitches to the ribber for 4x4 rib</li>\r\n\r\n<li>Knit 4 rows in ribbing</li>\r\n\r\n<li>Transfer to ALL stitches to main bed and knit 4 rows plain</li>\r\n\r\n<li>Transfer alternate stitches to the ribber for 4x4 rib</li>\r\n<li>Knit 4 rows in ribbing</li>\r\n\r\n<li>Transfer to all stitches to ribber and knit 4 rows plain</li>\r\n<li>Repeat these 16 rows for desired length</li>\r\n<li>Bind off</li>\r\n</ol>\r\n\r\nThe knitting naturally rolls to the knit side of the stockinette / reversed stockinette  forming the ridges and the 4x4 ribbing causes the waves.\r\n</div>\r\n\r\n<div class=\"col-12-xs\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/36/nancy3.jpg\"></div>\r\n\r\n<br>\r\n<hr><br>\r\n\r\n\r\n\r\n<div class=\"col-12-xs\"><img src=\"/challenge/images/v2/36/nancy1.jpg\"></div>\r\n<div class=\"col-12-xs\"><img src=\"/challenge/images/v2/36/nancy_collar1.jpg\"></div>\r\n<div class=\"col-12-xs\"><img src=\"/challenge/images/v2/36/nancy_collar2.jpg\"></div>\r\n",
+              "legacyComponentId": 4195,
+              "order": 1
+            }
+          ],
+          "title": "Nancy's Ribbed Collar",
+          "slug": "nancy-s-ribbed-collar",
+          "order": 2,
+          "legacy": {
+            "assignId": 3174,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Sleeve",
+      "slug": "sleeve",
+      "displayOrder": 21,
+      "legacy": {
+        "itemId": 262,
+        "lessonOrder": 21
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The \"sleeve\" is added to the edge of the main garment piece - joined and knitted as you go, from top to hem. No seaming!<br>\r\n<div class=\"col-12-xs\">\r\n\r\n<img src=\"/challenge/images/v2/36/fit_slideshow7.jpg\">\r\n\r\n\r\n</div>\r\n<div class=\"col-12-xs\">\r\n<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/297505303' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\r\n\r\n</div>\r\n<br><hr>\r\n",
+              "legacyComponentId": 4177,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Long-Time hand knitter, Cindy looked at the pick up for the sleeve a different way than what was suggested in the video above. Here's her suggestion:<br>\r\n<div class=\"col-12-xs\">\r\n<ol>\r\n<li>Hang the body stitches on the machine</li>\r\n<li>Knit 1 row</li>\r\n<li>Carriage on the left</li>\r\n<lI>Place the center needles in working position (as directed in the pattern)  <img src=\"/challenge/images/v2/36/1.jpg\"> AND put the remaining needles (opposite the carriage) <img src=\"/challenge/images/v2/36/2.jpg\">  in hold </li>\r\n<li>Knit across the needles in work <img src=\"/challenge/images/v2/36/3.jpg\"></li>\r\n<li>Wrap</li>\r\n<li>Your carriage is on the right and the working yarn is in the middle of the work</li>\r\n<li>Put the left section of needles in hold <img src=\"/challenge/images/v2/36/3.jpg\"> </li>\r\n<li>Continue knitting over the center section of needles <img src=\"/challenge/images/v2/36/1.jpg\">, working short row increases to form the sleeve</li>\r\n<li>Don't forget to wrap!</li>\r\n</ol>\r\n\r\n</div>\r\n<div class=\"col-12-xs\"><img src=\"/challenge/images/v2/36/alternate_sleeve.jpg\"></div>\r\n",
+              "legacyComponentId": 4191,
+              "order": 4
+            }
+          ],
+          "title": "Sew as  you go",
+          "slug": "sew-as-you-go",
+          "order": 1,
+          "legacy": {
+            "assignId": 3166,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Techniques",
+      "slug": "techniques",
+      "displayOrder": 40,
+      "legacy": {
+        "itemId": 258,
+        "lessonOrder": 40
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n    \r\n        <b><em>\"Increase 3 stitches every other row ...\"<br>\r\n        \"Decrease 3 stitches every other row ...\"\r\n        </em></b><br>The pattern is written this way... but by shaping the diagonal edges by casting on and binding off stitches, you'll get the dreaded \"stairsteps\" (plus the edge will be sloppy).\r\n        <br><i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> By using short row shaping, the edge will be picture perfect and more stable.<br><figure>\r\n        <img class=\"img-thumbnail\" src=\"/challenge/images/v2/36/stairsteps1.jpg\">\r\n            <figcaption align=\"center\"><br><em>Top edge is e-wrap cast on stairsteps<br>lower edge is worked with short row shaping and bind off.<br></em></figcaption>\r\n        </figure>\r\n        <br>\r\n\r\n\r\n    \r\n    <img src=\"/challenge/images/v2/36/co_bo_pattern.png\">\r\n    \r\n\r\n\r\n    \r\n    \r\n        <h2 class=\"section-title MachineknittingColor\"><i class=\"fa fa-lightbulb-o\"></i> The Secret?</h2>\r\n        <img src=\"/challenge/images/v2/36/new_concept.gif\">\r\n    \r\n    \r\n    \r\n    <ol>\r\n    <li>\r\n    Read ahead and determine the total number of stitches needed for your cast on.</li>\r\n    <li>With waste yarn and ravel cord, cast on the total number of stitches</li>\r\n    <li>Work a fairly loose closed cast on with the main yarn (e-wrap works great)</li>\r\n    <li>Work short row increases as instructed in the pattern</li>\r\n    <li>Continue following the pattern</li>\r\n    <li>Work short row decreases to complete the section</li>\r\n    <li>Scrap off or bind off loosely</li>\r\n    </ol>\r\n    \r\n    \r\n    \r\n    \r\n\r\n\r\n<br>\r\n<h2 class=\"section-title MachineknittingColor\"><i class=\"fa fa-lightbulb-o\"></i> Watch how it's done</h2>\r\n\r\n\r\n",
+              "legacyComponentId": 4152,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860040",
+              "title": "Short  Row Increases and Decreases",
+              "legacySlot": 1,
+              "legacyComponentId": 4151,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857333",
+              "title": "Automatic Wrap vs Manual Wrap",
+              "legacySlot": 2,
+              "legacyComponentId": 4151,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<h2 class=\"section-title MachineknittingColor\"><i class=\"fa fa-refresh\"></i> Try this yourself</h2>\r\n\r\n<div>\r\n<h3>Practice</h3>\r\n<ol class=\"instruction-list\">\r\n      <li>With waste yarn and ravel cord, cast on 30 stitches</li>\r\n       <li>Work a fairly loose closed cast on with the main yarn (e-wrap works great)</li>\r\n        <li><b>All needles in hold</b></li>\r\n       <li><b>Carriage set to hold</b></li>\r\n        <li>\"Cast on(increase) 3 stitches every other row\"<br><ul class=\"instruction-nolist\">\r\n                   <li>Opposite the carriage, put 3 needles into working position</li>\r\n                    <li>Knit across the needles in work</li>\r\n                   <li>Wrap</li>\r\n                     <li>Knit back</li>\r\n                   <li>Repeat until all needles are in work</li>\r\n                   </ul>\r\n  </li>\r\n<li>Knit 10 rows</li>\r\n<li>\"Bind off (decrease) 3 stitches every other row\"<br><ul class=\"instruction-nolist\">\r\n     <li>Opposite the carriage, put 3 needles into hold position</li>\r\n     <li>Knit across the needles in work</li>\r\n     <li>Wrap</li>\r\n     <li>Knit back</li>\r\n     <li>Repeat until all needles are in out of work position</li></ul>\r\n\r\n</li>\r\n\r\n<li>Scrap off or bind off loosely</li>\r\n</ol>\r\n\r\n\r\n",
+              "legacyComponentId": 4153,
+              "order": 3
+            }
+          ],
+          "title": "Construction techniques",
+          "slug": "construction-techniques",
+          "order": 1,
+          "legacy": {
+            "assignId": 3155,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858940",
+              "title": "Picking up Stitches To Rows",
+              "legacyComponentId": 4186,
+              "order": 1
+            }
+          ],
+          "title": "Sleeve Seam Pickup Perfection",
+          "slug": "sleeve-seam-pickup-perfection",
+          "order": 2,
+          "legacy": {
+            "assignId": 3170,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Do you use DAK? Here are the Original Pattern Drafting shape files for L'Enveloppe, based on the Knit it Now pattern.<br>\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4188,
+              "order": 1
+            }
+          ],
+          "title": "Design a Knit Shape Files",
+          "slug": "design-a-knit-shape-files",
+          "order": 3,
+          "legacy": {
+            "assignId": 3171,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Finishing Touches",
+      "slug": "finishing-touches",
+      "displayOrder": 100,
+      "legacy": {
+        "itemId": 254,
+        "lessonOrder": 100
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Adjust the underarm seam to your liking. (There is only 1 armhole!)<br><i class=\"fa fa-hand-o-right aria-hidden=\"true\"></i> The original side seam split is 5\" (13cm)<br>\r\n<i class=\"fa fa-hand-o-right aria-hidden=\"true\"></i> Make the armhole opening as large as you like.\r\n\r\n\r\n<div class=\"col-12-xs\"><img src=\"/challenge/images/v2/36/underarm_seam.jpg\"></div>\r\n<div class=\"col-12-xs\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/36/underarm_seam1.jpg\"></div>\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4173,
+              "order": 1
+            }
+          ],
+          "title": "Side Seam",
+          "slug": "side-seam",
+          "order": 1,
+          "legacy": {
+            "assignId": 3164,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<div class=\"col-12-xs\">\t<img src=\"/challenge/images/v2/36/how_will_you_finish.gif\"></div>\r\n<div class=\"col-12-xs\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/36/finishing_group.png\"></div>\r\n\r\n\r\n",
+              "legacyComponentId": 4175,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/36/enveloppe/finishing_collar.jpg",
+                  "caption": "This yarn adds an interesting touch to the foldover collar.<br>\r\nI finished mine with a crochet picot edge:<br><br>\r\n<li>Worked 1 row of single crochet around the entire neck edge.</li>\r\n<li>Turned the work around and created the picot edge with the purl side of the knitting facing me</li>\r\n<li>Slip stitch into the first single crochet<</li>\r\n<li>*Chain 3</li>\r\n<li>Slip stitch into the same single crochet<</li>\r\n<li>Slip stitch into the next 2 single crochet*</li>\r\n<li>Repeat from * to * around the neck opening</li>\r\n</ul>"
+                },
+                {
+                  "src": "/challenge/images/v2/36/enveloppe/finishing_edge.jpg",
+                  "caption": "This unusual crochet edge is easier than it looks! (please let me know the name for this stitch)<br>\r\nThe striped yarn gave an accent to the edges.  You might also consider using contrasting color.<br><br>\r\n<ul>\r\n<li>Knit side of the work facing</li>\r\n<li>Single crochet 1 row along the entire edge.</li>\r\n<li>Single crochet in the first single crochet</li>\r\n<li>*Work a double crochet about 3/4\" into the knitting</li>\r\n<li>Single crochet in the next single crochet*</li>\r\n<li>Repeat from * to * around the edge</li>\r\n</ul>"
+                },
+                {
+                  "src": "/challenge/images/v2/36/enveloppe/finishing_sleeve.jpg",
+                  "caption": "Just for fun, I picked up in the round and hand knit 2\" of 2x2 ribbing around the armhole opening."
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": "1"
+              },
+              "legacyComponentId": 4176,
+              "order": 2
+            }
+          ],
+          "title": "Edge Finishing",
+          "slug": "edge-finishing",
+          "order": 2,
+          "legacy": {
+            "assignId": 3165,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Inspiration",
+      "slug": "inspiration",
+      "displayOrder": 105,
+      "legacy": {
+        "itemId": 263,
+        "lessonOrder": 105
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pinterest",
+              "notes": [
+                "Legacy Pinterest embed; replace with static content or omit."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3168",
+                "PINTERESTID": "22",
+                "TYPEOF": "Pinterest"
+              },
+              "legacyComponentId": 4181,
+              "order": 1
+            }
+          ],
+          "title": "So many possiblities!",
+          "slug": "so-many-possiblities",
+          "order": 1,
+          "legacy": {
+            "assignId": 3168,
+            "blockType": "Pinterest"
+          }
+        }
+      ]
+    },
+    {
+      "title": "<b>{first} -</b> Your opinion matters",
+      "slug": "b-first-b-your-opinion-matters",
+      "displayOrder": 110,
+      "legacy": {
+        "itemId": 261,
+        "lessonOrder": 110
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Use your phone or camera to share your L'Enveloppe. Inspire others!",
+              "legacyComponentId": 4185,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "FinishItem",
+                "BUTTONLABLE": "Upload and Share Your Creations",
+                "CHALLENGE_ASSIGNID": "3163",
+                "QTY": "3",
+                "SUCCESSMESSAGE": "Thank you",
+                "TYPEOF": "ImageUpload"
+              },
+              "legacyComponentId": 4182,
+              "order": 2
+            }
+          ],
+          "title": "How did it go? Share your success!",
+          "slug": "how-did-it-go-share-your-success",
+          "order": 1,
+          "legacy": {
+            "assignId": 3163,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageGallary",
+              "notes": [
+                "Unmapped legacy component type: ImageGallary"
+              ],
+              "legacyFields": {
+                "ACTION": "FinishItem",
+                "CHALLENGE_ASSIGNID": "3169",
+                "TYPEOF": "ImageGallary",
+                "WORKSHOPONLY": "0"
+              },
+              "legacyComponentId": 4183,
+              "order": 1
+            }
+          ],
+          "title": "Community Work",
+          "slug": "community-work",
+          "order": 2,
+          "legacy": {
+            "assignId": 3169,
+            "blockType": "Imageslideshow"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Survay",
+              "notes": [
+                "Unmapped legacy component type: Survay"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3162",
+                "CHALLENGE_COMPONENTID": "4172",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "LABLE": "????",
+                "REDIRECT_TO": "/challenge/36/coursefinal/lenveloppe",
+                "SURVEY": "1A8E61D5-5056-A02D-DFF1-2AB4CF50F80D|L_enveloppe"
+              },
+              "legacyComponentId": 4172,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<table align=\"center\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"50%\" style=\"background-color:#9B2764; border:1px solid #353535; border-radius:30px;\">\r\n  <tr>\r\n    <td align=\"center\" valign=\"middle\" style=\"color:#FFFFFF; font-size:16px; font-weight:bold; letter-spacing:-.5px; line-height:150%; padding-top:5px; padding-right:30px; padding-bottom:5px; padding-left:30px;\">\r\n      <a href=\"/elements/contactus.cfm\" target=\"_blank\" style=\"color:#FFFFFF; text-decoration:none;\">Comments?  Questions?  Contact Us</a>\r\n    </td>\r\n  </tr>\r\n</table>",
+              "legacyComponentId": 4184,
+              "order": 2
+            }
+          ],
+          "title": "Please help us improve",
+          "slug": "please-help-us-improve",
+          "order": 3,
+          "legacy": {
+            "assignId": 3162,
+            "blockType": "Survay"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 8,
+    "videos": [
+      {
+        "vimeoId": "151859471",
+        "title": "Swatching in Pattern Knitting",
+        "lessonSlug": "swatching-is-not-optional",
+        "blockSlug": "swatching-in-pattern-knitting"
+      },
+      {
+        "vimeoId": "151857740",
+        "title": "What uses more yarn? Lace or Tuck? Compare stitch types and the amount of yarn needed",
+        "lessonSlug": "getting-started",
+        "blockSlug": "how-much-yarn"
+      },
+      {
+        "vimeoId": "299105747",
+        "title": "Use Short Row Shaping for beautiful edges and easier knitting",
+        "lessonSlug": "knit-the-body",
+        "blockSlug": "knit-the-body"
+      },
+      {
+        "vimeoId": "301845123",
+        "title": "Short Rows in Knitweave",
+        "lessonSlug": "knit-the-body",
+        "blockSlug": "short-rows-in-pattern"
+      },
+      {
+        "vimeoId": "299683876",
+        "title": "Short Rows in Tuck",
+        "lessonSlug": "knit-the-body",
+        "blockSlug": "short-rows-in-pattern"
+      },
+      {
+        "vimeoId": "151860040",
+        "title": "Short  Row Increases and Decreases",
+        "lessonSlug": "techniques",
+        "blockSlug": "construction-techniques"
+      },
+      {
+        "vimeoId": "151857333",
+        "title": "Automatic Wrap vs Manual Wrap",
+        "lessonSlug": "techniques",
+        "blockSlug": "construction-techniques"
+      },
+      {
+        "vimeoId": "151858940",
+        "title": "Picking up Stitches To Rows",
+        "lessonSlug": "techniques",
+        "blockSlug": "sleeve-seam-pickup-perfection"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

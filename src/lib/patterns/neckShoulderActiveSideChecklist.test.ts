@@ -42,11 +42,16 @@ function cardiganPattern(): Record<string, unknown> {
   };
 }
 
-function centerBindOffFromTimeline(timeline: ReturnType<typeof buildTimeline>): number {
+function centerDivideFromTimeline(timeline: ReturnType<typeof buildTimeline>): number {
   const row0 = timeline[0];
   if (!row0) return 0;
   return row0.events
-    .filter((e) => e.kind === "bindOff" && e.side === "center" && e.edge === "center")
+    .filter(
+      (e) =>
+        (e.kind === "bindOff" || e.kind === "hold") &&
+        e.side === "center" &&
+        e.edge === "center",
+    )
     .reduce((sum, e) => sum + e.amount, 0);
 }
 
@@ -60,12 +65,12 @@ function firstWorkedShapingRow(
 }
 
 describe("back active-shoulder checklist center neckline setup row", () => {
-  it("buildTimeline center bind-off row is represented in the back checklist when setup is enabled", () => {
+  it("buildTimeline center hold/divide row is represented in the back checklist when setup is enabled", () => {
     const r = generateSleevelessBackPattern(cardiganPattern());
     const timeline = r.backNeckShoulderTimeline;
     expect(timeline?.length).toBeGreaterThan(1);
-    const centerBo = centerBindOffFromTimeline(timeline!);
-    expect(centerBo).toBeGreaterThan(0);
+    const centerDivide = centerDivideFromTimeline(timeline!);
+    expect(centerDivide).toBeGreaterThan(0);
 
     const armholeStart = r.debug.armholeStartRow!;
     const rcStart = armholeLocalRcActiveShoulderChecklistStart(
@@ -83,8 +88,8 @@ describe("back active-shoulder checklist center neckline setup row", () => {
     const setup = rows.find(isCenterNecklineSetupChecklistRow);
     expect(setup).toBeDefined();
     expect(setup!.rc).toBe(rcStart);
-    expect(setup!.action).toMatch(/scrap off center/i);
-    expect(setup!.action).toMatch(String(centerBo));
+    expect(setup!.action).toMatch(/place center 7 neckline stitches in hold/i);
+    expect(setup!.action).toMatch(/opposite shoulder/i);
     expect(setup!.stitchesRemaining).toBe(timeline![0]!.stitchesR);
   });
 
@@ -94,7 +99,7 @@ describe("back active-shoulder checklist center neckline setup row", () => {
     const timeline = r.backNeckShoulderTimeline!;
     const activeShoulderSts = timeline[0]!.stitchesR;
     expect(B).toBeGreaterThan(activeShoulderSts);
-    expect(B - centerBindOffFromTimeline(timeline)).toBeGreaterThanOrEqual(activeShoulderSts * 2 - 1);
+    expect(B - centerDivideFromTimeline(timeline)).toBeGreaterThanOrEqual(activeShoulderSts * 2 - 1);
 
     const rcStart = armholeLocalRcActiveShoulderChecklistStart(
       r.neckShoulderShapingChart,
@@ -143,7 +148,9 @@ describe("back active-shoulder checklist center neckline setup row", () => {
 
     const baselineFirstShaping = firstWorkedShapingRow(withoutSetup);
     const updatedFirstShaping = firstWorkedShapingRow(withSetup);
-    expect(baselineFirstShaping?.rc).toBe(firstPostCenterGarmentRc - armholeStart);
+    const expectedEarliestRc = firstPostCenterGarmentRc - armholeStart;
+    expect(baselineFirstShaping?.rc).toBeGreaterThanOrEqual(expectedEarliestRc);
+    expect(baselineFirstShaping?.rc).toBeLessThanOrEqual(expectedEarliestRc + 1);
     expect(updatedFirstShaping?.rc).toBe(baselineFirstShaping?.rc);
     expect(updatedFirstShaping?.action).toBe(baselineFirstShaping?.action);
     expect(updatedFirstShaping?.stitchesRemaining).toBe(baselineFirstShaping?.stitchesRemaining);

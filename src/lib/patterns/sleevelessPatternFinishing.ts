@@ -14,6 +14,7 @@ export type SleevelessFinishingStepId =
   | "finishArmholes"
   | "finishFrontEdges"
   | "finishNeckline"
+  | "attachSleeves"
   | "joinSideSeams"
   | "finalPressing";
 
@@ -23,6 +24,7 @@ export const SLEEVELESS_FINISHING_STEP_TITLES: Record<SleevelessFinishingStepId,
   finishArmholes: "Finish Armholes",
   finishFrontEdges: "Finish Front Edges",
   finishNeckline: "Finish Neckline",
+  attachSleeves: "Attach Sleeves",
   joinSideSeams: "Join Side Seams",
   finalPressing: "Final Pressing",
 };
@@ -65,7 +67,9 @@ export function buildSleevelessFinishingStepIds(opts: SleevelessFinishingStepOpt
   const core: SleevelessFinishingStepId[] = ["joinShoulders"];
   if (!opts.isDropShoulder) core.push("finishArmholes");
   if (opts.isCardigan) core.push("finishFrontEdges");
-  core.push("finishNeckline", "joinSideSeams");
+  core.push("finishNeckline");
+  if (opts.isDropShoulder) core.push("attachSleeves");
+  core.push("joinSideSeams");
   return ["blockPieces", ...core, "finalPressing"];
 }
 

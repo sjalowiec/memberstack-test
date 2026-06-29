@@ -1,0 +1,1252 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 82,
+    "title": "Hand Knitting Patterns for Machine Knitting",
+    "slug": "hand-knitting-patterns-for-machine-knitting",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_82_hand_knitting_patterns_for_machine_knitting.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/hk_to_mk1.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Introduction",
+      "slug": "introduction",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 504,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">The goals of this course:</div>\r\n<ol class=\"instruction-list\">\r\n<li> Use a HK pattern as inspiration and convert the written instructions to MK instructions</li>\r\n\r\n<li>Use the converted pattern and substitute yarn (change the gauge)</li>\r\n\r\n<li>Use a HK pattern as inspiration,use a Knit it Now Dynamic pattern for a larger size range and incorporate the designer details.</li>\r\n</ol>\r\n\r\n",
+              "legacyComponentId": 6280,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "516824934",
+              "title": "How do you go about using a hand knitting pattern with your knitting machine?",
+              "legacyComponentId": 6282,
+              "order": 4
+            },
+            {
+              "type": "richText",
+              "html": "<br>\r\nBig Hug is a simple pattern by <a href=\"http://www.uandiknit.com/\">Josée Paquin. </a><em><small>http://www.uandiknit.com/</small></em><br>The pattern is available on Ravelry. Josée has generously allowed us to use her pattern to work with for this course.<br>The pattern has been very popular for it's simplicity and updated styling.<br><blockquote class=\"blockquote_style\">The design can be easily \"translated\" to machine knitting.<br>Follow along as we analyze this pattern.<br><b> The steps used can be applied to ANY hand knitting pattern.</b></blockquote>\r\n\r\n\r\n<div class=\"col-md-6col-xs-12\"><img src=\"/challenge/images/v2/82/big_hug/big_hug.jpeg\"></div>\r\n<br>\r\n\r\n\r\n",
+              "legacyComponentId": 6283,
+              "order": 5
+            }
+          ],
+          "title": "Knit a HK pattern on the Knitting Machine",
+          "slug": "knit-a-hk-pattern-on-the-knitting-machine",
+          "order": 1,
+          "legacy": {
+            "assignId": 4145,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "download",
+              "label": "Download the Hand Knitting Pattern",
+              "filename": "/downloads/big_hug_pattern.pdf",
+              "showInline": true,
+              "legacy": {
+                "assignId": "680",
+                "componentId": "1868",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 6284,
+              "order": 1
+            }
+          ],
+          "title": "The Original Pattern",
+          "slug": "the-original-pattern",
+          "order": 2,
+          "legacy": {
+            "assignId": 4146,
+            "blockType": "Document"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Forum",
+              "notes": [
+                "Unmapped legacy component type: Forum"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4179",
+                "TYPEOF": "Forum"
+              },
+              "legacyComponentId": 6367,
+              "order": 1
+            }
+          ],
+          "title": "Questions?  Visit the Forum",
+          "slug": "questions-visit-the-forum",
+          "order": 3,
+          "legacy": {
+            "assignId": 4179,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Translate to Machine Knitting",
+      "slug": "translate-to-machine-knitting",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 505,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n\t.circle {\r\n\t\twidth: 25px;\r\n\t\theight: 25px;\r\n\t\tborder-radius: 50%;\r\n\t\tbox-sizing: border-box;\r\n\t\ttext-align: center;\r\n\t\tdisplay: inline-block;\r\n\t\tline-height: 25px;\r\n\t\tbackground-color: #9E2065;\r\n\t}\r\n\r\n\t.circle a {\r\n\t\ttext-decoration: none;\r\n\t\tcolor: #fff;\r\n\t\tfont-size: 16px;\r\n\t}\r\n\r\n</style>\r\n\r\n\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">1</a></div> Determine the Gauge of the Original Pattern\r\n\t\t\t\r\n\t\t\tThe pattern gauge is 13 sts and 18 rows - 10cm/4\"<br><img src=\"/challenge/images/v2/82/big_hug/gauge.jpg\"><br>\r\n\t\t\r\n\t\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">2</a></div> Calculate the gauge in 1\" or 1cm\r\n\t\t\t\r\n\t\t\t<b>Do the math:</b><br><div class=\"table-responsive\">\r\n\t\t\t\t\t<table class=\"table\" border=\"1\">\r\n\t\t\t\t\t\t<thead>\r\n\t\t\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t\t\t<th>Inches</th>\r\n\t\t\t\t\t\t\t\t<th>CM</th>\r\n\t\t\t\t\t\t\t</tr>\r\n\t\t\t\t\t\t</thead>\r\n\t\t\t\t\t\t<tbody>\r\n\t\t\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t\t\t<td>13 stitches / 4 = 3.25 stitches per inch</td>\r\n\t\t\t\t\t\t\t\t<td>13 stitches / 10 = 1.3 stitches per cm</td>\r\n\t\t\t\t\t\t\t</tr>\r\n\t\t\t\t\t\t\t<tr>\r\n\t\t\t\t\t\t\t\t<td>18 rows / 4 = 4.5 rows per inch</td>\r\n\t\t\t\t\t\t\t\t<td>18 rows / 10 = 1.8 rows per cm</td>\r\n\t\t\t\t\t\t\t</tr>\r\n\t\t\t\t\t\t</tbody>\r\n\t\t\t\t\t</table>\r\n\t\t\t\t</div>\r\n\r\n\t\t\t\r\n\t\t\r\n\t\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t<div class=\"circle\"><a href=\"#\">?</a></div> <b>Why determine the gauge in 1 inch / 1 cm?</b>\r\n\t\t\t\r\n\t\t\tA common hand knitting instruction:<br>\r\n\t\t\t\t<em>work 9cm /3.5 inches in rib</em>\r\n\t\t\t\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/82/big_hug/co_instructions.jpg\"><br><b>This doesn't work for machine knitters. We need to know how many rows to knit.</b><br>To convert the instructions to rows, multiply the pattern dimension by the calculated rows per inch/centimeter\r\n\t\t\t\r\n\t\t\r\n\t\r\n\r\n",
+              "legacyComponentId": 6361,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\n\thr.style13 {\r\n\t\theight: 10px;\r\n\t\tborder: 0;\r\n\t\tbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n\t}\r\n\r\n\t.container-border {\r\n\t\tborder: 1px solid #ccc;\r\n\t\tborder-radius: 15px;\r\n\t\tpadding-top: 20px;\r\n\t\tpadding-right: 20px;\r\n\t\tpadding-bottom: 20px;\r\n\t\tpadding-left: 20px;\r\n\t}\r\n\r\n</style>\r\n\r\n<hr class=\"style13\">\r\n\r\n\r\n<div>\r\n\t\t<div class=\"container-border\">\r\n\t\t\t\r\n\t\t\t\t<i class=\"fa fa-refresh fa-2x fa-spin fa-fw\"></i> According to this pattern instruction,<br> how many <b>TOTAL ROWS </b> should you knit for the body? <em><small>(Rounded)</small></em><br><em>Continue in St st until the piece measures 66 cm/ 26 inches from CO edge</em><br><img src=\"/challenge/images/v2/82/big_hug/row_practice.jpg\"><br>\r\n\t\t\t\t\r\n\t\t\t\t\t<div class=\"radio\">\r\n\t\t\t\t\t\t<a href=\"#answer1\" data-toggle=\"collapse\"><label><input type=\"radio\" name=\"optradio\">118 rows</label></a>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t\t<div class=\"radio\">\r\n\t\t\t\t\t\t<a href=\"#answer1\" data-toggle=\"collapse\"><label><input type=\"radio\" name=\"optradio\">25 rows </label></a>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t\t<div class=\"radio\">\r\n\t\t\t\t\t\t<a href=\"#answer1\" data-toggle=\"collapse\"><label><input type=\"radio\" name=\"optradio\">99 rows</label></a>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t\t<div id=\"answer1\" class=\"collapse hidden-print\">The answer:<br><b>118 rows</b><br>26\" times rows per inch<br>(26 in x 4.5 = 117)<br><em>66 cm times rows per cm<br> (66cm x 1.8 = 118.8)</em>\r\n\t\t\t\t\t</div>\r\n\t\t\t\t\r\n\t\t\t\r\n\r\n\t\t</div>",
+              "legacyComponentId": 6366,
+              "order": 6
+            }
+          ],
+          "title": "Establish Gauge and Sizing",
+          "slug": "establish-gauge-and-sizing",
+          "order": 1,
+          "legacy": {
+            "assignId": 4178,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<mark>The first step is to determine the gauge in the original pattern.</mark><br>\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/82/big_hug/gauge.jpg\">\r\n\r\n\r\n<mark>Do the math and establish the gauge in 1\" or 1cm.</mark><br><table border=\"1\" class=\"small\">\r\n<tr>\r\n<th>4\" / 10 cm</th>\r\n<th>1 inch</th>\r\n<th>1 cm</th>\r\n</tr>\r\n<tr>\r\n<td>13 sts</td>\r\n<td>3.25 sts</td>\r\n<td>1.3 sts</td>\r\n</tr>\r\n<tr>\r\n<td>18 rows</td>\r\n<td>4.5 rows</td>\r\n<td>1.8 rows</td>\r\n</tr>\r\n</table>\r\n<hr>\r\n<mark>Why determine gauge in 1 inch / 1 cm?</mark><br>One of the biggest differences between HK and MK patterns is that hand knitting instructions are generally written in cm/inches, but we need to know how many rows to knit.\r\n\r\nFor example:<br>\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/82/big_hug/co_instructions.jpg\">\r\n\r\n\r\nThe instruction <b> <em>\"Knit 9 cm / 3.5 inches\" </em></b> doesn't work for machine knitters (no guessing allowed). We need to know how many rows to knit.\r\n\r\n\r\n<br><blockquote class=\"blockquote_style\">\r\nUsing the information we calculated above:<br><b>Pattern Instructions:</b>  <em>Knit 9 cm / 3.5 inches</em><br><b>Machine Knitting Instructions:</b>  <em>Knit [9cm x 1.8=16 rows] [3.5\" x 4.5 =16] rows</em> </blockquote>\r\n\r\n \r\n\r\n\r\n\r\n",
+              "legacyComponentId": 6285,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\"><i class=\"fa fa-refresh fa-spin fa-fw\"></i>Practice \"Translating\"</div>\r\n",
+              "legacyComponentId": 6287,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<img class=\"img-thumbnail zoom\" src=\"/challenge/images/v2/82/big_hug/row_practice.jpg\"><br><em>\"Continue in ST st .... until the piece measures 66 cm/ 26 inches from CO edge\"</em><br>\r\n\r\n\r\n",
+              "legacyComponentId": 6288,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "681",
+                "CHALLENGE_COMPONENTID": "1871",
+                "QUESTION_ANSWER": "118",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i>118 rows</b><em>(26 in x 4.5 = 117)  (66cm x 1.8 = 118.8) </em>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "According to the pattern above, how many <b>TOTAL ROWS </b> should you knit for the body? <em><small>(Rounded)</small></em>"
+              },
+              "legacyComponentId": 6289,
+              "order": 5
+            }
+          ],
+          "title": "Establish Gauge  and sizing",
+          "slug": "establish-gauge-and-sizing",
+          "order": 2,
+          "legacy": {
+            "assignId": 4147,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3><strong><span style=\"color: #00ff00;\">GAUGE SWATCH</span></strong> for <span style=\"text-decoration: underline;\">matching</span> gauge</h3>\r\nI recently had an epiphany about swatching when I'm trying to MATCH gauge.  In the past I've knit my gauge swatches as I learned as a machine knitter.   I never use the gauge rulers that came with my machines, but I've always knit my swatches according to the \"rules\". (DUH)\r\n\r\nOn my standard machine, I've dutifully cast on 60 stitches and knit 60 rows between marked rows .  I marked off 40 stitches and got out my regular ruler, measured and did the math.\r\n\r\n<em>Being a total non-math person, I can't tell you how many times I've messed up the calculation of my gauge ... even when using a calculator.</em>\r\n<br>\r\n<img src=\"http://kin.knititnow.com/wp-content/uploads/2017/05/lightbulb_guy_100.jpg\" alt=\"\" width=\"50\" />\r\n<img src=\"\">\r\n<br><strong>THE EPIPHANY:</strong> I was hand knitting a HK pattern.  Hand knitting the complicated sections of the pattern was fun, but I decided that knitting a whole lot of stockinette (the boring stuff by hand) was dumb.  So I threaded up my machine and started to knit a swatch.\r\n\r\n\r\n<br><b>The gauge I needed to match was 24 sts and 30 rows per 4\".</b><br>\r\n<ul class=\"li_7px\">\r\n \t<li> I cast 60 stitches (so I could easily measure 24 stitches)</li>\r\n \t<li> I knit a few rows with my main yarn (marking with eyelets the tension gauge)</li>\r\n \t<li> 2 rows of a contrasting color</li>\r\n \t<li> Knit 30 rows</li>\r\n \t<li> 2 rows of a contrasting color</li>\r\n \t<li> A few main yarn rows and bound off</li>\r\n \t<li>AT THE SAME TIME I also marked  the stitches that were framing my desired 24 stitches.</li>\r\n</ul>\r\n<blockquote class=\"blockquote_style\">\r\n<strong>In other words, instead of marking the traditional number of stitches and rows, I broke the \"rules\" and marked my DESIRED GAUGE  of 24 stitches and 30 rows as I knit the swatch.</strong></blockquote>\r\n\r\nI let the swatch rest, then wet blocked it and let it sit overnight.\r\n\r\nThe next day, I put my handy-dandy 4\" measuring tool down on my swatch.  (see below about my DIY 4\" tool)\r\n\r\nAs you can see, by the first photo, my stitch gauge was good, but my row gauge needed to be adjusted.  It was easy to see through my tool that I had too many rows to 4\".   I adjusted my mast tension, knit another swatch and VOILA!  I was able to match my gauge EXACTLY --- with NO MATH!<br>\r\n<div class=\"col-12-xs\"><img src=\"/challenge/images/v2/82/swatch_compare1-300x283.jpg\" alt=\"\" width=\"300\" height=\"283\" /> <strong>Stitch Gauge is close - but the row gauge is off</strong></div>\r\n<div class=\"col-12-xs\"><img src=\"/challenge/images/v2/82/http:/knititnow.com/challenge/images/v2/25/swatch_compare2-1-300x288.jpg\" alt=\"\" width=\"300\" height=\"288\" /><br> <strong>24 sts x 30 rows = 4\" ! Success!</strong></div>\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n<hr class=\"styel13\">\r\n\r\n \r\n<h3>Template</h3>\r\n<div align=\"center\"><img src=\"/challenge/images/v2/82/swatch_template.png\" alt=\"\" width=\"342\" height=\"342\" /></div>\r\n\r\nFor my tool, I cut a 4\" x 4\" square of quilters template plastic (readily available at craft stores) to create my Handy-dandy tool. Because it's see-through, I can see my marked stitches and rows on my swatch.<br>You could use a square of any material (cardboard, paper, clear plastic of any kind).<br>We've created a to-scale template for you to print. Print the template on paper, a transparency or card stock and try it.  You will be amazed at how much easier it is to measure gauge (for both hand and machine knitting).\r\n\r\n",
+              "legacyComponentId": 6291,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Download the Template",
+              "filename": "/downloads/swatch_template1.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "751",
+                "componentId": "2110",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 6292,
+              "order": 2
+            }
+          ],
+          "title": "Matching  Gauge",
+          "slug": "matching-gauge",
+          "order": 3,
+          "legacy": {
+            "assignId": 4148,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<div class=\"col-12-xs\">Because this pattern doesn't have a diagram, we'll need to create our own.<br>This is the basic shape of the sweater - it's long-sleeved, drop shoulder with a small funnel neck collar.<br>Next we will start filling in the blanks based on the written pattern. </div>\r\n<div class=\"col-12-xs\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/82/big_hug/big_hug_diagram1.jpg\"</div>\r\n\r\n\r\n<br>",
+              "legacyComponentId": 6293,
+              "order": 2
+            },
+            {
+              "type": "download",
+              "label": "Print the worksheet to follow along",
+              "filename": "/downloads/big_hug_worksheet.pdf",
+              "showInline": true,
+              "legacy": {
+                "assignId": "682",
+                "componentId": "1891",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 6294,
+              "order": 3
+            }
+          ],
+          "title": "Create your Schematic",
+          "slug": "create-your-schematic",
+          "order": 4,
+          "legacy": {
+            "assignId": 4149,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img class=\"img-thumbnail zoom\" src=\"/challenge/images/v2/82/big_hug/finished_measurements.jpg\"><br><blockquote class=\"blockquote_style\">The Designer gave us these 3 finished measurements and we've filled them in on our worksheet</blockquote>\r\n<img class=\"img-thumbnail zoom\" src=\"/challenge/images/v2/82/big_hug/big_hug_diagram2.jpg\">",
+              "legacyComponentId": 6295,
+              "order": 1
+            }
+          ],
+          "title": "Info from the Pattern Notes",
+          "slug": "info-from-the-pattern-notes",
+          "order": 5,
+          "legacy": {
+            "assignId": 4150,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "259414061",
+              "title": "Translate the Body Pieces",
+              "legacyComponentId": 6296,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<br><em><i class=\"fa fa-frown-o aria-hidden=\"true\"></i> Oops,  can't count.<br>Shoulder Shaping in the original pattern is written:<br>\r\n\r\n<b>1</b>  Next row: (RS) : BO 7 sts, k to the end<br>\r\n<b>2</b> Next Row (WS): BO 7 sts, k to the end<br>\r\n<b>3-4</b>  Repeat the last 2 rows once more<br>\r\n<b>5</b>  Next Row (RS): BO 6 sts, k to the end<br>\r\n<b>6</b>  Next Row (WS): BO 6 sts, p to the end<br>This is a total of of SIX rows, not 4 as in the video .... my apologies! <i class=\"fa fa-meh-o aria-hidden=\"true\"></i></em>\r\n\r\n",
+              "legacyComponentId": 6297,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "VimeoJumpLinks",
+              "notes": [
+                "Unmapped legacy component type: VimeoJumpLinks"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "684",
+                "CHALLENGE_COMPONENTID": "4757",
+                "LINKTIME_1": "00:02:20",
+                "LINKTITLE_1": "Jump to the boo-boo in the video"
+              },
+              "legacyComponentId": 6298,
+              "order": 3
+            }
+          ],
+          "title": "Uncover your MK Pattern Instructions",
+          "slug": "uncover-your-mk-pattern-instructions",
+          "order": 6,
+          "legacy": {
+            "assignId": 4151,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\ntd {                                     \r\n    padding: 10px; }\r\nth {                                     \r\n    padding: 10px; }\r\n</style>\r\n<div class=\"lead\">Your Turn! </div>\r\nUncover the stitches and row instructions for the sleeves.<br>\r\n\r\n\r\n\r\n<div class=\"col-12-xs\">Using your <a href=\"https://www.knititnow.com/challenge/25/Group/682/item#section157\">Worksheet</a> and the <a href=\"https://www.knititnow.com/challenge/25/Group/680/item#section156\">original pattern</a>, do the math to calculate the stitches and rows for the sleeves.<br>Remember the 1\" and 1 cm stitch and row multipliers that we established earlier.<br><table border=\"1\">\r\n<tr>\r\n<th>4\" / 10 cm</th>\r\n<th>1 inch</th>\r\n<th>1 cm</th>\r\n</tr>\r\n<tr>\r\n<td>13 sts</td>\r\n<td>3.25 sts</td>\r\n<td>1.3 sts</td>\r\n</tr>\r\n<tr>\r\n<td>18 rows</td>\r\n<td>4.5 rows</td>\r\n<td>1.8 rows</td>\r\n</tr>\r\n</table>\r\n\r\n\r\n</div>\r\n<div class=\"col-12-xs\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/82/big_hug/big_hug_sleeve.jpg\"</div>\r\n",
+              "legacyComponentId": 6299,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "685",
+                "QUESTION_ANSWER": "28",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> The pattern calls for 28 stitches to be cast on</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "How many stitches will you cast on? (W)",
+                "TYPEOF": "Questions"
+              },
+              "legacyComponentId": 6300,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "685",
+                "CHALLENGE_COMPONENTID": "1896",
+                "QUESTION_ANSWER": "58",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i>Follow the pattern to 58 stitches</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "How many stitches at the top of the sleeve? (U)"
+              },
+              "legacyComponentId": 6301,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "685",
+                "CHALLENGE_COMPONENTID": "1897",
+                "QUESTION_ANSWER": "14",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 14 rows",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "How many rows of ribbing? (R) <em><small>(Round up)</small></em>"
+              },
+              "legacyComponentId": 6302,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "685",
+                "CHALLENGE_COMPONENTID": "1898",
+                "QUESTION_ANSWER": "82",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 82 rows (rounded)</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "How many total rows will be knit for the sleeve? (R + L) <em><small>Round to even number</small></em>"
+              },
+              "legacyComponentId": 6303,
+              "order": 5
+            },
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"blockquote_style\">You are ready to knit this sweater if:\r\n<ul>\r\n<li>You can match the designer's gauge</li>\r\n<li>You can wear this size</li></ul>\r\nComing up .... we'll discuss some alternative ways of using this hand knitting pattern on the machine.\r\n</blockquote>\r\n\r\n\r\n",
+              "legacyComponentId": 6304,
+              "order": 6
+            }
+          ],
+          "title": "Practice Reading/Translating a HK Pattern",
+          "slug": "practice-reading-translating-a-hk-pattern",
+          "order": 7,
+          "legacy": {
+            "assignId": 4152,
+            "blockType": "Practice"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Convert the Pattern to Another Gauge",
+      "slug": "convert-the-pattern-to-another-gauge",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 506,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The yarn that was originally used for the Big Hug has been discontinued.  Chances are you won't be able to match the designer's gauge.<br>Grab a calculator  and use the Gauge Conversion Tool to successfully knit the sweater with your choice of yarn.<br><blockquote class=\"blockquote_style\">Remember: Swatching is NOT optional.\r\n You MUST have measured your swatch ACCURATELY for success.</blockquote>",
+              "legacyComponentId": 6305,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859608",
+              "title": "Gauge Conversion Tool",
+              "legacyComponentId": 6306,
+              "order": 3
+            }
+          ],
+          "title": "Gauge Conversion Tool",
+          "slug": "gauge-conversion-tool",
+          "order": 1,
+          "legacy": {
+            "assignId": 4153,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<table width= \"50%\">\r\n<tr>\r\n<td>For this exercise, use the stitches and rows we previously established for the body of our Big Hug</td>\r\n<td>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/82/big_hug/big_hug_diagram3.jpg\"></td>\r\n</tr>\r\n</table>\r\n\r\n\r\n.<br>\r\n<blockquote class=\"smallblock\"><b>Pattern gauge:</b> 13sts/18rows = 4\"/10cm<br><b>New Gauge:</b> 28sts/44rows = 4\"/10cm<br></blockquote>\r\n<ol class=\"instruction-list\">\r\n<li>Use the tool below to establish the multiplier for the new gauge\r\n<ul class=\"instruction-nolist\">Enter the Pattern gauge and the New Gauge below</ul>\r\n</li>\r\n<li>Record the multiplier for stitch and row</li>\r\n<li>Multiple each section by the correct ratio</li>\r\n<li>Scroll down to enter your answers (and check your math)</li>\r\n</ol>\r\n<br><i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> <em>Tip: Convert all the stitches at one time, then all the rows at one time</em>\r\n\r\n <br>",
+              "legacyComponentId": 6307,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: GaugeConversion.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "688",
+                "CUSTOMCFM": "GaugeConversion.cfm",
+                "TYPEOF": "CustomCFM"
+              },
+              "legacyComponentId": 6309,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\"><i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> Check your math</div>",
+              "legacyComponentId": 6311,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "688",
+                "CHALLENGE_COMPONENTID": "1949",
+                "QUESTION_ANSWER": "150",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 70 sts x 2.15 = 150 stitches</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "Cast on STITCHES (A)"
+              },
+              "legacyComponentId": 6312,
+              "order": 6
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "688",
+                "CHALLENGE_COMPONENTID": "1950",
+                "QUESTION_ANSWER": "40",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 16 rows x 2.44 = 40 rows</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "Ribbing ROWS (B)"
+              },
+              "legacyComponentId": 6313,
+              "order": 7
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "688",
+                "CHALLENGE_COMPONENTID": "1951",
+                "QUESTION_ANSWER": "248",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 102 rows x 2.44 = 248.88 (rounded down) 248</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "Body ROWS (C)"
+              },
+              "legacyComponentId": 6314,
+              "order": 8
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "688",
+                "CHALLENGE_COMPONENTID": "1952",
+                "QUESTION_ANSWER": "10",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 4 rows x 2.44 = 10 rows</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "Shoulder Shaping ROWS (S)"
+              },
+              "legacyComponentId": 6315,
+              "order": 9
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "688",
+                "CHALLENGE_COMPONENTID": "1953",
+                "QUESTION_ANSWER": "30",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 12 rows x 2.44 = 30 rows</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "Collar ROWS (F)"
+              },
+              "legacyComponentId": 6316,
+              "order": 10
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "688",
+                "CHALLENGE_COMPONENTID": "1954",
+                "QUESTION_ANSWER": "64",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 30 sts x 2.15 = 64.5 (rounded)</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "Collar Bind Off STITCHES (E)"
+              },
+              "legacyComponentId": 6317,
+              "order": 11
+            }
+          ],
+          "title": "Convert the Big Hug Pattern Gauge",
+          "slug": "convert-the-big-hug-pattern-gauge",
+          "order": 2,
+          "legacy": {
+            "assignId": 4154,
+            "blockType": "CustomCFM"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<div class=\"col-12-xs\">\t\r\n<blockquote class=\"smallblock\"><b>Pattern gauge:</b> 13sts/18rows = 4\"/10cm<br><b>New Gauge:</b> 28sts/44rows = 4\"/10cm<br></blockquote>\r\n<ol class=\"instruction-list\">\r\n<li>Use the tool in the previous section to establish the multiplier the new gauge\r\n<ul class=\"instruction-nolist\">Enter the Pattern gauge and the New Gauge below</ul>\r\n</li>\r\n<li>Record the multiplier for stitch and row</li>\r\n<li>Multiple each section by the correct ratio</li>\r\n<li>Scroll down to enter your answers (and check your math)</li>\r\n</ol>\r\n<br><i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> <em>Tip: Convert all the stitches at one time, then all the rows at one time</em>\r\n\r\n\r\n</div>\r\n<div class=\"col-12-xs\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/82/big_hug/extra_credit.jpg\"</div>\r\n\r\n",
+              "legacyComponentId": 6318,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "689",
+                "CHALLENGE_COMPONENTID": "1906",
+                "QUESTION_ANSWER": "60",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 28 sts x 2.15 = 60 (rounded) </b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "New cast on stitch count? (W)"
+              },
+              "legacyComponentId": 6319,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "689",
+                "CHALLENGE_COMPONENTID": "1907",
+                "QUESTION_ANSWER": "34",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 14 rows x 2.44 = 34</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "New Rows of Ribbing? (R) "
+              },
+              "legacyComponentId": 6320,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "689",
+                "CHALLENGE_COMPONENTID": "1908",
+                "QUESTION_ANSWER": "166",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 68 rows x 2.44 = 166</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "New Sleeve length (L)? "
+              },
+              "legacyComponentId": 6321,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "689",
+                "CHALLENGE_COMPONENTID": "1909",
+                "QUESTION_ANSWER": "124",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> 58 sts x 21.5 = 124</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "New Bind off stitches?"
+              },
+              "legacyComponentId": 6322,
+              "order": 5
+            }
+          ],
+          "title": "Extra Credit | More practice",
+          "slug": "extra-credit-more-practice",
+          "order": 3,
+          "legacy": {
+            "assignId": 4155,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "How's it Going?",
+      "slug": "how-s-it-going",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 510,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "516841801",
+              "title": null,
+              "legacyComponentId": 6360,
+              "order": 1
+            }
+          ],
+          "title": "Are the lightbulbs coming on?",
+          "slug": "are-the-lightbulbs-coming-on",
+          "order": 1,
+          "legacy": {
+            "assignId": 4177,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Forum",
+              "notes": [
+                "Unmapped legacy component type: Forum"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4180",
+                "TYPEOF": "Forum"
+              },
+              "legacyComponentId": 6368,
+              "order": 1
+            }
+          ],
+          "title": "Questions? Need Help?",
+          "slug": "questions-need-help",
+          "order": 2,
+          "legacy": {
+            "assignId": 4180,
+            "blockType": "Forum"
+          }
+        }
+      ]
+    },
+    {
+      "title": "What about Shaping?",
+      "slug": "what-about-shaping",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 507,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "After converting the gauge of a pattern using the Gauge Conversion Tool, you will no longer be able to follow the original knitting pattern shaping instructions.<br>\r\nKnit it Now offers 3 tools for the most common shaping situations:<br><ol class=\"li_7px\">\r\n<li><a href=\"https://www.knititnow.com/challenge/25/Group/690/item#section160\">Magic Formula Tools</a>(example: shaped sleeves)</li>\r\n<li><a href=\"https://www.knititnow.com/challenge/25/Group/692/item#section160\">Slope Tool</a> (example: Shoulder shaping)</li>\r\n<li><a href=\"https://www.knititnow.com/challenge/25/Group/691/item#section160\">Neckline tool</a>(re-calculate round necklines)</li>\r\n</ol>\r\n<blockquote class=\"blockquote_style\">For more complicated shaping or for creating your own designs, we suggest studying knitting pattern drafting books.  There are many available in libraries and online.  The investment in time to learn pattern drafting will be invaluable to you on your knitting journey.</blockquote>\r\n<br>\r\n<div Class = \"lead\">\r\nRecommended Reading</div>\r\n\r\n\r\n<div class=\"col-12-xs\">The Knitters guide to Sweater Design - <small>Carmen Michelson / Mary - Ann Davis</small>.<br>\r\nThis book is out of print, but you can find copies online.  It was published by Interweave press and presents all the math and formulas you will ever need in a clear and easy-to-understand manner.<br>\r\n<img src=\"/store/thumbnails/Knitters_guide_book1.jpg\"></div>\r\n<div class=\"col-12-xs\"><a href=\"http://www.knititnow.com/store/product/340/knitwear-design-workshop/Amazondetails\">Knitwear Design Workshop</a><br>\r\nThis book is still in print and readily available from Amazon.\r\nPurchase <a href=\"http://www.knititnow.com/store/product/340/knitwear-design-workshop/Amazondetails\">using this link</a> and Knit it Now receives a small commission.<a href=\"http://www.knititnow.com/store/product/340/knitwear-design-workshop/Amazondetails\"><img src=\"http://www.knititnow.com/knititnow/store/thumbnails/knitwear_design_workshop.jpg\"></a></div>\r\n\r\n\r\n",
+              "legacyComponentId": 6323,
+              "order": 1
+            }
+          ],
+          "title": "Re-Charting the Pattern Shaping",
+          "slug": "re-charting-the-pattern-shaping",
+          "order": 1,
+          "legacy": {
+            "assignId": 4156,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "You may not want to chart knitting patterns from start to finish, but if you substitute yarns and change gauge in a pattern, you'll need to re-chart shaping for your pattern.<br>The Knit it Now Tools are designed to give you a hand with the math.  Easy-to-use and accurate, these tools will go a long way to knitting garments that fit!",
+              "legacyComponentId": 6324,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "259466087",
+              "title": "Knit it Now Tools",
+              "legacyComponentId": 6325,
+              "order": 2
+            }
+          ],
+          "title": "Use Knit it Now Tools",
+          "slug": "use-knit-it-now-tools",
+          "order": 2,
+          "legacy": {
+            "assignId": 4157,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<br>\r\n<div class=\"col-12-xs\">To accurately re-calculate shoulder shaping, use the <a href=\"/tools/sholderslope.cfm\">Knit it Now Slope Tool</a></div>\r\n<div class=\"col-12-xs\"><img src=\"/challenge/images/v2/82/big_hug/shaped-shoulders.jpg\"></div>\r\n\r\n\r\n",
+              "legacyComponentId": 6326,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "259467980",
+              "title": "Slope Tool",
+              "legacyComponentId": 6327,
+              "order": 2
+            }
+          ],
+          "title": "Slope Tool",
+          "slug": "slope-tool",
+          "order": 3,
+          "legacy": {
+            "assignId": 4158,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/82/big_hug/diophantine_Equation.jpg\"><br>\r\n\r\nThe Magic Formula (AKA the Diophantine Equation) is used to calculate even increases and decreases  for knitting.<br>If you shorten or lengthen a shaped piece or you convert the gauge, these tools are invaluable for keeping the guess work out of increase and decrease placement.\r\n\r\n<blockquote class=\"blockquote_style\">No Math! Try the tools!</blockquote>",
+              "legacyComponentId": 6328,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "196648775",
+              "title": "Know the DIMENSIONS? Use this tool",
+              "legacySlot": 1,
+              "legacyComponentId": 6329,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "196656033",
+              "title": "Know your STITCH/ROW COUNT? Use this tool",
+              "legacySlot": 2,
+              "legacyComponentId": 6329,
+              "order": 2
+            }
+          ],
+          "title": "Magic Formula",
+          "slug": "magic-formula",
+          "order": 4,
+          "legacy": {
+            "assignId": 4159,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "259956453",
+              "title": "Watch as we shorten our sleeves",
+              "legacyComponentId": 6330,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-refresh fa-spin fa-2x fa-fw\"></i>Practice<br>\r\n<div class=\"col-12-xs\">\t\r\n\r\n<ol class=\"instruction-list\">\r\n<li>Practice using the Magic Formula Tool below\r\n<li>Use the numbers from the original pattern</li>\r\n<li>Did you get the same shaping instructions as we did?</li>\r\n\r\n</ol>\r\n</div>\r\n<div class=\"col-12-xs\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/82/big_hug/extra_credit.jpg\"</div>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 6331,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\"> <b>Knit it Now Magic Formula Tool</b></div>\r\nPractice using this tool to Calculate the shaping instructions for a taper. <br><i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> <em><small>The Magic Formula Tool is also available on the website -->Knit  -->Tools</small></em>",
+              "legacyComponentId": 6333,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: Magicformula_STS_Rows.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "701",
+                "CUSTOMCFM": "Magicformula_STS_Rows.cfm",
+                "TYPEOF": "CustomCFM"
+              },
+              "legacyComponentId": 6334,
+              "order": 5
+            }
+          ],
+          "title": "Challenge - Shorten the Big Hug Sleeves",
+          "slug": "challenge-shorten-the-big-hug-sleeves",
+          "order": 5,
+          "legacy": {
+            "assignId": 4160,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Analyze the Design and use a Knit it Now Pattern",
+      "slug": "analyze-the-design-and-use-a-knit-it-now-pattern",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 508,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "260059828",
+              "title": "Why mess with all that math?",
+              "legacyComponentId": 6336,
+              "order": 1
+            }
+          ],
+          "title": "Ready for the Easy Way?",
+          "slug": "ready-for-the-easy-way",
+          "order": 1,
+          "legacy": {
+            "assignId": 4161,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Most sweaters fall into general shape categories, based on the armhole design.<br><img class=\"img-thumbnail\" src=\"/challenge/images/v2/82/big_hug/sweater_shapes.jpg\">\r\n<hr>\r\n<br>\r\n<div class=\"col-12-xs\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/82/big_hug/big_hug.jpeg\"></div>\r\n<div class=\"col-12-xs\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/82/big_hug/big_hug_diagram1.jpg\"></div>\r\n\r\n<blockquote class=\"blockquote_style\">\r\n\r\nWe've determined that the Big Hug's shape is a simple drop shoulder shape.<br>Why not use a Knit it Now Basics Blueprint to reproduce the sweater? <b>You'll have a choice of sizes .... and NO MATH!</b><br><b>One little tweak and it's the SAME SWEATER!</b><br><img src=\"/challenge/images/v2/82/big_hug/blueprint_logo_small.jpg\"></div>\r\n\r\n\r\n\r\n</blockquote>\r\n\r\n",
+              "legacyComponentId": 6338,
+              "order": 1
+            }
+          ],
+          "title": "Garment shapes",
+          "slug": "garment-shapes",
+          "order": 2,
+          "legacy": {
+            "assignId": 4162,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "402313052",
+              "title": "Building Knit it Now Custom Patterns",
+              "legacyComponentId": 6339,
+              "order": 1
+            }
+          ],
+          "title": "Using Dynamic Patterns",
+          "slug": "using-dynamic-patterns",
+          "order": 3,
+          "legacy": {
+            "assignId": 4163,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Links to suggested Knit it Now Patterns:<br>\r\n<ul>\r\n<li>Men: <a href=\"/knit/DynamicPattern/1029/diamond-pullover\">Diamond Pullover</a></li>\r\n<li>Misses: <a href=\"/knit/DynamicPattern/1048/carnation-pullover\">Carnation Pullover</a></li>\r\n<li>Misses: <a href=\"/knit/DynamicPattern/1056/heather-pullover\">Heather Fitted Pullover</a></li>\r\n<li>Plus: <a href=\"/knit/TheBasicPattern/548/curry-pullover\">Curry</a></li>\r\n<li>Kids: <a href=\"/knit/DynamicPattern/128/prickly-pear-pullover\">Prickly Pear Pullover</a></li>\r\n</ul>",
+              "legacyComponentId": 6355,
+              "order": 1
+            }
+          ],
+          "title": "Pattern Suggestions",
+          "slug": "pattern-suggestions",
+          "order": 4,
+          "legacy": {
+            "assignId": 4174,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">Create the funnel Neck</div><br>\r\n\r\n\r\n<div class=\"col-12-xs\">Big Hug has no neckline shaping.  The neck stitches are knit for approximately 1\" and bound off.<br><img class=\"thumbnail\" src=\"/challenge/images/v2/82/big_hug/big_hug.jpeg\"></div>\r\n<div class=\"col-12-xs\"><img class=\"thumbnail\" src=\"/challenge/images/v2/82/big_hug/no_neck.jpg\"></div>\r\n\r\n<br>\r\n\r\n<img src=\"/challenge/images/v2/82/big_hug/blueprint_logo_small.jpg\"><br><ul>\r\n<li>Using the Knit it Now Blueprint, skip the neckline shaping.</li>\r\n<li>After the shoulder shaping is complete, knit for approximately 1\"</li>\r\n<li>Bind off</li>\r\n</ul>\r\n<br><img class=\"img-thumbnail\" src=\"/challenge/images/v2/82/big_hug/no_neck_shaping.jpg\">\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 6347,
+              "order": 1
+            }
+          ],
+          "title": "One Tweak (The Funnel Neck)",
+          "slug": "one-tweak-the-funnel-neck",
+          "order": 5,
+          "legacy": {
+            "assignId": 4170,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Conclusion and Inspiration",
+      "slug": "conclusion-and-inspiration",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 509,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<ol class=\"instruction-list\">\r\n<li>Use a HK pattern as inspiration and convert the written instructions to MK instructions</li>\r\n<li>Use the converted pattern and substitute yarn (change the gauge)</li>\r\n<li>Use a HK pattern as inspiration,use a Knit it Now Dynamic pattern for a larger size range and incorporate the designer details</li>\r\n</ol>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 6348,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "516849447",
+              "title": "3 Ways to Incorporate Hand Knitting Patterns in your Machine Knitting World",
+              "legacyComponentId": 6349,
+              "order": 2
+            }
+          ],
+          "title": "Are you Inspired?",
+          "slug": "are-you-inspired",
+          "order": 1,
+          "legacy": {
+            "assignId": 4171,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<center><img src=\"/challenge/images/v2/82/ellens_funnel_gif.gif\"></center>\r\n<br>\r\n<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Designer Ellen Kindsvater ran with the idea of a simple Funnel neck pullover. Here are her designer elements to the basic design.<br>A few minor changes to Big Hug, knit on the standard gauge machine with a textured stitch pattern and WOW!  A completely different look from the same pattern.<br><ul>\r\n<Li>G-Carriage Stitch pattern (see below)</li>\r\n<Li>She simplified the shape sleeve for less shaping with the g-carriage</li>\r\n<Li>3/4\" funnel for less bulk</li>\r\n<Li>No ribbing</li>\r\n<Li>Back is 2\" longer than the front</li>\r\n<Li>Side slit - 4\" in front and 6\" in back</li>\r\n</ul>\r\nEllen shared some finishing techniques:\r\n<ul>\r\n<li>To ensure the neck is stretchy enough to go over the head, she worked a loose \"around the gatepeg\" bind off. </li>\r\n<li>She used the same bind off edges for the top of the sleeves so they wouldn't be too tight in the armhole.\r\n<li>To prevent flair at the hem, she cast on with waste yarn and ravel cord. When the knitting was complete, she rehung the cast on edges and bound off tightly not around the gate peg).</li>\r\n<li>After dressing her swatch Ellen discovered that the ribbed stitch pattern she used caused the knitting to relax and become wider and shorter.</li>\r\n<li>With the knit and purl stitch pattern she chose, either side can be the public (right) side</li>\r\n</ul>\r\n",
+              "legacyComponentId": 6350,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "741",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 6351,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/82/big_hug/funnel_stitch_pattern.jpg\"><br>",
+              "legacyComponentId": 6352,
+              "order": 3
+            },
+            {
+              "type": "download",
+              "label": "Download the Punchcard Template",
+              "filename": "/downloads/punchcard_template.pdf",
+              "showInline": true,
+              "legacy": {
+                "assignId": "741",
+                "componentId": "2039",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 6353,
+              "order": 4
+            }
+          ],
+          "title": "Ellen's Updated Funnel",
+          "slug": "ellen-s-updated-funnel",
+          "order": 1,
+          "legacy": {
+            "assignId": 4172,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pinterest",
+              "notes": [
+                "Legacy Pinterest embed; replace with static content or omit."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3391",
+                "PINTERESTID": "12",
+                "TYPEOF": "Pinterest"
+              },
+              "legacyComponentId": 6354,
+              "order": 1
+            }
+          ],
+          "title": "Funnel Neck Inspiration",
+          "slug": "funnel-neck-inspiration",
+          "order": 2,
+          "legacy": {
+            "assignId": 4173,
+            "blockType": "Pinterest"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Survay",
+              "notes": [
+                "Unmapped legacy component type: Survay"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4175",
+                "CHALLENGE_COMPONENTID": "6356",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "LABLE": "Continue",
+                "REDIRECT_TO": "/challenge/82/Group/4175/item|Conclusion and Inspiration: survey",
+                "SURVEY": "4BB641BF-C7D7-40FC-DC42-2A1D005CCCCF|kal - hk to mk"
+              },
+              "legacyComponentId": 6356,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "SurvayResults",
+              "notes": [
+                "Unmapped legacy component type: SurvayResults"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "4175",
+                "CHALLENGE_COMPONENTID": "6358",
+                "SURVEY": "4BB641BF-C7D7-40FC-DC42-2A1D005CCCCF"
+              },
+              "legacyComponentId": 6358,
+              "order": 4
+            }
+          ],
+          "title": "Which Method Works for you?",
+          "slug": "which-method-works-for-you",
+          "order": 3,
+          "legacy": {
+            "assignId": 4175,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 12,
+    "videos": [
+      {
+        "vimeoId": "516824934",
+        "title": "How do you go about using a hand knitting pattern with your knitting machine?",
+        "lessonSlug": "introduction",
+        "blockSlug": "knit-a-hk-pattern-on-the-knitting-machine"
+      },
+      {
+        "vimeoId": "259414061",
+        "title": "Translate the Body Pieces",
+        "lessonSlug": "translate-to-machine-knitting",
+        "blockSlug": "uncover-your-mk-pattern-instructions"
+      },
+      {
+        "vimeoId": "151859608",
+        "title": "Gauge Conversion Tool",
+        "lessonSlug": "convert-the-pattern-to-another-gauge",
+        "blockSlug": "gauge-conversion-tool"
+      },
+      {
+        "vimeoId": "516841801",
+        "title": null,
+        "lessonSlug": "how-s-it-going",
+        "blockSlug": "are-the-lightbulbs-coming-on"
+      },
+      {
+        "vimeoId": "259466087",
+        "title": "Knit it Now Tools",
+        "lessonSlug": "what-about-shaping",
+        "blockSlug": "use-knit-it-now-tools"
+      },
+      {
+        "vimeoId": "259467980",
+        "title": "Slope Tool",
+        "lessonSlug": "what-about-shaping",
+        "blockSlug": "slope-tool"
+      },
+      {
+        "vimeoId": "196648775",
+        "title": "Know the DIMENSIONS? Use this tool",
+        "lessonSlug": "what-about-shaping",
+        "blockSlug": "magic-formula"
+      },
+      {
+        "vimeoId": "196656033",
+        "title": "Know your STITCH/ROW COUNT? Use this tool",
+        "lessonSlug": "what-about-shaping",
+        "blockSlug": "magic-formula"
+      },
+      {
+        "vimeoId": "259956453",
+        "title": "Watch as we shorten our sleeves",
+        "lessonSlug": "what-about-shaping",
+        "blockSlug": "challenge-shorten-the-big-hug-sleeves"
+      },
+      {
+        "vimeoId": "260059828",
+        "title": "Why mess with all that math?",
+        "lessonSlug": "analyze-the-design-and-use-a-knit-it-now-pattern",
+        "blockSlug": "ready-for-the-easy-way"
+      },
+      {
+        "vimeoId": "402313052",
+        "title": "Building Knit it Now Custom Patterns",
+        "lessonSlug": "analyze-the-design-and-use-a-knit-it-now-pattern",
+        "blockSlug": "using-dynamic-patterns"
+      },
+      {
+        "vimeoId": "516849447",
+        "title": "3 Ways to Incorporate Hand Knitting Patterns in your Machine Knitting World",
+        "lessonSlug": "conclusion-and-inspiration",
+        "blockSlug": "are-you-inspired"
+      }
+    ],
+    "downloadCount": 4,
+    "downloads": [
+      {
+        "filename": "/downloads/big_hug_pattern.pdf",
+        "label": "Download the Hand Knitting Pattern",
+        "lessonSlug": "introduction",
+        "blockSlug": "the-original-pattern"
+      },
+      {
+        "filename": "/downloads/swatch_template1.pdf",
+        "label": "Download the Template",
+        "lessonSlug": "translate-to-machine-knitting",
+        "blockSlug": "matching-gauge"
+      },
+      {
+        "filename": "/downloads/big_hug_worksheet.pdf",
+        "label": "Print the worksheet to follow along",
+        "lessonSlug": "translate-to-machine-knitting",
+        "blockSlug": "create-your-schematic"
+      },
+      {
+        "filename": "/downloads/punchcard_template.pdf",
+        "label": "Download the Punchcard Template",
+        "lessonSlug": "conclusion-and-inspiration",
+        "blockSlug": "ellen-s-updated-funnel"
+      }
+    ]
+  }
+}

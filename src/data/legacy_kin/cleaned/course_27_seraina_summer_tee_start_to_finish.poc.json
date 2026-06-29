@@ -1,0 +1,863 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 27,
+    "title": "Seraina Summer Tee | Start to Finish",
+    "slug": "seraina-summer-tee-start-to-finish",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_27_seraina_summer_tee_start_to_finish.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/seraina1.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Introduction",
+      "slug": "introduction",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 174,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "265844854",
+              "title": "Welcome!  Ready to Get Started?",
+              "legacyComponentId": 2276,
+              "order": 1
+            }
+          ],
+          "title": "Welcome!",
+          "slug": "welcome",
+          "order": 1,
+          "legacy": {
+            "assignId": 821,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The video will walk you through how to access the lessons and navigate to get the most out of your course.<br /> Don't skip lessons ... you may feel that you know how to cast on ... but sometimes you will pick up a tip that you can use while watching a video.<br>",
+              "legacyComponentId": 2274,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "221120492",
+              "title": "Machine Knitting Courses",
+              "legacyComponentId": 2275,
+              "order": 2
+            }
+          ],
+          "title": "New to Knit it Now Courses?",
+          "slug": "new-to-knit-it-now-courses",
+          "order": 2,
+          "legacy": {
+            "assignId": 822,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "283587850",
+              "title": "What are Perfect Fit Patterns?",
+              "legacyComponentId": 5455,
+              "order": 1
+            }
+          ],
+          "title": "New to Perfect Fit Patterns?",
+          "slug": "new-to-perfect-fit-patterns",
+          "order": 3,
+          "legacy": {
+            "assignId": 3696,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Essentials",
+      "slug": "essentials",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 176,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\n<iframe src='https://player.vimeo.com/video/264766933' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n<br>Knit a bit more slowly and keep an eye on they yarn as it travels through the mast.\r\n</div>\r\n\r\nSadly, sources for yarn that is put up on cones has dwindled greatly.  Most mills don't put yarn up on cones for home knitters.<br>\r\n<blockquote class=\"blockquote_style\">If you haven't tried using hand knitting yarn in balls, hanks or skeins .. you are missing out.  The extra effort is well worth the trouble to be able to use a large variety of available yarns.</blockquote><br>\r\n\r\n\r\n<div>\r\n<div class=\"col-12-xs\"><img class=img-thumbnail src=\"/challenge/images/v2/27/summer_tee/trash_cans.jpg\"><Br>Support this type of skein so the yarn flows easily. (Flower vases work well too).</div>\r\n<div class=\"col-12-xs\"><img class=img-thumbnail src=\"/challenge/images/v2/27/summer_tee/yarn_twister.jpg\"><br>\r\nIf the yarn is put up in hanks use a swift and ball winder to prepare it to use on the machine.</div>\r\n</div",
+              "legacyComponentId": 2216,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "244347021",
+              "title": "Balls to Skeins Conversion Tool",
+              "legacyComponentId": 2217,
+              "order": 2
+            }
+          ],
+          "title": "You CAN knit with hand knitting yarn on the machine",
+          "slug": "you-can-knit-with-hand-knitting-yarn-on-the-machine",
+          "order": 1,
+          "legacy": {
+            "assignId": 795,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<center><img class=\"img-thumbnail\" width=\"300\" src=\"/challenge/images/v2/27/gauge_swatch_tension/swatching_is_not_optional.jpg\"></center>\r\nThere are many variables when knitting (both by hand and by machine).\r\n\r\n <br><ul>\r\n \t<li>Different colors of the SAME yarn may knit to a different gauge</li>\r\n \t<li>Different dye lots of the SAME color of the SAME yarn may knit to a different gauge</li>\r\n \t<li>Different models of the SAME gauge knitting machine may knit to a different gauge.</li>\r\n \t<li>The SAME size knitting needle from a different manufacturer may knit to a different gauge</li>\r\n \t<li>Different people, using the exactly the SAME needles, machines, and yarns may get get different gauges</li>\r\n</ul>\r\n\r\n<div><strong>SWATCHING IS NOT OPTIONAL!</strong></div>\r\n\r\nHow many times have you knit something that just didn't fit?  Have you ever had colors run or fade when you washed your sweater?<br>So many knitting disasters can be avoided by swatching and dressing your swatch.  Machine knitters have NO EXCUSE for not swatching!  We can knit multiple swatches quickly, testing stitch patterns and tensions.  Since we don't have a lot of time invested, we can do the \"throw-the-swatch-in-the-wash-with-jeans\" test to see if a washable yarn will hold up.<br>",
+              "legacyComponentId": 2213,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357273",
+              "title": "Knit a Swatch (Don't Skip This!)",
+              "legacySlot": 1,
+              "legacyComponentId": 2214,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151856465",
+              "title": "Importance of Gauge",
+              "legacySlot": 2,
+              "legacyComponentId": 2214,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859471",
+              "title": "Swatch in Pattern Knitting",
+              "legacySlot": 3,
+              "legacyComponentId": 2214,
+              "order": 2
+            }
+          ],
+          "title": "Swatching is NOT optional",
+          "slug": "swatching-is-not-optional",
+          "order": 2,
+          "legacy": {
+            "assignId": 799,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Start To Finish",
+      "slug": "start-to-finish",
+      "displayOrder": 20,
+      "legacy": {
+        "itemId": 175,
+        "lessonOrder": 20
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "We choose to use a hung hem for our sweater. We just used a basic every-other-needle hung hem with tension changes.<br><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> In hindsight, because of the weight of this yarn, The \"Perfect Designer Hung Hem\" might have been a better choice.  Do you agree?<br><img class=\"img-thumbnail\" src=\"/challenge/images/v2/27/summer_tee/hem_compare.jpg\">\r\n",
+              "legacyComponentId": 2218,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859061",
+              "title": "Perfect Designer Hung Hem",
+              "legacySlot": 1,
+              "legacyComponentId": 6626,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860039",
+              "title": "Basic Hung Hems",
+              "legacySlot": 2,
+              "legacyComponentId": 6626,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "264775494",
+              "title": "Swatching for the Seraina Hung Hem",
+              "legacySlot": 3,
+              "legacyComponentId": 6626,
+              "order": 2
+            },
+            {
+              "type": "download",
+              "label": "Hung Hem Cheatsheet",
+              "filename": "/downloads/eon_hung_hem_cheatsheet.pdf",
+              "showInline": true,
+              "legacy": {
+                "assignId": "788",
+                "componentId": "2226",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 2226,
+              "order": 3
+            }
+          ],
+          "title": "Hem",
+          "slug": "hem",
+          "order": 1,
+          "legacy": {
+            "assignId": 788,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"blockquote_style\">Don't forget!  You can knit this sweater in any stitch pattern!</blockquote><br>\r\nSince the Seraina yarn has so many colors and creates such a wonderful patterning effect, I chose to knit in plain stockinette. But go crazy!  You could even knit the front and back in different stitch patterns if you like!<br><img width=\"200\" class=\"img-thumbnail\" src=\"/challenge/images/v2/27/Summer_Tee/marker1.jpg\"><br>\r\n\r\nThe best tip is to place yarn markers at regular intervals to make seaming easier. For more seaming tips, check the \"Finishing Tips\" Section below.<br>",
+              "legacyComponentId": 2222,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857799",
+              "title": "Stitch Multiples",
+              "legacyComponentId": 2223,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "789",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 2225,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "222275090",
+              "title": "Multiple Stitch Patterns with Dynamic Patterns",
+              "legacyComponentId": 2224,
+              "order": 4
+            }
+          ],
+          "title": "Body",
+          "slug": "body",
+          "order": 2,
+          "legacy": {
+            "assignId": 789,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img class=\"img-thumbnail\" src=\"/challenge/images/v2/27/summer_tee/underarm.jpg\"><br>\r\nThe Tee is designed with a 2\" sleeve.<br>\r\nTo create the sleeve we simply cast on stitches on each side. Want longer sleeves?  Cast on more stitches.<br><blockquote class=\"blockquote_style\">Casting on stitches at the edge of your work can be problematic. It's important that you add weight so newly cast on stitches knit correctly. </blockquote>\r\n\r\nThe best way to do this is to use a cast on rag.  You can create rags to use over and over, or simply use pieces of knitting that you have handy.\r\n<br>\r\n<h3>To add stitches along the edge of your knitting</h3>\r\n<ol class=\"instruction-list\">\r\n<li>Place strands of yarn along the edge of the rag on the new needles</li>\r\n <li>Knit a row of ravel cord (by hand is usually easiest)</li>\r\n<li>Use the garment yarn and work a closed cast on OVER the ravel cord stitches</li>\r\n<li>Hang weight from the rag</li>\r\n<li>Continue knitting your sleeve as instructed</li>\r\n</ol>\r\n\r\n ",
+              "legacyComponentId": 2228,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860044",
+              "title": "Creating a Cast on Rag",
+              "legacyComponentId": 2229,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "264780250",
+              "title": "Watch as we create our sleeves",
+              "legacyComponentId": 2230,
+              "order": 3
+            }
+          ],
+          "title": "Sleeves",
+          "slug": "sleeves",
+          "order": 3,
+          "legacy": {
+            "assignId": 790,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858551",
+              "title": "Easy Round Neck Shaping",
+              "legacySlot": 1,
+              "legacyComponentId": 2916,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859107",
+              "title": "Neckline Shaping Perfection",
+              "legacySlot": 2,
+              "legacyComponentId": 2916,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "264785831",
+              "title": "Watch as we shape the back neck of our Sweater",
+              "legacySlot": 3,
+              "legacyComponentId": 2916,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<table>\r\n<tr>\r\n<td>\r\n<p style=\"font-size:12px\">Knit it Now Patterns do not reset the row counts when shaping necklines.<br>\r\nThe first instruction is for the armhole shaping.<br> In this example, you are instructed to knit from row 188 to row 260 to complete the armhole.<br>The next instruction is for the neckline shaping. Notice that the neckline shaping STARTS at row 220. You will be working both instructions AT THE SAME TIME.<br>\r\nBest advice is to read and understand all of the shaping instructions BEFORE you start knitting.</p></td>\r\n<td>\r\n<img width=\"300\" src=\"https://www.knititnow.com/images/traditionalpatterns/neckline_row_counts.jpg\"></td>\r\n</tr>\r\n</table>\r\n",
+              "legacyComponentId": 2917,
+              "order": 2
+            }
+          ],
+          "title": "Neckline Shaping",
+          "slug": "neckline-shaping",
+          "order": 4,
+          "legacy": {
+            "assignId": 791,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nOur dropped stitch detail adds interest and are easy!\r\n<ol class=\"instruction-list\">\r\n<li>Knit the sleeves as directed and scrap off</li>\r\n<li>Before joining the shoulders, drop every 2nd or 3rd stitch down to the sleeve cast on edge</li>\r\n<li>Seam the shoulders neatly to finish</li>\r\n</ol>\r\n<img src=\"/challenge/images/v2/27/summer_tee/dropped_stitch.jpg\">\r\n\r\n<img src=\"/challenge/images/v2/27/summer_tee/seraina_sleeve.jpg\">\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 2273,
+              "order": 1
+            }
+          ],
+          "title": "Dropped Stitch Sleeves",
+          "slug": "dropped-stitch-sleeves",
+          "order": 5,
+          "legacy": {
+            "assignId": 820,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Finishing Tips",
+      "slug": "finishing-tips",
+      "displayOrder": 40,
+      "legacy": {
+        "itemId": 178,
+        "lessonOrder": 40
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<i class='fa fa-youtube-play' aria-hidden='true'></i> Wet Blocking\r\n\r\n<br>Instead of steam, try wet blocking. This technique is especially good for natural fibers.<br>\r\nWhatever method you use, blocking is essential for a professional finish.\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/27/summer_tee/blocking2.jpg\">\r\n<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/151858072' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n\r\n</div>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 2236,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "801",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 2238,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860086",
+              "title": "Fast 'n Easy Neck Shaping",
+              "legacySlot": 1,
+              "legacyComponentId": 2237,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858422",
+              "title": "Spectacular Seams",
+              "legacySlot": 2,
+              "legacyComponentId": 2237,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857638",
+              "title": "V-Neck Bands",
+              "legacySlot": 1,
+              "legacyComponentId": 5456,
+              "order": 4
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860086",
+              "title": "One Piece Neckband Perfection (this demonstrates a cut 'n sew band, but works great with shaped necklines as well)",
+              "legacySlot": 2,
+              "legacyComponentId": 5456,
+              "order": 4
+            }
+          ],
+          "title": "Finishing Tips",
+          "slug": "finishing-tips",
+          "order": 6,
+          "legacy": {
+            "assignId": 801,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Your Pattern",
+      "slug": "your-pattern",
+      "displayOrder": 45,
+      "legacy": {
+        "itemId": 179,
+        "lessonOrder": 45
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator (legacy garment workflow).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "803",
+                "CHALLENGE_COMPONENTID": "2241",
+                "GARMENTID": "902",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "patternfilename",
+                "REDIRECT_TO": "/challenge/27/Group/805/item|Your Pattern: Show Pattern",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "RowGauge",
+                "SIZING_DATAMODEL_ELEMENT": "size",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "StitchGauge",
+                "SWATCHROWS": "StitchGauge",
+                "SWATCHSTITCHES": "StitchGauge",
+                "SWATCHWEIGHT": "StitchGauge",
+                "USESWATCHLOGIC": "no"
+              },
+              "legacyComponentId": 2241,
+              "order": 1
+            }
+          ],
+          "title": "Misses Size",
+          "slug": "misses-size",
+          "order": 1,
+          "legacy": {
+            "assignId": 803,
+            "blockType": "Pattern"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment 'Summer T - Junior' (legacy garmentId 903).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "804",
+                "GARMENTID": "903",
+                "GARMENTTITLE": "Summer T - Junior",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "patternfilename",
+                "REDIRECT_TO": "/challenge/27/Group/805/item|Your Pattern: Show Pattern",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "RowGauge",
+                "SIZING_DATAMODEL_ELEMENT": "size",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "StitchGauge",
+                "SWATCHROWS": "StitchGauge",
+                "SWATCHSTITCHES": "StitchGauge",
+                "SWATCHWEIGHT": "StitchGauge",
+                "TYPEOF": "Pattern",
+                "USESWATCHLOGIC": "no"
+              },
+              "legacyComponentId": 2243,
+              "order": 1
+            }
+          ],
+          "title": "Junior Size",
+          "slug": "junior-size",
+          "order": 2,
+          "legacy": {
+            "assignId": 804,
+            "blockType": "Pattern"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'patternfilename'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "805",
+                "CHALLENGE_COMPONENTID": "2242",
+                "DATAMODEL_ICON": "fa fa-download",
+                "LABLE": "Your Pattern",
+                "PATTERN_DATAMODEL_ELEMENT": "patternfilename",
+                "VIEWHEIGHT": "600"
+              },
+              "legacyComponentId": 2242,
+              "order": 1
+            }
+          ],
+          "title": "Show Pattern",
+          "slug": "show-pattern",
+          "order": 3,
+          "legacy": {
+            "assignId": 805,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Make it your own",
+      "slug": "make-it-your-own",
+      "displayOrder": 51,
+      "legacy": {
+        "itemId": 177,
+        "lessonOrder": 51
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Are your sweaters too short in front?  Do you find that you are always tugging them down?<br>\r\nBust darts are the answer ... yes ... even in knits!<br>\r\nAdd additional length to the center front .... no more tugging!<br>\r\n<div class=\"lecture-attachment\">\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/27/summer_tee/seraina5a.jpg\"><br>Even our model, Esmeralda could use a bit of extra length in the front.  Notice how the front hem isn't straight and there is a slight wrinkle from side seam to bust point.\r\n</div>\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/27/summer_tee/bust-darts1.png\">\r\n\r\n</div>\r\n\r\n",
+              "legacyComponentId": 2212,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859486",
+              "title": "Bust Darts: Why and How",
+              "legacySlot": 1,
+              "legacyComponentId": 2211,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859480",
+              "title": "Use our Tool to Calculate your Darts",
+              "legacySlot": 2,
+              "legacyComponentId": 2211,
+              "order": 2
+            }
+          ],
+          "title": "Making room for \"the girls\"",
+          "slug": "making-room-for-the-girls",
+          "order": 1,
+          "legacy": {
+            "assignId": 796,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151819909",
+              "title": "Introduction to Cut and Sew",
+              "legacyComponentId": 2209,
+              "order": 1
+            }
+          ],
+          "title": "Extra Fast Necklines",
+          "slug": "extra-fast-necklines",
+          "order": 2,
+          "legacy": {
+            "assignId": 797,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859522",
+              "title": "Add a short curved hem (1-2\")",
+              "legacySlot": 1,
+              "legacyComponentId": 2210,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "262467515",
+              "title": "Deep curved hems ... the NO MATH way!",
+              "legacySlot": 2,
+              "legacyComponentId": 2210,
+              "order": 1
+            }
+          ],
+          "title": "Curved Hems",
+          "slug": "curved-hems",
+          "order": 3,
+          "legacy": {
+            "assignId": 798,
+            "blockType": "VimeoMultiple"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859900",
+              "title": "Scalloped Eyelet Hem",
+              "legacyComponentId": 2220,
+              "order": 1
+            }
+          ],
+          "title": "Scalloped Hems",
+          "slug": "scalloped-hems",
+          "order": 4,
+          "legacy": {
+            "assignId": 800,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Get Knitting!",
+      "slug": "get-knitting",
+      "displayOrder": 52,
+      "legacy": {
+        "itemId": 181,
+        "lessonOrder": 52
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "265845904",
+              "title": "What's your plan for your summer tee?",
+              "legacyComponentId": 2278,
+              "order": 1
+            }
+          ],
+          "title": "Get Knitting!",
+          "slug": "get-knitting",
+          "order": 1,
+          "legacy": {
+            "assignId": 823,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 27,
+    "videos": [
+      {
+        "vimeoId": "265844854",
+        "title": "Welcome!  Ready to Get Started?",
+        "lessonSlug": "introduction",
+        "blockSlug": "welcome"
+      },
+      {
+        "vimeoId": "221120492",
+        "title": "Machine Knitting Courses",
+        "lessonSlug": "introduction",
+        "blockSlug": "new-to-knit-it-now-courses"
+      },
+      {
+        "vimeoId": "283587850",
+        "title": "What are Perfect Fit Patterns?",
+        "lessonSlug": "introduction",
+        "blockSlug": "new-to-perfect-fit-patterns"
+      },
+      {
+        "vimeoId": "244347021",
+        "title": "Balls to Skeins Conversion Tool",
+        "lessonSlug": "essentials",
+        "blockSlug": "you-can-knit-with-hand-knitting-yarn-on-the-machine"
+      },
+      {
+        "vimeoId": "178357273",
+        "title": "Knit a Swatch (Don't Skip This!)",
+        "lessonSlug": "essentials",
+        "blockSlug": "swatching-is-not-optional"
+      },
+      {
+        "vimeoId": "151856465",
+        "title": "Importance of Gauge",
+        "lessonSlug": "essentials",
+        "blockSlug": "swatching-is-not-optional"
+      },
+      {
+        "vimeoId": "151859471",
+        "title": "Swatch in Pattern Knitting",
+        "lessonSlug": "essentials",
+        "blockSlug": "swatching-is-not-optional"
+      },
+      {
+        "vimeoId": "151859061",
+        "title": "Perfect Designer Hung Hem",
+        "lessonSlug": "start-to-finish",
+        "blockSlug": "hem"
+      },
+      {
+        "vimeoId": "151860039",
+        "title": "Basic Hung Hems",
+        "lessonSlug": "start-to-finish",
+        "blockSlug": "hem"
+      },
+      {
+        "vimeoId": "264775494",
+        "title": "Swatching for the Seraina Hung Hem",
+        "lessonSlug": "start-to-finish",
+        "blockSlug": "hem"
+      },
+      {
+        "vimeoId": "151857799",
+        "title": "Stitch Multiples",
+        "lessonSlug": "start-to-finish",
+        "blockSlug": "body"
+      },
+      {
+        "vimeoId": "222275090",
+        "title": "Multiple Stitch Patterns with Dynamic Patterns",
+        "lessonSlug": "start-to-finish",
+        "blockSlug": "body"
+      },
+      {
+        "vimeoId": "151860044",
+        "title": "Creating a Cast on Rag",
+        "lessonSlug": "start-to-finish",
+        "blockSlug": "sleeves"
+      },
+      {
+        "vimeoId": "264780250",
+        "title": "Watch as we create our sleeves",
+        "lessonSlug": "start-to-finish",
+        "blockSlug": "sleeves"
+      },
+      {
+        "vimeoId": "151858551",
+        "title": "Easy Round Neck Shaping",
+        "lessonSlug": "start-to-finish",
+        "blockSlug": "neckline-shaping"
+      },
+      {
+        "vimeoId": "151859107",
+        "title": "Neckline Shaping Perfection",
+        "lessonSlug": "start-to-finish",
+        "blockSlug": "neckline-shaping"
+      },
+      {
+        "vimeoId": "264785831",
+        "title": "Watch as we shape the back neck of our Sweater",
+        "lessonSlug": "start-to-finish",
+        "blockSlug": "neckline-shaping"
+      },
+      {
+        "vimeoId": "151860086",
+        "title": "Fast 'n Easy Neck Shaping",
+        "lessonSlug": "finishing-tips",
+        "blockSlug": "finishing-tips"
+      },
+      {
+        "vimeoId": "151858422",
+        "title": "Spectacular Seams",
+        "lessonSlug": "finishing-tips",
+        "blockSlug": "finishing-tips"
+      },
+      {
+        "vimeoId": "151857638",
+        "title": "V-Neck Bands",
+        "lessonSlug": "finishing-tips",
+        "blockSlug": "finishing-tips"
+      },
+      {
+        "vimeoId": "151859486",
+        "title": "Bust Darts: Why and How",
+        "lessonSlug": "make-it-your-own",
+        "blockSlug": "making-room-for-the-girls"
+      },
+      {
+        "vimeoId": "151859480",
+        "title": "Use our Tool to Calculate your Darts",
+        "lessonSlug": "make-it-your-own",
+        "blockSlug": "making-room-for-the-girls"
+      },
+      {
+        "vimeoId": "151819909",
+        "title": "Introduction to Cut and Sew",
+        "lessonSlug": "make-it-your-own",
+        "blockSlug": "extra-fast-necklines"
+      },
+      {
+        "vimeoId": "151859522",
+        "title": "Add a short curved hem (1-2\")",
+        "lessonSlug": "make-it-your-own",
+        "blockSlug": "curved-hems"
+      },
+      {
+        "vimeoId": "262467515",
+        "title": "Deep curved hems ... the NO MATH way!",
+        "lessonSlug": "make-it-your-own",
+        "blockSlug": "curved-hems"
+      },
+      {
+        "vimeoId": "151859900",
+        "title": "Scalloped Eyelet Hem",
+        "lessonSlug": "make-it-your-own",
+        "blockSlug": "scalloped-hems"
+      },
+      {
+        "vimeoId": "265845904",
+        "title": "What's your plan for your summer tee?",
+        "lessonSlug": "get-knitting",
+        "blockSlug": "get-knitting"
+      }
+    ],
+    "downloadCount": 1,
+    "downloads": [
+      {
+        "filename": "/downloads/eon_hung_hem_cheatsheet.pdf",
+        "label": "Hung Hem Cheatsheet",
+        "lessonSlug": "start-to-finish",
+        "blockSlug": "hem"
+      }
+    ]
+  }
+}

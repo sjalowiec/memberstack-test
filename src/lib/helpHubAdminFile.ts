@@ -109,3 +109,36 @@ export function stripLegacyHelpHubTipFields(row: Record<string, unknown>): void 
   delete row.lessonIDs;
   delete row.readyToPublish;
 }
+
+export type HelpHubPutValidatedFields = {
+  id: number;
+  title: string;
+  slug: string;
+  category: string;
+  status: string;
+};
+
+/**
+ * Merge a PUT payload into an existing Help Hub tip.
+ * Omitted body fields keep existing values; `relatedLessons` is only normalized when present in the body.
+ */
+export function mergeHelpHubPutUpdate(
+  existing: Record<string, unknown>,
+  body: Record<string, unknown>,
+  validated: HelpHubPutValidatedFields
+): Record<string, unknown> {
+  const row: Record<string, unknown> = {
+    ...existing,
+    ...body,
+  };
+  row.id = validated.id;
+  row.title = validated.title;
+  row.slug = validated.slug;
+  row.category = validated.category;
+  row.status = validated.status;
+  stripLegacyHelpHubTipFields(row);
+  if (Object.prototype.hasOwnProperty.call(body, "relatedLessons")) {
+    row.relatedLessons = normalizeRelatedLessons(body.relatedLessons);
+  }
+  return row;
+}

@@ -44,8 +44,17 @@ src/data/*.csv
 # Backup files
 *.backup
 *.bak.json
-#course images
-public/images/courses/
-public/challenge/images/v2/
-public/images/v2/
 
+# Adobe temporary files
+**/~ai-*
+# Legacy course migration scratch / export (production course JSON lives in cleaned/)
+src/data/legacy_kin/cleaned/backups/
+src/data/legacy_kin/raw/
+src/data/legacy_kin/reports/
+src/data/legacy_kin/exports/course_*.csv
+
+# Python cache
+__pycache__/
+*.pyc
+
+public/challenge/

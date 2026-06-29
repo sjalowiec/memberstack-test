@@ -30,6 +30,7 @@ import {
 } from "../sleevelessRowAccounting";
 import { computeDefaultMeasurementsFromChartRow } from "../sleevelessExpressSizeChartClient";
 import type { ChartRow } from "../sleevelessExpressSizeChartTypes";
+import { splitBodyBackCastOnToSymmetricCardiganHalves } from "../cardiganFrontBlock";
 import { extractCastOnFromRows } from "./sleevelessPatternQaMatrix";
 
 export type DropShoulderQaGaugeProfile = {
@@ -49,8 +50,11 @@ export type DropShoulderQaScenarioId =
   | "misses-8-5-7-pullover-round"
   | "misses-8-5-7-pullover-v"
   | "misses-8-5-7-cardigan-round"
+  | "misses-8-5-7-cardigan-v"
   | "misses-8-7-7-pullover-round"
-  | "mens-med-16-24-cardigan-round-top-down";
+  | "mens-med-16-24-cardigan-round-top-down"
+  | "kids-2yr-5-7-pullover-round"
+  | "baby-3mo-5-7-pullover-round";
 
 export type DropShoulderQaScenario = {
   id: DropShoulderQaScenarioId;
@@ -92,6 +96,40 @@ const MISSES_8_CHART_ROW: ChartRow = {
   upper_arm: 12.5,
   wrist: 6.25,
   sleeve_length: 17,
+};
+
+/** Kids size 2 yr — matches `public/data/sizing_sweaters_kids.json`. */
+const KIDS_2YR_CHART_ROW: ChartRow = {
+  size: "2 yr",
+  bust_or_chest: 21,
+  waist: 21,
+  hip: "",
+  garment_back_length: 18,
+  armhole_depth: 4.25,
+  shoulder_width: 9.25,
+  neck_opening: 4,
+  front_neck_depth: 2,
+  back_neck_depth: 1,
+  upper_arm: 6,
+  wrist: 4.5,
+  sleeve_length: 8.5,
+};
+
+/** Baby size 3 mo — matches `public/data/sizing_sweaters_baby.json`. */
+const BABY_3MO_CHART_ROW: ChartRow = {
+  size: "3 mo",
+  bust_or_chest: 16,
+  waist: 18,
+  hip: 19,
+  garment_back_length: 6,
+  armhole_depth: 3.25,
+  shoulder_width: 7.25,
+  neck_opening: 4.5,
+  front_neck_depth: 1.5,
+  back_neck_depth: 1,
+  upper_arm: 5.5,
+  wrist: 3.5,
+  sleeve_length: 6,
 };
 
 export const DROP_SHOULDER_QA_GAUGE_16_24: DropShoulderQaGaugeProfile = {
@@ -317,6 +355,46 @@ export const DROP_SHOULDER_QA_SCENARIOS: readonly DropShoulderQaScenario[] = [
     }),
     "top-down",
   ),
+  scenario(
+    "misses-8-5-7-cardigan-v",
+    "Misses 8 standard · 5/7 · cardigan V · cuff-up",
+    "Misses size 8, standard fit, 5/7 gauge",
+    buildDropShoulderQaPatternData({
+      chartRow: MISSES_8_CHART_ROW,
+      sizingChart: "misses",
+      selectedSize: 8,
+      easeChoice: "standard",
+      gauge: DROP_SHOULDER_QA_GAUGE_5_7,
+      neckline: "v",
+      garmentStyle: "cardigan",
+    }),
+  ),
+  scenario(
+    "kids-2yr-5-7-pullover-round",
+    "Kids 2 yr standard · 5/7 · pullover round · cuff-up",
+    "Kids 2 yr, standard fit, 5/7 gauge",
+    buildDropShoulderQaPatternData({
+      chartRow: KIDS_2YR_CHART_ROW,
+      sizingChart: "kids",
+      selectedSize: "2 yr",
+      easeChoice: "standard",
+      gauge: DROP_SHOULDER_QA_GAUGE_5_7,
+      neckline: "round",
+    }),
+  ),
+  scenario(
+    "baby-3mo-5-7-pullover-round",
+    "Baby 3 mo standard · 5/7 · pullover round · cuff-up",
+    "Baby 3 mo, standard fit, 5/7 gauge",
+    buildDropShoulderQaPatternData({
+      chartRow: BABY_3MO_CHART_ROW,
+      sizingChart: "baby",
+      selectedSize: "3 mo",
+      easeChoice: "standard",
+      gauge: DROP_SHOULDER_QA_GAUGE_5_7,
+      neckline: "round",
+    }),
+  ),
 ];
 
 function castOnFromJpNotation(token: string | undefined): number | undefined {
@@ -337,10 +415,6 @@ function chartAudienceFromPatternData(patternData: Record<string, unknown>): str
 function isCardiganScenario(scenarioId: DropShoulderQaScenarioId): boolean {
   return scenarioId.includes("cardigan");
 }
-
-/** Documented generator bug: cardigan front written cast-on uses forceEven(half) but JP/diagram use round(half). */
-export const DROP_SHOULDER_KNOWN_CARDIGAN_FRONT_CAST_ON_DRIFT =
-  "front cast-on (written/diagram/jp) mismatch";
 
 function isVNeckScenario(scenarioId: DropShoulderQaScenarioId): boolean {
   return scenarioId.endsWith("-v") || scenarioId.includes("-pullover-v") || scenarioId.includes("-cardigan-v");
@@ -456,7 +530,15 @@ export function collectDropShoulderQaMatrixRow(
 
   if (!result.isDropShoulder) flags.push("generator result missing isDropShoulder flag");
   if (result.neckShoulderShapingChart.rows.length > 0) {
-    flags.push("neck/shoulder shaping chart should be empty for drop shoulder");
+    flags.push("back neck/shoulder shaping chart should be empty for drop shoulder");
+  }
+  if (
+    (d.necklineStitches ?? 0) > 0 &&
+    (d.shoulderStitches ?? 0) > 0 &&
+    (d.frontNeckDepthRows ?? 0) > 0 &&
+    result.frontNeckShoulderShapingChart.rows.length === 0
+  ) {
+    flags.push("front neckline shaping chart missing for drop shoulder");
   }
 
   const finishedBust = resolveEffectiveFinishedBustInches(patternData);
@@ -601,7 +683,7 @@ export function collectDropShoulderQaMatrixRow(
   if (cardigan) {
     const backTorso = writtenBack ?? bodyWidthSts;
     if (backTorso !== undefined && writtenFront !== undefined) {
-      const expectedHalf = forceEven(backTorso / 2);
+      const expectedHalf = splitBodyBackCastOnToSymmetricCardiganHalves(backTorso).leftFrontWidthSts;
       if (writtenFront !== expectedHalf) {
         flags.push(`cardigan front cast-on (${writtenFront}) ≠ half back (${expectedHalf})`);
       }
@@ -647,6 +729,9 @@ export function collectDropShoulderQaMatrixRow(
   }
   if (!cardigan && finishingStepIds.includes("finishFrontEdges")) {
     flags.push("pullover finishing should not include finishFrontEdges");
+  }
+  if (!finishingStepIds.includes("attachSleeves")) {
+    flags.push("drop-shoulder finishing missing attachSleeves");
   }
 
   const rowInput = buildRowAccountingInputFromDebug({ ...d, rowsPerInch: rpi });
@@ -753,6 +838,12 @@ export function collectDropShoulderCrossScenarioFlags(
     "misses-8-5-7-pullover-round",
     "misses-8-5-7-pullover-v",
     "pullover round vs V-neck",
+  );
+  comparePair(
+    "Misses size 8, standard fit, 5/7 gauge",
+    "misses-8-5-7-cardigan-round",
+    "misses-8-5-7-cardigan-v",
+    "cardigan round vs V-neck",
   );
 
   return flags;

@@ -22,6 +22,8 @@ export type SleevelessBodyShapingChartRow = {
   rc: number;
   /** e.g. `Dec 1 stitch at each side edge` / `Inc 1 stitch at armhole edge`. */
   action: string;
+  /** Total stitches on the piece after this shaping row. */
+  stitchesRemaining: number;
 };
 
 function escapeHtml(text: string): string {
@@ -46,18 +48,34 @@ export function sleevelessBodyShapingActionLabel(
   return `${verb} 1 stitch at ${edge}`;
 }
 
+function bodyShapingStitchChangePerRow(
+  shapingType: SleevelessAlineShapingType,
+  edgeScope: SleevelessAlineShapingEdgeScope,
+): number {
+  const edges = edgeScope === "armholeEdgeOnly" ? 1 : 2;
+  const sign = shapingType === "increase-to-bust" ? 1 : -1;
+  return sign * edges;
+}
+
 /** Build chart rows from the shaping plan's row numbers; empty for straight bodies. */
 export function buildSleevelessBodyShapingChartRows(
   shapingType: SleevelessAlineShapingType,
   rowNumbers: readonly number[],
   edgeScope: SleevelessAlineShapingEdgeScope = "symmetricSides",
+  startingStitches = 0,
 ): SleevelessBodyShapingChartRow[] {
   if (shapingType === "straight") return [];
   const action = sleevelessBodyShapingActionLabel(shapingType, edgeScope);
+  const delta = bodyShapingStitchChangePerRow(shapingType, edgeScope);
+  const start = Math.max(0, Math.floor(startingStitches));
   return rowNumbers
     .map((r) => Math.max(0, Math.floor(Number(r))))
     .filter((r) => Number.isFinite(r))
-    .map((rc) => ({ rc, action }));
+    .map((rc, index) => ({
+      rc,
+      action,
+      stitchesRemaining: Math.max(0, start + delta * (index + 1)),
+    }));
 }
 
 function formatRcCell(rc: number): string {
@@ -66,7 +84,7 @@ function formatRcCell(rc: number): string {
 
 /** Stable per-row identity for progress persistence (paired with `data-chart-id`). */
 function buildBodyShapingStableRowId(chartId: string, r: SleevelessBodyShapingChartRow): string {
-  return `${chartId}|body|${Math.max(0, Math.floor(r.rc))}|${r.action}`;
+  return `${chartId}|body|${Math.max(0, Math.floor(r.rc))}|${r.action}|${r.stitchesRemaining}`;
 }
 
 /** Progress toolbar — mirrors the neckline/shoulder chart toolbar; `no-print` so it is online-only. */
@@ -112,9 +130,11 @@ export function renderSleevelessBodyShapingChartHtml(
         rcAttr,
       )}"><td class="ns-shaping-chart__td-complete"><label class="ns-shaping-chart__row-check-label"><input type="checkbox" class="ns-shaping-chart__row-check" aria-label="Mark body shaping row RC ${escapeHtml(
         rcCell,
-      )} complete" /></label></td><td class="ns-shaping-chart__td-num">${escapeHtml(
+      )} complete" /></label></td><td class="ns-shaping-chart__td-rc">${escapeHtml(
         rcCell,
-      )}</td><td>${escapeHtml(r.action)}</td></tr>`;
+      )}</td><td>${escapeHtml(r.action)}</td><td class="ns-shaping-chart__td-num">${escapeHtml(
+        String(r.stitchesRemaining),
+      )}</td></tr>`;
     })
     .join("");
 
@@ -128,12 +148,13 @@ export function renderSleevelessBodyShapingChartHtml(
     ${renderBodyShapingProgressToolbarHtml()}
     <div class="ns-shaping-chart__table-wrap">
     <div class="ns-shaping-chart__table-scroll">
-    <table class="ns-shaping-chart__table">
+    <table class="ns-shaping-chart__table ns-shaping-chart__table--checklist">
       <thead>
         <tr>
           <th scope="col" class="ns-shaping-chart__th-complete" aria-label="Completion status">Done</th>
           <th scope="col" class="ns-shaping-chart__th-row">RC</th>
           <th scope="col" class="ns-shaping-chart__th-action">Action</th>
+          <th scope="col" class="ns-shaping-chart__th-num">Sts Remaining</th>
         </tr>
       </thead>
       <tbody>${rowsHtml}</tbody>

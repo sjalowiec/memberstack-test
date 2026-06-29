@@ -1,0 +1,731 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 131,
+    "title": "No-Sew Color Blocks",
+    "slug": "no-sew-color-blocks",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_131_no_sew_color_blocks.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:10+00:00"
+    },
+    "thumbnail": "/images/courses/no-sew-color-block-block-blanket-knitting-machine.jpg",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Introduction",
+      "slug": "introduction",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 868,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nKnitting the Seamless Color Block Blanket isn’t just about making a cozy throw—it’s about creating something beautiful that’s uniquely yours. With its customizable design, you can choose colors that reflect your personality or match your space perfectly. Whether you want a bold, modern look or a soft, classic feel, <span class=\"yellow_highlight\">this blanket is your canvas.</span><br>This project is perfect if you want to create something amazing without the hassle of seaming or worrying about running out of needles. The no-sew technique makes the process fast and enjoyable, so you can focus on the fun of seeing your blanket come together. Just imagine the pride you’ll feel wrapping up in a beautiful, finished blanket that you made! This is your chance to create something special while growing your skills—and <span class=\"yellow_highlight\">enjoy every step along the way.</span>\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/131/color-block-blanket-machine-knitting.gif\">\r\n",
+              "legacyComponentId": 10047,
+              "order": 1
+            }
+          ],
+          "title": "You can Knit this",
+          "slug": "you-can-knit-this",
+          "order": 1,
+          "legacy": {
+            "assignId": 6465,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Establish your Gauge",
+      "slug": "establish-your-gauge",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 869,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3> <i class=\"fa-solid fa-hand-back-point-right fa-beat fa-xl\"></i>  Record your machine model <br></h3>\r\n<ul>\r\n<li>This helps ensure you have enough needles</li>\r\n<li>Provides machine-specific instruction in  this guide</li>\r\n</ul>\r\n",
+              "legacyComponentId": 10032,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "SelectMachine",
+              "notes": [
+                "Unmapped legacy component type: SelectMachine"
+              ],
+              "legacyFields": {
+                "BUTTONCSS": "btn-primary",
+                "BUTTONWORDS": "Mark as Complete and Continue",
+                "CHALLENGE_ASSIGNID": "6438",
+                "CHALLENGE_COMPONENTID": "9973",
+                "SELECTITLE": "Select the machine you will be using"
+              },
+              "legacyComponentId": 10033,
+              "order": 2
+            }
+          ],
+          "title": "Your Machine?",
+          "slug": "your-machine",
+          "order": 1,
+          "legacy": {
+            "assignId": 6460,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>Swatching is NOT optional <i class=\"fa-regular fa-message-smile fa-2xl\"></i></h3>",
+              "legacyComponentId": 10034,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "1033482537",
+              "title": "Knit a \" Proper \"  Swatch",
+              "legacySlot": 1,
+              "legacyComponentId": 10062,
+              "order": 4
+            },
+            {
+              "type": "video",
+              "vimeoId": "1048710081",
+              "title": "Watch as we start our blanket",
+              "legacySlot": 2,
+              "legacyComponentId": 10062,
+              "order": 4
+            }
+          ],
+          "title": "Your Swatch",
+          "slug": "your-swatch",
+          "order": 2,
+          "legacy": {
+            "assignId": 6461,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<h2>Have you finished your swatch?</h2>\r\n<h3>Click an option to continue</h3>\r\n\r\n\r\n",
+              "legacyComponentId": 10037,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Gauge_Calculator",
+              "notes": [
+                "Unmapped legacy component type: Gauge_Calculator"
+              ],
+              "legacyFields": {
+                "BUTTONCSS": "btn-primary",
+                "BUTTONWORDS": "I've knit my swatch, help me calculate MY gauge",
+                "CHALLENGE_ASSIGNID": "6398",
+                "CHALLENGE_COMPONENTID": "9852",
+                "MAINTITLE": "Calculate Your Gauge",
+                "SAVEROWVAR": "rows",
+                "SAVESTITCHVAR": "stitches"
+              },
+              "legacyComponentId": 10039,
+              "order": 4
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\n    table td,\r\n    table th {\r\n        font-size: smaller;\r\n        border: 1px solid black;\r\n        line-height: 1.4;\r\n        padding: 10px 10px;\r\n    }\r\n\r\n    /* Highlight the middle column */\r\n    table tr th:nth-child(2),\r\n    table tr td:nth-child(2) {\r\n        background-color: #ffffcc;\r\n    }\r\n\r\n    #table1 {\r\n        border: 2px solid #333;\r\n        border-radius: 10px;\r\n        margin: 20px;\r\n        padding: 15px;\r\n        text-align: center;\r\n        /* This is new */\r\n    }\r\n\r\n    #table1 table {\r\n        margin: 0 auto;\r\n        /* This is new */\r\n    }\r\n\r\n</style>\r\n<br>\r\n\r\n    <button class=\"btn btn-primary\" onclick=\"$('#helpme').toggle()\">I need help with creating my swatch</button>\r\n\r\n\r\n\r\n    \r\n\r\n        <h3>{First}</h3>\r\n        Swatching is NOT OPTIONAL<br>\r\n\r\n        Using YOUR gauge, you will create custom knitting instructions for your Triangular Cowl by knitting a <a data-GlossaryId=\"843\" class=\"glossaryhelp\"><b>Proper Swatch </b><i class=\"fa fa-question-circle-o\" aria-hidden=\"true\"></i></a><br><h3>Don't count stitches and rows,</h3> <span class=\"yellow_highlight\">mark specific stitch and row counts <b>AS YOU KNIT</b></span><br> then you can easily measure and calculate your gauge.\r\n        <div id=\"table1\">\r\n            <h3>Stitches and Rows to MEASURE</h3>\r\n            Cast on and knit enough stitches and rows to MEASURE as follows:\r\n            <table>\r\n                <tbody>\r\n                    <tr>\r\n                        <th>Standard Gauge</th>\r\n                        <th>Mid-Gauge</th>\r\n                        <th>Bulky Gauge</th>\r\n                    </tr>\r\n                    <tr>\r\n                        <td>40 stitches</td>\r\n                        <td>30 stitches</td>\r\n                        <td>20 stitches</td>\r\n                    </tr>\r\n                    <tr>\r\n                        <td>60 rows</td>\r\n                        <td>40 rows</td>\r\n                        <td>30 rows</td>\r\n                    </tr>\r\n                </tbody>\r\n            </table>\r\n        </div>\r\n    \r\n    \r\n        <div class=\"videopopup\" data-videotitle=\"swatch2025\" data-vimeoid=\"1046394794\">\r\n            <img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/1970153449-0dda23361c01cd76bf9e752ace4b3fa71355227555b08d98d3527000d94e47ec-d_1280x720?r=pad\">\r\n            <div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n        </div>\r\n   \r\n\r\n        <figcaption align=\"center\"><br>How to knit a <a data-GlossaryId=\"843\" class=\"glossaryhelp\"><b>\"Proper\" Swatch</b> <i class=\"fa fa-question-circle-o\" aria-hidden=\"true\"></i></a></figcaption>\r\n        </figure>\r\n        <div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n    \r\n\r\n    \r\n        <div class=\"videopopup\" data-videotitle=\"Accurate Gauge Measurement\" data-vimeoid=\"260683875\">\r\n            <figure><img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/689477228-1ce05cd1cd42a24287bb49d746fdebbe7cf7eb07a607590360047c25ee03fe21-d_1280x720?r=pad\">\r\n\r\n                <figcaption align=\"center\"><br><b>How to Accurately Measure Gauge</b> </figcaption>\r\n            </figure>\r\n\r\n            <div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n        </div>\r\n    \r\n\r\n",
+              "legacyComponentId": 10040,
+              "order": 5
+            }
+          ],
+          "title": "Swatch Help?",
+          "slug": "swatch-help",
+          "order": 3,
+          "legacy": {
+            "assignId": 6462,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3> Enter YOUR Gauge</h3>\r\n",
+              "legacyComponentId": 10041,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6463",
+                "CHALLENGE_COMPONENTID": "10042",
+                "DATAMODEL_ELEMENT": "swatch_stitches",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "STITCHES: 4\" (10cm)",
+                "DATAMODEL_VALIDATION": "range",
+                "DATAMODEL_VALIDATION_EXTRA": "8,40",
+                "DATAMODEL_VALIDATION_MESSAGE": "Please check your gauge. ",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 10042,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6463",
+                "CHALLENGE_COMPONENTID": "10043",
+                "DATAMODEL_ELEMENT": "swatch_rows",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "ROWS: 4\" (10cm)",
+                "DATAMODEL_VALIDATION": "range",
+                "DATAMODEL_VALIDATION_EXTRA": "8,40",
+                "DATAMODEL_VALIDATION_MESSAGE": "Please check your gauge. ",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 10043,
+              "order": 3
+            }
+          ],
+          "title": "Enter / Confirm Your Gauge",
+          "slug": "enter-confirm-your-gauge",
+          "order": 4,
+          "legacy": {
+            "assignId": 6463,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Snap a photo of your work at this stage - it's not just for sharing, it's for you!<br>These progress shots become a helpful reference library for your future projects. They're also a great way to track your growing skills and celebrate your progress.",
+              "legacyComponentId": 10045,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "swatch",
+                "BUTTONLABLE": "Upload",
+                "CHALLENGE_ASSIGNID": "6408",
+                "CHALLENGE_COMPONENTID": "9855",
+                "CONTIUNEBUTTONLABLE": "Continue",
+                "DISABLECONTINUE": "yes",
+                "QTY": "2",
+                "SUCCESSMESSAGE": "<H3>Got it!</H3> <i class='fa-regular fa-face-smile fa-2xl'></i>"
+              },
+              "legacyComponentId": 10046,
+              "order": 2
+            }
+          ],
+          "title": "Take a photo of your swatch",
+          "slug": "take-a-photo-of-your-swatch",
+          "order": 5,
+          "legacy": {
+            "assignId": 6464,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "New to Sew-as-You-Go?",
+      "slug": "new-to-sew-as-you-go",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 878,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>Hi {first}</h3>\r\n        Ensure success with your blanket by <b>learning and practicing</b> the Sew-as-You-Go method <b>BEFORE</b> starting your blanket.<br>\r\n        Knit swatches as instructed in the Skill Builder or use the edges of your swatch to practice. <br><div class=\"text-center\"><br><a href=\"/skillbuilder/4331/sew-as-you-go\" target=\"_blank\">\r\n            <img class=\"img-thumbnail\" src=\"/challenge/images/v2/131/sew-as-you-go-skill-builder-machine-knitting.jpg\">\r\n        </a></div>",
+              "legacyComponentId": 10111,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "1050550005",
+              "title": null,
+              "legacySource": "embedded-html",
+              "legacyComponentId": 10111,
+              "order": 1
+            }
+          ],
+          "title": "Master Sew-as-You-Go",
+          "slug": "master-sew-as-you-go",
+          "order": 1,
+          "legacy": {
+            "assignId": 6490,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Plan your Blanket",
+      "slug": "plan-your-blanket",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 876,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": " <div style=\"text-align: center; padding-top: 10vh;\">\r\n  <span class=\"handwriting\" style=\" font-size: 4vw; /* Responsive font size */ transform: rotate(20deg); display: inline-block; line-height: 1.2; /* Adjust line spacing for better readability */ \">\r\n    Planning<br> is your<br>blueprint <br>for success\r\n  </span>\r\n</div>",
+              "legacyComponentId": 10107,
+              "order": 1
+            }
+          ],
+          "title": "Make a plan",
+          "slug": "make-a-plan",
+          "order": 3,
+          "legacy": {
+            "assignId": 6479,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Don't Skip This",
+      "slug": "don-t-skip-this",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 873,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div>\r\n\r\n\r\n<h3>It’s NOT “Just” a Blanket</h3>\r\n<h4><b>Swatching is NOT Optional</b></h4>\r\nWhen it comes to knitting the <span style=\"color: #9E2065; font-weight: bold;\">Seamless Color Block Blanket,</span> let me be clear: <span class=\"yellow_highlight\"> swatching is NOT optional.</span> <b>This isn’t a project where you can “guess” at gauge and hope for the best.</b><br>If your gauge is off, your blocks won’t be square, and the finished blanket won’t come together the way it should.\r\n<br><b>Thinking of using different yarns for the blocks?</b> That’s a fantastic way to get creative (and use up your stash), but here’s the deal: <span class=\"yellow_highlight\">you MUST swatch for each yarn.</span> Every yarn has its own characteristics, and without swatching, your “puzzle pieces” won’t fit together. \r\n\r\n<br>Planning to mix in different stitch patterns? Same rule applies—you MUST swatch in each stitch pattern to ensure consistency across the blocks.\r\n<br>This project is about more than just knitting a blanket. It’s about creating something you’ll be proud of, and that starts with preparation. <span class=\"yellow_highlight\">A little extra effort now will save you frustration later</span>—and you’ll end up with a beautiful, seamless blanket that’s everything you hoped for.\r\n\r\n\r\n <div class=\"videopopup\" data-videotitle=\"swatch2025\" data-vimeoid=\"1046394794\">\r\n\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/1970153449-0dda23361c01cd76bf9e752ace4b3fa71355227555b08d98d3527000d94e47ec-d_1280x720?r=pad\">\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div><div class=\"text-center\"<br><h1> DON'T SKIP THIS!</h1></div>\r\n\r\n",
+              "legacyComponentId": 10060,
+              "order": 1
+            }
+          ],
+          "title": "It&apos;s NOT \"just\" a blanket",
+          "slug": "it-apos-s-not-just-a-blanket",
+          "order": 1,
+          "legacy": {
+            "assignId": 6472,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "It's important that you recognize the construction of the stitches along the edge of your knitting.<br>Identify the loops that will be picked up with the Cut 'n Sew method.",
+              "legacyComponentId": 10110,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "1051540009",
+              "title": null,
+              "legacyComponentId": 10099,
+              "order": 2
+            }
+          ],
+          "title": "Loops and Knots",
+          "slug": "loops-and-knots",
+          "order": 2,
+          "legacy": {
+            "assignId": 6486,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<span class=\"handwriting\" style=\"font-size:1.5em\">I HIGHLY SUGGEST trying this technique BEFORE starting your blanket.</span><br><ul class=\"lightlist\" style=\"list-style:none;\">\r\n<li>UNDERSTAND loops and knots and identify how to join</li>\r\n<li>Knit the EXACT same number of rows for each block</li>\r\n<li>Place markers at regular intervals for easier joining</li>\r\n<li>Don't mix 'n match gauges (or yarn with different gauges)</li>\r\n</ul>",
+              "legacyComponentId": 10097,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151856919",
+              "title": "Sew-as-You-Go",
+              "legacySlot": 1,
+              "legacyComponentId": 10095,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "169798401",
+              "title": "Sew-as-You-Go Tricks",
+              "legacySlot": 2,
+              "legacyComponentId": 10095,
+              "order": 2
+            }
+          ],
+          "title": "How to Sew-as-You-Go",
+          "slug": "how-to-sew-as-you-go",
+          "order": 3,
+          "legacy": {
+            "assignId": 6485,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Follow Along",
+      "slug": "follow-along",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 877,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "1051315167",
+              "title": null,
+              "legacyComponentId": 10093,
+              "order": 1
+            }
+          ],
+          "title": "Part 1",
+          "slug": "part-1",
+          "order": 1,
+          "legacy": {
+            "assignId": 6484,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "1051696037",
+              "title": null,
+              "legacyComponentId": 10104,
+              "order": 1
+            }
+          ],
+          "title": "Part 2",
+          "slug": "part-2",
+          "order": 2,
+          "legacy": {
+            "assignId": 6489,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Build your Custom pattern",
+      "slug": "build-your-custom-pattern",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 870,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .handwriting {'Handlee', cursive;\r\n        color: #9E2065;\r\n        font-weight: 600;\r\n    }\r\n</style>\r\n\r\n\r\n    \r\n        <span><i class=\"fa-solid fa-caret-down fa-2xl\"></i></span>\r\n        <h3 style=\"display: inline-block; margin-left: 10px;\"> Are you new to Knit it Now Patterns?</h3>\r\n    \r\n    \r\n        \r\n            \r\n                The Seamless Color Block Blanket is made up of squares, giving you full control over the finished size. You'll start by deciding whether to knit 3 or 5 blocks across. The total number of blocks in the blanket is then calculated based on the size you choose from the sizing chart.<br><ol>\r\n                    <li>Choose a blanket size</li>\r\n                    <li>Choose 3 or 5 panels</li>\r\n                    <li>Optional: Click the button \"Customize your Pattern\"</li>\r\n                    <li>Double Check your measurements</li>\r\n                    <li>Enter YOUR gauge</li>\r\n                    <li>Click the button to \"Create Your custom pattern\"</li>\r\n                </ol>\r\n                <br>\r\n                <b>NOTE:</b> Before you begin knitting:\r\n                <ul>\r\n                    <li>Double-check the calculated finished size to ensure it's exactly what you want. If it's not quite right, no problem! You can easily modify the blanket size and re-run the pattern to adjust.</li>\r\n                    <li>Don't forget to review the updated yarn requirements based on your adjustments to ensure you have enough to complete your project.</li>\r\n                </ul>\r\n                Taking these steps upfront ensures a stress-free knitting experience and a blanket you'll love!<br><a class=\"videopopup\" data-videotitle=\"KIN_Pattern_overview\" data-vimeoid=\"772256112\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Are you new to Knit it Now Patterns?\"</a>\r\n            \r\n            \r\n                <img class=\"img-thumbnail img1\" src=\"/challenge/images/v2/131/build_pattern.jpg\">\r\n            \r\n        \r\n    \r\n\r\n\r\n<script>\r\n    function togglePanel(header) {\r\n        var content = header.nextElementSibling;\r\n        var arrow = header.querySelector('.fa-caret-down');\r\n        \r\n        if (content.style.display === 'none') {\r\n            content.style.display = 'block';\r\n            arrow.style.transform = 'rotate(180deg)';\r\n        } else {\r\n            content.style.display = 'none';\r\n            arrow.style.transform = 'rotate(0deg)';\r\n        }\r\n    }\r\n</script>",
+              "legacyComponentId": 10109,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment 'No-Sew Color Block Blanket' (legacy garmentId 2342).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6467",
+                "CHALLENGE_COMPONENTID": "10051",
+                "EXAMPLE_LENGTH": "10",
+                "GARMENTID": "2342",
+                "GARMENTTITLE": "No-Sew Color Block Blanket",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "pattern_name",
+                "REDIRECT_TO": "/challenge/131/Group/6468/item|Build your Custom pattern: Do you have enough yarn?",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "rows",
+                "SHOWPATTERNNAME": "1",
+                "SIZING_DATAMODEL_ELEMENT": "pattern_name",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "stitches",
+                "SWATCHROWS": "swatch_rows",
+                "SWATCHSTITCHES": "swatch_stitches",
+                "SWATCHWEIGHT": "swatch_weight",
+                "USESWATCHLOGIC": "no"
+              },
+              "legacyComponentId": 10051,
+              "order": 3
+            }
+          ],
+          "title": "Create your CUSTOM Pattern",
+          "slug": "create-your-custom-pattern",
+          "order": 2,
+          "legacy": {
+            "assignId": 6467,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): pattern_name",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 6467 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6468",
+                "CHALLENGE_COMPONENTID": "10052",
+                "DATAMODEL_ELEMENTS": "pattern_name",
+                "DATAMODEL_REDIRECT": "6467"
+              },
+              "legacyComponentId": 10052,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: No_Sew_Color_Block_Blanket_estimate.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6468",
+                "CHALLENGE_COMPONENTID": "10080",
+                "CUSTOMCFM": "No_Sew_Color_Block_Blanket_estimate.cfm"
+              },
+              "legacyComponentId": 10080,
+              "order": 3
+            }
+          ],
+          "title": "PROJECT SUMMARY",
+          "slug": "project-summary",
+          "order": 3,
+          "legacy": {
+            "assignId": 6468,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Patternshowinline_DymanicPatternid",
+              "notes": [
+                "Unmapped legacy component type: Patternshowinline_DymanicPatternid"
+              ],
+              "legacyFields": {
+                "AUTOPLAY": "false",
+                "CHALLENGE_ASSIGNID": "6469",
+                "CONTINUEBUTTONWORDING": "Continue",
+                "DYANMICPATTERNID": "TogglePatternid",
+                "SHOWVIDEOEND": "Yes",
+                "TIMESHOWBUTTON": "30",
+                "TYPEOF": "Patternshowinline_DymanicPatternid"
+              },
+              "legacyComponentId": 10086,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"no-print\"><h3>Ready to start knitting? Your custom pattern is ready to print.</h3>\r\nIn the next sections, we'll walk through each part of the pattern step-by-step. <b>Take a moment to review it before we begin</b> - this will help you understand how all the pieces fit together.</div><br>\r\n<button class=\"btn btn-primary no-print\" onclick=\"window.print()\"><i class=\"fa fa-print\"></i> Print Pattern</button>\r\n",
+              "legacyComponentId": 10054,
+              "order": 3
+            }
+          ],
+          "title": "Your Pattern",
+          "slug": "your-pattern",
+          "order": 4,
+          "legacy": {
+            "assignId": 6469,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Share your Success",
+      "slug": "share-your-success",
+      "displayOrder": 8,
+      "legacy": {
+        "itemId": 871,
+        "lessonOrder": 8
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3><i class=\"fa-sharp-duotone fa-regular fa-camera-retro fa-2xl\"></i>  Record and share your success.</h3>\r\n",
+              "legacyComponentId": 10057,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "SharedImage",
+                "BUTTONLABLE": "Upload",
+                "CHALLENGE_ASSIGNID": "6428",
+                "CHALLENGE_COMPONENTID": "9929",
+                "CONTIUNEBUTTONLABLE": "Continue",
+                "QTY": "3",
+                "SUCCESSMESSAGE": "<H3>Got it!</H3> <i class='fa-regular fa-face-smile fa-2xl'></i>"
+              },
+              "legacyComponentId": 10058,
+              "order": 2
+            }
+          ],
+          "title": "Share your Success",
+          "slug": "share-your-success",
+          "order": 1,
+          "legacy": {
+            "assignId": 6470,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Share your thoughts",
+      "slug": "share-your-thoughts",
+      "displayOrder": 9,
+      "legacy": {
+        "itemId": 872,
+        "lessonOrder": 9
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Survay",
+              "notes": [
+                "Unmapped legacy component type: Survay"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "6429",
+                "CHALLENGE_COMPONENTID": "9930",
+                "DATAMODEL_ICON": "fa fa-question",
+                "LABLE": "Thank You For Your Feedback",
+                "REDIRECT_TO": "/challenge/129/coursefinal/watch-cap/9930/complete",
+                "SURVEY": "299F62A1-C572-FC99-830B-A116E354507E|Make and Master: Watch Cap"
+              },
+              "legacyComponentId": 10059,
+              "order": 1
+            }
+          ],
+          "title": "Help Shape the Future of Knit it Now",
+          "slug": "help-shape-the-future-of-knit-it-now",
+          "order": 1,
+          "legacy": {
+            "assignId": 6471,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 8,
+    "videos": [
+      {
+        "vimeoId": "1033482537",
+        "title": "Knit a \" Proper \"  Swatch",
+        "lessonSlug": "establish-your-gauge",
+        "blockSlug": "your-swatch"
+      },
+      {
+        "vimeoId": "1048710081",
+        "title": "Watch as we start our blanket",
+        "lessonSlug": "establish-your-gauge",
+        "blockSlug": "your-swatch"
+      },
+      {
+        "vimeoId": "1050550005",
+        "title": null,
+        "lessonSlug": "new-to-sew-as-you-go",
+        "blockSlug": "master-sew-as-you-go"
+      },
+      {
+        "vimeoId": "1051540009",
+        "title": null,
+        "lessonSlug": "don-t-skip-this",
+        "blockSlug": "loops-and-knots"
+      },
+      {
+        "vimeoId": "151856919",
+        "title": "Sew-as-You-Go",
+        "lessonSlug": "don-t-skip-this",
+        "blockSlug": "how-to-sew-as-you-go"
+      },
+      {
+        "vimeoId": "169798401",
+        "title": "Sew-as-You-Go Tricks",
+        "lessonSlug": "don-t-skip-this",
+        "blockSlug": "how-to-sew-as-you-go"
+      },
+      {
+        "vimeoId": "1051315167",
+        "title": null,
+        "lessonSlug": "follow-along",
+        "blockSlug": "part-1"
+      },
+      {
+        "vimeoId": "1051696037",
+        "title": null,
+        "lessonSlug": "follow-along",
+        "blockSlug": "part-2"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

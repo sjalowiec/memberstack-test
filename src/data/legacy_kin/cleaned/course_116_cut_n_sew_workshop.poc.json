@@ -1,0 +1,799 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 116,
+    "title": "Cut 'n Sew workshop",
+    "slug": "cut-n-sew-workshop",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_116_cut_n_sew_workshop.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:10+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Getting Started",
+      "slug": "getting-started",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 778,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<h3>Why Cut 'n Sew?</h3>\r\nAs machine knitters we can create raw knitted \"fabric\" fairly quickly. Thinking of our knitting as fabric opens new possibilities for creating garments.\r\n\r\n<ul>\r\n\t<li>Create your own knitted fabric</li>\r\n\t<li>No shaping - many knitters are intimidated by necklines (or they don't want to take the time to shape them)</li>\r\n\t<li>Shaping while knitting in pattern can be a challenge and time consuming. Cut 'n sew eliminates shaping on the machine</li>\r\n\t<li>Use sewing patterns for fabulous, updated garment styles</li>\r\n\t<li>Alter / resize / remake existing garments to fit</li>\r\n</ul>\r\n<br><h3>The biggest challenges to Cut 'n Sew?</h3>\r\n<ul class=\"lightlist\" style=\"list-style:none;\">\r\n\t<li>Getting over the fear of cutting your knitting</li>\r\n\t<li>Creating templates or finding patterns</li>\r\n\t<li>Stabilizing the fabric</li>\r\n\t<li>Finishing the edges and adding bands</li>\r\n</ul>\r\n\r\n<img class=\"img-thumbnail\" src=\"/path/images/101/fearless_cut_n_sew.jpg\">\r\n",
+              "legacyComponentId": 9537,
+              "order": 1
+            }
+          ],
+          "title": "Why Cut 'n Sew",
+          "slug": "why-cut-n-sew",
+          "order": 2,
+          "legacy": {
+            "assignId": 6221,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151819909",
+              "title": "Introduction to Cut and Sew",
+              "legacyComponentId": 9538,
+              "order": 1
+            }
+          ],
+          "title": "Introduction to Cut 'n Sew",
+          "slug": "introduction-to-cut-n-sew",
+          "order": 3,
+          "legacy": {
+            "assignId": 6222,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Olga Lynn specializes in using knit fabric for sewing garments.  Although she is a machine knitter, her approach is more sewing focused.<br>Check out our conversation about sewing with knits.",
+              "legacyComponentId": 9562,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "861767300",
+              "title": null,
+              "legacyComponentId": 9561,
+              "order": 2
+            }
+          ],
+          "title": "Live with O Jolly",
+          "slug": "live-with-o-jolly",
+          "order": 4,
+          "legacy": {
+            "assignId": 6240,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Stuff you Should Know",
+      "slug": "stuff-you-should-know",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 779,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "We recently explored using stabilizers to improve our cut ‘n sew skills … and we were pleasantly surprised!<br>Watch as we learn 3 Cut ‘n Sew lessons:\r\n<ul>\r\n<li>Easier Sewing</li>\r\n<li>More precise shaping</li>\r\n<li>Wash-away stabilizer really washes away!</li>\r\n</ul>",
+              "legacyComponentId": 9539,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "280094859",
+              "title": "Stabilizer for Cut 'n Sew Excellence",
+              "legacyComponentId": 9540,
+              "order": 2
+            }
+          ],
+          "title": "Stabilizer Trick",
+          "slug": "stabilizer-trick",
+          "order": 1,
+          "legacy": {
+            "assignId": 6223,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\nPrintable templates for cut 'n sew necklines.\r\n<ul class=\"lightlist\" style=\"list-style:none;\">\r\n<li>From infant to adult size</li>\r\n<li>Neck depths up to 7\" (18cm)</li>\r\n<li>Both Letter (US) and A4 (Metric) versions are included</li>\r\n</ul>\r\n<br>\r\n<b>Create a perfectly shaped neckline every time!</b><br><div class=\"lead\">Cut 'n Sew necklines are easy and fast!<br>The Steps:</div>\r\n<ul>\r\n<li>Knit your garment with no neckline shaping.</li>\r\n<li>Select a template for the desired neckline width and depth.</li>\r\n<li>Use the template to mark the shape</li>\r\n<li>Machine stitch along the marks to secure the edge</li>\r\n<li>Cut your neck opening</li>\r\n<li>Use an \"industrial\" band to neatly hide the cut edges.</li>\r\n<li>No shaping as you knit!</li>\r\n</ul>\r\n<br>\r\n<center></center>\r\n\r\n<a href=\"/downloads/cut-n-sew-neckline-template.pdf\"><img class=\"img-thumbnail zoom\" src=\"/path/images/101/template_img_500.jpg\"></a>\r\n",
+              "legacyComponentId": 9542,
+              "order": 1
+            }
+          ],
+          "title": "Knit it Now Printable Templates",
+          "slug": "knit-it-now-printable-templates",
+          "order": 3,
+          "legacy": {
+            "assignId": 6225,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "DesignaKnit 9 has expanded the possibilities with Cut 'n Sew.<br>In addition to creating templates, learn more about how Stitch Designer can improve your knitting with Cut 'n Sew.<br>\r\nThe complete course is at <a href=\"https://learndesignaknit.com/courses/11/stitch-designer\"><b>LearnDesignaKnit.com/stitchdesigner201</b></a>\r\n\r\n\r\n<hr class=\"style13\">\r\n\r\n\r\nUse DAK (8 or 9) to create your own neckline templates<br>\r\n <div class=\"videopopup\" data-videotitle=\"DAK: EZ Cut \\'N Sew Neckline Template\" data-vimeoid=\"344808537\">\r\n\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/794399190-69f659f08fb01a50ebed74e1dfee960a6d09bb6081ca1ac9cdebd9866caa8f59-d_1280x720?r=pad\">\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div>\r\n\r\n\r\n",
+              "legacyComponentId": 9563,
+              "order": 1
+            }
+          ],
+          "title": "Cut 'n Sew and DesignaKnit",
+          "slug": "cut-n-sew-and-designaknit",
+          "order": 4,
+          "legacy": {
+            "assignId": 6242,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "873804016",
+              "title": null,
+              "legacyComponentId": 9582,
+              "order": 1
+            }
+          ],
+          "title": "Band Finishing Trick <span class=\"badge\">NEW</span>",
+          "slug": "band-finishing-trick-span-class-badge-new-span",
+          "order": 5,
+          "legacy": {
+            "assignId": 6259,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857416",
+              "title": null,
+              "legacyComponentId": 9584,
+              "order": 1
+            }
+          ],
+          "title": "Turning Rows  <span class=\"badge\">NEW</span>",
+          "slug": "turning-rows-span-class-badge-new-span",
+          "order": 6,
+          "legacy": {
+            "assignId": 6260,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "To help keep bands from \"popping out\" and laying flat against the body, it's common practice to \"grade\" the tension as you knit the band piece(s).<br><a data-GlossaryId='617' class='glossaryhelp'>Grade the Tension <i class='fa fa-question-circle' aria-hidden='true'></i></a>\r\n\r\n<img class='img-thumbnail glossaryhelp' data-GlossaryId='617' src='https://www.knititnow.com/images/glossary/grade%20tension.png'>",
+              "legacyComponentId": 9585,
+              "order": 1
+            }
+          ],
+          "title": "Grading the Bands  <span class=\"badge\">NEW</span>",
+          "slug": "grading-the-bands-span-class-badge-new-span",
+          "order": 7,
+          "legacy": {
+            "assignId": 6261,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Neckbands",
+      "slug": "neckbands",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 780,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\nimg.ctr{\r\ndisplay: block;\r\nmargin-left: auto;\r\nmargin-right: auto; }\r\n</style>\r\n\r\n    <span class=\"handwriting\" style=\"font-size:2em\">Don't Skip this video!</span><br>\r\n        Warning: this video is long and there is math, but it's critical to understanding how many stitches to pick up for your neckline.<br><div class=\"videopopup\" data-videotitle=\"Calculating Bands\" data-vimeoid=\"151857646\">\r\n            <img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/551701095-355ee38df3dc65e3091726f98fdeca5b9aed10da6174722023816b48278672a9-d_1280x720?r=pad\">\r\n            <div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n        </div>\r\n    \r\n    \r\n\r\n        <img class=\"img-thumbnail ctr\" width=\"300\" src=\"/challenge/images/v2/116/measure.jpg\">\r\n    \r\n\r\n",
+              "legacyComponentId": 9569,
+              "order": 1
+            }
+          ],
+          "title": "Calculating Bands",
+          "slug": "calculating-bands",
+          "order": 2,
+          "legacy": {
+            "assignId": 6247,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "345059665",
+              "title": "Cut n Sew - Bands in Pattern (1 or 2 piece)",
+              "legacySlot": 1,
+              "legacyComponentId": 9543,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "345069044",
+              "title": "Cut N Sew - Rolled Edge Band (2 piece)",
+              "legacySlot": 2,
+              "legacyComponentId": 9543,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "345053252",
+              "title": "Cut N Sew - Chained Edge Band (2 piece)",
+              "legacySlot": 3,
+              "legacyComponentId": 9543,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "345047707",
+              "title": "Cut N Sew - Beaded Band (2 piece)",
+              "legacySlot": 4,
+              "legacyComponentId": 9543,
+              "order": 1
+            }
+          ],
+          "title": "Industrial Band Variations",
+          "slug": "industrial-band-variations",
+          "order": 3,
+          "legacy": {
+            "assignId": 6226,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151860086",
+              "title": "One Piece Neckband Perfection",
+              "legacyComponentId": 9544,
+              "order": 1
+            }
+          ],
+          "title": "One Piece Neckband Perfection",
+          "slug": "one-piece-neckband-perfection",
+          "order": 4,
+          "legacy": {
+            "assignId": 6227,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "223374072",
+              "title": "Reversible Band",
+              "legacySlot": 1,
+              "legacyComponentId": 9545,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151849234",
+              "title": "The Secret: Kitchener Stitch",
+              "legacySlot": 2,
+              "legacyComponentId": 9545,
+              "order": 1
+            }
+          ],
+          "title": "Amazing Reversible Band (2 piece)",
+          "slug": "amazing-reversible-band-2-piece",
+          "order": 5,
+          "legacy": {
+            "assignId": 6228,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Here's an unusual neck band technique that is great for highly textured stitch patterns like garter carriage and tuck stitch.<br>Use reverse stockinette stitch for the public side of the bands.br><br>\r\n\r\nThis is a version of an industrial band - sometimes called a sandwich band that is perfect for cut and sew necklines. The technique can also be applied to shaped necklines.br><br>\r\n\r\nIf you are used to working this style of band in stockinette, this video works through the construction using the purl side of the bands as the public side. br><br>\r\n\r\nPut on your thinking caps! Keeping things straight can be a challenge - right/wrong side, purl/knit side, public/private .. take it step by step for a beautiful faux garter band on the machine.",
+              "legacyComponentId": 9546,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858842",
+              "title": "Faux Garter Stitch Bands",
+              "legacyComponentId": 9547,
+              "order": 2
+            }
+          ],
+          "title": "Faux Garter Band",
+          "slug": "faux-garter-band",
+          "order": 6,
+          "legacy": {
+            "assignId": 6229,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857806",
+              "title": "Seaming Bands",
+              "legacyComponentId": 9566,
+              "order": 1
+            }
+          ],
+          "title": "Seaming Bands <span class=\"badge\">NEW</span>",
+          "slug": "seaming-bands-span-class-badge-new-span",
+          "order": 7,
+          "legacy": {
+            "assignId": 6246,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "873332368",
+              "title": null,
+              "legacyComponentId": 9577,
+              "order": 1
+            }
+          ],
+          "title": "Shoulders <span class=\"badge\">NEW</span>",
+          "slug": "shoulders-span-class-badge-new-span",
+          "order": 8,
+          "legacy": {
+            "assignId": 6255,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\n\r\nMost Cut 'n Sew instructions include a small seam allowance.  This would be equivalent to a surged edge.<br>\r\n\r\nBut what if you are knitting with a fine yarn?<br> The neckband could look limp, wimpy and look flimsy.  Plus you could clearly see a ridge created by the cut edge inside the band.<br>By wrapping the garment with the band, you will have a perfect band that is smooth and sturdy with no ridge showing.\r\n\r\n<img src=\"/challenge/images/v2/116/wrap1.jpg\">\r\n\r\n",
+              "legacyComponentId": 9580,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "873859561",
+              "title": null,
+              "legacyComponentId": 9583,
+              "order": 2
+            }
+          ],
+          "title": "Wrapped Neckband <span class=\"badge\">NEW</span>",
+          "slug": "wrapped-neckband-span-class-badge-new-span",
+          "order": 9,
+          "legacy": {
+            "assignId": 6257,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .outlined-div {\r\n        border: 1px solid #000;\r\n        /* 1px solid border with black color (#000) */\r\n        padding: 20px;\r\n        /* 10px of padding inside the div */\r\nmargin: 10px;\r\n        /* Additional styles for your div can be added here */\r\n    }\r\n.yellow_highlight {\r\n\r\nbackground: linear-gradient(rgba(255,255,255,0) 55%,#ffff00 45%,#ffff00);\r\n}\r\n\r\n</style>\r\nNeckbands can be constructed in 2 ways:\r\n\r\n\r\n    <div class=\"outlined-div\"><span style=\"font-size:1.5em\"><b>ONE PIECE BAND</b></span><br><i class=\"fa fa-check-circle-o fa-2x\" aria-hidden=\"true\"></i> <span style=\"font-size:1.5em\"><b>Pro:</b></span><br>\r\n        <ul>\r\n            <li>\r\n                Less steps to knit <span class=\"yellow_highlight\">(easier of the 2 methods)</span></li>\r\n            <li>Finish on either the public or private side</li>\r\n        </ul>\r\n        <i class=\"fa fa-check-circle-o fa-2x\" aria-hidden=\"true\"></i><span style=\"font-size:1.5em\"><b> Con:</b></span><br>\r\n        <ul>\r\n            <li>Finish on the private side isn't as neat (whip stitch)</li>\r\n            <li>Finish on the public side can be tedious to back stitch neatly</li>\r\n        </ul>\r\n        <img class=\"img-thumbnail zoom\" src=\"/challenge/images/v2/116/1 piece_compare.jpg\">\r\n\r\n\r\n    </div>\r\n    <div class=\"outlined-div\"><span style=\"font-size:1.5em\"><b>2 PIECE BAND </b></span><br><i class=\"fa fa-check-circle-o fa-2x\" aria-hidden=\"true\"></i> <span style=\"font-size:1.5em\"><b>Pro:</b></span><br>\r\n        <ul>\r\n            <li>Both edges next to the garment are picked up and neat</li>\r\n            <li><span class=\"yellow_highlight\">Collar or decorative finish can be added at the neck edge</span></li>\r\n        </ul>\r\n        <i class=\"fa fa-check-circle-o fa-2x\" aria-hidden=\"true\"></i> <span style=\"font-size:1.5em\"><b>Con:</b></span><br>\r\n        <ul>\r\n            <li>Extra steps to create the band in 2 pieces</li>\r\n            <li>Extra care is needed to join the \"sandwich\"</li>\r\n        </ul>\r\n        <img class=\"img-thumbnail zoom\" src=\"/challenge/images/v2/116/compare2.jpg\">\r\n\r\n\r\n\r\n\r\n    </div>\r\n\r\n",
+              "legacyComponentId": 9591,
+              "order": 1
+            }
+          ],
+          "title": "1 Piece Band VS 2 Piece Band   <span class=\"badge\" style=\"background-color: #9e2065; color: white; border-radius: 10px;\">NEW</span>",
+          "slug": "1-piece-band-vs-2-piece-band-span-class-badge-style-background-color-9e2065-color-white-border-radius-10px-new-span",
+          "order": 11,
+          "legacy": {
+            "assignId": 6264,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Exercises",
+      "slug": "exercises",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 785,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"text-center\"></div><br>\r\nIf you choose not to cut, the  Knit it Now Practice Neckline pattern is useful for the exercises in this workshop.  Combine practice with shaping necklines and adding bands. <br>You can choose to knit \"mini\" sizes to save time (and yarn) or full size necklines for practice.<br><a href=\"/knit/DynamicPattern/679/practice-necklines\" target=\"_blank\"><img src=\"/challenge/images/v2/116/practice1.jpg\"></a>\r\n<a href=\"/knit/DynamicPattern/679/practice-necklines\" target=\"_blank\"><img class=\"img-thumbnail\" src=\"/KIN_images/garments/practice_necklines400.jpg\"></a>\r\n\r\n\r\n",
+              "legacyComponentId": 9572,
+              "order": 1
+            }
+          ],
+          "title": "Practice Pattern",
+          "slug": "practice-pattern",
+          "order": 1,
+          "legacy": {
+            "assignId": 6249,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<span class=\"handwriting\" style=\"font-size:2em\">Don't just watch videos, make time to practice the techniques suggested in this course.</span>",
+              "legacyComponentId": 9570,
+              "order": 1
+            },
+            {
+              "type": "exerciseAccordion",
+              "sections": [
+                {
+                  "title": "<span style=\"font-size:1.5em\">Take the plunge ... cut some knitting</span>",
+                  "bodyHtml": "\r\n\r\nTake a blocked swatch in any stitch pattern and cut a curved edge.<br>Play with stretching and trying to make the stitches run.<br>\r\nObserve what happens<br>\r\n<img src=\"/challenge/images/v2/116/cut1.gif\">\r\n",
+                  "iconSrc": "/challenge/images/v2/116/arrow1.png"
+                },
+                {
+                  "title": "<span style=\"font-size:1.5em\">No stretching</span>",
+                  "bodyHtml": "\r\nA key to success is to secure the knitting with minimal stretching or distortion of the knitting.<br>Consider using: \r\n<ul>\r\n<li>A Sewing machine walking foot</lil>\r\n<li>Your serger Differential Feed adjustment</li>\r\n<li>Sew with a paper backing (then remove the paper)</li>\r\n<li>\r\n\r\n <div class=\"videopopup\" data-videotitle=\"Stabilizer for Cut \\'n Sew Excellence\" data-vimeoid=\"280094859\">Use   <i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i><b> wash-away stablizer</b></div></li>\r\n</ul>\r\n\r\n\r\n\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/116/stretch1.jpg\"><br><img class=\"img-thumbnail\" src=\"/challenge/images/v2/116/stretch2.jpg\">\r\n\r\n",
+                  "iconSrc": "/challenge/images/v2/116/arrow2.png"
+                },
+                {
+                  "title": "<span style=\"font-size:1.5em\"><b>Exercise 1</b> One-piece fold over band</span>",
+                  "bodyHtml": "<style>\r\n    .outlined-div {\r\n        border: 1px solid #000;\r\n        /* 1px solid border with black color (#000) */\r\n        padding: 20px;\r\n    }\r\n\r\n</style>\r\n\r\n<br>\r\n<div class=\"outlined-div\">\r\n    <b> One-piece band - pick up practice</b>\r\n    <h3>Exercise 1 Part 1</h3>\r\n    <ol>\r\n        <li>Swatch and establish the gauge of your band in your desired stitch pattern (stockinette at first)</li>\r\n        <li>Knit or use a good size swatch and secure a round neck opening (zig zag or serger)</li>\r\n        <li>With the curved edge flat, use a tape measure and establish the length of the practice neck opening</li>\r\n        <li>Multiply the length by the band gauge</li>\r\n        <li><b>How many stitches do you need?</b></li>\r\n    </uol>\r\n</div><br>\r\n<span class=\"handwriting\" style=\"font-size:1.5em\">Don't forget to add seaming stitches!</span><br>\r\n<div class=\"outlined-div\">\r\n    <b> One-piece band - confirm pick up</b>\r\n    <h3>Exercise 1 Part 2</h3><br>\r\n    Hold the neck opening up to the needlebed and push it through the gate pegs (if you have them)\r\n\r\n    <b>How many needles will be used?</b><br>\r\n</div>\r\n<br>\r\n<div class=\"outlined-div\">\r\n    <b> Knit a one-piece band</b>\r\n    <h3>Exercise 1 Part 3</h3><br>\r\n    <ol>\r\n        <li>\r\n            Hang the neckline:\r\n            <ul>\r\n                <li>Right side facing - band will fold to the public side and stitches will be on the front of the garment</li>\r\n                <li>Wrong side facing - band will fold to the private side and stitches will be on the inside of the garment</li>\r\n            </ul>\r\n        </li>\r\n        <li>\r\n            Knit a 1 piece band\r\n            <ul>\r\n                <li>\r\n                    Grade the tension</li>\r\n                <li>\r\n                    Knit a <a data-GlossaryId='324' class='glossaryhelp'>Turning Row <i class='fa fa-question-circle' aria-hidden='true'></i></a></li>\r\n            </ul>\r\n\r\n        </li>\r\n        <li>Steam the band</li><br>\r\n        <li>Fold the band and stitch in place</li>\r\n    </ol>\r\n</div>\r\n<Br>\r\n<div class=\"outlined-div\">\r\n    <b> Knit another one-piece band</b>\r\n    <h3>Exercise 1 Part 4</h3><br>\r\n    Repeat part 3, folding the band the other way (to the inside or outside)<br>\r\n    Stitching a band to the inside is easier (you don't have to be as precise) but stitching the band to the public side can be sooo worth the extra time and effort!\r\n    <br><span class=\"handwriting\" style=\"font-size:1.5 em\">Practice a 1 piece band both ways .. you'll be glad you did!</span>\r\n</div>",
+                  "iconSrc": "/challenge/images/v2/116/arrow3.png"
+                },
+                {
+                  "title": "<span style=\"font-size:1.5em\"><b>Exercise 2 </b>Industrial 2 piece band</span>",
+                  "bodyHtml": "<div class=\"outlined-div\">\r\n    <b> Knit an \"Industrial\" 2 piece band</b>\r\n    <h3>Exercise 2 Part 1</h3>\r\n    <ol>\r\n        <li>Swatch and establish the gauge of your band in your desired stitch pattern (stockinette at first)</li>\r\n        <li>Knit or use a good size swatch and secure a round neck opening (zig zag or serger)</li>\r\n        <li>With the curved edge flat, use a tape measure and establish the length of the practice neck opening</li>\r\n        <li>Multiply the length by the band gauge</li>\r\n        <li><b>How many stitches do you need?</b></li>\r\n    </ol>\r\n</div><br>\r\n<span class=\"handwriting\" style=\"font-size:1.5em\">Don't forget to add seaming stitches!</span><br>\r\n\r\n<div class=\"outlined-div\">\r\n    <b> Knit an \"Industrial\" 2 piece band</b>\r\n    <h3>Exercise 2 Part 2</h3>\r\n    Follow this video <div class=\"videopopup\" data-videotitle=\"Reversible Band\" data-vimeoid=\"223374072\"> <i class=\"fa fa-youtube-play\"></i> Amazing Reversible band</div>\r\n    <ol>\r\n\r\n        <li>Scrap on (this will be the \"pick up\" edge)</li>\r\n        <li>Knit 1 half of the band</li>\r\n        <li>Grade (tighten) the tension</li>\r\n        <li>Scrap off (this edge will be the top of the band)</li>\r\n    </ol>\r\n    Note the \"scrapped on\" edge will be picked up and attached to the body of the garment <br>\r\n    <b>TIP:</b> use different color scrap yarn to keep track\r\n    <br>\r\n\r\n    <ol start=\"5\">\r\n        <li>Pick up the garment edge (right or public side facing)</li>\r\n        <li>Rehang the band \"pick up\" edge (wrong side facing)</li>\r\n    </ol>\r\n    <b>TIP:</b> Note the public sides of both pieces are facing each other\r\n    <ol start=\"7\">\r\n        <li>Pull the band stitches through the garment</li>\r\n        <li>Continue knitting the 2nd half of the band</li>\r\n        <li>Pick up the top edge of the first band section and loosely bind off (or Kitchener graft the 2 pieces)\r\n    </ol><br>\r\n</div><Br>\r\n    <div class=\"outlined-div\">\r\n        <b> Knit another \"Industrial\" 2 piece band</b>\r\n        <h3>Exercise 2 Part 3</h3>\r\n\r\n        Repeat Parts 1 and 2 of this exercise, but instead of binding off, scrap off the 2nd band and <a data-GlossaryId='4704' class='glossaryhelp'>Kitchener graft<i class='fa fa-question-circle' aria-hidden='true'></i></a> the 2 band edges together for a seamless join.\r\n</div>",
+                  "iconSrc": "/challenge/images/v2/116/arrow4.png"
+                },
+                {
+                  "title": "<span style=\"font-size:1.5em\"><b>Exercise 3:</b> Industrial Rolled Edge</span>",
+                  "bodyHtml": "<div class=\"outlined-div\">\r\n\r\nRepeat the steps of Exercise 2 and knit a 2 piece band with a rolled edge<br>Watch this video  <div class=\"videopopup\" data-videotitle=\"rolled _edge_band\" data-vimeoid=\"345069044\"><i class=\"fa fa-youtube-play\" aria-hidden=\"true\"></i> Cut 'n Sew Rolled Edge Band</div><br>before binding off or joining the 2 band pieces,  knit for 1/2 or desired number of rows for a rolled edge.<br>\r\n\r\n<b>TIP:</b> Knit the rolled edge in a contrasting color <br></div>",
+                  "iconSrc": "/challenge/images/v2/116/arrow5.png"
+                },
+                {
+                  "title": "<span style=\"font-size:1.5em\"><b>Exercise 4: </b>Stitch pattern challenge</span>",
+                  "bodyHtml": "Choose the band method of your choice and knit the band in a stitch pattern at a different gauge than your garment.<br>Try:\r\n<ul>\r\n<li>Small fairisle</li>\r\n<li>Tuck</li>\r\n<li>Slip</li>\r\n<li>vertical stripes</li>\r\n<li> Contrasting color or different yarn weight</li\r\n</ul>",
+                  "iconSrc": "/challenge/images/v2/116/arrow6.png"
+                }
+              ],
+              "legacy": {
+                "showText": "below",
+                "size": null
+              },
+              "legacyComponentId": 9571,
+              "order": 2
+            }
+          ],
+          "title": "Don't Just Watch Videos!",
+          "slug": "don-t-just-watch-videos",
+          "order": 2,
+          "legacy": {
+            "assignId": 6248,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n.lightlist ul { padding-left:20px; list-style:none; }\r\n.lightlist li { margin-bottom:10px; }\r\n.lightlist li:before {'FontAwesome';\r\ncontent: '\\f00c';\r\nmargin:0 5px 0 -15px;\r\n}\r\n</style>\r\n\r\n\r\n\r\n\r\n<span style=\"font-size:2em\"> ONE PIECE BAND</span>\r\n\r\n<ul class=\"lightlist\" style=\"list-style:none;\"> \r\n<li>Join the shoulder(s)</li>\r\n<li>Cut 'n sew the garment edge</li>\r\n<li>Rehang the neck edge, stretching slightly</li>\r\n<li>Add a  marker row</li>\r\n<li>Manually knit 1 row with band yarn</li>\r\n<li>Knit 1/2 of the band (grading the tension)</li>\r\n<li>Knit a marker row</li>\r\n<li>Knit the second half of the band</li>\r\n<li>Scrap off</li>\r\n<li>Fold the band and stitch it in place</li>\r\n</ul>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/116/1 piece_compare.jpg\">\r\n<hr class=\"style13\">\r\n\r\n\r\n<span style=\"font-size:2em\"> TWO  PIECE BAND</span> (sandwich band)<br>\r\n<ul class=\"lightlist\" style=\"list-style:none;\"> \r\n<li>Join the shoulder(s)</li>\r\n<li>Cut 'n sew the garment edge</li>\r\n<li>Knit 1/2 of the band:\r\n<ul>\r\n<li>Scrap on</li>\r\n<li>Knit a row of ravel cord</li>\r\n<li>Knit 1/2 of the band depth (grading the tension)</li>\r\n<li>Scrap off</li>\r\n</ul>\r\n</li>\r\n<li>Hang the neck edge, stretching slightly</li>\r\n<li>Re-hang the pre-knit band <b>from the scrapped off edge</b></li>\r\n<li>Pull the stitches through the knitting to join the band to the garment edge</li>\r\n<li>Knit the second band (grading the tension)</lil>\r\n<li>Join the 2 pieces with Kitchener stitch or bind off LOOSELY</li>\r\n<li>Remove the scrap yarn</li>\r\n</ul>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/116/compare2.jpg\">\r\n",
+              "legacyComponentId": 9590,
+              "order": 1
+            }
+          ],
+          "title": "Checklists <span class=\"badge\" style=\"background-color: #9e2065; color: white; border-radius: 10px;\">NEW</span>",
+          "slug": "checklists-span-class-badge-style-background-color-9e2065-color-white-border-radius-10px-new-span",
+          "order": 3,
+          "legacy": {
+            "assignId": 6263,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Recommended Reading",
+      "slug": "recommended-reading",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 784,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\nimg.ctr{\r\ndisplay: block;\r\nmargin-left: auto;\r\nmargin-right: auto; }\r\n</style>\r\n\r\nVisit the Knit it Now <a href=\"/books/\" target=\"_blank\">Machine Knitters Bookshelf </a>for references to current and vintage books about necklines and cut 'n sew.<br>\r\n<div class=\"box\"><a href=\"/books/60/neckline-encyclopedia\"><img class=\"image-responsive ctr\" target=\"_blank\" src=\"/challenge/images/v2/116/neckline_encyclopedia2 .jpg\"></a><br><div class=\"text-center\"></div></div>\r\n<div class=\"box\"><a href=\"/books/155/passap-cut-and-sew-collars-and-bands\"><img class=\"ctr\" target=\"_blank\" src=\"/challenge/images/v2/116/PassapBandsCover.jpg\"></a>\r\n\r\n<div class=\"text-center\"></div>\r\n\r\n</div>\r\n\r\n<div class=\"box\"><a href=\"/books/129/haute-couture-of-the-cut-and-sew-technique\"><img class=\"ctr\" target=\"_blank\" width=\"325\" src=\"/images/books/couture.jpg\"><br>\r\n<div class=\"text-center\"></div>\r\n</div>\r\n\r\n",
+              "legacyComponentId": 9564,
+              "order": 1
+            }
+          ],
+          "title": "Vintage and Current Printed Books",
+          "slug": "vintage-and-current-printed-books",
+          "order": 1,
+          "legacy": {
+            "assignId": 6243,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Other uses for Cut 'n Sew",
+      "slug": "other-uses-for-cut-n-sew",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 781,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Fast finishing, accurate size for the opening. Use Cut 'n Sew to form the center opening for your Tree Skirt. <br>\r\n\r\n<a href=\"/challenge/14/course/christmas-tree-skirt\" target=\"_blank\"><figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/116/tree_skirt/tree_skirt.png\"><figcaption align=\"center\"><br>Complete Course for knitting your own skirt</figcaption>\r\n</figure></a>\r\n\r\n",
+              "legacyComponentId": 9548,
+              "order": 1
+            }
+          ],
+          "title": "Christmas Tree Skirt",
+          "slug": "christmas-tree-skirt",
+          "order": 1,
+          "legacy": {
+            "assignId": 6230,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "A pillow project that is fast, fast, fast! Use the cut 'n sew technique to create a heart shape. Put your serger or sewing machine to work and have a gift or a craft fair item in no time!<br>We knit a Valentine pillow, but consider other shapes ... how about a tooth shape for a Tooth Fairy Pillow?<br>You can knit in any stitch pattern, fairisle,stripes, tuck, slip or intarsia. Long floats aren't a problem and you don't have to worry about shaping and working a stitch pattern at the same time.<br>\r\n\r\n<figure>\r\n\r\n\r\n<a href=\"/path/176/heavenly-hearts\"><img class=\"img-thumbnail\" src=\"/path/images/101/Heart_pillow_final.jpg\">\r\n<figcaption align=\"center\"><br>Heavenly Hearts Quick Win</figcaption>\r\n</figure>\r\n</a>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 9550,
+              "order": 1
+            }
+          ],
+          "title": "Pillow Shapes",
+          "slug": "pillow-shapes",
+          "order": 2,
+          "legacy": {
+            "assignId": 6231,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Collar with Ribber",
+      "slug": "collar-with-ribber",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 787,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n.underlineit {\r\ntext-decoration: underline;}\r\n</style>\r\nAdding a collar to a cut 'n sew neckline is similar to a 2 piece neckband with a few extra steps.<br>What you must know:<br>\r\n<ul>\r\n<li> Have a SOLID understanding of your ribbber</li>\r\n<li>Be familar with your ribber and knit a rectangle in <span data-GlossaryId=\"184\" class=\"glossaryhelp underlineit\">Full Needle Rib</span> or the needle arrangement of your choice <span data-GlossaryId=\"321\" class=\"glossaryhelp underlineit\">(Flat Rib</span> is a good choice)</li>\r\n<li> <span data-GlossaryId=\"328\" class=\"glossaryhelp underlineit\">Circular Knitting</span> (tubular)</li>\r\n<li>Be comfortable transferring stitches between the beds</li>\r\n</ul>\r\n\r\n",
+              "legacyComponentId": 9578,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "876386142",
+              "title": null,
+              "legacyComponentId": 9593,
+              "order": 2
+            }
+          ],
+          "title": "Sandwich Band with FNR Collar",
+          "slug": "sandwich-band-with-fnr-collar",
+          "order": 1,
+          "legacy": {
+            "assignId": 6256,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<span class=\"handwriting\" style=\"font-size:2em\">Build your skills and confidence with practice</span><br>\r\n\r\nAt first, instead of knitting and creating an entire cut 'n sew neckline, consider working this exercise along the edge of an existing swatch.<br>The yarns don't even have to match!\r\nThere are a lot of steps.  If disaster happens you can easily rip out the sample, or use another edge of the swatch to try again <i class=\"fa fa-smile-o fa-2x\" aria-hidden=\"true\"></i><br><img class=\"img-thumbnail\" src=\"/challenge/images/v2/116/swatch1.jpg\">\r\n<div class=\"text-center\"> Save time, use the edge of a swatch</div>\r\n<br>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/116/swatch2.jpg\">\r\n<div class=\"text-center\"> Use a contrasting color to make it easier to see the stitches as you are practicing</div>\r\n",
+              "legacyComponentId": 9592,
+              "order": 1
+            }
+          ],
+          "title": "Collar Exercise",
+          "slug": "collar-exercise",
+          "order": 2,
+          "legacy": {
+            "assignId": 6265,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Oops Lessons",
+      "slug": "oops-lessons",
+      "displayOrder": 8,
+      "legacy": {
+        "itemId": 788,
+        "lessonOrder": 8
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    hr.style13 {\r\n        height: 10px;\r\n        border: 0;\r\n        box-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n    }\r\n\r\n    span.green {\r\n        background: #60C447;\r\n        border-radius: 0.8em;\r\n        -moz-border-radius: 0.8em;\r\n        -webkit-border-radius: 0.8em;\r\n        color: #ffffff;\r\n        display: inline-block;\r\n        font-weight: bold;\r\n        line-height: 1.6em;\r\n        margin-right: 15px;\r\n        text-align: center;\r\n        width: 1.6em;\r\n    }\r\n.yellow_highlight {\r\n\r\nbackground: linear-gradient(rgba(255,255,255,0) 55%,#ffff00 45%,#ffff00);\r\n}\r\n</style>\r\n\r\n<img src=\"/challenge/images/v2/116/oops1.png\">\r\n\r\n\r\n    Plan your shoulder join. When knitting pullovers, machine knitters can't knit our bands in the round. There needs to be a seam. (Normally on the left shoulder)<br>When forming your band be sure to add AT LEAST 1 extra seaming stitch on each end.<br>\r\n        In this <b>Oops</b> the red is the bind off neckline edge. You can see that there aren't enough stitches to cover that edge and join the band.\r\n        <div class=\"videopopup\" data-videotitle=\"Seaming Bands\" data-vimeoid=\"151857806\">\r\n            <img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/551701425-2e60883bd433a2c6a08cff085005fec06731a2afb6cd82b5168c720877c0f8e0-d_1280x720?r=pad\">\r\n            <div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n        </div>\r\n\r\n\r\n    \r\n    <img src=\"/challenge/images/v2/116/extra_stitches.jpg\">\r\n\r\n<hr class=\"style13\">\r\n<img src=\"/challenge/images/v2/116/oops1.png\">\r\n<h3>One-Piece band</h3>\r\n\r\n    <br><span class=\"handwriting\" style=\"font-size:2em\">\"Do as I say ... not as I did\"<br></span><br>\r\n        This neckline will not lay flat against the body. By grading you will make sure that the inner curve of the band is slightly smaller than the outer curve.<br><a data-GlossaryId=\"617\" class=\"glossaryhelp\">Grade the Band Tension <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a>\r\n<br><span class=\"yellow_highlight\">Another tip:</span>  Run a strand of ravel cord inside the band and pull up, steam to get it to lay flat.\r\n    \r\n    <img class=\"img-thumbnail\" src=\"/challenge/images/v2/116/grade.jpg\">\r\n\r\n<hr class=\"style13\">\r\n<img src=\"/challenge/images/v2/116/oops1.png\"><br><span class=\"handwriting\" style=\"font-size:2em\">2 Piece band:</span>\r\n\r\n    \r\n        <h3><span class=\"green\">1</span>Scrap On (yellow)</h3>\r\nOops,<span class=\"yellow_highlight\"> <b>don't forget the ravel cord</b> </span>between the yellow section and the band. It makes it hard to remove the waste yarn when finishing the band ......\r\n        <h3><span class=\"green\">2</span>Knit 1/2 of the band (red) grading the tension</h3>\r\n        <h3><span class=\"green\">3</span>Scrap off (blue)</h3>\r\n\r\n    \r\n     <img src=\"/challenge/images/v2/116/oops_ravel_cord.jpg\">\r\n\r\n",
+              "legacyComponentId": 9581,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<style>\r\n    hr.style13 {\r\n        height: 10px;\r\n        border: 0;\r\n        box-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n    }\r\n\r\n    span.green {\r\n        background: #60C447;\r\n        border-radius: 0.8em;\r\n        -moz-border-radius: 0.8em;\r\n        -webkit-border-radius: 0.8em;\r\n        color: #ffffff;\r\n        display: inline-block;\r\n        font-weight: bold;\r\n        line-height: 1.6em;\r\n        margin-right: 15px;\r\n        text-align: center;\r\n        width: 1.6em;\r\n    }\r\n.yellow_highlight {\r\n\r\nbackground: linear-gradient(rgba(255,255,255,0) 55%,#ffff00 45%,#ffff00);\r\n}\r\n</style>\r\n<hr class=\"style13\">\r\n<img src=\"/challenge/images/v2/116/oops1.png\">\r\n<span class=\"handwriting\" style=\"font-size:2em\">Cut raw edges:</span>\r\n<h3>Secure the raw edges</h3>\r\n\r\n\r\nThe stitching line is secured with straight and zig zag stitches and the neckline is cut.\r\n<img src=\"/challenge/images/v2/116/raw_edges.jpg\">\r\n\r\n\r\n<h3>BUT ... </h3> When the seam allowance is enclosed in the band, the cut edges tend to pop out<br> Serging (or zig zag stitching) to secure the cut floats would prevent this.\r\n<img src=\"/challenge/images/v2/116/popped.jpg\">\r\n<br>\r\n<hr class=\"style13\">\r\n<img src=\"/challenge/images/v2/116/oops1.png\">\r\n<span class=\"handwriting\" style=\"font-size:2em\">Sandwich band:</span>\r\n<h3>Dropped Stitch</h3>\r\n\r\n\r\nWhen I was rehanging the ribber stitches from scrap, I missed one.  I knew there was a problem when I got to the end of the row, but didn't identify which stitch until I removed the waste yarn.<br>Lesson learned: Remove the waste yarn to double check<br>Because this was just a test neckline, I didn't panic, I just put the stitch on a nearby needle (so there wasn't a hole) and fudged at the edge.\r\n<br>Obviously if this was a sweater, I would have fixed this in a better way .. if you look closely in some of the \"finished\" images, you can see the boo-boo. <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i>\r\n\r\n\r\n<img src=\"/challenge/images/v2/116/oops_gif.gif\">\r\n",
+              "legacyComponentId": 9587,
+              "order": 2
+            }
+          ],
+          "title": "<span class=\"badge\">NEW</span>",
+          "slug": "span-class-badge-new-span",
+          "order": 1,
+          "legacy": {
+            "assignId": 6258,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 17,
+    "videos": [
+      {
+        "vimeoId": "151819909",
+        "title": "Introduction to Cut and Sew",
+        "lessonSlug": "getting-started",
+        "blockSlug": "introduction-to-cut-n-sew"
+      },
+      {
+        "vimeoId": "861767300",
+        "title": null,
+        "lessonSlug": "getting-started",
+        "blockSlug": "live-with-o-jolly"
+      },
+      {
+        "vimeoId": "280094859",
+        "title": "Stabilizer for Cut 'n Sew Excellence",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "stabilizer-trick"
+      },
+      {
+        "vimeoId": "873804016",
+        "title": null,
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "band-finishing-trick-span-class-badge-new-span"
+      },
+      {
+        "vimeoId": "151857416",
+        "title": null,
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "turning-rows-span-class-badge-new-span"
+      },
+      {
+        "vimeoId": "345059665",
+        "title": "Cut n Sew - Bands in Pattern (1 or 2 piece)",
+        "lessonSlug": "neckbands",
+        "blockSlug": "industrial-band-variations"
+      },
+      {
+        "vimeoId": "345069044",
+        "title": "Cut N Sew - Rolled Edge Band (2 piece)",
+        "lessonSlug": "neckbands",
+        "blockSlug": "industrial-band-variations"
+      },
+      {
+        "vimeoId": "345053252",
+        "title": "Cut N Sew - Chained Edge Band (2 piece)",
+        "lessonSlug": "neckbands",
+        "blockSlug": "industrial-band-variations"
+      },
+      {
+        "vimeoId": "345047707",
+        "title": "Cut N Sew - Beaded Band (2 piece)",
+        "lessonSlug": "neckbands",
+        "blockSlug": "industrial-band-variations"
+      },
+      {
+        "vimeoId": "151860086",
+        "title": "One Piece Neckband Perfection",
+        "lessonSlug": "neckbands",
+        "blockSlug": "one-piece-neckband-perfection"
+      },
+      {
+        "vimeoId": "223374072",
+        "title": "Reversible Band",
+        "lessonSlug": "neckbands",
+        "blockSlug": "amazing-reversible-band-2-piece"
+      },
+      {
+        "vimeoId": "151849234",
+        "title": "The Secret: Kitchener Stitch",
+        "lessonSlug": "neckbands",
+        "blockSlug": "amazing-reversible-band-2-piece"
+      },
+      {
+        "vimeoId": "151858842",
+        "title": "Faux Garter Stitch Bands",
+        "lessonSlug": "neckbands",
+        "blockSlug": "faux-garter-band"
+      },
+      {
+        "vimeoId": "151857806",
+        "title": "Seaming Bands",
+        "lessonSlug": "neckbands",
+        "blockSlug": "seaming-bands-span-class-badge-new-span"
+      },
+      {
+        "vimeoId": "873332368",
+        "title": null,
+        "lessonSlug": "neckbands",
+        "blockSlug": "shoulders-span-class-badge-new-span"
+      },
+      {
+        "vimeoId": "873859561",
+        "title": null,
+        "lessonSlug": "neckbands",
+        "blockSlug": "wrapped-neckband-span-class-badge-new-span"
+      },
+      {
+        "vimeoId": "876386142",
+        "title": null,
+        "lessonSlug": "collar-with-ribber",
+        "blockSlug": "sandwich-band-with-fnr-collar"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

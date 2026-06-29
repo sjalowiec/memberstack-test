@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { writeActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
+import { clearActiveCustomPatternProjectId, readActiveCustomPatternProjectId, writeActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
 import { runUpdateActiveSavedCustomPattern } from "./customPatternEditingBannerActions";
 import { resolveEffectiveHemDepthInches } from "./customBuildEffectiveHemDepth";
 import {
@@ -19,6 +19,7 @@ import {
   mergedPatternForDisplayFromSources,
 } from "./sleevelessPatternBuilderMerge";
 import { calculateHemRowsFromInches } from "./hemDefaults";
+import { validatePatternBuilderRequired } from "./patternBuilderValidation";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 
 vi.mock("./customPatternProjectClient", async (importOriginal) => {
@@ -43,6 +44,7 @@ import {
 import {
   getCurrentPattern,
   getPatternData,
+  saveCurrentPattern,
   savePatternData,
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
 } from "./patternStorage";
@@ -212,6 +214,96 @@ describe("saved custom-build measurement save", () => {
     const payload = buildSavePayloadFromWorkingDraft(project.name);
     expect(overrideFromPayload(payload, "hip")).toBe("43");
     expect(overrideFromPayload(payload, "chestBust")).toBe("40");
+  });
+
+  it("save payload merges patternBuilderData selectedMeasurements when canonical fit omits them", () => {
+    const project = customBuildProject({
+      chestBust: "40",
+      finishedLength: "24",
+      armholeDepth: "8",
+      shoulderWidth: "14",
+      finishedNeckOpeningWidth: "6",
+      neckDepth: "3",
+      hip: "40",
+    });
+    hydrateSavedCustomPatternProjectSession(project);
+    savePatternData("fit", {
+      selectedSize: "M",
+      easeChoice: "standard",
+      fitChoice: "standard",
+      sizingChart: "misses",
+      selectedMeasurements: {
+        finished_bust_chest: 40,
+        finished_hip: 40,
+      },
+    });
+    saveCurrentPattern({
+      fit: {
+        selectedSize: "M",
+        easeChoice: "standard",
+        sizingChart: "misses",
+        cbMeasurementOverrides: loadMeasurementOverrides(),
+      },
+    });
+
+    const payload = buildSavePayloadFromWorkingDraft(project.name, {
+      skipFlushMeasurementOverrides: true,
+    });
+    const fit = payload.pattern.fit as Record<string, unknown>;
+    const sm = fit.selectedMeasurements as Record<string, number>;
+    expect(sm.finished_bust_chest).toBe(40);
+    expect(sm.finished_hip).toBe(40);
+  });
+
+  it("reload after update keeps pattern summary validation fields", () => {
+    const project = customBuildProject({
+      chestBust: "40",
+      finishedLength: "24",
+      armholeDepth: "8",
+      shoulderWidth: "14",
+      finishedNeckOpeningWidth: "6",
+      neckDepth: "3",
+      hip: "40",
+    });
+    hydrateSavedCustomPatternProjectSession(project);
+    savePatternData("fit", {
+      selectedSize: "M",
+      easeChoice: "standard",
+      fitChoice: "standard",
+      sizingChart: "misses",
+      selectedMeasurements: {
+        finished_bust_chest: 40,
+        finished_hip: 40,
+      },
+    });
+    savePatternData("yarnGaugeMachine", {
+      gaugeStitchesPerInch: "7",
+      gaugeRowsPerInch: "11",
+      gaugeStitchRaw: "28",
+      gaugeRowRaw: "44",
+      gaugeRawUnit: "in",
+      availableNeedles: "200",
+    });
+    saveCurrentPattern({
+      fit: {
+        selectedSize: "M",
+        easeChoice: "standard",
+        sizingChart: "misses",
+        cbMeasurementOverrides: loadMeasurementOverrides(),
+      },
+      yarnGauge: { gaugeStitchRaw: "28", gaugeRowRaw: "44", gaugeRawUnit: "in" },
+    });
+
+    const payload = buildSavePayloadFromWorkingDraft(project.name, {
+      skipFlushMeasurementOverrides: true,
+    });
+    loadProjectIntoWorkingDraft({
+      ...project,
+      pattern: payload.pattern,
+    });
+
+    const validation = validatePatternBuilderRequired(getPatternData());
+    expect(validation.ok).toBe(true);
   });
 
   it("detects dirty after hemDepth change and save payload includes updated hemDepth", () => {
@@ -574,5 +666,36 @@ describe("saved custom-build measurement save", () => {
       hemDepth: "3",
       chestBust: "41",
     });
+  });
+
+  it("smartSave update uses pinned activeProjectId when the localStorage link was cleared", async () => {
+    const project = customBuildProject({
+      chestBust: "40",
+      finishedLength: "24",
+      armholeDepth: "8",
+      shoulderWidth: "14",
+      finishedNeckOpeningWidth: "6",
+      neckDepth: "3",
+      hip: "40",
+    });
+    hydrateSavedCustomPatternProjectSession(project);
+    writeActiveCustomPatternProjectId(project.id, project.name);
+
+    vi.mocked(updateCustomPatternProject).mockResolvedValue({
+      ok: true,
+      project: { ...project, pattern: getCurrentPattern() },
+    });
+
+    clearActiveCustomPatternProjectId();
+
+    const saveRes = await smartSaveCustomPatternProject({
+      mode: "update",
+      activeProjectId: project.id,
+      resolveName: () => project.name,
+    });
+
+    expect(saveRes.ok).toBe(true);
+    expect(vi.mocked(updateCustomPatternProject).mock.calls.at(-1)?.[0].id).toBe(project.id);
+    expect(readActiveCustomPatternProjectId()).toBe(project.id);
   });
 });

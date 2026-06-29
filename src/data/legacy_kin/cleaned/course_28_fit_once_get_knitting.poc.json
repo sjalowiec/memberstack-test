@@ -1,0 +1,1462 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 28,
+    "title": "Fit Once ... Get Knitting!",
+    "slug": "fit-once-get-knitting",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_28_fit_once_get_knitting.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/fit_once.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "{first}, Start Here",
+      "slug": "first-start-here",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 183,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<div class=\"col-12-xs\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/28/sleeveless_workshop/sleeveless_spinner.gif\"></div>\r\n<div class=\"col-12-xs\">Let's walk through knitting this sleeveless top, from the planning stage to completion.<br>\r\nAlong the way we'll discuss perfect fit, knitting techniques and finishing details.<br><b>The goal is to create a \"blueprint\" for future knitting projects.</b><br>Follow along and create a \"muslin\" for your knitting and see where it can take you to creating your own custom designs ... that fit YOU!</div>\r\n\r\n\r\n<br><blockquote class=\"blockquote_style\">\r\n\r\n<b>Muslin</b><br>\r\nWhen sewing clothing, a dressmaker may test the fit of a garment, using an inexpensive muslin fabric before cutting pieces from expensive fabric, thereby avoiding potential costly mistakes. This garment is often called a \"muslin,\" and the process is called \"making a muslin.\" In this context, \"muslin\" has become the generic term for a test or fitting garment, regardless of what it is made from.<em><small> ~Wickipedia</small></em></blockquote",
+              "legacyComponentId": 2559,
+              "order": 1
+            }
+          ],
+          "title": "Introduction",
+          "slug": "introduction",
+          "order": 1,
+          "legacy": {
+            "assignId": 890,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Watch as we plan our new sweater.\r\n<ul>\r\n<li>Select the basic sweater shape</li>\r\n<li><b>Measure something we LOVE</b></li>\r\n<li>Plan for success!</li>\r\n</ul>",
+              "legacyComponentId": 2639,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "546638662",
+              "title": null,
+              "legacyComponentId": 6508,
+              "order": 3
+            }
+          ],
+          "title": "Start With Some Decisions",
+          "slug": "start-with-some-decisions",
+          "order": 2,
+          "legacy": {
+            "assignId": 938,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<center><img src=\"/challenge/images/v2/28/sleeveless_workshop/fit_once_roadmap_1000.jpg\"></center>\r\n\r\n",
+              "legacyComponentId": 2642,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Fill-in-the blanks Roadmap",
+              "filename": "/downloads/ROADMAP.pdf",
+              "showInline": true,
+              "legacy": {
+                "assignId": "940",
+                "componentId": "2643",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 2643,
+              "order": 2
+            }
+          ],
+          "title": "Your Roadmap",
+          "slug": "your-roadmap",
+          "order": 3,
+          "legacy": {
+            "assignId": 940,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Your Turn - Make Some Decisions",
+      "slug": "your-turn-make-some-decisions",
+      "displayOrder": 10,
+      "legacy": {
+        "itemId": 185,
+        "lessonOrder": 10
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<div class=\"col-12-xs\"><br>\r\n<em>When I am packing cones of yarn in a box, I know the the size of the cones, but will the cones will fit in the available box?  To be able to mail your yarn order, <b>the BOX size is more important than the cone dimensions!</b><br>If the box is too big the cones will rattle around and the box will get crushed.  If the packaging is too small, the box could split in transit.<br><b>It doesn't matter what your bust, waist and hip measurements are ... what matters is the size of the package!</b></em><br><blockquote class=\"smallblock\"> <i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> INSTEAD OF MAKING A PATTERN FIT OUR DIMENSIONS, LETS DETERMINE A COMFORTABLE SIZE FOR OUR SWEATER AND KNIT THE SWEATER TO THOSE DIMENSIONS!</blockquote><br>\r\n\r\n</div>\r\n\r\n<div class=\"col-12-xs\"><img src=\"/challenge/images/v2/28/nothing_fits/body_measure.jpg\"</div>\r\n\r\n</div>\r\nAfter you've chosen your pattern, print and complete your Perfect Fit Template and record the dimensions of your favorite sweater.<br>Armed with your preferred garment measurements, you will create a knitting pattern to match your sweater.\r\n<img src=\"/challenge/images/v2/28/sleeveless_workshop/blueprint_worksheet.jpg\">",
+              "legacyComponentId": 2597,
+              "order": 1
+            }
+          ],
+          "title": "Don't Measure your Body!",
+          "slug": "don-t-measure-your-body",
+          "order": 2,
+          "legacy": {
+            "assignId": 929,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The secret to knitting your PERFECT sweater is to identify what you want.<br>\r\nWould you blindly follow a recipe without checking out the ingredients?  Maybe you HATE turnips.  If a recipe calls for turnips, you will probably eliminate or substitute something else.<br><div class=\"smallblock\"><b><em>No knitting pattern written by someone else will ever be PERFECT for YOU!</em></b><br></div><br><b>Let's look at 4 basic sweater styles. Your favorite may be styled a little differently, but we'll use these basic shapes to establish measurement. We'll address styling later.</b>",
+              "legacyComponentId": 2490,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/28/nothing_fits/nothing_fits_measure2.jpg",
+                  "caption": "The drop shoulder sweater is the easiest and fastest style to knit. With minimal shaping, it's often recommended for beginner knitters. It's perfect if you are doing a lot of hand manipulation, adding complicated stitch patterns or color work, or using the g-carriage.<br>\r\nThis style is very common in ready-to-wear because it can easily fit a wide range of sizes."
+                },
+                {
+                  "src": "/challenge/images/v2/28/nothing_fits/nothing_fits_measure3.jpg",
+                  "caption": "Square armhole is also called \"modified drop shoulder\" shaping.  Again, there is minimal shaping, that makes for easy knitting.  Because the sleeve seams are higher on the shoulders, this style can be more flattering, but still fit a range of sizes and body types.<br>\r\nNotice the bind off edges at the underarms and the matching straight knitting on the sleeves. This makes it a bit more difficult to set in the sleeve, but nothing you can't master."
+                },
+                {
+                  "src": "/challenge/images/v2/28/nothing_fits/nothing_fits_measure4.jpg",
+                  "caption": "A variation on the Square armhole is the Full Fashioned sleeve.  Notice the diagonal shaping at the underarm.  This provides a better fit with less bulk at the underarm. Simple decreases create the shaping on both body and sleeve."
+                },
+                {
+                  "src": "/challenge/images/v2/28/nothing_fits/nothing_fits_measure1.jpg",
+                  "caption": "The classic set in sleeve has shaped armholes and a shaped sleeve cap.  This is a very popular and flattering style for all figures.<br>\r\nBUT it has the most shaping.  If you are short on time, or just getting started with your machine, you may want to consider another style.<br>\r\n<blockquote>This style of sleeve isn't hard to knit, it just takes more time and knitting experience. Knit it Now offers a complete course \"Set in Sleeve Perfection\" to help you master this style with practice BEFORE you start knitting your perfect sweater .</blockquote>"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 2491,
+              "order": 2
+            }
+          ],
+          "title": "Basic Sweater Styles",
+          "slug": "basic-sweater-styles",
+          "order": 3,
+          "legacy": {
+            "assignId": 896,
+            "blockType": "Imageslideshow"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Keeping with the <b>Keep it Simple</b> theme, here are the decisions I made for my sleeveless shell.<br>\r\n\r\n\r\n<div class=\"col-12-xs\">\r\n\r\n<ul class=\"li_7px\">\r\n<li>Shaping techiques: \r\n<ul><li><mark>Short row shaping?</mark></li>\r\n<li>Increase/decrease methods?</li>\r\n</ul></li>\r\n<li>Bind off the shoulders or <mark>remove on waste yarn</mark>?</li>\r\n<li>Cast on technique:\r\n<ul>\r\n<li><mark>Open Cast on?</mark></li>\r\n<li>Closed Cast on?</li>\r\n</ul>\r\n</li>\r\n<li><mark>Finishing by hand?</mark><ul>\r\n<li><mark>HK bands: Garter Stitch,</mark> Ribbing, Seed Stitch, etc.</li>\r\n<li>Crochet Bands</li>\r\n<li><mark>Hand stitch side seams</mark></li>\r\n</ul>\r\n</li>\r\n\r\n<li>Finishing by machine?<ul>\r\n<li>Ribbing</li>\r\n<li>Hung Hem</li>\r\n<li>Rolled Edges</li>\r\n<li>Seam on machine or linker</li>\r\n</ul>\r\n</li>\r\n\r\n</ul>\r\n<blockquote class=\"blockquote_style\">Making decisions now will help you determine other finishing details.</blockquote>\r\n</div>\r\n<div class=\"col-12-xs\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/28/sleeveless_workshop/garter_stitch.jpg\"></div>\r\n\r\n<br>",
+              "legacyComponentId": 2522,
+              "order": 1
+            }
+          ],
+          "title": "Finishing Decisions",
+          "slug": "finishing-decisions",
+          "order": 5,
+          "legacy": {
+            "assignId": 903,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Your Pattern",
+      "slug": "your-pattern",
+      "displayOrder": 30,
+      "legacy": {
+        "itemId": 186,
+        "lessonOrder": 30
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Knit it Now Dynamic Patterns were created to give you the freedom to knit any pattern YOUR WAY!<br>\r\n<ul>\r\n<li>ANY yarn!  Don't be limited to the yarn the designer chose</li>\r\n<li>Use ANY machine!</li>\r\n<li>ANY stitch pattern!  Easily substitute your favorite stitch pattern .. with NO MATH!</li>\r\n<li>Perfect Fit!   Adjust the dimensions of the pattern to fit YOU</li>\r\n</ul>\r\n<br>\r\nUnlike software, Knit it Now Patterns are generated completely online.  Nothing to install, maintain, upgrade or learn!<br>\r\nEnter YOUR gauge, select your size and GET KNITTING!<br><ul>\r\n<li>Single size per printout (no more highlighting your size)</li>\r\n<li>Limited abbreviations ... written in plain terms!</li>\r\n<li>Custom sizing</li>\r\n<li>NO MATH</li>\r\n</ul>\r\n",
+              "legacyComponentId": 2560,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "402313052",
+              "title": "Using the Basic Blueprints",
+              "legacyComponentId": 2595,
+              "order": 2
+            }
+          ],
+          "title": "{first}, New to Knit it Now Dynamic Patterns?",
+          "slug": "first-new-to-knit-it-now-dynamic-patterns",
+          "order": 1,
+          "legacy": {
+            "assignId": 921,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "402313052",
+              "title": "Armed with our dimensions, watch as we create our custom pattern",
+              "legacyComponentId": 2587,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "908",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 2588,
+              "order": 2
+            }
+          ],
+          "title": "How to Build a Pattern",
+          "slug": "how-to-build-a-pattern",
+          "order": 2,
+          "legacy": {
+            "assignId": 927,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>Start by making a choice</h3>\r\n\r\n<table class='table small'>\r\n<tr>\r\n   <th></th>\r\n   <th>bust/chest <em><small>without ease</small></em></th>\r\n </tr>\r\n<tr>\r\n<td>Misses Sizes </td>\r\n<td>31.50 - 42\" (80-106cm) </td>\r\n</tr>\r\n<tr>\r\n<td>Women Plus </td>\r\n<td>39-63\" (99-160cm)</td>\r\n</tr>\r\n<tr>\r\n<td>Men </td>\r\n<td>34-50\" (86-127cm)</td>\r\n</tr><tr>\r\n<td>Kids </td>\r\n<td>24-34\" (53-86cm)</td>\r\n</tr>\r\n</table>\r\n\r\n<div class=\"clearfix\">",
+              "legacyComponentId": 2653,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "BasicPicker",
+              "notes": [
+                "Unmapped legacy component type: BasicPicker"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "945",
+                "COLLECTIONCAT": "CollectionCat",
+                "TYPEOF": "BasicPicker"
+              },
+              "legacyComponentId": 2650,
+              "order": 2
+            }
+          ],
+          "title": "Select The Garment Type",
+          "slug": "select-the-garment-type",
+          "order": 3,
+          "legacy": {
+            "assignId": 945,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "NOTE: <br>\r\nIncluded with this course is one pattern.<br>\r\nOnce you have selected your pattern it will be attached to the course and added to your personal library. (It cannot be changed)<br>Subscribers: You may attach a pattern here, but you also have full access to all of our Perfect Fit Blueprints and can access them from your library.",
+              "legacyComponentId": 2655,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "BasicSelectPattern",
+              "notes": [
+                "Unmapped legacy component type: BasicSelectPattern"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "946",
+                "CHALLENGE_COMPONENTID": "2651",
+                "COLLECTIONCAT": "CollectionCat",
+                "REDIRECT_BACK": "/challenge/28/Group/945/item|Your Pattern: Select The Type Garment",
+                "SELECTEDPATTERN": "SelectedPatternID"
+              },
+              "legacyComponentId": 2651,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "946",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 2658,
+              "order": 4
+            }
+          ],
+          "title": "Find Your Pattern",
+          "slug": "find-your-pattern",
+          "order": 4,
+          "legacy": {
+            "assignId": 946,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "BacicPickerPattern",
+              "notes": [
+                "Unmapped legacy component type: BacicPickerPattern"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "908",
+                "DATAMODAL_GARMENTID": "SelectedPatternID",
+                "MISSINGINFO_SENDTO": "/challenge/28/Group/946/item|Your Pattern: Find Your Pattern",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "PatternFileName",
+                "REDIRECT_TO": "/challenge/28/Group/928/item|Your Pattern: Your Pattern",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "rowgauge",
+                "SIZING_DATAMODEL_ELEMENT": "SizingID",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "stitchgauge",
+                "SWATCHROWS": "YourSwatchLength",
+                "SWATCHSTITCHES": "YourSwatchWeight",
+                "SWATCHWEIGHT": "YourSwatchWeight",
+                "TYPEOF": "BacicPickerPattern",
+                "USESWATCHLOGIC": "no"
+              },
+              "legacyComponentId": 2652,
+              "order": 1
+            }
+          ],
+          "title": "Build YOUR Pattern",
+          "slug": "build-your-pattern",
+          "order": 5,
+          "legacy": {
+            "assignId": 908,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): PatternFileName",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 908 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "928",
+                "CHALLENGE_COMPONENTID": "2656",
+                "DATAMODEL_ELEMENTS": "PatternFileName",
+                "DATAMODEL_REDIRECT": "908"
+              },
+              "legacyComponentId": 2656,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'PatternFileName'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "928",
+                "CHALLENGE_COMPONENTID": "2596",
+                "DATAMODEL_ICON": "fa fa-download",
+                "LABLE": "Download",
+                "PATTERN_DATAMODEL_ELEMENT": "PatternFileName",
+                "VIEWHEIGHT": "300"
+              },
+              "legacyComponentId": 2596,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Basics_YarnEstimator",
+              "notes": [
+                "Unmapped legacy component type: Basics_YarnEstimator"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "928",
+                "CHALLENGE_COMPONENTID": "2657",
+                "SELECTEDPATTERN": "SelectedPatternID"
+              },
+              "legacyComponentId": 2657,
+              "order": 3
+            }
+          ],
+          "title": "Your Pattern",
+          "slug": "your-pattern",
+          "order": 6,
+          "legacy": {
+            "assignId": 928,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "281071041",
+              "title": "Read through your pattern and make some final decisions before starting to knit",
+              "legacyComponentId": 2641,
+              "order": 1
+            }
+          ],
+          "title": "Plan ahead",
+          "slug": "plan-ahead",
+          "order": 7,
+          "legacy": {
+            "assignId": 939,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "How much Yarn do I Need?",
+      "slug": "how-much-yarn-do-i-need",
+      "displayOrder": 39,
+      "legacy": {
+        "itemId": 192,
+        "lessonOrder": 39
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "It is important that you know how to estimate yarn for all of your knitting projects <small>(hint: it's based on your swatch and a little math)</small>",
+              "legacyComponentId": 2625,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857735",
+              "title": "Here's How",
+              "legacySlot": 1,
+              "legacyComponentId": 2626,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859805",
+              "title": "Hate Math? Try our Tool",
+              "legacySlot": 2,
+              "legacyComponentId": 2626,
+              "order": 3
+            }
+          ],
+          "title": "How Much Yarn Do You Need?",
+          "slug": "how-much-yarn-do-you-need",
+          "order": 5,
+          "legacy": {
+            "assignId": 932,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/28/yarn_estimate_example.jpg\" alt=\"\" />\r\n\r\n\r\n\r\n\r\nUsing the dimensions of the sample swatch shown above,  and the instructions from the video,<br />calculate how much yarn you would need for a <strong>36x36 baby blanket.</strong>\r\n<em><small>Not sure? Take a guess and we'll show you the math</small></em>\r\n\r\n",
+              "legacyComponentId": 2627,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "167",
+                "QUESTION_ANSWER": "63",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply 9 x 7 = 63</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many square inches in the sample swatch?"
+              },
+              "legacyComponentId": 2629,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "168",
+                "QUESTION_ANSWER": "3.5",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Divide weight (22) / square inches (63)=.35 </b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> Calculate weight per square inch <small>(round up)</small>"
+              },
+              "legacyComponentId": 2630,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "169",
+                "QUESTION_ANSWER": "1296",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply 36 x 36 = 1296</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many square inches in the blanket?"
+              },
+              "legacyComponentId": 2631,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "111",
+                "CHALLENGE_COMPONENTID": "170",
+                "QUESTION_ANSWER": "454",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Multiply the blanket square inches(1296) x multiplier (.35)= 454 grams</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-pencil' aria-hidden='true'></i> How many grams are needed (approximate) for the 36 x 36 inch blanket?"
+              },
+              "legacyComponentId": 2632,
+              "order": 6
+            }
+          ],
+          "title": "Practice - Yarn Estimate",
+          "slug": "practice-yarn-estimate",
+          "order": 6,
+          "legacy": {
+            "assignId": 933,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "For practice ... here are our numbers ...<br>\r\n\r\n",
+              "legacyComponentId": 2634,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Questions",
+              "notes": [
+                "Unmapped legacy component type: Questions"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "934",
+                "CHALLENGE_COMPONENTID": "2635",
+                "QUESTION_ANSWER": "185",
+                "QUESTION_ERROR_MESSAGE": "<b><i class='fa fa-exclamation-triangle' aria-hidden='true'></i> Look below for our answer using the Yarn Estimator tool</b>",
+                "QUESTION_MANDITORY": "0",
+                "QUESTION_SIZE": "col-xs-12 col-md-2",
+                "QUESTION_SUCCESS_MESSAGE": "<b><i class='fa fa-check-square' aria-hidden='true'></i> Correct!</b>",
+                "QUESTION_TEXT": "<i class='fa fa-question fa-2x'aria-hidden='true'></i> How many grams will we need for the front of our sweater?"
+              },
+              "legacyComponentId": 2635,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<!--- main info --->\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/28/sleeveless_workshop/square_inches.jpg\">\r\n\r\n\r\n\r\n<hr>\r\n\r\n\r\n<button class=\"btn btn-info\" onclick=\"$('#theanswer').toggle()\">Here's our answer</button>\r\n\r\n\r\n<br>\r\n<!--- hidden answer. --->\r\n\r\n\r\n<h3>The Answer</h3>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/28/estimate11.png\">\r\n\r\n",
+              "legacyComponentId": 2636,
+              "order": 3
+            }
+          ],
+          "title": "More Practice",
+          "slug": "more-practice",
+          "order": 7,
+          "legacy": {
+            "assignId": 934,
+            "blockType": "Questions"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: yarnusage.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "925",
+                "CUSTOMCFM": "yarnusage.cfm",
+                "TYPEOF": "CustomCFM"
+              },
+              "legacyComponentId": 2637,
+              "order": 2
+            }
+          ],
+          "title": "Determine how much yarn you need",
+          "slug": "determine-how-much-yarn-you-need",
+          "order": 8,
+          "legacy": {
+            "assignId": 935,
+            "blockType": "Practice"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Follow Along as We Get Knitting",
+      "slug": "follow-along-as-we-get-knitting",
+      "displayOrder": 40,
+      "legacy": {
+        "itemId": 188,
+        "lessonOrder": 40
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "277813677",
+              "title": "Knit the front and back",
+              "legacyComponentId": 2537,
+              "order": 1
+            }
+          ],
+          "title": "Let's Get Knitting",
+          "slug": "let-s-get-knitting",
+          "order": 1,
+          "legacy": {
+            "assignId": 914,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Knitting Techniques",
+      "slug": "knitting-techniques",
+      "displayOrder": 60,
+      "legacy": {
+        "itemId": 187,
+        "lessonOrder": 60
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859486",
+              "title": "Adding Bust Darts",
+              "legacyComponentId": 2527,
+              "order": 1
+            }
+          ],
+          "title": "Add Bust Darts",
+          "slug": "add-bust-darts",
+          "order": 1,
+          "legacy": {
+            "assignId": 904,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"blockquote_style\"><b>Stitch Multiples:</b><br>\r\nThe number of stitches needed to complete the pattern stitch</blockquote>",
+              "legacyComponentId": 2581,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857799",
+              "title": "Stitch Multiples",
+              "legacyComponentId": 2528,
+              "order": 2
+            }
+          ],
+          "title": "Stitch Multiples",
+          "slug": "stitch-multiples",
+          "order": 2,
+          "legacy": {
+            "assignId": 905,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859107",
+              "title": "Neckline Shaping Perfection",
+              "legacySlot": 1,
+              "legacyComponentId": 2529,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858551",
+              "title": "Easy Round Neck Shaping",
+              "legacySlot": 2,
+              "legacyComponentId": 2529,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "906",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 2567,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "\r\n<b>Could you use more practice with neckline shaping?</b><br>The Knit it Now complete <b><a href=\"http://www.knititnow.com/challenge/21/course/neckline-shaping-practice\">Neckline Shaping Course</a></b> walks you step-by-step through the process of shaping necklines, offering multiple techniques, a practice pattern PLUS exercises for mastering necklines.<br>\r\n<a href=\"http://www.knititnow.com/challenge/21/course/neckline-shaping-practice\"><img src=\"/challenge/images/v2/28/course_thumbnails/neckline.jpg\"></a>\r\n",
+              "legacyComponentId": 2566,
+              "order": 4
+            }
+          ],
+          "title": "Neckline Shaping",
+          "slug": "neckline-shaping",
+          "order": 3,
+          "legacy": {
+            "assignId": 906,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859907",
+              "title": "Best Ever Picot Hem",
+              "legacySlot": 1,
+              "legacyComponentId": 2568,
+              "order": 4
+            },
+            {
+              "type": "video",
+              "vimeoId": "187686648",
+              "title": "Faux Crochet Edge",
+              "legacySlot": 2,
+              "legacyComponentId": 2568,
+              "order": 4
+            }
+          ],
+          "title": "2 Favorite Band/Hem Finishes",
+          "slug": "2-favorite-band-hem-finishes",
+          "order": 4,
+          "legacy": {
+            "assignId": 919,
+            "blockType": "VimeoMultiple"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<i class='fa fa-ightbulb-o fa 4x' aria-hidden='true'></i> <br>Leaving open stitches allowed me to pick up and hand knit the hem. <br>Leaving open stitches at the shoulders allowed me to join the shoulders on the machine \r\n<a href=\"#\" data-toggle=\"tooltip\" data-placement=\"auto\" title=\"A hand knitting technique, demonstrated on the machine in the upcoming 'Seam the shoulders' video\">(3 needle Bind off)</a>",
+              "legacyComponentId": 2582,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "237470165",
+              "title": "Scrap on Scrap Off",
+              "legacyComponentId": 2532,
+              "order": 2
+            }
+          ],
+          "title": "Scrap On / Scrap Off",
+          "slug": "scrap-on-scrap-off",
+          "order": 5,
+          "legacy": {
+            "assignId": 909,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img class=\"img-thumbnail\" src=\"/challenge/images/v2/28/sleeveless_workshop/shoulder_join_both.jpg\">",
+              "legacyComponentId": 2572,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "922",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 2573,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860051",
+              "title": "Shoulder Seams",
+              "legacyComponentId": 2571,
+              "order": 3
+            }
+          ],
+          "title": "Seam the Shoulders",
+          "slug": "seam-the-shoulders",
+          "order": 6,
+          "legacy": {
+            "assignId": 922,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859649",
+              "title": "Taming Yarn Tails",
+              "legacyComponentId": 2534,
+              "order": 1
+            }
+          ],
+          "title": "Taming Yarn Tails",
+          "slug": "taming-yarn-tails",
+          "order": 8,
+          "legacy": {
+            "assignId": 911,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> \r\nAvoid \"stairsteps\" when shaping armholes and create neat, smooth edges to simplify picking up band stitches.",
+              "legacyComponentId": 2574,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857916",
+              "title": "Compairing shaping Part 1",
+              "legacySlot": 1,
+              "legacyComponentId": 2535,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857928",
+              "title": "Compairing shaping Part 2",
+              "legacySlot": 2,
+              "legacyComponentId": 2535,
+              "order": 2
+            }
+          ],
+          "title": "Armhole Shaping",
+          "slug": "armhole-shaping",
+          "order": 9,
+          "legacy": {
+            "assignId": 912,
+            "blockType": "VimeoMultiple"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "254877048",
+              "title": "LIfelines: Scrap off Method",
+              "legacyComponentId": 2536,
+              "order": 1
+            }
+          ],
+          "title": "Lifelines - Just in Case ....",
+          "slug": "lifelines-just-in-case",
+          "order": 10,
+          "legacy": {
+            "assignId": 913,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Finishing",
+      "slug": "finishing",
+      "displayOrder": 62,
+      "legacy": {
+        "itemId": 190,
+        "lessonOrder": 62
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>Before adding the finishing touches to your sweater, be sure to practice the techniques. </h3>\r\n\r\n<a href=\"#\" data-toggle=\"tooltip\" data-placement=\"auto\" title=\"Grafting/seaming stitch to stitch\">Kitchener Stitch</a>\r\n\r\n\r\n<h4>Use your Swatch</h4>\r\n<ol class=\"instruction-list\">\r\n<li>Pick up stitches along the edge of your swatch to play with band and hem stitch patterns</li>\r\n<li>Practice seaming with your yarn and stitch pattern</li>\r\n<li>Working <a href=\"#\" data-toggle=\"tooltip\" data-placement=\"auto\"  title=\"Grafting/seaming stitch to stitch\">Kitchener Stitch</a> in your project? Practice getting the tension just right by working a bit of <a href=\"#\" data-toggle=\"tooltip\" data-placement=\"auto\" title=\"Swiss Darning\">Duplicate Stitch</a> with your yarn on your swatch</li>\r\n</ol>\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/28/sleeveless_workshop/test_swatch.jpg\">\r\n\r\n\r\n\r\n<blockquote class=\"blockquote_style\"><i class=\"fa fa-lightbulb-o fa-2x\"></i>\r\nIf you are unsure, keep any waste yarn in place until the sweater is finished.\r\n</blockquote>\r\n\r\n",
+              "legacyComponentId": 2576,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858422",
+              "title": "Seaming: Putting it all Together",
+              "legacySlot": 1,
+              "legacyComponentId": 2577,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857806",
+              "title": "Seaming Bands",
+              "legacySlot": 2,
+              "legacyComponentId": 2577,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "202105212",
+              "title": "Band Perfection",
+              "legacySlot": 3,
+              "legacyComponentId": 2577,
+              "order": 3
+            }
+          ],
+          "title": "Finishing Tips",
+          "slug": "finishing-tips",
+          "order": 1,
+          "legacy": {
+            "assignId": 923,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/28/blocking/blocking1.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/28/blocking/blocking2.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/28/blocking/blocking3.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/28/blocking/blocking4.jpg",
+                  "caption": null
+                },
+                {
+                  "src": "/challenge/images/v2/28/blocking/blocking5.jpg",
+                  "caption": null
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 2546,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "\r\n<H4>Speak to a group of knitters and they will all have opinions about blocking. For what it's worth, here are my thoughts:</h4><br><table class=\"table\">\r\n<tr valign=\"top\">\r\n\t<td><b>Why bother blocking?</b></td>\r\n\t<td><em>It adds a professional finish to your knitting.<br>When I was a girl I had a sewing teacher insist that we press every dart and seam as we stitched it. I QUICKLY EMBRACED ... what a difference in the appearance of my finished items! <br>Although knitters don't normally press/iron knitting, <b> blocking adds the perfect professional finish.</b></em></td>\r\n</tr>\r\n<tr valign=\"top\">\r\n\t<td><b>Block the pieces before seaming and finishing?</b></td>\r\n\t<td><em>YES!  Why deal with curled edges when you are picking up bands and seaming? A shot of steam goes a long way. (If appropriate for your yarn)</em></td>\r\n</tr>\r\n<tr valign=\"top\">\r\n\t<td><b>Block the entire garment after it's completed?</b></td>\r\n\t<td><em>YES! I like to wash and dry my sweaters before wearing them.<br>Many knitters will put their finished sweater in the dryer with a damp towel and let the heat and moisture \"block\" the finished sweater.</em></td>\r\n</tr>\r\n<tr valign=\"top\">\r\n\t<td><b>What method to use for blocking?</b></td>\r\n\t<td><em><b>OK - this is where you'll find heated discussions.</b><br> <em>When I first started knitting (with acrylic yarn) I was taught to use blocking wires and pin each piece to size on a blocking board. I guess I'm lazy... because I found this to take more time than knitting the whole sweater!</em><br>Yes, you need to block ... how you go about it is YOUR CHOICE.<br>These days, I use mostly natural fibers and LOVE <b>wet blocking</b>.</em> </td>\r\n</tr>\r\n</table>\r\n\r\n\r\n\r\n\r\n<blockquote class=\"blockquote_style\"><i class=\"fa fa-quote-left\" aria-hidden=\"true\"></i> <b>From long-time MK instructor, Jodie Raymond:</b><br><em>\r\n \r\n<ul><li>\r\nIt is wise after finishing  one piece of  your garment,  to block it out to make sure your stitch  gauge is correct.  If this measures correctly, remaining pieces can be knit with confidence.<br></li>\r\n<li>\r\nBe sure to \"tube\" (pull) the fabric before blocking.  Also, run a wooden spoon  handle, or dowel,  down through all  doubled pieces like hems, cuffs, bands, and collars before you block in order to set  those stitches.<br></li>\r\n<li> Pin out the  fabric on a blocking board and steam until the  piece holds it's shape with no  pins.  This will be the  only time one can  sharply steam the seam  edges - making sewing much easier.  <i class=\"fa fa-quote-right\" aria-hidden=\"true\"></i></li>\r\n</ul> </em><br><em><small>Sue's Note: Jodie machine knit in the '80's and specialized in standard gauge dresses, skirts, slacks etc. She use wool/rayon blend, hard-twist dress yarns.<br>Adjust your blocking choices based on your style of knitting and yarns used.</em></small>\r\n</blockquote>\r\n\r\n\r\n\r\n<img src=\"\">\r\n\r\n<i class=\"fa fa-shopping-cart\" aria-hidden=\"true\"></i> Want more information about blocking?<br><a href=\"/store/product/534/blocking-for-everyone/itemdetails\" target=\"_blank\">Printed book available.</a><br><a href=\"/store/product/534/blocking-for-everyone/itemdetails\" target=\"_blank\"><img width=\"200\" src=\"/knititnow/store/thumbnails/blocking_cover.jpg\"></a>\r\n\r\n\r\n",
+              "legacyComponentId": 2544,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858072",
+              "title": "Wet Blocking",
+              "legacyComponentId": 2545,
+              "order": 3
+            }
+          ],
+          "title": "Blocking",
+          "slug": "blocking",
+          "order": 2,
+          "legacy": {
+            "assignId": 918,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "278020390",
+              "title": "Calculating Armhole Bands",
+              "legacyComponentId": 2558,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "NOTE:  The concepts of grading the band and picking up the right number of stitches apply to BOTH the neckbands and armhole bands.<br>No matter what knitting pattern you use, the number of stitches to pick up is an estimate in the pattern.<br><b> It is critical that you:</b>\r\n<ul>\r\n<li>Learn to calculate your own bands based on your gauge and your chosen stitch pattern</li>\r\n<li>Practice attaching bands BEFORE you start a project. Use the <a href=\"/knit/DynamicPattern/909/practice-armhole-finishing\">Knit it Now Practice Pattern</a> for mini swatches to use to gain experience and confidence></li>\r\n</ul>\r\n<a href=\"/knit/DynamicPattern/909/practice-armhole-finishing\"><img src=\"/challenge/images/v2/28/sleeveless_workshop/practice_pattern_armhole.jpg\" class=\"img-thumbnail\"></a>\r\n<a href=\"/knit/DynamicPattern/679/practice-necklines\"><img src=\"/challenge/images/v2/28/sleeveless_workshop/neckline_practice_pattern.jpg\" class=\"img-thumbnail\"></a>",
+              "legacyComponentId": 2575,
+              "order": 2
+            }
+          ],
+          "title": "Calculating Bands",
+          "slug": "calculating-bands",
+          "order": 3,
+          "legacy": {
+            "assignId": 920,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>Before adding the finishing touches to your sweater, be sure to practice the techniques. </h3>\r\n\r\n<h3 class=\"MachineknittingColor\">Neckbands</h3>\r\n<ol class=\"instruction-list\">\r\n\r\n<li>If you are knitting the  <b>NECKBAND on the machine:</B> <br><ol class=\"instruction-nolist\">\r\n<li>Join the right shoulder</li>\r\n<li>Knit the band</li>\r\n<li>Join the left shoulder</li>\r\n<li>Neatly seam the band at the shoulder</li>\r\n</ol>\r\n<li>If you are knitting (or crocheting) the <b>NECKBAND by hand:</B> <br><ol class=\"instruction-nolist\">\r\n<li>Join both shoulders</li>\r\n<li>Knit or crochet the band in the round (no seam!)</li>\r\n<li>Be sure to keep the edge of the band loose enough to go over the head</li>\r\n</ol>\r\n</ol>\r\n<h3 class=\"MachineknittingColor\">Armhole Bands</h3>\r\n<ol class=\"instruction-list\">\r\n\r\n<li>If you are knitting the  <b>ARMHOLE BANDS on the machine:</B> <br><ol class=\"instruction-nolist\">\r\n           <li>If you have enough needles, pick up and knit both front and back of the armholes with no seam</li>\r\n            <li>If you don't have enough needles, knit your armhole bands before joining the shoulders</li>\r\n             <li>When the bands are complete, seam the side seams on the machine or with mattress stitch</li>\r\n</ol>\r\n</li>\r\n<li>If you are knitting the  <b>ARMHOLE BANDS by hand or with crochet:</B> <br><ol class=\"instruction-nolist\">\r\n<li>Seam the side seams on the machine or work mattress stitch</li>\r\n<li>Pick up stitches around the armhole and knit (or crochet) in the round to finish the armhole edges.</li>\r\n</ol>\r\n</li>\r\n</ol>\r\n<blockquote class=\"blockquote_style\"><i class=\"fa fa-lightbulb-o fa-4x\" aria-hidden=\"true\"></i>Whether hand or machine knitting the bands, be sure to grade the tension so the edge lays flat.<br>\r\n<ul><li>By machine: tighten the tension.</li>\r\n<li>By Hand: switch to a smaller needle for the last few rows of the band.</li>\r\n</ul>\r\n</blockquote>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 2539,
+              "order": 1
+            }
+          ],
+          "title": "Knitting the Bands",
+          "slug": "knitting-the-bands",
+          "order": 4,
+          "legacy": {
+            "assignId": 917,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Your Success Depends on this",
+      "slug": "your-success-depends-on-this",
+      "displayOrder": 65,
+      "legacy": {
+        "itemId": 184,
+        "lessonOrder": 65
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "We spend a lot of time planning, practicing and thinking about knitting. We spend money on yarn and patterns. Even though machine knitting is fast, we all have limited time to devote to knitting.<br>\r\nWhy invest all that time, money and energy and not be happy with the results?  The ONLY WAY to ensure success is to establish correct gauge.\r\n\r\n\r\n<br><strong>DON'T SKIP THIS SECTION!</strong> <br>Your success with this course AND your success with your knitting machine depends on your understanding and mastering the art of knitting gauge swatches.<br>Without a swatch we are knitting in the dark.<br>\r\n<ul class=\"li_7px\">\r\n<li>Is it going to fit?</li>\r\n<li>How is the final sweater going to feel in the yarn and stitch pattern you've chosen?</li>\r\n<li>Do you have enough yarn?</li>\r\n<li>Do you have enough needles on your machine for the size you chose?</li>\r\n</ul>\r\n\r\n\r\n<div class=\"text-center\">\r\n<p style=\"text-align: center;\"><strong>SWATCHING IS NOT OPTIONAL</strong></p>\r\n<img class=\"img-thumbnail\" src=\"https://www.knititnow.com/images/blog_images/2017/swatching_is_not_optional.jpg\" /></div>\r\n",
+              "legacyComponentId": 2479,
+              "order": 1
+            }
+          ],
+          "title": "Swatching is NOT Optional",
+          "slug": "swatching-is-not-optional",
+          "order": 2,
+          "legacy": {
+            "assignId": 891,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Let's double check your gauge ... let's MAKE SURE  you are on track, before you start knitting another sweater.<br>We won't bore you with instruction for knitting gauge swatches.  Your manual will give you good instructions for the mechanics of knitting a swatch.<br>The important thing for this course is MEASURING GAUGE (accurately)",
+              "legacyComponentId": 2480,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "260683875",
+              "title": "Accurately Measure Gauge - 2 methods",
+              "legacyComponentId": 2481,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151856465",
+              "title": "Importance of Correct Gauge",
+              "legacyComponentId": 2482,
+              "order": 3
+            }
+          ],
+          "title": "Gauge",
+          "slug": "gauge",
+          "order": 3,
+          "legacy": {
+            "assignId": 892,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\"><b>If you haven't used your chosen yarn before, how do you know the best tension to knit your sweater?</div> </b>\r\n\r\nKnitters tend to use the terms \"tension swatch\" and \"gauge swatch\" interchangeably, lets take a look at both.",
+              "legacyComponentId": 2483,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"cleanwell\">\r\n\r\n<h4><strong>GAUGE SWATCH</strong></h4>\r\nThe <strong>gauge swatch</strong> is the \"official\" swatch used when designing a garment.\r\n<br>\r\nIt is knit at a specific size, marked for accurate stitch and row measurement and \"dressed\" as the final garment will be treated.<br>\r\n<blockquote class=\"smallblock\">\r\n<em>TIP: Whatever method you use to create a swatch, the key is to correctly measure it and calculate your gauge.</em></blockquote>\r\n<img src=\"/challenge/images/v2/28/swatch_measure.jpg\" />\r\n</div>",
+              "legacyComponentId": 2484,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"cleanwell\">\r\n\r\n<h4><strong>TENSION SWATCH</strong></h4>\r\n<em>When I pick up a new cone of yarn, I can't wait to thread up my machine and see what the yarn looks like.   From the initial cast on, I start guessing what setting on my tension dial I need to use.  I knit a few inches and reach down and start to feel the resulting fabric. <br>Once I get a feel for the yarn (what machine, general tension setting at stockinette, etc) I create a<strong> tension swatch</strong>.  This helps me fine-tune the tension needed to achieve the fabric I like and allows me to play with various techniques.  <strong>I'm often very surprised that a yarn looks great in tuck, and awful in slip</strong>, for example.  Adding a few eyelets here and there tells me if the yarn will work up in lace.</em><br>Let's practice knitting a <strong>tension swatch.</strong>\r\n</div>",
+              "legacyComponentId": 2485,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"section-title MachineknittingColor\"><i class=\"fa fa-refresh\" aria-hidden=\"true\"></i> Try it yourself</div>\r\n\r\n\r\n<ol class=\"instruction-list\">\r\n<li>Play!</li>\r\n<li>Start knitting stockenette at the tightest tension that will knit.  (If the tension is too tight, you'll see stitches that don't form properly.</li>\r\n<li>Knit 2-4 inches. Knit a marker row (change colors, work a few eyelets across the row or knit a sewing thread in with the main yarn)</li>\r\n<li>Keep knitting sections, marking the tension dial number in each section.  Knit the last section as loosely as possiblle, even if you think this will be too loose ... I'm often very pleasantly surprised at the result.</li>\r\n<li>Transfer every other needle to out of work postion and knit a section - put all needles back into work.</li>\r\n<li>Work a simple tuck, or slip, or any stitch pattern of your choice ... base your tension dial setting on the stockinette sections you just knit.</li>\r\n</ol>\r\n<blockquote class=\"smallblock\"><em>The point of this exercise is to put the yarn through it's paces ... ignite your creativity, and get a feel for what the yarn can do.  If you don't have a huge cone, you can always re-wind this knitting. At this point, you probably know exactly what you want to do with this yarn.  Knit your Gauge Swatch, dress it and and you are ready to design and knit your sweater.</em></blockquote>\r\n\r\n<img src=\"/challenge/images/v2/28/tension_swatch.jpg\" />\r\n\r\n",
+              "legacyComponentId": 2486,
+              "order": 4
+            }
+          ],
+          "title": "Gauge swatch verses Tension Swatch",
+          "slug": "gauge-swatch-verses-tension-swatch",
+          "order": 4,
+          "legacy": {
+            "assignId": 893,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "245117927",
+              "title": "Gauge and Drop",
+              "legacyComponentId": 2487,
+              "order": 1
+            }
+          ],
+          "title": "Gauge and Drop",
+          "slug": "gauge-and-drop",
+          "order": 5,
+          "legacy": {
+            "assignId": 894,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Things to consider when measuring\r\n<ul class=\"li_7px\">\r\n<li>Rest and dress your swatch before measuring</li>\r\n<li>These swatches are flat ... probably not the most accurate for larger pieces. You will want to hang your swatch (and possibly add a bit of weight) to account for drop</li>\r\n<li>Most hand knitters think we are crazy to calculate out 2 decimal places.  Is \"close enough\" good enough for you?  This is knitting after all <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i></li>\r\n<li>These swatches are both the same number of stitches and rows. Don't forget to swatch for each stitch pattern you will be using, including combinations of stitch patterns within a piece</li>\r\n</ul>\r\n",
+              "legacyComponentId": 2488,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/28/nothing_fits/swatch_measure1.jpg",
+                  "caption": "I'd \"average\" this out to 6\" or 18 cm."
+                },
+                {
+                  "src": "/challenge/images/v2/28/nothing_fits/swatch_measure2.jpg",
+                  "caption": "5.5\" / 14cm"
+                },
+                {
+                  "src": "/challenge/images/v2/28/nothing_fits/swatch_measure3.jpg",
+                  "caption": "7\" / 18 cm"
+                },
+                {
+                  "src": "/challenge/images/v2/28/nothing_fits/swatch_measure4.jpg",
+                  "caption": "4.125\" / 10.5 cm"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 2489,
+              "order": 2
+            }
+          ],
+          "title": "Swatching: Up Close",
+          "slug": "swatching-up-close",
+          "order": 6,
+          "legacy": {
+            "assignId": 895,
+            "blockType": "Imageslideshow"
+          }
+        }
+      ]
+    },
+    {
+      "title": "{First}, Where do you go from here?",
+      "slug": "first-where-do-you-go-from-here",
+      "displayOrder": 900,
+      "legacy": {
+        "itemId": 191,
+        "lessonOrder": 900
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Armed with your \"muslin\" the sky is the limit!<br>\r\n<ul>\r\n<li>Play with stitch patterning</li>\r\n<li>Modify the neckline</li>\r\n<li>Add embelishments</li>\r\n<li>Try different yarns and machines</li>\r\n</ul>\r\n\r\n",
+              "legacyComponentId": 2579,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pinterest",
+              "notes": [
+                "Legacy Pinterest embed; replace with static content or omit."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "924",
+                "PINTERESTID": "16",
+                "TYPEOF": "Pinterest"
+              },
+              "legacyComponentId": 2580,
+              "order": 2
+            }
+          ],
+          "title": "Your Next Steps",
+          "slug": "your-next-steps",
+          "order": 1,
+          "legacy": {
+            "assignId": 924,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 27,
+    "videos": [
+      {
+        "vimeoId": "546638662",
+        "title": null,
+        "lessonSlug": "first-start-here",
+        "blockSlug": "start-with-some-decisions"
+      },
+      {
+        "vimeoId": "402313052",
+        "title": "Using the Basic Blueprints",
+        "lessonSlug": "your-pattern",
+        "blockSlug": "first-new-to-knit-it-now-dynamic-patterns"
+      },
+      {
+        "vimeoId": "402313052",
+        "title": "Armed with our dimensions, watch as we create our custom pattern",
+        "lessonSlug": "your-pattern",
+        "blockSlug": "how-to-build-a-pattern"
+      },
+      {
+        "vimeoId": "281071041",
+        "title": "Read through your pattern and make some final decisions before starting to knit",
+        "lessonSlug": "your-pattern",
+        "blockSlug": "plan-ahead"
+      },
+      {
+        "vimeoId": "151857735",
+        "title": "Here's How",
+        "lessonSlug": "how-much-yarn-do-i-need",
+        "blockSlug": "how-much-yarn-do-you-need"
+      },
+      {
+        "vimeoId": "151859805",
+        "title": "Hate Math? Try our Tool",
+        "lessonSlug": "how-much-yarn-do-i-need",
+        "blockSlug": "how-much-yarn-do-you-need"
+      },
+      {
+        "vimeoId": "277813677",
+        "title": "Knit the front and back",
+        "lessonSlug": "follow-along-as-we-get-knitting",
+        "blockSlug": "let-s-get-knitting"
+      },
+      {
+        "vimeoId": "151859486",
+        "title": "Adding Bust Darts",
+        "lessonSlug": "knitting-techniques",
+        "blockSlug": "add-bust-darts"
+      },
+      {
+        "vimeoId": "151857799",
+        "title": "Stitch Multiples",
+        "lessonSlug": "knitting-techniques",
+        "blockSlug": "stitch-multiples"
+      },
+      {
+        "vimeoId": "151859107",
+        "title": "Neckline Shaping Perfection",
+        "lessonSlug": "knitting-techniques",
+        "blockSlug": "neckline-shaping"
+      },
+      {
+        "vimeoId": "151858551",
+        "title": "Easy Round Neck Shaping",
+        "lessonSlug": "knitting-techniques",
+        "blockSlug": "neckline-shaping"
+      },
+      {
+        "vimeoId": "151859907",
+        "title": "Best Ever Picot Hem",
+        "lessonSlug": "knitting-techniques",
+        "blockSlug": "2-favorite-band-hem-finishes"
+      },
+      {
+        "vimeoId": "187686648",
+        "title": "Faux Crochet Edge",
+        "lessonSlug": "knitting-techniques",
+        "blockSlug": "2-favorite-band-hem-finishes"
+      },
+      {
+        "vimeoId": "237470165",
+        "title": "Scrap on Scrap Off",
+        "lessonSlug": "knitting-techniques",
+        "blockSlug": "scrap-on-scrap-off"
+      },
+      {
+        "vimeoId": "151860051",
+        "title": "Shoulder Seams",
+        "lessonSlug": "knitting-techniques",
+        "blockSlug": "seam-the-shoulders"
+      },
+      {
+        "vimeoId": "151859649",
+        "title": "Taming Yarn Tails",
+        "lessonSlug": "knitting-techniques",
+        "blockSlug": "taming-yarn-tails"
+      },
+      {
+        "vimeoId": "151857916",
+        "title": "Compairing shaping Part 1",
+        "lessonSlug": "knitting-techniques",
+        "blockSlug": "armhole-shaping"
+      },
+      {
+        "vimeoId": "151857928",
+        "title": "Compairing shaping Part 2",
+        "lessonSlug": "knitting-techniques",
+        "blockSlug": "armhole-shaping"
+      },
+      {
+        "vimeoId": "254877048",
+        "title": "LIfelines: Scrap off Method",
+        "lessonSlug": "knitting-techniques",
+        "blockSlug": "lifelines-just-in-case"
+      },
+      {
+        "vimeoId": "151858422",
+        "title": "Seaming: Putting it all Together",
+        "lessonSlug": "finishing",
+        "blockSlug": "finishing-tips"
+      },
+      {
+        "vimeoId": "151857806",
+        "title": "Seaming Bands",
+        "lessonSlug": "finishing",
+        "blockSlug": "finishing-tips"
+      },
+      {
+        "vimeoId": "202105212",
+        "title": "Band Perfection",
+        "lessonSlug": "finishing",
+        "blockSlug": "finishing-tips"
+      },
+      {
+        "vimeoId": "151858072",
+        "title": "Wet Blocking",
+        "lessonSlug": "finishing",
+        "blockSlug": "blocking"
+      },
+      {
+        "vimeoId": "278020390",
+        "title": "Calculating Armhole Bands",
+        "lessonSlug": "finishing",
+        "blockSlug": "calculating-bands"
+      },
+      {
+        "vimeoId": "260683875",
+        "title": "Accurately Measure Gauge - 2 methods",
+        "lessonSlug": "your-success-depends-on-this",
+        "blockSlug": "gauge"
+      },
+      {
+        "vimeoId": "151856465",
+        "title": "Importance of Correct Gauge",
+        "lessonSlug": "your-success-depends-on-this",
+        "blockSlug": "gauge"
+      },
+      {
+        "vimeoId": "245117927",
+        "title": "Gauge and Drop",
+        "lessonSlug": "your-success-depends-on-this",
+        "blockSlug": "gauge-and-drop"
+      }
+    ],
+    "downloadCount": 1,
+    "downloads": [
+      {
+        "filename": "/downloads/ROADMAP.pdf",
+        "label": "Fill-in-the blanks Roadmap",
+        "lessonSlug": "first-start-here",
+        "blockSlug": "your-roadmap"
+      }
+    ]
+  }
+}

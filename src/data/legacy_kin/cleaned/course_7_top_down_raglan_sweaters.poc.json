@@ -1,0 +1,626 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 7,
+    "title": "Top Down Raglan Sweaters",
+    "slug": "top-down-raglan-sweaters",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_7_top_down_raglan_sweaters.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Hello, {First}! Welcome to the Top Down Raglan Course",
+      "slug": "hello-first-welcome-to-the-top-down-raglan-course",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 35,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">Welcome, {First}!</div>\r\nTop down raglan sweaters are long-time favorites for machine knitters.  The raglan shaping is flattering on everyone and the unusual construction can provide a challenge from traditional \"knit-in-pieces\" sweaters.<br>\r\nWe can play with yarn and stitch patterns. They offer an opportunity for us to gain confidence in our knitting.\r\n<blockquote class=\"smallblock\">\r\nWhen knitting top down sweaters,  little planning can go a long way!\r\n<ul class=”Instruction-list”>\r\n<li>Have you ever started a project unsure if you have enough yarn?</li>\r\n<li>Why guess at how many stitches to cast on?</li>\r\n<li>Want to create something that you will be proud of... good enough to enter in the fair?</li>\r\n</ul>\r\n</blockquote>\r\nThis course will walk you through all the planning steps and show you step by step the knitting in progress. <br> It shows techniques that may be new to you and helps you record your progress.<br>If this is your first sweater or your tenth, follow along, the skills you gain here will be invaluable for future knitting projects .. not just this style of sweater!\r\n<blockquote class=\"smallblock\">\r\nIf you are new here, the next video will help you learn to navigate this course so you can get the most benefit from the material that is included. It will walk you through how to access the lessons and navigate to get the most out of your course.<br />\r\n</blockquote>",
+              "legacyComponentId": 451,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<b>Don't skip lessons ... you may feel that you know how to work a technique ... but sometimes you will pick up a tip that you can use while watching a video.</b><br>",
+              "legacyComponentId": 490,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "221120492",
+              "title": "Machine Knitting Courses",
+              "legacyComponentId": 491,
+              "order": 4
+            }
+          ],
+          "title": "START HERE",
+          "slug": "start-here",
+          "order": 1,
+          "legacy": {
+            "assignId": 159,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Lesson 1: Plan your project",
+      "slug": "lesson-1-plan-your-project",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 36,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "For success in machine knitting, using the appropriate yarn for your machine is critical.<br>Also consider the care of the finished sweater.  You may be looking to make an heirloom sweater and want to use an exquisite natural fiber.  More than likely, you want to knit a hard wearing, easy care sweater. Consider the recipient when you make your yarn choice.<br><blockquote class=\"smallblock\"><b>TIP:</b><br><em>If your sweater will be a gift, you may want to include a note with the fiber content of the yarn used and suggested care instructions.</em></blockquote>",
+              "legacyComponentId": 453,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "160",
+                "DATAMODEL_ELEMENT": "yarn_choice",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "What yarn will you use?",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 455,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858444",
+              "title": "Yarns for Machine Knitting",
+              "legacyComponentId": 454,
+              "order": 3
+            }
+          ],
+          "title": "Step 1: What yarn will you use?",
+          "slug": "step-1-what-yarn-will-you-use",
+          "order": 1,
+          "legacy": {
+            "assignId": 160,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The beauty of this style of sweater is the ability to make it your own! There are many options for finishing the hem, neckbands and cuffs.  For our sample, we used the simplest, rolled edges, but you can mix and match to your heart's content!<br>If you are adventurous, you can find many more options in the Knit it Now Learning LIbrary.<br>Let's look at few basic options.",
+              "legacyComponentId": 456,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858757",
+              "title": "Rolled Hem Study",
+              "legacySlot": 1,
+              "legacyComponentId": 461,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859516",
+              "title": "Chained Hem",
+              "legacySlot": 2,
+              "legacyComponentId": 461,
+              "order": 2
+            }
+          ],
+          "title": "Hem, Neckband and Cuffs",
+          "slug": "hem-neckband-and-cuffs",
+          "order": 2,
+          "legacy": {
+            "assignId": 161,
+            "blockType": "DataEntry"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858391",
+              "title": "Basic Ribbing without a Ribber",
+              "legacySlot": 1,
+              "legacyComponentId": 660,
+              "order": 4
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857401",
+              "title": "Easy Ribber Bind off",
+              "legacySlot": 2,
+              "legacyComponentId": 660,
+              "order": 4
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858404",
+              "title": "HK ribbing with the machine",
+              "legacySlot": 3,
+              "legacyComponentId": 660,
+              "order": 4
+            }
+          ],
+          "title": "Ribbing Options",
+          "slug": "ribbing-options",
+          "order": 3,
+          "legacy": {
+            "assignId": 162,
+            "blockType": "VimeoMultiple"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "ribbing_practice",
+                "BUTTONLABLE": "Upload Photos of your Practice Swatches<br><small>They will be included in your Course Binder</small>",
+                "CHALLENGE_ASSIGNID": "219",
+                "CHALLENGE_COMPONENTID": "661",
+                "QTY": "2",
+                "SUCCESSMESSAGE": "Good job!"
+              },
+              "legacyComponentId": 661,
+              "order": 1
+            }
+          ],
+          "title": "Practice Challenge",
+          "slug": "practice-challenge",
+          "order": 4,
+          "legacy": {
+            "assignId": 219,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151857939",
+              "title": "Yipes! Stripes!",
+              "legacyComponentId": 478,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "169016269",
+              "title": "Garter Stitch - RTR",
+              "legacyComponentId": 479,
+              "order": 2
+            }
+          ],
+          "title": "Jazz it up!",
+          "slug": "jazz-it-up",
+          "order": 5,
+          "legacy": {
+            "assignId": 163,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Create your Course Binder",
+      "slug": "create-your-course-binder",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 39,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "This is optional information for you to add.  Your answers will be stored and included with any photos you upload in your Course Binder. These are not required.",
+              "legacyComponentId": 487,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "167",
+                "DATAMODEL_ELEMENT": "knitting_machine",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Knitting Machine",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 483,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "167",
+                "DATAMODEL_ELEMENT": "yarn_choice",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "What yarn will you use?",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 482,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "167",
+                "DATAMODEL_ELEMENT": "StitchGauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "What is your stitch gauge (4\"/10cm)?",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 480,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "167",
+                "DATAMODEL_ELEMENT": "RowGauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "What is your row gauge (4\"/10cm)?",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 481,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "167",
+                "DATAMODEL_ELEMENT": "hem_finish",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Hems, cuffs and neckband technique(s)?",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 485,
+              "order": 6
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "167",
+                "DATAMODEL_ELEMENT": "personal_notes",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Personal Notes",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 484,
+              "order": 7
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "Finished_photo",
+                "BUTTONLABLE": "Upload  images of your finished sample sweater<br><small>This will be included in your Course Binder</br>",
+                "CHALLENGE_ASSIGNID": "167",
+                "QTY": "2",
+                "SUCCESSMESSAGE": "Good job!",
+                "TYPEOF": "ImageUpload"
+              },
+              "legacyComponentId": 489,
+              "order": 8
+            }
+          ],
+          "title": "Record Your Plan",
+          "slug": "record-your-plan",
+          "order": 1,
+          "legacy": {
+            "assignId": 167,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Start-to-Finish Videos",
+      "slug": "start-to-finish-videos",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 37,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Watch as we knit a sample sweater. Because of the construction of this garment, it's important that you follow along step by step.  Watch the videos, then practice any unfamiliar techniques.  If you are a newer knitter, you might want to watch sections again before knitting them.",
+              "legacyComponentId": 492,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357455",
+              "title": "Part 1",
+              "legacySlot": 1,
+              "legacyComponentId": 465,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357438",
+              "title": "Part 2",
+              "legacySlot": 2,
+              "legacyComponentId": 465,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357427",
+              "title": "Part 3",
+              "legacySlot": 3,
+              "legacyComponentId": 465,
+              "order": 2
+            }
+          ],
+          "title": "Start-to-Finish",
+          "slug": "start-to-finish",
+          "order": 1,
+          "legacy": {
+            "assignId": 164,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Practice Sweater",
+      "slug": "practice-sweater",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 38,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "This 28 page downloadable pattern includes a sample pattern for you to knit.\r\n<br>\r\nIt is written in 2 gauges (standard and bulky).  Since this is a sample sweater, there is no need to match the gauge.\r\n<br><blockquote class=\"smallblock\"><em><b>NOTE:</b> The purpose of this exercise is to get you familiar with the construction techniques of this top down sweater, without a huge time investment. </em></blockquote>\r\n<br>\r\nThese written instructions, along with the start-to-finish videos are designed to ensure your success in knitting this sweater.",
+              "legacyComponentId": 488,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Download the practice pattern and instructions",
+              "filename": "/downloads/Practice_pattern.pdf",
+              "showInline": true,
+              "legacy": {
+                "assignId": "165",
+                "componentId": "658",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 658,
+              "order": 3
+            }
+          ],
+          "title": "Download the practice pattern and Get Knitting!",
+          "slug": "download-the-practice-pattern-and-get-knitting",
+          "order": 1,
+          "legacy": {
+            "assignId": 165,
+            "blockType": "Document"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "ImageUpload",
+              "notes": [
+                "Unmapped legacy component type: ImageUpload"
+              ],
+              "legacyFields": {
+                "ACTION": "progress1",
+                "BUTTONLABLE": "Upload Photo(s) of your Practice Sweater<br><small>They will be included in your Course Binder</small>",
+                "CHALLENGE_ASSIGNID": "220",
+                "CHALLENGE_COMPONENTID": "662",
+                "QTY": "2",
+                "SUCCESSMESSAGE": "Thank you"
+              },
+              "legacyComponentId": 662,
+              "order": 1
+            }
+          ],
+          "title": "Record your Progress",
+          "slug": "record-your-progress",
+          "order": 2,
+          "legacy": {
+            "assignId": 220,
+            "blockType": "ImageUpload"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Binder",
+              "notes": [
+                "Unmapped legacy component type: Binder"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "168",
+                "LABLE": "Download your Course Binder",
+                "TYPEOF": "Binder"
+              },
+              "legacyComponentId": 493,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "\r\n                Your Course Binder contains all of the information provided by you during the course.\r\n                <img src=\"/challenge/images/v2/7/course_binder_logo.png\"\">\r\n\r\n\r\n",
+              "legacyComponentId": 494,
+              "order": 2
+            }
+          ],
+          "title": "Download your Course Binder",
+          "slug": "download-your-course-binder",
+          "order": 3,
+          "legacy": {
+            "assignId": 168,
+            "blockType": "Binder"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 12,
+    "videos": [
+      {
+        "vimeoId": "221120492",
+        "title": "Machine Knitting Courses",
+        "lessonSlug": "hello-first-welcome-to-the-top-down-raglan-course",
+        "blockSlug": "start-here"
+      },
+      {
+        "vimeoId": "151858444",
+        "title": "Yarns for Machine Knitting",
+        "lessonSlug": "lesson-1-plan-your-project",
+        "blockSlug": "step-1-what-yarn-will-you-use"
+      },
+      {
+        "vimeoId": "151858757",
+        "title": "Rolled Hem Study",
+        "lessonSlug": "lesson-1-plan-your-project",
+        "blockSlug": "hem-neckband-and-cuffs"
+      },
+      {
+        "vimeoId": "151859516",
+        "title": "Chained Hem",
+        "lessonSlug": "lesson-1-plan-your-project",
+        "blockSlug": "hem-neckband-and-cuffs"
+      },
+      {
+        "vimeoId": "151858391",
+        "title": "Basic Ribbing without a Ribber",
+        "lessonSlug": "lesson-1-plan-your-project",
+        "blockSlug": "ribbing-options"
+      },
+      {
+        "vimeoId": "151857401",
+        "title": "Easy Ribber Bind off",
+        "lessonSlug": "lesson-1-plan-your-project",
+        "blockSlug": "ribbing-options"
+      },
+      {
+        "vimeoId": "151858404",
+        "title": "HK ribbing with the machine",
+        "lessonSlug": "lesson-1-plan-your-project",
+        "blockSlug": "ribbing-options"
+      },
+      {
+        "vimeoId": "151857939",
+        "title": "Yipes! Stripes!",
+        "lessonSlug": "lesson-1-plan-your-project",
+        "blockSlug": "jazz-it-up"
+      },
+      {
+        "vimeoId": "169016269",
+        "title": "Garter Stitch - RTR",
+        "lessonSlug": "lesson-1-plan-your-project",
+        "blockSlug": "jazz-it-up"
+      },
+      {
+        "vimeoId": "178357455",
+        "title": "Part 1",
+        "lessonSlug": "start-to-finish-videos",
+        "blockSlug": "start-to-finish"
+      },
+      {
+        "vimeoId": "178357438",
+        "title": "Part 2",
+        "lessonSlug": "start-to-finish-videos",
+        "blockSlug": "start-to-finish"
+      },
+      {
+        "vimeoId": "178357427",
+        "title": "Part 3",
+        "lessonSlug": "start-to-finish-videos",
+        "blockSlug": "start-to-finish"
+      }
+    ],
+    "downloadCount": 1,
+    "downloads": [
+      {
+        "filename": "/downloads/Practice_pattern.pdf",
+        "label": "Download the practice pattern and instructions",
+        "lessonSlug": "practice-sweater",
+        "blockSlug": "download-the-practice-pattern-and-get-knitting"
+      }
+    ]
+  }
+}

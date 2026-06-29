@@ -1,0 +1,376 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 71,
+    "title": "Fearless Cut 'n Sew Finishing",
+    "slug": "fearless-cut-n-sew-finishing",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_71_fearless_cut_n_sew_finishing.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Getting Started",
+      "slug": "getting-started",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 457,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<h3>Why Cut 'n Sew?</h3>\r\nAs machine knitters we can create raw knitted \"fabric\" fairly quickly. Thinking of our knitting as fabric opens new possibilities for creating garments.\r\n\r\n<ul>\r\n\t<li>Create your own knitted fabric</li>\r\n\t<li>No shaping - many knitters are intimidated by necklines (or they don't want to take the time to shape them)</li>\r\n\t<li>Shaping while knitting in pattern can be a challenge and time consuming. Cut 'n sew eliminates shaping on the machine</li>\r\n\t<li>Use sewing patterns for fabulous, updated garment styles</li>\r\n\t<li>Alter / resize / remake existing garments to fit</li>\r\n</ul>\r\n<br><h3>The biggest challenges to Cut 'n Sew?</h3>\r\n<ul class=\"lightlist\" style=\"list-style:none;\">\r\n\t<li>Getting over the fear of cutting your knitting</li>\r\n\t<li>Creating templates or finding patterns</li>\r\n\t<li>Stabilizing the fabric</li>\r\n\t<li>Finishing the edges and adding bands</li>\r\n</ul>\r\n\r\n<img class=\"img-thumbnail\" src=\"/path/images/101/fearless_cut_n_sew.jpg\">\r\n",
+              "legacyComponentId": 5897,
+              "order": 1
+            }
+          ],
+          "title": "Why Cut 'n Sew",
+          "slug": "why-cut-n-sew",
+          "order": 2,
+          "legacy": {
+            "assignId": 3938,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151819909",
+              "title": "Introduction to Cut and Sew",
+              "legacyComponentId": 5898,
+              "order": 1
+            }
+          ],
+          "title": "Introduction to Cut 'n Sew",
+          "slug": "introduction-to-cut-n-sew",
+          "order": 3,
+          "legacy": {
+            "assignId": 3939,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Stuff you Should Know",
+      "slug": "stuff-you-should-know",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 458,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "We recently explored using stabilizers to improve our cut ‘n sew skills … and we were pleasantly surprised!<br>Watch as we learn 3 Cut ‘n Sew lessons:\r\n<ul>\r\n<li>Easier Sewing</li>\r\n<li>More precise shaping</li>\r\n<li>Wash-away stabilizer really washes away!</li>\r\n</ul>",
+              "legacyComponentId": 5901,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "280094859",
+              "title": "Stabilizer for Cut 'n Sew Excellence",
+              "legacyComponentId": 5902,
+              "order": 2
+            }
+          ],
+          "title": "Stabilizer Trick",
+          "slug": "stabilizer-trick",
+          "order": 1,
+          "legacy": {
+            "assignId": 3941,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "344808537",
+              "title": "DAK: EZ Cut 'N Sew Neckline Template",
+              "legacyComponentId": 5903,
+              "order": 1
+            }
+          ],
+          "title": "DesignaKnit Templates",
+          "slug": "designaknit-templates",
+          "order": 2,
+          "legacy": {
+            "assignId": 3942,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\nPrintable templates for cut 'n sew necklines.\r\n<ul class=\"lightlist\" style=\"list-style:none;\">\r\n<li>From infant to adult size</li>\r\n<li>Neck depths up to 7\" (18cm)</li>\r\n<li>Both Letter (US) and A4 (Metric) versions are included</li>\r\n</ul>\r\n<br>\r\n<b>Create a perfectly shaped neckline every time!</b><br><div class=\"lead\">Cut 'n Sew necklines are easy and fast!<br>The Steps:</div>\r\n<ul>\r\n<li>Knit your garment with no neckline shaping.</li>\r\n<li>Select a template for the desired neckline width and depth.</li>\r\n<li>Use the template to mark the shape</li>\r\n<li>Machine stitch along the marks to secure the edge</li>\r\n<li>Cut your neck opening</li>\r\n<li>Use an \"industrial\" band to neatly hide the cut edges.</li>\r\n<li>No shaping as you knit!</li>\r\n</ul>\r\n<br>\r\n<center></center>\r\n\r\n<img class=\"img-thumbnail zoom\" src=\"/path/images/101/template_img_500.jpg\">\r\n",
+              "legacyComponentId": 5904,
+              "order": 1
+            }
+          ],
+          "title": "Knit it Now Printable Templates",
+          "slug": "knit-it-now-printable-templates",
+          "order": 3,
+          "legacy": {
+            "assignId": 3943,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Neckbands",
+      "slug": "neckbands",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 459,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "345059665",
+              "title": "Cut n Sew - Bands in Pattern",
+              "legacySlot": 1,
+              "legacyComponentId": 5908,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "345069044",
+              "title": "Cut N Sew - Rolled Edge Band",
+              "legacySlot": 2,
+              "legacyComponentId": 5908,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "345053252",
+              "title": "Cut N Sew - Chained Edge Band",
+              "legacySlot": 3,
+              "legacyComponentId": 5908,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "345047707",
+              "title": "Cut N Sew - Beaded Band",
+              "legacySlot": 4,
+              "legacyComponentId": 5908,
+              "order": 1
+            }
+          ],
+          "title": "Industrial Band Variations",
+          "slug": "industrial-band-variations",
+          "order": 1,
+          "legacy": {
+            "assignId": 3946,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151860086",
+              "title": "One Piece Neckband Perfection",
+              "legacyComponentId": 5909,
+              "order": 1
+            }
+          ],
+          "title": "One Piece Neckband Perfection",
+          "slug": "one-piece-neckband-perfection",
+          "order": 2,
+          "legacy": {
+            "assignId": 3947,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "223374072",
+              "title": "Reversible Band",
+              "legacySlot": 1,
+              "legacyComponentId": 5910,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151849234",
+              "title": "The Secret: Kitchener Stitch",
+              "legacySlot": 2,
+              "legacyComponentId": 5910,
+              "order": 1
+            }
+          ],
+          "title": "Amazing Reversible Band",
+          "slug": "amazing-reversible-band",
+          "order": 3,
+          "legacy": {
+            "assignId": 3948,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Here's an unusual neck band technique that is great for highly textured stitch patterns like garter carriage and tuck stitch.<br>Use reverse stockinette stitch for the public side of the bands.br><br>\r\n\r\nThis is a version of an industrial band - sometimes called a sandwich band that is perfect for cut and sew necklines. The technique can also be applied to shaped necklines.br><br>\r\n\r\nIf you are used to working this style of band in stockinette, this video works through the construction using the purl side of the bands as the public side. br><br>\r\n\r\nPut on your thinking caps! Keeping things straight can be a challenge - right/wrong side, purl/knit side, public/private .. take it step by step for a beautiful faux garter band on the machine.",
+              "legacyComponentId": 5912,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858842",
+              "title": "Faux Garter Stitch Bands",
+              "legacyComponentId": 5911,
+              "order": 2
+            }
+          ],
+          "title": "Faux Garter Band",
+          "slug": "faux-garter-band",
+          "order": 4,
+          "legacy": {
+            "assignId": 3949,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Other uses for Cut 'n Sew",
+      "slug": "other-uses-for-cut-n-sew",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 460,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Fast finishing, accurate size for the opening. Use Cut 'n Sew to form the center opening for your Tree Skirt. <br>\r\n\r\n<a href=\"/challenge/14/course/christmas-tree-skirt\" target=\"_blank\"><figure><img class=\"img-thumbnail\" src=\"/challenge/images/v2/71/tree_skirt/tree_skirt.png\"><figcaption align=\"center\"><br>Complete Course for knitting your own skirt</figcaption>\r\n</figure></a>\r\n\r\n",
+              "legacyComponentId": 5905,
+              "order": 1
+            }
+          ],
+          "title": "Christmas Tree Skirt",
+          "slug": "christmas-tree-skirt",
+          "order": 1,
+          "legacy": {
+            "assignId": 3944,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "A pillow project that is fast, fast, fast! Use the cut 'n sew technique to create a heart shape. Put your serger or sewing machine to work and have a gift or a craft fair item in no time!<br>We knit a Valentine pillow, but consider other shapes ... how about a tooth shape for a Tooth Fairy Pillow?<br>You can knit in any stitch pattern, fairisle,stripes, tuck, slip or intarsia. Long floats aren't a problem and you don't have to worry about shaping and working a stitch pattern at the same time.<br>\r\n\r\n<figure>\r\n\r\n\r\n<a href=\"/path/176/heavenly-hearts\"><img class=\"img-thumbnail\" src=\"/path/images/101/Heart_pillow_final.jpg\">\r\n<figcaption align=\"center\"><br>Heavenly Hearts Quick Win</figcaption>\r\n</figure>\r\n</a>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 5907,
+              "order": 1
+            }
+          ],
+          "title": "Pillow Shapes",
+          "slug": "pillow-shapes",
+          "order": 2,
+          "legacy": {
+            "assignId": 3945,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 11,
+    "videos": [
+      {
+        "vimeoId": "151819909",
+        "title": "Introduction to Cut and Sew",
+        "lessonSlug": "getting-started",
+        "blockSlug": "introduction-to-cut-n-sew"
+      },
+      {
+        "vimeoId": "280094859",
+        "title": "Stabilizer for Cut 'n Sew Excellence",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "stabilizer-trick"
+      },
+      {
+        "vimeoId": "344808537",
+        "title": "DAK: EZ Cut 'N Sew Neckline Template",
+        "lessonSlug": "stuff-you-should-know",
+        "blockSlug": "designaknit-templates"
+      },
+      {
+        "vimeoId": "345059665",
+        "title": "Cut n Sew - Bands in Pattern",
+        "lessonSlug": "neckbands",
+        "blockSlug": "industrial-band-variations"
+      },
+      {
+        "vimeoId": "345069044",
+        "title": "Cut N Sew - Rolled Edge Band",
+        "lessonSlug": "neckbands",
+        "blockSlug": "industrial-band-variations"
+      },
+      {
+        "vimeoId": "345053252",
+        "title": "Cut N Sew - Chained Edge Band",
+        "lessonSlug": "neckbands",
+        "blockSlug": "industrial-band-variations"
+      },
+      {
+        "vimeoId": "345047707",
+        "title": "Cut N Sew - Beaded Band",
+        "lessonSlug": "neckbands",
+        "blockSlug": "industrial-band-variations"
+      },
+      {
+        "vimeoId": "151860086",
+        "title": "One Piece Neckband Perfection",
+        "lessonSlug": "neckbands",
+        "blockSlug": "one-piece-neckband-perfection"
+      },
+      {
+        "vimeoId": "223374072",
+        "title": "Reversible Band",
+        "lessonSlug": "neckbands",
+        "blockSlug": "amazing-reversible-band"
+      },
+      {
+        "vimeoId": "151849234",
+        "title": "The Secret: Kitchener Stitch",
+        "lessonSlug": "neckbands",
+        "blockSlug": "amazing-reversible-band"
+      },
+      {
+        "vimeoId": "151858842",
+        "title": "Faux Garter Stitch Bands",
+        "lessonSlug": "neckbands",
+        "blockSlug": "faux-garter-band"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

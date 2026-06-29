@@ -1,0 +1,1312 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 33,
+    "title": "Beginner Workshop",
+    "slug": "beginner-workshop",
+    "status": "published",
+    "published": true,
+    "legacy": {
+      "sourceExport": "course_33_beginner_workshop.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/beginner.webp",
+    "contentStatus": "cleaned"
+  },
+  "lessons": [
+    {
+      "title": "Introducing .. Your Knitting Machine",
+      "slug": "introducing-your-knitting-machine",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 224,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Even though knitting machines seem mysterious, don't get overwhelmed!<br>\nYour journey to master your machine starts with de-mystifying the mechanics of our machines. <br>Learn to think of your machine as a tool - YOU are the boss! <i class=\"fa fa-smile-o aria-hidden=\"true\"></i><br><ul>\n<li>Basics</li>\n<li>Under the hood</li>\n<li>Terminology</li>\n</ul>\n<br\n<div class='text-center'>\n<a href=\"/downloads/beginner_worksheets.pdf\" class=\"kbm-btn kbm-btn-primary\" target=\"_blank\" rel=\"noopener noreferrer\">Print all pages of the Course Worksheets </a>\n</div>",
+              "legacyComponentId": 4442,
+              "order": 1,
+              "layoutRole": "textVideoLeft"
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357401",
+              "title": null,
+              "legacyComponentId": 4441,
+              "order": 2
+            }
+          ],
+          "title": "Your machine",
+          "slug": "your-machine",
+          "order": 1,
+          "legacy": {
+            "assignId": 1078,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "No matter what machine you have, the secret to stitch patterning (and other techniques) is to understand needle positions.<br><ul>\n<li> <a href=\"/glossary/out-of-work-position\" class=\"glossary-link\">Out of Work Position</a></li>\n<li><a href=\"/glossary/working-position\" class=\"glossary-link\">Working Position</a></li>\n<li><a href=\"/glossary/middle-position\" class=\"glossary-link\">Middle Position</a></li>\n<li><a href=\"/glossary/holding-position\" class=\"glossary-link\">Holding Position</a></li>\n</ul>",
+              "legacyComponentId": 4443,
+              "order": 1,
+              "layoutRole": "textVideoLeft"
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357325",
+              "title": null,
+              "legacyComponentId": 2960,
+              "order": 2
+            }
+          ],
+          "title": "Needle Positions",
+          "slug": "needle-positions",
+          "order": 2,
+          "legacy": {
+            "assignId": 1082,
+            "blockType": "VimeoID"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Yarns for machine knitting",
+      "slug": "yarns-for-machine-knitting",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 225,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "title": "What yarn can you use?",
+          "slug": "text-video-1782489002091",
+          "order": 1,
+          "legacy": {
+            "assignId": 1,
+            "blockType": "HTML",
+            "editorLayout": "textVideo"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "<p>\nOne of the first questions new machine knitters ask is, \"What yarn can I use?\"\n</p>\n\n<p>\nIn this lesson, you'll learn:\n</p>\n\n<ul>\n    <li>Whether you need yarn on cones</li>\n    <li>How machine gauge affects your yarn choices</li>\n    <li>What needle pitch means</li>\n    <li>Why full needle rib requires a finer yarn</li>\n</ul>\n\n<p>\nWatch the video first, then use the notes below as a handy reference whenever you're choosing yarn for your machine.\n</p>",
+              "legacyComponentId": 8477,
+              "order": 1,
+              "layoutRole": "textVideoLeft"
+            },
+            {
+              "type": "video",
+              "vimeoId": "527759119",
+              "title": "Yarn for Knitting machines",
+              "legacyComponentId": 8478,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<p></p>",
+              "legacyComponentId": 8479,
+              "order": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Helpful, Essential Tips",
+      "slug": "helpful-essential-tips",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 226,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>Don't Skip this one!</h3>\r\n<ul>\r\n<li>Rhythm</li>\r\n<li>Click</li>\r\n<li>Oops!</li>\r\n<li>Right is right</li>\r\n<li>Soapbox</li>\r\n</ul>",
+              "legacyComponentId": 4445,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357376",
+              "title": null,
+              "legacyComponentId": 2955,
+              "order": 2
+            }
+          ],
+          "title": "Essential Tips",
+          "slug": "essential-tips",
+          "order": 1,
+          "legacy": {
+            "assignId": 1080,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "699191838",
+              "title": null,
+              "legacyComponentId": 8469,
+              "order": 1
+            }
+          ],
+          "title": "Using Transfer Tools",
+          "slug": "using-transfer-tools",
+          "order": 2,
+          "legacy": {
+            "assignId": 5705,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "699787852",
+              "title": null,
+              "legacyComponentId": 8470,
+              "order": 1
+            }
+          ],
+          "title": "Using the Latch Tool",
+          "slug": "using-the-latch-tool",
+          "order": 3,
+          "legacy": {
+            "assignId": 5706,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Cast On Methods",
+      "slug": "cast-on-methods",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 227,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>What Cast on to Use? Try these and judge for yourself</h3>\nAs with all things machine knitting, there are many, many ways of casting on your knitting.<div><br>When we first start knitting we are anxious to get stitches on the machine and get knitting. But we soon find that there may be better methods to cast on.</div>\n<div><br><b>Please don't get stuck in a rut and use the same cast on over and over.</b> Take time to LEARN and PRACTICE different methods.&nbsp;</div>\n<div>\n    <ul>\n        <li>Some are fast (but not good for the hem of a sweater).</li>\n        <li>Others are a more time consuming (but beautiful).</li>\n        <li>Some are stretchy enough for socks, others not so much.\n        </li>\n    </ul>On your machine knitting journey, it's up to you to discover the perfect cast on for your specific project.\n</div>\n<div><br><br>\n    <div><br><br>\n        <a href=\"/downloads/cast_on_exercises1.pdf\" class=\"kbm-btn kbm-btn-primary\" target=\"_blank\" rel=\"noopener noreferrer\">\n            Print Cast On Worksheets\n        </a>\n</div></div>",
+              "legacyComponentId": 4448,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357365",
+              "title": "Explore an Open Cast On",
+              "legacyComponentId": 2956,
+              "order": 2
+            }
+          ],
+          "title": "What Cast on to Use?",
+          "slug": "open-cast-on",
+          "order": 1,
+          "legacy": {
+            "assignId": 1081,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "title": "Open Cast On",
+          "slug": "content-1782556698341",
+          "order": 2,
+          "legacy": {
+            "assignId": 3300,
+            "blockType": "HTML"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "Begin your knitting, leaving open stitches to be picked up later. Often worked with the <a href=\"/glossary/scrap-and-ravel-cast-on\" class=\"glossary-link\">Scrap and Ravel Cast On</a> method\n\n\n",
+              "legacyComponentId": 8492,
+              "order": 3,
+              "layoutRole": "textVideoLeft"
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357365",
+              "title": null,
+              "legacyComponentId": 8493,
+              "order": 4
+            }
+          ]
+        },
+        {
+          "title": "Closed Cast On",
+          "slug": "three-videos-1782550753014",
+          "order": 3,
+          "legacy": {
+            "assignId": 3299,
+            "blockType": "HTML",
+            "editorLayout": "threeVideosWithText"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "<p>\nWith a closed cast on, the starting stitches are secure. Here are a few methods for you to try.</p>\n<p>\n<img src=\"/challenge/images/v2/33/Dont_skip.gif\"></p>\n\n",
+              "legacyComponentId": 8484,
+              "order": 5,
+              "layoutRole": "threeVideosIntro"
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357361",
+              "title": "Fast 'n Easy",
+              "legacyComponentId": 8485,
+              "order": 7,
+              "layoutRole": "threeVideosVideo1"
+            },
+            {
+              "type": "richText",
+              "html": "<ul>\n<li>Super Fast Closed Cast On</li>\n<li>Weaving Cast On</li>\n<li>E-Wrap Cast On</li>\n</ul><br><br>",
+              "legacyComponentId": 8486,
+              "order": 6,
+              "layoutRole": "threeVideosCaption1"
+            },
+            {
+              "type": "video",
+              "vimeoId": "317801328",
+              "title": "Scrap on (Scrap and Ravel)",
+              "legacyComponentId": 8487,
+              "order": 9,
+              "layoutRole": "threeVideosVideo2"
+            },
+            {
+              "type": "richText",
+              "html": "\nThe technique of scrapping on is essential for you to learn.<br>\n<ul>\n<li>Protect delicate fibers and edges from a cast on comb</li>\n<li>Use as an open cast on for hems</li>\n<li>Make it easier to cast on using more complicated methods</li>\n</ul><br><br>",
+              "legacyComponentId": 8488,
+              "order": 8,
+              "layoutRole": "threeVideosCaption2"
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357352",
+              "title": "Better for Garment Edges",
+              "legacyComponentId": 8489,
+              "order": 11,
+              "layoutRole": "threeVideosVideo3"
+            },
+            {
+              "type": "richText",
+              "html": "<ul>\n<li>Double E-wrap</li>\n<li>Long Tail Cast On</li>\n<li>Chain Cast On</li>\n</ul>",
+              "legacyComponentId": 8490,
+              "order": 10,
+              "layoutRole": "threeVideosCaption3"
+            },
+            {
+              "type": "richText",
+              "html": "<img class=\"img-responsive\" src=\"/challenge/images/v2/33/Dont_skip.gif\">",
+              "legacyComponentId": 8491,
+              "order": 12,
+              "layoutRole": "threeVideosOutro"
+            }
+          ]
+        },
+        {
+          "title": "Troubleshooting Cast on Problems",
+          "slug": "content-1782557996196",
+          "order": 5,
+          "legacy": {
+            "assignId": 3301,
+            "blockType": "HTML"
+          },
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "178357341",
+              "title": "Cast on Problems",
+              "legacyComponentId": 8494,
+              "order": 13
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Bind off Methods",
+      "slug": "bind-off-methods",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 228,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "title": "Ending Your Knitting",
+          "slug": "three-videos-1782558227492",
+          "order": 2,
+          "legacy": {
+            "assignId": 1084,
+            "blockType": "HTML",
+            "editorLayout": "threeVideosWithText"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "<p>\n    Optional introductory text goes here. Explain what students should watch for before viewing the videos.\n</p>",
+              "legacyComponentId": 8495,
+              "order": 1,
+              "layoutRole": "threeVideosIntro"
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357318",
+              "title": "3 Methods You Should Knot",
+              "legacyComponentId": 8496,
+              "order": 3,
+              "layoutRole": "threeVideosVideo1"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 8497,
+              "order": 2,
+              "layoutRole": "threeVideosCaption1"
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357304",
+              "title": "Scrapping off  (Open Bindoff)",
+              "legacyComponentId": 8498,
+              "order": 5,
+              "layoutRole": "threeVideosVideo2"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 8499,
+              "order": 4,
+              "layoutRole": "threeVideosCaption2"
+            },
+            {
+              "type": "video",
+              "vimeoId": "",
+              "title": null,
+              "legacyComponentId": 8500,
+              "order": 7,
+              "layoutRole": "threeVideosVideo3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 8501,
+              "order": 6,
+              "layoutRole": "threeVideosCaption3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 8502,
+              "order": 8,
+              "layoutRole": "threeVideosOutro"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Swatching is Not Optional!",
+      "slug": "swatching-is-not-optional",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 230,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"handwriting-accent\">You are making progress!</div> ... we've spent a lot of time planning, practicing and thinking about knitting ... are you ready to do some \"real knitting\"?<br><strong>DON'T SKIP THIS SECTION!</strong> <br>Your success with this course AND your success with your knitting machine depends on your understanding and mastering the art of knitting gauge swatches.<br>Without a swatch we are knitting in the dark.\n<ul>\n<li>How is the final sweater going to feel in the yarn and stitch pattern you've chosen?</li>\n<li>Do you have enough yarn?</li>\n<li>Do you have enough needles on your machine for the size you chose?</li>\n\n\n</ul>\n\n\n<div class=\"text-center\">\n<p style=\"text-align: center;\"></p><div class=\"handwriting\" style=\"text-align: center;\">SWATCHING IS NOT OPTIONAL<br><br><br></div><p></p>\n</div>\n<br><a href=\"/downloads/swatch_exercises2.pdf\" class=\"kbm-btn kbm-btn-primary\" target=\"_blank\" rel=\"noopener noreferrer\">Download Swatch Exercises</a>\n",
+              "legacyComponentId": 4486,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357273",
+              "title": "'Proper' Gauge Swatches",
+              "legacyComponentId": 4514,
+              "order": 2
+            }
+          ],
+          "title": "Your Success Depends on this",
+          "slug": "your-success-depends-on-this",
+          "order": 1,
+          "legacy": {
+            "assignId": 3307,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h2>Gauge Swatch vs. Tension Swatch</h2>\n\n<p>Before you start your blanket, it's worth knitting a small sample. It can save time, frustration, and even yarn.</p>\n\n<p>Although many knitters use the terms interchangeably, <strong>a gauge swatch and a tension swatch serve different purposes.</strong></p>\n\n<div class=\"kin-two-column\">\n    <div>\n        <h3>Gauge Swatch</h3>\n\n        <p>A <strong>gauge swatch</strong> is the swatch you use to accurately measure your stitch and row gauge.</p>\n\n        <p>For the best results, your swatch should:</p>\n\n        <ul>\n            <li>Be larger than the area you'll measure.</li>\n            <li>Be finished the same way your project will be finished (washed or steamed if appropriate).</li>\n            <li>Be measured after it has relaxed.</li>\n        </ul>\n\n        <blockquote class=\"blockquote_style\">\n            <strong>Remember:</strong> The goal of a gauge swatch is accurate measurement.\n        </blockquote>\n    </div>\n\n    <div>\n        <img src=\"/images/courses/swatch_measure.jpg\" alt=\"Measuring stitch and row gauge on a swatch\">\n    </div>\n</div>\n\n<div class=\"kin-two-column\">\n    <div>\n        <h3>Tension Swatch</h3>\n\n        <p>A <strong>tension swatch</strong> is your opportunity to experiment.</p>\n\n        <p>When you're using a new yarn, don't worry about measuring gauge right away. Instead, knit several sections using different tension settings and compare the fabric.</p>\n\n        <p>As you knit, ask yourself:</p>\n\n        <ul>\n            <li>Which tension creates the fabric I like best?</li>\n            <li>Does this yarn look good in stockinette?</li>\n            <li>How does it behave in tuck, slip, lace, or other stitch patterns?</li>\n            <li>Which setting feels right for the project I'm planning?</li>\n        </ul>\n\n        <p>Once you've chosen the tension you like, knit a fresh <strong>gauge swatch</strong> using that setting and measure your stitch and row gauge.</p>\n    </div>\n\n    <div>\n        <img src=\"/images/courses/tension_swatch.jpg\" alt=\"Tension swatch showing several tension settings\">\n    </div>\n</div>\n\n<h3>Your Turn: Knit a Tension Swatch</h3>\n\n<p>Now it's time to get a feel for your yarn.</p>\n\n<ol class=\"instruction-list\">\n    <li>Cast on about 30 to 40 stitches.</li>\n\n    <li>Begin at the tightest tension that knits comfortably.</li>\n\n    <li>Knit 2 to 4 inches.</li>\n\n    <li>Work a marker row by changing yarn color, threading a contrasting yarn through the stitches, or making a few eyelets.</li>\n\n    <li>Change the tension dial one number looser and knit another section.</li>\n\n    <li>Repeat until you've sampled several tension settings.</li>\n\n    <li>Feel and compare each section to decide which fabric you like best.</li>\n\n    <li>Once you've found your favorite tension, knit a fresh gauge swatch and measure your stitch and row gauge.</li>\n</ol>\n\n<blockquote class=\"blockquote_style\">\n    <strong>Tip:</strong> There isn't a \"correct\" tension. The best tension is the one that creates the fabric you want for your project.\n</blockquote>",
+              "legacyComponentId": 4487,
+              "order": 3
+            }
+          ],
+          "title": "Gauge swatch verses Tension Swatch",
+          "slug": "gauge-swatch-verses-tension-swatch",
+          "order": 3,
+          "legacy": {
+            "assignId": 3308,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "title": "Understanding Gauge",
+          "slug": "three-videos-1782559145468",
+          "order": 4,
+          "legacy": {
+            "assignId": 3309,
+            "blockType": "HTML",
+            "editorLayout": "threeVideosWithText"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "<p>\n    Optional introductory text goes here. Explain what students should watch for before viewing the videos.\n</p>",
+              "legacyComponentId": 8503,
+              "order": 4,
+              "layoutRole": "threeVideosIntro"
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357292",
+              "title": "The Importance of Gauge",
+              "legacyComponentId": 8504,
+              "order": 6,
+              "layoutRole": "threeVideosVideo1"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 8505,
+              "order": 5,
+              "layoutRole": "threeVideosCaption1"
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357264",
+              "title": "TIP!  Using Weights",
+              "legacyComponentId": 8506,
+              "order": 8,
+              "layoutRole": "threeVideosVideo2"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 8507,
+              "order": 7,
+              "layoutRole": "threeVideosCaption2"
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357247",
+              "title": "Tension: Controlling your gauge",
+              "legacyComponentId": 8508,
+              "order": 10,
+              "layoutRole": "threeVideosVideo3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 8509,
+              "order": 9,
+              "layoutRole": "threeVideosCaption3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 8510,
+              "order": 11,
+              "layoutRole": "threeVideosOutro"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "How much Yarn do I Need?",
+      "slug": "how-much-yarn-do-i-need",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 232,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<p>Use your swatch and calculate how much yarn you will need for your project.  A little math will save hours of worry.</p>\n<img src=\"/images/courses/yarn_estimate_example.jpg\" width=\"400\">",
+              "legacyComponentId": 4458,
+              "order": 1,
+              "layoutRole": "textVideoLeft"
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357142",
+              "title": null,
+              "legacyComponentId": 2966,
+              "order": 2
+            }
+          ],
+          "title": "Don't Sweat it!",
+          "slug": "don-t-sweat-it",
+          "order": 1,
+          "legacy": {
+            "assignId": 1085,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "title": "Knit it Now Yarn Estimator",
+          "slug": "content-1782560495516",
+          "order": 2,
+          "legacy": {
+            "assignId": 1086,
+            "blockType": "HTML"
+          },
+          "components": [
+            {
+              "type": "embeddedTool",
+              "toolKey": "yarn-estimator",
+              "legacyComponentId": 8512,
+              "order": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Just for Fun",
+      "slug": "just-for-fun",
+      "displayOrder": 8,
+      "legacy": {
+        "itemId": 233,
+        "lessonOrder": 8
+      },
+      "blocks": [
+        {
+          "title": "Getting Inspired?",
+          "slug": "three-videos-1782560709452",
+          "order": 2,
+          "legacy": {
+            "assignId": 1087,
+            "blockType": "HTML",
+            "editorLayout": "threeVideosWithText"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "<p>Machine knitters can do SO MUCH with our machines.  Here's an intro to a couple of fun things.<br></p>\n\n<p>Promise me you won't get carried away (and distracted) just yet.  We still need to concentrate on some basics! <i class=\"fa fa-smile-o aria-hidden=\" true\"=\"\" aria-hidden=\"true\"></i></p>",
+              "legacyComponentId": 8513,
+              "order": 1,
+              "layoutRole": "threeVideosIntro"
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357106",
+              "title": "Play with stripes",
+              "legacyComponentId": 8514,
+              "order": 3,
+              "layoutRole": "threeVideosVideo1"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 8515,
+              "order": 2,
+              "layoutRole": "threeVideosCaption1"
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357093",
+              "title": "Fast I-cord on the machine",
+              "legacyComponentId": 8516,
+              "order": 5,
+              "layoutRole": "threeVideosVideo2"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 8517,
+              "order": 4,
+              "layoutRole": "threeVideosCaption2"
+            },
+            {
+              "type": "video",
+              "vimeoId": "",
+              "title": null,
+              "legacyComponentId": 8518,
+              "order": 7,
+              "layoutRole": "threeVideosVideo3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 8519,
+              "order": 6,
+              "layoutRole": "threeVideosCaption3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 8520,
+              "order": 8,
+              "layoutRole": "threeVideosOutro"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Project 1: Get Knitting",
+      "slug": "project-1-get-knitting",
+      "displayOrder": 9,
+      "legacy": {
+        "itemId": 285,
+        "lessonOrder": 9
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\t<img src=\"/challenge/images/v2/33/dont_skip_this_video.gif\">",
+              "legacyComponentId": 4580,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "319202520",
+              "title": "Ease, Build your Pattern and Knitting",
+              "legacyComponentId": 4517,
+              "order": 2
+            }
+          ],
+          "title": "Basic Beginner Hat",
+          "slug": "basic-beginner-hat",
+          "order": 1,
+          "legacy": {
+            "assignId": 3314,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "title": "Knit it Now Hat pattern",
+          "slug": "content-1782561100507",
+          "order": 3,
+          "legacy": {
+            "assignId": 3318,
+            "blockType": "HTML"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>Ready to Practice?</h3>\n\n<p>Now that you understand gauge and tension, put your new skills to work by knitting a simple hat.</p>\n\n\n\n<p>The Hat Pattern Builder will help you create a custom pattern based on your machine, gauge, and measurements.</p><p>Enter YOUR gauge, choose your size - answer a couple of questions and build your hat!</p><p><br></p><p><br></p>\n\n<a href=\"/patterns/hat\" class=\"btn btn-primary\">Build Your Custom Pattern</a>\n\n",
+              "legacyComponentId": 8521,
+              "order": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Hems and Ribbing",
+      "slug": "hems-and-ribbing",
+      "displayOrder": 10,
+      "legacy": {
+        "itemId": 234,
+        "lessonOrder": 10
+      },
+      "blocks": [
+        {
+          "title": "Hems",
+          "slug": "text-image-1782561614195",
+          "order": 1,
+          "legacy": {
+            "assignId": 3302,
+            "blockType": "HTML",
+            "editorLayout": "textImage"
+          },
+          "layoutOptions": {
+            "imagePosition": "right",
+            "header": null
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "For most knitting projects a plain 'ol cast just isn't enough.\nHems are a beautiful way to start (and end) your knitting.\n<ul>\n<li>Scrap and Ravel</li>\n<li>E-Wrap</li>\n<li>Every Other Needle</li>\n</ul>\n<div class='text-center'> <a href=\"/downloads/hem_exercises3.pdf\" class=\"kbm-btn kbm-btn-primary\" target=\"_blank\" rel=\"noopener noreferrer\">Download Hem Exercises</a>\n",
+              "legacyComponentId": 8522,
+              "order": 1,
+              "layoutRole": "textImageText"
+            },
+            {
+              "type": "image",
+              "src": "/images/courses/hems.webp",
+              "alt": "machine knitted hems",
+              "caption": "Finish beautiful hems",
+              "legacyComponentId": 8523,
+              "order": 2,
+              "layoutRole": "textImageImage"
+            }
+          ]
+        },
+        {
+          "title": "Ribbing",
+          "slug": "three-videos-1782562311331",
+          "order": 3,
+          "legacy": {
+            "assignId": 3303,
+            "blockType": "HTML",
+            "editorLayout": "threeVideosWithText"
+          },
+          "components": [
+            {
+              "type": "richText",
+              "html": "<p>\n  No matter what machine you have, you can add ribbing to your knitting. Examine and try whatever method works for you.\n</p>\n<div class='text-center'><a href=\"/downloads/page112.pdf\" class=\"kbm-btn kbm-btn-primary\" target=\"_blank\" rel=\"noopener noreferrer\">Download Ribbing Worksheet</a>",
+              "legacyComponentId": 8524,
+              "order": 3,
+              "layoutRole": "threeVideosIntro"
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357062",
+              "title": "Ribbing on the Knitting Machine",
+              "legacyComponentId": 8525,
+              "order": 5,
+              "layoutRole": "threeVideosVideo1"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 8526,
+              "order": 4,
+              "layoutRole": "threeVideosCaption1"
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357056",
+              "title": "Mock Ribbing",
+              "legacyComponentId": 8527,
+              "order": 7,
+              "layoutRole": "threeVideosVideo2"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 8528,
+              "order": 6,
+              "layoutRole": "threeVideosCaption2"
+            },
+            {
+              "type": "video",
+              "vimeoId": "",
+              "title": null,
+              "legacyComponentId": 8529,
+              "order": 9,
+              "layoutRole": "threeVideosVideo3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 8530,
+              "order": 8,
+              "layoutRole": "threeVideosCaption3"
+            },
+            {
+              "type": "richText",
+              "html": "",
+              "legacyComponentId": 8531,
+              "order": 10,
+              "layoutRole": "threeVideosOutro"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Oops",
+      "slug": "oops",
+      "displayOrder": 11,
+      "legacy": {
+        "itemId": 236,
+        "lessonOrder": 11
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<ul>\n<li>Speed Ripping</li>\n<li>Needle Stopper Bar</li>\n<li>Practice</li>\n</ul>",
+              "legacyComponentId": 4594,
+              "order": 1,
+              "layoutRole": "textVideoLeft"
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357042",
+              "title": "No Tears Allowed",
+              "legacyComponentId": 2973,
+              "order": 2
+            }
+          ],
+          "title": "Ripping",
+          "slug": "ripping",
+          "order": 1,
+          "legacy": {
+            "assignId": 1089,
+            "blockType": "VimeoID"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Intro to Patterning",
+      "slug": "intro-to-patterning",
+      "displayOrder": 12,
+      "legacy": {
+        "itemId": 237,
+        "lessonOrder": 12
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<ul>\n<li>Stockinette</li>\n<li>Tuck</li>\n<li>Slip</li>\n<li>Fairisle (stranded knitting)</li>\n<li>Lace</li>\n</ul>\n<br>\n<em>Learning to work stitch patterns is outside the scope of this course, this is just an introduction to the possibilities of your machine (no matter what machine you have).</em>",
+              "legacyComponentId": 4595,
+              "order": 1,
+              "layoutRole": "textVideoLeft"
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357030",
+              "title": "Stitch Types on the Knitting Machine",
+              "legacyComponentId": 2975,
+              "order": 2
+            }
+          ],
+          "title": "Stitch  Patterning",
+          "slug": "stitch-patterning",
+          "order": 1,
+          "legacy": {
+            "assignId": 1090,
+            "blockType": "VimeoID"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Shaping",
+      "slug": "shaping",
+      "displayOrder": 13,
+      "legacy": {
+        "itemId": 238,
+        "lessonOrder": 13
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\n<div style=\"\n    display:flex;\n    gap:2rem;\n    align-items:flex-start;\n    flex-wrap:wrap;\n    margin:1.5rem 0;\n\">\n    <div style=\"flex:1;\">\n  Unless you only want to knit blankets and scarves, increasing and decreasing is top on your list of skills to master.<br><br>\n\n<a href=\"/downloads/page121.pdf\" class=\"kbm-btn kbm-btn-primary\" target=\"_blank\" rel=\"noopener noreferrer\">Print Shaping Worksheet</a>\n    </div>\n\n    <div style=\"width:40%; min-width:250px;\">\n        <img src=\"/challenge/images/v2/33/trust_know_practice.gif\" alt=\"\" style=\"width:100%; height:auto; display:block;\">\n    </div>\n</div>\n\n\n\n",
+              "legacyComponentId": 4596,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/page121.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "1091",
+                "componentId": "4604",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4604,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357009",
+              "title": "Decreasing",
+              "legacyComponentId": 2977,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357019",
+              "title": "Increasing",
+              "legacyComponentId": 2976,
+              "order": 4
+            }
+          ],
+          "title": "Basic Increasing and Decreasing",
+          "slug": "basic-increasing-and-decreasing",
+          "order": 1,
+          "legacy": {
+            "assignId": 1091,
+            "blockType": "VimeoID"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Finishing",
+      "slug": "finishing",
+      "displayOrder": 14,
+      "legacy": {
+        "itemId": 239,
+        "lessonOrder": 14
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Just like in hand knitting, blocking techniques are a personal preference.<br>\n\n<b>Don't skip this topic.</b><br>  Blocking your knitting can mean the difference between \"home made\" and \"hand made\".<br>\n\n<ul>\n<li>Steaming</li>\n<li>Wet Blocking</li>\n<li>Wires</li>\n<li>Fibers</li>\n</ul>",
+              "legacyComponentId": 4478,
+              "order": 1,
+              "layoutRole": "textVideoLeft"
+            },
+            {
+              "type": "video",
+              "vimeoId": "178356993",
+              "title": "Blocking: The finishing touch",
+              "legacyComponentId": 2978,
+              "order": 2
+            }
+          ],
+          "title": "Blocking",
+          "slug": "blocking",
+          "order": 1,
+          "legacy": {
+            "assignId": 1092,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Hopefully you've knit a bunch of swatches in this course. <b> Use these swatches to practice seaming.</b> <br>Never thought of seaming on the machine?  This is similar to using an expensive linker.  Give it a try!<br><br>Do your mattress stitch skills need work?  Practice now!<br><hr>\n\n<ul>\n<li>Seam on the Machine</li>\n<li>Mattress Stitch</li>\n<li>Tips for Perfection</li>\n</ul>",
+              "legacyComponentId": 4480,
+              "order": 1,
+              "layoutRole": "textVideoLeft"
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357126",
+              "title": "Seaming Tips",
+              "legacyComponentId": 4479,
+              "order": 2
+            }
+          ],
+          "title": "Seaming Perfection",
+          "slug": "seaming-perfection",
+          "order": 2,
+          "legacy": {
+            "assignId": 3302,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "download",
+              "label": "Print all pages of the Course Worksheets",
+              "filename": "/downloads/beginner_worksheets.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3335",
+                "componentId": "4605",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4605,
+              "order": 1
+            }
+          ],
+          "title": "Print the  Worksheets",
+          "slug": "print-the-worksheets",
+          "order": 3,
+          "legacy": {
+            "assignId": 3335,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 33,
+    "videos": [
+      {
+        "vimeoId": "178357401",
+        "title": null,
+        "lessonSlug": "introducing-your-knitting-machine",
+        "blockSlug": "your-machine"
+      },
+      {
+        "vimeoId": "178357325",
+        "title": null,
+        "lessonSlug": "introducing-your-knitting-machine",
+        "blockSlug": "needle-positions"
+      },
+      {
+        "vimeoId": "178357376",
+        "title": null,
+        "lessonSlug": "helpful-essential-tips",
+        "blockSlug": "essential-tips"
+      },
+      {
+        "vimeoId": "699191838",
+        "title": null,
+        "lessonSlug": "helpful-essential-tips",
+        "blockSlug": "using-transfer-tools"
+      },
+      {
+        "vimeoId": "699787852",
+        "title": null,
+        "lessonSlug": "helpful-essential-tips",
+        "blockSlug": "using-the-latch-tool"
+      },
+      {
+        "vimeoId": "178357365",
+        "title": "Explore an Open Cast On",
+        "lessonSlug": "cast-on-methods",
+        "blockSlug": "open-cast-on"
+      },
+      {
+        "vimeoId": "178357361",
+        "title": "Video 1",
+        "lessonSlug": "cast-on-methods",
+        "blockSlug": "closed-cast-on"
+      },
+      {
+        "vimeoId": "317801328",
+        "title": "Video 2",
+        "lessonSlug": "cast-on-methods",
+        "blockSlug": "closed-cast-on"
+      },
+      {
+        "vimeoId": "178357352",
+        "title": "Video 3",
+        "lessonSlug": "cast-on-methods",
+        "blockSlug": "closed-cast-on"
+      },
+      {
+        "vimeoId": "178357341",
+        "title": null,
+        "lessonSlug": "cast-on-methods",
+        "blockSlug": "troubleshooting-cast-on-problems"
+      },
+      {
+        "vimeoId": "178357318",
+        "title": "Video 1: Three methods you should know",
+        "lessonSlug": "bind-off-methods",
+        "blockSlug": "ending-your-knitting"
+      },
+      {
+        "vimeoId": "178357304",
+        "title": "Video 2: Scrapping off  (Open Bindoff)",
+        "lessonSlug": "bind-off-methods",
+        "blockSlug": "ending-your-knitting"
+      },
+      {
+        "vimeoId": "178357273",
+        "title": "'Proper' Gauge Swatches",
+        "lessonSlug": "swatching-is-not-optional",
+        "blockSlug": "your-success-depends-on-this"
+      },
+      {
+        "vimeoId": "178357292",
+        "title": "The Importance of Gauge",
+        "lessonSlug": "swatching-is-not-optional",
+        "blockSlug": "understanding-gauge"
+      },
+      {
+        "vimeoId": "178357264",
+        "title": "TIP!  Using Weights",
+        "lessonSlug": "swatching-is-not-optional",
+        "blockSlug": "understanding-gauge"
+      },
+      {
+        "vimeoId": "178357247",
+        "title": "Tension: Controlling your gauge",
+        "lessonSlug": "swatching-is-not-optional",
+        "blockSlug": "understanding-gauge"
+      },
+      {
+        "vimeoId": "178357142",
+        "title": null,
+        "lessonSlug": "how-much-yarn-do-i-need",
+        "blockSlug": "don-t-sweat-it"
+      },
+      {
+        "vimeoId": "151859805",
+        "title": "Yarn Estimator Video",
+        "lessonSlug": "how-much-yarn-do-i-need",
+        "blockSlug": "practice-yarn-estimate"
+      },
+      {
+        "vimeoId": "178357106",
+        "title": "Play with stripes",
+        "lessonSlug": "just-for-fun",
+        "blockSlug": "getting-inspired"
+      },
+      {
+        "vimeoId": "178357093",
+        "title": "Fast I-cord on the machine",
+        "lessonSlug": "just-for-fun",
+        "blockSlug": "getting-inspired"
+      },
+      {
+        "vimeoId": "319202520",
+        "title": "Ease, Build your Pattern and Knitting",
+        "lessonSlug": "project-1-get-knitting",
+        "blockSlug": "basic-beginner-hat"
+      },
+      {
+        "vimeoId": "178357079",
+        "title": "Machine Knit Hems",
+        "lessonSlug": "hems-and-ribbing",
+        "blockSlug": "hems"
+      },
+      {
+        "vimeoId": "178357062",
+        "title": "Ribbing on the Knitting Machine",
+        "lessonSlug": "hems-and-ribbing",
+        "blockSlug": "ribbing"
+      },
+      {
+        "vimeoId": "178357056",
+        "title": "Mock Ribbing",
+        "lessonSlug": "hems-and-ribbing",
+        "blockSlug": "ribbing"
+      },
+      {
+        "vimeoId": "319304772",
+        "title": "Double Warm Hat",
+        "lessonSlug": "project-2-double-warm-hat",
+        "blockSlug": "double-warm-hat"
+      },
+      {
+        "vimeoId": "178357049",
+        "title": null,
+        "lessonSlug": "reading-mk-patterns",
+        "blockSlug": "machine-knitting-patterns"
+      },
+      {
+        "vimeoId": "178357042",
+        "title": "No Tears Allowed",
+        "lessonSlug": "oops",
+        "blockSlug": "ripping"
+      },
+      {
+        "vimeoId": "178357030",
+        "title": "Stitch Types on the Knitting Machine",
+        "lessonSlug": "intro-to-patterning",
+        "blockSlug": "stitch-patterning"
+      },
+      {
+        "vimeoId": "178357009",
+        "title": "Decreasing",
+        "lessonSlug": "shaping",
+        "blockSlug": "basic-increasing-and-decreasing"
+      },
+      {
+        "vimeoId": "178357019",
+        "title": "Increasing",
+        "lessonSlug": "shaping",
+        "blockSlug": "basic-increasing-and-decreasing"
+      },
+      {
+        "vimeoId": "178356986",
+        "title": "Watch Cap",
+        "lessonSlug": "project-3-shaped-watch-cap",
+        "blockSlug": "shaped-watch-cap"
+      },
+      {
+        "vimeoId": "178356993",
+        "title": "Blocking: The finishing touch",
+        "lessonSlug": "finishing",
+        "blockSlug": "blocking"
+      },
+      {
+        "vimeoId": "178357126",
+        "title": "Seaming Tips",
+        "lessonSlug": "finishing",
+        "blockSlug": "seaming-perfection"
+      }
+    ],
+    "downloadCount": 7,
+    "downloads": [
+      {
+        "filename": "/downloads/cast_on_exercises1.pdf",
+        "label": "Print the Worksheets",
+        "lessonSlug": "cast-on-methods",
+        "blockSlug": "open-cast-on"
+      },
+      {
+        "filename": "/downloads/swatch_exercises2.pdf",
+        "label": "Print the Worksheets",
+        "lessonSlug": "swatching-is-not-optional",
+        "blockSlug": "your-success-depends-on-this"
+      },
+      {
+        "filename": "/downloads/hem_exercises3.pdf",
+        "label": "Print the Worksheets",
+        "lessonSlug": "hems-and-ribbing",
+        "blockSlug": "hems"
+      },
+      {
+        "filename": "/downloads/page112.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "hems-and-ribbing",
+        "blockSlug": "ribbing"
+      },
+      {
+        "filename": "/downloads/Machine_Knitting_Abbreviations.pdf",
+        "label": "Printable Chart",
+        "lessonSlug": "reading-mk-patterns",
+        "blockSlug": "mk-abbreviations"
+      },
+      {
+        "filename": "/downloads/page121.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "shaping",
+        "blockSlug": "basic-increasing-and-decreasing"
+      },
+      {
+        "filename": "/downloads/merged1-12.pdf",
+        "label": "Print all Worksheets",
+        "lessonSlug": "finishing",
+        "blockSlug": "print-the-worksheets"
+      }
+    ]
+  }
+}

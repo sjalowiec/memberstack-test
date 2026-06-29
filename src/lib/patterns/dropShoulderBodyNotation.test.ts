@@ -3,6 +3,8 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { generateDropShoulderPattern } from "./dropShoulderPatternOutput";
 import { computeDefaultMeasurementsFromChartRow } from "./sleevelessExpressSizeChartClient";
+import { cardiganFrontInitialNeckBindOffStitches } from "./roundNeckNotation";
+import { formatBindOffNotation } from "./sleevelessBackJapaneseNotation";
 import {
   buildDropShoulderBackJapaneseNotationReplacements,
   buildDropShoulderFrontJapaneseNotationReplacements,
@@ -16,8 +18,10 @@ import {
   DROP_SHOULDER_BODY_FRONT_NOTATION_SRC,
   DROP_SHOULDER_BODY_FRONT_STS_ROWS_SRC,
   buildDropShoulderBodyDiagramReplacements,
+  withDropShoulderShoulderMeasurementReplacements,
   resolveDropShoulderShoulderStitchesForDiagram,
   resolveDropShoulderBackDiagramSrc,
+  resolveDropShoulderBackDiagramSvg,
   resolveDropShoulderFrontDiagramSrc,
 } from "./dropShoulderBodyNotationSvg";
 import {
@@ -25,6 +29,7 @@ import {
   assertJapaneseNotationSvgFullyReplaced,
   listJapaneseNotationPlaceholdersInSvg,
 } from "./sleevelessJapaneseNotationSvg";
+import { applyGarmentDiagramSvgReplacements } from "./sleevelessGarmentDiagramSvg";
 import { SLEEVELESS_BACK_JP_NOTATION_DIAGRAM_SRC } from "./sleevelessBackDiagramSrc";
 import { SLEEVELESS_FRONT_JP_NOTATION_DIAGRAM_SRC } from "./sleevelessFrontJapaneseNotation";
 
@@ -39,6 +44,42 @@ function inlineSvgReplacements(
     out = out.replace(re, v == null ? "" : String(v));
   }
   return out;
+}
+
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** Visible text from the first `<text>` inside an SVG group with `id`. */
+function textInSvgGroup(svgText: string, groupId: string): string | undefined {
+  const groupRe = new RegExp(
+    `id="${escapeRegExp(groupId)}"[\\s\\S]*?(?=id="|<\\/svg>)`,
+    "i",
+  );
+  const groupMatch = svgText.match(groupRe);
+  if (!groupMatch) return undefined;
+  const textMatch = groupMatch[0].match(/<text[^>]*>([\s\S]*?)<\/text>/i);
+  if (!textMatch) return undefined;
+  return textMatch[1]!
+    .replace(/<tspan[^>]*>/gi, "")
+    .replace(/<\/tspan>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function textAtTransform(svgText: string, transform: string): string | undefined {
+  const re = new RegExp(
+    `<text transform="${escapeRegExp(transform)}"[^>]*>([\\s\\S]*?)<\\/text>`,
+    "i",
+  );
+  const match = svgText.match(re);
+  if (!match) return undefined;
+  return match[1]!
+    .replace(/<tspan[^>]*>/gi, "")
+    .replace(/<\/tspan>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .trim();
 }
 
 /** Net open `<g>` depth after a full scan — must be 0 for well-formed SVG group nesting. */
@@ -63,22 +104,33 @@ function assertParseableSvgMarkup(svgText: string): void {
   expect(openText).toBe(closeText);
 }
 
-const DROP_SHOULDER_BODY_BACK_NOTATION_TOKENS = [
+const DROP_SHOULDER_BODY_JP_NOTATION_SHARED_TOKENS = [
   "jp-caston",
-  "jp-body-rows",
   "jp-neckline-bo",
   "jp-neckline-shaping",
-  "jp-armhole-bo",
   "rc-caston",
   "rc-hem",
   "rc-armhole-bo",
   "rc-neckline-start",
-  "rc_reset",
+] as const;
+
+const DROP_SHOULDER_BODY_BACK_NOTATION_TOKENS = [
+  ...DROP_SHOULDER_BODY_JP_NOTATION_SHARED_TOKENS,
+  "jp-body-shaping",
 ] as const;
 
 const DROP_SHOULDER_BODY_FRONT_NOTATION_TOKENS = [
-  ...DROP_SHOULDER_BODY_BACK_NOTATION_TOKENS,
+  ...DROP_SHOULDER_BODY_JP_NOTATION_SHARED_TOKENS,
+  "jp-body-rows",
+  "jp-armhole-bo",
   "jp-armhole-shaping",
+  "rc_reset",
+] as const;
+
+/** Cardigan front JP omits armhole and neckline placeholders (half-panel schematic). */
+const DROP_SHOULDER_BODY_CARDIGAN_NOTATION_TOKENS = [
+  "jp-caston",
+  "jp-body-rows",
 ] as const;
 
 const DROP_SHOULDER_PATTERN = {
@@ -114,6 +166,22 @@ const DROP_SHOULDER_CARDIGAN_PATTERN = {
     ...DROP_SHOULDER_PATTERN.style,
     frontStyle: "open",
     garmentStyle: "cardigan",
+  },
+};
+
+const DROP_SHOULDER_ALINE_CARDIGAN_V = {
+  ...DROP_SHOULDER_CARDIGAN_PATTERN,
+  style: {
+    ...DROP_SHOULDER_CARDIGAN_PATTERN.style,
+    neckline: "v-neck",
+    bodyShape: "aline",
+  },
+  fit: {
+    ...DROP_SHOULDER_CARDIGAN_PATTERN.fit,
+    selectedMeasurements: {
+      ...DROP_SHOULDER_CARDIGAN_PATTERN.fit.selectedMeasurements,
+      finished_hip: 44,
+    },
   },
 };
 
@@ -167,6 +235,21 @@ describe("dropShoulderBodyNotationSvg", () => {
     ).toBe(DROP_SHOULDER_BODY_CARDIGAN_NOTATION_SRC);
   });
 
+  it("resolves A-line back shaping notation and sts-rows without fallback", () => {
+    const notation = resolveDropShoulderBackDiagramSvg(
+      "shaping-notation",
+      DROP_SHOULDER_ALINE_CARDIGAN_V,
+    );
+    expect(notation.exactMatch).toBe(true);
+    expect(notation.src).toBe("/images/patterns/drop-shoulder/diagram-jp-back-aline.svg");
+    expect(notation.fallback).toBeUndefined();
+
+    const stsRows = resolveDropShoulderBackDiagramSvg("sts-rows", DROP_SHOULDER_ALINE_CARDIGAN_V);
+    expect(stsRows.exactMatch).toBe(true);
+    expect(stsRows.src).toBe("/images/patterns/drop-shoulder/drop-body-back-aline.svg");
+    expect(stsRows.fallback).toBeUndefined();
+  });
+
   it("lists expected notation tokens in each drop-shoulder body notation SVG", () => {
     const backSvg = readFileSync(
       resolve(process.cwd(), "public" + DROP_SHOULDER_BODY_BACK_NOTATION_SRC),
@@ -189,6 +272,8 @@ describe("dropShoulderBodyNotationSvg", () => {
     }
     for (const token of DROP_SHOULDER_BODY_FRONT_NOTATION_TOKENS) {
       expect(pulloverFrontTokens, `pullover front SVG missing ${token}`).toContain(token);
+    }
+    for (const token of DROP_SHOULDER_BODY_CARDIGAN_NOTATION_TOKENS) {
       expect(cardiganFrontTokens, `cardigan front SVG missing ${token}`).toContain(token);
     }
   });
@@ -225,7 +310,43 @@ describe("dropShoulderBodyNotationSvg", () => {
 });
 
 describe("dropShoulderBodyJapaneseNotation", () => {
-  it("fills drop-shoulder back notation with center bind-off and neckline shaping", () => {
+  it("always uses documented shallow-round JP on back (hold center + Xs-2r-Nx edge holds)", () => {
+    const result = generateDropShoulderPattern(DROP_SHOULDER_PATTERN);
+    expect(result.debug.backNeckRoundNecklineStrategy).toBe("shallow-round");
+    const repl = buildDropShoulderBackJapaneseNotationReplacements(result, DROP_SHOULDER_PATTERN);
+    expect(repl["jp-neckline-bo"]).toBe("hold18");
+    expect(repl["jp-neckline-shaping"]).toBe("3s-2r-1x\n2s-2r-3x");
+    expect(repl["jp-neckline-shaping"]).not.toMatch(/3s-2r-2x|1s-1r/);
+  });
+
+  it("back written instructions use needle-range shallow hold shaping with validation counts", () => {
+    const result = generateDropShoulderPattern(DROP_SHOULDER_PATTERN);
+    const backText = result.displayRows
+      .filter((row): row is Extract<(typeof result.displayRows)[number], { kind: "block" }> => row.kind === "block")
+      .flatMap((row) => [...(row.trustedParagraphs ?? []), ...(row.paragraphs ?? [])])
+      .join("\n");
+    expect(backText).toMatch(/RIGHT SIDE/i);
+    expect(backText).toMatch(/class="needle-range"/);
+    expect(backText).toMatch(/Put needles .*L50 through R9.*into hold \(59 stitches total\)/);
+    expect(backText).toMatch(/Work needles .*R10 through R50.*\(41 stitches total\)/);
+    expect(backText).toMatch(/Put 3 needles into hold every other row 1 time/i);
+    expect(backText).toMatch(/Put 2 needles into hold every other row 3 times/i);
+    expect(backText).toMatch(/Scrap off or bind off the remaining right shoulder stitches/i);
+    expect(backText).toMatch(/Break yarn and move the carriage to the opposite side/i);
+    expect(backText).toMatch(/Leave center neckline needles .*L9 through R9.*in hold \(18 stitches total\)/);
+    expect(backText).toMatch(/Return needles .*L50 through L10.*\(41 stitches total\)/);
+    expect(backText).toMatch(/Work needles .*L50 through L10/);
+    expect(backText).not.toMatch(/Work needles .*L50 through L10.*\(41 stitches total\)/);
+    expect(backText).toMatch(/BACK NECKLINE CLEANUP/i);
+    expect(backText).toMatch(/Scrap off or bind off all remaining held neckline stitches/i);
+    expect(backText).not.toMatch(/Place the center \d+ stitches in hold/i);
+    expect(backText).not.toMatch(/Place the opposite shoulder stitches in hold/i);
+    expect(backText).not.toMatch(/Continue to RC:/i);
+    expect(backText).not.toMatch(/bind off 32 stitches for each shoulder/i);
+    expect(backText).not.toMatch(/bind off all \d+ stitches across the top/i);
+  });
+
+  it("fills drop-shoulder back notation with center hold and neckline shaping", () => {
     const result = generateDropShoulderPattern(DROP_SHOULDER_PATTERN);
     expect(isDropShoulderBodyJapaneseNotationSupported(result)).toBe(true);
 
@@ -236,7 +357,7 @@ describe("dropShoulderBodyJapaneseNotation", () => {
     expect(repl["jp-armhole-bo"]).toBe("");
     expect(repl["jp-armhole-shaping"]).toBe("");
     expect(repl["jp-shoulder-shaping"]).toBe("");
-    expect(repl["jp-neckline-bo"]).toMatch(/^bo\d+/);
+    expect(repl["jp-neckline-bo"]).toMatch(/^hold\d+/);
     expect(repl["jp-neckline-shaping"].length).toBeGreaterThan(0);
     if (fullNeck > 0) {
       expect(repl["jp-neckline-bo"]).not.toBe(`bo${fullNeck}`);
@@ -254,12 +375,9 @@ describe("dropShoulderBodyJapaneseNotation", () => {
     const out = applyJapaneseNotationSvgReplacements(svgText, repl);
 
     expect(repl["jp-neckline-shaping"].length).toBeGreaterThan(0);
-    expect(out).toContain('transform="translate(40.6 28.83)"');
-    expect(out).toMatch(/translate\(40\.6 28\.83\)"[^>]*>[\s\S]*?1s-2r|3s-2r/);
-    const armholeText = out.match(
-      /<text transform="translate\(190\.38 113\.64\)"[^>]*>([\s\S]*?)<\/text>/,
-    )?.[1];
-    expect(armholeText ?? "").not.toMatch(/1s-2r|3s-2r/);
+    const neckCallout = textAtTransform(out, "translate(121.06 30.44)");
+    expect(neckCallout).toMatch(/3s-2r|2s-2r|1s-2r/);
+    expect(textAtTransform(out, "translate(193.02 223.22)") ?? "").not.toMatch(/3s-2r|2s-2r|1s-2r/);
   });
 
   it("derives back neckline shaping when debug.necklineStitches is missing but measurements exist", () => {
@@ -274,10 +392,10 @@ describe("dropShoulderBodyJapaneseNotation", () => {
       DROP_SHOULDER_PATTERN,
     );
     expect(repl["jp-neckline-shaping"].length).toBeGreaterThan(0);
-    expect(repl["jp-neckline-bo"]).toMatch(/^bo\d+/);
+    expect(repl["jp-neckline-bo"]).toMatch(/^hold\d+/);
   });
 
-  it("fills drop-shoulder front round-neck notation from debug", () => {
+  it("fills drop-shoulder front round-neck notation from debug (deep front uses bind-off center)", () => {
     const result = generateDropShoulderPattern(DROP_SHOULDER_PATTERN);
     const repl = buildDropShoulderFrontJapaneseNotationReplacements(result, DROP_SHOULDER_PATTERN);
     expect(repl["jp-caston"]).toMatch(/^co\d+/);
@@ -286,6 +404,28 @@ describe("dropShoulderBodyJapaneseNotation", () => {
     expect(repl["jp-neckline-bo"]).toMatch(/^bo\d+/);
     expect(repl["jp-neckline-shaping"].length).toBeGreaterThan(0);
     expect(repl["rc-neckline-start"]).toMatch(/^rc\d+/);
+  });
+
+  it("cardigan front jp-neckline-bo matches written CF bind-off (not legacy n/3 shortcut)", () => {
+    const result = generateDropShoulderPattern(DROP_SHOULDER_CARDIGAN_PATTERN);
+    const repl = buildDropShoulderFrontJapaneseNotationReplacements(
+      result,
+      DROP_SHOULDER_CARDIGAN_PATTERN,
+    );
+    const fullNeck = result.debug.necklineStitches ?? 0;
+    const cfBindOff = cardiganFrontInitialNeckBindOffStitches(
+      fullNeck,
+      result.debug.frontNeckDepthRows,
+    );
+    expect(repl["jp-neckline-bo"]).toBe(formatBindOffNotation(cfBindOff));
+    expect(repl["jp-neckline-shaping"].length).toBeGreaterThan(0);
+    expect(repl["jp-neckline-shaping"]).not.toMatch(/^1s-2r-\d+x$/);
+
+    const frontText = (result.frontDisplayRows ?? [])
+      .filter((row): row is Extract<(typeof result.frontDisplayRows)[number], { kind: "block" }> => row.kind === "block")
+      .flatMap((row) => [...(row.paragraphs ?? [])])
+      .join("\n");
+    expect(frontText).toMatch(new RegExp(`bind off ${cfBindOff} stitches`, "i"));
   });
 
   it("derives front neckline shaping when debug.necklineStitches is missing but measurements exist", () => {
@@ -310,12 +450,9 @@ describe("dropShoulderBodyJapaneseNotation", () => {
     const svgText = readFileSync(svgPath, "utf8");
     const out = applyJapaneseNotationSvgReplacements(svgText, repl);
 
-    expect(out).toContain('transform="translate(40.6 28.83)"');
-    expect(out).toMatch(/translate\(40\.6 28\.83\)"[^>]*>[\s\S]*?1s-2r/);
-    const armholeText = out.match(
-      /<text transform="translate\(190\.38 113\.64\)"[^>]*>([\s\S]*?)<\/text>/,
-    )?.[1];
-    expect(armholeText ?? "").not.toMatch(/1s-2r|3s-2r/);
+    const neckCallout = textAtTransform(out, "translate(84.71 31.37)");
+    expect(neckCallout).toMatch(/1s-2r/);
+    expect(textAtTransform(out, "translate(187.79 124.72)") ?? "").not.toMatch(/1s-2r|3s-2r/);
   });
 
   it("derives front neckline shaping from neck_opening_width alias", () => {
@@ -340,22 +477,35 @@ describe("dropShoulderBodyJapaneseNotation", () => {
   });
 
   it("replaces every jp token in drop-shoulder body notation SVGs when placeholders exist", () => {
-    for (const rel of [DROP_SHOULDER_BODY_BACK_NOTATION_SRC, DROP_SHOULDER_BODY_FRONT_NOTATION_SRC]) {
+    const result = generateDropShoulderPattern(DROP_SHOULDER_PATTERN);
+    for (const [rel, measurementPiece, buildRepl] of [
+      [
+        DROP_SHOULDER_BODY_BACK_NOTATION_SRC,
+        "back",
+        () => buildDropShoulderBackJapaneseNotationReplacements(result, DROP_SHOULDER_PATTERN),
+      ],
+      [
+        DROP_SHOULDER_BODY_FRONT_NOTATION_SRC,
+        "front",
+        () => buildDropShoulderFrontJapaneseNotationReplacements(result, DROP_SHOULDER_PATTERN),
+      ],
+    ] as const) {
       const svgPath = resolve(process.cwd(), "public" + rel);
       const svgText = readFileSync(svgPath, "utf8");
-      expect(svgText).not.toContain("{{shoulder-stitches}}");
       const tokens = listJapaneseNotationPlaceholdersInSvg(svgText);
       if (tokens.length === 0) continue;
 
-      const result = generateDropShoulderPattern(DROP_SHOULDER_PATTERN);
-      const repl =
-        rel === DROP_SHOULDER_BODY_BACK_NOTATION_SRC
-          ? buildDropShoulderBackJapaneseNotationReplacements(result, DROP_SHOULDER_PATTERN)
-          : buildDropShoulderFrontJapaneseNotationReplacements(result, DROP_SHOULDER_PATTERN);
+      const repl = withDropShoulderShoulderMeasurementReplacements(
+        buildRepl(),
+        result,
+        "in",
+        { patternData: DROP_SHOULDER_PATTERN, measurementPiece },
+      );
 
       expect(() => assertJapaneseNotationSvgFullyReplaced(svgText, repl)).not.toThrow();
       const out = applyJapaneseNotationSvgReplacements(svgText, repl);
       expect(listJapaneseNotationPlaceholdersInSvg(out)).toEqual([]);
+      expect(out).not.toContain("{{shoulder-stitches}}");
       expect(repl["jp-shoulder-shaping"]).toBe("");
     }
   });
@@ -414,21 +564,197 @@ describe("dropShoulderBodyDiagramReplacements", () => {
 
     const out = inlineSvgReplacements(svgText, repl);
 
-    expect(out).toMatch(
-      /translate\(105\.26 101\.93\)"[^>]*>[\s\S]*?>\s*74sts\s*</,
-    );
-    expect(out).toMatch(
-      /translate\(163\.66 43\.29\)"[^>]*>[\s\S]*?>\s*24sts\s*</,
-    );
-    expect(out).not.toMatch(
-      /translate\(163\.66 43\.29\)"[^>]*>[\s\S]*?>\s*74sts\s*</,
-    );
+    expect(textInSvgGroup(out, "CROSS_SHOULDER_STS")).toBe("74sts");
+    expect(textInSvgGroup(out, "NECK_WIDTH_STS-2")).toBe("24sts");
+    expect(textInSvgGroup(out, "CROSS_SHOULDER_STS")).not.toBe(textInSvgGroup(out, "NECK_WIDTH_STS-2"));
     expect(out).not.toContain("{{shoulder-stitches}}");
     expect(out).not.toContain("{{cross-shoulder-width}}");
     expect(out).not.toContain("{{cross-shoulder}}");
   });
 
-  it("replaces shoulder-stitches in sts-rows drop-shoulder body SVGs only", () => {
+  it("A-line back diagram uses bust width at cross-shoulder and hip cast-on at hem", () => {
+    const alinePattern = {
+      ...DROP_SHOULDER_PATTERN,
+      style: {
+        ...DROP_SHOULDER_PATTERN.style,
+        bodyShape: "aline",
+      },
+      fit: {
+        ...DROP_SHOULDER_PATTERN.fit,
+        selectedMeasurements: {
+          ...DROP_SHOULDER_PATTERN.fit.selectedMeasurements,
+          finished_hip: 44,
+        },
+      },
+    };
+    const result = generateDropShoulderPattern(alinePattern);
+    expect(result.debug.hemCastOnStitches).toBeGreaterThan(result.debug.bustBodyStitches!);
+
+    const repl = buildDropShoulderBodyDiagramReplacements(result, "in", {
+      patternData: alinePattern,
+      measurementPiece: "back",
+    });
+    expect(repl["cross-shoulder-width"]).toBe(String(result.debug.bustBodyStitches));
+    expect(repl.HIP_STS).toBe(String(result.debug.hemCastOnStitches));
+    expect(Number(repl["cross-shoulder-width"])).toBeLessThan(Number(repl.HIP_STS));
+    expect(repl["cross-shoulder"]).toBe(repl.SHOULDER_WIDTH);
+
+    const markerRc = result.debug.rowsFromCastOnToArmholeStart!;
+    const neckStartRc = result.debug.backNecklineStartRC!;
+    const straightAboveMarker = neckStartRc - markerRc;
+    expect(straightAboveMarker).toBeGreaterThan(0);
+    expect(straightAboveMarker).toBeLessThan(result.debug.armholeRows!);
+    expect(repl.ARMHOLE_ROWS).toBe(String(straightAboveMarker));
+    expect(repl.NECK_DEPTH_ROWS).toBe(String(result.debug.backNeckDepthRows));
+    expect(Number(repl.ARMHOLE_ROWS) + Number(repl.NECK_DEPTH_ROWS)).toBe(result.debug.armholeRows);
+  });
+
+  it("replaces shoulder-stitches in diagram-jp-back-aline shaping notation", () => {
+    const alinePattern = {
+      ...DROP_SHOULDER_PATTERN,
+      style: {
+        construction: "drop-shoulder",
+        frontStyle: "closed",
+        garmentStyle: "pullover",
+        neckline: "round",
+        bodyShape: "aline",
+      },
+      fit: {
+        ...DROP_SHOULDER_PATTERN.fit,
+        selectedMeasurements: {
+          ...DROP_SHOULDER_PATTERN.fit.selectedMeasurements,
+          finished_hip: 44,
+        },
+      },
+    };
+    const result = generateDropShoulderPattern(alinePattern);
+    const repl = withDropShoulderShoulderMeasurementReplacements(
+      buildDropShoulderBackJapaneseNotationReplacements(result, alinePattern),
+      result,
+      "in",
+      { patternData: alinePattern, measurementPiece: "back" },
+    );
+
+    const rel = "/images/patterns/drop-shoulder/diagram-jp-back-aline.svg";
+    const svgText = readFileSync(resolve(process.cwd(), "public" + rel), "utf8");
+    expect(svgText).toContain("{{shoulder-stitches}}");
+    expect(svgText).toContain("{{jp-body-shaping}}");
+    expect(repl["shoulder-stitches"]).toBe(String(result.debug.shoulderStitches));
+    expect(repl["jp-body-shaping"]).toMatch(/1s-\d+r-\d+x/);
+    expect(repl["jp-body-shaping"]).not.toMatch(/^\+/m);
+
+    const out = applyJapaneseNotationSvgReplacements(svgText, repl);
+    expect(textInSvgGroup(out, "NECK_WIDTH_STS")).toBe(`${repl["shoulder-stitches"]}sts`);
+    expect(out).not.toContain("{{shoulder-stitches}}");
+  });
+
+  it("replaces jp-body-shaping with + increase notation on diagram-jp-back-shaped.svg", () => {
+    const shapedPattern = {
+      ...DROP_SHOULDER_PATTERN,
+      style: {
+        construction: "drop-shoulder",
+        frontStyle: "closed",
+        garmentStyle: "pullover",
+        neckline: "round",
+        bodyShape: "shaped",
+      },
+      fit: {
+        ...DROP_SHOULDER_PATTERN.fit,
+        selectedMeasurements: {
+          ...DROP_SHOULDER_PATTERN.fit.selectedMeasurements,
+          finished_hip: 36,
+        },
+      },
+    };
+    const result = generateDropShoulderPattern(shapedPattern);
+    const repl = withDropShoulderShoulderMeasurementReplacements(
+      buildDropShoulderBackJapaneseNotationReplacements(result, shapedPattern),
+      result,
+      "in",
+      { patternData: shapedPattern, measurementPiece: "back" },
+    );
+
+    const rel = "/images/patterns/drop-shoulder/diagram-jp-back-shaped.svg";
+    const svgText = readFileSync(resolve(process.cwd(), "public" + rel), "utf8");
+    expect(svgText).toContain("{{jp-body-shaping}}");
+    expect(repl["jp-body-shaping"]).toMatch(/^\+1s-\d+r-\d+x/);
+    expect(repl["jp-body-shaping"].split("\n").every((line) => line.startsWith("+"))).toBe(true);
+
+    const out = applyJapaneseNotationSvgReplacements(svgText, repl);
+    expect(out).not.toContain("{{jp-body-shaping}}");
+    for (const line of repl["jp-body-shaping"].split("\n").filter(Boolean)) {
+      expect(out).toContain(line);
+    }
+  });
+
+  it("replaces shoulder-stitches in diagram-jp-front-v-aline shaping notation", () => {
+    const alineVPattern = {
+      ...DROP_SHOULDER_PATTERN,
+      style: {
+        construction: "drop-shoulder",
+        frontStyle: "closed",
+        garmentStyle: "pullover",
+        neckline: "v-neck",
+        bodyShape: "aline",
+      },
+      fit: {
+        ...DROP_SHOULDER_PATTERN.fit,
+        selectedMeasurements: {
+          ...DROP_SHOULDER_PATTERN.fit.selectedMeasurements,
+          finished_hip: 44,
+        },
+      },
+    };
+    const result = generateDropShoulderPattern(alineVPattern);
+    const repl = withDropShoulderShoulderMeasurementReplacements(
+      buildDropShoulderFrontJapaneseNotationReplacements(result, alineVPattern),
+      result,
+      "in",
+      { patternData: alineVPattern, measurementPiece: "front" },
+    );
+
+    const rel = "/images/patterns/drop-shoulder/diagram-jp-front-v-aline.svg";
+    const svgText = readFileSync(resolve(process.cwd(), "public" + rel), "utf8");
+    expect(svgText).toContain("{{shoulder-stitches}}");
+    expect(repl["shoulder-stitches"]).toBe(String(result.debug.shoulderStitches));
+
+    const out = applyJapaneseNotationSvgReplacements(svgText, repl);
+    expect(out).toMatch(
+      new RegExp(
+        `translate\\(160\\.84 53\\.43\\)"[^>]*>[\\s\\S]*?>\\s*${repl["shoulder-stitches"]}sts\\s*<`,
+      ),
+    );
+    expect(out).not.toContain("{{shoulder-stitches}}");
+    expect(() => assertJapaneseNotationSvgFullyReplaced(svgText, repl)).not.toThrow();
+  });
+
+  it("replaces HIP_STS cast-on at the front hem on drop-body-front.svg", () => {
+    const result = generateDropShoulderPattern(DROP_SHOULDER_PATTERN);
+    expect(result.debug.hemCastOnStitches).toBe(result.debug.backStitches);
+
+    const frontRepl = buildDropShoulderBodyDiagramReplacements(result, "in", {
+      patternData: DROP_SHOULDER_PATTERN,
+      measurementPiece: "front",
+    });
+    expect(frontRepl.HIP_STS).toBe(String(result.debug.hemCastOnStitches));
+    expect(frontRepl.HIP_INCHES).toBeTruthy();
+
+    const svgText = readFileSync(
+      resolve(process.cwd(), "public" + DROP_SHOULDER_BODY_FRONT_STS_ROWS_SRC),
+      "utf8",
+    );
+    expect(svgText).toContain("{{HIP_STS}}");
+    expect(svgText).toContain("{{HIP_INCHES}}");
+    expect(svgText).not.toContain("{{BUST_STS}}");
+
+    const out = applyGarmentDiagramSvgReplacements(svgText, frontRepl);
+    expect(out).toMatch(/id="HIP_MEASUREMENT"[\s\S]*?>\s*100sts\s*</);
+    expect(out).toMatch(/id="HIP_MEASUREMENT"[\s\S]*?>\s*\(20 in\)\s*</);
+    expect(out).not.toContain("{{HIP_STS}}");
+    expect(out).not.toContain("{{HIP_INCHES}}");
+  });
+
+  it("replaces shoulder-stitches in sts-rows and notation drop-shoulder body SVGs", () => {
     const result = generateDropShoulderPattern(DROP_SHOULDER_PATTERN);
     const backRepl = buildDropShoulderBodyDiagramReplacements(result, "in", {
       patternData: DROP_SHOULDER_PATTERN,
@@ -448,13 +774,27 @@ describe("dropShoulderBodyDiagramReplacements", () => {
       expect(svgText).toContain("{{shoulder-stitches}}");
       expect(svgText).not.toContain("{{shoulder_sts}}");
       const out = inlineSvgReplacements(svgText, repl);
-      expect(out).toMatch(/translate\(163\.66 43\.29\)"[^>]*>[\s\S]*?>\s*32sts\s*</);
+      expect(textInSvgGroup(out, "NECK_WIDTH_STS-2")).toBe(`${repl["shoulder-stitches"]}sts`);
       expect(out).not.toContain("{{shoulder-stitches}}");
     }
 
-    for (const rel of [DROP_SHOULDER_BODY_BACK_NOTATION_SRC, DROP_SHOULDER_BODY_FRONT_NOTATION_SRC]) {
+    for (const [rel, measurementPiece] of [
+      [DROP_SHOULDER_BODY_BACK_NOTATION_SRC, "back"],
+      [DROP_SHOULDER_BODY_FRONT_NOTATION_SRC, "front"],
+    ] as const) {
       const svgText = readFileSync(resolve(process.cwd(), "public" + rel), "utf8");
-      expect(svgText).not.toContain("{{shoulder-stitches}}");
+      expect(svgText).toContain("{{shoulder-stitches}}");
+      const repl = withDropShoulderShoulderMeasurementReplacements(
+        measurementPiece === "back"
+          ? buildDropShoulderBackJapaneseNotationReplacements(result, DROP_SHOULDER_PATTERN)
+          : buildDropShoulderFrontJapaneseNotationReplacements(result, DROP_SHOULDER_PATTERN),
+        result,
+        "in",
+        { patternData: DROP_SHOULDER_PATTERN, measurementPiece },
+      );
+      const out = applyJapaneseNotationSvgReplacements(svgText, repl);
+      expect(out).not.toContain("{{shoulder-stitches}}");
+      expect(out).toContain(`${repl["shoulder-stitches"]}sts`);
     }
   });
 
@@ -587,15 +927,10 @@ describe("dropShoulderBodyDiagramReplacements", () => {
     const svgPath = resolve(process.cwd(), "public" + DROP_SHOULDER_BODY_CARDIGAN_STS_ROWS_SRC);
     const svgText = readFileSync(svgPath, "utf8");
     const out = inlineSvgReplacements(svgText, frontRepl);
-    expect(out).toMatch(
-      /translate\(77\.82 88\.33\)"[^>]*>[\s\S]*?>\s*42sts\s*</,
-    );
-    expect(out).toMatch(
-      /translate\(86\.38 99\.61\)"[^>]*>[\s\S]*?>\s*\(6 in\)\s*</,
-    );
-    expect(out).not.toMatch(
-      /translate\(77\.82 88\.33\)"[^>]*>[\s\S]*?>\s*84sts\s*</,
-    );
+    expect(textInSvgGroup(out, "CROSS_SHOULDER_STS")).toBe("42sts");
+    expect(textInSvgGroup(out, "HIP_MEASUREMENT")).toBe("42sts");
+    expect(textInSvgGroup(out, "CROSS_SHOULDER_UNIT")).toBe("(6 in)");
+    expect(textInSvgGroup(out, "CROSS_SHOULDER_STS")).not.toBe("84sts");
   });
 });
 

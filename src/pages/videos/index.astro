@@ -1,14 +1,34 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
-import videos from "../../data/videos-public.json";
+import videosRaw from "../../data/videos-public.json";
 import { getPreviewMember } from "../../lib/getPreviewMember";
+import { filterPublicCatalogVideos, catalogVideoIsPublic } from "../../lib/videoPublic";
+
+const publicVideos = filterPublicCatalogVideos(Array.isArray(videosRaw) ? videosRaw : []);
+
+const debugVideo5001 = (Array.isArray(videosRaw) ? videosRaw : []).find(
+  (v) => String(v.content_id) === "5001",
+);
+if (debugVideo5001) {
+  console.log("[KBM catalog debug] videos/index loader", {
+    source: "src/data/videos-public.json",
+    content_id: debugVideo5001.content_id,
+    slug: debugVideo5001.slug,
+    status: debugVideo5001.status,
+    catalogVideoIsPublic: catalogVideoIsPublic(debugVideo5001),
+    inPublicCatalogEmbed: publicVideos.some((v) => String(v.content_id) === "5001"),
+    publicVideoCount: publicVideos.length,
+    rawVideoCount: Array.isArray(videosRaw) ? videosRaw.length : 0,
+  });
+}
 
 // --- Featured tip (Tuesday Tip / Weekly Quick Win) ---
 // Link and text are resolved from videos-public.json via tipOfWeek/isTipOfWeek.
-const featuredTipVideo = Array.isArray(videos)
-  ? videos.find((v: { tipOfWeek?: boolean; isTipOfWeek?: boolean }) => v.tipOfWeek === true || v.isTipOfWeek === true)
-  : null;
+const featuredTipVideo = publicVideos.find(
+  (v: { tipOfWeek?: boolean; isTipOfWeek?: boolean }) =>
+    v.tipOfWeek === true || v.isTipOfWeek === true,
+);
 const indexQuery = Astro.url.search || "";
 const featuredTipHref = featuredTipVideo
   ? (
@@ -147,7 +167,7 @@ const forceMemberView =
     
   </div>
 
-  <script id="videos-data" type="application/json" set:html={JSON.stringify(videos)} />
+  <script id="videos-data" type="application/json" set:html={JSON.stringify(publicVideos)} />
   <script is:inline define:vars={{ forceMemberView, FORCE_ALL_VIDEOS_LOCKED }}>
     window.__PREVIEW_FORCE_MEMBER__ = forceMemberView;
     window.__FORCE_ALL_VIDEOS_LOCKED__ = FORCE_ALL_VIDEOS_LOCKED;

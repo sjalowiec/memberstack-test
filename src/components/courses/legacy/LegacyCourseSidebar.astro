@@ -5,17 +5,40 @@ import {
   getSortedLessonsForCourse,
   legacyCourseHref,
   legacyLessonHref,
+  legacyLessonItemHref,
 } from "../../../lib/legacy_kin/legacyCourseLoader";
+import type { LessonContentNavEntry } from "../../../lib/legacy_kin/courseLessonContentItems";
 
 interface Props {
   courseSlug: string;
   currentLessonSlug?: string;
+  currentItemSlug?: string;
+  includeDrafts?: boolean;
+  previewQuery?: string;
+  contentNavEntries?: LessonContentNavEntry[];
 }
 
-const { courseSlug, currentLessonSlug } = Astro.props;
-const course = getLegacyCourseBySlug(courseSlug);
+const {
+  courseSlug,
+  currentLessonSlug,
+  currentItemSlug,
+  includeDrafts = false,
+  previewQuery = "",
+  contentNavEntries = [],
+} = Astro.props;
+const showContentNav = contentNavEntries.length > 1;
+const loaderOptions = { includeDrafts };
+const course = getLegacyCourseBySlug(courseSlug, loaderOptions);
 const lessons = course ? getSortedLessonsForCourse(course) : [];
-const allCourses = getLegacyCourses();
+const allCourses = getLegacyCourses(loaderOptions);
+
+function lessonHref(lessonSlug: string): string {
+  return `${legacyLessonHref(courseSlug, lessonSlug)}${previewQuery}`;
+}
+
+function itemHref(lessonSlug: string, itemSlug: string): string {
+  return `${legacyLessonItemHref(courseSlug, lessonSlug, itemSlug)}${previewQuery}`;
+}
 ---
 
 <aside class="course-preview__sidebar legacy-course__sidebar" aria-label="Course navigation">
@@ -31,7 +54,7 @@ const allCourses = getLegacyCourses();
           >
             {allCourses.map((item) => (
               <option
-                value={legacyCourseHref(item.slug)}
+                value={`${legacyCourseHref(item.slug)}${previewQuery}`}
                 selected={item.slug === courseSlug}
               >
                 {item.title}
@@ -46,7 +69,7 @@ const allCourses = getLegacyCourses();
       course ? (
         <>
           <h2 class="course-preview__sidebar-title">
-            <a href={legacyCourseHref(courseSlug)}>{course.course.title}</a>
+            <a href={`${legacyCourseHref(courseSlug)}${previewQuery}`}>{course.course.title}</a>
           </h2>
           <p class="course-preview__sidebar-meta">
             {lessons.length} lesson{lessons.length === 1 ? "" : "s"}
@@ -72,14 +95,39 @@ const allCourses = getLegacyCourses();
                 >
                   <a
                     class="course-preview__sidebar-lesson-link"
-                    href={legacyLessonHref(courseSlug, lesson.slug)}
-                    aria-current={isActive ? "page" : undefined}
+                    href={lessonHref(lesson.slug)}
+                    aria-current={isActive && !currentItemSlug ? "page" : undefined}
                   >
                     <span class="course-preview__sidebar-lesson-order">
                       {lesson.displayOrder}.
                     </span>
                     {lesson.title}
                   </a>
+
+                  {
+                    isActive && showContentNav ? (
+                      <ol class="course-preview__sidebar-sections">
+                        {contentNavEntries.map((entry) => {
+                          const isActiveItem = entry.itemSlug === currentItemSlug;
+                          return (
+                            <li class="course-preview__sidebar-section">
+                              <a
+                                class:list={[
+                                  "course-preview__sidebar-section-link",
+                                  isActiveItem &&
+                                    "course-preview__sidebar-section-link--active",
+                                ]}
+                                href={itemHref(lesson.slug, entry.itemSlug)}
+                                aria-current={isActiveItem ? "page" : undefined}
+                              >
+                                {entry.title}
+                              </a>
+                            </li>
+                          );
+                        })}
+                      </ol>
+                    ) : null
+                  }
                 </li>
               );
             })

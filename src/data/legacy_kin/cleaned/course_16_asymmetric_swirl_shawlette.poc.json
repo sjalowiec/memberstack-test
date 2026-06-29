@@ -1,0 +1,836 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 16,
+    "title": "Asymmetric Swirl Shawlette",
+    "slug": "asymmetric-swirl-shawlette",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_16_asymmetric_swirl_shawlette.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "thumbnail": "/images/courses/swirl_shawl.webp",
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Start here",
+      "slug": "start-here",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 99,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">Welcome, {First}!</div>\r\n\r\n\r\nThis beautiful swirl shawl was inspired by a hand knitting pattern.  Why should hand knitters have all the fun?<br>\r\nIt's a DIY, because you can use any yarn and any machine.  Just a little planning and help with the math and you'll be knitting in no time!<br>\r\n\r\nThis course will walk you through all the planning steps. It shows techniques that may be new to you.<br>If this is your first knitting project or your 100th, follow along, the skills you gain here will be invaluable for future knitting projects.\r\n<blockquote class=\"smallblock\">\r\nIf you are new here, the video below will help you learn to navigate this course so you can get the most benefit from the material that is included.\r\n</blockquote>\r\nPlease take a few minutes and walk through how to access the lessons and get the most out of your course.<br /> <b>Don't skip lessons</b> ... for example, you may feel that you know how to cast on ... but sometimes you will pick up a tip that you can use while watching a video.<br><blockquote class=\"smallblock\"><em>Another reason to follow the course material in order - Throughout the lessons, you'll be making decisions about your shawlette.  We will record your decisions to create your custom pattern.</em></blockquote>\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/16/swirl_shawl/swirl1.jpg\">\r\n\r\n",
+              "legacyComponentId": 1345,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "221120492",
+              "title": "Machine Knitting Courses",
+              "legacyComponentId": 1395,
+              "order": 3
+            }
+          ],
+          "title": "Start Here",
+          "slug": "start-here",
+          "order": 1,
+          "legacy": {
+            "assignId": 429,
+            "blockType": "Questions"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Originally designed as a 1 skein project (100 grams), you can choose to make your shawlette any size you like.<br>The number of needles available on your machine will determine the largest size. (The bind off edge is the widest point). The length can be adjusted by knitting without shaping at the widest point.<br>Because it is knit from the smallest edge to the widest, you can knit until you run out of needles (or yarn).<br>Using natural fibers, and blocking well, additional finishing is not needed. Although you may want to dress up the edges with crochet for a finishing touch.<br>",
+              "legacyComponentId": 1462,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"blockquote_style\">If you don't yet have a plan ... no problem!  You can enter this information when you create your custom pattern.</blockquote>",
+              "legacyComponentId": 1405,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "430",
+                "CHALLENGE_COMPONENTID": "1403",
+                "DATAMODEL_ELEMENT": "stitch_gauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Stitch Gauge * <small>(4 in/10cm)</small>",
+                "DATAMODEL_VALIDATION_EXTRA": "1, 12",
+                "DATAMODEL_VALIDATION_MESSAGE": "Enter gauge for 4 in / 10 cm",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 1403,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "430",
+                "CHALLENGE_COMPONENTID": "1404",
+                "DATAMODEL_ELEMENT": "row_gauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Row Gauge * <small>(4 in/10cm)</small>",
+                "DATAMODEL_VALIDATION_EXTRA": "1,20",
+                "DATAMODEL_VALIDATION_MESSAGE": "Enter gauge for 4 in / 10 cm",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 1404,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "430",
+                "DATAMODEL_ELEMENT": "Personal_notes",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Notes:",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 1398,
+              "order": 5
+            }
+          ],
+          "title": "Plan your project",
+          "slug": "plan-your-project",
+          "order": 3,
+          "legacy": {
+            "assignId": 430,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Use a fabulous variegated yarn or mix 'n match textures and colors ... get creative and make it your own!<br>\r\n",
+              "legacyComponentId": 1459,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "Pinterest",
+              "notes": [
+                "Legacy Pinterest embed; replace with static content or omit."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "454",
+                "PINTERESTID": "11",
+                "TYPEOF": "Pinterest"
+              },
+              "legacyComponentId": 1437,
+              "order": 2
+            }
+          ],
+          "title": "Pinterest Inspiration",
+          "slug": "pinterest-inspiration",
+          "order": 4,
+          "legacy": {
+            "assignId": 454,
+            "blockType": "Pinterest"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Your Success Depends on This",
+      "slug": "your-success-depends-on-this",
+      "displayOrder": 20,
+      "legacy": {
+        "itemId": 101,
+        "lessonOrder": 20
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<strong>You are making progress!</strong> ... we've spent a lot of time planning, practicing and thinking about knitting ... are you ready to do some \"real knitting\"?<br><strong>DON'T SKIP THIS SECTION!</strong> <br>Your success with this course AND your success with your knitting machine depends on your understanding and mastering the art of knitting gauge swatches.<br>Without a swatch we are knitting in the dark.\r\n<ul>\r\n<li>How is the finished shawl going to feel in the yarn and stitch pattern you've chosen?</li>\r\n<li>Do you have enough yarn?</li>\r\n<li>Do you have enough needles on your machine for the size you chose?</li>\r\n</ul>\r\n\r\n\r\n<div class=\"text-center\">\r\n<p style=\"text-align: center;\"><strong>SWATCHING IS NOT OPTIONAL</strong></p>\r\n<img class=\"img-thumbnail\" src=\"https://www.knititnow.com/images/blog_images/2017/swatching_is_not_optional.jpg\" /></div>\r\n",
+              "legacyComponentId": 1409,
+              "order": 1
+            }
+          ],
+          "title": "Don't skip this section",
+          "slug": "don-t-skip-this-section",
+          "order": 1,
+          "legacy": {
+            "assignId": 444,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\"><b>If you haven't used your chosen yarn before, how do you know the best tension to knit your shawlette? </div></b>\r\n\r\nKnitters tend to use the terms \"tension swatch\" and \"gauge swatch\" interchangeably, lets take a look at both.",
+              "legacyComponentId": 1410,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"cleanwell\">\r\n\r\n<h4><strong>GAUGE SWATCH</strong></h4>\r\nThe <strong>gauge swatch</strong> is the \"official\" swatch used when designing a garment.\r\n<br>\r\nIt is knit at a specific size, marked for accurate stitch and row measurement and \"dressed\" as the final garment will be treated.<br>\r\n<blockquote class=\"smallblock\">\r\n<em>TIP: Whatever method you use to create a swatch, the key is to correctly measure it and calculate your gauge.</em></blockquote>\r\n<img src=\"/challenge/images/v2/16/swatch_measure.jpg\" />\r\n</div>",
+              "legacyComponentId": 1411,
+              "order": 3
+            },
+            {
+              "type": "richText",
+              "html": "<div class=\"cleanwell\">\r\n\r\n<h4><strong>TENSION SWATCH</strong></h4>\r\n<em>When I pick up a new cone of yarn, I can't wait to thread up my machine and see what the yarn looks like.   From the initial cast on, I start guessing what setting on my tension dial I need to use.  I knit a few inches and reach down and start to feel the resulting fabric. <br>Once I get a feel for the yarn (what machine, general tension setting at stockinette, etc) I create a<strong> tension swatch</strong>.  This helps me fine-tune the tension needed to achieve the fabric I like and allows me to play with various techniques.  <strong>I'm often very surprised that a yarn looks great in tuck, and awful in slip</strong>, for example.  Adding a few eyelets here and there tells me if the yarn will work up in lace.</em><br>Let's practice knitting a <strong>tension swatch.</strong>\r\n</div>",
+              "legacyComponentId": 1412,
+              "order": 5
+            },
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<ol class=\"instruction-list\">\r\n<li>Play!</li>\r\n<li>Start knitting stockenette at the tightest tension that will knit.  (If the tension is too tight, you'll see stitches that don't form properly.</li>\r\n<li>Knit 2-4 inches. Knit a marker row (change colors, work a few eyelets across the row or knit a sewing thread in with the main yarn)</li>\r\n<li>Keep knitting sections, marking the tension dial number in each section.  Knit the last section as loosely as possiblle, even if you think this will be too loose ... I'm often very pleasantly surprised at the result.</li>\r\n<li>Transfer every other needle to out of work postion and knit a section - put all needles back into work.</li>\r\n<li>Work a simple tuck, or slip, or any stitch pattern of your choice ... base your tension dial setting on the stockinette sections you just knit.</li>\r\n</ol>\r\n<blockquote class=\"smallblock\">The point of this exercise is to put the yarn through it's paces ... ignite your creativity, and get a feel for what the yarn can do.  If you don't have a huge cone, you can always re-wind this knitting. At this point, you probably know exactly what you want to do with this yarn.  Knit your Gauge Swatch, dress it and and you are ready to design and knit your sweater.</blockquote>\r\n\r\n<img src=\"/challenge/images/v2/16/tension_swatch.jpg\" />\r\n\r\n",
+              "legacyComponentId": 1413,
+              "order": 7
+            }
+          ],
+          "title": "Step 1: Gauge swatch verses Tension Swatch",
+          "slug": "step-1-gauge-swatch-verses-tension-swatch",
+          "order": 3,
+          "legacy": {
+            "assignId": 445,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Hand knitters use the excuse \"It takes too much time to knit a swatch\", then they are often disappointed that their knitting doesn't fit.<br>\r\n<b>Machine knitters, rejoice!</b>  Knitting a swatch is fast and the information it supplies is invaluable ...even for something as simple as a blanket or shawl.",
+              "legacyComponentId": 1414,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "178357273",
+              "title": null,
+              "legacyComponentId": 1415,
+              "order": 2
+            }
+          ],
+          "title": "Step 2: Knitting swatches",
+          "slug": "step-2-knitting-swatches",
+          "order": 4,
+          "legacy": {
+            "assignId": 446,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<div class=\"lead\">Time to get knitting!</div>\r\n<ol class=\"Instruction-list\">\r\n<li>Knit a swatch using any method.</li>\r\n<li>Let it rest</li>\r\n<li>Dress the swatch (treat it as you will treat your blanket)</li>\r\n<li>Accurately measure YOUR stitch and row gauge</li>\r\n<li>Record your gauge below</li>\r\n</ol>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/16/2hr/swatch_example.jpg\" /><br />Does your swatch look similar to this one?\r\n\r\n",
+              "legacyComponentId": 1416,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<blockquote class=\"smallblock\"><em><b>TIP:</b> attach a string tag to your swatch recording all the details ... it's funny how easy it is to forget. Include yarn name, machine, tension, measurements, and stitch pattern number (if appropriate)</em></blockquote>",
+              "legacyComponentId": 1419,
+              "order": 4
+            }
+          ],
+          "title": "Step 3: Your turn ... Get Knitting",
+          "slug": "step-3-your-turn-get-knitting",
+          "order": 5,
+          "legacy": {
+            "assignId": 447,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">Estimate the amount of yarn needed</div>\r\n\r\n\r\n\r\n<div class=\"col-12-xs\">\r\nBecause of the odd shape of this pattern, the best way to estimate the amount of yarn needed is by stitches instead of dimensions.<br><b>What do you need to do? </b><small>(We'll do the math for you)</small><br><ol class=\"instruction-list\">\r\n<li>Record the number of stitches in your swatch (<b>the entire swatch, not just the center</b>)</li>\r\n<li>Record the number of rows in your swatch (<b>the entire swatch from cast on edge to bind off edge</b>)</li>\r\n<li>Weigh your swatch in grams</li>\r\n</ol></div>\r\n<div class=\"col-12-xs\"><img class=\"img-thumbnail\" src=\"/challenge/images/v2/16/swirl_shawl/yarn_estimate_swatch.png\"></div>\r\n\r\n\r\n\r\n\r\n<blockquote class=\"blockquote_style\">\r\nNOTE: This estimate is optional.  If you don't have the information (or you are just \"winging it\") The pattern is written so you know the current depth of the scarf/shawl as you are following the row by row instructions.<br>\r\nIf you are running short of yarn, you'll know your longest edge.<br>ALSO, using this tool will help you determine if you have enough yarn BEFORE you start knitting.\r\n</blockquote>\r\n",
+              "legacyComponentId": 1421,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "448",
+                "CHALLENGE_COMPONENTID": "1456",
+                "DATAMODEL_ELEMENT": "stitch_gauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "What is your stitch gauge  <small>(4in/10cm)</small>?",
+                "DATAMODEL_VALIDATION": "min",
+                "DATAMODEL_VALIDATION_EXTRA": "12",
+                "DATAMODEL_VALIDATION_MESSAGE": "Enter gauge for 4 in / 10 cm",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 1456,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "448",
+                "CHALLENGE_COMPONENTID": "1457",
+                "DATAMODEL_ELEMENT": "row_gauge",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "1",
+                "DATAMODEL_REQEST_TEXT": "What is your row gauge <small>(4in/10cm)</small>?",
+                "DATAMODEL_VALIDATION": "number",
+                "DATAMODEL_VALIDATION_MESSAGE": "Enter your gauge in numbers",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 1457,
+              "order": 3
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "448",
+                "CHALLENGE_COMPONENTID": "1438",
+                "DATAMODEL_ELEMENT": "swatchStitches",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "How many TOTAL stitches did you cast on for your swatch?",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 1438,
+              "order": 4
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "448",
+                "CHALLENGE_COMPONENTID": "1439",
+                "DATAMODEL_ELEMENT": "swatchRows",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "How many TOTAL rows did you knit in your swatch?",
+                "REMOVEALERT": "0"
+              },
+              "legacyComponentId": 1439,
+              "order": 5
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DataEntry",
+              "notes": [
+                "Unmapped legacy component type: DataEntry"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "448",
+                "DATAMODEL_ELEMENT": "swatchWeight",
+                "DATAMODEL_ICON": "fa fa-pencil",
+                "DATAMODEL_MANDITORY": "0",
+                "DATAMODEL_REQEST_TEXT": "Swatch weight in GRAMS",
+                "REMOVEALERT": "0",
+                "TYPEOF": "DataEntry"
+              },
+              "legacyComponentId": 1442,
+              "order": 6
+            }
+          ],
+          "title": "Step 4: How Much Yarn Do You Need?",
+          "slug": "step-4-how-much-yarn-do-you-need",
+          "order": 6,
+          "legacy": {
+            "assignId": 448,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: ShawlPattern.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "461",
+                "CUSTOMCFM": "ShawlPattern.cfm",
+                "TYPEOF": "CustomCFM"
+              },
+              "legacyComponentId": 1455,
+              "order": 1
+            }
+          ],
+          "title": "Calculate Your Yarn Needs",
+          "slug": "calculate-your-yarn-needs",
+          "order": 7,
+          "legacy": {
+            "assignId": 461,
+            "blockType": "YarnEstimator"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Pattern",
+      "slug": "pattern",
+      "displayOrder": 50,
+      "legacy": {
+        "itemId": 100,
+        "lessonOrder": 50
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "Pattern",
+              "notes": [
+                "Dynamic pattern generator for garment 'shawl' (legacy garmentId 896).",
+                "Requires swatch/gauge datamodel session state before pattern output."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "459",
+                "CHALLENGE_COMPONENTID": "1453",
+                "GARMENTID": "896",
+                "GARMENTTITLE": "shawl",
+                "PATTERNFILENAME_DATAMODEL_ELEMENT": "patternfile",
+                "REDIRECT_TO": "/challenge/16/Group/460/item|Pattern: Download Pattern",
+                "ROWGAUGE_DATAMODEL_ELEMENT": "row_gauge",
+                "SIZING_DATAMODEL_ELEMENT": "SizindID",
+                "STITCHGAUGE_DATAMODEL_ELEMENT": "stitch_gauge",
+                "SWATCHROWS": "swatchRows",
+                "SWATCHSTITCHES": "swatchStitches",
+                "SWATCHWEIGHT": "swatchWeight",
+                "USESWATCHLOGIC": "yes"
+              },
+              "legacyComponentId": 1453,
+              "order": 1
+            }
+          ],
+          "title": "Build Pattern",
+          "slug": "build-pattern",
+          "order": 3,
+          "legacy": {
+            "assignId": 459,
+            "blockType": "Pattern"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "migrationPending",
+              "legacyType": "DataValidation",
+              "notes": [
+                "Validates datamodel field(s): patternfile",
+                "Validates legacy datamodel fields and redirects when validation fails.",
+                "Redirects to legacy assign 459 when validation fails."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "460",
+                "CHALLENGE_COMPONENTID": "1472",
+                "DATAMODEL_ELEMENTS": "patternfile",
+                "DATAMODEL_REDIRECT": "459"
+              },
+              "legacyComponentId": 1472,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "DocumentPattern",
+              "notes": [
+                "Dynamic pattern PDF download from datamodel field.",
+                "Dynamic pattern PDF download from datamodel field 'patternfile'.",
+                "Depends on Pattern component output; not a static file."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "460",
+                "CHALLENGE_COMPONENTID": "1454",
+                "DATAMODEL_ICON": "fa fa-download",
+                "LABLE": " ",
+                "PATTERN_DATAMODEL_ELEMENT": "patternfile",
+                "VIEWHEIGHT": "600"
+              },
+              "legacyComponentId": 1454,
+              "order": 2
+            }
+          ],
+          "title": "Download Pattern",
+          "slug": "download-pattern",
+          "order": 4,
+          "legacy": {
+            "assignId": 460,
+            "blockType": "DocumentPattern"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Knitting Tips",
+      "slug": "knitting-tips",
+      "displayOrder": 51,
+      "legacy": {
+        "itemId": 102,
+        "lessonOrder": 51
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "247552064",
+              "title": "Knit the Swirl Shawl",
+              "legacyComponentId": 1461,
+              "order": 1
+            }
+          ],
+          "title": "Let's Get Knitting",
+          "slug": "let-s-get-knitting",
+          "order": 4,
+          "legacy": {
+            "assignId": 455,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151860044",
+              "title": "Creating a Cast on Rag",
+              "legacySlot": 1,
+              "legacyComponentId": 1458,
+              "order": 5
+            },
+            {
+              "type": "video",
+              "vimeoId": "151860058",
+              "title": "E-Wrap Cast On",
+              "legacySlot": 2,
+              "legacyComponentId": 1458,
+              "order": 5
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858975",
+              "title": "Bind off Basics",
+              "legacySlot": 3,
+              "legacyComponentId": 1458,
+              "order": 5
+            },
+            {
+              "type": "video",
+              "vimeoId": "247570973",
+              "title": "Compare Increase Methods",
+              "legacySlot": 4,
+              "legacyComponentId": 1458,
+              "order": 5
+            },
+            {
+              "type": "video",
+              "vimeoId": "284532122",
+              "title": "Partial Bind Off and a TRICK!",
+              "legacyComponentId": 2862,
+              "order": 6
+            }
+          ],
+          "title": "Basic Techniques",
+          "slug": "basic-techniques",
+          "order": 5,
+          "legacy": {
+            "assignId": 456,
+            "blockType": "VimeoID"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Unlike hand knitters, we can't measure our work as we are knitting.  The stitches are stretched and distorted as they are formed on the needlebed.<br>\r\nThis is why swatching and accurate gauge measurement are critical.<br>\r\nWe keep track of stitches AND rows to ensure that our finished piece is the correct size.<br>When knitting this Shawlette, it is tempting to \"guestimate\" the length while the knitting is still on the machine.<br>In the first image below, my stitches are spread over almost 20 inches.\r\n<br>\r\nIn the second image, I've removed the work from the needles and you can see that it is considerably narrower.  Letting it rest will also change the size.<br>\r\n\r\n<h4>Lesson Learned:  Don't measure your knitting while it is on the machine.</h4>Rely on your gauge and the math in your pattern to create the correct size knitted piece.<br>\r\n<img class=\"img-thumbnail\"src=\"/challenge/images/swirl_shawl/dont_measure.jpg\">\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/16/swirl_shawl/dont_measure1.jpg\">\r\n\r\n\r\n",
+              "legacyComponentId": 1448,
+              "order": 1
+            }
+          ],
+          "title": "Don't measure on the machine!",
+          "slug": "don-t-measure-on-the-machine",
+          "order": 6,
+          "legacy": {
+            "assignId": 457,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151858072",
+              "title": "Wet Blocking",
+              "legacyComponentId": 1449,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "HRline",
+              "notes": [
+                "Unmapped legacy component type: HRline"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "458",
+                "TYPEOF": "HRline"
+              },
+              "legacyComponentId": 1452,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "Our Shawlette was knit in a beautiful wool/silk blend and wet blocking was the best way to shape the piece.\r\n\r\n",
+              "legacyComponentId": 1450,
+              "order": 3
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/16/swirl_shawl/blocking6.jpg",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div>Hmmm... obviously this is going to need some help when it comes off the machine.</div></div>"
+                },
+                {
+                  "src": "/challenge/images/v2/16/swirl_shawl/blocking5.jpg",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div>If the stripes were more pronounced, this could be an interesting scarf without blocking.</div></div>"
+                },
+                {
+                  "src": "/challenge/images/v2/16/swirl_shawl/blocking3.jpg",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div>Taking shape</div></div>"
+                },
+                {
+                  "src": "/challenge/images/v2/16/swirl_shawl/blocking4.jpg",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\">A paper template helps shape each \"stairstep\".</div></div></div>"
+                },
+                {
+                  "src": "/challenge/images/v2/16/swirl_shawl/blocking1.jpg",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\">Wet blocking with this beautiful yarn, no additional finishing is needed.</div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"col-xs-12\"><div class=\"col-xs-12\"></div></div></div>"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 1451,
+              "order": 4
+            }
+          ],
+          "title": "Blocking",
+          "slug": "blocking",
+          "order": 7,
+          "legacy": {
+            "assignId": 458,
+            "blockType": "Video"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Get Creative!",
+      "slug": "get-creative",
+      "displayOrder": 52,
+      "legacy": {
+        "itemId": 103,
+        "lessonOrder": 52
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<img src=\"/challenge/images/v2/16/swirl_shawl/compare_edges.png\">\r\n<div class=\"lead\">Does it bother anyone else that the sample shawlette<br> has one decorative edge and one plain edge (the bind off edge)?</div>\r\n\r\n\r\n<hr>\r\n<br>\r\n<div class=\"lead\">A machine-knit sawtooth edge could be the answer!<br></div>\r\n\r\n\r\n       \r\n            <b>To use this edge on the Asymmetric Shawlette:</b></br>\r\n               <ol>\r\n                    <li>Follow the pattern to the bind off edge</li>\r\n                   <li>Scrap off</li>\r\n                  <li>Work one of the edges shown in the video below (or your personal variation), using sew-as-you-go to pick up and finish the live garment stitches</li>\r\n               </ol>\r\n\r\n\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/16/swirl_shawl/sawtooth_intro.jpg\">\r\n\r\n\r\n\r\nThe video below offesr multiple versions of this edge ... consider adding more eyelets for a more lacy look.\r\n\r\n",
+              "legacyComponentId": 1466,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859733",
+              "title": "Sawtooth Edges on the Machine",
+              "legacyComponentId": 1467,
+              "order": 2
+            }
+          ],
+          "title": "Sawtooth Border",
+          "slug": "sawtooth-border",
+          "order": 1,
+          "legacy": {
+            "assignId": 464,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 10,
+    "videos": [
+      {
+        "vimeoId": "221120492",
+        "title": "Machine Knitting Courses",
+        "lessonSlug": "start-here",
+        "blockSlug": "start-here"
+      },
+      {
+        "vimeoId": "178357273",
+        "title": null,
+        "lessonSlug": "your-success-depends-on-this",
+        "blockSlug": "step-2-knitting-swatches"
+      },
+      {
+        "vimeoId": "247552064",
+        "title": "Knit the Swirl Shawl",
+        "lessonSlug": "knitting-tips",
+        "blockSlug": "let-s-get-knitting"
+      },
+      {
+        "vimeoId": "151860044",
+        "title": "Creating a Cast on Rag",
+        "lessonSlug": "knitting-tips",
+        "blockSlug": "basic-techniques"
+      },
+      {
+        "vimeoId": "151860058",
+        "title": "E-Wrap Cast On",
+        "lessonSlug": "knitting-tips",
+        "blockSlug": "basic-techniques"
+      },
+      {
+        "vimeoId": "151858975",
+        "title": "Bind off Basics",
+        "lessonSlug": "knitting-tips",
+        "blockSlug": "basic-techniques"
+      },
+      {
+        "vimeoId": "247570973",
+        "title": "Compare Increase Methods",
+        "lessonSlug": "knitting-tips",
+        "blockSlug": "basic-techniques"
+      },
+      {
+        "vimeoId": "284532122",
+        "title": "Partial Bind Off and a TRICK!",
+        "lessonSlug": "knitting-tips",
+        "blockSlug": "basic-techniques"
+      },
+      {
+        "vimeoId": "151858072",
+        "title": "Wet Blocking",
+        "lessonSlug": "knitting-tips",
+        "blockSlug": "blocking"
+      },
+      {
+        "vimeoId": "151859733",
+        "title": "Sawtooth Edges on the Machine",
+        "lessonSlug": "get-creative",
+        "blockSlug": "sawtooth-border"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}

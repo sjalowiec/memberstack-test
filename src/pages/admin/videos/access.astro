@@ -1,0 +1,940 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import helpHubData from "../../../data/help-hub.json";
+import { buildVideoUsageIndex } from "../../../lib/videoUsageIndex";
+
+const helpHubEntries = Array.isArray(helpHubData) ? helpHubData : [];
+---
+
+<BaseLayout
+  title="Video Access Manager | Knit it Now"
+  description="Audit and edit video access levels in videos-public.json"
+  skipGlobalHyvor={true}
+  bodyClass="video-access-admin-body help-hub-admin-body"
+>
+  <main class="help-hub-admin video-access-admin">
+    <header class="help-hub-admin__head">
+      <h1 class="help-hub-admin__title">Video Access Manager</h1>
+      <p class="help-hub-admin__sub">
+        Audit every catalog video and set <code>access_level</code> to
+        <code>public</code>, <code>member</code>, or <code>draft</code>.
+        Data lives in <code>src/data/videos-public.json</code> and saves via
+        <code>/api/admin/videos</code>. This tool does not change frontend gating yet.
+      </p>
+    </header>
+
+    <div class="help-hub-admin__toolbar video-access-admin__toolbar">
+      <button type="button" class="kbm-btn kbm-btn-primary" id="video-access-save-top" disabled>
+        Save Changes
+      </button>
+      <a href="/admin/videos-admin" class="kbm-btn kbm-btn-outline">Videos Admin</a>
+      <a href="/admin" class="kbm-btn kbm-btn-outline">Control Panel</a>
+    </div>
+
+    <p id="video-access-status" class="help-hub-admin__status" aria-live="polite"></p>
+
+    <section class="video-access-admin__summary" aria-label="Access level summary">
+      <div class="video-access-admin__stat">
+        <span class="video-access-admin__stat-value" data-stat="total">ù</span>
+        <span class="video-access-admin__stat-label">Total videos</span>
+      </div>
+      <div class="video-access-admin__stat">
+        <span class="video-access-admin__stat-value" data-stat="public">ù</span>
+        <span class="video-access-admin__stat-label">Public</span>
+      </div>
+      <div class="video-access-admin__stat">
+        <span class="video-access-admin__stat-value" data-stat="member">ù</span>
+        <span class="video-access-admin__stat-label">Member</span>
+      </div>
+      <div class="video-access-admin__stat">
+        <span class="video-access-admin__stat-value" data-stat="draft">ù</span>
+        <span class="video-access-admin__stat-label">Draft</span>
+      </div>
+      <div class="video-access-admin__stat video-access-admin__stat--review">
+        <span class="video-access-admin__stat-value" data-stat="needsReview">ù</span>
+        <span class="video-access-admin__stat-label">Needs Review</span>
+      </div>
+    </section>
+
+    <div class="video-access-admin__search-row">
+      <label class="video-access-admin__search-label" for="video-access-search">
+        Search videos
+      </label>
+      <input
+        type="search"
+        id="video-access-search"
+        class="video-access-admin__search"
+        placeholder="Title, legacy video ID, slug, URL, category..."
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <p class="video-access-admin__search-hint" id="video-access-visible-count"></p>
+    </div>
+
+    <section class="admin-panel video-access-admin__panel" aria-labelledby="video-access-table-heading">
+      <h2 id="video-access-table-heading" class="visually-hidden">All videos</h2>
+      <p id="video-access-loading" class="help-hub-admin__loading">Loadingù</p>
+      <div id="video-access-table-wrap" class="video-access-admin__table-wrap" hidden>
+        <table id="video-access-table" class="help-hub-admin__table video-access-admin__table">
+          <thead>
+            <tr>
+              <th scope="col" class="video-access-admin__th-sortable" data-sort-column="title" tabindex="0">
+                Title <span class="video-access-admin__sort-indicator" aria-hidden="true"></span>
+              </th>
+              <th scope="col" class="video-access-admin__th-sortable" data-sort-column="legacyId" tabindex="0">
+                Legacy Video ID <span class="video-access-admin__sort-indicator" aria-hidden="true"></span>
+              </th>
+              <th scope="col" class="video-access-admin__th-sortable" data-sort-column="slug" tabindex="0">
+                Slug <span class="video-access-admin__sort-indicator" aria-hidden="true"></span>
+              </th>
+              <th scope="col" class="video-access-admin__th-sortable" data-sort-column="access" tabindex="0">
+                Access Level <span class="video-access-admin__sort-indicator" aria-hidden="true"></span>
+              </th>
+              <th scope="col" class="video-access-admin__th-sortable" data-sort-column="status" tabindex="0">
+                Status <span class="video-access-admin__sort-indicator" aria-hidden="true"></span>
+              </th>
+              <th scope="col" class="video-access-admin__th-sortable" data-sort-column="usedIn" tabindex="0">
+                Used In <span class="video-access-admin__sort-indicator" aria-hidden="true"></span>
+              </th>
+              <th scope="col" class="video-access-admin__th-sortable" data-sort-column="grouping" tabindex="0">
+                Category / Grouping <span class="video-access-admin__sort-indicator" aria-hidden="true"></span>
+              </th>
+              <th scope="col" class="video-access-admin__th-sortable" data-sort-column="updated" tabindex="0">
+                Last Updated <span class="video-access-admin__sort-indicator" aria-hidden="true"></span>
+              </th>
+            </tr>
+          </thead>
+          <tbody id="video-access-table-body"></tbody>
+        </table>
+      </div>
+      <p id="video-access-empty" class="help-hub-admin__empty" hidden>No videos match your search.</p>
+    </section>
+
+    <div class="video-access-admin__toolbar video-access-admin__toolbar--bottom">
+      <button type="button" class="kbm-btn kbm-btn-primary" id="video-access-save-bottom" disabled>
+        Save Changes
+      </button>
+    </div>
+  </main>
+
+  <script
+    type="application/json"
+    id="video-access-help-hub-data"
+    set:html={JSON.stringify(helpHubEntries)}
+  ></script>
+
+  <style>
+    :global(body.video-access-admin-body) {
+      margin: 0;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .video-access-admin {
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: 1.25rem 1.5rem 3rem;
+      box-sizing: border-box;
+    }
+
+    .help-hub-admin__head {
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .help-hub-admin__title {
+      margin: 0 0 0.35rem 0;
+      font-size: 1.65rem;
+      color: #243015;
+    }
+
+    .help-hub-admin__sub {
+      margin: 0;
+      font-size: 0.95rem;
+      color: #475569;
+      max-width: 56rem;
+      line-height: 1.5;
+    }
+
+    .help-hub-admin__sub code {
+      font-size: 0.88em;
+      background: #f1f5f9;
+      padding: 0.12rem 0.35rem;
+      border-radius: 4px;
+    }
+
+    .help-hub-admin__status {
+      min-height: 1.4em;
+      margin: 0 0 1rem 0;
+      font-size: 0.95rem;
+      color: #374151;
+    }
+
+    .help-hub-admin__status.is-error {
+      color: #b91c1c;
+      font-weight: 600;
+    }
+
+    .help-hub-admin__status.is-ok {
+      color: #166534;
+    }
+
+    .video-access-admin__toolbar {
+      margin-bottom: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem 1rem;
+    }
+
+    .video-access-admin__toolbar--bottom {
+      margin-top: 1rem;
+      margin-bottom: 0;
+    }
+
+    .video-access-admin__summary {
+      display: grid;
+      gap: 0.75rem;
+      grid-template-columns: repeat(2, 1fr);
+      margin-bottom: 1rem;
+    }
+
+    @media (min-width: 720px) {
+      .video-access-admin__summary {
+        grid-template-columns: repeat(5, 1fr);
+      }
+    }
+
+    .video-access-admin__stat {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      padding: 0.75rem 0.85rem;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+    }
+
+    .video-access-admin__stat--review {
+      border-color: #fcd34d;
+      background: #fffbeb;
+    }
+
+    .video-access-admin__stat-value {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #243015;
+      line-height: 1.1;
+    }
+
+    .video-access-admin__stat-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .video-access-admin__search-row {
+      margin-bottom: 1rem;
+    }
+
+    .video-access-admin__search-label {
+      display: block;
+      margin-bottom: 0.35rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .video-access-admin__search {
+      display: block;
+      width: 100%;
+      max-width: 32rem;
+      padding: 0.55rem 0.75rem;
+      font-size: 0.95rem;
+      color: #1e293b;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+
+    .video-access-admin__search:focus {
+      outline: 2px solid #3f6212;
+      outline-offset: 1px;
+      border-color: #3f6212;
+    }
+
+    .video-access-admin__search-hint {
+      margin: 0.35rem 0 0;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    .admin-panel {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .video-access-admin__panel {
+      padding: 0;
+    }
+
+    .help-hub-admin__loading,
+    .help-hub-admin__empty {
+      margin: 0;
+      padding: 1rem;
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+
+    .video-access-admin__table-wrap {
+      overflow: auto;
+      max-height: min(70vh, 900px);
+    }
+
+    .video-access-admin__table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .video-access-admin__table th,
+    .video-access-admin__table td {
+      border-bottom: 1px solid #e5e7eb;
+      padding: 0.6rem 0.55rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .video-access-admin__table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      font-weight: 700;
+      color: #243015;
+      background: #f8fafc;
+      box-shadow: 0 1px 0 #e5e7eb;
+    }
+
+    .video-access-admin__th-sortable {
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+
+    .video-access-admin__th-sortable.is-sorted {
+      color: #3f6212;
+    }
+
+    .video-access-admin__sort-indicator {
+      display: inline-block;
+      min-width: 0.85em;
+      margin-left: 0.15rem;
+    }
+
+    .video-access-admin__table tbody tr:hover {
+      background: #fafafa;
+    }
+
+    .video-access-admin__table tbody tr.is-needs-review {
+      background: #fffbeb;
+    }
+
+    .video-access-admin__table tbody tr.is-needs-review:hover {
+      background: #fef3c7;
+    }
+
+    .video-access-admin__table tbody tr.is-changed {
+      outline: 1px solid #86efac;
+      outline-offset: -1px;
+    }
+
+    .col-title {
+      font-weight: 600;
+      color: #111827;
+      max-width: 18rem;
+    }
+
+    .col-legacy-id code,
+    .col-slug code {
+      display: block;
+      font-size: 0.82em;
+      background: #f1f5f9;
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      word-break: break-all;
+    }
+
+    .col-slug {
+      max-width: 14rem;
+      font-size: 0.85rem;
+      color: #475569;
+    }
+
+    .video-access-admin__select {
+      min-width: 9.5rem;
+      max-width: 100%;
+      padding: 0.35rem 0.45rem;
+      font-size: 0.88rem;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      background: #fff;
+      font-family: inherit;
+    }
+
+    .video-access-admin__select.is-needs-review {
+      border-color: #f59e0b;
+      background: #fffbeb;
+    }
+
+    .video-access-admin__select.is-changed {
+      border-color: #16a34a;
+      background: #f0fdf4;
+    }
+
+    .video-access-admin__needs-label {
+      display: block;
+      margin-bottom: 0.25rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #b45309;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .col-used-in {
+      max-width: 14rem;
+      font-size: 0.85rem;
+      color: #475569;
+    }
+
+    .col-grouping {
+      max-width: 12rem;
+      font-size: 0.85rem;
+      color: #475569;
+    }
+
+    .col-muted {
+      color: #94a3b8;
+    }
+  </style>
+
+  <script>
+    import { stableVideoKey } from "../../../lib/lessonVideo";
+    import {
+      VIDEO_ACCESS_LEVELS,
+      accessLevelSummaryBucket,
+      normalizeAccessLevelRaw,
+      validatePendingAccessLevel,
+      videoAccessNeedsReview,
+    } from "../../../lib/videoAccessLevel";
+    import {
+      buildVideoUsageIndex,
+      formatVideoUsageList,
+      type VideoUsageRef,
+    } from "../../../lib/videoUsageIndex";
+    import { describeVideoAccessPatchSuccess } from "../../../lib/videoAccessLevelPatch";
+
+    const VIDEOS_API = "/api/admin/videos";
+    const ACCESS_LEVELS_API = "/api/admin/videos/access-levels";
+    const LESSONS_API = "/api/admin/lessons";
+
+    type VideoRow = Record<string, unknown>;
+    type SortColumn =
+      | "title"
+      | "legacyId"
+      | "slug"
+      | "access"
+      | "status"
+      | "usedIn"
+      | "grouping"
+      | "updated";
+
+    let originalVideos: VideoRow[] = [];
+    /** Pending access_level by unique content_id. */
+    const pendingAccess = new Map<string, string>();
+
+    let usageIndex = new Map<string, VideoUsageRef[]>();
+    let sortColumn: SortColumn = "title";
+    let sortDirection: "asc" | "desc" = "asc";
+    let searchQuery = "";
+
+    const statusEl = document.getElementById("video-access-status");
+    const loadingEl = document.getElementById("video-access-loading");
+    const tableWrapEl = document.getElementById("video-access-table-wrap");
+    const tbodyEl = document.getElementById("video-access-table-body");
+    const emptyEl = document.getElementById("video-access-empty");
+    const searchEl = document.getElementById("video-access-search");
+    const visibleCountEl = document.getElementById("video-access-visible-count");
+    const saveTopEl = document.getElementById("video-access-save-top");
+    const saveBottomEl = document.getElementById("video-access-save-bottom");
+    const tableEl = document.getElementById("video-access-table");
+
+    function setStatus(message: string, kind: "ok" | "err" | "neutral" = "neutral") {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.classList.toggle("is-error", kind === "err");
+      statusEl.classList.toggle("is-ok", kind === "ok");
+    }
+
+    function escapeHtml(s: string) {
+      return s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function asString(v: unknown) {
+      return v === null || v === undefined ? "" : String(v);
+    }
+
+    function readHelpHubFromPage(): unknown[] {
+      const el = document.getElementById("video-access-help-hub-data");
+      if (!el?.textContent) return [];
+      try {
+        const data = JSON.parse(el.textContent) as unknown;
+        return Array.isArray(data) ? data : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function contentIdKey(row: VideoRow): string {
+      return asString(row.content_id).trim();
+    }
+
+    function titleByContentIdMap(videos: VideoRow[]): Map<string, string> {
+      const map = new Map<string, string>();
+      for (const row of videos) {
+        const id = contentIdKey(row);
+        if (id) map.set(id, asString(row.title).trim());
+      }
+      return map;
+    }
+
+    function effectiveAccessRaw(row: VideoRow): unknown {
+      const id = contentIdKey(row);
+      if (id && pendingAccess.has(id)) return pendingAccess.get(id);
+      return row.access_level;
+    }
+
+    function catalogStatusLabel(row: VideoRow): string {
+      const raw = asString(row.status).trim().toLowerCase();
+      return raw || "published";
+    }
+
+    function groupingLabel(row: VideoRow): string {
+      const parts = [asString(row.category).trim(), asString(row.subcategory).trim()].filter(Boolean);
+      const videoType = asString(row.videoType).trim();
+      if (videoType) parts.push(videoType);
+      return parts.join(" ù ");
+    }
+
+    function videoUrl(row: VideoRow): string {
+      const cid = asString(row.content_id).trim();
+      return cid ? `/videos/${encodeURIComponent(cid)}` : "";
+    }
+
+    function lastUpdatedLabel(row: VideoRow): string {
+      for (const field of ["lastUpdated", "last_updated", "updatedAt", "updated_at"]) {
+        const v = asString(row[field]).trim();
+        if (v) return v;
+      }
+      return "";
+    }
+
+    function legacyVideoIdLabel(row: VideoRow): string {
+      return asString(row.content_id).trim();
+    }
+
+    function rowMatchesSearch(row: VideoRow): boolean {
+      const q = searchQuery.trim().toLowerCase();
+      if (!q) return true;
+      const key = stableVideoKey(row as Parameters<typeof stableVideoKey>[0]);
+      const haystack = [
+        asString(row.title),
+        asString(row.content_id),
+        asString(row.slug),
+        key,
+        videoUrl(row),
+        groupingLabel(row),
+        formatVideoUsageList(usageIndex.get(key)),
+      ]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(q);
+    }
+
+    function updateSaveButtons() {
+      const dirty = pendingAccess.size > 0;
+      for (const btn of [saveTopEl, saveBottomEl]) {
+        if (btn instanceof HTMLButtonElement) btn.disabled = !dirty;
+      }
+    }
+
+    function updateSummary() {
+      const counts = { total: 0, public: 0, member: 0, draft: 0, needsReview: 0 };
+      for (const row of originalVideos) {
+        counts.total += 1;
+        const bucket = accessLevelSummaryBucket(effectiveAccessRaw(row));
+        if (bucket === "needsReview") counts.needsReview += 1;
+        else counts[bucket] += 1;
+      }
+      for (const [stat, value] of Object.entries(counts)) {
+        const el = document.querySelector(`[data-stat="${stat}"]`);
+        if (el) el.textContent = String(value);
+      }
+    }
+
+    function buildSelectHtml(row: VideoRow, contentId: string): string {
+      const rawStored = row.access_level;
+      const effective = effectiveAccessRaw(row);
+      const needsReview = videoAccessNeedsReview(effective);
+      const normalizedEffective = normalizeAccessLevelRaw(effective);
+      const isChanged = pendingAccess.has(contentId);
+      const storedInvalid = videoAccessNeedsReview(rawStored);
+      const invalidLabel = storedInvalid
+        ? normalizeAccessLevelRaw(rawStored)
+          ? `Needs Review (was: ${escapeHtml(asString(rawStored))})`
+          : "Needs Review"
+        : "";
+
+      let options = "";
+      if (needsReview) {
+        options += `<option value=""${normalizedEffective ? "" : " selected"}>${escapeHtml(invalidLabel || "Needs Review")}</option>`;
+      }
+      for (const level of VIDEO_ACCESS_LEVELS) {
+        const selected = !needsReview && normalizedEffective === level ? " selected" : "";
+        options += `<option value="${level}"${selected}>${level}</option>`;
+      }
+
+      const selectClass = [
+        "video-access-admin__select",
+        needsReview ? "is-needs-review" : "",
+        isChanged ? "is-changed" : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+
+      const label = needsReview
+        ? `<span class="video-access-admin__needs-label">${escapeHtml(invalidLabel || "Needs Review")}</span>`
+        : "";
+
+      return `${label}<select class="${selectClass}" data-video-content-id="${escapeHtml(contentId)}" aria-label="Access level for ${escapeHtml(asString(row.title))}">${options}</select>`;
+    }
+
+    function compareRows(a: VideoRow, b: VideoRow): number {
+      const dir = sortDirection === "asc" ? 1 : -1;
+      const keyA = stableVideoKey(a as Parameters<typeof stableVideoKey>[0]);
+      const keyB = stableVideoKey(b as Parameters<typeof stableVideoKey>[0]);
+
+      if (sortColumn === "title") {
+        return asString(a.title).localeCompare(asString(b.title), undefined, { sensitivity: "base" }) * dir;
+      }
+      if (sortColumn === "legacyId") {
+        const cmp = legacyVideoIdLabel(a).localeCompare(legacyVideoIdLabel(b), undefined, {
+          sensitivity: "base",
+          numeric: true,
+        });
+        if (cmp !== 0) return cmp * dir;
+        return keyA.localeCompare(keyB, undefined, { sensitivity: "base" });
+      }
+      if (sortColumn === "slug") {
+        return keyA.localeCompare(keyB, undefined, { sensitivity: "base" }) * dir;
+      }
+      if (sortColumn === "access") {
+        const ea = accessLevelSummaryBucket(effectiveAccessRaw(a));
+        const eb = accessLevelSummaryBucket(effectiveAccessRaw(b));
+        const cmp = ea.localeCompare(eb);
+        if (cmp !== 0) return cmp * dir;
+        return keyA.localeCompare(keyB, undefined, { sensitivity: "base" });
+      }
+      if (sortColumn === "status") {
+        const cmp = catalogStatusLabel(a).localeCompare(catalogStatusLabel(b), undefined, {
+          sensitivity: "base",
+        });
+        if (cmp !== 0) return cmp * dir;
+        return keyA.localeCompare(keyB, undefined, { sensitivity: "base" });
+      }
+      if (sortColumn === "usedIn") {
+        const ua = formatVideoUsageList(usageIndex.get(keyA));
+        const ub = formatVideoUsageList(usageIndex.get(keyB));
+        const cmp = ua.localeCompare(ub, undefined, { sensitivity: "base" });
+        if (cmp !== 0) return cmp * dir;
+        return keyA.localeCompare(keyB, undefined, { sensitivity: "base" });
+      }
+      if (sortColumn === "grouping") {
+        const cmp = groupingLabel(a).localeCompare(groupingLabel(b), undefined, { sensitivity: "base" });
+        if (cmp !== 0) return cmp * dir;
+        return keyA.localeCompare(keyB, undefined, { sensitivity: "base" });
+      }
+      if (sortColumn === "updated") {
+        const cmp = lastUpdatedLabel(a).localeCompare(lastUpdatedLabel(b), undefined, {
+          sensitivity: "base",
+        });
+        if (cmp !== 0) return cmp * dir;
+        return keyA.localeCompare(keyB, undefined, { sensitivity: "base" });
+      }
+      return 0;
+    }
+
+    function updateHeaderState() {
+      if (!tableEl) return;
+      const headers = tableEl.querySelectorAll("th[data-sort-column]");
+      for (const th of headers) {
+        if (!(th instanceof HTMLElement)) continue;
+        const col = th.dataset.sortColumn;
+        const sorted = col === sortColumn;
+        th.classList.toggle("is-sorted", sorted);
+        th.setAttribute(
+          "aria-sort",
+          sorted ? (sortDirection === "asc" ? "ascending" : "descending") : "none",
+        );
+        const indicator = th.querySelector(".video-access-admin__sort-indicator");
+        if (indicator) {
+          indicator.textContent = sorted ? (sortDirection === "asc" ? "?" : "?") : "";
+        }
+      }
+    }
+
+    function renderTable() {
+      if (!tbodyEl || !tableWrapEl || !emptyEl || !loadingEl) return;
+      loadingEl.hidden = true;
+
+      const filtered = originalVideos.filter(rowMatchesSearch).sort(compareRows);
+      if (originalVideos.length === 0) {
+        tableWrapEl.hidden = true;
+        emptyEl.hidden = false;
+        emptyEl.textContent = "No videos in catalog.";
+        if (visibleCountEl) visibleCountEl.textContent = "";
+        tbodyEl.innerHTML = "";
+        updateHeaderState();
+        return;
+      }
+
+      if (filtered.length === 0) {
+        tableWrapEl.hidden = true;
+        emptyEl.hidden = false;
+        emptyEl.textContent = "No videos match your search.";
+        if (visibleCountEl) {
+          visibleCountEl.textContent = `0 of ${originalVideos.length} videos shown`;
+        }
+        tbodyEl.innerHTML = "";
+        updateHeaderState();
+        return;
+      }
+
+      tableWrapEl.hidden = false;
+      emptyEl.hidden = true;
+      if (visibleCountEl) {
+        const suffix =
+          searchQuery.trim() !== "" ? ` of ${originalVideos.length} videos shown` : " videos";
+        visibleCountEl.textContent = `Showing ${filtered.length}${suffix}`;
+      }
+
+      tbodyEl.innerHTML = filtered
+        .map((row) => {
+          const key = stableVideoKey(row as Parameters<typeof stableVideoKey>[0]);
+          const contentId = contentIdKey(row);
+          const needsReview = videoAccessNeedsReview(effectiveAccessRaw(row));
+          const isChanged = contentId ? pendingAccess.has(contentId) : false;
+          const trClass = [needsReview ? "is-needs-review" : "", isChanged ? "is-changed" : ""]
+            .filter(Boolean)
+            .join(" ");
+          const usedIn = formatVideoUsageList(usageIndex.get(key));
+          const grouping = groupingLabel(row);
+          const updated = lastUpdatedLabel(row);
+          const slug = asString(row.slug).trim();
+          const legacyId = legacyVideoIdLabel(row);
+
+          return `<tr class="${trClass}" data-video-content-id="${escapeHtml(contentId)}">
+            <td class="col-title">${escapeHtml(asString(row.title))}</td>
+            <td class="col-legacy-id">${legacyId ? `<code>${escapeHtml(legacyId)}</code>` : '<span class="col-muted">ù</span>'}</td>
+            <td class="col-slug">${slug ? `<code>${escapeHtml(slug)}</code>` : '<span class="col-muted">ù</span>'}</td>
+            <td>${buildSelectHtml(row, contentId)}</td>
+            <td>${escapeHtml(catalogStatusLabel(row))}</td>
+            <td class="col-used-in">${usedIn ? escapeHtml(usedIn) : '<span class="col-muted">ù</span>'}</td>
+            <td class="col-grouping">${grouping ? escapeHtml(grouping) : '<span class="col-muted">ù</span>'}</td>
+            <td>${updated ? escapeHtml(updated) : '<span class="col-muted">ù</span>'}</td>
+          </tr>`;
+        })
+        .join("");
+
+      updateHeaderState();
+      updateSummary();
+      updateSaveButtons();
+    }
+
+    function onAccessChange(select: HTMLSelectElement) {
+      const contentId = select.dataset.videoContentId ?? "";
+      if (!contentId) return;
+      const value = select.value;
+      const original = originalVideos.find((v) => contentIdKey(v) === contentId);
+      const originalNormalized = normalizeAccessLevelRaw(original?.access_level);
+
+      if (!value) {
+        pendingAccess.delete(contentId);
+      } else if (value === originalNormalized && !videoAccessNeedsReview(original?.access_level)) {
+        pendingAccess.delete(contentId);
+      } else {
+        pendingAccess.set(contentId, value);
+      }
+
+      renderTable();
+    }
+
+    tbodyEl?.addEventListener("change", (event) => {
+      const target = event.target;
+      if (target instanceof HTMLSelectElement && target.matches(".video-access-admin__select")) {
+        onAccessChange(target);
+      }
+    });
+
+    function initSortHeaders() {
+      if (!tableEl) return;
+      const headers = tableEl.querySelectorAll("th[data-sort-column]");
+      for (const th of headers) {
+        if (!(th instanceof HTMLElement)) continue;
+        th.addEventListener("click", () => {
+          const col = th.dataset.sortColumn as SortColumn | undefined;
+          if (!col) return;
+          if (col === sortColumn) {
+            sortDirection = sortDirection === "asc" ? "desc" : "asc";
+          } else {
+            sortColumn = col;
+            sortDirection = "asc";
+          }
+          renderTable();
+        });
+        th.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            th.click();
+          }
+        });
+      }
+    }
+
+    searchEl?.addEventListener("input", () => {
+      if (searchEl instanceof HTMLInputElement) {
+        searchQuery = searchEl.value;
+        renderTable();
+      }
+    });
+
+    async function loadData() {
+      setStatus("Loading catalogù");
+      if (loadingEl) loadingEl.hidden = false;
+      if (tableWrapEl) tableWrapEl.hidden = true;
+      if (emptyEl) emptyEl.hidden = true;
+
+      try {
+        const [videosRes, lessonsRes] = await Promise.all([
+          fetch(VIDEOS_API),
+          fetch(LESSONS_API),
+        ]);
+        const videosData = await videosRes.json();
+        const lessonsData = await lessonsRes.json();
+
+        if (!videosRes.ok || !videosData?.ok || !Array.isArray(videosData.videos)) {
+          setStatus(videosData?.error || `Load failed (${videosRes.status})`, "err");
+          if (loadingEl) loadingEl.textContent = "Could not load videos.";
+          return;
+        }
+
+        originalVideos = videosData.videos as VideoRow[];
+        pendingAccess.clear();
+
+        const lessons = lessonsRes.ok && lessonsData?.ok && Array.isArray(lessonsData.lessons)
+          ? lessonsData.lessons
+          : [];
+        usageIndex = buildVideoUsageIndex(
+          lessons,
+          readHelpHubFromPage(),
+          originalVideos as Parameters<typeof buildVideoUsageIndex>[2],
+        );
+
+        setStatus(`${originalVideos.length} video(s) loaded.`, "ok");
+        renderTable();
+      } catch {
+        setStatus("Network error loading videos.", "err");
+        if (loadingEl) loadingEl.textContent = "Could not load videos.";
+      }
+    }
+
+    async function saveChanges() {
+      if (pendingAccess.size === 0) return;
+
+      const updates: Array<{ content_id: string; access_level: string }> = [];
+      for (const [contentId, value] of pendingAccess) {
+        const validated = validatePendingAccessLevel(value);
+        if (!validated.ok) {
+          setStatus(`Video ${contentId}: ${validated.error}`, "err");
+          return;
+        }
+        updates.push({ content_id: contentId, access_level: validated.access_level });
+      }
+
+      const titles = titleByContentIdMap(originalVideos);
+      setStatus("Saving...");
+      for (const btn of [saveTopEl, saveBottomEl]) {
+        if (btn instanceof HTMLButtonElement) btn.disabled = true;
+      }
+
+      try {
+        const res = await fetch(ACCESS_LEVELS_API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ updates }),
+        });
+        const data = (await res.json()) as {
+          ok?: boolean;
+          error?: string;
+          updated?: Array<{ content_id: string | number; access_level: string }>;
+        };
+        if (!res.ok || !data?.ok || !Array.isArray(data.updated)) {
+          setStatus(data?.error || `Save failed (${res.status})`, "err");
+          updateSaveButtons();
+          return;
+        }
+
+        for (const patch of data.updated) {
+          const id = asString(patch.content_id).trim();
+          const row = originalVideos.find((v) => contentIdKey(v) === id);
+          if (row) row.access_level = patch.access_level;
+        }
+        pendingAccess.clear();
+        setStatus(describeVideoAccessPatchSuccess(data.updated, titles), "ok");
+        renderTable();
+      } catch {
+        setStatus("Network error while saving.", "err");
+        updateSaveButtons();
+      }
+    }
+
+    saveTopEl?.addEventListener("click", () => void saveChanges());
+    saveBottomEl?.addEventListener("click", () => void saveChanges());
+
+    initSortHeaders();
+    void loadData();
+  </script>
+</BaseLayout>

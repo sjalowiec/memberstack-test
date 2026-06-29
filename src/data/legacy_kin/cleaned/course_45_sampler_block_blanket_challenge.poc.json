@@ -1,0 +1,801 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 45,
+    "title": "Sampler Block Blanket Challenge",
+    "slug": "sampler-block-blanket-challenge",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_45_sampler_block_blanket_challenge.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Introduction",
+      "slug": "introduction",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 303,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<a href=\"http://warmupamerica.org/\" target=\"_blank\"><img src=\"/challenge/images/v2/45/warm_up_america_logo.png\"></a>\r\n<a href=\"http://warmupamerica.org/\" target=\"_blank\">Warm up America</a> is a fantastic, non-profit organization that has been collecting and distributing blankets since 1990.<br>\r\nVolunteers can donate their time to crochet and knit one or more 7\" x 9\" blocks as well as entire blankets and accessories. Sections are either joined by individuals or groups in a community.<br><a href=\"http://warmupamerica.org/\" target=\"_blank\">Learn more about Warm up America</a>\r\n\r\n<br>\r\nWe chose the 7\" x 9\" size for this Knit-Along in case you don't have time (or the interest) to finish a blanket and you'd like to donate your samples to this group.<br>If you have a local charity, please consider knitting for those in need near you.<br><hr><br>\r\n<div class='embed-video-container'>\n<iframe src='https://player.vimeo.com/video/333372479' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</div>\r\n</div>",
+              "legacyComponentId": 4760,
+              "order": 1
+            }
+          ],
+          "title": "Get motivated to help others",
+          "slug": "get-motivated-to-help-others",
+          "order": 2,
+          "legacy": {
+            "assignId": 3405,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\"><b>The Knit-Along overall goal:</b></div>Create 7\" x 9\" rectangles in a variety of stitch patterns to be assembled into a blanket.<br><div class=\"lead\"><b>Your Personal Goals: </b></div>\r\n<ul>\r\n<li>Explore the relationship between stitch pattern techniques and gauge</LI>\r\n<li>Master the art of measuring and knitting to gauge</li>\r\n<li>Create a blanket for charity or personal use</li>\r\n<li>Use up some stash yarn <i class=\"fa fa-meh-o aria-hidden=\"true\"></i></li>\r\n</ul>\r\n<div class=\"lead\"><b>The Plan: </b></div>\r\nUsing the Knit it Now DIY Blanket Course as reference, join other knitters in a 'no stress' project.\r\n<ul>\r\n<li>Hone your skills with easy to complete exercises.</li>\r\n<li>Enjoy small successes that add up</li>\r\n<li>Complete a blanket that will warm you, a friend or someone in need</li>\r\n</ul>\r\n<center><img src=\"/challenge/images/v2/45/the_only_way.gif\"></center>",
+              "legacyComponentId": 4759,
+              "order": 1
+            }
+          ],
+          "title": "Getting Started with a Plan",
+          "slug": "getting-started-with-a-plan",
+          "order": 3,
+          "legacy": {
+            "assignId": 3395,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\"><b>What yarn to choose?</b></div>\r\nThe yarn you use should be appropriate for your machine.<br>\r\nIf you are knitting for charity it must be machine washable and dryable.<br><div class=\"lead\"><b>What size blanket should I knit?</b></div>\r\nHow ambitious are you? <i class=\"fa fa-smile-o aria-hidden=\"true\"></i><br>\r\nThe following section gives suggested blanket sizes along with how many blocks needed\r\n<br><div class=\"lead\"><b>How much yarn do I need?</b></div>\r\n\r\nIf I wasn't using yarn from my stash ... I would:\r\n<ul>\r\n<li>Decide on the machine I'm using</li>\r\n<li>Choose an appropriate weight of yarn </li>\r\n<li>Check out blanket patterns in that yarn from the yarn company to get an estimate of how much I need</li>\r\n<li>Buy an extra ball (or 2) for playing and swatching.</li>\r\n</li>\r\nIn the past, working with mid-gauge or bulky yarn, I plan for approx 10-12 50gram balls for an adult size blanket.\r\n\r\n\r\n\r\nIf you are using stash yarn, once you knit your first swatch, you'll be able to get an idea of how much yarn you will need for the blanket size you want to knit. <br><hr>\r\n<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> This tool may help.<br><a href=\"https://www.JimmyBeansWool.com/knittingCalculator\" target=_blank><img border=0 width=126 height=102 src=\"https://www.JimmyBeansWool.com/images/knittingCalculator/knitCalcOtherSites.gif\" alt=\"Knitting Calculator at Jimmy Beans Wool\"></a>\r\n",
+              "legacyComponentId": 4791,
+              "order": 1
+            }
+          ],
+          "title": "Choose your yarn",
+          "slug": "choose-your-yarn",
+          "order": 4,
+          "legacy": {
+            "assignId": 3421,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "We will be knitting 7\"x9\" blocks. In order for the blanket to lay flat without any \"wonky\" edges we will be focusing on getting the gauge correct.<br><ol class=\"instruction-list\">\r\n<li>Knit your block according to the instructions in the following sections.  You will be creating your own custom block patterns with the tools in this course ... no math!</li>\r\n<li>Let it rest (don't measure your block straight off the machine)</li>\r\n<li>Block as desired (we'll discuss this in a later section)</li>\r\n<li>Lay it down on the included template to confirm the size. (If you are knitting different size blocks, take time to draw a template of your own size)</li>\r\n<li>Is the block the correct size?  If not, go back and double check your gauge.</li>\r\n<li>On to the next block!</li>\r\n</ol>",
+              "legacyComponentId": 4792,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Print the 7\"x9\" template",
+              "filename": "/downloads/block_blanket_template.pdf",
+              "showInline": true,
+              "legacy": {
+                "assignId": "3422",
+                "componentId": "4793",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4793,
+              "order": 2
+            }
+          ],
+          "title": "Print your template",
+          "slug": "print-your-template",
+          "order": 5,
+          "legacy": {
+            "assignId": 3422,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Week 1: Decisions, Decisions, Decisions",
+      "slug": "week-1-decisions-decisions-decisions",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 304,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<h3>Size Suggestions </h3>\r\n\tThe plan is to knit 7\" x 9\" blocks in different stitch patterns, mix 'n match as you like.<br>Here are some blanket size suggestions <a href=\"#\" data-toggle=\"tooltip\" data-placement=\"auto\" title=\"Standard Sizes\"><i class=\"fa fa-question-circle-o aria-hidden=\"true\"></i></a> and number of blocks needed to create each size. <br>\r\n\t<hr>\r\n\t\r\n\t<table class=\"table table-striped table-hover\">\r\n\t\t<thead>\r\n\t\t\t<tr>\r\n\t\t    \t<th></th>\r\n\t\t        <th>Number of Blocks</th>\r\n\t\t        <th>Finished  Size</th>\r\n\t\t\t</tr>\r\n\t\t </thead>\r\n\t\t<tbody>\r\n\t\t<tr>\r\n\t\t  <td>Small Preemie <a href=\"#\" data-toggle=\"tooltip\" data-placement=\"auto\" title=\"24x24 (60x60cm)\"><i class=\"fa fa-question-circle-o aria-hidden=\"true\"></i></a></td>\r\n\t\t  <td><b> 9</b><small><em> 3x3</em></small></td>\r\n\t\t  <td>21x27\" <small><em>53x69cm</em></small></td>\r\n\t\t</tr>\r\n\t\t<tr>\r\n\t\t      <td>Bassinette <a href=\"#\" data-toggle=\"tooltip\" data-placement=\"auto\" title=\"16x36 (40x90cm)\"><i class=\"fa fa-question-circle-o aria-hidden=\"true\"></i></a></td>\r\n\t\t      <td><b>12</b> <small><em>3x4</em></small></td>\r\n\t\t      <td>21x36\" <small><em>53x91cm</em></small></td>\r\n\t\t  </tr>\r\n\t\t  <tr>\r\n\t\t      <td>Cradle <a href=\"#\" data-toggle=\"tooltip\" data-placement=\"auto\" title=\"20x36 (50x90cm)\"><i class=\"fa fa-question-circle-o aria-hidden=\"true\"></i></a></td>\r\n\t\t      <td><b>12</b> <small><em>3x4</em></small></small></td>\r\n\t\t      <td>21x36\" <small><em>53x91cm</em></small></td>\r\n\t\t  </tr>\r\n\t\t  <tr>\r\n\t\t      <td>Large Preemie <a href=\"#\" data-toggle=\"tooltip\" data-placement=\"auto\" title=\"36x36 (90x90cm)\"><i class=\"fa fa-question-circle-o aria-hidden=\"true\"></i></a></td>\r\n\t\t      <td><b>20</b> <small><em>5x4</em></small></td>\r\n\t\t      <td>35x36\" <small><em>89x91cm</em></small></td>\r\n\t\t  </tr>\r\n\t\t  <tr>\r\n\t\t      <td>Toddler or Lapghan <a href=\"#\" data-toggle=\"tooltip\" data-placement=\"auto\" title=\"36x48 (90x122cm)\"><i class=\"fa fa-question-circle-o aria-hidden=\"true\"></i></a></td>\r\n\t\t      <td><b>25</b> <small><em>5x5</em></small></td>\r\n\t\t      <td>35x45\" <small><em>89x114cm</em></small></td>\r\n\t\t  </tr>\r\n\t\t  <tr>\r\n\t\t      <td>Child <a href=\"#\" data-toggle=\"tooltip\" data-placement=\"auto\" title=\"42x48 (105x122cm)\"><i class=\"fa fa-question-circle-o aria-hidden=\"true\"></i></a></td>\r\n\t\t      <td><b>30</b> <small><em>6x5</em></small></td>\r\n\t\t      <td>42x45\" <small><em>106x114cm</em></small></td>\r\n\t\t  </tr>\r\n\t\t  <tr>\r\n\t\t      <td>Crib <a href=\"#\" data-toggle=\"tooltip\" data-placement=\"auto\" title=\"30x54 (76x137cm)\"><i class=\"fa fa-question-circle-o aria-hidden=\"true\"></i></a></td>\r\n\t\t      <td><b>24</b> <small><em>4x6</em></small></td>\r\n\t\t      <td>28x54\" <small><em>71x137cm</em></small></td>\r\n\t\t  </tr>\r\n\t\t  <tr>\r\n\t\t      <td>Standard Throw<a href=\"#\" data-toggle=\"tooltip\" data-placement=\"auto\" title=\"48x60 (122/152cm)\"> <i class=\"fa fa-question-circle-o aria-hidden=\"true\"></i></a></td>\r\n\t\t      <td><b>49</b> <small><em>7x7</em></small></td>\r\n\t\t      <td>49x63\"<small><em>124x160cm</em></small></td>\r\n\t\t\r\n\t\t  </tr>\r\n\t\t  <tr>\r\n\t\t      <td>Adult Throw <a href=\"#\" data-toggle=\"tooltip\" data-placement=\"auto\" title=\"48x78 (122x198cm)\"><i class=\"fa fa-question-circle-o aria-hidden=\"true\"></i></a></td>\r\n\t\t      <td><b>63</b> <small><em>7x9</em></small></td>\r\n\t\t      <td>49x81\" <small><em>124x205cm</em></small></td>\r\n\t\t </tr>\r\n\t\t  </tbody>\r\n\t\t  </table>\r\n\r\n<img src=\"/challenge/images/v2/45/block_blanket_sizng.png\">\r\n",
+              "legacyComponentId": 4778,
+              "order": 1
+            }
+          ],
+          "title": "How Many Blocks?",
+          "slug": "how-many-blocks",
+          "order": 2,
+          "legacy": {
+            "assignId": 3417,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<img src=\"/challenge/images/v2/45/measure_stitches.jpg\">\r\n<img src=\"/challenge/images/v2/45/measure_rows.jpg\">\r\n\r\n<br>\r\nBecause we are knitting small rectangles to be joined.  It it CRITICAL that you measure and establish the correct gauge for each stitch pattern you use.<br><b>Not only will this guarantee your success, THIS IS THE POINT of this Knit-Along! <i class=\"fa fa-smile-o aria-hidden=\"true\"></i></b><br>\r\n\r\n<div class=\"lead\">New to Machine knitting?</div>\r\nAn entire section (Section 3) of the <a href=\"/challenge/3/course/diy-blanket\">DIY Blanket Course</a> is devoted to swatching.  If you are new, if have avoided this in the past, or you need a refresher, please take a look at the tutorials in that section.<br>\r\n\r\n\r\n\r\n\r\n<br>\r\n<hr>\r\nBelow is the video \"Swatching in Pattern\" that is CRITICAL for this project. Also watch the short rant about swatching. <em>(Look at that face ... she means business)</em>",
+              "legacyComponentId": 4763,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "293143036",
+              "title": "Don't Skip this one!",
+              "legacySlot": 1,
+              "legacyComponentId": 4762,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859471",
+              "title": "Many knitters get stuck with this",
+              "legacySlot": 2,
+              "legacyComponentId": 4762,
+              "order": 2
+            }
+          ],
+          "title": "Swatching is NOT optional",
+          "slug": "swatching-is-not-optional",
+          "order": 3,
+          "legacy": {
+            "assignId": 3398,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n<div class=\"lead\">Time to get knitting!</div>\r\n Let's set a baseline for a basic block in stockinette.\r\n<ol>\r\n<li>Knit a swatch using any method.</li>\r\n<li>Let it rest</li>\r\n<li>Dress the swatch (treat it as you will treat your blanket)</li>\r\n<li>Accurately measure YOUR stitch and row gauge</li>\r\n<li>Record your gauge</li>\r\n</ol>\r\n<i class=\"fa fa-lightbulb-o aria-hidden=\"true\"></i> <em><small><b>TIP:</b> attach a string tag to your swatch, recording all the details ... it's easy forget.<br> Include yarn name, machine, tension, measurements, and stitch pattern number (if appropriate)</small></em>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/45/2hr/swatch_example.jpg\" /><br />Does your swatch look similar to this one?\r\n\r\n<hr>\r\nThe <b>secret to successful swatching</b> is to knit a large piece and accurately measure in the center of the knitting. This avoids any distortion from the edges.<br>\r\nBy isolating a set number of stitches and rows, you avoid counting stitches.  <b>All you have to do is measure between the markers to establish your gauge.</b><br>\r\n<hr>\r\n<div class=\"lead\">New to swatching? Suggested Swatch instructions</div>\r\nClick the swatch for instructions for your gauge <i class=\"fa fa-arrow-down\" aria-hidden=\"true\"></i><br><hr>\r\n\r\n    \r\n        \r\n            \r\n\r\n               <center> <img src=\"/challenge/images/v2/45/standard_swatch.png\"></center>\r\n            \r\n        \r\n\r\n        \r\n            \r\n                <ol class=\"instruction-list\">\r\n                    <li>Cast on 60 stitches with any method</li>\r\n                    <li>Knit 6-8 rows</li>\r\n                    <li>Change to waste yarn and knit 2 rows in contrasting color</li>\r\n                    <li>Change to main yarn</li>\r\n                    <li>Knit 20 rows</li>\r\n                    <li>Place markers, isolating the center 40 stitches</li>\r\n                    <li>Knit 20 rows</li>\r\n                    <li>Place markers, isolating the center 40 stitches</li>\r\n                    <li>Knit 20 rows</li>\r\n                    <li>Change to waste yarn and knit 2 rows in contrasting color</li>\r\n                    <li>Change to main yarn knit 6-8 rows</li>\r\n                    <li>Bind off</li>\r\n                </ol>\r\n            \r\n        \r\n\r\n    \r\n\r\n    <!-- first box -->\r\n\r\n\r\n    \r\n        \r\n            \r\n\r\n               <center> <img src=\"/challenge/images/v2/45/mid_gauge_swatch.png\"> </center>\r\n            \r\n        \r\n\r\n        \r\n            \r\n                <ol class=\"instruction-list\">\r\n                    <li>Cast on 40 stitches with any method</li>\r\n                    <li>Knit 6-8 rows</li>\r\n                    <li>Change to waste yarn and knit 2 rows in contrasting color</li>\r\n                    <li>Change to main yarn</li>\r\n                    <li>Knit 20 rows</li>\r\n                    <li>Place markers, isolating the center 30 stitches</li>\r\n                    <li>Knit 20 rows</li>\r\n                    <li>Change to waste yarn and knit 2 rows in contrasting color</li>\r\n                    <li>Change to main yarn knit 6-8 rows</li>\r\n                    <li>Bind off</li>\r\n                </ol>\r\n            \r\n        \r\n\r\n    \r\n\r\n    <!-- 2nd box -->\r\n\r\n    \r\n        \r\n            \r\n\r\n                <center><img src=\"/challenge/images/v2/45/bulky_swatch.png\"> </center>\r\n            \r\n        \r\n\r\n        \r\n            \r\n                <ol class=\"instruction-list\">\r\n                    <li>Cast on 30 stitches with any method</li>\r\n                    <li>Knit 6-8 rows</li>\r\n                    <li>Change to waste yarn and knit 2 rows in contrasting color</li>\r\n                    <li>Change to main yarn</li>\r\n                    <li>Knit 15 rows</li>\r\n                    <li>Place markers, isolating the center 20 stitches</li>\r\n                    <li>Knit 15 rows</li>\r\n                    <li>Change to waste yarn and knit 2 rows in contrasting color</li>\r\n                    <li>Change to main yarn knit 6-8 rows</li>\r\n                    <li>Bind off</li>\r\n                </ol>\r\n            \r\n        \r\n\r\n\r\n    \r\n\r\n    <!-- 3rd box -->\r\n\r\n<!-- end row-->\r\n",
+              "legacyComponentId": 4798,
+              "order": 3
+            }
+          ],
+          "title": "Swatch #1",
+          "slug": "swatch-1",
+          "order": 4,
+          "legacy": {
+            "assignId": 3408,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "This will be a plain stockinette block. You could use this block in your blanket 'as is' or plan to work some Swiss Darning (duplicate stitch) or embroidery on it.<br>When planning the layout of your blocks, consider alterhnating the knit and the purl side of your plain blocks for added interest.<br><ol class=\"instruction-list\">\r\n<li>Enter your gauge below.  If you choose to make your blocks a different size, enter your desired block size.</li>\r\n<li>Click the blue button \"Create instructions\" for your block pattern</li>\r\n<li>Knit your first plain block</li>\r\n</ol>\r\n<br>\r\n<img src=\"/challenge/images/v2/45/choose_in_cm_script.gif\">\r\n\r\n",
+              "legacyComponentId": 4768,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: block_blanket_custom_code.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3409",
+                "CHALLENGE_COMPONENTID": "4769",
+                "CUSTOMCFM": "block_blanket_custom_code.cfm"
+              },
+              "legacyComponentId": 4769,
+              "order": 2
+            }
+          ],
+          "title": "Block #1",
+          "slug": "block-1",
+          "order": 5,
+          "legacy": {
+            "assignId": 3409,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nIf  your gauge is accurate, your blocks should practically block themselves. <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i><br>If you stretched or \"prodded\" your swatch, you'll need to do the same for the blocks.<br>NOTE: We are measuring our swatches and blocks flat.  This is for a blanket.  But if we were knitting for a garment, you'll want to consider measuring your swatches hanging.  After all, sweaters only lay flat in the closet.  \r\n<br>\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/45/block_1_mine.jpg\">\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4820,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "245117927",
+              "title": "Gauge and Drop",
+              "legacyComponentId": 4821,
+              "order": 2
+            }
+          ],
+          "title": "Notes",
+          "slug": "notes",
+          "order": 6,
+          "legacy": {
+            "assignId": 3428,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Week 2: Tuck and Slip",
+      "slug": "week-2-tuck-and-slip",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 305,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "For this challenge we are suggesting you use a very simple, specific stitch pattern:<br><ol>\r\n<li>We want you to discover the possibilities with just ONE PATTERN and MULTIPLE STITCH TECHNIQUES<br></li>\r\n<li>You can use this pattern no matter what machine you are using - manual or automatic<br></li>\r\n<li>Using one pattern allows you to program or punch only one card (saving time for knitting)<br></li>\r\n<li>No matter what stitch pattern(s) you use ... remember the point is to create blocks that are EXACTLY 7\" x 9\". (trust me it isn't as easy as it sounds, but you CAN do this!)</li>\r\n</ul>\r\n\t<img src=\"/challenge/images/v2/45/You_can_do_this.gif\"><br>\r\n\t<img src=\"/challenge/images/v2/45/block_knit_along11.jpg\">",
+              "legacyComponentId": 4765,
+              "order": 1
+            }
+          ],
+          "title": "Stitch Pattern Choice(s)",
+          "slug": "stitch-pattern-choice-s",
+          "order": 1,
+          "legacy": {
+            "assignId": 3407,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "OK, the course stitch pattern isn't the most exciting. <br><ul class=\"li_7px\">\r\n    <li>We chose a pattern that was easy to envision that anyone could knit on any machine</li>\r\n    <li>Limiting the number of stitch patterns limits the number of swatches</li>\r\n    <li>The project stitch pattern is super easy for those who are hand manipulating needles (This is supposed to be a no-stress project, remember?)</li>\r\n    <li>One of the goals is to experiment with the <b>\"1 pattern-lots of options\" </b>concept</li>\r\n    <li>If you are punching your own cards or programming your electronics, this simple stitch pattern won't give you grey hair</li>\r\n</ul>\r\n\r\n<br><h3>Do you want something more exciting? Do your own thing!</h3>\r\n\r\n<br><div class=\"table-responsive\">\r\n    <table class=\"table\">\r\n        <thead class=\"thead-dark\">\r\n            <tr>\r\n                <th scope=\"col\">Beginner</th>\r\n                <th scope=\"col\">Adventurous</th>\r\n            </tr>\r\n        </thead>\r\n        <tbody>\r\n            <tr>\r\n                <td>Punch, Program or use the project pattern</td>\r\n                <td>Choose your own stitch patterns (but don't skip swatching EACH ONE)</td>\r\n            </tr>\r\n            <tr>\r\n                <td>Try this stitch pattern in each of the stitch techniques as outlined</td>\r\n                <td>Remember not all stitch patterns will be appropriate for both slip and tuck</td>\r\n            </tr>\r\n            <tr>\r\n                <td>Play with the concept of \"one-pattern-lots of options\"</td>\r\n                <td>Play with the concept of \"one-pattern-lots of options\"</td>\r\n            </tr>\r\n            <tr>\r\n                <td>When assembling your blocks, alternate the knit and purl sides for even more interest</td>\r\n                <td>When assembling your blocks, alternate the knit and purl sides for even more interest</td>\r\n            </tr>\r\n<tr>\r\n                <td><em><small>Keep it simple</small></em></td>\r\n                <td>If your machine has stitch pattern variations settings, try the \"double high\" setting with the project stitch pattern</td>\r\n            </tr>\r\n<tr>\r\n                 <td><em><small>Keep it simple</small></em></td>\r\n                <td>Try multi-color stitch patterns</td>\r\n            </tr>\r\n<tr>\r\n                 <td><em><small>Keep it simple</small></em></td>\r\n                <td>Knit your swatches and samples in a double bed stitch pattern (get a gold star for this one!)</td>\r\n            </tr>\r\n\r\n        </tbody>\r\n    </table>\r\n",
+              "legacyComponentId": 4790,
+              "order": 1
+            }
+          ],
+          "title": "Want more drama? <i class='fa fa-smile-o' aria-hidden='true'></i>",
+          "slug": "want-more-drama-i-class-fa-fa-smile-o-aria-hidden-true-i",
+          "order": 2,
+          "legacy": {
+            "assignId": 3420,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "We are knitting blocks for this project.  By knitting blocks, we can hone our swatching and measuring gauge skills. <br.\r\n<ol>\r\n<li>Knit your swatch in pattern</li>\r\n<li>Let it rest and block it</li>\r\n<li>Take an accurate measurement of gauge</li>\r\n<li>Calculate the size of your block</li>\r\n<li>Knit the block to size</li>\r\n<li>Confirm the accuracy of your gauge</li>\r\n<li>Is your swatch the correct size? If not go back to step 3 and confirm.  Worst case, knit a larger swatch and measure again<br></li>\r\n<li>Rinse and Repeat</li>\r\n<li>Stitch the blocks together to create a blanket\r\n</ol><br>\r\n<hr>\r\n<h3>Knitting in Strips</h3>\r\n\r\n\r\n\r\nAs you are planning your blanket, you may think .. why knit all those separate blocks and then sew them together?  Why not knit in strips or panels, alternating stitch patterns and save a bit of seaming?<br><b>Great idea!  BUT ......Consider this:</b><br>Here are 3 blocks. Each has it's own stitch count for the width. <br>The yellow block is 24 stitches. Before binding off the yellow swatch, increase 7 stitches  evenly across the row.  You'll now have 31 stitches to knit in the green stitch pattern.<br>When the green block is finished, decrease 1 stitch and you'll have the required 30 stitches to start your pink block.<br>By increasing and decreasing, you'll maintain the MEASUREMENT of each block, and eliminate the seams.\r\n<img src=\"/challenge/images/v2/45/block_blanket_stips.png\">\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4823,
+              "order": 1
+            }
+          ],
+          "title": "Knitting in Strips",
+          "slug": "knitting-in-strips",
+          "order": 3,
+          "legacy": {
+            "assignId": 3429,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Tuck is a great way to add texture and interest to your knitting.<br>\r\nWhen knitting tuck, certain needles do not knit and the working yarn travels OVER the needles out of work.\r\n\t<img src=\"/challenge/images/v2/45/anatomy_thumbnail.jpg\"><br>\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4770,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "249931924",
+              "title": "Understanding Tuck - The Basics",
+              "legacySlot": 1,
+              "legacyComponentId": 4822,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "333804568",
+              "title": "Tuck Lessons Learned - Don't Skip This One!",
+              "legacySlot": 2,
+              "legacyComponentId": 4822,
+              "order": 3
+            }
+          ],
+          "title": "Tuck",
+          "slug": "tuck",
+          "order": 4,
+          "legacy": {
+            "assignId": 3399,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">Swatch in Tuck</div>\r\n\r\n\r\n<center>\r\n\r\n\r\n<br>for Manual, punchcard and electronic programming<br>\r\n<a href=\"/downloads/block_blanket_punchcard.pdf\" target=\"_blank\">\r\n<img src=\"/challenge/images/v2/45/block_stitch_punchcard.jpg\"></figure></a></center>\r\n\r\n\r\n<center>\r\n\r\n\r\nthe DesignaKnit STP File<br><a href=\"/challenge/images/v2/45/block_blanket_TUCK.stp\" target=\"_blank\"><img src=\"/challenge/images/v2/45/block_stitch_dak_tuck.jpg\"></a></center>\r\n\r\n<br>\r\n\r\n<div class=\"lead\"><i class=\"fa fa-refresh aria-hidden=\"true\"></i> Establish YOUR gauge for the Tuck Stitch.</div>\r\n<b>Use the same number of stitches and rows that you used for your stockinette swatch</b><br>\r\n<ol class=\"instruction-list\">\r\n<li>Knit a swatch using any method.</li>\r\n<li>Let it rest</li>\r\n<li>Dress the swatch (treat it as you will treat your blanket)</li>\r\n<li>Accurately measure YOUR stitch and row gauge</li>\r\n<li>Record your gauge</li>\r\n</ol><br><div class=\"lead\"><i class=\"fa fa-refresh aria-hidden=\"true\"></i> Compare your swatches </div>\r\n<ol class=\"instruction-list\">\r\n<li> Can you see how tuck is considerably wider and shorter than stockinette?</li>\r\n<li> Weigh both swatches and you will see that tuck also uses more yarn than stockinette</li>\t\r\n</ol><br><div class=\"lead\"><i class=\"fa fa-lightbulb-o aria-hidden=\"true\"></i> Sample Swatches</div><br>\r\n<center>\r\n<figure>\r\n<figcaption align=\"center\"><br><i class=\"fa fa-exclamation-triangle\" aria-hidden=\"true\"></i> <b>Each of these swatches have the SAME number of stitches and rows</b></figcaption>\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/45/block_blanket_compare.png\"></figure></center>\r\n",
+              "legacyComponentId": 4783,
+              "order": 1
+            }
+          ],
+          "title": "Swatch #2 | Tuck",
+          "slug": "swatch-2-tuck",
+          "order": 5,
+          "legacy": {
+            "assignId": 3418,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Enter your gauge information from your tuck swatch and generate your knitting instructions. <br>Notice that the stitch and row counts for tuck are considerably different than your stockinette block instructions.<br><ol class=\"instruction-list\">\r\n<li>Enter your gauge below.  If you choose to make your blocks a different size, enter your desired block size.</li>\r\n<li>Click the blue button \"Create instructions\" for your block pattern</li>\r\n<li>Knit your first <b>tuck stitch block</b></li>\r\n</ol>\r\n<br>\r\n<img src=\"/challenge/images/v2/45/choose_in_cm_script.gif\">\r\n",
+              "legacyComponentId": 4773,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: block_blanket_custom_code.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3411",
+                "CUSTOMCFM": "block_blanket_custom_code.cfm",
+                "TYPEOF": "CustomCFM"
+              },
+              "legacyComponentId": 4774,
+              "order": 2
+            }
+          ],
+          "title": "Block #2 | Tuck",
+          "slug": "block-2-tuck",
+          "order": 6,
+          "legacy": {
+            "assignId": 3411,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\nSlip Stitch is a great way to add texture and interest to your knitting.\r\nWhen knitting slip, certain needles do not knit and the working yarn travels UNDER the out of work needles.<br>\r\n\r\n<img src=\"/challenge/images/v2/45/slip stitch.jpg\">\r\n\r\n\r\n<br>\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4781,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "327588087",
+              "title": "Slip Stitch on Brother Machines",
+              "legacySlot": 1,
+              "legacyComponentId": 4782,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "327604741",
+              "title": "Slip Stitch on Silver/Singer/Studio Machines",
+              "legacySlot": 2,
+              "legacyComponentId": 4782,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "332703571",
+              "title": "Slip Stitch on Manual (non-patterning) Machines",
+              "legacySlot": 3,
+              "legacyComponentId": 4782,
+              "order": 2
+            }
+          ],
+          "title": "Slip",
+          "slug": "slip",
+          "order": 7,
+          "legacy": {
+            "assignId": 3400,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<div class=\"lead\">Swatch in Slip</div>\r\n\r\n\r\n<center>\r\n\r\n\r\n<br>For Manual, punchcard and electronic programming<br>\r\n\r\n<img src=\"/challenge/images/v2/45/block_stitch_punchcard.jpg\"></figure></a></center>\r\n\r\n\r\n<center>\r\n<br>DesignaKnit STP File<br>\r\n<img src=\"/challenge/images/v2/45/block_stitch_dak_slip.jpg\"></a></center>\r\n\r\n<br>\r\n\r\n<div class=\"lead\"><i class=\"fa fa-refresh aria-hidden=\"true\"></i> Establish YOUR gauge for the Slip Stitch.</div>\r\n<b>Use the same number of stitches and rows that you used for your stockinette swatch</b>\r\n<ol class=\"instruction-list\">\r\n<li>Knit a swatch using any method.</li>\r\n<li>Let it rest</li>\r\n<li>Dress the swatch (treat it as you will treat your blanket)</li>\r\n<li>Accurately measure YOUR stitch and row gauge</li>\r\n<li>Record your gauge</li>\r\n</ol><br><div class=\"lead\"><i class=\"fa fa-refresh aria-hidden=\"true\"></i> Compare your swatches </div>\r\n<ol class=\"instruction-list\">\r\n<li> Examine your 3 swatches. Notice the difference in size between stockinette, tuck and slip.</li>\r\n<li>Weigh and record the weight of each swatch to compare and to use later for estimating yarn usage</li>\r\n</0l>\t\r\n<br><div class=\"lead\"><i class=\"fa fa-lightbulb-o aria-hidden=\"true\"></i> Sample Swatches</div><br>\r\n<figure>\r\n<figcaption align=\"center\"><br><i class=\"fa fa-exclamation-triangle\" aria-hidden=\"true\"></i> <b>Each of these swatches have the SAME number of stitches and rows</b></figcaption>\r\n<center><img class=\"img-thumbnail\" src=\"/challenge/images/v2/45/block_blanket_compare.png\"></figure</center>\r\n",
+              "legacyComponentId": 4772,
+              "order": 1
+            }
+          ],
+          "title": "Swatch #3 | Slip",
+          "slug": "swatch-3-slip",
+          "order": 8,
+          "legacy": {
+            "assignId": 3410,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Enter your Slip Stitch gauge information and generate your knitting instructions. <br>Notice the difference between the stitch and row counts for slip compared to tuck and stockinette.<br><ol class=\"instruction-list\">\r\n<li>Enter your gauge below.  If you choose to make your blocks a different size, enter your desired block size.</li>\r\n<li>Click the blue button \"Create instructions\" for your block pattern</li>\r\n<li>Knit your first <b>slip stitch block</b></li>\r\n</ol>\r\n<br>\r\n<img src=\"/challenge/images/v2/45/choose_in_cm_script.gif\">\r\n",
+              "legacyComponentId": 4779,
+              "order": 1
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "CustomCFM",
+              "notes": [
+                "Legacy ColdFusion tool: block_blanket_custom_code.cfm",
+                "Legacy ColdFusion interactive tool.",
+                "Replace with equivalent KBM interactive tool."
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3413",
+                "CHALLENGE_COMPONENTID": "4780",
+                "CUSTOMCFM": "block_blanket_custom_code.cfm"
+              },
+              "legacyComponentId": 4780,
+              "order": 2
+            }
+          ],
+          "title": "Block #3 | Slip",
+          "slug": "block-3-slip",
+          "order": 9,
+          "legacy": {
+            "assignId": 3413,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Week 3: More Stitch Pattern Options",
+      "slug": "week-3-more-stitch-pattern-options",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 306,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\nLet's consider fairisle.  There are 2 considerations:<br><ol class=\"instruction-list\">\r\n\r\n<li>Looking at our project punchcard, there is a single plain row between the patterning rows. Let's imagine knitting with black and white yarn and try to knit this pattern \"as is\" in fairisle.<br><ul class=\"instruction-nolist\">\r\nStarting with the carriage on the right:\r\n<li> Row  1: We will knit 1 black and 1 white stitch across the row ... so far so good. We'll end up with the carriage on the left AND both the black and white working yarns will be on the left.</li>\r\n<li>Row 2: The pattern is telling us to knit plain in 1 color.  That's fine, except now we have one strand of working yarn on the left and one strand on the right. Short of breaking the yarn, how are we going to get both strands back on the right to work the next pattern row?</li>\r\n</ul>\r\nThe answer is .... this stitch pattern is not appropriate for fairisle. This is something to keep in  mind when analyzing a stitch pattern for different techniques.<br><blockquote class=\"smallblock\"><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i>  We COULD use this card by engaging the double high feature of our machines (if you have that feature). In other words, if you were hand selecting needles, the stitch pattern would look like the double high version shown.<br>A nice feature of using the \"double high\" variation, you don't have to punch or program the stitch pattern a second time.</blockquote>\r\n\r\n<br><li>The second consideration for fairisle in our block blanket project is the nature of fairasle itself. When knitting fairisle,  there are 2 strands of yarn being carried across the knitting.  Consider the thickness of 2 strands of yarn and the resulting fabric.<br>If all of our blocks were fairisle, this wouldn't be a problem. But mixing single color blocks with thicker fairisle blocks may not work.<br></li>\r\n\r\n\r\n</ol>\r\n\r\n<figure><center><img src=\"/challenge/images/v2/45/block_knit_along11.jpg\"></center><figcaption align=\"center\"><b>Project Stitch Pattern</b></figcaption>\r\n</figure><br>\r\n<figure><center><img src=\"/challenge/images/v2/45/double_high.jpg\"></center><figcaption align=\"center\"><b>Double High \r\nVersion</b></figcaption>\r\n</figure>\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i>  When knitting garments and mixing stitch patterns, here's a trick. Take a look at <a href=\"/knit/DynamicPattern/508/lady-leopard-cardigan\" target=\"_blank\">Ellen Kindsvater's Lady Leopard Cardigan.</a>  The body of the sweater is fairisle with 2 colors of yarn.  She knit the sleeves in fairisle as well, with 2 strands of the same color!  This \"bulked up\" the sleeves and the weight of the sleeves matched the weight of the body. If she had knit plain stockinette in a single strand, the sleeves may have turned out \"wimpy\"\r\n<img class=\"img-thumbnail zoom\" src=\"/challenge/images/v2/45/lady_leopard3.jpg\">\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4784,
+              "order": 1
+            }
+          ],
+          "title": "Fairisle Challenge",
+          "slug": "fairisle-challenge",
+          "order": 1,
+          "legacy": {
+            "assignId": 3401,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>NO FLOATS option</h3>\r\nConsidering the fact that Fairisle is considerably thicker than stockinette, AND it has floats..... <b>Here's a challenge:</b><br>Consider adding color to your blanket with multi-color Slip or multi-color tuck.<br>These techniques are worked by simply changing colors as you knit and there are NO FLOATS!<br>\r\n\r\nPlay with the texture and weight of each of these techniques to see which blend well together for the blocks of your blanket.\r\n<br>\r\n<img class=\"img-thumbnail\" src=\"https://www.knititnow.com/swatches/8/thumb_kin_8102_MultiSlip.jpg\">\r\n<img class=\"img-thumbnail\" src=\"https://www.knititnow.com/swatches/5/thumb_nautical_tuck2.jpg\">\r\n",
+              "legacyComponentId": 4785,
+              "order": 1
+            }
+          ],
+          "title": "Multi-Color Blocks",
+          "slug": "multi-color-blocks",
+          "order": 2,
+          "legacy": {
+            "assignId": 3419,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "If you are knitting blocks for a blanket, more than likely you aren't using a standard gauge knitting machine.  If you are, you could consider using a lace carriage to knit your blocks.<br>But like fairisle, the weight (and openness) of lace might not blend well with your other blocks. Another consideration are the eyelet holes. Although pretty, would they be practical for a blanket?  Would a child's fingers get caught?<br>Yes, we could hand manipulate and create lace using our project stitch pattern, but imagine how open and mesh-like it would be ... probably not appropriate for this project.<br><blockquote class=\"smallblock\">If you LOVE lace and would like to knit an entire \"sampler\" blanket in lace, GO FOR IT!<br>Just like the exercises in this Knit-Along, you'll need to swatch each lace pattern for gauge. But the results could be soooo worth it! </blockquote><br>",
+              "legacyComponentId": 4786,
+              "order": 1
+            }
+          ],
+          "title": "Lace",
+          "slug": "lace",
+          "order": 3,
+          "legacy": {
+            "assignId": 3402,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "One extremely valuable resource for machine knitters are the Brother Stitch World Books.<br>They display a treasure-trove of stitch patterns that can be the source of inspiration for any knitting machine.\r\n\r\n\r\n<a href=\"http://www.knititnow.com/ManualAndDocuments/BEDC6CBB-5056-A02D-DF3C-78CAD67BEA42/brother-stitchworld-i-pattern-book\" target=\"_blank\"><img src=\"http://www.knititnow.com/images/blog_images/2016/stitch_world/stitch_world1.jpg\" width=\"200\" /></a>\r\n<a href=\"http://www.knititnow.com/ManualAndDocuments/BEDC6CC5-5056-A02D-DF5B-418ED8B5285D/brother-stitchworld-ii-pattern-book-for-kh-and-kh-i\" target=\"_blank\"><img src=\"http://www.knititnow.com/images/blog_images/2016/stitch_world/stitch_world2.jpg\" width=\"200\" /></a>\r\n<a href=\"http://www.knititnow.com/ManualAndDocuments/BEDC6CCF-5056-A02D-DFDB-7F11E4B953D6/brother-stitchworld-iii-pattern-book\" target=\"_blank\"><img src=\"http://www.knititnow.com/images/blog_images/2016/stitch_world/stitch_world3.jpg\" width=\"200\" /></a>\r\n\r\n\r\nIf you have an electronic machine and are lucky enough to use DesignaKnit, you can download the patterns.\r\n\r\n\r\n<a href=\"http://www.knititnow.com/ManualAndDocuments/BEDCF655-5056-A02D-DF31-90EACA3CE78F/brother-stitchworld-i-files-for-designaknit\" target=\"_blank\"><img src=\"http://www.knititnow.com/images/blog_images/2016/stitch_world/stitch_world1_DAK.jpg\" width=\"150\" /></a>\r\n<a href=\"http://www.knititnow.com/ManualAndDocuments/BEDCF6B6-5056-A02D-DF68-D398E493030E/brother-stitchworld-ii-files-for-designaknit\" target=\"_blank\"><img src=\"http://www.knititnow.com/images/blog_images/2016/stitch_world/stitch_world2_DAK.jpg\" width=\"150\" /></a>\r\n<a href=\"http://www.knititnow.com/ManualAndDocuments/BEDCF5F2-5056-A02D-DF75-98166206CA82/brother-kh-pattern-files-for-designaknit\" target=\"_blank\"><img src=\"http://www.knititnow.com/images/blog_images/2016/stitch_world/stitch_world3_DAK.jpg\" width=\"150\" /></a>\r\n\r\n",
+              "legacyComponentId": 4794,
+              "order": 1
+            }
+          ],
+          "title": "Inifinite Stitch patterns",
+          "slug": "inifinite-stitch-patterns",
+          "order": 4,
+          "legacy": {
+            "assignId": 3423,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Week 4: Finishing",
+      "slug": "week-4-finishing",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 307,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Blocking is a controversial subject among knitters. Most knitters will agree that some blocking will greatly improve your knitting.<br>You can also use blocking to adjust your knitting to size slightly. <b>But DON'T RELY ON BLOCKING to obtain the right size ... swatch and measure accurately and you shouldn't have to block to size!</b><br>Methods of blocking:\r\n\r\n<ol class=\"instruction-list\">\r\n<li><b>Steam</b><br>\r\nUsing steam (with and without blocking wires) is the most common method of blocking knits. When working with acrylic yarn, you need to be careful not to \"kill\" the yarn with too much heat.  Enough steam to set the stitches in place will do the trick</li>\r\n\r\n<li><b>Wet Blocking</b><br>\r\nThis method will accomplish the goals of blocking and also clean the knitting. Using blocking wires is a personal preference.</li> \r\n\r\n</ol>\r\n\r\n\r\n<blockquote class=\"smallblock\">For this project you are probably working with acrylic yarn, or an acrylic blend. Use whichever blocking  method you prefer BUT don't rely on blocking to fix poor measuring and gauge calculation!<br>The point of this knit-along is for you to practice and master swatching, measuring and calculating your gauge. \r\nIf your knitted block is considerably smaller or larger than 7\" x 9\" and you have to block a knitted block to size, go back and see where you went wrong in the swatching and measuring process.</blockquote>",
+              "legacyComponentId": 4775,
+              "order": 1
+            }
+          ],
+          "title": "Blocking",
+          "slug": "blocking",
+          "order": 1,
+          "legacy": {
+            "assignId": 3403,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "You have so many choices when joining your blocks:<br>\r\n<ul>\r\n<li>Mattress Stitch</li>\r\n<li>Back Stitch</li>\r\n<li>Whip Stitch</li>\r\n<li>Crochet (work single or double crochet around each block then seam)</li>\r\n</ul>\r\nBut here are a few ideas for more decorative seams for your blanket.<br>\r\n<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i>  You might have considered <a href=\"/learn/tutorial/264/sew-as-you-go\">\"sew-as-you-go\" </a>for joining the blocks.  Sew-as-you-go is a method of joining knitted pieces together by hanging a finished edge on the edge needle as you knit a second piece.<br>This works great if both pieces have the same number of rows.<br>\r\nBUT... Because each of our blocks may have different row counts, this could be problematic.\r\n",
+              "legacyComponentId": 4788,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151858422",
+              "title": "Putting it all Together",
+              "legacySlot": 1,
+              "legacyComponentId": 4787,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857516",
+              "title": "Bickford Seams - The Flattest Seams Ever!",
+              "legacySlot": 2,
+              "legacyComponentId": 4787,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "152228985",
+              "title": "An extra touch for joining",
+              "legacySlot": 3,
+              "legacyComponentId": 4787,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859761",
+              "title": "Add I-Cord for a decorative touch",
+              "legacySlot": 4,
+              "legacyComponentId": 4787,
+              "order": 2
+            }
+          ],
+          "title": "Seaming",
+          "slug": "seaming",
+          "order": 2,
+          "legacy": {
+            "assignId": 3414,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "In addition to traditional joins, here are 2 joins to consider:<br>\r\n    \r\n        <h3><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Criss Cross Join</h3>\r\n\r\n        <ul>\r\n            <li>2 strands of contrasting color yarn</li>\r\n            <li>Stitch large X's, joining and embellishing the seams at the same time</li>\r\n        </ul>\r\n    \r\n    <img class=\"img-thumbnail zoom\" src=\"/challenge/images/v2/45/criss cross.jpg\">\r\n\r\n<br><hr>\r\n<br>\r\n\r\n<h3><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> Twisted Crochet Join <em><small>You gotta try this one!</small></em></h3>\r\nSmall chain loops worked around the edge of each block, embellishing the block and joining the pieces at the same time.\r\n\r\n<img class=\"img-thumbnail\" src=\"/challenge/images/v2/45/twisted_crochet.jpg\"><br>\r\n    \r\n        <img src=\"/challenge/images/v2/45/arrow1.png\" style=\"float:left;padding-right:10px;\">\r\n        <h3>Foundation Row:</h3>\r\n    \r\n\r\n\r\n<div>\r\n    <div id=\"theanswer1\" style=\"display:none\">\r\n        <ul>\r\n            <li><b>Foundation Block:</b><br>Crochet small 3 chain loops around the entire edge:\r\n                <ul>\r\n                    <li>\r\n\r\n                        Slip stitch in the block edge, chain 2-3 leave 1/2\" or so and slip stitch into the block edge (The key is to keep the work flat).</li>\r\n                    <li> Repeat around the block</li>\r\n                </ul>\r\n                <li><b>Joining Block:</b> Work the same 3 chain loops, joining to the matching edge as you go.\r\n                    <ul>\r\n                        <li>Slip stitch into the edge of the joining block.</li>\r\n                        <li> Chain 3.</li>\r\n                        <li> Remove the loop from the hook and insert the hook in the loop of Block 1.</li>\r\n                        <li>Pick up the loop again</li>\r\n                        <li> Slip stitch in the edge of block 2.</li>\r\n                        <li>Repeat, joining the blocks as you work loops into the Joining Block.</li>\r\n                        <li>Continue to work loops around the edge of this block</li>\r\n                    </ul>\r\n                    <li>Finish and join as many blocks as needed for the first row of your blanket</li>\r\n                </ul>\r\n        <img src=\"/challenge/images/v2/45/blocks.png\"><br><!-- *********************************-->\r\n        \r\n            \r\n                <img src=\"/challenge/images/v2/45/arrow2.png\" style=\"float:left;padding-right:10px;\">\r\n                <h3>Next Rows</h3>\r\n            \r\n        \r\n\r\n        \r\n            \r\n                Create the next row AND join to the first row at the same time<br>\r\n                <ul>\r\n                    <li><b>Block 1:</b><br> Join matching edge to a block in the first row as before<br> Continue working loops around the edge of this block</li>\r\n                    <li><b>Next Blocks:</b><br> Work chain loops around the edge of each block, <b>joining the previous block AND joining to the row below</b></li>\r\n                </ul>\r\n\r\n                <img class=\"zoom\" src=\"/challenge/images/v2/45/more_rows.png\">\r\n            \r\n        \r\n",
+              "legacyComponentId": 4824,
+              "order": 1
+            }
+          ],
+          "title": "Seaming - Think outside the box",
+          "slug": "seaming-think-outside-the-box",
+          "order": 3,
+          "legacy": {
+            "assignId": 3430,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "Finishing the edge of your blanket is such a personal choice.  Here are some options:<br>\r\n<ul>\r\n<li>Crochet</li>\r\n<li>Hand Knitting - pick up the entire edge on a long circular needle and hand knit garter stitch, seed stitch or any knit and purl combination</li>\r\n<li>Consider one of the machine knit methods below</li>\r\n</ul>\r\n",
+              "legacyComponentId": 4795,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "221921841",
+              "title": "Knitted Blanket Binding with Mitered Corners",
+              "legacySlot": 1,
+              "legacyComponentId": 4796,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859733",
+              "title": "Sawtooth  Edges",
+              "legacySlot": 2,
+              "legacyComponentId": 4796,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "151857129",
+              "title": "I-Cord Trim",
+              "legacySlot": 3,
+              "legacyComponentId": 4796,
+              "order": 2
+            }
+          ],
+          "title": "Edge Finishing",
+          "slug": "edge-finishing",
+          "order": 4,
+          "legacy": {
+            "assignId": 3404,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 15,
+    "videos": [
+      {
+        "vimeoId": "293143036",
+        "title": "Don't Skip this one!",
+        "lessonSlug": "week-1-decisions-decisions-decisions",
+        "blockSlug": "swatching-is-not-optional"
+      },
+      {
+        "vimeoId": "151859471",
+        "title": "Many knitters get stuck with this",
+        "lessonSlug": "week-1-decisions-decisions-decisions",
+        "blockSlug": "swatching-is-not-optional"
+      },
+      {
+        "vimeoId": "245117927",
+        "title": "Gauge and Drop",
+        "lessonSlug": "week-1-decisions-decisions-decisions",
+        "blockSlug": "notes"
+      },
+      {
+        "vimeoId": "249931924",
+        "title": "Understanding Tuck - The Basics",
+        "lessonSlug": "week-2-tuck-and-slip",
+        "blockSlug": "tuck"
+      },
+      {
+        "vimeoId": "333804568",
+        "title": "Tuck Lessons Learned - Don't Skip This One!",
+        "lessonSlug": "week-2-tuck-and-slip",
+        "blockSlug": "tuck"
+      },
+      {
+        "vimeoId": "327588087",
+        "title": "Slip Stitch on Brother Machines",
+        "lessonSlug": "week-2-tuck-and-slip",
+        "blockSlug": "slip"
+      },
+      {
+        "vimeoId": "327604741",
+        "title": "Slip Stitch on Silver/Singer/Studio Machines",
+        "lessonSlug": "week-2-tuck-and-slip",
+        "blockSlug": "slip"
+      },
+      {
+        "vimeoId": "332703571",
+        "title": "Slip Stitch on Manual (non-patterning) Machines",
+        "lessonSlug": "week-2-tuck-and-slip",
+        "blockSlug": "slip"
+      },
+      {
+        "vimeoId": "151858422",
+        "title": "Putting it all Together",
+        "lessonSlug": "week-4-finishing",
+        "blockSlug": "seaming"
+      },
+      {
+        "vimeoId": "151857516",
+        "title": "Bickford Seams - The Flattest Seams Ever!",
+        "lessonSlug": "week-4-finishing",
+        "blockSlug": "seaming"
+      },
+      {
+        "vimeoId": "152228985",
+        "title": "An extra touch for joining",
+        "lessonSlug": "week-4-finishing",
+        "blockSlug": "seaming"
+      },
+      {
+        "vimeoId": "151859761",
+        "title": "Add I-Cord for a decorative touch",
+        "lessonSlug": "week-4-finishing",
+        "blockSlug": "seaming"
+      },
+      {
+        "vimeoId": "221921841",
+        "title": "Knitted Blanket Binding with Mitered Corners",
+        "lessonSlug": "week-4-finishing",
+        "blockSlug": "edge-finishing"
+      },
+      {
+        "vimeoId": "151859733",
+        "title": "Sawtooth  Edges",
+        "lessonSlug": "week-4-finishing",
+        "blockSlug": "edge-finishing"
+      },
+      {
+        "vimeoId": "151857129",
+        "title": "I-Cord Trim",
+        "lessonSlug": "week-4-finishing",
+        "blockSlug": "edge-finishing"
+      }
+    ],
+    "downloadCount": 1,
+    "downloads": [
+      {
+        "filename": "/downloads/block_blanket_template.pdf",
+        "label": "Print the 7\"x9\" template",
+        "lessonSlug": "introduction",
+        "blockSlug": "print-your-template"
+      }
+    ]
+  }
+}

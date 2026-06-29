@@ -1,0 +1,1076 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 40,
+    "title": "Ribber Knit-Along 2",
+    "slug": "ribber-knit-along-2",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_40_ribber_knit_along_2.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:09+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Welcome!",
+      "slug": "welcome",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 284,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "317355371",
+              "title": "I'm ready to get knitting ... how about you?",
+              "legacyComponentId": 4432,
+              "order": 1
+            }
+          ],
+          "title": "Introduction to the Knit-Along",
+          "slug": "introduction-to-the-knit-along",
+          "order": 1,
+          "legacy": {
+            "assignId": 3293,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Week 5: Warm Up",
+      "slug": "week-5-warm-up",
+      "displayOrder": 10,
+      "legacy": {
+        "itemId": 274,
+        "lessonOrder": 10
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nLet's take a look at 2x2 ribbing (and other needle arrangements).  Many knitters get frustrated with the cast on method presented in our manuals.  There are many steps for a beautiful cast on, easy to forget, but the results are sooo worth it!<br><i class=\"fa fa-lightbulb-o aria-hidden=\"true\"></i> Yes, you could work a the <a href=\"/learn/tutorial/540/easiest-best-ribber-cast-on\"> \"Easiest, Best ribber Cast on\"</a>.  (Cast on over all needles on the main bed, then transfer stitches to the ribber in any arrangement). <br>But that's not why we're here ... you want to master your ribber?  Master this technique.<br><hr>\r\nThis 2x2 Ribbing Cast on is also known as <b> 2x2 Full Pitch Rib.</b>\r\n<br>Notice the position of the needles in relation to each bed.  2 needles in work, 2 out of work on each bed.<br>\r\n<img src=\"/challenge/images/v2/40/2x2_full_pitch_image.jpg\">\r\n\r\n\r\n",
+              "legacyComponentId": 4392,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859224",
+              "title": "2x2 Ribbing Cast On",
+              "legacyComponentId": 4382,
+              "order": 2
+            }
+          ],
+          "title": "2x2 Ribbing Cast on",
+          "slug": "2x2-ribbing-cast-on",
+          "order": 1,
+          "legacy": {
+            "assignId": 3265,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/Page1.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3266",
+                "componentId": "4411",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4411,
+              "order": 1
+            },
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/2x2Ribbing/2x2_1.jpg",
+                  "caption": "<div class=\"row\">\r\n         <div class=\"col-md-6 col-xs-12\">\r\n                  <div class=\"lead\">Engage Ribber and put needles into work </div><em>Needles in </em><B>WORKING POSITION</B> <EM><SMALL>(Not all the way out)</small></em>\r\n                           <ol>\r\n                                <li>Pitch P</li>\r\n                                <li>Rack 5</li>\r\n                                <li>End needles on the main bed</li>\r\n                            </ol>\r\n        </div>\r\n     <div class=\"col-md-6 col-xs-12\"><img class=\"img-responsive\" src=\"/challenge/images/2x2Ribbing/knitting_position.png\"></div>\r\n</div>"
+                },
+                {
+                  "src": "/2x2Ribbing/single_needle_caston.jpg",
+                  "caption": "<div class=\"col-xs-12\"><ol>\r\n<div class=\"lead\">Set up for Cast on</div>\r\n<li>Pitch H</li>\r\n<Li>Rack to 4</li>\r\n<li>Push single needle on ribber into work <img src=\"/challenge/images/2x2Ribbing/single_co_needle.png\"</li>\r\n</ol>\r\n<br>\r\n\r\n<img src=\"/challenge/images/2x2ribbing/Cast_on_position.png\">\r\n</div>"
+                },
+                {
+                  "src": "/2x2ribbing/tension_settings.png",
+                  "caption": "<div class=\"col-xs-12\"><ol>\r\n<div class=\"lead\">Adjust Tension for Cast on Edge</div>\r\n<li>Tighten tension on both carriages as tight as possible for your yarn<br>\r\n<em><small><i class=\"fa fa-long-arrow-right\" style=\"color:red\" aria-hidden=\"true\"></i> Brother Knitters: move Slide lever to II (2 for Tiny)</small></em></li>\r\n</ol>\r\n</div>"
+                },
+                {
+                  "src": "/2x2ribbing/2x2_6.jpg",
+                  "caption": "<div class=\"col-xs-12\"><ol>\r\n<div class=\"lead\">Knit Zig-Zag Row</div>\r\n<li>Maintain settings (Pitch H | Rack 4)</li>\r\n<Li>Knit 1 row right to left - Both beds should knit and a zig-zag should form.</li>\r\n\r\n</ol>\r\n (That extra needle on the left will help cast on the left 2 stitches. It will be removed when the cast on is done)\r\n\r\n</div>"
+                },
+                {
+                  "src": "/2x2ribbing/2x2_8.jpg",
+                  "caption": "<div class=\"col-xs-12\"><ol>\r\n<div class=\"lead\">Insert Cast on Comb</div>\r\n<li>Carefully ensure the loops are engaged</li>\r\n<Li>Be sure to include the loop of the working yarn <i class=\"fa fa-long-arrow-left\" style=\"color:red\" aria-hidden=\"true\"></i></li>\r\n<li>TIP: Mark the center of the comb with color, so the comb is centered in the work and the weights hang evenly</li>\r\n<li>Hang some weight appropriate for your yarn and width of knitting</li>\r\n</ol>\r\n<blockquote class=\"blockquote_style\">Does your zig-zag row look like this? If not, start over and follow each step exactly.</blockquote>\r\n\r\n</div>"
+                },
+                {
+                  "src": "/2x2ribbing/2x2_10.jpg",
+                  "caption": "<div class=\"col-xs-12\"></div>\r\n<div class=\"col-xs-12\">\r\n<blockquote class=\"blockquote_style\">Some machines have separate buttons to slip from right to left, others do not.  Check your manual and practice slipping in one direction before starting. </blockquote>\r\n<ol>\r\n<div class=\"lead\">Knit First Circular Row</div> <small><em>(1 of 3)</em></small>\r\n<li>Carriage is on the LEFT</li>\r\n<Li>Set Main Bed to knit to the right<br>\r\nAND<br>\r\nSet Ribber to slip</li>\r\n<li><i class=\"fa fa-long-arrow-right\" style=\"color:red\" aria-hidden=\"true\"></i>Knit 1 row from left to right ON THE MAIN BED ONLY</li>\r\n</ol>\r\n</div>"
+                },
+                {
+                  "src": "/2x2ribbing/2x2_11.jpg",
+                  "caption": "<div class=\"col-xs-12\">\r\n<ol>\r\n<div class=\"lead\">Knit Second Circular Row</div> <small><em>(2 of 3)</em></small>)\r\n<li>Carriage is on the RIGHT</li>\r\n<Li>Set Main Bed to knit to slip<br>\r\nAND<br>\r\nSet Ribber to knit to the LEFT</li>\r\n<li><i class=\"fa fa-long-arrow-left\" style=\"color:red\" aria-hidden=\"true\"></i>Knit 1 row from right to left ON THE RIBBER BED ONLY</li>\r\n</ol>\r\n</div>"
+                },
+                {
+                  "src": "/2x2ribbing/magnify_circular.png",
+                  "caption": "<div class=\"col-xs-12\">\r\n<ol>\r\n<div class=\"lead\">Knit Last Circular Row </div><small><em>(3 of 3)</em></small>\r\n<li>Carriage is on the LEFT</li>\r\n<Li>Set Main Bed to knit to the right<br>\r\nAND<br>\r\nSet Ribber to slip</li>\r\n<li><i class=\"fa fa-long-arrow-right\" style=\"color:red\" aria-hidden=\"true\"></i>Knit 1 row from left to right ON THE MAIN BED ONLY</li>\r\n</ol>\r\n<blockquote class=\"blockquote_style\">You will have knit 2 rows on the main bed and 1 row on the ribber.  Note that the yarn isn't traveling between the beds at this point.</blockquote>\r\n</div>"
+                },
+                {
+                  "src": "/2x2Ribbing/magnify_single_stitch.jpg",
+                  "caption": "<div class=\"col-xs-12\">\r\n<ol>\r\n<li>Transfer the single stitch from the ribber to the main bed</li>\r\n<li>Put the emptied needle into out of work position</li>\r\n</ol>\r\n</div>"
+                },
+                {
+                  "src": "/2x2ribbing/tension_settings_2.png",
+                  "caption": "<div class=\"col-xs-12\"><div class=\"lead\">Adjust to Garment Tension </div>\r\n<ol>\r\n<li>Set the carriage tensions to your garment tensions</li>\r\n<li>Brother Knitters - set slide lever to I</li>\r\n</ol>\r\n</div>"
+                },
+                {
+                  "src": "/2x2ribbing/magnify_ribbing.jpg",
+                  "caption": "<div class=\"col-xs-12\">\r\n<div class=\"lead\">Set carriage to Knitting Position (Pitch P - Rack 5) </div>\r\n<ol>\r\n<li>Knit the ribbing for your desired length</li>\r\n\r\n</ol>\r\n<blockquote class=\"blockquote_style\">Notice that both beds are knitting and the yarn is zig-zagging between the beds.</blockquote><br>\r\n<img src=\"/challenge/images/2x2ribbing/knitting_position.png\">\r\n\r\n</div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                },
+                {
+                  "src": "",
+                  "caption": "<div class=\"col-xs-12\"></div>"
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 4383,
+              "order": 2
+            }
+          ],
+          "title": "2x2 Step by Step",
+          "slug": "2x2-step-by-step",
+          "order": 2,
+          "legacy": {
+            "assignId": 3266,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/40/2x2Ribbing/troubleshoot.jpg",
+                  "caption": "<div class=\"row\">\r\n            <div class=\"col-md-4 col-xs-12\"><img class=\"img-responsive\"  src=\"/challenge/images/2x2ribbing/oops.png\">\r\n             </div>\r\n              <div class=\"col-md-6 col-xs-12\"> This zig zag row has a problem ....\r\n                      <ul>\r\n                     <li>Can you see what's wrong?</li>\r\n                     <li>What needs to be changed?</li></ul>\r\n              </div>\r\n</div>"
+                },
+                {
+                  "src": "/challenge/images/v2/40/2x2Ribbing/troubleshoot1.jpg",
+                  "caption": "The right side isn't right ... \r\n<ul>\r\n<li>The cast on comb can't be hung</li>"
+                },
+                {
+                  "src": "/challenge/images/v2/40/2x2Ribbing/troubleshoot2.jpg",
+                  "caption": "<div class=\"lead\">AH HA!</div>\r\nThe needles sequence on the ribber is not correct!<br>\r\n<em>Gotta start over .....</em>"
+                },
+                {
+                  "src": "/challenge/images/v2/40/2x2Ribbing/oops2.jpg",
+                  "caption": "Forget to raise that extra needle on the ribber?  You'll know immediately when you try to hang the cast on comb."
+                },
+                {
+                  "src": "/challenge/images/v2/40/2x2Ribbing/oops3.jpg",
+                  "caption": "Not to worry!  Just pick up the loop between the 2 main bed stitches and pick up the single needle on the ribber.  Now you'll be able to secure those stitches with the cast on comb."
+                },
+                {
+                  "src": "/challenge/images/v2/40/2x2Ribbing/between_beds.jpg",
+                  "caption": "Changing colors or adding a new yarn? <br>\r\nUse a double-eye needle to drop the tail between the beds."
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 4385,
+              "order": 1
+            }
+          ],
+          "title": "Troubleshoot",
+          "slug": "troubleshoot",
+          "order": 3,
+          "legacy": {
+            "assignId": 3268,
+            "blockType": "Imageslideshow"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "151859346",
+              "title": "2x2 Half Pitch Rib Cast On",
+              "legacyComponentId": 4386,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<hr><br>\r\n<b>Compare the 2 needle arrangements</b><br><img src=\"/challenge/images/v2/40/compare.png\">\r\n",
+              "legacyComponentId": 4620,
+              "order": 3
+            }
+          ],
+          "title": "2x2 (2x1) Half Pitch Cast on",
+          "slug": "2x2-2x1-half-pitch-cast-on",
+          "order": 4,
+          "legacy": {
+            "assignId": 3269,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/PAGE23.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3270",
+                "componentId": "4413",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4413,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<ol class=\"instruction-list\">\r\n<li>Engage ribber\r\n\r\n<ul class=\"instruction-nolist\">\r\n<li>Pitch \"H\" (half pitch)</li>\r\n<li>Rack 5</li>\r\n</ul>\r\n</li>\r\n\r\n<li>Select needles as shown: <em><small>(note there are 2 needles on the main bed on each edge)</em></small><br>\r\n<img src=\"/challenge/images/v2/40/2x2ribbing/2x2_half_pitch.jpg\" width=\"250px\"></li>\r\n<li>Run the carriages without yarn to align the needles to working position </li>\r\n<li>Swing the ribber to the right 1 number (4)<br>\r\n<img src=\"/challenge/images/v2/40/2x2ribbing/2x2_half_pitch_swing.jpg\" width=\"250px\">\r\n</li>\r\n<li>Bring up one needle on the ribber to working position<br>\r\n<img src=\"/challenge/images/v2/40/2x2Ribbing/single_needle_caston.jpg\" width=\"250px\"></li>\r\n<li>Tighten the tension on both beds</li>\r\n<li>Knit a Zig Zag row</li>\r\n<li>Hang cast on comb and weights</li>\r\n<li>Knit 3 rows of tubular knitting</li>\r\n<li>Rack back to the left (5)</li>\r\n<li>Transfer the added ribber stitch on the left to the main bed<br>Cast on Complete - Start Knitting</li>\r\n<li>Set tension on both carriages to garment tension</li>\r\n<li>Set row counter to 000</li>\r\n<li>Set both carriages to plain knitting</li>\r\n</ol>\r\n\r\n<div class=\"lead\"><i class=\"fa fa-lightbulb-o\" aria-hidden=\"true\"></i> Compare this sample to your 2x2 sample.</div>\r\n\r\n</ol>",
+              "legacyComponentId": 4388,
+              "order": 2
+            }
+          ],
+          "title": "Try the 2x2 (2x1) Cast On",
+          "slug": "try-the-2x2-2x1-cast-on",
+          "order": 5,
+          "legacy": {
+            "assignId": 3270,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "imageGallery",
+              "slides": [
+                {
+                  "src": "/challenge/images/v2/40/2x2Ribbing/finish5.jpg",
+                  "caption": "When you remove the cast on comb, the edge is flared and a bit distorted."
+                },
+                {
+                  "src": "/challenge/images/v2/40/2x2Ribbing/finish2.jpg",
+                  "caption": "Insert a blocking wire (or the wire from the cast on comb) in each of the loops across the edges and steam. Then block your ribbing as desired."
+                },
+                {
+                  "src": "/challenge/images/v2/40/2x2Ribbing/finish3.jpg",
+                  "caption": "This beautiful \"tubular\" edge is the end result. <br>\r\nNotice that this is the \"right\" or public side of the cast on.  It is the edge that had only 1 slipped row."
+                },
+                {
+                  "src": "/challenge/images/v2/40/2x2Ribbing/finish1.jpg",
+                  "caption": "This is the \"wrong\" or private side of the cast on.  It is the edge that had 2 slipped rows.<br>\r\nHow would you control which side is which?<br>\r\n<em>(Hint: It has to do with where the carriage starts for the initial zig-zag row. Pay attention when making your samples)</em>"
+                },
+                {
+                  "src": "/challenge/images/v2/40/2x2Ribbing/finish4.jpg",
+                  "caption": "Examine your samples to identify the right and wrong side of the cast on edge."
+                }
+              ],
+              "legacy": {
+                "enableAudio": "0",
+                "playAudio": null
+              },
+              "legacyComponentId": 4389,
+              "order": 1
+            }
+          ],
+          "title": "Finishing Tips",
+          "slug": "finishing-tips",
+          "order": 6,
+          "legacy": {
+            "assignId": 3271,
+            "blockType": "Imageslideshow"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nWhen working on the double bed, there are  many alternate ways of casting on and crafting beautiful hems.<br>The Knit it Now eBook, <a href=\"/store/product/502/machine-knitting-trims-and-edges-double-bed-pdf/digitialdownload\" target=\"_blank\">Machine Knit Trims and Edges - Double Bed Edition.</a>  will Inspire you to make the edges of your ribbing a focal point of your knitting.<br>Now that you are getting more comfortable with your ribber, these trims and edges will be a piece of cake for you!<br>\r\n<center><img src=\"/challenge/images/v2/40/try_these_hems.gif\"></center>\r\n\r\n<a href=\"/store/product/502/machine-knitting-trims-and-edges-double-bed-pdf/digitialdownload\" target=\"_blank\"><img src=\"/challenge/images/v2/40/double_bed_cover_400.jpg\"></a>\r\n<br>",
+              "legacyComponentId": 4404,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/PAGE31.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3275",
+                "componentId": "4415",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4415,
+              "order": 2
+            },
+            {
+              "type": "video",
+              "vimeoId": "314230918",
+              "title": "Lacy Ribber Hem",
+              "legacySlot": 1,
+              "legacyComponentId": 4405,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "314242233",
+              "title": "Loopy Ribber Hem",
+              "legacySlot": 2,
+              "legacyComponentId": 4405,
+              "order": 3
+            }
+          ],
+          "title": "Professional, Pretty Edges",
+          "slug": "professional-pretty-edges",
+          "order": 7,
+          "legacy": {
+            "assignId": 3275,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Week 6: Swing 'n Rack",
+      "slug": "week-6-swing-n-rack",
+      "displayOrder": 20,
+      "legacy": {
+        "itemId": 281,
+        "lessonOrder": 20
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nIn the first part of this knit-along, we used the racking handle to position the ribber needles.  But you may have just been following instructions and not understood exactly why we were racking.<br><h3>Don't skip this section</h3>\r\nIt is critical that you understand the mechanics of racking on YOUR machine, so you can explore the technique to it's fullest.  You will use racking for interesting hems and all-over fabric creation.\t\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/40/racking_possibilities.gif\">\r\n\r\n\r\n",
+              "legacyComponentId": 4402,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "314593305",
+              "title": "Racking overview",
+              "legacySlot": 1,
+              "legacyComponentId": 4403,
+              "order": 3
+            },
+            {
+              "type": "video",
+              "vimeoId": "314824637",
+              "title": "Down to the basics with Flat Rib",
+              "legacySlot": 2,
+              "legacyComponentId": 4403,
+              "order": 3
+            }
+          ],
+          "title": "Introduction to Racking",
+          "slug": "introduction-to-racking",
+          "order": 2,
+          "legacy": {
+            "assignId": 3274,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> This stitch pattern combines needles out of work and exaggerated racking.  You will be racking (swinging) the ribber  from the far left to the far right and back again.<br>Please give this one a try ... you will be inspired to try different needle arrangements and racking sequences.",
+              "legacyComponentId": 4416,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "151859543",
+              "title": "Racking Magic",
+              "legacyComponentId": 4406,
+              "order": 2
+            }
+          ],
+          "title": "Racking Challenge",
+          "slug": "racking-challenge",
+          "order": 3,
+          "legacy": {
+            "assignId": 3276,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "download",
+              "label": "Print the Worksheets",
+              "filename": "/downloads/page4_51.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3279",
+                "componentId": "4606",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4606,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<b>Many interesting ribber stitch patterns instruct you to \"Tuck Left\" or \"Tuck Right\".  It is critical that you know and UNDERSTAND the settings for your machine. (Without having to pull out your manual every time)</b><br><i class=\"fa fa-lightbulb-o fa-2x\" aria-hidden=\"true\"></i> <em>If you haven't already, make yourself a cheat sheet by working the following steps.</em><br><!-- *********************************-->\r\n\r\n\r\n<img src=\"/challenge/images/v2/40/arrow5.png\" style=\"float:left;padding-right:10px;\">\r\n</h3><b> Tuck on the MAIN BED:</b></h3>\r\n\r\n\r\n\r\n\r\n\r\nCast on for 1x1 ribbing (with any method) and knit a few rows. End with the carriage on the RIGHT.<br>\r\n\r\n    <img src=\"/challenge/images/v2/course_1.png\">\r\n        <ul><li> Set the main bed carriage to tuck in BOTH Directions</li>\r\n            <li>Knit left (main bed needles should tuck)</li>\r\n            <li>Knit right (main bed needles should tuck again)</li>\r\n            <li>There should be 2 tucked stitches on the main bed - ribber knits plain</li>\r\n        </ul>\r\n<center><img src=\"/challenge/images/v2/40/ribber_tuck4.jpg\"></center>\r\n    \r\n    What button(s) or lever(s) do you need to use?\r\n\r\n\r\nKnit a few rows plain. End with the carriage on the RIGHT\r\n\r\n\r\n    <img src=\"/challenge/images/v2/course_2.png\">\r\n        <ul>\r\n            <li>Set the main bed carriage to tuck LEFT </li>\r\n            <li>Knit left (main bed needles should tuck)</li>\r\n            <li>Knit right (main bed needles should knit)</li>\r\n        </ul>\r\n- Ribber needles knit plain\r\n<center><img src=\"/challenge/images/v2/40/ribber_tuck1.jpg\"></center>\r\n\r\n    \r\n    What button(s) or lever(s) do you need to use?\r\n\r\nKnit a few rows plain. End with the carriage on the RIGHT\r\n\r\n\r\n    <img src=\"/challenge/images/v2/course_3.png\">\r\n        <ul>\r\n            <li>Set the main bed carriage to tuck RIGHT</li>\r\n            <li>Knit left (main bed needles should Knit)</li>\r\n            <li>Knit right (main bed needles should tuck)</li>\r\n        </ul>\r\n- Ribber needles knit plain\r\n<center><img src=\"/challenge/images/v2/40/ribber_tuck1.jpg\"></center>\r\n\r\n\r\n    What button(s) or lever(s) do you need to use?\r\n\r\n\r\n\r\n\r\n\r\n<!-- *********************************-->\r\n<!-- *********************************-->\r\n<br>\r\n\r\n<img src=\"/challenge/images/v2/40/arrow6.png\" style=\"float:left;padding-right:10px;\">\r\n</h3><b> Tuck on the RIBBER:</b></h3>\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n    <img src=\"/challenge/images/v2/course_1.png\">\r\n        <ul><li> Set the ribber carriage to tuck in BOTH Directions</li>\r\n            <li>Knit left (ribber needles should tuck)</li>\r\n            <li>Knit right (ribber needles should tuck again)</li>\r\n            <li>There should be 2 tucked stitches on the ribber - main bed knits plain</li>\r\n        </ul>\r\n<center><img src=\"/challenge/images/v2/40/ribber_tuck3.jpg\"></center>\r\n    \r\n    What button(s) or lever(s) do you need to use?\r\n\r\n\r\nKnit a few rows plain. End with the carriage on the RIGHT\r\n\r\n\r\n    <img src=\"/challenge/images/v2/course_2.png\">\r\n        <ul>\r\n            <li>Set the ribber carriage to tuck LEFT </li>\r\n            <li>Knit left (ribber needles should tuck)</li>\r\n            <li>Knit right (ribber needles should knit)</li>\r\n        </ul>\r\n<center><img src=\"/challenge/images/v2/40/ribber_tuck2.jpg\"></center>\r\n    \r\n    What button(s) or lever(s) do you need to use?\r\n\r\nKnit a few rows plain. End with the carriage on the RIGHT\r\n\r\n\r\n    <img src=\"/challenge/images/v2/course_3.png\">\r\n        <ul>\r\n            <li>Set the ribber carriage to tuck RIGHT</li>\r\n            <li>Knit left (ribber needles should Knit)</li>\r\n            <li>Knit right (ribber needles should tuck)</li>\r\n        </ul>\r\n<center><img src=\"/challenge/images/v2/40/ribber_tuck2.jpg\"></center>\r\n\r\n    What button(s) or lever(s) do you need to use?\r\n\r\n    \r\n\r\n\r\n<br>",
+              "legacyComponentId": 4410,
+              "order": 2
+            }
+          ],
+          "title": "Quick! Tuck ONE Way",
+          "slug": "quick-tuck-one-way",
+          "order": 4,
+          "legacy": {
+            "assignId": 3279,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nNow that you are understanding the settings for your machine, there are an almost unlimited number of stitch variations that can be worked with just the machine settings.<br>Combine needles out of work with slip and tuck ... add racking ... the sky's the limit!<br>\r\n\r\n\r\n<em>\r\nYour  manual probably has a few options for some interesting stitch patterns, but take time to explore the ribber manuals for other machines.<a href=\"https://www.knititnow.com/ManualAndDocuments/\"> <small>(you can download them for free here)</small></a><br>You should be able to translate the terminology from the different brands to your machine.  Tuck is tuck, no matter what button or levers you need to set.<br>Pitch and Half pitch refer to the position of the needles, no matter what numbers or settings you need to make.</em><br>Get inspired and put your understanding of YOUR machine to work.<br>\r\n\r\n<b>Here's a beautiful stitch pattern to get you started</b>\r\n\r\n<br>\r\n\r\nCan you:<ul>\r\n<li>Set your machine for 2x2 ribbing with a needle out of work?</li>\r\n<li>Tuck in one direction?</li>\r\n<li>Rack?\r\n</ul><img src=\"/challenge/images/v2/40/You_can_do_this.gif\">\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4418,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "316406201",
+              "title": "Racked Tuck Rib",
+              "legacyComponentId": 4419,
+              "order": 2
+            }
+          ],
+          "title": "Racked Tuck Rib",
+          "slug": "racked-tuck-rib",
+          "order": 5,
+          "legacy": {
+            "assignId": 3280,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Week 7: Shaping in Ribbing",
+      "slug": "week-7-shaping-in-ribbing",
+      "displayOrder": 30,
+      "legacy": {
+        "itemId": 282,
+        "lessonOrder": 30
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nJust because we're knitting on the double bed, doesn't mean that we have to knit rectangles!<br>Remember when you first started shaping on the single bed?  It probably took a while to figure out what techniques worked best in each situation.<br>As you are shaping along the edge of your knitting, there are things to consider:<br>\r\n<ul>\r\n<li>The position of the edge needles in relation to the needle arrangement</li>\r\n<li>The edge needle positions when racking</li>\r\n<li>The stitch pattern setup - plain, slip, tuck etc</li>\r\n</ul>\r\n<br>\r\nLet's take this step by step, think it through AND PRACTICE shaping in double bed knitting.\r\n\r\n\r\n<center><img src=\"/challenge/images/v2/40/shaping1.jpg\"></center>\r\n\r\n\r\n\r\nNOTE: In the following exercises you will be practicing decreases and increases. Because we are all using different machines (standard, mid-gauge, bulky) the instructions are not written in stone. <br>We'll give instructions, but the goal is for you to UNDERSTAND the technique being practiced.  Struggling with binding off?  Bind off more stitches.  Feeling clumsy with increasing or decreasing? Work more stitches than instructed.  In other words, your sample doesn't have to  match mine.  Do what it takes to master the technique, even if that means dropping the work from the machine and starting again.<br>If you're swatch comes our perfectly .. congrats!  Please share and encourage others. <br>\r\n If not, try again! <i class=\"fa fa-smile-o\" aria-hidden=\"true\"></i> <br>Now is the time to gain confidence with these techniques, not when you are working on a garment under deadline. \r\n",
+              "legacyComponentId": 4420,
+              "order": 1
+            }
+          ],
+          "title": "Introduction",
+          "slug": "introduction",
+          "order": 1,
+          "legacy": {
+            "assignId": 3281,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3>Increases and Decreases in 1x1 ribbing</h3>\r\n\r\nShaping while working 1x1 ribbing (or any needle arrangment) doensn't have to be intimidating.  Keep in mind that you are working with a set number of stitches.  It doesn't matter that they are arranged between 2 needlebeds.<br>The secret to is focus on your goal or reducing or increasing the number of stitches in work.  The rest is just the confidence you'll gain with the following exercises.\r\n",
+              "legacyComponentId": 4422,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "316467548",
+              "title": "Watch the Video, then work the exercises",
+              "legacyComponentId": 4438,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "VimeoJumpLinks",
+              "notes": [
+                "Unmapped legacy component type: VimeoJumpLinks"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3282",
+                "CHALLENGE_COMPONENTID": "4439",
+                "LINKTIME_1": "00:00:05",
+                "LINKTIME_2": "00:01:03",
+                "LINKTIME_3": "00:01:27",
+                "LINKTIME_4": "00:02:05",
+                "LINKTITLE_1": "<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> DECREASE more than 1 stitch",
+                "LINKTITLE_2": "<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> Simple Edge DECREASE",
+                "LINKTITLE_3": "<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> INCREASE more than 1 stitch",
+                "LINKTITLE_4": "<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> Simple Edge INCREASE"
+              },
+              "legacyComponentId": 4439,
+              "order": 3
+            }
+          ],
+          "title": "1x1 Shaping",
+          "slug": "1x1-shaping",
+          "order": 2,
+          "legacy": {
+            "assignId": 3282,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/don't-practice.gif\">",
+              "legacyComponentId": 4426,
+              "order": 1
+            },
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/page6_72.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3292",
+                "componentId": "4428",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4428,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Follow along with the video and try these techniques.</h3>\r\n\r\n\r\n<i class=\"fa fa-hand-o-right fa-2x\" aria-hidden=\"true\"></i> <b>START HERE (A)</b>\r\n<ul>\r\n<li> Cast on 40(80) stitches with any method</li>\r\n<li> End needles in work on the main bed</li>\r\n<li> Knit in 1x1 ribbing for 2-3”</li>\r\n<li> End with the carriage on the right</li>\r\n\r\n</ul>\r\n\r\n<center>\t<img src=\"/challenge/images/v2/40/shaping1.jpg\"></center>\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 4424,
+              "order": 3
+            },
+            {
+              "type": "exerciseAccordion",
+              "sections": [
+                {
+                  "title": "<b>DECREASE More than one Stitch (B)</b><br><em>\"Bind off 4 stitches at the beginning of the next 2 rows\"</em>",
+                  "bodyHtml": "<ol class=\"instruction-list\">\r\n<li>Transfer 2 ribber stitches to the opposite empty needles on the main bed</li>\r\n<li>Take the ribber needles out of work.<small><em> (oops ... don’t forget this)</em></small></li>\r\n<li>Bind off 4 stitches on the main bed. Securing the last loop on the new end needle</li>\r\n<li> Hang a wire weight hanger and add a small weight</li>\r\n<li> Knit across the row (make sure that end needle knits properly)</li>\r\n<li> Carriage on the left: Bind off 4 stitches on the left</li>\r\n<li> Knit a few rows - end with the carriage on the right</li>\r\n</ol>",
+                  "iconSrc": "/challenge/images/v2/40/arrow1.png"
+                },
+                {
+                  "title": "<b>Simple Edge DECREASE (C)</b><br><em>\"Decrease 1 stitch each side, every other row 4 times\"</em>",
+                  "bodyHtml": "Transfer stitches between the beds to reduce the number of stitches in work<br>\r\n<ol class=\"instruction-list\">\r\n<li> If the edge stitch is on the ribber, transfer it to the main bed. (Double up the main bed needle)</li>\r\n<li>  If the edge stitch is on the mian bed, transfer it to the ribber (Double up the ribber needle)</li>\r\n</ol>\r\nRepeat the decreases as directed",
+                  "iconSrc": "/challenge/images/v2/40/arrow2.png"
+                },
+                {
+                  "title": "<b>INCREASE more than 1 stitch on the edge (D)</b>\r\n<br><em>\"Cast on 4 stitches at the beginning of the next 2 rows\"</em>",
+                  "bodyHtml": "<ol class=\"instruction-list\">\r\n<li> Maintaining the 1x1 needle arrangement, on the carriage side, put 4 new needles into work.</li>\r\n<li> Zig Zag the working yarn between the 2 beds across the new needles</li>\r\n<li> Hang a wire weight hanger and a small weight</li>\r\n<li> Knit across</li>\r\n<li> Repeat on the opposite side</li>\r\n<li> Knit 2 rows</li>\r\n</ol>",
+                  "iconSrc": "/challenge/images/v2/40/arrow3.png"
+                },
+                {
+                  "title": "<b>Simple Edge INCREASE (E)</b><br>\r\n<em>\"Increase 1 stitch each side, every other row 4 times\"</em>",
+                  "bodyHtml": "Work increases OPPOSITE the Carriage keeping the 1x1 needle arrangement.<br>\r\n<ol class=\"instruction-list\">\r\n<li> If the edge stitch is on the main bed, opposite the carriage pull 1 ribber needle into work</li>\r\n<li> Knit across</li>\r\n<li> Hang a wire weight hanger and small weight</li>\r\n<li>Opposite the carriage, maintaining the 1x1 arrangement, pull 1 needle into work.</li>\r\n<li> Knit across</li>\r\n<li> Hang a wire weight hanger and a small weight</li>\r\n<li> Knit back</li>\r\n</ol>",
+                  "iconSrc": "/challenge/images/v2/40/arrow4.png"
+                }
+              ],
+              "legacy": {
+                "showText": null,
+                "size": null
+              },
+              "legacyComponentId": 4452,
+              "order": 4
+            },
+            {
+              "type": "richText",
+              "html": "<i class=\"fa fa-hand-o-right fa-2x\" aria-hidden=\"true\"></i><b> FINISH HERE (F)</b>\r\n<br>If you are happy with the results of your exercises, finish your swatch by knitting a few rows and binding off.  (Practice a 1x1 bind off method)<br>\r\n\r\nIf you feel you need more practice, continue on this swatch until you can work 1x1 increases and decreases in your sleep!\r\n",
+              "legacyComponentId": 4453,
+              "order": 5
+            },
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/page6_73.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3292",
+                "componentId": "4429",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4429,
+              "order": 6
+            }
+          ],
+          "title": "1x1 Shaping Practice",
+          "slug": "1x1-shaping-practice",
+          "order": 3,
+          "legacy": {
+            "assignId": 3292,
+            "blockType": "Practice"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "The techniques used to shape in full needle rib are similar to those used for plain knitting (stockinette).<br>Keep in mind that shaping happens on both beds <br>Work the exercises to get comfortable with knitting garments in full needle rib.",
+              "legacyComponentId": 4431,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "317058475",
+              "title": "Shaping in Full Needle Rib",
+              "legacyComponentId": 4434,
+              "order": 2
+            },
+            {
+              "type": "migrationPending",
+              "legacyType": "VimeoJumpLinks",
+              "notes": [
+                "Unmapped legacy component type: VimeoJumpLinks"
+              ],
+              "legacyFields": {
+                "CHALLENGE_ASSIGNID": "3284",
+                "CHALLENGE_COMPONENTID": "4433",
+                "LINKTIME_1": "00:00:10",
+                "LINKTIME_2": "00:01:21",
+                "LINKTIME_3": "00:02:06",
+                "LINKTIME_4": "00:02:30",
+                "LINKTIME_5": "00:03:07",
+                "LINKTIME_6": "00:03:50",
+                "LINKTIME_7": " 00:05:37",
+                "LINKTITLE_1": "<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> The most important thing to keep in mind",
+                "LINKTITLE_2": "<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> DECREASE Multiple Stitches",
+                "LINKTITLE_3": "<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> Simple Edge DECREASE",
+                "LINKTITLE_4": "<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> Full Fashion DECREASE",
+                "LINKTITLE_5": "<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> INCREASE Multiple Stitches",
+                "LINKTITLE_6": "<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> INCREASE a Single Stitch Automatically",
+                "LINKTITLE_7": "<i class=\"fa fa-fast-forward\" aria-hidden=\"true\"></i> Full Fashion INCREASE"
+              },
+              "legacyComponentId": 4433,
+              "order": 3
+            }
+          ],
+          "title": "Full Needle Rib",
+          "slug": "full-needle-rib",
+          "order": 4,
+          "legacy": {
+            "assignId": 3284,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/Shaping_FNR.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3294",
+                "componentId": "4436",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4436,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "<h3>Follow along with the video and try these techniques.</h3>\r\n\r\n\r\n<i class=\"fa fa-hand-o-right fa-2x\" aria-hidden=\"true\"></i> <b>START HERE (A)</b>\r\n<ul>\r\n<li> Cast on 40(80) stitches with any method</li>\r\n<li> End needles in work on the main bed</li>\r\n<li> Knit in 1x1 ribbing for 2-3”</li>\r\n<li> End with the carriage on the right</li>\r\n\r\n</ul>\r\n\r\n<center>\t<img src=\"/challenge/images/v2/40/shaping1.jpg\"></center>\r\n\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/40/arrow11.png\" style=\"float:left;padding-right:10px;\">\r\n<b>DECREASE More than one Stitch (B)</b><br><em>\"Bind off 4 stitches at the beginning of the next 2 rows\"</em>\r\n\r\n\r\n\r\n\r\n<br>\r\n<ol class=\"instruction-list\">\r\n<li>Transfer 4 ribber stitches to the opposite needles on the main bed <small>(Double up the stitches)</small></li>\r\n<li>Take the ribber needles out of work.<small><em> (oops ... don’t forget this)</em></small></li>\r\n<li>Bind off 4 stitches on the main bed (work the doubled up stitches as a single stitch). Securing the last loop on the new end needle</li>\r\n<li> Hang a wire weight hanger and add a small weight</li>\r\n<li> Knit across the row (make sure that end needle knits properly)</li>\r\n<li> Carriage on the left: Bind off 4 stitches on the left</li>\r\n<li> Knit a few rows - end with the carriage on the right</li>\r\n</ol>\r\n\r\n\r\n<!-- ***************end section 1*****************-->\r\n<br>\r\n\r\n\r\n<img src=\"/challenge/images/v2/40/arrow12.png\" style=\"float:left;padding-right:10px;\">\r\n<b>Simple Edge DECREASE (C)</b><br><em>\"Decrease 1 stitch each side, every other row 4 times\"</em><br>\r\n\r\n\r\n\r\n\r\n\r\n\r\n<br>Transfer stitches between the beds to reduce the number of stitches in work<br><ol class=\"instruction-list\">\r\n<li> Decrease 1 stitch on the right\r\n<ol class=\"instruction-nolist\">\r\n<li>Transfer 1 main bed stitch to it's neighbor</li>\r\n<li>Transfer 1 ribber stitch to it's neighbor</li>\r\n</li>\r\n</ol>\r\n<li>Decrease 1 stitch on the left\r\n<ol class=\"instruction-nolist\">\r\n<li>Transfer 1 main bed stitch to it's neighbor</li>\r\n<li>Transfer 1 ribber stitch to it's neighbor</li>\r\n</li>\r\n</ul>\r\n</li>Knit 2 rows and repeat a few times</li>\r\n</ol>\r\n\r\n\r\n<!-- *****************end section 2****************-->\r\n\r\n\r\n<br>\r\n\r\n\r\n<img src=\"/challenge/images/v2/40/arrow13.png\" style=\"float:left;padding-right:10px;\">\r\n<b>Full Fashion DECREASE (C)</b>\r\n<br><em>\"Decrease1 stitch each side, every other row 4 times\"</em>\r\n\r\n\r\n\r\n\r\n\r\n<br>\r\nInstead of transferring the edge stitches, Transfer 2 or more stitches from the edge to decrease <br><b>Decrease 1 stitch on the right</b>\r\n<ul>\r\n<li>Transfer 1 main bed edge stitch to it’s neighbor</li>\r\n<li>Transfer 1 ribber stitch to it’s neighbor</li>\r\n</ul>\r\n<br>\r\n\r\n<b>Decrease 1 stitch  on the left</b>\r\n<ul>\r\n<li>Transfer 1 main bed edge stitch to it’s neighbor</li>\r\n<li>Transfer 1 ribber stitch to it’s neighbor</li>\r\n</ul>\r\n\r\n\r\n\r\n\r\n\r\n\r\n<!-- *****************end section 3****************-->\r\n<br>\r\n\r\n\r\n<img src=\"/challenge/images/v2/40/arrow14.png\" style=\"float:left;padding-right:10px;\">\r\n<b>INCREASE more than 1 stitch on the edge (D)</b>\r\n<br><em>\"Cast on 4 stitches at the beginning of the next 2 rows\"</em>\r\n\r\n\r\n\r\n\r\n<br>\r\nMaintaining the Full Needle Rib arrangement, on the carriage side:<br>\r\n<ol class=\"instruction-list\">\r\n<li> Put 4 new MAIN BED needles into work.</li>\r\n<li> Put 4 new RIBBER BED needles into work.</li>\r\n<li>Open the latches</li>\r\n\r\n<li> Zig Zag the working yarn between the 2 beds across the new needles</li>\r\n<li> Hang a wire weight hanger and a small weight</li>\r\n<li> Knit across</li>\r\n<li> Repeat on the opposite side</li>\r\n<li> Knit 2 rows</li>\r\n</ol>\r\n\r\n\r\n\r\n\r\n\r\n<!-- *****************end section 4****************-->\r\n\r\n<br>\r\n\r\n\r\n<img src=\"/challenge/images/v2/40/arrow15.png\" style=\"float:left;padding-right:10px;\">\r\n<b>Automatic Edge INCREASE (E)</b>\r\n<br><em>\"Increase 2 stitches every 4th row\"</em>\r\n\r\n\r\n\r\n\r\n<br>\r\n</em>NOTE: It takes 4 rows to increase 1 stitch on each edge</em><br>Work increases OPPOSITE the Carriage keeping\r\nthe full needle rib arrangement<br>\r\n<ol class=\"instruction-list\">\r\n<li> Opposite the carriage, pull 1 MAIN BED needle to work</li>\r\n<li> Knit across</li>\r\n<li> Opposite the carriage, pull 1 MAIN BED needle to work</li>\r\n<li> Knit across</li>\r\n<li> Opposite the carriage, pull 1 RIBBER needle to work</li>\r\n<li> Knit across</li>\r\n <li>Opposite the carriage, pull 1 RIBBER needle to work</li>\r\n<li>Knit across</li>\r\n<li>Hang a wire weight hanger and small weight</li>\r\n<li>Continue Knitting</li>\r\n<li>Repeat this increase sequence 2-3 more times</li>\r\n</ol>\r\n<em><small>You will have increased 2 GARMENT stitches over 4 rows (1 stitch on the main bed, 1 stitch on the ribber)</small></em>\r\n\r\n\r\n<!-- *****************end section 5****************-->\r\n<br>\r\n\r\n\r\n<img src=\"/challenge/images/v2/40/arrow16.png\" style=\"float:left;padding-right:10px;\">\r\n<b>Full Fashion INCREASE (E)</b>\r\n<br><em>\"Increase 2 stitches every other row\"</em>\r\n\r\n\r\n\r\n\r\n<br>\r\nWork right and left increases on the same row<br>\r\n<ol class=\"instruction-list\">\r\n<li> On the right side of the knitting, transfer 2 or more needles to the right, emptying a needle</li>\r\n<li>  Fill the empty needle with the purl bump from the row below</li>\r\n<li> Repeat on the left side</li>\r\n<li> Knit across</li>\r\n<li>  Hang a wire weight hanger and small weight</li>\r\n<li> Continue Knitting</li>\r\n</ol>\r\n\r\n\r\n\r\n\r\n\r\n<!-- *****************end section 6****************-->\r\n\r\n\r\n<br>\r\n<i class=\"fa fa-hand-o-right fa-2x\" aria-hidden=\"true\"></i><b> FINISH HERE (F)</b>\r\n<br>If you are happy with the results of your exercises, finish your swatch by knitting a few rows and binding off.  (Practice a full needle rib bind off method)<br>\r\n\r\nIf you feel you need more practice, continue on this swatch until you can work full needle rib  increases and decreases in your sleep!",
+              "legacyComponentId": 4437,
+              "order": 2
+            }
+          ],
+          "title": "Full Needle Rib Shaping Exercises",
+          "slug": "full-needle-rib-shaping-exercises",
+          "order": 5,
+          "legacy": {
+            "assignId": 3294,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Week 8: Short Rows in Ribbing",
+      "slug": "week-8-short-rows-in-ribbing",
+      "displayOrder": 40,
+      "legacy": {
+        "itemId": 283,
+        "lessonOrder": 40
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\nThere are so many variations in the techniques used to work short rows on the double bed.  Your needle arrangement, racking, patterning all determine the technique you use.<br>But it's not hard.  Start with a basic 1x1 needle arrangement and examine the wraps (remember we don't want short row holes).  The move to full needle rib and again explore the steps for shaping. <br>Armed with this knowledge, you'll be able to determine the steps needed to short row in any needle arrangement or pattern.\r\n\r\n\r\n\r\n<div class=\"embed-video-container\"><center>\n<iframe src='https://player.vimeo.com/video/318318315' frameborder='0' webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>\n</center></div>\r\n\r\n\r\n",
+              "legacyComponentId": 4483,
+              "order": 1
+            }
+          ],
+          "title": "Introduction",
+          "slug": "introduction",
+          "order": 1,
+          "legacy": {
+            "assignId": 3286,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\n<b>When would you use short row decreases?</b><br>Single or double bed, the advantage is a smoother edge.<br>Let's say you want to shape a shoulder and you are instructed:<br><em> Bind off 5 stitches every other row, 5 times</em><br>\r\nBinding off would produce stairsteps that would be hard to seam.<br>Using short row shaping keeps the stitches on the needles, so when the shaping is done, you can scrap off, then neatly join the front and back shoulder.<br>Short row decreases can also be used to shape necklines, form bust darts or other garment shaping. Any time you are decreasing over every other row, you can use short row shaping.\r\n\r\n\r\n<img src=\"/challenge/images/v2/40/shortrow_diagram.jpg\">\r\n",
+              "legacyComponentId": 4607,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "318312175",
+              "title": "Short Row Decreasing in 1x1 Ribbing",
+              "legacyComponentId": 4485,
+              "order": 2
+            }
+          ],
+          "title": "Short Row Decrease 1x1",
+          "slug": "short-row-decrease-1x1",
+          "order": 2,
+          "legacy": {
+            "assignId": 3291,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n<b>When would you use short row increase?</b><br>Like short row decreases, using \"partial knitting\" offers a smoother edge than casting on stitches.<br>Lets say your instruction tell you to:<br>\r\n<em>Increase 5 stitches every other row 5 times</em><br>\r\nCasting on multiple stitches on the edge of your knitting can produce stairsteps. By using short rows, all the stitches are on the needlebed and you'll use \"partial knitting\" to  create the shape.<br>This sideways knit cardigan is a good example.  To form the V neck, cast on the full width of the front (\"E\"), then work short row increases (instead of casting on stitches) to shape the neck.  You'll have a nice smooth cast on edge (or live stitches).\r\n<br><img src=\"/challenge/images/v2/40/sideways_cardigan_example.jpg\">",
+              "legacyComponentId": 4608,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "320558407",
+              "title": "Short Row Increasing in 1x1 ribbing",
+              "legacyComponentId": 4609,
+              "order": 2
+            }
+          ],
+          "title": "Short Row Increase 1x1",
+          "slug": "short-row-increase-1x1",
+          "order": 3,
+          "legacy": {
+            "assignId": 3305,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/1x1 short row exercises.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3306",
+                "componentId": "4613",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4613,
+              "order": 1
+            },
+            {
+              "type": "exerciseAccordion",
+              "sections": [
+                {
+                  "title": "Short Row Decreases<br>\r\n<em>“Decrease 5 stitches every other row 4 times”</em>",
+                  "bodyHtml": "Cast on 25 stitches in 1x1 needle setup\r\n(practice a new-to-you cast  on method)<Br>\r\n<ol class=\"instruction-list\">\r\n<li>Knit 10 rows</li>\r\n<li>Carriage on the right, set both carriages to hold both ways</li>\r\n<li>Opposite the carriage, put 5  needles in hold</li>\r\n<li>Knit across and wrap</li>\r\n<li>Knit back</li>\r\n<li> Repeat 3 more times</li>\r\n<li>Cancel hold and knit 1 row across all the needles - Carriage on the left\r\n    Don’t bind off</li>\r\n</ol>",
+                  "iconSrc": "/challenge/images/v2/40/arrow1.png"
+                },
+                {
+                  "title": "Short Row Increases<br>\r\n<em>“Increase 5 stitches every other row 4 times”</em>",
+                  "bodyHtml": "25 stitches are in work in 1x1 needle setup\r\n<Br>\r\n<ol class=\"instruction-list\"></li>\r\n<li>Put all needles in hold except for 5 needles next to the carriage</li>\r\n<li> Optional: Break the original color and thread up a contrasting color</li>\r\n<li>Carriage set to hold</li>\r\n<li>Knit across the 5 needles in work</li>\r\n<li>Wrap and Knit back (carriage on the left)</li>\r\n<li>Put 5 more needles into working position</li>\r\n<li>Knit, wrap, knit</li>\r\n<li>Repeat 2 more times</li>\r\n<li> Knit 10 rows and drop the work (or practice a bind off)</li>\r\n</ol>",
+                  "iconSrc": "/challenge/images/v2/40/arrow2.png"
+                }
+              ],
+              "legacy": {
+                "showText": null,
+                "size": null
+              },
+              "legacyComponentId": 4611,
+              "order": 2
+            },
+            {
+              "type": "richText",
+              "html": "\r\n<div class=\"col\">\t<img class=\"img-thumbnail\" src=\"/challenge/images/v2/40/1x1exercise1_a.jpg\"><br><img class=\"img-thumbnail\" src=\"/challenge/images/v2/40/1x1exercise_a.jpg\"></div>\r\n\r\n",
+              "legacyComponentId": 4612,
+              "order": 3
+            }
+          ],
+          "title": "1x1 Short Row Exercises",
+          "slug": "1x1-short-row-exercises",
+          "order": 4,
+          "legacy": {
+            "assignId": 3306,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/40/You_can_do_this1.gif\">",
+              "legacyComponentId": 4618,
+              "order": 1
+            },
+            {
+              "type": "video",
+              "vimeoId": "322059864",
+              "title": "Short Rows in Full Needle Rib",
+              "legacyComponentId": 4617,
+              "order": 2
+            }
+          ],
+          "title": "Short  Shaping in Full Needle Rib",
+          "slug": "short-shaping-in-full-needle-rib",
+          "order": 5,
+          "legacy": {
+            "assignId": 3337,
+            "blockType": "Video"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "download",
+              "label": "Print the Worksheet",
+              "filename": "/downloads/ribber shoulder shaping.pdf",
+              "showInline": false,
+              "legacy": {
+                "assignId": "3289",
+                "componentId": "4615",
+                "viewHeight": "600",
+                "icon": "fa fa-download"
+              },
+              "legacyComponentId": 4615,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "One practical use of Short Row shaping is for shaped shoulders.<br>This exercise is a great way to practice partial knitting with double bed needle arrangements and practice joining shoulders on the machine.\r\n<center><img src=\"/challenge/images/v2/40/shaped-shoulders_example.jpg\"></center>",
+              "legacyComponentId": 4614,
+              "order": 2
+            }
+          ],
+          "title": "Your  Turn ... Try this yourself!",
+          "slug": "your-turn-try-this-yourself",
+          "order": 6,
+          "legacy": {
+            "assignId": 3289,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 14,
+    "videos": [
+      {
+        "vimeoId": "317355371",
+        "title": "I'm ready to get knitting ... how about you?",
+        "lessonSlug": "welcome",
+        "blockSlug": "introduction-to-the-knit-along"
+      },
+      {
+        "vimeoId": "151859224",
+        "title": "2x2 Ribbing Cast On",
+        "lessonSlug": "week-5-warm-up",
+        "blockSlug": "2x2-ribbing-cast-on"
+      },
+      {
+        "vimeoId": "151859346",
+        "title": "2x2 Half Pitch Rib Cast On",
+        "lessonSlug": "week-5-warm-up",
+        "blockSlug": "2x2-2x1-half-pitch-cast-on"
+      },
+      {
+        "vimeoId": "314230918",
+        "title": "Lacy Ribber Hem",
+        "lessonSlug": "week-5-warm-up",
+        "blockSlug": "professional-pretty-edges"
+      },
+      {
+        "vimeoId": "314242233",
+        "title": "Loopy Ribber Hem",
+        "lessonSlug": "week-5-warm-up",
+        "blockSlug": "professional-pretty-edges"
+      },
+      {
+        "vimeoId": "314593305",
+        "title": "Racking overview",
+        "lessonSlug": "week-6-swing-n-rack",
+        "blockSlug": "introduction-to-racking"
+      },
+      {
+        "vimeoId": "314824637",
+        "title": "Down to the basics with Flat Rib",
+        "lessonSlug": "week-6-swing-n-rack",
+        "blockSlug": "introduction-to-racking"
+      },
+      {
+        "vimeoId": "151859543",
+        "title": "Racking Magic",
+        "lessonSlug": "week-6-swing-n-rack",
+        "blockSlug": "racking-challenge"
+      },
+      {
+        "vimeoId": "316406201",
+        "title": "Racked Tuck Rib",
+        "lessonSlug": "week-6-swing-n-rack",
+        "blockSlug": "racked-tuck-rib"
+      },
+      {
+        "vimeoId": "316467548",
+        "title": "Watch the Video, then work the exercises",
+        "lessonSlug": "week-7-shaping-in-ribbing",
+        "blockSlug": "1x1-shaping"
+      },
+      {
+        "vimeoId": "317058475",
+        "title": "Shaping in Full Needle Rib",
+        "lessonSlug": "week-7-shaping-in-ribbing",
+        "blockSlug": "full-needle-rib"
+      },
+      {
+        "vimeoId": "318312175",
+        "title": "Short Row Decreasing in 1x1 Ribbing",
+        "lessonSlug": "week-8-short-rows-in-ribbing",
+        "blockSlug": "short-row-decrease-1x1"
+      },
+      {
+        "vimeoId": "320558407",
+        "title": "Short Row Increasing in 1x1 ribbing",
+        "lessonSlug": "week-8-short-rows-in-ribbing",
+        "blockSlug": "short-row-increase-1x1"
+      },
+      {
+        "vimeoId": "322059864",
+        "title": "Short Rows in Full Needle Rib",
+        "lessonSlug": "week-8-short-rows-in-ribbing",
+        "blockSlug": "short-shaping-in-full-needle-rib"
+      }
+    ],
+    "downloadCount": 9,
+    "downloads": [
+      {
+        "filename": "/downloads/Page1.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "week-5-warm-up",
+        "blockSlug": "2x2-step-by-step"
+      },
+      {
+        "filename": "/downloads/PAGE23.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "week-5-warm-up",
+        "blockSlug": "try-the-2x2-2x1-cast-on"
+      },
+      {
+        "filename": "/downloads/PAGE31.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "week-5-warm-up",
+        "blockSlug": "professional-pretty-edges"
+      },
+      {
+        "filename": "/downloads/page4_51.pdf",
+        "label": "Print the Worksheets",
+        "lessonSlug": "week-6-swing-n-rack",
+        "blockSlug": "quick-tuck-one-way"
+      },
+      {
+        "filename": "/downloads/page6_72.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "week-7-shaping-in-ribbing",
+        "blockSlug": "1x1-shaping-practice"
+      },
+      {
+        "filename": "/downloads/page6_73.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "week-7-shaping-in-ribbing",
+        "blockSlug": "1x1-shaping-practice"
+      },
+      {
+        "filename": "/downloads/Shaping_FNR.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "week-7-shaping-in-ribbing",
+        "blockSlug": "full-needle-rib-shaping-exercises"
+      },
+      {
+        "filename": "/downloads/1x1 short row exercises.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "week-8-short-rows-in-ribbing",
+        "blockSlug": "1x1-short-row-exercises"
+      },
+      {
+        "filename": "/downloads/ribber shoulder shaping.pdf",
+        "label": "Print the Worksheet",
+        "lessonSlug": "week-8-short-rows-in-ribbing",
+        "blockSlug": "your-turn-try-this-yourself"
+      }
+    ]
+  }
+}

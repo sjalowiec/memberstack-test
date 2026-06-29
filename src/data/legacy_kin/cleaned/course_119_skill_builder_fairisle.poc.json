@@ -1,0 +1,321 @@
+{
+  "schemaVersion": 1,
+  "kind": "course-poc",
+  "course": {
+    "legacyChallengeId": 119,
+    "title": "Skill Builder: Fairisle",
+    "slug": "skill-builder-fairisle",
+    "status": "draft",
+    "published": false,
+    "legacy": {
+      "sourceExport": "course_119_skill_builder_fairisle.csv",
+      "sourceCsv": "src/data/legacy_kin/exports/kin-all-legacy-courses-content.csv",
+      "migratedAt": "2026-06-25T10:16:10+00:00"
+    },
+    "contentStatus": "in_progress"
+  },
+  "lessons": [
+    {
+      "title": "Get knitting!",
+      "slug": "get-knitting",
+      "displayOrder": 1,
+      "legacy": {
+        "itemId": 801,
+        "lessonOrder": 1
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "video",
+              "vimeoId": "920197540",
+              "title": null,
+              "legacyComponentId": 9662,
+              "order": 1
+            },
+            {
+              "type": "richText",
+              "html": "The first time every machine knitter attempts stranded knitting they are amazed. No matter if you are using a manual or automatic patterning machine, knitting 2 colors to create a decorative stitch pattern seems magical.<br>Let's review some of the pitfalls and considerations when knitting fairisle your machine.<br>From tension to floats to stitch pattern design, there are a lot of thing to consider for success with this technique.<br><b><h3>The Goal of this Workshop</h3></b>\r\n<ul>\r\n<li>Encourage you to try the different techniques </li>\r\n<li>Learn and master the settings for YOUR machine</li>\r\n<li>Build your confidence in using Fairisle stitch patterns</li>\r\n</ul>\r\n\r\n",
+              "legacyComponentId": 9663,
+              "order": 2
+            }
+          ],
+          "title": "LIVE Replay",
+          "slug": "live-replay",
+          "order": 1,
+          "legacy": {
+            "assignId": 6305,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "The Basics",
+      "slug": "the-basics",
+      "displayOrder": 2,
+      "legacy": {
+        "itemId": 796,
+        "lessonOrder": 2
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "exerciseAccordion",
+              "sections": [
+                {
+                  "title": "Knit a sample in fairisle",
+                  "bodyHtml": "<style>\r\n    .container-border1 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px 50px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n\r\n        max-width: 500px;\r\n        margin: auto;\r\n        background-color: #DCDCDC;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n\r\n<div class=\"container-border1\">\r\n<ol>\r\n<li>Choose a simple fairisle pattern and 2 contrasting colors.</li>\r\n<li>Cast on and set your machine for fairisle</li>\r\n<li>Knit 4-6\"</li><li>\r\nManual machines use 1x1 needle pusher</li>\r\n<li>Bind off or continue knitting</li>\r\n</ul>\r\n</div><h3>\r\n<span class=\"imagepopup\" data-imagetitle=\"1x1 fairisle\" data-image=\"/challenge/images/v2/119/1x1_1.jpg\"><i class=\"fa fa-picture-o\" aria-hidden=\"true\"></i> Sample</span></h3>\r\n\r\n<img src=\"/challenge/images/v2/119/1x1_2.jpg\" width=\"200\">\r\n",
+                  "iconSrc": "/challenge/images/v2/119/arrow1.png"
+                },
+                {
+                  "title": "Experiment with Variations  (Double High)",
+                  "bodyHtml": "\r\n    \r\n\r\n        Depending on your machine, set machine to knit double high.<ul>\r\n            <li> Punchcard machines will have a lever.</li>\r\n            <li> Electronic machines can be programmed.</li>\r\n            <li> Manual machines, repeat needle selection for 2 rows</li>\r\n        </ul>\r\n        <div class=\"container-border1\">\r\n            <ol>\r\n                <li>Cast on (or continue knitting) and set your machine to \"Double High\"</li>\r\n                <li>Knit for 3-4\"</li>\r\n                <li>Bind off or continue knitting</li>\r\n            </ol>\r\n        </div>\r\n       <h3> <span class=\"imagepopup\" data-imagetitle=\"double-high variation\" data-image=\"/challenge/images/v2/119/double_high1.jpg\"><i class=\"fa fa-picture-o\" aria-hidden=\"true\"></i> Sample</span></h3>\r\n\r\n\r\n    \r\n    <img src=\"/challenge/images/v2/119/double_high.jpg\">\r\n",
+                  "iconSrc": "/challenge/images/v2/119/arrow2.png"
+                },
+                {
+                  "title": "Experiment with Variations  (Double Wide)",
+                  "bodyHtml": "\r\n    \r\n\r\n        Depending on your machine, set machine to knit double wide.<ul>\r\n            <li> Punchcard machines may not have this feature.</li>\r\n            <li> Electronic machines can be programmed.</li>\r\n            <li> Manual machines, select with 2x2 needle pusher</li>\r\n        </ul>\r\n        <div class=\"container-border1\">\r\n            <ol>\r\n                <li>Cast on (or continue knitting) and set your machine to \"Double Wide\" (if available)</li>\r\n                <li>Knit for 3-4\"</li>\r\n                <li>Bind off or continue knittting</li>\r\n            </ol>\r\n      <h3>      <span class=\"imagepopup\" data-imagetitle=\"double wide variation\" data-image=\"/challenge/images/v2/119/double_wide_1.jpg\"><i class=\"fa fa-picture-o\" aria-hidden=\"true\">\r\n        </div>\r\n</i> Sample</span></h3>\r\n    \r\n    <img src=\"/challenge/images/v2/119/double_wide.jpg\">\r\n",
+                  "iconSrc": "/challenge/images/v2/119/arrow3.png"
+                },
+                {
+                  "title": "Vertical Stripes",
+                  "bodyHtml": "\r\n    \r\n\r\n        Depending on your machine, lock the pattern on a single row so it will repeat and not advance <ul>\r\n            <li> Not all machines have this functionality</li>\r\n\r\n            <li> Manual machines, select the same needles for every row </li>\r\n        </ul>\r\n        <div class=\"container-border1\">\r\n            <ol>\r\n                <li>Cast on (or continue knitting) and lock the pattern on a single row so it will repeat and not advance (if available)</li>\r\n                <li>Knit for 3-4\"</li>\r\n                <li> Set the machine for double wide (if available) and repeat the stripes for 3-4\" </li>\r\n                <li>Bind off or continue knitting</li>\r\n            </ol>\r\n        </div>\r\n        <br>This \"lock\" technique can be used with any stitch pattern, creating stripes of varying widths<br>\r\n    \r\n    \r\n        <img class=\"img-thumbnail zoom\" width=\"200\" src=\"/challenge/images/v2/119/vertical_1x1_stripea.jpg\"><br>\r\n        <img class=\"img-thumbnail zoom\" width=\"200\" src=\"/challenge/images/v2/119/vertical_2x2_stripea.jpg\">\r\n    \r\n\r\n",
+                  "iconSrc": "/challenge/images/v2/119/arrow4.png"
+                },
+                {
+                  "title": "Swatching is NOT Optional!",
+                  "bodyHtml": "\r\n        \r\n\r\n           <i class=\"fa fa-hand-o-right\" aria-hidden=\"true\"></i>  From our blog: <a target=\"_blank\" href=\"/blog/1145/swatching-with-stitch-patterns\"><b> Swatching in pattern</b></a>\r\n            <div class=\"container-border1\">\r\n                <ol>\r\n                    <li>Cast on for a swatch and knit a few rows in pattern</li>\r\n                    <li>Knit a marker row (change colors or weave a strand of contrasting yarn)</li>\r\n                    <li>Knit Rows for your machine, marking stitch count section <em><small>(see below)</small></em></li>\r\n                    <li>Knit a marker row as before</li>\r\n                    <li>Knit a few rows in pattern</li>\r\n                    <li>bind off or continue knitting</li>\r\n                </ol>\r\n            </div><br>\r\n\r\n\r\n            <table class=\"table table-bordered\">\r\n                <tr>\r\n                    <td>\r\n                        For 4.5 Standard Gauge Machines</td>\r\n                    <td>Isolate 40 stitches and 60 rows</td>\r\n                </tr>\r\n                <tr>\r\n                    <td>For Mid-gauge Machines</td>\r\n                    <td>Isolate 30 stitches and 40 rows</td>\r\n                </tr>\r\n                <tr>\r\n                    <td>\r\n                        For 9.0 Bulky Gauge Machines</td>\r\n                    <td>Isolate 20 stitches and 30 rows</td>\r\n                </tr>\r\n            </table>\r\n        \r\n\r\n\r\n        <img class=\"img-thumbnail\" src=\"/challenge/images/v2/119/swatch.jpg\">\r\n        \r\n\r\n    ",
+                  "iconSrc": "/challenge/images/v2/119/arrow5.png"
+                },
+                {
+                  "title": "Gauge and Texture",
+                  "bodyHtml": "<style>\r\n    .container-border1 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px 50px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n\r\n        max-width: 500px;\r\n        margin: auto;\r\n        background-color: #DCDCDC;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n    \r\n\r\n        Fairisle knitting not only has a different gauge than stockinette, but the weight, \"feel\" and texture are very different.<br><div class=\"container-border1\">\r\n            <ol>\r\n                <li>Cast on and knit with a single strand for 4-5\" in stockinette</li>\r\n                <li>Add a 2nd color and knit 2-3\" in fairisle</li>\r\n                <li>Finish the sample with 4-5\" of stockinette</li>\r\n            </ol>\r\n        </div><br>\r\n        <span class=\"yellow_highlight\">Notice the difference in gauge and the difference in texture</span><br>If mixing plain knitting (stockinette) with fairisle (or other multi-color stitch patterns) plan to even out the texture. For example, fairisle front and back and solid main color sleeves.<br><b>Suggestions:</b><br>\r\n        <ul>\r\n            <li>Knit the sleeves in the fairisle pattern with 2 strands of the main color</li>\r\n            <li> Knit the sleeves in slip stitch to add bulk and texture similar to the fairisle section</li>\r\n        </ul>\r\n        \r\n        <h3>      \r\n<span class=\"imagepopup\" data-imagetitle=\"Lady Leopard Cardigan\" data-image=\"/challenge/images/v2/119/lady_leopard_plus1.jpg\"><i class=\"fa fa-picture-o\" aria-hidden=\"true\"></i> Sample</span></h3>\r\n\r\n\r\n\r\n    \r\n    \r\n      <img class=\"img-thumbnail ctr\" src=\"/challenge/images/v2/119/gauge_difference.jpg\">\r\n\r\n    \r\n",
+                  "iconSrc": "/challenge/images/v2/119/arrow6.png"
+                }
+              ],
+              "legacy": {
+                "showText": "below",
+                "size": null
+              },
+              "legacyComponentId": 9652,
+              "order": 2
+            }
+          ],
+          "title": "Basic Skill Builder Exercises",
+          "slug": "basic-skill-builder-exercises",
+          "order": 1,
+          "legacy": {
+            "assignId": 6296,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Positioning",
+      "slug": "positioning",
+      "displayOrder": 3,
+      "legacy": {
+        "itemId": 797,
+        "lessonOrder": 3
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "\r\n\r\n\r\nBy default, our knitting machines position stitch patterns in the middle of the needlebed.<br><ul>\r\n<li>\r\nElectronic machines allow us to easily shift the pattern to any needle on the bed and allow us to choose the number of repeats to knit.</li>\r\n<li>Punchcard machines can be manipulated with special cams and accessories to precisely position a stitch pattern.</li>\r\n<li>DesignaKnit will also position stitch patterns</li>\r\n</ul><br>\r\n\r\n<div class=\"yellow_highlight\"><b>Check your manual for specific instructions for your machine.</b></div>\r\n\r\n\r\n\r\n<img src=\"/challenge/images/v2/119/1 repeat.jpg\"><br>\r\n\r\n\t<img src=\"/challenge/images/v2/119/position.jpg\">\r\n",
+              "legacyComponentId": 9647,
+              "order": 1
+            }
+          ],
+          "title": "Position a Stitch Pattern",
+          "slug": "position-a-stitch-pattern",
+          "order": 1,
+          "legacy": {
+            "assignId": 6297,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Floats",
+      "slug": "floats",
+      "displayOrder": 4,
+      "legacy": {
+        "itemId": 798,
+        "lessonOrder": 4
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .container-border1 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px 50px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n\r\n        max-width: 500px;\r\n        margin: auto;\r\n        background-color: #DCDCDC;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n    \r\n        To avoid unwanted long floats when selecting stitch patterns, \"read\" the pattern before knitting.<br><div class=\"container-border1\">\r\n            Which of these 2 stitch patterns will have the shortest floats?<br><em> <b>A</b> has only 3 stitch floats<br><b> B</b> has a row with 11 stitch floats </em>\r\n        </div>\r\n        \r\n            \r\n                <h3><b>A</b></h3>\r\n                <img src=\"/challenge/images/v2/119/punchcard2.jpg\"><br>\r\n            \r\n\r\n            \r\n                <h3><b>B</b></h3><img src=\"/challenge/images/v2/119/Copy of punchcard1_1.jpg\">\r\n            \r\n        \r\n\r\n    \r\n    \r\n    \r\n\r\n",
+              "legacyComponentId": 9659,
+              "order": 1
+            }
+          ],
+          "title": "Recognizing Floats",
+          "slug": "recognizing-floats",
+          "order": 1,
+          "legacy": {
+            "assignId": 6302,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n.play1 {\r\nposition: relative;\r\nwidth: 100%;\r\nmax-width: 400px;\r\n}\r\n.play1 img {\r\nwidth: 100%;\r\nheight: auto;\r\n}\r\n\r\n.play1 .btn {\r\nposition: absolute;\r\ntop: 50%;\r\nleft: 50%;\r\ntransform: translate(-50%, -50%);\r\n-ms-transform: translate(-50%, -50%);\r\nbackground-color: #555;\r\ncolor: white;\r\nfont-size: 16px;\r\npadding: 12px 24px;\r\nborder: none;\r\ncursor: pointer;\r\nborder-radius: 5px;\r\ntext-align: center;\r\n}\r\n\r\n.play1 .btn:hover {\r\nbackground-color: black;\r\n}\r\n    .container-border1 {\r\n        border: 2px solid #ccc;\r\n        border-radius: 15px 50px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n\r\n        max-width: 500px;\r\n        margin: auto;\r\n        background-color: #DCDCDC;\r\n    }\r\n\r\n</style>\r\n\r\n\r\n    \r\n\r\n        Many knitters shy away from Jacquard (fairisle) knitting because of the floats that are formed. Unlike hand knitters, we can't twist the working strands and prevent the floats as we knit. But there are many things machine knitters can do to \"tame\" floats.<br>Floats refers to strands of yarn carried across the purl side of the knitting.<br>\r\n        When Knitting fairisle, the opposite color of yarn is carried behind the stitches that are knit.\r\n\r\n\r\n        <br>\r\n        <div class=\"container-border1\">\r\n            <ol>\r\n                <li>Cast on and knit in a stitch pattern with long floats\r\n                    <ul>\r\n                        <li>Latch up the floats as you knit</li>\r\n                        <li>Weave the floats on the next row</li>\r\n                        <li>Continue knitting for a few more inches and bind off</li>\r\n                        <li>Try using a sewing thread to secure the floats</li>\r\n                    </ul>\r\n            </ol>\r\n\r\n\r\n        </div><br>\r\n       \r\n    \r\n    \r\n        <img class=\"img-thumbnail\" src=\"/images/glossary/floats.JPG\">\r\n    \r\n\r\n<h3> Watch the Video</h3>\r\n<div class=\"play1\">\r\n<div class=\"videopopup\" data-videotitle=\"Managing Floats\" data-vimeoid=\"475492261\" style=\"width:100%\">\r\n    <img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/988244244-1801b21cd167065fd204fa0491fdf02bcf768a71dd510e2cecfcd39a0d1a1cc6-d_1280x720?r=pad\">\r\n    <div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n</div><br>\r\n</div>\r\n<div style=\"margin: 50px;\"><h3>Suggestions for dealing with floats</h3></div>\r\n\r\n\r\n<ul class=\"fa-ul\">\r\n    <li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Embrace the floats with slip</li>\r\n    <li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Add a lining</li>\r\n    <li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Doubled scarf or blanket</li>\r\n    <li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Latch the strands as you knit</li></ul>\r\n <ul class=\"fa-ul\">   <li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Secure by sewing</li>\r\n    <li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Weave in as you knit</li>\r\n    <li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Modify the stitch pattern</li>\r\n    <li><span class=\"fa-li\"><i class=\"fa fa-check\"></i></span>Consider intarsia</li>\r\n</ul>\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+              "legacyComponentId": 9658,
+              "order": 1
+            }
+          ],
+          "title": "Dealing with Floats",
+          "slug": "dealing-with-floats",
+          "order": 2,
+          "legacy": {
+            "assignId": 6298,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "References",
+      "slug": "references",
+      "displayOrder": 5,
+      "legacy": {
+        "itemId": 799,
+        "lessonOrder": 5
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    @import url(https://fonts.googleapis.com/css?family=Permanent+Marker);\r\n\r\n    .sticky {\r\n        background: linear-gradient(#FEFCAF, #FFFEDA);\r\n        padding: 5px 20px 10px 20px;\r\n        width: 250px;\r\n        height: 250px;\r\n        margin: 30px auto;\r\n        box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.25);\r\n        border-radius: 2% / 50%;\r\n        position: relative;\r\n        text-align: center;\r\n\r\n    }\r\n\r\n    .sticky h3 {'Permanent Marker', cursive;\r\n        color: #066B4;\r\n    }\r\n\r\n    .sticky:before,\r\n    .sticky:after {\r\n        content: '';\r\n        z-index: -1;\r\n        position: absolute;\r\n        left: 20px;\r\n        bottom: 10px;\r\n        width: 70%;\r\n        max-width: 300px;\r\n        max-height: 100px;\r\n        height: 55%;\r\n        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);\r\n        transform: skew(-15deg) rotate(-6deg);\r\n    }\r\n\r\n    .sticky:after {\r\n        left: auto;\r\n        right: 20px;\r\n        transform: skew(15deg) rotate(6deg);\r\n    }\r\n\r\n</style>\r\n\r\n\r\nQuick Links to helpful Knit it Now Content\r\n<br>\r\n    \r\n        <a href=\"/knit/stitchlibrary/11/fair-isle\" target=\"_blank\">\r\n            <div class=\"sticky\">\r\n\r\n\r\n                Stitch pattern inspiration\r\n                <h3><i class=\"fa fa-check fa-2x\" aria-hidden=\"true\"></i><br> Stitch Library</h3>\r\n\r\n            </div>\r\n        </a>\r\n    \r\n\r\n    \r\n        <a href=\"/stitchworld\" target=\"_blank\">\r\n            <div class=\"sticky\">\r\n\r\n                Hundreds of vintage stitch patterns\r\n                <h3><i class=\"fa fa-check fa-2x\" aria-hidden=\"true\"></i><br> Stitch World Downloads</h3>\r\n\r\n            </div>\r\n        </a>\r\n    \r\n    \r\n        <a href=\"/fairisle\" target=\"_blank\">\r\n            <div class=\"sticky\">\r\n                Hand selected Knit it Now Content\r\n                <h3><i class=\"fa fa-check fa-2x\" aria-hidden=\"true\"></i> <br>Classroom: Fairisle</h3>\r\n            </div>\r\n        </a>\r\n    \r\n\r\n",
+              "legacyComponentId": 9650,
+              "order": 1
+            }
+          ],
+          "title": "Knit it Now Links",
+          "slug": "knit-it-now-links",
+          "order": 1,
+          "legacy": {
+            "assignId": 6300,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<img src=\"/challenge/images/v2/119/reference_card_gif.gif\">",
+              "legacyComponentId": 9648,
+              "order": 1
+            }
+          ],
+          "title": "Technique Reference Cards",
+          "slug": "technique-reference-cards",
+          "order": 2,
+          "legacy": {
+            "assignId": 6299,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Inspiration",
+      "slug": "inspiration",
+      "displayOrder": 6,
+      "legacy": {
+        "itemId": 800,
+        "lessonOrder": 6
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "sdfsdf",
+              "legacyComponentId": 9661,
+              "order": 1
+            }
+          ],
+          "title": "Put Fairisle to Work",
+          "slug": "put-fairisle-to-work",
+          "order": 1,
+          "legacy": {
+            "assignId": 6304,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    },
+    {
+      "title": "Pattern Suggestions",
+      "slug": "pattern-suggestions",
+      "displayOrder": 7,
+      "legacy": {
+        "itemId": 802,
+        "lessonOrder": 7
+      },
+      "blocks": [
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<h3> Inside - Out hat</h3>\r\n\r\n<img class=\"ctr\" src=\"/KIN_images/garments/inside_out_hat_main.jpg\" width=\"400\"><br>Easily add fairisle to this lined hat. The lining makes an extra-warm hat and hides any floats.\r\n<br>",
+              "legacyComponentId": 9665,
+              "order": 1
+            }
+          ],
+          "title": "Hide Those Floats",
+          "slug": "hide-those-floats",
+          "order": 1,
+          "legacy": {
+            "assignId": 6307,
+            "blockType": "HTML"
+          }
+        },
+        {
+          "components": [
+            {
+              "type": "richText",
+              "html": "<style>\r\n    .x3box {\r\n        border: 1px solid #ccc;\r\n        padding: 20px;\r\n        margin: 20px;\r\n    }\r\n\r\n</style>\r\n\r\nHand knitters would be jealous if they knew how easy and fast it is for us to add texture and color to our knitting.<i class=\"fa fa-smile-o fa-2x\" aria-hidden=\"true\"></i><br>Below are some Machine Knit-ables, inspiration from the hand knitting world.<br><span class=\"handwriting\" style=\"font-size: 1.5em;\">Use Fairisle for pillows and folded scarves. The floats are hidden inside </span><br>\r\n\r\nWhatever machine you are using, discovering your favorite stitch patterns and techniques and learning the possibilities—as well as the buttons and levers you need to use to make them happen—are all important parts of the learning curve.\r\n\r\n\r\n    \r\n        <div class=\"x3box text-center\">\r\n            <h4><b>Diamond Back Pillow</b></h4> <img class=\"img-thumbnail\" src=\"/path/images/4098/diamond_back_thumb.jpg\">\r\n            <div class=\"text-center\"></div>\r\n        </div>\r\n    \r\n    \r\n        <div class=\"x3box text-center\">\r\n            <h4><b>Clacton Scarf</b></h4> <img class=\"img-thumbnail\" src=\"/path/images/247/clacton_thumb.jpg\">\r\n            <div class=\"text-center\"></div>\r\n        </div>\r\n    \r\n    \r\n        <div class=\"x3box text-center\">\r\n            <h4><b>Tomte Pillow</b></h4> <img class=\"img-thumbnail\" src=\"/path/images/150/santapillowpatternki.jpg\">\r\n            <div class=\"text-center\"></div>\r\n        </div>\r\n    \r\n\r\n",
+              "legacyComponentId": 9666,
+              "order": 1
+            }
+          ],
+          "title": "Hidden Floats",
+          "slug": "hidden-floats",
+          "order": 2,
+          "legacy": {
+            "assignId": 6308,
+            "blockType": "HTML"
+          }
+        }
+      ]
+    }
+  ],
+  "manifest": {
+    "videoCount": 1,
+    "videos": [
+      {
+        "vimeoId": "920197540",
+        "title": null,
+        "lessonSlug": "get-knitting",
+        "blockSlug": "live-replay"
+      }
+    ],
+    "downloadCount": 0,
+    "downloads": []
+  }
+}
