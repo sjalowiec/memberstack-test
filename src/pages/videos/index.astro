@@ -216,39 +216,28 @@ const forceMemberView =
 
     async function getViewerState() {
       try {
-        const res = await window.$memberstackDom?.getCurrentMember?.();
-        const data = res?.data;
-        const member = (data?.member ?? data) || null;
-        if (!member) return { isLoggedIn: false, isMember: false, hasVideoAccess: false, member: null };
-
-        const conns = Array.isArray(member.planConnections) ? member.planConnections : [];
-        const hasAnyActiveOrTrialPlan = conns.some(function (c) {
-          if (!c) return false;
-          const status = String(c.status || "").toUpperCase();
-          return c.active === true || status === "ACTIVE" || status === "TRIALING";
-        });
-
-        const isMember = hasAnyActiveOrTrialPlan;
+        const res = await waitForMemberstackReady();
+        const member = res?.data?.member ?? null;
+        if (!member) return { isLoggedIn: false, hasVideoAccess: false, member: null };
 
         const rawKinAccess = member.customFields?.["kin-access"];
         const hasVideoAccess =
           typeof window.kbmHasKinVideoAccess === "function"
             ? window.kbmHasKinVideoAccess(res)
             : false;
-        const finalHasVideoAccess = hasVideoAccess;
         window.kbmLogKinVideoAccessDebug?.("videos/index.catalog", {
           member: res,
           rawKinAccess,
-          finalHasVideoAccess: finalHasVideoAccess,
+          finalHasVideoAccess: hasVideoAccess,
         });
 
-        return { isLoggedIn: true, isMember: isMember, hasVideoAccess: finalHasVideoAccess, member: member };
+        return { isLoggedIn: true, hasVideoAccess: hasVideoAccess, member: member };
       } catch (e) {
-        return { isLoggedIn: false, isMember: false, hasVideoAccess: false, member: null };
+        return { isLoggedIn: false, hasVideoAccess: false, member: null };
       }
     }
 
-    let VIEWER = { isLoggedIn: false, isMember: false, hasVideoAccess: false, member: null };
+    let VIEWER = { isLoggedIn: false, hasVideoAccess: false, member: null };
     let ACCESS_STATE = "checking";
 
     async function waitForMemberstackReady(opts) {
@@ -256,9 +245,8 @@ const forceMemberView =
       const delayMs = (opts && opts.delayMs) !== undefined ? opts.delayMs : 200;
       for (let i = 0; i < attempts; i++) {
         try {
-          if (window.$memberstackDom && typeof window.$memberstackDom.getCurrentMember === "function") {
-            return true;
-          }
+          const api = window.$memberstackDom?.getAppAndMember;
+          if (typeof api === "function") return await api();
         } catch (e) {
           // keep trying
         }
@@ -288,13 +276,15 @@ const forceMemberView =
         el.classList.remove("is-locked");
       });
     }
+    /** Same playback access as GatedVimeoEmbed / videos/[id] (public + open = free). */
+    function catalogVideoPlaybackAccess(v) {
+      if (v.tipOfWeek === true || v.isTipOfWeek === true) return "open";
+      const level = String(v.access_level ?? "member").trim().toLowerCase();
+      if (level === "open" || level === "public") return "open";
+      return "member";
+    }
     function isMemberOnlyVideo(v) {
-      return (
-        v.access_level === "member" ||
-        v.member_only === true ||
-        v.membersonly === true ||
-        v.isMemberOnly === true
-      );
+      return catalogVideoPlaybackAccess(v) === "member";
     }
     function hideAllVisibleLockIconsForAccess() {
       const pageRoot = document.querySelector(".page-wrap");
@@ -321,7 +311,7 @@ const forceMemberView =
     }
 
     function isVideoFree(video) {
-      const isFreeByData = video?.access_level === "open";
+      const isFreeByData = catalogVideoPlaybackAccess(video) === "open";
       return window.__FORCE_ALL_VIDEOS_LOCKED__ === true ? false : isFreeByData;
     }
 
@@ -400,7 +390,7 @@ const forceMemberView =
       const listQuery = listParams.toString();
       const listQueryString = listQuery ? "?" + listQuery : "";
 
-      const hasAccess = ACCESS_STATE === "has_access" || Boolean(VIEWER.hasVideoAccess);
+      const hasVideoAccess = ACCESS_STATE === "has_access" || Boolean(VIEWER.hasVideoAccess);
       grid.innerHTML = filtered.map(v => {
         const baseHref = v.content_id ? "/videos/" + v.content_id : "/videos/" + (v.slug || "");
         const href = baseHref + listQueryString;
@@ -412,7 +402,7 @@ const forceMemberView =
           "<polygon points=\"28,22 28,46 48,34\"></polygon>" +
           "</svg></span>";
         const isMemberOnly = isMemberOnlyVideo(v);
-        const showLocked = isMemberOnly && !hasAccess;
+        const showLocked = isMemberOnly && !hasVideoAccess;
         const lockOverlay =
           showLocked
             ? "<span class=\"kbm-lock-overlay\" aria-label=\"Member-only video\"><i class=\"fa-solid fa-lock\" aria-hidden=\"true\"></i></span>"
