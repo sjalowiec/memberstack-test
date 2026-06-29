@@ -105,7 +105,7 @@ const skillBuilderThumbnail = "/images/skill-builders/skill-buider.png";
       </article>
     </div>
 
-    <div data-ms-content="!paid-plans">
+    <div data-gated="locked" data-sb-member-lock>
       <MemberLockOverlay
         title="Skill Builders are for members"
         message="You'll need an active membership to generate practice worksheets."
@@ -391,6 +391,37 @@ const skillBuilderThumbnail = "/images/skill-builders/skill-buider.png";
   import { buildRoundNecklinePracticeDiagramValues } from "../../../lib/skillBuilders/roundNecklinePracticeDiagram";
   import { loadSkillBuilderDiagram } from "../../../lib/skillBuilders/skillBuilderDiagram";
   import { isSkillBuilderDebugMode } from "../../../lib/skillBuilders/skillBuilderDebugMode";
+  import { hasKinVideoAccess } from "../../../lib/kinVideoAccess";
+
+  async function syncSkillBuilderMemberLock() {
+    const lock = document.querySelector<HTMLElement>("[data-sb-member-lock]");
+    if (!lock) return;
+
+    let hasAccess = false;
+    const ms = window.$memberstackDom;
+    if (ms?.getCurrentMember) {
+      try {
+        hasAccess = hasKinVideoAccess(await ms.getCurrentMember());
+      } catch {
+        hasAccess = false;
+      }
+    }
+
+    lock.toggleAttribute("hidden", hasAccess);
+    document.body.classList.toggle("ms-logged-in", hasAccess);
+  }
+
+  function bindSkillBuilderAccessRefresh() {
+    void syncSkillBuilderMemberLock();
+    window.addEventListener("auth:updated", () => {
+      void syncSkillBuilderMemberLock();
+    });
+    const ms = window.$memberstackDom;
+    if (ms?.on) {
+      ms.on("member.login", () => void syncSkillBuilderMemberLock());
+      ms.on("member.logout", () => void syncSkillBuilderMemberLock());
+    }
+  }
 
   const ROUND_NECKLINE_DIAGRAM = "round-neckline";
   const SHOW_CALCULATION_SUMMARY = isSkillBuilderDebugMode();
@@ -446,6 +477,8 @@ const skillBuilderThumbnail = "/images/skill-builders/skill-buider.png";
   }
 
   document.addEventListener("DOMContentLoaded", () => {
+    bindSkillBuilderAccessRefresh();
+
     if (!SHOW_CALCULATION_SUMMARY) {
       document.getElementById("sb-calculation-summary-section")?.remove();
     }
