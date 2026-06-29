@@ -64,8 +64,23 @@ const iframeSrc = enableVimeoPlayerApi
   </div>
 </div>
 
-<script is:inline define:vars={{ videoId, access_level, iframeSrc, title, videoDevBypass, enableVimeoPlayerApi, iframePlayerId, ctaHref, ctaText }}>
-  document.addEventListener("DOMContentLoaded", function () {
+<script define:vars={{ videoId, access_level, iframeSrc, title, videoDevBypass, enableVimeoPlayerApi, iframePlayerId, ctaHref, ctaText }}>
+  import { hasKinVideoAccess, logKinVideoAccessDebug } from "../../lib/kinVideoAccess";
+
+  async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
+    for (let i = 0; i < attempts; i++) {
+      try {
+        const api = window.$memberstackDom?.getAppAndMember;
+        if (typeof api === "function") return await api();
+      } catch {
+        /* keep polling until Memberstack is ready */
+      }
+      await new Promise((r) => setTimeout(r, delayMs));
+    }
+    return null;
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
     if (access_level !== "member") return;
 
     const slot = document.getElementById(`kbm-vimeo-slot-${videoId}`);
@@ -98,13 +113,13 @@ const iframeSrc = enableVimeoPlayerApi
     function wireVideoLoginButton() {
       const btn = slot.querySelector("[data-kbm-video-login]");
       if (!(btn instanceof HTMLElement)) return;
-      btn.addEventListener("click", function (e) {
+      btn.addEventListener("click", (e) => {
         e.preventDefault();
         if (typeof window.kbmOpenMemberstackLoginModal === "function") {
           window.kbmOpenMemberstackLoginModal();
           return;
         }
-        var ms = window.$memberstackDom;
+        const ms = window.$memberstackDom;
         if (ms && typeof ms.openModal === "function") {
           void ms.openModal("LOGIN");
         }
@@ -142,43 +157,24 @@ const iframeSrc = enableVimeoPlayerApi
         return;
       }
 
-      const ms = window.$memberstackDom;
-      if (!ms || typeof ms.getCurrentMember !== "function") {
-        showLocked(true);
+      const res = await waitForMemberstackReady();
+      const member = res?.data?.member ?? null;
+      const isLoggedIn = Boolean(member);
+      const rawKinAccess = member?.customFields?.["kin-access"];
+      const hasVideoAccess = res ? hasKinVideoAccess(res) : false;
+
+      logKinVideoAccessDebug("GatedVimeoEmbed.iframe", {
+        member: res,
+        rawKinAccess,
+        finalHasVideoAccess: hasVideoAccess,
+      });
+
+      if (!hasVideoAccess) {
+        showLocked(!isLoggedIn);
         return;
       }
 
-      try {
-        const res = await ms.getCurrentMember();
-        const data = res?.data;
-        const member = (data?.member ?? data) || null;
-        if (!member) {
-          showLocked(true);
-          return;
-        }
-
-        const rawKinAccess = member.customFields?.["kin-access"];
-        const hasVideoAccess =
-          typeof window.kbmHasKinVideoAccess === "function"
-            ? window.kbmHasKinVideoAccess(res)
-            : false;
-
-        window.kbmLogKinVideoAccessDebug?.("GatedVimeoEmbed.iframe", {
-          member: res,
-          rawKinAccess,
-          finalHasVideoAccess: hasVideoAccess,
-        });
-
-        if (!hasVideoAccess) {
-          showLocked(false);
-          return;
-        }
-
-        showUnlockedIframe();
-      } catch (e) {
-        console.error("GatedVimeoEmbed MemberStack getCurrentMember failed:", e);
-        showLocked(true);
-      }
+      showUnlockedIframe();
     }
 
     function bindMemberstackAuthRefresh() {
@@ -186,10 +182,10 @@ const iframeSrc = enableVimeoPlayerApi
       const ms = window.$memberstackDom;
       if (!ms || typeof ms.on !== "function") return;
       authListenersBound = true;
-      ms.on("member.login", function () {
+      ms.on("member.login", () => {
         void resolveAccessAndRender();
       });
-      ms.on("member.logout", function () {
+      ms.on("member.logout", () => {
         void resolveAccessAndRender();
       });
     }
@@ -198,23 +194,11 @@ const iframeSrc = enableVimeoPlayerApi
       await resolveAccessAndRender();
 
       bindMemberstackAuthRefresh();
-      if (window.$memberstackDom?.onReady) {
-        void window.$memberstackDom.onReady.then(function () {
-          bindMemberstackAuthRefresh();
-        });
-      } else {
-        for (let i = 0; i < 30; i++) {
-          if (window.$memberstackDom?.on) {
-            bindMemberstackAuthRefresh();
-            break;
-          }
-          await new Promise(function (r) {
-            setTimeout(r, 200);
-          });
-        }
-      }
+      void window.$memberstackDom?.onReady?.then(() => {
+        bindMemberstackAuthRefresh();
+      });
 
-      window.addEventListener("auth:updated", function () {
+      window.addEventListener("auth:updated", () => {
         void resolveAccessAndRender();
       });
     }
