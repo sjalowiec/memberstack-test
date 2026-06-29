@@ -21,7 +21,11 @@ const description =
         <p class="account-page__lead account-page__lead--guest">
           Access saved patterns and your knitting workspace.
         </p>
-        <form data-ms-form="login" class="contact-form account-page__form">
+        <form
+          data-ms-form="login"
+          class="contact-form account-page__form"
+          {...{ redirect: "/account#my-patterns" } as Record<string, string>}
+        >
           <div class="contact-form__field">
             <label for="account-login-email">Email</label>
             <input
@@ -49,6 +53,14 @@ const description =
           </p>
           <button type="submit" class="contact-form__submit">Log in</button>
         </form>
+        <script is:inline>
+          (function () {
+            var form = document.querySelector('.account-page__guest form[data-ms-form="login"]');
+            if (!form) return;
+            var target = "/account" + (window.location.hash || "");
+            form.setAttribute("redirect", target);
+          })();
+        </script>
         <form
           class="account-page__ms-reset-sync"
           aria-hidden="true"

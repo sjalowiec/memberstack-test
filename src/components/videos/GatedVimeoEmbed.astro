@@ -76,7 +76,7 @@ const iframeSrc = enableVimeoPlayerApi
 
     function buildLockedMarkup(showLogin) {
       const loginBtn = showLogin
-        ? `<a href="#" class="kbm-video__cta kbm-video__cta--login" data-kbm-video-login data-ms-modal="login" data-ms-redirect="current-url">Log in to watch</a>`
+        ? `<button type="button" class="kbm-video__cta kbm-video__cta--login" data-kbm-video-login>Log in to watch</button>`
         : "";
       return `
   <div class="kbm-video__locked">
@@ -94,8 +94,27 @@ const iframeSrc = enableVimeoPlayerApi
 `;
     }
 
+    function wireVideoLoginButton() {
+      const btn = slot.querySelector("[data-kbm-video-login]");
+      if (!(btn instanceof HTMLElement)) return;
+      btn.addEventListener("click", function (e) {
+        e.preventDefault();
+        var returnPath =
+          window.location.pathname + window.location.search + window.location.hash;
+        if (typeof window.kbmOpenMemberstackLoginModal === "function") {
+          window.kbmOpenMemberstackLoginModal(returnPath);
+          return;
+        }
+        var ms = window.$memberstackDom;
+        if (ms && typeof ms.openModal === "function") {
+          void ms.openModal("LOGIN");
+        }
+      });
+    }
+
     function showLocked(showLogin) {
       slot.innerHTML = buildLockedMarkup(showLogin);
+      if (showLogin) wireVideoLoginButton();
       slot.setAttribute("data-state", "ready");
     }
 
@@ -255,6 +274,8 @@ const iframeSrc = enableVimeoPlayerApi
     background:#fff;
     color: var(--kbm-green, #52682d);
     border: 2px solid var(--kbm-green, #52682d);
+    cursor: pointer;
+    font: inherit;
   }
   .kbm-video__cta--login:hover{
     background: rgba(82, 104, 45, 0.08);

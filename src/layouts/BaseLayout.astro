@@ -180,9 +180,11 @@ const isProduction =
 </script>
 <script>
   import { hasKinVideoAccess, logKinVideoAccessDebug } from "../lib/kinVideoAccess";
+  import { openMemberstackLoginModal } from "../lib/memberstackLogin";
 
   window.kbmHasKinVideoAccess = hasKinVideoAccess;
   window.kbmLogKinVideoAccessDebug = logKinVideoAccessDebug;
+  window.kbmOpenMemberstackLoginModal = openMemberstackLoginModal;
 </script>
    
 <!-- MemberStack -->
@@ -201,6 +203,15 @@ const isProduction =
       <div class="ms-top-error__bar" aria-hidden="true"></div>
       <div class="ms-top-error__text"></div>
     </div>
+    <a
+      id="kbm-ms-login-proxy"
+      href="#"
+      data-ms-modal="login"
+      data-ms-redirect="/"
+      hidden
+      aria-hidden="true"
+      tabindex="-1"
+    ></a>
     <slot /> <!-- Page content (or Layout wrapper) goes here -->
 
     {toolPrintTitle && <ToolPrintFooter toolTitle={toolPrintTitle} />}

@@ -1,10 +1,14 @@
-import { applyMemberstackFormRedirect } from "../lib/memberstackReturnUrl";
+import { applyAccountLoginReturnPath } from "../lib/memberstackLogin";
 
 export function initAccountLoginRedirect(): void {
-  const form = document.querySelector<HTMLFormElement>(
-    '.account-page__guest form[data-ms-form="login"]',
-  );
-  if (form) applyMemberstackFormRedirect(form);
+  applyAccountLoginReturnPath();
+
+  const ms = window.$memberstackDom;
+  if (ms?.onReady) {
+    void ms.onReady.then(() => {
+      applyAccountLoginReturnPath();
+    });
+  }
 }
 
 if (typeof document !== "undefined") {

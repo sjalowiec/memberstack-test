@@ -62,6 +62,8 @@ declare global {
       init?: () => void;
       onReady?: Promise<unknown>;
     };
+    /** Opens Memberstack login modal with an explicit return path (dynamic CTAs). */
+    kbmOpenMemberstackLoginModal?: (returnPath?: string) => void;
     /** Two-step password reset modal (see AccountPasswordResetModal.astro). */
     kbmOpenAccountPasswordResetModal?: (prefillEmail?: string) => void;
     kbmCloseAccountPasswordResetModal?: () => void;
