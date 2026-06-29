@@ -109,8 +109,43 @@ describe("runUpdateActiveSavedCustomPattern", () => {
     expect(smartSaveCustomPatternProject).toHaveBeenCalledWith(
       expect.objectContaining({
         mode: "update",
+        activeProjectId: "proj-sue",
         resolveName: expect.any(Function),
         root: measureRoot,
+      }),
+    );
+  });
+
+  it("passes pinned activeProjectId and can skip pre-save prepare", async () => {
+    writeActiveCustomPatternProjectId("proj-sue", SUES_PATTERN);
+    saveCurrentPattern({
+      patternProject: { title: SUES_PATTERN, notes: "", titleCustomized: true },
+    });
+    vi.mocked(smartSaveCustomPatternProject).mockResolvedValue({
+      ok: true,
+      project: {
+        id: "proj-sue",
+        name: SUES_PATTERN,
+        family: "sleeveless",
+        source: "express",
+        notes: "",
+        pattern: {},
+        customOverrides: {},
+        createdAt: "",
+        updatedAt: "",
+      },
+      created: false,
+    });
+
+    await runUpdateActiveSavedCustomPattern(undefined, {
+      activeProjectId: "proj-sue",
+      skipPreSavePrepare: true,
+    });
+
+    expect(smartSaveCustomPatternProject).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: "update",
+        activeProjectId: "proj-sue",
       }),
     );
   });
