@@ -3,25 +3,9 @@ import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
 import videosRaw from "../../data/videos-public.json";
 import { getPreviewMember } from "../../lib/getPreviewMember";
-import { filterPublicCatalogVideos, catalogVideoIsPublic } from "../../lib/videoPublic";
+import { filterPublicCatalogVideos } from "../../lib/videoPublic";
 
 const publicVideos = filterPublicCatalogVideos(Array.isArray(videosRaw) ? videosRaw : []);
-
-const debugVideo5001 = (Array.isArray(videosRaw) ? videosRaw : []).find(
-  (v) => String(v.content_id) === "5001",
-);
-if (debugVideo5001) {
-  console.log("[KBM catalog debug] videos/index loader", {
-    source: "src/data/videos-public.json",
-    content_id: debugVideo5001.content_id,
-    slug: debugVideo5001.slug,
-    status: debugVideo5001.status,
-    catalogVideoIsPublic: catalogVideoIsPublic(debugVideo5001),
-    inPublicCatalogEmbed: publicVideos.some((v) => String(v.content_id) === "5001"),
-    publicVideoCount: publicVideos.length,
-    rawVideoCount: Array.isArray(videosRaw) ? videosRaw.length : 0,
-  });
-}
 
 // --- Featured tip (Tuesday Tip / Weekly Quick Win) ---
 // Link and text are resolved from videos-public.json via tipOfWeek/isTipOfWeek.
@@ -173,7 +157,9 @@ const forceMemberView =
     window.__FORCE_ALL_VIDEOS_LOCKED__ = FORCE_ALL_VIDEOS_LOCKED;
   </script>
 
-  <script is:inline>
+  <script>
+    import { hasKinVideoAccess } from "../../lib/kinVideoAccess";
+
     (function () {
       const FREE_FILTER_VALUE = "__free__";
       const raw = document.getElementById("videos-data")?.textContent || "{}";
@@ -220,16 +206,7 @@ const forceMemberView =
         const member = res?.data?.member ?? null;
         if (!member) return { isLoggedIn: false, hasVideoAccess: false, member: null };
 
-        const rawKinAccess = member.customFields?.["kin-access"];
-        const hasVideoAccess =
-          typeof window.kbmHasKinVideoAccess === "function"
-            ? window.kbmHasKinVideoAccess(res)
-            : false;
-        window.kbmLogKinVideoAccessDebug?.("videos/index.catalog", {
-          member: res,
-          rawKinAccess,
-          finalHasVideoAccess: hasVideoAccess,
-        });
+        const hasVideoAccess = hasKinVideoAccess(res);
 
         return { isLoggedIn: true, hasVideoAccess: hasVideoAccess, member: member };
       } catch (e) {
