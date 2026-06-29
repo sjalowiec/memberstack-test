@@ -29,6 +29,8 @@ import {
   readAvailableNeedlesFromAllSources,
   syncAvailableNeedlesMirrorsFromAllSources,
 } from "../lib/patterns/availableNeedlesMirrors";
+import { runUpdateActiveSavedCustomPattern } from "../lib/patterns/customPatternEditingBannerActions";
+import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
 import { isDropShoulderWorkspaceMeasurementSummaryPage } from "../lib/patterns/measurementBlueprintSvgUrl";
 import { applySleevelessPatternOnlineProjectHeader } from "./sleevelessPatternOnlineProjectHeader";
 import {
@@ -43,8 +45,10 @@ import {
 } from "../lib/patterns/patternStorage";
 import {
   LEGACY_STANDALONE_MEASUREMENTS_KEY,
+  flushCustomBuildMeasurementOverridesToCanonical,
   loadMeasurementOverrides,
   persistMeasurementOverrides,
+  resolveCustomBuildSaveMeasureFlushRoot,
 } from "../lib/patterns/sleevelessCustomMeasurementStorage";
 import { computeFitDerivedMeasurementOverrides } from "../lib/patterns/sleevelessEditFitRecalc";
 import { deriveSleevelessEditWorkspaceBodyShape } from "../lib/patterns/sleevelessEditWorkspaceBodyShape";
@@ -657,7 +661,11 @@ function initSleevelessPatternEditDrawer(): void {
         });
       }
 
-      // 2) Map wizard selections into canonical + patternBuilderData (re-derives measurements).
+      // 2) Flush diagram inputs, then map wizard selections into canonical + patternBuilderData.
+      const measureFlushRoot = resolveCustomBuildSaveMeasureFlushRoot(
+        measureBody ?? measurePane ?? drawer ?? undefined,
+      );
+      flushCustomBuildMeasurementOverridesToCanonical({ root: measureFlushRoot ?? undefined });
       syncCustomBuildToPatternStorage({ awaitCharts: false });
 
       // 3) Gauge → same canonical + patternBuilderData sections the gauge step / Express write.
@@ -710,7 +718,20 @@ function initSleevelessPatternEditDrawer(): void {
       const refresh = getRequestRefresh();
       if (refresh) await refresh();
 
-      // 5) Return to the updated pattern view.
+      // 5) Persist linked saved project (Update Pattern = save + regenerate).
+      if (readActiveCustomPatternProjectId()) {
+        const saveRes = await runUpdateActiveSavedCustomPattern(measureFlushRoot, {
+          onStatus: (message, isError) => {
+            if (isError) showErrors([message]);
+          },
+        });
+        if (!saveRes.ok) {
+          showErrors([saveRes.error]);
+          return;
+        }
+      }
+
+      // 6) Return to the updated pattern view.
       if (savedNote) savedNote.hidden = false;
       closeDrawer({ discardEdits: false });
       const top = document.getElementById("sleeveless-pattern-top");

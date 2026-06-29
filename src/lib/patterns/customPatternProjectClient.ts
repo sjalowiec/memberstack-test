@@ -19,9 +19,11 @@ import {
 } from "./patternConstructionIdentity";
 import {
   getCurrentPattern,
+  getPatternData,
   replaceWorkingDraftFromSavedPattern,
   type SleevelessPatternRecord,
 } from "./patternStorage";
+import { mergedPatternForDisplayFromSources } from "./sleevelessPatternBuilderMerge";
 import {
   flushCustomBuildMeasurementOverridesToCanonical,
   loadMeasurementOverrides,
@@ -145,7 +147,7 @@ export function buildSavePayloadFromWorkingDraft(
     flushCustomBuildMeasurementOverridesToCanonical({ root: flushRoot ?? undefined });
   }
 
-  let pattern = getCurrentPattern();
+  let pattern = mergeWorkingDraftForCustomPatternSave(getCurrentPattern());
   const meta = getPatternProjectMeta(pattern);
   const resolvedName = (name ?? meta.title).trim() || "Untitled pattern";
   const measurementOverrides = loadMeasurementOverrides();
@@ -174,7 +176,7 @@ export function buildSavePayloadFromWorkingDraft(
     { customOverrides, allowDropShoulder },
   );
 
-  return {
+  const payload: SaveCustomPatternProjectRequest = {
     name: resolvedName,
     notes: meta.notes,
     family: options.family ?? "sleeveless",
@@ -182,6 +184,14 @@ export function buildSavePayloadFromWorkingDraft(
     pattern,
     customOverrides,
   };
+
+  logCustomPatternSavePayloadDiagnostics(payload, {
+    phase: "before-save",
+    patternId: readActiveCustomPatternProjectId() || pattern.id,
+    mode: readActiveCustomPatternProjectId() ? "update" : "create",
+  });
+
+  return payload;
 }
 
 export async function createCustomPatternProject(
@@ -209,6 +219,21 @@ export async function updateCustomPatternProject(
     body: JSON.stringify(payload),
   });
   if (!res.ok) return res;
+  logCustomPatternSavePayloadDiagnostics(
+    {
+      name: res.project.name,
+      notes: res.project.notes,
+      family: res.project.family,
+      source: res.project.source,
+      pattern: res.project.pattern,
+      customOverrides: res.project.customOverrides ?? {},
+    },
+    {
+      phase: "after-save",
+      patternId: res.project.id,
+      mode: "update",
+    },
+  );
   return { ok: true, project: res.project, authMode: res.authMode };
 }
 
@@ -292,6 +317,65 @@ function patternSectionRecord(section: unknown): Record<string, unknown> {
   return section && typeof section === "object" && !Array.isArray(section)
     ? (section as Record<string, unknown>)
     : {};
+}
+
+/** Dev logging for saved-pattern update/create payload diagnostics. */
+export function logCustomPatternSavePayloadDiagnostics(
+  payload: SaveCustomPatternProjectRequest,
+  context: {
+    phase: "before-save" | "after-save";
+    patternId?: string;
+    mode?: "create" | "update";
+  },
+): void {
+  if (typeof console === "undefined" || typeof console.info !== "function") return;
+
+  const pattern = payload.pattern;
+  const fit = patternSectionRecord(pattern.fit);
+  const sm = patternSectionRecord(fit.selectedMeasurements);
+  const yarnGauge = patternSectionRecord(pattern.yarnGauge);
+  const machine = patternSectionRecord(pattern.machine);
+  const instructions = patternSectionRecord(pattern.instructions);
+  const calculations = patternSectionRecord(pattern.calculations);
+
+  console.info("[kbm] custom-pattern save payload", {
+    phase: context.phase,
+    mode: context.mode,
+    patternId: context.patternId ?? pattern.id,
+    patternType: pattern.patternType,
+    payloadKeys: ["name", "notes", "family", "source", "pattern", "customOverrides"].filter(
+      (key) => key in payload,
+    ),
+    patternSectionKeys: Object.keys(pattern).filter(
+      (key) => !["id", "createdAt", "updatedAt"].includes(key),
+    ),
+    summaryFieldsPresent: {
+      selectedMeasurements: Object.keys(sm).length > 0,
+      finishedBustChest: sm.finished_bust_chest !== undefined && sm.finished_bust_chest !== "",
+      stitchGaugePerInch: yarnGauge.stitchGauge !== undefined && yarnGauge.stitchGauge !== "",
+      gaugeStitchRaw: yarnGauge.gaugeStitchRaw !== undefined && yarnGauge.gaugeStitchRaw !== "",
+      availableNeedles: machine.availableNeedles !== undefined && machine.availableNeedles !== "",
+      instructions: Object.keys(instructions).length > 0,
+      calculations: Object.keys(calculations).length > 0,
+    },
+  });
+}
+
+/**
+ * Saved projects must be self-contained in `pattern` — merge builder mirrors
+ * (`patternBuilderData`) into canonical sections before persisting.
+ */
+function mergeWorkingDraftForCustomPatternSave(
+  canonical: SleevelessPatternRecord,
+): SleevelessPatternRecord {
+  const merged = mergedPatternForDisplayFromSources(canonical, getPatternData());
+  return {
+    ...canonical,
+    style: patternSectionRecord(merged.style),
+    fit: patternSectionRecord(merged.fit),
+    yarnGauge: patternSectionRecord(merged.yarnGauge),
+    machine: patternSectionRecord(merged.machine),
+  };
 }
 
 /**
