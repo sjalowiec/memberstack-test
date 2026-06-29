@@ -64,7 +64,7 @@ const iframeSrc = enableVimeoPlayerApi
   </div>
 </div>
 
-<script is:inline define:vars={{ videoId, access_level, iframeSrc, title, devBypass, enableVimeoPlayerApi, iframePlayerId }}>
+<script is:inline define:vars={{ videoId, access_level, iframeSrc, title, devBypass, enableVimeoPlayerApi, iframePlayerId, ctaHref, ctaText }}>
   document.addEventListener("DOMContentLoaded", async () => {
     if (access_level !== "member") return;
 
@@ -74,19 +74,30 @@ const iframeSrc = enableVimeoPlayerApi
     const iframeIdAttr =
       enableVimeoPlayerApi && iframePlayerId ? ` id="${iframePlayerId}"` : "";
 
-    const lockedMarkup = `
+    function buildLockedMarkup(showLogin) {
+      const loginBtn = showLogin
+        ? `<a href="#" class="kbm-video__cta kbm-video__cta--login" data-kbm-video-login data-ms-modal="login" data-ms-redirect="current-url">Log in to watch</a>`
+        : "";
+      return `
   <div class="kbm-video__locked">
     <div class="kbm-video__overlay">
       <div class="kbm-video__lockline">
         🔒 <strong>Members only</strong>
       </div>
       <p>This video is available with membership.</p>
-      <a href="/membership" class="kbm-video__cta">
-        Join to watch
-      </a>
+      <div class="kbm-video__actions">
+        ${loginBtn}
+        <a href="${ctaHref}" class="kbm-video__cta">${ctaText}</a>
+      </div>
     </div>
   </div>
 `;
+    }
+
+    function showLocked(showLogin) {
+      slot.innerHTML = buildLockedMarkup(showLogin);
+      slot.setAttribute("data-state", "ready");
+    }
 
     /* Dev-only: env bypass or localhost ?member=true (window.__KBM_DEV_MEMBER__ in BaseLayout). */
     if (devBypass || window.__KBM_DEV_MEMBER__ === true) {
@@ -110,16 +121,14 @@ const iframeSrc = enableVimeoPlayerApi
     }
 
     if (!window.$memberstackDom) {
-      slot.innerHTML = lockedMarkup;
-      slot.setAttribute("data-state", "ready");
+      showLocked(true);
       return;
     }
 
     try {
       const { data: member } = await window.$memberstackDom.getCurrentMember();
       if (!member) {
-        slot.innerHTML = lockedMarkup;
-        slot.setAttribute("data-state", "ready");
+        showLocked(true);
         return;
       }
 
@@ -136,8 +145,7 @@ const iframeSrc = enableVimeoPlayerApi
       });
 
       if (!hasVideoAccess) {
-        slot.innerHTML = lockedMarkup;
-        slot.setAttribute("data-state", "ready");
+        showLocked(false);
         return;
       }
 
@@ -155,8 +163,7 @@ const iframeSrc = enableVimeoPlayerApi
       slot.setAttribute("data-state", "ready");
     } catch (e) {
       console.error("GatedVimeoEmbed MemberStack getCurrentMember failed:", e);
-      slot.innerHTML = lockedMarkup;
-      slot.setAttribute("data-state", "ready");
+      showLocked(true);
     }
   });
 </script>
@@ -228,6 +235,13 @@ const iframeSrc = enableVimeoPlayerApi
     margin:0;
     max-width: 42ch;
   }
+  .kbm-video__actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    justify-content:center;
+    align-items:center;
+  }
   .kbm-video__cta{
     display:inline-block;
     padding:10px 14px;
@@ -236,5 +250,13 @@ const iframeSrc = enableVimeoPlayerApi
     font-weight:700;
     background: var(--kbm-green, #52682d);
     color:#fff;
+  }
+  .kbm-video__cta--login{
+    background:#fff;
+    color: var(--kbm-green, #52682d);
+    border: 2px solid var(--kbm-green, #52682d);
+  }
+  .kbm-video__cta--login:hover{
+    background: rgba(82, 104, 45, 0.08);
   }
 </style>

@@ -15,7 +15,7 @@ const { loginUrl = "/login", className, showBackLink = false } = Astro.props;
       <span class="login-nudge-sep" aria-hidden="true"> · </span>
     </>
   )}
-  Already a member? <a data-ms-modal="login" data-ms-content="!members" class="login-nudge-link">Log in</a>.
+  Already a member? <a href="#" data-ms-modal="login" data-ms-redirect="current-url" data-ms-content="!members" class="login-nudge-link">Log in</a>.
 </div>
 
 <style>
