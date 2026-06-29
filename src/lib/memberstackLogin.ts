@@ -1,5 +1,7 @@
+import { notifyMemberstackLoginSuccess } from "./memberstackPostLogin";
 import {
   MY_PATTERNS_RETURN_PATH,
+  getMemberstackReturnPath,
   resolveAccountLoginRedirectPath,
 } from "./memberstackReturnUrl";
 
@@ -10,22 +12,42 @@ export const MEMBERSTACK_LOGIN_PROXY_ID = "kbm-ms-login-proxy";
 
 /**
  * Opens the Memberstack login modal with an explicit post-login return path.
- * Uses a static proxy anchor; dynamically injected `data-ms-modal` markup is not bound at init.
+ * Programmatic opens use `openModal("LOGIN")` so its promise resolves on success;
+ * Memberstack prebuilt modals do not auto-close unless `hideModal()` runs (see post-login handler).
  */
 export function openMemberstackLoginModal(returnPath?: string): void {
-  const proxy = document.getElementById(MEMBERSTACK_LOGIN_PROXY_ID);
+  const redirect = returnPath ?? getMemberstackReturnPath();
 
-  if (proxy instanceof HTMLAnchorElement) {
-    // "current-url" is Memberstack's magic value for stay-on-page after modal login.
-    proxy.setAttribute("data-ms-redirect", returnPath ?? "current-url");
+  function openViaModal(ms: NonNullable<typeof window.$memberstackDom>): boolean {
+    if (typeof ms.openModal !== "function") return false;
+    void ms
+      .openModal("LOGIN")
+      .then(() => {
+        notifyMemberstackLoginSuccess();
+      })
+      .catch(() => {
+        /* dismissed or failed to open */
+      });
+    return true;
+  }
+
+  function openViaProxy(): boolean {
+    const proxy = document.getElementById(MEMBERSTACK_LOGIN_PROXY_ID);
+    if (!(proxy instanceof HTMLAnchorElement)) return false;
+    proxy.setAttribute("data-ms-redirect", redirect);
     proxy.click();
-    return;
+    return true;
   }
 
   const ms = window.$memberstackDom;
-  if (typeof ms?.openModal === "function") {
-    void ms.openModal("LOGIN");
-  }
+  if (ms && openViaModal(ms)) return;
+  if (openViaProxy()) return;
+
+  void ms?.onReady?.then(() => {
+    const readyMs = window.$memberstackDom;
+    if (readyMs && openViaModal(readyMs)) return;
+    openViaProxy();
+  });
 }
 
 /** Account page: form redirect + modal login triggers use the same explicit return path. */

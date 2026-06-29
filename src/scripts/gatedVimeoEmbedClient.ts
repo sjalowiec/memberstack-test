@@ -1,4 +1,6 @@
 import { hasKinVideoAccess, logKinVideoAccessDebug } from "../lib/kinVideoAccess";
+import { openMemberstackLoginModal } from "../lib/memberstackLogin";
+import { getMemberstackReturnPath } from "../lib/memberstackReturnUrl";
 
 async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
   for (let i = 0; i < attempts; i++) {
@@ -77,14 +79,7 @@ function initGatedVimeoEmbed(root: HTMLElement) {
     if (!(btn instanceof HTMLElement)) return;
     btn.addEventListener("click", (e) => {
       e.preventDefault();
-      if (typeof window.kbmOpenMemberstackLoginModal === "function") {
-        window.kbmOpenMemberstackLoginModal();
-        return;
-      }
-      const ms = window.$memberstackDom;
-      if (ms && typeof ms.openModal === "function") {
-        void ms.openModal("LOGIN");
-      }
+      openMemberstackLoginModal(getMemberstackReturnPath());
     });
   }
 
