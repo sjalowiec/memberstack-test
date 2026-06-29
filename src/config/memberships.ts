@@ -57,6 +57,14 @@ export const MEMBERSHIPS = {
     MEMBERSHIPS.premiumMonthly.memberstackPlanId,
     MEMBERSHIPS.premiumAnnual.memberstackPlanId,
   ] as const;
+
+  /** Basic + premium plans that grant catalog video access (excludes beta). */
+  export const VIDEO_MEMBERSHIP_PLAN_IDS = [
+    MEMBERSHIPS.basicMonthly.memberstackPlanId,
+    MEMBERSHIPS.basicAnnual.memberstackPlanId,
+    MEMBERSHIPS.premiumMonthly.memberstackPlanId,
+    MEMBERSHIPS.premiumAnnual.memberstackPlanId,
+  ] as const;
   
   export const MEMBERSHIP_PRICE_IDS = {
     basicMonthly: MEMBERSHIPS.basicMonthly.memberstackPriceId,

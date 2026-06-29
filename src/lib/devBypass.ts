@@ -43,10 +43,13 @@ function isLocalhostRuntime(): boolean {
   );
 }
 
-const devBypassOptIn =
+export const devBypassOptIn =
   typeof import.meta !== "undefined" &&
   !!import.meta.env?.DEV &&
   import.meta.env.PUBLIC_DEV_BYPASS_GATING === "true";
+
+/** Catalog video bypass: explicit env opt-in only (never localhost auto or ?member=true). */
+export const videoDevBypass = devBypassOptIn;
 
 // Local dev override: allows testing pattern flows without Memberstack login.
 export const devBypass = devBypassOptIn || isLocalhostRuntime();

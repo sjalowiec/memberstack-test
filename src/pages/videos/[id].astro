@@ -191,9 +191,9 @@ const enableVideoChapterControls = hasCatalogChapters;
         <script>
           import { MEMBER_PLAN_IDS } from "../../config/memberships";
           import { hasKinVideoAccess, logKinVideoAccessDebug } from "../../lib/kinVideoAccess";
+          import { videoDevBypass } from "../../lib/devBypass";
 
-          // --- Memberstack: client-side unlock for jump links (hasVideoAccess / kin-access) ---
-          /* Paid-tier plan IDs: used only for isMember. Unlock uses hasVideoAccess (kin-access only). */
+          // --- Memberstack: client-side unlock for jump links (basic/premium plan required) ---
           const memberPlanIds = new Set<string>(MEMBER_PLAN_IDS);
 
           async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
@@ -221,8 +221,7 @@ const enableVideoChapterControls = hasCatalogChapters;
             const isMember = [...activePlanIds].some((id) => memberPlanIds.has(id));
 
             const rawKinAccess = member?.customFields?.["kin-access"];
-            const hasVideoAccess =
-              Boolean(member) && hasKinVideoAccess(rawKinAccess);
+            const hasVideoAccess = hasKinVideoAccess(member);
 
             logKinVideoAccessDebug("videos/[id].jumpLinks", {
               member,
@@ -248,11 +247,10 @@ const enableVideoChapterControls = hasCatalogChapters;
             // default: locked
             setAccess(false);
 
-            // Dev-only gating bypass: env flag or localhost ?member=true (see BaseLayout).
-            if (window.__DEV_BYPASS_GATING || window.__KBM_DEV_MEMBER__) {
+            // Dev-only gating bypass: PUBLIC_DEV_BYPASS_GATING=true on Astro dev server.
+            if (videoDevBypass) {
               console.log("[KBM video access debug]", "videos/[id].setAccess.unlock", {
-                __DEV_BYPASS_GATING: window.__DEV_BYPASS_GATING,
-                __KBM_DEV_MEMBER__: window.__KBM_DEV_MEMBER__,
+                videoDevBypass,
               });
               setAccess(true);
               return;

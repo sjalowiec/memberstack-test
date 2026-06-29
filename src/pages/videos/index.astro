@@ -233,9 +233,9 @@ const forceMemberView =
         const rawKinAccess = member.customFields?.["kin-access"];
         const hasVideoAccess =
           typeof window.kbmHasKinVideoAccess === "function"
-            ? window.kbmHasKinVideoAccess(rawKinAccess)
-            : String(rawKinAccess ?? "").trim().toLowerCase() !== "false";
-        const finalHasVideoAccess = Boolean(member) && (hasVideoAccess || isMember);
+            ? window.kbmHasKinVideoAccess(member)
+            : false;
+        const finalHasVideoAccess = hasVideoAccess;
         window.kbmLogKinVideoAccessDebug?.("videos/index.catalog", {
           member,
           rawKinAccess,

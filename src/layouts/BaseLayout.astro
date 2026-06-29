@@ -418,9 +418,7 @@ const isProduction =
         try {
           const { data: member } = await window.$memberstackDom.getCurrentMember();
           const rawKinAccess = member?.customFields?.["kin-access"];
-          const hasVideoAccess =
-            Boolean(member) &&
-            (window.kbmHasKinVideoAccess?.(rawKinAccess) ?? false);
+          const hasVideoAccess = window.kbmHasKinVideoAccess?.(member) ?? false;
 
           window.kbmLogKinVideoAccessDebug?.("BaseLayout.ms-logged-in", {
             member,

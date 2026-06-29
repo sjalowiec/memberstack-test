@@ -2,10 +2,10 @@
 /**
  * GatedVimeoEmbed.astro
  * - If access_level === "open": render iframe for everyone.
- * - If access_level === "member": iframe when logged in and kin-access is not false/"false" (see window.kbmHasKinVideoAccess).
- * - When dev bypass is on (localhost + PUBLIC_DEV_BYPASS_GATING=true), member videos show without login.
+ * - If access_level === "member": iframe when member has active basic or premium plan (window.kbmHasKinVideoAccess).
+ * - When PUBLIC_DEV_BYPASS_GATING=true on the Astro dev server, member videos show without login.
  */
-import { devBypass } from "../../lib/devBypass";
+import { videoDevBypass } from "../../lib/devBypass";
 
 const {
   videoId,
@@ -64,7 +64,7 @@ const iframeSrc = enableVimeoPlayerApi
   </div>
 </div>
 
-<script is:inline define:vars={{ videoId, access_level, iframeSrc, title, devBypass, enableVimeoPlayerApi, iframePlayerId, ctaHref, ctaText }}>
+<script is:inline define:vars={{ videoId, access_level, iframeSrc, title, videoDevBypass, enableVimeoPlayerApi, iframePlayerId, ctaHref, ctaText }}>
   document.addEventListener("DOMContentLoaded", async () => {
     if (access_level !== "member") return;
 
@@ -118,11 +118,11 @@ const iframeSrc = enableVimeoPlayerApi
       slot.setAttribute("data-state", "ready");
     }
 
-    /* Dev-only: env bypass or localhost ?member=true (window.__KBM_DEV_MEMBER__ in BaseLayout). */
-    if (devBypass || window.__KBM_DEV_MEMBER__ === true) {
+    /* Dev-only: explicit PUBLIC_DEV_BYPASS_GATING=true on Astro dev server. */
+    if (videoDevBypass) {
       console.log("[KBM video access debug]", "GatedVimeoEmbed.unlock", {
         videoId,
-        reason: devBypass ? "devBypass(PUBLIC_DEV_BYPASS_GATING)" : "__KBM_DEV_MEMBER__(localhost?member=true)",
+        reason: "videoDevBypass(PUBLIC_DEV_BYPASS_GATING=true)",
       });
       slot.innerHTML = `
         <iframe${iframeIdAttr}
@@ -154,8 +154,8 @@ const iframeSrc = enableVimeoPlayerApi
       const rawKinAccess = member.customFields?.["kin-access"];
       const hasVideoAccess =
         typeof window.kbmHasKinVideoAccess === "function"
-          ? window.kbmHasKinVideoAccess(rawKinAccess)
-          : String(rawKinAccess ?? "").trim().toLowerCase() !== "false";
+          ? window.kbmHasKinVideoAccess(member)
+          : false;
 
       window.kbmLogKinVideoAccessDebug?.("GatedVimeoEmbed.iframe", {
         member,
