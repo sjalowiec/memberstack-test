@@ -278,6 +278,11 @@ const isProduction =
   window.addEventListener("pageshow", () => setBanner(""));
 })();
 </script>
+    <script>
+      import { initMemberstackPostLoginHandlers } from "../lib/memberstackPostLogin";
+
+      initMemberstackPostLoginHandlers();
+    </script>
     <script is:inline>
   window.$memberstackDom?.onReady?.then(() => {
     window.$memberstackDom?.init?.();

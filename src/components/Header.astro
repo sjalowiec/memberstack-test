@@ -1911,6 +1911,9 @@ div[data-ms-modal-overlay] {
       document.addEventListener("visibilitychange", () => {
         if (!document.hidden) refreshHeaderAuthUI();
       });
+      window.addEventListener("auth:updated", () => {
+        void refreshHeaderAuthUI();
+      });
     })();
   })();
 </script>

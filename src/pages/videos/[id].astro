@@ -243,11 +243,9 @@ const enableVideoChapterControls = hasCatalogChapters;
             });
           }
 
-          (async () => {
-            // default: locked
+          async function refreshJumpLinkAccess() {
             setAccess(false);
 
-            // Dev-only gating bypass: PUBLIC_DEV_BYPASS_GATING=true on Astro dev server.
             if (videoDevBypass) {
               console.log("[KBM video access debug]", "videos/[id].setAccess.unlock", {
                 videoDevBypass,
@@ -256,11 +254,8 @@ const enableVideoChapterControls = hasCatalogChapters;
               return;
             }
 
-            // Optional query override: ?mode=full
             const urlParams = new URLSearchParams(window.location.search);
-            const devFull = urlParams.get("mode") === "full";
-
-            if (devFull) {
+            if (urlParams.get("mode") === "full") {
               console.log("[KBM video access debug]", "videos/[id].setAccess.unlock", { mode: "full" });
               setAccess(true);
               return;
@@ -269,6 +264,31 @@ const enableVideoChapterControls = hasCatalogChapters;
             const res = await waitForMemberstackReady();
             const viewer = getViewerStateFromRes(res);
             setAccess(Boolean(viewer.hasVideoAccess));
+          }
+
+          let jumpLinkAuthBound = false;
+          function bindJumpLinkAuthRefresh() {
+            if (jumpLinkAuthBound) return;
+            const ms = window.$memberstackDom;
+            if (!ms?.on) return;
+            jumpLinkAuthBound = true;
+            ms.on("member.login", () => {
+              void refreshJumpLinkAccess();
+            });
+            ms.on("member.logout", () => {
+              void refreshJumpLinkAccess();
+            });
+          }
+
+          void (async () => {
+            await refreshJumpLinkAccess();
+            bindJumpLinkAuthRefresh();
+            void window.$memberstackDom?.onReady?.then(() => {
+              bindJumpLinkAuthRefresh();
+            });
+            window.addEventListener("auth:updated", () => {
+              void refreshJumpLinkAccess();
+            });
           })();
         </script>
 

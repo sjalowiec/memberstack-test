@@ -1,5 +1,4 @@
 import {
-  getMemberstackReturnPath,
   MY_PATTERNS_RETURN_PATH,
   resolveAccountLoginRedirectPath,
 } from "./memberstackReturnUrl";
@@ -14,11 +13,11 @@ export const MEMBERSTACK_LOGIN_PROXY_ID = "kbm-ms-login-proxy";
  * Uses a static proxy anchor; dynamically injected `data-ms-modal` markup is not bound at init.
  */
 export function openMemberstackLoginModal(returnPath?: string): void {
-  const path = returnPath ?? getMemberstackReturnPath();
   const proxy = document.getElementById(MEMBERSTACK_LOGIN_PROXY_ID);
 
   if (proxy instanceof HTMLAnchorElement) {
-    proxy.setAttribute("data-ms-redirect", path);
+    // "current-url" is Memberstack's magic value for stay-on-page after modal login.
+    proxy.setAttribute("data-ms-redirect", returnPath ?? "current-url");
     proxy.click();
     return;
   }

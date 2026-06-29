@@ -65,7 +65,7 @@ const iframeSrc = enableVimeoPlayerApi
 </div>
 
 <script is:inline define:vars={{ videoId, access_level, iframeSrc, title, videoDevBypass, enableVimeoPlayerApi, iframePlayerId, ctaHref, ctaText }}>
-  document.addEventListener("DOMContentLoaded", async () => {
+  document.addEventListener("DOMContentLoaded", function () {
     if (access_level !== "member") return;
 
     const slot = document.getElementById(`kbm-vimeo-slot-${videoId}`);
@@ -73,6 +73,7 @@ const iframeSrc = enableVimeoPlayerApi
 
     const iframeIdAttr =
       enableVimeoPlayerApi && iframePlayerId ? ` id="${iframePlayerId}"` : "";
+    let authListenersBound = false;
 
     function buildLockedMarkup(showLogin) {
       const loginBtn = showLogin
@@ -99,10 +100,8 @@ const iframeSrc = enableVimeoPlayerApi
       if (!(btn instanceof HTMLElement)) return;
       btn.addEventListener("click", function (e) {
         e.preventDefault();
-        var returnPath =
-          window.location.pathname + window.location.search + window.location.hash;
         if (typeof window.kbmOpenMemberstackLoginModal === "function") {
-          window.kbmOpenMemberstackLoginModal(returnPath);
+          window.kbmOpenMemberstackLoginModal();
           return;
         }
         var ms = window.$memberstackDom;
@@ -118,12 +117,7 @@ const iframeSrc = enableVimeoPlayerApi
       slot.setAttribute("data-state", "ready");
     }
 
-    /* Dev-only: explicit PUBLIC_DEV_BYPASS_GATING=true on Astro dev server. */
-    if (videoDevBypass) {
-      console.log("[KBM video access debug]", "GatedVimeoEmbed.unlock", {
-        videoId,
-        reason: "videoDevBypass(PUBLIC_DEV_BYPASS_GATING=true)",
-      });
+    function showUnlockedIframe() {
       slot.innerHTML = `
         <iframe${iframeIdAttr}
           src="${iframeSrc}"
@@ -136,56 +130,96 @@ const iframeSrc = enableVimeoPlayerApi
         ></iframe>
       `;
       slot.setAttribute("data-state", "ready");
-      return;
     }
 
-    if (!window.$memberstackDom) {
-      showLocked(true);
-      return;
-    }
+    async function resolveAccessAndRender() {
+      if (videoDevBypass) {
+        console.log("[KBM video access debug]", "GatedVimeoEmbed.unlock", {
+          videoId,
+          reason: "videoDevBypass(PUBLIC_DEV_BYPASS_GATING=true)",
+        });
+        showUnlockedIframe();
+        return;
+      }
 
-    try {
-      const res = await window.$memberstackDom.getCurrentMember();
-      const data = res?.data;
-      const member = (data?.member ?? data) || null;
-      if (!member) {
+      const ms = window.$memberstackDom;
+      if (!ms || typeof ms.getCurrentMember !== "function") {
         showLocked(true);
         return;
       }
 
-      const rawKinAccess = member.customFields?.["kin-access"];
-      const hasVideoAccess =
-        typeof window.kbmHasKinVideoAccess === "function"
-          ? window.kbmHasKinVideoAccess(res)
-          : false;
+      try {
+        const res = await ms.getCurrentMember();
+        const data = res?.data;
+        const member = (data?.member ?? data) || null;
+        if (!member) {
+          showLocked(true);
+          return;
+        }
 
-      window.kbmLogKinVideoAccessDebug?.("GatedVimeoEmbed.iframe", {
-        member: res,
-        rawKinAccess,
-        finalHasVideoAccess: hasVideoAccess,
+        const rawKinAccess = member.customFields?.["kin-access"];
+        const hasVideoAccess =
+          typeof window.kbmHasKinVideoAccess === "function"
+            ? window.kbmHasKinVideoAccess(res)
+            : false;
+
+        window.kbmLogKinVideoAccessDebug?.("GatedVimeoEmbed.iframe", {
+          member: res,
+          rawKinAccess,
+          finalHasVideoAccess: hasVideoAccess,
+        });
+
+        if (!hasVideoAccess) {
+          showLocked(false);
+          return;
+        }
+
+        showUnlockedIframe();
+      } catch (e) {
+        console.error("GatedVimeoEmbed MemberStack getCurrentMember failed:", e);
+        showLocked(true);
+      }
+    }
+
+    function bindMemberstackAuthRefresh() {
+      if (authListenersBound) return;
+      const ms = window.$memberstackDom;
+      if (!ms || typeof ms.on !== "function") return;
+      authListenersBound = true;
+      ms.on("member.login", function () {
+        void resolveAccessAndRender();
       });
+      ms.on("member.logout", function () {
+        void resolveAccessAndRender();
+      });
+    }
 
-      if (!hasVideoAccess) {
-        showLocked(false);
-        return;
+    async function initGatedVideo() {
+      await resolveAccessAndRender();
+
+      bindMemberstackAuthRefresh();
+      if (window.$memberstackDom?.onReady) {
+        void window.$memberstackDom.onReady.then(function () {
+          bindMemberstackAuthRefresh();
+        });
+      } else {
+        for (let i = 0; i < 30; i++) {
+          if (window.$memberstackDom?.on) {
+            bindMemberstackAuthRefresh();
+            break;
+          }
+          await new Promise(function (r) {
+            setTimeout(r, 200);
+          });
+        }
       }
 
-      slot.innerHTML = `
-        <iframe${iframeIdAttr}
-          src="${iframeSrc}"
-          title="${title}"
-          loading="lazy"
-          frameborder="0"
-          allow="autoplay; fullscreen; picture-in-picture"
-          allowfullscreen
-          style="position:absolute; inset:0; width:100%; height:100%; border:0;"
-        ></iframe>
-      `;
-      slot.setAttribute("data-state", "ready");
-    } catch (e) {
-      console.error("GatedVimeoEmbed MemberStack getCurrentMember failed:", e);
-      showLocked(true);
+      window.addEventListener("auth:updated", function () {
+        void resolveAccessAndRender();
+      });
     }
+
+    void initGatedVideo();
   });
 </script>
 
