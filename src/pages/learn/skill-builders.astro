@@ -1,0 +1,550 @@
+﻿---
+import Layout from "../../layouts/Layout.astro";
+
+const pageTitle = "Skill Builders | Knit it Now";
+const pageDescription =
+  "Short, focused knitting exercises to practice one technique at a time. Enter your gauge and generate a practice worksheet.";
+
+const availableItems = [
+  {
+    title: "Round Neckline Practice",
+    href: "/learn/skill-builders/round-neckline-practice",
+  },
+];
+
+const comingSoonItems = [
+  "Short Rows Practice",
+  "Sleeve Cap Practice",
+  "Ribber Practice",
+  "Cut & Sew Practice",
+];
+
+const howItWorksSteps = [
+  "Choose a skill.",
+  "Enter your stitch and row gauge.",
+  "Generate a short practice worksheet.",
+  "Knit the exercise.",
+  "Repeat until the skill feels comfortable.",
+];
+---
+
+<Layout title={pageTitle} description={pageDescription} bodyClass="page--tight-header">
+  <div class="skill-builders-page">
+    <div class="skill-builders-top">
+      <header class="skill-builders-hero">
+        <h1 class="skill-builders-hero__title">Skill Builders</h1>
+        <p class="skill-builders-hero__subtitle">
+          Practice a single technique without knitting an entire project.
+        </p>
+      </header>
+
+      <div class="skill-builders-body">
+        <img
+          class="skill-builders-body__image"
+          src="/images/skill-builders/skill-buider.png"
+          alt="Skill Builder practice worksheet for machine knitting"
+          width="320"
+          height="320"
+          loading="eager"
+          decoding="async"
+        />
+
+        <p class="skill-builders-hero__lead">
+          Reading about a skill and actually doing it are two different things.
+        </p>
+
+        <section class="skill-builders-intro" aria-label="About Skill Builders">
+        <p>
+          Skill Builders are short, focused knitting exercises designed to help you practice one
+          technique at a time. Each exercise is quick to knit and gives you the opportunity to build
+          confidence before using the skill in a larger project.
+        </p>
+        <p>
+          Unlike our courses, Skill Builders don't teach the techniques step by step. They provide the
+          instructions and the calculations, but they assume you're ready to practice.
+        </p>
+        <p>
+          Simply enter your stitch and row gauge, and we'll generate the shaping instructions for your
+          exercise. Then knit, practice, and repeat as many times as you'd like.
+        </p>
+        <p>
+          If you're new to a technique or would like a more detailed explanation, take the companion
+          course. Our courses explain the "why" behind the technique, demonstrate different methods,
+          and help you understand when to use each one.
+        </p>
+        <p class="skill-builders-intro__closing">
+          Practice builds confidence. That's exactly what Skill Builders are here to help you do.
+        </p>
+        </section>
+      </div>
+    </div>
+
+    <hr class="skill-builders-divider" />
+
+    <section class="skill-builders-section" aria-labelledby="skill-builders-how-it-works">
+      <h2 id="skill-builders-how-it-works" class="skill-builders-section__title">
+        How Skill Builders Work
+      </h2>
+      <ol class="skill-builders-steps">
+        {
+          howItWorksSteps.map((step) => (
+            <li class="skill-builders-steps__item">{step}</li>
+          ))
+        }
+      </ol>
+    </section>
+
+    <hr class="skill-builders-divider" />
+
+    <section class="skill-builders-section" aria-labelledby="skill-builders-available">
+      <h2 id="skill-builders-available" class="skill-builders-section__title">Available Skill Builders</h2>
+      <p class="skill-builders-section__note">Skill Builders are included with Knit it Now membership.</p>
+      <ul class="skill-builders-card-list">
+        {
+          availableItems.map((item) => (
+            <li class="skill-builders-card-list__item">
+              <a
+                href={item.href}
+                class="skill-builders-card skill-builders-card--link"
+                data-ms-content="paid-plans"
+              >
+                <span class="skill-builders-card__text">
+                  <span class="skill-builders-card__title">{item.title}</span>
+                </span>
+                <span class="skill-builders-card__badge skill-builders-card__badge--available">Available</span>
+              </a>
+              <a
+                href="#"
+                class="skill-builders-card skill-builders-card--link"
+                data-ms-content="!members"
+                data-ms-modal="login"
+                data-ms-redirect="current-url"
+              >
+                <span class="skill-builders-card__text">
+                  <span class="skill-builders-card__title">{item.title}</span>
+                </span>
+                <span class="skill-builders-card__badge skill-builders-card__badge--sign-in">Sign in</span>
+              </a>
+              <button
+                type="button"
+                class="skill-builders-card skill-builders-card--link"
+                data-ms-content="no-plans"
+                data-sb-membership-prompt
+              >
+                <span class="skill-builders-card__text">
+                  <span class="skill-builders-card__title">{item.title}</span>
+                </span>
+                <span class="skill-builders-card__badge skill-builders-card__badge--members-only">Members only</span>
+              </button>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <hr class="skill-builders-divider" />
+
+    <section class="skill-builders-section" aria-labelledby="skill-builders-coming-soon">
+      <h2 id="skill-builders-coming-soon" class="skill-builders-section__title">Coming Soon</h2>
+      <ul class="skill-builders-card-list">
+        {
+          comingSoonItems.map((item) => (
+            <li class="skill-builders-card-list__item">
+              <div class="skill-builders-card skill-builders-card--planned" aria-disabled="true">
+                <span class="skill-builders-card__text">
+                  <span class="skill-builders-card__title">{item}</span>
+                </span>
+                <span class="skill-builders-card__badge">Planned</span>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </div>
+
+  <dialog
+    id="sb-membership-dialog"
+    class="sb-membership-dialog"
+    aria-labelledby="sb-membership-dialog-title"
+  >
+    <div class="sb-membership-dialog__inner">
+      <h2 id="sb-membership-dialog-title" class="sb-membership-dialog__title">
+        Skill Builders are a member benefit
+      </h2>
+      <p class="sb-membership-dialog__message">
+        Skill Builders are included with Knit it Now membership. Join or upgrade to use this
+        worksheet-style practice exercise.
+      </p>
+      <div class="sb-membership-dialog__actions">
+        <a href="/membership" class="sb-membership-dialog__primary wizard-button">
+          View Membership Options
+        </a>
+        <button type="button" class="sb-membership-dialog__dismiss" data-sb-membership-dismiss>
+          Not Now
+        </button>
+      </div>
+    </div>
+  </dialog>
+</Layout>
+
+<style>
+  .skill-builders-page {
+    max-width: 48rem;
+    margin: 0 auto;
+    padding: 20px 20px 3.5rem;
+  }
+
+  .skill-builders-top {
+    margin-bottom: 1.75rem;
+  }
+
+  .skill-builders-body::after {
+    content: "";
+    display: table;
+    clear: both;
+  }
+
+  .skill-builders-body__image {
+    float: right;
+    width: min(280px, 42%);
+    height: auto;
+    margin: 0.25rem 0 1rem 1.5rem;
+    border-radius: 10px;
+    border: 1px solid #d6dbc9;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .skill-builders-hero {
+    margin-bottom: 1rem;
+  }
+
+  .skill-builders-hero__title {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.6rem, 3vw, 2rem);
+    font-weight: 600;
+    color: #52682d;
+    line-height: 1.2;
+  }
+
+  .skill-builders-hero__subtitle {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    color: #4d5a48;
+    font-weight: 500;
+  }
+
+  .skill-builders-hero__lead {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+    line-height: 1.55;
+    color: #4d5a48;
+    font-weight: 500;
+  }
+
+  .skill-builders-intro p {
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: #243015;
+  }
+
+  .skill-builders-intro p:last-child {
+    margin-bottom: 0;
+  }
+
+  .skill-builders-intro__closing {
+    font-weight: 500;
+    color: #52682d;
+  }
+
+  .skill-builders-divider {
+    border: 0;
+    border-top: 1px solid #e6e6e6;
+    margin: 2rem 0;
+  }
+
+  .skill-builders-section {
+    margin-bottom: 0.5rem;
+  }
+
+  .skill-builders-section__title {
+    margin: 0 0 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #52682d;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #c7d8a4;
+  }
+
+  .skill-builders-section__note {
+    margin: -0.35rem 0 1rem;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: #4d5a48;
+  }
+
+  .skill-builders-card-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .skill-builders-card-list__item {
+    margin: 0;
+  }
+
+  .skill-builders-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+    background: #fff;
+    border: 1px solid #d6dbc9;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    box-sizing: border-box;
+  }
+
+  .skill-builders-card--link {
+    width: 100%;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  button.skill-builders-card--link {
+    display: flex;
+    font: inherit;
+    text-align: left;
+    background: #fff;
+    border: 1px solid #d6dbc9;
+  }
+
+  .skill-builders-card--link:hover,
+  .skill-builders-card--link:focus {
+    border-color: #52682d;
+    box-shadow: 0 2px 8px rgba(82, 104, 45, 0.1);
+    outline: none;
+  }
+
+  .skill-builders-card--planned {
+    opacity: 0.92;
+  }
+
+  .skill-builders-card__text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+
+  .skill-builders-card__title {
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: #243015;
+    line-height: 1.35;
+  }
+
+  .skill-builders-card--link .skill-builders-card__title {
+    color: #52682d;
+  }
+
+  .skill-builders-card__subtitle {
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: #4d5a48;
+  }
+
+  .skill-builders-card__badge {
+    flex-shrink: 0;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #6b7280;
+    background: #f3f4f0;
+    border: 1px solid #e5e7e0;
+    border-radius: 999px;
+    padding: 0.2rem 0.55rem;
+  }
+
+  .skill-builders-card__badge--available {
+    color: #52682d;
+    background: #f0f4eb;
+    border-color: #c7d8a4;
+  }
+
+  .skill-builders-card__badge--sign-in {
+    color: #374151;
+    background: #f3f4f6;
+    border-color: #d1d5db;
+  }
+
+  .skill-builders-card__badge--members-only {
+    color: #6b7280;
+    background: #f3f4f0;
+    border-color: #e5e7e0;
+  }
+
+  .sb-membership-dialog {
+    border: none;
+    padding: 0;
+    max-width: min(400px, 92vw);
+    border-radius: 12px;
+    background: transparent;
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.06),
+      0 12px 28px -8px rgba(0, 0, 0, 0.1);
+  }
+
+  .sb-membership-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.35);
+  }
+
+  .sb-membership-dialog__inner {
+    padding: 1.4rem 1.5rem;
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-sizing: border-box;
+  }
+
+  .sb-membership-dialog__title {
+    margin: 0 0 0.65rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #243015;
+    line-height: 1.35;
+  }
+
+  .sb-membership-dialog__message {
+    margin: 0 0 1.15rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #4d5a48;
+  }
+
+  .sb-membership-dialog__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    align-items: center;
+  }
+
+  .sb-membership-dialog__primary.wizard-button {
+    display: inline-block;
+    padding: 10px 18px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: 8px;
+    background: #52682d;
+    color: #fff;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  .sb-membership-dialog__primary.wizard-button:hover {
+    background: #445925;
+    color: #fff;
+  }
+
+  .sb-membership-dialog__dismiss {
+    padding: 10px 14px;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #4d5a48;
+    background: transparent;
+    border: 1px solid #d6dbc9;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .sb-membership-dialog__dismiss:hover {
+    background: #f7f8f5;
+  }
+
+  .skill-builders-steps {
+    margin: 0;
+    padding: 0 0 0 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .skill-builders-steps__item {
+    font-size: 1rem;
+    line-height: 1.55;
+    color: #243015;
+    padding-left: 0.25rem;
+  }
+
+  .skill-builders-steps__item::marker {
+    color: #52682d;
+    font-weight: 600;
+  }
+
+  @media (max-width: 600px) {
+    .skill-builders-page {
+      padding-inline: 16px;
+    }
+
+    .skill-builders-body__image {
+      float: none;
+      display: block;
+      width: min(280px, 100%);
+      margin: 0 auto 1.25rem;
+    }
+
+    .skill-builders-card {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.4rem;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const dialog = document.getElementById("sb-membership-dialog") as HTMLDialogElement | null;
+    if (!dialog) return;
+
+    function openMembershipDialog(): void {
+      if (typeof dialog.showModal === "function") {
+        dialog.showModal();
+      }
+    }
+
+    function closeMembershipDialog(): void {
+      dialog.close();
+    }
+
+    document.querySelectorAll("[data-sb-membership-prompt]").forEach((trigger) => {
+      trigger.addEventListener("click", (event) => {
+        event.preventDefault();
+        openMembershipDialog();
+      });
+    });
+
+    document.querySelectorAll("[data-sb-membership-dismiss]").forEach((btn) => {
+      btn.addEventListener("click", closeMembershipDialog);
+    });
+
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) closeMembershipDialog();
+    });
+
+    dialog.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      closeMembershipDialog();
+    });
+  });
+</script>
