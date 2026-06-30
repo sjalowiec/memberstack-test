@@ -13,6 +13,7 @@ yarn-error.log*
 pnpm-debug.log*
 
 /scripts/
+!/scripts/prepare-transition-site.mjs
 src/data/glossary.backup.before-strip-html.json
 # environment variables
 .env
