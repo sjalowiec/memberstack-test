@@ -1,0 +1,16 @@
+---
+import MinimalLayout from "../layouts/MinimalLayout.astro";
+import TransitionPage from "@transition/TransitionPage.astro";
+import { description, pageTitle } from "@transition/transitionPageData";
+
+export const prerender = true;
+
+const defaultContact =
+  "mailto:contact@knititnow.com?subject=Knit%20It%20Now%20transition%20question";
+
+const contactHref = import.meta.env.PUBLIC_TRANSITION_CONTACT_URL || defaultContact;
+---
+
+<MinimalLayout title={`${pageTitle} | Knit it Now`} {description}>
+  <TransitionPage {contactHref} />
+</MinimalLayout>

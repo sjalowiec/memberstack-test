@@ -1,0 +1,625 @@
+---
+import {
+  pageTitle,
+  staysSameItems,
+  saveChecklistItems,
+  whatsNewItems,
+  faqGroups,
+} from "./transitionPageData";
+
+interface Props {
+  contactHref?: string;
+}
+
+const { contactHref = "/contact/" } = Astro.props;
+---
+
+<div class="transition-page">
+  <main class="transition-page__main">
+    <!-- Hero -->
+    <section class="transition-hero" aria-labelledby="transition-hero-heading">
+      <div class="transition-hero__layout">
+        <div class="transition-hero__logo">
+          <img src="/images/KINlogo.svg" alt="Knit it Now" width="150" height="146" />
+        </div>
+
+        <div class="transition-hero__content">
+          <h1 id="transition-hero-heading">{pageTitle}</h1>
+          <p class="transition-hero__subhead">
+            We're putting the finishing touches on a completely rebuilt Knit It Now. The current
+            site will be retired on August 1. Here's what's changing — and what isn't.
+          </p>
+        </div>
+      </div>
+
+      <blockquote class="transition-sue-note">
+        <p>
+          I've spent the past year rebuilding Knit It Now from the ground up. The goal isn't to
+          change what you love. It's to make everything easier to find, easier to use, and ready for
+          the future.
+        </p>
+        <footer>&mdash; Sue</footer>
+      </blockquote>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- What stays the same -->
+    <section class="transition-section" aria-labelledby="transition-same-heading">
+      <header class="transition-section__header">
+        <h2 id="transition-same-heading">What Stays the Same on the New Knit It Now</h2>
+      </header>
+
+      <ul class="transition-checklist">
+        {staysSameItems.map((item) => <li>{item}</li>)}
+      </ul>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- What's new -->
+    <section class="transition-section" aria-labelledby="transition-new-heading">
+      <header class="transition-section__header">
+        <h2 id="transition-new-heading">What's New</h2>
+        <p class="transition-section__lead">
+          The new Knit it Now is built to improve your experience — not to take anything away.
+        </p>
+      </header>
+
+      <ul class="transition-benefits">
+        {
+          whatsNewItems.map((item) => (
+            <li class="transition-benefit-card">
+              <span class="transition-benefit-card__label">{item}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Save before August 1 -->
+    <section class="transition-save" aria-labelledby="transition-save-heading">
+      <header class="transition-section__header">
+        <h2 id="transition-save-heading">3 Things to Save Before August 1</h2>
+      </header>
+
+      <p class="transition-save__intro">
+        As we move to the brand new Knit It Now, there are also a few things you'll want to save from
+        the current site before we say goodbye to it on August 1. I know this is a little
+        inconvenient, but I don't want you to lose anything you've created or downloaded over the
+        years.
+      </p>
+
+      <ul class="transition-checklist transition-save__checklist">
+        {
+          saveChecklistItems.map((item) => (
+            <li>
+              {item.link ? (
+                <>
+                  {item.link.before}
+                  <a href={item.link.href} class="transition-contact-link">{item.link.text}</a>
+                  {item.link.after}
+                </>
+              ) : (
+                <>
+                  <span class="transition-save__checklist-lead">{item.lead}</span>
+                  {item.note && <span class="transition-save__checklist-note">{item.note}</span>}
+                </>
+              )}
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- FAQ -->
+    <section class="transition-section" aria-labelledby="transition-faq-heading">
+      <header class="transition-section__header">
+        <h2 id="transition-faq-heading">Questions You May Have</h2>
+      </header>
+
+      <div class="faq-accordion transition-faq">
+        {
+          faqGroups.map((group) => (
+            <details class="faq-item transition-faq-group">
+              <summary>{group.title}</summary>
+              <div class="transition-faq-group__body">
+                {
+                  group.items.map((item) => (
+                    <div class="transition-faq-qa">
+                      <h3 class="transition-faq-qa__question">{item.question}</h3>
+                      {item.contactLink ? (
+                        <p class="transition-faq-qa__answer">
+                          Please{" "}
+                          <a href={contactHref} class="transition-contact-link">contact us</a> and we'll
+                          help.
+                        </p>
+                      ) : (
+                        <p class="transition-faq-qa__answer">{item.answer}</p>
+                      )}
+                    </div>
+                  ))
+                }
+                {group.summary && <p class="transition-faq-group__summary">{group.summary}</p>}
+              </div>
+            </details>
+          ))
+        }
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Questions callout -->
+    <section class="transition-questions" aria-labelledby="transition-questions-heading">
+      <h2 id="transition-questions-heading" class="transition-questions__heading">
+        Questions? I'm Happy to Help.
+      </h2>
+
+      <div class="transition-questions__layout">
+        <div class="transition-questions__content">
+          <p>
+            If you're not sure what to do before August 1, or you have a question about your
+            membership, saved patterns, downloads, or courses, just get in touch.
+          </p>
+          <p>
+            I've spent the past year building the new Knit It Now, and I want this transition to be
+            as smooth and stress-free as possible for you.
+          </p>
+          <a href={contactHref} class="kbm-btn kbm-btn-primary transition-questions__btn">
+            <svg
+              class="transition-questions__icon"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M4 6h16v12H4V6zm0 0l8 6 8-6"
+                stroke="currentColor"
+                stroke-width="1.75"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
+            </svg>
+            Ask Sue a Question
+          </a>
+        </div>
+
+        <figure class="transition-questions__photo">
+          <img
+            src="/images/knit-by-machine-sue.png"
+            alt="Sue at her knitting machine"
+            width="1385"
+            height="1371"
+            loading="lazy"
+            decoding="async"
+          />
+        </figure>
+      </div>
+    </section>
+
+    <hr class="section-divider" />
+
+    <!-- Closing -->
+    <section class="transition-closing" aria-labelledby="transition-closing-heading">
+      <h2 id="transition-closing-heading">Thank You for Being Part of Knit It Now</h2>
+      <p>
+        Change can feel a little uncomfortable, especially when a website has been part of your
+        knitting routine for years. I'll keep you updated as we get closer to August 1, and I'm
+        excited to show you what's coming.
+      </p>
+      <img
+        class="transition-closing__signature"
+        src="/images/sue-signature.svg"
+        alt="Sue"
+        width="132"
+        height="48"
+        loading="lazy"
+        decoding="async"
+      />
+    </section>
+  </main>
+</div>
+
+<style>
+  :global(body.transition-page-body) {
+    background: var(--page-bg, #f7f8f7);
+  }
+
+  .transition-page {
+    min-height: 100vh;
+  }
+
+  .transition-page__main {
+    max-width: 42rem;
+    margin: 0 auto;
+    padding: 1.75rem 1.25rem 3rem;
+  }
+
+  .transition-hero__layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+  }
+
+  .transition-hero__logo {
+    flex: 0 0 auto;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .transition-hero__logo img {
+    display: block;
+    width: clamp(5rem, 24vw, 6.25rem);
+    height: auto;
+    max-width: 100%;
+  }
+
+  .transition-hero__content {
+    min-width: 0;
+    max-width: 43.75rem;
+  }
+
+  .transition-hero h1 {
+    margin: 0 0 1rem;
+    font-size: clamp(1.65rem, 4.5vw, 2.15rem);
+    line-height: 1.25;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .transition-hero__subhead {
+    margin: 0;
+    max-width: 43.75rem;
+    font-size: 1.125rem;
+    line-height: 1.65;
+    color: #374151;
+  }
+
+  @media (min-width: 768px) {
+    .transition-hero__layout {
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(2rem, 4vw, 3rem);
+      text-align: left;
+    }
+
+    .transition-hero__logo {
+      padding: 0.75rem 0.5rem 0.75rem 0;
+    }
+
+    .transition-hero__logo img {
+      width: clamp(7.5rem, 12vw, 9.375rem);
+    }
+
+    .transition-hero__content {
+      flex: 1 1 0;
+      text-align: left;
+    }
+
+    .transition-hero h1 {
+      text-align: left;
+    }
+  }
+
+  .transition-sue-note {
+    margin: 0;
+    padding: 1.25rem 1.35rem;
+    text-align: left;
+    border-radius: 0.875rem;
+    background: #f6f8f3;
+    border: 1px solid #d8e1c8;
+    border-left: 6px solid var(--kbm-green, #52682d);
+  }
+
+  .transition-sue-note p {
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: #374151;
+  }
+
+  .transition-sue-note footer {
+    margin-top: 0.85rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .transition-section__header {
+    text-align: center;
+    margin-bottom: 1.35rem;
+  }
+
+  .transition-section__header h2 {
+    margin: 0;
+    font-size: clamp(1.35rem, 3.5vw, 1.65rem);
+    line-height: 1.3;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .transition-section__lead {
+    margin: 0.65rem auto 0;
+    max-width: 34rem;
+    font-size: 1.02rem;
+    line-height: 1.6;
+    color: #4d5a48;
+  }
+
+  .transition-save {
+    padding: 1.75rem 1.25rem;
+    border-radius: 1rem;
+    background: #f9faf6;
+    border: 1px solid rgba(82, 104, 45, 0.18);
+  }
+
+  .transition-save__intro {
+    margin: 0 0 1.15rem;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: #374151;
+  }
+
+  .transition-save__checklist {
+    margin-top: 0.25rem;
+  }
+
+  .transition-save__checklist-lead {
+    display: block;
+  }
+
+  .transition-save__checklist-note {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: #4d5a48;
+  }
+
+  .transition-checklist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .transition-checklist li {
+    position: relative;
+    margin: 0;
+    padding: 0.85rem 1rem 0.85rem 2.75rem;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: #374151;
+    border-radius: 0.75rem;
+    background: rgba(82, 104, 45, 0.06);
+    border: 1px solid rgba(82, 104, 45, 0.16);
+  }
+
+  .transition-checklist li::before {
+    content: "\2713";
+    position: absolute;
+    left: 1rem;
+    top: 0.85rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .transition-benefits {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    gap: 0.75rem;
+  }
+
+  .transition-benefit-card {
+    margin: 0;
+    padding: 1rem 1.1rem;
+    border-radius: 0.75rem;
+    background: #fff;
+    border: 1px solid #d6dbc9;
+  }
+
+  .transition-benefit-card__label {
+    display: block;
+    font-size: 1.02rem;
+    line-height: 1.5;
+    font-weight: 500;
+    color: #4d5a48;
+  }
+
+  .transition-faq {
+    max-width: 100%;
+  }
+
+  .transition-faq :global(.faq-item summary) {
+    font-size: 1.0625rem;
+    line-height: 1.45;
+    padding: 0.35rem 0;
+  }
+
+  .transition-faq-group__body {
+    padding-top: 0.25rem;
+  }
+
+  .transition-faq-qa + .transition-faq-qa {
+    margin-top: 1.1rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+  }
+
+  .transition-faq-qa__question {
+    margin: 0 0 0.4rem;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #2c3a57;
+  }
+
+  .transition-faq-qa__answer {
+    margin: 0;
+    font-size: 1.02rem;
+    line-height: 1.65;
+    color: #374151;
+  }
+
+  .transition-faq-group__summary {
+    margin: 1.25rem 0 0;
+    padding: 0.85rem 1rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #4d5a48;
+    border-radius: 0.625rem;
+    background: rgba(82, 104, 45, 0.06);
+    border-left: 4px solid var(--kbm-green, #52682d);
+  }
+
+  .transition-contact-link {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .transition-contact-link:hover {
+    color: var(--kbm-green-hover, #445626);
+  }
+
+  .transition-questions {
+    padding: 1.75rem 1.35rem;
+    border-radius: 1rem;
+    background: linear-gradient(160deg, #f3f6ef 0%, #f9faf6 100%);
+    border: 1px solid #d8e1c8;
+  }
+
+  .transition-questions__heading {
+    margin: 0 0 1.25rem;
+    font-size: clamp(1.3rem, 3.5vw, 1.55rem);
+    line-height: 1.35;
+    text-align: center;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .transition-questions__layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .transition-questions__content {
+    text-align: left;
+  }
+
+  .transition-questions p {
+    margin: 0 0 0.85rem;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: #374151;
+  }
+
+  .transition-questions__content p:last-of-type {
+    margin-bottom: 1.35rem;
+  }
+
+  .transition-questions__photo {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  .transition-questions__photo img {
+    display: block;
+    width: 100%;
+    max-width: 13.75rem;
+    height: auto;
+    border-radius: 14px;
+    box-shadow: 0 10px 28px rgba(82, 104, 45, 0.12);
+  }
+
+  .transition-questions__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: min(100%, 12.5rem);
+    padding: 0.75rem 1.5rem;
+    font-size: 1.0625rem;
+  }
+
+  .transition-questions__icon {
+    flex-shrink: 0;
+  }
+
+  @media (min-width: 768px) {
+    .transition-questions__layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr);
+      gap: clamp(2rem, 4vw, 3rem);
+      align-items: center;
+    }
+
+    .transition-questions__photo {
+      justify-content: center;
+    }
+
+    .transition-questions__photo img {
+      max-width: clamp(16.25rem, 28vw, 20rem);
+    }
+  }
+
+  .transition-closing {
+    text-align: center;
+    padding: 1.5rem 1.1rem;
+    border-radius: 1rem;
+    background: #fff;
+    border: 1px solid #d6dbc9;
+  }
+
+  .transition-closing h2 {
+    margin: 0 0 0.85rem;
+    font-size: clamp(1.3rem, 3.5vw, 1.55rem);
+    line-height: 1.35;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .transition-closing p {
+    margin: 0 auto;
+    max-width: 34rem;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: #374151;
+  }
+
+  .transition-closing__signature {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: clamp(96px, 22vw, 132px);
+    margin: 1.25rem auto 0;
+    opacity: 0.9;
+  }
+
+  @media (min-width: 640px) {
+    .transition-page__main {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+
+    .transition-save {
+      padding: 2rem 1.5rem;
+    }
+
+    .transition-questions {
+      padding: 2rem 1.5rem;
+    }
+  }
+</style>

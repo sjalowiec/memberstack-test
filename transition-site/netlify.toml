@@ -1,0 +1,11 @@
+# Deploy this folder as its own Netlify site (Site settings ? Build & deploy ? Base directory: transition-site)
+# Or from repo root: npm run build:transition-site && deploy transition-site/dist
+
+[build]
+  command = "cd .. && npm run prepare:transition-site && astro build --config transition-site/astro.config.mjs"
+  publish = "dist"
+
+[dev]
+  command = "cd .. && npm run prepare:transition-site && astro dev --config transition-site/astro.config.mjs"
+  port = 4322
+  framework = "#custom"
