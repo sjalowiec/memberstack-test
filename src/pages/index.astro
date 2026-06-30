@@ -7,8 +7,7 @@ const pageTitle = "Knit it Now | Learn, Build Skills & Machine Knit with Confide
 const pageDescription =
   "Knit It Now brings together lessons, videos, pattern builders, tools, and references to help machine knitters learn, practice, and knit with confidence.";
 
-/** Sue photo — same asset as the About page */
-const suePhoto = "/images/sue.jpg";
+const suePhoto = "/images/home/home-sue.png";
 const suePhotoAlt = "Sue Jalowiec at her knitting machine, founder of Knit it Now";
 
 /** Section 2 — audience cards (pre-cropped sweater WebPs — no CSS crop) */
@@ -96,15 +95,19 @@ const workflowSteps = [
 /** Section 5 — learn your way */
 const learnYourWayCards = [
   {
-    title: "Videos",
-    copy: "Watch technique demos and tips beside your machine.",
-    placeholder: "Video library screenshot",
-    button: "Watch videos",
-    href: "/videos",
+    title: "Glossary",
+    copy: "Look up techniques, machine terms, abbreviations, and more.",
+    image: "/images/home/home-glossary.webp",
+    alt: "Glossary screen showing knitting terms and techniques",
+    placeholder: "Glossary screenshot",
+    button: "Browse Glossary",
+    href: "/glossary",
   },
   {
     title: "Courses",
     copy: "Follow structured lessons and exercises at your own pace.",
+    image: "/images/home/home-courses.webp",
+    alt: "Courses screen showing structured machine knitting lessons",
     placeholder: "Course page screenshot",
     button: "Browse courses",
     href: "/courses",
@@ -112,6 +115,8 @@ const learnYourWayCards = [
   {
     title: "Help Hub",
     copy: "Find practical answers when something does not look right.",
+    image: "/images/home/home-help-hub.webp",
+    alt: "Help Hub screen showing practical knitting answers and troubleshooting",
     placeholder: "Help Hub screenshot",
     button: "Visit Help Hub",
     href: "/help-hub",
@@ -119,6 +124,8 @@ const learnYourWayCards = [
   {
     title: "References",
     copy: "Look up terms, machines, sizing charts, and more.",
+    image: "/images/home/home-reference.webp",
+    alt: "References screen showing lookup guides, sizing charts, and machine information",
     placeholder: "Glossary or Machine Database screenshot",
     button: "Browse references",
     href: "/reference",
@@ -141,24 +148,13 @@ const sueIntroParagraphs = [
     <!-- ========== HERO: wide image with card overlaid on the left (desktop) ========== -->
     <section class="home-v2-hero" aria-labelledby="home-hero-heading">
       <div class="home-v2-hero__frame">
-        <div class="home-v2-hero__backdrop" aria-hidden="true">
-          <!-- TODO: Replace with hero background photo — knitting machine with yarn -->
-          <HomeImagePlaceholder
-            label="Hero background photo — knitting machine with yarn"
-            fill={true}
-            minHeight="100%"
-          />
-        </div>
-
         <div class="home-v2-hero__card">
           <h1 id="home-hero-heading">Learn, build skills, and machine knit with confidence.</h1>
           <p class="home-v2-hero__copy">
-            Whether you're just getting started or have been machine knitting for years, Knit It Now
-            brings together lessons, videos, interactive pattern builders, practical tools, and trusted
-            references to help you spend less time guessing and more time knitting.
+            Whether you're a beginner or a seasoned pro, we provide the tools, patterns, and tutorials to help you spend less time guessing and more time knitting.
           </p>
           <div class="home-v2-hero__actions">
-            <a href="/whats-new" class="kbm-btn kbm-btn-accent">Explore What's New</a>
+            <a href="#explore" class="kbm-btn kbm-btn-accent">Explore the Site</a>
             <a href="/membership" class="kbm-btn kbm-btn-outline">Become a Member</a>
           </div>
           <p class="home-v2-hero__login">
@@ -285,9 +281,18 @@ const sueIntroParagraphs = [
         <div class="home-v2-grid home-v2-grid--four">
           {learnYourWayCards.map((card) => (
             <article class="home-v2-learn-card">
-              <div class="home-v2-learn-card__media">
-                <!-- TODO: Replace — {card.placeholder} -->
-                <HomeImagePlaceholder label={card.placeholder} aspect="16 / 10" compact={true} />
+              <div class="home-v2-feature-card__media">
+                {card.image ? (
+                  <img
+                    src={card.image}
+                    alt={card.alt ?? ""}
+                    class="home-v2-feature-card__img"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : (
+                  <HomeImagePlaceholder label={card.placeholder} aspect="16 / 9" compact={true} />
+                )}
               </div>
               <h3>{card.title}</h3>
               <p>{card.copy}</p>
@@ -317,7 +322,7 @@ const sueIntroParagraphs = [
               alt={suePhotoAlt}
               class="home-v2-sue__photo"
               width="480"
-              height="360"
+              height="480"
               loading="lazy"
               decoding="async"
             />
@@ -333,8 +338,8 @@ const sueIntroParagraphs = [
           member resources, we'd love to have you join.
         </p>
         <div class="home-v2-cta__actions">
-          <a href="/membership" class="kbm-btn kbm-btn-accent">Become a Member</a>
-          <a href="#explore" class="kbm-btn kbm-btn-outline">Explore the Site</a>
+          <a href="#explore" class="kbm-btn kbm-btn-accent">Explore the Site</a>
+          <a href="/membership" class="kbm-btn kbm-btn-outline">Become a Member</a>
         </div>
       </section>
     </div>
@@ -370,65 +375,46 @@ const sueIntroParagraphs = [
 
   /* —— Hero —— */
   .home-v2-hero {
-    padding: 0 var(--home-gutter);
     margin-bottom: clamp(3.5rem, 6vw, 5rem);
+    background-image: url("/images/home/knitting-machine.webp");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
   }
 
   .home-v2-hero__frame {
     position: relative;
+    z-index: 1;
     max-width: var(--home-max);
     margin: 0 auto;
-  }
-
-  .home-v2-hero__backdrop {
-    position: relative;
-    width: 100%;
-    min-height: 220px;
-    border-radius: 1rem;
-    overflow: hidden;
-  }
-
-  .home-v2-hero__backdrop :global(.home-img-placeholder) {
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    border: 2px dashed rgba(82, 104, 45, 0.3);
+    padding: clamp(2rem, 5vw, 3rem) var(--home-gutter);
+    min-height: clamp(320px, 62vw, 420px);
+    display: flex;
+    align-items: flex-end;
   }
 
   .home-v2-hero__card {
     position: relative;
     z-index: 2;
-    max-width: 100%;
-    margin-top: 1rem;
+    width: 100%;
+    max-width: 470px;
     padding: clamp(1.35rem, 3vw, 1.85rem) clamp(1.25rem, 3vw, 1.75rem);
     background: #fff;
-    border-radius: 1rem;
+    border-radius: 1.125rem;
     border: 1px solid rgba(82, 104, 45, 0.14);
-    box-shadow:
-      0 4px 24px rgba(36, 48, 21, 0.1),
-      0 1px 4px rgba(82, 104, 45, 0.08);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
   }
 
   @media (min-width: 900px) {
+    .home-v2-hero {
+      background-position: 60% center;
+      /* If cover still feels too zoomed after height/position tweaks, test: background-size: 100% auto; */
+    }
+
     .home-v2-hero__frame {
-      min-height: clamp(340px, 38vw, 440px);
-    }
-
-    .home-v2-hero__backdrop {
-      position: absolute;
-      inset: 0;
-      min-height: 100%;
-      aspect-ratio: auto;
-    }
-
-    .home-v2-hero__card {
-      position: absolute;
-      left: clamp(1.25rem, 3vw, 2rem);
-      top: 50%;
-      transform: translateY(-50%);
-      width: min(420px, 42%);
-      max-width: 420px;
-      margin-top: 0;
+      min-height: clamp(520px, 42vw, 650px);
+      padding: 4rem var(--home-gutter);
+      align-items: center;
     }
   }
 
@@ -789,13 +775,6 @@ const sueIntroParagraphs = [
     box-shadow: 0 2px 8px rgba(82, 104, 45, 0.05);
   }
 
-  .home-v2-learn-card__media :global(.home-img-placeholder) {
-    border-radius: 0;
-    border-left: none;
-    border-right: none;
-    border-top: none;
-  }
-
   .home-v2-learn-card h3 {
     margin: 0;
     padding: 0.95rem 1rem 0.35rem;
@@ -865,16 +844,20 @@ const sueIntroParagraphs = [
   }
 
   .home-v2-sue__photo-wrap {
-    overflow: hidden;
-    border-radius: 0.85rem;
+    max-width: min(100%, 20rem);
+    margin-inline: auto;
+  }
+
+  @media (min-width: 768px) {
+    .home-v2-sue__photo-wrap {
+      margin-inline: 0 0 auto;
+    }
   }
 
   .home-v2-sue__photo {
     display: block;
     width: 100%;
     height: auto;
-    object-fit: cover;
-    aspect-ratio: 4 / 3;
   }
 
   /* —— Final CTA (section 7) —— */
@@ -929,7 +912,7 @@ const sueIntroParagraphs = [
       padding-inline: 1rem;
     }
 
-    .home-v2-hero {
+    .home-v2-hero__frame {
       padding-inline: 1rem;
     }
 
