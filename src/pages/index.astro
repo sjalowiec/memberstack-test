@@ -1,1199 +1,940 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import Header from "../components/Header.astro";
-import Footer from "../components/Footer.astro";
-import PatternsFeaturesSection from "../components/patterns/PatternsFeaturesSection.astro";
-import PatternHeaderImage from "../components/patterns/PatternHeaderImage.astro";
+import HomeImagePlaceholder from "../components/home/HomeImagePlaceholder.astro";
 import "../styles/global.css";
----   
 
-<Layout bodyClass="page--tight-header page--home">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <!-- CRITICAL: Inline typography to prevent Astro CSS bundler reordering issues -->
-    <style data-kbm-typography>
-      html {
-        font-size: 112.5% !important; /* 18px - comfortable mobile reading */
-        -webkit-text-size-adjust: 100%;
-        text-size-adjust: 100%;
-      }
-      @media (min-width: 1025px) {
-        html {
-          font-size: 100% !important; /* 16px for desktop */
-        }
-      }
-    </style>
-    
-    <title>Knit it Now | Custom Machine Knitting Patterns</title>
-    <meta
-      name="description"
-      content="Build, customize, and knit sweater patterns for your machine, your gauge, and your measurements with Knit It Now's guided pattern system."
-    />
-  </head>
+const pageTitle = "Knit it Now | Learn, Build Skills & Machine Knit with Confidence";
+const pageDescription =
+  "Knit It Now brings together lessons, videos, pattern builders, tools, and references to help machine knitters learn, practice, and knit with confidence.";
 
-    <main class="kbm-start-here">
-      <!-- HERO SECTION -->
-      <section class="kbm-hero kbm-hero--patterns">
-        <div class="kbm-hero__content">
-          <h1>The Next Generation of Knit It Now Patterns</h1>
-          <p class="kbm-hero__framing">
-            These next-generation patterns are just one part of the new Knit It Now experience we’re building for machine knitters.
+/** Sue photo — same asset as the About page */
+const suePhoto = "/images/sue.jpg";
+const suePhotoAlt = "Sue Jalowiec at her knitting machine, founder of Knit it Now";
+
+/** Section 2 — audience cards (pre-cropped sweater WebPs — no CSS crop) */
+const helpTodayCards = [
+  {
+    title: "New to machine knitting",
+    copy: "Learn step by step with guided lessons, beginner-friendly projects, and practical videos.",
+    href: "/start-here",
+    image: "/images/home/new-to-MK.webp",
+    alt: "Knitted sweater for someone new to machine knitting",
+  },
+  {
+    title: "Returning after a break",
+    copy: "Refresh your skills, solve common problems, and rebuild your confidence.",
+    href: "/courses",
+    image: "/images/home/returning.webp",
+    alt: "Knitted sweater for machine knitters returning after a break",
+  },
+  {
+    title: "Creating patterns that fit",
+    copy: "Use interactive Pattern Builders designed around your gauge, measurements, and machine.",
+    href: "/patterns",
+    image: "/images/home/patterns-that-fit.webp",
+    alt: "Knitted sweater representing custom patterns that fit your measurements",
+  },
+  {
+    title: "Stuck on a project",
+    copy: "Find answers with troubleshooting guides, videos, references, and practical tools.",
+    href: "/help-hub",
+    image: "/images/home/stuck.webp",
+    alt: "Knitted sweater for when you are stuck mid-project and need help",
+  },
+];
+
+/** Section 3 — explore feature cards */
+const exploreCards = [
+  {
+    title: "Interactive Pattern Builder",
+    copy: "Build custom knitting instructions based on your own gauge, machine, and measurements.",
+    image: "/images/home/home-pattern.webp",
+    alt: "Pattern Builder screen showing custom knitting instructions based on your measurements",
+    placeholder: "Pattern Builder screenshot",
+    button: "Explore Pattern Builders",
+    href: "/patterns",
+  },
+  {
+    title: "Skill Builders",
+    copy: "Practice one technique at a time with guided learning projects.",
+    image: "/images/home/home-skill-builder.webp",
+    alt: "Skill Builder lesson screen showing guided technique practice",
+    placeholder: "Skill Builder screenshot",
+    button: "Try a Skill Builder",
+    // TODO: Link to Skill Builders catalog when /skill-builders exists
+    href: "/tools/neckline-and-shoulder-shaping",
+  },
+  {
+    title: "Learning Library",
+    copy: "Browse videos, courses, and tutorials whenever you need them.",
+    image: "/images/home/home-videos.webp",
+    alt: "Video library screen showing browsable knitting tutorials and courses",
+    placeholder: "Video library screenshot",
+    button: "Browse videos",
+    href: "/videos",
+  },
+  {
+    title: "Tools & References",
+    copy: "Use calculators, references, glossaries, machine information, and more while you knit.",
+    image: "/images/home/home-tools.webp",
+    alt: "Tools and references screen with calculators and lookup guides",
+    placeholder: "Gauge Comparison tool screenshot",
+    button: "See tools & references",
+    href: "/tools",
+  },
+];
+
+/** Section 4 — connected workflow (5 steps on desktop) */
+const workflowSteps = [
+  { label: "Learn", hint: "Courses & videos" },
+  { label: "Practice", hint: "Skill Builders" },
+  { label: "Build", hint: "Pattern Builders" },
+  { label: "Knit", hint: "At your machine" },
+  { label: "Get Help", hint: "Help Hub • Tools • Glossary" },
+];
+
+/** Section 5 — learn your way */
+const learnYourWayCards = [
+  {
+    title: "Videos",
+    copy: "Watch technique demos and tips beside your machine.",
+    placeholder: "Video library screenshot",
+    button: "Watch videos",
+    href: "/videos",
+  },
+  {
+    title: "Courses",
+    copy: "Follow structured lessons and exercises at your own pace.",
+    placeholder: "Course page screenshot",
+    button: "Browse courses",
+    href: "/courses",
+  },
+  {
+    title: "Help Hub",
+    copy: "Find practical answers when something does not look right.",
+    placeholder: "Help Hub screenshot",
+    button: "Visit Help Hub",
+    href: "/help-hub",
+  },
+  {
+    title: "References",
+    copy: "Look up terms, machines, sizing charts, and more.",
+    placeholder: "Glossary or Machine Database screenshot",
+    button: "Browse references",
+    href: "/reference",
+  },
+];
+
+const sueIntroParagraphs = [
+  "I'm Sue, and I've been helping machine knitters for more than fifteen years.",
+  "Knit It Now grew from the real questions knitters ask every day — at the machine, mid-project, when something doesn't look quite right.",
+  "My goal is simple: give you clear guidance, practical tools, and a place you can come back to whenever you knit.",
+];
+---
+
+<Layout
+  title={pageTitle}
+  description={pageDescription}
+  bodyClass="page--tight-header page--home-v2"
+>
+  <div class="home-v2">
+    <!-- ========== HERO: wide image with card overlaid on the left (desktop) ========== -->
+    <section class="home-v2-hero" aria-labelledby="home-hero-heading">
+      <div class="home-v2-hero__frame">
+        <div class="home-v2-hero__backdrop" aria-hidden="true">
+          <!-- TODO: Replace with hero background photo — knitting machine with yarn -->
+          <HomeImagePlaceholder
+            label="Hero background photo — knitting machine with yarn"
+            fill={true}
+            minHeight="100%"
+          />
+        </div>
+
+        <div class="home-v2-hero__card">
+          <h1 id="home-hero-heading">Learn, build skills, and machine knit with confidence.</h1>
+          <p class="home-v2-hero__copy">
+            Whether you're just getting started or have been machine knitting for years, Knit It Now
+            brings together lessons, videos, interactive pattern builders, practical tools, and trusted
+            references to help you spend less time guessing and more time knitting.
           </p>
-          <p class="kbm-hero__ecosystem" aria-label="Areas of the Knit It Now experience">
-            Patterns • Interactive Tools • Planning • Tutorials • Community
+          <div class="home-v2-hero__actions">
+            <a href="/whats-new" class="kbm-btn kbm-btn-accent">Explore What's New</a>
+            <a href="/membership" class="kbm-btn kbm-btn-outline">Become a Member</a>
+          </div>
+          <p class="home-v2-hero__login">
+            Already a member?
+            <a href="#" data-ms-modal="login" data-ms-redirect="current-url">Log in</a>
           </p>
-          <p class="kbm-hero__text">
-            Choose your style and enter your measurements.<br />
-            Generate a ready-to-knit custom pattern in just a few guided steps.
+        </div>
+      </div>
+    </section>
+
+    <div class="home-v2__content">
+      <!-- ========== SECTION 2: How can we help? ========== -->
+      <section class="home-v2-section" aria-labelledby="home-help-heading">
+        <header class="home-v2-section__header">
+          <h2 id="home-help-heading">How can Knit It Now help you today?</h2>
+        </header>
+        <div class="home-v2-grid home-v2-grid--four">
+          {helpTodayCards.map((card) => (
+            <a href={card.href} class="home-v2-audience-card">
+              <div class="home-v2-audience-card__media">
+                <img
+                  src={card.image}
+                  alt={card.alt}
+                  class="home-v2-audience-card__img"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <h3>{card.title}</h3>
+              <p>{card.copy}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      <!-- ========== SECTION 3: Explore Knit It Now ========== -->
+      <section class="home-v2-section home-v2-section--soft" id="explore" aria-labelledby="home-explore-heading">
+        <header class="home-v2-section__header">
+          <h2 id="home-explore-heading">Explore Knit It Now</h2>
+          <p class="home-v2-section__lede">
+            Pick an area and take a look — no commitment required.
           </p>
-          <ul class="kbm-hero__benefits">
-            <li>Built around your gauge, machine, and fit</li>
-            <li>Easier-to-follow shaping with visual guidance</li>
-            <li>Customize styles without rewriting pattern instructions</li>
-            <li>Track your progress as you knit</li>
-            <li>Cleaner, more modern patterns designed for machine knitters</li>
-            <li>Print-friendly layouts that work beside your machine</li>
-          </ul>
-          <div class="kbm-hero__cta-group">
-            <p class="kbm-hero__cta-helper">
-              Beta Preview: We’re testing our new builder with the Sleeveless Pattern first. Give it a try.
-            </p>
-            <div class="kbm-hero__actions">
-              <a href="/patterns/sleeveless-express/" class="kbm-btn kbm-btn-accent" data-testid="home-cta-sleeveless">
-                Try the Sleeveless Pattern
+        </header>
+        <div class="home-v2-grid home-v2-grid--four">
+          {exploreCards.map((card) => (
+            <article class="home-v2-feature-card">
+              <div class="home-v2-feature-card__media">
+                {card.image ? (
+                  <img
+                    src={card.image}
+                    alt={card.alt ?? ""}
+                    class="home-v2-feature-card__img"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : (
+                  <HomeImagePlaceholder label={card.placeholder} aspect="16 / 9" compact={true} />
+                )}
+              </div>
+              <h3>{card.title}</h3>
+              <p>{card.copy}</p>
+              <a href={card.href} class="kbm-btn kbm-btn-outline home-v2-feature-card__btn">
+                {card.button}
               </a>
-            </div>
-          </div>
+            </article>
+          ))}
         </div>
       </section>
 
-      <section class="kbm-home-split kbm-home-split--build-steps kbm-home-split--stack-media-first kbm-home-split--text-45" aria-labelledby="home-build-steps-heading">
-        <div class="kbm-home-split__grid">
-          <div class="kbm-home-split__content">
-            <h2 id="home-build-steps-heading">Create your custom pattern in guided steps.</h2>
-            <ol class="kbm-home-split__steps">
-              <li>Choose who you’re knitting for</li>
-              <li>Select your garment style</li>
-              <li>Pick your neckline and fit</li>
-              <li>Enter your gauge and measurements</li>
-              <li>Generate your custom pattern</li>
-            </ol>
-          </div>
-          <div class="kbm-home-split__media">
-            <PatternHeaderImage
-              class="kbm-home-split__enlarge"
-              src="/images/patterns/build-steps.jpg"
-              alt="Guided sweater pattern builder showing style, neckline, fit, and gauge steps"
-              hintText="Click to enlarge"
-              hintStyle="overlay"
-              modalFit="readable"
-              loading="lazy"
-            />
-          </div>
+      <!-- ========== SECTION 4: Everything works together ========== -->
+      <section class="home-v2-section" aria-labelledby="home-workflow-heading">
+        <header class="home-v2-section__header">
+          <h2 id="home-workflow-heading">Everything works together</h2>
+          <p class="home-v2-section__lede">
+            Everything is designed to work together, from learning new skills to knitting with confidence.
+          </p>
+        </header>
+        <ol class="home-v2-workflow" aria-label="How Knit It Now fits together">
+          {workflowSteps.map((step, index) => (
+            <li class="home-v2-workflow__item">
+              <div class="home-v2-workflow__block">
+                <span class="home-v2-workflow__label">{step.label}</span>
+                <span class="home-v2-workflow__hint">{step.hint}</span>
+              </div>
+              {index < workflowSteps.length - 1 && (
+                <>
+                  <span class="home-v2-workflow__arrow home-v2-workflow__arrow--down" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path
+                        d="M12 5v14M6 13l6 6 6-6"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </span>
+                  <span class="home-v2-workflow__arrow home-v2-workflow__arrow--right" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path
+                        d="M5 12h14M13 6l6 6-6 6"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  </span>
+                </>
+              )}
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <!-- ========== SECTION 5: Learn your way ========== -->
+      <section class="home-v2-section home-v2-section--soft" aria-labelledby="home-learn-heading">
+        <header class="home-v2-section__header">
+          <h2 id="home-learn-heading">Learn your way</h2>
+          <p class="home-v2-section__lede">
+            Watch, read, or look something up — come back whenever you need it.
+          </p>
+        </header>
+        <div class="home-v2-grid home-v2-grid--four">
+          {learnYourWayCards.map((card) => (
+            <article class="home-v2-learn-card">
+              <div class="home-v2-learn-card__media">
+                <!-- TODO: Replace — {card.placeholder} -->
+                <HomeImagePlaceholder label={card.placeholder} aspect="16 / 10" compact={true} />
+              </div>
+              <h3>{card.title}</h3>
+              <p>{card.copy}</p>
+              <a href={card.href} class="kbm-btn kbm-btn-primary home-v2-learn-card__btn">
+                {card.button}
+              </a>
+            </article>
+          ))}
         </div>
       </section>
 
-      <section class="kbm-home-split kbm-home-split--media-first" aria-labelledby="home-custom-sizing-heading">
-        <div class="kbm-home-split__grid">
-          <div class="kbm-home-split__media">
-            <PatternHeaderImage
-              class="kbm-home-split__enlarge"
-              src="/images/patterns/custom-sizing.jpg"
-              alt="Custom sizing controls for adjusting sweater measurements before knitting"
-              hintText="Click to enlarge"
-              hintStyle="overlay"
-              modalFit="readable"
-              loading="lazy"
-            />
-          </div>
-          <div class="kbm-home-split__content">
-            <h2 id="home-custom-sizing-heading">Customize the fit before you cast on.</h2>
-            <p class="kbm-home-split__intro">
-              Our interactive summary page takes the guesswork out of sizing your project. Use the blueprint diagram to enter your exact target measurements before your pattern is generated:
+      <!-- ========== SECTION 6: Hi, I'm Sue ========== -->
+      <section class="home-v2-section" aria-labelledby="home-sue-heading">
+        <div class="home-v2-sue">
+          <div class="home-v2-sue__text">
+            <h2 id="home-sue-heading">Hi, I'm Sue.</h2>
+            {sueIntroParagraphs.map((paragraph) => (
+              <p>{paragraph}</p>
+            ))}
+            <p>
+              <a href="/about" class="home-v2-sue__link">More about Knit It Now</a>
             </p>
-            <ul class="kbm-home-split__callouts">
-              <li><strong>Visual measurement layout:</strong> Clearly see where each measurement applies on the garment.</li>
-              <li><strong>Complete sizing control:</strong> Adjust key lengths, widths, and depths to match your body and style preferences.</li>
-              <li><strong>Built for your project:</strong> Generate a custom pattern based on your measurements, gauge, and fit choices, not a generic sample size.</li>
-            </ul>
+          </div>
+          <div class="home-v2-sue__photo-wrap">
+            <img
+              src={suePhoto}
+              alt={suePhotoAlt}
+              class="home-v2-sue__photo"
+              width="480"
+              height="360"
+              loading="lazy"
+              decoding="async"
+            />
           </div>
         </div>
       </section>
 
-      <PatternsFeaturesSection
-        sectionId="home-pattern-features"
-        headingId="home-patterns-features-heading"
-        subtitle="Designed to make machine knitting easier to follow, customize, and track."
-      />
-
-      <!-- SOFT LAUNCH: Hidden temporarily. Bring back after initial onboarding phase -->
-      <!-- WHERE ARE YOU RIGHT NOW? SECTION -->
-      <section id="where-are-you" class="kbm-where-section kbm-hidden-softlaunch" hidden aria-hidden="true">
-        <div class="kbm-where-inner">
-          <div class="kbm-section-header">
-            <h2>Where are you right now?</h2>
-            <p class="kbm-section-subtitle">Tell me where you are right now, and I’ll point you to the right next step.</p>
-            <p class="kbm-section-subtitle kbm-section-subtitle--secondary">There's no wrong choice — each path starts where you are.</p>
-          </div>
-
-          <div class="kbm-hex-grid">
-          <!-- Card 1: I'm just starting — same wrapper pattern as shop/downloads (article + download-card-link) -->
-          <article class="download-card kbm-card kbm-card--download kbm-hex-card">
-            <a href="/start-here" class="download-card-link kbm-hex-card--link" data-testid="card-start-phase">
-              <span class="kbm-card-ribbon">LIVE</span>
-              <div class="kbm-hex-icon">
-                <img src="/images/KINlogo.svg" alt="" />
-              </div>
-              <h3>I'm just getting started</h3>
-              <p>Learn the basics so you can knit your first confident rows.</p>
-              <span class="btn primary kbm-cta-guide" data-testid="button-getting-started">Start with the basics</span>
-            </a>
-          </article>
-
-          <!-- Card 2: I've knitted a little -->
-          <article class="download-card kbm-card kbm-card--download kbm-hex-card">
-            <a href="/start-here" class="download-card-link kbm-hex-card--link" data-testid="card-skills-phase">
-              <span class="kbm-card-ribbon" aria-label="In Progress">
-                <i class="fa-solid fa-screwdriver-wrench" style="color: rgb(255, 255, 255);" aria-hidden="true"></i>
-              </span>
-              <div class="kbm-hex-icon">
-                <img src="/images/KINlogo.svg" alt="" />
-              </div>
-              <h3>I've knitted a little</h3>
-              <p>Build your skills with small, low-pressure projects.</p>
-              <span class="btn primary kbm-cta-guide" data-testid="button-skill-builders">Practice Key Skills</span>
-            </a>
-          </article>
-
-          <!-- Card 3: I'm ready to make something -->
-          <article class="download-card kbm-card kbm-card--download kbm-hex-card">
-            <a href="/start-here" class="download-card-link kbm-hex-card--link" data-testid="card-projects-phase">
-              <span class="kbm-card-ribbon" aria-label="In Progress">
-                <i class="fa-solid fa-screwdriver-wrench" style="color: rgb(255, 255, 255);" aria-hidden="true"></i>
-              </span>
-              <div class="kbm-hex-icon">
-                <img src="/images/KINlogo.svg" alt="" />
-              </div>
-              <h3>I'm ready to make something</h3>
-              <p>Start with patterns that give you a solid place to begin.</p>
-              <span class="btn primary kbm-cta-guide" data-testid="button-rsk">Start a project</span>
-            </a>
-          </article>
-
-          <!-- Card 4: Help Hub (support destination) -->
-          <article class="download-card kbm-card kbm-card--download kbm-hex-card kbm-hex-card--help">
-            <a href="/start-here" class="download-card-link kbm-hex-card--link" data-testid="card-need-help">
-              <span class="kbm-card-ribbon" aria-label="In Progress">
-                <i class="fa-solid fa-screwdriver-wrench" style="color: rgb(255, 255, 255);" aria-hidden="true"></i>
-              </span>
-              <div class="kbm-hex-icon">
-                <img src="/images/KINlogo.svg" alt="" />
-              </div>
-              <h3>Help Hub</h3>
-              <p>Find troubleshooting tips, answers, and your next step.</p>
-              <span class="btn primary kbm-cta-guide" data-testid="button-need-help">Get Help</span>
-            </a>
-          </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="kbm-home-feedback">
-        <h3>Help shape the future of Knit It Now patterns</h3>
+      <!-- ========== SECTION 7: Ready to explore? ========== -->
+      <section class="home-v2-cta" aria-labelledby="home-cta-heading">
+        <h2 id="home-cta-heading">Ready to explore?</h2>
         <p>
-          This pattern system is still in progress. If something feels confusing or missing, we’d love to hear from you.
+          Take your time looking around. When you're ready for full access to builders, courses, and
+          member resources, we'd love to have you join.
         </p>
-        <div class="kbm-home-feedback__actions">
-          <a href="/contact" class="kbm-btn kbm-btn-accent">Send Feedback</a>
-          <a href="/patterns/sleeveless-express/" class="kbm-btn kbm-btn-outline" data-testid="home-cta-sleeveless-bottom">
-            Try the Sleeveless Pattern
-          </a>
+        <div class="home-v2-cta__actions">
+          <a href="/membership" class="kbm-btn kbm-btn-accent">Become a Member</a>
+          <a href="#explore" class="kbm-btn kbm-btn-outline">Explore the Site</a>
         </div>
-        <p><br />
-          As we continue rebuilding Knit It Now, these interactive patterns are only the beginning.
-        </p>
       </section>
-
-    </main>
-
-  
+    </div>
+  </div>
 </Layout>
 
+<style is:global>
+  body.page--home-v2 .site-content {
+    padding-left: 0;
+    padding-right: 0;
+    max-width: none;
+  }
+
+  body.page--home-v2 .home-v2 {
+    max-width: none;
+    padding-left: 0;
+    padding-right: 0;
+  }
+</style>
+
 <style>
-  html {
-    scroll-behavior: smooth;
+  .home-v2 {
+    --home-max: 1200px;
+    --home-gutter: clamp(1rem, 2.5vw, 1.75rem);
+    background: #fafaf8;
   }
 
-  :root {
-    --kbm-green: #52682d;
-    --kbm-green-hover: #445626;
-    --kbm-green-2: #738c52;
-    --font: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-
-  body {
-    margin: 0;
-    background: #f7f8f7;
-    font-family: var(--font);
-    color: #222;
-  }
-
-  /* ========== MAIN WRAPPER ========== */
-  :global(body.page--home .site-content) {
-    padding-top: calc(var(--header-offset, 150px) + 10px);
-  }
-
-  .kbm-start-here {
-    max-width: 1000px;
+  .home-v2__content {
+    max-width: var(--home-max);
     margin: 0 auto;
-    padding: 0.25rem 1.5rem 3rem;
+    padding: 0 var(--home-gutter) 4.5rem;
   }
 
-  /* ========== SHARED BUTTON STYLES ========== */
-  .btn {
-    display: inline-block;
-    padding: 0.65rem 1.4rem;
-    border-radius: 999px;
-    font-size: 0.95rem;
-    text-decoration: none;
-    font-weight: 500;
-    border: 1px solid transparent;
-    transition: background-color 0.2s ease;
+  /* —— Hero —— */
+  .home-v2-hero {
+    padding: 0 var(--home-gutter);
+    margin-bottom: clamp(3.5rem, 6vw, 5rem);
   }
 
-  .btn.primary {
-    background-color: var(--kbm-green);
-    color: #fff;
-  }
-
-  .btn.primary:hover {
-    background-color: var(--kbm-green-hover);
-  }
-
-  /* ========== SECTION HEADERS ========== */
-  .kbm-section-header {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-
-  .kbm-section-header h2 {
-    font-size: clamp(1.4rem, 2.5vw, 1.8rem);
-    color: #2c3a57;
-    margin: 0 0 0.5rem;
-  }
-
-  .kbm-section-framing {
+  .home-v2-hero__frame {
+    position: relative;
+    max-width: var(--home-max);
     margin: 0 auto;
-    max-width: 40rem;
-    font-size: 1rem;
-    line-height: 1.6;
-    color: #4d5a48;
   }
 
-  .kbm-section-subtitle {
-    color: #4d5a48;
-    font-size: 1rem;
-    margin: 0;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .kbm-section-subtitle--secondary {
-    font-style: italic;
-    margin-top: 0.35rem;
-    font-size: 0.95rem;
-    color: #6b7565;
-  }
-
-  /* :global so this still applies when homepage markup is passed through Layout’s <slot /> */
-  :global(.kbm-hidden-softlaunch) {
-    display: none !important;
-  }
-
-  /* ========== HERO SECTION ========== */
-  .kbm-hero {
-    margin-bottom: 2.25rem;
-    padding-top: 0.25rem;
-  }
-
-  .kbm-hero--patterns {
-    margin-bottom: 1.65rem;
-    padding: 1.25rem 1.5rem 1.5rem;
+  .home-v2-hero__backdrop {
+    position: relative;
+    width: 100%;
+    min-height: 220px;
     border-radius: 1rem;
-    background: linear-gradient(135deg, #f9f9f6 0%, #fff 55%);
-    border: 1px solid #d6dbc9;
-    box-shadow: 0 4px 16px rgba(82, 104, 45, 0.1);
+    overflow: hidden;
   }
 
-  .kbm-hero--patterns .kbm-hero__content {
-    text-align: center;
-    max-width: 42rem;
-    margin: 0 auto;
+  .home-v2-hero__backdrop :global(.home-img-placeholder) {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 2px dashed rgba(82, 104, 45, 0.3);
   }
 
-  .kbm-hero--patterns .kbm-hero__cta-group,
-  .kbm-hero--patterns .kbm-hero__actions {
-    align-items: center;
-    justify-content: center;
-  }
-
-  .kbm-hero__beta-note {
-    margin: 0 auto 1.5rem;
-    max-width: 36rem;
-    font-size: 0.92rem;
-    line-height: 1.55;
-    color: #6b7565;
-    font-style: italic;
-  }
-
-  @media (max-width: 640px) {
-    .kbm-hero {
-      padding-top: 0.15rem;
-    }
-  }
-
-  .kbm-hero__grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    align-items: center;
-  }
-
-  .kbm-hero__content {
-    text-align: center;
-  }
-
-  .kbm-hero__eyebrow {
-    display: inline-block;
-    font-size: 0.85rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--kbm-green-2);
-    margin-bottom: 0.75rem;
-    padding: 0.35rem 1rem;
-    background: rgba(115, 140, 82, 0.12);
-    border-radius: 999px;
-  }
-
-  .kbm-hero h1 {
-    font-size: clamp(1.4rem, 3vw, 2rem);
-    margin: 0 0 0.65rem;
-    color: #2c3a57;
-    line-height: 1.3;
-  }
-
-  .kbm-hero__framing {
-    margin: 0 auto 0.55rem;
-    max-width: 36rem;
-    font-size: 0.95rem;
-    line-height: 1.55;
-    color: #5f6b58;
-  }
-
-  .kbm-hero__ecosystem {
-    margin: 0 auto 0.75rem;
-    max-width: 36rem;
-    font-size: 0.8rem;
-    line-height: 1.4;
-    letter-spacing: 0.03em;
-    color: #8a9484;
-  }
-
-  .kbm-hero .hero-tagline {
-    margin: 0 0 1rem;
-    font-size: clamp(1rem, 2.2vw, 1.15rem);
-    font-weight: 600;
-    line-height: 1.45;
-    color: var(--kbm-green-2);
-  }
-
-  .kbm-hero__text {
-    max-width: 42rem;
-    margin: 0 auto 0.85rem;
-    font-size: 1rem;
-    line-height: 1.55;
-    color: #4d5a48;
-  }
-
-  .kbm-hero__benefits {
-    list-style: disc;
-    list-style-position: outside;
-    margin: 0 auto 1.25rem;
-    padding-left: 1.25rem;
-    max-width: 36rem;
-    text-align: left;
-    font-size: 0.95rem;
-    line-height: 1.55;
-    color: #4d5a48;
-  }
-
-  .kbm-hero__benefits li {
-    margin-bottom: 0.35rem;
-  }
-
-  .kbm-hero__benefits li:last-child {
-    margin-bottom: 0;
-  }
-
-  .kbm-hero__actions {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 0.85rem;
-  }
-
-  /* Hero CTAs: slightly larger tap targets; same global .kbm-btn system */
-  .kbm-hero__actions .kbm-btn {
-    padding: 0.55rem 1.35rem;
-    font-size: 0.95rem;
-    font-weight: 600;
-    text-decoration: none;
-  }
-
-  .kbm-hero__cta-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.4rem;
-    width: 100%;
-    max-width: 42rem;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .kbm-hero__cta-helper {
-    margin: 0;
-    width: 100%;
+  .home-v2-hero__card {
+    position: relative;
+    z-index: 2;
     max-width: 100%;
-    font-size: 0.85rem;
-    line-height: 1.45;
-    color: #6b7565;
-    text-align: center;
-  }
-
-  .kbm-hero__support {
-    margin: 0;
-    padding-top: 0.1rem;
-    text-align: center;
-  }
-
-  .kbm-hero__support-link {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #6b7565;
-    text-decoration: underline;
-    text-decoration-color: rgba(107, 117, 101, 0.45);
-    text-underline-offset: 0.2em;
-  }
-
-  .kbm-hero__support-link:hover {
-    color: var(--kbm-green-2);
-    text-decoration-color: rgba(115, 140, 82, 0.55);
-  }
-
-  .kbm-hero__support-link:focus-visible {
-    outline: 2px solid var(--kbm-green-2);
-    outline-offset: 0.15rem;
-    border-radius: 2px;
-  }
-
-  .kbm-hero__helper {
-    font-style: italic;
-    font-size: 0.9rem;
-    color: #4d5a48;
-    margin: 0;
-    text-align: center;
-  }
-
-  .kbm-hero__image {
-    display: flex;
-    justify-content: center;
-  }
-
-  .kbm-hero__image img {
-    width: 100%;
-    max-width: 420px;
-    height: auto;
+    margin-top: 1rem;
+    padding: clamp(1.35rem, 3vw, 1.85rem) clamp(1.25rem, 3vw, 1.75rem);
+    background: #fff;
     border-radius: 1rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-    background: #e0e5d8;
-    min-height: 200px;
-    object-fit: cover;
+    border: 1px solid rgba(82, 104, 45, 0.14);
+    box-shadow:
+      0 4px 24px rgba(36, 48, 21, 0.1),
+      0 1px 4px rgba(82, 104, 45, 0.08);
   }
 
   @media (min-width: 900px) {
-    .kbm-hero__grid {
-      grid-template-columns: 1fr 1fr;
-      gap: 2.5rem;
+    .home-v2-hero__frame {
+      min-height: clamp(340px, 38vw, 440px);
     }
 
-    .kbm-hero__content {
-      text-align: left;
+    .home-v2-hero__backdrop {
+      position: absolute;
+      inset: 0;
+      min-height: 100%;
+      aspect-ratio: auto;
     }
 
-    .kbm-hero__text {
-      margin-left: 0;
-      margin-right: 0;
-    }
-
-    .kbm-hero__actions {
-      align-items: flex-start;
-      justify-content: flex-start;
-      flex-direction: row;
-    }
-
-    .kbm-hero__cta-group {
-      align-items: flex-start;
-      margin-left: 0;
-      margin-right: auto;
-    }
-
-    .kbm-hero--patterns .kbm-hero__cta-group,
-    .kbm-hero--patterns .kbm-hero__actions {
-      align-items: center;
-      justify-content: center;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .kbm-hero__support {
-      text-align: left;
-    }
-
-    .kbm-hero__image img {
-      max-width: 100%;
+    .home-v2-hero__card {
+      position: absolute;
+      left: clamp(1.25rem, 3vw, 2rem);
+      top: 50%;
+      transform: translateY(-50%);
+      width: min(420px, 42%);
+      max-width: 420px;
+      margin-top: 0;
     }
   }
 
-  /* ========== HOME PATTERN SPLIT ROWS ========== */
-  .kbm-home-split {
-    margin-bottom: 2.5rem;
-    padding: 1.75rem;
-    border-radius: 1rem;
-    background: #fff;
-    border: 1px solid #d6dbc9;
-    box-shadow: 0 2px 10px rgba(82, 104, 45, 0.08);
-  }
-
-  .kbm-home-split__grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.75rem;
-    align-items: center;
-  }
-
-  .kbm-home-split__content {
-    align-self: center;
-  }
-
-  .kbm-home-split__media {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    align-self: center;
-  }
-
-  .kbm-home-split__content h2 {
+  .home-v2-hero__card h1 {
     margin: 0 0 0.85rem;
-    font-size: clamp(1.2rem, 2.4vw, 1.45rem);
+    font-size: clamp(1.45rem, 3.2vw, 2rem);
+    line-height: 1.28;
     color: #2c3a57;
-    line-height: 1.3;
   }
 
-  .kbm-home-split__content p {
-    margin: 0;
+  .home-v2-hero__copy {
+    margin: 0 0 1.35rem;
     font-size: 1rem;
     line-height: 1.6;
     color: #4d5a48;
   }
 
-  .kbm-home-split__callouts {
-    margin: 1rem 0 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .kbm-home-split__callouts li,
-  .kbm-home-split__steps li {
-    margin: 0 0 0.6rem;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    color: #4d5a48;
-    border-radius: 0.75rem;
-    background: rgba(82, 104, 45, 0.06);
-    border: 1px solid rgba(82, 104, 45, 0.18);
-    box-shadow: 0 1px 3px rgba(82, 104, 45, 0.06);
-  }
-
-  .kbm-home-split__callouts li {
-    padding: 0.6rem 0.75rem;
-  }
-
-  .kbm-home-split__callouts li:last-child,
-  .kbm-home-split__steps li:last-child {
-    margin-bottom: 0;
-  }
-
-  .kbm-home-split__callouts strong {
-    color: #2c3a57;
-  }
-
-  .kbm-home-split__callouts strong::after {
-    content: "\00a0";
-  }
-
-  .kbm-home-split__steps {
-    margin: 0.75rem 0 0;
-    padding: 0;
-    list-style: none;
-    counter-reset: home-build-step;
-  }
-
-  .kbm-home-split__steps li {
-    counter-increment: home-build-step;
-    position: relative;
-    padding: 0.6rem 0.75rem 0.6rem 2.5rem;
-    line-height: 1.45;
-  }
-
-  .kbm-home-split__steps li::before {
-    content: counter(home-build-step);
-    position: absolute;
-    left: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--kbm-green);
-    line-height: 1;
-  }
-
-  .kbm-home-split--build-steps .kbm-home-split__content {
+  .home-v2-hero__actions {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    gap: 0.65rem;
   }
 
-  @media (min-width: 768px) {
-    .kbm-home-split--build-steps .kbm-home-split__grid {
-      align-items: stretch;
-    }
-  }
-
-  .kbm-home-split--build-steps .kbm-home-split__media :global(.pattern-header-image) {
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-  }
-
-  .kbm-home-split--build-steps .kbm-home-split__media :global(.pattern-header-image__img) {
-    max-height: min(62vh, 540px);
-  }
-
-  .kbm-home-split--stack-media-first .kbm-home-split__media {
-    order: -1;
-  }
-
-  .kbm-home-split__media .kbm-home-split__enlarge {
-    max-width: 100%;
-  }
-
-  .kbm-home-split__media .pattern-header-image__img {
-    width: 100%;
-    max-height: none;
-    border-radius: 0.75rem;
-    border: 1px solid rgba(82, 104, 45, 0.18);
-    box-shadow:
-      0 10px 28px rgba(0, 0, 0, 0.08),
-      0 2px 8px rgba(82, 104, 45, 0.12);
-  }
-
-  @media (min-width: 768px) {
-    .kbm-home-split__grid {
-      grid-template-columns: 1fr 1fr;
-      gap: 2rem;
-    }
-
-    .kbm-home-split--text-45 .kbm-home-split__grid {
-      grid-template-columns: 9fr 11fr;
-      gap: 2.5rem;
-    }
-
-    .kbm-home-split--build-steps.kbm-home-split--text-45 .kbm-home-split__grid {
-      grid-template-columns: 7fr 13fr;
-      gap: 2rem;
-    }
-
-    .kbm-home-split--stack-media-first .kbm-home-split__media,
-    .kbm-home-split--stack-media-first .kbm-home-split__content {
-      order: unset;
-    }
-
-    .kbm-home-split--media-first .kbm-home-split__media {
-      order: 0;
-    }
-
-    .kbm-home-split--media-first .kbm-home-split__content {
-      order: 1;
-    }
-  }
-
-  /* ========== HOME FEEDBACK ========== */
-  .kbm-home-feedback {
-    margin-top: 2.5rem;
-    padding: 2rem 1.5rem;
-    text-align: center;
-    border-radius: 1rem;
-    background: #fff;
-    border: 1px solid #d6dbc9;
-    box-shadow: 0 2px 8px rgba(82, 104, 45, 0.06);
-  }
-
-  .kbm-home-feedback h3 {
-    margin: 0 0 0.75rem;
-    font-size: 1.15rem;
-    color: #2c3a57;
-  }
-
-  .kbm-home-feedback p {
-    margin: 0;
-    color: #4d5a48;
-    line-height: 1.55;
-  }
-
-  .kbm-home-feedback__actions {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.75rem;
-    margin-top: 1.25rem;
-    max-width: 22rem;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .kbm-home-feedback__actions .kbm-btn {
+  .home-v2-hero__actions .kbm-btn {
     text-align: center;
     text-decoration: none;
-    font-weight: 600;
   }
 
-  .kbm-home-feedback__outro {
-    margin: 1rem auto 0;
-    max-width: 28rem;
-    font-size: 0.92rem;
-    line-height: 1.5;
+  @media (min-width: 480px) {
+    .home-v2-hero__actions {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+  }
+
+  .home-v2-hero__login {
+    margin: 1rem 0 0;
+    font-size: 0.9rem;
+    color: #6b7565;
+    text-align: center;
+  }
+
+  .home-v2-hero__login a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  @media (min-width: 768px) {
+    .home-v2-hero__login {
+      text-align: left;
+    }
+  }
+
+  /* —— Sections —— */
+  .home-v2-section {
+    margin-bottom: clamp(3.5rem, 6vw, 5rem);
+  }
+
+  .home-v2-section--soft {
+    padding: clamp(2.75rem, 4.5vw, 3.75rem);
+    background: #fff;
+    border-radius: 1rem;
+    border: 1px solid rgba(82, 104, 45, 0.1);
+    box-shadow: 0 2px 12px rgba(82, 104, 45, 0.04);
+  }
+
+  .home-v2-section__header {
+    text-align: center;
+    margin-bottom: clamp(2rem, 3.5vw, 2.75rem);
+  }
+
+  .home-v2-section__header h2 {
+    margin: 0 0 0.65rem;
+    font-size: clamp(1.4rem, 2.8vw, 1.85rem);
+    color: #2c3a57;
+    line-height: 1.25;
+  }
+
+  .home-v2-section__lede {
+    margin: 0 auto;
+    max-width: 38rem;
+    font-size: 1.02rem;
+    line-height: 1.55;
     color: #6b7565;
   }
 
-  @media (min-width: 520px) {
-    .kbm-home-feedback__actions {
-      flex-direction: column;
-      align-items: stretch;
-    }
-  }
-
-  /* Welcome / founder card: global.css (.kbm-welcome*, .kbm-welcome-founder*) */
-
-  .kbm-welcome-title-logo {
-    width: 2rem;
-    height: 2rem;
-    flex-shrink: 0;
-    object-fit: contain;
-    display: block;
-  }
-
-  /* ========== WHERE ARE YOU SECTION ========== */
-  .kbm-where-section {
-    background-color: #ffffff;
-    padding-top: 2rem;
-    padding-bottom: 4rem;
-    margin-top: 3rem;
-    margin-left: -1.5rem;
-    margin-right: -1.5rem;
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-    scroll-margin-top: calc(var(--header-height, 160px) + 1rem);
-  }
-
-  .kbm-where-inner {
-    max-width: 1000px;
-    margin: 0 auto;
-  }
-
-  .kbm-where-section .kbm-section-header {
-    margin-bottom: 2rem;
-  }
-
-  .kbm-where-section .kbm-section-header h2 {
-    margin-bottom: 0.5rem;
-  }
-
-  .kbm-hex-grid {
+  /* —— Grids —— */
+  .home-v2-grid {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: clamp(1.25rem, 2vw, 1.75rem);
+    align-items: stretch;
   }
 
-  @media (min-width: 600px) {
-    .kbm-hex-grid {
-      grid-template-columns: repeat(2, 1fr);
+  .home-v2-grid--four {
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 640px) {
+    .home-v2-grid--four {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
-  @media (min-width: 1024px) {
-    .kbm-hex-grid {
-      position: relative;
+  @media (min-width: 960px) {
+    .home-v2-grid--four {
       grid-template-columns: repeat(4, minmax(0, 1fr));
     }
-    /* Subtle connector line behind first three cards (visible only in gaps between them) */
-    .kbm-hex-grid::before {
-      content: "";
-      position: absolute;
-      left: 0;
-      width: 65%;
-      top: 50%;
-      transform: translateY(-50%);
-      height: 4px;
-      border-radius: 3px;
-      background: rgba(115, 140, 82, 0.35);
-      z-index: 0;
-      pointer-events: none;
-    }
   }
 
-  @media (max-width: 1023px) {
-    .kbm-hex-grid::before {
-      display: none;
-    }
-  }
-
-  .kbm-hex-card {
-    position: relative;
-    z-index: 2;
-    background-color: #ffffff;
-    border-radius: 1.25rem;
-    padding: 1.5rem 1.25rem;
-    border: 2px solid #c7d8a4;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* —— Audience cards (section 2) —— */
+  .home-v2-audience-card {
     display: flex;
     flex-direction: column;
-  }
-
-  .kbm-hex-card:hover {
-    background-color: #f6f8f2;
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(82, 104, 45, 0.12);
-    border-color: var(--kbm-green);
-  }
-
-  /* Help Hub card: subtle support styling (same structure, soft green tint) */
-  .kbm-hex-card--help {
-    background-color: #f2f5ec;
-    border-color: #a8c078;
-  }
-
-  .kbm-hex-card--help:hover {
-    background-color: #eaf0e2;
-    border-color: var(--kbm-green-2);
-  }
-
-  .kbm-hex-card--link {
-    text-decoration: none;
-    cursor: pointer;
-    color: inherit;
-  }
-
-  /* Same card shell as shop/downloads: article.download-card.kbm-card.kbm-card--download + .download-card-link */
-  .kbm-hex-grid > article.kbm-hex-card.download-card.kbm-card.kbm-card--download {
-    padding: 1.5rem 1.25rem !important;
-    font-size: 1rem !important;
-    font-weight: 400 !important;
-    color: #222;
+    height: 100%;
+    padding: 0;
+    background: #fff;
+    border: 1px solid rgba(82, 104, 45, 0.12);
+    border-radius: 0.85rem;
     overflow: hidden;
-    cursor: default;
-    height: auto;
-    justify-content: flex-start;
-    transform: none;
-    text-decoration: none;
-  }
-
-  .kbm-hex-grid > article.kbm-hex-card.download-card.kbm-card.kbm-card--download:hover {
-    background-color: #f6f8f2;
-    transform: translateY(-4px) !important;
-    box-shadow: 0 8px 20px rgba(82, 104, 45, 0.12);
-    border-color: var(--kbm-green);
-  }
-
-  .kbm-hex-grid .kbm-hex-card.download-card .download-card-link {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
     text-decoration: none;
     color: inherit;
-    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(82, 104, 45, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   }
 
-  .kbm-hex-icon {
-    width: 56px;
-    height: 56px;
-    margin-bottom: 1rem;
-    margin-left: auto;
-    margin-right: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .home-v2-audience-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(82, 104, 45, 0.35);
+    box-shadow: 0 8px 20px rgba(82, 104, 45, 0.1);
   }
 
-  .kbm-hex-icon img {
+  .home-v2-audience-card__media {
+    height: 195px;
+    overflow: hidden;
+    border-radius: 14px 14px 0 0;
+    background: #fff;
+  }
+
+  .home-v2-audience-card__img {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: contain;
   }
 
-  .kbm-hex-card h3 {
-    font-size: 1rem;
-    color: #2c3a57;
-    margin: 0 0 0.75rem;
+  .home-v2-audience-card h3 {
+    margin: 0;
+    padding: 1.1rem 1.1rem 0.4rem;
+    font-size: 1.02rem;
     line-height: 1.35;
+    color: #2c3a57;
   }
 
-  .kbm-hex-card p {
+  .home-v2-audience-card p {
+    margin: 0;
+    padding: 0 1.1rem 1.35rem;
+    flex: 1;
+    min-height: 4.5rem;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: #4d5a48;
+  }
+
+  /* —— Feature cards (section 3) —— */
+  .home-v2-feature-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 100%;
+    padding: 0 0 1.25rem;
+    background: #fafaf8;
+    border: 1px solid rgba(82, 104, 45, 0.12);
+    border-radius: 0.85rem;
+    overflow: hidden;
+  }
+
+  .home-v2-section--soft .home-v2-feature-card {
+    background: #fff;
+    border-color: rgba(82, 104, 45, 0.1);
+  }
+
+  .home-v2-feature-card__media {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: #eef1e8;
+  }
+
+  .home-v2-feature-card__media :global(.home-img-placeholder) {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    height: 100%;
+    aspect-ratio: auto;
+  }
+
+  .home-v2-feature-card__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+  }
+
+  .home-v2-feature-card h3 {
+    margin: 0;
+    padding: 1rem 1.1rem 0.4rem;
+    font-size: 1rem;
+    line-height: 1.35;
+    color: #2c3a57;
+  }
+
+  .home-v2-feature-card p {
+    margin: 0 0 1.15rem;
+    padding: 0 1.1rem;
+    flex: 1;
+    min-height: 3.5rem;
     font-size: 0.9rem;
-    color: #4f5a4b;
-    line-height: 1.5;
-    margin: 0 0 0.5rem;
+    line-height: 1.55;
+    color: #4d5a48;
   }
 
-  .kbm-highlight {
-    font-weight: 600;
-    color: var(--kbm-green);
-    font-style: italic;
-  }
-
-  .kbm-hex-card .btn {
+  .home-v2-feature-card__btn {
+    align-self: center;
     margin-top: auto;
-    text-align: center;
-    font-size: 0.85rem;
-    padding: 0.55rem 1rem;
-  }
-
-  .kbm-link-list {
-    padding-left: 1.1rem;
-    margin: 0.5rem 0 0;
-    font-size: 0.85rem;
-    color: #4f5a4b;
-  }
-
-  .kbm-link-list li {
-    margin-bottom: 0.4rem;
-    line-height: 1.45;
-  }
-
-  .kbm-link-list a {
-    color: var(--kbm-green);
-    font-weight: 600;
+    font-size: 0.88rem !important;
+    padding: 0.55rem 0.95rem !important;
     text-decoration: none;
   }
 
-  .kbm-link-list a:hover {
-    text-decoration: underline;
-    text-underline-offset: 2px;
+  /* —— Workflow (section 4) —— */
+  .home-v2-workflow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.65rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
   }
 
-  /* ========== REASSURANCE SECTION ========== */
-  .kbm-reassurance-section {
-    margin-bottom: 1.5rem;
-    padding: 2rem 0;
+  .home-v2-workflow__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    max-width: 14rem;
   }
 
-  .kbm-reassurance-grid {
+  .home-v2-workflow__block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 5.5rem;
+    padding: 1.1rem 0.95rem;
+    background: #fff;
+    border: 1px solid rgba(82, 104, 45, 0.18);
+    border-radius: 0.85rem;
+    box-shadow: 0 2px 8px rgba(82, 104, 45, 0.06);
+    text-align: center;
+  }
+
+  .home-v2-workflow__label {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--kbm-green, #52682d);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+
+  .home-v2-workflow__hint {
+    margin-top: 0.4rem;
+    font-size: 0.74rem;
+    font-weight: 400;
+    line-height: 1.4;
+    color: #8a9484;
+  }
+
+  .home-v2-workflow__arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .home-v2-workflow__arrow svg {
+    display: block;
+    width: 1.875rem;
+    height: 1.875rem;
+  }
+
+  .home-v2-workflow__arrow--right {
+    display: none;
+  }
+
+  @media (min-width: 900px) {
+    .home-v2-workflow {
+      flex-direction: row;
+      flex-wrap: nowrap;
+      align-items: stretch;
+      justify-content: center;
+      gap: 0;
+      max-width: 100%;
+    }
+
+    .home-v2-workflow__item {
+      flex: 1 1 0;
+      flex-direction: row;
+      align-items: stretch;
+      max-width: none;
+      min-width: 0;
+      gap: 0;
+    }
+
+    .home-v2-workflow__block {
+      flex: 0 1 86%;
+      width: 86%;
+      min-height: 7rem;
+      height: 100%;
+      align-self: stretch;
+      box-sizing: border-box;
+    }
+
+    .home-v2-workflow__arrow--down {
+      display: none;
+    }
+
+    .home-v2-workflow__arrow--right {
+      display: flex;
+      flex: 1 1 auto;
+      align-self: center;
+      min-width: 1.75rem;
+      padding: 0 0.15rem;
+    }
+
+    .home-v2-workflow__arrow--right svg {
+      width: 2rem;
+      height: 2rem;
+    }
+  }
+
+  /* —— Learn cards (section 5) —— */
+  .home-v2-learn-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: #fff;
+    border: 1px solid rgba(82, 104, 45, 0.12);
+    border-radius: 0.85rem;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(82, 104, 45, 0.05);
+  }
+
+  .home-v2-learn-card__media :global(.home-img-placeholder) {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+  }
+
+  .home-v2-learn-card h3 {
+    margin: 0;
+    padding: 0.95rem 1rem 0.35rem;
+    font-size: 1rem;
+    color: #2c3a57;
+  }
+
+  .home-v2-learn-card p {
+    margin: 0 0 1rem;
+    padding: 0 1rem;
+    flex: 1;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: #4d5a48;
+  }
+
+  .home-v2-learn-card__btn {
+    align-self: center;
+    margin: 0 1rem 1.15rem;
+    margin-top: auto;
+    font-size: 0.88rem !important;
+    padding: 0.5rem 0.9rem !important;
+    text-decoration: none;
+  }
+
+  /* —— Sue (section 6) —— */
+  .home-v2-sue {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1.75rem;
+    align-items: center;
+    padding: clamp(1.5rem, 3vw, 2rem);
+    background: #fff;
+    border: 1px solid rgba(82, 104, 45, 0.12);
+    border-radius: 1rem;
+    box-shadow: 0 2px 12px rgba(82, 104, 45, 0.06);
   }
 
   @media (min-width: 768px) {
-    .kbm-reassurance-grid {
-      grid-template-columns: repeat(3, 1fr);
+    .home-v2-sue {
+      grid-template-columns: 1fr minmax(200px, 42%);
       gap: 2rem;
     }
   }
 
-  .kbm-reassurance-item {
-    text-align: center;
-    padding: 1.25rem;
-  }
-
-  @media (min-width: 768px) {
-    .kbm-reassurance-item {
-      text-align: left;
-    }
-  }
-
-  .kbm-reassurance-item h4 {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 1.05rem;
+  .home-v2-sue__text h2 {
+    margin: 0 0 0.85rem;
+    font-size: clamp(1.25rem, 2.5vw, 1.5rem);
     color: #2c3a57;
-    margin: 0 0 0.5rem;
-    font-weight: 600;
   }
 
-  .kbm-reassurance-icon {
-    width: 1.25rem;
-    height: auto;
-    flex-shrink: 0;
-  }
-
-  .kbm-reassurance-item p {
-    font-size: 0.9rem;
+  .home-v2-sue__text p {
+    margin: 0 0 0.85rem;
+    font-size: 0.98rem;
+    line-height: 1.6;
     color: #4d5a48;
-    line-height: 1.55;
-    margin: 0;
   }
 
-  .kbm-power-user-shortcut {
-    font-size: 0.9rem;
-    color: #666;
-    line-height: 1.5;
-    margin-top: 0.5rem;
+  .home-v2-sue__text p:last-child {
+    margin-bottom: 0;
   }
 
-  /* ========== ABOUT LINK (welcome + founder block) ========== */
-  .kbm-about-link {
-    color: var(--kbm-green);
+  .home-v2-sue__link {
+    color: var(--kbm-green, #52682d);
     font-weight: 600;
-    text-decoration: none;
-    font-size: 0.95rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-  }
-
-  .kbm-about-link::after {
-    content: "→";
-    font-size: 0.85em;
-  }
-
-  .kbm-about-link:hover {
     text-decoration: underline;
     text-underline-offset: 2px;
   }
 
-  /* ========== MOBILE ADJUSTMENTS ========== */
-  @media (max-width: 480px) {
-    .kbm-start-here {
-      padding-left: 1rem;
-      padding-right: 1rem;
-    }
-
-    .kbm-hex-card {
-      padding: 1.25rem 1rem;
-    }
-
-    .kbm-reassurance-item {
-      padding: 1rem 0.5rem;
-    }
-
-    .kbm-where-section {
-      margin-left: -1rem;
-      margin-right: -1rem;
-      padding-left: 1rem;
-      padding-right: 1rem;
-      padding-top: 3rem;
-      padding-bottom: 3rem;
-    }
+  .home-v2-sue__photo-wrap {
+    overflow: hidden;
+    border-radius: 0.85rem;
   }
 
-  /* ========== FIRST CARD PULSE ANIMATION ========== */
-  .pulse-once {
-    animation: pulseOnce 1.2s ease-out 0.8s 1;
+  .home-v2-sue__photo {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    aspect-ratio: 4 / 3;
   }
 
-  @keyframes pulseOnce {
-    0%   { transform: scale(1); }
-    40%  { transform: scale(1.03); }
-    100% { transform: scale(1); }
-  }
-
-  /* Ribbons: match shop/downloads/index.astro (.kbm-card--download .kbm-card-ribbon); !important beats global .kbm-card-ribbon */
-  .kbm-hex-grid .kbm-card--download .kbm-card-ribbon {
-    width: 96px !important;
-    height: 96px !important;
-    padding: 0 !important;
-    font-size: 0.62rem;
-    line-height: 1;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: transparent;
-    display: flex !important;
-    align-items: flex-start;
-    justify-content: flex-start;
-    box-sizing: border-box;
-  }
-
-  .kbm-hex-grid .kbm-card--download .kbm-card-ribbon::before {
-    background: #52682d !important;
-    z-index: 0;
-  }
-
-  .kbm-hex-grid .kbm-card--download .kbm-card-ribbon::after {
-    content: "Member Bonus" !important;
-    position: absolute;
-    top: 42px;
-    left: -3px;
-    width: 70px;
-    font-size: 0.6rem;
-    line-height: 1.1;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    text-transform: none;
-    color: #ffffff !important;
+  /* —— Final CTA (section 7) —— */
+  .home-v2-cta {
+    margin-top: clamp(3rem, 5vw, 4.5rem);
+    padding: clamp(2.25rem, 4vw, 3rem) clamp(1.5rem, 3vw, 2rem);
     text-align: center;
-    transform: rotate(-45deg);
-    transform-origin: top left;
-    z-index: 1;
+    background: linear-gradient(165deg, #f9f9f6 0%, #fff 100%);
+    border: 1px solid rgba(82, 104, 45, 0.12);
+    border-radius: 1rem;
   }
 
-  .kbm-hex-grid .kbm-card--download:first-child .kbm-card-ribbon::before {
-    background: #c2614e !important;
-    border-right-color: rgba(130, 55, 45, 0.35);
-    border-bottom-color: rgba(130, 55, 45, 0.35);
+  .home-v2-cta h2 {
+    margin: 0 0 0.65rem;
+    font-size: clamp(1.2rem, 2.5vw, 1.45rem);
+    color: #2c3a57;
   }
 
-  .kbm-hex-grid .kbm-card--download:first-child .kbm-card-ribbon::after {
-  content: "LIVE" !important;
-  top: 48px;
-  left: 17px;
-  width: auto;
-  font-size: 1rem;
-  letter-spacing: 0.2em;
-  text-align: center;
-}
-
-  .kbm-hex-grid .kbm-card--download:nth-child(n + 2) .kbm-card-ribbon::after {
-    content: "In Progress" !important;
-    top: 60px;
-    left: 3%;
-    width: 88px;
-    font-size: 0.9rem;
-    line-height: 1.2;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    white-space: nowrap;
+  .home-v2-cta p {
+    margin: 0 auto;
+    max-width: 32rem;
+    font-size: 0.98rem;
+    line-height: 1.6;
+    color: #4d5a48;
   }
 
+  .home-v2-cta__actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+    margin-top: 1.35rem;
+    max-width: 22rem;
+    margin-inline: auto;
+  }
 
+  .home-v2-cta__actions .kbm-btn {
+    text-align: center;
+    text-decoration: none;
+  }
 
+  @media (min-width: 480px) {
+    .home-v2-cta__actions {
+      flex-direction: row;
+      justify-content: center;
+      max-width: none;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .home-v2__content {
+      padding-inline: 1rem;
+    }
+
+    .home-v2-hero {
+      padding-inline: 1rem;
+    }
+
+    .home-v2-section--soft {
+      padding-inline: 1.15rem;
+    }
+  }
 </style>
