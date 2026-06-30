@@ -1,0 +1,50 @@
+---
+import "@repo-styles/global.css";
+import "@repo-styles/print.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "Knit it Now",
+  description = "Machine knitting tools and patterns",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <style data-kbm-typography>
+      html {
+        font-size: 112.5% !important;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+      }
+      @media (min-width: 1025px) {
+        html {
+          font-size: 112.5% !important;
+        }
+      }
+    </style>
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content="index, follow" />
+
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="transition-page-body">
+    <slot />
+  </body>
+</html>
