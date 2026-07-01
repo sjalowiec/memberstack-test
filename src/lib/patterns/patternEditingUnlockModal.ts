@@ -46,6 +46,14 @@ export function shouldOfferPatternEditingUnlockModal(
   return Boolean(access?.loggedIn && !canEditSleevelessPatternSettings(access));
 }
 
+function isDialogElement(el: Element | null): el is HTMLDialogElement {
+  return (
+    !!el &&
+    typeof (el as HTMLDialogElement).showModal === "function" &&
+    typeof (el as HTMLDialogElement).close === "function"
+  );
+}
+
 function getDialog(root?: ParentNode): HTMLDialogElement | null {
   if (typeof document === "undefined") return null;
   const scopes: ParentNode[] = [];
@@ -53,7 +61,7 @@ function getDialog(root?: ParentNode): HTMLDialogElement | null {
   if (typeof document.querySelector === "function") scopes.push(document);
   for (const scope of scopes) {
     const el = scope.querySelector(MODAL_SELECTOR);
-    if (el instanceof HTMLDialogElement) return el;
+    if (isDialogElement(el)) return el;
   }
   return null;
 }
@@ -77,15 +85,16 @@ export function showPatternEditingUnlockModal(options?: {
 }
 
 /**
- * When the knitter lacks edit access, offer the unlock modal (respecting session dismiss).
- * Returns true when the modal was shown.
+ * When the knitter lacks edit access, show the unlock modal for a deliberate action
+ * (Edit, Copy, locked customize control). Always re-opens even if they dismissed the
+ * auto-prompt earlier in the session.
  */
 export function offerPatternEditingUnlockModal(
   access: SleevelessUserAccess | null | undefined,
-  options?: { force?: boolean; root?: ParentNode },
+  options?: { root?: ParentNode },
 ): boolean {
   if (!shouldOfferPatternEditingUnlockModal(access)) return false;
-  return showPatternEditingUnlockModal(options);
+  return showPatternEditingUnlockModal({ ...options, force: true });
 }
 
 /** Wire dismiss controls once per dialog instance. */
@@ -113,12 +122,13 @@ export function initPatternEditingUnlockModal(root: ParentNode = document): void
   });
 }
 
-/** Auto-open on gated pattern workspace load (once per session unless forced). */
+/** Auto-open on gated pattern workspace load (once per session after dismiss). */
 export function maybeShowPatternEditingUnlockModalOnWorkspaceLoad(
   access: SleevelessUserAccess,
   options?: { root?: ParentNode },
 ): boolean {
-  return offerPatternEditingUnlockModal(access, options);
+  if (!shouldOfferPatternEditingUnlockModal(access)) return false;
+  return showPatternEditingUnlockModal(options);
 }
 
 /** Offer the modal when a locked customize/edit control is clicked. */
@@ -136,6 +146,6 @@ export function wirePatternEditingUnlockClickIntercepts(root: ParentNode = docum
     const lockedControl = target.closest(LOCKED_EDITING_CLICK_SELECTOR);
     if (!lockedControl) return;
     event.preventDefault();
-    showPatternEditingUnlockModal();
+    showPatternEditingUnlockModal({ force: true });
   });
 }

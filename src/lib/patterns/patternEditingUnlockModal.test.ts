@@ -2,7 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   dismissPatternEditingUnlockModalForSession,
   isPatternEditingUnlockModalDismissedForSession,
+  offerPatternEditingUnlockModal,
   shouldOfferPatternEditingUnlockModal,
+  showPatternEditingUnlockModal,
 } from "./patternEditingUnlockModal";
 import type { SleevelessUserAccess } from "./sleevelessPatternSystemAccess";
 
@@ -58,5 +60,27 @@ describe("patternEditingUnlockModal", () => {
     expect(isPatternEditingUnlockModalDismissedForSession()).toBe(false);
     dismissPatternEditingUnlockModalForSession();
     expect(isPatternEditingUnlockModalDismissedForSession()).toBe(true);
+  });
+
+  it("re-opens on explicit edit attempts after the auto-prompt was dismissed", () => {
+    const showModal = vi.fn();
+    const dialog = {
+      showModal,
+      open: false,
+      close: vi.fn(),
+      getAttribute: () => null,
+      setAttribute: vi.fn(),
+      querySelectorAll: () => [],
+      addEventListener: vi.fn(),
+    } as unknown as HTMLDialogElement;
+
+    vi.stubGlobal("document", {
+      querySelector: () => dialog,
+    });
+
+    dismissPatternEditingUnlockModalForSession();
+    expect(showPatternEditingUnlockModal()).toBe(false);
+    expect(offerPatternEditingUnlockModal(claimedFree)).toBe(true);
+    expect(showModal).toHaveBeenCalledTimes(1);
   });
 });
