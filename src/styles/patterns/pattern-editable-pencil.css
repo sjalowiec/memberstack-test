@@ -1,0 +1,29 @@
+/* Shared editable-field pencil cue (see PatternEditablePencilIcon.astro) */
+
+.pattern-editable-heading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.pattern-editable-pencil-icon {
+  flex-shrink: 0;
+  display: block;
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 48%, #9ca3af);
+  opacity: 0.92;
+}
+
+.pattern-editable-pencil-icon--sm {
+  width: 0.72rem;
+  height: 0.72rem;
+}
+
+.pattern-editable-pencil-icon--md {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.pattern-editable-pencil-icon--lg {
+  width: 1.3125rem;
+  height: 1.3125rem;
+}

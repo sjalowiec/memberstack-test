@@ -188,6 +188,7 @@ function applyReadOnlyProjectHeader(root: HTMLElement): void {
   }
 
   stripSectionHeadTrigger(root.querySelector("[data-sleeveless-pattern-project-notes-header]"));
+  stripSectionHeadTrigger(root.querySelector("[data-sleeveless-pattern-project-notes-view-edit]"));
 
   const notes = meta.notes;
   const notesReadonly = root.querySelector("[data-sleeveless-pattern-project-notes-readonly]");
@@ -281,6 +282,10 @@ function bindEditableHeader(root: HTMLElement): void {
 
   beginNotesEditForFocus = beginNotesEdit;
   bindSectionHeadTrigger(notesEditTrigger, beginNotesEdit);
+  bindSectionHeadTrigger(
+    root.querySelector<HTMLElement>("[data-sleeveless-pattern-project-notes-view-edit]"),
+    beginNotesEdit,
+  );
 
   saveBtn?.addEventListener("click", () => {
     if (!notesInput) return;

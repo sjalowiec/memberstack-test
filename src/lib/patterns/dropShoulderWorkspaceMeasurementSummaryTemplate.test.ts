@@ -20,8 +20,8 @@ const measurementsPageScript = readFileSync(
 );
 
 describe("Drop Shoulder Edit Pattern workspace (pattern/index.astro)", () => {
-  it("contains Update Pattern, Quick edits Size, and measurement diagram markers", () => {
-    expect(dropShoulderPatternWorkspaceAstro).toContain("Update Pattern");
+  it("contains Save Changes, Quick edits Size, and measurement diagram markers", () => {
+    expect(dropShoulderPatternWorkspaceAstro).toContain("Save Changes");
     expect(dropShoulderPatternWorkspaceAstro).toContain("Quick edits");
     expect(dropShoulderPatternWorkspaceAstro).toContain("data-sl-edit-size");
     expect(dropShoulderPatternWorkspaceAstro).toContain("data-cb-measure-diagram");
@@ -55,7 +55,7 @@ describe("Drop Shoulder workspace measurement rehydrate", () => {
 
 describe("Sleeveless Edit Pattern workspace", () => {
   it("supports Drop Shoulder saved projects in the shared edit workspace", () => {
-    expect(sleevelessPatternWorkspaceAstro).toContain("Update Pattern");
+    expect(sleevelessPatternWorkspaceAstro).toContain("Save Changes");
     expect(sleevelessPatternWorkspaceAstro).not.toContain("data-drop-shoulder-workspace-measure-summary");
     expect(sleevelessPatternWorkspaceAstro).not.toContain("drop-shoulder-refresh-measurements");
   });

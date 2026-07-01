@@ -5,6 +5,7 @@ import PatternPrintFooter from "../../../../components/common/PatternPrintFooter
 import PatternPrintPersonalization from "../../../../components/common/PatternPrintPersonalization.astro";
 import PatternTipsToggle from "../../../../components/patterns/PatternTipsToggle.astro";
 import PatternWorkspaceLibraryDrawer from "../../../../components/patterns/PatternWorkspaceLibraryDrawer.astro";
+import PatternEditablePencilIcon from "../../../../components/patterns/PatternEditablePencilIcon.astro";
 import SleevelessPatternPrintNotice from "../../../../components/patterns/SleevelessPatternPrintNotice.astro";
 
 import "../../../../styles/ns-shaping-chart.css";
@@ -16,6 +17,7 @@ import "../../../../styles/pattern-help-card.css";
 
 import "../../../../styles/patterns/sleeveless-pattern-shared.css";
 import "../../../../styles/patterns/pattern-app-shell.css";
+import "../../../../styles/patterns/pattern-editable-pencil.css";
 
 // Reused measurement editor styling (same diagram/overlay as Custom Build → Measurements).
 import "../../../../styles/sleeveless-express-measurements-confirm.css";
@@ -215,7 +217,10 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
           <div class="sl-edit-workspace__quick">
             <div class="sl-edit-drawer__body">
               <div class="sl-edit-field">
-                <label class="sl-edit-label" for="sl-edit-title">Pattern title</label>
+                <label class="sl-edit-label pattern-editable-heading" for="sl-edit-title">
+                  Pattern title
+                  <PatternEditablePencilIcon />
+                </label>
                 <input
                   type="text"
                   id="sl-edit-title"
@@ -226,7 +231,10 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
               </div>
 
               <div class="sl-edit-field">
-                <label class="sl-edit-label" for="sl-edit-notes">Notes</label>
+                <label class="sl-edit-label pattern-editable-heading" for="sl-edit-notes">
+                  Notes
+                  <PatternEditablePencilIcon />
+                </label>
                 <textarea
                   id="sl-edit-notes"
                   class="sl-edit-input sl-edit-textarea"
@@ -236,13 +244,19 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
               </div>
 
               <section class="sl-edit-section" aria-labelledby="sl-edit-setup-heading">
-                <h3 class="sl-edit-section__title" id="sl-edit-setup-heading">Quick edits</h3>
+                <h3 class="sl-edit-section__title pattern-editable-heading" id="sl-edit-setup-heading">
+                  Quick edits
+                  <PatternEditablePencilIcon />
+                </h3>
 
                 <div class="sl-edit-field">
                   <label class="sl-edit-sublabel" for="sl-edit-size">Size</label>
                   <select id="sl-edit-size" class="sl-edit-input sl-edit-select" data-sl-edit-size>
                     <option value="">Loading sizes…</option>
                   </select>
+                  <p class="sl-edit-ease">
+                    Changing the size updates the pattern measurements automatically.
+                  </p>
                 </div>
 
                 <fieldset class="sl-edit-field sl-edit-fieldset">
@@ -294,7 +308,10 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
               </section>
 
               <section class="sl-edit-section" aria-labelledby="sl-edit-gauge-heading">
-                <h3 class="sl-edit-section__title" id="sl-edit-gauge-heading">Gauge</h3>
+                <h3 class="sl-edit-section__title pattern-editable-heading" id="sl-edit-gauge-heading">
+                  Gauge
+                  <PatternEditablePencilIcon />
+                </h3>
                 <div class="sl-edit-grid">
                   <div class="sl-edit-subfield">
                     <label class="sl-edit-sublabel" for="sl-edit-spi" data-sl-edit-spi-label>Stitch gauge (per 4")</label>
@@ -348,8 +365,9 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
           <div class="sl-edit-workspace__measure" data-sl-measure-pane>
             <header class="sl-edit-workspace__measure-head">
               <div class="sl-edit-workspace__measure-headrow">
-                <h3 class="sl-edit-workspace__measure-title">
-                  <i class="fa-thin fa-ruler sl-edit-workspace__measure-icon" aria-hidden="true"></i> Measurements
+                <h3 class="sl-edit-workspace__measure-title pattern-editable-heading">
+                  Measurements
+                  <PatternEditablePencilIcon />
                 </h3>
                 <!--
                   Primary edit actions live here (next to the Measurements heading) so they are
@@ -379,13 +397,13 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
                       data-sl-edit-apply
                       data-testid="button-edit-apply"
                     >
-                      Update Pattern
+                      Save Changes
                     </button>
                   </div>
                 </div>
               </div>
               <p class="sl-edit-workspace__measure-hint">
-                Tap a measurement to fine-tune it. Updates apply when you press Update Pattern.
+                Make your changes, then click Save Changes to update your pattern.
               </p>
             </header>
             <div class="sl-measure-workspace__body cb-measure-page express-measurements-confirm-page">
@@ -787,16 +805,6 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
     color: color-mix(in srgb, var(--kbm-green, #52682d) 65%, #6b7280);
   }
 
-  .sl-edit-select {
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-    background-size: 12px;
-    padding-right: 2.25rem;
-    cursor: pointer;
-  }
-
   .sl-edit-segment--three {
     flex-wrap: wrap;
   }
@@ -870,10 +878,20 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
     font-size: 0.95rem;
     line-height: 1.4;
     color: #1f2937;
-    background: #fff;
+    background-color: #fff;
     border: 1px solid #d1d5db;
     border-radius: 8px;
     transition: border-color 0.12s ease, box-shadow 0.12s ease;
+  }
+
+  .sl-edit-input.sl-edit-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 12 12'%3E%3Cpath fill='%23374151' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+    background-size: 14px;
+    padding-right: 2.65rem;
+    cursor: pointer;
   }
 
   /* Notes — same input chrome as the title, sized for a few lines of free text. */
@@ -1086,13 +1104,6 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
   .sl-edit-workspace__measure-actions .sl-edit-error-note[hidden],
   .sl-edit-workspace__measure-actions .sl-edit-saved-note[hidden] {
     display: none;
-  }
-
-  /* Clean, subtle ruler — secondary to the "Measurements" heading (no rotation). */
-  .sl-edit-workspace__measure-icon {
-    flex-shrink: 0;
-    color: var(--kbm-green, #52682d);
-    font-size: 1.1em;
   }
 
   .sl-edit-workspace__measure-hint {

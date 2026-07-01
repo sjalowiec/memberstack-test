@@ -5,6 +5,9 @@
  *
  * Optional named slot `print-summary` renders between title and notes (e.g. sleeveless “At a glance” on the pattern tab).
  */
+import PatternEditablePencilIcon from "../patterns/PatternEditablePencilIcon.astro";
+import "../../styles/patterns/pattern-editable-pencil.css";
+
 interface Props {
   /** When false, only the dialog is rendered (e.g. beta-print injects slots inside generated HTML). */
   includePrintSection?: boolean;
@@ -36,8 +39,9 @@ const { includePrintSection = true } = Astro.props;
     </h2>
 
     <div class="pattern-print-personalization-modal__fields">
-      <label class="pattern-print-personalization-modal__label" for="pattern-print-personalization-title">
+      <label class="pattern-print-personalization-modal__label pattern-editable-heading" for="pattern-print-personalization-title">
         Printed pattern title
+        <PatternEditablePencilIcon />
       </label>
       <input
         id="pattern-print-personalization-title"
@@ -47,8 +51,9 @@ const { includePrintSection = true } = Astro.props;
         autocomplete="off"
       />
 
-      <label class="pattern-print-personalization-modal__label" for="pattern-print-personalization-notes">
+      <label class="pattern-print-personalization-modal__label pattern-editable-heading" for="pattern-print-personalization-notes">
         Project notes
+        <PatternEditablePencilIcon />
       </label>
       <textarea
         id="pattern-print-personalization-notes"

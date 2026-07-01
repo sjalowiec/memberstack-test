@@ -1,12 +1,14 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 import SleevelessPatternMemberGate from "../../../components/patterns/SleevelessPatternMemberGate.astro";
+import PatternEditablePencilIcon from "../../../components/patterns/PatternEditablePencilIcon.astro";
 import UnitToggle from "../../../components/wizards/UnitToggle.astro";
 import YarnRequirement from "../../../components/tools/YarnRequirement.astro";
 import "../../../styles/wizard.css";
 import "../../../styles/sleeveless-express-wizard-layout.css";
 import "../../../styles/sleeveless-express-measurements-confirm.css";
 import "../../../styles/sleeveless-review-measurements.css";
+import "../../../styles/patterns/pattern-editable-pencil.css";
 import "../../../styles/sleeveless-pattern-project-cloud-save.css";
 import "../../../styles/custom-pattern-editing-banner.css";
 import { SLEEVELESS_PATTERN_FAMILY_NAME } from "../../../lib/patterns/sleevelessPatternProjectMeta";
@@ -188,8 +190,9 @@ const DEBUG_FORCE_FREE_USER = false;
             aria-label="Pattern project"
           >
             <div class="sleeveless-review-project-header__name">
-              <label class="sleeveless-review-project-header__label" for="sleeveless-pattern-name">
+              <label class="sleeveless-review-project-header__label pattern-editable-heading" for="sleeveless-pattern-name">
                 Pattern name
+                <PatternEditablePencilIcon />
               </label>
               <p
                 class="sleeveless-review-project-header__title-display"
@@ -211,26 +214,6 @@ const DEBUG_FORCE_FREE_USER = false;
                     autocomplete="off"
                     spellcheck="false"
                   />
-                  <span
-                    class="sleeveless-review-project-header__field-pencil"
-                    aria-hidden="true"
-                  >
-                    <svg
-                      class="sleeveless-review-project-header__pencil-icon sleeveless-review-project-header__pencil-icon--inline"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"></path>
-                    </svg>
-                  </span>
                 </div>
                 <button
                   type="button"
@@ -262,10 +245,11 @@ const DEBUG_FORCE_FREE_USER = false;
                 ></p>
               </div>
               <label
-                class="sleeveless-review-project-header__label sleeveless-review-project-header__notes-label"
+                class="sleeveless-review-project-header__label sleeveless-review-project-header__notes-label pattern-editable-heading"
                 for="sleeveless-pattern-notes"
               >
                 Project notes
+                <PatternEditablePencilIcon />
               </label>
               <div
                 class="sleeveless-review-project-header__section-head sleeveless-review-project-header__editable-field sleeveless-review-project-header__notes-trigger"
@@ -277,21 +261,7 @@ const DEBUG_FORCE_FREE_USER = false;
                 aria-label="Add project notes"
               >
                 <span class="sleeveless-review-project-header__section-pencil" aria-hidden="true">
-                  <svg
-                    class="sleeveless-review-project-header__pencil-icon"
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    aria-hidden="true"
-                  >
-                    <path
-                      d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"></path>
-                  </svg>
+                  <PatternEditablePencilIcon size="md" />
                 </span>
                 <span class="sleeveless-review-project-header__notes-empty-hint">
                   Add project notes…
@@ -300,8 +270,16 @@ const DEBUG_FORCE_FREE_USER = false;
               <div
                 class="sleeveless-review-project-header__notes-view sleeveless-review-project-header__editable-field"
                 data-sleeveless-pattern-project-notes-view
+                data-sleeveless-pattern-project-notes-view-edit
+                role="button"
+                tabindex="0"
+                title="Edit project notes"
+                aria-label="Edit project notes"
                 hidden
               >
+                <span class="sleeveless-review-project-header__section-pencil" aria-hidden="true">
+                  <PatternEditablePencilIcon size="md" />
+                </span>
                 <p
                   class="sleeveless-review-project-header__notes-display"
                   data-sleeveless-pattern-project-notes-static
@@ -393,21 +371,7 @@ const DEBUG_FORCE_FREE_USER = false;
               aria-label="Edit pattern"
             >
               <span class="sleeveless-review-project-header__section-pencil" aria-hidden="true">
-                <svg
-                  class="sleeveless-review-project-header__pencil-icon"
-                  width="21"
-                  height="21"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"></path>
-                </svg>
+                <PatternEditablePencilIcon size="lg" />
               </span>
               <div
                 class="sleeveless-measure-summary-edit-row__content"
