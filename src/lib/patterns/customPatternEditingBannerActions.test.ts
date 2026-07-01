@@ -59,6 +59,10 @@ vi.mock("./patternEditingUnlockModal", () => ({
   offerPatternEditingUnlockModal: vi.fn(),
 }));
 
+vi.mock("./patternEditGateDebug", () => ({
+  logPatternEditGateDebug: vi.fn(),
+}));
+
 import { smartSaveCustomPatternProject } from "./customPatternSavedProjectsPanel";
 import {
   markFreePatternClaimedForSystem,

@@ -1,4 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("./patternEditGateDebug", () => ({
+  isPatternEditGateDebugEnabled: vi.fn(() => false),
+  logPatternEditGateDebug: vi.fn(),
+  logPatternEditGateAccess: vi.fn(),
+}));
+
 import {
   applyLockedPatternEditButtonState,
   dismissPatternEditingUnlockModalForSession,

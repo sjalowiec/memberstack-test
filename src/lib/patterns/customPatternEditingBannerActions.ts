@@ -24,6 +24,7 @@ import {
 import { isFreeClaimedForSystem } from "./patternSystemFreeClaim";
 import { resolvePatternSystemForEntitlement } from "./patternSystemId";
 import { offerPatternEditingUnlockModal } from "./patternEditingUnlockModal";
+import { logPatternEditGateDebug } from "./patternEditGateDebug";
 import {
   resolveSaveAlreadyClaimedCopy,
   resolveSaveLoggedOutCopy,
@@ -105,6 +106,13 @@ export async function runSaveCustomPatternFromWorkspace(
   }
 
   if (!willCreate && !canEditPatternSettingsForSystem(access, patternSystem)) {
+    logPatternEditGateDebug("runSaveCustomPatternFromWorkspace.blocked", {
+      patternSystem,
+      locked: true,
+      drawerAllowed: false,
+      hasSystemAccess: access.hasSystemAccess,
+      freeClaimsBySystem: access.freeClaimsBySystem,
+    });
     if (typeof document !== "undefined") {
       offerPatternEditingUnlockModal(access, { patternSystem });
     }

@@ -18,6 +18,12 @@ import { resolveSaveLoggedOutCopy } from "./sleevelessPatternProjectCloudSave";
 import { resolveHasAdvancedPatternAccessForAccess } from "./sleevelessPatternAccessGate";
 
 vi.mock("../devBypass", () => ({ devBypass: false }));
+vi.mock("./sleevelessPatternLoginGate", () => ({
+  waitForMemberstackDom: vi.fn().mockResolvedValue(true),
+}));
+vi.mock("./patternEditGateDebug", () => ({
+  logPatternEditGateDebug: vi.fn(),
+}));
 
 import {
   invalidateSleevelessUserAccessCache,

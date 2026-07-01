@@ -129,14 +129,17 @@ export function resolvePatternSystemFromWorkingSession(): PatternSystemId {
   const activeId = readActiveCustomPatternProjectId()?.trim();
   if (activeId) {
     const baseline = readHydratedConstructionBaseline();
-    if (baseline?.projectId === activeId) {
-      return baseline.hadAuthoritativeDropShoulder ? "drop-shoulder" : "sleeveless";
+    if (baseline?.projectId === activeId && baseline.hadAuthoritativeDropShoulder) {
+      return "drop-shoulder";
     }
     try {
       const fromDraft = resolvePatternSystemFromPatternRecord(getCurrentPattern());
       if (fromDraft === "drop-shoulder") return "drop-shoulder";
     } catch {
       /* ignore */
+    }
+    if (baseline?.projectId === activeId) {
+      return "sleeveless";
     }
   }
   if (isActiveDropShoulderConstruction()) {

@@ -6,6 +6,8 @@
  */
 import { devBypass } from "../devBypass";
 import { memberIdFromMemberstackPayload } from "./memberstackMember";
+import { logPatternEditGateDebug } from "./patternEditGateDebug";
+import { waitForMemberstackDom } from "./sleevelessPatternLoginGate";
 import {
   mergeFreeClaimForSystemIntoMemberJson,
   mergeAllFreeClaimsResetIntoMemberJson,
@@ -160,13 +162,23 @@ async function resolveMemberstackAccess(ms: MemberstackDom): Promise<SleevelessU
 async function resolveAccessUncached(): Promise<SleevelessUserAccess> {
   if (typeof window === "undefined") return LOGGED_OUT_SLEEVELESS_ACCESS;
 
+  // Wait for Memberstack before resolving — avoids caching dev-bypass access on localhost
+  // while a real nosub/member session is still loading.
+  await waitForMemberstackDom();
+
   const ms = window.$memberstackDom;
   if (ms?.getCurrentMember) {
     const memberAccess = await resolveMemberstackAccess(ms);
     if (memberAccess) return memberAccess;
   }
 
-  if (devBypass) return devBypassAccessSnapshot();
+  if (devBypass) {
+    logPatternEditGateDebug("resolveAccessUncached.dev-bypass-fallback", {
+      accessSource: "dev-bypass",
+      extra: { memberstackReady: Boolean(ms?.getCurrentMember) },
+    });
+    return devBypassAccessSnapshot();
+  }
 
   if (!ms?.getCurrentMember) return loggedOutAccessSnapshot("memberstack-dom-unavailable");
   return loggedOutAccessSnapshot("no-member-id");
@@ -183,8 +195,31 @@ export function resolveSleevelessUserAccess(): Promise<SleevelessUserAccess> {
       window.__KBM_SLEEVELESS_ACCESS__ = access;
       return access;
     });
+    wireMemberstackAccessCacheInvalidation();
   }
   return window.__KBM_SLEEVELESS_ACCESS_PROMISE__;
+}
+
+let memberstackAccessInvalidationWired = false;
+
+function wireMemberstackAccessCacheInvalidation(): void {
+  if (memberstackAccessInvalidationWired || typeof window === "undefined") return;
+  memberstackAccessInvalidationWired = true;
+
+  const rebind = (): void => {
+    invalidateSleevelessUserAccessCache();
+    logPatternEditGateDebug("access-cache.invalidated", {
+      extra: { reason: "memberstack-auth-change" },
+    });
+  };
+
+  void waitForMemberstackDom().then(() => {
+    const ms = window.$memberstackDom;
+    if (ms && typeof ms.on === "function") {
+      ms.on("member.login", rebind);
+      ms.on("member.logout", rebind);
+    }
+  });
 }
 
 export function getCachedSleevelessUserAccess(): SleevelessUserAccess | null {

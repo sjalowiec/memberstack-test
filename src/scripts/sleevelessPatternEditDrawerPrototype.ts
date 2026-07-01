@@ -99,6 +99,7 @@ import {
   maybeShowPatternEditingUnlockModalOnWorkspaceLoad,
   offerPatternEditingUnlockModal,
 } from "../lib/patterns/patternEditingUnlockModal";
+import { logPatternEditGateDebug } from "../lib/patterns/patternEditGateDebug";
 
 /** localStorage keys the reused measurement editor may write to (snapshot/restore for discard). */
 const MEASURE_STORAGE_KEYS = [
@@ -286,7 +287,15 @@ function getRequestRefresh(): (() => unknown) | null {
 function initSleevelessPatternEditDrawer(): void {
   const drawer = document.querySelector<HTMLElement>("[data-sl-edit-drawer]");
   const openBtn = document.querySelector<HTMLElement>("[data-sl-edit-open]");
-  if (!drawer || !openBtn) return;
+  logPatternEditGateDebug("initSleevelessPatternEditDrawer", {
+    extra: { hasDrawer: Boolean(drawer), hasOpenBtn: Boolean(openBtn) },
+  });
+  if (!drawer || !openBtn) {
+    logPatternEditGateDebug("initSleevelessPatternEditDrawer.aborted", {
+      extra: { reason: "missing drawer or open button — gate not wired" },
+    });
+    return;
+  }
 
   const drawerPanel = drawer.querySelector<HTMLElement>(".sl-edit-drawer__panel");
   const drawerBody = drawer.querySelector<HTMLElement>(".sl-edit-drawer__body");
@@ -578,7 +587,15 @@ function initSleevelessPatternEditDrawer(): void {
   }
 
   async function openDrawer(): Promise<void> {
+    logPatternEditGateDebug("openDrawer.click", { extra: { phase: "before-gate" } });
     await refreshEditAccess();
+    logPatternEditGateDebug("openDrawer.after-gate", {
+      patternSystem,
+      locked: settingsEditingLocked,
+      drawerAllowed: !settingsEditingLocked,
+      hasSystemAccess: resolvedAccess?.hasSystemAccess,
+      freeClaimsBySystem: resolvedAccess?.freeClaimsBySystem,
+    });
     if (settingsEditingLocked) {
       offerPatternEditingUnlockModal(resolvedAccess, { patternSystem });
       return;
@@ -596,6 +613,7 @@ function initSleevelessPatternEditDrawer(): void {
     logSavedPatternUpdateFlowDiagnostics("edit-drawer-opened", {
       openedSavedProjectId: readActiveCustomPatternProjectId(),
     });
+    logPatternEditGateDebug("openDrawer.opening", { drawerAllowed: true });
     syncPanelTop();
     drawer!.classList.add("is-open");
     drawer!.setAttribute("aria-hidden", "false");
@@ -649,11 +667,13 @@ function initSleevelessPatternEditDrawer(): void {
   async function applyChanges(): Promise<void> {
     if (!applyBtn) return;
 
+    logPatternEditGateDebug("applyChanges.click", { extra: { phase: "before-gate" } });
     const gate = await resolvePatternWorkspaceSettingsEditGate();
     if (gate.locked) {
       blockPatternWorkspaceSettingsEditOrOfferUnlock(gate.access, gate.patternSystem);
       return;
     }
+    logPatternEditGateDebug("applyChanges.proceeding", { drawerAllowed: true });
 
     const audience = resolveAudience();
     const size = sizeSelect?.value.trim() ?? "";
@@ -886,7 +906,13 @@ function initSleevelessPatternEditDrawer(): void {
     });
   }
 
-  openBtn.addEventListener("click", () => {
+  openBtn.addEventListener("click", (event) => {
+    logPatternEditGateDebug("edit-button.click-listener", {
+      extra: {
+        defaultPrevented: event.defaultPrevented,
+        isDisabled: openBtn.classList.contains("is-disabled"),
+      },
+    });
     void openDrawer();
   });
   drawerCloseEls.forEach((el) => el.addEventListener("click", () => closeDrawer()));
@@ -938,6 +964,7 @@ function initSleevelessPatternEditDrawer(): void {
       shouldOpen = false;
     }
     if (!shouldOpen) return;
+    logPatternEditGateDebug("maybeAutoOpenFromQuery", { extra: { editQuery: true } });
     try {
       const url = new URL(window.location.href);
       url.searchParams.delete("edit");

@@ -6,8 +6,9 @@ import {
   canEditPatternSettingsForSystem,
   type SleevelessUserAccess,
 } from "./sleevelessPatternSystemAccess";
-import { resolveSleevelessUserAccess } from "./sleevelessPatternSystemAccessClient";
+import { resolveSleevelessUserAccessSnapshot } from "./sleevelessPatternSystemAccessClient";
 import { offerPatternEditingUnlockModal } from "./patternEditingUnlockModal";
+import { logPatternEditGateAccess, logPatternEditGateDebug } from "./patternEditGateDebug";
 import {
   resolvePatternSystemForEntitlement,
   resolvePatternSystemFromWorkingSession,
@@ -27,9 +28,16 @@ export async function resolvePatternWorkspaceSettingsEditGate(): Promise<{
   patternSystem: PatternSystemId;
   locked: boolean;
 }> {
-  const access = await resolveSleevelessUserAccess();
+  logPatternEditGateDebug("resolvePatternWorkspaceSettingsEditGate.start");
+  const access = await resolveSleevelessUserAccessSnapshot();
   const patternSystem = resolvePatternSystemForEntitlement();
   const locked = isPatternWorkspaceSettingsEditingLocked(access, patternSystem);
+  logPatternEditGateAccess("resolvePatternWorkspaceSettingsEditGate.result", access, patternSystem);
+  logPatternEditGateDebug("resolvePatternWorkspaceSettingsEditGate.result", {
+    patternSystem,
+    locked,
+    drawerAllowed: !locked,
+  });
   return { access, patternSystem, locked };
 }
 
@@ -38,7 +46,13 @@ export function blockPatternWorkspaceSettingsEditOrOfferUnlock(
   access: SleevelessUserAccess,
   patternSystem: PatternSystemId,
 ): boolean {
-  if (!isPatternWorkspaceSettingsEditingLocked(access, patternSystem)) return false;
+  const locked = isPatternWorkspaceSettingsEditingLocked(access, patternSystem);
+  logPatternEditGateDebug("blockPatternWorkspaceSettingsEditOrOfferUnlock", {
+    patternSystem,
+    locked,
+    drawerAllowed: !locked,
+  });
+  if (!locked) return false;
   offerPatternEditingUnlockModal(access, { patternSystem });
   return true;
 }

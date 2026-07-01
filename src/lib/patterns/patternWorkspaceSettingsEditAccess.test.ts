@@ -5,7 +5,7 @@ import {
   isPatternWorkspaceSettingsEditingLocked,
   resolvePatternWorkspaceSettingsEditGate,
 } from "./patternWorkspaceSettingsEditAccess";
-import { resolveSleevelessUserAccess } from "./sleevelessPatternSystemAccessClient";
+import { resolveSleevelessUserAccessSnapshot } from "./sleevelessPatternSystemAccessClient";
 import { offerPatternEditingUnlockModal } from "./patternEditingUnlockModal";
 import {
   CONSTRUCTION_AUTHORED_KEY,
@@ -16,12 +16,19 @@ import { writeHydratedConstructionBaseline } from "./customPatternProjectConstru
 import type { CustomPatternProject } from "./customPatternProjectTypes";
 import { stubLocalStorage, stubSessionStorage } from "./test/stubLocalStorage";
 
-vi.mock("./sleevelessPatternSystemAccessClient", () => ({
-  resolveSleevelessUserAccess: vi.fn(),
-}));
-
 vi.mock("./patternEditingUnlockModal", () => ({
   offerPatternEditingUnlockModal: vi.fn(),
+}));
+
+vi.mock("./patternEditGateDebug", () => ({
+  isPatternEditGateDebugEnabled: vi.fn(() => false),
+  logPatternEditGateDebug: vi.fn(),
+  logPatternEditGateAccess: vi.fn(),
+}));
+
+vi.mock("./sleevelessPatternSystemAccessClient", () => ({
+  resolveSleevelessUserAccess: vi.fn(),
+  resolveSleevelessUserAccessSnapshot: vi.fn(),
 }));
 
 describe("isPatternWorkspaceSettingsEditingLocked", () => {
@@ -81,7 +88,7 @@ describe("resolvePatternWorkspaceSettingsEditGate", () => {
     } as CustomPatternProject;
     writeHydratedConstructionBaseline(project);
 
-    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue(
+    vi.mocked(resolveSleevelessUserAccessSnapshot).mockResolvedValue(
       testAccess({
         loggedIn: true,
         hasSystemAccess: false,

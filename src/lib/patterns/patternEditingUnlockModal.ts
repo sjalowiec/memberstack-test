@@ -6,6 +6,7 @@ import {
   resolvePatternSystemForEntitlement,
   type PatternSystemId,
 } from "./patternSystemId";
+import { logPatternEditGateDebug } from "./patternEditGateDebug";
 
 export const PATTERN_EDITING_UNLOCK_EDIT_BUTTON_TOOLTIP =
   "Pattern editing is included with membership. You can still view, print, and rename this pattern.";
@@ -104,8 +105,21 @@ export function offerPatternEditingUnlockModal(
   access: SleevelessUserAccess | null | undefined,
   options?: { root?: ParentNode; patternSystem?: PatternSystemId },
 ): boolean {
-  if (!shouldOfferPatternEditingUnlockModal(access, options?.patternSystem)) return false;
-  return showPatternEditingUnlockModal({ ...options, force: true });
+  const shouldOffer = shouldOfferPatternEditingUnlockModal(access, options?.patternSystem);
+  logPatternEditGateDebug("offerPatternEditingUnlockModal", {
+    patternSystem: options?.patternSystem,
+    hasSystemAccess: access?.hasSystemAccess,
+    freeClaimsBySystem: access?.freeClaimsBySystem,
+    drawerAllowed: false,
+    extra: { shouldOffer },
+  });
+  if (!shouldOffer) return false;
+  const shown = showPatternEditingUnlockModal({ ...options, force: true });
+  logPatternEditGateDebug("showPatternEditingUnlockModal", {
+    patternSystem: options?.patternSystem,
+    extra: { shown },
+  });
+  return shown;
 }
 
 /** Keep Edit visible but clearly locked; click handlers show {@link offerPatternEditingUnlockModal}. */
