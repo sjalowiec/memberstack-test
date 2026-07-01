@@ -2,39 +2,32 @@
 import Layout from '../../layouts/Layout.astro';
 import PatternsMarketingHero from '../../components/patterns/PatternsMarketingHero.astro';
 import PatternsFeaturesSection from '../../components/patterns/PatternsFeaturesSection.astro';
-import { buildSleevelessExpressNewPatternHref } from '../../lib/patterns/patternStorage';
-
-const startNewPatternHref = buildSleevelessExpressNewPatternHref();
+import PatternBuilderMyPatternsLink from '../../components/patterns/PatternBuilderMyPatternsLink.astro';
+import PatternWorkspaceLibraryDrawer from '../../components/patterns/PatternWorkspaceLibraryDrawer.astro';
+import { PATTERN_CATALOG_HREF } from '../../lib/patterns/customPatternProjectNavigation';
 ---
 
-<Layout title="About the Pattern Builders">
+<Layout title="Pattern Builders">
 
     <div class="patterns-page">
 
-        <nav class="patterns-action-bar" aria-label="Pattern workspace actions">
-          <a href={startNewPatternHref} class="patterns-action-bar__btn kbm-btn kbm-btn-accent">
-            Start a New Pattern
+        <nav class="patterns-action-bar" aria-label="Pattern builder actions">
+          <a href={PATTERN_CATALOG_HREF} class="patterns-action-bar__primary kbm-btn kbm-btn-accent">
+            Choose a Pattern
           </a>
-          <a href="/account#my-patterns" class="patterns-action-bar__btn kbm-btn kbm-btn-outline">
-            My Patterns
-          </a>
+          <PatternBuilderMyPatternsLink />
         </nav>
 
         <PatternsMarketingHero />
 
-        <PatternsFeaturesSection />
-
-        <section class="patterns-browse-cta" aria-labelledby="patterns-browse-cta-heading">
-          <h2 id="patterns-browse-cta-heading" class="patterns-browse-cta__title">Browse Pattern Systems</h2>
-          <p class="patterns-browse-cta__copy">
-            Choose from the pattern builders available now, and see what's coming next.
-          </p>
-          <a href="/patterns" class="kbm-btn kbm-btn-accent patterns-browse-cta__btn">
-            View Pattern Catalog
-          </a>
-        </section>
+        <PatternsFeaturesSection
+          headingId="patterns-builders-features-heading"
+          title="Why These Pattern Builders Are Different"
+        />
 
   </div>
+
+  <PatternWorkspaceLibraryDrawer />
 
 </Layout>
 
@@ -46,56 +39,25 @@ const startNewPatternHref = buildSleevelessExpressNewPatternHref();
 }
 
 .patterns-action-bar {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
   gap: 12px;
   margin: 0 0 20px;
 }
 
-.patterns-action-bar__btn {
+.patterns-action-bar__primary {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex: 1 1 14rem;
   min-height: 3.25rem;
   padding: 0.85rem 1.25rem;
   margin: 0;
   font-size: 1.05rem;
   font-weight: 600;
   text-align: center;
-  text-decoration: none;
-}
-
-@media (max-width: 720px) {
-  .patterns-action-bar {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Browse Pattern Systems CTA */
-.patterns-browse-cta {
-  text-align: center;
-  margin-top: 30px;
-  border-top: 1px solid #eee;
-  padding-top: 28px;
-}
-
-.patterns-browse-cta__title {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #52682d; /* kin-green */
-  margin: 0 0 10px;
-}
-
-.patterns-browse-cta__copy {
-  color: #555;
-  max-width: 600px;
-  margin: 0 auto 20px;
-}
-
-.patterns-browse-cta__btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   text-decoration: none;
 }
 </style>

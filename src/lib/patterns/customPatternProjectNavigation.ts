@@ -2,6 +2,12 @@ import type { CustomPatternProjectSource } from "./customPatternProjectTypes";
 import type { CustomPatternProject } from "./customPatternProjectTypes";
 import { hasAuthoritativeDropShoulderConstruction } from "./patternConstructionIdentity";
 
+/** Pattern Builder marketing home (main nav “Patterns”, explore entry points). */
+export const PATTERN_BUILDERS_HOME_HREF = "/patterns/about";
+
+/** Pattern catalog — choose a builder to start. */
+export const PATTERN_CATALOG_HREF = "/patterns";
+
 export const OPEN_PATTERN_HREF = "/patterns/sleeveless/pattern/";
 export const DROP_SHOULDER_OPEN_PATTERN_HREF = "/patterns/drop-shoulder/pattern/";
 

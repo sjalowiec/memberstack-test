@@ -99,6 +99,11 @@
   border-bottom: 1px solid rgba(55, 65, 81, 0.15);
 }
 
+/* RC header + row cells: keep counter and carriage-side hint on one line when space allows. */
+.ns-shaping-chart__th-row {
+  white-space: nowrap;
+}
+
 /* Numeric column header (e.g. Sts Remaining) sits right-aligned directly above its values. */
 .ns-shaping-chart__th-num {
   text-align: right;

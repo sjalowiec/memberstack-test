@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import PatternsFeaturesSection from "../components/patterns/PatternsFeaturesSection.astro";
 import PatternHeaderImage from "../components/patterns/PatternHeaderImage.astro";
+import { PATTERN_BUILDERS_HOME_HREF } from "../lib/patterns/customPatternProjectNavigation";
 import MembershipPricing from "../components/membership/MembershipPricing.astro";
 import wisdomData from "../data/wisdom-from-machine-knitters.json";
 
@@ -151,7 +152,7 @@ const includedItems = [
       <div class="reference-quick-links">
         <p class="reference-quick-links__label">Explore member areas</p>
         <div class="reference-quick-links__list">
-          <a href="/patterns" class="reference-quick-links__item">Patterns</a>
+          <a href={PATTERN_BUILDERS_HOME_HREF} class="reference-quick-links__item">Patterns</a>
           <a href="/tools" class="reference-quick-links__item">Tools</a>
           <a href="/videos" class="reference-quick-links__item">Videos</a>
           <a href="/help-hub" class="reference-quick-links__item">Help Hub</a>

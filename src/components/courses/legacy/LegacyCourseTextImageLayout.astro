@@ -1,71 +1,142 @@
----
-import type { CourseBlock } from "../../../lib/legacy_kin/coursePreviewPoc";
-import { rewriteLegacyHtml } from "../../../lib/legacy_kin/coursePreviewPoc";
-import {
-  getImagePosition,
-  getLayoutHeader,
-  getTextImageLayoutParts,
-  imageCaptionHasContent,
-  normalizeImageLinkUrl,
-  unwrapTextVideoColumnHtml,
-} from "../../../lib/legacy_kin/courseTextImageLayout";
-import LegacyCourseLinkedImage from "./LegacyCourseLinkedImage.astro";
-
-interface Props {
-  block: CourseBlock;
-}
-
-const { block } = Astro.props;
-const parts = getTextImageLayoutParts(block);
-const imagePosition = parts ? getImagePosition(block) : "right";
-const layoutHeader = parts ? getLayoutHeader(block) : null;
-const imageSrc = parts ? String(parts.image.src ?? "").trim() : "";
-const imageAlt = parts ? String(parts.image.alt ?? "") : "";
-const imageCaption = parts ? parts.image.caption : null;
-const imageLinkUrl = parts ? normalizeImageLinkUrl(parts.image.linkUrl) : undefined;
----
-
-{
-  parts ? (
-    <div
-      class:list={[
-        "course-preview__text-image-layout",
-        "legacy-course__text-image-layout",
-        `text-image-layout--image-${imagePosition}`,
-      ]}
-    >
-      {layoutHeader ? (
-        <h4 class="course-preview__carousel-title text-image-layout__title">
-          {layoutHeader}
-        </h4>
-      ) : null}
-      <div class="lesson-media-row course-preview__media-row legacy-course__media-row text-image-layout__row">
-        <div
-          class="text-image-layout__text lesson-text course-preview__richtext legacy-course__richtext"
-          set:html={rewriteLegacyHtml(
-            unwrapTextVideoColumnHtml(String(parts.text.html ?? "")),
-          )}
-          data-legacy-component={parts.text.legacyComponentId}
-        />
-        <figure
-          class="text-image-layout__image lesson-image legacy-course__media-image"
-          data-legacy-component={parts.image.legacyComponentId}
-        >
-          {imageSrc ? (
-            <LegacyCourseLinkedImage
-              class="text-image-layout__img"
-              src={imageSrc}
-              alt={imageAlt}
-              linkUrl={imageLinkUrl}
-            />
-          ) : null}
-          {imageCaptionHasContent(imageCaption) ? (
-            <figcaption class="text-image-layout__caption">
-              {String(imageCaption)}
-            </figcaption>
-          ) : null}
-        </figure>
-      </div>
-    </div>
-  ) : null
-}
+---
+
+import type { CourseBlock } from "../../../lib/legacy_kin/coursePreviewPoc";
+
+import { rewriteLegacyHtml } from "../../../lib/legacy_kin/coursePreviewPoc";
+
+import {
+
+  getImagePosition,
+
+  getLayoutHeader,
+
+  getTextImageLayoutParts,
+
+  imageCaptionHasContent,
+
+  normalizeImageLinkUrl,
+
+  unwrapTextVideoColumnHtml,
+
+} from "../../../lib/legacy_kin/courseTextImageLayout";
+
+import LegacyCourseLinkedImage from "./LegacyCourseLinkedImage.astro";
+
+
+
+interface Props {
+
+  block: CourseBlock;
+
+}
+
+
+
+const { block } = Astro.props;
+
+const parts = getTextImageLayoutParts(block);
+
+const imagePosition = parts ? getImagePosition(block) : "right";
+
+const layoutHeader = parts ? getLayoutHeader(block) : null;
+
+const imageSrc = parts ? String(parts.image.src ?? "").trim() : "";
+
+const imageAlt = parts ? String(parts.image.alt ?? "") : "";
+
+const imageCaption = parts ? parts.image.caption : null;
+
+const imageLinkUrl = parts ? normalizeImageLinkUrl(parts.image.linkUrl) : undefined;
+
+---
+
+
+
+{
+
+  parts ? (
+
+    <div
+
+      class:list={[
+
+        "course-preview__text-image-layout",
+
+        "legacy-course__text-image-layout",
+
+        `text-image-layout--image-${imagePosition}`,
+
+      ]}
+
+    >
+
+      {layoutHeader ? (
+
+        <h4 class="course-preview__carousel-title text-image-layout__title">
+
+          {layoutHeader}
+
+        </h4>
+
+      ) : null}
+
+      <div class="lesson-media-row course-preview__media-row legacy-course__media-row text-image-layout__row">
+
+        <div
+
+          class="text-image-layout__text lesson-text course-preview__richtext legacy-course__richtext"
+
+          set:html={rewriteLegacyHtml(
+
+            unwrapTextVideoColumnHtml(String(parts.text.html ?? "")),
+
+          )}
+
+          data-legacy-component={parts.text.legacyComponentId}
+
+        />
+
+        <figure
+
+          class="text-image-layout__image lesson-image legacy-course__media-image"
+
+          data-legacy-component={parts.image.legacyComponentId}
+
+        >
+
+          {imageSrc ? (
+
+            <LegacyCourseLinkedImage
+
+              class="text-image-layout__img"
+
+              src={imageSrc}
+
+              alt={imageAlt}
+
+              linkUrl={imageLinkUrl}
+
+            />
+
+          ) : null}
+
+          {imageCaptionHasContent(imageCaption) ? (
+
+            <figcaption class="text-image-layout__caption">
+
+              {String(imageCaption)}
+
+            </figcaption>
+
+          ) : null}
+
+        </figure>
+
+      </div>
+
+    </div>
+
+  ) : null
+
+}
+

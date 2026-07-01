@@ -2,6 +2,7 @@
 /* Centered Logo Header for Knit it Now — soft launch (simplified nav) */
 
 import { MEMBER_PLAN_IDS } from "../config/memberships";
+import { PATTERN_BUILDERS_HOME_HREF } from "../lib/patterns/customPatternProjectNavigation";
 
 /* Temporary beta "What's New" banner. Set to false to hide site-wide
    (no leftover spacing — the fixed-header offset re-measures automatically). */
@@ -1550,34 +1551,10 @@ div[data-ms-modal-overlay] {
         <div class="kbm-nav-center-cluster">
           <div class="kbm-nav-row menu-row">
             <ul class="kbm-menu">
-            <li class="nav-item nav-dropdown dd">
-              <button
-                type="button"
-                class="nav-link nav-dropdown-toggle dd-trigger"
-                aria-haspopup="true"
-                aria-expanded="false"
-                data-testid="nav-patterns"
-              >
+            <li class="nav-item">
+              <a href={PATTERN_BUILDERS_HOME_HREF} class="nav-link" data-testid="nav-patterns">
                 Patterns
-              </button>
-
-              <ul class="nav-dropdown-menu dd-panel" role="menu">
-                <li>
-                  <a href="/patterns/" data-testid="nav-patterns-catalog">
-                    Patterns
-                  </a>
-                </li>
-                <li>
-                  <a href="/stitch" data-testid="nav-stitch-library">
-                    Stitch Browser
-                  </a>
-                </li>
-                <li>
-                  <a href="/reference/sizing-charts" data-testid="nav-sizing-charts">
-                    Sizing Charts
-                  </a>
-                </li>
-              </ul>
+              </a>
             </li>
             <li class="nav-item nav-dropdown dd">
               <button

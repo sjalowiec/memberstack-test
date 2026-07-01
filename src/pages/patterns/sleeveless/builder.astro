@@ -1,6 +1,8 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 import SleevelessPatternMemberGate from "../../../components/patterns/SleevelessPatternMemberGate.astro";
+import PatternBuilderMyPatternsLink from "../../../components/patterns/PatternBuilderMyPatternsLink.astro";
+import PatternWorkspaceLibraryDrawer from "../../../components/patterns/PatternWorkspaceLibraryDrawer.astro";
 import GlossaryTooltip from "../../../components/common/GlossaryTooltip.astro";
 import GaugeInput from "../../../components/wizards/GaugeInput.astro";
 import UnitToggle from "../../../components/wizards/UnitToggle.astro";
@@ -93,8 +95,10 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
             </div>
 
             <header class="pattern-header page-header">
-              
-              <h1 class="pattern-title">Sleeveless Sweater</h1>
+              <div class="pattern-header__title-row">
+                <h1 class="pattern-title">Sleeveless Sweater</h1>
+                <PatternBuilderMyPatternsLink />
+              </div>
               <p class="pattern-subtext">
                 Create a ready-to-knit sweater pattern in a few guided steps.
               </p>
@@ -616,6 +620,8 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
           </div>
       </div>
     </div>
+
+    <PatternWorkspaceLibraryDrawer />
   </main>
   </SleevelessPatternMemberGate>
 </Layout>

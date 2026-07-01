@@ -1,6 +1,7 @@
 ---
 import '../../../styles/global.css';
 import '../../../styles/wizard.css';
+import { PATTERN_BUILDERS_HOME_HREF } from '../../../lib/patterns/customPatternProjectNavigation';
 
 const pageTitle = "Hybrid Blanket Pattern • Knit it Now";
 const pageDescription = "A customizable blanket pattern for mixing stitch patterns — whether they're hand knit, machine knit, or both.";
@@ -69,7 +70,7 @@ const pageDescription = "A customizable blanket pattern for mixing stitch patter
     <!-- Slim Header: Logo/Brand Only -->
     <header class="sales-slim-header">
       <div class="sales-header-container">
-        <a href="/patterns" class="sales-brand" aria-label="Knit it Now patterns">
+        <a href={PATTERN_BUILDERS_HOME_HREF} class="sales-brand" aria-label="Knit it Now patterns">
           <img src="/images/kbm_logo.svg" alt="Knit it Now" class="sales-logo-img" />
           <span class="sales-logo-text">Knit it Now</span>
         </a>

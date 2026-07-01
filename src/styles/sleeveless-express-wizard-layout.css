@@ -36,6 +36,30 @@
   margin-bottom: 4px;
 }
 
+.pattern-header__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem 1rem;
+  margin-bottom: 0.35rem;
+}
+
+.pattern-header__title-row .pattern-title {
+  margin-bottom: 0;
+}
+
+.pattern-header__my-patterns {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.42rem 0.85rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
 .pattern-title {
   font-size: 2rem;
   font-weight: 600;

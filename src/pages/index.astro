@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import HomeImagePlaceholder from "../components/home/HomeImagePlaceholder.astro";
+import { PATTERN_BUILDERS_HOME_HREF } from "../lib/patterns/customPatternProjectNavigation";
 import "../styles/global.css";
 
 const pageTitle = "Knit it Now | Learn, Build Skills & Machine Knit with Confidence";
@@ -29,7 +30,7 @@ const helpTodayCards = [
   {
     title: "Creating patterns that fit",
     copy: "Use interactive Pattern Builders designed around your gauge, measurements, and machine.",
-    href: "/patterns",
+    href: PATTERN_BUILDERS_HOME_HREF,
     image: "/images/home/patterns-that-fit.webp",
     alt: "Knitted sweater representing custom patterns that fit your measurements",
   },
@@ -51,7 +52,7 @@ const exploreCards = [
     alt: "Pattern Builder screen showing custom knitting instructions based on your measurements",
     placeholder: "Pattern Builder screenshot",
     button: "Explore Pattern Builders",
-    href: "/patterns",
+    href: PATTERN_BUILDERS_HOME_HREF,
   },
   {
     title: "Skill Builders",
