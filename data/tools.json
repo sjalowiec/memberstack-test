@@ -215,16 +215,15 @@
   
   {
     "id": 28,
-    "title": "Stitch Multiples",
-    "href": "StitchMulitples.cfm",
+    "title": "Stitch Multiple Calculator",
+    "href": "/tools/stitch-multiple-calculator",
     "icon": "st_multiple.svg",
-    "description": "Adjust stitch counts to fit complete stitch pattern repeats.",
+    "description": "Check whether a stitch pattern repeat fits your cast-on, and find the nearest stitch counts that do.",
     "membersonly": true,
     "helpID": 6239,
     "category": "Design Elements",
-    "help_text": "Use this tool to adjust stitch counts so a stitch pattern fits correctly.\n\nEnter the number of stitches required for the stitch pattern repeat and the number of stitches available in your piece. The tool calculates the nearest stitch count that allows complete pattern repeats.",
-    "active": false,
-    "status": "coming-soon"
+    "help_text": "Use this tool to check whether a stitch pattern repeat fits your cast-on stitch count.\n\nEnter your cast-on stitches, the stitch pattern repeat, and any plus stitches. The tool tells you if the pattern fits perfectly or shows the nearest lower and higher stitch counts that do.",
+    "active": true
   },
   {
     "id": 9,
