@@ -3,7 +3,13 @@
 .pattern-editable-heading {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.4375rem; /* ~7px between heading text and pencil */
+}
+
+/* Field labels (e.g. sl-edit-label) set display:block - keep heading + pencil on one row. */
+label.pattern-editable-heading,
+.sl-edit-label.pattern-editable-heading {
+  display: inline-flex;
 }
 
 .pattern-editable-pencil-icon {

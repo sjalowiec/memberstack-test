@@ -217,9 +217,11 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
           <div class="sl-edit-workspace__quick">
             <div class="sl-edit-drawer__body">
               <div class="sl-edit-field">
-                <label class="sl-edit-label pattern-editable-heading" for="sl-edit-title">
-                  Pattern title
-                  <PatternEditablePencilIcon />
+                <label class="sl-edit-label" for="sl-edit-title">
+                  <span class="pattern-editable-heading">
+                    Pattern title
+                    <PatternEditablePencilIcon />
+                  </span>
                 </label>
                 <input
                   type="text"
@@ -231,9 +233,11 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
               </div>
 
               <div class="sl-edit-field">
-                <label class="sl-edit-label pattern-editable-heading" for="sl-edit-notes">
-                  Notes
-                  <PatternEditablePencilIcon />
+                <label class="sl-edit-label" for="sl-edit-notes">
+                  <span class="pattern-editable-heading">
+                    Notes
+                    <PatternEditablePencilIcon />
+                  </span>
                 </label>
                 <textarea
                   id="sl-edit-notes"
@@ -857,6 +861,12 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
     letter-spacing: 0.07em;
     text-transform: uppercase;
     color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #6b7280);
+  }
+
+  .sl-edit-label .pattern-editable-heading {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
   }
 
   /* Field labels support the controls: smaller, medium weight, quietly muted. */

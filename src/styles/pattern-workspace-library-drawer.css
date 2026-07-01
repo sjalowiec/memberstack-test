@@ -164,6 +164,34 @@
   color: #5b6472;
 }
 
+.pattern-workspace-library__status-heading {
+  margin: 0 0 0.35rem;
+  font-size: inherit;
+  font-weight: 600;
+  line-height: inherit;
+  color: inherit;
+}
+
+.pattern-workspace-library__status-body {
+  margin: 0;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+
+.pattern-workspace-library__status-cta {
+  margin: 1rem 0 0;
+}
+
+.pattern-workspace-library__status-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+
 .pattern-workspace-library__status--error {
   color: #b42318;
 }

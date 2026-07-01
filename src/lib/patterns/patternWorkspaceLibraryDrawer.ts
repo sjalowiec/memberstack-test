@@ -91,6 +91,33 @@ function setDrawerStatus(root: HTMLElement, message: string, isError = false): v
   el.classList.toggle("pattern-workspace-library__status--error", isError);
 }
 
+function setDrawerLibraryEmptyState(root: HTMLElement): void {
+  const el = root.querySelector("[data-pattern-workspace-library-status]");
+  if (!(el instanceof HTMLElement)) return;
+  el.replaceChildren();
+  el.hidden = false;
+  el.classList.remove("pattern-workspace-library__status--error");
+
+  const heading = document.createElement("p");
+  heading.className = "pattern-workspace-library__status-heading";
+  heading.textContent = "You haven't saved any patterns yet.";
+
+  const body = document.createElement("p");
+  body.className = "pattern-workspace-library__status-body";
+  body.textContent = "Build your first pattern and it will appear here for easy access.";
+
+  const ctaWrap = document.createElement("div");
+  ctaWrap.className = "pattern-workspace-library__status-cta";
+
+  const cta = document.createElement("a");
+  cta.className = "kbm-btn kbm-btn-primary pattern-workspace-library__status-btn";
+  cta.href = "/patterns";
+  cta.textContent = "Build Your First Pattern";
+
+  ctaWrap.append(cta);
+  el.append(heading, body, ctaWrap);
+}
+
 function setListVisible(root: HTMLElement, visible: boolean): void {
   const list = root.querySelector("[data-pattern-workspace-library-list]");
   if (list instanceof HTMLElement) list.hidden = !visible;
@@ -270,10 +297,7 @@ export async function refreshPatternWorkspaceLibraryList(
   }
 
   if (res.projects.length === 0) {
-    setDrawerStatus(
-      root,
-      "No saved patterns yet. Save a project from Create or Customize to see it here.",
-    );
+    setDrawerLibraryEmptyState(root);
     return;
   }
 

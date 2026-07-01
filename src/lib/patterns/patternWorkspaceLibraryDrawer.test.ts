@@ -266,6 +266,28 @@ describe("patternWorkspaceLibraryDrawer", () => {
     expect(bodyClassList.contains(PATTERN_WORKSPACE_LIBRARY_DRAWER_OPEN_CLASS)).toBe(false);
   });
 
+  it("shows an empty state with a primary CTA to build a pattern", async () => {
+    const bindings = makeDrawerBindings();
+    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: [] });
+
+    await refreshPatternWorkspaceLibraryList(bindings.drawer);
+
+    expect(bindings.status.hidden).toBe(false);
+    expect(bindings.list.hidden).toBe(true);
+    const heading = bindings.status._children[0];
+    const body = bindings.status._children[1];
+    const ctaWrap = bindings.status._children[2];
+    expect(heading.textContent).toBe("You haven't saved any patterns yet.");
+    expect(body.textContent).toBe(
+      "Build your first pattern and it will appear here for easy access.",
+    );
+    const cta = ctaWrap._children[0] as MockEl & { href?: string };
+    expect(cta.textContent).toBe("Build Your First Pattern");
+    expect(cta.href).toBe("/patterns");
+    expect(cta.className).toContain("kbm-btn-primary");
+    expect(bindings.status.textContent).not.toMatch(/Create|Customize/i);
+  });
+
   it("renders saved projects and marks the active project", async () => {
     const bindings = makeDrawerBindings();
     writeActiveCustomPatternProjectId("proj-b", "Beta vest");
