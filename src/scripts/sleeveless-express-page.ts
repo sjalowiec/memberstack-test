@@ -16,15 +16,17 @@ import {
   isSleevelessExpressNewSessionSearchParams,
 } from "../lib/patterns/sleevelessExpressFreshStart";
 import { resolveSleevelessUserAccess } from "../lib/patterns/sleevelessPatternSystemAccessClient";
-import { canEditSleevelessPatternSettings } from "../lib/patterns/sleevelessPatternSystemAccess";
+import { canEditPatternSettingsForSystem } from "../lib/patterns/sleevelessPatternSystemAccess";
 import { reconcilePatternDraftOwner } from "../lib/patterns/patternDraftOwnerGuard";
 import { exitEditingSavedCustomPattern } from "../lib/patterns/customPatternEditingBannerActions";
 import { OPEN_PATTERN_HREF } from "../lib/patterns/customPatternProjectNavigation";
 import {
-  canStartNewSleevelessPattern,
-  resolveSleevelessNewPatternBlockedCopy,
+  canStartNewPatternForSystem,
+  resolveNewPatternBlockedCopy,
   showSleevelessNewPatternLockedScreen,
 } from "../lib/patterns/sleevelessNewPatternAccessGuard";
+import { resolvePatternSystemForBuilderGate, resolvePatternSystemForEntitlement } from "../lib/patterns/patternSystemId";
+import { logPatternEditGateDebug } from "../lib/patterns/patternEditGateDebug";
 import {
   garmentTypeFromFront,
   writeSleevelessGarmentTypeLocalStorage,
@@ -1181,15 +1183,27 @@ async function blockExpressNewPatternStartIfLocked(): Promise<boolean> {
   }
   if (!isNewSessionIntent) return false;
 
+  const patternSystem = resolvePatternSystemForBuilderGate(document);
   const access = await resolveSleevelessUserAccess();
-  if (!access.loggedIn || canStartNewSleevelessPattern(access)) return false;
+  const canStartNew = canStartNewPatternForSystem(access, patternSystem);
+  logPatternEditGateDebug("blockExpressNewPatternStartIfLocked", {
+    patternSystem,
+    hasSystemAccess: access.hasSystemAccess,
+    freeClaimsBySystem: access.freeClaimsBySystem,
+    extra: { canStartNew, isNewSessionIntent },
+  });
+  if (!access.loggedIn || canStartNew) return false;
 
   // `?new=1` means "start a new pattern". When creation is locked we still return early (skipping
   // initExpressPage → applySleevelessExpressNewSessionFromUrl), so exit any leftover saved-pattern
   // edit session here — otherwise the "Editing saved pattern" wrapper (Save Changes / Save a Copy /
   // X) from customPatternEditingBanner.ts would frame the unlock gate for a claimed free user.
   exitEditingSavedCustomPattern();
-  showSleevelessNewPatternLockedScreen(document, resolveSleevelessNewPatternBlockedCopy(access));
+  showSleevelessNewPatternLockedScreen(
+    document,
+    resolveNewPatternBlockedCopy(access, patternSystem, document),
+    patternSystem,
+  );
   return true;
 }
 
@@ -1216,7 +1230,17 @@ async function redirectSavedPatternEditIfLocked(): Promise<boolean> {
   if (!isEditChoicesIntent && !isEditingSavedCustomPatternProject()) return false;
 
   const access = await resolveSleevelessUserAccess();
-  if (!access.loggedIn || canEditSleevelessPatternSettings(access)) return false;
+  const patternSystem = resolvePatternSystemForEntitlement(document);
+  logPatternEditGateDebug("redirectSavedPatternEditIfLocked", {
+    patternSystem,
+    hasSystemAccess: access.hasSystemAccess,
+    freeClaimsBySystem: access.freeClaimsBySystem,
+    extra: {
+      canEdit: canEditPatternSettingsForSystem(access, patternSystem),
+      isEditChoicesIntent,
+    },
+  });
+  if (!access.loggedIn || canEditPatternSettingsForSystem(access, patternSystem)) return false;
 
   // `replace` so the browser back button does not bounce them onto the editable URL again.
   window.location.replace(OPEN_PATTERN_HREF);

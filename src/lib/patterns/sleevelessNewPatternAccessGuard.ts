@@ -9,10 +9,11 @@ import {
 } from "./sleevelessPatternSystemAccess";
 import { resolveSleevelessUserAccess } from "./sleevelessPatternSystemAccessClient";
 import {
-  resolvePatternSystemFromPage,
+  resolvePatternSystemForBuilderGate,
   patternSystemDisplayName,
   type PatternSystemId,
 } from "./patternSystemId";
+import { logPatternEditGateDebug } from "./patternEditGateDebug";
 
 /** @deprecated Use {@link resolveSaveAlreadyClaimedCopy} from cloud save module. */
 export {
@@ -30,19 +31,35 @@ export function canStartNewPatternForSystem(
   return canCreatePatternForSystem(access, systemId);
 }
 
+function resolveNewPatternGateSystem(
+  systemId?: PatternSystemId,
+  doc?: Document,
+): PatternSystemId {
+  return systemId ?? resolvePatternSystemForBuilderGate(doc);
+}
+
 /** @deprecated Use {@link canStartNewPatternForSystem}. */
 export function canStartNewSleevelessPattern(
   access: SleevelessUserAccess,
   systemId?: PatternSystemId,
+  doc?: Document,
 ): boolean {
-  return canStartNewPatternForSystem(access, systemId ?? resolvePatternSystemFromPage());
+  const system = resolveNewPatternGateSystem(systemId, doc);
+  logPatternEditGateDebug("canStartNewSleevelessPattern", {
+    patternSystem: system,
+    hasSystemAccess: access.hasSystemAccess,
+    freeClaimsBySystem: access.freeClaimsBySystem,
+    extra: { canStartNew: canStartNewPatternForSystem(access, system) },
+  });
+  return canStartNewPatternForSystem(access, system);
 }
 
 export function resolveNewPatternBlockedCopy(
   access: SleevelessUserAccess,
   systemId?: PatternSystemId,
+  doc?: Document,
 ): string {
-  const system = systemId ?? resolvePatternSystemFromPage();
+  const system = resolveNewPatternGateSystem(systemId, doc);
   return access.loggedIn
     ? resolvePatternSystemAlreadyClaimedCopy(system)
     : resolvePatternSystemSaveLoggedOutCopy(system);
@@ -52,20 +69,29 @@ export function resolveNewPatternBlockedCopy(
 export function resolveSleevelessNewPatternBlockedCopy(
   access: SleevelessUserAccess,
   systemId?: PatternSystemId,
+  doc?: Document,
 ): string {
-  return resolveNewPatternBlockedCopy(access, systemId);
+  return resolveNewPatternBlockedCopy(access, systemId, doc);
 }
 
 export async function resolveCanStartNewPatternForSystem(
   systemId?: PatternSystemId,
+  doc?: Document,
 ): Promise<boolean> {
-  const system = systemId ?? resolvePatternSystemFromPage();
-  return canStartNewPatternForSystem(await resolveSleevelessUserAccess(), system);
+  const system = resolveNewPatternGateSystem(systemId, doc);
+  const access = await resolveSleevelessUserAccess();
+  logPatternEditGateDebug("resolveCanStartNewPatternForSystem", {
+    patternSystem: system,
+    hasSystemAccess: access.hasSystemAccess,
+    freeClaimsBySystem: access.freeClaimsBySystem,
+    extra: { canStartNew: canStartNewPatternForSystem(access, system) },
+  });
+  return canStartNewPatternForSystem(access, system);
 }
 
 /** @deprecated Use {@link resolveCanStartNewPatternForSystem}. */
-export async function resolveCanStartNewSleevelessPattern(): Promise<boolean> {
-  return resolveCanStartNewPatternForSystem();
+export async function resolveCanStartNewSleevelessPattern(doc?: Document): Promise<boolean> {
+  return resolveCanStartNewPatternForSystem(undefined, doc);
 }
 
 function isElementLike(el: unknown): el is HTMLElement {
@@ -81,6 +107,14 @@ function hideEl(el: unknown): void {
   if (isElementLike(el)) el.hidden = true;
 }
 
+function resolveDocFromRoot(root: ParentNode): Document | undefined {
+  if (typeof Document !== "undefined" && root instanceof Document) return root;
+  if (typeof HTMLElement !== "undefined" && root instanceof HTMLElement && root.ownerDocument) {
+    return root.ownerDocument;
+  }
+  return typeof document !== "undefined" ? document : undefined;
+}
+
 export function showSleevelessNewPatternLockedScreen(
   root: ParentNode | null = typeof document !== "undefined" ? document : null,
   copy?: string,
@@ -88,8 +122,13 @@ export function showSleevelessNewPatternLockedScreen(
 ): HTMLElement | null {
   if (!root || typeof document === "undefined") return null;
 
-  const system = systemId ?? resolvePatternSystemFromPage();
+  const doc = resolveDocFromRoot(root);
+  const system = resolveNewPatternGateSystem(systemId, doc);
   const resolvedCopy = copy ?? resolvePatternSystemAlreadyClaimedCopy(system);
+  logPatternEditGateDebug("showSleevelessNewPatternLockedScreen", {
+    patternSystem: system,
+    extra: { titleSystemName: patternSystemDisplayName(system) },
+  });
   const systemName = patternSystemDisplayName(system);
 
   const builder = root.querySelector?.("[data-express-builder]");

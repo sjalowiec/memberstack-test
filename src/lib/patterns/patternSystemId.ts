@@ -89,32 +89,54 @@ function readPagePathname(scope?: Document): string {
   return fromDoc ?? "";
 }
 
-/** Resolve pattern system from the active browser page (pathname + draft markers). */
-export function resolvePatternSystemFromPage(doc?: Document): PatternSystemId {
-  if (typeof document !== "undefined" || doc) {
-    const scope = doc ?? document;
-    const pathname = readPagePathname(scope);
-    if (/\/patterns\/drop-shoulder(?:\/|$)/.test(pathname)) {
+/**
+ * URL + DOM markers for builder / new-pattern intent (no working-draft fallback).
+ * Returns null when the page does not express a pattern system explicitly.
+ */
+function resolvePatternSystemFromPageUrlAndDom(doc?: Document): PatternSystemId | null {
+  if (typeof document === "undefined" && !doc) return null;
+  const scope = doc ?? document;
+  const pathname = readPagePathname(scope);
+  if (/\/patterns\/drop-shoulder(?:\/|$)/.test(pathname)) {
+    return "drop-shoulder";
+  }
+  // Builder entry routes: URL intent wins over a stale cross-system working draft in localStorage.
+  // (A nosub knitter with a saved Drop Shoulder pattern must still open Sleeveless with ?new=1.)
+  if (/\/patterns\/sleeveless-express(?:\/|$)/.test(pathname)) {
+    return "sleeveless";
+  }
+  if (/\/patterns\/sleeveless\/builder(?:\/|$)/.test(pathname)) {
+    return "sleeveless";
+  }
+  if (scope && typeof scope.querySelector === "function") {
+    const expressConstruction = scope
+      .querySelector<HTMLElement>("[data-express-construction]")
+      ?.getAttribute("data-express-construction")
+      ?.trim();
+    if (expressConstruction === DROP_SHOULDER_CONSTRUCTION) {
       return "drop-shoulder";
     }
-    // Builder entry routes: URL intent wins over a stale cross-system working draft in localStorage.
-    // (A nosub knitter with a saved Drop Shoulder pattern must still open Sleeveless with ?new=1.)
-    if (/\/patterns\/sleeveless-express(?:\/|$)/.test(pathname)) {
-      return "sleeveless";
-    }
-    if (/\/patterns\/sleeveless\/builder(?:\/|$)/.test(pathname)) {
-      return "sleeveless";
-    }
-    if (scope && typeof scope.querySelector === "function") {
-      const expressConstruction = scope
-        .querySelector<HTMLElement>("[data-express-construction]")
-        ?.getAttribute("data-express-construction")
-        ?.trim();
-      if (expressConstruction === DROP_SHOULDER_CONSTRUCTION) {
-        return "drop-shoulder";
-      }
-    }
   }
+  return null;
+}
+
+/**
+ * Pattern system for new-pattern / builder entitlement gates ù page intent only.
+ * Never falls back to a stale working draft or active saved-project session.
+ */
+export function resolvePatternSystemForBuilderGate(doc?: Document): PatternSystemId {
+  return resolvePatternSystemFromPageUrlAndDom(doc) ?? "sleeveless";
+}
+
+/** @alias {@link resolvePatternSystemForBuilderGate} */
+export function resolvePatternSystemForNewPatternGate(doc?: Document): PatternSystemId {
+  return resolvePatternSystemForBuilderGate(doc);
+}
+
+/** Resolve pattern system from the active browser page (pathname + draft markers). */
+export function resolvePatternSystemFromPage(doc?: Document): PatternSystemId {
+  const fromUrl = resolvePatternSystemFromPageUrlAndDom(doc);
+  if (fromUrl) return fromUrl;
   if (isActiveDropShoulderConstruction()) {
     return "drop-shoulder";
   }
@@ -148,12 +170,12 @@ export function resolvePatternSystemFromWorkingSession(): PatternSystemId {
   return resolvePatternSystemFromPage();
 }
 
-/** Entitlement checks: saved project session when linked, otherwise page intent. */
+/** Entitlement checks: saved project session when linked, otherwise builder page intent. */
 export function resolvePatternSystemForEntitlement(doc?: Document): PatternSystemId {
   if (readActiveCustomPatternProjectId()?.trim()) {
     return resolvePatternSystemFromWorkingSession();
   }
-  return resolvePatternSystemFromPage(doc);
+  return resolvePatternSystemForBuilderGate(doc);
 }
 
 /** @internal Test seam ù classify from raw style/customOverrides without draft reads. */

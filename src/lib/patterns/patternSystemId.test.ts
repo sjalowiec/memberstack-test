@@ -5,6 +5,7 @@ import {
   withDropShoulderConstructionAuthored,
 } from "./patternConstructionIdentity";
 import {
+  resolvePatternSystemForBuilderGate,
   resolvePatternSystemForEntitlement,
   resolvePatternSystemFromPage,
   resolvePatternSystemFromProject,
@@ -95,6 +96,43 @@ describe("resolvePatternSystemFromPage", () => {
   });
 });
 
+describe("resolvePatternSystemForBuilderGate", () => {
+  beforeEach(() => {
+    stubLocalStorage();
+    stubSessionStorage();
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("uses drop-shoulder pathname for the drop-shoulder builder", () => {
+    const doc = stubPathname("/patterns/drop-shoulder/builder");
+    expect(resolvePatternSystemForBuilderGate(doc)).toBe("drop-shoulder");
+  });
+
+  it("uses data-express-construction without falling back to a stale sleeveless draft", () => {
+    saveCurrentPattern({ style: { patternMode: "express" } });
+    const doc = stubDocument("/patterns/unknown-route", DROP_SHOULDER_CONSTRUCTION);
+    expect(resolvePatternSystemForBuilderGate(doc)).toBe("drop-shoulder");
+  });
+
+  it("does not fall back to a stale drop-shoulder working draft on sleeveless-express", () => {
+    seedDropShoulderWorkingDraft();
+    const doc = stubPathname("/patterns/sleeveless-express");
+    expect(resolvePatternSystemForBuilderGate(doc)).toBe("sleeveless");
+  });
+
+  it("defaults to sleeveless when URL and DOM do not express a system", () => {
+    seedDropShoulderWorkingDraft();
+    const doc = stubPathname("/patterns/sleeveless/pattern/");
+    expect(resolvePatternSystemForBuilderGate(doc)).toBe("sleeveless");
+    expect(resolvePatternSystemFromPage(doc)).toBe("drop-shoulder");
+  });
+});
+
 describe("resolvePatternSystemFromWorkingSession", () => {
   beforeEach(() => {
     stubLocalStorage();
@@ -148,6 +186,12 @@ describe("resolvePatternSystemFromWorkingSession", () => {
 
     expect(resolvePatternSystemForEntitlement()).toBe("drop-shoulder");
     expect(resolvePatternSystemFromPage()).toBe("sleeveless");
+  });
+
+  it("uses builder page intent when no saved project is linked", () => {
+    seedDropShoulderWorkingDraft();
+    const doc = stubPathname("/patterns/sleeveless/pattern/");
+    expect(resolvePatternSystemForEntitlement(doc)).toBe("sleeveless");
   });
 });
 

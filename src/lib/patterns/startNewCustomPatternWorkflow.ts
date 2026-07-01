@@ -1,15 +1,21 @@
 /**
  * Start a brand-new sleeveless pattern session (clears active saved-project link).
  */
-import { buildSleevelessExpressNewPatternHref } from "./patternStorage";
+import {
+  buildDropShoulderBuilderNewPatternHref,
+  buildSleevelessExpressNewPatternHref,
+} from "./patternStorage";
 import { dispatchCustomPatternEditingStateChanged } from "./customPatternEditingBannerActions";
 import { hasUnsavedCustomPatternChanges } from "./customPatternSavedProjectDirtyState";
 import { saveActiveCustomPatternBeforeNavigate } from "./saveActiveCustomPatternBeforeNavigate";
 import { startFreshSleevelessExpressPattern } from "./sleevelessExpressFreshStart";
 import {
-  resolveCanStartNewSleevelessPattern,
+  resolveCanStartNewPatternForSystem,
+  resolveNewPatternBlockedCopy,
   showSleevelessNewPatternLockedScreen,
 } from "./sleevelessNewPatternAccessGuard";
+import { resolveSleevelessUserAccess } from "./sleevelessPatternSystemAccessClient";
+import { resolvePatternSystemForBuilderGate } from "./patternSystemId";
 
 export const PATTERN_WORKSPACE_NEW_PATTERN_UNSAVED_DIALOG_ID =
   "pattern-workspace-new-pattern-unsaved-dialog";
@@ -71,6 +77,16 @@ export function navigateToFreshSleevelessPattern(href = buildSleevelessExpressNe
   window.location.assign(href);
 }
 
+export function buildFreshPatternHrefForPage(doc?: Document): string {
+  return resolvePatternSystemForBuilderGate(doc) === "drop-shoulder"
+    ? buildDropShoulderBuilderNewPatternHref()
+    : buildSleevelessExpressNewPatternHref();
+}
+
+export function navigateToFreshPatternForPage(doc?: Document): void {
+  navigateToFreshSleevelessPattern(buildFreshPatternHrefForPage(doc));
+}
+
 /**
  * Clears the saved-project link and working draft, then navigates to Express with `?new=1`.
  * When editing a saved project with unsaved edits, prompts before discarding.
@@ -117,9 +133,21 @@ export function createStartNewCustomPatternWorkflowDeps(options: {
   if (!root) {
     throw new Error("document unavailable");
   }
+  const doc = resolveDocumentFromRoot(root);
   return {
-    canStartNew: resolveCanStartNewSleevelessPattern,
-    onBlocked: options.onBlockedStartNew ?? (() => showSleevelessNewPatternLockedScreen(root)),
+    canStartNew: () => resolveCanStartNewPatternForSystem(undefined, doc),
+    onBlocked:
+      options.onBlockedStartNew ??
+      (() => {
+        void resolveSleevelessUserAccess().then((access) => {
+          const system = resolvePatternSystemForBuilderGate(doc);
+          showSleevelessNewPatternLockedScreen(
+            root,
+            resolveNewPatternBlockedCopy(access, system, doc),
+            system,
+          );
+        });
+      }),
     hasUnsaved: hasUnsavedCustomPatternChanges,
     promptUnsaved: () => promptNewPatternUnsavedChoice(root),
     saveActiveProject: async () => saveActiveCustomPatternBeforeNavigate(root),
@@ -131,9 +159,10 @@ export function createStartNewCustomPatternWorkflowDeps(options: {
 export async function startNewCustomPatternFromWorkspace(
   root: ParentNode = document,
 ): Promise<StartNewCustomPatternOutcome> {
+  const doc = resolveDocumentFromRoot(root);
   return runStartNewCustomPatternWorkflow(
     createStartNewCustomPatternWorkflowDeps({
-      onAfterFreshSession: navigateToFreshSleevelessPattern,
+      onAfterFreshSession: () => navigateToFreshPatternForPage(doc),
       root,
     }),
   );
@@ -254,8 +283,10 @@ export function syncUnsavedChangesDialogUi(panel: ParentNode, config: UnsavedCha
 }
 
 function resolveDocumentFromRoot(root: ParentNode): Document {
-  if (root instanceof Document) return root;
-  if (root instanceof HTMLElement && root.ownerDocument) return root.ownerDocument;
+  if (typeof Document !== "undefined" && root instanceof Document) return root;
+  if (typeof HTMLElement !== "undefined" && root instanceof HTMLElement && root.ownerDocument) {
+    return root.ownerDocument;
+  }
   if (typeof document !== "undefined") return document;
   throw new Error("document unavailable");
 }

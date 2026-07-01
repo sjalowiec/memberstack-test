@@ -4,7 +4,7 @@
 import { startNewCustomPatternFromWorkspace } from "./startNewCustomPatternWorkflow";
 import { canCreatePatternForSystem } from "./sleevelessPatternSystemAccess";
 import { resolveSleevelessUserAccess } from "./sleevelessPatternSystemAccessClient";
-import { resolvePatternSystemFromPage } from "./patternSystemId";
+import { resolvePatternSystemForBuilderGate } from "./patternSystemId";
 
 export function initPatternWorkspaceNewPattern(doc: Document = document): void {
   const trigger = doc.querySelector("[data-pattern-workspace-new-pattern-trigger]");
@@ -14,7 +14,7 @@ export function initPatternWorkspaceNewPattern(doc: Document = document): void {
   // their one pattern, or a downgraded member). Saving is gated server-side too, but hiding the
   // entry point keeps the locked state clear instead of letting them build then fail at save.
   void resolveSleevelessUserAccess().then((access) => {
-    const system = resolvePatternSystemFromPage(doc);
+    const system = resolvePatternSystemForBuilderGate(doc);
     if (canCreatePatternForSystem(access, system)) return;
     trigger.hidden = true;
     trigger.setAttribute("aria-hidden", "true");
