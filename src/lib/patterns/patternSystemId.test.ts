@@ -5,8 +5,10 @@ import {
   withDropShoulderConstructionAuthored,
 } from "./patternConstructionIdentity";
 import {
+  resolvePatternSystemForEntitlement,
   resolvePatternSystemFromPage,
   resolvePatternSystemFromProject,
+  resolvePatternSystemFromWorkingSession,
 } from "./patternSystemId";
 import type { CustomPatternProject } from "./customPatternProjectTypes";
 import {
@@ -14,7 +16,9 @@ import {
   saveCurrentPattern,
   savePatternData,
 } from "./patternStorage";
-import { stubLocalStorage } from "./test/stubLocalStorage";
+import { stubLocalStorage, stubSessionStorage } from "./test/stubLocalStorage";
+import { writeActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
+import { writeHydratedConstructionBaseline } from "./customPatternProjectConstructionBaseline";
 
 function stubPathname(pathname: string): Document {
   const doc = stubDocument(pathname);
@@ -47,7 +51,9 @@ function seedDropShoulderWorkingDraft(): void {
 describe("resolvePatternSystemFromPage", () => {
   beforeEach(() => {
     stubLocalStorage();
+    stubSessionStorage();
     localStorage.clear();
+    sessionStorage.clear();
   });
 
   afterEach(() => {
@@ -86,6 +92,62 @@ describe("resolvePatternSystemFromPage", () => {
     const doc = stubPathname("/patterns/sleeveless/pattern/");
 
     expect(resolvePatternSystemFromPage(doc)).toBe("drop-shoulder");
+  });
+});
+
+describe("resolvePatternSystemFromWorkingSession", () => {
+  beforeEach(() => {
+    stubLocalStorage();
+    stubSessionStorage();
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("prefers hydrated construction baseline over page pathname", () => {
+    writeActiveCustomPatternProjectId("proj-drop", "Drop Shoulder Vest");
+    const project = {
+      id: "proj-drop",
+      name: "Drop Shoulder Vest",
+      family: "sleeveless",
+      source: "express",
+      pattern: {
+        style: {
+          construction: DROP_SHOULDER_CONSTRUCTION,
+          [CONSTRUCTION_AUTHORED_KEY]: DROP_SHOULDER_CONSTRUCTION,
+        },
+      },
+      customOverrides: {},
+    } as CustomPatternProject;
+    writeHydratedConstructionBaseline(project);
+    stubPathname("/patterns/sleeveless/pattern/");
+
+    expect(resolvePatternSystemFromWorkingSession()).toBe("drop-shoulder");
+  });
+
+  it("uses resolvePatternSystemForEntitlement when a saved project is linked", () => {
+    writeActiveCustomPatternProjectId("proj-drop", "Drop Shoulder Vest");
+    const project = {
+      id: "proj-drop",
+      name: "Drop Shoulder Vest",
+      family: "sleeveless",
+      source: "express",
+      pattern: {
+        style: {
+          construction: DROP_SHOULDER_CONSTRUCTION,
+          [CONSTRUCTION_AUTHORED_KEY]: DROP_SHOULDER_CONSTRUCTION,
+        },
+      },
+      customOverrides: {},
+    } as CustomPatternProject;
+    writeHydratedConstructionBaseline(project);
+    stubPathname("/patterns/sleeveless-express");
+
+    expect(resolvePatternSystemForEntitlement()).toBe("drop-shoulder");
+    expect(resolvePatternSystemFromPage()).toBe("sleeveless");
   });
 });
 

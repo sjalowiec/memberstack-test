@@ -179,6 +179,20 @@ export function patternSystemCreateBlockedMessage(systemId = "sleeveless") {
 export const SLEEVELESS_PATTERN_CREATE_BLOCKED_MESSAGE =
   patternSystemCreateBlockedMessage("sleeveless");
 
+/** Server mirror of the client settings-edit rule (gauge, measurements, size, style, regenerate). */
+export function isPatternSettingsEditBlockedForSystem(input) {
+  if (!input || typeof input !== "object") return false;
+  if (input.hasSystemAccess === true) return false;
+  if (input.freeClaimedForSystem === true) return true;
+  return false;
+}
+
+/** Explanatory text when a non-member tries to edit pattern settings for a claimed free pattern. */
+export function patternSystemSettingsEditBlockedMessage(systemId = "sleeveless") {
+  const name = patternSystemDisplayName(systemId);
+  return `Pattern editing is included with membership. You can still view, print, rename, and use your free ${name} pattern.`;
+}
+
 /**
  * Server mirror of the client create/copy rule. Returns true when a new saved project must be
  * refused for the given pattern system.

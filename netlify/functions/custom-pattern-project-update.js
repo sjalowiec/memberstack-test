@@ -5,15 +5,19 @@
 import {
   buildProjectRecord,
   getProjectsStore,
+  isPatternSettingsEditBlockedForSystem,
   jsonResponse,
   parseJsonBody,
+  patternSystemSettingsEditBlockedMessage,
   projectBlobKey,
   publicProject,
+  readPatternEntitlementFromSaveBody,
   readProjectJson,
   resolveProjectUserId,
   upsertProjectSummaryInIndex,
   withCors,
 } from "./lib/custom-pattern-projects-store.js";
+import { resolvePatternSystemFromProject } from "./lib/pattern-system-id.js";
 
 export default async (req) => {
   if (req.method === "OPTIONS") {
@@ -87,6 +91,25 @@ export default async (req) => {
     } catch (err) {
       console.error("custom-pattern-project-update workflowOnly failed:", err);
       return withCors(jsonResponse({ ok: false, error: "Failed to update project." }, 500));
+    }
+  }
+
+  if (body.data.metadataOnly !== true) {
+    const entitlement = readPatternEntitlementFromSaveBody(body.data);
+    const patternSystem =
+      entitlement?.patternSystem ?? resolvePatternSystemFromProject(existing);
+    if (
+      isPatternSettingsEditBlockedForSystem({
+        hasSystemAccess: entitlement?.hasSystemAccess,
+        freeClaimedForSystem: entitlement?.freeClaimedForSystem,
+      })
+    ) {
+      return withCors(
+        jsonResponse(
+          { ok: false, error: patternSystemSettingsEditBlockedMessage(patternSystem) },
+          403,
+        ),
+      );
     }
   }
 

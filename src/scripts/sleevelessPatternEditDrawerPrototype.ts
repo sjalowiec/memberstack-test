@@ -80,11 +80,12 @@ import {
   swatchCountFromPerInchForDisplay,
   type GaugeSwatchBasis,
 } from "../lib/patterns/gaugeDisplayFormat";
-import { canEditPatternSettingsForSystem } from "../lib/patterns/sleevelessPatternSystemAccess";
-import { resolvePatternSystemFromPage } from "../lib/patterns/patternSystemId";
+import {
+  blockPatternWorkspaceSettingsEditOrOfferUnlock,
+  resolvePatternWorkspaceSettingsEditGate,
+} from "../lib/patterns/patternWorkspaceSettingsEditAccess";
 import type { PatternSystemId } from "../lib/patterns/patternSystemId";
 import type { SleevelessUserAccess } from "../lib/patterns/sleevelessPatternSystemAccess";
-import { resolveSleevelessUserAccess } from "../lib/patterns/sleevelessPatternSystemAccessClient";
 import {
   getPatternProjectMeta,
   resolvePatternProjectSaveNameFromState,
@@ -315,8 +316,8 @@ function initSleevelessPatternEditDrawer(): void {
   let chartsLoaded = false;
   let chartsLoadStarted = false;
   // Entitlement gate: gauge / measurements / style edits + regeneration require edit access
-  // for the active pattern system (Sleeveless vs Drop Shoulder). Resolved async below.
-  let settingsEditingLocked = false;
+  // for the active pattern system (Sleeveless vs Drop Shoulder). Default locked until resolved.
+  let settingsEditingLocked = true;
   let resolvedAccess: SleevelessUserAccess | null = null;
   let patternSystem: PatternSystemId = "sleeveless";
 
@@ -565,7 +566,19 @@ function initSleevelessPatternEditDrawer(): void {
     document.body.style.overflow = "";
   };
 
-  function openDrawer(): void {
+  async function refreshEditAccess(): Promise<void> {
+    const gate = await resolvePatternWorkspaceSettingsEditGate();
+    resolvedAccess = gate.access;
+    patternSystem = gate.patternSystem;
+    settingsEditingLocked = gate.locked;
+    applyLockedPatternEditButtonState(openBtn, settingsEditingLocked);
+    if (settingsEditingLocked && drawer.classList.contains("is-open")) {
+      closeDrawer();
+    }
+  }
+
+  async function openDrawer(): Promise<void> {
+    await refreshEditAccess();
     if (settingsEditingLocked) {
       offerPatternEditingUnlockModal(resolvedAccess, { patternSystem });
       return;
@@ -635,6 +648,13 @@ function initSleevelessPatternEditDrawer(): void {
   /** Validate, persist (reusing the build workflow), regenerate, and return to the pattern. */
   async function applyChanges(): Promise<void> {
     if (!applyBtn) return;
+
+    const gate = await resolvePatternWorkspaceSettingsEditGate();
+    if (gate.locked) {
+      blockPatternWorkspaceSettingsEditOrOfferUnlock(gate.access, gate.patternSystem);
+      return;
+    }
+
     const audience = resolveAudience();
     const size = sizeSelect?.value.trim() ?? "";
     const garment = (radioValue("sl-edit-garment") || "pullover") as SleevelessGarmentType;
@@ -866,7 +886,9 @@ function initSleevelessPatternEditDrawer(): void {
     });
   }
 
-  openBtn.addEventListener("click", openDrawer);
+  openBtn.addEventListener("click", () => {
+    void openDrawer();
+  });
   drawerCloseEls.forEach((el) => el.addEventListener("click", () => closeDrawer()));
 
   // Keep the panel flush with the header when the chrome height changes (resize, font load).
@@ -878,14 +900,9 @@ function initSleevelessPatternEditDrawer(): void {
 
   // Lock the in-place editor when the user lacks settings-editing access for this pattern
   // system. The Edit button stays visible (with a tooltip) and opens the unlock modal on click.
-  void resolveSleevelessUserAccess().then((access) => {
-    resolvedAccess = access;
-    patternSystem = resolvePatternSystemFromPage();
-    settingsEditingLocked = !canEditPatternSettingsForSystem(access, patternSystem);
+  void refreshEditAccess().then(() => {
     if (!settingsEditingLocked) return;
-    if (drawer.classList.contains("is-open")) closeDrawer();
-    applyLockedPatternEditButtonState(openBtn, true);
-    maybeShowPatternEditingUnlockModalOnWorkspaceLoad(access, { patternSystem });
+    maybeShowPatternEditingUnlockModalOnWorkspaceLoad(resolvedAccess, { patternSystem });
   });
 
   drawer.querySelectorAll<HTMLInputElement>('input[name="sl-edit-fit"]').forEach((el) => {
@@ -928,7 +945,7 @@ function initSleevelessPatternEditDrawer(): void {
     } catch {
       /* history unavailable — harmless */
     }
-    openDrawer();
+    void openDrawer();
   }
 
   maybeAutoOpenFromQuery();

@@ -107,6 +107,7 @@ export async function renameSavedCustomPatternProject(
     pattern,
     customOverrides: source.customOverrides ?? {},
     version: source.version,
+    metadataOnly: true,
   });
   if (!res.ok) return { ok: false, error: res.error };
 

@@ -12,9 +12,12 @@ describe("pattern workspace Edit Pattern unlock wiring", () => {
       "utf-8",
     );
 
-    expect(src).toContain("canEditPatternSettingsForSystem(access, patternSystem)");
-    expect(src).toContain("applyLockedPatternEditButtonState(openBtn, true)");
+    expect(src).toContain("resolvePatternWorkspaceSettingsEditGate");
+    expect(src).toContain("blockPatternWorkspaceSettingsEditOrOfferUnlock");
+    expect(src).toContain("let settingsEditingLocked = true");
+    expect(src).toContain("applyLockedPatternEditButtonState(openBtn, settingsEditingLocked)");
     expect(src).not.toContain("openBtn.hidden = true");
     expect(src).toContain("offerPatternEditingUnlockModal(resolvedAccess, { patternSystem })");
+    expect(src).not.toContain("resolvePatternSystemFromPage()");
   });
 });

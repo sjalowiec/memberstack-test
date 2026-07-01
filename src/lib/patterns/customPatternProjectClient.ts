@@ -53,6 +53,7 @@ import {
   isFreeClaimedForSystem,
 } from "./patternSystemFreeClaim";
 import {
+  resolvePatternSystemForEntitlement,
   resolvePatternSystemFromPage,
   resolvePatternSystemFromProject,
   type PatternSystemId,
@@ -73,7 +74,7 @@ export async function buildPatternSaveEntitlementSnapshot(
   patternSystem?: PatternSystemId,
 ): Promise<PatternSaveEntitlementSnapshot> {
   const access = await resolveSleevelessUserAccessSnapshot();
-  const systemId = patternSystem ?? resolvePatternSystemFromPage();
+  const systemId = patternSystem ?? resolvePatternSystemForEntitlement();
   return buildPatternSaveEntitlementSnapshotFromAccess(access, systemId);
 }
 
@@ -270,9 +271,17 @@ export async function updateCustomPatternProject(
   | { ok: true; project: CustomPatternProject; authMode?: CustomPatternProjectAuthMode }
   | { ok: false; error: string }
 > {
+  let body: UpdateCustomPatternProjectRequest & { entitlement?: PatternSaveEntitlementSnapshot } =
+    payload;
+  if (typeof window !== "undefined" && payload.metadataOnly !== true) {
+    const patternSystem = resolvePatternSystemForSavePayload(payload);
+    const entitlement = await buildPatternSaveEntitlementSnapshot(patternSystem);
+    body = { ...payload, entitlement };
+  }
+
   const res = await projectFetch<{ project: CustomPatternProject }>("custom-pattern-project-update", {
     method: "PUT",
-    body: JSON.stringify(payload),
+    body: JSON.stringify(body),
   });
   if (!res.ok) return res;
   logCustomPatternSavePayloadDiagnostics(

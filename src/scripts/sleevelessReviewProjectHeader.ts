@@ -3,10 +3,11 @@
  */
 
 import {
+  canEditPatternSettingsForSystem,
   canEditSleevelessPatternNotes,
-  canEditSleevelessPatternSettings,
   LOGGED_OUT_SLEEVELESS_ACCESS,
 } from "../lib/patterns/sleevelessPatternSystemAccess";
+import { resolvePatternSystemForEntitlement } from "../lib/patterns/patternSystemId";
 import {
   getCachedSleevelessUserAccess,
   resolveSleevelessUserAccess,
@@ -392,7 +393,8 @@ export async function initSleevelessReviewProjectHeader(): Promise<void> {
 
   // Pattern-building choices (who/size, front, neckline, fit, gauge) + regeneration: members /
   // Sleeveless Pattern System owners, or free users still creating their one free pattern.
-  if (canEditSleevelessPatternSettings(access)) {
+  const patternSystem = resolvePatternSystemForEntitlement();
+  if (canEditPatternSettingsForSystem(access, patternSystem)) {
     initSleevelessReviewSummaryEdit();
     initChangePatternChoicesLinks();
   } else {

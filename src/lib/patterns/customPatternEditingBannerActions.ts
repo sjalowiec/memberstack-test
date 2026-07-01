@@ -12,13 +12,18 @@ import {
   canCopySavedCustomPatternForAccess,
   SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT,
 } from "./savedCustomPatternCopyAccess";
-import { canCreatePatternForSystem } from "./sleevelessPatternSystemAccess";
+import {
+  canCreatePatternForSystem,
+  canEditPatternSettingsForSystem,
+  resolvePatternSystemAlreadyClaimedCopy,
+} from "./sleevelessPatternSystemAccess";
 import {
   markFreePatternClaimedForSystem,
   resolveSleevelessUserAccess,
 } from "./sleevelessPatternSystemAccessClient";
 import { isFreeClaimedForSystem } from "./patternSystemFreeClaim";
-import { resolvePatternSystemFromPage } from "./patternSystemId";
+import { resolvePatternSystemForEntitlement } from "./patternSystemId";
+import { offerPatternEditingUnlockModal } from "./patternEditingUnlockModal";
 import {
   resolveSaveAlreadyClaimedCopy,
   resolveSaveLoggedOutCopy,
@@ -89,6 +94,25 @@ export async function runSaveCustomPatternFromWorkspace(
     skipPreSavePrepare: options?.skipPreSavePrepare === true,
   });
 
+  const access = await resolveSleevelessUserAccess();
+  const patternSystem = resolvePatternSystemForEntitlement();
+  if (willCreate && !canCreatePatternForSystem(access, patternSystem)) {
+    const message = access.loggedIn
+      ? resolveSaveAlreadyClaimedCopy(patternSystem)
+      : resolveSaveLoggedOutCopy(patternSystem);
+    options?.onStatus?.(message, true);
+    return { ok: false, error: message };
+  }
+
+  if (!willCreate && !canEditPatternSettingsForSystem(access, patternSystem)) {
+    if (typeof document !== "undefined") {
+      offerPatternEditingUnlockModal(access, { patternSystem });
+    }
+    const message = resolvePatternSystemAlreadyClaimedCopy(patternSystem);
+    options?.onStatus?.(message, true);
+    return { ok: false, error: message };
+  }
+
   const scope = root ?? (typeof document !== "undefined" ? document : undefined);
   const measureRoot = resolveCustomBuildSaveMeasureFlushRoot(scope);
   const name = resolvePatternProjectSaveName(scope);
@@ -98,16 +122,6 @@ export async function runSaveCustomPatternFromWorkspace(
       : "Enter a pattern name before updating.";
     options?.onStatus?.(error, true);
     return { ok: false, error };
-  }
-
-  const access = await resolveSleevelessUserAccess();
-  const patternSystem = resolvePatternSystemFromPage(scope);
-  if (willCreate && !canCreatePatternForSystem(access, patternSystem)) {
-    const message = access.loggedIn
-      ? resolveSaveAlreadyClaimedCopy(patternSystem)
-      : resolveSaveLoggedOutCopy(patternSystem);
-    options?.onStatus?.(message, true);
-    return { ok: false, error: message };
   }
 
   if (!options?.skipPreSavePrepare) {

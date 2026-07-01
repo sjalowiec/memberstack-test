@@ -6,6 +6,8 @@
  * construction metadata on saved projects and the working draft.
  */
 import type { CustomPatternProject } from "./customPatternProjectTypes";
+import { readActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
+import { readHydratedConstructionBaseline } from "./customPatternProjectConstructionBaseline";
 import {
   DROP_SHOULDER_CONSTRUCTION,
   CONSTRUCTION_AUTHORED_KEY,
@@ -14,6 +16,7 @@ import {
   isActiveDropShoulderConstruction,
 } from "./patternConstructionIdentity";
 import type { SleevelessPatternRecord } from "./patternStorage";
+import { getCurrentPattern } from "./patternStorage";
 
 /** Canonical pattern system slugs used in entitlement tracking. */
 export type PatternSystemId =
@@ -116,6 +119,38 @@ export function resolvePatternSystemFromPage(doc?: Document): PatternSystemId {
     return "drop-shoulder";
   }
   return "sleeveless";
+}
+
+/**
+ * Resolve pattern system from the active saved-project session (baseline + working draft).
+ * Prefer this over {@link resolvePatternSystemFromPage} when a saved project is linked.
+ */
+export function resolvePatternSystemFromWorkingSession(): PatternSystemId {
+  const activeId = readActiveCustomPatternProjectId()?.trim();
+  if (activeId) {
+    const baseline = readHydratedConstructionBaseline();
+    if (baseline?.projectId === activeId) {
+      return baseline.hadAuthoritativeDropShoulder ? "drop-shoulder" : "sleeveless";
+    }
+    try {
+      const fromDraft = resolvePatternSystemFromPatternRecord(getCurrentPattern());
+      if (fromDraft === "drop-shoulder") return "drop-shoulder";
+    } catch {
+      /* ignore */
+    }
+  }
+  if (isActiveDropShoulderConstruction()) {
+    return "drop-shoulder";
+  }
+  return resolvePatternSystemFromPage();
+}
+
+/** Entitlement checks: saved project session when linked, otherwise page intent. */
+export function resolvePatternSystemForEntitlement(doc?: Document): PatternSystemId {
+  if (readActiveCustomPatternProjectId()?.trim()) {
+    return resolvePatternSystemFromWorkingSession();
+  }
+  return resolvePatternSystemFromPage(doc);
 }
 
 /** @internal Test seam ù classify from raw style/customOverrides without draft reads. */

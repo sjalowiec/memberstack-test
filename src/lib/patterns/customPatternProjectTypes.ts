@@ -57,6 +57,8 @@ export type SaveCustomPatternProjectRequest = {
 export type UpdateCustomPatternProjectRequest = SaveCustomPatternProjectRequest & {
   id: string;
   version?: number;
+  /** When true, only name/notes/project meta changed — skips settings-edit entitlement guard. */
+  metadataOnly?: true;
 };
 
 /** Workflow-only patch — does not change pattern body or summary `updatedAt`. */

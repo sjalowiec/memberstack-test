@@ -2,7 +2,10 @@ import {
   canEditPatternSettingsForSystem,
   type SleevelessUserAccess,
 } from "./sleevelessPatternSystemAccess";
-import { resolvePatternSystemFromPage, type PatternSystemId } from "./patternSystemId";
+import {
+  resolvePatternSystemForEntitlement,
+  type PatternSystemId,
+} from "./patternSystemId";
 
 export const PATTERN_EDITING_UNLOCK_EDIT_BUTTON_TOOLTIP =
   "Pattern editing is included with membership. You can still view, print, and rename this pattern.";
@@ -50,7 +53,7 @@ export function shouldOfferPatternEditingUnlockModal(
 ): boolean {
   const system =
     patternSystem ??
-    (typeof document !== "undefined" ? resolvePatternSystemFromPage() : "sleeveless");
+    (typeof document !== "undefined" ? resolvePatternSystemForEntitlement() : "sleeveless");
   return Boolean(access?.loggedIn && !canEditPatternSettingsForSystem(access, system));
 }
 

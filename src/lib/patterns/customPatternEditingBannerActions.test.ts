@@ -51,8 +51,13 @@ vi.mock("./patternSystemId", async (importOriginal) => {
   return {
     ...actual,
     resolvePatternSystemFromPage: vi.fn(() => "sleeveless"),
+    resolvePatternSystemForEntitlement: vi.fn(() => "sleeveless"),
   };
 });
+
+vi.mock("./patternEditingUnlockModal", () => ({
+  offerPatternEditingUnlockModal: vi.fn(),
+}));
 
 import { smartSaveCustomPatternProject } from "./customPatternSavedProjectsPanel";
 import {
@@ -61,6 +66,8 @@ import {
 } from "./sleevelessPatternSystemAccessClient";
 import { canCreatePatternForSystem } from "./sleevelessPatternSystemAccess";
 import { testAccess } from "./patternAccessTestFixtures";
+import { resolvePatternSystemForEntitlement } from "./patternSystemId";
+import { offerPatternEditingUnlockModal } from "./patternEditingUnlockModal";
 
 const SUES_PATTERN = "Sue's test pattern";
 
@@ -376,6 +383,82 @@ describe("runSaveCustomPatternFromWorkspace", () => {
     const res = await runSaveCustomPatternFromWorkspace(undefined, { skipPreSavePrepare: true });
     expect(res.ok).toBe(true);
     expect(markFreePatternClaimedForSystem).not.toHaveBeenCalled();
+  });
+
+  it("blocks settings update for nosub with claimed drop-shoulder saved project", async () => {
+    writeActiveCustomPatternProjectId("proj-drop", "Drop Shoulder Vest");
+    saveCurrentPattern({
+      style: {
+        construction: DROP_SHOULDER_CONSTRUCTION,
+        [CONSTRUCTION_AUTHORED_KEY]: DROP_SHOULDER_CONSTRUCTION,
+      },
+      patternProject: { title: "Drop Shoulder Vest", notes: "", titleCustomized: true },
+    });
+    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue(
+      testAccess({
+        loggedIn: true,
+        hasSystemAccess: false,
+        freeClaimed: true,
+        claimedSystem: "drop-shoulder",
+        freeClaimedPatternId: "proj-drop",
+      }),
+    );
+    vi.mocked(resolvePatternSystemForEntitlement).mockReturnValue("drop-shoulder");
+
+    const res = await runSaveCustomPatternFromWorkspace(undefined, { skipPreSavePrepare: true });
+    expect(res.ok).toBe(false);
+    if (res.ok) return;
+    expect(res.error).toMatch(/Editing is included with membership/i);
+    expect(smartSaveCustomPatternProject).not.toHaveBeenCalled();
+  });
+
+  it("blocks settings update for nosub with claimed sleeveless saved project", async () => {
+    writeActiveCustomPatternProjectId("proj-sl", SUES_PATTERN);
+    saveCurrentPattern({
+      patternProject: { title: SUES_PATTERN, notes: "", titleCustomized: true },
+    });
+    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue(
+      testAccess({
+        loggedIn: true,
+        hasSystemAccess: false,
+        freeClaimed: true,
+        claimedSystem: "sleeveless",
+        freeClaimedPatternId: "proj-sl",
+      }),
+    );
+    vi.mocked(resolvePatternSystemForEntitlement).mockReturnValue("sleeveless");
+
+    const res = await runSaveCustomPatternFromWorkspace(undefined, { skipPreSavePrepare: true });
+    expect(res.ok).toBe(false);
+    if (res.ok) return;
+    expect(smartSaveCustomPatternProject).not.toHaveBeenCalled();
+  });
+
+  it("allows members to save settings updates for both systems", async () => {
+    writeActiveCustomPatternProjectId("proj-drop", "Drop Shoulder Vest");
+    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue(
+      testAccess({ loggedIn: true, hasSystemAccess: true, freeClaimed: true }),
+    );
+    vi.mocked(resolvePatternSystemForEntitlement).mockReturnValue("drop-shoulder");
+    vi.mocked(smartSaveCustomPatternProject).mockResolvedValue({
+      ok: true,
+      created: false,
+      project: {
+        id: "proj-drop",
+        name: "Drop Shoulder Vest",
+        family: "sleeveless",
+        source: "express",
+        notes: "",
+        pattern: {},
+        customOverrides: {},
+        createdAt: "",
+        updatedAt: "",
+      },
+    });
+
+    const res = await runSaveCustomPatternFromWorkspace(undefined, { skipPreSavePrepare: true });
+    expect(res.ok).toBe(true);
+    expect(smartSaveCustomPatternProject).toHaveBeenCalled();
   });
 
   it("saves drop shoulder edit changes without manual title entry and preserves auto title", async () => {
