@@ -30,15 +30,16 @@ import {
   SLEEVELESS_FREE_PATTERN_DELETE_BLOCKED_TEXT,
 } from "./sleevelessPatternDeleteGuard";
 import { resolveSleevelessUserAccessSnapshot } from "./sleevelessPatternSystemAccessClient";
+import { offerPatternEditingUnlockModal } from "./patternEditingUnlockModal";
 import {
   canEditSleevelessPatternSettings,
   type SleevelessUserAccess,
 } from "./sleevelessPatternSystemAccess";
 
 const SIGN_IN_REQUIRED_ERROR = "Sign in to save Custom Pattern projects.";
-/** Tooltip shown when Edit is disabled for a view-only (free claimed / downgraded) knitter. */
+/** Tooltip shown when Edit is disabled for a free claimed / downgraded knitter. */
 export const SAVED_CUSTOM_PATTERN_EDIT_DISABLED_TEXT =
-  "Editing is available when you purchase this pattern or become a member. You can still view, print, and rename it.";
+  "Pattern editing is included with membership. You can still view, print, and rename this pattern.";
 const EMPTY_LIST_MESSAGE =
   "You do not have any saved patterns yet. Create your first pattern to get started.";
 export const DELETE_SAVED_PATTERN_CONFIRM_MESSAGE = "Delete this saved pattern?";
@@ -214,11 +215,12 @@ function listAccess(root: HTMLElement): SleevelessUserAccess | null {
 
 /**
  * Whether the current knitter may edit a saved pattern's settings (Express Setup, measurements,
- * gauge, regenerate). Until access resolves we default to allowed so members aren't briefly locked.
+ * gauge, regenerate). Until access resolves we default to locked so free users are not briefly
+ * unlocked.
  */
 function canEditSavedPatternFromList(root: HTMLElement): boolean {
   const access = listAccess(root);
-  return access ? canEditSleevelessPatternSettings(access) : true;
+  return access ? canEditSleevelessPatternSettings(access) : false;
 }
 
 /** Reflects edit-access onto a single Edit button: disabled + grayed + tooltip for view-only users. */
@@ -227,8 +229,8 @@ function applyEditAccessToButton(
   access: SleevelessUserAccess | null,
 ): void {
   if (!btn) return;
-  const canEdit = access ? canEditSleevelessPatternSettings(access) : true;
-  btn.disabled = !canEdit;
+  const canEdit = access ? canEditSleevelessPatternSettings(access) : false;
+  btn.disabled = false;
   btn.classList.toggle("is-disabled", !canEdit);
   if (canEdit) {
     btn.removeAttribute("aria-disabled");
@@ -332,10 +334,11 @@ async function onProjectView(root: HTMLElement, projectId: string, label: string
 }
 
 async function onProjectEdit(root: HTMLElement, projectId: string, label: string): Promise<void> {
-  // Guard before loading: a view-only knitter (free claimed / downgraded) cannot open the editable
-  // builder. The Edit button is disabled for them, but guard the handler too for keyboard/programmatic paths.
+  // Guard before loading: a free claimed / downgraded knitter cannot open the editable builder.
+  // The Edit button is styled as disabled for them, but guard the handler too for keyboard paths.
+  const access = listAccess(root);
   if (!canEditSavedPatternFromList(root)) {
-    setStatus(root, SAVED_CUSTOM_PATTERN_EDIT_DISABLED_TEXT, true);
+    offerPatternEditingUnlockModal(access);
     return;
   }
 
@@ -449,8 +452,9 @@ async function onProjectCopy(
   projectId: string,
   label: string,
 ): Promise<void> {
-  if (!canCopySavedCustomPatternForAccess(listAccess(root))) {
-    setStatus(root, SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT, true);
+  const access = listAccess(root);
+  if (!canCopySavedCustomPatternForAccess(access)) {
+    offerPatternEditingUnlockModal(access);
     return;
   }
 

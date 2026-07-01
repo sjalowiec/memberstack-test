@@ -22,6 +22,11 @@ import {
   writeActiveCustomPatternProjectId,
 } from "./customPatternProjectActiveId";
 import { resolveUniqueCopyName } from "./customPatternSavedProjectsPanel";
+import {
+  canCopySavedCustomPatternForAccess,
+  SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT,
+} from "./savedCustomPatternCopyAccess";
+import { resolveSleevelessUserAccessSnapshot } from "./sleevelessPatternSystemAccessClient";
 
 export type ManageSavedCustomPatternResult =
   | { ok: true; project: CustomPatternProject }
@@ -39,6 +44,11 @@ export async function copySavedCustomPatternProjectById(
   projectId: string,
   family: CustomPatternFamily = "sleeveless",
 ): Promise<ManageSavedCustomPatternResult> {
+  const access = await resolveSleevelessUserAccessSnapshot();
+  if (!canCopySavedCustomPatternForAccess(access)) {
+    return { ok: false, error: SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT };
+  }
+
   const loaded = await loadCustomPatternProject(projectId, family);
   if (!loaded.ok) return { ok: false, error: loaded.error };
   const source = loaded.project;

@@ -110,47 +110,43 @@ async function readMemberJson(ms: MemberstackDom): Promise<unknown> {
   }
 }
 
-async function resolveAccessUncached(): Promise<SleevelessUserAccess> {
-  if (devBypass) {
-    recordAccessDebug({
-      source: "dev-bypass",
-      loggedIn: true,
-      hasSystemAccess: true,
-      freeClaimed: false,
-      planIds: [],
-      unlockedViaJson: false,
-      at: Date.now(),
-    });
-    return { loggedIn: true, hasSystemAccess: true, freeClaimed: false };
-  }
-  if (typeof window === "undefined") return LOGGED_OUT_SLEEVELESS_ACCESS;
+function devBypassAccessSnapshot(): SleevelessUserAccess {
+  recordAccessDebug({
+    source: "dev-bypass",
+    loggedIn: true,
+    hasSystemAccess: true,
+    freeClaimed: false,
+    planIds: [],
+    unlockedViaJson: false,
+    at: Date.now(),
+  });
+  return { loggedIn: true, hasSystemAccess: true, freeClaimed: false };
+}
 
-  const loggedOut = (reason: string): SleevelessUserAccess => {
-    recordAccessDebug({
-      source: "logged-out",
-      loggedIn: false,
-      hasSystemAccess: false,
-      freeClaimed: false,
-      planIds: [],
-      unlockedViaJson: false,
-      reason,
-      at: Date.now(),
-    });
-    return LOGGED_OUT_SLEEVELESS_ACCESS;
-  };
+function loggedOutAccessSnapshot(reason: string): SleevelessUserAccess {
+  recordAccessDebug({
+    source: "logged-out",
+    loggedIn: false,
+    hasSystemAccess: false,
+    freeClaimed: false,
+    planIds: [],
+    unlockedViaJson: false,
+    reason,
+    at: Date.now(),
+  });
+  return LOGGED_OUT_SLEEVELESS_ACCESS;
+}
 
-  const ms = window.$memberstackDom;
-  if (!ms?.getCurrentMember) return loggedOut("memberstack-dom-unavailable");
-
+async function resolveMemberstackAccess(ms: MemberstackDom): Promise<SleevelessUserAccess | null> {
   let memberPayload: unknown;
   try {
     memberPayload = await ms.getCurrentMember();
   } catch {
-    return loggedOut("getCurrentMember-error");
+    return null;
   }
 
   const memberId = memberIdFromMemberstackPayload(memberPayload);
-  if (!memberId) return loggedOut("no-member-id");
+  if (!memberId) return null;
 
   const planIds = planIdsFromMemberstackPayload(memberPayload);
   const memberJson = await readMemberJson(ms);
@@ -179,6 +175,23 @@ async function resolveAccessUncached(): Promise<SleevelessUserAccess> {
     freeClaimed: claim.freeSleevelessPatternClaimed,
     freeClaimedPatternId: claim.freeSleevelessPatternId,
   };
+}
+
+async function resolveAccessUncached(): Promise<SleevelessUserAccess> {
+  if (typeof window === "undefined") return LOGGED_OUT_SLEEVELESS_ACCESS;
+
+  const ms = window.$memberstackDom;
+  if (ms?.getCurrentMember) {
+    const memberAccess = await resolveMemberstackAccess(ms);
+    if (memberAccess) return memberAccess;
+  }
+
+  // Local dev bypass applies only when no real Memberstack member is signed in. Logged-in accounts
+  // such as nosub must always resolve from Memberstack so plan entitlement is enforced locally.
+  if (devBypass) return devBypassAccessSnapshot();
+
+  if (!ms?.getCurrentMember) return loggedOutAccessSnapshot("memberstack-dom-unavailable");
+  return loggedOutAccessSnapshot("no-member-id");
 }
 
 /**

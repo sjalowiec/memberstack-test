@@ -39,18 +39,19 @@ export async function resolveCurrentMemberIdForDraftGuard(): Promise<string | nu
 
 /** True when the visitor may use sleeveless pattern pages (Memberstack member or local dev bypass). */
 export async function isSleevelessPatternMemberLoggedIn(): Promise<boolean> {
-  if (devBypass) return true;
   if (typeof window === "undefined") return false;
 
   const ms = window.$memberstackDom;
-  if (!ms?.getCurrentMember) return false;
-
-  try {
-    const res = await ms.getCurrentMember();
-    return isMemberstackLoggedInPayload(res);
-  } catch {
-    return false;
+  if (ms?.getCurrentMember) {
+    try {
+      const res = await ms.getCurrentMember();
+      if (isMemberstackLoggedInPayload(res)) return true;
+    } catch {
+      /* fall through to dev bypass */
+    }
   }
+
+  return devBypass;
 }
 
 function setGateState(root: HTMLElement, state: SleevelessPatternGateState): void {

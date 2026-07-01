@@ -9,9 +9,11 @@ import {
 import {
   exitEditingSavedCustomPattern,
   resolveProjectNameForEditingBannerUpdate,
+  runCopyActiveSavedCustomPattern,
   runSaveCustomPatternFromWorkspace,
   runUpdateActiveSavedCustomPattern,
 } from "./customPatternEditingBannerActions";
+import { SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT } from "./savedCustomPatternCopyAccess";
 import {
   CONSTRUCTION_AUTHORED_KEY,
   DROP_SHOULDER_CONSTRUCTION,
@@ -426,5 +428,25 @@ describe("runSaveCustomPatternFromWorkspace", () => {
     );
     const resolveName = vi.mocked(smartSaveCustomPatternProject).mock.calls.at(-1)?.[0].resolveName;
     expect(resolveName?.()).toBe(autoTitle);
+  });
+
+  it("blocks Save a Copy for logged-in users without system access", async () => {
+    writeActiveCustomPatternProjectId("proj-sue", SUES_PATTERN);
+    saveCurrentPattern({
+      patternProject: { title: SUES_PATTERN, notes: "", titleCustomized: true },
+    });
+    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue({
+      loggedIn: true,
+      memberId: "ms_nosub",
+      hasSystemAccess: false,
+      freeClaimed: true,
+      freeClaimedPatternId: "proj-sue",
+    });
+
+    const res = await runCopyActiveSavedCustomPattern();
+    expect(res.ok).toBe(false);
+    if (res.ok) return;
+    expect(res.error).toBe(SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT);
+    expect(smartSaveCustomPatternProject).not.toHaveBeenCalled();
   });
 });

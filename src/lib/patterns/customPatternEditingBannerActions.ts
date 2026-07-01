@@ -8,6 +8,10 @@ import { prepareCustomBuildPatternGeneration } from "./prepareCustomBuildPattern
 import { resolveCustomBuildSaveMeasureFlushRoot } from "./sleevelessCustomMeasurementStorage";
 import { logSavedPatternUpdateFlowDiagnostics } from "./customPatternProjectClient";
 import { smartSaveCustomPatternProject } from "./customPatternSavedProjectsPanel";
+import {
+  canCopySavedCustomPatternForAccess,
+  SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT,
+} from "./savedCustomPatternCopyAccess";
 import { canCreateSleevelessPattern } from "./sleevelessPatternSystemAccess";
 import {
   markFreeSleevelessPatternClaimed,
@@ -189,6 +193,12 @@ export async function runCopyActiveSavedCustomPattern(
     const error = "Enter a pattern name before saving a copy.";
     options?.onStatus?.(error, true);
     return { ok: false, error };
+  }
+
+  const access = await resolveSleevelessUserAccess();
+  if (!canCopySavedCustomPatternForAccess(access)) {
+    options?.onStatus?.(SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT, true);
+    return { ok: false, error: SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT };
   }
 
   prepareCustomBuildPatternGeneration({

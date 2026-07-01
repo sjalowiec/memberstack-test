@@ -8,10 +8,17 @@ import { readActiveCustomPatternProjectId } from "./customPatternProjectActiveId
 import { loadSavedCustomPatternProject } from "./loadSavedCustomPatternProject";
 import { copySavedCustomPatternProjectById } from "./savedCustomPatternManageActions";
 import {
-  canCopySavedCustomPattern,
+  canCopySavedCustomPatternForAccess,
   SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT,
-  syncSavedCustomPatternCopyAccess,
+  syncSavedCustomPatternCopyAccessForAccess,
 } from "./savedCustomPatternCopyAccess";
+import { SAVED_CUSTOM_PATTERN_EDIT_DISABLED_TEXT } from "./accountMyPatternsList";
+import {
+  canEditSleevelessPatternSettings,
+  type SleevelessUserAccess,
+} from "./sleevelessPatternSystemAccess";
+import { resolveSleevelessUserAccessSnapshot } from "./sleevelessPatternSystemAccessClient";
+import { offerPatternEditingUnlockModal } from "./patternEditingUnlockModal";
 import { formatSavedPatternGauge } from "./savedPatternGaugeDisplay";
 
 const SIGN_IN_REQUIRED_ERROR = "Sign in to save Custom Pattern projects.";
@@ -73,6 +80,34 @@ export function formatPatternCopiedDrawerMessage(projectName: string): string {
 }
 
 let lastCopiedProjectIdInDrawer: string | null = null;
+let lastResolvedLibraryAccess: SleevelessUserAccess | null = null;
+
+function syncLibraryOpenAccess(
+  openButton: HTMLButtonElement | null | undefined,
+  access: SleevelessUserAccess | null,
+): boolean {
+  if (!(openButton instanceof HTMLButtonElement)) return false;
+  const canEdit = access ? canEditSleevelessPatternSettings(access) : false;
+  openButton.disabled = false;
+  openButton.classList.toggle("is-disabled", !canEdit);
+  if (canEdit) {
+    openButton.removeAttribute("aria-disabled");
+    openButton.removeAttribute("title");
+  } else {
+    openButton.setAttribute("aria-disabled", "true");
+    openButton.setAttribute("title", SAVED_CUSTOM_PATTERN_EDIT_DISABLED_TEXT);
+  }
+  return canEdit;
+}
+
+function syncLibraryItemAccess(
+  openButton: HTMLButtonElement | null | undefined,
+  copyButton: HTMLButtonElement | null | undefined,
+  access: SleevelessUserAccess | null,
+): void {
+  syncLibraryOpenAccess(openButton, access);
+  syncSavedCustomPatternCopyAccessForAccess(copyButton, access);
+}
 
 function clearDrawerCopyHighlight(): void {
   lastCopiedProjectIdInDrawer = null;
@@ -81,6 +116,7 @@ function clearDrawerCopyHighlight(): void {
 /** Test hook — reset drawer copy highlight state between tests. */
 export function resetPatternWorkspaceLibraryDrawerSessionState(): void {
   clearDrawerCopyHighlight();
+  lastResolvedLibraryAccess = null;
 }
 
 function setDrawerStatus(root: HTMLElement, message: string, isError = false): void {
@@ -191,6 +227,10 @@ function renderLibraryItem(
   openBtn.textContent = "Open Pattern";
   openBtn.addEventListener("click", async () => {
     if (openBtn.disabled) return;
+    if (!canEditSleevelessPatternSettings(lastResolvedLibraryAccess)) {
+      offerPatternEditingUnlockModal(lastResolvedLibraryAccess);
+      return;
+    }
     await onLibraryProjectOpen(root, project.id, displayName);
   });
 
@@ -204,9 +244,13 @@ function renderLibraryItem(
   copyBtn.textContent = "Copy Pattern";
   copyBtn.addEventListener("click", async () => {
     if (copyBtn.disabled) return;
+    if (!canCopySavedCustomPatternForAccess(lastResolvedLibraryAccess)) {
+      offerPatternEditingUnlockModal(lastResolvedLibraryAccess);
+      return;
+    }
     await onLibraryProjectCopy(root, project.id, displayName);
   });
-  syncSavedCustomPatternCopyAccess(copyBtn);
+  syncLibraryItemAccess(openBtn, copyBtn, lastResolvedLibraryAccess);
 
   actions.append(openBtn, copyBtn);
   card.append(body, actions);
@@ -219,8 +263,8 @@ async function onLibraryProjectCopy(
   projectId: string,
   label: string,
 ): Promise<void> {
-  if (!canCopySavedCustomPattern()) {
-    setDrawerStatus(root, SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT, true);
+  if (!canCopySavedCustomPatternForAccess(lastResolvedLibraryAccess)) {
+    offerPatternEditingUnlockModal(lastResolvedLibraryAccess);
     return;
   }
 
@@ -246,10 +290,11 @@ async function onLibraryProjectCopy(
 function setDrawerActionButtonsDisabled(root: HTMLElement, disabled: boolean): void {
   root.querySelectorAll<HTMLButtonElement>("[data-pattern-workspace-library-open]").forEach((button) => {
     button.disabled = disabled;
+    if (!disabled) syncLibraryOpenAccess(button, lastResolvedLibraryAccess);
   });
   root.querySelectorAll<HTMLButtonElement>("[data-pattern-workspace-library-copy]").forEach((button) => {
     button.disabled = disabled;
-    if (!disabled) syncSavedCustomPatternCopyAccess(button);
+    if (!disabled) syncSavedCustomPatternCopyAccessForAccess(button, lastResolvedLibraryAccess);
   });
 }
 
@@ -258,6 +303,10 @@ async function onLibraryProjectOpen(
   projectId: string,
   label: string,
 ): Promise<void> {
+  if (!lastResolvedLibraryAccess || !canEditSleevelessPatternSettings(lastResolvedLibraryAccess)) {
+    offerPatternEditingUnlockModal(lastResolvedLibraryAccess);
+    return;
+  }
   setDrawerStatus(root, `Loading “${label}”…`);
   setDrawerActionButtonsDisabled(root, true);
 
@@ -300,6 +349,8 @@ export async function refreshPatternWorkspaceLibraryList(
     setDrawerLibraryEmptyState(root);
     return;
   }
+
+  lastResolvedLibraryAccess = await resolveSleevelessUserAccessSnapshot();
 
   const highlightProjectId =
     options?.highlightProjectId !== undefined

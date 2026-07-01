@@ -467,11 +467,11 @@ describe("accountMyPatternsList", () => {
 
     const copyBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-copy]");
     expect(copyBtns.length).toBe(2);
-    // Button stays in the DOM (not hidden) but is disabled with the helper tooltip.
+    // Button stays in the DOM (not hidden) but is locked with the helper tooltip.
     expect(copyBtns[0].textContent).toBe("Copy");
-    expect(copyBtns[0].disabled).toBe(true);
+    expect(copyBtns[0].disabled).toBe(false);
     expect(copyBtns[0].getAttribute("aria-disabled")).toBe("true");
-    expect(copyBtns[0].getAttribute("title")).toMatch(/purchase this pattern or become a member/i);
+    expect(copyBtns[0].getAttribute("title")).toMatch(/included with membership/i);
   });
 
   it("does not copy when the entitlement gate denies access", async () => {
@@ -485,7 +485,8 @@ describe("accountMyPatternsList", () => {
     const copyA = collectMatches(tbody._children, "[data-kbm-my-patterns-copy]").find(
       (b) => b.dataset.projectId === "proj-a",
     );
-    expect(copyA?.disabled).toBe(true);
+    expect(copyA?.disabled).toBe(false);
+    expect(copyA?.getAttribute("aria-disabled")).toBe("true");
     await copyA?._click?.();
     await flushAsync();
 
@@ -556,14 +557,14 @@ describe("accountMyPatternsList", () => {
     expect(delB?.disabled).toBe(false);
     expect(delB?.getAttribute("aria-disabled")).toBeNull();
 
-    // View-only: every Edit and Copy action is disabled with a helper tooltip (Fixes B + C).
+    // Locked: every Edit and Copy action stays visible with a helper tooltip.
     const editBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-edit]");
     const copyBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-copy]");
     expect(editBtns.length).toBe(2);
     expect(copyBtns.length).toBe(2);
-    expect(editBtns.every((b) => b.disabled === true)).toBe(true);
-    expect(editBtns[0].getAttribute("title")).toMatch(/purchase this pattern or become a member/i);
-    expect(copyBtns.every((b) => b.disabled === true)).toBe(true);
+    expect(editBtns.every((b) => b.getAttribute("aria-disabled") === "true")).toBe(true);
+    expect(editBtns[0].getAttribute("title")).toMatch(/included with membership/i);
+    expect(copyBtns.every((b) => b.getAttribute("aria-disabled") === "true")).toBe(true);
 
     // Clicking the disabled Delete / Edit never reaches their APIs.
     await delA?._click?.();

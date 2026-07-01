@@ -47,6 +47,7 @@ import {
   type CustomPatternProjectAuthMode,
 } from "./customPatternProjectAuth";
 import { perfEnd, perfStart } from "./savedPatternsPerfLog";
+import { resolveSleevelessUserAccessSnapshot } from "./sleevelessPatternSystemAccessClient";
 
 const FN_BASE = "/.netlify/functions";
 
@@ -200,9 +201,19 @@ export async function createCustomPatternProject(
   | { ok: true; project: CustomPatternProject; authMode?: CustomPatternProjectAuthMode }
   | { ok: false; error: string }
 > {
+  let entitlement: Record<string, unknown> | undefined;
+  if (typeof window !== "undefined") {
+    const access = await resolveSleevelessUserAccessSnapshot();
+    entitlement = {
+      hasSystemAccess: access.hasSystemAccess === true,
+      freeClaimed: access.freeClaimed === true,
+      ...(access.freeClaimedPatternId ? { freeClaimedPatternId: access.freeClaimedPatternId } : {}),
+    };
+  }
+
   const res = await projectFetch<{ project: CustomPatternProject }>("custom-pattern-project-save", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ ...payload, ...(entitlement ? { entitlement } : {}) }),
   });
   if (!res.ok) return res;
   return { ok: true, project: res.project, authMode: res.authMode };

@@ -5,11 +5,15 @@
 import {
   buildProjectRecord,
   getProjectsStore,
+  isSleevelessPatternCreateBlocked,
   jsonResponse,
+  listProjectSummaries,
   parseJsonBody,
   projectBlobKey,
   publicProject,
+  readSleevelessEntitlementFromSaveBody,
   resolveProjectUserId,
+  SLEEVELESS_PATTERN_CREATE_BLOCKED_MESSAGE,
   upsertProjectSummaryInIndex,
   withCors,
 } from "./lib/custom-pattern-projects-store.js";
@@ -43,10 +47,25 @@ export default async (req) => {
   }
 
   const project = built.project;
+  const family = project.family || "sleeveless";
+  const store = getProjectsStore();
+  const existingProjects = await listProjectSummaries(store, family, user.userId);
+  const entitlement = readSleevelessEntitlementFromSaveBody(body.data);
+  if (
+    isSleevelessPatternCreateBlocked({
+      hasSystemAccess: entitlement?.hasSystemAccess,
+      freeClaimed: entitlement?.freeClaimed,
+      existingProjectCount: existingProjects.length,
+    })
+  ) {
+    return withCors(
+      jsonResponse({ ok: false, error: SLEEVELESS_PATTERN_CREATE_BLOCKED_MESSAGE }, 403),
+    );
+  }
+
   const key = projectBlobKey(project.family, user.userId, project.id);
 
   try {
-    const store = getProjectsStore();
     await store.set(key, JSON.stringify(publicProject(project)), {
       metadata: {
         userId: user.userId,

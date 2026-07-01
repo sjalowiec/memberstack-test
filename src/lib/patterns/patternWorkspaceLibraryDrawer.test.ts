@@ -23,6 +23,7 @@ import type { PatternWorkspaceLibraryDrawerBindings } from "./patternWorkspaceLi
 const listCustomPatternProjectsMock = vi.fn();
 const loadSavedCustomPatternProjectMock = vi.fn();
 const copyByIdMock = vi.fn();
+const resolveAccessSnapshotMock = vi.fn();
 
 vi.mock("./customPatternProjectClient", () => ({
   listCustomPatternProjects: (...args: unknown[]) => listCustomPatternProjectsMock(...args),
@@ -35,6 +36,10 @@ vi.mock("./loadSavedCustomPatternProject", () => ({
 vi.mock("./savedCustomPatternManageActions", () => ({
   copySavedCustomPatternProjectById: (...args: unknown[]) => copyByIdMock(...args),
   renameSavedCustomPatternProject: vi.fn(),
+}));
+
+vi.mock("./sleevelessPatternSystemAccessClient", () => ({
+  resolveSleevelessUserAccessSnapshot: (...args: unknown[]) => resolveAccessSnapshotMock(...args),
 }));
 
 class MockHTMLElement {}
@@ -244,6 +249,12 @@ describe("patternWorkspaceLibraryDrawer", () => {
     resetPatternWorkspaceLibraryDrawerSessionState();
     vi.clearAllMocks();
     listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: [] });
+    resolveAccessSnapshotMock.mockResolvedValue({
+      loggedIn: true,
+      memberId: "ms_member",
+      hasSystemAccess: true,
+      freeClaimed: false,
+    });
     vi.stubGlobal("document", {
       createElement: (tag: string) => makeEl(tag),
     });
@@ -454,7 +465,13 @@ describe("patternWorkspaceLibraryDrawer", () => {
   it("keeps the drawer Copy action visible but disabled for free / non-owner users", async () => {
     const bindings = makeDrawerBindings();
     vi.stubGlobal("window", {});
-    localStorage.setItem("kbm_sleeveless_advanced_pattern_access", "0");
+    resolveAccessSnapshotMock.mockResolvedValue({
+      loggedIn: true,
+      memberId: "ms_nosub",
+      hasSystemAccess: false,
+      freeClaimed: true,
+      freeClaimedPatternId: "proj-a",
+    });
     listCustomPatternProjectsMock.mockResolvedValue({
       ok: true,
       projects: [
@@ -466,8 +483,9 @@ describe("patternWorkspaceLibraryDrawer", () => {
     const copyBtn = collectMatches(bindings.list._children, "[data-pattern-workspace-library-copy]")[0];
 
     expect(copyBtn.textContent).toBe("Copy Pattern");
-    expect(copyBtn.disabled).toBe(true);
-    expect(copyBtn.getAttribute("title")).toMatch(/purchase this pattern or become a member/i);
+    expect(copyBtn.disabled).toBe(false);
+    expect(copyBtn.getAttribute("aria-disabled")).toBe("true");
+    expect(copyBtn.getAttribute("title")).toMatch(/included with membership/i);
 
     await copyBtn?._click?.();
     expect(copyByIdMock).not.toHaveBeenCalled();

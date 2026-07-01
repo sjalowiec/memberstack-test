@@ -86,7 +86,14 @@ import {
   getPatternProjectMeta,
   resolvePatternProjectSaveNameFromState,
 } from "../lib/patterns/sleevelessPatternProjectMeta";
-import { isEditPatternSaveConfirmationOpen, promptEditPatternSaveConfirmation } from "../lib/patterns/sleevelessPatternEditSaveConfirmation";
+import {
+  isEditPatternSaveConfirmationOpen,
+  promptEditPatternSaveConfirmation,
+} from "../lib/patterns/sleevelessPatternEditSaveConfirmation";
+import {
+  maybeShowPatternEditingUnlockModalOnWorkspaceLoad,
+  offerPatternEditingUnlockModal,
+} from "../lib/patterns/patternEditingUnlockModal";
 
 /** localStorage keys the reused measurement editor may write to (snapshot/restore for discard). */
 const MEASURE_STORAGE_KEYS = [
@@ -555,7 +562,12 @@ function initSleevelessPatternEditDrawer(): void {
   };
 
   function openDrawer(): void {
-    if (settingsEditingLocked) return;
+    if (settingsEditingLocked) {
+      void resolveSleevelessUserAccess().then((access) => {
+        offerPatternEditingUnlockModal(access);
+      });
+      return;
+    }
     if (drawer!.classList.contains("is-open")) return;
     clearNotes();
     syncAvailableNeedlesMirrorsFromAllSources();
@@ -872,11 +884,7 @@ function initSleevelessPatternEditDrawer(): void {
     openBtn.hidden = true;
     openBtn.setAttribute("aria-hidden", "true");
     openBtn.setAttribute("tabindex", "-1");
-    // Reveal the workspace read-only notice that explains why editing is unavailable.
-    const lockedBanner = document.querySelector<HTMLElement>(
-      "[data-sleeveless-workspace-locked-banner]",
-    );
-    if (lockedBanner) lockedBanner.hidden = false;
+    maybeShowPatternEditingUnlockModalOnWorkspaceLoad(access);
   });
 
   drawer.querySelectorAll<HTMLInputElement>('input[name="sl-edit-fit"]').forEach((el) => {
@@ -901,8 +909,8 @@ function initSleevelessPatternEditDrawer(): void {
   }
 
   // Auto-open the workspace when arrived via My Patterns → Edit (`?edit=1`). View opens the same
-  // page without the flag and stays read-only. The query is stripped so a refresh/back doesn't
-  // re-open the drawer, and `openDrawer()` already no-ops when settings editing is locked.
+  // page without the flag. When editing is locked, offer the membership modal instead. The query
+  // is stripped so a refresh/back doesn't re-trigger the prompt.
   function maybeAutoOpenFromQuery(): void {
     if (typeof window === "undefined") return;
     let shouldOpen = false;

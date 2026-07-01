@@ -158,6 +158,51 @@ export async function writeProjectSummaryIndex(store, family, userId, summaries)
 export const FREE_SLEEVELESS_PATTERN_DELETE_BLOCKED_MESSAGE =
   "This is your free Sleeveless Pattern. To keep access to it, it can't be deleted unless you unlock the Sleeveless Pattern System.";
 
+/** Explanatory text returned when a non-member tries to create/copy another saved pattern. */
+export const SLEEVELESS_PATTERN_CREATE_BLOCKED_MESSAGE =
+  "You've already created your free Sleeveless Pattern. To create additional versions, change your gauge or measurements, or explore different style choices, you'll need access to the Sleeveless Pattern System.";
+
+/**
+ * Server mirror of the client create/copy rule. Returns true when a new saved project must be
+ * refused. Uses client-asserted entitlement (same trust level as delete) plus an independent
+ * project-count fallback when entitlement is missing.
+ *
+ * @param {{ hasSystemAccess?: boolean, freeClaimed?: boolean, existingProjectCount?: number }} input
+ */
+export function isSleevelessPatternCreateBlocked(input) {
+  if (!input || typeof input !== "object") return false;
+  if (input.hasSystemAccess === true) return false;
+  if (input.freeClaimed === true) return true;
+
+  const count = Number(input.existingProjectCount);
+  if (Number.isFinite(count) && count > 0) return true;
+  return false;
+}
+
+/**
+ * Parses the optional client entitlement snapshot from a save request body.
+ * @param {unknown} body
+ */
+export function readSleevelessEntitlementFromSaveBody(body) {
+  const root =
+    body && typeof body === "object" && !Array.isArray(body)
+      ? /** @type {Record<string, unknown>} */ (body)
+      : null;
+  const entitlement =
+    root?.entitlement && typeof root.entitlement === "object" && !Array.isArray(root.entitlement)
+      ? /** @type {Record<string, unknown>} */ (root.entitlement)
+      : null;
+  if (!entitlement) return null;
+  return {
+    hasSystemAccess: entitlement.hasSystemAccess === true,
+    freeClaimed: entitlement.freeClaimed === true,
+    freeClaimedPatternId:
+      typeof entitlement.freeClaimedPatternId === "string"
+        ? entitlement.freeClaimedPatternId.trim()
+        : undefined,
+  };
+}
+
 /**
  * Server mirror of the client free-pattern delete rule. Returns true when the deletion must be
  * refused. The entitlement flags are client-asserted (same trust level as `X-KBM-Member-Id`), but
