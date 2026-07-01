@@ -21,7 +21,7 @@ import { refreshCustomPatternSavedProjectsPanelUi } from "./customPatternSavedPr
 import { syncCustomBuildCustomizeAccessChrome } from "./customBuildCustomizeAccess";
 import { syncCustomBuildFoundationPageHeader } from "./customBuildFoundationPageEditingUx";
 import { syncPatternWorkspaceExpressTabLabel } from "./patternWorkspaceExpressTabLabel";
-import { getPatternProjectMeta } from "./sleevelessPatternProjectMeta";
+import { resolvePatternProjectSaveName } from "./sleevelessPatternProjectMeta";
 import { CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT } from "./customPatternEditingEvents";
 
 export { CUSTOM_PATTERN_EDITING_STATE_CHANGED_EVENT };
@@ -52,19 +52,7 @@ export function dispatchCustomPatternEditingStateChanged(): void {
 
 /** Resolves the name used when updating the active saved project from the current page. */
 export function resolveProjectNameForEditingBannerUpdate(root: ParentNode = document): string {
-  const editDrawerTitle = root.querySelector<HTMLInputElement>("#sl-edit-title");
-  const fromEditDrawer = editDrawerTitle?.value?.trim() ?? "";
-  if (fromEditDrawer) return fromEditDrawer;
-
-  const reviewTitle = root.querySelector<HTMLInputElement>("[data-sleeveless-pattern-project-title]");
-  const fromReview = reviewTitle?.value?.trim() ?? "";
-  if (fromReview) return fromReview;
-
-  const panelName = root.querySelector<HTMLInputElement>("[data-cb-project-name]");
-  const fromPanel = panelName?.value?.trim() ?? "";
-  if (fromPanel) return fromPanel;
-
-  return getPatternProjectMeta().title.trim();
+  return resolvePatternProjectSaveName(root);
 }
 
 export type UpdateActiveSavedCustomPatternResult =
@@ -97,9 +85,7 @@ export async function runSaveCustomPatternFromWorkspace(
 
   const scope = root ?? (typeof document !== "undefined" ? document : undefined);
   const measureRoot = resolveCustomBuildSaveMeasureFlushRoot(scope);
-  const name = scope
-    ? resolveProjectNameForEditingBannerUpdate(scope)
-    : getPatternProjectMeta().title.trim();
+  const name = resolvePatternProjectSaveName(scope);
   if (!name) {
     const error = willCreate
       ? "Enter a pattern name before saving."
@@ -198,9 +184,7 @@ export async function runCopyActiveSavedCustomPattern(
 
   const scope = root ?? (typeof document !== "undefined" ? document : undefined);
   const measureRoot = resolveCustomBuildSaveMeasureFlushRoot(scope);
-  const name = scope
-    ? resolveProjectNameForEditingBannerUpdate(scope)
-    : getPatternProjectMeta().title.trim();
+  const name = resolvePatternProjectSaveName(scope);
   if (!name) {
     const error = "Enter a pattern name before saving a copy.";
     options?.onStatus?.(error, true);

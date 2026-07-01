@@ -82,6 +82,10 @@ import {
 } from "../lib/patterns/gaugeDisplayFormat";
 import { canEditSleevelessPatternSettings } from "../lib/patterns/sleevelessPatternSystemAccess";
 import { resolveSleevelessUserAccess } from "../lib/patterns/sleevelessPatternSystemAccessClient";
+import {
+  getPatternProjectMeta,
+  resolvePatternProjectSaveNameFromState,
+} from "../lib/patterns/sleevelessPatternProjectMeta";
 
 /** localStorage keys the reused measurement editor may write to (snapshot/restore for discard). */
 const MEASURE_STORAGE_KEYS = [
@@ -433,11 +437,7 @@ function initSleevelessPatternEditDrawer(): void {
     const ev = readExpressValues();
 
     if (titleInput) {
-      const title =
-        pattern.patternProject && typeof pattern.patternProject.title === "string"
-          ? pattern.patternProject.title
-          : "";
-      titleInput.value = title;
+      titleInput.value = resolvePatternProjectSaveNameFromState();
     }
 
     if (notesInput) {
@@ -656,12 +656,16 @@ function initSleevelessPatternEditDrawer(): void {
       // Title + notes (online project header) — reuses patternProject meta. Notes come from the
       // editable Notes textarea; fall back to any previously saved notes if the field is absent.
       if (titleInput) {
-        const prevProject = getCurrentPattern().patternProject;
-        const prevNotes =
-          prevProject && typeof prevProject.notes === "string" ? prevProject.notes : "";
-        const notes = notesInput ? notesInput.value : prevNotes;
+        const prevMeta = getPatternProjectMeta();
+        const enteredTitle = titleInput.value.trim();
+        const notes = notesInput ? notesInput.value : prevMeta.notes;
+        const title = enteredTitle || resolvePatternProjectSaveNameFromState();
         saveCurrentPattern({
-          patternProject: { title: titleInput.value.trim(), notes, titleCustomized: true },
+          patternProject: {
+            title,
+            notes,
+            titleCustomized: enteredTitle ? true : prevMeta.titleCustomized,
+          },
         });
       }
 

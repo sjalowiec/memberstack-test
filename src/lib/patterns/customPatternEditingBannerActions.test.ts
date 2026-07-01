@@ -12,7 +12,11 @@ import {
   runSaveCustomPatternFromWorkspace,
   runUpdateActiveSavedCustomPattern,
 } from "./customPatternEditingBannerActions";
-import { saveCurrentPattern } from "./patternStorage";
+import {
+  CONSTRUCTION_AUTHORED_KEY,
+  DROP_SHOULDER_CONSTRUCTION,
+} from "./patternConstructionIdentity";
+import { saveCurrentPattern, SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "./patternStorage";
 import {
   SLEEVELESS_SAVE_ALREADY_CLAIMED_COPY,
   SLEEVELESS_SAVE_LOGGED_OUT_COPY,
@@ -105,6 +109,50 @@ describe("resolveProjectNameForEditingBannerUpdate", () => {
       },
     } as unknown as ParentNode;
     expect(resolveProjectNameForEditingBannerUpdate(root)).toBe(SUES_PATTERN);
+  });
+
+  it("falls back to linked saved project name when edit drawer title is empty", () => {
+    writeActiveCustomPatternProjectId("proj-drop", "Drop Shoulder Pullover - Child's Size 2 yr Round Neck");
+    saveCurrentPattern({
+      patternProject: { title: "", notes: "", titleCustomized: false },
+    });
+    const root = {
+      querySelector(sel: string) {
+        if (sel === "#sl-edit-title") return { value: "" } as HTMLInputElement;
+        return null;
+      },
+    } as unknown as ParentNode;
+    expect(resolveProjectNameForEditingBannerUpdate(root)).toBe(
+      "Drop Shoulder Pullover - Child's Size 2 yr Round Neck",
+    );
+  });
+
+  it("falls back to auto-generated drop shoulder title when draft and linked name are empty", () => {
+    saveCurrentPattern({
+      style: {
+        construction: DROP_SHOULDER_CONSTRUCTION,
+        [CONSTRUCTION_AUTHORED_KEY]: DROP_SHOULDER_CONSTRUCTION,
+        garmentStyle: "pullover",
+        neckline: "round",
+      },
+      fit: { sizingChart: "kids", selectedSize: "2 yr" },
+      patternProject: { title: "", notes: "", titleCustomized: false },
+    });
+    localStorage.setItem(
+      SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
+      JSON.stringify({
+        values: { selectedSize: "2 yr", neckline: "round", fit: "standard" },
+      }),
+    );
+    const root = {
+      querySelector(sel: string) {
+        if (sel === "#sl-edit-title") return { value: "" } as HTMLInputElement;
+        return null;
+      },
+    } as unknown as ParentNode;
+    const name = resolveProjectNameForEditingBannerUpdate(root);
+    expect(name).toContain("Drop Shoulder");
+    expect(name).toContain("Child's Size 2 yr");
   });
 });
 
@@ -316,5 +364,67 @@ describe("runSaveCustomPatternFromWorkspace", () => {
     const res = await runSaveCustomPatternFromWorkspace(undefined, { skipPreSavePrepare: true });
     expect(res.ok).toBe(true);
     expect(markFreeSleevelessPatternClaimed).not.toHaveBeenCalled();
+  });
+
+  it("saves drop shoulder edit changes without manual title entry and preserves auto title", async () => {
+    const autoTitle = "Drop Shoulder Pullover - Child's Size 2 yr Round Neck";
+    writeActiveCustomPatternProjectId("proj-drop", autoTitle);
+    saveCurrentPattern({
+      style: {
+        construction: DROP_SHOULDER_CONSTRUCTION,
+        [CONSTRUCTION_AUTHORED_KEY]: DROP_SHOULDER_CONSTRUCTION,
+        garmentStyle: "pullover",
+        neckline: "round",
+      },
+      fit: { sizingChart: "kids", selectedSize: "2 yr" },
+      patternProject: { title: "", notes: "", titleCustomized: false },
+    });
+    localStorage.setItem(
+      SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
+      JSON.stringify({
+        values: { selectedSize: "2 yr", neckline: "round", fit: "standard" },
+      }),
+    );
+
+    vi.mocked(smartSaveCustomPatternProject).mockResolvedValue({
+      ok: true,
+      created: false,
+      project: {
+        id: "proj-drop",
+        name: autoTitle,
+        family: "sleeveless",
+        source: "express",
+        notes: "",
+        pattern: {},
+        customOverrides: {},
+        createdAt: "",
+        updatedAt: "",
+      },
+    });
+
+    const measureRoot = {
+      querySelector(sel: string) {
+        if (sel === "#sl-edit-title") return { value: "" } as HTMLInputElement;
+        return null;
+      },
+      querySelectorAll: () => [],
+    } as unknown as ParentNode;
+
+    const res = await runSaveCustomPatternFromWorkspace(measureRoot, {
+      skipPreSavePrepare: true,
+      activeProjectId: "proj-drop",
+    });
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    expect(res.projectName).toBe(autoTitle);
+    expect(smartSaveCustomPatternProject).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: "update",
+        activeProjectId: "proj-drop",
+        resolveName: expect.any(Function),
+      }),
+    );
+    const resolveName = vi.mocked(smartSaveCustomPatternProject).mock.calls.at(-1)?.[0].resolveName;
+    expect(resolveName?.()).toBe(autoTitle);
   });
 });

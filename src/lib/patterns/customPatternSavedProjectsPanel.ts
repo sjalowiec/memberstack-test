@@ -41,7 +41,7 @@ import {
 import { hydrateSavedCustomPatternProjectSession } from "./hydrateSavedCustomPatternProject";
 import { writeHydratedConstructionBaseline } from "./customPatternProjectConstructionBaseline";
 import { logSleevelessPatternActivity } from "./sleevelessPatternActivity";
-import { getPatternProjectMeta, savePatternProjectMeta } from "./sleevelessPatternProjectMeta";
+import { getPatternProjectMeta, resolvePatternProjectSaveName, savePatternProjectMeta } from "./sleevelessPatternProjectMeta";
 import { nextPanelListRefresh, perfEnd, perfMark, perfStart } from "./savedPatternsPerfLog";
 
 export const CUSTOM_PATTERN_SAVED_PROJECTS_PANEL_TITLE = "Saved Pattern Projects";
@@ -56,10 +56,10 @@ export type CustomPatternSavedProjectsPanelOptions = {
   onProjectLoaded?: (project: CustomPatternProject) => void;
 };
 
-function resolveProjectNameForSave(nameInput: HTMLInputElement | null): string {
+function resolveProjectNameForSave(nameInput: HTMLInputElement | null, root?: ParentNode): string {
   const fromInput = nameInput?.value?.trim() ?? "";
   if (fromInput) return fromInput;
-  return getPatternProjectMeta().title.trim();
+  return resolvePatternProjectSaveName(root);
 }
 
 function setStatusEl(el: HTMLElement | null, message: string, isError = false): void {
@@ -460,7 +460,7 @@ export function initCustomPatternSavedProjectsPanel(
   });
 
   saveBtn?.addEventListener("click", async () => {
-    const name = resolveProjectNameForSave(nameInput);
+    const name = resolveProjectNameForSave(nameInput, root);
     if (!name) {
       setStatus(root, "Enter a project name before saving.", true);
       return;
@@ -490,7 +490,7 @@ export function initCustomPatternSavedProjectsPanel(
       setStatus(root, SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT, true);
       return;
     }
-    const name = resolveProjectNameForSave(nameInput);
+    const name = resolveProjectNameForSave(nameInput, root);
     if (!name) {
       setStatus(root, "Enter a project name before saving a copy.", true);
       return;
@@ -525,7 +525,7 @@ export function initCustomPatternSavedProjectsPanel(
       );
       return;
     }
-    const name = resolveProjectNameForSave(nameInput);
+    const name = resolveProjectNameForSave(nameInput, root);
     if (!name) {
       setStatus(root, "Enter a project name before updating.", true);
       return;

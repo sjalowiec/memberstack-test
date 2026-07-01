@@ -2,6 +2,7 @@
  * Pattern name + project notes for sleeveless working draft, print, and saved Custom Pattern projects.
  * Canonical store: `kbm_current_pattern.patternProject` ({@link SleevelessPatternProjectMeta}).
  */
+import { readActiveCustomPatternProjectLinkedName } from "./customPatternProjectActiveId";
 import {
   getCurrentPattern,
   getSleevelessChartAudience,
@@ -165,6 +166,48 @@ export function getPatternProjectMeta(
 ): SleevelessPatternProjectMeta {
   migrateLegacyPrintSessionToPatternProject(pattern);
   return normalizeMeta(getCurrentPattern().patternProject);
+}
+
+/**
+ * Resolves the pattern name for save/update from working draft state only (no DOM).
+ * Falls back to the linked saved-project name, then the auto-generated title from selections.
+ */
+export function resolvePatternProjectSaveNameFromState(
+  pattern: SleevelessPatternRecord = getCurrentPattern(),
+): string {
+  const meta = getPatternProjectMeta(pattern);
+  const draftTitle = meta.title.trim();
+  if (draftTitle) return draftTitle;
+
+  const linked = readActiveCustomPatternProjectLinkedName().trim();
+  if (linked) return linked;
+
+  return buildDefaultSleevelessPatternTitle(
+    inferSleevelessPatternTitleContext(pattern),
+    patternFamilyNameForPattern(pattern),
+  ).trim();
+}
+
+/**
+ * Resolves the pattern name for save/update from editable fields, then draft state fallbacks.
+ * Used by Edit Pattern → Save Changes and shared saved-project save actions.
+ */
+export function resolvePatternProjectSaveName(root?: ParentNode): string {
+  if (root) {
+    const editDrawerTitle = root.querySelector<HTMLInputElement>("#sl-edit-title");
+    const fromEditDrawer = editDrawerTitle?.value?.trim() ?? "";
+    if (fromEditDrawer) return fromEditDrawer;
+
+    const reviewTitle = root.querySelector<HTMLInputElement>("[data-sleeveless-pattern-project-title]");
+    const fromReview = reviewTitle?.value?.trim() ?? "";
+    if (fromReview) return fromReview;
+
+    const panelName = root.querySelector<HTMLInputElement>("[data-cb-project-name]");
+    const fromPanel = panelName?.value?.trim() ?? "";
+    if (fromPanel) return fromPanel;
+  }
+
+  return resolvePatternProjectSaveNameFromState();
 }
 
 /**
