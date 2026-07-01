@@ -7,24 +7,32 @@ import {
   resolveDefaultCustomPatternSaveMode,
   smartSaveCustomPatternProject,
 } from "./customPatternSavedProjectsPanel";
-import { canCreateSleevelessPattern } from "./sleevelessPatternSystemAccess";
 import {
-  markFreeSleevelessPatternClaimed,
+  canCreatePatternForSystem,
+  resolvePatternSystemAlreadyClaimedCopy,
+  resolvePatternSystemSaveLoggedOutCopy,
+} from "./sleevelessPatternSystemAccess";
+import {
+  markFreePatternClaimedForSystem,
   resolveSleevelessUserAccess,
 } from "./sleevelessPatternSystemAccessClient";
+import { isFreeClaimedForSystem } from "./patternSystemFreeClaim";
+import { resolvePatternSystemFromPage, type PatternSystemId } from "./patternSystemId";
 
-/** Shown when a logged-out visitor tries to save a sleeveless pattern. */
-export const SLEEVELESS_SAVE_LOGGED_OUT_COPY =
-  "Log in to create your free Sleeveless Pattern.";
+/** @deprecated Use {@link resolvePatternSystemSaveLoggedOutCopy}. */
+export const SLEEVELESS_SAVE_LOGGED_OUT_COPY = resolvePatternSystemSaveLoggedOutCopy("sleeveless");
 
-/**
- * Shown when a free user who already claimed their pattern tries to create another.
- * Paragraph breaks (\n\n) render as separate paragraphs on the locked card
- * (see `.sleeveless-new-pattern-locked__body`); they collapse to spaces in the
- * single-line inline save-status element, which is acceptable there.
- */
+/** @deprecated Use {@link resolvePatternSystemAlreadyClaimedCopy}. */
 export const SLEEVELESS_SAVE_ALREADY_CLAIMED_COPY =
-  "You’ve already created your free Sleeveless Pattern.\n\nTo create additional versions, change your gauge or measurements, or explore different style choices, you’ll need access to the Sleeveless Pattern System.\n\nMembers already have access, or you can purchase the Sleeveless Pattern System separately.";
+  resolvePatternSystemAlreadyClaimedCopy("sleeveless");
+
+export function resolveSaveLoggedOutCopy(systemId?: PatternSystemId): string {
+  return resolvePatternSystemSaveLoggedOutCopy(systemId ?? resolvePatternSystemFromPage());
+}
+
+export function resolveSaveAlreadyClaimedCopy(systemId?: PatternSystemId): string {
+  return resolvePatternSystemAlreadyClaimedCopy(systemId ?? resolvePatternSystemFromPage());
+}
 
 export function setSleevelessPatternProjectCloudSaveStatus(
   root: HTMLElement,
@@ -41,6 +49,7 @@ export type RunSleevelessPatternProjectCloudSaveOptions = {
   resolveName: () => string;
   onMissingName?: () => void;
   onSuccess?: (result: { project: CustomPatternProject; created: boolean }) => void;
+  patternSystem?: PatternSystemId;
 };
 
 /** Create or update the active saved project; update status element inside `root`. */
@@ -51,6 +60,7 @@ export async function runSleevelessPatternProjectCloudSave(
   const cloudSaveBtn = root.querySelector<HTMLButtonElement>(
     "[data-sleeveless-pattern-project-cloud-save]",
   );
+  const patternSystem = options.patternSystem ?? resolvePatternSystemFromPage();
   const name = options.resolveName().trim();
   if (!name) {
     setSleevelessPatternProjectCloudSaveStatus(root, "Enter a pattern name before saving.", true);
@@ -58,14 +68,12 @@ export async function runSleevelessPatternProjectCloudSave(
     return;
   }
 
-  // Gate creation of NEW patterns by Memberstack access. Updating an existing saved pattern
-  // (e.g. renaming a free claimed pattern or editing notes) is always allowed when logged in.
   const access = await resolveSleevelessUserAccess();
   const willCreateNew = resolveDefaultCustomPatternSaveMode() === "create";
-  if (willCreateNew && !canCreateSleevelessPattern(access)) {
+  if (willCreateNew && !canCreatePatternForSystem(access, patternSystem)) {
     const message = access.loggedIn
-      ? SLEEVELESS_SAVE_ALREADY_CLAIMED_COPY
-      : SLEEVELESS_SAVE_LOGGED_OUT_COPY;
+      ? resolveSaveAlreadyClaimedCopy(patternSystem)
+      : resolveSaveLoggedOutCopy(patternSystem);
     setSleevelessPatternProjectCloudSaveStatus(root, message, true);
     return;
   }
@@ -84,12 +92,11 @@ export async function runSleevelessPatternProjectCloudSave(
     return;
   }
 
-  // First saved pattern on the account → record the one-time creation allowance as used
-  // (account-tied). Done for members too: it has no effect while they have access, but once
-  // entitlement ends it correctly locks creation + regeneration of all saved patterns. We only
-  // mark on the very first create so the recorded id stays the account's first pattern.
-  if (res.created && !access.freeClaimed) {
-    await markFreeSleevelessPatternClaimed(res.project.id);
+  if (
+    res.created &&
+    !isFreeClaimedForSystem(access.freeClaimsBySystem, patternSystem)
+  ) {
+    await markFreePatternClaimedForSystem(patternSystem, res.project.id);
   }
 
   options.onSuccess?.(res);

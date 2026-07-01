@@ -14,10 +14,12 @@ import {
 } from "./savedCustomPatternCopyAccess";
 import { SAVED_CUSTOM_PATTERN_EDIT_DISABLED_TEXT } from "./accountMyPatternsList";
 import {
-  canEditSleevelessPatternSettings,
+  canEditPatternSettingsForSystem,
   type SleevelessUserAccess,
 } from "./sleevelessPatternSystemAccess";
 import { resolveSleevelessUserAccessSnapshot } from "./sleevelessPatternSystemAccessClient";
+import type { PatternSystemId } from "./patternSystemId";
+import { resolvePatternSystemFromPage, patternSystemDisplayName } from "./patternSystemId";
 import { offerPatternEditingUnlockModal } from "./patternEditingUnlockModal";
 import { formatSavedPatternGauge } from "./savedPatternGaugeDisplay";
 
@@ -26,7 +28,9 @@ export const PATTERN_WORKSPACE_LIBRARY_DRAWER_OPEN_CLASS =
   "pattern-workspace-library-drawer-open";
 
 export function formatCustomPatternProjectType(project: CustomPatternProjectSummary): string {
-  // User-facing pattern type only — internal workflow source (Express / Custom Build) is not shown.
+  const system = project.patternSystem?.trim();
+  if (system === "drop-shoulder") return "Drop Shoulder";
+  if (system === "sleeveless") return "Sleeveless";
   const familyLabels: Record<string, string> = {
     sleeveless: "Sleeveless",
   };
@@ -82,12 +86,30 @@ export function formatPatternCopiedDrawerMessage(projectName: string): string {
 let lastCopiedProjectIdInDrawer: string | null = null;
 let lastResolvedLibraryAccess: SleevelessUserAccess | null = null;
 
+function projectSystemFromSummary(project: CustomPatternProjectSummary): PatternSystemId {
+  const raw = project.patternSystem?.trim();
+  if (raw === "drop-shoulder" || raw === "sleeveless") return raw;
+  return "sleeveless";
+}
+
+function canEditProjectFromLibrary(
+  access: SleevelessUserAccess | null,
+  project: CustomPatternProjectSummary,
+): boolean {
+  if (!access) return false;
+  return canEditPatternSettingsForSystem(access, projectSystemFromSummary(project));
+}
+
 function syncLibraryOpenAccess(
   openButton: HTMLButtonElement | null | undefined,
   access: SleevelessUserAccess | null,
+  patternSystem?: PatternSystemId,
 ): boolean {
   if (!(openButton instanceof HTMLButtonElement)) return false;
-  const canEdit = access ? canEditSleevelessPatternSettings(access) : false;
+  const system =
+    patternSystem ??
+    (typeof document !== "undefined" ? resolvePatternSystemFromPage() : "sleeveless");
+  const canEdit = access ? canEditPatternSettingsForSystem(access, system) : false;
   openButton.disabled = false;
   openButton.classList.toggle("is-disabled", !canEdit);
   if (canEdit) {
@@ -104,8 +126,9 @@ function syncLibraryItemAccess(
   openButton: HTMLButtonElement | null | undefined,
   copyButton: HTMLButtonElement | null | undefined,
   access: SleevelessUserAccess | null,
+  patternSystem?: PatternSystemId,
 ): void {
-  syncLibraryOpenAccess(openButton, access);
+  syncLibraryOpenAccess(openButton, access, patternSystem);
   syncSavedCustomPatternCopyAccessForAccess(copyButton, access);
 }
 
@@ -227,11 +250,11 @@ function renderLibraryItem(
   openBtn.textContent = "Open Pattern";
   openBtn.addEventListener("click", async () => {
     if (openBtn.disabled) return;
-    if (!canEditSleevelessPatternSettings(lastResolvedLibraryAccess)) {
+    if (!canEditProjectFromLibrary(lastResolvedLibraryAccess, project)) {
       offerPatternEditingUnlockModal(lastResolvedLibraryAccess);
       return;
     }
-    await onLibraryProjectOpen(root, project.id, displayName);
+    await onLibraryProjectOpen(root, project.id, displayName, project);
   });
 
   const copyBtn = document.createElement("button");
@@ -250,7 +273,7 @@ function renderLibraryItem(
     }
     await onLibraryProjectCopy(root, project.id, displayName);
   });
-  syncLibraryItemAccess(openBtn, copyBtn, lastResolvedLibraryAccess);
+  syncLibraryItemAccess(openBtn, copyBtn, lastResolvedLibraryAccess, projectSystemFromSummary(project));
 
   actions.append(openBtn, copyBtn);
   card.append(body, actions);
@@ -302,8 +325,13 @@ async function onLibraryProjectOpen(
   root: HTMLElement,
   projectId: string,
   label: string,
+  project?: CustomPatternProjectSummary,
 ): Promise<void> {
-  if (!lastResolvedLibraryAccess || !canEditSleevelessPatternSettings(lastResolvedLibraryAccess)) {
+  const system = project ? projectSystemFromSummary(project) : resolvePatternSystemFromPage();
+  if (
+    !lastResolvedLibraryAccess ||
+    !canEditPatternSettingsForSystem(lastResolvedLibraryAccess, system)
+  ) {
     offerPatternEditingUnlockModal(lastResolvedLibraryAccess);
     return;
   }

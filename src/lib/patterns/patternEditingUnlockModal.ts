@@ -1,13 +1,14 @@
 import {
-  canEditSleevelessPatternSettings,
+  canEditPatternSettingsForSystem,
   type SleevelessUserAccess,
 } from "./sleevelessPatternSystemAccess";
+import { resolvePatternSystemFromPage } from "./patternSystemId";
 
 export const PATTERN_EDITING_UNLOCK_MODAL_TITLE = "Unlock pattern editing";
 export const PATTERN_EDITING_UNLOCK_MODAL_BODY_LEAD =
-  "You can view, print, and use this free pattern.";
+  "You can still view, print, rename, and use this pattern.";
 export const PATTERN_EDITING_UNLOCK_MODAL_BODY_DETAIL =
-  "To change the gauge, measurements, size, or style choices, unlock the full pattern system with a Knit It Now membership.";
+  "Editing is included with membership. To change the gauge, measurements, size, or style choices, unlock the full pattern system.";
 export const PATTERN_EDITING_UNLOCK_MODAL_KEEP_LABEL = "Keep using this pattern";
 export const PATTERN_EDITING_UNLOCK_MODAL_MEMBERSHIP_LABEL = "See membership options";
 export const PATTERN_EDITING_UNLOCK_MODAL_MEMBERSHIP_HREF = "/membership";
@@ -42,8 +43,12 @@ export function dismissPatternEditingUnlockModalForSession(): void {
 /** Logged-in knitters who may view/print/rename but not edit pattern settings. */
 export function shouldOfferPatternEditingUnlockModal(
   access: SleevelessUserAccess | null | undefined,
+  patternSystem?: PatternSystemId,
 ): boolean {
-  return Boolean(access?.loggedIn && !canEditSleevelessPatternSettings(access));
+  const system =
+    patternSystem ??
+    (typeof document !== "undefined" ? resolvePatternSystemFromPage() : "sleeveless");
+  return Boolean(access?.loggedIn && !canEditPatternSettingsForSystem(access, system));
 }
 
 function isDialogElement(el: Element | null): el is HTMLDialogElement {

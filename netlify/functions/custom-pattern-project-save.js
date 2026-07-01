@@ -4,19 +4,21 @@
  */
 import {
   buildProjectRecord,
+  countProjectsForPatternSystem,
   getProjectsStore,
-  isSleevelessPatternCreateBlocked,
+  isPatternCreateBlockedForSystem,
   jsonResponse,
   listProjectSummaries,
   parseJsonBody,
+  patternSystemCreateBlockedMessage,
   projectBlobKey,
   publicProject,
-  readSleevelessEntitlementFromSaveBody,
+  readPatternEntitlementFromSaveBody,
   resolveProjectUserId,
-  SLEEVELESS_PATTERN_CREATE_BLOCKED_MESSAGE,
   upsertProjectSummaryInIndex,
   withCors,
 } from "./lib/custom-pattern-projects-store.js";
+import { resolvePatternSystemFromProject } from "./lib/pattern-system-id.js";
 
 export default async (req) => {
   if (req.method === "OPTIONS") {
@@ -48,18 +50,30 @@ export default async (req) => {
 
   const project = built.project;
   const family = project.family || "sleeveless";
+  const patternSystem =
+    readPatternEntitlementFromSaveBody(body.data)?.patternSystem ??
+    resolvePatternSystemFromProject(project);
+
   const store = getProjectsStore();
   const existingProjects = await listProjectSummaries(store, family, user.userId);
-  const entitlement = readSleevelessEntitlementFromSaveBody(body.data);
+  const existingProjectCountForSystem = countProjectsForPatternSystem(
+    existingProjects,
+    patternSystem,
+  );
+  const entitlement = readPatternEntitlementFromSaveBody(body.data);
+
   if (
-    isSleevelessPatternCreateBlocked({
+    isPatternCreateBlockedForSystem({
       hasSystemAccess: entitlement?.hasSystemAccess,
-      freeClaimed: entitlement?.freeClaimed,
-      existingProjectCount: existingProjects.length,
+      freeClaimedForSystem: entitlement?.freeClaimedForSystem,
+      existingProjectCountForSystem,
     })
   ) {
     return withCors(
-      jsonResponse({ ok: false, error: SLEEVELESS_PATTERN_CREATE_BLOCKED_MESSAGE }, 403),
+      jsonResponse(
+        { ok: false, error: patternSystemCreateBlockedMessage(patternSystem) },
+        403,
+      ),
     );
   }
 

@@ -8,20 +8,22 @@ import {
 } from "./patternEditingUnlockModal";
 import type { SleevelessUserAccess } from "./sleevelessPatternSystemAccess";
 
-const claimedFree: SleevelessUserAccess = {
+import { testAccess } from "./patternAccessTestFixtures";
+
+const claimedFree = testAccess({
   loggedIn: true,
   memberId: "ms_free",
   hasSystemAccess: false,
   freeClaimed: true,
   freeClaimedPatternId: "pat_1",
-};
+});
 
-const paidMember: SleevelessUserAccess = {
+const paidMember = testAccess({
   loggedIn: true,
   memberId: "ms_member",
   hasSystemAccess: true,
   freeClaimed: false,
-};
+});
 
 const sessionStorageMock = (() => {
   let store: Record<string, string> = {};

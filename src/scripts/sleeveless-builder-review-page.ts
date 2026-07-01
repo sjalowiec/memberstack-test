@@ -8,6 +8,11 @@ import {
   hasSleevelessPatternSystemAccess,
   type SleevelessUserAccess,
 } from "../lib/patterns/sleevelessPatternSystemAccess";
+import { isFreeClaimedForSystem } from "../lib/patterns/patternSystemFreeClaim";
+import {
+  patternSystemDisplayName,
+  resolvePatternSystemFromPage,
+} from "../lib/patterns/patternSystemId";
 import { resolveSleevelessUserAccess } from "../lib/patterns/sleevelessPatternSystemAccessClient";
 import { initSleevelessLockedBannerDismiss } from "./sleevelessLockedBannerDismiss";
 import { initExpressYarnDrawer } from "./sleeveless-express-measurements-page";
@@ -85,9 +90,9 @@ function isDebugForceFreeUser(): boolean {
 }
 
 const LOCKED_BANNER_BODY_UNCLAIMED =
-  "You’re viewing the measurements from your choices. Unlock the Sleeveless Pattern System to fully customize your fit, fine-tune shaping inputs, and update your pattern anytime.";
+  "You're viewing the measurements from your choices. Editing is included with membership when you want to customize fit, gauge, or style choices.";
 const LOCKED_BANNER_BODY_CLAIMED =
-  "This free pattern can be viewed, printed, and renamed. Unlock the Sleeveless Pattern System to change gauge, measurements, or style choices.";
+  "You can still view, print, rename, and use this pattern. Editing is included with membership.";
 
 /** Show exactly one access banner based on resolved entitlement. */
 function applyReviewAccessBanners(access: SleevelessUserAccess, forceFree: boolean): void {
@@ -108,9 +113,14 @@ function applyReviewAccessBanners(access: SleevelessUserAccess, forceFree: boole
     "[data-sleeveless-review-access-locked-body]",
   );
   if (lockedBody) {
-    lockedBody.textContent = access.freeClaimed
+    const system = resolvePatternSystemFromPage();
+    const claimed = isFreeClaimedForSystem(access.freeClaimsBySystem, system);
+    lockedBody.textContent = claimed
       ? LOCKED_BANNER_BODY_CLAIMED
-      : LOCKED_BANNER_BODY_UNCLAIMED;
+      : LOCKED_BANNER_BODY_UNCLAIMED.replace(
+          "membership",
+          `membership for your ${patternSystemDisplayName(system)} pattern`,
+        );
   }
   // Reveals the locked banner (or its collapsed strip) honoring the saved dismiss state.
   initSleevelessLockedBannerDismiss();
@@ -136,7 +146,8 @@ async function initUnifiedSleevelessReviewPage(): Promise<void> {
   applyReviewAccessBanners(access, forceFree);
 
   const advanced = canCustomizePattern() && hasSleevelessPatternSystemAccess(access) && !forceFree;
-  const canEditSettings = canEditSleevelessPatternSettings(access) && !forceFree;
+  const canEditSettings =
+    canEditSleevelessPatternSettings(access, resolvePatternSystemFromPage()) && !forceFree;
   applyReviewContinueButtonLabel(canEditSettings);
   configureReviewActions(advanced);
   initExpressYarnDrawer();

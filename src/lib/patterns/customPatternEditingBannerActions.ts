@@ -12,14 +12,16 @@ import {
   canCopySavedCustomPatternForAccess,
   SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT,
 } from "./savedCustomPatternCopyAccess";
-import { canCreateSleevelessPattern } from "./sleevelessPatternSystemAccess";
+import { canCreatePatternForSystem } from "./sleevelessPatternSystemAccess";
 import {
-  markFreeSleevelessPatternClaimed,
+  markFreePatternClaimedForSystem,
   resolveSleevelessUserAccess,
 } from "./sleevelessPatternSystemAccessClient";
+import { isFreeClaimedForSystem } from "./patternSystemFreeClaim";
+import { resolvePatternSystemFromPage } from "./patternSystemId";
 import {
-  SLEEVELESS_SAVE_ALREADY_CLAIMED_COPY,
-  SLEEVELESS_SAVE_LOGGED_OUT_COPY,
+  resolveSaveAlreadyClaimedCopy,
+  resolveSaveLoggedOutCopy,
 } from "./sleevelessPatternProjectCloudSave";
 import { refreshCustomPatternSavedProjectsPanelUi } from "./customPatternSavedProjectsPanel";
 import { syncCustomBuildCustomizeAccessChrome } from "./customBuildCustomizeAccess";
@@ -99,10 +101,11 @@ export async function runSaveCustomPatternFromWorkspace(
   }
 
   const access = await resolveSleevelessUserAccess();
-  if (willCreate && !canCreateSleevelessPattern(access)) {
+  const patternSystem = resolvePatternSystemFromPage(scope);
+  if (willCreate && !canCreatePatternForSystem(access, patternSystem)) {
     const message = access.loggedIn
-      ? SLEEVELESS_SAVE_ALREADY_CLAIMED_COPY
-      : SLEEVELESS_SAVE_LOGGED_OUT_COPY;
+      ? resolveSaveAlreadyClaimedCopy(patternSystem)
+      : resolveSaveLoggedOutCopy(patternSystem);
     options?.onStatus?.(message, true);
     return { ok: false, error: message };
   }
@@ -131,8 +134,11 @@ export async function runSaveCustomPatternFromWorkspace(
     return { ok: false, error: res.error };
   }
 
-  if (res.created && !access.freeClaimed) {
-    await markFreeSleevelessPatternClaimed(res.project.id);
+  if (
+    res.created &&
+    !isFreeClaimedForSystem(access.freeClaimsBySystem, patternSystem)
+  ) {
+    await markFreePatternClaimedForSystem(patternSystem, res.project.id);
   }
 
   logSavedPatternUpdateFlowDiagnostics(

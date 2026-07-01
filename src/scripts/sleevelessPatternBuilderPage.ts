@@ -3,6 +3,7 @@ import { initSleevelessPatternBuilderPage } from "./sleevelessPatternPageShared.
 import { ensureClaimedSavedPatternHydratedForView } from "../lib/patterns/loadClaimedSavedPatternForView.ts";
 import { isDedicatedSleevelessPatternWorkspacePage } from "../lib/patterns/prepareCustomBuildPatternGeneration.ts";
 import { runPatternWorkspaceBuilderGenerationHandoff } from "../lib/patterns/patternWorkspaceBuilderGenerationHandoff.ts";
+import { maybeAutoSaveFirstFreePattern } from "../lib/patterns/patternAutoSaveFirstFree.ts";
 
 declare global {
   interface Window {
@@ -30,7 +31,14 @@ async function boot(): Promise<void> {
       console.error("[kbm] Claimed saved-pattern view fallback failed; continuing.", error);
     }
     try {
-      await runPatternWorkspaceBuilderGenerationHandoff();
+      const handoffRan = await runPatternWorkspaceBuilderGenerationHandoff();
+      if (handoffRan) {
+        try {
+          await maybeAutoSaveFirstFreePattern();
+        } catch (error) {
+          console.error("[kbm] Auto-save first free pattern failed; continuing.", error);
+        }
+      }
     } catch (error) {
       console.error("[kbm] Builder generation handoff failed; continuing.", error);
     }

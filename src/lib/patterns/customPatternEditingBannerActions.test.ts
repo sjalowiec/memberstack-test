@@ -34,19 +34,33 @@ vi.mock("./customPatternSavedProjectsPanel", async (importOriginal) => {
 
 vi.mock("./sleevelessPatternSystemAccessClient", () => ({
   resolveSleevelessUserAccess: vi.fn(),
+  markFreePatternClaimedForSystem: vi.fn().mockResolvedValue(true),
   markFreeSleevelessPatternClaimed: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock("./sleevelessPatternSystemAccess", () => ({
-  canCreateSleevelessPattern: vi.fn(),
-}));
+vi.mock("./sleevelessPatternSystemAccess", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./sleevelessPatternSystemAccess")>();
+  return {
+    ...actual,
+    canCreatePatternForSystem: vi.fn(),
+  };
+});
+
+vi.mock("./patternSystemId", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./patternSystemId")>();
+  return {
+    ...actual,
+    resolvePatternSystemFromPage: vi.fn(() => "sleeveless"),
+  };
+});
 
 import { smartSaveCustomPatternProject } from "./customPatternSavedProjectsPanel";
 import {
-  markFreeSleevelessPatternClaimed,
+  markFreePatternClaimedForSystem,
   resolveSleevelessUserAccess,
 } from "./sleevelessPatternSystemAccessClient";
-import { canCreateSleevelessPattern } from "./sleevelessPatternSystemAccess";
+import { canCreatePatternForSystem } from "./sleevelessPatternSystemAccess";
+import { testAccess } from "./patternAccessTestFixtures";
 
 const SUES_PATTERN = "Sue's test pattern";
 
@@ -163,12 +177,10 @@ describe("runUpdateActiveSavedCustomPattern", () => {
     stubLocalStorage();
     localStorage.clear();
     vi.clearAllMocks();
-    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue({
-      loggedIn: true,
-      hasSystemAccess: true,
-      freeClaimed: false,
-    });
-    vi.mocked(canCreateSleevelessPattern).mockReturnValue(true);
+    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue(
+      testAccess({ loggedIn: true, hasSystemAccess: true, freeClaimed: false }),
+    );
+    vi.mocked(canCreatePatternForSystem).mockReturnValue(true);
   });
 
   it("calls update mode on the active saved project", async () => {
@@ -257,12 +269,10 @@ describe("runSaveCustomPatternFromWorkspace", () => {
     stubLocalStorage();
     localStorage.clear();
     vi.clearAllMocks();
-    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue({
-      loggedIn: true,
-      hasSystemAccess: true,
-      freeClaimed: false,
-    });
-    vi.mocked(canCreateSleevelessPattern).mockReturnValue(true);
+    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue(
+      testAccess({ loggedIn: true, hasSystemAccess: true, freeClaimed: false }),
+    );
+    vi.mocked(canCreatePatternForSystem).mockReturnValue(true);
   });
 
   it("creates a new saved project when none is linked", async () => {
@@ -300,16 +310,14 @@ describe("runSaveCustomPatternFromWorkspace", () => {
     expect(smartSaveCustomPatternProject).toHaveBeenCalledWith(
       expect.objectContaining({ mode: "create" }),
     );
-    expect(markFreeSleevelessPatternClaimed).toHaveBeenCalledWith("proj-new");
+    expect(markFreePatternClaimedForSystem).toHaveBeenCalledWith("sleeveless", "proj-new");
   });
 
   it("blocks create for logged-out users", async () => {
-    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue({
-      loggedIn: false,
-      hasSystemAccess: false,
-      freeClaimed: false,
-    });
-    vi.mocked(canCreateSleevelessPattern).mockReturnValue(false);
+    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue(
+      testAccess({ loggedIn: false, hasSystemAccess: false, freeClaimed: false }),
+    );
+    vi.mocked(canCreatePatternForSystem).mockReturnValue(false);
 
     saveCurrentPattern({
       patternProject: { title: "New vest", notes: "", titleCustomized: true },
@@ -323,13 +331,15 @@ describe("runSaveCustomPatternFromWorkspace", () => {
   });
 
   it("blocks create when free allowance is already used", async () => {
-    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue({
-      loggedIn: true,
-      hasSystemAccess: false,
-      freeClaimed: true,
-      freeClaimedPatternId: "pat_1",
-    });
-    vi.mocked(canCreateSleevelessPattern).mockReturnValue(false);
+    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue(
+      testAccess({
+        loggedIn: true,
+        hasSystemAccess: false,
+        freeClaimed: true,
+        freeClaimedPatternId: "pat_1",
+      }),
+    );
+    vi.mocked(canCreatePatternForSystem).mockReturnValue(false);
 
     saveCurrentPattern({
       patternProject: { title: "Second vest", notes: "", titleCustomized: true },
@@ -365,7 +375,7 @@ describe("runSaveCustomPatternFromWorkspace", () => {
 
     const res = await runSaveCustomPatternFromWorkspace(undefined, { skipPreSavePrepare: true });
     expect(res.ok).toBe(true);
-    expect(markFreeSleevelessPatternClaimed).not.toHaveBeenCalled();
+    expect(markFreePatternClaimedForSystem).not.toHaveBeenCalled();
   });
 
   it("saves drop shoulder edit changes without manual title entry and preserves auto title", async () => {
@@ -435,13 +445,15 @@ describe("runSaveCustomPatternFromWorkspace", () => {
     saveCurrentPattern({
       patternProject: { title: SUES_PATTERN, notes: "", titleCustomized: true },
     });
-    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue({
-      loggedIn: true,
-      memberId: "ms_nosub",
-      hasSystemAccess: false,
-      freeClaimed: true,
-      freeClaimedPatternId: "proj-sue",
-    });
+    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue(
+      testAccess({
+        loggedIn: true,
+        memberId: "ms_nosub",
+        hasSystemAccess: false,
+        freeClaimed: true,
+        freeClaimedPatternId: "proj-sue",
+      }),
+    );
 
     const res = await runCopyActiveSavedCustomPattern();
     expect(res.ok).toBe(false);

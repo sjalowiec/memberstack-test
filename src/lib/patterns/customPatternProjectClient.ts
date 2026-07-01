@@ -48,8 +48,57 @@ import {
 } from "./customPatternProjectAuth";
 import { perfEnd, perfStart } from "./savedPatternsPerfLog";
 import { resolveSleevelessUserAccessSnapshot } from "./sleevelessPatternSystemAccessClient";
+import {
+  freeClaimedPatternIdForSystem,
+  isFreeClaimedForSystem,
+} from "./patternSystemFreeClaim";
+import {
+  resolvePatternSystemFromPage,
+  resolvePatternSystemFromProject,
+  type PatternSystemId,
+} from "./patternSystemId";
+import type { SleevelessUserAccess } from "./sleevelessPatternSystemAccess";
 
 const FN_BASE = "/.netlify/functions";
+
+export type PatternSaveEntitlementSnapshot = {
+  patternSystem: PatternSystemId;
+  hasSystemAccess: boolean;
+  freeClaimedForSystem: boolean;
+  freeClaimedPatternId?: string;
+};
+
+/** Build entitlement payload for create/delete requests. */
+export async function buildPatternSaveEntitlementSnapshot(
+  patternSystem?: PatternSystemId,
+): Promise<PatternSaveEntitlementSnapshot> {
+  const access = await resolveSleevelessUserAccessSnapshot();
+  const systemId = patternSystem ?? resolvePatternSystemFromPage();
+  return buildPatternSaveEntitlementSnapshotFromAccess(access, systemId);
+}
+
+export function buildPatternSaveEntitlementSnapshotFromAccess(
+  access: SleevelessUserAccess,
+  patternSystem: PatternSystemId,
+): PatternSaveEntitlementSnapshot {
+  const claimed = isFreeClaimedForSystem(access.freeClaimsBySystem, patternSystem);
+  const claimedId = freeClaimedPatternIdForSystem(access.freeClaimsBySystem, patternSystem);
+  return {
+    patternSystem,
+    hasSystemAccess: access.hasSystemAccess === true,
+    freeClaimedForSystem: claimed,
+    ...(claimedId ? { freeClaimedPatternId: claimedId } : {}),
+  };
+}
+
+export function resolvePatternSystemForSavePayload(
+  payload: Pick<SaveCustomPatternProjectRequest, "pattern" | "customOverrides">,
+): PatternSystemId {
+  return resolvePatternSystemFromProject({
+    pattern: payload.pattern,
+    customOverrides: payload.customOverrides ?? {},
+  });
+}
 
 type ApiOk<T> = { ok: true; authMode?: CustomPatternProjectAuthMode } & T;
 type ApiErr = { ok: false; error: string };
@@ -201,14 +250,10 @@ export async function createCustomPatternProject(
   | { ok: true; project: CustomPatternProject; authMode?: CustomPatternProjectAuthMode }
   | { ok: false; error: string }
 > {
-  let entitlement: Record<string, unknown> | undefined;
+  let entitlement: PatternSaveEntitlementSnapshot | undefined;
   if (typeof window !== "undefined") {
-    const access = await resolveSleevelessUserAccessSnapshot();
-    entitlement = {
-      hasSystemAccess: access.hasSystemAccess === true,
-      freeClaimed: access.freeClaimed === true,
-      ...(access.freeClaimedPatternId ? { freeClaimedPatternId: access.freeClaimedPatternId } : {}),
-    };
+    const patternSystem = resolvePatternSystemForSavePayload(payload);
+    entitlement = await buildPatternSaveEntitlementSnapshot(patternSystem);
   }
 
   const res = await projectFetch<{ project: CustomPatternProject }>("custom-pattern-project-save", {
@@ -299,26 +344,31 @@ export async function listCustomPatternProjects(
 export async function deleteCustomPatternProject(
   projectId: string,
   family: CustomPatternFamily = "sleeveless",
-  access?: { hasSystemAccess: boolean; freeClaimed: boolean; freeClaimedPatternId?: string },
+  access?: SleevelessUserAccess,
+  patternSystem?: PatternSystemId,
 ): Promise<
   | { ok: true; authMode?: CustomPatternProjectAuthMode }
   | { ok: false; error: string }
 > {
-  // Forward the resolved entitlement snapshot so the delete endpoint can independently refuse to
-  // delete a free user's protected pattern (defense-in-depth; same trust level as X-KBM-Member-Id).
-  const freeClaim = access
-    ? {
-        hasSystemAccess: access.hasSystemAccess === true,
-        freeClaimed: access.freeClaimed === true,
-        ...(access.freeClaimedPatternId
-          ? { freeClaimedPatternId: access.freeClaimedPatternId }
-          : {}),
-      }
-    : undefined;
+  const resolvedAccess = access ?? (await resolveSleevelessUserAccessSnapshot());
+  const systemId = patternSystem ?? resolvePatternSystemFromPage();
+  const freeClaim = {
+    patternSystem: systemId,
+    hasSystemAccess: resolvedAccess.hasSystemAccess === true,
+    freeClaimedForSystem: isFreeClaimedForSystem(resolvedAccess.freeClaimsBySystem, systemId),
+    ...(freeClaimedPatternIdForSystem(resolvedAccess.freeClaimsBySystem, systemId)
+      ? {
+          freeClaimedPatternId: freeClaimedPatternIdForSystem(
+            resolvedAccess.freeClaimsBySystem,
+            systemId,
+          ),
+        }
+      : {}),
+  };
 
   const res = await projectFetch<{ deleted: true }>("custom-pattern-project-delete", {
     method: "DELETE",
-    body: JSON.stringify({ id: projectId, family, ...(freeClaim ? { freeClaim } : {}) }),
+    body: JSON.stringify({ id: projectId, family, freeClaim }),
   });
   if (!res.ok) return res;
   return { ok: true, authMode: res.authMode };

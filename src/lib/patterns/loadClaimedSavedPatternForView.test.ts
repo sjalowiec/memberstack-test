@@ -2,16 +2,17 @@ import { describe, expect, it, vi } from "vitest";
 import { ensureClaimedSavedPatternHydratedForView } from "./loadClaimedSavedPatternForView";
 import type { SleevelessUserAccess } from "./sleevelessPatternSystemAccess";
 
+import { testAccess } from "./patternAccessTestFixtures";
+
 const CLAIMED_ID = "67f872ca-a330-409a-a13c-ce973bc72a12";
 
-/** Logged-in, no plan, free pattern already claimed — the affected test user. */
-const FREE_CLAIMED_ACCESS: SleevelessUserAccess = {
+const FREE_CLAIMED_ACCESS = testAccess({
   loggedIn: true,
   memberId: "mem_free",
   hasSystemAccess: false,
   freeClaimed: true,
   freeClaimedPatternId: CLAIMED_ID,
-};
+});
 
 function deps(overrides: Parameters<typeof ensureClaimedSavedPatternHydratedForView>[0] = {}) {
   return {
@@ -73,13 +74,14 @@ describe("ensureClaimedSavedPatternHydratedForView", () => {
     const loadProject = vi.fn(async () => ({ ok: true }));
     const result = await ensureClaimedSavedPatternHydratedForView(
       deps({
-        resolveAccess: async () => ({
-          loggedIn: true,
-          memberId: "mem_paid",
-          hasSystemAccess: true,
-          freeClaimed: true,
-          freeClaimedPatternId: CLAIMED_ID,
-        }),
+        resolveAccess: async () =>
+          testAccess({
+            loggedIn: true,
+            memberId: "mem_paid",
+            hasSystemAccess: true,
+            freeClaimed: true,
+            freeClaimedPatternId: CLAIMED_ID,
+          }),
         loadProject,
       }),
     );
@@ -92,11 +94,8 @@ describe("ensureClaimedSavedPatternHydratedForView", () => {
     const loadProject = vi.fn(async () => ({ ok: true }));
     const result = await ensureClaimedSavedPatternHydratedForView(
       deps({
-        resolveAccess: async () => ({
-          loggedIn: false,
-          hasSystemAccess: false,
-          freeClaimed: false,
-        }),
+        resolveAccess: async () =>
+          testAccess({ loggedIn: false, hasSystemAccess: false, freeClaimed: false }),
         loadProject,
       }),
     );
@@ -109,12 +108,13 @@ describe("ensureClaimedSavedPatternHydratedForView", () => {
     const loadProject = vi.fn(async () => ({ ok: true }));
     const result = await ensureClaimedSavedPatternHydratedForView(
       deps({
-        resolveAccess: async () => ({
-          loggedIn: true,
-          memberId: "mem_free",
-          hasSystemAccess: false,
-          freeClaimed: false,
-        }),
+        resolveAccess: async () =>
+          testAccess({
+            loggedIn: true,
+            memberId: "mem_free",
+            hasSystemAccess: false,
+            freeClaimed: false,
+          }),
         loadProject,
       }),
     );

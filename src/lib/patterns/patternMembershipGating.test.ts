@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MEMBERSHIPS } from "../../config/memberships";
 import {
-  canCreateSleevelessPattern,
-  canEditSleevelessPatternSettings,
+  canCreatePatternForSystem,
+  canEditPatternSettingsForSystem,
   LOGGED_OUT_SLEEVELESS_ACCESS,
   type SleevelessUserAccess,
 } from "./sleevelessPatternSystemAccess";
@@ -12,12 +12,9 @@ import {
 } from "./savedCustomPatternCopyAccess";
 import {
   canStartNewSleevelessPattern,
-  resolveSleevelessNewPatternBlockedCopy,
+  resolveNewPatternBlockedCopy,
 } from "./sleevelessNewPatternAccessGuard";
-import {
-  SLEEVELESS_SAVE_ALREADY_CLAIMED_COPY,
-  SLEEVELESS_SAVE_LOGGED_OUT_COPY,
-} from "./sleevelessPatternProjectCloudSave";
+import { resolveSaveLoggedOutCopy } from "./sleevelessPatternProjectCloudSave";
 import { resolveHasAdvancedPatternAccessForAccess } from "./sleevelessPatternAccessGate";
 
 vi.mock("../devBypass", () => ({ devBypass: false }));
@@ -31,29 +28,39 @@ const nosubUnclaimed: SleevelessUserAccess = {
   loggedIn: true,
   memberId: "ms_nosub",
   hasSystemAccess: false,
-  freeClaimed: false,
+  freeClaimsBySystem: {},
 };
 
-const nosubClaimed: SleevelessUserAccess = {
+const nosubSleevelessClaimed: SleevelessUserAccess = {
   loggedIn: true,
   memberId: "ms_nosub",
   hasSystemAccess: false,
-  freeClaimed: true,
-  freeClaimedPatternId: "pat_free",
+  freeClaimsBySystem: {
+    sleeveless: { claimed: true, patternId: "pat_free" },
+  },
+};
+
+const nosubDropShoulderClaimed: SleevelessUserAccess = {
+  loggedIn: true,
+  memberId: "ms_nosub",
+  hasSystemAccess: false,
+  freeClaimsBySystem: {
+    "drop-shoulder": { claimed: true, patternId: "pat_ds" },
+  },
 };
 
 const betaMember: SleevelessUserAccess = {
   loggedIn: true,
   memberId: "ms_beta",
   hasSystemAccess: true,
-  freeClaimed: false,
+  freeClaimsBySystem: {},
 };
 
 const paidMember: SleevelessUserAccess = {
   loggedIn: true,
   memberId: "ms_member",
   hasSystemAccess: true,
-  freeClaimed: false,
+  freeClaimsBySystem: {},
 };
 
 type MsMock = {
@@ -76,39 +83,46 @@ afterEach(() => {
 
 describe("pattern membership gating (pure rules)", () => {
   it("logged-out users are blocked from create, edit settings, and advanced access", () => {
-    expect(canCreateSleevelessPattern(LOGGED_OUT_SLEEVELESS_ACCESS)).toBe(false);
-    expect(canEditSleevelessPatternSettings(LOGGED_OUT_SLEEVELESS_ACCESS)).toBe(false);
+    expect(canCreatePatternForSystem(LOGGED_OUT_SLEEVELESS_ACCESS, "sleeveless")).toBe(false);
+    expect(canEditPatternSettingsForSystem(LOGGED_OUT_SLEEVELESS_ACCESS, "sleeveless")).toBe(false);
     expect(canStartNewSleevelessPattern(LOGGED_OUT_SLEEVELESS_ACCESS)).toBe(false);
-    expect(resolveSleevelessNewPatternBlockedCopy(LOGGED_OUT_SLEEVELESS_ACCESS)).toBe(
-      SLEEVELESS_SAVE_LOGGED_OUT_COPY,
+    expect(resolveNewPatternBlockedCopy(LOGGED_OUT_SLEEVELESS_ACCESS, "sleeveless")).toBe(
+      resolveSaveLoggedOutCopy("sleeveless"),
     );
     expect(canCopySavedCustomPatternForAccess(LOGGED_OUT_SLEEVELESS_ACCESS)).toBe(false);
     expect(resolveHasAdvancedPatternAccessForAccess(LOGGED_OUT_SLEEVELESS_ACCESS)).toBe(false);
   });
 
-  it("logged-in no-plan users may start one pattern but not member-only actions", () => {
-    expect(canCreateSleevelessPattern(nosubUnclaimed)).toBe(true);
-    expect(canEditSleevelessPatternSettings(nosubUnclaimed)).toBe(true);
+  it("logged-in no-plan users may start one pattern per system but not member-only actions", () => {
+    expect(canCreatePatternForSystem(nosubUnclaimed, "sleeveless")).toBe(true);
+    expect(canCreatePatternForSystem(nosubUnclaimed, "drop-shoulder")).toBe(true);
+    expect(canEditPatternSettingsForSystem(nosubUnclaimed, "sleeveless")).toBe(true);
     expect(canStartNewSleevelessPattern(nosubUnclaimed)).toBe(true);
     expect(canCopySavedCustomPatternForAccess(nosubUnclaimed)).toBe(false);
     expect(resolveHasAdvancedPatternAccessForAccess(nosubUnclaimed)).toBe(false);
   });
 
-  it("logged-in no-plan users with a claimed free pattern are blocked from gated features", () => {
-    expect(canCreateSleevelessPattern(nosubClaimed)).toBe(false);
-    expect(canEditSleevelessPatternSettings(nosubClaimed)).toBe(false);
-    expect(canStartNewSleevelessPattern(nosubClaimed)).toBe(false);
-    expect(resolveSleevelessNewPatternBlockedCopy(nosubClaimed)).toBe(
-      SLEEVELESS_SAVE_ALREADY_CLAIMED_COPY,
-    );
-    expect(canCopySavedCustomPatternForAccess(nosubClaimed)).toBe(false);
-    expect(resolveHasAdvancedPatternAccessForAccess(nosubClaimed)).toBe(false);
+  it("sleeveless claim blocks only sleeveless, not drop-shoulder", () => {
+    expect(canCreatePatternForSystem(nosubSleevelessClaimed, "sleeveless")).toBe(false);
+    expect(canCreatePatternForSystem(nosubSleevelessClaimed, "drop-shoulder")).toBe(true);
+    expect(canEditPatternSettingsForSystem(nosubSleevelessClaimed, "sleeveless")).toBe(false);
+    expect(canEditPatternSettingsForSystem(nosubSleevelessClaimed, "drop-shoulder")).toBe(true);
+    expect(canStartNewSleevelessPattern(nosubSleevelessClaimed)).toBe(false);
+    expect(canCopySavedCustomPatternForAccess(nosubSleevelessClaimed)).toBe(false);
+  });
+
+  it("drop-shoulder claim blocks only drop-shoulder, not sleeveless", () => {
+    expect(canCreatePatternForSystem(nosubDropShoulderClaimed, "drop-shoulder")).toBe(false);
+    expect(canCreatePatternForSystem(nosubDropShoulderClaimed, "sleeveless")).toBe(true);
+    expect(canEditPatternSettingsForSystem(nosubDropShoulderClaimed, "drop-shoulder")).toBe(false);
+    expect(canEditPatternSettingsForSystem(nosubDropShoulderClaimed, "sleeveless")).toBe(true);
   });
 
   it("active members and beta users get full access", () => {
     for (const access of [paidMember, betaMember]) {
-      expect(canCreateSleevelessPattern(access)).toBe(true);
-      expect(canEditSleevelessPatternSettings(access)).toBe(true);
+      expect(canCreatePatternForSystem(access, "sleeveless")).toBe(true);
+      expect(canCreatePatternForSystem(access, "drop-shoulder")).toBe(true);
+      expect(canEditPatternSettingsForSystem(access, "sleeveless")).toBe(true);
       expect(canStartNewSleevelessPattern(access)).toBe(true);
       expect(canCopySavedCustomPatternForAccess(access)).toBe(true);
       expect(resolveHasAdvancedPatternAccessForAccess(access)).toBe(true);
@@ -137,7 +151,7 @@ describe("pattern membership gating (Memberstack resolver)", () => {
       loggedIn: true,
       memberId: "ms_nosub",
       hasSystemAccess: false,
-      freeClaimed: false,
+      freeClaimsBySystem: {},
     });
   });
 

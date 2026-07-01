@@ -1,69 +1,80 @@
 import { describe, expect, it } from "vitest";
 import {
-  isSleevelessPatternCreateBlocked,
-  readSleevelessEntitlementFromSaveBody,
-  SLEEVELESS_PATTERN_CREATE_BLOCKED_MESSAGE,
+  countProjectsForPatternSystem,
+  isPatternCreateBlockedForSystem,
+  patternSystemCreateBlockedMessage,
 } from "./custom-pattern-projects-store.js";
 
-describe("isSleevelessPatternCreateBlocked", () => {
-  it("never blocks a user with system access", () => {
+describe("isPatternCreateBlockedForSystem", () => {
+  it("never blocks members", () => {
     expect(
-      isSleevelessPatternCreateBlocked({
+      isPatternCreateBlockedForSystem({
         hasSystemAccess: true,
-        freeClaimed: true,
-        existingProjectCount: 9,
+        freeClaimedForSystem: true,
+        existingProjectCountForSystem: 99,
       }),
     ).toBe(false);
   });
 
-  it("allows the first saved pattern for a free unclaimed user", () => {
+  it("blocks when client reports the system is already claimed", () => {
     expect(
-      isSleevelessPatternCreateBlocked({
+      isPatternCreateBlockedForSystem({
         hasSystemAccess: false,
-        freeClaimed: false,
-        existingProjectCount: 0,
+        freeClaimedForSystem: true,
+        existingProjectCountForSystem: 0,
+      }),
+    ).toBe(true);
+  });
+
+  it("blocks when the user already has a saved project for that system (server count fallback)", () => {
+    expect(
+      isPatternCreateBlockedForSystem({
+        hasSystemAccess: false,
+        freeClaimedForSystem: false,
+        existingProjectCountForSystem: 1,
+      }),
+    ).toBe(true);
+  });
+
+  it("allows first save for a system when unclaimed and no existing projects", () => {
+    expect(
+      isPatternCreateBlockedForSystem({
+        hasSystemAccess: false,
+        freeClaimedForSystem: false,
+        existingProjectCountForSystem: 0,
       }),
     ).toBe(false);
-  });
-
-  it("blocks create/copy when the free allowance is already claimed", () => {
-    expect(
-      isSleevelessPatternCreateBlocked({
-        hasSystemAccess: false,
-        freeClaimed: true,
-        existingProjectCount: 1,
-      }),
-    ).toBe(true);
-  });
-
-  it("blocks when entitlement is missing but the user already has saved projects", () => {
-    expect(
-      isSleevelessPatternCreateBlocked({
-        existingProjectCount: 2,
-      }),
-    ).toBe(true);
-  });
-
-  it("exposes the explanatory message", () => {
-    expect(SLEEVELESS_PATTERN_CREATE_BLOCKED_MESSAGE).toMatch(/free Sleeveless Pattern/i);
   });
 });
 
-describe("readSleevelessEntitlementFromSaveBody", () => {
-  it("reads the client entitlement snapshot from the save body", () => {
+describe("countProjectsForPatternSystem", () => {
+  it("counts only matching patternSystem rows", () => {
+    const summaries = [
+      { id: "a", patternSystem: "sleeveless" },
+      { id: "b", patternSystem: "drop-shoulder" },
+      { id: "c", patternSystem: "sleeveless" },
+    ];
+    expect(countProjectsForPatternSystem(summaries, "sleeveless")).toBe(2);
+    expect(countProjectsForPatternSystem(summaries, "drop-shoulder")).toBe(1);
+  });
+});
+
+describe("patternSystemCreateBlockedMessage", () => {
+  it("includes the pattern system display name", () => {
+    expect(patternSystemCreateBlockedMessage("drop-shoulder")).toMatch(/Drop Shoulder/i);
+  });
+});
+
+/** @deprecated alias coverage */
+describe("isSleevelessPatternCreateBlocked (legacy alias)", () => {
+  it("delegates to per-system guard", async () => {
+    const { isSleevelessPatternCreateBlocked } = await import("./custom-pattern-projects-store.js");
     expect(
-      readSleevelessEntitlementFromSaveBody({
-        name: "Test",
-        entitlement: {
-          hasSystemAccess: false,
-          freeClaimed: true,
-          freeClaimedPatternId: "pat_1",
-        },
+      isSleevelessPatternCreateBlocked({
+        hasSystemAccess: false,
+        freeClaimed: true,
+        existingProjectCount: 0,
       }),
-    ).toEqual({
-      hasSystemAccess: false,
-      freeClaimed: true,
-      freeClaimedPatternId: "pat_1",
-    });
+    ).toBe(true);
   });
 });

@@ -26,15 +26,17 @@ import {
   formatSavedPatternGauge,
 } from "./savedPatternGaugeDisplay";
 import {
-  isSleevelessPatternDeleteProtected,
-  SLEEVELESS_FREE_PATTERN_DELETE_BLOCKED_TEXT,
+  isPatternDeleteProtectedForSystem,
+  freePatternDeleteBlockedText,
 } from "./sleevelessPatternDeleteGuard";
 import { resolveSleevelessUserAccessSnapshot } from "./sleevelessPatternSystemAccessClient";
 import { offerPatternEditingUnlockModal } from "./patternEditingUnlockModal";
 import {
-  canEditSleevelessPatternSettings,
+  canEditPatternSettingsForSystem,
   type SleevelessUserAccess,
 } from "./sleevelessPatternSystemAccess";
+import type { PatternSystemId } from "./patternSystemId";
+import { patternSystemDisplayName } from "./patternSystemId";
 
 const SIGN_IN_REQUIRED_ERROR = "Sign in to save Custom Pattern projects.";
 /** Tooltip shown when Edit is disabled for a free claimed / downgraded knitter. */
@@ -97,12 +99,26 @@ function hideStatus(root: HTMLElement): void {
 }
 
 function formatProjectType(project: CustomPatternProjectSummary): string {
-  // User-facing pattern type only — internal workflow source (Express / Custom Build) is not shown.
+  const system = project.patternSystem as PatternSystemId | undefined;
+  if (system) return patternSystemDisplayName(system);
   const familyLabels: Record<string, string> = {
     sleeveless: "Sleeveless",
   };
   const family = project.family ? (familyLabels[project.family] ?? project.family) : "";
   return family || "—";
+}
+
+function projectPatternSystem(project: CustomPatternProjectSummary): PatternSystemId {
+  const raw = project.patternSystem?.trim();
+  if (raw === "drop-shoulder" || raw === "sleeveless") return raw;
+  return "sleeveless";
+}
+
+function countProjectsForSystem(
+  projects: CustomPatternProjectSummary[],
+  patternSystem: PatternSystemId,
+): number {
+  return projects.filter((p) => projectPatternSystem(p) === patternSystem).length;
 }
 
 function compareProjects(
@@ -218,18 +234,21 @@ function listAccess(root: HTMLElement): SleevelessUserAccess | null {
  * gauge, regenerate). Until access resolves we default to locked so free users are not briefly
  * unlocked.
  */
-function canEditSavedPatternFromList(root: HTMLElement): boolean {
+function canEditSavedPatternFromList(
+  root: HTMLElement,
+  patternSystem: PatternSystemId = "sleeveless",
+): boolean {
   const access = listAccess(root);
-  return access ? canEditSleevelessPatternSettings(access) : false;
+  return access ? canEditPatternSettingsForSystem(access, patternSystem) : false;
 }
 
-/** Reflects edit-access onto a single Edit button: disabled + grayed + tooltip for view-only users. */
 function applyEditAccessToButton(
   btn: HTMLButtonElement | null | undefined,
   access: SleevelessUserAccess | null,
+  patternSystem: PatternSystemId = "sleeveless",
 ): void {
   if (!btn) return;
-  const canEdit = access ? canEditSleevelessPatternSettings(access) : false;
+  const canEdit = access ? canEditPatternSettingsForSystem(access, patternSystem) : false;
   btn.disabled = false;
   btn.classList.toggle("is-disabled", !canEdit);
   if (canEdit) {
@@ -245,7 +264,8 @@ function applyEditAccessToButton(
 function syncMyPatternsEditAccess(root: HTMLElement): void {
   const access = listAccess(root);
   root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-edit]").forEach((btn) => {
-    applyEditAccessToButton(btn, access);
+    const system = (btn.dataset.patternSystem as PatternSystemId | undefined) ?? "sleeveless";
+    applyEditAccessToButton(btn, access, system);
   });
 }
 
@@ -261,10 +281,13 @@ function syncMyPatternsCopyAccess(root: HTMLElement): void {
 function isProtectedDeleteTarget(root: HTMLElement, projectId: string): boolean {
   const state = listStateByRoot.get(root);
   if (!state?.access) return false;
-  return isSleevelessPatternDeleteProtected({
+  const project = state.projects.find((p) => p.id === projectId);
+  const patternSystem = project ? projectPatternSystem(project) : "sleeveless";
+  return isPatternDeleteProtectedForSystem({
     access: state.access,
     projectId,
-    totalSavedCount: state.projects.length,
+    patternSystem,
+    totalSavedCountForSystem: countProjectsForSystem(state.projects, patternSystem),
   });
 }
 
@@ -280,7 +303,9 @@ function syncMyPatternsDeleteAccess(root: HTMLElement): void {
     btn.classList.toggle("is-disabled", protectedTarget);
     if (protectedTarget) {
       btn.setAttribute("aria-disabled", "true");
-      btn.setAttribute("title", SLEEVELESS_FREE_PATTERN_DELETE_BLOCKED_TEXT);
+      const project = listStateByRoot.get(root)?.projects.find((p) => p.id === projectId);
+      const system = project ? projectPatternSystem(project) : "sleeveless";
+      btn.setAttribute("title", freePatternDeleteBlockedText(system));
     } else {
       btn.removeAttribute("aria-disabled");
       btn.removeAttribute("title");
@@ -334,10 +359,11 @@ async function onProjectView(root: HTMLElement, projectId: string, label: string
 }
 
 async function onProjectEdit(root: HTMLElement, projectId: string, label: string): Promise<void> {
-  // Guard before loading: a free claimed / downgraded knitter cannot open the editable builder.
-  // The Edit button is styled as disabled for them, but guard the handler too for keyboard paths.
+  const state = listStateByRoot.get(root);
+  const project = state?.projects.find((p) => p.id === projectId);
+  const patternSystem = project ? projectPatternSystem(project) : "sleeveless";
   const access = listAccess(root);
-  if (!canEditSavedPatternFromList(root)) {
+  if (!canEditSavedPatternFromList(root, patternSystem)) {
     offerPatternEditingUnlockModal(access);
     return;
   }
@@ -384,7 +410,9 @@ async function onProjectDelete(
 ): Promise<void> {
   // Guard before the confirm dialog: a free user's protected pattern can never be deleted.
   if (isProtectedDeleteTarget(root, projectId)) {
-    setStatus(root, SLEEVELESS_FREE_PATTERN_DELETE_BLOCKED_TEXT, true);
+    const project = listStateByRoot.get(root)?.projects.find((p) => p.id === projectId);
+    const system = project ? projectPatternSystem(project) : "sleeveless";
+    setStatus(root, freePatternDeleteBlockedText(system), true);
     return;
   }
 
@@ -561,6 +589,8 @@ function renderProjectRow(root: HTMLElement, project: CustomPatternProjectSummar
 
   const tr = document.createElement("tr");
   const displayName = project.name || "Untitled pattern";
+  const patternSystem = projectPatternSystem(project);
+  tr.dataset.patternSystem = patternSystem;
   wireProjectRow(root, tr, project, displayName);
 
   const nameCell = document.createElement("td");
@@ -615,6 +645,7 @@ function renderProjectRow(root: HTMLElement, project: CustomPatternProjectSummar
   editBtn.className = "account-my-patterns__action account-my-patterns__action--edit";
   editBtn.setAttribute("data-kbm-my-patterns-edit", "");
   editBtn.dataset.projectId = project.id;
+  editBtn.dataset.patternSystem = patternSystem;
   editBtn.setAttribute("aria-label", `Edit ${displayName}`);
   editBtn.textContent = "Edit";
   editBtn.addEventListener("click", (event) => {
@@ -638,7 +669,7 @@ function renderProjectRow(root: HTMLElement, project: CustomPatternProjectSummar
   // Edit + Copy are visible for everyone; disabled + grayed (with tooltip) for view-only knitters
   // (free user who already claimed, or downgraded member) based on the resolved access snapshot.
   const rowAccess = listAccess(root);
-  applyEditAccessToButton(editBtn, rowAccess);
+  applyEditAccessToButton(editBtn, rowAccess, patternSystem);
   syncSavedCustomPatternCopyAccessForAccess(copyBtn, rowAccess);
 
   const editCopyPair = document.createElement("div");

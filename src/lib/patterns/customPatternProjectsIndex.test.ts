@@ -18,6 +18,7 @@ const SUMMARY_SHAPE_KEYS = [
   "name",
   "family",
   "source",
+  "patternSystem",
   "createdAt",
   "updatedAt",
   "version",

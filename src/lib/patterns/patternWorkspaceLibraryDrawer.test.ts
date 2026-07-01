@@ -19,6 +19,7 @@ import {
   resolvePatternWorkspaceLibraryDrawerBindings,
 } from "./patternWorkspaceLibraryDrawer";
 import type { PatternWorkspaceLibraryDrawerBindings } from "./patternWorkspaceLibraryDrawer";
+import { testAccess } from "./patternAccessTestFixtures";
 
 const listCustomPatternProjectsMock = vi.fn();
 const loadSavedCustomPatternProjectMock = vi.fn();
@@ -253,7 +254,7 @@ describe("patternWorkspaceLibraryDrawer", () => {
       loggedIn: true,
       memberId: "ms_member",
       hasSystemAccess: true,
-      freeClaimed: false,
+      freeClaimsBySystem: {},
     });
     vi.stubGlobal("document", {
       createElement: (tag: string) => makeEl(tag),
@@ -465,13 +466,15 @@ describe("patternWorkspaceLibraryDrawer", () => {
   it("keeps the drawer Copy action visible but disabled for free / non-owner users", async () => {
     const bindings = makeDrawerBindings();
     vi.stubGlobal("window", {});
-    resolveAccessSnapshotMock.mockResolvedValue({
-      loggedIn: true,
-      memberId: "ms_nosub",
-      hasSystemAccess: false,
-      freeClaimed: true,
-      freeClaimedPatternId: "proj-a",
-    });
+    resolveAccessSnapshotMock.mockResolvedValue(
+      testAccess({
+        loggedIn: true,
+        memberId: "ms_nosub",
+        hasSystemAccess: false,
+        freeClaimed: true,
+        freeClaimedPatternId: "proj-a",
+      }),
+    );
     listCustomPatternProjectsMock.mockResolvedValue({
       ok: true,
       projects: [

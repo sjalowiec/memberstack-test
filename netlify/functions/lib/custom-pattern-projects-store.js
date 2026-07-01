@@ -5,6 +5,10 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { getStore } from "@netlify/blobs";
+import {
+  patternSystemDisplayName,
+  resolvePatternSystemFromProject,
+} from "./pattern-system-id.js";
 
 export const CUSTOM_PATTERN_PROJECTS_BLOB_STORE = "custom-pattern-projects";
 
@@ -35,8 +39,8 @@ export function projectIndexKey(family, userId) {
   return `${userProjectsPrefix(family, userId)}index.json`;
 }
 
-// v3 adds original entered gauge counts to summaries for user-facing display; bumping forces stale indexes to rebuild.
-export const PROJECT_SUMMARY_INDEX_VERSION = 3;
+// v4 adds patternSystem to summaries for per-system entitlement counts; bumping forces stale indexes to rebuild.
+export const PROJECT_SUMMARY_INDEX_VERSION = 4;
 
 /** @param {unknown} value */
 function gaugePositiveNumber(value) {
@@ -93,6 +97,7 @@ export function summaryFromProject(project) {
     name: project.name,
     family: project.family,
     source: project.source,
+    patternSystem: resolvePatternSystemFromProject(project),
     createdAt: project.createdAt,
     updatedAt: project.updatedAt,
     version: project.version,
@@ -155,35 +160,73 @@ export async function writeProjectSummaryIndex(store, family, userId, summaries)
 }
 
 /** Explanatory text returned when a free user's protected pattern delete is refused. */
-export const FREE_SLEEVELESS_PATTERN_DELETE_BLOCKED_MESSAGE =
-  "This is your free Sleeveless Pattern. To keep access to it, it can't be deleted unless you unlock the Sleeveless Pattern System.";
+export function freePatternDeleteBlockedMessage(systemId = "sleeveless") {
+  const name = patternSystemDisplayName(systemId);
+  return `This is your free ${name} pattern. To keep access to it, it can't be deleted unless you unlock the full pattern system with membership.`;
+}
 
-/** Explanatory text returned when a non-member tries to create/copy another saved pattern. */
+/** @deprecated Use {@link freePatternDeleteBlockedMessage}. */
+export const FREE_SLEEVELESS_PATTERN_DELETE_BLOCKED_MESSAGE =
+  freePatternDeleteBlockedMessage("sleeveless");
+
+/** Explanatory text when a non-member tries to create/copy another saved pattern for a system. */
+export function patternSystemCreateBlockedMessage(systemId = "sleeveless") {
+  const name = patternSystemDisplayName(systemId);
+  return `You've already created your free ${name} pattern. Create another ${name} pattern with membership.`;
+}
+
+/** @deprecated Use {@link patternSystemCreateBlockedMessage}. */
 export const SLEEVELESS_PATTERN_CREATE_BLOCKED_MESSAGE =
-  "You've already created your free Sleeveless Pattern. To create additional versions, change your gauge or measurements, or explore different style choices, you'll need access to the Sleeveless Pattern System.";
+  patternSystemCreateBlockedMessage("sleeveless");
 
 /**
  * Server mirror of the client create/copy rule. Returns true when a new saved project must be
- * refused. Uses client-asserted entitlement (same trust level as delete) plus an independent
- * project-count fallback when entitlement is missing.
+ * refused for the given pattern system.
  *
- * @param {{ hasSystemAccess?: boolean, freeClaimed?: boolean, existingProjectCount?: number }} input
+ * @param {{ hasSystemAccess?: boolean, freeClaimedForSystem?: boolean, existingProjectCountForSystem?: number }} input
  */
-export function isSleevelessPatternCreateBlocked(input) {
+export function isPatternCreateBlockedForSystem(input) {
   if (!input || typeof input !== "object") return false;
   if (input.hasSystemAccess === true) return false;
-  if (input.freeClaimed === true) return true;
+  if (input.freeClaimedForSystem === true) return true;
 
-  const count = Number(input.existingProjectCount);
+  const count = Number(input.existingProjectCountForSystem);
   if (Number.isFinite(count) && count > 0) return true;
   return false;
+}
+
+/** @deprecated Use {@link isPatternCreateBlockedForSystem}. */
+export function isSleevelessPatternCreateBlocked(input) {
+  return isPatternCreateBlockedForSystem({
+    hasSystemAccess: input?.hasSystemAccess,
+    freeClaimedForSystem: input?.freeClaimed,
+    existingProjectCountForSystem: input?.existingProjectCount,
+  });
+}
+
+/**
+ * Count saved projects for a specific pattern system from summary rows.
+ * @param {unknown[]} summaries
+ * @param {string} patternSystem
+ */
+export function countProjectsForPatternSystem(summaries, patternSystem) {
+  if (!Array.isArray(summaries)) return 0;
+  return summaries.filter((row) => {
+    if (!row || typeof row !== "object") return false;
+    const rec = /** @type {Record<string, unknown>} */ (row);
+    const system =
+      typeof rec.patternSystem === "string" && rec.patternSystem.trim()
+        ? rec.patternSystem.trim()
+        : "sleeveless";
+    return system === patternSystem;
+  }).length;
 }
 
 /**
  * Parses the optional client entitlement snapshot from a save request body.
  * @param {unknown} body
  */
-export function readSleevelessEntitlementFromSaveBody(body) {
+export function readPatternEntitlementFromSaveBody(body) {
   const root =
     body && typeof body === "object" && !Array.isArray(body)
       ? /** @type {Record<string, unknown>} */ (body)
@@ -193,9 +236,16 @@ export function readSleevelessEntitlementFromSaveBody(body) {
       ? /** @type {Record<string, unknown>} */ (root.entitlement)
       : null;
   if (!entitlement) return null;
+
+  const patternSystem =
+    typeof entitlement.patternSystem === "string" && entitlement.patternSystem.trim()
+      ? entitlement.patternSystem.trim()
+      : "sleeveless";
+
   return {
+    patternSystem,
     hasSystemAccess: entitlement.hasSystemAccess === true,
-    freeClaimed: entitlement.freeClaimed === true,
+    freeClaimedForSystem: entitlement.freeClaimedForSystem === true,
     freeClaimedPatternId:
       typeof entitlement.freeClaimedPatternId === "string"
         ? entitlement.freeClaimedPatternId.trim()
@@ -203,29 +253,44 @@ export function readSleevelessEntitlementFromSaveBody(body) {
   };
 }
 
+/** @deprecated Use {@link readPatternEntitlementFromSaveBody}. */
+export function readSleevelessEntitlementFromSaveBody(body) {
+  const parsed = readPatternEntitlementFromSaveBody(body);
+  if (!parsed) return null;
+  return {
+    hasSystemAccess: parsed.hasSystemAccess,
+    freeClaimed: parsed.freeClaimedForSystem,
+    freeClaimedPatternId: parsed.freeClaimedPatternId,
+  };
+}
+
 /**
- * Server mirror of the client free-pattern delete rule. Returns true when the deletion must be
- * refused. The entitlement flags are client-asserted (same trust level as `X-KBM-Member-Id`), but
- * `totalSavedCount` is computed server-side from the user's own blobs for the unknown-id fallback.
+ * Server mirror of the client free-pattern delete rule.
  *
- * - System access → never blocked.
- * - Not freeClaimed → never blocked.
- * - freeClaimed + known claimed id → block deleting exactly that id.
- * - freeClaimed + unknown claimed id → block when it is the user's last remaining pattern.
- *
- * @param {{ hasSystemAccess?: boolean, freeClaimed?: boolean, freeClaimedPatternId?: string, projectId: string, totalSavedCount: number }} input
+ * @param {{ hasSystemAccess?: boolean, freeClaimedForSystem?: boolean, freeClaimedPatternId?: string, projectId: string, totalSavedCountForSystem: number, patternSystem?: string }} input
  */
-export function isFreeSleevelessPatternDeleteBlocked(input) {
+export function isFreePatternDeleteBlockedForSystem(input) {
   if (!input || typeof input !== "object") return false;
   if (input.hasSystemAccess === true) return false;
-  if (input.freeClaimed !== true) return false;
+  if (input.freeClaimedForSystem !== true) return false;
 
   const claimedId =
     typeof input.freeClaimedPatternId === "string" ? input.freeClaimedPatternId.trim() : "";
   if (claimedId) return String(input.projectId) === claimedId;
 
-  const count = Number(input.totalSavedCount);
+  const count = Number(input.totalSavedCountForSystem);
   return Number.isFinite(count) ? count <= 1 : true;
+}
+
+/** @deprecated Use {@link isFreePatternDeleteBlockedForSystem}. */
+export function isFreeSleevelessPatternDeleteBlocked(input) {
+  return isFreePatternDeleteBlockedForSystem({
+    hasSystemAccess: input?.hasSystemAccess,
+    freeClaimedForSystem: input?.freeClaimed,
+    freeClaimedPatternId: input?.freeClaimedPatternId,
+    projectId: input?.projectId,
+    totalSavedCountForSystem: input?.totalSavedCount,
+  });
 }
 
 /**
