@@ -1106,26 +1106,10 @@ function initExpressPage() {
       /** Snapshot Express wizard localStorage so the measurements page fallbacks match the submitted gauge and steps. */
       persistExpressSession();
 
-      // Keep in sync with `mergeContextFromUrlStorageAndPattern` in sleeveless-express-measurements-page.ts (URL fallbacks).
-      const q = new URLSearchParams();
-      q.set("express", "1");
-      if (values.who) q.set("who", values.who);
-      if (values.style) q.set("style", values.style);
-      if (values.neckline) q.set("neckline", values.neckline);
-      if (values.fit) q.set("fit", values.fit);
-      if (values.selectedSize) q.set("selectedSize", values.selectedSize);
-      if (values.front === "open") q.set("garmentStyle", "cardigan");
-      q.set("gaugeStitchRaw", gaugeStitchRaw);
-      q.set("gaugeRowRaw", gaugeRowRaw);
-      q.set("gaugeRawUnit", unit);
-      q.set("stitches", gaugeStitchesPerInch);
-      q.set("rows", gaugeRowsPerInch);
-
-      const reviewBase =
+      const workspaceHref =
         document.querySelector<HTMLElement>("[data-express-review-href]")?.getAttribute("data-express-review-href")?.trim() ||
-        "/patterns/sleeveless-express-measurements";
-      const reviewPath = reviewBase.replace(/\?.*$/, "");
-      window.location.href = `${reviewPath}?${q.toString()}`;
+        "/patterns/sleeveless/pattern/?generated=1";
+      window.location.href = workspaceHref;
     })();
   });
 

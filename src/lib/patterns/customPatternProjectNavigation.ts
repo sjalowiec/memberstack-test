@@ -1,6 +1,9 @@
 import type { CustomPatternProjectSource } from "./customPatternProjectTypes";
 import type { CustomPatternProject } from "./customPatternProjectTypes";
 import { hasAuthoritativeDropShoulderConstruction } from "./patternConstructionIdentity";
+import { PATTERN_WORKSPACE_BUILDER_HANDOFF_QUERY } from "./patternWorkspaceBuilderGenerationHandoff";
+
+export { PATTERN_WORKSPACE_BUILDER_HANDOFF_QUERY };
 
 /** Pattern Builder marketing home (main nav “Patterns”, explore entry points). */
 export const PATTERN_BUILDERS_HOME_HREF = "/patterns/about";
@@ -25,10 +28,22 @@ export const OPEN_PATTERN_EDIT_WORKSPACE_HREF = `${OPEN_PATTERN_HREF}?${PATTERN_
 export const DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF =
   `${DROP_SHOULDER_OPEN_PATTERN_HREF}?${PATTERN_WORKSPACE_EDIT_QUERY}`;
 
-export const EXPRESS_CONTINUE_EDITING_HREF = "/patterns/sleeveless/review/";
+/** Query flag for first arrival on the workspace after builder completion (see handoff module). */
+export const PATTERN_WORKSPACE_GENERATED_QUERY = `${PATTERN_WORKSPACE_BUILDER_HANDOFF_QUERY}=1`;
 
-/** Drop-shoulder unified review page — resume editing where the knitter left off. */
-export const DROP_SHOULDER_CONTINUE_EDITING_HREF = "/patterns/drop-shoulder/review/";
+/** Pattern workspace opened immediately after builder completion. */
+export const SLEEVELESS_PATTERN_WORKSPACE_GENERATED_HREF =
+  `${OPEN_PATTERN_HREF}?${PATTERN_WORKSPACE_GENERATED_QUERY}`;
+
+/** Drop-shoulder pattern workspace opened immediately after builder completion. */
+export const DROP_SHOULDER_PATTERN_WORKSPACE_GENERATED_HREF =
+  `${DROP_SHOULDER_OPEN_PATTERN_HREF}?${PATTERN_WORKSPACE_GENERATED_QUERY}`;
+
+/** Resume editing an express saved project — pattern workspace with Edit drawer auto-opened. */
+export const EXPRESS_CONTINUE_EDITING_HREF = OPEN_PATTERN_EDIT_WORKSPACE_HREF;
+
+/** Drop-shoulder express saved project — same edit workspace entry point. */
+export const DROP_SHOULDER_CONTINUE_EDITING_HREF = DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
 
 /** Custom Build Foundation — first Edit tab when opening a saved custom-build project. */
 export const CUSTOM_BUILD_FIRST_EDIT_HREF = "/patterns/sleeveless/custom-build/design";

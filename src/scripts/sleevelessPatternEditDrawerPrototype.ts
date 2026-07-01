@@ -29,7 +29,7 @@ import {
   readAvailableNeedlesFromAllSources,
   syncAvailableNeedlesMirrorsFromAllSources,
 } from "../lib/patterns/availableNeedlesMirrors";
-import { runUpdateActiveSavedCustomPattern } from "../lib/patterns/customPatternEditingBannerActions";
+import { runSaveCustomPatternFromWorkspace } from "../lib/patterns/customPatternEditingBannerActions";
 import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
 import { logSavedPatternUpdateFlowDiagnostics } from "../lib/patterns/customPatternProjectClient";
 import { isDropShoulderWorkspaceMeasurementSummaryPage } from "../lib/patterns/measurementBlueprintSvgUrl";
@@ -718,29 +718,27 @@ function initSleevelessPatternEditDrawer(): void {
       }
 
       const pinnedSavedProjectId = readActiveCustomPatternProjectId();
-      logSavedPatternUpdateFlowDiagnostics("edit-drawer-before-update", {
+      logSavedPatternUpdateFlowDiagnostics("edit-drawer-before-save", {
         openedSavedProjectId: pinnedSavedProjectId,
         pinnedSavedProjectId,
       });
 
-      // 4) Persist linked saved project first — keeps the active project id stable, then regenerate once.
-      if (pinnedSavedProjectId) {
-        const saveRes = await runUpdateActiveSavedCustomPattern(measureFlushRoot, {
-          activeProjectId: pinnedSavedProjectId,
-          skipPreSavePrepare: true,
-          onStatus: (message, isError) => {
-            if (isError) showErrors([message]);
-          },
-        });
-        if (!saveRes.ok) {
-          showErrors([saveRes.error]);
-          return;
-        }
-        logSavedPatternUpdateFlowDiagnostics("edit-drawer-after-update", {
-          pinnedSavedProjectId,
-          activeSavedProjectIdAfterUpdate: readActiveCustomPatternProjectId(),
-        });
+      const saveRes = await runSaveCustomPatternFromWorkspace(measureFlushRoot, {
+        skipPreSavePrepare: true,
+        activeProjectId: pinnedSavedProjectId || undefined,
+        onStatus: (message, isError) => {
+          if (isError) showErrors([message]);
+        },
+      });
+      if (!saveRes.ok) {
+        showErrors([saveRes.error]);
+        return;
       }
+      logSavedPatternUpdateFlowDiagnostics("edit-drawer-after-save", {
+        pinnedSavedProjectId: pinnedSavedProjectId || readActiveCustomPatternProjectId(),
+        created: saveRes.created,
+        activeSavedProjectIdAfterSave: readActiveCustomPatternProjectId(),
+      });
 
       // 5) Refresh the visible title and pattern output once from the saved working draft.
       applySleevelessPatternOnlineProjectHeader();

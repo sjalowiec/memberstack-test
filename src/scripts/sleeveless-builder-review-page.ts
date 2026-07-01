@@ -12,19 +12,8 @@ import { resolveSleevelessUserAccess } from "../lib/patterns/sleevelessPatternSy
 import { initSleevelessLockedBannerDismiss } from "./sleevelessLockedBannerDismiss";
 import { initExpressYarnDrawer } from "./sleeveless-express-measurements-page";
 import { initCustomBuildMeasurementsPage } from "./sleeveless-custom-build-measurements-page";
-import { mapExpressStyleKey, syncSleevelessDesignBasicsToPatternStorage } from "../lib/patterns/syncSleevelessExpressDesignToStorage";
-import {
-  expressWhoToChartAudience,
-  loadExpressSweaterCharts,
-  resolveExpressChartFit,
-} from "../lib/patterns/sleevelessExpressSizeChartClient";
-import { getCurrentPattern, getPatternData, SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "../lib/patterns/patternStorage";
-import { resolveSleevelessGarmentKind } from "../lib/patterns/resolveSleevelessGarmentKind";
-import { readCustomBuildWizardGarmentType } from "../lib/patterns/sleevelessCustomBuildWizardNeckline";
-import {
-  readExpressWizardValues,
-  syncExpressWizardToPatternStorage,
-} from "../lib/patterns/syncExpressWizardToPatternStorage";
+import { flushExpressWizardToCanonicalPattern } from "../lib/patterns/flushExpressWizardToCanonicalPattern";
+import { loadExpressSweaterCharts } from "../lib/patterns/sleevelessExpressSizeChartClient";
 import { prepareCustomBuildPatternGeneration } from "../lib/patterns/prepareCustomBuildPatternGeneration";
 import { navigateToPatternWithUnsavedEditsGuard } from "../lib/patterns/savedCustomPatternUnsavedViewGuard";
 import { logSleevelessPatternActivity } from "../lib/patterns/sleevelessPatternActivity";
@@ -45,63 +34,10 @@ function resolvePatternWorkspaceHref(): string {
 
 const PATTERN_WORKSPACE_TAB_PATTERN_HREF = resolvePatternWorkspaceHref();
 
-function readExpressValues(): Record<string, string> {
-  if (typeof localStorage === "undefined") return {};
-  try {
-    const raw = localStorage.getItem(SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY);
-    if (!raw) return readExpressWizardValues();
-    const p = JSON.parse(raw) as unknown;
-    if (!p || typeof p !== "object" || Array.isArray(p)) return readExpressWizardValues();
-    const v = (p as Record<string, unknown>).values;
-    if (v && typeof v === "object" && !Array.isArray(v)) return { ...(v as Record<string, string>) };
-  } catch {
-    /* ignore */
-  }
-  return readExpressWizardValues();
-}
-
-/** Push Express builder snapshot (incl. gauge/needles) into canonical pattern before pattern tab / save. */
-export function flushExpressWizardToCanonicalPatternForReview(): void {
-  const ls = readExpressValues();
-  const pb = getPatternData();
-  const fit = pb.fit as Record<string, unknown> | undefined;
-  const style = pb.style as Record<string, unknown> | undefined;
-
-  const who = ls.who?.trim() || "";
-  const selectedSize =
-    ls.selectedSize?.trim() || String(fit?.selectedSize ?? "").trim();
-  const fitEase =
-    ls.fit?.trim() || String(fit?.easeChoice ?? fit?.fitChoice ?? "standard").trim();
-
-  let neckline = ls.neckline?.trim() ?? "";
-  if (!neckline) {
-    const canon = String(style?.neckline ?? "").trim().toLowerCase();
-    if (canon === "v") neckline = "v-neck";
-    else if (canon === "round") neckline = "round";
-  }
-
-  const garmentKind = resolveSleevelessGarmentKind({
-    wizardGarmentType: readCustomBuildWizardGarmentType(),
-    canonicalStyle: (getCurrentPattern().style ?? {}) as Record<string, unknown>,
-    patternBuilderStyle: (style ?? {}) as Record<string, unknown>,
-    expressValues: ls,
-  });
-
-  const expressStyleKey = String(ls.style ?? "").trim();
-  const expressStyle = mapExpressStyleKey(expressStyleKey);
-  const aud = expressWhoToChartAudience(who);
-  const chartFit =
-    who && selectedSize
-      ? resolveExpressChartFit(aud, selectedSize, fitEase || "standard", {
-          bodyShape: expressStyle.bodyShape,
-        })
-      : null;
-
-  syncExpressWizardToPatternStorage(ls, chartFit, { preferDomGauge: false });
-}
+export { flushExpressWizardToCanonicalPattern as flushExpressWizardToCanonicalPatternForReview };
 
 function syncExpressBasicsFromBuilderAndContinue(): void {
-  flushExpressWizardToCanonicalPatternForReview();
+  flushExpressWizardToCanonicalPattern();
   void navigateToPatternWithUnsavedEditsGuard({ href: PATTERN_WORKSPACE_TAB_PATTERN_HREF });
 }
 
@@ -121,7 +57,7 @@ function continueToPatternFromReview(): void {
   void loadExpressSweaterCharts()
     .then(async () => {
       prepareCustomBuildPatternGeneration({ root: document });
-      flushExpressWizardToCanonicalPatternForReview();
+      flushExpressWizardToCanonicalPattern();
       logSleevelessPatternActivity("pattern_generated");
       if (canCustomizePattern()) {
         await navigateToPatternWithUnsavedEditsGuard({ href: PATTERN_WORKSPACE_TAB_PATTERN_HREF });

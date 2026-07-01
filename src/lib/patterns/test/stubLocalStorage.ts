@@ -20,3 +20,24 @@ export function stubLocalStorage(): void {
     },
   });
 }
+
+/** In-memory sessionStorage for unit tests. */
+export function stubSessionStorage(): void {
+  const store: Record<string, string> = {};
+  vi.stubGlobal("sessionStorage", {
+    get length() {
+      return Object.keys(store).length;
+    },
+    key: (index: number) => Object.keys(store)[index] ?? null,
+    getItem: (key: string) => store[key] ?? null,
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      for (const k of Object.keys(store)) delete store[k];
+    },
+  });
+}

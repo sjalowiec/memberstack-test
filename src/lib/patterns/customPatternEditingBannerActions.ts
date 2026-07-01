@@ -8,6 +8,15 @@ import { prepareCustomBuildPatternGeneration } from "./prepareCustomBuildPattern
 import { resolveCustomBuildSaveMeasureFlushRoot } from "./sleevelessCustomMeasurementStorage";
 import { logSavedPatternUpdateFlowDiagnostics } from "./customPatternProjectClient";
 import { smartSaveCustomPatternProject } from "./customPatternSavedProjectsPanel";
+import { canCreateSleevelessPattern } from "./sleevelessPatternSystemAccess";
+import {
+  markFreeSleevelessPatternClaimed,
+  resolveSleevelessUserAccess,
+} from "./sleevelessPatternSystemAccessClient";
+import {
+  SLEEVELESS_SAVE_ALREADY_CLAIMED_COPY,
+  SLEEVELESS_SAVE_LOGGED_OUT_COPY,
+} from "./sleevelessPatternProjectCloudSave";
 import { refreshCustomPatternSavedProjectsPanelUi } from "./customPatternSavedProjectsPanel";
 import { syncCustomBuildCustomizeAccessChrome } from "./customBuildCustomizeAccess";
 import { syncCustomBuildFoundationPageHeader } from "./customBuildFoundationPageEditingUx";
@@ -43,6 +52,10 @@ export function dispatchCustomPatternEditingStateChanged(): void {
 
 /** Resolves the name used when updating the active saved project from the current page. */
 export function resolveProjectNameForEditingBannerUpdate(root: ParentNode = document): string {
+  const editDrawerTitle = root.querySelector<HTMLInputElement>("#sl-edit-title");
+  const fromEditDrawer = editDrawerTitle?.value?.trim() ?? "";
+  if (fromEditDrawer) return fromEditDrawer;
+
   const reviewTitle = root.querySelector<HTMLInputElement>("[data-sleeveless-pattern-project-title]");
   const fromReview = reviewTitle?.value?.trim() ?? "";
   if (fromReview) return fromReview;
@@ -55,42 +68,53 @@ export function resolveProjectNameForEditingBannerUpdate(root: ParentNode = docu
 }
 
 export type UpdateActiveSavedCustomPatternResult =
-  | { ok: true; projectName: string }
+  | { ok: true; projectName: string; created: boolean }
   | { ok: false; error: string };
 
-/** Overwrites the active saved Blob project from the working draft. */
-export async function runUpdateActiveSavedCustomPattern(
+export type SaveCustomPatternFromWorkspaceOptions = {
+  onStatus?: (message: string, isError?: boolean) => void;
+  /** Pin the saved project id (update); omit to create when none is linked. */
+  activeProjectId?: string;
+  /** When true, caller already flushed diagram inputs and synced storage (Edit Pattern apply). */
+  skipPreSavePrepare?: boolean;
+};
+
+/**
+ * Create or update the My Patterns record from the pattern workspace (Edit Pattern → Save Changes).
+ * Applies the same free-user one-pattern claim rules as the review page cloud save.
+ */
+export async function runSaveCustomPatternFromWorkspace(
   root?: ParentNode,
-  options?: {
-    onStatus?: (message: string, isError?: boolean) => void;
-    /** Pin the saved project id for this update (set when opening / starting edit). */
-    activeProjectId?: string;
-    /** When true, caller already flushed diagram inputs and synced storage (Edit Pattern apply). */
-    skipPreSavePrepare?: boolean;
-  },
+  options?: SaveCustomPatternFromWorkspaceOptions,
 ): Promise<UpdateActiveSavedCustomPatternResult> {
   const pinnedActiveId = options?.activeProjectId?.trim() || readActiveCustomPatternProjectId();
-  logSavedPatternUpdateFlowDiagnostics("run-update-start", {
+  const willCreate = !pinnedActiveId;
+
+  logSavedPatternUpdateFlowDiagnostics(willCreate ? "run-save-create-start" : "run-update-start", {
     pinnedSavedProjectId: pinnedActiveId,
     skipPreSavePrepare: options?.skipPreSavePrepare === true,
   });
 
-  if (!pinnedActiveId) {
-    const error = "Open a saved project before updating.";
-    options?.onStatus?.(error, true);
-    return { ok: false, error };
-  }
-
-  const scope =
-    root ?? (typeof document !== "undefined" ? document : undefined);
+  const scope = root ?? (typeof document !== "undefined" ? document : undefined);
   const measureRoot = resolveCustomBuildSaveMeasureFlushRoot(scope);
   const name = scope
     ? resolveProjectNameForEditingBannerUpdate(scope)
     : getPatternProjectMeta().title.trim();
   if (!name) {
-    const error = "Enter a pattern name before updating.";
+    const error = willCreate
+      ? "Enter a pattern name before saving."
+      : "Enter a pattern name before updating.";
     options?.onStatus?.(error, true);
     return { ok: false, error };
+  }
+
+  const access = await resolveSleevelessUserAccess();
+  if (willCreate && !canCreateSleevelessPattern(access)) {
+    const message = access.loggedIn
+      ? SLEEVELESS_SAVE_ALREADY_CLAIMED_COPY
+      : SLEEVELESS_SAVE_LOGGED_OUT_COPY;
+    options?.onStatus?.(message, true);
+    return { ok: false, error: message };
   }
 
   if (!options?.skipPreSavePrepare) {
@@ -100,13 +124,14 @@ export async function runUpdateActiveSavedCustomPattern(
     });
   }
 
-  logSavedPatternUpdateFlowDiagnostics("run-update-before-smart-save", {
-    pinnedSavedProjectId: pinnedActiveId,
-  });
+  logSavedPatternUpdateFlowDiagnostics(
+    willCreate ? "run-save-create-before-smart-save" : "run-update-before-smart-save",
+    { pinnedSavedProjectId: pinnedActiveId },
+  );
 
   const res = await smartSaveCustomPatternProject({
-    mode: "update",
-    activeProjectId: pinnedActiveId,
+    mode: willCreate ? "create" : "update",
+    activeProjectId: pinnedActiveId || undefined,
     resolveName: () => name,
     onStatus: options?.onStatus,
     root: measureRoot,
@@ -116,13 +141,38 @@ export async function runUpdateActiveSavedCustomPattern(
     return { ok: false, error: res.error };
   }
 
-  logSavedPatternUpdateFlowDiagnostics("run-update-after-smart-save", {
-    pinnedSavedProjectId: pinnedActiveId,
-    returnedSavedProjectId: res.project.id,
-  });
+  if (res.created && !access.freeClaimed) {
+    await markFreeSleevelessPatternClaimed(res.project.id);
+  }
+
+  logSavedPatternUpdateFlowDiagnostics(
+    willCreate ? "run-save-create-after-smart-save" : "run-update-after-smart-save",
+    {
+      pinnedSavedProjectId: pinnedActiveId || res.project.id,
+      returnedSavedProjectId: res.project.id,
+    },
+  );
 
   dispatchCustomPatternEditingStateChanged();
-  return { ok: true, projectName: res.project.name };
+  return { ok: true, projectName: res.project.name, created: res.created };
+}
+
+/** Overwrites the active saved Blob project from the working draft. */
+export async function runUpdateActiveSavedCustomPattern(
+  root?: ParentNode,
+  options?: SaveCustomPatternFromWorkspaceOptions,
+): Promise<UpdateActiveSavedCustomPatternResult> {
+  const pinnedActiveId = options?.activeProjectId?.trim() || readActiveCustomPatternProjectId();
+  if (!pinnedActiveId) {
+    const error = "Open a saved project before updating.";
+    options?.onStatus?.(error, true);
+    return { ok: false, error };
+  }
+
+  return runSaveCustomPatternFromWorkspace(root, {
+    ...options,
+    activeProjectId: pinnedActiveId,
+  });
 }
 
 export type CopyActiveSavedCustomPatternResult =

@@ -2,6 +2,7 @@ import { applySleevelessPatternOnlineProjectHeader } from "./sleevelessPatternOn
 import { initSleevelessPatternBuilderPage } from "./sleevelessPatternPageShared.ts";
 import { ensureClaimedSavedPatternHydratedForView } from "../lib/patterns/loadClaimedSavedPatternForView.ts";
 import { isDedicatedSleevelessPatternWorkspacePage } from "../lib/patterns/prepareCustomBuildPatternGeneration.ts";
+import { runPatternWorkspaceBuilderGenerationHandoff } from "../lib/patterns/patternWorkspaceBuilderGenerationHandoff.ts";
 
 declare global {
   interface Window {
@@ -27,6 +28,11 @@ async function boot(): Promise<void> {
       await ensureClaimedSavedPatternHydratedForView();
     } catch (error) {
       console.error("[kbm] Claimed saved-pattern view fallback failed; continuing.", error);
+    }
+    try {
+      await runPatternWorkspaceBuilderGenerationHandoff();
+    } catch (error) {
+      console.error("[kbm] Builder generation handoff failed; continuing.", error);
     }
   }
   applySleevelessPatternOnlineProjectHeader();

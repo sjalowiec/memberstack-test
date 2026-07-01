@@ -99,8 +99,9 @@ describe("loadSavedCustomPatternProject", () => {
     if (result.ok) {
       expect(result.redirectHref).toContain(OPEN_PATTERN_HREF);
       expect(result.redirectHref).not.toBe(OPEN_PATTERN_HREF);
-      expect(result.redirectHref).not.toBe(EXPRESS_CONTINUE_EDITING_HREF);
+      expect(result.redirectHref).toBe(EXPRESS_CONTINUE_EDITING_HREF);
       expect(result.redirectHref).not.toBe(EXPRESS_EDIT_WORKSPACE_HREF);
+      expect(result.redirectHref).not.toContain("/review");
     }
     expect(readActiveCustomPatternProjectId()).toBe(PROJECT_ID);
     expect(localStorage.getItem(PATTERN_STORAGE_KEY)).toContain("For Aubrie");
@@ -129,7 +130,7 @@ describe("loadSavedCustomPatternProject", () => {
     }
   });
 
-  it("continues a saved drop-shoulder express project on the drop-shoulder review page", async () => {
+  it("continues a saved drop-shoulder express project on the drop-shoulder edit workspace", async () => {
     loadCustomPatternProjectMock.mockResolvedValue({
       ok: true,
       project: sampleProject({
@@ -149,10 +150,12 @@ describe("loadSavedCustomPatternProject", () => {
     expect(result).toEqual({ ok: true, redirectHref: DROP_SHOULDER_CONTINUE_EDITING_HREF });
     if (result.ok) {
       expect(result.redirectHref).not.toBe(EXPRESS_CONTINUE_EDITING_HREF);
+      expect(result.redirectHref).toBe(DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF);
+      expect(result.redirectHref).not.toContain("/review");
     }
   });
 
-  it("continues a saved sleeveless express project on the sleeveless review page", async () => {
+  it("continues a saved sleeveless express project on the sleeveless edit workspace", async () => {
     loadCustomPatternProjectMock.mockResolvedValue({
       ok: true,
       project: sampleProject(),
@@ -163,6 +166,8 @@ describe("loadSavedCustomPatternProject", () => {
     expect(result).toEqual({ ok: true, redirectHref: EXPRESS_CONTINUE_EDITING_HREF });
     if (result.ok) {
       expect(result.redirectHref).not.toBe(DROP_SHOULDER_CONTINUE_EDITING_HREF);
+      expect(result.redirectHref).toBe(OPEN_PATTERN_EDIT_WORKSPACE_HREF);
+      expect(result.redirectHref).not.toContain("/review");
     }
   });
 

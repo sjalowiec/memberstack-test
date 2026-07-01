@@ -67,7 +67,7 @@ const customStyleRoot = normPath("/patterns/sleeveless/custom-style");
 const pathIsCustomStyleFlow =
   pathNow === customStyleRoot || (customStyleRoot && pathNow.startsWith(`${customStyleRoot}/`));
 
-const summaryRoot = normPath("/patterns/sleeveless/review");
+const summaryRoot = normPath("/patterns/sleeveless/pattern");
 const pathIsSummaryFlow =
   (summaryRoot && (pathNow === summaryRoot || pathNow.startsWith(`${summaryRoot}/`))) ||
   pathIsCustomStyleFlow;
