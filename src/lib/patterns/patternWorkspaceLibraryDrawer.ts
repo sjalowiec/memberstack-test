@@ -251,7 +251,9 @@ function renderLibraryItem(
   openBtn.addEventListener("click", async () => {
     if (openBtn.disabled) return;
     if (!canEditProjectFromLibrary(lastResolvedLibraryAccess, project)) {
-      offerPatternEditingUnlockModal(lastResolvedLibraryAccess);
+      offerPatternEditingUnlockModal(lastResolvedLibraryAccess, {
+        patternSystem: projectSystemFromSummary(project),
+      });
       return;
     }
     await onLibraryProjectOpen(root, project.id, displayName, project);
@@ -332,7 +334,7 @@ async function onLibraryProjectOpen(
     !lastResolvedLibraryAccess ||
     !canEditPatternSettingsForSystem(lastResolvedLibraryAccess, system)
   ) {
-    offerPatternEditingUnlockModal(lastResolvedLibraryAccess);
+    offerPatternEditingUnlockModal(lastResolvedLibraryAccess, { patternSystem: system });
     return;
   }
   setDrawerStatus(root, `Loading “${label}”…`);

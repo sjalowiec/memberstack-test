@@ -76,18 +76,31 @@ export function resolvePatternSystemFromPatternRecord(
   return "sleeveless";
 }
 
+function readPagePathname(scope?: Document): string {
+  if (typeof window !== "undefined") {
+    const fromWindow = window.location?.pathname?.trim();
+    if (fromWindow) return fromWindow;
+  }
+  const fromDoc =
+    scope && "defaultView" in scope ? scope.defaultView?.location?.pathname?.trim() : "";
+  return fromDoc ?? "";
+}
+
 /** Resolve pattern system from the active browser page (pathname + draft markers). */
 export function resolvePatternSystemFromPage(doc?: Document): PatternSystemId {
   if (typeof document !== "undefined" || doc) {
     const scope = doc ?? document;
-    const pathname =
-      scope && "defaultView" in scope
-        ? scope.defaultView?.location?.pathname ?? ""
-        : typeof window !== "undefined" && window.location?.pathname
-          ? window.location.pathname
-          : "";
+    const pathname = readPagePathname(scope);
     if (/\/patterns\/drop-shoulder(?:\/|$)/.test(pathname)) {
       return "drop-shoulder";
+    }
+    // Builder entry routes: URL intent wins over a stale cross-system working draft in localStorage.
+    // (A nosub knitter with a saved Drop Shoulder pattern must still open Sleeveless with ?new=1.)
+    if (/\/patterns\/sleeveless-express(?:\/|$)/.test(pathname)) {
+      return "sleeveless";
+    }
+    if (/\/patterns\/sleeveless\/builder(?:\/|$)/.test(pathname)) {
+      return "sleeveless";
     }
     if (scope && typeof scope.querySelector === "function") {
       const expressConstruction = scope

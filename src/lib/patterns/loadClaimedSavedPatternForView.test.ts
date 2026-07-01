@@ -131,6 +131,29 @@ describe("ensureClaimedSavedPatternHydratedForView", () => {
     expect(result).toBe("load-failed");
   });
 
+  it("loads only the claimed pattern for the requested pattern system", async () => {
+    const loadProject = vi.fn(async () => ({ ok: true }));
+    const dropShoulderClaimed = testAccess({
+      loggedIn: true,
+      memberId: "mem_free",
+      hasSystemAccess: false,
+      claimedSystem: "drop-shoulder",
+      freeClaimed: true,
+      freeClaimedPatternId: "pat_ds",
+    });
+
+    const result = await ensureClaimedSavedPatternHydratedForView(
+      deps({
+        patternSystem: "sleeveless",
+        resolveAccess: async () => dropShoulderClaimed,
+        loadProject,
+      }),
+    );
+
+    expect(result).toBe("no-claimed-pattern");
+    expect(loadProject).not.toHaveBeenCalled();
+  });
+
   it("does not enable starting a second pattern — it only reloads the existing claimed pattern", async () => {
     // The guard's only network action is loading the ALREADY-claimed pattern by id; it never creates
     // a new project. Assert it is called exactly once with the claimed id and returns "loaded".

@@ -116,6 +116,7 @@ describe("pattern membership gating (pure rules)", () => {
     expect(canCreatePatternForSystem(nosubDropShoulderClaimed, "sleeveless")).toBe(true);
     expect(canEditPatternSettingsForSystem(nosubDropShoulderClaimed, "drop-shoulder")).toBe(false);
     expect(canEditPatternSettingsForSystem(nosubDropShoulderClaimed, "sleeveless")).toBe(true);
+    expect(canStartNewSleevelessPattern(nosubDropShoulderClaimed)).toBe(true);
   });
 
   it("active members and beta users get full access", () => {

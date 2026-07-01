@@ -364,7 +364,7 @@ async function onProjectEdit(root: HTMLElement, projectId: string, label: string
   const patternSystem = project ? projectPatternSystem(project) : "sleeveless";
   const access = listAccess(root);
   if (!canEditSavedPatternFromList(root, patternSystem)) {
-    offerPatternEditingUnlockModal(access);
+    offerPatternEditingUnlockModal(access, { patternSystem });
     return;
   }
 

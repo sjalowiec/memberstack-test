@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  applyLockedPatternEditButtonState,
   dismissPatternEditingUnlockModalForSession,
   isPatternEditingUnlockModalDismissedForSession,
   offerPatternEditingUnlockModal,
@@ -58,6 +59,21 @@ describe("patternEditingUnlockModal", () => {
     expect(shouldOfferPatternEditingUnlockModal(null)).toBe(false);
   });
 
+  it("checks edit access per pattern system when the system is passed explicitly", () => {
+    const dropShoulderClaimed = testAccess({
+      loggedIn: true,
+      memberId: "ms_free",
+      hasSystemAccess: false,
+      claimedSystem: "drop-shoulder",
+      freeClaimed: true,
+      freeClaimedPatternId: "pat_ds",
+    });
+    // On /account (or any page without drop-shoulder context), page resolution defaults to sleeveless.
+    expect(shouldOfferPatternEditingUnlockModal(dropShoulderClaimed)).toBe(false);
+    expect(shouldOfferPatternEditingUnlockModal(dropShoulderClaimed, "drop-shoulder")).toBe(true);
+    expect(shouldOfferPatternEditingUnlockModal(dropShoulderClaimed, "sleeveless")).toBe(false);
+  });
+
   it("remembers dismiss for the browser session", () => {
     expect(isPatternEditingUnlockModalDismissedForSession()).toBe(false);
     dismissPatternEditingUnlockModalForSession();
@@ -84,5 +100,19 @@ describe("patternEditingUnlockModal", () => {
     expect(showPatternEditingUnlockModal()).toBe(false);
     expect(offerPatternEditingUnlockModal(claimedFree)).toBe(true);
     expect(showModal).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the pattern workspace Edit button visible but locked", () => {
+    const button = {
+      hidden: true,
+      classList: { toggle: vi.fn() },
+      removeAttribute: vi.fn(),
+      setAttribute: vi.fn(),
+    } as unknown as HTMLElement;
+
+    applyLockedPatternEditButtonState(button, true);
+    expect(button.hidden).toBe(false);
+    expect(button.classList.toggle).toHaveBeenCalledWith("is-disabled", true);
+    expect(button.setAttribute).toHaveBeenCalledWith("aria-disabled", "true");
   });
 });

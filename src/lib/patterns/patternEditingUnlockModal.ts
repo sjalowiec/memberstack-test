@@ -2,7 +2,10 @@ import {
   canEditPatternSettingsForSystem,
   type SleevelessUserAccess,
 } from "./sleevelessPatternSystemAccess";
-import { resolvePatternSystemFromPage } from "./patternSystemId";
+import { resolvePatternSystemFromPage, type PatternSystemId } from "./patternSystemId";
+
+export const PATTERN_EDITING_UNLOCK_EDIT_BUTTON_TOOLTIP =
+  "Pattern editing is included with membership. You can still view, print, and rename this pattern.";
 
 export const PATTERN_EDITING_UNLOCK_MODAL_TITLE = "Unlock pattern editing";
 export const PATTERN_EDITING_UNLOCK_MODAL_BODY_LEAD =
@@ -96,10 +99,30 @@ export function showPatternEditingUnlockModal(options?: {
  */
 export function offerPatternEditingUnlockModal(
   access: SleevelessUserAccess | null | undefined,
-  options?: { root?: ParentNode },
+  options?: { root?: ParentNode; patternSystem?: PatternSystemId },
 ): boolean {
-  if (!shouldOfferPatternEditingUnlockModal(access)) return false;
+  if (!shouldOfferPatternEditingUnlockModal(access, options?.patternSystem)) return false;
   return showPatternEditingUnlockModal({ ...options, force: true });
+}
+
+/** Keep Edit visible but clearly locked; click handlers show {@link offerPatternEditingUnlockModal}. */
+export function applyLockedPatternEditButtonState(
+  button: HTMLElement | null | undefined,
+  locked: boolean,
+  tooltip = PATTERN_EDITING_UNLOCK_EDIT_BUTTON_TOOLTIP,
+): void {
+  if (!button) return;
+  button.hidden = false;
+  button.removeAttribute("aria-hidden");
+  button.removeAttribute("tabindex");
+  button.classList.toggle("is-disabled", locked);
+  if (locked) {
+    button.setAttribute("aria-disabled", "true");
+    button.setAttribute("title", tooltip);
+  } else {
+    button.removeAttribute("aria-disabled");
+    button.removeAttribute("title");
+  }
 }
 
 /** Wire dismiss controls once per dialog instance. */
@@ -130,9 +153,9 @@ export function initPatternEditingUnlockModal(root: ParentNode = document): void
 /** Auto-open on gated pattern workspace load (once per session after dismiss). */
 export function maybeShowPatternEditingUnlockModalOnWorkspaceLoad(
   access: SleevelessUserAccess,
-  options?: { root?: ParentNode },
+  options?: { root?: ParentNode; patternSystem?: PatternSystemId },
 ): boolean {
-  if (!shouldOfferPatternEditingUnlockModal(access)) return false;
+  if (!shouldOfferPatternEditingUnlockModal(access, options?.patternSystem)) return false;
   return showPatternEditingUnlockModal(options);
 }
 

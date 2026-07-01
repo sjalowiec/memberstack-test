@@ -31,6 +31,11 @@ vi.mock("./loadSavedCustomPatternProject", () => ({
   loadSavedCustomPatternProject: (...args: unknown[]) => loadSavedCustomPatternProjectMock(...args),
 }));
 
+const offerPatternEditingUnlockModalMock = vi.fn(() => true);
+vi.mock("./patternEditingUnlockModal", () => ({
+  offerPatternEditingUnlockModal: (...args: unknown[]) => offerPatternEditingUnlockModalMock(...args),
+}));
+
 class MockHTMLElement {}
 class MockHTMLButtonElement extends MockHTMLElement {}
 
@@ -573,6 +578,50 @@ describe("accountMyPatternsList", () => {
     await flushAsync();
     expect(deleteCustomPatternProjectMock).not.toHaveBeenCalled();
     expect(loadSavedCustomPatternProjectMock).not.toHaveBeenCalled();
+    expect(offerPatternEditingUnlockModalMock).toHaveBeenCalledTimes(1);
+    expect(offerPatternEditingUnlockModalMock).toHaveBeenCalledWith(
+      expect.objectContaining({ loggedIn: true, hasSystemAccess: false }),
+      expect.objectContaining({ patternSystem: "sleeveless" }),
+    );
+  });
+
+  it("opens the unlock modal when a drop-shoulder free user clicks Edit (not a silent no-op)", async () => {
+    const dropShoulderProject = {
+      id: "proj-ds",
+      name: "Drop shoulder pullover",
+      family: "sleeveless" as const,
+      source: "express" as const,
+      patternSystem: "drop-shoulder" as const,
+      updatedAt: "2026-02-01T00:00:00.000Z",
+    };
+    const { root, tbody } = makeAccountRoot();
+    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: [dropShoulderProject] });
+    vi.stubGlobal("window", {
+      $memberstackDom: {
+        getCurrentMember: async () => ({ data: { id: "ms_free" } }),
+        getMemberJSON: async () => ({
+          data: {
+            freePatternClaimsBySystem: {
+              "drop-shoulder": { claimed: true, patternId: "proj-ds" },
+            },
+          },
+        }),
+      },
+    });
+
+    await initAccountMyPatternsList(root);
+
+    const editBtn = collectMatches(tbody._children, "[data-kbm-my-patterns-edit]")[0];
+    expect(editBtn?.getAttribute("aria-disabled")).toBe("true");
+    await editBtn?._click?.();
+    await flushAsync();
+
+    expect(loadSavedCustomPatternProjectMock).not.toHaveBeenCalled();
+    expect(offerPatternEditingUnlockModalMock).toHaveBeenCalledTimes(1);
+    expect(offerPatternEditingUnlockModalMock).toHaveBeenCalledWith(
+      expect.objectContaining({ loggedIn: true, hasSystemAccess: false }),
+      expect.objectContaining({ patternSystem: "drop-shoulder" }),
+    );
   });
 
   it("keeps Delete enabled for a member with system access", async () => {

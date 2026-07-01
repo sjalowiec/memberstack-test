@@ -455,5 +455,16 @@ describe("sleeveless-express-page Start Over", () => {
     expect(gateIdx).toBeGreaterThan(reconcileIdx);
     expect(initIdx).toBeGreaterThan(reconcileIdx);
   });
+
+  it("does not redirect ?new=1 builder entry to a saved pattern view", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { fileURLToPath } = await import("node:url");
+    const { dirname, join } = await import("node:path");
+    const dir = dirname(fileURLToPath(import.meta.url));
+    const src = readFileSync(join(dir, "../../scripts/sleeveless-express-page.ts"), "utf-8");
+
+    expect(src).toContain("isNewSessionIntent");
+    expect(src).toMatch(/if \(isNewSessionIntent\) return false;/);
+  });
 });
 

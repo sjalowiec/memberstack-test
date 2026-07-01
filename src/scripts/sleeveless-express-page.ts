@@ -1201,14 +1201,18 @@ async function blockExpressNewPatternStartIfLocked(): Promise<boolean> {
  * view instead. This mirrors the workspace Edit Pattern gate and also protects direct-URL access.
  */
 async function redirectSavedPatternEditIfLocked(): Promise<boolean> {
+  let isNewSessionIntent = false;
   let isEditChoicesIntent = false;
   try {
-    isEditChoicesIntent = isSleevelessExpressEditChoicesSearchParams(
-      new URL(window.location.href).searchParams,
-    );
+    const params = new URL(window.location.href).searchParams;
+    isNewSessionIntent = isSleevelessExpressNewSessionSearchParams(params);
+    isEditChoicesIntent = isSleevelessExpressEditChoicesSearchParams(params);
   } catch {
+    isNewSessionIntent = false;
     isEditChoicesIntent = false;
   }
+  // ?new=1 always means a fresh builder session — never redirect to a saved pattern view.
+  if (isNewSessionIntent) return false;
   if (!isEditChoicesIntent && !isEditingSavedCustomPatternProject()) return false;
 
   const access = await resolveSleevelessUserAccess();

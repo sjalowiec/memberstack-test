@@ -80,7 +80,10 @@ import {
   swatchCountFromPerInchForDisplay,
   type GaugeSwatchBasis,
 } from "../lib/patterns/gaugeDisplayFormat";
-import { canEditSleevelessPatternSettings } from "../lib/patterns/sleevelessPatternSystemAccess";
+import { canEditPatternSettingsForSystem } from "../lib/patterns/sleevelessPatternSystemAccess";
+import { resolvePatternSystemFromPage } from "../lib/patterns/patternSystemId";
+import type { PatternSystemId } from "../lib/patterns/patternSystemId";
+import type { SleevelessUserAccess } from "../lib/patterns/sleevelessPatternSystemAccess";
 import { resolveSleevelessUserAccess } from "../lib/patterns/sleevelessPatternSystemAccessClient";
 import {
   getPatternProjectMeta,
@@ -91,6 +94,7 @@ import {
   promptEditPatternSaveConfirmation,
 } from "../lib/patterns/sleevelessPatternEditSaveConfirmation";
 import {
+  applyLockedPatternEditButtonState,
   maybeShowPatternEditingUnlockModalOnWorkspaceLoad,
   offerPatternEditingUnlockModal,
 } from "../lib/patterns/patternEditingUnlockModal";
@@ -310,11 +314,11 @@ function initSleevelessPatternEditDrawer(): void {
   let drawerSnapshot: FieldSnapshot | null = null;
   let chartsLoaded = false;
   let chartsLoadStarted = false;
-  // Entitlement gate: gauge / measurements / style edits + regeneration are only available to
-  // users with active Sleeveless Pattern System access. Resolved async below; defaults to
-  // unlocked so members aren't briefly blocked, then locks the drawer if access is absent.
-  // (Title/notes stay editable for everyone via the Pattern Setup tab → Customize page.)
+  // Entitlement gate: gauge / measurements / style edits + regeneration require edit access
+  // for the active pattern system (Sleeveless vs Drop Shoulder). Resolved async below.
   let settingsEditingLocked = false;
+  let resolvedAccess: SleevelessUserAccess | null = null;
+  let patternSystem: PatternSystemId = "sleeveless";
 
   function radioValue(name: string): string {
     const el = drawer!.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`);
@@ -563,9 +567,7 @@ function initSleevelessPatternEditDrawer(): void {
 
   function openDrawer(): void {
     if (settingsEditingLocked) {
-      void resolveSleevelessUserAccess().then((access) => {
-        offerPatternEditingUnlockModal(access);
-      });
+      offerPatternEditingUnlockModal(resolvedAccess, { patternSystem });
       return;
     }
     if (drawer!.classList.contains("is-open")) return;
@@ -874,17 +876,16 @@ function initSleevelessPatternEditDrawer(): void {
     void document.fonts.ready.then(syncPanelTop).catch(() => {});
   }
 
-  // Lock the in-place editor (gauge, measurements, style choices, regeneration) when the user
-  // lacks active system access. The button is hidden rather than shown-disabled so the locked
-  // state reads as intentional; renaming/notes remain available on the Customize page.
+  // Lock the in-place editor when the user lacks settings-editing access for this pattern
+  // system. The Edit button stays visible (with a tooltip) and opens the unlock modal on click.
   void resolveSleevelessUserAccess().then((access) => {
-    settingsEditingLocked = !canEditSleevelessPatternSettings(access);
+    resolvedAccess = access;
+    patternSystem = resolvePatternSystemFromPage();
+    settingsEditingLocked = !canEditPatternSettingsForSystem(access, patternSystem);
     if (!settingsEditingLocked) return;
     if (drawer.classList.contains("is-open")) closeDrawer();
-    openBtn.hidden = true;
-    openBtn.setAttribute("aria-hidden", "true");
-    openBtn.setAttribute("tabindex", "-1");
-    maybeShowPatternEditingUnlockModalOnWorkspaceLoad(access);
+    applyLockedPatternEditButtonState(openBtn, true);
+    maybeShowPatternEditingUnlockModalOnWorkspaceLoad(access, { patternSystem });
   });
 
   drawer.querySelectorAll<HTMLInputElement>('input[name="sl-edit-fit"]').forEach((el) => {
