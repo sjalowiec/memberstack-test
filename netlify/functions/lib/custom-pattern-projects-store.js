@@ -35,8 +35,8 @@ export function projectIndexKey(family, userId) {
   return `${userProjectsPrefix(family, userId)}index.json`;
 }
 
-// v2 adds a derived display `gauge` to summaries; bumping forces stale indexes to rebuild.
-export const PROJECT_SUMMARY_INDEX_VERSION = 2;
+// v3 adds original entered gauge counts to summaries for user-facing display; bumping forces stale indexes to rebuild.
+export const PROJECT_SUMMARY_INDEX_VERSION = 3;
 
 /** @param {unknown} value */
 function gaugePositiveNumber(value) {
@@ -45,9 +45,9 @@ function gaugePositiveNumber(value) {
 }
 
 /**
- * Derives display gauge (stitches/rows per inch) from a saved pattern's `yarnGauge` section.
- * Prefers stored per-inch values; falls back to raw swatch counts (over 4" / 10 cm).
- * Returns `null` when no usable gauge is present. Mirrors `savedPatternGaugeDisplay.ts`.
+ * Derives display gauge from a saved pattern's `yarnGauge` section.
+ * Keeps original entered swatch counts for display when stored; per-inch values remain for internal use.
+ * Mirrors `savedPatternGaugeDisplay.ts`.
  * @param {Record<string, unknown>} project
  */
 export function gaugeFromProject(project) {
@@ -61,18 +61,25 @@ export function gaugeFromProject(project) {
       : null;
   if (!yarnGauge) return null;
 
-  const perInchSts = gaugePositiveNumber(yarnGauge.stitchGauge);
-  const perInchRows = gaugePositiveNumber(yarnGauge.rowGauge);
-  if (perInchSts !== null && perInchRows !== null) {
-    return { stitchesPerInch: perInchSts, rowsPerInch: perInchRows };
-  }
-
   const rawSts = gaugePositiveNumber(yarnGauge.gaugeStitchRaw);
   const rawRows = gaugePositiveNumber(yarnGauge.gaugeRowRaw);
+  const unit = yarnGauge.gaugeRawUnit === "cm" ? "cm" : "in";
+
+  const perInchSts = gaugePositiveNumber(yarnGauge.stitchGauge);
+  const perInchRows = gaugePositiveNumber(yarnGauge.rowGauge);
+
   if (rawSts !== null && rawRows !== null) {
-    const unit = yarnGauge.gaugeRawUnit === "cm" ? "cm" : "in";
     const perInch = (raw) => (unit === "cm" ? (raw / 10) * 2.54 : raw / 4);
-    return { stitchesPerInch: perInch(rawSts), rowsPerInch: perInch(rawRows) };
+    return {
+      stitchesPerInch: perInchSts ?? perInch(rawSts),
+      rowsPerInch: perInchRows ?? perInch(rawRows),
+      displayStitches: rawSts,
+      displayRows: rawRows,
+    };
+  }
+
+  if (perInchSts !== null && perInchRows !== null) {
+    return { stitchesPerInch: perInchSts, rowsPerInch: perInchRows };
   }
 
   return null;

@@ -36,8 +36,9 @@ export type CustomPatternProjectSummary = Pick<
   "id" | "name" | "family" | "source" | "createdAt" | "updatedAt" | "version"
 > & {
   /**
-   * Display-only gauge (stitches/rows per inch) derived from the saved pattern's `yarnGauge`.
-   * Not part of the stored pattern data; populated for list/drawer surfaces. Absent when unknown.
+   * Display gauge derived from the saved pattern's `yarnGauge`.
+   * Includes original entered swatch counts when stored (`displayStitches` / `displayRows`).
+   * Absent when unknown.
    */
   gauge?: SavedPatternGauge;
 };

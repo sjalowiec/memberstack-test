@@ -4,10 +4,14 @@
  * `yarnGauge` section without changing how gauge is stored.
  */
 
-/** Display-only gauge in stitches/rows per inch, derived from a saved pattern's `yarnGauge`. */
+/** Display gauge derived from a saved pattern's `yarnGauge`. */
 export type SavedPatternGauge = {
   stitchesPerInch: number;
   rowsPerInch: number;
+  /** Original user-entered stitch count (swatch over 4" / 10 cm), when stored. */
+  displayStitches?: number;
+  /** Original user-entered row count (swatch over 4" / 10 cm), when stored. */
+  displayRows?: number;
 };
 
 /** Shown when a saved pattern has no usable gauge yet. */
@@ -24,30 +28,34 @@ function rawSwatchToPerInch(raw: number, unit: "in" | "cm"): number {
 }
 
 /**
- * Extracts a display gauge from a saved pattern's `yarnGauge` section.
+ * Extracts display gauge from a saved pattern's `yarnGauge` section.
  *
- * Prefers the stored per-inch values (`stitchGauge` / `rowGauge`); falls back to deriving
- * per-inch from the raw swatch counts (`gaugeStitchRaw` / `gaugeRowRaw` + `gaugeRawUnit`).
- * Returns `null` when no usable gauge is present.
+ * When raw swatch counts are stored (`gaugeStitchRaw` / `gaugeRowRaw`), those original
+ * entered values are kept for display. Per-inch values remain available for internal use.
+ * When only per-inch values exist, display uses those directly.
  */
 export function extractSavedPatternGauge(yarnGauge: unknown): SavedPatternGauge | null {
   if (!yarnGauge || typeof yarnGauge !== "object" || Array.isArray(yarnGauge)) return null;
   const yg = yarnGauge as Record<string, unknown>;
 
-  const perInchSts = toPositiveNumber(yg.stitchGauge);
-  const perInchRows = toPositiveNumber(yg.rowGauge);
-  if (perInchSts !== null && perInchRows !== null) {
-    return { stitchesPerInch: perInchSts, rowsPerInch: perInchRows };
-  }
-
   const rawSts = toPositiveNumber(yg.gaugeStitchRaw);
   const rawRows = toPositiveNumber(yg.gaugeRowRaw);
   const unit: "in" | "cm" = yg.gaugeRawUnit === "cm" ? "cm" : "in";
+
+  const perInchSts = toPositiveNumber(yg.stitchGauge);
+  const perInchRows = toPositiveNumber(yg.rowGauge);
+
   if (rawSts !== null && rawRows !== null) {
     return {
-      stitchesPerInch: rawSwatchToPerInch(rawSts, unit),
-      rowsPerInch: rawSwatchToPerInch(rawRows, unit),
+      stitchesPerInch: perInchSts ?? rawSwatchToPerInch(rawSts, unit),
+      rowsPerInch: perInchRows ?? rawSwatchToPerInch(rawRows, unit),
+      displayStitches: rawSts,
+      displayRows: rawRows,
     };
+  }
+
+  if (perInchSts !== null && perInchRows !== null) {
+    return { stitchesPerInch: perInchSts, rowsPerInch: perInchRows };
   }
 
   return null;
@@ -63,10 +71,13 @@ function formatGaugeCount(n: number): string {
 }
 
 /**
- * User-friendly gauge label, e.g. `"7 sts / 11 rows"` or `"7.5 sts / 10.25 rows"`.
+ * User-friendly gauge label, e.g. `"28 sts / 44 rows"` when raw swatch counts were saved,
+ * or `"7 sts / 11 rows"` when only per-inch values exist.
  * Returns {@link SAVED_PATTERN_GAUGE_FALLBACK_TEXT} when gauge is missing.
  */
 export function formatSavedPatternGauge(gauge: SavedPatternGauge | null | undefined): string {
   if (!gauge) return SAVED_PATTERN_GAUGE_FALLBACK_TEXT;
-  return `${formatGaugeCount(gauge.stitchesPerInch)} sts / ${formatGaugeCount(gauge.rowsPerInch)} rows`;
+  const stitches = gauge.displayStitches ?? gauge.stitchesPerInch;
+  const rows = gauge.displayRows ?? gauge.rowsPerInch;
+  return `${formatGaugeCount(stitches)} sts / ${formatGaugeCount(rows)} rows`;
 }

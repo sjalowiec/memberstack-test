@@ -50,6 +50,39 @@ export function buildCustomPatternProjectMetaLine(project: CustomPatternProjectS
   return parts.filter(Boolean).join(" • ");
 }
 
+/** Drawer card lines — gauge on its own row for easier scanning. */
+export function buildCustomPatternProjectDrawerLines(project: CustomPatternProjectSummary): {
+  contextLine: string;
+  gaugeLine: string;
+} {
+  const contextParts = [formatCustomPatternProjectType(project)];
+  const stamp = formatCustomPatternProjectUpdatedAt(project.updatedAt);
+  if (stamp) contextParts.push(stamp);
+  return {
+    contextLine: contextParts.filter(Boolean).join(" • "),
+    gaugeLine: formatSavedPatternGauge(project.gauge),
+  };
+}
+
+export function formatPatternCopiedDrawerMessage(projectName: string): string {
+  const trimmed = projectName.trim();
+  if (trimmed) {
+    return `Pattern copied. “${trimmed}” is ready to edit.`;
+  }
+  return "Pattern copied. Your new copy is ready to edit.";
+}
+
+let lastCopiedProjectIdInDrawer: string | null = null;
+
+function clearDrawerCopyHighlight(): void {
+  lastCopiedProjectIdInDrawer = null;
+}
+
+/** Test hook — reset drawer copy highlight state between tests. */
+export function resetPatternWorkspaceLibraryDrawerSessionState(): void {
+  clearDrawerCopyHighlight();
+}
+
 function setDrawerStatus(root: HTMLElement, message: string, isError = false): void {
   const el = root.querySelector("[data-pattern-workspace-library-status]");
   if (!(el instanceof HTMLElement)) return;
@@ -67,6 +100,7 @@ function renderLibraryItem(
   root: HTMLElement,
   project: CustomPatternProjectSummary,
   displayName: string,
+  options?: { isNewCopy?: boolean },
 ): void {
   const list = root.querySelector("[data-pattern-workspace-library-list]");
   if (!(list instanceof HTMLElement)) return;
@@ -82,35 +116,61 @@ function renderLibraryItem(
   if (project.id === activeId) {
     card.classList.add("is-active");
   }
+  if (options?.isNewCopy) {
+    card.classList.add("is-new-copy");
+  }
 
-  const btn = document.createElement("button");
-  btn.type = "button";
-  btn.className = "pattern-workspace-library__item-btn";
-  btn.setAttribute("data-pattern-workspace-library-item", "");
-  btn.dataset.projectId = project.id;
-  if (project.id === activeId) btn.setAttribute("aria-current", "true");
-  btn.setAttribute("aria-label", `Open ${displayName}`);
+  const body = document.createElement("div");
+  body.className = "pattern-workspace-library__item-body";
+
+  const titleRow = document.createElement("div");
+  titleRow.className = "pattern-workspace-library__item-title-row";
 
   const nameEl = document.createElement("span");
   nameEl.className = "pattern-workspace-library__item-name";
   nameEl.textContent = displayName;
 
-  const metaEl = document.createElement("span");
-  metaEl.className = "pattern-workspace-library__item-meta";
-  metaEl.textContent = buildCustomPatternProjectMetaLine(project);
+  titleRow.append(nameEl);
 
-  btn.append(nameEl, metaEl);
-  btn.addEventListener("click", async () => {
-    if (btn.disabled) return;
-    await onLibraryProjectOpen(root, project.id, displayName, btn);
-  });
+  if (options?.isNewCopy) {
+    const badge = document.createElement("span");
+    badge.className = "pattern-workspace-library__item-badge";
+    badge.textContent = "New copy";
+    titleRow.append(badge);
+  }
+
+  const { contextLine, gaugeLine } = buildCustomPatternProjectDrawerLines(project);
+
+  const contextEl = document.createElement("span");
+  contextEl.className = "pattern-workspace-library__item-context";
+  contextEl.textContent = contextLine;
+
+  const gaugeEl = document.createElement("span");
+  gaugeEl.className = "pattern-workspace-library__item-gauge";
+  gaugeEl.textContent = gaugeLine;
+
+  body.append(titleRow, contextEl, gaugeEl);
 
   const actions = document.createElement("div");
   actions.className = "pattern-workspace-library__item-actions";
 
+  const openBtn = document.createElement("button");
+  openBtn.type = "button";
+  openBtn.className = "pattern-workspace-library__item-action pattern-workspace-library__item-open";
+  openBtn.setAttribute("data-pattern-workspace-library-open", "");
+  openBtn.dataset.projectId = project.id;
+  if (project.id === activeId) openBtn.setAttribute("aria-current", "true");
+  openBtn.setAttribute("aria-label", `Open ${displayName}`);
+  openBtn.textContent = "Open Pattern";
+  openBtn.addEventListener("click", async () => {
+    if (openBtn.disabled) return;
+    await onLibraryProjectOpen(root, project.id, displayName);
+  });
+
   const copyBtn = document.createElement("button");
   copyBtn.type = "button";
-  copyBtn.className = "pattern-workspace-library__item-action pattern-workspace-library__item-copy";
+  copyBtn.className =
+    "pattern-workspace-library__item-action pattern-workspace-library__item-action--secondary pattern-workspace-library__item-copy";
   copyBtn.setAttribute("data-pattern-workspace-library-copy", "");
   copyBtn.dataset.projectId = project.id;
   copyBtn.setAttribute("aria-label", `Copy ${displayName}`);
@@ -119,11 +179,10 @@ function renderLibraryItem(
     if (copyBtn.disabled) return;
     await onLibraryProjectCopy(root, project.id, displayName);
   });
-  // Visible for everyone; disabled + grayed (helper tooltip) for free / non-owner users.
   syncSavedCustomPatternCopyAccess(copyBtn);
 
-  actions.append(copyBtn);
-  card.append(btn, actions);
+  actions.append(openBtn, copyBtn);
+  card.append(body, actions);
   li.append(card);
   list.append(li);
 }
@@ -139,10 +198,7 @@ async function onLibraryProjectCopy(
   }
 
   setDrawerStatus(root, `Copying “${label}”…`);
-  const copyButtons = root.querySelectorAll<HTMLButtonElement>("[data-pattern-workspace-library-copy]");
-  copyButtons.forEach((b) => {
-    b.disabled = true;
-  });
+  setDrawerActionButtonsDisabled(root, true);
 
   try {
     const result = await copySavedCustomPatternProjectById(projectId, "sleeveless");
@@ -150,28 +206,33 @@ async function onLibraryProjectCopy(
       setDrawerStatus(root, result.error, true);
       return;
     }
-    await refreshPatternWorkspaceLibraryList(root);
-    setDrawerStatus(root, `Created “${result.project.name}”.`);
+    lastCopiedProjectIdInDrawer = result.project.id;
+    await refreshPatternWorkspaceLibraryList(root, { highlightProjectId: result.project.id });
+    setDrawerStatus(root, formatPatternCopiedDrawerMessage(result.project.name ?? ""));
   } catch {
     setDrawerStatus(root, "Could not copy this pattern. Please try again.", true);
   } finally {
-    root
-      .querySelectorAll<HTMLButtonElement>("[data-pattern-workspace-library-copy]")
-      .forEach((b) => syncSavedCustomPatternCopyAccess(b));
+    setDrawerActionButtonsDisabled(root, false);
   }
+}
+
+function setDrawerActionButtonsDisabled(root: HTMLElement, disabled: boolean): void {
+  root.querySelectorAll<HTMLButtonElement>("[data-pattern-workspace-library-open]").forEach((button) => {
+    button.disabled = disabled;
+  });
+  root.querySelectorAll<HTMLButtonElement>("[data-pattern-workspace-library-copy]").forEach((button) => {
+    button.disabled = disabled;
+    if (!disabled) syncSavedCustomPatternCopyAccess(button);
+  });
 }
 
 async function onLibraryProjectOpen(
   root: HTMLElement,
   projectId: string,
   label: string,
-  trigger: HTMLButtonElement,
 ): Promise<void> {
   setDrawerStatus(root, `Loading “${label}”…`);
-  const openItems = root.querySelectorAll<HTMLButtonElement>("[data-pattern-workspace-library-item]");
-  openItems.forEach((item) => {
-    item.disabled = true;
-  });
+  setDrawerActionButtonsDisabled(root, true);
 
   try {
     const result = await loadSavedCustomPatternProject(projectId, "open");
@@ -184,14 +245,14 @@ async function onLibraryProjectOpen(
   } catch {
     setDrawerStatus(root, "Could not open this pattern. Please try again.", true);
   } finally {
-    openItems.forEach((item) => {
-      item.disabled = false;
-    });
-    trigger.disabled = false;
+    setDrawerActionButtonsDisabled(root, false);
   }
 }
 
-export async function refreshPatternWorkspaceLibraryList(root: HTMLElement): Promise<void> {
+export async function refreshPatternWorkspaceLibraryList(
+  root: HTMLElement,
+  options?: { highlightProjectId?: string | null },
+): Promise<void> {
   setDrawerStatus(root, "Loading your saved patterns…");
   setListVisible(root, false);
 
@@ -216,11 +277,22 @@ export async function refreshPatternWorkspaceLibraryList(root: HTMLElement): Pro
     return;
   }
 
-  const sorted = [...res.projects].sort((a, b) =>
-    String(b.updatedAt ?? "").localeCompare(String(a.updatedAt ?? "")),
-  );
+  const highlightProjectId =
+    options?.highlightProjectId !== undefined
+      ? options.highlightProjectId
+      : lastCopiedProjectIdInDrawer;
+
+  const sorted = [...res.projects].sort((a, b) => {
+    if (highlightProjectId) {
+      if (a.id === highlightProjectId) return -1;
+      if (b.id === highlightProjectId) return 1;
+    }
+    return String(b.updatedAt ?? "").localeCompare(String(a.updatedAt ?? ""));
+  });
   for (const project of sorted) {
-    renderLibraryItem(root, project, project.name || "Untitled pattern");
+    renderLibraryItem(root, project, project.name || "Untitled pattern", {
+      isNewCopy: highlightProjectId !== null && project.id === highlightProjectId,
+    });
   }
   setDrawerStatus(root, "");
   setListVisible(root, true);
@@ -290,6 +362,7 @@ export function closePatternWorkspaceLibraryDrawer(bindings: PatternWorkspaceLib
     trigger.focus();
   }
   lastFocusBeforeOpen = null;
+  clearDrawerCopyHighlight();
 }
 
 function closeBtnFocus(bindings: PatternWorkspaceLibraryDrawerBindings): void {
