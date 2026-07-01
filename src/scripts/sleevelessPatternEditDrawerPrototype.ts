@@ -86,6 +86,7 @@ import {
   getPatternProjectMeta,
   resolvePatternProjectSaveNameFromState,
 } from "../lib/patterns/sleevelessPatternProjectMeta";
+import { isEditPatternSaveConfirmationOpen, promptEditPatternSaveConfirmation } from "../lib/patterns/sleevelessPatternEditSaveConfirmation";
 
 /** localStorage keys the reused measurement editor may write to (snapshot/restore for discard). */
 const MEASURE_STORAGE_KEYS = [
@@ -602,6 +603,21 @@ function initSleevelessPatternEditDrawer(): void {
     if (typeof openBtn!.focus === "function") openBtn!.focus();
   }
 
+  /** After a successful save, treat the current edit state as the new Cancel baseline. */
+  function refreshEditDrawerSavedBaseline(): void {
+    drawerSnapshot = snapshotFields(drawerBody);
+    measureStorageBaseline = snapshotMeasureStorage();
+    captureMeasureFieldBaseline();
+  }
+
+  function returnToUpdatedPatternView(): void {
+    closeDrawer({ discardEdits: false });
+    const top = document.getElementById("sleeveless-pattern-top");
+    if (top) {
+      top.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+
   /** Validate, persist (reusing the build workflow), regenerate, and return to the pattern. */
   async function applyChanges(): Promise<void> {
     if (!applyBtn) return;
@@ -755,12 +771,12 @@ function initSleevelessPatternEditDrawer(): void {
         renderedPatternRecordId: getCurrentPattern().id,
       });
 
-      // 6) Return to the updated pattern view.
-      if (savedNote) savedNote.hidden = false;
-      closeDrawer({ discardEdits: false });
-      const top = document.getElementById("sleeveless-pattern-top");
-      if (top) {
-        top.scrollIntoView({ behavior: "smooth", block: "start" });
+      const confirmationChoice = await promptEditPatternSaveConfirmation(drawer ?? document);
+      if (confirmationChoice === "view") {
+        returnToUpdatedPatternView();
+      } else {
+        refreshEditDrawerSavedBaseline();
+        applyBtn?.focus();
       }
     } catch (err) {
       console.error("[Edit Pattern] Apply Changes failed:", err);
@@ -872,6 +888,7 @@ function initSleevelessPatternEditDrawer(): void {
 
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
+    if (isEditPatternSaveConfirmationOpen()) return;
     if (drawer.classList.contains("is-open")) {
       closeDrawer();
     }
