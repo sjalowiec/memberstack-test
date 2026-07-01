@@ -221,7 +221,7 @@
     "description": "Check whether a stitch pattern repeat fits your cast-on, and find the nearest stitch counts that do.",
     "membersonly": true,
     "helpID": 6239,
-    "category": "Design Elements",
+    "category": "Project Planning",
     "help_text": "Use this tool to check whether a stitch pattern repeat fits your cast-on stitch count.\n\nEnter your cast-on stitches, the stitch pattern repeat, and any plus stitches. The tool tells you if the pattern fits perfectly or shows the nearest lower and higher stitch counts that do.",
     "active": true
   },
