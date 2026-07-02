@@ -4,7 +4,7 @@
  * (header Sign Up, Hat/Blanket account gate, sleeveless gate) can open it via
  * `window.kbmOpenPublicSignupModal()` or a `data-open-public-signup` attribute.
  *
- * Uses a CUSTOM Memberstack signup form (First Name / Email / Password) — never the prebuilt
+ * Uses a CUSTOM Memberstack signup form (First Name / Email / Password) ï¿½ never the prebuilt
  * `data-ms-modal="signup"` modal, which exposes internal member fields. Creates a free member
  * (no plan attached).
  */
@@ -25,13 +25,6 @@ import {
   aria-labelledby="public-signup-modal-title"
 >
   <div class="public-signup-modal__inner">
-    <button
-      type="button"
-      class="public-signup-modal__close"
-      data-public-signup-dismiss
-      aria-label="Close"
-    >&times;</button>
-
     <h2 id="public-signup-modal-title" class="public-signup-modal__title">
       {PUBLIC_SIGNUP_MODAL_TITLE}
     </h2>
@@ -112,24 +105,6 @@ import {
   .public-signup-modal__inner {
     position: relative;
     padding: clamp(1.5rem, 3vw, 2rem);
-  }
-
-  .public-signup-modal__close {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.65rem;
-    appearance: none;
-    border: none;
-    background: transparent;
-    font-size: 1.6rem;
-    line-height: 1;
-    color: #9ca3af;
-    cursor: pointer;
-    padding: 0.25rem 0.4rem;
-  }
-
-  .public-signup-modal__close:hover {
-    color: #4b5563;
   }
 
   .public-signup-modal__title {
@@ -213,8 +188,7 @@ import {
     color: #3f5122;
   }
 
-  .public-signup-modal__login-link:focus-visible,
-  .public-signup-modal__close:focus-visible {
+  .public-signup-modal__login-link:focus-visible {
     outline: 2px solid #52682d;
     outline-offset: 2px;
   }

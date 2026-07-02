@@ -1,19 +1,20 @@
 /**
- * Clean public signup modal — the single "create a free account" experience used site-wide
+ * Clean public signup modal ï¿½ the single "create a free account" experience used site-wide
  * (main menu Sign Up, Hat/Blanket account gate, sleeveless gate, and any `[data-open-public-signup]`
  * CTA).
  *
  * It is backed by a CUSTOM Memberstack signup form (`data-ms-form="signup"` with only First Name,
  * Email, and Password). It deliberately does NOT use the prebuilt Memberstack signup modal
  * (`openModal("SIGNUP")` / `data-ms-modal="signup"`), which auto-renders every internal member
- * custom field (birthday, date-joined, legacyMemberID). It also creates a free member — no plan is
- * attached — so it is not tied to the beta-specific `/beta-signup` page.
+ * custom field (birthday, date-joined, legacyMemberID). It also creates a free member ï¿½ no plan is
+ * attached ï¿½ so it is not tied to the beta-specific `/beta-signup` page.
  */
 import { openMemberstackLoginModal } from "./memberstackLogin";
+import { getMemberstackReturnPath } from "./memberstackReturnUrl";
 
 export const PUBLIC_SIGNUP_MODAL_TITLE = "Create your free Knit It Now account";
 export const PUBLIC_SIGNUP_MODAL_SUBTITLE =
-  "It's free — create an account to build and save your patterns.";
+  "Create a free account to build custom patterns designed for your machine.";
 export const PUBLIC_SIGNUP_FIRST_NAME_LABEL = "First Name";
 export const PUBLIC_SIGNUP_EMAIL_LABEL = "Email Address";
 export const PUBLIC_SIGNUP_PASSWORD_LABEL = "Create Password";
@@ -46,10 +47,25 @@ function getDialog(root?: ParentNode): HTMLDialogElement | null {
   return null;
 }
 
+/**
+ * Points the signup form back to the page it was opened from. Memberstack inline forms honor the
+ * `redirect` attribute (see account guest login / password reset forms); setting it here overrides
+ * the dashboard-configured signup redirect (the beta welcome/thank-you page) so a public signup
+ * returns to the current page instead.
+ */
+function applySignupReturnRedirect(dialog: HTMLDialogElement): void {
+  if (typeof window === "undefined") return;
+  const form = dialog.querySelector('[data-ms-form="signup"]');
+  if (form && typeof form.setAttribute === "function") {
+    form.setAttribute("redirect", getMemberstackReturnPath());
+  }
+}
+
 /** Shows the clean public signup modal. Returns true when the modal was shown. */
 export function showPublicSignupModal(options?: { root?: ParentNode }): boolean {
   const dialog = getDialog(options?.root);
   if (!dialog || typeof dialog.showModal !== "function") return false;
+  applySignupReturnRedirect(dialog);
   if (!dialog.open) dialog.showModal();
   return true;
 }

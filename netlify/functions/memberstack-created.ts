@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-const BETA_TAG_NAME = "Beta";
+const NEW_ACCOUNT_TAG_NAME = "source:KIN 2026 signup";
 
 interface MemberstackWebhookBody {
   payload?: {
@@ -24,6 +24,10 @@ interface AcContactSyncResponse {
 
 interface AcTagsResponse {
   tags: AcTag[];
+}
+
+interface AcTagResponse {
+  tag: AcTag;
 }
 
 function jsonResponse(body: Record<string, unknown>, status: number): Response {
@@ -60,6 +64,82 @@ async function activeCampaignRequest(
       ...(init.headers as Record<string, string> | undefined),
     },
   });
+}
+
+// Look up the "source:KIN 2026 signup" tag, creating it if it does not exist.
+// Returns the tag id, or null if it could not be resolved (caller stays
+// defensive and skips tagging rather than failing the webhook).
+async function resolveNewAccountTagId(
+  baseUrl: string,
+  apiKey: string,
+): Promise<string | null> {
+  try {
+    const tagsResp = await activeCampaignRequest(
+      baseUrl,
+      apiKey,
+      `/api/3/tags?search=${encodeURIComponent(NEW_ACCOUNT_TAG_NAME)}`,
+    );
+
+    if (tagsResp.ok) {
+      const tagsData = (await tagsResp.json()) as AcTagsResponse;
+      const existingTag = (tagsData.tags ?? []).find(
+        (tag) => tag.tag === NEW_ACCOUNT_TAG_NAME,
+      );
+      if (existingTag?.id) {
+        return existingTag.id;
+      }
+    } else {
+      const tagsErrorText = await tagsResp.text();
+      console.error("memberstack-created: tag search failed", {
+        status: tagsResp.status,
+        body: tagsErrorText,
+      });
+    }
+
+    const createResp = await activeCampaignRequest(baseUrl, apiKey, "/api/3/tags", {
+      method: "POST",
+      body: JSON.stringify({
+        tag: {
+          tag: NEW_ACCOUNT_TAG_NAME,
+          tagType: "contact",
+        },
+      }),
+    });
+
+    if (createResp.ok) {
+      const createData = (await createResp.json()) as AcTagResponse;
+      if (createData.tag?.id) {
+        return createData.tag.id;
+      }
+    } else {
+      const createErrorText = await createResp.text();
+      console.error("memberstack-created: tag create failed", {
+        status: createResp.status,
+        body: createErrorText,
+      });
+
+      // A conflict (or similar) can occur if the tag already exists but was
+      // missed by the search above; try one more lookup before giving up.
+      const retryResp = await activeCampaignRequest(
+        baseUrl,
+        apiKey,
+        `/api/3/tags?search=${encodeURIComponent(NEW_ACCOUNT_TAG_NAME)}`,
+      );
+      if (retryResp.ok) {
+        const retryData = (await retryResp.json()) as AcTagsResponse;
+        const retryTag = (retryData.tags ?? []).find(
+          (tag) => tag.tag === NEW_ACCOUNT_TAG_NAME,
+        );
+        if (retryTag?.id) {
+          return retryTag.id;
+        }
+      }
+    }
+  } catch (error) {
+    console.error("memberstack-created: tag resolve error", error);
+  }
+
+  return null;
 }
 
 export default async (req: Request): Promise<Response> => {
@@ -160,36 +240,28 @@ export default async (req: Request): Promise<Response> => {
 
     console.log("memberstack-created: contact synced", { contactId, email });
 
-    const tagsResp = await activeCampaignRequest(
-      baseUrl,
-      apiKey,
-      `/api/3/tags?search=${encodeURIComponent(BETA_TAG_NAME)}`,
-    );
+    // Tagging is best-effort: the contact is already synced, so a tag
+    // lookup/create/apply failure should not fail the whole webhook.
+    const tagId = await resolveNewAccountTagId(baseUrl, apiKey);
 
-    if (!tagsResp.ok) {
-      const tagsErrorText = await tagsResp.text();
-      console.error("memberstack-created: tag search failed", {
-        status: tagsResp.status,
-        body: tagsErrorText,
+    if (!tagId) {
+      console.warn("memberstack-created: proceeding without new-account tag", {
+        contactId,
+        email,
       });
-      return jsonResponse({ error: "Internal server error" }, 500);
+      return jsonResponse(
+        {
+          ok: true,
+          contactId,
+          tagged: false,
+        },
+        200,
+      );
     }
 
-    const tagsData = (await tagsResp.json()) as AcTagsResponse;
-    const betaTag = (tagsData.tags ?? []).find(
-      (tag) => tag.tag === BETA_TAG_NAME,
-    );
-
-    if (!betaTag) {
-      console.error("memberstack-created: beta tag not found", {
-        tagCount: tagsData.tags?.length ?? 0,
-      });
-      return jsonResponse({ error: "Internal server error" }, 500);
-    }
-
-    console.log("memberstack-created: applying beta tag", {
+    console.log("memberstack-created: applying new-account tag", {
       contactId,
-      tagId: betaTag.id,
+      tagId,
     });
 
     const tagResp = await activeCampaignRequest(
@@ -201,7 +273,7 @@ export default async (req: Request): Promise<Response> => {
         body: JSON.stringify({
           contactTag: {
             contact: contactId,
-            tag: betaTag.id,
+            tag: tagId,
           },
         }),
       },
@@ -213,7 +285,14 @@ export default async (req: Request): Promise<Response> => {
         status: tagResp.status,
         body: tagErrorText,
       });
-      return jsonResponse({ error: "Internal server error" }, 500);
+      return jsonResponse(
+        {
+          ok: true,
+          contactId,
+          tagged: false,
+        },
+        200,
+      );
     }
 
     console.log("memberstack-created: success", { contactId, email });
@@ -222,7 +301,8 @@ export default async (req: Request): Promise<Response> => {
       {
         ok: true,
         contactId,
-        tag: BETA_TAG_NAME,
+        tagged: true,
+        tag: NEW_ACCOUNT_TAG_NAME,
       },
       200,
     );

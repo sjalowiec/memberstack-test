@@ -37,6 +37,7 @@ function makeDialogFixture() {
     "[data-public-signup-login]": [makeButton()],
     "[data-public-signup-dismiss]": [makeButton()],
   };
+  const form = { setAttribute: vi.fn() };
   const attrs: Record<string, string> = {};
   const dialog = {
     open: false,
@@ -50,11 +51,12 @@ function makeDialogFixture() {
     setAttribute: (k: string, v: string) => {
       attrs[k] = v;
     },
+    querySelector: (sel: string) => (sel === '[data-ms-form="signup"]' ? form : null),
     querySelectorAll: (sel: string) => buttons[sel] ?? [],
     addEventListener: vi.fn(),
   };
   const root = { querySelector: (_sel: string) => dialog } as unknown as ParentNode;
-  return { dialog, root, buttons };
+  return { dialog, root, buttons, form };
 }
 
 describe("showPublicSignupModal", () => {
@@ -67,6 +69,27 @@ describe("showPublicSignupModal", () => {
   it("returns false when no dialog exists", () => {
     vi.stubGlobal("document", { querySelector: () => null });
     expect(showPublicSignupModal()).toBe(false);
+  });
+
+  it("captures the current page path as the signup form redirect", () => {
+    const { root, form } = makeDialogFixture();
+    vi.stubGlobal("window", {
+      location: { pathname: "/patterns/hat", search: "", hash: "" },
+    });
+    expect(showPublicSignupModal({ root })).toBe(true);
+    expect(form.setAttribute).toHaveBeenCalledWith("redirect", "/patterns/hat");
+  });
+
+  it("captures query and hash in the signup return path", () => {
+    const { root, form } = makeDialogFixture();
+    vi.stubGlobal("window", {
+      location: { pathname: "/patterns/diy-blanket", search: "?size=throw", hash: "#step-2" },
+    });
+    expect(showPublicSignupModal({ root })).toBe(true);
+    expect(form.setAttribute).toHaveBeenCalledWith(
+      "redirect",
+      "/patterns/diy-blanket?size=throw#step-2",
+    );
   });
 });
 
@@ -114,7 +137,9 @@ describe("installPublicSignupModal", () => {
   it("exposes window.kbmOpenPublicSignupModal and registers a delegated open handler", () => {
     const { dialog } = makeDialogFixture();
     const addEventListener = vi.fn();
-    vi.stubGlobal("window", {} as Window & typeof globalThis);
+    vi.stubGlobal("window", {
+      location: { pathname: "/", search: "", hash: "" },
+    } as Window & typeof globalThis);
     vi.stubGlobal("document", {
       querySelector: () => dialog,
       addEventListener,
