@@ -10,6 +10,9 @@ export { MY_PATTERNS_RETURN_PATH, resolveAccountLoginRedirectPath };
 /** Id of the static login proxy anchor rendered in BaseLayout (bound at Memberstack init). */
 export const MEMBERSTACK_LOGIN_PROXY_ID = "kbm-ms-login-proxy";
 
+/** Id of the static signup proxy anchor rendered in BaseLayout (bound at Memberstack init). */
+export const MEMBERSTACK_SIGNUP_PROXY_ID = "kbm-ms-signup-proxy";
+
 /**
  * Opens the Memberstack login modal with an explicit post-login return path.
  * Programmatic opens use `openModal("LOGIN")` so its promise resolves on success;
@@ -33,6 +36,46 @@ export function openMemberstackLoginModal(returnPath?: string): void {
 
   function openViaProxy(): boolean {
     const proxy = document.getElementById(MEMBERSTACK_LOGIN_PROXY_ID);
+    if (!(proxy instanceof HTMLAnchorElement)) return false;
+    proxy.setAttribute("data-ms-redirect", redirect);
+    proxy.click();
+    return true;
+  }
+
+  const ms = window.$memberstackDom;
+  if (ms && openViaModal(ms)) return;
+  if (openViaProxy()) return;
+
+  void ms?.onReady?.then(() => {
+    const readyMs = window.$memberstackDom;
+    if (readyMs && openViaModal(readyMs)) return;
+    openViaProxy();
+  });
+}
+
+/**
+ * Opens the Memberstack signup/registration modal with an explicit post-signup return path.
+ * Mirrors {@link openMemberstackLoginModal}: prefers the promise-returning `openModal("SIGNUP")`,
+ * falling back to the hidden `data-ms-modal="signup"` proxy anchor rendered in BaseLayout.
+ */
+export function openMemberstackSignupModal(returnPath?: string): void {
+  const redirect = returnPath ?? getMemberstackReturnPath();
+
+  function openViaModal(ms: NonNullable<typeof window.$memberstackDom>): boolean {
+    if (typeof ms.openModal !== "function") return false;
+    void ms
+      .openModal("SIGNUP")
+      .then(() => {
+        notifyMemberstackLoginSuccess();
+      })
+      .catch(() => {
+        /* dismissed or failed to open */
+      });
+    return true;
+  }
+
+  function openViaProxy(): boolean {
+    const proxy = document.getElementById(MEMBERSTACK_SIGNUP_PROXY_ID);
     if (!(proxy instanceof HTMLAnchorElement)) return false;
     proxy.setAttribute("data-ms-redirect", redirect);
     proxy.click();

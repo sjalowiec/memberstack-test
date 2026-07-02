@@ -9,6 +9,7 @@ import UnitToggle from "../../components/wizards/UnitToggle.astro";
 import PatternComments from "../../components/patterns/PatternComments.astro";
 import NeedleCheckDrawer from "../../components/patterns/NeedleCheckDrawer.astro";
 import PatternHeaderImage from "../../components/patterns/PatternHeaderImage.astro";
+import PatternBuilderAccountGate from "../../components/patterns/PatternBuilderAccountGate.astro";
 import WarningBox from "../../components/ui/WarningBox.astro";
 import GlossaryTooltip from "../../components/common/GlossaryTooltip.astro";
 import YarnRequirement from "../../components/tools/YarnRequirement.astro";
@@ -1589,7 +1590,7 @@ const patternPersistWarning =
 <script is:inline src="/js/wizard-utils.js"></script>
 
 <script>
-import { ensurePatternBuilderLogin } from "../../lib/patterns/patternBuilderLoginGate";
+import { ensurePatternBuilderAccount } from "../../lib/patterns/patternBuilderAccountGate";
 
 document.addEventListener('DOMContentLoaded', function() {
   console.log('Custom Blanket Builder initializing...');
@@ -1681,10 +1682,10 @@ document.addEventListener('DOMContentLoaded', function() {
       if (button.classList.contains('is-disabled')) return;
       const target = button.dataset.tab;
       if (!target) return;
-      // Login gate: viewing the generated Pattern tab requires sign-in (matches the
-      // Create My Pattern gate). Other tabs stay open to anonymous visitors.
+      // Account gate: viewing the generated Pattern tab requires a free account (matches
+      // the Create My Pattern gate). Other tabs stay open to anonymous visitors.
       if (target === 'pattern') {
-        void ensurePatternBuilderLogin().then((allowed) => {
+        void ensurePatternBuilderAccount().then((allowed) => {
           if (allowed) activateWizardTab('pattern');
         });
         return;
@@ -2695,9 +2696,10 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     createPatternBtnForClick.addEventListener('click', () => {
-      // Login gate: anonymous visitors may view the builder, but generating the pattern
-      // requires sign-in. The gate opens the login prompt when logged out (no silent fail).
-      void ensurePatternBuilderLogin().then((allowed) => {
+      // Account gate: anonymous visitors may view the builder, but generating the pattern
+      // requires a free account. The gate opens the signup-first prompt when logged out
+      // (no silent fail). Blanket patterns are free for any logged-in visitor (no membership check).
+      void ensurePatternBuilderAccount().then((allowed) => {
         if (allowed) runCreateBlanketPattern();
       });
     });
@@ -2750,5 +2752,7 @@ document.addEventListener('DOMContentLoaded', function() {
   console.log('Wizard initialized!');
 });
 </script>
+
+<PatternBuilderAccountGate />
 
 </Layout>

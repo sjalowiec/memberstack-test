@@ -13,6 +13,7 @@ import FloatingInput from "../../components/tools/FloatingInput.astro";
 import YarnRequirement from "../../components/tools/YarnRequirement.astro";
 import PatternComments from "../../components/patterns/PatternComments.astro";
 import PatternHeaderImage from "../../components/patterns/PatternHeaderImage.astro";
+import PatternBuilderAccountGate from "../../components/patterns/PatternBuilderAccountGate.astro";
 import WarningBox from "../../components/ui/WarningBox.astro";
 import glossaryJson from "../../data/glossary.json";
 import hatSizingRows from "../../data/sizing_hats.json";
@@ -2259,9 +2260,9 @@ select.disabled {
     refreshPatternTipDismiss,
     updateTipsResetLinkVisibility,
   } from "../../lib/patterns/patternTipDismiss";
-  import { installPatternBuilderLoginGate } from "../../lib/patterns/patternBuilderLoginGate";
+  import { installPatternBuilderAccountGate } from "../../lib/patterns/patternBuilderAccountGate";
 
-  installPatternBuilderLoginGate();
+  installPatternBuilderAccountGate();
 
   const HAT_TIPS_STORAGE_KEY = "hat-show-tips";
   window.kbmPatternTipsControlBoxHtml = patternTipsControlBoxHtml;
@@ -2644,10 +2645,10 @@ async function initHatBuilder() {
       if (button.classList.contains('is-disabled')) return;
       const target = button.dataset.tab;
       if (!target) return;
-      // Login gate: viewing the generated Pattern tab requires sign-in (matches the
-      // Create My Pattern gate). Other tabs stay open to anonymous visitors.
+      // Account gate: viewing the generated Pattern tab requires a free account (matches
+      // the Create My Pattern gate). Other tabs stay open to anonymous visitors.
       if (target === 'pattern') {
-        const gate = window.kbmEnsurePatternBuilderLogin;
+        const gate = window.kbmEnsurePatternBuilderAccountGate;
         if (typeof gate === 'function') {
           void gate().then((allowed) => {
             if (allowed) activateWizardTab('pattern');
@@ -3409,9 +3410,10 @@ async function initHatBuilder() {
     };
 
     createPatternBtnForClick.addEventListener('click', () => {
-      // Login gate: anonymous visitors may view the builder, but generating the pattern
-      // requires sign-in. The gate opens the login prompt when logged out (no silent fail).
-      const gate = window.kbmEnsurePatternBuilderLogin;
+      // Account gate: anonymous visitors may view the builder, but generating the pattern
+      // requires a free account. The gate opens the signup-first prompt when logged out
+      // (no silent fail). Hat patterns are free for any logged-in visitor (no membership check).
+      const gate = window.kbmEnsurePatternBuilderAccountGate;
       if (typeof gate === 'function') {
         void gate().then((allowed) => {
           if (allowed) runCreateHatPattern();
@@ -5035,5 +5037,7 @@ if (document.readyState === 'loading') {
     });
   }
 </script>
+
+<PatternBuilderAccountGate />
 
 </Layout>

@@ -180,11 +180,12 @@ const isProduction =
 </script>
 <script>
   import { hasKinVideoAccess, logKinVideoAccessDebug } from "../lib/kinVideoAccess";
-  import { openMemberstackLoginModal } from "../lib/memberstackLogin";
+  import { openMemberstackLoginModal, openMemberstackSignupModal } from "../lib/memberstackLogin";
 
   window.kbmHasKinVideoAccess = hasKinVideoAccess;
   window.kbmLogKinVideoAccessDebug = logKinVideoAccessDebug;
   window.kbmOpenMemberstackLoginModal = openMemberstackLoginModal;
+  window.kbmOpenMemberstackSignupModal = openMemberstackSignupModal;
 </script>
    
 <!-- MemberStack -->
@@ -207,6 +208,15 @@ const isProduction =
       id="kbm-ms-login-proxy"
       href="#"
       data-ms-modal="login"
+      data-ms-redirect="/"
+      hidden
+      aria-hidden="true"
+      tabindex="-1"
+    ></a>
+    <a
+      id="kbm-ms-signup-proxy"
+      href="#"
+      data-ms-modal="signup"
       data-ms-redirect="/"
       hidden
       aria-hidden="true"

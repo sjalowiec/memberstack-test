@@ -64,11 +64,16 @@ declare global {
     };
     /** Opens Memberstack login modal with an explicit return path (dynamic CTAs). */
     kbmOpenMemberstackLoginModal?: (returnPath?: string) => void;
+    /** Opens Memberstack signup/register modal with an explicit return path (dynamic CTAs). */
+    kbmOpenMemberstackSignupModal?: (returnPath?: string) => void;
     /**
-     * Hat/Blanket builder login gate: resolves true when the visitor may generate a pattern,
-     * otherwise opens the login prompt and resolves false. Installed by the builder pages.
+     * Hat/Blanket builder account gate: resolves true when the visitor has an account (may
+     * generate a pattern), otherwise opens the signup-first prompt and resolves false.
+     * Installed by the PatternBuilderAccountGate modal component.
      */
-    kbmEnsurePatternBuilderLogin?: () => Promise<boolean>;
+    kbmEnsurePatternBuilderAccountGate?: () => Promise<boolean>;
+    /** Opens the Hat/Blanket signup-first account gate prompt. */
+    kbmOpenPatternBuilderAccountPrompt?: () => void;
     /** Two-step password reset modal (see AccountPasswordResetModal.astro). */
     kbmOpenAccountPasswordResetModal?: (prefillEmail?: string) => void;
     kbmCloseAccountPasswordResetModal?: () => void;
