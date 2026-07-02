@@ -1589,6 +1589,8 @@ const patternPersistWarning =
 <script is:inline src="/js/wizard-utils.js"></script>
 
 <script>
+import { ensurePatternBuilderLogin } from "../../lib/patterns/patternBuilderLoginGate";
+
 document.addEventListener('DOMContentLoaded', function() {
   console.log('Custom Blanket Builder initializing...');
 
@@ -1679,6 +1681,14 @@ document.addEventListener('DOMContentLoaded', function() {
       if (button.classList.contains('is-disabled')) return;
       const target = button.dataset.tab;
       if (!target) return;
+      // Login gate: viewing the generated Pattern tab requires sign-in (matches the
+      // Create My Pattern gate). Other tabs stay open to anonymous visitors.
+      if (target === 'pattern') {
+        void ensurePatternBuilderLogin().then((allowed) => {
+          if (allowed) activateWizardTab('pattern');
+        });
+        return;
+      }
       activateWizardTab(target);
     });
   });
@@ -2672,7 +2682,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (e.button !== 0) return;
       e.preventDefault();
     });
-    createPatternBtnForClick.addEventListener('click', () => {
+    const runCreateBlanketPattern = () => {
       if (!requiredBlanketInputsComplete()) {
         showFinishRequiredSectionsMessage();
         return;
@@ -2682,6 +2692,14 @@ document.addEventListener('DOMContentLoaded', function() {
       patternNav?.classList.remove('is-disabled');
       patternNav?.removeAttribute('aria-disabled');
       activateWizardTab('pattern');
+    };
+
+    createPatternBtnForClick.addEventListener('click', () => {
+      // Login gate: anonymous visitors may view the builder, but generating the pattern
+      // requires sign-in. The gate opens the login prompt when logged out (no silent fail).
+      void ensurePatternBuilderLogin().then((allowed) => {
+        if (allowed) runCreateBlanketPattern();
+      });
     });
   }
 

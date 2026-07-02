@@ -342,8 +342,9 @@ const memberPlanIds = [...MEMBER_PLAN_IDS];
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    margin-top: 1.5rem;
-    padding-top: 1.25rem;
+    /* ~32px total between nav links and buttons, split across the divider */
+    margin-top: 1.25rem;
+    padding-top: 0.75rem;
     border-top: 1px solid var(--ring);
   }
 
@@ -354,15 +355,26 @@ const memberPlanIds = [...MEMBER_PLAN_IDS];
 
   .kbm-nav-row .kbm-drawer-actions .kbm-drawer-account {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    justify-content: flex-start;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  /* Memberstack toggles these wrappers; only one is visible at a time */
+  .kbm-nav-row .kbm-drawer-actions .kbm-drawer-account > [data-ms-content] {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
   }
 
   .kbm-nav-row .kbm-drawer-actions .kbm-drawer-account a {
     min-height: 44px;
+    width: 100%;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    text-align: center;
     padding: 0.5rem 1rem;
   }
 
@@ -876,8 +888,9 @@ const memberPlanIds = [...MEMBER_PLAN_IDS];
     justify-content: space-between;
     align-items: center;
     gap: 0.5rem;
-    padding-top: 0.55rem;
-    padding-bottom: 0.55rem;
+    /* Trimmed ~6px vs. 0.55rem to shorten the green bar; stays centered */
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
     min-width: 0;
   }
 
@@ -892,22 +905,11 @@ const memberPlanIds = [...MEMBER_PLAN_IDS];
     flex: 0 0 0;
   }
 
+  /* Mobile header = logo (left) + hamburger (right) only.
+     Search pill and account buttons move into the drawer, so the whole
+     secondary zone is hidden here to stop it competing with the logo. */
   .kbm-nav-bar .kbm-nav-secondary {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 0.5rem;
-    min-width: 0;
-    flex: 1 1 auto;
-  }
-
-  /* Search pill is hidden in the green bar on mobile; nav lives in the drawer */
-  .kbm-nav-bar .kbm-nav-secondary .header-search-trigger {
     display: none;
-  }
-
-  .kbm-nav-bar .kbm-header-auth .kbm-header-account-btn {
-    max-width: min(9.5rem, 38vw);
   }
 
   .kbm-nav-bar .kbm-nav-right {
@@ -1272,7 +1274,7 @@ const memberPlanIds = [...MEMBER_PLAN_IDS];
 
   /* Brand text may wrap to two lines on mobile to free space for CTA */
   .kbm-nav-bar .kbm-logo-section {
-    padding: 0.25rem 0;
+    padding: 0.1rem 0;
     min-width: 0;
   }
 
@@ -1333,7 +1335,8 @@ const memberPlanIds = [...MEMBER_PLAN_IDS];
     flex-direction: column;
     align-items: stretch;
     gap: 0;
-    margin: 0 0 24px 0;
+    /* Spacing to the auth section is owned by .kbm-drawer-actions below */
+    margin: 0;
   }
 
   .kbm-menu > li {
@@ -1412,7 +1415,7 @@ const memberPlanIds = [...MEMBER_PLAN_IDS];
   }
 
   .kbm-nav-bar .kbm-logo-section {
-    padding: 0.25rem 0;
+    padding: 0.1rem 0;
   }
 
   /* Keep brand title prominent on small screens */
@@ -1710,6 +1713,49 @@ div[data-ms-modal-overlay] {
               </ul>
             </li>
           </ul>
+
+          <!-- Drawer-only account actions (mobile): moved out of the crowded header bar -->
+          <div class="kbm-drawer-actions">
+            <div class="kbm-drawer-account">
+              <div data-ms-content="!members">
+                <a
+                  href="#"
+                  data-ms-modal="login"
+                  data-ms-redirect="current-url"
+                  class="kbm-btn kbm-btn-outline"
+                >
+                  Log In
+                </a>
+                <!-- Temporarily disabled until sign-up flow is finished -->
+                <a
+                  href="#"
+                  class="kbm-btn kbm-btn-outline kbm-header-signup--inactive"
+                  aria-disabled="true"
+                  tabindex="-1"
+                >
+                  Sign Up
+                </a>
+              </div>
+
+              <div data-ms-content="members">
+                <a
+                  href="/account"
+                  class="kbm-btn kbm-btn--primary"
+                  data-testid="nav-my-account-mobile"
+                >
+                  My Account
+                </a>
+                <a
+                  href="#"
+                  data-ms-action="logout"
+                  data-ms-redirect="current-url"
+                  class="kbm-btn kbm-btn-outline"
+                >
+                  Log Out
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -2089,8 +2135,12 @@ div[data-ms-modal-overlay] {
     function syncHeaderHeight() {
       const header = document.querySelector('.kbm-header-wrap');
       if (header) {
-        const height = header.getBoundingClientRect().height;
-        document.documentElement.style.setProperty('--header-height', `${height}px`);
+        // Use the header's bottom edge (not just its height) so the value also
+        // accounts for the fixed DEV/env stripe that pushes the header down.
+        // This keeps the mobile drawer and content offset below both bars.
+        const rect = header.getBoundingClientRect();
+        const headerBottom = Math.max(0, Math.round(rect.bottom));
+        document.documentElement.style.setProperty('--header-height', `${headerBottom}px`);
       }
     }
 
