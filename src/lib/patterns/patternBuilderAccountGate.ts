@@ -12,9 +12,11 @@
  * "already have an account? Log in" link) rather than a login-only prompt, so brand-new visitors
  * can hand us their email. It reuses the shared Memberstack primitives:
  *   - `isSleevelessPatternMemberLoggedIn` for the logged-in decision (Memberstack + dev bypass)
- *   - `openMemberstackSignupModal` / `openMemberstackLoginModal` for the prompt CTAs
+ *   - `goToPublicSignup` (the production signup form) for the primary CTA  NOT the prebuilt
+ *     Memberstack SIGNUP modal, which exposes internal member fields
+ *   - `openMemberstackLoginModal` for the secondary CTA
  */
-import { openMemberstackLoginModal, openMemberstackSignupModal } from "../memberstackLogin";
+import { goToPublicSignup, openMemberstackLoginModal } from "../memberstackLogin";
 import { isSleevelessPatternMemberLoggedIn } from "./sleevelessPatternLoginGate";
 
 export const PATTERN_BUILDER_ACCOUNT_GATE_TITLE = "Create your free Knit It Now account";
@@ -36,7 +38,7 @@ export interface EnsurePatternBuilderAccountDeps {
 /**
  * Returns `true` when the visitor may generate/view a pattern (they have an account). When logged
  * out, opens the signup-first prompt (so the failure is never silent) and returns `false` so
- * callers can abort. No subscription/membership check is applied — login alone is sufficient.
+ * callers can abort. No subscription/membership check is applied  login alone is sufficient.
  */
 export async function ensurePatternBuilderAccount(
   deps: EnsurePatternBuilderAccountDeps = {},
@@ -88,15 +90,15 @@ export function showPatternBuilderAccountGate(options?: { root?: ParentNode }): 
 }
 
 export interface PatternBuilderAccountGateModalDeps {
-  /** Primary CTA (Create Free Account). Defaults to the Memberstack signup modal. */
+  /** Primary CTA (Create Free Account). Defaults to routing to the public signup form. */
   openSignup?: (returnPath?: string) => void;
   /** Secondary CTA (Log in). Defaults to the Memberstack login modal. */
   openLogin?: (returnPath?: string) => void;
 }
 
 /**
- * Wires the account gate modal's CTAs once per dialog instance: primary opens Memberstack
- * signup/register, secondary opens Memberstack login, and dismiss/backdrop/Escape close it.
+ * Wires the account gate modal's CTAs once per dialog instance: primary routes to the public
+ * signup form, secondary opens the Memberstack login modal, and dismiss/backdrop/Escape close it.
  */
 export function initPatternBuilderAccountGate(
   root: ParentNode = typeof document !== "undefined" ? document : ({} as ParentNode),
@@ -106,7 +108,7 @@ export function initPatternBuilderAccountGate(
   if (!dialog || dialog.getAttribute(BOUND_ATTR) === "true") return;
   dialog.setAttribute(BOUND_ATTR, "true");
 
-  const openSignup = deps.openSignup ?? openMemberstackSignupModal;
+  const openSignup = deps.openSignup ?? goToPublicSignup;
   const openLogin = deps.openLogin ?? openMemberstackLoginModal;
 
   const close = (): void => {

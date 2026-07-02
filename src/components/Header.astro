@@ -3,6 +3,7 @@
 
 import { MEMBER_PLAN_IDS } from "../config/memberships";
 import { PATTERN_BUILDERS_HOME_HREF } from "../lib/patterns/customPatternProjectNavigation";
+import { PUBLIC_SIGNUP_PATH } from "../lib/memberstackReturnUrl";
 
 /* Temporary beta "What's New" banner. Set to false to hide site-wide
    (no leftover spacing — the fixed-header offset re-measures automatically). */
@@ -560,15 +561,6 @@ const memberPlanIds = [...MEMBER_PLAN_IDS];
 
 .kbm-nav-bar .kbm-header-auth a[data-ms-action="logout"] {
   flex-shrink: 0;
-}
-
-/* Sign Up — temporarily inactive until sign-up flow is finished (see header markup) */
-.kbm-nav-bar .kbm-header-signup--inactive,
-.kbm-nav-bar .kbm-header-auth .kbm-header-signup--inactive,
-.kbm-nav-row .kbm-drawer-account .kbm-header-signup--inactive {
-  opacity: 0.55;
-  cursor: not-allowed;
-  pointer-events: none;
 }
 
 .kbm-nav-bar .kbm-logo-section {
@@ -1726,12 +1718,10 @@ div[data-ms-modal-overlay] {
                 >
                   Log In
                 </a>
-                <!-- Temporarily disabled until sign-up flow is finished -->
                 <a
-                  href="#"
-                  class="kbm-btn kbm-btn-outline kbm-header-signup--inactive"
-                  aria-disabled="true"
-                  tabindex="-1"
+                  href={PUBLIC_SIGNUP_PATH}
+                  class="kbm-btn kbm-btn-outline"
+                  data-testid="nav-signup-mobile"
                 >
                   Sign Up
                 </a>
@@ -1775,12 +1765,10 @@ div[data-ms-modal-overlay] {
             <a href="#" data-ms-modal="login" data-ms-redirect="current-url" class="kbm-btn kbm-btn-outline">
               Log In
             </a>
-            <!-- Temporarily disabled until sign-up flow is finished — no MemberStack signup modal -->
             <a
-              href="#"
-              class="kbm-btn kbm-btn-outline kbm-header-signup--inactive"
-              aria-disabled="true"
-              tabindex="-1"
+              href={PUBLIC_SIGNUP_PATH}
+              class="kbm-btn kbm-btn-outline"
+              data-testid="nav-signup"
             >
               Sign Up
             </a>

@@ -1,17 +1,15 @@
 import { notifyMemberstackLoginSuccess } from "./memberstackPostLogin";
 import {
   MY_PATTERNS_RETURN_PATH,
+  PUBLIC_SIGNUP_PATH,
   getMemberstackReturnPath,
   resolveAccountLoginRedirectPath,
 } from "./memberstackReturnUrl";
 
-export { MY_PATTERNS_RETURN_PATH, resolveAccountLoginRedirectPath };
+export { MY_PATTERNS_RETURN_PATH, PUBLIC_SIGNUP_PATH, resolveAccountLoginRedirectPath };
 
 /** Id of the static login proxy anchor rendered in BaseLayout (bound at Memberstack init). */
 export const MEMBERSTACK_LOGIN_PROXY_ID = "kbm-ms-login-proxy";
-
-/** Id of the static signup proxy anchor rendered in BaseLayout (bound at Memberstack init). */
-export const MEMBERSTACK_SIGNUP_PROXY_ID = "kbm-ms-signup-proxy";
 
 /**
  * Opens the Memberstack login modal with an explicit post-login return path.
@@ -54,43 +52,15 @@ export function openMemberstackLoginModal(returnPath?: string): void {
 }
 
 /**
- * Opens the Memberstack signup/registration modal with an explicit post-signup return path.
- * Mirrors {@link openMemberstackLoginModal}: prefers the promise-returning `openModal("SIGNUP")`,
- * falling back to the hidden `data-ms-modal="signup"` proxy anchor rendered in BaseLayout.
+ * Sends the visitor to the site's public signup experience — the custom Memberstack signup form
+ * at {@link PUBLIC_SIGNUP_PATH}. We deliberately do NOT open the prebuilt Memberstack SIGNUP modal
+ * (`openModal("SIGNUP")` / `data-ms-modal="signup"`): that modal auto-renders every internal member
+ * custom field (birthday, date-joined, legacyMemberID), which must never be shown to a new visitor.
+ * This reuses the one production public signup flow rather than creating a second one.
  */
-export function openMemberstackSignupModal(returnPath?: string): void {
-  const redirect = returnPath ?? getMemberstackReturnPath();
-
-  function openViaModal(ms: NonNullable<typeof window.$memberstackDom>): boolean {
-    if (typeof ms.openModal !== "function") return false;
-    void ms
-      .openModal("SIGNUP")
-      .then(() => {
-        notifyMemberstackLoginSuccess();
-      })
-      .catch(() => {
-        /* dismissed or failed to open */
-      });
-    return true;
-  }
-
-  function openViaProxy(): boolean {
-    const proxy = document.getElementById(MEMBERSTACK_SIGNUP_PROXY_ID);
-    if (!(proxy instanceof HTMLAnchorElement)) return false;
-    proxy.setAttribute("data-ms-redirect", redirect);
-    proxy.click();
-    return true;
-  }
-
-  const ms = window.$memberstackDom;
-  if (ms && openViaModal(ms)) return;
-  if (openViaProxy()) return;
-
-  void ms?.onReady?.then(() => {
-    const readyMs = window.$memberstackDom;
-    if (readyMs && openViaModal(readyMs)) return;
-    openViaProxy();
-  });
+export function goToPublicSignup(signupPath: string = PUBLIC_SIGNUP_PATH): void {
+  if (typeof window === "undefined") return;
+  window.location.assign(signupPath);
 }
 
 /** Account page: form redirect + modal login triggers use the same explicit return path. */

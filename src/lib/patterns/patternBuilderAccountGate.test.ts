@@ -3,14 +3,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 // Default deps come from these two modules; mock them so we can assert the gate reuses them
 // without pulling in the real Memberstack / DOM stack.
 const isSleevelessPatternMemberLoggedIn = vi.fn<[], Promise<boolean>>();
-const openMemberstackSignupModal = vi.fn<[string?], void>();
+const goToPublicSignup = vi.fn<[string?], void>();
 const openMemberstackLoginModal = vi.fn<[string?], void>();
 
 vi.mock("./sleevelessPatternLoginGate", () => ({
   isSleevelessPatternMemberLoggedIn: () => isSleevelessPatternMemberLoggedIn(),
 }));
 vi.mock("../memberstackLogin", () => ({
-  openMemberstackSignupModal: (returnPath?: string) => openMemberstackSignupModal(returnPath),
+  goToPublicSignup: (signupPath?: string) => goToPublicSignup(signupPath),
   openMemberstackLoginModal: (returnPath?: string) => openMemberstackLoginModal(returnPath),
 }));
 
@@ -23,7 +23,7 @@ import {
 
 beforeEach(() => {
   isSleevelessPatternMemberLoggedIn.mockReset();
-  openMemberstackSignupModal.mockReset();
+  goToPublicSignup.mockReset();
   openMemberstackLoginModal.mockReset();
 });
 
@@ -171,7 +171,7 @@ describe("ensurePatternBuilderAccount  logged-in visitors generate for free (no
 
     expect(allowed).toBe(true);
     expect(isSleevelessPatternMemberLoggedIn).toHaveBeenCalledTimes(1);
-    expect(openMemberstackSignupModal).not.toHaveBeenCalled();
+    expect(goToPublicSignup).not.toHaveBeenCalled();
     expect(openMemberstackLoginModal).not.toHaveBeenCalled();
   });
 });
@@ -190,7 +190,7 @@ describe("showPatternBuilderAccountGate", () => {
 });
 
 describe("initPatternBuilderAccountGate  modal CTAs", () => {
-  it("primary CTA opens signup/register, secondary CTA opens login", () => {
+  it("primary CTA routes to public signup, secondary CTA opens login", () => {
     const openSignup = vi.fn();
     const openLogin = vi.fn();
     const { dialog, root, buttons } = makeDialogFixture();
