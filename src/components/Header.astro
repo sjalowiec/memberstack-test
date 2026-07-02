@@ -3,7 +3,6 @@
 
 import { MEMBER_PLAN_IDS } from "../config/memberships";
 import { PATTERN_BUILDERS_HOME_HREF } from "../lib/patterns/customPatternProjectNavigation";
-import { PUBLIC_SIGNUP_PATH } from "../lib/memberstackReturnUrl";
 
 /* Temporary beta "What's New" banner. Set to false to hide site-wide
    (no leftover spacing — the fixed-header offset re-measures automatically). */
@@ -1719,8 +1718,9 @@ div[data-ms-modal-overlay] {
                   Log In
                 </a>
                 <a
-                  href={PUBLIC_SIGNUP_PATH}
+                  href="#"
                   class="kbm-btn kbm-btn-outline"
+                  data-open-public-signup
                   data-testid="nav-signup-mobile"
                 >
                   Sign Up
@@ -1766,8 +1766,9 @@ div[data-ms-modal-overlay] {
               Log In
             </a>
             <a
-              href={PUBLIC_SIGNUP_PATH}
+              href="#"
               class="kbm-btn kbm-btn-outline"
+              data-open-public-signup
               data-testid="nav-signup"
             >
               Sign Up

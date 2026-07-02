@@ -3,7 +3,6 @@
  * Wraps sleeveless pattern page content. Logged-out visitors see a login prompt;
  * pattern builder / review / print UI stays hidden until Memberstack reports a member.
  */
-import { PUBLIC_SIGNUP_PATH } from "../../lib/memberstackReturnUrl";
 ---
 
 <div class="sleeveless-pattern-gate" data-sleeveless-pattern-gate data-gate-pending>
@@ -33,8 +32,9 @@ import { PUBLIC_SIGNUP_PATH } from "../../lib/memberstackReturnUrl";
           Log in
         </a>
         <a
-          href={PUBLIC_SIGNUP_PATH}
+          href="#"
           class="kbm-btn kbm-btn-outline"
+          data-open-public-signup
         >
           Sign up
         </a>

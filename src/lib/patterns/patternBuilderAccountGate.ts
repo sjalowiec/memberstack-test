@@ -10,13 +10,14 @@
  *
  * When logged out, the gate shows a signup-first prompt (Create Free Account, with a secondary
  * "already have an account? Log in" link) rather than a login-only prompt, so brand-new visitors
- * can hand us their email. It reuses the shared Memberstack primitives:
+ * can hand us their email. It reuses the shared primitives:
  *   - `isSleevelessPatternMemberLoggedIn` for the logged-in decision (Memberstack + dev bypass)
- *   - `goToPublicSignup` (the production signup form) for the primary CTA  NOT the prebuilt
+ *   - `showPublicSignupModal` (the clean site-wide custom signup form) for the primary CTA  NOT the prebuilt
  *     Memberstack SIGNUP modal, which exposes internal member fields
  *   - `openMemberstackLoginModal` for the secondary CTA
  */
-import { goToPublicSignup, openMemberstackLoginModal } from "../memberstackLogin";
+import { openMemberstackLoginModal } from "../memberstackLogin";
+import { showPublicSignupModal } from "../publicSignupModal";
 import { isSleevelessPatternMemberLoggedIn } from "./sleevelessPatternLoginGate";
 
 export const PATTERN_BUILDER_ACCOUNT_GATE_TITLE = "Create your free Knit It Now account";
@@ -90,15 +91,15 @@ export function showPatternBuilderAccountGate(options?: { root?: ParentNode }): 
 }
 
 export interface PatternBuilderAccountGateModalDeps {
-  /** Primary CTA (Create Free Account). Defaults to routing to the public signup form. */
+  /** Primary CTA (Create Free Account). Defaults to opening the clean public signup modal. */
   openSignup?: (returnPath?: string) => void;
   /** Secondary CTA (Log in). Defaults to the Memberstack login modal. */
   openLogin?: (returnPath?: string) => void;
 }
 
 /**
- * Wires the account gate modal's CTAs once per dialog instance: primary routes to the public
- * signup form, secondary opens the Memberstack login modal, and dismiss/backdrop/Escape close it.
+ * Wires the account gate modal's CTAs once per dialog instance: primary opens the clean public
+ * signup modal, secondary opens the Memberstack login modal, and dismiss/backdrop/Escape close it.
  */
 export function initPatternBuilderAccountGate(
   root: ParentNode = typeof document !== "undefined" ? document : ({} as ParentNode),
@@ -108,7 +109,7 @@ export function initPatternBuilderAccountGate(
   if (!dialog || dialog.getAttribute(BOUND_ATTR) === "true") return;
   dialog.setAttribute(BOUND_ATTR, "true");
 
-  const openSignup = deps.openSignup ?? goToPublicSignup;
+  const openSignup = deps.openSignup ?? (() => void showPublicSignupModal());
   const openLogin = deps.openLogin ?? openMemberstackLoginModal;
 
   const close = (): void => {

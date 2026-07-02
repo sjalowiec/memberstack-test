@@ -4,6 +4,7 @@ import "../styles/global.css";
 import "../styles/print.css";
 import ContactModal from "../components/ContactModal.astro";
 import AccountPasswordResetModal from "../components/auth/AccountPasswordResetModal.astro";
+import PublicSignupModal from "../components/PublicSignupModal.astro";
 import KinCatalogVideoModal from "../components/common/KinCatalogVideoModal.astro";
 import ToolPrintFooter from "../components/tools/ToolPrintFooter.astro";
 import EnvBanner from "../components/EnvBanner.astro";
@@ -180,12 +181,11 @@ const isProduction =
 </script>
 <script>
   import { hasKinVideoAccess, logKinVideoAccessDebug } from "../lib/kinVideoAccess";
-  import { goToPublicSignup, openMemberstackLoginModal } from "../lib/memberstackLogin";
+  import { openMemberstackLoginModal } from "../lib/memberstackLogin";
 
   window.kbmHasKinVideoAccess = hasKinVideoAccess;
   window.kbmLogKinVideoAccessDebug = logKinVideoAccessDebug;
   window.kbmOpenMemberstackLoginModal = openMemberstackLoginModal;
-  window.kbmGoToPublicSignup = goToPublicSignup;
 </script>
    
 <!-- MemberStack -->
@@ -219,6 +219,7 @@ const isProduction =
 
     <ContactModal />
     <AccountPasswordResetModal />
+    <PublicSignupModal />
     <KinCatalogVideoModal />
 
     <script>

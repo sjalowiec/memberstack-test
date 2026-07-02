@@ -64,8 +64,8 @@ declare global {
     };
     /** Opens Memberstack login modal with an explicit return path (dynamic CTAs). */
     kbmOpenMemberstackLoginModal?: (returnPath?: string) => void;
-    /** Navigates to the public signup page (custom signup form, not the prebuilt MS modal). */
-    kbmGoToPublicSignup?: (signupPath?: string) => void;
+    /** Opens the clean public signup modal (custom signup form, not the prebuilt MS modal). */
+    kbmOpenPublicSignupModal?: () => void;
     /**
      * Hat/Blanket builder account gate: resolves true when the visitor has an account (may
      * generate a pattern), otherwise opens the signup-first prompt and resolves false.

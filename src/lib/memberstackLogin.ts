@@ -1,12 +1,11 @@
 import { notifyMemberstackLoginSuccess } from "./memberstackPostLogin";
 import {
   MY_PATTERNS_RETURN_PATH,
-  PUBLIC_SIGNUP_PATH,
   getMemberstackReturnPath,
   resolveAccountLoginRedirectPath,
 } from "./memberstackReturnUrl";
 
-export { MY_PATTERNS_RETURN_PATH, PUBLIC_SIGNUP_PATH, resolveAccountLoginRedirectPath };
+export { MY_PATTERNS_RETURN_PATH, resolveAccountLoginRedirectPath };
 
 /** Id of the static login proxy anchor rendered in BaseLayout (bound at Memberstack init). */
 export const MEMBERSTACK_LOGIN_PROXY_ID = "kbm-ms-login-proxy";
@@ -50,19 +49,6 @@ export function openMemberstackLoginModal(returnPath?: string): void {
     openViaProxy();
   });
 }
-
-/**
- * Sends the visitor to the site's public signup experience — the custom Memberstack signup form
- * at {@link PUBLIC_SIGNUP_PATH}. We deliberately do NOT open the prebuilt Memberstack SIGNUP modal
- * (`openModal("SIGNUP")` / `data-ms-modal="signup"`): that modal auto-renders every internal member
- * custom field (birthday, date-joined, legacyMemberID), which must never be shown to a new visitor.
- * This reuses the one production public signup flow rather than creating a second one.
- */
-export function goToPublicSignup(signupPath: string = PUBLIC_SIGNUP_PATH): void {
-  if (typeof window === "undefined") return;
-  window.location.assign(signupPath);
-}
-
 /** Account page: form redirect + modal login triggers use the same explicit return path. */
 export function applyAccountLoginReturnPath(loc: Location = window.location): string {
   const returnPath = resolveAccountLoginRedirectPath(loc);

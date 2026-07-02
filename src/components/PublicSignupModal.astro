@@ -1,0 +1,221 @@
+---
+/**
+ * Site-wide clean public signup modal. Rendered once globally from BaseLayout so any CTA
+ * (header Sign Up, Hat/Blanket account gate, sleeveless gate) can open it via
+ * `window.kbmOpenPublicSignupModal()` or a `data-open-public-signup` attribute.
+ *
+ * Uses a CUSTOM Memberstack signup form (First Name / Email / Password) — never the prebuilt
+ * `data-ms-modal="signup"` modal, which exposes internal member fields. Creates a free member
+ * (no plan attached).
+ */
+import {
+  PUBLIC_SIGNUP_EMAIL_LABEL,
+  PUBLIC_SIGNUP_FIRST_NAME_LABEL,
+  PUBLIC_SIGNUP_LOGIN_LABEL,
+  PUBLIC_SIGNUP_MODAL_SUBTITLE,
+  PUBLIC_SIGNUP_MODAL_TITLE,
+  PUBLIC_SIGNUP_PASSWORD_LABEL,
+  PUBLIC_SIGNUP_SUBMIT_LABEL,
+} from "../lib/publicSignupModal";
+---
+
+<dialog
+  class="public-signup-modal"
+  data-public-signup-modal
+  aria-labelledby="public-signup-modal-title"
+>
+  <div class="public-signup-modal__inner">
+    <button
+      type="button"
+      class="public-signup-modal__close"
+      data-public-signup-dismiss
+      aria-label="Close"
+    >&times;</button>
+
+    <h2 id="public-signup-modal-title" class="public-signup-modal__title">
+      {PUBLIC_SIGNUP_MODAL_TITLE}
+    </h2>
+    <p class="public-signup-modal__subtitle">{PUBLIC_SIGNUP_MODAL_SUBTITLE}</p>
+
+    <form data-ms-form="signup" class="public-signup-modal__form">
+      <div class="public-signup-modal__field">
+        <label for="public-signup-first-name">{PUBLIC_SIGNUP_FIRST_NAME_LABEL}</label>
+        <input
+          id="public-signup-first-name"
+          type="text"
+          data-ms-member="first-name"
+          autocomplete="given-name"
+        />
+      </div>
+
+      <div class="public-signup-modal__field">
+        <label for="public-signup-email">{PUBLIC_SIGNUP_EMAIL_LABEL}</label>
+        <input
+          id="public-signup-email"
+          type="email"
+          data-ms-member="email"
+          autocomplete="email"
+          required
+        />
+      </div>
+
+      <div class="public-signup-modal__field">
+        <label for="public-signup-password">{PUBLIC_SIGNUP_PASSWORD_LABEL}</label>
+        <input
+          id="public-signup-password"
+          type="password"
+          data-ms-member="password"
+          autocomplete="new-password"
+          required
+          aria-describedby="public-signup-password-hint"
+        />
+        <p class="public-signup-modal__hint" id="public-signup-password-hint">
+          Password must be at least 8 characters.
+        </p>
+      </div>
+
+      <button type="submit" class="public-signup-modal__submit kbm-btn kbm-btn-primary">
+        {PUBLIC_SIGNUP_SUBMIT_LABEL}
+      </button>
+    </form>
+
+    <div class="public-signup-modal__login">
+      <button type="button" class="public-signup-modal__login-link" data-public-signup-login>
+        {PUBLIC_SIGNUP_LOGIN_LABEL}
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+  import { initPublicSignupModal, installPublicSignupModal } from "../lib/publicSignupModal";
+
+  initPublicSignupModal();
+  installPublicSignupModal();
+</script>
+
+<style>
+  .public-signup-modal {
+    max-width: min(92vw, 28rem);
+    margin: auto;
+    padding: 0;
+    border: none;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.18);
+  }
+
+  .public-signup-modal::backdrop {
+    background: rgba(15, 23, 42, 0.45);
+  }
+
+  .public-signup-modal__inner {
+    position: relative;
+    padding: clamp(1.5rem, 3vw, 2rem);
+  }
+
+  .public-signup-modal__close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.65rem;
+    appearance: none;
+    border: none;
+    background: transparent;
+    font-size: 1.6rem;
+    line-height: 1;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 0.25rem 0.4rem;
+  }
+
+  .public-signup-modal__close:hover {
+    color: #4b5563;
+  }
+
+  .public-signup-modal__title {
+    margin: 0 0 0.4rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #2c3a57;
+    line-height: 1.25;
+    text-align: center;
+  }
+
+  .public-signup-modal__subtitle {
+    margin: 0 0 1.25rem;
+    font-size: 0.98rem;
+    line-height: 1.5;
+    color: #4b5563;
+    text-align: center;
+  }
+
+  .public-signup-modal__form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .public-signup-modal__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .public-signup-modal__field label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #374151;
+  }
+
+  .public-signup-modal__field input {
+    padding: 0.6rem 0.7rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font: inherit;
+    color: #111827;
+  }
+
+  .public-signup-modal__field input:focus {
+    outline: 2px solid #52682d;
+    outline-offset: 1px;
+    border-color: #52682d;
+  }
+
+  .public-signup-modal__hint {
+    margin: 0.15rem 0 0;
+    font-size: 0.8rem;
+    color: #6b7280;
+  }
+
+  .public-signup-modal__submit {
+    margin-top: 0.35rem;
+    width: 100%;
+  }
+
+  .public-signup-modal__login {
+    margin-top: 1rem;
+    text-align: center;
+  }
+
+  .public-signup-modal__login-link {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: #52682d;
+    font: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .public-signup-modal__login-link:hover {
+    color: #3f5122;
+  }
+
+  .public-signup-modal__login-link:focus-visible,
+  .public-signup-modal__close:focus-visible {
+    outline: 2px solid #52682d;
+    outline-offset: 2px;
+  }
+</style>
