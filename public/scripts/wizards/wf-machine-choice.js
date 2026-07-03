@@ -100,6 +100,7 @@
   let history = [];
   let answers = {};
   let multiSelectTemp = []; // Temporary storage for multi-select step
+  let singleSelectTemp = null; // Temporary storage for the current single-select step (before Continue)
 
   // Helper functions
   function getCurrentStep() {
@@ -112,6 +113,20 @@
 
   function getStepByIndex(index) {
     return steps[index] || null;
+  }
+
+  // Seed the temp selection for whatever step is now current from any previously saved
+  // answer, so navigating forward/back always shows the prior choice highlighted.
+  function loadTempForCurrentStep() {
+    const step = getCurrentStep();
+    multiSelectTemp = [];
+    singleSelectTemp = null;
+    if (!step) return;
+    if (step.answerType === "multi") {
+      multiSelectTemp = Array.isArray(answers[step.answerKey]) ? [...answers[step.answerKey]] : [];
+    } else if (step.answerType === "single") {
+      singleSelectTemp = (answers[step.answerKey] !== undefined) ? answers[step.answerKey] : null;
+    }
   }
 
   // Compute results based on answers
@@ -212,9 +227,11 @@
     const step = getCurrentStep();
     if (!step) return;
 
+    const choice = step.choices[choiceIndex];
+    if (!choice) return;
+
     if (step.answerType === "multi") {
-      // Toggle selection for multi-select
-      const choice = step.choices[choiceIndex];
+      // Toggle selection for multi-select (highlight only; advance happens on Continue)
       const value = choice.value;
       const idx = multiSelectTemp.indexOf(value);
       if (idx >= 0) {
@@ -224,15 +241,8 @@
       }
       render();
     } else {
-      // Single select - record and advance
-      const choice = step.choices[choiceIndex];
-      answers[step.answerKey] = choice.value;
-
-      history.push(currentStepId);
-      const nextIndex = getCurrentStepIndex() + 1;
-      if (nextIndex < steps.length) {
-        currentStepId = steps[nextIndex].stepId;
-      }
+      // Single select: highlight only, do NOT auto-advance. Continue advances.
+      singleSelectTemp = choice.value;
       render();
     }
   }
@@ -241,10 +251,14 @@
     const step = getCurrentStep();
     if (!step) return;
 
+    // Commit the current step's temp selection into answers (guarded so a disabled
+    // Continue can never advance without a selection).
     if (step.answerType === "multi") {
-      // Save multi-select answers
+      if (multiSelectTemp.length === 0) return;
       answers[step.answerKey] = [...multiSelectTemp];
-      multiSelectTemp = [];
+    } else if (step.answerType === "single") {
+      if (singleSelectTemp === null || singleSelectTemp === undefined) return;
+      answers[step.answerKey] = singleSelectTemp;
     }
 
     history.push(currentStepId);
@@ -252,6 +266,7 @@
     if (nextIndex < steps.length) {
       currentStepId = steps[nextIndex].stepId;
     }
+    loadTempForCurrentStep();
     render();
   }
 
@@ -260,11 +275,8 @@
       const prevStepId = history.pop();
       currentStepId = prevStepId;
 
-      // Restore multi-select temp if going back to multi-select step
-      const step = getCurrentStep();
-      if (step && step.answerType === "multi" && answers[step.answerKey]) {
-        multiSelectTemp = [...answers[step.answerKey]];
-      }
+      // Restore the prior answer as the highlighted temp selection.
+      loadTempForCurrentStep();
 
       render();
     }
@@ -275,11 +287,67 @@
     history = [];
     answers = {};
     multiSelectTemp = [];
+    singleSelectTemp = null;
     render();
   }
 
-  // Orientation text (only shown on first question)
-  const ORIENTATION_TEXT = "Answer 6 quick questions to find the right knitting machine for your needs.";
+  // "Contact Sue" recipient. Matches Sue's direct address already used elsewhere on the
+  // site (src/pages/reference/clubs.astro, src/pages/help-hub/guided-workshop.astro,
+  // src/lib/email/sendCourseReadyNotificationEmail.ts).
+  const CONTACT_SUE_EMAIL = "sue@knititnow.com";
+
+  // Build a readable list of the user's selected answers using the wizard's own
+  // question text and choice labels. Shared by the on-screen "Your answers" summary
+  // and the Contact Sue mailto body, so both always reflect the current wizard state.
+  function buildAnswerSummary() {
+    const summary = [];
+    steps.forEach(step => {
+      if (!step.answerKey || step.answerType === "computed") return;
+      const raw = answers[step.answerKey];
+      if (raw === undefined || raw === null || (Array.isArray(raw) && raw.length === 0)) return;
+
+      const labelFor = (val) => {
+        const choice = (step.choices || []).find(c => c.value === val);
+        return choice ? choice.label : val;
+      };
+
+      const answerText = Array.isArray(raw)
+        ? raw.map(labelFor).join(", ")
+        : labelFor(raw);
+
+      summary.push({ question: step.thoughtText, answer: answerText });
+    });
+    return summary;
+  }
+
+  // Build the "Contact Sue" mailto href dynamically from the current wizard state.
+  // Subject + body are URL-encoded with encodeURIComponent.
+  function buildContactMailto() {
+    const summary = buildAnswerSummary();
+    const subject = "Help choosing a knitting machine";
+
+    const lines = [
+      "Hi Sue,",
+      "I used the Choose a Knitting Machine guide and would like help choosing a machine.",
+      "",
+      "Your answers:"
+    ];
+
+    if (summary.length > 0) {
+      summary.forEach(item => {
+        lines.push(`- ${item.question}`);
+        lines.push(`  ${item.answer}`);
+      });
+    } else {
+      lines.push("- (no answers recorded)");
+    }
+
+    lines.push("");
+    lines.push("Thank you!");
+
+    const body = lines.join("\n");
+    return `mailto:${CONTACT_SUE_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  }
 
   // CSS Styles (injected once)
   function injectStyles() {
@@ -596,12 +664,20 @@
         `;
       }).join("");
     } else {
-      choicesHtml = step.choices.map((choice, i) => `
-        <button class="wizard-choice-btn" data-choice="${i}">${escapeHtml(choice.label)}</button>
-      `).join("");
+      // Single-select: highlight the chosen option; selection no longer auto-advances.
+      choicesHtml = step.choices.map((choice, i) => {
+        const isSelected = singleSelectTemp === choice.value;
+        return `
+          <button class="wizard-choice-btn${isSelected ? ' is-selected' : ''}" data-choice="${i}">${escapeHtml(choice.label)}</button>
+        `;
+      }).join("");
     }
 
-    const canContinue = !isMultiSelect || multiSelectTemp.length > 0;
+    // Continue is enabled only once this step has a selection (works the same for every
+    // question, single or multi, first screen or later).
+    const canContinue = isMultiSelect
+      ? multiSelectTemp.length > 0
+      : (singleSelectTemp !== null && singleSelectTemp !== undefined);
     const isFirstStep = history.length === 0;
 
     return `
@@ -619,26 +695,32 @@
         <div class="wizard-choices">
           ${choicesHtml}
         </div>
-        ${!isFirstStep || isMultiSelect ? `
-          <div class="wizard-btn-row wizard-btn-row-sticky">
-            ${!isFirstStep ? `
-              <button class="wizard-btn wizard-btn-ghost" data-action="back">
-                ${ICONS.arrowLeft} Go Back
-              </button>
-              <button class="wizard-btn wizard-btn-outline" data-action="restart">
-                ${ICONS.rotateCcw} Start Over
-              </button>
-            ` : ""}
-            ${isMultiSelect ? `
-              <button class="wizard-btn wizard-btn-primary" data-action="continue" ${!canContinue ? 'disabled' : ''}>
-                Continue ${ICONS.arrowRight}
-              </button>
-            ` : ""}
-          </div>
-        ` : ""}
+        <div class="wizard-btn-row wizard-btn-row-sticky">
+          ${!isFirstStep ? `
+            <button class="wizard-btn wizard-btn-ghost" data-action="back">
+              ${ICONS.arrowLeft} Go Back
+            </button>
+            <button class="wizard-btn wizard-btn-outline" data-action="restart">
+              ${ICONS.rotateCcw} Start Over
+            </button>
+          ` : ""}
+          <button class="wizard-btn wizard-btn-primary" data-action="continue" ${!canContinue ? 'disabled' : ''}>
+            Continue ${ICONS.arrowRight}
+          </button>
+        </div>
       </div>
     `;
   }
+
+  /**
+   * TEMPORARY (pre-August 1 launch): specific machine recommendations are disabled.
+   * While this flag is false, the results screen shows a "contact Sue" invitation
+   * instead of naming machines. Flip it back to `true` to restore the original
+   * recommendation UI after the recommendations are reviewed post-launch. All scoring
+   * and recommendation logic (computeResults, INVENTORY, control/gauge/ribber/caveats,
+   * matching machines) is left fully intact below and still runs every render.
+   */
+  const SHOW_MACHINE_RECOMMENDATIONS = false;
 
   function renderResultsView() {
     const results = computeResults();
@@ -663,38 +745,74 @@
       machinesHtml = '<p class="wizard-no-machines">No current machines we offer match every requirement you selected.</p>';
     }
 
+    // Original machine-recommendation card body. Preserved intact; only shown when
+    // SHOW_MACHINE_RECOMMENDATIONS is re-enabled after the post-launch review.
+    const recommendationsInner = `
+      <h3 class="wizard-outcome-title">Your Machine Recommendations</h3>
+
+      <div class="wizard-results-section">
+        <p class="wizard-results-label">Control types that fit your needs:</p>
+        <ul class="wizard-results-list">${controlTypesHtml}</ul>
+      </div>
+
+      <div class="wizard-results-section">
+        <p class="wizard-results-label">Gauge family:</p>
+        <p class="wizard-results-value">${formatGaugeFamily(results.gaugeFamily)}</p>
+      </div>
+
+      <div class="wizard-results-section">
+        <p class="wizard-results-label">Ribber:</p>
+        <p class="wizard-results-value">${results.ribberOutput}</p>
+      </div>
+
+      <div class="wizard-results-section">
+        <p class="wizard-results-label">Things to consider:</p>
+        ${caveatsHtml}
+      </div>
+
+      <div class="wizard-results-section">
+        <p class="wizard-results-label">New machines we currently offer that fit:</p>
+        ${machinesHtml}
+      </div>
+    `;
+
+    // TEMPORARY replacement shown while SHOW_MACHINE_RECOMMENDATIONS is false: no specific
+    // machine picks yet — show a friendly closing message, a summary of the user's answers,
+    // and a Contact Sue button. Remove this (and flip the flag) once recommendations are
+    // reviewed after launch.
+    const summary = buildAnswerSummary();
+    const answersHtml = summary.length > 0
+      ? `<ul class="wizard-results-list">${summary.map(item =>
+          `<li><strong>${escapeHtml(item.question)}</strong><br>${escapeHtml(item.answer)}</li>`
+        ).join("")}</ul>`
+      : '<p class="wizard-results-value">No answers recorded.</p>';
+
+    // mailto is built from current wizard state; subject/body encoded with encodeURIComponent.
+    const mailtoHref = buildContactMailto();
+
+    const contactInner = `
+      <h3 class="wizard-outcome-title">Still have questions?</h3>
+      <p class="wizard-outcome-body">Choosing your first knitting machine can feel overwhelming, but it doesn't have to be.</p>
+      <p class="wizard-outcome-body" style="margin-top: 0.875rem;">If you'd like a little guidance, let's spend 5 minutes talking about what you want to knit.</p>
+      <p class="wizard-outcome-body" style="margin-top: 0.875rem;"><strong>No sales pitch. No pressure. Just one machine knitter helping another find the right machine.</strong></p>
+
+      <div class="wizard-results-section" style="margin-top: 1.5rem;">
+        <p class="wizard-results-label">Your answers</p>
+        ${answersHtml}
+      </div>
+
+      <a href="${escapeHtml(mailtoHref)}" class="wizard-cta-btn">${ICONS.messageCircle} Contact Sue</a>
+    `;
+
+    const cardInner = SHOW_MACHINE_RECOMMENDATIONS ? recommendationsInner : contactInner;
+
     return `
       <div class="wizard-embed" data-view="results">
         <div class="wizard-feedback-card">
           <div class="wizard-feedback-content">
             <div class="wizard-feedback-icon">${ICONS.checkCircle}</div>
             <div class="wizard-feedback-text">
-              <h3 class="wizard-outcome-title">Your Machine Recommendations</h3>
-              
-              <div class="wizard-results-section">
-                <p class="wizard-results-label">Control types that fit your needs:</p>
-                <ul class="wizard-results-list">${controlTypesHtml}</ul>
-              </div>
-
-              <div class="wizard-results-section">
-                <p class="wizard-results-label">Gauge family:</p>
-                <p class="wizard-results-value">${formatGaugeFamily(results.gaugeFamily)}</p>
-              </div>
-
-              <div class="wizard-results-section">
-                <p class="wizard-results-label">Ribber:</p>
-                <p class="wizard-results-value">${results.ribberOutput}</p>
-              </div>
-
-              <div class="wizard-results-section">
-                <p class="wizard-results-label">Things to consider:</p>
-                ${caveatsHtml}
-              </div>
-
-              <div class="wizard-results-section">
-                <p class="wizard-results-label">New machines we currently offer that fit:</p>
-                ${machinesHtml}
-              </div>
+              ${cardInner}
             </div>
           </div>
         </div>
@@ -722,11 +840,8 @@
       content = `<div style="padding: 2rem; text-align: center; color: #666;">No steps configured for this wizard.</div>`;
     }
 
-    // Wrap in well container, show orientation text only on first question
-    const showOrientation = history.length === 0 && step && step.answerType !== "computed";
     mount.innerHTML = `
       <div class="wizard-well">
-        ${showOrientation ? `<p class="wizard-orientation">${ORIENTATION_TEXT}</p>` : ""}
         ${content}
       </div>
     `;
@@ -755,5 +870,6 @@
 
   // Initialize
   injectStyles();
+  loadTempForCurrentStep();
   render();
 })();
