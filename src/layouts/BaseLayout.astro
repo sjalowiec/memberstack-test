@@ -4,6 +4,7 @@ import "../styles/global.css";
 import "../styles/print.css";
 import ContactModal from "../components/ContactModal.astro";
 import AccountPasswordResetModal from "../components/auth/AccountPasswordResetModal.astro";
+import PublicSignupModal from "../components/PublicSignupModal.astro";
 import KinCatalogVideoModal from "../components/common/KinCatalogVideoModal.astro";
 import ToolPrintFooter from "../components/tools/ToolPrintFooter.astro";
 import EnvBanner from "../components/EnvBanner.astro";
@@ -180,9 +181,11 @@ const isProduction =
 </script>
 <script>
   import { hasKinVideoAccess, logKinVideoAccessDebug } from "../lib/kinVideoAccess";
+  import { openMemberstackLoginModal } from "../lib/memberstackLogin";
 
   window.kbmHasKinVideoAccess = hasKinVideoAccess;
   window.kbmLogKinVideoAccessDebug = logKinVideoAccessDebug;
+  window.kbmOpenMemberstackLoginModal = openMemberstackLoginModal;
 </script>
    
 <!-- MemberStack -->
@@ -201,12 +204,22 @@ const isProduction =
       <div class="ms-top-error__bar" aria-hidden="true"></div>
       <div class="ms-top-error__text"></div>
     </div>
+    <a
+      id="kbm-ms-login-proxy"
+      href="#"
+      data-ms-modal="login"
+      data-ms-redirect="/"
+      hidden
+      aria-hidden="true"
+      tabindex="-1"
+    ></a>
     <slot /> <!-- Page content (or Layout wrapper) goes here -->
 
     {toolPrintTitle && <ToolPrintFooter toolTitle={toolPrintTitle} />}
 
     <ContactModal />
     <AccountPasswordResetModal />
+    <PublicSignupModal />
     <KinCatalogVideoModal />
 
     <script>
@@ -267,6 +280,11 @@ const isProduction =
   window.addEventListener("pageshow", () => setBanner(""));
 })();
 </script>
+    <script>
+      import { initMemberstackPostLoginHandlers } from "../lib/memberstackPostLogin";
+
+      initMemberstackPostLoginHandlers();
+    </script>
     <script is:inline>
   window.$memberstackDom?.onReady?.then(() => {
     window.$memberstackDom?.init?.();
