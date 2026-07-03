@@ -1687,12 +1687,12 @@ div[data-ms-modal-overlay] {
             <a href="#" data-ms-modal="login" data-ms-redirect="current-url" class="kbm-btn kbm-btn-outline">
               Log In
             </a>
-            <!-- Temporarily disabled until sign-up flow is finished — no MemberStack signup modal -->
+            <!-- TEMPORARY: signup button re-enabled for production testing (temp/enable-signup-button-test). -->
             <a
               href="#"
-              class="kbm-btn kbm-btn-outline kbm-header-signup--inactive"
-              aria-disabled="true"
-              tabindex="-1"
+              class="kbm-btn kbm-btn-outline"
+              data-open-public-signup
+              data-testid="nav-signup"
             >
               Sign Up
             </a>
