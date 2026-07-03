@@ -1,0 +1,138 @@
+---
+export const prerender = true;
+import Layout from "../../layouts/Layout.astro";
+
+const pageTitle = "Welcome to Knit It Now!";
+const description = "Your free Knit It Now account has been created. Start learning, explore tools, browse patterns, or see what membership includes.";
+
+const nextSteps = [
+  {
+    title: "Start Learning",
+    href: "/learn",
+    text: "Browse tutorials and skill-building lessons.",
+  },
+  {
+    title: "Explore Tools",
+    href: "/tools",
+    text: "Use calculators and planning tools for your next project.",
+  },
+  {
+    title: "Browse Patterns",
+    href: "/patterns",
+    text: "Find machine knitting patterns and builders.",
+  },
+  {
+    title: "Learn About Membership",
+    href: "/membership",
+    text: "See what’s included with Knit It Now membership.",
+  },
+];
+---
+
+<Layout
+  title={`${pageTitle} | Knit it Now`}
+  {description}
+  bodyClass="page--tight-header"
+>
+  <article class="signup-thank-you page-wrap" aria-labelledby="signup-thank-you-heading">
+    <header class="signup-thank-you__header">
+      <h1 id="signup-thank-you-heading">{pageTitle}</h1>
+      <p class="signup-thank-you__subhead">Your free account has been created.</p>
+      <p class="signup-thank-you__intro">
+        You can now save patterns, explore free resources, and use tools that help you spend more
+        time knitting and less time guessing.
+      </p>
+    </header>
+
+    <section class="signup-thank-you__next" aria-labelledby="signup-thank-you-next-heading">
+      <h2 id="signup-thank-you-next-heading">What would you like to do next?</h2>
+      <div class="signup-thank-you__grid">
+        {
+          nextSteps.map((step) => (
+            <a class="kbm-card signup-thank-you__card" href={step.href}>
+              <h3 class="kbm-card__title">{step.title}</h3>
+              <p class="kbm-card__desc">{step.text}</p>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+
+    <p class="signup-thank-you__note">
+      If you were in the middle of something, you can return to the page you came from using your
+      browser back button.
+    </p>
+  </article>
+</Layout>
+
+<style>
+  .signup-thank-you.page-wrap {
+    padding-top: 0.5rem;
+    padding-bottom: 3rem;
+    max-width: 56rem;
+  }
+
+  .signup-thank-you__header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .signup-thank-you h1 {
+    margin: 0 0 0.75rem;
+    font-size: clamp(1.75rem, 4vw, 2.15rem);
+    line-height: 1.25;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .signup-thank-you__subhead {
+    margin: 0 0 1rem;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .signup-thank-you__intro {
+    max-width: 40rem;
+    margin: 0 auto;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: #374151;
+  }
+
+  .signup-thank-you__next {
+    margin-top: 2rem;
+  }
+
+  .signup-thank-you__next h2 {
+    margin: 0 0 1.25rem;
+    text-align: center;
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
+    line-height: 1.3;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .signup-thank-you__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  @media (min-width: 560px) {
+    .signup-thank-you__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .signup-thank-you__card {
+    height: 100%;
+  }
+
+  .signup-thank-you__note {
+    margin: 2.5rem auto 0;
+    max-width: 40rem;
+    text-align: center;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #6b7280;
+  }
+</style>
