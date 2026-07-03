@@ -10,7 +10,13 @@
  * attached � so it is not tied to the beta-specific `/beta-signup` page.
  */
 import { openMemberstackLoginModal } from "./memberstackLogin";
-import { getMemberstackReturnPath } from "./memberstackReturnUrl";
+
+/**
+ * Post-signup destination for the public "create a free account" flow. A successful signup lands
+ * here (a friendly account-created confirmation with next steps) instead of the current page or the
+ * Memberstack dashboard default signup redirect (`/beta-welcome`).
+ */
+export const PUBLIC_SIGNUP_REDIRECT_PATH = "/signup/thank-you";
 
 export const PUBLIC_SIGNUP_MODAL_TITLE = "Create your free Knit It Now account";
 export const PUBLIC_SIGNUP_MODAL_SUBTITLE =
@@ -48,16 +54,16 @@ function getDialog(root?: ParentNode): HTMLDialogElement | null {
 }
 
 /**
- * Points the signup form back to the page it was opened from. Memberstack inline forms honor the
+ * Points the signup form at the public signup thank-you page. Memberstack inline forms honor the
  * `redirect` attribute (see account guest login / password reset forms); setting it here overrides
- * the dashboard-configured signup redirect (the beta welcome/thank-you page) so a public signup
- * returns to the current page instead.
+ * the dashboard-configured signup redirect (`/beta-welcome`) so a public signup lands on
+ * `/signup/thank-you`. The form also carries this as a static `redirect` attribute so Memberstack
+ * has it at bind time; this reasserts it whenever the modal is opened.
  */
-function applySignupReturnRedirect(dialog: HTMLDialogElement): void {
-  if (typeof window === "undefined") return;
+function applySignupRedirect(dialog: HTMLDialogElement): void {
   const form = dialog.querySelector('[data-ms-form="signup"]');
   if (form && typeof form.setAttribute === "function") {
-    form.setAttribute("redirect", getMemberstackReturnPath());
+    form.setAttribute("redirect", PUBLIC_SIGNUP_REDIRECT_PATH);
   }
 }
 
@@ -65,7 +71,7 @@ function applySignupReturnRedirect(dialog: HTMLDialogElement): void {
 export function showPublicSignupModal(options?: { root?: ParentNode }): boolean {
   const dialog = getDialog(options?.root);
   if (!dialog || typeof dialog.showModal !== "function") return false;
-  applySignupReturnRedirect(dialog);
+  applySignupRedirect(dialog);
   if (!dialog.open) dialog.showModal();
   return true;
 }

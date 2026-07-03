@@ -15,6 +15,7 @@ import {
   PUBLIC_SIGNUP_MODAL_SUBTITLE,
   PUBLIC_SIGNUP_MODAL_TITLE,
   PUBLIC_SIGNUP_PASSWORD_LABEL,
+  PUBLIC_SIGNUP_REDIRECT_PATH,
   PUBLIC_SIGNUP_SUBMIT_LABEL,
 } from "../lib/publicSignupModal";
 ---
@@ -30,7 +31,11 @@ import {
     </h2>
     <p class="public-signup-modal__subtitle">{PUBLIC_SIGNUP_MODAL_SUBTITLE}</p>
 
-    <form data-ms-form="signup" class="public-signup-modal__form">
+    <form
+      data-ms-form="signup"
+      class="public-signup-modal__form"
+      {...{ redirect: PUBLIC_SIGNUP_REDIRECT_PATH } as Record<string, string>}
+    >
       <div class="public-signup-modal__field">
         <label for="public-signup-first-name">{PUBLIC_SIGNUP_FIRST_NAME_LABEL}</label>
         <input

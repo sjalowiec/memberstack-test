@@ -71,25 +71,22 @@ describe("showPublicSignupModal", () => {
     expect(showPublicSignupModal()).toBe(false);
   });
 
-  it("captures the current page path as the signup form redirect", () => {
+  it("sets the signup form redirect to the public signup thank-you page", () => {
     const { root, form } = makeDialogFixture();
     vi.stubGlobal("window", {
       location: { pathname: "/patterns/hat", search: "", hash: "" },
     });
     expect(showPublicSignupModal({ root })).toBe(true);
-    expect(form.setAttribute).toHaveBeenCalledWith("redirect", "/patterns/hat");
+    expect(form.setAttribute).toHaveBeenCalledWith("redirect", "/signup/thank-you");
   });
 
-  it("captures query and hash in the signup return path", () => {
+  it("uses the fixed thank-you redirect regardless of the current page", () => {
     const { root, form } = makeDialogFixture();
     vi.stubGlobal("window", {
       location: { pathname: "/patterns/diy-blanket", search: "?size=throw", hash: "#step-2" },
     });
     expect(showPublicSignupModal({ root })).toBe(true);
-    expect(form.setAttribute).toHaveBeenCalledWith(
-      "redirect",
-      "/patterns/diy-blanket?size=throw#step-2",
-    );
+    expect(form.setAttribute).toHaveBeenCalledWith("redirect", "/signup/thank-you");
   });
 });
 
