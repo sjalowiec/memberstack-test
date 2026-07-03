@@ -1995,6 +1995,75 @@ div[data-ms-modal-overlay] {
       }
     }
 
+    // ---- Logout: immediate feedback + guaranteed header refresh -------------
+    // The logout buttons use Memberstack's declarative data-ms-action="logout".
+    // Memberstack logs the member out, but the header can lag until a manual
+    // refresh, so we take over the click to give instant feedback and force a
+    // reload once logout resolves (which re-evaluates data-ms-content state).
+    let logoutInProgress = false;
+
+    function setLogoutButtonBusy(btn, busy) {
+      if (!btn) return;
+      if (busy) {
+        if (typeof btn.dataset.kbmLogoutLabel !== "string") {
+          btn.dataset.kbmLogoutLabel = btn.textContent.trim();
+        }
+        btn.textContent = "Logging out\u2026";
+        btn.setAttribute("aria-disabled", "true");
+        btn.setAttribute("aria-busy", "true");
+        btn.style.pointerEvents = "none";
+        btn.style.opacity = "0.7";
+      } else {
+        if (typeof btn.dataset.kbmLogoutLabel === "string") {
+          btn.textContent = btn.dataset.kbmLogoutLabel;
+          delete btn.dataset.kbmLogoutLabel;
+        }
+        btn.removeAttribute("aria-disabled");
+        btn.removeAttribute("aria-busy");
+        btn.style.pointerEvents = "";
+        btn.style.opacity = "";
+      }
+    }
+
+    async function handleLogoutClick(e) {
+      const ms = window.$memberstackDom;
+      // If Memberstack isn't ready, let the default declarative handler run.
+      if (!ms?.logout) return;
+
+      // Preempt Memberstack's own delegated handler so logout only runs once.
+      e.preventDefault();
+      e.stopImmediatePropagation();
+
+      if (logoutInProgress) return;
+      logoutInProgress = true;
+
+      const buttons = document.querySelectorAll('a[data-ms-action="logout"]');
+      buttons.forEach((b) => setLogoutButtonBusy(b, true));
+
+      try {
+        await ms.logout();
+        // Full reload guarantees the header re-renders to the logged-out state
+        // (Sign Up / Log In) instead of leaving "Log Out" visible.
+        window.location.reload();
+      } catch (err) {
+        console.error("[kbm] Logout failed:", err);
+        logoutInProgress = false;
+        buttons.forEach((b) => setLogoutButtonBusy(b, false));
+      }
+    }
+
+    function setupLogoutButtons() {
+      const buttons = document.querySelectorAll('a[data-ms-action="logout"]');
+      buttons.forEach((btn) => {
+        if (btn.dataset.kbmLogoutBound === "1") return;
+        btn.dataset.kbmLogoutBound = "1";
+        // Capture phase so we run before Memberstack's bubble-phase handler.
+        btn.addEventListener("click", handleLogoutClick, true);
+      });
+    }
+
+    setupLogoutButtons();
+
     setPill({ ms: "loading", loggedIn: false, isMember: false, plansDebug: "" });
 
     (async () => {
