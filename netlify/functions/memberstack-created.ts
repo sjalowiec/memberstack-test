@@ -1,6 +1,13 @@
 import "dotenv/config";
 
-const NEW_ACCOUNT_TAG_NAME = "source:KIN 2026 signup";
+const KIN_SIGNUP_TAG_NAME = "source:KIN 2026 signup";
+const LEARNDAK_SIGNUP_TAG_NAME = "source: Learn DAK";
+
+// LearnDAK grants this free plan to every account it creates at signup. Because
+// LearnDAK and Knit It Now share this Memberstack app, its presence in the
+// created member's planConnections is how we tell a LearnDAK signup apart from a
+// Knit It Now signup (KIN's public signup attaches no plan).
+const LEARNDAK_FREE_PLAN_ID = "pln_dak-quick-start-vp4e0are";
 
 interface MemberstackWebhookBody {
   payload?: {
@@ -8,6 +15,7 @@ interface MemberstackWebhookBody {
       email?: string;
     };
     customFields?: Record<string, string>;
+    planConnections?: Array<{ planId?: string } | null>;
   };
 }
 
@@ -66,24 +74,25 @@ async function activeCampaignRequest(
   });
 }
 
-// Look up the "source:KIN 2026 signup" tag, creating it if it does not exist.
+// Look up the given source tag by name, creating it if it does not exist.
 // Returns the tag id, or null if it could not be resolved (caller stays
 // defensive and skips tagging rather than failing the webhook).
 async function resolveNewAccountTagId(
   baseUrl: string,
   apiKey: string,
+  tagName: string,
 ): Promise<string | null> {
   try {
     const tagsResp = await activeCampaignRequest(
       baseUrl,
       apiKey,
-      `/api/3/tags?search=${encodeURIComponent(NEW_ACCOUNT_TAG_NAME)}`,
+      `/api/3/tags?search=${encodeURIComponent(tagName)}`,
     );
 
     if (tagsResp.ok) {
       const tagsData = (await tagsResp.json()) as AcTagsResponse;
       const existingTag = (tagsData.tags ?? []).find(
-        (tag) => tag.tag === NEW_ACCOUNT_TAG_NAME,
+        (tag) => tag.tag === tagName,
       );
       if (existingTag?.id) {
         return existingTag.id;
@@ -100,7 +109,7 @@ async function resolveNewAccountTagId(
       method: "POST",
       body: JSON.stringify({
         tag: {
-          tag: NEW_ACCOUNT_TAG_NAME,
+          tag: tagName,
           tagType: "contact",
         },
       }),
@@ -123,12 +132,12 @@ async function resolveNewAccountTagId(
       const retryResp = await activeCampaignRequest(
         baseUrl,
         apiKey,
-        `/api/3/tags?search=${encodeURIComponent(NEW_ACCOUNT_TAG_NAME)}`,
+        `/api/3/tags?search=${encodeURIComponent(tagName)}`,
       );
       if (retryResp.ok) {
         const retryData = (await retryResp.json()) as AcTagsResponse;
         const retryTag = (retryData.tags ?? []).find(
-          (tag) => tag.tag === NEW_ACCOUNT_TAG_NAME,
+          (tag) => tag.tag === tagName,
         );
         if (retryTag?.id) {
           return retryTag.id;
@@ -199,9 +208,23 @@ export default async (req: Request): Promise<Response> => {
   const firstName =
     typeof firstNameRaw === "string" ? firstNameRaw.trim() : undefined;
 
+  // Choose the source tag by signup origin. LearnDAK attaches its free plan at
+  // signup, so a matching planConnection marks the member as a LearnDAK signup;
+  // everything else is treated as a Knit It Now signup. This only affects which
+  // source tag is applied — plan assignment, redirects, and paid membership
+  // logic are untouched.
+  const isLearnDakSignup = (body.payload?.planConnections ?? []).some(
+    (connection) => connection?.planId === LEARNDAK_FREE_PLAN_ID,
+  );
+  const sourceTagName = isLearnDakSignup
+    ? LEARNDAK_SIGNUP_TAG_NAME
+    : KIN_SIGNUP_TAG_NAME;
+
   console.log("memberstack-created: processing member", {
     email,
     hasFirstName: Boolean(firstName),
+    isLearnDakSignup,
+    sourceTagName,
   });
 
   try {
@@ -242,7 +265,7 @@ export default async (req: Request): Promise<Response> => {
 
     // Tagging is best-effort: the contact is already synced, so a tag
     // lookup/create/apply failure should not fail the whole webhook.
-    const tagId = await resolveNewAccountTagId(baseUrl, apiKey);
+    const tagId = await resolveNewAccountTagId(baseUrl, apiKey, sourceTagName);
 
     if (!tagId) {
       console.warn("memberstack-created: proceeding without new-account tag", {
@@ -302,7 +325,7 @@ export default async (req: Request): Promise<Response> => {
         ok: true,
         contactId,
         tagged: true,
-        tag: NEW_ACCOUNT_TAG_NAME,
+        tag: sourceTagName,
       },
       200,
     );
