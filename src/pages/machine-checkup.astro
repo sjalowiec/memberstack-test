@@ -1,0 +1,358 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ZoomableImage from "../components/ZoomableImage.astro";
+
+const pageTitle = "Before You Knit Your First Row";
+const pageDescription =
+  "Let's make sure your machine is ready. Work through this quick checklist before you start knitting.";
+
+const imageSrc = "/images/reference/essential-machine-parts.webp";
+const imageAlt =
+  "Example accessories page from a knitting machine manual with numbered callouts";
+
+// Numbered legend: each entry corresponds to a numbered marker on the image.
+const legend = [
+  {
+    title: "Yarn Tension Unit",
+    body: "Holds and guides the yarn so it feeds smoothly into the carriage.",
+  },
+  {
+    title: "Row Counter",
+    body: "Counts each row as the carriage passes, helping you follow patterns accurately.",
+  },
+  {
+    title: "Transfer Tools",
+    body: "Used to move stitches from one needle to another for shaping, decreases, increases, and stitch manipulation.",
+  },
+  {
+    title: "Claw Weights",
+    body: "Small weights that hang from the knitting to help keep stitches forming evenly.",
+  },
+  {
+    title: "Latch Tool",
+    body: "Used for picking up dropped stitches, reforming stitches, and basic repairs.",
+  },
+  {
+    title: "Special Knitting Oil",
+    body: "Light machine oil used to keep the carriage and needle bed moving smoothly.",
+  },
+  {
+    title: "Needle Pusher",
+    body: "Used to move groups of needles in or out of working position.",
+  },
+  {
+    title: "Table Clamps",
+    body: "Hold the knitting machine securely to the table while you knit.",
+  },
+];
+---
+
+<Layout
+  title={`${pageTitle} | Knit it Now`}
+  description={pageDescription}
+  bodyClass="machine-checkup-page-body"
+>
+  <section class="container py-5 machine-checkup-page">
+    <div class="machine-checkup-inner">
+      <div class="machine-checkup-layout">
+        <div class="machine-checkup-content">
+          <header class="machine-checkup-header">
+            <h1>Before You Knit Your First Row</h1>
+            <p class="machine-checkup-intro">
+              Get to know the key accessories that came with your machine.
+            </p>
+            <p class="machine-checkup-intro">
+              The numbers below match the callouts on the image. Use them to
+              identify each part before you begin.
+            </p>
+          </header>
+
+          <ol class="machine-checkup-panel">
+            {legend.map((item, index) => (
+              <li class="machine-checkup-item">
+                <span class="machine-checkup-item__num" aria-hidden="true">{index + 1}</span>
+                <div class="machine-checkup-item__content">
+                  <h2 class="machine-checkup-item__title">{item.title}</h2>
+                  <p class="machine-checkup-item__body">{item.body}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+
+          <a href="/glossary" class="machine-checkup-glossary-link">
+            Need help with a term? Check the Machine Knitting Glossary
+            <span class="machine-checkup-item__arrow" aria-hidden="true">&rarr;</span>
+          </a>
+        </div>
+
+        <div class="machine-checkup-media">
+          <ZoomableImage
+            src={imageSrc}
+            alt={imageAlt}
+            zoom={2}
+            class="machine-checkup-figure"
+          />
+          <p class="machine-checkup-tip">
+            <strong class="machine-checkup-tip__label">Tip</strong>
+            Need a closer look? Hover over the image on desktop, or tap and drag on
+            mobile, to inspect individual machine parts.
+          </p>
+        </div>
+      </div>
+
+      <div class="machine-checkup-final">
+        <h2 class="machine-checkup-final__heading">Ready to knit?</h2>
+        <p class="machine-checkup-final__text">
+          Finished this checklist? Start with your first lesson.
+        </p>
+        <a
+          href="/courses/legacy/lk-150-quick-start/welcome"
+          class="kbm-btn kbm-btn-primary machine-checkup-final__btn"
+        >
+          Start My First Rows
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .machine-checkup-inner {
+      max-width: 1560px;
+      margin: 0 auto;
+    }
+
+    .machine-checkup-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+      gap: 3rem;
+      align-items: start;
+      margin-bottom: 1.75rem;
+    }
+
+    .machine-checkup-content {
+      min-width: 0;
+    }
+
+    .machine-checkup-media {
+      position: sticky;
+      top: 1.5rem;
+    }
+
+    .machine-checkup-tip {
+      margin: 0.75rem 0 0;
+      padding: 0;
+      background: transparent;
+      border: none;
+      font-size: var(--text-sm);
+      line-height: 1.55;
+      color: #6a7658;
+    }
+
+    .machine-checkup-tip__label {
+      font-weight: 700;
+      color: #6a7658;
+    }
+
+    .machine-checkup-tip__label::after {
+      content: " ù";
+    }
+
+    .machine-checkup-header {
+      margin-bottom: 1.75rem;
+    }
+
+    .machine-checkup-header h1 {
+      font-size: var(--text-xxl);
+      font-weight: 600;
+      color: var(--kbm-green);
+      margin: 0 0 1rem 0;
+    }
+
+    .machine-checkup-intro {
+      font-size: var(--text-lg);
+      color: #243015;
+      line-height: 1.65;
+      margin: 0 0 0.75rem;
+      max-width: 40rem;
+    }
+
+    .machine-checkup-intro:last-child {
+      margin-bottom: 0;
+    }
+
+    .machine-checkup-panel {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .machine-checkup-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1.15rem 0;
+      border-bottom: 1px solid #e5ead9;
+    }
+
+    .machine-checkup-item:first-child {
+      padding-top: 0;
+    }
+
+    .machine-checkup-item:last-child {
+      border-bottom: none;
+    }
+
+    .machine-checkup-item__num {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      background: var(--kbm-green);
+      color: #ffffff;
+      font-size: 1.05rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-top: 0.15rem;
+    }
+
+    .machine-checkup-item__content {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .machine-checkup-item__title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      line-height: 1.3;
+      color: #243015;
+      margin: 0 0 0.3rem 0;
+    }
+
+    .machine-checkup-item__body {
+      font-size: var(--text-lg);
+      line-height: 1.55;
+      color: #3a4a24;
+      margin: 0 0 0.4rem 0;
+    }
+
+    .machine-checkup-item__link {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.35rem;
+      font-size: var(--text-lg);
+      font-weight: 600;
+      color: var(--kbm-green);
+      text-decoration: none;
+    }
+
+    .machine-checkup-item__link:hover,
+    .machine-checkup-item__link:focus {
+      text-decoration: underline;
+    }
+
+    .machine-checkup-item__arrow {
+      font-weight: 600;
+      transition: transform 0.15s ease;
+    }
+
+    .machine-checkup-item__link:hover .machine-checkup-item__arrow,
+    .machine-checkup-item__link:focus .machine-checkup-item__arrow {
+      transform: translateX(3px);
+    }
+
+    .machine-checkup-glossary-link {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.35rem;
+      margin-top: 1.5rem;
+      font-size: var(--text-lg);
+      font-weight: 600;
+      color: var(--kbm-green);
+      text-decoration: none;
+    }
+
+    .machine-checkup-glossary-link:hover,
+    .machine-checkup-glossary-link:focus {
+      text-decoration: underline;
+    }
+
+    .machine-checkup-glossary-link:hover .machine-checkup-item__arrow,
+    .machine-checkup-glossary-link:focus .machine-checkup-item__arrow {
+      transform: translateX(3px);
+    }
+
+    .machine-checkup-final {
+      text-align: center;
+      padding: 1.5rem 1.75rem;
+      background: #f6f8f2;
+      border: 1px solid #dfe6d1;
+      border-radius: 12px;
+      max-width: 34rem;
+    }
+
+    .machine-checkup-final__heading {
+      font-size: var(--text-lg);
+      font-weight: 600;
+      color: var(--kbm-green);
+      margin: 0 0 0.4rem 0;
+    }
+
+    .machine-checkup-final__text {
+      font-size: var(--text-base);
+      color: #3a4a24;
+      line-height: 1.55;
+      margin: 0 auto 1.1rem;
+      max-width: 30rem;
+    }
+
+    @media (max-width: 960px) {
+      .machine-checkup-layout {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      /* Text/checklist first, image below on mobile/tablet; sticky disabled. */
+      .machine-checkup-media {
+        position: static;
+        top: auto;
+        margin-top: 0.5rem;
+      }
+
+      .machine-checkup-header {
+        margin-bottom: 1.5rem;
+        text-align: center;
+      }
+
+      .machine-checkup-intro {
+        margin-left: auto;
+        margin-right: auto;
+      }
+    }
+
+    @media (max-width: 540px) {
+      .machine-checkup-item {
+        gap: 0.85rem;
+        padding: 1rem 0;
+      }
+    }
+  </style>
+
+  <style is:global>
+    /* This instructional page uses a wider workspace than the default 1100px article width. */
+    body.machine-checkup-page-body main.site-content {
+      max-width: 1600px;
+      padding-left: 2.5rem;
+      padding-right: 2.5rem;
+    }
+
+    @media (max-width: 640px) {
+      body.machine-checkup-page-body main.site-content {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+    }
+  </style>
+</Layout>

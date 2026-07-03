@@ -8,9 +8,9 @@
 import { videoDevBypass } from "../../lib/devBypass";
 
 const {
-  videoId,
+  videoId: rawVideoId,
   title = "Video",
-  access_level = "open", // "open" | "member"
+  access_level: rawAccessLevel = "open", // "open" | "member" | "public" | "free"
   aspect = "16/9",
   thumbUrl = "", // optional: show a thumbnail for locked state
   ctaHref = "/membership",
@@ -18,6 +18,17 @@ const {
   /** When true, iframe uses Vimeo Player.js (`api=1`) and a stable `id` for programmatic seek. */
   enableVimeoPlayerApi = false,
 } = Astro.props;
+
+// Coerce the Vimeo ID to a trimmed string (JSON may store it as a number).
+const videoId = rawVideoId != null ? String(rawVideoId).trim() : "";
+
+// Normalize access level so gating only ever deals with "open" | "member".
+// Public synonyms ("public", "free", "open") all mean "show to everyone".
+const normalizedAccess = String(rawAccessLevel).trim().toLowerCase();
+const access_level =
+  normalizedAccess === "open" || normalizedAccess === "public" || normalizedAccess === "free"
+    ? "open"
+    : "member";
 
 function paddingPercent(aspectStr: string) {
   // "16/9" -> 56.25

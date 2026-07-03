@@ -1,0 +1,272 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+const pageTitle = "Essential Machine Parts";
+const pageDescription =
+  "Open your own manual to the accessories page and use this guide to identify the key machine knitting tools to find before you begin.";
+
+const imageSrc = "/images/reference/essential-machine-parts.webp";
+const imageAlt =
+  "Example accessories page from a knitting machine manual with numbered callouts";
+
+const parts = [
+  {
+    title: "Yarn Tension Unit",
+    body: "This guides the yarn smoothly from the cone or ball to the carriage. Without it, the yarn will not feed evenly.",
+  },
+  {
+    title: "Row Counter",
+    body: "You'll use this constantly to track where you are in a pattern. It is much easier than trying to count rows by eye.",
+  },
+  {
+    title: "Transfer Tools",
+    body: "These are used to move stitches from one needle to another. You'll use them for shaping, simple stitch patterns, and fixing mistakes.",
+  },
+  {
+    title: "Claw Weights",
+    body: "These help keep the knitting feeding evenly, especially near the edges or when working shaped pieces.",
+  },
+  {
+    title: "Latch Tool",
+    body: "This is one of the most useful tools you'll own. Use it for fixing dropped stitches, working up stitches, and many common machine knitting tasks.",
+  },
+  {
+    title: "Knitting Oil",
+    body: "Your machine needs a little oil to run smoothly. If you do not have knitting machine oil, plain sewing machine oil is a good substitute.",
+  },
+  {
+    title: "Needle Pusher",
+    body: "This helps move groups of needles in and out of working position quickly and accurately.",
+  },
+  {
+    title: "Table Clamps",
+    body: "These secure the machine to the table. If your machine uses clamps, make sure they are tight before you start knitting.",
+  },
+];
+---
+
+<Layout title={`${pageTitle} | Knit it Now`} description={pageDescription}>
+  <section class="container py-5 machine-parts-page">
+    <div class="machine-parts-inner">
+      <header class="machine-parts-header">
+        <h1>Essential Machine Parts</h1>
+        <p class="machine-parts-intro">
+          Every knitting machine is a little different. Your manual may not look
+          exactly like this example, and that's okay. Open your own manual to the
+          accessories or parts page and use this guide to identify the key items I
+          recommend finding before you begin.
+        </p>
+      </header>
+
+      <div class="machine-parts-layout">
+        <div class="machine-parts-figure">
+          <a href={imageSrc} target="_blank" rel="noopener noreferrer">
+            <img src={imageSrc} alt={imageAlt} loading="lazy" width="900" height="1200" />
+          </a>
+          <p class="machine-parts-figure__caption">
+            Tap the image to view it larger.
+          </p>
+        </div>
+
+        <div class="machine-parts-list-col">
+          <ol class="machine-parts-list">
+            {parts.map((item, index) => (
+              <li class="machine-parts-item">
+                <span class="machine-parts-item__num" aria-hidden="true">{index + 1}</span>
+                <div class="machine-parts-item__content">
+                  <h2 class="machine-parts-item__title">{item.title}</h2>
+                  <p class="machine-parts-item__body">{item.body}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+
+      <div class="machine-parts-note" role="note">
+        <p>
+          Don't panic if you don't have every accessory shown in this example.
+          Different machines came with different tools. The goal is to identify
+          what your machine needs so you can start with confidence.
+        </p>
+      </div>
+
+      <div class="machine-parts-final">
+        <h2 class="machine-parts-final__heading">Ready for the next step?</h2>
+        <a
+          href="/machine-checkup"
+          class="kbm-btn kbm-btn-primary machine-parts-final__btn"
+        >
+          Back to the First Row Checklist
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .machine-parts-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .machine-parts-header {
+      margin-bottom: 2.5rem;
+      text-align: center;
+    }
+
+    .machine-parts-header h1 {
+      font-size: var(--text-xxl);
+      font-weight: 600;
+      color: var(--kbm-green);
+      margin: 0 0 1rem 0;
+    }
+
+    .machine-parts-intro {
+      font-size: var(--text-lg);
+      color: #243015;
+      line-height: 1.65;
+      margin: 0 auto;
+      max-width: 48rem;
+    }
+
+    .machine-parts-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 2.5rem;
+      align-items: start;
+      margin-bottom: 2.5rem;
+    }
+
+    .machine-parts-figure {
+      position: sticky;
+      top: 1.5rem;
+    }
+
+    .machine-parts-figure img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid #dfe6d1;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(36, 48, 21, 0.05);
+      background: #ffffff;
+    }
+
+    .machine-parts-figure__caption {
+      font-size: var(--text-sm);
+      color: #5a6b3f;
+      text-align: center;
+      margin: 0.75rem 0 0 0;
+    }
+
+    .machine-parts-list {
+      list-style: none;
+      margin: 0;
+      padding: 0.5rem 2rem;
+      background: #ffffff;
+      border: 1px solid #dfe6d1;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(36, 48, 21, 0.05);
+    }
+
+    .machine-parts-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.25rem;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid #e5ead9;
+    }
+
+    .machine-parts-item:last-child {
+      border-bottom: none;
+    }
+
+    .machine-parts-item__num {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 50%;
+      background: var(--kbm-green);
+      color: #ffffff;
+      font-size: 1.15rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-top: 0.1rem;
+    }
+
+    .machine-parts-item__content {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .machine-parts-item__title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      line-height: 1.3;
+      color: #243015;
+      margin: 0 0 0.4rem 0;
+    }
+
+    .machine-parts-item__body {
+      font-size: var(--text-base);
+      line-height: 1.6;
+      color: #3a4a24;
+      margin: 0;
+    }
+
+    .machine-parts-note {
+      padding: 1.5rem 1.75rem;
+      background: #fbf7ea;
+      border: 1px solid #e8dcae;
+      border-left: 4px solid #c7a94a;
+      border-radius: 12px;
+      margin-bottom: 2.5rem;
+    }
+
+    .machine-parts-note p {
+      font-size: var(--text-base);
+      line-height: 1.6;
+      color: #4a3f1a;
+      margin: 0;
+    }
+
+    .machine-parts-final {
+      text-align: center;
+      padding: 2rem;
+      background: #f6f8f2;
+      border: 2px solid #c7d8a4;
+      border-radius: 16px;
+    }
+
+    .machine-parts-final__heading {
+      font-size: var(--text-xl);
+      font-weight: 600;
+      color: var(--kbm-green);
+      margin: 0 0 1.25rem 0;
+    }
+
+    @media (max-width: 860px) {
+      .machine-parts-layout {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+
+      .machine-parts-figure {
+        position: static;
+        top: auto;
+      }
+
+      .machine-parts-list {
+        padding: 0.25rem 1.25rem;
+      }
+
+      .machine-parts-item {
+        gap: 1rem;
+        padding: 1.5rem 0;
+      }
+    }
+  </style>
+</Layout>

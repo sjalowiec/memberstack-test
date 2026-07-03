@@ -20,7 +20,10 @@ const video = findPublicCatalogVideoByContentId(videosRaw, id);
 const contentIdForJumplinks = Number((video as any)?.content_id ?? Astro.params?.id ?? NaN);
 const contentIdAttr = !Number.isNaN(contentIdForJumplinks) ? String(contentIdForJumplinks) : "";
 
-const vimeoId = (video as any)?.vimeo_id;
+// Normalize Vimeo ID: prefer the public ID, fall back to the internal one.
+// JSON may store these as numbers, so coerce to a trimmed string before use.
+const rawVimeoId = (video as any)?.vimeo_id_public ?? (video as any)?.vimeo_id;
+const vimeoId = rawVimeoId ? String(rawVimeoId).trim() : "";
 const title = (video as any)?.title ?? "Video";
 const description = (video as any)?.description ?? "";
 const downloadUrlRaw =
@@ -34,12 +37,20 @@ const downloadLabelRaw =
     : "";
 const downloadLabel = downloadLabelRaw || "Download";
 
+// Normalize access_level so downstream gating only sees "open" | "member".
+// JSON uses several public synonyms ("public", "free", "open"); treat all as open.
+const rawAccessLevel = String((video as any)?.access_level ?? "member")
+  .trim()
+  .toLowerCase();
+const normalizedAccessLevel =
+  rawAccessLevel === "open" || rawAccessLevel === "public" || rawAccessLevel === "free"
+    ? "open"
+    : "member";
+
 // Public exception: when this video is the featured Tuesday Tip (isTipOfWeek), show player to everyone.
-// Otherwise use access_level from JSON (default "member").
+// Otherwise use the normalized access_level from JSON (default "member").
 const isFeaturedTip = (video as any)?.isTipOfWeek === true;
-const effectiveAccessLevelFromVideo = isFeaturedTip
-  ? "open"
-  : ((video as any)?.access_level ?? "member");
+const effectiveAccessLevelFromVideo = isFeaturedTip ? "open" : normalizedAccessLevel;
 /** Temporary until free video exceptions are restored — set false to use JSON/tip logic again. */
 const TEMPORARY_FORCE_MEMBER_WATCH = false;
 const effectiveAccessLevel = TEMPORARY_FORCE_MEMBER_WATCH
@@ -59,6 +70,25 @@ const posterSrc =
 const catalogChapters: CatalogChapterRow[] = video ? catalogChaptersFromVideoRow(video) : [];
 const hasCatalogChapters = catalogChapters.length > 0;
 const enableVideoChapterControls = hasCatalogChapters;
+
+// TEMPORARY DEBUG: trace player rendering for the e-wrap cast on video (content_id 206).
+// Remove once the empty-video-box issue is confirmed fixed.
+if (contentIdAttr === "206") {
+  const debugIframeSrc = vimeoId
+    ? enableVideoChapterControls
+      ? `https://player.vimeo.com/video/${vimeoId}?api=1&player_id=kbm-gated-vimeo-${vimeoId}`
+      : `https://player.vimeo.com/video/${vimeoId}`
+    : "";
+  console.log("[videos/[id] debug]", {
+    content_id: contentIdAttr,
+    access_level: (video as any)?.access_level,
+    effectiveAccessLevel,
+    vimeo_id_public: (video as any)?.vimeo_id_public,
+    vimeo_id: (video as any)?.vimeo_id,
+    normalizedVimeoId: vimeoId,
+    finalIframeSrc: debugIframeSrc,
+  });
+}
 
 ---
 

@@ -1,0 +1,192 @@
+---
+/**
+ * ============================================================================
+ * KBM: ZoomableImage
+ * ============================================================================
+ *
+ * Reusable interactive zoom-on-inspect image. No modal, no lightbox, no new
+ * tab, no external library.
+ *
+ * Behavior (Pointer Events):
+ * - Desktop (mouse): hover activates zoom; moving the mouse pans the image so
+ *   any area can be inspected (transform-origin follows the pointer).
+ * - Touch: press/tap activates zoom, drag pans, release resets.
+ *
+ * Accessibility/UX:
+ * - cursor: zoom-in normally, zoom-out while active.
+ * - touch-action: none only on the zoom frame so drags pan instead of scroll.
+ * - Respects prefers-reduced-motion (disables the scale transition).
+ *
+ * USAGE:
+ *   <ZoomableImage src="/images/foo.webp" alt="..." zoom={2} caption="..." />
+ */
+
+interface Props {
+  src: string;
+  alt: string;
+  /** Extra classes applied to the root <figure>. */
+  class?: string;
+  /** Zoom scale factor when active. Default 2. */
+  zoom?: number;
+  /** Optional caption rendered below the image. */
+  caption?: string;
+}
+
+const {
+  src,
+  alt,
+  class: className = "",
+  zoom = 2,
+  caption,
+} = Astro.props;
+---
+
+<figure class={`zoomable-image ${className}`.trim()}>
+  <div
+    class="zoomable-image__frame"
+    data-zoomable-image
+    data-zoom={zoom}
+  >
+    <img class="zoomable-image__img" src={src} alt={alt} loading="lazy" draggable="false" />
+  </div>
+  {caption && <figcaption class="zoomable-image__caption">{caption}</figcaption>}
+</figure>
+
+<script>
+  function initZoomableImages() {
+    const frames = document.querySelectorAll<HTMLElement>("[data-zoomable-image]");
+
+    frames.forEach((frame) => {
+      if (frame.dataset.zoomableReady === "true") return;
+      frame.dataset.zoomableReady = "true";
+
+      const img = frame.querySelector<HTMLImageElement>(".zoomable-image__img");
+      if (!img) return;
+
+      const zoom = Number(frame.dataset.zoom) || 2;
+      frame.style.setProperty("--zoom-scale", String(zoom));
+
+      const setOriginFromPointer = (clientX: number, clientY: number) => {
+        const rect = frame.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return;
+        const x = ((clientX - rect.left) / rect.width) * 100;
+        const y = ((clientY - rect.top) / rect.height) * 100;
+        const clampedX = Math.min(100, Math.max(0, x));
+        const clampedY = Math.min(100, Math.max(0, y));
+        img.style.transformOrigin = `${clampedX}% ${clampedY}%`;
+      };
+
+      const activate = (clientX: number, clientY: number) => {
+        setOriginFromPointer(clientX, clientY);
+        frame.classList.add("is-active");
+      };
+
+      const deactivate = () => {
+        frame.classList.remove("is-active");
+        img.style.transformOrigin = "center center";
+      };
+
+      // Desktop (mouse): hover to activate, move to pan, leave to reset.
+      frame.addEventListener("pointerenter", (e) => {
+        if (e.pointerType !== "mouse") return;
+        activate(e.clientX, e.clientY);
+      });
+
+      frame.addEventListener("pointerleave", (e) => {
+        if (e.pointerType !== "mouse") return;
+        deactivate();
+      });
+
+      // Touch/pen: press to activate, drag to pan, release to reset.
+      frame.addEventListener("pointerdown", (e) => {
+        if (e.pointerType === "mouse") return;
+        e.preventDefault();
+        try {
+          frame.setPointerCapture(e.pointerId);
+        } catch {
+          /* setPointerCapture can throw on some browsers; safe to ignore. */
+        }
+        activate(e.clientX, e.clientY);
+      });
+
+      const endTouch = (e: PointerEvent) => {
+        if (e.pointerType === "mouse") return;
+        try {
+          frame.releasePointerCapture(e.pointerId);
+        } catch {
+          /* ignore */
+        }
+        deactivate();
+      };
+
+      frame.addEventListener("pointerup", endTouch);
+      frame.addEventListener("pointercancel", endTouch);
+
+      // Panning (both input types) while active.
+      frame.addEventListener("pointermove", (e) => {
+        if (!frame.classList.contains("is-active")) return;
+        setOriginFromPointer(e.clientX, e.clientY);
+      });
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initZoomableImages);
+  } else {
+    initZoomableImages();
+  }
+
+  // Support Astro view transitions / client-side navigation.
+  document.addEventListener("astro:page-load", initZoomableImages);
+</script>
+
+<style>
+  .zoomable-image {
+    margin: 0;
+  }
+
+  .zoomable-image__frame {
+    overflow: hidden;
+    border: 1px solid #dfe6d1;
+    border-radius: 16px;
+    box-shadow: 0 2px 10px rgba(36, 48, 21, 0.05);
+    cursor: zoom-in;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    background: #ffffff;
+  }
+
+  .zoomable-image__frame.is-active {
+    cursor: zoom-out;
+  }
+
+  .zoomable-image__img {
+    display: block;
+    width: 100%;
+    height: auto;
+    transform: scale(1);
+    transform-origin: center center;
+    transition: transform 0.35s ease;
+    will-change: transform;
+    -webkit-user-drag: none;
+    user-select: none;
+  }
+
+  .zoomable-image__frame.is-active .zoomable-image__img {
+    transform: scale(var(--zoom-scale, 2));
+  }
+
+  .zoomable-image__caption {
+    margin-top: 0.75rem;
+    font-size: var(--text-sm);
+    color: #5a6b3f;
+    text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .zoomable-image__img {
+      transition: none;
+    }
+  }
+</style>
