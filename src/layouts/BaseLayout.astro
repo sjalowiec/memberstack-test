@@ -464,6 +464,21 @@ const isProduction =
           finalHasVideoAccess: hasVideoAccess,
         });
 
+        // Temporary: raw plan connections (all statuses) so we can see the exact
+        // plan id + status assigned to an account that isn't being recognized.
+        const rawPlanConnections = Array.isArray(member?.planConnections)
+          ? member.planConnections.map((p: any) => ({
+              planId: p?.planId ?? p?.plan ?? p?.id,
+              status: p?.status,
+              active: p?.active,
+            }))
+          : member?.planConnections ?? null;
+        console.log("[KBM video access debug] BaseLayout.planConnections", {
+          memberEmail: member?.auth?.email ?? data?.auth?.email ?? null,
+          memberId: member?.id ?? member?._id ?? null,
+          rawPlanConnections,
+        });
+
         if (hasVideoAccess) {
           document.body.classList.add("ms-logged-in");
         } else {

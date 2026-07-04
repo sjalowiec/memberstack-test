@@ -492,6 +492,14 @@ const NEW_TOOL_HREF = "/tools/stitch-multiple-calculator";
   color:var(--kbm-green,#52682d);
 }
 
+/* Members with access shouldn't see a lock implying they're blocked. Keyed on
+   the same body classes used site-wide for tool/video access (see BaseLayout). */
+:global(body.ms-logged-in) .tool-member-lock,
+:global(body.dev-member) .tool-member-lock,
+:global(body.dev-bypass-gating) .tool-member-lock{
+  display:none;
+}
+
 .tool-member-lock__icon{
   width:34px;
   height:34px;
