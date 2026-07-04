@@ -8,6 +8,7 @@ import FloatingSelect from "../../components/tools/FloatingSelect.astro";
 import PrintButton from "../../components/common/PrintButton.astro";
 import ToolResultCard from "../../components/tools/ToolResultCard.astro";
 import ToolGate from "../../components/ui/ToolGate.astro";
+import ToolPreviewGate from "../../components/ui/ToolPreviewGate.astro";
 import toolsData from "../../../data/tools.json";
 import "../../styles/wizard.css";
 
@@ -47,7 +48,8 @@ const cupOptions = [
 
       <ToolGate tool={tool} />
 
-      <div class="dart-tool-wrap" data-gated="content" hidden>
+      <ToolPreviewGate tool={tool}>
+      <div class="dart-tool-wrap">
         <div class="dart-calculator-panel kbm-tool-calculator-area">
           <form id="wizard-form" class="dart-form" novalidate>
             <div class="dart-tool-layout">
@@ -98,6 +100,7 @@ const cupOptions = [
           <PrintButton slot="actions" label="" ariaLabel="Print instructions" />
         </ToolResultCard>
       </div>
+      </ToolPreviewGate>
     </div>
   </main>
 

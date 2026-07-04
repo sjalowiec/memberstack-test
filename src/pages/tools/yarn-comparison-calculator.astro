@@ -7,6 +7,7 @@ import PrintButton from "../../components/common/PrintButton.astro";
 import ToolResultCard from "../../components/tools/ToolResultCard.astro";
 import YarnWeightsTable from "../../components/reference/YarnWeightsTable.astro";
 import ToolGate from "../../components/ui/ToolGate.astro";
+import ToolPreviewGate from "../../components/ui/ToolPreviewGate.astro";
 import { yarnWeights } from "../../data/yarn-weights";
 import toolsData from "../../../data/tools.json";
 import "../../styles/wizard.css";
@@ -40,7 +41,8 @@ const rangeCategoryMap = Object.fromEntries(yarnWeights.map((item) => [item.rang
 
       <ToolGate tool={tool} />
 
-      <div class="ypp-tool-wrap" data-gated="content" hidden>
+      <ToolPreviewGate tool={tool}>
+      <div class="ypp-tool-wrap">
         <div class="ypp-calculator-panel kbm-tool-calculator-area">
           <form id="wizard-form" class="ypp-form" novalidate>
             <h2 class="ypp-form-title">Enter yarn label information</h2>
@@ -118,6 +120,7 @@ const rangeCategoryMap = Object.fromEntries(yarnWeights.map((item) => [item.rang
           </div>
         </ToolResultCard>
       </div>
+      </ToolPreviewGate>
     </div>
   </main>
 

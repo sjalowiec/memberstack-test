@@ -5,6 +5,7 @@ import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
 import StitchMultipleTool from "../../components/tools/StitchMultipleCalculator.astro";
 import VimeoEmbed from "../../components/media/VimeoEmbed.astro";
 import ToolGate from "../../components/ui/ToolGate.astro";
+import ToolPreviewGate from "../../components/ui/ToolPreviewGate.astro";
 import toolsData from "../../../data/tools.json";
 import "../../styles/wizard.css";
 
@@ -33,9 +34,11 @@ const toolPrintTitle = tool?.title ?? "Stitch Multiple Calculator";
 
       <ToolGate tool={tool} />
 
-      <div class="stitchmult-tool-wrap" data-gated="content" hidden>
-        <StitchMultipleTool instanceId="page" />
-      </div>
+      <ToolPreviewGate tool={tool}>
+        <div class="stitchmult-tool-wrap">
+          <StitchMultipleTool instanceId="page" />
+        </div>
+      </ToolPreviewGate>
 
       <section class="kbm-intro-callout stitchmult-guidance" aria-labelledby="stitchmult-guidance-heading">
         <strong id="stitchmult-guidance-heading">Before You Change Your Cast-On</strong>
