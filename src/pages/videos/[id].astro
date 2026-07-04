@@ -199,12 +199,13 @@ const enableVideoChapterControls = hasCatalogChapters;
         </article>
 
         <script>
-          import { MEMBER_PLAN_IDS } from "../../config/memberships";
-          import { hasKinVideoAccess, logKinVideoAccessDebug } from "../../lib/kinVideoAccess";
+          // Jump links use the SAME global member gate as every other section.
+          import {
+            getViewerAccessState,
+            hasMemberAccess,
+            logMemberAccessDebug,
+          } from "../../lib/memberAccess";
           import { videoDevBypass } from "../../lib/devBypass";
-
-          // --- Memberstack: client-side unlock for jump links (basic/premium plan required) ---
-          const memberPlanIds = new Set<string>(MEMBER_PLAN_IDS);
 
           async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
             for (let i = 0; i < attempts; i++) {
@@ -219,27 +220,15 @@ const enableVideoChapterControls = hasCatalogChapters;
 
           function getViewerStateFromRes(res) {
             const member = res?.data?.member ?? null;
-            const planConnections = member?.planConnections ?? [];
-            const activePlanIds = new Set(
-              planConnections
-                .filter((p) => (p?.status ?? "").toUpperCase() === "ACTIVE")
-                .map((p) => p?.planId)
-                .filter(Boolean)
-            );
-
             const isLoggedIn = Boolean(member);
-            const isMember = [...activePlanIds].some((id) => memberPlanIds.has(id));
+            const hasVideoAccess = hasMemberAccess(res);
 
-            const rawKinAccess = member?.customFields?.["kin-access"];
-            const hasVideoAccess = hasKinVideoAccess(res);
-
-            logKinVideoAccessDebug("videos/[id].jumpLinks", {
-              member: res,
-              rawKinAccess,
-              finalHasVideoAccess: hasVideoAccess,
+            logMemberAccessDebug("videos/[id].jumpLinks", res, {
+              rawKinAccess: member?.customFields?.["kin-access"],
+              viewerAccessState: getViewerAccessState(res),
             });
 
-            return { isLoggedIn, isMember, hasVideoAccess, member };
+            return { isLoggedIn, isMember: hasVideoAccess, hasVideoAccess, member };
           }
 
           function setAccess(hasFullAccess) {

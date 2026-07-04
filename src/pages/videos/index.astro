@@ -158,7 +158,12 @@ const forceMemberView =
   </script>
 
   <script>
-    import { hasKinVideoAccess } from "../../lib/kinVideoAccess";
+    // Video catalog cards use the SAME global member gate as every other section.
+    import {
+      getViewerAccessState,
+      hasMemberAccess,
+      logMemberAccessDebug,
+    } from "../../lib/memberAccess";
 
     (function () {
       const FREE_FILTER_VALUE = "__free__";
@@ -204,10 +209,11 @@ const forceMemberView =
       try {
         const res = await waitForMemberstackReady();
         const member = res?.data?.member ?? null;
+        const hasVideoAccess = hasMemberAccess(res);
+        logMemberAccessDebug("videos/index.catalog", res, {
+          viewerAccessState: getViewerAccessState(res),
+        });
         if (!member) return { isLoggedIn: false, hasVideoAccess: false, member: null };
-
-        const hasVideoAccess = hasKinVideoAccess(res);
-
         return { isLoggedIn: true, hasVideoAccess: hasVideoAccess, member: member };
       } catch (e) {
         return { isLoggedIn: false, hasVideoAccess: false, member: null };

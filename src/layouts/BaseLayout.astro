@@ -181,8 +181,19 @@ const isProduction =
 </script>
 <script>
   import { hasKinVideoAccess, logKinVideoAccessDebug } from "../lib/kinVideoAccess";
+  import {
+    getViewerAccessState,
+    hasMemberAccess,
+    logMemberAccessDebug,
+  } from "../lib/memberAccess";
   import { openMemberstackLoginModal } from "../lib/memberstackLogin";
 
+  // Global member-access helpers (single source of truth for all gated sections).
+  window.kbmHasMemberAccess = hasMemberAccess;
+  window.kbmGetViewerAccessState = getViewerAccessState;
+  window.kbmLogMemberAccessDebug = logMemberAccessDebug;
+
+  // Back-compat aliases (videos and older gates still reference these globals).
   window.kbmHasKinVideoAccess = hasKinVideoAccess;
   window.kbmLogKinVideoAccessDebug = logKinVideoAccessDebug;
   window.kbmOpenMemberstackLoginModal = openMemberstackLoginModal;
@@ -419,12 +430,16 @@ const isProduction =
     )}
 
     <script>
-      // Import the access helpers directly (like the video pages) rather than
-      // relying on window.kbmHasKinVideoAccess / window.kbmLogKinVideoAccessDebug,
-      // which are assigned by a separate bundled module. Those globals were
-      // undefined when this ran, so hasVideoAccess fell back to false and the
-      // detailed debug log silently no-op'd (optional chaining short-circuit).
-      import { hasKinVideoAccess, logKinVideoAccessDebug } from "../lib/kinVideoAccess";
+      // Import the global access helper directly (like the video pages) rather
+      // than relying on window.kbm* globals, which are assigned by a separate
+      // bundled module. Those globals were undefined when this ran, so access
+      // fell back to false and the detailed debug log silently no-op'd (optional
+      // chaining short-circuit).
+      import {
+        getViewerAccessState,
+        hasMemberAccess,
+        logMemberAccessDebug,
+      } from "../lib/memberAccess";
 
       // Wait for the Memberstack SDK to be ready instead of bailing on the first
       // tick. The CDN script often isn't loaded when DOMContentLoaded fires.
@@ -454,14 +469,13 @@ const isProduction =
         const data = res?.data;
         const member = (data?.member ?? data) || null;
         const rawKinAccess = member?.customFields?.["kin-access"];
-        const hasVideoAccess = hasKinVideoAccess(res);
+        const memberHasAccess = hasMemberAccess(res);
 
         // Detailed log first (always runs, even when access is false) so we can
-        // see activePlanIds vs allowedVideoPlanIds.
-        logKinVideoAccessDebug("BaseLayout.ms-logged-in", {
-          member: res,
+        // see activePlanIds vs the global allow list and which gate decided.
+        logMemberAccessDebug("BaseLayout.ms-logged-in", res, {
           rawKinAccess,
-          finalHasVideoAccess: hasVideoAccess,
+          viewerAccessState: getViewerAccessState(res),
         });
 
         // Temporary: raw plan connections (all statuses) so we can see the exact
@@ -473,21 +487,22 @@ const isProduction =
               active: p?.active,
             }))
           : member?.planConnections ?? null;
-        console.log("[KBM video access debug] BaseLayout.planConnections", {
+        console.log("[KIN member access] BaseLayout.planConnections", {
           memberEmail: member?.auth?.email ?? data?.auth?.email ?? null,
           memberId: member?.id ?? member?._id ?? null,
           rawPlanConnections,
         });
 
-        if (hasVideoAccess) {
+        if (memberHasAccess) {
           document.body.classList.add("ms-logged-in");
         } else {
           document.body.classList.remove("ms-logged-in");
         }
 
-        console.log("[KBM video access debug] BaseLayout.ms-logged-in applied", {
+        console.log("[KIN member access] BaseLayout.ms-logged-in applied", {
+          gate: "BaseLayout",
           msLoggedIn: document.body.classList.contains("ms-logged-in"),
-          finalHasVideoAccess: hasVideoAccess,
+          hasMemberAccess: memberHasAccess,
         });
       }
 

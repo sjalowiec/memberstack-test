@@ -504,9 +504,13 @@ function getStitchFileCleanName(file: StitchFile): string {
   </script>
 
   <script>
-    import { MEMBER_PLAN_IDS } from "../../config/memberships";
-
-    const memberPlanIds = new Set<string>(MEMBER_PLAN_IDS);
+    // Downloads/stitch files use the SAME global member gate as every other
+    // section (videos, tools, skill builders). No section-specific plan list.
+    import {
+      getViewerAccessState,
+      hasMemberAccess,
+      logMemberAccessDebug,
+    } from "../../lib/memberAccess";
 
     async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
       for (let i = 0; i < attempts; i++) {
@@ -524,16 +528,11 @@ function getStitchFileCleanName(file: StitchFile): string {
     function getViewerStateFromRes(res: unknown) {
       const r = res as { data?: { member?: Record<string, unknown> } } | null | undefined;
       const member = r?.data?.member ?? null;
-      const planConnections = (member?.planConnections as Record<string, unknown>[]) ?? [];
-      const activePlanIds = new Set(
-        planConnections
-          .filter((p) => String(p?.status ?? "").toUpperCase() === "ACTIVE")
-          .map((p) => p?.planId as string)
-          .filter(Boolean)
-      );
-      const isLoggedIn = Boolean(member);
-      const isMember = [...activePlanIds].some((id) => memberPlanIds.has(id));
-      return { isLoggedIn, isMember, member };
+      const isMember = hasMemberAccess(res);
+      logMemberAccessDebug("stitch/[id].downloads", res, {
+        viewerAccessState: getViewerAccessState(res),
+      });
+      return { isLoggedIn: Boolean(member), isMember, member };
     }
 
     function setFileAccess(hasFullAccess: boolean) {

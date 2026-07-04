@@ -391,7 +391,12 @@ const skillBuilderThumbnail = "/images/skill-builders/skill-buider.png";
   import { buildRoundNecklinePracticeDiagramValues } from "../../../lib/skillBuilders/roundNecklinePracticeDiagram";
   import { loadSkillBuilderDiagram } from "../../../lib/skillBuilders/skillBuilderDiagram";
   import { isSkillBuilderDebugMode } from "../../../lib/skillBuilders/skillBuilderDebugMode";
-  import { hasKinVideoAccess } from "../../../lib/kinVideoAccess";
+  // Skill builders use the SAME global member gate as every other section.
+  import {
+    getViewerAccessState,
+    hasMemberAccess,
+    logMemberAccessDebug,
+  } from "../../../lib/memberAccess";
 
   async function syncSkillBuilderMemberLock() {
     const lock = document.querySelector<HTMLElement>("[data-sb-member-lock]");
@@ -401,7 +406,11 @@ const skillBuilderThumbnail = "/images/skill-builders/skill-buider.png";
     const ms = window.$memberstackDom;
     if (ms?.getCurrentMember) {
       try {
-        hasAccess = hasKinVideoAccess(await ms.getCurrentMember());
+        const res = await ms.getCurrentMember();
+        hasAccess = hasMemberAccess(res);
+        logMemberAccessDebug("skill-builders/round-neckline-practice", res, {
+          viewerAccessState: getViewerAccessState(res),
+        });
       } catch {
         hasAccess = false;
       }

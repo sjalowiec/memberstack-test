@@ -262,7 +262,7 @@
     "href": "/tools/magic-formula",
     "icon": "magic-formula.svg",
     "description": "Calculate evenly spaced increases or decreases for shaping.",
-    "membersonly": false,
+    "membersonly": true,
     "helpID": 4135,
     "category": "Shaping and Charting",
     "help_text": "Use this tool to calculate evenly spaced increases or decreases for shaping a knitted piece.\n\nEnter the number of stitches to increase or decrease and the number of rows available for the shaping. The tool calculates how to distribute the shaping evenly across the rows and provides the knitting instructions.Watch the video above for more details.\n\nUse this Knit it Now Magic Formula Tool when you know the stitches and rows of the piece you are creating or altering.\nUse this formula when you are working more rows than stitches.\nA common use for the Magic Formula is to alter sleeve length or create waist shaping for a sweater.\n If you are working from a pattern and you know the dimensions,\nuse the Knit it Now Magic Formula (in/cm) Tool.\n\n If you are working with more stitches than rows, like a shoulder slope,\nuse the Knit it Now Slope Tool.",
