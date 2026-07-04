@@ -104,7 +104,7 @@ async function startQuickHelpCheckout(): Promise<void> {
       }
     }
 
-    showStatus("Opening checkoutù", "info");
+    showStatus("Opening checkout...", "info");
 
     const checkoutResult = await purchasePlansWithCheckout.call(ms, {
       priceId: QUICK_HELP_SESSION.memberstackPriceId,

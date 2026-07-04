@@ -180,7 +180,7 @@ async function startJoinCheckout(planKey: JoinCheckoutPlanKey): Promise<void> {
 
     if (!loggedIn) {
       console.log("[join checkout] opening SIGNUP modal");
-      showJoinStatus("Create your account to continue to checkoutù", "info");
+      showJoinStatus("Create your account to continue to checkout...", "info");
 
       const signupResult = await ms.openModal?.("SIGNUP");
       console.log("[join checkout] signup modal result:", signupResult);
@@ -213,7 +213,7 @@ async function startJoinCheckout(planKey: JoinCheckoutPlanKey): Promise<void> {
     console.log("[join checkout] calling purchasePlansWithCheckout", {
       priceId: plan.priceId,
     });
-    showJoinStatus(`Opening checkout for ${plan.label}ù`, "info");
+    showJoinStatus(`Opening checkout for ${plan.label}...`, "info");
 
     const checkoutResult = await purchasePlansWithCheckout.call(ms, {
       priceId: plan.priceId,

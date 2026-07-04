@@ -78,7 +78,7 @@ function makeDialogFixture() {
   return { dialog, root, buttons };
 }
 
-describe("ensurePatternBuilderAccount  logged-out visitors see the signup-first prompt", () => {
+describe("ensurePatternBuilderAccount - logged-out visitors see the signup-first prompt", () => {
   it("Hat Create: blocks generation and opens the account prompt", async () => {
     const openAccountPrompt = vi.fn();
     const allowed = await ensurePatternBuilderAccount({
@@ -143,7 +143,7 @@ describe("ensurePatternBuilderAccount  logged-out visitors see the signup-first
   });
 });
 
-describe("ensurePatternBuilderAccount  logged-in visitors generate for free (no membership gate)", () => {
+describe("ensurePatternBuilderAccount - logged-in visitors generate for free (no membership gate)", () => {
   it("logged-in with no subscription can generate (no prompt)", async () => {
     const openAccountPrompt = vi.fn();
     const allowed = await ensurePatternBuilderAccount({
@@ -191,7 +191,7 @@ describe("showPatternBuilderAccountGate", () => {
   });
 });
 
-describe("initPatternBuilderAccountGate  modal CTAs", () => {
+describe("initPatternBuilderAccountGate - modal CTAs", () => {
   it("primary CTA routes to public signup, secondary CTA opens login", () => {
     const openSignup = vi.fn();
     const openLogin = vi.fn();

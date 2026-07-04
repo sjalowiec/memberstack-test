@@ -122,7 +122,11 @@
     "helpID": "NULL",
     "category": "Swatching and Gauge",
     "help_text": "Use this tool to see how differences in gauge affect the finished size of your knitting.",
-    "active": true
+    "active": true,
+    "toolKey": "gauge-comparison",
+    "embeddable": true,
+    "embedContexts": ["course"],
+    "embedStatus": "planned"
   },
   {
     "id": 18,
@@ -146,7 +150,11 @@
     "helpID": 4133,
     "category": "Swatching and Gauge",
     "help_text": "Use this tool when you want to substitute a different yarn than the pattern calls for.\n\nEnter the gauge from the original pattern and the gauge from your swatch. The tool calculates the stitch and row counts needed so your finished piece matches the pattern measurements using your yarn.",
-    "active": true
+    "active": true,
+    "toolKey": "pattern-conversion",
+    "embeddable": true,
+    "embedContexts": ["course"],
+    "embedStatus": "planned"
   },
   {
     "id": 16,
@@ -171,7 +179,11 @@
     "helpID": "NULL",
     "category": "Project Planning",
     "help_text": "Every machine has its limits—don't let your design exceed them. This tool cross-references your gauge with your needle bed to give you the exact maximum width possible. It’s the ultimate planning tool for calculating how many panels you'll need for blankets, wide wraps, or oversized garments.",
-    "active": true
+    "active": true,
+    "toolKey": "maximum-knitted-width",
+    "embeddable": true,
+    "embedContexts": ["course"],
+    "embedStatus": "available"
   },
   {
     "id": 23,
@@ -261,7 +273,11 @@
     "helpID": 4138,
     "category": "Project Planning",
     "help_text": "Use this tool to estimate whether you have enough yarn to finish your project.\n\nWeigh and measure a swatch, then enter the finished dimensions of one pattern piece. The tool estimates grams needed for that piece. Repeat for each piece and add the totals together.",
-    "active": true
+    "active": true,
+    "toolKey": "yarn-estimator",
+    "embeddable": true,
+    "embedContexts": ["course"],
+    "embedStatus": "available"
   },
   {
     "id": 19,

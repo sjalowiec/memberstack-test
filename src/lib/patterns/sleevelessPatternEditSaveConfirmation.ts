@@ -125,7 +125,7 @@ export function isEditPatternSaveConfirmationOpen(doc: Document = document): boo
 
 /**
  * Shows the post-save confirmation modal. Resolves when the user picks an action.
- * Does not perform save ù call only after a successful save completes.
+ * Does not perform save - call only after a successful save completes.
  */
 export function promptEditPatternSaveConfirmation(
   root?: ParentNode,

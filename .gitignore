@@ -12,7 +12,8 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-/scripts/
+/scripts/*
+!/scripts/check-utf8.mjs
 src/data/glossary.backup.before-strip-html.json
 # environment variables
 .env

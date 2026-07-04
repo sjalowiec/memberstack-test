@@ -12,6 +12,12 @@ interface Props {
   skipGlobalPinterest?: boolean;
   /** Print-only tool attribution (see ToolPrintFooter). */
   toolPrintTitle?: string;
+  /**
+   * Onboarding flow: render a minimal header (logo → home only, no nav/search)
+   * and a "Skip for now" link near the bottom. Reuse for focused onboarding
+   * pages (signup/thank-you, machine-checkup, knit-your-first-rows, etc.).
+   */
+  onboarding?: boolean;
 }
 
 const {
@@ -20,19 +26,26 @@ const {
   bodyClass = "",
   skipGlobalHyvor = false,
   skipGlobalPinterest = false,
-  toolPrintTitle
+  toolPrintTitle,
+  onboarding = false
 } = Astro.props;
+
+// Onboarding pages get a body hook so the minimal header height is respected
+// without touching the global header offset used by the rest of the site.
+const resolvedBodyClass = [bodyClass, onboarding ? "page--onboarding" : ""]
+  .filter(Boolean)
+  .join(" ");
 ---
 
 <!-- This layout does not render a visible page heading; title is used only for <title> in BaseLayout. -->
 <BaseLayout
   title={title}
   description={description}
-  bodyClass={bodyClass}
+  bodyClass={resolvedBodyClass}
   skipGlobalHyvor={skipGlobalHyvor}
   skipGlobalPinterest={skipGlobalPinterest}
 >
-  <Header />
+  <Header onboarding={onboarding} />
 
  
 
@@ -91,6 +104,11 @@ const {
 
   <main class="site-content" style="padding-top: calc(var(--header-offset, 150px) + var(--header-buffer, 24px) + var(--kbm-env-banner-h, 0px));">
     <slot />
+    {onboarding && (
+      <nav class="onboarding-skip" aria-label="Skip onboarding">
+        <a href="/" class="onboarding-skip__link">Skip for now → Go to Home</a>
+      </nav>
+    )}
     {toolPrintTitle && <ToolPrintFooter toolTitle={toolPrintTitle} />}
   </main>
 
@@ -121,6 +139,46 @@ const {
 
   body.page--tight-header {
     --header-buffer: 8px;
+  }
+
+  /* Onboarding flow: minimal header (logo only), so content can sit closer to
+     the top. Set here (body scope) so it never affects the global header used
+     by the rest of the site. The offset JS below refines this after measuring. */
+  body.page--onboarding {
+    --header-offset: 88px;
+    --header-buffer: 8px;
+  }
+
+  @media (max-width: 600px) {
+    body.page--onboarding {
+      --header-offset: 72px;
+    }
+  }
+
+  /* "Skip for now" text link near the bottom of onboarding pages */
+  .onboarding-skip {
+    margin-top: 2.5rem;
+    text-align: center;
+  }
+
+  .onboarding-skip__link {
+    display: inline-block;
+    padding: 0.25rem 0.25rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #6b7280;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .onboarding-skip__link:hover {
+    color: var(--kbm-green, #52682d);
+  }
+
+  .onboarding-skip__link:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 3px;
+    border-radius: 4px;
   }
 
   /* Mobile: more breathing room below brand bar so content doesn’t feel jammed */

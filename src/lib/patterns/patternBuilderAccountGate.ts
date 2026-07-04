@@ -12,7 +12,7 @@
  * "already have an account? Log in" link) rather than a login-only prompt, so brand-new visitors
  * can hand us their email. It reuses the shared primitives:
  *   - `isSleevelessPatternMemberLoggedIn` for the logged-in decision (Memberstack + dev bypass)
- *   - `showPublicSignupModal` (the clean site-wide custom signup form) for the primary CTA ù NOT the prebuilt
+ *   - `showPublicSignupModal` (the clean site-wide custom signup form) for the primary CTA - NOT the prebuilt
  *     Memberstack SIGNUP modal, which exposes internal member fields
  *   - `openMemberstackLoginModal` for the secondary CTA
  */
@@ -39,7 +39,7 @@ export interface EnsurePatternBuilderAccountDeps {
 /**
  * Returns `true` when the visitor may generate/view a pattern (they have an account). When logged
  * out, opens the signup-first prompt (so the failure is never silent) and returns `false` so
- * callers can abort. No subscription/membership check is applied ù login alone is sufficient.
+ * callers can abort. No subscription/membership check is applied - login alone is sufficient.
  */
 export async function ensurePatternBuilderAccount(
   deps: EnsurePatternBuilderAccountDeps = {},

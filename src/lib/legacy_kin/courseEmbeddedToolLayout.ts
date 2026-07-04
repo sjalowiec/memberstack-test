@@ -79,8 +79,8 @@ export function embeddedToolLayoutSummary(parts: EmbeddedToolLayoutParts): strin
   const introHtml = parts.introText ? String(parts.introText.html ?? "") : "";
   if (richTextHasVisibleContent(introHtml)) {
     const text = introHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
-    const preview = text.length > 40 ? `${text.slice(0, 40)}…` : text;
-    return `${preview} · ${toolLabel}`;
+    const preview = text.length > 40 ? `${text.slice(0, 40)}...` : text;
+    return `${preview} - ${toolLabel}`;
   }
   return toolLabel;
 }

@@ -121,7 +121,7 @@ function resolvePatternSystemFromPageUrlAndDom(doc?: Document): PatternSystemId 
 }
 
 /**
- * Pattern system for new-pattern / builder entitlement gates ù page intent only.
+ * Pattern system for new-pattern / builder entitlement gates - page intent only.
  * Never falls back to a stale working draft or active saved-project session.
  */
 export function resolvePatternSystemForBuilderGate(doc?: Document): PatternSystemId {
@@ -178,7 +178,7 @@ export function resolvePatternSystemForEntitlement(doc?: Document): PatternSyste
   return resolvePatternSystemForBuilderGate(doc);
 }
 
-/** @internal Test seam ù classify from raw style/customOverrides without draft reads. */
+/** @internal Test seam - classify from raw style/customOverrides without draft reads. */
 export function resolvePatternSystemFromStylePayload(
   style: Record<string, unknown> | undefined,
   customOverrides?: Record<string, unknown>,

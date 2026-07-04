@@ -1,7 +1,7 @@
 /**
  * Build schema.org FAQPage JSON-LD from a Help Hub tip's *visible* content.
  *
- * Rules (kept strict on purpose, for AEO/AI readability — not ranking promises):
+ * Rules (kept strict on purpose, for AEO/AI readability - not ranking promises):
  * - Only genuine, question-shaped Q&A pairs are included (the question text must
  *   end with "?"). We never invent questions or repeat marketing copy.
  * - Answers are stripped of HTML and normalised to plain text.

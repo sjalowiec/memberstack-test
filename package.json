@@ -12,6 +12,7 @@
     "build:transition-site": "npm run prepare:transition-site && astro build --config transition-site/astro.config.mjs",
     "preview:transition-site": "astro preview --config transition-site/astro.config.mjs",
     "test": "vitest run",
+    "check:utf8": "node scripts/check-utf8.mjs",
     "generate:legacy-ebook-shopify-import": "vite-node scripts/generate-legacy-ebook-shopify-import.ts",
     "split:course-content": "vite-node scripts/split-course-content.ts"
   },

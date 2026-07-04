@@ -20,7 +20,7 @@ export type PatternAutoSaveSuccessDialogOptions = {
   patternSystem: PatternSystemId;
   projectName?: string;
   root?: ParentNode;
-  /** Called when "Open My Patterns" is chosen — wire to library drawer opener. */
+  /** Called when "Open My Patterns" is chosen - wire to library drawer opener. */
   onOpenLibrary?: () => void;
 };
 

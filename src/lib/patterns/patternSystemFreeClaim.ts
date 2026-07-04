@@ -2,7 +2,7 @@
  * Per-pattern-system free claim storage in Memberstack member JSON.
  *
  * Each logged-in non-member may save one free pattern per pattern system (Sleeveless, Drop
- * Shoulder, Blanket, ù). Claims are account-tied via Memberstack `getMemberJSON` /
+ * Shoulder, Blanket, ...). Claims are account-tied via Memberstack `getMemberJSON` /
  * `updateMemberJSON`, not localStorage.
  */
 import type { PatternSystemId } from "./patternSystemId";
@@ -101,7 +101,7 @@ export function mergeFreeClaimForSystemIntoMemberJson(
   return merged;
 }
 
-/** Admin reset ù clears one system's claim; legacy keys cleared when sleeveless is reset. */
+/** Admin reset - clears one system's claim; legacy keys cleared when sleeveless is reset. */
 export function mergeFreeClaimResetForSystemIntoMemberJson(
   json: unknown,
   systemId: PatternSystemId,

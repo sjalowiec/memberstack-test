@@ -8,7 +8,7 @@ export function testAccess(
   partial: Partial<SleevelessUserAccess> & {
     loggedIn: boolean;
     hasSystemAccess: boolean;
-    /** Shorthand — sets claim on sleeveless unless patternSystem is given. */
+    /** Shorthand - sets claim on sleeveless unless patternSystem is given. */
     freeClaimed?: boolean;
     freeClaimedPatternId?: string;
     claimedSystem?: PatternSystemId;

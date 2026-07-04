@@ -6,6 +6,7 @@ import FloatingInput from "../../components/tools/FloatingInput.astro";
 import PrintButton from "../../components/common/PrintButton.astro";
 import ToolResultCard from "../../components/tools/ToolResultCard.astro";
 import YarnWeightsTable from "../../components/reference/YarnWeightsTable.astro";
+import ToolGate from "../../components/ui/ToolGate.astro";
 import { yarnWeights } from "../../data/yarn-weights";
 import toolsData from "../../../data/tools.json";
 import "../../styles/wizard.css";
@@ -14,6 +15,7 @@ const tools = toolsData as Array<{
   href?: string;
   title?: string;
   icon?: string;
+  membersonly?: boolean;
 }>;
 const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
 const toolPrintTitle = tool?.title ?? "Yarn Comparison Calculator";
@@ -36,7 +38,9 @@ const rangeCategoryMap = Object.fromEntries(yarnWeights.map((item) => [item.rang
         </p>
       </section>
 
-      <div class="ypp-tool-wrap">
+      <ToolGate tool={tool} />
+
+      <div class="ypp-tool-wrap" data-gated="content" hidden>
         <div class="ypp-calculator-panel kbm-tool-calculator-area">
           <form id="wizard-form" class="ypp-form" novalidate>
             <h2 class="ypp-form-title">Enter yarn label information</h2>
@@ -124,6 +128,7 @@ const rangeCategoryMap = Object.fromEntries(yarnWeights.map((item) => [item.rang
     }
 
     .ypp-tool-wrap {
+      position: relative;
       margin-bottom: 2rem;
     }
 

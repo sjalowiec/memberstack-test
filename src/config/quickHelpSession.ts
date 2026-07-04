@@ -1,11 +1,11 @@
 /**
- * Quick Help Session ù one-time purchase via Memberstack.
+ * Quick Help Session - one-time purchase via Memberstack.
  * Do not hard-code these IDs elsewhere.
  *
  * Production checklist (admin/developer):
  * - Memberstack controls whether checkout is Test or Live mode (dashboard toggle, not this file).
  * - memberstackPlanId and memberstackPriceId must come from the Memberstack environment in use
- *   (Test-mode IDs differ from Live-mode IDs ù copy from the matching dashboard mode).
+ *   (Test-mode IDs differ from Live-mode IDs - copy from the matching dashboard mode).
  * - Before production: confirm Memberstack is in LIVE mode.
  * - Confirm the Quick Help product uses the live Knit It Now Stripe account.
  * - Confirm the $49 price exists in live mode.

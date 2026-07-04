@@ -1,6 +1,6 @@
 /**
  * Front neckline shaping chart for drop-shoulder patterns.
- * Reuses {@link buildTimeline} / {@link buildVNeckFrontFullWidthTimeline} — no duplicate neck math.
+ * Reuses {@link buildTimeline} / {@link buildVNeckFrontFullWidthTimeline} - no duplicate neck math.
  */
 
 import {

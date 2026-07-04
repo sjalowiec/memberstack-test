@@ -1,5 +1,5 @@
 /**
- * Stitch Multiple Calculator — core logic (UI-free so it can be unit tested).
+ * Stitch Multiple Calculator - core logic (UI-free so it can be unit tested).
  *
  * A stitch pattern repeat is written as "repeat + plus" (e.g. "3 + 1"), meaning
  * the pattern repeats every `repeat` stitches and finishes with `plus` extra

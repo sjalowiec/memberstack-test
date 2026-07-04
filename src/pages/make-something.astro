@@ -1,0 +1,333 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const pageTitle = "Find Your Next Project";
+const pageDescription =
+  "You're in the right place. Whether you want a quick win, something wearable, or a project that stretches your skills, Knit It Now can help you choose a project and find the tools, videos, and patterns to make it happen.";
+
+// Project-focused orientation page. Intentionally NOT tied to the Getting
+// Started flow: no ProgressNav, no skill-level framing. Each card leads with
+// project ideas (what the visitor came here to find), then explains how Knit
+// It Now helps, and finally offers a small set of secondary helpful links.
+// Order is fixed: Quick Projects, Wearables, Challenge Yourself.
+const sections = [
+  {
+    id: "quick-projects",
+    heading: "Quick Projects",
+    copy:
+      "Want to finish something in a day or two? Start with simple projects that build confidence while helping you learn your machine.",
+    projects: ["Scarf or cowl", "Baby blanket", "Pillow front", "Practice panel", "Table runner"],
+    benefits: [
+      "Calculate how many stitches to cast on",
+      "Estimate how much yarn you'll need",
+      "Create any size rectangle with the Rectangle / Square Builder",
+      "Learn cast on and bind off techniques",
+    ],
+    links: [
+      { label: "Blanket Pattern", href: "/patterns/diy-blanket" },
+      { label: "Rectangle / Square Builder", href: "/tools/rectangle-tool" },
+      { label: "Video Library", href: "/videos" },
+      { label: "Yarn Estimator", href: "/tools/yarn-estimator" },
+    ],
+  },
+  {
+    id: "wearables",
+    heading: "Wearables",
+    copy:
+      "Ready to knit something you can wear? These projects introduce shaping, sizing, and fit without throwing you into the full pattern catalog.",
+    projects: ["Basic hat", "Vest", "Sleeveless top", "Baby sweater", "Simple pullover"],
+    benefits: [
+      "Check your gauge so your project comes out the right size",
+      "Take accurate measurements for a good fit",
+      "Generate patterns that fit you and your yarn",
+      "Follow lessons that explain the techniques step by step",
+    ],
+    links: [
+      { label: "Pattern Builders", href: "/patterns" },
+      { label: "Gauge Calculator", href: "/tools/gauge-calculator" },
+      { label: "Sizing Charts", href: "/reference/sizing-charts" },
+      { label: "Pattern Library", href: "/patterns" },
+    ],
+  },
+  {
+    id: "challenge-yourself",
+    heading: "Challenge Yourself",
+    copy:
+      "Ready to try something new? Explore larger projects, custom patterns, and techniques that help you grow as a machine knitter.",
+    projects: ["Cardigan", "Custom sweater", "Fair Isle project", "Lace project", "Projects using stitch patterns"],
+    benefits: [
+      "Create custom-fit patterns designed around your measurements",
+      "Explore stitch patterns to add texture and color",
+      "Learn new techniques with videos and courses",
+      "Understand Japanese knitting diagrams with confidence",
+    ],
+    links: [
+      { label: "Sweater Builders", href: "/patterns" },
+      { label: "Stitch Pattern Library", href: "/stitch" },
+      { label: "Japanese Knitting Diagrams", href: "/glossary/japanese-notation" },
+      { label: "Pattern Conversion Tools", href: "/tools/pattern-conversion" },
+      { label: "Courses", href: "/courses" },
+    ],
+  },
+];
+---
+
+<Layout
+  title={`${pageTitle} | Knit It Now`}
+  description={pageDescription}
+  bodyClass="find-project-page-body"
+>
+  <div class="find-page">
+    <header class="find-hero">
+      <div class="find-hero__inner">
+        <h1 class="find-hero__title">Find Your Next Project</h1>
+        <p class="find-hero__intro">
+          You're in the right place. Whether you want a quick win, something
+          wearable, or a project that stretches your skills, Knit It Now can help
+          you choose a project and find the tools, videos, and patterns to make
+          it happen.
+        </p>
+        <p class="find-hero__note">
+          <strong>Not sure where to start?</strong> Pick the project that sounds
+          the most fun. You can always come back and choose another path.
+        </p>
+      </div>
+    </header>
+
+    <div class="find-cards">
+      {sections.map((section) => (
+        <section id={section.id} class="find-card">
+          <h2 class="find-card__heading">{section.heading}</h2>
+          <p class="find-card__copy">{section.copy}</p>
+
+          <h3 class="find-card__subhead">Project ideas</h3>
+          <ul class="find-projects">
+            {section.projects.map((project) => (
+              <li>{project}</li>
+            ))}
+          </ul>
+
+          <h3 class="find-card__subhead">Knit It Now can help you</h3>
+          <ul class="find-benefits">
+            {section.benefits.map((benefit) => (
+              <li>{benefit}</li>
+            ))}
+          </ul>
+
+          <div class="find-card__links">
+            <h3 class="find-card__links-title">Helpful links</h3>
+            <ul class="find-links">
+              {section.links.map((link) => (
+                <li>
+                  <a class="find-link" href={link.href}>{link.label}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      ))}
+    </div>
+  </div>
+
+  <style>
+    .find-page {
+      color: #243015;
+    }
+
+    /* Hero / intro */
+    .find-hero {
+      padding: 1rem 1.25rem 2rem;
+    }
+
+    .find-hero__inner {
+      max-width: 46rem;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .find-hero__title {
+      font-size: var(--text-xxl);
+      font-weight: 600;
+      color: var(--kbm-green);
+      margin: 0 0 1rem 0;
+    }
+
+    .find-hero__intro {
+      font-size: var(--text-lg);
+      line-height: 1.7;
+      color: #243015;
+      margin: 0 auto 1.5rem;
+    }
+
+    .find-hero__note {
+      font-size: var(--text-base);
+      line-height: 1.6;
+      color: #4d5a48;
+      background: #f2f5ea;
+      border: 1px solid #dce4cd;
+      border-radius: 10px;
+      padding: 0.85rem 1.15rem;
+      margin: 0 auto;
+      max-width: 38rem;
+    }
+
+    .find-hero__note strong {
+      color: var(--kbm-green);
+    }
+
+    /* Three distinct project cards */
+    .find-cards {
+      max-width: 1560px;
+      margin: 0 auto;
+      padding: 1.5rem 0 4rem;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    @media (min-width: 900px) {
+      .find-cards {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2.25rem;
+        align-items: start;
+      }
+    }
+
+    .find-card {
+      background: #ffffff;
+      border: 1px solid #dce4cd;
+      border-top: 4px solid var(--kbm-green);
+      border-radius: 14px;
+      padding: 2.25rem 2rem;
+      box-shadow: 0 2px 10px rgba(36, 48, 21, 0.05);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .find-card__heading {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: var(--kbm-green);
+      line-height: 1.2;
+      margin: 0 0 0.75rem 0;
+    }
+
+    .find-card__copy {
+      font-size: var(--text-base);
+      line-height: 1.65;
+      color: #3a4a24;
+      margin: 0 0 1.5rem 0;
+    }
+
+    .find-card__subhead {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #243015;
+      margin: 0 0 0.6rem 0;
+    }
+
+    /* Projects lead visually */
+    .find-projects {
+      list-style: none;
+      margin: 0 0 1.5rem 0;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .find-projects li {
+      font-size: var(--text-base);
+      font-weight: 600;
+      color: #33421f;
+      background: #f2f5ea;
+      border: 1px solid #dce4cd;
+      border-radius: 999px;
+      padding: 0.4rem 0.85rem;
+      line-height: 1.3;
+    }
+
+    .find-benefits {
+      list-style: disc;
+      margin: 0 0 1.75rem 0;
+      padding-left: 1.3rem;
+      font-size: var(--text-base);
+      line-height: 1.7;
+      color: #3a4a24;
+    }
+
+    .find-benefits li {
+      margin: 0 0 0.4rem 0;
+    }
+
+    /* Secondary, quieter links grouped at the bottom */
+    .find-card__links {
+      margin-top: auto;
+      border-top: 1px solid #e5ead9;
+      padding-top: 1.1rem;
+    }
+
+    .find-card__links-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #6b7860;
+      margin: 0 0 0.6rem 0;
+    }
+
+    .find-links {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .find-links li {
+      margin: 0 0 0.4rem 0;
+    }
+
+    .find-link {
+      font-size: var(--text-base);
+      line-height: 1.5;
+      color: var(--kbm-green);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(82, 104, 45, 0.35);
+      padding-bottom: 1px;
+      transition: color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .find-link:hover,
+    .find-link:focus-visible {
+      color: #3a4a24;
+      border-bottom-color: var(--kbm-green);
+    }
+
+    @media (max-width: 540px) {
+      .find-card {
+        padding: 1.5rem 1.35rem;
+      }
+
+      .find-card__heading {
+        font-size: 1.45rem;
+      }
+    }
+  </style>
+
+  <style is:global>
+    /* This orientation page uses a wider workspace than the default article width
+       so the three project cards can breathe side by side on desktop. */
+    body.find-project-page-body main.site-content {
+      max-width: 1600px;
+      padding-left: 2.5rem;
+      padding-right: 2.5rem;
+    }
+
+    @media (max-width: 640px) {
+      body.find-project-page-body main.site-content {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+    }
+  </style>
+</Layout>
+</output>

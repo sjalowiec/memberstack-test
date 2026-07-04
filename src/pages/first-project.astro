@@ -119,7 +119,27 @@ const projectIdeas = [
             </p>
           </div>
         </li>
+
+        <li class="first-project-step">
+          <span class="first-project-step__num" aria-hidden="true">5</span>
+          <div class="first-project-step__content">
+            <h2 class="first-project-step__title">Optional next step: a basic hat</h2>
+            <p class="first-project-step__body">
+              Once a rectangle feels comfortable, a simple hat is a friendly next
+              step. It is still quick to knit, but it introduces a little shaping
+              and a finished, wearable result.
+            </p>
+            <a href="/patterns/hat" class="kbm-btn kbm-btn-outline first-project-step__btn">
+              Try the Hat Pattern Builder
+            </a>
+          </div>
+        </li>
       </ol>
+
+      <p class="first-project-more">
+        Ready to explore beyond a first project?{" "}
+        <a href="/make-something">See what else you can make</a>.
+      </p>
     </div>
   </section>
 
@@ -237,6 +257,19 @@ const projectIdeas = [
 
     .first-project-step__btn {
       margin-top: 0.75rem;
+    }
+
+    .first-project-more {
+      margin: 2rem 0 0;
+      font-size: var(--text-lg);
+      line-height: 1.7;
+      color: #3a4a24;
+      text-align: center;
+    }
+
+    .first-project-more a {
+      color: var(--kbm-green);
+      font-weight: 600;
     }
 
     @media (max-width: 540px) {

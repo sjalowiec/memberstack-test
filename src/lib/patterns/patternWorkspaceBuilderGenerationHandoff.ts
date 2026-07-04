@@ -3,7 +3,7 @@
  *
  * Mirrors the review page "Build My Pattern" prep so the dedicated workspace can become
  * the first destination after builder completion. Trigger via `?generated=1` or
- * {@link markPatternWorkspaceBuilderHandoff} — builder routing is wired in a later phase.
+ * {@link markPatternWorkspaceBuilderHandoff} - builder routing is wired in a later phase.
  */
 import { loadExpressSweaterCharts } from "./sleevelessExpressSizeChartClient";
 import { flushExpressWizardToCanonicalPattern } from "./flushExpressWizardToCanonicalPattern";

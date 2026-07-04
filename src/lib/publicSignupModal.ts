@@ -1,13 +1,13 @@
 /**
- * Clean public signup modal � the single "create a free account" experience used site-wide
+ * Clean public signup modal - the single "create a free account" experience used site-wide
  * (main menu Sign Up, Hat/Blanket account gate, sleeveless gate, and any `[data-open-public-signup]`
  * CTA).
  *
  * It is backed by a CUSTOM Memberstack signup form (`data-ms-form="signup"` with only First Name,
  * Email, and Password). It deliberately does NOT use the prebuilt Memberstack signup modal
  * (`openModal("SIGNUP")` / `data-ms-modal="signup"`), which auto-renders every internal member
- * custom field (birthday, date-joined, legacyMemberID). It also creates a free member � no plan is
- * attached � so it is not tied to the beta-specific `/beta-signup` page.
+ * custom field (birthday, date-joined, legacyMemberID). It also creates a free member - no plan is
+ * attached - so it is not tied to the beta-specific `/beta-signup` page.
  */
 import { openMemberstackLoginModal } from "./memberstackLogin";
 

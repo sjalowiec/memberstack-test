@@ -19,10 +19,9 @@ const nextSteps = [
   },
   {
     title: "I Want to Make Something",
-    text: "Explore beginner-friendly projects, patterns, and builders to start knitting.",
+    text: "Choose a quick project, something wearable, or a challenge that helps you grow.",
     button: "Find a Project",
-    // TODO: replace "#" with the final "make something / projects" destination once decided.
-    href: "#",
+    href: "/make-something",
     image: "/images/home/returning.webp",
     alt: "Coral knitted sweater representing making your first project",
   },
@@ -30,8 +29,7 @@ const nextSteps = [
     title: "I Want Patterns That Fit",
     text: "Create custom patterns using your measurements, gauge, and machine.",
     button: "Explore Pattern Builders",
-    // TODO: replace "#" with the final Pattern Builders destination once decided.
-    href: "#",
+    href: "/patterns/about",
     image: "/images/home/patterns-that-fit.webp",
     alt: "Green knitted sweater representing custom patterns that fit",
   },
@@ -39,8 +37,7 @@ const nextSteps = [
     title: "I Need Help Solving a Problem",
     text: "Find answers with tutorials, the glossary, reference library, and knitting tools.",
     button: "Get Help",
-    // TODO: replace "#" with the final help/troubleshooting destination once decided.
-    href: "#",
+    href: "/help-hub",
     image: "/images/home/stuck.webp",
     alt: "Tan knitted sweater for when you need help solving a problem",
   },
@@ -50,7 +47,7 @@ const nextSteps = [
 <Layout
   title={`${pageTitle} | Knit it Now`}
   {description}
-  bodyClass="page--tight-header"
+  onboarding
 >
   <article class="signup-thank-you page-wrap" aria-labelledby="signup-thank-you-heading">
     <section class="signup-thank-you__hero">

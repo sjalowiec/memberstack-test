@@ -85,7 +85,7 @@
     margin-bottom: 0.75rem;
   }
 
-  /* Logo | divider | title â€” letterhead row, rule below (global print.css hides bare `header`; see @media print overrides) */
+  /* Logo | divider | title - letterhead row, rule below (global print.css hides bare `header`; see @media print overrides) */
   .sleeveless-print-root .print-doc-header-brand {
     display: flex;
     flex-direction: row;
@@ -759,7 +759,7 @@
     }
 
     /*
-      Global src/styles/print.css hides every `header` in print â€” restore the pattern
+      Global src/styles/print.css hides every `header` in print - restore the pattern
       sheet header inside main (logo + divider + title); keep site chrome hidden above.
     */
     body.sleeveless-print-route .print-doc-inner header.print-doc-header {

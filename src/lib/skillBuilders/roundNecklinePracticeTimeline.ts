@@ -293,7 +293,7 @@ export function validateRoundNecklinePracticeRowAccounting(
   if (centerMatches && (shallowHold || (stairMatches && singlesMatch))) {
     validationLines.push("Japanese notation matches plan stair/single/center counts.");
   } else {
-    validationLines.push("WARNING: Japanese notation counts differ from plan ù inspect tokens.");
+    validationLines.push("WARNING: Japanese notation counts differ from plan - inspect tokens.");
   }
 
   if (result.neckShapingRows !== 1 + innerSpan) {

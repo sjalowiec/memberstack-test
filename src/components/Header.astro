@@ -8,6 +8,17 @@ import { PATTERN_BUILDERS_HOME_HREF } from "../lib/patterns/customPatternProject
    (no leftover spacing — the fixed-header offset re-measures automatically). */
 const SHOW_BETA_BANNER = true;
 
+interface Props {
+  /**
+   * Onboarding mode: render a stripped-down header (logo only) for focused
+   * flows like /signup/thank-you. Hides primary nav, search, account actions,
+   * the hamburger menu, and the beta banner while keeping the logo → home link.
+   */
+  onboarding?: boolean;
+}
+
+const { onboarding = false } = Astro.props;
+
 const memberPlanIds = [...MEMBER_PLAN_IDS];
 ---
 <style is:global>
@@ -1612,13 +1623,34 @@ div[data-ms-modal-overlay] {
       </div>
 
       <!-- Primary nav: menu links (row 1 on tablet; centered on desktop) -->
+      {!onboarding && (
+      <>
       <div class="kbm-nav-primary">
         <div class="kbm-nav-row menu-row">
           <ul class="kbm-menu">
-            <li class="nav-item">
-              <a href={PATTERN_BUILDERS_HOME_HREF} class="nav-link" data-testid="nav-patterns">
+            <li class="nav-item nav-dropdown dd">
+              <a
+                href={PATTERN_BUILDERS_HOME_HREF}
+                class="nav-link nav-dropdown-toggle dd-trigger"
+                aria-haspopup="true"
+                aria-expanded="false"
+                data-testid="nav-patterns"
+              >
                 Patterns
               </a>
+
+              <ul class="nav-dropdown-menu dd-panel" role="menu">
+                <li>
+                  <a href="/stitch" data-testid="nav-stitch-library">
+                    Stitch Browser
+                  </a>
+                </li>
+                <li>
+                  <a href="/reference/sizing-charts" data-testid="nav-sizing-charts">
+                    Sizing Charts
+                  </a>
+                </li>
+              </ul>
             </li>
             <li class="nav-item nav-dropdown dd">
               <button
@@ -1809,6 +1841,8 @@ div[data-ms-modal-overlay] {
           <span></span>
         </button>
       </div>
+      </>
+      )}
     </div>
 
     <div id="auth-msg" class="auth-msg" style="display:none;" role="status" aria-live="polite">
@@ -1817,7 +1851,7 @@ div[data-ms-modal-overlay] {
     </div>
   </header>
 
-  {SHOW_BETA_BANNER && (
+  {SHOW_BETA_BANNER && !onboarding && (
     <div class="kbm-beta-banner" role="region" aria-label="Beta updates">
       <div class="kbm-beta-banner-inner">
         <span class="kbm-beta-banner-title">What's New in Beta</span>

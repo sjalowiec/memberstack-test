@@ -6,7 +6,7 @@ import UnitToggle from "../../components/wizards/UnitToggle.astro";
 import FloatingInput from "../../components/tools/FloatingInput.astro";
 import PrintButton from "../../components/common/PrintButton.astro";
 import ToolResultCard from "../../components/tools/ToolResultCard.astro";
-import MemberLockOverlay from "../../components/ui/MemberLockOverlay.astro";
+import ToolGate from "../../components/ui/ToolGate.astro";
 import toolsData from "../../../data/tools.json";
 import "../../styles/wizard.css";
 
@@ -17,7 +17,6 @@ const tools = toolsData as Array<{
   membersonly?: boolean;
 }>;
 const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
-const isMemberOnly = tool?.membersonly === true;
 const toolPrintTitle = tool?.title ?? "Gauge Calculator";
 ---
 
@@ -171,15 +170,7 @@ const toolPrintTitle = tool?.title ?? "Gauge Calculator";
           </div>
         </ToolResultCard>
 
-        {isMemberOnly && (
-          <div data-ms-content="!paid-plans">
-            <MemberLockOverlay
-              title="This tool is for members"
-              message="You’ll need an active membership to use this tool."
-              ctaText="Become a member"
-            />
-          </div>
-        )}
+        <ToolGate tool={tool} />
       </div>
     </div>
 

@@ -1112,6 +1112,34 @@ p {
   transform-origin: center;
 }
 
+/* NEW: featured brand-new tool. Filled warm-accent ribbon in the top-right
+   corner (opposite the top-left Member ribbon), stronger than the sage
+   Member/Free/Coming Soon ribbons but still on-brand. */
+.kbm-card-ribbon--new {
+  left: auto !important;
+  right: 0 !important;
+}
+.kbm-card-ribbon--new::before {
+  background: var(--kbm-accent, #c2614e);
+  border-left: 1px solid rgba(0, 0, 0, 0.14);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.14);
+  border-right: 0;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+.kbm-card-ribbon--new::after {
+  content: attr(data-label);
+  top: 15px;
+  right: 6px;
+  left: auto;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  transform: rotate(45deg);
+  transform-origin: center;
+}
+
 /* Video cards: refine spacing between thumbnail, title, and description */
 .video-card h3 {
   margin-top: 12px;
