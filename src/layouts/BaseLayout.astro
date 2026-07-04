@@ -424,12 +424,18 @@ const isProduction =
         // tick. The CDN script often isn't loaded when DOMContentLoaded fires, and
         // a one-shot check left body.ms-logged-in unset for real members (locking
         // member-only tools). Mirrors the retry pattern used on video pages.
+        //
+        // Use getAppAndMember() (not getCurrentMember): it resolves only after full
+        // SDK init and reliably includes planConnections, so plan-based access is
+        // correct on first load. getCurrentMember() can return a cached member
+        // without planConnections early, which made finalHasVideoAccess false.
         async function waitForMemberstackReady(attempts, delayMs) {
           for (let i = 0; i < attempts; i++) {
-            const get = window.$memberstackDom?.getCurrentMember;
-            if (typeof get === "function") {
+            const ms = window.$memberstackDom;
+            const api = ms?.getAppAndMember ?? ms?.getCurrentMember;
+            if (typeof api === "function") {
               try {
-                return await window.$memberstackDom.getCurrentMember();
+                return await api.call(ms);
               } catch (error) {
                 console.warn("MemberStack member check failed", error);
                 return null;
@@ -457,6 +463,18 @@ const isProduction =
           } else {
             document.body.classList.remove("ms-logged-in");
           }
+
+          console.log("[KBM video access debug] BaseLayout.ms-logged-in applied", {
+            msLoggedIn: document.body.classList.contains("ms-logged-in"),
+            finalHasVideoAccess: hasVideoAccess,
+          });
+        }
+
+        function refreshMemberAccess() {
+          const ms = window.$memberstackDom;
+          const api = ms?.getAppAndMember ?? ms?.getCurrentMember;
+          if (typeof api !== "function") return;
+          api.call(ms).then(applyMsLoggedIn).catch(() => {});
         }
 
         // Re-check on auth changes so login/logout without a full reload also
@@ -464,9 +482,7 @@ const isProduction =
         function bindAuthEvents() {
           const ms = window.$memberstackDom;
           if (!ms || typeof ms.on !== "function") return;
-          ms.on("member.login", () => {
-            ms.getCurrentMember().then(applyMsLoggedIn).catch(() => {});
-          });
+          ms.on("member.login", refreshMemberAccess);
           ms.on("member.logout", () => {
             document.body.classList.remove("ms-logged-in");
           });
