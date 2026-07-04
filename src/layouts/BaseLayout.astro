@@ -418,88 +418,93 @@ const isProduction =
       </script>
     )}
 
-    <script is:inline>
-      (function () {
-        // Wait for the Memberstack SDK to be ready instead of bailing on the first
-        // tick. The CDN script often isn't loaded when DOMContentLoaded fires, and
-        // a one-shot check left body.ms-logged-in unset for real members (locking
-        // member-only tools). Mirrors the retry pattern used on video pages.
-        //
-        // Use getAppAndMember() (not getCurrentMember): it resolves only after full
-        // SDK init and reliably includes planConnections, so plan-based access is
-        // correct on first load. getCurrentMember() can return a cached member
-        // without planConnections early, which made finalHasVideoAccess false.
-        async function waitForMemberstackReady(attempts, delayMs) {
-          for (let i = 0; i < attempts; i++) {
-            const ms = window.$memberstackDom;
-            const api = ms?.getAppAndMember ?? ms?.getCurrentMember;
-            if (typeof api === "function") {
-              try {
-                return await api.call(ms);
-              } catch (error) {
-                console.warn("MemberStack member check failed", error);
-                return null;
-              }
-            }
-            await new Promise((r) => setTimeout(r, delayMs));
-          }
-          return null;
-        }
+    <script>
+      // Import the access helpers directly (like the video pages) rather than
+      // relying on window.kbmHasKinVideoAccess / window.kbmLogKinVideoAccessDebug,
+      // which are assigned by a separate bundled module. Those globals were
+      // undefined when this ran, so hasVideoAccess fell back to false and the
+      // detailed debug log silently no-op'd (optional chaining short-circuit).
+      import { hasKinVideoAccess, logKinVideoAccessDebug } from "../lib/kinVideoAccess";
 
-        function applyMsLoggedIn(res) {
-          const data = res?.data;
-          const member = (data?.member ?? data) || null;
-          const rawKinAccess = member?.customFields?.["kin-access"];
-          const hasVideoAccess = window.kbmHasKinVideoAccess?.(res) ?? false;
-
-          window.kbmLogKinVideoAccessDebug?.("BaseLayout.ms-logged-in", {
-            member: res,
-            rawKinAccess,
-            finalHasVideoAccess: hasVideoAccess,
-          });
-
-          if (hasVideoAccess) {
-            document.body.classList.add("ms-logged-in");
-          } else {
-            document.body.classList.remove("ms-logged-in");
-          }
-
-          console.log("[KBM video access debug] BaseLayout.ms-logged-in applied", {
-            msLoggedIn: document.body.classList.contains("ms-logged-in"),
-            finalHasVideoAccess: hasVideoAccess,
-          });
-        }
-
-        function refreshMemberAccess() {
+      // Wait for the Memberstack SDK to be ready instead of bailing on the first
+      // tick. The CDN script often isn't loaded when DOMContentLoaded fires.
+      //
+      // Use getAppAndMember() (not getCurrentMember): it resolves only after full
+      // SDK init and reliably includes planConnections, so plan-based access is
+      // correct on first load. getCurrentMember() can return a cached member
+      // without planConnections early, which made finalHasVideoAccess false.
+      async function waitForMemberstackReady(attempts: number, delayMs: number) {
+        for (let i = 0; i < attempts; i++) {
           const ms = window.$memberstackDom;
           const api = ms?.getAppAndMember ?? ms?.getCurrentMember;
-          if (typeof api !== "function") return;
-          api.call(ms).then(applyMsLoggedIn).catch(() => {});
+          if (typeof api === "function") {
+            try {
+              return await api.call(ms);
+            } catch (error) {
+              console.warn("MemberStack member check failed", error);
+              return null;
+            }
+          }
+          await new Promise((r) => setTimeout(r, delayMs));
         }
+        return null;
+      }
 
-        // Re-check on auth changes so login/logout without a full reload also
-        // unlocks/locks member-only tools.
-        function bindAuthEvents() {
-          const ms = window.$memberstackDom;
-          if (!ms || typeof ms.on !== "function") return;
-          ms.on("member.login", refreshMemberAccess);
-          ms.on("member.logout", () => {
-            document.body.classList.remove("ms-logged-in");
-          });
-        }
+      function applyMsLoggedIn(res: any) {
+        const data = res?.data;
+        const member = (data?.member ?? data) || null;
+        const rawKinAccess = member?.customFields?.["kin-access"];
+        const hasVideoAccess = hasKinVideoAccess(res);
 
-        async function initMsLoggedIn() {
-          const res = await waitForMemberstackReady(30, 200);
-          applyMsLoggedIn(res);
-          bindAuthEvents();
-        }
+        // Detailed log first (always runs, even when access is false) so we can
+        // see activePlanIds vs allowedVideoPlanIds.
+        logKinVideoAccessDebug("BaseLayout.ms-logged-in", {
+          member: res,
+          rawKinAccess,
+          finalHasVideoAccess: hasVideoAccess,
+        });
 
-        if (document.readyState === "loading") {
-          document.addEventListener("DOMContentLoaded", initMsLoggedIn);
+        if (hasVideoAccess) {
+          document.body.classList.add("ms-logged-in");
         } else {
-          initMsLoggedIn();
+          document.body.classList.remove("ms-logged-in");
         }
-      })();
+
+        console.log("[KBM video access debug] BaseLayout.ms-logged-in applied", {
+          msLoggedIn: document.body.classList.contains("ms-logged-in"),
+          finalHasVideoAccess: hasVideoAccess,
+        });
+      }
+
+      function refreshMemberAccess() {
+        const ms = window.$memberstackDom;
+        const api = ms?.getAppAndMember ?? ms?.getCurrentMember;
+        if (typeof api !== "function") return;
+        api.call(ms).then(applyMsLoggedIn).catch(() => {});
+      }
+
+      // Re-check on auth changes so login/logout without a full reload also
+      // unlocks/locks member-only tools.
+      function bindAuthEvents() {
+        const ms = window.$memberstackDom;
+        if (!ms || typeof ms.on !== "function") return;
+        ms.on("member.login", refreshMemberAccess);
+        ms.on("member.logout", () => {
+          document.body.classList.remove("ms-logged-in");
+        });
+      }
+
+      async function initMsLoggedIn() {
+        const res = await waitForMemberstackReady(30, 200);
+        applyMsLoggedIn(res);
+        bindAuthEvents();
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initMsLoggedIn);
+      } else {
+        initMsLoggedIn();
+      }
     </script>
 
     <script is:inline>
