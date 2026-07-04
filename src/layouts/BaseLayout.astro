@@ -419,11 +419,28 @@ const isProduction =
     )}
 
     <script is:inline>
-      document.addEventListener("DOMContentLoaded", async () => {
-        if (!window.$memberstackDom) return;
+      (function () {
+        // Wait for the Memberstack SDK to be ready instead of bailing on the first
+        // tick. The CDN script often isn't loaded when DOMContentLoaded fires, and
+        // a one-shot check left body.ms-logged-in unset for real members (locking
+        // member-only tools). Mirrors the retry pattern used on video pages.
+        async function waitForMemberstackReady(attempts, delayMs) {
+          for (let i = 0; i < attempts; i++) {
+            const get = window.$memberstackDom?.getCurrentMember;
+            if (typeof get === "function") {
+              try {
+                return await window.$memberstackDom.getCurrentMember();
+              } catch (error) {
+                console.warn("MemberStack member check failed", error);
+                return null;
+              }
+            }
+            await new Promise((r) => setTimeout(r, delayMs));
+          }
+          return null;
+        }
 
-        try {
-          const res = await window.$memberstackDom.getCurrentMember();
+        function applyMsLoggedIn(res) {
           const data = res?.data;
           const member = (data?.member ?? data) || null;
           const rawKinAccess = member?.customFields?.["kin-access"];
@@ -440,10 +457,33 @@ const isProduction =
           } else {
             document.body.classList.remove("ms-logged-in");
           }
-        } catch (error) {
-          console.warn("MemberStack member check failed", error);
         }
-      });
+
+        // Re-check on auth changes so login/logout without a full reload also
+        // unlocks/locks member-only tools.
+        function bindAuthEvents() {
+          const ms = window.$memberstackDom;
+          if (!ms || typeof ms.on !== "function") return;
+          ms.on("member.login", () => {
+            ms.getCurrentMember().then(applyMsLoggedIn).catch(() => {});
+          });
+          ms.on("member.logout", () => {
+            document.body.classList.remove("ms-logged-in");
+          });
+        }
+
+        async function initMsLoggedIn() {
+          const res = await waitForMemberstackReady(30, 200);
+          applyMsLoggedIn(res);
+          bindAuthEvents();
+        }
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", initMsLoggedIn);
+        } else {
+          initMsLoggedIn();
+        }
+      })();
     </script>
 
     <script is:inline>
