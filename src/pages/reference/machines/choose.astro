@@ -2,6 +2,8 @@
 import Layout from "../../../layouts/Layout.astro";
 import "../../../styles/wizard.css";
 import WizardBackLink from "../../../components/wizards/WizardBackLink.astro";
+import ProgressNav from "../../../components/ProgressNav.astro";
+import { gettingStartedItems } from "../../../lib/gettingStartedNav";
 
 ---
 
@@ -84,6 +86,7 @@ import WizardBackLink from "../../../components/wizards/WizardBackLink.astro";
 </style>
 
 <div class="wizard-page">
+  <ProgressNav current="need-machine" items={gettingStartedItems} />
   <WizardBackLink fallback="/reference" label="? Back to Reference" />
   
   <div class="header-panel">

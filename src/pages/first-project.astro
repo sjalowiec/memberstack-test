@@ -1,0 +1,253 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ProgressNav from "../components/ProgressNav.astro";
+import GatedVimeoEmbed from "../components/videos/GatedVimeoEmbed.astro";
+import { gettingStartedItems } from "../lib/gettingStartedNav";
+
+const pageTitle = "Knit Your First Project";
+const pageDescription =
+  "Start simple. A rectangle is the perfect first project so you can practice casting on, knitting rows, binding off, and finishing without worrying about shaping.";
+
+// Public "How to Knit a Proper Swatch" video (KIN 2189 / Vimeo 1046394794).
+const swatchVimeoId = "1046394794";
+const swatchVideoTitle =
+  "How to Knit a Proper Swatch: The Secret to Machine Knitting Success";
+
+const projectIdeas = [
+  "Scarf",
+  "Baby blanket",
+  "Dishcloth",
+  "Table runner",
+  "Placemat",
+  "Practice panel",
+];
+---
+
+<Layout title={`${pageTitle} | Knit it Now`} description={pageDescription}>
+  <section class="container py-5 first-project-page">
+    <div class="first-project-inner">
+      <ProgressNav current="first-project" items={gettingStartedItems} />
+
+      <header class="first-project-header">
+        <h1>Knit Your First Project</h1>
+        <p class="first-project-intro">
+          Start simple. A rectangle is the perfect first project because you can
+          practice casting on, knitting rows, binding off, and finishing without
+          worrying about shaping.
+        </p>
+      </header>
+
+      <ol class="first-project-checklist">
+        <li class="first-project-step">
+          <span class="first-project-step__num" aria-hidden="true">1</span>
+          <div class="first-project-step__content">
+            <h2 class="first-project-step__title">Knit a swatch</h2>
+            <p class="first-project-step__body">
+              A swatch is just a small square of knitting, and this is practice,
+              not a test. The goal is simply to get comfortable casting on,
+              knitting rows, and binding off &mdash; and to see how your machine
+              behaves with your yarn.
+            </p>
+            <p class="first-project-step__body">
+              Watch along, then try it yourself. There is no wrong way to
+              practice.
+            </p>
+            <div class="first-project-video">
+              <GatedVimeoEmbed
+                videoId={swatchVimeoId}
+                title={swatchVideoTitle}
+                access_level="open"
+              />
+            </div>
+          </div>
+        </li>
+
+        <li class="first-project-step">
+          <span class="first-project-step__num" aria-hidden="true">2</span>
+          <div class="first-project-step__content">
+            <h2 class="first-project-step__title">Choose a simple rectangle project</h2>
+            <p class="first-project-step__body">
+              Pick something straight and forgiving, with no shaping to worry
+              about. Any of these make a relaxing first project:
+            </p>
+            <ul class="first-project-ideas">
+              {projectIdeas.map((idea) => (
+                <li>{idea}</li>
+              ))}
+            </ul>
+          </div>
+        </li>
+
+        <li class="first-project-step">
+          <span class="first-project-step__num" aria-hidden="true">3</span>
+          <div class="first-project-step__content">
+            <h2 class="first-project-step__title">Use the Rectangle/Square Tool</h2>
+            <p class="first-project-step__body">
+              Enter the size you want, your gauge, and let the tool do the math.
+              It tells you how many stitches to cast on and how many rows to
+              knit.
+            </p>
+            <a
+              href="/tools/rectangle-tool"
+              class="kbm-btn kbm-btn-primary first-project-step__btn"
+            >
+              Open the Rectangle/Square Tool
+            </a>
+          </div>
+        </li>
+
+        <li class="first-project-step">
+          <span class="first-project-step__num" aria-hidden="true">4</span>
+          <div class="first-project-step__content">
+            <h2 class="first-project-step__title">Knit it</h2>
+            <p class="first-project-step__body">
+              Now the fun part. Cast on, knit the rows from the tool, and bind
+              off. Take it one row at a time &mdash; there is no rush.
+            </p>
+            <p class="first-project-step__body">
+              As you go, keep a few simple notes so you can repeat what works:
+            </p>
+            <ul class="first-project-notes">
+              <li>The yarn you used</li>
+              <li>Your tension setting</li>
+              <li>Your stitch count</li>
+              <li>Your row count</li>
+            </ul>
+            <p class="first-project-step__body">
+              That is it. Finishing your first rectangle is a real milestone, and
+              those notes will make your next project even easier.
+            </p>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <style>
+    .first-project-inner {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .first-project-header {
+      margin-bottom: 2.5rem;
+      text-align: center;
+    }
+
+    .first-project-header h1 {
+      font-size: var(--text-xxl);
+      font-weight: 600;
+      color: var(--kbm-green);
+      margin: 0 0 1rem 0;
+    }
+
+    .first-project-intro {
+      font-size: var(--text-lg);
+      color: #243015;
+      line-height: 1.65;
+      margin: 0 auto;
+      max-width: 44rem;
+    }
+
+    .first-project-checklist {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .first-project-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.15rem;
+      padding: 2.25rem 0;
+      border-bottom: 1px solid #e5ead9;
+    }
+
+    .first-project-step:first-child {
+      padding-top: 0.5rem;
+    }
+
+    .first-project-step:last-child {
+      border-bottom: none;
+    }
+
+    .first-project-step__num {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 50%;
+      background: var(--kbm-green);
+      color: #ffffff;
+      font-size: 1.15rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-top: 0.15rem;
+    }
+
+    .first-project-step__content {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .first-project-step__title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      line-height: 1.3;
+      color: #243015;
+      margin: 0 0 0.75rem 0;
+    }
+
+    .first-project-step__body {
+      font-size: var(--text-lg);
+      line-height: 1.7;
+      color: #3a4a24;
+      margin: 0 0 0.9rem 0;
+    }
+
+    .first-project-step__body:last-child {
+      margin-bottom: 0;
+    }
+
+    .first-project-ideas {
+      list-style: disc;
+      margin: 0.25rem 0 0;
+      padding-left: 1.5rem;
+      columns: 2;
+      color: #3a4a24;
+      font-size: var(--text-lg);
+      line-height: 1.9;
+    }
+
+    .first-project-notes {
+      list-style: disc;
+      margin: 0 0 0.9rem;
+      padding-left: 1.5rem;
+      color: #3a4a24;
+      font-size: var(--text-lg);
+      line-height: 1.8;
+    }
+
+    .first-project-video {
+      margin-top: 1.25rem;
+      max-width: 640px;
+    }
+
+    .first-project-step__btn {
+      margin-top: 0.75rem;
+    }
+
+    @media (max-width: 540px) {
+      .first-project-step {
+        gap: 0.9rem;
+        padding: 1.75rem 0;
+      }
+
+      .first-project-ideas {
+        columns: 1;
+      }
+    }
+  </style>
+</Layout>

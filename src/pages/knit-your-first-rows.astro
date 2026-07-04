@@ -1,0 +1,142 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ProgressNav from "../components/ProgressNav.astro";
+import GatedVimeoEmbed from "../components/videos/GatedVimeoEmbed.astro";
+import { gettingStartedItems } from "../lib/gettingStartedNav";
+
+const pageTitle = "Knit Your First Rows";
+const pageDescription =
+  "Learn the E-Wrap cast on, one of the easiest ways to get started on a knitting machine, then practice it on your own machine before moving on.";
+
+// Public "E-Wrap Cast On" video (KIN 206 / Vimeo 151860058).
+const eWrapVimeoId = "151860058";
+const eWrapVideoTitle = "E-Wrap Cast On";
+
+// Public "Bind off Basics" video (KIN 582 / Vimeo 151858975).
+const bindOffVimeoId = "151858975";
+const bindOffVideoTitle = "Bind Off";
+---
+
+<Layout title={`${pageTitle} | Knit it Now`} description={pageDescription}>
+  <section class="container py-5 first-rows-page">
+    <div class="first-rows-inner">
+      <ProgressNav current="first-rows" items={gettingStartedItems} />
+
+      <header class="first-rows-header">
+        <h1>Knit Your First Rows</h1>
+      </header>
+
+      <section class="first-rows-lesson">
+        <h2 class="first-rows-lesson__heading">E-Wrap Cast On</h2>
+        <p class="first-rows-intro">
+          Getting your first stitches on the machine is an exciting milestone.
+          The E-Wrap cast on is one of the easiest ways to begin. Watch the
+          video, then give it a try on your own machine.
+        </p>
+
+        <div class="first-rows-video">
+          <GatedVimeoEmbed
+            videoId={eWrapVimeoId}
+            title={eWrapVideoTitle}
+            access_level="open"
+          />
+        </div>
+      </section>
+
+      <section class="first-rows-lesson">
+        <h2 class="first-rows-lesson__heading">Bind Off</h2>
+        <p class="first-rows-intro">
+          Binding off removes the stitches from the machine and finishes your
+          practice piece. Watch the video, then bind off your swatch.
+          Congratulations&hellip;you&rsquo;ve just completed your first machine
+          knitted project!
+        </p>
+
+        <div class="first-rows-video">
+          <GatedVimeoEmbed
+            videoId={bindOffVimeoId}
+            title={bindOffVideoTitle}
+            access_level="open"
+          />
+        </div>
+      </section>
+
+      <section class="first-rows-turn">
+        <h2 class="first-rows-turn__heading">Your Turn</h2>
+        <p class="first-rows-turn__body">
+          Practice the complete sequence a few more times. Cast on, knit several
+          rows, and bind off. Don&rsquo;t worry about perfection. Every swatch
+          helps you become more comfortable with your machine and builds
+          confidence for your first real project.
+        </p>
+      </section>
+    </div>
+  </section>
+
+  <style>
+    .first-rows-inner {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .first-rows-header {
+      margin-bottom: 1rem;
+    }
+
+    .first-rows-header h1 {
+      font-size: var(--text-xxl);
+      font-weight: 600;
+      color: var(--kbm-green);
+      margin: 0;
+    }
+
+    .first-rows-lesson {
+      margin-bottom: 2.5rem;
+    }
+
+    .first-rows-lesson__heading {
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: var(--kbm-green);
+      margin: 0 0 0.75rem 0;
+    }
+
+    .first-rows-intro {
+      font-size: var(--text-lg);
+      color: #243015;
+      line-height: 1.65;
+      margin: 0 0 1.25rem;
+      max-width: 44rem;
+    }
+
+    .first-rows-video {
+      margin: 0;
+    }
+
+    .first-rows-turn {
+      padding: 1.5rem 1.75rem;
+      background: #f6f8f2;
+      border: 1px solid #dfe6d1;
+      border-radius: 12px;
+      margin-bottom: 2.5rem;
+    }
+
+    .first-rows-turn__heading {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--kbm-green);
+      margin: 0 0 0.6rem 0;
+    }
+
+    .first-rows-turn__body {
+      font-size: var(--text-lg);
+      line-height: 1.7;
+      color: #3a4a24;
+      margin: 0 0 0.9rem;
+    }
+
+    .first-rows-turn__body:last-child {
+      margin-bottom: 0;
+    }
+  </style>
+</Layout>

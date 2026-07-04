@@ -70,26 +70,6 @@ const posterSrc =
 const catalogChapters: CatalogChapterRow[] = video ? catalogChaptersFromVideoRow(video) : [];
 const hasCatalogChapters = catalogChapters.length > 0;
 const enableVideoChapterControls = hasCatalogChapters;
-
-// TEMPORARY DEBUG: trace player rendering for the e-wrap cast on video (content_id 206).
-// Remove once the empty-video-box issue is confirmed fixed.
-if (contentIdAttr === "206") {
-  const debugIframeSrc = vimeoId
-    ? enableVideoChapterControls
-      ? `https://player.vimeo.com/video/${vimeoId}?api=1&player_id=kbm-gated-vimeo-${vimeoId}`
-      : `https://player.vimeo.com/video/${vimeoId}`
-    : "";
-  console.log("[videos/[id] debug]", {
-    content_id: contentIdAttr,
-    access_level: (video as any)?.access_level,
-    effectiveAccessLevel,
-    vimeo_id_public: (video as any)?.vimeo_id_public,
-    vimeo_id: (video as any)?.vimeo_id,
-    normalizedVimeoId: vimeoId,
-    finalIframeSrc: debugIframeSrc,
-  });
-}
-
 ---
 
 <Layout title={video ? title : "Video not found"} description={video ? description : "Video not found."}>
