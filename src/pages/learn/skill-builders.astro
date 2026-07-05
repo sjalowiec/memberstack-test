@@ -106,7 +106,8 @@ const howItWorksSteps = [
               <a
                 href={item.href}
                 class="skill-builders-card skill-builders-card--link"
-                data-ms-content="paid-plans"
+                data-sb-state="memberAccess"
+                hidden
               >
                 <span class="skill-builders-card__text">
                   <span class="skill-builders-card__title">{item.title}</span>
@@ -116,9 +117,10 @@ const howItWorksSteps = [
               <a
                 href="#"
                 class="skill-builders-card skill-builders-card--link"
-                data-ms-content="!members"
+                data-sb-state="loggedOut"
                 data-ms-modal="login"
                 data-ms-redirect="current-url"
+                hidden
               >
                 <span class="skill-builders-card__text">
                   <span class="skill-builders-card__title">{item.title}</span>
@@ -128,8 +130,9 @@ const howItWorksSteps = [
               <button
                 type="button"
                 class="skill-builders-card skill-builders-card--link"
-                data-ms-content="no-plans"
+                data-sb-state="loggedInNoAccess"
                 data-sb-membership-prompt
+                hidden
               >
                 <span class="skill-builders-card__text">
                   <span class="skill-builders-card__title">{item.title}</span>
@@ -513,18 +516,60 @@ const howItWorksSteps = [
 </style>
 
 <script>
+  // Skill Builder cards use the SAME global member gate as every other section.
+  // Beta counts as member access — identical to basic/premium.
+  import {
+    getViewerAccessState,
+    logMemberAccessDebug,
+    type ViewerAccessState,
+  } from "../../lib/memberAccess";
+
+  async function resolveSkillBuilderViewerState(): Promise<ViewerAccessState> {
+    const ms = window.$memberstackDom;
+    if (!ms?.getCurrentMember) return "loggedOut";
+    try {
+      const res = await ms.getCurrentMember();
+      logMemberAccessDebug("learn/skill-builders.catalog", res);
+      return getViewerAccessState(res);
+    } catch {
+      return "loggedOut";
+    }
+  }
+
+  async function syncSkillBuilderCards(): Promise<void> {
+    const cards = document.querySelectorAll<HTMLElement>("[data-sb-state]");
+    if (cards.length === 0) return;
+
+    const state = await resolveSkillBuilderViewerState();
+    cards.forEach((card) => {
+      card.toggleAttribute("hidden", card.dataset.sbState !== state);
+    });
+  }
+
+  function bindSkillBuilderCardRefresh(): void {
+    void syncSkillBuilderCards();
+    window.addEventListener("auth:updated", () => void syncSkillBuilderCards());
+    const ms = window.$memberstackDom;
+    if (ms?.on) {
+      ms.on("member.login", () => void syncSkillBuilderCards());
+      ms.on("member.logout", () => void syncSkillBuilderCards());
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
+    bindSkillBuilderCardRefresh();
+
     const dialog = document.getElementById("sb-membership-dialog") as HTMLDialogElement | null;
     if (!dialog) return;
 
     function openMembershipDialog(): void {
-      if (typeof dialog.showModal === "function") {
+      if (dialog && typeof dialog.showModal === "function") {
         dialog.showModal();
       }
     }
 
     function closeMembershipDialog(): void {
-      dialog.close();
+      dialog?.close();
     }
 
     document.querySelectorAll("[data-sb-membership-prompt]").forEach((trigger) => {
