@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import CourseAccessGate from "../../components/courses/CourseAccessGate.astro";
 import { getCourseLandingBySlug } from "../../lib/legacy_kin/courseLanding";
 
 export const prerender = false;
@@ -119,14 +120,16 @@ const statusClass =
               </div>
             </section>
           ) : (
-            <section class="course-landing__access">
-              <a class="kbm-btn kbm-btn-accent course-landing__start" href={landing.startHref}>
-                Start course
-              </a>
-              <p class="course-landing__access-note">
-                Opens the lesson player for this course.
-              </p>
-            </section>
+            <CourseAccessGate access={landing.access} courseSlug={landing.slug}>
+              <section slot="content" class="course-landing__access">
+                <a class="kbm-btn kbm-btn-accent course-landing__start" href={landing.startHref}>
+                  Start course
+                </a>
+                <p class="course-landing__access-note">
+                  Opens the lesson player for this course.
+                </p>
+              </section>
+            </CourseAccessGate>
           )
         }
       </div>

@@ -1,0 +1,133 @@
+---
+/**
+ * CourseAccessGate � soft gate for course content.
+ *
+ * - "free":     renders the `content` slot for everyone (no gate markup).
+ * - "premium":  renders a locked teaser + the hidden `content` slot; the client
+ *               script (`courseAccessGate.ts`) flips them for Beta/Premium members.
+ * - "purchase": renders a "buy soon" placeholder ONLY. The content slot is not
+ *               emitted (reserved tier, no entitlement system yet), so premium
+ *               course media is never shipped to the page for purchase courses.
+ *
+ * Provide a custom locked state via the `locked` slot (e.g. on the landing page);
+ * otherwise a default teaser card is rendered.
+ */
+import LoginNudge from "../auth/LoginNudge.astro";
+import type { CourseAccessLevel } from "../../lib/courseAccess";
+
+interface Props {
+  access: CourseAccessLevel;
+  courseSlug?: string;
+  joinHref?: string;
+  lockedTitle?: string;
+  lockedMessage?: string;
+}
+
+const {
+  access,
+  courseSlug,
+  joinHref = "/membership",
+  lockedTitle,
+  lockedMessage,
+} = Astro.props;
+
+const isFree = access === "free";
+const isPurchase = access === "purchase";
+const hasLockedSlot = Astro.slots.has("locked");
+
+const defaultLockedTitle = isPurchase ? "Available to buy soon" : "Premium course";
+const defaultLockedMessage = isPurchase
+  ? "Individual course purchases are coming soon. This course isn�t available to buy just yet."
+  : "This course is included with a Premium membership.";
+---
+
+{
+  isFree ? (
+    <slot name="content" />
+  ) : (
+    <div
+      class="course-gate"
+      data-course-gate
+      data-course-access={access}
+      data-course-slug={courseSlug}
+      data-join-href={joinHref}
+    >
+      <div class="course-gate__locked" data-gated="locked">
+        {hasLockedSlot ? (
+          <slot name="locked" />
+        ) : (
+          <div class="course-gate__card">
+            <h2 class="course-gate__title">{lockedTitle ?? defaultLockedTitle}</h2>
+            <p class="course-gate__msg">{lockedMessage ?? defaultLockedMessage}</p>
+            {!isPurchase ? (
+              <div class="course-gate__actions">
+                <a class="kbm-btn kbm-btn-accent course-gate__cta" href={joinHref}>
+                  Join to unlock
+                </a>
+                <LoginNudge className="course-gate__nudge" />
+              </div>
+            ) : null}
+          </div>
+        )}
+      </div>
+
+      {!isPurchase ? (
+        <div class="course-gate__content" data-gated="content" hidden>
+          <slot name="content" />
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+{
+  !isFree ? (
+    <script>
+      import { runCourseAccessGateBoot } from "../../scripts/courseAccessGate";
+      runCourseAccessGateBoot();
+    </script>
+  ) : null
+}
+
+<style>
+  .course-gate__card {
+    max-width: 40rem;
+    margin: 1rem auto;
+    padding: 1.5rem 1.5rem 1.75rem;
+    text-align: center;
+    border: 1px solid #d6dbc9;
+    border-radius: 14px;
+    background: #f8faf3;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .course-gate__title {
+    margin: 0 0 0.5rem;
+    font-size: 1.25rem;
+    color: #52682d;
+  }
+
+  .course-gate__msg {
+    margin: 0 0 1rem;
+    line-height: 1.55;
+    color: #4d5a48;
+  }
+
+  .course-gate__actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .course-gate__cta {
+    text-decoration: none;
+  }
+
+  /* LoginNudge ships white text (for dark overlays); recolor for this light card. */
+  .course-gate__card :global(.course-gate__nudge),
+  .course-gate__card :global(.course-gate__nudge a),
+  .course-gate__card :global(.course-gate__nudge .login-nudge-link) {
+    color: #4d5a48;
+  }
+</style>

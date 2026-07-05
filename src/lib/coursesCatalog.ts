@@ -1,4 +1,6 @@
 import catalogFile from "../data/courses-catalog.json";
+import type { CourseAccessLevel } from "./courseAccess";
+import { getCourseAccessBySlug } from "./coursesCatalogAccess";
 import { getCatalogOverlayDescription } from "./coursesCatalogOverlay";
 import { readCourseContentStatus } from "./legacy_kin/courseContentAdmin";
 import { courseLandingHref } from "./legacy_kin/courseLanding";
@@ -23,6 +25,8 @@ export type CourseCatalogEntry = {
   status: CourseCatalogStatus;
   href?: string;
   buttonLabel: string;
+  /** Gating tier: free (open), premium (Beta/Premium), purchase (reserved). */
+  access: CourseAccessLevel;
 };
 
 type CatalogFileEntry = {
@@ -30,6 +34,8 @@ type CatalogFileEntry = {
   category: string;
   catalogStatus: CourseCatalogStatus;
   description?: string;
+  /** Gating tier: "free" | "premium" | "purchase". Untagged → premium (locked). */
+  access?: string;
   /** @deprecated Prefer `course.thumbnail` in the course JSON file. */
   thumbnail?: string;
 };
@@ -210,6 +216,7 @@ export function getCourseCatalogEntries(): CourseCatalogEntry[] {
         status,
         href: resolveHref(entry.slug, entry.catalogStatus),
         buttonLabel: STATUS_BUTTONS[status],
+        access: getCourseAccessBySlug(entry.slug),
       };
     });
 }

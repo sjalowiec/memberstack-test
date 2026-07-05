@@ -1,3 +1,5 @@
+import type { CourseAccessLevel } from "../courseAccess";
+import { getCourseAccessBySlug } from "../coursesCatalogAccess";
 import { readCourseContentStatus } from "./courseContentAdmin";
 import { legacyAssetUrl } from "./legacyCourseAssetUrls";
 import {
@@ -19,6 +21,8 @@ export type CourseLandingView = {
   lessonCount: number;
   startHref: string;
   interestTag: string;
+  /** Gating tier: free (open), premium (Beta/Premium), purchase (reserved). */
+  access: CourseAccessLevel;
 };
 
 const CONTENT_STATUS_LABELS: Record<CourseContentStatus, string> = {
@@ -79,5 +83,6 @@ export function getCourseLandingBySlug(slug: string): CourseLandingView | undefi
     lessonCount: record.lessons.length,
     startHref: courseLandingStartHref(normalizedSlug, record),
     interestTag: courseInterestActiveCampaignTag(normalizedSlug),
+    access: getCourseAccessBySlug(normalizedSlug),
   };
 }

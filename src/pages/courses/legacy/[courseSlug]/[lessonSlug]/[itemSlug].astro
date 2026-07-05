@@ -3,6 +3,8 @@ import Layout from "../../../../../layouts/Layout.astro";
 import LegacyCourseShell from "../../../../../components/courses/legacy/LegacyCourseShell.astro";
 import LegacyCourseRenderer from "../../../../../components/courses/legacy/LegacyCourseRenderer.astro";
 import LegacyCourseItemNav from "../../../../../components/courses/legacy/LegacyCourseItemNav.astro";
+import CourseAccessGate from "../../../../../components/courses/CourseAccessGate.astro";
+import { getCourseAccessBySlug } from "../../../../../lib/coursesCatalogAccess";
 import {
   getLegacyCourseBySlug,
   getLegacyLessonBySlug,
@@ -36,6 +38,8 @@ const { prev, next } = getCourseContentItemNeighbors(course, lesson.slug, item.i
 const sectionTitle = contentItemDisplayTitle(lesson, item) || item.itemSlug;
 const pageTitle = `${sectionTitle} · ${lesson.title} · ${course.course.title} | Knit it Now`;
 const previewQuery = loaderOptions.includeDrafts ? "?preview=true" : "";
+// Editor preview (?preview=true) stays open; the public player is gated by tier.
+const courseAccess = loaderOptions.includeDrafts ? "free" : getCourseAccessBySlug(courseSlug);
 ---
 
 <Layout
@@ -67,7 +71,14 @@ const previewQuery = loaderOptions.includeDrafts ? "?preview=true" : "";
         placement="top"
       />
 
-      <LegacyCourseRenderer lesson={lesson} item={item} showItemTitles={false} />
+      <CourseAccessGate access={courseAccess} courseSlug={courseSlug}>
+        <LegacyCourseRenderer
+          slot="content"
+          lesson={lesson}
+          item={item}
+          showItemTitles={false}
+        />
+      </CourseAccessGate>
 
       <LegacyCourseItemNav
         {courseSlug}
