@@ -301,6 +301,12 @@ const howItWorksSteps = [
     margin: 0;
   }
 
+  /* A class-level display value beats the UA [hidden] rule, so enforce hiding
+     for state-gated cards until the viewer state resolves and reveals one. */
+  .skill-builders-card[hidden] {
+    display: none !important;
+  }
+
   .skill-builders-card {
     display: flex;
     align-items: center;
