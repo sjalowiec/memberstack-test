@@ -4,14 +4,13 @@ import {
   memberRecordFromMemberstackPayload,
 } from "../lib/patterns/memberstackMember";
 
-const PLAN_ID_TO_PRICE_ID = new Map<string, string>(
-  Object.values(MEMBERSHIPS)
-    .filter(
-      (tier): tier is typeof MEMBERSHIPS.basicMonthly =>
-        "memberstackPlanId" in tier && "memberstackPriceId" in tier,
-    )
-    .map((tier) => [tier.memberstackPlanId, tier.memberstackPriceId]),
-);
+// Fallback map for "you already have this plan" detection when a member's
+// active plan connection has no explicit priceId. Each current paid plan maps
+// to its annual price id (a stable representative price for the plan).
+const PLAN_ID_TO_PRICE_ID = new Map<string, string>([
+  [MEMBERSHIPS.basic.memberstackPlanId, MEMBERSHIPS.basic.prices.annual.memberstackPriceId],
+  [MEMBERSHIPS.premium.memberstackPlanId, MEMBERSHIPS.premium.prices.annual.memberstackPriceId],
+]);
 
 const JOIN_CHECKOUT_PLANS = {
   basicMonthly: { label: "Basic Monthly", priceId: MEMBERSHIP_PRICE_IDS.basicMonthly },

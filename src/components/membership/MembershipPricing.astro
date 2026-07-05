@@ -8,10 +8,10 @@ interface Props {
 
 const { showStatus = true, showFooter = true } = Astro.props;
 
-const basicMonthlyPrice = MEMBERSHIPS.basicMonthly.price;
-const basicAnnualPrice = MEMBERSHIPS.basicAnnual.price;
-const premiumMonthlyPrice = MEMBERSHIPS.premiumMonthly.price;
-const premiumAnnualPrice = MEMBERSHIPS.premiumAnnual.price;
+const basicMonthlyPrice = MEMBERSHIPS.basic.prices.monthly.price;
+const basicAnnualPrice = MEMBERSHIPS.basic.prices.annual.price;
+const premiumMonthlyPrice = MEMBERSHIPS.premium.prices.monthly.price;
+const premiumAnnualPrice = MEMBERSHIPS.premium.prices.annual.price;
 ---
 
 <div class="membership-pricing">

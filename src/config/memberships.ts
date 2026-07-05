@@ -1,76 +1,102 @@
 /**
  * Knit It Now Membership Configuration
  *
- * Single source of truth for Memberstack plan IDs and Stripe/Memberstack price IDs.
- * Do not hard-code these values elsewhere in the application.
+ * Single source of truth for Memberstack plan IDs (access control) and price
+ * IDs (checkout). Do not hard-code these values elsewhere in the application.
+ *
+ * Model after the plan consolidation:
+ *   - There are TWO paid plans, Basic and Premium, plus Beta.
+ *   - Each paid plan has TWO prices: monthly and annual.
+ *   - Access control keys off the PLAN id; checkout keys off the PRICE id.
  */
 
+/* ============================================================================
+ * CURRENT PLANS — active Memberstack products
+ * ==========================================================================*/
 export const MEMBERSHIPS = {
     beta: {
       name: "KIN Beta Access",
       memberstackPlanId: "pln_kin-beta-access-vyek0a38",
     },
-  
-    basicMonthly: {
-      name: "KIN Membership Monthly Basic",
-      price: 13.99,
-      stripeProductId: "prod_UmDnDybpgF9laX",
-      memberstackPlanId: "pln_kin-membership-monthly-a59701wy",
-      memberstackPriceId: "prc_basic-membership-monthly-z05k0css",
-    },
-  
-    basicAnnual: {
-      name: "KIN Membership Annual Basic",
-      price: 129,
-      stripeProductId: "prod_UmDcvzzkCzCGst",
+
+    basic: {
+      name: "KIN Membership - Basic",
       memberstackPlanId: "pln_kin-membership-annual-basic-je3s0vpe",
-      memberstackPriceId: "prc_basic-annual-membership-u35f0cz4",
-    },
-  
-    premiumMonthly: {
-      name: "KIN Membership Monthly Premium",
-      price: 19.99,
-      stripeProductId: "prod_UmDotNT6aE1KH5",
-      memberstackPlanId: "pln_kin-membership-monthly-premium-915u0c2f",
-      memberstackPriceId: "prc_membership-monthly-premium-r5490vkw",
-    },
-  
-    premiumAnnual: {
-      name: "KIN Membership Annual Premium",
-      price: 228,
-      stripeProductId: "prod_UmDWvG1nD2IMiH",
-      memberstackPlanId: "pln_kin-membership-annual-premium-tn5b0cxj",
-      memberstackPriceId: "prc_pemium-annual-membership-vh4g0cr7",
+      prices: {
+        monthly: { price: 13.99, memberstackPriceId: "prc_basic-monthly-membership-s71690r6w" },
+        annual: { price: 129, memberstackPriceId: "prc_basic-annual-membership-bp1bh07cp" },
+      },
     },
 
-    /** Grandfathered annual basic plan still attached to some live Memberstack members. */
-    legacyBasicAnnual: {
-      name: "KIN Membership Annual (legacy)",
+    premium: {
+      name: "KIN Membership - Premium",
+      memberstackPlanId: "pln_kin-membership-annual-premium-tn5b0cxj",
+      prices: {
+        monthly: { price: 19.99, memberstackPriceId: "prc_knit-it-now-premium-monthly--en1b307jv" },
+        annual: { price: 228, memberstackPriceId: "prc_knit-it-now-premium-annual-membership-1g1bg070r" },
+      },
+    },
+  } as const;
+
+/* ============================================================================
+ * LEGACY PLANS — access allow list ONLY (never used for checkout)
+ * --------------------------------------------------------------------------
+ * These plans are no longer sold. They remain here solely so existing members
+ * whose Memberstack records still carry these plan connections keep member
+ * access after the consolidation. Remove once no live members hold them.
+ * ==========================================================================*/
+export const LEGACY_MEMBERSHIPS = {
+    monthlyBasic: {
+      name: "KIN Membership Monthly Basic (retired)",
+      memberstackPlanId: "pln_kin-membership-monthly-a59701wy",
+    },
+    monthlyPremium: {
+      name: "KIN Membership Monthly Premium (retired)",
+      memberstackPlanId: "pln_kin-membership-monthly-premium-915u0c2f",
+    },
+    annualBasic: {
+      name: "KIN Membership Annual (grandfathered)",
       memberstackPlanId: "pln_kin-membership-annual-qf9g01et",
     },
   } as const;
-  
-  export const MEMBER_PLAN_IDS = [
-    MEMBERSHIPS.beta.memberstackPlanId,
-    MEMBERSHIPS.basicMonthly.memberstackPlanId,
-    MEMBERSHIPS.basicAnnual.memberstackPlanId,
-    MEMBERSHIPS.premiumMonthly.memberstackPlanId,
-    MEMBERSHIPS.premiumAnnual.memberstackPlanId,
-    MEMBERSHIPS.legacyBasicAnnual.memberstackPlanId,
-  ] as const;
-  
-  export const PREMIUM_PLAN_IDS = [
-    MEMBERSHIPS.beta.memberstackPlanId,
-    MEMBERSHIPS.premiumMonthly.memberstackPlanId,
-    MEMBERSHIPS.premiumAnnual.memberstackPlanId,
+
+/** Legacy plan ids retained for access only. */
+export const LEGACY_MEMBER_PLAN_IDS = [
+    LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId,
+    LEGACY_MEMBERSHIPS.monthlyPremium.memberstackPlanId,
+    LEGACY_MEMBERSHIPS.annualBasic.memberstackPlanId,
   ] as const;
 
-  /** Beta, basic, premium, and legacy plans that grant catalog video access. */
-  export const VIDEO_MEMBERSHIP_PLAN_IDS = MEMBER_PLAN_IDS;
-  
-  export const MEMBERSHIP_PRICE_IDS = {
-    basicMonthly: MEMBERSHIPS.basicMonthly.memberstackPriceId,
-    basicAnnual: MEMBERSHIPS.basicAnnual.memberstackPriceId,
-    premiumMonthly: MEMBERSHIPS.premiumMonthly.memberstackPriceId,
-    premiumAnnual: MEMBERSHIPS.premiumAnnual.memberstackPriceId,
+/** Current plan ids that grant member access. */
+export const CURRENT_MEMBER_PLAN_IDS = [
+    MEMBERSHIPS.beta.memberstackPlanId,
+    MEMBERSHIPS.basic.memberstackPlanId,
+    MEMBERSHIPS.premium.memberstackPlanId,
+  ] as const;
+
+/**
+ * Global allow list of Memberstack plan ids that grant member access:
+ * current plans + legacy plans (kept for migration). Gating consumes this as a
+ * set, so order does not matter.
+ */
+export const MEMBER_PLAN_IDS = [
+    ...CURRENT_MEMBER_PLAN_IDS,
+    ...LEGACY_MEMBER_PLAN_IDS,
+  ] as const;
+
+/** Premium-tier plan ids (beta + premium). Currently unused; kept for parity. */
+export const PREMIUM_PLAN_IDS = [
+    MEMBERSHIPS.beta.memberstackPlanId,
+    MEMBERSHIPS.premium.memberstackPlanId,
+  ] as const;
+
+/** Beta, basic, premium, and legacy plans that grant catalog video access. */
+export const VIDEO_MEMBERSHIP_PLAN_IDS = MEMBER_PLAN_IDS;
+
+/** Checkout price ids for the four purchasable options (two plans × two prices). */
+export const MEMBERSHIP_PRICE_IDS = {
+    basicMonthly: MEMBERSHIPS.basic.prices.monthly.memberstackPriceId,
+    basicAnnual: MEMBERSHIPS.basic.prices.annual.memberstackPriceId,
+    premiumMonthly: MEMBERSHIPS.premium.prices.monthly.memberstackPriceId,
+    premiumAnnual: MEMBERSHIPS.premium.prices.annual.memberstackPriceId,
   } as const;

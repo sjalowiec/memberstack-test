@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MEMBERSHIPS } from "../config/memberships";
+import { LEGACY_MEMBERSHIPS, MEMBERSHIPS } from "../config/memberships";
 import {
   activeVideoPlanIdsFromMemberPayload,
   hasKinVideoAccess,
@@ -26,7 +26,7 @@ describe("hasKinVideoAccess", () => {
         data: {
           auth: { email: "membertest@knititnow.com" },
           planConnections: [
-            { planId: MEMBERSHIPS.basicMonthly.memberstackPlanId, status: "ACTIVE" },
+            { planId: MEMBERSHIPS.basic.memberstackPlanId, status: "ACTIVE" },
           ],
         },
       }),
@@ -39,7 +39,7 @@ describe("hasKinVideoAccess", () => {
         data: {
           auth: { email: "sue@knititnow.com" },
           planConnections: [
-            { planId: MEMBERSHIPS.premiumAnnual.memberstackPlanId, status: "ACTIVE" },
+            { planId: MEMBERSHIPS.premium.memberstackPlanId, status: "ACTIVE" },
           ],
         },
       }),
@@ -64,7 +64,7 @@ describe("hasKinVideoAccess", () => {
       hasKinVideoAccess({
         data: {
           planConnections: [
-            { planId: MEMBERSHIPS.legacyBasicAnnual.memberstackPlanId, status: "ACTIVE" },
+            { planId: LEGACY_MEMBERSHIPS.annualBasic.memberstackPlanId, status: "ACTIVE" },
           ],
         },
       }),
@@ -76,7 +76,7 @@ describe("hasKinVideoAccess", () => {
       hasKinVideoAccess({
         data: {
           planConnections: [
-            { planId: MEMBERSHIPS.basicMonthly.memberstackPlanId, active: true },
+            { planId: LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId, active: true },
           ],
         },
       }),
@@ -90,7 +90,7 @@ describe("hasKinVideoAccess", () => {
           member: {
             auth: { email: "member@example.com" },
             planConnections: [
-              { planId: MEMBERSHIPS.premiumMonthly.memberstackPlanId, status: "ACTIVE" },
+              { planId: LEGACY_MEMBERSHIPS.monthlyPremium.memberstackPlanId, status: "ACTIVE" },
             ],
           },
         },
@@ -103,7 +103,7 @@ describe("hasKinVideoAccess", () => {
       hasKinVideoAccess({
         data: {
           planConnections: [
-            { planId: MEMBERSHIPS.basicMonthly.memberstackPlanId, status: "CANCELED" },
+            { planId: MEMBERSHIPS.basic.memberstackPlanId, status: "CANCELED" },
           ],
         },
       }),
@@ -130,11 +130,11 @@ describe("activeVideoPlanIdsFromMemberPayload", () => {
   it("lists every configured video membership plan id", () => {
     expect(VIDEO_MEMBERSHIP_PLAN_IDS).toEqual([
       MEMBERSHIPS.beta.memberstackPlanId,
-      MEMBERSHIPS.basicMonthly.memberstackPlanId,
-      MEMBERSHIPS.basicAnnual.memberstackPlanId,
-      MEMBERSHIPS.premiumMonthly.memberstackPlanId,
-      MEMBERSHIPS.premiumAnnual.memberstackPlanId,
-      MEMBERSHIPS.legacyBasicAnnual.memberstackPlanId,
+      MEMBERSHIPS.basic.memberstackPlanId,
+      MEMBERSHIPS.premium.memberstackPlanId,
+      LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId,
+      LEGACY_MEMBERSHIPS.monthlyPremium.memberstackPlanId,
+      LEGACY_MEMBERSHIPS.annualBasic.memberstackPlanId,
     ]);
   });
 });
