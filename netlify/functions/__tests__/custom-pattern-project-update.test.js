@@ -18,7 +18,7 @@ const h = vi.hoisted(() => {
 });
 
 // Keep the real guard/build helpers; only stub the blob IO + auth resolution.
-vi.mock("./lib/custom-pattern-projects-store.js", async (importOriginal) => {
+vi.mock("../lib/custom-pattern-projects-store.js", async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -29,7 +29,7 @@ vi.mock("./lib/custom-pattern-projects-store.js", async (importOriginal) => {
   };
 });
 
-import handler from "./custom-pattern-project-update.js";
+import handler from "../custom-pattern-project-update.js";
 
 const FREE_ENTITLEMENT = {
   patternSystem: "sleeveless",
