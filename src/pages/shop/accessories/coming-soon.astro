@@ -1,0 +1,105 @@
+---
+/**
+ * Reusable "accessory coming soon" placeholder.
+ * Reads the accessory name from the `item` query string and shows a simple
+ * interest page that points at Contact Us. Used by machine sales pages to link
+ * accessories that don't have product pages yet (V1 accessory interest path).
+ *
+ * URL: /shop/accessories/coming-soon?item=Silver%20Reed%20SK280%20Lace%20Carriage
+ */
+import Layout from "../../../layouts/Layout.astro";
+
+const CONTACT_HREF = "/contact";
+const FALLBACK_NAME = "Machine Knitting Accessory";
+
+const rawItem = Astro.url.searchParams.get("item");
+const itemName = rawItem && rawItem.trim() ? rawItem.trim() : FALLBACK_NAME;
+
+const title = `${itemName} | Knit it Now`;
+const description = `${itemName} is coming soon to the Knit it Now shop.`;
+---
+
+<Layout {title} {description}>
+  <div class="placeholder-page">
+    <a class="back-link back-to-shop-link" href="/shop/machines">? Back to Machines</a>
+    <header class="page-header">
+      <h1 data-testid="text-page-title">{itemName}</h1>
+    </header>
+
+    <div class="content-section">
+      <p>We're currently adding this accessory to the Knit it Now shop.</p>
+      <p>If you're interested in {itemName}, we'd be happy to help.</p>
+      <a href={CONTACT_HREF} class="btn-primary" data-testid="button-contact">Contact Us</a>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .back-link {
+    display: inline-block;
+    color: var(--kbm-green);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+
+  .back-link:hover {
+    color: #3d4e21;
+    text-decoration: underline;
+  }
+
+  .back-to-shop-link {
+    margin-bottom: 1rem;
+  }
+
+  .placeholder-page {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .page-header h1 {
+    font-size: 2rem;
+    color: var(--kbm-green);
+    margin-bottom: 0.5rem;
+  }
+
+  .content-section {
+    background: #f9fdf5;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .content-section p {
+    font-size: 1.1rem;
+    color: #5a6b47;
+    line-height: 1.7;
+    margin-bottom: 1.25rem;
+  }
+
+  .content-section p:last-of-type {
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 0.875rem 2rem;
+    background: var(--kbm-green);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s ease;
+  }
+
+  .btn-primary:hover {
+    background: var(--kbm-green-hover, #445626);
+  }
+</style>
