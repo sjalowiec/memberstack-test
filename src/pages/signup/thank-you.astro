@@ -49,6 +49,33 @@ const nextSteps = [
   {description}
   onboarding
 >
+  {/*
+    Builder-flow return bounce. Signups opened from the Hat/DIY Blanket account gate stash their
+    return path in sessionStorage (Memberstack ignores post-bind form-redirect overrides, so it must
+    land here first). Runs synchronously before paint and uses location.replace so the thank-you page
+    never enters history. Keep the key/TTL in sync with PUBLIC_SIGNUP_RETURN_STORAGE_KEY in
+    src/lib/publicSignupModal.ts. Site-wide signups set no key and simply stay on this page.
+  */}
+  <script is:inline>
+    (function () {
+      try {
+        var KEY = "kbm:public-signup-return";
+        var raw = window.sessionStorage.getItem(KEY);
+        if (!raw) return;
+        window.sessionStorage.removeItem(KEY);
+        var data = JSON.parse(raw);
+        var path = data && typeof data.path === "string" ? data.path : "";
+        var ts = data && typeof data.ts === "number" ? data.ts : 0;
+        // Same-origin relative path only; never bounce back to this page; 15-minute TTL.
+        if (!path || path.charAt(0) !== "/" || path.charAt(1) === "/") return;
+        if (path.replace(/\/+$/, "") === "/signup/thank-you") return;
+        if (Date.now() - ts > 15 * 60 * 1000) return;
+        window.location.replace(path);
+      } catch (e) {
+        /* storage unavailable — stay on the thank-you page */
+      }
+    })();
+  </script>
   <article class="signup-thank-you page-wrap" aria-labelledby="signup-thank-you-heading">
     <section class="signup-thank-you__hero">
       <div class="signup-thank-you__hero-text">

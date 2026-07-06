@@ -2,15 +2,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Default deps come from these modules; mock them so we can assert the gate reuses them
 // without pulling in the real Memberstack / DOM stack.
-const isSleevelessPatternMemberLoggedIn = vi.fn<[], Promise<boolean>>();
-const showPublicSignupModal = vi.fn<[], boolean>();
+const showPublicSignupModal = vi.fn<[{ root?: ParentNode; redirectPath?: string }?], boolean>();
 const openMemberstackLoginModal = vi.fn<[string?], void>();
 
+// The strict login check waits for Memberstack, then reads window.$memberstackDom directly. Mock
+// only the wait; tests drive the login decision via a stubbed window.$memberstackDom.getCurrentMember.
 vi.mock("./sleevelessPatternLoginGate", () => ({
-  isSleevelessPatternMemberLoggedIn: () => isSleevelessPatternMemberLoggedIn(),
+  waitForMemberstackDom: async () => true,
 }));
 vi.mock("../publicSignupModal", () => ({
-  showPublicSignupModal: () => showPublicSignupModal(),
+  showPublicSignupModal: (options?: { root?: ParentNode; redirectPath?: string }) =>
+    showPublicSignupModal(options),
 }));
 vi.mock("../memberstackLogin", () => ({
   openMemberstackLoginModal: (returnPath?: string) => openMemberstackLoginModal(returnPath),
@@ -24,7 +26,6 @@ import {
 } from "./patternBuilderAccountGate";
 
 beforeEach(() => {
-  isSleevelessPatternMemberLoggedIn.mockReset();
   showPublicSignupModal.mockReset();
   openMemberstackLoginModal.mockReset();
 });
@@ -134,7 +135,32 @@ describe("ensurePatternBuilderAccount - logged-out visitors see the signup-first
   it("default prompt shows the signup-first gate modal", async () => {
     const { dialog } = makeDialogFixture();
     vi.stubGlobal("document", { querySelector: () => dialog });
-    isSleevelessPatternMemberLoggedIn.mockResolvedValue(false);
+
+    const allowed = await ensurePatternBuilderAccount();
+
+    expect(allowed).toBe(false);
+    expect(dialog.showModal).toHaveBeenCalledTimes(1);
+  });
+
+  it("fails closed when Memberstack reports no signed-in member (regression: dev-bypass must not open the gate)", async () => {
+    const { dialog } = makeDialogFixture();
+    vi.stubGlobal("document", { querySelector: () => dialog });
+    // Memberstack present but no member (logged out). Previously the shared login check fell back to
+    // the localhost dev bypass and reported this as logged in — letting anonymous users generate.
+    vi.stubGlobal("window", {
+      $memberstackDom: { getCurrentMember: async () => ({ data: {} }) },
+    });
+
+    const allowed = await ensurePatternBuilderAccount();
+
+    expect(allowed).toBe(false);
+    expect(dialog.showModal).toHaveBeenCalledTimes(1);
+  });
+
+  it("fails closed when Memberstack is unavailable (never treats 'not ready' as logged in)", async () => {
+    const { dialog } = makeDialogFixture();
+    vi.stubGlobal("document", { querySelector: () => dialog });
+    vi.stubGlobal("window", {} as Window & typeof globalThis);
 
     const allowed = await ensurePatternBuilderAccount();
 
@@ -164,15 +190,16 @@ describe("ensurePatternBuilderAccount - logged-in visitors generate for free (no
     expect(openAccountPrompt).not.toHaveBeenCalled();
   });
 
-  it("applies NO entitlement/free-claim check: login alone (via shared helper) permits generation", async () => {
-    // Default deps: the only gate is isSleevelessPatternMemberLoggedIn. A logged-in visitor is
-    // allowed regardless of subscription/free claims, and no login/signup modal is shown.
-    isSleevelessPatternMemberLoggedIn.mockResolvedValue(true);
+  it("applies NO entitlement/free-claim check: a real Memberstack login alone permits generation", async () => {
+    // A signed-in member (any account — no-sub / member / beta) is allowed regardless of
+    // subscription/free claims, and no login/signup modal is shown.
+    vi.stubGlobal("window", {
+      $memberstackDom: { getCurrentMember: async () => ({ data: { id: "mem_123" } }) },
+    });
 
     const allowed = await ensurePatternBuilderAccount();
 
     expect(allowed).toBe(true);
-    expect(isSleevelessPatternMemberLoggedIn).toHaveBeenCalledTimes(1);
     expect(showPublicSignupModal).not.toHaveBeenCalled();
     expect(openMemberstackLoginModal).not.toHaveBeenCalled();
   });
@@ -212,6 +239,22 @@ describe("initPatternBuilderAccountGate - modal CTAs", () => {
     expect(dialog.close).toHaveBeenCalledTimes(2);
   });
 
+  it("default signup CTA returns the new member to the current builder page", () => {
+    const { dialog, root, buttons } = makeDialogFixture();
+    vi.stubGlobal("window", {
+      location: { pathname: "/patterns/hat", search: "", hash: "" },
+    });
+    showPublicSignupModal.mockReturnValue(true);
+
+    // No deps: exercise the real default openSignup, which must scope the post-signup redirect
+    // to the current builder page (not the site-wide /signup/thank-you landing).
+    initPatternBuilderAccountGate(root);
+
+    dialog.open = true;
+    buttons["[data-account-gate-signup]"][0].click();
+    expect(showPublicSignupModal).toHaveBeenCalledWith({ redirectPath: "/patterns/hat" });
+  });
+
   it("is idempotent per dialog instance (binds once)", () => {
     const { root, buttons } = makeDialogFixture();
     initPatternBuilderAccountGate(root, { openSignup: vi.fn(), openLogin: vi.fn() });
@@ -224,9 +267,9 @@ describe("initPatternBuilderAccountGate - modal CTAs", () => {
 describe("installPatternBuilderAccountGate (hat inline-script bridge)", () => {
   it("installs window globals that gate via the shared helper", async () => {
     const { dialog } = makeDialogFixture();
+    // No $memberstackDom => strict check fails closed (logged out) and the prompt opens.
     vi.stubGlobal("window", {} as Window & typeof globalThis);
     vi.stubGlobal("document", { querySelector: () => dialog });
-    isSleevelessPatternMemberLoggedIn.mockResolvedValue(false);
 
     installPatternBuilderAccountGate();
 

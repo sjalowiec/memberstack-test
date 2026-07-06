@@ -7,10 +7,23 @@ vi.mock("./memberstackLogin", () => ({
 }));
 
 import {
+  PUBLIC_SIGNUP_RETURN_STORAGE_KEY,
+  clearPublicSignupReturnPath,
+  consumePublicSignupReturnPath,
   initPublicSignupModal,
   installPublicSignupModal,
   showPublicSignupModal,
 } from "./publicSignupModal";
+
+function stubSessionStorage(): Map<string, string> {
+  const map = new Map<string, string>();
+  vi.stubGlobal("sessionStorage", {
+    getItem: (k: string) => (map.has(k) ? map.get(k)! : null),
+    setItem: (k: string, v: string) => void map.set(k, String(v)),
+    removeItem: (k: string) => void map.delete(k),
+  });
+  return map;
+}
 
 beforeEach(() => {
   openMemberstackLoginModal.mockReset();
@@ -87,6 +100,96 @@ describe("showPublicSignupModal", () => {
     });
     expect(showPublicSignupModal({ root })).toBe(true);
     expect(form.setAttribute).toHaveBeenCalledWith("redirect", "/signup/thank-you");
+  });
+
+  it("honors an explicit redirectPath override (builder gate returns to the builder page)", () => {
+    const { root, form } = makeDialogFixture();
+    expect(showPublicSignupModal({ root, redirectPath: "/patterns/hat" })).toBe(true);
+    expect(form.setAttribute).toHaveBeenCalledWith("redirect", "/patterns/hat");
+  });
+
+  it("stores the builder return path so the thank-you page can bounce (attribute alone is ignored by Memberstack)", () => {
+    const store = stubSessionStorage();
+    const { root } = makeDialogFixture();
+
+    expect(showPublicSignupModal({ root, redirectPath: "/patterns/diy-blanket" })).toBe(true);
+
+    const raw = store.get(PUBLIC_SIGNUP_RETURN_STORAGE_KEY);
+    expect(raw).toBeTruthy();
+    expect(JSON.parse(raw!).path).toBe("/patterns/diy-blanket");
+  });
+
+  it("clears any stored return path for a site-wide signup (no override)", () => {
+    const store = stubSessionStorage();
+    store.set(PUBLIC_SIGNUP_RETURN_STORAGE_KEY, JSON.stringify({ path: "/patterns/hat", ts: Date.now() }));
+    const { root } = makeDialogFixture();
+
+    expect(showPublicSignupModal({ root })).toBe(true);
+
+    expect(store.has(PUBLIC_SIGNUP_RETURN_STORAGE_KEY)).toBe(false);
+  });
+
+  it("ignores an unsafe (non-relative) redirectPath override", () => {
+    const store = stubSessionStorage();
+    const { root } = makeDialogFixture();
+
+    expect(showPublicSignupModal({ root, redirectPath: "https://evil.example.com" })).toBe(true);
+
+    expect(store.has(PUBLIC_SIGNUP_RETURN_STORAGE_KEY)).toBe(false);
+  });
+});
+
+describe("consumePublicSignupReturnPath (thank-you bounce)", () => {
+  it("returns and consumes a fresh, safe return path", () => {
+    const store = stubSessionStorage();
+    store.set(PUBLIC_SIGNUP_RETURN_STORAGE_KEY, JSON.stringify({ path: "/patterns/hat", ts: Date.now() }));
+
+    expect(consumePublicSignupReturnPath()).toBe("/patterns/hat");
+    expect(store.has(PUBLIC_SIGNUP_RETURN_STORAGE_KEY)).toBe(false);
+  });
+
+  it("returns null (and clears) for a stale entry beyond the TTL", () => {
+    const store = stubSessionStorage();
+    store.set(
+      PUBLIC_SIGNUP_RETURN_STORAGE_KEY,
+      JSON.stringify({ path: "/patterns/hat", ts: Date.now() - 20 * 60 * 1000 }),
+    );
+
+    expect(consumePublicSignupReturnPath()).toBeNull();
+    expect(store.has(PUBLIC_SIGNUP_RETURN_STORAGE_KEY)).toBe(false);
+  });
+
+  it("rejects a protocol-relative path (open-redirect guard)", () => {
+    const store = stubSessionStorage();
+    store.set(
+      PUBLIC_SIGNUP_RETURN_STORAGE_KEY,
+      JSON.stringify({ path: "//evil.example.com", ts: Date.now() }),
+    );
+
+    expect(consumePublicSignupReturnPath()).toBeNull();
+  });
+
+  it("never bounces back to the thank-you page itself", () => {
+    const store = stubSessionStorage();
+    store.set(
+      PUBLIC_SIGNUP_RETURN_STORAGE_KEY,
+      JSON.stringify({ path: "/signup/thank-you", ts: Date.now() }),
+    );
+
+    expect(consumePublicSignupReturnPath()).toBeNull();
+  });
+
+  it("returns null when there is no stored entry", () => {
+    stubSessionStorage();
+    expect(consumePublicSignupReturnPath()).toBeNull();
+  });
+
+  it("clearPublicSignupReturnPath removes a stored entry", () => {
+    const store = stubSessionStorage();
+    store.set(PUBLIC_SIGNUP_RETURN_STORAGE_KEY, JSON.stringify({ path: "/patterns/hat", ts: Date.now() }));
+
+    clearPublicSignupReturnPath();
+    expect(store.has(PUBLIC_SIGNUP_RETURN_STORAGE_KEY)).toBe(false);
   });
 });
 

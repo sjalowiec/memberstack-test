@@ -18,13 +18,90 @@ import { openMemberstackLoginModal } from "./memberstackLogin";
  */
 export const PUBLIC_SIGNUP_REDIRECT_PATH = "/signup/thank-you";
 
-export const PUBLIC_SIGNUP_MODAL_TITLE = "Create your free Knit It Now account";
+/**
+ * sessionStorage key holding a pending post-signup return path for the Hat/Blanket builder flow.
+ *
+ * WHY THIS EXISTS: Memberstack v2 captures a `data-ms-form`'s `redirect` attribute at BIND time
+ * (page load) and treats a form-level redirect as authoritative; changing the attribute later (at
+ * modal-open/click time) is ignored. The builder's return target is only known at click time, so we
+ * cannot express it via the cached attribute. Instead the builder gate stashes the target here, lets
+ * Memberstack land on the static `/signup/thank-you`, and the thank-you page immediately bounces to
+ * the stored path. Site-wide signups (no override) never set this key and stay on `/signup/thank-you`.
+ */
+export const PUBLIC_SIGNUP_RETURN_STORAGE_KEY = "kbm:public-signup-return";
+
+/** Pending returns older than this are ignored (defensive against a stale, unconsumed entry). */
+const PUBLIC_SIGNUP_RETURN_TTL_MS = 15 * 60 * 1000;
+
+function isSafeInternalPath(path: unknown): path is string {
+  return typeof path === "string" && path.startsWith("/") && !path.startsWith("//");
+}
+
+function isSignupThankYouPath(pathname?: string | null): boolean {
+  if (!pathname) return false;
+  return pathname.replace(/\/+$/, "") === PUBLIC_SIGNUP_REDIRECT_PATH;
+}
+
+/**
+ * Records (or clears) the pending post-signup return path. Called with the override when the builder
+ * gate opens signup, and with `undefined` for site-wide opens (which clears any lingering entry so
+ * a dismissed builder gate can never bounce a later, unrelated signup).
+ */
+function persistSignupReturnPath(redirectPath?: string): void {
+  try {
+    if (typeof sessionStorage === "undefined") return;
+    if (isSafeInternalPath(redirectPath)) {
+      sessionStorage.setItem(
+        PUBLIC_SIGNUP_RETURN_STORAGE_KEY,
+        JSON.stringify({ path: redirectPath, ts: Date.now() }),
+      );
+    } else {
+      sessionStorage.removeItem(PUBLIC_SIGNUP_RETURN_STORAGE_KEY);
+    }
+  } catch {
+    /* storage unavailable (private mode / disabled) — fall back to the default thank-you landing */
+  }
+}
+
+/**
+ * Reads and CONSUMES the pending post-signup return path. Returns a validated same-origin relative
+ * path (or null). Used by the `/signup/thank-you` bounce. TTL-guarded so an old entry never fires.
+ */
+export function consumePublicSignupReturnPath(): string | null {
+  try {
+    if (typeof sessionStorage === "undefined") return null;
+    const raw = sessionStorage.getItem(PUBLIC_SIGNUP_RETURN_STORAGE_KEY);
+    if (!raw) return null;
+    sessionStorage.removeItem(PUBLIC_SIGNUP_RETURN_STORAGE_KEY);
+    const parsed = JSON.parse(raw) as { path?: unknown; ts?: unknown };
+    if (!isSafeInternalPath(parsed.path)) return null;
+    if (isSignupThankYouPath(parsed.path)) return null;
+    const ts = typeof parsed.ts === "number" ? parsed.ts : 0;
+    if (Date.now() - ts > PUBLIC_SIGNUP_RETURN_TTL_MS) return null;
+    return parsed.path;
+  } catch {
+    return null;
+  }
+}
+
+/** Clears any pending post-signup return path (e.g. on non-thank-you page loads). */
+export function clearPublicSignupReturnPath(): void {
+  try {
+    if (typeof sessionStorage !== "undefined") {
+      sessionStorage.removeItem(PUBLIC_SIGNUP_RETURN_STORAGE_KEY);
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+export const PUBLIC_SIGNUP_MODAL_TITLE = "Share your email address";
 export const PUBLIC_SIGNUP_MODAL_SUBTITLE =
-  "Create a free account to build custom patterns designed for your machine.";
+  "Enter your information below to start building custom hat and blanket patterns.";
 export const PUBLIC_SIGNUP_FIRST_NAME_LABEL = "First Name";
 export const PUBLIC_SIGNUP_EMAIL_LABEL = "Email Address";
 export const PUBLIC_SIGNUP_PASSWORD_LABEL = "Create Password";
-export const PUBLIC_SIGNUP_SUBMIT_LABEL = "Create Free Account";
+export const PUBLIC_SIGNUP_SUBMIT_LABEL = "Continue";
 export const PUBLIC_SIGNUP_LOGIN_LABEL = "Already have an account? Log in";
 
 const MODAL_SELECTOR = "[data-public-signup-modal]";
@@ -54,24 +131,42 @@ function getDialog(root?: ParentNode): HTMLDialogElement | null {
 }
 
 /**
- * Points the signup form at the public signup thank-you page. Memberstack inline forms honor the
- * `redirect` attribute (see account guest login / password reset forms); setting it here overrides
- * the dashboard-configured signup redirect (`/beta-welcome`) so a public signup lands on
- * `/signup/thank-you`. The form also carries this as a static `redirect` attribute so Memberstack
- * has it at bind time; this reasserts it whenever the modal is opened.
+ * Points the signup form at its post-signup destination via the `redirect` attribute.
+ *
+ * IMPORTANT: Memberstack v2 captures this attribute at BIND time and a form-level redirect overrides
+ * everything, so a value set here at modal-open time is only honored if it matches the bind-time
+ * value. The static `/signup/thank-you` in the markup is what actually takes effect for signups.
+ * We still set it (harmless, and honored by Memberstack builds that read it live), but the
+ * builder's dynamic return is enforced separately via {@link persistSignupReturnPath} + the
+ * `/signup/thank-you` bounce — do NOT rely on this attribute for the override.
  */
-function applySignupRedirect(dialog: HTMLDialogElement): void {
+function applySignupRedirect(
+  dialog: HTMLDialogElement,
+  redirectPath: string = PUBLIC_SIGNUP_REDIRECT_PATH,
+): void {
   const form = dialog.querySelector('[data-ms-form="signup"]');
   if (form && typeof form.setAttribute === "function") {
-    form.setAttribute("redirect", PUBLIC_SIGNUP_REDIRECT_PATH);
+    form.setAttribute("redirect", redirectPath);
   }
 }
 
-/** Shows the clean public signup modal. Returns true when the modal was shown. */
-export function showPublicSignupModal(options?: { root?: ParentNode }): boolean {
+/**
+ * Shows the clean public signup modal. Returns true when the modal was shown.
+ *
+ * `redirectPath` overrides where the new member returns after signup; when omitted the site-wide
+ * `/signup/thank-you` landing is used. Only the Hat/Blanket builder account gate passes an override
+ * (the current builder page). Because Memberstack ignores post-bind changes to the form redirect,
+ * the override is enforced via a stored return path that the thank-you page bounces from — every
+ * other caller keeps the default behavior.
+ */
+export function showPublicSignupModal(options?: {
+  root?: ParentNode;
+  redirectPath?: string;
+}): boolean {
   const dialog = getDialog(options?.root);
   if (!dialog || typeof dialog.showModal !== "function") return false;
-  applySignupRedirect(dialog);
+  applySignupRedirect(dialog, options?.redirectPath);
+  persistSignupReturnPath(options?.redirectPath);
   if (!dialog.open) dialog.showModal();
   return true;
 }
@@ -137,6 +232,14 @@ export function initPublicSignupModal(
  */
 export function installPublicSignupModal(): void {
   if (typeof window === "undefined") return;
+
+  // Any non-thank-you page load invalidates a lingering pending return (e.g. the builder gate was
+  // opened then dismissed without signing up), so it can never bounce a later, unrelated signup.
+  // The thank-you page consumes the entry itself and is deliberately excluded here.
+  if (!isSignupThankYouPath(window.location?.pathname)) {
+    clearPublicSignupReturnPath();
+  }
+
   window.kbmOpenPublicSignupModal = () => {
     void showPublicSignupModal();
   };

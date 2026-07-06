@@ -200,7 +200,22 @@ const isProduction =
 </script>
    
 <!-- MemberStack -->
-<!-- Memberstack webflow package -->
+<!--
+  Memberstack webflow package. The public app key below is used on ALL environments.
+
+  IMPORTANT - TEST vs LIVE mode (read before QA-ing signup/login for launch):
+    - Memberstack runs in TEST mode on every NON-production domain (localhost, *.netlify.app,
+      deploy previews, staging). It only runs in LIVE mode on the production custom domain
+      (e.g. knititnow.com / knitbymachine.com — see PRODUCTION_HOSTNAMES in
+      src/lib/env/siteEnvironment.ts).
+    - Members created in TEST mode do NOT appear in the live Memberstack member list (they live
+      under the dashboard's "Test Mode" toggle) and are a separate data set.
+    - TEST mode does NOT trigger live integrations — e.g. ActiveCampaign sync/tagging does not fire
+      for test members.
+    - Therefore signup/login/account-access testing for launch MUST be verified on the PRODUCTION
+      custom domain. A successful-looking signup + redirect on staging is expected but only creates
+      a test member; it is NOT proof of a real live member or ActiveCampaign sync.
+-->
 <script data-memberstack-app="app_cmfh3d1n802vb0wy706205810" src="https://static.memberstack.com/scripts/v2/memberstack.js" type="text/javascript"></script>
 
 

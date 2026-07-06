@@ -1222,7 +1222,7 @@ const patternPersistWarning =
   
   <div id="diy-blanket-form-top" class="wizard-container scroll-mt-[96px]">
 
-    <div class="calculator-card diy-blanket-builder-inputs">
+    <div class="calculator-card diy-blanket-builder-inputs" data-pattern-builder-lock>
       <div class="pattern-tabs">
         <div class="pattern-tab-nav">
           <button type="button" class="tab-btn active" data-tab="build">Create</button>
@@ -1577,10 +1577,21 @@ const patternPersistWarning =
 <script is:inline src="/js/wizard-utils.js"></script>
 
 <script>
-import { ensurePatternBuilderAccount } from "../../lib/patterns/patternBuilderAccountGate";
+import {
+  ensurePatternBuilderAccount,
+  lockPatternBuilderForLoggedOut,
+} from "../../lib/patterns/patternBuilderAccountGate";
 
 document.addEventListener('DOMContentLoaded', function() {
   console.log('Custom Blanket Builder initializing...');
+
+  // Upfront account gate: lock the interactive builder for logged-out visitors and prompt them to
+  // create/log into a free account before they start building. Closing the prompt leaves the builder
+  // locked; clicking/focusing any control re-opens the prompt. Logging in unlocks the builder. The
+  // Create / Pattern tab gates remain the fail-closed backup. Logged-in visitors are never blocked.
+  void lockPatternBuilderForLoggedOut(
+    document.querySelector('[data-pattern-builder-lock]'),
+  );
 
   if (!window.WizardUtils) {
     console.error('WizardUtils not found. Ensure /js/wizard-utils.js is loaded before this script.');
@@ -1672,9 +1683,19 @@ document.addEventListener('DOMContentLoaded', function() {
       // Account gate: viewing the generated Pattern tab requires a free account (matches
       // the Create My Pattern gate). Other tabs stay open to anonymous visitors.
       if (target === 'pattern') {
-        void ensurePatternBuilderAccount().then((allowed) => {
-          if (allowed) activateWizardTab('pattern');
-        });
+        if (import.meta.env?.DEV) console.debug('[account-gate][blanket] Pattern tab clicked');
+        void ensurePatternBuilderAccount()
+          .then((allowed) => {
+            if (import.meta.env?.DEV) {
+              console.debug('[account-gate][blanket] Pattern tab gate resolved — allowed:', allowed);
+            }
+            // Strict: ONLY open the Pattern tab when the gate positively confirms an account.
+            if (allowed === true) activateWizardTab('pattern');
+          })
+          .catch(() => {
+            // Fail closed on any error: never open the Pattern tab; re-surface the prompt.
+            window.kbmOpenPatternBuilderAccountPrompt?.();
+          });
         return;
       }
       activateWizardTab(target);
@@ -2730,9 +2751,20 @@ document.addEventListener('DOMContentLoaded', function() {
       // Account gate: anonymous visitors may view the builder, but generating the pattern
       // requires a free account. The gate opens the signup-first prompt when logged out
       // (no silent fail). Blanket patterns are free for any logged-in visitor (no membership check).
-      void ensurePatternBuilderAccount().then((allowed) => {
-        if (allowed) runCreateBlanketPattern();
-      });
+      if (import.meta.env?.DEV) console.debug('[account-gate][blanket] Create My Pattern clicked');
+      void ensurePatternBuilderAccount()
+        .then((allowed) => {
+          if (import.meta.env?.DEV) {
+            console.debug('[account-gate][blanket] Create gate resolved — allowed:', allowed);
+          }
+          // Strict: ONLY generate when the gate positively confirms an account.
+          if (allowed === true) runCreateBlanketPattern();
+        })
+        .catch((err) => {
+          // Fail closed on any error: never generate; re-surface the prompt.
+          if (import.meta.env?.DEV) console.debug('[account-gate][blanket] Create gate errored', err);
+          window.kbmOpenPatternBuilderAccountPrompt?.();
+        });
     });
   }
 
