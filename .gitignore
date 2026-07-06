@@ -42,6 +42,8 @@ public/api/
 src/data/*.csv
 !src/data/machine_techniques.csv
 
+!/scripts/generate-public-manifests.mjs
+
 # Backup files
 *.backup
 *.bak.json
