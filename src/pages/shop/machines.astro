@@ -1,88 +1,101 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
-import machinesData from "../../data/machines.json";
+import {
+  getMachinesForSale,
+  primaryImageUrl,
+  machineTitle,
+  formatPitch,
+} from "../../lib/machines/referenceCatalog";
+import { availabilityLabel } from "../../lib/machines/machineAdminFields";
 
-// TODO (temporary): The machines shop page is disabled for production.
-// It redirects to /shop for now. Remove this redirect to re-enable the page.
-// The full page markup/logic is preserved below and is unaffected.
-return Astro.redirect("/shop");
+const title = "Knitting Machines for Sale | Knit it Now";
+const description =
+  "Knitting machines currently available for purchase. Compare gauge and specs, then buy securely online.";
 
-const title = "Knitting Machines | Knit it Now";
-const description = "Compare knitting machines and choose the one that fits your needs. Metal-bed machines, gauges, and key specs at a glance.";
+const machines = getMachinesForSale();
 
-interface Machine {
-  name: string;
-  slug: string;
-  shortDescription?: string;
-  quickSpecs?: string[];
-  image?: string;
-  active?: boolean | string;
+function formatPrice(value: number | null): string | null {
+  if (value == null) return null;
+  return Number.isInteger(value)
+    ? `$${value.toLocaleString("en-US")}`
+    : `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
-
-const rawMachines = machinesData as Machine[];
-const hasActiveFlag = rawMachines.some((m) => Object.prototype.hasOwnProperty.call(m, "active"));
-const machines = hasActiveFlag
-  ? rawMachines.filter((m) => m.active === true || String(m.active).toUpperCase() === "TRUE")
-  : rawMachines;
-
-const detailUrl = (slug: string) => `/shop/machines/${slug}`;
-const quickSpecsSlice = (specs: string[] | undefined) => (specs ?? []).slice(0, 3);
 ---
 
 <Layout {title} {description}>
-  <PageHead title="Knitting Machines" />
+  <PageHead title="Knitting Machines for Sale" />
 
   <div class="machines-page">
     <header class="page-header">
-      <h1 class="page-title">Knitting Machines</h1>
+      <h1 class="page-title">Knitting Machines for Sale</h1>
       <p class="page-intro">
-        This page helps you compare available machines and choose the one that fits your needs. Each card gives you a quick overview; use <strong>View Details</strong> to see full specs and more.
-      </p>
-      <p class="page-wizard-placeholder">
-        Not sure which machine is right for you? A machine decision wizard will be available here soon.
+        These machines are currently available for purchase. Each card shows the
+        key details—select <strong>View Details</strong> to learn more about a
+        machine and its specs before you buy.
       </p>
     </header>
 
-    <div class="machines-grid">
-      {machines.map((machine) => {
-        const specs = quickSpecsSlice(machine.quickSpecs);
-        const imageSrc = machine.image?.startsWith("/") ? machine.image : machine.image ? `/${machine.image}` : null;
-        return (
-          <article class="machine-card">
-            <div class="machine-card-image-wrap">
-              {imageSrc ? (
-                <img
-                  src={imageSrc}
-                  alt={machine.name}
-                  class="machine-card-image"
-                  width="280"
-                  height="180"
-                />
-              ) : (
-                <div class="machine-card-image-placeholder" aria-hidden="true">Image coming soon</div>
-              )}
-            </div>
-            <h2 class="machine-name">{machine.name}</h2>
-            {machine.shortDescription && (
-              <p class="machine-short">{machine.shortDescription}</p>
-            )}
-            {specs.length > 0 && (
-              <ul class="machine-specs" aria-label="Quick specs">
-                {specs.map((spec) => (
-                  <li>{spec}</li>
-                ))}
-              </ul>
-            )}
-            <div class="machine-actions">
-              <a href={detailUrl(machine.slug)} class="machine-link-details">
-                View Details
-              </a>
-            </div>
-          </article>
-        );
-      })}
-    </div>
+    {machines.length === 0 ? (
+      <p class="machines-empty">
+        No machines are listed for sale right now. Please check back soon.
+      </p>
+    ) : (
+      <div class="machines-grid">
+        {machines.map((machine) => {
+          const sale = machine.sale!;
+          const imageSrc = primaryImageUrl(machine);
+          const name = machineTitle(machine);
+          const pitch = formatPitch(machine);
+          const priceLabel = formatPrice(sale.price);
+          const availLabel = availabilityLabel(sale);
+          // Short blurb for the card.
+          const shortHtml = sale.shortDescriptionHtml || null;
+          return (
+            <article class="machine-card">
+              <div class="machine-card-image-wrap">
+                {imageSrc ? (
+                  <img
+                    src={imageSrc}
+                    alt={name}
+                    class="machine-card-image"
+                    width="280"
+                    height="180"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : (
+                  <div class="machine-card-image-placeholder" aria-hidden="true">
+                    Image coming soon
+                  </div>
+                )}
+                <span class={`machine-status machine-status--${sale.availabilityStatus}`}>{availLabel}</span>
+              </div>
+
+              <div class="machine-card-body">
+                <h2 class="machine-name">{name}</h2>
+
+                <ul class="machine-specs" aria-label="Quick specs">
+                  <li>{machine.gauge}</li>
+                  {pitch && <li>{pitch}</li>}
+                  {machine.machineStyle && <li>{machine.machineStyle}</li>}
+                </ul>
+
+                {shortHtml && <div class="machine-short" set:html={shortHtml} />}
+
+                {priceLabel && <p class="machine-price">{priceLabel}</p>}
+
+                <div class="machine-actions">
+                  <a href={`/shop/machines/${machine.slug}`} class="machine-details-link">
+                    View Details
+                  </a>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    )}
   </div>
 </Layout>
 
@@ -110,14 +123,14 @@ const quickSpecsSlice = (specs: string[] | undefined) => (specs ?? []).slice(0, 
     margin: 0;
   }
 
-  .page-wizard-placeholder {
-    font-size: 0.95rem;
+  .machines-empty {
+    font-size: 1.05rem;
     color: #6b7b55;
-    margin: 1rem 0 0;
-  }
-
-  .page-wizard-placeholder a {
-    color: var(--kbm-green);
+    background: #fafbf9;
+    border: 1px solid #e8ebe4;
+    border-radius: 12px;
+    padding: 2rem 1.5rem;
+    text-align: center;
   }
 
   .machines-grid {
@@ -153,6 +166,7 @@ const quickSpecsSlice = (specs: string[] | undefined) => (specs ?? []).slice(0, 
   }
 
   .machine-card-image-wrap {
+    position: relative;
     width: 100%;
     aspect-ratio: 280 / 180;
     overflow: hidden;
@@ -178,52 +192,104 @@ const quickSpecsSlice = (specs: string[] | undefined) => (specs ?? []).slice(0, 
     background: #eef3e6;
   }
 
+  .machine-status {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
+    color: #fff;
+    background: #52682d;
+  }
+
+  .machine-status--available {
+    background: #3f6212;
+  }
+
+  .machine-status--backorder {
+    background: #b45309;
+  }
+
+  .machine-status--unavailable {
+    background: #475569;
+  }
+
+  /* Legacy sale.status variants (kept for any older markup). */
+  .machine-status--sold-out {
+    background: #9a3412;
+  }
+
+  .machine-status--coming-soon {
+    background: #b45309;
+  }
+
+  .machine-status--inquiry-only {
+    background: #475569;
+  }
+
+  .machine-card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 1.25rem;
+  }
+
   .machine-name {
     font-size: 1.125rem;
     font-weight: 600;
     color: var(--kbm-green);
     margin: 0;
-    padding: 1.25rem 1.25rem 0;
+  }
+
+  .machine-specs {
+    list-style: none;
+    margin: 0.6rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .machine-specs li {
+    font-size: 0.78rem;
+    color: #52682d;
+    background: #f0f4e7;
+    border: 1px solid #dbe6c5;
+    border-radius: 6px;
+    padding: 0.15rem 0.5rem;
   }
 
   .machine-short {
     font-size: 0.95rem;
     color: #5a6b47;
     line-height: 1.55;
-    margin: 1rem 1.25rem 0;
-    flex-grow: 1;
+    margin: 1rem 0 0;
   }
 
-  .machine-specs {
-    list-style: none;
-    margin: 0 1.25rem;
-    padding: 0;
-    font-size: 0.875rem;
-    color: #6b7b55;
-    line-height: 1.5;
-  }
-
-  .machine-specs li {
-    position: relative;
-    padding-left: 1rem;
-  }
-
-  .machine-specs li::before {
-    content: "·";
-    position: absolute;
-    left: 0;
-    color: var(--kbm-green);
+  .machine-price {
+    font-size: 1.2rem;
     font-weight: 700;
+    color: var(--kbm-green);
+    margin: 1rem 0 0;
   }
 
   .machine-actions {
-    padding: 1.25rem 1.25rem 1.5rem;
+    padding-top: 1.25rem;
     margin-top: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem 1rem;
   }
 
-  .machine-link-details {
+  .machine-details-link {
     display: inline-block;
-    padding: 0.6rem 1.25rem;
+    padding: 0.6rem 1.5rem;
     background: var(--kbm-green);
     color: #ffffff;
     font-weight: 600;
@@ -233,7 +299,51 @@ const quickSpecsSlice = (specs: string[] | undefined) => (specs ?? []).slice(0, 
     transition: background 0.2s ease;
   }
 
-  .machine-link-details:hover {
+  .machine-details-link:hover {
     background: var(--kbm-green-hover, #445626);
+    color: #ffffff;
+  }
+
+  .machine-buy {
+    display: inline-block;
+    padding: 0.6rem 1.5rem;
+    background: var(--kbm-green);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s ease;
+  }
+
+  .machine-buy:hover {
+    background: var(--kbm-green-hover, #445626);
+  }
+
+  .machine-status-note {
+    display: inline-block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #6b7b55;
+  }
+
+  .machine-contact {
+    display: inline-block;
+    padding: 0.6rem 1.5rem;
+    background: #ffffff;
+    color: var(--kbm-green);
+    font-weight: 600;
+    font-size: 0.95rem;
+    border: 1px solid var(--kbm-green);
+    border-radius: 8px;
+    text-decoration: none;
+    transition:
+      background 0.2s ease,
+      color 0.2s ease;
+  }
+
+  .machine-contact:hover {
+    background: var(--kbm-green);
+    color: #ffffff;
   }
 </style>

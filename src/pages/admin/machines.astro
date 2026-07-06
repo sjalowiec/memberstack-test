@@ -1,29 +1,8 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { readFileSync } from "node:fs";
-import path from "node:path";
-
-// Build a machineId -> technique names map from the technique catalog CSV
-// (read-only join data; technique assignments are not edited here).
-function loadTechniquesByMachineId(): Record<string, string[]> {
-  const map: Record<string, string[]> = {};
-  try {
-    const csvPath = path.join(process.cwd(), "src", "data", "machine_techniques.csv");
-    const text = readFileSync(csvPath, "utf8").replace(/^\uFEFF/, "");
-    const lines = text.split(/\r?\n/).filter((line) => line.trim() !== "");
-    for (let i = 1; i < lines.length; i++) {
-      const cols = lines[i].split(",");
-      const id = (cols[0] ?? "").trim();
-      const technique = (cols[1] ?? "").trim();
-      if (!id || !technique) continue;
-      if (!map[id]) map[id] = [];
-      if (!map[id].includes(technique)) map[id].push(technique);
-    }
-  } catch {
-    /* CSV optional — table just shows 0 techniques. */
-  }
-  return map;
-}
+import HtmlHelperToolbar from "../../components/admin/HtmlHelperToolbar.astro";
+import { loadTechniquesByMachineId } from "../../lib/machines/techniquesCatalog";
+import "../../styles/admin-machines.css";
 
 const techniquesByMachineId = loadTechniquesByMachineId();
 ---
@@ -48,45 +27,14 @@ const techniquesByMachineId = loadTechniquesByMachineId();
 
     <p id="am-status" class="am__status" aria-live="polite"></p>
 
-    <section class="am__panel" aria-labelledby="am-list-heading">
-      <div class="am__toolbar">
-        <h2 id="am-list-heading" class="am__panel-title">Machines</h2>
-        <label class="am__search-label">
-          <span class="sr-only">Search machines</span>
-          <input
-            type="search"
-            id="am-search"
-            placeholder="Search brand, model, gauge, style, punchcard, year, technique…"
-            autocomplete="off"
-          />
-        </label>
-        <button type="button" id="am-add" class="am__btn am__btn--primary">
-          + Add New Machine
-        </button>
-      </div>
-      <p id="am-count" class="am__count"></p>
-
-      <div class="am__table-wrap">
-        <table class="am__table">
-          <thead>
-            <tr>
-              <th scope="col">Brand</th>
-              <th scope="col">Model</th>
-              <th scope="col">Gauge</th>
-              <th scope="col">Style</th>
-              <th scope="col">Punchcard</th>
-              <th scope="col">Year</th>
-              <th scope="col" class="am__num">Img</th>
-              <th scope="col" class="am__num">Man</th>
-              <th scope="col" class="am__num">Acc</th>
-              <th scope="col" class="am__num">Tech</th>
-              <th scope="col"><span class="sr-only">Actions</span></th>
-            </tr>
-          </thead>
-          <tbody id="am-rows"></tbody>
-        </table>
-      </div>
-    </section>
+    <div class="am__actionbar">
+      <a href="/admin/machines/for-sale" class="am__btn am__btn--accent">
+        For Sale Machines →
+      </a>
+      <button type="button" id="am-add" class="am__btn am__btn--outline">
+        + Add New Machine
+      </button>
+    </div>
 
     <section
       class="am__panel am__form-panel"
@@ -94,10 +42,129 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       aria-labelledby="am-form-heading"
       hidden
     >
-      <h2 id="am-form-heading" class="am__panel-title">Edit machine</h2>
+      <div class="am__form-topbar">
+        <h2 id="am-form-heading" class="am__panel-title">Edit machine</h2>
+        <div class="am__form-topbar-actions">
+          <button type="button" id="am-save-top" class="am__btn am__btn--primary">Save</button>
+          <button type="button" id="am-cancel-top" class="am__btn am__btn--outline">Cancel</button>
+        </div>
+      </div>
       <p id="am-mode" class="am__mode"></p>
 
       <form id="am-form" class="am__form" autocomplete="off">
+        <fieldset class="am__sales">
+          <legend class="am__sales-legend">Sales</legend>
+          <p class="am__sales-intro">
+            Only machines with <strong>For sale</strong> checked appear on
+            <code>/shop/machines</code>. Buy Now shows only when status is
+            <em>Available</em> and a Stripe Payment Link is set.
+          </p>
+
+          <div class="am__sales-grid">
+            <label class="am__check">
+              <input type="checkbox" name="saleForSale" id="am-field-saleForSale" />
+              <span>For sale (list on shop page)</span>
+            </label>
+            <label class="am__check">
+              <input type="checkbox" name="saleFeatured" id="am-field-saleFeatured" />
+              <span>Feature on /shop/machines</span>
+            </label>
+
+            <label>
+              <span>Status</span>
+              <select name="saleStatus" id="am-field-saleStatus">
+                <option value="available">Available</option>
+                <option value="sold-out">Sold Out</option>
+                <option value="coming-soon">Coming Soon</option>
+                <option value="inquiry-only">Inquiry Only</option>
+              </select>
+            </label>
+            <label>
+              <span>Price (USD)</span>
+              <input
+                type="number"
+                name="salePrice"
+                id="am-field-salePrice"
+                step="0.01"
+                min="0"
+                placeholder="e.g. 999"
+              />
+            </label>
+
+            <label>
+              <span>Availability</span>
+              <select name="saleAvailabilityStatus" id="am-field-saleAvailabilityStatus">
+                <option value="available">Available</option>
+                <option value="backorder">Backorder</option>
+                <option value="unavailable">Unavailable</option>
+              </select>
+            </label>
+            <label>
+              <span>Expected date</span>
+              <input type="date" name="saleExpectedDate" id="am-field-saleExpectedDate" />
+              <span class="am__hint">
+                Optional. Shown as e.g. “Expected September 1” when Availability
+                is <em>Backorder</em>.
+              </span>
+            </label>
+
+            <label class="am__full">
+              <span>Stripe Payment Link</span>
+              <input
+                type="url"
+                name="saleStripeLink"
+                id="am-field-saleStripeLink"
+                placeholder="https://buy.stripe.com/…"
+              />
+            </label>
+
+            <label class="am__full">
+              <span>Short Description (HTML)</span>
+              <HtmlHelperToolbar target="am-field-saleShortDescriptionHtml" />
+              <textarea
+                name="saleShortDescriptionHtml"
+                id="am-field-saleShortDescriptionHtml"
+                rows="3"
+              ></textarea>
+              <span class="am__hint">
+                HTML allowed. Shown on the shop cards/listings at
+                <code>/shop/machines</code>. Basic formatting (paragraphs, links,
+                lists, <strong>bold</strong>, <em>italics</em>) is preserved.
+              </span>
+            </label>
+
+            <label class="am__full">
+              <span>Long Description (HTML)</span>
+              <HtmlHelperToolbar target="am-field-saleLongDescriptionHtml" />
+              <textarea
+                name="saleLongDescriptionHtml"
+                id="am-field-saleLongDescriptionHtml"
+                rows="8"
+              ></textarea>
+              <span class="am__hint">
+                HTML allowed. Shown on the machine detail page at
+                <code>/shop/machines/[slug]</code>. Falls back to the Short
+                Description when empty.
+              </span>
+            </label>
+
+            <label class="am__full">
+              <span>Ordering Information</span>
+              <HtmlHelperToolbar target="am-field-saleShippingNotes" />
+              <textarea
+                name="saleShippingNotes"
+                id="am-field-saleShippingNotes"
+                rows="8"
+              ></textarea>
+              <span class="am__hint">
+                HTML allowed. Shown on the machine detail page. For new machines,
+                a brand-based default is filled in automatically (Silver Reed,
+                Titexma) until you edit it.
+              </span>
+            </label>
+          </div>
+        </fieldset>
+
         <div class="am__grid">
           <label>
             <span>machineId (read-only)</span>
@@ -157,10 +224,18 @@ const techniquesByMachineId = loadTechniquesByMachineId();
 
           <label class="am__full">
             <span>Images</span>
-            <textarea name="images" id="am-field-images" rows="3"></textarea>
+            <textarea
+              name="images"
+              id="am-field-images"
+              rows="3"
+              autocomplete="off"
+              spellcheck="false"
+              placeholder="sk840_1.jpg | main"
+            ></textarea>
             <span class="am__hint">
-              One image per line. Use just the file/URL, or add <code>| main</code>
-              to mark the primary image. Example: <code>kh864.jpg | main</code>
+              One image filename per line.<br />
+              Store files in: <code>public/images/machines/</code><br />
+              Example: <code>sk840_1.jpg | main</code>
             </span>
           </label>
 
@@ -194,11 +269,58 @@ const techniquesByMachineId = loadTechniquesByMachineId();
         </div>
       </form>
 
-      <div class="am__preview-wrap">
-        <h3 class="am__preview-title">Current record (preview)</h3>
-        <pre id="am-preview" class="am__preview" aria-live="polite"></pre>
-      </div>
+      <details class="am__adv">
+        <summary class="am__adv-summary">Advanced / JSON</summary>
+        <div class="am__preview-wrap">
+          <h3 class="am__preview-title">Current record (preview)</h3>
+          <pre id="am-preview" class="am__preview" aria-live="polite"></pre>
+        </div>
+      </details>
     </section>
+
+    <details class="am__panel am__find" id="am-find" open>
+      <summary class="am__find-summary">
+        <span class="am__find-title">Find a machine</span>
+        <span id="am-count" class="am__count"></span>
+      </summary>
+      <div class="am__find-body">
+        <label class="am__search-label">
+          <span class="sr-only">Search machines</span>
+          <input
+            type="search"
+            id="am-search"
+            placeholder="Search brand, model, gauge, style, punchcard, year, technique…"
+            autocomplete="off"
+          />
+        </label>
+
+        <div class="am__table-wrap">
+          <table class="am__table">
+            <thead>
+              <tr>
+                <th scope="col">Brand</th>
+                <th scope="col">Model</th>
+                <th scope="col">Gauge</th>
+                <th scope="col">Style</th>
+                <th scope="col">Punchcard</th>
+                <th scope="col">Year</th>
+                <th scope="col" class="am__num">Img</th>
+                <th scope="col" class="am__num">Man</th>
+                <th scope="col" class="am__num">Acc</th>
+                <th scope="col" class="am__num">Tech</th>
+                <th scope="col" class="am__num">Sale</th>
+                <th scope="col">Status</th>
+                <th scope="col">Price</th>
+                <th scope="col">Avail</th>
+                <th scope="col">Expected</th>
+                <th scope="col"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody id="am-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </details>
   </main>
 
   <script
@@ -224,10 +346,21 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       normalizeImages,
       normalizeAccessories,
       normalizeManuals,
+      normalizeSale,
+      defaultOrderingInfoHtml,
       type MachineRecord,
     } from "../../lib/machines/machineAdminFields";
-
-    const API_BASE = "/api/admin/machines";
+    import {
+      API_BASE,
+      machineRowHtml,
+      matchesQuery,
+      persistMachines,
+      quickSaveSale,
+      readQuickPatch,
+      setQuickFeedback,
+      sortMachines,
+    } from "../../lib/machines/adminListShared";
+    import { initHtmlHelperToolbars } from "../../lib/machines/htmlHelperToolbar";
 
     type EditorMode = "none" | "edit" | "new";
 
@@ -236,6 +369,12 @@ const techniquesByMachineId = loadTechniquesByMachineId();
     let mode: EditorMode = "none";
     /** machineId of the record loaded in the form (edit mode). */
     let editingId: number | null = null;
+    /**
+     * True once the Ordering Information field holds content we must not clobber
+     * (a user edit, or an existing record's value). While false and creating a
+     * new machine, the field tracks the brand's default template.
+     */
+    let orderingInfoDirty = false;
 
     const statusEl = document.getElementById("am-status");
     const countEl = document.getElementById("am-count");
@@ -246,6 +385,12 @@ const techniquesByMachineId = loadTechniquesByMachineId();
     const modeEl = document.getElementById("am-mode");
     const previewEl = document.getElementById("am-preview");
     const techniquesEl = document.getElementById("am-techniques");
+    const findEl = document.getElementById("am-find") as HTMLDetailsElement | null;
+
+    /** Collapse the "Find a machine" list when editing; expand it otherwise. */
+    function setFindOpen(open: boolean) {
+      if (findEl) findEl.open = open;
+    }
 
     function setStatus(message: string, kind: "ok" | "err" | "neutral" = "neutral") {
       if (!statusEl) return;
@@ -258,14 +403,6 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       return JSON.parse(JSON.stringify(x)) as T;
     }
 
-    function escapeHtml(s: string): string {
-      return s
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-    }
-
     function techNames(id: number | null): string[] {
       if (id === null) return [];
       return techniquesByMachineId[String(id)] ?? [];
@@ -274,6 +411,11 @@ const techniquesByMachineId = loadTechniquesByMachineId();
     function fieldEl(name: string): HTMLInputElement | HTMLTextAreaElement | null {
       const el = form?.elements?.namedItem(name);
       return el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement ? el : null;
+    }
+
+    function selectEl(name: string): HTMLSelectElement | null {
+      const el = form?.elements?.namedItem(name);
+      return el instanceof HTMLSelectElement ? el : null;
     }
 
     function textVal(name: string): string {
@@ -285,74 +427,56 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       if (el) el.value = value;
     }
 
+    function checkVal(name: string): boolean {
+      const el = fieldEl(name);
+      return el instanceof HTMLInputElement && el.type === "checkbox" ? el.checked : false;
+    }
+
+    function setCheck(name: string, checked: boolean) {
+      const el = fieldEl(name);
+      if (el instanceof HTMLInputElement && el.type === "checkbox") el.checked = checked;
+    }
+
+    function selectVal(name: string): string {
+      return selectEl(name)?.value ?? "";
+    }
+
+    function setSelect(name: string, value: string) {
+      const el = selectEl(name);
+      if (el) el.value = value;
+    }
+
+    /**
+     * For a new machine whose Ordering Information hasn't been touched, keep the
+     * field in sync with the selected brand's default template. Assigning
+     * `.value` here does not fire an `input` event, so it never marks the field
+     * dirty. Existing/edited content is left untouched.
+     */
+    function applyOrderingInfoDefault() {
+      if (mode !== "new" || orderingInfoDirty) return;
+      const template = defaultOrderingInfoHtml(textVal("brand"));
+      if (template !== null) setField("saleShippingNotes", template);
+      refreshPreview();
+    }
+
     // ----- search + table ---------------------------------------------------
-
-    function matchesQuery(m: MachineRecord, q: string): boolean {
-      if (!q) return true;
-      const id = readMachineId(m);
-      const haystack = [
-        asString(m.brand),
-        asString(m.model),
-        asString(m.gauge),
-        asString(m.machineStyle),
-        asString(m.punchcardWidth),
-        asString(m.year),
-        techNames(id).join(" "),
-      ]
-        .join(" ")
-        .toLowerCase();
-      return haystack.indexOf(q) !== -1;
-    }
-
-    function countOf(value: unknown): number {
-      return Array.isArray(value) ? value.length : 0;
-    }
-
-    function cell(value: string): string {
-      const v = value.trim();
-      return `<td>${v ? escapeHtml(v) : "—"}</td>`;
-    }
 
     function renderTable() {
       if (!rowsEl || !countEl) return;
       const q = (searchEl?.value || "").trim().toLowerCase();
-      const filtered = machines
-        .filter((m) => matchesQuery(m, q))
-        .slice()
-        .sort((a, b) => {
-          const byBrand = asString(a.brand).localeCompare(asString(b.brand), undefined, {
-            sensitivity: "base",
-          });
-          if (byBrand !== 0) return byBrand;
-          return asString(a.model).localeCompare(asString(b.model), undefined, {
-            numeric: true,
-            sensitivity: "base",
-          });
-        });
+      const filtered = sortMachines(
+        machines.filter((m) => matchesQuery(m, q, techNames(readMachineId(m))))
+      );
 
       countEl.textContent = `${filtered.length} of ${machines.length} machine(s)`;
       rowsEl.innerHTML = filtered
         .map((m) => {
           const id = readMachineId(m);
-          const active = id !== null && id === editingId ? " is-active" : "";
-          const tech = techNames(id).length;
-          return `<tr class="am__row${active}" data-id="${id ?? ""}">
-            ${cell(asString(m.brand))}
-            ${cell(asString(m.model))}
-            ${cell(asString(m.gauge))}
-            ${cell(asString(m.machineStyle))}
-            ${cell(asString(m.punchcardWidth))}
-            ${cell(asString(m.year))}
-            <td class="am__num">${countOf(m.images)}</td>
-            <td class="am__num">${countOf(m.manuals)}</td>
-            <td class="am__num">${countOf(m.accessories)}</td>
-            <td class="am__num">${tech}</td>
-            <td class="am__row-action">
-              <button type="button" class="am__btn am__btn--small" data-edit="${id ?? ""}">
-                View / Edit
-              </button>
-            </td>
-          </tr>`;
+          return machineRowHtml(m, {
+            activeId: editingId,
+            techCount: techNames(id).length,
+            actionHtml: `<button type="button" class="am__btn am__btn--small" data-edit="${id ?? ""}">View / Edit</button>`,
+          });
         })
         .join("");
     }
@@ -369,6 +493,8 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       if (!m || !form || !formPanel) return;
       mode = "edit";
       editingId = id;
+      // Existing records keep their stored Ordering Information; never auto-fill.
+      orderingInfoDirty = true;
       formPanel.hidden = false;
 
       setField("machineId", asString(m.machineId));
@@ -385,6 +511,18 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       setField("accessories", serializeAccessories(m.accessories));
       setField("manuals", serializeManuals(m.manuals));
 
+      const sale = normalizeSale(m.sale);
+      setCheck("saleForSale", sale?.forSale ?? false);
+      setCheck("saleFeatured", sale?.featured ?? false);
+      setSelect("saleStatus", sale?.status ?? "available");
+      setField("salePrice", sale?.price != null ? String(sale.price) : "");
+      setSelect("saleAvailabilityStatus", sale?.availabilityStatus ?? "available");
+      setField("saleExpectedDate", sale?.expectedDate ?? "");
+      setField("saleStripeLink", sale?.stripePaymentLink ?? "");
+      setField("saleShortDescriptionHtml", sale?.shortDescriptionHtml ?? "");
+      setField("saleLongDescriptionHtml", sale?.longDescriptionHtml ?? "");
+      setField("saleShippingNotes", sale?.shippingNotes ?? "");
+
       const names = techNames(id);
       if (techniquesEl) techniquesEl.textContent = names.length ? names.join(", ") : "None assigned";
 
@@ -394,6 +532,7 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       }
       renderTable();
       refreshPreview();
+      setFindOpen(false);
       formPanel.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
@@ -401,6 +540,8 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       if (!form || !formPanel) return;
       mode = "new";
       editingId = null;
+      // Fresh record: Ordering Information tracks the brand default until edited.
+      orderingInfoDirty = false;
       formPanel.hidden = false;
       form.reset();
 
@@ -413,6 +554,7 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       }
       renderTable();
       refreshPreview();
+      setFindOpen(false);
       formPanel.scrollIntoView({ behavior: "smooth", block: "start" });
       fieldEl("brand")?.focus();
     }
@@ -445,6 +587,21 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       row.images = normalizeImages(parseImages(textVal("images")));
       row.accessories = normalizeAccessories(parseAccessories(textVal("accessories")));
       row.manuals = normalizeManuals(parseManuals(textVal("manuals")));
+
+      const sale = normalizeSale({
+        forSale: checkVal("saleForSale"),
+        featured: checkVal("saleFeatured"),
+        status: selectVal("saleStatus"),
+        availabilityStatus: selectVal("saleAvailabilityStatus"),
+        expectedDate: textVal("saleExpectedDate"),
+        price: textVal("salePrice"),
+        stripePaymentLink: textVal("saleStripeLink"),
+        shortDescriptionHtml: textVal("saleShortDescriptionHtml"),
+        longDescriptionHtml: textVal("saleLongDescriptionHtml"),
+        shippingNotes: textVal("saleShippingNotes"),
+      });
+      if (sale === null) delete row.sale;
+      else row.sale = sale;
 
       return row;
     }
@@ -493,17 +650,7 @@ const techniquesByMachineId = loadTechniquesByMachineId();
 
       setStatus("Saving…");
       try {
-        const res = await fetch(API_BASE, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(next),
-        });
-        const data = await res.json();
-        if (!res.ok || !data?.ok || !Array.isArray(data.machines)) {
-          setStatus(data?.error || `Save failed (${res.status})`, "err");
-          return;
-        }
-        machines = data.machines as MachineRecord[];
+        machines = await persistMachines(next);
         setStatus(
           wasNew
             ? `Created "${asString(row.brand)} ${asString(row.model)}" (machineId ${id}).`
@@ -513,8 +660,32 @@ const techniquesByMachineId = loadTechniquesByMachineId();
         if (wasNew && searchEl) searchEl.value = "";
         renderTable();
         loadToForm(id);
-      } catch {
-        setStatus("Network error while saving.", "err");
+      } catch (err) {
+        setStatus(err instanceof Error ? err.message : "Network error while saving.", "err");
+      }
+    }
+
+    /**
+     * Save a single sale field edited inline in the list, without opening the
+     * form. Reuses the shared quick-save path, then keeps the open details form
+     * (if it's showing this record) in sync without a disruptive re-render.
+     */
+    async function quickSave(id: number, patch: Parameters<typeof quickSaveSale>[2]) {
+      setQuickFeedback(rowsEl, id, "Saving…", "neutral");
+      try {
+        machines = await quickSaveSale(machines, id, patch);
+        if (editingId === id) {
+          const sale = normalizeSale(findById(id)?.sale);
+          setCheck("saleForSale", sale?.forSale ?? false);
+          setSelect("saleStatus", sale?.status ?? "available");
+          setField("salePrice", sale?.price != null ? String(sale.price) : "");
+          setSelect("saleAvailabilityStatus", sale?.availabilityStatus ?? "available");
+          setField("saleExpectedDate", sale?.expectedDate ?? "");
+          refreshPreview();
+        }
+        setQuickFeedback(rowsEl, id, "Saved ✓", "ok");
+      } catch (err) {
+        setQuickFeedback(rowsEl, id, err instanceof Error ? err.message : "Save failed", "err");
       }
     }
 
@@ -524,6 +695,7 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       if (form) form.reset();
       if (formPanel) formPanel.hidden = true;
       renderTable();
+      setFindOpen(true);
     }
 
     async function init() {
@@ -547,6 +719,7 @@ const techniquesByMachineId = loadTechniquesByMachineId();
         machines = data.machines as MachineRecord[];
         setStatus(`${machines.length} machine(s) loaded.`, "ok");
         renderTable();
+        openFromUrl();
       } catch {
         setStatus("Network error loading machines.", "err");
         return;
@@ -556,6 +729,8 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       document.getElementById("am-add")?.addEventListener("click", startNew);
       document.getElementById("am-save")?.addEventListener("click", () => void save());
       document.getElementById("am-cancel")?.addEventListener("click", cancel);
+      document.getElementById("am-save-top")?.addEventListener("click", () => void save());
+      document.getElementById("am-cancel-top")?.addEventListener("click", cancel);
 
       rowsEl?.addEventListener("click", (event) => {
         const target = event.target;
@@ -566,308 +741,35 @@ const techniquesByMachineId = loadTechniquesByMachineId();
         if (Number.isFinite(id)) loadToForm(id);
       });
 
+      // Inline quick-edit: For sale / Status / Price. `change` fires on toggle,
+      // select change, and on blur/Enter for the number input.
+      rowsEl?.addEventListener("change", (event) => {
+        const parsed = readQuickPatch(event.target);
+        if (parsed) void quickSave(parsed.id, parsed.patch);
+      });
+
       form?.addEventListener("input", refreshPreview);
       form?.addEventListener("change", refreshPreview);
+
+      // Auto-fill Ordering Information from the brand default on new machines,
+      // and stop as soon as the user edits the field themselves.
+      fieldEl("brand")?.addEventListener("input", applyOrderingInfoDefault);
+      fieldEl("saleShippingNotes")?.addEventListener("input", () => {
+        orderingInfoDirty = true;
+      });
+
+      initHtmlHelperToolbars();
+    }
+
+    /** Open a machine's form directly when linked as `?edit=<machineId>`. */
+    function openFromUrl() {
+      const raw = new URLSearchParams(window.location.search).get("edit");
+      if (!raw) return;
+      const id = Number.parseInt(raw, 10);
+      if (Number.isFinite(id) && findById(id)) loadToForm(id);
     }
 
     void init();
   </script>
 
-  <style>
-    :global(body.admin-machines-body) {
-      margin: 0;
-    }
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-    .am {
-      width: 100%;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: calc(var(--header-height, 7rem) + 1rem) 1.25rem 3rem;
-      box-sizing: border-box;
-    }
-    .am__head {
-      margin-bottom: 1rem;
-      padding-bottom: 0.85rem;
-      border-bottom: 1px solid #e2e8f0;
-    }
-    .am__title {
-      margin: 0 0 0.4rem 0;
-      font-size: 1.65rem;
-      font-weight: 700;
-      color: #243015;
-    }
-    .am__sub {
-      margin: 0;
-      font-size: 0.95rem;
-      color: #475569;
-      max-width: 62rem;
-      line-height: 1.5;
-    }
-    .am__sub code {
-      font-size: 0.88em;
-      background: #f1f5f9;
-      padding: 0.12rem 0.35rem;
-      border-radius: 4px;
-    }
-    .am__status {
-      min-height: 1.4em;
-      margin: 0 0 0.85rem 0;
-      font-size: 0.95rem;
-      color: #374151;
-    }
-    .am__status.is-error {
-      color: #b91c1c;
-      font-weight: 600;
-    }
-    .am__status.is-ok {
-      color: #166534;
-    }
-    .am__panel {
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 1rem;
-      margin-bottom: 1.25rem;
-    }
-    .am__panel-title {
-      margin: 0;
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: #243015;
-    }
-    .am__toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.6rem;
-      margin-bottom: 0.5rem;
-    }
-    .am__search-label {
-      flex: 1 1 18rem;
-      min-width: 0;
-    }
-    .am__search-label input {
-      width: 100%;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 0.55rem 0.65rem;
-      font: inherit;
-      box-sizing: border-box;
-    }
-    .am__count {
-      margin: 0 0 0.6rem 0;
-      font-size: 0.85rem;
-      color: #64748b;
-    }
-    .am__table-wrap {
-      overflow-x: auto;
-    }
-    .am__table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.88rem;
-    }
-    .am__table th,
-    .am__table td {
-      padding: 0.5rem 0.6rem;
-      text-align: left;
-      border-bottom: 1px solid #e2e8f0;
-      vertical-align: middle;
-    }
-    .am__table th {
-      font-size: 0.74rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-      color: #64748b;
-      white-space: nowrap;
-    }
-    .am__table td {
-      color: #334155;
-    }
-    .am__num {
-      text-align: right;
-      width: 3rem;
-      font-variant-numeric: tabular-nums;
-    }
-    .am__row.is-active {
-      background: #f7fee7;
-    }
-    .am__row-action {
-      white-space: nowrap;
-      text-align: right;
-    }
-
-    .am__form-panel[hidden] {
-      display: none;
-    }
-    .am__mode {
-      margin: 0.65rem 0 0.85rem 0;
-      padding: 0.5rem 0.65rem;
-      border-radius: 8px;
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      font-weight: 600;
-      color: #243015;
-      font-size: 0.95rem;
-    }
-    .am__mode.is-new {
-      background: #fef3c7;
-      border-color: #fcd34d;
-      color: #92400e;
-    }
-    .am__grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 0.7rem;
-    }
-    @media (min-width: 640px) {
-      .am__grid {
-        grid-template-columns: 1fr 1fr;
-      }
-    }
-    @media (min-width: 960px) {
-      .am__grid {
-        grid-template-columns: 1fr 1fr 1fr;
-      }
-    }
-    .am__full {
-      grid-column: 1 / -1;
-    }
-    .am__form label {
-      display: flex;
-      flex-direction: column;
-      gap: 0.3rem;
-    }
-    .am__form label > span:first-child {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #2e3a18;
-    }
-    .req {
-      color: #b91c1c;
-      font-style: normal;
-    }
-    .am__form input,
-    .am__form textarea {
-      width: 100%;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 0.5rem 0.65rem;
-      font: inherit;
-      color: #111827;
-      background: #fff;
-      box-sizing: border-box;
-    }
-    .am__form input[readonly] {
-      background: #f1f5f9;
-      color: #475569;
-    }
-    .am__form textarea {
-      resize: vertical;
-      min-height: 60px;
-      font-family: ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
-      font-size: 0.85rem;
-    }
-    .am__hint {
-      font-size: 0.8rem;
-      font-weight: 400;
-      color: #64748b;
-      line-height: 1.45;
-    }
-    .am__hint code {
-      background: #f1f5f9;
-      padding: 0.05rem 0.3rem;
-      border-radius: 4px;
-      font-size: 0.92em;
-    }
-    .am__techniques {
-      display: flex;
-      flex-direction: column;
-      gap: 0.3rem;
-    }
-    .am__techniques-label {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #2e3a18;
-    }
-    .am__techniques-list {
-      margin: 0;
-      padding: 0.5rem 0.65rem;
-      border-radius: 8px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      font-size: 0.88rem;
-      color: #475569;
-    }
-    .am__form-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.6rem;
-      margin-top: 1.1rem;
-    }
-    .am__btn {
-      padding: 0.5rem 1rem;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #fff;
-      background: #3f6212;
-      border: 1px solid #3f6212;
-      border-radius: 8px;
-      cursor: pointer;
-      transition:
-        background 0.15s ease,
-        border-color 0.15s ease;
-    }
-    .am__btn:hover:not(:disabled) {
-      background: #365314;
-      border-color: #365314;
-    }
-    .am__btn:focus-visible {
-      outline: 2px solid #3f6212;
-      outline-offset: 2px;
-    }
-    .am__btn--outline {
-      color: #3f6212;
-      background: #fff;
-    }
-    .am__btn--outline:hover:not(:disabled) {
-      background: #f7fee7;
-    }
-    .am__btn--small {
-      padding: 0.3rem 0.6rem;
-      font-size: 0.8rem;
-    }
-    .am__preview-wrap {
-      margin-top: 1rem;
-      padding-top: 0.75rem;
-      border-top: 1px solid #e5e7eb;
-    }
-    .am__preview-title {
-      margin: 0 0 0.5rem 0;
-      font-size: 1rem;
-      color: #243015;
-    }
-    .am__preview {
-      margin: 0;
-      padding: 0.85rem;
-      border-radius: 8px;
-      background: #0f172a;
-      color: #e2e8f0;
-      overflow: auto;
-      font-size: 0.78rem;
-      line-height: 1.45;
-      max-height: 360px;
-    }
-  </style>
 </BaseLayout>

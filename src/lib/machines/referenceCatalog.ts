@@ -15,8 +15,11 @@
  * data source can later move (e.g. to a content collection or Supabase) without
  * touching the UI.
  */
-import { readFileSync, statSync } from "node:fs";
+import { readFileSync, statSync, existsSync } from "node:fs";
 import path from "node:path";
+import { normalizeSale, type MachineSale } from "./machineAdminFields";
+
+export type { MachineSale } from "./machineAdminFields";
 
 export interface MachineImage {
   url?: string | null;
@@ -36,6 +39,8 @@ interface RawMachine {
   year?: number | null;
   notes?: string | null;
   images?: MachineImage[] | null;
+  /** Optional sales block; present only when a machine is listed for sale. */
+  sale?: unknown;
 }
 
 /** Normalized machine record consumed by the Machine Library UI. */
@@ -65,9 +70,14 @@ export interface Machine {
    * machine type. Empty when the machine has no technique records.
    */
   techniques: string[];
+  /** Optional sales data; `null` for reference-only machines (the vast majority). */
+  sale: MachineSale | null;
 }
 
-const IMAGE_BASE = "https://www.knititnow.com/images/machines/";
+/** Local directory (under public/) that machine sale images live in. */
+const LOCAL_IMAGE_DIR = "/images/machines/";
+/** Legacy CDN base, kept only as a fallback for older bare-filename records. */
+const LEGACY_IMAGE_BASE = "https://www.knititnow.com/images/machines/";
 
 function loadRawMachines(): RawMachine[] {
   const machinesPath = path.join(process.cwd(), "data", "machines.json");
@@ -185,6 +195,7 @@ function toMachine(raw: RawMachine): Machine | null {
     notes,
     images,
     techniques: [],
+    sale: normalizeSale(raw.sale),
   };
 }
 
@@ -252,6 +263,21 @@ export function getMachineBySlug(slug: string | undefined): Machine | undefined 
   return getAllMachines().find((m) => m.slug === slug);
 }
 
+/**
+ * Machines currently listed for sale (`sale.forSale === true`), for the shop
+ * page. Featured machines sort first, then alphabetically by display title.
+ */
+export function getMachinesForSale(): Machine[] {
+  return getAllMachines()
+    .filter((m) => m.sale?.forSale === true)
+    .sort((a, b) => {
+      const fa = a.sale?.featured ? 0 : 1;
+      const fb = b.sale?.featured ? 0 : 1;
+      if (fa !== fb) return fa - fb;
+      return machineTitle(a).localeCompare(machineTitle(b), "en", { sensitivity: "base" });
+    });
+}
+
 /** Unique, sorted list of brands for the brand filter. */
 export function getAllBrands(): string[] {
   const set = new Set<string>();
@@ -287,13 +313,52 @@ export function getAllMachineStyles(): string[] {
   );
 }
 
-/** Build the absolute URL for a stored machine image path. */
+/**
+ * True when a bare filename exists as a local asset in public/images/machines/.
+ * Used to prefer local site images over the legacy CDN. Runs at build/request
+ * time in Node, alongside the JSON read above.
+ */
+function machineImageExistsLocally(parts: string[]): boolean {
+  if (parts.length === 0) return false;
+  try {
+    const filePath = path.join(process.cwd(), "public", "images", "machines", ...parts);
+    return existsSync(filePath);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Resolve a stored machine image path to a URL for rendering.
+ *
+ * Supports three input forms so admins can store simple filenames:
+ *   - Absolute URL ("https://…")         → used as-is.
+ *   - Site-relative path ("/images/…")    → used as-is (encoded per segment).
+ *   - Bare filename ("sk840_1.jpg")       → served locally from
+ *     /images/machines/ when the file exists in public/images/machines/.
+ *
+ * The legacy knititnow.com CDN is used only as a fallback for older bare-
+ * filename records whose files were never copied into public/images/machines/.
+ * New admin entries should be plain filenames stored under that folder.
+ */
 export function machineImageUrl(relativePath: string | null | undefined): string | null {
   const value = clean(relativePath);
   if (!value) return null;
-  const normalized = value.replace(/\\/g, "/").replace(/^\/+/, "");
-  const parts = normalized.split("/").filter(Boolean).map(encodeURIComponent);
-  return `${IMAGE_BASE.replace(/\/+$/, "")}/${parts.join("/")}`;
+  if (/^https?:\/\//i.test(value)) return value;
+
+  const normalized = value.replace(/\\/g, "/");
+  if (normalized.startsWith("/")) {
+    const parts = normalized.split("/").filter(Boolean).map(encodeURIComponent);
+    return `/${parts.join("/")}`;
+  }
+
+  // Bare filename: prefer the local machine image, fall back to the legacy CDN.
+  const rawParts = normalized.split("/").filter(Boolean);
+  const encoded = rawParts.map(encodeURIComponent).join("/");
+  if (machineImageExistsLocally(rawParts)) {
+    return `${LOCAL_IMAGE_DIR}${encoded}`;
+  }
+  return `${LEGACY_IMAGE_BASE.replace(/\/+$/, "")}/${encoded}`;
 }
 
 /** Pick the primary image URL for a machine (main image, else first). */
