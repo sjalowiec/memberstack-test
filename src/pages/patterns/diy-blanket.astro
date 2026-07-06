@@ -16,7 +16,7 @@ import YarnRequirement from "../../components/tools/YarnRequirement.astro";
 import "../../styles/wizard.css";
 
 const patternPersistWarning =
-  "Your pattern will not be saved on this site. Please be sure to download and save your PDF — once you leave this page, your pattern will be gone.";
+  "This builder creates a temporary pattern — it isn't saved to your account. Print it or download it as a PDF before you leave this page, or your pattern will be gone.";
 ---
 
 <Layout 
@@ -176,34 +176,26 @@ const patternPersistWarning =
   margin-bottom: 0;
 }
 
-.diy-blanket-width-drawer-sheet .diy-blanket-panel-diagram {
-  display: block;
-  margin-top: 11px;
-  margin-bottom: 13px;
-}
-.diy-blanket-width-drawer-sheet .diy-blanket-panel-diagram img {
-  display: block;
-  max-width: min(130px, 100%);
-  width: auto;
-  height: auto;
+.diy-blanket-width-drawer-options {
+  margin: 0 0 0.65rem;
+  padding-left: 1.25rem;
+  color: #6b7280;
+  font-size: 0.95rem;
+  line-height: 1.55;
 }
 
-.hat-yarn-drawer-body .diy-blanket-width-drawer-needle {
-  margin: 0 0 1rem;
-  padding-top: 0.25rem;
+.diy-blanket-width-drawer-options li {
+  margin: 0 0 0.35rem;
+  overflow-wrap: anywhere;
 }
 
-.hat-yarn-drawer-body .needle-count {
-  margin: 0 0 0.15rem;
-  font-size: 28px;
-  font-weight: 600;
-  color: #c2644e;
-  line-height: 1.2;
+.diy-blanket-width-drawer-options li:last-child {
+  margin-bottom: 0;
 }
 
-.hat-yarn-drawer-body .needle-count #needle-count-value {
-  font-size: 36px;
-  font-weight: 700;
+.diy-blanket-width-drawer-note {
+  color: #9ca3af;
+  font-style: italic;
 }
 
 .hat-yarn-drawer-body .needle-check__size-context {
@@ -1536,7 +1528,7 @@ const patternPersistWarning =
     >
       <header class="hat-yarn-drawer-header">
         <div class="hat-yarn-drawer-header-text">
-          <h2 id="diy-blanket-width-drawer-title" class="hat-yarn-drawer-title">Need a narrower panel?</h2>
+          <h2 id="diy-blanket-width-drawer-title" class="hat-yarn-drawer-title">Will this fit on your machine?</h2>
         </div>
         <button type="button" class="hat-yarn-drawer-close" id="diy-blanket-width-drawer-close" aria-label="Close">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -1551,25 +1543,20 @@ const patternPersistWarning =
       </header>
       <div class="hat-yarn-drawer-body">
         <div id="diy-blanket-width-drawer-desc" class="diy-blanket-width-drawer-helpers">
-          <p>This blanket width may be too wide for some machines at your current gauge.</p>
-          <p>Use Custom Size to adjust the width.</p>
-          <p>Want to keep the overall size? Use Custom Size to plan panels that fit your machine.</p>
-        </div>
-
-        <div class="diy-blanket-panel-diagram">
-          <img src="/diagrams/blanket-panel-diagram.svg" alt="" decoding="async" />
-        </div>
-
-        <div id="needle-estimate-block" class="diy-blanket-width-drawer-needle" hidden>
-          <p class="needle-count">
-            <strong><span id="needle-count-value">—</span> needles required</strong>
-          </p>
+          <p>This blanket requires approximately <strong><span id="needle-count-value">—</span> needles</strong> at your current gauge.</p>
           <p class="needle-check__size-context" id="needle-size-context"></p>
+          <p>If your machine has at least <strong><span id="needle-count-value-secondary">—</span> working needles</strong>, you can knit it as a single piece.</p>
+          <p>If not, you have two options:</p>
+          <ul class="diy-blanket-width-drawer-options">
+            <li>Use Custom Size to make the blanket narrower.</li>
+            <li>Knit the blanket in multiple panels and seam them together.</li>
+          </ul>
+          <p class="diy-blanket-width-drawer-note">(The blanket builder does not currently generate panel instructions.)</p>
         </div>
 
         <div class="diy-blanket-width-drawer-actions">
           <button type="button" id="diy-blanket-adjust-width-btn" class="kbm-btn kbm-btn-outline">
-            Go to Custom Size
+            Adjust Size or Gauge
           </button>
         </div>
       </div>
@@ -1782,6 +1769,9 @@ document.addEventListener('DOMContentLoaded', function() {
   let hatYarnDrawerLastFocus = null;
   /** @type {HTMLElement | null} */
   let widthDrawerLastFocus = null;
+  // Auto-expand the machine-fit drawer once, the first time a valid needle calc is available.
+  // If the user then collapses it, we never auto-reopen (avoids repetitive opening while editing gauge).
+  let hasAutoOpenedWidthDrawer = false;
 
   function isYarnDrawerMobile() {
     return yarnDrawerMobileMq.matches;
@@ -1824,7 +1814,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const widthDrawerCloseBtn = document.getElementById('diy-blanket-width-drawer-close');
   const widthDrawerBackdrop = document.getElementById('diy-blanket-width-drawer-backdrop');
 
-  function openWidthDrawer() {
+  function openWidthDrawer(moveFocus = true) {
     if (!widthDrawerRoot) return;
     if (
       widthDrawerToggle instanceof HTMLButtonElement &&
@@ -1833,15 +1823,48 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     if (!isMachineFitInputsReady()) return;
+    updateNeedleCount();
     closeHatYarnDrawer();
     widthDrawerLastFocus =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      moveFocus && document.activeElement instanceof HTMLElement ? document.activeElement : null;
     widthDrawerRoot.classList.add('is-open');
     widthDrawerRoot.setAttribute('aria-hidden', 'false');
     document.body.classList.add('diy-blanket-width-drawer-open');
     widthDrawerToggle?.classList.add('is-open');
     widthDrawerToggle?.setAttribute('aria-expanded', 'true');
-    widthDrawerCloseBtn?.focus();
+    if (moveFocus) {
+      widthDrawerCloseBtn?.focus();
+    }
+  }
+
+  /** Both gauge fields filled and passing validation (used to gate auto-open after entry). */
+  function isGaugeEntryComplete() {
+    const sts = String(stitchesGauge ?? '').trim();
+    const rows = String(rowsGauge ?? '').trim();
+    if (!sts || !rows) return false;
+    return !checkGaugeErrors();
+  }
+
+  /**
+   * Auto-open the machine-fit drawer the first time gauge entry is complete and a valid
+   * needle calculation exists. Runs at most once, and only from "entry complete" moments
+   * (gauge blur or a size change) — never during raw input events — so it doesn't interrupt
+   * typing. Opens without moving focus. After it fires once (or the user dismisses the drawer
+   * manually) it never auto-opens again this session.
+   */
+  function maybeAutoOpenWidthDrawer() {
+    if (hasAutoOpenedWidthDrawer) return;
+    if (!isGaugeEntryComplete()) return;
+    if (!isMachineFitInputsReady()) return;
+    hasAutoOpenedWidthDrawer = true;
+    if (widthDrawerRoot?.classList.contains('is-open')) return;
+    openWidthDrawer(false);
+  }
+
+  /** Manual close: prevents any further auto-open this session, then closes the drawer. */
+  function markWidthDrawerDismissed() {
+    hasAutoOpenedWidthDrawer = true;
+    closeWidthDrawer();
   }
 
   function closeWidthDrawer() {
@@ -1917,8 +1940,8 @@ document.addEventListener('DOMContentLoaded', function() {
   hatYarnDrawerBackdrop?.addEventListener('click', () => closeHatYarnDrawer());
   hatYarnDrawerCloseBtn?.addEventListener('click', () => closeHatYarnDrawer());
   hatYarnDrawerHideBtn?.addEventListener('click', () => closeHatYarnDrawer());
-  widthDrawerBackdrop?.addEventListener('click', () => closeWidthDrawer());
-  widthDrawerCloseBtn?.addEventListener('click', () => closeWidthDrawer());
+  widthDrawerBackdrop?.addEventListener('click', () => markWidthDrawerDismissed());
+  widthDrawerCloseBtn?.addEventListener('click', () => markWidthDrawerDismissed());
 
   syncYarnDrawerPresentation(false);
 
@@ -1930,7 +1953,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     if (widthDrawerRoot?.classList.contains('is-open')) {
-      closeWidthDrawer();
+      markWidthDrawerDismissed();
       e.preventDefault();
     }
   });
@@ -2047,6 +2070,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateYarnCalculatorVisibility();
     updateNeedleCount();
     calculate();
+    maybeAutoOpenWidthDrawer();
   }
 
   function selectSize(key) {
@@ -2059,6 +2083,7 @@ document.addEventListener('DOMContentLoaded', function() {
     syncBlanketYarnCalculator();
     updateNeedleCount();
     calculate();
+    maybeAutoOpenWidthDrawer();
   }
 
   /** Jump to Custom size, reveal inputs, scroll, focus width, brief highlight. */
@@ -2089,7 +2114,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     if (widthDrawerRoot?.classList.contains('is-open')) {
-      closeWidthDrawer();
+      markWidthDrawerDismissed();
       return;
     }
     openWidthDrawer();
@@ -2402,6 +2427,11 @@ document.addEventListener('DOMContentLoaded', function() {
       const needles = Math.round(sizeSelection.dimensions.width * stitchesPerUnit);
       valueEl.textContent = String(needles);
     } finally {
+      const primaryEl = document.getElementById('needle-count-value');
+      const secondaryEl = document.getElementById('needle-count-value-secondary');
+      if (primaryEl && secondaryEl) {
+        secondaryEl.textContent = primaryEl.textContent;
+      }
       syncWidthDrawerNeedleBlock();
     }
   }
@@ -2663,6 +2693,7 @@ document.addEventListener('DOMContentLoaded', function() {
       btnInches.classList.add('active');
       btnCm.classList.remove('active');
       applySizeMode(false);
+      hasAutoOpenedWidthDrawer = false;
       closeHatYarnDrawer();
       closeWidthDrawer();
       syncBlanketYarnCalculator();
@@ -2743,6 +2774,13 @@ document.addEventListener('DOMContentLoaded', function() {
   inputStitches?.addEventListener('input', updateNeedleCount);
   inputCustomWidth?.addEventListener('input', updateNeedleCount);
   inputCustomLength?.addEventListener('input', updateNeedleCount);
+
+  // Auto-open the machine-fit drawer only once gauge entry is complete — on blur of a gauge or
+  // custom-size field, never on the input events above (avoids opening mid-typing).
+  inputStitches?.addEventListener('blur', () => maybeAutoOpenWidthDrawer());
+  inputRows?.addEventListener('blur', () => maybeAutoOpenWidthDrawer());
+  inputCustomWidth?.addEventListener('blur', () => maybeAutoOpenWidthDrawer());
+  inputCustomLength?.addEventListener('blur', () => maybeAutoOpenWidthDrawer());
 
   // Initialize (`units` already matches `kbm-units`; `kbm:units-change` may have fired before listener existed)
   console.log('Initializing wizard, calling populateSizes()...');
