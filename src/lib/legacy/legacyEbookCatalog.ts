@@ -1,5 +1,6 @@
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import shopDownloadsManifest from "../../data/generated/shop-downloads-manifest.json";
 
 export const LEGACY_EBOOK_CATALOG_CSV_PATH = join(
   process.cwd(),
@@ -23,13 +24,6 @@ export type LegacyEbookCatalogRowAudited = LegacyEbookCatalogRow & {
   /** Actual filename on disk when matched (may differ in case). */
   matchedShopFile: string | null;
 };
-
-export const LEGACY_SHOP_DOWNLOADS_DIR = join(
-  process.cwd(),
-  "public",
-  "downloads",
-  "shop"
-);
 
 export const LEGACY_SHOP_DOWNLOADS_PUBLIC_PREFIX = "/downloads/shop";
 
@@ -80,20 +74,24 @@ export function formatActiveLabel(active: boolean | null): string {
   return active ? "Active" : "Inactive";
 }
 
-/** List filenames in public/downloads/shop (empty if directory missing). */
+/**
+ * Snapshot of public/downloads/shop (filename + byte size) captured at build
+ * time by scripts/generate-public-manifests.mjs. Reading this manifest instead
+ * of scanning the directory keeps the Netlify SSR function from bundling the
+ * whole public/downloads tree (see that script's header for the rationale).
+ */
+type ShopDownloadManifestEntry = { name: string; size: number | null };
+
+const SHOP_DOWNLOADS: ShopDownloadManifestEntry[] =
+  shopDownloadsManifest as ShopDownloadManifestEntry[];
+
+const SHOP_FILE_SIZES: ReadonlyMap<string, number | null> = new Map(
+  SHOP_DOWNLOADS.map((entry) => [entry.name, entry.size])
+);
+
+/** List filenames in public/downloads/shop (empty if none). */
 export function listLegacyShopDownloadFiles(): string[] {
-  try {
-    if (!existsSync(LEGACY_SHOP_DOWNLOADS_DIR)) return [];
-    return readdirSync(LEGACY_SHOP_DOWNLOADS_DIR).filter((name) => {
-      try {
-        return statSync(join(LEGACY_SHOP_DOWNLOADS_DIR, name)).isFile();
-      } catch {
-        return false;
-      }
-    });
-  } catch {
-    return [];
-  }
+  return SHOP_DOWNLOADS.map((entry) => entry.name);
 }
 
 /** Case-insensitive lookup: lowercase name → canonical on-disk filename. */
@@ -198,12 +196,9 @@ export function parseShopFilenameLegacyIdPrefix(filename: string): string | null
 }
 
 function statShopFileSizeKb(filename: string): number | null {
-  try {
-    const bytes = statSync(join(LEGACY_SHOP_DOWNLOADS_DIR, filename)).size;
-    return Math.round((bytes / 1024) * 10) / 10;
-  } catch {
-    return null;
-  }
+  const bytes = SHOP_FILE_SIZES.get(filename);
+  if (bytes == null) return null;
+  return Math.round((bytes / 1024) * 10) / 10;
 }
 
 function isShopAuditFile(filename: string): boolean {

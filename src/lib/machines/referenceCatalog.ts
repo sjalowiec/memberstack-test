@@ -15,9 +15,10 @@
  * data source can later move (e.g. to a content collection or Supabase) without
  * touching the UI.
  */
-import { readFileSync, statSync, existsSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { normalizeSale, type MachineSale } from "./machineAdminFields";
+import machineImageManifest from "../../data/generated/machine-images-manifest.json";
 
 export type { MachineSale } from "./machineAdminFields";
 
@@ -314,18 +315,20 @@ export function getAllMachineStyles(): string[] {
 }
 
 /**
+ * Filenames present in public/images/machines, snapshotted at build time by
+ * scripts/generate-public-manifests.mjs. Checking this manifest instead of
+ * hitting the filesystem keeps the Netlify SSR function from bundling the whole
+ * public/images tree (see that script's header for the full rationale).
+ */
+const MACHINE_IMAGE_FILES: ReadonlySet<string> = new Set(machineImageManifest as string[]);
+
+/**
  * True when a bare filename exists as a local asset in public/images/machines/.
- * Used to prefer local site images over the legacy CDN. Runs at build/request
- * time in Node, alongside the JSON read above.
+ * Used to prefer local site images over the legacy CDN.
  */
 function machineImageExistsLocally(parts: string[]): boolean {
   if (parts.length === 0) return false;
-  try {
-    const filePath = path.join(process.cwd(), "public", "images", "machines", ...parts);
-    return existsSync(filePath);
-  } catch {
-    return false;
-  }
+  return MACHINE_IMAGE_FILES.has(parts.join("/"));
 }
 
 /**
