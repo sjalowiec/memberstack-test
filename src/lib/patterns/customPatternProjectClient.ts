@@ -273,7 +273,10 @@ export async function updateCustomPatternProject(
 > {
   let body: UpdateCustomPatternProjectRequest & { entitlement?: PatternSaveEntitlementSnapshot } =
     payload;
-  if (typeof window !== "undefined" && payload.metadataOnly !== true) {
+  // Attach the entitlement snapshot for full updates AND metadataOnly updates. The server uses it
+  // to block non-members from renaming a saved pattern (changing name/title) via a metadataOnly
+  // update, while still allowing permitted metadata edits (e.g. notes).
+  if (typeof window !== "undefined") {
     const patternSystem = resolvePatternSystemForSavePayload(payload);
     const entitlement = await buildPatternSaveEntitlementSnapshot(patternSystem);
     body = { ...payload, entitlement };

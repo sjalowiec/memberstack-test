@@ -384,7 +384,9 @@ export async function initSleevelessReviewProjectHeader(): Promise<void> {
 
   const access = await resolveSleevelessUserAccess();
 
-  // Title + project notes: editable for any logged-in user (including a free claimed pattern).
+  // Project notes stay editable for any logged-in user (including a free claimed pattern). The
+  // title field can be edited locally, but renaming only persists via the cloud save, which now
+  // requires membership (gated in runSleevelessPatternProjectCloudSave) — matching My Patterns.
   if (canEditSleevelessPatternNotes(access)) {
     bindEditableHeader(root);
   } else {

@@ -9,9 +9,11 @@ import {
 } from "./customPatternSavedProjectsPanel";
 import {
   canCreatePatternForSystem,
+  canEditPatternSettingsForSystem,
   resolvePatternSystemAlreadyClaimedCopy,
   resolvePatternSystemSaveLoggedOutCopy,
 } from "./sleevelessPatternSystemAccess";
+import { offerPatternEditingUnlockModal } from "./patternEditingUnlockModal";
 import {
   markFreePatternClaimedForSystem,
   resolveSleevelessUserAccess,
@@ -75,6 +77,19 @@ export async function runSleevelessPatternProjectCloudSave(
       ? resolveSaveAlreadyClaimedCopy(patternSystem)
       : resolveSaveLoggedOutCopy(patternSystem);
     setSleevelessPatternProjectCloudSaveStatus(root, message, true);
+    return;
+  }
+
+  // Overwriting/renaming the linked saved project is an edit — gate like My Patterns.
+  if (!willCreateNew && !canEditPatternSettingsForSystem(access, patternSystem)) {
+    if (typeof document !== "undefined") {
+      offerPatternEditingUnlockModal(access, { patternSystem });
+    }
+    setSleevelessPatternProjectCloudSaveStatus(
+      root,
+      resolveSaveAlreadyClaimedCopy(patternSystem),
+      true,
+    );
     return;
   }
 

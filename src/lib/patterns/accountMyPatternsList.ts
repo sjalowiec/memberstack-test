@@ -41,7 +41,7 @@ import { patternSystemDisplayName } from "./patternSystemId";
 const SIGN_IN_REQUIRED_ERROR = "Sign in to save Custom Pattern projects.";
 /** Tooltip shown when Edit is disabled for a free claimed / downgraded knitter. */
 export const SAVED_CUSTOM_PATTERN_EDIT_DISABLED_TEXT =
-  "Pattern editing is included with membership. You can still view, print, and rename this pattern.";
+  "Pattern editing is included with membership. You can still view, print, and knit from this pattern.";
 const EMPTY_LIST_MESSAGE =
   "You do not have any saved patterns yet. Create your first pattern to get started.";
 export const DELETE_SAVED_PATTERN_CONFIRM_MESSAGE = "Delete this saved pattern?";
@@ -214,14 +214,12 @@ function releaseMyPatternsListInteraction(root: HTMLElement): void {
   root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-view]").forEach((b) => {
     b.disabled = false;
   });
-  root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-rename]").forEach((b) => {
-    b.disabled = false;
-  });
   // Delete stays gated: a free user's protected pattern must remain non-deletable after unlock.
   syncMyPatternsDeleteAccess(root);
-  // Edit + Copy stay gated by entitlement even after the list unlocks (view-only users).
+  // Edit + Copy + Rename stay gated by entitlement even after the list unlocks (view-only users).
   syncMyPatternsEditAccess(root);
   syncMyPatternsCopyAccess(root);
+  syncMyPatternsRenameAccess(root);
 }
 
 /** Resolved access for this list, or null until it resolves (or if resolution failed). */
@@ -264,6 +262,15 @@ function applyEditAccessToButton(
 function syncMyPatternsEditAccess(root: HTMLElement): void {
   const access = listAccess(root);
   root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-edit]").forEach((btn) => {
+    const system = (btn.dataset.patternSystem as PatternSystemId | undefined) ?? "sleeveless";
+    applyEditAccessToButton(btn, access, system);
+  });
+}
+
+/** Reflects edit-access onto every Rename button: renaming is an edit and requires membership. */
+function syncMyPatternsRenameAccess(root: HTMLElement): void {
+  const access = listAccess(root);
+  root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-rename]").forEach((btn) => {
     const system = (btn.dataset.patternSystem as PatternSystemId | undefined) ?? "sleeveless";
     applyEditAccessToButton(btn, access, system);
   });
@@ -521,6 +528,15 @@ async function onProjectRename(
   projectId: string,
   label: string,
 ): Promise<void> {
+  const state = listStateByRoot.get(root);
+  const project = state?.projects.find((p) => p.id === projectId);
+  const patternSystem = project ? projectPatternSystem(project) : "sleeveless";
+  const access = listAccess(root);
+  if (!canEditSavedPatternFromList(root, patternSystem)) {
+    offerPatternEditingUnlockModal(access, { patternSystem });
+    return;
+  }
+
   const next = window.prompt(RENAME_SAVED_PATTERN_PROMPT_MESSAGE, label);
   if (next === null) return;
   const name = next.trim();
@@ -681,6 +697,7 @@ function renderProjectRow(root: HTMLElement, project: CustomPatternProjectSummar
   renameBtn.className = "account-my-patterns__action account-my-patterns__action--rename";
   renameBtn.setAttribute("data-kbm-my-patterns-rename", "");
   renameBtn.dataset.projectId = project.id;
+  renameBtn.dataset.patternSystem = patternSystem;
   renameBtn.setAttribute("aria-label", `Rename ${displayName}`);
   renameBtn.textContent = "Rename";
   renameBtn.addEventListener("click", (event) => {
@@ -688,6 +705,8 @@ function renderProjectRow(root: HTMLElement, project: CustomPatternProjectSummar
     if (renameBtn.disabled) return;
     void onProjectRename(root, project.id, displayName);
   });
+  // Rename is an edit: visible for everyone, disabled + grayed (with tooltip) for view-only knitters.
+  applyEditAccessToButton(renameBtn, rowAccess, patternSystem);
 
   const delBtn = document.createElement("button");
   delBtn.type = "button";

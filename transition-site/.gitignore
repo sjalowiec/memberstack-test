@@ -1,3 +1,4 @@
 dist/
 public/images/*
 !public/images/.gitkeep
+!/scripts/generate-public-manifests.mjs

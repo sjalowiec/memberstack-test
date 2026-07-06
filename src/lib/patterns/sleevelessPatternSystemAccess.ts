@@ -191,7 +191,7 @@ export function canEditSleevelessPatternNotes(
 /** User-facing copy when a free user already claimed their pattern for a system. */
 export function resolvePatternSystemAlreadyClaimedCopy(systemId: PatternSystemId): string {
   const name = patternSystemDisplayName(systemId);
-  return `You've already created your free ${name} pattern.\n\nEditing is included with membership. You can still view, print, rename, and use this pattern.\n\nCreate another ${name} pattern with membership.`;
+  return `You've already created your free ${name} pattern.\n\nEditing is included with membership. You can still view, print, and knit from this pattern.\n\nCreate another ${name} pattern with membership.`;
 }
 
 /** User-facing copy when a logged-out visitor tries to save. */

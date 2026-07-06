@@ -502,7 +502,16 @@ describe("accountMyPatternsList", () => {
     const { root, tbody, status } = makeAccountRoot();
     listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
     const prompt = vi.fn(() => "Renamed pullover");
-    vi.stubGlobal("window", { prompt });
+    // Renaming is an edit and requires membership; use a member with Sleeveless access.
+    vi.stubGlobal("window", {
+      prompt,
+      $memberstackDom: {
+        getCurrentMember: async () => ({
+          data: { id: "ms_member", planConnections: [{ planId: "pln_kin-membership-annual-qf9g01et" }] },
+        }),
+        getMemberJSON: async () => ({ data: {} }),
+      },
+    });
     renameMock.mockResolvedValue({
       ok: true,
       project: { ...sampleProjects[0], name: "Renamed pullover" },
@@ -525,7 +534,16 @@ describe("accountMyPatternsList", () => {
     const { root, tbody } = makeAccountRoot();
     listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
     const prompt = vi.fn(() => null);
-    vi.stubGlobal("window", { prompt });
+    // Member access so the prompt is reached; cancelling it must abort the rename.
+    vi.stubGlobal("window", {
+      prompt,
+      $memberstackDom: {
+        getCurrentMember: async () => ({
+          data: { id: "ms_member", planConnections: [{ planId: "pln_kin-membership-annual-qf9g01et" }] },
+        }),
+        getMemberJSON: async () => ({ data: {} }),
+      },
+    });
 
     await initAccountMyPatternsList(root);
 
@@ -534,7 +552,40 @@ describe("accountMyPatternsList", () => {
     );
     await renameA?._click?.();
 
+    expect(prompt).toHaveBeenCalledWith(RENAME_SAVED_PATTERN_PROMPT_MESSAGE, "Alpha pullover");
     expect(renameMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps Rename visible but locked for free / view-only users and offers the unlock modal", async () => {
+    const { root, tbody } = makeAccountRoot();
+    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
+    const prompt = vi.fn(() => "Should not be used");
+    // A logged-in free user who claimed proj-a as their one free pattern, no system access.
+    vi.stubGlobal("window", {
+      prompt,
+      $memberstackDom: {
+        getCurrentMember: async () => ({ data: { id: "ms_free" } }),
+        getMemberJSON: async () => ({
+          data: { freeSleevelessPatternClaimed: true, freeSleevelessPatternId: "proj-a" },
+        }),
+      },
+    });
+
+    await initAccountMyPatternsList(root);
+
+    const renameBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-rename]");
+    expect(renameBtns.length).toBe(2);
+    expect(renameBtns[0].textContent).toBe("Rename");
+    expect(renameBtns.every((b) => b.getAttribute("aria-disabled") === "true")).toBe(true);
+    expect(renameBtns[0].getAttribute("title")).toMatch(/included with membership/i);
+
+    const renameA = renameBtns.find((b) => b.dataset.projectId === "proj-a");
+    await renameA?._click?.();
+    await flushAsync();
+
+    expect(prompt).not.toHaveBeenCalled();
+    expect(renameMock).not.toHaveBeenCalled();
+    expect(offerPatternEditingUnlockModalMock).toHaveBeenCalledTimes(1);
   });
 
   it("disables Delete on the free user's protected pattern but keeps others deletable", async () => {

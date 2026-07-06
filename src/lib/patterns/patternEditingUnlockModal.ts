@@ -9,14 +9,14 @@ import {
 import { logPatternEditGateDebug } from "./patternEditGateDebug";
 
 export const PATTERN_EDITING_UNLOCK_EDIT_BUTTON_TOOLTIP =
-  "Pattern editing is included with membership. You can still view, print, and rename this pattern.";
+  "Pattern editing is included with membership. You can still view, print, and knit from this pattern.";
 
 export const PATTERN_EDITING_UNLOCK_MODAL_TITLE = "Unlock pattern editing";
 export const PATTERN_EDITING_UNLOCK_MODAL_BODY_LEAD =
-  "You can still view, print, rename, and use this pattern.";
+  "You can still view, print, and knit from this pattern.";
 export const PATTERN_EDITING_UNLOCK_MODAL_BODY_DETAIL =
   "Editing is included with membership. To change the gauge, measurements, size, or style choices, unlock the full pattern system.";
-export const PATTERN_EDITING_UNLOCK_MODAL_KEEP_LABEL = "Keep using this pattern";
+export const PATTERN_EDITING_UNLOCK_MODAL_KEEP_LABEL = "Get knitting";
 export const PATTERN_EDITING_UNLOCK_MODAL_MEMBERSHIP_LABEL = "See membership options";
 export const PATTERN_EDITING_UNLOCK_MODAL_MEMBERSHIP_HREF = "/membership";
 export const PATTERN_EDITING_UNLOCK_MODAL_DISMISSED_SESSION_KEY =
@@ -47,7 +47,7 @@ export function dismissPatternEditingUnlockModalForSession(): void {
   }
 }
 
-/** Logged-in knitters who may view/print/rename but not edit pattern settings. */
+/** Logged-in knitters who may view/print/knit but not edit pattern settings. */
 export function shouldOfferPatternEditingUnlockModal(
   access: SleevelessUserAccess | null | undefined,
   patternSystem?: PatternSystemId,

@@ -6,6 +6,7 @@ import {
   buildProjectRecord,
   getProjectsStore,
   isPatternSettingsEditBlockedForSystem,
+  isSavedPatternRenameAttempt,
   jsonResponse,
   parseJsonBody,
   patternSystemSettingsEditBlockedMessage,
@@ -94,7 +95,12 @@ export default async (req) => {
     }
   }
 
-  if (body.data.metadataOnly !== true) {
+  // A full update is a pattern-settings edit (gauge, measurements, size, style, regenerate) and
+  // requires membership. A metadataOnly update stays open for permitted fields (e.g. notes), EXCEPT
+  // renaming: changing the saved pattern name/title is an edit that also requires membership.
+  const isMetadataOnly = body.data.metadataOnly === true;
+  const gateEdit = !isMetadataOnly || isSavedPatternRenameAttempt(existing.name, body.data.name);
+  if (gateEdit) {
     const entitlement = readPatternEntitlementFromSaveBody(body.data);
     const patternSystem =
       entitlement?.patternSystem ?? resolvePatternSystemFromProject(existing);

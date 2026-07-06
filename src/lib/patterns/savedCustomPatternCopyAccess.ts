@@ -17,7 +17,7 @@ import type { SleevelessUserAccess } from "./sleevelessPatternSystemAccess";
 
 /** Tooltip / helper copy shown when Copy is disabled for free / non-owner knitters. */
 export const SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT =
-  "Copy is included with membership. You can still view, print, and rename this pattern.";
+  "Copy is included with membership. You can still view, print, and knit from this pattern.";
 
 /** True when the current knitter can copy a saved pattern (active member or paid owner). */
 export function canCopySavedCustomPattern(pageUrl?: URL): boolean {

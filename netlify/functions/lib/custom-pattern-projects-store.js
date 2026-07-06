@@ -190,7 +190,23 @@ export function isPatternSettingsEditBlockedForSystem(input) {
 /** Explanatory text when a non-member tries to edit pattern settings for a claimed free pattern. */
 export function patternSystemSettingsEditBlockedMessage(systemId = "sleeveless") {
   const name = patternSystemDisplayName(systemId);
-  return `Pattern editing is included with membership. You can still view, print, rename, and use your free ${name} pattern.`;
+  return `Pattern editing is included with membership. You can still view, print, and knit from your free ${name} pattern.`;
+}
+
+/**
+ * True when an update payload changes a saved pattern's stored name/title (a rename), versus
+ * leaving it unchanged (e.g. a notes-only metadata update). Normalization mirrors
+ * {@link buildProjectRecord} (trim + 120-char cap) so the comparison matches what would be stored.
+ *
+ * @param {unknown} existingName the currently-stored project name
+ * @param {unknown} incomingName the name in the update payload
+ */
+export function isSavedPatternRenameAttempt(existingName, incomingName) {
+  if (typeof incomingName !== "string") return false;
+  const next = incomingName.trim().slice(0, 120);
+  if (!next) return false;
+  const current = typeof existingName === "string" ? existingName.trim().slice(0, 120) : "";
+  return next !== current;
 }
 
 /**

@@ -1,6 +1,7 @@
 /**
  * Pattern workspace settings edit gate (gauge, measurements, size, style, regenerate).
- * Title, notes, rename, view, and print stay available for logged-in free users.
+ * Notes, view, and print stay available for logged-in free users; renaming (like other
+ * edits) requires membership.
  */
 import {
   canEditPatternSettingsForSystem,

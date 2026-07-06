@@ -92,7 +92,7 @@ function isDebugForceFreeUser(): boolean {
 const LOCKED_BANNER_BODY_UNCLAIMED =
   "You're viewing the measurements from your choices. Editing is included with membership when you want to customize fit, gauge, or style choices.";
 const LOCKED_BANNER_BODY_CLAIMED =
-  "You can still view, print, rename, and use this pattern. Editing is included with membership.";
+  "You can still view, print, and knit from this pattern. Editing is included with membership.";
 
 /** Show exactly one access banner based on resolved entitlement. */
 function applyReviewAccessBanners(access: SleevelessUserAccess, forceFree: boolean): void {
