@@ -1,0 +1,123 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
+import StitchMultipleTool from "../../components/tools/StitchMultipleCalculator.astro";
+import VimeoEmbed from "../../components/media/VimeoEmbed.astro";
+import ToolGate from "../../components/ui/ToolGate.astro";
+import ToolPreviewGate from "../../components/ui/ToolPreviewGate.astro";
+import toolsData from "../../../data/tools.json";
+import "../../styles/wizard.css";
+
+const tools = toolsData as Array<{ href?: string; title?: string; icon?: string; membersonly?: boolean }>;
+const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
+const toolPrintTitle = tool?.title ?? "Stitch Multiple Calculator";
+---
+
+<Layout
+  title="Stitch Multiple Calculator | Knit by Machine"
+  description="Check whether a stitch pattern repeat fits your cast-on stitch count, and find the nearest stitch counts that do."
+  toolPrintTitle={toolPrintTitle}
+>
+  <main class="wizard-page">
+    <div class="wizard-shell">
+      <WizardBackLink fallback="/tools" className="back-link" label="? Back" />
+
+      <section class="wizard-hero">
+        <ToolPageHeader tool={tool} fallbackTitle="Stitch Multiple Calculator" />
+        <p class="wizard-intro">
+          Enter your cast-on stitch count and stitch pattern repeat to see if
+          they'll work together. If not, we'll show you the nearest stitch counts
+          that fit.
+        </p>
+      </section>
+
+      <ToolGate tool={tool} />
+
+      <ToolPreviewGate tool={tool}>
+        <div class="stitchmult-tool-wrap">
+          <StitchMultipleTool instanceId="page" />
+        </div>
+      </ToolPreviewGate>
+
+      <section class="kbm-intro-callout stitchmult-guidance" aria-labelledby="stitchmult-guidance-heading">
+        <strong id="stitchmult-guidance-heading">Before You Change Your Cast-On</strong>
+        <p>Changing your cast-on stitch count affects more than the first row.</p>
+        <p>
+          Most knitting patterns use the cast-on stitch count to calculate
+          shaping throughout the garment. If you change the cast-on, you may also
+          need to adjust:
+        </p>
+        <ul>
+          <li>Increase and decrease counts</li>
+          <li>Armhole shaping</li>
+          <li>Neckline shaping</li>
+          <li>Sleeve shaping</li>
+          <li>Finishing stitch counts</li>
+        </ul>
+        <p>
+          Simply changing the cast-on number does not update the rest of the
+          pattern. Review your pattern carefully and make any additional
+          adjustments needed before you begin knitting.
+        </p>
+      </section>
+
+      <section class="stitchmult-video">
+        <h2>Learn More About Stitch Multiples</h2>
+        <p class="stitchmult-video-intro">
+          New to stitch multiples? Watch this short lesson to learn how they work
+          and why they matter.
+        </p>
+        <VimeoEmbed vimeoId="151857799" title="Stitch Multiples" />
+      </section>
+    </div>
+  </main>
+
+  <style>
+    .wizard-page .wizard-shell {
+      max-width: 56rem;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    .stitchmult-tool-wrap {
+      position: relative;
+    }
+
+    .stitchmult-guidance {
+      margin-top: 1.5rem;
+    }
+
+    .stitchmult-guidance :global(p) {
+      margin: 0 0 0.65rem;
+    }
+
+    .stitchmult-guidance :global(ul) {
+      margin: 0 0 0.65rem;
+      padding-left: 1.25rem;
+      line-height: 1.6;
+    }
+
+    .stitchmult-guidance :global(p:last-child) {
+      margin-bottom: 0;
+    }
+
+    .stitchmult-video {
+      margin-top: 2rem;
+    }
+
+    .stitchmult-video h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #2f3a2f;
+      margin: 0 0 0.5rem;
+    }
+
+    .stitchmult-video-intro {
+      margin: 0 0 0.75rem;
+      max-width: 44rem;
+      line-height: 1.55;
+      color: #374151;
+    }
+  </style>
+</Layout>

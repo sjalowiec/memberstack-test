@@ -1,0 +1,176 @@
+---
+export const prerender = true;
+import Layout from "../layouts/Layout.astro";
+import { PATTERN_BUILDERS_HOME_HREF } from "../lib/patterns/customPatternProjectNavigation";
+
+const pageTitle = "Getting Started";
+const pageDescription =
+  "New to Knit It Now? Choose the best place to start based on what you need today - learn machine knitting, refresh your skills, build custom patterns, or get unstuck.";
+
+/** Reuses the home page "How can Knit It Now help you today?" audience cards, images, and links. */
+const helpTodayCards = [
+  {
+    title: "New to machine knitting",
+    copy: "Learn step by step with guided lessons, beginner-friendly projects, and practical videos.",
+    href: "/start-here",
+    image: "/images/home/new-to-MK.webp",
+    alt: "Knitted sweater for someone new to machine knitting",
+  },
+  {
+    title: "Returning after a break",
+    copy: "Refresh your skills, solve common problems, and rebuild your confidence.",
+    href: "/courses",
+    image: "/images/home/returning.webp",
+    alt: "Knitted sweater for machine knitters returning after a break",
+  },
+  {
+    title: "Create patterns that fit",
+    copy: "Use interactive Pattern Builders designed around your gauge, measurements, and machine.",
+    href: PATTERN_BUILDERS_HOME_HREF,
+    image: "/images/home/patterns-that-fit.webp",
+    alt: "Knitted sweater representing custom patterns that fit your measurements",
+  },
+  {
+    title: "Stuck on a project",
+    copy: "Find answers with troubleshooting guides, videos, references, and practical tools.",
+    href: "/help-hub",
+    image: "/images/home/stuck.webp",
+    alt: "Knitted sweater for when you are stuck mid-project and need help",
+  },
+];
+---
+
+<Layout
+  title={`${pageTitle} | Knit it Now`}
+  description={pageDescription}
+  bodyClass="page--tight-header"
+>
+  <article class="getting-started page-wrap" aria-labelledby="getting-started-heading">
+    <header class="getting-started__header">
+      <h1 id="getting-started-heading">How can Knit It Now help you today?</h1>
+      <p class="getting-started__lede">
+        Choose the best place to start based on what you need today.
+      </p>
+    </header>
+
+    <div class="getting-started__grid">
+      {helpTodayCards.map((card) => (
+        <a href={card.href} class="getting-started__card">
+          <div class="getting-started__media">
+            <img
+              src={card.image}
+              alt={card.alt}
+              class="getting-started__img"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <h2>{card.title}</h2>
+          <p>{card.copy}</p>
+        </a>
+      ))}
+    </div>
+  </article>
+</Layout>
+
+<style>
+  .getting-started.page-wrap {
+    padding-top: 1rem;
+    padding-bottom: 3.5rem;
+    max-width: 1100px;
+  }
+
+  .getting-started__header {
+    text-align: center;
+    margin-bottom: clamp(2rem, 3.5vw, 2.75rem);
+  }
+
+  .getting-started__header h1 {
+    margin: 0 0 0.65rem;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    line-height: 1.25;
+    color: #2c3a57;
+  }
+
+  .getting-started__lede {
+    margin: 0 auto;
+    max-width: 38rem;
+    font-size: 1.02rem;
+    line-height: 1.55;
+    color: #6b7565;
+  }
+
+  /* Grid mirrors the home page audience-card grid (1 / 2 / 4 columns) */
+  .getting-started__grid {
+    display: grid;
+    gap: clamp(1.25rem, 2vw, 1.75rem);
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 640px) {
+    .getting-started__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 960px) {
+    .getting-started__grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  /* Card style copied from home page .home-v2-audience-card */
+  .getting-started__card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 0;
+    background: #fff;
+    border: 1px solid rgba(82, 104, 45, 0.12);
+    border-radius: 0.85rem;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 2px 8px rgba(82, 104, 45, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+
+  .getting-started__card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(82, 104, 45, 0.35);
+    box-shadow: 0 8px 20px rgba(82, 104, 45, 0.1);
+  }
+
+  .getting-started__media {
+    height: 195px;
+    overflow: hidden;
+    border-radius: 14px 14px 0 0;
+    background: #fff;
+  }
+
+  .getting-started__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .getting-started__card h2 {
+    margin: 0;
+    padding: 1.1rem 1.1rem 0.4rem;
+    font-size: 1.02rem;
+    line-height: 1.35;
+    color: #2c3a57;
+  }
+
+  .getting-started__card p {
+    margin: 0;
+    padding: 0 1.1rem 1.35rem;
+    flex: 1;
+    min-height: 4.5rem;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: #4d5a48;
+  }
+</style>

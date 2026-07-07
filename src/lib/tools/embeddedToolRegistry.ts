@@ -1,4 +1,25 @@
-export type EmbeddedToolStatus = "available" | "planned" | "retired";
+/**
+ * Registry of tools that can be embedded inside course lessons.
+ *
+ * This is now DERIVED from the canonical tool catalog in `data/tools.json`
+ * (edited via the Tools Admin page at `/admin/embedded-tools`). A tool appears
+ * here when `embeddable: true`; its embed availability comes from `embedStatus`.
+ *
+ * Keeping this module as the registry means existing consumers (course editor,
+ * `EmbeddedTool.astro`) don't change: they still call `getEmbeddedToolByKey`,
+ * `embeddedToolsForContext`, and `availableEmbeddedToolsForContext`.
+ */
+import toolsData from "../../../data/tools.json";
+import {
+  embedContextsOf,
+  embedStatusOf,
+  isEmbeddable,
+  toolKeyOf,
+  type EmbedStatus,
+  type ToolRecord,
+} from "./toolAdminFields";
+
+export type EmbeddedToolStatus = EmbedStatus;
 
 export type EmbeddedToolContext = "course";
 
@@ -11,41 +32,19 @@ export type EmbeddedToolEntry = {
   allowedContexts: EmbeddedToolContext[];
 };
 
-export const EMBEDDED_TOOL_REGISTRY: EmbeddedToolEntry[] = [
-  {
-    key: "maximum-knitted-width",
-    name: "Maximum Knitted Width",
-    description:
-      "Calculate the widest piece you can knit based on available needles and stitch gauge.",
-    standalonePath: "/tools/maximum-knitted-width",
-    status: "available",
-    allowedContexts: ["course"],
-  },
-  {
-    key: "gauge-comparison",
-    name: "Gauge Comparison",
-    description: "See how a gauge difference changes the finished size of your project.",
-    standalonePath: "/tools/gauge-comparison",
-    status: "planned",
-    allowedContexts: ["course"],
-  },
-  {
-    key: "yarn-estimator",
-    name: "Yarn Estimator",
-    description: "Estimate whether you have enough yarn to finish a project.",
-    standalonePath: "/tools/yarn-estimator",
-    status: "available",
-    allowedContexts: ["course"],
-  },
-  {
-    key: "pattern-conversion",
-    name: "Pattern Conversion",
-    description: "Convert pattern stitch and row counts to match your gauge.",
-    standalonePath: "/tools/pattern-conversion",
-    status: "planned",
-    allowedContexts: ["course"],
-  },
-];
+export const EMBEDDED_TOOL_REGISTRY: EmbeddedToolEntry[] = (
+  toolsData as ToolRecord[]
+)
+  .filter(isEmbeddable)
+  .map((tool) => ({
+    key: toolKeyOf(tool),
+    name: (tool.title ?? "").trim(),
+    description: (tool.description ?? "").trim(),
+    standalonePath: (tool.href ?? "").trim(),
+    status: embedStatusOf(tool),
+    allowedContexts: embedContextsOf(tool),
+  }))
+  .filter((entry) => entry.key.length > 0);
 
 export function getEmbeddedToolByKey(key: string): EmbeddedToolEntry | undefined {
   const trimmed = key.trim();

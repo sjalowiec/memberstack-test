@@ -26,7 +26,7 @@ function readVideosArray(): unknown[] {
   return data;
 }
 
-/** Patch only `access_level` by unique `content_id`  does not re-validate full catalog keys. */
+/** Patch only `access_level` by unique `content_id` - does not re-validate full catalog keys. */
 export const POST: APIRoute = async ({ request }) => {
   if (!request.headers.get("content-type")?.includes("application/json")) {
     return jsonResponse({ ok: false, error: "Content-Type must be application/json" }, 400);

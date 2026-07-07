@@ -181,15 +181,41 @@ const isProduction =
 </script>
 <script>
   import { hasKinVideoAccess, logKinVideoAccessDebug } from "../lib/kinVideoAccess";
+  import {
+    getViewerAccessState,
+    hasMemberAccess,
+    logMemberAccessDebug,
+  } from "../lib/memberAccess";
   import { openMemberstackLoginModal } from "../lib/memberstackLogin";
 
+  // Global member-access helpers (single source of truth for all gated sections).
+  window.kbmHasMemberAccess = hasMemberAccess;
+  window.kbmGetViewerAccessState = getViewerAccessState;
+  window.kbmLogMemberAccessDebug = logMemberAccessDebug;
+
+  // Back-compat aliases (videos and older gates still reference these globals).
   window.kbmHasKinVideoAccess = hasKinVideoAccess;
   window.kbmLogKinVideoAccessDebug = logKinVideoAccessDebug;
   window.kbmOpenMemberstackLoginModal = openMemberstackLoginModal;
 </script>
    
 <!-- MemberStack -->
-<!-- Memberstack webflow package -->
+<!--
+  Memberstack webflow package. The public app key below is used on ALL environments.
+
+  IMPORTANT - TEST vs LIVE mode (read before QA-ing signup/login for launch):
+    - Memberstack runs in TEST mode on every NON-production domain (localhost, *.netlify.app,
+      deploy previews, staging). It only runs in LIVE mode on the production custom domain
+      (e.g. knititnow.com / knitbymachine.com — see PRODUCTION_HOSTNAMES in
+      src/lib/env/siteEnvironment.ts).
+    - Members created in TEST mode do NOT appear in the live Memberstack member list (they live
+      under the dashboard's "Test Mode" toggle) and are a separate data set.
+    - TEST mode does NOT trigger live integrations — e.g. ActiveCampaign sync/tagging does not fire
+      for test members.
+    - Therefore signup/login/account-access testing for launch MUST be verified on the PRODUCTION
+      custom domain. A successful-looking signup + redirect on staging is expected but only creates
+      a test member; it is NOT proof of a real live member or ActiveCampaign sync.
+-->
 <script data-memberstack-app="app_cmfh3d1n802vb0wy706205810" src="https://static.memberstack.com/scripts/v2/memberstack.js" type="text/javascript"></script>
 
 
@@ -418,32 +444,112 @@ const isProduction =
       </script>
     )}
 
-    <script is:inline>
-      document.addEventListener("DOMContentLoaded", async () => {
-        if (!window.$memberstackDom) return;
+    <script>
+      // Import the global access helper directly (like the video pages) rather
+      // than relying on window.kbm* globals, which are assigned by a separate
+      // bundled module. Those globals were undefined when this ran, so access
+      // fell back to false and the detailed debug log silently no-op'd (optional
+      // chaining short-circuit).
+      import {
+        getViewerAccessState,
+        hasMemberAccess,
+        logMemberAccessDebug,
+      } from "../lib/memberAccess";
 
-        try {
-          const { data: member } = await window.$memberstackDom.getCurrentMember();
-          const rawKinAccess = member?.customFields?.["kin-access"];
-          const hasVideoAccess =
-            Boolean(member) &&
-            (window.kbmHasKinVideoAccess?.(rawKinAccess) ?? false);
-
-          window.kbmLogKinVideoAccessDebug?.("BaseLayout.ms-logged-in", {
-            member,
-            rawKinAccess,
-            finalHasVideoAccess: hasVideoAccess,
-          });
-
-          if (hasVideoAccess) {
-            document.body.classList.add("ms-logged-in");
-          } else {
-            document.body.classList.remove("ms-logged-in");
+      // Wait for the Memberstack SDK to be ready instead of bailing on the first
+      // tick. The CDN script often isn't loaded when DOMContentLoaded fires.
+      //
+      // Use getAppAndMember() (not getCurrentMember): it resolves only after full
+      // SDK init and reliably includes planConnections, so plan-based access is
+      // correct on first load. getCurrentMember() can return a cached member
+      // without planConnections early, which made finalHasVideoAccess false.
+      async function waitForMemberstackReady(attempts: number, delayMs: number) {
+        for (let i = 0; i < attempts; i++) {
+          const ms = window.$memberstackDom;
+          const api = ms?.getAppAndMember ?? ms?.getCurrentMember;
+          if (typeof api === "function") {
+            try {
+              return await api.call(ms);
+            } catch (error) {
+              console.warn("MemberStack member check failed", error);
+              return null;
+            }
           }
-        } catch (error) {
-          console.warn("MemberStack member check failed", error);
+          await new Promise((r) => setTimeout(r, delayMs));
         }
-      });
+        return null;
+      }
+
+      function applyMsLoggedIn(res: any) {
+        const data = res?.data;
+        const member = (data?.member ?? data) || null;
+        const rawKinAccess = member?.customFields?.["kin-access"];
+        const memberHasAccess = hasMemberAccess(res);
+
+        // Detailed log first (always runs, even when access is false) so we can
+        // see activePlanIds vs the global allow list and which gate decided.
+        logMemberAccessDebug("BaseLayout.ms-logged-in", res, {
+          rawKinAccess,
+          viewerAccessState: getViewerAccessState(res),
+        });
+
+        // Temporary: raw plan connections (all statuses) so we can see the exact
+        // plan id + status assigned to an account that isn't being recognized.
+        const rawPlanConnections = Array.isArray(member?.planConnections)
+          ? member.planConnections.map((p: any) => ({
+              planId: p?.planId ?? p?.plan ?? p?.id,
+              status: p?.status,
+              active: p?.active,
+            }))
+          : member?.planConnections ?? null;
+        console.log("[KIN member access] BaseLayout.planConnections", {
+          memberEmail: member?.auth?.email ?? data?.auth?.email ?? null,
+          memberId: member?.id ?? member?._id ?? null,
+          rawPlanConnections,
+        });
+
+        if (memberHasAccess) {
+          document.body.classList.add("ms-logged-in");
+        } else {
+          document.body.classList.remove("ms-logged-in");
+        }
+
+        console.log("[KIN member access] BaseLayout.ms-logged-in applied", {
+          gate: "BaseLayout",
+          msLoggedIn: document.body.classList.contains("ms-logged-in"),
+          hasMemberAccess: memberHasAccess,
+        });
+      }
+
+      function refreshMemberAccess() {
+        const ms = window.$memberstackDom;
+        const api = ms?.getAppAndMember ?? ms?.getCurrentMember;
+        if (typeof api !== "function") return;
+        api.call(ms).then(applyMsLoggedIn).catch(() => {});
+      }
+
+      // Re-check on auth changes so login/logout without a full reload also
+      // unlocks/locks member-only tools.
+      function bindAuthEvents() {
+        const ms = window.$memberstackDom;
+        if (!ms || typeof ms.on !== "function") return;
+        ms.on("member.login", refreshMemberAccess);
+        ms.on("member.logout", () => {
+          document.body.classList.remove("ms-logged-in");
+        });
+      }
+
+      async function initMsLoggedIn() {
+        const res = await waitForMemberstackReady(30, 200);
+        applyMsLoggedIn(res);
+        bindAuthEvents();
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initMsLoggedIn);
+      } else {
+        initMsLoggedIn();
+      }
     </script>
 
     <script is:inline>

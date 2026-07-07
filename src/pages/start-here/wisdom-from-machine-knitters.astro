@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import wisdomData from "../../data/wisdom-from-machine-knitters.json";
+import { PATTERN_BUILDERS_HOME_HREF } from "../../lib/patterns/customPatternProjectNavigation";
 
 type WisdomEntry = {
   id: string;
@@ -106,7 +107,7 @@ const entries = wisdomData.entries as WisdomEntry[];
         </p>
         <nav class="wisdom-page-links" aria-label="Next steps">
           <a href="/help-hub" class="kbm-btn kbm-btn-outline">Help Hub</a>
-          <a href="/patterns" class="kbm-btn kbm-btn-outline">Patterns</a>
+          <a href={PATTERN_BUILDERS_HOME_HREF} class="kbm-btn kbm-btn-outline">Patterns</a>
           <a href="/tools" class="kbm-btn kbm-btn-outline">Tools</a>
         </nav>
       </footer>

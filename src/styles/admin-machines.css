@@ -1,0 +1,621 @@
+/**
+ * Shared styles for the admin machine list pages:
+ *   - /admin/machines            (full Machine Database + editor)
+ *   - /admin/machines/for-sale   (For-Sale inventory view)
+ *
+ * Class names are all `am__*`-prefixed so this can be a plain global stylesheet
+ * imported by both pages instead of duplicating scoped styles.
+ */
+body.admin-machines-body {
+  margin: 0;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.am {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: calc(var(--header-height, 7rem) + 1rem) 1.25rem 3rem;
+  box-sizing: border-box;
+}
+.am__head {
+  margin-bottom: 1rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+.am__head--row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.am__title {
+  margin: 0 0 0.4rem 0;
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: #243015;
+}
+.am__sub {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #475569;
+  max-width: 62rem;
+  line-height: 1.5;
+}
+.am__sub code {
+  font-size: 0.88em;
+  background: #f1f5f9;
+  padding: 0.12rem 0.35rem;
+  border-radius: 4px;
+}
+.am__head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+.am__status {
+  min-height: 1.4em;
+  margin: 0 0 0.85rem 0;
+  font-size: 0.95rem;
+  color: #374151;
+}
+.am__status.is-error {
+  color: #b91c1c;
+  font-weight: 600;
+}
+.am__status.is-ok {
+  color: #166534;
+}
+.am__panel {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+}
+.am__panel-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #243015;
+}
+.am__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+.am__search-label {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+.am__search-label input {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.55rem 0.65rem;
+  font: inherit;
+  box-sizing: border-box;
+}
+.am__count {
+  margin: 0 0 0.6rem 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+/* Top action bar (For Sale Machines / Add New Machine) */
+.am__actionbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 1.25rem;
+}
+
+/* Collapsible "Find a machine" list (secondary to the edit panel). */
+.am__find {
+  padding: 0;
+}
+.am__find-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  list-style: none;
+  font-weight: 700;
+  color: #243015;
+}
+.am__find-summary::-webkit-details-marker {
+  display: none;
+}
+.am__find-summary::before {
+  content: "\25B8"; /* ? */
+  font-size: 0.85em;
+  color: #64748b;
+  transition: transform 0.15s ease;
+  align-self: center;
+}
+.am__find[open] .am__find-summary::before {
+  transform: rotate(90deg);
+}
+.am__find-title {
+  font-size: 1.05rem;
+}
+.am__find-summary .am__count {
+  margin: 0;
+  font-weight: 400;
+}
+.am__find-body {
+  padding: 0 1rem 1rem;
+}
+.am__find-body .am__search-label {
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+/* Advanced / JSON disclosure inside the edit form */
+.am__adv {
+  margin-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 0.75rem;
+}
+.am__adv-summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #64748b;
+}
+.am__adv .am__preview-wrap {
+  margin-top: 0.5rem;
+  border-top: none;
+  padding-top: 0;
+}
+.am__table-wrap {
+  overflow-x: auto;
+}
+.am__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.am__table th,
+.am__table td {
+  padding: 0.5rem 0.6rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: middle;
+}
+.am__table th {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #64748b;
+  white-space: nowrap;
+}
+.am__table td {
+  color: #334155;
+}
+.am__num {
+  text-align: right;
+  width: 3rem;
+  font-variant-numeric: tabular-nums;
+}
+.am__row.is-active {
+  background: #f7fee7;
+}
+.am__row-action {
+  white-space: nowrap;
+  text-align: right;
+}
+.am__empty {
+  margin: 0.5rem 0;
+  padding: 1rem;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  color: #64748b;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* Inline quick-edit controls (For sale / Status / Price) */
+.am__quick {
+  white-space: nowrap;
+}
+.am__num.am__quick {
+  text-align: center;
+}
+.am__quick-check {
+  width: 1.05rem;
+  height: 1.05rem;
+  margin: 0;
+  cursor: pointer;
+}
+.am__quick-select {
+  max-width: 8.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.25rem 0.35rem;
+  font: inherit;
+  font-size: 0.8rem;
+  color: #111827;
+  background: #fff;
+}
+.am__quick-price {
+  width: 5.5rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.25rem 0.4rem;
+  font: inherit;
+  font-size: 0.8rem;
+  color: #111827;
+  background: #fff;
+  text-align: right;
+  box-sizing: border-box;
+}
+.am__quick-date {
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.2rem 0.35rem;
+  font: inherit;
+  font-size: 0.8rem;
+  color: #111827;
+  background: #fff;
+  box-sizing: border-box;
+}
+.am__quick-select:disabled,
+.am__quick-price:disabled,
+.am__quick-date:disabled,
+.am__quick-check:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.am__qfeedback {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  color: #64748b;
+  white-space: nowrap;
+}
+.am__qfeedback.is-ok {
+  color: #166534;
+}
+.am__qfeedback.is-error {
+  color: #b91c1c;
+  white-space: normal;
+}
+
+.am__form-panel[hidden] {
+  display: none;
+}
+.am__form-topbar {
+  position: sticky;
+  top: var(--header-height, 7rem);
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin: -1rem -1rem 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  border-radius: 12px 12px 0 0;
+}
+.am__form-topbar .am__panel-title {
+  margin: 0;
+}
+.am__form-topbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+@media (max-width: 480px) {
+  .am__form-topbar {
+    top: 0;
+  }
+  .am__form-topbar-actions {
+    flex: 1 1 100%;
+  }
+  .am__form-topbar-actions .am__btn {
+    flex: 1 1 auto;
+  }
+}
+.am__mode {
+  margin: 0.65rem 0 0.85rem 0;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  font-weight: 600;
+  color: #243015;
+  font-size: 0.95rem;
+}
+.am__mode.is-new {
+  background: #fef3c7;
+  border-color: #fcd34d;
+  color: #92400e;
+}
+.am__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.7rem;
+}
+@media (min-width: 640px) {
+  .am__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (min-width: 960px) {
+  .am__grid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+.am__full {
+  grid-column: 1 / -1;
+}
+.am__form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.am__form label > span:first-child {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2e3a18;
+}
+.req {
+  color: #b91c1c;
+  font-style: normal;
+}
+.am__form input,
+.am__form textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.5rem 0.65rem;
+  font: inherit;
+  color: #111827;
+  background: #fff;
+  box-sizing: border-box;
+}
+.am__form input[readonly] {
+  background: #f1f5f9;
+  color: #475569;
+}
+.am__form textarea {
+  resize: vertical;
+  min-height: 60px;
+  font-family: ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+}
+/* Lightweight HTML helper toolbar above HTML textareas */
+.am__htmltoolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.15rem 0 0.4rem;
+}
+.am__htmlbtn {
+  padding: 0.2rem 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #3f6212;
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  line-height: 1.4;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.am__htmlbtn:hover {
+  background: #f7fee7;
+  border-color: #3f6212;
+}
+.am__htmlbtn:focus-visible {
+  outline: 2px solid #3f6212;
+  outline-offset: 1px;
+}
+.am__htmlbtn strong,
+.am__htmlbtn em {
+  font-weight: 700;
+}
+
+.am__hint {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #64748b;
+  line-height: 1.45;
+}
+.am__hint code {
+  background: #f1f5f9;
+  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+  font-size: 0.92em;
+}
+.am__hint--note {
+  margin-top: 0.15rem;
+  color: #78716c;
+  font-style: italic;
+}
+.am__techniques {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.am__techniques-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2e3a18;
+}
+.am__techniques-list {
+  margin: 0;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  font-size: 0.88rem;
+  color: #475569;
+}
+.am__sales {
+  margin-top: 1.25rem;
+  border: 1px solid #d6dcc8;
+  border-left: 4px solid #3f6212;
+  border-radius: 10px;
+  padding: 0.85rem 1rem 1rem;
+  background: #f8faf3;
+}
+.am__sales-legend {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #243015;
+  padding: 0 0.4rem;
+}
+.am__sales-intro {
+  margin: 0 0 0.85rem 0;
+  font-size: 0.85rem;
+  color: #475569;
+  line-height: 1.5;
+}
+.am__sales-intro code {
+  background: #eef2e3;
+  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+  font-size: 0.92em;
+}
+.am__sales-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.7rem;
+}
+@media (min-width: 640px) {
+  .am__sales-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.am__check {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.5rem !important;
+}
+.am__check input {
+  width: auto !important;
+  margin: 0;
+}
+.am__check > span {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #2e3a18;
+}
+.am__sales select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.5rem 0.65rem;
+  font: inherit;
+  color: #111827;
+  background: #fff;
+  box-sizing: border-box;
+}
+.am__form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1.1rem;
+}
+.am__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  background: #3f6212;
+  border: 1px solid #3f6212;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  line-height: 1.2;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+.am__btn:hover:not(:disabled) {
+  background: #365314;
+  border-color: #365314;
+}
+.am__btn:focus-visible {
+  outline: 2px solid #3f6212;
+  outline-offset: 2px;
+}
+.am__btn--outline {
+  color: #3f6212;
+  background: #fff;
+}
+.am__btn--outline:hover:not(:disabled) {
+  background: #f7fee7;
+}
+.am__btn--accent {
+  color: #fff;
+  background: #b45309;
+  border-color: #b45309;
+}
+.am__btn--accent:hover:not(:disabled) {
+  background: #92400e;
+  border-color: #92400e;
+}
+/*
+ * Anchor buttons: the global stylesheet sets `a:visited { color: #3e5221 }`,
+ * which (being a pseudo-class) outranks the plain `.am__btn` color. Restore the
+ * intended button text color for both unvisited and visited link-buttons.
+ */
+a.am__btn:link,
+a.am__btn:visited {
+  color: #fff;
+}
+a.am__btn--outline:link,
+a.am__btn--outline:visited {
+  color: #3f6212;
+}
+.am__btn--small {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+}
+.am__preview-wrap {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #e5e7eb;
+}
+.am__preview-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  color: #243015;
+}
+.am__preview {
+  margin: 0;
+  padding: 0.85rem;
+  border-radius: 8px;
+  background: #0f172a;
+  color: #e2e8f0;
+  overflow: auto;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  max-height: 360px;
+}

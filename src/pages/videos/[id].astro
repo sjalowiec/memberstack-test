@@ -20,7 +20,10 @@ const video = findPublicCatalogVideoByContentId(videosRaw, id);
 const contentIdForJumplinks = Number((video as any)?.content_id ?? Astro.params?.id ?? NaN);
 const contentIdAttr = !Number.isNaN(contentIdForJumplinks) ? String(contentIdForJumplinks) : "";
 
-const vimeoId = (video as any)?.vimeo_id;
+// Normalize Vimeo ID: prefer the public ID, fall back to the internal one.
+// JSON may store these as numbers, so coerce to a trimmed string before use.
+const rawVimeoId = (video as any)?.vimeo_id_public ?? (video as any)?.vimeo_id;
+const vimeoId = rawVimeoId ? String(rawVimeoId).trim() : "";
 const title = (video as any)?.title ?? "Video";
 const description = (video as any)?.description ?? "";
 const downloadUrlRaw =
@@ -34,12 +37,20 @@ const downloadLabelRaw =
     : "";
 const downloadLabel = downloadLabelRaw || "Download";
 
+// Normalize access_level so downstream gating only sees "open" | "member".
+// JSON uses several public synonyms ("public", "free", "open"); treat all as open.
+const rawAccessLevel = String((video as any)?.access_level ?? "member")
+  .trim()
+  .toLowerCase();
+const normalizedAccessLevel =
+  rawAccessLevel === "open" || rawAccessLevel === "public" || rawAccessLevel === "free"
+    ? "open"
+    : "member";
+
 // Public exception: when this video is the featured Tuesday Tip (isTipOfWeek), show player to everyone.
-// Otherwise use access_level from JSON (default "member").
+// Otherwise use the normalized access_level from JSON (default "member").
 const isFeaturedTip = (video as any)?.isTipOfWeek === true;
-const effectiveAccessLevelFromVideo = isFeaturedTip
-  ? "open"
-  : ((video as any)?.access_level ?? "member");
+const effectiveAccessLevelFromVideo = isFeaturedTip ? "open" : normalizedAccessLevel;
 /** Temporary until free video exceptions are restored — set false to use JSON/tip logic again. */
 const TEMPORARY_FORCE_MEMBER_WATCH = false;
 const effectiveAccessLevel = TEMPORARY_FORCE_MEMBER_WATCH
@@ -59,7 +70,6 @@ const posterSrc =
 const catalogChapters: CatalogChapterRow[] = video ? catalogChaptersFromVideoRow(video) : [];
 const hasCatalogChapters = catalogChapters.length > 0;
 const enableVideoChapterControls = hasCatalogChapters;
-
 ---
 
 <Layout title={video ? title : "Video not found"} description={video ? description : "Video not found."}>
@@ -189,12 +199,13 @@ const enableVideoChapterControls = hasCatalogChapters;
         </article>
 
         <script>
-          import { MEMBER_PLAN_IDS } from "../../config/memberships";
-          import { hasKinVideoAccess, logKinVideoAccessDebug } from "../../lib/kinVideoAccess";
-
-          // --- Memberstack: client-side unlock for jump links (hasVideoAccess / kin-access) ---
-          /* Paid-tier plan IDs: used only for isMember. Unlock uses hasVideoAccess (kin-access only). */
-          const memberPlanIds = new Set<string>(MEMBER_PLAN_IDS);
+          // Jump links use the SAME global member gate as every other section.
+          import {
+            getViewerAccessState,
+            hasMemberAccess,
+            logMemberAccessDebug,
+          } from "../../lib/memberAccess";
+          import { videoDevBypass } from "../../lib/devBypass";
 
           async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
             for (let i = 0; i < attempts; i++) {
@@ -209,28 +220,15 @@ const enableVideoChapterControls = hasCatalogChapters;
 
           function getViewerStateFromRes(res) {
             const member = res?.data?.member ?? null;
-            const planConnections = member?.planConnections ?? [];
-            const activePlanIds = new Set(
-              planConnections
-                .filter((p) => (p?.status ?? "").toUpperCase() === "ACTIVE")
-                .map((p) => p?.planId)
-                .filter(Boolean)
-            );
-
             const isLoggedIn = Boolean(member);
-            const isMember = [...activePlanIds].some((id) => memberPlanIds.has(id));
+            const hasVideoAccess = hasMemberAccess(res);
 
-            const rawKinAccess = member?.customFields?.["kin-access"];
-            const hasVideoAccess =
-              Boolean(member) && hasKinVideoAccess(rawKinAccess);
-
-            logKinVideoAccessDebug("videos/[id].jumpLinks", {
-              member,
-              rawKinAccess,
-              finalHasVideoAccess: hasVideoAccess,
+            logMemberAccessDebug("videos/[id].jumpLinks", res, {
+              rawKinAccess: member?.customFields?.["kin-access"],
+              viewerAccessState: getViewerAccessState(res),
             });
 
-            return { isLoggedIn, isMember, hasVideoAccess, member };
+            return { isLoggedIn, isMember: hasVideoAccess, hasVideoAccess, member };
           }
 
           function setAccess(hasFullAccess) {
@@ -244,25 +242,19 @@ const enableVideoChapterControls = hasCatalogChapters;
             });
           }
 
-          (async () => {
-            // default: locked
+          async function refreshJumpLinkAccess() {
             setAccess(false);
 
-            // Dev-only gating bypass: env flag or localhost ?member=true (see BaseLayout).
-            if (window.__DEV_BYPASS_GATING || window.__KBM_DEV_MEMBER__) {
+            if (videoDevBypass) {
               console.log("[KBM video access debug]", "videos/[id].setAccess.unlock", {
-                __DEV_BYPASS_GATING: window.__DEV_BYPASS_GATING,
-                __KBM_DEV_MEMBER__: window.__KBM_DEV_MEMBER__,
+                videoDevBypass,
               });
               setAccess(true);
               return;
             }
 
-            // Optional query override: ?mode=full
             const urlParams = new URLSearchParams(window.location.search);
-            const devFull = urlParams.get("mode") === "full";
-
-            if (devFull) {
+            if (urlParams.get("mode") === "full") {
               console.log("[KBM video access debug]", "videos/[id].setAccess.unlock", { mode: "full" });
               setAccess(true);
               return;
@@ -271,6 +263,31 @@ const enableVideoChapterControls = hasCatalogChapters;
             const res = await waitForMemberstackReady();
             const viewer = getViewerStateFromRes(res);
             setAccess(Boolean(viewer.hasVideoAccess));
+          }
+
+          let jumpLinkAuthBound = false;
+          function bindJumpLinkAuthRefresh() {
+            if (jumpLinkAuthBound) return;
+            const ms = window.$memberstackDom;
+            if (!ms?.on) return;
+            jumpLinkAuthBound = true;
+            ms.on("member.login", () => {
+              void refreshJumpLinkAccess();
+            });
+            ms.on("member.logout", () => {
+              void refreshJumpLinkAccess();
+            });
+          }
+
+          void (async () => {
+            await refreshJumpLinkAccess();
+            bindJumpLinkAuthRefresh();
+            void window.$memberstackDom?.onReady?.then(() => {
+              bindJumpLinkAuthRefresh();
+            });
+            window.addEventListener("auth:updated", () => {
+              void refreshJumpLinkAccess();
+            });
           })();
         </script>
 

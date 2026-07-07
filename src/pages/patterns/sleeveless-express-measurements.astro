@@ -1,4 +1,7 @@
 ---
-/** Legacy Express measurements URL — canonical Summary lives on unified review. */
-return Astro.redirect("/patterns/sleeveless/review/");
+/** Legacy Express measurements URL — redirects to the sleeveless pattern workspace. */
+import { OPEN_PATTERN_HREF } from "../../lib/patterns/customPatternProjectNavigation";
+import { buildPatternReviewLegacyRedirect } from "../../lib/patterns/patternReviewLegacyRedirect";
+
+return Astro.redirect(buildPatternReviewLegacyRedirect(Astro.request.url, OPEN_PATTERN_HREF));
 ---

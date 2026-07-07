@@ -370,5 +370,31 @@
     "tryImage": "/images/help-hub/slip-card.jpg",
     "tryImageAlt": "slip stitch chart example",
     "tryImageCaption": "Example punchcard\nBlack holes  (D) = KNIT\nWhite & Symbols <img src=\"/images/help-hub/slip-symbol.png\" alt=\"slip symbol\"> (B) = SLIP"
+  },
+  {
+    "question": "How do I choose the right knitting machine?",
+    "slug": "choosing-a-knitting-machine",
+    "status": "draft",
+    "isNew": true,
+    "bubbleAnswer": "There isn't one \"best\" knitting machine. The right choice depends on what you want to knit, the yarns you enjoy using, your budget, and whether you're looking for a new or used machine.\n\nBefore you buy, it helps to think through a few important questions. I've created a simple Machine Selection Guide that will walk you through those decisions and help narrow the choices.\n\nIf you're still unsure afterward, you can send me your answers, and I'll be happy to help. No sales pitch. No pressure. Just one machine knitter helping another find the right machine.",
+    "hook": "There isn't one \"perfect\" knitting machine. Let's find the one that's perfect for you.",
+    "category": "getting-started",
+    "mediaType": "placeholder",
+    "solutionText": "Not sure where to start? Use the <a href=\"/reference/machines/choose\">Machine Selection Guide</a> to answer a few simple questions about what you want to knit, the yarns you enjoy, and the features that matter most to you.\n\nWhen you're finished, you'll see a summary of your answers and can contact Sue for friendly, no-pressure guidance.",
+    "tryThis": "Ready to narrow down your choices? The Machine Selection Guide will walk you through a few simple questions to help identify the type of knitting machine that best fits your goals.",
+    "trySteps": [
+      "Think about what you want to knit.",
+      "Consider the yarns you enjoy using.",
+      "Decide whether you're looking for a new or used machine.",
+      "Answer a few simple questions.",
+      "Review your answers.",
+      "Contact Sue if you'd like a little guidance."
+    ],
+    "tryNote": "Not every knitter will choose the same machine, and that's okay. This guide is designed to help you narrow the choices. If you're still unsure afterward, <strong>I'm happy to help.</strong> Just one machine knitter helping another find the right machine.",
+    "title": "How do I choose the right knitting machine?",
+    "id": 1007,
+    "relatedLessons": [],
+    "sortOrder": 41,
+    "bridge": "Not sure where to start? Use the <a href=\"/reference/machines/choose\">Machine Selection Guide</a> to answer a few simple questions about what you want to knit, the yarns you enjoy, and the features that matter most to you.\n\nWhen you're finished, you'll see a summary of your answers and can contact Sue for friendly, no-pressure guidance."
   }
 ]

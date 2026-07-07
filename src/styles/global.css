@@ -8,6 +8,27 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Logged-out lock for the Hat / DIY Blanket builders.
+   A transparent overlay sits over the interactive builder area so anonymous visitors cannot make
+   builder choices; clicking it re-opens the account prompt. The dimmed state is only applied once
+   the visitor is confirmed logged out (`--out`), so logged-in members never see a flash of dimming. */
+.pattern-builder-locked {
+  position: relative;
+}
+
+.pattern-builder-lock-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  cursor: pointer;
+  background: transparent;
+  border-radius: inherit;
+}
+
+.pattern-builder-locked--out .pattern-builder-lock-overlay {
+  background: rgba(249, 250, 251, 0.62);
+}
+
 /* Pattern wizard tabs (e.g. hat builder) */
 .pattern-tab-nav {
   display: flex;
@@ -1109,6 +1130,34 @@ p {
   font-size: 0.58rem;
   letter-spacing: 0.04em;
   transform: rotate(-52deg);
+  transform-origin: center;
+}
+
+/* NEW: featured brand-new tool. Filled warm-accent ribbon in the top-right
+   corner (opposite the top-left Member ribbon), stronger than the sage
+   Member/Free/Coming Soon ribbons but still on-brand. */
+.kbm-card-ribbon--new {
+  left: auto !important;
+  right: 0 !important;
+}
+.kbm-card-ribbon--new::before {
+  background: var(--kbm-accent, #c2614e);
+  border-left: 1px solid rgba(0, 0, 0, 0.14);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.14);
+  border-right: 0;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+.kbm-card-ribbon--new::after {
+  content: attr(data-label);
+  top: 15px;
+  right: 6px;
+  left: auto;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  transform: rotate(45deg);
   transform-origin: center;
 }
 

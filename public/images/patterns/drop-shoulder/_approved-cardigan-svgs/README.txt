@@ -3,7 +3,7 @@ APPROVED DROP-SHOULDER CARDIGAN FRONT SVGs (read-only backup)
 Created: 2025-06-25
 
 The pattern page loads LIVE files from drop-shoulder/body/ and drop-shoulder/japanese/
-� NOT this folder.
+- NOT this folder.
 
 
 STRAIGHT CARDIGAN FRONT (round + V-neck share)
@@ -15,7 +15,7 @@ STRAIGHT CARDIGAN FRONT (round + V-neck share)
   BACKUP: 01-straight-cardigan-front-STITCHES-AND-ROWS.svg
 
 
-A-LINE CARDIGAN FRONT (round + V-neck share � both necklines in artwork)
+A-LINE CARDIGAN FRONT (round + V-neck share - both necklines in artwork)
 -----------------------------------------------------------------------
 
   LIVE:  drop-A-body-cardigan.svg              Stitches & Rows

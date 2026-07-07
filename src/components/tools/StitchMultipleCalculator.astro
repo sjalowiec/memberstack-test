@@ -1,0 +1,370 @@
+---
+import "../../styles/wizard.css";
+import FloatingInput from "./FloatingInput.astro";
+
+interface Props {
+  /** Suffix for input ids when multiple calculators may appear on one page. */
+  instanceId?: string;
+}
+
+const { instanceId = "standalone" } = Astro.props;
+const castOnId = `castOn-${instanceId}`;
+const repeatId = `repeat-${instanceId}`;
+const plusId = `plus-${instanceId}`;
+---
+
+<div class="stitchmult-panel" data-stitchmult-calculator>
+  <div class="section-header-with-toggle">
+    <h2>Enter Your Stitch Information</h2>
+  </div>
+
+  <form data-stitchmult-form>
+    <div class="stitchmult-input-grid">
+      <FloatingInput
+        id={castOnId}
+        name="castOn"
+        label="Cast-on stitches"
+        type="number"
+        min={1}
+        step={1}
+        inputmode="numeric"
+        placeholder=" "
+      />
+      <FloatingInput
+        id={repeatId}
+        name="repeat"
+        label="Stitch pattern repeat"
+        type="number"
+        min={1}
+        step={1}
+        inputmode="numeric"
+        placeholder=" "
+      />
+      <FloatingInput
+        id={plusId}
+        name="plus"
+        label="Extra stitches (+)"
+        type="number"
+        value="0"
+        min={0}
+        step={1}
+        inputmode="numeric"
+        placeholder=" "
+      />
+    </div>
+
+    <div class="stitchmult-actions">
+      <button type="submit" data-stitchmult-calc class="wizard-button">
+        Calculate
+      </button>
+    </div>
+
+    <div data-stitchmult-validation class="stitchmult-validation" role="alert" hidden></div>
+    <div data-stitchmult-results class="stitchmult-results" aria-live="polite"></div>
+    <div data-stitchmult-explanation class="stitchmult-explanation" hidden></div>
+  </form>
+</div>
+
+<style>
+  .stitchmult-panel {
+    background: #fff;
+    padding: 1.75rem;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 640px) {
+    .stitchmult-panel {
+      padding: 1.25rem;
+    }
+  }
+
+  .stitchmult-input-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 16px;
+  }
+
+  @media (max-width: 640px) {
+    .stitchmult-input-grid {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+  }
+
+  .stitchmult-actions {
+    margin-top: 20px;
+  }
+
+  .stitchmult-actions .wizard-button {
+    padding: 12px 22px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    background: #52682d;
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: auto;
+  }
+
+  .stitchmult-actions .wizard-button:hover {
+    background: #445925;
+  }
+
+  @media (max-width: 640px) {
+    .stitchmult-actions .wizard-button {
+      width: 100%;
+    }
+  }
+
+  .stitchmult-validation {
+    margin-top: 20px;
+    padding: 14px 18px;
+    border-left: 6px solid #d9534f;
+    background: #fff4f4;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    color: #333;
+  }
+
+  .stitchmult-validation:not([hidden]) {
+    display: block;
+  }
+
+  .stitchmult-results {
+    margin-top: 24px;
+  }
+
+  .stitchmult-results:empty {
+    margin-top: 0;
+  }
+
+  /* Injected results markup (global so scoped styles reach it) */
+  :global(.stitchmult-result-card) {
+    border-radius: 8px;
+    padding: 20px 24px;
+    font-size: 1.1rem;
+  }
+
+  :global(.stitchmult-result-card--success) {
+    background: #f1f7ea;
+    border: 1px solid #cfe0b8;
+    border-left: 4px solid #52682d;
+  }
+
+  :global(.stitchmult-result-card--nomatch) {
+    background: #fbfbf9;
+    border: 1px solid #e5e7eb;
+    border-left: 4px solid #b58a2e;
+  }
+
+  :global(.stitchmult-result-heading) {
+    margin: 0 0 0.5rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #52682d;
+  }
+
+  :global(.stitchmult-result-card--nomatch .stitchmult-result-heading) {
+    color: #7a5a12;
+  }
+
+  :global(.stitchmult-result-lede) {
+    margin: 0 0 0.75rem;
+    line-height: 1.5;
+  }
+
+  :global(.stitchmult-options) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 12px;
+  }
+
+  @media (max-width: 640px) {
+    :global(.stitchmult-options) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  :global(.stitchmult-option) {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px 18px;
+  }
+
+  :global(.stitchmult-option-count) {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #2f3a2f;
+    margin: 0 0 0.4rem;
+  }
+
+  :global(.stitchmult-option ul) {
+    margin: 0;
+    padding-left: 1.1rem;
+    line-height: 1.5;
+  }
+
+  :global(.stitchmult-result-detail) {
+    margin: 0.35rem 0 0;
+    line-height: 1.5;
+  }
+
+  .stitchmult-explanation {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .stitchmult-explanation:not([hidden]) {
+    display: block;
+  }
+
+  .stitchmult-explanation h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #2f3a2f;
+  }
+
+  .stitchmult-explanation p {
+    margin: 0 0 0.65rem;
+    line-height: 1.55;
+    color: #374151;
+  }
+
+  .stitchmult-explanation p:last-child {
+    margin-bottom: 0;
+  }
+</style>
+
+<script>
+  import {
+    calculateStitchMultiple,
+    formatDiff,
+    formatRepeat,
+    formatRepeats,
+    parseWholeNumber,
+    type StitchCountOption,
+  } from "../../lib/tools/stitchMultiple";
+
+  function escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  function optionMarkup(option: StitchCountOption): string {
+    return `
+      <div class="stitchmult-option">
+        <p class="stitchmult-option-count">${option.stitches} stitches</p>
+        <ul>
+          <li>${escapeHtml(formatRepeats(option.repeats))}</li>
+          <li>${escapeHtml(formatDiff(option.diff))}</li>
+        </ul>
+      </div>`;
+  }
+
+  function initCalculator(root: HTMLElement): void {
+    const form = root.querySelector("[data-stitchmult-form]") as HTMLFormElement | null;
+    const validationEl = root.querySelector("[data-stitchmult-validation]") as HTMLElement | null;
+    const resultsEl = root.querySelector("[data-stitchmult-results]") as HTMLElement | null;
+    const explanationEl = root.querySelector("[data-stitchmult-explanation]") as HTMLElement | null;
+
+    if (!form || !validationEl || !resultsEl || !explanationEl) return;
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      validationEl.hidden = true;
+      validationEl.textContent = "";
+      resultsEl.innerHTML = "";
+      explanationEl.hidden = true;
+      explanationEl.innerHTML = "";
+
+      const data = new FormData(form);
+      const castOn = parseWholeNumber(String(data.get("castOn") ?? ""));
+      const repeat = parseWholeNumber(String(data.get("repeat") ?? ""));
+      const plusRaw = String(data.get("plus") ?? "").trim();
+      const plus = plusRaw === "" ? 0 : parseWholeNumber(plusRaw);
+
+      const fieldErrors: string[] = [];
+      if (castOn === null) fieldErrors.push("Enter a whole number for cast-on stitches.");
+      if (repeat === null) fieldErrors.push("Enter a whole number for the stitch pattern repeat.");
+      if (plus === null) fieldErrors.push("Enter a whole number (0 or more) for plus stitches.");
+
+      if (fieldErrors.length > 0 || castOn === null || repeat === null || plus === null) {
+        validationEl.textContent = fieldErrors.join(" ");
+        validationEl.hidden = false;
+        return;
+      }
+
+      const result = calculateStitchMultiple({ castOn, repeat, plus });
+
+      if (!result.ok) {
+        validationEl.textContent = result.errors.join(" ");
+        validationEl.hidden = false;
+        return;
+      }
+
+      const repeatLabel = formatRepeat(result.repeat, result.plus);
+
+      if (result.exact) {
+        const plusLine =
+          result.plus > 0
+            ? `<li>plus ${result.plus} stitch${result.plus === 1 ? "" : "es"}</li>`
+            : "";
+        resultsEl.innerHTML = `
+          <div class="stitchmult-result-card stitchmult-result-card--success">
+            <p class="stitchmult-result-heading">&#10003; Perfect!</p>
+            <p class="stitchmult-result-lede">
+              ${result.castOn} stitches works with a stitch pattern repeat of ${repeatLabel}.
+            </p>
+            <p class="stitchmult-result-detail">This gives you:</p>
+            <ul>
+              <li>${escapeHtml(formatRepeats(result.repeats))}</li>
+              ${plusLine}
+            </ul>
+          </div>`;
+      } else {
+        const options = [
+          result.lower ? optionMarkup(result.lower) : "",
+          result.higher ? optionMarkup(result.higher) : "",
+        ]
+          .filter(Boolean)
+          .join("");
+
+        resultsEl.innerHTML = `
+          <div class="stitchmult-result-card stitchmult-result-card--nomatch">
+            <p class="stitchmult-result-lede">
+              ${result.castOn} stitches will not work with a stitch pattern repeat of ${repeatLabel}.
+            </p>
+            <p class="stitchmult-result-heading">The nearest stitch counts that fit are:</p>
+            <div class="stitchmult-options">${options}</div>
+          </div>`;
+      }
+
+      const plusPhrase =
+        result.plus > 0
+          ? `A stitch pattern repeat of ${repeatLabel} means the stitch pattern repeats every ${result.repeat} stitches and finishes with ${result.plus} extra stitch${result.plus === 1 ? "" : "es"}.`
+          : `A stitch pattern repeat of ${repeatLabel} means the stitch pattern repeats every ${result.repeat} stitches with no extra stitches at the end.`;
+
+      explanationEl.innerHTML = `
+        <h3>What does this mean?</h3>
+        <p>${escapeHtml(plusPhrase)}</p>
+        <p>If your cast-on cannot be divided evenly after accounting for the extra stitches, the stitch pattern will not fit evenly across the row.</p>`;
+      explanationEl.hidden = false;
+    });
+  }
+
+  document.querySelectorAll("[data-stitchmult-calculator]").forEach((root) => {
+    initCalculator(root as HTMLElement);
+  });
+</script>

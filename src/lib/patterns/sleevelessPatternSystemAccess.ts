@@ -1,64 +1,92 @@
 import { MEMBER_PLAN_IDS } from "../../config/memberships";
+import {
+  type FreeClaimsBySystem,
+  freeClaimedPatternIdForSystem,
+  isFreeClaimedForSystem,
+} from "./patternSystemFreeClaim";
+import {
+  patternSystemDisplayName,
+  type PatternSystemId,
+} from "./patternSystemId";
 
 /**
- * Pure access rules for the Sleeveless Pattern System (no DOM / Memberstack imports).
+ * Pure access rules for Custom Pattern systems (no DOM / Memberstack imports).
  *
- * Business rules (first pass):
+ * Business rules:
  * - Logged-out visitors cannot create patterns.
- * - Each account gets ONE one-time pattern creation allowance. It is recorded as "claimed" on the
- *   first saved pattern by ANY logged-in user (free or member) — so it represents "this account has
- *   used its free creation / has an established library", not a per-pattern special case.
- * - Ownership preserves viewing/printing forever: saved measurements, gauge, notes, and
- *   customizations are never lost, and any saved pattern stays viewable/printable while logged in.
- * - Active entitlement is the only thing that re-enables creation and regeneration/editing:
- *     - Members / Sleeveless Pattern System owners get full editing + unlimited creation.
- *     - Once entitlement ends, ALL saved patterns become settings-read-only (no gauge, measurement,
- *       style, or regeneration edits) and no new patterns can be created.
- * - User-owned text fields (pattern name/title + project notes) stay editable for any logged-in user
- *   on any pattern — that is library/project management, not pattern generation.
+ * - Each account gets ONE one-time saved pattern per pattern system (Sleeveless, Drop Shoulder, …).
+ * - Ownership preserves viewing/printing forever for saved patterns.
+ * - Active entitlement re-enables unlimited creation and full editing.
+ * - User-owned text fields (name/title + notes) stay editable for any logged-in user.
  *
- * The DOM/Memberstack wiring lives in `sleevelessPatternSystemAccessClient.ts`; this module stays
- * pure so the rules can be unit-tested directly.
+ * DOM/Memberstack wiring lives in `sleevelessPatternSystemAccessClient.ts`.
  */
 
-/** Paid membership plans that grant full Sleeveless Pattern System access. */
+/** Paid membership plans that grant full pattern system access. */
 export const SLEEVELESS_SYSTEM_MEMBERSHIP_PLAN_IDS = MEMBER_PLAN_IDS;
 
-/**
- * Standalone "unlock the Sleeveless Pattern System" plan/price ids.
- * Empty until the per-system checkout is wired; member JSON unlock flag covers the interim.
- */
+/** Standalone unlock plan ids (empty until per-system checkout is wired). */
 export const SLEEVELESS_SYSTEM_UNLOCK_PLAN_IDS: readonly string[] = [];
 
-/** Member JSON key set when a member owns/unlocks the standalone Sleeveless Pattern System. */
+/** Member JSON key for standalone Sleeveless Pattern System unlock. */
 export const SLEEVELESS_SYSTEM_UNLOCK_JSON_KEY = "sleevelessPatternSystemUnlocked";
 
-/** Member JSON keys for the one-time free pattern claim (account-tied, not localStorage). */
+/** @deprecated Legacy keys — use {@link FREE_PATTERN_CLAIMS_BY_SYSTEM_JSON_KEY} via patternSystemFreeClaim. */
 export const FREE_SLEEVELESS_CLAIMED_JSON_KEY = "freeSleevelessPatternClaimed";
+/** @deprecated Legacy keys — use per-system claims. */
 export const FREE_SLEEVELESS_CLAIMED_PATTERN_ID_JSON_KEY = "freeSleevelessPatternId";
 
 /** Resolved access snapshot for the current visitor. */
 export interface SleevelessUserAccess {
-  /** Memberstack reports a logged-in member (or dev bypass). */
   loggedIn: boolean;
-  /** Memberstack member id when logged in. */
   memberId?: string;
-  /** Member or owns/unlocks the Sleeveless Pattern System → full editing + unlimited creation. */
+  /** Member or owns/unlocks the pattern system → full editing + unlimited creation. */
   hasSystemAccess: boolean;
-  /** The account has used its one-time creation allowance (set on the first saved pattern). */
-  freeClaimed: boolean;
-  /** Saved-pattern id recorded when the allowance was first used (informational only). */
-  freeClaimedPatternId?: string;
+  /** Per-system one-time free pattern claims (canonical). */
+  freeClaimsBySystem: FreeClaimsBySystem;
 }
 
-/** Stable snapshot for logged-out visitors. */
 export const LOGGED_OUT_SLEEVELESS_ACCESS: SleevelessUserAccess = {
   loggedIn: false,
   hasSystemAccess: false,
-  freeClaimed: false,
+  freeClaimsBySystem: {},
 };
 
-/** The one-time free claim as stored in Memberstack member JSON. */
+/** @deprecated Use {@link isFreeClaimedForSystem} with a {@link PatternSystemId}. */
+export function accessFreeClaimedForSystem(
+  access: SleevelessUserAccess,
+  systemId: PatternSystemId,
+): boolean {
+  return isFreeClaimedForSystem(access.freeClaimsBySystem, systemId);
+}
+
+/** @deprecated Use {@link freeClaimedPatternIdForSystem}. */
+export function accessFreeClaimedPatternIdForSystem(
+  access: SleevelessUserAccess,
+  systemId: PatternSystemId,
+): string | undefined {
+  return freeClaimedPatternIdForSystem(access.freeClaimsBySystem, systemId);
+}
+
+/** @deprecated Prefer per-system checks — true when ANY system has a claim. */
+export function accessHasAnyFreeClaim(access: SleevelessUserAccess): boolean {
+  return Object.values(access.freeClaimsBySystem).some((c) => c?.claimed === true);
+}
+
+/** @deprecated Use per-system id lookup with {@link resolvePatternSystemFromPage}. */
+export function legacyFreeClaimed(access: SleevelessUserAccess): boolean {
+  return accessHasAnyFreeClaim(access);
+}
+
+/** @deprecated Use {@link freeClaimedPatternIdForSystem}. */
+export function legacyFreeClaimedPatternId(access: SleevelessUserAccess): string | undefined {
+  return (
+    freeClaimedPatternIdForSystem(access.freeClaimsBySystem, "sleeveless") ??
+    freeClaimedPatternIdForSystem(access.freeClaimsBySystem, "drop-shoulder")
+  );
+}
+
+/** The one-time free claim as stored in legacy Memberstack member JSON. */
 export interface SleevelessFreeClaim {
   freeSleevelessPatternClaimed: boolean;
   freeSleevelessPatternId?: string;
@@ -70,7 +98,6 @@ function asRecord(value: unknown): Record<string, unknown> {
     : {};
 }
 
-/** True when any of the member's plan ids grant Sleeveless Pattern System access. */
 export function planIdsGrantSleevelessSystemAccess(planIds: readonly string[]): boolean {
   const granting = new Set<string>([
     ...SLEEVELESS_SYSTEM_MEMBERSHIP_PLAN_IDS,
@@ -79,13 +106,12 @@ export function planIdsGrantSleevelessSystemAccess(planIds: readonly string[]): 
   return planIds.some((id) => typeof id === "string" && granting.has(id.trim()));
 }
 
-/** Reads the standalone unlock flag from Memberstack member JSON. */
 export function readSleevelessSystemUnlockFromMemberJson(json: unknown): boolean {
   const record = asRecord(json);
   return record[SLEEVELESS_SYSTEM_UNLOCK_JSON_KEY] === true;
 }
 
-/** Reads the one-time free claim from Memberstack member JSON. */
+/** @deprecated Legacy read — use {@link readFreeClaimsBySystemFromMemberJson}. */
 export function readFreeClaimFromMemberJson(json: unknown): SleevelessFreeClaim {
   const record = asRecord(json);
   const claimed = record[FREE_SLEEVELESS_CLAIMED_JSON_KEY] === true;
@@ -94,10 +120,7 @@ export function readFreeClaimFromMemberJson(json: unknown): SleevelessFreeClaim 
   return { freeSleevelessPatternClaimed: claimed, freeSleevelessPatternId: id };
 }
 
-/**
- * Returns a new member-JSON object with the free claim merged in.
- * Existing keys are preserved so we never clobber other account metadata.
- */
+/** @deprecated Legacy merge — use {@link mergeFreeClaimForSystemIntoMemberJson}. */
 export function mergeFreeClaimIntoMemberJson(
   json: unknown,
   claim: SleevelessFreeClaim,
@@ -110,14 +133,7 @@ export function mergeFreeClaimIntoMemberJson(
   return merged;
 }
 
-/**
- * Returns a new member-JSON object with the one-time free claim cleared:
- * `freeSleevelessPatternClaimed: false` and `freeSleevelessPatternId: null`.
- *
- * Admin/support reset path only — see `resetFreeSleevelessPatternClaimForCurrentMember`. All other
- * keys are preserved so we never clobber unrelated account metadata. The id is set to `null` (rather
- * than deleted) so the cleared state is explicit in the stored JSON.
- */
+/** @deprecated Legacy reset — use {@link mergeFreeClaimResetForSystemIntoMemberJson}. */
 export function mergeFreeClaimResetIntoMemberJson(json: unknown): Record<string, unknown> {
   const merged: Record<string, unknown> = { ...asRecord(json) };
   merged[FREE_SLEEVELESS_CLAIMED_JSON_KEY] = false;
@@ -125,47 +141,67 @@ export function mergeFreeClaimResetIntoMemberJson(json: unknown): Record<string,
   return merged;
 }
 
-/** Member or owns/unlocks the Sleeveless Pattern System. */
 export function hasSleevelessPatternSystemAccess(user: SleevelessUserAccess): boolean {
   return Boolean(user?.hasSystemAccess);
 }
 
-/**
- * Whether the user may create/save a NEW Sleeveless Pattern right now.
- * - Logged out → no.
- * - System access → always (unlimited creation).
- * - Otherwise → only if the account's one-time creation allowance is still unused.
- */
-export function canCreateSleevelessPattern(user: SleevelessUserAccess): boolean {
+/** Whether the user may create/save a NEW pattern for the given system right now. */
+export function canCreatePatternForSystem(
+  user: SleevelessUserAccess,
+  systemId: PatternSystemId,
+): boolean {
   if (!user?.loggedIn) return false;
   if (hasSleevelessPatternSystemAccess(user)) return true;
-  return !user.freeClaimed;
+  return !isFreeClaimedForSystem(user.freeClaimsBySystem ?? {}, systemId);
 }
 
-/**
- * Whether the user may edit pattern-building choices (who/size, front, neckline, fit, gauge,
- * measurements) and regenerate.
- * - System access → always.
- * - Otherwise → only while still creating their one allowed pattern (allowance unused). Once the
- *   allowance is used (or entitlement has ended), every saved pattern is settings-read-only.
- * - Logged out → no.
- */
-export function canEditSleevelessPatternSettings(
+/** @deprecated Use {@link canCreatePatternForSystem} with an explicit system id. */
+export function canCreateSleevelessPattern(
   user: SleevelessUserAccess,
-  _pattern?: unknown,
+  systemId: PatternSystemId = "sleeveless",
+): boolean {
+  return canCreatePatternForSystem(user, systemId);
+}
+
+/** Whether the user may edit pattern-building choices and regenerate for the given system. */
+export function canEditPatternSettingsForSystem(
+  user: SleevelessUserAccess,
+  systemId: PatternSystemId,
 ): boolean {
   if (hasSleevelessPatternSystemAccess(user)) return true;
   if (!user?.loggedIn) return false;
-  return !user.freeClaimed;
+  return !isFreeClaimedForSystem(user.freeClaimsBySystem ?? {}, systemId);
 }
 
-/**
- * Whether the user may edit user-owned text fields (pattern name/title, project notes).
- * Any logged-in user may rename and add notes — including a free user's claimed pattern.
- */
+/** @deprecated Use {@link canEditPatternSettingsForSystem} with an explicit system id. */
+export function canEditSleevelessPatternSettings(
+  user: SleevelessUserAccess,
+  systemId: PatternSystemId = "sleeveless",
+): boolean {
+  return canEditPatternSettingsForSystem(user, systemId);
+}
+
 export function canEditSleevelessPatternNotes(
   user: SleevelessUserAccess,
   _pattern?: unknown,
 ): boolean {
   return Boolean(user?.loggedIn);
 }
+
+/** User-facing copy when a free user already claimed their pattern for a system. */
+export function resolvePatternSystemAlreadyClaimedCopy(systemId: PatternSystemId): string {
+  const name = patternSystemDisplayName(systemId);
+  return `You've already created your free ${name} pattern.\n\nEditing is included with membership. You can still view, print, and knit from this pattern.\n\nCreate another ${name} pattern with membership.`;
+}
+
+/** User-facing copy when a logged-out visitor tries to save. */
+export function resolvePatternSystemSaveLoggedOutCopy(systemId: PatternSystemId): string {
+  const name = patternSystemDisplayName(systemId);
+  return `Log in to create your free ${name} pattern.`;
+}
+
+export {
+  isFreeClaimedForSystem,
+  freeClaimedPatternIdForSystem,
+  type FreeClaimsBySystem,
+};

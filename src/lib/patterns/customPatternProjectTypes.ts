@@ -35,9 +35,12 @@ export type CustomPatternProjectSummary = Pick<
   CustomPatternProject,
   "id" | "name" | "family" | "source" | "createdAt" | "updatedAt" | "version"
 > & {
+  /** Entitlement / display slug (sleeveless, drop-shoulder, …). */
+  patternSystem?: string;
   /**
-   * Display-only gauge (stitches/rows per inch) derived from the saved pattern's `yarnGauge`.
-   * Not part of the stored pattern data; populated for list/drawer surfaces. Absent when unknown.
+   * Display gauge derived from the saved pattern's `yarnGauge`.
+   * Includes original entered swatch counts when stored (`displayStitches` / `displayRows`).
+   * Absent when unknown.
    */
   gauge?: SavedPatternGauge;
 };
@@ -54,6 +57,8 @@ export type SaveCustomPatternProjectRequest = {
 export type UpdateCustomPatternProjectRequest = SaveCustomPatternProjectRequest & {
   id: string;
   version?: number;
+  /** When true, only name/notes/project meta changed — skips settings-edit entitlement guard. */
+  metadataOnly?: true;
 };
 
 /** Workflow-only patch — does not change pattern body or summary `updatedAt`. */

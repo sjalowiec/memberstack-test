@@ -1,0 +1,21 @@
+---
+interface Props {
+  class?: string;
+}
+
+const {
+  class: className = "pattern-header__my-patterns kbm-btn kbm-btn-outline no-print",
+} = Astro.props;
+---
+
+<button
+  type="button"
+  class={className}
+  data-pattern-workspace-library-trigger
+  data-testid="pattern-workspace-library-trigger"
+  aria-haspopup="dialog"
+  aria-controls="pattern-workspace-library-drawer-panel"
+  aria-expanded="false"
+>
+  <i class="fa-solid fa-folder-open" aria-hidden="true"></i> My Patterns
+</button>

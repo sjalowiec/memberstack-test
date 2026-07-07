@@ -4,7 +4,7 @@
  * (header Sign Up, Hat/Blanket account gate, sleeveless gate) can open it via
  * `window.kbmOpenPublicSignupModal()` or a `data-open-public-signup` attribute.
  *
- * Uses a CUSTOM Memberstack signup form (First Name / Email / Password) � never the prebuilt
+ * Uses a CUSTOM Memberstack signup form (First Name / Email / Password) - never the prebuilt
  * `data-ms-modal="signup"` modal, which exposes internal member fields. Creates a free member
  * (no plan attached).
  */
@@ -15,6 +15,7 @@ import {
   PUBLIC_SIGNUP_MODAL_SUBTITLE,
   PUBLIC_SIGNUP_MODAL_TITLE,
   PUBLIC_SIGNUP_PASSWORD_LABEL,
+  PUBLIC_SIGNUP_REDIRECT_PATH,
   PUBLIC_SIGNUP_SUBMIT_LABEL,
 } from "../lib/publicSignupModal";
 ---
@@ -30,7 +31,11 @@ import {
     </h2>
     <p class="public-signup-modal__subtitle">{PUBLIC_SIGNUP_MODAL_SUBTITLE}</p>
 
-    <form data-ms-form="signup" class="public-signup-modal__form">
+    <form
+      data-ms-form="signup"
+      class="public-signup-modal__form"
+      {...{ redirect: PUBLIC_SIGNUP_REDIRECT_PATH } as Record<string, string>}
+    >
       <div class="public-signup-modal__field">
         <label for="public-signup-first-name">{PUBLIC_SIGNUP_FIRST_NAME_LABEL}</label>
         <input
@@ -66,6 +71,11 @@ import {
           Password must be at least 8 characters.
         </p>
       </div>
+
+      <p class="public-signup-modal__note">
+        We'll occasionally send you machine knitting tips, new patterns, and updates from Knit It
+        Now. You can unsubscribe at any time.
+      </p>
 
       <button type="submit" class="public-signup-modal__submit kbm-btn kbm-btn-primary">
         {PUBLIC_SIGNUP_SUBMIT_LABEL}
@@ -159,6 +169,13 @@ import {
   .public-signup-modal__hint {
     margin: 0.15rem 0 0;
     font-size: 0.8rem;
+    color: #6b7280;
+  }
+
+  .public-signup-modal__note {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.45;
     color: #6b7280;
   }
 

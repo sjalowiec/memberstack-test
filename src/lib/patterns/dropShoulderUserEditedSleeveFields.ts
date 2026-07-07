@@ -94,11 +94,20 @@ export function writeDropShoulderUserEditedSleeveFields(
   writeExpressBlobPatch({ [DROP_SHOULDER_USER_EDITED_SLEEVE_FIELDS_KEY]: normalizeFlags(flags) });
 }
 
+function isEmptyExpressBlob(blob: Record<string, unknown>): boolean {
+  return Object.keys(blob).length === 0;
+}
+
 export function clearDropShoulderUserEditedSleeveFields(): void {
+  if (typeof localStorage === "undefined") return;
   const prev = readExpressBlob();
   delete prev[DROP_SHOULDER_USER_EDITED_SLEEVE_FIELDS_KEY];
   try {
-    localStorage.setItem(SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY, JSON.stringify(prev));
+    if (isEmptyExpressBlob(prev)) {
+      localStorage.removeItem(SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY);
+    } else {
+      localStorage.setItem(SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY, JSON.stringify(prev));
+    }
   } catch {
     /* ignore */
   }

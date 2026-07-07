@@ -1,5 +1,7 @@
 ---
 import "../../styles/patterns/pattern-tabs-scope.css";
+import "../../styles/patterns/pattern-editable-pencil.css";
+import PatternEditablePencilIcon from "./PatternEditablePencilIcon.astro";
 import PatternWorkspaceLibraryDrawer from "./PatternWorkspaceLibraryDrawer.astro";
 
 interface Props {
@@ -65,7 +67,7 @@ const customStyleRoot = normPath("/patterns/sleeveless/custom-style");
 const pathIsCustomStyleFlow =
   pathNow === customStyleRoot || (customStyleRoot && pathNow.startsWith(`${customStyleRoot}/`));
 
-const summaryRoot = normPath("/patterns/sleeveless/review");
+const summaryRoot = normPath("/patterns/sleeveless/pattern");
 const pathIsSummaryFlow =
   (summaryRoot && (pathNow === summaryRoot || pathNow.startsWith(`${summaryRoot}/`))) ||
   pathIsCustomStyleFlow;
@@ -117,21 +119,7 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
             aria-label="Pattern Setup"
             title="Pattern Setup"
           >
-            <svg
-              class="tab-workspace-brand-icon tab-workspace-summary-pencil-icon"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"></path>
-            </svg>
+            <PatternEditablePencilIcon size="md" class="tab-workspace-brand-icon tab-workspace-summary-pencil-icon" />
             <span class="pattern-workspace-tabs__visible-label" aria-hidden="true">Pattern Setup</span>
           </a>
           {!hidePattern &&

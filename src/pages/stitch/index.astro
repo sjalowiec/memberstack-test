@@ -55,34 +55,20 @@ function searchBlob(it: (typeof items)[0]): string {
 }
 
 const pageDescription =
-  "Browse machine knitting stitch patterns—swatches, punchcard layouts, DesignaKnit files, and print-ready references.";
+  "Browse hundreds of machine knitting stitch patterns for your next project—tuck, lace, Fair Isle, knitweave, slip stitch, ribber, punchcard, LK150-friendly, and hand-manipulated textures.";
 ---
 
 <Layout title="Stitch Browser" description={pageDescription} bodyClass="page--tight-header">
   <div class="page-wrap stitch-cat">
     <header class="stitch-cat__intro">
-      <div class="stitch-cat__header-row">
-        <div class="stitch-cat__title-block">
-          <h1>Stitch Browser</h1>
-        </div>
-        <div class="stitch-cat__search-slot">
-          <FloatingInput
-            id="stitch-cat-search"
-            name="q"
-            type="text"
-            inputmode="search"
-            enterkeyhint="search"
-            role="searchbox"
-            label="Search stitches, techniques, or repeats"
-            autocomplete="off"
-            spellcheck={false}
-            dataAttrs={{ "data-stitch-cat-search": "" }}
-          />
-        </div>
+      <div class="stitch-cat__title-block">
+        <h1>Stitch Browser</h1>
       </div>
       <div class="stitch-cat__dek-row">
         <p class="stitch-cat__dek">
-          Explore stitch patterns, filter by what works for your machine, and find your next idea.
+          Browse hundreds of machine knitting stitch patterns. Each stitch includes a stitch chart,
+          with DesignaKnit files, printable punch card diagrams, and LK-150 cheat sheets available
+          where applicable.
         </p>
       </div>
     </header>
@@ -121,8 +107,22 @@ const pageDescription =
               data-value="lk150"
               aria-pressed="false"
             >
-              LK150 friendly
+              LK-150 Cheat Sheets
             </button>
+          </div>
+          <div class="stitch-cat__search-slot">
+            <FloatingInput
+              id="stitch-cat-search"
+              name="q"
+              type="text"
+              inputmode="search"
+              enterkeyhint="search"
+              role="searchbox"
+              label="Search stitches, techniques, or repeats"
+              autocomplete="off"
+              spellcheck={false}
+              dataAttrs={{ "data-stitch-cat-search": "" }}
+            />
           </div>
         </div>
 
@@ -499,26 +499,7 @@ const pageDescription =
       flex-direction: column;
       align-items: stretch;
       width: 100%;
-      margin-bottom: 2.25rem;
-    }
-
-    /* Title + search only — full-width description sits in .stitch-cat__dek-row below. */
-    .stitch-cat__header-row {
-      display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      width: 100%;
-      gap: 1rem;
-    }
-
-    @media (min-width: 768px) {
-      .stitch-cat__header-row {
-        flex-direction: row;
-        flex-wrap: nowrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1.5rem 2rem;
-      }
+      margin-bottom: 1.1rem;
     }
 
     .stitch-cat__dek-row {
@@ -532,6 +513,7 @@ const pageDescription =
       min-width: 0;
     }
 
+    /* Search lives in the machine-filter row; on narrow screens it stacks full-width. */
     .stitch-cat__search-slot {
       width: 100%;
       min-width: 0;
@@ -541,7 +523,7 @@ const pageDescription =
     @media (min-width: 768px) {
       .stitch-cat__search-slot {
         width: auto;
-        flex: 0 1 min(50%, 32.5rem);
+        flex: 0 1 min(50%, 28rem);
       }
     }
 
@@ -551,23 +533,17 @@ const pageDescription =
       box-sizing: border-box;
       font-family: var(--font, "Poppins", system-ui, sans-serif);
       font-size: 1.05rem;
-      line-height: 1.65;
+      line-height: 1.6;
       color: rgba(36, 48, 21, 0.62);
-      margin: 1.1rem 0 0;
+      margin: 0.6rem 0 0;
       font-weight: 400;
-    }
-
-    @media (min-width: 768px) {
-      .stitch-cat__dek {
-        margin-top: 1.15rem;
-      }
     }
 
     /* Filters scroll with the page — not sticky, so the grid stays fully visible while scrolling. */
     .stitch-cat__filters {
       position: static;
-      margin-bottom: 1.75rem;
-      padding-top: 0.75rem;
+      margin-bottom: 1.35rem;
+      padding-top: 0.25rem;
     }
 
     .stitch-cat__to-top {
@@ -610,17 +586,36 @@ const pageDescription =
     .stitch-cat__controls {
       display: flex;
       flex-direction: column;
-      gap: 1.4rem;
+      gap: 1rem;
     }
 
+    /* Machine chips on the left, search on the right; stacks on narrow screens. */
     .stitch-cat__row--machine {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.85rem;
       border-top: 1px solid rgba(28, 36, 18, 0.055);
-      padding-top: 1.05rem;
+      padding-top: 0.9rem;
+    }
+
+    @media (min-width: 768px) {
+      .stitch-cat__row--machine {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.25rem 2rem;
+      }
+    }
+
+    .stitch-cat__row--machine .stitch-cat__machine-list {
+      flex: 1 1 auto;
     }
 
     .stitch-cat__row--techniques {
       border-top: 1px solid rgba(28, 36, 18, 0.055);
-      padding-top: 1rem;
+      padding-top: 0.9rem;
     }
 
     /* Machine: compact chips — clearer than techniques, still light */

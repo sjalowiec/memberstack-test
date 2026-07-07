@@ -1,0 +1,536 @@
+﻿---
+import Layout from "../../../layouts/Layout.astro";
+import WizardBackLink from "../../../components/wizards/WizardBackLink.astro";
+import GaugeInput from "../../../components/wizards/GaugeInput.astro";
+import PrintButton from "../../../components/common/PrintButton.astro";
+import MemberLockOverlay from "../../../components/ui/MemberLockOverlay.astro";
+
+const pageTitle = "Round Neckline Practice | Skill Builders | Knit it Now";
+const pageDescription =
+  "Practice shaping a round neckline without knitting an entire sweater.";
+const skillBuilderThumbnail = "/images/skill-builders/skill-buider.png";
+---
+
+<Layout
+  title={pageTitle}
+  description={pageDescription}
+  bodyClass="page--tight-header"
+  toolPrintTitle="Round Neckline Practice"
+>
+  <div class="sb-practice-page">
+    <WizardBackLink
+      fallback="/learn/skill-builders"
+      label="Skill Builders"
+      className="sb-practice-eyebrow"
+    />
+
+    <header class="sb-practice-hero">
+      <div class="sb-practice-hero__layout">
+        <img
+          class="sb-practice-hero__thumb no-print"
+          src={skillBuilderThumbnail}
+          alt=""
+          width="320"
+          height="320"
+          loading="eager"
+          decoding="async"
+        />
+        <div class="sb-practice-hero__text">
+          <h1>Round Neckline Practice</h1>
+          <p class="sb-practice-hero__intro">
+            Practice shaping a round neckline without knitting an entire sweater.
+          </p>
+        </div>
+      </div>
+    </header>
+
+    <div class="sb-practice-tool-wrap">
+    <section class="sb-practice-panel no-print" aria-label="Gauge input">
+      <h2 class="sb-practice-panel__title">Your Gauge</h2>
+      <GaugeInput id="roundneck" showTitle={false} showToggle={false} showGaugeSubLabel={false} />
+    </section>
+
+    <div id="sb-practice-results" class="sb-practice-results" hidden>
+      <div class="sb-practice-results__toolbar no-print">
+        <PrintButton label="Print worksheet" />
+      </div>
+
+      <div id="sb-practice-diagram" class="sb-practice-diagram" aria-hidden="true"></div>
+
+      <article class="sb-worksheet" id="sb-worksheet" aria-live="polite">
+        <section
+          id="sb-calculation-summary-section"
+          class="sb-calculation-summary no-print"
+          hidden
+          aria-labelledby="sb-calculation-summary-heading"
+        >
+          <h3 id="sb-calculation-summary-heading">Calculation Summary</h3>
+          <p class="sb-calculation-summary__note">
+            Temporary developer view ¥ verifies SVG and instructions share one calculation. Will be removed.
+          </p>
+          <pre id="sb-calculation-summary" class="sb-calculation-summary__pre"></pre>
+        </section>
+
+        <section class="sb-worksheet__section" aria-labelledby="sb-worksheet-steps">
+          <h3 id="sb-worksheet-steps">Instructions</h3>
+          <ol class="sb-worksheet__steps" id="sb-worksheet-steps-list"></ol>
+        </section>
+
+        <aside class="sb-worksheet__encouragement" aria-label="Practice reminder">
+          <p><strong>Mistakes are useful here.</strong></p>
+          <p>
+            If something goes wrong on this practice piece, that's not failure. It shows you
+            exactly what to review before you try the technique on a sweater.
+          </p>
+        </aside>
+
+        <section class="sb-worksheet__section" aria-labelledby="sb-worksheet-chart">
+          <h3 id="sb-worksheet-chart">Worksheet Summary</h3>
+          <div class="sb-worksheet__table-wrap">
+            <table class="sb-worksheet__table" id="sb-worksheet-chart-table">
+              <thead>
+                <tr>
+                  <th scope="col">Step</th>
+                  <th scope="col">Rows</th>
+                  <th scope="col">Stitches</th>
+                  <th scope="col">Detail</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </section>
+
+        <p class="sb-worksheet__note no-print" id="sb-worksheet-warnings" hidden></p>
+      </article>
+    </div>
+
+    <div data-gated="locked" data-sb-member-lock>
+      <MemberLockOverlay
+        title="Skill Builders are for members"
+        message="You'll need an active membership to generate practice worksheets."
+        ctaText="Become a member"
+      />
+    </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .sb-practice-page {
+    max-width: 44rem;
+    margin: 0 auto;
+    padding: 0 20px 3.5rem;
+  }
+
+  .sb-practice-page :global(.sb-practice-eyebrow) {
+    display: inline-block;
+    margin: 0.25rem 0 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6b7280;
+    text-decoration: none;
+  }
+
+  .sb-practice-page :global(.sb-practice-eyebrow:hover) {
+    color: #52682d;
+  }
+
+  .sb-practice-tool-wrap {
+    position: relative;
+  }
+
+  .sb-practice-hero {
+    margin: 0.5rem 0 1.75rem;
+  }
+
+  .sb-practice-hero__layout {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .sb-practice-hero__thumb {
+    flex-shrink: 0;
+    width: 100px;
+    height: auto;
+    border-radius: 8px;
+  }
+
+  .sb-practice-hero__text {
+    min-width: 0;
+  }
+
+  .sb-practice-hero h1 {
+    margin: 0 0 0.65rem;
+    font-size: clamp(1.55rem, 3vw, 1.95rem);
+    font-weight: 600;
+    color: #52682d;
+    line-height: 1.2;
+  }
+
+  .sb-practice-hero__intro {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #4d5a48;
+  }
+
+  .sb-practice-panel {
+    margin-bottom: 1.25rem;
+    padding: 1.25rem 1.35rem;
+    background: #fff;
+    border: 1px solid #d6dbc9;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  }
+
+  .sb-practice-panel__title {
+    margin: 0 0 0.85rem;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #52682d;
+    padding-bottom: 0.45rem;
+    border-bottom: 2px solid #c7d8a4;
+  }
+
+  .sb-practice-panel :global(.gauge-input-wrapper) {
+    margin-bottom: 0;
+  }
+
+  .sb-practice-results__toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+  }
+
+  .sb-practice-diagram {
+    width: 100%;
+    max-width: 22rem;
+    margin: 0 auto 1.25rem;
+  }
+
+  .sb-practice-diagram :global(svg) {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .sb-worksheet {
+    padding: 1.5rem 1.35rem;
+    background: #fff;
+    border: 1px solid #d6dbc9;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  }
+
+  .sb-calculation-summary {
+    margin-bottom: 1.35rem;
+    padding: 1rem 1.1rem;
+    background: #f4f6ef;
+    border: 1px dashed #9aab7a;
+    border-radius: 8px;
+  }
+
+  .sb-calculation-summary h3 {
+    margin: 0 0 0.35rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #52682d;
+  }
+
+  .sb-calculation-summary__note {
+    margin: 0 0 0.65rem;
+    font-size: 0.82rem;
+    color: #6b7280;
+  }
+
+  .sb-calculation-summary__pre {
+    margin: 0;
+    padding: 0.75rem 0.85rem;
+    background: #fff;
+    border: 1px solid #d6dbc9;
+    border-radius: 6px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.72rem;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    color: #243015;
+  }
+
+  .sb-worksheet__section {
+    margin-bottom: 1.35rem;
+  }
+
+  .sb-worksheet__section:last-child {
+    margin-bottom: 0;
+  }
+
+  .sb-worksheet__section h3 {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #52682d;
+  }
+
+  .sb-worksheet__steps {
+    margin: 0;
+    padding-left: 1.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .sb-worksheet__steps li {
+    line-height: 1.65;
+    color: #243015;
+  }
+
+  .sb-worksheet__encouragement {
+    margin: 0 0 1.35rem;
+    padding: 0.75rem 0.95rem;
+    background: #f8faf6;
+    border: 1px solid #e8ece3;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: #5a6652;
+  }
+
+  .sb-worksheet__encouragement p {
+    margin: 0;
+  }
+
+  .sb-worksheet__encouragement p + p {
+    margin-top: 0.35rem;
+  }
+
+  .sb-worksheet__encouragement strong {
+    font-weight: 600;
+    color: #52682d;
+  }
+
+  .sb-worksheet__table-wrap {
+    overflow-x: auto;
+  }
+
+  .sb-worksheet__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+  }
+
+  .sb-worksheet__table th,
+  .sb-worksheet__table td {
+    padding: 0.55rem 0.65rem;
+    border: 1px solid #e5e7e0;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .sb-worksheet__table th {
+    background: #f0f4eb;
+    color: #52682d;
+    font-weight: 600;
+  }
+
+  .sb-worksheet__table tbody tr:nth-child(even) {
+    background: #fafbf8;
+  }
+
+  .sb-worksheet__note {
+    margin: 1rem 0 0;
+    padding: 0.75rem 0.9rem;
+    background: #fff8e6;
+    border: 1px solid #f0d899;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #5c4a1a;
+  }
+
+  @media (max-width: 600px) {
+    .sb-practice-page {
+      padding-inline: 16px;
+    }
+
+    .sb-practice-hero__layout {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .sb-practice-hero__thumb {
+      width: 80px;
+    }
+  }
+
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+
+    .sb-practice-page {
+      max-width: none;
+      padding: 0;
+    }
+
+    .sb-worksheet {
+      border: none;
+      box-shadow: none;
+      padding: 0;
+    }
+  }
+</style>
+
+<script>
+  import { calculateRoundNecklinePractice } from "../../../lib/skillBuilders/roundNecklinePractice";
+  import { buildRoundNecklinePracticeCalculationSummary } from "../../../lib/skillBuilders/roundNecklinePracticeCalculationSummary";
+  import { buildRoundNecklinePracticeDiagramValues } from "../../../lib/skillBuilders/roundNecklinePracticeDiagram";
+  import { loadSkillBuilderDiagram } from "../../../lib/skillBuilders/skillBuilderDiagram";
+  import { isSkillBuilderDebugMode } from "../../../lib/skillBuilders/skillBuilderDebugMode";
+  // Skill builders use the SAME global member gate as every other section.
+  import {
+    getViewerAccessState,
+    hasMemberAccess,
+    logMemberAccessDebug,
+  } from "../../../lib/memberAccess";
+
+  async function syncSkillBuilderMemberLock() {
+    const lock = document.querySelector<HTMLElement>("[data-sb-member-lock]");
+    if (!lock) return;
+
+    let hasAccess = false;
+    const ms = window.$memberstackDom;
+    if (ms?.getCurrentMember) {
+      try {
+        const res = await ms.getCurrentMember();
+        hasAccess = hasMemberAccess(res);
+        logMemberAccessDebug("skill-builders/round-neckline-practice", res, {
+          viewerAccessState: getViewerAccessState(res),
+        });
+      } catch {
+        hasAccess = false;
+      }
+    }
+
+    lock.toggleAttribute("hidden", hasAccess);
+    document.body.classList.toggle("ms-logged-in", hasAccess);
+  }
+
+  function bindSkillBuilderAccessRefresh() {
+    void syncSkillBuilderMemberLock();
+    window.addEventListener("auth:updated", () => {
+      void syncSkillBuilderMemberLock();
+    });
+    const ms = window.$memberstackDom;
+    if (ms?.on) {
+      ms.on("member.login", () => void syncSkillBuilderMemberLock());
+      ms.on("member.logout", () => void syncSkillBuilderMemberLock());
+    }
+  }
+
+  const ROUND_NECKLINE_DIAGRAM = "round-neckline";
+  const SHOW_CALCULATION_SUMMARY = isSkillBuilderDebugMode();
+
+  async function renderWorksheet(
+    result: NonNullable<ReturnType<typeof calculateRoundNecklinePractice>>,
+    gauge: { stitchesPerFourInches: number; rowsPerFourInches: number },
+  ) {
+    const resultsRoot = document.getElementById("sb-practice-results");
+    const diagramRoot = document.getElementById("sb-practice-diagram");
+    const summarySection = document.getElementById("sb-calculation-summary-section");
+    const summaryPre = document.getElementById("sb-calculation-summary");
+    const stepsList = document.getElementById("sb-worksheet-steps-list");
+    const chartBody = document.querySelector<HTMLTableSectionElement>(
+      "#sb-worksheet-chart-table tbody",
+    );
+    const warningsEl = document.getElementById("sb-worksheet-warnings");
+
+    if (!resultsRoot || !diagramRoot || !stepsList || !chartBody || !warningsEl) return;
+
+    if (SHOW_CALCULATION_SUMMARY && summarySection && summaryPre) {
+      summaryPre.textContent = buildRoundNecklinePracticeCalculationSummary(result, gauge);
+      summarySection.hidden = false;
+    }
+
+    await loadSkillBuilderDiagram(
+      diagramRoot,
+      ROUND_NECKLINE_DIAGRAM,
+      buildRoundNecklinePracticeDiagramValues(result),
+    );
+    diagramRoot.removeAttribute("aria-hidden");
+
+    stepsList.innerHTML = result.worksheetSteps
+      .map((step) => `<li>${step}</li>`)
+      .join("");
+
+    chartBody.innerHTML = result.shapingChart
+      .map(
+        (row) =>
+          `<tr><td>${row.step}</td><td>${row.rows}</td><td>${row.stitches}</td><td>${row.detail}</td></tr>`,
+      )
+      .join("");
+
+    if (result.warnings.length > 0) {
+      warningsEl.hidden = false;
+      warningsEl.textContent = result.warnings.join(" ");
+    } else {
+      warningsEl.hidden = true;
+      warningsEl.textContent = "";
+    }
+
+    resultsRoot.hidden = false;
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    bindSkillBuilderAccessRefresh();
+
+    if (!SHOW_CALCULATION_SUMMARY) {
+      document.getElementById("sb-calculation-summary-section")?.remove();
+    }
+
+    const stitchInput = document.getElementById("roundneck-stitch-gauge") as HTMLInputElement | null;
+    const rowInput = document.getElementById("roundneck-row-gauge") as HTMLInputElement | null;
+    const resultsRoot = document.getElementById("sb-practice-results");
+
+    if (!stitchInput || !rowInput || !resultsRoot) return;
+
+    function calculateFromInputs() {
+      const stitchesPerFourInches = parseFloat(stitchInput!.value);
+      const rowsPerFourInches = parseFloat(rowInput!.value);
+
+      if (
+        !Number.isFinite(stitchesPerFourInches) ||
+        stitchesPerFourInches <= 0 ||
+        !Number.isFinite(rowsPerFourInches) ||
+        rowsPerFourInches <= 0
+      ) {
+        resultsRoot!.hidden = true;
+        document.getElementById("sb-practice-diagram")?.replaceChildren();
+        return;
+      }
+
+      const result = calculateRoundNecklinePractice({
+        stitchesPerFourInches,
+        rowsPerFourInches,
+      });
+
+      if (!result) {
+        resultsRoot!.hidden = true;
+        document.getElementById("sb-practice-diagram")?.replaceChildren();
+        return;
+      }
+
+      void renderWorksheet(result, {
+        stitchesPerFourInches,
+        rowsPerFourInches,
+      });
+    }
+
+    stitchInput.addEventListener("input", calculateFromInputs);
+    rowInput.addEventListener("input", calculateFromInputs);
+  });
+</script>

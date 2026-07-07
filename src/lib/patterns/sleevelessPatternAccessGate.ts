@@ -4,8 +4,9 @@
  *
  * Resolution order: explicit dev/test overrides (query param, then localStorage) win; otherwise
  * the resolved Memberstack access snapshot decides (`hasSystemAccess`). Before the async snapshot
- * resolves, callers that have not awaited resolution fall back to the open beta default. Review-page
- * scripts await {@link resolveSleevelessUserAccess} first so the snapshot is primed before reading.
+ * resolves, callers that have not awaited resolution fall back to locked (non-member) so free and
+ * downgraded users are not briefly granted member-only controls. Review-page scripts await
+ * {@link resolveSleevelessUserAccess} first so the snapshot is primed before reading.
  */
 import { getCachedSleevelessUserAccess } from "./sleevelessPatternSystemAccessClient";
 import type { SleevelessUserAccess } from "./sleevelessPatternSystemAccess";
@@ -27,7 +28,7 @@ function parseAccessOverride(raw: string | null | undefined): boolean | null {
  * When true, review-page measurement fields are editable and full validation runs.
  * When false, measurements are read-only; knitters can still generate/print the pattern.
  *
- * Default: editable (beta / current testing).
+ * Default: locked until access resolves (conservative for free / downgraded users).
  *
  * Force read-only for future free-state testing:
  * - `?advanced=0` or `?customize=0` on the review URL
@@ -73,8 +74,8 @@ export function resolveHasAdvancedPatternAccess(pageUrl?: URL): boolean {
   const access = getCachedSleevelessUserAccess();
   if (access) return access.hasSystemAccess;
 
-  // Snapshot not resolved yet — keep the open beta default to avoid flash-locking members.
-  return true;
+  // Snapshot not resolved yet — default locked so non-members are not briefly unlocked.
+  return false;
 }
 
 /**

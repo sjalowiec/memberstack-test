@@ -4,14 +4,13 @@ import {
   memberRecordFromMemberstackPayload,
 } from "../lib/patterns/memberstackMember";
 
-const PLAN_ID_TO_PRICE_ID = new Map<string, string>(
-  Object.values(MEMBERSHIPS)
-    .filter(
-      (tier): tier is typeof MEMBERSHIPS.basicMonthly =>
-        "memberstackPlanId" in tier && "memberstackPriceId" in tier,
-    )
-    .map((tier) => [tier.memberstackPlanId, tier.memberstackPriceId]),
-);
+// Fallback map for "you already have this plan" detection when a member's
+// active plan connection has no explicit priceId. Each current paid plan maps
+// to its annual price id (a stable representative price for the plan).
+const PLAN_ID_TO_PRICE_ID = new Map<string, string>([
+  [MEMBERSHIPS.basic.memberstackPlanId, MEMBERSHIPS.basic.prices.annual.memberstackPriceId],
+  [MEMBERSHIPS.premium.memberstackPlanId, MEMBERSHIPS.premium.prices.annual.memberstackPriceId],
+]);
 
 const JOIN_CHECKOUT_PLANS = {
   basicMonthly: { label: "Basic Monthly", priceId: MEMBERSHIP_PRICE_IDS.basicMonthly },
@@ -180,7 +179,7 @@ async function startJoinCheckout(planKey: JoinCheckoutPlanKey): Promise<void> {
 
     if (!loggedIn) {
       console.log("[join checkout] opening SIGNUP modal");
-      showJoinStatus("Create your account to continue to checkoutù", "info");
+      showJoinStatus("Create your account to continue to checkout...", "info");
 
       const signupResult = await ms.openModal?.("SIGNUP");
       console.log("[join checkout] signup modal result:", signupResult);
@@ -213,7 +212,7 @@ async function startJoinCheckout(planKey: JoinCheckoutPlanKey): Promise<void> {
     console.log("[join checkout] calling purchasePlansWithCheckout", {
       priceId: plan.priceId,
     });
-    showJoinStatus(`Opening checkout for ${plan.label}ù`, "info");
+    showJoinStatus(`Opening checkout for ${plan.label}...`, "info");
 
     const checkoutResult = await purchasePlansWithCheckout.call(ms, {
       priceId: plan.priceId,

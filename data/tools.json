@@ -10,7 +10,8 @@
     "category": "Buttons and Bands",
     "help_text": "Use this tool when you need to calculate how many stitches to pick up for a cardigan band.\n\nEnter the gauge of the band stitch pattern and the number of rows along the sweater front edge. The tool calculates how many stitches to pick up so the band lies flat without pulling or rippling.Use this tool when you need to calculate how many stitches to pick up for a cardigan band.\n\nWhat You Need\n• Gauge of the band stitch pattern\n• Number of rows along the sweater front edge",
     "active": false,
-    "status": "coming-soon"
+    "status": "coming-soon",
+    "embeddable": false
   },
   {
     "id": 5,
@@ -23,7 +24,8 @@
     "category": "Buttons and Bands",
     "help_text": "Use this tool when adding vertical bands to the front edges of a cardigan.\n\nEnter the number of rows along the sweater front and the gauge of the band stitch pattern. The tool calculates how many stitches to pick up and the instructions needed to knit the band so it lies flat when worn.\nThe tool will give you precise instructions for positioning the buttonholes using any knitting method you like.",
     "active": false,
-    "status": "coming-soon"
+    "status": "coming-soon",
+    "embeddable": false
   },
   {
     "id": 2,
@@ -35,7 +37,8 @@
     "helpID": 4144,
     "category": "Shaping and Charting",
     "help_text": "Use this tool to create rectangular or square projects such as scarves, shawls, pillows, and blankets.\n\nEnter the finished width and length, along with your gauge. The tool calculates the number of stitches to cast on and the number of rows needed to reach your desired size.\nUse any yarn, any machine and any stitch pattern.",
-    "active": true
+    "active": true,
+    "embeddable": false
   },
   {
     "id": 36,
@@ -46,7 +49,8 @@
     "membersonly": false,
     "category": "Shaping and Charting",
     "help_text": "Use this tool to download printable knitters graph paper that matches your gauge.\n\nChoose US Letter or Metric A4, then pick your stitch gauge and row gauge. The tool builds a link to a ready-made PDF you can print for intarsia, motifs, stitch placement, or shaping notes.\nFor true-scale printing, print at Actual Size / 100% (not 'Fit to page').",
-    "active": true
+    "active": true,
+    "embeddable": false
   },
   {
     "id": 4,
@@ -59,9 +63,9 @@
     "category": "Buttons and Bands",
     "help_text": "Use this tool to position buttonholes evenly along a band.\n\nEnter the length of the band and the number of buttonholes needed. The tool calculates the spacing so the buttonholes are placed evenly from top to bottom.\nThe Knit it Now Buttonhole Placement Tool, will walk you through all the decisions you need to make, step-by-step and it will generate knitting instructions so you can knit bands with perfectly spaced buttonholes.\n\nStart by entering the gauge of the stitch pattern you'll use for your band Next add the details of your buttons:\nHow many holes?\nHow long is the band?\nhat size buttonhole do you need?\nHow much space do you want from the top and bottom edge of the band?\n\nArmed with your answers, the tool will generate knitting instructions for you, with NO MATH.",
     "active": false,
-    "status": "coming-soon"
+    "status": "coming-soon",
+    "embeddable": false
   },
-
   {
     "id": 26,
     "title": "Custom Sleeve",
@@ -73,7 +77,8 @@
     "category": "Design Elements",
     "help_text": "You've found the perfect pattern, and sleeveless just isn't comfortable for you. With a few measurements and the Knit it Now Custom Sleeves pattern, you're the designer!\n\nTake a sleeveless sweater pattern (with dropped shoulders) and add sleeves.",
     "active": false,
-    "status": "coming-soon"
+    "status": "coming-soon",
+    "embeddable": false
   },
   {
     "id": 3,
@@ -85,7 +90,8 @@
     "helpID": 4141,
     "category": "Design Elements",
     "help_text": "Use this tool to calculate short-row shaping for darts.\n\nEnter the dart depth and the number of stitches involved. The tool calculates the short-row sequence needed to shape the dart and improve the fit of your sweater.\nLet the Knit it Now Dart Formula Tool calculate the short-row shaping for darts.\n\nAdding bust darts will improve the fit of your sweaters.",
-    "active": true
+    "active": true,
+    "embeddable": false
   },
   {
     "id": 35,
@@ -97,7 +103,8 @@
     "helpID": null,
     "category": "Design Elements",
     "help_text": "Plan vertical button bands for machine-knit cardigans, including buttonhole spacing, offsets, band dimensions, and written knitting instructions.\n\nUse this tool for sideways-knit vertical button bands: cast on across the band depth, knit rows along the band length, and work buttonholes evenly spaced across one row at the midpoint of the band. Helpful for cardigan finishing, bands, and closures.",
-    "active": true
+    "active": true,
+    "embeddable": false
   },
   {
     "id": 8,
@@ -110,7 +117,8 @@
     "category": "Project Planning",
     "help_text": "Use this tool to create full-scale knitter’s graph paper based on your stitch and row gauge.\n\nEnter your stitch gauge and row gauge. The tool generates graph paper scaled to your gauge so you can accurately plan intarsia, motifs, or pattern shaping.Note: if you are using an IPad with Safari, you may have a problem with the download. Please use a different browser or device",
     "active": false,
-    "status": "coming-soon"
+    "status": "coming-soon",
+    "embeddable": false
   },
   {
     "id": 34,
@@ -122,7 +130,13 @@
     "helpID": "NULL",
     "category": "Swatching and Gauge",
     "help_text": "Use this tool to see how differences in gauge affect the finished size of your knitting.",
-    "active": true
+    "active": true,
+    "toolKey": "gauge-comparison",
+    "embeddable": true,
+    "embedContexts": [
+      "course"
+    ],
+    "embedStatus": "planned"
   },
   {
     "id": 18,
@@ -134,7 +148,8 @@
     "helpID": null,
     "category": "Swatching and Gauge",
     "help_text": "Ditch the Calculator! Enter stitches, rows, width, and height for your swatch; the tool shows stitch and row gauge per 4 inches or 10 cm.\n\nMeasure between your markers—not the full swatch—for the most accurate results.",
-    "active": true
+    "active": true,
+    "embeddable": false
   },
   {
     "id": 33,
@@ -142,11 +157,17 @@
     "href": "/tools/pattern-conversion",
     "icon": "gaugeconversion.svg",
     "description": "Convert pattern stitch and row counts to match your gauge.",
-    "membersonly": false,
+    "membersonly": true,
     "helpID": 4133,
     "category": "Swatching and Gauge",
     "help_text": "Use this tool when you want to substitute a different yarn than the pattern calls for.\n\nEnter the gauge from the original pattern and the gauge from your swatch. The tool calculates the stitch and row counts needed so your finished piece matches the pattern measurements using your yarn.",
-    "active": true
+    "active": true,
+    "toolKey": "pattern-conversion",
+    "embeddable": true,
+    "embedContexts": [
+      "course"
+    ],
+    "embedStatus": "planned"
   },
   {
     "id": 16,
@@ -159,19 +180,26 @@
     "category": "Design Elements",
     "help_text": "Use this tool to create a simple hood shape that can be added to a knitting pattern.\n\nEnter your gauge and the desired hood size. The tool calculates the stitches, rows, and shaping needed to knit the hood.Choose from 4 different hood styles\nEnter the dimensions of your finished neck opening and the desired hood depth.\nThe tool will generate a hood pattern based on your stitch and row gauge",
     "active": false,
-    "status": "coming-soon"
-  },  
+    "status": "coming-soon",
+    "embeddable": false
+  },
   {
     "id": 20,
-    "title": "Maximum Knitted Width",   
-     "href": "/tools/maximum-knitted-width",
+    "title": "Maximum Knitted Width",
+    "href": "/tools/maximum-knitted-width",
     "icon": "how_many_needles.svg",
     "description": "Instant verification of your machine’s maximum knitting width.",
     "membersonly": false,
     "helpID": "NULL",
     "category": "Project Planning",
     "help_text": "Every machine has its limits—don't let your design exceed them. This tool cross-references your gauge with your needle bed to give you the exact maximum width possible. It’s the ultimate planning tool for calculating how many panels you'll need for blankets, wide wraps, or oversized garments.",
-    "active": true
+    "active": true,
+    "toolKey": "maximum-knitted-width",
+    "embeddable": true,
+    "embedContexts": [
+      "course"
+    ],
+    "embedStatus": "available"
   },
   {
     "id": 23,
@@ -184,7 +212,8 @@
     "category": "Design Elements",
     "help_text": "Use this tool to calculate shaping instructions for a V-neck with a flat point.\n\nEnter your gauge along with the depth and width of the neckline. The tool calculates the decreases needed to shape the V-neck and create a flat point at the bottom.",
     "active": false,
-    "status": "coming-soon"
+    "status": "coming-soon",
+    "embeddable": false
   },
   {
     "id": 17,
@@ -197,7 +226,8 @@
     "category": "Buttons and Bands",
     "help_text": "Use this tool to estimate the number of stitches needed for neck bands.\n\nEnter your gauge and the dimensions of the neck opening. The tool calculates how many stitches to pick up for the band across both the front and back neck edges.",
     "active": false,
-    "status": "coming-soon"
+    "status": "coming-soon",
+    "embeddable": false
   },
   {
     "id": 22,
@@ -210,21 +240,21 @@
     "category": "Design Elements",
     "help_text": "Use this tool to calculate the placement and knitting instructions for rectangular or square pockets.\n\nEnter your gauge along with the finished pocket width and depth. Choose the pocket style: gathers at top and bottom, gathers at the top only, or no gathers. The tool calculates the stitch counts and instructions needed to knit and place the pocket.Top and bottom gathers: The pocket stitch count is true.5 times \"F\" (the finished pocket width)\nGather at top only: The pocket is shaped with the top edge true.5 times \"F\" (the finished pocket width)\nNo Gathers: The instructions are calculated on your \"F\" and \"D\" entry and your gauge",
     "active": false,
-    "status": "coming-soon"
+    "status": "coming-soon",
+    "embeddable": false
   },
-  
   {
     "id": 28,
-    "title": "Stitch Multiples",
-    "href": "StitchMulitples.cfm",
+    "title": "Stitch Multiple Calculator",
+    "href": "/tools/stitch-multiple-calculator",
     "icon": "st_multiple.svg",
-    "description": "Adjust stitch counts to fit complete stitch pattern repeats.",
+    "description": "Check whether a stitch pattern repeat fits your cast-on, and find the nearest stitch counts that do.",
     "membersonly": true,
     "helpID": 6239,
-    "category": "Design Elements",
-    "help_text": "Use this tool to adjust stitch counts so a stitch pattern fits correctly.\n\nEnter the number of stitches required for the stitch pattern repeat and the number of stitches available in your piece. The tool calculates the nearest stitch count that allows complete pattern repeats.",
-    "active": false,
-    "status": "coming-soon"
+    "category": "Project Planning",
+    "help_text": "Use this tool to check whether a stitch pattern repeat fits your cast-on stitch count.\n\nEnter your cast-on stitches, the stitch pattern repeat, and any plus stitches. The tool tells you if the pattern fits perfectly or shows the nearest lower and higher stitch counts that do.",
+    "active": true,
+    "embeddable": false
   },
   {
     "id": 9,
@@ -232,26 +262,26 @@
     "href": "/tools/magic-formula",
     "icon": "magic-formula.svg",
     "description": "Calculate evenly spaced increases or decreases for shaping.",
-    "membersonly": false,
+    "membersonly": true,
     "helpID": 4135,
     "category": "Shaping and Charting",
     "help_text": "Use this tool to calculate evenly spaced increases or decreases for shaping a knitted piece.\n\nEnter the number of stitches to increase or decrease and the number of rows available for the shaping. The tool calculates how to distribute the shaping evenly across the rows and provides the knitting instructions.Watch the video above for more details.\n\nUse this Knit it Now Magic Formula Tool when you know the stitches and rows of the piece you are creating or altering.\nUse this formula when you are working more rows than stitches.\nA common use for the Magic Formula is to alter sleeve length or create waist shaping for a sweater.\n If you are working from a pattern and you know the dimensions,\nuse the Knit it Now Magic Formula (in/cm) Tool.\n\n If you are working with more stitches than rows, like a shoulder slope,\nuse the Knit it Now Slope Tool.",
-    "active": true
+    "active": true,
+    "embeddable": false
   },
-  
   {
     "id": 30,
     "title": "Triangle Tool",
     "href": "/tools/triangle-v2",
     "icon": "triangle1.svg",
     "description": "Instant shaping math for symmetrical and asymmetrical triangles.",
-    "membersonly": false,
+    "membersonly": true,
     "helpID": "NULL",
     "category": "Shaping and Charting",
     "help_text": "Whether it’s a simple shawl or a complex garment insert, get the exact increase and decrease rates you need. Just enter your finished dimensions and let us handle the slopes.",
-    "active": true
+    "active": true,
+    "embeddable": false
   },
-
   {
     "id": 14,
     "title": "Yarn Estimator",
@@ -262,7 +292,13 @@
     "helpID": 4138,
     "category": "Project Planning",
     "help_text": "Use this tool to estimate whether you have enough yarn to finish your project.\n\nWeigh and measure a swatch, then enter the finished dimensions of one pattern piece. The tool estimates grams needed for that piece. Repeat for each piece and add the totals together.",
-    "active": true
+    "active": true,
+    "toolKey": "yarn-estimator",
+    "embeddable": true,
+    "embedContexts": [
+      "course"
+    ],
+    "embedStatus": "available"
   },
   {
     "id": 19,
@@ -275,7 +311,8 @@
     "category": "Project Planning",
     "help_text": "Use this tool to evaluate whether a yarn is suitable for your knitting machine.\n\nEnter the information from the yarn label, such as weight, yardage, and recommended gauge. The tool helps you estimate whether the yarn will work well on your machine.\nBy using the information on the ball band, this tool will help you determine if the yarn of interest is appropriate for your machine.",
     "active": false,
-    "status": "coming-soon"
+    "status": "coming-soon",
+    "embeddable": false
   },
   {
     "id": 30,
@@ -287,7 +324,8 @@
     "helpID": "NULL",
     "category": "Shaping and Charting",
     "help_text": "Use the Increase / Decrease Evenly Calculator when you need more or fewer stitches across a single row—for example ruffles, gathers, or other even distributions.\n\nEnter starting and ending stitch counts. The tool spaces the change evenly across the row and gives clear machine-knitting instructions for rehanging centered on the needle bed.",
-    "active": true
+    "active": true,
+    "embeddable": false
   },
   {
     "id": 31,
@@ -299,6 +337,7 @@
     "helpID": "NULL",
     "category": "Shaping and Charting",
     "help_text": "Use the Yarn Comparison Calculator to compare yarns based on ball band information.\n\nEnter yardage and weight to calculate yards per pound. This helps you understand how different yarns relate to each other and choose suitable substitutes for machine knitting.",
-    "active": true
+    "active": true,
+    "embeddable": false
   }
 ]

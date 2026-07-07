@@ -1,209 +1,943 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import {
-  EMBEDDED_TOOL_REGISTRY,
-  formatEmbeddedToolContexts,
-  type EmbeddedToolStatus,
-} from "../../lib/tools/embeddedToolRegistry";
-
-const statusLabel: Record<EmbeddedToolStatus, string> = {
-  available: "Available",
-  planned: "Planned",
-  retired: "Retired",
-};
 ---
 
 <BaseLayout
-  title="Embedded Tools | Admin"
-  description="Reference registry of site tools that can be embedded in course lessons"
+  title="Tools Admin | Admin"
+  description="Fast-edit table for every site tool: status, category, member access, and course-embedding metadata."
   skipGlobalHyvor={true}
-  bodyClass="embedded-tools-admin-body"
+  bodyClass="tools-admin-body"
 >
-  <main class="embedded-tools-admin">
-    <header class="embedded-tools-admin__head">
+  <main class="ta">
+    <header class="ta__head">
       <div>
-        <h1 class="embedded-tools-admin__title">Embedded Tools</h1>
-        <p class="embedded-tools-admin__intro">
-          Read-only reference for tools that can appear inside course lessons. Edit the registry in
-          <code>src/lib/tools/embeddedToolRegistry.ts</code>.
+        <h1 class="ta__title">Tools Admin</h1>
+        <p class="ta__intro">
+          Edit every tool from <code>data/tools.json</code> directly in the table. Changed rows are
+          highlighted; click <strong>Save changes</strong> to write them all. Only tools marked
+          <strong>Embeddable</strong> with course context and <strong>Available</strong> embed
+          status appear in the course editor dropdown.
         </p>
       </div>
-      <div class="embedded-tools-admin__actions">
-        <a href="/admin" class="kbm-btn kbm-btn-outline">Admin</a>
-        <a href="/admin/course-content" class="kbm-btn kbm-btn-outline">Course editor</a>
+      <div class="ta__head-links">
+        <a href="/admin" class="ta__btn ta__btn--outline">Admin</a>
+        <a href="/admin/course-content" class="ta__btn ta__btn--outline">Course editor</a>
       </div>
     </header>
 
-    <div class="embedded-tools-admin__table-wrap">
-      <table class="embedded-tools-admin__table">
+    <div class="ta__toolbar">
+      <label class="ta__tb-field ta__tb-field--search">
+        <span class="sr-only">Search tools</span>
+        <input type="search" id="ta-search" placeholder="Search tools…" autocomplete="off" />
+      </label>
+
+      <label class="ta__tb-field">
+        <span class="ta__tb-label">Status</span>
+        <select id="ta-filter-status">
+          <option value="all">All</option>
+          <option value="live">Live</option>
+          <option value="coming-soon">Coming soon</option>
+          <option value="hidden">Hidden</option>
+        </select>
+      </label>
+
+      <label class="ta__tb-field">
+        <span class="ta__tb-label">Category</span>
+        <select id="ta-filter-category">
+          <option value="all">All</option>
+        </select>
+      </label>
+
+      <label class="ta__tb-field">
+        <span class="ta__tb-label">Sort by</span>
+        <select id="ta-sort">
+          <option value="name">Name</option>
+          <option value="status">Status</option>
+          <option value="category">Category</option>
+          <option value="embeddable">Embeddable</option>
+          <option value="member">Member only</option>
+        </select>
+      </label>
+
+      <div class="ta__toolbar-spacer"></div>
+
+      <span id="ta-status" class="ta__status" aria-live="polite"></span>
+      <button type="button" id="ta-save" class="ta__btn ta__btn--save" disabled>
+        Save changes
+      </button>
+    </div>
+
+    <p class="ta__hint">
+      <strong>Status &amp; Active/Live are linked:</strong> coming soon tools are not live. Turning
+      on <em>Active/Live</em> clears a “Coming soon” status, and choosing “Coming soon” turns
+      <em>Active/Live</em> off.
+    </p>
+
+    <div class="ta__table-scroll">
+      <table class="ta__table">
         <thead>
           <tr>
-            <th scope="col">Tool name</th>
-            <th scope="col">Tool key</th>
-            <th scope="col">Standalone URL</th>
-            <th scope="col">Where it can be embedded</th>
-            <th scope="col">Description</th>
-            <th scope="col">Status</th>
+            <th scope="col" class="col-name sortable" data-sort="name" aria-sort="none">
+              <span class="ta-th">Tool name<span class="ta-sort-ind" aria-hidden="true"></span></span>
+            </th>
+            <th scope="col" class="col-key">Tool key</th>
+            <th scope="col" class="col-url">URL</th>
+            <th scope="col" class="col-cat sortable" data-sort="category" aria-sort="none">
+              <span class="ta-th">Category<span class="ta-sort-ind" aria-hidden="true"></span></span>
+            </th>
+            <th scope="col" class="col-status sortable" data-sort="status" aria-sort="none">
+              <span class="ta-th">Status<span class="ta-sort-ind" aria-hidden="true"></span></span>
+            </th>
+            <th scope="col" class="col-flag sortable" data-sort="member" aria-sort="none">
+              <span class="ta-th">Member only<span class="ta-sort-ind" aria-hidden="true"></span></span>
+            </th>
+            <th scope="col" class="col-flag sortable" data-sort="active" aria-sort="none">
+              <span class="ta-th">Active / Live<span class="ta-sort-ind" aria-hidden="true"></span></span>
+            </th>
+            <th scope="col" class="col-flag sortable" data-sort="embeddable" aria-sort="none">
+              <span class="ta-th">Embeddable<span class="ta-sort-ind" aria-hidden="true"></span></span>
+            </th>
+            <th scope="col" class="col-embedstatus sortable" data-sort="embedStatus" aria-sort="none">
+              <span class="ta-th">Embed status<span class="ta-sort-ind" aria-hidden="true"></span></span>
+            </th>
+            <th scope="col" class="col-flag sortable" data-sort="embedContext" aria-sort="none">
+              <span class="ta-th">Embed context<span class="ta-sort-ind" aria-hidden="true"></span></span>
+            </th>
+            <th scope="col" class="col-desc">Description</th>
+            <th scope="col" class="col-actions">Actions</th>
           </tr>
         </thead>
-        <tbody>
-          {
-            EMBEDDED_TOOL_REGISTRY.map((tool) => (
-              <tr>
-                <td>{tool.name}</td>
-                <td>
-                  <code>{tool.key}</code>
-                </td>
-                <td>
-                  <a href={tool.standalonePath}>{tool.standalonePath}</a>
-                </td>
-                <td>{formatEmbeddedToolContexts(tool.allowedContexts)}</td>
-                <td>{tool.description}</td>
-                <td>
-                  <span class:list={["embedded-tools-admin__status", `is-${tool.status}`]}>
-                    {statusLabel[tool.status]}
-                  </span>
-                </td>
-              </tr>
-            ))
-          }
-        </tbody>
+        <tbody id="ta-rows"></tbody>
       </table>
     </div>
 
-    <p class="embedded-tools-admin__note">
-      Only tools with status <strong>available</strong> appear in the course editor Embedded Tool
-      dropdown. Planned tools are listed here for reference until their embedded versions are built.
-    </p>
+    <p id="ta-empty" class="ta__empty" hidden>No tools match your filters.</p>
+
+    <!-- Shared category suggestions for every row's Category input. -->
+    <datalist id="ta-category-list"></datalist>
   </main>
+
+  <script>
+    import {
+      asString,
+      toolKeyOf,
+      toolStatusOf,
+      isEmbeddable,
+      embedContextsOf,
+      embedStatusOf,
+      isMemberOnly,
+      embedStatusLabel,
+      EMBED_STATUS_OPTIONS,
+      type ToolRecord,
+      type ToolStatus,
+      type EmbedStatus,
+      type EmbedContext,
+    } from "../../lib/tools/toolAdminFields";
+
+    const API_BASE = "/api/admin/tools";
+
+    /** Last-saved snapshot (source of truth for dirty detection). */
+    let original: ToolRecord[] = [];
+    /** Editable working copy the table inputs mutate. */
+    let working: ToolRecord[] = [];
+
+    const statusEl = document.getElementById("ta-status");
+    const emptyEl = document.getElementById("ta-empty");
+    const rowsEl = document.getElementById("ta-rows");
+    const saveBtn = document.getElementById("ta-save") as HTMLButtonElement | null;
+
+    const searchEl = document.getElementById("ta-search") as HTMLInputElement | null;
+    const filterStatusEl = document.getElementById("ta-filter-status") as HTMLSelectElement | null;
+    const filterCategoryEl = document.getElementById("ta-filter-category") as HTMLSelectElement | null;
+    const sortEl = document.getElementById("ta-sort") as HTMLSelectElement | null;
+    const categoryListEl = document.getElementById("ta-category-list");
+
+    function setStatus(message: string, kind: "ok" | "err" | "neutral" = "neutral") {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.classList.toggle("is-error", kind === "err");
+      statusEl.classList.toggle("is-ok", kind === "ok");
+    }
+
+    function escapeHtml(s: string): string {
+      return s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function deepClone<T>(x: T): T {
+      return JSON.parse(JSON.stringify(x)) as T;
+    }
+
+    function categories(): string[] {
+      const set = new Set<string>();
+      for (const t of working) {
+        const c = asString(t.category).trim();
+        if (c) set.add(c);
+      }
+      return Array.from(set).sort((a, b) => a.localeCompare(b));
+    }
+
+    function populateCategoryFilter() {
+      const cats = categories();
+      if (filterCategoryEl) {
+        const current = filterCategoryEl.value;
+        filterCategoryEl.innerHTML =
+          `<option value="all">All</option>` +
+          cats.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+        if (cats.includes(current) || current === "all") filterCategoryEl.value = current;
+      }
+      if (categoryListEl) {
+        categoryListEl.innerHTML = cats
+          .map((c) => `<option value="${escapeHtml(c)}"></option>`)
+          .join("");
+      }
+    }
+
+    // ----- dirty tracking ---------------------------------------------------
+
+    function signature(t: ToolRecord): string {
+      return JSON.stringify({
+        title: asString(t.title),
+        href: asString(t.href),
+        category: asString(t.category),
+        status: asString(t.status),
+        membersonly: t.membersonly === true,
+        active: t.active === true,
+        embeddable: t.embeddable === true,
+        embedStatus: embedStatusOf(t),
+        embedContexts: embedContextsOf(t),
+        description: asString(t.description),
+      });
+    }
+
+    function isDirty(index: number): boolean {
+      if (!original[index]) return true;
+      return signature(working[index]) !== signature(original[index]);
+    }
+
+    function dirtyCount(): number {
+      let n = 0;
+      for (let i = 0; i < working.length; i++) if (isDirty(i)) n++;
+      return n;
+    }
+
+    function refreshSaveButton() {
+      const n = dirtyCount();
+      if (saveBtn) {
+        saveBtn.disabled = n === 0;
+        saveBtn.textContent = n === 0 ? "Save changes" : `Save changes (${n})`;
+      }
+    }
+
+    // ----- filter + sort ----------------------------------------------------
+
+    function matchesFilters(tool: ToolRecord): boolean {
+      const q = (searchEl?.value || "").trim().toLowerCase();
+      if (q) {
+        const blob = [
+          asString(tool.title),
+          toolKeyOf(tool),
+          asString(tool.description),
+          asString(tool.category),
+          asString(tool.href),
+        ]
+          .join(" ")
+          .toLowerCase();
+        if (!blob.includes(q)) return false;
+      }
+
+      const status = filterStatusEl?.value || "all";
+      if (status !== "all" && toolStatusOf(tool) !== status) return false;
+
+      const cat = filterCategoryEl?.value || "all";
+      if (cat !== "all" && asString(tool.category).trim() !== cat) return false;
+
+      return true;
+    }
+
+    const STATUS_ORDER: Record<ToolStatus, number> = { live: 0, "coming-soon": 1, hidden: 2 };
+
+    /** Sortable keys shared by the toolbar dropdown and the table headers. */
+    type SortKey =
+      | "name"
+      | "category"
+      | "status"
+      | "member"
+      | "active"
+      | "embeddable"
+      | "embedStatus"
+      | "embedContext";
+
+    let sortKey: SortKey = "name";
+    let sortDir: 1 | -1 = 1;
+
+    function nameCmp(a: ToolRecord, b: ToolRecord): number {
+      return asString(a.title).localeCompare(asString(b.title), undefined, { sensitivity: "base" });
+    }
+
+    /** For a checked value, ascending groups checked (true) rows first. */
+    function boolCmp(a: boolean, b: boolean): number {
+      return Number(b) - Number(a);
+    }
+
+    /** Ascending comparison for a key (direction is applied by the caller). */
+    function keyCompare(a: ToolRecord, b: ToolRecord, key: SortKey): number {
+      switch (key) {
+        case "category":
+          return asString(a.category).localeCompare(asString(b.category), undefined, {
+            sensitivity: "base",
+          });
+        case "status":
+          return STATUS_ORDER[toolStatusOf(a)] - STATUS_ORDER[toolStatusOf(b)];
+        case "member":
+          return boolCmp(isMemberOnly(a), isMemberOnly(b));
+        case "active":
+          return boolCmp(a.active === true, b.active === true);
+        case "embeddable":
+          return boolCmp(isEmbeddable(a), isEmbeddable(b));
+        case "embedStatus":
+          return EMBED_STATUS_OPTIONS.indexOf(embedStatusOf(a)) - EMBED_STATUS_OPTIONS.indexOf(embedStatusOf(b));
+        case "embedContext":
+          return boolCmp(
+            embedContextsOf(a).includes("course"),
+            embedContextsOf(b).includes("course"),
+          );
+        default:
+          return nameCmp(a, b);
+      }
+    }
+
+    function compare(a: ToolRecord, b: ToolRecord): number {
+      const primary = keyCompare(a, b, sortKey) * sortDir;
+      if (primary !== 0) return primary;
+      // Stable secondary ordering by name (not flipped by direction).
+      return nameCmp(a, b);
+    }
+
+    function updateSortIndicators() {
+      document.querySelectorAll<HTMLElement>(".ta__table th.sortable").forEach((th) => {
+        const active = th.getAttribute("data-sort") === sortKey;
+        const ind = th.querySelector<HTMLElement>(".ta-sort-ind");
+        if (ind) ind.textContent = active ? (sortDir === 1 ? " ▲" : " ▼") : "";
+        th.classList.toggle("is-sorted", active);
+        th.setAttribute("aria-sort", active ? (sortDir === 1 ? "ascending" : "descending") : "none");
+      });
+    }
+
+    function setSort(key: SortKey, toggle: boolean) {
+      if (toggle && key === sortKey) {
+        sortDir = sortDir === 1 ? -1 : 1;
+      } else {
+        sortKey = key;
+        sortDir = 1;
+      }
+      // Keep the toolbar dropdown in sync when the key is one it offers.
+      if (sortEl && Array.from(sortEl.options).some((o) => o.value === key)) {
+        sortEl.value = key;
+      }
+      updateSortIndicators();
+      render();
+    }
+
+    // ----- render -----------------------------------------------------------
+
+    function statusOptions(selected: string): string {
+      const opts: [string, string][] = [
+        ["", "None"],
+        ["coming-soon", "Coming soon"],
+      ];
+      return opts
+        .map(
+          ([v, label]) =>
+            `<option value="${v}"${v === selected ? " selected" : ""}>${label}</option>`,
+        )
+        .join("");
+    }
+
+    function embedStatusOptions(selected: EmbedStatus): string {
+      return EMBED_STATUS_OPTIONS.map(
+        (s) => `<option value="${s}"${s === selected ? " selected" : ""}>${embedStatusLabel(s)}</option>`,
+      ).join("");
+    }
+
+    function rowHtml(tool: ToolRecord, index: number): string {
+      const dirty = isDirty(index) ? " is-dirty" : "";
+      const href = asString(tool.href);
+      const embeddable = isEmbeddable(tool);
+      const disabledAttr = embeddable ? "" : " disabled";
+      const courseChecked = embedContextsOf(tool).includes("course") ? " checked" : "";
+      const openLink = href
+        ? `<a href="${escapeHtml(href)}" target="_blank" rel="noopener" class="ta-row-link">Open</a>`
+        : "";
+      return `<tr class="ta-row${dirty}" data-index="${index}">
+        <td class="col-name"><input type="text" class="ta-in" data-field="title" value="${escapeHtml(asString(tool.title))}" /></td>
+        <td class="col-key"><code class="ta-key">${escapeHtml(toolKeyOf(tool)) || "—"}</code></td>
+        <td class="col-url"><input type="text" class="ta-in ta-in--mono" data-field="href" value="${escapeHtml(href)}" /></td>
+        <td class="col-cat"><input type="text" class="ta-in" data-field="category" list="ta-category-list" value="${escapeHtml(asString(tool.category))}" /></td>
+        <td class="col-status"><select class="ta-sel" data-field="status">${statusOptions(asString(tool.status))}</select></td>
+        <td class="col-flag"><input type="checkbox" class="ta-chk" data-field="membersonly"${tool.membersonly === true ? " checked" : ""} /></td>
+        <td class="col-flag"><input type="checkbox" class="ta-chk" data-field="active"${tool.active === true ? " checked" : ""} /></td>
+        <td class="col-flag"><input type="checkbox" class="ta-chk" data-field="embeddable"${embeddable ? " checked" : ""} /></td>
+        <td class="col-embedstatus"><select class="ta-sel" data-field="embedStatus"${disabledAttr}>${embedStatusOptions(embedStatusOf(tool))}</select></td>
+        <td class="col-flag"><label class="ta-ctx"><input type="checkbox" class="ta-chk" data-field="embedContext"${courseChecked}${disabledAttr} /><span>course</span></label></td>
+        <td class="col-desc"><textarea class="ta-ta" data-field="description" rows="2">${escapeHtml(asString(tool.description))}</textarea></td>
+        <td class="col-actions">
+          <button type="button" class="ta-row-btn" data-reset="${index}">Reset</button>
+          ${openLink}
+        </td>
+      </tr>`;
+    }
+
+    function render() {
+      if (!rowsEl) return;
+      const view = working
+        .map((tool, index) => ({ tool, index }))
+        .filter(({ tool }) => matchesFilters(tool))
+        .sort((a, b) => compare(a.tool, b.tool));
+
+      if (emptyEl) emptyEl.hidden = view.length !== 0;
+      rowsEl.innerHTML = view.map(({ tool, index }) => rowHtml(tool, index)).join("");
+      refreshSaveButton();
+    }
+
+    // ----- editing ----------------------------------------------------------
+
+    function rowIndexOf(el: HTMLElement): number | null {
+      const tr = el.closest("tr[data-index]");
+      if (!(tr instanceof HTMLElement)) return null;
+      const i = Number.parseInt(tr.getAttribute("data-index") || "", 10);
+      return Number.isFinite(i) ? i : null;
+    }
+
+    function markRowDirty(index: number) {
+      const tr = rowsEl?.querySelector<HTMLElement>(`tr[data-index="${index}"]`);
+      tr?.classList.toggle("is-dirty", isDirty(index));
+      refreshSaveButton();
+    }
+
+    function onFieldInput(el: HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement) {
+      const index = rowIndexOf(el);
+      if (index === null) return;
+      const tool = working[index];
+      if (!tool) return;
+      const field = el.getAttribute("data-field");
+
+      switch (field) {
+        case "title":
+        case "href":
+        case "category":
+        case "description":
+          tool[field] = el.value;
+          break;
+        case "status": {
+          tool.status = el.value;
+          // A "coming soon" tool cannot also be live: force Active off.
+          if (el.value === "coming-soon" && tool.active === true) {
+            tool.active = false;
+            const activeChk = el
+              .closest("tr")
+              ?.querySelector<HTMLInputElement>('[data-field="active"]');
+            if (activeChk) activeChk.checked = false;
+          }
+          break;
+        }
+        case "membersonly":
+          tool.membersonly = (el as HTMLInputElement).checked;
+          break;
+        case "active": {
+          const on = (el as HTMLInputElement).checked;
+          tool.active = on;
+          // A live tool cannot be "coming soon": reset Status to normal/blank.
+          if (on && asString(tool.status) === "coming-soon") {
+            tool.status = "";
+            const statusSel = el
+              .closest("tr")
+              ?.querySelector<HTMLSelectElement>('[data-field="status"]');
+            if (statusSel) statusSel.value = "";
+          }
+          break;
+        }
+        case "embeddable": {
+          const on = (el as HTMLInputElement).checked;
+          tool.embeddable = on;
+          const tr = el.closest("tr");
+          tr?.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
+            '[data-field="embedStatus"], [data-field="embedContext"]',
+          ).forEach((c) => {
+            c.disabled = !on;
+          });
+          break;
+        }
+        case "embedStatus":
+          tool.embedStatus = el.value as EmbedStatus;
+          break;
+        case "embedContext":
+          tool.embedContexts = (el as HTMLInputElement).checked
+            ? (["course"] as EmbedContext[])
+            : [];
+          break;
+        default:
+          return;
+      }
+      markRowDirty(index);
+    }
+
+    function resetRow(index: number) {
+      if (!original[index]) return;
+      working[index] = deepClone(original[index]);
+      render();
+      setStatus("Row reset.", "neutral");
+    }
+
+    async function save() {
+      const n = dirtyCount();
+      if (n === 0) return;
+      setStatus(`Saving ${n} change(s)…`);
+      if (saveBtn) saveBtn.disabled = true;
+      try {
+        const res = await fetch(API_BASE, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(working),
+        });
+        const data = await res.json();
+        if (!res.ok || !data?.ok || !Array.isArray(data.tools)) {
+          setStatus(data?.error || `Save failed (${res.status})`, "err");
+          refreshSaveButton();
+          return;
+        }
+        original = deepClone(data.tools as ToolRecord[]);
+        working = deepClone(data.tools as ToolRecord[]);
+        setStatus(`Saved ${n} change(s).`, "ok");
+        populateCategoryFilter();
+        render();
+      } catch {
+        setStatus("Network error while saving.", "err");
+        refreshSaveButton();
+      }
+    }
+
+    async function init() {
+      setStatus("Loading tools…");
+      try {
+        const res = await fetch(API_BASE);
+        const data = await res.json();
+        if (!res.ok || !data?.ok || !Array.isArray(data.tools)) {
+          setStatus(data?.error || `Load failed (${res.status})`, "err");
+          return;
+        }
+        original = deepClone(data.tools as ToolRecord[]);
+        working = deepClone(data.tools as ToolRecord[]);
+        setStatus(`${working.length} tool(s) loaded.`, "ok");
+        populateCategoryFilter();
+        render();
+      } catch {
+        setStatus("Network error loading tools.", "err");
+        return;
+      }
+
+      [searchEl, filterStatusEl, filterCategoryEl].forEach((el) => {
+        el?.addEventListener("input", render);
+        el?.addEventListener("change", render);
+      });
+
+      sortEl?.addEventListener("change", () => setSort((sortEl.value as SortKey) || "name", false));
+
+      const theadEl = document.querySelector(".ta__table thead");
+      theadEl?.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const th = target.closest("th.sortable");
+        if (!(th instanceof HTMLElement)) return;
+        const key = th.getAttribute("data-sort") as SortKey | null;
+        if (key) setSort(key, true);
+      });
+
+      updateSortIndicators();
+
+      rowsEl?.addEventListener("input", (event) => {
+        const t = event.target;
+        if (
+          t instanceof HTMLInputElement ||
+          t instanceof HTMLSelectElement ||
+          t instanceof HTMLTextAreaElement
+        ) {
+          onFieldInput(t);
+        }
+      });
+      rowsEl?.addEventListener("change", (event) => {
+        const t = event.target;
+        if (t instanceof HTMLInputElement || t instanceof HTMLSelectElement) onFieldInput(t);
+      });
+      rowsEl?.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!(target instanceof HTMLElement)) return;
+        const btn = target.closest("[data-reset]");
+        if (btn instanceof HTMLElement) {
+          const i = Number.parseInt(btn.getAttribute("data-reset") || "", 10);
+          if (Number.isFinite(i)) resetRow(i);
+        }
+      });
+
+      saveBtn?.addEventListener("click", () => void save());
+
+      window.addEventListener("beforeunload", (event) => {
+        if (dirtyCount() > 0) {
+          event.preventDefault();
+          event.returnValue = "";
+        }
+      });
+    }
+
+    void init();
+  </script>
+
+  <style>
+    :global(body.tools-admin-body) {
+      margin: 0;
+      background: #f8fafc;
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .ta {
+      width: 100%;
+      max-width: none;
+      margin: 0 auto;
+      padding: calc(var(--header-height, 7rem) + 0.75rem) 1rem 2.5rem;
+      box-sizing: border-box;
+    }
+    .ta__head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1.5rem;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+    .ta__title {
+      margin: 0 0 0.3rem 0;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #243015;
+    }
+    .ta__intro {
+      margin: 0;
+      max-width: 60rem;
+      color: #475569;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+    .ta__intro code {
+      font-size: 0.88em;
+      background: #eef2e6;
+      padding: 0.1rem 0.3rem;
+      border-radius: 4px;
+    }
+    .ta__head-links {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    /* ----- toolbar ----- */
+    .ta__toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.6rem 0.85rem;
+      padding: 0.75rem 0.85rem;
+      margin-bottom: 0.85rem;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    }
+    .ta__tb-field {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .ta__tb-field--search {
+      flex: 1 1 16rem;
+      min-width: 12rem;
+    }
+    .ta__tb-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #64748b;
+      white-space: nowrap;
+    }
+    .ta__toolbar input,
+    .ta__toolbar select {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 0.45rem 0.6rem;
+      font: inherit;
+      font-size: 0.9rem;
+      background: #fff;
+      box-sizing: border-box;
+    }
+    .ta__tb-field--search input {
+      width: 100%;
+    }
+    .ta__toolbar input:focus,
+    .ta__toolbar select:focus {
+      outline: 2px solid rgba(63, 98, 18, 0.3);
+      outline-offset: 1px;
+      border-color: #3f6212;
+    }
+    .ta__toolbar-spacer {
+      flex: 1 1 auto;
+    }
+    .ta__status {
+      font-size: 0.85rem;
+      color: #64748b;
+      min-width: 0;
+    }
+    .ta__status.is-error {
+      color: #b91c1c;
+      font-weight: 600;
+    }
+    .ta__status.is-ok {
+      color: #166534;
+    }
+
+    /* ----- buttons ----- */
+    .ta__btn {
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #fff;
+      background: #3f6212;
+      border: 1px solid #3f6212;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease;
+      white-space: nowrap;
+    }
+    .ta__btn:hover:not(:disabled) {
+      background: #365314;
+      border-color: #365314;
+    }
+    .ta__btn:focus-visible {
+      outline: 2px solid #3f6212;
+      outline-offset: 2px;
+    }
+    .ta__btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .ta__btn--outline {
+      color: #3f6212;
+      background: #fff;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+    .ta__btn--outline:hover:not(:disabled) {
+      background: #f7fee7;
+    }
+    .ta__btn--save {
+      background: #b45309;
+      border-color: #b45309;
+    }
+    .ta__btn--save:hover:not(:disabled) {
+      background: #92400e;
+      border-color: #92400e;
+    }
+
+    .ta__hint {
+      margin: 0 0 0.7rem 0;
+      padding: 0.5rem 0.75rem;
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: #075985;
+    }
+    .ta__hint strong {
+      color: #0c4a6e;
+    }
+
+    /* ----- table ----- */
+    .ta__table-scroll {
+      overflow: auto;
+      max-height: calc(100vh - 220px);
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    }
+    .ta__table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+      min-width: 1500px;
+      font-size: 0.85rem;
+    }
+    .ta__table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #f1f5f9;
+      text-align: left;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: #475569;
+      padding: 0.55rem 0.6rem;
+      border-bottom: 1px solid #cbd5e1;
+      white-space: nowrap;
+    }
+    .ta__table thead th.sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+    .ta__table thead th.sortable:hover {
+      background: #e2e8f0;
+      color: #243015;
+    }
+    .ta__table thead th.is-sorted {
+      background: #e6efda;
+      color: #33420f;
+    }
+    .ta-th {
+      display: inline-flex;
+      align-items: center;
+    }
+    .ta-sort-ind {
+      font-size: 0.85em;
+      color: #3f6212;
+      min-width: 0.9em;
+    }
+    .ta__table tbody td {
+      padding: 0.4rem 0.5rem;
+      border-bottom: 1px solid #eef2f7;
+      vertical-align: top;
+    }
+    .ta-row:nth-child(even) td {
+      background: #fafbfc;
+    }
+    .ta-row.is-dirty td {
+      background: #fffbeb;
+    }
+    .ta-row.is-dirty td:first-child {
+      box-shadow: inset 3px 0 0 #f59e0b;
+    }
+
+    .ta-in,
+    .ta-sel,
+    .ta-ta {
+      width: 100%;
+      border: 1px solid #d5dce4;
+      border-radius: 6px;
+      padding: 0.35rem 0.45rem;
+      font: inherit;
+      font-size: 0.85rem;
+      color: #111827;
+      background: #fff;
+      box-sizing: border-box;
+    }
+    .ta-in:focus,
+    .ta-sel:focus,
+    .ta-ta:focus {
+      outline: 2px solid rgba(63, 98, 18, 0.25);
+      outline-offset: 0;
+      border-color: #3f6212;
+    }
+    .ta-in--mono {
+      font-family: ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
+      font-size: 0.8rem;
+    }
+    .ta-ta {
+      resize: vertical;
+      min-height: 2.6rem;
+      line-height: 1.4;
+    }
+    .ta-sel:disabled {
+      background: #f1f5f9;
+      color: #94a3b8;
+    }
+    .ta-key {
+      font-family: ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
+      font-size: 0.78rem;
+      color: #475569;
+      word-break: break-all;
+    }
+    .ta-chk {
+      width: 1.05rem;
+      height: 1.05rem;
+      accent-color: #3f6212;
+      cursor: pointer;
+    }
+    .ta-ctx {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.78rem;
+      color: #475569;
+    }
+    .ta-ctx input:disabled + span {
+      color: #94a3b8;
+    }
+
+    /* column widths */
+    .col-name { min-width: 190px; }
+    .col-key { min-width: 150px; }
+    .col-url { min-width: 210px; }
+    .col-cat { min-width: 160px; }
+    .col-status { min-width: 130px; }
+    .col-flag { min-width: 74px; text-align: center; }
+    td.col-flag { text-align: center; }
+    .col-embedstatus { min-width: 130px; }
+    .col-desc { min-width: 280px; }
+    .col-actions { min-width: 120px; white-space: nowrap; }
+
+    .ta-row-btn {
+      padding: 0.3rem 0.55rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #475569;
+      background: #fff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .ta-row-btn:hover {
+      background: #f1f5f9;
+    }
+    .ta-row-link {
+      margin-left: 0.4rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #52682d;
+    }
+
+    .ta__empty[hidden] {
+      display: none;
+    }
+    .ta__empty {
+      margin: 1.25rem 0 0;
+      text-align: center;
+      color: #64748b;
+      font-size: 0.95rem;
+    }
+  </style>
 </BaseLayout>
-
-<style>
-  :global(body.embedded-tools-admin-body) {
-    margin: 0;
-    background: #f8fafc;
-  }
-
-  .embedded-tools-admin {
-    max-width: 1120px;
-    margin: 0 auto;
-    padding: 1.5rem 1.25rem 2.5rem;
-  }
-
-  .embedded-tools-admin__head {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem 1.5rem;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1.5rem;
-  }
-
-  .embedded-tools-admin__title {
-    margin: 0 0 0.35rem;
-    font-size: 1.65rem;
-    color: #1e293b;
-  }
-
-  .embedded-tools-admin__intro {
-    margin: 0;
-    max-width: 42rem;
-    color: #64748b;
-    font-size: 0.95rem;
-    line-height: 1.5;
-  }
-
-  .embedded-tools-admin__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .embedded-tools-admin__table-wrap {
-    overflow-x: auto;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    background: #fff;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
-  }
-
-  .embedded-tools-admin__table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.92rem;
-  }
-
-  .embedded-tools-admin__table th,
-  .embedded-tools-admin__table td {
-    padding: 0.85rem 1rem;
-    text-align: left;
-    vertical-align: top;
-    border-bottom: 1px solid #eef2f7;
-  }
-
-  .embedded-tools-admin__table th {
-    background: #f8fafc;
-    font-size: 0.78rem;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    color: #64748b;
-  }
-
-  .embedded-tools-admin__table tr:last-child td {
-    border-bottom: none;
-  }
-
-  .embedded-tools-admin__table code {
-    font-size: 0.85em;
-    background: #f1f5f9;
-    padding: 0.12rem 0.35rem;
-    border-radius: 4px;
-  }
-
-  .embedded-tools-admin__table a {
-    color: #52682d;
-    word-break: break-all;
-  }
-
-  .embedded-tools-admin__status {
-    display: inline-block;
-    padding: 0.18rem 0.55rem;
-    border-radius: 999px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-  }
-
-  .embedded-tools-admin__status.is-available {
-    background: #ecfdf3;
-    color: #166534;
-  }
-
-  .embedded-tools-admin__status.is-planned {
-    background: #eff6ff;
-    color: #1d4ed8;
-  }
-
-  .embedded-tools-admin__status.is-retired {
-    background: #f8fafc;
-    color: #64748b;
-  }
-
-  .embedded-tools-admin__note {
-    margin: 1rem 0 0;
-    color: #64748b;
-    font-size: 0.9rem;
-    line-height: 1.5;
-  }
-
-  @media (max-width: 720px) {
-    .embedded-tools-admin {
-      padding-inline: 1rem;
-    }
-
-    .embedded-tools-admin__table {
-      min-width: 760px;
-    }
-  }
-</style>

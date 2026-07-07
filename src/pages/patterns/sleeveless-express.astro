@@ -5,6 +5,8 @@ import GlossaryTooltip from "../../components/common/GlossaryTooltip.astro";
 import GaugeInput from "../../components/wizards/GaugeInput.astro";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
 import SleevelessExpressEditingBar from "../../components/patterns/SleevelessExpressEditingBar.astro";
+import PatternBuilderMyPatternsLink from "../../components/patterns/PatternBuilderMyPatternsLink.astro";
+import PatternWorkspaceLibraryDrawer from "../../components/patterns/PatternWorkspaceLibraryDrawer.astro";
 /* Wizard is @import'd first inside sleeveless-express-builder-cards.css so Express overrides always win cascade */
 import "../../styles/sleeveless-express-builder-cards.css";
 import "../../styles/sleeveless-express-wizard-layout.css";
@@ -92,10 +94,13 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
             </div>
 
             <header class="pattern-header page-header">
-              <h1 class="pattern-title">Sleeveless Sweater</h1>
+              <div class="pattern-header__title-row">
+                <h1 class="pattern-title">Sleeveless Sweater</h1>
+                <PatternBuilderMyPatternsLink />
+              </div>
               <SleevelessExpressEditingBar />
               <p class="pattern-subtext">
-                <strong>Just evaluating the pattern?</strong><br>Use 16 sts/24 rows for a mid-gauge sample or 28 sts/44 rows for a standard-gauge sample.
+                Create a ready-to-knit sweater pattern in a few guided steps.
               </p>
             </header>
 
@@ -749,6 +754,8 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
         </div>
       </div>
     </dialog>
+
+    <PatternWorkspaceLibraryDrawer />
   </main>
   </SleevelessPatternMemberGate>
 </Layout>

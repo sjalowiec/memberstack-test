@@ -28,8 +28,20 @@ declare global {
     __DEV_BYPASS_GATING?: boolean;
     /** Localhost + ?member=true: set in BaseLayout for client-side gates (videos, etc.). */
     __KBM_DEV_MEMBER__?: boolean;
-    /** Set in BaseLayout: kin-access custom field video gate (deny unless false / "false"). */
-    kbmHasKinVideoAccess?: (rawKinAccess: unknown) => boolean;
+    /** Global member gate: true when logged in with an active allowed plan (beta/basic/premium/legacy). */
+    kbmHasMemberAccess?: (memberOrPayload: unknown) => boolean;
+    /** Global viewer state: "loggedOut" | "loggedInNoAccess" | "memberAccess". */
+    kbmGetViewerAccessState?: (
+      memberOrPayload: unknown,
+    ) => "loggedOut" | "loggedInNoAccess" | "memberAccess";
+    /** Temporary: global member-access debug logging from inline scripts. */
+    kbmLogMemberAccessDebug?: (
+      gate: string,
+      memberOrPayload: unknown,
+      extra?: Record<string, unknown>,
+    ) => void;
+    /** @deprecated Alias of kbmHasMemberAccess (kept for older video gates). */
+    kbmHasKinVideoAccess?: (memberOrPayload: unknown) => boolean;
     /** Temporary: kin-access debug logging from inline scripts. */
     kbmLogKinVideoAccessDebug?: (
       context: string,
@@ -66,6 +78,14 @@ declare global {
     kbmOpenMemberstackLoginModal?: (returnPath?: string) => void;
     /** Opens the clean public signup modal (custom signup form, not the prebuilt MS modal). */
     kbmOpenPublicSignupModal?: () => void;
+    /**
+     * Hat/Blanket builder account gate: resolves true when the visitor has an account (may
+     * generate a pattern), otherwise opens the signup-first prompt and resolves false.
+     * Installed by the PatternBuilderAccountGate modal component.
+     */
+    kbmEnsurePatternBuilderAccountGate?: () => Promise<boolean>;
+    /** Opens the Hat/Blanket signup-first account gate prompt. */
+    kbmOpenPatternBuilderAccountPrompt?: () => void;
     /** Two-step password reset modal (see AccountPasswordResetModal.astro). */
     kbmOpenAccountPasswordResetModal?: (prefillEmail?: string) => void;
     kbmCloseAccountPasswordResetModal?: () => void;

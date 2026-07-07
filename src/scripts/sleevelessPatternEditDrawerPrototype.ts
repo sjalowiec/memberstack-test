@@ -29,7 +29,7 @@ import {
   readAvailableNeedlesFromAllSources,
   syncAvailableNeedlesMirrorsFromAllSources,
 } from "../lib/patterns/availableNeedlesMirrors";
-import { runUpdateActiveSavedCustomPattern } from "../lib/patterns/customPatternEditingBannerActions";
+import { runSaveCustomPatternFromWorkspace } from "../lib/patterns/customPatternEditingBannerActions";
 import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
 import { logSavedPatternUpdateFlowDiagnostics } from "../lib/patterns/customPatternProjectClient";
 import { isDropShoulderWorkspaceMeasurementSummaryPage } from "../lib/patterns/measurementBlueprintSvgUrl";
@@ -80,8 +80,26 @@ import {
   swatchCountFromPerInchForDisplay,
   type GaugeSwatchBasis,
 } from "../lib/patterns/gaugeDisplayFormat";
-import { canEditSleevelessPatternSettings } from "../lib/patterns/sleevelessPatternSystemAccess";
-import { resolveSleevelessUserAccess } from "../lib/patterns/sleevelessPatternSystemAccessClient";
+import {
+  blockPatternWorkspaceSettingsEditOrOfferUnlock,
+  resolvePatternWorkspaceSettingsEditGate,
+} from "../lib/patterns/patternWorkspaceSettingsEditAccess";
+import type { PatternSystemId } from "../lib/patterns/patternSystemId";
+import type { SleevelessUserAccess } from "../lib/patterns/sleevelessPatternSystemAccess";
+import {
+  getPatternProjectMeta,
+  resolvePatternProjectSaveNameFromState,
+} from "../lib/patterns/sleevelessPatternProjectMeta";
+import {
+  isEditPatternSaveConfirmationOpen,
+  promptEditPatternSaveConfirmation,
+} from "../lib/patterns/sleevelessPatternEditSaveConfirmation";
+import {
+  applyLockedPatternEditButtonState,
+  maybeShowPatternEditingUnlockModalOnWorkspaceLoad,
+  offerPatternEditingUnlockModal,
+} from "../lib/patterns/patternEditingUnlockModal";
+import { logPatternEditGateDebug } from "../lib/patterns/patternEditGateDebug";
 
 /** localStorage keys the reused measurement editor may write to (snapshot/restore for discard). */
 const MEASURE_STORAGE_KEYS = [
@@ -269,7 +287,15 @@ function getRequestRefresh(): (() => unknown) | null {
 function initSleevelessPatternEditDrawer(): void {
   const drawer = document.querySelector<HTMLElement>("[data-sl-edit-drawer]");
   const openBtn = document.querySelector<HTMLElement>("[data-sl-edit-open]");
-  if (!drawer || !openBtn) return;
+  logPatternEditGateDebug("initSleevelessPatternEditDrawer", {
+    extra: { hasDrawer: Boolean(drawer), hasOpenBtn: Boolean(openBtn) },
+  });
+  if (!drawer || !openBtn) {
+    logPatternEditGateDebug("initSleevelessPatternEditDrawer.aborted", {
+      extra: { reason: "missing drawer or open button — gate not wired" },
+    });
+    return;
+  }
 
   const drawerPanel = drawer.querySelector<HTMLElement>(".sl-edit-drawer__panel");
   const drawerBody = drawer.querySelector<HTMLElement>(".sl-edit-drawer__body");
@@ -298,11 +324,11 @@ function initSleevelessPatternEditDrawer(): void {
   let drawerSnapshot: FieldSnapshot | null = null;
   let chartsLoaded = false;
   let chartsLoadStarted = false;
-  // Entitlement gate: gauge / measurements / style edits + regeneration are only available to
-  // users with active Sleeveless Pattern System access. Resolved async below; defaults to
-  // unlocked so members aren't briefly blocked, then locks the drawer if access is absent.
-  // (Title/notes stay editable for everyone via the Pattern Setup tab → Customize page.)
-  let settingsEditingLocked = false;
+  // Entitlement gate: gauge / measurements / style edits + regeneration require edit access
+  // for the active pattern system (Sleeveless vs Drop Shoulder). Default locked until resolved.
+  let settingsEditingLocked = true;
+  let resolvedAccess: SleevelessUserAccess | null = null;
+  let patternSystem: PatternSystemId = "sleeveless";
 
   function radioValue(name: string): string {
     const el = drawer!.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`);
@@ -433,11 +459,7 @@ function initSleevelessPatternEditDrawer(): void {
     const ev = readExpressValues();
 
     if (titleInput) {
-      const title =
-        pattern.patternProject && typeof pattern.patternProject.title === "string"
-          ? pattern.patternProject.title
-          : "";
-      titleInput.value = title;
+      titleInput.value = resolvePatternProjectSaveNameFromState();
     }
 
     if (notesInput) {
@@ -553,8 +575,31 @@ function initSleevelessPatternEditDrawer(): void {
     document.body.style.overflow = "";
   };
 
-  function openDrawer(): void {
-    if (settingsEditingLocked) return;
+  async function refreshEditAccess(): Promise<void> {
+    const gate = await resolvePatternWorkspaceSettingsEditGate();
+    resolvedAccess = gate.access;
+    patternSystem = gate.patternSystem;
+    settingsEditingLocked = gate.locked;
+    applyLockedPatternEditButtonState(openBtn, settingsEditingLocked);
+    if (settingsEditingLocked && drawer.classList.contains("is-open")) {
+      closeDrawer();
+    }
+  }
+
+  async function openDrawer(): Promise<void> {
+    logPatternEditGateDebug("openDrawer.click", { extra: { phase: "before-gate" } });
+    await refreshEditAccess();
+    logPatternEditGateDebug("openDrawer.after-gate", {
+      patternSystem,
+      locked: settingsEditingLocked,
+      drawerAllowed: !settingsEditingLocked,
+      hasSystemAccess: resolvedAccess?.hasSystemAccess,
+      freeClaimsBySystem: resolvedAccess?.freeClaimsBySystem,
+    });
+    if (settingsEditingLocked) {
+      offerPatternEditingUnlockModal(resolvedAccess, { patternSystem });
+      return;
+    }
     if (drawer!.classList.contains("is-open")) return;
     clearNotes();
     syncAvailableNeedlesMirrorsFromAllSources();
@@ -568,6 +613,7 @@ function initSleevelessPatternEditDrawer(): void {
     logSavedPatternUpdateFlowDiagnostics("edit-drawer-opened", {
       openedSavedProjectId: readActiveCustomPatternProjectId(),
     });
+    logPatternEditGateDebug("openDrawer.opening", { drawerAllowed: true });
     syncPanelTop();
     drawer!.classList.add("is-open");
     drawer!.setAttribute("aria-hidden", "false");
@@ -602,9 +648,33 @@ function initSleevelessPatternEditDrawer(): void {
     if (typeof openBtn!.focus === "function") openBtn!.focus();
   }
 
+  /** After a successful save, treat the current edit state as the new Cancel baseline. */
+  function refreshEditDrawerSavedBaseline(): void {
+    drawerSnapshot = snapshotFields(drawerBody);
+    measureStorageBaseline = snapshotMeasureStorage();
+    captureMeasureFieldBaseline();
+  }
+
+  function returnToUpdatedPatternView(): void {
+    closeDrawer({ discardEdits: false });
+    const top = document.getElementById("sleeveless-pattern-top");
+    if (top) {
+      top.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }
+
   /** Validate, persist (reusing the build workflow), regenerate, and return to the pattern. */
   async function applyChanges(): Promise<void> {
     if (!applyBtn) return;
+
+    logPatternEditGateDebug("applyChanges.click", { extra: { phase: "before-gate" } });
+    const gate = await resolvePatternWorkspaceSettingsEditGate();
+    if (gate.locked) {
+      blockPatternWorkspaceSettingsEditOrOfferUnlock(gate.access, gate.patternSystem);
+      return;
+    }
+    logPatternEditGateDebug("applyChanges.proceeding", { drawerAllowed: true });
+
     const audience = resolveAudience();
     const size = sizeSelect?.value.trim() ?? "";
     const garment = (radioValue("sl-edit-garment") || "pullover") as SleevelessGarmentType;
@@ -656,12 +726,16 @@ function initSleevelessPatternEditDrawer(): void {
       // Title + notes (online project header) — reuses patternProject meta. Notes come from the
       // editable Notes textarea; fall back to any previously saved notes if the field is absent.
       if (titleInput) {
-        const prevProject = getCurrentPattern().patternProject;
-        const prevNotes =
-          prevProject && typeof prevProject.notes === "string" ? prevProject.notes : "";
-        const notes = notesInput ? notesInput.value : prevNotes;
+        const prevMeta = getPatternProjectMeta();
+        const enteredTitle = titleInput.value.trim();
+        const notes = notesInput ? notesInput.value : prevMeta.notes;
+        const title = enteredTitle || resolvePatternProjectSaveNameFromState();
         saveCurrentPattern({
-          patternProject: { title: titleInput.value.trim(), notes, titleCustomized: true },
+          patternProject: {
+            title,
+            notes,
+            titleCustomized: enteredTitle ? true : prevMeta.titleCustomized,
+          },
         });
       }
 
@@ -718,29 +792,27 @@ function initSleevelessPatternEditDrawer(): void {
       }
 
       const pinnedSavedProjectId = readActiveCustomPatternProjectId();
-      logSavedPatternUpdateFlowDiagnostics("edit-drawer-before-update", {
+      logSavedPatternUpdateFlowDiagnostics("edit-drawer-before-save", {
         openedSavedProjectId: pinnedSavedProjectId,
         pinnedSavedProjectId,
       });
 
-      // 4) Persist linked saved project first — keeps the active project id stable, then regenerate once.
-      if (pinnedSavedProjectId) {
-        const saveRes = await runUpdateActiveSavedCustomPattern(measureFlushRoot, {
-          activeProjectId: pinnedSavedProjectId,
-          skipPreSavePrepare: true,
-          onStatus: (message, isError) => {
-            if (isError) showErrors([message]);
-          },
-        });
-        if (!saveRes.ok) {
-          showErrors([saveRes.error]);
-          return;
-        }
-        logSavedPatternUpdateFlowDiagnostics("edit-drawer-after-update", {
-          pinnedSavedProjectId,
-          activeSavedProjectIdAfterUpdate: readActiveCustomPatternProjectId(),
-        });
+      const saveRes = await runSaveCustomPatternFromWorkspace(measureFlushRoot, {
+        skipPreSavePrepare: true,
+        activeProjectId: pinnedSavedProjectId || undefined,
+        onStatus: (message, isError) => {
+          if (isError) showErrors([message]);
+        },
+      });
+      if (!saveRes.ok) {
+        showErrors([saveRes.error]);
+        return;
       }
+      logSavedPatternUpdateFlowDiagnostics("edit-drawer-after-save", {
+        pinnedSavedProjectId: pinnedSavedProjectId || readActiveCustomPatternProjectId(),
+        created: saveRes.created,
+        activeSavedProjectIdAfterSave: readActiveCustomPatternProjectId(),
+      });
 
       // 5) Refresh the visible title and pattern output once from the saved working draft.
       applySleevelessPatternOnlineProjectHeader();
@@ -753,12 +825,12 @@ function initSleevelessPatternEditDrawer(): void {
         renderedPatternRecordId: getCurrentPattern().id,
       });
 
-      // 6) Return to the updated pattern view.
-      if (savedNote) savedNote.hidden = false;
-      closeDrawer({ discardEdits: false });
-      const top = document.getElementById("sleeveless-pattern-top");
-      if (top) {
-        top.scrollIntoView({ behavior: "smooth", block: "start" });
+      const confirmationChoice = await promptEditPatternSaveConfirmation(drawer ?? document);
+      if (confirmationChoice === "view") {
+        returnToUpdatedPatternView();
+      } else {
+        refreshEditDrawerSavedBaseline();
+        applyBtn?.focus();
       }
     } catch (err) {
       console.error("[Edit Pattern] Apply Changes failed:", err);
@@ -834,7 +906,15 @@ function initSleevelessPatternEditDrawer(): void {
     });
   }
 
-  openBtn.addEventListener("click", openDrawer);
+  openBtn.addEventListener("click", (event) => {
+    logPatternEditGateDebug("edit-button.click-listener", {
+      extra: {
+        defaultPrevented: event.defaultPrevented,
+        isDisabled: openBtn.classList.contains("is-disabled"),
+      },
+    });
+    void openDrawer();
+  });
   drawerCloseEls.forEach((el) => el.addEventListener("click", () => closeDrawer()));
 
   // Keep the panel flush with the header when the chrome height changes (resize, font load).
@@ -844,21 +924,11 @@ function initSleevelessPatternEditDrawer(): void {
     void document.fonts.ready.then(syncPanelTop).catch(() => {});
   }
 
-  // Lock the in-place editor (gauge, measurements, style choices, regeneration) when the user
-  // lacks active system access. The button is hidden rather than shown-disabled so the locked
-  // state reads as intentional; renaming/notes remain available on the Customize page.
-  void resolveSleevelessUserAccess().then((access) => {
-    settingsEditingLocked = !canEditSleevelessPatternSettings(access);
+  // Lock the in-place editor when the user lacks settings-editing access for this pattern
+  // system. The Edit button stays visible (with a tooltip) and opens the unlock modal on click.
+  void refreshEditAccess().then(() => {
     if (!settingsEditingLocked) return;
-    if (drawer.classList.contains("is-open")) closeDrawer();
-    openBtn.hidden = true;
-    openBtn.setAttribute("aria-hidden", "true");
-    openBtn.setAttribute("tabindex", "-1");
-    // Reveal the workspace read-only notice that explains why editing is unavailable.
-    const lockedBanner = document.querySelector<HTMLElement>(
-      "[data-sleeveless-workspace-locked-banner]",
-    );
-    if (lockedBanner) lockedBanner.hidden = false;
+    maybeShowPatternEditingUnlockModalOnWorkspaceLoad(resolvedAccess, { patternSystem });
   });
 
   drawer.querySelectorAll<HTMLInputElement>('input[name="sl-edit-fit"]').forEach((el) => {
@@ -870,6 +940,7 @@ function initSleevelessPatternEditDrawer(): void {
 
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
+    if (isEditPatternSaveConfirmationOpen()) return;
     if (drawer.classList.contains("is-open")) {
       closeDrawer();
     }
@@ -882,8 +953,8 @@ function initSleevelessPatternEditDrawer(): void {
   }
 
   // Auto-open the workspace when arrived via My Patterns → Edit (`?edit=1`). View opens the same
-  // page without the flag and stays read-only. The query is stripped so a refresh/back doesn't
-  // re-open the drawer, and `openDrawer()` already no-ops when settings editing is locked.
+  // page without the flag. When editing is locked, offer the membership modal instead. The query
+  // is stripped so a refresh/back doesn't re-trigger the prompt.
   function maybeAutoOpenFromQuery(): void {
     if (typeof window === "undefined") return;
     let shouldOpen = false;
@@ -893,6 +964,7 @@ function initSleevelessPatternEditDrawer(): void {
       shouldOpen = false;
     }
     if (!shouldOpen) return;
+    logPatternEditGateDebug("maybeAutoOpenFromQuery", { extra: { editQuery: true } });
     try {
       const url = new URL(window.location.href);
       url.searchParams.delete("edit");
@@ -900,7 +972,7 @@ function initSleevelessPatternEditDrawer(): void {
     } catch {
       /* history unavailable — harmless */
     }
-    openDrawer();
+    void openDrawer();
   }
 
   maybeAutoOpenFromQuery();

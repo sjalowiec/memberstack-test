@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import PageBackLink from "../../components/common/PageBackLink.astro";
+import GlossaryTooltip from "../../components/common/GlossaryTooltip.astro";
 import {
   getPatternById,
   getImagesForPattern,
@@ -8,9 +9,6 @@ import {
   getTechniqueById,
   getCategoriesForPattern
 } from "../../lib/stitch-data";
-
-/** Legacy Knit It Now stitch library — update if the production site origin changes. */
-const KNIT_IT_NOW_STITCH_LIBRARY_ORIGIN = "https://www.knititnow.com";
 
 const { id } = Astro.params;
 const patternId = Number(id);
@@ -69,16 +67,6 @@ const rawTitle = pattern.title?.trim() || "";
 const titleIsIdOnly = rawTitle === String(patternId);
 const displayTitle = rawTitle && !titleIsIdOnly ? rawTitle : metaLine;
 
-// Beta: legacy stitch pattern URL for the download CTA; may later be replaced with native member/download handling.
-const legacyStitchPageSlug =
-  rawTitle
-    .trim()
-    .toLowerCase()
-    .replace(/['']/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || String(patternId);
-const legacyStitchPatternPageUrl = `${KNIT_IT_NOW_STITCH_LIBRARY_ORIGIN}/knit/swatch/${patternId}/${legacyStitchPageSlug}`;
-
 const pageTitle = `${displayTitle} · Stitch Library`;
 const pageDescription = techniqueLabel
   ? `${techniqueLabel} stitch #${patternId} — pattern reference and downloads.`
@@ -135,9 +123,35 @@ function getStitchFileIconPath(filename: string): string {
   return STITCH_FILE_ICON_FALLBACK;
 }
 
+/** Descriptive display overrides for common download labels (text-only; file links unchanged). */
+const STITCH_FILE_LABEL_OVERRIDES: Record<string, string> = {
+  "dak file": "DesignaKnit Stitch Pattern File",
+  "stitch painter": "Stitch Painter Stitch Pattern File",
+  "punchcard & diagram": "Printable Knitting Machine Punch Card Diagram",
+  "punchard & diagram": "Printable Knitting Machine Punch Card Diagram"
+};
+
+/** Real extension from href basename; falls back to the data's filetype field. */
+function getStitchFileExtension(file: StitchFile): string {
+  const fn = (file.filename || "").trim().toLowerCase();
+  const dot = fn.lastIndexOf(".");
+  if (dot > 0 && dot < fn.length - 1) return fn.slice(dot + 1);
+  return (file.filetype || "").trim().toLowerCase();
+}
+
+/** " (PDF)" for PDFs, " (.stp)" / " (.stc)" for others; empty when unknown. */
+function formatStitchFileTypeSuffix(ext: string): string {
+  if (!ext) return "";
+  if (ext === "pdf") return " (PDF)";
+  return ` (.${ext})`;
+}
+
 function getStitchFileCleanName(file: StitchFile): string {
   const raw = (file.label || file.filename || "").trim();
-  return stripExtension(raw);
+  const clean = stripExtension(raw);
+  const base = STITCH_FILE_LABEL_OVERRIDES[clean.toLowerCase()];
+  if (!base) return clean;
+  return base + formatStitchFileTypeSuffix(getStitchFileExtension(file));
 }
 ---
 
@@ -214,7 +228,7 @@ function getStitchFileCleanName(file: StitchFile): string {
           <h2 id="stitch-specs-heading">At a glance</h2>
           <dl class="stitch-fe__specs-list">
             <div class="stitch-fe__specs-row">
-              <dt>Repeat</dt>
+              <dt><GlossaryTooltip id={329}>Repeat</GlossaryTooltip></dt>
               <dd>{pattern.stitchMultiple || "—"}</dd>
             </div>
             <div class="stitch-fe__specs-row">
@@ -248,50 +262,27 @@ function getStitchFileCleanName(file: StitchFile): string {
           ) : (
             <>
               <div class="stitch-fe__vault-locked" data-gated="locked">
-               
-                <ul class="stitch-fe__vault-files" aria-label="Files included with membership">
-                  {activeFiles.map((file) => {
-                    const fn = file.filename || "";
-                    const iconPath = getStitchFileIconPath(fn);
-                    const cleanName = getStitchFileCleanName(file);
-                    return (
-                      <li class="stitch-fe__vault-file">
-                        <div class="file-row file-row--locked">
-                          <img
-                            class="file-icon"
-                            src={iconPath}
-                            alt=""
-                            width={20}
-                            height={20}
-                            loading="lazy"
-                            decoding="async"
-                          />
-                          <span class="file-name">{cleanName}</span>
-                          <span class="stitch-fe__vault-lock" aria-hidden="true">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                              <path
-                                d="M7 11V8a5 5 0 0110 0v3M6 11h12v10H6V11z"
-                                stroke="currentColor"
-                                stroke-width="1.5"
-                                stroke-linejoin="round"
-                              />
-                            </svg>
-                          </span>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-                <div class="stitch-fe__vault-cta">
-                  <a
-                    class="kbm-btn kbm-btn-primary stitch-fe__vault-cta-btn"
-                    href={legacyStitchPatternPageUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Download from Knit it Now (Members)
-                  </a>
-                  <p class="stitch-fe__vault-login">Downloads are currently available in the Knit It Now library.</p>
+                <div class="stitch-fe__gate">
+                  <h3 class="stitch-fe__gate-title">Member Downloads</h3>
+                  <p class="stitch-fe__gate-body">
+                    Downloadable resources are available to Knit It Now members.
+                  </p>
+                  <p class="stitch-fe__gate-subhead">Members can download:</p>
+                  <ul class="stitch-fe__gate-list">
+                    <li>DesignaKnit Stitch Pattern Files</li>
+                    <li>Stitch Painter Stitch Pattern Files</li>
+                    <li>Printable Knitting Machine Punch Card Diagrams</li>
+                    <li>LK-150 Cheat Sheets</li>
+                  </ul>
+                  <div class="stitch-fe__gate-actions">
+                    <a class="kbm-btn kbm-btn-primary stitch-fe__gate-btn" href="/membership">
+                      Become a Member
+                    </a>
+                    <p class="stitch-fe__gate-signin" data-stitch-signin>
+                      Already a member?{" "}
+                      <a href="#" data-ms-modal="login" data-ms-redirect="current-url">Sign in</a>
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -504,9 +495,13 @@ function getStitchFileCleanName(file: StitchFile): string {
   </script>
 
   <script>
-    import { MEMBER_PLAN_IDS } from "../../config/memberships";
-
-    const memberPlanIds = new Set<string>(MEMBER_PLAN_IDS);
+    // Downloads/stitch files use the SAME global member gate as every other
+    // section (videos, tools, skill builders). No section-specific plan list.
+    import {
+      getViewerAccessState,
+      hasMemberAccess,
+      logMemberAccessDebug,
+    } from "../../lib/memberAccess";
 
     async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
       for (let i = 0; i < attempts; i++) {
@@ -524,16 +519,11 @@ function getStitchFileCleanName(file: StitchFile): string {
     function getViewerStateFromRes(res: unknown) {
       const r = res as { data?: { member?: Record<string, unknown> } } | null | undefined;
       const member = r?.data?.member ?? null;
-      const planConnections = (member?.planConnections as Record<string, unknown>[]) ?? [];
-      const activePlanIds = new Set(
-        planConnections
-          .filter((p) => String(p?.status ?? "").toUpperCase() === "ACTIVE")
-          .map((p) => p?.planId as string)
-          .filter(Boolean)
-      );
-      const isLoggedIn = Boolean(member);
-      const isMember = [...activePlanIds].some((id) => memberPlanIds.has(id));
-      return { isLoggedIn, isMember, member };
+      const isMember = hasMemberAccess(res);
+      logMemberAccessDebug("stitch/[id].downloads", res, {
+        viewerAccessState: getViewerAccessState(res),
+      });
+      return { isLoggedIn: Boolean(member), isMember, member };
     }
 
     function setFileAccess(hasFullAccess: boolean) {
@@ -543,6 +533,14 @@ function getStitchFileCleanName(file: StitchFile): string {
       });
       document.querySelectorAll('.stitch-fe__vault-locked[data-gated="locked"]').forEach((el) => {
         if (hasFullAccess) el.setAttribute("hidden", "");
+        else el.removeAttribute("hidden");
+      });
+    }
+
+    /** Sign-in link only makes sense for visitors who are not signed in. */
+    function setSignInVisibility(isLoggedIn: boolean) {
+      document.querySelectorAll("[data-stitch-signin]").forEach((el) => {
+        if (isLoggedIn) el.setAttribute("hidden", "");
         else el.removeAttribute("hidden");
       });
     }
@@ -657,10 +655,12 @@ function getStitchFileCleanName(file: StitchFile): string {
           const res = typeof api === "function" ? await api() : await waitForMemberstackReady();
           const viewer = getViewerStateFromRes(res);
           setFileAccess(Boolean(viewer.isMember));
+          setSignInVisibility(Boolean(viewer.isLoggedIn));
           setMyLibraryUI(viewer);
           if (viewer.isMember) await refreshMyLibrarySavedState(viewer);
         } catch {
           setFileAccess(false);
+          setSignInVisibility(false);
           setMyLibraryUI({ isMember: false });
         }
       }
@@ -954,6 +954,82 @@ function getStitchFileCleanName(file: StitchFile): string {
       color: rgba(36, 48, 21, 0.55);
     }
 
+    /* Member callout — shown when the visitor does not have member access */
+    .stitch-fe__gate {
+      padding: 1.25rem 1.35rem 1.35rem;
+      border: 1px solid rgba(82, 104, 45, 0.18);
+      border-radius: 12px;
+      background: rgba(82, 104, 45, 0.045);
+    }
+
+    .stitch-fe__gate-title {
+      margin: 0 0 0.5rem;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #1c2412;
+    }
+
+    .stitch-fe__gate-body {
+      margin: 0 0 0.9rem;
+      font-size: 0.92rem;
+      line-height: 1.6;
+      color: rgba(36, 48, 21, 0.82);
+    }
+
+    .stitch-fe__gate-subhead {
+      margin: 0 0 0.4rem;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(36, 48, 21, 0.5);
+    }
+
+    .stitch-fe__gate-list {
+      margin: 0 0 1.15rem;
+      padding-left: 1.15rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      font-size: 0.92rem;
+      line-height: 1.45;
+      color: rgba(36, 48, 21, 0.85);
+    }
+
+    .stitch-fe__gate-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      align-items: stretch;
+    }
+
+    .stitch-fe__gate-btn.kbm-btn {
+      width: 100%;
+      text-align: center;
+    }
+
+    .stitch-fe__gate-signin {
+      margin: 0;
+      font-size: 0.85rem;
+      text-align: center;
+      color: rgba(36, 48, 21, 0.65);
+    }
+
+    .stitch-fe__gate-signin[hidden] {
+      display: none;
+    }
+
+    .stitch-fe__gate-signin a {
+      color: var(--kbm-green, #52682d);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .stitch-fe__gate-signin a:hover {
+      color: #3d4f22;
+    }
+
     .stitch-fe__vault-pitch {
       margin: 0 0 1.1rem;
       font-size: 0.9rem;
@@ -967,38 +1043,56 @@ function getStitchFileCleanName(file: StitchFile): string {
       padding: 0;
       display: flex;
       flex-direction: column;
-      gap: 0;
+      gap: 0.25rem;
     }
 
     .stitch-fe__vault-file {
       margin: 0;
     }
 
+    /* Larger, comfortable tap target; negative inline margin keeps text aligned to the section edge. */
     .stitch-fe__vault .file-row {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       text-decoration: none;
-      margin-bottom: 8px;
+      margin: 0 -0.5rem;
+      padding: 0.5rem;
+      min-height: 44px;
+      border-radius: 8px;
       color: #1c1914;
       min-width: 0;
     }
 
-    .stitch-fe__vault .file-row:last-child {
-      margin-bottom: 0;
-    }
-
     .stitch-fe__vault a.file-row {
-      transition: color 0.15s ease;
+      transition: color 0.15s ease, background-color 0.15s ease;
     }
 
-    .stitch-fe__vault a.file-row:hover {
+    .stitch-fe__vault a.file-row:hover,
+    .stitch-fe__vault a.file-row:focus-visible {
       color: var(--kbm-green, #52682d);
+      background: rgba(82, 104, 45, 0.06);
+    }
+
+    .stitch-fe__vault a.file-row:focus-visible {
+      outline: 2px solid var(--kbm-green, #52682d);
+      outline-offset: 1px;
     }
 
     .stitch-fe__vault a.file-row:hover .file-name {
       text-decoration: underline;
       text-underline-offset: 3px;
+    }
+
+    @media (max-width: 640px) {
+      .stitch-fe__vault-files {
+        gap: 0.4rem;
+      }
+
+      .stitch-fe__vault .file-row {
+        min-height: 46px;
+        padding: 0.6rem 0.5rem;
+      }
     }
 
     .stitch-fe__vault .file-row--locked {
@@ -1016,9 +1110,9 @@ function getStitchFileCleanName(file: StitchFile): string {
     .stitch-fe__vault .file-name {
       flex: 1;
       min-width: 0;
-      font-size: 14px;
+      font-size: 0.95rem;
       font-weight: 500;
-      line-height: 1.35;
+      line-height: 1.4;
     }
 
     .stitch-fe__vault-lock {

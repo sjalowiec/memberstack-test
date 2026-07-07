@@ -12,8 +12,9 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-/scripts/
+/scripts/*
 !/scripts/prepare-transition-site.mjs
+!/scripts/check-utf8.mjs
 src/data/glossary.backup.before-strip-html.json
 # environment variables
 .env
@@ -41,6 +42,8 @@ public/api/
 # Local data scratch files (machine_techniques.csv is required at build time)
 src/data/*.csv
 !src/data/machine_techniques.csv
+
+!/scripts/generate-public-manifests.mjs
 
 # Backup files
 *.backup

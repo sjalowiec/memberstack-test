@@ -5,10 +5,10 @@
 import { canCustomizePattern } from "./sleevelessPatternAccessGate";
 
 export const CUSTOM_BUILD_STYLE_STEP_LOCKED_TITLE =
-  "Unlock this pattern to customize these details.";
+  "Style and shaping choices are included with membership.";
 
 export const CUSTOM_BUILD_WORKSPACE_CUSTOMIZE_LOCKED_LABEL =
-  "Pattern Setup is available with this pattern.";
+  "Pattern setup is included with membership.";
 
 const CUSTOM_BUILD_STYLE_STEP_MIN = 2;
 

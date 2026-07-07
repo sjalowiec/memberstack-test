@@ -2,7 +2,7 @@
 # Or from repo root: npm run build:transition-site && deploy transition-site/dist
 
 [build]
-  command = "cd .. && npm ci && npm run prepare:transition-site && npm run build -- --config transition-site/astro.config.mjs"
+  command = "cd .. && npm run prepare:transition-site && astro build --config transition-site/astro.config.mjs"
   publish = "dist"
 
 [dev]

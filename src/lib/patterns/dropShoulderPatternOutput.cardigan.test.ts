@@ -9,7 +9,7 @@ import { computeDefaultMeasurementsFromChartRow } from "./sleevelessExpressSizeC
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 import { extractCastOnFromRows } from "./testScenarios/sleevelessPatternQaMatrix";
 
-/** Men's Med ù matches `public/data/sizing_sweaters_men.json`. */
+/** Men's Med - matches `public/data/sizing_sweaters_men.json`. */
 const MENS_MED_CHART_ROW: ChartRow = {
   size: "Med",
   bust_or_chest: 36,
@@ -26,7 +26,7 @@ const MENS_MED_CHART_ROW: ChartRow = {
   sleeve_length: 18.25,
 };
 
-/** Misses size 8 ù matches `public/data/sizing_sweaters_misses.json`. */
+/** Misses size 8 - matches `public/data/sizing_sweaters_misses.json`. */
 const MISSES_8_CHART_ROW: ChartRow = {
   size: 8,
   bust_or_chest: 42,

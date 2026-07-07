@@ -92,7 +92,9 @@
 }
 
 .express-measurements-confirm-page.sleeveless-unified-review-page
-  .sleeveless-review-project-header__section-head.sleeveless-review-project-header__editable-field:hover {
+  .sleeveless-review-project-header__section-head.sleeveless-review-project-header__editable-field:hover,
+.express-measurements-confirm-page.sleeveless-unified-review-page
+  .sleeveless-review-project-header__notes-view.sleeveless-review-project-header__editable-field:hover {
   border-color: color-mix(in srgb, var(--kbm-green, #52682d) 32%, #c5c9c2);
   background: #fff;
 }
@@ -102,19 +104,32 @@
   margin: 0;
 }
 
-.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-project-header__section-pencil,
-.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-project-header__field-pencil {
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-project-header__section-pencil {
   flex: 0 0 auto;
   line-height: 0;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page
+  .sleeveless-review-project-header__section-pencil
+  .pattern-editable-pencil-icon,
+.express-measurements-confirm-page.sleeveless-unified-review-page
+  .sleeveless-review-project-header__label.pattern-editable-heading
+  .pattern-editable-pencil-icon {
   color: color-mix(in srgb, var(--kbm-green, #52682d) 72%, #9ca3af);
 }
 
 .express-measurements-confirm-page.sleeveless-unified-review-page
   .sleeveless-review-project-header__section-head:hover
-  .sleeveless-review-project-header__section-pencil,
+  .sleeveless-review-project-header__section-pencil
+  .pattern-editable-pencil-icon,
 .express-measurements-confirm-page.sleeveless-unified-review-page
-  .sleeveless-review-project-header__title-input-wrap:focus-within
-  .sleeveless-review-project-header__field-pencil {
+  .sleeveless-review-project-header__notes-view:hover
+  .sleeveless-review-project-header__section-pencil
+  .pattern-editable-pencil-icon,
+.express-measurements-confirm-page.sleeveless-unified-review-page
+  .sleeveless-review-project-header__notes-view:focus-visible
+  .sleeveless-review-project-header__section-pencil
+  .pattern-editable-pencil-icon {
   color: color-mix(in srgb, var(--kbm-green, #52682d) 88%, #6b7280);
 }
 
@@ -127,20 +142,12 @@
 }
 
 .express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-project-header__section-head:focus-visible,
+.express-measurements-confirm-page.sleeveless-unified-review-page
+  .sleeveless-review-project-header__notes-view:focus-visible,
 .express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-measure-summary-edit-row:focus-visible {
   outline: 2px solid var(--sg-accent, #c2614e);
   outline-offset: 1px;
   border-radius: 8px;
-}
-
-.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-project-header__pencil-icon {
-  display: block;
-}
-
-.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-project-header__pencil-icon--inline,
-.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-project-header__section-head .sleeveless-review-project-header__pencil-icon {
-  width: 18px;
-  height: 18px;
 }
 
 .express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-customize-field-highlight {
@@ -211,12 +218,22 @@
 }
 
 .express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-project-header__notes-view {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
   margin: 0;
   padding: 0.55rem 0.65rem;
   text-align: left;
+  cursor: pointer;
+}
+
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-project-header__notes-view[hidden] {
+  display: none;
 }
 
 .express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-project-header__notes-view .sleeveless-review-project-header__notes-display {
+  flex: 1 1 auto;
+  min-width: 0;
   margin: 0;
 }
 
@@ -334,6 +351,10 @@
 }
 
 .express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-project-header--read-only .sleeveless-review-project-header__section-pencil,
+.express-measurements-confirm-page.sleeveless-unified-review-page
+  .sleeveless-review-project-header--read-only
+  .pattern-editable-heading
+  .pattern-editable-pencil-icon,
 .express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-project-header--read-only .sleeveless-review-project-header__notes-label,
 .express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-project-header--read-only [data-sleeveless-pattern-project-title-field],
 .express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-review-project-header--read-only [data-cb-project-status],
@@ -453,12 +474,14 @@
   line-height: 0;
 }
 
-.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-measure-summary-edit-row .sleeveless-review-project-header__pencil-icon {
-  width: 21px;
-  height: 21px;
+.express-measurements-confirm-page.sleeveless-unified-review-page
+  .sleeveless-measure-summary-edit-row
+  .sleeveless-review-project-header__section-pencil
+  .pattern-editable-pencil-icon {
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 72%, #9ca3af);
 }
 
-.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-measure-summary-edit-row:hover .sleeveless-review-project-header__section-pencil {
+.express-measurements-confirm-page.sleeveless-unified-review-page .sleeveless-measure-summary-edit-row:hover .sleeveless-review-project-header__section-pencil .pattern-editable-pencil-icon {
   color: color-mix(in srgb, var(--kbm-green, #52682d) 88%, #1f2937);
 }
 

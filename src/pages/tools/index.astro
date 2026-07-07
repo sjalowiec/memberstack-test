@@ -3,19 +3,15 @@ import Layout from "../../layouts/Layout.astro";
 import CardRibbon from "../../components/ui/CardRibbon.astro";
 import tools from "../../../data/tools.json";
 
-// Group tools by category (live tools plus optional coming-soon cards)
+// Launch: render only working tools (active === true). Coming-soon entries
+// remain in tools.json but are hidden from the index (display-only change).
 const listedTools = tools.filter(
-  (tool: { active?: boolean; status?: string }) =>
-    tool.active === true || tool.status === "coming-soon"
+  (tool: { active?: boolean }) => tool.active === true
 );
 const groupedTools = Object.groupBy(listedTools, (tool) => tool.category);
 
-// Unique category strings exactly as in tools.json (All = no category filter)
-const categoryValues = tools
-  .map((tool: { category?: string }) => tool.category)
-  .filter((c): c is string => typeof c === "string" && c.length > 0);
-const categories = ["All", ...new Set(categoryValues)];
-
+// Newest tool to feature with a "NEW" ribbon (brand-new to Knit It Now).
+const NEW_TOOL_HREF = "/tools/stitch-multiple-calculator";
 ---
 <Layout title="Charting Tools" bodyClass="page--tight-header">
 
@@ -24,20 +20,13 @@ const categories = ["All", ...new Set(categoryValues)];
   <h1>Charting Tools</h1>
 
   <p class="tools-intro">
-    Adjust fit, add details, or change any pattern - without doing the math yourself.
-  <div class="non-member-cta">
-    <strong>Beta Note:</strong> We’re actively building and improving these tools. Some features may still be in progress. Thanks for being part of it!
-    <p><strong>What do you want to customize?</strong></p>
-  </div>
+    Need to adjust a pattern, resize a project, or make the numbers work for your machine? These tools handle the math so you can spend more time knitting.
+  </p>
 
   <div class="tools-filters">
-    <p class="tools-more-hint">
-      More tools are on the way — <button type="button" id="tools-view-all-hint" class="tools-more-hint__link">view all</button>
-    </p>
     <div class="tools-filter-row tools-access-toolbar">
       <div id="tool-access-filters" class="filter-pills tools-access-filters">
-        <button type="button" class="filter-pill active" data-filter="available">Available Now</button>
-        <button type="button" class="filter-pill" data-filter="all">All Tools</button>
+        <button type="button" class="filter-pill active" data-filter="all">All</button>
         <button type="button" class="filter-pill" data-filter="false">Free</button>
         <button type="button" class="filter-pill" data-filter="true">Member</button>
       </div>
@@ -69,23 +58,6 @@ const categories = ["All", ...new Set(categoryValues)];
     <p id="tools-search-results-line" class="tools-search-results-line small text-muted" hidden>
       Showing results for: <span id="tools-search-term-display" class="tools-search-term-display"></span>
     </p>
-
-    <div id="tools-category-section" class="tools-category-section tools-filter-row">
-      <div id="tool-category-filters" class="filter-pills tools-category-filter-pills">
-        <button type="button" id="show-all-category-tools" class="filter-pill" hidden>
-          Show All Tools
-        </button>
-        {categories.map((category, index) => (
-          <button
-            type="button"
-            class={`filter-pill ${index === 0 ? "active" : ""}`}
-            data-category-filter={category === "All" ? "all" : category}
-          >
-            {category === "All" ? "All Categories" : category}
-          </button>
-        ))}
-      </div>
-    </div>
   </div>
 
   <p id="tools-search-empty" class="tools-search-empty small text-muted" hidden>No tools match your search. Try another word or clear the search.</p>
@@ -98,6 +70,7 @@ const categories = ["All", ...new Set(categoryValues)];
           {(items ?? []).map((tool) => {
             const membersOnly = tool.membersonly ?? false;
             const isComingSoon = tool.status === "coming-soon";
+            const isNew = tool.href === NEW_TOOL_HREF;
             const searchBlob = `${tool.title} ${tool.description}`
               .toLowerCase()
               .replace(/\s+/g, " ")
@@ -112,9 +85,7 @@ const categories = ["All", ...new Set(categoryValues)];
             const inner = (
               <>
                 {isComingSoon && <CardRibbon label="Coming Soon" variant="soon" />}
-                {tool.membersonly && !isComingSoon && (
-                  <CardRibbon label="Member" variant="member" />
-                )}
+                {isNew && <CardRibbon label="New" variant="new" />}
                 <img
                   src={`/icons/tools/${tool.icon}`}
                   alt=""
@@ -122,6 +93,24 @@ const categories = ["All", ...new Set(categoryValues)];
                 />
                 <h3>{tool.title} </h3>
                 <p>{tool.description}</p>
+                {membersOnly && !isNew && (
+                  <span class="tool-member-lock">
+                    <svg
+                      class="tool-member-lock__icon"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    <span class="sr-only">Member tool</span>
+                  </span>
+                )}
               </>
             );
             return isComingSoon ? (
@@ -148,26 +137,16 @@ const categories = ["All", ...new Set(categoryValues)];
 <script>
   const toolsPage = document.querySelector<HTMLElement>(".tools-page");
   const accessButtons = document.querySelectorAll<HTMLButtonElement>("#tool-access-filters .filter-pill");
-  const categoryButtons = document.querySelectorAll<HTMLButtonElement>(
-    "#tool-category-filters .filter-pill[data-category-filter]"
-  );
   const categorySections = document.querySelectorAll<HTMLElement>(".tool-category[data-category-section]");
-  const showAllCategoryToolsBtn = document.getElementById("show-all-category-tools");
   const cards = document.querySelectorAll<HTMLElement>(".tools-grid .kbm-card");
   const searchToggle = document.getElementById("tools-search-toggle");
   const searchInput = document.getElementById("tools-search-input") as HTMLInputElement | null;
   const searchClearBtn = document.getElementById("tools-search-clear");
   const searchResultsLine = document.getElementById("tools-search-results-line");
   const searchTermDisplay = document.getElementById("tools-search-term-display");
-  const toolsCategorySection = document.getElementById("tools-category-section");
   const searchEmptyMsg = document.getElementById("tools-search-empty");
-  const viewAllHint = document.getElementById("tools-view-all-hint");
-  const allToolsAccessBtn = document.querySelector<HTMLButtonElement>(
-    '#tool-access-filters .filter-pill[data-filter="all"]'
-  );
 
-  let activeAccessFilter = "available";
-  let activeCategoryFilter = "all";
+  let activeAccessFilter = "all";
 
   function getSearchQuery(): string {
     return (searchInput?.value ?? "").trim().toLowerCase();
@@ -185,49 +164,24 @@ const categories = ["All", ...new Set(categoryValues)];
       searchTermDisplay.textContent = hasQuery ? (searchInput?.value ?? "").trim() : "";
     }
 
-    if (toolsCategorySection) toolsCategorySection.hidden = hasQuery;
-
     if (searchClearBtn) searchClearBtn.hidden = !hasQuery;
   }
 
   function applyToolFilters() {
     const q = getSearchQuery();
 
-    if (showAllCategoryToolsBtn) {
-      showAllCategoryToolsBtn.hidden = activeCategoryFilter === "all" || q.length > 0;
-    }
-
-    categorySections.forEach((section) => {
-      const sectionCat = section.dataset.categorySection ?? "";
-      if (q.length > 0) {
-        section.style.display = "";
-      } else if (activeCategoryFilter === "all") {
-        section.style.display = "";
-      } else {
-        section.style.display = sectionCat === activeCategoryFilter ? "" : "none";
-      }
-    });
-
     cards.forEach((card) => {
       const isMember = card.dataset.membersonly === "true";
-      const isComingSoonCard = card.dataset.comingSoon === "true";
-      const category = card.dataset.category || "";
       const blob = card.dataset.toolSearch ?? "";
 
       const matchesAccess =
-        (activeAccessFilter === "available" && !isComingSoonCard) ||
         activeAccessFilter === "all" ||
         (activeAccessFilter === "false" && !isMember) ||
         (activeAccessFilter === "true" && isMember);
 
-      const matchesCategory =
-        q.length > 0 ||
-        activeCategoryFilter === "all" ||
-        category === activeCategoryFilter;
-
       const matchesSearch = !q || blob.includes(q);
 
-      card.style.display = matchesAccess && matchesCategory && matchesSearch ? "" : "none";
+      card.style.display = matchesAccess && matchesSearch ? "" : "none";
     });
 
     categorySections.forEach((section) => {
@@ -278,34 +232,9 @@ const categories = ["All", ...new Set(categoryValues)];
     button.addEventListener("click", () => {
       accessButtons.forEach((b) => b.classList.remove("active"));
       button.classList.add("active");
-      activeAccessFilter = button.dataset.filter || "available";
+      activeAccessFilter = button.dataset.filter || "all";
       applyToolFilters();
     });
-  });
-
-  viewAllHint?.addEventListener("click", () => {
-    allToolsAccessBtn?.click();
-  });
-
-  categoryButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      categoryButtons.forEach((b) => b.classList.remove("active"));
-      button.classList.add("active");
-      activeCategoryFilter = button.dataset.categoryFilter || "all";
-      applyToolFilters();
-    });
-  });
-
-  showAllCategoryToolsBtn?.addEventListener("click", () => {
-    const allPill = document.querySelector<HTMLButtonElement>(
-      '#tool-category-filters .filter-pill[data-category-filter="all"]'
-    );
-    if (allPill) {
-      categoryButtons.forEach((b) => b.classList.remove("active"));
-      allPill.classList.add("active");
-    }
-    activeCategoryFilter = "all";
-    applyToolFilters();
   });
 
   applyToolFilters();
@@ -324,7 +253,7 @@ const categories = ["All", ...new Set(categoryValues)];
 }
 
 .tools-intro{
-  max-width:700px;
+  max-width:100%;
   margin-bottom: 0.85rem;
 }
 
@@ -340,40 +269,6 @@ const categories = ["All", ...new Set(categoryValues)];
   flex-direction: column;
   gap: 0.4rem;
   margin-top: 0.35rem;
-}
-
-.tools-more-hint {
-  margin: 0;
-  padding: 0;
-  font-size: 0.8125rem;
-  line-height: 1.35;
-  font-weight: 400;
-  color: var(--text-muted, #6b7280);
-}
-
-.tools-more-hint__link {
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: none;
-  font: inherit;
-  font-size: inherit;
-  line-height: inherit;
-  font-weight: 400;
-  color: inherit;
-  cursor: pointer;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.tools-more-hint__link:hover {
-  color: var(--kbm-green, #52682d);
-}
-
-.tools-more-hint__link:focus-visible {
-  outline: 2px solid rgba(82, 104, 45, 0.25);
-  outline-offset: 2px;
-  border-radius: 2px;
 }
 
 .tools-filter-row {
@@ -491,19 +386,6 @@ const categories = ["All", ...new Set(categoryValues)];
   gap: 6px;
 }
 
-.tools-category-section {
-  margin-top: 0;
-  width: 100%;
-}
-
-.tools-category-section .tools-category-filter-pills.filter-pills {
-  flex: 1 1 100%;
-  min-width: 0;
-  margin-top: 0;
-  margin-bottom: 1rem;
-  gap: 6px;
-}
-
 .tool-category{
   margin-top:60px;
 }
@@ -597,6 +479,43 @@ const categories = ["All", ...new Set(categoryValues)];
   font-size:14px;
   color:#555;
   text-decoration:none;
+}
+
+.tool-member-lock{
+  position:absolute;
+  top:14px;
+  right:14px;
+  z-index:3;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--kbm-green,#52682d);
+}
+
+/* Members with access shouldn't see a lock implying they're blocked. Keyed on
+   the same body classes used site-wide for tool/video access (see BaseLayout). */
+:global(body.ms-logged-in) .tool-member-lock,
+:global(body.dev-member) .tool-member-lock,
+:global(body.dev-bypass-gating) .tool-member-lock{
+  display:none;
+}
+
+.tool-member-lock__icon{
+  width:34px;
+  height:34px;
+  display:block;
+}
+
+.sr-only{
+  position:absolute;
+  width:1px;
+  height:1px;
+  padding:0;
+  margin:-1px;
+  overflow:hidden;
+  clip:rect(0,0,0,0);
+  white-space:nowrap;
+  border:0;
 }
 
 .tools-coming-soon {

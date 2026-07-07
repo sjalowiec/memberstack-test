@@ -1,0 +1,35 @@
+---
+/**
+ * Lightweight HTML helper toolbar for admin textareas that accept trusted HTML.
+ * Renders only markup; the insert/wrap behavior is wired once on the client via
+ * `initHtmlHelperToolbars()` (src/lib/machines/htmlHelperToolbar.ts), keyed off
+ * the shared `.am__htmltoolbar` class and each toolbar's `data-target`.
+ *
+ * Not a rich-text editor -- buttons just insert/wrap tags at the caret.
+ */
+interface Props {
+  /** id of the <textarea> this toolbar edits. */
+  target: string;
+}
+const { target } = Astro.props;
+---
+
+<div
+  class="am__htmltoolbar"
+  data-target={target}
+  role="toolbar"
+  aria-label="HTML formatting helpers"
+>
+  <button type="button" class="am__htmlbtn" data-cmd="bold" title="Bold (strong)">
+    <strong>B</strong>
+  </button>
+  <button type="button" class="am__htmlbtn" data-cmd="italic" title="Italic (em)">
+    <em>I</em>
+  </button>
+  <button type="button" class="am__htmlbtn" data-cmd="link" title="Link (a href)">Link</button>
+  <button type="button" class="am__htmlbtn" data-cmd="ul" title="Bulleted list (ul)">Bullets</button>
+  <button type="button" class="am__htmlbtn" data-cmd="ol" title="Numbered list (ol)">Numbers</button>
+  <button type="button" class="am__htmlbtn" data-cmd="p" title="Paragraph (p)">Paragraph</button>
+  <button type="button" class="am__htmlbtn" data-cmd="br" title="Line break (br)">Break</button>
+  <button type="button" class="am__htmlbtn" data-cmd="h3" title="Heading (h3)">H3</button>
+</div>

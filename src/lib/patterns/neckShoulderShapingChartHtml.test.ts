@@ -193,7 +193,9 @@ describe("online checklist combines Row Counter + Carriage Position", () => {
     // The dedicated column header is gone (the collapsible help-card title may still say it).
     expect(html).not.toContain(">Carriage Position</th>");
     // The Row Counter / RC header is still present.
-    expect(html).toContain('class="ns-shaping-chart__th-row">RC</th>');
+    expect(html).toContain(
+      'class="ns-shaping-chart__th-row">RC <span class="ns-shaping-chart__row-counter-side">(carriage side)</span></th>',
+    );
   });
 
   it("shows row counter + carriage side using full words via distinguishable number/side markup", () => {

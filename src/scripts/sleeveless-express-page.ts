@@ -16,15 +16,17 @@ import {
   isSleevelessExpressNewSessionSearchParams,
 } from "../lib/patterns/sleevelessExpressFreshStart";
 import { resolveSleevelessUserAccess } from "../lib/patterns/sleevelessPatternSystemAccessClient";
-import { canEditSleevelessPatternSettings } from "../lib/patterns/sleevelessPatternSystemAccess";
+import { canEditPatternSettingsForSystem } from "../lib/patterns/sleevelessPatternSystemAccess";
 import { reconcilePatternDraftOwner } from "../lib/patterns/patternDraftOwnerGuard";
 import { exitEditingSavedCustomPattern } from "../lib/patterns/customPatternEditingBannerActions";
 import { OPEN_PATTERN_HREF } from "../lib/patterns/customPatternProjectNavigation";
 import {
-  canStartNewSleevelessPattern,
-  resolveSleevelessNewPatternBlockedCopy,
+  canStartNewPatternForSystem,
+  resolveNewPatternBlockedCopy,
   showSleevelessNewPatternLockedScreen,
 } from "../lib/patterns/sleevelessNewPatternAccessGuard";
+import { resolvePatternSystemForBuilderGate, resolvePatternSystemForEntitlement } from "../lib/patterns/patternSystemId";
+import { logPatternEditGateDebug } from "../lib/patterns/patternEditGateDebug";
 import {
   garmentTypeFromFront,
   writeSleevelessGarmentTypeLocalStorage,
@@ -1106,26 +1108,10 @@ function initExpressPage() {
       /** Snapshot Express wizard localStorage so the measurements page fallbacks match the submitted gauge and steps. */
       persistExpressSession();
 
-      // Keep in sync with `mergeContextFromUrlStorageAndPattern` in sleeveless-express-measurements-page.ts (URL fallbacks).
-      const q = new URLSearchParams();
-      q.set("express", "1");
-      if (values.who) q.set("who", values.who);
-      if (values.style) q.set("style", values.style);
-      if (values.neckline) q.set("neckline", values.neckline);
-      if (values.fit) q.set("fit", values.fit);
-      if (values.selectedSize) q.set("selectedSize", values.selectedSize);
-      if (values.front === "open") q.set("garmentStyle", "cardigan");
-      q.set("gaugeStitchRaw", gaugeStitchRaw);
-      q.set("gaugeRowRaw", gaugeRowRaw);
-      q.set("gaugeRawUnit", unit);
-      q.set("stitches", gaugeStitchesPerInch);
-      q.set("rows", gaugeRowsPerInch);
-
-      const reviewBase =
+      const workspaceHref =
         document.querySelector<HTMLElement>("[data-express-review-href]")?.getAttribute("data-express-review-href")?.trim() ||
-        "/patterns/sleeveless-express-measurements";
-      const reviewPath = reviewBase.replace(/\?.*$/, "");
-      window.location.href = `${reviewPath}?${q.toString()}`;
+        "/patterns/sleeveless/pattern/?generated=1";
+      window.location.href = workspaceHref;
     })();
   });
 
@@ -1197,15 +1183,27 @@ async function blockExpressNewPatternStartIfLocked(): Promise<boolean> {
   }
   if (!isNewSessionIntent) return false;
 
+  const patternSystem = resolvePatternSystemForBuilderGate(document);
   const access = await resolveSleevelessUserAccess();
-  if (!access.loggedIn || canStartNewSleevelessPattern(access)) return false;
+  const canStartNew = canStartNewPatternForSystem(access, patternSystem);
+  logPatternEditGateDebug("blockExpressNewPatternStartIfLocked", {
+    patternSystem,
+    hasSystemAccess: access.hasSystemAccess,
+    freeClaimsBySystem: access.freeClaimsBySystem,
+    extra: { canStartNew, isNewSessionIntent },
+  });
+  if (!access.loggedIn || canStartNew) return false;
 
   // `?new=1` means "start a new pattern". When creation is locked we still return early (skipping
   // initExpressPage → applySleevelessExpressNewSessionFromUrl), so exit any leftover saved-pattern
   // edit session here — otherwise the "Editing saved pattern" wrapper (Save Changes / Save a Copy /
   // X) from customPatternEditingBanner.ts would frame the unlock gate for a claimed free user.
   exitEditingSavedCustomPattern();
-  showSleevelessNewPatternLockedScreen(document, resolveSleevelessNewPatternBlockedCopy(access));
+  showSleevelessNewPatternLockedScreen(
+    document,
+    resolveNewPatternBlockedCopy(access, patternSystem, document),
+    patternSystem,
+  );
   return true;
 }
 
@@ -1217,18 +1215,32 @@ async function blockExpressNewPatternStartIfLocked(): Promise<boolean> {
  * view instead. This mirrors the workspace Edit Pattern gate and also protects direct-URL access.
  */
 async function redirectSavedPatternEditIfLocked(): Promise<boolean> {
+  let isNewSessionIntent = false;
   let isEditChoicesIntent = false;
   try {
-    isEditChoicesIntent = isSleevelessExpressEditChoicesSearchParams(
-      new URL(window.location.href).searchParams,
-    );
+    const params = new URL(window.location.href).searchParams;
+    isNewSessionIntent = isSleevelessExpressNewSessionSearchParams(params);
+    isEditChoicesIntent = isSleevelessExpressEditChoicesSearchParams(params);
   } catch {
+    isNewSessionIntent = false;
     isEditChoicesIntent = false;
   }
+  // ?new=1 always means a fresh builder session — never redirect to a saved pattern view.
+  if (isNewSessionIntent) return false;
   if (!isEditChoicesIntent && !isEditingSavedCustomPatternProject()) return false;
 
   const access = await resolveSleevelessUserAccess();
-  if (!access.loggedIn || canEditSleevelessPatternSettings(access)) return false;
+  const patternSystem = resolvePatternSystemForEntitlement(document);
+  logPatternEditGateDebug("redirectSavedPatternEditIfLocked", {
+    patternSystem,
+    hasSystemAccess: access.hasSystemAccess,
+    freeClaimsBySystem: access.freeClaimsBySystem,
+    extra: {
+      canEdit: canEditPatternSettingsForSystem(access, patternSystem),
+      isEditChoicesIntent,
+    },
+  });
+  if (!access.loggedIn || canEditPatternSettingsForSystem(access, patternSystem)) return false;
 
   // `replace` so the browser back button does not bounce them onto the editable URL again.
   window.location.replace(OPEN_PATTERN_HREF);

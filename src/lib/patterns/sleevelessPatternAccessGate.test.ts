@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { canCustomizePattern, resolveHasAdvancedPatternAccess } from "./sleevelessPatternAccessGate";
 
 describe("resolveHasAdvancedPatternAccess", () => {
-  it("defaults to true when no override is present", () => {
-    expect(resolveHasAdvancedPatternAccess(new URL("https://example.test/review"))).toBe(true);
+  it("defaults to false when no override is present", () => {
+    expect(resolveHasAdvancedPatternAccess(new URL("https://example.test/review"))).toBe(false);
   });
 
   it("returns true when advanced=1 query param is set", () => {

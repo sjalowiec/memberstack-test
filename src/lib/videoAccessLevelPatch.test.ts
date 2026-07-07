@@ -27,7 +27,7 @@ describe("videoAccessLevelPatch", () => {
   it("formats a single-video success message", () => {
     const titles = new Map([["785", "Ravel Cord Tips"]]);
     expect(describeVideoAccessPatchSuccess([{ content_id: 785, access_level: "public" }], titles)).toBe(
-      "Saved access level for 785 — Ravel Cord Tips (public).",
+      "Saved access level for 785 - Ravel Cord Tips (public).",
     );
   });
 });

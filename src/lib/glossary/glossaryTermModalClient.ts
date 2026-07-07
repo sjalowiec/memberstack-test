@@ -41,7 +41,7 @@ export function openGlossaryTermModal(slug: string) {
   modalRoot.hidden = false;
   modalRoot.classList.add("is-open");
   document.body.style.overflow = "hidden";
-  modalBody.innerHTML = "<p>Loading…</p>";
+  modalBody.innerHTML = "<p>Loading...</p>";
   if (modalTitleEl) modalTitleEl.textContent = "";
   if (closeBtn instanceof HTMLElement) closeBtn.focus();
 

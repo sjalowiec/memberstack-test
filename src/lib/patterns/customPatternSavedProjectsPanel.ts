@@ -41,8 +41,15 @@ import {
 import { hydrateSavedCustomPatternProjectSession } from "./hydrateSavedCustomPatternProject";
 import { writeHydratedConstructionBaseline } from "./customPatternProjectConstructionBaseline";
 import { logSleevelessPatternActivity } from "./sleevelessPatternActivity";
-import { getPatternProjectMeta, savePatternProjectMeta } from "./sleevelessPatternProjectMeta";
+import { getPatternProjectMeta, resolvePatternProjectSaveName, savePatternProjectMeta } from "./sleevelessPatternProjectMeta";
 import { nextPanelListRefresh, perfEnd, perfMark, perfStart } from "./savedPatternsPerfLog";
+import {
+  canEditPatternSettingsForSystem,
+  resolvePatternSystemAlreadyClaimedCopy,
+} from "./sleevelessPatternSystemAccess";
+import { resolveSleevelessUserAccess } from "./sleevelessPatternSystemAccessClient";
+import { resolvePatternSystemForEntitlement } from "./patternSystemId";
+import { offerPatternEditingUnlockModal } from "./patternEditingUnlockModal";
 
 export const CUSTOM_PATTERN_SAVED_PROJECTS_PANEL_TITLE = "Saved Pattern Projects";
 
@@ -56,10 +63,10 @@ export type CustomPatternSavedProjectsPanelOptions = {
   onProjectLoaded?: (project: CustomPatternProject) => void;
 };
 
-function resolveProjectNameForSave(nameInput: HTMLInputElement | null): string {
+function resolveProjectNameForSave(nameInput: HTMLInputElement | null, root?: ParentNode): string {
   const fromInput = nameInput?.value?.trim() ?? "";
   if (fromInput) return fromInput;
-  return getPatternProjectMeta().title.trim();
+  return resolvePatternProjectSaveName(root);
 }
 
 function setStatusEl(el: HTMLElement | null, message: string, isError = false): void {
@@ -70,6 +77,22 @@ function setStatusEl(el: HTMLElement | null, message: string, isError = false): 
 
 function setStatus(root: HTMLElement, message: string, isError = false): void {
   setStatusEl(root.querySelector("[data-cb-project-status]"), message, isError);
+}
+
+/**
+ * Overwriting/renaming an existing saved project is an edit that requires membership — mirror the
+ * My Patterns Rename gate. Create/copy have their own gates, so only update mode is guarded here.
+ * Returns false (and offers the unlock modal) when the current knitter may not edit.
+ */
+async function ensureSavedProjectUpdateAllowed(root: HTMLElement): Promise<boolean> {
+  const access = await resolveSleevelessUserAccess();
+  const patternSystem = resolvePatternSystemForEntitlement();
+  if (canEditPatternSettingsForSystem(access, patternSystem)) return true;
+  if (typeof document !== "undefined") {
+    offerPatternEditingUnlockModal(access, { patternSystem });
+  }
+  setStatus(root, resolvePatternSystemAlreadyClaimedCopy(patternSystem), true);
+  return false;
 }
 
 function resolveNameForPanelDisplay(nameInput: HTMLInputElement | null): string {
@@ -460,9 +483,16 @@ export function initCustomPatternSavedProjectsPanel(
   });
 
   saveBtn?.addEventListener("click", async () => {
-    const name = resolveProjectNameForSave(nameInput);
+    const name = resolveProjectNameForSave(nameInput, root);
     if (!name) {
       setStatus(root, "Enter a project name before saving.", true);
+      return;
+    }
+    // An implicit save that would overwrite the linked project is an edit — gate like My Patterns.
+    if (
+      resolveDefaultCustomPatternSaveMode() === "update" &&
+      !(await ensureSavedProjectUpdateAllowed(root))
+    ) {
       return;
     }
     const res = await smartSaveCustomPatternProject({
@@ -490,7 +520,7 @@ export function initCustomPatternSavedProjectsPanel(
       setStatus(root, SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT, true);
       return;
     }
-    const name = resolveProjectNameForSave(nameInput);
+    const name = resolveProjectNameForSave(nameInput, root);
     if (!name) {
       setStatus(root, "Enter a project name before saving a copy.", true);
       return;
@@ -525,9 +555,12 @@ export function initCustomPatternSavedProjectsPanel(
       );
       return;
     }
-    const name = resolveProjectNameForSave(nameInput);
+    const name = resolveProjectNameForSave(nameInput, root);
     if (!name) {
       setStatus(root, "Enter a project name before updating.", true);
+      return;
+    }
+    if (!(await ensureSavedProjectUpdateAllowed(root))) {
       return;
     }
     if (id !== readActiveCustomPatternProjectId()) {

@@ -1,0 +1,88 @@
+---
+/**
+ * ToolGate - member gate notice for individual Tools pages.
+ *
+ * Reuses the site-wide access system used by Videos and Skill Builders:
+ *   - Access is decided by the shared `hasKinVideoAccess` helper
+ *     (via `window.kbmHasKinVideoAccess` in BaseLayout), which grants access to
+ *     beta, basic, premium, and legacy plans (VIDEO_MEMBERSHIP_PLAN_IDS).
+ *   - BaseLayout sets `body.ms-logged-in` from that helper. global.css then
+ *     hides `[data-gated="locked"]` and reveals `[data-gated="content"]` for
+ *     that tier (and for dev-member / dev-bypass-gating preview modes).
+ *
+ * Usage (member-only tool pages):
+ *   1. Place <ToolGate tool={tool} /> directly under the tool title/intro,
+ *      BEFORE the tool form/results.
+ *   2. Wrap the tool's interactive UI in a container marked
+ *      `data-gated="content" hidden` so it is hidden for logged-out /
+ *      non-member visitors and revealed for members with access.
+ *
+ * Behaviour:
+ *   - `tool.membersonly !== true` -> renders nothing (free tools unaffected).
+ *   - `tool.membersonly === true` -> renders the locked notice, shown to
+ *     logged-out visitors and members without a qualifying plan, and hidden
+ *     for members with access.
+ */
+interface Props {
+  /** Tool entry from data/tools.json (only `membersonly` is read). */
+  tool?: { membersonly?: boolean } | null;
+}
+
+const { tool = null } = Astro.props;
+const isMemberOnly = tool?.membersonly === true;
+---
+
+{isMemberOnly && (
+  <div class="tool-gate-notice" data-gated="locked" role="note">
+    <h2 class="tool-gate-notice__title">This tool is for members</h2>
+    <p class="tool-gate-notice__body">You'll need an active membership to use this tool.</p>
+    <p class="tool-gate-notice__actions">
+      <a href="/membership" class="tool-gate-notice__cta">Become a member</a>
+    </p>
+  </div>
+)}
+
+<style>
+  .tool-gate-notice {
+    margin: 0 0 1.5rem;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid #d7e2c8;
+    border-left: 4px solid var(--kbm-green, #52682d);
+    border-radius: 12px;
+    background: #f4f7ee;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .tool-gate-notice__title {
+    margin: 0 0 0.35rem;
+    font-size: 1.15rem;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .tool-gate-notice__body {
+    margin: 0 0 0.9rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #374151;
+  }
+
+  .tool-gate-notice__actions {
+    margin: 0;
+  }
+
+  .tool-gate-notice__cta {
+    display: inline-block;
+    padding: 10px 18px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 8px;
+    background: var(--kbm-green, #52682d);
+    color: #fff;
+    text-decoration: none;
+  }
+
+  .tool-gate-notice__cta:hover {
+    background: var(--kbm-green-hover, #445925);
+    color: #fff;
+  }
+</style>

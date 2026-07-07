@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import { writeActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
 import { saveCurrentPattern } from "./patternStorage";
 import { stubLocalStorage } from "./test/stubLocalStorage";
 import {
@@ -8,6 +9,8 @@ import {
   getSleevelessPatternOnlineHeading,
   getSleevelessPatternOnlineNotesText,
   resetPatternProjectMetaForNewDraft,
+  resolvePatternProjectSaveName,
+  resolvePatternProjectSaveNameFromState,
   SLEEVELESS_PATTERN_ONLINE_HEADING_FALLBACK,
 } from "./sleevelessPatternProjectMeta";
 import {
@@ -121,6 +124,40 @@ describe("resetPatternProjectMetaForNewDraft", () => {
 
     expect(getPatternProjectMeta()).toEqual({ title: "", notes: "" });
     expect(getExpressEditingProjectLabel()).toBe(EXPRESS_EDITING_FALLBACK_LABEL);
+  });
+});
+
+describe("resolvePatternProjectSaveName", () => {
+  beforeEach(() => {
+    stubLocalStorage();
+    localStorage.clear();
+  });
+
+  it("uses linked saved project name before auto-generated title", () => {
+    writeActiveCustomPatternProjectId("proj-1", "Saved Drop Shoulder Name");
+    saveCurrentPattern({ patternProject: { title: "", notes: "" } });
+    expect(resolvePatternProjectSaveNameFromState()).toBe("Saved Drop Shoulder Name");
+  });
+
+  it("uses auto-generated title when draft and linked name are empty", () => {
+    saveCurrentPattern({
+      fit: { sizingChart: "misses", selectedSize: "4" },
+      style: { garmentStyle: "pullover", neckline: "round" },
+      patternProject: { title: "", notes: "" },
+    });
+    expect(resolvePatternProjectSaveNameFromState()).toContain("Sleeveless Pullover");
+    expect(resolvePatternProjectSaveNameFromState()).toContain("Women's Size 4");
+  });
+
+  it("prefers a non-empty edit drawer title over state fallbacks", () => {
+    writeActiveCustomPatternProjectId("proj-1", "Saved Name");
+    const root = {
+      querySelector(sel: string) {
+        if (sel === "#sl-edit-title") return { value: "Typed title" } as HTMLInputElement;
+        return null;
+      },
+    } as unknown as ParentNode;
+    expect(resolvePatternProjectSaveName(root)).toBe("Typed title");
   });
 });
 

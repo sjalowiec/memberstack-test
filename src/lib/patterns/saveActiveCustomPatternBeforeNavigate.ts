@@ -5,7 +5,7 @@ import { runUpdateActiveSavedCustomPattern } from "./customPatternEditingBannerA
 import { readActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
 import { smartSaveCustomPatternProject } from "./customPatternSavedProjectsPanel";
 import { prepareCustomBuildPatternGeneration } from "./prepareCustomBuildPatternGeneration";
-import { getPatternProjectMeta } from "./sleevelessPatternProjectMeta";
+import { resolvePatternProjectSaveNameFromState } from "./sleevelessPatternProjectMeta";
 
 export async function saveActiveCustomPatternBeforeNavigate(
   root?: ParentNode,
@@ -21,7 +21,7 @@ export async function saveActiveCustomPatternBeforeNavigate(
     return res.ok ? { ok: true } : { ok: false };
   }
 
-  const title = getPatternProjectMeta().title.trim();
+  const title = resolvePatternProjectSaveNameFromState();
   if (!title) {
     return { ok: false };
   }

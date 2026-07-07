@@ -13,6 +13,7 @@ import {
 } from "../../lib/lessonVideo";
 import { filterPublicCatalogVideos, catalogVideoIsPublic } from "../../lib/videoPublic";
 import { helpHubTipIsPublic } from "../../lib/helpHubPublic";
+import { buildHelpHubFaqPage, serializeJsonLd } from "../../lib/helpHubFaqSchema";
 // at the top of [slug].astro
 
 const reservedPaths = ["guided-workshops"];
@@ -335,9 +336,29 @@ const tryHeading =
   typeof tip.tryThisTitle === "string" && tip.tryThisTitle.trim() !== ""
     ? tip.tryThisTitle.trim()
     : "Try This";
+
+/**
+ * FAQPage JSON-LD, server-rendered, built only from the tip's *visible* Q&A content.
+ * Emitted only when there are >= 2 genuine question-shaped Q&A items (no fabricated FAQs).
+ */
+const faqPage = buildHelpHubFaqPage({
+  question: tip.question,
+  title: tip.title,
+  bubbleAnswer: tip.bubbleAnswer,
+  aboutTitle: tip.aboutTitle,
+  solutionText: tip.solutionText,
+  bridge: tip.bridge,
+  tryThisTitle: tip.tryThisTitle,
+  tryThis: tip.tryThis,
+  trySteps: tip.trySteps,
+});
+const faqJsonLd = faqPage ? serializeJsonLd(faqPage) : "";
 ---
 
 <Layout title={layoutTitle} description={pageDescription} bodyClass="page--tight-header">
+  {faqJsonLd && (
+    <script type="application/ld+json" set:html={faqJsonLd} />
+  )}
   <PageHead title="Help Hub" subhead={undefined} hideTitle={true} />
 
   <section class="container py-5 tips-page-section">

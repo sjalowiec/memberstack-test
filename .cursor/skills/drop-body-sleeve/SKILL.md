@@ -17,7 +17,7 @@ description: >-
 | **Top-down** | Stitches & Rows | `public/images/patterns/drop-shoulder/drop-body-sleeve-top-down.svg` |
 | **Top-down** | Shaping Notation | `public/images/patterns/drop-shoulder/jp-drop-body-sleeve-top-down.svg` |
 
-**Naming note:** Bottom-up JP uses legacy capital `JP-drop-body-sleeve.svg` (git-tracked). Top-down JP is lowercase `jp-drop-body-sleeve-top-down.svg`. On Windows these look interchangeable � on Linux deploy they are **not**. Never save body/cardigan art into the sleeve JP filename.
+**Naming note:** Bottom-up JP uses legacy capital `JP-drop-body-sleeve.svg` (git-tracked). Top-down JP is lowercase `jp-drop-body-sleeve-top-down.svg`. On Windows these look interchangeable - on Linux deploy they are **not**. Never save body/cardigan art into the sleeve JP filename.
 
 ## Do not mix token families
 
@@ -26,12 +26,12 @@ Export **one layer per file** from Illustrator.
 - **Measurement** files (`drop-body-sleeve*.svg`): `{{WRIST_STS}}`, `{{SLEEVE_CAP_STS}}`, `{{SLEEVE_LENGTH_ROWS}}`, `{{SIDE_LENGTH}}`, `{{CUFF_ROWS}}`, `{{CUFF_DEPTH}}`, `{{UNIT}}`, etc.
 - **Japanese notation** files (`JP-drop-body-sleeve*.svg`): `{{jp-caston}}`, `{{jp-cuff}}`, `{{jp-sleeve}}`, `{{jp-sleeve_cap_sts}}` only.
 
-Body/cardigan tokens (`jp-neckline-bo`, `rc-armhole-bo`, `NECK_STS`, �) belong on **front/back** schematics, not sleeve JP exports.
+Body/cardigan tokens (`jp-neckline-bo`, `rc-armhole-bo`, `NECK_STS`, ...) belong on **front/back** schematics, not sleeve JP exports.
 
 ## Orientation
 
 - **Cuff-up / bottom-up:** Cast-on at wrist (bottom). Upper-arm / bind-off at top. Matches default sleeve construction on the pattern page.
-- **Top-down:** Artwork is vertically flipped; **same token ids** � the code swaps wrist ? upper-arm values when hydrating top-down measurement art.
+- **Top-down:** Artwork is vertically flipped; **same token ids** - the code swaps wrist -> upper-arm values when hydrating top-down measurement art.
 
 ## JP label placement (cuff-up)
 

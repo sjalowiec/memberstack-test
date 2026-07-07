@@ -13,7 +13,8 @@
  * 2. Localhost runtime override (no env var needed): the page is being served
  *    from a localhost-style host (localhost / 127.0.0.1 / 0.0.0.0 / ::1 /
  *    *.local). This lets us exercise pattern flows locally without a real
- *    Memberstack login.
+ *    Memberstack login when no account is signed in. Signed-in Memberstack
+ *    accounts (including nosub) always resolve real plan entitlement instead.
  *
  * Production hosts (knititnow.com, etc.) resolve to "production" and Netlify
  * deploy previews (*.netlify.app) resolve to "dev" — neither is "localhost",
@@ -43,10 +44,13 @@ function isLocalhostRuntime(): boolean {
   );
 }
 
-const devBypassOptIn =
+export const devBypassOptIn =
   typeof import.meta !== "undefined" &&
   !!import.meta.env?.DEV &&
   import.meta.env.PUBLIC_DEV_BYPASS_GATING === "true";
+
+/** Catalog video bypass: explicit env opt-in only (never localhost auto or ?member=true). */
+export const videoDevBypass = devBypassOptIn;
 
 // Local dev override: allows testing pattern flows without Memberstack login.
 export const devBypass = devBypassOptIn || isLocalhostRuntime();

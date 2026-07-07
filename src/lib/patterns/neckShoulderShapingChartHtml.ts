@@ -1000,6 +1000,8 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
             Done
           </th>`;
   const doneHeaderActiveSide = `<th scope="col" rowspan="1" class="ns-shaping-chart__th-complete" aria-label="Completion status">Done</th>`;
+  /** Active-shoulder neckline checklist only — not used on body/sleeve shaping charts. */
+  const activeSideRcHeader = `<th scope="col" rowspan="1" class="ns-shaping-chart__th-row">RC <span class="ns-shaping-chart__row-counter-side">(carriage side)</span></th>`;
   const doneLeadingCell = activeSideOnly
     ? showDoneColumn
       ? doneHeaderActiveSide
@@ -1027,7 +1029,7 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
           ${doneLeadingCell}
           ${
             activeSideOnly
-              ? `<th scope="col" rowspan="1" class="ns-shaping-chart__th-row">RC</th>
+              ? `${activeSideRcHeader}
           <th scope="col" rowspan="1" class="ns-shaping-chart__th-action">Action</th>
           <th scope="col" rowspan="1" class="ns-shaping-chart__th-group">Edge</th>
           <th scope="col" rowspan="1" class="ns-shaping-chart__th-num">Sts Remaining</th>`
@@ -1088,7 +1090,7 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
       <thead>
         <tr>
           ${doneHeaderActiveSide}
-          <th scope="col" rowspan="1" class="ns-shaping-chart__th-row">RC</th>
+          ${activeSideRcHeader}
           <th scope="col" rowspan="1" class="ns-shaping-chart__th-action">Action</th>
           <th scope="col" rowspan="1" class="ns-shaping-chart__th-group">Edge</th>
           <th scope="col" rowspan="1" class="ns-shaping-chart__th-num">Sts Remaining</th>

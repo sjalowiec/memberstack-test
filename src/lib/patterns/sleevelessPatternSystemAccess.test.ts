@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  canCreatePatternForSystem,
   canCreateSleevelessPattern,
   canEditSleevelessPatternNotes,
   canEditSleevelessPatternSettings,
@@ -13,58 +14,83 @@ import {
   SLEEVELESS_SYSTEM_MEMBERSHIP_PLAN_IDS,
   type SleevelessUserAccess,
 } from "./sleevelessPatternSystemAccess";
+import { readFreeClaimsBySystemFromMemberJson } from "./patternSystemFreeClaim";
 
 const loggedOut = LOGGED_OUT_SLEEVELESS_ACCESS;
 const freeUnclaimed: SleevelessUserAccess = {
   loggedIn: true,
   memberId: "ms_free",
   hasSystemAccess: false,
-  freeClaimed: false,
+  freeClaimsBySystem: {},
 };
-const freeClaimed: SleevelessUserAccess = {
+const freeSleevelessClaimed: SleevelessUserAccess = {
   loggedIn: true,
   memberId: "ms_free",
   hasSystemAccess: false,
-  freeClaimed: true,
-  freeClaimedPatternId: "pat_123",
+  freeClaimsBySystem: {
+    sleeveless: { claimed: true, patternId: "pat_123" },
+  },
+};
+const freeDropShoulderClaimed: SleevelessUserAccess = {
+  loggedIn: true,
+  memberId: "ms_free",
+  hasSystemAccess: false,
+  freeClaimsBySystem: {
+    "drop-shoulder": { claimed: true, patternId: "pat_ds" },
+  },
 };
 const member: SleevelessUserAccess = {
   loggedIn: true,
   memberId: "ms_member",
   hasSystemAccess: true,
-  freeClaimed: false,
+  freeClaimsBySystem: {},
 };
 const memberAfterClaim: SleevelessUserAccess = {
   ...member,
-  freeClaimed: true,
-  freeClaimedPatternId: "pat_999",
+  freeClaimsBySystem: {
+    sleeveless: { claimed: true, patternId: "pat_999" },
+  },
 };
 
 describe("hasSleevelessPatternSystemAccess", () => {
   it("is false for logged-out and free users, true for members/owners", () => {
     expect(hasSleevelessPatternSystemAccess(loggedOut)).toBe(false);
     expect(hasSleevelessPatternSystemAccess(freeUnclaimed)).toBe(false);
-    expect(hasSleevelessPatternSystemAccess(freeClaimed)).toBe(false);
+    expect(hasSleevelessPatternSystemAccess(freeSleevelessClaimed)).toBe(false);
     expect(hasSleevelessPatternSystemAccess(member)).toBe(true);
   });
 });
 
-describe("canCreateSleevelessPattern", () => {
+describe("canCreatePatternForSystem (per-system)", () => {
   it("blocks logged-out visitors", () => {
-    expect(canCreateSleevelessPattern(loggedOut)).toBe(false);
+    expect(canCreatePatternForSystem(loggedOut, "sleeveless")).toBe(false);
+    expect(canCreatePatternForSystem(loggedOut, "drop-shoulder")).toBe(false);
   });
 
-  it("allows a free user their first (unclaimed) pattern", () => {
+  it("allows a free user their first pattern per system independently", () => {
+    expect(canCreatePatternForSystem(freeUnclaimed, "sleeveless")).toBe(true);
+    expect(canCreatePatternForSystem(freeUnclaimed, "drop-shoulder")).toBe(true);
+  });
+
+  it("blocks only the claimed system, not other systems", () => {
+    expect(canCreatePatternForSystem(freeSleevelessClaimed, "sleeveless")).toBe(false);
+    expect(canCreatePatternForSystem(freeSleevelessClaimed, "drop-shoulder")).toBe(true);
+
+    expect(canCreatePatternForSystem(freeDropShoulderClaimed, "drop-shoulder")).toBe(false);
+    expect(canCreatePatternForSystem(freeDropShoulderClaimed, "sleeveless")).toBe(true);
+  });
+
+  it("always allows members / system owners", () => {
+    expect(canCreatePatternForSystem(member, "sleeveless")).toBe(true);
+    expect(canCreatePatternForSystem(memberAfterClaim, "sleeveless")).toBe(true);
+    expect(canCreatePatternForSystem(memberAfterClaim, "drop-shoulder")).toBe(true);
+  });
+});
+
+describe("canCreateSleevelessPattern (default system)", () => {
+  it("uses sleeveless as the default system id", () => {
     expect(canCreateSleevelessPattern(freeUnclaimed)).toBe(true);
-  });
-
-  it("blocks a free user who already claimed their pattern", () => {
-    expect(canCreateSleevelessPattern(freeClaimed)).toBe(false);
-  });
-
-  it("always allows members / system owners (even after claiming)", () => {
-    expect(canCreateSleevelessPattern(member)).toBe(true);
-    expect(canCreateSleevelessPattern(memberAfterClaim)).toBe(true);
+    expect(canCreateSleevelessPattern(freeSleevelessClaimed)).toBe(false);
   });
 });
 
@@ -73,9 +99,10 @@ describe("canEditSleevelessPatternSettings", () => {
     expect(canEditSleevelessPatternSettings(loggedOut)).toBe(false);
   });
 
-  it("allows a free user while still creating, blocks after claiming", () => {
+  it("allows a free user while still creating, blocks after claiming for that system", () => {
     expect(canEditSleevelessPatternSettings(freeUnclaimed)).toBe(true);
-    expect(canEditSleevelessPatternSettings(freeClaimed)).toBe(false);
+    expect(canEditSleevelessPatternSettings(freeSleevelessClaimed)).toBe(false);
+    expect(canEditSleevelessPatternSettings(freeSleevelessClaimed, "drop-shoulder")).toBe(true);
   });
 
   it("always allows members / system owners", () => {
@@ -85,23 +112,22 @@ describe("canEditSleevelessPatternSettings", () => {
 });
 
 describe("downgrade lifecycle (had access → entitlement ended)", () => {
-  // After access ends the account keeps freeClaimed=true (allowance used) but loses system access.
   const downgraded: SleevelessUserAccess = {
     loggedIn: true,
     memberId: "ms_ex_member",
     hasSystemAccess: false,
-    freeClaimed: true,
-    freeClaimedPatternId: "pat_first",
+    freeClaimsBySystem: {
+      sleeveless: { claimed: true, patternId: "pat_first" },
+    },
   };
 
-  it("locks creation of new patterns", () => {
-    expect(canCreateSleevelessPattern(downgraded)).toBe(false);
+  it("locks creation of new patterns for claimed systems", () => {
+    expect(canCreatePatternForSystem(downgraded, "sleeveless")).toBe(false);
   });
 
-  it("locks settings/regeneration on every saved pattern", () => {
+  it("locks settings/regeneration on claimed systems", () => {
     expect(canEditSleevelessPatternSettings(downgraded)).toBe(false);
-    expect(canEditSleevelessPatternSettings(downgraded, { id: "pat_first" })).toBe(false);
-    expect(canEditSleevelessPatternSettings(downgraded, { id: "pat_made_while_member" })).toBe(false);
+    expect(canEditSleevelessPatternSettings(downgraded, "drop-shoulder")).toBe(true);
   });
 
   it("keeps title/notes editable (library management)", () => {
@@ -116,7 +142,7 @@ describe("canEditSleevelessPatternNotes", () => {
 
   it("allows any logged-in user (free claimed included) to edit title/notes", () => {
     expect(canEditSleevelessPatternNotes(freeUnclaimed)).toBe(true);
-    expect(canEditSleevelessPatternNotes(freeClaimed)).toBe(true);
+    expect(canEditSleevelessPatternNotes(freeSleevelessClaimed)).toBe(true);
     expect(canEditSleevelessPatternNotes(member)).toBe(true);
   });
 });
@@ -142,59 +168,52 @@ describe("plan entitlement", () => {
 });
 
 describe("free claim member JSON read/merge", () => {
-  it("reads an empty/absent claim", () => {
+  it("reads an empty/absent claim (legacy)", () => {
     expect(readFreeClaimFromMemberJson({})).toEqual({
       freeSleevelessPatternClaimed: false,
       freeSleevelessPatternId: undefined,
     });
-    expect(readFreeClaimFromMemberJson(null)).toEqual({
-      freeSleevelessPatternClaimed: false,
-      freeSleevelessPatternId: undefined,
+  });
+
+  it("reads per-system claims and migrates legacy keys", () => {
+    const json = {
+      freePatternClaimsBySystem: {
+        "drop-shoulder": { claimed: true, patternId: "pat_ds" },
+      },
+    };
+    expect(readFreeClaimsBySystemFromMemberJson(json)).toEqual({
+      "drop-shoulder": { claimed: true, patternId: "pat_ds" },
     });
   });
 
-  it("reads a stored claim", () => {
+  it("migrates legacy sleeveless keys into per-system claims", () => {
     const json = { freeSleevelessPatternClaimed: true, freeSleevelessPatternId: "pat_abc" };
-    expect(readFreeClaimFromMemberJson(json)).toEqual({
-      freeSleevelessPatternClaimed: true,
-      freeSleevelessPatternId: "pat_abc",
+    expect(readFreeClaimsBySystemFromMemberJson(json)).toEqual({
+      sleeveless: { claimed: true, patternId: "pat_abc" },
     });
   });
 
-  it("merges the claim without clobbering existing keys (replace-safe)", () => {
+  it("merges legacy claim without clobbering existing keys", () => {
     const existing = { preferences: { theme: "dark" }, other: 1 };
     const merged = mergeFreeClaimIntoMemberJson(existing, {
       freeSleevelessPatternClaimed: true,
       freeSleevelessPatternId: "pat_xyz",
     });
-    expect(merged).toEqual({
-      preferences: { theme: "dark" },
-      other: 1,
-      freeSleevelessPatternClaimed: true,
-      freeSleevelessPatternId: "pat_xyz",
-    });
-    // round-trips back through the reader
+    expect(merged.preferences).toEqual({ theme: "dark" });
     expect(readFreeClaimFromMemberJson(merged)).toEqual({
       freeSleevelessPatternClaimed: true,
       freeSleevelessPatternId: "pat_xyz",
     });
   });
 
-  it("resets the claim without clobbering unrelated keys", () => {
+  it("resets legacy claim without clobbering unrelated keys", () => {
     const existing = {
       preferences: { theme: "dark" },
-      other: 1,
       freeSleevelessPatternClaimed: true,
       freeSleevelessPatternId: "pat_old",
     };
     const reset = mergeFreeClaimResetIntoMemberJson(existing);
-    expect(reset).toEqual({
-      preferences: { theme: "dark" },
-      other: 1,
-      freeSleevelessPatternClaimed: false,
-      freeSleevelessPatternId: null,
-    });
-    // reader treats the cleared state as unclaimed
+    expect(reset.preferences).toEqual({ theme: "dark" });
     expect(readFreeClaimFromMemberJson(reset)).toEqual({
       freeSleevelessPatternClaimed: false,
       freeSleevelessPatternId: undefined,

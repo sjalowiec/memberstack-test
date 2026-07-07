@@ -28,5 +28,10 @@
     "id": 6,
     "key": "getting-started",
     "label": "Getting Started"
+  },
+  {
+    "id": 7,
+    "key": "machines",
+    "label": "Machines"
   }
 ]

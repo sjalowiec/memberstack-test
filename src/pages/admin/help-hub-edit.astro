@@ -2,9 +2,23 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import helpHubData from "../../data/help-hub.json";
 import lessons from "../../data/lessons.json";
+import helpHubCategories from "../../data/help-hub-categories.json";
 
 const entries = Array.isArray(helpHubData) ? helpHubData : [];
 const lessonRecords = Array.isArray(lessons) ? lessons : [];
+
+const categoryOptions = (Array.isArray(helpHubCategories) ? helpHubCategories : [])
+  .reduce<{ key: string; label: string }[]>((acc, cat) => {
+    const rec = cat as Record<string, unknown>;
+    const key = typeof rec.key === "string" ? rec.key.trim() : "";
+    if (!key) return acc;
+    const label =
+      typeof rec.label === "string" && rec.label.trim() !== ""
+        ? rec.label.trim()
+        : key;
+    acc.push({ key, label });
+    return acc;
+  }, []);
 
 const lessonReferenceLines = lessonRecords.reduce<
   { id: number; title: string }[]
@@ -161,6 +175,18 @@ const entryLabel = currentEntry as {
       <span id="saveHelpHubStatusTop" class="help-hub-edit__save-status" aria-live="polite"></span>
     </div>
 
+    <div id="helpHubDraftRecovery" class="help-hub-edit__recovery" role="alert" hidden>
+      <span class="help-hub-edit__recovery-text">Recovered unsaved draft available.</span>
+      <div class="help-hub-edit__recovery-actions">
+        <button type="button" id="helpHubRestoreDraft" class="kbm-btn kbm-btn-primary">
+          Restore Draft
+        </button>
+        <button type="button" id="helpHubDiscardDraft" class="kbm-btn kbm-btn-outline">
+          Discard Draft
+        </button>
+      </div>
+    </div>
+
     <form class="help-hub-edit__form" novalidate>
       <div class="help-hub-edit__sections help-hub-dash__sections">
         <section
@@ -194,6 +220,41 @@ const entryLabel = currentEntry as {
               }
               <p class="help-hub-edit__hint">
                 Published page location: visibility control. HTML not supported. Displayed.
+              </p>
+            </div>
+            <div class="help-hub-edit__field">
+              <label for="help-hub-category" class="help-hub-edit__label">Category</label>
+              {
+                (() => {
+                  const categoryValue = valueFor("category", "");
+                  const knownKeys = categoryOptions.map((opt) => opt.key);
+                  const showLegacyOption =
+                    categoryValue !== "" && !knownKeys.includes(categoryValue);
+                  return (
+                    <select
+                      id="help-hub-category"
+                      class="help-hub-edit__select"
+                      name="category"
+                    >
+                      <option value="" selected={categoryValue === ""}>
+                        — Select a category —
+                      </option>
+                      {categoryOptions.map((opt) => (
+                        <option value={opt.key} selected={categoryValue === opt.key}>
+                          {opt.label}
+                        </option>
+                      ))}
+                      {showLegacyOption && (
+                        <option value={categoryValue} selected>
+                          {categoryValue} (legacy)
+                        </option>
+                      )}
+                    </select>
+                  );
+                })()
+              }
+              <p class="help-hub-edit__hint">
+                Groups the entry in the Help Hub. Choose from the shared category list.
               </p>
             </div>
             <div class="help-hub-edit__field">
@@ -252,19 +313,6 @@ const entryLabel = currentEntry as {
           >
             <h2 id="metadata-heading" class="help-hub-dash__panel-title">Metadata</h2>
             <div class="help-hub-edit__fields">
-              <div class="help-hub-edit__field">
-                <label for="help-hub-category" class="help-hub-edit__label">Category</label>
-                <input
-                  id="help-hub-category"
-                  class="help-hub-edit__input"
-                  type="text"
-                  name="category"
-                  value={valueFor("category", "")}
-                />
-                <p class="help-hub-edit__hint">
-                  Published page: not currently displayed. HTML not supported. Currently unused.
-                </p>
-              </div>
               <div class="help-hub-edit__field">
                 <label for="help-hub-category-pill" class="help-hub-edit__label">
                   Category Pill
@@ -785,6 +833,35 @@ const entryLabel = currentEntry as {
       gap: 0.65rem 1rem;
     }
 
+    .help-hub-edit__recovery {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.65rem 1rem;
+      margin-bottom: 1.5rem;
+      padding: 0.75rem 1rem;
+      background: #fef9c3;
+      border: 1px solid #fde047;
+      border-radius: 10px;
+    }
+
+    .help-hub-edit__recovery[hidden] {
+      display: none;
+    }
+
+    .help-hub-edit__recovery-text {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: #713f12;
+    }
+
+    .help-hub-edit__recovery-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
     .admin-panel {
       background: #fff;
       border: 1px solid #e5e7eb;
@@ -1001,6 +1078,56 @@ const entryLabel = currentEntry as {
         "resources",
       ];
 
+      var DRAFT_KEY = (function () {
+        var base = "kbm:helpHubEditDraft:";
+        var e = INITIAL_HELP_HUB;
+        if (e && typeof e === "object") {
+          if (e.id !== undefined && e.id !== null && String(e.id).trim() !== "") {
+            return base + "id:" + String(e.id);
+          }
+          if (typeof e.slug === "string" && e.slug.trim() !== "") {
+            return base + "slug:" + e.slug.trim();
+          }
+        }
+        return base + "new";
+      })();
+
+      var SUPPRESS_UNLOAD = false;
+
+      function snapshotForm(form) {
+        var data = {};
+        var els = form.elements;
+        for (var i = 0; i < els.length; i++) {
+          var el = els[i];
+          var name = el && el.getAttribute ? el.getAttribute("name") : null;
+          if (!name) continue;
+          if ("value" in el) data[name] = String(el.value);
+        }
+        return data;
+      }
+
+      function snapshotString(form) {
+        return JSON.stringify(snapshotForm(form));
+      }
+
+      function readDraft() {
+        try {
+          var raw = localStorage.getItem(DRAFT_KEY);
+          if (!raw) return null;
+          var parsed = JSON.parse(raw);
+          if (parsed && parsed.data && typeof parsed.data === "object") {
+            return parsed.data;
+          }
+        } catch (e) {}
+        return null;
+      }
+
+      function clearDraft() {
+        try {
+          localStorage.removeItem(DRAFT_KEY);
+        } catch (e) {}
+      }
+
       function trimmedFieldValue(form, name) {
         var el = form.elements.namedItem(name);
         if (!el) return "";
@@ -1201,9 +1328,11 @@ const entryLabel = currentEntry as {
             window.currentHelpHub = JSON.parse(JSON.stringify(data.tip));
           }
 
+          clearDraft();
           setSaveStatus("Saved to help-hub.json", "ok");
 
           if (method === "POST" && data.tip && data.tip.slug) {
+            SUPPRESS_UNLOAD = true;
             window.setTimeout(function () {
               window.location.href =
                 "/admin/help-hub-edit?slug=" + encodeURIComponent(String(data.tip.slug));
@@ -1234,10 +1363,49 @@ const entryLabel = currentEntry as {
         var cursorStatus = document.getElementById("copyHelpHubCursorStatus");
         var previewBtn = document.getElementById("previewHelpHub");
         var saveBtn = document.getElementById("saveHelpHubBtn");
+        var recovery = document.getElementById("helpHubDraftRecovery");
+        var restoreBtn = document.getElementById("helpHubRestoreDraft");
+        var discardBtn = document.getElementById("helpHubDiscardDraft");
         if (!form || !pre || !copyBtn || !status || !cursorBtn || !cursorStatus) return;
 
         var jsonCopyTimerHolder = { current: null };
         var cursorCopyTimerHolder = { current: null };
+
+        // Snapshot of the server-loaded form state; used as the "clean" baseline
+        // for draft comparison and the unsaved-changes leave warning.
+        var baselineSnapshot = snapshotString(form);
+        var savedSnapshot = baselineSnapshot;
+        var pendingDraft = readDraft();
+
+        function saveDraft() {
+          try {
+            var snap = snapshotForm(form);
+            if (JSON.stringify(snap) === baselineSnapshot) {
+              clearDraft();
+            } else {
+              localStorage.setItem(
+                DRAFT_KEY,
+                JSON.stringify({ v: 1, ts: Date.now(), data: snap })
+              );
+            }
+          } catch (e) {}
+        }
+
+        function applySnapshot(data) {
+          if (!data || typeof data !== "object") return;
+          Object.keys(data).forEach(function (name) {
+            var el = form.elements.namedItem(name);
+            if (el && "value" in el) el.value = data[name];
+          });
+        }
+
+        function showRecovery() {
+          if (recovery) recovery.hidden = false;
+        }
+
+        function hideRecovery() {
+          if (recovery) recovery.hidden = true;
+        }
 
         function copyToClipboard(text, statusEl, timerHolder) {
           function showCopied() {
@@ -1310,12 +1478,47 @@ const entryLabel = currentEntry as {
           }
           updatePreview();
           updateCopyUi();
+          saveDraft();
         }
 
         form.addEventListener("input", onFormActivity);
         form.addEventListener("change", onFormActivity);
         updatePreview();
         updateCopyUi();
+
+        if (pendingDraft && JSON.stringify(pendingDraft) !== baselineSnapshot) {
+          showRecovery();
+        } else if (pendingDraft) {
+          clearDraft();
+        }
+
+        if (restoreBtn) {
+          restoreBtn.addEventListener("click", function () {
+            if (pendingDraft) {
+              applySnapshot(pendingDraft);
+              updatePreview();
+              updateCopyUi();
+              saveDraft();
+            }
+            hideRecovery();
+          });
+        }
+
+        if (discardBtn) {
+          discardBtn.addEventListener("click", function () {
+            clearDraft();
+            hideRecovery();
+          });
+        }
+
+        window.addEventListener("beforeunload", function (e) {
+          if (SUPPRESS_UNLOAD) return;
+          if (snapshotString(form) !== savedSnapshot) {
+            e.preventDefault();
+            e.returnValue = "";
+            return "";
+          }
+        });
 
         copyBtn.addEventListener("click", function () {
           if (!hasRequiredFields(form)) {
@@ -1353,6 +1556,11 @@ const entryLabel = currentEntry as {
           saveBtn.addEventListener("click", async function () {
             var saved = await saveHelpHubEntry(form, saveBtn);
             if (saved) {
+              baselineSnapshot = snapshotString(form);
+              savedSnapshot = baselineSnapshot;
+              pendingDraft = null;
+              clearDraft();
+              hideRecovery();
               updatePreview();
               updateCopyUi();
             }

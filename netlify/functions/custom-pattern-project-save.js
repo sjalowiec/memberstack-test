@@ -4,15 +4,21 @@
  */
 import {
   buildProjectRecord,
+  countProjectsForPatternSystem,
   getProjectsStore,
+  isPatternCreateBlockedForSystem,
   jsonResponse,
+  listProjectSummaries,
   parseJsonBody,
+  patternSystemCreateBlockedMessage,
   projectBlobKey,
   publicProject,
+  readPatternEntitlementFromSaveBody,
   resolveProjectUserId,
   upsertProjectSummaryInIndex,
   withCors,
 } from "./lib/custom-pattern-projects-store.js";
+import { resolvePatternSystemFromProject } from "./lib/pattern-system-id.js";
 
 export default async (req) => {
   if (req.method === "OPTIONS") {
@@ -43,10 +49,37 @@ export default async (req) => {
   }
 
   const project = built.project;
+  const family = project.family || "sleeveless";
+  const patternSystem =
+    readPatternEntitlementFromSaveBody(body.data)?.patternSystem ??
+    resolvePatternSystemFromProject(project);
+
+  const store = getProjectsStore();
+  const existingProjects = await listProjectSummaries(store, family, user.userId);
+  const existingProjectCountForSystem = countProjectsForPatternSystem(
+    existingProjects,
+    patternSystem,
+  );
+  const entitlement = readPatternEntitlementFromSaveBody(body.data);
+
+  if (
+    isPatternCreateBlockedForSystem({
+      hasSystemAccess: entitlement?.hasSystemAccess,
+      freeClaimedForSystem: entitlement?.freeClaimedForSystem,
+      existingProjectCountForSystem,
+    })
+  ) {
+    return withCors(
+      jsonResponse(
+        { ok: false, error: patternSystemCreateBlockedMessage(patternSystem) },
+        403,
+      ),
+    );
+  }
+
   const key = projectBlobKey(project.family, user.userId, project.id);
 
   try {
-    const store = getProjectsStore();
     await store.set(key, JSON.stringify(publicProject(project)), {
       metadata: {
         userId: user.userId,

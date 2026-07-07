@@ -1,0 +1,189 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { loadTechniquesByMachineId } from "../../../lib/machines/techniquesCatalog";
+import "../../../styles/admin-machines.css";
+
+const techniquesByMachineId = loadTechniquesByMachineId();
+---
+
+<BaseLayout
+  title="For Sale Machines | Knit it Now"
+  description="Admin: manage the knitting machines currently listed for sale."
+  skipGlobalHyvor={true}
+  bodyClass="admin-machines-body"
+>
+  <main class="am">
+    <header class="am__head am__head--row">
+      <div>
+        <h1 class="am__title">For Sale Machines</h1>
+        <p class="am__sub">
+          Inventory view ù only machines with <strong>For sale</strong> checked
+          appear here. Toggle <strong>For sale</strong>, change <strong>Status</strong>,
+          or edit <strong>Price</strong> inline; use <strong>View / Edit</strong>
+          to open the full record on the main database.
+        </p>
+      </div>
+      <div class="am__head-actions">
+        <a href="/admin/machines" class="am__btn am__btn--outline">? All Machines</a>
+      </div>
+    </header>
+
+    <p id="am-status" class="am__status" aria-live="polite"></p>
+
+    <section class="am__panel" aria-labelledby="am-list-heading">
+      <div class="am__toolbar">
+        <h2 id="am-list-heading" class="am__panel-title">Listed for sale</h2>
+        <label class="am__search-label">
+          <span class="sr-only">Search for-sale machines</span>
+          <input
+            type="search"
+            id="am-search"
+            placeholder="Search brand, model, gauge, style, punchcard, year, techniqueù"
+            autocomplete="off"
+          />
+        </label>
+      </div>
+      <p id="am-count" class="am__count"></p>
+
+      <div class="am__table-wrap">
+        <table class="am__table">
+          <thead>
+            <tr>
+              <th scope="col">Brand</th>
+              <th scope="col">Model</th>
+              <th scope="col" class="am__num">Sale</th>
+              <th scope="col">Status</th>
+              <th scope="col">Expected Date</th>
+              <th scope="col">Price</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="am-rows"></tbody>
+        </table>
+      </div>
+      <p id="am-empty" class="am__empty" hidden>
+        No machines are currently listed for sale. Open
+        <a href="/admin/machines">All Machines</a> and check
+        <strong>For sale</strong> on a record to add it here.
+      </p>
+    </section>
+  </main>
+
+  <script
+    type="application/json"
+    id="am-techniques-data"
+    set:html={JSON.stringify(techniquesByMachineId)}
+  ></script>
+
+  <script>
+    import { machineId as readMachineId, normalizeSale, type MachineRecord } from "../../../lib/machines/machineAdminFields";
+    import {
+      API_BASE,
+      machineForSaleRowHtml,
+      matchesQuery,
+      quickSaveSale,
+      readQuickPatch,
+      setQuickFeedback,
+      sortMachines,
+    } from "../../../lib/machines/adminListShared";
+
+    // Full catalog is held in memory (quick-edit saves the whole array, matching
+    // the admin save pattern); only for-sale records are displayed.
+    let machines: MachineRecord[] = [];
+    let techniquesByMachineId: Record<string, string[]> = {};
+
+    const statusEl = document.getElementById("am-status");
+    const countEl = document.getElementById("am-count");
+    const searchEl = document.getElementById("am-search") as HTMLInputElement | null;
+    const rowsEl = document.getElementById("am-rows");
+    const emptyEl = document.getElementById("am-empty");
+
+    function setStatus(message: string, kind: "ok" | "err" | "neutral" = "neutral") {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.classList.toggle("is-error", kind === "err");
+      statusEl.classList.toggle("is-ok", kind === "ok");
+    }
+
+    function techNames(id: number | null): string[] {
+      if (id === null) return [];
+      return techniquesByMachineId[String(id)] ?? [];
+    }
+
+    function isForSale(m: MachineRecord): boolean {
+      return normalizeSale(m.sale)?.forSale === true;
+    }
+
+    function render() {
+      if (!rowsEl || !countEl) return;
+      const q = (searchEl?.value || "").trim().toLowerCase();
+      const forSale = machines.filter(isForSale);
+      const filtered = sortMachines(
+        forSale.filter((m) => matchesQuery(m, q, techNames(readMachineId(m))))
+      );
+
+      countEl.textContent = `${filtered.length} of ${forSale.length} for-sale machine(s)`;
+      if (emptyEl) emptyEl.hidden = forSale.length !== 0;
+
+      rowsEl.innerHTML = filtered
+        .map((m) => {
+          const id = readMachineId(m);
+          return machineForSaleRowHtml(m, {
+            actionHtml: `<a href="/admin/machines?edit=${id ?? ""}" class="am__btn am__btn--small">View / Edit</a>`,
+          });
+        })
+        .join("");
+    }
+
+    async function quickEdit(id: number, patch: Parameters<typeof quickSaveSale>[2]) {
+      setQuickFeedback(rowsEl, id, "Savingù", "neutral");
+      try {
+        machines = await quickSaveSale(machines, id, patch);
+        setStatus("Saved.", "ok");
+        // Re-render so the inventory list reflects any newly (un)listed machine.
+        render();
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Save failed";
+        setStatus(msg, "err");
+        setQuickFeedback(rowsEl, id, "Save failed", "err");
+      }
+    }
+
+    async function init() {
+      const dataEl = document.getElementById("am-techniques-data");
+      if (dataEl?.textContent) {
+        try {
+          techniquesByMachineId = JSON.parse(dataEl.textContent) as Record<string, string[]>;
+        } catch {
+          techniquesByMachineId = {};
+        }
+      }
+
+      setStatus("Loading machinesù");
+      try {
+        const res = await fetch(API_BASE);
+        const data = await res.json();
+        if (!res.ok || !data?.ok || !Array.isArray(data.machines)) {
+          setStatus(data?.error || `Load failed (${res.status})`, "err");
+          return;
+        }
+        machines = data.machines as MachineRecord[];
+        setStatus(`${machines.filter(isForSale).length} machine(s) listed for sale.`, "ok");
+        render();
+      } catch {
+        setStatus("Network error loading machines.", "err");
+        return;
+      }
+
+      searchEl?.addEventListener("input", render);
+
+      // Inline quick-edit: For sale / Status / Price (same controls as the main list).
+      rowsEl?.addEventListener("change", (event) => {
+        const parsed = readQuickPatch(event.target);
+        if (parsed) void quickEdit(parsed.id, parsed.patch);
+      });
+    }
+
+    void init();
+  </script>
+</BaseLayout>

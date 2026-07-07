@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import { PATTERN_BUILDERS_HOME_HREF } from "../lib/patterns/customPatternProjectNavigation";
 import "../styles/global.css";
 ---   
 
@@ -86,7 +87,7 @@ import "../styles/global.css";
           </a>
 
           <!-- Card 3: I'm ready to make something -->
-          <a href="/patterns" class="kbm-hex-card kbm-hex-card--link" data-testid="card-projects-phase">
+          <a href={PATTERN_BUILDERS_HOME_HREF} class="kbm-hex-card kbm-hex-card--link" data-testid="card-projects-phase">
             <div class="kbm-hex-icon">
               <img src="/images/KINlogo.svg" alt="" />
             </div>

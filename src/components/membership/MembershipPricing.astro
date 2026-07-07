@@ -8,10 +8,10 @@ interface Props {
 
 const { showStatus = true, showFooter = true } = Astro.props;
 
-const basicMonthlyPrice = MEMBERSHIPS.basicMonthly.price;
-const basicAnnualPrice = MEMBERSHIPS.basicAnnual.price;
-const premiumMonthlyPrice = MEMBERSHIPS.premiumMonthly.price;
-const premiumAnnualPrice = MEMBERSHIPS.premiumAnnual.price;
+const basicMonthlyPrice = MEMBERSHIPS.basic.prices.monthly.price;
+const basicAnnualPrice = MEMBERSHIPS.basic.prices.annual.price;
+const premiumMonthlyPrice = MEMBERSHIPS.premium.prices.monthly.price;
+const premiumAnnualPrice = MEMBERSHIPS.premium.prices.annual.price;
 ---
 
 <div class="membership-pricing">
@@ -44,7 +44,7 @@ const premiumAnnualPrice = MEMBERSHIPS.premiumAnnual.price;
             class="kbm-btn kbm-btn-primary join-plan__cta"
             data-join-checkout="basicMonthly"
           >
-            Join Basic — Monthly
+            Join Basic - Monthly
           </button>
         </div>
         <div class="join-plan__option">
@@ -56,7 +56,7 @@ const premiumAnnualPrice = MEMBERSHIPS.premiumAnnual.price;
             class="kbm-btn kbm-btn-outline join-plan__cta"
             data-join-checkout="basicAnnual"
           >
-            Join Basic — Annual
+            Join Basic - Annual
           </button>
         </div>
       </div>
@@ -75,7 +75,7 @@ const premiumAnnualPrice = MEMBERSHIPS.premiumAnnual.price;
             class="kbm-btn kbm-btn-primary join-plan__cta"
             data-join-checkout="premiumMonthly"
           >
-            Join Premium — Monthly
+            Join Premium - Monthly
           </button>
         </div>
         <div class="join-plan__option">
@@ -87,7 +87,7 @@ const premiumAnnualPrice = MEMBERSHIPS.premiumAnnual.price;
             class="kbm-btn kbm-btn-outline join-plan__cta"
             data-join-checkout="premiumAnnual"
           >
-            Join Premium — Annual
+            Join Premium - Annual
           </button>
         </div>
       </div>

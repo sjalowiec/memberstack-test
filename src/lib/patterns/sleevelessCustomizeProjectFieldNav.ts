@@ -1,6 +1,15 @@
-/** Deep-link from My Pattern → Customize tab for project title / notes editing. */
+/** Deep-link into the pattern workspace Edit drawer for project title / notes editing. */
 
-export const SLEEVELESS_CUSTOMIZE_REVIEW_PATH = "/patterns/sleeveless/review/";
+import {
+  OPEN_PATTERN_EDIT_WORKSPACE_HREF,
+  PATTERN_WORKSPACE_EDIT_QUERY,
+} from "./customPatternProjectNavigation";
+
+/** @deprecated Review route redirects to workspace; use {@link SLEEVELESS_CUSTOMIZE_WORKSPACE_PATH}. */
+export const SLEEVELESS_CUSTOMIZE_REVIEW_PATH = OPEN_PATTERN_EDIT_WORKSPACE_HREF;
+
+/** Pattern workspace with Edit drawer auto-opened (`?edit=1`). */
+export const SLEEVELESS_CUSTOMIZE_WORKSPACE_PATH = OPEN_PATTERN_EDIT_WORKSPACE_HREF;
 
 export type SleevelessCustomizeProjectField = "title" | "notes";
 
@@ -10,7 +19,7 @@ const HASH_BY_TARGET: Record<SleevelessCustomizeProjectField, string> = {
 };
 
 export function customizeReviewHrefForField(target: SleevelessCustomizeProjectField): string {
-  return `${SLEEVELESS_CUSTOMIZE_REVIEW_PATH}#${HASH_BY_TARGET[target]}`;
+  return `${SLEEVELESS_CUSTOMIZE_WORKSPACE_PATH}#${HASH_BY_TARGET[target]}`;
 }
 
 export function navigateToCustomizeProjectField(target: SleevelessCustomizeProjectField): void {
@@ -33,3 +42,6 @@ export function consumeCustomizeProjectFieldHash(): SleevelessCustomizeProjectFi
   history.replaceState(null, "", cleanUrl);
   return target;
 }
+
+/** Query flag used when deep-linking into the workspace edit surface. */
+export const SLEEVELESS_CUSTOMIZE_WORKSPACE_EDIT_QUERY = PATTERN_WORKSPACE_EDIT_QUERY;

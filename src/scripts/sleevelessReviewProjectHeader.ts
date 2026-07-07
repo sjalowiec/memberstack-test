@@ -3,10 +3,11 @@
  */
 
 import {
+  canEditPatternSettingsForSystem,
   canEditSleevelessPatternNotes,
-  canEditSleevelessPatternSettings,
   LOGGED_OUT_SLEEVELESS_ACCESS,
 } from "../lib/patterns/sleevelessPatternSystemAccess";
+import { resolvePatternSystemForEntitlement } from "../lib/patterns/patternSystemId";
 import {
   getCachedSleevelessUserAccess,
   resolveSleevelessUserAccess,
@@ -188,6 +189,7 @@ function applyReadOnlyProjectHeader(root: HTMLElement): void {
   }
 
   stripSectionHeadTrigger(root.querySelector("[data-sleeveless-pattern-project-notes-header]"));
+  stripSectionHeadTrigger(root.querySelector("[data-sleeveless-pattern-project-notes-view-edit]"));
 
   const notes = meta.notes;
   const notesReadonly = root.querySelector("[data-sleeveless-pattern-project-notes-readonly]");
@@ -281,6 +283,10 @@ function bindEditableHeader(root: HTMLElement): void {
 
   beginNotesEditForFocus = beginNotesEdit;
   bindSectionHeadTrigger(notesEditTrigger, beginNotesEdit);
+  bindSectionHeadTrigger(
+    root.querySelector<HTMLElement>("[data-sleeveless-pattern-project-notes-view-edit]"),
+    beginNotesEdit,
+  );
 
   saveBtn?.addEventListener("click", () => {
     if (!notesInput) return;
@@ -378,7 +384,9 @@ export async function initSleevelessReviewProjectHeader(): Promise<void> {
 
   const access = await resolveSleevelessUserAccess();
 
-  // Title + project notes: editable for any logged-in user (including a free claimed pattern).
+  // Project notes stay editable for any logged-in user (including a free claimed pattern). The
+  // title field can be edited locally, but renaming only persists via the cloud save, which now
+  // requires membership (gated in runSleevelessPatternProjectCloudSave) — matching My Patterns.
   if (canEditSleevelessPatternNotes(access)) {
     bindEditableHeader(root);
   } else {
@@ -387,7 +395,8 @@ export async function initSleevelessReviewProjectHeader(): Promise<void> {
 
   // Pattern-building choices (who/size, front, neckline, fit, gauge) + regeneration: members /
   // Sleeveless Pattern System owners, or free users still creating their one free pattern.
-  if (canEditSleevelessPatternSettings(access)) {
+  const patternSystem = resolvePatternSystemForEntitlement();
+  if (canEditPatternSettingsForSystem(access, patternSystem)) {
     initSleevelessReviewSummaryEdit();
     initChangePatternChoicesLinks();
   } else {

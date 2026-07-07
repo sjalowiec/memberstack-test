@@ -1,0 +1,80 @@
+import { describe, expect, it } from "vitest";
+import {
+  countProjectsForPatternSystem,
+  isPatternCreateBlockedForSystem,
+  patternSystemCreateBlockedMessage,
+} from "./custom-pattern-projects-store.js";
+
+describe("isPatternCreateBlockedForSystem", () => {
+  it("never blocks members", () => {
+    expect(
+      isPatternCreateBlockedForSystem({
+        hasSystemAccess: true,
+        freeClaimedForSystem: true,
+        existingProjectCountForSystem: 99,
+      }),
+    ).toBe(false);
+  });
+
+  it("blocks when client reports the system is already claimed", () => {
+    expect(
+      isPatternCreateBlockedForSystem({
+        hasSystemAccess: false,
+        freeClaimedForSystem: true,
+        existingProjectCountForSystem: 0,
+      }),
+    ).toBe(true);
+  });
+
+  it("blocks when the user already has a saved project for that system (server count fallback)", () => {
+    expect(
+      isPatternCreateBlockedForSystem({
+        hasSystemAccess: false,
+        freeClaimedForSystem: false,
+        existingProjectCountForSystem: 1,
+      }),
+    ).toBe(true);
+  });
+
+  it("allows first save for a system when unclaimed and no existing projects", () => {
+    expect(
+      isPatternCreateBlockedForSystem({
+        hasSystemAccess: false,
+        freeClaimedForSystem: false,
+        existingProjectCountForSystem: 0,
+      }),
+    ).toBe(false);
+  });
+});
+
+describe("countProjectsForPatternSystem", () => {
+  it("counts only matching patternSystem rows", () => {
+    const summaries = [
+      { id: "a", patternSystem: "sleeveless" },
+      { id: "b", patternSystem: "drop-shoulder" },
+      { id: "c", patternSystem: "sleeveless" },
+    ];
+    expect(countProjectsForPatternSystem(summaries, "sleeveless")).toBe(2);
+    expect(countProjectsForPatternSystem(summaries, "drop-shoulder")).toBe(1);
+  });
+});
+
+describe("patternSystemCreateBlockedMessage", () => {
+  it("includes the pattern system display name", () => {
+    expect(patternSystemCreateBlockedMessage("drop-shoulder")).toMatch(/Drop Shoulder/i);
+  });
+});
+
+/** @deprecated alias coverage */
+describe("isSleevelessPatternCreateBlocked (legacy alias)", () => {
+  it("delegates to per-system guard", async () => {
+    const { isSleevelessPatternCreateBlocked } = await import("./custom-pattern-projects-store.js");
+    expect(
+      isSleevelessPatternCreateBlocked({
+        hasSystemAccess: false,
+        freeClaimed: true,
+        existingProjectCount: 0,
+      }),
+    ).toBe(true);
+  });
+});

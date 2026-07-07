@@ -35,23 +35,23 @@ const helpHubEntries = Array.isArray(helpHubData) ? helpHubData : [];
 
     <section class="video-access-admin__summary" aria-label="Access level summary">
       <div class="video-access-admin__stat">
-        <span class="video-access-admin__stat-value" data-stat="total">ù</span>
+        <span class="video-access-admin__stat-value" data-stat="total">-</span>
         <span class="video-access-admin__stat-label">Total videos</span>
       </div>
       <div class="video-access-admin__stat">
-        <span class="video-access-admin__stat-value" data-stat="public">ù</span>
+        <span class="video-access-admin__stat-value" data-stat="public">-</span>
         <span class="video-access-admin__stat-label">Public</span>
       </div>
       <div class="video-access-admin__stat">
-        <span class="video-access-admin__stat-value" data-stat="member">ù</span>
+        <span class="video-access-admin__stat-value" data-stat="member">-</span>
         <span class="video-access-admin__stat-label">Member</span>
       </div>
       <div class="video-access-admin__stat">
-        <span class="video-access-admin__stat-value" data-stat="draft">ù</span>
+        <span class="video-access-admin__stat-value" data-stat="draft">-</span>
         <span class="video-access-admin__stat-label">Draft</span>
       </div>
       <div class="video-access-admin__stat video-access-admin__stat--review">
-        <span class="video-access-admin__stat-value" data-stat="needsReview">ù</span>
+        <span class="video-access-admin__stat-value" data-stat="needsReview">-</span>
         <span class="video-access-admin__stat-label">Needs Review</span>
       </div>
     </section>
@@ -73,7 +73,7 @@ const helpHubEntries = Array.isArray(helpHubData) ? helpHubData : [];
 
     <section class="admin-panel video-access-admin__panel" aria-labelledby="video-access-table-heading">
       <h2 id="video-access-table-heading" class="visually-hidden">All videos</h2>
-      <p id="video-access-loading" class="help-hub-admin__loading">Loadingù</p>
+      <p id="video-access-loading" class="help-hub-admin__loading">Loading...</p>
       <div id="video-access-table-wrap" class="video-access-admin__table-wrap" hidden>
         <table id="video-access-table" class="help-hub-admin__table video-access-admin__table">
           <thead>
@@ -546,7 +546,7 @@ const helpHubEntries = Array.isArray(helpHubData) ? helpHubData : [];
       const parts = [asString(row.category).trim(), asString(row.subcategory).trim()].filter(Boolean);
       const videoType = asString(row.videoType).trim();
       if (videoType) parts.push(videoType);
-      return parts.join(" ù ");
+      return parts.join(" - ");
     }
 
     function videoUrl(row: VideoRow): string {
@@ -768,13 +768,13 @@ const helpHubEntries = Array.isArray(helpHubData) ? helpHubData : [];
 
           return `<tr class="${trClass}" data-video-content-id="${escapeHtml(contentId)}">
             <td class="col-title">${escapeHtml(asString(row.title))}</td>
-            <td class="col-legacy-id">${legacyId ? `<code>${escapeHtml(legacyId)}</code>` : '<span class="col-muted">ù</span>'}</td>
-            <td class="col-slug">${slug ? `<code>${escapeHtml(slug)}</code>` : '<span class="col-muted">ù</span>'}</td>
+            <td class="col-legacy-id">${legacyId ? `<code>${escapeHtml(legacyId)}</code>` : '<span class="col-muted">-</span>'}</td>
+            <td class="col-slug">${slug ? `<code>${escapeHtml(slug)}</code>` : '<span class="col-muted">-</span>'}</td>
             <td>${buildSelectHtml(row, contentId)}</td>
             <td>${escapeHtml(catalogStatusLabel(row))}</td>
-            <td class="col-used-in">${usedIn ? escapeHtml(usedIn) : '<span class="col-muted">ù</span>'}</td>
-            <td class="col-grouping">${grouping ? escapeHtml(grouping) : '<span class="col-muted">ù</span>'}</td>
-            <td>${updated ? escapeHtml(updated) : '<span class="col-muted">ù</span>'}</td>
+            <td class="col-used-in">${usedIn ? escapeHtml(usedIn) : '<span class="col-muted">-</span>'}</td>
+            <td class="col-grouping">${grouping ? escapeHtml(grouping) : '<span class="col-muted">-</span>'}</td>
+            <td>${updated ? escapeHtml(updated) : '<span class="col-muted">-</span>'}</td>
           </tr>`;
         })
         .join("");
@@ -842,7 +842,7 @@ const helpHubEntries = Array.isArray(helpHubData) ? helpHubData : [];
     });
 
     async function loadData() {
-      setStatus("Loading catalogù");
+      setStatus("Loading catalog...");
       if (loadingEl) loadingEl.hidden = false;
       if (tableWrapEl) tableWrapEl.hidden = true;
       if (emptyEl) emptyEl.hidden = true;

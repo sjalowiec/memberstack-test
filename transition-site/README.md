@@ -4,7 +4,7 @@ Minimal static site for deploying the Knit It Now transition page to its **own N
 
 ## What's included
 
-- `/` and `/transition/` ó same transition page
+- `/` and `/transition/` ù same transition page
 - Shared content from `src/components/transition/` (single source of truth with `/transition` on the main app)
 - Styles: `src/styles/global.css`, `src/styles/print.css`
 - Assets: logo, Sue photo, signature, favicons (copied into `public/` before build)
@@ -41,13 +41,13 @@ Output: `transition-site/dist/`
 
 ## Netlify deploy (separate site)
 
-**Option A ó base directory**
+**Option A ù base directory**
 
 1. Create a new Netlify site linked to this repo.
 2. Set **Base directory** to `transition-site`.
 3. Build command and publish directory are read from `transition-site/netlify.toml`.
 
-**Option B ó repo root**
+**Option B ù repo root**
 
 1. Build command: `npm run build:transition-site`
 2. Publish directory: `transition-site/dist`

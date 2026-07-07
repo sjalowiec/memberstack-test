@@ -3,6 +3,7 @@ import {
   buildReferenceMachineStaticPaths,
   type ReferenceMachine,
 } from "../../../lib/machines/referenceCatalogPaths";
+import { machineImageUrl } from "../../../lib/machines/referenceCatalog";
 
 export const prerender = true;
 
@@ -17,15 +18,8 @@ function formatSpec(value: unknown): string {
   return s === "" ? "—" : s;
 }
 
-function machineImageUrl(base: string, relativePath: string): string {
-  const normalized = relativePath.replace(/\\/g, "/").replace(/^\/+/, "");
-  const parts = normalized.split("/").filter(Boolean).map(encodeURIComponent);
-  return `${base.replace(/\/+$/, "")}/${parts.join("/")}`;
-}
-
 const { machine } = Astro.props as { machine: ReferenceMachine };
 
-const imageBase = "https://www.knititnow.com/images/machines/";
 const images = Array.isArray(machine?.images) ? machine.images : [];
 const mainEntry =
   images.find((img) => img && img.isMain === true) ??
@@ -33,7 +27,7 @@ const mainEntry =
   null;
 const mainImageRaw =
   mainEntry?.url != null ? String(mainEntry.url).trim() : "";
-const mainImage = mainImageRaw ? machineImageUrl(imageBase, mainImageRaw) : null;
+const mainImage = mainImageRaw ? machineImageUrl(mainImageRaw) : null;
 
 const brand = formatSpec(machine?.brand);
 const model = formatSpec(machine?.model);

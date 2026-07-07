@@ -7,32 +7,33 @@ import {
   SLEEVELESS_SAVE_LOGGED_OUT_COPY,
 } from "./sleevelessNewPatternAccessGuard";
 import type { SleevelessUserAccess } from "./sleevelessPatternSystemAccess";
+import { testAccess } from "./patternAccessTestFixtures";
 
-const loggedOut: SleevelessUserAccess = {
+const loggedOut: SleevelessUserAccess = testAccess({
   loggedIn: false,
   hasSystemAccess: false,
   freeClaimed: false,
-};
-const freeUnclaimed: SleevelessUserAccess = {
+});
+const freeUnclaimed: SleevelessUserAccess = testAccess({
   loggedIn: true,
   memberId: "ms_free",
   hasSystemAccess: false,
   freeClaimed: false,
-};
-const freeClaimed: SleevelessUserAccess = {
+});
+const freeClaimed: SleevelessUserAccess = testAccess({
   loggedIn: true,
   memberId: "ms_free",
   hasSystemAccess: false,
   freeClaimed: true,
   freeClaimedPatternId: "pat_1",
-};
-const member: SleevelessUserAccess = {
+});
+const member: SleevelessUserAccess = testAccess({
   loggedIn: true,
   memberId: "ms_member",
   hasSystemAccess: true,
   freeClaimed: false,
-};
-const memberAfterClaim: SleevelessUserAccess = { ...member, freeClaimed: true };
+});
+const memberAfterClaim: SleevelessUserAccess = testAccess({ ...member, freeClaimed: true });
 
 describe("canStartNewSleevelessPattern", () => {
   it("blocks a free user who already claimed their one-time free pattern", () => {
@@ -190,7 +191,7 @@ describe("showSleevelessNewPatternLockedScreen", () => {
 
     // The "Open your saved pattern" link stays available on the gate.
     const actions = notice!.children.find((c) => c.className.includes("__actions"));
-    const openSavedLink = actions?.children.find((c) => c.textContent === "Open your saved pattern");
+    const openSavedLink = actions?.children.find((c) => c.textContent === "Open your saved patterns");
     expect(openSavedLink).toBeTruthy();
     expect(openSavedLink?.href).toBe("/account#my-patterns");
   });

@@ -1,7 +1,7 @@
 export const pageTitle = "The New Knit It Now is Coming";
 
 export const description =
-  "The new Knit It Now is coming August 1. Your membership continues — here's what's changing and what stays the same.";
+  "The new Knit It Now is coming August 1. Your membership continues - here's what's changing and what stays the same.";
 
 export type SaveChecklistItem = {
   lead: string;
@@ -10,7 +10,7 @@ export type SaveChecklistItem = {
 };
 
 export const staysSameItems = [
-  "Your membership will continue — nothing about your membership is going away.",
+  "Your membership will continue - nothing about your membership is going away.",
   "Your email address and account stay the same.",
   "You'll continue to have access to everything included with the membership you've purchased.",
   "No extra cost is required because of the new site.",
@@ -58,7 +58,7 @@ export const faqGroups: FaqGroup[] = [
       {
         question: "Will my membership continue?",
         answer:
-          "Yes. If you are currently a monthly member, your membership will continue on the new Knit It Now — same account, same access.",
+          "Yes. If you are currently a monthly member, your membership will continue on the new Knit It Now - same account, same access.",
       },
       {
         question: "Do I need to do anything?",
@@ -90,7 +90,7 @@ export const faqGroups: FaqGroup[] = [
       {
         question: "Will my course progress transfer?",
         answer:
-          "Course progress from the current site won't carry over. If you're partway through a course you'd like to finish, you may want to complete it before August 1 — but only if that's important to you.",
+          "Course progress from the current site won't carry over. If you're partway through a course you'd like to finish, you may want to complete it before August 1 - but only if that's important to you.",
       },
     ],
   },

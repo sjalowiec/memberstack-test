@@ -2,7 +2,8 @@
  * Memberstack login gate for sleeveless pattern builder pages.
  * Logged-out visitors cannot use builder, review, pattern, print, or saved-pattern UI.
  */
-import { devBypass } from "../devBypass";
+import { getMemberstackReturnPath } from "../memberstackReturnUrl";
+import { showPublicSignupModal } from "../publicSignupModal";
 import { isMemberstackLoggedInPayload, memberIdFromMemberstackPayload } from "./memberstackMember";
 import { enforcePatternDraftOwner } from "./patternDraftOwnerGuard";
 
@@ -18,6 +19,28 @@ export async function waitForMemberstackDom(
     await new Promise((r) => setTimeout(r, delayMs));
   }
   return Boolean(window.$memberstackDom?.getCurrentMember);
+}
+
+/**
+ * Waits (best-effort, time-bounded) for Memberstack to finish restoring the current session.
+ *
+ * `waitForMemberstackDom` only waits for the `getCurrentMember` METHOD to exist, not for the member
+ * state to be loaded. Immediately after a login/signup redirects back to the builder,
+ * `getCurrentMember()` can otherwise resolve as logged-out before the restored session is processed
+ * — and `member.login` does NOT fire on that reload, so the gate would stay locked / the builder
+ * would stay disabled for an already-signed-in member. Awaiting `onReady` (which resolves once the
+ * app + member are loaded) makes the logged-in decision reliable on that first post-login page load.
+ * Never rejects/hangs the gate. Mirrors the Hat/Blanket account gate.
+ */
+export async function waitForMemberstackReady(
+  ms: NonNullable<Window["$memberstackDom"]>,
+): Promise<void> {
+  const onReady = ms.onReady;
+  if (!onReady || typeof (onReady as Promise<unknown>).then !== "function") return;
+  await Promise.race([
+    Promise.resolve(onReady).catch(() => undefined),
+    new Promise<void>((resolve) => setTimeout(resolve, 4000)),
+  ]);
 }
 
 /**
@@ -37,15 +60,25 @@ export async function resolveCurrentMemberIdForDraftGuard(): Promise<string | nu
   }
 }
 
-/** True when the visitor may use sleeveless pattern pages (Memberstack member or local dev bypass). */
+/**
+ * Strict logged-in decision for the sleeveless/sweater login gate. Resolves `true` ONLY when
+ * Memberstack reports a real signed-in member — it deliberately does NOT honor the localhost dev
+ * bypass, so a logged-out visitor sees the login/signup gate on localhost exactly as in production
+ * (and matching the Hat/Blanket account gate, which is also strict). This is a login-gate decision
+ * only; entitlement/plan resolution lives elsewhere and is unchanged. Because the dev bypass is
+ * always false off localhost, dropping it here affects local development only.
+ *
+ * It DOES wait for Memberstack to finish initializing (`onReady`) before reading the member, so a
+ * member returning to the builder right after logging in is recognized instead of being read as
+ * logged-out (which would leave the builder gated/disabled on that first post-login load).
+ */
 export async function isSleevelessPatternMemberLoggedIn(): Promise<boolean> {
-  if (devBypass) return true;
   if (typeof window === "undefined") return false;
 
   const ms = window.$memberstackDom;
   if (!ms?.getCurrentMember) return false;
-
   try {
+    await waitForMemberstackReady(ms);
     const res = await ms.getCurrentMember();
     return isMemberstackLoggedInPayload(res);
   } catch {
@@ -87,9 +120,29 @@ function setGateState(root: HTMLElement, state: SleevelessPatternGateState): voi
   }
 }
 
+/**
+ * Wires the gate's "Create Free Account" CTA to the shared public signup modal — the same helper
+ * the Hat/Blanket account gate uses — passing the current builder URL so a brand-new member is
+ * returned to the builder they were on (not the site-wide `/signup/thank-you` landing). The "Log In"
+ * CTA uses Memberstack's login modal with a current-url redirect (in the markup), so it likewise
+ * returns to the builder; a successful login is also caught by the `member.login` refresh below,
+ * which reveals the builder in place.
+ */
+function wireGateSignupCta(root: HTMLElement): void {
+  root.querySelectorAll<HTMLElement>("[data-sleeveless-gate-signup]").forEach((btn) => {
+    if (btn.dataset.signupBound === "true") return;
+    btn.dataset.signupBound = "true";
+    btn.addEventListener("click", (event) => {
+      event.preventDefault();
+      showPublicSignupModal({ redirectPath: getMemberstackReturnPath() });
+    });
+  });
+}
+
 /** Wires `[data-sleeveless-pattern-gate]` on sleeveless pattern pages. */
 export async function initSleevelessPatternMemberGate(root: HTMLElement): Promise<void> {
   setGateState(root, "pending");
+  wireGateSignupCta(root);
 
   await waitForMemberstackDom();
   const loggedIn = await isSleevelessPatternMemberLoggedIn();

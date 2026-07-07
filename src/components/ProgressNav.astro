@@ -1,0 +1,207 @@
+---
+/**
+ * ProgressNav
+ *
+ * A generic, centered progress indicator for any multi-step path - Getting
+ * Started, workflows, courses, builders, etc. Pass the list of `items` and the
+ * `current` step key; the matching item is emphasized as the active step.
+ *
+ * The nav is self-constrained (max-width + margin-inline: auto) so it does not
+ * depend on the width of the surrounding page content. Circles show the Knit It
+ * Now logo and are joined by a thin connecting line; on narrow screens the nav
+ * may wrap and the connecting lines are suppressed.
+ */
+export interface ProgressNavItem {
+  key: string;
+  label: string;
+  href: string;
+}
+
+interface Props {
+  current: string;
+  items: ProgressNavItem[];
+  /** Accessible label for the nav landmark. */
+  ariaLabel?: string;
+}
+
+const { current, items, ariaLabel = "Progress steps" } = Astro.props;
+---
+
+<nav class="progress-nav" aria-label={ariaLabel}>
+  <div class="progress-nav__inner">
+    <ol class="progress-nav__list">
+      {items.map((item) => {
+        const isActive = item.key === current;
+        return (
+          <li class:list={["progress-nav__item", { "progress-nav__item--active": isActive }]}>
+            <a
+              href={item.href}
+              class="progress-nav__link"
+              aria-current={isActive ? "page" : undefined}
+            >
+              <span class="progress-nav__marker">
+                <img class="progress-nav__logo" src="/KINlogo.svg" alt="" aria-hidden="true" />
+              </span>
+              <span class="progress-nav__label">{item.label}</span>
+            </a>
+          </li>
+        );
+      })}
+    </ol>
+  </div>
+</nav>
+
+<style>
+  .progress-nav {
+    --marker-size: 2.75rem;
+    /* Soft, clearly-visible Knit It Now green - connects steps without dominating. */
+    --line-color: #a9c07d;
+    /* Breathing room between the line ends and each circle. */
+    --line-gap: 6px;
+    /* Stick just below the fixed site header (billboard + green bar). Mirrors the
+       offset used by other sticky in-page navs so it tucks under the header on
+       every screen size. --header-offset / --kbm-env-banner-h are set in Layout. */
+    position: sticky;
+    top: calc(var(--kbm-env-banner-h, 0px) + var(--header-offset, 170px) + 4px);
+    /* Above page content, below the fixed header. */
+    z-index: 24;
+    margin: 0 0 1.75rem 0;
+    /* Small top pad + existing bottom pad so the stuck state reads as intentional. */
+    padding: 0.75rem 0 1.25rem 0;
+    /* Solid page background so content can't show through while stuck. */
+    background: var(--page-bg, #f7f8f7);
+    /* Understated separator: light border + soft shadow. */
+    border-bottom: 1px solid #e5ead9;
+    box-shadow: 0 4px 14px rgba(17, 24, 39, 0.05);
+  }
+
+  /* Self-constrained + centered, independent of page content width. */
+  .progress-nav__inner {
+    max-width: 960px;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+
+  .progress-nav__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: flex-start;
+  }
+
+  .progress-nav__item {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    text-align: center;
+  }
+
+  /* Connecting line: spans the gap from the previous circle's edge to this
+     circle's edge (not underneath the markers), with a small breathing gap. */
+  .progress-nav__item::before {
+    content: "";
+    position: absolute;
+    top: calc(var(--marker-size) / 2);
+    left: calc(-50% + var(--marker-size) / 2 + var(--line-gap));
+    right: calc(50% + var(--marker-size) / 2 + var(--line-gap));
+    height: 3px;
+    border-radius: 3px;
+    background: var(--line-color);
+    transform: translateY(-50%);
+    z-index: 0;
+  }
+
+  .progress-nav__item:first-child::before {
+    display: none;
+  }
+
+  .progress-nav__link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0 0.35rem;
+    text-decoration: none;
+    color: #4a5a34;
+    line-height: 1.3;
+  }
+
+  .progress-nav__marker {
+    position: relative;
+    z-index: 1;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--marker-size);
+    height: var(--marker-size);
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid var(--kbm-green);
+    transition:
+      background-color 0.15s ease,
+      border-color 0.15s ease;
+  }
+
+  /* Small logo with breathing room inside the circle. */
+  .progress-nav__logo {
+    width: 56%;
+    height: 56%;
+    object-fit: contain;
+    display: block;
+  }
+
+  .progress-nav__label {
+    font-size: 0.95rem;
+    color: #4a5a34;
+    transition: color 0.15s ease;
+  }
+
+  .progress-nav__link:hover .progress-nav__label,
+  .progress-nav__link:focus-visible .progress-nav__label {
+    color: var(--kbm-green);
+  }
+
+  .progress-nav__link:focus-visible {
+    outline: 2px solid var(--kbm-green);
+    outline-offset: 3px;
+    border-radius: 10px;
+  }
+
+  /* Active step: filled green circle + bold green label. */
+  /* Active: keep the white circle (so the logo stays readable) but make it
+     stand out with a noticeably heavier, darker green outline. */
+  .progress-nav__item--active .progress-nav__marker {
+    background: #ffffff;
+    border-width: 4px;
+    border-color: #52682d;
+  }
+
+  .progress-nav__item--active .progress-nav__label {
+    color: var(--kbm-green);
+    font-weight: 700;
+  }
+
+  /* Mobile: allow wrapping into two columns and suppress the connecting lines
+     so they never look broken. Touch targets stay comfortable. */
+  @media (max-width: 640px) {
+    .progress-nav__list {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem 0.5rem;
+    }
+
+    .progress-nav__item {
+      flex: 1 1 calc(50% - 0.5rem);
+    }
+
+    .progress-nav__item::before {
+      display: none;
+    }
+
+    .progress-nav__link {
+      padding: 0.25rem 0.35rem;
+    }
+  }
+</style>

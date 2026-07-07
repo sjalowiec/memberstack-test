@@ -2,15 +2,15 @@
 /**
  * GatedVimeoEmbed.astro
  * - If access_level === "open": render iframe for everyone.
- * - If access_level === "member": iframe when logged in and kin-access is not false/"false" (see window.kbmHasKinVideoAccess).
- * - When dev bypass is on (localhost + PUBLIC_DEV_BYPASS_GATING=true), member videos show without login.
+ * - If access_level === "member": iframe when member has active basic or premium plan (window.kbmHasKinVideoAccess).
+ * - When PUBLIC_DEV_BYPASS_GATING=true on the Astro dev server, member videos show without login.
  */
-import { devBypass } from "../../lib/devBypass";
+import { videoDevBypass } from "../../lib/devBypass";
 
 const {
-  videoId,
+  videoId: rawVideoId,
   title = "Video",
-  access_level = "open", // "open" | "member"
+  access_level: rawAccessLevel = "open", // "open" | "member" | "public" | "free"
   aspect = "16/9",
   thumbUrl = "", // optional: show a thumbnail for locked state
   ctaHref = "/membership",
@@ -18,6 +18,17 @@ const {
   /** When true, iframe uses Vimeo Player.js (`api=1`) and a stable `id` for programmatic seek. */
   enableVimeoPlayerApi = false,
 } = Astro.props;
+
+// Coerce the Vimeo ID to a trimmed string (JSON may store it as a number).
+const videoId = rawVideoId != null ? String(rawVideoId).trim() : "";
+
+// Normalize access level so gating only ever deals with "open" | "member".
+// Public synonyms ("public", "free", "open") all mean "show to everyone".
+const normalizedAccess = String(rawAccessLevel).trim().toLowerCase();
+const access_level =
+  normalizedAccess === "open" || normalizedAccess === "public" || normalizedAccess === "free"
+    ? "open"
+    : "member";
 
 function paddingPercent(aspectStr: string) {
   // "16/9" -> 56.25
@@ -39,6 +50,11 @@ const iframeSrc = enableVimeoPlayerApi
   data-access-level={access_level}
   data-video-id={videoId}
   data-iframe-src={iframeSrc}
+  data-video-title={title}
+  data-video-dev-bypass={videoDevBypass ? "true" : "false"}
+  data-enable-vimeo-player-api={enableVimeoPlayerApi ? "true" : "false"}
+  data-cta-href={ctaHref}
+  data-cta-text={ctaText}
 >
   <div class="kbm-video__frame" style={`padding-top:${pad}%;`}>
     <div
@@ -64,108 +80,10 @@ const iframeSrc = enableVimeoPlayerApi
   </div>
 </div>
 
-<script is:inline define:vars={{ videoId, access_level, iframeSrc, title, devBypass, enableVimeoPlayerApi, iframePlayerId, ctaHref, ctaText }}>
-  document.addEventListener("DOMContentLoaded", async () => {
-    if (access_level !== "member") return;
+<script>
+  import { runGatedVimeoEmbedBoot } from "../../scripts/gatedVimeoEmbedClient";
 
-    const slot = document.getElementById(`kbm-vimeo-slot-${videoId}`);
-    if (!slot) return;
-
-    const iframeIdAttr =
-      enableVimeoPlayerApi && iframePlayerId ? ` id="${iframePlayerId}"` : "";
-
-    function buildLockedMarkup(showLogin) {
-      const loginBtn = showLogin
-        ? `<a href="#" class="kbm-video__cta kbm-video__cta--login" data-kbm-video-login data-ms-modal="login" data-ms-redirect="current-url">Log in to watch</a>`
-        : "";
-      return `
-  <div class="kbm-video__locked">
-    <div class="kbm-video__overlay">
-      <div class="kbm-video__lockline">
-        🔒 <strong>Members only</strong>
-      </div>
-      <p>This video is available with membership.</p>
-      <div class="kbm-video__actions">
-        ${loginBtn}
-        <a href="${ctaHref}" class="kbm-video__cta">${ctaText}</a>
-      </div>
-    </div>
-  </div>
-`;
-    }
-
-    function showLocked(showLogin) {
-      slot.innerHTML = buildLockedMarkup(showLogin);
-      slot.setAttribute("data-state", "ready");
-    }
-
-    /* Dev-only: env bypass or localhost ?member=true (window.__KBM_DEV_MEMBER__ in BaseLayout). */
-    if (devBypass || window.__KBM_DEV_MEMBER__ === true) {
-      console.log("[KBM video access debug]", "GatedVimeoEmbed.unlock", {
-        videoId,
-        reason: devBypass ? "devBypass(PUBLIC_DEV_BYPASS_GATING)" : "__KBM_DEV_MEMBER__(localhost?member=true)",
-      });
-      slot.innerHTML = `
-        <iframe${iframeIdAttr}
-          src="${iframeSrc}"
-          title="${title}"
-          loading="lazy"
-          frameborder="0"
-          allow="autoplay; fullscreen; picture-in-picture"
-          allowfullscreen
-          style="position:absolute; inset:0; width:100%; height:100%; border:0;"
-        ></iframe>
-      `;
-      slot.setAttribute("data-state", "ready");
-      return;
-    }
-
-    if (!window.$memberstackDom) {
-      showLocked(true);
-      return;
-    }
-
-    try {
-      const { data: member } = await window.$memberstackDom.getCurrentMember();
-      if (!member) {
-        showLocked(true);
-        return;
-      }
-
-      const rawKinAccess = member.customFields?.["kin-access"];
-      const hasVideoAccess =
-        typeof window.kbmHasKinVideoAccess === "function"
-          ? window.kbmHasKinVideoAccess(rawKinAccess)
-          : String(rawKinAccess ?? "").trim().toLowerCase() !== "false";
-
-      window.kbmLogKinVideoAccessDebug?.("GatedVimeoEmbed.iframe", {
-        member,
-        rawKinAccess,
-        finalHasVideoAccess: hasVideoAccess,
-      });
-
-      if (!hasVideoAccess) {
-        showLocked(false);
-        return;
-      }
-
-      slot.innerHTML = `
-        <iframe${iframeIdAttr}
-          src="${iframeSrc}"
-          title="${title}"
-          loading="lazy"
-          frameborder="0"
-          allow="autoplay; fullscreen; picture-in-picture"
-          allowfullscreen
-          style="position:absolute; inset:0; width:100%; height:100%; border:0;"
-        ></iframe>
-      `;
-      slot.setAttribute("data-state", "ready");
-    } catch (e) {
-      console.error("GatedVimeoEmbed MemberStack getCurrentMember failed:", e);
-      showLocked(true);
-    }
-  });
+  runGatedVimeoEmbedBoot();
 </script>
 
 
@@ -255,6 +173,8 @@ const iframeSrc = enableVimeoPlayerApi
     background:#fff;
     color: var(--kbm-green, #52682d);
     border: 2px solid var(--kbm-green, #52682d);
+    cursor: pointer;
+    font: inherit;
   }
   .kbm-video__cta--login:hover{
     background: rgba(82, 104, 45, 0.08);

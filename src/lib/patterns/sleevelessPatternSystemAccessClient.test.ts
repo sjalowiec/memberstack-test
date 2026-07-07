@@ -1,6 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../devBypass", () => ({ devBypass: false }));
+vi.mock("./sleevelessPatternLoginGate", () => ({
+  waitForMemberstackDom: vi.fn().mockResolvedValue(true),
+  waitForMemberstackReady: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock("./patternEditGateDebug", () => ({
+  logPatternEditGateDebug: vi.fn(),
+}));
 
 import {
   getCachedSleevelessUserAccess,
@@ -52,7 +59,7 @@ describe("resolveSleevelessUserAccess", () => {
     await expect(resolveSleevelessUserAccess()).resolves.toMatchObject({
       loggedIn: false,
       hasSystemAccess: false,
-      freeClaimed: false,
+      freeClaimsBySystem: {},
     });
   });
 
@@ -65,11 +72,11 @@ describe("resolveSleevelessUserAccess", () => {
       loggedIn: true,
       memberId: "ms_free",
       hasSystemAccess: false,
-      freeClaimed: false,
+      freeClaimsBySystem: {},
     });
   });
 
-  it("reports a free user who already claimed their pattern", async () => {
+  it("reports a free user who already claimed their pattern (legacy keys migrated)", async () => {
     stubMemberstack({
       getCurrentMember: vi.fn().mockResolvedValue({ data: { id: "ms_free", planConnections: [] } }),
       getMemberJSON: vi.fn().mockResolvedValue({
@@ -79,8 +86,9 @@ describe("resolveSleevelessUserAccess", () => {
     await expect(resolveSleevelessUserAccess()).resolves.toMatchObject({
       loggedIn: true,
       hasSystemAccess: false,
-      freeClaimed: true,
-      freeClaimedPatternId: "pat_1",
+      freeClaimsBySystem: {
+        sleeveless: { claimed: true, patternId: "pat_1" },
+      },
     });
   });
 
@@ -126,15 +134,19 @@ describe("markFreeSleevelessPatternClaimed", () => {
 
     expect(ok).toBe(true);
     expect(updateMemberJSON).toHaveBeenCalledWith({
-      json: {
+      json: expect.objectContaining({
         existingKey: "keep",
         freeSleevelessPatternClaimed: true,
         freeSleevelessPatternId: "pat_new",
-      },
+        freePatternClaimsBySystem: {
+          sleeveless: { claimed: true, patternId: "pat_new" },
+        },
+      }),
     });
     expect(getCachedSleevelessUserAccess()).toMatchObject({
-      freeClaimed: true,
-      freeClaimedPatternId: "pat_new",
+      freeClaimsBySystem: {
+        sleeveless: { claimed: true, patternId: "pat_new" },
+      },
     });
   });
 
@@ -147,7 +159,7 @@ describe("markFreeSleevelessPatternClaimed", () => {
 });
 
 describe("resetFreeSleevelessPatternClaimForCurrentMember", () => {
-  it("clears the claim, preserves unrelated keys, and invalidates the cache", async () => {
+  it("clears all claims, preserves unrelated keys, and invalidates the cache", async () => {
     const updateMemberJSON = vi.fn().mockResolvedValue({ data: { json: {} } });
     stubMemberstack({
       getCurrentMember: vi.fn().mockResolvedValue({ data: { id: "ms_free", planConnections: [] } }),
@@ -161,7 +173,6 @@ describe("resetFreeSleevelessPatternClaimForCurrentMember", () => {
       updateMemberJSON,
     });
 
-    // Prime the cache so we can confirm the reset clears it.
     await resolveSleevelessUserAccess();
     expect(getCachedSleevelessUserAccess()).not.toBeNull();
 
@@ -169,11 +180,12 @@ describe("resetFreeSleevelessPatternClaimForCurrentMember", () => {
 
     expect(result).toEqual({ ok: true, memberId: "ms_free" });
     expect(updateMemberJSON).toHaveBeenCalledWith({
-      json: {
+      json: expect.objectContaining({
         preferences: { theme: "dark" },
         freeSleevelessPatternClaimed: false,
         freeSleevelessPatternId: null,
-      },
+        freePatternClaimsBySystem: {},
+      }),
     });
     expect(getCachedSleevelessUserAccess()).toBeNull();
   });

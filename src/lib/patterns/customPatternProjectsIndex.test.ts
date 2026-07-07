@@ -18,6 +18,7 @@ const SUMMARY_SHAPE_KEYS = [
   "name",
   "family",
   "source",
+  "patternSystem",
   "createdAt",
   "updatedAt",
   "version",
@@ -96,6 +97,29 @@ describe("custom pattern project summary index", () => {
       }),
     );
     expect(summary.gauge).toEqual({ stitchesPerInch: 7, rowsPerInch: 11 });
+  });
+
+  it("summaryFromProject keeps original entered swatch counts for display", () => {
+    const summary = summaryFromProject(
+      sampleProject({
+        pattern: {
+          patternType: "sleeveless",
+          yarnGauge: {
+            gaugeStitchRaw: "28",
+            gaugeRowRaw: "44",
+            gaugeRawUnit: "in",
+            stitchGauge: "7",
+            rowGauge: "11",
+          },
+        },
+      }),
+    );
+    expect(summary.gauge).toEqual({
+      stitchesPerInch: 7,
+      rowsPerInch: 11,
+      displayStitches: 28,
+      displayRows: 44,
+    });
   });
 
   it("summaryFromProject omits gauge when the pattern has none", () => {

@@ -573,6 +573,14 @@
     opacity: 0.9;
   }
 
+  .sleeveless-pattern-page .sleeveless-pattern-edit-action.is-disabled,
+  .sleeveless-pattern-page .sleeveless-pattern-edit-action.is-disabled:hover {
+    color: #9ca3af;
+    background: #f9fafb;
+    border-color: #e5e7eb;
+    cursor: not-allowed;
+  }
+
   #pattern-content .pattern-section,
   #pattern-content .pattern-subsection {
     scroll-margin-top: calc(

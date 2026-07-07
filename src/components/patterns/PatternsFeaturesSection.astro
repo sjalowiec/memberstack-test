@@ -2,12 +2,14 @@
 interface Props {
   sectionId?: string;
   headingId?: string;
+  title?: string;
   subtitle?: string;
 }
 
 const {
   sectionId = "pattern-features",
   headingId = "patterns-features-heading",
+  title = "Why These Patterns Are Different",
   subtitle,
 } = Astro.props;
 ---
@@ -19,16 +21,18 @@ const {
   aria-labelledby={headingId}
 >
   <div class="patterns-features__header">
-    <img
-      class="patterns-pinwheel"
-      src="/images/KINlogo.svg"
-      alt=""
-      width="22"
-      height="22"
-      decoding="async"
-      aria-hidden="true"
-    />
-    <h2 id={headingId} class="patterns-features__title">Why These Patterns Are Different</h2>
+    <div class="patterns-features__title-row">
+      <img
+        class="patterns-pinwheel"
+        src="/images/KINlogo.svg"
+        alt=""
+        width="36"
+        height="36"
+        decoding="async"
+        aria-hidden="true"
+      />
+      <h2 id={headingId} class="patterns-features__title">{title}</h2>
+    </div>
     {subtitle && <p class="patterns-features__subtitle">{subtitle}</p>}
   </div>
   <ul class="patterns-features__grid">
@@ -130,14 +134,15 @@ const {
 
 <style>
   .patterns-pinwheel {
-    width: 22px;
-    height: 22px;
+    width: 36px;
+    height: 36px;
     object-fit: contain;
-    opacity: 0.58;
+    opacity: 0.72;
     flex-shrink: 0;
   }
 
   .patterns-features {
+    margin-top: 1.25rem;
     margin-bottom: 36px;
     padding-top: 4px;
     scroll-margin-top: calc(var(--site-header-offset, 72px) + 16px);
@@ -151,12 +156,21 @@ const {
     margin-bottom: 16px;
   }
 
+  .patterns-features__title-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    max-width: 100%;
+  }
+
   .patterns-features__title {
     margin: 0;
     font-size: 1.2rem;
     font-weight: 600;
     color: #52682d;
-    text-align: center;
+    line-height: 1.25;
+    text-align: left;
   }
 
   .patterns-features__subtitle {
@@ -328,6 +342,14 @@ const {
   }
 
   @media (max-width: 720px) {
+    .patterns-features__title-row {
+      gap: 12px;
+    }
+
+    .patterns-features__title {
+      font-size: 1.05rem;
+    }
+
     .patterns-features__grid {
       grid-template-columns: 1fr;
     }

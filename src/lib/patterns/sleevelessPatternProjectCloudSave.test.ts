@@ -17,18 +17,28 @@ vi.mock("./customPatternSavedProjectsPanel", () => ({
 vi.mock("./sleevelessPatternSystemAccessClient", () => ({
   resolveSleevelessUserAccess: vi
     .fn()
-    .mockResolvedValue({ loggedIn: true, hasSystemAccess: true, freeClaimed: false }),
+    .mockResolvedValue({ loggedIn: true, hasSystemAccess: true, freeClaimsBySystem: {} }),
+  markFreePatternClaimedForSystem: vi.fn().mockResolvedValue(true),
   markFreeSleevelessPatternClaimed: vi.fn().mockResolvedValue(true),
 }));
+
+vi.mock("./patternSystemId", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./patternSystemId")>();
+  return {
+    ...actual,
+    resolvePatternSystemFromPage: vi.fn(() => "sleeveless"),
+  };
+});
 
 import {
   resolveDefaultCustomPatternSaveMode,
   smartSaveCustomPatternProject,
 } from "./customPatternSavedProjectsPanel";
 import {
-  markFreeSleevelessPatternClaimed,
+  markFreePatternClaimedForSystem,
   resolveSleevelessUserAccess,
 } from "./sleevelessPatternSystemAccessClient";
+import { testAccess } from "./patternAccessTestFixtures";
 
 function makeStatusEl() {
   const el = {
@@ -181,11 +191,9 @@ describe("sleevelessPatternProjectCloudSave", () => {
   it("blocks a logged-out visitor from creating a pattern", async () => {
     const root = makeSaveRoot();
     vi.mocked(resolveDefaultCustomPatternSaveMode).mockReturnValue("create");
-    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue({
-      loggedIn: false,
-      hasSystemAccess: false,
-      freeClaimed: false,
-    });
+    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue(
+      testAccess({ loggedIn: false, hasSystemAccess: false, freeClaimed: false }),
+    );
 
     await runSleevelessPatternProjectCloudSave(root, { resolveName: () => "Anon vest" });
 
@@ -197,12 +205,14 @@ describe("sleevelessPatternProjectCloudSave", () => {
   it("blocks a free user who already claimed from creating another pattern", async () => {
     const root = makeSaveRoot();
     vi.mocked(resolveDefaultCustomPatternSaveMode).mockReturnValue("create");
-    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue({
-      loggedIn: true,
-      hasSystemAccess: false,
-      freeClaimed: true,
-      freeClaimedPatternId: "p1",
-    });
+    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue(
+      testAccess({
+        loggedIn: true,
+        hasSystemAccess: false,
+        freeClaimed: true,
+        freeClaimedPatternId: "p1",
+      }),
+    );
 
     await runSleevelessPatternProjectCloudSave(root, { resolveName: () => "Second vest" });
 
@@ -214,11 +224,9 @@ describe("sleevelessPatternProjectCloudSave", () => {
   it("marks the free pattern claimed after the first create", async () => {
     const root = makeSaveRoot();
     vi.mocked(resolveDefaultCustomPatternSaveMode).mockReturnValue("create");
-    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue({
-      loggedIn: true,
-      hasSystemAccess: false,
-      freeClaimed: false,
-    });
+    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue(
+      testAccess({ loggedIn: true, hasSystemAccess: false, freeClaimed: false }),
+    );
     vi.mocked(smartSaveCustomPatternProject).mockResolvedValue({
       ok: true,
       created: true,
@@ -238,18 +246,16 @@ describe("sleevelessPatternProjectCloudSave", () => {
     await runSleevelessPatternProjectCloudSave(root, { resolveName: () => "My first vest" });
 
     expect(smartSaveCustomPatternProject).toHaveBeenCalledTimes(1);
-    expect(markFreeSleevelessPatternClaimed).toHaveBeenCalledWith("free-1");
+    expect(markFreePatternClaimedForSystem).toHaveBeenCalledWith("sleeveless", "free-1");
     expect(root._status.textContent).toBe('Saved “My first vest”.');
   });
 
   it("records the one-time allowance on a member's first create too", async () => {
     const root = makeSaveRoot();
     vi.mocked(resolveDefaultCustomPatternSaveMode).mockReturnValue("create");
-    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue({
-      loggedIn: true,
-      hasSystemAccess: true,
-      freeClaimed: false,
-    });
+    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue(
+      testAccess({ loggedIn: true, hasSystemAccess: true, freeClaimed: false }),
+    );
     vi.mocked(smartSaveCustomPatternProject).mockResolvedValue({
       ok: true,
       created: true,
@@ -270,18 +276,20 @@ describe("sleevelessPatternProjectCloudSave", () => {
 
     // Marking has no effect while they have access, but ensures creation/regeneration lock
     // correctly if their entitlement later ends.
-    expect(markFreeSleevelessPatternClaimed).toHaveBeenCalledWith("m1");
+    expect(markFreePatternClaimedForSystem).toHaveBeenCalledWith("sleeveless", "m1");
   });
 
   it("does not re-mark the allowance on a subsequent create once already used", async () => {
     const root = makeSaveRoot();
     vi.mocked(resolveDefaultCustomPatternSaveMode).mockReturnValue("create");
-    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue({
-      loggedIn: true,
-      hasSystemAccess: true,
-      freeClaimed: true,
-      freeClaimedPatternId: "m1",
-    });
+    vi.mocked(resolveSleevelessUserAccess).mockResolvedValue(
+      testAccess({
+        loggedIn: true,
+        hasSystemAccess: true,
+        freeClaimed: true,
+        freeClaimedPatternId: "m1",
+      }),
+    );
     vi.mocked(smartSaveCustomPatternProject).mockResolvedValue({
       ok: true,
       created: true,
@@ -300,7 +308,7 @@ describe("sleevelessPatternProjectCloudSave", () => {
 
     await runSleevelessPatternProjectCloudSave(root, { resolveName: () => "Member vest 2" });
 
-    expect(markFreeSleevelessPatternClaimed).not.toHaveBeenCalled();
+    expect(markFreePatternClaimedForSystem).not.toHaveBeenCalled();
   });
 
   it("setSleevelessPatternProjectCloudSaveStatus toggles error class", () => {

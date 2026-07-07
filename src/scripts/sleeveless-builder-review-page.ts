@@ -8,23 +8,17 @@ import {
   hasSleevelessPatternSystemAccess,
   type SleevelessUserAccess,
 } from "../lib/patterns/sleevelessPatternSystemAccess";
+import { isFreeClaimedForSystem } from "../lib/patterns/patternSystemFreeClaim";
+import {
+  patternSystemDisplayName,
+  resolvePatternSystemFromPage,
+} from "../lib/patterns/patternSystemId";
 import { resolveSleevelessUserAccess } from "../lib/patterns/sleevelessPatternSystemAccessClient";
 import { initSleevelessLockedBannerDismiss } from "./sleevelessLockedBannerDismiss";
 import { initExpressYarnDrawer } from "./sleeveless-express-measurements-page";
 import { initCustomBuildMeasurementsPage } from "./sleeveless-custom-build-measurements-page";
-import { mapExpressStyleKey, syncSleevelessDesignBasicsToPatternStorage } from "../lib/patterns/syncSleevelessExpressDesignToStorage";
-import {
-  expressWhoToChartAudience,
-  loadExpressSweaterCharts,
-  resolveExpressChartFit,
-} from "../lib/patterns/sleevelessExpressSizeChartClient";
-import { getCurrentPattern, getPatternData, SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY } from "../lib/patterns/patternStorage";
-import { resolveSleevelessGarmentKind } from "../lib/patterns/resolveSleevelessGarmentKind";
-import { readCustomBuildWizardGarmentType } from "../lib/patterns/sleevelessCustomBuildWizardNeckline";
-import {
-  readExpressWizardValues,
-  syncExpressWizardToPatternStorage,
-} from "../lib/patterns/syncExpressWizardToPatternStorage";
+import { flushExpressWizardToCanonicalPattern } from "../lib/patterns/flushExpressWizardToCanonicalPattern";
+import { loadExpressSweaterCharts } from "../lib/patterns/sleevelessExpressSizeChartClient";
 import { prepareCustomBuildPatternGeneration } from "../lib/patterns/prepareCustomBuildPatternGeneration";
 import { navigateToPatternWithUnsavedEditsGuard } from "../lib/patterns/savedCustomPatternUnsavedViewGuard";
 import { logSleevelessPatternActivity } from "../lib/patterns/sleevelessPatternActivity";
@@ -45,63 +39,10 @@ function resolvePatternWorkspaceHref(): string {
 
 const PATTERN_WORKSPACE_TAB_PATTERN_HREF = resolvePatternWorkspaceHref();
 
-function readExpressValues(): Record<string, string> {
-  if (typeof localStorage === "undefined") return {};
-  try {
-    const raw = localStorage.getItem(SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY);
-    if (!raw) return readExpressWizardValues();
-    const p = JSON.parse(raw) as unknown;
-    if (!p || typeof p !== "object" || Array.isArray(p)) return readExpressWizardValues();
-    const v = (p as Record<string, unknown>).values;
-    if (v && typeof v === "object" && !Array.isArray(v)) return { ...(v as Record<string, string>) };
-  } catch {
-    /* ignore */
-  }
-  return readExpressWizardValues();
-}
-
-/** Push Express builder snapshot (incl. gauge/needles) into canonical pattern before pattern tab / save. */
-export function flushExpressWizardToCanonicalPatternForReview(): void {
-  const ls = readExpressValues();
-  const pb = getPatternData();
-  const fit = pb.fit as Record<string, unknown> | undefined;
-  const style = pb.style as Record<string, unknown> | undefined;
-
-  const who = ls.who?.trim() || "";
-  const selectedSize =
-    ls.selectedSize?.trim() || String(fit?.selectedSize ?? "").trim();
-  const fitEase =
-    ls.fit?.trim() || String(fit?.easeChoice ?? fit?.fitChoice ?? "standard").trim();
-
-  let neckline = ls.neckline?.trim() ?? "";
-  if (!neckline) {
-    const canon = String(style?.neckline ?? "").trim().toLowerCase();
-    if (canon === "v") neckline = "v-neck";
-    else if (canon === "round") neckline = "round";
-  }
-
-  const garmentKind = resolveSleevelessGarmentKind({
-    wizardGarmentType: readCustomBuildWizardGarmentType(),
-    canonicalStyle: (getCurrentPattern().style ?? {}) as Record<string, unknown>,
-    patternBuilderStyle: (style ?? {}) as Record<string, unknown>,
-    expressValues: ls,
-  });
-
-  const expressStyleKey = String(ls.style ?? "").trim();
-  const expressStyle = mapExpressStyleKey(expressStyleKey);
-  const aud = expressWhoToChartAudience(who);
-  const chartFit =
-    who && selectedSize
-      ? resolveExpressChartFit(aud, selectedSize, fitEase || "standard", {
-          bodyShape: expressStyle.bodyShape,
-        })
-      : null;
-
-  syncExpressWizardToPatternStorage(ls, chartFit, { preferDomGauge: false });
-}
+export { flushExpressWizardToCanonicalPattern as flushExpressWizardToCanonicalPatternForReview };
 
 function syncExpressBasicsFromBuilderAndContinue(): void {
-  flushExpressWizardToCanonicalPatternForReview();
+  flushExpressWizardToCanonicalPattern();
   void navigateToPatternWithUnsavedEditsGuard({ href: PATTERN_WORKSPACE_TAB_PATTERN_HREF });
 }
 
@@ -121,7 +62,7 @@ function continueToPatternFromReview(): void {
   void loadExpressSweaterCharts()
     .then(async () => {
       prepareCustomBuildPatternGeneration({ root: document });
-      flushExpressWizardToCanonicalPatternForReview();
+      flushExpressWizardToCanonicalPattern();
       logSleevelessPatternActivity("pattern_generated");
       if (canCustomizePattern()) {
         await navigateToPatternWithUnsavedEditsGuard({ href: PATTERN_WORKSPACE_TAB_PATTERN_HREF });
@@ -149,9 +90,9 @@ function isDebugForceFreeUser(): boolean {
 }
 
 const LOCKED_BANNER_BODY_UNCLAIMED =
-  "You’re viewing the measurements from your choices. Unlock the Sleeveless Pattern System to fully customize your fit, fine-tune shaping inputs, and update your pattern anytime.";
+  "You're viewing the measurements from your choices. Editing is included with membership when you want to customize fit, gauge, or style choices.";
 const LOCKED_BANNER_BODY_CLAIMED =
-  "This free pattern can be viewed, printed, and renamed. Unlock the Sleeveless Pattern System to change gauge, measurements, or style choices.";
+  "You can still view, print, and knit from this pattern. Editing is included with membership.";
 
 /** Show exactly one access banner based on resolved entitlement. */
 function applyReviewAccessBanners(access: SleevelessUserAccess, forceFree: boolean): void {
@@ -172,9 +113,14 @@ function applyReviewAccessBanners(access: SleevelessUserAccess, forceFree: boole
     "[data-sleeveless-review-access-locked-body]",
   );
   if (lockedBody) {
-    lockedBody.textContent = access.freeClaimed
+    const system = resolvePatternSystemFromPage();
+    const claimed = isFreeClaimedForSystem(access.freeClaimsBySystem, system);
+    lockedBody.textContent = claimed
       ? LOCKED_BANNER_BODY_CLAIMED
-      : LOCKED_BANNER_BODY_UNCLAIMED;
+      : LOCKED_BANNER_BODY_UNCLAIMED.replace(
+          "membership",
+          `membership for your ${patternSystemDisplayName(system)} pattern`,
+        );
   }
   // Reveals the locked banner (or its collapsed strip) honoring the saved dismiss state.
   initSleevelessLockedBannerDismiss();
@@ -200,7 +146,8 @@ async function initUnifiedSleevelessReviewPage(): Promise<void> {
   applyReviewAccessBanners(access, forceFree);
 
   const advanced = canCustomizePattern() && hasSleevelessPatternSystemAccess(access) && !forceFree;
-  const canEditSettings = canEditSleevelessPatternSettings(access) && !forceFree;
+  const canEditSettings =
+    canEditSleevelessPatternSettings(access, resolvePatternSystemFromPage()) && !forceFree;
   applyReviewContinueButtonLabel(canEditSettings);
   configureReviewActions(advanced);
   initExpressYarnDrawer();

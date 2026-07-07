@@ -1,202 +1,260 @@
 ---
 /**
- * Dynamic machine detail page.
- * Data: src/data/machines.json (slug used for routing).
- * URL: /shop/machines/[slug] (e.g. /shop/machines/th160, /shop/machines/sk280).
+ * Dynamic machine detail page for the shop.
+ * Data: canonical catalog at data/machines.json (via referenceCatalog).
+ * Only machines listed for sale (sale.forSale === true) get a detail page.
+ * URL: /shop/machines/[slug] (brand-model slug, e.g. /shop/machines/brother-kh864).
  */
+export const prerender = true;
+
 import Layout from "../../../layouts/Layout.astro";
-import PageHead from "../../../components/PageHead.astro";
-import machinesData from "../../../data/machines.json";
+import {
+  getMachinesForSale,
+  getMachineBySlug,
+  primaryImageUrl,
+  machineImageUrl,
+  machineTitle,
+  formatPitch,
+  type Machine,
+} from "../../../lib/machines/referenceCatalog";
+import { availabilityLabel, canCheckout } from "../../../lib/machines/machineAdminFields";
 
-// Types matching your JSON (exact field names).
-interface WhoItsForItem {
-  title: string;
-  text: string;
-}
-
-interface Bonus {
-  title: string;
-  description?: string;
-  value?: string;
-}
-
-interface Warranty {
-  us?: string;
-  international?: string;
-}
-
-interface Machine {
-  name: string;
-  id?: number;
-  slug: string;
-  shortDescription?: string;
-  intro?: string;
-  whoItsFor?: WhoItsForItem[];
-  features?: string[];
-  quickSpecs?: string[];
-  bonus?: Bonus;
-  warranty?: Warranty;
-  shipping?: string;
-  image?: string;
-  sku?: string;
-}
-
-const machines = machinesData as Machine[];
+const CONTACT_HREF = "/contact";
 
 export function getStaticPaths() {
-  return machines.map((machine) => ({
+  return getMachinesForSale().map((machine) => ({
     params: { slug: machine.slug },
     props: { machine },
   }));
 }
 
-const { machine } = Astro.props;
+const { machine } = Astro.props as { machine: Machine };
 
-// TODO (temporary): The machines shop is disabled for production.
-// Detail pages redirect to /shop for now. Remove this redirect to re-enable them.
-return Astro.redirect("/shop");
-
-// Defensive: should always exist when built from getStaticPaths; redirect if missing.
-if (!machine) {
+// Defensive: only for-sale machines should reach here; send strays back.
+const resolved = machine ?? getMachineBySlug(Astro.params.slug);
+if (!resolved || resolved.sale?.forSale !== true) {
   return Astro.redirect("/shop/machines");
 }
 
-const title = `${machine.name} | Knit by Machine`;
+const sale = resolved.sale;
+const name = machineTitle(resolved);
+const title = `${name} | Knit it Now`;
+// Meta description: derive plain text from the short HTML blurb, else a generic line.
+const metaFromShort = sale.shortDescriptionHtml
+  ? sale.shortDescriptionHtml.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
+  : "";
 const description =
-  machine.shortDescription ||
-  `${machine.name} – knitting machine details and specifications.`;
+  metaFromShort || `${name} – knitting machine details and purchase information.`;
+
+const heroImage = primaryImageUrl(resolved);
+const gallery = resolved.images
+  .map((img) => machineImageUrl(img.url))
+  .filter((url): url is string => !!url);
+const extraImages = gallery.filter((url) => url !== heroImage);
+
+const pitch = formatPitch(resolved);
+const availLabel = availabilityLabel(sale);
+const canBuy = canCheckout(sale);
+// Detail copy: prefer long HTML, else fall back to the short HTML.
+const longHtml = sale.longDescriptionHtml || sale.shortDescriptionHtml || null;
+
+/** Minimal HTML-escape for text injected into the trusted description markup. */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/** Capitalize the first letter of each word, leaving model tokens intact. */
+function titleCaseAccessory(value: string): string {
+  return value
+    .split(/\s+/)
+    .map((word) => (word ? word.charAt(0).toUpperCase() + word.slice(1) : word))
+    .join(" ");
+}
+
+/**
+ * Build a fully-qualified accessory name for the coming-soon `item` query.
+ * If the raw text already names a specific model (contains a digit, e.g.
+ * "SRP60N ribber"), prefix the brand only. Otherwise it's a generic type
+ * (e.g. "Lace Carriage"), so also include the machine model for context.
+ *  - "Lace Carriage"  -> "Silver Reed SK280 Lace Carriage"
+ *  - "SRP60N ribber"  -> "Silver Reed SRP60N Ribber"
+ */
+function accessoryItemName(raw: string, brand: string, model: string): string {
+  const label = titleCaseAccessory(raw);
+  const hasModelToken = /\d/.test(raw);
+  const parts = hasModelToken ? [brand, label] : [brand, model, label];
+  return parts.filter(Boolean).join(" ").trim();
+}
+
+const COMING_SOON_BASE = "/shop/accessories/coming-soon";
+
+/**
+ * Presentation-only normalization of the trusted description HTML into a
+ * consistent accessory layout, without touching the stored sales copy:
+ *
+ *  1. Drop the "If you decide to expand later..." paragraph so accessory
+ *     interest lives only in the Compatible Accessories list, not the body copy.
+ *  2. After "Key Features", show a "Compatible Accessories" heading followed by
+ *     a bulleted list of coming-soon links (no introductory paragraph).
+ *  3. New-format data already authors that section as markup; legacy plain-text
+ *     descriptions have it rebuilt from their "Expand ... with ..." prose.
+ *  4. Never render an empty "Compatible Accessories" heading (no list).
+ *  5. The Warranty link stays where the copy places it (after accessories, or
+ *     after Key Features when there are none).
+ *
+ * Non-matching descriptions pass through unchanged.
+ */
+function enhanceDescriptionHtml(raw: string, brand: string, model: string): string {
+  let html = raw;
+
+  // 1. Remove the "If you decide to expand later..." paragraph (marked-up or plain).
+  html = html.replace(/<p[^>]*>\s*If you decide to expand later[\s\S]*?<\/p>\s*/gi, "");
+  html = html.replace(/(?:<br\s*\/?>\s*)*\s*If you decide to expand later[^<\n]*/gi, "");
+
+  // Legacy plain-text descriptions: lift accessory mentions out of the prose so
+  // they can be rebuilt as links. New-format data uses markup and matches none.
+  const accessoryItems: string[] = [];
+  const accessoryRe =
+    /Expand(?:\s+the\s+possibilities)?(?:\s+MORE)?(?:\s+even\s+further)?\s+with\s+(?:an?|the)\s+([^\n<.]+)/gi;
+  let match: RegExpExecArray | null;
+  while ((match = accessoryRe.exec(html)) !== null) {
+    const item = match[1]
+      .trim()
+      .replace(/\s+attachment$/i, "")
+      .replace(/[.\s]+$/, "");
+    if (item) accessoryItems.push(item);
+  }
+  if (accessoryItems.length) {
+    html = html.replace(
+      /(?:<br\s*\/?>\s*)*Expand(?:\s+the\s+possibilities)?(?:\s+MORE)?(?:\s+even\s+further)?\s+with\s+(?:an?|the)\s+[^\n<]+/gi,
+      ""
+    );
+  }
+
+  // Legacy "Key Features:" text label -> heading (new-format data uses <h3>).
+  html = html.replace(
+    /(?:<br\s*\/?>\s*)*\s*Key Features\s*:/i,
+    '<h3 class="machine-subhead">Key Features</h3>'
+  );
+
+  // Rebuild the Compatible Accessories section (heading + list only, no intro)
+  // for legacy descriptions, placed just after the Key Features list.
+  if (accessoryItems.length) {
+    const items = accessoryItems
+      .map((a) => {
+        const itemName = accessoryItemName(a, brand, model);
+        const href = `${COMING_SOON_BASE}?item=${encodeURIComponent(itemName)}`;
+        return `<li><a href="${href}">${escapeHtml(itemName)}</a></li>`;
+      })
+      .join("");
+    const section =
+      '<h3 class="machine-subhead">Compatible Accessories</h3>' + `<ul>${items}</ul>`;
+    html = html.includes("</ul>") ? html.replace("</ul>", "</ul>" + section) : html + section;
+  }
+
+  // 4. Drop a "Compatible Accessories" heading that has no list following it.
+  html = html.replace(
+    /<h[1-6][^>]*>\s*Compatible Accessories\s*<\/h[1-6]>\s*(?!\s*<ul)/i,
+    ""
+  );
+
+  return html;
+}
+
+const longHtmlDisplay = longHtml
+  ? enhanceDescriptionHtml(longHtml, resolved.brand, resolved.model)
+  : null;
+
+function formatPrice(value: number | null): string | null {
+  if (value == null) return null;
+  return Number.isInteger(value)
+    ? `$${value.toLocaleString("en-US")}`
+    : `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+const priceLabel = formatPrice(sale.price);
 ---
 
 <Layout {title} {description}>
-  <PageHead title={machine.name} />
-
   <div class="machine-detail-page">
-    <!-- Breadcrumb / back navigation -->
+    <h1 class="machine-name">{name}</h1>
+
     <nav class="machine-breadcrumb" aria-label="Breadcrumb">
       <a href="/shop/machines" class="back-link">← Back to Machines</a>
-      <span class="breadcrumb-sep">/</span>
-      <span class="breadcrumb-current">{machine.name}</span>
     </nav>
 
-    <!-- Hero: name, short description, optional SKU/model -->
-    <header class="machine-hero">
-      <div class="machine-hero-text">
-        <h1 class="machine-name">{machine.name}</h1>
-        {(machine.sku || machine.id) && (
-          <p class="machine-meta">
-            {machine.sku && <span class="machine-sku">{machine.sku}</span>}
-            {machine.sku && machine.id != null && " · "}
-            {machine.id != null && <span>ID: {machine.id}</span>}
-          </p>
-        )}
-        {machine.shortDescription && (
-          <p class="machine-short">{machine.shortDescription}</p>
-        )}
-      </div>
-      {machine.image && (
-        <div class="machine-hero-image-wrap">
-          <img
-            src={machine.image.startsWith("/") ? machine.image : `/${machine.image}`}
-            alt={machine.name}
-            class="machine-hero-image"
-            width="400"
-            height="260"
-          />
-        </div>
-      )}
+    <header class="machine-header">
+      <p class="machine-meta">
+        <span class={`machine-status machine-status--${sale.availabilityStatus}`}>{availLabel}</span>
+      </p>
+
+      <ul class="machine-specs" aria-label="Quick specs">
+        <li>{resolved.gauge}</li>
+        {pitch && <li>{pitch}</li>}
+        {resolved.machineStyle && <li>{resolved.machineStyle}</li>}
+        {resolved.bed && <li>{resolved.bed} bed</li>}
+        {resolved.needleCount && <li>{resolved.needleCount} needles</li>}
+      </ul>
     </header>
 
-    <!-- Intro section -->
-    {machine.intro && (
-      <section class="machine-section machine-intro">
-        <h2 class="section-title">Overview</h2>
-        <p class="machine-intro-text">{machine.intro}</p>
+    <section class="machine-purchase" aria-label="Purchase">
+      <div class="machine-purchase-main">
+        {priceLabel && <p class="machine-price">{priceLabel}</p>}
+        <div class="machine-buy-row">
+          {canBuy ? (
+            <a href={sale.stripePaymentLink!} class="machine-buy" rel="noopener">
+              Buy Now
+            </a>
+          ) : (
+            <a href={CONTACT_HREF} class="machine-contact">
+              Contact Us About Availability
+            </a>
+          )}
+        </div>
+      </div>
+      {sale.shippingNotes && <div class="machine-shipping" set:html={sale.shippingNotes} />}
+    </section>
+
+    {(longHtml || heroImage) && (
+      <section class="machine-body">
+        {heroImage && (
+          <figure class="machine-figure">
+            <img
+              src={heroImage}
+              alt={name}
+              class="machine-hero-image"
+              width="400"
+              height="260"
+            />
+          </figure>
+        )}
+        {longHtmlDisplay && <div class="machine-long" set:html={longHtmlDisplay} />}
       </section>
     )}
 
-    <!-- Who It's For -->
-    {machine.whoItsFor && machine.whoItsFor.length > 0 && (
-      <section class="machine-section machine-who">
-        <h2 class="section-title">Who It's For</h2>
-        <div class="who-cards">
-          {machine.whoItsFor.map((item) => (
-            <div class="who-card">
-              <h3 class="who-title">{item.title}</h3>
-              <p class="who-text">{item.text}</p>
-            </div>
+    {resolved.notes && (
+      <section class="machine-section">
+        <h2 class="section-title">About This Machine</h2>
+        <p class="machine-intro-text">{resolved.notes}</p>
+      </section>
+    )}
+
+    {extraImages.length > 0 && (
+      <section class="machine-section">
+        <h2 class="section-title">More Photos</h2>
+        <div class="machine-gallery">
+          {extraImages.map((url) => (
+            <img src={url} alt={`${name} photo`} class="machine-gallery-img" loading="lazy" />
           ))}
         </div>
       </section>
     )}
 
-    <!-- Features list -->
-    {machine.features && machine.features.length > 0 && (
-      <section class="machine-section machine-features">
-        <h2 class="section-title">Features</h2>
-        <ul class="features-list">
-          {machine.features.map((feature) => (
-            <li>{feature}</li>
-          ))}
-        </ul>
-      </section>
-    )}
-
-    <!-- Quick Specs -->
-    {machine.quickSpecs && machine.quickSpecs.length > 0 && (
-      <section class="machine-section machine-specs">
-        <h2 class="section-title">Quick Specs</h2>
-        <ul class="specs-list">
-          {machine.quickSpecs.map((spec) => (
-            <li class="spec-tag">{spec}</li>
-          ))}
-        </ul>
-      </section>
-    )}
-
-    <!-- Bonus (visually distinct, not flashy) -->
-    {machine.bonus && (machine.bonus.title || machine.bonus.description || machine.bonus.value) && (
-      <section class="machine-section machine-bonus">
-        <h2 class="section-title">{machine.bonus.title || "Bonus"}</h2>
-        <div class="bonus-box">
-          {machine.bonus.description && (
-            <p class="bonus-description">{machine.bonus.description}</p>
-          )}
-          {machine.bonus.value && (
-            <p class="bonus-value">{machine.bonus.value}</p>
-          )}
-        </div>
-      </section>
-    )}
-
-    <!-- Warranty -->
-    {machine.warranty && (machine.warranty.us || machine.warranty.international) && (
-      <section class="machine-section machine-warranty">
-        <h2 class="section-title">Warranty</h2>
-        <div class="warranty-box">
-          {machine.warranty.us && (
-            <p><strong>US:</strong> {machine.warranty.us}</p>
-          )}
-          {machine.warranty.international && (
-            <p><strong>International:</strong> {machine.warranty.international}</p>
-          )}
-        </div>
-      </section>
-    )}
-
-    <!-- Shipping -->
-    {machine.shipping && (
-      <section class="machine-section machine-shipping">
-        <h2 class="section-title">Shipping</h2>
-        <p class="shipping-text">{machine.shipping}</p>
-      </section>
-    )}
-
-    <!-- CTA: placeholder until buy link exists -->
     <section class="machine-section machine-cta">
       <a href="/shop/machines" class="cta-secondary">← Back to Machines</a>
-      <span class="cta-placeholder" aria-hidden="true">
-        Purchase Information Coming Soon
-      </span>
     </section>
   </div>
 </Layout>
@@ -205,12 +263,12 @@ const description =
   .machine-detail-page {
     max-width: 900px;
     margin: 0 auto;
-    padding: 2rem 1rem 4rem;
+    padding: 0.5rem 1rem 4rem;
   }
 
   .machine-breadcrumb {
     font-size: 0.95rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.75rem;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -235,56 +293,242 @@ const description =
     color: #5a6b47;
   }
 
-  /* Hero */
-  .machine-hero {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-    margin-bottom: 2rem;
-  }
-
-  @media (min-width: 640px) {
-    .machine-hero {
-      grid-template-columns: 1fr 320px;
-      align-items: start;
-    }
-  }
-
-  .machine-hero-text {
-    min-width: 0;
+  .machine-header {
+    margin-bottom: 0.75rem;
   }
 
   .machine-name {
-    font-size: 1.5rem;
+    font-size: var(--text-xxl);
+    line-height: 1.2;
     font-weight: 600;
     color: var(--kbm-green);
     margin: 0 0 0.5rem 0;
   }
 
   .machine-meta {
-    font-size: 0.9rem;
-    color: #6b7b55;
     margin: 0 0 0.75rem 0;
   }
 
-  .machine-sku {
-    font-weight: 600;
+  .machine-status {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
+    color: #fff;
+    background: #52682d;
+  }
+
+  .machine-status--available {
+    background: #3f6212;
+  }
+
+  .machine-status--backorder {
+    background: #b45309;
+  }
+
+  .machine-status--unavailable {
+    background: #475569;
+  }
+
+  /* Legacy sale.status variants (kept for any older markup). */
+  .machine-status--sold-out {
+    background: #9a3412;
+  }
+
+  .machine-status--coming-soon {
+    background: #b45309;
+  }
+
+  .machine-status--inquiry-only {
+    background: #475569;
   }
 
   .machine-short {
     font-size: 1.05rem;
     color: #5a6b47;
     line-height: 1.6;
+    margin: 0 0 1rem;
+  }
+
+  .machine-long {
+    font-size: 1.05rem;
+    color: #5a6b47;
+    line-height: 1.6;
+    margin: 0 0 1rem;
+  }
+
+  .machine-long :first-child {
+    margin-top: 0;
+  }
+
+  .machine-long :last-child {
+    margin-bottom: 0;
+  }
+
+  .machine-long a {
+    color: var(--kbm-green);
+    text-decoration: underline;
+  }
+
+  .machine-long ul,
+  .machine-long ol {
+    padding-left: 1.25rem;
+    margin: 0.5rem 0;
+  }
+
+  /* Subsection headings in the description (Key Features, Compatible
+     Accessories, etc.) — authored as <h3> or injected as .machine-subhead. */
+  .machine-long :global(h3),
+  .machine-long :global(.machine-subhead) {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--kbm-green);
+    line-height: 1.3;
+    margin: 1.75rem 0 0.6rem;
+  }
+
+  .machine-long :global(h3:first-child),
+  .machine-long :global(.machine-subhead:first-child) {
+    margin-top: 0;
+  }
+
+  .machine-specs {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .machine-specs li {
+    font-size: 0.82rem;
+    color: #52682d;
+    background: #f0f4e7;
+    border: 1px solid #dbe6c5;
+    border-radius: 6px;
+    padding: 0.2rem 0.55rem;
+  }
+
+  /* Purchase panel: sized to its content (price + Buy), not a full-width banner. */
+  .machine-purchase {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem 1.25rem;
+    width: fit-content;
+    max-width: 100%;
+    padding: 0.85rem 1.15rem;
+    margin-bottom: 1.25rem;
+    background: #f7faf0;
+    border: 1px solid #dbe6c5;
+    border-radius: 12px;
+  }
+
+  .machine-purchase-main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.5rem;
+  }
+
+  /* Shipping note drops onto its own line so the panel stays compact. */
+  .machine-purchase .machine-shipping {
+    flex-basis: 100%;
+  }
+
+  .machine-price {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--kbm-green);
     margin: 0;
   }
 
-  .machine-hero-image-wrap {
+  .machine-buy-row {
+    margin: 0;
+  }
+
+  .machine-buy {
+    display: inline-block;
+    padding: 0.7rem 1.75rem;
+    background: var(--kbm-green);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s ease;
+  }
+
+  .machine-buy:hover {
+    background: var(--kbm-green-hover, #445626);
+  }
+
+  .machine-status-note {
+    display: inline-block;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #6b7b55;
+  }
+
+  .machine-contact {
+    display: inline-block;
+    padding: 0.7rem 1.75rem;
+    background: #ffffff;
+    color: var(--kbm-green);
+    font-weight: 600;
+    font-size: 1rem;
+    border: 1px solid var(--kbm-green);
+    border-radius: 8px;
+    text-decoration: none;
+    transition:
+      background 0.2s ease,
+      color 0.2s ease;
+  }
+
+  .machine-contact:hover {
+    background: var(--kbm-green);
+    color: #ffffff;
+  }
+
+  .machine-shipping {
+    font-size: 0.9rem;
+    color: #6b7b55;
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  /* Description body: image works with the copy (floats on desktop). */
+  .machine-body {
+    margin-bottom: 2rem;
+  }
+
+  .machine-body::after {
+    content: "";
+    display: block;
+    clear: both;
+  }
+
+  .machine-figure {
+    margin: 0 0 1.25rem;
     width: 100%;
-    max-width: 320px;
     aspect-ratio: 400 / 260;
     overflow: hidden;
     border-radius: 12px;
     background: #eef3e6;
+  }
+
+  @media (min-width: 640px) {
+    .machine-figure {
+      float: right;
+      width: 384px;
+      max-width: 45%;
+      /* Top aligned with the first line of the description copy. */
+      margin: 0 0 1rem 1.75rem;
+    }
   }
 
   .machine-hero-image {
@@ -294,7 +538,6 @@ const description =
     display: block;
   }
 
-  /* Sections */
   .machine-section {
     margin-bottom: 2rem;
   }
@@ -313,116 +556,20 @@ const description =
     margin: 0;
   }
 
-  /* Who It's For cards */
-  .who-cards {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+  .machine-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.75rem;
   }
 
-  .who-card {
-    background: #fafbf9;
-    border: 1px solid #e8ebe4;
-    border-radius: 12px;
-    padding: 1.25rem;
-  }
-
-  .who-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--kbm-green);
-    margin: 0 0 0.5rem 0;
-  }
-
-  .who-text {
-    font-size: 0.95rem;
-    color: #5a6b47;
-    line-height: 1.55;
-    margin: 0;
-  }
-
-  /* Features list */
-  .features-list {
-    margin: 0;
-    padding-left: 1.35rem;
-    color: #5a6b47;
-    line-height: 1.7;
-  }
-
-  .features-list li {
-    margin-bottom: 0.35rem;
-  }
-
-  /* Quick Specs tags */
-  .specs-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .spec-tag {
-    display: inline-block;
-    padding: 0.4rem 0.85rem;
-    background: #eef3e6;
-    border: 1px solid #d7e2c8;
+  .machine-gallery-img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
     border-radius: 8px;
-    font-size: 0.9rem;
-    color: #52682d;
+    background: #eef3e6;
   }
 
-  /* Bonus box */
-  .machine-bonus .section-title {
-    margin-bottom: 0.5rem;
-  }
-
-  .bonus-box {
-    background: #f8faf5;
-    border: 1px solid #e8ebe4;
-    border-radius: 12px;
-    padding: 1.25rem;
-  }
-
-  .bonus-description {
-    font-size: 1rem;
-    color: #5a6b47;
-    line-height: 1.6;
-    margin: 0 0 0.5rem 0;
-  }
-
-  .bonus-value {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--kbm-green);
-    margin: 0;
-  }
-
-  /* Warranty */
-  .warranty-box {
-    font-size: 0.95rem;
-    color: #5a6b47;
-    line-height: 1.6;
-  }
-
-  .warranty-box p {
-    margin: 0 0 0.5rem 0;
-  }
-
-  .warranty-box p:last-child {
-    margin-bottom: 0;
-  }
-
-  /* Shipping */
-  .shipping-text {
-    font-size: 0.95rem;
-    color: #5a6b47;
-    line-height: 1.6;
-    margin: 0;
-  }
-
-  /* CTA */
   .machine-cta {
     display: flex;
     flex-wrap: wrap;
@@ -440,11 +587,5 @@ const description =
 
   .cta-secondary:hover {
     color: var(--kbm-green-hover, #445626);
-  }
-
-  .cta-placeholder {
-    font-size: 0.9rem;
-    color: #8a9a6e;
-    font-style: italic;
   }
 </style>

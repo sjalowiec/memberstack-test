@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { OPEN_PATTERN_EDIT_WORKSPACE_HREF } from "./customPatternProjectNavigation";
 import {
   consumeCustomizeProjectFieldHash,
   customizeReviewHrefForField,
@@ -6,9 +7,14 @@ import {
 } from "./sleevelessCustomizeProjectFieldNav";
 
 describe("sleevelessCustomizeProjectFieldNav", () => {
-  it("builds review URLs with edit hashes", () => {
-    expect(customizeReviewHrefForField("title")).toBe("/patterns/sleeveless/review/#edit-title");
-    expect(customizeReviewHrefForField("notes")).toBe("/patterns/sleeveless/review/#edit-notes");
+  it("builds workspace edit URLs with edit hashes", () => {
+    expect(customizeReviewHrefForField("title")).toBe(
+      `${OPEN_PATTERN_EDIT_WORKSPACE_HREF}#edit-title`,
+    );
+    expect(customizeReviewHrefForField("notes")).toBe(
+      `${OPEN_PATTERN_EDIT_WORKSPACE_HREF}#edit-notes`,
+    );
+    expect(customizeReviewHrefForField("title")).not.toContain("/review");
   });
 
   it("parses edit hashes", () => {
@@ -23,12 +29,12 @@ describe("sleevelessCustomizeProjectFieldNav", () => {
     vi.stubGlobal("window", {
       location: {
         hash: "#edit-notes",
-        pathname: "/patterns/sleeveless/review/",
-        search: "",
+        pathname: "/patterns/sleeveless/pattern/",
+        search: "?edit=1",
       },
     });
     expect(consumeCustomizeProjectFieldHash()).toBe("notes");
-    expect(replaceState).toHaveBeenCalledWith(null, "", "/patterns/sleeveless/review/");
+    expect(replaceState).toHaveBeenCalledWith(null, "", "/patterns/sleeveless/pattern/?edit=1");
   });
 });
 

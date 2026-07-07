@@ -31,6 +31,11 @@ vi.mock("./loadSavedCustomPatternProject", () => ({
   loadSavedCustomPatternProject: (...args: unknown[]) => loadSavedCustomPatternProjectMock(...args),
 }));
 
+const offerPatternEditingUnlockModalMock = vi.fn(() => true);
+vi.mock("./patternEditingUnlockModal", () => ({
+  offerPatternEditingUnlockModal: (...args: unknown[]) => offerPatternEditingUnlockModalMock(...args),
+}));
+
 class MockHTMLElement {}
 class MockHTMLButtonElement extends MockHTMLElement {}
 
@@ -467,11 +472,11 @@ describe("accountMyPatternsList", () => {
 
     const copyBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-copy]");
     expect(copyBtns.length).toBe(2);
-    // Button stays in the DOM (not hidden) but is disabled with the helper tooltip.
+    // Button stays in the DOM (not hidden) but is locked with the helper tooltip.
     expect(copyBtns[0].textContent).toBe("Copy");
-    expect(copyBtns[0].disabled).toBe(true);
+    expect(copyBtns[0].disabled).toBe(false);
     expect(copyBtns[0].getAttribute("aria-disabled")).toBe("true");
-    expect(copyBtns[0].getAttribute("title")).toMatch(/purchase this pattern or become a member/i);
+    expect(copyBtns[0].getAttribute("title")).toMatch(/included with membership/i);
   });
 
   it("does not copy when the entitlement gate denies access", async () => {
@@ -485,7 +490,8 @@ describe("accountMyPatternsList", () => {
     const copyA = collectMatches(tbody._children, "[data-kbm-my-patterns-copy]").find(
       (b) => b.dataset.projectId === "proj-a",
     );
-    expect(copyA?.disabled).toBe(true);
+    expect(copyA?.disabled).toBe(false);
+    expect(copyA?.getAttribute("aria-disabled")).toBe("true");
     await copyA?._click?.();
     await flushAsync();
 
@@ -496,7 +502,16 @@ describe("accountMyPatternsList", () => {
     const { root, tbody, status } = makeAccountRoot();
     listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
     const prompt = vi.fn(() => "Renamed pullover");
-    vi.stubGlobal("window", { prompt });
+    // Renaming is an edit and requires membership; use a member with Sleeveless access.
+    vi.stubGlobal("window", {
+      prompt,
+      $memberstackDom: {
+        getCurrentMember: async () => ({
+          data: { id: "ms_member", planConnections: [{ planId: "pln_kin-membership-annual-qf9g01et" }] },
+        }),
+        getMemberJSON: async () => ({ data: {} }),
+      },
+    });
     renameMock.mockResolvedValue({
       ok: true,
       project: { ...sampleProjects[0], name: "Renamed pullover" },
@@ -519,7 +534,16 @@ describe("accountMyPatternsList", () => {
     const { root, tbody } = makeAccountRoot();
     listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
     const prompt = vi.fn(() => null);
-    vi.stubGlobal("window", { prompt });
+    // Member access so the prompt is reached; cancelling it must abort the rename.
+    vi.stubGlobal("window", {
+      prompt,
+      $memberstackDom: {
+        getCurrentMember: async () => ({
+          data: { id: "ms_member", planConnections: [{ planId: "pln_kin-membership-annual-qf9g01et" }] },
+        }),
+        getMemberJSON: async () => ({ data: {} }),
+      },
+    });
 
     await initAccountMyPatternsList(root);
 
@@ -528,7 +552,40 @@ describe("accountMyPatternsList", () => {
     );
     await renameA?._click?.();
 
+    expect(prompt).toHaveBeenCalledWith(RENAME_SAVED_PATTERN_PROMPT_MESSAGE, "Alpha pullover");
     expect(renameMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps Rename visible but locked for free / view-only users and offers the unlock modal", async () => {
+    const { root, tbody } = makeAccountRoot();
+    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
+    const prompt = vi.fn(() => "Should not be used");
+    // A logged-in free user who claimed proj-a as their one free pattern, no system access.
+    vi.stubGlobal("window", {
+      prompt,
+      $memberstackDom: {
+        getCurrentMember: async () => ({ data: { id: "ms_free" } }),
+        getMemberJSON: async () => ({
+          data: { freeSleevelessPatternClaimed: true, freeSleevelessPatternId: "proj-a" },
+        }),
+      },
+    });
+
+    await initAccountMyPatternsList(root);
+
+    const renameBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-rename]");
+    expect(renameBtns.length).toBe(2);
+    expect(renameBtns[0].textContent).toBe("Rename");
+    expect(renameBtns.every((b) => b.getAttribute("aria-disabled") === "true")).toBe(true);
+    expect(renameBtns[0].getAttribute("title")).toMatch(/included with membership/i);
+
+    const renameA = renameBtns.find((b) => b.dataset.projectId === "proj-a");
+    await renameA?._click?.();
+    await flushAsync();
+
+    expect(prompt).not.toHaveBeenCalled();
+    expect(renameMock).not.toHaveBeenCalled();
+    expect(offerPatternEditingUnlockModalMock).toHaveBeenCalledTimes(1);
   });
 
   it("disables Delete on the free user's protected pattern but keeps others deletable", async () => {
@@ -556,14 +613,14 @@ describe("accountMyPatternsList", () => {
     expect(delB?.disabled).toBe(false);
     expect(delB?.getAttribute("aria-disabled")).toBeNull();
 
-    // View-only: every Edit and Copy action is disabled with a helper tooltip (Fixes B + C).
+    // Locked: every Edit and Copy action stays visible with a helper tooltip.
     const editBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-edit]");
     const copyBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-copy]");
     expect(editBtns.length).toBe(2);
     expect(copyBtns.length).toBe(2);
-    expect(editBtns.every((b) => b.disabled === true)).toBe(true);
-    expect(editBtns[0].getAttribute("title")).toMatch(/purchase this pattern or become a member/i);
-    expect(copyBtns.every((b) => b.disabled === true)).toBe(true);
+    expect(editBtns.every((b) => b.getAttribute("aria-disabled") === "true")).toBe(true);
+    expect(editBtns[0].getAttribute("title")).toMatch(/included with membership/i);
+    expect(copyBtns.every((b) => b.getAttribute("aria-disabled") === "true")).toBe(true);
 
     // Clicking the disabled Delete / Edit never reaches their APIs.
     await delA?._click?.();
@@ -572,6 +629,50 @@ describe("accountMyPatternsList", () => {
     await flushAsync();
     expect(deleteCustomPatternProjectMock).not.toHaveBeenCalled();
     expect(loadSavedCustomPatternProjectMock).not.toHaveBeenCalled();
+    expect(offerPatternEditingUnlockModalMock).toHaveBeenCalledTimes(1);
+    expect(offerPatternEditingUnlockModalMock).toHaveBeenCalledWith(
+      expect.objectContaining({ loggedIn: true, hasSystemAccess: false }),
+      expect.objectContaining({ patternSystem: "sleeveless" }),
+    );
+  });
+
+  it("opens the unlock modal when a drop-shoulder free user clicks Edit (not a silent no-op)", async () => {
+    const dropShoulderProject = {
+      id: "proj-ds",
+      name: "Drop shoulder pullover",
+      family: "sleeveless" as const,
+      source: "express" as const,
+      patternSystem: "drop-shoulder" as const,
+      updatedAt: "2026-02-01T00:00:00.000Z",
+    };
+    const { root, tbody } = makeAccountRoot();
+    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: [dropShoulderProject] });
+    vi.stubGlobal("window", {
+      $memberstackDom: {
+        getCurrentMember: async () => ({ data: { id: "ms_free" } }),
+        getMemberJSON: async () => ({
+          data: {
+            freePatternClaimsBySystem: {
+              "drop-shoulder": { claimed: true, patternId: "proj-ds" },
+            },
+          },
+        }),
+      },
+    });
+
+    await initAccountMyPatternsList(root);
+
+    const editBtn = collectMatches(tbody._children, "[data-kbm-my-patterns-edit]")[0];
+    expect(editBtn?.getAttribute("aria-disabled")).toBe("true");
+    await editBtn?._click?.();
+    await flushAsync();
+
+    expect(loadSavedCustomPatternProjectMock).not.toHaveBeenCalled();
+    expect(offerPatternEditingUnlockModalMock).toHaveBeenCalledTimes(1);
+    expect(offerPatternEditingUnlockModalMock).toHaveBeenCalledWith(
+      expect.objectContaining({ loggedIn: true, hasSystemAccess: false }),
+      expect.objectContaining({ patternSystem: "drop-shoulder" }),
+    );
   });
 
   it("keeps Delete enabled for a member with system access", async () => {

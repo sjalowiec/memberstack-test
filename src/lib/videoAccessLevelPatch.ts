@@ -98,7 +98,7 @@ export function describeVideoAccessPatchSuccess(
     const row = updated[0]!;
     const id = contentIdKey(row.content_id);
     const title = titleByContentId.get(id);
-    const label = title ? `${id} — ${title}` : id;
+    const label = title ? `${id} - ${title}` : id;
     return `Saved access level for ${label} (${row.access_level}).`;
   }
   return `Saved access levels for ${updated.length} videos.`;
