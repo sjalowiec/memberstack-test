@@ -17,6 +17,16 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const request = context.request;
   const u = new URL(request.url);
 
+  // Normalize duplicate slashes in the path (e.g. `//signup/thank-you`). Malformed links
+  // from external sources — notably ActiveCampaign emails that concatenate a base URL ending
+  // in `/` with a leading-slash path — produce `//…`, which matches no route and 404s on every
+  // environment. Collapse repeated slashes and redirect to the canonical single-slash URL,
+  // preserving the query string (e.g. `?utm_source=ActiveCampaign`).
+  const normalizedPathname = u.pathname.replace(/\/{2,}/g, "/");
+  if (normalizedPathname !== u.pathname) {
+    return context.redirect(`${normalizedPathname}${u.search}`, 301);
+  }
+
   if (
     isDropShoulderRoute(u.pathname) &&
     isDropShoulderProductionBlocked(u.hostname, devOnlyRouteEnv)
