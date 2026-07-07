@@ -27,10 +27,33 @@ import { isMemberstackLoggedInPayload } from "./memberstackMember";
 import { waitForMemberstackDom } from "./sleevelessPatternLoginGate";
 
 /**
+ * Waits (best-effort, time-bounded) for Memberstack to finish restoring the current session.
+ *
+ * `waitForMemberstackDom` only waits for the `getCurrentMember` METHOD to exist, not for the member
+ * state to be loaded. Immediately after a brand-new signup redirects back to the builder,
+ * `getCurrentMember()` can otherwise resolve as logged-out before the freshly-created session is
+ * processed. Awaiting `onReady` (which resolves once the app + member are loaded) makes the
+ * logged-in decision reliable on that first post-signup page load. Never rejects/hangs the gate.
+ */
+async function waitForMemberstackReady(
+  ms: NonNullable<Window["$memberstackDom"]>,
+): Promise<void> {
+  const onReady = ms.onReady;
+  if (!onReady || typeof onReady.then !== "function") return;
+  await Promise.race([
+    Promise.resolve(onReady).catch(() => undefined),
+    new Promise<void>((resolve) => setTimeout(resolve, 4000)),
+  ]);
+}
+
+/**
  * Strict logged-in decision for the account gate. Resolves `true` ONLY when Memberstack reports a
  * real signed-in member. Unlike `isSleevelessPatternMemberLoggedIn`, it NEVER falls back to the dev
  * bypass and NEVER treats a missing/slow Memberstack as logged in — it fails closed so anonymous
  * visitors (including on localhost) cannot generate or view a pattern.
+ *
+ * It DOES wait for Memberstack to finish initializing (`onReady`) before reading the member, so a
+ * just-signed-up member returning to the builder is recognized instead of being read as logged-out.
  */
 async function isPatternBuilderMemberSignedIn(): Promise<boolean> {
   if (typeof window === "undefined") return false;
@@ -38,6 +61,7 @@ async function isPatternBuilderMemberSignedIn(): Promise<boolean> {
   const ms = window.$memberstackDom;
   if (!ms?.getCurrentMember) return false;
   try {
+    await waitForMemberstackReady(ms);
     const res = await ms.getCurrentMember();
     return isMemberstackLoggedInPayload(res);
   } catch {
