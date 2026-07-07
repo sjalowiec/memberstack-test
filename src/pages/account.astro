@@ -18,14 +18,14 @@ const description =
   <div class="account-dashboard">
     <div class="account-page__guest" data-ms-content="!members">
       <section class="dashboard-card account-page__login-card" aria-labelledby="account-login-heading">
-        <h1 id="account-login-heading" class="dashboard-card__title">Log in to your workspace</h1>
+        <h1 id="account-login-heading" class="dashboard-card__title">Create or open your saved patterns</h1>
         <p class="account-page__lead account-page__lead--guest">
-          Access saved patterns and your knitting workspace.
+          Log in or create a free Knit It Now account to save and reopen your patterns.
         </p>
         <form
           data-ms-form="login"
           class="contact-form account-page__form"
-          {...{ redirect: "/account#my-patterns" } as Record<string, string>}
+          {...{ redirect: "/account?view=my-patterns#my-patterns" } as Record<string, string>}
         >
           <div class="contact-form__field">
             <label for="account-login-email">Email</label>
@@ -52,13 +52,29 @@ const description =
           <p class="account-page__forgot-wrap">
             <a href="#" data-ms-modal="forgot-password" class="account-page__forgot-link">Forgot your password?</a>
           </p>
-          <button type="submit" class="contact-form__submit">Log in</button>
+          <button type="submit" class="contact-form__submit">Log In</button>
         </form>
+        <div class="account-page__signup-alt">
+          <p class="account-page__signup-alt-text">New to Knit It Now?</p>
+          <button
+            type="button"
+            class="kbm-btn kbm-btn-outline account-page__signup-btn"
+            data-account-signup
+            data-testid="account-guest-signup"
+          >
+            Create Free Account
+          </button>
+        </div>
         <script is:inline>
           (function () {
             var form = document.querySelector('.account-page__guest form[data-ms-form="login"]');
             if (!form) return;
-            var target = "/account" + (window.location.hash || "");
+            var hash = window.location.hash || "";
+            // Memberstack captures the redirect at bind time (page load), so this inline script must
+            // set the final value. The My Patterns entry uses a `view` query param so the post-login
+            // redirect is a real navigation, not a same-URL fragment change that never reloads.
+            var target =
+              hash === "#my-patterns" ? "/account?view=my-patterns#my-patterns" : "/account" + hash;
             form.setAttribute("redirect", target);
           })();
         </script>
@@ -100,6 +116,7 @@ const description =
 
 <script>
   import "/src/scripts/account-login-redirect.ts";
+  import "/src/scripts/account-signup-return.ts";
   import "/src/scripts/account-my-patterns.ts";
   import "/src/scripts/account-welcome.ts";
 </script>
@@ -135,6 +152,23 @@ const description =
 
   .account-page__lead--guest {
     margin-bottom: 1.25rem;
+  }
+
+  .account-page__signup-alt {
+    margin-top: 1.35rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+  }
+
+  .account-page__signup-alt-text {
+    margin: 0 0 0.65rem;
+    font-size: 0.95rem;
+    color: #4b5563;
+  }
+
+  .account-page__signup-btn {
+    width: 100%;
   }
 
   /* Shared dashboard card styles */

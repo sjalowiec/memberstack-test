@@ -48,7 +48,7 @@ async function waitForMemberstackReady(
 
 /**
  * Strict logged-in decision for the account gate. Resolves `true` ONLY when Memberstack reports a
- * real signed-in member. Unlike `isSleevelessPatternMemberLoggedIn`, it NEVER falls back to the dev
+ * real signed-in member. Like the sleeveless/sweater login gate, it NEVER falls back to the dev
  * bypass and NEVER treats a missing/slow Memberstack as logged in — it fails closed so anonymous
  * visitors (including on localhost) cannot generate or view a pattern.
  *

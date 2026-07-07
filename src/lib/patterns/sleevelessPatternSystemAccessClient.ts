@@ -7,7 +7,7 @@
 import { devBypass } from "../devBypass";
 import { memberIdFromMemberstackPayload } from "./memberstackMember";
 import { logPatternEditGateDebug } from "./patternEditGateDebug";
-import { waitForMemberstackDom } from "./sleevelessPatternLoginGate";
+import { waitForMemberstackDom, waitForMemberstackReady } from "./sleevelessPatternLoginGate";
 import {
   mergeFreeClaimForSystemIntoMemberJson,
   mergeAllFreeClaimsResetIntoMemberJson,
@@ -168,6 +168,10 @@ async function resolveAccessUncached(): Promise<SleevelessUserAccess> {
 
   const ms = window.$memberstackDom;
   if (ms?.getCurrentMember) {
+    // Also wait for the session to be RESTORED (not just the method to exist) so a member
+    // returning right after a login reload — when `member.login` does not fire — is not read as
+    // logged-out and cached that way, which would block them from creating their first pattern.
+    await waitForMemberstackReady(ms);
     const memberAccess = await resolveMemberstackAccess(ms);
     if (memberAccess) return memberAccess;
   }

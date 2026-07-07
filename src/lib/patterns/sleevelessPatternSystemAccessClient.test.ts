@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("../devBypass", () => ({ devBypass: false }));
 vi.mock("./sleevelessPatternLoginGate", () => ({
   waitForMemberstackDom: vi.fn().mockResolvedValue(true),
+  waitForMemberstackReady: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock("./patternEditGateDebug", () => ({
   logPatternEditGateDebug: vi.fn(),
