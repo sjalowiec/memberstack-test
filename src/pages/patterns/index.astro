@@ -34,22 +34,28 @@ const availablePatterns = [
     copy: 'Custom-fit sleeveless sweaters with pullover or cardigan fronts, round or V-neck styling, and printable row-by-row instructions.',
     button: 'Create sleeveless sweater',
   },
-  {
-    title: 'Hat Pattern Builder',
-    href: '/patterns/hat',
-    image: '/images/patterns/basic-hat.webp',
-    copy: 'Knit a hat that actually fits with brim choices, custom sizing, and machine-friendly instructions.',
-    button: 'Create your hat',
-  },
+  // Hat Pattern Builder — POSTPONED for the August launch. Hidden from the public catalog but the
+  // route /patterns/hat is intact and reachable by direct URL for future development/testing.
+  // Uncomment this entry to bring the Hat builder back to the catalog.
+  // {
+  //   title: 'Hat Pattern Builder',
+  //   href: '/patterns/hat',
+  //   image: '/images/patterns/basic-hat.webp',
+  //   copy: 'Knit a hat that actually fits with brim choices, custom sizing, and machine-friendly instructions.',
+  //   button: 'Create your hat',
+  // },
   ...(hideDropShoulderInCatalog ? [] : [dropShoulderPattern]),
-  {
-    title: 'Blanket Pattern Builder',
-    // Existing working route preserved (no /patterns/blanket page exists).
-    href: '/patterns/diy-blanket',
-    image: '/images/hybrid-blanket1.webp',
-    copy: 'Build a custom blanket pattern for your yarn, your gauge, and your machine.',
-    button: 'Create your blanket',
-  },
+  // Blanket Pattern Builder — POSTPONED for the August launch. Hidden from the public catalog but the
+  // route /patterns/diy-blanket is intact and reachable by direct URL for future development/testing.
+  // Uncomment this entry to bring the Blanket builder back to the catalog.
+  // {
+  //   title: 'Blanket Pattern Builder',
+  //   // Existing working route preserved (no /patterns/blanket page exists).
+  //   href: '/patterns/diy-blanket',
+  //   image: '/images/hybrid-blanket1.webp',
+  //   copy: 'Build a custom blanket pattern for your yarn, your gauge, and your machine.',
+  //   button: 'Create your blanket',
+  // },
 ];
 
 const comingSoonPatterns = [
