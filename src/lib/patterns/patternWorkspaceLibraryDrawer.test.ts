@@ -39,8 +39,18 @@ vi.mock("./savedCustomPatternManageActions", () => ({
   renameSavedCustomPatternProject: vi.fn(),
 }));
 
-vi.mock("./sleevelessPatternSystemAccessClient", () => ({
-  resolveSleevelessUserAccessSnapshot: (...args: unknown[]) => resolveAccessSnapshotMock(...args),
+vi.mock("./sleevelessPatternSystemAccessClient", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./sleevelessPatternSystemAccessClient")>();
+  return {
+    ...actual,
+    resolveSleevelessUserAccessSnapshot: (...args: unknown[]) => resolveAccessSnapshotMock(...args),
+  };
+});
+
+// The blocked (free / non-owner) Copy click drives the separate editing-unlock modal, which is
+// covered by its own tests. Isolate it here so this suite stays focused on the drawer behavior.
+vi.mock("./patternEditingUnlockModal", () => ({
+  offerPatternEditingUnlockModal: vi.fn(),
 }));
 
 class MockHTMLElement {}

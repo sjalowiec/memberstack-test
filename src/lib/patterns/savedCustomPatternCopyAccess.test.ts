@@ -83,9 +83,11 @@ describe("syncSavedCustomPatternCopyAccess", () => {
     );
 
     expect(allowed).toBe(false);
-    // Button is never hidden — only disabled / grayed.
+    // Button is never hidden and stays natively clickable (disabled === false) so the
+    // click can drive the membership upsell; it is only visually disabled via the
+    // is-disabled class + aria-disabled/title tooltip.
     expect(btn.textContent).toBe("Save a Copy");
-    expect(btn.disabled).toBe(true);
+    expect(btn.disabled).toBe(false);
     expect(btn.hasClass("is-disabled")).toBe(true);
     expect(btn.getAttribute("aria-disabled")).toBe("true");
     expect(btn.getAttribute("title")).toBe(SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT);

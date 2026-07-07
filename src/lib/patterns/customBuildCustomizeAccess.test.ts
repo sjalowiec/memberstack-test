@@ -11,8 +11,16 @@ const DENIED_URL = new URL(
 );
 
 describe("canAccessCustomBuildStyleAndShaping", () => {
-  it("allows access by default for dev", () => {
-    expect(canAccessCustomBuildStyleAndShaping(new URL("https://example.test/design"))).toBe(true);
+  it("locks access by default when no membership snapshot has resolved", () => {
+    // Gating change: without an explicit override or a resolved member snapshot the gate
+    // defaults to locked so free / downgraded users are not briefly granted access.
+    expect(canAccessCustomBuildStyleAndShaping(new URL("https://example.test/design"))).toBe(false);
+  });
+
+  it("allows access when explicitly unlocked via ?customize=1", () => {
+    expect(
+      canAccessCustomBuildStyleAndShaping(new URL("https://example.test/design?customize=1")),
+    ).toBe(true);
   });
 
   it("denies access when customize=0 is on the URL", () => {
