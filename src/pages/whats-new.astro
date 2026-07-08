@@ -19,96 +19,99 @@ const sueHeadshot = "/images/sue.gif";
   <section class="whats-new-page" aria-label="What's new at Knit it Now">
     <div class="whats-new-container">
       <section class="whats-new-top" aria-label="Pattern system update">
-        <div class="whats-new-top__lead">
-          <div class="whats-new-header" role="banner">
-            <PageHead title="What's New in Knit It Now Patterns" />
-            <p class="whats-new-updated" role="status">Updated June 15</p>
-            <p class="whats-new-intro">
-              New features and improvements added during beta testing.
-            </p>
-           </div>
+  <div class="whats-new-top__lead">
+    <div class="whats-new-header" role="banner">
+      <PageHead title="What's New in Knit It Now Patterns" />
+      <p class="whats-new-updated" role="status">Updated July 8</p>
+      <p class="whats-new-intro">
+        We’ve made some of the biggest improvements yet to the Knit It Now pattern system.
+      </p>
+    </div>
 
-          <section class="whats-new-focus" aria-labelledby="whats-new-focus-heading">
-            <p class="whats-new-focus__eyebrow">This Week's Focus</p>
-            <h2 class="whats-new-focus__heading" id="whats-new-focus-heading">Neckline Shaping</h2>
-            <p class="whats-new-focus__copy">
-              Neckline shaping is one of the most challenging parts of garment knitting. Over the past week we've revised the instructions, improved the shaping charts, and added clearer row-by-row guidance to make the process easier to follow.
-            </p>
-            <p class="whats-new-focus__copy">
-              We're looking for feedback from beta testers. Please review the examples and let us know:
-            </p>
-            <ul class="whats-new-focus__points">
-              <li>Are the instructions easy to follow?</li>
-              <li>Do the charts make sense?</li>
-              <li>Would you feel confident knitting from these instructions?</li>
-              <li>Is anything unclear or confusing?</li>
-            </ul>
-            <div class="whats-new-focus__cta">
-              <a class="kbm-btn kbm-btn-primary whats-new-focus__btn" href="/beta/neckline-shaping">Review Neckline Shaping</a>
-            </div>
-            <p class="whats-new-focus__note">
-              Your feedback helps shape the final version of Knit It Now patterns.
-            </p>
-          </section>
+    <section class="whats-new-focus" aria-labelledby="whats-new-focus-heading">
+      <p class="whats-new-focus__eyebrow">Major Beta Update</p>
+      <h2 class="whats-new-focus__heading" id="whats-new-focus-heading">
+        New Drop Shoulder Sweaters + a Better Pattern Flow
+      </h2>
 
-          <section class="whats-new-video" aria-labelledby="whats-new-video-heading">
-            <h2 class="whats-new-video__heading" id="whats-new-video-heading">Watch the Pattern Update Walkthrough</h2>
-            <p class="whats-new-video__intro">
-              A lot has changed in the pattern system. This quick walkthrough shows how saving, editing, copying, and managing patterns now works.
-            </p>
-            <div class="whats-new-video__embed">
-              <iframe
-                src="https://player.vimeo.com/video/1198067821"
-                title="Pattern Update Walkthrough"
-                loading="lazy"
-                frameborder="0"
-                allow="autoplay; fullscreen; picture-in-picture"
-                allowfullscreen
-              ></iframe>
-            </div>
-          </section>
+      <p class="whats-new-focus__copy">
+        The new Drop Shoulder Sweater builder is here, with custom pullovers and cardigans you can build from your own measurements and gauge.
+      </p>
 
-          
-          
+      <p class="whats-new-focus__copy">
+        We’ve also redesigned the pattern workflow so it’s easier to create a pattern, save it, return later, edit it, and try another version.
+      </p>
+
+      <p class="whats-new-focus__copy">
+        The best way to see what’s changed is to build a pattern and click through the new flow.
+      </p>
+
+      <div class="whats-new-focus__cta">
+        <a class="kbm-btn kbm-btn-primary whats-new-focus__btn" href="/patterns/drop-shoulder/builder?new=1">
+          Try the Drop Shoulder Builder
+        </a>
+      </div>
+
+      <p class="whats-new-focus__note">
+        Save a pattern, edit it, and let me know what feels smooth or confusing.
+      </p>
+    </section>
+  </div>
+
+  <footer class="whats-new-footer">
+    <div class="whats-new-footer__inner">
+      <div class="whats-new-footer__image">
+        <img src={sueHeadshot} alt="Sue" width="100" height="100" loading="lazy" decoding="async" />
+      </div>
+
+      <div class="whats-new-footer__content">
+        <h3>A Note from Sue</h3>
+
+        <p>
+          Since the beta launch, knitters have been exploring the new pattern system and sharing comments, questions, and suggestions along the way.
+        </p>
+
+        <p>
+          Many of the improvements in this update came directly from that feedback.
+        </p>
+
+        <p>
+          Rather than reading a long list of changes, I’d love for you to jump in and build a pattern.
+        </p>
+
+        <p>
+          Try the new Drop Shoulder Sweater builder. Save a pattern. Edit it. Click around. If something feels confusing or doesn’t work the way you expect, please tell me.
+        </p>
+
+        <p>
+          <strong>Thank you for helping shape Knit It Now.</strong> Every pattern you create and every piece of feedback helps make this better for the next knitter.
+        </p>
+
+        <div class="whats-new-footer__cta">
+          <a
+            class="kbm-btn kbm-btn-primary whats-new-footer__message-btn"
+            href="#comments"
+          >
+            Help us shape what’s next
+          </a>
         </div>
 
-        <footer class="whats-new-footer">
-          <div class="whats-new-footer__inner">
-            <div class="whats-new-footer__image">
-              <img src={sueHeadshot} alt="Sue" width="100" height="100" loading="lazy" decoding="async" />
-            </div>
-
-            <div class="whats-new-footer__content">
-              <h3>A Note from Sue</h3>
-              <p>Since the beta launch, dozens of knitters have been exploring the new pattern system and sharing their thoughts along the way.</p>
-
-<p>Many of the improvements on this page started as comments, questions, and suggestions from knitters just like you.</p>
-
-<p>Recent updates include pattern saving, pattern editing, a simplified workflow, and new tools to help you plan your projects.</p>
-
-<p><strong>Thank you for being part of this journey. </strong>Every pattern you create, every feature you try, and every piece of feedback helps shape what comes next.</p>
-
-<p>Keep the feedback coming. I'm listening.</p>
-              <div class="whats-new-footer__cta">
-                <a
-                  class="kbm-btn kbm-btn-primary whats-new-footer__message-btn"
-                  href="#comments"
-                  >Help us shape what's next</a>
-              </div>
-              <p class="whats-new-footer__private-hint">
-                Prefer to reach out privately?
-                <a
-                  href="#"
-                  class="whats-new-footer__private-link"
-                  id="whats-new-sue-modal-open"
-                  aria-haspopup="dialog"
-                  aria-controls="whats-new-sue-modal"
-                  >Message Sue directly</a>
-              </p>
-            </div>
-          </div>
-        </footer>
-      </section>
+        <p class="whats-new-footer__private-hint">
+          Prefer to reach out privately?
+          <a
+            href="#"
+            class="whats-new-footer__private-link"
+            id="whats-new-sue-modal-open"
+            aria-haspopup="dialog"
+            aria-controls="whats-new-sue-modal"
+          >
+            Message Sue directly
+          </a>
+        </p>
+      </div>
+    </div>
+  </footer>
+</section>
 
       <section class="whats-new-beginning-callout" aria-labelledby="whats-new-beginning">
         <h2 class="whats-new-beginning-callout__title" id="whats-new-beginning">This Is Just the Beginning</h2>
