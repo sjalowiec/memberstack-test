@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "astro dev",
     "prebuild": "node scripts/generate-public-manifests.mjs",
-    "build": "astro build",
+    "build": "astro build && pagefind --site dist",
     "preview": "astro preview",
     "astro": "astro",
     "prepare:transition-site": "node scripts/prepare-transition-site.mjs",
@@ -26,6 +26,7 @@
     "@astrojs/check": "^0.9.8",
     "@astrojs/netlify": "^6.6.4",
     "@types/node": "^25.3.0",
+    "pagefind": "^1.5.2",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"
   }

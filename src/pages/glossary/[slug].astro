@@ -4,6 +4,9 @@ import GlossaryEntry from "../../components/GlossaryEntry.astro";
 import glossary from "../../data/glossary.json";
 import { slugify } from "../../lib/slugify";
 import PageHead from "../../components/PageHead.astro";
+
+export const prerender = true;
+
 function cleanTerm(v: any) {
   return (v ?? "").toString().replace(/<[^>]*>/g, "").trim();
 }

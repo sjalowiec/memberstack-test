@@ -11,18 +11,12 @@ import {
   vimeoNumericIdFromPublicVideo,
   type PublicVideoRow,
 } from "../../lib/lessonVideo";
-import { filterPublicCatalogVideos, catalogVideoIsPublic } from "../../lib/videoPublic";
+import { filterPublicCatalogVideos } from "../../lib/videoPublic";
 import { helpHubTipIsPublic } from "../../lib/helpHubPublic";
 import { buildHelpHubFaqPage, serializeJsonLd } from "../../lib/helpHubFaqSchema";
-// at the top of [slug].astro
-
-const reservedPaths = ["guided-workshops"];
 
 const slugParam =
   typeof Astro.params.slug === "string" ? Astro.params.slug.trim() : "";
-if (reservedPaths.includes(slugParam)) {
-  return Astro.redirect("/404");
-}
 type HelpHubTryThis = {
   quickActionTitle?: string;
   quickAction?: string[];
@@ -152,53 +146,32 @@ function resolveLessonFromRelatedRef(
   return undefined;
 }
 
-/** Server-rendered so `?preview=true` can show draft tips; search params are not available at static build time. */
-export const prerender = false;
+/**
+ * Prerendered: only public Help Hub tips are emitted as static pages via
+ * getStaticPaths(). Draft, private, and other non-public tips are never
+ * generated here, so they can't be reached or indexed. Draft preview stays on
+ * the dedicated SSR route (/help-hub/preview), which is unaffected by this change.
+ */
+export const prerender = true;
 
-const isPreview = Astro.url.searchParams.get("preview") === "true";
-
-const tips = Array.isArray(helpHubData)
-  ? (helpHubData as HelpHubRecord[])
-  : [];
-const tip: HelpHubRecord | undefined = slugParam
-  ? tips.find((t) => typeof t.slug === "string" && t.slug.trim() === slugParam)
-  : undefined;
-
-if (!tip || (!helpHubTipIsPublic(tip) && !isPreview)) {
-  if (slugParam === "change-colors-lk150" && tip) {
-    console.log("[KBM catalog debug] help-hub/[slug] blocked or allowed", {
-      source: "src/data/help-hub.json",
-      slug: tip.slug,
-      status: tip.status,
-      active: tip.active,
-      helpHubTipIsPublic: helpHubTipIsPublic(tip),
-      isPreview,
-      action: helpHubTipIsPublic(tip) || isPreview ? "render" : "404",
-    });
-  }
-  return await Astro.rewrite("/404");
+export function getStaticPaths() {
+  // Slugs reserved for other /help-hub/* routes (kept out of the tip catalog).
+  const reservedPaths = ["guided-workshops"];
+  const all = Array.isArray(helpHubData) ? (helpHubData as HelpHubRecord[]) : [];
+  return all
+    .filter((t) => {
+      const slug = typeof t.slug === "string" ? t.slug.trim() : "";
+      return (
+        slug !== "" && !reservedPaths.includes(slug) && helpHubTipIsPublic(t)
+      );
+    })
+    .map((t) => ({
+      params: { slug: (t.slug as string).trim() },
+      props: { tip: t },
+    }));
 }
 
-if (slugParam === "change-colors-lk150") {
-  const debugVideo5001 = (Array.isArray(videosPublic) ? videosPublic : []).find(
-    (v) => String(v.content_id) === "5001",
-  );
-  console.log("[KBM catalog debug] help-hub/[slug] render", {
-    helpHub: {
-      slug: tip.slug,
-      status: tip.status,
-      helpHubTipIsPublic: helpHubTipIsPublic(tip),
-    },
-    linkedVideo5001: debugVideo5001
-      ? {
-          content_id: debugVideo5001.content_id,
-          slug: debugVideo5001.slug,
-          status: (debugVideo5001 as { status?: string }).status,
-          catalogVideoIsPublic: catalogVideoIsPublic(debugVideo5001),
-        }
-      : null,
-  });
-}
+const tip = Astro.props.tip as HelpHubRecord;
 
 const lessonRecords = Array.isArray(lessons)
   ? (lessons as LessonRecord[])

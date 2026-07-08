@@ -4,6 +4,8 @@ import HomeImagePlaceholder from "../components/home/HomeImagePlaceholder.astro"
 import { PATTERN_BUILDERS_HOME_HREF } from "../lib/patterns/customPatternProjectNavigation";
 import "../styles/global.css";
 
+export const prerender = true;
+
 const pageTitle = "Knit it Now | Learn, Build Skills & Machine Knit with Confidence";
 const pageDescription =
   "Knit It Now brings together lessons, videos, pattern builders, tools, and references to help machine knitters learn, practice, and knit with confidence.";

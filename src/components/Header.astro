@@ -1598,7 +1598,7 @@ div[data-ms-modal-overlay] {
 </style>
 
 
-<section class="kbm-header-wrap">
+<section class="kbm-header-wrap" data-pagefind-ignore>
   <!-- Billboard strip above main nav 
   <div class="kbm-billboard" data-testid="welcome-intro-wrapper">
     <div class="kbm-billboard-inner">
@@ -1875,26 +1875,15 @@ div[data-ms-modal-overlay] {
   )}
 </section>
 
-<div id="searchModal" class="search-modal" aria-hidden="true">
+<div id="searchModal" class="search-modal" aria-hidden="true" data-pagefind-ignore>
   <div class="search-modal__overlay" id="closeSearchModal"></div>
 
   <div class="search-modal__content" role="dialog" aria-modal="true" aria-labelledby="searchModalTitle">
     <button type="button" class="search-modal__close" id="closeSearchModalBtn" aria-label="Close">×</button>
 
-    <h3 id="searchModalTitle">Site-wide search is coming</h3>
+    <h3 id="searchModalTitle">Search Knit it Now</h3>
 
-    <p>
-      You’ll soon be able to search across everything — videos, tips, and more.
-    </p>
-
-    <p>
-      For now, try one of these:
-    </p>
-
-    <div class="search-modal__actions">
-      <a href="/video-search" class="kbm-btn kbm-btn-primary">Search Videos</a>
-      <a href="/help-hub" class="kbm-btn kbm-btn-outline">Browse Help Hub</a>
-    </div>
+    <div id="pagefind-search" class="pagefind-search"></div>
   </div>
 </div>
 
@@ -2314,15 +2303,49 @@ div[data-ms-modal-overlay] {
     const overlay = document.getElementById("closeSearchModal");
     const closeBtn = document.getElementById("closeSearchModalBtn");
 
-    function menuDrawerOpen() {
-      return document.querySelector(".kbm-nav-row")?.classList.contains("mobile-open");
+    // Lazily load the Pagefind UI bundle the first time the search modal opens.
+    // The /pagefind/ assets only exist after `pagefind --site dist` runs post-build,
+    // so loading on demand avoids 404 noise on pages/dev where the index is absent.
+    let pagefindRequested = false;
+    function loadPagefind() {
+      if (pagefindRequested) return;
+      pagefindRequested = true;
+
+      const css = document.createElement("link");
+      css.rel = "stylesheet";
+      css.href = "/pagefind/pagefind-ui.css";
+      document.head.appendChild(css);
+
+      const script = document.createElement("script");
+      script.src = "/pagefind/pagefind-ui.js";
+      script.onload = function () {
+        if (typeof window.PagefindUI !== "function") return;
+        new window.PagefindUI({
+          element: "#pagefind-search",
+          showSubResults: true,
+          showImages: false,
+        });
+        const input = document.querySelector("#pagefind-search input");
+        if (input) input.focus();
+      };
+      script.onerror = function () {
+        const el = document.getElementById("pagefind-search");
+        if (el) {
+          el.innerHTML =
+            '<p style="margin:0;line-height:1.5;">Search isn’t available yet. Try <a href="/video-search">Search Videos</a> or <a href="/help-hub">Browse the Help Hub</a>.</p>';
+        }
+      };
+      document.head.appendChild(script);
     }
 
     function openModal() {
       if (!modal) return;
+      loadPagefind();
       modal.classList.add("active");
       modal.setAttribute("aria-hidden", "false");
       document.body.style.overflow = "hidden";
+      const input = document.querySelector("#pagefind-search input");
+      if (input) input.focus();
     }
 
     function closeModal() {

@@ -11,6 +11,8 @@ import ToolPreviewGate from "../../components/ui/ToolPreviewGate.astro";
 import toolsData from "../../../data/tools.json";
 import "../../styles/wizard.css";
 
+export const prerender = true;
+
 const tools = toolsData as Array<{
   href?: string;
   title?: string;

@@ -4,6 +4,8 @@ import "../../components/talk-bubbles.css";
 import helpHubData from "../../data/help-hub.json";
 import { helpHubTipIsPublic } from "../../lib/helpHubPublic";
 
+export const prerender = true;
+
 function helpHubTipSortOrder(item: { sortOrder?: unknown; id?: unknown }): number {
   const v = item.sortOrder;
   if (typeof v === "number" && Number.isFinite(v)) return v;
