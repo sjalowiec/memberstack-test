@@ -12,7 +12,10 @@ import {
   readDropShoulderUserEditedSleeveFields,
   type DropShoulderUserEditedSleeveFields,
 } from "./dropShoulderUserEditedSleeveFields";
-import { hasAuthoritativeDropShoulderConstruction } from "./patternConstructionIdentity";
+import {
+  dropShoulderSleeveLengthProportion,
+  hasAuthoritativeDropShoulderConstruction,
+} from "./patternConstructionIdentity";
 import { computeDefaultMeasurementsFromChartRow } from "./sleevelessExpressSizeChartClient";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 
@@ -102,6 +105,12 @@ export function resolveDropShoulderSleeveInches(args: {
   selectedMeasurements?: Record<string, unknown> | null;
   bodyShape?: string;
   userEdited?: DropShoulderUserEditedSleeveFields;
+  /**
+   * Sleeve-length picker choice ("long" | "three-quarter" | "elbow" | "short"). The resolved
+   * `sleeveLengthIn` is the full chart/override length scaled by this choice's proportion; the
+   * stored override always represents the full (long) length, so this scales it exactly once.
+   */
+  sleeveLengthChoice?: unknown;
 }): {
   upperArmIn?: number;
   wristIn?: number;
@@ -112,10 +121,14 @@ export function resolveDropShoulderSleeveInches(args: {
     if (!raw?.trim()) return undefined;
     return parseOverrideInches(raw);
   };
+  const fullSleeveLengthIn = parse(strings.sleeveLength);
+  const proportion = dropShoulderSleeveLengthProportion(args.sleeveLengthChoice);
+  const sleeveLengthIn =
+    fullSleeveLengthIn !== undefined ? roundQuarter(fullSleeveLengthIn * proportion) : undefined;
   return {
     upperArmIn: parse(strings.upperArm),
     wristIn: parse(strings.wrist),
-    sleeveLengthIn: parse(strings.sleeveLength),
+    sleeveLengthIn,
   };
 }
 

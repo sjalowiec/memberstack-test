@@ -284,6 +284,28 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
                   </div>
                   <p class="sl-edit-ease" data-sl-edit-ease aria-live="polite"></p>
                 </fieldset>
+
+                <fieldset class="sl-edit-field sl-edit-fieldset" data-sl-edit-sleeve-length>
+                  <legend class="sl-edit-sublabel">Sleeve length</legend>
+                  <div class="sl-edit-segment sl-edit-segment--four" role="radiogroup" aria-label="Sleeve length">
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sl-edit-sleeve-length" value="long" checked />
+                      <span class="sl-edit-segment__pill">Long</span>
+                    </label>
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sl-edit-sleeve-length" value="three-quarter" />
+                      <span class="sl-edit-segment__pill">3/4</span>
+                    </label>
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sl-edit-sleeve-length" value="elbow" />
+                      <span class="sl-edit-segment__pill">Elbow</span>
+                    </label>
+                    <label class="sl-edit-segment__option">
+                      <input type="radio" name="sl-edit-sleeve-length" value="short" />
+                      <span class="sl-edit-segment__pill">Short</span>
+                    </label>
+                  </div>
+                </fieldset>
               </section>
 
               <section class="sl-edit-section" aria-labelledby="sl-edit-gauge-heading">
@@ -728,7 +750,8 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
     color: color-mix(in srgb, var(--kbm-green, #52682d) 65%, #6b7280);
   }
 
-  .sl-edit-segment--three {
+  .sl-edit-segment--three,
+  .sl-edit-segment--four {
     flex-wrap: wrap;
   }
 

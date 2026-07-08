@@ -25,7 +25,45 @@ export const DROP_SHOULDER_STYLE_KEYS = [
 ] as const;
 
 const DROP_SHOULDER_SLEEVE_DIRECTIONS = new Set(["cuff-up", "top-down"]);
-const DROP_SHOULDER_SLEEVE_LENGTHS = new Set(["long", "three-quarter", "elbow", "short"]);
+
+/** Sleeve-length picker choices (Drop Shoulder builder + Edit Pattern drawer). */
+export const DROP_SHOULDER_SLEEVE_LENGTH_CHOICES = [
+  "long",
+  "three-quarter",
+  "elbow",
+  "short",
+] as const;
+
+export type DropShoulderSleeveLengthChoice =
+  (typeof DROP_SHOULDER_SLEEVE_LENGTH_CHOICES)[number];
+
+/**
+ * Fraction of the full (long) chart `sleeve_length` each picker choice knits.
+ * The chart only stores the full length; shorter choices scale it proportionally.
+ */
+export const DROP_SHOULDER_SLEEVE_LENGTH_PROPORTIONS: Record<
+  DropShoulderSleeveLengthChoice,
+  number
+> = {
+  long: 1,
+  "three-quarter": 0.75,
+  elbow: 0.5,
+  short: 0.33,
+};
+
+/** Coerce an unknown value to a valid sleeve-length choice (defaults to "long"). */
+export function normalizeDropShoulderSleeveLengthChoice(
+  value: unknown,
+): DropShoulderSleeveLengthChoice {
+  return DROP_SHOULDER_SLEEVE_LENGTH_CHOICES.includes(value as DropShoulderSleeveLengthChoice)
+    ? (value as DropShoulderSleeveLengthChoice)
+    : "long";
+}
+
+/** Proportion of the full sleeve length for a (possibly unknown) picker choice. */
+export function dropShoulderSleeveLengthProportion(value: unknown): number {
+  return DROP_SHOULDER_SLEEVE_LENGTH_PROPORTIONS[normalizeDropShoulderSleeveLengthChoice(value)];
+}
 
 function section(obj: unknown): Record<string, unknown> {
   return obj && typeof obj === "object" && !Array.isArray(obj) ? { ...(obj as Record<string, unknown>) } : {};

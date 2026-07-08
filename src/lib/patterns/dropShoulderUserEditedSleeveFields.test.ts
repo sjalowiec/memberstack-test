@@ -144,6 +144,33 @@ describe("dropShoulderUserEditedSleeveFields + sleeve reconcile", () => {
     expect(review.wristIn).toBe(6);
   });
 
+  it("scales sleeve length by the picker choice (long/3-4/elbow/short)", () => {
+    const base = {
+      overrides: {},
+      chartRow: size7Row,
+      fitPreference: "standard",
+    } as const;
+    // Size 7 full sleeve_length = 17″.
+    expect(resolveDropShoulderSleeveInches({ ...base }).sleeveLengthIn).toBe(17);
+    expect(
+      resolveDropShoulderSleeveInches({ ...base, sleeveLengthChoice: "long" }).sleeveLengthIn,
+    ).toBe(17);
+    expect(
+      resolveDropShoulderSleeveInches({ ...base, sleeveLengthChoice: "three-quarter" })
+        .sleeveLengthIn,
+    ).toBe(12.75);
+    expect(
+      resolveDropShoulderSleeveInches({ ...base, sleeveLengthChoice: "elbow" }).sleeveLengthIn,
+    ).toBe(8.5);
+    expect(
+      resolveDropShoulderSleeveInches({ ...base, sleeveLengthChoice: "short" }).sleeveLengthIn,
+    ).toBe(5.5); // 17 × 0.33 = 5.61 → rounded to nearest ¼″
+    // Unknown/absent choice falls back to full length.
+    expect(
+      resolveDropShoulderSleeveInches({ ...base, sleeveLengthChoice: "bogus" }).sleeveLengthIn,
+    ).toBe(17);
+  });
+
   it("does not treat stale overrides as user-edited without explicit flags", () => {
     store[SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY] = JSON.stringify({
       cbMeasurementOverrides: {
