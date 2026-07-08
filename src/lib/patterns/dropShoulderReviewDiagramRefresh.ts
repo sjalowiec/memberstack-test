@@ -401,6 +401,7 @@ function forceRefreshDropShoulderSummaryFromContext(
     fitPreference: ctx.fitPreference,
     selectedMeasurements: ctx.selectedMeasurements,
     bodyShape: ctx.bodyShape,
+    sleeveLengthChoice: section(getCurrentPattern().style).sleeveLength,
   });
 
   const normalizedSize = normalizeChartRowSize(row) || ctx.selectedSize;

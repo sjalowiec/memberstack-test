@@ -986,6 +986,7 @@ export function generateDropShoulderPattern(
         fitPreference,
         selectedMeasurements: sm,
         bodyShape: String(style.bodyShape ?? "straight"),
+        sleeveLengthChoice: style.sleeveLength,
       })
     : {};
   const upperArmIn =
