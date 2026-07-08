@@ -13,7 +13,14 @@ describe("customBuildDiagramFieldPolicy", () => {
     expect(isDropShoulderHiddenSummaryField("shoulderWidth")).toBe(true);
     expect(isDropShoulderHiddenSummaryField("armholeDepth")).toBe(false);
     expect(isDropShoulderDisplayOnlySummaryField("armholeDepth")).toBe(true);
+    expect(isDropShoulderDisplayOnlySummaryField("sleeveLength")).toBe(true);
     expect(isDropShoulderDisplayOnlySummaryField("shoulderWidth")).toBe(false);
+  });
+
+  it("makes sleeveLength picker-driven read-only on drop-shoulder (not an editable input)", () => {
+    const sleeveLength = { key: "sleeveLength", dropShoulderOnly: true };
+    expect(isCustomBuildDiagramFieldActiveForConstruction(sleeveLength, true)).toBe(false);
+    expect(isCustomBuildDiagramFieldRenderedOnSummary(sleeveLength, true)).toBe(true);
   });
 
   it("excludes shoulderWidth from active and rendered drop-shoulder fields", () => {

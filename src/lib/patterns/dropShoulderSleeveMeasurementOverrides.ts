@@ -40,6 +40,20 @@ function roundQuarter(n: number): number {
   return Math.round(n * 4) / 4;
 }
 
+/**
+ * SINGLE SCALING POINT — the sleeve-length picker choice turned into actual sleeve length inches.
+ * The full (long) chart/override length scaled by the picker proportion, rounded to the nearest ¼″.
+ * Everything that needs the actual sleeve length (generator, summary, diagram read-only display)
+ * must call this so the picker drives one value everywhere with no double-scaling.
+ */
+export function scaleDropShoulderSleeveLengthInches(
+  fullInches: number | undefined,
+  sleeveLengthChoice: unknown,
+): number | undefined {
+  if (fullInches === undefined || !Number.isFinite(fullInches)) return undefined;
+  return roundQuarter(fullInches * dropShoulderSleeveLengthProportion(sleeveLengthChoice));
+}
+
 function parseOverrideInches(raw: string): number | undefined {
   const s = raw.trim();
   if (!s) return undefined;
@@ -106,9 +120,15 @@ export function resolveDropShoulderSleeveInches(args: {
   bodyShape?: string;
   userEdited?: DropShoulderUserEditedSleeveFields;
   /**
-   * Sleeve-length picker choice ("long" | "three-quarter" | "elbow" | "short"). The resolved
-   * `sleeveLengthIn` is the full chart/override length scaled by this choice's proportion; the
-   * stored override always represents the full (long) length, so this scales it exactly once.
+   * Sleeve-length picker choice ("long" | "three-quarter" | "elbow" | "short"). The picker is the
+   * single source of truth for sleeve length: the resolved `sleeveLengthIn` is the full chart/override
+   * length scaled by this choice's proportion.
+   *
+   * SINGLE SCALING POINT: scaling happens here (and only here). The stored override always represents
+   * the full (long) length; every consumer that needs the *actual* sleeve length inches — generator,
+   * summary, and the measurement-diagram read-only display — calls this function so they all agree
+   * and nothing double-scales. `resolveDropShoulderSleeveOverrideStrings` intentionally returns the
+   * unscaled full length (it also feeds override persistence, which must stay full).
    */
   sleeveLengthChoice?: unknown;
 }): {
@@ -121,20 +141,22 @@ export function resolveDropShoulderSleeveInches(args: {
     if (!raw?.trim()) return undefined;
     return parseOverrideInches(raw);
   };
-  const fullSleeveLengthIn = parse(strings.sleeveLength);
-  const proportion = dropShoulderSleeveLengthProportion(args.sleeveLengthChoice);
-  const sleeveLengthIn =
-    fullSleeveLengthIn !== undefined ? roundQuarter(fullSleeveLengthIn * proportion) : undefined;
   return {
     upperArmIn: parse(strings.upperArm),
     wristIn: parse(strings.wrist),
-    sleeveLengthIn,
+    sleeveLengthIn: scaleDropShoulderSleeveLengthInches(
+      parse(strings.sleeveLength),
+      args.sleeveLengthChoice,
+    ),
   };
 }
 
 /**
- * Resolved sleeve override strings for review diagram and generator.
+ * Resolved sleeve override strings for review diagram, measurement editor, and generator.
  * Non-user-edited fields always come from the current chart row.
+ *
+ * Returns the FULL (unscaled) sleeve length — this feeds override persistence and the single
+ * scaling point in {@link resolveDropShoulderSleeveInches}. Do not scale here.
  */
 export function resolveDropShoulderSleeveOverrideStrings(args: {
   overrides: Record<string, string>;

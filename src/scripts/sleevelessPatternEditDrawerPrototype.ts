@@ -23,6 +23,7 @@
 import {
   initCustomBuildMeasurementsPage,
   readDropShoulderWorkspaceQuickEditSizingFromDom,
+  refreshDropShoulderWorkspaceMeasurementSummary,
   rehydrateDropShoulderWorkspaceMeasurementDiagramFromQuickEdit,
 } from "./sleeveless-custom-build-measurements-page";
 import {
@@ -849,6 +850,11 @@ function initSleevelessPatternEditDrawer(): void {
       const refresh = getRequestRefresh();
       if (refresh) await refresh();
 
+      // Recompute the Drop Shoulder measurement summary diagram from the just-saved pattern data so
+      // its display-only sleeve length matches the regenerated instructions (not a stale pre-save
+      // value). Scaling flows through the shared resolver, so no double-scaling.
+      await refreshDropShoulderWorkspaceMeasurementSummary();
+
       logSavedPatternUpdateFlowDiagnostics("edit-drawer-after-reload", {
         pinnedSavedProjectId,
         renderedActiveSavedProjectId: readActiveCustomPatternProjectId(),
@@ -965,6 +971,19 @@ function initSleevelessPatternEditDrawer(): void {
     el.addEventListener("change", () => {
       updateEaseReadout();
       recalcFitDerivedMeasurements();
+    });
+  });
+
+  // Drop Shoulder sleeve length: persist the choice onto the working draft the moment it changes,
+  // so the value is captured even if apply-time reads race with re-renders. Cancel reverts it via
+  // the measurement-storage baseline (PATTERN_STORAGE_KEY + PATTERN_BUILDER_DATA_KEY) snapshot.
+  drawer.querySelectorAll<HTMLInputElement>('input[name="sl-edit-sleeve-length"]').forEach((el) => {
+    el.addEventListener("change", () => {
+      persistDropShoulderSleeveLength();
+      // Live-refresh the measurement summary diagram so its (display-only, picker-driven) sleeve
+      // length reflects the new choice immediately — recomputed via the same scaling helper the
+      // generator uses. Without this the diagram short-circuits on an unchanged merged snapshot.
+      void refreshDropShoulderWorkspaceMeasurementSummary();
     });
   });
 

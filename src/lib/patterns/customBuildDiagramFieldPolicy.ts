@@ -10,9 +10,14 @@ export function isDropShoulderHiddenSummaryField(key: string): boolean {
   return key === "shoulderWidth";
 }
 
-/** Shown read-only on drop-shoulder summary (derived, not persisted). */
+/**
+ * Shown read-only on drop-shoulder summary (derived / picker-driven, not directly editable):
+ * - `armholeDepth`: derived = upper arm ÷ 2.
+ * - `sleeveLength`: driven by the sleeve-length picker (full chart length × chosen proportion), so
+ *   it is displayed as a scaled read-only value rather than a raw inches input.
+ */
 export function isDropShoulderDisplayOnlySummaryField(key: string): boolean {
-  return key === "armholeDepth";
+  return key === "armholeDepth" || key === "sleeveLength";
 }
 
 /** Editable / validated / persisted fields for the active construction. */

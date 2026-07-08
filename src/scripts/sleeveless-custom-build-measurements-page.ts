@@ -79,7 +79,10 @@ import {
 } from "../lib/patterns/measurementBlueprintSvgUrl";
 import { mapExpressStyleKey } from "../lib/patterns/syncSleevelessExpressDesignToStorage";
 import { markDropShoulderSleeveOverrideKeyUserEdited } from "../lib/patterns/dropShoulderUserEditedSleeveFields";
-import { resolveDropShoulderSleeveOverrideStrings } from "../lib/patterns/dropShoulderSleeveMeasurementOverrides";
+import {
+  resolveDropShoulderSleeveOverrideStrings,
+  scaleDropShoulderSleeveLengthInches,
+} from "../lib/patterns/dropShoulderSleeveMeasurementOverrides";
 
 const YARN_GAUGE_HREF = "/patterns/sleeveless/custom-build/yarn-gauge";
 const PATTERN_WORKSPACE_TAB_PATTERN_HREF = "/patterns/sleeveless/pattern/?tab=pattern";
@@ -94,6 +97,8 @@ let dropShoulderWorkspaceRehydrateImpl:
   | ((sizing: DropShoulderQuickEditSizing, meta?: DropShoulderWorkspaceRehydrateMeta) => Promise<boolean>)
   | null = null;
 
+let dropShoulderWorkspaceSummaryRefreshImpl: (() => Promise<void>) | null = null;
+
 /** Called from Edit Pattern → Measurements when Quick edits Size changes (Drop Shoulder only). */
 export async function rehydrateDropShoulderWorkspaceMeasurementDiagramFromQuickEdit(
   sizing: DropShoulderQuickEditSizing,
@@ -103,6 +108,17 @@ export async function rehydrateDropShoulderWorkspaceMeasurementDiagramFromQuickE
     return false;
   }
   return dropShoulderWorkspaceRehydrateImpl(sizing, meta);
+}
+
+/**
+ * Re-render the Drop Shoulder measurement summary diagram from the current saved pattern data.
+ * Used when the sleeve-length picker choice changes (or after an edit save) so the display-only
+ * scaled sleeve length reflects the new choice — the number is recomputed via the same
+ * `scaleDropShoulderSleeveLengthInches` helper the generator uses.
+ */
+export async function refreshDropShoulderWorkspaceMeasurementSummary(): Promise<void> {
+  if (!dropShoulderWorkspaceSummaryRefreshImpl) return;
+  await dropShoulderWorkspaceSummaryRefreshImpl();
 }
 
 function readDropShoulderWorkspaceQuickEditGaugeFromDom(): string | null {
@@ -386,6 +402,32 @@ function dropShoulderArmholeDepthInchesFromMerged(
   const upperArm = parseInchesInput(merged.upperArm ?? "");
   const depth = computeDropShoulderArmholeDepthInches(upperArm);
   return depth !== undefined ? formatInchesInput(depth) : "";
+}
+
+/** Sleeve-length picker choice from the working draft style (canonical wins over builder mirror). */
+function readDropShoulderSleeveLengthChoice(): unknown {
+  const canonical = (getCurrentPattern().style ?? {}) as Record<string, unknown>;
+  const pb = (getPatternData().style ?? {}) as Record<string, unknown>;
+  return canonical.sleeveLength ?? pb.sleeveLength;
+}
+
+/**
+ * Read-only value (inch string) for a drop-shoulder display-only diagram field:
+ * - `sleeveLength`: full length (merged) scaled once by the sleeve-length picker choice.
+ * - `armholeDepth`: derived from upper arm ÷ 2.
+ */
+function dropShoulderDisplayOnlyFieldInches(
+  fieldKey: DiagramFieldKey,
+  merged: Record<DiagramFieldKey, string>,
+): string {
+  if (fieldKey === "sleeveLength") {
+    const scaled = scaleDropShoulderSleeveLengthInches(
+      parseInchesInput(merged.sleeveLength ?? ""),
+      readDropShoulderSleeveLengthChoice(),
+    );
+    return scaled !== undefined ? formatInchesInput(scaled) : "";
+  }
+  return dropShoulderArmholeDepthInchesFromMerged(merged);
 }
 
 /** Field keys rendered for the active construction (validation / collect / persist gate). */
@@ -1009,7 +1051,8 @@ function wireFieldPersistence(root: HTMLElement, getDisplayUnit: () => UiLengthU
     if (
       isDropShoulderConstruction() &&
       !suppressDropShoulderSleeveUserEditTracking &&
-      (key === "upperArm" || key === "sleeveLength" || key === "wrist")
+      // sleeveLength is picker-driven (display-only), so only the editable sleeve fields are tracked.
+      (key === "upperArm" || key === "wrist")
     ) {
       markDropShoulderSleeveOverrideKeyUserEdited(key);
     }
@@ -1116,7 +1159,7 @@ function applyDiagramUnitDisplay(
         box.querySelector(".express-mbp-box__value");
       if (valEl instanceof HTMLElement) {
         valEl.textContent = formatReadonlyMeasurementDisplay(
-          dropShoulderArmholeDepthInchesFromMerged(inchesByKey),
+          dropShoulderDisplayOnlyFieldInches(field.key, inchesByKey),
           unit,
         );
         valuesUpdated += 1;
@@ -1199,7 +1242,7 @@ async function renderDiagram(
       overlay.appendChild(
         createDiagramReadonlyFieldBox(
           field,
-          dropShoulderArmholeDepthInchesFromMerged(merged),
+          dropShoulderDisplayOnlyFieldInches(field.key, merged),
           unitForBoxes,
           { axis: field.axis, labelLines: field.labelLines },
         ),
@@ -1335,7 +1378,10 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
     diagramInches = merged;
     if (!(diagramHost instanceof HTMLElement)) return;
 
-    const renderKey = `${JSON.stringify(merged)}|${useUiUnitDisplay ? getExpressUiUnit() : "in"}|${readOnly}`;
+    // The sleeve-length picker choice scales the (display-only) sleeve length but is NOT part of
+    // `merged` (which stores the full length). Include it so changing the choice forces a re-render
+    // instead of short-circuiting on an unchanged merged snapshot.
+    const renderKey = `${JSON.stringify(merged)}|${useUiUnitDisplay ? getExpressUiUnit() : "in"}|${readOnly}|${String(readDropShoulderSleeveLengthChoice() ?? "")}`;
     const hasDiagram = !!diagramHost.querySelector(".express-mbp--diagram");
     if (renderKey === lastSummaryDiagramRenderKey && hasDiagram) {
       diagramUnitDisplayReady = true;
@@ -1589,6 +1635,11 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
     } finally {
       workspaceSummaryDiagramHydrateInFlight = false;
     }
+  };
+
+  dropShoulderWorkspaceSummaryRefreshImpl = async (): Promise<void> => {
+    await loadExpressSweaterCharts();
+    await hydrateWorkspaceSummaryDiagram();
   };
 
   void loadExpressSweaterCharts().then(hydrateWorkspaceSummaryDiagram);
