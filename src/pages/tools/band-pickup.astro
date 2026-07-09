@@ -1,0 +1,525 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
+import UnitToggle from "../../components/wizards/UnitToggle.astro";
+import FloatingInput from "../../components/tools/FloatingInput.astro";
+import PrintButton from "../../components/common/PrintButton.astro";
+import ToolResultCard from "../../components/tools/ToolResultCard.astro";
+import ToolGate from "../../components/ui/ToolGate.astro";
+import ToolPreviewGate from "../../components/ui/ToolPreviewGate.astro";
+import toolsData from "../../../data/tools.json";
+import "../../styles/wizard.css";
+
+export const prerender = true;
+
+const tools = toolsData as Array<{
+  href?: string;
+  title?: string;
+  icon?: string;
+  membersonly?: boolean;
+}>;
+const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
+const toolPrintTitle = tool?.title ?? "Band Pickup";
+---
+
+<Layout
+  title="Band Pickup | Knit by Machine"
+  description="Estimate how many stitches to pick up along a cardigan front edge for a band. Enter your band gauge and the rows along the front edge for a starting point in inches or cm."
+  toolPrintTitle={toolPrintTitle}
+>
+  <main class="wizard-page">
+    <div class="wizard-shell">
+      <WizardBackLink className="back-link" />
+
+      <section class="wizard-hero band-hero">
+        <ToolPageHeader tool={tool} fallbackTitle="Band Pickup" />
+        <h2 class="band-tagline">Skip the Math!</h2>
+        <p class="wizard-intro band-hero-intro">
+          The Band Pickup tool helps you estimate how many stitches to pick up along a cardigan front edge for a band.
+        </p>
+        <p class="wizard-intro band-hero-intro">
+          A good pickup count keeps the band lying flat - no pulling in, no rippling.
+        </p>
+      </section>
+
+      <ToolGate tool={tool} />
+
+      <ToolPreviewGate tool={tool}>
+        <div class="band-tool-wrap">
+          <div class="band-calculator-panel kbm-tool-calculator-area">
+            <form id="wizard-form" class="band-form" novalidate>
+              <div class="band-tool-layout">
+                <div class="band-input-column">
+                  <h2 class="band-form-section-title">Enter your details</h2>
+
+                  <div class="band-units-block">
+                    <UnitToggle id="band-pickup-units" />
+                  </div>
+
+                  <div class="band-input-grid">
+                    <div class="band-field">
+                      <FloatingInput
+                        id="bandStitchGauge"
+                        name="bandStitchGauge"
+                        label="Band stitch gauge"
+                        type="number"
+                        min={0.01}
+                        step={0.01}
+                        inputmode="decimal"
+                        placeholder=" "
+                      />
+                      <p class="band-field-hint">stitches per 4 in / 10 cm</p>
+                    </div>
+                    <div class="band-field">
+                      <FloatingInput
+                        id="bandRowGauge"
+                        name="bandRowGauge"
+                        label="Band row gauge"
+                        type="number"
+                        min={0.01}
+                        step={0.01}
+                        inputmode="decimal"
+                        placeholder=" "
+                      />
+                      <p class="band-field-hint">rows per 4 in / 10 cm</p>
+                    </div>
+                    <div class="band-field band-field--wide">
+                      <FloatingInput
+                        id="garmentRows"
+                        name="garmentRows"
+                        label="Garment rows along front edge"
+                        type="number"
+                        min={1}
+                        step={1}
+                        inputmode="numeric"
+                        placeholder=" "
+                      />
+                      <p class="band-field-hint">Count the rows along the edge where the band will go.</p>
+                    </div>
+                  </div>
+
+                  <div class="band-actions">
+                    <button type="submit" class="wizard-button" id="bandCalculateBtn">Calculate Pickup</button>
+                  </div>
+
+                  <div id="bandValidation" class="band-validation" role="alert" hidden></div>
+
+                  <p class="band-help-copy">
+                    Too few stitches can make the band pull in. Too many stitches can make the edge ripple.
+                  </p>
+                </div>
+
+                <aside class="band-image-panel" aria-label="Cardigan band pickup reference">
+                  <div class="band-image-panel__card">
+                    <img
+                      src="/images/tools/band-pickup.webp"
+                      alt=""
+                      class="band-reference-image"
+                      width="520"
+                      height="400"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                </aside>
+              </div>
+            </form>
+          </div>
+
+          <ToolResultCard
+            id="band-results"
+            hidden
+            title="Your band pickup"
+            resultsContentId="bandResultsContent"
+            singleColumn={true}
+          >
+            <PrintButton slot="actions" label="" ariaLabel="Print band pickup results" />
+            <div class="band-results-body">
+              <div class="band-result-row">
+                <div class="band-result-row__label">Estimated edge length</div>
+                <div class="band-result-row__value" id="edgeLengthResult"></div>
+              </div>
+              <div class="band-result-row">
+                <div class="band-result-row__label">Approximate stitches to pick up</div>
+                <div class="band-result-row__value" id="pickupStitchesResult"></div>
+              </div>
+              <p class="band-result-statement" id="pickupStatement"></p>
+              <p class="band-result-guidance">
+                This is a starting point. Adjust slightly if your band pulls in or ripples.
+              </p>
+            </div>
+          </ToolResultCard>
+
+          <section class="band-video-help" aria-label="Video help">
+            <p class="band-video-help__text">
+              Need help? Watch the short
+              <a href="/videos/2097" class="band-video-help__link">Cardigan Band Pickup video</a>.
+            </p>
+          </section>
+        </div>
+      </ToolPreviewGate>
+    </div>
+  </main>
+
+  <style>
+    .band-hero .band-tagline {
+      margin: 0.2rem 0 0.35rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--kbm-green);
+      line-height: 1.25;
+    }
+
+    .band-hero .band-hero-intro {
+      margin: 0.2rem 0;
+      max-width: 44rem;
+    }
+
+    .band-hero .band-hero-intro:last-of-type {
+      margin-bottom: 0.65rem;
+    }
+
+    .band-tool-wrap {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+
+    .band-calculator-panel {
+      background: #fff;
+      padding: 1.75rem;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 640px) {
+      .band-calculator-panel {
+        padding: 1.25rem;
+      }
+    }
+
+    .band-tool-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      align-items: start;
+    }
+
+    .band-input-column {
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .band-image-panel {
+      min-width: 0;
+      order: -1;
+      max-width: min(480px, 100%);
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    @media (min-width: 992px) {
+      .band-tool-layout {
+        grid-template-columns: minmax(0, 380px) minmax(480px, 1.65fr);
+        gap: 1.5rem 2rem;
+      }
+
+      .band-input-column {
+        max-width: 380px;
+      }
+
+      .band-image-panel {
+        order: 0;
+        max-width: none;
+        margin: 0;
+        width: auto;
+      }
+    }
+
+    .band-image-panel__card {
+      background: #fafaf8;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+      height: 100%;
+    }
+
+    .band-reference-image {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      border-radius: 8px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .band-form-section-title {
+      margin: 0 0 0.5rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #2f3a2f;
+      line-height: 1.3;
+    }
+
+    .band-units-block {
+      margin-bottom: 0.65rem;
+    }
+
+    .band-input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.65rem 1rem;
+    }
+
+    .band-field--wide {
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 640px) {
+      .band-input-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .band-field-hint {
+      margin: 0.2rem 0 0;
+      font-size: 0.8rem;
+      line-height: 1.35;
+      color: #6b7280;
+    }
+
+    .band-actions {
+      margin-top: 0.85rem;
+    }
+
+    .band-actions .wizard-button {
+      padding: 12px 22px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      background: #52682d;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .band-actions .wizard-button:hover {
+      background: #445626;
+    }
+
+    .band-validation {
+      margin-top: 1.25rem;
+      padding: 14px 18px;
+      border-left: 6px solid #d9534f;
+      background: #fff4f4;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      color: #333;
+    }
+
+    .band-validation[hidden] {
+      display: none;
+    }
+
+    .band-validation:not([hidden]) {
+      display: block;
+    }
+
+    .band-help-copy {
+      margin: 1rem 0 0;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: #4b5563;
+    }
+
+    :global(#bandResultsContent) {
+      line-height: 1.55;
+    }
+
+    .band-results-body {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .band-result-row__label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #52682d;
+      margin-bottom: 0.35rem;
+    }
+
+    .band-result-row__value {
+      font-size: 1.45rem;
+      font-weight: 700;
+      line-height: 1.3;
+      color: #1f2937;
+    }
+
+    .band-result-statement {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #2f3a2f;
+      line-height: 1.4;
+    }
+
+    .band-result-guidance {
+      margin: 0;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: #4b5563;
+    }
+
+    .band-video-help {
+      margin-top: 1.5rem;
+      padding: 1rem 1.25rem;
+      border: 1px solid #d7e2c8;
+      border-left: 4px solid var(--kbm-green, #52682d);
+      border-radius: 12px;
+      background: #f4f7ee;
+    }
+
+    .band-video-help__text {
+      margin: 0;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: #374151;
+    }
+
+    .band-video-help__link {
+      color: var(--kbm-green, #52682d);
+      font-weight: 600;
+      text-decoration: underline;
+    }
+
+    .band-video-help__link:hover {
+      color: var(--kbm-green-hover, #445925);
+    }
+  </style>
+
+  <script>
+    const form = document.getElementById("wizard-form") as HTMLFormElement | null;
+    const validationEl = document.getElementById("bandValidation");
+    const resultsCard = document.getElementById("band-results");
+    const edgeLengthResult = document.getElementById("edgeLengthResult");
+    const pickupStitchesResult = document.getElementById("pickupStitchesResult");
+    const pickupStatement = document.getElementById("pickupStatement");
+
+    if (
+      !form ||
+      !validationEl ||
+      !resultsCard ||
+      !edgeLengthResult ||
+      !pickupStitchesResult ||
+      !pickupStatement
+    ) {
+      throw new Error("Band pickup: missing DOM elements");
+    }
+
+    const formEl = form;
+    const validationElEl = validationEl;
+    const resultsCardEl = resultsCard;
+    const edgeLengthResultEl = edgeLengthResult;
+    const pickupStitchesResultEl = pickupStitchesResult;
+    const pickupStatementEl = pickupStatement;
+
+    function getUnit(): "in" | "cm" {
+      const el = document.getElementById("band-pickup-units-unit") as HTMLInputElement | null;
+      const v = el?.value?.trim();
+      return v === "cm" ? "cm" : "in";
+    }
+
+    /** Show up to two decimal places, dropping trailing zeros. */
+    function formatLength(value: number): string {
+      const rounded = Math.round(value * 100) / 100;
+      return String(rounded);
+    }
+
+    function parsePositiveNumber(raw: string): number | null {
+      const t = raw.trim();
+      if (t === "") return null;
+      const n = parseFloat(t);
+      if (Number.isNaN(n) || n <= 0) return null;
+      return n;
+    }
+
+    function validateAndCollect():
+      | { ok: true; bandStitchGauge: number; bandRowGauge: number; garmentRows: number }
+      | { ok: false; message: string } {
+      const fd = new FormData(formEl);
+      const stitchGaugeRaw = (fd.get("bandStitchGauge") ?? "").toString();
+      const rowGaugeRaw = (fd.get("bandRowGauge") ?? "").toString();
+      const garmentRowsRaw = (fd.get("garmentRows") ?? "").toString();
+
+      const bandStitchGauge = parsePositiveNumber(stitchGaugeRaw);
+      const bandRowGauge = parsePositiveNumber(rowGaugeRaw);
+      const garmentRows = parsePositiveNumber(garmentRowsRaw);
+
+      const missing: string[] = [];
+      if (bandStitchGauge === null) missing.push("band stitch gauge");
+      if (bandRowGauge === null) missing.push("band row gauge");
+      if (garmentRows === null) missing.push("garment rows along front edge");
+
+      if (missing.length > 0) {
+        return {
+          ok: false,
+          message: `Please enter every field with a number greater than zero. Check: ${missing.join(", ")}.`,
+        };
+      }
+
+      return {
+        ok: true,
+        bandStitchGauge: bandStitchGauge!,
+        bandRowGauge: bandRowGauge!,
+        garmentRows: garmentRows!,
+      };
+    }
+
+    function hideResults(): void {
+      resultsCardEl.hidden = true;
+    }
+
+    formEl.addEventListener("input", () => {
+      validationElEl.hidden = true;
+      hideResults();
+    });
+
+    formEl.addEventListener("submit", (e) => {
+      e.preventDefault();
+      validationElEl.hidden = true;
+
+      const parsed = validateAndCollect();
+      if (!parsed.ok) {
+        validationElEl.hidden = false;
+        validationElEl.textContent = parsed.message;
+        hideResults();
+        return;
+      }
+
+      const unit = getUnit();
+      const gaugeBase = unit === "cm" ? 10 : 4;
+      const unitLabel = unit === "cm" ? "cm" : "in";
+
+      const edgeLength = parsed.garmentRows / (parsed.bandRowGauge / gaugeBase);
+      const pickupStitches = Math.round(edgeLength * (parsed.bandStitchGauge / gaugeBase));
+
+      edgeLengthResultEl.textContent = `${formatLength(edgeLength)} ${unitLabel}`;
+      pickupStitchesResultEl.textContent = `${pickupStitches} stitches`;
+      pickupStatementEl.textContent = `Pick up approximately ${pickupStitches} stitches evenly along this edge.`;
+
+      resultsCardEl.hidden = false;
+      resultsCardEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    window.addEventListener("kbm:units-change", () => {
+      validationElEl.hidden = true;
+      hideResults();
+    });
+  </script>
+</Layout>

@@ -13,13 +13,13 @@ const { title, description } = Astro.props;
 
   <body>
     <div class="sales-page">
-      <header class="sales-header">
+      <header class="sales-header" data-pagefind-ignore>
         <a href="/" class="sales-logo-link" aria-label="Back to Knit it Now home">
           <img src="/KINlogo.svg" alt="Knit it Now" class="sales-logo" />
         </a>
       </header>
 
-      <main class="sales-main">
+      <main class="sales-main" data-pagefind-body>
         <slot />
       </main>
     </div>

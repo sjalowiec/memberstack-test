@@ -2,15 +2,14 @@
   {
     "id": 13,
     "title": "Band Pickup",
-    "href": "band_pickup.cfm",
+    "href": "/tools/band-pickup",
     "icon": "band_pickup.svg",
     "description": "Calculate how many stitches to pick up for cardigan bands.",
     "membersonly": true,
     "helpID": 4128,
     "category": "Buttons and Bands",
     "help_text": "Use this tool when you need to calculate how many stitches to pick up for a cardigan band.\n\nEnter the gauge of the band stitch pattern and the number of rows along the sweater front edge. The tool calculates how many stitches to pick up so the band lies flat without pulling or rippling.Use this tool when you need to calculate how many stitches to pick up for a cardigan band.\n\nWhat You Need\n• Gauge of the band stitch pattern\n• Number of rows along the sweater front edge",
-    "active": false,
-    "status": "coming-soon",
+    "active": true,
     "embeddable": false
   },
   {
@@ -99,9 +98,9 @@
     "href": "/tools/button-band-buttonholes",
     "icon": "band_pickup.svg",
     "description": "Calculate sideways-knit cardigan button bands and evenly spaced buttonhole placement instructions.",
-    "membersonly": false,
+    "membersonly": true,
     "helpID": null,
-    "category": "Design Elements",
+    "category": "Buttons and Bands",
     "help_text": "Plan vertical button bands for machine-knit cardigans, including buttonhole spacing, offsets, band dimensions, and written knitting instructions.\n\nUse this tool for sideways-knit vertical button bands: cast on across the band depth, knit rows along the band length, and work buttonholes evenly spaced across one row at the midpoint of the band. Helpful for cardigan finishing, bands, and closures.",
     "active": true,
     "embeddable": false

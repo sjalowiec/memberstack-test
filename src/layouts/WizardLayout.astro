@@ -51,7 +51,7 @@ const { title, description = "", schemaMarkup, toolPrintTitle } = Astro.props;
       />
     </div>
     
-    <div id="wizard-content" class="wizard-content">
+    <div id="wizard-content" class="wizard-content" data-pagefind-body>
       <slot />
       {toolPrintTitle && <ToolPrintFooter toolTitle={toolPrintTitle} />}
     </div>

@@ -102,7 +102,7 @@ const resolvedBodyClass = [bodyClass, onboarding ? "page--onboarding" : ""]
     })();
   </script>
 
-  <main class="site-content" style="padding-top: calc(var(--header-offset, 150px) + var(--header-buffer, 24px) + var(--kbm-env-banner-h, 0px));">
+  <main class="site-content" data-pagefind-body style="padding-top: calc(var(--header-offset, 150px) + var(--header-buffer, 24px) + var(--kbm-env-banner-h, 0px));">
     <slot />
     {onboarding && (
       <nav class="onboarding-skip" aria-label="Skip onboarding">

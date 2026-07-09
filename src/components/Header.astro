@@ -1531,19 +1531,35 @@ const memberPlanIds = [...MEMBER_PLAN_IDS];
 
 .search-modal__content {
   position: relative;
-  max-width: 420px;
-  margin: 10% auto;
+  width: min(680px, calc(100vw - 24px));
+  max-height: min(88vh, 760px);
+  margin: 6vh auto;
   background: #fff;
-  padding: 24px;
-  border-radius: 12px;
+  padding: 20px 22px 14px;
+  border-radius: 16px;
   z-index: 1;
-  text-align: center;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+}
+
+@media (max-width: 640px) {
+  .search-modal__content {
+    margin: 0;
+    width: 100%;
+    max-height: 100vh;
+    height: 100dvh;
+    border-radius: 0;
+    padding: 16px 16px 10px;
+  }
 }
 
 .search-modal__content h3 {
-  margin: 0 0 12px;
+  margin: 0 4px 12px 0;
   font-size: 1.25rem;
   color: var(--kbm-green, #243015);
+  flex: 0 0 auto;
 }
 
 .search-modal__content p {
@@ -1580,6 +1596,236 @@ const memberPlanIds = [...MEMBER_PLAN_IDS];
   opacity: 0.75;
 }
 
+/* ------------------------------------------------------------------ */
+/* Custom site-wide search results (Pagefind JS API, presentation only) */
+/* ------------------------------------------------------------------ */
+.pagefind-search {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.kin-search__form {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.kin-search__icon {
+  position: absolute;
+  left: 14px;
+  display: inline-flex;
+  color: var(--text-muted, #6b7280);
+  pointer-events: none;
+}
+.kin-search__icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.kin-search__input {
+  width: 100%;
+  font: inherit;
+  font-size: 1.0625rem;
+  padding: 13px 14px 13px 44px;
+  border: 2px solid var(--ring, #e5e8e0);
+  border-radius: 12px;
+  background: var(--page-bg, #f7f8f7);
+  color: #1f2417;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.kin-search__input::placeholder {
+  color: var(--text-muted, #6b7280);
+}
+.kin-search__input:focus {
+  outline: none;
+  border-color: var(--kbm-green, #52682d);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.15);
+}
+
+.kin-search__hint {
+  margin: 26px 4px 14px;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--text-muted-strong, #556070);
+  flex: 0 0 auto;
+}
+.kin-search__hint b {
+  font-weight: 600;
+}
+
+.kin-search__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 4px;
+  flex: 0 0 auto;
+}
+
+.kin-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 9px 13px;
+  min-height: 38px;
+  border: 1.5px solid var(--ring, #e5e8e0);
+  border-radius: 999px;
+  background: #fff;
+  color: #3a4230;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.kin-chip:hover {
+  border-color: var(--kbm-green-2, #738c52);
+}
+.kin-chip:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+}
+.kin-chip.is-active {
+  background: var(--kbm-green, #52682d);
+  border-color: var(--kbm-green, #52682d);
+  color: #fff;
+}
+.kin-chip__count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.08);
+  color: inherit;
+}
+.kin-chip.is-active .kin-chip__count {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.kin-search__status {
+  margin: 12px 4px;
+  color: var(--text-muted, #6b7280);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  flex: 0 0 auto;
+}
+.kin-search__status a {
+  color: var(--kbm-green, #52682d);
+  font-weight: 600;
+}
+/* Suggestion keywords shown in the "no good matches" empty state. */
+.kin-search__suggestions {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.kin-search__suggestions li {
+  background: var(--kbm-green-050, #eef2e6);
+  color: var(--kbm-green, #52682d);
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.kin-search__results {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 4px 2px 8px;
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1 1 auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.kin-result + .kin-result {
+  border-top: 1px solid var(--ring, #e5e8e0);
+}
+
+.kin-result__link {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 17px 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+.kin-result__link:hover {
+  background: rgba(82, 104, 45, 0.06);
+}
+.kin-result__link:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: -2px;
+}
+
+/* Icon + title share one line; title is the visual focus */
+.kin-result__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.kin-result__icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--kbm-green, #52682d);
+}
+.kin-result__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.kin-result__title {
+  min-width: 0;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--kbm-green, #243015);
+}
+.kin-result__link:hover .kin-result__title {
+  text-decoration: underline;
+}
+
+.kin-result__excerpt {
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #4a5140;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.kin-result__excerpt mark {
+  background: rgba(184, 134, 11, 0.08);
+  color: inherit;
+  font-weight: inherit;
+  padding: 0;
+  border-radius: 2px;
+}
+
+/* Category icon tint (no background block) */
+.kin-result__icon--courses   { color: #52682d; }
+.kin-result__icon--videos    { color: #b0503d; }
+.kin-result__icon--tools     { color: #3f6f8f; }
+.kin-result__icon--reference { color: #6b5b95; }
+.kin-result__icon--glossary  { color: #2f8f83; }
+.kin-result__icon--help      { color: #9c7209; }
+.kin-result__icon--guide     { color: #5a634e; }
+
 /* Memberstack overlay (try common selectors) */
 .ms-modal__overlay,
 .ms-overlay,
@@ -1598,7 +1844,7 @@ div[data-ms-modal-overlay] {
 </style>
 
 
-<section class="kbm-header-wrap">
+<section class="kbm-header-wrap" data-pagefind-ignore>
   <!-- Billboard strip above main nav 
   <div class="kbm-billboard" data-testid="welcome-intro-wrapper">
     <div class="kbm-billboard-inner">
@@ -1863,26 +2109,15 @@ div[data-ms-modal-overlay] {
   )}
 </section>
 
-<div id="searchModal" class="search-modal" aria-hidden="true">
+<div id="searchModal" class="search-modal" aria-hidden="true" data-pagefind-ignore>
   <div class="search-modal__overlay" id="closeSearchModal"></div>
 
   <div class="search-modal__content" role="dialog" aria-modal="true" aria-labelledby="searchModalTitle">
     <button type="button" class="search-modal__close" id="closeSearchModalBtn" aria-label="Close">×</button>
 
-    <h3 id="searchModalTitle">Site-wide search is coming</h3>
+    <h3 id="searchModalTitle">Search Knit it Now</h3>
 
-    <p>
-      You’ll soon be able to search across everything — videos, tips, and more.
-    </p>
-
-    <p>
-      For now, try one of these:
-    </p>
-
-    <div class="search-modal__actions">
-      <a href="/video-search" class="kbm-btn kbm-btn-primary">Search Videos</a>
-      <a href="/help-hub" class="kbm-btn kbm-btn-outline">Browse Help Hub</a>
-    </div>
+    <div id="pagefind-search" class="pagefind-search"></div>
   </div>
 </div>
 
@@ -2302,15 +2537,375 @@ div[data-ms-modal-overlay] {
     const overlay = document.getElementById("closeSearchModal");
     const closeBtn = document.getElementById("closeSearchModalBtn");
 
-    function menuDrawerOpen() {
-      return document.querySelector(".kbm-nav-row")?.classList.contains("mobile-open");
+    // Custom site-wide search results (presentation only).
+    // We drive Pagefind's own JS API (/pagefind/pagefind.js) so we can render a
+    // clean, scannable layout with category icons/labels + filter chips, instead
+    // of the generic default PagefindUI. The index/search logic is unchanged.
+    // The /pagefind/ assets only exist after `pagefind --site dist` runs
+    // post-build, so we load on demand and fail gracefully on pages/dev.
+    let pagefindRequested = false;
+    function loadPagefind() {
+      if (pagefindRequested) return;
+      pagefindRequested = true;
+
+      const root = document.getElementById("pagefind-search");
+      if (!root) return;
+
+      const svg = (paths) =>
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        paths + "</svg>";
+
+      const ICONS = {
+        search: svg('<circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>'),
+        // Graduation cap
+        courses: svg('<path d="M3 9l9-4 9 4-9 4-9-4z"/><path d="M7 11v4.4c0 1 2.2 2.6 5 2.6s5-1.6 5-2.6V11"/><path d="M21 9v4.5"/>'),
+        // Play button
+        videos: svg('<circle cx="12" cy="12" r="9"/><path d="M10 8.3l6 3.7-6 3.7z"/>'),
+        // Sliders / adjustments
+        tools: svg('<line x1="4" y1="7" x2="12" y2="7"/><line x1="16" y1="7" x2="20" y2="7"/><circle cx="14" cy="7" r="2"/><line x1="4" y1="12" x2="8" y2="12"/><line x1="12" y1="12" x2="20" y2="12"/><circle cx="10" cy="12" r="2"/><line x1="4" y1="17" x2="12" y2="17"/><line x1="16" y1="17" x2="20" y2="17"/><circle cx="14" cy="17" r="2"/>'),
+        // Open book
+        reference: svg('<path d="M12 6C10.4 5 8 4.5 5 4.5c-1 0-2 .2-2 .2v13s1-.2 2-.2c3 0 5.4.5 7 1.5"/><path d="M12 6c1.6-1 4-1.5 7-1.5 1 0 2 .2 2 .2v13s-1-.2-2-.2c-3 0-5.4.5-7 1.5z"/><line x1="12" y1="6" x2="12" y2="19"/>'),
+        // Tag / label
+        glossary: svg('<path d="M20.5 12.3l-7.2 7.2a1.6 1.6 0 0 1-2.3 0l-6.7-6.7V4.5h8.3l7.9 7.8z"/><circle cx="8.3" cy="8.3" r="1.3"/>'),
+        // Question mark in a circle
+        help: svg('<circle cx="12" cy="12" r="9"/><path d="M9.6 9.3c0-1.4 1.1-2.3 2.5-2.3s2.4 1 2.4 2.2c0 1.1-.8 1.6-1.6 2.2-.7.5-1 .9-1 1.8v.3"/><line x1="12" y1="16.6" x2="12" y2="16.7"/>'),
+        // Document
+        guide: svg('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="16" x2="13" y2="16"/>'),
+      };
+
+      // Category config. `label` is the per-result badge label (singular),
+      // `plural` is the filter-chip label. New categories can be added here and
+      // wired into categorize() below without touching search/indexing.
+      const CATEGORY_ORDER = ["courses", "videos", "tools", "reference", "glossary", "help", "guide"];
+      const CATEGORIES = {
+        courses:   { label: "Course",    plural: "Courses",    icon: ICONS.courses },
+        videos:    { label: "Video",     plural: "Videos",     icon: ICONS.videos },
+        tools:     { label: "Tool",      plural: "Tools",      icon: ICONS.tools },
+        reference: { label: "Reference", plural: "Reference",  icon: ICONS.reference },
+        glossary:  { label: "Glossary",  plural: "Glossary",   icon: ICONS.glossary },
+        help:      { label: "Help Hub",  plural: "Help Hubs",  icon: ICONS.help },
+        guide:     { label: "Guide",     plural: "Guides",     icon: ICONS.guide },
+      };
+
+      // Infer category from the result URL path (presentation-only).
+      function categorize(url) {
+        const path = String(url || "").split(/[?#]/)[0].toLowerCase();
+        if (/^\/courses(\/|$)/.test(path) || /^\/lessons(\/|$)/.test(path)) return "courses";
+        if (/^\/videos?(\/|$)/.test(path) || /^\/video-search(\/|$)/.test(path) ||
+            /^\/ready-set-knit(\/|$)/.test(path) || /^\/stitch(\/|$)/.test(path)) return "videos";
+        if (/^\/tools(\/|$)/.test(path)) return "tools";
+        if (/^\/reference(\/|$)/.test(path)) return "reference";
+        if (/^\/glossary(\/|$)/.test(path)) return "glossary";
+        if (/^\/help-hub(\/|$)/.test(path)) return "help";
+        return "guide";
+      }
+
+      function titleFromUrl(url) {
+        const path = String(url || "").split(/[?#]/)[0].replace(/\/$/, "");
+        const last = path.split("/").filter(Boolean).pop() || "Page";
+        return last.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      }
+
+      function escapeHtml(s) {
+        return String(s == null ? "" : s)
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function stripTags(s) {
+        return String(s == null ? "" : s).replace(/<[^>]*>/g, "");
+      }
+
+      // Drop the first `count` visible characters from an HTML string while
+      // preserving/removing tags cleanly (used to trim a leading title echo).
+      function removeLeadingVisible(html, count) {
+        let removed = 0;
+        let i = 0;
+        while (i < html.length && removed < count) {
+          const ch = html[i];
+          if (ch === "<") {
+            const close = html.indexOf(">", i);
+            if (close === -1) break;
+            i = close + 1; // skip the tag; tags aren't visible characters
+            continue;
+          }
+          if (ch === "&") {
+            const semi = html.indexOf(";", i);
+            if (semi !== -1 && semi - i <= 9) {
+              removed += 1;
+              i = semi + 1;
+              continue;
+            }
+          }
+          removed += 1;
+          i += 1;
+        }
+        // Drop any now-orphaned leading closing tags and separators.
+        return html.slice(i).replace(/^(?:\s*<\/[^>]+>)+/, "").trim();
+      }
+
+      // Presentation-only tidy of Pagefind excerpts: strip a leading
+      // "← Back to …" breadcrumb and a leading echo of the page title so the
+      // snippet leads with useful content. Never touches source/indexing.
+      function cleanExcerpt(html, title) {
+        if (!html) return "";
+        let out = String(html).trim();
+
+        out = out.replace(
+          /^(?:<[^>]+>\s*)*(?:←|&larr;|&#8592;|&#x2190;|«)?\s*Back to\b[^.<]*?(?:[.•·|–—-]+\s*|\s{2,}|(?=<))/i,
+          ""
+        ).trim();
+
+        if (title) {
+          const t = title.replace(/\s+/g, " ").trim();
+          const plain = stripTags(out).replace(/\s+/g, " ").trim();
+          if (t && plain.toLowerCase().startsWith(t.toLowerCase())) {
+            out = removeLeadingVisible(out, t.length)
+              .replace(/^\s*[-–—:.|•·]+\s*/, "")
+              .trim();
+          }
+        }
+
+        return out;
+      }
+
+      root.innerHTML =
+        '<form class="kin-search__form" role="search">' +
+        '<span class="kin-search__icon">' + ICONS.search + "</span>" +
+        '<input type="search" class="kin-search__input" autocomplete="off" ' +
+        'placeholder="Search courses, videos, tools\u2026" aria-label="Search Knit it Now">' +
+        "</form>" +
+        '<p class="kin-search__hint"><b>Tip:</b> Search works best with a few keywords. ' +
+        "If you don\u2019t find what you need, try fewer words or a simpler search.</p>" +
+        '<div class="kin-search__filters" role="group" aria-label="Filter results by type"></div>' +
+        '<p class="kin-search__status" role="status" aria-live="polite">Start typing to search across Knit it Now.</p>' +
+        '<ul class="kin-search__results" aria-label="Search results"></ul>';
+
+      const input = root.querySelector(".kin-search__input");
+      const form = root.querySelector(".kin-search__form");
+      const filtersEl = root.querySelector(".kin-search__filters");
+      const statusEl = root.querySelector(".kin-search__status");
+      const listEl = root.querySelector(".kin-search__results");
+
+      let pagefind = null;
+      let allResults = [];
+      let activeFilter = "all";
+      let currentTerm = "";
+
+      // ---- Search-result QUALITY FILTER (UX-only, not a Pagefind change) ----
+      // Pagefind will happily match tiny fragments (single letters, generic
+      // words) for weak/garbage queries, which makes search feel broken. The
+      // helpers below decide, purely in the presentation layer, whether the
+      // results are worth showing. This does NOT touch the Pagefind index or
+      // the search query — it only gates what we render after results return.
+      //
+      // Quality is judged from the ACTUAL MATCHED TERMS Pagefind returns (the
+      // <mark> highlights in the result excerpts), NOT from the raw query. We
+      // require at least one matched token that is 3+ characters and not a
+      // generic UI word. If every match is a single character or a generic
+      // word, we treat the results as noise and show the empty state.
+      //
+      // MIN_GOOD_RESULT_SCORE is a secondary, conservative guard on Pagefind's
+      // relative relevance score (higher = better). Tune it if weak matches
+      // still slip through.
+      const MIN_GOOD_RESULT_SCORE = 0.05;
+
+      // Generic UI/helper words that shouldn't count as a "real" match.
+      const GENERIC_WORDS = new Set([
+        "search", "another", "result", "results", "showing", "try",
+        "word", "words", "keyword", "keywords", "clear", "filter", "filters",
+      ]);
+
+      // Lowercase, strip punctuation, split into tokens.
+      function tokenize(text) {
+        return String(text || "")
+          .toLowerCase()
+          .replace(/[^\p{L}\p{N}\s]+/gu, " ")
+          .split(/\s+/)
+          .filter(Boolean);
+      }
+
+      // A token counts as meaningful when it is 3+ chars and not generic.
+      function isMeaningfulToken(t) {
+        return t.length >= 3 && !GENERIC_WORDS.has(t);
+      }
+
+      // Pull the actual matched terms out of Pagefind result data by reading
+      // the <mark>…</mark> highlights in each excerpt (and any sub-result
+      // excerpts). These are the words Pagefind actually matched on.
+      function matchedTermsFrom(dataItems) {
+        const terms = [];
+        const collect = (html) => {
+          const re = /<mark[^>]*>([\s\S]*?)<\/mark>/gi;
+          let m;
+          while ((m = re.exec(String(html || "")))) {
+            terms.push(...tokenize(stripTags(m[1])));
+          }
+        };
+        (dataItems || []).forEach((d) => {
+          if (!d) return;
+          collect(d.excerpt);
+          (d.sub_results || []).forEach((s) => collect(s && s.excerpt));
+        });
+        return terms;
+      }
+
+      // Good quality requires at least one matched term that is 3+ chars and
+      // not a generic word. Single-character or generic-only matches → poor.
+      function hasGoodMatchedTerm(dataItems) {
+        return matchedTermsFrom(dataItems).some(isMeaningfulToken);
+      }
+
+      // Empty state shown for weak/garbage queries: hide filter pills + cards
+      // (so we never show misleading counts like "All 6") and guide the user
+      // toward stronger knitting keywords.
+      function showNoGoodMatches(term) {
+        allResults = [];
+        activeFilter = "all";
+        filtersEl.innerHTML = "";
+        filtersEl.style.display = "none";
+        listEl.innerHTML = "";
+        statusEl.innerHTML =
+          "No matches found for \u201C" + escapeHtml(term) + "\u201D.<br>" +
+          "Search works best with one or two knitting keywords.<br><br>" +
+          "Try searching for:" +
+          '<ul class="kin-search__suggestions">' +
+          "<li>tuck</li><li>ribbing</li><li>band pickup</li>" +
+          "<li>LK150</li><li>punchcard</li>" +
+          "</ul>";
+        statusEl.style.display = "";
+      }
+
+      function setStatusText(msg) {
+        statusEl.textContent = msg || "";
+        statusEl.style.display = msg ? "" : "none";
+      }
+      function showUnavailable() {
+        allResults = [];
+        filtersEl.innerHTML = "";
+        filtersEl.style.display = "none";
+        listEl.innerHTML = "";
+        statusEl.innerHTML =
+          "Search isn\u2019t available yet. Try <a href=\"/video-search\">Search Videos</a> or <a href=\"/help-hub\">Browse the Help Hub</a>.";
+        statusEl.style.display = "";
+      }
+
+      async function getPagefind() {
+        if (pagefind) return pagefind;
+        pagefind = await import("/pagefind/pagefind.js");
+        return pagefind;
+      }
+
+      function render() {
+        const counts = {};
+        allResults.forEach((r) => { counts[r.cat] = (counts[r.cat] || 0) + 1; });
+        if (activeFilter !== "all" && !counts[activeFilter]) activeFilter = "all";
+
+        const chips = [{ key: "all", label: "All", count: allResults.length }];
+        CATEGORY_ORDER.forEach((k) => {
+          if (counts[k]) chips.push({ key: k, label: CATEGORIES[k].plural, count: counts[k] });
+        });
+        filtersEl.style.display = allResults.length ? "" : "none";
+        filtersEl.innerHTML = chips
+          .map((c) =>
+            '<button type="button" class="kin-chip' + (c.key === activeFilter ? " is-active" : "") +
+            '" data-filter="' + c.key + '" aria-pressed="' + (c.key === activeFilter) + '">' +
+            escapeHtml(c.label) + '<span class="kin-chip__count">' + c.count + "</span></button>")
+          .join("");
+
+        const items = activeFilter === "all"
+          ? allResults
+          : allResults.filter((r) => r.cat === activeFilter);
+        listEl.innerHTML = items
+          .map((r) => {
+            const cat = CATEGORIES[r.cat] || CATEGORIES.guide;
+            return '<li class="kin-result"><a class="kin-result__link" href="' + escapeHtml(r.url) + '">' +
+              '<span class="kin-result__title-row">' +
+              '<span class="kin-result__icon kin-result__icon--' + r.cat + '">' + cat.icon + "</span>" +
+              '<span class="kin-result__title">' + escapeHtml(r.title) + "</span>" +
+              "</span>" +
+              '<span class="kin-result__excerpt">' + (r.excerpt || "") + "</span>" +
+              "</a></li>";
+          })
+          .join("");
+      }
+
+      filtersEl.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-filter]");
+        if (!btn) return;
+        activeFilter = btn.getAttribute("data-filter");
+        render();
+      });
+
+      async function runSearch(term) {
+        currentTerm = term;
+        if (!term.trim()) {
+          allResults = [];
+          activeFilter = "all";
+          render();
+          setStatusText("Start typing to search across Knit it Now.");
+          return;
+        }
+        setStatusText("Searching\u2026");
+        let pf;
+        try {
+          pf = await getPagefind();
+        } catch (err) {
+          showUnavailable();
+          return;
+        }
+        let search;
+        try {
+          search = await pf.debouncedSearch(term, {}, 200);
+        } catch (err) {
+          showUnavailable();
+          return;
+        }
+        if (search === null) return; // superseded by a newer keystroke
+        if (term !== currentTerm) return; // stale
+
+        const data = await Promise.all(search.results.slice(0, 30).map((r) => r.data()));
+        if (term !== currentTerm) return;
+
+        // UX quality gate (presentation-only): judge quality from the ACTUAL
+        // matched terms Pagefind returned (not the raw query). Require at least
+        // one matched token of 3+ chars that isn't a generic UI word, plus a
+        // conservative relevance-score guard. If it's all single letters or
+        // generic words, show the empty state instead of noisy cards/counts.
+        // The Pagefind index/query are untouched — we just don't show noise.
+        const topScore = search.results.length ? search.results[0].score : 0;
+        if (!hasGoodMatchedTerm(data) || !(topScore >= MIN_GOOD_RESULT_SCORE)) {
+          showNoGoodMatches(term);
+          return;
+        }
+
+        allResults = data.map((d) => {
+          const title = (d.meta && d.meta.title) || titleFromUrl(d.url);
+          return {
+            url: d.url,
+            title,
+            excerpt: cleanExcerpt(d.excerpt, title),
+            cat: categorize(d.url),
+          };
+        });
+        render();
+        setStatusText(
+          allResults.length ? "" : "No results for \u201C" + term + "\u201D. Try a different word."
+        );
+      }
+
+      form.addEventListener("submit", (e) => e.preventDefault());
+      input.addEventListener("input", () => runSearch(input.value));
     }
 
     function openModal() {
       if (!modal) return;
+      loadPagefind();
       modal.classList.add("active");
       modal.setAttribute("aria-hidden", "false");
       document.body.style.overflow = "hidden";
+      const input = document.querySelector("#pagefind-search input");
+      if (input) input.focus();
     }
 
     function closeModal() {

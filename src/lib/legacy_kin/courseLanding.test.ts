@@ -15,8 +15,8 @@ describe("courseLanding", () => {
   it("loads landing data for a known course slug", () => {
     const landing = getCourseLandingBySlug("lk-150-quick-start");
     expect(landing?.title).toBe("LK-150 Quick Start");
-    expect(landing?.contentStatus).toBe("in_progress");
-    expect(landing?.contentStatusLabel).toBe("Being updated");
+    expect(landing?.contentStatus).toBe("cleaned");
+    expect(landing?.contentStatusLabel).toBe("Ready");
     expect(landing?.interestTag).toBe("course-interest-lk-150-quick-start");
   });
 
@@ -26,6 +26,15 @@ describe("courseLanding", () => {
     expect(landing?.contentStatus).toBe("cleaned");
     expect(landing?.contentStatusLabel).toBe("Ready");
     expect(landing?.startHref).toMatch(/^\/courses\/legacy\/ribber-basic-bootcamp\//);
+  });
+
+  it("falls back to the courses-catalog blurb when the course JSON has no description", () => {
+    // not-enough-needles has no description in its cleaned course JSON, so the
+    // landing page (and Pagefind) should surface the curated catalog blurb.
+    const landing = getCourseLandingBySlug("not-enough-needles");
+    expect(landing?.description).toBe(
+      "Strategies for when your machine does not have enough needles for the width you want to knit.",
+    );
   });
 
   it("returns undefined for unknown slugs", () => {

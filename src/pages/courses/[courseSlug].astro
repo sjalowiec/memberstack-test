@@ -2,13 +2,24 @@
 import Layout from "../../layouts/Layout.astro";
 import CourseAccessGate from "../../components/courses/CourseAccessGate.astro";
 import { getCourseLandingBySlug } from "../../lib/legacy_kin/courseLanding";
+import { getLegacyCourses } from "../../lib/legacy_kin/legacyCourseLoader";
 
-export const prerender = false;
+export const prerender = true;
+
+// Prerender one static landing page per PUBLIC course only. getLegacyCourses()
+// filters by isLegacyCoursePublic, so draft/unpublished/invalid slugs are never
+// generated — invalid slugs 404 naturally (page not built) with no runtime check.
+export function getStaticPaths() {
+  return getLegacyCourses().map((course) => ({
+    params: { courseSlug: course.slug },
+  }));
+}
 
 const courseSlug = Astro.params.courseSlug ?? "";
 const landing = getCourseLandingBySlug(courseSlug);
 
 if (!landing) {
+  // Safety net only: getStaticPaths never emits an unknown slug.
   return new Response("Course not found", { status: 404 });
 }
 
@@ -120,16 +131,21 @@ const statusClass =
               </div>
             </section>
           ) : (
-            <CourseAccessGate access={landing.access} courseSlug={landing.slug}>
-              <section slot="content" class="course-landing__access">
-                <a class="kbm-btn kbm-btn-accent course-landing__start" href={landing.startHref}>
-                  Start course
-                </a>
-                <p class="course-landing__access-note">
-                  Opens the lesson player for this course.
-                </p>
-              </section>
-            </CourseAccessGate>
+            // Access/CTA region is excluded from Pagefind: it holds gating UI and
+            // (for premium) a hidden CourseAccessGate content slot — never index
+            // gated/member-only content, only the public landing copy above.
+            <div data-pagefind-ignore>
+              <CourseAccessGate access={landing.access} courseSlug={landing.slug}>
+                <section slot="content" class="course-landing__access">
+                  <a class="kbm-btn kbm-btn-accent course-landing__start" href={landing.startHref}>
+                    Start course
+                  </a>
+                  <p class="course-landing__access-note">
+                    Opens the lesson player for this course.
+                  </p>
+                </section>
+              </CourseAccessGate>
+            </div>
           )
         }
       </div>
