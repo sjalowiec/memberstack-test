@@ -26,6 +26,13 @@ export const ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS =
  */
 export const ACTIVE_SHOULDER_REVERSE_NECKLINE_ONLY_EMPHASIS = "reversing the neckline shaping";
 
+/**
+ * Explicit reminder placed at the start of the drop-shoulder front neckline/shoulder section
+ * (straight shoulders). Not used for sleeveless, whose shoulders are shaped.
+ */
+export const DROP_SHOULDER_NO_SHOULDER_SHAPING_NOTE =
+  "Drop-shoulder shoulders are worked straight. There is no shoulder shaping in this pattern.";
+
 export const ACTIVE_SHOULDER_CHART_INTRO_SENTENCE =
   `Follow the checklist row by row for the first shoulder. Then return the held stitches to the machine and work the second shoulder, ${ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS} so that neckline shaping remains on the neck edge and shoulder shaping remains on the shoulder edge.`;
 

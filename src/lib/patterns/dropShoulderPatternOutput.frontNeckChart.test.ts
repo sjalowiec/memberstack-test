@@ -7,7 +7,11 @@ import {
   initialNeckBindOffFromNeckShoulderChart,
 } from "./sleevelessPatternOutput";
 import { cardiganFrontInitialNeckBindOffStitches } from "./roundNeckNotation";
-import { renderNeckShoulderShapingChartTableOnlyHtml } from "./neckShoulderShapingChartHtml";
+import {
+  renderActiveShoulderChartIntroHtml,
+  renderNeckShoulderShapingChartTableOnlyHtml,
+} from "./neckShoulderShapingChartHtml";
+import { DROP_SHOULDER_NO_SHOULDER_SHAPING_NOTE } from "./neckShoulderActiveIntroCopy";
 import { armholeLocalRcActiveShoulderChecklistStart } from "./neckShoulderActiveSideChecklist";
 
 const DROP_SHOULDER_BASE = {
@@ -94,6 +98,45 @@ describe("drop-shoulder front neckline shaping chart", () => {
     expect(html).toContain("cut the yarn");
     expect(html).toContain("reversing the neckline shaping");
     expect(html).toContain("so it remains on the neck edge");
+  });
+
+  it("opens the front neckline/shoulder intro with the no-shoulder-shaping note (straight shoulders)", () => {
+    const result = generateDropShoulderPattern(DROP_SHOULDER_BASE);
+
+    const intro = renderActiveShoulderChartIntroHtml({
+      localStartRcLabel: "RC:000",
+      centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(
+        result.frontNeckShoulderShapingChart,
+      ),
+      chart: result.frontNeckShoulderShapingChart,
+      shouldersShaped: false,
+      wrapperClass: "pattern-shaping-intro",
+      layout: "labeled",
+    });
+
+    expect(intro).toContain(DROP_SHOULDER_NO_SHOULDER_SHAPING_NOTE);
+    // Appears exactly once, before the neckline shaping instructions/chart.
+    expect(intro.split(DROP_SHOULDER_NO_SHOULDER_SHAPING_NOTE)).toHaveLength(2);
+    expect(intro.indexOf(DROP_SHOULDER_NO_SHOULDER_SHAPING_NOTE)).toBeLessThan(
+      intro.indexOf("neckline"),
+    );
+  });
+
+  it("omits the no-shoulder-shaping note when shoulders are shaped (sleeveless default)", () => {
+    const result = generateDropShoulderPattern(DROP_SHOULDER_BASE);
+
+    const introShaped = renderActiveShoulderChartIntroHtml({
+      localStartRcLabel: "RC:000",
+      centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(
+        result.frontNeckShoulderShapingChart,
+      ),
+      chart: result.frontNeckShoulderShapingChart,
+      wrapperClass: "pattern-shaping-intro",
+      layout: "labeled",
+    });
+
+    expect(introShaped).not.toContain(DROP_SHOULDER_NO_SHOULDER_SHAPING_NOTE);
+    expect(introShaped).not.toMatch(/no shoulder shaping/i);
   });
 
   it("includes chart for pullover V-neck", () => {
