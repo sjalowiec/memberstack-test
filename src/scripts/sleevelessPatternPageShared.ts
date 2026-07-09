@@ -3877,6 +3877,11 @@ table {
     return document.querySelector(".sleeveless-pattern-page .pattern-tabs");
   }
 
+  function summaryMetaFromCurrentDraft() {
+    const cur = getCurrentPattern();
+    return { createdAt: cur.createdAt, updatedAt: cur.updatedAt };
+  }
+
   function updateSleevelessPrintBasicsSummarySlot(patternMerged, patternData, validationOk) {
     const body = document.querySelector("[data-sg-pattern-print-basics-body]");
     if (!(body instanceof HTMLElement)) return;
@@ -3884,7 +3889,11 @@ table {
       body.innerHTML = "";
       return;
     }
-    body.innerHTML = buildSleevelessPrintBasicsSummaryDlHtml(patternMerged, patternData);
+    body.innerHTML = buildSleevelessPrintBasicsSummaryDlHtml(
+      patternMerged,
+      patternData,
+      summaryMetaFromCurrentDraft(),
+    );
   }
 
   function renderExpressNeedleHardStop(needleCheck) {
@@ -3925,7 +3934,9 @@ table {
 
     const introEl = document.querySelector("[data-sg-pattern-intro]");
     if (introEl instanceof HTMLElement) {
-      introEl.innerHTML = validation.ok ? buildSleevelessScreenBasicsSummaryDlHtml(patternMerged, patternData) : "";
+      introEl.innerHTML = validation.ok
+        ? buildSleevelessScreenBasicsSummaryDlHtml(patternMerged, patternData, summaryMetaFromCurrentDraft())
+        : "";
     }
 
     /**
@@ -4025,7 +4036,10 @@ table {
 
     const introEl = document.querySelector("[data-sg-pattern-intro]");
     if (introEl instanceof HTMLElement) {
-      introEl.innerHTML = buildSleevelessScreenBasicsSummaryDlHtml(patternMerged, patternData);
+      introEl.innerHTML = buildSleevelessScreenBasicsSummaryDlHtml(patternMerged, patternData, {
+        createdAt: canon.createdAt,
+        updatedAt: canon.updatedAt,
+      });
     }
 
     const genInput = buildGeneratorPatternDataFromSources(patternMerged, goldenPb);

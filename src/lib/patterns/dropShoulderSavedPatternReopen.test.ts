@@ -150,7 +150,7 @@ describe("drop-shoulder saved pattern reopen routing", () => {
         { chartAudience: "kids", neckline: "round", garmentStyle: "pullover", selectedSize: "2 yr" },
         DROP_SHOULDER_PATTERN_FAMILY_NAME,
       ),
-    ).toBe("Drop Shoulder Pullover - Child's Size 2 yr Round Neck");
+    ).toBe("Kids' Drop Shoulder");
 
     const meta = refreshAutoPatternProjectTitle({
       chartAudience: "kids",

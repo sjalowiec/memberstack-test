@@ -89,42 +89,38 @@ function readExpressValues(): Record<string, string> {
   return {};
 }
 
-function possessiveAudienceLabel(who: string, chartAudience?: string): string {
+/**
+ * Audience prefix for auto-generated default names: "Women's", "Men's", "Kids'", "Baby".
+ * Returns "" when the audience cannot be determined (title then falls back to the family name only).
+ */
+function audiencePrefixLabel(who: string, chartAudience?: string): string {
   const w = who.trim().toLowerCase();
-  if (w === "women" || w === "woman") return "Women's";
+  if (w === "women" || w === "woman" || w === "misses" || w === "plus") return "Women's";
   if (w === "men" || w === "man") return "Men's";
-  if (w === "kids" || w === "kid" || w === "child") return "Child's";
-  if (w === "baby") return "Baby's";
+  if (w === "kids" || w === "kid" || w === "child" || w === "children") return "Kids'";
+  if (w === "baby" || w === "babies") return "Baby";
 
   const aud = String(chartAudience ?? "").trim().toLowerCase();
   if (aud === "men") return "Men's";
-  if (aud === "kids") return "Child's";
-  if (aud === "baby") return "Baby's";
-  if (aud === "misses" || aud === "plus") return "Women's";
-  return "Sleeveless";
+  if (aud === "kids") return "Kids'";
+  if (aud === "baby") return "Baby";
+  if (aud === "misses" || aud === "plus" || aud === "women") return "Women's";
+  return "";
 }
 
-function necklineTitlePart(neckline: string): string {
-  const n = neckline.trim().toLowerCase();
-  if (n === "v-neck" || n === "v") return "V-Neck";
-  return "Round Neck";
-}
-
-function garmentTitlePart(garmentStyle: string | undefined): string {
-  return garmentStyle === "cardigan" ? "Cardigan" : "Pullover";
-}
-
-/** User-facing default pattern name from design selections. */
+/**
+ * User-facing default pattern name from the high-level pattern description only.
+ *
+ * Uses just the audience/category and the pattern family (e.g. "Women's Drop Shoulder",
+ * "Baby Sleeveless"). Editable configuration (neckline, fit, sleeve length, gauge, size,
+ * pullover/cardigan) is intentionally excluded so the name stays stable while the pattern is edited.
+ */
 export function buildDefaultSleevelessPatternTitle(
   ctx: SleevelessPatternTitleContext,
   patternFamily: string = SLEEVELESS_PATTERN_FAMILY_NAME,
 ): string {
-  const audience = possessiveAudienceLabel(ctx.who ?? "", ctx.chartAudience);
-  const neck = necklineTitlePart(ctx.neckline ?? "round");
-  const garment = garmentTitlePart(ctx.garmentStyle);
-  const size = String(ctx.selectedSize ?? "").trim();
-  const audienceSize = size ? `${audience} Size ${size}` : audience;
-  return `${patternFamily} ${garment} - ${audienceSize} ${neck}`;
+  const audience = audiencePrefixLabel(ctx.who ?? "", ctx.chartAudience);
+  return audience ? `${audience} ${patternFamily}` : patternFamily;
 }
 
 export function inferSleevelessPatternTitleContext(
@@ -166,6 +162,20 @@ export function getPatternProjectMeta(
 ): SleevelessPatternProjectMeta {
   migrateLegacyPrintSessionToPatternProject(pattern);
   return normalizeMeta(getCurrentPattern().patternProject);
+}
+
+/**
+ * The auto-generated default title (audience + family) for the given/working pattern, ignoring any
+ * saved or user-customized title. Used to detect whether a save name is still an auto default so the
+ * create flow can apply duplicate numbering regardless of the `titleCustomized` flag.
+ */
+export function buildDefaultPatternTitleForPattern(
+  pattern: SleevelessPatternRecord = getCurrentPattern(),
+): string {
+  return buildDefaultSleevelessPatternTitle(
+    inferSleevelessPatternTitleContext(pattern),
+    patternFamilyNameForPattern(pattern),
+  ).trim();
 }
 
 /**

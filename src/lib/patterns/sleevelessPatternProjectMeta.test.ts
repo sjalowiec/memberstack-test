@@ -19,7 +19,7 @@ import {
 } from "./sleevelessExpressResume";
 
 describe("buildDefaultSleevelessPatternTitle", () => {
-  it("builds women's round pullover with size", () => {
+  it("uses only audience + family (no neckline/size/garment details)", () => {
     expect(
       buildDefaultSleevelessPatternTitle({
         who: "women",
@@ -27,10 +27,10 @@ describe("buildDefaultSleevelessPatternTitle", () => {
         garmentStyle: "pullover",
         selectedSize: "4",
       }),
-    ).toBe("Sleeveless Pullover - Women's Size 4 Round Neck");
+    ).toBe("Women's Sleeveless");
   });
 
-  it("builds men's v-neck cardigan with size", () => {
+  it("builds men's sleeveless regardless of neckline/garment", () => {
     expect(
       buildDefaultSleevelessPatternTitle({
         who: "men",
@@ -38,39 +38,36 @@ describe("buildDefaultSleevelessPatternTitle", () => {
         garmentStyle: "cardigan",
         selectedSize: "M",
       }),
-    ).toBe("Sleeveless Cardigan - Men's Size M V-Neck");
+    ).toBe("Men's Sleeveless");
   });
 
-  it("builds child's round pullover from kids who key", () => {
-    expect(
-      buildDefaultSleevelessPatternTitle({
-        who: "kids",
-        neckline: "round",
-        garmentStyle: "pullover",
-        selectedSize: "8",
-      }),
-    ).toBe("Sleeveless Pullover - Child's Size 8 Round Neck");
+  it("maps kids who key to Kids'", () => {
+    expect(buildDefaultSleevelessPatternTitle({ who: "kids" })).toBe("Kids' Sleeveless");
+  });
+
+  it("maps baby who key to Baby (no possessive)", () => {
+    expect(buildDefaultSleevelessPatternTitle({ who: "baby" })).toBe("Baby Sleeveless");
   });
 
   it("uses chart audience when who is empty", () => {
-    expect(
-      buildDefaultSleevelessPatternTitle({
-        chartAudience: "men",
-        neckline: "v-neck",
-        garmentStyle: "cardigan",
-        selectedSize: "L",
-      }),
-    ).toBe("Sleeveless Cardigan - Men's Size L V-Neck");
+    expect(buildDefaultSleevelessPatternTitle({ chartAudience: "men" })).toBe("Men's Sleeveless");
+    expect(buildDefaultSleevelessPatternTitle({ chartAudience: "misses" })).toBe(
+      "Women's Sleeveless",
+    );
   });
 
-  it("omits size segment when selectedSize is missing", () => {
+  it("uses the provided pattern family (e.g. Drop Shoulder)", () => {
     expect(
-      buildDefaultSleevelessPatternTitle({
-        who: "women",
-        neckline: "round",
-        garmentStyle: "pullover",
-      }),
-    ).toBe("Sleeveless Pullover - Women's Round Neck");
+      buildDefaultSleevelessPatternTitle({ who: "women" }, "Drop Shoulder"),
+    ).toBe("Women's Drop Shoulder");
+    expect(
+      buildDefaultSleevelessPatternTitle({ chartAudience: "kids" }, "Drop Shoulder"),
+    ).toBe("Kids' Drop Shoulder");
+  });
+
+  it("falls back to family only when audience is unknown", () => {
+    expect(buildDefaultSleevelessPatternTitle({})).toBe("Sleeveless");
+    expect(buildDefaultSleevelessPatternTitle({}, "Drop Shoulder")).toBe("Drop Shoulder");
   });
 });
 
@@ -139,14 +136,13 @@ describe("resolvePatternProjectSaveName", () => {
     expect(resolvePatternProjectSaveNameFromState()).toBe("Saved Drop Shoulder Name");
   });
 
-  it("uses auto-generated title when draft and linked name are empty", () => {
+  it("uses auto-generated title (audience + family only) when draft and linked name are empty", () => {
     saveCurrentPattern({
       fit: { sizingChart: "misses", selectedSize: "4" },
       style: { garmentStyle: "pullover", neckline: "round" },
       patternProject: { title: "", notes: "" },
     });
-    expect(resolvePatternProjectSaveNameFromState()).toContain("Sleeveless Pullover");
-    expect(resolvePatternProjectSaveNameFromState()).toContain("Women's Size 4");
+    expect(resolvePatternProjectSaveNameFromState()).toBe("Women's Sleeveless");
   });
 
   it("prefers a non-empty edit drawer title over state fallbacks", () => {

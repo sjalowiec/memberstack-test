@@ -8,11 +8,15 @@ import {
 } from "./customPatternProjectActiveId";
 import {
   buildCopyBaseName,
+  nameMatchesDefaultOrNumbered,
   resolveDefaultCustomPatternSaveMode,
   resolveUniqueCopyName,
+  resolveUniqueDefaultPatternName,
   smartSaveCustomPatternProject,
   stripCustomPatternCopySuffix,
 } from "./customPatternSavedProjectsPanel";
+import { getPatternProjectMeta, savePatternProjectMeta } from "./sleevelessPatternProjectMeta";
+import { saveCurrentPattern } from "./patternStorage";
 
 vi.mock("./customPatternProjectClient", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./customPatternProjectClient")>();
@@ -173,6 +177,67 @@ describe("resolveUniqueCopyName", () => {
   });
 });
 
+describe("resolveUniqueDefaultPatternName", () => {
+  it("returns the base name when nothing matches", () => {
+    expect(resolveUniqueDefaultPatternName("Women's Drop Shoulder", [])).toBe(
+      "Women's Drop Shoulder",
+    );
+    expect(resolveUniqueDefaultPatternName("Women's Drop Shoulder", ["Men's Drop Shoulder"])).toBe(
+      "Women's Drop Shoulder",
+    );
+  });
+
+  it("appends ' 2' when the base default already exists", () => {
+    expect(
+      resolveUniqueDefaultPatternName("Women's Drop Shoulder", ["Women's Drop Shoulder"]),
+    ).toBe("Women's Drop Shoulder 2");
+  });
+
+  it("uses the next available number", () => {
+    expect(
+      resolveUniqueDefaultPatternName("Women's Drop Shoulder", [
+        "Women's Drop Shoulder",
+        "Women's Drop Shoulder 2",
+      ]),
+    ).toBe("Women's Drop Shoulder 3");
+  });
+
+  it("matches existing names case-insensitively", () => {
+    expect(resolveUniqueDefaultPatternName("Women's Sleeveless", ["women's sleeveless"])).toBe(
+      "Women's Sleeveless 2",
+    );
+  });
+
+  it("returns empty for a blank base name", () => {
+    expect(resolveUniqueDefaultPatternName("   ", ["Women's Sleeveless"])).toBe("");
+  });
+});
+
+describe("nameMatchesDefaultOrNumbered", () => {
+  it("matches the exact default title (case-insensitive)", () => {
+    expect(nameMatchesDefaultOrNumbered("Women's Sleeveless", "Women's Sleeveless")).toBe(true);
+    expect(nameMatchesDefaultOrNumbered("women's sleeveless", "Women's Sleeveless")).toBe(true);
+  });
+
+  it("matches numbered variants of the default", () => {
+    expect(nameMatchesDefaultOrNumbered("Women's Sleeveless 2", "Women's Sleeveless")).toBe(true);
+    expect(nameMatchesDefaultOrNumbered("Women's Sleeveless 37", "Women's Sleeveless")).toBe(true);
+  });
+
+  it("does not match custom names or partial words", () => {
+    expect(nameMatchesDefaultOrNumbered("Mom's birthday vest", "Women's Sleeveless")).toBe(false);
+    expect(nameMatchesDefaultOrNumbered("Women's Sleeveless Deluxe", "Women's Sleeveless")).toBe(
+      false,
+    );
+    expect(nameMatchesDefaultOrNumbered("Women's Sleevelessness", "Women's Sleeveless")).toBe(false);
+  });
+
+  it("returns false for blank inputs", () => {
+    expect(nameMatchesDefaultOrNumbered("", "Women's Sleeveless")).toBe(false);
+    expect(nameMatchesDefaultOrNumbered("Women's Sleeveless", "")).toBe(false);
+  });
+});
+
 describe("smartSaveCustomPatternProject", () => {
   beforeEach(() => {
     stubLocalStorage();
@@ -238,6 +303,124 @@ describe("smartSaveCustomPatternProject", () => {
     expect(updateCustomPatternProject).not.toHaveBeenCalled();
     expect(readActiveCustomPatternProjectId()).toBe("proj-womens-pullover");
     expect(readActiveCustomPatternProjectLinkedName()).toBe(womensPullover.name);
+  });
+
+  it("appends a number to the default name on create when it already exists", async () => {
+    // Draft carries the auto-generated default name (not manually renamed).
+    savePatternProjectMeta({ title: "Women's Drop Shoulder", titleCustomized: false });
+    vi.mocked(listCustomPatternProjects).mockResolvedValue({
+      ok: true,
+      projects: [{ id: "p1", name: "Women's Drop Shoulder" } as never],
+    });
+    vi.mocked(createCustomPatternProject).mockResolvedValue({
+      ok: true,
+      project: { ...womensPullover, id: "p2", name: "Women's Drop Shoulder 2" },
+    });
+
+    const res = await smartSaveCustomPatternProject({
+      mode: "create",
+      resolveName: () => "Women's Drop Shoulder",
+    });
+
+    expect(res.ok).toBe(true);
+    expect(createCustomPatternProject).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "Women's Drop Shoulder 2" }),
+    );
+  });
+
+  it("increments an auto default even after the title was pinned as customized (review-page Save bug)", async () => {
+    // Reproduces the reported bug: the review-page Save persists the title field before saving,
+    // flipping titleCustomized -> true even though the name is still the unedited auto default.
+    saveCurrentPattern({
+      fit: { sizingChart: "misses", selectedSize: "4" },
+      style: { garmentStyle: "pullover", neckline: "round" },
+      patternProject: { title: "Women's Sleeveless", notes: "", titleCustomized: true },
+    });
+    vi.mocked(listCustomPatternProjects).mockResolvedValue({
+      ok: true,
+      projects: [{ id: "p1", name: "Women's Sleeveless" } as never],
+    });
+    vi.mocked(createCustomPatternProject).mockResolvedValue({
+      ok: true,
+      project: { ...womensPullover, id: "p2", name: "Women's Sleeveless 2" },
+    });
+
+    const res = await smartSaveCustomPatternProject({
+      mode: "create",
+      resolveName: () => "Women's Sleeveless",
+    });
+
+    expect(res.ok).toBe(true);
+    expect(createCustomPatternProject).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "Women's Sleeveless 2" }),
+    );
+  });
+
+  it("resolves the next number against the whole existing sequence", async () => {
+    saveCurrentPattern({
+      fit: { sizingChart: "misses", selectedSize: "4" },
+      style: { garmentStyle: "pullover", neckline: "round" },
+      patternProject: { title: "Women's Sleeveless", notes: "", titleCustomized: true },
+    });
+    vi.mocked(listCustomPatternProjects).mockResolvedValue({
+      ok: true,
+      projects: [
+        { id: "p1", name: "Women's Sleeveless" } as never,
+        { id: "p2", name: "women's sleeveless 2" } as never,
+      ],
+    });
+    vi.mocked(createCustomPatternProject).mockResolvedValue({
+      ok: true,
+      project: { ...womensPullover, id: "p3", name: "Women's Sleeveless 3" },
+    });
+
+    // Draft title carries a numbered variant; numbering still resolves against the base sequence.
+    await smartSaveCustomPatternProject({
+      mode: "create",
+      resolveName: () => "Women's Sleeveless 2",
+    });
+
+    expect(createCustomPatternProject).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "Women's Sleeveless 3" }),
+    );
+  });
+
+  it("does not renumber a manually customized name on create", async () => {
+    savePatternProjectMeta({ title: "Mom's birthday vest", titleCustomized: true });
+    vi.mocked(listCustomPatternProjects).mockResolvedValue({
+      ok: true,
+      projects: [{ id: "p1", name: "Mom's birthday vest" } as never],
+    });
+    vi.mocked(createCustomPatternProject).mockResolvedValue({
+      ok: true,
+      project: { ...womensPullover, id: "p2", name: "Mom's birthday vest" },
+    });
+
+    await smartSaveCustomPatternProject({
+      mode: "create",
+      resolveName: () => "Mom's birthday vest",
+    });
+
+    expect(createCustomPatternProject).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "Mom's birthday vest" }),
+    );
+  });
+
+  it("locks the saved name on the draft after create so edits do not auto-rename it", async () => {
+    savePatternProjectMeta({ title: "Women's Sleeveless", titleCustomized: false });
+    vi.mocked(createCustomPatternProject).mockResolvedValue({
+      ok: true,
+      project: { ...womensPullover, id: "p2", name: "Women's Sleeveless" },
+    });
+
+    await smartSaveCustomPatternProject({
+      mode: "create",
+      resolveName: () => "Women's Sleeveless",
+    });
+
+    const meta = getPatternProjectMeta();
+    expect(meta.title).toBe("Women's Sleeveless");
+    expect(meta.titleCustomized).toBe(true);
   });
 
   it("creates a second saved pattern instead of overwriting the first", async () => {

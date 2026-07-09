@@ -6,9 +6,22 @@
 import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
 import { resolveDiagramFinishedHipInches } from "./customBuildEffectiveFinishedHip";
 import { resolveEffectiveSleevelessBodyShapePhrase } from "./sleevelessAlineShaping";
+import { hasAuthoritativeDropShoulderConstruction } from "./patternConstructionIdentity";
 import { SLEEVELESS_CHART_AUDIENCE_LABELS } from "./patternStorage.ts";
 
 const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
+
+const SLEEVELESS_FAMILY_LABEL = "Sleeveless";
+const DROP_SHOULDER_FAMILY_LABEL = "Drop Shoulder";
+
+/**
+ * Extra saved-project metadata for the summary. These come from the saved project record / working
+ * draft rather than the pattern math, so they are optional and only rendered when provided.
+ */
+export type SleevelessBasicsSummaryMeta = {
+  createdAt?: string;
+  updatedAt?: string;
+};
 
 function section(obj: unknown): Record<string, unknown> {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) {
@@ -135,11 +148,46 @@ function garmentShapeLengthPhrase(
   return lenWord || "";
 }
 
-function frontIntroPhrase(st: Record<string, unknown>): string {
-  const k = st.frontStyle;
-  if (k === "closed") return "pullover front";
-  if (k === "open") return "cardigan front";
+/** Pattern family/type label from the stored construction identity. */
+function patternFamilyLabel(st: Record<string, unknown>): string {
+  return hasAuthoritativeDropShoulderConstruction(st)
+    ? DROP_SHOULDER_FAMILY_LABEL
+    : SLEEVELESS_FAMILY_LABEL;
+}
+
+/** Garment style label (Pullover / Cardigan) from garmentStyle, falling back to frontStyle. */
+function garmentStyleLabel(st: Record<string, unknown>): string {
+  const g = String(st.garmentStyle ?? "").trim().toLowerCase();
+  if (g === "cardigan") return "Cardigan";
+  if (g === "pullover") return "Pullover";
+  const f = String(st.frontStyle ?? "").trim().toLowerCase();
+  if (f === "open") return "Cardigan";
+  if (f === "closed") return "Pullover";
   return "";
+}
+
+/** Sleeve-length label — only meaningful for constructions with sleeves (drop shoulder). */
+function sleeveLengthLabel(st: Record<string, unknown>): string {
+  if (!hasAuthoritativeDropShoulderConstruction(st)) return "";
+  const raw = String(st.sleeveLength ?? "").trim().toLowerCase();
+  if (raw === "long") return "Long";
+  if (raw === "three-quarter") return "Three-quarter";
+  if (raw === "elbow") return "Elbow";
+  if (raw === "short") return "Short";
+  return "";
+}
+
+const SUMMARY_MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+/** Stable, locale-independent date label (e.g. "Jan 2, 2026") from an ISO timestamp. */
+function formatSummaryDate(iso: string | undefined): string {
+  if (!iso || !iso.trim()) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return `${SUMMARY_MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
 }
 
 function necklineBasicsLabel(st: Record<string, unknown>): string {
@@ -168,6 +216,7 @@ function collectSleevelessBasicsSummaryRows(
   merged: Record<string, unknown>,
   patternData: Record<string, unknown>,
   gaugeFormatter: GaugeFormatter,
+  meta: SleevelessBasicsSummaryMeta = {},
 ): { term: string; def: string }[] {
   const st = section(merged.style);
   const ft = section(merged.fit);
@@ -179,16 +228,16 @@ function collectSleevelessBasicsSummaryRows(
 
   const rows: { term: string; def: string }[] = [];
 
+  rows.push({ term: "Pattern", def: patternFamilyLabel(st) });
+
   const aud = audienceLabelFromPattern(st, ft);
+  if (aud) {
+    rows.push({ term: "Audience", def: aud });
+  }
+
   const size = ft.selectedSize != null && String(ft.selectedSize).trim() ? String(ft.selectedSize).trim() : "";
-  if (aud || size) {
-    const parts: string[] = [];
-    if (aud) parts.push(aud);
-    if (size) parts.push(`chart size ${size}`);
-    rows.push({
-      term: "Size",
-      def: parts.join(" — "),
-    });
+  if (size) {
+    rows.push({ term: "Size", def: `Chart size ${size}` });
   }
 
   const garmentRaw = garmentShapeLengthPhrase(st, patternData);
@@ -199,12 +248,9 @@ function collectSleevelessBasicsSummaryRows(
     });
   }
 
-  const frontRaw = frontIntroPhrase(st);
-  if (frontRaw) {
-    rows.push({
-      term: "Garment type",
-      def: sentenceCaseDisplay(frontRaw),
-    });
+  const styleLabel = garmentStyleLabel(st);
+  if (styleLabel) {
+    rows.push({ term: "Style", def: styleLabel });
   }
 
   const neckLabel = necklineBasicsLabel(st);
@@ -217,9 +263,24 @@ function collectSleevelessBasicsSummaryRows(
     rows.push({ term: "Fit", def: fitDef });
   }
 
+  const sleeveDef = sleeveLengthLabel(st);
+  if (sleeveDef) {
+    rows.push({ term: "Sleeve length", def: sleeveDef });
+  }
+
   const gaugeStr = gaugeFormatter(ygm, yg);
   if (gaugeStr) {
     rows.push({ term: "Gauge", def: gaugeStr });
+  }
+
+  const createdStr = formatSummaryDate(meta.createdAt);
+  if (createdStr) {
+    rows.push({ term: "Created", def: createdStr });
+  }
+
+  const updatedStr = formatSummaryDate(meta.updatedAt);
+  if (updatedStr) {
+    rows.push({ term: "Last updated", def: updatedStr });
   }
 
   return rows;
@@ -236,9 +297,17 @@ function basicsRowsToDlHtml(rows: { term: string; def: string }[]): string {
 export function buildSleevelessPrintBasicsSummaryDlHtml(
   merged: Record<string, unknown>,
   patternData: Record<string, unknown>,
+  meta: SleevelessBasicsSummaryMeta = {},
 ): string {
-  const rows = collectSleevelessBasicsSummaryRows(merged, patternData, formatGaugeFromBuilderExact);
-  if (rows.length === 0) {
+  const rows = collectSleevelessBasicsSummaryRows(
+    merged,
+    patternData,
+    formatGaugeFromBuilderExact,
+    meta,
+  );
+  // The "Pattern" family row is always present; only treat the summary as populated when at least
+  // one configuration/detail row exists.
+  if (!rows.some((r) => r.term !== "Pattern")) {
     return `<p class="print-muted">No summary details were stored — complete the builder and reload this page.</p>`;
   }
   return basicsRowsToDlHtml(rows);
@@ -262,8 +331,9 @@ function basicsRowsToInlineDlHtml(rows: { term: string; def: string }[]): string
 export function buildSleevelessScreenBasicsSummaryDlHtml(
   merged: Record<string, unknown>,
   patternData: Record<string, unknown>,
+  meta: SleevelessBasicsSummaryMeta = {},
 ): string {
-  const rows = collectSleevelessBasicsSummaryRows(merged, patternData, formatGaugeIntroPhrase);
-  if (rows.length === 0) return "";
+  const rows = collectSleevelessBasicsSummaryRows(merged, patternData, formatGaugeIntroPhrase, meta);
+  if (!rows.some((r) => r.term !== "Pattern")) return "";
   return basicsRowsToInlineDlHtml(rows);
 }

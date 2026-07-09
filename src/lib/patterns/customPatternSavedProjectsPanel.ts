@@ -41,7 +41,12 @@ import {
 import { hydrateSavedCustomPatternProjectSession } from "./hydrateSavedCustomPatternProject";
 import { writeHydratedConstructionBaseline } from "./customPatternProjectConstructionBaseline";
 import { logSleevelessPatternActivity } from "./sleevelessPatternActivity";
-import { getPatternProjectMeta, resolvePatternProjectSaveName, savePatternProjectMeta } from "./sleevelessPatternProjectMeta";
+import {
+  buildDefaultPatternTitleForPattern,
+  getPatternProjectMeta,
+  resolvePatternProjectSaveName,
+  savePatternProjectMeta,
+} from "./sleevelessPatternProjectMeta";
 import { nextPanelListRefresh, perfEnd, perfMark, perfStart } from "./savedPatternsPerfLog";
 import {
   canEditPatternSettingsForSystem,
@@ -241,6 +246,53 @@ export function resolveUniqueCopyName(
   return `${base} ${suffix}`;
 }
 
+/**
+ * Resolves a unique default pattern name by appending the next available number on collision.
+ *
+ * Used for the auto-generated default name (family + audience) at the first save so a knitter can
+ * have several patterns of the same kind without name clashes:
+ *
+ * - `"Women's Drop Shoulder"` -> `"Women's Drop Shoulder"` (no existing match)
+ * - `"Women's Drop Shoulder"` -> `"Women's Drop Shoulder 2"` (one existing match)
+ * - `"Women's Drop Shoulder"` -> `"Women's Drop Shoulder 3"` (name + " 2" already taken)
+ *
+ * Collisions are resolved case-insensitively against `existingNames`.
+ */
+export function resolveUniqueDefaultPatternName(
+  baseName: string,
+  existingNames: Iterable<string> = [],
+): string {
+  const base = (baseName ?? "").trim();
+  if (!base) return base;
+  const taken = new Set<string>();
+  for (const name of existingNames) {
+    const normalized = (name ?? "").trim().toLowerCase();
+    if (normalized) taken.add(normalized);
+  }
+  if (!taken.has(base.toLowerCase())) return base;
+  let suffix = 2;
+  while (taken.has(`${base} ${suffix}`.toLowerCase())) {
+    suffix += 1;
+  }
+  return `${base} ${suffix}`;
+}
+
+/**
+ * True when `name` is the auto-generated default title or a numbered variant of it
+ * (`"Women's Sleeveless"`, `"Women's Sleeveless 2"`, …). Case-insensitive.
+ *
+ * Lets the create flow recognize an auto default even after the title has been pinned as
+ * `titleCustomized: true` (e.g. the review-page Save persists the field value before saving).
+ */
+export function nameMatchesDefaultOrNumbered(name: string, defaultTitle: string): boolean {
+  const n = (name ?? "").trim().toLowerCase();
+  const d = (defaultTitle ?? "").trim().toLowerCase();
+  if (!n || !d) return false;
+  if (n === d) return true;
+  if (!n.startsWith(`${d} `)) return false;
+  return /^\d+$/.test(n.slice(d.length + 1));
+}
+
 /** Ordinary save: update when a saved project is already linked, otherwise create. */
 export function resolveDefaultCustomPatternSaveMode(): "create" | "update" {
   return readActiveCustomPatternProjectId() ? "update" : "create";
@@ -297,6 +349,29 @@ export async function smartSaveCustomPatternProject(
       existingNames = list.projects.map((project) => project.name);
     }
     name = resolveUniqueCopyName(originalName, existingNames);
+  } else if (mode === "create") {
+    // First save of a pattern that still uses its auto-generated default name (family + audience).
+    // Append the next available number when a same-named default already exists so
+    // "Women's Sleeveless" -> "Women's Sleeveless 2", etc.
+    //
+    // Detect the auto default by comparing the name to the freshly computed default title — do NOT
+    // rely on `titleCustomized`, because save entry points (e.g. the review page) persist the title
+    // field, flipping `titleCustomized` to true before this runs even for an unedited auto name.
+    const defaultTitle = buildDefaultPatternTitleForPattern();
+    const nameIsDefault = nameMatchesDefaultOrNumbered(rawName, defaultTitle);
+    const isAutoDefault = nameIsDefault || getPatternProjectMeta().titleCustomized !== true;
+    if (isAutoDefault) {
+      // Always number from the clean default base when the name is a default variant, so
+      // "Women's Sleeveless 2" resolves against the "Women's Sleeveless" sequence (not "… 2 2").
+      const base = nameIsDefault ? defaultTitle : rawName;
+      const list = await listCustomPatternProjects(family);
+      if (list.ok) {
+        name = resolveUniqueDefaultPatternName(
+          base,
+          list.projects.map((project) => project.name),
+        );
+      }
+    }
   }
 
   const base = buildSavePayloadFromWorkingDraft(name, { family, flushRoot });
@@ -348,6 +423,9 @@ export async function smartSaveCustomPatternProject(
   const res = await createCustomPatternProject(base);
   if (!res.ok) return { ok: false, error: res.error };
   writeActiveCustomPatternProjectId(res.project.id, res.project.name);
+  // The saved name is now the pattern's fixed name. Pin it on the working draft (as customized) so
+  // later edits do not auto-regenerate the default title over it — matching a loaded saved project.
+  savePatternProjectMeta({ title: res.project.name, titleCustomized: true });
   writeHydratedConstructionBaseline(res.project);
   captureSavedCustomPatternDirtyBaseline();
   notifySavedProjectLinkChanged(options.root ?? undefined);

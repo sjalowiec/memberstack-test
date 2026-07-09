@@ -178,8 +178,7 @@ describe("resolveProjectNameForEditingBannerUpdate", () => {
       },
     } as unknown as ParentNode;
     const name = resolveProjectNameForEditingBannerUpdate(root);
-    expect(name).toContain("Drop Shoulder");
-    expect(name).toContain("Child's Size 2 yr");
+    expect(name).toBe("Kids' Drop Shoulder");
   });
 });
 
