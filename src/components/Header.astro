@@ -1724,9 +1724,9 @@ const memberPlanIds = [...MEMBER_PLAN_IDS];
 
 .kin-result__link {
   display: flex;
-  gap: 14px;
-  align-items: flex-start;
-  padding: 14px 12px;
+  flex-direction: column;
+  gap: 5px;
+  padding: 17px 12px;
   border-radius: 12px;
   text-decoration: none;
   color: inherit;
@@ -1739,39 +1739,30 @@ const memberPlanIds = [...MEMBER_PLAN_IDS];
   outline-offset: -2px;
 }
 
-.kin-result__badge {
+/* Icon + title share one line; title is the visual focus */
+.kin-result__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.kin-result__icon {
   flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  margin-top: 2px;
+  color: var(--kbm-green, #52682d);
 }
-.kin-result__badge svg {
-  width: 24px;
-  height: 24px;
-}
-
-.kin-result__body {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.kin-result__cat {
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--text-muted, #6b7280);
+.kin-result__icon svg {
+  width: 18px;
+  height: 18px;
 }
 
 .kin-result__title {
+  min-width: 0;
   font-size: 1.0625rem;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.35;
   color: var(--kbm-green, #243015);
 }
@@ -1780,7 +1771,8 @@ const memberPlanIds = [...MEMBER_PLAN_IDS];
 }
 
 .kin-result__excerpt {
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
+  font-weight: 400;
   line-height: 1.5;
   color: #4a5140;
   display: -webkit-box;
@@ -1789,20 +1781,21 @@ const memberPlanIds = [...MEMBER_PLAN_IDS];
   overflow: hidden;
 }
 .kin-result__excerpt mark {
-  background: rgba(184, 134, 11, 0.22);
+  background: rgba(184, 134, 11, 0.13);
   color: inherit;
+  font-weight: inherit;
   padding: 0 1px;
   border-radius: 3px;
 }
 
-/* Category badge palette (icon + light tint) */
-.kin-result__badge--courses  { background: rgba(82, 104, 45, 0.12);  color: #52682d; }
-.kin-result__badge--videos   { background: rgba(194, 97, 78, 0.12);  color: #b0503d; }
-.kin-result__badge--tools    { background: rgba(63, 111, 143, 0.12); color: #3f6f8f; }
-.kin-result__badge--reference{ background: rgba(107, 91, 149, 0.12); color: #6b5b95; }
-.kin-result__badge--glossary { background: rgba(47, 143, 131, 0.12); color: #2f8f83; }
-.kin-result__badge--help     { background: rgba(184, 134, 11, 0.14); color: #9c7209; }
-.kin-result__badge--guide    { background: rgba(90, 99, 78, 0.12);   color: #5a634e; }
+/* Category icon tint (no background block) */
+.kin-result__icon--courses   { color: #52682d; }
+.kin-result__icon--videos    { color: #b0503d; }
+.kin-result__icon--tools     { color: #3f6f8f; }
+.kin-result__icon--reference { color: #6b5b95; }
+.kin-result__icon--glossary  { color: #2f8f83; }
+.kin-result__icon--help      { color: #9c7209; }
+.kin-result__icon--guide     { color: #5a634e; }
 
 /* Memberstack overlay (try common selectors) */
 .ms-modal__overlay,
@@ -2602,6 +2595,63 @@ div[data-ms-modal-overlay] {
           .replace(/"/g, "&quot;");
       }
 
+      function stripTags(s) {
+        return String(s == null ? "" : s).replace(/<[^>]*>/g, "");
+      }
+
+      // Drop the first `count` visible characters from an HTML string while
+      // preserving/removing tags cleanly (used to trim a leading title echo).
+      function removeLeadingVisible(html, count) {
+        let removed = 0;
+        let i = 0;
+        while (i < html.length && removed < count) {
+          const ch = html[i];
+          if (ch === "<") {
+            const close = html.indexOf(">", i);
+            if (close === -1) break;
+            i = close + 1; // skip the tag; tags aren't visible characters
+            continue;
+          }
+          if (ch === "&") {
+            const semi = html.indexOf(";", i);
+            if (semi !== -1 && semi - i <= 9) {
+              removed += 1;
+              i = semi + 1;
+              continue;
+            }
+          }
+          removed += 1;
+          i += 1;
+        }
+        // Drop any now-orphaned leading closing tags and separators.
+        return html.slice(i).replace(/^(?:\s*<\/[^>]+>)+/, "").trim();
+      }
+
+      // Presentation-only tidy of Pagefind excerpts: strip a leading
+      // "← Back to …" breadcrumb and a leading echo of the page title so the
+      // snippet leads with useful content. Never touches source/indexing.
+      function cleanExcerpt(html, title) {
+        if (!html) return "";
+        let out = String(html).trim();
+
+        out = out.replace(
+          /^(?:<[^>]+>\s*)*(?:←|&larr;|&#8592;|&#x2190;|«)?\s*Back to\b[^.<]*?(?:[.•·|–—-]+\s*|\s{2,}|(?=<))/i,
+          ""
+        ).trim();
+
+        if (title) {
+          const t = title.replace(/\s+/g, " ").trim();
+          const plain = stripTags(out).replace(/\s+/g, " ").trim();
+          if (t && plain.toLowerCase().startsWith(t.toLowerCase())) {
+            out = removeLeadingVisible(out, t.length)
+              .replace(/^\s*[-–—:.|•·]+\s*/, "")
+              .trim();
+          }
+        }
+
+        return out;
+      }
+
       root.innerHTML =
         '<form class="kin-search__form" role="search">' +
         '<span class="kin-search__icon">' + ICONS.search + "</span>" +
@@ -2667,12 +2717,12 @@ div[data-ms-modal-overlay] {
           .map((r) => {
             const cat = CATEGORIES[r.cat] || CATEGORIES.guide;
             return '<li class="kin-result"><a class="kin-result__link" href="' + escapeHtml(r.url) + '">' +
-              '<span class="kin-result__badge kin-result__badge--' + r.cat + '">' + cat.icon + "</span>" +
-              '<span class="kin-result__body">' +
-              '<span class="kin-result__cat">' + escapeHtml(cat.label) + "</span>" +
+              '<span class="kin-result__title-row">' +
+              '<span class="kin-result__icon kin-result__icon--' + r.cat + '">' + cat.icon + "</span>" +
               '<span class="kin-result__title">' + escapeHtml(r.title) + "</span>" +
+              "</span>" +
               '<span class="kin-result__excerpt">' + (r.excerpt || "") + "</span>" +
-              "</span></a></li>";
+              "</a></li>";
           })
           .join("");
       }
@@ -2712,12 +2762,15 @@ div[data-ms-modal-overlay] {
         if (term !== currentTerm) return; // stale
         const data = await Promise.all(search.results.slice(0, 30).map((r) => r.data()));
         if (term !== currentTerm) return;
-        allResults = data.map((d) => ({
-          url: d.url,
-          title: (d.meta && d.meta.title) || titleFromUrl(d.url),
-          excerpt: d.excerpt,
-          cat: categorize(d.url),
-        }));
+        allResults = data.map((d) => {
+          const title = (d.meta && d.meta.title) || titleFromUrl(d.url);
+          return {
+            url: d.url,
+            title,
+            excerpt: cleanExcerpt(d.excerpt, title),
+            cat: categorize(d.url),
+          };
+        });
         render();
         setStatusText(
           allResults.length ? "" : "No results for \u201C" + term + "\u201D. Try a different word."
