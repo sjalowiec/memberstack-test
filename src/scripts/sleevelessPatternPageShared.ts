@@ -2189,28 +2189,47 @@ table {
     });
   }
 
-  function bindSecondShoulderChecklistToggles(root) {
-    if (!root) return;
-    const scopes = root.querySelectorAll("[data-second-shoulder-scope]");
-    scopes.forEach((scopeEl) => {
-      if (!(scopeEl instanceof HTMLElement)) return;
-      if (scopeEl.dataset.secondShoulderToggleBound === "true") return;
-      scopeEl.dataset.secondShoulderToggleBound = "true";
-      const checkbox = scopeEl.querySelector("[data-second-shoulder-toggle]");
+  // Syncs one second-shoulder scope's visible blocks/instructions to its checkbox state.
+  function applySecondShoulderScopeState(scopeEl) {
+    if (!(scopeEl instanceof HTMLElement)) return;
+    const checkbox = scopeEl.querySelector("[data-second-shoulder-toggle]");
+    if (!(checkbox instanceof HTMLInputElement)) return;
+    const show = checkbox.checked;
+    scopeEl.querySelectorAll("[data-second-shoulder-content]").forEach((block) => {
+      if (block instanceof HTMLElement) block.hidden = !show;
+    });
+    const defaultInstruction = scopeEl.querySelector("[data-second-shoulder-default-instruction]");
+    const checkedInstruction = scopeEl.querySelector("[data-second-shoulder-checked-instruction]");
+    if (defaultInstruction instanceof HTMLElement) defaultInstruction.hidden = show;
+    if (checkedInstruction instanceof HTMLElement) checkedInstruction.hidden = !show;
+  }
+
+  // Delegated toggle: a single document-level `change` listener drives every second-shoulder
+  // checklist. Previously each checkbox was bound at mount time, but that binding ran only AFTER
+  // `await hydrateSleevelessDiagrams(...)` and its render-seq guard — in production the diagram
+  // chunks hydrate on a different schedule, so the guard could return early (or hydration lagged)
+  // and the listener was never attached: a visible button with no handler and no console error.
+  // Delegation survives pattern regeneration/re-insertion because `change` bubbles to `document`.
+  let secondShoulderChecklistDelegationBound = false;
+  function ensureSecondShoulderChecklistDelegation() {
+    if (secondShoulderChecklistDelegationBound) return;
+    if (typeof document === "undefined") return;
+    secondShoulderChecklistDelegationBound = true;
+    document.addEventListener("change", (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const checkbox = target.closest("[data-second-shoulder-toggle]");
       if (!(checkbox instanceof HTMLInputElement)) return;
-      const secondShoulderBlocks = scopeEl.querySelectorAll("[data-second-shoulder-content]");
-      const defaultInstruction = scopeEl.querySelector("[data-second-shoulder-default-instruction]");
-      const checkedInstruction = scopeEl.querySelector("[data-second-shoulder-checked-instruction]");
-      const update = () => {
-        const show = checkbox.checked;
-        secondShoulderBlocks.forEach((block) => {
-          if (block instanceof HTMLElement) block.hidden = !show;
-        });
-        if (defaultInstruction instanceof HTMLElement) defaultInstruction.hidden = show;
-        if (checkedInstruction instanceof HTMLElement) checkedInstruction.hidden = !show;
-      };
-      checkbox.addEventListener("change", update);
-      update();
+      const scopeEl = checkbox.closest("[data-second-shoulder-scope]");
+      if (scopeEl instanceof HTMLElement) applySecondShoulderScopeState(scopeEl);
+    });
+  }
+
+  function bindSecondShoulderChecklistToggles(root) {
+    ensureSecondShoulderChecklistDelegation();
+    if (!root) return;
+    root.querySelectorAll("[data-second-shoulder-scope]").forEach((scopeEl) => {
+      if (scopeEl instanceof HTMLElement) applySecondShoulderScopeState(scopeEl);
     });
   }
 
@@ -4119,6 +4138,12 @@ table {
   export function initSleevelessPatternBuilderPage() {
     if (sleevelessPatternBuilderPageInitBound) return;
     sleevelessPatternBuilderPageInitBound = true;
+
+    // Install the delegated second-shoulder toggle handler immediately, independent of the render
+    // lifecycle. The per-mount call to bindSecondShoulderChecklistToggles() sits behind an async
+    // diagram-hydration guard that can be skipped in production; delegation here guarantees the
+    // toggle always works.
+    ensureSecondShoulderChecklistDelegation();
 
     if (isDedicatedSleevelessPatternWorkspacePage() && isEditingSavedCustomPatternProject()) {
       ensureSavedCustomPatternSessionHydratedOnPatternPage();
