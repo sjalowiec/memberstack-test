@@ -345,7 +345,7 @@ function dropShoulderPulloverFrontShoulderDivideParagraphs(): string[] {
 }
 
 const DROP_SHOULDER_PULLOVER_ROUND_NECK_SECOND_SHOULDER_SENTENCE =
-  "Return the held shoulder stitches to the needles and repeat the neckline and shoulder shaping for the second shoulder, matching the first side.";
+  "Return the held shoulder stitches to the needles and repeat the neckline shaping for the second shoulder, matching the first side.";
 
 const DROP_SHOULDER_PULLOVER_V_NECK_SECOND_SHOULDER_SENTENCE =
   "Return the held shoulder stitches to the needles and repeat the V-neck shaping for the second shoulder, mirroring the first side.";

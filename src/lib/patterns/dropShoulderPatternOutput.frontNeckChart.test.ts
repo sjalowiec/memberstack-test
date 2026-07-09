@@ -72,6 +72,30 @@ describe("drop-shoulder front neckline shaping chart", () => {
     expect(html).not.toContain("First Shoulder Checklist");
   });
 
+  it("drops shoulder-shaping wording from the front chart second-shoulder copy (straight shoulders)", () => {
+    const result = generateDropShoulderPattern(DROP_SHOULDER_BASE);
+
+    const html = renderNeckShoulderShapingChartTableOnlyHtml(
+      result.frontNeckShoulderShapingChart,
+      "test-drop-front-round-copy",
+      undefined,
+      {
+        activeSideOnly: true,
+        activeSideRcStart: armholeLocalRcActiveShoulderChecklistStart(
+          result.frontNeckShoulderShapingChart,
+          result.debug.armholeStartRow,
+        ),
+        tableHeading: "Front Neckline Shaping Chart",
+        shouldersShaped: false,
+      },
+    );
+
+    expect(html).not.toMatch(/shoulder shaping/i);
+    expect(html).toContain("cut the yarn");
+    expect(html).toContain("reversing the neckline shaping");
+    expect(html).toContain("so it remains on the neck edge");
+  });
+
   it("includes chart for pullover V-neck", () => {
     const result = generateDropShoulderPattern({
       ...DROP_SHOULDER_BASE,

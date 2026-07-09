@@ -132,7 +132,8 @@ describe("generateDropShoulderPattern round-neck front instructions", () => {
     );
     expect(text).toMatch(/Bind off the 23 shoulder stitches\./);
     expect(text).toMatch(/Return the held shoulder stitches to the needles/i);
-    expect(text).toMatch(/repeat the neckline and shoulder shaping for the second shoulder, matching the first side/i);
+    expect(text).toMatch(/repeat the neckline shaping for the second shoulder, matching the first side/i);
+    expect(text).not.toMatch(/shoulder shaping/i);
 
     expect(text).not.toMatch(/stitches remain on the side, knit even/i);
     expect(text).not.toMatch(/Work the second side to match, reversing the neck-edge shaping/i);

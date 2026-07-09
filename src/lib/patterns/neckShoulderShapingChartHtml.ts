@@ -21,6 +21,9 @@ import {
   ACTIVE_SHOULDER_DIVIDE_SENTENCE,
   ACTIVE_SHOULDER_PARK_NONWORKING_SIDE_SENTENCE,
   ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS,
+  ACTIVE_SHOULDER_REVERSE_NECKLINE_ONLY_EMPHASIS,
+  activeShoulderChartIntroSentence,
+  activeShoulderReverseShapingEmphasis,
   ACTIVE_VNECK_CENTER_DIVIDE_TAIL,
   activeShoulderCenterDivideIntroApplies,
   activeShoulderIntroIsCardiganFront,
@@ -84,12 +87,13 @@ function escapeHtmlWithEmphasis(text: string, phrase: string): string {
 
 /**
  * Escaped intro sentence with the reverse-shaping phrase emphasized in `<strong>`.
- * The plain-text constant is unchanged for print/non-HTML consumers.
+ * The plain-text constant is unchanged for print/non-HTML consumers. Drop shoulder
+ * (`shouldersShaped: false`) reverses only the neckline shaping (straight shoulders).
  */
-function activeShoulderChartIntroSentenceHtml(): string {
+function activeShoulderChartIntroSentenceHtml(shouldersShaped = true): string {
   return escapeHtmlWithEmphasis(
-    ACTIVE_SHOULDER_CHART_INTRO_SENTENCE,
-    ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS,
+    activeShoulderChartIntroSentence(shouldersShaped),
+    activeShoulderReverseShapingEmphasis(shouldersShaped),
   );
 }
 
@@ -226,6 +230,9 @@ function stitchRemainingCompact(left: number, right: number): string {
 
 const SECOND_SIDE_INSTRUCTION_SUFFIX =
   `Work the second shoulder, ${ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS} so that neckline shaping remains on the neck edge and shoulder shaping remains on the shoulder edge.`;
+/** Drop-shoulder variant (straight shoulders): reverse only the neckline shaping. */
+const SECOND_SIDE_INSTRUCTION_SUFFIX_NECKLINE_ONLY =
+  `Work the second shoulder, ${ACTIVE_SHOULDER_REVERSE_NECKLINE_ONLY_EMPHASIS} so it remains on the neck edge.`;
 const SECOND_SIDE_CHECKLIST_INSTRUCTION_SUFFIX = "Follow the second shoulder checklist below.";
 
 export type ActiveShoulderChartIntroLayout = "compact" | "labeled";
@@ -239,6 +246,11 @@ export type ActiveShoulderChartIntroOptions = {
   chart?: NeckShoulderShapingChart | undefined;
   /** When true (or chart flag), intro uses cardigan front wording instead of pullover divide language. */
   isCardiganFront?: boolean | undefined;
+  /**
+   * When false, the shoulders are worked straight (drop shoulder) so the reverse-shaping copy
+   * mentions only the neckline shaping. Defaults to true (sleeveless: neckline + shoulder shaping).
+   */
+  shouldersShaped?: boolean | undefined;
   /** Host-specific wrapper class (`print-chart-intro` vs `pattern-shaping-intro`). */
   wrapperClass: string;
   /** Reserved for callers (online vs print); intro wording is the same for both layouts. */
@@ -600,7 +612,7 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
       );
     }
   }
-  innerParts.push(`<p>${activeShoulderChartIntroSentenceHtml()}</p>`);
+  innerParts.push(`<p>${activeShoulderChartIntroSentenceHtml(options.shouldersShaped !== false)}</p>`);
   const inner = innerParts.join("\n  ");
 
   return wrapActiveShoulderChartIntroHtml(
@@ -662,28 +674,36 @@ function instructionWithHeldStitches(
   heldShoulderStitches: number,
   showChecklist: boolean,
   isCardiganFront: boolean,
+  shouldersShaped = true,
 ): string {
   if (isCardiganFront) {
     return CARDIGAN_FRONT_OPPOSITE_FRONT_SENTENCE;
   }
   const held = Math.max(0, Math.floor(heldShoulderStitches));
-  const suffix = showChecklist ? SECOND_SIDE_CHECKLIST_INSTRUCTION_SUFFIX : SECOND_SIDE_INSTRUCTION_SUFFIX;
-  return `Once this side is complete, cut yarn and return the ${held} held stitches for the opposite shoulder to working position. ${suffix}`;
+  const suffix = showChecklist
+    ? SECOND_SIDE_CHECKLIST_INSTRUCTION_SUFFIX
+    : shouldersShaped
+      ? SECOND_SIDE_INSTRUCTION_SUFFIX
+      : SECOND_SIDE_INSTRUCTION_SUFFIX_NECKLINE_ONLY;
+  const cutPhrase = shouldersShaped ? "cut yarn" : "cut the yarn";
+  return `Once this side is complete, ${cutPhrase} and return the ${held} held stitches for the opposite shoulder to working position. ${suffix}`;
 }
 
 /**
  * HTML form of {@link instructionWithHeldStitches}: escaped, with the reverse-shaping phrase
  * emphasized in `<strong>` when the second-shoulder (non-checklist) suffix is used. Cardigan and
- * checklist variants contain no emphasis phrase, so they escape unchanged.
+ * checklist variants contain no emphasis phrase, so they escape unchanged. Drop shoulder
+ * (`shouldersShaped: false`) emphasizes the neckline-only reverse-shaping phrase.
  */
 function instructionWithHeldStitchesHtml(
   heldShoulderStitches: number,
   showChecklist: boolean,
   isCardiganFront: boolean,
+  shouldersShaped = true,
 ): string {
   return escapeHtmlWithEmphasis(
-    instructionWithHeldStitches(heldShoulderStitches, showChecklist, isCardiganFront),
-    ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS,
+    instructionWithHeldStitches(heldShoulderStitches, showChecklist, isCardiganFront, shouldersShaped),
+    activeShoulderReverseShapingEmphasis(shouldersShaped),
   );
 }
 
@@ -839,6 +859,11 @@ export type NeckShoulderChartRenderOptions = {
   fullWidthChartOneRowPerRc?: boolean;
   /** When true (or chart flag), completion copy uses cardigan front wording and hides second-shoulder UI. */
   isCardiganFront?: boolean;
+  /**
+   * When false, shoulders are worked straight (drop shoulder), so the second-shoulder completion
+   * copy reverses only the neckline shaping. Defaults to true (sleeveless: neckline + shoulder shaping).
+   */
+  shouldersShaped?: boolean;
   /** Back neckline only: prepend center divide/setup row at the timeline center-bind-off RC. */
   includeCenterNecklineSetupRow?: boolean;
   /**
@@ -988,6 +1013,7 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
     chart,
     isCardiganFront: options?.isCardiganFront,
   });
+  const shouldersShaped = options?.shouldersShaped !== false;
   const showDoneColumn = activeSideOnly ? true : includeDoneColumnOption;
   const tableClassName = String(options?.tableClassName ?? "").trim();
   const sectionClass = tableClassName ? `ns-shaping-chart ${tableClassName}` : "ns-shaping-chart";
@@ -1065,13 +1091,13 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
     activeSideOnly
       ? isCardiganFront
         ? `<p class="ns-shaping-chart__active-side-note">${instructionWithHeldStitchesHtml(
-            heldShoulderStitches, false, true,
+            heldShoulderStitches, false, true, shouldersShaped,
           )}</p>`
         : `<p class="ns-shaping-chart__active-side-note ns-shaping-chart__active-side-note--collapsed" data-second-shoulder-default-instruction>${instructionWithHeldStitchesHtml(
-          heldShoulderStitches, false, false
+          heldShoulderStitches, false, false, shouldersShaped
         )}</p>
 <p class="ns-shaping-chart__active-side-note ns-shaping-chart__active-side-note--expanded" data-second-shoulder-checked-instruction hidden>${instructionWithHeldStitchesHtml(
-          heldShoulderStitches, true, false
+          heldShoulderStitches, true, false, shouldersShaped
         )}</p>
 <div class="ns-shaping-chart__second-shoulder-toggle no-print">
   <p class="ns-shaping-chart__second-shoulder-toggle-copy">Want less mental reversing? Show a second checklist for the opposite shoulder.</p>

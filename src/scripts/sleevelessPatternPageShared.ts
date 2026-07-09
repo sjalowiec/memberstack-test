@@ -517,8 +517,10 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
    * @param {boolean} [showNotationPreview] When true (front/back + notation supported), adds the
    *   quiet "Japanese Notation Quick Reference" preview card beside the intro for that piece (opens
    *   the existing per-piece Shaping Notation modal).
+   * @param {boolean} [shouldersShaped=true] When false (drop shoulder: straight shoulders), the
+   *   reverse-shaping intro copy mentions only the neckline shaping.
    */
-  function neckShoulderChartHelpRowHtml(startRowLabel, chart, _piece, showNotationPreview) {
+  function neckShoulderChartHelpRowHtml(startRowLabel, chart, _piece, showNotationPreview, shouldersShaped = true) {
     const notationPreviewPiece =
       showNotationPreview === true && (_piece === "front" || _piece === "back")
         ? _piece
@@ -527,6 +529,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       localStartRcLabel: String(startRowLabel ?? "").trim(),
       centerBindOffStitches: centerBindOffStitchesFromNeckShoulderChart(chart),
       chart,
+      shouldersShaped,
       wrapperClass: "pattern-shaping-intro",
       layout: "labeled",
       includeWorkflowSteps: true,
@@ -3582,6 +3585,7 @@ table {
           result?.frontNeckShoulderShapingChart,
           "front",
           bodyNotationSupported,
+          false,
         ),
         {
           activeSideOnly: true,
@@ -3589,6 +3593,7 @@ table {
           includeCenterNecklineSetupRow: true,
           hideCenterNecklineSetupRow: true,
           tableHeading: "Front Neckline Shaping Chart",
+          shouldersShaped: false,
         },
       );
     }
@@ -3601,6 +3606,8 @@ table {
           `RC:${String(frontArmholeLocalChartStartRc).padStart(3, "0")}`,
           result?.frontNeckShoulderShapingChart,
           "front",
+          undefined,
+          false,
         ),
         options: {
           activeSideOnly: true,
@@ -3608,6 +3615,7 @@ table {
           includeCenterNecklineSetupRow: true,
           hideCenterNecklineSetupRow: true,
           tableHeading: "Front Neckline Shaping Chart",
+          shouldersShaped: false,
         },
       },
     };

@@ -20,8 +20,35 @@ export const BIND_OFF_GLOSSARY_ID = 804;
 export const ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS =
   "reversing the neckline and shoulder shaping";
 
+/**
+ * Drop-shoulder variant of {@link ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS}. Drop-shoulder shoulders
+ * are worked straight (no shoulder shaping), so only the neckline shaping is reversed.
+ */
+export const ACTIVE_SHOULDER_REVERSE_NECKLINE_ONLY_EMPHASIS = "reversing the neckline shaping";
+
 export const ACTIVE_SHOULDER_CHART_INTRO_SENTENCE =
   `Follow the checklist row by row for the first shoulder. Then return the held stitches to the machine and work the second shoulder, ${ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS} so that neckline shaping remains on the neck edge and shoulder shaping remains on the shoulder edge.`;
+
+/** Drop-shoulder variant of {@link ACTIVE_SHOULDER_CHART_INTRO_SENTENCE} (straight shoulders, neckline shaping only). */
+export const ACTIVE_SHOULDER_CHART_INTRO_SENTENCE_NECKLINE_ONLY =
+  `Follow the checklist row by row for the first shoulder. Then return the held stitches to the machine and work the second shoulder, ${ACTIVE_SHOULDER_REVERSE_NECKLINE_ONLY_EMPHASIS} so it remains on the neck edge.`;
+
+/**
+ * Emphasis phrase for the reverse-shaping instruction. Sleeveless reverses neckline + shoulder
+ * shaping; drop shoulder (straight shoulders) reverses only the neckline shaping.
+ */
+export function activeShoulderReverseShapingEmphasis(shouldersShaped = true): string {
+  return shouldersShaped
+    ? ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS
+    : ACTIVE_SHOULDER_REVERSE_NECKLINE_ONLY_EMPHASIS;
+}
+
+/** Chart intro sentence; drop shoulder (straight shoulders) reverses only the neckline shaping. */
+export function activeShoulderChartIntroSentence(shouldersShaped = true): string {
+  return shouldersShaped
+    ? ACTIVE_SHOULDER_CHART_INTRO_SENTENCE
+    : ACTIVE_SHOULDER_CHART_INTRO_SENTENCE_NECKLINE_ONLY;
+}
 
 /** Park the non-working shoulder before shaping one side at a time (online + print). */
 export const ACTIVE_SHOULDER_PARK_NONWORKING_SIDE_SENTENCE =
