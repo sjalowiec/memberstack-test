@@ -2601,6 +2601,39 @@ table {
   let sleevelessPatternRefreshExternalTrigger = false;
   let sleevelessPatternBuilderPageInitBound = false;
 
+  /**
+   * Signature of the meaningful pattern inputs behind the last committed render. Used to skip a
+   * redundant regeneration when nothing that affects the output has changed.
+   *
+   * Why this exists: a saved-pattern refresh mirrors the needle count into `kbm_current_pattern`
+   * and `patternBuilderData` (see `syncAvailableNeedlesMirrorsFromAllSources`), and those writes
+   * always bump a fresh `updatedAt`. Cross-document `storage` events (a second tab/window on the
+   * same origin) then re-trigger `refreshPatternTabContent`, whose own mirror-write bumps the
+   * timestamp again — an unbounded ping-pong that continuously rewrote the mount (flashing
+   * diagrams + shaping notation). Comparing a timestamp-free signature makes an unchanged input a
+   * no-op, so the loop cannot sustain itself while real edits still re-render.
+   */
+  let sleevelessLastRenderedSignature = null;
+
+  /** Timestamp-free snapshot of the inputs that determine the rendered pattern (null on failure). */
+  function computeSleevelessRenderSignature() {
+    try {
+      const stripVolatile = (obj) => {
+        if (!obj || typeof obj !== "object" || Array.isArray(obj)) return obj;
+        const { updatedAt: _updatedAt, createdAt: _createdAt, ...rest } = obj;
+        return rest;
+      };
+      const patternId = String(getCurrentPattern().id || "").trim();
+      return JSON.stringify({
+        canon: stripVolatile(getCurrentPattern()),
+        patternBuilderData: stripVolatile(getPatternData()),
+        sleeveDirection: readDropShoulderSleeveConstruction(patternId),
+      });
+    } catch {
+      return null;
+    }
+  }
+
   function logExpressNeedleFailSafeDev(failSafe) {
     if (typeof import.meta !== "undefined" && import.meta.env?.DEV) {
       console.log("[express needles fail-safe]", {
@@ -3910,11 +3943,26 @@ table {
     }
     sleevelessPatternRefreshInFlight = true;
     try {
+    // Skip when nothing that affects the rendered pattern has changed. This runs before the
+    // needle-mirror write below so a no-op refresh performs no storage write at all — which is
+    // what stops the cross-document `storage` ping-pong that made the diagrams and shaping
+    // notation flash (see `sleevelessLastRenderedSignature`). Real edits change the signature and
+    // still re-render.
+    const incomingSignature = computeSleevelessRenderSignature();
+    if (
+      incomingSignature !== null &&
+      incomingSignature === sleevelessLastRenderedSignature
+    ) {
+      return;
+    }
     if (!isDedicatedSleevelessPatternWorkspacePage()) {
       prepareCustomBuildPatternGeneration({ awaitCharts: false });
     } else if (isEditingSavedCustomPatternProject()) {
       syncAvailableNeedlesMirrorsFromAllSources();
     }
+    // Capture the post-mirror signature so the next storage-driven refresh (whose only delta is a
+    // bumped `updatedAt`) compares equal and is skipped.
+    sleevelessLastRenderedSignature = computeSleevelessRenderSignature();
     const patternMerged = mergedPatternForDisplay(getCurrentPattern());
     const patternData = getPatternData();
     const validation = validatePatternBuilderRequired(patternData);
