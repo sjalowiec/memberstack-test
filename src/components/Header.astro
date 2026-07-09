@@ -1647,6 +1647,15 @@ const memberPlanIds = [...MEMBER_PLAN_IDS];
   box-shadow: 0 0 0 3px rgba(82, 104, 45, 0.15);
 }
 
+.kin-search__hint {
+  margin: 8px 4px 0;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--text-muted, #6b7280);
+  flex: 0 0 auto;
+}
+
 .kin-search__filters {
   display: flex;
   flex-wrap: wrap;
@@ -1781,11 +1790,11 @@ const memberPlanIds = [...MEMBER_PLAN_IDS];
   overflow: hidden;
 }
 .kin-result__excerpt mark {
-  background: rgba(184, 134, 11, 0.13);
+  background: rgba(184, 134, 11, 0.08);
   color: inherit;
   font-weight: inherit;
-  padding: 0 1px;
-  border-radius: 3px;
+  padding: 0;
+  border-radius: 2px;
 }
 
 /* Category icon tint (no background block) */
@@ -2658,6 +2667,8 @@ div[data-ms-modal-overlay] {
         '<input type="search" class="kin-search__input" autocomplete="off" ' +
         'placeholder="Search courses, videos, tools\u2026" aria-label="Search Knit it Now">' +
         "</form>" +
+        '<p class="kin-search__hint">Search works best with a few keywords. ' +
+        "If you don\u2019t find what you need, try fewer words or a simpler term.</p>" +
         '<div class="kin-search__filters" role="group" aria-label="Filter results by type"></div>' +
         '<p class="kin-search__status" role="status" aria-live="polite">Start typing to search across Knit it Now.</p>' +
         '<ul class="kin-search__results" aria-label="Search results"></ul>';
