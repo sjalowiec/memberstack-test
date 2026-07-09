@@ -1719,6 +1719,23 @@ const memberPlanIds = [...MEMBER_PLAN_IDS];
   color: var(--kbm-green, #52682d);
   font-weight: 600;
 }
+/* Suggestion keywords shown in the "no good matches" empty state. */
+.kin-search__suggestions {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.kin-search__suggestions li {
+  background: var(--kbm-green-050, #eef2e6);
+  color: var(--kbm-green, #52682d);
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
 
 .kin-search__results {
   list-style: none;
@@ -2687,6 +2704,73 @@ div[data-ms-modal-overlay] {
       let activeFilter = "all";
       let currentTerm = "";
 
+      // ---- Search-result QUALITY FILTER (UX-only, not a Pagefind change) ----
+      // Pagefind will happily match tiny fragments (single letters, generic
+      // words) for weak/garbage queries, which makes search feel broken. The
+      // helpers below decide, purely in the presentation layer, whether the
+      // results are worth showing. This does NOT touch the Pagefind index or
+      // the search query — it only gates what we render after results return.
+      //
+      // Tune this if too many good/poor queries slip through. Pagefind scores
+      // are relative (higher = better); keep this conservative so we only
+      // reject clearly weak matches.
+      const MIN_GOOD_RESULT_SCORE = 0.05;
+
+      // Generic UI/helper words that shouldn't count as a "real" search intent.
+      const GENERIC_WORDS = new Set([
+        "search", "another", "result", "results", "showing", "try",
+        "word", "words", "keyword", "keywords", "clear", "filter", "filters",
+      ]);
+
+      // Lowercase, strip punctuation, split into raw tokens.
+      function tokenizeQuery(term) {
+        return String(term || "")
+          .toLowerCase()
+          .replace(/[^\p{L}\p{N}\s]+/gu, " ")
+          .split(/\s+/)
+          .filter(Boolean);
+      }
+
+      // Meaningful tokens: at least 3 chars and not a generic UI/helper word.
+      function meaningfulTokens(term) {
+        return tokenizeQuery(term).filter(
+          (t) => t.length >= 3 && !GENERIC_WORDS.has(t)
+        );
+      }
+
+      // Decide whether Pagefind's results are too weak to show. Returns true
+      // (poor quality → show empty state) when any of these hold:
+      //  - the query has no meaningful tokens (all short/generic), OR
+      //  - every raw token is only 1–2 characters long, OR
+      //  - the top result's relevance score is below MIN_GOOD_RESULT_SCORE.
+      function isPoorQuality(term, topScore) {
+        const rawTokens = tokenizeQuery(term);
+        if (meaningfulTokens(term).length === 0) return true;
+        if (rawTokens.length > 0 && rawTokens.every((t) => t.length <= 2)) return true;
+        if (!(topScore >= MIN_GOOD_RESULT_SCORE)) return true;
+        return false;
+      }
+
+      // Empty state shown for weak/garbage queries: hide filter pills + cards
+      // (so we never show misleading counts like "All 6") and guide the user
+      // toward stronger knitting keywords.
+      function showNoGoodMatches(term) {
+        allResults = [];
+        activeFilter = "all";
+        filtersEl.innerHTML = "";
+        filtersEl.style.display = "none";
+        listEl.innerHTML = "";
+        statusEl.innerHTML =
+          "No matches found for \u201C" + escapeHtml(term) + "\u201D.<br>" +
+          "Search works best with one or two knitting keywords.<br><br>" +
+          "Try searching for:" +
+          '<ul class="kin-search__suggestions">' +
+          "<li>tuck</li><li>ribbing</li><li>band pickup</li>" +
+          "<li>LK150</li><li>punchcard</li>" +
+          "</ul>";
+        statusEl.style.display = "";
+      }
+
       function setStatusText(msg) {
         statusEl.textContent = msg || "";
         statusEl.style.display = msg ? "" : "none";
@@ -2774,6 +2858,16 @@ div[data-ms-modal-overlay] {
         }
         if (search === null) return; // superseded by a newer keystroke
         if (term !== currentTerm) return; // stale
+
+        // UX quality gate (presentation-only): before rendering any cards or
+        // category pills, reject weak/garbage queries and low-relevance hits.
+        // The Pagefind index/query are untouched — we just don't show noise.
+        const topScore = search.results.length ? search.results[0].score : 0;
+        if (isPoorQuality(term, topScore)) {
+          showNoGoodMatches(term);
+          return;
+        }
+
         const data = await Promise.all(search.results.slice(0, 30).map((r) => r.data()));
         if (term !== currentTerm) return;
         allResults = data.map((d) => {
