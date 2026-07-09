@@ -31,6 +31,11 @@ import {
   syncAvailableNeedlesMirrorsFromAllSources,
 } from "../lib/patterns/availableNeedlesMirrors";
 import { runSaveCustomPatternFromWorkspace } from "../lib/patterns/customPatternEditingBannerActions";
+import {
+  buildNotesCollapsedPreview,
+  hashRequestsNotesEditing,
+  resolveNotesDefaultExpanded,
+} from "../lib/patterns/sleevelessPatternNotesCollapse";
 import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
 import { logSavedPatternUpdateFlowDiagnostics } from "../lib/patterns/customPatternProjectClient";
 import { isDropShoulderWorkspaceMeasurementSummaryPage } from "../lib/patterns/measurementBlueprintSvgUrl";
@@ -311,6 +316,10 @@ function initSleevelessPatternEditDrawer(): void {
 
   const titleInput = drawer.querySelector<HTMLInputElement>("#sl-edit-title");
   const notesInput = drawer.querySelector<HTMLTextAreaElement>("#sl-edit-notes");
+  const notesField = drawer.querySelector<HTMLElement>("[data-sl-notes-field]");
+  const notesToggle = drawer.querySelector<HTMLButtonElement>("[data-sl-notes-toggle]");
+  const notesRegion = drawer.querySelector<HTMLElement>("[data-sl-notes-region]");
+  const notesPreview = drawer.querySelector<HTMLElement>("[data-sl-notes-preview]");
   const audienceEl = drawer.querySelector<HTMLElement>("[data-sl-edit-audience]");
   const sizeSelect = drawer.querySelector<HTMLSelectElement>("[data-sl-edit-size]");
   const easeEl = drawer.querySelector<HTMLElement>("[data-sl-edit-ease]");
@@ -470,6 +479,23 @@ function initSleevelessPatternEditDrawer(): void {
       currentSize && isValidExpressSizeForAudience(audience, currentSize) ? currentSize : "";
   }
 
+  /** Refresh the collapsed-header preview from the current textarea value. */
+  function updateNotesPreview(): void {
+    if (!notesPreview) return;
+    const collapsed = notesField?.dataset.collapsed !== "false";
+    const preview = collapsed ? buildNotesCollapsedPreview(notesInput?.value ?? "") : "";
+    notesPreview.textContent = preview;
+    notesPreview.hidden = preview === "";
+  }
+
+  /** Expand/collapse the Notes section, keeping ARIA + preview in sync. */
+  function setNotesExpanded(expanded: boolean): void {
+    if (notesField) notesField.dataset.collapsed = expanded ? "false" : "true";
+    if (notesToggle) notesToggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+    if (notesRegion) notesRegion.hidden = !expanded;
+    updateNotesPreview();
+  }
+
   /** Fill every drawer control from the current pattern storage (source of truth). */
   function populateFromStorage(): void {
     const pattern = getCurrentPattern();
@@ -490,6 +516,11 @@ function initSleevelessPatternEditDrawer(): void {
           ? pattern.patternProject.notes
           : "";
       notesInput.value = notes;
+      // Collapsed by default so Quick edits sits higher; open when a note already exists or when
+      // the workspace was deep-linked straight to notes editing (`#edit-notes`).
+      const deepLinkToNotes =
+        typeof window !== "undefined" && hashRequestsNotesEditing(window.location.hash);
+      setNotesExpanded(resolveNotesDefaultExpanded(notes, { deepLinkToNotes }));
     }
 
     const audience = resolveAudience();
@@ -952,6 +983,17 @@ function initSleevelessPatternEditDrawer(): void {
     void openDrawer();
   });
   drawerCloseEls.forEach((el) => el.addEventListener("click", () => closeDrawer()));
+
+  if (notesToggle) {
+    notesToggle.addEventListener("click", () => {
+      const willExpand = notesField?.dataset.collapsed !== "false";
+      setNotesExpanded(willExpand);
+      if (willExpand && notesInput) {
+        window.requestAnimationFrame(() => notesInput.focus());
+      }
+    });
+  }
+  notesInput?.addEventListener("input", updateNotesPreview);
 
   // Keep the panel flush with the header when the chrome height changes (resize, font load).
   syncPanelTop();

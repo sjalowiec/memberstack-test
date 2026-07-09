@@ -207,19 +207,30 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
                 />
               </div>
 
-              <div class="sl-edit-field">
-                <label class="sl-edit-label" for="sl-edit-notes">
-                  <span class="pattern-editable-heading">
+              <div class="sl-edit-field sl-edit-notes-field" data-sl-notes-field data-collapsed="true">
+                <button
+                  type="button"
+                  class="sl-edit-notes-toggle"
+                  data-sl-notes-toggle
+                  aria-expanded="false"
+                  aria-controls="sl-edit-notes-region"
+                >
+                  <span class="sl-edit-notes-toggle__label pattern-editable-heading">
                     Notes
                     <PatternEditablePencilIcon />
                   </span>
-                </label>
-                <textarea
-                  id="sl-edit-notes"
-                  class="sl-edit-input sl-edit-textarea"
-                  rows="4"
-                  placeholder="Add your own notes — yarn, needles, tweaks to remember…"
-                ></textarea>
+                  <span class="sl-edit-notes-toggle__preview" data-sl-notes-preview hidden></span>
+                  <i class="fa-solid fa-chevron-down sl-edit-notes-toggle__chevron" aria-hidden="true"></i>
+                </button>
+                <div class="sl-edit-notes-region" id="sl-edit-notes-region" data-sl-notes-region hidden>
+                  <textarea
+                    id="sl-edit-notes"
+                    class="sl-edit-input sl-edit-textarea"
+                    rows="4"
+                    aria-label="Notes"
+                    placeholder="Add your own notes — yarn, needles, tweaks to remember…"
+                  ></textarea>
+                </div>
               </div>
 
               <section class="sl-edit-section" aria-labelledby="sl-edit-setup-heading">
@@ -847,6 +858,78 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
   .sl-edit-textarea {
     min-height: 5.5rem;
     resize: vertical;
+  }
+
+  /*
+   * Collapsible Notes: defaults collapsed to a single compact header row so the Quick edits
+   * section sits higher on the panel. The header button reuses the eyebrow label styling and
+   * shows an inline preview of any saved note; the chevron rotates when open.
+   */
+  .sl-edit-notes-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: none;
+    border: 0;
+    text-align: left;
+    cursor: pointer;
+    color: inherit;
+  }
+
+  .sl-edit-notes-toggle__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4375rem;
+    flex: 0 0 auto;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #6b7280);
+  }
+
+  .sl-edit-notes-toggle__preview {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: #6b7280;
+  }
+
+  .sl-edit-notes-toggle__preview[hidden] {
+    display: none;
+  }
+
+  .sl-edit-notes-toggle__chevron {
+    flex: 0 0 auto;
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #6b7280);
+    transition: transform 0.15s ease;
+  }
+
+  .sl-edit-notes-field[data-collapsed="false"] .sl-edit-notes-toggle__chevron {
+    transform: rotate(180deg);
+  }
+
+  .sl-edit-notes-toggle:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  .sl-edit-notes-region {
+    margin-top: 0.5rem;
+  }
+
+  .sl-edit-notes-region[hidden] {
+    display: none;
   }
 
   #sl-edit-title {
