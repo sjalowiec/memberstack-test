@@ -1,5 +1,6 @@
 import type { CourseAccessLevel } from "../courseAccess";
 import { getCourseAccessBySlug } from "../coursesCatalogAccess";
+import { getCatalogOverlayDescription } from "../coursesCatalogOverlay";
 import { readCourseContentStatus } from "./courseContentAdmin";
 import { legacyAssetUrl } from "./legacyCourseAssetUrls";
 import {
@@ -73,10 +74,16 @@ export function getCourseLandingBySlug(slug: string): CourseLandingView | undefi
   const normalizedSlug = record.course.slug;
   const contentStatus = readCourseContentStatus(record.course);
 
+  // Prefer the course JSON description; fall back to the curated
+  // courses-catalog.json blurb so the landing page (and Pagefind) always has
+  // searchable description copy, matching the /courses catalog card.
+  const description =
+    readCourseDescription(record) ?? getCatalogOverlayDescription(normalizedSlug);
+
   return {
     slug: normalizedSlug,
     title: record.course.title,
-    description: readCourseDescription(record),
+    description,
     thumbnailUrl: readCourseLandingThumbnail(record),
     contentStatus,
     contentStatusLabel: CONTENT_STATUS_LABELS[contentStatus],
