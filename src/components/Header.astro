@@ -4,10 +4,6 @@
 import { MEMBER_PLAN_IDS } from "../config/memberships";
 import { PATTERN_BUILDERS_HOME_HREF } from "../lib/patterns/customPatternProjectNavigation";
 
-/* Temporary beta "What's New" banner. Set to false to hide site-wide
-   (no leftover spacing — the fixed-header offset re-measures automatically). */
-const SHOW_BETA_BANNER = true;
-
 interface Props {
   /**
    * Onboarding mode: render a stripped-down header (logo only) for focused
@@ -107,22 +103,6 @@ const memberPlanIds = [...MEMBER_PLAN_IDS];
     padding: 6px 0;
   }
 
-  .kbm-nav-bar .header-search-trigger {
-    flex: 0 1 180px;
-    max-width: 260px;
-    min-width: 140px;
-    margin-right: auto;
-    padding: 6px 14px;
-    font-size: 13px;
-  }
-
-  .kbm-nav-bar .search-placeholder {
-    display: block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
   .kbm-nav-bar .kbm-header-auth {
     flex: 0 1 auto;
     min-width: 0;
@@ -174,10 +154,6 @@ const memberPlanIds = [...MEMBER_PLAN_IDS];
     align-items: center;
     gap: 1.5rem;
     min-width: 0;
-  }
-
-  .kbm-nav-bar .header-search-trigger {
-    margin-right: 0;
   }
 
   .kbm-nav-bar .kbm-header-auth {
@@ -262,84 +238,89 @@ const memberPlanIds = [...MEMBER_PLAN_IDS];
   }
 }
 
-/* ===== BETA "WHAT'S NEW" BANNER (terracotta strip below nav) ===== */
-.kbm-beta-banner {
+/* ===== SITE-WIDE SEARCH STRIP (full-width search bar below nav) ===== */
+.kbm-search-strip {
   width: 100%;
   background: var(--kbm-accent, #c2614e);
-  color: #fff;
-  padding: 0.45rem 0;
+  padding: 0.6rem 0;
   border-top: 1px solid rgba(255, 255, 255, 0.18);
 }
 
-.kbm-beta-banner-inner {
+.kbm-search-strip-inner {
   width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
   padding-inline: 24px;
   box-sizing: border-box;
+}
+
+.kbm-search-bar {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 10px 20px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 999px;
+  background: #fff;
+  color: #5b5b5b;
+  cursor: text;
+  box-sizing: border-box;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.kbm-search-bar:hover {
+  border-color: rgba(0, 0, 0, 0.16);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+}
+
+.kbm-search-bar:focus,
+.kbm-search-bar:focus-visible {
+  outline: none;
+  border-color: var(--kbm-green, #52682d);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.85), 0 3px 10px rgba(0, 0, 0, 0.18);
+}
+
+.kbm-search-bar__icon {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  gap: 0.35rem 0.75rem;
-  text-align: center;
+  flex: 0 0 auto;
+  color: var(--kbm-green, #52682d);
 }
 
-.kbm-beta-banner-title {
+.kbm-search-bar__placeholder {
   font-family: var(--font, "Poppins", sans-serif);
-  font-weight: 700;
-  font-size: var(--text-base);
-  color: #fff;
-}
-
-.kbm-beta-banner-text {
-  font-family: var(--font, "Poppins", sans-serif);
-  font-size: var(--text-base);
-  color: rgba(255, 255, 255, 0.95);
-}
-
-.kbm-beta-banner .kbm-beta-banner-link,
-.kbm-beta-banner .kbm-beta-banner-link:link,
-.kbm-beta-banner .kbm-beta-banner-link:visited {
-  font-family: var(--font, "Poppins", sans-serif);
-  font-weight: 700;
-  font-size: var(--text-base);
-  color: #fff;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  font-size: 1.05rem;
+  color: #6a6a6a;
   white-space: nowrap;
-}
-
-.kbm-beta-banner .kbm-beta-banner-link:hover,
-.kbm-beta-banner .kbm-beta-banner-link:focus {
-  color: #fff;
-  text-decoration-thickness: 2px;
-}
-
-.kbm-beta-banner-link:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
-  border-radius: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @media (max-width: 1024px) {
-  .kbm-beta-banner {
-    padding: 0.4rem 0;
+  .kbm-search-strip {
+    padding: 0.5rem 0;
   }
-  .kbm-beta-banner-inner {
+  .kbm-search-strip-inner {
     padding-inline: 16px;
   }
 }
 
-@media (max-width: 699px) {
-  .kbm-beta-banner {
-    display: none;
-  }
-}
-
 @media (max-width: 600px) {
-  .kbm-beta-banner-title,
-  .kbm-beta-banner-text,
-  .kbm-beta-banner-link {
-    font-size: 0.85rem;
+  .kbm-search-bar {
+    min-height: 48px;
+    padding: 8px 16px;
+    gap: 10px;
+  }
+  .kbm-search-bar__placeholder {
+    font-size: 0.95rem;
+  }
+  .kbm-search-bar__icon svg {
+    width: 20px;
+    height: 20px;
   }
 }
 
@@ -479,35 +460,6 @@ const memberPlanIds = [...MEMBER_PLAN_IDS];
   align-items: center;
   gap: 0.75rem;
   min-width: 0;
-}
-
-.kbm-nav-bar .header-search-trigger {
-  margin-left: 0;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 999px;
-  padding: 8px 16px;
-  color: rgba(255, 255, 255, 0.8);
-  cursor: pointer;
-  background: transparent;
-  min-width: 0;
-  flex: 0 1 220px;
-  max-width: 220px;
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-.kbm-nav-bar .header-search-trigger:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.6);
-}
-
-.kbm-nav-bar .header-search-trigger:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.85);
-  outline-offset: 2px;
-}
-
-.kbm-nav-bar .search-placeholder {
-  opacity: 0.8;
 }
 
 .kbm-nav-bar .kbm-nav-right {
@@ -2024,17 +1976,8 @@ div[data-ms-modal-overlay] {
         </div>
       </div>
 
-      <!-- Secondary row on tablet: search + account; inline on desktop -->
+      <!-- Secondary row on tablet: account actions; inline on desktop -->
       <div class="kbm-nav-secondary">
-        <div
-          class="header-search-trigger"
-          id="openSearchModal"
-          role="button"
-          tabindex="0"
-          aria-label="Site-wide search"
-        >
-          <span class="search-placeholder">Site-wide search</span>
-        </div>
         <div class="kbm-header-auth">
           <div data-ms-content="!members">
             <a href="#" data-ms-modal="login" data-ms-redirect="current-url" class="kbm-btn kbm-btn-outline">
@@ -2094,16 +2037,24 @@ div[data-ms-modal-overlay] {
     </div>
   </header>
 
-  {SHOW_BETA_BANNER && !onboarding && (
-    <div class="kbm-beta-banner" role="region" aria-label="Beta updates">
-      <div class="kbm-beta-banner-inner">
-        <span class="kbm-beta-banner-title">What's New in Beta</span>
-        <span class="kbm-beta-banner-text">
-          See the latest updates, new tools, pattern improvements, and bug fixes.
-        </span>
-        <a href="/whats-new" class="kbm-beta-banner-link" data-testid="beta-banner-link">
-          View Updates →
-        </a>
+  {!onboarding && (
+    <div class="kbm-search-strip" role="region" aria-label="Site-wide search">
+      <div class="kbm-search-strip-inner">
+        <div
+          class="kbm-search-bar"
+          id="openSearchModal"
+          role="button"
+          tabindex="0"
+          aria-label="Search videos, tools, patterns, glossary, and more"
+        >
+          <span class="kbm-search-bar__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </span>
+          <span class="kbm-search-bar__placeholder">Search videos, tools, patterns, glossary, and more...</span>
+        </div>
       </div>
     </div>
   )}
