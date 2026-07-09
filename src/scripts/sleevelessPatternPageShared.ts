@@ -72,9 +72,6 @@ import {
 } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
 import { renderSleevelessBodyShapingChartHtml } from "../lib/patterns/sleevelessBodyShapingChartHtml.ts";
 import { renderDropShoulderSleeveShapingChartHtml } from "../lib/patterns/dropShoulderSleeveShapingChart.ts";
-// PROTOTYPE: isolated dynamic "Shaping Map" SVG. Sample data only for now — will later
-// be fed from real shaping math. See src/lib/patterns/shapingMapSvg.ts.
-import { renderShapingMapSvg, SAMPLE_SHAPING_MAP_DATA } from "../lib/patterns/shapingMapSvg.ts";
 import { initChartProgressTracking } from "./chartProgressTracker.ts";
 import { scheduleReadingWorkflowSync } from "../lib/patterns/patternReadingWorkflowSync.ts";
 import { showResults, initializeActionBar } from "../components/wizards/utils/wizardBehavior.ts";
@@ -733,20 +730,12 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
   <div class="sg-pattern-output sg-neck-chart-print-block" id="${escapeHtml(chartTableMountId)}"></div>
   <p class="neckline-chart-print-only-footer">Created by Knit It Now · Printed <span data-neckline-chart-print-date></span></p>
 </div>`;
-        // PROTOTYPE: temporary Shaping Map section. Driven by hardcoded SAMPLE_SHAPING_MAP_DATA
-        // (not from instruction text) — swap in real shaping data once wired to pattern math.
-        const shapingMapChunk = `<section class="shaping-map" aria-label="Shaping Map (prototype)">
-  <h3 class="shaping-map__title">Shaping Map</h3>
-  <p class="shaping-map__note">Prototype preview using sample data. This map will be generated from your pattern's shaping math.</p>
-  <div class="shaping-map__scroll">${renderShapingMapSvg(SAMPLE_SHAPING_MAP_DATA)}</div>
-</section>`;
         if (openSectionSlugSource) {
           openSectionParts.push(chartChunk);
-          openSectionParts.push(shapingMapChunk);
           continue;
         }
         postParts.push(
-          `<section class="sleeveless-piece-chart-fullwidth">${chartChunk}${shapingMapChunk}</section>`
+          `<section class="sleeveless-piece-chart-fullwidth">${chartChunk}</section>`
         );
         continue;
       }
