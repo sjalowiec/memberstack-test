@@ -67,6 +67,7 @@ import {
   isShallowSinglesOnlyPlan,
 } from "./roundNeckPlanPresentation";
 import { cardiganFrontInitialNeckBindOffStitches } from "./roundNeckNotation";
+import { dropShoulderShoulderBindOffVideoRow } from "./dropShoulderShoulderBindOffVideo";
 import {
   castOnMethodQuickTipInnerHtml,
   pieceMarkersSeamingTipDisplayRow,
@@ -532,6 +533,9 @@ function buildBackRows(args: {
       bodyWidthStitches: args.bodyWidthSts,
       rc: { necklineStartRc: neckStartRc, shoulderCompleteRc: args.totalRows },
     });
+    // Isolated, hardcoded explainer video shown immediately before the shoulder
+    // bind-off instructions. See `dropShoulderShoulderBindOffVideo.ts`.
+    rows.push(dropShoulderShoulderBindOffVideoRow());
     rows.push({
       kind: "block",
       rc: formatRcColon(neckStartRc),

@@ -491,6 +491,8 @@ export type SleevelessPatternDisplayRow =
       tipPresentation?: PatternTipPresentation;
       /** Stable id for per-tip dismiss (`data-tip-id` on the rendered `.pattern-tip` wrapper). */
       tipId?: string;
+      /** Extra classes on the rendered `.pattern-tip` wrapper (e.g. `no-print` / `pattern-print-personalization-never-print`). */
+      tipWrapperClass?: string;
       /**
        * Required-action marker: render the {@link rowCounterResetBlockHtml} block
        * (after {@link rc}, before {@link paragraphs}). Not a tip — see `rowCounterReset.ts`.
