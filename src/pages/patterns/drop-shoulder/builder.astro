@@ -4,6 +4,12 @@ import SleevelessPatternMemberGate from "../../../components/patterns/Sleeveless
 import GlossaryTooltip from "../../../components/common/GlossaryTooltip.astro";
 import GaugeInput from "../../../components/wizards/GaugeInput.astro";
 import UnitToggle from "../../../components/wizards/UnitToggle.astro";
+import FloatingInput from "../../../components/lego/FloatingInput.astro";
+import {
+  AVAILABLE_NEEDLES_HELPER_TEXT,
+  AVAILABLE_NEEDLES_LABEL,
+  AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
+} from "../../../lib/patterns/sleevelessExpressAvailableNeedles";
 /* Wizard is @import'd first inside sleeveless-express-builder-cards.css so Express overrides always win cascade */
 import "../../../styles/sleeveless-express-builder-cards.css";
 import "../../../styles/sleeveless-express-wizard-layout.css";
@@ -683,26 +689,21 @@ const imgGarmentCardigan = "/images/patterns/drop-shoulder/picker/drop-cardigan-
                   />
                 </div>
                 <div class="express-needle-block">
-                  <label for="express-available-needles" class="express-needle-label">
-                    Available needles
-                  </label>
-                  <p class="express-needle-label">
-                    Used to check whether your pattern pieces will fit on your machine.
+                  <FloatingInput
+                    id="express-available-needles"
+                    name="availableNeedles"
+                    label={AVAILABLE_NEEDLES_LABEL}
+                    type="number"
+                    inputMode="numeric"
+                    min="1"
+                    step="1"
+                    required
+                    errorId="express-available-needles-error"
+                    errorText={AVAILABLE_NEEDLES_REQUIRED_MESSAGE}
+                  />
+                  <p class="express-needle-help" id="express-available-needles-help">
+                    {AVAILABLE_NEEDLES_HELPER_TEXT}
                   </p>
-                  <div class="express-needle-input-group">
-                    <input
-                      type="number"
-                      id="express-available-needles"
-                      class="express-needle-input"
-                      name="availableNeedles"
-                      min="1"
-                      step="1"
-                      inputmode="numeric"
-                      value="150"
-                      required
-                    />
-                    <span class="express-needle-suffix" aria-hidden="true">needles</span>
-                  </div>
                 </div>
               </form>
             </div>
@@ -813,6 +814,14 @@ const imgGarmentCardigan = "/images/patterns/drop-shoulder/picker/drop-cardigan-
     flex-direction: column;
     gap: 0.3rem;
     max-width: 16rem;
+  }
+
+  .express-needle-help {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: #6b7280;
   }
 
   .express-needle-label {

@@ -2,6 +2,11 @@
 import Layout from "../../layouts/Layout.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import FloatingInput from "../../components/tools/FloatingInput.astro";
+import {
+  AVAILABLE_NEEDLES_HELPER_TEXT,
+  AVAILABLE_NEEDLES_LABEL,
+  AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
+} from "../../lib/patterns/sleevelessExpressAvailableNeedles";
 import "../../styles/wizard.css";
 ---
 
@@ -133,21 +138,22 @@ import "../../styles/wizard.css";
         </section>
 
         <section class="hat-form-section" aria-labelledby="sg-yarn-needles-heading">
-          <h2 id="sg-yarn-needles-heading" class="hat-form-section__title hat-form-section__heading">13. Available needles</h2>
+          <h2 id="sg-yarn-needles-heading" class="hat-form-section__title hat-form-section__heading">13. Needles available</h2>
           <div class="sg-needle-field">
-            <span id="sg-needle-label" class="sg-yarn-label">Available needles</span>
-            <div class="sg-needle-input-group" role="group" aria-labelledby="sg-needle-label">
-              <input
-                type="number"
-                id="sg-available-needles"
-                class="sg-needle-input"
-                min="1"
-                step="1"
-                inputmode="numeric"
-                aria-label="Number of needles available"
-              />
-              <span class="sg-needle-suffix" aria-hidden="true">needles</span>
-            </div>
+            <FloatingInput
+              id="sg-available-needles"
+              label={AVAILABLE_NEEDLES_LABEL}
+              type="number"
+              min={1}
+              step={1}
+              inputmode="numeric"
+              required
+              ariaDescribedby="sg-available-needles-help"
+              errorMessage={AVAILABLE_NEEDLES_REQUIRED_MESSAGE}
+            />
+            <p class="sg-needle-help" id="sg-available-needles-help">
+              {AVAILABLE_NEEDLES_HELPER_TEXT}
+            </p>
             <div class="sg-needle-quick" role="group" aria-label="Common needle counts">
               <button type="button" class="sg-needle-chip" data-needle-preset="100">100</button>
               <button type="button" class="sg-needle-chip" data-needle-preset="110">110</button>
@@ -339,43 +345,15 @@ import "../../styles/wizard.css";
     gap: 0.65rem;
   }
 
-  .sg-needle-input-group {
-    display: flex;
-    align-items: stretch;
+  .sg-needle-field .floating-input {
     max-width: 22rem;
-    border-radius: 10px;
-    overflow: hidden;
-    border: 1px solid rgba(82, 104, 45, 0.35);
-    background: #fff;
   }
 
-  .sg-needle-input {
-    flex: 1 1 auto;
-    min-width: 0;
-    border: none;
-    padding: 0.65rem 0.85rem;
-    font-family: inherit;
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #374151;
-    background: transparent;
-  }
-
-  .sg-needle-input:focus {
-    outline: none;
-    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--sg-accent) 35%, transparent);
-  }
-
-  .sg-needle-suffix {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    padding: 0 0.95rem;
-    font-size: 0.92rem;
-    font-weight: 600;
-    color: #4b5563;
-    background: color-mix(in srgb, var(--kbm-green, #52682d) 8%, #fff);
-    border-left: 1px solid rgba(82, 104, 45, 0.18);
+  .sg-needle-help {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #6b7280;
   }
 
   .sg-needle-quick {
@@ -631,6 +609,7 @@ import "../../styles/wizard.css";
     notifyPatternSaved,
     getSleevelessChartAudience,
   } from "../../lib/patterns/patternStorage.ts";
+  import { isValidExpressAvailableNeedles } from "../../lib/patterns/sleevelessExpressAvailableNeedles.ts";
 
   const CHART_AUDIENCES = ["misses", "plus", "men", "kids", "baby"];
 
@@ -902,8 +881,44 @@ import "../../styles/wizard.css";
         if (!v || !(input instanceof HTMLInputElement)) return;
         input.value = v;
         input.dispatchEvent(new Event("input", { bubbles: true }));
+        setNeedleErrorState(input, false);
       });
     });
+
+    const needlesInput = root.querySelector("#sg-available-needles");
+    if (needlesInput instanceof HTMLInputElement) {
+      needlesInput.addEventListener("input", () => {
+        if (isValidExpressAvailableNeedles(needlesInput.value)) {
+          setNeedleErrorState(needlesInput, false);
+        }
+      });
+      needlesInput.addEventListener("blur", () => {
+        if (needlesInput.value.trim() !== "") {
+          setNeedleErrorState(needlesInput, !isValidExpressAvailableNeedles(needlesInput.value));
+        }
+      });
+    }
+
+    const continueBtn = document.querySelector("[data-sg-yarn-continue-pattern]");
+    if (continueBtn instanceof HTMLAnchorElement && needlesInput instanceof HTMLInputElement) {
+      continueBtn.addEventListener(
+        "click",
+        (event) => {
+          if (!isValidExpressAvailableNeedles(needlesInput.value)) {
+            event.preventDefault();
+            setNeedleErrorState(needlesInput, true);
+            needlesInput.focus();
+          }
+        },
+        true,
+      );
+    }
+  }
+
+  function setNeedleErrorState(input, hasError) {
+    input.classList.toggle("error", hasError);
+    if (hasError) input.setAttribute("aria-invalid", "true");
+    else input.removeAttribute("aria-invalid");
   }
 
   function init() {

@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 import {
-  EXPRESS_DEFAULT_AVAILABLE_NEEDLES,
   evaluateExpressNeedleFailSafeBeforeRender,
   isValidExpressAvailableNeedles,
   readExpressSessionAvailableNeedles,
@@ -51,10 +50,10 @@ function expressPatternData(overrides: {
 }
 
 describe("resolveExpressAvailableNeedles", () => {
-  it("defaults to 150 when there is no prior value or input", () => {
-    expect(resolveExpressAvailableNeedles(undefined)).toBe(EXPRESS_DEFAULT_AVAILABLE_NEEDLES);
-    expect(resolveExpressAvailableNeedles({})).toBe(EXPRESS_DEFAULT_AVAILABLE_NEEDLES);
-    expect(resolveExpressAvailableNeedles(undefined, "  ")).toBe(EXPRESS_DEFAULT_AVAILABLE_NEEDLES);
+  it("returns empty (no silent default) when there is no prior value or input", () => {
+    expect(resolveExpressAvailableNeedles(undefined)).toBe("");
+    expect(resolveExpressAvailableNeedles({})).toBe("");
+    expect(resolveExpressAvailableNeedles(undefined, "  ")).toBe("");
   });
 
   it("prefers live input over stored yarnGaugeMachine", () => {
@@ -69,13 +68,14 @@ describe("resolveExpressAvailableNeedles", () => {
 });
 
 describe("isValidExpressAvailableNeedles", () => {
-  it("accepts positive integers and rejects empty or non-positive values", () => {
+  it("accepts positive whole numbers and rejects empty, non-positive, or fractional values", () => {
     expect(isValidExpressAvailableNeedles("150")).toBe(true);
     expect(isValidExpressAvailableNeedles(" 272 ")).toBe(true);
     expect(isValidExpressAvailableNeedles("")).toBe(false);
     expect(isValidExpressAvailableNeedles("0")).toBe(false);
     expect(isValidExpressAvailableNeedles("-1")).toBe(false);
     expect(isValidExpressAvailableNeedles("abc")).toBe(false);
+    expect(isValidExpressAvailableNeedles("150.5")).toBe(false);
   });
 });
 
@@ -86,11 +86,11 @@ describe("resolveExpressAvailableNeedlesForResume", () => {
     ).toBe("150");
   });
 
-  it("falls back to yarnGaugeMachine then default", () => {
+  it("falls back to yarnGaugeMachine then empty (no silent default)", () => {
     expect(resolveExpressAvailableNeedlesForResume(undefined, { availableNeedles: 272 })).toBe(
       "272",
     );
-    expect(resolveExpressAvailableNeedlesForResume("", {})).toBe(EXPRESS_DEFAULT_AVAILABLE_NEEDLES);
+    expect(resolveExpressAvailableNeedlesForResume("", {})).toBe("");
   });
 });
 

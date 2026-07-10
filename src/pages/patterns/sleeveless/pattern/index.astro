@@ -9,6 +9,12 @@ import PatternEditablePencilIcon from "../../../../components/patterns/PatternEd
 import SleevelessPatternPrintNotice from "../../../../components/patterns/SleevelessPatternPrintNotice.astro";
 import PatternEditingUnlockModal from "../../../../components/patterns/PatternEditingUnlockModal.astro";
 import PatternAutoSaveSuccessDialog from "../../../../components/patterns/PatternAutoSaveSuccessDialog.astro";
+import FloatingInput from "../../../../components/lego/FloatingInput.astro";
+import {
+  AVAILABLE_NEEDLES_HELPER_TEXT,
+  AVAILABLE_NEEDLES_LABEL,
+  AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
+} from "../../../../lib/patterns/sleevelessExpressAvailableNeedles";
 
 import "../../../../styles/ns-shaping-chart.css";
 // PROTOTYPE: dynamic Shaping Map SVG styles (temporary, isolated).
@@ -334,18 +340,22 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
                       placeholder="e.g. 44"
                     />
                   </div>
-                  <div class="sl-edit-subfield">
-                    <label class="sl-edit-sublabel" for="sl-edit-needles">Available needles</label>
-                    <input
-                      type="number"
-                      id="sl-edit-needles"
-                      class="sl-edit-input"
-                      inputmode="numeric"
-                      min="0"
-                      step="1"
-                      placeholder="e.g. 200"
-                    />
-                  </div>
+                </div>
+                <div class="sl-edit-needles-field">
+                  <FloatingInput
+                    id="sl-edit-needles"
+                    label={AVAILABLE_NEEDLES_LABEL}
+                    type="number"
+                    inputMode="numeric"
+                    min="1"
+                    step="1"
+                    required
+                    errorId="sl-edit-needles-error"
+                    errorText={AVAILABLE_NEEDLES_REQUIRED_MESSAGE}
+                  />
+                  <p class="sl-edit-needles-help" id="sl-edit-needles-help">
+                    {AVAILABLE_NEEDLES_HELPER_TEXT}
+                  </p>
                 </div>
               </section>
             </div>
@@ -968,6 +978,18 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
 
   .sl-edit-subfield {
     min-width: 0;
+  }
+
+  .sl-edit-needles-field {
+    margin-top: 0.9rem;
+    max-width: 18rem;
+  }
+
+  .sl-edit-needles-help {
+    margin: 0.4rem 0 0;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: #6b7280;
   }
 
   .sl-edit-segment {

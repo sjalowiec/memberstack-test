@@ -11,20 +11,31 @@ export const EXPRESS_AVAILABLE_NEEDLES_INPUT_ID = "express-available-needles";
 /** Express builder — return here to adjust size, ease, or gauge without clearing saved answers. */
 export const EXPRESS_BUILDER_ADJUST_HREF = "/patterns/sleeveless-express/";
 
-/** Default when the knitter has not entered a needle count. */
-export const EXPRESS_DEFAULT_AVAILABLE_NEEDLES = "150";
+/**
+ * Shared copy for the "Needles available" field across every pattern builder / edit view.
+ * Keep the wording centralized so the builder, edit drawer, and validation stay consistent.
+ */
+export const AVAILABLE_NEEDLES_LABEL = "Needles available";
+export const AVAILABLE_NEEDLES_HELPER_TEXT =
+  "Used to check that your pattern pieces will knit on your machine.";
+export const AVAILABLE_NEEDLES_REQUIRED_MESSAGE =
+  "Enter the number of working needles available on your machine.";
 
-/** True when the knitter entered a positive needle count (Express gauge step). */
+/**
+ * True when the knitter entered a positive whole needle count (Express gauge step).
+ * Only positive integers are accepted — no default is ever substituted.
+ */
 export function isValidExpressAvailableNeedles(value: string): boolean {
   const trimmed = value.trim();
   if (trimmed === "") return false;
   const n = Number(trimmed);
-  return Number.isFinite(n) && n > 0;
+  return Number.isInteger(n) && n > 0;
 }
 
 /**
- * Resolved needle count for Express storage (string, digits only when from presets/default).
- * Prefers live input, then prior `yarnGaugeMachine`, then {@link EXPRESS_DEFAULT_AVAILABLE_NEEDLES}.
+ * Resolved needle count for Express storage (string, digits only).
+ * Prefers live input, then prior `yarnGaugeMachine`. Returns "" when nothing has been entered —
+ * never invents a default value.
  */
 export function resolveExpressAvailableNeedles(
   prevYarnGaugeMachine: Record<string, unknown> | undefined,
@@ -38,10 +49,10 @@ export function resolveExpressAvailableNeedles(
     return String(raw).trim();
   }
 
-  return EXPRESS_DEFAULT_AVAILABLE_NEEDLES;
+  return "";
 }
 
-/** Needle count stored on the Express wizard snapshot (resume). */
+/** Needle count stored on the Express wizard snapshot (resume). Empty when never entered. */
 export function resolveExpressAvailableNeedlesForResume(
   persistedNeedles: string | undefined,
   prevYarnGaugeMachine: Record<string, unknown> | undefined,

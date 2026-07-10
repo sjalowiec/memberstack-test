@@ -69,6 +69,10 @@ import {
   validatePatternBuilderRequired,
 } from "../lib/patterns/patternBuilderValidation";
 import {
+  AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
+  isValidExpressAvailableNeedles,
+} from "../lib/patterns/sleevelessExpressAvailableNeedles";
+import {
   findExpressChartRow,
   getExpressChartRowsForAudience,
   isValidExpressSizeForAudience,
@@ -750,7 +754,13 @@ function initSleevelessPatternEditDrawer(): void {
     }
     if (!isPositiveNumericMeasurement(stitchSwatch)) errors.push("Enter a stitch gauge greater than 0.");
     if (!isPositiveNumericMeasurement(rowSwatch)) errors.push("Enter a row gauge greater than 0.");
-    if (!isPositiveNumericMeasurement(needles)) errors.push("Enter the number of needles.");
+    const needlesValid = isValidExpressAvailableNeedles(needles);
+    if (!needlesValid) errors.push(AVAILABLE_NEEDLES_REQUIRED_MESSAGE);
+    if (needlesInput) {
+      needlesInput.classList.toggle("error", !needlesValid);
+      if (needlesValid) needlesInput.removeAttribute("aria-invalid");
+      else needlesInput.setAttribute("aria-invalid", "true");
+    }
     if (errors.length > 0) {
       showErrors(errors);
       return;

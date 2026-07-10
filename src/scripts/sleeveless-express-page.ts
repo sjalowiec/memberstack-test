@@ -242,6 +242,15 @@ function needlesOk(): boolean {
   return isValidExpressAvailableNeedles(readExpressAvailableNeedlesInput());
 }
 
+/** Toggle the FloatingInput error state (red border + required message) on the needle field. */
+function setNeedleFieldError(hasError: boolean): void {
+  const el = document.getElementById(EXPRESS_AVAILABLE_NEEDLES_INPUT_ID);
+  if (!(el instanceof HTMLInputElement)) return;
+  el.classList.toggle("error", hasError);
+  if (hasError) el.setAttribute("aria-invalid", "true");
+  else el.removeAttribute("aria-invalid");
+}
+
 /** Gauge step complete: swatch gauge + available needles (no machine-width checks yet). */
 function gaugeStepOk(): boolean {
   return gaugeOk() && needlesOk();
@@ -883,6 +892,9 @@ function initExpressPage() {
     persistExpressSession();
     syncExpressWizardToPatternStorage(values, null);
     refreshGaugeStepUi(false);
+    if (isValidExpressAvailableNeedles(readExpressAvailableNeedlesInput())) {
+      setNeedleFieldError(false);
+    }
   }
 
   function applyExpressBuilderUiReset(): void {
@@ -1046,6 +1058,11 @@ function initExpressPage() {
   rowsInput?.addEventListener("change", onGaugeInput);
   needlesInput?.addEventListener("input", onNeedlesInput);
   needlesInput?.addEventListener("change", onNeedlesInput);
+  needlesInput?.addEventListener("blur", () => {
+    if (needlesInput instanceof HTMLInputElement && needlesInput.value.trim() !== "") {
+      setNeedleFieldError(!isValidExpressAvailableNeedles(needlesInput.value));
+    }
+  });
 
   window.addEventListener("kbm:units-change", (ev: Event) => {
     const tid = (ev as CustomEvent<{ toggleId?: string }>).detail?.toggleId;
@@ -1060,11 +1077,16 @@ function initExpressPage() {
     const rwEl = document.getElementById(GAUGE_ROW_ID);
     if (!(stEl instanceof HTMLInputElement) || !(rwEl instanceof HTMLInputElement)) return;
     const needlesEl = document.getElementById(EXPRESS_AVAILABLE_NEEDLES_INPUT_ID);
+    const needlesValid =
+      needlesEl instanceof HTMLInputElement && isValidExpressAvailableNeedles(needlesEl.value);
+    if (!needlesValid) {
+      setNeedleFieldError(true);
+      if (needlesEl instanceof HTMLInputElement) needlesEl.focus();
+    }
     if (
       !isValidPositiveNumber(stEl.value) ||
       !isValidPositiveNumber(rwEl.value) ||
-      !(needlesEl instanceof HTMLInputElement) ||
-      !isValidPositiveNumber(needlesEl.value)
+      !needlesValid
     ) {
       return;
     }

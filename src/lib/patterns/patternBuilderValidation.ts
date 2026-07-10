@@ -2,6 +2,7 @@ import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinish
 import { getCurrentPattern, getPatternData, normalizeSleevelessAudience } from "./patternStorage";
 import { patternBuilderAvailableNeedlesRaw } from "./availableNeedlesMirrors";
 import { mergedPatternForDisplayFromSources } from "./sleevelessPatternBuilderMerge";
+import { AVAILABLE_NEEDLES_REQUIRED_MESSAGE } from "./sleevelessExpressAvailableNeedles";
 
 /** Sleeveless tops default to hip length when older saves omit `style.length`. */
 const DEFAULT_SLEEVELESS_BUILDER_LENGTH = "top";
@@ -269,7 +270,7 @@ export function validatePatternBuilderRequired(
     },
     {
       id: "availableNeedles",
-      label: "Enter available needles",
+      label: AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
       href: PATTERN_BUILDER_YARN_NEEDLES_HREF,
       complete: isPositiveNumericMeasurement(patternBuilderAvailableNeedlesRaw(data)),
     },
