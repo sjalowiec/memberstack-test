@@ -887,6 +887,17 @@ export type NeckShoulderChartRenderOptions = {
   /** Heading text for the chart section (online uses "First Shoulder Checklist"). */
   tableHeading?: string;
   /**
+   * When true, the whole checklist renders as a collapsible `<details>` disclosure: a full-width
+   * clickable `<summary>` header bar (chevron on the left, {@link tableHeading} as the label, and a
+   * `[data-chart-print-slot]` on the right for the print button) with the intro, controls, and table
+   * beneath it. Collapsed shows only the header; expanded shows everything. Opt-in and presentation
+   * only — it never changes the checklist rows, RC values, or shaping math. Defaults to a plain
+   * `<section>` with a standalone `<h2>` heading.
+   */
+  collapsible?: boolean;
+  /** When {@link collapsible} is true, render the disclosure initially expanded. Defaults to collapsed. */
+  collapsibleDefaultOpen?: boolean;
+  /**
    * Optional extra HTML inserted at the TOP of the Second Shoulder Checklist block (just under its
    * heading). Used to place the second-shoulder Shaping Map (opposite orientation from the first
    * shoulder) inside its own disclosure, so the two maps never silently swap a shared element.
@@ -1066,8 +1077,23 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
     typeof options?.tableHeading === "string" && options.tableHeading.trim()
       ? options.tableHeading.trim()
       : "Neckline / Shoulder Shaping Chart";
-  return `<section class="${escapeHtml(sectionClass)}" aria-labelledby="${escapeHtml(headingId)}">
-  <h2 id="${escapeHtml(headingId)}" class="ns-shaping-chart__title">${escapeHtml(tableHeading)}</h2>
+  // Presentation-only: when `collapsible`, wrap the exact same body in a `<details>` disclosure whose
+  // full-width `<summary>` is the header (chevron + title + print-button slot). Otherwise keep the
+  // original `<section>` + standalone `<h2>` markup so existing callers are byte-for-byte unchanged.
+  const collapsible = options?.collapsible === true;
+  const collapsibleOpen = options?.collapsibleDefaultOpen === true;
+  const openTag = collapsible
+    ? `<details class="${escapeHtml(`${sectionClass} ns-shaping-chart--collapsible`)}"${collapsibleOpen ? " open" : ""}>
+  <summary class="ns-shaping-chart__disclosure-header">
+    <span class="ns-shaping-chart__disclosure-chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+    <span id="${escapeHtml(headingId)}" class="ns-shaping-chart__title ns-shaping-chart__disclosure-title">${escapeHtml(tableHeading)}</span>
+    <span class="ns-shaping-chart__disclosure-actions" data-chart-print-slot></span>
+  </summary>
+  <div class="ns-shaping-chart__disclosure-body">`
+    : `<section class="${escapeHtml(sectionClass)}" aria-labelledby="${escapeHtml(headingId)}">
+  <h2 id="${escapeHtml(headingId)}" class="ns-shaping-chart__title">${escapeHtml(tableHeading)}</h2>`;
+  const closeTag = collapsible ? `</div>\n</details>` : `</section>`;
+  return `${openTag}
   ${intro}
   <div class="ns-shaping-chart__progress-section" data-chart-id="${escapeHtml(progressChartIdPrimary)}">
     ${progressToolbarHtml}
@@ -1155,7 +1181,7 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
 </div>`
       : ""
   }
-</section>`;
+${closeTag}`;
 }
 
 /**

@@ -284,53 +284,8 @@ button.ns-visual-guides__preview:focus-visible .ns-visual-guides__zoom {
   outline-offset: 2px;
 }
 
-/* Collapsed row-by-row checklist disclosure. */
-.ns-checklist-disclosure {
-  margin: 0.5rem 0 0.5rem;
-}
-
-.ns-checklist-disclosure__summary {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.5rem 0.85rem;
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--kbm-green, #52682d);
-  cursor: pointer;
-  list-style: none;
-  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 30%, #d1d5db);
-  border-radius: 8px;
-  background: #fff;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-}
-
-.ns-checklist-disclosure__summary::-webkit-details-marker {
-  display: none;
-}
-
-.ns-checklist-disclosure__summary::before {
-  content: "\f078"; /* chevron-down */
-  font-family: "Font Awesome 6 Free", "Font Awesome 5 Free";
-  font-weight: 900;
-  font-size: 0.72rem;
-  transition: transform 0.15s ease;
-}
-
-.ns-checklist-disclosure[open] > .ns-checklist-disclosure__summary::before {
-  transform: rotate(180deg);
-}
-
-.ns-checklist-disclosure__summary:hover,
-.ns-checklist-disclosure__summary:focus-visible {
-  background: color-mix(in srgb, var(--kbm-green, #52682d) 8%, #fff);
-  border-color: var(--kbm-green, #52682d);
-  outline: none;
-}
-
-.ns-checklist-disclosure__body {
-  margin-top: 0.75rem;
-}
+/* The row-by-row checklist collapses via the shared checklist component's own full-width header
+ * disclosure (`.ns-shaping-chart--collapsible` in ns-shaping-chart.css), not a wrapper here. */
 
 /* Second-shoulder map inside the Second Shoulder Checklist disclosure: same look as the embedded
  * map, scaled to the disclosure width (opposite orientation from the first-shoulder Visual Guides map). */
@@ -375,9 +330,9 @@ button.ns-visual-guides__preview:focus-visible .ns-visual-guides__zoom {
   }
 
   /*
-   * Print convention: show the FULL visual guides and the FULL checklist rather than the
-   * collapsed control. The <details> body is force-shown even when closed, and the on-screen
-   * summary/enlarge chrome is hidden (the printed diagrams/table carry the information).
+   * Print convention: show the FULL visual guides rather than the collapsed on-screen chrome
+   * (the printed diagrams carry the information). The collapsible checklist's own print handling
+   * lives with the shared checklist component in ns-shaping-chart.css.
    */
   .ns-visual-guides {
     break-inside: avoid;
@@ -396,19 +351,5 @@ button.ns-visual-guides__preview:focus-visible .ns-visual-guides__zoom {
   .ns-visual-guides__enlarge,
   .ns-visual-guides__zoom {
     display: none !important;
-  }
-
-  .ns-checklist-disclosure__summary {
-    display: none !important;
-  }
-
-  .ns-checklist-disclosure__body {
-    display: block !important;
-    margin-top: 0;
-  }
-
-  /* Override the UA rule that hides closed <details> content so the checklist always prints. */
-  .ns-checklist-disclosure:not([open]) > .ns-checklist-disclosure__body {
-    display: block !important;
   }
 }

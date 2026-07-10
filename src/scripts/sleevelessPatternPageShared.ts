@@ -835,10 +835,11 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
           // together first. Previously they lived inside the collapsed checklist below the visuals.
           const writtenIntroMount = `<div class="ns-written-intro" id="sg-front-ns-written-intro" data-front-ns-written-intro></div>`;
           const visualGuidesChunk = buildFrontVisualGuidesHtml(frontVisualGuides);
-          const checklistDisclosure = `<details class="ns-checklist-disclosure">
-  <summary class="ns-checklist-disclosure__summary">Show Row-by-Row Checklist</summary>
-  <div class="ns-checklist-disclosure__body">${chartChunk}</div>
-</details>`;
+          // The row-by-row checklist is collapsed via the shared checklist component itself
+          // (`collapsible` option on renderNeckShoulderShapingChartTableOnlyHtml): its injected
+          // `<details>` supplies the full-width "First Shoulder Checklist" header + chevron + print
+          // button, so no separate disclosure/summary wrapper is needed here.
+          const checklistDisclosure = chartChunk;
           if (openSectionSlugSource) {
             openSectionParts.push(writtenIntroMount);
             openSectionParts.push(visualGuidesChunk);
@@ -2458,18 +2459,6 @@ table {
     if (!(area instanceof HTMLElement)) return;
     const chartRoot = area.querySelector(".ns-shaping-chart");
     if (!(chartRoot instanceof HTMLElement)) return;
-    const title = chartRoot.querySelector(".ns-shaping-chart__title");
-    if (!(title instanceof HTMLElement)) return;
-
-    title.classList.add("neckline-chart-header");
-
-    let headerRow = chartRoot.querySelector(".neckline-chart-header-row");
-    if (!(headerRow instanceof HTMLElement)) {
-      headerRow = document.createElement("div");
-      headerRow.className = "neckline-chart-header-row";
-      title.insertAdjacentElement("beforebegin", headerRow);
-      headerRow.appendChild(title);
-    }
 
     let btn = document.getElementById(String(buttonId || ""));
     if (!(btn instanceof HTMLButtonElement)) {
@@ -2487,6 +2476,36 @@ table {
       if (!btn.querySelector("i")) {
         btn.innerHTML = `<i class="fas fa-print" aria-hidden="true"></i>`;
       }
+    }
+
+    // Collapsible checklist: the shared component renders a full-width `<summary>` header with a
+    // dedicated print slot on the right. Drop the button there and stop its click from toggling
+    // the disclosure (the separate print handler still fires).
+    const printSlot = chartRoot.querySelector("[data-chart-print-slot]");
+    if (printSlot instanceof HTMLElement) {
+      if (!btn.dataset.disclosureClickGuard) {
+        btn.dataset.disclosureClickGuard = "1";
+        btn.addEventListener("click", (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+        });
+      }
+      printSlot.appendChild(btn);
+      return;
+    }
+
+    // Non-collapsible chart: keep the print button beside the standalone `<h2>` heading.
+    const title = chartRoot.querySelector(".ns-shaping-chart__title");
+    if (!(title instanceof HTMLElement)) return;
+
+    title.classList.add("neckline-chart-header");
+
+    let headerRow = chartRoot.querySelector(".neckline-chart-header-row");
+    if (!(headerRow instanceof HTMLElement)) {
+      headerRow = document.createElement("div");
+      headerRow.className = "neckline-chart-header-row";
+      title.insertAdjacentElement("beforebegin", headerRow);
+      headerRow.appendChild(title);
     }
 
     headerRow.appendChild(btn);
@@ -4099,6 +4118,12 @@ table {
           tableHeading: "First Shoulder Checklist",
           secondShoulderExtraHtml: frontSecondShoulderMapHtml,
           suppressCarriagePositionTip: frontIsRoundNeck,
+          // Sleeveless front: the checklist collapses into a full-width header bar
+          // ("First Shoulder Checklist" + chevron + print button), replacing the former separate
+          // "Show Row-by-Row Checklist" disclosure. Collapsed by default (matching the prior
+          // wrapper); the shared print flow re-renders it expanded.
+          collapsible: true,
+          collapsibleDefaultOpen: false,
         }
       );
     }

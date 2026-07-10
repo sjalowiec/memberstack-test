@@ -14,6 +14,72 @@
   letter-spacing: 0.02em;
 }
 
+/* Collapsible checklist: full-width clickable header bar (chevron left, title, print right). */
+.ns-shaping-chart--collapsible {
+  border: 1px solid var(--kin-border, #ddd);
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.ns-shaping-chart__disclosure-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.7rem 0.9rem;
+  cursor: pointer;
+  background: var(--kbm-green-050, #f4f6ee);
+  list-style: none;
+  user-select: none;
+}
+
+/* Hide the native disclosure triangle across browsers (we render our own chevron). */
+.ns-shaping-chart__disclosure-header::-webkit-details-marker {
+  display: none;
+}
+.ns-shaping-chart__disclosure-header::marker {
+  content: "";
+}
+
+.ns-shaping-chart__disclosure-header:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: -2px;
+}
+
+.ns-shaping-chart__disclosure-chevron {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--kbm-green, #52682d);
+  font-size: 0.85rem;
+  transition: transform 0.15s ease;
+}
+
+.ns-shaping-chart--collapsible[open] .ns-shaping-chart__disclosure-chevron {
+  transform: rotate(90deg);
+}
+
+/* Title inside the header bar sits inline (no standalone-heading bottom margin). */
+.ns-shaping-chart__disclosure-title {
+  flex: 1 1 auto;
+  margin: 0;
+  min-width: 0;
+}
+
+.ns-shaping-chart__disclosure-actions {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.ns-shaping-chart__disclosure-body {
+  padding: 0.35rem 0.9rem 0.6rem;
+}
+
 .ns-shaping-chart__intro {
   margin: 0 0 0.65rem;
   font-size: 0.8125rem;
@@ -280,6 +346,15 @@
   .ns-shaping-chart {
     font-size: 9pt;
     break-inside: avoid;
+  }
+
+  /* Collapsible checklist prints in full even when collapsed on-screen; hide the chevron. */
+  .ns-shaping-chart--collapsible > .ns-shaping-chart__disclosure-body {
+    display: block !important;
+  }
+
+  .ns-shaping-chart__disclosure-chevron {
+    display: none !important;
   }
 
   .ns-shaping-chart__table-wrap,
