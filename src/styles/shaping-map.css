@@ -1,0 +1,414 @@
+/*
+ * PROTOTYPE styles for the dynamic "Shaping Map" SVG (renderShapingMapSvg).
+ * Isolated from existing pattern chart styles. The sample data driving this map
+ * will later be replaced by real shaping data from the pattern math.
+ */
+
+.shaping-map {
+  margin: 1.25rem 0 1.5rem;
+  color: #1f2937;
+}
+
+.shaping-map__title {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--kbm-green, #52682d);
+  letter-spacing: 0.02em;
+}
+
+.shaping-map__note {
+  margin: 0 0 0.65rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: #6b7280;
+}
+
+/* Horizontal scroll on narrow screens; the SVG keeps its aspect ratio via viewBox. */
+.shaping-map__scroll {
+  overflow-x: auto;
+  border: 1px solid var(--kin-border, #ddd);
+  border-radius: 12px;
+  background: #fff;
+  padding: 0.5rem;
+}
+
+.shaping-map__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* Keep steps legible on mobile; container scrolls if the viewport is narrower. */
+  min-width: 460px;
+}
+
+/* White chart background. */
+.shaping-map-bg {
+  fill: #ffffff;
+}
+
+/* Shaded fabric region under the shaping edge, so it reads as one connected area. */
+.shaping-map-fabric {
+  fill: rgba(183, 167, 224, 0.14);
+  stroke: none;
+}
+
+/* Light gray square grid (slightly lightened so the shaping line reads first). */
+.shaping-map-grid-minor line {
+  stroke: #eef0f3;
+  stroke-width: 1;
+}
+
+/* Lavender major guide lines (every 10 stitches / rows). */
+.shaping-map-grid-major line {
+  stroke: #b7a7e0;
+  stroke-width: 1.25;
+}
+
+/* Black stepped shaping path (clearly heavier than the grid lines). */
+.shaping-map-path {
+  fill: none;
+  stroke: #111111;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* Small step count labels (e.g. -6, -5, -1, -4). */
+.shaping-map-step-label {
+  fill: #111111;
+  font-size: 10px;
+  font-weight: 700;
+  text-anchor: middle;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Right-side row numbers. */
+.shaping-map-row-number {
+  fill: #4b5563;
+  font-size: 9px;
+  text-anchor: start;
+  dominant-baseline: middle;
+  font-variant-numeric: tabular-nums;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* "N Center Stitches" callout, lower right (slightly stronger than the row numbers). */
+.shaping-map-center-label {
+  fill: #1f2937;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-anchor: end;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Edge callouts ("Shoulder Edge" / "Neck Edge"). Larger than the step labels so they stay
+ * legible at the embedded size, in the enlarged modal copy, and in print. Text-anchor is set
+ * inline per label (so a mirrored map can flip the anchor while keeping the text upright). */
+.shaping-map-edge-label {
+  fill: var(--kbm-green, #52682d);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* ============================================================================
+ * PROTOTYPE  FRONT "Visual Guides" two-column layout (Japanese Notation + Shaping Map)
+ * followed by a collapsed row-by-row checklist. Reuses the existing pattern card look
+ * (quiet border, small radius, calm padding) so it does not introduce a new heavy design.
+ * ========================================================================== */
+.ns-visual-guides {
+  margin: 1.1rem 0 1.35rem;
+}
+
+.ns-visual-guides__heading {
+  margin: 0 0 0.7rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--kbm-green, #52682d);
+}
+
+/* Desktop/tablet: two visually balanced columns. Mobile: stack (JP first, then Map). */
+.ns-visual-guides__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  align-items: stretch;
+}
+
+@media (min-width: 700px) {
+  .ns-visual-guides__grid:not(.ns-visual-guides__grid--single) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Shared card chrome  consistent borders/padding/heading between both guides. */
+.ns-visual-guides__card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: 0;
+  padding: 0.85rem;
+  border: 1px solid var(--kin-border, #ddd);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.ns-visual-guides__card-title {
+  margin: 0 0 0.6rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1f2937;
+  text-align: center;
+}
+
+/* Preview area: both cards keep the same framed, centered preview box. */
+.ns-visual-guides__preview {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 150px;
+  margin: 0;
+  padding: 0.5rem;
+  border: 1px solid #f0f1f2;
+  border-radius: 8px;
+  background: #f9fafb;
+  box-sizing: border-box;
+}
+
+/* JP card: the preview is a keyboard-accessible button opening the notation modal. */
+button.ns-visual-guides__preview {
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+button.ns-visual-guides__preview:hover,
+button.ns-visual-guides__preview:focus-visible {
+  border-color: var(--kbm-green, #52682d);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+  outline: none;
+}
+
+.ns-visual-guides__preview-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 200px;
+  object-fit: cover;
+  object-position: top center;
+}
+
+.ns-visual-guides__zoom {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 50%;
+  background: rgba(31, 41, 55, 0.5);
+  color: #fff;
+  font-size: 0.95rem;
+  pointer-events: none;
+  transition: background-color 0.15s ease;
+}
+
+button.ns-visual-guides__preview:hover .ns-visual-guides__zoom,
+button.ns-visual-guides__preview:focus-visible .ns-visual-guides__zoom {
+  background: var(--kbm-green, #52682d);
+}
+
+/* Map preview: let the SVG scale to the card width (overall shape) instead of forcing its
+ * on-screen min-width; the enlarged modal copy restores full label/grid legibility. */
+.ns-visual-guides__preview--map {
+  padding: 0.35rem;
+}
+
+.ns-visual-guides__preview--map .shaping-map__svg {
+  min-width: 0;
+  max-height: 220px;
+}
+
+/* Notation preview: the ACTUAL Japanese notation SVG inlined into the card. Scale to the card
+ * width and keep it tall enough to stay legible; the Enlarge button opens a full-size copy. */
+.ns-visual-guides__preview--notation {
+  padding: 0.35rem;
+}
+
+.ns-visual-guides__preview--notation svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 280px;
+  object-fit: contain;
+}
+
+/* Enlarge controls  identical treatment on both cards. */
+.ns-visual-guides__actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 0.6rem;
+}
+
+.ns-visual-guides__enlarge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--kbm-green, #52682d);
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 40%, #d1d5db);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.ns-visual-guides__enlarge:hover,
+.ns-visual-guides__enlarge:focus-visible {
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 8%, #fff);
+  border-color: var(--kbm-green, #52682d);
+  outline: none;
+}
+
+.ns-visual-guides__enlarge:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+}
+
+/* Collapsed row-by-row checklist disclosure. */
+.ns-checklist-disclosure {
+  margin: 0.5rem 0 0.5rem;
+}
+
+.ns-checklist-disclosure__summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.85rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--kbm-green, #52682d);
+  cursor: pointer;
+  list-style: none;
+  border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 30%, #d1d5db);
+  border-radius: 8px;
+  background: #fff;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.ns-checklist-disclosure__summary::-webkit-details-marker {
+  display: none;
+}
+
+.ns-checklist-disclosure__summary::before {
+  content: "\f078"; /* chevron-down */
+  font-family: "Font Awesome 6 Free", "Font Awesome 5 Free";
+  font-weight: 900;
+  font-size: 0.72rem;
+  transition: transform 0.15s ease;
+}
+
+.ns-checklist-disclosure[open] > .ns-checklist-disclosure__summary::before {
+  transform: rotate(180deg);
+}
+
+.ns-checklist-disclosure__summary:hover,
+.ns-checklist-disclosure__summary:focus-visible {
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 8%, #fff);
+  border-color: var(--kbm-green, #52682d);
+  outline: none;
+}
+
+.ns-checklist-disclosure__body {
+  margin-top: 0.75rem;
+}
+
+/* Second-shoulder map inside the Second Shoulder Checklist disclosure: same look as the embedded
+ * map, scaled to the disclosure width (opposite orientation from the first-shoulder Visual Guides map). */
+.shaping-map--second-shoulder {
+  margin: 0 0 1rem;
+}
+
+.shaping-map--second-shoulder .shaping-map__svg {
+  min-width: 0;
+  max-height: 260px;
+}
+
+/* Enlarged map inside the shared diagram modal: keep it readable (full labels + grid). */
+.sleeveless-diagram-modal__content .shaping-map__svg--enlarged {
+  min-width: min(88vw, 560px);
+}
+
+@media print {
+  .shaping-map {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .shaping-map__scroll {
+    overflow: visible;
+    border-color: #ccc;
+  }
+
+  .shaping-map__svg {
+    min-width: 0;
+  }
+
+  /* Preserve the grid + path colors when printing. */
+  .shaping-map-bg,
+  .shaping-map-fabric,
+  .shaping-map-grid-minor line,
+  .shaping-map-grid-major line,
+  .shaping-map-path,
+  .shaping-map-edge-label {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /*
+   * Print convention: show the FULL visual guides and the FULL checklist rather than the
+   * collapsed control. The <details> body is force-shown even when closed, and the on-screen
+   * summary/enlarge chrome is hidden (the printed diagrams/table carry the information).
+   */
+  .ns-visual-guides {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .ns-visual-guides__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Print the full notation legibly, sized by the column width rather than a screen cap. */
+  .ns-visual-guides__preview--notation svg {
+    max-height: none;
+  }
+
+  .ns-visual-guides__enlarge,
+  .ns-visual-guides__zoom {
+    display: none !important;
+  }
+
+  .ns-checklist-disclosure__summary {
+    display: none !important;
+  }
+
+  .ns-checklist-disclosure__body {
+    display: block !important;
+    margin-top: 0;
+  }
+
+  /* Override the UA rule that hides closed <details> content so the checklist always prints. */
+  .ns-checklist-disclosure:not([open]) > .ns-checklist-disclosure__body {
+    display: block !important;
+  }
+}

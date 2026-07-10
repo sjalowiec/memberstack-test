@@ -35,6 +35,7 @@ import {
   patternTipWrapperHtml,
 } from "../lib/patterns/sleevelessPatternOutput.ts";
 import { generateDropShoulderPattern } from "../lib/patterns/dropShoulderPatternOutput.ts";
+import { parseInlineMarkedLine } from "../lib/patterns/inlineRcHeading.ts";
 import {
   DROP_SHOULDER_SLEEVE_CONSTRUCTION_CHOICE_TIP_ID,
   dropShoulderSleeveConstructionChoiceQuickTipInnerHtml,
@@ -67,11 +68,18 @@ import { rowCounterResetBlockHtml } from "../lib/patterns/rowCounterReset.ts";
 import {
   armholeLocalRcActiveShoulderChecklistStart,
   renderActiveShoulderChartIntroHtml,
+  renderCarriagePositionPatternTipHtml,
   renderNecklineInstructionsWithNotationPreviewHtml,
   renderNeckShoulderShapingChartTableOnlyHtml,
+  resolveJapaneseNotationQuickReferencePreviewSrc,
 } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
 import { renderSleevelessBodyShapingChartHtml } from "../lib/patterns/sleevelessBodyShapingChartHtml.ts";
 import { renderDropShoulderSleeveShapingChartHtml } from "../lib/patterns/dropShoulderSleeveShapingChart.ts";
+// Dynamic "Shaping Map" SVG. The sleeveless round-neck FRONT is driven by real shaping math via
+// buildSleevelessRoundNeckShapingMapData below; patterns without a real schedule render no map
+// (SAMPLE_SHAPING_MAP_DATA is intentionally not imported — it is dev/test-only, never customer-facing).
+import { renderShapingMapSvg } from "../lib/patterns/shapingMapSvg.ts";
+import { buildSleevelessRoundNeckShapingMapData } from "../lib/patterns/sleevelessRoundNeckShapingSchedule.ts";
 import { initChartProgressTracking } from "./chartProgressTracker.ts";
 import { scheduleReadingWorkflowSync } from "../lib/patterns/patternReadingWorkflowSync.ts";
 import { showResults, initializeActionBar } from "../components/wizards/utils/wizardBehavior.ts";
@@ -560,6 +568,77 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
   }
 
   /**
+   * PROTOTYPE — "Visual Guides" block for the FRONT neckline/shoulder section.
+   *
+   * A responsive two-column layout placed AFTER the written instructions and BEFORE the
+   * (collapsed) row-by-row checklist:
+   *   LEFT  — Japanese Notation: the existing quick-reference crop. Its trigger keeps
+   *           `data-neckline-notation-preview-trigger="front"` so `bindNecklineNotationPreview`
+   *           opens the SAME Shaping Notation diagram modal (no second modal system).
+   *   RIGHT — Shaping Map: a condensed preview of the dynamic map, rendered from the real
+   *           round-neck shaping schedule (`opts.shapingMapData`). Omitted when no real schedule
+   *           exists. Its Enlarge button carries `data-shaping-map-enlarge` so `bindShapingMapEnlarge`
+   *           opens the SAME sleeveless-diagram-modal.
+   *
+   * No pattern math, written instructions, Japanese SVG, or checklist rows change here — this
+   * only rearranges existing previews into two consistent cards.
+   *
+   * The Shaping Map is driven by real round-neck shaping data (`opts.shapingMapData`) when the
+   * front is a round-neck pullover. When no real schedule exists (V-neck, cardigan, unsupported),
+   * the Shaping Map card is omitted entirely — sample/demo data is never shown in a generated pattern.
+   * @param {{ notationSupported?: boolean; construction?: string; patternData?: unknown; shapingMapData?: import("../lib/patterns/shapingMapSvg.ts").ShapingMapData | null }} opts
+   */
+  function buildFrontVisualGuidesHtml(opts) {
+    const notationSupported = !!(opts && opts.notationSupported === true);
+    const construction = (opts && opts.construction) || "sleeveless";
+    const patternData = opts ? opts.patternData : undefined;
+    const shapingMapData = opts && opts.shapingMapData ? opts.shapingMapData : null;
+    // Round-neck front (a real Shaping Map exists) renders the ACTUAL Japanese notation SVG inline
+    // in this card — self-contained (inlined post-mount via inlineFrontJapaneseNotationSvg, enlarged
+    // by bindFrontNotationEnlarge). The piece diagram no longer carries a Shaping Notation tab there,
+    // so the notation lives once, here. Other fronts (e.g. V-neck) keep the quiet quick-reference crop
+    // that opens the piece diagram's notation view — that workflow is unchanged.
+    const notationInline = notationSupported && !!shapingMapData;
+    const jpCard = notationInline
+      ? `<section class="ns-visual-guides__card ns-visual-guides__card--jp">
+    <h4 class="ns-visual-guides__card-title">Japanese Notation</h4>
+    <div class="ns-visual-guides__preview ns-visual-guides__preview--notation" data-front-notation-host>
+      <p class="sleeveless-pattern-boot-msg">Loading notation…</p>
+    </div>
+    <div class="ns-visual-guides__actions no-print">
+      <button type="button" class="ns-visual-guides__enlarge" data-front-notation-enlarge aria-label="Enlarge Japanese notation"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Enlarge</button>
+    </div>
+  </section>`
+      : notationSupported
+      ? `<section class="ns-visual-guides__card ns-visual-guides__card--jp">
+    <h4 class="ns-visual-guides__card-title">Japanese Notation</h4>
+    <button type="button" class="ns-visual-guides__preview" data-neckline-notation-preview-trigger="front" aria-label="Enlarge Japanese notation quick reference">
+      <img class="ns-visual-guides__preview-img" src="${escapeHtml(resolveJapaneseNotationQuickReferencePreviewSrc("front", construction, patternData))}" alt="" loading="lazy" aria-hidden="true" />
+      <span class="ns-visual-guides__zoom" aria-hidden="true"><i class="fa-solid fa-magnifying-glass"></i></span>
+    </button>
+    <div class="ns-visual-guides__actions no-print">
+      <button type="button" class="ns-visual-guides__enlarge" data-neckline-notation-preview-trigger="front"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Enlarge</button>
+    </div>
+  </section>`
+      : "";
+    const mapCard = shapingMapData
+      ? `<section class="ns-visual-guides__card ns-visual-guides__card--map">
+    <h4 class="ns-visual-guides__card-title">Shaping Map</h4>
+    <div class="ns-visual-guides__preview ns-visual-guides__preview--map">${renderShapingMapSvg(shapingMapData, { mirror: true })}</div>
+    <div class="ns-visual-guides__actions no-print">
+      <button type="button" class="ns-visual-guides__enlarge" data-shaping-map-enlarge aria-label="Enlarge shaping map"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Enlarge</button>
+    </div>
+  </section>`
+      : "";
+    const cardCount = (jpCard ? 1 : 0) + (mapCard ? 1 : 0);
+    const gridModifier = cardCount <= 1 ? " ns-visual-guides__grid--single" : "";
+    return `<section class="ns-visual-guides" aria-labelledby="ns-visual-guides-heading-front">
+  <h3 class="ns-visual-guides__heading" id="ns-visual-guides-heading-front">Visual Guides</h3>
+  <div class="ns-visual-guides__grid${gridModifier}">${jpCard}${mapCard}</div>
+</section>`;
+  }
+
+  /**
    * Renders structured rows: left column RC + text, right column total sts only when it changes.
    * Chart table stays in the left column below neckline/shoulder prose.
    * @param {unknown[]} rows
@@ -577,6 +656,13 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     const neckNotationPreview =
       displayOpts && displayOpts.neckNotationPreview && displayOpts.neckNotationPreview.enabled === true
         ? displayOpts.neckNotationPreview
+        : undefined;
+    // PROTOTYPE (front only): opt-in "Visual Guides" two-column layout (Japanese Notation +
+    // Shaping Map) followed by a collapsed row-by-row checklist. Only the sleeveless front sets
+    // this; every other caller keeps the standalone Shaping Map / chart behavior below.
+    const frontVisualGuides =
+      displayOpts && displayOpts.frontVisualGuides && displayOpts.frontVisualGuides.enabled === true
+        ? displayOpts.frontVisualGuides
         : undefined;
     const list = Array.isArray(rows) ? rows : [];
     let lastShownStitch;
@@ -654,7 +740,15 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       if (trusted && trusted.length > 0) {
         for (const p of trusted) {
           const t = String(p).trim();
-          if (t) leftBits.push(`<p class="sleeveless-pattern-line">${p}</p>`);
+          if (!t) continue;
+          const marked = parseInlineMarkedLine(t);
+          if (marked) {
+            const cls =
+              marked.kind === "rc-heading" ? "sleeveless-pattern-rc" : "sleeveless-pattern-subhead";
+            leftBits.push(`<p class="${cls}">${escapeHtml(marked.text)}</p>`);
+            continue;
+          }
+          leftBits.push(`<p class="sleeveless-pattern-line">${p}</p>`);
         }
       } else {
         for (const p of row.paragraphs) {
@@ -730,6 +824,36 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
   <div class="sg-pattern-output sg-neck-chart-print-block" id="${escapeHtml(chartTableMountId)}"></div>
   <p class="neckline-chart-print-only-footer">Created by Knit It Now · Printed <span data-neckline-chart-print-date></span></p>
 </div>`;
+        // PROTOTYPE (front only, opt-in): reduce section length/repetition by grouping the two
+        // visual aids into a "Visual Guides" two-column block placed AFTER the written
+        // instructions, then moving the row-by-row checklist into a collapsed disclosure. The
+        // checklist mount id (`chartTableMountId`) still lives in the DOM, so the later injection
+        // + chart-only print are unchanged. Only sleeveless front sets `frontVisualGuides`.
+        if (frontVisualGuides && pieceSectionId === "front") {
+          // Written intro/tips (divide-neckline copy, workflow steps, carriage-position help) are
+          // injected here — BEFORE Visual Guides — by renderMount, so all written instructions read
+          // together first. Previously they lived inside the collapsed checklist below the visuals.
+          const writtenIntroMount = `<div class="ns-written-intro" id="sg-front-ns-written-intro" data-front-ns-written-intro></div>`;
+          const visualGuidesChunk = buildFrontVisualGuidesHtml(frontVisualGuides);
+          const checklistDisclosure = `<details class="ns-checklist-disclosure">
+  <summary class="ns-checklist-disclosure__summary">Show Row-by-Row Checklist</summary>
+  <div class="ns-checklist-disclosure__body">${chartChunk}</div>
+</details>`;
+          if (openSectionSlugSource) {
+            openSectionParts.push(writtenIntroMount);
+            openSectionParts.push(visualGuidesChunk);
+            openSectionParts.push(checklistDisclosure);
+            continue;
+          }
+          postParts.push(
+            `<section class="sleeveless-piece-chart-fullwidth">${writtenIntroMount}${visualGuidesChunk}${checklistDisclosure}</section>`
+          );
+          continue;
+        }
+
+        // The Shaping Map is only rendered from a real shaping schedule (sleeveless front
+        // Visual Guides path above). Pieces without a real schedule here (e.g. drop-shoulder
+        // front) show no Shaping Map — sample/demo data is never used in a generated pattern.
         if (openSectionSlugSource) {
           openSectionParts.push(chartChunk);
           continue;
@@ -760,7 +884,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
    * @param {string} innerHtml
    * @param {string} diagramSrc
    * @param {string} diagramAlt
-   * @param {{ cardiganHalfSide?: "left" | "right"; backDiagramModeToggle?: boolean; frontDiagramModeToggle?: boolean }} [diagramOpts]
+   * @param {{ cardiganHalfSide?: "left" | "right"; backDiagramModeToggle?: boolean; frontDiagramModeToggle?: boolean; showModeToggle?: boolean }} [diagramOpts]
    */
   function wrapSleevelessPieceSplit(innerHtml, diagramSrc, diagramAlt, postSplitHtml, diagramOpts) {
     const src = escapeHtml(diagramSrc);
@@ -772,6 +896,12 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     const backModeToggle = diagramOpts?.backDiagramModeToggle === true;
     const frontModeToggle = diagramOpts?.frontDiagramModeToggle === true;
     const garmentModeToggle = backModeToggle || frontModeToggle;
+    // The diagram still hydrates as the garment schematic (Stitches & Rows) via its data attrs, but
+    // the Stitches & Rows / Shaping Notation TAB UI is suppressed when showModeToggle === false.
+    // Used by the sleeveless round-neck FRONT, where the Japanese (shaping) notation now lives in the
+    // Visual Guides block, so the piece diagram stays focused on stitch/row info with no notation tab.
+    const showModeToggle = diagramOpts?.showModeToggle !== false;
+    const hasToggleUi = garmentModeToggle && showModeToggle;
     const backDiagramAttrs = backModeToggle
       ? ' data-sleeveless-back-diagram data-sleeveless-back-diagram-mode="sts-rows"'
       : "";
@@ -783,7 +913,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     const modeBtnAttr = backModeToggle
       ? "data-sleeveless-back-diagram-mode-btn"
       : "data-sleeveless-front-diagram-mode-btn";
-    const modeToggleHtml = garmentModeToggle
+    const modeToggleHtml = hasToggleUi
       ? `<div class="sleeveless-back-diagram-mode no-print" role="group" aria-label="${modeToggleGroupLabel}">
         <button type="button" class="sleeveless-back-diagram-mode__btn is-active" ${modeBtnAttr}="sts-rows" aria-pressed="true">Stitches &amp; Rows</button>
         <button type="button" class="sleeveless-back-diagram-mode__btn" ${modeBtnAttr}="shaping-notation" aria-pressed="false">Shaping Notation</button>
@@ -797,7 +927,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     const diagramEnlargeBtnHtml = `<button type="button" class="sleeveless-piece-split__diagram-enlarge-btn no-print" data-sleeveless-diagram-enlarge aria-label="Enlarge diagram">
         <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
       </button>`;
-    const shapingNotationHelpHtml = garmentModeToggle
+    const shapingNotationHelpHtml = hasToggleUi
       ? buildShapingNotationChartHelpHtml(
           escapeGlossaryPlaceholderAttr,
           escapeGlossaryPlaceholderText,
@@ -807,7 +937,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         ${diagramEnlargeBtnHtml}
         ${diagramTriggerHtml}
       </div>`;
-    const diagramAsideInner = garmentModeToggle
+    const diagramAsideInner = hasToggleUi
       ? `<div class="sleeveless-back-diagram-panel">
       ${modeToggleHtml}
       <div class="sleeveless-back-diagram-well">
@@ -819,7 +949,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     return `<div class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split">
   <div class="pattern-layout__content sleeveless-piece-split__text">${innerHtml}</div>
   <aside class="pattern-layout__sidebar sleeveless-piece-split__diagram" aria-label="Garment diagram">
-    <div class="sleeveless-piece-split__diagram-inner${garmentModeToggle ? " sleeveless-piece-split__diagram-inner--back-panel" : ""}">
+    <div class="sleeveless-piece-split__diagram-inner${hasToggleUi ? " sleeveless-piece-split__diagram-inner--back-panel" : ""}">
       ${diagramAsideInner}
     </div>
   </aside>
@@ -1893,6 +2023,91 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
           ? "back"
           : "front";
       openShapingNotationFromPreview(root, piece);
+    });
+  }
+
+  /**
+   * PROTOTYPE — enlarge a Shaping Map. Reuses the SAME diagram modal component as the Japanese
+   * notation / garment diagrams ({@link ensureSleevelessDiagramModal}): clones the nearest map's
+   * `.shaping-map__svg` into the modal so the enlarged copy carries full labels and grid detail
+   * (and, for the Second Shoulder map, its mirrored orientation — the mirror is baked into the SVG).
+   * One delegated handler serves every Enlarge button (First-Shoulder Visual Guides card AND the
+   * Second-Shoulder map inside its checklist disclosure). No pattern math or map data changes.
+   * @param {ParentNode & { dataset?: DOMStringMap } | null} root
+   */
+  function bindShapingMapEnlarge(root) {
+    if (!(root instanceof HTMLElement)) return;
+    if (root.dataset.shapingMapEnlargeBound === "true") return;
+    root.dataset.shapingMapEnlargeBound = "true";
+    root.addEventListener("click", (e) => {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      const btn = target.closest("[data-shaping-map-enlarge]");
+      if (!(btn instanceof HTMLElement)) return;
+      e.preventDefault();
+      // Scope to the specific map this button belongs to: the Visual Guides card (First Shoulder)
+      // or the `.shaping-map` wrapper (Second Shoulder), so each button enlarges its own SVG.
+      const card = btn.closest(".ns-visual-guides__card, .shaping-map") || root;
+      const svg = card.querySelector(".shaping-map__svg");
+      if (!(svg instanceof SVGElement)) return;
+
+      const modal = ensureSleevelessDiagramModal();
+      const content = modal.querySelector("[data-sleeveless-diagram-content]");
+      if (!(content instanceof HTMLElement)) return;
+      const printBtn = modal.querySelector("[data-sleeveless-diagram-print]");
+      if (printBtn instanceof HTMLButtonElement) printBtn.hidden = true;
+      delete modal.dataset.sleevelessDiagramMode;
+      modal.setAttribute("aria-label", "Enlarged shaping map");
+
+      content.innerHTML = "";
+      const clone = svg.cloneNode(true);
+      if (!(clone instanceof SVGElement)) return;
+      clone.classList.add("shaping-map__svg--enlarged");
+      content.appendChild(clone);
+      modal.hidden = false;
+      document.body.classList.add("sleeveless-diagram-modal-open");
+      const closeBtn = modal.querySelector("[data-sleeveless-diagram-close]");
+      if (closeBtn instanceof HTMLElement) closeBtn.focus();
+    });
+  }
+
+  /**
+   * Enlarge the Japanese notation rendered inside the Visual Guides card (round-neck front). Reuses
+   * the SAME diagram modal as the Shaping Map / garment diagrams: clones the card's already-inlined
+   * notation SVG into the modal. Self-contained — it does not depend on the piece diagram's (removed)
+   * Shaping Notation tab. No pattern math or notation calculations change.
+   * @param {ParentNode & { dataset?: DOMStringMap } | null} root
+   */
+  function bindFrontNotationEnlarge(root) {
+    if (!(root instanceof HTMLElement)) return;
+    if (root.dataset.frontNotationEnlargeBound === "true") return;
+    root.dataset.frontNotationEnlargeBound = "true";
+    root.addEventListener("click", (e) => {
+      const target = e.target;
+      if (!(target instanceof Element)) return;
+      const btn = target.closest("[data-front-notation-enlarge]");
+      if (!(btn instanceof HTMLElement)) return;
+      e.preventDefault();
+      const card = btn.closest(".ns-visual-guides__card") || root;
+      const svg = card.querySelector("[data-front-notation-host] svg");
+      if (!(svg instanceof SVGElement)) return;
+
+      const modal = ensureSleevelessDiagramModal();
+      const content = modal.querySelector("[data-sleeveless-diagram-content]");
+      if (!(content instanceof HTMLElement)) return;
+      const printBtn = modal.querySelector("[data-sleeveless-diagram-print]");
+      if (printBtn instanceof HTMLButtonElement) printBtn.hidden = true;
+      delete modal.dataset.sleevelessDiagramMode;
+      modal.setAttribute("aria-label", "Enlarged Japanese notation");
+
+      content.innerHTML = "";
+      const clone = svg.cloneNode(true);
+      if (!(clone instanceof SVGElement)) return;
+      content.appendChild(clone);
+      modal.hidden = false;
+      document.body.classList.add("sleeveless-diagram-modal-open");
+      const closeBtn = modal.querySelector("[data-sleeveless-diagram-close]");
+      if (closeBtn instanceof HTMLElement) closeBtn.focus();
     });
   }
 
@@ -3679,6 +3894,18 @@ table {
       patternMerged,
       generatorPatternData,
     );
+    // Computed early so the FRONT "Visual Guides" prototype knows whether the Japanese Notation
+    // quick reference is available (same check used later for the garment diagram mode toggle).
+    const frontNotationSupported = isFrontJapaneseNotationSupported(diagramPatternData, result);
+    // Real round-neck front shaping map (null for V-neck / cardigan half front). Computed once and
+    // reused for: the Visual Guides map card, the Second Shoulder map, AND as the "round-neck front"
+    // signal that (a) inlines the Japanese notation into Visual Guides and (b) drops the piece
+    // diagram's Shaping Notation tab so the notation is not duplicated.
+    const frontShapingMapData = buildSleevelessRoundNeckShapingMapData(
+      result?.frontNeckShoulderTimeline,
+      { firstArmholeRc: result?.debug?.armholeStartRow },
+    );
+    const frontIsRoundNeck = !!frontShapingMapData;
 
     const displayRows = result.displayRows ?? [];
     const frontDisplayRows = result.frontDisplayRows ?? [];
@@ -3702,7 +3929,23 @@ table {
             "front",
             patternIntroSentence,
             result?.frontNeckShoulderShapingChart?.rows?.[0]?.row,
-            { omitPieceBanner: true }
+            {
+              omitPieceBanner: true,
+              // PROTOTYPE: single "Visual Guides" block (Japanese Notation + Shaping Map) and a
+              // collapsed row-by-row checklist. The Japanese notation now lives ONLY here, so the
+              // duplicate preview is dropped from the front chart intro below.
+              frontVisualGuides: {
+                enabled: true,
+                notationSupported: frontNotationSupported,
+                construction: "sleeveless",
+                patternData: diagramPatternData,
+                // Real round-neck front shaping map derived from the calculated neck/shoulder
+                // timeline (null for V-neck / cardigan half front). Row labels are converted to
+                // armhole-local RC using the SAME origin (`debug.armholeStartRow`) the written
+                // instructions and checklist use, so every representation agrees.
+                shapingMapData: frontShapingMapData,
+              },
+            }
           )
         : null;
 
@@ -3744,7 +3987,6 @@ table {
           ? "Sleeveless cardigan V-neck front diagram"
           : "Sleeveless cardigan front diagram"
       : "Sleeveless front piece diagram";
-    const frontNotationSupported = isFrontJapaneseNotationSupported(diagramPatternData, result);
     const frontInitialDiagramMode = "sts-rows";
     const frontWrapSrc = frontNotationSupported
       ? resolveSleevelessFrontDiagramSrc(frontInitialDiagramMode, diagramPatternData)
@@ -3755,7 +3997,9 @@ table {
       frontDiagramAlt,
       frontPost,
       frontNotationSupported
-        ? { frontDiagramModeToggle: true }
+        ? // Round-neck front: keep the Stitches & Rows schematic hydration but hide the Shaping
+          // Notation tab (notation now lives in Visual Guides). Other fronts keep the tab.
+          { frontDiagramModeToggle: true, showModeToggle: !frontIsRoundNeck }
         : frontCardiganHalfSide
           ? { cardiganHalfSide: frontCardiganHalfSide }
           : undefined,
@@ -3815,25 +4059,71 @@ table {
         }
       );
     }
+    // Second-shoulder Shaping Map: the SAME real schedule as the first shoulder, rendered in the
+    // OPPOSITE orientation (unmirrored — the first-shoulder Visual Guides map is mirrored). Placed
+    // inside the Second Shoulder Checklist disclosure so each shoulder shows the map matching its
+    // checklist; no single shared map is silently swapped back and forth.
+    const frontSecondShoulderMapData = frontShapingMapData;
+    const frontSecondShoulderMapHtml = frontSecondShoulderMapData
+      ? `<div class="shaping-map shaping-map--second-shoulder">
+      <p class="shaping-map__note">Second shoulder: same shaping schedule, mirror-image orientation (worked in the opposite carriage direction).</p>
+      <div class="shaping-map__scroll">${renderShapingMapSvg(frontSecondShoulderMapData, { mirror: false })}</div>
+      <div class="ns-visual-guides__actions no-print">
+        <button type="button" class="ns-visual-guides__enlarge" data-shaping-map-enlarge aria-label="Enlarge second shoulder shaping map"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Enlarge</button>
+      </div>
+    </div>`
+      : "";
+    // Front written intro + tips (divide-neckline copy, workflow steps, machine-help card). The
+    // Japanese Notation quick reference is suppressed here (passing false) because the notation now
+    // lives once in the Visual Guides block.
+    const frontWrittenIntroHtml = neckShoulderChartHelpRowHtml(
+      `RC:${String(frontArmholeLocalChartStartRc).padStart(3, "0")}`,
+      result?.frontNeckShoulderShapingChart,
+      "front",
+      false
+    );
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
     if (frontChartTableHost) {
       frontChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
         result.frontNeckShoulderShapingChart,
         "ns-shaping-chart-front",
-        neckShoulderChartHelpRowHtml(
-          `RC:${String(frontArmholeLocalChartStartRc).padStart(3, "0")}`,
-          result?.frontNeckShoulderShapingChart,
-          "front",
-          frontNotationSupported
-        ),
+        // Round-neck front: the written intro + carriage-position tip are relocated ABOVE Visual
+        // Guides (into #sg-front-ns-written-intro below), so the row-by-row checklist table carries
+        // no intro. Other fronts keep the intro inline with their checklist.
+        frontIsRoundNeck ? "" : frontWrittenIntroHtml,
         {
           activeSideOnly: true,
           activeSideRcStart: frontActiveSideRcStart,
           includeCenterNecklineSetupRow: true,
           hideCenterNecklineSetupRow: true,
           tableHeading: "First Shoulder Checklist",
+          secondShoulderExtraHtml: frontSecondShoulderMapHtml,
+          suppressCarriagePositionTip: frontIsRoundNeck,
         }
       );
+    }
+    // Round-neck front: render all written instructions/tips together ABOVE the Visual Guides block.
+    if (frontIsRoundNeck) {
+      const frontWrittenIntroHost = mount.querySelector("#sg-front-ns-written-intro");
+      if (frontWrittenIntroHost instanceof HTMLElement) {
+        const frontCarriageTip = renderCarriagePositionPatternTipHtml({ activeSideOnly: true });
+        frontWrittenIntroHost.innerHTML = `${frontWrittenIntroHtml}${
+          frontCarriageTip ? `\n${frontCarriageTip}` : ""
+        }`;
+      }
+      // Render the ACTUAL Japanese notation SVG inline in the Visual Guides card (self-contained;
+      // no longer routed through the piece diagram's Shaping Notation tab).
+      if (frontNotationSupported) {
+        const frontNotationHost = mount.querySelector("[data-front-notation-host]");
+        if (frontNotationHost instanceof HTMLElement) {
+          void inlineFrontJapaneseNotationSvg(
+            frontNotationHost,
+            result,
+            diagramPatternData,
+            renderSeq,
+          );
+        }
+      }
     }
 
     /** Used by chart-only print (dialog) to re-render compact rows without altering on-screen HTML. */
@@ -3868,6 +4158,7 @@ table {
           includeCenterNecklineSetupRow: true,
           hideCenterNecklineSetupRow: true,
           tableHeading: "First Shoulder Checklist",
+          secondShoulderExtraHtml: frontSecondShoulderMapHtml,
         },
       },
     };
@@ -3912,6 +4203,8 @@ table {
     bindSleevelessBackDiagramMode(mount);
     bindSleevelessFrontDiagramMode(mount);
     bindNecklineNotationPreview(mount);
+    bindShapingMapEnlarge(mount);
+    bindFrontNotationEnlarge(mount);
     ensureSleevelessVideoModal();
     const videoHelpRoot =
       document.getElementById("sleeveless-pattern-tips-scope") || mount;

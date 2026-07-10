@@ -554,10 +554,22 @@
   }
 
   .sleeveless-print-root .print-rc {
-    margin: 0 0 0.15rem;
+    /* Match the online treatment: scannable space above mid-block checkpoints, compact below. */
+    margin: 0.55rem 0 0.1rem;
     font-family: ui-monospace, monospace;
     font-weight: 700;
     font-size: 0.9rem;
+  }
+
+  .sleeveless-print-root .print-rc:first-child {
+    margin-top: 0;
+  }
+
+  .sleeveless-print-root .print-subhead {
+    margin: 0.5rem 0 0.15rem;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
   }
 
   .sleeveless-print-root .print-line {

@@ -78,7 +78,7 @@ describe("sleeveless armhole row counter reset block", () => {
     if (block?.kind !== "block") throw new Error("expected armhole block");
     expect(block.paragraphs.some((p) => p.includes(ARMHOLE_RC_FROM_RESET_NOTE))).toBe(false);
     expect(block.paragraphs[0]).toMatch(
-      /^At RC:000, bind off OR hold \d+ stitches at the armhole edge \(carriage side\)\. Knit across\.$/,
+      /^Bind off OR hold \d+ stitches at the armhole edge \(carriage side\)\. Knit across\.$/,
     );
   });
 
@@ -102,7 +102,7 @@ describe("row counter reset in printed pattern", () => {
     expect(html).not.toContain(ARMHOLE_RC_FROM_RESET_NOTE);
 
     const resetIdx = html.indexOf(RESET_ROW_COUNTER_TEXT);
-    const bindOffIdx = html.search(/At RC:000, bind off OR hold \d+ stitches at the armhole edge/);
+    const bindOffIdx = html.search(/Bind off OR hold \d+ stitches at the armhole edge/);
     expect(resetIdx).toBeGreaterThanOrEqual(0);
     expect(bindOffIdx).toBeGreaterThan(resetIdx);
   });

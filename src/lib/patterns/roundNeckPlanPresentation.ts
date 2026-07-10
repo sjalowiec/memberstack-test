@@ -26,11 +26,31 @@ import {
 } from "./legoBlocks/shallowBackNeckNeedleLayout";
 import { consolidateConsecutiveJapaneseNotationLines } from "./shapingNotationCompress";
 import { formatHoldNotation, formatShapingSegment } from "./sleevelessBackJapaneseNotation";
+import { inlineRcHeadingLine, inlineSubheadingLine } from "./inlineRcHeading";
 
 export type RoundNeckBackShallowExecutionOptions = {
   /** Full back body width in stitches — enables needle-range execution instructions. */
   bodyWidthStitches: number;
+  /**
+   * Garment RC context (drop-shoulder). When set, grouped neck-edge hold actions and shoulder
+   * completion gain row-counter anchors derived from the shared shaping schedule (holds every
+   * other row). Omit to keep the RC-free wording used elsewhere.
+   */
+  rc?: RoundNeckBackShallowRcContext;
 };
+
+/** Garment row-counter anchors for shallow back-neck execution prose (drop-shoulder). */
+export type RoundNeckBackShallowRcContext = {
+  /** Garment RC where back neckline shaping begins (first every-other-row hold action). */
+  necklineStartRc: number;
+  /** Garment RC at the final row of the piece — the working shoulder is complete here. */
+  shoulderCompleteRc: number;
+};
+
+/** Zero-padded garment RC label (matches {@link formatRcColon} in pattern output). */
+function formatBackShallowRc(rc: number): string {
+  return `RC:${String(Math.max(0, Math.floor(rc))).padStart(3, "0")}`;
+}
 
 export { NEEDLE_RANGE_CLASS };
 
@@ -100,15 +120,45 @@ export function roundNeckPlanFinishHeldStitchesLine(): string {
 
 function holdNeedleSegmentBullet(stitchCount: number, repeatCount: number): string {
   const needleWord = stitchCount === 1 ? "needle" : "needles";
-  return `• Put ${stitchCount} ${needleWord} into hold every other row ${repeatCount} time${repeatCount === 1 ? "" : "s"}.`;
+  const times = `${repeatCount} time${repeatCount === 1 ? "" : "s"}`;
+  return `• Put ${stitchCount} ${needleWord} into hold every other row ${times}.`;
+}
+
+/**
+ * Attach the every-other-row garment RC at which each compressed hold segment begins.
+ * Both shoulders are worked to the same RC targets (second shoulder mirrors the first).
+ */
+function holdSegmentsStartRc(
+  segments: { stitchCount: number; repeatCount: number }[],
+  startRc: number,
+): { stitchCount: number; repeatCount: number; startRc: number }[] {
+  let rc = startRc;
+  return segments.map((seg) => {
+    const withRc = { ...seg, startRc: rc };
+    rc += 2 * seg.repeatCount;
+    return withRc;
+  });
 }
 
 function roundNeckBackNeedleSideShapingLines(
   segments: { stitchCount: number; repeatCount: number }[],
   sideLabel: "right" | "left",
+  necklineStartRc?: number,
 ): string[] {
   if (segments.length === 0) {
     return [`Knit the ${sideLabel} shoulder with no neck-edge hold shaping on this side.`];
+  }
+  if (necklineStartRc !== undefined) {
+    const lines: string[] = ["At the neck edge:"];
+    for (const seg of holdSegmentsStartRc(segments, necklineStartRc)) {
+      // Each hold group that begins on a new row counter becomes its own RC checkpoint; the first
+      // group starts on the section's opening RC (already the block heading), so it needs none.
+      if (seg.startRc !== necklineStartRc) {
+        lines.push(inlineRcHeadingLine(formatBackShallowRc(seg.startRc)));
+      }
+      lines.push(holdNeedleSegmentBullet(seg.stitchCount, seg.repeatCount));
+    }
+    return lines;
   }
   return [
     "At the neck edge:",
@@ -116,9 +166,29 @@ function roundNeckBackNeedleSideShapingLines(
   ];
 }
 
+/**
+ * Shoulder-completion lines. With garment RC context, the completion row becomes its own RC
+ * checkpoint heading followed by a short statement; otherwise the RC-free sentence is used.
+ */
+function backShallowShoulderCompleteLines(
+  sideLabel: "right" | "left",
+  rc?: RoundNeckBackShallowRcContext,
+): string[] {
+  if (rc) {
+    return [
+      inlineRcHeadingLine(formatBackShallowRc(rc.shoulderCompleteRc)),
+      `The ${sideLabel} shoulder is complete.`,
+    ];
+  }
+  return [
+    `When the final neck-edge group has been placed in hold, the ${sideLabel} shoulder is complete.`,
+  ];
+}
+
 function roundNeckBackShallowNeedleExecutionLines(
   plan: RoundNecklinePlanResult | RoundNecklineShapingResult,
   bodyWidthStitches: number,
+  rc?: RoundNeckBackShallowRcContext,
 ): string[] {
   const layout = computeShallowBackNeckNeedleLayout(bodyWidthStitches, plan.centerBindOff);
   const { stitchCounts: counts } = layout;
@@ -133,24 +203,24 @@ function roundNeckBackShallowNeedleExecutionLines(
   );
 
   return [
-    "RIGHT SIDE",
+    inlineSubheadingLine("RIGHT SIDE"),
     "",
     `Put needles ${formatFirstSideHoldPhraseHtml(layout)} into hold${formatStitchCountValidation(counts.firstSideHold)}.`,
     `Work needles ${rightWorkRangeHtml}${formatStitchCountValidation(counts.rightShoulder)}.`,
-    ...roundNeckBackNeedleSideShapingLines(rightSegments, "right"),
+    ...roundNeckBackNeedleSideShapingLines(rightSegments, "right", rc?.necklineStartRc),
     "",
-    "When the final neck-edge group has been placed in hold, the right shoulder is complete.",
+    ...backShallowShoulderCompleteLines("right", rc),
     "Scrap off or bind off the remaining right shoulder stitches.",
     "Break yarn and move the carriage to the opposite side.",
     "",
-    "LEFT SIDE",
+    inlineSubheadingLine("LEFT SIDE"),
     "",
     `Return needles ${leftWorkRangeHtml} to working position${formatStitchCountValidation(counts.leftShoulder)}.`,
     `Leave center neckline needles ${centerRangeHtml} in hold${formatStitchCountValidation(counts.center)}.`,
     `Work needles ${leftWorkRangeHtml}.`,
-    ...roundNeckBackNeedleSideShapingLines(leftSegments, "left"),
+    ...roundNeckBackNeedleSideShapingLines(leftSegments, "left", rc?.necklineStartRc),
     "",
-    "When the final neck-edge group has been placed in hold, the left shoulder is complete.",
+    ...backShallowShoulderCompleteLines("left", rc),
     "Scrap off or bind off the remaining left shoulder stitches.",
     "",
     "BACK NECKLINE CLEANUP",
@@ -182,8 +252,10 @@ export function roundNeckBackShallowSleevelessSummaryWrittenLines(
   }
 
   const bodyWidth = options?.bodyWidthStitches ?? 0;
+  // The neckline start RC is shown once, as the block's RC heading (see backNeckSummaryRcHeading);
+  // the intro sentence no longer repeats it. Presence of a label still gates the intro line.
   const rcLabel = String(options?.necklineStartRcLabel ?? "").trim();
-  const rcLine = rcLabel ? `At ${rcLabel}, begin back neckline and shoulder shaping.` : null;
+  const rcLine = rcLabel ? "Begin back neckline and shoulder shaping." : null;
 
   if (bodyWidth <= 0) {
     const centerLine = roundNeckPlanCenterWrittenLine(plan);
@@ -219,26 +291,27 @@ export function roundNeckBackShallowExecutionWrittenLines(
   }
 
   const bodyWidth = options?.bodyWidthStitches ?? 0;
+  const rc = options?.rc;
   if (bodyWidth > 0) {
-    return roundNeckBackShallowNeedleExecutionLines(plan, bodyWidth);
+    return roundNeckBackShallowNeedleExecutionLines(plan, bodyWidth, rc);
   }
 
   const rightSegments = compressHoldGroupsToSegments(plan.right.holdGroups);
   const leftSegments = compressHoldGroupsToSegments(plan.left.holdGroups);
   return [
-    "RIGHT SIDE",
+    inlineSubheadingLine("RIGHT SIDE"),
     "",
-    ...roundNeckBackNeedleSideShapingLines(rightSegments, "right"),
+    ...roundNeckBackNeedleSideShapingLines(rightSegments, "right", rc?.necklineStartRc),
     "",
-    "When the final neck-edge group has been placed in hold, the right shoulder is complete.",
+    ...backShallowShoulderCompleteLines("right", rc),
     "Scrap off or bind off the remaining right shoulder stitches.",
     "Break yarn and move the carriage to the opposite side.",
     "",
-    "LEFT SIDE",
+    inlineSubheadingLine("LEFT SIDE"),
     "",
-    ...roundNeckBackNeedleSideShapingLines(leftSegments, "left"),
+    ...roundNeckBackNeedleSideShapingLines(leftSegments, "left", rc?.necklineStartRc),
     "",
-    "When the final neck-edge group has been placed in hold, the left shoulder is complete.",
+    ...backShallowShoulderCompleteLines("left", rc),
     "Scrap off or bind off the remaining left shoulder stitches.",
     "",
     "BACK NECKLINE CLEANUP",

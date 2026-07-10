@@ -213,7 +213,7 @@ describe("sleeveless armhole RC wording", () => {
     expect(
       armhole.some((p) =>
         new RegExp(
-          `At RC:000, bind off OR hold ${bindOffSts} stitches at the armhole edge \\(carriage side\\)\\. Knit across\\.`,
+          `Bind off OR hold ${bindOffSts} stitches at the armhole edge \\(carriage side\\)\\. Knit across\\.`,
           "i",
         ).test(p),
       ),

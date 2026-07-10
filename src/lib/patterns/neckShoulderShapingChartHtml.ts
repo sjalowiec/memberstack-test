@@ -696,7 +696,7 @@ function instructionWithHeldStitches(
       ? SECOND_SIDE_INSTRUCTION_SUFFIX
       : SECOND_SIDE_INSTRUCTION_SUFFIX_NECKLINE_ONLY;
   const cutPhrase = shouldersShaped ? "cut yarn" : "cut the yarn";
-  return `Once this side is complete, ${cutPhrase} and return the ${held} held stitches for the opposite shoulder to working position. ${suffix}`;
+  return `Once this side is complete, ${cutPhrase} and return the ${held} held stitches for the second shoulder to working position. ${suffix}`;
 }
 
 /**
@@ -886,6 +886,20 @@ export type NeckShoulderChartRenderOptions = {
   hideCenterNecklineSetupRow?: boolean;
   /** Heading text for the chart section (online uses "First Shoulder Checklist"). */
   tableHeading?: string;
+  /**
+   * Optional extra HTML inserted at the TOP of the Second Shoulder Checklist block (just under its
+   * heading). Used to place the second-shoulder Shaping Map (opposite orientation from the first
+   * shoulder) inside its own disclosure, so the two maps never silently swap a shared element.
+   * Caller-built, already-escaped/trusted markup.
+   */
+  secondShoulderExtraHtml?: string;
+  /**
+   * When true, the collapsible Carriage Position pattern tip is NOT emitted inside the chart
+   * section. Used by the sleeveless front, where that tip is relocated with the other written
+   * instructions above the Visual Guides block (the carriage-position help still renders once —
+   * just outside this table). Never affects the chart rows or shaping math.
+   */
+  suppressCarriagePositionTip?: boolean;
 };
 
 function activeShoulderChecklistOptions(
@@ -990,7 +1004,7 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
   const headingId = `${idPrefix}-heading`;
   const introParts = [
     typeof introHtml === "string" && introHtml.trim() ? introHtml : "",
-    renderCarriagePositionPatternTipHtml(options),
+    options?.suppressCarriagePositionTip === true ? "" : renderCarriagePositionPatternTipHtml(options),
   ].filter((part) => part.trim());
   const intro = introParts.join("\n");
   const includeDoneColumnOption = options?.includeDoneColumn !== false;
@@ -1110,7 +1124,7 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
           heldShoulderStitches, true, false, shouldersShaped
         )}</p>
 <div class="ns-shaping-chart__second-shoulder-toggle no-print">
-  <p class="ns-shaping-chart__second-shoulder-toggle-copy">Want less mental reversing? Show a second checklist for the opposite shoulder.</p>
+  <p class="ns-shaping-chart__second-shoulder-toggle-copy">Want less mental reversing? Show a ready-made checklist for the second shoulder.</p>
   <label class="ns-shaping-chart__second-shoulder-label">
     <input type="checkbox" class="ns-shaping-chart__second-shoulder-input" data-second-shoulder-toggle />
     Show second shoulder checklist
@@ -1118,6 +1132,7 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
 </div>
 <div class="ns-shaping-chart__second-shoulder-block" data-second-shoulder-content hidden>
   <h3 class="ns-shaping-chart__preview-title">Second Shoulder Checklist</h3>
+  ${typeof options?.secondShoulderExtraHtml === "string" ? options.secondShoulderExtraHtml : ""}
   <div class="ns-shaping-chart__progress-section" data-chart-id="${escapeHtml(progressChartIdSecondary)}">
     ${progressToolbarHtml}
     <div class="ns-shaping-chart__table-wrap">

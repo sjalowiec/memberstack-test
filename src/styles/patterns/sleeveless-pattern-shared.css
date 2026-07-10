@@ -283,11 +283,28 @@
   }
 
   .sleeveless-pattern-rc {
-    margin: 0 0 0.2rem;
+    /* Modest space above so mid-block RC checkpoints are easy to scan; compact below to stay
+       visually tied to the instruction that follows. */
+    margin: 0.85rem 0 0.15rem;
     font-family: ui-monospace, monospace;
     font-weight: 700;
     font-size: 0.9rem;
     color: #1f2937;
+  }
+
+  /* The section's opening RC leads the block, so it should not gain awkward extra top space. */
+  .sleeveless-pattern-rc:first-child {
+    margin-top: 0;
+  }
+
+  /* Internal side subheadings (RIGHT SIDE / LEFT SIDE): a small step above body text, kept
+     clearly subordinate to the green section heading above. */
+  .sleeveless-pattern-subhead {
+    margin: 0.7rem 0 0.25rem;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    color: #374151;
   }
 
   .sleeveless-pattern-line {

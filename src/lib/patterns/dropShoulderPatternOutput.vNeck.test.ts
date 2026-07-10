@@ -72,7 +72,7 @@ describe("generateDropShoulderPattern V-neck front instructions", () => {
     expect(perSide).toBe(18);
     const sched = evenShapingSchedule(perSide, frontNeckDepthRows!);
 
-    expect(text).toMatch(/divide for the V-neck at the center\./);
+    expect(text).toMatch(/Divide for the V-neck at the center\./);
     expect(text).not.toMatch(/divide for the V-neck at the center\. Work each side separately/i);
     expect(text).toMatch(/Place the opposite shoulder stitches on hold/i);
     expect(text).toMatch(/Work one shoulder at a time/i);

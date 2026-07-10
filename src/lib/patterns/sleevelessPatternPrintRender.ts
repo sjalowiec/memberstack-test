@@ -5,6 +5,7 @@
 
 import { patternTipWrapperHtml, type SleevelessPatternDisplayRow } from "./sleevelessPatternOutput";
 import { rowCounterResetBlockHtml } from "./rowCounterReset";
+import { parseInlineMarkedLine } from "./inlineRcHeading";
 import { renderSleevelessBodyShapingChartHtml } from "./sleevelessBodyShapingChartHtml";
 import { renderDropShoulderSleeveShapingChartHtml } from "./dropShoulderSleeveShapingChart";
 
@@ -61,9 +62,16 @@ function renderPrintBlockRow(
   if (trusted && trusted.length > 0) {
     for (const p of trusted) {
       const t = String(p).trim();
+      if (!t) continue;
+      const marked = parseInlineMarkedLine(t);
+      if (marked) {
+        const cls = marked.kind === "rc-heading" ? "print-rc" : "print-subhead";
+        leftBits.push(`<p class="${cls}">${escapeHtml(marked.text)}</p>`);
+        continue;
+      }
       const plain = stripTrustedPatternHtmlToPlain(t);
       if (isOmittedTipParagraph(plain)) continue;
-      if (t) leftBits.push(`<p class="print-line">${p}</p>`);
+      leftBits.push(`<p class="print-line">${p}</p>`);
     }
   } else {
     for (const p of row.paragraphs) {

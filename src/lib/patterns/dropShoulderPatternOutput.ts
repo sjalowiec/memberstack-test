@@ -531,14 +531,15 @@ function buildBackRows(args: {
     const plan = args.backRoundNeckPlan;
     const executionLines = roundNeckBackShallowExecutionWrittenLines(plan, {
       bodyWidthStitches: args.bodyWidthSts,
+      rc: { necklineStartRc: neckStartRc, shoulderCompleteRc: args.totalRows },
     });
     rows.push({
       kind: "block",
       rc: formatRcColon(neckStartRc),
       trustedParagraphs: [
-        `At ${formatRcColon(neckStartRc)}, begin back neckline shaping.`,
-        ...executionLines,
+        "Begin back neckline shaping.",
         "Drop-shoulder shoulders are worked straight — there is no shoulder shaping.",
+        ...executionLines,
       ],
       stitchCount: args.shoulderStsEach,
     });
@@ -631,7 +632,7 @@ function buildPulloverFrontRows(args: {
         kind: "block",
         rc: formatRcColon(neckStartRc),
         paragraphs: [
-          `At ${formatRcColon(neckStartRc)}, divide for the V-neck at the center.`,
+          "Divide for the V-neck at the center.",
           ...dropShoulderPulloverFrontShoulderDivideParagraphs(),
           sched.count > 0
             ? `At the neck edge, decrease 1 stitch ${intervalPhrase(sched.interval)} ${sched.count} time${sched.count === 1 ? "" : "s"} (${perSide} stitches removed per side).`
@@ -651,9 +652,7 @@ function buildPulloverFrontRows(args: {
         kind: "block",
         rc: formatRcColon(neckStartRc),
         paragraphs: [
-          centerLine
-            ? `At ${formatRcColon(neckStartRc)}, ${centerLine.charAt(0).toLowerCase()}${centerLine.slice(1)} for the neck.`
-            : `At ${formatRcColon(neckStartRc)}, shape the neck.`,
+          centerLine ? `${centerLine} for the neck.` : "Shape the neck.",
           ...dropShoulderPulloverFrontShoulderDivideParagraphs(),
           ...lines,
           ...(isShallowSinglesOnlyPlan(plan) ? [roundNeckPlanFinishHeldStitchesLine()] : []),
@@ -754,7 +753,7 @@ function buildCardiganFrontRows(args: {
         kind: "block",
         rc: formatRcColon(neckStartRc),
         paragraphs: [
-          `At ${formatRcColon(neckStartRc)}, begin the V-neck shaping at the center-front edge.`,
+          "Begin the V-neck shaping at the center-front edge.",
           sched.count > 0
             ? `Decrease 1 stitch at the center-front (neck) edge ${intervalPhrase(sched.interval)} ${sched.count} time${sched.count === 1 ? "" : "s"} (${args.neckPerFront} stitches removed).`
             : "Work straight to the shoulder.",
@@ -773,7 +772,7 @@ function buildCardiganFrontRows(args: {
         kind: "block",
         rc: formatRcColon(neckStartRc),
         paragraphs: [
-          `At ${formatRcColon(neckStartRc)}, bind off ${cfBindOff} stitches at the center-front (neck) edge.`,
+          `Bind off ${cfBindOff} stitches at the center-front (neck) edge.`,
           ...roundNeckCardiganCfEdgeWrittenLines(plan),
           `When ${args.shoulderStsEach} stitches remain, knit even to ${formatRcColon(args.totalRows)}, then bind off ${args.shoulderStsEach} stitches for the shoulder.`,
         ],

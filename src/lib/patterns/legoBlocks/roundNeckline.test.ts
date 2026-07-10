@@ -32,6 +32,7 @@ import {
   roundNeckPlanOneSideNeckEdgeWrittenLines,
 
 } from "../roundNeckPlanPresentation";
+import { inlineSubheadingLine } from "../inlineRcHeading";
 
 
 
@@ -326,7 +327,8 @@ describe("shallow round-neck written instructions", () => {
       necklineDepthRows: 10,
     });
     const lines = roundNeckBackShallowExecutionWrittenLines(plan, { bodyWidthStitches: 100 });
-    expect(lines[0]).toBe("RIGHT SIDE");
+    // First line is the RIGHT SIDE subheading (a presentation marker; renders as "RIGHT SIDE").
+    expect(lines[0]).toBe(inlineSubheadingLine("RIGHT SIDE"));
     expect(lines.some((l) => /Put needles .*needle-range.*L50 through R9.*into hold \(59 stitches total\)/i.test(l))).toBe(
       true,
     );
@@ -365,7 +367,7 @@ describe("shallow round-neck written instructions", () => {
       bodyWidthStitches: 100,
       necklineStartRcLabel: "RC:049",
     });
-    expect(lines[0]).toBe("At RC:049, begin back neckline and shoulder shaping.");
+    expect(lines[0]).toBe("Begin back neckline and shoulder shaping.");
     expect(lines.some((l) => /Place center neckline needles .*L9 through R9/i.test(l))).toBe(true);
     expect(lines.some((l) => /Put needles .*L50 through R9.*into hold/i.test(l))).toBe(true);
     expect(lines.some((l) => /Work needles .*R10 through R50.*first/i.test(l))).toBe(true);

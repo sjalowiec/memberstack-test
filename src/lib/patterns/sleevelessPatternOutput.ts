@@ -5,6 +5,7 @@
 
 import { calculateArmholeShaping, type ArmholeResult } from "./legoBlocks/armholeBlock";
 import { RESET_ROW_COUNTER_TEXT } from "./rowCounterReset";
+import { parseInlineMarkedLine } from "./inlineRcHeading";
 import {
   generateNeckShoulderExecution,
   shapingActionsFromTimeline,
@@ -690,6 +691,11 @@ function flattenDisplayRowsToLines(rows: readonly SleevelessPatternDisplayRow[])
           ? r.trustedParagraphs
           : r.paragraphs;
       for (const p of plainParas) {
+        const marked = parseInlineMarkedLine(String(p));
+        if (marked) {
+          out.push(marked.text);
+          continue;
+        }
         const line =
           r.trustedParagraphs && r.trustedParagraphs.length > 0
             ? tipHtmlToPlainLine(p)
@@ -717,9 +723,13 @@ const PLAIN_KNIT_UNTIL_RC_RE = /^Knit in pattern until RC (\d{1,4})\.\s*$/i;
 /** Preferred plain-span wording: next instruction row RC (not the last work-even RC). */
 const KNIT_TO_RC_RE = /^Knit to (?:Armhole )?RC:?s*(\d{1,4})\.\s*$/i;
 
-/** Armhole bridge line: “At RC:…, knit in pattern to [Armhole ]RC:…”. */
-const AT_RC_KNIT_IN_PATTERN_TO_RC_RE =
-  /^At RC:?(\d{1,4}),\s*knit in pattern to (?:Armhole )?RC:?(\d{1,4})\.\s*$/i;
+/**
+ * Plain-span bridge line: “Knit in pattern to [Armhole ]RC:…”. The RC heading above the block
+ * already anchors the start row, so the start prefix is no longer emitted; the optional
+ * `At RC:…,` group keeps legacy/persisted rows parseable.
+ */
+const KNIT_IN_PATTERN_TO_RC_RE =
+  /^(?:At RC:?(\d{1,4}),\s*)?knit in pattern to (?:Armhole )?RC:?(\d{1,4})\.\s*$/i;
 
 /** Legacy front-clamp parsing (older saved display rows). */
 const KNIT_EVEN_ROWS_TO_RC_RE = /^Knit (\d+) rows even \(to RC (\d{1,4})\)\.\s*$/i;
@@ -844,10 +854,11 @@ function extractPlainSpanRowsAndEndRc(
 ): { rows: number; endRc: number } | undefined {
   const even = extractKnitEvenRowsToRc(paragraph);
   if (even !== undefined) return even;
-  const atRcKnitTo = paragraph.trim().match(AT_RC_KNIT_IN_PATTERN_TO_RC_RE);
-  if (atRcKnitTo && blockStartRc !== undefined) {
-    const startFromLine = parseInt(atRcKnitTo[1], 10);
-    const targetRc = parseInt(atRcKnitTo[2], 10);
+  const knitInPatternTo = paragraph.trim().match(KNIT_IN_PATTERN_TO_RC_RE);
+  if (knitInPatternTo && blockStartRc !== undefined) {
+    const startFromLine =
+      knitInPatternTo[1] !== undefined ? parseInt(knitInPatternTo[1], 10) : blockStartRc;
+    const targetRc = parseInt(knitInPatternTo[2], 10);
     if (
       Number.isFinite(startFromLine) &&
       Number.isFinite(targetRc) &&
@@ -959,15 +970,13 @@ function clampFrontSharedRowsBeforeNeckStart(
         const clamped =
           maxPlainRows === Number.POSITIVE_INFINITY ? span.rows : Math.min(span.rows, maxPlainRows);
         if (clamped <= 0) continue;
-        const atRcMerged = p.trim().match(AT_RC_KNIT_IN_PATTERN_TO_RC_RE);
-        if (atRcMerged) {
+        const knitInPatternToMerged = p.trim().match(KNIT_IN_PATTERN_TO_RC_RE);
+        if (knitInPatternToMerged) {
           const lastPlainRc = startRc + clamped - 1;
           const toRcLabel = inArmholeSection
             ? `Armhole RC:${String(lastPlainRc).padStart(3, "0")}`
             : `RC:${String(lastPlainRc).padStart(3, "0")}`;
-          newParagraphs.push(
-            `At RC:${String(startRc).padStart(3, "0")}, knit in pattern to ${toRcLabel}.`
-          );
+          newParagraphs.push(`Knit in pattern to ${toRcLabel}.`);
           continue;
         }
         const spanLine = formatPlainKnitInPatternSpan(clamped, startRc, {
@@ -1494,6 +1503,26 @@ function backNeckSummaryInstructionFields(summary: string[]): {
   return { paragraphs: summary };
 }
 
+/**
+ * RC heading for the back-neck summary block. Shallow-round summaries previously repeated the
+ * neckline start RC inline (“At RC:049, begin …”); the value now lives once, as the block heading.
+ */
+function backNeckSummaryRcHeading(
+  backRoundNeckPlan: RoundNecklinePlanResult | null | undefined,
+  backNecklineStartRC: number | undefined,
+  firstArmholeRC: number | null | undefined,
+): string | undefined {
+  if (backRoundNeckPlan?.strategy !== "shallow-round") return undefined;
+  if (
+    backNecklineStartRC === undefined ||
+    firstArmholeRC === null ||
+    firstArmholeRC === undefined
+  ) {
+    return undefined;
+  }
+  return formatArmholeLocalRc(backNecklineStartRC, firstArmholeRC);
+}
+
 export function buildSleevelessBackDisplayRows(args: {
   castOnSts: number;
   /** Stitches on the needle at the armhole (bust width when A-line); defaults to {@link castOnSts}. */
@@ -1739,7 +1768,7 @@ export function buildSleevelessBackDisplayRows(args: {
       rc: formatArmholeLocalRc(first, first),
       rowCounterReset: true,
       paragraphs: [
-        `At RC:000, bind off OR hold ${bo} stitches at the armhole edge (carriage side). Knit across.`,
+        `Bind off OR hold ${bo} stitches at the armhole edge (carriage side). Knit across.`,
       ],
       tipHtml: armholeAlternateTechniquesHelpCardInnerHtml(),
       tipHtmlIsFull: true,
@@ -1752,7 +1781,7 @@ export function buildSleevelessBackDisplayRows(args: {
         kind: "block",
         rc: formatArmholeLocalRc(first + 1, first),
         paragraphs: [
-          `At RC:001, bind off OR hold ${bo} stitches at the remaining armhole edge (carriage side). Knit across.`,
+          `Bind off OR hold ${bo} stitches at the remaining armhole edge (carriage side). Knit across.`,
         ],
         stitchCount: afterBo2 > 0 ? afterBo2 : undefined,
       });
@@ -1761,7 +1790,7 @@ export function buildSleevelessBackDisplayRows(args: {
         kind: "block",
         rc: formatArmholeLocalRc(first + 1, first),
         paragraphs: [
-          "At RC:001, knit across — center front edge (no bind-off; opening is worked as a separate piece or band later).",
+          "Knit across — center front edge (no bind-off; opening is worked as a separate piece or band later).",
         ],
         stitchCount: afterBo1 > 0 ? afterBo1 : undefined,
       });
@@ -1774,8 +1803,8 @@ export function buildSleevelessBackDisplayRows(args: {
       ).join(" - ");
       const decreaseSentence =
         armholeStyle === "cardiganHalfLeftFront"
-          ? `At RC:${formatArmholeLocalRcNumber(decStart, first)}, decrease 1 stitch at the armhole edge every other row, ${m.decreaseSts} times — ${decreasesTotalCardigan} stitch${decreasesTotalCardigan === 1 ? "" : "es"} removed total.`
-          : `At RC:${formatArmholeLocalRcNumber(decStart, first)}, decrease 1 stitch at each armhole edge every other row, ${m.decreaseSts} times — ${decreasesTotalSymmetric} stitches removed total.`;
+          ? `Decrease 1 stitch at the armhole edge every other row, ${m.decreaseSts} times — ${decreasesTotalCardigan} stitch${decreasesTotalCardigan === 1 ? "" : "es"} removed total.`
+          : `Decrease 1 stitch at each armhole edge every other row, ${m.decreaseSts} times — ${decreasesTotalSymmetric} stitches removed total.`;
       rows.push({
         kind: "block",
         rc: formatArmholeLocalRc(decStart, first),
@@ -1812,8 +1841,8 @@ export function buildSleevelessBackDisplayRows(args: {
         rc: formatArmholeLocalRc(armholeBridgeRc, first),
         paragraphs: [
           canMergeBridgeWithEvenSpan
-            ? `At RC:${formatArmholeLocalRcNumber(armholeBridgeRc, first)}, knit in pattern to Armhole RC:${String(localNext).padStart(3, "0")}.`
-            : `At RC:${formatArmholeLocalRcNumber(armholeBridgeRc, first)}, knit in pattern. ${B} sts remain.`,
+            ? `Knit in pattern to Armhole RC:${String(localNext).padStart(3, "0")}.`
+            : `Knit in pattern. ${B} sts remain.`,
         ],
         stitchCount: B > 0 ? B : undefined,
       });
@@ -1962,6 +1991,11 @@ export function buildSleevelessBackDisplayRows(args: {
     if (summary) {
       rows.push({
         kind: "block",
+        rc: backNeckSummaryRcHeading(
+          args.backRoundNeckPlan,
+          args.backNecklineStartRC,
+          args.firstArmholeRC,
+        ),
         ...backNeckSummaryInstructionFields(summary),
         tipHtml: necklineShoulderOrientationHelpCardInnerHtml(),
         tipHtmlIsFull: true,
@@ -1995,7 +2029,14 @@ export function buildSleevelessBackDisplayRows(args: {
     rows.push({
       kind: "block",
       ...(summary
-        ? backNeckSummaryInstructionFields(summary)
+        ? {
+            rc: backNeckSummaryRcHeading(
+              args.backRoundNeckPlan,
+              args.backNecklineStartRC,
+              args.firstArmholeRC,
+            ),
+            ...backNeckSummaryInstructionFields(summary),
+          }
         : {
             paragraphs: [
               "Neckline summary could not be generated. Confirm neck opening and shoulder width in Fit, then open this tab again.",
@@ -2106,18 +2147,19 @@ export function buildSleevelessFrontDisplayRows(args: {
   const pieceTitle = args.pieceTitle ?? "FRONT";
   rows.push({ kind: "piece", title: pieceTitle });
   rows.push(pieceMarkersSeamingTipDisplayRow("front"));
-  rows.push({
-    kind: "block",
-    paragraphs: args.introIsCardiganHalf
-      ? [
-          "This piece is half the body width (one center-front edge). Cast-on and armhole counts below are for the left front only. Work the front from the top — the cast-on, body, body shaping, and armhole steps are written out in full below, then continue into the front neckline shaping. Body/side shaping on the front is worked only on the armhole edge.",
-          "After the armhole reset, use Armhole RC — not the body row counter.",
-        ]
-      : [
-          "The front is written out in full below — work the body, any body shaping, and armhole shaping from the top, then continue into the front neckline shaping.",
-          "After the armhole reset, use Armhole RC — not the body row counter.",
-        ],
-  });
+  // Cardigan half-front keeps its setup note (half body width, cast-on/armhole counts are for the
+  // left front only, shaping worked on the armhole edge) — that context is not conveyed elsewhere.
+  // The full-width (pullover) front has no introductory paragraph: the headings, row-counter labels,
+  // and shaping checklist already provide the needed context, so instructions begin directly.
+  if (args.introIsCardiganHalf) {
+    rows.push({
+      kind: "block",
+      paragraphs: [
+        "This piece is half the body width (one center-front edge). Cast-on and armhole counts below are for the left front only. Work the front from the top — the cast-on, body, body shaping, and armhole steps are written out in full below, then continue into the front neckline shaping. Body/side shaping on the front is worked only on the armhole edge.",
+        "After the armhole reset, use Armhole RC — not the body row counter.",
+      ],
+    });
+  }
   rows.push(...sharedRowsFrontMilestones);
 
   rows.push({ kind: "section", title: "FRONT NECKLINE & SHOULDERS" });
