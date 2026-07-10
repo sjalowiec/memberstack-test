@@ -69,13 +69,13 @@ import {
 import { cardiganFrontInitialNeckBindOffStitches } from "./roundNeckNotation";
 import {
   castOnMethodQuickTipInnerHtml,
-  ribbedHemTipDisplayRow,
   pieceMarkersSeamingTipDisplayRow,
   formatRcColon,
   type SleevelessPatternDisplayRow,
   type SleevelessBackPatternResult,
   type SleevelessBackPatternDebug,
 } from "./sleevelessPatternOutput";
+import { hemSectionRow } from "./legoBlocks/hem";
 import type { NeckShoulderShapingChart } from "./neckShoulderShapingChart";
 import { buildDropShoulderFrontNeckShapingChart } from "./dropShoulderFrontNeckShapingChart";
 import { resolveCardiganHalfFrontWidths } from "./cardiganFrontBlock";
@@ -306,10 +306,9 @@ function castOnBlock(sts: number, label?: string, alineHipNote = false): Block {
   };
 }
 
-function hemBlocks(piece: "back" | "front", hemRows: number, hemRowsValid: boolean, sts: number): SleevelessPatternDisplayRow[] {
+function hemBlocks(hemRows: number, hemRowsValid: boolean, sts: number): SleevelessPatternDisplayRow[] {
   return [
-    { kind: "section", title: "RIBBED HEM" },
-    ribbedHemTipDisplayRow(piece),
+    hemSectionRow(),
     {
       kind: "block",
       rc: formatRcColon(0),
@@ -479,7 +478,7 @@ function buildBackRows(args: {
   rows.push({ kind: "piece", title: "BACK" });
   rows.push(pieceMarkersSeamingTipDisplayRow("back"));
   rows.push(castOnBlock(castOnSts, "the back", useAlineBody));
-  rows.push(...hemBlocks("back", args.hemRows, args.hemRowsValid, castOnSts));
+  rows.push(...hemBlocks(args.hemRows, args.hemRowsValid, castOnSts));
 
   rows.push({ kind: "section", title: "BODY" });
   if (useAlineBody && aline) {
@@ -583,7 +582,7 @@ function buildPulloverFrontRows(args: {
   rows.push({ kind: "piece", title: "FRONT" });
   rows.push(pieceMarkersSeamingTipDisplayRow("front"));
   rows.push(castOnBlock(castOnSts, "the front", useAlineBody));
-  rows.push(...hemBlocks("front", args.hemRows, args.hemRowsValid, castOnSts));
+  rows.push(...hemBlocks(args.hemRows, args.hemRowsValid, castOnSts));
 
   rows.push({ kind: "section", title: "BODY" });
   if (useAlineBody && aline) {
@@ -705,7 +704,7 @@ function buildCardiganFrontRows(args: {
   rows.push({ kind: "piece", title: "LEFT FRONT" });
   rows.push(pieceMarkersSeamingTipDisplayRow("front"));
   rows.push(castOnBlock(castOnSts, "the left front", useAlineBody));
-  rows.push(...hemBlocks("front", args.hemRows, args.hemRowsValid, castOnSts));
+  rows.push(...hemBlocks(args.hemRows, args.hemRowsValid, castOnSts));
 
   rows.push({ kind: "section", title: "BODY" });
   if (useAlineBody && aline) {

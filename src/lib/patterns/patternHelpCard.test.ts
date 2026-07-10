@@ -4,15 +4,14 @@ import {
   armholeAlternateTechniquesHelpCardInnerHtml,
   carriagePositionHelpCardHtml,
   generateSleevelessBackPattern,
-  MOCK_RIB_HEM_GLOSSARY_ID,
   necklineShoulderOrientationHelpCardInnerHtml,
-  ribbedHemTipDisplayRow,
 } from "./sleevelessPatternOutput";
+import { HEM_GLOSSARY_ID } from "./legoBlocks/hem";
 
 describe("patternHelpCard", () => {
   it("builds collapsed details with chevron, icon, and title", () => {
     const html = buildPatternHelpCardInnerHtml({
-      title: "Hem Treatment",
+      title: "Sample Card",
       bodyHtml: "<p>Body</p>",
     });
     expect(html).toContain('class="pattern-help-card__details"');
@@ -20,7 +19,7 @@ describe("patternHelpCard", () => {
     expect(html).toContain('class="pattern-help-card__chevron"');
     expect(html).toContain("fa-chevron-right");
     expect(html).toContain("fa-book-open");
-    expect(html).toContain("Hem Treatment");
+    expect(html).toContain("Sample Card");
     expect(html).toContain("<p>Body</p>");
   });
 
@@ -83,34 +82,28 @@ describe("armholeAlternateTechniquesHelpCardInnerHtml", () => {
   });
 });
 
-describe("ribbedHemTipDisplayRow", () => {
-  it("uses Help Card presentation with glossary placeholders and no header icon", () => {
-    for (const piece of ["front", "back"] as const) {
-      const row = ribbedHemTipDisplayRow(piece);
-      expect(row.tipPresentation).toBe("help-card");
-      expect(row.tipHtml).toContain("pattern-help-card__details");
-      expect(row.tipHtml).toContain("pattern-help-card__chevron");
-      expect(row.tipHtml).toContain("Hem Treatment");
-      expect(row.tipHtml).not.toContain("fa-book-open");
-      expect(row.tipHtml).toContain(`data-glossary-id="${MOCK_RIB_HEM_GLOSSARY_ID}"`);
-      expect(row.tipId).toBe(`sleeveless-ribbed-hem-${piece}`);
-    }
-  });
-
-  it("generated pattern includes hem help card on back and front", () => {
+describe("HEM section help (glossary tooltip only, no Hem Treatment help card)", () => {
+  it("puts the single Hem glossary link on the HEM section heading and renders no hem help card", () => {
     const result = generateSleevelessBackPattern({
       fit: { selectedMeasurements: baseMeasurements() },
       style: { neckline: "round", frontStyle: "closed" },
       yarnGaugeMachine: { gaugeStitchesPerInch: 5, gaugeRowsPerInch: 7, availableNeedles: 200 },
     });
-    const frontHem = result.frontDisplayRows.find(
-      (r) => r.kind === "block" && r.tipId === "sleeveless-ribbed-hem-front",
-    );
-    const backHem = result.displayRows.find(
-      (r) => r.kind === "block" && r.tipId === "sleeveless-ribbed-hem-back",
-    );
-    expect(frontHem?.tipPresentation).toBe("help-card");
-    expect(backHem?.tipPresentation).toBe("help-card");
+    for (const rows of [result.displayRows, result.frontDisplayRows]) {
+      const hemSection = rows.find((r) => r.kind === "section" && r.title === "HEM");
+      expect(hemSection).toBeDefined();
+      expect(hemSection?.kind === "section" ? hemSection.titleHtml : "").toContain(
+        `data-glossary-id="${HEM_GLOSSARY_ID}"`,
+      );
+      // No hem-treatment help card is emitted anywhere in the pattern.
+      const hemTip = rows.find(
+        (r) => r.kind === "block" && r.tipId?.startsWith("pattern-hem"),
+      );
+      expect(hemTip).toBeUndefined();
+      expect(rows.some((r) => r.kind === "block" && r.tipHtml?.includes("Hem Treatment"))).toBe(
+        false,
+      );
+    }
   });
 });
 

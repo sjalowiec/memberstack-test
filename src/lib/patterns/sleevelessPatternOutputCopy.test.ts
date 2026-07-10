@@ -119,10 +119,13 @@ describe("sleeveless pattern output copy (print-safe)", () => {
     expect(plain).toContain("Knit 1 turning row.");
   });
 
-  it("includes readable hem treatment options", () => {
+  it("shows the HEM heading with no Hem Treatment help card copy", () => {
     const plain = collectSleevelessOutputPlainText(pulloverPattern());
-    expect(plain).toContain(
-      "a rolled stockinette edge, or a fold-up band — for the depth shown.",
-    );
+    expect(plain).toContain("HEM");
+    expect(plain).not.toContain("RIBBED HEM");
+    // The Hem Treatment help card was removed; only the HEM glossary heading remains.
+    expect(plain).not.toContain("Hem Treatment");
+    expect(plain).not.toContain("Work even in your chosen hem treatment");
+    expect(plain).not.toContain("typically require double the hem depth");
   });
 });

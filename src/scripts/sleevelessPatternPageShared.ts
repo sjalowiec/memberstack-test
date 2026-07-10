@@ -796,8 +796,13 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         flushOpenSection();
         const rawTitle = String(row.title || "");
         openSectionSlugSource = escapeHtml(rawTitle);
-        openSectionDisplayHeading =
-          /^\s*armhole\s*$/i.test(rawTitle) && pieceSectionId === "front"
+        // `titleHtml` is trusted heading markup (e.g. a glossary link) built by a lego block;
+        // when present it renders the heading, while `title` still drives the slug/section id.
+        const trustedTitleHtml =
+          typeof row.titleHtml === "string" && row.titleHtml.trim() ? row.titleHtml : null;
+        openSectionDisplayHeading = trustedTitleHtml
+          ? trustedTitleHtml
+          : /^\s*armhole\s*$/i.test(rawTitle) && pieceSectionId === "front"
             ? escapeHtml("FRONT ARMHOLE")
             : /^\s*armhole\s*$/i.test(rawTitle)
               ? escapeHtml("BACK ARMHOLE")

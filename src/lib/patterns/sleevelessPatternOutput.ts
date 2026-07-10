@@ -4,6 +4,7 @@
  */
 
 import { calculateArmholeShaping, type ArmholeResult } from "./legoBlocks/armholeBlock";
+import { hemSectionRow } from "./legoBlocks/hem";
 import { RESET_ROW_COUNTER_TEXT } from "./rowCounterReset";
 import { parseInlineMarkedLine } from "./inlineRcHeading";
 import {
@@ -108,10 +109,6 @@ import { buildGlossaryTooltipPlaceholderHtml } from "../glossary/glossaryTooltip
 import { buildPatternHelpCardInnerHtml } from "./patternHelpCard";
 import { buildPatternQuickTipInnerHtml } from "./patternQuickTip";
 
-/** Glossary entries for hem-treatment help card inline tooltips. */
-export const MOCK_RIB_HEM_GLOSSARY_ID = 291;
-export const HUNG_HEM_GLOSSARY_ID = 284;
-
 /** Visual presentation for structured pattern tips (style only). */
 export type PatternTipPresentation = "quick-tip" | "help-card";
 
@@ -140,39 +137,6 @@ export function patternTipWrapperHtml(row: {
     return `<div class="pattern-tip${presentationClass}${wrapperExtraClass}" data-tip${tipIdAttr}>${row.tipHtml}</div>`;
   }
   return `<div class="pattern-tip${wrapperExtraClass}" data-tip${tipIdAttr}><strong>Tip:</strong> ${row.tipHtml}</div>`;
-}
-
-/**
- * Trusted HTML body for ribbed-hem Help Card (glossary placeholders; print → plain terms).
- * Render inside {@link ribbedHemHelpCardInnerHtml} only via pattern output, never user input.
- */
-export function ribbedHemHelpCardBodyHtml(): string {
-  const mockRibPh = buildGlossaryTooltipPlaceholderHtml(
-    MOCK_RIB_HEM_GLOSSARY_ID,
-    "mock ribbing",
-    glossaryPlaceholderAttrEscape,
-    (s) => s,
-  );
-  const hungHemsPh = buildGlossaryTooltipPlaceholderHtml(
-    HUNG_HEM_GLOSSARY_ID,
-    "hung hems",
-    glossaryPlaceholderAttrEscape,
-    (s) => s,
-  );
-  return (
-    `<p>Work even in your chosen hem treatment — for example 1x1 or 2x2 ribbing or ${mockRibPh}, ` +
-    `a rolled stockinette edge, or a fold-up band — for the depth shown.</p>` +
-    `<p>Fold-up and ${hungHemsPh} typically require double the hem depth before rehanging.</p>`
-  );
-}
-
-/** Expandable Help Card inner markup (wrapped by pattern tab renderer). */
-export function ribbedHemHelpCardInnerHtml(): string {
-  return buildPatternHelpCardInnerHtml({
-    title: "Hem Treatment",
-    bodyHtml: ribbedHemHelpCardBodyHtml(),
-    icon: false,
-  });
 }
 
 /** Glossary entry for e-wrap cast on (cast-on method tip). */
@@ -207,20 +171,6 @@ export function castOnMethodQuickTipInnerHtml(): string {
     summaryLabel: CAST_ON_METHOD_QUICK_TIP_SUMMARY,
     bodyHtml: castOnMethodQuickTipBodyHtml(),
   });
-}
-
-/** First block inside RIBBED HEM (before hem RC / knit rows). */
-export function ribbedHemTipDisplayRow(
-  piece: "back" | "front",
-): Extract<SleevelessPatternDisplayRow, { kind: "block" }> {
-  return {
-    kind: "block",
-    paragraphs: [],
-    tipHtml: ribbedHemHelpCardInnerHtml(),
-    tipHtmlIsFull: true,
-    tipPresentation: "help-card",
-    tipId: `sleeveless-ribbed-hem-${piece}`,
-  };
 }
 
 /** Glossary entry for piece-level seaming marker tip (entire tip opens this entry). */
@@ -519,7 +469,8 @@ export type SleevelessBackPatternDebug = {
 /** Two-column pattern UI: piece banner, section title, or instruction block with optional stitch count. */
 export type SleevelessPatternDisplayRow =
   | { kind: "piece"; title: string }
-  | { kind: "section"; title: string }
+  /** `title` is plain text (slug/id + plain-text lines); `titleHtml` is optional trusted heading markup (e.g. a glossary link). */
+  | { kind: "section"; title: string; titleHtml?: string }
   /** Filled client-side with chart table (see pattern tab). */
   | { kind: "neckShoulderChartTableMount" }
   | {
@@ -532,7 +483,7 @@ export type SleevelessPatternDisplayRow =
        * When set, use instead of {@link paragraphs} for that block’s instruction text.
        */
       trustedParagraphs?: string[];
-      /** Trusted HTML only (e.g. {@link ribbedHemHelpCardInnerHtml}); rendered as innerHTML in the pattern tab. */
+      /** Trusted HTML only (e.g. a Help Card built by {@link buildPatternHelpCardInnerHtml}); rendered as innerHTML in the pattern tab. */
       tipHtml?: string;
       /** When true, {@link tipHtml} is the full `.pattern-tip` inner HTML (no extra “Tip:” prefix). */
       tipHtmlIsFull?: boolean;
@@ -1602,8 +1553,7 @@ export function buildSleevelessBackDisplayRows(args: {
     stitchCount: A > 0 ? A : undefined,
   });
 
-  rows.push({ kind: "section", title: "RIBBED HEM" });
-  rows.push(ribbedHemTipDisplayRow("back"));
+  rows.push(hemSectionRow());
   rows.push({
     kind: "block",
     rc: hemRcLabel,
@@ -2106,19 +2056,13 @@ export function buildSleevelessFrontDisplayRows(args: {
     }
     if (row.kind === "section") {
       sharedRows.push(row);
-      if (row.title === "RIBBED HEM") {
-        sharedRows.push(ribbedHemTipDisplayRow("front"));
-      }
       continue;
     }
     if (row.kind !== "block") {
       sharedRows.push(row);
       continue;
     }
-    if (
-      row.tipId?.startsWith("sleeveless-piece-markers-") ||
-      row.tipId?.startsWith("sleeveless-ribbed-hem-")
-    ) {
+    if (row.tipId?.startsWith("sleeveless-piece-markers-")) {
       continue;
     }
     sharedRows.push({
