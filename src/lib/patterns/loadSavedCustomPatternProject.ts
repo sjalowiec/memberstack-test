@@ -10,6 +10,7 @@ import {
   getOpenPatternHrefForProject,
   getSavedCustomPatternOpenHref,
 } from "./customPatternProjectNavigation";
+import { withSavedPatternProjectId } from "./savedPatternViewUrl";
 
 /**
  * - `view`: read-only destination — the saved pattern's instructions page. Primary action from
@@ -56,7 +57,9 @@ export async function loadSavedCustomPatternProject(
 
   let redirectHref: string;
   if (action === "view") {
-    redirectHref = getOpenPatternHrefForProject(res.project);
+    // Carry the exact project id in the URL so the destination pattern page loads it authoritatively,
+    // independent of localStorage state (working draft, activeProjectId, Express mirror).
+    redirectHref = withSavedPatternProjectId(getOpenPatternHrefForProject(res.project), res.project.id);
   } else if (action === "open") {
     redirectHref = getSavedCustomPatternOpenHref(res.project.source, res.project);
   } else {

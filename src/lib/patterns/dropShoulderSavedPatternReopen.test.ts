@@ -100,7 +100,10 @@ describe("drop-shoulder saved pattern reopen routing", () => {
     loadCustomPatternProjectMock.mockResolvedValue({ ok: true, project });
 
     const viewResult = await loadSavedCustomPatternProject(project.id, "view");
-    expect(viewResult).toEqual({ ok: true, redirectHref: DROP_SHOULDER_OPEN_PATTERN_HREF });
+    expect(viewResult).toEqual({
+      ok: true,
+      redirectHref: `${DROP_SHOULDER_OPEN_PATTERN_HREF}?project=${project.id}`,
+    });
     expect(viewResult.ok && viewResult.redirectHref).not.toContain("/patterns/sleeveless/pattern/");
 
     const openResult = await loadSavedCustomPatternProject(project.id, "open");

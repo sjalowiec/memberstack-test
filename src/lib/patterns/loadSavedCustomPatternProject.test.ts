@@ -124,9 +124,14 @@ describe("loadSavedCustomPatternProject", () => {
 
     const result = await loadSavedCustomPatternProject(PROJECT_ID, "view");
 
-    expect(result).toEqual({ ok: true, redirectHref: DROP_SHOULDER_OPEN_PATTERN_HREF });
+    expect(result).toEqual({
+      ok: true,
+      redirectHref: `${DROP_SHOULDER_OPEN_PATTERN_HREF}?project=${PROJECT_ID}`,
+    });
     if (result.ok) {
-      expect(result.redirectHref).not.toBe(OPEN_PATTERN_HREF);
+      expect(result.redirectHref).toContain(DROP_SHOULDER_OPEN_PATTERN_HREF);
+      expect(result.redirectHref).toContain(`project=${PROJECT_ID}`);
+      expect(result.redirectHref).not.toContain("/patterns/sleeveless/pattern/");
     }
   });
 
@@ -202,8 +207,11 @@ describe("loadSavedCustomPatternProject", () => {
 
     const result = await loadSavedCustomPatternProject(PROJECT_ID, "view");
 
-    expect(result).toEqual({ ok: true, redirectHref: OPEN_PATTERN_HREF });
+    expect(result).toEqual({ ok: true, redirectHref: `${OPEN_PATTERN_HREF}?project=${PROJECT_ID}` });
     if (result.ok) {
+      expect(result.redirectHref).toContain(OPEN_PATTERN_HREF);
+      // The saved project id rides in the URL so the destination page loads it authoritatively.
+      expect(result.redirectHref).toContain(`project=${PROJECT_ID}`);
       expect(result.redirectHref).not.toBe(EXPRESS_EDIT_WORKSPACE_HREF);
       expect(result.redirectHref).not.toContain("edit=choices");
     }
@@ -220,8 +228,9 @@ describe("loadSavedCustomPatternProject", () => {
 
     const result = await loadSavedCustomPatternProject(PROJECT_ID, "view");
 
-    expect(result).toEqual({ ok: true, redirectHref: OPEN_PATTERN_HREF });
+    expect(result).toEqual({ ok: true, redirectHref: `${OPEN_PATTERN_HREF}?project=${PROJECT_ID}` });
     if (result.ok) {
+      expect(result.redirectHref).toContain(`project=${PROJECT_ID}`);
       expect(result.redirectHref).not.toBe(CUSTOM_BUILD_EDIT_WORKSPACE_HREF);
     }
   });

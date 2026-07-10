@@ -20,6 +20,7 @@ import {
 import {
   ensureSavedCustomPatternSessionHydratedOnPatternPage,
 } from "../lib/patterns/hydrateSavedCustomPatternProject.ts";
+import { hasAuthoritativeUrlSavedPatternId } from "../lib/patterns/savedPatternViewUrl.ts";
 import {
   syncAvailableNeedlesMirrorsFromAllSources,
 } from "../lib/patterns/availableNeedlesMirrors";
@@ -4478,7 +4479,14 @@ table {
     // toggle always works.
     ensureSecondShoulderChecklistDelegation();
 
-    if (isDedicatedSleevelessPatternWorkspacePage() && isEditingSavedCustomPatternProject()) {
+    // Skip reconciliation when an authoritative `project` id is in the URL — the requested saved
+    // project was already loaded as the source of truth and must not be replaced by drift-promotion
+    // or an Express-mirror rehydrate.
+    if (
+      isDedicatedSleevelessPatternWorkspacePage() &&
+      isEditingSavedCustomPatternProject() &&
+      !hasAuthoritativeUrlSavedPatternId()
+    ) {
       ensureSavedCustomPatternSessionHydratedOnPatternPage();
     }
 

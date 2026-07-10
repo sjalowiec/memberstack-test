@@ -10,6 +10,7 @@
 
 import { initChangePatternChoicesLinks } from "../lib/patterns/restoreSleevelessExpressBuilderFromPattern";
 import { ensureSavedCustomPatternSessionHydratedOnPatternPage } from "../lib/patterns/hydrateSavedCustomPatternProject";
+import { hasAuthoritativeUrlSavedPatternId } from "../lib/patterns/savedPatternViewUrl";
 
 import {
 
@@ -100,7 +101,12 @@ export function initSleevelessPatternOnlineProjectHeader(): void {
 
   if (!document.querySelector("[data-sleeveless-pattern-online-heading]")) return;
 
-  ensureSavedCustomPatternSessionHydratedOnPatternPage();
+  // When an authoritative `project` id is in the URL it has already been loaded as the source of
+  // truth; skip reconciliation (drift-promotion / Express-mirror rehydrate) so it can't replace the
+  // explicitly requested pattern.
+  if (!hasAuthoritativeUrlSavedPatternId()) {
+    ensureSavedCustomPatternSessionHydratedOnPatternPage();
+  }
 
   applySleevelessPatternOnlineProjectHeader();
 
