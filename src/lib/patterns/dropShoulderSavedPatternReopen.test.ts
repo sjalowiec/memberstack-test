@@ -111,6 +111,20 @@ describe("drop-shoulder saved pattern reopen routing", () => {
     expect(openResult.ok && openResult.redirectHref).not.toContain("/patterns/sleeveless/pattern/");
   });
 
+  it("routes a drop-shoulder project stored with source=custom-build to the drop-shoulder workspace, never sleeveless", async () => {
+    // Drop Shoulder + custom-build is not a reachable product path, but the real load pipeline must
+    // still never produce a /patterns/sleeveless/ builder URL for a Drop Shoulder project.
+    const project = dropShoulderSavedProject({ source: "custom-build" });
+    loadCustomPatternProjectMock.mockResolvedValue({ ok: true, project });
+
+    const openResult = await loadSavedCustomPatternProject(project.id, "open", "sleeveless");
+    expect(openResult).toEqual({
+      ok: true,
+      redirectHref: DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF,
+    });
+    expect(openResult.ok && openResult.redirectHref).not.toContain("/patterns/sleeveless/");
+  });
+
   it("keeps sleeveless saved projects on the sleeveless workspace", () => {
     const sleevelessProject: CustomPatternProject = {
       ...dropShoulderSavedProject(),

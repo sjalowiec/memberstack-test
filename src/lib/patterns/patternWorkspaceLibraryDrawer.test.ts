@@ -101,8 +101,11 @@ function makeEl(tag = "div"): MockEl {
       if (event === "click") el._click = handler;
     },
     matches(sel: string) {
-      if (sel === "[data-pattern-workspace-library-open]") {
-        return attrs.has("data-pattern-workspace-library-open");
+      if (sel === "[data-pattern-workspace-library-view]") {
+        return attrs.has("data-pattern-workspace-library-view");
+      }
+      if (sel === "[data-pattern-workspace-library-edit]") {
+        return attrs.has("data-pattern-workspace-library-edit");
       }
       if (sel === "[data-pattern-workspace-library-item-card]") {
         return attrs.has("data-pattern-workspace-library-item-card");
@@ -163,7 +166,8 @@ function makeDrawerBindings(): PatternWorkspaceLibraryDrawerBindings & {
   drawer.querySelectorAll = (sel: string) => {
     if (
       sel === "[data-pattern-workspace-library-item-card]" ||
-      sel === "[data-pattern-workspace-library-open]" ||
+      sel === "[data-pattern-workspace-library-view]" ||
+      sel === "[data-pattern-workspace-library-edit]" ||
       sel === "[data-pattern-workspace-library-copy]"
     ) {
       return collectMatches(list._children, sel) as unknown as NodeListOf<HTMLElement>;
@@ -364,7 +368,7 @@ describe("patternWorkspaceLibraryDrawer", () => {
     expect(gaugeEl.textContent).not.toMatch(/Express/);
   });
 
-  it("opens a saved project via redirect href", async () => {
+  it("View Pattern routes to the finished pattern page (view action, not the editor)", async () => {
     const bindings = makeDrawerBindings();
     const assign = vi.fn();
     vi.stubGlobal("window", { location: { assign } });
@@ -388,16 +392,89 @@ describe("patternWorkspaceLibraryDrawer", () => {
 
     await refreshPatternWorkspaceLibraryList(bindings.drawer);
     const btn = bindings.drawer.querySelector(
-      "[data-pattern-workspace-library-open]",
+      "[data-pattern-workspace-library-view]",
     ) as MockEl | null;
     expect(btn?._click).toBeTypeOf("function");
     await btn?._click?.();
 
-    expect(loadSavedCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "open");
+    // Preserves the saved project id and uses the read-only "view" action.
+    expect(loadSavedCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "view");
+    expect(loadSavedCustomPatternProjectMock).not.toHaveBeenCalledWith("proj-a", "open");
     expect(assign).toHaveBeenCalledWith("/patterns/sleeveless/pattern/");
   });
 
-  it("renders Open Pattern as the primary action and Copy Pattern as secondary", async () => {
+  it("Edit Pattern routes to the correct builder (open action) for a Sleeveless project", async () => {
+    const bindings = makeDrawerBindings();
+    const assign = vi.fn();
+    vi.stubGlobal("window", { location: { assign } });
+
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: [
+        {
+          id: "proj-a",
+          name: "Alpha pullover",
+          family: "sleeveless",
+          source: "express",
+          patternSystem: "sleeveless",
+          updatedAt: "2026-01-01T00:00:00.000Z",
+        },
+      ],
+    });
+    loadSavedCustomPatternProjectMock.mockResolvedValue({
+      ok: true,
+      redirectHref: "/patterns/sleeveless/pattern/?edit=1",
+    });
+
+    await refreshPatternWorkspaceLibraryList(bindings.drawer);
+    const btn = bindings.drawer.querySelector(
+      "[data-pattern-workspace-library-edit]",
+    ) as MockEl | null;
+    expect(btn?._click).toBeTypeOf("function");
+    await btn?._click?.();
+
+    // Preserves the saved project id and uses the editable "open" action.
+    expect(loadSavedCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "open");
+    expect(assign).toHaveBeenCalledWith("/patterns/sleeveless/pattern/?edit=1");
+  });
+
+  it("Edit Pattern uses the Drop Shoulder builder for a Drop Shoulder project", async () => {
+    const bindings = makeDrawerBindings();
+    const assign = vi.fn();
+    vi.stubGlobal("window", { location: { assign } });
+
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: [
+        {
+          id: "proj-ds",
+          name: "Kid's drop shoulder",
+          family: "sleeveless",
+          source: "express",
+          patternSystem: "drop-shoulder",
+          updatedAt: "2026-01-01T00:00:00.000Z",
+        },
+      ],
+    });
+    loadSavedCustomPatternProjectMock.mockResolvedValue({
+      ok: true,
+      redirectHref: "/patterns/drop-shoulder/pattern/?edit=1",
+    });
+
+    await refreshPatternWorkspaceLibraryList(bindings.drawer);
+    const btn = bindings.drawer.querySelector(
+      "[data-pattern-workspace-library-edit]",
+    ) as MockEl | null;
+    await btn?._click?.();
+
+    expect(loadSavedCustomPatternProjectMock).toHaveBeenCalledWith("proj-ds", "open");
+    // The saved pattern's construction (via loadSavedCustomPatternProject) drives the destination,
+    // so a Drop Shoulder project never routes into the Sleeveless builder.
+    expect(assign).toHaveBeenCalledWith("/patterns/drop-shoulder/pattern/?edit=1");
+    expect(assign).not.toHaveBeenCalledWith("/patterns/sleeveless/pattern/?edit=1");
+  });
+
+  it("renders View Pattern as the primary action plus Edit and Copy, with no Open Pattern action", async () => {
     const bindings = makeDrawerBindings();
     vi.stubGlobal("window", {});
     listCustomPatternProjectsMock.mockResolvedValue({
@@ -409,13 +486,22 @@ describe("patternWorkspaceLibraryDrawer", () => {
 
     await refreshPatternWorkspaceLibraryList(bindings.drawer);
 
-    const openBtns = collectMatches(bindings.list._children, "[data-pattern-workspace-library-open]");
+    const viewBtns = collectMatches(bindings.list._children, "[data-pattern-workspace-library-view]");
+    const editBtns = collectMatches(bindings.list._children, "[data-pattern-workspace-library-edit]");
     const copyBtns = collectMatches(bindings.list._children, "[data-pattern-workspace-library-copy]");
-    expect(openBtns.length).toBe(1);
-    expect(openBtns[0].textContent).toBe("Open Pattern");
+    expect(viewBtns.length).toBe(1);
+    expect(viewBtns[0].textContent).toBe("View Pattern");
+    expect(editBtns.length).toBe(1);
+    expect(editBtns[0].textContent).toBe("Edit Pattern");
     expect(copyBtns.length).toBe(1);
     expect(copyBtns[0].textContent).toBe("Copy Pattern");
     expect(copyBtns[0].disabled).toBe(false);
+
+    // The misleading "Open Pattern" action (which routed to the editor) no longer exists.
+    const allText = [...viewBtns, ...editBtns, ...copyBtns].map((b) => b.textContent);
+    expect(allText).not.toContain("Open Pattern");
+    const openBtns = collectMatches(bindings.list._children, "[data-pattern-workspace-library-open]");
+    expect(openBtns.length).toBe(0);
   });
 
   it("copies a saved project from the drawer and highlights the new copy", async () => {

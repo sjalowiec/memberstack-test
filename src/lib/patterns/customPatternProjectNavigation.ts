@@ -69,8 +69,11 @@ export function getContinueEditingHref(
   source: CustomPatternProjectSource,
   project?: Pick<CustomPatternProject, "pattern" | "customOverrides">,
 ): string {
+  // Drop Shoulder is an Express-only construction with no Custom Build route, so a Drop Shoulder
+  // project always edits on the drop-shoulder workspace — never a /patterns/sleeveless/ builder
+  // route, regardless of the stored source.
   if (project && isDropShoulderCustomPatternProject(project)) {
-    return source === "express" ? DROP_SHOULDER_CONTINUE_EDITING_HREF : CUSTOM_BUILD_FIRST_EDIT_HREF;
+    return DROP_SHOULDER_CONTINUE_EDITING_HREF;
   }
   return source === "express" ? EXPRESS_CONTINUE_EDITING_HREF : CUSTOM_BUILD_FIRST_EDIT_HREF;
 }
@@ -112,10 +115,11 @@ export function getSavedCustomPatternOpenHref(
   source: CustomPatternProjectSource,
   project?: Pick<CustomPatternProject, "pattern" | "customOverrides">,
 ): string {
+  // Drop Shoulder is an Express-only construction with no Custom Build route, so every Drop Shoulder
+  // project edits on the drop-shoulder pattern workspace — never a /patterns/sleeveless/ builder
+  // route, regardless of the stored source.
   if (project && isDropShoulderCustomPatternProject(project)) {
-    return source === "custom-build"
-      ? CUSTOM_BUILD_EDIT_WORKSPACE_HREF
-      : DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
+    return DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
   }
   return source === "custom-build" ? CUSTOM_BUILD_EDIT_WORKSPACE_HREF : OPEN_PATTERN_EDIT_WORKSPACE_HREF;
 }

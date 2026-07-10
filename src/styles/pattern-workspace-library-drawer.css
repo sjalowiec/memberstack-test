@@ -318,11 +318,11 @@
     opacity 0.12s ease;
 }
 
-.pattern-workspace-library__item-open {
+.pattern-workspace-library__item-view {
   flex: 1 1 8rem;
 }
 
-.pattern-workspace-library__item-open:hover:not(:disabled) {
+.pattern-workspace-library__item-view:hover:not(:disabled) {
   background: #465f26;
   border-color: #465f26;
 }

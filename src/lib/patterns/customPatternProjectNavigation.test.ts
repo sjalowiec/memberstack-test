@@ -102,4 +102,56 @@ describe("customPatternProjectNavigation", () => {
     expect(getContinueEditingHref("express")).not.toBe(DROP_SHOULDER_CONTINUE_EDITING_HREF);
     expect(EXPRESS_CONTINUE_EDITING_HREF).not.toContain("/review");
   });
+
+  describe("final Edit Pattern destinations across pattern type and construction", () => {
+    const dropShoulderProject = {
+      pattern: {
+        style: { construction: "drop-shoulder", constructionAuthored: "drop-shoulder" },
+      },
+      customOverrides: { constructionFamily: "drop-shoulder" },
+    };
+    const sleevelessProject = {
+      pattern: { style: { construction: "set-in", garmentStyle: "pullover" } },
+      customOverrides: {},
+    };
+
+    it("Sleeveless Express → /patterns/sleeveless/pattern/?edit=1", () => {
+      expect(getSavedCustomPatternOpenHref("express", sleevelessProject)).toBe(
+        "/patterns/sleeveless/pattern/?edit=1",
+      );
+    });
+
+    it("Sleeveless Custom Build → /patterns/sleeveless/custom-build/design?edit=choices", () => {
+      expect(getSavedCustomPatternOpenHref("custom-build", sleevelessProject)).toBe(
+        "/patterns/sleeveless/custom-build/design?edit=choices",
+      );
+    });
+
+    it("Drop Shoulder Express → /patterns/drop-shoulder/pattern/?edit=1 (never sleeveless)", () => {
+      const href = getSavedCustomPatternOpenHref("express", dropShoulderProject);
+      expect(href).toBe("/patterns/drop-shoulder/pattern/?edit=1");
+      expect(href).not.toContain("/patterns/sleeveless/");
+    });
+
+    it("Drop Shoulder Custom Build never lands on a /patterns/sleeveless/ builder route", () => {
+      // Drop Shoulder + custom-build is not a reachable product path, but the routing source of
+      // truth must still never send a Drop Shoulder project into the Sleeveless builder.
+      const href = getSavedCustomPatternOpenHref("custom-build", dropShoulderProject);
+      expect(href).toBe(DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF);
+      expect(href).toBe("/patterns/drop-shoulder/pattern/?edit=1");
+      expect(href).not.toContain("/patterns/sleeveless/");
+    });
+
+    it("View Pattern destinations stay on the matching pattern page", () => {
+      expect(getOpenPatternHrefForProject(sleevelessProject)).toBe(
+        "/patterns/sleeveless/pattern/",
+      );
+      expect(getOpenPatternHrefForProject(dropShoulderProject)).toBe(
+        "/patterns/drop-shoulder/pattern/",
+      );
+      expect(getOpenPatternHrefForProject(dropShoulderProject)).not.toContain(
+        "/patterns/sleeveless/",
+      );
+    });
+  });
 });

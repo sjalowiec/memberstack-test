@@ -100,35 +100,35 @@ function canEditProjectFromLibrary(
   return canEditPatternSettingsForSystem(access, projectSystemFromSummary(project));
 }
 
-function syncLibraryOpenAccess(
-  openButton: HTMLButtonElement | null | undefined,
+function syncLibraryEditAccess(
+  editButton: HTMLButtonElement | null | undefined,
   access: SleevelessUserAccess | null,
   patternSystem?: PatternSystemId,
 ): boolean {
-  if (!(openButton instanceof HTMLButtonElement)) return false;
+  if (!(editButton instanceof HTMLButtonElement)) return false;
   const system =
     patternSystem ??
     (typeof document !== "undefined" ? resolvePatternSystemFromPage() : "sleeveless");
   const canEdit = access ? canEditPatternSettingsForSystem(access, system) : false;
-  openButton.disabled = false;
-  openButton.classList.toggle("is-disabled", !canEdit);
+  editButton.disabled = false;
+  editButton.classList.toggle("is-disabled", !canEdit);
   if (canEdit) {
-    openButton.removeAttribute("aria-disabled");
-    openButton.removeAttribute("title");
+    editButton.removeAttribute("aria-disabled");
+    editButton.removeAttribute("title");
   } else {
-    openButton.setAttribute("aria-disabled", "true");
-    openButton.setAttribute("title", SAVED_CUSTOM_PATTERN_EDIT_DISABLED_TEXT);
+    editButton.setAttribute("aria-disabled", "true");
+    editButton.setAttribute("title", SAVED_CUSTOM_PATTERN_EDIT_DISABLED_TEXT);
   }
   return canEdit;
 }
 
 function syncLibraryItemAccess(
-  openButton: HTMLButtonElement | null | undefined,
+  editButton: HTMLButtonElement | null | undefined,
   copyButton: HTMLButtonElement | null | undefined,
   access: SleevelessUserAccess | null,
   patternSystem?: PatternSystemId,
 ): void {
-  syncLibraryOpenAccess(openButton, access, patternSystem);
+  syncLibraryEditAccess(editButton, access, patternSystem);
   syncSavedCustomPatternCopyAccessForAccess(copyButton, access);
 }
 
@@ -240,23 +240,39 @@ function renderLibraryItem(
   const actions = document.createElement("div");
   actions.className = "pattern-workspace-library__item-actions";
 
-  const openBtn = document.createElement("button");
-  openBtn.type = "button";
-  openBtn.className = "pattern-workspace-library__item-action pattern-workspace-library__item-open";
-  openBtn.setAttribute("data-pattern-workspace-library-open", "");
-  openBtn.dataset.projectId = project.id;
-  if (project.id === activeId) openBtn.setAttribute("aria-current", "true");
-  openBtn.setAttribute("aria-label", `Open ${displayName}`);
-  openBtn.textContent = "Open Pattern";
-  openBtn.addEventListener("click", async () => {
-    if (openBtn.disabled) return;
+  // Primary: View opens the finished pattern page (read-only instructions). Never routes to the
+  // builder, so it is not gated by edit entitlement — everyone can view/print/knit a saved pattern.
+  const viewBtn = document.createElement("button");
+  viewBtn.type = "button";
+  viewBtn.className = "pattern-workspace-library__item-action pattern-workspace-library__item-view";
+  viewBtn.setAttribute("data-pattern-workspace-library-view", "");
+  viewBtn.dataset.projectId = project.id;
+  if (project.id === activeId) viewBtn.setAttribute("aria-current", "true");
+  viewBtn.setAttribute("aria-label", `View ${displayName}`);
+  viewBtn.textContent = "View Pattern";
+  viewBtn.addEventListener("click", async () => {
+    if (viewBtn.disabled) return;
+    await onLibraryProjectView(root, project.id, displayName, project);
+  });
+
+  // Secondary: Edit opens the correct builder/edit surface. Gated by edit entitlement.
+  const editBtn = document.createElement("button");
+  editBtn.type = "button";
+  editBtn.className =
+    "pattern-workspace-library__item-action pattern-workspace-library__item-action--secondary pattern-workspace-library__item-edit";
+  editBtn.setAttribute("data-pattern-workspace-library-edit", "");
+  editBtn.dataset.projectId = project.id;
+  editBtn.setAttribute("aria-label", `Edit ${displayName}`);
+  editBtn.textContent = "Edit Pattern";
+  editBtn.addEventListener("click", async () => {
+    if (editBtn.disabled) return;
     if (!canEditProjectFromLibrary(lastResolvedLibraryAccess, project)) {
       offerPatternEditingUnlockModal(lastResolvedLibraryAccess, {
         patternSystem: projectSystemFromSummary(project),
       });
       return;
     }
-    await onLibraryProjectOpen(root, project.id, displayName, project);
+    await onLibraryProjectEdit(root, project.id, displayName, project);
   });
 
   const copyBtn = document.createElement("button");
@@ -275,9 +291,9 @@ function renderLibraryItem(
     }
     await onLibraryProjectCopy(root, project.id, displayName);
   });
-  syncLibraryItemAccess(openBtn, copyBtn, lastResolvedLibraryAccess, projectSystemFromSummary(project));
+  syncLibraryItemAccess(editBtn, copyBtn, lastResolvedLibraryAccess, projectSystemFromSummary(project));
 
-  actions.append(openBtn, copyBtn);
+  actions.append(viewBtn, editBtn, copyBtn);
   card.append(body, actions);
   li.append(card);
   list.append(li);
@@ -313,9 +329,12 @@ async function onLibraryProjectCopy(
 }
 
 function setDrawerActionButtonsDisabled(root: HTMLElement, disabled: boolean): void {
-  root.querySelectorAll<HTMLButtonElement>("[data-pattern-workspace-library-open]").forEach((button) => {
+  root.querySelectorAll<HTMLButtonElement>("[data-pattern-workspace-library-view]").forEach((button) => {
     button.disabled = disabled;
-    if (!disabled) syncLibraryOpenAccess(button, lastResolvedLibraryAccess);
+  });
+  root.querySelectorAll<HTMLButtonElement>("[data-pattern-workspace-library-edit]").forEach((button) => {
+    button.disabled = disabled;
+    if (!disabled) syncLibraryEditAccess(button, lastResolvedLibraryAccess);
   });
   root.querySelectorAll<HTMLButtonElement>("[data-pattern-workspace-library-copy]").forEach((button) => {
     button.disabled = disabled;
@@ -323,7 +342,33 @@ function setDrawerActionButtonsDisabled(root: HTMLElement, disabled: boolean): v
   });
 }
 
-async function onLibraryProjectOpen(
+/** Primary action — open the saved pattern's finished, read-only instructions page. */
+async function onLibraryProjectView(
+  root: HTMLElement,
+  projectId: string,
+  label: string,
+  _project?: CustomPatternProjectSummary,
+): Promise<void> {
+  setDrawerStatus(root, `Loading “${label}”…`);
+  setDrawerActionButtonsDisabled(root, true);
+
+  try {
+    const result = await loadSavedCustomPatternProject(projectId, "view");
+    if (!result.ok) {
+      setDrawerStatus(root, result.error, true);
+      return;
+    }
+    setDrawerStatus(root, "");
+    window.location.assign(result.redirectHref);
+  } catch {
+    setDrawerStatus(root, "Could not open this pattern. Please try again.", true);
+  } finally {
+    setDrawerActionButtonsDisabled(root, false);
+  }
+}
+
+/** Secondary action — open the correct builder/edit surface for the saved pattern. */
+async function onLibraryProjectEdit(
   root: HTMLElement,
   projectId: string,
   label: string,
@@ -337,7 +382,7 @@ async function onLibraryProjectOpen(
     offerPatternEditingUnlockModal(lastResolvedLibraryAccess, { patternSystem: system });
     return;
   }
-  setDrawerStatus(root, `Loading “${label}”…`);
+  setDrawerStatus(root, `Opening “${label}” for editing…`);
   setDrawerActionButtonsDisabled(root, true);
 
   try {
@@ -349,7 +394,7 @@ async function onLibraryProjectOpen(
     setDrawerStatus(root, "");
     window.location.assign(result.redirectHref);
   } catch {
-    setDrawerStatus(root, "Could not open this pattern. Please try again.", true);
+    setDrawerStatus(root, "Could not open this pattern for editing. Please try again.", true);
   } finally {
     setDrawerActionButtonsDisabled(root, false);
   }
