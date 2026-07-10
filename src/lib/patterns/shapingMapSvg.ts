@@ -219,17 +219,27 @@ export function renderShapingMapSvg(
   const padTop = PAD_TOP + (shoulderEdgeLabel ? EDGE_LABEL_TOP_GAP : 0);
   const padBottom = PAD_BOTTOM + (neckEdgeLabel ? EDGE_LABEL_BOTTOM_GAP : 0);
 
-  const width = PAD_LEFT + gridStitches * cell + PAD_RIGHT;
+  // Base layout width: grid plus the standard right margin that holds the row-number column.
+  const baseWidth = PAD_LEFT + gridStitches * cell + PAD_RIGHT;
+  // In the mirrored branch (the corrected first-shoulder orientation, where the shoulder steps
+  // inward toward the neckline as RC increases and therefore renders on the RIGHT), the reflected
+  // geometry + bind-off labels land in the right margin, on top of the row numbers. Reserve extra
+  // right-side space and shift ONLY the row-number column clear of that geometry. The unmirrored
+  // orientation is untouched  its row-number placement is already correct.
+  const mirroredRowNumberShift = mirror ? PAD_RIGHT - PAD_LEFT : 0;
+  const width = baseWidth + mirroredRowNumberShift;
   const height = padTop + gridRows * cell + padBottom;
 
   const xPx = (stitch: number): number => PAD_LEFT + stitch * cell;
   // Higher row numbers sit toward the top of the map.
   const yPx = (row: number): number => padTop + (rowMax - row) * cell;
 
-  // Presentation-layer horizontal mirror: reflect an x pixel across the SVG mid-line. Applied
-  // to the drawn geometry and the callouts that track it; NOT to the right-side row numbers
-  // (they stay in the right margin) and NOT via any transform on text (text stays upright).
-  const fx = (px: number): number => (mirror ? width - px : px);
+  // Presentation-layer horizontal mirror: reflect an x pixel across the base (un-padded) mid-line.
+  // Reflecting across `baseWidth` (not the padded `width`) means the extra row-number space added
+  // above never moves any drawn geometry. Applied to the drawn geometry and the callouts that track
+  // it; NOT to the right-side row numbers (they stay in the right margin) and NOT via any transform
+  // on text (text stays upright).
+  const fx = (px: number): number => (mirror ? baseWidth - px : px);
   // When mirrored, a "start"-anchored label must become "end"-anchored (and vice versa) so it
   // still reads outward from the same feature. "middle" is unaffected.
   const flipAnchor = (anchor: "start" | "middle" | "end"): "start" | "middle" | "end" =>
@@ -281,9 +291,10 @@ export function renderShapingMapSvg(
   parts.push(`<g class="shaping-map-grid-minor">${gridMinor.join("")}</g>`);
   parts.push(`<g class="shaping-map-grid-major">${gridMajor.join("")}</g>`);
 
-  // Row numbers down the right side.
+  // Row numbers down the right side. In the mirrored branch they shift right by the reserved
+  // extra space so they clear the reflected shoulder path/labels instead of sitting under them.
   const rowNumbers: string[] = [];
-  const rowNumX = gridRight + 8;
+  const rowNumX = gridRight + 8 + mirroredRowNumberShift;
   for (let r = rowMin; r <= rowMax; r++) {
     if (r % rowNumberInterval !== 0) continue;
     rowNumbers.push(

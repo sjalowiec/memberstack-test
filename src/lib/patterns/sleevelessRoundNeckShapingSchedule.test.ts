@@ -181,8 +181,10 @@ describe("shapingScheduleToMapData (adapter)", () => {
     expect(shoulderPath).toBeDefined();
     expect(neckPath).toBeDefined();
 
-    // Shoulder path draws top-down from the highest shoulder RC.
-    expect(shoulderPath.startRow).toBe(507);
+    // Shoulder path draws bottom-up from the FIRST (lowest) shoulder RC: the armhole edge steps
+    // inward toward the center as the RC climbs, ending at the top next to the neck.
+    expect(shoulderPath.startRow).toBe(505);
+    expect(shoulderPath.rowDirection).toBe("up");
     expect(shoulderPath.steps.map((s) => s.stitches)).toEqual([6, 6]);
     // Neck path is offset by the total shoulder stitches removed so the two connect.
     expect(neckPath.startX).toBe(12);

@@ -239,10 +239,42 @@ function pathStepsTopDown(
 }
 
 /**
+ * Build a stepped path (bottom-up) from shaping points. Anchored at the LOWEST row, each step
+ * binds off inward then works UP to the next (higher) row; the topmost step has no trailing run
+ * so the path ends exactly on the highest shaping row.
+ *
+ * Used for the shoulder edge: shoulder bind-offs happen on the ARMHOLE (outer) edge, so as the RC
+ * increases (the piece is knit upward) each bind-off moves that edge INWARD, toward the center /
+ * neckline. Tracing the shoulder from its first bind-off row upward with inward steps draws the
+ * armhole edge receding toward the center  the opposite of a top-down trace, which would (wrongly)
+ * plant the outer corner at the top and step the shoulder back out toward the armhole.
+ */
+function pathStepsBottomUp(
+  points: readonly { row: number; stitches: number }[],
+): { startRow: number; steps: ShapingMapStep[]; totalStitches: number } {
+  if (points.length === 0) {
+    return { startRow: 0, steps: [], totalStitches: 0 };
+  }
+  const asc = [...points].sort((a, b) => a.row - b.row);
+  const startRow = asc[0]!.row;
+  const steps: ShapingMapStep[] = [];
+  let totalStitches = 0;
+  for (let i = 0; i < asc.length; i++) {
+    const cur = asc[i]!;
+    const next = asc[i + 1];
+    // Work up to the next bind-off row; the final (topmost) step lands on the top row (rows = 0).
+    const rows = next ? Math.max(1, next.row - cur.row) : 0;
+    steps.push({ stitches: cur.stitches, rows });
+    totalStitches += cur.stitches;
+  }
+  return { startRow, steps, totalStitches };
+}
+
+/**
  * Adapter: convert a {@link SleevelessRoundNeckShapingSchedule} into {@link ShapingMapData}
- * for {@link renderShapingMapSvg}. Draws one active edge as a continuous top-down profile:
- * shoulder bind-offs (from the armhole corner) then neckline decreases, down to the center
- * stitches.
+ * for {@link renderShapingMapSvg}. Draws one active edge as a continuous profile: the shoulder
+ * bind-offs traced UPWARD along the armhole edge (which recedes inward toward the center as it is
+ * bound off), meeting the neckline decreases at the top and continuing DOWN to the center stitches.
  *
  * The schedule stores absolute (global garment) RC. Every customer-facing view shows
  * armhole-local RC (`garmentRc - firstArmholeRc`); pass `firstArmholeRc` (the pattern's
@@ -257,10 +289,11 @@ export function shapingScheduleToMapData(
   const shoulderPoints = opsToPoints(schedule.shoulderOps);
   const neckPoints = opsToPoints(schedule.neckOps);
 
-  const shoulderTrailing = schedule.shoulderOps[0]?.rowInterval ?? DEFAULT_ROW_INTERVAL;
   const neckTrailing = schedule.neckOps[schedule.neckOps.length - 1]?.rowInterval ?? DEFAULT_ROW_INTERVAL;
 
-  const shoulder = pathStepsTopDown(shoulderPoints, shoulderTrailing);
+  // Shoulder is traced bottom-up (armhole edge receding inward toward the center as RC climbs);
+  // the neck is traced top-down (neckline edge continuing down to the center stitches).
+  const shoulder = pathStepsBottomUp(shoulderPoints);
   const neck = pathStepsTopDown(neckPoints, neckTrailing);
 
   // Convert absolute garment RC anchors to armhole-local RC using the same origin the rest of
@@ -276,8 +309,11 @@ export function shapingScheduleToMapData(
     paths.push({
       id: "shoulder",
       label: "Shoulder",
+      // Traced UPWARD from the first shoulder bind-off row: the armhole (outer) edge steps inward
+      // (+X, toward the center / neckline) as the RC climbs  matching how shoulder bind-offs remove
+      // stitches from the armhole edge. It ends at the top, adjacent to the neck path.
       edge: "left",
-      rowDirection: "down",
+      rowDirection: "up",
       startX: 0,
       startRow: toLocal(shoulder.startRow),
       steps: shoulder.steps,
