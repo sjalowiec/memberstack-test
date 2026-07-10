@@ -37,6 +37,13 @@ const featuredTip = featuredTipVideo
     }
   : null;
 
+/**
+ * Feature flag: show/hide the Tuesday Tip promo card in the hero.
+ * Set to `true` to re-enable the card (and its two-column hero layout).
+ * All supporting code/markup is preserved below; only the render is gated.
+ */
+const SHOW_TUESDAY_TIP_CARD = false;
+
 /** Temporary: treat every catalog card as member-only until free video exceptions are restored. */
 const FORCE_ALL_VIDEOS_LOCKED = false;
 
@@ -59,7 +66,7 @@ const forceMemberView =
     />
 
     <section class="video-catalog-hero">
-      <div class="video-catalog-hero__grid">
+      <div class={`video-catalog-hero__grid${SHOW_TUESDAY_TIP_CARD && featuredTip ? "" : " video-catalog-hero__grid--full"}`}>
         <div class="video-catalog-hero__intro">
           <p class="video-catalog-hero__eyebrow">Video Tutorials</p>
           <h1>Learn with clear, practical machine knitting videos</h1>
@@ -68,7 +75,7 @@ const forceMemberView =
           </p>
         </div>
         {/* Tuesday Tip / Weekly Quick Win: compact promo card */}
-        {featuredTip && (
+        {SHOW_TUESDAY_TIP_CARD && featuredTip && (
           <aside class="tuesday-tip-feature" aria-label="Tuesday Tip">
             <div class="kbm-card tip-of-week-card">
               <img
@@ -655,9 +662,16 @@ const forceMemberView =
       align-items: start;
     }
     @media (min-width: 720px) {
-      .video-catalog-hero__grid {
+      .video-catalog-hero__grid:not(.video-catalog-hero__grid--full) {
         grid-template-columns: 1fr minmax(280px, 380px);
       }
+    }
+    /* Promo card hidden: hero spans the full width, no empty right column. */
+    .video-catalog-hero__grid--full {
+      grid-template-columns: 1fr;
+    }
+    .video-catalog-hero__grid--full .video-catalog-hero__intro p {
+      max-width: none;
     }
     .video-catalog-hero__eyebrow {
       margin: 0 0 0.5rem;
