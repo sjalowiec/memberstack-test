@@ -269,8 +269,8 @@ describe("generateDropShoulderPattern sleeve shaping chart", () => {
     const noteBlock = result.sleeveDisplayRows.find(
       (r) =>
         r.kind === "block" &&
-        (r.trustedParagraphs?.some((p) => p.includes("No sleeve shaping is needed.")) ||
-          r.paragraphs?.some((p) => p.includes("No sleeve shaping is needed."))),
+        (r.trustedParagraphs?.some((p) => p.includes("Knit straight to length.")) ||
+          r.paragraphs?.some((p) => p.includes("Knit straight to length."))),
     );
 
     expect(chartRows).toEqual([]);
@@ -381,7 +381,7 @@ describe("generateDropShoulderPattern sleeve instruction copy", () => {
     const noteBlock = result.sleeveDisplayRows.find(
       (r) =>
         r.kind === "block" &&
-        r.trustedParagraphs?.some((p) => /No sleeve shaping is needed/i.test(p)),
+        r.trustedParagraphs?.some((p) => /Knit straight to length/i.test(p)),
     );
     expect(noteBlock).toBeTruthy();
     if (!noteBlock || noteBlock.kind !== "block") return;

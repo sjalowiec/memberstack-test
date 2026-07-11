@@ -73,6 +73,10 @@ export const CARDIGAN_FRONT_NECKLINE_START_TAIL = "begin neckline shaping at the
 export const CARDIGAN_FRONT_SHAPING_TOGETHER_SENTENCE =
   "Work the neckline shaping and shoulder shaping together following the chart below.";
 
+/** Drop-shoulder cardigan front chart intro (straight shoulders — neckline shaping only). */
+export const CARDIGAN_FRONT_NECKLINE_ONLY_SENTENCE =
+  "Work the neckline shaping following the chart below.";
+
 export const CARDIGAN_FRONT_OPPOSITE_FRONT_SENTENCE =
   "Once this front is complete, cut yarn and work the opposite front, reversing the edge shaping.";
 

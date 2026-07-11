@@ -13,7 +13,6 @@ import { sleeveShapingPerSide, type EvenShapingSchedule } from "./evenShapingSch
 import { dropShoulderSleeveShapingPlan } from "./dropShoulderSleeveShaping";
 
 export const DROP_SHOULDER_SLEEVE_NO_SHAPING_NOTE_LINES = [
-  "No sleeve shaping is needed.",
   "Knit straight to length.",
   "Bind off loosely or scrap off.",
 ] as const;

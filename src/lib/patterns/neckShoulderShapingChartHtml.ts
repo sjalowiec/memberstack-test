@@ -30,6 +30,7 @@ import {
   activeShoulderIntroUsesVNeckDivideCopy,
   CARDIGAN_FRONT_NECKLINE_START_TAIL,
   CARDIGAN_FRONT_OPPOSITE_FRONT_SENTENCE,
+  CARDIGAN_FRONT_NECKLINE_ONLY_SENTENCE,
   CARDIGAN_FRONT_SHAPING_TOGETHER_SENTENCE,
   BIND_OFF_GLOSSARY_ID,
   SCRAP_OFF_GLOSSARY_ID,
@@ -548,7 +549,9 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
         })}</p>`,
       );
     }
-    innerParts.push(`<p>${escapeHtml(CARDIGAN_FRONT_SHAPING_TOGETHER_SENTENCE)}</p>`);
+    innerParts.push(
+      `<p>${escapeHtml(options.shouldersShaped === false ? CARDIGAN_FRONT_NECKLINE_ONLY_SENTENCE : CARDIGAN_FRONT_SHAPING_TOGETHER_SENTENCE)}</p>`,
+    );
     return wrapActiveShoulderChartIntroHtml(
       wrappedClass,
       innerParts.join("\n  "),
