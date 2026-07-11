@@ -988,6 +988,7 @@ export function generateDropShoulderPattern(
         fitPreference,
         selectedMeasurements: sm,
         bodyShape: String(style.bodyShape ?? "straight"),
+        chartAudience,
         sleeveLengthChoice: style.sleeveLength,
       })
     : {};

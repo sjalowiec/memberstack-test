@@ -325,10 +325,11 @@ describe("forceRefreshDropShoulderSummaryMeasurements", () => {
     const refreshed = forceRefreshDropShoulderSummaryMeasurements();
     expect(refreshed).not.toBeNull();
     expect(refreshed!.selectedSize).toBe("8");
-    expect(refreshed!.merged.upperArm).toBe("12.5");
+    // body 12.5 + Adult woman standard allowance 8.7 → finished 21.25.
+    expect(refreshed!.merged.upperArm).toBe("21.25");
     expect(refreshed!.merged.sleeveLength).toBe("17");
     expect(refreshed!.merged.wrist).toBe("6.25");
-    expect(refreshed!.resolvedUpperArmIn).toBe(12.5);
+    expect(refreshed!.resolvedUpperArmIn).toBe(21.25);
     expect(readDropShoulderReviewDiagramDirty()).toBe(false);
     expect(readDropShoulderReviewDisplayIdentity()?.selectedSize).toBe("8");
   });
@@ -372,9 +373,10 @@ describe("forceRefreshDropShoulderSummaryMeasurements", () => {
     });
     expect(refreshed).not.toBeNull();
     expect(refreshed!.selectedSize).toBe("8");
-    expect(refreshed!.merged.upperArm).toBe("12.5");
+    // body 12.5 + Adult woman standard allowance 8.7 → finished 21.25.
+    expect(refreshed!.merged.upperArm).toBe("21.25");
     expect(refreshed!.merged.sleeveLength).toBe("17");
     expect(refreshed!.merged.wrist).toBe("6.25");
-    expect(refreshed!.resolvedUpperArmIn).toBe(12.5);
+    expect(refreshed!.resolvedUpperArmIn).toBe(21.25);
   });
 });

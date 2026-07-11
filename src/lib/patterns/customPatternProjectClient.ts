@@ -30,6 +30,12 @@ import {
   resolveCustomBuildSaveMeasureFlushRoot,
 } from "./sleevelessCustomMeasurementStorage";
 import { syncCustomBuildToPatternStorage } from "./syncCustomBuildToPatternStorage";
+import {
+  DROP_SHOULDER_USER_EDITED_SLEEVE_FIELDS_KEY,
+  hasAnyDropShoulderUserEditedSleeveField,
+  normalizeDropShoulderUserEditedSleeveFields,
+  readDropShoulderUserEditedSleeveFields,
+} from "./dropShoulderUserEditedSleeveFields";
 import { getPatternProjectMeta } from "./sleevelessPatternProjectMeta";
 import type {
   CustomPatternFamily,
@@ -213,6 +219,21 @@ export function buildSavePayloadFromWorkingDraft(
   let customOverrides = options.customOverrides ?? {};
   if (allowDropShoulder) {
     customOverrides = withDropShoulderConstructionFamily(customOverrides);
+  }
+
+  // Persist Drop Shoulder user-edited sleeve-field state with the project so a manual upper-arm/wrist
+  // value stays protected after reopen (the flags otherwise live only in the Express-builder blob).
+  // The live builder state is the source of truth at save time; an unedited pattern removes the key.
+  if (allowDropShoulder) {
+    const editedFlags = readDropShoulderUserEditedSleeveFields();
+    if (hasAnyDropShoulderUserEditedSleeveField(editedFlags)) {
+      fitForSave[DROP_SHOULDER_USER_EDITED_SLEEVE_FIELDS_KEY] =
+        normalizeDropShoulderUserEditedSleeveFields(editedFlags);
+    } else {
+      delete fitForSave[DROP_SHOULDER_USER_EDITED_SLEEVE_FIELDS_KEY];
+    }
+  } else {
+    delete fitForSave[DROP_SHOULDER_USER_EDITED_SLEEVE_FIELDS_KEY];
   }
 
   pattern = preparePatternRecordForSave(

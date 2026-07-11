@@ -71,7 +71,8 @@ describe("diagramOverrideDefaultsFromChartRow", () => {
     const defaults = diagramOverrideDefaultsFromChartRow(size8Row, "standard", "misses", {
       dropShoulder: true,
     });
-    expect(defaults.upperArm).toBe("12.5");
+    // Finished Drop Shoulder upper arm = body 12.5 + Adult woman standard allowance 8.7 → 21.25.
+    expect(defaults.upperArm).toBe("21.25");
     expect(defaults.sleeveLength).toBe("17");
     expect(defaults.wrist).toBe("6.25");
     expect(defaults.cuffDepth).toBe("2");
@@ -109,10 +110,11 @@ describe("reconcileCustomBuildDiagramOverridesAfterSizingChange", () => {
 
     expect(next.chestBust).toBe("45");
     expect(next.finishedLength).toBe("25");
-    expect(next.upperArm).toBe("12.5");
+    // body 12.5 + Adult woman standard allowance 8.7 → finished 21.25.
+    expect(next.upperArm).toBe("21.25");
     expect(next.sleeveLength).toBe("17");
     expect(next.wrist).toBe("6.25");
-    expect(computeDropShoulderArmholeDepthInches(parseFloat(next.upperArm!))).toBe(6.25);
+    expect(computeDropShoulderArmholeDepthInches(parseFloat(next.upperArm!))).toBe(10.625);
   });
 
   it("preserves a deliberate user-edited upper arm when switching sizes", () => {
@@ -213,7 +215,7 @@ describe("reconcileCustomBuildOverridesForSizingIdentityChange", () => {
       dropShoulder: true,
     });
 
-    expect(reconciled.upperArm).toBe("12.5");
+    expect(reconciled.upperArm).toBe("21.25");
     expect(reconciled.sleeveLength).toBe("17");
     expect(reconciled.chestBust).toBe("45");
     expect(reconciled.finishedLength).toBe("25");
@@ -228,7 +230,7 @@ describe("reconcileCustomBuildOverridesForSizingIdentityChange", () => {
       overrides: { upperArm: "9.75", chestBust: "35" },
       dropShoulder: true,
     });
-    expect(reconciled.upperArm).toBe("12.5");
+    expect(reconciled.upperArm).toBe("21.25");
     expect(reconciled.chestBust).toBe("45");
   });
 

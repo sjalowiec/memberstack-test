@@ -132,6 +132,7 @@ export function diagramOverrideDefaultsFromChartRow(
       out,
       dropShoulderSleeveDefaultsFromChartRow(row, fitPreference, {
         bodyShape: options.bodyShape,
+        chartAudience: audience,
       }),
     );
   }
@@ -202,7 +203,7 @@ export function reconcileCustomBuildDiagramOverridesAfterSizingChange(args: {
       args.currentRow,
       args.currentFit,
       readDropShoulderUserEditedSleeveFields(),
-      { bodyShape: args.bodyShape },
+      { bodyShape: args.bodyShape, chartAudience: args.audience },
     );
   }
 

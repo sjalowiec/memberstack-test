@@ -17,6 +17,7 @@ import {
   hasAuthoritativeDropShoulderConstruction,
 } from "./patternConstructionIdentity";
 import { computeDefaultMeasurementsFromChartRow } from "./sleevelessExpressSizeChartClient";
+import { resolveDropShoulderFinishedUpperArmInches } from "./dropShoulderUpperArmAllowance";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 
 export const DROP_SHOULDER_SLEEVE_OVERRIDE_KEYS = ["upperArm", "sleeveLength", "wrist"] as const;
@@ -78,13 +79,22 @@ export function isDropShoulderPatternData(patternData: Record<string, unknown>):
   return hasAuthoritativeDropShoulderConstruction(section(patternData.style));
 }
 
-/** Chart row → formatted override strings for the three sleeve diagram fields. */
+/**
+ * Chart row → formatted override strings for the three sleeve diagram fields.
+ *
+ * When `chartAudience` is supplied, the `upperArm` default is the FINISHED Drop Shoulder upper arm
+ * (body upper arm + fit allowance) rather than the raw chart body value. See
+ * {@link resolveDropShoulderFinishedUpperArmInches}. Without an audience the raw chart value is
+ * used (no allowance), so callers that cannot supply a group are unchanged.
+ */
 export function dropShoulderSleeveDefaultsFromChartRow(
   row: ChartRow,
   fitPreference: string,
-  options?: { bodyShape?: string },
+  options?: { bodyShape?: string; chartAudience?: string },
 ): Partial<Record<DropShoulderSleeveOverrideKey, string>> {
-  const computed = computeDefaultMeasurementsFromChartRow(row, fitPreference, options);
+  const computed = computeDefaultMeasurementsFromChartRow(row, fitPreference, {
+    bodyShape: options?.bodyShape,
+  });
   const out: Partial<Record<DropShoulderSleeveOverrideKey, string>> = {};
   for (const overrideKey of DROP_SHOULDER_SLEEVE_OVERRIDE_KEYS) {
     const chartKey = CHART_KEY_BY_OVERRIDE[overrideKey];
@@ -93,6 +103,19 @@ export function dropShoulderSleeveDefaultsFromChartRow(
       out[overrideKey] = formatOverrideInches(val);
     }
   }
+
+  // Replace the raw body upper arm with the finished (allowance-added) value when the group is known.
+  if (options?.chartAudience) {
+    const finishedUpperArm = resolveDropShoulderFinishedUpperArmInches({
+      chartAudience: options.chartAudience,
+      fit: fitPreference,
+      bodyUpperArmIn: computed.upper_arm,
+    });
+    if (finishedUpperArm !== undefined && finishedUpperArm > 0) {
+      out.upperArm = formatOverrideInches(finishedUpperArm);
+    }
+  }
+
   return out;
 }
 
@@ -118,6 +141,8 @@ export function resolveDropShoulderSleeveInches(args: {
   fitPreference: string;
   selectedMeasurements?: Record<string, unknown> | null;
   bodyShape?: string;
+  /** Sizing group identity — enables the finished (allowance-added) Drop Shoulder upper arm. */
+  chartAudience?: string;
   userEdited?: DropShoulderUserEditedSleeveFields;
   /**
    * Sleeve-length picker choice ("long" | "three-quarter" | "elbow" | "short"). The picker is the
@@ -164,12 +189,14 @@ export function resolveDropShoulderSleeveOverrideStrings(args: {
   fitPreference: string;
   selectedMeasurements?: Record<string, unknown> | null;
   bodyShape?: string;
+  chartAudience?: string;
   userEdited?: DropShoulderUserEditedSleeveFields;
 }): Partial<Record<DropShoulderSleeveOverrideKey, string>> {
   const userEdited = args.userEdited ?? readDropShoulderUserEditedSleeveFields();
   const chartDefaults = args.chartRow
     ? dropShoulderSleeveDefaultsFromChartRow(args.chartRow, args.fitPreference, {
         bodyShape: args.bodyShape,
+        chartAudience: args.chartAudience,
       })
     : dropShoulderSleeveDefaultsFromSelectedMeasurements(
         snakeCaseMeasurementsFromUnknown(args.selectedMeasurements),
@@ -213,7 +240,7 @@ export function reconcileDropShoulderSleeveOverridesForSizeChange(
   chartRow: ChartRow,
   fitPreference: string,
   userEdited: DropShoulderUserEditedSleeveFields = readDropShoulderUserEditedSleeveFields(),
-  options?: { bodyShape?: string },
+  options?: { bodyShape?: string; chartAudience?: string },
 ): Record<string, string> {
   const next = { ...overrides };
   const chartDefaults = dropShoulderSleeveDefaultsFromChartRow(chartRow, fitPreference, options);
@@ -278,7 +305,7 @@ export function reconcileDropShoulderSleeveOverridesAfterChartSync(
   fitPreference: string,
   overrides: Record<string, string>,
   previousSelectedMeasurements?: Record<string, number> | null,
-  options?: { bodyShape?: string },
+  options?: { bodyShape?: string; chartAudience?: string },
 ): Record<string, string> {
   const chartDefaults = dropShoulderSleeveDefaultsFromChartRow(chartRow, fitPreference, options);
   return reconcileDropShoulderSleeveOverridesWithDefaults(

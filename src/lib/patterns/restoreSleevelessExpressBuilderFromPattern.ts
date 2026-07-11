@@ -21,6 +21,11 @@ import {
   mapExpressStyleKey,
 } from "./syncSleevelessExpressDesignToStorage";
 import { writeOverrideSeedSizingIdentity } from "./customBuildMeasurementOverrideReconcile";
+import {
+  DROP_SHOULDER_USER_EDITED_SLEEVE_FIELDS_KEY,
+  hasAnyDropShoulderUserEditedSleeveField,
+  readDropShoulderUserEditedSleeveFieldsFromFit,
+} from "./dropShoulderUserEditedSleeveFields";
 import { buildSizingIdentityFromExpressValues } from "./savedCustomPatternSessionIdentity";
 import { mergeCbMeasurementOverridesFromFitSources } from "./sleevelessCustomMeasurementStorage";
 import {
@@ -270,6 +275,10 @@ export function restoreSleevelessExpressBuilderFromPattern(
     patternData.fit,
   );
 
+  // Restore Drop Shoulder user-edited sleeve flags from the saved project (source of truth), not from
+  // any stale prior-session Express blob. Older projects without this metadata yield all-false.
+  const dropShoulderUserEditedSleeveFields = readDropShoulderUserEditedSleeveFieldsFromFit(fit);
+
   const snapshot: ExpressPersistedV1 = {
     values,
     openStep,
@@ -280,6 +289,11 @@ export function restoreSleevelessExpressBuilderFromPattern(
     ...gauge,
     ...(Object.keys(cbMeasurementOverrides).length > 0 ? { cbMeasurementOverrides } : {}),
   };
+
+  if (hasAnyDropShoulderUserEditedSleeveField(dropShoulderUserEditedSleeveFields)) {
+    (snapshot as Record<string, unknown>)[DROP_SHOULDER_USER_EDITED_SLEEVE_FIELDS_KEY] =
+      dropShoulderUserEditedSleeveFields;
+  }
 
   const sizingIdentity =
     values.who && values.selectedSize

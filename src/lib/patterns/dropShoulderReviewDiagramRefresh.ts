@@ -261,6 +261,7 @@ export function buildDropShoulderReviewMergedInches(args: {
     chartRow: args.row,
     fitPreference: args.fitPreference,
     bodyShape: args.bodyShape,
+    chartAudience: args.audience,
   });
   Object.assign(merged, sleeveResolved);
 
@@ -401,6 +402,7 @@ function forceRefreshDropShoulderSummaryFromContext(
     fitPreference: ctx.fitPreference,
     selectedMeasurements: ctx.selectedMeasurements,
     bodyShape: ctx.bodyShape,
+    chartAudience: ctx.audience,
     sleeveLengthChoice: section(getCurrentPattern().style).sleeveLength,
   });
 

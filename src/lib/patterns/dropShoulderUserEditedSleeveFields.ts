@@ -84,6 +84,32 @@ function normalizeFlags(raw: unknown): DropShoulderUserEditedSleeveFields {
   return out;
 }
 
+/** Coerce arbitrary stored data into the canonical flags shape (missing/invalid → all false). */
+export function normalizeDropShoulderUserEditedSleeveFields(
+  raw: unknown,
+): DropShoulderUserEditedSleeveFields {
+  return normalizeFlags(raw);
+}
+
+/** True when at least one tracked sleeve field is flagged as user-edited. */
+export function hasAnyDropShoulderUserEditedSleeveField(
+  flags: DropShoulderUserEditedSleeveFields,
+): boolean {
+  return DROP_SHOULDER_USER_EDITED_SLEEVE_FIELD_KEYS.some((key) => flags[key] === true);
+}
+
+/**
+ * Read persisted user-edited sleeve flags from a saved project `fit` section
+ * (`fit.dropShoulderUserEditedSleeveFields`). Older projects without the metadata yield all-false.
+ * Never infers a flag by comparing measurement values.
+ */
+export function readDropShoulderUserEditedSleeveFieldsFromFit(
+  fit: unknown,
+): DropShoulderUserEditedSleeveFields {
+  if (!fit || typeof fit !== "object" || Array.isArray(fit)) return emptyFlags();
+  return normalizeFlags((fit as Record<string, unknown>)[DROP_SHOULDER_USER_EDITED_SLEEVE_FIELDS_KEY]);
+}
+
 export function readDropShoulderUserEditedSleeveFields(): DropShoulderUserEditedSleeveFields {
   return normalizeFlags(readExpressBlob()[DROP_SHOULDER_USER_EDITED_SLEEVE_FIELDS_KEY]);
 }
