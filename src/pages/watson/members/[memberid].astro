@@ -1,0 +1,32 @@
+---
+import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
+
+export const prerender = false;
+
+const memberid = Astro.params.memberid ? decodeURIComponent(Astro.params.memberid) : "";
+---
+
+<WatsonPageShell
+  title={`Watson Member ${memberid || "Detail"} | Knit it Now`}
+  description="Legacy member detail placeholder for Watson support."
+  heading="Member Detail"
+  intro="Placeholder page — full member overview and history tabs will be added in a later Watson phase."
+>
+  <section class="watson__panel">
+    <h2 class="watson__panel-title">Legacy member ID</h2>
+    <p class="watson__placeholder">
+      {memberid ? memberid : "No member ID provided."}
+    </p>
+    <dl class="watson__meta">
+      <dt>Status</dt>
+      <dd>Detail view not built yet</dd>
+    </dl>
+    <p class="watson__placeholder">
+      Orders, courses, saved patterns, PDF purchases, and support notes will appear here in future
+      releases. Imported legacy data remains read-only.
+    </p>
+    <p>
+      <a href="/watson">? Back to member search</a>
+    </p>
+  </section>
+</WatsonPageShell>

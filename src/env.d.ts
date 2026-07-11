@@ -121,6 +121,10 @@ declare global {
 declare namespace App {
   interface Locals {
     msToken?: string | null;
+    watsonAdmin?: {
+      id: string;
+      email: string | null;
+    };
   }
 }
 

@@ -15,17 +15,23 @@
     "test": "vitest run",
     "check:utf8": "node scripts/check-utf8.mjs",
     "generate:legacy-ebook-shopify-import": "vite-node scripts/generate-legacy-ebook-shopify-import.ts",
-    "split:course-content": "vite-node scripts/split-course-content.ts"
+    "split:course-content": "vite-node scripts/split-course-content.ts",
+    "watson:import": "vite-node scripts/watson-import.ts",
+    "watson:validate": "vite-node scripts/watson-validate-import.ts",
+    "watson:analyze-csv": "node scripts/watson-analyze-csv.mjs",
+    "watson:generate-schema": "vite-node scripts/watson-generate-schema.ts"
   },
   "dependencies": {
     "@fastify/busboy": "^3.2.0",
     "@netlify/blobs": "^10.7.4",
-    "astro": "^5.17.1"
+    "astro": "^5.17.1",
+    "pg": "^8.22.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.8",
     "@astrojs/netlify": "^6.6.4",
     "@types/node": "^25.3.0",
+    "@types/pg": "^8.20.0",
     "pagefind": "^1.5.2",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"

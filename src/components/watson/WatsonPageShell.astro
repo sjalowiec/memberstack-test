@@ -1,0 +1,33 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/watson.css";
+
+interface Props {
+  title: string;
+  description?: string;
+  heading: string;
+  intro?: string;
+}
+
+const { title, description, heading, intro } = Astro.props;
+---
+
+<BaseLayout title={title} description={description} skipGlobalHyvor={true} bodyClass="watson-body">
+  <main class="watson">
+    <header class="watson__head">
+      <nav class="watson__nav" aria-label="Watson">
+        <a href="/watson">Member Search</a>
+        <a href="/admin">Admin</a>
+      </nav>
+      <h1 class="watson__title">{heading}</h1>
+      {intro ? <p class="watson__subtitle">{intro}</p> : null}
+      <slot name="head" />
+    </header>
+    <slot />
+  </main>
+</BaseLayout>
+
+<script>
+  import { initSortableTables } from "../../lib/watson/sortableTable";
+  initSortableTables(document);
+</script>

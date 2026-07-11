@@ -1,0 +1,203 @@
+/**
+ * Watson support UI styles — functional tables and search, no Bootstrap.
+ */
+.watson {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: calc(var(--header-height, 7rem) + 1.5rem) 1.25rem 3rem;
+  box-sizing: border-box;
+}
+
+.watson__head {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.watson__title {
+  margin: 0 0 0.35rem 0;
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: #243015;
+}
+
+.watson__subtitle {
+  margin: 0 0 1rem 0;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.watson__nav {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.watson__nav a {
+  color: #3f6212;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.watson__nav a:hover {
+  text-decoration: underline;
+}
+
+.watson__search {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.watson__search-input {
+  flex: 1 1 16rem;
+  min-width: 0;
+  padding: 0.55rem 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-family: inherit;
+}
+
+.watson__search-input:focus {
+  outline: 2px solid #3f6212;
+  outline-offset: 1px;
+  border-color: #3f6212;
+}
+
+.watson__button {
+  padding: 0.55rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  background: #3f6212;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.watson__button:hover {
+  background: #365314;
+}
+
+.watson__status {
+  margin: 1rem 0 0;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.watson__status--error {
+  color: #b91c1c;
+}
+
+.watson__panel {
+  margin-top: 1.25rem;
+  padding: 1.1rem 1.15rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+}
+
+.watson__panel-title {
+  margin: 0 0 0.85rem 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #243015;
+}
+
+.watson__table-wrap {
+  overflow-x: auto;
+}
+
+.watson-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.watson-table th,
+.watson-table td {
+  padding: 0.55rem 0.65rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: top;
+}
+
+.watson-table th {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.watson-table td {
+  color: #334155;
+}
+
+.watson-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.watson-table__sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.watson-table__sortable:hover {
+  color: #243015;
+}
+
+.watson-table__sortable::after {
+  content: "?";
+  display: inline-block;
+  margin-left: 0.35rem;
+  font-size: 0.7rem;
+  opacity: 0.45;
+}
+
+.watson-table__sort--asc::after {
+  content: "?";
+  opacity: 1;
+}
+
+.watson-table__sort--desc::after {
+  content: "?";
+  opacity: 1;
+}
+
+.watson-table a {
+  color: #3f6212;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.watson-table a:hover {
+  text-decoration: underline;
+}
+
+.watson__placeholder {
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.watson__meta {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.watson__meta dt {
+  font-weight: 700;
+  display: inline;
+}
+
+.watson__meta dd {
+  display: inline;
+  margin: 0 1rem 0 0.35rem;
+}

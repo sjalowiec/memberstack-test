@@ -1,4 +1,5 @@
 import { defineMiddleware } from "astro:middleware";
+import { requireAdminForRequest } from "./lib/admin/requireAdminRequest";
 import {
   isCoursePreviewProductionBlocked,
   isCoursePreviewRoute,
@@ -7,6 +8,7 @@ import {
   isDropShoulderProductionBlocked,
   isDropShoulderRoute,
 } from "./lib/patterns/dropShoulderProductionAccess";
+import { isWatsonRoute, watsonAccessDeniedResponse } from "./lib/watson/watsonAccess";
 
 const devOnlyRouteEnv = {
   isViteDev: import.meta.env.DEV,
@@ -39,6 +41,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
     isCoursePreviewProductionBlocked(u.hostname, devOnlyRouteEnv)
   ) {
     return context.redirect("/courses/", 302);
+  }
+
+  if (isWatsonRoute(u.pathname)) {
+    const auth = await requireAdminForRequest(request, context.cookies);
+    if (!auth.ok) {
+      return watsonAccessDeniedResponse(auth.status, auth.error);
+    }
+    context.locals.watsonAdmin = auth.member;
   }
 
   // ✅ Always pass /api through unchanged (keep your original behavior)
