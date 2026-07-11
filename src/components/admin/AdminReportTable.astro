@@ -1,0 +1,30 @@
+---
+/**
+ * Generic table card for admin reports — pairs with `renderTableRows()` in
+ * src/lib/admin/reportRenderer.ts. The page's script fills `<tbody data-table={id}>` with rows;
+ * this component only owns the shared markup/CSS shell (see admin-report.css).
+ */
+interface Props {
+  id: string;
+  title: string;
+  columns: string[];
+}
+
+const { id, title, columns } = Astro.props;
+---
+
+<div class="admin-report__table-card">
+  <h2 class="admin-report__section-title">{title}</h2>
+  <div class="admin-report__table-wrap">
+    <table class="admin-report__table">
+      <thead>
+        <tr>
+          {columns.map((col) => <th scope="col">{col}</th>)}
+        </tr>
+      </thead>
+      <tbody data-table={id}>
+        <tr><td colspan={columns.length}>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>

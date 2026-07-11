@@ -1,0 +1,73 @@
+---
+/**
+ * Shared shell for /admin/reports/* pages: layout, header, stat-card grid, status line, and a
+ * general-purpose note slot — the reusable structure behind every admin report so a new report is
+ * "provide title/cards/tables", not "copy an existing page and rewrite its CSS".
+ *
+ * Usage:
+ *   <AdminReportPage
+ *     title="Membership | Knit it Now Admin"
+ *     heading="Membership & Revenue"
+ *     intro="..."
+ *     statCards={[{ key: "activeMembersTotal", label: "Active members" }, ...]}
+ *   >
+ *     <Fragment slot="controls">...optional filters...</Fragment>
+ *     ...table markup (use AdminReportTable)...
+ *   </AdminReportPage>
+ *
+ * The page's own <script> is responsible for fetching data and calling
+ * `setStat("activeMembersTotal", value)` / `setStatus(message)` from
+ * src/lib/admin/reportRenderer.ts against these `data-stat` / `data-status` hooks.
+ */
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/admin-report.css";
+
+interface StatCard {
+  key: string;
+  label: string;
+}
+
+interface Props {
+  title: string;
+  description?: string;
+  heading: string;
+  intro: string;
+  statCards: StatCard[];
+}
+
+const { title, description, heading, intro, statCards } = Astro.props;
+---
+
+<BaseLayout title={title} description={description} skipGlobalHyvor={true} bodyClass="admin-dash-body">
+  <main class="admin-report">
+    <header class="admin-report__head">
+      <h1 class="admin-report__title">{heading}</h1>
+      <p class="admin-report__intro">{intro}</p>
+      <div class="admin-report__controls">
+        <slot name="controls" />
+      </div>
+    </header>
+
+    <p class="admin-report__status" data-status>Loading…</p>
+    <p class="admin-report__note" data-note hidden></p>
+
+    <section class="admin-report__body" data-report hidden>
+      {
+        statCards.length > 0 && (
+          <div class="admin-report__stats">
+            {statCards.map((card) => (
+              <div class="admin-report__stat">
+                <span class="admin-report__stat-value" data-stat={card.key}>
+                  —
+                </span>
+                <span class="admin-report__stat-label">{card.label}</span>
+              </div>
+            ))}
+          </div>
+        )
+      }
+
+      <slot />
+    </section>
+  </main>
+</BaseLayout>

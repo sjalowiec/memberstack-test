@@ -1,6 +1,6 @@
 # Admin Reporting Architecture — Recommendation
 
-Status: proposal, not yet implemented. Written after auditing the current data layer, Stripe/Memberstack integration, and `/admin` pages in this repo (knititnow-staging).
+Status: partially implemented. Written after auditing the current data layer, Stripe/Memberstack integration, and `/admin` pages in this repo (knititnow-staging). See "Implementation log" and "Information architecture plan" below for current state.
 
 ## What's actually here today
 
@@ -74,3 +74,66 @@ Start with the snapshot approach for a first membership report (fast, no new web
 3. Add the Memberstack snapshot-based membership/plan report using the same page pattern.
 4. Add any new usage-tracked domain (course engagement, tool usage, etc.) purely as config against the now-shared pipeline.
 5. Only if event volume becomes a real problem: add incremental rollup counters (mirroring the summary-index pattern `custom-pattern-projects-store.js` already uses) instead of full-window rescans.
+
+## Implementation log
+
+**2026-07-11 — first slice shipped.** Server-side admin auth hardening (real Memberstack JWT verification via `netlify/functions/lib/admin-auth.js`, replacing trust in client-sent headers) and the membership snapshot report (`netlify/functions/admin-membership-report.ts`, page at `/admin/reports/membership`), plus the shared report UI scaffold (`src/components/admin/AdminReportPage.astro`, `AdminReportTable.astro`, `src/styles/admin-report.css`, `src/lib/admin/reportRenderer.ts`). Two open items from that session: (1) Memberstack's paid `planConnections[].payment` shape is undocumented — the MRR calc excludes anything it can't confidently match rather than guessing (see code comment in `admin-membership-report.ts`); (2) automated verification (`astro check` / `vitest`) could not be run from the build session's sandbox due to a shell/file-sync quirk — run it locally before deploying.
+
+Step 1 of the build order above (refactoring the two legacy reports onto shared modules) has **not** been done yet — deferred in favor of building the membership report on fresh shared modules first. The legacy `pattern-activity-log` and `bookshelf-activity-log` stacks are still their own independent, duplicated code.
+
+## Information architecture plan (2026-07-11)
+
+Sue's preferred structure for the whole admin area is three top-level sections, replacing the current ad hoc grouping on `/admin/index.astro` (Content Admin / Private Project Workspaces / Reporting / Legacy Admin / Utilities):
+
+- **Business Membership** — active members, members by plan, monthly vs. annual, new memberships, cancellations, churn/retention, member lookup, membership history.
+- **Business Financial** — MRR, revenue by month, Stripe payments, failed payments, refunds, course/product revenue, taxes/payout summaries, reconciliation reports.
+- **Data Admin** — JSON editing, pattern access reset, data repair utilities, imports/exports, activity reports, content manifests, support tools.
+
+Note: the MRR card currently lives inside the membership report (built before this structure was decided). Under this IA it belongs in Business Financial, not Business Membership — needs to be split out when the nav is rebuilt.
+
+### Inventory: what exists vs. what needs building
+
+**Business Membership**
+| Item | Status |
+|---|---|
+| Active members | Built — `admin-membership-report.ts` |
+| Members by plan | Built — same endpoint, `activeByPlan` |
+| Monthly vs. annual | Not built — endpoint resolves price id but doesn't currently surface interval as its own breakdown |
+| New memberships | Built — today/7d/month/year |
+| Cancellations | Partial — a total count exists (`canceledConnectionsTotal`); no time-bucketing (this week/month) |
+| Churn and retention | Not built — a true churn *rate* needs historical tracking over time, not just a live snapshot; likely needs the event-sourced approach (webhooks into an event log) rather than the snapshot API alone |
+| Member lookup | Partial — `admin-sleeveless-access-reset.js` already does an email-based Memberstack lookup (built for a different purpose: resetting a free-pattern claim); could be generalized into a real member-lookup tool |
+| Membership history | Not built — needs a per-member timeline of plan changes; Memberstack's snapshot API doesn't expose this, so likely needs webhook-driven event capture going forward (no way to backfill history that predates tracking) |
+
+**Business Financial**
+| Item | Status |
+|---|---|
+| MRR | Built (as part of the membership report — needs to move) |
+| Revenue by month | Not built — needs either historical Stripe data or an event log going forward; a live snapshot alone can't show past months |
+| Stripe payments | Not built — **needs direct Stripe API access**, which nothing in this codebase currently has (Memberstack owns the Stripe relationship; its Admin API doesn't expose charge/payment-level detail, only plan connections) |
+| Failed payments | Not built — same Stripe access gap |
+| Refunds | Not built — same Stripe access gap |
+| Course or product revenue | Not built — **needs investigation, not just Stripe access**: it's not yet confirmed whether one-time purchases (courses, ebooks, patterns) go through the same Memberstack/Stripe checkout as memberships, or a separate mechanism. The `src/pages/shop/*` pages (books, ebooks, cables) haven't been audited for how they actually process payment. |
+| Taxes / payout summaries | Not built — needs Stripe's Payouts/Tax reporting API, advanced case |
+| Reconciliation reports | Not built — needs Stripe access, plus cross-referencing against Memberstack plan data |
+
+Open decision (Sue's to make): whether to provide a Stripe secret key (recommended: restricted-permissions, read-only on payments/charges/refunds) so these can be built against real data, using the `stripeCustomerId` field already present on each Memberstack member record as the bridge between the two systems. Nothing in Business Financial beyond MRR/plan-mix can be built without this.
+
+**Data Admin**
+| Item | Status |
+|---|---|
+| JSON editing | Built — Help Hub admin, Lessons admin, Bookshelf editor, Machine database admin all already edit JSON content files |
+| Pattern access reset | Built — Sleeveless free-claim reset tool (`admin-sleeveless-access-reset.js` + UI section in `admin/index.astro`) |
+| Data repair utilities | Partial — several one-off scripts exist (`scripts/*.mjs`, `*.cjs`: glossary repair, jump-link fixes, etc.) but run from the command line, not surfaced as admin UI tools |
+| Imports and exports | Partial — `scripts/import-bookshelf.cjs`, `scripts/import-book-comments.cjs` exist as CLI scripts, not admin-UI-integrated |
+| Activity reports | Built — pattern activity (inline on `admin/index.astro`) and bookshelf activity (`admin/bookshelf-activity.astro`); these are the two legacy duplicated report stacks from the original architecture doc, still not refactored onto shared modules |
+| Content manifests | Partial — `scripts/generate-public-manifests.mjs` runs at build time (`prebuild`), not an interactive admin tool |
+| Support tools | Partial — Video Access Manager, Legacy eBook Lookup, and the pattern access reset tool above all fit here; not consolidated under one heading yet |
+
+### Suggested rollout approach (not yet started)
+
+1. Rebuild `/admin/index.astro`'s navigation around the three sections, slotting in everything already built above. Keep existing page URLs stable (don't move files yet) — this is a navigation/grouping change first, physical reorganization later if wanted, to avoid unnecessary churn/breakage.
+2. Split the MRR card out of the membership report into wherever Business Financial's first real page ends up living.
+3. Resolve the Stripe access question above — it blocks most of Business Financial.
+4. Fill in Business Membership's remaining gaps (monthly/annual breakdown is cheap — data's already fetched; churn/retention and membership history are the expensive ones needing webhook-driven history).
+5. Data Admin is mostly consolidation of already-built tools plus surfacing the CLI-only scripts as real admin-UI tools where worth the effort — lower urgency than the other two sections since the operational capability already exists, just not in one place.

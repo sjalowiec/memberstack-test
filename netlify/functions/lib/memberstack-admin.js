@@ -122,15 +122,16 @@ export function createMemberstackAdminClient({
   }
 
   /**
-   * TEMPORARY DEBUG: lists members (paginated). Used only by the lookup debug probe to confirm the
-   * key targets a populated app and whether a target email is present. Not used by normal behavior.
-   * @param {{ limit?: number, after?: number | string }} [options]
+   * Lists members (paginated, `after`-cursor style per the Admin REST API). Originally added for
+   * the lookup debug probe; also used by reporting to page through the full member list.
+   * @param {{ limit?: number, after?: number | string, order?: "ASC" | "DESC" }} [options]
    * @returns {Promise<{ totalCount?: number, endCursor?: number, hasNextPage?: boolean, data?: unknown[] }>}
    */
-  async function listMembers({ limit = 100, after } = {}) {
+  async function listMembers({ limit = 100, after, order } = {}) {
     const url = new URL(`${baseUrl}/members`);
     url.searchParams.set("limit", String(limit));
     if (after !== undefined) url.searchParams.set("after", String(after));
+    if (order) url.searchParams.set("order", order);
     const res = await fetchImpl(url.toString(), { method: "GET", headers: baseHeaders });
     if (!res.ok) {
       throw new Error(`Memberstack listMembers failed (${res.status}).`);
@@ -138,7 +139,42 @@ export function createMemberstackAdminClient({
     return res.json();
   }
 
-  return { getMember, updateMemberJson, listMembers };
+  /**
+   * Verifies a member session JWT via the Admin REST API and returns the decoded payload
+   * (`{ id, type, iat, exp, aud, iss }`) on success, or `null` for any invalid/expired/malformed
+   * token. Per Memberstack's docs this endpoint always returns 400 (never 401) for a bad token, so
+   * any non-200 response, not just a specific status, is treated as "not verified".
+   * Docs: https://developers.memberstack.com/admin-rest-api/verification
+   * @param {string} token
+   * @returns {Promise<{ id: string, type?: string, iat?: number, exp?: number, aud?: string, iss?: string } | null>}
+   */
+  async function verifyMemberToken(token) {
+    if (!token || typeof token !== "string") return null;
+    let res;
+    try {
+      res = await fetchImpl(`${baseUrl}/members/verify-token`, {
+        method: "POST",
+        headers: baseHeaders,
+        body: JSON.stringify({ token }),
+      });
+    } catch {
+      return null;
+    }
+    if (!res.ok) return null;
+    let body;
+    try {
+      body = await res.json();
+    } catch {
+      return null;
+    }
+    const data = body && typeof body === "object" && "data" in body ? body.data : null;
+    if (!data || typeof data !== "object" || typeof data.id !== "string") return null;
+    return /** @type {{ id: string, type?: string, iat?: number, exp?: number, aud?: string, iss?: string }} */ (
+      data
+    );
+  }
+
+  return { getMember, updateMemberJson, listMembers, verifyMemberToken };
 }
 
 /**

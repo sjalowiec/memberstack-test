@@ -1,0 +1,156 @@
+---
+import AdminReportPage from "../../../components/admin/AdminReportPage.astro";
+import AdminReportTable from "../../../components/admin/AdminReportTable.astro";
+
+const STAT_CARDS = [
+  { key: "activeMembersTotal", label: "Active members" },
+  { key: "mrr", label: "MRR (estimate)" },
+  { key: "arr", label: "ARR (estimate)" },
+  { key: "newToday", label: "New today" },
+  { key: "newLast7Days", label: "New last 7 days" },
+  { key: "newThisMonth", label: "New this month" },
+  { key: "newThisYear", label: "New this year" },
+  { key: "canceledConnections", label: "Canceled connections" },
+];
+---
+
+<AdminReportPage
+  title="Membership & Revenue | Knit it Now Admin"
+  description="Active members by plan, new members, cancellations, and an MRR/ARR estimate."
+  heading="Membership & Revenue"
+  intro="Live snapshot from Memberstack — active members by plan, new members by period, and an estimated MRR/ARR. This is a point-in-time view, not a historical trend (see docs/admin-reporting-architecture.md for why)."
+  statCards={STAT_CARDS}
+>
+  <AdminReportTable
+    id="active-by-plan"
+    title="Active Members by Plan"
+    columns={["Plan", "Active members"]}
+  />
+
+  <div class="admin-report__table-card">
+    <h2 class="admin-report__section-title">Year-over-year (new members, same date range)</h2>
+    <div class="admin-report__table-wrap">
+      <table class="admin-report__table">
+        <thead>
+          <tr>
+            <th scope="col">This year (Jan 1 → today)</th>
+            <th scope="col">Same period last year</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-yoy-current>—</td>
+            <td data-yoy-previous>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</AdminReportPage>
+
+<script>
+  import { getAdminAuthHeaders } from "../../../lib/admin/adminAuthClient";
+  import {
+    formatUsd,
+    renderTableRows,
+    setNote,
+    setStat,
+    setStatus,
+    showReport,
+  } from "../../../lib/admin/reportRenderer";
+
+  const ENDPOINT = "/.netlify/functions/admin-membership-report";
+
+  interface PlanRow {
+    planKey: string;
+    planName: string;
+    activeMembers: number;
+  }
+
+  interface MembershipReport {
+    ok: boolean;
+    error?: string;
+    activeMembersTotal: number;
+    activeByPlan: PlanRow[];
+    newMembers: {
+      today: number;
+      last7Days: number;
+      thisMonth: number;
+      thisYear: number;
+      sameDayLastYear: number;
+    };
+    canceledConnectionsTotal: number;
+    revenue: {
+      mrrEstimate: number;
+      arrEstimate: number;
+      unresolvedPaidConnections: number;
+      note: string | null;
+    };
+    scanTruncated: boolean;
+    totalMembersScanned: number;
+  }
+
+  function setYoy(current: number, previous: number): void {
+    const currentEl = document.querySelector("[data-yoy-current]");
+    const previousEl = document.querySelector("[data-yoy-previous]");
+    if (currentEl instanceof HTMLElement) currentEl.textContent = String(current);
+    if (previousEl instanceof HTMLElement) previousEl.textContent = String(previous);
+  }
+
+  async function loadReport(): Promise<void> {
+    setStatus("Loading membership & revenue report…");
+    showReport(false);
+    try {
+      const headers = await getAdminAuthHeaders();
+      const res = await fetch(ENDPOINT, { method: "GET", headers });
+
+      if (res.status === 401) {
+        setStatus("Sign in with an admin account to view this report.");
+        return;
+      }
+      if (res.status === 403) {
+        setStatus("You don't have admin access to view this report.");
+        return;
+      }
+
+      const data = (await res.json().catch(() => null)) as MembershipReport | null;
+      if (!res.ok || !data?.ok) {
+        setStatus(data?.error || "Unable to load the membership report right now.");
+        return;
+      }
+
+      setStat("activeMembersTotal", data.activeMembersTotal);
+      setStat("mrr", formatUsd(data.revenue.mrrEstimate));
+      setStat("arr", formatUsd(data.revenue.arrEstimate));
+      setStat("newToday", data.newMembers.today);
+      setStat("newLast7Days", data.newMembers.last7Days);
+      setStat("newThisMonth", data.newMembers.thisMonth);
+      setStat("newThisYear", data.newMembers.thisYear);
+      setStat("canceledConnections", data.canceledConnectionsTotal);
+      setYoy(data.newMembers.thisYear, data.newMembers.sameDayLastYear);
+
+      renderTableRows(
+        "active-by-plan",
+        data.activeByPlan,
+        (row) => [row.planName, String(row.activeMembers)],
+        "No active plan connections found.",
+      );
+
+      const notes: string[] = [];
+      if (data.revenue.note) notes.push(data.revenue.note);
+      if (data.scanTruncated) {
+        notes.push(
+          `Member list is larger than this report's safety cap (${data.totalMembersScanned} scanned) — numbers are a partial snapshot.`,
+        );
+      }
+      setNote(notes.join(" "));
+
+      showReport(true);
+      setStatus("");
+    } catch {
+      setStatus("Unable to load the membership report right now.", true);
+    }
+  }
+
+  void loadReport();
+</script>
