@@ -32,7 +32,7 @@ describe("drop-shoulder pattern QA matrix", () => {
   it("allows explanatory 'no armhole/shoulder shaping' but rejects sleeveless-style shaping instructions", () => {
     expect(
       findForbiddenDropShoulderInstructionViolations(
-        "Work straight above the markers (no armhole shaping).\nShoulders are worked straight.",
+        "Drop-shoulder shoulders are worked straight — there is no shoulder shaping.",
       ),
     ).toEqual([]);
     const armholeShapingViolations = findForbiddenDropShoulderInstructionViolations(

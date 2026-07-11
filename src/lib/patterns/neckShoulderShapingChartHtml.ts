@@ -31,7 +31,6 @@ import {
   CARDIGAN_FRONT_NECKLINE_START_TAIL,
   CARDIGAN_FRONT_OPPOSITE_FRONT_SENTENCE,
   CARDIGAN_FRONT_SHAPING_TOGETHER_SENTENCE,
-  DROP_SHOULDER_NO_SHOULDER_SHAPING_NOTE,
   BIND_OFF_GLOSSARY_ID,
   SCRAP_OFF_GLOSSARY_ID,
 } from "./neckShoulderActiveIntroCopy";
@@ -540,16 +539,8 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
   const wrappedClass = String(options.wrapperClass ?? "").trim() || "active-shoulder-chart-intro";
   const isCardiganFront = activeShoulderIntroIsCardiganFront(options);
 
-  // Drop shoulder (straight shoulders) opens the front neckline/shoulder section with an explicit
-  // reminder that there is no shoulder shaping. Sleeveless (shaped shoulders) omits it.
-  const noShoulderShapingNoteHtml =
-    options.shouldersShaped === false
-      ? `<p class="ns-shaping-intro__no-shoulder-shaping">${escapeHtml(DROP_SHOULDER_NO_SHOULDER_SHAPING_NOTE)}</p>`
-      : "";
-
   if (isCardiganFront) {
     const innerParts: string[] = [];
-    if (noShoulderShapingNoteHtml) innerParts.push(noShoulderShapingNoteHtml);
     if (activeShoulderCenterDivideIntroApplies(options.centerBindOffStitches, options.chart)) {
       innerParts.push(
         `<p><strong>Center-front edge:</strong><br>${formatActiveShoulderCardiganFrontNecklineHtml({
@@ -594,7 +585,6 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
           })
         : "";
   const innerParts: string[] = [];
-  if (noShoulderShapingNoteHtml) innerParts.push(noShoulderShapingNoteHtml);
   if (options.includeWorkflowSteps === true && showCenterDivide && centerHtml) {
     const divideRc = divideRcDisplayLabel(options.localStartRcLabel);
     const knitUntilBullet = divideRc

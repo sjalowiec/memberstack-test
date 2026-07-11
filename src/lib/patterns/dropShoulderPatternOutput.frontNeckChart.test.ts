@@ -100,7 +100,7 @@ describe("drop-shoulder front neckline shaping chart", () => {
     expect(html).toContain("so it remains on the neck edge");
   });
 
-  it("opens the front neckline/shoulder intro with the no-shoulder-shaping note (straight shoulders)", () => {
+  it("omits the no-shoulder-shaping note from the front chart intro (stated once in back instructions)", () => {
     const result = generateDropShoulderPattern(DROP_SHOULDER_BASE);
 
     const intro = renderActiveShoulderChartIntroHtml({
@@ -114,12 +114,14 @@ describe("drop-shoulder front neckline shaping chart", () => {
       layout: "labeled",
     });
 
-    expect(intro).toContain(DROP_SHOULDER_NO_SHOULDER_SHAPING_NOTE);
-    // Appears exactly once, before the neckline shaping instructions/chart.
-    expect(intro.split(DROP_SHOULDER_NO_SHOULDER_SHAPING_NOTE)).toHaveLength(2);
-    expect(intro.indexOf(DROP_SHOULDER_NO_SHOULDER_SHAPING_NOTE)).toBeLessThan(
-      intro.indexOf("neckline"),
-    );
+    expect(intro).not.toContain(DROP_SHOULDER_NO_SHOULDER_SHAPING_NOTE);
+    expect(intro).not.toMatch(/no shoulder shaping/i);
+
+    const backText = (result.displayRows ?? [])
+      .filter((row): row is Extract<(typeof result.displayRows)[number], { kind: "block" }> => row.kind === "block")
+      .flatMap((row) => [...(row.trustedParagraphs ?? []), ...(row.paragraphs ?? [])])
+      .join("\n");
+    expect(backText).toContain("Drop-shoulder shoulders are worked straight — there is no shoulder shaping.");
   });
 
   it("omits the no-shoulder-shaping note when shoulders are shaped (sleeveless default)", () => {

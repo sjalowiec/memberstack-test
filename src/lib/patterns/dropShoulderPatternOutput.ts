@@ -513,10 +513,7 @@ function buildBackRows(args: {
 
   const backAboveMarker = armholeMarkerBlockParagraphs(
     "Place a marker at each end of this row to mark the base of the armhole.",
-    [
-      "This is a drop-shoulder sweater: work straight above the markers. There is no armhole shaping.",
-      knitEvenLine(straightAboveMarkerRows, hasBackNeckPlan ? neckStartRc : args.totalRows),
-    ],
+    [knitEvenLine(straightAboveMarkerRows, hasBackNeckPlan ? neckStartRc : args.totalRows)],
   );
   rows.push({
     kind: "block",
@@ -613,10 +610,7 @@ function buildPulloverFrontRows(args: {
   rows.push({ kind: "section", title: "ABOVE ARMHOLE MARKERS" });
   const pulloverFrontAboveMarker = armholeMarkerBlockParagraphs(
     "Place a marker at each end of this row to mark the base of the armhole.",
-    [
-      "Work straight above the markers (no armhole shaping).",
-      knitEvenLine(straightAboveMarkerRows, neckStartRc),
-    ],
+    [knitEvenLine(straightAboveMarkerRows, neckStartRc)],
   );
   rows.push({
     kind: "block",
@@ -735,10 +729,7 @@ function buildCardiganFrontRows(args: {
   rows.push({ kind: "section", title: "ABOVE ARMHOLE MARKERS" });
   const cardiganFrontAboveMarker = armholeMarkerBlockParagraphs(
     "Place a marker at the side edge to mark the base of the armhole.",
-    [
-      "Work straight above the marker (no armhole shaping).",
-      knitEvenLine(straightAboveMarkerRows, neckStartRc),
-    ],
+    [knitEvenLine(straightAboveMarkerRows, neckStartRc)],
   );
   rows.push({
     kind: "block",
@@ -785,7 +776,7 @@ function buildCardiganFrontRows(args: {
     rows.push({
       kind: "block",
       paragraphs: [
-        "Work the RIGHT FRONT to match, reversing the neckline shaping so it falls at the opposite (center-front) edge. Shoulders are worked straight.",
+        "Work the RIGHT FRONT to match, reversing the neckline shaping so it falls at the opposite (center-front) edge.",
       ],
     });
   } else {

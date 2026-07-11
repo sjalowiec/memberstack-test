@@ -27,8 +27,8 @@ export const ACTIVE_SHOULDER_REVERSE_SHAPING_EMPHASIS =
 export const ACTIVE_SHOULDER_REVERSE_NECKLINE_ONLY_EMPHASIS = "reversing the neckline shaping";
 
 /**
- * Explicit reminder placed at the start of the drop-shoulder front neckline/shoulder section
- * (straight shoulders). Not used for sleeveless, whose shoulders are shaped.
+ * Former chart-intro reminder for drop-shoulder straight shoulders (now stated once in back
+ * written instructions). Kept for tests and copy reference.
  */
 export const DROP_SHOULDER_NO_SHOULDER_SHAPING_NOTE =
   "Drop-shoulder shoulders are worked straight. There is no shoulder shaping in this pattern.";
