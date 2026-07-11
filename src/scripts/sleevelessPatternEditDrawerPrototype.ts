@@ -69,9 +69,10 @@ import {
   validatePatternBuilderRequired,
 } from "../lib/patterns/patternBuilderValidation";
 import {
-  AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
-  isValidExpressAvailableNeedles,
-} from "../lib/patterns/sleevelessExpressAvailableNeedles";
+  bindAvailableNeedlesFieldValidation,
+  reportAvailableNeedlesFieldValidationFailure,
+  validateAvailableNeedlesFieldValue,
+} from "../lib/patterns/availableNeedlesFieldValidation";
 import { writeExpressPersistedSnapshot } from "../lib/patterns/sleevelessExpressResume";
 import {
   findExpressChartRow,
@@ -333,6 +334,7 @@ function initSleevelessPatternEditDrawer(): void {
   const spiLabel = drawer.querySelector<HTMLElement>("[data-sl-edit-spi-label]");
   const rpiLabel = drawer.querySelector<HTMLElement>("[data-sl-edit-rpi-label]");
   const needlesInput = drawer.querySelector<HTMLInputElement>("#sl-edit-needles");
+  bindAvailableNeedlesFieldValidation(needlesInput);
 
   // Measurement SVG editor lives in the right column of the SAME workspace now
   // (no separate full-screen surface). `.sl-measure-workspace__body` is kept so the
@@ -755,15 +757,16 @@ function initSleevelessPatternEditDrawer(): void {
     }
     if (!isPositiveNumericMeasurement(stitchSwatch)) errors.push("Enter a stitch gauge greater than 0.");
     if (!isPositiveNumericMeasurement(rowSwatch)) errors.push("Enter a row gauge greater than 0.");
-    const needlesValid = isValidExpressAvailableNeedles(needles);
-    if (!needlesValid) errors.push(AVAILABLE_NEEDLES_REQUIRED_MESSAGE);
-    if (needlesInput) {
-      needlesInput.classList.toggle("error", !needlesValid);
-      if (needlesValid) needlesInput.removeAttribute("aria-invalid");
-      else needlesInput.setAttribute("aria-invalid", "true");
+    const needlesResult = validateAvailableNeedlesFieldValue(needles);
+    if (!needlesResult.valid) {
+      reportAvailableNeedlesFieldValidationFailure(needlesInput);
     }
-    if (errors.length > 0) {
-      showErrors(errors);
+    if (errors.length > 0 || !needlesResult.valid) {
+      if (errors.length > 0) showErrors(errors);
+      else if (errorNote) {
+        errorNote.hidden = true;
+        errorNote.textContent = "";
+      }
       return;
     }
 

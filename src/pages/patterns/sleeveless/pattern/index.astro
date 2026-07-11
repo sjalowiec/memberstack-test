@@ -982,7 +982,18 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
 
   .sl-edit-needles-field {
     margin-top: 0.9rem;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .sl-edit-needles-field :global(.floating-input) {
     max-width: 18rem;
+  }
+
+  @media (max-width: 480px) {
+    .sl-edit-needles-field :global(.floating-input) {
+      max-width: 100%;
+    }
   }
 
   .sl-edit-needles-help {

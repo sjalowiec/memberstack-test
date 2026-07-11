@@ -65,9 +65,18 @@ import {
 import { syncSleevelessBuilderHeaderTitle } from "../lib/patterns/sleevelessBuilderHeaderUx";
 import {
   EXPRESS_AVAILABLE_NEEDLES_INPUT_ID,
-  isValidExpressAvailableNeedles,
   resolveExpressAvailableNeedlesForResume,
 } from "../lib/patterns/sleevelessExpressAvailableNeedles";
+import {
+  bindAvailableNeedlesFieldValidation,
+  clearAvailableNeedlesFieldErrorIfValid,
+  getAvailableNeedlesInputById,
+  validateAvailableNeedlesFieldValue,
+} from "../lib/patterns/availableNeedlesFieldValidation";
+import {
+  isExpressReviewCtaReady,
+  wireExpressBuilderReviewSubmit,
+} from "../lib/patterns/expressBuilderReviewSubmit";
 import {
   rawSwatchToPerInch,
   resolveExpressGaugeFieldsForPersist,
@@ -239,16 +248,7 @@ function gaugeOk(): boolean {
 }
 
 function needlesOk(): boolean {
-  return isValidExpressAvailableNeedles(readExpressAvailableNeedlesInput());
-}
-
-/** Toggle the FloatingInput error state (red border + required message) on the needle field. */
-function setNeedleFieldError(hasError: boolean): void {
-  const el = document.getElementById(EXPRESS_AVAILABLE_NEEDLES_INPUT_ID);
-  if (!(el instanceof HTMLInputElement)) return;
-  el.classList.toggle("error", hasError);
-  if (hasError) el.setAttribute("aria-invalid", "true");
-  else el.removeAttribute("aria-invalid");
+  return validateAvailableNeedlesFieldValue(readExpressAvailableNeedlesInput()).valid;
 }
 
 /** Gauge step complete: swatch gauge + available needles (no machine-width checks yet). */
@@ -498,19 +498,19 @@ function initExpressPage() {
   function updateGeneratePatternAvailability(): void {
     const wrap = document.getElementById("express-generate-wrap");
     const btn = document.getElementById("express-generate");
-    const complete =
+    const wizardStepsComplete =
       !!values.who &&
       nonEmptyTrimmed(values.selectedSize) &&
       nonEmptyTrimmed(values.front) &&
       !!values.neckline &&
-      !!values.fit &&
-      gaugeStepOk();
+      !!values.fit;
+    const reviewCtaReady = isExpressReviewCtaReady(wizardStepsComplete, gaugeOk());
 
     if (wrap) {
-      if (complete) wrap.removeAttribute("hidden");
+      if (reviewCtaReady) wrap.removeAttribute("hidden");
       else wrap.setAttribute("hidden", "");
     }
-    if (btn instanceof HTMLButtonElement) btn.disabled = !complete;
+    if (btn instanceof HTMLButtonElement) btn.disabled = !reviewCtaReady;
   }
 
   function updatePills() {
@@ -612,6 +612,14 @@ function initExpressPage() {
     applySelectionUI();
     syncExpressChartAudienceLockUi();
     refreshExpressWhoCardHeroImages(values);
+  }
+
+  function openGaugeStepForValidation(): void {
+    if (openStep !== STEPS) {
+      goToStep(STEPS);
+      return;
+    }
+    updateSections();
   }
 
   function goToStep(step: number) {
@@ -892,9 +900,7 @@ function initExpressPage() {
     persistExpressSession();
     syncExpressWizardToPatternStorage(values, null);
     refreshGaugeStepUi(false);
-    if (isValidExpressAvailableNeedles(readExpressAvailableNeedlesInput())) {
-      setNeedleFieldError(false);
-    }
+    clearAvailableNeedlesFieldErrorIfValid(getAvailableNeedlesInputById());
   }
 
   function applyExpressBuilderUiReset(): void {
@@ -1049,8 +1055,9 @@ function initExpressPage() {
 
   const stitchesInput = document.getElementById(GAUGE_STITCH_ID);
   const rowsInput = document.getElementById(GAUGE_ROW_ID);
-  const needlesInput = document.getElementById(EXPRESS_AVAILABLE_NEEDLES_INPUT_ID);
-  const gaugeForm = document.getElementById("express-gauge-form");
+  const needlesInput = getAvailableNeedlesInputById();
+
+  bindAvailableNeedlesFieldValidation(needlesInput);
 
   stitchesInput?.addEventListener("input", onGaugeInput);
   stitchesInput?.addEventListener("change", onGaugeInput);
@@ -1058,10 +1065,60 @@ function initExpressPage() {
   rowsInput?.addEventListener("change", onGaugeInput);
   needlesInput?.addEventListener("input", onNeedlesInput);
   needlesInput?.addEventListener("change", onNeedlesInput);
-  needlesInput?.addEventListener("blur", () => {
-    if (needlesInput instanceof HTMLInputElement && needlesInput.value.trim() !== "") {
-      setNeedleFieldError(!isValidExpressAvailableNeedles(needlesInput.value));
-    }
+
+  wireExpressBuilderReviewSubmit({
+    openGaugeStepForValidation,
+    onProceed: () => {
+      const stEl = document.getElementById(GAUGE_STITCH_ID);
+      const rwEl = document.getElementById(GAUGE_ROW_ID);
+      if (!(stEl instanceof HTMLInputElement) || !(rwEl instanceof HTMLInputElement)) return;
+
+      if (
+        !values.who ||
+        !nonEmptyTrimmed(values.selectedSize) ||
+        !nonEmptyTrimmed(values.front) ||
+        !values.neckline ||
+        !values.fit
+      ) {
+        window.alert("Please complete all Express steps before generating your pattern.");
+        return;
+      }
+
+      const unit = getExpressGaugeUnit();
+      const gaugeStitchRaw = stEl.value.trim();
+      const gaugeRowRaw = rwEl.value.trim();
+      rawSwatchToPerInch(gaugeStitchRaw, gaugeRowRaw, unit);
+
+      const aud = expressWhoToChartAudience(values.who);
+      const fitPref = values.fit;
+
+      void (async () => {
+        try {
+          await loadExpressSweaterCharts();
+        } catch {
+          window.alert("Could not load size charts. Check your connection and try again.");
+          return;
+        }
+        const sm = mapExpressStyle(values.style ?? "");
+        const chartFit = resolveExpressChartFit(aud, values.selectedSize!.trim(), fitPref, {
+          bodyShape: sm.bodyShape,
+        });
+        if (!chartFit) {
+          window.alert("Please choose a valid size for this wearer.");
+          return;
+        }
+        persistExpressSession();
+        persistExpressBuilderState(values, chartFit);
+        persistExpressSession();
+
+        const workspaceHref =
+          document
+            .querySelector<HTMLElement>("[data-express-review-href]")
+            ?.getAttribute("data-express-review-href")
+            ?.trim() || "/patterns/sleeveless/pattern/?generated=1";
+        window.location.href = workspaceHref;
+      })();
+    },
   });
 
   window.addEventListener("kbm:units-change", (ev: Event) => {
@@ -1069,72 +1126,6 @@ function initExpressPage() {
     if (tid != null && tid !== SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID) return;
     refreshExpressWhoSizePanel();
     onGaugeInput();
-  });
-
-  gaugeForm?.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const stEl = document.getElementById(GAUGE_STITCH_ID);
-    const rwEl = document.getElementById(GAUGE_ROW_ID);
-    if (!(stEl instanceof HTMLInputElement) || !(rwEl instanceof HTMLInputElement)) return;
-    const needlesEl = document.getElementById(EXPRESS_AVAILABLE_NEEDLES_INPUT_ID);
-    const needlesValid =
-      needlesEl instanceof HTMLInputElement && isValidExpressAvailableNeedles(needlesEl.value);
-    if (!needlesValid) {
-      setNeedleFieldError(true);
-      if (needlesEl instanceof HTMLInputElement) needlesEl.focus();
-    }
-    if (
-      !isValidPositiveNumber(stEl.value) ||
-      !isValidPositiveNumber(rwEl.value) ||
-      !needlesValid
-    ) {
-      return;
-    }
-
-    if (
-      !values.who ||
-      !nonEmptyTrimmed(values.selectedSize) ||
-      !nonEmptyTrimmed(values.front) ||
-      !values.neckline ||
-      !values.fit
-    ) {
-      window.alert("Please complete all Express steps before generating your pattern.");
-      return;
-    }
-
-    const unit = getExpressGaugeUnit();
-    const gaugeStitchRaw = stEl.value.trim();
-    const gaugeRowRaw = rwEl.value.trim();
-    const { gaugeStitchesPerInch, gaugeRowsPerInch } = rawSwatchToPerInch(gaugeStitchRaw, gaugeRowRaw, unit);
-
-    const aud = expressWhoToChartAudience(values.who);
-    const fitPref = values.fit;
-
-    void (async () => {
-      try {
-        await loadExpressSweaterCharts();
-      } catch {
-        window.alert("Could not load size charts. Check your connection and try again.");
-        return;
-      }
-      const sm = mapExpressStyle(values.style ?? "");
-      const chartFit = resolveExpressChartFit(aud, values.selectedSize!.trim(), fitPref, {
-        bodyShape: sm.bodyShape,
-      });
-      if (!chartFit) {
-        window.alert("Please choose a valid size for this wearer.");
-        return;
-      }
-      persistExpressSession();
-      persistExpressBuilderState(values, chartFit);
-      /** Snapshot Express wizard localStorage so the measurements page fallbacks match the submitted gauge and steps. */
-      persistExpressSession();
-
-      const workspaceHref =
-        document.querySelector<HTMLElement>("[data-express-review-href]")?.getAttribute("data-express-review-href")?.trim() ||
-        "/patterns/sleeveless/pattern/?generated=1";
-      window.location.href = workspaceHref;
-    })();
   });
 
   void loadExpressSweaterCharts()

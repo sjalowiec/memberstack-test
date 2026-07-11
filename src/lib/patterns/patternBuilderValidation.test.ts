@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { hydrateSavedCustomPatternProjectSession } from "./hydrateSavedCustomPatternProject";
 import { validatePatternBuilderRequired } from "./patternBuilderValidation";
+import { AVAILABLE_NEEDLES_REQUIRED_MESSAGE } from "./sleevelessExpressAvailableNeedles";
+import { validateAvailableNeedlesFieldValue } from "./availableNeedlesFieldValidation";
 import type { CustomPatternProject } from "./customPatternProjectTypes";
 import {
   getPatternData,
@@ -115,5 +117,35 @@ describe("validatePatternBuilderRequired saved custom-build compatibility", () =
     const validation = validatePatternBuilderRequired(getPatternData());
     expect(validation.ok).toBe(false);
     expect(validation.missingItems.some((m) => m.id === "finished_bust_chest")).toBe(true);
+  });
+});
+
+describe("validatePatternBuilderRequired — available needles", () => {
+  it("lists the same required message as the inline field validator", () => {
+    const validation = validatePatternBuilderRequired({
+      style: {
+        patternMode: "express",
+        recipientCategory: "misses",
+        bodyShape: "straight",
+        frontStyle: "closed",
+        garmentStyle: "pullover",
+        neckline: "round",
+      },
+      fit: {
+        selectedSize: "3",
+        easeChoice: "standard",
+        sizingChart: "misses",
+        selectedMeasurements: { finished_bust_chest: 40 },
+      },
+      yarnGaugeMachine: {
+        gaugeStitchesPerInch: "7",
+        gaugeRowsPerInch: "11",
+        availableNeedles: "",
+      },
+    });
+
+    const needlesMissing = validation.missingItems.find((m) => m.id === "availableNeedles");
+    expect(needlesMissing?.label).toBe(AVAILABLE_NEEDLES_REQUIRED_MESSAGE);
+    expect(validateAvailableNeedlesFieldValue("").message).toBe(AVAILABLE_NEEDLES_REQUIRED_MESSAGE);
   });
 });
