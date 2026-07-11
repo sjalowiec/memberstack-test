@@ -379,4 +379,109 @@ describe("forceRefreshDropShoulderSummaryMeasurements", () => {
     expect(refreshed!.merged.wrist).toBe("6.25");
     expect(refreshed!.resolvedUpperArmIn).toBe(21.25);
   });
+
+  // Regression: editing a saved Drop Shoulder pattern and changing ONLY the fit (same size) must
+  // recompute the system-default finished upper arm and repaint the summary SVG immediately, while
+  // a manual upper-arm override stays put. Mirrors the edit-drawer fit-change → rehydrate path.
+  describe("Drop Shoulder edit — change fit refreshes finished upper arm", () => {
+    function seedSavedSize8Pattern(): void {
+      writeOverrideSeedSizingIdentity({ chartAudience: "misses", selectedSize: "8" });
+      commitDropShoulderReviewDiagramHydration(
+        buildDropShoulderReviewDisplayIdentity("misses", "8", "standard"),
+      );
+      store[SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY] = JSON.stringify({
+        ...(JSON.parse(store[SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY] ?? "{}") as Record<
+          string,
+          unknown
+        >),
+        values: { who: "women", selectedSize: "8", fit: "standard" },
+        // Body upper arm 12.5 + Adult woman standard allowance 8.7 = finished 21.25 (as saved).
+        cbMeasurementOverrides: { upperArm: "21.25", sleeveLength: "17", wrist: "6.25" },
+      });
+      store[PATTERN_STORAGE_KEY] = JSON.stringify({
+        fit: {
+          sizingChart: "misses",
+          selectedSize: "8",
+          easeChoice: "standard",
+          cbMeasurementOverrides: { upperArm: "21.25", sleeveLength: "17", wrist: "6.25" },
+        },
+        style: { recipientCategory: "misses", bodyShape: "straight", construction: "drop-shoulder" },
+      });
+    }
+
+    it("Standard → Close recomputes finished upper arm and updates the SVG label value", () => {
+      seedSavedSize8Pattern();
+
+      const refreshed = forceRefreshDropShoulderSummaryMeasurementsForQuickEditSizing({
+        audience: "misses",
+        selectedSize: "8",
+        fitPreference: "close",
+      });
+
+      expect(refreshed).not.toBeNull();
+      // body 12.5 + Adult woman close allowance 7.1 = 19.6 → finished 19.5 (rounded to ¼″).
+      expect(refreshed!.merged.upperArm).toBe("19.5");
+      expect(refreshed!.resolvedUpperArmIn).toBe(19.5);
+      // The persisted (stored) value tracks the recomputed system default, not the old Standard one.
+      const persisted = JSON.parse(store[SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY] ?? "{}") as {
+        cbMeasurementOverrides?: Record<string, string>;
+      };
+      expect(persisted.cbMeasurementOverrides?.upperArm).toBe("19.5");
+    });
+
+    it("Standard → Relaxed recomputes the finished upper arm (Oversized allowance)", () => {
+      seedSavedSize8Pattern();
+
+      const refreshed = forceRefreshDropShoulderSummaryMeasurementsForQuickEditSizing({
+        audience: "misses",
+        selectedSize: "8",
+        fitPreference: "relaxed",
+      });
+
+      expect(refreshed).not.toBeNull();
+      // body 12.5 + Adult woman oversized allowance 10.2 → finished 22.75.
+      expect(refreshed!.merged.upperArm).toBe("22.75");
+      expect(refreshed!.resolvedUpperArmIn).toBe(22.75);
+    });
+
+    it("keeps a manually overridden upper arm unchanged when fit changes", () => {
+      seedSavedSize8Pattern();
+      // User hand-edited the upper arm during the review session, then changes fit afterward. The
+      // manual value lives on BOTH the express blob and the canonical pattern fit (the canonical
+      // draft wins last in loadMeasurementOverrides), mirroring how a real manual edit persists.
+      const manualOverrides = { upperArm: "20", sleeveLength: "17", wrist: "6.25" };
+      store[SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY] = JSON.stringify({
+        ...(JSON.parse(store[SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY] ?? "{}") as Record<
+          string,
+          unknown
+        >),
+        cbMeasurementOverrides: manualOverrides,
+      });
+      store[PATTERN_STORAGE_KEY] = JSON.stringify({
+        fit: {
+          sizingChart: "misses",
+          selectedSize: "8",
+          easeChoice: "standard",
+          cbMeasurementOverrides: manualOverrides,
+        },
+        style: { recipientCategory: "misses", bodyShape: "straight", construction: "drop-shoulder" },
+      });
+      markDropShoulderSleeveFieldUserEdited("upperArm");
+
+      const refreshed = forceRefreshDropShoulderSummaryMeasurementsForQuickEditSizing({
+        audience: "misses",
+        selectedSize: "8",
+        fitPreference: "close",
+      });
+
+      expect(refreshed).not.toBeNull();
+      // Manual override survives the fit change — neither the SVG value nor the stored value moves.
+      expect(refreshed!.merged.upperArm).toBe("20");
+      expect(refreshed!.resolvedUpperArmIn).toBe(20);
+      const persisted = JSON.parse(store[SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY] ?? "{}") as {
+        cbMeasurementOverrides?: Record<string, string>;
+      };
+      expect(persisted.cbMeasurementOverrides?.upperArm).toBe("20");
+    });
+  });
 });

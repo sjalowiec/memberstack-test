@@ -37,6 +37,18 @@ describe("Drop Shoulder Edit Pattern workspace (pattern/index.astro)", () => {
     expect(editDrawerScript).toContain("readDropShoulderWorkspaceQuickEditSizingFromDom");
     expect(editDrawerScript).toContain("isDropShoulderWorkspaceMeasurementSummaryPage");
   });
+
+  // Regression: a fit change must also rehydrate the Drop Shoulder summary SVG (not only Size), so
+  // the displayed upper-arm circumference tracks the recalculated finished upper arm immediately.
+  it("rehydrates the summary SVG when the fit radio changes (not only on size change)", () => {
+    expect(editDrawerScript).toContain("handleDropShoulderQuickEditFitChanged");
+    const fitHandler = editDrawerScript.slice(
+      editDrawerScript.indexOf('input[name="sl-edit-fit"]'),
+    );
+    // The fit-change listener body must invoke the Drop Shoulder rehydrate path.
+    const listenerBody = fitHandler.slice(0, fitHandler.indexOf("});"));
+    expect(listenerBody).toContain("handleDropShoulderQuickEditFitChanged");
+  });
 });
 
 describe("Drop Shoulder workspace measurement rehydrate", () => {

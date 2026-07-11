@@ -952,6 +952,31 @@ function initSleevelessPatternEditDrawer(): void {
     if (refreshed) lastQuickEditSize = sizing.selectedSize;
   }
 
+  /**
+   * Fit is a live recalculation control for Drop Shoulder, exactly like Size: changing it must
+   * recompute the system-default finished upper arm (body upper arm + fit allowance) and re-render
+   * the measurement summary SVG immediately, so the displayed upper-arm circumference matches the
+   * value the generator will use. Without this, only the body ease fields moved (see
+   * {@link recalcFitDerivedMeasurements}) while the SVG upper-arm label stayed at the value seeded
+   * when the pattern was first built.
+   *
+   * Manual upper-arm edits are preserved: the shared rehydrate resolves sleeve fields through
+   * {@link resolveDropShoulderSleeveOverrideStrings}, which keeps the saved override for any field
+   * flagged as user-edited — so a fit change never overwrites a hand-edited upper arm (stored value
+   * or SVG display).
+   */
+  async function handleDropShoulderQuickEditFitChanged(): Promise<void> {
+    if (!isDropShoulderWorkspaceMeasurementSummaryPage()) return;
+    ensureDropShoulderMeasurementEditorReady();
+    const sizing = readDropShoulderWorkspaceQuickEditSizingFromDom();
+    if (!sizing) return;
+    patchExpressValues({
+      selectedSize: sizing.selectedSize,
+      fit: sizing.fitPreference,
+    });
+    await rehydrateDropShoulderWorkspaceMeasurementDiagramFromQuickEdit(sizing);
+  }
+
   function wireQuickEditSizeChangeHandler(): void {
     if (!sizeSelect || sizeSelect.dataset.slQuickEditSizeWired === "1") return;
     sizeSelect.dataset.slQuickEditSizeWired = "1";
@@ -1029,6 +1054,10 @@ function initSleevelessPatternEditDrawer(): void {
     el.addEventListener("change", () => {
       updateEaseReadout();
       recalcFitDerivedMeasurements();
+      // Drop Shoulder: recompute the finished upper arm for the new fit and repaint the summary SVG
+      // immediately (Size already does this). recalcFitDerivedMeasurements only moves the body ease
+      // fields, so without this the SVG upper-arm label stays stale on a fit change.
+      void handleDropShoulderQuickEditFitChanged();
     });
   });
 
