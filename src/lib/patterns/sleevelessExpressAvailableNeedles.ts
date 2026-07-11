@@ -462,9 +462,29 @@ export function evaluateExpressNeedleFailSafeBeforeRender(
   };
 }
 
-/** Hard-stop card when Express pattern exceeds available needle count. */
-export function buildExpressNeedleHardStopHtml(validation: ExpressNeedleValidation): string {
+function escapeHtmlAttribute(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+/**
+ * Hard-stop card when an Express pattern exceeds the available needle count.
+ *
+ * `adjustHref` is the "Go Back and Adjust" destination. For a saved/generated pattern the caller
+ * passes that pattern's own Summary/Edit route (see
+ * {@link import("./customPatternProjectNavigation").getSavedPatternNeedleAdjustHref}) so the knitter
+ * returns to the same saved project. It defaults to the Express builder for a brand-new/unsaved
+ * pattern.
+ */
+export function buildExpressNeedleHardStopHtml(
+  validation: ExpressNeedleValidation,
+  adjustHref: string = EXPRESS_BUILDER_ADJUST_HREF,
+): string {
   const { requiredNeedles, availableNeedles } = validation;
+  const href = escapeHtmlAttribute((adjustHref || EXPRESS_BUILDER_ADJUST_HREF).trim() || EXPRESS_BUILDER_ADJUST_HREF);
   return `<section class="express-needle-hard-stop" role="alert">
   <h2 class="express-needle-hard-stop__title">This pattern is too wide for your machine</h2>
   <p class="express-needle-hard-stop__body">
@@ -479,7 +499,7 @@ export function buildExpressNeedleHardStopHtml(validation: ExpressNeedleValidati
     <li>Choose a different sweater style</li>
   </ul>
   <p class="express-needle-hard-stop__actions">
-    <a href="${EXPRESS_BUILDER_ADJUST_HREF}" class="kbm-btn kbm-btn-accent express-needle-hard-stop__btn">Go Back and Adjust</a>
+    <a href="${href}" class="kbm-btn kbm-btn-accent express-needle-hard-stop__btn">Go Back and Adjust</a>
   </p>
 </section>`;
 }

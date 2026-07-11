@@ -135,6 +135,13 @@ import {
   buildExpressNeedleHardStopHtml,
   evaluateExpressNeedleFailSafeBeforeRender,
 } from "../lib/patterns/sleevelessExpressAvailableNeedles.ts";
+import { getSavedPatternNeedleAdjustHref } from "../lib/patterns/customPatternProjectNavigation.ts";
+import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId.ts";
+import { inferCustomPatternProjectSource } from "../lib/patterns/customPatternProjectClient.ts";
+import {
+  isActiveDropShoulderConstruction,
+  withDropShoulderConstructionFamily,
+} from "../lib/patterns/patternConstructionIdentity.ts";
 import {
   ARMHOLE_BIND_OFF_TRICK_CONTENT_ID,
   type SleevelessBackPatternDebug,
@@ -4282,10 +4289,36 @@ table {
     );
   }
 
+  /**
+   * "Go Back and Adjust" destination for the too-wide warning. For a saved/generated pattern this is
+   * that pattern's own Summary/Edit workspace (correct construction + preserved project id), resolved
+   * via the shared edit-routing source of truth. Brand-new/unsaved patterns fall back to the builder.
+   */
+  function resolveExpressNeedleAdjustHref() {
+    try {
+      const pattern = getCurrentPattern();
+      const dropShoulder = isActiveDropShoulderConstruction();
+      const project = {
+        pattern,
+        customOverrides: dropShoulder ? withDropShoulderConstructionFamily({}) : {},
+      };
+      return getSavedPatternNeedleAdjustHref(
+        readActiveCustomPatternProjectId(),
+        project,
+        inferCustomPatternProjectSource(pattern),
+      );
+    } catch {
+      return null;
+    }
+  }
+
   function renderExpressNeedleHardStop(needleCheck) {
     const mount = document.querySelector("[data-sleeveless-mount]");
     if (mount) {
-      mount.innerHTML = buildExpressNeedleHardStopHtml(needleCheck);
+      const adjustHref = resolveExpressNeedleAdjustHref();
+      mount.innerHTML = adjustHref
+        ? buildExpressNeedleHardStopHtml(needleCheck, adjustHref)
+        : buildExpressNeedleHardStopHtml(needleCheck);
     }
     if (resultsVisibilityConfig.actionBarSelector) {
       const actionBar = document.querySelector(resultsVisibilityConfig.actionBarSelector);

@@ -2,6 +2,7 @@ import type { CustomPatternProjectSource } from "./customPatternProjectTypes";
 import type { CustomPatternProject } from "./customPatternProjectTypes";
 import { hasAuthoritativeDropShoulderConstruction } from "./patternConstructionIdentity";
 import { PATTERN_WORKSPACE_BUILDER_HANDOFF_QUERY } from "./patternWorkspaceBuilderGenerationHandoff";
+import { withSavedPatternProjectId } from "./savedPatternViewUrl";
 
 export { PATTERN_WORKSPACE_BUILDER_HANDOFF_QUERY };
 
@@ -122,4 +123,24 @@ export function getSavedCustomPatternOpenHref(
     return DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF;
   }
   return source === "custom-build" ? CUSTOM_BUILD_EDIT_WORKSPACE_HREF : OPEN_PATTERN_EDIT_WORKSPACE_HREF;
+}
+
+/**
+ * "Go Back and Adjust" destination for the too-wide-for-machine needle warning shown on a saved
+ * pattern page. Returns the saved pattern's OWN Summary/Edit workspace for the correct construction
+ * (Sleeveless, Drop Shoulder, or Custom Build) with the active project id preserved — reusing
+ * {@link getSavedCustomPatternOpenHref} (and {@link withSavedPatternProjectId}) as the single
+ * edit-routing source of truth so we never construct a builder URL locally.
+ *
+ * Returns `null` when there is no active saved project (a brand-new / unsaved pattern), so the caller
+ * keeps the plain Express builder href and does not start / lose a project.
+ */
+export function getSavedPatternNeedleAdjustHref(
+  activeProjectId: string | undefined | null,
+  project: Pick<CustomPatternProject, "pattern" | "customOverrides">,
+  source: CustomPatternProjectSource,
+): string | null {
+  const id = activeProjectId?.trim();
+  if (!id) return null;
+  return withSavedPatternProjectId(getSavedCustomPatternOpenHref(source, project), id);
 }

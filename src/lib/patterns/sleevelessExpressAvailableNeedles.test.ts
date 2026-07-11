@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 import {
+  buildExpressNeedleHardStopHtml,
+  EXPRESS_BUILDER_ADJUST_HREF,
   evaluateExpressNeedleFailSafeBeforeRender,
   isValidExpressAvailableNeedles,
   readExpressSessionAvailableNeedles,
@@ -313,5 +315,27 @@ describe("resolveExpressNeedleFailSafeActivation", () => {
       },
     });
     expect(activation.active).toBe(true);
+  });
+});
+
+describe("buildExpressNeedleHardStopHtml — Go Back and Adjust destination", () => {
+  const validation = { ok: false, requiredNeedles: 260, availableNeedles: 100 };
+
+  it("defaults to the Express builder href for a brand-new/unsaved pattern", () => {
+    const html = buildExpressNeedleHardStopHtml(validation);
+    expect(html).toContain(`href="${EXPRESS_BUILDER_ADJUST_HREF}"`);
+    expect(html).toContain("Go Back and Adjust");
+  });
+
+  it("uses the saved pattern's Summary/Edit href when one is supplied", () => {
+    const savedHref = "/patterns/drop-shoulder/pattern/?edit=1&project=proj_ds";
+    const html = buildExpressNeedleHardStopHtml(validation, savedHref);
+    expect(html).toContain('href="/patterns/drop-shoulder/pattern/?edit=1&amp;project=proj_ds"');
+    expect(html).not.toContain(`href="${EXPRESS_BUILDER_ADJUST_HREF}"`);
+  });
+
+  it("falls back to the builder href when passed an empty href", () => {
+    const html = buildExpressNeedleHardStopHtml(validation, "");
+    expect(html).toContain(`href="${EXPRESS_BUILDER_ADJUST_HREF}"`);
   });
 });

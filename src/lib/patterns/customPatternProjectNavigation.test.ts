@@ -11,6 +11,7 @@ import {
   getContinueEditingHref,
   getOpenPatternHrefForProject,
   getSavedCustomPatternOpenHref,
+  getSavedPatternNeedleAdjustHref,
   OPEN_PATTERN_EDIT_WORKSPACE_HREF,
   OPEN_PATTERN_HREF,
   PATTERN_WORKSPACE_EDIT_QUERY,
@@ -152,6 +153,46 @@ describe("customPatternProjectNavigation", () => {
       expect(getOpenPatternHrefForProject(dropShoulderProject)).not.toContain(
         "/patterns/sleeveless/",
       );
+    });
+  });
+
+  describe("too-wide 'Go Back and Adjust' href for saved patterns", () => {
+    const sleevelessProject = {
+      pattern: { style: { construction: "set-in", garmentStyle: "pullover" } },
+      customOverrides: {},
+    };
+    const dropShoulderProject = {
+      pattern: {
+        style: { construction: "drop-shoulder", constructionAuthored: "drop-shoulder" },
+      },
+      customOverrides: { constructionFamily: "drop-shoulder" },
+    };
+
+    it("returns the saved Sleeveless pattern's own Summary/Edit page with the project id", () => {
+      const href = getSavedPatternNeedleAdjustHref("proj_sleeveless", sleevelessProject, "express");
+      expect(href).toBe("/patterns/sleeveless/pattern/?edit=1&project=proj_sleeveless");
+      expect(href).toContain(PATTERN_WORKSPACE_EDIT_QUERY);
+      expect(href).not.toContain("/patterns/sleeveless-express");
+      expect(href).not.toContain("/drop-shoulder/");
+    });
+
+    it("returns the saved Drop Shoulder pattern's own Summary/Edit page with the project id", () => {
+      const href = getSavedPatternNeedleAdjustHref("proj_drop", dropShoulderProject, "express");
+      expect(href).toBe("/patterns/drop-shoulder/pattern/?edit=1&project=proj_drop");
+      expect(href).toContain(PATTERN_WORKSPACE_EDIT_QUERY);
+      expect(href).not.toContain("/patterns/sleeveless/");
+    });
+
+    it("preserves the project id and edit flag rather than starting a builder flow", () => {
+      const href = getSavedPatternNeedleAdjustHref("abc123", sleevelessProject, "express");
+      expect(href).toContain("project=abc123");
+      expect(href).toContain("edit=1");
+    });
+
+    it("returns null for a brand-new/unsaved pattern so the caller keeps the builder href", () => {
+      expect(getSavedPatternNeedleAdjustHref("", sleevelessProject, "express")).toBeNull();
+      expect(getSavedPatternNeedleAdjustHref(undefined, sleevelessProject, "express")).toBeNull();
+      expect(getSavedPatternNeedleAdjustHref("   ", sleevelessProject, "express")).toBeNull();
     });
   });
 });

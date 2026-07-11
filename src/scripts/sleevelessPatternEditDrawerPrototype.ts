@@ -72,6 +72,7 @@ import {
   AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
   isValidExpressAvailableNeedles,
 } from "../lib/patterns/sleevelessExpressAvailableNeedles";
+import { writeExpressPersistedSnapshot } from "../lib/patterns/sleevelessExpressResume";
 import {
   findExpressChartRow,
   getExpressChartRowsForAudience,
@@ -855,6 +856,11 @@ function initSleevelessPatternEditDrawer(): void {
         gaugeRawUnit: gaugeBasis,
         availableNeedles: needles,
       });
+
+      // The Express wizard snapshot (`kbm_sleeveless_express_builder`) is the highest-priority read
+      // source for needle validation and mirror sync. Editing needles here (not in the wizard) must
+      // update it too, or a stale snapshot value would clobber the edit on regenerate/reopen.
+      writeExpressPersistedSnapshot({ availableNeedles: needles });
 
       // Defensive: confirm the shared validator agrees before persisting.
       const validation = validatePatternBuilderRequired(getPatternData());

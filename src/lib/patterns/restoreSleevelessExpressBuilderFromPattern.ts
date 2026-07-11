@@ -111,11 +111,15 @@ function resolveGaugeFields(
     }
   }
 
+  // This function rebuilds the Express snapshot FROM the working draft (the saved project is the
+  // source of truth on reopen). Prefer the just-loaded pattern/builder needle values over any prior
+  // `kbm_sleeveless_express_builder` snapshot, otherwise a stale snapshot (from an earlier session or
+  // a different pattern) would win and re-clobber the freshly-restored value.
   const needles = resolveAvailableNeedlesFromSources(
-    loadExpressPersisted()?.availableNeedles,
     ygm.availableNeedles,
     machinePb.availableNeedles,
     machine.availableNeedles,
+    loadExpressPersisted()?.availableNeedles,
   );
 
   return {

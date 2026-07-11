@@ -96,6 +96,23 @@ describe("restoreSleevelessExpressBuilderFromPattern", () => {
     expect(localStorage.getItem(CUSTOM_PATTERN_ACTIVE_PROJECT_ID_KEY)).toBe("proj-aubrey");
   });
 
+  it("prefers the just-loaded pattern needles over a stale express snapshot (reopen source of truth)", () => {
+    // Simulate a stale snapshot left over from an earlier session / different pattern.
+    localStorage.setItem(
+      SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
+      JSON.stringify({ values: { who: "women" }, availableNeedles: "100" }),
+    );
+
+    // Reopen a saved project whose machine specifies the edited value (250).
+    restoreSleevelessExpressBuilderFromPattern(
+      samplePattern({ machine: { availableNeedles: "250" } }),
+      { yarnGaugeMachine: { availableNeedles: "250" } },
+    );
+
+    const snap = loadExpressPersisted();
+    expect(snap?.availableNeedles).toBe("250");
+  });
+
   it("editChoicesReopen unlocks gauge and opens step 5 with prefilled snapshot", () => {
     restoreSleevelessExpressBuilderFromPattern(samplePattern(), {}, { editChoicesReopen: true });
     const persisted = loadExpressPersisted();
