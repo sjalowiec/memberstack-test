@@ -1,11 +1,11 @@
 ---
+import WatsonMemberSupportNotes from "../../../components/watson/WatsonMemberSupportNotes.astro";
 import WatsonMemberPdfPurchases from "../../../components/watson/WatsonMemberPdfPurchases.astro";
 import WatsonMemberSavedPatterns from "../../../components/watson/WatsonMemberSavedPatterns.astro";
 import WatsonMemberMembership from "../../../components/watson/WatsonMemberMembership.astro";
 import WatsonMemberCourses from "../../../components/watson/WatsonMemberCourses.astro";
 import WatsonMemberOrders from "../../../components/watson/WatsonMemberOrders.astro";
 import WatsonMemberOverview from "../../../components/watson/WatsonMemberOverview.astro";
-import WatsonMemberPlaceholders from "../../../components/watson/WatsonMemberPlaceholders.astro";
 import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
 import {
   buildMemberOverviewFields,
@@ -13,6 +13,7 @@ import {
   getLegacyMemberById,
   watsonMemberNotFoundHtml,
 } from "../../../lib/watson/memberDetail";
+import { getMemberLegacySupportNoteCount } from "../../../lib/watson/memberSupportNotes";
 import { getMemberPdfPurchaseCount } from "../../../lib/watson/memberPdfPurchases";
 import { getMemberSavedPatternCount } from "../../../lib/watson/memberSavedPatterns";
 import { getMemberMembershipCount } from "../../../lib/watson/memberMembership";
@@ -41,18 +42,20 @@ let orderCount = 0;
 let membershipCount = 0;
 let savedPatternCount = 0;
 let pdfPurchaseCount = 0;
+let supportNoteCount = 0;
 let courses: Awaited<ReturnType<typeof getMemberCourses>> = [];
 let loadError: string | null = null;
 
 try {
   member = await getLegacyMemberById(memberid);
   if (member) {
-    [orderCount, membershipCount, savedPatternCount, pdfPurchaseCount, courses] =
+    [orderCount, membershipCount, savedPatternCount, pdfPurchaseCount, supportNoteCount, courses] =
       await Promise.all([
         getMemberOrderCount(memberid),
         getMemberMembershipCount(memberid),
         getMemberSavedPatternCount(memberid),
         getMemberPdfPurchaseCount(memberid),
+        getMemberLegacySupportNoteCount(memberid),
         getMemberCourses(memberid),
       ]);
   }
@@ -103,7 +106,7 @@ const displayName = member ? formatMemberDisplayName(member) : "Member Detail";
       <WatsonMemberMembership memberid={memberid} recordCount={membershipCount} />
       <WatsonMemberSavedPatterns memberid={memberid} recordCount={savedPatternCount} />
       <WatsonMemberPdfPurchases memberid={memberid} recordCount={pdfPurchaseCount} />
-      <WatsonMemberPlaceholders />
+      <WatsonMemberSupportNotes memberid={memberid} noteCount={supportNoteCount} />
     </WatsonPageShell>
   )
 }

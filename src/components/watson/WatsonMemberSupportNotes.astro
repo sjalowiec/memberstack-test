@@ -1,0 +1,50 @@
+---
+import {
+  buildSupportNotesFragmentUrl,
+  formatSupportNotesSectionHeading,
+  SUPPORT_NOTES_SECTION_SHOW_LABEL,
+} from "../../lib/watson/watsonMemberSupportNotesSection";
+
+interface Props {
+  memberid: string;
+  noteCount: number;
+}
+
+const { memberid, noteCount } = Astro.props;
+const heading = formatSupportNotesSectionHeading(noteCount);
+const fragmentUrl = buildSupportNotesFragmentUrl(memberid);
+---
+
+<section
+  class="watson__panel watson-support-notes__section"
+  aria-labelledby="watson-support-notes-heading"
+  data-watson-support-notes-section
+  data-note-count={String(noteCount)}
+  data-support-notes-fragment-url={fragmentUrl}
+>
+  <div class="watson-orders__section-header">
+    <h2 id="watson-support-notes-heading" class="watson__panel-title watson-orders__section-title">
+      {heading}
+    </h2>
+    <button
+      type="button"
+      class="watson-orders__section-toggle"
+      data-watson-support-notes-section-toggle
+      aria-expanded="false"
+      aria-controls="watson-support-notes-panel"
+    >
+      {SUPPORT_NOTES_SECTION_SHOW_LABEL}
+    </button>
+  </div>
+  <p class="watson__section-note">
+    Legacy admin notes are imported from the <code>Notes</code> column on
+    <code>legacy_members</code>. There is no separate legacy notes table, note date, author, type, or
+    status in this export. Editable Watson support notes are coming next.
+  </p>
+  <div id="watson-support-notes-panel" data-watson-support-notes-panel hidden></div>
+</section>
+
+<script>
+  import { initMemberSupportNotesSections } from "../../lib/watson/watsonMemberSupportNotesSection";
+  initMemberSupportNotesSections(document);
+</script>

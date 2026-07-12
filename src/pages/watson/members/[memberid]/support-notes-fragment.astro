@@ -1,0 +1,28 @@
+---
+import WatsonMemberSupportNotesContent from "../../../../components/watson/WatsonMemberSupportNotesContent.astro";
+import { getMemberLegacySupportNotes } from "../../../../lib/watson/memberSupportNotes";
+
+export const prerender = false;
+
+const memberid = Astro.params.memberid ? decodeURIComponent(Astro.params.memberid) : "";
+
+if (!memberid) {
+  return new Response("Member ID required.", { status: 400 });
+}
+
+let notes: Awaited<ReturnType<typeof getMemberLegacySupportNotes>> = [];
+
+try {
+  notes = await getMemberLegacySupportNotes(memberid);
+} catch (error) {
+  const message = error instanceof Error ? error.message : "Unable to load support notes.";
+  return new Response(message, { status: 500 });
+}
+---
+
+<WatsonMemberSupportNotesContent notes={notes} />
+
+<script>
+  import { initSortableTables } from "../../../../lib/watson/sortableTable";
+  initSortableTables(document);
+</script>

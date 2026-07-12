@@ -1,0 +1,114 @@
+---
+import {
+  getVisibleSupportNoteColumns,
+  type MemberLegacySupportNoteDisplay,
+} from "../../lib/watson/memberSupportNotes";
+
+interface Props {
+  notes: MemberLegacySupportNoteDisplay[];
+}
+
+const { notes } = Astro.props;
+const visibleColumns = getVisibleSupportNoteColumns(notes);
+---
+
+{
+  notes.length === 0 ? (
+    <>
+      <p class="watson__placeholder">No legacy admin notes found for this member.</p>
+      <p class="watson__placeholder">Editable Watson support notes are coming next.</p>
+    </>
+  ) : (
+    <div class="watson__table-wrap">
+      <table class="watson-table" data-sortable-table data-support-notes-table>
+        <thead>
+          <tr>
+            <th scope="col" data-sort-key="noterecordid" data-sort-type="string" tabindex="0">
+              Note record ID
+            </th>
+            <th scope="col" data-sort-key="notesource" data-sort-type="string" tabindex="0">
+              Source
+            </th>
+            {
+              visibleColumns.showNoteDate ? (
+                <th scope="col" data-sort-key="notedate" data-sort-type="date" tabindex="0">
+                  Note date
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showAuthor ? (
+                <th scope="col" data-sort-key="author" data-sort-type="string" tabindex="0">
+                  Author
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showNoteType ? (
+                <th scope="col" data-sort-key="notetype" data-sort-type="string" tabindex="0">
+                  Note type
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showStatus ? (
+                <th scope="col" data-sort-key="status" data-sort-type="string" tabindex="0">
+                  Status
+                </th>
+              ) : null
+            }
+            <th scope="col" data-sort-key="notetext" data-sort-type="string" tabindex="0">
+              Note text
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            notes.map((note) => (
+              <tr>
+                <td data-sort-value={note.noteRecordId}>{note.noteRecordId}</td>
+                <td data-sort-value={note.noteSource}>{note.noteSource}</td>
+                {
+                  visibleColumns.showNoteDate ? (
+                    <td data-sort-value={note.noteDateSort}>{note.noteDate ?? "—"}</td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showAuthor ? (
+                    <td data-sort-value={note.author ?? ""}>{note.author ?? "—"}</td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showNoteType ? (
+                    <td data-sort-value={note.noteType ?? ""}>{note.noteType ?? "—"}</td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showStatus ? (
+                    <td data-sort-value={note.status ?? ""}>{note.status ?? "—"}</td>
+                  ) : null
+                }
+                <td class="watson-support-notes__text" data-sort-value={note.noteText}>
+                  {note.noteText}
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+<script>
+  import { initSortableTables } from "../../lib/watson/sortableTable";
+  initSortableTables(document);
+</script>
+
+<style>
+  .watson-support-notes__text {
+    max-width: none;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+</style>
