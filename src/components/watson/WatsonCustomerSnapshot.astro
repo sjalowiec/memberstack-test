@@ -1,0 +1,31 @@
+---
+import { type CustomerSnapshotMetric } from "../../lib/watson/customerProfile";
+
+interface Props {
+  metrics: CustomerSnapshotMetric[];
+}
+
+const { metrics } = Astro.props;
+---
+
+<section class="watson__panel watson-customer__snapshot" aria-labelledby="watson-customer-snapshot-heading">
+  <h2 id="watson-customer-snapshot-heading" class="watson__panel-title">Quick snapshot</h2>
+  {
+    metrics.length > 0 ? (
+      <dl class="watson-customer__snapshot-grid">
+        {
+          metrics.map((metric) => (
+            <div class="watson-customer__snapshot-item">
+              <dt>{metric.label}</dt>
+              <dd class:list={[{ "watson-customer__unavailable": metric.unavailable }]}>
+                {metric.value}
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
+    ) : (
+      <p class="watson__placeholder">No snapshot metrics are available for this customer.</p>
+    )
+  }
+</section>

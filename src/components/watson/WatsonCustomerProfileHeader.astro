@@ -1,0 +1,92 @@
+---
+import {
+  type CustomerProfileAction,
+  type CustomerProfileHeaderView,
+} from "../../lib/watson/customerProfile";
+
+interface Props {
+  header: CustomerProfileHeaderView;
+  actions?: CustomerProfileAction[];
+}
+
+const { header, actions = [] } = Astro.props;
+
+const statusClass = `watson-customer__status-badge watson-customer__status-badge--${header.membershipStatusTone}`;
+---
+
+<section class="watson__panel watson-customer__header" aria-labelledby="watson-customer-header-heading">
+  <div class="watson-customer__header-main">
+    <div class="watson-customer__header-identity">
+      <h2 id="watson-customer-header-heading" class="watson-customer__header-name">
+        {header.displayName}
+      </h2>
+      {
+        header.email ? (
+          <p class="watson-customer__header-email">
+            <a href={`mailto:${header.email}`}>{header.email}</a>
+          </p>
+        ) : null
+      }
+      {
+        header.membershipStatus ? (
+          <p class="watson-customer__header-status">
+            <span class={statusClass}>{header.membershipStatus}</span>
+          </p>
+        ) : null
+      }
+    </div>
+
+    {
+      actions.length > 0 ? (
+        <nav class="watson-customer__header-actions" aria-label="Customer quick actions">
+          <ul class="watson-customer__header-action-list">
+            {
+              actions.map((action) => (
+                <li>
+                  <a href={action.href} title={action.description}>{action.label}</a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+      ) : (
+        <div class="watson-customer__header-actions watson-customer__header-actions--placeholder" aria-hidden="true" />
+      )
+    }
+  </div>
+
+  <dl class="watson-customer__header-meta">
+    {
+      header.legacyMemberid ? (
+        <div class="watson-customer__header-meta-item">
+          <dt>Legacy member ID</dt>
+          <dd>{header.legacyMemberid}</dd>
+        </div>
+      ) : null
+    }
+    {
+      header.memberstackId ? (
+        <div class="watson-customer__header-meta-item watson-customer__header-meta-item--secondary">
+          <dt>Memberstack ID</dt>
+          <dd>{header.memberstackId}</dd>
+        </div>
+      ) : null
+    }
+    {
+      header.joinDate ? (
+        <div class="watson-customer__header-meta-item">
+          <dt>Join date</dt>
+          <dd>{header.joinDate}</dd>
+        </div>
+      ) : null
+    }
+    {
+      header.lastActivityDate ? (
+        <div class="watson-customer__header-meta-item">
+          <dt>Last activity</dt>
+          <dd>{header.lastActivityDate}</dd>
+        </div>
+      ) : null
+    }
+  </dl>
+</section>

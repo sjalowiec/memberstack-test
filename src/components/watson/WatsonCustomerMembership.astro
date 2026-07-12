@@ -1,0 +1,117 @@
+---
+import WatsonMemberMembershipTable from "./WatsonMemberMembershipTable.astro";
+import { type CustomerMemberstackSummary } from "../../lib/watson/customerMemberstack";
+import { type MemberMembershipDisplay } from "../../lib/watson/memberMembership";
+
+interface Props {
+  memberstack: CustomerMemberstackSummary;
+  legacyMemberships?: MemberMembershipDisplay[];
+  hasLegacyHistory?: boolean;
+  notLinkedToMemberstack?: boolean;
+}
+
+const {
+  memberstack,
+  legacyMemberships = [],
+  hasLegacyHistory = false,
+  notLinkedToMemberstack = false,
+} = Astro.props;
+const hasConnections = memberstack.connections.length > 0;
+---
+
+<section
+  id="customer-membership"
+  class="watson__panel watson-customer__membership"
+  aria-labelledby="watson-customer-membership-heading"
+>
+  <h2 id="watson-customer-membership-heading" class="watson__panel-title">Membership</h2>
+
+  <div class="watson-customer__membership-section">
+    <h3 class="watson-customer__subsection-title">Current Memberstack membership</h3>
+    <p class="watson__section-note">
+      Live plan connection data from the Memberstack Admin API.
+    </p>
+
+    {
+      notLinkedToMemberstack ? (
+        <p class="watson__placeholder">Not yet linked to Memberstack.</p>
+      ) : !memberstack.configured ? (
+        <p class="watson__placeholder watson-customer__unavailable">
+          Not available yet - Memberstack admin API is not configured.
+        </p>
+      ) : memberstack.loadError ? (
+        <p class="watson__placeholder watson-customer__unavailable">{memberstack.loadError}</p>
+      ) : !hasConnections ? (
+        <p class="watson__placeholder">No plan connections returned from Memberstack for this customer.</p>
+      ) : (
+        <div class="watson__table-wrap">
+          <table class="watson-table" data-sortable-table data-customer-membership-table>
+            <thead>
+              <tr>
+                <th scope="col" data-sort-key="plan" data-sort-type="string" tabindex="0">Plan</th>
+                <th scope="col" data-sort-key="status" data-sort-type="string" tabindex="0">Status</th>
+                <th scope="col" data-sort-key="active" data-sort-type="string" tabindex="0">Active</th>
+                <th scope="col" data-sort-key="interval" data-sort-type="string" tabindex="0">
+                  Billing interval
+                </th>
+                <th
+                  scope="col"
+                  data-sort-key="start"
+                  data-sort-type="date"
+                  data-sort-default="true"
+                  data-sort-default-direction="desc"
+                  tabindex="0"
+                >
+                  Start date
+                </th>
+                <th scope="col" data-sort-key="canceled" data-sort-type="date" tabindex="0">
+                  Canceled
+                </th>
+                <th scope="col" data-sort-key="paid" data-sort-type="string" tabindex="0">Paid plan</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                memberstack.connections.map((connection) => (
+                  <tr>
+                    <td data-sort-value={connection.planName ?? ""}>{connection.planName ?? ""}</td>
+                    <td data-sort-value={connection.status ?? ""}>{connection.status ?? ""}</td>
+                    <td data-sort-value={connection.activeLabel}>{connection.activeLabel}</td>
+                    <td data-sort-value={connection.billingInterval ?? ""}>
+                      {connection.billingInterval ?? ""}
+                    </td>
+                    <td data-sort-value={connection.startDateSort}>{connection.startDate ?? ""}</td>
+                    <td data-sort-value={connection.canceledAtSort}>{connection.canceledAt ?? ""}</td>
+                    <td data-sort-value={connection.isPaidPlan === null ? "" : String(connection.isPaidPlan)}>
+                      {
+                        connection.isPaidPlan === null
+                          ? ""
+                          : connection.isPaidPlan
+                            ? "Yes"
+                            : "No"
+                      }
+                    </td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      )
+    }
+  </div>
+
+  <div class="watson-customer__membership-section">
+    <h3 class="watson-customer__subsection-title">Legacy membership payment history</h3>
+    <p class="watson__section-note">
+      Historical legacy subscription payment records. This is not current Memberstack billing status.
+    </p>
+    {
+      hasLegacyHistory ? (
+        <WatsonMemberMembershipTable records={legacyMemberships} />
+      ) : (
+        <p class="watson__placeholder watson-customer__unavailable">No legacy history</p>
+      )
+    }
+  </div>
+</section>

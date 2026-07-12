@@ -1,0 +1,23 @@
+---
+import { type CustomerProfileAction } from "../../lib/watson/customerProfile";
+
+interface Props {
+  actions: CustomerProfileAction[];
+}
+
+const { actions } = Astro.props;
+---
+
+<section class="watson__panel watson-customer__actions" aria-labelledby="watson-customer-actions-heading">
+  <h2 id="watson-customer-actions-heading" class="watson__panel-title">Actions</h2>
+  <ul class="watson-customer__action-list">
+    {
+      actions.map((action) => (
+        <li>
+          <a href={action.href}>{action.label}</a>
+          {action.description ? <span class="watson-customer__action-note">{action.description}</span> : null}
+        </li>
+      ))
+    }
+  </ul>
+</section>

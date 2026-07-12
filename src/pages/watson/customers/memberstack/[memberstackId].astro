@@ -1,0 +1,105 @@
+---
+import WatsonCustomerInternalInfo from "../../../../components/watson/WatsonCustomerInternalInfo.astro";
+import WatsonCustomerLegacyAmbiguity from "../../../../components/watson/WatsonCustomerLegacyAmbiguity.astro";
+import WatsonCustomerMembership from "../../../../components/watson/WatsonCustomerMembership.astro";
+import WatsonCustomerNotes from "../../../../components/watson/WatsonCustomerNotes.astro";
+import WatsonCustomerProfileHeader from "../../../../components/watson/WatsonCustomerProfileHeader.astro";
+import WatsonCustomerPurchases from "../../../../components/watson/WatsonCustomerPurchases.astro";
+import WatsonCustomerSnapshot from "../../../../components/watson/WatsonCustomerSnapshot.astro";
+import WatsonCustomerTimeline from "../../../../components/watson/WatsonCustomerTimeline.astro";
+import WatsonPageShell from "../../../../components/watson/WatsonPageShell.astro";
+import { buildCustomerSearchReturnUrl } from "../../../../lib/watson/customerIdentifier";
+import {
+  loadMemberstackCustomerProfile,
+  watsonCustomerNotFoundHtml,
+} from "../../../../lib/watson/customerProfile";
+
+export const prerender = false;
+
+const memberstackId = Astro.params.memberstackId
+  ? decodeURIComponent(Astro.params.memberstackId)
+  : "";
+const searchQuery = Astro.url.searchParams.get("q");
+const backHref = buildCustomerSearchReturnUrl(searchQuery);
+
+if (!memberstackId) {
+  return new Response(watsonCustomerNotFoundHtml("", "memberstack"), {
+    status: 404,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
+const result = await loadMemberstackCustomerProfile(memberstackId);
+
+if (!result.ok && result.reason === "not_found") {
+  return new Response(watsonCustomerNotFoundHtml(result.identifier, "memberstack"), {
+    status: 404,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+    },
+  });
+}
+---
+
+{
+  !result.ok && result.reason === "error" ? (
+    <WatsonPageShell
+      title="Memberstack Customer Profile | Watson"
+      description="Watson Memberstack customer profile."
+      heading="Memberstack Customer Profile"
+    >
+      <p class="watson__status watson__status--error" role="alert">{result.message}</p>
+      <p>
+        <a href={backHref}>? Back to customer search</a>
+      </p>
+    </WatsonPageShell>
+  ) : result.ok ? (
+    <WatsonPageShell
+      title={`${result.profile.displayName} | Watson Customer`}
+      description="Watson Memberstack customer profile for Knit It Now support."
+      heading={result.profile.displayName}
+      intro={result.profile.headerView.email ?? "Memberstack customer profile"}
+    >
+      <p slot="head" class="watson__back-link">
+        <a href={backHref}>? Back to customer search</a>
+      </p>
+
+      <div class="watson-customer__dashboard">
+        <WatsonCustomerProfileHeader
+          header={result.profile.headerView}
+          actions={result.profile.actions}
+        />
+        <WatsonCustomerSnapshot metrics={result.profile.snapshot} />
+        {
+          result.profile.legacyLinkAmbiguous ? (
+            <WatsonCustomerLegacyAmbiguity memberids={result.profile.ambiguousLegacyMemberids} />
+          ) : null
+        }
+        <WatsonCustomerMembership
+          memberstack={result.profile.memberstack}
+          legacyMemberships={result.profile.memberships}
+          hasLegacyHistory={result.profile.hasLegacyHistory}
+        />
+        <WatsonCustomerPurchases
+          courses={result.profile.courses}
+          orders={result.profile.orders}
+          hasLegacyHistory={result.profile.hasLegacyHistory}
+          legacyMemberid={result.profile.legacyMemberid}
+          pdfPurchaseCount={result.profile.pdfPurchaseCount}
+        />
+        <WatsonCustomerTimeline events={result.profile.timeline} />
+        <WatsonCustomerNotes
+          notesWriteId={result.profile.notesWriteId}
+          memberstackId={result.profile.memberstackId}
+          legacyMemberid={result.profile.hasLegacyHistory ? result.profile.legacyMemberid : null}
+          profileType="memberstack"
+        />
+        <WatsonCustomerInternalInfo />
+      </div>
+    </WatsonPageShell>
+  ) : null
+}

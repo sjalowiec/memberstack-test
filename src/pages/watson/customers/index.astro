@@ -1,0 +1,145 @@
+---
+import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
+import {
+  describeCustomerSearchQuery,
+  MEMBER_SEARCH_LIMIT,
+  searchCustomers,
+} from "../../../lib/watson/customerSearch";
+import { isMemberSearchQueryUsable } from "../../../lib/watson/memberSearch";
+
+export const prerender = false;
+
+const rawQuery = Astro.url.searchParams.get("q") ?? "";
+let searchResult: Awaited<ReturnType<typeof searchCustomers>> | null = null;
+let searchError: string | null = null;
+const hasQuery = isMemberSearchQueryUsable(rawQuery);
+
+if (hasQuery) {
+  try {
+    searchResult = await searchCustomers(rawQuery);
+    if (searchResult.searchError && searchResult.rows.length === 0) {
+      searchError = searchResult.searchError;
+    }
+  } catch (error) {
+    searchError = error instanceof Error ? error.message : "Customer search failed.";
+  }
+}
+---
+
+<WatsonPageShell
+  title="Customer Search | Watson"
+  description="Search Watson customers by Memberstack ID, email, name, or legacy member ID."
+  heading="Customer Search"
+  intro="Search legacy-only, Memberstack-only, and linked customers. Legacy and Memberstack profiles use separate routes; exact email links records when unambiguous. Name searches require at least 2 characters."
+>
+  <form class="watson__search" method="get" action="/watson/customers" role="search">
+    <label class="visually-hidden" for="watson-customer-search">Search customers</label>
+    <input
+      id="watson-customer-search"
+      class="watson__search-input"
+      type="search"
+      name="q"
+      value={rawQuery}
+      placeholder="Memberstack ID, email, name, or legacy member ID"
+      autocomplete="off"
+      required
+    />
+    <button class="watson__button" type="submit">Search</button>
+  </form>
+
+  {
+    searchError ? (
+      <p class="watson__status watson__status--error" role="alert">{searchError}</p>
+    ) : hasQuery && searchResult ? (
+      <p class="watson__status">
+        {searchResult.rows.length === 0
+          ? `No customers matched "${rawQuery}".`
+          : `Showing ${searchResult.rows.length} result${searchResult.rows.length === 1 ? "" : "s"} for "${rawQuery}" (${describeCustomerSearchQuery(rawQuery)}).`}
+        {searchResult.truncated
+          ? ` Results limited to ${MEMBER_SEARCH_LIMIT}. Refine your search for more.`
+          : null}
+        {!searchResult.configured ? " Memberstack admin API is not configured." : null}
+      </p>
+    ) : (
+      <p class="watson__status">Enter at least one character to search customers.</p>
+    )
+  }
+
+  {
+    searchResult && searchResult.rows.length > 0 ? (
+      <section class="watson__panel" aria-label="Search results">
+        <h2 class="watson__panel-title">Search results</h2>
+        <div class="watson__table-wrap">
+          <table class="watson-table" data-sortable-table>
+            <thead>
+              <tr>
+                <th scope="col" data-sort-key="name" data-sort-type="string" tabindex="0">Name</th>
+                <th scope="col" data-sort-key="email" data-sort-type="string" tabindex="0">Email</th>
+                <th scope="col" data-sort-key="memberstack" data-sort-type="string" tabindex="0">
+                  Memberstack ID
+                </th>
+                <th scope="col" data-sort-key="legacy" data-sort-type="string" tabindex="0">
+                  Legacy member ID
+                </th>
+                <th scope="col" data-sort-key="membership" data-sort-type="string" tabindex="0">
+                  Membership
+                </th>
+                <th scope="col" data-sort-key="status" data-sort-type="string" tabindex="0">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                searchResult.rows.map((row) => (
+                  <tr>
+                    <td data-sort-value={row.name}>
+                      {row.profileHref ? (
+                        <a href={row.profileHref}>{row.name}</a>
+                      ) : (
+                        row.name
+                      )}
+                    </td>
+                    <td data-sort-value={row.email ?? ""}>{row.email ?? ""}</td>
+                    <td data-sort-value={row.memberstackId ?? ""}>
+                      {row.memberstackProfileHref && row.memberstackId ? (
+                        <a href={row.memberstackProfileHref}>{row.memberstackId}</a>
+                      ) : (
+                        row.memberstackId ?? ""
+                      )}
+                    </td>
+                    <td data-sort-value={row.legacyMemberid ?? ""}>
+                      {row.legacyProfileHref && row.legacyMemberid ? (
+                        <a href={row.legacyProfileHref}>{row.legacyMemberid}</a>
+                      ) : row.legacyMemberHref ? (
+                        <a href={row.legacyMemberHref}>{row.legacyMemberid}</a>
+                      ) : (
+                        row.legacyMemberid ?? ""
+                      )}
+                    </td>
+                    <td data-sort-value={row.membershipStatus ?? ""}>
+                      {row.membershipStatus ?? ""}
+                    </td>
+                    <td data-sort-value={row.statusLabel}>{row.statusLabel}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    ) : null
+  }
+</WatsonPageShell>
+
+<style>
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>

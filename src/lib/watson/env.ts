@@ -42,7 +42,7 @@ export function getWatsonDatabaseUrl(): string {
   return url;
 }
 
-/** Host and database name only ù safe to print in CLI logs. */
+/** Host and database name only - safe to print in CLI logs. */
 export function formatDatabaseTarget(databaseUrl: string): string {
   try {
     const parsed = new URL(databaseUrl);

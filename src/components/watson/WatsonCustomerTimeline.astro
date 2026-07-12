@@ -1,0 +1,76 @@
+---
+import { type CustomerTimelineEvent } from "../../lib/watson/customerTimeline";
+
+interface Props {
+  events: CustomerTimelineEvent[];
+  previewLimit?: number;
+}
+
+const { events, previewLimit = 8 } = Astro.props;
+const previewEvents = events.slice(0, previewLimit);
+const hasMoreEvents = events.length > previewLimit;
+---
+
+<section class="watson__panel" aria-labelledby="watson-customer-timeline-heading">
+  <h2 id="watson-customer-timeline-heading" class="watson__panel-title">Customer timeline</h2>
+  {
+    events.length === 0 ? (
+      <>
+        <p class="watson__section-note">
+          A unified customer timeline is coming next. It will combine membership changes, purchases,
+          enrollments, and support notes in one chronological view.
+        </p>
+        <p class="watson__placeholder watson-customer__unavailable">Not available yet</p>
+      </>
+    ) : (
+      <>
+        <p class="watson__section-note">
+          Recent events from confirmed legacy imports and Memberstack API data. A fuller unified
+          timeline is coming next.
+        </p>
+        <div class="watson__table-wrap">
+          <table class="watson-table" data-sortable-table data-customer-timeline-table>
+            <thead>
+              <tr>
+                <th
+                  scope="col"
+                  data-sort-key="date"
+                  data-sort-type="date"
+                  data-sort-default="true"
+                  data-sort-default-direction="desc"
+                  tabindex="0"
+                >
+                  Date
+                </th>
+                <th scope="col" data-sort-key="type" data-sort-type="string" tabindex="0">Event</th>
+                <th scope="col" data-sort-key="description" data-sort-type="string" tabindex="0">
+                  Description
+                </th>
+                <th scope="col" data-sort-key="source" data-sort-type="string" tabindex="0">Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                previewEvents.map((event) => (
+                  <tr>
+                    <td data-sort-value={event.dateSort}>{event.dateDisplay}</td>
+                    <td data-sort-value={event.eventTypeLabel}>{event.eventTypeLabel}</td>
+                    <td data-sort-value={event.description}>{event.description}</td>
+                    <td data-sort-value={event.source}>{event.source}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+        {
+          hasMoreEvents ? (
+            <p class="watson-customer__timeline-more">
+              Showing {previewLimit} of {events.length} events.
+            </p>
+          ) : null
+        }
+      </>
+    )
+  }
+</section>

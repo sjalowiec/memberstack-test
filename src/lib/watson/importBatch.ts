@@ -542,7 +542,7 @@ export async function importLegacyBatch(
 
 export function formatImportReport(report: ImportBatchReport): string {
   const lines = [
-    `Watson legacy import ù batch ${report.batchId}`,
+    `Watson legacy import - batch ${report.batchId}`,
     `Status: ${report.status}`,
     `Started: ${report.startedAt}`,
   ];

@@ -98,8 +98,8 @@ if (hasQuery) {
     ) : hasQuery ? (
       <p class="watson__status">
         {rows.length === 0
-          ? `No members matched “${rawQuery}”.`
-          : `Showing ${rows.length} result${rows.length === 1 ? "" : "s"} for “${rawQuery}”.`}
+          ? `No members matched "${rawQuery}".`
+          : `Showing ${rows.length} result${rows.length === 1 ? "" : "s"} for "${rawQuery}".`}
         {truncated ? ` Results limited to ${MEMBER_SEARCH_LIMIT}. Refine your search for more.` : null}
       </p>
     ) : (
@@ -157,7 +157,7 @@ if (hasQuery) {
                     <td data-sort-value={name}>
                       <a href={detailHref}>{name}</a>
                     </td>
-                    <td data-sort-value={row.email ?? ""}>{row.email ?? "—"}</td>
+                    <td data-sort-value={row.email ?? ""}>{row.email ?? ""}</td>
                     <td data-sort-value={location}>{location}</td>
                     <td data-sort-value={joinedSort}>{joinedDisplay}</td>
                   </tr>

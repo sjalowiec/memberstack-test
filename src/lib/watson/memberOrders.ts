@@ -1,3 +1,4 @@
+import { joinWatsonDisplayParts } from "./displayFormat";
 import { hasDisplayValue } from "./memberDetail";
 import { formatMemberJoinedDateDisplay, type WatsonQueryFn } from "./memberSearch";
 import { queryWatson } from "./db";
@@ -155,7 +156,7 @@ export function buildOrderItemDescription(item: LegacyStoreTransactionItemRow): 
   if (hasDisplayValue(item.saledescripton)) {
     parts.push(String(item.saledescripton).trim());
   }
-  return parts.length > 0 ? parts.join("  ") : "";
+  return parts.length > 0 ? joinWatsonDisplayParts(parts) : "";
 }
 
 export function buildOrderItemDisplay(item: LegacyStoreTransactionItemRow): MemberOrderItemDisplay {

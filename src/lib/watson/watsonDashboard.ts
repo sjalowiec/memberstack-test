@@ -314,22 +314,23 @@ export async function loadWatsonDashboardRecentActivity(
         storeTransactionId: String(row.storetransactionid),
         transactionId: row.transactionid,
         memberId: row.memberid_fk,
-        memberLabel: memberLabel === "—" ? row.memberid_fk : memberLabel,
+        memberLabel: memberLabel || row.memberid_fk,
         memberHref: buildWatsonMemberDetailHref(row.memberid_fk),
-        activityDate: formatMemberJoinedDateDisplay(row.purchasedate) ?? "—",
+        activityDate: formatMemberJoinedDateDisplay(row.purchasedate) ?? "",
         orderTotal,
-        summary: `Store order ${row.transactionid}${orderTotal ? ` · ${orderTotal}` : ""}`,
+        summary: orderTotal
+          ? `Store order ${row.transactionid} - ${orderTotal}`
+          : `Store order ${row.transactionid}`,
       };
     }),
     courseEnrollments: courseRows.map((row) => ({
       libraryRecordId: String(row.homestudy_libraryid),
       memberId: row.memberid_fk,
-      memberLabel:
-        formatMemberDisplayName(row) === "—" ? row.memberid_fk : formatMemberDisplayName(row),
+      memberLabel: formatMemberDisplayName(row) || row.memberid_fk,
       memberHref: buildWatsonMemberDetailHref(row.memberid_fk),
-      activityDate: formatMemberJoinedDateDisplay(row.dateadded) ?? "—",
+      activityDate: formatMemberJoinedDateDisplay(row.dateadded) ?? "",
       courseId: String(row.homestudy_courseid_fk),
-      summary: `Course enrollment · course ID ${row.homestudy_courseid_fk}`,
+      summary: `Course enrollment - course ID ${row.homestudy_courseid_fk}`,
     })),
     savedPatterns: savedPatternRows.map((row) => {
       const patternLabel = buildPatternActivityLabel(
@@ -340,12 +341,11 @@ export async function loadWatsonDashboardRecentActivity(
       return {
         detailId: String(row.detailid),
         memberId: row.member_fk,
-        memberLabel:
-          formatMemberDisplayName(row) === "—" ? row.member_fk : formatMemberDisplayName(row),
+        memberLabel: formatMemberDisplayName(row) || row.member_fk,
         memberHref: buildWatsonMemberDetailHref(row.member_fk),
-        activityDate: formatMemberJoinedDateDisplay(row.builddate) ?? "—",
+        activityDate: formatMemberJoinedDateDisplay(row.builddate) ?? "",
         patternLabel,
-        summary: `Saved pattern · ${patternLabel}`,
+        summary: `Saved pattern - ${patternLabel}`,
       };
     }),
   };

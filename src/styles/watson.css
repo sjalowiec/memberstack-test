@@ -1,5 +1,5 @@
 /**
- * Watson support UI styles ù functional tables and search, no Bootstrap.
+ * Watson support UI styles - functional tables and search, no Bootstrap.
  */
 .watson {
   width: 100%;
@@ -173,7 +173,7 @@
 }
 
 .watson-table__sortable::after {
-  content: "?";
+  content: "\2195";
   display: inline-block;
   margin-left: 0.35rem;
   font-size: 0.7rem;
@@ -181,12 +181,12 @@
 }
 
 .watson-table__sort--asc::after {
-  content: "?";
+  content: "\2191";
   opacity: 1;
 }
 
 .watson-table__sort--desc::after {
-  content: "?";
+  content: "\2193";
   opacity: 1;
 }
 
@@ -510,4 +510,257 @@
   display: grid;
   gap: 0.65rem;
   margin-top: 0.5rem;
+}
+
+.watson-customer__source {
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  color: #94a3b8;
+  font-size: 0.72rem;
+}
+
+.watson-customer__unavailable {
+  font-style: italic;
+}
+
+.watson-customer__action-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.watson-customer__action-list a {
+  color: #3f6212;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.watson-customer__action-list a:hover {
+  text-decoration: underline;
+}
+
+.watson-customer__action-note {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.watson-customer__legacy-ambiguity-message {
+  margin: 0 0 0.75rem;
+  color: #64748b;
+  line-height: 1.5;
+  font-size: 0.92rem;
+}
+
+.watson-customer__legacy-ambiguity-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #475569;
+}
+
+.watson-customer__legacy-ambiguity-list a {
+  color: #3f6212;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.watson-customer__legacy-ambiguity-list a:hover {
+  text-decoration: underline;
+}
+
+.watson-customer__dashboard {
+  display: grid;
+  gap: 0;
+}
+
+.watson-customer__header {
+  margin-top: 0;
+}
+
+.watson-customer__header-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+}
+
+.watson-customer__header-name {
+  margin: 0 0 0.35rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #243015;
+}
+
+.watson-customer__header-email {
+  margin: 0 0 0.55rem;
+  font-size: 0.98rem;
+}
+
+.watson-customer__header-email a {
+  color: #3f6212;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.watson-customer__header-email a:hover {
+  text-decoration: underline;
+}
+
+.watson-customer__header-status {
+  margin: 0;
+}
+
+.watson-customer__status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.watson-customer__status-badge--active {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.watson-customer__status-badge--inactive {
+  color: #9a3412;
+  background: #ffedd5;
+}
+
+.watson-customer__status-badge--not_linked,
+.watson-customer__status-badge--unknown {
+  color: #475569;
+  background: #f1f5f9;
+}
+
+.watson-customer__header-actions {
+  flex: 0 1 auto;
+}
+
+.watson-customer__header-actions--placeholder {
+  min-height: 0;
+}
+
+.watson-customer__header-action-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.watson-customer__header-action-list a {
+  display: inline-block;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #3f6212;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.watson-customer__header-action-list a:hover {
+  background: #f1f5f9;
+  text-decoration: none;
+}
+
+.watson-customer__header-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  margin: 1rem 0 0;
+  padding-top: 0.85rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.watson-customer__header-meta-item {
+  margin: 0;
+}
+
+.watson-customer__header-meta-item dt {
+  margin: 0 0 0.15rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #94a3b8;
+}
+
+.watson-customer__header-meta-item dd {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.watson-customer__header-meta-item--secondary dd {
+  font-size: 0.82rem;
+  color: #64748b;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.watson-customer__snapshot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 0.85rem 1rem;
+  margin: 0;
+}
+
+.watson-customer__snapshot-item {
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.watson-customer__snapshot-item dt {
+  margin: 0 0 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #64748b;
+}
+
+.watson-customer__snapshot-item dd {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #243015;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.watson-customer__membership-section + .watson-customer__membership-section {
+  margin-top: 1.25rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.watson-customer__subsection-title {
+  margin: 0 0 0.45rem;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.watson-customer__timeline-more {
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.watson-customer__notes {
+  margin-top: 1.25rem;
 }

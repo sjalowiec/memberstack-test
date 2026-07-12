@@ -50,32 +50,32 @@ export const MEMBER_SEARCH_SQL = `
 
 export function formatMemberDisplayName(row: Pick<LegacyMemberSearchRow, "fristname" | "lastname">): string {
   const parts = [row.fristname, row.lastname].filter(Boolean);
-  return parts.length > 0 ? parts.join(" ") : "—";
+  return parts.length > 0 ? parts.join(" ") : "";
 }
 
 export function formatMemberLocation(row: Pick<LegacyMemberSearchRow, "city" | "state">): string {
   const parts = [row.city, row.state].filter(Boolean);
-  return parts.length > 0 ? parts.join(", ") : "—";
+  return parts.length > 0 ? parts.join(", ") : "";
 }
 
 export function formatMemberJoinedDate(value: LegacyMemberSearchRow["datejoined"]): string {
   if (!value) {
-    return "—";
+    return "";
   }
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) {
-    return "—";
+    return "";
   }
   return date.toISOString();
 }
 
 export function formatMemberJoinedDateDisplay(value: LegacyMemberSearchRow["datejoined"]): string {
   if (!value) {
-    return "—";
+    return "";
   }
   const date = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(date.getTime())) {
-    return "—";
+    return "";
   }
   return date.toLocaleDateString("en-US", {
     year: "numeric",

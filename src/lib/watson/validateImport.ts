@@ -151,7 +151,7 @@ export async function validateLegacyImport(
 
 export function formatValidateReport(report: ValidateImportReport): string {
   const lines = [
-    `Watson import validation ù batch ${report.batchId}`,
+    `Watson import validation - batch ${report.batchId}`,
     `OK: ${report.ok ? "yes" : "no"}`,
   ];
 

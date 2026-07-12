@@ -70,22 +70,22 @@ const visibleColumns = getVisibleSupportNoteColumns(notes);
                 <td data-sort-value={note.noteSource}>{note.noteSource}</td>
                 {
                   visibleColumns.showNoteDate ? (
-                    <td data-sort-value={note.noteDateSort}>{note.noteDate ?? "—"}</td>
+                    <td data-sort-value={note.noteDateSort}>{note.noteDate ?? ""}</td>
                   ) : null
                 }
                 {
                   visibleColumns.showAuthor ? (
-                    <td data-sort-value={note.author ?? ""}>{note.author ?? "—"}</td>
+                    <td data-sort-value={note.author ?? ""}>{note.author ?? ""}</td>
                   ) : null
                 }
                 {
                   visibleColumns.showNoteType ? (
-                    <td data-sort-value={note.noteType ?? ""}>{note.noteType ?? "—"}</td>
+                    <td data-sort-value={note.noteType ?? ""}>{note.noteType ?? ""}</td>
                   ) : null
                 }
                 {
                   visibleColumns.showStatus ? (
-                    <td data-sort-value={note.status ?? ""}>{note.status ?? "—"}</td>
+                    <td data-sort-value={note.status ?? ""}>{note.status ?? ""}</td>
                   ) : null
                 }
                 <td class="watson-support-notes__text" data-sort-value={note.noteText}>

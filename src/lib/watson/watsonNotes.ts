@@ -56,6 +56,26 @@ export const WATSON_NOTES_BY_MEMBER_SQL = `
   ORDER BY created_at DESC, id DESC
 `;
 
+export const WATSON_NOTES_BY_CUSTOMER_SQL = `
+  SELECT
+    id,
+    memberid,
+    note_text,
+    category,
+    created_by,
+    created_at,
+    updated_at
+  FROM watson_notes
+  WHERE memberid = $1 OR ($2::text IS NOT NULL AND memberid = $2)
+  ORDER BY created_at DESC, id DESC
+`;
+
+export const WATSON_NOTE_COUNT_BY_CUSTOMER_SQL = `
+  SELECT COUNT(*)::text AS note_count
+  FROM watson_notes
+  WHERE memberid = $1 OR ($2::text IS NOT NULL AND memberid = $2)
+`;
+
 export const WATSON_NOTE_COUNT_BY_MEMBER_SQL = `
   SELECT COUNT(*)::text AS note_count
   FROM watson_notes
@@ -205,7 +225,7 @@ export function buildWatsonNoteDisplay(row: WatsonNoteRow): WatsonNoteDisplay {
     noteText: row.note_text,
     category,
     createdBy: row.created_by,
-    createdAt: formatWatsonNoteTimestamp(row.created_at) ?? "—",
+    createdAt: formatWatsonNoteTimestamp(row.created_at) ?? "",
     createdAtSort,
     updatedAt: formatWatsonNoteTimestamp(row.updated_at),
     updatedAtSort,
@@ -239,6 +259,53 @@ export async function getMemberWatsonNotes(
 
   const rows = await queryFn<WatsonNoteRow>(WATSON_NOTES_BY_MEMBER_SQL, [validated.value]);
   return rows.map(buildWatsonNoteDisplay);
+}
+
+export async function getCustomerWatsonNotes(
+  memberstackId: string,
+  legacyMemberId?: string | null,
+  queryFn: WatsonQueryFn = queryWatson,
+): Promise<WatsonNoteDisplay[]> {
+  const validatedMemberstackId = validateWatsonNoteMemberid(memberstackId);
+  if (!validatedMemberstackId.ok) {
+    return [];
+  }
+
+  const legacyId =
+    legacyMemberId && legacyMemberId !== validatedMemberstackId.value
+      ? validateWatsonNoteMemberid(legacyMemberId)
+      : null;
+  const legacyValue = legacyId?.ok ? legacyId.value : null;
+
+  const rows = await queryFn<WatsonNoteRow>(WATSON_NOTES_BY_CUSTOMER_SQL, [
+    validatedMemberstackId.value,
+    legacyValue,
+  ]);
+  return rows.map(buildWatsonNoteDisplay);
+}
+
+export async function getCustomerWatsonNoteCount(
+  memberstackId: string,
+  legacyMemberId?: string | null,
+  queryFn: WatsonQueryFn = queryWatson,
+): Promise<number> {
+  const validatedMemberstackId = validateWatsonNoteMemberid(memberstackId);
+  if (!validatedMemberstackId.ok) {
+    return 0;
+  }
+
+  const legacyId =
+    legacyMemberId && legacyMemberId !== validatedMemberstackId.value
+      ? validateWatsonNoteMemberid(legacyMemberId)
+      : null;
+  const legacyValue = legacyId?.ok ? legacyId.value : null;
+
+  const rows = await queryFn<{ note_count: string }>(WATSON_NOTE_COUNT_BY_CUSTOMER_SQL, [
+    validatedMemberstackId.value,
+    legacyValue,
+  ]);
+  const count = Number.parseInt(rows[0]?.note_count ?? "0", 10);
+  return Number.isNaN(count) ? 0 : count;
 }
 
 export async function getWatsonNoteById(

@@ -16,7 +16,7 @@ export function resolveLegacyCourseName(courseId: number): string | null {
   return getCourseNameByLegacyIdMap().get(courseId) ?? null;
 }
 
-/** Test helper — reset cached lookup between tests. */
+/** Test helper - reset cached lookup between tests. */
 export function resetLegacyCourseNameLookupCache(): void {
   courseNameByLegacyId = null;
 }

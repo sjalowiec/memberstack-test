@@ -21,7 +21,7 @@ export type PlanConnection = {
 export type MemberstackMember = {
   id: string;
   createdAt?: string;
-  auth?: { email?: string };
+  auth?: { email?: string; firstName?: string; lastName?: string };
   planConnections?: PlanConnection[];
 };
 

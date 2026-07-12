@@ -122,57 +122,57 @@ const visibleColumns = getVisiblePdfPurchaseColumns(records);
                 <td data-sort-value={record.purchaseRecordId}>{record.purchaseRecordId}</td>
                 {
                   visibleColumns.showPdfTitle ? (
-                    <td data-sort-value={record.pdfTitle ?? ""}>{record.pdfTitle ?? "—"}</td>
+                    <td data-sort-value={record.pdfTitle ?? ""}>{record.pdfTitle ?? ""}</td>
                   ) : null
                 }
                 <td data-sort-value={record.patternLibraryId}>{record.patternLibraryId}</td>
                 {
                   visibleColumns.showPurchaseDate ? (
-                    <td data-sort-value={record.purchaseDateSort}>{record.purchaseDate ?? "—"}</td>
+                    <td data-sort-value={record.purchaseDateSort}>{record.purchaseDate ?? ""}</td>
                   ) : null
                 }
                 <td data-sort-value={record.transactionGuid}>{record.transactionGuid}</td>
                 {
                   visibleColumns.showAmountPaid ? (
-                    <td data-sort-value={record.amountPaidSort}>{record.amountPaid ?? "—"}</td>
+                    <td data-sort-value={record.amountPaidSort}>{record.amountPaid ?? ""}</td>
                   ) : null
                 }
                 {
                   visibleColumns.showCatalogCost ? (
-                    <td data-sort-value={record.catalogCostSort}>{record.catalogCost ?? "—"}</td>
+                    <td data-sort-value={record.catalogCostSort}>{record.catalogCost ?? ""}</td>
                   ) : null
                 }
                 {
                   visibleColumns.showNetCost ? (
-                    <td data-sort-value={record.netCostSort}>{record.netCost ?? "—"}</td>
+                    <td data-sort-value={record.netCostSort}>{record.netCost ?? ""}</td>
                   ) : null
                 }
                 {
                   visibleColumns.showFilename ? (
-                    <td data-sort-value={record.filename ?? ""}>{record.filename ?? "—"}</td>
+                    <td data-sort-value={record.filename ?? ""}>{record.filename ?? ""}</td>
                   ) : null
                 }
                 {
                   visibleColumns.showPatternType ? (
-                    <td data-sort-value={record.patternType ?? ""}>{record.patternType ?? "—"}</td>
+                    <td data-sort-value={record.patternType ?? ""}>{record.patternType ?? ""}</td>
                   ) : null
                 }
                 {
                   visibleColumns.showVendorPaidFlag ? (
-                    <td data-sort-value={record.vendorPaidFlag ?? ""}>{record.vendorPaidFlag ?? "—"}</td>
+                    <td data-sort-value={record.vendorPaidFlag ?? ""}>{record.vendorPaidFlag ?? ""}</td>
                   ) : null
                 }
                 {
                   visibleColumns.showPatternActiveFlag ? (
                     <td data-sort-value={record.patternActiveFlag ?? ""}>
-                      {record.patternActiveFlag ?? "—"}
+                      {record.patternActiveFlag ?? ""}
                     </td>
                   ) : null
                 }
                 {
                   visibleColumns.showFreeWithSubscriptionFlag ? (
                     <td data-sort-value={record.freeWithSubscriptionFlag ?? ""}>
-                      {record.freeWithSubscriptionFlag ?? "—"}
+                      {record.freeWithSubscriptionFlag ?? ""}
                     </td>
                   ) : null
                 }

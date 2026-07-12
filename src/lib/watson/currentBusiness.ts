@@ -1,5 +1,5 @@
 /**
- * Current Business — live platform reporting.
+ * Current Business - live platform reporting.
  *
  * This module is intentionally separate from legacy Watson reporting:
  * - Legacy dashboard/reports use `queryWatson()` against imported Postgres tables.
@@ -167,7 +167,7 @@ export function buildCurrentBusinessSummaryNotes(summary: MembershipSummary): st
   if (summary.revenue.note) notes.push(summary.revenue.note);
   if (summary.scanTruncated) {
     notes.push(
-      `Member list is larger than the report safety cap (${summary.totalMembersScanned} scanned) — numbers are a partial snapshot.`,
+      `Member list is larger than the report safety cap (${summary.totalMembersScanned} scanned) - numbers are a partial snapshot.`,
     );
   }
   return notes;

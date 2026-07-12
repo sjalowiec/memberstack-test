@@ -6,14 +6,15 @@ import {
 
 interface Props {
   courses: MemberCourseDisplay[];
+  heading?: string;
 }
 
-const { courses } = Astro.props;
+const { courses, heading = "Courses" } = Astro.props;
 const visibleColumns = getVisibleCourseColumns(courses);
 ---
 
 <section class="watson__panel" aria-labelledby="watson-courses-heading">
-  <h2 id="watson-courses-heading" class="watson__panel-title">Courses</h2>
+  <h2 id="watson-courses-heading" class="watson__panel-title">{heading}</h2>
   <p class="watson__section-note">
     Imported from <code>legacy_course_member_library</code>. Each row is a separate legacy
     enrollment record. Completion, progress, amount paid, and last activity are not in this export.
@@ -73,18 +74,18 @@ const visibleColumns = getVisibleCourseColumns(courses);
                   <td data-sort-value={course.courseIdSort}>{course.courseId}</td>
                   {
                     visibleColumns.showCourseName ? (
-                      <td data-sort-value={course.courseName ?? ""}>{course.courseName ?? "—"}</td>
+                      <td data-sort-value={course.courseName ?? ""}>{course.courseName ?? ""}</td>
                     ) : null
                   }
-                  <td data-sort-value={course.dateAddedSort}>{course.dateAdded ?? "—"}</td>
+                  <td data-sort-value={course.dateAddedSort}>{course.dateAdded ?? ""}</td>
                   {
                     visibleColumns.showAccessStatus ? (
-                      <td data-sort-value={course.accessStatus ?? ""}>{course.accessStatus ?? "—"}</td>
+                      <td data-sort-value={course.accessStatus ?? ""}>{course.accessStatus ?? ""}</td>
                     ) : null
                   }
                   {
                     visibleColumns.showCreditId ? (
-                      <td data-sort-value={course.creditIdSort}>{course.creditId ?? "—"}</td>
+                      <td data-sort-value={course.creditIdSort}>{course.creditId ?? ""}</td>
                     ) : null
                   }
                 </tr>

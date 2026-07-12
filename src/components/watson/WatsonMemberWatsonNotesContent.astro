@@ -54,8 +54,8 @@ const { memberid, notes } = Astro.props;
               <div class="watson-watson-notes__item-header">
                 <span class="watson-watson-notes__category">{note.category}</span>
                 <span class="watson-watson-notes__meta">
-                  {note.createdAt} ù {note.createdBy}
-                  {note.updatedAt ? ` ù updated ${note.updatedAt}` : ""}
+                  {note.createdAt} - {note.createdBy}
+                  {note.updatedAt ? ` - updated ${note.updatedAt}` : ""}
                 </span>
               </div>
               <p class="watson-watson-notes__text" data-watson-note-text>

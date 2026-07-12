@@ -77,19 +77,19 @@ const colspan =
                       </button>
                     </td>
                     <td data-sort-value={order.transactionId}>{order.transactionId}</td>
-                    <td data-sort-value={order.orderDateSort}>{order.orderDate ?? "—"}</td>
+                    <td data-sort-value={order.orderDateSort}>{order.orderDate ?? ""}</td>
                     {
                       visibleColumns.showStatus ? (
                         <td data-sort-value={order.orderStatus ?? ""}>
-                          {order.orderStatus ?? "—"}
+                          {order.orderStatus ?? ""}
                         </td>
                       ) : null
                     }
-                    <td data-sort-value={order.orderTotalSort}>{order.orderTotal ?? "—"}</td>
+                    <td data-sort-value={order.orderTotalSort}>{order.orderTotal ?? ""}</td>
                     {
                       visibleColumns.showPayment ? (
                         <td data-sort-value={order.paymentMethod ?? ""}>
-                          {order.paymentMethod ?? "—"}
+                          {order.paymentMethod ?? ""}
                         </td>
                       ) : null
                     }
@@ -133,17 +133,17 @@ const colspan =
                                   <td>{item.description}</td>
                                   {
                                     itemColumns.showQuantity ? (
-                                      <td>{item.quantity ?? "—"}</td>
+                                      <td>{item.quantity ?? ""}</td>
                                     ) : null
                                   }
                                   {
                                     itemColumns.showItemPrice ? (
-                                      <td>{item.itemPrice ?? "—"}</td>
+                                      <td>{item.itemPrice ?? ""}</td>
                                     ) : null
                                   }
                                   {
                                     itemColumns.showLineTotal ? (
-                                      <td>{item.lineTotal ?? "—"}</td>
+                                      <td>{item.lineTotal ?? ""}</td>
                                     ) : null
                                   }
                                 </tr>

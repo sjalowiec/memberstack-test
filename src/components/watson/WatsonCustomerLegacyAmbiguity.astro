@@ -1,0 +1,35 @@
+---
+import { buildLegacyMemberDetailUrl } from "../../lib/watson/customerIdentifier";
+
+interface Props {
+  memberids: string[];
+}
+
+const { memberids } = Astro.props;
+---
+
+{
+  memberids.length > 0 ? (
+    <section
+      class="watson__panel watson-customer__legacy-ambiguity"
+      aria-labelledby="watson-customer-legacy-ambiguity-heading"
+    >
+      <h2 id="watson-customer-legacy-ambiguity-heading" class="watson__panel-title">
+        Legacy email match
+      </h2>
+      <p class="watson-customer__legacy-ambiguity-message">
+        Multiple legacy customer records use this email. Legacy history has not been linked
+        automatically.
+      </p>
+      <ul class="watson-customer__legacy-ambiguity-list">
+        {
+          memberids.map((memberid) => (
+            <li>
+              <a href={buildLegacyMemberDetailUrl(memberid)}>{memberid}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  ) : null
+}

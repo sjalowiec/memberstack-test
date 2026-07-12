@@ -1,0 +1,81 @@
+---
+import WatsonMemberLegacyNotesContent from "./WatsonMemberLegacyNotesContent.astro";
+import WatsonMemberWatsonNotesContent from "./WatsonMemberWatsonNotesContent.astro";
+import { getMemberLegacySupportNotes } from "../../lib/watson/memberSupportNotes";
+import { getCustomerWatsonNotes } from "../../lib/watson/watsonNotes";
+
+interface Props {
+  notesWriteId: string;
+  memberstackId?: string | null;
+  legacyMemberid?: string | null;
+  profileType: "legacy" | "memberstack";
+}
+
+const { notesWriteId, memberstackId = null, legacyMemberid = null, profileType } = Astro.props;
+const notesReadMemberstackId =
+  profileType === "memberstack" ? notesWriteId : (memberstackId ?? notesWriteId);
+const notesReadLegacyMemberid = legacyMemberid;
+
+let legacyNotes: Awaited<ReturnType<typeof getMemberLegacySupportNotes>> = [];
+let watsonNotes: Awaited<ReturnType<typeof getCustomerWatsonNotes>> = [];
+let loadError: string | null = null;
+
+try {
+  [watsonNotes, legacyNotes] = await Promise.all([
+    getCustomerWatsonNotes(notesReadMemberstackId, notesReadLegacyMemberid),
+    legacyMemberid ? getMemberLegacySupportNotes(legacyMemberid) : Promise.resolve([]),
+  ]);
+} catch (error) {
+  loadError = error instanceof Error ? error.message : "Unable to load customer notes.";
+}
+---
+
+<section
+  id="customer-notes"
+  class="watson__panel watson-customer__notes"
+  aria-labelledby="watson-customer-notes-heading"
+>
+  <h2 id="watson-customer-notes-heading" class="watson__panel-title">Customer notes</h2>
+  {
+    loadError ? (
+      <p class="watson__status watson__status--error" role="alert">{loadError}</p>
+    ) : (
+      <div class="watson-member-notes__grid">
+        <div class="watson-member-notes__column">
+          <h3 class="watson-member-notes__column-title">Legacy Notes</h3>
+          <p class="watson__section-note">
+            Read-only notes imported from the legacy <code>Members.Notes</code> field.
+          </p>
+          {
+            legacyMemberid ? (
+              <WatsonMemberLegacyNotesContent notes={legacyNotes} />
+            ) : (
+              <p class="watson__placeholder watson-customer__unavailable">No legacy history</p>
+            )
+          }
+        </div>
+        <div class="watson-member-notes__column">
+          <h3 class="watson-member-notes__column-title">Watson Notes</h3>
+          <p class="watson__section-note">
+            Private admin notes keyed to the customer ID for this profile route. Notes stored under
+            the other identifier remain visible when linked.
+          </p>
+          <WatsonMemberWatsonNotesContent memberid={notesWriteId} notes={watsonNotes} />
+        </div>
+      </div>
+    )
+  }
+</section>
+
+<script>
+  import { initWatsonNotesPanel } from "../../lib/watson/watsonMemberWatsonNotesSection";
+
+  const root = document.querySelector<HTMLElement>("[data-watson-notes-root]");
+  if (root) {
+    initWatsonNotesPanel(root, {
+      onNotesChanged: async () => {
+        window.location.reload();
+      },
+    });
+  }
+</script>
