@@ -1,0 +1,223 @@
+---
+import {
+  getVisibleMembershipColumns,
+  type MemberMembershipDisplay,
+} from "../../lib/watson/memberMembership";
+
+interface Props {
+  records: MemberMembershipDisplay[];
+}
+
+const { records } = Astro.props;
+const visibleColumns = getVisibleMembershipColumns(records);
+---
+
+{
+  records.length === 0 ? (
+    <p class="watson__placeholder">No legacy subscription records found for this member.</p>
+  ) : (
+    <div class="watson__table-wrap">
+      <table class="watson-table" data-sortable-table data-membership-table>
+        <thead>
+          <tr>
+            <th
+              scope="col"
+              data-sort-key="subscriptionid"
+              data-sort-type="string"
+              data-sort-default={visibleColumns.showStartDate ? undefined : "true"}
+              data-sort-default-direction={visibleColumns.showStartDate ? undefined : "desc"}
+              tabindex="0"
+            >
+              Subscription ID
+            </th>
+            {
+              visibleColumns.showSubscriptionRateId ? (
+                <th scope="col" data-sort-key="rateid" data-sort-type="string" tabindex="0">
+                  Subscription rate ID
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showStartDate ? (
+                <th
+                  scope="col"
+                  data-sort-key="startdate"
+                  data-sort-type="date"
+                  data-sort-default="true"
+                  data-sort-default-direction="desc"
+                  tabindex="0"
+                >
+                  Start date (Datebought)
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showExpirationDate ? (
+                <th scope="col" data-sort-key="expirationdate" data-sort-type="date" tabindex="0">
+                  Expiration date
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showCancelDate ? (
+                <th scope="col" data-sort-key="canceldate" data-sort-type="date" tabindex="0">
+                  Cancel date
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showCancelledFlag ? (
+                <th scope="col" data-sort-key="cancelledflag" data-sort-type="string" tabindex="0">
+                  Cancelled flag
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showAmount ? (
+                <th scope="col" data-sort-key="amount" data-sort-type="string" tabindex="0">
+                  Amount (Dollaramount)
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showRenewalFlag ? (
+                <th scope="col" data-sort-key="renewalflag" data-sort-type="string" tabindex="0">
+                  Renewal flag
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showMonthlyBillingFlag ? (
+                <th scope="col" data-sort-key="monthlybillingflag" data-sort-type="string" tabindex="0">
+                  Monthly billing flag
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showPremiumFlag ? (
+                <th scope="col" data-sort-key="premiumflag" data-sort-type="string" tabindex="0">
+                  Premium flag
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showProcessor ? (
+                <th scope="col" data-sort-key="processor" data-sort-type="string" tabindex="0">
+                  Processor
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showTransactionGuid ? (
+                <th scope="col" data-sort-key="transactionguid" data-sort-type="string" tabindex="0">
+                  Transaction GUID
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showArbId ? (
+                <th scope="col" data-sort-key="arbid" data-sort-type="string" tabindex="0">
+                  ARB ID
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showInvoiceNumber ? (
+                <th scope="col" data-sort-key="invoicenumber" data-sort-type="string" tabindex="0">
+                  Invoice number
+                </th>
+              ) : null
+            }
+          </tr>
+        </thead>
+        <tbody>
+          {
+            records.map((record) => (
+              <tr>
+                <td data-sort-value={record.subscriptionId}>{record.subscriptionId}</td>
+                {
+                  visibleColumns.showSubscriptionRateId ? (
+                    <td data-sort-value={record.subscriptionRateId ?? ""}>
+                      {record.subscriptionRateId ?? "ù"}
+                    </td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showStartDate ? (
+                    <td data-sort-value={record.startDateSort}>{record.startDate ?? "ù"}</td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showExpirationDate ? (
+                    <td data-sort-value={record.expirationDateSort}>
+                      {record.expirationDate ?? "ù"}
+                    </td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showCancelDate ? (
+                    <td data-sort-value={record.cancelDateSort}>{record.cancelDate ?? "ù"}</td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showCancelledFlag ? (
+                    <td data-sort-value={record.cancelledFlag ?? ""}>{record.cancelledFlag ?? "ù"}</td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showAmount ? (
+                    <td data-sort-value={record.amountSort}>{record.amount ?? "ù"}</td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showRenewalFlag ? (
+                    <td data-sort-value={record.renewalFlag ?? ""}>{record.renewalFlag ?? "ù"}</td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showMonthlyBillingFlag ? (
+                    <td data-sort-value={record.monthlyBillingFlag ?? ""}>
+                      {record.monthlyBillingFlag ?? "ù"}
+                    </td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showPremiumFlag ? (
+                    <td data-sort-value={record.premiumFlag ?? ""}>{record.premiumFlag ?? "ù"}</td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showProcessor ? (
+                    <td data-sort-value={record.processor ?? ""}>{record.processor ?? "ù"}</td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showTransactionGuid ? (
+                    <td data-sort-value={record.transactionGuid ?? ""}>
+                      {record.transactionGuid ?? "ù"}
+                    </td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showArbId ? (
+                    <td data-sort-value={record.arbId ?? ""}>{record.arbId ?? "ù"}</td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showInvoiceNumber ? (
+                    <td data-sort-value={record.invoiceNumber ?? ""}>{record.invoiceNumber ?? "ù"}</td>
+                  ) : null
+                }
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+<script>
+  import { initSortableTables } from "../../lib/watson/sortableTable";
+  initSortableTables(document);
+</script>

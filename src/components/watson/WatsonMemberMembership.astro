@@ -1,0 +1,49 @@
+---
+import {
+  buildMembershipFragmentUrl,
+  formatMembershipSectionHeading,
+  MEMBERSHIP_SECTION_SHOW_LABEL,
+} from "../../lib/watson/watsonMemberMembershipSection";
+
+interface Props {
+  memberid: string;
+  recordCount: number;
+}
+
+const { memberid, recordCount } = Astro.props;
+const heading = formatMembershipSectionHeading(recordCount);
+const fragmentUrl = buildMembershipFragmentUrl(memberid);
+---
+
+<section
+  class="watson__panel watson-membership__section"
+  aria-labelledby="watson-membership-heading"
+  data-watson-membership-section
+  data-record-count={String(recordCount)}
+  data-membership-fragment-url={fragmentUrl}
+>
+  <div class="watson-orders__section-header">
+    <h2 id="watson-membership-heading" class="watson__panel-title watson-orders__section-title">
+      {heading}
+    </h2>
+    <button
+      type="button"
+      class="watson-orders__section-toggle"
+      data-watson-membership-section-toggle
+      aria-expanded="false"
+      aria-controls="watson-membership-panel"
+    >
+      {MEMBERSHIP_SECTION_SHOW_LABEL}
+    </button>
+  </div>
+  <p class="watson__section-note">
+    Imported from <code>legacy_subscriptions</code>. Each row is a separate legacy subscription
+    record. Flag columns show raw legacy values (0/1) without reinterpretation.
+  </p>
+  <div id="watson-membership-panel" data-watson-membership-panel hidden></div>
+</section>
+
+<script>
+  import { initMemberMembershipSections } from "../../lib/watson/watsonMemberMembershipSection";
+  initMemberMembershipSections(document);
+</script>
