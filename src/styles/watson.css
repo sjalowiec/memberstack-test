@@ -329,3 +329,166 @@
 .watson-orders__items-table {
   margin-top: 0.25rem;
 }
+
+.watson__section-note {
+  margin: 0 0 0.85rem 0;
+  font-size: 0.88rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.watson-member-notes__grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 900px) {
+  .watson-member-notes__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+.watson-member-notes__column-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #243015;
+}
+
+.watson-member-notes__legacy-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.watson-member-notes__legacy-item {
+  padding: 0.75rem 0.85rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.watson-watson-notes__form {
+  display: grid;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.watson-watson-notes__form-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #243015;
+}
+
+.watson-watson-notes__label {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.watson-watson-notes__label select,
+.watson-watson-notes__label textarea {
+  font: inherit;
+  font-weight: 400;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #334155;
+}
+
+.watson-watson-notes__label textarea {
+  resize: vertical;
+  min-height: 5rem;
+}
+
+.watson-watson-notes__form-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.watson-watson-notes__status {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.watson-watson-notes__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.watson-watson-notes__item {
+  padding: 0.75rem 0.85rem;
+  background: #fff;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+}
+
+.watson-watson-notes__item-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  align-items: baseline;
+  margin-bottom: 0.45rem;
+}
+
+.watson-watson-notes__category {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #1d4ed8;
+}
+
+.watson-watson-notes__meta {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.watson-watson-notes__text {
+  margin: 0 0 0.55rem 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #334155;
+  line-height: 1.6;
+}
+
+.watson-watson-notes__item-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.watson-watson-notes__action {
+  padding: 0.25rem 0.55rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #3f6212;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.watson-watson-notes__action:hover {
+  background: #f1f5f9;
+}
+
+.watson-watson-notes__action--danger {
+  color: #b91c1c;
+}
+
+.watson-watson-notes__edit-form {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.5rem;
+}

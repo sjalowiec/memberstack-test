@@ -1,0 +1,68 @@
+---
+import {
+  buildLegacyNotesFragmentUrl,
+  buildWatsonNotesFragmentUrl,
+  formatMemberNotesSectionHeading,
+  MEMBER_NOTES_SECTION_SHOW_LABEL,
+} from "../../lib/watson/watsonMemberNotesSection";
+
+interface Props {
+  memberid: string;
+  legacyNoteCount: number;
+  watsonNoteCount: number;
+}
+
+const { memberid, legacyNoteCount, watsonNoteCount } = Astro.props;
+const heading = formatMemberNotesSectionHeading(legacyNoteCount, watsonNoteCount);
+const legacyFragmentUrl = buildLegacyNotesFragmentUrl(memberid);
+const watsonFragmentUrl = buildWatsonNotesFragmentUrl(memberid);
+---
+
+<section
+  class="watson__panel watson-member-notes__section"
+  aria-labelledby="watson-member-notes-heading"
+  data-watson-member-notes-section
+  data-legacy-note-count={String(legacyNoteCount)}
+  data-watson-note-count={String(watsonNoteCount)}
+  data-legacy-notes-fragment-url={legacyFragmentUrl}
+  data-watson-notes-fragment-url={watsonFragmentUrl}
+  data-memberid={memberid}
+>
+  <div class="watson-orders__section-header">
+    <h2 id="watson-member-notes-heading" class="watson__panel-title watson-orders__section-title">
+      {heading}
+    </h2>
+    <button
+      type="button"
+      class="watson-orders__section-toggle"
+      data-watson-member-notes-section-toggle
+      aria-expanded="false"
+      aria-controls="watson-member-notes-panel"
+    >
+      {MEMBER_NOTES_SECTION_SHOW_LABEL}
+    </button>
+  </div>
+  <div id="watson-member-notes-panel" data-watson-member-notes-panel hidden>
+    <div class="watson-member-notes__grid">
+      <div class="watson-member-notes__column" data-watson-legacy-notes-column>
+        <h3 class="watson-member-notes__column-title">Legacy Notes</h3>
+        <p class="watson__section-note">
+          Read-only notes imported from the legacy <code>Members.Notes</code> field.
+        </p>
+        <div data-watson-legacy-notes-panel></div>
+      </div>
+      <div class="watson-member-notes__column" data-watson-watson-notes-column>
+        <h3 class="watson-member-notes__column-title">Watson Notes</h3>
+        <p class="watson__section-note">
+          Private admin notes created in Watson from 2026 forward.
+        </p>
+        <div data-watson-watson-notes-panel></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { initMemberNotesSections } from "../../lib/watson/watsonMemberNotesSection";
+  initMemberNotesSections(document);
+</script>

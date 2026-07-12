@@ -9,6 +9,7 @@ import {
 describe("watsonAccess", () => {
   it("matches /watson and nested routes", () => {
     expect(isWatsonRoute("/watson")).toBe(true);
+    expect(isWatsonRoute("/watson/current")).toBe(true);
     expect(isWatsonRoute("/watson/members/123")).toBe(true);
     expect(isWatsonRoute("/watsonish")).toBe(false);
     expect(isWatsonRoute("/admin")).toBe(false);

@@ -1,0 +1,35 @@
+---
+import { type MemberLegacySupportNoteDisplay } from "../../lib/watson/memberSupportNotes";
+
+interface Props {
+  notes: MemberLegacySupportNoteDisplay[];
+}
+
+const { notes } = Astro.props;
+---
+
+{
+  notes.length === 0 ? (
+    <p class="watson__placeholder">No legacy admin notes found for this member.</p>
+  ) : (
+    <div class="watson-member-notes__legacy-list">
+      {
+        notes.map((note) => (
+          <div class="watson-member-notes__legacy-item" data-legacy-note-readonly>
+            <p class="watson-member-notes__legacy-text">{note.noteText}</p>
+          </div>
+        ))
+      }
+    </div>
+  )
+}
+
+<style>
+  .watson-member-notes__legacy-text {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: #334155;
+    line-height: 1.6;
+  }
+</style>

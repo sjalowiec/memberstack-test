@@ -1,0 +1,108 @@
+---
+import {
+  WATSON_NOTE_CATEGORIES,
+  WATSON_NOTE_DEFAULT_AUTHOR,
+  type WatsonNoteDisplay,
+} from "../../lib/watson/watsonNotes";
+
+interface Props {
+  memberid: string;
+  notes: WatsonNoteDisplay[];
+}
+
+const { memberid, notes } = Astro.props;
+---
+
+<div class="watson-watson-notes" data-watson-notes-root data-memberid={memberid}>
+  <form class="watson-watson-notes__form" data-watson-note-add-form>
+    <h4 class="watson-watson-notes__form-title">Add note</h4>
+    <label class="watson-watson-notes__label">
+      Category
+      <select name="category" required>
+        {
+          WATSON_NOTE_CATEGORIES.map((category) => (
+            <option value={category} selected={category === "General"}>
+              {category}
+            </option>
+          ))
+        }
+      </select>
+    </label>
+    <label class="watson-watson-notes__label">
+      Note
+      <textarea
+        name="noteText"
+        rows="4"
+        required
+        placeholder="Enter support note text"></textarea>
+    </label>
+    <input type="hidden" name="createdBy" value={WATSON_NOTE_DEFAULT_AUTHOR} />
+    <div class="watson-watson-notes__form-actions">
+      <button type="submit" class="watson__button">Add note</button>
+    </div>
+    <p class="watson-watson-notes__status" data-watson-note-form-status hidden></p>
+  </form>
+
+  {
+    notes.length === 0 ? (
+      <p class="watson__placeholder" data-watson-notes-empty>No Watson notes yet.</p>
+    ) : (
+      <ul class="watson-watson-notes__list" data-watson-notes-list>
+        {
+          notes.map((note) => (
+            <li class="watson-watson-notes__item" data-watson-note-item data-note-id={note.id}>
+              <div class="watson-watson-notes__item-header">
+                <span class="watson-watson-notes__category">{note.category}</span>
+                <span class="watson-watson-notes__meta">
+                  {note.createdAt} ù {note.createdBy}
+                  {note.updatedAt ? ` ù updated ${note.updatedAt}` : ""}
+                </span>
+              </div>
+              <p class="watson-watson-notes__text" data-watson-note-text>
+                {note.noteText}
+              </p>
+              <div class="watson-watson-notes__item-actions">
+                <button type="button" class="watson-watson-notes__action" data-watson-note-edit>
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  class="watson-watson-notes__action watson-watson-notes__action--danger"
+                  data-watson-note-delete
+                >
+                  Delete
+                </button>
+              </div>
+              <form class="watson-watson-notes__edit-form" data-watson-note-edit-form hidden>
+                <label class="watson-watson-notes__label">
+                  Category
+                  <select name="category" required>
+                    {
+                      WATSON_NOTE_CATEGORIES.map((category) => (
+                        <option value={category} selected={category === note.category}>
+                          {category}
+                        </option>
+                      ))
+                    }
+                  </select>
+                </label>
+                <label class="watson-watson-notes__label">
+                  Note
+                  <textarea name="noteText" rows="4" required>
+                    {note.noteText}
+                  </textarea>
+                </label>
+                <div class="watson-watson-notes__form-actions">
+                  <button type="submit" class="watson__button">Save</button>
+                  <button type="button" class="watson-watson-notes__action" data-watson-note-cancel>
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </li>
+          ))
+        }
+      </ul>
+    )
+  }
+</div>

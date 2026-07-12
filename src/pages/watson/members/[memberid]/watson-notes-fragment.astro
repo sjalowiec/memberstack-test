@@ -1,0 +1,23 @@
+---
+import WatsonMemberWatsonNotesContent from "../../../../components/watson/WatsonMemberWatsonNotesContent.astro";
+import { getMemberWatsonNotes } from "../../../../lib/watson/watsonNotes";
+
+export const prerender = false;
+
+const memberid = Astro.params.memberid ? decodeURIComponent(Astro.params.memberid) : "";
+
+if (!memberid) {
+  return new Response("Member ID required.", { status: 400 });
+}
+
+let notes: Awaited<ReturnType<typeof getMemberWatsonNotes>> = [];
+
+try {
+  notes = await getMemberWatsonNotes(memberid);
+} catch (error) {
+  const message = error instanceof Error ? error.message : "Unable to load Watson notes.";
+  return new Response(message, { status: 500 });
+}
+---
+
+<WatsonMemberWatsonNotesContent memberid={memberid} notes={notes} />

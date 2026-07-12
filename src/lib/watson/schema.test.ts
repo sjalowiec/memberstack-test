@@ -8,6 +8,7 @@ import {
   getLegacyMetadataSchemaStatements,
   getLegacySchemaStatements,
   getLegacyTableSchemaStatements,
+  getWatsonNativeSchemaStatements,
 } from "./schema";
 
 describe("schema", () => {
@@ -27,6 +28,12 @@ describe("schema", () => {
     const indexStatements = getLegacyIndexSchemaStatements();
     expect(indexStatements).toHaveLength(9);
     expect(indexStatements[0]?.label).toBe("index idx_legacy_members_email");
+
+    const nativeStatements = getWatsonNativeSchemaStatements();
+    expect(nativeStatements).toHaveLength(2);
+    expect(nativeStatements[0]?.label).toBe("table watson_notes");
+    expect(nativeStatements[0]?.sql).toContain("CREATE TABLE IF NOT EXISTS watson_notes");
+    expect(nativeStatements[1]?.label).toBe("index idx_watson_notes_memberid_created");
   });
 
   it("keeps generated schema.sql content in sync with statement builders", () => {

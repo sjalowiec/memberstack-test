@@ -235,6 +235,18 @@ CREATE TABLE IF NOT EXISTS watson_import_run_tables (
   PRIMARY KEY (import_run_id, pg_table)
 );
 
+CREATE TABLE IF NOT EXISTS watson_notes (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  memberid TEXT NOT NULL,
+  note_text TEXT NOT NULL,
+  category TEXT NOT NULL CHECK (category IN ('General', 'Course', 'Membership', 'Payment', 'Support')),
+  created_by TEXT NOT NULL DEFAULT 'Sue',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_watson_notes_memberid_created ON watson_notes (memberid, created_at DESC);
+
 CREATE INDEX IF NOT EXISTS idx_legacy_members_email ON legacy_members (LOWER(email));
 
 CREATE INDEX IF NOT EXISTS idx_legacy_members_lastname ON legacy_members (lastname);

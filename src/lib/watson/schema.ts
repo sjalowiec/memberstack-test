@@ -66,6 +66,27 @@ export function getLegacyTableSchemaStatements(
   }));
 }
 
+export function getWatsonNativeSchemaStatements(): SchemaStatement[] {
+  return [
+    {
+      label: "table watson_notes",
+      sql: `CREATE TABLE IF NOT EXISTS watson_notes (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  memberid TEXT NOT NULL,
+  note_text TEXT NOT NULL,
+  category TEXT NOT NULL CHECK (category IN ('General', 'Course', 'Membership', 'Payment', 'Support')),
+  created_by TEXT NOT NULL DEFAULT 'Sue',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ
+)`,
+    },
+    {
+      label: "index idx_watson_notes_memberid_created",
+      sql: "CREATE INDEX IF NOT EXISTS idx_watson_notes_memberid_created ON watson_notes (memberid, created_at DESC)",
+    },
+  ];
+}
+
 export function getLegacyMetadataSchemaStatements(): SchemaStatement[] {
   return [
     {
@@ -145,6 +166,7 @@ export function getLegacySchemaStatements(
   return [
     ...getLegacyTableSchemaStatements(definitions),
     ...getLegacyMetadataSchemaStatements(),
+    ...getWatsonNativeSchemaStatements(),
     ...getLegacyIndexSchemaStatements(),
   ];
 }
@@ -257,6 +279,13 @@ export async function applyLegacyIndexes(
   options.onProgress?.("Index creation started...");
   await applySchemaStatements(client, getLegacyIndexSchemaStatements(), options.onProgress);
   options.onProgress?.("Index creation completed.");
+}
+
+export async function applyWatsonNativeSchema(
+  client: { query: (sql: string) => Promise<unknown> },
+  options: { onProgress?: (message: string) => void } = {},
+): Promise<void> {
+  await applySchemaStatements(client, getWatsonNativeSchemaStatements(), options.onProgress);
 }
 
 export async function truncateLegacyTables(
