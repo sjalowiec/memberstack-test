@@ -1,0 +1,45 @@
+---
+import {
+  buildOrdersFragmentUrl,
+  formatOrdersSectionHeading,
+  ORDERS_SECTION_SHOW_LABEL,
+} from "../../lib/watson/watsonMemberOrdersSection";
+
+interface Props {
+  memberid: string;
+  orderCount: number;
+}
+
+const { memberid, orderCount } = Astro.props;
+const heading = formatOrdersSectionHeading(orderCount);
+const fragmentUrl = buildOrdersFragmentUrl(memberid);
+---
+
+<section
+  class="watson__panel watson-orders__section"
+  aria-labelledby="watson-orders-heading"
+  data-watson-orders-section
+  data-order-count={String(orderCount)}
+  data-orders-fragment-url={fragmentUrl}
+>
+  <div class="watson-orders__section-header">
+    <h2 id="watson-orders-heading" class="watson__panel-title watson-orders__section-title">
+      {heading}
+    </h2>
+    <button
+      type="button"
+      class="watson-orders__section-toggle"
+      data-watson-orders-section-toggle
+      aria-expanded="false"
+      aria-controls="watson-orders-panel"
+    >
+      {ORDERS_SECTION_SHOW_LABEL}
+    </button>
+  </div>
+  <div id="watson-orders-panel" data-watson-orders-panel hidden></div>
+</section>
+
+<script>
+  import { initMemberOrdersSections } from "../../lib/watson/watsonMemberOrdersSection";
+  initMemberOrdersSections(document);
+</script>

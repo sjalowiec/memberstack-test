@@ -1,5 +1,5 @@
 /**
- * Watson support UI styles — functional tables and search, no Bootstrap.
+ * Watson support UI styles  functional tables and search, no Bootstrap.
  */
 .watson {
   width: 100%;
@@ -200,4 +200,132 @@
 .watson__meta dd {
   display: inline;
   margin: 0 1rem 0 0.35rem;
+}
+
+.watson__back-link {
+  margin: 0;
+}
+
+.watson__back-link a {
+  color: #3f6212;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.watson__back-link a:hover {
+  text-decoration: underline;
+}
+
+.watson-overview {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.watson-overview__row {
+  display: grid;
+  gap: 0.2rem;
+}
+
+@media (min-width: 640px) {
+  .watson-overview__row {
+    grid-template-columns: 11rem 1fr;
+    gap: 1rem;
+  }
+}
+
+.watson-overview dt {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #64748b;
+}
+
+.watson-overview dd {
+  margin: 0;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.watson-overview__multiline {
+  white-space: pre-line;
+}
+
+.watson__future-sections {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+@media (min-width: 760px) {
+  .watson__future-sections {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.watson__panel--placeholder {
+  margin-top: 0;
+}
+
+.watson-orders__section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.watson-orders__section-title {
+  margin-bottom: 0;
+}
+
+.watson-orders__section-toggle {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #3f6212;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.watson-orders__section-toggle:hover {
+  background: #f1f5f9;
+}
+
+.watson-orders__section-toggle:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.watson-orders__expand-col {
+  width: 6.5rem;
+}
+
+.watson-orders__toggle {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #3f6212;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.watson-orders__toggle:hover {
+  background: #f1f5f9;
+}
+
+.watson-orders__items-row > td {
+  background: #f8fafc;
+}
+
+.watson-orders__items-table {
+  margin-top: 0.25rem;
 }

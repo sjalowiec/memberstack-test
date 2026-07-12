@@ -1,32 +1,93 @@
 ---
+import WatsonMemberCourses from "../../../components/watson/WatsonMemberCourses.astro";
+import WatsonMemberOrders from "../../../components/watson/WatsonMemberOrders.astro";
+import WatsonMemberOverview from "../../../components/watson/WatsonMemberOverview.astro";
+import WatsonMemberPlaceholders from "../../../components/watson/WatsonMemberPlaceholders.astro";
 import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
+import {
+  buildMemberOverviewFields,
+  buildMemberSearchReturnUrl,
+  getLegacyMemberById,
+  watsonMemberNotFoundHtml,
+} from "../../../lib/watson/memberDetail";
+import { getMemberOrderCount } from "../../../lib/watson/memberOrders";
+import { getMemberCourses } from "../../../lib/watson/memberCourses";
+import { formatMemberDisplayName } from "../../../lib/watson/memberSearch";
 
 export const prerender = false;
 
 const memberid = Astro.params.memberid ? decodeURIComponent(Astro.params.memberid) : "";
+const searchQuery = Astro.url.searchParams.get("q");
+const backHref = buildMemberSearchReturnUrl(searchQuery);
+
+if (!memberid) {
+  return new Response(watsonMemberNotFoundHtml(""), {
+    status: 404,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
+let member: Awaited<ReturnType<typeof getLegacyMemberById>> = null;
+let orderCount = 0;
+let courses: Awaited<ReturnType<typeof getMemberCourses>> = [];
+let loadError: string | null = null;
+
+try {
+  member = await getLegacyMemberById(memberid);
+  if (member) {
+    [orderCount, courses] = await Promise.all([
+      getMemberOrderCount(memberid),
+      getMemberCourses(memberid),
+    ]);
+  }
+} catch (error) {
+  loadError = error instanceof Error ? error.message : "Unable to load member.";
+}
+
+if (!loadError && !member) {
+  return new Response(watsonMemberNotFoundHtml(memberid), {
+    status: 404,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+    },
+  });
+}
+
+const overviewFields = member ? buildMemberOverviewFields(member) : [];
+const displayName = member ? formatMemberDisplayName(member) : "Member Detail";
 ---
 
-<WatsonPageShell
-  title={`Watson Member ${memberid || "Detail"} | Knit it Now`}
-  description="Legacy member detail placeholder for Watson support."
-  heading="Member Detail"
-  intro="Placeholder page — full member overview and history tabs will be added in a later Watson phase."
->
-  <section class="watson__panel">
-    <h2 class="watson__panel-title">Legacy member ID</h2>
-    <p class="watson__placeholder">
-      {memberid ? memberid : "No member ID provided."}
-    </p>
-    <dl class="watson__meta">
-      <dt>Status</dt>
-      <dd>Detail view not built yet</dd>
-    </dl>
-    <p class="watson__placeholder">
-      Orders, courses, saved patterns, PDF purchases, and support notes will appear here in future
-      releases. Imported legacy data remains read-only.
-    </p>
-    <p>
-      <a href="/watson">? Back to member search</a>
-    </p>
-  </section>
-</WatsonPageShell>
+{
+  loadError ? (
+    <WatsonPageShell
+      title="Watson Member Detail | Knit it Now"
+      description="Legacy member detail for Watson support."
+      heading="Member Detail"
+    >
+      <p class="watson__status watson__status--error" role="alert">{loadError}</p>
+      <p>
+        <a href={backHref}>? Back to Search</a>
+      </p>
+    </WatsonPageShell>
+  ) : (
+    <WatsonPageShell
+      title={`${displayName} | Watson`}
+      description="Read-only legacy member overview for Watson support."
+      heading={displayName}
+      intro={`Legacy member ID: ${memberid}`}
+    >
+      <p slot="head" class="watson__back-link">
+        <a href={backHref}>? Back to Search</a>
+      </p>
+
+      <WatsonMemberOverview fields={overviewFields} />
+      <WatsonMemberOrders memberid={memberid} orderCount={orderCount} />
+      <WatsonMemberCourses courses={courses} />
+      <WatsonMemberPlaceholders />
+    </WatsonPageShell>
+  )
+}

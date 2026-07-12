@@ -1,0 +1,170 @@
+---
+import {
+  getVisibleItemColumns,
+  getVisibleOrderColumns,
+  type MemberOrderDisplay,
+} from "../../lib/watson/memberOrders";
+
+interface Props {
+  orders: MemberOrderDisplay[];
+}
+
+const { orders } = Astro.props;
+const visibleColumns = getVisibleOrderColumns(orders);
+const colspan =
+  3 + (visibleColumns.showStatus ? 1 : 0) + (visibleColumns.showPayment ? 1 : 0);
+---
+
+{
+  orders.length === 0 ? (
+    <p class="watson__placeholder">No store orders found for this member.</p>
+  ) : (
+    <div class="watson__table-wrap">
+      <table class="watson-table" data-sortable-table data-order-table>
+        <thead>
+          <tr>
+            <th scope="col" class="watson-orders__expand-col" aria-label="Expand order items">
+              <span class="visually-hidden">Expand</span>
+            </th>
+            <th scope="col" data-sort-key="transactionid" data-sort-type="string" tabindex="0">
+              Transaction ID
+            </th>
+            <th
+              scope="col"
+              data-sort-key="orderdate"
+              data-sort-type="date"
+              data-sort-default="true"
+              data-sort-default-direction="desc"
+              tabindex="0"
+            >
+              Order date
+            </th>
+            {
+              visibleColumns.showStatus ? (
+                <th scope="col" data-sort-key="status" data-sort-type="string" tabindex="0">
+                  Order status
+                </th>
+              ) : null
+            }
+            <th scope="col" data-sort-key="total" data-sort-type="string" tabindex="0">
+              Order total
+            </th>
+            {
+              visibleColumns.showPayment ? (
+                <th scope="col" data-sort-key="payment" data-sort-type="string" tabindex="0">
+                  Payment method
+                </th>
+              ) : null
+            }
+          </tr>
+        </thead>
+        <tbody>
+          {
+            orders.map((order) => {
+              const itemColumns = getVisibleItemColumns(order.items);
+              return (
+                <>
+                  <tr data-sort-row data-order-id={order.storeTransactionId}>
+                    <td>
+                      <button
+                        type="button"
+                        class="watson-orders__toggle"
+                        aria-expanded="false"
+                        aria-controls={`order-items-${order.storeTransactionId}`}
+                        data-order-toggle={order.storeTransactionId}
+                      >
+                        Show items
+                      </button>
+                    </td>
+                    <td data-sort-value={order.transactionId}>{order.transactionId}</td>
+                    <td data-sort-value={order.orderDateSort}>{order.orderDate ?? "—"}</td>
+                    {
+                      visibleColumns.showStatus ? (
+                        <td data-sort-value={order.orderStatus ?? ""}>
+                          {order.orderStatus ?? "—"}
+                        </td>
+                      ) : null
+                    }
+                    <td data-sort-value={order.orderTotalSort}>{order.orderTotal ?? "—"}</td>
+                    {
+                      visibleColumns.showPayment ? (
+                        <td data-sort-value={order.paymentMethod ?? ""}>
+                          {order.paymentMethod ?? "—"}
+                        </td>
+                      ) : null
+                    }
+                  </tr>
+                  <tr
+                    class="watson-orders__items-row"
+                    data-sort-ignore
+                    data-order-items-row={order.storeTransactionId}
+                    id={`order-items-${order.storeTransactionId}`}
+                    hidden
+                  >
+                    <td colspan={colspan}>
+                      {
+                        order.items.length === 0 ? (
+                          <p class="watson__placeholder">No line items found for this order.</p>
+                        ) : (
+                          <table class="watson-table watson-orders__items-table">
+                            <thead>
+                              <tr>
+                                <th scope="col">Item</th>
+                                {
+                                  itemColumns.showQuantity ? (
+                                    <th scope="col">Quantity</th>
+                                  ) : null
+                                }
+                                {
+                                  itemColumns.showItemPrice ? (
+                                    <th scope="col">Item price</th>
+                                  ) : null
+                                }
+                                {
+                                  itemColumns.showLineTotal ? (
+                                    <th scope="col">Line total</th>
+                                  ) : null
+                                }
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {order.items.map((item) => (
+                                <tr>
+                                  <td>{item.description}</td>
+                                  {
+                                    itemColumns.showQuantity ? (
+                                      <td>{item.quantity ?? "—"}</td>
+                                    ) : null
+                                  }
+                                  {
+                                    itemColumns.showItemPrice ? (
+                                      <td>{item.itemPrice ?? "—"}</td>
+                                    ) : null
+                                  }
+                                  {
+                                    itemColumns.showLineTotal ? (
+                                      <td>{item.lineTotal ?? "—"}</td>
+                                    ) : null
+                                  }
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        )
+                      }
+                    </td>
+                  </tr>
+                </>
+              );
+            })
+          }
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+<script>
+  import { initOrderItemToggles } from "../../lib/watson/watsonOrdersTable";
+  initOrderItemToggles(document);
+</script>

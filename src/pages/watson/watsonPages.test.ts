@@ -21,8 +21,11 @@ describe("Watson member search pages", () => {
     expect(searchPage).toContain("/watson/members/${encodeURIComponent(row.memberid)}");
 
     expect(detailPage).toContain('export const prerender = false');
-    expect(detailPage).toContain("Astro.params.memberid");
-    expect(detailPage).toContain('href="/watson"');
+    expect(detailPage).toContain("getLegacyMemberById");
+    expect(detailPage).toContain("buildMemberOverviewFields");
+    expect(detailPage).toContain("watsonMemberNotFoundHtml");
+    expect(detailPage).toContain("Back to Search");
+    expect(detailPage).toContain("WatsonMemberPlaceholders");
 
     expect(middleware).toContain("isWatsonRoute");
     expect(middleware).toContain("requireAdminForRequest");

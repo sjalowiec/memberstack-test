@@ -105,7 +105,9 @@ if (hasQuery) {
                 const location = formatMemberLocation(row);
                 const joinedSort = formatMemberJoinedDate(row.datejoined);
                 const joinedDisplay = formatMemberJoinedDateDisplay(row.datejoined);
-                const detailHref = `/watson/members/${encodeURIComponent(row.memberid)}`;
+                const detailHref = `/watson/members/${encodeURIComponent(row.memberid)}${
+                  rawQuery ? `?q=${encodeURIComponent(rawQuery)}` : ""
+                }`;
 
                 return (
                   <tr>

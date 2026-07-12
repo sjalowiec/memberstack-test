@@ -1,0 +1,110 @@
+---
+import {
+  getVisibleCourseColumns,
+  type MemberCourseDisplay,
+} from "../../lib/watson/memberCourses";
+
+interface Props {
+  courses: MemberCourseDisplay[];
+}
+
+const { courses } = Astro.props;
+const visibleColumns = getVisibleCourseColumns(courses);
+---
+
+<section class="watson__panel" aria-labelledby="watson-courses-heading">
+  <h2 id="watson-courses-heading" class="watson__panel-title">Courses</h2>
+  <p class="watson__section-note">
+    Imported from <code>legacy_course_member_library</code>. Each row is a separate legacy
+    enrollment record. Completion, progress, amount paid, and last activity are not in this export.
+  </p>
+  {
+    courses.length === 0 ? (
+      <p class="watson__placeholder">No course library records found for this member.</p>
+    ) : (
+      <div class="watson__table-wrap">
+        <table class="watson-table" data-sortable-table data-courses-table>
+          <thead>
+            <tr>
+              <th scope="col" data-sort-key="recordid" data-sort-type="string" tabindex="0">
+                Record ID
+              </th>
+              <th scope="col" data-sort-key="courseid" data-sort-type="string" tabindex="0">
+                Course ID
+              </th>
+              {
+                visibleColumns.showCourseName ? (
+                  <th scope="col" data-sort-key="coursename" data-sort-type="string" tabindex="0">
+                    Course name
+                  </th>
+                ) : null
+              }
+              <th
+                scope="col"
+                data-sort-key="dateadded"
+                data-sort-type="date"
+                data-sort-default="true"
+                data-sort-default-direction="desc"
+                tabindex="0"
+              >
+                Date added
+              </th>
+              {
+                visibleColumns.showAccessStatus ? (
+                  <th scope="col" data-sort-key="access" data-sort-type="string" tabindex="0">
+                    Access
+                  </th>
+                ) : null
+              }
+              {
+                visibleColumns.showCreditId ? (
+                  <th scope="col" data-sort-key="creditid" data-sort-type="string" tabindex="0">
+                    Credit ID
+                  </th>
+                ) : null
+              }
+            </tr>
+          </thead>
+          <tbody>
+            {
+              courses.map((course) => (
+                <tr>
+                  <td data-sort-value={course.libraryRecordId}>{course.libraryRecordId}</td>
+                  <td data-sort-value={course.courseIdSort}>{course.courseId}</td>
+                  {
+                    visibleColumns.showCourseName ? (
+                      <td data-sort-value={course.courseName ?? ""}>{course.courseName ?? "—"}</td>
+                    ) : null
+                  }
+                  <td data-sort-value={course.dateAddedSort}>{course.dateAdded ?? "—"}</td>
+                  {
+                    visibleColumns.showAccessStatus ? (
+                      <td data-sort-value={course.accessStatus ?? ""}>{course.accessStatus ?? "—"}</td>
+                    ) : null
+                  }
+                  {
+                    visibleColumns.showCreditId ? (
+                      <td data-sort-value={course.creditIdSort}>{course.creditId ?? "—"}</td>
+                    ) : null
+                  }
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+</section>
+
+<style>
+  .watson__section-note {
+    margin: 0 0 1rem;
+    font-size: 0.9rem;
+    color: #475569;
+  }
+
+  .watson__section-note code {
+    font-size: 0.85em;
+  }
+</style>

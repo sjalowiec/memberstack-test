@@ -1,0 +1,19 @@
+---
+const PLACEHOLDER_SECTIONS = [
+  "Membership History",
+  "Saved Patterns",
+  "Legacy PDF Purchases",
+  "Support Notes",
+];
+---
+
+<section class="watson__future-sections" aria-label="Upcoming member sections">
+  {
+    PLACEHOLDER_SECTIONS.map((title) => (
+      <article class="watson__panel watson__panel--placeholder">
+        <h2 class="watson__panel-title">{title}</h2>
+        <p class="watson__placeholder">Coming next.</p>
+      </article>
+    ))
+  }
+</section>

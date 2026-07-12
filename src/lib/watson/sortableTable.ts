@@ -21,6 +21,31 @@ export function compareSortValues(
   return left.localeCompare(right, undefined, { sensitivity: "base", numeric: true });
 }
 
+function getSortableRowGroups(tbody: HTMLTableSectionElement): HTMLTableRowElement[][] {
+  const groups: HTMLTableRowElement[][] = [];
+  const rows = Array.from(tbody.querySelectorAll<HTMLTableRowElement>("tr"));
+
+  for (const row of rows) {
+    if (row.hasAttribute("data-sort-ignore")) {
+      continue;
+    }
+    if (!row.hasAttribute("data-sort-row")) {
+      groups.push([row]);
+      continue;
+    }
+
+    const group = [row];
+    let next = row.nextElementSibling;
+    while (next instanceof HTMLTableRowElement && next.hasAttribute("data-sort-ignore")) {
+      group.push(next);
+      next = next.nextElementSibling;
+    }
+    groups.push(group);
+  }
+
+  return groups;
+}
+
 export function initSortableTable(table: HTMLTableElement): void {
   const headers = Array.from(table.querySelectorAll<HTMLTableCellElement>("thead th[data-sort-key]"));
   if (headers.length === 0) {
@@ -49,8 +74,8 @@ export function initSortableTable(table: HTMLTableElement): void {
   };
 
   const sortByHeader = (header: HTMLTableCellElement, forcedDirection?: SortDirection): void => {
-    const columnIndex = headers.indexOf(header);
-    if (columnIndex === -1) {
+    const columnIndex = header.cellIndex;
+    if (columnIndex < 0) {
       return;
     }
 
@@ -61,19 +86,21 @@ export function initSortableTable(table: HTMLTableElement): void {
     activeDirection = nextDirection;
 
     const sortType = (header.dataset.sortType as SortValueType | undefined) ?? "string";
-    const rows = Array.from(tbody.querySelectorAll("tr"));
+    const groups = getSortableRowGroups(tbody);
 
-    rows.sort((leftRow, rightRow) => {
-      const leftCell = leftRow.cells[columnIndex];
-      const rightCell = rightRow.cells[columnIndex];
+    groups.sort((leftGroup, rightGroup) => {
+      const leftCell = leftGroup[0]?.cells[columnIndex];
+      const rightCell = rightGroup[0]?.cells[columnIndex];
       const leftValue = leftCell?.dataset.sortValue ?? leftCell?.textContent?.trim() ?? "";
       const rightValue = rightCell?.dataset.sortValue ?? rightCell?.textContent?.trim() ?? "";
       const comparison = compareSortValues(leftValue, rightValue, sortType);
       return nextDirection === "asc" ? comparison : -comparison;
     });
 
-    for (const row of rows) {
-      tbody.appendChild(row);
+    for (const group of groups) {
+      for (const row of group) {
+        tbody.appendChild(row);
+      }
     }
 
     updateHeaderState();

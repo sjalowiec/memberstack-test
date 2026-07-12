@@ -1,0 +1,27 @@
+---
+interface Props {
+  fields: Array<{ label: string; value: string }>;
+}
+
+const { fields } = Astro.props;
+---
+
+<section class="watson__panel" aria-labelledby="watson-overview-heading">
+  <h2 id="watson-overview-heading" class="watson__panel-title">Overview</h2>
+  {
+    fields.length > 0 ? (
+      <dl class="watson-overview">
+        {fields.map((field) => (
+          <div class="watson-overview__row">
+            <dt>{field.label}</dt>
+            <dd class:list={[{ "watson-overview__multiline": field.value.includes("\n") }]}>
+              {field.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    ) : (
+      <p class="watson__placeholder">No overview fields are available for this member.</p>
+    )
+  }
+</section>

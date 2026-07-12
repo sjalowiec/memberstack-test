@@ -1,0 +1,28 @@
+---
+import WatsonMemberOrdersTable from "../../../../components/watson/WatsonMemberOrdersTable.astro";
+import { getMemberOrders } from "../../../../lib/watson/memberOrders";
+
+export const prerender = false;
+
+const memberid = Astro.params.memberid ? decodeURIComponent(Astro.params.memberid) : "";
+
+if (!memberid) {
+  return new Response("Member ID required.", { status: 400 });
+}
+
+let orders: Awaited<ReturnType<typeof getMemberOrders>> = [];
+
+try {
+  orders = await getMemberOrders(memberid);
+} catch (error) {
+  const message = error instanceof Error ? error.message : "Unable to load orders.";
+  return new Response(message, { status: 500 });
+}
+---
+
+<WatsonMemberOrdersTable orders={orders} />
+
+<script>
+  import { initSortableTables } from "../../../../lib/watson/sortableTable";
+  initSortableTables(document);
+</script>
