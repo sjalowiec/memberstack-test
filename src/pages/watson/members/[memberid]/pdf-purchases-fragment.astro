@@ -1,0 +1,28 @@
+---
+import WatsonMemberPdfPurchasesTable from "../../../../components/watson/WatsonMemberPdfPurchasesTable.astro";
+import { getMemberPdfPurchases } from "../../../../lib/watson/memberPdfPurchases";
+
+export const prerender = false;
+
+const memberid = Astro.params.memberid ? decodeURIComponent(Astro.params.memberid) : "";
+
+if (!memberid) {
+  return new Response("Member ID required.", { status: 400 });
+}
+
+let records: Awaited<ReturnType<typeof getMemberPdfPurchases>> = [];
+
+try {
+  records = await getMemberPdfPurchases(memberid);
+} catch (error) {
+  const message = error instanceof Error ? error.message : "Unable to load PDF purchases.";
+  return new Response(message, { status: 500 });
+}
+---
+
+<WatsonMemberPdfPurchasesTable records={records} />
+
+<script>
+  import { initSortableTables } from "../../../../lib/watson/sortableTable";
+  initSortableTables(document);
+</script>

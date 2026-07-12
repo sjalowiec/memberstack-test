@@ -1,4 +1,6 @@
 ---
+import WatsonMemberPdfPurchases from "../../../components/watson/WatsonMemberPdfPurchases.astro";
+import WatsonMemberSavedPatterns from "../../../components/watson/WatsonMemberSavedPatterns.astro";
 import WatsonMemberMembership from "../../../components/watson/WatsonMemberMembership.astro";
 import WatsonMemberCourses from "../../../components/watson/WatsonMemberCourses.astro";
 import WatsonMemberOrders from "../../../components/watson/WatsonMemberOrders.astro";
@@ -11,6 +13,8 @@ import {
   getLegacyMemberById,
   watsonMemberNotFoundHtml,
 } from "../../../lib/watson/memberDetail";
+import { getMemberPdfPurchaseCount } from "../../../lib/watson/memberPdfPurchases";
+import { getMemberSavedPatternCount } from "../../../lib/watson/memberSavedPatterns";
 import { getMemberMembershipCount } from "../../../lib/watson/memberMembership";
 import { getMemberOrderCount } from "../../../lib/watson/memberOrders";
 import { getMemberCourses } from "../../../lib/watson/memberCourses";
@@ -35,17 +39,22 @@ if (!memberid) {
 let member: Awaited<ReturnType<typeof getLegacyMemberById>> = null;
 let orderCount = 0;
 let membershipCount = 0;
+let savedPatternCount = 0;
+let pdfPurchaseCount = 0;
 let courses: Awaited<ReturnType<typeof getMemberCourses>> = [];
 let loadError: string | null = null;
 
 try {
   member = await getLegacyMemberById(memberid);
   if (member) {
-    [orderCount, membershipCount, courses] = await Promise.all([
-      getMemberOrderCount(memberid),
-      getMemberMembershipCount(memberid),
-      getMemberCourses(memberid),
-    ]);
+    [orderCount, membershipCount, savedPatternCount, pdfPurchaseCount, courses] =
+      await Promise.all([
+        getMemberOrderCount(memberid),
+        getMemberMembershipCount(memberid),
+        getMemberSavedPatternCount(memberid),
+        getMemberPdfPurchaseCount(memberid),
+        getMemberCourses(memberid),
+      ]);
   }
 } catch (error) {
   loadError = error instanceof Error ? error.message : "Unable to load member.";
@@ -92,6 +101,8 @@ const displayName = member ? formatMemberDisplayName(member) : "Member Detail";
       <WatsonMemberOrders memberid={memberid} orderCount={orderCount} />
       <WatsonMemberCourses courses={courses} />
       <WatsonMemberMembership memberid={memberid} recordCount={membershipCount} />
+      <WatsonMemberSavedPatterns memberid={memberid} recordCount={savedPatternCount} />
+      <WatsonMemberPdfPurchases memberid={memberid} recordCount={pdfPurchaseCount} />
       <WatsonMemberPlaceholders />
     </WatsonPageShell>
   )

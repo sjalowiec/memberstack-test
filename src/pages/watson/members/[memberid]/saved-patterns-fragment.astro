@@ -1,0 +1,28 @@
+---
+import WatsonMemberSavedPatternsTable from "../../../../components/watson/WatsonMemberSavedPatternsTable.astro";
+import { getMemberSavedPatterns } from "../../../../lib/watson/memberSavedPatterns";
+
+export const prerender = false;
+
+const memberid = Astro.params.memberid ? decodeURIComponent(Astro.params.memberid) : "";
+
+if (!memberid) {
+  return new Response("Member ID required.", { status: 400 });
+}
+
+let records: Awaited<ReturnType<typeof getMemberSavedPatterns>> = [];
+
+try {
+  records = await getMemberSavedPatterns(memberid);
+} catch (error) {
+  const message = error instanceof Error ? error.message : "Unable to load saved patterns.";
+  return new Response(message, { status: 500 });
+}
+---
+
+<WatsonMemberSavedPatternsTable records={records} />
+
+<script>
+  import { initSortableTables } from "../../../../lib/watson/sortableTable";
+  initSortableTables(document);
+</script>

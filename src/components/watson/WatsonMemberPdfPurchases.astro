@@ -1,0 +1,51 @@
+---
+import {
+  buildPdfPurchasesFragmentUrl,
+  formatPdfPurchasesSectionHeading,
+  PDF_PURCHASES_SECTION_SHOW_LABEL,
+} from "../../lib/watson/watsonMemberPdfPurchasesSection";
+
+interface Props {
+  memberid: string;
+  recordCount: number;
+}
+
+const { memberid, recordCount } = Astro.props;
+const heading = formatPdfPurchasesSectionHeading(recordCount);
+const fragmentUrl = buildPdfPurchasesFragmentUrl(memberid);
+---
+
+<section
+  class="watson__panel watson-pdf-purchases__section"
+  aria-labelledby="watson-pdf-purchases-heading"
+  data-watson-pdf-purchases-section
+  data-record-count={String(recordCount)}
+  data-pdf-purchases-fragment-url={fragmentUrl}
+>
+  <div class="watson-orders__section-header">
+    <h2 id="watson-pdf-purchases-heading" class="watson__panel-title watson-orders__section-title">
+      {heading}
+    </h2>
+    <button
+      type="button"
+      class="watson-orders__section-toggle"
+      data-watson-pdf-purchases-section-toggle
+      aria-expanded="false"
+      aria-controls="watson-pdf-purchases-panel"
+    >
+      {PDF_PURCHASES_SECTION_SHOW_LABEL}
+    </button>
+  </div>
+  <p class="watson__section-note">
+    Imported from <code>legacy_pattern_library_purchases</code>, with PDF metadata from
+    <code>legacy_pattern_library</code> and optional store totals from
+    <code>legacy_store_transactions.transactionid</code> when the transaction GUID matches.
+    There is no separate download-status field in this export.
+  </p>
+  <div id="watson-pdf-purchases-panel" data-watson-pdf-purchases-panel hidden></div>
+</section>
+
+<script>
+  import { initMemberPdfPurchasesSections } from "../../lib/watson/watsonMemberPdfPurchasesSection";
+  initMemberPdfPurchasesSections(document);
+</script>

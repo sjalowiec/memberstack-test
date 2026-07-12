@@ -1,0 +1,49 @@
+---
+import {
+  buildSavedPatternsFragmentUrl,
+  formatSavedPatternsSectionHeading,
+  SAVED_PATTERNS_SECTION_SHOW_LABEL,
+} from "../../lib/watson/watsonMemberSavedPatternsSection";
+
+interface Props {
+  memberid: string;
+  recordCount: number;
+}
+
+const { memberid, recordCount } = Astro.props;
+const heading = formatSavedPatternsSectionHeading(recordCount);
+const fragmentUrl = buildSavedPatternsFragmentUrl(memberid);
+---
+
+<section
+  class="watson__panel watson-saved-patterns__section"
+  aria-labelledby="watson-saved-patterns-heading"
+  data-watson-saved-patterns-section
+  data-record-count={String(recordCount)}
+  data-saved-patterns-fragment-url={fragmentUrl}
+>
+  <div class="watson-orders__section-header">
+    <h2 id="watson-saved-patterns-heading" class="watson__panel-title watson-orders__section-title">
+      {heading}
+    </h2>
+    <button
+      type="button"
+      class="watson-orders__section-toggle"
+      data-watson-saved-patterns-section-toggle
+      aria-expanded="false"
+      aria-controls="watson-saved-patterns-panel"
+    >
+      {SAVED_PATTERNS_SECTION_SHOW_LABEL}
+    </button>
+  </div>
+  <p class="watson__section-note">
+    Imported from <code>legacy_member_pattern_details</code>. Each row is a separate saved pattern
+    record. Pattern construction data is not recreated here.
+  </p>
+  <div id="watson-saved-patterns-panel" data-watson-saved-patterns-panel hidden></div>
+</section>
+
+<script>
+  import { initMemberSavedPatternsSections } from "../../lib/watson/watsonMemberSavedPatternsSection";
+  initMemberSavedPatternsSections(document);
+</script>

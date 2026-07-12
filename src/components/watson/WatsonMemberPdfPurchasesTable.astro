@@ -1,0 +1,198 @@
+---
+import {
+  getVisiblePdfPurchaseColumns,
+  type MemberPdfPurchaseDisplay,
+} from "../../lib/watson/memberPdfPurchases";
+
+interface Props {
+  records: MemberPdfPurchaseDisplay[];
+}
+
+const { records } = Astro.props;
+const visibleColumns = getVisiblePdfPurchaseColumns(records);
+---
+
+{
+  records.length === 0 ? (
+    <p class="watson__placeholder">No legacy PDF purchase records found for this member.</p>
+  ) : (
+    <div class="watson__table-wrap">
+      <table class="watson-table" data-sortable-table data-pdf-purchases-table>
+        <thead>
+          <tr>
+            <th
+              scope="col"
+              data-sort-key="purchaserecordid"
+              data-sort-type="string"
+              data-sort-default={visibleColumns.showPurchaseDate ? undefined : "true"}
+              data-sort-default-direction={visibleColumns.showPurchaseDate ? undefined : "desc"}
+              tabindex="0"
+            >
+              Purchase record ID
+            </th>
+            {
+              visibleColumns.showPdfTitle ? (
+                <th scope="col" data-sort-key="pdftitle" data-sort-type="string" tabindex="0">
+                  PDF title
+                </th>
+              ) : null
+            }
+            <th scope="col" data-sort-key="patternlibraryid" data-sort-type="string" tabindex="0">
+              Pattern library ID
+            </th>
+            {
+              visibleColumns.showPurchaseDate ? (
+                <th
+                  scope="col"
+                  data-sort-key="purchasedate"
+                  data-sort-type="date"
+                  data-sort-default="true"
+                  data-sort-default-direction="desc"
+                  tabindex="0"
+                >
+                  Purchase date (Dateadded)
+                </th>
+              ) : null
+            }
+            <th scope="col" data-sort-key="transactionguid" data-sort-type="string" tabindex="0">
+              Transaction GUID
+            </th>
+            {
+              visibleColumns.showAmountPaid ? (
+                <th scope="col" data-sort-key="amountpaid" data-sort-type="string" tabindex="0">
+                  Amount paid (store transaction)
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showCatalogCost ? (
+                <th scope="col" data-sort-key="catalogcost" data-sort-type="string" tabindex="0">
+                  Catalog cost (Pattern Library)
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showNetCost ? (
+                <th scope="col" data-sort-key="netcost" data-sort-type="string" tabindex="0">
+                  Net cost (Pattern Library)
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showFilename ? (
+                <th scope="col" data-sort-key="filename" data-sort-type="string" tabindex="0">
+                  Filename
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showPatternType ? (
+                <th scope="col" data-sort-key="patterntype" data-sort-type="string" tabindex="0">
+                  Pattern type
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showVendorPaidFlag ? (
+                <th scope="col" data-sort-key="vendorpaidflag" data-sort-type="string" tabindex="0">
+                  Vendor paid flag
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showPatternActiveFlag ? (
+                <th scope="col" data-sort-key="patternactiveflag" data-sort-type="string" tabindex="0">
+                  Pattern active flag
+                </th>
+              ) : null
+            }
+            {
+              visibleColumns.showFreeWithSubscriptionFlag ? (
+                <th scope="col" data-sort-key="freewithsubscriptionflag" data-sort-type="string" tabindex="0">
+                  Free with subscription flag
+                </th>
+              ) : null
+            }
+          </tr>
+        </thead>
+        <tbody>
+          {
+            records.map((record) => (
+              <tr>
+                <td data-sort-value={record.purchaseRecordId}>{record.purchaseRecordId}</td>
+                {
+                  visibleColumns.showPdfTitle ? (
+                    <td data-sort-value={record.pdfTitle ?? ""}>{record.pdfTitle ?? "—"}</td>
+                  ) : null
+                }
+                <td data-sort-value={record.patternLibraryId}>{record.patternLibraryId}</td>
+                {
+                  visibleColumns.showPurchaseDate ? (
+                    <td data-sort-value={record.purchaseDateSort}>{record.purchaseDate ?? "—"}</td>
+                  ) : null
+                }
+                <td data-sort-value={record.transactionGuid}>{record.transactionGuid}</td>
+                {
+                  visibleColumns.showAmountPaid ? (
+                    <td data-sort-value={record.amountPaidSort}>{record.amountPaid ?? "—"}</td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showCatalogCost ? (
+                    <td data-sort-value={record.catalogCostSort}>{record.catalogCost ?? "—"}</td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showNetCost ? (
+                    <td data-sort-value={record.netCostSort}>{record.netCost ?? "—"}</td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showFilename ? (
+                    <td data-sort-value={record.filename ?? ""}>{record.filename ?? "—"}</td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showPatternType ? (
+                    <td data-sort-value={record.patternType ?? ""}>{record.patternType ?? "—"}</td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showVendorPaidFlag ? (
+                    <td data-sort-value={record.vendorPaidFlag ?? ""}>{record.vendorPaidFlag ?? "—"}</td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showPatternActiveFlag ? (
+                    <td data-sort-value={record.patternActiveFlag ?? ""}>
+                      {record.patternActiveFlag ?? "—"}
+                    </td>
+                  ) : null
+                }
+                {
+                  visibleColumns.showFreeWithSubscriptionFlag ? (
+                    <td data-sort-value={record.freeWithSubscriptionFlag ?? ""}>
+                      {record.freeWithSubscriptionFlag ?? "—"}
+                    </td>
+                  ) : null
+                }
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+<script>
+  import { initSortableTables } from "../../lib/watson/sortableTable";
+  initSortableTables(document);
+</script>
+
+<style>
+  .watson-table td {
+    max-width: 18rem;
+    word-break: break-word;
+  }
+</style>
