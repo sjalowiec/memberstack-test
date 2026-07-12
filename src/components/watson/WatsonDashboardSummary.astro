@@ -1,0 +1,69 @@
+---
+import type { DashboardSummaryCard } from "../../lib/watson/watsonDashboard";
+
+interface Props {
+  cards: DashboardSummaryCard[];
+}
+
+const { cards } = Astro.props;
+---
+
+<section class="watson__panel" aria-labelledby="watson-dashboard-summary-heading">
+  <h2 id="watson-dashboard-summary-heading" class="watson__panel-title">Imported legacy summary</h2>
+  <div class="watson-dashboard__cards">
+    {
+      cards.map((card) => (
+        <article class="watson-dashboard__card">
+          <h3 class="watson-dashboard__card-label">{card.label}</h3>
+          <p class="watson-dashboard__card-value">{card.displayValue}</p>
+          <p class="watson-dashboard__card-note">{card.explanation}</p>
+          {
+            !card.metric.ok ? (
+              <p class="watson__status watson__status--error" role="alert">
+                {card.metric.error}
+              </p>
+            ) : null
+          }
+        </article>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .watson-dashboard__cards {
+    display: grid;
+    gap: 0.85rem;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+
+  .watson-dashboard__card {
+    padding: 0.85rem 0.95rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: #f8fafc;
+  }
+
+  .watson-dashboard__card-label {
+    margin: 0 0 0.35rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #64748b;
+  }
+
+  .watson-dashboard__card-value {
+    margin: 0 0 0.45rem;
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: #243015;
+  }
+
+  .watson-dashboard__card-note {
+    margin: 0;
+    font-size: 0.86rem;
+    line-height: 1.45;
+    color: #475569;
+  }
+</style>

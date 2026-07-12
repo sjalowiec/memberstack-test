@@ -1,0 +1,140 @@
+---
+import type { WatsonDashboardRecentActivity } from "../../lib/watson/watsonDashboard";
+
+interface Props {
+  activity: WatsonDashboardRecentActivity;
+}
+
+const { activity } = Astro.props;
+const hasAnyActivity =
+  activity.storeOrders.length > 0 ||
+  activity.courseEnrollments.length > 0 ||
+  activity.savedPatterns.length > 0;
+---
+
+{
+  hasAnyActivity ? (
+    <section class="watson__panel" aria-labelledby="watson-dashboard-activity-heading">
+      <h2 id="watson-dashboard-activity-heading" class="watson__panel-title">
+        Recent legacy activity
+      </h2>
+      <div class="watson-dashboard__activity-groups">
+        {
+          activity.storeOrders.length > 0 ? (
+            <section aria-labelledby="watson-recent-orders-heading">
+              <h3 id="watson-recent-orders-heading" class="watson-dashboard__activity-title">
+                Recent store orders
+              </h3>
+              <ul class="watson-dashboard__activity-list">
+                {
+                  activity.storeOrders.map((item) => (
+                    <li>
+                      <span class="watson-dashboard__activity-date">{item.activityDate}</span>
+                      <span class="watson-dashboard__activity-summary">{item.summary}</span>
+                      <a href={item.memberHref}>{item.memberLabel}</a>
+                    </li>
+                  ))
+                }
+              </ul>
+            </section>
+          ) : null
+        }
+        {
+          activity.courseEnrollments.length > 0 ? (
+            <section aria-labelledby="watson-recent-courses-heading">
+              <h3 id="watson-recent-courses-heading" class="watson-dashboard__activity-title">
+                Recent course enrollments
+              </h3>
+              <ul class="watson-dashboard__activity-list">
+                {
+                  activity.courseEnrollments.map((item) => (
+                    <li>
+                      <span class="watson-dashboard__activity-date">{item.activityDate}</span>
+                      <span class="watson-dashboard__activity-summary">{item.summary}</span>
+                      <a href={item.memberHref}>{item.memberLabel}</a>
+                    </li>
+                  ))
+                }
+              </ul>
+            </section>
+          ) : null
+        }
+        {
+          activity.savedPatterns.length > 0 ? (
+            <section aria-labelledby="watson-recent-patterns-heading">
+              <h3 id="watson-recent-patterns-heading" class="watson-dashboard__activity-title">
+                Recent saved patterns
+              </h3>
+              <ul class="watson-dashboard__activity-list">
+                {
+                  activity.savedPatterns.map((item) => (
+                    <li>
+                      <span class="watson-dashboard__activity-date">{item.activityDate}</span>
+                      <span class="watson-dashboard__activity-summary">{item.summary}</span>
+                      <a href={item.memberHref}>{item.memberLabel}</a>
+                    </li>
+                  ))
+                }
+              </ul>
+            </section>
+          ) : null
+        }
+      </div>
+    </section>
+  ) : null
+}
+
+<style>
+  .watson-dashboard__activity-groups {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .watson-dashboard__activity-title {
+    margin: 0 0 0.55rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #243015;
+  }
+
+  .watson-dashboard__activity-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.65rem;
+  }
+
+  .watson-dashboard__activity-list li {
+    display: grid;
+    gap: 0.15rem;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .watson-dashboard__activity-list li:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .watson-dashboard__activity-date {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #64748b;
+  }
+
+  .watson-dashboard__activity-summary {
+    color: #334155;
+    line-height: 1.45;
+  }
+
+  .watson-dashboard__activity-list a {
+    color: #3f6212;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .watson-dashboard__activity-list a:hover {
+    text-decoration: underline;
+  }
+</style>

@@ -1,5 +1,11 @@
 ---
+import WatsonDashboardRecentActivity from "../../components/watson/WatsonDashboardRecentActivity.astro";
+import WatsonDashboardSummary from "../../components/watson/WatsonDashboardSummary.astro";
 import WatsonPageShell from "../../components/watson/WatsonPageShell.astro";
+import {
+  buildDashboardSummaryCards,
+  loadWatsonDashboard,
+} from "../../lib/watson/watsonDashboard";
 import {
   formatMemberDisplayName,
   formatMemberJoinedDate,
@@ -16,7 +22,32 @@ const rawQuery = Astro.url.searchParams.get("q") ?? "";
 let rows: Awaited<ReturnType<typeof searchLegacyMembers>>["rows"] = [];
 let truncated = false;
 let searchError: string | null = null;
+let dashboardError: string | null = null;
+let dashboardCards = buildDashboardSummaryCards({
+  totalMembers: { ok: true, value: 0 },
+  subscriptionRecords: { ok: true, value: 0 },
+  storeOrders: { ok: true, value: 0 },
+  storeRevenue: { ok: true, value: "$0.00" },
+  courseEnrollments: { ok: true, value: 0 },
+  savedPatternRecords: { ok: true, value: 0 },
+  pdfPurchases: { ok: true, value: 0 },
+  membersWithSupportNotes: { ok: true, value: 0 },
+});
+let recentActivity: Awaited<ReturnType<typeof loadWatsonDashboard>>["recentActivity"] = {
+  storeOrders: [],
+  courseEnrollments: [],
+  savedPatterns: [],
+};
+
 const hasQuery = isMemberSearchQueryUsable(rawQuery);
+
+try {
+  const dashboard = await loadWatsonDashboard();
+  dashboardCards = buildDashboardSummaryCards(dashboard.summary);
+  recentActivity = dashboard.recentActivity;
+} catch (error) {
+  dashboardError = error instanceof Error ? error.message : "Dashboard metrics failed to load.";
+}
 
 if (hasQuery) {
   try {
@@ -30,10 +61,10 @@ if (hasQuery) {
 ---
 
 <WatsonPageShell
-  title="Watson Member Search | Knit it Now"
-  description="Search imported legacy members by email, name, or member ID."
-  heading="Watson — Member Search"
-  intro="Search imported legacy members by email, first name, last name, or member ID. Results are loaded server-side from Postgres (read-only legacy data)."
+  title="Watson | Knit it Now"
+  description="Legacy support and business data overview for Knit It Now."
+  heading="Watson"
+  intro="Legacy support and business data for Knit It Now"
 >
   <form class="watson__search" method="get" action="/watson" role="search">
     <label class="visually-hidden" for="watson-member-search">Search members</label>
@@ -51,6 +82,15 @@ if (hasQuery) {
   </form>
 
   {
+    dashboardError ? (
+      <p class="watson__status watson__status--error" role="alert">{dashboardError}</p>
+    ) : null
+  }
+
+  <WatsonDashboardSummary cards={dashboardCards} />
+  <WatsonDashboardRecentActivity activity={recentActivity} />
+
+  {
     searchError ? (
       <p class="watson__status watson__status--error" role="alert">
         {searchError}
@@ -63,14 +103,14 @@ if (hasQuery) {
         {truncated ? ` Results limited to ${MEMBER_SEARCH_LIMIT}. Refine your search for more.` : null}
       </p>
     ) : (
-      <p class="watson__status">Enter at least one character to search.</p>
+      <p class="watson__status">Enter at least one character to search members.</p>
     )
   }
 
   {
     rows.length > 0 ? (
       <section class="watson__panel" aria-label="Search results">
-        <h2 class="watson__panel-title">Results</h2>
+        <h2 class="watson__panel-title">Search results</h2>
         <div class="watson__table-wrap">
           <table class="watson-table" data-sortable-table>
             <thead>
