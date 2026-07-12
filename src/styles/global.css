@@ -2206,55 +2206,6 @@ p {
   transform: scale(0.98);
 }
 
-/* Success message styling */
-.contact-success {
-  background: #f6f8f5;
-  border: 2px solid var(--kbm-green);
-  border-radius: 12px;
-  padding: 2rem 1.5rem;
-  text-align: center;
-  color: #2C3A57;
-  max-width: 100%;
-  margin: 0;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-  animation: fadeInUp 0.6s ease both;
-}
-
-.contact-success::before {
-  content: "";
-  display: block;
-  width: 72px;
-  height: 72px;
-  margin: 0 auto 1rem;
-  background-image: url("/images/envelope.svg");
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  opacity: 0.9;
-}
-
-.contact-success h2 {
-  color: var(--kbm-green);
-  margin-bottom: 0.75rem;
-  font-size: 1.25rem;
-}
-
-.contact-success p {
-  font-size: 1.05rem;
-  line-height: 1.6;
-}
-
-.contact-success a {
-  color: var(--kbm-green);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
 /* Mobile adjustments */
 @media (max-width: 640px) {
   .contact-modal-container {
