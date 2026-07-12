@@ -178,11 +178,23 @@ export function createMemberstackAdminClient({
 }
 
 /**
- * Returns a ready-to-use admin client built from `MEMBERSTACK_SECRET_KEY`, or `null` when the key
- * is not configured (callers should fail closed with a 500 rather than leak that detail).
+ * Returns a ready-to-use admin client, or `null` when the key is not configured.
+ *
+ * Callers may pass `secretKey` explicitly for runtime-specific env access:
+ * - Netlify Functions: `process.env.MEMBERSTACK_SECRET_KEY`
+ * - Astro SSR: `import.meta.env.MEMBERSTACK_SECRET_KEY`
+ *
+ * When `secretKey` is omitted, falls back to `process.env.MEMBERSTACK_SECRET_KEY`.
+ *
+ * @param {{ secretKey?: string | null }} [options]
  */
-export function getMemberstackAdminClient() {
-  const secretKey = getMemberstackSecretKey();
+export function getMemberstackAdminClient(options = {}) {
+  const secretKey =
+    "secretKey" in options
+      ? typeof options.secretKey === "string"
+        ? options.secretKey.trim()
+        : ""
+      : getMemberstackSecretKey();
   if (!secretKey) return null;
   return createMemberstackAdminClient({ secretKey });
 }

@@ -1,0 +1,27 @@
+---
+import WatsonCurrentBusiness from "../../../components/watson/WatsonCurrentBusiness.astro";
+import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
+import {
+  buildCurrentBusinessSummaryCardViews,
+  buildCurrentBusinessSummaryNotes,
+} from "../../../lib/watson/currentBusiness";
+import { loadCurrentBusinessMembershipSummary } from "../../../lib/watson/currentBusinessLoader";
+
+export const prerender = false;
+
+const membershipResult = await loadCurrentBusinessMembershipSummary();
+const loadError = membershipResult.ok ? null : membershipResult.error;
+const summary = membershipResult.ok ? membershipResult.summary : null;
+const cards = buildCurrentBusinessSummaryCardViews(summary);
+const asOf = summary?.generatedAt ?? null;
+const notes = summary ? buildCurrentBusinessSummaryNotes(summary) : [];
+---
+
+<WatsonPageShell
+  title="Current Business | Watson"
+  description="Live business information from the current Knit It Now platform."
+  heading="Current Business"
+  intro="Live business information from the current Knit It Now platform."
+>
+  <WatsonCurrentBusiness cards={cards} asOf={asOf} notes={notes} loadError={loadError} />
+</WatsonPageShell>
