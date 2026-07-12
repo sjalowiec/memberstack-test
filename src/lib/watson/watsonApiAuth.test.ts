@@ -1,22 +1,18 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { readWatsonJsonBody, requireWatsonAdminJson, watsonJsonResponse } from "./watsonApiAuth";
+import { readWatsonJsonBody, requireWatsonSessionJson, watsonJsonResponse } from "./watsonApiAuth";
 
-vi.mock("../admin/requireAdminRequest", () => ({
-  requireAdminForRequest: vi.fn(),
+vi.mock("./watsonAuth", () => ({
+  isWatsonSessionAuthenticated: vi.fn(),
 }));
 
-import { requireAdminForRequest } from "../admin/requireAdminRequest";
+import { isWatsonSessionAuthenticated } from "./watsonAuth";
 
 describe("watsonApiAuth", () => {
-  it("returns JSON auth errors when admin check fails", async () => {
-    vi.mocked(requireAdminForRequest).mockResolvedValueOnce({
-      ok: false,
-      status: 403,
-      error: "You don't have admin access to Watson.",
-    });
+  it("returns JSON auth errors when the Watson session is missing", async () => {
+    vi.mocked(isWatsonSessionAuthenticated).mockReturnValueOnce(false);
 
-    const response = await requireWatsonAdminJson({
+    const response = await requireWatsonSessionJson({
       request: new Request("https://example.com/api/watson/notes/1"),
       cookies: {
         get: () => undefined,
@@ -25,32 +21,25 @@ describe("watsonApiAuth", () => {
 
     expect(response).toBeInstanceOf(Response);
     if (response instanceof Response) {
-      expect(response.status).toBe(403);
+      expect(response.status).toBe(401);
       expect(await response.json()).toEqual({
         ok: false,
-        error: "You don't have admin access to Watson.",
+        error: "Sign in required.",
       });
     }
   });
 
-  it("returns admin member when auth succeeds", async () => {
-    vi.mocked(requireAdminForRequest).mockResolvedValueOnce({
-      ok: true,
-      member: { id: "admin-1", email: "sue@example.com" },
-      mode: "verified",
-    });
+  it("allows requests with a valid Watson session", async () => {
+    vi.mocked(isWatsonSessionAuthenticated).mockReturnValueOnce(true);
 
-    const result = await requireWatsonAdminJson({
+    const result = await requireWatsonSessionJson({
       request: new Request("https://example.com/api/watson/notes/1"),
       cookies: {
-        get: () => undefined,
+        get: () => ({ value: "session-token" }),
       },
     } as never);
 
-    expect(result).toEqual({
-      ok: true,
-      member: { id: "admin-1", email: "sue@example.com" },
-    });
+    expect(result).toEqual({ ok: true });
   });
 
   it("rejects non-JSON request bodies", async () => {

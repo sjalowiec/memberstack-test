@@ -45,6 +45,25 @@
   text-decoration: underline;
 }
 
+.watson__logout {
+  margin: 0;
+}
+
+.watson__logout button {
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.watson__logout button:hover {
+  color: #3f6212;
+  text-decoration: underline;
+}
+
 .watson__search {
   display: flex;
   gap: 0.65rem;

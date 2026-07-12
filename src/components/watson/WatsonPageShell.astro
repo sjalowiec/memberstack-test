@@ -20,6 +20,9 @@ const { title, description, heading, intro } = Astro.props;
         <a href="/watson/current">Current</a>
         <a href="/watson/reports">Reports</a>
         <a href="/admin">Admin</a>
+        <form class="watson__logout" method="post" action="/api/watson/logout">
+          <button type="submit">Logout</button>
+        </form>
       </nav>
       <h1 class="watson__title">{heading}</h1>
       {intro ? <p class="watson__subtitle">{intro}</p> : null}

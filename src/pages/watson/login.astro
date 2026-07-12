@@ -1,0 +1,104 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { sanitizeWatsonLoginNextPath } from "../../lib/watson/watsonAuth";
+import "../../styles/watson.css";
+
+export const prerender = false;
+
+const next = sanitizeWatsonLoginNextPath(Astro.url.searchParams.get("next"));
+const showError = Astro.url.searchParams.get("error") === "1";
+---
+
+<BaseLayout title="Watson Login" description="Sign in to Watson." skipGlobalHyvor={true} bodyClass="watson-body">
+  <main class="watson watson-login">
+    <section class="watson-login__card">
+      <h1 class="watson-login__title">Watson</h1>
+      <p class="watson-login__intro">Private owner access only.</p>
+
+      {showError ? (
+        <p class="watson__status watson__status--error" role="alert">Incorrect password.</p>
+      ) : null}
+
+      <form class="watson-login__form" method="post" action="/api/watson/login">
+        <input type="hidden" name="next" value={next} />
+        <label class="watson-login__label" for="watson-password">Password</label>
+        <input
+          class="watson-login__input"
+          id="watson-password"
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          required
+        />
+        <button class="watson-login__button" type="submit">Login</button>
+      </form>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .watson-login {
+    min-height: 70vh;
+    display: grid;
+    place-items: center;
+    padding: 2rem 1rem;
+  }
+
+  .watson-login__card {
+    width: min(100%, 24rem);
+    padding: 1.25rem 1.35rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  }
+
+  .watson-login__title {
+    margin: 0 0 0.35rem;
+    font-size: 1.75rem;
+    color: #243015;
+  }
+
+  .watson-login__intro {
+    margin: 0 0 1rem;
+    color: #64748b;
+    font-size: 0.95rem;
+  }
+
+  .watson-login__form {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .watson-login__label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #64748b;
+  }
+
+  .watson-login__input {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 1rem;
+  }
+
+  .watson-login__button {
+    justify-self: start;
+    padding: 0.55rem 1rem;
+    border: 0;
+    border-radius: 8px;
+    background: #3f6212;
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .watson-login__button:hover {
+    background: #365314;
+  }
+</style>

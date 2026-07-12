@@ -5,6 +5,8 @@
  * Inline scripts check this to show gated content without Memberstack login.
  */
 interface ImportMetaEnv {
+  /** Server-only: Watson owner password for private admin access. */
+  readonly WATSON_ADMIN_PASSWORD?: string;
   /** Server-only: Memberstack Admin API key for token verification (My Library APIs). */
   readonly MEMBERSTACK_SECRET_KEY?: string;
   /** Server-only: Resend API key for transactional email. */
@@ -121,10 +123,7 @@ declare global {
 declare namespace App {
   interface Locals {
     msToken?: string | null;
-    watsonAdmin?: {
-      id: string;
-      email: string | null;
-    };
+    watsonAuthenticated?: boolean;
   }
 }
 

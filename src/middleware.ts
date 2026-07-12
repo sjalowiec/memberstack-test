@@ -1,5 +1,4 @@
 import { defineMiddleware } from "astro:middleware";
-import { requireAdminForRequest } from "./lib/admin/requireAdminRequest";
 import {
   isCoursePreviewProductionBlocked,
   isCoursePreviewRoute,
@@ -8,7 +7,16 @@ import {
   isDropShoulderProductionBlocked,
   isDropShoulderRoute,
 } from "./lib/patterns/dropShoulderProductionAccess";
-import { isWatsonRoute, watsonAccessDeniedResponse } from "./lib/watson/watsonAccess";
+import {
+  isWatsonApiRoute,
+  isWatsonRoute,
+  watsonApiUnauthorizedResponse,
+} from "./lib/watson/watsonAccess";
+import {
+  isWatsonPublicPath,
+  isWatsonSessionAuthenticated,
+  sanitizeWatsonLoginNextPath,
+} from "./lib/watson/watsonAuth";
 
 const devOnlyRouteEnv = {
   isViteDev: import.meta.env.DEV,
@@ -43,12 +51,24 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return context.redirect("/courses/", 302);
   }
 
-  if (isWatsonRoute(u.pathname)) {
-    const auth = await requireAdminForRequest(request, context.cookies);
-    if (!auth.ok) {
-      return watsonAccessDeniedResponse(auth.status, auth.error);
+  const isWatsonPage = isWatsonRoute(u.pathname);
+  const isWatsonApi = isWatsonApiRoute(u.pathname);
+
+  if (isWatsonPage && u.pathname === "/watson/login" && isWatsonSessionAuthenticated(context.cookies)) {
+    return context.redirect(sanitizeWatsonLoginNextPath(u.searchParams.get("next")), 302);
+  }
+
+  if ((isWatsonPage || isWatsonApi) && !isWatsonPublicPath(u.pathname)) {
+    if (!isWatsonSessionAuthenticated(context.cookies)) {
+      if (isWatsonApi) {
+        return watsonApiUnauthorizedResponse();
+      }
+
+      const next = encodeURIComponent(`${u.pathname}${u.search}`);
+      return context.redirect(`/watson/login?next=${next}`, 302);
     }
-    context.locals.watsonAdmin = auth.member;
+
+    context.locals.watsonAuthenticated = true;
   }
 
   // ✅ Always pass /api through unchanged (keep your original behavior)

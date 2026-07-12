@@ -127,7 +127,8 @@ describe("Watson member search pages", () => {
     expect(memberNotesApi).toContain("requireWatsonAdminJson");
 
     expect(middleware).toContain("isWatsonRoute");
-    expect(middleware).toContain("requireAdminForRequest");
-    expect(middleware).toContain("watsonAccessDeniedResponse");
+    expect(middleware).toContain("isWatsonSessionAuthenticated");
+    expect(middleware).toContain("/watson/login?next=");
+    expect(middleware).not.toContain("requireAdminForRequest");
   });
 });

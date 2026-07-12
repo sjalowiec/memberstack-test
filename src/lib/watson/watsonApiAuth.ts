@@ -1,6 +1,6 @@
 import type { APIContext } from "astro";
 
-import { requireAdminForRequest } from "../admin/requireAdminRequest";
+import { isWatsonSessionAuthenticated } from "./watsonAuth";
 
 export function watsonJsonResponse(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -12,18 +12,17 @@ export function watsonJsonResponse(data: unknown, status = 200): Response {
   });
 }
 
-export async function requireWatsonAdminJson(
+export async function requireWatsonSessionJson(
   context: APIContext,
-): Promise<
-  | { ok: true; member: { id: string; email: string | null } }
-  | Response
-> {
-  const auth = await requireAdminForRequest(context.request, context.cookies);
-  if (!auth.ok) {
-    return watsonJsonResponse({ ok: false, error: auth.error }, auth.status);
+): Promise<{ ok: true } | Response> {
+  if (!isWatsonSessionAuthenticated(context.cookies)) {
+    return watsonJsonResponse({ ok: false, error: "Sign in required." }, 401);
   }
-  return { ok: true, member: auth.member };
+  return { ok: true };
 }
+
+/** @deprecated Use requireWatsonSessionJson. Kept as alias for existing API routes. */
+export const requireWatsonAdminJson = requireWatsonSessionJson;
 
 export async function readWatsonJsonBody(
   request: Request,
