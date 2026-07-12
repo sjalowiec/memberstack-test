@@ -96,6 +96,32 @@ export function formatLegacyMoney(value: string | number | null | undefined): st
   });
 }
 
+export function parseLegacyMoneyAmount(value: string | number | null | undefined): number | null {
+  if (value == null || value === "") {
+    return null;
+  }
+  const amount = typeof value === "number" ? value : Number.parseFloat(String(value));
+  return Number.isNaN(amount) ? null : amount;
+}
+
+export function formatLegacyMoneyDisplay(value: string | number | null | undefined): string {
+  return formatLegacyMoney(value) ?? "$0.00";
+}
+
+export function formatLegacyAverageOrderValue(totalRevenue: number, orderCount: number): string {
+  if (orderCount <= 0) {
+    return "$0.00";
+  }
+
+  const average = totalRevenue / orderCount;
+  return average.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 export function formatLegacyOrderStatus(row: Pick<
   LegacyStoreTransactionRow,
   "fulfillment_status_current" | "fulfillment_status" | "paid"

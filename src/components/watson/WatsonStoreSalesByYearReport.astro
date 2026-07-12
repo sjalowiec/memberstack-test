@@ -1,0 +1,95 @@
+---
+import type { StoreSalesByYearReport } from "../../lib/watson/storeSalesByYearReport";
+
+interface Props {
+  report: StoreSalesByYearReport;
+}
+
+const { report } = Astro.props;
+const { rows, totals } = report;
+---
+
+<section class="watson__panel" aria-labelledby="legacy-store-sales-by-year-heading">
+  <h2 id="legacy-store-sales-by-year-heading" class="watson__panel-title">
+    Legacy Store Sales by Year
+  </h2>
+  <p class="watson-reports__note">
+    This report summarizes legacy Knit It Now store orders imported from the previous system. It
+    does not include current Stripe, Shopify, Memberstack, or Learn DesignaKnit sales.
+  </p>
+
+  {
+    rows.length === 0 ? (
+      <p class="watson__placeholder">No legacy store orders with purchase dates were found.</p>
+    ) : (
+      <div class="watson__table-wrap">
+        <table class="watson-table" data-sortable-table>
+          <thead>
+            <tr>
+              <th
+                scope="col"
+                data-sort-key="year"
+                data-sort-type="string"
+                data-sort-default="true"
+                data-sort-default-direction="desc"
+                tabindex="0"
+              >
+                Year
+              </th>
+              <th scope="col" data-sort-key="orders" data-sort-type="string" tabindex="0">
+                Number of store orders
+              </th>
+              <th scope="col" data-sort-key="revenue" data-sort-type="string" tabindex="0">
+                Legacy store revenue
+              </th>
+              <th scope="col" data-sort-key="average" data-sort-type="string" tabindex="0">
+                Average order value
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              rows.map((row) => (
+                <tr>
+                  <td data-sort-value={String(row.year)}>{row.year}</td>
+                  <td data-sort-value={String(row.orderCount)}>{row.orderCount.toLocaleString("en-US")}</td>
+                  <td data-sort-value={String(row.revenueAmount)}>{row.revenueDisplay}</td>
+                  <td data-sort-value={String(row.averageOrderValueAmount)}>
+                    {row.averageOrderValueDisplay}
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+          <tfoot>
+            <tr class="watson-reports__totals-row">
+              <th scope="row">Totals</th>
+              <td>{totals.orderCount.toLocaleString("en-US")}</td>
+              <td>{totals.revenueDisplay}</td>
+              <td>{totals.averageOrderValueDisplay}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    )
+  }
+</section>
+
+<style>
+  .watson-reports__note {
+    margin: 0 0 1rem;
+    color: #475569;
+    line-height: 1.5;
+  }
+
+  .watson-reports__totals-row th,
+  .watson-reports__totals-row td {
+    font-weight: 700;
+    border-top: 2px solid #cbd5e1;
+    background: #f8fafc;
+  }
+
+  .watson-table tfoot .watson-reports__totals-row td {
+    color: #334155;
+  }
+</style>
