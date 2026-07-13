@@ -42,14 +42,10 @@ function detailsOpenForPrint(html: string): string {
 
 function renderPrintBlockRow(
   row: Extract<SleevelessPatternDisplayRow, { kind: "block" }>,
-  lastStitchRef: { value: number | undefined },
   pieceKey = "print",
   keepWithNext = false,
 ): string {
-  const showStitch =
-    row.stitchCount !== undefined &&
-    (lastStitchRef.value === undefined || row.stitchCount !== lastStitchRef.value);
-  if (showStitch) lastStitchRef.value = row.stitchCount;
+  const showStitch = row.stitchCount !== undefined;
 
   const leftBits: string[] = [];
   if (row.rc) {
@@ -128,7 +124,6 @@ export function renderSleevelessPrintPieceHtml(
   pieceKey = "print",
 ): string {
   const list = Array.isArray(rows) ? rows : [];
-  const lastStitchRef = { value: undefined as number | undefined };
   const chunks: string[] = [];
 
   for (let idx = 0; idx < list.length; idx++) {
@@ -153,7 +148,7 @@ export function renderSleevelessPrintPieceHtml(
       // Glue a setup instruction that sits directly above the shaping chart to the chart
       // header so the heading/intro never strand alone at a page foot (the chart body flows).
       const keepWithNext = list[idx + 1]?.kind === "neckShoulderChartTableMount";
-      chunks.push(renderPrintBlockRow(row, lastStitchRef, pieceKey, keepWithNext));
+      chunks.push(renderPrintBlockRow(row, pieceKey, keepWithNext));
     }
   }
 

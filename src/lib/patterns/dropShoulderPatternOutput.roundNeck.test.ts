@@ -75,7 +75,7 @@ function frontBlockParagraphs(rows: SleevelessPatternDisplayRow[]): string[] {
     .filter(
       (row): row is Extract<SleevelessPatternDisplayRow, { kind: "block" }> => row.kind === "block",
     )
-    .flatMap((row) => row.paragraphs ?? []);
+    .flatMap((row) => [...(row.trustedParagraphs ?? []), ...(row.paragraphs ?? [])]);
 }
 
 function sleeveInstructionText(rows: SleevelessPatternDisplayRow[]): string {
@@ -128,7 +128,7 @@ describe("generateDropShoulderPattern round-neck front instructions", () => {
     expect(text).toMatch(/Place the opposite shoulder stitches on hold/i);
     expect(text).toMatch(/Work one shoulder at a time/i);
     expect(text).toMatch(
-      /When neckline shaping is complete and 23 stitches remain on the working shoulder, knit even to RC:126 \(no further neck-edge decreases\)/,
+      /When neckline shaping is complete and 23 stitches remain on the working shoulder, knit even to RC: 126 \(no further neck-edge decreases\)/,
     );
     expect(text).toMatch(/Bind off the 23 shoulder stitches\./);
     expect(text).toMatch(/Return the held shoulder stitches to the needles/i);
@@ -141,7 +141,7 @@ describe("generateDropShoulderPattern round-neck front instructions", () => {
     const printHtml = renderSleevelessPrintPieceHtml(result.frontDisplayRows, "", "front");
     expect(printHtml).toMatch(/Place the opposite shoulder stitches on hold/i);
     expect(printHtml).toMatch(
-      /When neckline shaping is complete and 23 stitches remain on the working shoulder, knit even to RC:126 \(no further neck-edge decreases\)/,
+      /When neckline shaping is complete and 23 stitches remain on the working shoulder, knit even to RC: 126 \(no further neck-edge decreases\)/,
     );
     expect(printHtml).toMatch(/Bind off the 23 shoulder stitches\./);
   });
@@ -160,7 +160,7 @@ describe("generateDropShoulderPattern round-neck front instructions", () => {
     expect(text).toMatch(/Bind off 4 stitches at the center-front \(neck\) edge\./);
     expect(text).toMatch(/bind off 3, then 2 stitches on alternate \(neck-edge\) rows\./);
     expect(text).toMatch(/Decrease 1 stitch at the neck edge every other row 5 times/i);
-    expect(text).toMatch(/When 28 stitches remain, knit even to RC:198/);
+    expect(text).toMatch(/When 28 stitches remain, knit even to RC: 198/);
 
     const backRepl = buildDropShoulderBodyDiagramReplacements(result, "in", {
       patternData,
@@ -183,7 +183,7 @@ describe("generateDropShoulderPattern round-neck front instructions", () => {
     expect(result.debug.dropShoulderSleeveBodyRows).toBe(72);
     expect(sleeveText).toMatch(/Increase 1 stitch at each side every 14 rows 5 times\./);
     expect(sleeveText).toMatch(
-      /After the final increase, knit 2 rows even in pattern, then bind off at RC:094\./,
+      /After the final increase, knit 2 rows even in pattern, then bind off at RC: 094\./,
     );
 
     const sleeveRepl = buildDropShoulderSleeveDiagramReplacements(result, "in", "cuff-up");

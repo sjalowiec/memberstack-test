@@ -331,6 +331,7 @@ describe("dropShoulderBodyJapaneseNotation", () => {
     expect(backText).toMatch(/Work needles .*R10 through R50.*\(41 stitches total\)/);
     expect(backText).toMatch(/Put 3 needles into hold every other row 1 time/i);
     expect(backText).toMatch(/Put 2 needles into hold every other row 3 times/i);
+    expect(backText).toMatch(/<em>\(RC: \d+(?:, \d+)*\)<\/em>/);
     expect(backText).toMatch(/Scrap off or bind off the remaining right shoulder stitches/i);
     expect(backText).toMatch(/Break yarn and move the carriage to the opposite side/i);
     expect(backText).toMatch(/Leave center neckline needles .*L9 through R9.*in hold \(18 stitches total\)/);
@@ -423,7 +424,7 @@ describe("dropShoulderBodyJapaneseNotation", () => {
 
     const frontText = (result.frontDisplayRows ?? [])
       .filter((row): row is Extract<(typeof result.frontDisplayRows)[number], { kind: "block" }> => row.kind === "block")
-      .flatMap((row) => [...(row.paragraphs ?? [])])
+      .flatMap((row) => [...(row.trustedParagraphs ?? []), ...(row.paragraphs ?? [])])
       .join("\n");
     expect(frontText).toMatch(new RegExp(`bind off ${cfBindOff} stitches`, "i"));
   });

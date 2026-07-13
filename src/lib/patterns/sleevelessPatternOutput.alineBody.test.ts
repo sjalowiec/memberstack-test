@@ -114,13 +114,13 @@ describe("A-line BODY written instructions (single continuous span)", () => {
       countBodyParagraphMatches(blocks, /glossary-tooltip-placeholder.*data-glossary-id="178"/),
     ).toBe(0);
 
-    const shapingBlock = blocks.find((b) => b.rc === "RC:022");
+    const shapingBlock = blocks.find((b) => b.rc === "RC: 022");
     expect(shapingBlock).toBeDefined();
     expect(shapingBlock && blockHasText(shapingBlock, /Begin A-line shaping/i)).toBe(true);
-    expect(blocks.find((b) => b.rc === "RC:088")?.paragraphs?.some((p) => /Knit 7 rows straight/i.test(p))).toBe(
+    expect(blocks.find((b) => b.rc === "RC: 088")?.paragraphs?.some((p) => /Knit 7 rows straight/i.test(p))).toBe(
       true,
     );
-    const armholeMarker = blocks.find((b) => b.rc === "RC:095");
+    const armholeMarker = blocks.find((b) => b.rc === "RC: 095");
     expect(armholeMarker).toBeDefined();
     expect(armholeMarker!.stitchCount).toBe(128);
     expect(armholeMarker!.paragraphs?.some((p) => /Begin armhole shaping/i.test(p))).toBe(true);

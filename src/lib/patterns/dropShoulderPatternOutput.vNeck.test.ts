@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { generateDropShoulderPattern } from "./dropShoulderPatternOutput";
 import { neckDecreaseStitchesPerSideFromOpening } from "./legoBlocks/vNeckline";
-import { evenShapingSchedule } from "./evenShapingSchedule";
+import { evenShapingGarmentRowNumbers, evenShapingSchedule, formatParentheticalShapingRowNumbers } from "./evenShapingSchedule";
 import type { SleevelessPatternDisplayRow } from "./sleevelessPatternOutput";
 import { renderSleevelessPrintPieceHtml } from "./sleevelessPatternPrintRender";
 
@@ -37,7 +37,7 @@ function frontBlockParagraphs(rows: SleevelessPatternDisplayRow[]): string[] {
     .filter(
       (row): row is Extract<SleevelessPatternDisplayRow, { kind: "block" }> => row.kind === "block",
     )
-    .flatMap((row) => row.paragraphs ?? []);
+    .flatMap((row) => [...(row.trustedParagraphs ?? []), ...(row.paragraphs ?? [])]);
 }
 
 describe("generateDropShoulderPattern V-neck front instructions", () => {
@@ -76,13 +76,13 @@ describe("generateDropShoulderPattern V-neck front instructions", () => {
     expect(text).not.toMatch(/divide for the V-neck at the center\. Work each side separately/i);
     expect(text).toMatch(/Place the opposite shoulder stitches on hold/i);
     expect(text).toMatch(/Work one shoulder at a time/i);
-    expect(text).toMatch(
-      new RegExp(
-        `At the neck edge, decrease 1 stitch .+ ${sched.count} time${sched.count === 1 ? "" : "s"} \\(${perSide} stitches removed per side\\)`,
-      ),
+    expect(text).toContain(
+      `At the neck edge, decrease 1 stitch every row ${sched.count} times ${formatParentheticalShapingRowNumbers(
+        evenShapingGarmentRowNumbers(frontNecklineStartRC!, sched),
+      )} (${perSide} stitches removed per side).`,
     );
     expect(text).toMatch(
-      /When neckline shaping is complete and 32 stitches remain on the working shoulder, knit even to RC:168 \(no further neck-edge decreases\)/,
+      /When neckline shaping is complete and 32 stitches remain on the working shoulder, knit even to RC: 168 \(no further neck-edge decreases\)/,
     );
     expect(text).toMatch(/Bind off the 32 shoulder stitches\./);
     expect(text).toMatch(/Return the held shoulder stitches to the needles/i);

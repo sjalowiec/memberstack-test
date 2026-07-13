@@ -4,6 +4,7 @@
  */
 
 import { calculateArmholeShaping, type ArmholeResult } from "./legoBlocks/armholeBlock";
+import { shapingActionRowNumbers } from "./evenShapingSchedule";
 import { hemSectionRow } from "./legoBlocks/hem";
 import { RESET_ROW_COUNTER_TEXT } from "./rowCounterReset";
 import { parseInlineMarkedLine } from "./inlineRcHeading";
@@ -513,7 +514,7 @@ export type SleevelessPatternDisplayRow =
         edge: string;
         stitchesRemaining: number;
       }[];
-      /** Total stitches on the piece after this block; right column only when different from last shown */
+      /** Total stitches on the piece after this block; shown in the right column when defined */
       stitchCount?: number;
     };
 
@@ -599,10 +600,10 @@ function backStitchesFromPattern(bustChestStitches: number): number {
   return Math.round(bustChestStitches / 2);
 }
 
-/** Row counter label for pattern text: `RC:000` (no space after colon). */
+/** Row counter heading for pattern blocks: `RC: 000` (space after colon). */
 export function formatRcColon(rc: number): string {
   const n = Math.max(0, Math.floor(rc));
-  return `RC:${String(n).padStart(3, "0")}`;
+  return `RC: ${String(n).padStart(3, "0")}`;
 }
 
 type ArmholeRcPlan = {
@@ -1749,9 +1750,10 @@ export function buildSleevelessBackDisplayRows(args: {
     }
 
     if (m.decreaseSts > 0) {
-      const decreaseRowsChecklist = Array.from(
-        { length: Math.max(0, m.decreaseSts) },
-        (_, i) => String(Math.max(0, decStart - first + i * 2))
+      const decreaseRowsChecklist = shapingActionRowNumbers(
+        Math.max(0, decStart - first),
+        m.decreaseSts,
+        2,
       ).join(" - ");
       const decreaseSentence =
         armholeStyle === "cardiganHalfLeftFront"
@@ -3471,11 +3473,11 @@ export function sanitizeSleevelessPatternLineForDisplay(line: string): string {
   return s;
 }
 
-/** Normalize RC display to `RC:000` (no space after colon). */
+/** Normalize RC display to `RC: 000` (space after colon). */
 export function normalizeRcDisplayLine(line: string): string {
   let s = line;
-  s = s.replace(/^RC\s+(\d{1,3})\b/, (_, d: string) => `RC:${String(d).padStart(3, "0")}`);
-  s = s.replace(/^RC:\s*(\d{1,3})\b/, (_, d: string) => `RC:${String(d).padStart(3, "0")}`);
+  s = s.replace(/^RC\s+(\d{1,3})\b/, (_, d: string) => `RC: ${String(d).padStart(3, "0")}`);
+  s = s.replace(/^RC:\s*(\d{1,3})\b/, (_, d: string) => `RC: ${String(d).padStart(3, "0")}`);
   return s;
 }
 

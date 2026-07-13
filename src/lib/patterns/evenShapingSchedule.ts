@@ -35,3 +35,38 @@ export function sleeveEvenShapingSchedule(
 ): EvenShapingSchedule {
   return evenShapingSchedule(sleeveShapingPerSide(topSts, wristSts), sleeveBodyRows);
 }
+
+/**
+ * Garment RC of each shaping action when the first action falls on `firstActionRc` and repeats
+ * every `interval` rows (same spacing as sleeveless armhole decreases at interval 2).
+ */
+export function shapingActionRowNumbers(
+  firstActionRc: number,
+  count: number,
+  interval: number,
+): number[] {
+  const n = Math.max(0, Math.floor(count));
+  const step = Math.max(0, Math.floor(interval));
+  if (n === 0 || step === 0) return [];
+  const start = Math.max(0, Math.floor(firstActionRc));
+  return Array.from({ length: n }, (_, i) => start + i * step);
+}
+
+/** Italic parenthetical shaping RC list: <em>(RC: 168, 170)</em> — trusted HTML only. */
+export function formatParentheticalShapingRowNumbers(rows: readonly number[]): string {
+  if (rows.length === 0) return "";
+  return `<em>(RC: ${rows.join(", ")})</em>`;
+}
+
+/**
+ * Garment RC list for {@link evenShapingSchedule} decreases beginning at `shapingStartRc`
+ * (first decrease on `shapingStartRc + interval`, matching {@link generateRowByRow} spacing).
+ */
+export function evenShapingGarmentRowNumbers(
+  shapingStartRc: number,
+  schedule: EvenShapingSchedule,
+): number[] {
+  const { interval, count } = schedule;
+  if (count <= 0 || interval <= 0) return [];
+  return shapingActionRowNumbers(shapingStartRc + interval, count, interval);
+}

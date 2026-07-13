@@ -24,9 +24,25 @@ import {
   formatStitchCountValidation,
   NEEDLE_RANGE_CLASS,
 } from "./legoBlocks/shallowBackNeckNeedleLayout";
+import {
+  evenShapingGarmentRowNumbers,
+  formatParentheticalShapingRowNumbers,
+  shapingActionRowNumbers,
+  type EvenShapingSchedule,
+} from "./evenShapingSchedule";
 import { consolidateConsecutiveJapaneseNotationLines } from "./shapingNotationCompress";
 import { formatHoldNotation, formatShapingSegment } from "./sleevelessBackJapaneseNotation";
 import { inlineRcHeadingLine, inlineSubheadingLine } from "./inlineRcHeading";
+
+export type RoundNeckNeckEdgeWrittenOptions = {
+  /** When set, append parenthetical comma-separated garment RC lists after each shaping line. */
+  necklineStartRc?: number;
+};
+
+function appendShapingRowListAfterSentence(line: string, rows: readonly number[]): string {
+  const parens = formatParentheticalShapingRowNumbers(rows);
+  return parens ? `${line} ${parens}` : line;
+}
 
 export type RoundNeckBackShallowExecutionOptions = {
   /** Full back body width in stitches — enables needle-range execution instructions. */
@@ -47,9 +63,9 @@ export type RoundNeckBackShallowRcContext = {
   shoulderCompleteRc: number;
 };
 
-/** Zero-padded garment RC label (matches {@link formatRcColon} in pattern output). */
+/** Zero-padded garment RC heading label (space after colon). */
 function formatBackShallowRc(rc: number): string {
-  return `RC:${String(Math.max(0, Math.floor(rc))).padStart(3, "0")}`;
+  return `RC: ${String(Math.max(0, Math.floor(rc))).padStart(3, "0")}`;
 }
 
 export { NEEDLE_RANGE_CLASS };
@@ -96,9 +112,15 @@ function holdSegmentWrittenLine(
   stitchCount: number,
   repeatCount: number,
   edgePhrase: string,
+  firstActionRc?: number,
 ): string {
   const stWord = stitchCount === 1 ? "stitch" : "stitches";
-  return `At ${edgePhrase}, put ${stitchCount} ${stWord} in hold every other row ${repeatCount} time${repeatCount === 1 ? "" : "s"}.`;
+  const line = `At ${edgePhrase}, put ${stitchCount} ${stWord} in hold every other row ${repeatCount} time${repeatCount === 1 ? "" : "s"}.`;
+  if (firstActionRc === undefined) return line;
+  return appendShapingRowListAfterSentence(
+    line,
+    shapingActionRowNumbers(firstActionRc, repeatCount, 2),
+  );
 }
 
 /** Center neckline written line (hold for shallow; bind-off for deep). */
@@ -118,10 +140,19 @@ export function roundNeckPlanFinishHeldStitchesLine(): string {
   return "Scrap off or bind off all remaining held neckline stitches.";
 }
 
-function holdNeedleSegmentBullet(stitchCount: number, repeatCount: number): string {
+function holdNeedleSegmentBullet(
+  stitchCount: number,
+  repeatCount: number,
+  firstActionRc?: number,
+): string {
   const needleWord = stitchCount === 1 ? "needle" : "needles";
   const times = `${repeatCount} time${repeatCount === 1 ? "" : "s"}`;
-  return `• Put ${stitchCount} ${needleWord} into hold every other row ${times}.`;
+  const line = `• Put ${stitchCount} ${needleWord} into hold every other row ${times}.`;
+  if (firstActionRc === undefined) return line;
+  return appendShapingRowListAfterSentence(
+    line,
+    shapingActionRowNumbers(firstActionRc, repeatCount, 2),
+  );
 }
 
 /**
@@ -156,7 +187,7 @@ function roundNeckBackNeedleSideShapingLines(
       if (seg.startRc !== necklineStartRc) {
         lines.push(inlineRcHeadingLine(formatBackShallowRc(seg.startRc)));
       }
-      lines.push(holdNeedleSegmentBullet(seg.stitchCount, seg.repeatCount));
+      lines.push(holdNeedleSegmentBullet(seg.stitchCount, seg.repeatCount, seg.startRc));
     }
     return lines;
   }
@@ -324,27 +355,71 @@ export function roundNeckBackShallowExecutionWrittenLines(
 export function roundNeckPlanOneSideNeckEdgeWrittenLines(
   plan: RoundNecklinePlanResult | RoundNecklineShapingResult,
   side: RoundNeckPlanSide = "right",
+  options?: RoundNeckNeckEdgeWrittenOptions,
 ): string[] {
+  const necklineStartRc = options?.necklineStartRc;
   const { stairSteps, singleDecreaseCount, holdGroups } = sidePlan(plan, side);
 
   if (isShallowHoldRoundPlan(plan)) {
-    return compressHoldGroupsToSegments(holdGroups).map((seg) =>
-      holdSegmentWrittenLine(seg.stitchCount, seg.repeatCount, "the neck edge"),
-    );
+    let rc = necklineStartRc;
+    return compressHoldGroupsToSegments(holdGroups).map((seg) => {
+      const line = holdSegmentWrittenLine(
+        seg.stitchCount,
+        seg.repeatCount,
+        "the neck edge",
+        rc,
+      );
+      if (rc !== undefined) rc += 2 * seg.repeatCount;
+      return line;
+    });
   }
 
   const lines: string[] = [];
   if (stairSteps.length > 0) {
-    lines.push(
-      `At the neck edge, bind off ${stairSteps.join(", then ")} stitch${stairSteps.length === 1 && stairSteps[0] === 1 ? "" : "es"} on alternate (neck-edge) rows.`,
-    );
+    const stairLine = `At the neck edge, bind off ${stairSteps.join(", then ")} stitch${stairSteps.length === 1 && stairSteps[0] === 1 ? "" : "es"} on alternate (neck-edge) rows.`;
+    if (necklineStartRc !== undefined) {
+      lines.push(
+        appendShapingRowListAfterSentence(
+          stairLine,
+          shapingActionRowNumbers(necklineStartRc + 2, stairSteps.length, 2),
+        ),
+      );
+    } else {
+      lines.push(stairLine);
+    }
   }
   if (singleDecreaseCount > 0) {
-    lines.push(
-      `Decrease 1 stitch at the neck edge every other row ${singleDecreaseCount} time${singleDecreaseCount === 1 ? "" : "s"}.`,
-    );
+    const singleLine = `Decrease 1 stitch at the neck edge every other row ${singleDecreaseCount} time${singleDecreaseCount === 1 ? "" : "s"}.`;
+    if (necklineStartRc !== undefined) {
+      const firstSingleRc = necklineStartRc + 2 * (stairSteps.length + 1);
+      lines.push(
+        appendShapingRowListAfterSentence(
+          singleLine,
+          shapingActionRowNumbers(firstSingleRc, singleDecreaseCount, 2),
+        ),
+      );
+    } else {
+      lines.push(singleLine);
+    }
   }
   return lines;
+}
+
+/** Insert comma-separated garment RC list before the closing stitch-count parenthetical. */
+export function appendEvenShapingRowListToInstruction(
+  instructionBeforeStitchNote: string,
+  schedule: EvenShapingSchedule,
+  necklineStartRc: number | undefined,
+  stitchCountNote: string,
+): string {
+  const rowList =
+    necklineStartRc !== undefined
+      ? formatParentheticalShapingRowNumbers(
+          evenShapingGarmentRowNumbers(necklineStartRc, schedule),
+        )
+      : "";
+  const rowSuffix = rowList ? ` ${rowList}` : "";
+  return `${instructionBeforeStitchNote}${rowSuffix} ${stitchCountNote}.`;
 }
 
 function roundNeckPlanHoldGroupsJpLines(
@@ -417,7 +492,9 @@ export function roundNeckBackBothEdgesWrittenLines(
 /** Cardigan CF edge: combined hold groups from both sides of the full shallow/deep plan. */
 export function roundNeckCardiganCfEdgeWrittenLines(
   plan: RoundNecklinePlanResult | RoundNecklineShapingResult,
+  options?: RoundNeckNeckEdgeWrittenOptions,
 ): string[] {
+  const necklineStartRc = options?.necklineStartRc;
   if (isShallowHoldRoundPlan(plan)) {
     const combined = [...plan.left.holdGroups];
     for (let i = 0; i < plan.right.holdGroups.length; i++) {
@@ -425,11 +502,19 @@ export function roundNeckCardiganCfEdgeWrittenLines(
     }
     const trimmed = combined.filter((g) => g > 0);
     if (trimmed.length === 0) return [];
-    return compressHoldGroupsToSegments(trimmed).map((seg) =>
-      holdSegmentWrittenLine(seg.stitchCount, seg.repeatCount, "the neck edge"),
-    );
+    let rc = necklineStartRc;
+    return compressHoldGroupsToSegments(trimmed).map((seg) => {
+      const line = holdSegmentWrittenLine(
+        seg.stitchCount,
+        seg.repeatCount,
+        "the neck edge",
+        rc,
+      );
+      if (rc !== undefined) rc += 2 * seg.repeatCount;
+      return line;
+    });
   }
-  return roundNeckPlanOneSideNeckEdgeWrittenLines(plan, "right");
+  return roundNeckPlanOneSideNeckEdgeWrittenLines(plan, "right", options);
 }
 
 /** @deprecated Use {@link roundNeckPlanOneSideNeckEdgeWrittenLines}. */

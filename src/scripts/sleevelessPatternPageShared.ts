@@ -673,7 +673,6 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         ? displayOpts.frontVisualGuides
         : undefined;
     const list = Array.isArray(rows) ? rows : [];
-    let lastShownStitch;
     let currentPiece = "";
     /** @type {string[]} */
     const splitParts = [];
@@ -732,10 +731,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
      * @param {Extract<(typeof list)[number], { kind: "block" }>} row
      */
     function instructionRowHtml(row) {
-      const showStitch =
-        row.stitchCount !== undefined &&
-        (lastShownStitch === undefined || row.stitchCount !== lastShownStitch);
-      if (showStitch) lastShownStitch = row.stitchCount;
+      const showStitch = row.stitchCount !== undefined;
 
       const leftBits = [];
       if (row.rc) {
