@@ -16,6 +16,24 @@
   line-height: 1.45;
 }
 
+.sleeveless-unified-builder-page .express-size-heading {
+  margin: 0 0 0.35rem;
+  color: #26351f;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.sleeveless-unified-builder-page .express-size-instruction {
+  font-weight: 400;
+}
+
+.sleeveless-express-page .express-size-chart-link-wrap {
+  margin: 0 0 0.85rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
 .sleeveless-express-page .express-size-select-wrap {
   margin: 0 0 0.85rem;
   width: 100%;
@@ -208,6 +226,57 @@
   color: #6b7280;
   font-size: 0.9rem;
   line-height: 1.45;
+}
+
+.sleeveless-unified-builder-page .express-size-standard-body-summary {
+  margin: 0.75rem 0 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.5rem;
+  background: rgba(82, 104, 45, 0.06);
+  border: 1px solid rgba(82, 104, 45, 0.12);
+  color: #374151;
+}
+
+.sleeveless-unified-builder-page .express-size-standard-body-summary__heading {
+  margin: 0 0 0.45rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #26351f;
+}
+
+.sleeveless-unified-builder-page .express-size-standard-body-summary__list {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 0.35rem 0.75rem;
+}
+
+.sleeveless-unified-builder-page .express-size-standard-body-summary__item {
+  margin: 0;
+  min-width: 0;
+}
+
+.sleeveless-unified-builder-page .express-size-standard-body-summary__item dt {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #667085;
+}
+
+.sleeveless-unified-builder-page .express-size-standard-body-summary__item dd {
+  margin: 0.1rem 0 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #26351f;
+}
+
+.sleeveless-unified-builder-page .express-fit-instruction {
+  margin: 0 0 1rem;
+  color: #374151;
+  font-size: 0.92rem;
+  line-height: 1.5;
 }
 
 @media (max-width: 480px) {

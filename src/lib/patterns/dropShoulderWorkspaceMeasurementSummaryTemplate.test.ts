@@ -114,4 +114,8 @@ describe("Drop Shoulder builder Fit step (unchanged)", () => {
     expect(dropShoulderBuilderAstro).toContain('data-value="relaxed"');
     expect(dropShoulderBuilderAstro).toContain("formatFitEaseApproxLabel");
   });
+
+  it("uses the starting-fit heading on the builder", () => {
+    expect(dropShoulderBuilderAstro).toContain("Choose a starting fit");
+  });
 });

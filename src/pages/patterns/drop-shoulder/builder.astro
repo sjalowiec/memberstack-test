@@ -243,8 +243,14 @@ const imgGarmentCardigan = "/images/patterns/drop-shoulder/picker/drop-cardigan-
                 </button>
               </div>
               <div class="express-who-size-nested" data-express-nested-size hidden>
+                <h3 class="express-size-heading">Choose your size</h3>
                 <p class="express-size-instruction" id="express-size-helper-text">
-                  Choose your size: Select the bust/chest measurement closest to yours.
+                  Select the bust/chest measurement closest to yours. The other body measurements are based on the Knit It Now standard sizing chart for that size.
+                </p>
+                <p class="express-size-chart-link-wrap">
+                  <a href="/reference/sizing-charts" class="express-custom-build-callout__link"
+                    >View the complete sizing chart</a
+                  >
                 </p>
                 <p class="express-size-load-msg sg-fit-size-copy" data-express-size-status>
                   Loading size charts…
@@ -274,6 +280,12 @@ const imgGarmentCardigan = "/images/patterns/drop-shoulder/picker/drop-cardigan-
                     autocomplete="off"
                   ></select>
                 </div>
+                <div
+                  class="express-size-standard-body-summary"
+                  data-express-size-standard-body-summary
+                  aria-live="polite"
+                  hidden
+                ></div>
               </div>
             </div>
           </section>
@@ -430,7 +442,7 @@ const imgGarmentCardigan = "/images/patterns/drop-shoulder/picker/drop-cardigan-
               </button>
               <div class="express-acc__header-main">
                 <span class="express-acc__check" data-express-check aria-hidden="true">✓</span>
-                <h2 class="express-acc__title" id="express-step-3-title">Choose your fit</h2>
+                <h2 class="express-acc__title" id="express-step-3-title">Choose a starting fit</h2>
                 <span class="express-acc__value" data-express-summary="fit"></span>
               </div>
             </div>
@@ -445,6 +457,9 @@ const imgGarmentCardigan = "/images/patterns/drop-shoulder/picker/drop-cardigan-
               aria-labelledby="express-step-3-title"
               hidden
             >
+              <p class="express-fit-instruction">
+                Your selected fit adds ease to the standard body measurements shown above. You can adjust the finished garment measurements after the pattern is built.
+              </p>
               <div
                 class="express-fit-cards hat-length-picker__grid sg-fit-preference-grid"
                 role="group"

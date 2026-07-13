@@ -109,12 +109,30 @@ function escapeAttr(s: string): string {
   return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 }
 
+export const EXPRESS_STANDARD_BODY_MEASUREMENT_FIELDS = [
+  { key: "bust_or_chest", label: "Bust/Chest" },
+  { key: "waist", label: "Waist" },
+  { key: "hip", label: "Hip" },
+  { key: "upper_arm", label: "Upper Arm" },
+] as const;
+
+export type ExpressStandardBodyMeasurementKey =
+  (typeof EXPRESS_STANDARD_BODY_MEASUREMENT_FIELDS)[number]["key"];
+
 /** Table cell — same inches/cm rules as Fit dropdown labels. */
-export function formatBustChestDisplay(row: ChartRow, uiUnit: "in" | "cm"): string {
+export function formatBodyMeasurementDisplay(
+  row: ChartRow,
+  field: ExpressStandardBodyMeasurementKey,
+  uiUnit: "in" | "cm",
+): string {
   const rowObj = row && typeof row === "object" ? (row as Record<string, unknown>) : {};
   if (uiUnit === "cm") {
     let cm: number | null = null;
-    for (const key of ["bust_or_chest_cm", "bust_cm", "chest_cm"] as const) {
+    const cmKeys =
+      field === "bust_or_chest"
+        ? (["bust_or_chest_cm", "bust_cm", "chest_cm"] as const)
+        : ([`${field}_cm`] as const);
+    for (const key of cmKeys) {
       const raw = rowObj[key];
       const n = typeof raw === "number" ? raw : parseFloat(String(raw ?? ""));
       if (Number.isFinite(n) && n > 0) {
@@ -123,14 +141,53 @@ export function formatBustChestDisplay(row: ChartRow, uiUnit: "in" | "cm"): stri
       }
     }
     if (cm === null) {
-      const inches = toFiniteNumber(row.bust_or_chest);
+      const inches = toFiniteNumber(row[field]);
       cm = Number.isFinite(inches) ? Math.round(inches * 2.54) : null;
     }
     return cm !== null ? `${cm} cm` : "—";
   }
-  const inches = toFiniteNumber(row.bust_or_chest);
+  const inches = toFiniteNumber(row[field]);
   if (!Number.isFinite(inches)) return "—";
   return `${formatSwatchCountForGaugeInput(inches)}"`;
+}
+
+/** Table cell — same inches/cm rules as Fit dropdown labels. */
+export function formatBustChestDisplay(row: ChartRow, uiUnit: "in" | "cm"): string {
+  return formatBodyMeasurementDisplay(row, "bust_or_chest", uiUnit);
+}
+
+export type ExpressStandardBodyMeasurementsSummary = {
+  heading: string;
+  measurements: Array<{ label: string; value: string }>;
+};
+
+/** Standard chart body measurements for the selected size (no fit ease applied). */
+export function buildExpressStandardBodyMeasurementsSummaryFromRow(
+  sizeStr: string,
+  row: ChartRow,
+  uiUnit: "in" | "cm",
+): ExpressStandardBodyMeasurementsSummary {
+  const sizeLabel = sizeStr.trim();
+  return {
+    heading: `Size ${sizeLabel} standard body measurements`,
+    measurements: EXPRESS_STANDARD_BODY_MEASUREMENT_FIELDS.map(({ key, label }) => ({
+      label,
+      value: formatBodyMeasurementDisplay(row, key, uiUnit),
+    })),
+  };
+}
+
+export function buildExpressStandardBodyMeasurementsSummary(
+  values: Record<string, string>,
+  options?: { uiUnit?: "in" | "cm" },
+): ExpressStandardBodyMeasurementsSummary | null {
+  const sz = values.selectedSize?.trim();
+  if (!sz) return null;
+  const aud = expressWhoToChartAudience(values.who);
+  const row = findExpressChartRow(aud, sz);
+  if (!row) return null;
+  const uiUnit = options?.uiUnit ?? getExpressUiUnit();
+  return buildExpressStandardBodyMeasurementsSummaryFromRow(sz, row, uiUnit);
 }
 
 /** Already-loaded sweater chart rows for an audience (empty until {@link loadExpressSweaterCharts} resolves). */
@@ -239,11 +296,44 @@ export function formatExpressSizeBodyConfirmation(
   return line;
 }
 
-function isDropShoulderExpressBuilderPage(): boolean {
-  if (typeof document === "undefined") return false;
-  return (
-    document.querySelector('[data-express-construction="drop-shoulder"]') instanceof HTMLElement
-  );
+function nestedHasStandardBodyMeasurementsSummary(nested: ParentNode): boolean {
+  return nested.querySelector("[data-express-size-standard-body-summary]") instanceof HTMLElement;
+}
+
+function renderExpressStandardBodyMeasurementsSummaryHtml(
+  summary: ExpressStandardBodyMeasurementsSummary,
+): string {
+  const items = summary.measurements
+    .map(
+      ({ label, value }) =>
+        `<div class="express-size-standard-body-summary__item"><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`,
+    )
+    .join("");
+  return `<h3 class="express-size-standard-body-summary__heading">${escapeHtml(summary.heading)}</h3><dl class="express-size-standard-body-summary__list">${items}</dl>`;
+}
+
+/**
+ * Express builders with `[data-express-size-standard-body-summary]`: compact standard body measurements.
+ */
+export function patchExpressStandardBodyMeasurementsSummary(
+  scope: ParentNode,
+  values: Record<string, string>,
+): void {
+  const nested = scope.querySelector("[data-express-nested-size]");
+  if (!(nested instanceof HTMLElement)) return;
+
+  const el = nested.querySelector("[data-express-size-standard-body-summary]");
+  if (!(el instanceof HTMLElement)) return;
+
+  const summary = buildExpressStandardBodyMeasurementsSummary(values);
+  if (!summary) {
+    el.innerHTML = "";
+    el.setAttribute("hidden", "");
+    return;
+  }
+
+  el.innerHTML = renderExpressStandardBodyMeasurementsSummaryHtml(summary);
+  el.removeAttribute("hidden");
 }
 
 /**
@@ -263,9 +353,14 @@ export function patchExpressSizeBodyConfirmation(scope: ParentNode, values: Reco
     if (wrap instanceof HTMLElement) wrap.after(el);
     else nested.appendChild(el);
   }
+  if (nestedHasStandardBodyMeasurementsSummary(nested)) {
+    el.textContent = "";
+    el.setAttribute("hidden", "");
+    return;
+  }
   const t = nonEmptyTrimmed(values.selectedSize)
     ? formatExpressSizeBodyConfirmation(values, {
-        includeDropShoulderSleeveMeasurements: isDropShoulderExpressBuilderPage(),
+        includeDropShoulderSleeveMeasurements: false,
       })
     : "";
   el.textContent = t;
@@ -385,4 +480,5 @@ export function refreshExpressSizePanel(
   }
 
   patchExpressSizeBodyConfirmation(scope, values);
+  patchExpressStandardBodyMeasurementsSummary(scope, values);
 }
