@@ -253,6 +253,11 @@
     display: none !important;
   }
 
+  .pattern-tips-scope[data-show-tips="true"] .pattern-tip[data-tip-dismissed="true"],
+  #pattern-content[data-show-tips="true"] .pattern-tip[data-tip-dismissed="true"] {
+    display: none !important;
+  }
+
   .pattern-tips-scope[data-show-tips="true"] .pattern-tip {
     display: block !important;
     border-left: 1px solid #333 !important;
@@ -271,6 +276,10 @@
 
   .pattern-tip-dismiss,
   .pattern-tips-control-btn {
+    display: none !important;
+  }
+
+  .pattern-tip .pattern-tip-media-no-print {
     display: none !important;
   }
 }

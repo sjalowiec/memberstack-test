@@ -29,6 +29,12 @@ export function dismissTipId(storageKey: string, tipId: string): void {
   saveDismissedTipIds(storageKey, ids);
 }
 
+export function restoreTipId(storageKey: string, tipId: string): void {
+  const ids = loadDismissedTipIds(storageKey);
+  ids.delete(tipId);
+  saveDismissedTipIds(storageKey, ids);
+}
+
 export function resetDismissedTips(storageKey: string): void {
   localStorage.removeItem(dismissedTipsStorageKey(storageKey));
 }
@@ -45,6 +51,9 @@ function notifySleevelessReadingWorkflowIfSaved(storageKey: string): void {
 export const DISMISSABLE_TIP_SELECTOR =
   ".pattern-tip[data-tip-id]:not(.pattern-tip-intro):not(.pattern-tips-control-box):not([data-pattern-print-personalization-tip])";
 
+/** Every tip wrapper carrying a stable id (includes duplicates in screen + print-only regions). */
+export const TIP_WITH_ID_SELECTOR = ".pattern-tip[data-tip-id]";
+
 /** Top-of-pattern pink control banner (always visible; not affected by global tips hide). */
 export function patternTipsControlBoxHtml(tipsOn: boolean): string {
   const checked = tipsOn ? "true" : "false";
@@ -56,8 +65,6 @@ export function patternTipsControlBoxHtml(tipsOn: boolean): string {
     '<span class="pattern-tips-switch__track" aria-hidden="true"><span class="pattern-tips-switch__thumb"></span></span>' +
     `<span class="pattern-tips-switch__state">${stateLabel}</span>` +
     "</button>";
-  // Hidden until at least one tip is dismissed; revealed by updateTipsResetLinkVisibility().
-  // Lives in the always-visible control box so users can restore tips even while global tips are hidden.
   const restore =
     '<button type="button" ' +
     'class="pattern-tips-control-btn pattern-tips-reset-dismissed" ' +
@@ -82,18 +89,96 @@ function isDismissableTip(el: Element): el is HTMLElement {
   return el.matches(DISMISSABLE_TIP_SELECTOR);
 }
 
-/** Inject dismiss buttons and apply persisted hidden state. */
-export function refreshPatternTipDismiss(scope: Element, storageKey: string): void {
-  const dismissed = loadDismissedTipIds(storageKey);
-  scope.querySelectorAll(DISMISSABLE_TIP_SELECTOR).forEach((tip) => {
-    const id = tip.getAttribute("data-tip-id");
-    if (!id) return;
-    if (dismissed.has(id)) {
+function tipHasDirectDismissButton(tip: Element): boolean {
+  for (const child of tip.children) {
+    if (child instanceof HTMLElement && child.classList.contains("pattern-tip-dismiss")) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/** Resolve the dismissable tip wrapper that owns a dismiss button. */
+export function resolveDismissableTipFromDismissButton(dismissBtn: Element): HTMLElement | null {
+  const parent = dismissBtn.parentElement;
+  if (parent && isDismissableTip(parent)) {
+    return parent;
+  }
+  const tip = dismissBtn.closest(".pattern-tip");
+  if (tip && isDismissableTip(tip)) {
+    return tip;
+  }
+  return null;
+}
+
+function tipWrappersWithId(scope: Element, tipId: string): HTMLElement[] {
+  const matches: HTMLElement[] = [];
+  scope.querySelectorAll(TIP_WITH_ID_SELECTOR).forEach((el) => {
+    if (!(el instanceof HTMLElement)) return;
+    if (el.getAttribute("data-tip-id") === tipId) matches.push(el);
+  });
+  return matches;
+}
+
+/** Mirrors {@link pattern-tips.css} print hide rules for unit tests (not full layout CSS). */
+export function isTipHiddenForPrint(tip: HTMLElement, globalTipsVisible: boolean): boolean {
+  if (tip.classList.contains("pattern-tips-control-box")) return true;
+  if (!globalTipsVisible) return true;
+  if (tip.hasAttribute("data-tip-dismissed")) return true;
+  if (tip.classList.contains("pattern-print-personalization-never-print")) return true;
+  if (tip.hasAttribute("data-pattern-print-personalization-tip")) return true;
+  return false;
+}
+
+function syncTipDismissedDomForId(scope: Element, tipId: string, dismissed: boolean): void {
+  for (const tip of tipWrappersWithId(scope, tipId)) {
+    if (dismissed) {
       tip.setAttribute("data-tip-dismissed", "true");
     } else {
       tip.removeAttribute("data-tip-dismissed");
     }
-    if (!tip.querySelector(".pattern-tip-dismiss")) {
+  }
+}
+
+/** Remove stale per-tip hide flags that no longer match persisted dismissal state. */
+function clearStaleTipDismissedAttributes(scope: Element, dismissed: Set<string>): void {
+  scope.querySelectorAll(".pattern-tip[data-tip-dismissed]").forEach((tip) => {
+    if (!(tip instanceof HTMLElement)) return;
+    const id = tip.getAttribute("data-tip-id");
+    if (!id || !dismissed.has(id)) {
+      tip.removeAttribute("data-tip-dismissed");
+    }
+  });
+}
+
+function setTipDismissedState(
+  scope: Element,
+  storageKey: string,
+  tip: HTMLElement,
+  dismissed: boolean,
+): void {
+  const id = tip.getAttribute("data-tip-id");
+  if (!id) return;
+  if (dismissed) {
+    dismissTipId(storageKey, id);
+  } else {
+    restoreTipId(storageKey, id);
+  }
+  syncTipDismissedDomForId(scope, id, dismissed);
+}
+
+/** Inject dismiss buttons and apply persisted hidden state to every matching tip wrapper. */
+export function refreshPatternTipDismiss(scope: Element, storageKey: string): void {
+  const dismissed = loadDismissedTipIds(storageKey);
+  clearStaleTipDismissedAttributes(scope, dismissed);
+
+  scope.querySelectorAll(DISMISSABLE_TIP_SELECTOR).forEach((tip) => {
+    if (!(tip instanceof HTMLElement)) return;
+    const id = tip.getAttribute("data-tip-id");
+    if (!id) return;
+    syncTipDismissedDomForId(scope, id, dismissed.has(id));
+
+    if (!tipHasDirectDismissButton(tip)) {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "pattern-tip-dismiss";
@@ -102,6 +187,33 @@ export function refreshPatternTipDismiss(scope: Element, storageKey: string): vo
       tip.appendChild(btn);
     }
   });
+}
+
+/** Re-read persisted dismissal state into the live DOM immediately before print preview. */
+export function syncPatternTipDismissBeforePrint(scope: Element, storageKey: string): void {
+  refreshPatternTipDismiss(scope, storageKey);
+}
+
+const printSyncScopes = new Map<Element, string>();
+let beforePrintListenerBound = false;
+
+function bindBeforePrintListenerOnce(): void {
+  if (beforePrintListenerBound || typeof window === "undefined") return;
+  beforePrintListenerBound = true;
+  window.addEventListener("beforeprint", () => {
+    for (const [scope, storageKey] of printSyncScopes) {
+      if (!scope.isConnected) {
+        printSyncScopes.delete(scope);
+        continue;
+      }
+      syncPatternTipDismissBeforePrint(scope, storageKey);
+    }
+  });
+}
+
+function registerPrintSyncScope(scope: Element, storageKey: string): void {
+  printSyncScopes.set(scope, storageKey);
+  bindBeforePrintListenerOnce();
 }
 
 function resolveResetControl(scopeOrReset: Element | null): HTMLElement | null {
@@ -128,8 +240,9 @@ export type PatternTipDismissBinding = {
 export function bindPatternTipDismiss(
   scope: Element,
   storageKey: string,
-  resetRow: Element | null
+  resetRow: Element | null,
 ): PatternTipDismissBinding {
+  registerPrintSyncScope(scope, storageKey);
   refreshPatternTipDismiss(scope, storageKey);
   updateTipsResetLinkVisibility(scope, storageKey);
 
@@ -143,13 +256,12 @@ export function bindPatternTipDismiss(
 
       const dismissBtn = target.closest(".pattern-tip-dismiss");
       if (dismissBtn && scope.contains(dismissBtn)) {
-        const tip = dismissBtn.closest(".pattern-tip");
-        if (!tip || !isDismissableTip(tip)) return;
+        const tip = resolveDismissableTipFromDismissButton(dismissBtn);
+        if (!tip) return;
         const id = tip.getAttribute("data-tip-id");
         if (!id) return;
         e.preventDefault();
-        dismissTipId(storageKey, id);
-        tip.setAttribute("data-tip-dismissed", "true");
+        setTipDismissedState(scope, storageKey, tip, true);
         updateTipsResetLinkVisibility(scope, storageKey);
         notifySleevelessReadingWorkflowIfSaved(storageKey);
         return;
@@ -159,9 +271,7 @@ export function bindPatternTipDismiss(
       if (resetLink && scope.contains(resetLink)) {
         e.preventDefault();
         resetDismissedTips(storageKey);
-        scope.querySelectorAll(".pattern-tip[data-tip-dismissed]").forEach((tip) => {
-          tip.removeAttribute("data-tip-dismissed");
-        });
+        refreshPatternTipDismiss(scope, storageKey);
         updateTipsResetLinkVisibility(scope, storageKey);
         notifySleevelessReadingWorkflowIfSaved(storageKey);
       }
@@ -180,4 +290,10 @@ export function bindPatternTipDismiss(
   refreshPatternTipDismiss(scope, storageKey);
   updateTipsResetLinkVisibility(scope, storageKey);
   return { scope, storageKey, resetRow, observer: null };
+}
+
+/** @internal Tests only — reset the global beforeprint registration. */
+export function resetPatternTipPrintSyncForTests(): void {
+  printSyncScopes.clear();
+  beforePrintListenerBound = false;
 }

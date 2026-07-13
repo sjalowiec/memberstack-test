@@ -138,6 +138,10 @@
     box-shadow: none;
   }
 
+  .pattern-quick-tip__details > .pattern-quick-tip__body {
+    display: block !important;
+  }
+
   .pattern-quick-tip__chevron {
     display: none;
   }

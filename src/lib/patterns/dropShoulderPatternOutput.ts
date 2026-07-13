@@ -860,6 +860,7 @@ export function buildDropShoulderSleeveDisplayRows(
             tipHtml: castOnMethodQuickTipInnerHtml(),
             tipHtmlIsFull: true,
             tipPresentation: "quick-tip" as const,
+            tipId: "drop-shoulder-cast-on-sleeve-top",
           }
         : {}),
       stitchCount: args.topSts > 0 ? args.topSts : undefined,
@@ -891,7 +892,7 @@ export function buildDropShoulderSleeveDisplayRows(
     kind: "block",
     paragraphs: ["Make 2 sleeves."],
   });
-  rows.push(castOnBlock(args.wristSts));
+  rows.push(castOnBlock(args.wristSts, "the sleeve cuff"));
   rows.push({ kind: "section", title: "CUFF" });
   rows.push({
     kind: "block",

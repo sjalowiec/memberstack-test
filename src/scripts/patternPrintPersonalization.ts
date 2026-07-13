@@ -9,6 +9,7 @@ import {
   PROJECT_NOTES_MAX_LENGTH,
   syncPatternProjectToPrintSession,
 } from "../lib/patterns/sleevelessPatternProjectMeta";
+import { syncPatternTipDismissBeforePrint } from "../lib/patterns/patternTipDismiss";
 
 const STORAGE_TITLE_KEY = "kbm-pattern-print-personalization-title";
 const STORAGE_NOTES_KEY = "kbm-pattern-print-personalization-notes";
@@ -145,12 +146,7 @@ function bindModalListenersOnce(): void {
     const opts = pendingOpts;
     pendingOpts = undefined;
     dialog.close();
-    try {
-      opts?.onBeforePrint?.();
-      window.print();
-    } finally {
-      opts?.onAfterPrint?.();
-    }
+    runPatternPrint(opts);
   });
 
   addBtn?.addEventListener("click", () => {
@@ -169,12 +165,7 @@ function bindModalListenersOnce(): void {
     const opts = pendingOpts;
     pendingOpts = undefined;
     dialog.close();
-    try {
-      opts?.onBeforePrint?.();
-      window.print();
-    } finally {
-      opts?.onAfterPrint?.();
-    }
+    runPatternPrint(opts);
   });
 
   /** Escape closes without printing — drop deferred callbacks. */
@@ -190,6 +181,25 @@ function shouldSkipPersonalizationModal(): boolean {
   return Boolean(document.querySelector("[data-pattern-print-skip-modal]"));
 }
 
+function syncAllPatternTipDismissBeforePrint(): void {
+  document.querySelectorAll("[data-pattern-tip-dismiss-bound]").forEach((scope) => {
+    const storageKey = scope.getAttribute("data-pattern-tip-dismiss-bound");
+    if (storageKey) {
+      syncPatternTipDismissBeforePrint(scope, storageKey);
+    }
+  });
+}
+
+function runPatternPrint(opts?: PatternPrintTriggerOptions): void {
+  syncAllPatternTipDismissBeforePrint();
+  try {
+    opts?.onBeforePrint?.();
+    window.print();
+  } finally {
+    opts?.onAfterPrint?.();
+  }
+}
+
 export function triggerPatternPrint(
   triggerEl: HTMLElement | null,
   opts?: PatternPrintTriggerOptions,
@@ -199,24 +209,14 @@ export function triggerPatternPrint(
   applyPatternPrintPersonalizationToDom(title, notes);
 
   if (shouldSkipPersonalizationModal()) {
-    opts?.onBeforePrint?.();
-    try {
-      window.print();
-    } finally {
-      opts?.onAfterPrint?.();
-    }
+    runPatternPrint(opts);
     return;
   }
 
   const dialog = getDialog();
 
   if (!dialog || typeof dialog.showModal !== "function") {
-    opts?.onBeforePrint?.();
-    try {
-      window.print();
-    } finally {
-      opts?.onAfterPrint?.();
-    }
+    runPatternPrint(opts);
     return;
   }
 
@@ -227,12 +227,7 @@ export function triggerPatternPrint(
   try {
     dialog.showModal();
   } catch {
-    opts?.onBeforePrint?.();
-    try {
-      window.print();
-    } finally {
-      opts?.onAfterPrint?.();
-    }
+    runPatternPrint(opts);
     return;
   }
 
