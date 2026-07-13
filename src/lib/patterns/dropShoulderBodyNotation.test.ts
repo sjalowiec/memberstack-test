@@ -332,19 +332,40 @@ describe("dropShoulderBodyJapaneseNotation", () => {
     expect(backText).toMatch(/Put 3 needles into hold every other row 1 time/i);
     expect(backText).toMatch(/Put 2 needles into hold every other row 3 times/i);
     expect(backText).toMatch(/<em>\(RC: \d+(?:, \d+)*\)<\/em>/);
-    expect(backText).toMatch(/Scrap off or bind off the remaining right shoulder stitches/i);
+    expect(backText).toMatch(/Scrap off or bind off the remaining shoulder stitches/i);
+    expect(backText).toMatch(/The first shoulder is complete/i);
+    expect(backText).toMatch(/The second shoulder is complete/i);
     expect(backText).toMatch(/Break yarn and move the carriage to the opposite side/i);
     expect(backText).toMatch(/Leave center neckline needles .*L9 through R9.*in hold \(18 stitches total\)/);
     expect(backText).toMatch(/Return needles .*L50 through L10.*\(41 stitches total\)/);
     expect(backText).toMatch(/Work needles .*L50 through L10/);
     expect(backText).not.toMatch(/Work needles .*L50 through L10.*\(41 stitches total\)/);
-    expect(backText).toMatch(/BACK NECKLINE CLEANUP/i);
-    expect(backText).toMatch(/Scrap off or bind off all remaining held neckline stitches/i);
+    expect(backText).not.toMatch(/BACK NECKLINE CLEANUP/i);
+    expect(backText).not.toMatch(/Scrap off or bind off all remaining held neckline stitches/i);
     expect(backText).not.toMatch(/Place the center \d+ stitches in hold/i);
     expect(backText).not.toMatch(/Place the opposite shoulder stitches in hold/i);
     expect(backText).not.toMatch(/Continue to RC:/i);
     expect(backText).not.toMatch(/bind off 32 stitches for each shoulder/i);
     expect(backText).not.toMatch(/bind off all \d+ stitches across the top/i);
+  });
+
+  it("omits right-column stitch count from BACK NECKLINE & SHOULDERS blocks", () => {
+    const result = generateDropShoulderPattern(DROP_SHOULDER_PATTERN);
+    let inSection = false;
+    const backNeckBlocks: Array<{ stitchCount?: number }> = [];
+    for (const row of result.displayRows) {
+      if (row.kind === "section" && row.title === "BACK NECKLINE & SHOULDERS") {
+        inSection = true;
+        continue;
+      }
+      if (inSection && row.kind === "section") break;
+      if (inSection && row.kind === "block") backNeckBlocks.push(row);
+    }
+    expect(backNeckBlocks.length).toBeGreaterThan(0);
+    for (const block of backNeckBlocks) {
+      expect(block.stitchCount).toBeUndefined();
+    }
+    expect(result.debug.shoulderStitches).toBeGreaterThan(0);
   });
 
   it("fills drop-shoulder back notation with center hold and neckline shaping", () => {

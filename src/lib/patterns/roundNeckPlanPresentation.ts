@@ -202,17 +202,17 @@ function roundNeckBackNeedleSideShapingLines(
  * checkpoint heading followed by a short statement; otherwise the RC-free sentence is used.
  */
 function backShallowShoulderCompleteLines(
-  sideLabel: "right" | "left",
+  orderLabel: "first" | "second",
   rc?: RoundNeckBackShallowRcContext,
 ): string[] {
   if (rc) {
     return [
       inlineRcHeadingLine(formatBackShallowRc(rc.shoulderCompleteRc)),
-      `The ${sideLabel} shoulder is complete.`,
+      `The ${orderLabel} shoulder is complete.`,
     ];
   }
   return [
-    `When the final neck-edge group has been placed in hold, the ${sideLabel} shoulder is complete.`,
+    `When the final neck-edge group has been placed in hold, the ${orderLabel} shoulder is complete.`,
   ];
 }
 
@@ -240,8 +240,8 @@ function roundNeckBackShallowNeedleExecutionLines(
     `Work needles ${rightWorkRangeHtml}${formatStitchCountValidation(counts.rightShoulder)}.`,
     ...roundNeckBackNeedleSideShapingLines(rightSegments, "right", rc?.necklineStartRc),
     "",
-    ...backShallowShoulderCompleteLines("right", rc),
-    "Scrap off or bind off the remaining right shoulder stitches.",
+    ...backShallowShoulderCompleteLines("first", rc),
+    "Scrap off or bind off the remaining shoulder stitches.",
     "Break yarn and move the carriage to the opposite side.",
     "",
     inlineSubheadingLine("LEFT SIDE"),
@@ -251,12 +251,8 @@ function roundNeckBackShallowNeedleExecutionLines(
     `Work needles ${leftWorkRangeHtml}.`,
     ...roundNeckBackNeedleSideShapingLines(leftSegments, "left", rc?.necklineStartRc),
     "",
-    ...backShallowShoulderCompleteLines("left", rc),
-    "Scrap off or bind off the remaining left shoulder stitches.",
-    "",
-    "BACK NECKLINE CLEANUP",
-    "",
-    roundNeckPlanFinishHeldStitchesLine(),
+    ...backShallowShoulderCompleteLines("second", rc),
+    "Scrap off or bind off the remaining shoulder stitches.",
   ];
 }
 
@@ -334,20 +330,16 @@ export function roundNeckBackShallowExecutionWrittenLines(
     "",
     ...roundNeckBackNeedleSideShapingLines(rightSegments, "right", rc?.necklineStartRc),
     "",
-    ...backShallowShoulderCompleteLines("right", rc),
-    "Scrap off or bind off the remaining right shoulder stitches.",
+    ...backShallowShoulderCompleteLines("first", rc),
+    "Scrap off or bind off the remaining shoulder stitches.",
     "Break yarn and move the carriage to the opposite side.",
     "",
     inlineSubheadingLine("LEFT SIDE"),
     "",
     ...roundNeckBackNeedleSideShapingLines(leftSegments, "left", rc?.necklineStartRc),
     "",
-    ...backShallowShoulderCompleteLines("left", rc),
-    "Scrap off or bind off the remaining left shoulder stitches.",
-    "",
-    "BACK NECKLINE CLEANUP",
-    "",
-    roundNeckPlanFinishHeldStitchesLine(),
+    ...backShallowShoulderCompleteLines("second", rc),
+    "Scrap off or bind off the remaining shoulder stitches.",
   ];
 }
 

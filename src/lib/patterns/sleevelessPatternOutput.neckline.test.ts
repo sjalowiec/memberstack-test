@@ -229,6 +229,9 @@ describe("sleeveless round-neck back neckline summary prose", () => {
     expect(text).not.toMatch(/LEFT SIDE/i);
     expect(text).not.toMatch(/Scrap off or bind off the remaining right shoulder stitches/i);
     expect(text).not.toMatch(/Scrap off or bind off the remaining left shoulder stitches/i);
+    expect(text).not.toMatch(/Scrap off or bind off the remaining shoulder stitches/i);
+    expect(text).not.toMatch(/The first shoulder is complete/i);
+    expect(text).not.toMatch(/The second shoulder is complete/i);
     expect(text).not.toMatch(/BACK NECKLINE CLEANUP/i);
     expect(text).not.toMatch(/At the neck edge:/i);
     expect(text).not.toMatch(/needle 0/i);

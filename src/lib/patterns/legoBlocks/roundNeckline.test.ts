@@ -345,13 +345,15 @@ describe("shallow round-neck written instructions", () => {
       true,
     );
     expect(lines.filter((l) => l.includes('class="needle-range"')).length).toBeGreaterThanOrEqual(5);
-    expect(lines.some((l) => /Scrap off or bind off the remaining right shoulder stitches/i.test(l))).toBe(
+    expect(lines.some((l) => /Scrap off or bind off the remaining shoulder stitches/i.test(l))).toBe(
       true,
     );
+    expect(lines.some((l) => /The first shoulder is complete/i.test(l))).toBe(true);
+    expect(lines.some((l) => /The second shoulder is complete/i.test(l))).toBe(true);
     expect(lines.some((l) => /Break yarn and move the carriage to the opposite side/i.test(l))).toBe(
       true,
     );
-    expect(lines.some((l) => /BACK NECKLINE CLEANUP/i.test(l))).toBe(true);
+    expect(lines.some((l) => /BACK NECKLINE CLEANUP/i.test(l))).toBe(false);
     expect(lines.some((l) => /Put \d+ needles into hold every other row/i.test(l))).toBe(true);
     expect(lines.some((l) => /Place the (center|opposite)/i.test(l))).toBe(false);
     expect(lines.some((l) => /Continue to RC:/i.test(l))).toBe(false);

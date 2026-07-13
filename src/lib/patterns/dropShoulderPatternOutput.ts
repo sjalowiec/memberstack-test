@@ -543,7 +543,6 @@ function buildBackRows(args: {
         "Drop-shoulder shoulders are worked straight — there is no shoulder shaping.",
         ...executionLines,
       ],
-      stitchCount: args.shoulderStsEach,
     });
   } else {
     rows.push({
