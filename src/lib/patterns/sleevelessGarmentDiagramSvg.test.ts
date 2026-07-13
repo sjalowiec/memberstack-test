@@ -91,10 +91,11 @@ describe("repairMissingHemDepthMeasurementLabels", () => {
     const backRepaired = repairMissingHemDepthMeasurementLabels(backSvg);
     const frontRepaired = repairMissingHemDepthMeasurementLabels(frontSvg);
 
-    expect(backRepaired).toContain('transform="translate(7.5 284.71)"');
-    expect(backRepaired).toContain('transform="translate(3.1 295.51)"');
-    expect(frontRepaired).toContain('transform="translate(16.95 266.47)"');
-    expect(frontRepaired).toContain('transform="translate(12.55 277.27)"');
+    expect(backRepaired).toContain('transform="translate(178 277)"');
+    expect(backRepaired).toContain('transform="translate(178 287)"');
+    expect(frontRepaired).toContain('transform="translate(192.34 258.75)"');
+    expect(frontRepaired).toContain('transform="translate(192.34 268.75)"');
+    expect(frontRepaired).not.toContain('transform="translate(16.95 266.47)"');
 
     const backOut = applyGarmentDiagramSvgReplacements(backSvg, backRepl);
     const frontOut = applyGarmentDiagramSvgReplacements(frontSvg, frontRepl);

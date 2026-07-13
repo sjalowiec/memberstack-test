@@ -43,6 +43,36 @@ function fmtTranslate(x: number, y: number): string {
   return `translate(${rx} ${ry})`;
 }
 
+function parseSideSeamBottom(svgText: string): number | null {
+  const groupMatch = svgText.match(/<g id="SIDE_SEAM">([\s\S]*?)<\/g>/i);
+  if (!groupMatch) return null;
+  const lineMatch = groupMatch[1].match(
+    /<line[^>]*\bx1="[\d.]+"[^>]*\by1="([\d.]+)"[^>]*\bx2="[\d.]+"[^>]*\by2="([\d.]+)"/i,
+  );
+  if (!lineMatch) return null;
+  const y1 = Number(lineMatch[1]);
+  const y2 = Number(lineMatch[2]);
+  if (!Number.isFinite(y1) || !Number.isFinite(y2)) return null;
+  return Math.max(y1, y2);
+}
+
+/** Lower-right hem labels: mirror back placement using viewBox width and side-seam bottom. */
+function resolveLowerRightHemLabelCoords(
+  svgText: string,
+): { x: number; rowsY: number; inchesY: number } | null {
+  const viewBoxMatch = svgText.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
+  const sideSeamBottom = parseSideSeamBottom(svgText);
+  if (!viewBoxMatch || sideSeamBottom === null) return null;
+  const vbW = Number(viewBoxMatch[1]);
+  if (!Number.isFinite(vbW)) return null;
+  const rightMarginFromViewBox = 76.3;
+  return {
+    x: vbW - rightMarginFromViewBox,
+    rowsY: sideSeamBottom + 8.7,
+    inchesY: sideSeamBottom + 18.7,
+  };
+}
+
 /** Inject `HEM_MEASUREMENT` label placeholders when Illustrator exports omit them. */
 export function repairMissingHemDepthMeasurementLabels(svgText: string): string {
   if (!svgNeedsHemDepthMeasurementLabels(svgText)) return svgText;
@@ -50,20 +80,18 @@ export function repairMissingHemDepthMeasurementLabels(svgText: string): string 
   const viewBox = svgText.match(/viewBox="([^"]+)"/)?.[1] ?? "";
   const isLegacyStraightBack = viewBox.startsWith("0 0 254");
   const hemAnchor = parseHemLineAnchor(svgText);
+  const lowerRight = resolveLowerRightHemLabelCoords(svgText);
 
-  let rowsTransform: string;
-  let inchesTransform: string;
+  if (!hemAnchor || !lowerRight) return svgText;
+
+  const rowsTransform = fmtTranslate(lowerRight.x, lowerRight.rowsY);
+  const inchesTransform = fmtTranslate(lowerRight.x, lowerRight.inchesY);
   let rowsText: string;
   let inchesText: string;
-
-  if (isLegacyStraightBack && hemAnchor) {
-    rowsTransform = fmtTranslate(hemAnchor.x - 22.3, hemAnchor.yTop + 16.61);
-    inchesTransform = fmtTranslate(hemAnchor.x - 26.7, hemAnchor.yTop + 27.41);
+  if (isLegacyStraightBack) {
     rowsText = `<text class="st10" transform="${rowsTransform}"><tspan x="0" y="0" xml:space="preserve"> {{HEM_ROWS}} rows</tspan></text>`;
     inchesText = `<text class="st9" transform="${inchesTransform}"><tspan x="0" y="0" xml:space="preserve">      ({{HEM_INCHES}} {{UNIT}})</tspan></text>`;
   } else {
-    rowsTransform = fmtTranslate(16.95, 266.47);
-    inchesTransform = fmtTranslate(12.55, 277.27);
     rowsText = `<text transform="${rowsTransform}" fill="#010101" font-family="ArialMT, Arial" font-size="12" isolation="isolate"><tspan x="0" y="0" xml:space="preserve"> {{HEM_ROWS}} rows</tspan></text>`;
     inchesText = `<text transform="${inchesTransform}" fill="#565656" font-family="ArialMT, Arial" font-size="9" isolation="isolate"><tspan x="0" y="0" xml:space="preserve">      ({{HEM_INCHES}} {{UNIT}})</tspan></text>`;
   }
