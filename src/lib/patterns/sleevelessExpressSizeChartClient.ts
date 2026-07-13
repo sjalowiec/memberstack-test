@@ -16,14 +16,10 @@ const chartRowsByAudience: Record<string, ChartRow[]> = {};
 const chartSizeSets: Record<string, Set<string>> = {};
 let expressChartsLoadPromise: Promise<void> | null = null;
 
-/** Same sweater chart URLs as Fit step. */
-const SWEATER_CHART_URLS: Record<string, string> = {
-  misses: "/data/sizing_sweaters_misses.json",
-  plus: "/data/sizing_sweaters_plus.json",
-  men: "/data/sizing_sweaters_men.json",
-  kids: "/data/sizing_sweaters_kids.json",
-  baby: "/data/sizing_sweaters_baby.json",
-};
+import { SWEATER_CHART_DATA_URLS_BY_AUDIENCE } from "../sizing/sizingChartCatalog";
+
+/** Same sweater chart URLs as the reference sizing charts page. */
+const SWEATER_CHART_URLS: Record<string, string> = SWEATER_CHART_DATA_URLS_BY_AUDIENCE;
 
 /** Must match `UnitToggle` id on Express + Custom Build design (size labels). */
 export const SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID = "sleeveless-fit";

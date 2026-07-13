@@ -78,6 +78,7 @@ import {
   isExpressReviewCtaReady,
   wireExpressBuilderReviewSubmit,
 } from "../lib/patterns/expressBuilderReviewSubmit";
+import { wireExpressSweaterSizingChartLink } from "../lib/reference/sweaterSizingChartNavigation";
 import {
   rawSwatchToPerInch,
   resolveExpressGaugeFieldsForPersist,
@@ -271,6 +272,7 @@ function formatGaugeSummary(): string {
 }
 
 function initExpressPage() {
+  wireExpressSweaterSizingChartLink(window.location.pathname);
   const startedFreshSession = applySleevelessExpressNewSessionFromUrl();
   if (!startedFreshSession) {
     applySleevelessExpressEditChoicesFromUrl();

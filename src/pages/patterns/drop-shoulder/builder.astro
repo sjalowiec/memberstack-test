@@ -11,6 +11,9 @@ import {
   AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
 } from "../../../lib/patterns/sleevelessExpressAvailableNeedles";
 import { formatFitEaseApproxLabel } from "../../../lib/patterns/fitEaseInches";
+import { buildSweaterSizingChartHref } from "../../../lib/reference/sweaterSizingChartNavigation";
+
+const sweaterSizingChartHref = buildSweaterSizingChartHref("/patterns/drop-shoulder/builder");
 /* Wizard is @import'd first inside sleeveless-express-builder-cards.css so Express overrides always win cascade */
 import "../../../styles/sleeveless-express-builder-cards.css";
 import "../../../styles/sleeveless-express-wizard-layout.css";
@@ -248,8 +251,11 @@ const imgGarmentCardigan = "/images/patterns/drop-shoulder/picker/drop-cardigan-
                   Select the bust/chest measurement closest to yours. The other body measurements are based on the Knit It Now standard sizing chart for that size.
                 </p>
                 <p class="express-size-chart-link-wrap">
-                  <a href="/reference/sizing-charts" class="express-custom-build-callout__link"
-                    >View the complete sizing chart</a
+                  <a
+                    href={sweaterSizingChartHref}
+                    class="express-custom-build-callout__link"
+                    data-express-sweater-sizing-chart-link
+                    >View the sweater sizing chart</a
                   >
                 </p>
                 <p class="express-size-load-msg sg-fit-size-copy" data-express-size-status>

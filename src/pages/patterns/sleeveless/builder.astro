@@ -11,6 +11,9 @@ import "../../../styles/sleeveless-express-wizard-layout.css";
 import "../../../styles/express-size-selection.css";
 import "../../../styles/custom-pattern-editing-banner.css";
 import { formatFitEaseApproxLabel } from "../../../lib/patterns/fitEaseInches";
+import { buildSweaterSizingChartHref } from "../../../lib/reference/sweaterSizingChartNavigation";
+
+const sweaterSizingChartHref = buildSweaterSizingChartHref("/patterns/sleeveless/builder");
 
 const expressNavSteps = [
   { step: 1, label: "Who & Size" },
@@ -241,8 +244,11 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
                   Select the bust/chest measurement closest to yours. The other body measurements are based on the Knit It Now standard sizing chart for that size.
                 </p>
                 <p class="express-size-chart-link-wrap">
-                  <a href="/reference/sizing-charts" class="express-custom-build-callout__link"
-                    >View the complete sizing chart</a
+                  <a
+                    href={sweaterSizingChartHref}
+                    class="express-custom-build-callout__link"
+                    data-express-sweater-sizing-chart-link
+                    >View the sweater sizing chart</a
                   >
                 </p>
                 <p class="express-size-load-msg sg-fit-size-copy" data-express-size-status>

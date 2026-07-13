@@ -23,8 +23,7 @@ const customBuildDesignAstro = readFileSync(
 );
 
 const sizeFitCopy = {
-  sizingChartLink: 'href="/reference/sizing-charts"',
-  sizingChartLabel: "View the complete sizing chart",
+  sizingChartLabel: "View the sweater sizing chart",
   sizeHeading: "Choose your size",
   sizeInstruction:
     "Select the bust/chest measurement closest to yours. The other body measurements are based on the Knit It Now standard sizing chart for that size.",
@@ -43,7 +42,8 @@ const sampleRow: ChartRow = {
 };
 
 function expectBuilderSizeFitClarity(builderSource: string, fitStep: "3" | "4"): void {
-  expect(builderSource).toContain(sizeFitCopy.sizingChartLink);
+  expect(builderSource).toContain("buildSweaterSizingChartHref");
+  expect(builderSource).toContain("href={sweaterSizingChartHref}");
   expect(builderSource).toContain(sizeFitCopy.sizingChartLabel);
   expect(builderSource).toContain(sizeFitCopy.sizeHeading);
   expect(builderSource).toContain(sizeFitCopy.sizeInstruction);
@@ -62,12 +62,18 @@ function expectBuilderSizeFitClarity(builderSource: string, fitStep: "3" | "4"):
 describe("Drop Shoulder builder size and fit clarity", () => {
   it("includes shared size/fit explanatory UI", () => {
     expectBuilderSizeFitClarity(dropShoulderBuilderAstro, "3");
+    expect(dropShoulderBuilderAstro).toContain(
+      'buildSweaterSizingChartHref("/patterns/drop-shoulder/builder")',
+    );
   });
 });
 
 describe("Sleeveless builder size and fit clarity", () => {
   it("includes shared size/fit explanatory UI", () => {
     expectBuilderSizeFitClarity(sleevelessBuilderAstro, "4");
+    expect(sleevelessBuilderAstro).toContain(
+      'buildSweaterSizingChartHref("/patterns/sleeveless/builder")',
+    );
   });
 });
 

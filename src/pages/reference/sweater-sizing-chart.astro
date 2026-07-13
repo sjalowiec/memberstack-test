@@ -1,0 +1,469 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import ReferencePageShell from "../../components/ReferencePageShell.astro";
+import {
+  resolveSweaterSizingChartBackLink,
+} from "../../lib/reference/sweaterSizingChartNavigation";
+import { SWEATER_CHART_METADATA } from "../../lib/sizing/sizingChartCatalog";
+
+const returnToRaw = Astro.url.searchParams.get("returnTo");
+const backLink = resolveSweaterSizingChartBackLink(returnToRaw);
+---
+
+<Layout
+  title="Sweater Sizing Chart"
+  description="Standard sweater body measurements for the Knit It Now pattern builders."
+>
+  <ReferencePageShell
+    title="Sweater Sizing Chart"
+    subhead="Body measurements used by the Sleeveless and Drop Shoulder pattern builders."
+    backHref={backLink.href}
+    backLabel={backLink.label}
+    wide
+  >
+    <div class="sizing-chart-page">
+      <div class="sweater-sizing-intro">
+        <p>
+          The <strong>bust or chest</strong> measurement shown in this chart is a <strong>body measurement</strong> - how you measure yourself, not the finished sweater.
+        </p>
+        <p>
+          In the pattern builder, you pick the size whose bust/chest is closest to yours. That body measurement becomes your <strong>selected size</strong>.
+        </p>
+        <p>
+          The <strong>finished sweater measurement</strong> is calculated separately from your selected size, based on the fit you choose and how much ease is added.
+        </p>
+        <p>
+          If you change a finished measurement in the custom builder, that value replaces the calculated one - ease is <strong>not</strong> added a second time.
+        </p>
+      </div>
+
+      <div class="unit-toggle-wrapper">
+        <span class="unit-label">in</span>
+        <label class="switch">
+          <input type="checkbox" id="unitToggle" />
+          <span class="slider round"></span>
+        </label>
+        <span class="unit-label">cm</span>
+      </div>
+
+      <p class="related-link">
+        <a href="/reference/minimum-ease-chart">Minimum ease suggestions</a>.
+      </p>
+
+      <div class="project-controls">
+        <div class="sweater-audience-pills project-pills">
+          {
+            Object.entries(SWEATER_CHART_METADATA).map(([type, meta]) => (
+              <button type="button" data-type={type}>
+                <img src={meta.icon} alt="" class="button-icon" />
+                {meta.audienceLabel}
+              </button>
+            ))
+          }
+        </div>
+      </div>
+
+      <div id="chartHeader" class="chart-header"></div>
+
+      <div class="sizing-table-stage">
+        <div id="sizingGrid" class="sizing-grid"></div>
+      </div>
+      <p id="errorMsg" class="error-message" style="display:none;">Error loading data.</p>
+    </div>
+  </ReferencePageShell>
+</Layout>
+
+<style is:inline>
+  :root {
+    --kbm-green: #52682D;
+  }
+
+  .sizing-chart-page {
+    font-family: "Poppins", sans-serif;
+    max-width: 1400px;
+    margin: 0 auto 60px;
+  }
+
+  .sweater-sizing-intro {
+    margin: 0 0 1.5rem;
+    padding: 1rem 1.25rem;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #333;
+    background: rgba(82, 104, 45, 0.06);
+    border-radius: 8px;
+  }
+
+  .sweater-sizing-intro p {
+    margin: 0 0 0.75rem;
+  }
+
+  .sweater-sizing-intro p:last-child {
+    margin-bottom: 0;
+  }
+
+  .related-link {
+    font-size: 0.95em;
+    margin-top: -10px;
+    margin-bottom: 20px;
+    color: #52682D;
+    text-align: center;
+  }
+
+  .related-link a {
+    color: #738C52;
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  .related-link a:hover {
+    text-decoration: none;
+    color: #52682D;
+  }
+
+  .project-controls {
+    margin-bottom: 32px;
+  }
+
+  .project-pills {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .project-pills button {
+    background: white;
+    border: 2px solid var(--kbm-green);
+    color: var(--kbm-green);
+    padding: 10px 20px;
+    border-radius: 24px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: "Poppins", sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .button-icon {
+    width: 30px;
+    height: 30px;
+    transition: filter 0.2s ease;
+  }
+
+  .project-pills button:hover {
+    background: var(--kbm-green);
+    color: white;
+  }
+
+  .project-pills button:hover .button-icon {
+    filter: brightness(0) invert(1);
+  }
+
+  .project-pills button.active {
+    background: var(--kbm-green);
+    color: white;
+  }
+
+  .project-pills button.active .button-icon {
+    filter: brightness(0) invert(1);
+  }
+
+  .unit-toggle-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1rem;
+  }
+
+  .unit-label {
+    font-weight: 600;
+    color: var(--kbm-green);
+    font-size: 0.95rem;
+  }
+
+  .switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+  }
+
+  .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--kbm-green);
+    transition: 0.3s;
+  }
+
+  .slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+  }
+
+  input:checked + .slider {
+    background-color: var(--kbm-green);
+  }
+
+  input:checked + .slider:before {
+    transform: translateX(24px);
+  }
+
+  .slider.round {
+    border-radius: 26px;
+  }
+
+  .slider.round:before {
+    border-radius: 50%;
+  }
+
+  .chart-header {
+    margin: 32px 0 16px;
+    text-align: center;
+  }
+
+  .chart-header h2 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #52682D;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 0;
+  }
+
+  .chart-header img {
+    width: 42px;
+    height: 42px;
+  }
+
+  .chart-header-dropdown {
+    position: relative;
+    display: inline-block;
+  }
+
+  .chart-header-dropdown-button {
+    background: none;
+    border: none;
+    color: #738C52;
+    font-size: 1.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    font-family: "Poppins", sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.2s ease;
+  }
+
+  .chart-header-dropdown-button:hover {
+    color: var(--kbm-green);
+  }
+
+  .chart-header-dropdown-caret {
+    font-size: 1.2em;
+  }
+
+  .chart-header-dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: white;
+    min-width: 180px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    z-index: 100;
+    border-radius: 8px;
+    overflow: hidden;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 8px;
+    border: 1px solid #e0e0e0;
+  }
+
+  .chart-header-dropdown-content button {
+    color: var(--kbm-green);
+    padding: 12px 20px;
+    text-decoration: none;
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: white;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: "Poppins", sans-serif;
+    transition: background-color 0.2s ease;
+  }
+
+  .chart-header-dropdown-content button:hover {
+    background-color: #f0f4ed;
+  }
+
+  .chart-header-dropdown.open .chart-header-dropdown-content {
+    display: block;
+  }
+
+  .chart-header-body-measurements-note {
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0.5rem 0 1rem 0;
+    padding: 0.3rem 0;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--kbm-green);
+    text-align: center;
+    background: rgba(82, 104, 45, 0.06);
+    border-radius: 0;
+  }
+
+  .sizing-table-stage {
+    margin-top: 24px;
+  }
+
+  @media (min-width: 1025px) {
+    .sizing-table-stage {
+      position: relative;
+      width: min(1400px, calc(100vw - 40px));
+      margin-left: 50%;
+      transform: translateX(-50%);
+      box-sizing: border-box;
+    }
+  }
+
+  .sizing-grid {
+    overflow-x: auto;
+    margin-top: 0;
+    opacity: 0;
+    animation: fadeIn 0.3s ease-in forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .sizing-grid table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+    font-size: 0.95em;
+    line-height: 1.5;
+  }
+
+  .sizing-grid th {
+    background: #E8EDE2;
+    color: #52682D;
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.95rem;
+    font-family: "Poppins", sans-serif;
+  }
+
+  .sizing-grid th:not(:first-child) {
+    text-align: center;
+  }
+
+  .sizing-grid td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #e8e8e8;
+    font-size: 0.9rem;
+    font-family: "Poppins", sans-serif;
+  }
+
+  .sizing-grid td:not(:first-child) {
+    text-align: center;
+  }
+
+  .sizing-grid tbody tr:nth-child(even) {
+    background-color: #f8f8f8;
+  }
+
+  .sizing-grid tbody tr:nth-child(odd) {
+    background-color: white;
+  }
+
+  .sizing-grid tbody tr:hover {
+    background-color: #f0f4ed;
+  }
+
+  .sizing-grid tr:last-child td {
+    border-bottom: none;
+  }
+
+  .error-message {
+    text-align: center;
+    color: #e74c3c;
+    font-size: 1.1rem;
+    padding: 20px;
+  }
+
+  @media (max-width: 1024px) {
+    .chart-header h2 {
+      justify-content: center;
+      text-align: center;
+    }
+
+    .project-controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .project-pills {
+      justify-content: center;
+    }
+
+    .unit-toggle-wrapper {
+      justify-content: center;
+    }
+
+    .sizing-grid {
+      font-size: 0.9em;
+    }
+
+    .sizing-grid th,
+    .sizing-grid td {
+      padding: 10px 8px;
+      font-size: 0.9em;
+    }
+  }
+</style>
+
+<script>
+  import { initSweaterSizingChartTable } from "../../lib/sizing/sizingChartTableClient";
+
+  document.addEventListener("DOMContentLoaded", () => {
+    initSweaterSizingChartTable({});
+  });
+</script>
