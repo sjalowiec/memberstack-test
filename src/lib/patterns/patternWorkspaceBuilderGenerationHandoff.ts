@@ -13,6 +13,10 @@ import { logSleevelessPatternActivity } from "./sleevelessPatternActivity";
 /** Query flag: `/patterns/sleeveless/pattern/?generated=1` */
 export const PATTERN_WORKSPACE_BUILDER_HANDOFF_QUERY = "generated";
 
+/** Fired after the builder handoff block finishes on the pattern workspace (ran or skipped). */
+export const PATTERN_WORKSPACE_BUILDER_HANDOFF_COMPLETE_EVENT =
+  "kbm:pattern-workspace-builder-handoff-complete";
+
 /** sessionStorage flag set by {@link markPatternWorkspaceBuilderHandoff}. */
 export const PATTERN_WORKSPACE_BUILDER_HANDOFF_SESSION_KEY =
   "kbm_pattern_workspace_builder_handoff";
