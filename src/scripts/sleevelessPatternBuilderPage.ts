@@ -3,7 +3,10 @@ import { initSleevelessPatternBuilderPage } from "./sleevelessPatternPageShared.
 import { ensureClaimedSavedPatternHydratedForView } from "../lib/patterns/loadClaimedSavedPatternForView.ts";
 import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern.ts";
 import { isDedicatedSleevelessPatternWorkspacePage } from "../lib/patterns/prepareCustomBuildPatternGeneration.ts";
-import { runPatternWorkspaceBuilderGenerationHandoff } from "../lib/patterns/patternWorkspaceBuilderGenerationHandoff.ts";
+import {
+  PATTERN_WORKSPACE_BUILDER_HANDOFF_COMPLETE_EVENT,
+  runPatternWorkspaceBuilderGenerationHandoff,
+} from "../lib/patterns/patternWorkspaceBuilderGenerationHandoff.ts";
 import { maybeAutoSaveFirstFreePattern } from "../lib/patterns/patternAutoSaveFirstFree.ts";
 
 declare global {
@@ -57,6 +60,10 @@ async function boot(): Promise<void> {
       }
     } catch (error) {
       console.error("[kbm] Builder generation handoff failed; continuing.", error);
+    } finally {
+      if (typeof document !== "undefined") {
+        document.dispatchEvent(new CustomEvent(PATTERN_WORKSPACE_BUILDER_HANDOFF_COMPLETE_EVENT));
+      }
     }
   }
   applySleevelessPatternOnlineProjectHeader();

@@ -127,6 +127,11 @@ export function createStartNewCustomPatternWorkflowDeps(options: {
   onAfterFreshSession: () => void;
   /** Override the locked-state handler; defaults to the Express locked / upgrade screen. */
   onBlockedStartNew?: () => void;
+  /**
+   * Finished-pattern / workspace navigation: skip the local entitlement gate and let the builder
+   * route (`?new=1`) apply the existing membership / login gate.
+   */
+  deferEntitlementGateToBuilder?: boolean;
   root?: ParentNode;
 }): StartNewCustomPatternWorkflowDeps {
   const root = options.root ?? (typeof document !== "undefined" ? document : undefined);
@@ -134,20 +139,25 @@ export function createStartNewCustomPatternWorkflowDeps(options: {
     throw new Error("document unavailable");
   }
   const doc = resolveDocumentFromRoot(root);
+  const deferGate = options.deferEntitlementGateToBuilder === true;
   return {
-    canStartNew: () => resolveCanStartNewPatternForSystem(undefined, doc),
-    onBlocked:
-      options.onBlockedStartNew ??
-      (() => {
-        void resolveSleevelessUserAccess().then((access) => {
-          const system = resolvePatternSystemForBuilderGate(doc);
-          showSleevelessNewPatternLockedScreen(
-            root,
-            resolveNewPatternBlockedCopy(access, system, doc),
-            system,
-          );
-        });
-      }),
+    ...(deferGate
+      ? {}
+      : {
+          canStartNew: () => resolveCanStartNewPatternForSystem(undefined, doc),
+          onBlocked:
+            options.onBlockedStartNew ??
+            (() => {
+              void resolveSleevelessUserAccess().then((access) => {
+                const system = resolvePatternSystemForBuilderGate(doc);
+                showSleevelessNewPatternLockedScreen(
+                  root,
+                  resolveNewPatternBlockedCopy(access, system, doc),
+                  system,
+                );
+              });
+            }),
+        }),
     hasUnsaved: hasUnsavedCustomPatternChanges,
     promptUnsaved: () => promptNewPatternUnsavedChoice(root),
     saveActiveProject: async () => saveActiveCustomPatternBeforeNavigate(root),
@@ -163,6 +173,7 @@ export async function startNewCustomPatternFromWorkspace(
   return runStartNewCustomPatternWorkflow(
     createStartNewCustomPatternWorkflowDeps({
       onAfterFreshSession: () => navigateToFreshPatternForPage(doc),
+      deferEntitlementGateToBuilder: true,
       root,
     }),
   );

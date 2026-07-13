@@ -1,27 +1,33 @@
 /**
- * Pattern workspace settings edit gate (gauge, measurements, size, style, regenerate).
- * Notes, view, and print stay available for logged-in free users; renaming (like other
- * edits) requires membership.
+ * In-place Summary/Edit workspace gate on the pattern page (Edit Pattern drawer).
+ *
+ * Requires paid membership (`hasSystemAccess`). Free users may view/print/knit their quick
+ * pattern but cannot open this workspace — including via `?edit=1`, the Edit button, or
+ * `openDrawer()`. Other settings-edit surfaces (e.g. per-system free-claim builder rights)
+ * still use {@link canEditPatternSettingsForSystem} elsewhere.
  */
 import {
-  canEditPatternSettingsForSystem,
+  hasSleevelessPatternSystemAccess,
   type SleevelessUserAccess,
 } from "./sleevelessPatternSystemAccess";
 import { resolveSleevelessUserAccessSnapshot } from "./sleevelessPatternSystemAccessClient";
-import { offerPatternEditingUnlockModal } from "./patternEditingUnlockModal";
+import { showPatternEditingUnlockModal } from "./patternEditingUnlockModal";
 import { logPatternEditGateAccess, logPatternEditGateDebug } from "./patternEditGateDebug";
 import {
   resolvePatternSystemForEntitlement,
-  resolvePatternSystemFromWorkingSession,
   type PatternSystemId,
 } from "./patternSystemId";
 
+/** Beta, Basic, Premium (and JSON unlock) may open the pattern-page edit workspace. */
+export function canOpenPatternWorkspaceEditWorkspace(access: SleevelessUserAccess): boolean {
+  return hasSleevelessPatternSystemAccess(access);
+}
+
 export function isPatternWorkspaceSettingsEditingLocked(
   access: SleevelessUserAccess,
-  patternSystem?: PatternSystemId,
+  _patternSystem?: PatternSystemId,
 ): boolean {
-  const system = patternSystem ?? resolvePatternSystemFromWorkingSession();
-  return !canEditPatternSettingsForSystem(access, system);
+  return !canOpenPatternWorkspaceEditWorkspace(access);
 }
 
 export async function resolvePatternWorkspaceSettingsEditGate(): Promise<{
@@ -54,6 +60,8 @@ export function blockPatternWorkspaceSettingsEditOrOfferUnlock(
     drawerAllowed: !locked,
   });
   if (!locked) return false;
-  offerPatternEditingUnlockModal(access, { patternSystem });
+  if (access.loggedIn) {
+    showPatternEditingUnlockModal({ force: true, patternSystem });
+  }
   return true;
 }

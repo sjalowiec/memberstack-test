@@ -17,7 +17,7 @@ describe("pattern workspace Edit Pattern unlock wiring", () => {
     expect(src).toContain("let settingsEditingLocked = true");
     expect(src).toContain("applyLockedPatternEditButtonState(openBtn, settingsEditingLocked)");
     expect(src).not.toContain("openBtn.hidden = true");
-    expect(src).toContain("offerPatternEditingUnlockModal(resolvedAccess, { patternSystem })");
+    expect(src).toContain("blockPatternWorkspaceSettingsEditOrOfferUnlock(");
     expect(src).not.toContain("resolvePatternSystemFromPage()");
   });
 });

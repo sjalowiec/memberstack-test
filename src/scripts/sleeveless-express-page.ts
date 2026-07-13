@@ -20,6 +20,7 @@ import { canEditPatternSettingsForSystem } from "../lib/patterns/sleevelessPatte
 import { reconcilePatternDraftOwner } from "../lib/patterns/patternDraftOwnerGuard";
 import { exitEditingSavedCustomPattern } from "../lib/patterns/customPatternEditingBannerActions";
 import { OPEN_PATTERN_HREF } from "../lib/patterns/customPatternProjectNavigation";
+import { resolveExpressBuilderPostBuildHref } from "../lib/patterns/expressBuilderPostBuildRouting";
 import {
   canStartNewPatternForSystem,
   resolveNewPatternBlockedCopy,
@@ -1111,11 +1112,16 @@ function initExpressPage() {
         persistExpressBuilderState(values, chartFit);
         persistExpressSession();
 
-        const workspaceHref =
+        const baseWorkspaceHref =
           document
             .querySelector<HTMLElement>("[data-express-review-href]")
             ?.getAttribute("data-express-review-href")
             ?.trim() || "/patterns/sleeveless/pattern/?generated=1";
+        const access = await resolveSleevelessUserAccess();
+        const workspaceHref = resolveExpressBuilderPostBuildHref(
+          baseWorkspaceHref,
+          access.hasSystemAccess,
+        );
         window.location.href = workspaceHref;
       })();
     },

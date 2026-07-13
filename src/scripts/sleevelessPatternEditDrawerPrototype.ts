@@ -97,6 +97,10 @@ import {
   blockPatternWorkspaceSettingsEditOrOfferUnlock,
   resolvePatternWorkspaceSettingsEditGate,
 } from "../lib/patterns/patternWorkspaceSettingsEditAccess";
+import {
+  PATTERN_WORKSPACE_BUILDER_HANDOFF_COMPLETE_EVENT,
+  peekPatternWorkspaceBuilderHandoff,
+} from "../lib/patterns/patternWorkspaceBuilderGenerationHandoff";
 import type { PatternSystemId } from "../lib/patterns/patternSystemId";
 import type { SleevelessUserAccess } from "../lib/patterns/sleevelessPatternSystemAccess";
 import {
@@ -110,7 +114,6 @@ import {
 import {
   applyLockedPatternEditButtonState,
   maybeShowPatternEditingUnlockModalOnWorkspaceLoad,
-  offerPatternEditingUnlockModal,
 } from "../lib/patterns/patternEditingUnlockModal";
 import { logPatternEditGateDebug } from "../lib/patterns/patternEditGateDebug";
 
@@ -593,7 +596,10 @@ function initSleevelessPatternEditDrawer(): void {
       freeClaimsBySystem: resolvedAccess?.freeClaimsBySystem,
     });
     if (settingsEditingLocked) {
-      offerPatternEditingUnlockModal(resolvedAccess, { patternSystem });
+      blockPatternWorkspaceSettingsEditOrOfferUnlock(
+        resolvedAccess ?? { loggedIn: false, hasSystemAccess: false, freeClaimsBySystem: {} },
+        patternSystem,
+      );
       return;
     }
     if (drawer!.classList.contains("is-open")) return;
@@ -986,10 +992,35 @@ function initSleevelessPatternEditDrawer(): void {
     });
   }
 
-  // Auto-open the workspace when arrived via My Patterns → Edit (`?edit=1`). View opens the same
-  // page without the flag. When editing is locked, offer the membership modal instead. The query
-  // is stripped so a refresh/back doesn't re-trigger the prompt.
-  function maybeAutoOpenFromQuery(): void {
+  // Auto-open the workspace when arrived via My Patterns → Edit (`?edit=1`) or after express
+  // builder completion for paid members (`?generated=1&edit=1`). View opens the same page without
+  // the flag. When editing is locked, offer the membership modal instead. The query is stripped so
+  // a refresh/back doesn't re-trigger the prompt.
+  function waitForBuilderHandoffComplete(): Promise<void> {
+    if (typeof document === "undefined" || typeof window === "undefined") {
+      return Promise.resolve();
+    }
+    if (!peekPatternWorkspaceBuilderHandoff()) return Promise.resolve();
+
+    return new Promise((resolve) => {
+      let settled = false;
+      const finish = (): void => {
+        if (settled) return;
+        settled = true;
+        document.removeEventListener(
+          PATTERN_WORKSPACE_BUILDER_HANDOFF_COMPLETE_EVENT,
+          finish,
+        );
+        resolve();
+      };
+      document.addEventListener(PATTERN_WORKSPACE_BUILDER_HANDOFF_COMPLETE_EVENT, finish, {
+        once: true,
+      });
+      window.setTimeout(finish, 8000);
+    });
+  }
+
+  async function maybeAutoOpenFromQuery(): Promise<void> {
     if (typeof window === "undefined") return;
     let shouldOpen = false;
     try {
@@ -1006,10 +1037,11 @@ function initSleevelessPatternEditDrawer(): void {
     } catch {
       /* history unavailable — harmless */
     }
+    await waitForBuilderHandoffComplete();
     void openDrawer();
   }
 
-  maybeAutoOpenFromQuery();
+  void maybeAutoOpenFromQuery();
   wireQuickEditSizeChangeHandler();
 }
 

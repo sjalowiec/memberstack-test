@@ -6,7 +6,7 @@ import {
   resolvePatternWorkspaceSettingsEditGate,
 } from "./patternWorkspaceSettingsEditAccess";
 import { resolveSleevelessUserAccessSnapshot } from "./sleevelessPatternSystemAccessClient";
-import { offerPatternEditingUnlockModal } from "./patternEditingUnlockModal";
+import { showPatternEditingUnlockModal } from "./patternEditingUnlockModal";
 import {
   CONSTRUCTION_AUTHORED_KEY,
   DROP_SHOULDER_CONSTRUCTION,
@@ -17,7 +17,7 @@ import type { CustomPatternProject } from "./customPatternProjectTypes";
 import { stubLocalStorage, stubSessionStorage } from "./test/stubLocalStorage";
 
 vi.mock("./patternEditingUnlockModal", () => ({
-  offerPatternEditingUnlockModal: vi.fn(),
+  showPatternEditingUnlockModal: vi.fn(() => true),
 }));
 
 vi.mock("./patternEditGateDebug", () => ({
@@ -32,7 +32,17 @@ vi.mock("./sleevelessPatternSystemAccessClient", () => ({
 }));
 
 describe("isPatternWorkspaceSettingsEditingLocked", () => {
-  it("locks nosub with claimed drop-shoulder when system is drop-shoulder", () => {
+  it("locks all free users including unclaimed", () => {
+    const unclaimed = testAccess({
+      loggedIn: true,
+      hasSystemAccess: false,
+      freeClaimed: false,
+    });
+    expect(isPatternWorkspaceSettingsEditingLocked(unclaimed, "drop-shoulder")).toBe(true);
+    expect(isPatternWorkspaceSettingsEditingLocked(unclaimed, "sleeveless")).toBe(true);
+  });
+
+  it("locks nosub with claimed drop-shoulder on both systems", () => {
     const access = testAccess({
       loggedIn: true,
       hasSystemAccess: false,
@@ -41,7 +51,7 @@ describe("isPatternWorkspaceSettingsEditingLocked", () => {
       freeClaimedPatternId: "proj-drop",
     });
     expect(isPatternWorkspaceSettingsEditingLocked(access, "drop-shoulder")).toBe(true);
-    expect(isPatternWorkspaceSettingsEditingLocked(access, "sleeveless")).toBe(false);
+    expect(isPatternWorkspaceSettingsEditingLocked(access, "sleeveless")).toBe(true);
   });
 
   it("locks nosub with claimed sleeveless", () => {
@@ -120,7 +130,8 @@ describe("blockPatternWorkspaceSettingsEditOrOfferUnlock", () => {
     });
     const blocked = blockPatternWorkspaceSettingsEditOrOfferUnlock(access, "drop-shoulder");
     expect(blocked).toBe(true);
-    expect(offerPatternEditingUnlockModal).toHaveBeenCalledWith(access, {
+    expect(showPatternEditingUnlockModal).toHaveBeenCalledWith({
+      force: true,
       patternSystem: "drop-shoulder",
     });
   });
@@ -128,6 +139,6 @@ describe("blockPatternWorkspaceSettingsEditOrOfferUnlock", () => {
   it("returns false when editing is allowed", () => {
     const access = testAccess({ loggedIn: true, hasSystemAccess: true, freeClaimed: true });
     expect(blockPatternWorkspaceSettingsEditOrOfferUnlock(access, "sleeveless")).toBe(false);
-    expect(offerPatternEditingUnlockModal).not.toHaveBeenCalled();
+    expect(showPatternEditingUnlockModal).not.toHaveBeenCalled();
   });
 });
