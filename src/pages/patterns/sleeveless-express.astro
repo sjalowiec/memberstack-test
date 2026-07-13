@@ -12,6 +12,10 @@ import {
   AVAILABLE_NEEDLES_LABEL,
   AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
 } from "../../lib/patterns/sleevelessExpressAvailableNeedles";
+import {
+  formatFitEaseAboutProse,
+  formatFitEaseApproxLabel,
+} from "../../lib/patterns/fitEaseInches";
 /* Wizard is @import'd first inside sleeveless-express-builder-cards.css so Express overrides always win cascade */
 import "../../styles/sleeveless-express-builder-cards.css";
 import "../../styles/sleeveless-express-wizard-layout.css";
@@ -501,7 +505,7 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
                     <span class="sg-fit-option-check" aria-hidden="true">✓</span>
                   </span>
                   <span class="sg-fit-preference-note">Fits close to the body.</span>
-                  <span class="sg-fit-preference-ease">Approx. +1&quot; ease</span>
+                  <span class="sg-fit-preference-ease">{formatFitEaseApproxLabel("close")}</span>
                 </button>
                 <button
                   type="button"
@@ -521,7 +525,7 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
                     <span class="sg-fit-option-check" aria-hidden="true">✓</span>
                   </span>
                   <span class="sg-fit-preference-note">Comfortable everyday fit.</span>
-                  <span class="sg-fit-preference-ease">Approx. +3&quot; ease</span>
+                  <span class="sg-fit-preference-ease">{formatFitEaseApproxLabel("standard")}</span>
                 </button>
                 <button
                   type="button"
@@ -541,7 +545,7 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
                     <span class="sg-fit-option-check" aria-hidden="true">✓</span>
                   </span>
                   <span class="sg-fit-preference-note">More room and drape.</span>
-                  <span class="sg-fit-preference-ease">Approx. +6&quot; ease</span>
+                  <span class="sg-fit-preference-ease">{formatFitEaseApproxLabel("relaxed")}</span>
                 </button>
               </div>
             </div>
@@ -710,15 +714,15 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
             <h3 class="fit-help-article__heading">What Do the Fit Choices Mean?</h3>
 
             <h4 class="fit-help-article__subheading">Close Fit</h4>
-            <p>About 1&quot; of ease.</p>
+            <p>{formatFitEaseAboutProse("close")}</p>
             <p>Fits closer to the body.</p>
 
             <h4 class="fit-help-article__subheading">Standard Fit</h4>
-            <p>About 3&quot; of ease.</p>
+            <p>{formatFitEaseAboutProse("standard")}</p>
             <p>Comfortable everyday fit.</p>
 
             <h4 class="fit-help-article__subheading">Relaxed Fit</h4>
-            <p>About 6&quot; of ease.</p>
+            <p>{formatFitEaseAboutProse("relaxed")}</p>
             <p>More room and drape.</p>
 
             <h3 class="fit-help-article__heading">Why Not Just Follow the Model?</h3>

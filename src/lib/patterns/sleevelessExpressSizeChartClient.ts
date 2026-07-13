@@ -2,6 +2,7 @@
  * Express size chart fetch + table UI (shared by `/patterns/sleeveless-express` and Custom Build design).
  * Same JSON URLs and bust/chest formatting as the Fit step.
  */
+import { fitEaseInchesForChoice } from "./fitEaseInches";
 import { formatSwatchCountForGaugeInput } from "./gaugeDisplayFormat";
 import { expressWhoToChartAudience } from "./syncSleevelessExpressDesignToStorage";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
@@ -24,12 +25,6 @@ const SWEATER_CHART_URLS: Record<string, string> = {
   baby: "/data/sizing_sweaters_baby.json",
 };
 
-const EASE_INCHES_BY_FIT: Record<string, number> = {
-  close: 1,
-  standard: 3,
-  relaxed: 5,
-};
-
 /** Must match `UnitToggle` id on Express + Custom Build design (size labels). */
 export const SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID = "sleeveless-fit";
 
@@ -45,11 +40,6 @@ function roundQuarter(n: number): number {
   return Math.round(n * 4) / 4;
 }
 
-function easeInchesForFit(fitPreference: string): number {
-  const e = EASE_INCHES_BY_FIT[fitPreference];
-  return typeof e === "number" ? e : EASE_INCHES_BY_FIT.standard;
-}
-
 export function normalizeChartRowSize(row: ChartRow): string {
   if (row.size === undefined || row.size === null) return "";
   return String(row.size);
@@ -60,7 +50,7 @@ export function computeDefaultMeasurementsFromChartRow(
   fitPreference: string,
   options?: { bodyShape?: string },
 ): Record<string, number> {
-  const ease = easeInchesForFit(fitPreference);
+  const ease = fitEaseInchesForChoice(fitPreference);
   const bust = toFiniteNumber(row.bust_or_chest);
   const waist = toFiniteNumber(row.waist);
   const finishedBustChest = roundQuarter(bust + ease);

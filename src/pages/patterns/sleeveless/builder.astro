@@ -10,6 +10,7 @@ import "../../../styles/sleeveless-express-builder-cards.css";
 import "../../../styles/sleeveless-express-wizard-layout.css";
 import "../../../styles/express-size-selection.css";
 import "../../../styles/custom-pattern-editing-banner.css";
+import { formatFitEaseApproxLabel } from "../../../lib/patterns/fitEaseInches";
 
 const expressNavSteps = [
   { step: 1, label: "Who & Size" },
@@ -484,7 +485,7 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
                     <span class="sg-fit-option-check" aria-hidden="true">✓</span>
                   </span>
                   <span class="sg-fit-preference-note">Fits close to the body.</span>
-                  <span class="sg-fit-preference-ease">Approx. +1&quot; ease</span>
+                  <span class="sg-fit-preference-ease">{formatFitEaseApproxLabel("close")}</span>
                 </button>
                 <button
                   type="button"
@@ -504,7 +505,7 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
                     <span class="sg-fit-option-check" aria-hidden="true">✓</span>
                   </span>
                   <span class="sg-fit-preference-note">Comfortable everyday fit.</span>
-                  <span class="sg-fit-preference-ease">Approx. +3&quot; ease</span>
+                  <span class="sg-fit-preference-ease">{formatFitEaseApproxLabel("standard")}</span>
                 </button>
                 <button
                   type="button"
@@ -524,7 +525,7 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
                     <span class="sg-fit-option-check" aria-hidden="true">✓</span>
                   </span>
                   <span class="sg-fit-preference-note">More room and drape.</span>
-                  <span class="sg-fit-preference-ease">Approx. +6&quot; ease</span>
+                  <span class="sg-fit-preference-ease">{formatFitEaseApproxLabel("relaxed")}</span>
                 </button>
               </div>
             </div>

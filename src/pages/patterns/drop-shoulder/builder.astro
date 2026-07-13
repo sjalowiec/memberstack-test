@@ -10,6 +10,7 @@ import {
   AVAILABLE_NEEDLES_LABEL,
   AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
 } from "../../../lib/patterns/sleevelessExpressAvailableNeedles";
+import { formatFitEaseApproxLabel } from "../../../lib/patterns/fitEaseInches";
 /* Wizard is @import'd first inside sleeveless-express-builder-cards.css so Express overrides always win cascade */
 import "../../../styles/sleeveless-express-builder-cards.css";
 import "../../../styles/sleeveless-express-wizard-layout.css";
@@ -463,7 +464,7 @@ const imgGarmentCardigan = "/images/patterns/drop-shoulder/picker/drop-cardigan-
                     <span class="sg-fit-option-check" aria-hidden="true">✓</span>
                   </span>
                   <span class="sg-fit-preference-note">Fits close to the body.</span>
-                  <span class="sg-fit-preference-ease">Approx. +1&quot; ease</span>
+                  <span class="sg-fit-preference-ease">{formatFitEaseApproxLabel("close")}</span>
                 </button>
                 <button
                   type="button"
@@ -479,7 +480,7 @@ const imgGarmentCardigan = "/images/patterns/drop-shoulder/picker/drop-cardigan-
                     <span class="sg-fit-option-check" aria-hidden="true">✓</span>
                   </span>
                   <span class="sg-fit-preference-note">Comfortable everyday fit.</span>
-                  <span class="sg-fit-preference-ease">Approx. +3&quot; ease</span>
+                  <span class="sg-fit-preference-ease">{formatFitEaseApproxLabel("standard")}</span>
                 </button>
                 <button
                   type="button"
@@ -495,7 +496,7 @@ const imgGarmentCardigan = "/images/patterns/drop-shoulder/picker/drop-cardigan-
                     <span class="sg-fit-option-check" aria-hidden="true">✓</span>
                   </span>
                   <span class="sg-fit-preference-note">More room and drape.</span>
-                  <span class="sg-fit-preference-ease">Approx. +6&quot; ease</span>
+                  <span class="sg-fit-preference-ease">{formatFitEaseApproxLabel("relaxed")}</span>
                 </button>
               </div>
             </div>

@@ -58,10 +58,8 @@ import {
   LEGACY_STANDALONE_MEASUREMENTS_KEY,
   flushCustomBuildMeasurementOverridesToCanonical,
   loadMeasurementOverrides,
-  persistMeasurementOverrides,
   resolveCustomBuildSaveMeasureFlushRoot,
 } from "../lib/patterns/sleevelessCustomMeasurementStorage";
-import { computeFitDerivedMeasurementOverrides } from "../lib/patterns/sleevelessEditFitRecalc";
 import { deriveSleevelessEditWorkspaceBodyShape } from "../lib/patterns/sleevelessEditWorkspaceBodyShape";
 import { syncCustomBuildToPatternStorage } from "../lib/patterns/syncCustomBuildToPatternStorage";
 import {
@@ -75,7 +73,6 @@ import {
 } from "../lib/patterns/availableNeedlesFieldValidation";
 import { writeExpressPersistedSnapshot } from "../lib/patterns/sleevelessExpressResume";
 import {
-  findExpressChartRow,
   getExpressChartRowsForAudience,
   isValidExpressSizeForAudience,
   loadExpressSweaterCharts,
@@ -124,9 +121,6 @@ const MEASURE_STORAGE_KEYS = [
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
   LEGACY_STANDALONE_MEASUREMENTS_KEY,
 ] as const;
-
-/** Ease (inches) applied per fit preference — mirrors `computeDefaultMeasurementsFromChartRow`. */
-const EASE_INCHES_BY_FIT: Record<string, number> = { close: 1, standard: 3, relaxed: 5 };
 
 const AUDIENCE_DISPLAY_LABELS: Record<string, string> = {
   misses: "Women",
@@ -231,6 +225,17 @@ function patchExpressValues(partial: Record<string, string>): void {
   }
 }
 
+/** Fit chosen at build time — preserved on save; not editable in the workspace. */
+function readStoredFitPreference(): string {
+  const ft = section(getCurrentPattern().fit);
+  const ev = readExpressValues();
+  const evFit = ev.fit;
+  if (evFit === "close" || evFit === "standard" || evFit === "relaxed") return evFit;
+  const ease = ft.easeChoice ?? ft.fitChoice;
+  if (ease === "close" || ease === "standard" || ease === "relaxed") return String(ease);
+  return "standard";
+}
+
 function writeLocalStorageString(key: string, value: string): void {
   if (typeof localStorage === "undefined") return;
   try {
@@ -328,7 +333,6 @@ function initSleevelessPatternEditDrawer(): void {
   const notesPreview = drawer.querySelector<HTMLElement>("[data-sl-notes-preview]");
   const audienceEl = drawer.querySelector<HTMLElement>("[data-sl-edit-audience]");
   const sizeSelect = drawer.querySelector<HTMLSelectElement>("[data-sl-edit-size]");
-  const easeEl = drawer.querySelector<HTMLElement>("[data-sl-edit-ease]");
   const spiInput = drawer.querySelector<HTMLInputElement>("#sl-edit-spi");
   const rpiInput = drawer.querySelector<HTMLInputElement>("#sl-edit-rpi");
   const spiLabel = drawer.querySelector<HTMLElement>("[data-sl-edit-spi-label]");
@@ -401,67 +405,6 @@ function initSleevelessPatternEditDrawer(): void {
     if (rpiLabel) rpiLabel.textContent = `Row gauge (${suffix})`;
   }
 
-  function updateEaseReadout(): void {
-    if (!easeEl) return;
-    const fit = radioValue("sl-edit-fit") || "standard";
-    const ease = EASE_INCHES_BY_FIT[fit] ?? EASE_INCHES_BY_FIT.standard;
-    const label = fit.charAt(0).toUpperCase() + fit.slice(1);
-    easeEl.textContent = `${label} fit · about +${ease}″ ease (applied to the chart measurements).`;
-  }
-
-  /** Write a recomputed inches value into a measurement diagram input (when it has rendered). */
-  function setMeasurementInputValue(key: string, displayInches: string): void {
-    if (!measureBody || !displayInches) return;
-    const input = measureBody.querySelector<HTMLInputElement>(`[data-cb-measure-input="${key}"]`);
-    if (input) input.value = displayInches;
-  }
-
-  /**
-   * Fit is a LIVE recalculation control: changing it must refresh the finished bust/chest and hip
-   * from the body chart row + new ease, both in the visible measurement diagram and in the stored
-   * `cbMeasurementOverrides` that the save/regeneration pipeline reads. Without this, the finished
-   * circumference stays at the value captured when the pattern was first built (e.g. Close 22″
-   * never moves to Standard 24″). Non-ease fields (shoulder, armhole, neck, length, hem) are left
-   * untouched.
-   */
-  function recalcFitDerivedMeasurements(): void {
-    if (typeof localStorage === "undefined") return;
-    if (!chartsLoaded) {
-      // Charts power the body row lookup; load once then retry so the first fit change still applies.
-      void loadExpressSweaterCharts()
-        .then(() => {
-          chartsLoaded = true;
-          recalcFitDerivedMeasurements();
-        })
-        .catch(() => {});
-      return;
-    }
-
-    const audience = resolveAudience();
-    const ft = section(getCurrentPattern().fit);
-    const size =
-      sizeSelect?.value.trim() ||
-      (typeof ft.selectedSize === "string" ? ft.selectedSize.trim() : "");
-    if (!size || !isValidExpressSizeForAudience(audience, size)) return;
-
-    const row = findExpressChartRow(audience, size);
-    if (!row) return;
-
-    const fit = radioValue("sl-edit-fit") || "standard";
-    const bodyShape = readCurrentBodyShape();
-    const overrides = computeFitDerivedMeasurementOverrides(row, fit, {
-      bodyShape,
-      existingOverrides: loadMeasurementOverrides(),
-    });
-
-    // Persist so the save/regeneration pipeline (and any re-render of the diagram) uses the new
-    // values even if the diagram inputs have not finished rendering yet. Restored on Cancel via
-    // the measurement-storage baseline snapshotted on open.
-    persistMeasurementOverrides(overrides);
-    setMeasurementInputValue("chestBust", overrides.chestBust ?? "");
-    setMeasurementInputValue("hip", overrides.hip ?? "");
-  }
-
   function populateSizeOptions(audience: string, currentSize: string): void {
     if (!sizeSelect) return;
     const rows = getExpressChartRowsForAudience(audience);
@@ -511,7 +454,6 @@ function initSleevelessPatternEditDrawer(): void {
     const yg = section(pattern.yarnGauge);
     const machine = section(pattern.machine);
     const ygm = section(getPatternData().yarnGaugeMachine);
-    const ev = readExpressValues();
 
     if (titleInput) {
       titleInput.value = resolvePatternProjectSaveNameFromState();
@@ -544,17 +486,6 @@ function initSleevelessPatternEditDrawer(): void {
     const neckline =
       readCustomBuildWizardNeckline() || (st.neckline === "v" ? "v-neck" : "round");
     setRadio("sl-edit-neckline", neckline === "v" ? "v-neck" : neckline);
-
-    const fit =
-      ev.fit === "close" || ev.fit === "standard" || ev.fit === "relaxed"
-        ? ev.fit
-        : ft.easeChoice === "close" || ft.easeChoice === "standard" || ft.easeChoice === "relaxed"
-          ? (ft.easeChoice as string)
-          : ft.fitChoice === "close" || ft.fitChoice === "standard" || ft.fitChoice === "relaxed"
-            ? (ft.fitChoice as string)
-            : "standard";
-    setRadio("sl-edit-fit", fit);
-    updateEaseReadout();
 
     // Drop Shoulder sleeve length — restore the picker choice from the saved pattern style.
     // (The control is only rendered on the drop-shoulder pattern page; setRadio is a no-op
@@ -744,7 +675,7 @@ function initSleevelessPatternEditDrawer(): void {
     const size = sizeSelect?.value.trim() ?? "";
     const garment = (radioValue("sl-edit-garment") || "pullover") as SleevelessGarmentType;
     const neckline = radioValue("sl-edit-neckline") === "v-neck" ? "v-neck" : "round";
-    const fit = radioValue("sl-edit-fit") || "standard";
+    const fit = readStoredFitPreference();
     // Inputs hold swatch counts (sts/rows over 4" or 10 cm); the engine consumes per-inch.
     const gaugeBasis = resolveGaugeBasis();
     const stitchSwatch = spiInput?.value.trim() ?? "";
@@ -955,31 +886,6 @@ function initSleevelessPatternEditDrawer(): void {
     if (refreshed) lastQuickEditSize = sizing.selectedSize;
   }
 
-  /**
-   * Fit is a live recalculation control for Drop Shoulder, exactly like Size: changing it must
-   * recompute the system-default finished upper arm (body upper arm + fit allowance) and re-render
-   * the measurement summary SVG immediately, so the displayed upper-arm circumference matches the
-   * value the generator will use. Without this, only the body ease fields moved (see
-   * {@link recalcFitDerivedMeasurements}) while the SVG upper-arm label stayed at the value seeded
-   * when the pattern was first built.
-   *
-   * Manual upper-arm edits are preserved: the shared rehydrate resolves sleeve fields through
-   * {@link resolveDropShoulderSleeveOverrideStrings}, which keeps the saved override for any field
-   * flagged as user-edited — so a fit change never overwrites a hand-edited upper arm (stored value
-   * or SVG display).
-   */
-  async function handleDropShoulderQuickEditFitChanged(): Promise<void> {
-    if (!isDropShoulderWorkspaceMeasurementSummaryPage()) return;
-    ensureDropShoulderMeasurementEditorReady();
-    const sizing = readDropShoulderWorkspaceQuickEditSizingFromDom();
-    if (!sizing) return;
-    patchExpressValues({
-      selectedSize: sizing.selectedSize,
-      fit: sizing.fitPreference,
-    });
-    await rehydrateDropShoulderWorkspaceMeasurementDiagramFromQuickEdit(sizing);
-  }
-
   function wireQuickEditSizeChangeHandler(): void {
     if (!sizeSelect || sizeSelect.dataset.slQuickEditSizeWired === "1") return;
     sizeSelect.dataset.slQuickEditSizeWired = "1";
@@ -1051,17 +957,6 @@ function initSleevelessPatternEditDrawer(): void {
   void refreshEditAccess().then(() => {
     if (!settingsEditingLocked) return;
     maybeShowPatternEditingUnlockModalOnWorkspaceLoad(resolvedAccess, { patternSystem });
-  });
-
-  drawer.querySelectorAll<HTMLInputElement>('input[name="sl-edit-fit"]').forEach((el) => {
-    el.addEventListener("change", () => {
-      updateEaseReadout();
-      recalcFitDerivedMeasurements();
-      // Drop Shoulder: recompute the finished upper arm for the new fit and repaint the summary SVG
-      // immediately (Size already does this). recalcFitDerivedMeasurements only moves the body ease
-      // fields, so without this the SVG upper-arm label stays stale on a fit change.
-      void handleDropShoulderQuickEditFitChanged();
-    });
   });
 
   // Drop Shoulder sleeve length: persist the choice onto the working draft the moment it changes,

@@ -18,6 +18,10 @@ const measurementsPageScript = readFileSync(
   resolve("src/scripts/sleeveless-custom-build-measurements-page.ts"),
   "utf8",
 );
+const dropShoulderBuilderAstro = readFileSync(
+  resolve("src/pages/patterns/drop-shoulder/builder.astro"),
+  "utf8",
+);
 
 describe("Drop Shoulder Edit Pattern workspace (pattern/index.astro)", () => {
   it("contains Save Changes, Quick edits Size, and measurement diagram markers", () => {
@@ -30,6 +34,12 @@ describe("Drop Shoulder Edit Pattern workspace (pattern/index.astro)", () => {
     expect(dropShoulderPatternWorkspaceAstro).not.toContain("Refresh measurements");
   });
 
+  it("does not render interactive Fit choices on the edit workspace", () => {
+    expect(dropShoulderPatternWorkspaceAstro).not.toContain('name="sl-edit-fit"');
+    expect(dropShoulderPatternWorkspaceAstro).not.toContain("data-sl-edit-ease");
+    expect(dropShoulderPatternWorkspaceAstro).not.toContain('aria-label="Fit"');
+  });
+
   it("loads the edit drawer script that rehydrates measurements on size change", () => {
     expect(dropShoulderPatternWorkspaceAstro).toContain("sleevelessPatternEditDrawerPrototype.ts");
     expect(editDrawerScript).toContain("rehydrateDropShoulderWorkspaceMeasurementDiagramFromQuickEdit");
@@ -38,16 +48,18 @@ describe("Drop Shoulder Edit Pattern workspace (pattern/index.astro)", () => {
     expect(editDrawerScript).toContain("isDropShoulderWorkspaceMeasurementSummaryPage");
   });
 
-  // Regression: a fit change must also rehydrate the Drop Shoulder summary SVG (not only Size), so
-  // the displayed upper-arm circumference tracks the recalculated finished upper arm immediately.
-  it("rehydrates the summary SVG when the fit radio changes (not only on size change)", () => {
-    expect(editDrawerScript).toContain("handleDropShoulderQuickEditFitChanged");
-    const fitHandler = editDrawerScript.slice(
-      editDrawerScript.indexOf('input[name="sl-edit-fit"]'),
-    );
-    // The fit-change listener body must invoke the Drop Shoulder rehydrate path.
-    const listenerBody = fitHandler.slice(0, fitHandler.indexOf("});"));
-    expect(listenerBody).toContain("handleDropShoulderQuickEditFitChanged");
+  it("does not wire fit-change listeners or live fit recalculation in the edit drawer", () => {
+    expect(editDrawerScript).not.toContain("handleDropShoulderQuickEditFitChanged");
+    expect(editDrawerScript).not.toContain('input[name="sl-edit-fit"]');
+    expect(editDrawerScript).not.toContain("recalcFitDerivedMeasurements");
+    expect(editDrawerScript).toContain("readStoredFitPreference");
+  });
+
+  it("still supports measurement edit and save via the existing apply pipeline", () => {
+    expect(editDrawerScript).toContain("async function applyChanges");
+    expect(editDrawerScript).toContain("flushCustomBuildMeasurementOverridesToCanonical");
+    expect(editDrawerScript).toContain("syncCustomBuildToPatternStorage");
+    expect(editDrawerScript).toContain("loadMeasurementOverrides");
   });
 });
 
@@ -63,6 +75,11 @@ describe("Drop Shoulder workspace measurement rehydrate", () => {
       "export function readDropShoulderWorkspaceQuickEditSizingFromDom",
     );
   });
+
+  it("reads fit from stored pattern data, not edit-workspace Fit controls", () => {
+    expect(measurementsPageScript).toContain("resolveFitPreference(expressValues, fit)");
+    expect(measurementsPageScript).not.toContain('input[name="sl-edit-fit"]:checked');
+  });
 });
 
 describe("Sleeveless Edit Pattern workspace", () => {
@@ -70,5 +87,20 @@ describe("Sleeveless Edit Pattern workspace", () => {
     expect(sleevelessPatternWorkspaceAstro).toContain("Save Changes");
     expect(sleevelessPatternWorkspaceAstro).not.toContain("data-drop-shoulder-workspace-measure-summary");
     expect(sleevelessPatternWorkspaceAstro).not.toContain("drop-shoulder-refresh-measurements");
+  });
+
+  it("does not render interactive Fit choices on the edit workspace", () => {
+    expect(sleevelessPatternWorkspaceAstro).not.toContain('name="sl-edit-fit"');
+    expect(sleevelessPatternWorkspaceAstro).not.toContain("data-sl-edit-ease");
+  });
+});
+
+describe("Drop Shoulder builder Fit step (unchanged)", () => {
+  it("still renders builder Fit choices for new patterns", () => {
+    expect(dropShoulderBuilderAstro).toContain('data-field="fit"');
+    expect(dropShoulderBuilderAstro).toContain('data-value="close"');
+    expect(dropShoulderBuilderAstro).toContain('data-value="standard"');
+    expect(dropShoulderBuilderAstro).toContain('data-value="relaxed"');
+    expect(dropShoulderBuilderAstro).toContain("formatFitEaseApproxLabel");
   });
 });

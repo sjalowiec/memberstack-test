@@ -16,6 +16,7 @@ import {
 } from "../../../../lib/patterns/sleevelessExpressAvailableNeedles";
 
 import "../../../../styles/ns-shaping-chart.css";
+import "../../../../styles/shaping-map.css";
 import "../../../../styles/wizard.css";
 import "../../../../styles/glossary-tooltip.css";
 import "../../../../styles/pattern-tips.css";
@@ -176,7 +177,7 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
 
     <!--
       Edit Pattern workspace — ONE combined editing surface (full-width app shell).
-      Left column: quick edits (Size, Front Style, Neckline, Fit, Gauge, Needles).
+      Left column: quick edits (Size, Front Style, Neckline, Gauge, Needles).
       Right column: the reused Custom Build measurement editor SVG — visible immediately,
       no separate "Edit Measurements" click.
     -->
@@ -278,25 +279,6 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
                       <span class="sl-edit-segment__pill">V-Neck</span>
                     </label>
                   </div>
-                </fieldset>
-
-                <fieldset class="sl-edit-field sl-edit-fieldset">
-                  <legend class="sl-edit-sublabel">Fit</legend>
-                  <div class="sl-edit-segment sl-edit-segment--three" role="radiogroup" aria-label="Fit">
-                    <label class="sl-edit-segment__option">
-                      <input type="radio" name="sl-edit-fit" value="close" />
-                      <span class="sl-edit-segment__pill">Close</span>
-                    </label>
-                    <label class="sl-edit-segment__option">
-                      <input type="radio" name="sl-edit-fit" value="standard" checked />
-                      <span class="sl-edit-segment__pill">Standard</span>
-                    </label>
-                    <label class="sl-edit-segment__option">
-                      <input type="radio" name="sl-edit-fit" value="relaxed" />
-                      <span class="sl-edit-segment__pill">Relaxed</span>
-                    </label>
-                  </div>
-                  <p class="sl-edit-ease" data-sl-edit-ease aria-live="polite"></p>
                 </fieldset>
 
                 <fieldset class="sl-edit-field sl-edit-fieldset" data-sl-edit-sleeve-length>

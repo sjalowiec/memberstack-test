@@ -4,6 +4,7 @@
  */
 import { SLEEVELESS_BODY_STRAIGHT_TOLERANCE_INCHES } from "./bodyBlock/sleevelessBodyBlock";
 import { positiveMeasurementInches } from "./customBuildEffectiveArmholeDepth";
+import { fitEaseInchesForChoice } from "./fitEaseInches";
 import {
   getCurrentPattern,
   getPatternData,
@@ -29,12 +30,6 @@ export type SleevelessCustomBuildBodyFinishedMeasurements = Partial<
   Record<CustomBuildBodyFinishedKey, number>
 >;
 
-const EASE_INCHES_BY_FIT: Record<string, number> = {
-  close: 1,
-  standard: 3,
-  relaxed: 5,
-};
-
 function toFiniteNumber(v: unknown): number | undefined {
   if (v === undefined || v === null) return undefined;
   if (typeof v === "number") return Number.isFinite(v) && v > 0 ? v : undefined;
@@ -44,11 +39,6 @@ function toFiniteNumber(v: unknown): number | undefined {
 
 function roundQuarter(n: number): number {
   return Math.round(n * 4) / 4;
-}
-
-function easeInchesForFit(fitPreference: string): number {
-  const e = EASE_INCHES_BY_FIT[fitPreference];
-  return typeof e === "number" ? e : EASE_INCHES_BY_FIT.standard;
 }
 
 export function readCustomBuildBodyFinishedMeasurements(
@@ -137,7 +127,7 @@ export function computeCustomBuildBodyFinishedFromChartRow(
   fitPreference: string,
   options?: { bodyShape?: string },
 ): SleevelessCustomBuildBodyFinishedMeasurements {
-  const ease = easeInchesForFit(fitPreference);
+  const ease = fitEaseInchesForChoice(fitPreference);
   const bodyBustOrChest = toFiniteNumber(row.bust_or_chest);
   const bodyWaist = toFiniteNumber(row.waist);
   const bodyHip = toFiniteNumber(row.hip) ?? bodyBustOrChest;

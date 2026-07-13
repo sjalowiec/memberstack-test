@@ -175,12 +175,11 @@ export function readDropShoulderWorkspaceQuickEditSizingFromDom(): DropShoulderQ
   if (!isDropShoulderWorkspaceMeasurementSummaryPage()) return null;
   const sizeSelect = document.querySelector<HTMLSelectElement>("[data-sl-edit-size]");
   const selectedSize = sizeSelect?.value.trim() ?? "";
-  const fitEl = document.querySelector<HTMLInputElement>('input[name="sl-edit-fit"]:checked');
-  const fitPreference = fitEl?.value.trim() || "standard";
-  if (!selectedSize) return null;
   const pattern = getCurrentPattern();
   const expressValues = readExpressValues();
   const fit = pattern.fit ?? {};
+  const fitPreference = resolveFitPreference(expressValues, fit);
+  if (!selectedSize) return null;
   const audience =
     expressWhoToChartAudience(fit.sizingChart) ||
     expressWhoToChartAudience(pattern.style?.recipientCategory) ||
