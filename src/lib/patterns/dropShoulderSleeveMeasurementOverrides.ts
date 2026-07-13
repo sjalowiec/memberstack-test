@@ -166,14 +166,37 @@ export function resolveDropShoulderSleeveInches(args: {
     if (!raw?.trim()) return undefined;
     return parseOverrideInches(raw);
   };
+  const userEdited = args.userEdited ?? readDropShoulderUserEditedSleeveFields();
+  const fullSleeveLengthIn = parse(strings.sleeveLength);
+  const sleeveLengthIn =
+    userEdited.sleeveLength === true
+      ? fullSleeveLengthIn
+      : scaleDropShoulderSleeveLengthInches(fullSleeveLengthIn, args.sleeveLengthChoice);
+
   return {
     upperArmIn: parse(strings.upperArm),
     wristIn: parse(strings.wrist),
-    sleeveLengthIn: scaleDropShoulderSleeveLengthInches(
-      parse(strings.sleeveLength),
-      args.sleeveLengthChoice,
-    ),
+    sleeveLengthIn,
   };
+}
+
+/**
+ * Sleeve length shown in the Edit Pattern diagram input: the saved override when user-edited,
+ * otherwise the picker-scaled actual length (so the field matches generated sleeve rows).
+ */
+export function dropShoulderEditWorkspaceSleeveLengthDisplayInches(args: {
+  overrideInches: string;
+  sleeveLengthChoice: unknown;
+  userEditedSleeveLength: boolean;
+}): string {
+  const trimmed = args.overrideInches.trim();
+  if (!trimmed) return "";
+  if (args.userEditedSleeveLength) return trimmed;
+  const scaled = scaleDropShoulderSleeveLengthInches(
+    parseOverrideInches(trimmed),
+    args.sleeveLengthChoice,
+  );
+  return scaled !== undefined ? formatOverrideInches(scaled) : trimmed;
 }
 
 /**

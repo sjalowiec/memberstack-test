@@ -105,15 +105,14 @@ function frontBlockParagraphs(rows: SleevelessPatternDisplayRow[]): string[] {
 }
 
 describe("drop-shoulder neckline shaping row lists", () => {
-  it("back shallow hold bullets include every-other-row garment RC lists", () => {
+  it("back shallow hold bullets include every-other-row local RC lists after reset", () => {
     const result = generateDropShoulderPattern(DROP_SHOULDER_PATTERN);
-    const neckStartRc = result.debug.backNecklineStartRC!;
     const plan = calculateBackRoundNecklinePlan({
       necklineStitches: result.debug.necklineStitches!,
       necklineDepthRows: result.debug.backNeckDepthRows!,
     });
     const rightSegments = compressHoldGroupsToSegments(plan.right.holdGroups);
-    let rc = neckStartRc;
+    let rc = 0;
     for (const seg of rightSegments) {
       const expected = formatParentheticalShapingRowNumbers(
         shapingActionRowNumbers(rc, seg.repeatCount, 2),
@@ -125,30 +124,38 @@ describe("drop-shoulder neckline shaping row lists", () => {
     }
   });
 
-  it("pullover round front shallow shaping lines include row lists when depth requires shallow plan", () => {
+  it("pullover round front shaping lines include local row lists in the neckline section", () => {
     const result = generateDropShoulderPattern(DROP_SHOULDER_PATTERN);
-    const neckStartRc = result.debug.frontNecklineStartRC!;
-    const text = frontBlockParagraphs(result.frontDisplayRows).join("\n");
     const neckBlock = result.frontDisplayRows.find(
-      (row) =>
-        row.kind === "block" &&
-        row.rc === `RC: ${String(neckStartRc).padStart(3, "0")}`,
+      (row) => row.kind === "block" && row.rc === "RC: 000",
     );
     expect(neckBlock?.kind).toBe("block");
-    const paragraphs =
-      neckBlock && neckBlock.kind === "block"
-        ? [...(neckBlock.trustedParagraphs ?? []), ...(neckBlock.paragraphs ?? [])]
-        : [];
-    const shapingLines = paragraphs.filter((p) => /<em>\(RC: \d+/i.test(p));
+
+    const sectionStart = result.frontDisplayRows.findIndex(
+      (row) => row.kind === "section" && /FRONT NECKLINE/i.test(String(row.title ?? "")),
+    );
+    const necklineText: string[] = [];
+    for (let i = sectionStart + 1; i < result.frontDisplayRows.length; i++) {
+      const row = result.frontDisplayRows[i]!;
+      if (row.kind === "section" || row.kind === "piece") break;
+      if (row.kind === "block") {
+        necklineText.push(...(row.trustedParagraphs ?? []), ...(row.paragraphs ?? []));
+      }
+    }
+
+    const shapingLines = necklineText.filter((p) => /<em>\(RC: \d+/i.test(p));
     expect(shapingLines.length).toBeGreaterThan(0);
     for (const line of shapingLines) {
       expect(line).toMatch(/<em>\(RC: \d+(?:, \d+)*\)<\/em>/);
+      expect(line).not.toMatch(/<em>\(RC: 1[0-9]{2}/);
     }
   });
 
-  it("cardigan round front shaping includes row lists on alternate-row bind-off and decrease lines", () => {
+  it("cardigan round front shaping includes local row lists on alternate-row bind-off and decrease lines", () => {
     const result = generateDropShoulderPattern(KIDS_2YR_CARDIGAN_ROUND_PATTERN);
     const neckStartRc = result.debug.frontNecklineStartRC!;
+    const necklineLocalTotalRows =
+      result.debug.totalCalculatedRows! - neckStartRc;
     const text = frontBlockParagraphs(result.frontDisplayRows).join("\n");
 
     const stairLine = frontBlockParagraphs(result.frontDisplayRows).find((p) =>
@@ -163,23 +170,26 @@ describe("drop-shoulder neckline shaping row lists", () => {
     expect(decreaseLine).toBeDefined();
     expect(decreaseLine).toContain(
       formatParentheticalShapingRowNumbers(
-        shapingActionRowNumbers(neckStartRc + 2 * (2 + 1), 5, 2),
+        shapingActionRowNumbers(0 + 2 * (2 + 1), 5, 2),
       ),
     );
-    expect(text).toMatch(/When 28 stitches remain, knit even to RC: 198/);
+    expect(text).toMatch(
+      new RegExp(
+        `When 28 stitches remain, knit even to RC: ${String(necklineLocalTotalRows).padStart(3, "0")}`,
+      ),
+    );
   });
 
-  it("pullover V-neck decrease line includes garment RC list before the stitch-count note", () => {
+  it("pullover V-neck decrease line includes local RC list before the stitch-count note", () => {
     const pattern = {
       ...DROP_SHOULDER_PATTERN,
       style: { ...DROP_SHOULDER_PATTERN.style, neckline: "v" },
     };
     const result = generateDropShoulderPattern(pattern);
-    const neckStartRc = result.debug.frontNecklineStartRC!;
     const perSide = neckDecreaseStitchesPerSideFromOpening(result.debug.necklineStitches!);
     const sched = evenShapingSchedule(perSide, result.debug.frontNeckDepthRows!);
     const rowList = formatParentheticalShapingRowNumbers(
-      evenShapingGarmentRowNumbers(neckStartRc, sched),
+      evenShapingGarmentRowNumbers(0, sched),
     );
 
     const text = frontBlockParagraphs(result.frontDisplayRows).join("\n");

@@ -1,8 +1,8 @@
 /**
- * Sleeveless Round Neck **front** shaping schedule ù narrowly scoped.
+ * Sleeveless Round Neck **front** shaping schedule ó narrowly scoped.
  *
  * Architecture:
- *   Pattern calculations  ?  buildTimeline (RowEntry[])  ?  this schedule  ?  Shaping Map data
+ *   Pattern calculations ? buildTimeline (RowEntry[]) ? this schedule ? Shaping Map data
  *
  * This module does NOT recompute any pattern math. It reads the already-calculated
  * neck/shoulder {@link RowEntry} timeline (the same source of truth that drives the
@@ -48,6 +48,9 @@ export type SleevelessRoundNeckShapingOp = {
   endRow: number;
 };
 
+/** How outer-edge bind-offs are drawn: stepped during ascent vs straight side + top completion. */
+export type ShoulderRepresentationMode = "shaped" | "straight";
+
 /** Structured shaping schedule for one edge of a Sleeveless Round Neck front. */
 export type SleevelessRoundNeckShapingSchedule = {
   neckProfile: "front";
@@ -61,6 +64,12 @@ export type SleevelessRoundNeckShapingSchedule = {
   startRow: number;
   /** Last shaping RC in this neckline/shoulder section. */
   endRow: number;
+  /**
+   * Derived from outer-edge event placement in the timeline (never from trimming events).
+   * `shaped`: bind-offs distributed across multiple RCs (sleeveless stepped shoulders).
+   * `straight`: outer bind-offs only at the final RC (drop-shoulder completion bind-off).
+   */
+  shoulderMode: ShoulderRepresentationMode;
   /** Neckline (inner-edge) decreases / bind-offs, in RC order (ascending). */
   neckOps: SleevelessRoundNeckShapingOp[];
   /** Shoulder (outer-edge) bind-offs, in RC order (ascending). */
@@ -159,6 +168,18 @@ function collectEdgePoints(
 }
 
 /**
+ * Classify shoulder representation from outer-edge event placement in the full timeline.
+ * Does not remove or rewrite any events.
+ */
+export function detectShoulderRepresentationMode(
+  shoulderPoints: readonly EdgePoint[],
+  endRow: number,
+): ShoulderRepresentationMode {
+  if (shoulderPoints.length === 0) return "straight";
+  return shoulderPoints.every((p) => p.row === endRow) ? "straight" : "shaped";
+}
+
+/**
  * Build the Sleeveless Round Neck front shaping schedule from the already-calculated
  * neck/shoulder timeline. Returns `null` when the timeline is not a round-neck pullover
  * front (no center bind-off/hold row), leaving V-neck / cardigan behavior untouched.
@@ -182,6 +203,7 @@ export function buildSleevelessRoundNeckShapingSchedule(
   const shoulderOps = groupPoints(shoulderPoints, "shoulder");
 
   const rows = sorted.map((e) => e.row);
+  const endRow = Math.max(...rows);
   const neckStitchesTotal = neckPoints.reduce((s, p) => s + p.amount, 0);
   const shoulderStitchesTotal = shoulderPoints.reduce((s, p) => s + p.amount, 0);
 
@@ -191,7 +213,8 @@ export function buildSleevelessRoundNeckShapingSchedule(
     centerStitches: center.amount,
     centerHeld: center.held,
     startRow: Math.min(...rows),
-    endRow: Math.max(...rows),
+    endRow,
+    shoulderMode: detectShoulderRepresentationMode(shoulderPoints, endRow),
     neckOps,
     shoulderOps,
     neckStitchesTotal,
@@ -243,11 +266,7 @@ function pathStepsTopDown(
  * binds off inward then works UP to the next (higher) row; the topmost step has no trailing run
  * so the path ends exactly on the highest shaping row.
  *
- * Used for the shoulder edge: shoulder bind-offs happen on the ARMHOLE (outer) edge, so as the RC
- * increases (the piece is knit upward) each bind-off moves that edge INWARD, toward the center /
- * neckline. Tracing the shoulder from its first bind-off row upward with inward steps draws the
- * armhole edge receding toward the center ù the opposite of a top-down trace, which would (wrongly)
- * plant the outer corner at the top and step the shoulder back out toward the armhole.
+ * Used for shaped shoulders: outer bind-offs during ascent move the armhole edge inward.
  */
 function pathStepsBottomUp(
   points: readonly { row: number; stitches: number }[],
@@ -262,7 +281,6 @@ function pathStepsBottomUp(
   for (let i = 0; i < asc.length; i++) {
     const cur = asc[i]!;
     const next = asc[i + 1];
-    // Work up to the next bind-off row; the final (topmost) step lands on the top row (rows = 0).
     const rows = next ? Math.max(1, next.row - cur.row) : 0;
     steps.push({ stitches: cur.stitches, rows });
     totalStitches += cur.stitches;
@@ -272,74 +290,119 @@ function pathStepsBottomUp(
 
 /**
  * Adapter: convert a {@link SleevelessRoundNeckShapingSchedule} into {@link ShapingMapData}
- * for {@link renderShapingMapSvg}. Draws one active edge as a continuous profile: the shoulder
- * bind-offs traced UPWARD along the armhole edge (which recedes inward toward the center as it is
- * bound off), meeting the neckline decreases at the top and continuing DOWN to the center stitches.
+ * for {@link renderShapingMapSvg}.
  *
- * The schedule stores absolute (global garment) RC. Every customer-facing view shows
- * armhole-local RC (`garmentRc - firstArmholeRc`); pass `firstArmholeRc` (the pattern's
- * `debug.armholeStartRow` ù the single source of truth for this origin) so the map's row
- * numbers agree with the written instructions, Japanese notation, and checklist. Only absolute
- * row anchors are shifted; step spacings are RC deltas and are unaffected.
+ * `shaped` mode traces progressive outer-edge bind-offs (sleeveless stepped shoulders).
+ * `straight` mode traces a vertical side edge, a horizontal shoulder completion at the top,
+ * then neckline shaping down to center stitches (drop-shoulder).
+ *
+ * The schedule stores absolute (global garment) RC. Pass `firstArmholeRc` (`debug.armholeStartRow`)
+ * so row labels match the written instructions and checklist.
  */
 export function shapingScheduleToMapData(
   schedule: SleevelessRoundNeckShapingSchedule,
   options?: { title?: string; firstArmholeRc?: number | null },
 ): ShapingMapData {
-  const shoulderPoints = opsToPoints(schedule.shoulderOps);
   const neckPoints = opsToPoints(schedule.neckOps);
-
   const neckTrailing = schedule.neckOps[schedule.neckOps.length - 1]?.rowInterval ?? DEFAULT_ROW_INTERVAL;
-
-  // Shoulder is traced bottom-up (armhole edge receding inward toward the center as RC climbs);
-  // the neck is traced top-down (neckline edge continuing down to the center stitches).
-  const shoulder = pathStepsBottomUp(shoulderPoints);
   const neck = pathStepsTopDown(neckPoints, neckTrailing);
 
-  // Convert absolute garment RC anchors to armhole-local RC using the same origin the rest of
-  // the pattern uses (written instructions / notation / checklist). Uniform shift, so step
-  // deltas (which drive the shape) are preserved exactly.
   const offsetRaw = Number(options?.firstArmholeRc);
   const offset = Number.isFinite(offsetRaw) ? Math.floor(offsetRaw) : 0;
   const toLocal = (row: number): number => row - offset;
 
+  const localStart = toLocal(schedule.startRow);
+  const localEnd = toLocal(schedule.endRow);
   const paths: ShapingMapData["paths"] = [];
 
-  if (shoulder.steps.length > 0) {
+  if (schedule.shoulderMode === "shaped") {
+    const shoulderPoints = opsToPoints(schedule.shoulderOps);
+    const shoulder = pathStepsBottomUp(shoulderPoints);
+
+    if (shoulder.steps.length > 0) {
+      paths.push({
+        id: "shoulder",
+        label: "Shoulder",
+        edge: "left",
+        rowDirection: "up",
+        startX: 0,
+        startRow: toLocal(shoulder.startRow),
+        steps: shoulder.steps,
+      });
+    }
+
+    if (neck.steps.length > 0) {
+      paths.push({
+        id: "neck",
+        label: "Neck",
+        edge: "left",
+        rowDirection: "down",
+        startX: shoulder.totalStitches,
+        startRow: toLocal(neck.steps.length > 0 ? neck.startRow : shoulder.startRow),
+        steps: neck.steps,
+      });
+    }
+  } else if (schedule.shoulderStitchesTotal > 0) {
+    const shoulderWidth = schedule.shoulderStitchesTotal;
+    const verticalRows = Math.max(0, localEnd - localStart);
+    const shoulderSteps: ShapingMapStep[] = [];
+
+    if (verticalRows > 0) {
+      shoulderSteps.push({ stitches: 0, rows: verticalRows, label: "" });
+    }
+    shoulderSteps.push({
+      stitches: shoulderWidth,
+      rows: 0,
+      label: `-${shoulderWidth}`,
+    });
+
     paths.push({
       id: "shoulder",
       label: "Shoulder",
-      // Traced UPWARD from the first shoulder bind-off row: the armhole (outer) edge steps inward
-      // (+X, toward the center / neckline) as the RC climbs ù matching how shoulder bind-offs remove
-      // stitches from the armhole edge. It ends at the top, adjacent to the neck path.
       edge: "left",
       rowDirection: "up",
       startX: 0,
-      startRow: toLocal(shoulder.startRow),
-      steps: shoulder.steps,
+      startRow: localStart,
+      steps: shoulderSteps,
     });
-  }
 
-  if (neck.steps.length > 0) {
+    if (neck.steps.length > 0) {
+      const localHighestNeckRow = toLocal(neck.startRow);
+      const knitEvenGap = Math.max(0, localEnd - localHighestNeckRow);
+      const neckSteps: ShapingMapStep[] = [];
+      if (knitEvenGap > 0) {
+        neckSteps.push({ stitches: 0, rows: knitEvenGap, label: "" });
+      }
+      neckSteps.push(...neck.steps);
+
+      paths.push({
+        id: "neck",
+        label: "Neck",
+        edge: "left",
+        rowDirection: "down",
+        startX: shoulderWidth,
+        startRow: localEnd,
+        steps: neckSteps,
+      });
+    }
+  } else if (neck.steps.length > 0) {
     paths.push({
       id: "neck",
       label: "Neck",
       edge: "left",
       rowDirection: "down",
-      startX: shoulder.totalStitches,
-      startRow: toLocal(neck.steps.length > 0 ? neck.startRow : shoulder.startRow),
+      startX: 0,
+      startRow: toLocal(neck.startRow),
       steps: neck.steps,
     });
   }
 
   return {
     title: options?.title ?? "Neckline & shoulder shaping map",
-    rowMin: toLocal(schedule.startRow),
-    rowMax: toLocal(schedule.endRow),
+    rowMin: localStart,
+    rowMax: localEnd,
     centerStitches: schedule.centerStitches,
     paths,
-    // The profile is always drawn armhole/shoulder at the top-left (outer edge) down to the
-    // center-front stitches at the lower right (inner edge). Label by that meaning, not by side.
     edgeLabels: { shoulder: "Shoulder Edge", neck: "Neck Edge" },
   };
 }

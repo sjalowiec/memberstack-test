@@ -34,6 +34,12 @@ describe("Drop Shoulder Edit Pattern workspace (pattern/index.astro)", () => {
     expect(dropShoulderPatternWorkspaceAstro).not.toContain("Refresh measurements");
   });
 
+  it("does not render sleeve-length preset choices on the edit workspace", () => {
+    expect(dropShoulderPatternWorkspaceAstro).not.toContain("data-sl-edit-sleeve-length");
+    expect(dropShoulderPatternWorkspaceAstro).not.toContain('name="sl-edit-sleeve-length"');
+    expect(editDrawerScript).not.toContain("persistDropShoulderSleeveLength");
+  });
+
   it("does not render interactive Fit choices on the edit workspace", () => {
     expect(dropShoulderPatternWorkspaceAstro).not.toContain('name="sl-edit-fit"');
     expect(dropShoulderPatternWorkspaceAstro).not.toContain("data-sl-edit-ease");
@@ -53,6 +59,11 @@ describe("Drop Shoulder Edit Pattern workspace (pattern/index.astro)", () => {
     expect(editDrawerScript).not.toContain('input[name="sl-edit-fit"]');
     expect(editDrawerScript).not.toContain("recalcFitDerivedMeasurements");
     expect(editDrawerScript).toContain("readStoredFitPreference");
+  });
+
+  it("marks numeric sleeve length user-edited on save from the diagram field", () => {
+    expect(editDrawerScript).toContain('markDropShoulderSleeveFieldUserEdited("sleeveLength")');
+    expect(editDrawerScript).toContain('[data-cb-measure-input="sleeveLength"]');
   });
 
   it("still supports measurement edit and save via the existing apply pipeline", () => {

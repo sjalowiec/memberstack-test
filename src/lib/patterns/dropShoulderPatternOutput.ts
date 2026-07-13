@@ -49,6 +49,7 @@ import {
 } from "./customBuildEffectiveArmholeDepth";
 import { isDropShoulderPatternData } from "./dropShoulderSleeveMeasurementOverrides";
 import { resolveDropShoulderSleeveInches } from "./dropShoulderSleeveMeasurementOverrides";
+import { readEffectiveDropShoulderUserEditedSleeveFields } from "./dropShoulderUserEditedSleeveFields";
 import { findExpressChartRow } from "./sleevelessExpressSizeChartClient";
 import {
   calculateBackRoundNecklinePlan,
@@ -73,18 +74,25 @@ import {
   castOnMethodQuickTipInnerHtml,
   pieceMarkersSeamingTipDisplayRow,
   formatRcColon,
+  insertLifelineReminderAfterOpening,
   type SleevelessPatternDisplayRow,
   type SleevelessBackPatternResult,
   type SleevelessBackPatternDebug,
 } from "./sleevelessPatternOutput";
 import { hemSectionRow } from "./legoBlocks/hem";
 import type { NeckShoulderShapingChart } from "./neckShoulderShapingChart";
-import { buildDropShoulderFrontNeckShapingChart } from "./dropShoulderFrontNeckShapingChart";
+import {
+  buildDropShoulderFrontNeckShapingChart,
+  dropShoulderFrontNeckShapingChartInputsReady,
+} from "./dropShoulderFrontNeckShapingChart";
 import { resolveCardiganHalfFrontWidths } from "./cardiganFrontBlock";
 import {
+  DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE,
   DROP_SHOULDER_SLEEVE_NO_SHAPING_NOTE_LINES,
   buildDropShoulderSleeveShapingChartRows,
   dropShoulderSleeveNeedsShapingChart,
+  dropShoulderSleevePreShapingSpan,
+  dropShoulderSleeveShapingRcSequence,
 } from "./dropShoulderSleeveShapingChart";
 import {
   dropShoulderSleeveShapingPlanForDirection,
@@ -95,6 +103,7 @@ import { DROP_SHOULDER_SLEEVE_DIRECTION_DEFAULT } from "./dropShoulderSleeveCons
 import { isSleevelessVNeckChoice } from "./sleevelessFrontDiagramSrc";
 import { buildGlossaryTooltipPlaceholderHtml, PLACE_MARKER_GLOSSARY_ID } from "../glossary/glossaryTooltipPrint";
 import { SCRAP_OFF_GLOSSARY_ID } from "./neckShoulderActiveIntroCopy";
+import { inlineRcHeadingLine, parseInlineMarkedLine } from "./inlineRcHeading";
 
 /** Drop shoulder result reuses the sleeveless contract and adds the sleeve piece. */
 export type DropShoulderPatternResult = SleevelessBackPatternResult & {
@@ -120,6 +129,16 @@ export type BuildDropShoulderSleeveRowsArgs = {
 };
 
 type Block = Extract<SleevelessPatternDisplayRow, { kind: "block" }>;
+
+/** Shared Row Counter Reset marker immediately before drop-shoulder neckline shaping. */
+function dropShoulderNecklineRowCounterResetBlock(garmentRc: number): Block {
+  return {
+    kind: "block",
+    rowCounterReset: true,
+    rowCounterResetGarmentRc: garmentRc,
+    paragraphs: [],
+  };
+}
 
 function section(obj: unknown): Record<string, unknown> {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) {
@@ -180,11 +199,10 @@ function forceEven(n: number): number {
   return r % 2 === 0 ? r : r + 1;
 }
 
-/** Plain-knit instruction line; optionally states the RC the counter will read at the end. */
-function knitEvenLine(rows: number, endRc?: number): string {
+/** Plain-knit instruction line for drop-shoulder even-row spans (RC shown in block headings). */
+function knitEvenLine(rows: number): string {
   if (rows <= 0) return "";
-  const base = rows === 1 ? "Knit 1 row even." : `Knit ${rows} rows even.`;
-  return endRc !== undefined ? `${base} (Counter reads ${formatRcColon(endRc)} at the end.)` : base;
+  return rows === 1 ? "Knit 1 row even." : `Knit ${rows} rows even.`;
 }
 
 /** Sleeve body remainder after shaping — work in pattern to length. */
@@ -315,7 +333,7 @@ function hemBlocks(hemRows: number, hemRowsValid: boolean, sts: number): Sleevel
       kind: "block",
       rc: formatRcColon(0),
       paragraphs: hemRowsValid
-        ? [knitEvenLine(hemRows, hemRows)]
+        ? [knitEvenLine(hemRows)]
         : [
             "Hem rows could not be calculated — check row gauge and sizing chart. Knit your hem to the depth you prefer, then continue.",
           ],
@@ -352,19 +370,123 @@ const DROP_SHOULDER_PULLOVER_ROUND_NECK_SECOND_SHOULDER_SENTENCE =
 const DROP_SHOULDER_PULLOVER_V_NECK_SECOND_SHOULDER_SENTENCE =
   "Return the held shoulder stitches to the needles and repeat the V-neck shaping for the second shoulder, mirroring the first side.";
 
+const DROP_SHOULDER_SHOULDER_COMPLETE_RE = /^The (first|second) shoulder is complete\.?$/i;
+
+/** Plain text from a trusted instruction line (markers and HTML stripped). */
+function trustedLinePlainText(line: string): string {
+  const marked = parseInlineMarkedLine(line);
+  if (marked) return marked.text.trim();
+  return String(line)
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isDropShoulderShoulderCompleteLine(line: string): boolean {
+  return DROP_SHOULDER_SHOULDER_COMPLETE_RE.test(trustedLinePlainText(line));
+}
+
 /**
- * Pullover front: after neck-edge shaping on the first shoulder, knit even to the shoulder bind-off
- * RC when needed, bind off, then repeat for the held shoulder.
+ * Split neckline trusted paragraphs into display blocks. Shoulder-completion sentences become
+ * their own blocks with {@link shoulderStsEach} in the right column; all other blocks omit it.
  */
-function dropShoulderPulloverFirstShoulderFinishParagraphs(
+function splitTrustedParagraphsAtShoulderCompletion(
+  lines: readonly string[],
   shoulderStsEach: number,
-  totalRows: number,
+): Block[] {
+  const blocks: Block[] = [];
+  let buffer: string[] = [];
+  let pendingInlineRc: string | undefined;
+
+  const flushBuffer = () => {
+    if (buffer.length === 0) return;
+    blocks.push({
+      kind: "block",
+      trustedParagraphs: [...buffer],
+      paragraphs: [],
+    });
+    buffer = [];
+  };
+
+  for (const line of lines) {
+    const marked = parseInlineMarkedLine(line);
+    if (marked?.kind === "rc-heading") {
+      pendingInlineRc = marked.text;
+      continue;
+    }
+
+    if (isDropShoulderShoulderCompleteLine(line)) {
+      flushBuffer();
+      blocks.push({
+        kind: "block",
+        ...(pendingInlineRc ? { rc: pendingInlineRc } : {}),
+        trustedParagraphs: [line],
+        paragraphs: [],
+        stitchCount: shoulderStsEach > 0 ? shoulderStsEach : undefined,
+      });
+      pendingInlineRc = undefined;
+      continue;
+    }
+
+    if (pendingInlineRc) {
+      buffer.push(inlineRcHeadingLine(pendingInlineRc));
+      pendingInlineRc = undefined;
+    }
+    buffer.push(line);
+  }
+
+  flushBuffer();
+  return blocks;
+}
+
+/** Local neckline RC after the row-counter reset (matches chart/map/checklist RC 000). */
+const DROP_SHOULDER_NECKLINE_LOCAL_RC_START = 0;
+
+function dropShoulderNecklineLocalRowsFromGarment(
+  neckGarmentStartRc: number,
+  totalGarmentRows: number,
+): number {
+  return Math.max(0, Math.floor(totalGarmentRows) - Math.floor(neckGarmentStartRc));
+}
+
+function dropShoulderNecklineFirstBlockRc(
+  useLocalNecklineRc: boolean,
+  neckGarmentStartRc: number,
+): string {
+  return formatRcColon(
+    useLocalNecklineRc ? DROP_SHOULDER_NECKLINE_LOCAL_RC_START : neckGarmentStartRc,
+  );
+}
+
+function dropShoulderNecklineWrittenStartRc(
+  useLocalNecklineRc: boolean,
+  neckGarmentStartRc: number,
+): number | undefined {
+  return useLocalNecklineRc ? DROP_SHOULDER_NECKLINE_LOCAL_RC_START : neckGarmentStartRc;
+}
+
+/** Pullover front: knit even to shoulder bind-off RC, bind off, then repeat for the held shoulder. */
+function dropShoulderPulloverShoulderFinishParagraphs(
+  shoulderStsEach: number,
+  shoulderFinishRc: number,
+  orderLabel: "first" | "second",
+): string[] {
+  return [
+    `The ${orderLabel} shoulder is complete.`,
+    `When neckline shaping is complete and ${shoulderStsEach} stitches remain on the working shoulder, knit even to ${formatRcColon(shoulderFinishRc)} (no further neck-edge decreases).`,
+    `Bind off the ${shoulderStsEach} shoulder stitches.`,
+  ];
+}
+
+function dropShoulderPulloverBothShouldersFinishParagraphs(
+  shoulderStsEach: number,
+  shoulderFinishRc: number,
   secondShoulderSentence: string,
 ): string[] {
   return [
-    `When neckline shaping is complete and ${shoulderStsEach} stitches remain on the working shoulder, knit even to ${formatRcColon(totalRows)} (no further neck-edge decreases).`,
-    `Bind off the ${shoulderStsEach} shoulder stitches.`,
+    ...dropShoulderPulloverShoulderFinishParagraphs(shoulderStsEach, shoulderFinishRc, "first"),
     secondShoulderSentence,
+    ...dropShoulderPulloverShoulderFinishParagraphs(shoulderStsEach, shoulderFinishRc, "second"),
   ];
 }
 
@@ -397,7 +519,7 @@ function appendDropShoulderAlineBodyRows(
     rows.push({
       kind: "block",
       rc: formatRcColon(aline.shapingBeginRc),
-      paragraphs: [knitEvenLine(args.bodyToArmholeRows, aline.armholeBeginRc)],
+      paragraphs: [knitEvenLine(args.bodyToArmholeRows)],
       stitchCount: aline.bustBodySts > 0 ? aline.bustBodySts : castOnSts > 0 ? castOnSts : undefined,
     });
     return;
@@ -497,7 +619,7 @@ function buildBackRows(args: {
       kind: "block",
       rc: formatRcColon(args.hemRows),
       paragraphs: args.bodyRowsValid
-        ? [knitEvenLine(args.bodyToArmholeRows, args.armholeMarkerRc)]
+        ? [knitEvenLine(args.bodyToArmholeRows)]
         : [
             "Body length to the armhole could not be calculated. Confirm back neck to hem, upper arm, and row gauge, then try again.",
           ],
@@ -513,9 +635,10 @@ function buildBackRows(args: {
       : args.totalRows;
   const straightAboveMarkerRows = Math.max(0, neckStartRc - args.armholeMarkerRc);
 
+  const garmentRcBeforeNecklineReset = hasBackNeckPlan ? neckStartRc : args.totalRows;
   const backAboveMarker = armholeMarkerBlockParagraphs(
     "Place a marker at each end of this row to mark the base of the armhole.",
-    [knitEvenLine(straightAboveMarkerRows, hasBackNeckPlan ? neckStartRc : args.totalRows)],
+    [knitEvenLine(straightAboveMarkerRows)],
   );
   rows.push({
     kind: "block",
@@ -525,25 +648,40 @@ function buildBackRows(args: {
     stitchCount: A > 0 ? A : undefined,
   });
 
+  const hasBackNeckShaping =
+    args.shoulderStsEach > 0 && args.backNeckSts > 0 && args.backRoundNeckPlan !== null;
+  if (hasBackNeckShaping) {
+    rows.push(dropShoulderNecklineRowCounterResetBlock(garmentRcBeforeNecklineReset));
+  }
+
   rows.push({ kind: "section", title: "BACK NECKLINE & SHOULDERS" });
   if (args.shoulderStsEach > 0 && args.backNeckSts > 0 && args.backRoundNeckPlan) {
     const plan = args.backRoundNeckPlan;
+    const necklineLocalTotalRows = dropShoulderNecklineLocalRowsFromGarment(
+      neckStartRc,
+      args.totalRows,
+    );
+    const necklineWrittenStartRc = dropShoulderNecklineWrittenStartRc(true, neckStartRc)!;
     const executionLines = roundNeckBackShallowExecutionWrittenLines(plan, {
       bodyWidthStitches: args.bodyWidthSts,
-      rc: { necklineStartRc: neckStartRc, shoulderCompleteRc: args.totalRows },
+      rc: {
+        necklineStartRc: necklineWrittenStartRc,
+        shoulderCompleteRc: necklineLocalTotalRows,
+      },
     });
     // Isolated, hardcoded explainer video shown immediately before the shoulder
     // bind-off instructions. See `dropShoulderShoulderBindOffVideo.ts`.
     rows.push(dropShoulderShoulderBindOffVideoRow());
     rows.push({
       kind: "block",
-      rc: formatRcColon(neckStartRc),
-      trustedParagraphs: [
+      rc: dropShoulderNecklineFirstBlockRc(true, neckStartRc),
+      trustedParagraphs: insertLifelineReminderAfterOpening([
         "Begin back neckline shaping.",
         "Drop-shoulder shoulders are worked straight — there is no shoulder shaping.",
-        ...executionLines,
-      ],
+      ]),
+      paragraphs: [],
     });
+    rows.push(...splitTrustedParagraphsAtShoulderCompletion(executionLines, args.shoulderStsEach));
   } else {
     rows.push({
       kind: "block",
@@ -600,7 +738,7 @@ function buildPulloverFrontRows(args: {
       kind: "block",
       rc: formatRcColon(args.hemRows),
       paragraphs: args.bodyRowsValid
-        ? [knitEvenLine(args.bodyToArmholeRows, args.armholeMarkerRc)]
+        ? [knitEvenLine(args.bodyToArmholeRows)]
         : [
             "Body length to the armhole could not be calculated. Confirm back neck to hem, upper arm, and row gauge, then try again.",
           ],
@@ -611,7 +749,7 @@ function buildPulloverFrontRows(args: {
   rows.push({ kind: "section", title: "ABOVE ARMHOLE MARKERS" });
   const pulloverFrontAboveMarker = armholeMarkerBlockParagraphs(
     "Place a marker at each end of this row to mark the base of the armhole.",
-    [knitEvenLine(straightAboveMarkerRows, neckStartRc)],
+    [knitEvenLine(straightAboveMarkerRows)],
   );
   rows.push({
     kind: "block",
@@ -621,54 +759,70 @@ function buildPulloverFrontRows(args: {
     stitchCount: A > 0 ? A : undefined,
   });
 
+  const hasPulloverFrontNeckShaping = args.neckSts > 0 && args.shoulderStsEach > 0;
+  if (hasPulloverFrontNeckShaping) {
+    rows.push(dropShoulderNecklineRowCounterResetBlock(neckStartRc));
+  }
+
   rows.push({ kind: "section", title: "FRONT NECKLINE & SHOULDERS" });
   if (args.neckSts > 0 && args.shoulderStsEach > 0) {
+    const necklineLocalTotalRows = dropShoulderNecklineLocalRowsFromGarment(
+      neckStartRc,
+      args.totalRows,
+    );
+    const necklineWrittenStartRc = dropShoulderNecklineWrittenStartRc(true, neckStartRc);
     if (args.isVNeck) {
       const perSide = neckDecreaseStitchesPerSideFromOpening(args.neckSts);
       const sched = evenShapingSchedule(perSide, args.frontNeckDepthRows);
+      const introTrusted = insertLifelineReminderAfterOpening([
+        "Divide for the V-neck at the center.",
+        ...dropShoulderPulloverFrontShoulderDivideParagraphs(),
+        sched.count > 0
+          ? appendEvenShapingRowListToInstruction(
+              `At the neck edge, decrease 1 stitch ${intervalPhrase(sched.interval)} ${sched.count} time${sched.count === 1 ? "" : "s"}`,
+              sched,
+              necklineWrittenStartRc,
+              `(${perSide} stitches removed per side)`,
+            )
+          : "Work straight to the shoulder.",
+      ]);
+      const finishTrusted = dropShoulderPulloverBothShouldersFinishParagraphs(
+        args.shoulderStsEach,
+        necklineLocalTotalRows,
+        DROP_SHOULDER_PULLOVER_V_NECK_SECOND_SHOULDER_SENTENCE,
+      );
       rows.push({
         kind: "block",
-        rc: formatRcColon(neckStartRc),
-        trustedParagraphs: [
-          "Divide for the V-neck at the center.",
-          ...dropShoulderPulloverFrontShoulderDivideParagraphs(),
-          sched.count > 0
-            ? appendEvenShapingRowListToInstruction(
-                `At the neck edge, decrease 1 stitch ${intervalPhrase(sched.interval)} ${sched.count} time${sched.count === 1 ? "" : "s"}`,
-                sched,
-                neckStartRc,
-                `(${perSide} stitches removed per side)`,
-              )
-            : "Work straight to the shoulder.",
-          ...dropShoulderPulloverFirstShoulderFinishParagraphs(
-            args.shoulderStsEach,
-            args.totalRows,
-            DROP_SHOULDER_PULLOVER_V_NECK_SECOND_SHOULDER_SENTENCE,
-          ),
-        ],
+        rc: dropShoulderNecklineFirstBlockRc(true, neckStartRc),
+        trustedParagraphs: introTrusted,
         paragraphs: [],
-        stitchCount: args.shoulderStsEach,
       });
+      rows.push(...splitTrustedParagraphsAtShoulderCompletion(finishTrusted, args.shoulderStsEach));
     } else {
-      const { lines, plan } = roundNeckEdgeLines(args.neckSts, args.frontNeckDepthRows, neckStartRc);
+      const { lines, plan } = roundNeckEdgeLines(
+        args.neckSts,
+        args.frontNeckDepthRows,
+        necklineWrittenStartRc,
+      );
       const centerLine = roundNeckPlanCenterWrittenLine(plan);
+      const introTrusted = insertLifelineReminderAfterOpening([
+        centerLine ? `${centerLine} for the neck.` : "Shape the neck.",
+        ...dropShoulderPulloverFrontShoulderDivideParagraphs(),
+        ...lines,
+        ...(isShallowSinglesOnlyPlan(plan) ? [roundNeckPlanFinishHeldStitchesLine()] : []),
+      ]);
+      const finishTrusted = dropShoulderPulloverBothShouldersFinishParagraphs(
+        args.shoulderStsEach,
+        necklineLocalTotalRows,
+        DROP_SHOULDER_PULLOVER_ROUND_NECK_SECOND_SHOULDER_SENTENCE,
+      );
       rows.push({
         kind: "block",
-        rc: formatRcColon(neckStartRc),
-        trustedParagraphs: [
-          centerLine ? `${centerLine} for the neck.` : "Shape the neck.",
-          ...dropShoulderPulloverFrontShoulderDivideParagraphs(),
-          ...lines,
-          ...(isShallowSinglesOnlyPlan(plan) ? [roundNeckPlanFinishHeldStitchesLine()] : []),
-          ...dropShoulderPulloverFirstShoulderFinishParagraphs(
-            args.shoulderStsEach,
-            args.totalRows,
-            DROP_SHOULDER_PULLOVER_ROUND_NECK_SECOND_SHOULDER_SENTENCE,
-          ),
-        ],
+        rc: dropShoulderNecklineFirstBlockRc(true, neckStartRc),
+        trustedParagraphs: introTrusted,
         paragraphs: [],
-        stitchCount: args.shoulderStsEach,
       });
+      rows.push(...splitTrustedParagraphsAtShoulderCompletion(finishTrusted, args.shoulderStsEach));
     }
   } else {
     rows.push({
@@ -726,7 +880,7 @@ function buildCardiganFrontRows(args: {
       kind: "block",
       rc: formatRcColon(args.hemRows),
       paragraphs: args.bodyRowsValid
-        ? [knitEvenLine(args.bodyToArmholeRows, args.armholeMarkerRc)]
+        ? [knitEvenLine(args.bodyToArmholeRows)]
         : [
             "Body length to the armhole could not be calculated. Confirm back neck to hem, upper arm, and row gauge, then try again.",
           ],
@@ -737,7 +891,7 @@ function buildCardiganFrontRows(args: {
   rows.push({ kind: "section", title: "ABOVE ARMHOLE MARKERS" });
   const cardiganFrontAboveMarker = armholeMarkerBlockParagraphs(
     "Place a marker at the side edge to mark the base of the armhole.",
-    [knitEvenLine(straightAboveMarkerRows, neckStartRc)],
+    [knitEvenLine(straightAboveMarkerRows)],
   );
   rows.push({
     kind: "block",
@@ -747,28 +901,50 @@ function buildCardiganFrontRows(args: {
     stitchCount: A > 0 ? A : undefined,
   });
 
+  const cardiganNeckChartAtRc000 = dropShoulderFrontNeckShapingChartInputsReady({
+    neckSts: args.neckPerFront * 2,
+    shoulderStsEach: args.shoulderStsEach,
+    frontNeckDepthRows: args.frontNeckDepthRows,
+    totalRows: args.totalRows,
+    bustBodySts: args.frontSts * 2,
+  });
+  if (cardiganNeckChartAtRc000) {
+    rows.push(dropShoulderNecklineRowCounterResetBlock(neckStartRc));
+  }
+
   rows.push({ kind: "section", title: "FRONT NECKLINE & SHOULDERS" });
   if (args.neckPerFront > 0 && args.shoulderStsEach > 0) {
+    const useLocalNecklineRc = cardiganNeckChartAtRc000;
+    const necklineLocalTotalRows = dropShoulderNecklineLocalRowsFromGarment(
+      neckStartRc,
+      args.totalRows,
+    );
+    const necklineWrittenStartRc = dropShoulderNecklineWrittenStartRc(useLocalNecklineRc, neckStartRc);
+    const shoulderFinishRc = useLocalNecklineRc ? necklineLocalTotalRows : args.totalRows;
     if (args.isVNeck) {
       const sched = evenShapingSchedule(args.neckPerFront, args.frontNeckDepthRows);
+      const introTrusted = [
+        "Begin the V-neck shaping at the center-front edge.",
+        sched.count > 0
+          ? appendEvenShapingRowListToInstruction(
+              `Decrease 1 stitch at the center-front (neck) edge ${intervalPhrase(sched.interval)} ${sched.count} time${sched.count === 1 ? "" : "s"}`,
+              sched,
+              necklineWrittenStartRc,
+              `(${args.neckPerFront} stitches removed)`,
+            )
+          : "Work straight to the shoulder.",
+      ];
+      const finishTrusted = [
+        "The first shoulder is complete.",
+        `When ${args.shoulderStsEach} stitches remain, knit even to ${formatRcColon(shoulderFinishRc)}, then bind off ${args.shoulderStsEach} stitches for the shoulder.`,
+      ];
       rows.push({
         kind: "block",
-        rc: formatRcColon(neckStartRc),
-        trustedParagraphs: [
-          "Begin the V-neck shaping at the center-front edge.",
-          sched.count > 0
-            ? appendEvenShapingRowListToInstruction(
-                `Decrease 1 stitch at the center-front (neck) edge ${intervalPhrase(sched.interval)} ${sched.count} time${sched.count === 1 ? "" : "s"}`,
-                sched,
-                neckStartRc,
-                `(${args.neckPerFront} stitches removed)`,
-              )
-            : "Work straight to the shoulder.",
-          `When ${args.shoulderStsEach} stitches remain, knit even to ${formatRcColon(args.totalRows)}, then bind off ${args.shoulderStsEach} stitches for the shoulder.`,
-        ],
+        rc: dropShoulderNecklineFirstBlockRc(useLocalNecklineRc, neckStartRc),
+        trustedParagraphs: introTrusted,
         paragraphs: [],
-        stitchCount: args.shoulderStsEach,
       });
+      rows.push(...splitTrustedParagraphsAtShoulderCompletion(finishTrusted, args.shoulderStsEach));
     } else {
       const fullNeck = args.neckPerFront * 2;
       const plan = calculateRoundNecklinePlan({
@@ -776,17 +952,21 @@ function buildCardiganFrontRows(args: {
         necklineDepthRows: args.frontNeckDepthRows,
       });
       const cfBindOff = cardiganFrontInitialNeckBindOffStitches(fullNeck, args.frontNeckDepthRows);
+      const introTrusted = [
+        `Bind off ${cfBindOff} stitches at the center-front (neck) edge.`,
+        ...roundNeckCardiganCfEdgeWrittenLines(plan, { necklineStartRc: necklineWrittenStartRc }),
+      ];
+      const finishTrusted = [
+        "The first shoulder is complete.",
+        `When ${args.shoulderStsEach} stitches remain, knit even to ${formatRcColon(shoulderFinishRc)}, then bind off ${args.shoulderStsEach} stitches for the shoulder.`,
+      ];
       rows.push({
         kind: "block",
-        rc: formatRcColon(neckStartRc),
-        trustedParagraphs: [
-          `Bind off ${cfBindOff} stitches at the center-front (neck) edge.`,
-          ...roundNeckCardiganCfEdgeWrittenLines(plan, { necklineStartRc: neckStartRc }),
-          `When ${args.shoulderStsEach} stitches remain, knit even to ${formatRcColon(args.totalRows)}, then bind off ${args.shoulderStsEach} stitches for the shoulder.`,
-        ],
+        rc: dropShoulderNecklineFirstBlockRc(useLocalNecklineRc, neckStartRc),
+        trustedParagraphs: introTrusted,
         paragraphs: [],
-        stitchCount: args.shoulderStsEach,
       });
+      rows.push(...splitTrustedParagraphsAtShoulderCompletion(finishTrusted, args.shoulderStsEach));
     }
     rows.push({
       kind: "block",
@@ -840,10 +1020,50 @@ export function buildDropShoulderSleeveDisplayRows(
   };
   const sleeveShapingChartRows = buildDropShoulderSleeveShapingChartRows(chartInput);
   const showSleeveShapingChart = dropShoulderSleeveNeedsShapingChart(chartInput);
+  const shapingRcSequence = dropShoulderSleeveShapingRcSequence(chartInput);
   const shapingWrittenLines = formatDropShoulderSleeveShapingWrittenLines(
     shapingPlan.shapingDirection,
     shapingPlan.steps,
+    shapingRcSequence,
   );
+  const sleeveBodyTailLines = [
+    sleeveBodyRemainderLine(shapingPlan, args.direction, args.sleeveTotalRows),
+  ].filter((p) => p.length > 0);
+  const preShaping = dropShoulderSleevePreShapingSpan(chartInput);
+  const hasSleeveShaping = shapingWrittenLines.length > 0;
+
+  function appendSleeveBodyBlocks(stitchCount: number | undefined): void {
+    rows.push({ kind: "section", title: "SLEEVE BODY" });
+    if (!hasSleeveShaping) {
+      rows.push({
+        kind: "block",
+        rc: formatRcColon(preShaping.bodyStartRc),
+        paragraphs: sleeveBodyTailLines,
+        stitchCount,
+      });
+      return;
+    }
+    const shapingRc = preShaping.firstShapingRc!;
+    if (preShaping.straightRows > 0) {
+      rows.push({
+        kind: "block",
+        rc: formatRcColon(preShaping.bodyStartRc),
+        paragraphs: [knitEvenLine(preShaping.straightRows)],
+        stitchCount,
+      });
+    }
+    rows.push({
+      kind: "block",
+      rc: formatRcColon(shapingRc),
+      paragraphs: [DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE, ...sleeveBodyTailLines],
+      trustedParagraphs: [
+        DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE,
+        ...shapingWrittenLines,
+        ...sleeveBodyTailLines,
+      ],
+      stitchCount,
+    });
+  }
 
   function appendSleeveShapingChartSection(): void {
     rows.push({ kind: "section", title: "SLEEVE SHAPING CHART" });
@@ -880,22 +1100,13 @@ export function buildDropShoulderSleeveDisplayRows(
         : {}),
       stitchCount: args.topSts > 0 ? args.topSts : undefined,
     });
-    rows.push({ kind: "section", title: "SLEEVE BODY" });
-    rows.push({
-      kind: "block",
-      rc: formatRcColon(0),
-      paragraphs: [
-        ...shapingWrittenLines,
-        sleeveBodyRemainderLine(shapingPlan, args.direction, args.sleeveTotalRows),
-      ].filter((p) => p.length > 0),
-      stitchCount: args.wristSts > 0 ? args.wristSts : undefined,
-    });
+    appendSleeveBodyBlocks(args.wristSts > 0 ? args.wristSts : undefined);
     appendSleeveShapingChartSection();
     rows.push({ kind: "section", title: "CUFF" });
     rows.push({
       kind: "block",
       rc: formatRcColon(args.sleeveBodyRows),
-      paragraphs: [knitEvenLine(args.cuffRows, args.sleeveTotalRows)],
+      paragraphs: [knitEvenLine(args.cuffRows)],
       trustedParagraphs: [bindOffLooselyOrScrapOffTrustedParagraph("cuff/wrist edge")],
       stitchCount: args.wristSts,
     });
@@ -912,19 +1123,10 @@ export function buildDropShoulderSleeveDisplayRows(
   rows.push({
     kind: "block",
     rc: formatRcColon(0),
-    paragraphs: [knitEvenLine(args.cuffRows, args.cuffRows)],
+    paragraphs: [knitEvenLine(args.cuffRows)],
     stitchCount: args.wristSts,
   });
-  rows.push({ kind: "section", title: "SLEEVE BODY" });
-  rows.push({
-    kind: "block",
-    rc: formatRcColon(args.cuffRows),
-    paragraphs: [
-      ...shapingWrittenLines,
-      sleeveBodyRemainderLine(shapingPlan, args.direction, args.sleeveTotalRows),
-    ].filter((p) => p.length > 0),
-    stitchCount: args.topSts,
-  });
+  appendSleeveBodyBlocks(args.topSts);
   appendSleeveShapingChartSection();
   rows.push({ kind: "section", title: "BIND OFF" });
   rows.push({
@@ -997,6 +1199,7 @@ export function generateDropShoulderPattern(
         bodyShape: String(style.bodyShape ?? "straight"),
         chartAudience,
         sleeveLengthChoice: style.sleeveLength,
+        userEdited: readEffectiveDropShoulderUserEditedSleeveFields(fitSection),
       })
     : {};
   const upperArmIn =

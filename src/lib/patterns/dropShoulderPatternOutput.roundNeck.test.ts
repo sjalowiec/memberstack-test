@@ -6,6 +6,8 @@ import { computeDefaultMeasurementsFromChartRow } from "./sleevelessExpressSizeC
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 import type { SleevelessPatternDisplayRow } from "./sleevelessPatternOutput";
 import { renderSleevelessPrintPieceHtml } from "./sleevelessPatternPrintRender";
+import { formatParentheticalShapingRowNumbers } from "./evenShapingSchedule";
+import { dropShoulderSleeveShapingRcSequence } from "./dropShoulderSleeveShapingChart";
 
 /** Kids chart size 2 yr — matches `public/data/sizing_sweaters_kids.json`. */
 const KIDS_2YR_CHART_ROW: ChartRow = {
@@ -127,10 +129,12 @@ describe("generateDropShoulderPattern round-neck front instructions", () => {
     expect(text).toMatch(/bind off the center/i);
     expect(text).toMatch(/Place the opposite shoulder stitches on hold/i);
     expect(text).toMatch(/Work one shoulder at a time/i);
+    expect(text).toMatch(/The first shoulder is complete/i);
     expect(text).toMatch(
-      /When neckline shaping is complete and 23 stitches remain on the working shoulder, knit even to RC: 126 \(no further neck-edge decreases\)/,
+      /When neckline shaping is complete and 23 stitches remain on the working shoulder, knit even to RC: 024 \(no further neck-edge decreases\)/,
     );
     expect(text).toMatch(/Bind off the 23 shoulder stitches\./);
+    expect(text).toMatch(/The second shoulder is complete/i);
     expect(text).toMatch(/Return the held shoulder stitches to the needles/i);
     expect(text).toMatch(/repeat the neckline shaping for the second shoulder, matching the first side/i);
     expect(text).not.toMatch(/shoulder shaping/i);
@@ -141,7 +145,7 @@ describe("generateDropShoulderPattern round-neck front instructions", () => {
     const printHtml = renderSleevelessPrintPieceHtml(result.frontDisplayRows, "", "front");
     expect(printHtml).toMatch(/Place the opposite shoulder stitches on hold/i);
     expect(printHtml).toMatch(
-      /When neckline shaping is complete and 23 stitches remain on the working shoulder, knit even to RC: 126 \(no further neck-edge decreases\)/,
+      /When neckline shaping is complete and 23 stitches remain on the working shoulder, knit even to RC: 024 \(no further neck-edge decreases\)/,
     );
     expect(printHtml).toMatch(/Bind off the 23 shoulder stitches\./);
   });
@@ -160,7 +164,7 @@ describe("generateDropShoulderPattern round-neck front instructions", () => {
     expect(text).toMatch(/Bind off 4 stitches at the center-front \(neck\) edge\./);
     expect(text).toMatch(/bind off 3, then 2 stitches on alternate \(neck-edge\) rows\./);
     expect(text).toMatch(/Decrease 1 stitch at the neck edge every other row 5 times/i);
-    expect(text).toMatch(/When 28 stitches remain, knit even to RC: 198/);
+    expect(text).toMatch(/When 28 stitches remain, knit even to RC: 022, then bind off 28 stitches for the shoulder\./);
 
     const backRepl = buildDropShoulderBodyDiagramReplacements(result, "in", {
       patternData,
@@ -181,7 +185,17 @@ describe("generateDropShoulderPattern round-neck front instructions", () => {
     expect(result.debug.dropShoulderSleeveTotalRows).toBe(94);
     expect(result.debug.dropShoulderSleeveCuffRows).toBe(22);
     expect(result.debug.dropShoulderSleeveBodyRows).toBe(72);
+    const sleeveChartInput = {
+      topSts: result.debug.dropShoulderSleeveTopStitches ?? 0,
+      wristSts: result.debug.dropShoulderSleeveWristStitches ?? 0,
+      cuffRows: result.debug.dropShoulderSleeveCuffRows ?? 0,
+      sleeveBodyRows: result.debug.dropShoulderSleeveBodyRows ?? 0,
+      sleeveTotalRows: result.debug.dropShoulderSleeveTotalRows ?? 0,
+      direction: "cuff-up" as const,
+    };
+    const sleeveShapingRcs = dropShoulderSleeveShapingRcSequence(sleeveChartInput);
     expect(sleeveText).toMatch(/Increase 1 stitch at each side every 14 rows 5 times\./);
+    expect(sleeveText).toContain(formatParentheticalShapingRowNumbers(sleeveShapingRcs));
     expect(sleeveText).toMatch(
       /After the final increase, knit 2 rows even in pattern, then bind off at RC: 094\./,
     );

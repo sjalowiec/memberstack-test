@@ -78,11 +78,11 @@ describe("generateDropShoulderPattern V-neck front instructions", () => {
     expect(text).toMatch(/Work one shoulder at a time/i);
     expect(text).toContain(
       `At the neck edge, decrease 1 stitch every row ${sched.count} times ${formatParentheticalShapingRowNumbers(
-        evenShapingGarmentRowNumbers(frontNecklineStartRC!, sched),
+        evenShapingGarmentRowNumbers(0, sched),
       )} (${perSide} stitches removed per side).`,
     );
     expect(text).toMatch(
-      /When neckline shaping is complete and 32 stitches remain on the working shoulder, knit even to RC: 168 \(no further neck-edge decreases\)/,
+      /When neckline shaping is complete and 32 stitches remain on the working shoulder, knit even to RC: 028 \(no further neck-edge decreases\)/,
     );
     expect(text).toMatch(/Bind off the 32 shoulder stitches\./);
     expect(text).toMatch(/Return the held shoulder stitches to the needles/i);

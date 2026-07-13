@@ -78,8 +78,12 @@ import {
   SLEEVELESS_MEASUREMENT_BLUEPRINT_SVG_URL,
 } from "../lib/patterns/measurementBlueprintSvgUrl";
 import { mapExpressStyleKey } from "../lib/patterns/syncSleevelessExpressDesignToStorage";
-import { markDropShoulderSleeveOverrideKeyUserEdited } from "../lib/patterns/dropShoulderUserEditedSleeveFields";
 import {
+  markDropShoulderSleeveOverrideKeyUserEdited,
+  readEffectiveDropShoulderUserEditedSleeveFields,
+} from "../lib/patterns/dropShoulderUserEditedSleeveFields";
+import {
+  dropShoulderEditWorkspaceSleeveLengthDisplayInches,
   resolveDropShoulderSleeveOverrideStrings,
   scaleDropShoulderSleeveLengthInches,
 } from "../lib/patterns/dropShoulderSleeveMeasurementOverrides";
@@ -112,9 +116,7 @@ export async function rehydrateDropShoulderWorkspaceMeasurementDiagramFromQuickE
 
 /**
  * Re-render the Drop Shoulder measurement summary diagram from the current saved pattern data.
- * Used when the sleeve-length picker choice changes (or after an edit save) so the display-only
- * scaled sleeve length reflects the new choice — the number is recomputed via the same
- * `scaleDropShoulderSleeveLengthInches` helper the generator uses.
+ * Used after an edit save so the sleeve length field matches the regenerated instructions.
  */
 export async function refreshDropShoulderWorkspaceMeasurementSummary(): Promise<void> {
   if (!dropShoulderWorkspaceSummaryRefreshImpl) return;
@@ -382,6 +384,14 @@ function resolveDiagramFieldTargetId(field: DiagramFieldDef): string {
   return field.targetId;
 }
 
+function isDropShoulderEditWorkspace(): boolean {
+  return isDropShoulderWorkspaceMeasurementSummaryPage();
+}
+
+function dropShoulderDiagramFieldPolicyOptions(): { dropShoulderEditWorkspace: boolean } {
+  return { dropShoulderEditWorkspace: isDropShoulderEditWorkspace() };
+}
+
 /**
  * Diagram fields for the active construction:
  * - Sleeveless: the 8 body fields (sleeve fields are excluded).
@@ -390,9 +400,25 @@ function resolveDiagramFieldTargetId(field: DiagramFieldDef): string {
  */
 function getActiveDiagramFields(): DiagramFieldDef[] {
   const dropShoulder = isDropShoulderConstruction();
+  const policyOptions = dropShoulderDiagramFieldPolicyOptions();
   return DIAGRAM_FIELDS.filter((field) =>
-    isCustomBuildDiagramFieldActiveForConstruction(field, dropShoulder),
+    isCustomBuildDiagramFieldActiveForConstruction(field, dropShoulder, policyOptions),
   );
+}
+
+/** Transform merged overrides for diagram display on the Edit Pattern workspace. */
+function dropShoulderEditWorkspaceMergedForDiagram(
+  merged: Record<DiagramFieldKey, string>,
+): Record<DiagramFieldKey, string> {
+  if (!isDropShoulderEditWorkspace()) return merged;
+  const userEdited = readEffectiveDropShoulderUserEditedSleeveFields(getCurrentPattern().fit);
+  const displaySleeveLength = dropShoulderEditWorkspaceSleeveLengthDisplayInches({
+    overrideInches: merged.sleeveLength ?? "",
+    sleeveLengthChoice: readDropShoulderSleeveLengthChoice(),
+    userEditedSleeveLength: userEdited.sleeveLength === true,
+  });
+  if (!displaySleeveLength) return merged;
+  return { ...merged, sleeveLength: displaySleeveLength };
 }
 
 function dropShoulderArmholeDepthInchesFromMerged(
@@ -412,7 +438,6 @@ function readDropShoulderSleeveLengthChoice(): unknown {
 
 /**
  * Read-only value (inch string) for a drop-shoulder display-only diagram field:
- * - `sleeveLength`: full length (merged) scaled once by the sleeve-length picker choice.
  * - `armholeDepth`: derived from upper arm ÷ 2.
  */
 function dropShoulderDisplayOnlyFieldInches(
@@ -1050,8 +1075,7 @@ function wireFieldPersistence(root: HTMLElement, getDisplayUnit: () => UiLengthU
     if (
       isDropShoulderConstruction() &&
       !suppressDropShoulderSleeveUserEditTracking &&
-      // sleeveLength is picker-driven (display-only), so only the editable sleeve fields are tracked.
-      (key === "upperArm" || key === "wrist")
+      (key === "upperArm" || key === "wrist" || (key === "sleeveLength" && isDropShoulderEditWorkspace()))
     ) {
       markDropShoulderSleeveOverrideKeyUserEdited(key);
     }
@@ -1148,8 +1172,9 @@ function applyDiagramUnitDisplay(
   }
 
   if (isDropShoulderConstruction()) {
+    const policyOptions = dropShoulderDiagramFieldPolicyOptions();
     for (const field of DIAGRAM_FIELDS) {
-      if (!isDropShoulderDisplayOnlySummaryField(field.key)) continue;
+      if (!isDropShoulderDisplayOnlySummaryField(field.key, policyOptions)) continue;
       const box = scope.querySelector(`.express-mbp-box--${field.positionMod}`);
       if (!(box instanceof HTMLElement)) continue;
       boxesFound += 1;
@@ -1234,10 +1259,11 @@ async function renderDiagram(
   overlay.className = "express-mbp-overlay";
 
   const dropShoulder = isDropShoulderConstruction();
+  const policyOptions = dropShoulderDiagramFieldPolicyOptions();
   for (const field of DIAGRAM_FIELDS) {
     if (!isCustomBuildDiagramFieldRenderedOnSummary(field, dropShoulder)) continue;
 
-    if (dropShoulder && isDropShoulderDisplayOnlySummaryField(field.key)) {
+    if (dropShoulder && isDropShoulderDisplayOnlySummaryField(field.key, policyOptions)) {
       overlay.appendChild(
         createDiagramReadonlyFieldBox(
           field,
@@ -1374,13 +1400,11 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
   let dropShoulderWorkspaceQuickEditRevision = 0;
 
   const renderSummaryDiagramFromMerged = async (merged: Record<DiagramFieldKey, string>): Promise<void> => {
-    diagramInches = merged;
+    const displayMerged = dropShoulderEditWorkspaceMergedForDiagram(merged);
+    diagramInches = displayMerged;
     if (!(diagramHost instanceof HTMLElement)) return;
 
-    // The sleeve-length picker choice scales the (display-only) sleeve length but is NOT part of
-    // `merged` (which stores the full length). Include it so changing the choice forces a re-render
-    // instead of short-circuiting on an unchanged merged snapshot.
-    const renderKey = `${JSON.stringify(merged)}|${useUiUnitDisplay ? getExpressUiUnit() : "in"}|${readOnly}|${String(readDropShoulderSleeveLengthChoice() ?? "")}`;
+    const renderKey = `${JSON.stringify(displayMerged)}|${useUiUnitDisplay ? getExpressUiUnit() : "in"}|${readOnly}`;
     const hasDiagram = !!diagramHost.querySelector(".express-mbp--diagram");
     if (renderKey === lastSummaryDiagramRenderKey && hasDiagram) {
       diagramUnitDisplayReady = true;
@@ -1398,7 +1422,7 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
       await renderDiagram(
         diagramHost,
         root,
-        merged,
+        displayMerged,
         readOnly,
         useUiUnitDisplay ? lastDisplayUnit : null,
         getDisplayUnit,

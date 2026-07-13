@@ -734,11 +734,11 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       const showStitch = row.stitchCount !== undefined;
 
       const leftBits = [];
+      if (row.rowCounterReset) {
+        leftBits.push(rowCounterResetBlockHtml(row.rowCounterResetGarmentRc ?? 0));
+      }
       if (row.rc) {
         leftBits.push(`<p class="sleeveless-pattern-rc">${escapeHtml(row.rc)}</p>`);
-      }
-      if (row.rowCounterReset) {
-        leftBits.push(rowCounterResetBlockHtml());
       }
       const trusted = row.trustedParagraphs;
       if (trusted && trusted.length > 0) {
@@ -3691,8 +3691,17 @@ table {
       patternMerged,
       generatorPatternData,
     );
+    const isRoundNeckPullover =
+      String(generatorPatternData?.style?.neckline || "") !== "v-neck" && !isCardigan;
+    const frontShapingMapData =
+      isRoundNeckPullover && result.frontNeckShoulderChartUsesLiveRows
+        ? buildSleevelessRoundNeckShapingMapData(result.frontNeckShoulderTimeline, {
+            firstArmholeRc: result.debug?.armholeStartRow,
+            title: "Front neckline shaping map",
+          })
+        : null;
 
-    const renderPiece = (rows, pieceId, chartTableMountId, neckChartStartRow) =>
+    const renderPiece = (rows, pieceId, chartTableMountId, neckChartStartRow, pieceDisplayOpts) =>
       renderSleevelessDisplayHtml(
         rows ?? [],
         chartTableMountId ?? "",
@@ -3708,6 +3717,7 @@ table {
               patternData: dropShoulderDiagramPatternData,
             }
           : undefined,
+        ...(pieceDisplayOpts ?? {}),
       },
       );
 
@@ -3717,6 +3727,14 @@ table {
       "front",
       "sg-neck-shoulder-chart-table-front",
       result?.frontNeckShoulderShapingChart?.rows?.[0]?.row,
+      frontShapingMapData
+        ? {
+            frontVisualGuides: {
+              enabled: true,
+              shapingMapData: frontShapingMapData,
+            },
+          }
+        : undefined,
     );
     const sleeve = renderPiece(result.sleeveDisplayRows, "sleeve");
 
@@ -3879,6 +3897,9 @@ table {
     bindDropShoulderBodyDiagramMode(mount);
     bindDropShoulderSleeveConstructionToggle(mount);
     bindNecklineNotationPreview(mount);
+    if (frontShapingMapData) {
+      bindShapingMapEnlarge(mount);
+    }
     ensureSleevelessVideoModal();
     const videoHelpRoot = document.getElementById("sleeveless-pattern-tips-scope") || mount;
     bindSleevelessVideoHelp(videoHelpRoot);

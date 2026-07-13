@@ -52,6 +52,33 @@ export function dropShoulderSleeveShapingSchedule(
  * RC of each shaping pass (increases cuff-up, decreases top-down).
  * Same steps as `jp-sleeve-shaping` / written sleeve body instructions.
  */
+export const DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE = "Begin sleeve shaping.";
+
+export type DropShoulderSleevePreShapingSpan = {
+  /** Cuff-end RC (bottom-up) or sleeve-body start RC (top-down). */
+  bodyStartRc: number;
+  /** First shaping RC from {@link dropShoulderSleeveShapingRcSequence}, if any. */
+  firstShapingRc: number | undefined;
+  /** Even rows worked between `bodyStartRc` and `firstShapingRc` (0 when shaping starts immediately). */
+  straightRows: number;
+};
+
+/**
+ * Straight rows between sleeve-body start and the first shaping row — derived from the shared RC sequence.
+ */
+export function dropShoulderSleevePreShapingSpan(
+  input: DropShoulderSleeveShapingChartInput,
+): DropShoulderSleevePreShapingSpan {
+  const sequence = dropShoulderSleeveShapingRcSequence(input);
+  const bodyStartRc = input.direction === "cuff-up" ? input.cuffRows : 0;
+  const firstShapingRc = sequence[0];
+  if (firstShapingRc === undefined) {
+    return { bodyStartRc, firstShapingRc: undefined, straightRows: 0 };
+  }
+  const straightRows = Math.max(0, firstShapingRc - bodyStartRc);
+  return { bodyStartRc, firstShapingRc, straightRows };
+}
+
 export function dropShoulderSleeveShapingRcSequence(
   input: DropShoulderSleeveShapingChartInput,
 ): number[] {

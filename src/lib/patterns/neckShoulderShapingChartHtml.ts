@@ -56,7 +56,6 @@ import {
   carriagePositionHelpCardHtml,
   centerBindOffStitchesFromNeckShoulderChart,
   formatShoulderBindoffRemainingInstruction,
-  LIFELINE_GLOSSARY_ID,
 } from "./sleevelessPatternOutput";
 import { isDropShoulderCardiganGarmentStyle } from "./dropShoulderBodyNotationSvg";
 
@@ -404,15 +403,6 @@ function bindOffGlossaryPlaceholderHtml(): string {
   );
 }
 
-function lifelineGlossaryPlaceholderHtml(): string {
-  return buildGlossaryTooltipPlaceholderHtml(
-    LIFELINE_GLOSSARY_ID,
-    "lifeline",
-    (s) => s.replace(/"/g, "&quot;"),
-    (s) => s,
-  );
-}
-
 /**
  * Padded Armhole RC number from a `RC:NNN` label (e.g. `RC:050` → `050`). Empty when the label is
  * not in that form. Pure display formatting — no shaping math or row-counter values are derived here.
@@ -598,7 +588,7 @@ export function renderActiveShoulderChartIntroHtml(options: ActiveShoulderChartI
       : `<li>${escapeHtml(ACTIVE_SHOULDER_PARK_NONWORKING_SIDE_SENTENCE)}</li><li>Work one shoulder at a time.</li>`;
     innerParts.push(
       `<p class="pattern-shaping-step-title"><strong>Before Shaping</strong></p>`,
-      `<ul class="pattern-shaping-step-list"><li>Optional: Add a ${lifelineGlossaryPlaceholderHtml()} before dividing the neckline.</li><li>${knitUntilBullet}</li></ul>`,
+      `<ul class="pattern-shaping-step-list"><li>${knitUntilBullet}</li></ul>`,
       `<p class="pattern-shaping-step-title"><strong>Divide the Neckline</strong></p>`,
       `<ul class="pattern-shaping-step-list"><li>${centerHtml}</li>${afterDivideBullets}</ul>`,
     );

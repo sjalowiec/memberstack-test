@@ -114,6 +114,19 @@ export function readDropShoulderUserEditedSleeveFields(): DropShoulderUserEdited
   return normalizeFlags(readExpressBlob()[DROP_SHOULDER_USER_EDITED_SLEEVE_FIELDS_KEY]);
 }
 
+/** Merge express-session flags with persisted `fit` metadata (saved reopen + generator parity). */
+export function readEffectiveDropShoulderUserEditedSleeveFields(
+  fit?: unknown,
+): DropShoulderUserEditedSleeveFields {
+  const fromFit = readDropShoulderUserEditedSleeveFieldsFromFit(fit);
+  const fromExpress = readDropShoulderUserEditedSleeveFields();
+  const out = emptyFlags();
+  for (const key of DROP_SHOULDER_USER_EDITED_SLEEVE_FIELD_KEYS) {
+    out[key] = fromFit[key] === true || fromExpress[key] === true;
+  }
+  return out;
+}
+
 export function writeDropShoulderUserEditedSleeveFields(
   flags: DropShoulderUserEditedSleeveFields,
 ): void {

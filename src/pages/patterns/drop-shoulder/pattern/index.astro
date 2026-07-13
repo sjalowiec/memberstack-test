@@ -280,28 +280,6 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
                     </label>
                   </div>
                 </fieldset>
-
-                <fieldset class="sl-edit-field sl-edit-fieldset" data-sl-edit-sleeve-length>
-                  <legend class="sl-edit-sublabel">Sleeve length</legend>
-                  <div class="sl-edit-segment sl-edit-segment--four" role="radiogroup" aria-label="Sleeve length">
-                    <label class="sl-edit-segment__option">
-                      <input type="radio" name="sl-edit-sleeve-length" value="long" checked />
-                      <span class="sl-edit-segment__pill">Long</span>
-                    </label>
-                    <label class="sl-edit-segment__option">
-                      <input type="radio" name="sl-edit-sleeve-length" value="three-quarter" />
-                      <span class="sl-edit-segment__pill">3/4</span>
-                    </label>
-                    <label class="sl-edit-segment__option">
-                      <input type="radio" name="sl-edit-sleeve-length" value="elbow" />
-                      <span class="sl-edit-segment__pill">Elbow</span>
-                    </label>
-                    <label class="sl-edit-segment__option">
-                      <input type="radio" name="sl-edit-sleeve-length" value="short" />
-                      <span class="sl-edit-segment__pill">Short</span>
-                    </label>
-                  </div>
-                </fieldset>
               </section>
 
               <section class="sl-edit-section" aria-labelledby="sl-edit-gauge-heading">
@@ -578,9 +556,11 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
 
     :global(#pattern-content .pattern-layout.pattern-layout--garment-columns),
     :global(#pattern-content .sleeveless-piece-split) {
+      --garment-print-diagram-track: 2.6in;
+      --garment-print-column-gap: 0.35in;
       display: grid !important;
-      grid-template-columns: minmax(0, 1fr) minmax(180px, 2.6in) !important;
-      column-gap: 0.35in !important;
+      grid-template-columns: minmax(0, 1fr) minmax(180px, var(--garment-print-diagram-track)) !important;
+      column-gap: var(--garment-print-column-gap) !important;
       row-gap: 0 !important;
       align-items: start !important;
     }

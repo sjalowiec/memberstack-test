@@ -4,7 +4,7 @@ import {
   generateSleevelessBackPattern,
   type SleevelessPatternDisplayRow,
 } from "./sleevelessPatternOutput";
-import { RESET_ROW_COUNTER_TEXT, rowCounterResetBlockHtml } from "./rowCounterReset";
+import { RESET_ROW_COUNTER_TEXT, formatRowCounterResetGarmentRcLabel, rowCounterResetBlockHtml } from "./rowCounterReset";
 import { renderSleevelessPrintPieceHtml } from "./sleevelessPatternPrintRender";
 
 const OLD_RESET_WORDING = "Reset Armhole RC to RC:000.";
@@ -47,12 +47,23 @@ function firstArmholeBlock(rows: readonly SleevelessPatternDisplayRow[]) {
 describe("rowCounterResetBlockHtml", () => {
   it("renders the exact required wording", () => {
     expect(RESET_ROW_COUNTER_TEXT).toBe("RESET ROW COUNTER TO 000");
-    const html = rowCounterResetBlockHtml();
+    const html = rowCounterResetBlockHtml(120);
     expect(html).toContain(RESET_ROW_COUNTER_TEXT);
   });
 
+  it("shows the garment RC immediately above the reset button", () => {
+    expect(formatRowCounterResetGarmentRcLabel(120)).toBe("RC: 120");
+    const html = rowCounterResetBlockHtml(120);
+    expect(html).toContain('class="row-counter-reset__garment-rc"');
+    expect(html).toContain("RC: 120");
+    const rcIdx = html.indexOf("RC: 120");
+    const resetIdx = html.indexOf(RESET_ROW_COUNTER_TEXT);
+    expect(rcIdx).toBeGreaterThanOrEqual(0);
+    expect(resetIdx).toBeGreaterThan(rcIdx);
+  });
+
   it("includes a reset/refresh icon and is not a dismissible pattern tip", () => {
-    const html = rowCounterResetBlockHtml();
+    const html = rowCounterResetBlockHtml(0);
     expect(html).toContain("row-counter-reset__icon");
     expect(html).toContain("<svg");
     expect(html).not.toContain("pattern-tip");
@@ -68,6 +79,7 @@ describe("sleeveless armhole row counter reset block", () => {
     expect(block?.kind).toBe("block");
     if (block?.kind !== "block") throw new Error("expected armhole block");
     expect(block.rowCounterReset).toBe(true);
+    expect(block.rowCounterResetGarmentRc).toBeGreaterThan(0);
     expect(block.paragraphs).not.toContain(OLD_RESET_WORDING);
     expect(block.paragraphs.some((p) => p.includes(OLD_RESET_WORDING))).toBe(false);
   });
@@ -100,11 +112,15 @@ describe("row counter reset in printed pattern", () => {
     expect(html).toContain(RESET_ROW_COUNTER_TEXT);
     expect(html).not.toContain(OLD_RESET_WORDING);
     expect(html).not.toContain(ARMHOLE_RC_FROM_RESET_NOTE);
+    expect(html).toContain("row-counter-reset__garment-rc");
 
     const resetIdx = html.indexOf(RESET_ROW_COUNTER_TEXT);
     const bindOffIdx = html.search(/Bind off OR hold \d+ stitches at the armhole edge/);
+    const armholeRcIdx = html.indexOf("RC: 000", resetIdx);
     expect(resetIdx).toBeGreaterThanOrEqual(0);
     expect(bindOffIdx).toBeGreaterThan(resetIdx);
+    expect(armholeRcIdx).toBeGreaterThan(resetIdx);
+    expect(armholeRcIdx).toBeLessThan(bindOffIdx);
   });
 
   it("renders the reset marker exactly once per armhole (no duplicated wording)", () => {

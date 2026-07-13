@@ -16,6 +16,7 @@ import {
   resolveDropShoulderSleeveInches,
   resolveDropShoulderSleeveOverrideStrings,
 } from "./dropShoulderSleeveMeasurementOverrides";
+import { readEffectiveDropShoulderUserEditedSleeveFields } from "./dropShoulderUserEditedSleeveFields";
 import {
   loadMeasurementOverrides,
   persistMeasurementOverrides,
@@ -404,6 +405,7 @@ function forceRefreshDropShoulderSummaryFromContext(
     bodyShape: ctx.bodyShape,
     chartAudience: ctx.audience,
     sleeveLengthChoice: section(getCurrentPattern().style).sleeveLength,
+    userEdited: readEffectiveDropShoulderUserEditedSleeveFields(getCurrentPattern().fit),
   });
 
   const normalizedSize = normalizeChartRowSize(row) || ctx.selectedSize;

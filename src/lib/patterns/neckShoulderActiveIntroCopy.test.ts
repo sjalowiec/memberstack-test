@@ -18,7 +18,6 @@ import {
 import {
   centerBindOffStitchesFromNeckShoulderChart,
   generateSleevelessBackPattern,
-  LIFELINE_GLOSSARY_ID,
 } from "./sleevelessPatternOutput";
 
 function baseRoundNeckMeasurements() {
@@ -190,15 +189,9 @@ describe("renderActiveShoulderChartIntroHtml", () => {
       includeWorkflowSteps: true,
     });
     expect(html).toContain("Before Shaping");
-    // "Optional: Add a lifeline before dividing the neckline." with a glossary popup on "lifeline".
-    expect(html).toContain(`data-glossary-id="${LIFELINE_GLOSSARY_ID}"`);
-    expect(html).toContain("Optional: Add a <span");
-    expect(html).toContain(">lifeline</span> before dividing the neckline.");
-    // Lifeline comes first, then the "Knit until Armhole RC reaches {divideRc}." milestone.
-    const lifelineIdx = html.indexOf("before dividing the neckline.");
-    const knitUntilIdx = html.indexOf("Knit until Armhole RC reaches 050.");
-    expect(lifelineIdx).toBeGreaterThanOrEqual(0);
-    expect(knitUntilIdx).toBeGreaterThan(lifelineIdx);
+    expect(html).not.toContain("before dividing the neckline.");
+    // Lifeline reminder lives in neckline-section written instructions, not the chart checklist.
+    expect(html).toContain("Knit until Armhole RC reaches 050.");
     expect(html).toContain("Divide the Neckline");
     expect(html).toContain(
       "Place the remaining stitches on hold, or transfer them to scrap yarn if preferred.",
@@ -235,15 +228,8 @@ describe("renderActiveShoulderChartIntroHtml", () => {
       includeWorkflowSteps: true,
     });
     expect(html).toContain("Before Shaping");
-    // "Optional: Add a lifeline before dividing the neckline." with a glossary popup on "lifeline".
-    expect(html).toContain(`data-glossary-id="${LIFELINE_GLOSSARY_ID}"`);
-    expect(html).toContain("Optional: Add a <span");
-    expect(html).toContain(">lifeline</span> before dividing the neckline.");
-    // Lifeline first, then the "Knit until Armhole RC reaches {divideRc}." milestone.
-    const lifelineIdx = html.indexOf("before dividing the neckline.");
-    const knitUntilIdx = html.indexOf("Knit until Armhole RC reaches 100.");
-    expect(lifelineIdx).toBeGreaterThanOrEqual(0);
-    expect(knitUntilIdx).toBeGreaterThan(lifelineIdx);
+    expect(html).not.toContain("before dividing the neckline.");
+    expect(html).toContain("Knit until Armhole RC reaches 100.");
     expect(html).toContain("Divide the Neckline");
     expect(html).toContain(
       "Place the remaining stitches on hold, or transfer them to scrap yarn if preferred.",

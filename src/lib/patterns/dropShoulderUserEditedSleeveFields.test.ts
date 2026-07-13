@@ -144,7 +144,18 @@ describe("dropShoulderUserEditedSleeveFields + sleeve reconcile", () => {
     expect(review.wristIn).toBe(6);
   });
 
-  it("scales sleeve length by the picker choice (long/3-4/elbow/short)", () => {
+  it("user-edited numeric sleeve length skips picker scaling", () => {
+    const resolved = resolveDropShoulderSleeveInches({
+      overrides: { sleeveLength: "8" },
+      chartRow: size7Row,
+      fitPreference: "standard",
+      sleeveLengthChoice: "short",
+      userEdited: { upperArm: false, sleeveLength: true, cuffCircumference: false },
+    });
+    expect(resolved.sleeveLengthIn).toBe(8);
+  });
+
+  it("scales sleeve length by the picker choice when not user-edited (long/3-4/elbow/short)", () => {
     const base = {
       overrides: {},
       chartRow: size7Row,

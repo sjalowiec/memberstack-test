@@ -11,6 +11,12 @@
 /** Exact required wording for the reset marker. */
 export const RESET_ROW_COUNTER_TEXT = "RESET ROW COUNTER TO 000";
 
+/** Garment RC label shown above the reset marker (`RC: 000`). */
+export function formatRowCounterResetGarmentRcLabel(garmentRc: number): string {
+  const n = Math.max(0, Math.floor(garmentRc));
+  return `RC: ${String(n).padStart(3, "0")}`;
+}
+
 /** Inline reset/refresh glyph (currentColor stroke so it prints with the accent text). */
 const ROW_COUNTER_RESET_ICON_SVG =
   '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" ' +
@@ -22,12 +28,16 @@ const ROW_COUNTER_RESET_ICON_SVG =
  *
  * Block-level `<div>` (not wrapped in a paragraph) so renderers should push it
  * directly into the instruction column rather than into `paragraphs`/`trustedParagraphs`.
+ * The garment RC label is rendered immediately above the reset button.
  */
-export function rowCounterResetBlockHtml(): string {
+export function rowCounterResetBlockHtml(garmentRc: number): string {
+  const rcLabel = formatRowCounterResetGarmentRcLabel(garmentRc);
   return (
-    `<div class="row-counter-reset" role="note" aria-label="Required action: ${RESET_ROW_COUNTER_TEXT}">` +
+    `<div class="row-counter-reset-wrap">` +
+    `<p class="row-counter-reset__garment-rc">${rcLabel}</p>` +
+    `<div class="row-counter-reset" role="note" aria-label="${rcLabel}. Required action: ${RESET_ROW_COUNTER_TEXT}">` +
     `<span class="row-counter-reset__icon" aria-hidden="true">${ROW_COUNTER_RESET_ICON_SVG}</span>` +
     `<span class="row-counter-reset__text">${RESET_ROW_COUNTER_TEXT}</span>` +
-    `</div>`
+    `</div></div>`
   );
 }

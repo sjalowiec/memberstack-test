@@ -391,10 +391,26 @@
     display: table-row !important;
   }
 
+  .ns-shaping-chart__table-wrap {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
+
   .ns-shaping-chart__table-scroll {
     max-height: none !important;
     overflow: visible !important;
+    overflow-x: visible !important;
     border: none !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
+
+  .ns-shaping-chart__table {
+    width: 100% !important;
+    max-width: none !important;
+    table-layout: auto !important;
   }
 
   .ns-shaping-chart__table-scroll thead th {

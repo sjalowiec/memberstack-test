@@ -44,7 +44,7 @@ const DROP_SHOULDER_BASE = {
 function frontNeckParagraphs(result: ReturnType<typeof generateDropShoulderPattern>): string {
   return (result.frontDisplayRows ?? [])
     .filter((row): row is Extract<(typeof result.frontDisplayRows)[number], { kind: "block" }> => row.kind === "block")
-    .flatMap((row) => [...(row.paragraphs ?? [])])
+    .flatMap((row) => [...(row.trustedParagraphs ?? []), ...(row.paragraphs ?? [])])
     .join("\n");
 }
 

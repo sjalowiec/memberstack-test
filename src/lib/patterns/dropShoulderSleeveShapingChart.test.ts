@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { formatShapingSegment } from "./sleevelessBackJapaneseNotation";
+import { formatParentheticalShapingRowNumbers } from "./evenShapingSchedule";
 import { buildDropShoulderSleeveJapaneseNotationReplacements } from "./sleevelessGarmentDiagramReplacements";
 import {
   buildDropShoulderSleeveShapingChartRows,
+  DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE,
   dropShoulderSleeveNeedsShapingChart,
+  dropShoulderSleevePreShapingSpan,
   dropShoulderSleeveShapingRcSequence,
   dropShoulderSleeveShapingSchedule,
   renderDropShoulderSleeveShapingChartHtml,
@@ -13,6 +16,7 @@ import {
   generateDropShoulderPattern,
 } from "./dropShoulderPatternOutput";
 import type { SleevelessPatternDisplayRow } from "./sleevelessPatternOutput";
+import { renderSleevelessPrintPieceHtml } from "./sleevelessPatternPrintRender";
 import { SCRAP_OFF_GLOSSARY_ID } from "./neckShoulderActiveIntroCopy";
 import { sleeveEvenShapingSchedule } from "./evenShapingSchedule";
 import {
@@ -51,13 +55,19 @@ const DROP_SHOULDER_CUFF_UP_PATTERN = {
   },
 };
 
-function sleeveInstructionText(rows: readonly SleevelessPatternDisplayRow[]): string {
+function sleeveInstructionTrustedText(rows: readonly SleevelessPatternDisplayRow[]): string {
   const parts: string[] = [];
   for (const row of rows) {
     if (row.kind !== "block") continue;
-    parts.push(...(row.paragraphs ?? []), ...(row.trustedParagraphs ?? []));
+    parts.push(...(row.trustedParagraphs ?? []), ...(row.paragraphs ?? []));
   }
   return parts.join("\n");
+}
+
+function shapingRcListFromWrittenLine(line: string): number[] {
+  const match = line.match(/<em>\(RC: ([^)]+)\)<\/em>/);
+  if (!match) return [];
+  return match[1]!.split(", ").map((n) => parseInt(n.trim(), 10));
 }
 
 const CUFF_UP_SAMPLE = {
@@ -73,6 +83,41 @@ const TOP_DOWN_SAMPLE = {
   ...CUFF_UP_SAMPLE,
   direction: "top-down" as const,
 };
+
+/** Steep taper: shaping every row — one straight row before the first increase. */
+const STEEP_CUFF_UP_SAMPLE = {
+  topSts: 60,
+  wristSts: 20,
+  cuffRows: 10,
+  sleeveBodyRows: 20,
+  sleeveTotalRows: 30,
+  direction: "cuff-up" as const,
+};
+
+function sleeveBodyBlocks(
+  rows: readonly SleevelessPatternDisplayRow[],
+): Extract<SleevelessPatternDisplayRow, { kind: "block" }>[] {
+  const sectionIdx = rows.findIndex((r) => r.kind === "section" && r.title === "SLEEVE BODY");
+  if (sectionIdx < 0) return [];
+  const blocks: Extract<SleevelessPatternDisplayRow, { kind: "block" }>[] = [];
+  for (let i = sectionIdx + 1; i < rows.length; i++) {
+    const row = rows[i]!;
+    if (row.kind === "section") break;
+    if (row.kind === "block") blocks.push(row);
+  }
+  return blocks;
+}
+
+function blockParagraphText(
+  block: Extract<SleevelessPatternDisplayRow, { kind: "block" }>,
+): string {
+  return [...(block.trustedParagraphs ?? []), ...(block.paragraphs ?? [])].join("\n");
+}
+
+function parseRcNumber(rc: string | undefined): number {
+  const match = String(rc ?? "").match(/(\d+)/);
+  return match ? parseInt(match[1]!, 10) : NaN;
+}
 
 function sleeveShapingChartRowsFromDisplay(
   rows: readonly SleevelessPatternDisplayRow[],
@@ -217,23 +262,111 @@ describe("buildDropShoulderSleeveShapingChartRows", () => {
 describe("buildDropShoulderSleeveDisplayRows", () => {
   it("defaults to bottom-up written instructions", () => {
     const rows = buildDropShoulderSleeveDisplayRows({ ...CUFF_UP_SAMPLE, valid: true });
-    const text = sleeveInstructionText(rows);
+    const text = sleeveInstructionTrustedText(rows);
+    const chartRcs = dropShoulderSleeveShapingRcSequence(CUFF_UP_SAMPLE);
+    const preShaping = dropShoulderSleevePreShapingSpan(CUFF_UP_SAMPLE);
+    const bodyBlocks = sleeveBodyBlocks(rows);
+    const shapingLine = bodyBlocks
+      .flatMap((r) => r.trustedParagraphs ?? [])
+      .find((p) => /Increase 1 stitch at each side/i.test(p));
 
-    expect(text).toContain("Cast on 40 stitches.");
-    expect(text).toContain("Increase 1 stitch at each side every 4 rows 20 times.");
+    expect(text).toContain("Cast on 40 stitches for the sleeve cuff.");
+    expect(preShaping.straightRows).toBe(4);
+    expect(bodyBlocks).toHaveLength(2);
+    expect(blockParagraphText(bodyBlocks[0]!)).toContain("Knit 4 rows even.");
+    expect(parseRcNumber(bodyBlocks[0]!.rc)).toBe(preShaping.bodyStartRc);
+    expect(blockParagraphText(bodyBlocks[1]!)).toContain(DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE);
+    expect(parseRcNumber(bodyBlocks[1]!.rc)).toBe(preShaping.firstShapingRc);
+    expect(shapingLine).toContain("Increase 1 stitch at each side every 4 rows 20 times.");
+    expect(shapingLine).toContain(formatParentheticalShapingRowNumbers(chartRcs));
+    expect(shapingRcListFromWrittenLine(shapingLine ?? "")).toEqual(chartRcs);
+    expect(shapingRcListFromWrittenLine(shapingLine ?? "")[0]).toBe(preShaping.firstShapingRc);
     expect(text).not.toContain("according to the sleeve shaping sequence");
+    expect(text).not.toContain("Knit 0 rows even.");
     expect(text).toContain("Bind off loosely or");
     expect(text).toContain("upper-arm/top edge");
   });
 
   it("writes top-down sleeve instructions", () => {
     const rows = buildDropShoulderSleeveDisplayRows({ ...TOP_DOWN_SAMPLE, valid: true });
-    const text = sleeveInstructionText(rows);
+    const text = sleeveInstructionTrustedText(rows);
+    const chartRcs = dropShoulderSleeveShapingRcSequence(TOP_DOWN_SAMPLE);
+    const preShaping = dropShoulderSleevePreShapingSpan(TOP_DOWN_SAMPLE);
+    const bodyBlocks = sleeveBodyBlocks(rows);
+    const shapingLine = bodyBlocks
+      .flatMap((r) => r.trustedParagraphs ?? [])
+      .find((p) => /Decrease 1 stitch at each side/i.test(p));
 
     expect(text).toContain("Cast on or pick up 80 stitches.");
-    expect(text).toContain("Decrease 1 stitch at each side every 4 rows 20 times.");
+    expect(preShaping.straightRows).toBe(4);
+    expect(bodyBlocks).toHaveLength(2);
+    expect(blockParagraphText(bodyBlocks[0]!)).toContain("Knit 4 rows even.");
+    expect(blockParagraphText(bodyBlocks[1]!)).toContain(DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE);
+    expect(parseRcNumber(bodyBlocks[1]!.rc)).toBe(preShaping.firstShapingRc);
+    expect(shapingLine).toContain("Decrease 1 stitch at each side every 4 rows 20 times.");
+    expect(shapingLine).toContain(formatParentheticalShapingRowNumbers(chartRcs));
+    expect(shapingRcListFromWrittenLine(shapingLine ?? "")).toEqual(chartRcs);
     expect(text).not.toContain("according to the sleeve shaping sequence");
     expect(text).toContain("cuff/wrist edge");
+  });
+
+  it("states one straight row before shaping when the schedule interval is 1", () => {
+    const rows = buildDropShoulderSleeveDisplayRows({ ...STEEP_CUFF_UP_SAMPLE, valid: true });
+    const preShaping = dropShoulderSleevePreShapingSpan(STEEP_CUFF_UP_SAMPLE);
+    const bodyBlocks = sleeveBodyBlocks(rows);
+
+    expect(preShaping).toEqual({ bodyStartRc: 10, firstShapingRc: 11, straightRows: 1 });
+    expect(bodyBlocks).toHaveLength(2);
+    expect(blockParagraphText(bodyBlocks[0]!)).toBe("Knit 1 row even.");
+    expect(parseRcNumber(bodyBlocks[1]!.rc)).toBe(11);
+    expect(blockParagraphText(bodyBlocks[1]!)).toContain(DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE);
+  });
+
+  it("begins shaping immediately at body start when straight rows are zero", () => {
+    const noShapingInput = { ...CUFF_UP_SAMPLE, topSts: 40, wristSts: 40 };
+    const rows = buildDropShoulderSleeveDisplayRows({ ...noShapingInput, valid: true });
+    const preShaping = dropShoulderSleevePreShapingSpan(noShapingInput);
+    const bodyBlocks = sleeveBodyBlocks(rows);
+    const text = sleeveInstructionTrustedText(rows);
+
+    expect(preShaping.straightRows).toBe(0);
+    expect(bodyBlocks).toHaveLength(1);
+    expect(text).not.toContain(DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE);
+    expect(text).not.toContain("Knit 0 rows even.");
+  });
+
+  it("written RC list matches shaping chart rows for cuff-up and top-down samples", () => {
+    for (const input of [CUFF_UP_SAMPLE, TOP_DOWN_SAMPLE]) {
+      const displayRows = buildDropShoulderSleeveDisplayRows({ ...input, valid: true });
+      const chartRows = sleeveShapingChartRowsFromDisplay(displayRows);
+      const chartShapingRcs = chartRows
+        .filter((r) => /increase|decrease/i.test(r.action))
+        .map((r) => r.rc);
+      const writtenLine = displayRows
+        .filter((r) => r.kind === "block")
+        .flatMap((r) => (r.kind === "block" ? (r.trustedParagraphs ?? []) : []))
+        .find((p) => /stitch at each side every/i.test(p));
+
+      expect(writtenLine).toBeDefined();
+      expect(shapingRcListFromWrittenLine(writtenLine ?? "")).toEqual(chartShapingRcs);
+      expect(shapingRcListFromWrittenLine(writtenLine ?? "")).toEqual(
+        dropShoulderSleeveShapingRcSequence(input),
+      );
+    }
+  });
+
+  it("renders straight rows, begin shaping, and RC headings in print output", () => {
+    const rows = buildDropShoulderSleeveDisplayRows({ ...CUFF_UP_SAMPLE, valid: true });
+    const preShaping = dropShoulderSleevePreShapingSpan(CUFF_UP_SAMPLE);
+    const chartRcs = dropShoulderSleeveShapingRcSequence(CUFF_UP_SAMPLE);
+    const printHtml = renderSleevelessPrintPieceHtml(rows, "", "sleeve");
+
+    expect(printHtml).toContain(`RC: ${String(preShaping.bodyStartRc).padStart(3, "0")}`);
+    expect(printHtml).toContain(`RC: ${String(preShaping.firstShapingRc).padStart(3, "0")}`);
+    expect(printHtml).toContain(`Knit ${preShaping.straightRows} rows even.`);
+    expect(printHtml).toContain(DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE);
+    expect(printHtml).toContain(formatParentheticalShapingRowNumbers(chartRcs));
+    expect(printHtml).not.toContain("Knit 0 rows even.");
   });
 });
 
@@ -243,6 +376,13 @@ describe("generateDropShoulderPattern sleeve shaping chart", () => {
   it("embeds a sleeve shaping chart section for a tapered cuff-up sleeve", () => {
     const result = generateDropShoulderPattern(patternData);
     const chartRows = sleeveShapingChartRowsFromDisplay(result.sleeveDisplayRows);
+    const chartShapingRcs = chartRows
+      .filter((r) => /increase/i.test(r.action))
+      .map((r) => r.rc);
+    const shapingLine = result.sleeveDisplayRows
+      .filter((r) => r.kind === "block")
+      .flatMap((r) => (r.kind === "block" ? (r.trustedParagraphs ?? []) : []))
+      .find((p) => /Increase 1 stitch at each side/i.test(p));
 
     expect(chartRows.length).toBeGreaterThan(1);
     expect(chartRows.some((r) => /increase/i.test(r.action))).toBe(true);
@@ -250,6 +390,8 @@ describe("generateDropShoulderPattern sleeve shaping chart", () => {
     expect(result.sleeveDisplayRows.some((r) => r.kind === "section" && r.title === "SLEEVE SHAPING CHART")).toBe(
       true,
     );
+    expect(shapingLine).toContain(formatParentheticalShapingRowNumbers(chartShapingRcs));
+    expect(shapingRcListFromWrittenLine(shapingLine ?? "")).toEqual(chartShapingRcs);
   });
 
   it("shows the no-shaping note instead of a table when wrist equals top width", () => {
@@ -279,21 +421,38 @@ describe("generateDropShoulderPattern sleeve shaping chart", () => {
 
   it("uses top-down instructions when sleeveDirection option is top-down", () => {
     const result = generateDropShoulderPattern(patternData, { sleeveDirection: "top-down" });
-    const text = sleeveInstructionText(result.sleeveDisplayRows);
+    const text = sleeveInstructionTrustedText(result.sleeveDisplayRows);
     const d = result.debug as {
       dropShoulderSleeveTopStitches?: number;
       dropShoulderSleeveWristStitches?: number;
       dropShoulderSleeveBodyRows?: number;
+      dropShoulderSleeveCuffRows?: number;
+      dropShoulderSleeveTotalRows?: number;
     };
     const sched = sleeveEvenShapingSchedule(
       d.dropShoulderSleeveTopStitches ?? 0,
       d.dropShoulderSleeveWristStitches ?? 0,
       d.dropShoulderSleeveBodyRows ?? 0,
     );
+    const chartInput = {
+      topSts: d.dropShoulderSleeveTopStitches ?? 0,
+      wristSts: d.dropShoulderSleeveWristStitches ?? 0,
+      cuffRows: d.dropShoulderSleeveCuffRows ?? 0,
+      sleeveBodyRows: d.dropShoulderSleeveBodyRows ?? 0,
+      sleeveTotalRows: d.dropShoulderSleeveTotalRows ?? 0,
+      direction: "top-down" as const,
+    };
+    const chartRcs = dropShoulderSleeveShapingRcSequence(chartInput);
+    const shapingLine = result.sleeveDisplayRows
+      .filter((r) => r.kind === "block")
+      .flatMap((r) => (r.kind === "block" ? (r.trustedParagraphs ?? []) : []))
+      .find((p) => /Decrease 1 stitch at each side/i.test(p));
 
     expect(text).toContain(
       `Decrease 1 stitch at each side every ${sched.interval} rows ${sched.count} times.`,
     );
+    expect(shapingLine).toContain(formatParentheticalShapingRowNumbers(chartRcs));
+    expect(shapingRcListFromWrittenLine(shapingLine ?? "")).toEqual(chartRcs);
     expect(text).not.toContain("according to the sleeve shaping sequence");
     expect(sleeveShapingChartRowsFromDisplay(result.sleeveDisplayRows).some((r) => /decrease/i.test(r.action))).toBe(
       true,
@@ -305,21 +464,38 @@ describe("generateDropShoulderPattern sleeve shaping chart", () => {
       ...patternData,
       style: { ...patternData.style, sleeveDirection: "top-down" },
     });
-    const text = sleeveInstructionText(result.sleeveDisplayRows);
+    const text = sleeveInstructionTrustedText(result.sleeveDisplayRows);
     const d = result.debug as {
       dropShoulderSleeveTopStitches?: number;
       dropShoulderSleeveWristStitches?: number;
       dropShoulderSleeveBodyRows?: number;
+      dropShoulderSleeveCuffRows?: number;
+      dropShoulderSleeveTotalRows?: number;
     };
     const sched = sleeveEvenShapingSchedule(
       d.dropShoulderSleeveTopStitches ?? 0,
       d.dropShoulderSleeveWristStitches ?? 0,
       d.dropShoulderSleeveBodyRows ?? 0,
     );
+    const chartInput = {
+      topSts: d.dropShoulderSleeveTopStitches ?? 0,
+      wristSts: d.dropShoulderSleeveWristStitches ?? 0,
+      cuffRows: d.dropShoulderSleeveCuffRows ?? 0,
+      sleeveBodyRows: d.dropShoulderSleeveBodyRows ?? 0,
+      sleeveTotalRows: d.dropShoulderSleeveTotalRows ?? 0,
+      direction: "cuff-up" as const,
+    };
+    const chartRcs = dropShoulderSleeveShapingRcSequence(chartInput);
+    const shapingLine = result.sleeveDisplayRows
+      .filter((r) => r.kind === "block")
+      .flatMap((r) => (r.kind === "block" ? (r.trustedParagraphs ?? []) : []))
+      .find((p) => /Increase 1 stitch at each side/i.test(p));
 
     expect(text).toContain(
       `Increase 1 stitch at each side every ${sched.interval} rows ${sched.count} times.`,
     );
+    expect(shapingLine).toContain(formatParentheticalShapingRowNumbers(chartRcs));
+    expect(shapingRcListFromWrittenLine(shapingLine ?? "")).toEqual(chartRcs);
     expect(text).not.toContain("Decrease 1 stitch at each side");
     expect(text).not.toContain("according to the sleeve shaping sequence");
   });
@@ -328,7 +504,7 @@ describe("generateDropShoulderPattern sleeve shaping chart", () => {
 describe("generateDropShoulderPattern sleeve instruction copy", () => {
   it("uses clear even-row wording after the final increase for bottom-up sleeves", () => {
     const result = generateDropShoulderPattern(DROP_SHOULDER_CUFF_UP_PATTERN);
-    const text = sleeveInstructionText(result.sleeveDisplayRows);
+    const text = sleeveInstructionTrustedText(result.sleeveDisplayRows);
     const d = result.debug as {
       dropShoulderSleeveTopStitches?: number;
       dropShoulderSleeveWristStitches?: number;
@@ -343,7 +519,7 @@ describe("generateDropShoulderPattern sleeve instruction copy", () => {
 
     expect(text).not.toContain("The sleeve top edge matches the armhole opening");
     expect(text).toContain(
-      `After the final increase, knit ${sched.remainderRows} rows even in pattern, then bind off at RC:${String(d.dropShoulderSleeveTotalRows ?? 0).padStart(3, "0")}.`,
+      `After the final increase, knit ${sched.remainderRows} rows even in pattern, then bind off at RC: ${String(d.dropShoulderSleeveTotalRows ?? 0).padStart(3, "0")}.`,
     );
   });
 

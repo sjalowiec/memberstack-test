@@ -584,6 +584,22 @@
   }
 
   /* Row Counter Reset — required action marker; keep border + accent in print. */
+  .sleeveless-print-root .row-counter-reset-wrap {
+    margin: 0.55rem 0 0.35rem;
+  }
+
+  .sleeveless-print-root .row-counter-reset__garment-rc {
+    margin: 0 0 0.25rem;
+    font-family: ui-monospace, monospace;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #1f2937;
+  }
+
+  .sleeveless-print-root .row-counter-reset-wrap .row-counter-reset {
+    margin-top: 0;
+  }
+
   .sleeveless-print-root .row-counter-reset {
     display: inline-flex;
     align-items: center;

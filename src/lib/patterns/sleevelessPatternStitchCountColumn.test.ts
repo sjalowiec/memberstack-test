@@ -115,4 +115,51 @@ describe("pattern stitch count column", () => {
     expect(markerRowHtml).not.toContain('class="print-inst-sts"');
     expect(markerRowHtml).toContain("print-inst-row--full");
   });
+
+  it("shows final shoulder stitch count on all four shoulder completion blocks (pullover front and back)", () => {
+    const result = generateDropShoulderPattern(DROP_SHOULDER_PATTERN);
+    const shoulderSts = result.debug.shoulderStitches!;
+    expect(shoulderSts).toBeGreaterThan(0);
+
+    function shoulderCompletionBlocks(
+      rows: readonly SleevelessPatternDisplayRow[],
+      sectionTitle: string,
+    ): Extract<SleevelessPatternDisplayRow, { kind: "block" }>[] {
+      let inSection = false;
+      const out: Extract<SleevelessPatternDisplayRow, { kind: "block" }>[] = [];
+      for (const row of rows) {
+        if (row.kind === "section" && row.title === sectionTitle) {
+          inSection = true;
+          continue;
+        }
+        if (inSection && row.kind === "section") break;
+        if (!inSection || row.kind !== "block") continue;
+        const text = [...(row.trustedParagraphs ?? []), ...(row.paragraphs ?? [])].join("\n");
+        if (/The (first|second) shoulder is complete/i.test(text)) {
+          out.push(row);
+        }
+      }
+      return out;
+    }
+
+    const backCompletions = shoulderCompletionBlocks(
+      result.displayRows,
+      "BACK NECKLINE & SHOULDERS",
+    );
+    const frontCompletions = shoulderCompletionBlocks(
+      result.frontDisplayRows,
+      "FRONT NECKLINE & SHOULDERS",
+    );
+
+    expect(backCompletions).toHaveLength(2);
+    expect(frontCompletions).toHaveLength(2);
+    for (const block of [...backCompletions, ...frontCompletions]) {
+      expect(block.stitchCount).toBe(shoulderSts);
+    }
+
+    const backPrint = renderSleevelessPrintPieceHtml(result.displayRows, "", "back");
+    const frontPrint = renderSleevelessPrintPieceHtml(result.frontDisplayRows, "", "front");
+    expect(countPrintStitchLabels(backPrint, shoulderSts)).toBe(2);
+    expect(countPrintStitchLabels(frontPrint, shoulderSts)).toBe(2);
+  });
 });

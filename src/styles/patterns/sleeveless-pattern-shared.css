@@ -325,6 +325,26 @@
    * Intentionally distinct from `.pattern-tip`: full accent border, accent
    * icon + uppercase text. Not collapsible, no dismiss control.
    */
+  .row-counter-reset-wrap {
+    margin: 0.85rem 0 0.5rem;
+  }
+
+  .row-counter-reset-wrap:first-child {
+    margin-top: 0;
+  }
+
+  .row-counter-reset__garment-rc {
+    margin: 0 0 0.35rem;
+    font-family: ui-monospace, monospace;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #1f2937;
+  }
+
+  .row-counter-reset-wrap .row-counter-reset {
+    margin-top: 0;
+  }
+
   .row-counter-reset {
     display: inline-flex;
     align-items: center;
@@ -2198,11 +2218,73 @@
 
     #pattern-content .pattern-layout.pattern-layout--garment-columns,
     #pattern-content .sleeveless-piece-split {
+      --garment-print-diagram-track: 2.6in;
+      --garment-print-column-gap: 0.35in;
       display: grid !important;
-      grid-template-columns: minmax(0, 1fr) minmax(180px, 2.6in) !important;
-      column-gap: 0.35in !important;
+      grid-template-columns: minmax(0, 1fr) minmax(180px, var(--garment-print-diagram-track)) !important;
+      column-gap: var(--garment-print-column-gap) !important;
       row-gap: 0 !important;
       align-items: start !important;
+    }
+
+    /*
+     * Shaping charts/checklists inside the garment text column must use the full printable width.
+     * The interactive layout keeps a diagram sidebar; in print that reserved track leaves a blank
+     * strip and squeezes the table unless the chart breaks out across both grid columns.
+     */
+    #pattern-content .sleeveless-piece-split__text .sleeveless-piece-chart-fullwidth,
+    #pattern-content .pattern-layout__content .sleeveless-piece-chart-fullwidth,
+    #pattern-content .sleeveless-piece-split__text .pattern-subsection.sleeveless-piece-chart-fullwidth,
+    #pattern-content .pattern-layout__content .pattern-subsection.sleeveless-piece-chart-fullwidth,
+    #pattern-content .sleeveless-piece-split__text #neckline-shoulder-chart-print-area,
+    #pattern-content .pattern-layout__content #neckline-shoulder-chart-print-area,
+    #pattern-content .sleeveless-piece-split__text #front-neckline-shoulder-chart-print-area,
+    #pattern-content .pattern-layout__content #front-neckline-shoulder-chart-print-area,
+    #pattern-content .sleeveless-piece-split__text .sg-neck-chart-print-block,
+    #pattern-content .pattern-layout__content .sg-neck-chart-print-block,
+    #pattern-content .sleeveless-piece-split__text .ns-shaping-chart,
+    #pattern-content .pattern-layout__content .ns-shaping-chart {
+      width: calc(
+        100% + var(--garment-print-diagram-track, 2.6in) + var(--garment-print-column-gap, 0.35in)
+      ) !important;
+      max-width: none !important;
+      margin-right: calc(
+        -1 * (var(--garment-print-diagram-track, 2.6in) + var(--garment-print-column-gap, 0.35in))
+      ) !important;
+      box-sizing: border-box !important;
+      overflow: visible !important;
+    }
+
+    #pattern-content .sleeveless-piece-chart-fullwidth,
+    #pattern-content .pattern-subsection.sleeveless-piece-chart-fullwidth,
+    #pattern-content #neckline-shoulder-chart-print-area,
+    #pattern-content #front-neckline-shoulder-chart-print-area,
+    #pattern-content .sg-neck-chart-print-block,
+    #pattern-content .print-chart-wrap,
+    #pattern-content .ns-shaping-chart__table-wrap,
+    #pattern-content .ns-shaping-chart__table-scroll,
+    #pattern-content .ns-shaping-chart__table {
+      max-width: none !important;
+      overflow: visible !important;
+      overflow-x: visible !important;
+    }
+
+    #pattern-content .ns-shaping-chart__table {
+      width: 100% !important;
+      table-layout: auto !important;
+    }
+
+    #pattern-content .pattern-shaping-intro.ns-shaping-intro--with-preview,
+    #pattern-content .print-chart-intro.ns-shaping-intro--with-preview {
+      display: block !important;
+      max-width: none !important;
+    }
+
+    #pattern-content .ns-shaping-intro__main,
+    #pattern-content .ns-jp-preview {
+      flex: none !important;
+      max-width: none !important;
+      width: 100% !important;
     }
 
     #pattern-content .pattern-layout__content,

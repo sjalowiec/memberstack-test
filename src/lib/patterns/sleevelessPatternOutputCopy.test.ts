@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   generateSleevelessBackPattern,
   lifelineBeforeNeckShoulderQuickTipBodyHtml,
+  LIFELINE_BEFORE_DIVIDING_NECKLINE_PLAIN,
   LIFELINE_GLOSSARY_ID,
 } from "./sleevelessPatternOutput";
 import { sleevelessFinishingFromPattern } from "./sleevelessPatternFinishing";
@@ -92,10 +93,9 @@ describe("sleeveless pattern output copy (print-safe)", () => {
     });
   }
 
-  it("no longer renders the standalone lifeline-before-neckline-shaping panel (now redundant)", () => {
+  it("includes the lifeline reminder in neckline-section written instructions", () => {
     const plain = collectSleevelessOutputPlainText(pulloverPattern());
-    // The redundant standalone panel text is gone; the lifeline guidance now lives in the
-    // chart's "Before Shaping" checklist ("Optional: Add a lifeline before dividing the neckline.").
+    expect(plain).toContain(LIFELINE_BEFORE_DIVIDING_NECKLINE_PLAIN);
     expect(plain).not.toContain(
       "Before starting the neckline and shoulder shaping, consider adding a lifeline or waste yarn row.",
     );

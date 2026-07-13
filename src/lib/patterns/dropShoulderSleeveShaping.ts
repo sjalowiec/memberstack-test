@@ -8,6 +8,7 @@
 import type { ShapingStep } from "../shaping/generateRowByRow";
 import { formatShapingSegment } from "./sleevelessBackJapaneseNotation";
 import {
+  formatParentheticalShapingRowNumbers,
   sleeveEvenShapingSchedule,
   sleeveShapingPerSide,
   type EvenShapingSchedule,
@@ -88,27 +89,37 @@ export function formatDropShoulderSleeveShapingNotation(steps: readonly ShapingS
     .join(", ");
 }
 
+function appendShapingRcListToWrittenLine(line: string, shapingRcSequence: readonly number[]): string {
+  const parens = formatParentheticalShapingRowNumbers(shapingRcSequence);
+  return parens ? `${line} ${parens}` : line;
+}
+
 /**
  * Fully expanded written shaping line(s) for machine knitting (each side).
  * Example: `Increase 1 stitch at each side every 6 rows 4 times, then every 8 rows 3 times.`
+ * When `shapingRcSequence` is provided (from {@link dropShoulderSleeveShapingRcSequence}), appends
+ * the same RC list used by the sleeve shaping chart/checklist.
  */
 export function formatDropShoulderSleeveShapingWrittenLines(
   shapingDirection: "increase" | "decrease",
   steps: readonly ShapingStep[],
+  shapingRcSequence?: readonly number[],
 ): string[] {
   const verb = shapingDirection === "decrease" ? "Decrease" : "Increase";
   const filtered = steps.filter((s) => s.times > 0 && s.rows > 0);
   if (filtered.length === 0) return [];
 
+  const rcList = shapingRcSequence && shapingRcSequence.length > 0 ? shapingRcSequence : undefined;
+
   if (filtered.length === 1) {
     const step = filtered[0]!;
-    return [
-      `${verb} 1 stitch at each side ${rowIntervalPhrase(step.rows)} ${step.times} ${timesWord(step.times)}.`,
-    ];
+    const line = `${verb} 1 stitch at each side ${rowIntervalPhrase(step.rows)} ${step.times} ${timesWord(step.times)}.`;
+    return [rcList ? appendShapingRcListToWrittenLine(line, rcList) : line];
   }
 
   const clauses = filtered.map(
     (step) => `${rowIntervalPhrase(step.rows)} ${step.times} ${timesWord(step.times)}`,
   );
-  return [`${verb} 1 stitch at each side ${clauses[0]}, then ${clauses.slice(1).join(", then ")}.`];
+  const line = `${verb} 1 stitch at each side ${clauses[0]}, then ${clauses.slice(1).join(", then ")}.`;
+  return [rcList ? appendShapingRcListToWrittenLine(line, rcList) : line];
 }

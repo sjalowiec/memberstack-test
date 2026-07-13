@@ -39,10 +39,7 @@ import {
 import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
 import { logSavedPatternUpdateFlowDiagnostics } from "../lib/patterns/customPatternProjectClient";
 import { isDropShoulderWorkspaceMeasurementSummaryPage } from "../lib/patterns/measurementBlueprintSvgUrl";
-import {
-  normalizeDropShoulderSleeveLengthChoice,
-  withDropShoulderConstructionAuthored,
-} from "../lib/patterns/patternConstructionIdentity";
+import { markDropShoulderSleeveFieldUserEdited } from "../lib/patterns/dropShoulderUserEditedSleeveFields";
 import { applySleevelessPatternOnlineProjectHeader } from "./sleevelessPatternOnlineProjectHeader";
 import {
   PATTERN_BUILDER_DATA_KEY,
@@ -378,23 +375,6 @@ function initSleevelessPatternEditDrawer(): void {
     return getSleevelessChartAudience(getCurrentPattern()) || "misses";
   }
 
-  /**
-   * Persist the Drop Shoulder sleeve-length picker choice onto the working draft style (canonical
-   * + patternBuilderData mirror) so the generator's proportional sleeve math and the saved pattern
-   * both pick it up. No-op when the picker is absent (sleeveless workspace).
-   */
-  function persistDropShoulderSleeveLength(): void {
-    const control = drawer!.querySelector<HTMLElement>("[data-sl-edit-sleeve-length]");
-    if (!control) return;
-    const choice = normalizeDropShoulderSleeveLengthChoice(radioValue("sl-edit-sleeve-length"));
-    const mergedStyle = withDropShoulderConstructionAuthored(
-      { ...section(getCurrentPattern().style), ...section(getPatternData().style) },
-      choice,
-    );
-    saveCurrentPattern({ style: mergedStyle });
-    savePatternData("style", mergedStyle);
-  }
-
   /** Swatch basis (4" vs 10 cm) the saved gauge was entered in — mirrors the pattern summary. */
   function resolveGaugeBasis(): GaugeSwatchBasis {
     const yg = section(getCurrentPattern().yarnGauge);
@@ -489,11 +469,6 @@ function initSleevelessPatternEditDrawer(): void {
     const neckline =
       readCustomBuildWizardNeckline() || (st.neckline === "v" ? "v-neck" : "round");
     setRadio("sl-edit-neckline", neckline === "v" ? "v-neck" : neckline);
-
-    // Drop Shoulder sleeve length — restore the picker choice from the saved pattern style.
-    // (The control is only rendered on the drop-shoulder pattern page; setRadio is a no-op
-    // when it is absent, so this stays inert on the sleeveless workspace.)
-    setRadio("sl-edit-sleeve-length", normalizeDropShoulderSleeveLengthChoice(st.sleeveLength));
 
     // Gauge is shown in the machine-knitting convention (sts/rows over 4" or 10 cm), matching
     // the pattern summary. Per-inch values used by the engine are derived on save.
@@ -753,11 +728,16 @@ function initSleevelessPatternEditDrawer(): void {
         measureBody ?? measurePane ?? drawer ?? undefined,
       );
       flushCustomBuildMeasurementOverridesToCanonical({ root: measureFlushRoot ?? undefined });
+      if (isDropShoulderWorkspaceMeasurementSummaryPage()) {
+        // Numeric sleeve length on the diagram is the source of truth after save on the Edit page.
+        const sleeveInput = (measureFlushRoot ?? measurePane ?? drawer)?.querySelector<HTMLInputElement>(
+          '[data-cb-measure-input="sleeveLength"]',
+        );
+        if (sleeveInput?.value.trim()) {
+          markDropShoulderSleeveFieldUserEdited("sleeveLength");
+        }
+      }
       syncCustomBuildToPatternStorage({ awaitCharts: false });
-
-      // Drop Shoulder: fold the sleeve-length picker choice into style so the regenerated pattern
-      // (and the saved record) reflect it. Done after the sync so it is not overwritten.
-      persistDropShoulderSleeveLength();
 
       // 3) Gauge → same canonical + patternBuilderData sections the gauge step / Express write.
       // Convert the swatch counts the user sees (28 / 44 over 4") into the per-inch values the
@@ -838,8 +818,7 @@ function initSleevelessPatternEditDrawer(): void {
       if (refresh) await refresh();
 
       // Recompute the Drop Shoulder measurement summary diagram from the just-saved pattern data so
-      // its display-only sleeve length matches the regenerated instructions (not a stale pre-save
-      // value). Scaling flows through the shared resolver, so no double-scaling.
+      // its sleeve length field matches the regenerated instructions (not a stale pre-save value).
       await refreshDropShoulderWorkspaceMeasurementSummary();
 
       logSavedPatternUpdateFlowDiagnostics("edit-drawer-after-reload", {
@@ -963,19 +942,6 @@ function initSleevelessPatternEditDrawer(): void {
   void refreshEditAccess().then(() => {
     if (!settingsEditingLocked) return;
     maybeShowPatternEditingUnlockModalOnWorkspaceLoad(resolvedAccess, { patternSystem });
-  });
-
-  // Drop Shoulder sleeve length: persist the choice onto the working draft the moment it changes,
-  // so the value is captured even if apply-time reads race with re-renders. Cancel reverts it via
-  // the measurement-storage baseline (PATTERN_STORAGE_KEY + PATTERN_BUILDER_DATA_KEY) snapshot.
-  drawer.querySelectorAll<HTMLInputElement>('input[name="sl-edit-sleeve-length"]').forEach((el) => {
-    el.addEventListener("change", () => {
-      persistDropShoulderSleeveLength();
-      // Live-refresh the measurement summary diagram so its (display-only, picker-driven) sleeve
-      // length reflects the new choice immediately — recomputed via the same scaling helper the
-      // generator uses. Without this the diagram short-circuits on an unchanged merged snapshot.
-      void refreshDropShoulderWorkspaceMeasurementSummary();
-    });
   });
 
   document.addEventListener("keydown", (event) => {

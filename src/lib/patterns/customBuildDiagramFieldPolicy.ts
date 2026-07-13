@@ -13,21 +13,37 @@ export function isDropShoulderHiddenSummaryField(key: string): boolean {
 /**
  * Shown read-only on drop-shoulder summary (derived / picker-driven, not directly editable):
  * - `armholeDepth`: derived = upper arm ÷ 2.
- * - `sleeveLength`: driven by the sleeve-length picker (full chart length × chosen proportion), so
- *   it is displayed as a scaled read-only value rather than a raw inches input.
+ * - `sleeveLength`: on the initial builder/review path, driven by the sleeve-length picker (full
+ *   chart length × chosen proportion) as a scaled read-only value. On the Edit Pattern workspace,
+ *   `sleeveLength` is an editable numeric field instead (see {@link isDropShoulderSleeveLengthEditableOnEditWorkspace}).
  */
-export function isDropShoulderDisplayOnlySummaryField(key: string): boolean {
-  return key === "armholeDepth" || key === "sleeveLength";
+export function isDropShoulderDisplayOnlySummaryField(
+  key: string,
+  options?: { dropShoulderEditWorkspace?: boolean },
+): boolean {
+  if (key === "armholeDepth") return true;
+  if (key === "sleeveLength") {
+    return !isDropShoulderSleeveLengthEditableOnEditWorkspace(options?.dropShoulderEditWorkspace);
+  }
+  return false;
+}
+
+/** Drop Shoulder Edit Pattern workspace — sleeve length is a numeric input, not a preset picker. */
+export function isDropShoulderSleeveLengthEditableOnEditWorkspace(
+  dropShoulderEditWorkspace?: boolean,
+): boolean {
+  return dropShoulderEditWorkspace === true;
 }
 
 /** Editable / validated / persisted fields for the active construction. */
 export function isCustomBuildDiagramFieldActiveForConstruction(
   field: { key: string; dropShoulderOnly?: boolean },
   isDropShoulder: boolean,
+  options?: { dropShoulderEditWorkspace?: boolean },
 ): boolean {
   if (field.dropShoulderOnly && !isDropShoulder) return false;
   if (isDropShoulder && isDropShoulderHiddenSummaryField(field.key)) return false;
-  if (isDropShoulder && isDropShoulderDisplayOnlySummaryField(field.key)) return false;
+  if (isDropShoulder && isDropShoulderDisplayOnlySummaryField(field.key, options)) return false;
   return true;
 }
 

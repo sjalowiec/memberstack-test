@@ -6,7 +6,7 @@
 import { calculateArmholeShaping, type ArmholeResult } from "./legoBlocks/armholeBlock";
 import { shapingActionRowNumbers } from "./evenShapingSchedule";
 import { hemSectionRow } from "./legoBlocks/hem";
-import { RESET_ROW_COUNTER_TEXT } from "./rowCounterReset";
+import { formatRowCounterResetGarmentRcLabel, RESET_ROW_COUNTER_TEXT } from "./rowCounterReset";
 import { parseInlineMarkedLine } from "./inlineRcHeading";
 import {
   generateNeckShoulderExecution,
@@ -305,6 +305,38 @@ export function carriagePositionHelpCardHtml(): string {
 /** Glossary entry for “lifeline” in neckline/shoulder shaping tip. */
 export const LIFELINE_GLOSSARY_ID = 1779296723857;
 
+/** Plain neckline-section lifeline reminder (tooltip target is the word “lifeline” only). */
+export const LIFELINE_BEFORE_DIVIDING_NECKLINE_PLAIN =
+  "Optional: Add a lifeline before dividing the neckline.";
+
+/** Trusted HTML for the neckline-section lifeline reminder (glossary popup on “lifeline”). */
+export function lifelineBeforeDividingNecklineReminderTrustedHtml(): string {
+  const lifelinePh = buildGlossaryTooltipPlaceholderHtml(
+    LIFELINE_GLOSSARY_ID,
+    "lifeline",
+    glossaryPlaceholderAttrEscape,
+    (s) => s,
+  );
+  return `Optional: Add a ${lifelinePh} before dividing the neckline.`;
+}
+
+/**
+ * Pullover / full-width neckline sections that divide the neckline at center.
+ * Cardigan half fronts shape at the open center-front edge instead — omit there.
+ */
+export function lifelineBeforeDividingNecklineReminderApplies(isCardiganHalfFront = false): boolean {
+  return !isCardiganHalfFront;
+}
+
+/** Insert the lifeline reminder immediately after the section’s opening instruction line. */
+export function insertLifelineReminderAfterOpening(
+  lines: readonly string[],
+  applies = true,
+): string[] {
+  if (!applies || lines.length === 0) return [...lines];
+  return [lines[0]!, lifelineBeforeDividingNecklineReminderTrustedHtml(), ...lines.slice(1)];
+}
+
 const LIFELINE_BEFORE_NECK_SHOULDER_QUICK_TIP_SUMMARY = "Lifeline before neckline shaping";
 
 /** Quick Tip body after armhole shaping (glossary placeholder on “lifeline” only). */
@@ -496,9 +528,11 @@ export type SleevelessPatternDisplayRow =
       tipWrapperClass?: string;
       /**
        * Required-action marker: render the {@link rowCounterResetBlockHtml} block
-       * (after {@link rc}, before {@link paragraphs}). Not a tip — see `rowCounterReset.ts`.
+       * (before {@link rc} and {@link paragraphs}). Not a tip — see `rowCounterReset.ts`.
        */
       rowCounterReset?: boolean;
+      /** Garment RC immediately before the reset; shown above the reset button. */
+      rowCounterResetGarmentRc?: number;
       /**
        * Interactive body / A-line shaping chart rows (checkbox · RC · action). Rendered piece-aware
        * (chart id derived from the rendering piece) after this block's paragraphs.
@@ -638,8 +672,13 @@ function flattenDisplayRowsToLines(rows: readonly SleevelessPatternDisplayRow[])
     } else if (r.kind === "neckShoulderChartTableMount") {
       out.push("Neckline / shoulder shaping chart", "");
     } else {
+      if (r.rowCounterReset) {
+        if (r.rowCounterResetGarmentRc !== undefined) {
+          out.push(formatRowCounterResetGarmentRcLabel(r.rowCounterResetGarmentRc));
+        }
+        out.push(RESET_ROW_COUNTER_TEXT);
+      }
       if (r.rc) out.push(r.rc);
-      if (r.rowCounterReset) out.push(RESET_ROW_COUNTER_TEXT);
       const plainParas =
         r.trustedParagraphs && r.trustedParagraphs.length > 0
           ? r.trustedParagraphs
@@ -1388,6 +1427,8 @@ function backNecklineShoulderSummaryParagraphs(args: {
   /** Garment RC where back neckline shaping begins (with {@link firstArmholeRC} for Armhole RC label). */
   backNecklineStartRC?: number;
   firstArmholeRC?: number | null;
+  /** When false, omit the lifeline reminder (cardigan half fronts). Defaults to true. */
+  includeLifelineReminder?: boolean;
 }): string[] | null {
   let leftS: number | undefined;
   let rightS: number | undefined;
@@ -1436,14 +1477,17 @@ function backNecklineShoulderSummaryParagraphs(args: {
       ? formatArmholeLocalRc(args.backNecklineStartRC, args.firstArmholeRC)
       : undefined;
 
+  const includeLifeline = args.includeLifelineReminder !== false;
+  let lines: string[];
   if (args.backRoundNeckPlan?.strategy === "shallow-round") {
-    return roundNeckBackShallowSleevelessSummaryWrittenLines(args.backRoundNeckPlan, {
+    lines = roundNeckBackShallowSleevelessSummaryWrittenLines(args.backRoundNeckPlan, {
       bodyWidthStitches: args.stitchesAfterArmhole ?? 0,
       necklineStartRcLabel,
     });
+  } else {
+    lines = ["Use the checklist below for row-by-row neckline and shoulder shaping."];
   }
-
-  return ["Use the checklist below for row-by-row neckline and shoulder shaping."];
+  return insertLifelineReminderAfterOpening(lines, includeLifeline);
 }
 
 /** Routes needle-range HTML lines to {@link trustedParagraphs} for trusted rendering. */
@@ -1451,7 +1495,10 @@ function backNeckSummaryInstructionFields(summary: string[]): {
   paragraphs?: string[];
   trustedParagraphs?: string[];
 } {
-  if (summary.some((line) => line.includes('class="needle-range"'))) {
+  if (
+    summary.some((line) => line.includes('class="needle-range"')) ||
+    summary.some((line) => line.includes("data-glossary-id"))
+  ) {
     return { trustedParagraphs: summary };
   }
   return { paragraphs: summary };
@@ -1720,6 +1767,7 @@ export function buildSleevelessBackDisplayRows(args: {
       kind: "block",
       rc: formatArmholeLocalRc(first, first),
       rowCounterReset: true,
+      rowCounterResetGarmentRc: first,
       paragraphs: [
         `Bind off OR hold ${bo} stitches at the armhole edge (carriage side). Knit across.`,
       ],
@@ -1927,9 +1975,8 @@ export function buildSleevelessBackDisplayRows(args: {
     }
   }
 
-  // The standalone "Lifeline before neckline shaping" quick-tip panel was removed: the lifeline
-  // guidance (with the glossary popup) now lives in the chart's "Before Shaping" checklist
-  // ("Optional: Add a lifeline before dividing the neckline."), making this panel redundant.
+  // The standalone "Lifeline before neckline shaping" quick-tip panel was removed; the lifeline
+  // reminder is normal neckline-section instruction copy (see insertLifelineReminderAfterOpening).
 
   if (args.useNeckChartRows && args.neckChartRows.length > 0) {
     rows.push({ kind: "section", title: "BACK NECKLINE & SHOULDERS" });
@@ -2117,11 +2164,12 @@ export function buildSleevelessFrontDisplayRows(args: {
       necklineStitches: args.necklineStitches,
       fullNecklineStitches: args.fullNecklineStitches,
       shoulderStitches: args.shoulderStitches,
+      includeLifelineReminder: !args.introIsCardiganHalf,
     });
     if (summary) {
       rows.push({
         kind: "block",
-        paragraphs: summary,
+        ...backNeckSummaryInstructionFields(summary),
         tipHtml: necklineShoulderOrientationHelpCardInnerHtml(),
         tipHtmlIsFull: true,
         tipPresentation: "help-card",

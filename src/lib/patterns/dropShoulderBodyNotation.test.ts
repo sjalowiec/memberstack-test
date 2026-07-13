@@ -349,23 +349,41 @@ describe("dropShoulderBodyJapaneseNotation", () => {
     expect(backText).not.toMatch(/bind off all \d+ stitches across the top/i);
   });
 
-  it("omits right-column stitch count from BACK NECKLINE & SHOULDERS blocks", () => {
+  it("shows final shoulder stitch count only on shoulder completion blocks in BACK NECKLINE & SHOULDERS", () => {
     const result = generateDropShoulderPattern(DROP_SHOULDER_PATTERN);
+    const shoulderSts = result.debug.shoulderStitches!;
+    expect(shoulderSts).toBeGreaterThan(0);
+
     let inSection = false;
-    const backNeckBlocks: Array<{ stitchCount?: number }> = [];
+    const backNeckBlocks: Array<{ stitchCount?: number; text: string }> = [];
     for (const row of result.displayRows) {
       if (row.kind === "section" && row.title === "BACK NECKLINE & SHOULDERS") {
         inSection = true;
         continue;
       }
       if (inSection && row.kind === "section") break;
-      if (inSection && row.kind === "block") backNeckBlocks.push(row);
+      if (!inSection || row.kind !== "block") continue;
+      const text = [...(row.trustedParagraphs ?? []), ...(row.paragraphs ?? [])].join("\n");
+      backNeckBlocks.push({ stitchCount: row.stitchCount, text });
     }
+
     expect(backNeckBlocks.length).toBeGreaterThan(0);
-    for (const block of backNeckBlocks) {
+
+    const completionBlocks = backNeckBlocks.filter((b) =>
+      /The (first|second) shoulder is complete/i.test(b.text),
+    );
+    expect(completionBlocks).toHaveLength(2);
+    for (const block of completionBlocks) {
+      expect(block.stitchCount).toBe(shoulderSts);
+    }
+
+    const nonCompletionBlocks = backNeckBlocks.filter(
+      (b) => !/The (first|second) shoulder is complete/i.test(b.text),
+    );
+    expect(nonCompletionBlocks.length).toBeGreaterThan(0);
+    for (const block of nonCompletionBlocks) {
       expect(block.stitchCount).toBeUndefined();
     }
-    expect(result.debug.shoulderStitches).toBeGreaterThan(0);
   });
 
   it("fills drop-shoulder back notation with center hold and neckline shaping", () => {

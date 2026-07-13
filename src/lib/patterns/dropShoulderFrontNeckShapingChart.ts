@@ -35,6 +35,24 @@ export type DropShoulderFrontNeckChartResult = {
   usesLiveRows: true;
 };
 
+/** True when live front neckline chart/map inputs are sufficient (chart/checklist begin at local RC 000). */
+export function dropShoulderFrontNeckShapingChartInputsReady(inputs: {
+  neckSts: number;
+  shoulderStsEach: number;
+  frontNeckDepthRows: number;
+  totalRows: number;
+  bustBodySts: number;
+}): boolean {
+  const { neckSts, shoulderStsEach, frontNeckDepthRows, totalRows, bustBodySts } = inputs;
+  return (
+    neckSts > 0 &&
+    shoulderStsEach > 0 &&
+    frontNeckDepthRows > 0 &&
+    totalRows > 0 &&
+    bustBodySts > 0
+  );
+}
+
 function forceEven(n: number): number {
   const v = Math.max(0, Math.round(n));
   return v % 2 === 0 ? v : v + 1;
@@ -127,7 +145,7 @@ export function buildDropShoulderFrontNeckShapingChart(
     rowsPerInch,
   } = inputs;
 
-  if (neckSts <= 0 || shoulderStsEach <= 0 || frontNeckDepthRows <= 0 || totalRows <= 0 || bustBodySts <= 0) {
+  if (!dropShoulderFrontNeckShapingChartInputsReady(inputs)) {
     return null;
   }
 

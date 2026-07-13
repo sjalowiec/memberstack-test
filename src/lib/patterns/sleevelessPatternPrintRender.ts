@@ -48,11 +48,11 @@ function renderPrintBlockRow(
   const showStitch = row.stitchCount !== undefined;
 
   const leftBits: string[] = [];
+  if (row.rowCounterReset) {
+    leftBits.push(rowCounterResetBlockHtml(row.rowCounterResetGarmentRc ?? 0));
+  }
   if (row.rc) {
     leftBits.push(`<p class="print-rc">${escapeHtml(row.rc)}</p>`);
-  }
-  if (row.rowCounterReset) {
-    leftBits.push(rowCounterResetBlockHtml());
   }
   const trusted = row.trustedParagraphs;
   if (trusted && trusted.length > 0) {

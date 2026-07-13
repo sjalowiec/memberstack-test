@@ -1,16 +1,20 @@
 /**
- * Regression: editing a saved Drop Shoulder pattern's sleeve length (Long ? Short) must flow
- * through save + regeneration. Mirrors the Edit Pattern drawer persist path.
+ * Regression: editing a saved Drop Shoulder pattern's sleeve length via the numeric diagram field
+ * must flow through save + regeneration.
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildCustomBuildEffectivePatternInput } from "./buildCustomBuildEffectivePatternInput";
 import { buildSavePayloadFromWorkingDraft } from "./customPatternProjectClient";
 import { generateDropShoulderPattern } from "./dropShoulderPatternOutput";
 import {
+  dropShoulderEditWorkspaceSleeveLengthDisplayInches,
   resolveDropShoulderSleeveInches,
-  scaleDropShoulderSleeveLengthInches,
 } from "./dropShoulderSleeveMeasurementOverrides";
 import { syncCustomBuildToPatternStorage } from "./syncCustomBuildToPatternStorage";
+import {
+  markDropShoulderSleeveFieldUserEdited,
+  readDropShoulderUserEditedSleeveFields,
+} from "./dropShoulderUserEditedSleeveFields";
 import {
   getCurrentPattern,
   getPatternData,
@@ -19,6 +23,7 @@ import {
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
 } from "./patternStorage";
 import { withDropShoulderConstructionAuthored } from "./patternConstructionIdentity";
+import { persistMeasurementOverrides } from "./sleevelessCustomMeasurementStorage";
 import { writeActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
 import { stubLocalStorage } from "./test/stubLocalStorage";
 
@@ -80,14 +85,20 @@ function seedSavedDropShoulder(sleeveLength: string): void {
   });
 }
 
-/** Mirror of sleevelessPatternEditDrawerPrototype.persistDropShoulderSleeveLength. */
-function persistSleeveLengthLikeDrawer(choice: string): void {
-  const mergedStyle = withDropShoulderConstructionAuthored(
-    { ...(getCurrentPattern().style ?? {}), ...(getPatternData().style ?? {}) },
-    choice,
-  );
-  saveCurrentPattern({ style: mergedStyle });
-  savePatternData("style", mergedStyle);
+function persistNumericSleeveLengthLikeEditSave(inches: string): void {
+  persistMeasurementOverrides({ sleeveLength: inches });
+  markDropShoulderSleeveFieldUserEdited("sleeveLength");
+  const fit = {
+    ...(getCurrentPattern().fit ?? {}),
+    cbMeasurementOverrides: {
+      upperArm: "12",
+      wrist: "6",
+      sleeveLength: inches,
+    },
+    dropShoulderUserEditedSleeveFields: readDropShoulderUserEditedSleeveFields(),
+  };
+  saveCurrentPattern({ fit });
+  savePatternData("fit", fit);
 }
 
 function generatedSleeveLengthInches(): number | undefined {
@@ -98,25 +109,35 @@ function generatedSleeveLengthInches(): number | undefined {
     | undefined;
 }
 
-describe("Drop Shoulder edit ? sleeve length persists through save + regen", () => {
+describe("Drop Shoulder edit ? numeric sleeve length persists through save + regen", () => {
   beforeEach(() => {
     stubLocalStorage();
     localStorage.clear();
     vi.restoreAllMocks();
   });
 
-  it("Long build regenerates at full length", () => {
+  it("Long build regenerates at full length before numeric edit", () => {
     seedSavedDropShoulder("long");
     expect(generatedSleeveLengthInches()).toBe(17);
   });
 
-  it("changing to Short in the drawer regenerates at ~1/3 length (full applyChanges sequence)", () => {
+  it("short preset shows scaled length in the edit diagram until user saves a numeric value", () => {
+    seedSavedDropShoulder("short");
+    const display = dropShoulderEditWorkspaceSleeveLengthDisplayInches({
+      overrideInches: "17",
+      sleeveLengthChoice: "short",
+      userEditedSleeveLength: false,
+    });
+    expect(display).toBe("5.5");
+    expect(generatedSleeveLengthInches()).toBe(5.5);
+  });
+
+  it("changing the numeric field to 8? regenerates at 8? (full applyChanges sequence)", () => {
     seedSavedDropShoulder("long");
     writeActiveCustomPatternProjectId("proj-drop-shoulder", "My Drop Shoulder");
 
-    // Mirror applyChanges order: sync (step 5) ? persist sleeve length (step 6) ? gauge (step 7).
     syncCustomBuildToPatternStorage({ awaitCharts: false });
-    persistSleeveLengthLikeDrawer("short");
+    persistNumericSleeveLengthLikeEditSave("8");
     saveCurrentPattern({
       yarnGauge: { stitchGauge: 5, rowGauge: 7, gaugeUnits: "per_inch", gaugeRawUnit: "in" },
       machine: { availableNeedles: "200" },
@@ -128,49 +149,37 @@ describe("Drop Shoulder edit ? sleeve length persists through save + regen", () 
       gaugeRawUnit: "in",
     });
 
-    expect(getCurrentPattern().style?.sleeveLength).toBe("short");
-    expect(getPatternData().style?.sleeveLength).toBe("short");
-
     const payload = buildSavePayloadFromWorkingDraft("My Drop Shoulder", { family: "sleeveless" });
-    expect((payload.pattern.style as Record<string, unknown>).sleeveLength).toBe("short");
+    expect(
+      ((payload.pattern.fit as Record<string, unknown>).cbMeasurementOverrides as Record<string, string>)
+        .sleeveLength,
+    ).toBe("8");
 
-    expect(generatedSleeveLengthInches()).toBe(5.5);
+    expect(generatedSleeveLengthInches()).toBe(8);
   });
 
-  it("summary/edit display sleeve length matches the generated (scaled) value: Long 16.5\" -> Short ~5.5\"", () => {
-    // The measurement-summary diagram is display-only and picker-driven. It renders the FULL length
-    // (choice-independent, kept full so persistence never round-trips a scaled value) scaled once by
-    // the saved sleeveLengthChoice ù via the SAME helper the generator uses. This guards the display
-    // rehydration bug where the summary showed a stale/full length after editing Long -> Short.
+  it("summary/edit display sleeve length matches the generated value after numeric edit", () => {
     const userEdited = { upperArm: false, sleeveLength: true, cuffCircumference: false };
     const resolverArgs = {
-      overrides: { sleeveLength: "16.5" },
+      overrides: { sleeveLength: "8" },
       chartRow: null,
       fitPreference: "standard",
       userEdited,
+      selectedMeasurements: SELECTED_MEASUREMENTS,
     } as const;
 
-    // Full length surfaced for "long" (what the diagram/data source holds, unscaled).
-    const fullInches = resolveDropShoulderSleeveInches({
+    const generator = resolveDropShoulderSleeveInches({
       ...resolverArgs,
       sleeveLengthChoice: "long",
     }).sleeveLengthIn;
-    expect(fullInches).toBe(16.5);
+    expect(generator).toBe(8);
 
-    // Display for each choice = full length scaled once by the picker choice.
-    expect(scaleDropShoulderSleeveLengthInches(fullInches, "long")).toBe(16.5);
-    expect(scaleDropShoulderSleeveLengthInches(fullInches, "three-quarter")).toBe(12.5); // 16.5 ◊ 0.75 = 12.375 ? nearest º?
-    expect(scaleDropShoulderSleeveLengthInches(fullInches, "elbow")).toBe(8.25); // 16.5 ◊ 0.5
-
-    const displayShort = scaleDropShoulderSleeveLengthInches(fullInches, "short");
-    expect(displayShort).toBe(5.5);
-
-    // Generator/summary numeric resolver agrees exactly ù no double-scaling.
-    const generatorShort = resolveDropShoulderSleeveInches({
-      ...resolverArgs,
-      sleeveLengthChoice: "short",
-    }).sleeveLengthIn;
-    expect(generatorShort).toBe(5.5);
-    expect(displayShort).toBe(generatorShort);
+    const display = dropShoulderEditWorkspaceSleeveLengthDisplayInches({
+      overrideInches: "8",
+      sleeveLengthChoice: "long",
+      userEditedSleeveLength: true,
+    });
+    expect(display).toBe("8");
+    expect(Number(display)).toBe(generator);
   });
 });

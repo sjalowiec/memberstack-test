@@ -223,9 +223,11 @@ import "../../../styles/patterns/pattern-app-shell.css";
 
     :global(#pattern-content .pattern-layout.pattern-layout--garment-columns),
     :global(#pattern-content .sleeveless-piece-split) {
+      --garment-print-diagram-track: 2.6in;
+      --garment-print-column-gap: 0.35in;
       display: grid !important;
-      grid-template-columns: minmax(0, 1fr) minmax(180px, 2.6in) !important;
-      column-gap: 0.35in !important;
+      grid-template-columns: minmax(0, 1fr) minmax(180px, var(--garment-print-diagram-track)) !important;
+      column-gap: var(--garment-print-column-gap) !important;
       row-gap: 0 !important;
       align-items: start !important;
     }

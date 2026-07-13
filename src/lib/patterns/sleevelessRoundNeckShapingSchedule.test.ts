@@ -8,7 +8,7 @@ import {
 } from "./sleevelessRoundNeckShapingSchedule";
 import { renderShapingMapSvg } from "./shapingMapSvg";
 
-/** Minimal RowEntry factory  only `row` + `events` matter to the schedule builder. */
+/** Minimal RowEntry factory ? only `row` + `events` matter to the schedule builder. */
 function mkRow(row: number, events: ShapingEvent[]): RowEntry {
   return {
     row,
@@ -65,7 +65,7 @@ describe("buildSleevelessRoundNeckShapingSchedule", () => {
     expect(buildSleevelessRoundNeckShapingSchedule([])).toBeNull();
   });
 
-  it("returns null when there is no center bind-off (V-neck / cardigan half front)  scope protection", () => {
+  it("returns null when there is no center bind-off (V-neck / cardigan half front) ? scope protection", () => {
     const timeline = [
       mkRow(100, [rightNeck(1)]),
       mkRow(102, [rightNeck(1)]),
@@ -73,7 +73,7 @@ describe("buildSleevelessRoundNeckShapingSchedule", () => {
     expect(buildSleevelessRoundNeckShapingSchedule(timeline)).toBeNull();
   });
 
-  it("case 1  simple neckline with minimal shaping (center + a few singles, no shoulder)", () => {
+  it("case 1 ? simple neckline with minimal shaping (center + a few singles, no shoulder)", () => {
     const timeline = [
       mkRow(200, [center(10)]),
       mkRow(202, [rightNeck(1)]),
@@ -100,7 +100,7 @@ describe("buildSleevelessRoundNeckShapingSchedule", () => {
     expect(schedule!.neckStitchesTotal).toBe(2);
   });
 
-  it("case 2  initial center bind-off followed by repeated single decreases", () => {
+  it("case 2 ? initial center bind-off followed by repeated single decreases", () => {
     const timeline = [
       mkRow(300, [center(12)]),
       mkRow(301, [rightNeck(2, "bindOff")]),
@@ -118,7 +118,7 @@ describe("buildSleevelessRoundNeckShapingSchedule", () => {
     expect(schedule.neckStitchesTotal).toBe(5);
   });
 
-  it("case 3  more than one decrease grouping / interval (steep every row, then gradual every other row)", () => {
+  it("case 3 ? more than one decrease grouping / interval (steep every row, then gradual every other row)", () => {
     const timeline = [
       mkRow(400, [center(8)]),
       mkRow(401, [rightNeck(1)]),
@@ -134,7 +134,7 @@ describe("buildSleevelessRoundNeckShapingSchedule", () => {
     ]);
   });
 
-  it("case 4  includes real shoulder shaping (outer-edge bind-offs)", () => {
+  it("case 4 ? includes real shoulder shaping (outer-edge bind-offs)", () => {
     const timeline = [
       mkRow(500, [center(10)]),
       mkRow(501, [rightNeck(1)]),
@@ -215,7 +215,7 @@ describe("shapingScheduleToMapData (adapter)", () => {
     const localShoulder = local.paths.find((p) => p.id === "shoulder")!;
     expect(globalShoulder.startRow - localShoulder.startRow).toBe(firstArmholeRc);
     expect(localShoulder.steps).toEqual(globalShoulder.steps);
-    // Center stitches are a stitch count, not an RC  never shifted.
+    // Center stitches are a stitch count, not an RC ? never shifted.
     expect(local.centerStitches).toBe(global.centerStitches);
   });
 
@@ -277,7 +277,116 @@ describe("shapingScheduleToMapData (adapter)", () => {
   });
 });
 
-describe("integration  real Sleeveless Round Neck front timeline", () => {
+/** Stable snapshot of map geometry for regression tests (adapter changes must not alter shaped output). */
+function freezeMapGeometry(map: NonNullable<ReturnType<typeof buildSleevelessRoundNeckShapingMapData>>) {
+  return {
+    rowMin: map.rowMin,
+    rowMax: map.rowMax,
+    centerStitches: map.centerStitches,
+    edgeLabels: map.edgeLabels,
+    paths: map.paths.map((p) => ({
+      id: p.id,
+      startX: p.startX,
+      startRow: p.startRow,
+      rowDirection: p.rowDirection,
+      edge: p.edge,
+      steps: p.steps.map((s) => ({ stitches: s.stitches, rows: s.rows, label: s.label })),
+    })),
+  };
+}
+
+describe("sleeveless shaped-shoulder regression ? frozen ShapingMapData", () => {
+  it("stepped shoulder timeline (case 4) produces unchanged shaped map geometry", () => {
+    const timeline = [
+      mkRow(500, [center(10)]),
+      mkRow(501, [rightNeck(1)]),
+      mkRow(503, [rightNeck(1)]),
+      mkRow(505, [rightNeck(1), rightShoulder(6)]),
+      mkRow(507, [rightShoulder(6)]),
+      mkRow(509, [rightShoulder(5)]),
+    ];
+    const map = buildSleevelessRoundNeckShapingMapData(timeline)!;
+    expect(freezeMapGeometry(map)).toEqual({
+      rowMin: 500,
+      rowMax: 509,
+      centerStitches: 10,
+      edgeLabels: { shoulder: "Shoulder Edge", neck: "Neck Edge" },
+      paths: [
+        {
+          id: "shoulder",
+          startX: 0,
+          startRow: 505,
+          rowDirection: "up",
+          edge: "left",
+          steps: [
+            { stitches: 6, rows: 2, label: undefined },
+            { stitches: 6, rows: 2, label: undefined },
+            { stitches: 5, rows: 0, label: undefined },
+          ],
+        },
+        {
+          id: "neck",
+          startX: 17,
+          startRow: 505,
+          rowDirection: "down",
+          edge: "left",
+          steps: [
+            { stitches: 1, rows: 2, label: undefined },
+            { stitches: 1, rows: 2, label: undefined },
+            { stitches: 1, rows: 2, label: undefined },
+          ],
+        },
+      ],
+    });
+  });
+
+  it("no-shoulder shaping timeline produces unchanged neck-only map geometry", () => {
+    const timeline = [mkRow(200, [center(10)]), mkRow(202, [rightNeck(1)])];
+    const map = buildSleevelessRoundNeckShapingMapData(timeline)!;
+    expect(freezeMapGeometry(map)).toEqual({
+      rowMin: 200,
+      rowMax: 202,
+      centerStitches: 10,
+      edgeLabels: { shoulder: "Shoulder Edge", neck: "Neck Edge" },
+      paths: [
+        {
+          id: "neck",
+          startX: 0,
+          startRow: 202,
+          rowDirection: "down",
+          edge: "left",
+          steps: [{ stitches: 1, rows: 2, label: undefined }],
+        },
+      ],
+    });
+  });
+
+  it("real sleeveless round-neck timeline uses shaped shoulder map geometry", () => {
+    const r = generateSleevelessBackPattern(basePattern("round"));
+    const map = buildSleevelessRoundNeckShapingMapData(r.frontNeckShoulderTimeline, {
+      firstArmholeRc: r.debug?.armholeStartRow,
+    })!;
+    const shoulderPath = map.paths.find((p) => p.id === "shoulder");
+    expect(shoulderPath).toBeDefined();
+    expect(shoulderPath!.steps.filter((s) => s.stitches > 0).length).toBeGreaterThan(1);
+    expect(shoulderPath!.startRow).toBeLessThan(map.rowMax);
+    expect({
+      rowMin: map.rowMin,
+      rowMax: map.rowMax,
+      shoulderSteps: shoulderPath!.steps.map((s) => ({ stitches: s.stitches, rows: s.rows })),
+      neckStartX: map.paths.find((p) => p.id === "neck")!.startX,
+    }).toEqual({
+      rowMin: r.debug?.frontNecklineStartLocalRC,
+      rowMax:
+        Math.max(...(r.frontNeckShoulderTimeline ?? []).map((e) => e.row)) -
+        Math.floor(r.debug?.armholeStartRow ?? 0),
+      shoulderSteps: shoulderPath!.steps.map((s) => ({ stitches: s.stitches, rows: s.rows })),
+      neckStartX: shoulderPath!.steps.reduce((sum, s) => sum + s.stitches, 0),
+    });
+  });
+});
+
+describe("integration ? real Sleeveless Round Neck front timeline", () => {
   it("builds a schedule from the calculated front timeline with matching center + real rows", () => {
     const r = generateSleevelessBackPattern(basePattern("round"));
     const timeline = r.frontNeckShoulderTimeline;
@@ -342,13 +451,13 @@ describe("integration  real Sleeveless Round Neck front timeline", () => {
 
     const rows = timeline.map((e) => e.row);
     const globalMin = Math.min(...rows);
-    // The map's lowest label is the center row expressed in armhole-local RC  not the raw
-    // garment RC  matching formatArmholeLocalRc(garmentRc, armholeStartRow) used elsewhere.
+    // The map's lowest label is the center row expressed in armhole-local RC ? not the raw
+    // garment RC ? matching formatArmholeLocalRc(garmentRc, armholeStartRow) used elsewhere.
     expect(map.rowMin).toBe(globalMin - Math.floor(armholeStartRow!));
     expect(map.rowMin).toBeLessThan(globalMin);
 
     // The neckline (center bind-off) row is the front neckline start; its local RC is the
-    // pattern's own debug.frontNecklineStartLocalRC  proving one shared numbering system.
+    // pattern's own debug.frontNecklineStartLocalRC ? proving one shared numbering system.
     const frontNecklineStartLocalRC = r.debug?.frontNecklineStartLocalRC;
     if (Number.isFinite(frontNecklineStartLocalRC)) {
       expect(map.rowMin).toBe(Math.floor(frontNecklineStartLocalRC!));
@@ -360,7 +469,7 @@ describe("integration  real Sleeveless Round Neck front timeline", () => {
     expect(buildSleevelessRoundNeckShapingMapData(r.frontNeckShoulderTimeline)).toBeNull();
   });
 
-  it("case 5  row gauge changes the shaping schedule", () => {
+  it("case 5 ? row gauge changes the shaping schedule", () => {
     const coarse = generateSleevelessBackPattern(basePattern("round", 6));
     const fine = generateSleevelessBackPattern(basePattern("round", 9));
     const coarseSchedule = buildSleevelessRoundNeckShapingSchedule(coarse.frontNeckShoulderTimeline)!;
