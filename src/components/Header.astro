@@ -3,6 +3,7 @@
 
 import { MEMBER_PLAN_IDS } from "../config/memberships";
 import { PATTERN_BUILDERS_HOME_HREF } from "../lib/patterns/customPatternProjectNavigation";
+import PatternWorkspaceLibraryDrawer from "./patterns/PatternWorkspaceLibraryDrawer.astro";
 
 interface Props {
   /**
@@ -1844,7 +1845,14 @@ div[data-ms-modal-overlay] {
                   </a>
                 </li>
                 <li>
-                  <a href="/account#my-patterns" data-testid="nav-my-patterns">
+                  <a
+                    href="#"
+                    data-pattern-workspace-library-trigger
+                    data-testid="nav-my-patterns"
+                    aria-haspopup="dialog"
+                    aria-controls="pattern-workspace-library-drawer-panel"
+                    aria-expanded="false"
+                  >
                     My Patterns
                   </a>
                 </li>
@@ -2083,6 +2091,8 @@ div[data-ms-modal-overlay] {
     <div id="pagefind-search" class="pagefind-search"></div>
   </div>
 </div>
+
+{!onboarding && <PatternWorkspaceLibraryDrawer />}
 
 <script is:inline define:vars={{ memberPlanIds }}>
   (function () {

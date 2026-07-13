@@ -136,10 +136,13 @@ function clearDrawerCopyHighlight(): void {
   lastCopiedProjectIdInDrawer = null;
 }
 
+let libraryDrawerInitBound = false;
+
 /** Test hook — reset drawer copy highlight state between tests. */
 export function resetPatternWorkspaceLibraryDrawerSessionState(): void {
   clearDrawerCopyHighlight();
   lastResolvedLibraryAccess = null;
+  libraryDrawerInitBound = false;
 }
 
 function setDrawerStatus(root: HTMLElement, message: string, isError = false): void {
@@ -448,10 +451,38 @@ export async function refreshPatternWorkspaceLibraryList(
   setListVisible(root, true);
 }
 
+type LibraryDrawerTrigger = HTMLButtonElement | HTMLAnchorElement;
+
+function isLibraryDrawerTrigger(el: Element | null): el is LibraryDrawerTrigger {
+  return el instanceof HTMLButtonElement || el instanceof HTMLAnchorElement;
+}
+
+function setLibraryDrawerTriggersExpanded(triggers: LibraryDrawerTrigger[], expanded: boolean): void {
+  const value = expanded ? "true" : "false";
+  for (const trigger of triggers) {
+    trigger.setAttribute("aria-expanded", value);
+  }
+}
+
+function closeMobileNavDrawer(doc: Document): void {
+  if (typeof doc.querySelector !== "function") return;
+  const navRow = doc.querySelector(".kbm-nav-row");
+  if (!(navRow instanceof HTMLElement) || !navRow.classList.contains("mobile-open")) return;
+  navRow.classList.remove("mobile-open");
+  const hamburger = doc.querySelector(".kbm-hamburger");
+  if (hamburger instanceof HTMLElement) {
+    hamburger.classList.remove("active");
+    hamburger.setAttribute("aria-expanded", "false");
+  }
+  if (!doc.body.classList.contains(PATTERN_WORKSPACE_LIBRARY_DRAWER_OPEN_CLASS)) {
+    doc.body.style.overflow = "";
+  }
+}
+
 export type PatternWorkspaceLibraryDrawerBindings = {
   drawer: HTMLElement;
   panel: HTMLElement;
-  trigger: HTMLButtonElement;
+  triggers: LibraryDrawerTrigger[];
   closeBtn: HTMLButtonElement;
   backdrop: HTMLElement;
 };
@@ -461,27 +492,29 @@ export function resolvePatternWorkspaceLibraryDrawerBindings(
 ): PatternWorkspaceLibraryDrawerBindings | null {
   const drawer = doc.querySelector("[data-pattern-workspace-library-drawer]");
   const panel = doc.querySelector("#pattern-workspace-library-drawer-panel");
-  const trigger = doc.querySelector("[data-pattern-workspace-library-trigger]");
+  const triggers = [...doc.querySelectorAll("[data-pattern-workspace-library-trigger]")].filter(
+    isLibraryDrawerTrigger,
+  );
   const closeBtn = doc.querySelector("[data-pattern-workspace-library-close]");
   const backdrop = doc.querySelector("[data-pattern-workspace-library-backdrop]");
 
   if (
     !(drawer instanceof HTMLElement) ||
     !(panel instanceof HTMLElement) ||
-    !(trigger instanceof HTMLButtonElement) ||
+    triggers.length === 0 ||
     !(closeBtn instanceof HTMLButtonElement) ||
     !(backdrop instanceof HTMLElement)
   ) {
     return null;
   }
 
-  return { drawer, panel, trigger, closeBtn, backdrop };
+  return { drawer, panel, triggers, closeBtn, backdrop };
 }
 
 let lastFocusBeforeOpen: HTMLElement | null = null;
 
 export function openPatternWorkspaceLibraryDrawer(bindings: PatternWorkspaceLibraryDrawerBindings): void {
-  const { drawer, panel, trigger } = bindings;
+  const { drawer, panel, triggers } = bindings;
   const doc = drawer.ownerDocument;
   lastFocusBeforeOpen =
     doc.activeElement instanceof HTMLElement ? doc.activeElement : null;
@@ -489,27 +522,28 @@ export function openPatternWorkspaceLibraryDrawer(bindings: PatternWorkspaceLibr
   drawer.classList.add("is-open");
   drawer.setAttribute("aria-hidden", "false");
   panel.setAttribute("aria-hidden", "false");
-  trigger.setAttribute("aria-expanded", "true");
+  setLibraryDrawerTriggersExpanded(triggers, true);
   doc.body.classList.add(PATTERN_WORKSPACE_LIBRARY_DRAWER_OPEN_CLASS);
+  closeMobileNavDrawer(doc);
 
   void refreshPatternWorkspaceLibraryList(drawer);
   closeBtnFocus(bindings);
 }
 
 export function closePatternWorkspaceLibraryDrawer(bindings: PatternWorkspaceLibraryDrawerBindings): void {
-  const { drawer, panel, trigger } = bindings;
+  const { drawer, panel, triggers } = bindings;
   const doc = drawer.ownerDocument;
 
   drawer.classList.remove("is-open");
   drawer.setAttribute("aria-hidden", "true");
   panel.setAttribute("aria-hidden", "true");
-  trigger.setAttribute("aria-expanded", "false");
+  setLibraryDrawerTriggersExpanded(triggers, false);
   doc.body.classList.remove(PATTERN_WORKSPACE_LIBRARY_DRAWER_OPEN_CLASS);
 
   if (lastFocusBeforeOpen && doc.contains(lastFocusBeforeOpen)) {
     lastFocusBeforeOpen.focus();
   } else {
-    trigger.focus();
+    triggers[0]?.focus();
   }
   lastFocusBeforeOpen = null;
   clearDrawerCopyHighlight();
@@ -528,15 +562,24 @@ export function isPatternWorkspaceLibraryDrawerOpen(
 export function initPatternWorkspaceLibraryDrawer(doc: Document = document): void {
   const bindings = resolvePatternWorkspaceLibraryDrawerBindings(doc);
   if (!bindings) return;
+  if (libraryDrawerInitBound) return;
+  libraryDrawerInitBound = true;
 
-  const { drawer, trigger, closeBtn, backdrop } = bindings;
+  const { triggers, closeBtn, backdrop } = bindings;
 
-  trigger.addEventListener("click", () => {
+  const toggle = (): void => {
     if (isPatternWorkspaceLibraryDrawerOpen(bindings)) {
       closePatternWorkspaceLibraryDrawer(bindings);
     } else {
       openPatternWorkspaceLibraryDrawer(bindings);
     }
+  };
+
+  triggers.forEach((trigger) => {
+    trigger.addEventListener("click", (event) => {
+      if (trigger instanceof HTMLAnchorElement) event.preventDefault();
+      toggle();
+    });
   });
 
   closeBtn.addEventListener("click", () => closePatternWorkspaceLibraryDrawer(bindings));

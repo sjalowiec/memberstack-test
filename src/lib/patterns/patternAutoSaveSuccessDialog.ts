@@ -86,7 +86,7 @@ export function showPatternAutoSaveSuccessDialog(
     openLibraryBtn.onclick = () => {
       dialog.close();
       options.onOpenLibrary?.();
-      const trigger = document.querySelector<HTMLButtonElement>(
+      const trigger = document.querySelector<HTMLElement>(
         "[data-pattern-workspace-library-trigger]",
       );
       trigger?.click();

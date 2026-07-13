@@ -39,15 +39,21 @@ vi.mock("./savedCustomPatternManageActions", () => ({
   renameSavedCustomPatternProject: vi.fn(),
 }));
 
-vi.mock("./sleevelessPatternSystemAccessClient", () => ({
-  resolveSleevelessUserAccessSnapshot: (...args: unknown[]) => resolveAccessSnapshotMock(...args),
-}));
+vi.mock("./sleevelessPatternSystemAccessClient", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./sleevelessPatternSystemAccessClient")>();
+  return {
+    ...actual,
+    resolveSleevelessUserAccessSnapshot: (...args: unknown[]) => resolveAccessSnapshotMock(...args),
+  };
+});
 
 class MockHTMLElement {}
 class MockHTMLButtonElement extends MockHTMLElement {}
+class MockHTMLAnchorElement extends MockHTMLElement {}
 
 vi.stubGlobal("HTMLElement", MockHTMLElement);
 vi.stubGlobal("HTMLButtonElement", MockHTMLButtonElement);
+vi.stubGlobal("HTMLAnchorElement", MockHTMLAnchorElement);
 
 function makeClassList() {
   const classes = new Set<string>();
@@ -66,7 +72,12 @@ type MockEl = HTMLElement & {
 
 function makeEl(tag = "div"): MockEl {
   const attrs = new Map<string, string>();
-  const Base = tag === "button" ? MockHTMLButtonElement : MockHTMLElement;
+  const Base =
+    tag === "button"
+      ? MockHTMLButtonElement
+      : tag === "a"
+        ? MockHTMLAnchorElement
+        : MockHTMLElement;
   const el = Object.assign(new Base(), {
     tagName: tag.toUpperCase(),
     classList: makeClassList(),
@@ -175,7 +186,7 @@ function makeDrawerBindings(): PatternWorkspaceLibraryDrawerBindings & {
     return [] as unknown as NodeListOf<HTMLElement>;
   };
 
-  return { drawer, panel, trigger, closeBtn, backdrop, status, list };
+  return { drawer, panel, triggers: [trigger], closeBtn, backdrop, status, list };
 }
 
 describe("patternWorkspaceLibraryDrawer display helpers", () => {
@@ -272,13 +283,13 @@ describe("patternWorkspaceLibraryDrawer", () => {
     openPatternWorkspaceLibraryDrawer(bindings);
     expect(bindings.drawer.classList.contains("is-open")).toBe(true);
     expect(bindings.drawer.getAttribute("aria-hidden")).toBe("false");
-    expect(bindings.trigger.getAttribute("aria-expanded")).toBe("true");
+    expect(bindings.triggers[0].getAttribute("aria-expanded")).toBe("true");
     expect(bodyClassList.contains(PATTERN_WORKSPACE_LIBRARY_DRAWER_OPEN_CLASS)).toBe(true);
 
     closePatternWorkspaceLibraryDrawer(bindings);
     expect(bindings.drawer.classList.contains("is-open")).toBe(false);
     expect(bindings.drawer.getAttribute("aria-hidden")).toBe("true");
-    expect(bindings.trigger.getAttribute("aria-expanded")).toBe("false");
+    expect(bindings.triggers[0].getAttribute("aria-expanded")).toBe("false");
     expect(bodyClassList.contains(PATTERN_WORKSPACE_LIBRARY_DRAWER_OPEN_CLASS)).toBe(false);
   });
 
@@ -551,7 +562,7 @@ describe("patternWorkspaceLibraryDrawer", () => {
 
   it("keeps the drawer Copy action visible but disabled for free / non-owner users", async () => {
     const bindings = makeDrawerBindings();
-    vi.stubGlobal("window", {});
+    vi.stubGlobal("window", { location: { href: "http://localhost/" } });
     resolveAccessSnapshotMock.mockResolvedValue(
       testAccess({
         loggedIn: true,
@@ -596,8 +607,57 @@ describe("patternWorkspaceLibraryDrawer", () => {
   it("returns null bindings when drawer markup is missing", () => {
     const doc = {
       querySelector: () => null,
+      querySelectorAll: () => [],
     } as unknown as Document;
     expect(resolvePatternWorkspaceLibraryDrawerBindings(doc)).toBeNull();
     clearActiveCustomPatternProjectId();
+  });
+
+  it("resolves bindings for anchor and button library triggers", () => {
+    const drawer = makeEl("div");
+    drawer.setAttribute("data-pattern-workspace-library-drawer", "");
+    const panel = makeEl("div");
+    panel.id = "pattern-workspace-library-drawer-panel";
+    const navTrigger = makeEl("a") as unknown as HTMLAnchorElement;
+    navTrigger.setAttribute("data-pattern-workspace-library-trigger", "");
+    const workspaceTrigger = makeEl("button") as unknown as HTMLButtonElement;
+    workspaceTrigger.setAttribute("data-pattern-workspace-library-trigger", "");
+    const closeBtn = makeEl("button") as unknown as HTMLButtonElement;
+    closeBtn.setAttribute("data-pattern-workspace-library-close", "");
+    const backdrop = makeEl("div");
+    backdrop.setAttribute("data-pattern-workspace-library-backdrop", "");
+
+    const doc = {
+      querySelector: (sel: string) => {
+        if (sel === "[data-pattern-workspace-library-drawer]") return drawer;
+        if (sel === "#pattern-workspace-library-drawer-panel") return panel;
+        if (sel === "[data-pattern-workspace-library-close]") return closeBtn;
+        if (sel === "[data-pattern-workspace-library-backdrop]") return backdrop;
+        return null;
+      },
+      querySelectorAll: (sel: string) => {
+        if (sel === "[data-pattern-workspace-library-trigger]") {
+          return [navTrigger, workspaceTrigger] as unknown as NodeListOf<Element>;
+        }
+        return [] as unknown as NodeListOf<Element>;
+      },
+    } as unknown as Document;
+
+    const bindings = resolvePatternWorkspaceLibraryDrawerBindings(doc);
+    expect(bindings?.triggers).toHaveLength(2);
+    expect(bindings?.triggers[0]).toBe(navTrigger);
+    expect(bindings?.triggers[1]).toBe(workspaceTrigger);
+  });
+
+  it("syncs aria-expanded across all library triggers when opening and closing", () => {
+    const bindings = makeDrawerBindings();
+    const navTrigger = makeEl("a") as unknown as HTMLAnchorElement;
+    bindings.triggers.push(navTrigger);
+
+    openPatternWorkspaceLibraryDrawer(bindings);
+    expect(bindings.triggers.every((t) => t.getAttribute("aria-expanded") === "true")).toBe(true);
+
+    closePatternWorkspaceLibraryDrawer(bindings);
+    expect(bindings.triggers.every((t) => t.getAttribute("aria-expanded") === "false")).toBe(true);
   });
 });
