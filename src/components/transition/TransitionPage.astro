@@ -94,7 +94,7 @@ const { contactHref = "/contact/" } = Astro.props;
 
       <ul class="transition-checklist transition-save__checklist">
         {
-          saveChecklistItems.map((item) => (
+          saveChecklistItems.map((item, index) => (
             <li>
               {item.link ? (
                 <>
@@ -106,6 +106,35 @@ const { contactHref = "/contact/" } = Astro.props;
                 <>
                   <span class="transition-save__checklist-lead">{item.lead}</span>
                   {item.note && <span class="transition-save__checklist-note">{item.note}</span>}
+                  {index === 0 && (
+                    <>
+                      <p class="transition-save__instructions-title">
+                        <strong>How to save your patterns:</strong>
+                      </p>
+                      <ol class="transition-save__instructions">
+                        <li>Open your saved pattern.</li>
+                        <li>
+                          Click <strong>Print</strong>.
+                        </li>
+                        <li>
+                          Choose <strong>Print the Full Pattern</strong>.
+                        </li>
+                        <li>
+                          Click <strong>Download Pattern</strong>.
+                        </li>
+                        <li>
+                          Choose <strong>PDF</strong> as the file type.
+                        </li>
+                        <li>Save the PDF somewhere you'll remember on your computer.</li>
+                      </ol>
+                      <p class="transition-save__instructions-reminder">
+                        <strong>
+                          Repeat these steps for every pattern you want to keep. After August 1, your
+                          saved patterns cannot be transferred to the new Knit It Now.
+                        </strong>
+                      </p>
+                    </>
+                  )}
                 </>
               )}
             </li>
@@ -378,6 +407,44 @@ const { contactHref = "/contact/" } = Astro.props;
   .transition-save__checklist-note {
     display: block;
     margin-top: 0.35rem;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: #4d5a48;
+  }
+
+  .transition-save__instructions-title {
+    margin: 0.75rem 0 0.5rem;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: #374151;
+  }
+
+  .transition-save__instructions {
+    list-style: decimal;
+    margin: 0 0 0.75rem;
+    padding-left: 1.35rem;
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .transition-save__instructions li {
+    position: static;
+    margin: 0;
+    padding: 0;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: #4d5a48;
+    border: none;
+    background: none;
+    border-radius: 0;
+  }
+
+  .transition-save__instructions li::before {
+    content: none;
+  }
+
+  .transition-save__instructions-reminder {
+    margin: 0;
     font-size: 0.98rem;
     line-height: 1.55;
     color: #4d5a48;

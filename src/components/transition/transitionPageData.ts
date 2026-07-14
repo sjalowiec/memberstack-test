@@ -19,7 +19,7 @@ export const staysSameItems = [
 
 export const saveChecklistItems: SaveChecklistItem[] = [
   {
-    lead: "Download any saved patterns you want to keep before August 1.",
+    lead: "Download or print every saved pattern you want to keep before August 1.",
     note: "Your saved patterns were created on the current site and won't be available after August 1.",
   },
   {
