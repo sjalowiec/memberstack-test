@@ -1,6 +1,8 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import ReferencePageShell from "../../components/ReferencePageShell.astro";
+import SweaterSizingChartCallout from "../../components/reference/SweaterSizingChartCallout.astro";
+import { SWEATER_SIZING_CHART_INTRO_SENTENCE } from "../../lib/reference/sweaterSizingChartIntro";
 import {
   resolveSweaterSizingChartBackLink,
 } from "../../lib/reference/sweaterSizingChartNavigation";
@@ -16,26 +18,13 @@ const backLink = resolveSweaterSizingChartBackLink(returnToRaw);
 >
   <ReferencePageShell
     title="Sweater Sizing Chart"
-    subhead="Body measurements used by the Sleeveless and Drop Shoulder pattern builders."
+    subhead={SWEATER_SIZING_CHART_INTRO_SENTENCE}
     backHref={backLink.href}
     backLabel={backLink.label}
     wide
   >
     <div class="sizing-chart-page">
-      <div class="sweater-sizing-intro">
-        <p>
-          The <strong>bust or chest</strong> measurement shown in this chart is a <strong>body measurement</strong> - how you measure yourself, not the finished sweater.
-        </p>
-        <p>
-          In the pattern builder, you pick the size whose bust/chest is closest to yours. That body measurement becomes your <strong>selected size</strong>.
-        </p>
-        <p>
-          The <strong>finished sweater measurement</strong> is calculated separately from your selected size, based on the fit you choose and how much ease is added.
-        </p>
-        <p>
-          If you change a finished measurement in the custom builder, that value replaces the calculated one - ease is <strong>not</strong> added a second time.
-        </p>
-      </div>
+      <SweaterSizingChartCallout />
 
       <div class="unit-toggle-wrapper">
         <span class="unit-label">in</span>
@@ -82,24 +71,6 @@ const backLink = resolveSweaterSizingChartBackLink(returnToRaw);
     font-family: "Poppins", sans-serif;
     max-width: 1400px;
     margin: 0 auto 60px;
-  }
-
-  .sweater-sizing-intro {
-    margin: 0 0 1.5rem;
-    padding: 1rem 1.25rem;
-    font-size: 0.95rem;
-    line-height: 1.55;
-    color: #333;
-    background: rgba(82, 104, 45, 0.06);
-    border-radius: 8px;
-  }
-
-  .sweater-sizing-intro p {
-    margin: 0 0 0.75rem;
-  }
-
-  .sweater-sizing-intro p:last-child {
-    margin-bottom: 0;
   }
 
   .related-link {

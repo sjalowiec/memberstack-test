@@ -1,0 +1,40 @@
+---
+import { SWEATER_SIZING_CHART_CALLOUT_BULLETS } from "../../lib/reference/sweaterSizingChartIntro";
+---
+
+<div class="sweater-sizing-intro">
+  <ul class="sweater-sizing-intro__list">
+    {
+      SWEATER_SIZING_CHART_CALLOUT_BULLETS.map(({ term, description }) => (
+        <li>
+          <strong>{term}:</strong> {description}
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .sweater-sizing-intro {
+    margin: 0 0 1.5rem;
+    padding: 1rem 1.25rem;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #333;
+    background: rgba(82, 104, 45, 0.06);
+    border-radius: 8px;
+  }
+
+  .sweater-sizing-intro__list {
+    margin: 0;
+    padding-left: 1.25rem;
+  }
+
+  .sweater-sizing-intro__list li {
+    margin: 0 0 0.75rem;
+  }
+
+  .sweater-sizing-intro__list li:last-child {
+    margin-bottom: 0;
+  }
+</style>
