@@ -108,6 +108,15 @@ const PAD_LEFT = 18;
 const PAD_TOP = 20;
 const PAD_RIGHT = 66; // room for right-side row numbers
 const PAD_BOTTOM = 46; // room for the center-stitches label
+const MIN_SIDE_MARGIN = 8;
+/** Keep in sync with `.shaping-map-step-label` in shaping-map.css */
+export const SHAPING_MAP_STEP_LABEL_FONT_PX = 20;
+/** Vertical gap between the black outline and step-label center (consistent for every step). */
+export const SHAPING_MAP_STEP_LABEL_OUTLINE_OFFSET_PX = 16;
+/** Keep in sync with `.shaping-map-center-label` in shaping-map.css */
+export const SHAPING_MAP_CENTER_LABEL_FONT_PX = 11.5;
+/** Extra left reserve beyond measured center-label width (scales with digit count). */
+const CENTER_LABEL_MARGIN_PAD_PX = 12;
 // Extra breathing room reserved only when the optional edge callouts are present, so
 // "Shoulder Edge" sits in a clear band above the top step and "Neck Edge" sits clearly
 // below the center-stitches label. Sized for the larger edge-label font.
@@ -120,6 +129,39 @@ function escapeXml(text: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+/** Shared center-stitch callout used by every pattern adapter that supplies `centerStitches`. */
+export function formatCenterStitchesLabel(centerStitches: number): string {
+  const n = Math.max(0, Math.floor(centerStitches));
+  return `${n} Center Stitches`;
+}
+
+/** Rough width estimate for upright sans-serif labels (avoids clipping without a DOM measure). */
+function estimateTextWidthPx(text: string, fontSizePx: number): number {
+  return Math.max(0, text.length) * fontSizePx * 0.62;
+}
+
+/** Pixel y for a step label: centered above the horizontal outline, never on the stroke. */
+export function stepLabelCenterY(
+  row: number,
+  yPx: (row: number) => number,
+): number {
+  return (
+    yPx(row) -
+    SHAPING_MAP_STEP_LABEL_OUTLINE_OFFSET_PX -
+    SHAPING_MAP_STEP_LABEL_FONT_PX / 2
+  );
+}
+
+function textLeftExtent(
+  x: number,
+  anchor: "start" | "middle" | "end",
+  widthPx: number,
+): number {
+  if (anchor === "start") return x;
+  if (anchor === "end") return x - widthPx;
+  return x - widthPx / 2;
 }
 
 type PathGeometry = {
@@ -219,47 +261,90 @@ export function renderShapingMapSvg(
   const padTop = PAD_TOP + (shoulderEdgeLabel ? EDGE_LABEL_TOP_GAP : 0);
   const padBottom = PAD_BOTTOM + (neckEdgeLabel ? EDGE_LABEL_BOTTOM_GAP : 0);
 
+  const centerLabelText = centerStitches > 0 ? formatCenterStitchesLabel(centerStitches) : "";
+  const centerLabelWidthPx = centerLabelText
+    ? estimateTextWidthPx(centerLabelText, SHAPING_MAP_CENTER_LABEL_FONT_PX)
+    : 0;
+
   // Base layout width: grid plus the standard right margin that holds the row-number column.
   const baseWidth = PAD_LEFT + gridStitches * cell + PAD_RIGHT;
   // In the mirrored branch (the corrected first-shoulder orientation, where the shoulder steps
   // inward toward the neckline as RC increases and therefore renders on the RIGHT), the reflected
   // geometry + bind-off labels land in the right margin, on top of the row numbers. Reserve extra
   // right-side space and shift ONLY the row-number column clear of that geometry. The unmirrored
-  // orientation is untouched  its row-number placement is already correct.
+  // orientation is untouched ? its row-number placement is already correct.
   const mirroredRowNumberShift = mirror ? PAD_RIGHT - PAD_LEFT : 0;
-  const width = baseWidth + mirroredRowNumberShift;
   const height = padTop + gridRows * cell + padBottom;
 
+  const fmt = (n: number): string => (Math.round(n * 100) / 100).toString();
   const xPx = (stitch: number): number => PAD_LEFT + stitch * cell;
-  // Higher row numbers sit toward the top of the map.
   const yPx = (row: number): number => padTop + (rowMax - row) * cell;
 
-  // Presentation-layer horizontal mirror: reflect an x pixel across the base (un-padded) mid-line.
-  // Reflecting across `baseWidth` (not the padded `width`) means the extra row-number space added
-  // above never moves any drawn geometry. Applied to the drawn geometry and the callouts that track
-  // it; NOT to the right-side row numbers (they stay in the right margin) and NOT via any transform
-  // on text (text stays upright).
-  const fx = (px: number): number => (mirror ? baseWidth - px : px);
-  // When mirrored, a "start"-anchored label must become "end"-anchored (and vice versa) so it
-  // still reads outward from the same feature. "middle" is unaffected.
-  const flipAnchor = (anchor: "start" | "middle" | "end"): "start" | "middle" | "end" =>
-    !mirror ? anchor : anchor === "start" ? "end" : anchor === "end" ? "start" : "middle";
-
-  const fmt = (n: number): string => (Math.round(n * 100) / 100).toString();
-
-  const parts: string[] = [];
   const gridTop = yPx(rowMax);
   const gridBottom = yPx(rowMin);
   const gridLeft = xPx(0);
   const gridRight = xPx(gridStitches);
 
-  // Background.
+  const fx = (px: number): number => (mirror ? baseWidth - px : px);
+  const flipAnchor = (anchor: "start" | "middle" | "end"): "start" | "middle" | "end" =>
+    !mirror ? anchor : anchor === "start" ? "end" : anchor === "end" ? "start" : "middle";
+
+  const neckSideX = centerSeg ? xPx(Math.max(centerSeg.x1, centerSeg.x2)) : gridRight;
+  const centerLabelBaseY = centerSeg ? yPx(centerSeg.row) + 18 : gridBottom + 26;
+  const neckAnchor = flipAnchor("end");
+
+  let minContentX = gridLeft;
+  for (const t of traced) {
+    for (const lbl of t.labels) {
+      if (!lbl.text.trim()) continue;
+      const stepWidth = estimateTextWidthPx(lbl.text, SHAPING_MAP_STEP_LABEL_FONT_PX);
+      minContentX = Math.min(
+        minContentX,
+        textLeftExtent(fx(xPx(lbl.midX)), "middle", stepWidth),
+      );
+    }
+  }
+  if (centerLabelText) {
+    minContentX = Math.min(
+      minContentX,
+      textLeftExtent(fx(neckSideX), neckAnchor, centerLabelWidthPx),
+    );
+  }
+  if (shoulderEdgeLabel) {
+    const shoulderWidth = estimateTextWidthPx(shoulderEdgeLabel, 13);
+    minContentX = Math.min(
+      minContentX,
+      textLeftExtent(fx(gridLeft), flipAnchor("start"), shoulderWidth),
+    );
+  }
+  if (neckEdgeLabel) {
+    const neckWidth = estimateTextWidthPx(neckEdgeLabel, 13);
+    minContentX = Math.min(
+      minContentX,
+      textLeftExtent(fx(neckSideX), neckAnchor, neckWidth),
+    );
+  }
+
+  const layoutOffsetX = Math.max(
+    0,
+    MIN_SIDE_MARGIN - minContentX,
+    centerLabelText && neckAnchor === "end"
+      ? centerLabelWidthPx + CENTER_LABEL_MARGIN_PAD_PX - fx(neckSideX)
+      : 0,
+    centerLabelText && neckAnchor === "start"
+      ? CENTER_LABEL_MARGIN_PAD_PX - fx(neckSideX)
+      : 0,
+  );
+  const shiftX = (px: number): number => px + layoutOffsetX;
+  const width = baseWidth + mirroredRowNumberShift + layoutOffsetX;
+  const drawX = (px: number): number => shiftX(fx(px));
+
+  const parts: string[] = [];
+
   parts.push(
     `<rect class="shaping-map-bg" x="0" y="0" width="${fmt(width)}" height="${fmt(height)}" />`,
   );
 
-  // Fabric region: shade under the continuous shaping edge (shoulder + neck + center)
-  // down to the baseline and back to the armhole edge, so the whole thing reads as one area.
   if (showFabricFill && traced.length > 0) {
     const edgePts: { x: number; row: number }[] = [];
     for (const t of traced) edgePts.push(...t.points);
@@ -267,34 +352,30 @@ export function renderShapingMapSvg(
     const first = edgePts[0]!;
     const last = edgePts[edgePts.length - 1]!;
     const poly = [
-      ...edgePts.map((p) => `${fmt(fx(xPx(p.x)))},${fmt(yPx(p.row))}`),
-      `${fmt(fx(xPx(last.x)))},${fmt(gridBottom)}`,
-      `${fmt(fx(xPx(first.x)))},${fmt(gridBottom)}`,
+      ...edgePts.map((p) => `${fmt(drawX(xPx(p.x)))},${fmt(yPx(p.row))}`),
+      `${fmt(drawX(xPx(last.x)))},${fmt(gridBottom)}`,
+      `${fmt(drawX(xPx(first.x)))},${fmt(gridBottom)}`,
     ].join(" ");
     parts.push(`<polygon class="shaping-map-fabric" points="${poly}" />`);
   }
 
-  // Grid - vertical lines (per stitch).
   const gridMinor: string[] = [];
   const gridMajor: string[] = [];
   for (let s = 0; s <= gridStitches; s++) {
-    const gx = xPx(s);
+    const gx = drawX(xPx(s));
     const line = `<line x1="${fmt(gx)}" y1="${fmt(gridTop)}" x2="${fmt(gx)}" y2="${fmt(gridBottom)}" />`;
     (s % majorEvery === 0 ? gridMajor : gridMinor).push(line);
   }
-  // Grid - horizontal lines (per row).
   for (let r = rowMin; r <= rowMax; r++) {
     const gy = yPx(r);
-    const line = `<line x1="${fmt(gridLeft)}" y1="${fmt(gy)}" x2="${fmt(gridRight)}" y2="${fmt(gy)}" />`;
+    const line = `<line x1="${fmt(drawX(gridLeft))}" y1="${fmt(gy)}" x2="${fmt(drawX(gridRight))}" y2="${fmt(gy)}" />`;
     (r % majorEvery === 0 ? gridMajor : gridMinor).push(line);
   }
   parts.push(`<g class="shaping-map-grid-minor">${gridMinor.join("")}</g>`);
   parts.push(`<g class="shaping-map-grid-major">${gridMajor.join("")}</g>`);
 
-  // Row numbers down the right side. In the mirrored branch they shift right by the reserved
-  // extra space so they clear the reflected shoulder path/labels instead of sitting under them.
   const rowNumbers: string[] = [];
-  const rowNumX = gridRight + 8 + mirroredRowNumberShift;
+  const rowNumX = shiftX(gridRight + 8 + mirroredRowNumberShift);
   for (let r = rowMin; r <= rowMax; r++) {
     if (r % rowNumberInterval !== 0) continue;
     rowNumbers.push(
@@ -303,62 +384,46 @@ export function renderShapingMapSvg(
   }
   parts.push(`<g>${rowNumbers.join("")}</g>`);
 
-  // The continuous black shaping edge: every path joined end-to-end, then the center
-  // bind-off segment. Drawn as one polyline so shoulder + neck + center read as one line.
   const edgePoints: { x: number; row: number }[] = [];
   for (const t of traced) {
     for (const p of t.points) {
       const prev = edgePoints[edgePoints.length - 1];
-      if (prev && prev.x === p.x && prev.row === p.row) continue; // de-dupe shared joins
+      if (prev && prev.x === p.x && prev.row === p.row) continue;
       edgePoints.push(p);
     }
   }
   if (centerSeg) edgePoints.push({ x: centerSeg.x2, row: centerSeg.row });
   if (edgePoints.length > 1) {
-    const pts = edgePoints.map((p) => `${fmt(fx(xPx(p.x)))},${fmt(yPx(p.row))}`).join(" ");
+    const pts = edgePoints.map((p) => `${fmt(drawX(xPx(p.x)))},${fmt(yPx(p.row))}`).join(" ");
     parts.push(`<polyline class="shaping-map-path" points="${pts}" />`);
   }
 
-  // Step count labels (e.g. -6, -5, -1), nudged just above each horizontal run. The narrow -1
-  // decrease steps sit right on top of the shaping line, so give them a little more breathing
-  // room than the wider bind-off labels.
   for (const t of traced) {
     for (const lbl of t.labels) {
-      const labelGap = lbl.text.trim() === "-1" ? 6 : 4;
+      if (!lbl.text.trim()) continue;
       parts.push(
-        `<text class="shaping-map-step-label" x="${fmt(fx(xPx(lbl.midX)))}" y="${fmt(yPx(lbl.row) - labelGap)}">${escapeXml(lbl.text)}</text>`,
+        `<text class="shaping-map-step-label" x="${fmt(drawX(xPx(lbl.midX)))}" y="${fmt(stepLabelCenterY(lbl.row, yPx))}">${escapeXml(lbl.text)}</text>`,
       );
     }
   }
 
-  // Center-stitches callout + neck-edge label live together on the neckline / center-front side
-  // (the end of the last neck step). Under a mirror they move to the opposite side (fx) and their
-  // anchor flips so the upright text still reads outward from the center stitches.
-  const neckSideX = centerSeg ? xPx(Math.max(centerSeg.x1, centerSeg.x2)) : gridRight;
-  const centerLabelBaseY = centerSeg ? yPx(centerSeg.row) + 18 : gridBottom + 26;
-  const neckAnchor = flipAnchor("end");
-  if (centerStitches > 0) {
+  if (centerLabelText) {
     parts.push(
-      `<text class="shaping-map-center-label" x="${fmt(fx(neckSideX))}" y="${fmt(centerLabelBaseY)}" text-anchor="${neckAnchor}">${centerStitches} Center Stitches</text>`,
+      `<text class="shaping-map-center-label" x="${fmt(drawX(neckSideX))}" y="${fmt(centerLabelBaseY)}" text-anchor="${neckAnchor}">${escapeXml(centerLabelText)}</text>`,
     );
   }
 
-  // Edge callouts, placed OUTSIDE the plotting area by the meaning of the profile (never by fixed
-  // page position). Text is always upright; the mirror only moves the x position + flips anchors.
-  //   - "Shoulder Edge": outer / armhole edge, in the top band above the shoulder step.
-  //   - "Neck Edge": neckline / center-front edge, below the center-stitches callout.
   if (shoulderEdgeLabel) {
-    // Sits in the reserved top band, above (and clear of) the top step label near the grid line.
     const shoulderEdgeY = EDGE_LABEL_TOP_GAP - 8;
     parts.push(
-      `<text class="shaping-map-edge-label" x="${fmt(fx(gridLeft))}" y="${fmt(shoulderEdgeY)}" text-anchor="${flipAnchor("start")}">${escapeXml(shoulderEdgeLabel)}</text>`,
+      `<text class="shaping-map-edge-label" x="${fmt(drawX(gridLeft))}" y="${fmt(shoulderEdgeY)}" text-anchor="${flipAnchor("start")}">${escapeXml(shoulderEdgeLabel)}</text>`,
     );
   }
   if (neckEdgeLabel) {
     const neckEdgeY =
       (centerStitches > 0 ? centerLabelBaseY : gridBottom + 16) + EDGE_LABEL_BOTTOM_GAP - 6;
     parts.push(
-      `<text class="shaping-map-edge-label" x="${fmt(fx(neckSideX))}" y="${fmt(neckEdgeY)}" text-anchor="${neckAnchor}">${escapeXml(neckEdgeLabel)}</text>`,
+      `<text class="shaping-map-edge-label" x="${fmt(drawX(neckSideX))}" y="${fmt(neckEdgeY)}" text-anchor="${neckAnchor}">${escapeXml(neckEdgeLabel)}</text>`,
     );
   }
 

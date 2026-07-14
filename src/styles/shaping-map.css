@@ -73,12 +73,13 @@
   stroke-linecap: round;
 }
 
-/* Small step count labels (e.g. -6, -5, -1, -4). */
+/* Step count labels (e.g. -6, -5, -1, -34). Sized for legibility in card, modal, and print. */
 .shaping-map-step-label {
   fill: #111111;
-  font-size: 10px;
+  font-size: 20px;
   font-weight: 700;
   text-anchor: middle;
+  dominant-baseline: middle;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
@@ -113,7 +114,7 @@
 }
 
 /* ============================================================================
- * PROTOTYPE ù FRONT "Visual Guides" two-column layout (Japanese Notation + Shaping Map)
+ * PROTOTYPE ? FRONT "Visual Guides" two-column layout (Japanese Notation + Shaping Map)
  * followed by a collapsed row-by-row checklist. Reuses the existing pattern card look
  * (quiet border, small radius, calm padding) so it does not introduce a new heavy design.
  * ========================================================================== */
@@ -143,7 +144,7 @@
   }
 }
 
-/* Shared card chrome ù consistent borders/padding/heading between both guides. */
+/* Shared card chrome ? consistent borders/padding/heading between both guides. */
 .ns-visual-guides__card {
   display: flex;
   flex-direction: column;
@@ -250,7 +251,7 @@ button.ns-visual-guides__preview:focus-visible .ns-visual-guides__zoom {
   object-fit: contain;
 }
 
-/* Enlarge controls ù identical treatment on both cards. */
+/* Enlarge controls ? identical treatment on both cards. */
 .ns-visual-guides__actions {
   display: flex;
   justify-content: center;
