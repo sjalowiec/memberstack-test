@@ -1,0 +1,103 @@
+---
+interface Props {
+  downloadLabel: string;
+  pdfFile: string;
+}
+
+const { downloadLabel, pdfFile } = Astro.props;
+---
+
+<section
+  class="printable-download-card kbm-card"
+  aria-labelledby="printable-download-heading"
+  data-printable-download
+  data-download-href={pdfFile}
+  data-download-label={downloadLabel}
+>
+  <h2 id="printable-download-heading" class="printable-download-card__heading">Download</h2>
+
+  <p class="printable-download-card__label">{downloadLabel}</p>
+  <p class="printable-download-card__member-note">(member only)</p>
+
+  <div
+    class="printable-download-card__cta-mount"
+    data-printable-download-cta
+    aria-live="polite"
+  ></div>
+</section>
+
+<script>
+  import { bootPrintableDownloadGates } from "../../scripts/printableDownloadGate";
+  bootPrintableDownloadGates();
+</script>
+
+<style>
+  .printable-download-card {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border: 1px solid #d7e2c8;
+    border-radius: 14px;
+    background: #f8faf3;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .printable-download-card__heading {
+    margin: 0 0 0.75rem;
+    font-size: 1.25rem;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .printable-download-card__label {
+    margin: 0;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .printable-download-card__member-note {
+    margin: 0.25rem 0 1.25rem;
+    font-size: 0.95rem;
+    color: #738c52;
+    font-weight: 600;
+  }
+
+  .printable-download-card__cta-mount {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+  }
+
+  .printable-download-card__cta-mount:empty {
+    min-height: 2.75rem;
+  }
+
+  .printable-download-card :global(.printable-download-card__cta) {
+    display: inline-block;
+    text-align: center;
+    text-decoration: none;
+  }
+
+  .printable-download-card :global(.printable-download-card__cta--secondary) {
+    background: transparent;
+    color: var(--kbm-green, #52682d);
+    border: 2px solid var(--kbm-green, #52682d);
+  }
+
+  .printable-download-card :global(.printable-download-card__cta--secondary:hover) {
+    background: rgba(82, 104, 45, 0.08);
+    color: var(--kbm-green, #52682d);
+  }
+
+  .printable-download-card :global(.printable-download-card__locked-status) {
+    margin: 0 0 0.75rem;
+    font-weight: 600;
+    color: #4d5a48;
+    line-height: 1.5;
+  }
+
+  .printable-download-card :global(.printable-download-card__locked-support) {
+    margin: 0 0 1rem;
+    color: #4d5a48;
+    line-height: 1.55;
+  }
+</style>

@@ -1,0 +1,40 @@
+---
+export const prerender = true;
+
+import Layout from "../../../layouts/Layout.astro";
+import PrintableResourceLayout from "../../../components/downloads/PrintableResourceLayout.astro";
+import {
+  findPrintableResourceBySlug,
+  printableResources,
+} from "../../../data/printableResources";
+
+export function getStaticPaths() {
+  return printableResources.map((resource) => ({
+    params: { slug: resource.slug },
+    props: { resource },
+  }));
+}
+
+const propResource = (Astro.props as { resource?: (typeof printableResources)[number] }).resource;
+const slugParam = Astro.params.slug ?? "";
+const resource = propResource ?? findPrintableResourceBySlug(slugParam);
+
+if (!resource) {
+  return Astro.redirect("/");
+}
+
+const title = `${resource.title} | Knit it Now`;
+const description = resource.subtitle;
+---
+
+<Layout {title} {description}>
+  <div class="page-wrap printable-resource-page-wrap">
+    <PrintableResourceLayout {resource} />
+  </div>
+</Layout>
+
+<style>
+  .printable-resource-page-wrap {
+    padding-top: 0;
+  }
+</style>

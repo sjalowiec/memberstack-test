@@ -1,0 +1,203 @@
+---
+import type { PrintableResource } from "../../data/printableResources";
+import PrintableDownloadCard from "./PrintableDownloadCard.astro";
+
+interface Props {
+  resource: PrintableResource;
+}
+
+const { resource } = Astro.props;
+---
+
+<div class="printable-resource-page">
+  <nav class="printable-resource-page__breadcrumb" aria-label="Breadcrumb">
+    <ol>
+      <li><a href="/">Home</a></li>
+      <li><span aria-hidden="true">/</span></li>
+      <li><span>Printable Resources</span></li>
+      <li><span aria-hidden="true">/</span></li>
+      <li><span aria-current="page">{resource.title}</span></li>
+    </ol>
+  </nav>
+
+  <header class="printable-resource-page__hero">
+    <h1 class="printable-resource-page__title">{resource.title}</h1>
+    <p class="printable-resource-page__subtitle">{resource.subtitle}</p>
+  </header>
+
+  <div class="printable-resource-page__layout">
+    <div class="printable-resource-page__main">
+      <div class="printable-resource-page__intro">
+        {resource.intro.map((paragraph) => (
+          <p>{paragraph}</p>
+        ))}
+
+        {resource.techniqueIntro && resource.techniqueExamples?.length ? (
+          <div class="printable-resource-page__techniques">
+            <p>{resource.techniqueIntro}</p>
+            <ul>
+              {resource.techniqueExamples.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </div>
+
+      <section class="printable-resource-page__includes" aria-labelledby="printable-includes-heading">
+        <h2 id="printable-includes-heading">What's Included</h2>
+        <ul>
+          {resource.includes.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+      </section>
+
+      <PrintableDownloadCard
+        downloadLabel={resource.downloadLabel}
+        pdfFile={resource.pdfFile}
+      />
+    </div>
+
+    {resource.image ? (
+      <aside class="printable-resource-page__media" aria-label="Preview">
+        <img
+          src={resource.image}
+          alt={resource.imageAlt ?? `${resource.title} preview`}
+          class="printable-resource-page__image"
+          loading="lazy"
+          decoding="async"
+        />
+      </aside>
+    ) : null}
+  </div>
+</div>
+
+<style>
+  .printable-resource-page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 1rem 4rem;
+  }
+
+  .printable-resource-page__breadcrumb ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    list-style: none;
+    margin: 0 0 1.25rem;
+    padding: 0;
+    font-size: 0.9rem;
+    color: #6b7280;
+  }
+
+  .printable-resource-page__breadcrumb a {
+    color: var(--kbm-green, #52682d);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .printable-resource-page__breadcrumb a:hover {
+    text-decoration: underline;
+  }
+
+  .printable-resource-page__breadcrumb [aria-current="page"] {
+    color: #374151;
+    font-weight: 600;
+  }
+
+  .printable-resource-page__hero {
+    margin-bottom: 1.75rem;
+  }
+
+  .printable-resource-page__title {
+    margin: 0 0 0.75rem;
+    font-size: var(--text-xxl, 2rem);
+    line-height: 1.2;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .printable-resource-page__subtitle {
+    margin: 0;
+    font-size: var(--text-lg, 1.125rem);
+    line-height: 1.55;
+    color: #4d5a48;
+  }
+
+  .printable-resource-page__layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  @media (min-width: 768px) {
+    .printable-resource-page__layout {
+      grid-template-columns: minmax(0, 1.2fr) minmax(220px, 0.8fr);
+    }
+  }
+
+  .printable-resource-page__intro p {
+    margin: 0 0 1rem;
+    line-height: 1.65;
+    color: #333;
+  }
+
+  .printable-resource-page__techniques {
+    margin-top: 0.25rem;
+  }
+
+  .printable-resource-page__techniques ul {
+    margin: 0.5rem 0 0;
+    padding-left: 1.25rem;
+    line-height: 1.65;
+    color: #333;
+  }
+
+  .printable-resource-page__techniques li {
+    margin-bottom: 0.35rem;
+  }
+
+  .printable-resource-page__includes {
+    margin: 2rem 0;
+  }
+
+  .printable-resource-page__includes h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1.35rem;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .printable-resource-page__includes ul {
+    margin: 0;
+    padding-left: 1.25rem;
+    line-height: 1.65;
+    color: #333;
+  }
+
+  .printable-resource-page__includes li {
+    margin-bottom: 0.35rem;
+  }
+
+  .printable-resource-page__media {
+    position: sticky;
+    top: 1rem;
+  }
+
+  .printable-resource-page__image {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 12px;
+    border: 1px solid #e8ebe4;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  }
+
+  @media (max-width: 767px) {
+    .printable-resource-page__media {
+      position: static;
+      order: -1;
+    }
+  }
+</style>
