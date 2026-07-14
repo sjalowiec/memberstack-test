@@ -12,6 +12,11 @@
   visibility: hidden;
 }
 
+.pattern-workspace-library-drawer.hat-yarn-drawer:not(.is-open),
+.pattern-workspace-library-drawer.hat-yarn-drawer:not(.is-open) * {
+  pointer-events: none !important;
+}
+
 .pattern-workspace-library-drawer.hat-yarn-drawer.is-open {
   pointer-events: auto;
   visibility: visible;
@@ -20,7 +25,7 @@
 .pattern-workspace-library-drawer .hat-yarn-drawer-backdrop {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
   margin: 0;
   padding: 0;
   border: none;
@@ -42,7 +47,8 @@
   top: 0;
   right: 0;
   bottom: 0;
-  z-index: 1;
+  z-index: 2;
+  pointer-events: auto;
   width: min(22rem, 100vw);
   max-width: 100%;
   box-sizing: border-box;
