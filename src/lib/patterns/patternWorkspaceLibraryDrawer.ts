@@ -27,6 +27,9 @@ const SIGN_IN_REQUIRED_ERROR = "Sign in to save Custom Pattern projects.";
 export const PATTERN_WORKSPACE_LIBRARY_DRAWER_OPEN_CLASS =
   "pattern-workspace-library-drawer-open";
 
+export const PATTERN_WORKSPACE_LIBRARY_DRAWER_INIT_ATTR =
+  "data-pattern-workspace-library-drawer-init";
+
 export function formatCustomPatternProjectType(project: CustomPatternProjectSummary): string {
   const system = project.patternSystem?.trim();
   if (system === "drop-shoulder") return "Drop Shoulder";
@@ -406,7 +409,8 @@ export async function refreshPatternWorkspaceLibraryList(
 export type PatternWorkspaceLibraryDrawerBindings = {
   drawer: HTMLElement;
   panel: HTMLElement;
-  trigger: HTMLButtonElement;
+  /** First trigger in document order — used only as a focus fallback on close. */
+  trigger: HTMLElement;
   closeBtn: HTMLButtonElement;
   backdrop: HTMLElement;
 };
@@ -423,7 +427,7 @@ export function resolvePatternWorkspaceLibraryDrawerBindings(
   if (
     !(drawer instanceof HTMLElement) ||
     !(panel instanceof HTMLElement) ||
-    !(trigger instanceof HTMLButtonElement) ||
+    !(trigger instanceof HTMLElement) ||
     !(closeBtn instanceof HTMLButtonElement) ||
     !(backdrop instanceof HTMLElement)
   ) {
@@ -435,8 +439,14 @@ export function resolvePatternWorkspaceLibraryDrawerBindings(
 
 let lastFocusBeforeOpen: HTMLElement | null = null;
 
+function syncLibraryDrawerTriggerExpanded(doc: Document, expanded: boolean): void {
+  doc.querySelectorAll("[data-pattern-workspace-library-trigger]").forEach((el) => {
+    el.setAttribute("aria-expanded", expanded ? "true" : "false");
+  });
+}
+
 export function openPatternWorkspaceLibraryDrawer(bindings: PatternWorkspaceLibraryDrawerBindings): void {
-  const { drawer, panel, trigger } = bindings;
+  const { drawer, panel } = bindings;
   const doc = drawer.ownerDocument;
   lastFocusBeforeOpen =
     doc.activeElement instanceof HTMLElement ? doc.activeElement : null;
@@ -444,7 +454,7 @@ export function openPatternWorkspaceLibraryDrawer(bindings: PatternWorkspaceLibr
   drawer.classList.add("is-open");
   drawer.setAttribute("aria-hidden", "false");
   panel.setAttribute("aria-hidden", "false");
-  trigger.setAttribute("aria-expanded", "true");
+  syncLibraryDrawerTriggerExpanded(doc, true);
   doc.body.classList.add(PATTERN_WORKSPACE_LIBRARY_DRAWER_OPEN_CLASS);
 
   void refreshPatternWorkspaceLibraryList(drawer);
@@ -458,12 +468,12 @@ export function closePatternWorkspaceLibraryDrawer(bindings: PatternWorkspaceLib
   drawer.classList.remove("is-open");
   drawer.setAttribute("aria-hidden", "true");
   panel.setAttribute("aria-hidden", "true");
-  trigger.setAttribute("aria-expanded", "false");
+  syncLibraryDrawerTriggerExpanded(doc, false);
   doc.body.classList.remove(PATTERN_WORKSPACE_LIBRARY_DRAWER_OPEN_CLASS);
 
   if (lastFocusBeforeOpen && doc.contains(lastFocusBeforeOpen)) {
     lastFocusBeforeOpen.focus();
-  } else {
+  } else if (trigger instanceof HTMLElement) {
     trigger.focus();
   }
   lastFocusBeforeOpen = null;
@@ -480,22 +490,40 @@ export function isPatternWorkspaceLibraryDrawerOpen(
   return bindings.drawer.classList.contains("is-open");
 }
 
+function togglePatternWorkspaceLibraryDrawer(
+  bindings: PatternWorkspaceLibraryDrawerBindings,
+  event?: Event,
+): void {
+  event?.preventDefault();
+  if (isPatternWorkspaceLibraryDrawerOpen(bindings)) {
+    closePatternWorkspaceLibraryDrawer(bindings);
+  } else {
+    openPatternWorkspaceLibraryDrawer(bindings);
+  }
+}
+
 export function initPatternWorkspaceLibraryDrawer(doc: Document = document): void {
+  const root = doc.documentElement;
+  if (root.getAttribute(PATTERN_WORKSPACE_LIBRARY_DRAWER_INIT_ATTR) === "true") return;
+
   const bindings = resolvePatternWorkspaceLibraryDrawerBindings(doc);
   if (!bindings) return;
 
-  const { drawer, trigger, closeBtn, backdrop } = bindings;
+  root.setAttribute(PATTERN_WORKSPACE_LIBRARY_DRAWER_INIT_ATTR, "true");
 
-  trigger.addEventListener("click", () => {
-    if (isPatternWorkspaceLibraryDrawerOpen(bindings)) {
-      closePatternWorkspaceLibraryDrawer(bindings);
-    } else {
-      openPatternWorkspaceLibraryDrawer(bindings);
-    }
+  const { closeBtn, backdrop, panel } = bindings;
+
+  doc.querySelectorAll("[data-pattern-workspace-library-trigger]").forEach((trigger) => {
+    trigger.addEventListener("click", (event) => togglePatternWorkspaceLibraryDrawer(bindings, event));
   });
 
   closeBtn.addEventListener("click", () => closePatternWorkspaceLibraryDrawer(bindings));
   backdrop.addEventListener("click", () => closePatternWorkspaceLibraryDrawer(bindings));
+
+  // Clicks inside the panel must not bubble to document-level dismiss handlers.
+  panel.addEventListener("click", (event) => {
+    event.stopPropagation();
+  });
 
   doc.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;

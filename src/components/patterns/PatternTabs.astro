@@ -2,7 +2,6 @@
 import "../../styles/patterns/pattern-tabs-scope.css";
 import "../../styles/patterns/pattern-editable-pencil.css";
 import PatternEditablePencilIcon from "./PatternEditablePencilIcon.astro";
-import PatternWorkspaceLibraryDrawer from "./PatternWorkspaceLibraryDrawer.astro";
 
 interface Props {
   /** When true, Pattern tab cannot be activated by click (programmatic switches still work). */
@@ -72,7 +71,7 @@ const pathIsSummaryFlow =
   (summaryRoot && (pathNow === summaryRoot || pathNow.startsWith(`${summaryRoot}/`))) ||
   pathIsCustomStyleFlow;
 
-/** Custom Build Foundation — workspace Create tab, not Customize. */
+/** Custom Build Foundation � workspace Create tab, not Customize. */
 const customBuildFoundationRoot = normPath("/patterns/sleeveless/custom-build/design");
 const pathIsCustomBuildFoundationFlow =
   pathNow === customBuildFoundationRoot ||
@@ -202,7 +201,7 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
       <div class="pattern-tab-nav">
         <>
           <button type="button" class="tab-btn active" data-tab="build">
-            <span class="tab-icon" aria-hidden="true">⚙️</span>
+            <span class="tab-icon" aria-hidden="true">??</span>
             <span class="tab-label">Create</span>
           </button>
           {
@@ -214,7 +213,7 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
                 data-tab="pattern"
                 aria-disabled={patternTabDisabled ? "true" : undefined}
               >
-                <span class="tab-icon" aria-hidden="true">📝</span>
+                <span class="tab-icon" aria-hidden="true">??</span>
                 <span class="tab-label">Pattern</span>
               </button>
             )
@@ -222,7 +221,7 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
           {
             !hideShare && (
               <button type="button" class="tab-btn" data-tab="share">
-                <span class="tab-icon" aria-hidden="true">💬</span>
+                <span class="tab-icon" aria-hidden="true">??</span>
                 <span class="tab-label">Ask / Share</span>
               </button>
             )
@@ -230,7 +229,7 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
           {
             !hideInspiration && (
               <button type="button" class="tab-btn" data-tab="inspiration">
-                <span class="tab-icon" aria-hidden="true">💡</span>
+                <span class="tab-icon" aria-hidden="true">??</span>
                 <span class="tab-label">Inspiration</span>
               </button>
             )
@@ -239,8 +238,6 @@ const summaryNavHref = summaryRoot ? `${summaryRoot}/` : cb || "#";
       </div>
     )
   }
-
-  {workspaceNav ? <PatternWorkspaceLibraryDrawer /> : null}
 
   {
     workspaceNav ? null : (

@@ -14,6 +14,8 @@ import {
   formatPatternCopiedDrawerMessage,
   openPatternWorkspaceLibraryDrawer,
   PATTERN_WORKSPACE_LIBRARY_DRAWER_OPEN_CLASS,
+  PATTERN_WORKSPACE_LIBRARY_DRAWER_INIT_ATTR,
+  initPatternWorkspaceLibraryDrawer,
   refreshPatternWorkspaceLibraryList,
   resetPatternWorkspaceLibraryDrawerSessionState,
   resolvePatternWorkspaceLibraryDrawerBindings,
@@ -71,6 +73,7 @@ function makeClassList() {
 
 type MockEl = HTMLElement & {
   _click?: () => unknown;
+  _clickListeners?: Array<(event?: { preventDefault?: () => void; stopPropagation?: () => void }) => unknown>;
   _children: MockEl[];
 };
 
@@ -85,6 +88,7 @@ function makeEl(tag = "div"): MockEl {
     disabled: false,
     dataset: {} as DOMStringMap,
     _children: [] as MockEl[],
+    _clickListeners: [] as MockEl["_clickListeners"],
     setAttribute(name: string, value: string) {
       attrs.set(name, value);
     },
@@ -107,8 +111,13 @@ function makeEl(tag = "div"): MockEl {
       const matches = collectMatches(el._children, sel);
       return matches as unknown as NodeListOf<Element>;
     },
-    addEventListener(event: string, handler: () => unknown) {
-      if (event === "click") el._click = handler;
+    addEventListener(event: string, handler: (...args: unknown[]) => unknown) {
+      if (event === "click") {
+        el._click = handler as () => unknown;
+        el._clickListeners?.push(
+          handler as (event?: { preventDefault?: () => void; stopPropagation?: () => void }) => unknown,
+        );
+      }
     },
     matches(sel: string) {
       if (sel === "[data-pattern-workspace-library-open]") {
@@ -147,6 +156,12 @@ function makeDrawerBindings(): PatternWorkspaceLibraryDrawerBindings & {
     activeElement: null as HTMLElement | null,
     contains: () => false,
     addEventListener: vi.fn(),
+    querySelectorAll: (sel: string) => {
+      if (sel === "[data-pattern-workspace-library-trigger]") {
+        return [trigger] as unknown as NodeListOf<Element>;
+      }
+      return [] as unknown as NodeListOf<Element>;
+    },
   };
 
   const drawer = makeEl("div");
@@ -523,5 +538,148 @@ describe("patternWorkspaceLibraryDrawer", () => {
     } as unknown as Document;
     expect(resolvePatternWorkspaceLibraryDrawerBindings(doc)).toBeNull();
     clearActiveCustomPatternProjectId();
+  });
+
+  it("syncs aria-expanded on every My Patterns trigger when opening and closing", () => {
+    const bindings = makeDrawerBindings();
+    const headerTrigger = bindings.trigger;
+    const workspaceTrigger = makeEl("button");
+    const doc = bindings.drawer.ownerDocument as Document & {
+      querySelectorAll: (sel: string) => MockEl[];
+    };
+    doc.querySelectorAll = (sel: string) => {
+      if (sel === "[data-pattern-workspace-library-trigger]") {
+        return [headerTrigger, workspaceTrigger];
+      }
+      return [];
+    };
+
+    openPatternWorkspaceLibraryDrawer(bindings);
+    expect(headerTrigger.getAttribute("aria-expanded")).toBe("true");
+    expect(workspaceTrigger.getAttribute("aria-expanded")).toBe("true");
+
+    closePatternWorkspaceLibraryDrawer(bindings);
+    expect(headerTrigger.getAttribute("aria-expanded")).toBe("false");
+    expect(workspaceTrigger.getAttribute("aria-expanded")).toBe("false");
+  });
+
+  it("initializes once, binds all triggers, and keeps in-drawer controls clickable", async () => {
+    const bodyClassList = makeClassList();
+    const rootAttrs = new Map<string, string>();
+    const documentClickHandlers: Array<(event: { target: MockEl; preventDefault: () => void }) => void> = [];
+
+    const doc = {
+      body: { classList: bodyClassList },
+      documentElement: {
+        getAttribute: (name: string) => rootAttrs.get(name) ?? null,
+        setAttribute: (name: string, value: string) => rootAttrs.set(name, value),
+      },
+      activeElement: null as HTMLElement | null,
+      contains: () => true,
+      addEventListener: vi.fn((event: string, handler: (e: unknown) => void) => {
+        if (event === "click") documentClickHandlers.push(handler as typeof documentClickHandlers[number]);
+      }),
+      querySelector: (sel: string) => {
+        if (sel === "[data-pattern-workspace-library-drawer]") return drawer;
+        if (sel === "#pattern-workspace-library-drawer-panel") return panel;
+        if (sel === "[data-pattern-workspace-library-close]") return closeBtn;
+        if (sel === "[data-pattern-workspace-library-backdrop]") return backdrop;
+        if (sel === "[data-pattern-workspace-library-trigger]") return headerTrigger;
+        return null;
+      },
+      querySelectorAll: (sel: string) => {
+        if (sel === "[data-pattern-workspace-library-trigger]") {
+          return [headerTrigger, workspaceTrigger] as unknown as NodeListOf<Element>;
+        }
+        return [] as unknown as NodeListOf<Element>;
+      },
+    } as unknown as Document;
+
+    const drawer = makeEl("div");
+    const panel = makeEl("div");
+    const headerTrigger = makeEl("a");
+    const workspaceTrigger = makeEl("button");
+    const closeBtn = makeEl("button");
+    const backdrop = makeEl("div");
+    const status = makeEl("div");
+    const list = makeEl("ul");
+
+    headerTrigger.setAttribute("data-pattern-workspace-library-trigger", "");
+    workspaceTrigger.setAttribute("data-pattern-workspace-library-trigger", "");
+
+    for (const el of [drawer, panel, headerTrigger, workspaceTrigger, closeBtn, backdrop, status, list]) {
+      Object.defineProperty(el, "ownerDocument", { value: doc });
+    }
+
+    drawer.querySelector = (sel: string) => {
+      if (sel === "[data-pattern-workspace-library-status]") return status;
+      if (sel === "[data-pattern-workspace-library-list]") return list;
+      return collectMatches(list._children, sel)[0] ?? null;
+    };
+    drawer.querySelectorAll = (sel: string) => {
+      if (
+        sel === "[data-pattern-workspace-library-item-card]" ||
+        sel === "[data-pattern-workspace-library-open]" ||
+        sel === "[data-pattern-workspace-library-copy]"
+      ) {
+        return collectMatches(list._children, sel) as unknown as NodeListOf<HTMLElement>;
+      }
+      return [] as unknown as NodeListOf<HTMLElement>;
+    };
+
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: [
+        {
+          id: "proj-a",
+          name: "Alpha pullover",
+          family: "sleeveless",
+          source: "express",
+          updatedAt: "2026-01-01T00:00:00.000Z",
+        },
+      ],
+    });
+    loadSavedCustomPatternProjectMock.mockResolvedValue({
+      ok: true,
+      redirectHref: "/patterns/sleeveless/pattern/",
+    });
+    const assign = vi.fn();
+    vi.stubGlobal("window", { location: { assign } });
+
+    initPatternWorkspaceLibraryDrawer(doc);
+    initPatternWorkspaceLibraryDrawer(doc);
+    expect(rootAttrs.get(PATTERN_WORKSPACE_LIBRARY_DRAWER_INIT_ATTR)).toBe("true");
+
+    await headerTrigger._click?.({ preventDefault: vi.fn() });
+    expect(drawer.classList.contains("is-open")).toBe(true);
+
+    await refreshPatternWorkspaceLibraryList(drawer);
+    const openBtn = drawer.querySelector(
+      "[data-pattern-workspace-library-open]",
+    ) as MockEl | null;
+    expect(openBtn?._click).toBeTypeOf("function");
+
+    let documentDismissCalled = false;
+    documentClickHandlers.forEach((handler) =>
+      handler({
+        target: openBtn as MockEl,
+        preventDefault: () => {
+          documentDismissCalled = true;
+        },
+      }),
+    );
+    expect(documentDismissCalled).toBe(false);
+
+    await openBtn?._click?.();
+    expect(loadSavedCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "open");
+    expect(assign).toHaveBeenCalledWith("/patterns/sleeveless/pattern/");
+
+    await backdrop._click?.();
+    expect(drawer.classList.contains("is-open")).toBe(false);
+
+    await workspaceTrigger._click?.({ preventDefault: vi.fn() });
+    expect(drawer.classList.contains("is-open")).toBe(true);
+    expect(workspaceTrigger.getAttribute("aria-expanded")).toBe("true");
+    expect(headerTrigger.getAttribute("aria-expanded")).toBe("true");
   });
 });
