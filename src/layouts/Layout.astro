@@ -18,6 +18,11 @@ interface Props {
    * pages (signup/thank-you, machine-checkup, knit-your-first-rows, etc.).
    */
   onboarding?: boolean;
+  /**
+   * Marketing / sales pages: same minimal header as onboarding (logo only, no
+   * nav or search) without onboarding-only UI such as "Skip for now".
+   */
+  marketing?: boolean;
 }
 
 const {
@@ -27,12 +32,17 @@ const {
   skipGlobalHyvor = false,
   skipGlobalPinterest = false,
   toolPrintTitle,
-  onboarding = false
+  onboarding = false,
+  marketing = false,
 } = Astro.props;
 
-// Onboarding pages get a body hook so the minimal header height is respected
-// without touching the global header offset used by the rest of the site.
-const resolvedBodyClass = [bodyClass, onboarding ? "page--onboarding" : ""]
+// Onboarding and marketing pages get a body hook so the minimal header height is
+// respected without touching the global header offset used by the rest of the site.
+const resolvedBodyClass = [
+  bodyClass,
+  onboarding ? "page--onboarding" : "",
+  marketing ? "page--marketing" : "",
+]
   .filter(Boolean)
   .join(" ");
 ---
@@ -45,7 +55,7 @@ const resolvedBodyClass = [bodyClass, onboarding ? "page--onboarding" : ""]
   skipGlobalHyvor={skipGlobalHyvor}
   skipGlobalPinterest={skipGlobalPinterest}
 >
-  <Header onboarding={onboarding} />
+  <Header onboarding={onboarding} marketing={marketing} />
 
  
 
@@ -141,16 +151,18 @@ const resolvedBodyClass = [bodyClass, onboarding ? "page--onboarding" : ""]
     --header-buffer: 8px;
   }
 
-  /* Onboarding flow: minimal header (logo only), so content can sit closer to
+  /* Onboarding and marketing: minimal header (logo only), so content can sit closer to
      the top. Set here (body scope) so it never affects the global header used
      by the rest of the site. The offset JS below refines this after measuring. */
-  body.page--onboarding {
+  body.page--onboarding,
+  body.page--marketing {
     --header-offset: 88px;
     --header-buffer: 8px;
   }
 
   @media (max-width: 600px) {
-    body.page--onboarding {
+    body.page--onboarding,
+    body.page--marketing {
       --header-offset: 72px;
     }
   }

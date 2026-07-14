@@ -8,7 +8,7 @@ import MembershipPricing from "../components/membership/MembershipPricing.astro"
   <div class="page-wrap">
     <PageHead title="Become a Member" breadcrumb="Home / Join" />
 
-    <div class="join-content">
+    <div class="join-content membership-billing-scope">
       <p class="join-intro">
         Choose the membership that fits how you knit. Checkout is handled securely through Memberstack.
       </p>
@@ -32,5 +32,6 @@ import MembershipPricing from "../components/membership/MembershipPricing.astro"
 
   <script>
     import "../scripts/joinCheckout.ts";
+    import "../scripts/membershipBillingToggle.ts";
   </script>
 </Layout>

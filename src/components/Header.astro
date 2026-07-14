@@ -3,6 +3,7 @@
 
 import { MEMBER_PLAN_IDS } from "../config/memberships";
 import { PATTERN_BUILDERS_HOME_HREF } from "../lib/patterns/customPatternProjectNavigation";
+import PatternWorkspaceLibraryDrawer from "./patterns/PatternWorkspaceLibraryDrawer.astro";
 
 interface Props {
   /**
@@ -11,9 +12,15 @@ interface Props {
    * the hamburger menu, and the beta banner while keeping the logo → home link.
    */
   onboarding?: boolean;
+  /**
+   * Marketing mode: same minimal chrome as onboarding (logo only, no nav/search)
+   * for sales pages such as /membership.
+   */
+  marketing?: boolean;
 }
 
-const { onboarding = false } = Astro.props;
+const { onboarding = false, marketing = false } = Astro.props;
+const minimalHeader = onboarding || marketing;
 
 const memberPlanIds = [...MEMBER_PLAN_IDS];
 ---
@@ -1821,7 +1828,7 @@ div[data-ms-modal-overlay] {
       </div>
 
       <!-- Primary nav: menu links (row 1 on tablet; centered on desktop) -->
-      {!onboarding && (
+      {!minimalHeader && (
       <>
       <div class="kbm-nav-primary">
         <div class="kbm-nav-row menu-row">
@@ -1844,7 +1851,14 @@ div[data-ms-modal-overlay] {
                   </a>
                 </li>
                 <li>
-                  <a href="/account#my-patterns" data-testid="nav-my-patterns">
+                  <a
+                    href="#"
+                    data-pattern-workspace-library-trigger
+                    data-testid="nav-my-patterns"
+                    aria-haspopup="dialog"
+                    aria-controls="pattern-workspace-library-drawer-panel"
+                    aria-expanded="false"
+                  >
                     My Patterns
                   </a>
                 </li>
@@ -1892,10 +1906,22 @@ div[data-ms-modal-overlay] {
                 Tools
               </a>
             </li>
-            <li class="nav-item">
-              <a href="/help-hub" class="nav-link" data-testid="nav-help-hub">
-                Help Hub
-              </a>
+            <li class="nav-item nav-dropdown dd">
+              <button
+                type="button"
+                class="nav-link nav-dropdown-toggle dd-trigger"
+                aria-haspopup="true"
+                aria-expanded="false"
+                data-testid="nav-help-hub"
+              >
+                Help Hub 
+              </button>
+
+              <ul class="nav-dropdown-menu dd-panel" role="menu">
+                <li><a href="/help-hub" data-testid="nav-help-hub">Help Hub</a></li>
+                <!-- Hidden for now -->
+                 <li class="is-hidden"><a href="/reference">Reference</a></li>
+              </ul>
             </li>
             <!-- Temporary for local/dev testing: may be disabled again before production release. -->
             <li class="nav-item nav-dropdown dd">
@@ -1920,7 +1946,7 @@ div[data-ms-modal-overlay] {
                   <a href="/shop/cables" data-testid="nav-shop-cables">Cables</a>
                 </li>
                 <li>
-                  <a href="/shop/machines" data-testid="nav-shop-machines">Knitting Machines</a>
+                  <a href="/shop/machines" data-testid="nav-shop-machines">Machines</a>
                 </li>
                 <li>
                   <a href="/shop/ebooks" data-testid="nav-shop-ebooks">eBooks</a>
@@ -2037,7 +2063,7 @@ div[data-ms-modal-overlay] {
     </div>
   </header>
 
-  {!onboarding && (
+  {!minimalHeader && (
     <div class="kbm-search-strip" role="region" aria-label="Site-wide search">
       <div class="kbm-search-strip-inner">
         <div
@@ -2060,6 +2086,7 @@ div[data-ms-modal-overlay] {
   )}
 </section>
 
+{!minimalHeader && (
 <div id="searchModal" class="search-modal" aria-hidden="true" data-pagefind-ignore>
   <div class="search-modal__overlay" id="closeSearchModal"></div>
 
@@ -2071,6 +2098,9 @@ div[data-ms-modal-overlay] {
     <div id="pagefind-search" class="pagefind-search"></div>
   </div>
 </div>
+)}
+
+{!minimalHeader && <PatternWorkspaceLibraryDrawer />}
 
 <script is:inline define:vars={{ memberPlanIds }}>
   (function () {
