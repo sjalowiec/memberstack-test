@@ -14,6 +14,10 @@ import {
 import { filterPublicCatalogVideos } from "../../lib/videoPublic";
 import { helpHubTipIsPublic } from "../../lib/helpHubPublic";
 import { buildHelpHubFaqPage, serializeJsonLd } from "../../lib/helpHubFaqSchema";
+import {
+  resolveHelpHubRelatedLessons,
+  type HelpHubLessonRecord,
+} from "../../lib/helpHubMemberLesson";
 
 const slugParam =
   typeof Astro.params.slug === "string" ? Astro.params.slug.trim() : "";
@@ -59,92 +63,17 @@ type HelpHubRecord = {
   jumpLinks?: { label: string; href: string }[];
 };
 
-type LessonRecord = {
-  id?: number | string;
-  slug?: string;
-  title?: string;
-  summary?: string;
-  access?: string;
+type LessonRecord = HelpHubLessonRecord & {
   videoSlug?: string;
   vimeoEmbedUrl?: string;
   /** Inline player shape (`lessons/[slug].astro`). */
   mediaType?: string;
   mediaUrl?: string;
-  /** `published`, omitted, or empty = public; other values hide from `/lessons/[slug]`. */
-  status?: string;
 };
 
 const catalogVideosHelpHub = filterPublicCatalogVideos(
   Array.isArray(videosPublic) ? (videosPublic as PublicVideoRow[]) : [],
 );
-
-/** Vimeo numeric id from catalog `videoSlug` or legacy `vimeoEmbedUrl` (matching relatedLessons refs). */
-function vimeoNumericIdFromLesson(l: LessonRecord): string | null {
-  const key = typeof l.videoSlug === "string" ? l.videoSlug.trim() : "";
-  if (key) {
-    const v = findPublicVideoByKey(catalogVideosHelpHub, key);
-    if (v) {
-      const id = vimeoNumericIdFromPublicVideo(v);
-      if (id) return id;
-    }
-  }
-  const raw = typeof l.vimeoEmbedUrl === "string" ? l.vimeoEmbedUrl.trim() : "";
-  if (raw) {
-    if (/^\d+$/.test(raw)) return raw;
-    const m = raw.match(/\/(?:video\/)?(\d+)(?:\?|#|$)/);
-    if (m) return m[1];
-  }
-  const mt = typeof l.mediaType === "string" ? l.mediaType.trim().toLowerCase() : "";
-  const mu = typeof l.mediaUrl === "string" ? l.mediaUrl.trim() : "";
-  if (mt === "vimeo" && /^\d+$/.test(mu)) return mu;
-  return null;
-}
-
-/** Same rule as `src/pages/lessons/[slug].astro` `lessonIsPubliclyPublished`. */
-function lessonIsPubliclyPublished(l: LessonRecord): boolean {
-  const raw = l.status;
-  if (raw === undefined || raw === null) return true;
-  const s = typeof raw === "string" ? raw.trim().toLowerCase() : "";
-  if (s === "") return true;
-  return s === "published";
-}
-
-function lessonNumericId(l: LessonRecord): number | null {
-  const rawId: unknown = l.id;
-  if (typeof rawId === "number" && Number.isFinite(rawId)) return rawId;
-  if (typeof rawId === "string" && /^\d+$/.test(rawId.trim())) {
-    const n = Number(rawId.trim());
-    return Number.isFinite(n) ? n : null;
-  }
-  return null;
-}
-
-function lessonIdMatches(refNum: number, l: LessonRecord): boolean {
-  const nid = lessonNumericId(l);
-  return nid !== null && nid === refNum;
-}
-
-/** Resolve a tip `relatedLessons[]` entry: slug, then `lessons.json` id (digits), then Vimeo id. */
-function resolveLessonFromRelatedRef(
-  ref: string,
-  allLessons: LessonRecord[],
-): LessonRecord | undefined {
-  const trimmed = ref.trim();
-  if (!trimmed) return undefined;
-  const bySlug = allLessons.find(
-    (l) => typeof l.slug === "string" && l.slug.trim() === trimmed,
-  );
-  if (bySlug) return bySlug;
-  if (/^\d+$/.test(trimmed)) {
-    const idNum = Number(trimmed);
-    if (Number.isFinite(idNum)) {
-      const byLessonId = allLessons.find((l) => lessonIdMatches(idNum, l));
-      if (byLessonId) return byLessonId;
-    }
-    return allLessons.find((l) => vimeoNumericIdFromLesson(l) === trimmed);
-  }
-  return undefined;
-}
 
 /**
  * Prerendered: only public Help Hub tips are emitted as static pages via
@@ -177,20 +106,10 @@ const lessonRecords = Array.isArray(lessons)
   ? (lessons as LessonRecord[])
   : [];
 
-const relatedLessonsResolved: LessonRecord[] = [];
-if (Array.isArray(tip.relatedLessons)) {
-  for (const ref of tip.relatedLessons) {
-    let found: LessonRecord | undefined;
-    if (typeof ref === "number" && Number.isFinite(ref)) {
-      found = lessonRecords.find((l) => lessonIdMatches(ref, l));
-    } else if (typeof ref === "string") {
-      found = resolveLessonFromRelatedRef(ref, lessonRecords);
-    }
-    if (found && lessonIsPubliclyPublished(found)) {
-      relatedLessonsResolved.push(found);
-    }
-  }
-}
+const relatedLessonsResolved = resolveHelpHubRelatedLessons(
+  tip.relatedLessons,
+  lessonRecords,
+);
 
 const memberLessonsSectionTitle =
   relatedLessonsResolved.length === 1 ? "Member Lesson" : "Member Lessons";
@@ -580,13 +499,12 @@ const faqJsonLd = faqPage ? serializeJsonLd(faqPage) : "";
                   <div class="help-hub-member-lessons__summary" set:html={summary}></div>
                 ) : null}
                 <div class="help-hub-member-lessons__actions">
-                  <a
-                    href={lessonHref}
-                    class="kbm-btn kbm-btn-accent help-hub-member-lessons__cta"
-                  >
-                    Watch the full lesson
-                  </a>
-                  <p class="help-hub-member-lessons__note">
+                  <div
+                    class="help-hub-member-lessons__cta-mount"
+                    data-hh-lesson-cta
+                    data-lesson-href={lessonHref}
+                  ></div>
+                  <p class="help-hub-member-lessons__note" data-hh-lesson-note hidden>
                     Included with Knit it Now membership.
                   </p>
                 </div>
@@ -597,85 +515,15 @@ const faqJsonLd = faqPage ? serializeJsonLd(faqPage) : "";
       )}
     </section>
 
-    <!--
-    <script is:inline>
-      (function () {
-        var MEMBER_PLAN_IDS = [
-          "pln_kin-membership-annual-qf9g01et",
-          "pln_kin-membership-monthly-a59701wy",
-        ];
-        function planSet() {
-          var s = {};
-          for (var i = 0; i < MEMBER_PLAN_IDS.length; i++) s[MEMBER_PLAN_IDS[i]] = true;
-          return s;
-        }
-        var PLAN = planSet();
+    <script>
+      import { bootHelpHubMemberLessonGates } from "../../scripts/helpHubMemberLessonGateClient";
 
-        async function getIsMember() {
-          try {
-            var res =
-              window.$memberstackDom &&
-              (await window.$memberstackDom.getAppAndMember?.());
-            var member = res && res.data && res.data.member;
-            if (!member) return false;
-            var conns = Array.isArray(member.planConnections)
-              ? member.planConnections
-              : [];
-            for (var i = 0; i < conns.length; i++) {
-              var c = conns[i];
-              if (
-                c &&
-                c.status === "ACTIVE" &&
-                c.active &&
-                c.planId &&
-                PLAN[c.planId]
-              )
-                return true;
-            }
-            return false;
-          } catch (e) {
-            return false;
-          }
-        }
-
-        function applyLessonButtons(isMember) {
-          var root = document.querySelector("[data-help-hub-lessons]");
-          if (!root) return;
-          var btns = root.querySelectorAll("a.kbm-btn[data-lesson-access]");
-          for (var i = 0; i < btns.length; i++) {
-            var btn = btns[i];
-            var access = btn.getAttribute("data-lesson-access") || "free";
-            var openHref = btn.getAttribute("data-lesson-href") || btn.getAttribute("href") || "/lessons";
-            if (access !== "member") {
-              btn.textContent = "Open Lesson";
-              btn.setAttribute("href", openHref);
-              continue;
-            }
-            if (isMember) {
-              btn.textContent = "Open Lesson";
-              btn.setAttribute("href", openHref);
-            } else {
-              btn.textContent = "Unlock Lesson 🔒";
-              btn.setAttribute("href", "/join");
-            }
-          }
-        }
-
-        async function init() {
-          for (var j = 0; j < 35; j++) {
-            if (window.$memberstackDom && window.$memberstackDom.getAppAndMember) break;
-            await new Promise(function (r) {
-              setTimeout(r, 200);
-            });
-          }
-          var isMember = await getIsMember();
-          if (window.__DEV_BYPASS_GATING || window.__KBM_DEV_MEMBER__) isMember = true;
-          applyLessonButtons(isMember);
-        }
-        void init();
-      })();
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", bootHelpHubMemberLessonGates);
+      } else {
+        bootHelpHubMemberLessonGates();
+      }
     </script>
-    -->
 
     <section class="tuesday-tip__section tuesday-tip-discussion">
       <h2>Did you try this? I’d love to hear how it went</h2>
@@ -1250,10 +1098,41 @@ const faqJsonLd = faqPage ? serializeJsonLd(faqPage) : "";
     margin-top: 0.15rem;
   }
 
+  .help-hub-member-lessons__locked-status {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #334155;
+    line-height: 1.45;
+  }
+
+  .help-hub-member-lessons__locked-support {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #64748b;
+    line-height: 1.5;
+  }
+
+  .help-hub-member-lessons__cta-mount {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.55rem;
+    width: 100%;
+  }
+
+  .help-hub-member-lessons__cta-mount:empty {
+    display: none;
+  }
+
   .help-hub-member-lessons__cta {
     font-weight: 650;
     padding-inline: 1.35rem;
     padding-block: 0.55rem;
+  }
+
+  .help-hub-member-lessons__cta--secondary {
+    font-weight: 600;
   }
 
   .help-hub-member-lessons__note {
@@ -1288,7 +1167,7 @@ const faqJsonLd = faqPage ? serializeJsonLd(faqPage) : "";
     }
 
     .help-hub-member-lessons__actions .kbm-btn,
-    .help-hub-member-lessons__cta {
+    .help-hub-member-lessons__cta-mount .help-hub-member-lessons__cta {
       width: 100%;
       text-align: center;
     }
