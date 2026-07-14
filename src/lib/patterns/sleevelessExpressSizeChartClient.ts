@@ -231,6 +231,25 @@ export function loadExpressSweaterCharts(): Promise<void> {
   return expressChartsLoadPromise;
 }
 
+/** Clears in-memory chart cache (tests only). */
+export function resetExpressSweaterChartsForTests(): void {
+  for (const key of Object.keys(chartRowsByAudience)) {
+    delete chartRowsByAudience[key];
+  }
+  for (const key of Object.keys(chartSizeSets)) {
+    delete chartSizeSets[key];
+  }
+  expressChartsLoadPromise = null;
+}
+
+/** Seeds chart rows for a single audience (tests only). */
+export function seedExpressSweaterChartsForTests(audience: string, rows: ChartRow[]): void {
+  chartRowsByAudience[audience] = rows;
+  chartSizeSets[audience] = new Set(
+    rows.map((row) => normalizeChartRowSize(row)).filter(Boolean),
+  );
+}
+
 export function resolveExpressChartFit(
   chartAudience: string,
   sizeStr: string,
@@ -377,6 +396,8 @@ export function refreshExpressSizePanel(
 
   if (!values.who) {
     nested.setAttribute("hidden", "");
+    patchExpressStandardBodyMeasurementsSummary(scope, values);
+    patchExpressSizeBodyConfirmation(scope, values);
     return;
   }
   nested.removeAttribute("hidden");

@@ -1,0 +1,59 @@
+---
+/** Shared Who & Size nested UI for unified Express builders (Sleeveless + Drop Shoulder). */
+interface Props {
+  sweaterSizingChartHref: string;
+}
+
+const { sweaterSizingChartHref } = Astro.props;
+---
+
+<div class="express-who-size-intro">
+  <h3 class="express-size-heading">Choose your size</h3>
+  <p class="express-size-instruction" id="express-size-helper-text">
+    Select the bust/chest measurement closest to yours. The other body measurements are based on the
+    Knit It Now standard sizing chart for that size.
+  </p>
+  <p class="express-size-chart-link-wrap">
+    <a
+      href={sweaterSizingChartHref}
+      class="express-custom-build-callout__link"
+      data-express-sweater-sizing-chart-link>View the sweater sizing chart</a
+    >
+  </p>
+</div>
+<div class="express-who-size-nested" data-express-nested-size hidden>
+  <p class="express-size-load-msg sg-fit-size-copy" data-express-size-status>
+    Loading size charts…
+  </p>
+  <div class="express-size-select-wrap" data-express-size-select-wrap hidden>
+    <div class="express-size-table-wrap">
+      <table class="express-size-table">
+        <thead>
+          <tr>
+            <th scope="col">Size</th>
+            <th scope="col">Bust/Chest</th>
+          </tr>
+        </thead>
+        <tbody
+          role="radiogroup"
+          aria-labelledby="express-size-helper-text"
+          data-express-size-table-body
+        ></tbody>
+      </table>
+    </div>
+    <select
+      id="express-body-size-select"
+      class="express-size-select express-size-select--visually-hidden"
+      data-express-size-select
+      tabindex="-1"
+      aria-hidden="true"
+      autocomplete="off"
+    ></select>
+  </div>
+  <div
+    class="express-size-standard-body-summary"
+    data-express-size-standard-body-summary
+    aria-live="polite"
+    hidden
+  ></div>
+</div>

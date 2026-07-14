@@ -481,8 +481,9 @@ function initExpressPage() {
   }
 
   function updateExpressSizeBodyConfirmation(): void {
-    if (!(expressBuilderRoot instanceof HTMLElement)) return;
-    patchExpressSizeBodyConfirmation(expressBuilderRoot, values);
+    const root = resolveExpressBuilderRoot();
+    if (!root) return;
+    patchExpressSizeBodyConfirmation(root, values);
   }
 
   function updateSummaries() {
@@ -699,9 +700,15 @@ function initExpressPage() {
     return false;
   }
 
+  function resolveExpressBuilderRoot(): HTMLElement | null {
+    const root = document.querySelector("[data-express-builder]");
+    return root instanceof HTMLElement ? root : null;
+  }
+
   function refreshExpressWhoSizePanel(): void {
-    if (!(expressBuilderRoot instanceof HTMLElement)) return;
-    refreshExpressSizePanel(expressBuilderRoot, values, canInteractWithSizeStep());
+    const root = resolveExpressBuilderRoot();
+    if (!root) return;
+    refreshExpressSizePanel(root, values, canInteractWithSizeStep());
   }
 
   /** Clears size only — uses same {@link maxReachableFromChoices} / accordion unlock rules as {@link selectExpressSize}. */
@@ -727,7 +734,7 @@ function initExpressPage() {
 
   function applySelectionUI() {
     refreshExpressWhoSizePanel();
-    const root = expressBuilderRoot instanceof HTMLElement ? expressBuilderRoot : document;
+    const root = resolveExpressBuilderRoot() ?? document;
     (["who", "front", "neckline", "fit"] as const).forEach((field) => {
       const value = values[field];
       if (!value) return;

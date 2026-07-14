@@ -11,9 +11,18 @@ import {
   SWEATER_SIZING_CHART_PATH,
   SWEATER_SIZING_CHART_RETURN_LABEL,
 } from "./sweaterSizingChartNavigation";
+import {
+  LEGACY_SWEATER_SIZING_CHART_INTRO_COPY,
+  SWEATER_SIZING_CHART_CALLOUT_BULLETS,
+  SWEATER_SIZING_CHART_INTRO_SENTENCE,
+} from "./sweaterSizingChartIntro";
 
 const sweaterSizingChartPage = readFileSync(
   resolve("src/pages/reference/sweater-sizing-chart.astro"),
+  "utf8",
+);
+const sweaterSizingChartCallout = readFileSync(
+  resolve("src/components/reference/SweaterSizingChartCallout.astro"),
   "utf8",
 );
 const sleevelessBuilderAstro = readFileSync(
@@ -22,6 +31,10 @@ const sleevelessBuilderAstro = readFileSync(
 );
 const dropShoulderBuilderAstro = readFileSync(
   resolve("src/pages/patterns/drop-shoulder/builder.astro"),
+  "utf8",
+);
+const whoSizeSection = readFileSync(
+  resolve("src/components/patterns/ExpressBuilderWhoSizeSection.astro"),
   "utf8",
 );
 
@@ -84,13 +97,38 @@ describe("resolveSweaterSizingChartBackLink", () => {
 describe("sweater sizing chart reference page", () => {
   it("contains sweater sizing content and shared chart data", () => {
     expect(sweaterSizingChartPage).toContain("Sweater Sizing Chart");
-    expect(sweaterSizingChartPage).toContain("body measurement");
-    expect(sweaterSizingChartPage).toContain("finished sweater measurement");
-    expect(sweaterSizingChartPage).toContain("ease is");
+    expect(sweaterSizingChartPage).toContain("SWEATER_SIZING_CHART_INTRO_SENTENCE");
+    expect(sweaterSizingChartPage).toContain("SweaterSizingChartCallout");
     expect(sweaterSizingChartPage).toContain("SWEATER_CHART_METADATA");
     expect(sweaterSizingChartPage).toContain("initSweaterSizingChartTable");
     expect(sweaterSizingChartPage).toContain("meta.audienceLabel");
     expect(sweaterSizingChartPage).toContain("resolveSweaterSizingChartBackLink");
+  });
+
+  it("uses the concise two-bullet sizing chart callout copy", () => {
+    expect(SWEATER_SIZING_CHART_INTRO_SENTENCE).toBe(
+      "Body measurements used by the Sleeveless and Drop Shoulder pattern builders.",
+    );
+    expect(SWEATER_SIZING_CHART_CALLOUT_BULLETS).toHaveLength(2);
+    expect(SWEATER_SIZING_CHART_CALLOUT_BULLETS[0]?.term).toBe("Body measurement");
+    expect(SWEATER_SIZING_CHART_CALLOUT_BULLETS[1]?.term).toBe("Finished sweater measurement");
+    expect(SWEATER_SIZING_CHART_CALLOUT_BULLETS[0]?.description).toContain(
+      "Use the closest measurement in the chart to select your pattern size.",
+    );
+    expect(SWEATER_SIZING_CHART_CALLOUT_BULLETS[1]?.description).toContain(
+      "ease must not be added again.",
+    );
+    expect(sweaterSizingChartCallout).toContain("SWEATER_SIZING_CHART_CALLOUT_BULLETS");
+    expect(sweaterSizingChartCallout).toContain("<strong>{term}:</strong>");
+    expect(sweaterSizingChartCallout).toContain("sweater-sizing-intro");
+    expect(sweaterSizingChartCallout).toContain("sweater-sizing-intro__list");
+  });
+
+  it("removes the legacy four-paragraph sizing chart explanation", () => {
+    for (const legacyCopy of LEGACY_SWEATER_SIZING_CHART_INTRO_COPY) {
+      expect(sweaterSizingChartPage).not.toContain(legacyCopy);
+      expect(sweaterSizingChartCallout).not.toContain(legacyCopy);
+    }
   });
 
   it("does not include non-sweater sizing sections", () => {
@@ -114,19 +152,21 @@ describe("sweater sizing chart reference page", () => {
 
 describe("pattern builder sweater sizing chart links", () => {
   it("sleeveless builder links to the sweater sizing chart with returnTo", () => {
+    expect(sleevelessBuilderAstro).toContain("ExpressBuilderWhoSizeSection");
     expect(sleevelessBuilderAstro).toContain(
       'buildSweaterSizingChartHref("/patterns/sleeveless/builder")',
     );
-    expect(sleevelessBuilderAstro).toContain("href={sweaterSizingChartHref}");
-    expect(sleevelessBuilderAstro).toContain("data-express-sweater-sizing-chart-link");
+    expect(sleevelessBuilderAstro).toContain("sweaterSizingChartHref={sweaterSizingChartHref}");
+    expect(whoSizeSection).toContain("data-express-sweater-sizing-chart-link");
   });
 
   it("drop shoulder builder links to the sweater sizing chart with returnTo", () => {
+    expect(dropShoulderBuilderAstro).toContain("ExpressBuilderWhoSizeSection");
     expect(dropShoulderBuilderAstro).toContain(
       'buildSweaterSizingChartHref("/patterns/drop-shoulder/builder")',
     );
-    expect(dropShoulderBuilderAstro).toContain("href={sweaterSizingChartHref}");
-    expect(dropShoulderBuilderAstro).toContain("data-express-sweater-sizing-chart-link");
+    expect(dropShoulderBuilderAstro).toContain("sweaterSizingChartHref={sweaterSizingChartHref}");
+    expect(whoSizeSection).toContain("data-express-sweater-sizing-chart-link");
   });
 
   it("uses the dedicated sweater sizing chart path", () => {

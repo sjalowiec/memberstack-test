@@ -8,6 +8,12 @@
   border-top: 1px solid rgba(82, 104, 45, 0.12);
 }
 
+.sleeveless-express-page .express-who-size-intro {
+  margin-top: 1.15rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(82, 104, 45, 0.12);
+}
+
 .sleeveless-express-page .express-size-instruction {
   margin: 0 0 0.65rem;
   color: #374151;

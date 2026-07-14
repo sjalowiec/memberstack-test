@@ -41,15 +41,21 @@ const sampleRow: ChartRow = {
   upper_arm: 12.25,
 };
 
+const whoSizeSection = readFileSync(
+  resolve("src/components/patterns/ExpressBuilderWhoSizeSection.astro"),
+  "utf8",
+);
+
 function expectBuilderSizeFitClarity(builderSource: string, fitStep: "3" | "4"): void {
+  expect(builderSource).toContain("ExpressBuilderWhoSizeSection");
   expect(builderSource).toContain("buildSweaterSizingChartHref");
-  expect(builderSource).toContain("href={sweaterSizingChartHref}");
-  expect(builderSource).toContain(sizeFitCopy.sizingChartLabel);
-  expect(builderSource).toContain(sizeFitCopy.sizeHeading);
-  expect(builderSource).toContain(sizeFitCopy.sizeInstruction);
+  expect(builderSource).toContain("sweaterSizingChartHref={sweaterSizingChartHref}");
+  expect(whoSizeSection).toContain(sizeFitCopy.sizingChartLabel);
+  expect(whoSizeSection).toContain(sizeFitCopy.sizeHeading);
+  expect(whoSizeSection).toContain("Select the bust/chest measurement closest to yours");
   expect(builderSource).toContain(sizeFitCopy.fitHeading);
   expect(builderSource).toContain(sizeFitCopy.fitInstruction);
-  expect(builderSource).toContain(sizeFitCopy.summaryMarker);
+  expect(whoSizeSection).toContain(sizeFitCopy.summaryMarker);
   expect(builderSource).toContain('data-value="close"');
   expect(builderSource).toContain('data-value="standard"');
   expect(builderSource).toContain('data-value="relaxed"');
