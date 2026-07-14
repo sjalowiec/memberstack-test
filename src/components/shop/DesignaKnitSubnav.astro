@@ -1,13 +1,13 @@
 ---
 interface Props {
-  current: "designaknit" | "compare" | "buyers-guide";
+  current: "designaknit" | "basics" | "buyers-guide";
 }
 
 const { current } = Astro.props;
 
 const links = [
   { key: "designaknit", label: "DesignaKnit", href: "/shop/designaknit" },
-  { key: "compare", label: "Compare Versions", href: "/reference/DAK-compare" },
+  { key: "basics", label: "DesignaKnit Basics", href: "/reference/designaknit-basics" },
   { key: "buyers-guide", label: "Buyer's Guide", href: "/reference/dak-buyers-guide" }
 ];
 ---
