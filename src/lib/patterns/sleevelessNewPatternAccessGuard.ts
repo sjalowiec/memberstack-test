@@ -9,6 +9,10 @@ import {
 } from "./sleevelessPatternSystemAccess";
 import { resolveSleevelessUserAccess } from "./sleevelessPatternSystemAccessClient";
 import {
+  mountPatternBuilderNewPatternUpgradeScreen,
+  PATTERN_BUILDER_NEW_PATTERN_LOCKED_SCREEN_SELECTOR,
+} from "./patternBuilderNewPatternUpgradeScreen";
+import {
   resolvePatternSystemForBuilderGate,
   patternSystemDisplayName,
   type PatternSystemId,
@@ -21,8 +25,7 @@ export {
   SLEEVELESS_SAVE_LOGGED_OUT_COPY,
 } from "./sleevelessPatternProjectCloudSave";
 
-export const SLEEVELESS_NEW_PATTERN_LOCKED_SCREEN_SELECTOR =
-  "[data-sleeveless-new-pattern-locked]";
+export { PATTERN_BUILDER_NEW_PATTERN_LOCKED_SCREEN_SELECTOR as SLEEVELESS_NEW_PATTERN_LOCKED_SCREEN_SELECTOR };
 
 export function canStartNewPatternForSystem(
   access: SleevelessUserAccess,
@@ -94,99 +97,38 @@ export async function resolveCanStartNewSleevelessPattern(doc?: Document): Promi
   return resolveCanStartNewPatternForSystem(undefined, doc);
 }
 
-function isElementLike(el: unknown): el is HTMLElement {
-  return (
-    typeof el === "object" &&
-    el !== null &&
-    "setAttribute" in el &&
-    typeof (el as HTMLElement).setAttribute === "function"
-  );
-}
-
-function hideEl(el: unknown): void {
-  if (isElementLike(el)) el.hidden = true;
-}
-
-function resolveDocFromRoot(root: ParentNode): Document | undefined {
-  if (typeof Document !== "undefined" && root instanceof Document) return root;
-  if (typeof HTMLElement !== "undefined" && root instanceof HTMLElement && root.ownerDocument) {
-    return root.ownerDocument;
-  }
-  return typeof document !== "undefined" ? document : undefined;
-}
-
 export function showSleevelessNewPatternLockedScreen(
   root: ParentNode | null = typeof document !== "undefined" ? document : null,
   copy?: string,
   systemId?: PatternSystemId,
+  access?: SleevelessUserAccess,
 ): HTMLElement | null {
   if (!root || typeof document === "undefined") return null;
 
-  const doc = resolveDocFromRoot(root);
+  const doc =
+    typeof Document !== "undefined" && root instanceof Document
+      ? root
+      : typeof HTMLElement !== "undefined" &&
+          root instanceof HTMLElement &&
+          root.ownerDocument
+        ? root.ownerDocument
+        : document;
   const system = resolveNewPatternGateSystem(systemId, doc);
-  const resolvedCopy = copy ?? resolvePatternSystemAlreadyClaimedCopy(system);
   logPatternEditGateDebug("showSleevelessNewPatternLockedScreen", {
     patternSystem: system,
     extra: { titleSystemName: patternSystemDisplayName(system) },
   });
-  const systemName = patternSystemDisplayName(system);
 
-  const builder = root.querySelector?.("[data-express-builder]");
-  if (!isElementLike(builder)) return null;
+  const resolvedAccess = access ?? {
+    loggedIn: true,
+    hasSystemAccess: false,
+    freeClaimsBySystem: {},
+  };
 
-  hideEl(builder);
-  hideEl(root.querySelector(".express-builder-nav-row"));
-  hideEl(root.querySelector(".sg-builder-nav-row"));
-  hideEl(root.querySelector("[data-express-editing-bar]"));
-  hideEl(root.querySelector(".pattern-subtext"));
-  hideEl(root.querySelector("[data-cb-editing-banner-host]"));
-
-  const panel = root.querySelector(".express-panel");
-  const host = isElementLike(panel) ? panel : builder.parentElement;
-  if (!isElementLike(host)) return null;
-
-  let notice = host.querySelector<HTMLElement>(SLEEVELESS_NEW_PATTERN_LOCKED_SCREEN_SELECTOR);
-  if (!notice) {
-    notice = document.createElement("section");
-    notice.setAttribute("data-sleeveless-new-pattern-locked", "");
-    notice.className = "sleeveless-new-pattern-locked";
-    notice.setAttribute("role", "status");
-    notice.setAttribute("aria-live", "polite");
-    host.insertBefore(notice, host.firstChild);
-  }
-  notice.replaceChildren();
-  notice.hidden = false;
-
-  const title = document.createElement("h2");
-  title.className = "sleeveless-new-pattern-locked__title";
-  title.textContent = `Create another ${systemName} pattern with membership`;
-  notice.appendChild(title);
-
-  const body = document.createElement("p");
-  body.className = "sleeveless-new-pattern-locked__body";
-  body.textContent = resolvedCopy;
-  notice.appendChild(body);
-
-  const actions = document.createElement("div");
-  actions.className = "sleeveless-new-pattern-locked__actions";
-
-  const memberLink = document.createElement("a");
-  memberLink.className =
-    "kbm-btn kbm-btn-primary sleeveless-new-pattern-locked__btn sleeveless-new-pattern-locked__btn--primary";
-  memberLink.href = "/membership";
-  memberLink.target = "_blank";
-  memberLink.rel = "noopener noreferrer";
-  memberLink.textContent = "See membership options";
-  actions.appendChild(memberLink);
-
-  const viewLink = document.createElement("a");
-  viewLink.className =
-    "kbm-btn sleeveless-new-pattern-locked__btn sleeveless-new-pattern-locked__btn--secondary";
-  viewLink.href = "/account#my-patterns";
-  viewLink.textContent = "Open your saved patterns";
-  actions.appendChild(viewLink);
-
-  notice.appendChild(actions);
-
-  return notice;
+  return mountPatternBuilderNewPatternUpgradeScreen(root, resolvedAccess, system, copy);
 }
+
+export {
+  resolvePatternBuilderNewPatternUpgradeUiMode as resolveSleevelessNewPatternUpgradeUiMode,
+  shouldBypassPatternBuilderNewPatternUpgradeScreen as shouldBypassSleevelessNewPatternUpgradeScreen,
+} from "./patternBuilderNewPatternUpgrade";

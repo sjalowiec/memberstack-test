@@ -9,7 +9,11 @@
  * {@link resolveSleevelessUserAccess} first so the snapshot is primed before reading.
  */
 import { getCachedSleevelessUserAccess } from "./sleevelessPatternSystemAccessClient";
-import type { SleevelessUserAccess } from "./sleevelessPatternSystemAccess";
+import {
+  hasPatternSystemAccess,
+  type SleevelessUserAccess,
+} from "./sleevelessPatternSystemAccess";
+import { resolvePatternSystemForEntitlement } from "./patternSystemId";
 
 /** localStorage key for dev/testing override (`"1"` = editable, `"0"` = read-only). */
 export const SLEEVELESS_PATTERN_ACCESS_LS_KEY = "kbm_sleeveless_advanced_pattern_access";
@@ -72,7 +76,9 @@ export function resolveHasAdvancedPatternAccess(pageUrl?: URL): boolean {
   if (override !== null) return override;
 
   const access = getCachedSleevelessUserAccess();
-  if (access) return access.hasSystemAccess;
+  if (access) {
+    return hasPatternSystemAccess(access, resolvePatternSystemForEntitlement());
+  }
 
   // Snapshot not resolved yet — default locked so non-members are not briefly unlocked.
   return false;
@@ -89,7 +95,9 @@ export function resolveHasAdvancedPatternAccessForAccess(
 ): boolean {
   const override = readAdvancedPatternAccessOverride(pageUrl);
   if (override !== null) return override;
-  if (access) return access.hasSystemAccess;
+  if (access) {
+    return hasPatternSystemAccess(access, resolvePatternSystemForEntitlement());
+  }
   return resolveHasAdvancedPatternAccess(pageUrl);
 }
 

@@ -58,7 +58,7 @@ import {
   resolvePatternSystemFromProject,
   type PatternSystemId,
 } from "./patternSystemId";
-import type { SleevelessUserAccess } from "./sleevelessPatternSystemAccess";
+import { hasPatternSystemAccess, type SleevelessUserAccess } from "./sleevelessPatternSystemAccess";
 
 const FN_BASE = "/.netlify/functions";
 
@@ -86,7 +86,7 @@ export function buildPatternSaveEntitlementSnapshotFromAccess(
   const claimedId = freeClaimedPatternIdForSystem(access.freeClaimsBySystem, patternSystem);
   return {
     patternSystem,
-    hasSystemAccess: access.hasSystemAccess === true,
+    hasSystemAccess: hasPatternSystemAccess(access, patternSystem),
     freeClaimedForSystem: claimed,
     ...(claimedId ? { freeClaimedPatternId: claimedId } : {}),
   };
@@ -366,7 +366,7 @@ export async function deleteCustomPatternProject(
   const systemId = patternSystem ?? resolvePatternSystemFromPage();
   const freeClaim = {
     patternSystem: systemId,
-    hasSystemAccess: resolvedAccess.hasSystemAccess === true,
+    hasSystemAccess: hasPatternSystemAccess(resolvedAccess, systemId),
     freeClaimedForSystem: isFreeClaimedForSystem(resolvedAccess.freeClaimsBySystem, systemId),
     ...(freeClaimedPatternIdForSystem(resolvedAccess.freeClaimsBySystem, systemId)
       ? {

@@ -1,0 +1,16 @@
+/**
+ * @deprecated Import from `./patternBuilderNewPatternUpgradeScreen`.
+ */
+export {
+  PATTERN_BUILDER_NEW_PATTERN_LOCKED_SCREEN_SELECTOR as SLEEVELESS_NEW_PATTERN_LOCKED_SCREEN_SELECTOR,
+  PATTERN_BUILDER_LIFETIME_CHECKOUT_BUTTON_SELECTOR as SLEEVELESS_LIFETIME_CHECKOUT_BUTTON_SELECTOR,
+  PATTERN_BUILDER_UPGRADE_STATUS_SELECTOR as SLEEVELESS_UPGRADE_STATUS_SELECTOR,
+  setPendingUpgradeCheckoutError,
+  consumePendingUpgradeCheckoutError,
+  clearUpgradeStatus,
+  wirePatternBuilderNewPatternUpgradeScreen as wireSleevelessNewPatternUpgradeScreen,
+  renderPatternBuilderNewPatternUpgradeScreen as renderSleevelessNewPatternUpgradeScreen,
+  mountPatternBuilderNewPatternUpgradeScreen as mountSleevelessNewPatternUpgradeScreen,
+  showPatternBuilderUnlockedConfirmation as showSleevelessLifetimeUnlockedConfirmation,
+  hideExpressBuilderChromeForUpgradeScreen,
+} from "./patternBuilderNewPatternUpgradeScreen";

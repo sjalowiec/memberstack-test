@@ -1,0 +1,315 @@
+---
+import GlossaryHtml from "../GlossaryHtml.astro";
+import GatedVimeoEmbed from "../videos/GatedVimeoEmbed.astro";
+
+type LessonBodyBlock =
+  | { type: "text"; content?: string }
+  | { type: "vimeo"; title?: string; vimeoId?: string | number };
+
+type LessonLibraryVideoEmbed = {
+  key: string;
+  title: string;
+  videoId: string;
+  access_level: "open" | "member";
+};
+
+type LessonRow = {
+  title: string;
+  summary?: string;
+  encouragement?: string;
+  exerciseItems?: string[];
+  templateLink?: string;
+  templateLinkText?: string;
+  supportImage?: string;
+  supportImageAlt?: string;
+  noteTitle?: string;
+  noteText?: string;
+};
+
+export interface Props {
+  lesson: LessonRow;
+  hasLessonBlocks: boolean;
+  renderableLessonBlocks: LessonBodyBlock[];
+  showLessonBodyEmptyState: boolean;
+  relatedTipHref: string | null;
+  inlineVimeoSrc: string | null;
+  lessonLibraryVideos: LessonLibraryVideoEmbed[];
+  hasLessonVideo: boolean;
+  videoPreviewUsesSupportImage: boolean;
+  supportImageForPreview: string;
+  videoOpenLabel: string;
+  hasSupportCard: boolean;
+  showSupportImageInCard: boolean;
+  hasLessonModalVideo: boolean;
+  vimeoPlayerSrc: string;
+}
+
+const {
+  lesson,
+  hasLessonBlocks,
+  renderableLessonBlocks,
+  showLessonBodyEmptyState,
+  relatedTipHref,
+  inlineVimeoSrc,
+  lessonLibraryVideos,
+  hasLessonVideo,
+  videoPreviewUsesSupportImage,
+  supportImageForPreview,
+  videoOpenLabel,
+  hasSupportCard,
+  showSupportImageInCard,
+  hasLessonModalVideo,
+  vimeoPlayerSrc,
+} = Astro.props;
+---
+
+<div class="lesson-member-body" data-lesson-member-body>
+  <div class="lesson-grid">
+    <div class="lesson-content">
+      {hasLessonBlocks ? (
+        <div class="lesson-body-blocks">
+          {showLessonBodyEmptyState ? (
+            <p class="lesson-empty">
+              This lesson does not have any content blocks yet. Check back soon, or explore the{" "}
+              {relatedTipHref ? (
+                <a href={relatedTipHref}>related Help Hub article</a>
+              ) : (
+                <a href="/help-hub/">Help Hub</a>
+              )}
+              .
+            </p>
+          ) : (
+            renderableLessonBlocks.map((block) => {
+              if (block.type === "text") {
+                const blockContent =
+                  typeof block.content === "string" ? block.content : "";
+                return (
+                  <div class="lesson-block lesson-text-block">
+                    <GlossaryHtml html={blockContent} />
+                  </div>
+                );
+              }
+              if (block.type === "vimeo") {
+                if (block.vimeoId === undefined || block.vimeoId === null || block.vimeoId === "") {
+                  return null;
+                }
+                const iframeTitle =
+                  typeof block.title === "string" && block.title.trim() !== ""
+                    ? block.title.trim()
+                    : lesson.title;
+                const videoLabel =
+                  typeof block.title === "string" && block.title.trim() !== ""
+                    ? block.title.trim()
+                    : null;
+                return (
+                  <div class="lesson-block lesson-video-block">
+                    {videoLabel && <p class="lesson-video-block__label">{videoLabel}</p>}
+                    <div class="lesson-video-frame lesson-video-frame--modal-trigger">
+                      <iframe
+                        src={`https://player.vimeo.com/video/${block.vimeoId}`}
+                        title={iframeTitle}
+                        allow="autoplay; fullscreen; picture-in-picture"
+                        allowfullscreen
+                        loading="lazy"
+                      />
+                      <button
+                        type="button"
+                        class="lesson-video-frame__open"
+                        aria-label={`Open larger video: ${iframeTitle}`}
+                        data-player-src={`https://player.vimeo.com/video/${block.vimeoId}`}
+                      />
+                    </div>
+                  </div>
+                );
+              }
+              return null;
+            })
+          )}
+        </div>
+      ) : (
+        <>
+          {showLessonBodyEmptyState ? (
+            <p class="lesson-empty">
+              This lesson does not have any content yet. Check back soon, or browse the{" "}
+              <a href="/help-hub/">Help Hub</a>.
+            </p>
+          ) : (
+            <>
+              {inlineVimeoSrc && (
+                <div class="lesson-block lesson-video-block">
+                  <div class="lesson-video-frame lesson-video-frame--modal-trigger">
+                    <iframe
+                      src={inlineVimeoSrc}
+                      title={lesson.title}
+                      allow="autoplay; fullscreen; picture-in-picture"
+                      allowfullscreen
+                      loading="lazy"
+                    />
+                    <button
+                      type="button"
+                      class="lesson-video-frame__open"
+                      aria-label={`Open larger video: ${lesson.title}`}
+                      data-player-src={inlineVimeoSrc}
+                    />
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </>
+      )}
+
+      {lessonLibraryVideos.length > 0 && (
+        <div class="lesson-library-videos">
+          {lessonLibraryVideos.map((libVideo) => (
+            <GatedVimeoEmbed
+              videoId={libVideo.videoId}
+              title={libVideo.title}
+              access_level={libVideo.access_level}
+            />
+          ))}
+        </div>
+      )}
+
+      {lesson.encouragement && (
+        <div class="lesson-encouragement">
+          <div set:html={lesson.encouragement} />
+        </div>
+      )}
+
+      {typeof lesson.templateLink === "string" && lesson.templateLink.trim() !== "" && (
+        <p class="lesson-template">
+          <a
+            href={lesson.templateLink}
+            class="kbm-btn kbm-btn-outline"
+            target="_blank"
+            rel="noopener"
+          >
+            {typeof lesson.templateLinkText === "string" && lesson.templateLinkText.trim() !== ""
+              ? lesson.templateLinkText
+              : "Download"}
+          </a>
+        </p>
+      )}
+
+      {lesson.exerciseItems && lesson.exerciseItems.length > 0 && (
+        <section class="lesson-exercise" id="lesson-exercise">
+          <div class="lesson-exercise__brand" aria-hidden="true">
+            <img
+              class="lesson-exercise__brand-logo"
+              src="/KINlogo.svg"
+              alt=""
+              width="28"
+              height="28"
+            />
+            <div class="lesson-exercise__brand-text">
+              <span class="lesson-exercise__brand-name">Knit it Now</span>
+              <span class="lesson-exercise__brand-label">Lesson Worksheet</span>
+            </div>
+          </div>
+          <h1 class="lesson-exercise__print-title">{lesson.title}</h1>
+          <div class="lesson-exercise__header">
+            <h2 class="lesson-exercise__title">Follow These Steps</h2>
+            <button type="button" class="lesson-exercise__print" onclick="printLessonExercise()">
+              Print Steps
+            </button>
+          </div>
+          <ol class="lesson-exercise__list">
+            {lesson.exerciseItems.map((item) => (
+              <li class="lesson-exercise__item" set:html={item} />
+            ))}
+          </ol>
+          <footer class="lesson-exercise__print-footer">knititnow.com</footer>
+        </section>
+      )}
+    </div>
+
+    <div class="lesson-media">
+      {hasLessonVideo && (
+        <div class="lesson-video-card">
+          <button
+            type="button"
+            class="lesson-video-thumb"
+            id="lesson-video-open"
+            aria-haspopup="dialog"
+            aria-controls="lesson-video-modal"
+            aria-label={videoOpenLabel}
+          >
+            {videoPreviewUsesSupportImage ? (
+              <img
+                src={supportImageForPreview}
+                alt=""
+                class="lesson-video-thumb__img"
+                width="640"
+                height="360"
+                loading="lazy"
+              />
+            ) : (
+              <div class="lesson-video-thumb__placeholder" aria-hidden="true">
+                <span class="lesson-video-thumb__placeholder-text">Watch the lesson</span>
+              </div>
+            )}
+            <span class="lesson-video-thumb__play" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </span>
+          </button>
+          <p class="lesson-video-thumb__hint">Watch the lesson</p>
+        </div>
+      )}
+
+      {hasSupportCard && (
+        <div class="lesson-support">
+          {showSupportImageInCard && (
+            <img
+              src={lesson.supportImage}
+              alt={
+                typeof lesson.supportImageAlt === "string" && lesson.supportImageAlt.trim() !== ""
+                  ? lesson.supportImageAlt
+                  : lesson.title
+              }
+              class="lesson-support-image"
+              loading="lazy"
+            />
+          )}
+          {((typeof lesson.noteTitle === "string" && lesson.noteTitle.trim() !== "") ||
+            (typeof lesson.noteText === "string" && lesson.noteText.trim() !== "")) && (
+            <div class="lesson-support-note">
+              {typeof lesson.noteTitle === "string" && lesson.noteTitle.trim() !== "" && (
+                <h3>{lesson.noteTitle}</h3>
+              )}
+              {typeof lesson.noteText === "string" && lesson.noteText.trim() !== "" && (
+                <div class="lesson-support-note__html" set:html={lesson.noteText} />
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  </div>
+
+  {hasLessonModalVideo && (
+    <dialog
+      id="lesson-video-modal"
+      class="lesson-video-modal"
+      aria-labelledby="lesson-video-modal-title"
+      data-player-src={vimeoPlayerSrc}
+    >
+      <div class="lesson-video-modal__inner">
+        <button type="button" class="lesson-video-modal__close" aria-label="Close video">
+          ×
+        </button>
+        <h2 id="lesson-video-modal-title" class="lesson-video-modal__sr-title">Lesson video</h2>
+        <div class="lesson-video-modal__frame-wrap">
+          <iframe
+            id="lesson-video-modal-iframe"
+            title={lesson.title}
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowfullscreen
+          />
+        </div>
+      </div>
+    </dialog>
+  )}
+</div>

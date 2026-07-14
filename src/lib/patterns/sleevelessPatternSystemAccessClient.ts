@@ -4,6 +4,7 @@
  * Per-system free claims are stored on Memberstack member JSON (`getMemberJSON` /
  * `updateMemberJSON`) — account-tied, not localStorage.
  */
+import { getActivePlanIds } from "../memberAccess";
 import { devBypass } from "../devBypass";
 import { memberIdFromMemberstackPayload } from "./memberstackMember";
 import { logPatternEditGateDebug } from "./patternEditGateDebug";
@@ -15,9 +16,9 @@ import {
 } from "./patternSystemFreeClaim";
 import type { PatternSystemId } from "./patternSystemId";
 import {
+  computeHasSystemAccessFlag,
   hasSleevelessPatternSystemAccess as hasSystemAccessRule,
   LOGGED_OUT_SLEEVELESS_ACCESS,
-  planIdsGrantSleevelessSystemAccess,
   readSleevelessSystemUnlockFromMemberJson,
   type SleevelessUserAccess,
 } from "./sleevelessPatternSystemAccess";
@@ -68,21 +69,6 @@ function asRecord(value: unknown): Record<string, unknown> {
     : {};
 }
 
-export function planIdsFromMemberstackPayload(payload: unknown): string[] {
-  const root = asRecord(payload);
-  const data = asRecord(root.data ?? root);
-  const member = asRecord((data.member as unknown) ?? data);
-  const connections = member.planConnections ?? data.planConnections;
-  if (!Array.isArray(connections)) return [];
-  const ids: string[] = [];
-  for (const conn of connections) {
-    const rec = asRecord(conn);
-    const id = rec.planId ?? rec.plan ?? rec.id;
-    if (typeof id === "string" && id.trim()) ids.push(id.trim());
-  }
-  return ids;
-}
-
 async function readMemberJson(ms: MemberstackDom): Promise<unknown> {
   if (typeof ms.getMemberJSON !== "function") return {};
   try {
@@ -95,6 +81,12 @@ async function readMemberJson(ms: MemberstackDom): Promise<unknown> {
 }
 
 function devBypassAccessSnapshot(): SleevelessUserAccess {
+  const access: SleevelessUserAccess = {
+    loggedIn: true,
+    activePlanIds: [],
+    hasSystemAccess: true,
+    freeClaimsBySystem: {},
+  };
   recordAccessDebug({
     source: "dev-bypass",
     loggedIn: true,
@@ -104,7 +96,7 @@ function devBypassAccessSnapshot(): SleevelessUserAccess {
     unlockedViaJson: false,
     at: Date.now(),
   });
-  return { loggedIn: true, hasSystemAccess: true, freeClaimsBySystem: {} };
+  return access;
 }
 
 function loggedOutAccessSnapshot(reason: string): SleevelessUserAccess {
@@ -121,6 +113,24 @@ function loggedOutAccessSnapshot(reason: string): SleevelessUserAccess {
   return LOGGED_OUT_SLEEVELESS_ACCESS;
 }
 
+function resolveAccessSource(
+  activePlanIds: readonly string[],
+  sleevelessUnlockedViaJson: boolean,
+): SleevelessAccessSource {
+  const snapshot: SleevelessUserAccess = {
+    loggedIn: true,
+    activePlanIds,
+    sleevelessUnlockedViaJson,
+    hasSystemAccess: false,
+    freeClaimsBySystem: {},
+  };
+  if (hasSystemAccessRule(snapshot, "sleeveless") || hasSystemAccessRule(snapshot, "drop-shoulder")) {
+    if (activePlanIds.length > 0) return "memberstack-plan";
+    if (sleevelessUnlockedViaJson) return "member-json-unlock";
+  }
+  return "free";
+}
+
 async function resolveMemberstackAccess(ms: MemberstackDom): Promise<SleevelessUserAccess | null> {
   let memberPayload: unknown;
   try {
@@ -132,30 +142,34 @@ async function resolveMemberstackAccess(ms: MemberstackDom): Promise<SleevelessU
   const memberId = memberIdFromMemberstackPayload(memberPayload);
   if (!memberId) return null;
 
-  const planIds = planIdsFromMemberstackPayload(memberPayload);
+  const activePlanIds = getActivePlanIds(memberPayload);
   const memberJson = await readMemberJson(ms);
-  const unlockedViaJson = readSleevelessSystemUnlockFromMemberJson(memberJson);
+  const sleevelessUnlockedViaJson = readSleevelessSystemUnlockFromMemberJson(memberJson);
   const freeClaimsBySystem = readFreeClaimsBySystemFromMemberJson(memberJson);
 
-  const grantedByPlan = planIdsGrantSleevelessSystemAccess(planIds);
-  const hasSystemAccess = grantedByPlan || unlockedViaJson;
+  const base = {
+    loggedIn: true as const,
+    memberId,
+    activePlanIds,
+    sleevelessUnlockedViaJson,
+    freeClaimsBySystem,
+  };
+  const hasSystemAccess = computeHasSystemAccessFlag(base);
 
   recordAccessDebug({
-    source: grantedByPlan ? "memberstack-plan" : unlockedViaJson ? "member-json-unlock" : "free",
+    source: resolveAccessSource(activePlanIds, sleevelessUnlockedViaJson),
     loggedIn: true,
     hasSystemAccess,
     freeClaimsBySystem,
     memberId,
-    planIds,
-    unlockedViaJson,
+    planIds: [...activePlanIds],
+    unlockedViaJson: sleevelessUnlockedViaJson,
     at: Date.now(),
   });
 
   return {
-    loggedIn: true,
-    memberId,
+    ...base,
     hasSystemAccess,
-    freeClaimsBySystem,
   };
 }
 

@@ -21,6 +21,14 @@ import { reconcilePatternDraftOwner } from "../lib/patterns/patternDraftOwnerGua
 import { exitEditingSavedCustomPattern } from "../lib/patterns/customPatternEditingBannerActions";
 import { OPEN_PATTERN_HREF } from "../lib/patterns/customPatternProjectNavigation";
 import {
+  processPatternBuilderPurchaseReturn,
+  stripPatternBuilderPurchaseReturnParams,
+} from "../lib/patterns/patternBuilderLifetimePurchaseReturn";
+import {
+  setPendingUpgradeCheckoutError,
+  showPatternBuilderUnlockedConfirmation,
+} from "../lib/patterns/patternBuilderNewPatternUpgradeScreen";
+import {
   canStartNewPatternForSystem,
   resolveNewPatternBlockedCopy,
   showSleevelessNewPatternLockedScreen,
@@ -1172,6 +1180,32 @@ function initExpressTopTabs(): void {
  * questions / title / notes are shown. Logged-out visitors are handled by the member gate, and
  * members / free-unclaimed users proceed normally.
  */
+async function handlePatternBuilderPurchaseReturnOnBoot(): Promise<void> {
+  let url: URL;
+  try {
+    url = new URL(window.location.href);
+  } catch {
+    return;
+  }
+
+  const purchaseReturn = await processPatternBuilderPurchaseReturn(url);
+  const cleanedPath = stripPatternBuilderPurchaseReturnParams(url);
+  window.history.replaceState({}, "", cleanedPath);
+
+  if (purchaseReturn.kind === "success" && purchaseReturn.unlocked) {
+    showPatternBuilderUnlockedConfirmation(
+      document,
+      purchaseReturn.title ?? "",
+      purchaseReturn.message ?? "",
+    );
+    return;
+  }
+
+  if (purchaseReturn.errorMessage) {
+    setPendingUpgradeCheckoutError(purchaseReturn.errorMessage, purchaseReturn.builderKey ?? undefined);
+  }
+}
+
 async function blockExpressNewPatternStartIfLocked(): Promise<boolean> {
   let isNewSessionIntent = false;
   try {
@@ -1203,6 +1237,7 @@ async function blockExpressNewPatternStartIfLocked(): Promise<boolean> {
     document,
     resolveNewPatternBlockedCopy(access, patternSystem, document),
     patternSystem,
+    access,
   );
   return true;
 }
@@ -1254,6 +1289,7 @@ if (typeof document !== "undefined") {
       // different member never inherits the previous member's local working draft. Runs first;
       // `?new=1` in initExpressPage clears again for the explicit "start new" path.
       await reconcilePatternDraftOwner();
+      await handlePatternBuilderPurchaseReturnOnBoot();
       const blocked = await blockExpressNewPatternStartIfLocked();
       if (blocked) return;
       const redirected = await redirectSavedPatternEditIfLocked();
