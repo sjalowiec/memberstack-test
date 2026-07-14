@@ -12,9 +12,15 @@ interface Props {
    * the hamburger menu, and the beta banner while keeping the logo → home link.
    */
   onboarding?: boolean;
+  /**
+   * Marketing mode: same minimal chrome as onboarding (logo only, no nav/search)
+   * for sales pages such as /membership.
+   */
+  marketing?: boolean;
 }
 
-const { onboarding = false } = Astro.props;
+const { onboarding = false, marketing = false } = Astro.props;
+const minimalHeader = onboarding || marketing;
 
 const memberPlanIds = [...MEMBER_PLAN_IDS];
 ---
@@ -1822,7 +1828,7 @@ div[data-ms-modal-overlay] {
       </div>
 
       <!-- Primary nav: menu links (row 1 on tablet; centered on desktop) -->
-      {!onboarding && (
+      {!minimalHeader && (
       <>
       <div class="kbm-nav-primary">
         <div class="kbm-nav-row menu-row">
@@ -2057,7 +2063,7 @@ div[data-ms-modal-overlay] {
     </div>
   </header>
 
-  {!onboarding && (
+  {!minimalHeader && (
     <div class="kbm-search-strip" role="region" aria-label="Site-wide search">
       <div class="kbm-search-strip-inner">
         <div
@@ -2080,6 +2086,7 @@ div[data-ms-modal-overlay] {
   )}
 </section>
 
+{!minimalHeader && (
 <div id="searchModal" class="search-modal" aria-hidden="true" data-pagefind-ignore>
   <div class="search-modal__overlay" id="closeSearchModal"></div>
 
@@ -2091,8 +2098,9 @@ div[data-ms-modal-overlay] {
     <div id="pagefind-search" class="pagefind-search"></div>
   </div>
 </div>
+)}
 
-{!onboarding && <PatternWorkspaceLibraryDrawer />}
+{!minimalHeader && <PatternWorkspaceLibraryDrawer />}
 
 <script is:inline define:vars={{ memberPlanIds }}>
   (function () {
