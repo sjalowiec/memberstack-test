@@ -189,11 +189,17 @@ describe("showSleevelessNewPatternLockedScreen", () => {
     const body = notice!.children.find((c) => c.className.includes("__body"));
     expect(body?.textContent).toBe(SLEEVELESS_SAVE_ALREADY_CLAIMED_COPY);
 
-    // The "Open your saved pattern" link stays available on the gate.
+    // The "Open your saved patterns" control opens the in-page library drawer.
     const actions = notice!.children.find((c) => c.className.includes("__actions"));
-    const openSavedLink = actions?.children.find((c) => c.textContent === "Open your saved patterns");
-    expect(openSavedLink).toBeTruthy();
-    expect(openSavedLink?.href).toBe("/account#my-patterns");
+    const openSavedBtn = actions?.children.find(
+      (c) => c.textContent === "Open your saved patterns",
+    );
+    expect(openSavedBtn).toBeTruthy();
+    expect(openSavedBtn?.tagName).toBe("button");
+    expect(openSavedBtn?.getAttribute("data-pattern-workspace-library-trigger")).toBe("");
+    expect(openSavedBtn?.getAttribute("aria-controls")).toBe(
+      "pattern-workspace-library-drawer-panel",
+    );
   });
 
   it("is a safe no-op when the Express builder is absent (e.g. workspace page)", () => {

@@ -13,6 +13,7 @@ import {
   formatCustomPatternProjectUpdatedAt,
   formatPatternCopiedDrawerMessage,
   openPatternWorkspaceLibraryDrawer,
+  openPatternWorkspaceLibraryDrawerFromDocument,
   PATTERN_WORKSPACE_LIBRARY_DRAWER_OPEN_CLASS,
   PATTERN_WORKSPACE_LIBRARY_DRAWER_INIT_ATTR,
   initPatternWorkspaceLibraryDrawer,
@@ -123,6 +124,9 @@ function makeEl(tag = "div"): MockEl {
       }
     },
     matches(sel: string) {
+      if (sel === "[data-pattern-workspace-library-trigger]") {
+        return attrs.has("data-pattern-workspace-library-trigger");
+      }
       if (sel === "[data-pattern-workspace-library-view]") {
         return attrs.has("data-pattern-workspace-library-view");
       }
@@ -136,6 +140,10 @@ function makeEl(tag = "div"): MockEl {
         return attrs.has("data-pattern-workspace-library-copy");
       }
       return false;
+    },
+    closest(sel: string) {
+      if (el.matches(sel)) return el;
+      return null;
     },
     focus: vi.fn(),
   }) as unknown as MockEl;
@@ -157,20 +165,34 @@ function makeDrawerBindings(): PatternWorkspaceLibraryDrawerBindings & {
   list: MockEl;
 } {
   const bodyClassList = makeClassList();
+  const drawer = makeEl("div");
+  const panel = makeEl("div");
+  const trigger = makeEl("button") as unknown as HTMLButtonElement;
+  trigger.setAttribute("data-pattern-workspace-library-trigger", "");
+  const closeBtn = makeEl("button") as unknown as HTMLButtonElement;
+  const backdrop = makeEl("div");
+  const status = makeEl("p");
+  const list = makeEl("ul");
+
   const doc = {
     body: { classList: bodyClassList },
     activeElement: null as HTMLElement | null,
     contains: () => false,
     addEventListener: vi.fn(),
+    querySelector: (sel: string) => {
+      if (sel === "[data-pattern-workspace-library-drawer]") return drawer;
+      if (sel === "#pattern-workspace-library-drawer-panel") return panel;
+      if (sel === "[data-pattern-workspace-library-close]") return closeBtn;
+      if (sel === "[data-pattern-workspace-library-backdrop]") return backdrop;
+      return null;
+    },
+    querySelectorAll: (sel: string) => {
+      if (sel === "[data-pattern-workspace-library-trigger]") {
+        return [trigger] as unknown as NodeListOf<Element>;
+      }
+      return [] as unknown as NodeListOf<Element>;
+    },
   };
-
-  const drawer = makeEl("div");
-  const panel = makeEl("div");
-  const trigger = makeEl("button") as unknown as HTMLButtonElement;
-  const closeBtn = makeEl("button") as unknown as HTMLButtonElement;
-  const backdrop = makeEl("div");
-  const status = makeEl("p");
-  const list = makeEl("ul");
 
   Object.defineProperty(drawer, "ownerDocument", { value: doc });
   Object.defineProperty(panel, "ownerDocument", { value: doc });
@@ -778,7 +800,16 @@ describe("patternWorkspaceLibraryDrawer", () => {
     initPatternWorkspaceLibraryDrawer(doc);
     expect(rootAttrs.get(PATTERN_WORKSPACE_LIBRARY_DRAWER_INIT_ATTR)).toBe("true");
 
-    await headerTrigger._click?.({ preventDefault: vi.fn() });
+    const clickTrigger = async (trigger: MockEl): Promise<void> => {
+      for (const handler of documentClickHandlers) {
+        await handler({
+          target: trigger,
+          preventDefault: vi.fn(),
+        });
+      }
+    };
+
+    await clickTrigger(headerTrigger);
     expect(drawer.classList.contains("is-open")).toBe(true);
 
     await refreshPatternWorkspaceLibraryList(drawer);
@@ -805,7 +836,7 @@ describe("patternWorkspaceLibraryDrawer", () => {
     await backdrop._click?.();
     expect(drawer.classList.contains("is-open")).toBe(false);
 
-    await workspaceTrigger._click?.({ preventDefault: vi.fn() });
+    await clickTrigger(workspaceTrigger);
     expect(drawer.classList.contains("is-open")).toBe(true);
     expect(workspaceTrigger.getAttribute("aria-expanded")).toBe("true");
     expect(headerTrigger.getAttribute("aria-expanded")).toBe("true");
@@ -814,5 +845,73 @@ describe("patternWorkspaceLibraryDrawer", () => {
       handler({ key: "Escape", preventDefault: vi.fn() }),
     );
     expect(drawer.classList.contains("is-open")).toBe(false);
+  });
+
+  it("opens for dynamically inserted library triggers after init", async () => {
+    const bodyClassList = makeClassList();
+    const rootAttrs = new Map<string, string>();
+    const documentClickHandlers: Array<
+      (event: { target: MockEl; preventDefault: () => void }) => void
+    > = [];
+
+    const drawer = makeEl("div");
+    const panel = makeEl("div");
+    const closeBtn = makeEl("button");
+    const backdrop = makeEl("div");
+    const lateTrigger = makeEl("button");
+    lateTrigger.setAttribute("data-pattern-workspace-library-trigger", "");
+
+    const triggerList: MockEl[] = [];
+
+    const doc = {
+      body: { classList: bodyClassList },
+      documentElement: {
+        getAttribute: (name: string) => rootAttrs.get(name) ?? null,
+        setAttribute: (name: string, value: string) => rootAttrs.set(name, value),
+        removeAttribute: (name: string) => rootAttrs.delete(name),
+      },
+      activeElement: null as HTMLElement | null,
+      contains: () => true,
+      addEventListener: vi.fn((event: string, handler: (e: unknown) => void) => {
+        if (event === "click") {
+          documentClickHandlers.push(handler as typeof documentClickHandlers[number]);
+        }
+      }),
+      querySelector: (sel: string) => {
+        if (sel === "[data-pattern-workspace-library-drawer]") return drawer;
+        if (sel === "#pattern-workspace-library-drawer-panel") return panel;
+        if (sel === "[data-pattern-workspace-library-close]") return closeBtn;
+        if (sel === "[data-pattern-workspace-library-backdrop]") return backdrop;
+        return null;
+      },
+      querySelectorAll: (sel: string) => {
+        if (sel === "[data-pattern-workspace-library-trigger]") {
+          return triggerList as unknown as NodeListOf<Element>;
+        }
+        return [] as unknown as NodeListOf<Element>;
+      },
+    } as unknown as Document;
+
+    for (const el of [drawer, panel, closeBtn, backdrop, lateTrigger]) {
+      Object.defineProperty(el, "ownerDocument", { value: doc });
+    }
+
+    initPatternWorkspaceLibraryDrawer(doc);
+    triggerList.push(lateTrigger);
+
+    for (const handler of documentClickHandlers) {
+      await handler({ target: lateTrigger, preventDefault: vi.fn() });
+    }
+
+    expect(drawer.classList.contains("is-open")).toBe(true);
+  });
+
+  it("openPatternWorkspaceLibraryDrawerFromDocument opens when drawer shell and triggers exist", () => {
+    const bindings = makeDrawerBindings();
+
+    expect(openPatternWorkspaceLibraryDrawerFromDocument(bindings.drawer.ownerDocument)).toBe(
+      true,
+    );
+    expect(bindings.drawer.classList.contains("is-open")).toBe(true);
   });
 });

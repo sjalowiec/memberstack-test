@@ -20,6 +20,7 @@ describe("pattern workspace library drawer mount", () => {
       "pages/patterns/about.astro",
       "pages/patterns/sleeveless-express.astro",
       "pages/patterns/sleeveless/builder.astro",
+      "pages/patterns/drop-shoulder/builder.astro",
       "pages/patterns/sleeveless/pattern/index.astro",
       "pages/patterns/drop-shoulder/pattern/index.astro",
       "components/patterns/PatternTabs.astro",

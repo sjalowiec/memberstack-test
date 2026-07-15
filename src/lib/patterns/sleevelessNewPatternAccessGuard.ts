@@ -179,12 +179,15 @@ export function showSleevelessNewPatternLockedScreen(
   memberLink.textContent = "See membership options";
   actions.appendChild(memberLink);
 
-  const viewLink = document.createElement("a");
-  viewLink.className =
+  const viewBtn = document.createElement("button");
+  viewBtn.type = "button";
+  viewBtn.className =
     "kbm-btn sleeveless-new-pattern-locked__btn sleeveless-new-pattern-locked__btn--secondary";
-  viewLink.href = "/account#my-patterns";
-  viewLink.textContent = "Open your saved patterns";
-  actions.appendChild(viewLink);
+  viewBtn.setAttribute("data-pattern-workspace-library-trigger", "");
+  viewBtn.setAttribute("aria-haspopup", "dialog");
+  viewBtn.setAttribute("aria-controls", "pattern-workspace-library-drawer-panel");
+  viewBtn.textContent = "Open your saved patterns";
+  actions.appendChild(viewBtn);
 
   notice.appendChild(actions);
 
