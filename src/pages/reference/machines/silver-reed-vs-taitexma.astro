@@ -1,0 +1,544 @@
+---
+export const prerender = true;
+
+import Layout from "../../../layouts/Layout.astro";
+import ReferencePageShell from "../../../components/ReferencePageShell.astro";
+import {
+  AVAILABILITY_NOTE,
+  CANONICAL_URL,
+  INTRO_SUMMARY,
+  META_DESCRIPTION,
+  PAGE_H1,
+  SEO_TITLE,
+  getComparisonPageData,
+} from "../../../lib/reference/silverReedVsTaitexma";
+
+const {
+  silverReedCards,
+  taitexmaCards,
+  comparisonRows,
+  faqItems,
+  jsonLd,
+} = getComparisonPageData();
+
+const layoutTitle = `${SEO_TITLE} | Knit it Now`;
+---
+
+<Layout title={layoutTitle} description={META_DESCRIPTION} bodyClass="page--tight-header">
+  <Fragment slot="head">
+    <link rel="canonical" href={CANONICAL_URL} />
+    <script type="application/ld+json" set:html={jsonLd} />
+  </Fragment>
+
+  <ReferencePageShell
+    title={PAGE_H1}
+    subhead={INTRO_SUMMARY}
+    backHref="/reference/machines"
+    backLabel="Back to Machine Database"
+    wide
+  >
+    <div class="brand-compare-page">
+      <nav class="brand-compare-page__breadcrumb" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="/">Home</a></li>
+          <li><span aria-hidden="true">/</span></li>
+          <li><a href="/reference">Reference</a></li>
+          <li><span aria-hidden="true">/</span></li>
+          <li><a href="/reference/machines">Machines</a></li>
+          <li><span aria-hidden="true">/</span></li>
+          <li><span aria-current="page">Silver Reed vs. Taitexma</span></li>
+        </ol>
+      </nav>
+
+      <p class="brand-compare-page__note">{AVAILABILITY_NOTE}</p>
+
+      <section class="brand-compare-page__section" aria-labelledby="quick-comparison-heading">
+        <h2 id="quick-comparison-heading">Quick comparison</h2>
+        <div class="table-scroll" aria-label="Silver Reed vs Taitexma feature comparison">
+          <table class="brand-compare-page__table">
+            <thead>
+              <tr>
+                <th scope="col">Feature</th>
+                <th scope="col">Silver Reed</th>
+                <th scope="col">Taitexma</th>
+              </tr>
+            </thead>
+            <tbody>
+              {comparisonRows.map((row) => (
+                <tr>
+                  <th scope="row">{row.feature}</th>
+                  <td>{row.silverReed}</td>
+                  <td>{row.taitexma}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="brand-compare-page__section" aria-labelledby="before-buy-heading">
+        <h2 id="before-buy-heading">What should you compare before buying?</h2>
+        <p>
+          A Silver Reed vs Taitexma decision usually comes down to practical fit, not brand loyalty.
+          Compare these factors on the specific models you are considering:
+        </p>
+        <ul class="brand-compare-page__list">
+          <li>Electronic, punchcard, or manual patterning</li>
+          <li>Metal or plastic needle bed</li>
+          <li>
+            <a href="/glossary/needle-pitch">Machine knitting gauge</a> and yarn weight
+          </li>
+          <li>Available accessories</li>
+          <li>Replacement parts and support</li>
+          <li>Current availability and delivery time</li>
+          <li>Budget</li>
+        </ul>
+      </section>
+
+      <section class="brand-compare-page__section" aria-labelledby="silver-reed-heading">
+        <h2 id="silver-reed-heading">Silver Reed knitting machines</h2>
+        <p>
+          Silver Reed is a long-established Japanese knitting machine brand with current shop listings
+          that include standard-gauge punchcard and electronic models, a mid-gauge manual machine,
+          and a bulky punchcard option.
+        </p>
+
+        {silverReedCards.length === 0 ? (
+          <p>No Silver Reed models are currently listed for sale. Check the <a href="/shop/machines">machine shop</a>.</p>
+        ) : (
+          <div class="brand-compare-page__cards">
+            {silverReedCards.map((model) => (
+              <article class="brand-compare-page__card">
+                <h3 class="brand-compare-page__card-title">
+                  <a href={model.shopHref}>{model.name}</a>
+                </h3>
+                <dl class="brand-compare-page__specs">
+                  <div>
+                    <dt>Gauge</dt>
+                    <dd>{model.gauge}{model.pitch ? ` (${model.pitch})` : ""}</dd>
+                  </div>
+                  <div>
+                    <dt>Patterning</dt>
+                    <dd>{model.patterning}</dd>
+                  </div>
+                  {model.bed && (
+                    <div>
+                      <dt>Bed</dt>
+                      <dd>{model.bed}</dd>
+                    </div>
+                  )}
+                </dl>
+                <p>{model.summary}</p>
+                <p class="brand-compare-page__card-links">
+                  <a class="kbm-btn kbm-btn-primary" href={model.shopHref}>View {model.name} listing</a>
+                  <a href={model.referenceHref}>Machine database entry</a>
+                </p>
+              </article>
+            ))}
+          </div>
+        )}
+
+        <h3>Silver Reed may be a good fit when:</h3>
+        <ul class="brand-compare-page__list">
+          <li>You want an electronic standard-gauge option.</li>
+          <li>You use or plan to use <a href="/designaknit">DesignaKnit</a>.</li>
+          <li>You want a widely recognized modern machine system.</li>
+          <li>The available Silver Reed gauge matches the yarns you want to knit.</li>
+        </ul>
+      </section>
+
+      <section class="brand-compare-page__section" aria-labelledby="taitexma-heading">
+        <h2 id="taitexma-heading">Taitexma knitting machines</h2>
+        <p>
+          Taitexma produces new Brother-style knitting machines, including standard-gauge punchcard,
+          mid-gauge manual, and bulky punchcard models. Current shop listings use metal beds and
+          Brother-style punchcard needle preselection on patterning models.
+        </p>
+
+        {taitexmaCards.length === 0 ? (
+          <p>No Taitexma models are currently listed for sale. Check the <a href="/shop/machines">machine shop</a>.</p>
+        ) : (
+          <div class="brand-compare-page__cards">
+            {taitexmaCards.map((model) => (
+              <article class="brand-compare-page__card">
+                <h3 class="brand-compare-page__card-title">
+                  <a href={model.shopHref}>{model.name}</a>
+                </h3>
+                <dl class="brand-compare-page__specs">
+                  <div>
+                    <dt>Gauge</dt>
+                    <dd>{model.gauge}{model.pitch ? ` (${model.pitch})` : ""}</dd>
+                  </div>
+                  <div>
+                    <dt>Patterning</dt>
+                    <dd>{model.patterning}</dd>
+                  </div>
+                  {model.bed && (
+                    <div>
+                      <dt>Bed</dt>
+                      <dd>{model.bed}</dd>
+                    </div>
+                  )}
+                </dl>
+                <p>{model.summary}</p>
+                <p class="brand-compare-page__card-links">
+                  <a class="kbm-btn kbm-btn-primary" href={model.shopHref}>View {model.name} listing</a>
+                  <a href={model.referenceHref}>Machine database entry</a>
+                </p>
+              </article>
+            ))}
+          </div>
+        )}
+
+        <h3>Taitexma may be a good fit when:</h3>
+        <ul class="brand-compare-page__list">
+          <li>You want a new punchcard machine.</li>
+          <li>You prefer Brother-style needle preselection.</li>
+          <li>You want a currently produced bulky-gauge option.</li>
+          <li>One of the available Taitexma gauges better matches your preferred yarn.</li>
+        </ul>
+      </section>
+
+      <section class="brand-compare-page__section" aria-labelledby="needle-selection-heading">
+        <h2 id="needle-selection-heading">How needle selection differs</h2>
+        <p>
+          Needle selection is one of the most important technical differences in a Silver Reed vs
+          Taitexma comparison. Both brands can knit patterned fabric successfully, but the carriage
+          pass feels different.
+        </p>
+
+        <div class="brand-compare-page__columns">
+          <div class="brand-compare-page__callout">
+            <h3>Silver Reed needle selection</h3>
+            <p>
+              On Silver Reed machines, patterning needles are selected as the carriage knits the row.
+              The needles are not visibly preselected before the carriage pass, so you do not see the
+              upcoming patterning selection in advance.
+            </p>
+          </div>
+          <div class="brand-compare-page__callout">
+            <h3>Taitexma punchcard needle preselection</h3>
+            <p>
+              Taitexma punchcard machines preselect the needles for the next row, similar to many
+              vintage Brother machines. After one row is completed, the needles required for the
+              following pattern row are moved into their selected position.
+            </p>
+          </div>
+        </div>
+
+        <p class="brand-compare-page__note">
+          This difference affects how the machines feel to operate, but both systems can produce
+          patterned knitting successfully.
+        </p>
+      </section>
+
+      <section class="brand-compare-page__section" aria-labelledby="dak-heading">
+        <h2 id="dak-heading">Electronic patterning and DesignaKnit</h2>
+        <p>
+          Among current shop listings, the Silver Reed SK840 is the DesignaKnit compatible knitting
+          machine option for automatic electronic patterning. Like other Silver Reed electronic
+          machines, the SK840 uses an external pattern source rather than built-in pattern memory.
+        </p>
+        <p>
+          DesignaKnit can send patterning information through a SilverLink 5 connecting cable and the
+          Silver Reed curl cord included with the SK840 listing. Interactive Knitting with
+          DesignaKnit is also possible on manual machines such as the LK150 using a Screen Link
+          cable, but those machines do not download stitch patterns to the bed.
+        </p>
+        <p>
+          Taitexma does not currently list an electronic knitting machine for sale on Knit It Now.
+          Vintage Silver Reed EC1/PE1 controllers are no longer produced; current electronic
+          patterning on Silver Reed generally uses DesignaKnit with a SilverLink cable instead.
+        </p>
+        <p>
+          Learn more on the <a href="/designaknit">DesignaKnit overview</a> and
+          <a href="/reference/designaknit-basics">DesignaKnit Basics</a> reference pages.
+        </p>
+      </section>
+
+      <section class="brand-compare-page__section" aria-labelledby="choose-heading">
+        <h2 id="choose-heading">Which machine should you choose?</h2>
+
+        <h3>Choose Silver Reed when...</h3>
+        <ul class="brand-compare-page__list">
+          <li>You want a currently listed electronic standard-gauge machine.</li>
+          <li>DesignaKnit electronic patterning matters to your workflow.</li>
+          <li>You prefer a plastic-bed mid-gauge manual option such as the LK150.</li>
+          <li>A Silver Reed punchcard or bulky model matches your yarn and technique goals.</li>
+        </ul>
+
+        <h3>Choose Taitexma when...</h3>
+        <ul class="brand-compare-page__list">
+          <li>You want a new punchcard knitting machine with Brother-style preselection.</li>
+          <li>You want a currently listed bulky-gauge punchcard model.</li>
+          <li>A Taitexma mid-gauge or standard-gauge listing fits your yarn range better.</li>
+        </ul>
+
+        <h3>Compare individual models before deciding</h3>
+        <p>
+          Brand alone is not enough. Machine gauge, patterning method, accessories, price, and
+          current availability matter more than the name on the bed. Use the quick comparison above,
+          then open the individual machine pages before you decide.
+        </p>
+      </section>
+
+      <section class="brand-compare-page__section" aria-labelledby="faq-heading">
+        <h2 id="faq-heading">Frequently asked questions</h2>
+        <div class="brand-compare-page__faq">
+          {faqItems.map((item) => (
+            <article class="brand-compare-page__faq-item">
+              <h3>{item.question}</h3>
+              <p>{item.answer}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section class="brand-compare-page__section" aria-labelledby="related-heading">
+        <h2 id="related-heading">Related resources</h2>
+        <ul class="brand-compare-page__list">
+          <li><a href="/reference/machines/choose">Machine Buying Decision Guide</a></li>
+          <li><a href="/glossary/needle-pitch">Machine gauge reference (Needle Pitch)</a></li>
+          <li><a href="/reference/yarn-weight">Yarn weight and machine pitch reference</a></li>
+          <li><a href="/shop/machines">Compare current knitting machines</a></li>
+          <li><a href="/reference/machines">Machine database</a></li>
+          <li><a href="/designaknit">DesignaKnit information</a></li>
+          <li><a href="/contact">Contact Knit It Now</a></li>
+        </ul>
+      </section>
+
+      <section class="brand-compare-page__cta" aria-label="Next steps">
+        <a class="kbm-btn kbm-btn-primary" href="/shop/machines">Compare Current Knitting Machines</a>
+        <a class="kbm-btn kbm-btn-secondary" href="/reference/machines/choose">Use the Machine Buying Decision Guide</a>
+        <a class="kbm-btn kbm-btn-secondary" href="/contact">Contact Knit It Now</a>
+      </section>
+    </div>
+  </ReferencePageShell>
+</Layout>
+
+<style>
+  .brand-compare-page {
+    font-size: 1rem;
+    line-height: 1.65;
+    color: #243015;
+  }
+
+  .brand-compare-page__breadcrumb ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.5rem;
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+    font-size: 0.92rem;
+    color: #4b5563;
+  }
+
+  .brand-compare-page__breadcrumb a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .brand-compare-page__breadcrumb [aria-current="page"] {
+    color: #374151;
+    font-weight: 600;
+  }
+
+  .brand-compare-page__note {
+    margin: 0 0 1.5rem;
+    padding: 0.85rem 1rem;
+    background: #f5f7f2;
+    border: 1px solid #d6dcc8;
+    border-left: 4px solid #52682d;
+    border-radius: 6px;
+    font-size: 0.95rem;
+  }
+
+  .brand-compare-page__section {
+    margin-bottom: 2.25rem;
+  }
+
+  .brand-compare-page__section h2 {
+    margin: 0 0 0.75rem;
+    font-size: 1.45rem;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .brand-compare-page__section h3 {
+    margin: 1.25rem 0 0.65rem;
+    font-size: 1.12rem;
+    color: #374151;
+  }
+
+  .brand-compare-page__list {
+    margin: 0.5rem 0 0;
+    padding-left: 1.25rem;
+  }
+
+  .brand-compare-page__list li + li {
+    margin-top: 0.35rem;
+  }
+
+  .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .brand-compare-page__table {
+    width: 100%;
+    min-width: 720px;
+    border-collapse: collapse;
+    font-size: 0.96rem;
+  }
+
+  .brand-compare-page__table th,
+  .brand-compare-page__table td {
+    padding: 0.85rem 1rem;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid #e5e7df;
+  }
+
+  .brand-compare-page__table thead th {
+    background: #f3f4ef;
+    font-weight: 700;
+    color: #374151;
+    border-bottom: 2px solid #d6d9cf;
+  }
+
+  .brand-compare-page__table tbody th[scope="row"] {
+    font-weight: 700;
+    color: #1f2937;
+    background: #fcfcfa;
+    white-space: nowrap;
+    width: 12rem;
+  }
+
+  .brand-compare-page__cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+
+  .brand-compare-page__card {
+    background: #fff;
+    border: 1px solid #d6dcc8;
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+    box-shadow: 0 2px 10px rgba(82, 104, 45, 0.06);
+  }
+
+  .brand-compare-page__card-title {
+    margin: 0 0 0.65rem;
+    font-size: 1.08rem;
+  }
+
+  .brand-compare-page__card-title a {
+    color: var(--kbm-green, #52682d);
+    text-decoration: none;
+  }
+
+  .brand-compare-page__card-title a:hover {
+    text-decoration: underline;
+  }
+
+  .brand-compare-page__specs {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0 0 0.75rem;
+  }
+
+  .brand-compare-page__specs div {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr;
+    gap: 0.5rem;
+  }
+
+  .brand-compare-page__specs dt {
+    margin: 0;
+    font-weight: 600;
+    color: #52682d;
+  }
+
+  .brand-compare-page__specs dd {
+    margin: 0;
+  }
+
+  .brand-compare-page__card p {
+    margin: 0 0 0.75rem;
+  }
+
+  .brand-compare-page__card-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem 1rem;
+    align-items: center;
+    margin: 0 !important;
+  }
+
+  .brand-compare-page__card-links a:not(.kbm-btn) {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+  }
+
+  .brand-compare-page__columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 0.75rem;
+  }
+
+  .brand-compare-page__callout {
+    background: #f8faf5;
+    border: 1px solid #d6dcc8;
+    border-radius: 10px;
+    padding: 1rem 1.1rem;
+  }
+
+  .brand-compare-page__callout h3 {
+    margin-top: 0;
+  }
+
+  .brand-compare-page__faq {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .brand-compare-page__faq-item {
+    border-top: 1px solid #e5e7df;
+    padding-top: 0.85rem;
+  }
+
+  .brand-compare-page__faq-item h3 {
+    margin: 0 0 0.45rem;
+    font-size: 1.05rem;
+    color: #1f2937;
+  }
+
+  .brand-compare-page__faq-item p {
+    margin: 0;
+  }
+
+  .brand-compare-page__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7df;
+  }
+
+  @media (max-width: 760px) {
+    .brand-compare-page__columns {
+      grid-template-columns: 1fr;
+    }
+
+    .brand-compare-page__table {
+      font-size: 0.9rem;
+    }
+  }
+</style>
