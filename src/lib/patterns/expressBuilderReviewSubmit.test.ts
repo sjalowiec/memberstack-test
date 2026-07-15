@@ -1,15 +1,21 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import {
   AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
   EXPRESS_AVAILABLE_NEEDLES_INPUT_ID,
 } from "./sleevelessExpressAvailableNeedles";
 import {
+  computeExpressGaugeStepComplete,
   evaluateExpressGaugeFormSubmit,
   EXPRESS_GAUGE_FORM_ID,
   EXPRESS_GAUGE_ROW_INPUT_ID,
   EXPRESS_GAUGE_STITCH_INPUT_ID,
   EXPRESS_GENERATE_BUTTON_ID,
+  EXPRESS_NEEDLE_BLOCK_SELECTOR,
+  expressBuilderRequiresNeedles,
   isExpressReviewCtaReady,
+  syncExpressNeedleBlockVisibility,
   wireExpressBuilderReviewSubmit,
 } from "./expressBuilderReviewSubmit";
 
@@ -69,7 +75,13 @@ function makeEl(tag: string, init: Partial<El> = {}): El {
   return el;
 }
 
-function mountBuilderDom(): { doc: Document; needles: El; button: El; openGauge: ReturnType<typeof vi.fn> } {
+function mountBuilderDom(): {
+  doc: Document;
+  needles: El;
+  needleBlock: El;
+  button: El;
+  openGauge: ReturnType<typeof vi.fn>;
+} {
   const openGauge = vi.fn();
   const needles = makeEl("input", {
     id: EXPRESS_AVAILABLE_NEEDLES_INPUT_ID,
@@ -90,11 +102,16 @@ function mountBuilderDom(): { doc: Document; needles: El; button: El; openGauge:
   const floating = makeEl("div", { children: [needles, errorText] });
   needles.parent = floating;
   errorText.parent = floating;
+  const needleBlock = makeEl("div", {
+    attributes: { class: "express-needle-block", hidden: "hidden" },
+    children: [floating],
+  });
+  floating.parent = needleBlock;
 
-  const form = makeEl("form", { id: EXPRESS_GAUGE_FORM_ID, children: [stitch, row, floating] });
+  const form = makeEl("form", { id: EXPRESS_GAUGE_FORM_ID, children: [stitch, row, needleBlock] });
   stitch.parent = form;
   row.parent = form;
-  floating.parent = form;
+  needleBlock.parent = form;
 
   const button = makeEl("button", {
     id: EXPRESS_GENERATE_BUTTON_ID,
@@ -114,6 +131,10 @@ function mountBuilderDom(): { doc: Document; needles: El; button: El; openGauge:
 
   const doc = {
     getElementById: (id: string) => byId.get(id) ?? null,
+    querySelector: (selector: string) => {
+      if (selector === EXPRESS_NEEDLE_BLOCK_SELECTOR) return needleBlock;
+      return null;
+    },
   } as unknown as Document;
 
   vi.stubGlobal("window", {
@@ -123,13 +144,56 @@ function mountBuilderDom(): { doc: Document; needles: El; button: El; openGauge:
     },
   });
 
-  return { doc, needles, button, openGauge };
+  return { doc, needles, needleBlock, button, openGauge };
 }
 
+describe("expressBuilderRequiresNeedles", () => {
+  it("returns true when the needles input is in the builder markup", () => {
+    const { doc } = mountBuilderDom();
+    expect(expressBuilderRequiresNeedles(doc)).toBe(true);
+  });
+
+  it("returns false when the needles input is absent", () => {
+    const doc = {
+      getElementById: () => null,
+      querySelector: () => null,
+    } as unknown as Document;
+    expect(expressBuilderRequiresNeedles(doc)).toBe(false);
+  });
+});
+
+describe("computeExpressGaugeStepComplete", () => {
+  it("requires needles when the field is present", () => {
+    const { doc } = mountBuilderDom();
+    expect(computeExpressGaugeStepComplete(true, false, doc)).toBe(false);
+    expect(computeExpressGaugeStepComplete(true, true, doc)).toBe(true);
+    expect(computeExpressGaugeStepComplete(false, true, doc)).toBe(false);
+  });
+
+  it("does not require needles when the field is absent", () => {
+    const doc = { getElementById: () => null } as unknown as Document;
+    expect(computeExpressGaugeStepComplete(true, false, doc)).toBe(true);
+  });
+});
+
+describe("syncExpressNeedleBlockVisibility", () => {
+  it("reveals the needles block once stitch/row gauge is entered", () => {
+    const { doc, needleBlock } = mountBuilderDom();
+    expect(needleBlock.getAttribute("hidden")).toBe("hidden");
+
+    syncExpressNeedleBlockVisibility(doc, true);
+    expect(needleBlock.getAttribute("hidden")).toBeNull();
+
+    syncExpressNeedleBlockVisibility(doc, false);
+    expect(needleBlock.attributes.hidden).toBeDefined();
+  });
+});
+
 describe("isExpressReviewCtaReady", () => {
-  it("shows the CTA when stitch/row gauge is ready even if needles are still empty", () => {
+  it("shows the CTA only when wizard steps and the full gauge step are complete", () => {
     expect(isExpressReviewCtaReady(true, true)).toBe(true);
     expect(isExpressReviewCtaReady(true, false)).toBe(false);
+    expect(isExpressReviewCtaReady(false, true)).toBe(false);
   });
 });
 
@@ -138,14 +202,15 @@ describe("evaluateExpressGaugeFormSubmit", () => {
     vi.unstubAllGlobals();
   });
 
-  it("blocks navigation, opens gauge, and marks needles invalid when empty", () => {
-    const { doc, needles, openGauge } = mountBuilderDom();
+  it("blocks navigation, opens gauge, reveals needles, and marks needles invalid when empty", () => {
+    const { doc, needles, needleBlock, openGauge } = mountBuilderDom();
     const outcome = evaluateExpressGaugeFormSubmit(doc, {
       openGaugeStepForValidation: openGauge,
     });
 
     expect(outcome).toEqual({ proceed: false, reason: "invalid-needles" });
     expect(openGauge).toHaveBeenCalledOnce();
+    expect(needleBlock.getAttribute("hidden")).toBeNull();
     expect(needles.classList.toggle).toHaveBeenCalledWith("error", true);
     expect(needles.getAttribute("aria-invalid")).toBe("true");
     expect(needles.focus).toHaveBeenCalled();
@@ -230,6 +295,35 @@ describe("builder needles copy parity", () => {
   it("uses the shared required message in the submit evaluation path", () => {
     expect(AVAILABLE_NEEDLES_REQUIRED_MESSAGE).toBe(
       "Enter the number of working needles available on your machine.",
+    );
+  });
+});
+
+const sleevelessBuilderAstro = readFileSync(
+  resolve("src/pages/patterns/sleeveless/builder.astro"),
+  "utf8",
+);
+const dropShoulderBuilderAstro = readFileSync(
+  resolve("src/pages/patterns/drop-shoulder/builder.astro"),
+  "utf8",
+);
+const expressPageSrc = readFileSync(resolve("src/scripts/sleeveless-express-page.ts"), "utf8");
+
+describe("builder needles field parity", () => {
+  it("renders the shared needles field on the sleeveless builder", () => {
+    expect(sleevelessBuilderAstro).toContain('id="express-available-needles"');
+    expect(sleevelessBuilderAstro).toContain('class="express-needle-block" hidden');
+  });
+
+  it("keeps the drop-shoulder needles field hidden until gauge is entered", () => {
+    expect(dropShoulderBuilderAstro).toContain('class="express-needle-block" hidden');
+  });
+
+  it("keeps review CTA, gauge-step completion, and needle visibility in sync in the shared client", () => {
+    expect(expressPageSrc).toContain("computeExpressGaugeStepComplete");
+    expect(expressPageSrc).toContain("syncExpressNeedleBlockVisibility");
+    expect(expressPageSrc).not.toMatch(
+      /isExpressReviewCtaReady\(wizardStepsComplete,\s*gaugeOk\(\)\)/,
     );
   });
 });

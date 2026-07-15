@@ -11,6 +11,7 @@ export const EXPRESS_GENERATE_BUTTON_ID = "express-generate";
 export const EXPRESS_GENERATE_WRAP_ID = "express-generate-wrap";
 export const EXPRESS_GAUGE_STITCH_INPUT_ID = "express-stitch-gauge";
 export const EXPRESS_GAUGE_ROW_INPUT_ID = "express-row-gauge";
+export const EXPRESS_NEEDLE_BLOCK_SELECTOR = ".express-needle-block";
 
 export type ExpressReviewSubmitOutcome =
   | { proceed: true }
@@ -22,9 +23,42 @@ export type ExpressReviewSubmitHooks = {
   afterGaugeStepOpened?: () => void;
 };
 
-/** Review CTA is ready when wizard choices and swatch gauge (stitch + row) are entered  not needles. */
-export function isExpressReviewCtaReady(wizardStepsComplete: boolean, stitchRowGaugeOk: boolean): boolean {
-  return wizardStepsComplete && stitchRowGaugeOk;
+/** True when the builder markup includes the available-needles field. */
+export function expressBuilderRequiresNeedles(doc: Document): boolean {
+  return doc.getElementById(EXPRESS_AVAILABLE_NEEDLES_INPUT_ID) != null;
+}
+
+/** Gauge accordion step is complete: stitch/row gauge plus needles when the field is present. */
+export function computeExpressGaugeStepComplete(
+  stitchRowGaugeOk: boolean,
+  needlesOk: boolean,
+  doc: Document,
+): boolean {
+  if (!stitchRowGaugeOk) return false;
+  if (!expressBuilderRequiresNeedles(doc)) return true;
+  return needlesOk;
+}
+
+/** Review CTA is ready only when wizard choices and the full gauge step are complete. */
+export function isExpressReviewCtaReady(
+  wizardStepsComplete: boolean,
+  gaugeStepComplete: boolean,
+): boolean {
+  return wizardStepsComplete && gaugeStepComplete;
+}
+
+/** Reveal the needles block once stitch/row gauge is entered; hide it until then. */
+export function syncExpressNeedleBlockVisibility(doc: Document, stitchRowGaugeOk: boolean): void {
+  const block = doc.querySelector(EXPRESS_NEEDLE_BLOCK_SELECTOR);
+  if (
+    !block ||
+    typeof (block as Element).setAttribute !== "function" ||
+    typeof (block as Element).removeAttribute !== "function"
+  ) {
+    return;
+  }
+  if (stitchRowGaugeOk) block.removeAttribute("hidden");
+  else block.setAttribute("hidden", "");
 }
 
 function isValidPositiveNumber(value: string): boolean {
@@ -58,13 +92,17 @@ export function evaluateExpressGaugeFormSubmit(
 
   const stitchValid = isValidPositiveNumber(stEl.value);
   const rowValid = isValidPositiveNumber(rwEl.value);
+  const requiresNeedles = expressBuilderRequiresNeedles(doc);
   const needlesInput = asTextInput(doc.getElementById(EXPRESS_AVAILABLE_NEEDLES_INPUT_ID));
-  const needlesResult = validateAvailableNeedlesFieldValue(needlesInput?.value ?? "");
+  const needlesResult = requiresNeedles
+    ? validateAvailableNeedlesFieldValue(needlesInput?.value ?? "")
+    : { valid: true, message: "" };
 
   if (!stitchValid || !rowValid || !needlesResult.valid) {
+    syncExpressNeedleBlockVisibility(doc, stitchValid && rowValid);
     hooks.openGaugeStepForValidation();
 
-    if (!needlesResult.valid) {
+    if (requiresNeedles && !needlesResult.valid) {
       setAvailableNeedlesFieldErrorState(needlesInput, true);
       const focusNeedles = (): void => {
         if (!needlesInput) return;
@@ -82,7 +120,7 @@ export function evaluateExpressGaugeFormSubmit(
       else rwEl.focus();
     }
 
-    if (!needlesResult.valid) return { proceed: false, reason: "invalid-needles" };
+    if (requiresNeedles && !needlesResult.valid) return { proceed: false, reason: "invalid-needles" };
     if (!stitchValid) return { proceed: false, reason: "invalid-stitch" };
     return { proceed: false, reason: "invalid-row" };
   }

@@ -75,7 +75,9 @@ import {
   validateAvailableNeedlesFieldValue,
 } from "../lib/patterns/availableNeedlesFieldValidation";
 import {
+  computeExpressGaugeStepComplete,
   isExpressReviewCtaReady,
+  syncExpressNeedleBlockVisibility,
   wireExpressBuilderReviewSubmit,
 } from "../lib/patterns/expressBuilderReviewSubmit";
 import { wireExpressSweaterSizingChartLink } from "../lib/reference/sweaterSizingChartNavigation";
@@ -508,7 +510,8 @@ function initExpressPage() {
       nonEmptyTrimmed(values.front) &&
       !!values.neckline &&
       !!values.fit;
-    const reviewCtaReady = isExpressReviewCtaReady(wizardStepsComplete, gaugeOk());
+    const gaugeStepComplete = computeExpressGaugeStepComplete(gaugeOk(), needlesOk(), document);
+    const reviewCtaReady = isExpressReviewCtaReady(wizardStepsComplete, gaugeStepComplete);
 
     if (wrap) {
       if (reviewCtaReady) wrap.removeAttribute("hidden");
@@ -612,6 +615,7 @@ function initExpressPage() {
     });
 
     updateSummaries();
+    syncExpressNeedleBlockVisibility(document, gaugeOk());
     updateGeneratePatternAvailability();
     applySelectionUI();
     syncExpressChartAudienceLockUi();
@@ -892,6 +896,7 @@ function initExpressPage() {
   }
 
   function refreshGaugeStepUi(persist = true) {
+    syncExpressNeedleBlockVisibility(document, gaugeOk());
     updateSummaries();
     updateGeneratePatternAvailability();
     const secG = stepSection(STEPS);

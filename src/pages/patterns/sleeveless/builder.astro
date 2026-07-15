@@ -6,6 +6,12 @@ import ExpressBuilderWhoSizeSection from "../../../components/patterns/ExpressBu
 import GlossaryTooltip from "../../../components/common/GlossaryTooltip.astro";
 import GaugeInput from "../../../components/wizards/GaugeInput.astro";
 import UnitToggle from "../../../components/wizards/UnitToggle.astro";
+import FloatingInput from "../../../components/lego/FloatingInput.astro";
+import {
+  AVAILABLE_NEEDLES_HELPER_TEXT,
+  AVAILABLE_NEEDLES_LABEL,
+  AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
+} from "../../../lib/patterns/sleevelessExpressAvailableNeedles";
 /* Wizard is @import'd first inside sleeveless-express-builder-cards.css so Express overrides always win cascade */
 import "../../../styles/sleeveless-express-builder-cards.css";
 import "../../../styles/sleeveless-express-wizard-layout.css";
@@ -579,6 +585,23 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
                     rowLabelCm="Row gauge — rows over 10 cm"
                   />
                 </div>
+                <div class="express-needle-block" hidden>
+                  <FloatingInput
+                    id="express-available-needles"
+                    name="availableNeedles"
+                    label={AVAILABLE_NEEDLES_LABEL}
+                    type="number"
+                    inputMode="numeric"
+                    min="1"
+                    step="1"
+                    required
+                    errorId="express-available-needles-error"
+                    errorText={AVAILABLE_NEEDLES_REQUIRED_MESSAGE}
+                  />
+                  <p class="express-needle-help" id="express-available-needles-help">
+                    {AVAILABLE_NEEDLES_HELPER_TEXT}
+                  </p>
+                </div>
               </form>
             </div>
             <!-- Submit lives outside collapsible .express-acc__body so it stays visible when Gauge is closed (see updateGeneratePatternAvailability). -->
@@ -670,6 +693,28 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
 
   .express-gauge-block {
     margin-bottom: 0.25rem;
+  }
+
+  .express-needle-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    max-width: 16rem;
+    width: 100%;
+  }
+
+  @media (max-width: 480px) {
+    .express-needle-block {
+      max-width: 100%;
+    }
+  }
+
+  .express-needle-help {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: #6b7280;
   }
 
   .sg-tab-share__intro {
