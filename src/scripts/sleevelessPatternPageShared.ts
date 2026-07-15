@@ -79,6 +79,7 @@ import { renderDropShoulderSleeveShapingChartHtml } from "../lib/patterns/dropSh
 // buildSleevelessRoundNeckShapingMapData below; patterns without a real schedule render no map
 // (SAMPLE_SHAPING_MAP_DATA is intentionally not imported — it is dev/test-only, never customer-facing).
 import { renderShapingMapSvg } from "../lib/patterns/shapingMapSvg.ts";
+import { buildSleevelessRoundNeckBackShapingMapData } from "../lib/patterns/sleevelessRoundNeckBackShapingSchedule.ts";
 import { buildSleevelessRoundNeckShapingMapData } from "../lib/patterns/sleevelessRoundNeckShapingSchedule.ts";
 import { initChartProgressTracking } from "./chartProgressTracker.ts";
 import { scheduleReadingWorkflowSync } from "../lib/patterns/patternReadingWorkflowSync.ts";
@@ -4033,6 +4034,13 @@ table {
       { firstArmholeRc: result?.debug?.armholeStartRow },
     );
     const frontIsRoundNeck = !!frontShapingMapData;
+    const backShapingMapData = buildSleevelessRoundNeckBackShapingMapData(
+      result?.backNeckShoulderTimeline,
+      {
+        firstArmholeRc: result?.debug?.armholeStartRow,
+        patternData: diagramPatternData,
+      },
+    );
 
     const displayRows = result.displayRows ?? [];
     const frontDisplayRows = result.frontDisplayRows ?? [];
@@ -4054,6 +4062,7 @@ table {
                     notationSupported: true,
                     construction: "sleeveless",
                     patternData: diagramPatternData,
+                    shapingMapData: backShapingMapData,
                   }
                 : undefined,
             }
