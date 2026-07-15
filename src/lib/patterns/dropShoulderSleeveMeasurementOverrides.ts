@@ -20,7 +20,10 @@ import {
   normalizeDropShoulderSleeveLengthChoice,
 } from "./patternConstructionIdentity";
 import { computeDefaultMeasurementsFromChartRow } from "./sleevelessExpressSizeChartClient";
-import { resolveDropShoulderFinishedUpperArmInches } from "./dropShoulderUpperArmAllowance";
+import {
+  resolveDropShoulderFinishedUpperArmInches,
+  resolveDropShoulderFinishedWristInches,
+} from "./dropShoulderSleeveEase";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 
 export const DROP_SHOULDER_SLEEVE_OVERRIDE_KEYS = ["upperArm", "sleeveLength", "wrist"] as const;
@@ -108,10 +111,11 @@ export function isDropShoulderPatternData(patternData: Record<string, unknown>):
 /**
  * Chart row → formatted override strings for the three sleeve diagram fields.
  *
- * When `chartAudience` is supplied, the `upperArm` default is the FINISHED Drop Shoulder upper arm
- * (body upper arm + fit allowance) rather than the raw chart body value. See
- * {@link resolveDropShoulderFinishedUpperArmInches}. Without an audience the raw chart value is
- * used (no allowance), so callers that cannot supply a group are unchanged.
+ * When `chartAudience` is supplied, `upperArm` and `wrist` defaults are FINISHED sleeve
+ * circumferences (body measurement + fit-based sleeve ease) rather than raw chart body values.
+ * See {@link resolveDropShoulderFinishedUpperArmInches} and
+ * {@link resolveDropShoulderFinishedWristInches}. Without an audience the raw chart values are
+ * used (no ease), so callers that cannot supply a group are unchanged.
  */
 export function dropShoulderSleeveDefaultsFromChartRow(
   row: ChartRow,
@@ -130,7 +134,7 @@ export function dropShoulderSleeveDefaultsFromChartRow(
     }
   }
 
-  // Replace the raw body upper arm with the finished (allowance-added) value when the group is known.
+  // Replace raw body sleeve measurements with finished (ease-added) values when the group is known.
   if (options?.chartAudience) {
     const finishedUpperArm = resolveDropShoulderFinishedUpperArmInches({
       chartAudience: options.chartAudience,
@@ -139,6 +143,15 @@ export function dropShoulderSleeveDefaultsFromChartRow(
     });
     if (finishedUpperArm !== undefined && finishedUpperArm > 0) {
       out.upperArm = formatOverrideInches(finishedUpperArm);
+    }
+
+    const finishedWrist = resolveDropShoulderFinishedWristInches({
+      chartAudience: options.chartAudience,
+      fit: fitPreference,
+      bodyWristIn: computed.wrist,
+    });
+    if (finishedWrist !== undefined && finishedWrist > 0) {
+      out.wrist = formatOverrideInches(finishedWrist);
     }
   }
 

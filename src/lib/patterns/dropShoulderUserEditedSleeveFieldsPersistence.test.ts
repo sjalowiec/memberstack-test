@@ -14,7 +14,7 @@ import {
 } from "./patternStorage";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 
-/** Misses size 7 ? body upper_arm 12 (finished standard = 12 + 8.7 = 20.75). */
+/** Misses size 7 ? body upper_arm 12 (finished standard = 12 + 2.0 = 14). */
 const MISSES_7: ChartRow = {
   size: 7,
   bust_or_chest: 40,
@@ -150,9 +150,9 @@ describe("Drop Shoulder user-edited sleeve fields ? persistence across save + re
       fitPreference: "standard",
       chartAudience: "misses",
     });
-    // body 12 + {7.1 close, 8.7 standard} ? 19.0 / 20.75.
-    expect(close.upperArm).toBe("19");
-    expect(standard.upperArm).toBe("20.75");
+    // body 12 + {1.0 close, 2.0 standard} ? 13 / 14.
+    expect(close.upperArm).toBe("13");
+    expect(standard.upperArm).toBe("14");
   });
 
   it("6. wrist manual-edit state also survives reopen", () => {

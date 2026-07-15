@@ -25,11 +25,20 @@ const size7Row: ChartRow = {
 };
 
 describe("dropShoulderSleeveDefaultsFromChartRow", () => {
-  it("maps upper_arm, sleeve_length, and wrist from Size 7 chart row", () => {
+  it("maps upper_arm, sleeve_length, and wrist from Size 7 chart row without audience (raw body)", () => {
     const defaults = dropShoulderSleeveDefaultsFromChartRow(size7Row, "standard");
     expect(defaults.upperArm).toBe("12");
     expect(defaults.sleeveLength).toBe("17");
     expect(defaults.wrist).toBe("6");
+  });
+
+  it("applies sleeve ease when chartAudience is supplied", () => {
+    const defaults = dropShoulderSleeveDefaultsFromChartRow(size7Row, "standard", {
+      chartAudience: "misses",
+    });
+    expect(defaults.upperArm).toBe("14");
+    expect(defaults.sleeveLength).toBe("17");
+    expect(defaults.wrist).toBe("6.75");
   });
 });
 
@@ -47,18 +56,21 @@ describe("reconcileDropShoulderSleeveOverridesForSizeChange", () => {
       size7Row,
       "standard",
       { upperArm: false, sleeveLength: false, cuffCircumference: false },
+      { chartAudience: "misses" },
     );
 
-    expect(next.upperArm).toBe("12");
+    expect(next.upperArm).toBe("14");
     expect(next.sleeveLength).toBe("17");
-    expect(next.wrist).toBe("6");
+    expect(next.wrist).toBe("6.75");
     expect(next.chestBust).toBe("43");
   });
 
-  it("computes armhole depth as upper arm ÷ 2 after Size 7 hydration", () => {
-    const defaults = dropShoulderSleeveDefaultsFromChartRow(size7Row, "standard");
+  it("computes armhole depth as eased upper arm ÷ 2 after Size 7 hydration", () => {
+    const defaults = dropShoulderSleeveDefaultsFromChartRow(size7Row, "standard", {
+      chartAudience: "misses",
+    });
     const upperArm = parseFloat(defaults.upperArm!);
-    expect(computeDropShoulderArmholeDepthInches(upperArm)).toBe(6);
+    expect(computeDropShoulderArmholeDepthInches(upperArm)).toBe(7);
   });
 
   it("preserves a user-edited upper arm via explicit flag", () => {
@@ -73,11 +85,12 @@ describe("reconcileDropShoulderSleeveOverridesForSizeChange", () => {
       size7Row,
       "standard",
       { upperArm: true, sleeveLength: false, cuffCircumference: false },
+      { chartAudience: "misses" },
     );
 
     expect(next.upperArm).toBe("13");
     expect(next.sleeveLength).toBe("17");
-    expect(next.wrist).toBe("6");
+    expect(next.wrist).toBe("6.75");
   });
 });
 
@@ -99,10 +112,11 @@ describe("reconcileDropShoulderSleeveOverridesAfterChartSync (legacy)", () => {
       "standard",
       overrides,
       previous,
+      { chartAudience: "misses" },
     );
 
-    expect(next.upperArm).toBe("12");
+    expect(next.upperArm).toBe("14");
     expect(next.sleeveLength).toBe("17");
-    expect(next.wrist).toBe("6");
+    expect(next.wrist).toBe("6.75");
   });
 });

@@ -325,11 +325,11 @@ describe("forceRefreshDropShoulderSummaryMeasurements", () => {
     const refreshed = forceRefreshDropShoulderSummaryMeasurements();
     expect(refreshed).not.toBeNull();
     expect(refreshed!.selectedSize).toBe("8");
-    // body 12.5 + Adult woman standard allowance 8.7 → finished 21.25.
-    expect(refreshed!.merged.upperArm).toBe("21.25");
+    // body 12.5 + adult standard upper-arm ease 2.0 → finished 14.5.
+    expect(refreshed!.merged.upperArm).toBe("14.5");
     expect(refreshed!.merged.sleeveLength).toBe("17");
-    expect(refreshed!.merged.wrist).toBe("6.25");
-    expect(refreshed!.resolvedUpperArmIn).toBe(21.25);
+    expect(refreshed!.merged.wrist).toBe("7");
+    expect(refreshed!.resolvedUpperArmIn).toBe(14.5);
     expect(readDropShoulderReviewDiagramDirty()).toBe(false);
     expect(readDropShoulderReviewDisplayIdentity()?.selectedSize).toBe("8");
   });
@@ -373,11 +373,11 @@ describe("forceRefreshDropShoulderSummaryMeasurements", () => {
     });
     expect(refreshed).not.toBeNull();
     expect(refreshed!.selectedSize).toBe("8");
-    // body 12.5 + Adult woman standard allowance 8.7 → finished 21.25.
-    expect(refreshed!.merged.upperArm).toBe("21.25");
+    // body 12.5 + adult standard upper-arm ease 2.0 → finished 14.5.
+    expect(refreshed!.merged.upperArm).toBe("14.5");
     expect(refreshed!.merged.sleeveLength).toBe("17");
-    expect(refreshed!.merged.wrist).toBe("6.25");
-    expect(refreshed!.resolvedUpperArmIn).toBe(21.25);
+    expect(refreshed!.merged.wrist).toBe("7");
+    expect(refreshed!.resolvedUpperArmIn).toBe(14.5);
   });
 
   // Regression: editing a saved Drop Shoulder pattern and changing ONLY the fit (same size) must
@@ -395,15 +395,15 @@ describe("forceRefreshDropShoulderSummaryMeasurements", () => {
           unknown
         >),
         values: { who: "women", selectedSize: "8", fit: "standard" },
-        // Body upper arm 12.5 + Adult woman standard allowance 8.7 = finished 21.25 (as saved).
-        cbMeasurementOverrides: { upperArm: "21.25", sleeveLength: "17", wrist: "6.25" },
+        // Body upper arm 12.5 + adult standard ease 2.0 = finished 14.5 (as saved).
+        cbMeasurementOverrides: { upperArm: "14.5", sleeveLength: "17", wrist: "7" },
       });
       store[PATTERN_STORAGE_KEY] = JSON.stringify({
         fit: {
           sizingChart: "misses",
           selectedSize: "8",
           easeChoice: "standard",
-          cbMeasurementOverrides: { upperArm: "21.25", sleeveLength: "17", wrist: "6.25" },
+          cbMeasurementOverrides: { upperArm: "14.5", sleeveLength: "17", wrist: "7" },
         },
         style: { recipientCategory: "misses", bodyShape: "straight", construction: "drop-shoulder" },
       });
@@ -419,17 +419,17 @@ describe("forceRefreshDropShoulderSummaryMeasurements", () => {
       });
 
       expect(refreshed).not.toBeNull();
-      // body 12.5 + Adult woman close allowance 7.1 = 19.6 → finished 19.5 (rounded to ¼″).
-      expect(refreshed!.merged.upperArm).toBe("19.5");
-      expect(refreshed!.resolvedUpperArmIn).toBe(19.5);
+      // body 12.5 + adult close upper-arm ease 1.0 = 13.5.
+      expect(refreshed!.merged.upperArm).toBe("13.5");
+      expect(refreshed!.resolvedUpperArmIn).toBe(13.5);
       // The persisted (stored) value tracks the recomputed system default, not the old Standard one.
       const persisted = JSON.parse(store[SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY] ?? "{}") as {
         cbMeasurementOverrides?: Record<string, string>;
       };
-      expect(persisted.cbMeasurementOverrides?.upperArm).toBe("19.5");
+      expect(persisted.cbMeasurementOverrides?.upperArm).toBe("13.5");
     });
 
-    it("Standard → Relaxed recomputes the finished upper arm (Oversized allowance)", () => {
+    it("Standard → Relaxed recomputes the finished upper arm and wrist ease", () => {
       seedSavedSize8Pattern();
 
       const refreshed = forceRefreshDropShoulderSummaryMeasurementsForQuickEditSizing({
@@ -439,9 +439,9 @@ describe("forceRefreshDropShoulderSummaryMeasurements", () => {
       });
 
       expect(refreshed).not.toBeNull();
-      // body 12.5 + Adult woman oversized allowance 10.2 → finished 22.75.
-      expect(refreshed!.merged.upperArm).toBe("22.75");
-      expect(refreshed!.resolvedUpperArmIn).toBe(22.75);
+      // body 12.5 + adult relaxed upper-arm ease 3.0 → finished 15.5.
+      expect(refreshed!.merged.upperArm).toBe("15.5");
+      expect(refreshed!.resolvedUpperArmIn).toBe(15.5);
     });
 
     it("keeps a manually overridden upper arm unchanged when fit changes", () => {
@@ -449,7 +449,7 @@ describe("forceRefreshDropShoulderSummaryMeasurements", () => {
       // User hand-edited the upper arm during the review session, then changes fit afterward. The
       // manual value lives on BOTH the express blob and the canonical pattern fit (the canonical
       // draft wins last in loadMeasurementOverrides), mirroring how a real manual edit persists.
-      const manualOverrides = { upperArm: "20", sleeveLength: "17", wrist: "6.25" };
+      const manualOverrides = { upperArm: "20", sleeveLength: "17", wrist: "7" };
       store[SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY] = JSON.stringify({
         ...(JSON.parse(store[SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY] ?? "{}") as Record<
           string,

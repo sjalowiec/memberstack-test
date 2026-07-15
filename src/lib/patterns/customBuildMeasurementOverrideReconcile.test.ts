@@ -71,10 +71,10 @@ describe("diagramOverrideDefaultsFromChartRow", () => {
     const defaults = diagramOverrideDefaultsFromChartRow(size8Row, "standard", "misses", {
       dropShoulder: true,
     });
-    // Finished Drop Shoulder upper arm = body 12.5 + Adult woman standard allowance 8.7 → 21.25.
-    expect(defaults.upperArm).toBe("21.25");
+    // Finished Drop Shoulder upper arm = body 12.5 + adult standard ease 2.0 → 14.5.
+    expect(defaults.upperArm).toBe("14.5");
     expect(defaults.sleeveLength).toBe("17");
-    expect(defaults.wrist).toBe("6.25");
+    expect(defaults.wrist).toBe("7");
     expect(defaults.cuffDepth).toBe("2");
   });
 
@@ -110,11 +110,11 @@ describe("reconcileCustomBuildDiagramOverridesAfterSizingChange", () => {
 
     expect(next.chestBust).toBe("45");
     expect(next.finishedLength).toBe("25");
-    // body 12.5 + Adult woman standard allowance 8.7 → finished 21.25.
-    expect(next.upperArm).toBe("21.25");
+    // body 12.5 + adult standard upper-arm ease 2.0 → finished 14.5.
+    expect(next.upperArm).toBe("14.5");
     expect(next.sleeveLength).toBe("17");
-    expect(next.wrist).toBe("6.25");
-    expect(computeDropShoulderArmholeDepthInches(parseFloat(next.upperArm!))).toBe(10.625);
+    expect(next.wrist).toBe("7");
+    expect(computeDropShoulderArmholeDepthInches(parseFloat(next.upperArm!))).toBe(7.25);
   });
 
   it("preserves a deliberate user-edited upper arm when switching sizes", () => {
@@ -215,7 +215,7 @@ describe("reconcileCustomBuildOverridesForSizingIdentityChange", () => {
       dropShoulder: true,
     });
 
-    expect(reconciled.upperArm).toBe("21.25");
+    expect(reconciled.upperArm).toBe("14.5");
     expect(reconciled.sleeveLength).toBe("17");
     expect(reconciled.chestBust).toBe("45");
     expect(reconciled.finishedLength).toBe("25");
@@ -230,7 +230,7 @@ describe("reconcileCustomBuildOverridesForSizingIdentityChange", () => {
       overrides: { upperArm: "9.75", chestBust: "35" },
       dropShoulder: true,
     });
-    expect(reconciled.upperArm).toBe("21.25");
+    expect(reconciled.upperArm).toBe("14.5");
     expect(reconciled.chestBust).toBe("45");
   });
 
@@ -250,7 +250,7 @@ describe("reconcileCustomBuildOverridesForSizingIdentityChange", () => {
     });
     expect(reconciled.upperArm).toBe("13");
     expect(reconciled.sleeveLength).toBe("17");
-    expect(reconciled.wrist).toBe("6.25");
+    expect(reconciled.wrist).toBe("7");
   });
 
   it("returns overrides unchanged when sizing identity is unchanged", () => {
