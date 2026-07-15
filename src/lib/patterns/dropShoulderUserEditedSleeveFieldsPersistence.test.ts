@@ -14,7 +14,7 @@ import {
 } from "./patternStorage";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 
-/** Misses size 7 ù body upper_arm 12 (finished standard = 12 + 8.7 = 20.75). */
+/** Misses size 7 ? body upper_arm 12 (finished standard = 12 + 8.7 = 20.75). */
 const MISSES_7: ChartRow = {
   size: 7,
   bust_or_chest: 40,
@@ -67,7 +67,7 @@ function fitOf(pattern: SleevelessPatternRecord): Record<string, unknown> {
   return (pattern.fit ?? {}) as Record<string, unknown>;
 }
 
-describe("Drop Shoulder user-edited sleeve fields ù persistence across save + reopen", () => {
+describe("Drop Shoulder user-edited sleeve fields ? persistence across save + reopen", () => {
   beforeEach(() => {
     stubLocalStorage();
   });

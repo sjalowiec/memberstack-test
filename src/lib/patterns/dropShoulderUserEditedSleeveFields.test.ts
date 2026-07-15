@@ -155,31 +155,46 @@ describe("dropShoulderUserEditedSleeveFields + sleeve reconcile", () => {
     expect(resolved.sleeveLengthIn).toBe(8);
   });
 
-  it("scales sleeve length by the picker choice when not user-edited (long/3-4/elbow/short)", () => {
+  it("scales sleeve length and cuff circumference by the picker choice when not user-edited", () => {
     const base = {
       overrides: {},
       chartRow: size7Row,
       fitPreference: "standard",
     } as const;
-    // Size 7 full sleeve_length = 17″.
+    // Size 7 full sleeve_length = 17″, wrist = 6″, upper arm = 12″.
     expect(resolveDropShoulderSleeveInches({ ...base }).sleeveLengthIn).toBe(17);
+    expect(resolveDropShoulderSleeveInches({ ...base }).wristIn).toBe(6);
     expect(
-      resolveDropShoulderSleeveInches({ ...base, sleeveLengthChoice: "long" }).sleeveLengthIn,
+      resolveDropShoulderSleeveInches({ ...base, sleeveLengthChoice: "long" })
+        .sleeveLengthIn,
     ).toBe(17);
     expect(
       resolveDropShoulderSleeveInches({ ...base, sleeveLengthChoice: "three-quarter" })
         .sleeveLengthIn,
     ).toBe(12.75);
     expect(
+      resolveDropShoulderSleeveInches({ ...base, sleeveLengthChoice: "three-quarter" })
+        .wristIn,
+    ).toBe(7.5);
+    expect(
       resolveDropShoulderSleeveInches({ ...base, sleeveLengthChoice: "elbow" }).sleeveLengthIn,
     ).toBe(8.5);
     expect(
+      resolveDropShoulderSleeveInches({ ...base, sleeveLengthChoice: "elbow" }).wristIn,
+    ).toBe(9);
+    expect(
       resolveDropShoulderSleeveInches({ ...base, sleeveLengthChoice: "short" }).sleeveLengthIn,
     ).toBe(5.5); // 17 × 0.33 = 5.61 → rounded to nearest ¼″
-    // Unknown/absent choice falls back to full length.
+    expect(
+      resolveDropShoulderSleeveInches({ ...base, sleeveLengthChoice: "short" }).wristIn,
+    ).toBe(12);
+    // Unknown/absent choice falls back to full length and wrist.
     expect(
       resolveDropShoulderSleeveInches({ ...base, sleeveLengthChoice: "bogus" }).sleeveLengthIn,
     ).toBe(17);
+    expect(
+      resolveDropShoulderSleeveInches({ ...base, sleeveLengthChoice: "bogus" }).wristIn,
+    ).toBe(6);
   });
 
   it("does not treat stale overrides as user-edited without explicit flags", () => {

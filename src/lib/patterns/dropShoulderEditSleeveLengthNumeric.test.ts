@@ -1,5 +1,5 @@
 /**
- * Drop Shoulder Edit page ù numeric sleeve length (not preset picker).
+ * Drop Shoulder Edit page ? numeric sleeve length (not preset picker).
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -143,7 +143,7 @@ function loadOverridesFromPattern(): Record<string, string> {
   );
 }
 
-describe("Drop Shoulder sleeve length ù builder vs Edit page UI", () => {
+describe("Drop Shoulder sleeve length ? builder vs Edit page UI", () => {
   it("1. initial builder still shows sleeve-length preset choices", () => {
     expect(dropShoulderBuilderAstro).toContain("data-ds-sleeve-length-option");
     expect(dropShoulderBuilderAstro).toContain('data-value="short"');
@@ -182,7 +182,7 @@ describe("Drop Shoulder sleeve length ù builder vs Edit page UI", () => {
   });
 });
 
-describe("Drop Shoulder Edit page ù numeric sleeve length data flow", () => {
+describe("Drop Shoulder Edit page ? numeric sleeve length data flow", () => {
   beforeEach(() => {
     stubLocalStorage();
     localStorage.clear();

@@ -11,7 +11,7 @@ import { computeDefaultMeasurementsFromChartRow } from "./sleevelessExpressSizeC
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 import type { DropShoulderUserEditedSleeveFields } from "./dropShoulderUserEditedSleeveFields";
 
-/** Misses size 7 — matches `public/data/sizing_sweaters_misses.json` (body upper_arm 12). */
+/** Misses size 7  matches `public/data/sizing_sweaters_misses.json` (body upper_arm 12). */
 const MISSES_7: ChartRow = {
   size: 7,
   bust_or_chest: 40,
@@ -65,7 +65,7 @@ function upperArmForFit(chartRow: ChartRow, chartAudience: string, fit: string):
   }).upperArm;
 }
 
-describe("New Drop Shoulder pattern — finished upper arm per fit", () => {
+describe("New Drop Shoulder pattern  finished upper arm per fit", () => {
   it("Misses gives a distinct upper-arm value for Close, Standard, and Oversized", () => {
     const close = upperArmForFit(MISSES_7, "misses", "close");
     const standard = upperArmForFit(MISSES_7, "misses", "standard");
@@ -119,7 +119,7 @@ describe("Manual upper-arm override is protected across fit changes", () => {
   });
 });
 
-describe("Editing a saved pattern — size/fit reconcile", () => {
+describe("Editing a saved pattern  size/fit reconcile", () => {
   it("refreshes a system-default upper arm to the finished value", () => {
     const next = reconcileDropShoulderSleeveOverridesForSizeChange(
       { upperArm: "9.75", wrist: "5.25", sleeveLength: "16.25" },
@@ -145,7 +145,7 @@ describe("Editing a saved pattern — size/fit reconcile", () => {
 
 describe("Sleeveless / no-audience behavior is unchanged", () => {
   it("computeDefaultMeasurementsFromChartRow still returns the raw body upper arm (no allowance)", () => {
-    // Shared with Sleeveless — must never add the Drop Shoulder allowance.
+    // Shared with Sleeveless  must never add the Drop Shoulder allowance.
     expect(computeDefaultMeasurementsFromChartRow(MISSES_7, "standard").upper_arm).toBe(12);
     expect(computeDefaultMeasurementsFromChartRow(MENS_MED, "close").upper_arm).toBe(13);
   });
@@ -196,19 +196,19 @@ describe("Pattern generation consumes the finished upper arm", () => {
     expect(F).toBe(20.75);
   });
 
-  it("sleeve-top stitches use the finished upper arm (20.75 × 5 = 104 sts)", () => {
+  it("sleeve-top stitches use the finished upper arm (20.75  5 = 104 sts)", () => {
     const result = generateDropShoulderPattern(missesGeneratorPatternData());
     expect(result.debug.dropShoulderUpperArmInches).toBe(20.75);
     expect(result.debug.dropShoulderSleeveTopStitches).toBe(104);
   });
 
-  it("armhole depth uses finished upper arm ÷ 2", () => {
+  it("armhole depth uses finished upper arm  2", () => {
     const result = generateDropShoulderPattern(missesGeneratorPatternData());
     expect(result.debug.armholeDepth).toBe(computeDropShoulderArmholeDepthInches(20.75));
     expect(result.debug.armholeDepth).toBe(10.375);
   });
 
-  it("sleeve-top width equals the total front+back armhole opening (2 × armhole depth)", () => {
+  it("sleeve-top width equals the total front+back armhole opening (2  armhole depth)", () => {
     const result = generateDropShoulderPattern(missesGeneratorPatternData());
     const upperArm = result.debug.dropShoulderUpperArmInches!;
     const armholeDepth = result.debug.armholeDepth!;

@@ -83,6 +83,7 @@ import {
   readEffectiveDropShoulderUserEditedSleeveFields,
 } from "../lib/patterns/dropShoulderUserEditedSleeveFields";
 import {
+  dropShoulderEditWorkspaceCuffCircumferenceDisplayInches,
   dropShoulderEditWorkspaceSleeveLengthDisplayInches,
   resolveDropShoulderSleeveOverrideStrings,
   scaleDropShoulderSleeveLengthInches,
@@ -412,13 +413,26 @@ function dropShoulderEditWorkspaceMergedForDiagram(
 ): Record<DiagramFieldKey, string> {
   if (!isDropShoulderEditWorkspace()) return merged;
   const userEdited = readEffectiveDropShoulderUserEditedSleeveFields(getCurrentPattern().fit);
+  const sleeveLengthChoice = readDropShoulderSleeveLengthChoice();
+  let out = merged;
   const displaySleeveLength = dropShoulderEditWorkspaceSleeveLengthDisplayInches({
     overrideInches: merged.sleeveLength ?? "",
-    sleeveLengthChoice: readDropShoulderSleeveLengthChoice(),
+    sleeveLengthChoice,
     userEditedSleeveLength: userEdited.sleeveLength === true,
   });
-  if (!displaySleeveLength) return merged;
-  return { ...merged, sleeveLength: displaySleeveLength };
+  if (displaySleeveLength) {
+    out = { ...out, sleeveLength: displaySleeveLength };
+  }
+  const displayCuffCirc = dropShoulderEditWorkspaceCuffCircumferenceDisplayInches({
+    overrideInches: merged.wrist ?? "",
+    upperArmInches: merged.upperArm ?? "",
+    sleeveLengthChoice,
+    userEditedCuffCircumference: userEdited.cuffCircumference === true,
+  });
+  if (displayCuffCirc) {
+    out = { ...out, wrist: displayCuffCirc };
+  }
+  return out;
 }
 
 function dropShoulderArmholeDepthInchesFromMerged(
@@ -1075,7 +1089,9 @@ function wireFieldPersistence(root: HTMLElement, getDisplayUnit: () => UiLengthU
     if (
       isDropShoulderConstruction() &&
       !suppressDropShoulderSleeveUserEditTracking &&
-      (key === "upperArm" || key === "wrist" || (key === "sleeveLength" && isDropShoulderEditWorkspace()))
+      (key === "upperArm" ||
+        key === "wrist" ||
+        (key === "sleeveLength" && isDropShoulderEditWorkspace()))
     ) {
       markDropShoulderSleeveOverrideKeyUserEdited(key);
     }

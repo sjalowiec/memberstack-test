@@ -1,8 +1,10 @@
 /**
  * Drop Shoulder — sleeve measurement overrides (`upperArm`, `sleeveLength`, `wrist`).
  *
- * Chart keys: `upper_arm`, `sleeve_length`, `wrist`. On size change, refresh chart-owned
- * overrides unless the user explicitly edited that field in the review session
+ * Chart keys: `upper_arm`, `sleeve_length`, `wrist`. Sleeve length and cuff circumference
+ * (wrist) are scaled at resolution from the picker choice unless user-edited; stored overrides
+ * always hold the full long-sleeve chart values. On size change, refresh chart-owned overrides
+ * unless the user explicitly edited that field in the review session
  * ({@link readDropShoulderUserEditedSleeveFields}).
  */
 import { formatSwatchCountForGaugeInput } from "./gaugeDisplayFormat";
@@ -15,6 +17,7 @@ import {
 import {
   dropShoulderSleeveLengthProportion,
   hasAuthoritativeDropShoulderConstruction,
+  normalizeDropShoulderSleeveLengthChoice,
 } from "./patternConstructionIdentity";
 import { computeDefaultMeasurementsFromChartRow } from "./sleevelessExpressSizeChartClient";
 import { resolveDropShoulderFinishedUpperArmInches } from "./dropShoulderUpperArmAllowance";
@@ -53,6 +56,29 @@ export function scaleDropShoulderSleeveLengthInches(
 ): number | undefined {
   if (fullInches === undefined || !Number.isFinite(fullInches)) return undefined;
   return roundQuarter(fullInches * dropShoulderSleeveLengthProportion(sleeveLengthChoice));
+}
+
+/**
+ * Cuff opening circumference from upper arm (shoulder) to wrist (full long sleeve).
+ *
+ * - Long (p = 1): wrist
+ * - Three-quarter (p = 0.75) and Elbow (p = 0.5): linear taper
+ *   opening = upperArm + (wrist − upperArm) × p
+ * - Short: upper arm exactly (not the 0.33 taper point)
+ */
+export function scaleDropShoulderCuffCircumferenceInches(
+  upperArmIn: number | undefined,
+  fullWristIn: number | undefined,
+  sleeveLengthChoice: unknown,
+): number | undefined {
+  if (fullWristIn === undefined || !Number.isFinite(fullWristIn)) return undefined;
+  if (upperArmIn === undefined || !Number.isFinite(upperArmIn)) return fullWristIn;
+  const choice = normalizeDropShoulderSleeveLengthChoice(sleeveLengthChoice);
+  if (choice === "short") {
+    return roundQuarter(upperArmIn);
+  }
+  const proportion = dropShoulderSleeveLengthProportion(choice);
+  return roundQuarter(upperArmIn + (fullWristIn - upperArmIn) * proportion);
 }
 
 function parseOverrideInches(raw: string): number | undefined {
@@ -146,8 +172,9 @@ export function resolveDropShoulderSleeveInches(args: {
   userEdited?: DropShoulderUserEditedSleeveFields;
   /**
    * Sleeve-length picker choice ("long" | "three-quarter" | "elbow" | "short"). The picker is the
-   * single source of truth for sleeve length: the resolved `sleeveLengthIn` is the full chart/override
-   * length scaled by this choice's proportion.
+   * single source of truth for sleeve length and cuff circumference: resolved `sleeveLengthIn` is
+   * the full chart/override length scaled by this choice's proportion; resolved `wristIn` is the
+   * taper-derived opening at that proportion unless cuff circumference was user-edited.
    *
    * SINGLE SCALING POINT: scaling happens here (and only here). The stored override always represents
    * the full (long) length; every consumer that needs the *actual* sleeve length inches — generator,
@@ -167,15 +194,21 @@ export function resolveDropShoulderSleeveInches(args: {
     return parseOverrideInches(raw);
   };
   const userEdited = args.userEdited ?? readDropShoulderUserEditedSleeveFields();
+  const upperArmIn = parse(strings.upperArm);
   const fullSleeveLengthIn = parse(strings.sleeveLength);
+  const fullWristIn = parse(strings.wrist);
   const sleeveLengthIn =
     userEdited.sleeveLength === true
       ? fullSleeveLengthIn
       : scaleDropShoulderSleeveLengthInches(fullSleeveLengthIn, args.sleeveLengthChoice);
+  const wristIn =
+    userEdited.cuffCircumference === true
+      ? fullWristIn
+      : scaleDropShoulderCuffCircumferenceInches(upperArmIn, fullWristIn, args.sleeveLengthChoice);
 
   return {
-    upperArmIn: parse(strings.upperArm),
-    wristIn: parse(strings.wrist),
+    upperArmIn,
+    wristIn,
     sleeveLengthIn,
   };
 }
@@ -193,6 +226,27 @@ export function dropShoulderEditWorkspaceSleeveLengthDisplayInches(args: {
   if (!trimmed) return "";
   if (args.userEditedSleeveLength) return trimmed;
   const scaled = scaleDropShoulderSleeveLengthInches(
+    parseOverrideInches(trimmed),
+    args.sleeveLengthChoice,
+  );
+  return scaled !== undefined ? formatOverrideInches(scaled) : trimmed;
+}
+
+/**
+ * Cuff circumference (wrist) shown in the Edit Pattern diagram input: the saved override when
+ * user-edited, otherwise the taper-derived opening at the picker-scaled sleeve length.
+ */
+export function dropShoulderEditWorkspaceCuffCircumferenceDisplayInches(args: {
+  overrideInches: string;
+  upperArmInches: string;
+  sleeveLengthChoice: unknown;
+  userEditedCuffCircumference: boolean;
+}): string {
+  const trimmed = args.overrideInches.trim();
+  if (!trimmed) return "";
+  if (args.userEditedCuffCircumference) return trimmed;
+  const scaled = scaleDropShoulderCuffCircumferenceInches(
+    parseOverrideInches(args.upperArmInches),
     parseOverrideInches(trimmed),
     args.sleeveLengthChoice,
   );
