@@ -1477,6 +1477,44 @@
     clear: both;
   }
 
+  /*
+   * Garment piece shell: body/armhole two-column split, then a separate full-width neckline block.
+   * Keeping the neckline subsection outside `.sleeveless-piece-split` ends the sticky diagram scope
+   * before Back/Front Neckline & Shoulders so the piece schematic does not sit behind Visual Guides.
+   */
+  #pattern-content .sleeveless-piece-layout {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  #pattern-content .sleeveless-piece-layout > .sleeveless-piece-neckline-fullwidth {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    clear: both;
+    position: relative;
+    z-index: 1;
+  }
+
+  #pattern-content .sleeveless-piece-neckline-fullwidth {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    clear: both;
+  }
+
+  /* Legacy intro flex wrapper without a preview card — use full width (notation lives in Visual Guides). */
+  #pattern-content .pattern-shaping-intro.ns-shaping-intro--with-preview:not(:has(.ns-jp-preview)) {
+    display: block;
+  }
+
+  #pattern-content .pattern-shaping-intro.ns-shaping-intro--with-preview:not(:has(.ns-jp-preview)) .ns-shaping-intro__main {
+    flex: none;
+    max-width: none;
+    width: 100%;
+  }
+
   #pattern-content .sleeveless-piece-chart-fullwidth .ns-shaping-chart__table {
     width: 100%;
   }
@@ -2257,6 +2295,8 @@
 
     #pattern-content .sleeveless-piece-chart-fullwidth,
     #pattern-content .pattern-subsection.sleeveless-piece-chart-fullwidth,
+    #pattern-content .sleeveless-piece-neckline-fullwidth,
+    #pattern-content .sleeveless-piece-neckline-fullwidth .pattern-subsection.sleeveless-piece-chart-fullwidth,
     #pattern-content #neckline-shoulder-chart-print-area,
     #pattern-content #front-neckline-shoulder-chart-print-area,
     #pattern-content .sg-neck-chart-print-block,

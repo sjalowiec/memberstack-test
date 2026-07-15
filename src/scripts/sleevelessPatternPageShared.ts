@@ -70,10 +70,9 @@ import {
   armholeLocalRcActiveShoulderChecklistStart,
   renderActiveShoulderChartIntroHtml,
   renderCarriagePositionPatternTipHtml,
-  renderNecklineInstructionsWithNotationPreviewHtml,
   renderNeckShoulderShapingChartTableOnlyHtml,
-  resolveJapaneseNotationQuickReferencePreviewSrc,
 } from "../lib/patterns/neckShoulderShapingChartHtml.ts";
+import { buildPatternVisualGuidesHtml } from "../lib/patterns/patternVisualGuides.ts";
 import { renderSleevelessBodyShapingChartHtml } from "../lib/patterns/sleevelessBodyShapingChartHtml.ts";
 import { renderDropShoulderSleeveShapingChartHtml } from "../lib/patterns/dropShoulderSleeveShapingChart.ts";
 // Dynamic "Shaping Map" SVG. The sleeveless round-neck FRONT is driven by real shaping math via
@@ -576,79 +575,6 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
   }
 
   /**
-   * PROTOTYPE — "Visual Guides" block for the FRONT neckline/shoulder section.
-   *
-   * A responsive two-column layout placed AFTER the written instructions and BEFORE the
-   * (collapsed) row-by-row checklist:
-   *   LEFT  — Japanese Notation: the existing quick-reference crop. Its trigger keeps
-   *           `data-neckline-notation-preview-trigger="front"` so `bindNecklineNotationPreview`
-   *           opens the SAME Shaping Notation diagram modal (no second modal system).
-   *   RIGHT — Shaping Map: a condensed preview of the dynamic map, rendered from the real
-   *           round-neck shaping schedule (`opts.shapingMapData`). Omitted when no real schedule
-   *           exists. Its Enlarge button carries `data-shaping-map-enlarge` so `bindShapingMapEnlarge`
-   *           opens the SAME sleeveless-diagram-modal.
-   *
-   * No pattern math, written instructions, Japanese SVG, or checklist rows change here — this
-   * only rearranges existing previews into two consistent cards.
-   *
-   * The Shaping Map is driven by real round-neck shaping data (`opts.shapingMapData`) when the
-   * front is a round-neck pullover. When no real schedule exists (V-neck, cardigan, unsupported),
-   * the Shaping Map card is omitted entirely — sample/demo data is never shown in a generated pattern.
-   * @param {{ notationSupported?: boolean; construction?: string; patternData?: unknown; shapingMapData?: import("../lib/patterns/shapingMapSvg.ts").ShapingMapData | null }} opts
-   */
-  function buildFrontVisualGuidesHtml(opts) {
-    const notationSupported = !!(opts && opts.notationSupported === true);
-    const construction = (opts && opts.construction) || "sleeveless";
-    const patternData = opts ? opts.patternData : undefined;
-    const shapingMapData = opts && opts.shapingMapData ? opts.shapingMapData : null;
-    // Round-neck front (a real Shaping Map exists) renders the ACTUAL Japanese notation SVG inline
-    // in this card — self-contained (inlined post-mount via inlineFrontJapaneseNotationSvg, enlarged
-    // by bindFrontNotationEnlarge). The piece diagram no longer carries a Shaping Notation tab there,
-    // so the notation lives once, here. Other fronts (e.g. V-neck) keep the quiet quick-reference crop
-    // that opens the piece diagram's notation view — that workflow is unchanged.
-    const notationInline = notationSupported && !!shapingMapData;
-    const jpCard = notationInline
-      ? `<section class="ns-visual-guides__card ns-visual-guides__card--jp">
-    <h4 class="ns-visual-guides__card-title">Japanese Notation</h4>
-    <div class="ns-visual-guides__preview ns-visual-guides__preview--notation" data-front-notation-host>
-      <p class="sleeveless-pattern-boot-msg">Loading notation…</p>
-    </div>
-    <div class="ns-visual-guides__actions no-print">
-      <button type="button" class="ns-visual-guides__enlarge" data-front-notation-enlarge aria-label="Enlarge Japanese notation"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Enlarge</button>
-    </div>
-  </section>`
-      : notationSupported
-      ? `<section class="ns-visual-guides__card ns-visual-guides__card--jp">
-    <h4 class="ns-visual-guides__card-title">Japanese Notation</h4>
-    <button type="button" class="ns-visual-guides__preview" data-neckline-notation-preview-trigger="front" aria-label="Enlarge Japanese notation quick reference">
-      <img class="ns-visual-guides__preview-img" src="${escapeHtml(resolveJapaneseNotationQuickReferencePreviewSrc("front", construction, patternData))}" alt="" loading="lazy" aria-hidden="true" />
-      <span class="ns-visual-guides__zoom" aria-hidden="true"><i class="fa-solid fa-magnifying-glass"></i></span>
-    </button>
-    <div class="ns-visual-guides__actions no-print">
-      <button type="button" class="ns-visual-guides__enlarge" data-neckline-notation-preview-trigger="front"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Enlarge</button>
-    </div>
-  </section>`
-      : "";
-    const mapCard = shapingMapData
-      ? `<section class="ns-visual-guides__card ns-visual-guides__card--map">
-    <h4 class="ns-visual-guides__card-title">Shaping Map</h4>
-    <div class="ns-visual-guides__preview ns-visual-guides__preview--map">${renderShapingMapSvg(shapingMapData, { mirror: true })}</div>
-    <div class="ns-visual-guides__actions no-print">
-      <button type="button" class="ns-visual-guides__enlarge" data-shaping-map-enlarge aria-label="Enlarge shaping map"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Enlarge</button>
-    </div>
-  </section>`
-      : "";
-    const cardCount = (jpCard ? 1 : 0) + (mapCard ? 1 : 0);
-    const gridModifier = cardCount <= 1 ? " ns-visual-guides__grid--single" : "";
-    return `<section class="ns-visual-guides" aria-labelledby="ns-visual-guides-heading-front">
-  <h3 class="ns-visual-guides__heading" id="ns-visual-guides-heading-front">Visual Guides</h3>
-  <div class="ns-visual-guides__grid${gridModifier}">${jpCard}${mapCard}</div>
-</section>`;
-  }
-
-  /**
-   * Renders structured rows: left column RC + text, right column total sts only when it changes.
-   * Chart table stays in the left column below neckline/shoulder prose.
    * @param {unknown[]} rows
    * @param {string} chartTableMountId
    */
@@ -661,17 +587,11 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     displayOpts
   ) {
     const omitPieceBanner = displayOpts && displayOpts.omitPieceBanner === true;
-    const neckNotationPreview =
-      displayOpts && displayOpts.neckNotationPreview && displayOpts.neckNotationPreview.enabled === true
-        ? displayOpts.neckNotationPreview
+    const visualGuides =
+      displayOpts && displayOpts.visualGuides && displayOpts.visualGuides.enabled === true
+        ? displayOpts.visualGuides
         : undefined;
-    // PROTOTYPE (front only): opt-in "Visual Guides" two-column layout (Japanese Notation +
-    // Shaping Map) followed by a collapsed row-by-row checklist. Only the sleeveless front sets
-    // this; every other caller keeps the standalone Shaping Map / chart behavior below.
-    const frontVisualGuides =
-      displayOpts && displayOpts.frontVisualGuides && displayOpts.frontVisualGuides.enabled === true
-        ? displayOpts.frontVisualGuides
-        : undefined;
+    let visualGuidesPlaced = false;
     const list = Array.isArray(rows) ? rows : [];
     let currentPiece = "";
     /** @type {string[]} */
@@ -696,17 +616,9 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       const headingHtml = openSectionDisplayHeading ?? openSectionSlugSource;
       const targetParts = openSectionIsPost ? postParts : splitParts;
       let sectionInner = openSectionParts.join("");
-      if (
-        openSectionIsPost &&
-        neckNotationPreview &&
-        (pieceSectionId === "back" || pieceSectionId === "front")
-      ) {
-        sectionInner = renderNecklineInstructionsWithNotationPreviewHtml(
-          sectionInner,
-          pieceSectionId,
-          neckNotationPreview.construction ?? "drop-shoulder",
-          neckNotationPreview.patternData,
-        );
+      if (visualGuides && !visualGuidesPlaced && openSectionIsPost) {
+        sectionInner += buildPatternVisualGuidesHtml(visualGuides);
+        visualGuidesPlaced = true;
       }
       targetParts.push(
         wrapPatternSection(
@@ -833,24 +745,19 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
   <div class="sg-pattern-output sg-neck-chart-print-block" id="${escapeHtml(chartTableMountId)}"></div>
   <p class="neckline-chart-print-only-footer">Created by Knit It Now · Printed <span data-neckline-chart-print-date></span></p>
 </div>`;
-        // PROTOTYPE (front only, opt-in): reduce section length/repetition by grouping the two
-        // visual aids into a "Visual Guides" two-column block placed AFTER the written
-        // instructions, then moving the row-by-row checklist into a collapsed disclosure. The
-        // checklist mount id (`chartTableMountId`) still lives in the DOM, so the later injection
-        // + chart-only print are unchanged. Only sleeveless front sets `frontVisualGuides`.
-        if (frontVisualGuides && pieceSectionId === "front") {
-          // Written intro/tips (divide-neckline copy, workflow steps, carriage-position help) are
-          // injected here — BEFORE Visual Guides — by renderMount, so all written instructions read
-          // together first. Previously they lived inside the collapsed checklist below the visuals.
-          const writtenIntroMount = `<div class="ns-written-intro" id="sg-front-ns-written-intro" data-front-ns-written-intro></div>`;
-          const visualGuidesChunk = buildFrontVisualGuidesHtml(frontVisualGuides);
-          // The row-by-row checklist is collapsed via the shared checklist component itself
-          // (`collapsible` option on renderNeckShoulderShapingChartTableOnlyHtml): its injected
-          // `<details>` supplies the full-width "First Shoulder Checklist" header + chevron + print
-          // button, so no separate disclosure/summary wrapper is needed here.
+        // Visual Guides (Japanese Notation + optional Shaping Map) at the neckline chart mount,
+        // placed after written instructions and before the row-by-row checklist.
+        if (visualGuides && (pieceSectionId === "front" || pieceSectionId === "back")) {
+          const useFrontRoundNeckLayout =
+            visualGuides.frontRoundNeckLayout === true && pieceSectionId === "front";
+          const writtenIntroMount = useFrontRoundNeckLayout
+            ? `<div class="ns-written-intro" id="sg-front-ns-written-intro" data-front-ns-written-intro></div>`
+            : "";
+          const visualGuidesChunk = buildPatternVisualGuidesHtml(visualGuides);
+          visualGuidesPlaced = true;
           const checklistDisclosure = chartChunk;
           if (openSectionSlugSource) {
-            openSectionParts.push(writtenIntroMount);
+            if (writtenIntroMount) openSectionParts.push(writtenIntroMount);
             openSectionParts.push(visualGuidesChunk);
             openSectionParts.push(checklistDisclosure);
             continue;
@@ -861,9 +768,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
           continue;
         }
 
-        // The Shaping Map is only rendered from a real shaping schedule (sleeveless front
-        // Visual Guides path above). Pieces without a real schedule here (e.g. drop-shoulder
-        // front) show no Shaping Map — sample/demo data is never used in a generated pattern.
+        // Pieces without Visual Guides keep the chart mount alone (e.g. when notation unsupported).
         if (openSectionSlugSource) {
           openSectionParts.push(chartChunk);
           continue;
@@ -879,6 +784,11 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       else splitParts.push(chunk);
     }
     flushOpenSection();
+
+    if (visualGuides && !visualGuidesPlaced && pieceSectionId === "sleeve") {
+      splitParts.push(buildPatternVisualGuidesHtml(visualGuides));
+      visualGuidesPlaced = true;
+    }
 
     const splitInner = `<div class="sleeveless-pattern-instructions">${splitParts.join("")}</div>`;
     const postSplit = postParts.join("");
@@ -899,7 +809,9 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
   function wrapSleevelessPieceSplit(innerHtml, diagramSrc, diagramAlt, postSplitHtml, diagramOpts) {
     const src = escapeHtml(diagramSrc);
     const alt = escapeHtml(diagramAlt);
-    const post = postSplitHtml || "";
+    const post = postSplitHtml
+      ? `<div class="sleeveless-piece-neckline-fullwidth">${postSplitHtml}</div>`
+      : "";
     const half = diagramOpts?.cardiganHalfSide;
     const halfAttr =
       half === "left" || half === "right" ? ` data-sleeveless-cardigan-half="${half}"` : "";
@@ -956,14 +868,16 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       </div>
     </div>`
       : diagramCardHtml;
-    return `<div class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split">
+    return `<div class="sleeveless-piece-layout">
+  <div class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split">
   <div class="pattern-layout__content sleeveless-piece-split__text">${innerHtml}</div>
   <aside class="pattern-layout__sidebar sleeveless-piece-split__diagram" aria-label="Garment diagram">
     <div class="sleeveless-piece-split__diagram-inner${hasToggleUi ? " sleeveless-piece-split__diagram-inner--back-panel" : ""}">
       ${diagramAsideInner}
     </div>
   </aside>
-</div>${post}`;
+</div>${post}
+</div>`;
   }
 
   function isFiniteNumber(n) {
@@ -1978,45 +1892,99 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
   function openShapingNotationFromPreview(root, piece) {
     if (!root) return;
     const sectionId = piece === "back" ? "#sg-back" : "#sg-front";
-    const modeBtnAttr =
-      piece === "back"
-        ? "data-sleeveless-back-diagram-mode-btn"
-        : "data-sleeveless-front-diagram-mode-btn";
     const hostAttr =
       piece === "back" ? "data-sleeveless-back-diagram" : "data-sleeveless-front-diagram";
     const hostModeKey =
       piece === "back" ? "sleevelessBackDiagramMode" : "sleevelessFrontDiagramMode";
 
-    const section = root.querySelector(sectionId);
-    if (!section) return;
-    const trigger = section.querySelector("[data-sleeveless-diagram-trigger]");
+    const pieceSection = root.querySelector(sectionId);
+    if (!pieceSection) return;
+    const trigger = pieceSection.querySelector("[data-sleeveless-diagram-trigger]");
     if (!(trigger instanceof HTMLElement)) return;
 
-    const host = section.querySelector(`[${hostAttr}]`);
-    const alreadyNotation =
-      host instanceof HTMLElement && host.dataset[hostModeKey] === "shaping-notation";
-    if (!alreadyNotation) {
-      const modeBtn = section.querySelector(`[${modeBtnAttr}="shaping-notation"]`);
-      if (modeBtn instanceof HTMLElement) {
-        modeBtn.click();
-      }
+    const host = pieceSection.querySelector(`[${hostAttr}]`);
+    if (!(host instanceof HTMLElement)) return;
+
+    const openWhenReady = () => {
+      let attempts = 0;
+      const maxAttempts = 60;
+      const waitAndOpen = () => {
+        const svg = trigger.querySelector(".sleeveless-piece-split__diagram-inline");
+        const isNotation =
+          svg instanceof SVGElement &&
+          /shaping\s+notation/i.test(svg.getAttribute("aria-label") || "");
+        if (isNotation) {
+          openSleevelessDiagramModal(trigger);
+          return;
+        }
+        if (++attempts > maxAttempts) return;
+        window.setTimeout(waitAndOpen, 50);
+      };
+      waitAndOpen();
+    };
+
+    if (host.dataset[hostModeKey] === "shaping-notation") {
+      openWhenReady();
+      return;
     }
 
-    let attempts = 0;
-    const maxAttempts = 60;
-    const waitAndOpen = () => {
-      const svg = trigger.querySelector(".sleeveless-piece-split__diagram-inline");
-      const isNotation =
-        svg instanceof SVGElement &&
-        /shaping\s+notation/i.test(svg.getAttribute("aria-label") || "");
-      if (isNotation) {
-        openSleevelessDiagramModal(trigger);
-        return;
+    host.dataset[hostModeKey] = "shaping-notation";
+    host.innerHTML = '<p class="sleeveless-pattern-boot-msg">Loading diagram…</p>';
+
+    const dropCtx = dropShoulderBodyDiagramHydrateContext;
+    const sleevelessBackCtx = sleevelessBackDiagramHydrateContext;
+    const sleevelessFrontCtx = sleevelessFrontDiagramHydrateContext;
+
+    if (dropCtx && dropCtx.hydrateGeneration === sleevelessRenderMountSeq) {
+      if (piece === "back") {
+        void hydrateDropShoulderBackDiagram(
+          host,
+          "shaping-notation",
+          dropCtx.result,
+          dropCtx.unit,
+          dropCtx.diagramPatternData,
+          dropCtx.hydrateGeneration,
+          dropCtx.generatorPatternData,
+        ).then(openWhenReady);
+      } else {
+        const isCardigan =
+          String(section(dropCtx.generatorPatternData?.style).frontStyle || "") === "open";
+        void hydrateDropShoulderFrontDiagram(
+          host,
+          "shaping-notation",
+          dropCtx.result,
+          dropCtx.unit,
+          dropCtx.diagramPatternData,
+          dropCtx.hydrateGeneration,
+          isCardigan,
+          dropCtx.generatorPatternData,
+        ).then(openWhenReady);
       }
-      if (++attempts > maxAttempts) return;
-      window.setTimeout(waitAndOpen, 50);
-    };
-    waitAndOpen();
+      return;
+    }
+
+    if (piece === "back" && sleevelessBackCtx) {
+      void hydrateSleevelessBackDiagram(
+        host,
+        "shaping-notation",
+        sleevelessBackCtx.result,
+        sleevelessBackCtx.unit,
+        sleevelessBackCtx.diagramPatternData,
+        sleevelessBackCtx.hydrateGeneration,
+      ).then(openWhenReady);
+      return;
+    }
+
+    if (piece === "front" && sleevelessFrontCtx) {
+      void hydrateSleevelessFrontDiagram(
+        host,
+        "shaping-notation",
+        sleevelessFrontCtx.result,
+        sleevelessFrontCtx.unit,
+        sleevelessFrontCtx.diagramPatternData,
+        sleevelessFrontCtx.hydrateGeneration,
+      ).then(openWhenReady);
+    }
   }
 
   function bindNecklineNotationPreview(root) {
@@ -2082,24 +2050,22 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
   }
 
   /**
-   * Enlarge the Japanese notation rendered inside the Visual Guides card (round-neck front). Reuses
-   * the SAME diagram modal as the Shaping Map / garment diagrams: clones the card's already-inlined
-   * notation SVG into the modal. Self-contained — it does not depend on the piece diagram's (removed)
-   * Shaping Notation tab. No pattern math or notation calculations change.
+   * Enlarge inline Japanese notation inside a Visual Guides card. Reuses the SAME diagram modal as
+   * the Shaping Map / garment diagrams: clones the card's already-inlined notation SVG into the modal.
    * @param {ParentNode & { dataset?: DOMStringMap } | null} root
    */
-  function bindFrontNotationEnlarge(root) {
+  function bindPatternNotationEnlarge(root) {
     if (!(root instanceof HTMLElement)) return;
-    if (root.dataset.frontNotationEnlargeBound === "true") return;
-    root.dataset.frontNotationEnlargeBound = "true";
+    if (root.dataset.patternNotationEnlargeBound === "true") return;
+    root.dataset.patternNotationEnlargeBound = "true";
     root.addEventListener("click", (e) => {
       const target = e.target;
       if (!(target instanceof Element)) return;
-      const btn = target.closest("[data-front-notation-enlarge]");
+      const btn = target.closest("[data-pattern-notation-enlarge]");
       if (!(btn instanceof HTMLElement)) return;
       e.preventDefault();
       const card = btn.closest(".ns-visual-guides__card") || root;
-      const svg = card.querySelector("[data-front-notation-host] svg");
+      const svg = card.querySelector("[data-pattern-notation-host] svg");
       if (!(svg instanceof SVGElement)) return;
 
       const modal = ensureSleevelessDiagramModal();
@@ -2119,6 +2085,74 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       const closeBtn = modal.querySelector("[data-sleeveless-diagram-close]");
       if (closeBtn instanceof HTMLElement) closeBtn.focus();
     });
+  }
+
+  /**
+   * Inline Japanese notation SVGs into Visual Guides hosts (`data-pattern-notation-host`).
+   * @param {ParentNode | null} root
+   * @param {{
+   *   result: import("../lib/patterns/sleevelessPatternOutput").SleevelessBackPatternResult;
+   *   unit?: string;
+   *   patternData?: unknown;
+   *   generatorPatternData?: unknown;
+   *   hydrateGeneration: number;
+   *   isDropShoulder?: boolean;
+   *   sleeveDirection?: import("../lib/patterns/dropShoulderSleeveConstruction.ts").DropShoulderSleeveDirection;
+   * }} ctx
+   */
+  async function hydrateVisualGuidesNotationHosts(root, ctx) {
+    if (!root) return;
+    const hosts = root.querySelectorAll("[data-pattern-notation-host]");
+    const jobs = [];
+    hosts.forEach((hostEl) => {
+      if (!(hostEl instanceof HTMLElement)) return;
+      const piece = hostEl.getAttribute("data-pattern-notation-piece") || "";
+      if (ctx.isDropShoulder) {
+        if (piece === "sleeve") {
+          jobs.push(
+            inlineDropShoulderSleeveNotationSvg(
+              hostEl,
+              ctx.result,
+              ctx.hydrateGeneration,
+              ctx.sleeveDirection ?? "cuff-up",
+            ),
+          );
+        } else if (piece === "back") {
+          jobs.push(
+            inlineDropShoulderBackNotationSvg(
+              hostEl,
+              ctx.result,
+              ctx.unit ?? "in",
+              ctx.patternData,
+              ctx.hydrateGeneration,
+              ctx.generatorPatternData,
+            ),
+          );
+        } else if (piece === "front") {
+          jobs.push(
+            inlineDropShoulderFrontNotationSvg(
+              hostEl,
+              ctx.result,
+              ctx.unit ?? "in",
+              ctx.patternData,
+              ctx.hydrateGeneration,
+              ctx.generatorPatternData,
+            ),
+          );
+        }
+        return;
+      }
+      if (piece === "back") {
+        jobs.push(
+          inlineBackJapaneseNotationSvg(hostEl, ctx.result, ctx.patternData, ctx.hydrateGeneration),
+        );
+      } else if (piece === "front") {
+        jobs.push(
+          inlineFrontJapaneseNotationSvg(hostEl, ctx.result, ctx.patternData, ctx.hydrateGeneration),
+        );
+      }
+    });
+    await Promise.all(jobs);
   }
 
   function bindSleevelessVideoHelp(root) {
@@ -2945,7 +2979,9 @@ table {
   function wrapDropShoulderPieceSplit(innerHtml, diagramSrc, diagramAlt, postSplitHtml, diagramOpts) {
     const src = escapeHtml(diagramSrc);
     const alt = escapeHtml(diagramAlt);
-    const post = postSplitHtml || "";
+    const post = postSplitHtml
+      ? `<div class="sleeveless-piece-neckline-fullwidth">${postSplitHtml}</div>`
+      : "";
     const half = diagramOpts?.cardiganHalfSide;
     const halfAttr =
       half === "left" || half === "right" ? ` data-sleeveless-cardigan-half="${half}"` : "";
@@ -2968,6 +3004,9 @@ table {
       ? ' data-sleeveless-sleeve-diagram data-sleeveless-sleeve-diagram-mode="sts-rows"'
       : "";
     const diagramModeAttrs = `${backDiagramAttrs}${frontDiagramAttrs}${sleeveDiagramAttrs}`;
+    // Suppress Stitches & Rows / Shaping Notation tabs when notation lives in Visual Guides.
+    const showModeToggle = diagramOpts?.showModeToggle !== false;
+    const hasGarmentToggleUi = (garmentModeToggle || sleeveModeToggle) && showModeToggle;
     const modeToggleGroupLabel = backModeToggle
       ? "Back diagram view"
       : frontModeToggle
@@ -2978,13 +3017,13 @@ table {
       : frontModeToggle
         ? "data-sleeveless-front-diagram-mode-btn"
         : "data-sleeveless-sleeve-diagram-mode-btn";
-    const modeToggleHtml = garmentModeToggle || sleeveModeToggle
+    const modeToggleHtml = hasGarmentToggleUi
       ? `<div class="sleeveless-back-diagram-mode no-print" role="group" aria-label="${modeToggleGroupLabel}">
         <button type="button" class="sleeveless-back-diagram-mode__btn is-active" ${modeBtnAttr}="sts-rows" aria-pressed="true">Stitches &amp; Rows</button>
         <button type="button" class="sleeveless-back-diagram-mode__btn" ${modeBtnAttr}="shaping-notation" aria-pressed="false">Shaping Notation</button>
       </div>`
       : "";
-    const shapingNotationHelpHtml = garmentModeToggle
+    const shapingNotationHelpHtml = hasGarmentToggleUi && garmentModeToggle
       ? buildShapingNotationChartHelpHtml(
           escapeGlossaryPlaceholderAttr,
           escapeGlossaryPlaceholderText,
@@ -2995,7 +3034,7 @@ table {
           <p class="sleeveless-pattern-boot-msg">Loading diagram…</p>
         </div>
       </button>`;
-    const diagramEnlargeBtnHtml = garmentModeToggle
+    const diagramEnlargeBtnHtml = hasGarmentToggleUi
       ? `<button type="button" class="sleeveless-piece-split__diagram-enlarge-btn no-print" data-sleeveless-diagram-enlarge aria-label="Enlarge diagram">
         <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
       </button>`
@@ -3004,24 +3043,25 @@ table {
         ${diagramEnlargeBtnHtml}
         ${diagramTriggerHtml}
       </div>`;
-    const diagramAsideInner =
-      garmentModeToggle || sleeveModeToggle
-        ? `<div class="sleeveless-back-diagram-panel">
+    const diagramAsideInner = hasGarmentToggleUi
+      ? `<div class="sleeveless-back-diagram-panel">
       ${modeToggleHtml}
       <div class="sleeveless-back-diagram-well">
         ${shapingNotationHelpHtml}
         ${diagramCardHtml}
       </div>
     </div>`
-        : diagramCardHtml;
-    return `<div class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split">
+      : diagramCardHtml;
+    return `<div class="sleeveless-piece-layout">
+  <div class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split">
   <div class="pattern-layout__content sleeveless-piece-split__text">${innerHtml}</div>
   <aside class="pattern-layout__sidebar sleeveless-piece-split__diagram" aria-label="Garment diagram">
-    <div class="sleeveless-piece-split__diagram-inner${garmentModeToggle || sleeveModeToggle ? " sleeveless-piece-split__diagram-inner--back-panel" : ""}">
+    <div class="sleeveless-piece-split__diagram-inner${hasGarmentToggleUi ? " sleeveless-piece-split__diagram-inner--back-panel" : ""}">
       ${diagramAsideInner}
     </div>
   </aside>
-</div>${post}`;
+</div>${post}
+</div>`;
   }
 
   /** @type {{ result: import("../lib/patterns/sleevelessPatternOutput").SleevelessBackPatternResult; unit: string; hydrateGeneration: number; sleeveDirection: DropShoulderSleeveDirection } | null} */
@@ -3700,6 +3740,32 @@ table {
             title: "Front neckline shaping map",
           })
         : null;
+    const frontIsRoundNeck = !!frontShapingMapData;
+
+    /** @param {"back" | "front" | "sleeve"} piece */
+    const dropShoulderVisualGuidesOpts = (piece, extras = {}) => {
+      if (piece === "sleeve") {
+        return {
+          enabled: true,
+          piece: "sleeve",
+          notationSupported: true,
+          notationInline: true,
+          construction: "drop-shoulder",
+          patternData: dropShoulderDiagramPatternData,
+        };
+      }
+      if (!bodyNotationSupported) return undefined;
+      return {
+        enabled: true,
+        piece,
+        notationSupported: true,
+        notationInline: extras.notationInline === true,
+        construction: "drop-shoulder",
+        patternData: dropShoulderDiagramPatternData,
+        shapingMapData: extras.shapingMapData ?? null,
+        frontRoundNeckLayout: extras.frontRoundNeckLayout === true,
+      };
+    };
 
     const renderPiece = (rows, pieceId, chartTableMountId, neckChartStartRow, pieceDisplayOpts) =>
       renderSleevelessDisplayHtml(
@@ -3709,34 +3775,29 @@ table {
         patternIntroSentence,
         neckChartStartRow,
         {
-        omitPieceBanner: true,
-        neckNotationPreview: bodyNotationSupported
-          ? {
-              enabled: true,
-              construction: "drop-shoulder",
-              patternData: dropShoulderDiagramPatternData,
-            }
-          : undefined,
-        ...(pieceDisplayOpts ?? {}),
-      },
+          omitPieceBanner: true,
+          visualGuides: pieceDisplayOpts?.visualGuides,
+        },
       );
 
-    const back = renderPiece(result.displayRows, "back");
+    const back = renderPiece(result.displayRows, "back", "", undefined, {
+      visualGuides: dropShoulderVisualGuidesOpts("back"),
+    });
     const front = renderPiece(
       result.frontDisplayRows,
       "front",
       "sg-neck-shoulder-chart-table-front",
       result?.frontNeckShoulderShapingChart?.rows?.[0]?.row,
-      frontShapingMapData
-        ? {
-            frontVisualGuides: {
-              enabled: true,
-              shapingMapData: frontShapingMapData,
-            },
-          }
-        : undefined,
+      {
+        visualGuides: dropShoulderVisualGuidesOpts("front", {
+          notationInline: frontIsRoundNeck,
+          shapingMapData: frontShapingMapData,
+        }),
+      },
     );
-    const sleeve = renderPiece(result.sleeveDisplayRows, "sleeve");
+    const sleeve = renderPiece(result.sleeveDisplayRows, "sleeve", "", undefined, {
+      visualGuides: dropShoulderVisualGuidesOpts("sleeve"),
+    });
 
     const frontLabel = "FRONT";
     const frontAlt = isCardigan
@@ -3746,11 +3807,15 @@ table {
       ? {
           diagramPiece: "front",
           cardiganHalfSide: "left",
-          ...(bodyNotationSupported ? { frontDiagramModeToggle: true } : {}),
+          ...(bodyNotationSupported
+            ? { frontDiagramModeToggle: true, showModeToggle: false }
+            : {}),
         }
       : {
           diagramPiece: "front",
-          ...(bodyNotationSupported ? { frontDiagramModeToggle: true } : {}),
+          ...(bodyNotationSupported
+            ? { frontDiagramModeToggle: true, showModeToggle: false }
+            : {}),
         };
 
     const sleeveInner =
@@ -3786,7 +3851,9 @@ table {
           back.postSplit,
           {
             diagramPiece: "back",
-            ...(bodyNotationSupported ? { backDiagramModeToggle: true } : {}),
+            ...(bodyNotationSupported
+              ? { backDiagramModeToggle: true, showModeToggle: false }
+              : {}),
           },
         ),
         { defaultCollapsed: false, sectionClassName: "pattern-section--garment-piece" },
@@ -3811,7 +3878,7 @@ table {
           resolveDropShoulderSleeveMeasurementSvgSrc(sleeveDirection),
           "Drop shoulder sleeve schematic",
           sleeve.postSplit,
-          { diagramPiece: "sleeve", sleeveDiagramModeToggle: true },
+          { diagramPiece: "sleeve", sleeveDiagramModeToggle: true, showModeToggle: false },
         ),
         { defaultCollapsed: false, sectionClassName: "pattern-section--garment-piece" },
       ) +
@@ -3847,7 +3914,7 @@ table {
           `RC:${String(frontArmholeLocalChartStartRc).padStart(3, "0")}`,
           result?.frontNeckShoulderShapingChart,
           "front",
-          bodyNotationSupported,
+          false,
           false,
         ),
         {
@@ -3890,6 +3957,17 @@ table {
       sleeveDirection,
     };
 
+    await hydrateVisualGuidesNotationHosts(mount, {
+      result,
+      unit,
+      patternData: dropShoulderDiagramPatternData,
+      generatorPatternData,
+      hydrateGeneration: renderSeq,
+      isDropShoulder: true,
+      sleeveDirection,
+    });
+    if (renderSeq !== sleevelessRenderMountSeq) return;
+
     hydrateGlossaryTooltipPlaceholders(mount);
     ensureSleevelessDiagramModal();
     bindSleevelessDiagramZoom(mount);
@@ -3897,9 +3975,8 @@ table {
     bindDropShoulderBodyDiagramMode(mount);
     bindDropShoulderSleeveConstructionToggle(mount);
     bindNecklineNotationPreview(mount);
-    if (frontShapingMapData) {
-      bindShapingMapEnlarge(mount);
-    }
+    bindShapingMapEnlarge(mount);
+    bindPatternNotationEnlarge(mount);
     ensureSleevelessVideoModal();
     const videoHelpRoot = document.getElementById("sleeveless-pattern-tips-scope") || mount;
     bindSleevelessVideoHelp(videoHelpRoot);
@@ -3946,6 +4023,7 @@ table {
     // Computed early so the FRONT "Visual Guides" prototype knows whether the Japanese Notation
     // quick reference is available (same check used later for the garment diagram mode toggle).
     const frontNotationSupported = isFrontJapaneseNotationSupported(diagramPatternData, result);
+    const backNotationSupported = isBackJapaneseNotationSupported(diagramPatternData, result);
     // Real round-neck front shaping map (null for V-neck / cardigan half front). Computed once and
     // reused for: the Visual Guides map card, the Second Shoulder map, AND as the "round-neck front"
     // signal that (a) inlines the Japanese notation into Visual Guides and (b) drops the piece
@@ -3967,7 +4045,18 @@ table {
             "back",
             patternIntroSentence,
             result?.neckShoulderShapingChart?.rows?.[0]?.row,
-            { omitPieceBanner: true }
+            {
+              omitPieceBanner: true,
+              visualGuides: backNotationSupported
+                ? {
+                    enabled: true,
+                    piece: "back",
+                    notationSupported: true,
+                    construction: "sleeveless",
+                    patternData: diagramPatternData,
+                  }
+                : undefined,
+            }
           )
         : null;
     const frontRendered =
@@ -3980,20 +4069,18 @@ table {
             result?.frontNeckShoulderShapingChart?.rows?.[0]?.row,
             {
               omitPieceBanner: true,
-              // PROTOTYPE: single "Visual Guides" block (Japanese Notation + Shaping Map) and a
-              // collapsed row-by-row checklist. The Japanese notation now lives ONLY here, so the
-              // duplicate preview is dropped from the front chart intro below.
-              frontVisualGuides: {
-                enabled: true,
-                notationSupported: frontNotationSupported,
-                construction: "sleeveless",
-                patternData: diagramPatternData,
-                // Real round-neck front shaping map derived from the calculated neck/shoulder
-                // timeline (null for V-neck / cardigan half front). Row labels are converted to
-                // armhole-local RC using the SAME origin (`debug.armholeStartRow`) the written
-                // instructions and checklist use, so every representation agrees.
-                shapingMapData: frontShapingMapData,
-              },
+              visualGuides: frontNotationSupported
+                ? {
+                    enabled: true,
+                    piece: "front",
+                    notationSupported: true,
+                    notationInline: frontIsRoundNeck,
+                    construction: "sleeveless",
+                    patternData: diagramPatternData,
+                    shapingMapData: frontShapingMapData,
+                    frontRoundNeckLayout: frontIsRoundNeck,
+                  }
+                : undefined,
             }
           )
         : null;
@@ -4004,13 +4091,12 @@ table {
       frontRendered?.splitInner ?? `<p class="pattern-step-intro">Front instructions are not available. Try refreshing this tab.</p>`;
     const frontPost = frontRendered?.postSplit ?? "";
 
-    const backNotationSupported = isBackJapaneseNotationSupported(diagramPatternData, result);
     const backWrapped = wrapSleevelessPieceSplit(
       backInner,
       resolveSleevelessBackDiagramSrc("sts-rows", diagramPatternData),
       BACK_DIAGRAM_STS_ROWS_ALT,
       backPost,
-      backNotationSupported ? { backDiagramModeToggle: true } : undefined,
+      backNotationSupported ? { backDiagramModeToggle: true, showModeToggle: false } : undefined,
     );
     const frontDiagramResolution = resolveSleevelessFrontDiagram(diagramPatternData, {
       devForceCardiganHalfLeft: false,
@@ -4046,9 +4132,8 @@ table {
       frontDiagramAlt,
       frontPost,
       frontNotationSupported
-        ? // Round-neck front: keep the Stitches & Rows schematic hydration but hide the Shaping
-          // Notation tab (notation now lives in Visual Guides). Other fronts keep the tab.
-          { frontDiagramModeToggle: true, showModeToggle: !frontIsRoundNeck }
+        ? // Notation lives in Visual Guides — keep sts-rows hydration but hide the Shaping Notation tab.
+          { frontDiagramModeToggle: true, showModeToggle: false }
         : frontCardiganHalfSide
           ? { cardiganHalfSide: frontCardiganHalfSide }
           : undefined,
@@ -4098,7 +4183,7 @@ table {
       backChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
         result.neckShoulderShapingChart,
         "ns-shaping-chart-back",
-        neckShoulderChartHelpRowHtml(`RC:${String(backArmholeLocalChartStartRc).padStart(3, "0")}`, result?.neckShoulderShapingChart, "back", backNotationSupported),
+        neckShoulderChartHelpRowHtml(`RC:${String(backArmholeLocalChartStartRc).padStart(3, "0")}`, result?.neckShoulderShapingChart, "back", false),
         {
           activeSideOnly: true,
           activeSideRcStart: backActiveSideRcStart,
@@ -4165,19 +4250,6 @@ table {
         frontWrittenIntroHost.innerHTML = `${frontWrittenIntroHtml}${
           frontCarriageTip ? `\n${frontCarriageTip}` : ""
         }`;
-      }
-      // Render the ACTUAL Japanese notation SVG inline in the Visual Guides card (self-contained;
-      // no longer routed through the piece diagram's Shaping Notation tab).
-      if (frontNotationSupported) {
-        const frontNotationHost = mount.querySelector("[data-front-notation-host]");
-        if (frontNotationHost instanceof HTMLElement) {
-          void inlineFrontJapaneseNotationSvg(
-            frontNotationHost,
-            result,
-            diagramPatternData,
-            renderSeq,
-          );
-        }
       }
     }
 
@@ -4253,13 +4325,20 @@ table {
     });
     if (renderSeq !== sleevelessRenderMountSeq) return;
 
+    await hydrateVisualGuidesNotationHosts(mount, {
+      result,
+      patternData: diagramPatternData,
+      hydrateGeneration: renderSeq,
+    });
+    if (renderSeq !== sleevelessRenderMountSeq) return;
+
     ensureSleevelessDiagramModal();
     bindSleevelessDiagramZoom(mount);
     bindSleevelessBackDiagramMode(mount);
     bindSleevelessFrontDiagramMode(mount);
     bindNecklineNotationPreview(mount);
     bindShapingMapEnlarge(mount);
-    bindFrontNotationEnlarge(mount);
+    bindPatternNotationEnlarge(mount);
     ensureSleevelessVideoModal();
     const videoHelpRoot =
       document.getElementById("sleeveless-pattern-tips-scope") || mount;
