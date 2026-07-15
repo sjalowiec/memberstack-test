@@ -5,12 +5,18 @@
  * Steps come from {@link sleeveEvenShapingSchedule} (one interval + remainder rows).
  */
 
+import type { RowEntry } from "../shaping/generateRowByRow";
+import {
+  generateDecreaseBreakdown,
+  generateIncreaseBreakdown,
+} from "../shaping/generateRowByRow";
 import type { ShapingStep } from "../shaping/generateRowByRow";
 import { formatShapingSegment } from "./sleevelessBackJapaneseNotation";
 import {
   formatParentheticalShapingRowNumbers,
   sleeveEvenShapingSchedule,
   sleeveShapingPerSide,
+  sleeveWidensFromCuffToTop,
   type EvenShapingSchedule,
 } from "./evenShapingSchedule";
 import type { DropShoulderSleeveDirection } from "./dropShoulderSleeveConstruction";
@@ -70,6 +76,39 @@ export function dropShoulderSleeveShapingPlan(
   };
 }
 
+export function dropShoulderSleeveShapingVerb(
+  sleeveConstruction: DropShoulderSleeveDirection,
+  topSts: number,
+  wristSts: number,
+): "increase" | "decrease" {
+  const widensTowardTop = sleeveWidensFromCuffToTop(topSts, wristSts);
+  if (sleeveConstruction === "cuff-up") {
+    return widensTowardTop ? "increase" : "decrease";
+  }
+  return widensTowardTop ? "decrease" : "increase";
+}
+
+/** Row-by-row shaping actions for cuff-up or top-down from the shared plan steps. */
+export function dropShoulderSleeveShapingBreakdown(
+  args: {
+    topSts: number;
+    wristSts: number;
+    direction: DropShoulderSleeveDirection;
+  },
+  steps: readonly ShapingStep[],
+): RowEntry[] {
+  const widensTowardTop = sleeveWidensFromCuffToTop(args.topSts, args.wristSts);
+  const isCuffUp = args.direction === "cuff-up";
+  if (isCuffUp) {
+    return widensTowardTop
+      ? generateIncreaseBreakdown(args.wristSts, steps, "both")
+      : generateDecreaseBreakdown(args.wristSts, steps, "both");
+  }
+  return widensTowardTop
+    ? generateDecreaseBreakdown(args.topSts, steps, "both")
+    : generateIncreaseBreakdown(args.topSts, steps, "both");
+}
+
 export function dropShoulderSleeveShapingPlanForDirection(
   input: DropShoulderSleeveShapingPlanInput,
   sleeveConstruction: DropShoulderSleeveDirection,
@@ -77,7 +116,11 @@ export function dropShoulderSleeveShapingPlanForDirection(
   const plan = dropShoulderSleeveShapingPlan(input);
   return {
     ...plan,
-    shapingDirection: sleeveConstruction === "top-down" ? "decrease" : "increase",
+    shapingDirection: dropShoulderSleeveShapingVerb(
+      sleeveConstruction,
+      input.topSts,
+      input.wristSts,
+    ),
   };
 }
 

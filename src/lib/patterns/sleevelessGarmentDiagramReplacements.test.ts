@@ -468,32 +468,105 @@ describe("buildDropShoulderSleeveDiagramReplacements", () => {
     expect(repl.ARM_LENGTH).toBe("8.5");
   });
 
-  it("swaps wrist and sleeve-cap tokens for top-down measurement artwork", async () => {
-    const { buildDropShoulderSleeveDiagramReplacements } = await import(
-      "./sleevelessGarmentDiagramReplacements"
-    );
-    const result = {
-      debug: {
-        rowsPerInch: 10,
-        dropShoulderSleeveTotalRows: 120,
-        dropShoulderSleeveBodyRows: 100,
-        dropShoulderSleeveCuffRows: 20,
-        dropShoulderSleeveLengthInches: 12,
-        dropShoulderSleeveTopStitches: 80,
-        dropShoulderSleeveWristStitches: 40,
-        dropShoulderWristInches: 8,
-        dropShoulderUpperArmInches: 16,
-        dropShoulderUpperArmRows: 40,
-        dropShoulderCuffDepthInches: 2,
-      },
-    } as import("./sleevelessPatternOutput").SleevelessBackPatternResult;
+  describe("sleeve end labels follow physical diagram orientation", () => {
+    const taperedDebug = {
+      rowsPerInch: 10,
+      dropShoulderSleeveTotalRows: 120,
+      dropShoulderSleeveBodyRows: 100,
+      dropShoulderSleeveCuffRows: 20,
+      dropShoulderSleeveLengthInches: 12,
+      dropShoulderSleeveTopStitches: 68,
+      dropShoulderSleeveWristStitches: 22,
+      dropShoulderWristInches: 5.3,
+      dropShoulderUpperArmInches: 16.8,
+      dropShoulderUpperArmRows: 40,
+      dropShoulderCuffDepthInches: 2,
+    };
 
-    const repl = buildDropShoulderSleeveDiagramReplacements(result, "in", "top-down");
+    const reverseTaperDebug = {
+      ...taperedDebug,
+      dropShoulderSleeveTopStitches: 60,
+      dropShoulderSleeveWristStitches: 70,
+      dropShoulderWristInches: 14,
+      dropShoulderUpperArmInches: 12,
+    };
 
-    expect(repl.SLEEVE_CAP_STS).toBe("40");
-    expect(repl.SLEEVE_CAP_WIDTH).toBe("8");
-    expect(repl.WRIST_STS).toBe("80");
-    expect(repl.WRIST_WIDTH).toBe("16");
+    const straightDebug = {
+      ...taperedDebug,
+      dropShoulderSleeveTopStitches: 40,
+      dropShoulderSleeveWristStitches: 40,
+      dropShoulderWristInches: 8,
+      dropShoulderUpperArmInches: 8,
+    };
+
+    async function replFor(
+      debug: Record<string, unknown>,
+      direction: "cuff-up" | "top-down" = "cuff-up",
+    ) {
+      const { buildDropShoulderSleeveDiagramReplacements } = await import(
+        "./sleevelessGarmentDiagramReplacements"
+      );
+      return buildDropShoulderSleeveDiagramReplacements(
+        { debug } as import("./sleevelessPatternOutput").SleevelessBackPatternResult,
+        "in",
+        direction,
+      );
+    }
+
+    /** Cuff-up: SLEEVE_CAP at top (upper arm), WRIST at bottom (cuff). */
+    function expectCuffUpEnds(
+      repl: Record<string, string>,
+      upperArmSts: string,
+      upperArmWidth: string,
+      cuffSts: string,
+      cuffWidth: string,
+    ) {
+      expect(repl.SLEEVE_CAP_STS).toBe(upperArmSts);
+      expect(repl.SLEEVE_CAP_WIDTH).toBe(upperArmWidth);
+      expect(repl.WRIST_STS).toBe(cuffSts);
+      expect(repl.WRIST_WIDTH).toBe(cuffWidth);
+    }
+
+    /** Top-down: WRIST at top (cuff), SLEEVE_CAP at bottom (upper arm). */
+    function expectTopDownEnds(
+      repl: Record<string, string>,
+      upperArmSts: string,
+      upperArmWidth: string,
+      cuffSts: string,
+      cuffWidth: string,
+    ) {
+      expect(repl.WRIST_STS).toBe(cuffSts);
+      expect(repl.WRIST_WIDTH).toBe(cuffWidth);
+      expect(repl.SLEEVE_CAP_STS).toBe(upperArmSts);
+      expect(repl.SLEEVE_CAP_WIDTH).toBe(upperArmWidth);
+    }
+
+    it("normal taper cuff-up: upper arm at top, cuff at bottom", async () => {
+      const repl = await replFor(taperedDebug, "cuff-up");
+      expectCuffUpEnds(repl, "68", "16.8", "22", "5.3");
+    });
+
+    it("normal taper top-down: cuff at top, upper arm at bottom", async () => {
+      const repl = await replFor(taperedDebug, "top-down");
+      expectTopDownEnds(repl, "68", "16.8", "22", "5.3");
+    });
+
+    it("reverse taper cuff-up: labels still follow physical upper-arm and cuff ends", async () => {
+      const repl = await replFor(reverseTaperDebug, "cuff-up");
+      expectCuffUpEnds(repl, "60", "12", "70", "14");
+    });
+
+    it("reverse taper top-down: labels follow correct ends after orientation reversal", async () => {
+      const repl = await replFor(reverseTaperDebug, "top-down");
+      expectTopDownEnds(repl, "60", "12", "70", "14");
+    });
+
+    it("straight sleeve: equal stitch counts do not break label placement", async () => {
+      const cuffUp = await replFor(straightDebug, "cuff-up");
+      const topDown = await replFor(straightDebug, "top-down");
+      expectCuffUpEnds(cuffUp, "40", "8", "40", "8");
+      expectTopDownEnds(topDown, "40", "8", "40", "8");
+    });
   });
 });
 

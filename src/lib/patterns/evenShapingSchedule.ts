@@ -25,7 +25,13 @@ export function evenShapingSchedule(count: number, rows: number): EvenShapingSch
 
 /** Stitches to shape on each edge between wrist and sleeve top (flat piece). */
 export function sleeveShapingPerSide(topSts: number, wristSts: number): number {
-  return Math.max(0, (topSts - wristSts) / 2);
+  if (!Number.isFinite(topSts) || !Number.isFinite(wristSts)) return 0;
+  return Math.abs(topSts - wristSts) / 2;
+}
+
+/** True when the sleeve widens from cuff (wrist) toward the upper arm. */
+export function sleeveWidensFromCuffToTop(topSts: number, wristSts: number): boolean {
+  return topSts > wristSts;
 }
 
 export function sleeveEvenShapingSchedule(

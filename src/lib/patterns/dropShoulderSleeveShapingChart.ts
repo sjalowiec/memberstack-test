@@ -5,12 +5,12 @@
  * and {@link buildDropShoulderSleeveJapaneseNotationReplacements}.
  */
 
-import {
-  generateDecreaseBreakdown,
-  generateIncreaseBreakdown,
-} from "../shaping/generateRowByRow";
 import { sleeveShapingPerSide, type EvenShapingSchedule } from "./evenShapingSchedule";
-import { dropShoulderSleeveShapingPlan } from "./dropShoulderSleeveShaping";
+import {
+  dropShoulderSleeveShapingBreakdown,
+  dropShoulderSleeveShapingPlan,
+  dropShoulderSleeveShapingVerb,
+} from "./dropShoulderSleeveShaping";
 
 export const DROP_SHOULDER_SLEEVE_NO_SHAPING_NOTE_LINES = [
   "Knit straight to length.",
@@ -91,9 +91,7 @@ export function dropShoulderSleeveShapingRcSequence(
 
   const isCuffUp = input.direction === "cuff-up";
   const shapingStartRc = isCuffUp ? input.cuffRows : 0;
-  const breakdown = isCuffUp
-    ? generateIncreaseBreakdown(input.wristSts, plan.steps, "both")
-    : generateDecreaseBreakdown(input.topSts, plan.steps, "both");
+  const breakdown = dropShoulderSleeveShapingBreakdown(input, plan.steps);
   return breakdown.map((entry) => shapingStartRc + entry.rowNumber);
 }
 
@@ -106,13 +104,16 @@ export function buildDropShoulderSleeveShapingChartRows(
 
   const isCuffUp = direction === "cuff-up";
   const shapingStartRc = isCuffUp ? cuffRows : 0;
-  const breakdown = isCuffUp
-    ? generateIncreaseBreakdown(wristSts, plan.steps, "both")
-    : generateDecreaseBreakdown(topSts, plan.steps, "both");
+  const breakdown = dropShoulderSleeveShapingBreakdown(
+    { topSts, wristSts, direction },
+    plan.steps,
+  );
 
-  const shapingAction = isCuffUp
-    ? "Increase 1 stitch at each side"
-    : "Decrease 1 stitch at each side";
+  const shapingVerb = dropShoulderSleeveShapingVerb(direction, topSts, wristSts);
+  const shapingAction =
+    shapingVerb === "increase"
+      ? "Increase 1 stitch at each side"
+      : "Decrease 1 stitch at each side";
   const rows: DropShoulderSleeveShapingChartRow[] = breakdown.map((entry) => ({
     rc: shapingStartRc + entry.rowNumber,
     action: shapingAction,

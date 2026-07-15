@@ -94,6 +94,22 @@ describe("dropShoulderSleeveShaping", () => {
     expect(plan.steps).toEqual([]);
     expect(plan.remainderRows).toBe(100);
   });
+
+  it("reverse taper: cuff-up decreases, top-down increases", () => {
+    const reverse = { topSts: 60, wristSts: 70, sleeveBodyRows: 100 };
+    const cuffUp = dropShoulderSleeveShapingPlanForDirection(reverse, "cuff-up");
+    const topDown = dropShoulderSleeveShapingPlanForDirection(reverse, "top-down");
+    expect(cuffUp.noShaping).toBe(false);
+    expect(cuffUp.shapingDirection).toBe("decrease");
+    expect(cuffUp.steps).toEqual([{ sts: 1, rows: 20, times: 5 }]);
+    expect(topDown.shapingDirection).toBe("increase");
+    expect(formatDropShoulderSleeveShapingWrittenLines(cuffUp.shapingDirection, cuffUp.steps)).toEqual([
+      "Decrease 1 stitch at each side every 20 rows 5 times.",
+    ]);
+    expect(formatDropShoulderSleeveShapingWrittenLines(topDown.shapingDirection, topDown.steps)).toEqual([
+      "Increase 1 stitch at each side every 20 rows 5 times.",
+    ]);
+  });
 });
 
 describe("dropShoulderSleevePreShapingSpan", () => {

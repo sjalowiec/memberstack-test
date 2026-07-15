@@ -31,7 +31,7 @@ Body/cardigan tokens (`jp-neckline-bo`, `rc-armhole-bo`, `NECK_STS`, ...) belong
 ## Orientation
 
 - **Cuff-up / bottom-up:** Cast-on at wrist (bottom). Upper-arm / bind-off at top. Matches default sleeve construction on the pattern page.
-- **Top-down:** Artwork is vertically flipped; **same token ids** - the code swaps wrist -> upper-arm values when hydrating top-down measurement art.
+- **Top-down:** Artwork is vertically flipped; **same token ids** — token groups are repositioned in the SVG (`WRIST_*` at the narrow top, `SLEEVE_CAP_*` at the wide bottom). Hydration maps physical upper-arm/cuff values to each token by rendered position, not by swapping stitch counts.
 
 ## JP label placement (cuff-up)
 

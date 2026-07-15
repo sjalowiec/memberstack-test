@@ -600,12 +600,23 @@ export function buildDropShoulderSleeveDiagramReplacements(
       ? lengthFromRowsForDiagram(armLengthRows, rpi, unit)
       : undefined;
 
-  // Top-down measurement artwork flips vertical positions but keeps the same token ids.
+  // Physical sleeve ends — independent of diagram orientation.
+  const upperArmStitches = topSts;
+  const cuffStitches = wristSts;
+  const upperArmCircumference = upperArmInches;
+  const cuffCircumference = wristInches;
+
   const isTopDown = sleeveDirection === "top-down";
-  const sleeveCapStsToken = isTopDown ? wristSts : topSts;
-  const wristStsToken = isTopDown ? topSts : wristSts;
-  const sleeveCapWidthToken = isTopDown ? wristInches : upperArmInches;
-  const wristWidthToken = isTopDown ? upperArmInches : wristInches;
+  const topEndStitches = isTopDown ? cuffStitches : upperArmStitches;
+  const bottomEndStitches = isTopDown ? upperArmStitches : cuffStitches;
+  const topEndCircumference = isTopDown ? cuffCircumference : upperArmCircumference;
+  const bottomEndCircumference = isTopDown ? upperArmCircumference : cuffCircumference;
+
+  // Cuff-up artwork: SLEEVE_CAP at top, WRIST at bottom. Top-down artwork: WRIST at top, SLEEVE_CAP at bottom.
+  const sleeveCapStsToken = isTopDown ? bottomEndStitches : topEndStitches;
+  const wristStsToken = isTopDown ? topEndStitches : bottomEndStitches;
+  const sleeveCapWidthToken = isTopDown ? bottomEndCircumference : topEndCircumference;
+  const wristWidthToken = isTopDown ? topEndCircumference : bottomEndCircumference;
 
   return {
     UNIT: unitLabel,

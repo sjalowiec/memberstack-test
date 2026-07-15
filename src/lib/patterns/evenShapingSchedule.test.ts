@@ -27,6 +27,14 @@ describe("sleeveEvenShapingSchedule", () => {
       remainderRows: 100,
     });
   });
+
+  it("schedules reverse taper when cuff is wider than upper arm", () => {
+    expect(sleeveEvenShapingSchedule(60, 70, 100)).toEqual({
+      interval: 20,
+      count: 5,
+      remainderRows: 0,
+    });
+  });
 });
 
 describe("shapingActionRowNumbers", () => {

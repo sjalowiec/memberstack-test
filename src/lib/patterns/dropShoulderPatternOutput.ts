@@ -211,22 +211,28 @@ function knitInPatternLine(rows: number): string {
   return rows === 1 ? "Knit 1 row in pattern." : `Knit ${rows} rows in pattern.`;
 }
 
-/** Cuff-up sleeve: even rows after the last side increase, then bind off at total RC. */
-function knitEvenAfterFinalIncreaseLine(remainderRows: number, bindOffRc: number): string {
+/** Cuff-up sleeve: even rows after the last side shaping action, then bind off at total RC. */
+function knitEvenAfterFinalShapingLine(
+  remainderRows: number,
+  bindOffRc: number,
+  shapingVerb: "increase" | "decrease",
+): string {
   if (remainderRows <= 0) return "";
   const rowWord = remainderRows === 1 ? "1 row even" : `${remainderRows} rows even`;
-  return `After the final increase, knit ${rowWord} in pattern, then bind off at ${formatRcColon(bindOffRc)}.`;
+  const noun = shapingVerb === "decrease" ? "decrease" : "increase";
+  return `After the final ${noun}, knit ${rowWord} in pattern, then bind off at ${formatRcColon(bindOffRc)}.`;
 }
 
 function sleeveBodyRemainderLine(
   plan: { remainderRows: number; steps: readonly { times: number }[] },
   direction: DropShoulderSleeveDirection,
   sleeveTotalRows: number,
+  shapingVerb: "increase" | "decrease" = "increase",
 ): string {
   if (plan.remainderRows <= 0) return "";
   const hadShaping = plan.steps.some((s) => s.times > 0);
   if (hadShaping && direction === "cuff-up") {
-    return knitEvenAfterFinalIncreaseLine(plan.remainderRows, sleeveTotalRows);
+    return knitEvenAfterFinalShapingLine(plan.remainderRows, sleeveTotalRows, shapingVerb);
   }
   return knitInPatternLine(plan.remainderRows);
 }
@@ -1027,7 +1033,7 @@ export function buildDropShoulderSleeveDisplayRows(
     shapingRcSequence,
   );
   const sleeveBodyTailLines = [
-    sleeveBodyRemainderLine(shapingPlan, args.direction, args.sleeveTotalRows),
+    sleeveBodyRemainderLine(shapingPlan, args.direction, args.sleeveTotalRows, shapingPlan.shapingDirection),
   ].filter((p) => p.length > 0);
   const preShaping = dropShoulderSleevePreShapingSpan(chartInput);
   const hasSleeveShaping = shapingWrittenLines.length > 0;
