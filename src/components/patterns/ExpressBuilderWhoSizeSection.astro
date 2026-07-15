@@ -1,5 +1,11 @@
 ---
 /** Shared Who & Size nested UI for unified Express builders (Sleeveless + Drop Shoulder). */
+import {
+  EXPRESS_BUILDER_SIZE_HEADING,
+  EXPRESS_BUILDER_SIZE_INSTRUCTION,
+  EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL,
+} from "../../lib/patterns/expressBuilderCopy";
+
 interface Props {
   sweaterSizingChartHref: string;
 }
@@ -8,16 +14,15 @@ const { sweaterSizingChartHref } = Astro.props;
 ---
 
 <div class="express-who-size-intro">
-  <h3 class="express-size-heading">Choose your size</h3>
+  <h3 class="express-size-heading">{EXPRESS_BUILDER_SIZE_HEADING}</h3>
   <p class="express-size-instruction" id="express-size-helper-text">
-    Select the bust/chest measurement closest to yours. The other body measurements are based on the
-    Knit It Now standard sizing chart for that size.
+    {EXPRESS_BUILDER_SIZE_INSTRUCTION}
   </p>
   <p class="express-size-chart-link-wrap">
     <a
       href={sweaterSizingChartHref}
       class="express-custom-build-callout__link"
-      data-express-sweater-sizing-chart-link>View the sweater sizing chart</a
+      data-express-sweater-sizing-chart-link>{EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL}</a
     >
   </p>
 </div>

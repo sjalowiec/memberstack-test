@@ -9,6 +9,11 @@ import {
   seedExpressSweaterChartsForTests,
 } from "./sleevelessExpressSizeChartClient";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
+import {
+  EXPRESS_BUILDER_SIZE_HEADING,
+  EXPRESS_BUILDER_SIZE_INSTRUCTION,
+  EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL,
+} from "./expressBuilderCopy";
 
 const whoSizeSection = readFileSync(
   resolve("src/components/patterns/ExpressBuilderWhoSizeSection.astro"),
@@ -146,13 +151,14 @@ function buildSleevelessBuilderSizeScope(): FakeElement {
 
   const intro = new FakeElement("DIV", ["express-who-size-intro"]);
   const heading = new FakeElement("H3", ["express-size-heading"]);
-  heading.textContent = "Choose your size";
+  heading.textContent = EXPRESS_BUILDER_SIZE_HEADING;
   const instruction = new FakeElement("P", ["express-size-instruction"]);
   instruction.setAttribute("id", "express-size-helper-text");
+  instruction.textContent = EXPRESS_BUILDER_SIZE_INSTRUCTION;
   const linkWrap = new FakeElement("P", ["express-size-chart-link-wrap"]);
   const link = new FakeElement("A");
   link.setAttribute("data-express-sweater-sizing-chart-link", "");
-  link.textContent = "View the sweater sizing chart";
+  link.textContent = EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL;
   linkWrap.appendChild(link);
   intro.append(heading, instruction, linkWrap);
 
@@ -185,10 +191,15 @@ function summaryEl(scope: FakeElement): FakeElement | null {
 
 describe("ExpressBuilderWhoSizeSection shared markup", () => {
   it("includes the full size introduction and sizing chart link", () => {
-    expect(whoSizeSection).toContain("Choose your size");
-    expect(whoSizeSection).toContain("Select the bust/chest measurement closest to yours");
-    expect(whoSizeSection).toContain("Knit It Now standard sizing chart");
-    expect(whoSizeSection).toContain("View the sweater sizing chart");
+    expect(whoSizeSection).toContain("expressBuilderCopy");
+    expect(whoSizeSection).toContain("EXPRESS_BUILDER_SIZE_HEADING");
+    expect(whoSizeSection).toContain("EXPRESS_BUILDER_SIZE_INSTRUCTION");
+    expect(whoSizeSection).toContain("EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL");
+    expect(whoSizeSection).toContain("{EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL}");
+    expect(EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL).toBe("View the sweater sizing chart");
+    expect(EXPRESS_BUILDER_SIZE_INSTRUCTION).toContain("Select the bust/chest measurement closest to yours");
+    expect(EXPRESS_BUILDER_SIZE_INSTRUCTION).toContain("Knit It Now standard sizing chart");
+    expect(EXPRESS_BUILDER_SIZE_INSTRUCTION).toContain("starting point for your sweater");
     expect(whoSizeSection).toContain("data-express-sweater-sizing-chart-link");
     expect(whoSizeSection).toContain("data-express-size-standard-body-summary");
     expect(whoSizeSection).toContain("express-who-size-intro");

@@ -8,6 +8,11 @@ import {
   formatBodyMeasurementDisplay,
 } from "./sleevelessExpressSizeChartClient";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
+import {
+  EXPRESS_BUILDER_SIZE_HEADING,
+  EXPRESS_BUILDER_SIZE_INSTRUCTION,
+  EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL,
+} from "./expressBuilderCopy";
 
 const dropShoulderBuilderAstro = readFileSync(
   resolve("src/pages/patterns/drop-shoulder/builder.astro"),
@@ -23,10 +28,9 @@ const customBuildDesignAstro = readFileSync(
 );
 
 const sizeFitCopy = {
-  sizingChartLabel: "View the sweater sizing chart",
-  sizeHeading: "Choose your size",
-  sizeInstruction:
-    "Select the bust/chest measurement closest to yours. The other body measurements are based on the Knit It Now standard sizing chart for that size.",
+  sizingChartLabel: EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL,
+  sizeHeading: EXPRESS_BUILDER_SIZE_HEADING,
+  sizeInstruction: EXPRESS_BUILDER_SIZE_INSTRUCTION,
   fitHeading: "Choose a starting fit",
   fitInstruction:
     "Your selected fit adds ease to the standard body measurements shown above. You can adjust the finished garment measurements after the pattern is built.",
@@ -50,9 +54,11 @@ function expectBuilderSizeFitClarity(builderSource: string, fitStep: "3" | "4"):
   expect(builderSource).toContain("ExpressBuilderWhoSizeSection");
   expect(builderSource).toContain("buildSweaterSizingChartHref");
   expect(builderSource).toContain("sweaterSizingChartHref={sweaterSizingChartHref}");
-  expect(whoSizeSection).toContain(sizeFitCopy.sizingChartLabel);
-  expect(whoSizeSection).toContain(sizeFitCopy.sizeHeading);
-  expect(whoSizeSection).toContain("Select the bust/chest measurement closest to yours");
+  expect(whoSizeSection).toContain("expressBuilderCopy");
+  expect(whoSizeSection).toContain("EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL");
+  expect(whoSizeSection).toContain("EXPRESS_BUILDER_SIZE_HEADING");
+  expect(whoSizeSection).toContain("EXPRESS_BUILDER_SIZE_INSTRUCTION");
+  expect(EXPRESS_BUILDER_SIZE_INSTRUCTION).toContain("Select the bust/chest measurement closest to yours");
   expect(builderSource).toContain(sizeFitCopy.fitHeading);
   expect(builderSource).toContain(sizeFitCopy.fitInstruction);
   expect(whoSizeSection).toContain(sizeFitCopy.summaryMarker);

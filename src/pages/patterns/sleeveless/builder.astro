@@ -18,6 +18,7 @@ import "../../../styles/sleeveless-express-wizard-layout.css";
 import "../../../styles/express-size-selection.css";
 import "../../../styles/custom-pattern-editing-banner.css";
 import { formatFitEaseApproxLabel } from "../../../lib/patterns/fitEaseInches";
+import { EXPRESS_BUILDER_INTRO_SUBTEXT } from "../../../lib/patterns/expressBuilderCopy";
 import { buildSweaterSizingChartHref } from "../../../lib/reference/sweaterSizingChartNavigation";
 
 const sweaterSizingChartHref = buildSweaterSizingChartHref("/patterns/sleeveless/builder");
@@ -110,7 +111,7 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
                 <PatternBuilderMyPatternsLink />
               </div>
               <p class="pattern-subtext">
-                Create a ready-to-knit sweater pattern in a few guided steps.
+                {EXPRESS_BUILDER_INTRO_SUBTEXT}
               </p>
             </header>
             <div data-cb-editing-banner-host hidden></div>
