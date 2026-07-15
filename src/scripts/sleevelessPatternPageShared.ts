@@ -75,6 +75,7 @@ import {
 import { buildPatternVisualGuidesHtml } from "../lib/patterns/patternVisualGuides.ts";
 import { renderSleevelessBodyShapingChartHtml } from "../lib/patterns/sleevelessBodyShapingChartHtml.ts";
 import { renderDropShoulderSleeveShapingChartHtml } from "../lib/patterns/dropShoulderSleeveShapingChart.ts";
+import { buildDropShoulderMountShapingMapData } from "../lib/patterns/dropShoulderMountVisualGuides.ts";
 // Dynamic "Shaping Map" SVG. The sleeveless round-neck FRONT is driven by real shaping math via
 // buildSleevelessRoundNeckShapingMapData below; patterns without a real schedule render no map
 // (SAMPLE_SHAPING_MAP_DATA is intentionally not imported — it is dev/test-only, never customer-facing).
@@ -3734,24 +3735,15 @@ table {
       patternMerged,
       generatorPatternData,
     );
-    const isRoundNeckPullover =
-      String(generatorPatternData?.style?.neckline || "") !== "v-neck" && !isCardigan;
-    const frontShapingMapData =
-      isRoundNeckPullover && result.frontNeckShoulderChartUsesLiveRows
-        ? buildSleevelessRoundNeckShapingMapData(result.frontNeckShoulderTimeline, {
-            firstArmholeRc: result.debug?.armholeStartRow,
-            title: "Front neckline shaping map",
-          })
-        : null;
-    const frontIsRoundNeck = !!frontShapingMapData;
-    const backShapingMapData = buildSleevelessRoundNeckBackShapingMapData(
-      result?.backNeckShoulderTimeline,
-      {
-        firstArmholeRc: result?.debug?.armholeStartRow,
-        title: "Back neckline shaping map",
-        patternData: dropShoulderDiagramPatternData,
-      },
+    // Use generatorPatternData for map gates — NOT dropShoulderDiagramPatternData.
+    // Diagram rebuild can re-resolve a stale wizard/express V-neck and null the back map while
+    // the front map (gated on gen neckline) still renders.
+    const { backShapingMapData, frontShapingMapData } = buildDropShoulderMountShapingMapData(
+      result,
+      generatorPatternData,
+      { isCardigan },
     );
+    const frontIsRoundNeck = !!frontShapingMapData;
 
     /** @param {"back" | "front" | "sleeve"} piece */
     const dropShoulderVisualGuidesOpts = (piece, extras = {}) => {

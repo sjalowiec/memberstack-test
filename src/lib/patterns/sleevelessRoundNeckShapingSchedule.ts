@@ -1,5 +1,5 @@
 /**
- * Sleeveless Round Neck **front** shaping schedule — narrowly scoped.
+ * Sleeveless Round Neck **front** shaping schedule ï¿½ narrowly scoped.
  *
  * Architecture:
  *   Pattern calculations ? buildTimeline (RowEntry[]) ? this schedule ? Shaping Map data
