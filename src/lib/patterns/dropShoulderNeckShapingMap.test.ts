@@ -1,10 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { generateDropShoulderPattern } from "./dropShoulderPatternOutput";
+import { buildPatternVisualGuidesHtml } from "./patternVisualGuides";
+import {
+  buildSleevelessRoundNeckBackShapingMapData,
+  buildSleevelessRoundNeckBackShapingSchedule,
+} from "./sleevelessRoundNeckBackShapingSchedule";
 import {
   buildSleevelessRoundNeckShapingMapData,
   buildSleevelessRoundNeckShapingSchedule,
   detectShoulderRepresentationMode,
 } from "./sleevelessRoundNeckShapingSchedule";
+import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 import type { ShapingMapPath } from "./shapingMapSvg";
 import { renderShapingMapSvg } from "./shapingMapSvg";
 
@@ -135,3 +141,125 @@ function scheduleShoulderWidth(result: ReturnType<typeof generateDropShoulderPat
   const schedule = buildSleevelessRoundNeckShapingSchedule(result.frontNeckShoulderTimeline)!;
   return schedule.shoulderStitchesTotal;
 }
+
+describe("drop-shoulder back round-neck shaping map", () => {
+  it("renders a shaping map with neckline shaping and straight shoulders", () => {
+    const result = generateDropShoulderPattern(DROP_SHOULDER_ROUND);
+    expect(result.backNeckShoulderTimeline?.length).toBeGreaterThan(0);
+
+    const schedule = buildSleevelessRoundNeckBackShapingSchedule(result.backNeckShoulderTimeline)!;
+    expect(schedule).not.toBeNull();
+    expect(schedule.centerHeld).toBe(true);
+    expect(schedule.centerStitches).toBeGreaterThan(0);
+    expect(schedule.neckStitchesTotal).toBeGreaterThan(0);
+    expect(schedule.shoulderMode).toBe("straight");
+
+    const map = buildSleevelessRoundNeckBackShapingMapData(result.backNeckShoulderTimeline, {
+      firstArmholeRc: result.debug.armholeStartRow,
+      title: "Back neckline shaping map",
+      patternData: DROP_SHOULDER_ROUND,
+    });
+    expect(map).not.toBeNull();
+    expect(map!.paths.find((p) => p.id === "neck")).toBeDefined();
+    expect(map!.paths.find((p) => p.id === "shoulder")).toBeDefined();
+    expect(map!.rowMax).toBeGreaterThan(map!.rowMin);
+
+    const html = buildPatternVisualGuidesHtml({
+      piece: "back",
+      notationSupported: true,
+      construction: "drop-shoulder",
+      shapingMapData: map,
+    });
+    expect(html).toContain("Shaping Notation");
+    expect(html).toContain("Shaping Map");
+    expect(html).toContain("shaping-map__svg");
+    expect(html).not.toContain("ns-visual-guides__grid--single");
+  });
+
+  it("does not suppress the neckline map when there is no shoulder shaping", () => {
+    const result = generateDropShoulderPattern(DROP_SHOULDER_ROUND);
+    const schedule = buildSleevelessRoundNeckBackShapingSchedule(result.backNeckShoulderTimeline)!;
+    expect(schedule.shoulderMode).toBe("straight");
+    // Completion bind-off only at the final row — not graduated shoulder shaping.
+    expect(schedule.shoulderOps.every((op) => op.endRow === schedule.endRow)).toBe(true);
+
+    const map = buildSleevelessRoundNeckBackShapingMapData(result.backNeckShoulderTimeline, {
+      firstArmholeRc: result.debug.armholeStartRow,
+      patternData: DROP_SHOULDER_ROUND,
+    });
+    expect(map).not.toBeNull();
+    expect(map!.paths.some((p) => p.id === "neck")).toBe(true);
+
+    const svg = renderShapingMapSvg(map!);
+    expect(svg).toContain(">Neck Edge<");
+    expect(svg).toContain("Center Stitches");
+  });
+
+  it("keeps the drop-shoulder front shaping map working alongside the back map", () => {
+    const result = generateDropShoulderPattern(DROP_SHOULDER_ROUND);
+
+    const frontMap = buildSleevelessRoundNeckShapingMapData(result.frontNeckShoulderTimeline, {
+      firstArmholeRc: result.debug.armholeStartRow,
+      title: "Front neckline shaping map",
+    });
+    const backMap = buildSleevelessRoundNeckBackShapingMapData(result.backNeckShoulderTimeline, {
+      firstArmholeRc: result.debug.armholeStartRow,
+      patternData: DROP_SHOULDER_ROUND,
+    });
+
+    expect(frontMap).not.toBeNull();
+    expect(backMap).not.toBeNull();
+    expect(frontMap!.title).toBe("Front neckline shaping map");
+    expect(backMap!.title).toBe("Back neckline shaping map");
+
+    const frontHtml = buildPatternVisualGuidesHtml({
+      piece: "front",
+      notationSupported: true,
+      construction: "drop-shoulder",
+      shapingMapData: frontMap,
+    });
+    expect(frontHtml).toContain("Shaping Map");
+    expect(frontHtml).toContain("shaping-map__svg");
+  });
+});
+
+describe("sleeveless map rendering remains intact", () => {
+  it("still builds front and back maps for sleeveless round neck", () => {
+    const pattern = {
+      fit: {
+        sizingChart: "women",
+        selectedMeasurements: {
+          finished_bust_chest: 40,
+          back_neck_to_hem: 24,
+          armhole_depth: 8,
+          shoulder_width: 16,
+          neck_opening: 7,
+          back_neck_depth: 1,
+          front_neck_depth: 4,
+        },
+      },
+      yarnGaugeMachine: {
+        gaugeStitchesPerInch: 5,
+        gaugeRowsPerInch: 7,
+        availableNeedles: 200,
+      },
+      style: {
+        construction: "sleeveless",
+        frontStyle: "closed",
+        neckline: "round",
+      },
+    };
+    const r = generateSleevelessBackPattern(pattern);
+    const frontMap = buildSleevelessRoundNeckShapingMapData(r.frontNeckShoulderTimeline, {
+      firstArmholeRc: r.debug?.armholeStartRow,
+    });
+    const backMap = buildSleevelessRoundNeckBackShapingMapData(r.backNeckShoulderTimeline, {
+      firstArmholeRc: r.debug?.armholeStartRow,
+      patternData: pattern,
+    });
+    expect(frontMap).not.toBeNull();
+    expect(backMap).not.toBeNull();
+    expect(frontMap!.paths.length).toBeGreaterThan(0);
+    expect(backMap!.paths.length).toBeGreaterThan(0);
+  });
+});

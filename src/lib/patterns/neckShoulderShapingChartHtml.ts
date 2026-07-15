@@ -873,9 +873,9 @@ export type NeckShoulderChartRenderOptions = {
    * When true, the whole checklist renders as a collapsible `<details>` disclosure: a full-width
    * clickable `<summary>` header bar (chevron on the left, {@link tableHeading} as the label, and a
    * `[data-chart-print-slot]` on the right for the print button) with the intro, controls, and table
-   * beneath it. Collapsed shows only the header; expanded shows everything. Opt-in and presentation
-   * only — it never changes the checklist rows, RC values, or shaping math. Defaults to a plain
-   * `<section>` with a standalone `<h2>` heading.
+   * beneath it. Collapsed shows only the header; expanded shows everything. Defaults to collapsible
+   * for active-shoulder {@link tableHeading} values that include “Shoulder Checklist”; pass
+   * `collapsible: false` to keep a plain `<section>` with a standalone `<h2>` heading.
    */
   collapsible?: boolean;
   /** When {@link collapsible} is true, render the disclosure initially expanded. Defaults to collapsed. */
@@ -895,6 +895,72 @@ export type NeckShoulderChartRenderOptions = {
    */
   suppressCarriagePositionTip?: boolean;
 };
+
+const SECOND_SHOULDER_CHECKLIST_HEADING = "Second Shoulder Checklist";
+
+function isShoulderChecklistHeading(heading: string): boolean {
+  return /shoulder checklist/i.test(heading.trim());
+}
+
+/** Centered readable column inside a full-width collapsible checklist body. */
+function checklistInnerOpenHtml(): string {
+  return `<div class="ns-shaping-chart__checklist-inner">`;
+}
+
+function checklistInnerCloseHtml(): string {
+  return `</div>`;
+}
+
+/**
+ * Print-only anchor: in-flow checklist heading immediately before table content. The on-screen
+ * `<summary>` header stays for accordion behavior; print CSS hides it and shows this heading
+ * inside the disclosure body so pagination cannot orphan the title from the table start.
+ */
+function wrapChecklistPrintLeadHtml(
+  title: string,
+  headingId: string,
+  innerHtml: string,
+): string {
+  const printHeadingId = `${headingId}-print`;
+  return `<div class="ns-shaping-chart__print-lead" data-checklist-print-lead aria-labelledby="${escapeHtml(printHeadingId)}">
+    <h4 id="${escapeHtml(printHeadingId)}" class="ns-shaping-chart__print-lead-heading">${escapeHtml(title)}</h4>
+    ${innerHtml}
+  </div>`;
+}
+
+function collapsibleChecklistShellHtml(
+  sectionClass: string,
+  headingId: string,
+  title: string,
+  options?: {
+    open?: boolean;
+    hidden?: boolean;
+    includePrintSlot?: boolean;
+    extraClass?: string;
+    dataSecondShoulderContent?: boolean;
+  },
+): { open: string; close: string } {
+  const extraClass = options?.extraClass ? ` ${options.extraClass}` : "";
+  const hiddenAttr = options?.hidden ? " hidden" : "";
+  const openAttr = options?.open ? " open" : "";
+  const dataAttr = options?.dataSecondShoulderContent ? " data-second-shoulder-content" : "";
+  const printSlot = options?.includePrintSlot !== false
+    ? `<span class="ns-shaping-chart__disclosure-actions" data-chart-print-slot></span>`
+    : "";
+  return {
+    open: `<details class="${escapeHtml(`${sectionClass} ns-shaping-chart--collapsible${extraClass}`)}"${dataAttr}${hiddenAttr}${openAttr}>
+  <summary class="ns-shaping-chart__disclosure-header">
+    <span class="ns-shaping-chart__disclosure-chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
+    <span id="${escapeHtml(headingId)}" class="ns-shaping-chart__title ns-shaping-chart__disclosure-title">${escapeHtml(title)}</span>
+    ${printSlot}
+  </summary>
+  <div class="ns-shaping-chart__disclosure-body">
+  ${checklistInnerOpenHtml()}`,
+    close: `${checklistInnerCloseHtml()}
+</div>
+</details>`,
+  };
+}
 
 function activeShoulderChecklistOptions(
   options?: NeckShoulderChartRenderOptions,
@@ -1060,25 +1126,13 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
     typeof options?.tableHeading === "string" && options.tableHeading.trim()
       ? options.tableHeading.trim()
       : "Neckline / Shoulder Shaping Chart";
-  // Presentation-only: when `collapsible`, wrap the exact same body in a `<details>` disclosure whose
-  // full-width `<summary>` is the header (chevron + title + print-button slot). Otherwise keep the
-  // original `<section>` + standalone `<h2>` markup so existing callers are byte-for-byte unchanged.
-  const collapsible = options?.collapsible === true;
+  const shoulderChecklist = activeSideOnly && isShoulderChecklistHeading(tableHeading);
+  const collapsible =
+    options?.collapsible === true ||
+    (options?.collapsible !== false && shoulderChecklist);
   const collapsibleOpen = options?.collapsibleDefaultOpen === true;
-  const openTag = collapsible
-    ? `<details class="${escapeHtml(`${sectionClass} ns-shaping-chart--collapsible`)}"${collapsibleOpen ? " open" : ""}>
-  <summary class="ns-shaping-chart__disclosure-header">
-    <span class="ns-shaping-chart__disclosure-chevron" aria-hidden="true"><i class="fas fa-chevron-right"></i></span>
-    <span id="${escapeHtml(headingId)}" class="ns-shaping-chart__title ns-shaping-chart__disclosure-title">${escapeHtml(tableHeading)}</span>
-    <span class="ns-shaping-chart__disclosure-actions" data-chart-print-slot></span>
-  </summary>
-  <div class="ns-shaping-chart__disclosure-body">`
-    : `<section class="${escapeHtml(sectionClass)}" aria-labelledby="${escapeHtml(headingId)}">
-  <h2 id="${escapeHtml(headingId)}" class="ns-shaping-chart__title">${escapeHtml(tableHeading)}</h2>`;
-  const closeTag = collapsible ? `</div>\n</details>` : `</section>`;
-  return `${openTag}
-  ${intro}
-  <div class="ns-shaping-chart__progress-section" data-chart-id="${escapeHtml(progressChartIdPrimary)}">
+
+  const primaryTableHtml = `<div class="ns-shaping-chart__progress-section" data-chart-id="${escapeHtml(progressChartIdPrimary)}">
     ${progressToolbarHtml}
     <div class="ns-shaping-chart__table-wrap">
     <div class="ns-shaping-chart__table-scroll">
@@ -1118,31 +1172,9 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
     </table>
     </div>
     </div>
-  </div>
-  ${activeSideOnly ? renderActiveSideBindoffRemainingHtml(activeRowsRaw) : ""}
-  ${
-    activeSideOnly
-      ? isCardiganFront
-        ? `<p class="ns-shaping-chart__active-side-note">${instructionWithHeldStitchesHtml(
-            heldShoulderStitches, false, true, shouldersShaped,
-          )}</p>`
-        : `<p class="ns-shaping-chart__active-side-note ns-shaping-chart__active-side-note--collapsed" data-second-shoulder-default-instruction>${instructionWithHeldStitchesHtml(
-          heldShoulderStitches, false, false, shouldersShaped
-        )}</p>
-<p class="ns-shaping-chart__active-side-note ns-shaping-chart__active-side-note--expanded" data-second-shoulder-checked-instruction hidden>${instructionWithHeldStitchesHtml(
-          heldShoulderStitches, true, false, shouldersShaped
-        )}</p>
-<div class="ns-shaping-chart__second-shoulder-toggle no-print">
-  <p class="ns-shaping-chart__second-shoulder-toggle-copy">Want less mental reversing? Show a ready-made checklist for the second shoulder.</p>
-  <label class="ns-shaping-chart__second-shoulder-label">
-    <input type="checkbox" class="ns-shaping-chart__second-shoulder-input" data-second-shoulder-toggle />
-    Show second shoulder checklist
-  </label>
-</div>
-<div class="ns-shaping-chart__second-shoulder-block" data-second-shoulder-content hidden>
-  <h3 class="ns-shaping-chart__preview-title">Second Shoulder Checklist</h3>
-  ${typeof options?.secondShoulderExtraHtml === "string" ? options.secondShoulderExtraHtml : ""}
-  <div class="ns-shaping-chart__progress-section" data-chart-id="${escapeHtml(progressChartIdSecondary)}">
+  </div>`;
+
+  const secondShoulderTableHtml = `<div class="ns-shaping-chart__progress-section" data-chart-id="${escapeHtml(progressChartIdSecondary)}">
     ${progressToolbarHtml}
     <div class="ns-shaping-chart__table-wrap">
     <div class="ns-shaping-chart__table-scroll">
@@ -1160,11 +1192,107 @@ export function renderNeckShoulderShapingChartTableOnlyHtml(
     </table>
     </div>
     </div>
-  </div>
+  </div>`;
+
+  const secondShoulderToggleHtml = `<p class="ns-shaping-chart__active-side-note ns-shaping-chart__active-side-note--collapsed" data-second-shoulder-default-instruction>${instructionWithHeldStitchesHtml(
+    heldShoulderStitches,
+    false,
+    false,
+    shouldersShaped,
+  )}</p>
+<p class="ns-shaping-chart__active-side-note ns-shaping-chart__active-side-note--expanded" data-second-shoulder-checked-instruction hidden>${instructionWithHeldStitchesHtml(
+    heldShoulderStitches,
+    true,
+    false,
+    shouldersShaped,
+  )}</p>
+<div class="ns-shaping-chart__second-shoulder-toggle no-print">
+  <p class="ns-shaping-chart__second-shoulder-toggle-copy">Want less mental reversing? Show a ready-made checklist for the second shoulder.</p>
+  <label class="ns-shaping-chart__second-shoulder-label">
+    <input type="checkbox" class="ns-shaping-chart__second-shoulder-input" data-second-shoulder-toggle />
+    Show second shoulder checklist
+  </label>
+</div>`;
+
+  const secondShoulderHeadingId = `${idPrefix}-second-heading`;
+  const secondShoulderExtra =
+    typeof options?.secondShoulderExtraHtml === "string" ? options.secondShoulderExtraHtml : "";
+
+  const secondShoulderCollapsibleHtml = collapsible
+    ? (() => {
+        const shell = collapsibleChecklistShellHtml(
+          sectionClass,
+          secondShoulderHeadingId,
+          SECOND_SHOULDER_CHECKLIST_HEADING,
+          {
+            open: true,
+            hidden: true,
+            includePrintSlot: false,
+            extraClass: "ns-shaping-chart--second-shoulder",
+            dataSecondShoulderContent: true,
+          },
+        );
+        return `${shell.open}
+  ${wrapChecklistPrintLeadHtml(
+    SECOND_SHOULDER_CHECKLIST_HEADING,
+    secondShoulderHeadingId,
+    `${secondShoulderExtra}
+  ${secondShoulderTableHtml}`,
+  )}
+${shell.close}`;
+      })()
+    : "";
+
+  const secondShoulderLegacyHtml = !collapsible
+    ? `<div class="ns-shaping-chart__second-shoulder-block" data-second-shoulder-content hidden>
+  <h3 class="ns-shaping-chart__preview-title">${SECOND_SHOULDER_CHECKLIST_HEADING}</h3>
+  ${secondShoulderExtra}
+  ${secondShoulderTableHtml}
 </div>`
-      : ""
+    : "";
+
+  const activeSideTailHtml =
+    activeSideOnly && !isCardiganFront
+      ? `${secondShoulderToggleHtml}
+${collapsible ? secondShoulderCollapsibleHtml : secondShoulderLegacyHtml}`
+      : activeSideOnly && isCardiganFront
+        ? `<p class="ns-shaping-chart__active-side-note">${instructionWithHeldStitchesHtml(
+            heldShoulderStitches,
+            false,
+            true,
+            shouldersShaped,
+          )}</p>`
+        : "";
+
+  const primaryTableForBody = collapsible
+    ? wrapChecklistPrintLeadHtml(tableHeading, headingId, primaryTableHtml)
+    : primaryTableHtml;
+
+  const checklistBodyHtml = `${intro}
+  ${primaryTableForBody}
+  ${activeSideOnly ? renderActiveSideBindoffRemainingHtml(activeRowsRaw) : ""}
+  ${activeSideTailHtml}`;
+
+  if (collapsible) {
+    const shell = collapsibleChecklistShellHtml(sectionClass, headingId, tableHeading, {
+      open: collapsibleOpen,
+      includePrintSlot: true,
+    });
+    return `${shell.open}
+  ${checklistBodyHtml}
+${shell.close}`;
   }
-${closeTag}`;
+
+  const innerWrap = shoulderChecklist
+    ? { open: checklistInnerOpenHtml(), close: checklistInnerCloseHtml() }
+    : { open: "", close: "" };
+
+  return `<section class="${escapeHtml(sectionClass)}" aria-labelledby="${escapeHtml(headingId)}">
+  <h2 id="${escapeHtml(headingId)}" class="ns-shaping-chart__title">${escapeHtml(tableHeading)}</h2>
+  ${innerWrap.open}
+  ${checklistBodyHtml}
+  ${innerWrap.close}
+</section>`;
 }
 
 /**

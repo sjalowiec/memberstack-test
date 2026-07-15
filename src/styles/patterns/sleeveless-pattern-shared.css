@@ -2189,33 +2189,29 @@
 
     #pattern-content #neckline-shoulder-chart-print-area,
     #pattern-content #front-neckline-shoulder-chart-print-area,
+    #pattern-content .print-chart-wrap,
     #pattern-content #neckline-shoulder-chart-print-area .ns-shaping-chart,
     #pattern-content #front-neckline-shoulder-chart-print-area .ns-shaping-chart,
     #pattern-content .sleeveless-piece-chart-fullwidth .ns-shaping-chart,
+    #pattern-content .sg-neck-chart-print-block .ns-shaping-chart,
     #pattern-content #neckline-shoulder-chart-print-area .ns-shaping-chart__table-wrap,
     #pattern-content #front-neckline-shoulder-chart-print-area .ns-shaping-chart__table-wrap,
     #pattern-content .sleeveless-piece-chart-fullwidth .ns-shaping-chart__table-wrap,
+    #pattern-content .sg-neck-chart-print-block .ns-shaping-chart__table-wrap,
     #pattern-content #neckline-shoulder-chart-print-area .ns-shaping-chart__table-scroll,
     #pattern-content #front-neckline-shoulder-chart-print-area .ns-shaping-chart__table-scroll,
     #pattern-content .sleeveless-piece-chart-fullwidth .ns-shaping-chart__table-scroll,
-    #pattern-content .sg-neck-chart-print-block .ns-shaping-chart__table-wrap,
     #pattern-content .sg-neck-chart-print-block .ns-shaping-chart__table-scroll,
-    #pattern-content .sg-neck-chart-print-block .ns-shaping-chart,
-    #pattern-content .print-chart-wrap {
-      break-inside: avoid !important;
-      page-break-inside: avoid !important;
+    #pattern-content .ns-shaping-chart__table {
+      break-inside: auto !important;
+      page-break-inside: auto !important;
+      break-before: auto !important;
+      page-break-before: auto !important;
     }
 
-    #pattern-content #neckline-shoulder-chart-print-area .ns-shaping-chart__table-wrap,
-    #pattern-content #front-neckline-shoulder-chart-print-area .ns-shaping-chart__table-wrap,
-    #pattern-content .sleeveless-piece-chart-fullwidth .ns-shaping-chart__table-wrap,
-    #pattern-content #neckline-shoulder-chart-print-area .ns-shaping-chart__table-scroll,
-    #pattern-content #front-neckline-shoulder-chart-print-area .ns-shaping-chart__table-scroll,
-    #pattern-content .sleeveless-piece-chart-fullwidth .ns-shaping-chart__table-scroll,
-    #pattern-content .sg-neck-chart-print-block .ns-shaping-chart__table-wrap,
-    #pattern-content .sg-neck-chart-print-block .ns-shaping-chart__table-scroll {
-      break-before: avoid !important;
-      page-break-before: avoid !important;
+    #pattern-content .ns-shaping-chart__print-lead-heading {
+      break-after: avoid !important;
+      page-break-after: avoid !important;
     }
 
     #pattern-content .ns-shaping-chart__title,
@@ -2226,11 +2222,23 @@
       page-break-after: avoid !important;
     }
 
+    #pattern-content #neckline-shoulder-chart-print-area .ns-shaping-chart__print-lead .ns-shaping-chart__table thead,
+    #pattern-content #front-neckline-shoulder-chart-print-area .ns-shaping-chart__print-lead .ns-shaping-chart__table thead,
+    #pattern-content .sg-neck-chart-print-block .ns-shaping-chart__print-lead .ns-shaping-chart__table thead,
     #pattern-content #neckline-shoulder-chart-print-area .ns-shaping-chart__table thead,
     #pattern-content #front-neckline-shoulder-chart-print-area .ns-shaping-chart__table thead,
     #pattern-content .sg-neck-chart-print-block .ns-shaping-chart__table thead {
       break-after: avoid !important;
       page-break-after: avoid !important;
+    }
+
+    #pattern-content #neckline-shoulder-chart-print-area .ns-shaping-chart__print-lead .ns-shaping-chart__table tbody tr:first-child,
+    #pattern-content #front-neckline-shoulder-chart-print-area .ns-shaping-chart__print-lead .ns-shaping-chart__table tbody tr:first-child,
+    #pattern-content .sg-neck-chart-print-block .ns-shaping-chart__print-lead .ns-shaping-chart__table tbody tr:first-child {
+      break-before: avoid !important;
+      page-break-before: avoid !important;
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
     }
 
     #pattern-content #neckline-shoulder-chart-print-area .ns-shaping-chart__tr,

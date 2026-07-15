@@ -16,10 +16,29 @@
 
 /* Collapsible checklist: full-width clickable header bar (chevron left, title, print right). */
 .ns-shaping-chart--collapsible {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   border: 1px solid var(--kin-border, #ddd);
   border-radius: 12px;
   background: #fff;
   overflow: hidden;
+}
+
+.ns-shaping-chart--collapsible + .ns-shaping-chart--collapsible {
+  margin-top: 0.75rem;
+}
+
+/* Readable column inside the full-width disclosure — table fills this wrapper, not the viewport. */
+.ns-shaping-chart__checklist-inner {
+  width: 100%;
+  max-width: var(--pattern-readable, 52rem);
+  margin-inline: auto;
+}
+
+.ns-shaping-chart__disclosure-body {
+  padding: 0.35rem 0.9rem 0.6rem;
 }
 
 .ns-shaping-chart__disclosure-header {
@@ -76,8 +95,9 @@
   margin-left: auto;
 }
 
-.ns-shaping-chart__disclosure-body {
-  padding: 0.35rem 0.9rem 0.6rem;
+/* In-flow print heading — hidden on screen; the disclosure `<summary>` is the interactive title. */
+.ns-shaping-chart__print-lead-heading {
+  display: none;
 }
 
 .ns-shaping-chart__intro {
@@ -345,12 +365,44 @@
 @media print {
   .ns-shaping-chart {
     font-size: 9pt;
-    break-inside: avoid;
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  /*
+   * Collapsible shoulder checklists: hide the interactive `<summary>` bar in print and use the
+   * in-flow `.ns-shaping-chart__print-lead` heading inside the disclosure body instead. This prevents
+   * the summary from paginating separately from the table (a common `<details>` print bug when the
+   * whole chart was marked break-inside: avoid).
+   */
+  .ns-shaping-chart--collapsible > .ns-shaping-chart__disclosure-header {
+    display: none !important;
+  }
+
+  .ns-shaping-chart__print-lead-heading {
+    display: block;
+    margin: 0 0 0.45rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+    letter-spacing: 0.02em;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  /* Second-shoulder checklist may be `hidden` on screen until toggled — always print it. */
+  .ns-shaping-chart--second-shoulder[hidden] {
+    display: block !important;
   }
 
   /* Collapsible checklist prints in full even when collapsed on-screen; hide the chevron. */
   .ns-shaping-chart--collapsible > .ns-shaping-chart__disclosure-body {
     display: block !important;
+  }
+
+  .ns-shaping-chart__checklist-inner {
+    max-width: none !important;
+    margin-inline: 0 !important;
   }
 
   .ns-shaping-chart__disclosure-chevron {
@@ -360,10 +412,10 @@
   .ns-shaping-chart__table-wrap,
   .ns-shaping-chart__table-scroll,
   .ns-shaping-chart__table {
-    break-inside: avoid;
-    page-break-inside: avoid;
-    break-before: avoid;
-    page-break-before: avoid;
+    break-inside: auto;
+    page-break-inside: auto;
+    break-before: auto;
+    page-break-before: auto;
   }
 
   .ns-shaping-chart__title,
@@ -372,6 +424,20 @@
   .print-chart-intro {
     break-after: avoid;
     page-break-after: avoid;
+  }
+
+  /* Keep each checklist heading with the table header and first data row. */
+  .ns-shaping-chart__print-lead .ns-shaping-chart__table thead {
+    display: table-header-group;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .ns-shaping-chart__print-lead .ns-shaping-chart__table tbody tr:first-child {
+    break-before: avoid;
+    page-break-before: avoid;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .ns-shaping-chart__table thead {

@@ -2075,7 +2075,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       const printBtn = modal.querySelector("[data-sleeveless-diagram-print]");
       if (printBtn instanceof HTMLButtonElement) printBtn.hidden = true;
       delete modal.dataset.sleevelessDiagramMode;
-      modal.setAttribute("aria-label", "Enlarged Japanese notation");
+      modal.setAttribute("aria-label", "Enlarged shaping notation");
 
       content.innerHTML = "";
       const clone = svg.cloneNode(true);
@@ -3711,7 +3711,9 @@ table {
   /**
    * Drop-shoulder layout: Back / Front / Sleeve pieces each in a two-column split with the
    * drop-shoulder schematic SVGs. Front neckline shaping uses a row-by-row chart when live
-   * neck/shoulder inputs are available (straight shoulders — no back neckline chart).
+   * neck/shoulder inputs are available. Back keeps prose instructions (no checklist chart) but
+   * still gets a Shaping Map from the back neckline timeline when round-neck inputs exist
+   * (straight shoulders — no shoulder shaping — do not suppress the map).
    */
   async function renderDropShoulderMount(
     patternMerged,
@@ -3742,6 +3744,14 @@ table {
           })
         : null;
     const frontIsRoundNeck = !!frontShapingMapData;
+    const backShapingMapData = buildSleevelessRoundNeckBackShapingMapData(
+      result?.backNeckShoulderTimeline,
+      {
+        firstArmholeRc: result?.debug?.armholeStartRow,
+        title: "Back neckline shaping map",
+        patternData: dropShoulderDiagramPatternData,
+      },
+    );
 
     /** @param {"back" | "front" | "sleeve"} piece */
     const dropShoulderVisualGuidesOpts = (piece, extras = {}) => {
@@ -3750,7 +3760,6 @@ table {
           enabled: true,
           piece: "sleeve",
           notationSupported: true,
-          notationInline: true,
           construction: "drop-shoulder",
           patternData: dropShoulderDiagramPatternData,
         };
@@ -3760,7 +3769,6 @@ table {
         enabled: true,
         piece,
         notationSupported: true,
-        notationInline: extras.notationInline === true,
         construction: "drop-shoulder",
         patternData: dropShoulderDiagramPatternData,
         shapingMapData: extras.shapingMapData ?? null,
@@ -3782,7 +3790,9 @@ table {
       );
 
     const back = renderPiece(result.displayRows, "back", "", undefined, {
-      visualGuides: dropShoulderVisualGuidesOpts("back"),
+      visualGuides: dropShoulderVisualGuidesOpts("back", {
+        shapingMapData: backShapingMapData,
+      }),
     });
     const front = renderPiece(
       result.frontDisplayRows,
@@ -3791,7 +3801,6 @@ table {
       result?.frontNeckShoulderShapingChart?.rows?.[0]?.row,
       {
         visualGuides: dropShoulderVisualGuidesOpts("front", {
-          notationInline: frontIsRoundNeck,
           shapingMapData: frontShapingMapData,
         }),
       },
@@ -4083,7 +4092,6 @@ table {
                     enabled: true,
                     piece: "front",
                     notationSupported: true,
-                    notationInline: frontIsRoundNeck,
                     construction: "sleeveless",
                     patternData: diagramPatternData,
                     shapingMapData: frontShapingMapData,
@@ -4199,6 +4207,7 @@ table {
           includeCenterNecklineSetupRow: true,
           hideCenterNecklineSetupRow: true,
           tableHeading: "First Shoulder Checklist",
+          collapsibleDefaultOpen: false,
         }
       );
     }

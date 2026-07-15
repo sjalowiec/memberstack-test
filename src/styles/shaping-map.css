@@ -114,7 +114,7 @@
 }
 
 /* ============================================================================
- * PROTOTYPE ? FRONT "Visual Guides" two-column layout (Japanese Notation + Shaping Map)
+ * PROTOTYPE — FRONT "Visual Guides" two-column layout (Shaping Notation + Shaping Map)
  * followed by a collapsed row-by-row checklist. Reuses the existing pattern card look
  * (quiet border, small radius, calm padding) so it does not introduce a new heavy design.
  * ========================================================================== */
@@ -237,18 +237,25 @@ button.ns-visual-guides__preview:focus-visible .ns-visual-guides__zoom {
   max-height: 220px;
 }
 
-/* Notation preview: the ACTUAL Japanese notation SVG inlined into the card. Scale to the card
- * width and keep it tall enough to stay legible; the Enlarge button opens a full-size copy. */
+/* Notation preview: the ACTUAL shaping notation SVG inlined into the card. Scale to the card
+ * width and preserve aspect ratio; the Enlarge button opens a full-size copy. */
 .ns-visual-guides__preview--notation {
   padding: 0.35rem;
+  overflow: visible;
 }
 
 .ns-visual-guides__preview--notation svg {
   display: block;
   width: 100%;
   height: auto;
-  max-height: 280px;
   object-fit: contain;
+}
+
+.ns-visual-guides__notation-help {
+  margin: 0 0 0.55rem;
+  text-align: center;
+  font-size: 0.82rem;
+  line-height: 1.35;
 }
 
 /* Enlarge controls ? identical treatment on both cards. */
@@ -334,19 +341,40 @@ button.ns-visual-guides__preview:focus-visible .ns-visual-guides__zoom {
    * Print convention: show the FULL visual guides rather than the collapsed on-screen chrome
    * (the printed diagrams carry the information). The collapsible checklist's own print handling
    * lives with the shared checklist component in ns-shaping-chart.css.
+   *
+   * Stack Shaping Notation above Shaping Map (HTML order) at full printable width so the map
+   * is legible. Screen two-column layout is unchanged — override the min-width: 700px grid here.
    */
-  .ns-visual-guides {
+  .ns-visual-guides__grid,
+  .ns-visual-guides__grid:not(.ns-visual-guides__grid--single) {
+    grid-template-columns: 1fr !important;
+    gap: 0.85rem;
+  }
+
+  /* Keep each card title with its diagram; allow breaks between the two cards. */
+  .ns-visual-guides__card {
     break-inside: avoid;
     page-break-inside: avoid;
+    width: 100%;
   }
 
-  .ns-visual-guides__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .ns-visual-guides__preview {
+    min-height: 0;
   }
 
-  /* Print the full notation legibly, sized by the column width rather than a screen cap. */
+  /* Print the full notation legibly at full width (no on-screen height cap). */
   .ns-visual-guides__preview--notation svg {
     max-height: none;
+    width: 100%;
+    height: auto;
+  }
+
+  /* Shaping map: full printable width, natural height — no screen preview max-height. */
+  .ns-visual-guides__preview--map .shaping-map__svg {
+    min-width: 0;
+    max-height: none;
+    width: 100%;
+    height: auto;
   }
 
   .ns-visual-guides__enlarge,

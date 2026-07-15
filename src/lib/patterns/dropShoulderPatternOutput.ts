@@ -82,6 +82,7 @@ import {
 import { hemSectionRow } from "./legoBlocks/hem";
 import type { NeckShoulderShapingChart } from "./neckShoulderShapingChart";
 import {
+  buildDropShoulderBackNeckShapingTimeline,
   buildDropShoulderFrontNeckShapingChart,
   dropShoulderFrontNeckShapingChartInputsReady,
 } from "./dropShoulderFrontNeckShapingChart";
@@ -1447,6 +1448,20 @@ export function generateDropShoulderPattern(
     frontDisplayRows = [...frontDisplayRows, { kind: "neckShoulderChartTableMount" }];
   }
 
+  // Back timeline feeds the Visual Guides Shaping Map only (no back checklist chart mount).
+  const backNeckShoulderTimeline =
+    !isVNeck
+      ? buildDropShoulderBackNeckShapingTimeline({
+          backNeckSts,
+          shoulderStsEach,
+          backNeckDepthRows: Math.max(1, backNeckDepthRows),
+          backNecklineStartRC,
+          totalRows,
+          bustBodySts,
+          rowsPerInch: rpi,
+        }) ?? undefined
+      : undefined;
+
   const sleeveDisplayRows = buildDropShoulderSleeveDisplayRows({
     topSts,
     wristSts,
@@ -1540,6 +1555,7 @@ export function generateDropShoulderPattern(
     frontNeckShoulderShapingChart: frontNeckChartBuilt?.chart ?? EMPTY_CHART,
     neckShoulderChartUsesLiveRows: false,
     frontNeckShoulderChartUsesLiveRows: frontNeckChartBuilt?.usesLiveRows ?? false,
+    backNeckShoulderTimeline,
     frontNeckShoulderTimeline: frontNeckChartBuilt?.timeline,
     isDropShoulder: true,
   };

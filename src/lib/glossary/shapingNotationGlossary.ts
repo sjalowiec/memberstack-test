@@ -20,6 +20,24 @@ export function buildShapingNotationChartHelpVimeoSrc(vimeoId: string): string {
 /**
  * Help panel above inline shaping notation diagrams (shown in Shaping Notation diagram mode).
  */
+/**
+ * Compact help trigger for Visual Guides and other inline notation contexts.
+ * Opens the same Vimeo walkthrough via the page's sleeveless video modal.
+ */
+export function buildShapingNotationChartHelpTriggerHtml(
+  escapeAttr: (s: string) => string,
+  escapeText: (s: string) => string,
+): string {
+  const title = escapeText(SHAPING_NOTATION_CHART_HELP_VIDEO_TITLE);
+  const titleAttr = escapeAttr(SHAPING_NOTATION_CHART_HELP_VIDEO_TITLE);
+  const vimeoId = escapeAttr(SHAPING_NOTATION_CHART_HELP_VIMEO_ID);
+  return `<p class="ns-visual-guides__notation-help no-print">
+  <button type="button" class="pattern-help-link__button" data-sleeveless-video-id="${vimeoId}" data-video-title="${titleAttr}" aria-haspopup="dialog">
+    <i class="fa-solid fa-play" aria-hidden="true"></i> ${title}
+  </button>
+</p>`;
+}
+
 export function buildShapingNotationChartHelpHtml(
   escapeAttr: (s: string) => string,
   escapeText: (s: string) => string,

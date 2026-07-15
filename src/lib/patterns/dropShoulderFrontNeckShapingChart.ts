@@ -1,5 +1,7 @@
 /**
- * Front neckline shaping chart for drop-shoulder patterns.
+ * Drop-shoulder neckline shaping charts/timelines.
+ * Front: live checklist chart + shaping-map timeline.
+ * Back: shaping-map timeline only (written prose, no back checklist chart).
  * Reuses {@link buildTimeline} / {@link buildVNeckFrontFullWidthTimeline} - no duplicate neck math.
  */
 
@@ -126,8 +128,78 @@ function appendDropShoulderStraightShoulderFinish(
   return out;
 }
 
+export type DropShoulderBackNeckTimelineInputs = {
+  backNeckSts: number;
+  shoulderStsEach: number;
+  backNeckDepthRows: number;
+  backNecklineStartRC: number;
+  totalRows: number;
+  bustBodySts: number;
+  rowsPerInch: number;
+};
+
+/** True when live back neckline map inputs are sufficient (straight shoulders OK). */
+export function dropShoulderBackNeckShapingTimelineInputsReady(inputs: {
+  backNeckSts: number;
+  shoulderStsEach: number;
+  backNeckDepthRows: number;
+  totalRows: number;
+  bustBodySts: number;
+}): boolean {
+  const { backNeckSts, shoulderStsEach, backNeckDepthRows, totalRows, bustBodySts } = inputs;
+  return (
+    backNeckSts > 0 &&
+    shoulderStsEach > 0 &&
+    backNeckDepthRows > 0 &&
+    totalRows > 0 &&
+    bustBodySts > 0
+  );
+}
+
 /**
- * Build the live front neckline chart for drop-shoulder (straight shoulders, no back chart).
+ * Build the live back neckline timeline for drop-shoulder shaping maps (straight shoulders).
+ * Does not produce a checklist chart — drop-shoulder back instructions stay prose-only.
+ * Returns null when neck/shoulder inputs are insufficient.
+ */
+export function buildDropShoulderBackNeckShapingTimeline(
+  inputs: DropShoulderBackNeckTimelineInputs,
+): RowEntry[] | null {
+  const {
+    backNeckSts,
+    shoulderStsEach,
+    backNeckDepthRows,
+    backNecklineStartRC,
+    totalRows,
+    bustBodySts,
+    rowsPerInch,
+  } = inputs;
+
+  if (!dropShoulderBackNeckShapingTimelineInputsReady(inputs)) {
+    return null;
+  }
+
+  const shoulderBindoffRows = Math.max(1, Math.round(rowsPerInch));
+  const patternNumbers: NeckShoulderShapingPatternNumbers = {
+    firstShapingRow: backNecklineStartRC,
+    shoulderStitchesPerSide: shoulderStsEach,
+    centerNeckBindOff: backNeckSts,
+    neckDepthRows: backNeckDepthRows,
+    neckProfile: "back",
+    stitchesAfterArmhole: bustBodySts,
+    shoulderBindoffRows,
+  };
+
+  let timeline = buildNeckShoulderTimelineAndChartRows(patternNumbers, {
+    straightShoulders: true,
+  }).timeline;
+  if (timeline.length === 0) return null;
+
+  timeline = appendDropShoulderStraightShoulderFinish(timeline, totalRows, "pullover");
+  return timeline.length > 0 ? timeline : null;
+}
+
+/**
+ * Build the live front neckline chart for drop-shoulder (straight shoulders).
  * Returns null when neck/shoulder inputs are insufficient.
  */
 export function buildDropShoulderFrontNeckShapingChart(

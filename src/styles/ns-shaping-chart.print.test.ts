@@ -46,4 +46,36 @@ describe("ns-shaping-chart print layout regression", () => {
     );
     expect(sharedPrintCss).toMatch(/\.ns-shaping-chart__table[\s\S]*table-layout:\s*auto\s*!important/);
   });
+
+  it("allows long shoulder checklists to paginate instead of forcing one page", () => {
+    const printCss = printBlock(nsShapingChartCss);
+    expect(printCss).toMatch(/\.ns-shaping-chart \{\s*[\s\S]*break-inside:\s*auto/);
+    expect(printCss).toMatch(
+      /\.ns-shaping-chart__table-wrap[\s\S]*break-inside:\s*auto/,
+    );
+    expect(sharedPrintCss).toMatch(
+      /\.sleeveless-piece-chart-fullwidth \.ns-shaping-chart,\s*[\s\S]*break-inside:\s*auto\s*!important/,
+    );
+  });
+
+  it("keeps collapsible checklist headings with the table start via print-lead markup and CSS", () => {
+    const printCss = printBlock(nsShapingChartCss);
+    expect(printCss).toMatch(
+      /\.ns-shaping-chart--collapsible > \.ns-shaping-chart__disclosure-header[\s\S]*display:\s*none\s*!important/,
+    );
+    expect(printCss).toMatch(/\.ns-shaping-chart__print-lead-heading[\s\S]*display:\s*block/);
+    expect(printCss).toMatch(
+      /\.ns-shaping-chart__print-lead \.ns-shaping-chart__table thead[\s\S]*break-after:\s*avoid/,
+    );
+    expect(printCss).toMatch(
+      /\.ns-shaping-chart__print-lead \.ns-shaping-chart__table tbody tr:first-child[\s\S]*break-before:\s*avoid/,
+    );
+    expect(sharedPrintCss).toMatch(/\.ns-shaping-chart__print-lead-heading[\s\S]*break-after:\s*avoid\s*!important/);
+  });
+
+  it("keeps screen accordion disclosure headers visible outside print", () => {
+    const screenCss = nsShapingChartCss.replace(printBlock(nsShapingChartCss), "");
+    expect(screenCss).toMatch(/\.ns-shaping-chart__disclosure-header[\s\S]*cursor:\s*pointer/);
+    expect(screenCss).toMatch(/\.ns-shaping-chart__print-lead-heading[\s\S]*display:\s*none/);
+  });
 });

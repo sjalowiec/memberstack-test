@@ -388,6 +388,63 @@ describe("center neckline divide/setup row moved out of the online checklist", (
   });
 });
 
+describe("shoulder checklist full-width collapsible layout", () => {
+  it("renders First and Second Shoulder checklists as separate full-width disclosures", () => {
+    const r = generateSleevelessBackPattern(baseRoundNeckPattern());
+    const chart = r.frontNeckShoulderShapingChart;
+    const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, r.firstArmholeGarmentRc, {
+      includeCenterNecklineSetupRow: true,
+    });
+    const html = renderNeckShoulderShapingChartTableOnlyHtml(chart, "test-layout", undefined, {
+      activeSideOnly: true,
+      activeSideRcStart: rcStart,
+      includeCenterNecklineSetupRow: true,
+      hideCenterNecklineSetupRow: true,
+      tableHeading: "First Shoulder Checklist",
+    });
+
+    expect(html).toContain('class="ns-shaping-chart ns-shaping-chart--collapsible"');
+    expect(html).toContain("ns-shaping-chart__disclosure-header");
+    expect(html).toContain("ns-shaping-chart__disclosure-chevron");
+    expect(html).toContain("data-chart-print-slot");
+    expect(html).toContain("ns-shaping-chart__checklist-inner");
+    expect(html).toContain("data-checklist-print-lead");
+    expect(html).toContain("ns-shaping-chart__print-lead-heading");
+    expect(html).toContain("ns-shaping-chart--second-shoulder");
+    expect(html).toContain("data-second-shoulder-content");
+    expect(html).not.toContain("ns-shaping-chart__preview-title");
+    expect(html.match(/ns-shaping-chart--collapsible/g)?.length).toBe(2);
+    expect(html.indexOf("First Shoulder Checklist")).toBeLessThan(
+      html.indexOf("Second Shoulder Checklist"),
+    );
+    const firstPrintLead = html.indexOf('data-checklist-print-lead');
+    const firstTable = html.indexOf("ns-shaping-chart__table--checklist");
+    expect(firstPrintLead).toBeGreaterThan(-1);
+    expect(firstPrintLead).toBeLessThan(firstTable);
+    const firstClose = html.indexOf("</details>");
+    const secondOpen = html.indexOf("ns-shaping-chart--second-shoulder");
+    expect(secondOpen).toBeGreaterThan(firstClose);
+  });
+
+  it("defaults to collapsible layout for shoulder checklist headings without an explicit flag", () => {
+    const r = generateSleevelessBackPattern(baseRoundNeckPattern());
+    const chart = r.neckShoulderShapingChart;
+    const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, r.firstArmholeGarmentRc, {
+      includeCenterNecklineSetupRow: true,
+    });
+    const html = renderNeckShoulderShapingChartTableOnlyHtml(chart, "test-back-layout", undefined, {
+      activeSideOnly: true,
+      activeSideRcStart: rcStart,
+      includeCenterNecklineSetupRow: true,
+      hideCenterNecklineSetupRow: true,
+      tableHeading: "First Shoulder Checklist",
+    });
+    expect(html).toContain("<details");
+    expect(html).toContain("First Shoulder Checklist");
+    expect(html).toContain("Second Shoulder Checklist");
+  });
+});
+
 describe("formatActionCellHtml wrap-safe Action cells", () => {
   const NBSP = "\u00A0";
 
