@@ -6,6 +6,8 @@ export const EXPRESS_BUILDER_INTRO_SUBTEXT =
 export const EXPRESS_BUILDER_SIZE_HEADING = "Choose your starting size";
 
 export const EXPRESS_BUILDER_SIZE_INSTRUCTION =
-  "Select the bust/chest measurement closest to yours. We'll use the Knit It Now standard sizing chart as the starting point for your sweater.";
+  "Select the body bust/chest measurement closest to your own. We'll use the Knit It Now standard sizing chart as the starting point for your sweater.";
+
+export const EXPRESS_BUILDER_SIZE_TABLE_BODY_BUST_CHEST_COLUMN = "Body Bust/Chest";
 
 export const EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL = "View the sweater sizing chart";

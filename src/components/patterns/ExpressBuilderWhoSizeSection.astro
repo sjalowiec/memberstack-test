@@ -3,6 +3,7 @@
 import {
   EXPRESS_BUILDER_SIZE_HEADING,
   EXPRESS_BUILDER_SIZE_INSTRUCTION,
+  EXPRESS_BUILDER_SIZE_TABLE_BODY_BUST_CHEST_COLUMN,
   EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL,
 } from "../../lib/patterns/expressBuilderCopy";
 
@@ -28,7 +29,7 @@ const { sweaterSizingChartHref } = Astro.props;
 </div>
 <div class="express-who-size-nested" data-express-nested-size hidden>
   <p class="express-size-load-msg sg-fit-size-copy" data-express-size-status>
-    Loading size chartsÖ
+    Loading size chartsù
   </p>
   <div class="express-size-select-wrap" data-express-size-select-wrap hidden>
     <div class="express-size-table-wrap">
@@ -36,7 +37,7 @@ const { sweaterSizingChartHref } = Astro.props;
         <thead>
           <tr>
             <th scope="col">Size</th>
-            <th scope="col">Bust/Chest</th>
+            <th scope="col">{EXPRESS_BUILDER_SIZE_TABLE_BODY_BUST_CHEST_COLUMN}</th>
           </tr>
         </thead>
         <tbody

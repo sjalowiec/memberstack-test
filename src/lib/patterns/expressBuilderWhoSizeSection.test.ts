@@ -12,6 +12,7 @@ import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
 import {
   EXPRESS_BUILDER_SIZE_HEADING,
   EXPRESS_BUILDER_SIZE_INSTRUCTION,
+  EXPRESS_BUILDER_SIZE_TABLE_BODY_BUST_CHEST_COLUMN,
   EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL,
 } from "./expressBuilderCopy";
 
@@ -197,10 +198,11 @@ describe("ExpressBuilderWhoSizeSection shared markup", () => {
     expect(whoSizeSection).toContain("EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL");
     expect(whoSizeSection).toContain("{EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL}");
     expect(EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL).toBe("View the sweater sizing chart");
-    expect(EXPRESS_BUILDER_SIZE_INSTRUCTION).toContain("Select the bust/chest measurement closest to yours");
+    expect(EXPRESS_BUILDER_SIZE_INSTRUCTION).toContain("Select the body bust/chest measurement closest to your own");
     expect(EXPRESS_BUILDER_SIZE_INSTRUCTION).toContain("Knit It Now standard sizing chart");
     expect(EXPRESS_BUILDER_SIZE_INSTRUCTION).toContain("starting point for your sweater");
-    expect(whoSizeSection).toContain("data-express-sweater-sizing-chart-link");
+    expect(whoSizeSection).toContain("EXPRESS_BUILDER_SIZE_TABLE_BODY_BUST_CHEST_COLUMN");
+    expect(EXPRESS_BUILDER_SIZE_TABLE_BODY_BUST_CHEST_COLUMN).toBe("Body Bust/Chest");
     expect(whoSizeSection).toContain("data-express-size-standard-body-summary");
     expect(whoSizeSection).toContain("express-who-size-intro");
     expect(whoSizeSection).toContain("data-express-nested-size");

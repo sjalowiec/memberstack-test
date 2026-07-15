@@ -58,7 +58,7 @@ function expectBuilderSizeFitClarity(builderSource: string, fitStep: "3" | "4"):
   expect(whoSizeSection).toContain("EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL");
   expect(whoSizeSection).toContain("EXPRESS_BUILDER_SIZE_HEADING");
   expect(whoSizeSection).toContain("EXPRESS_BUILDER_SIZE_INSTRUCTION");
-  expect(EXPRESS_BUILDER_SIZE_INSTRUCTION).toContain("Select the bust/chest measurement closest to yours");
+    expect(EXPRESS_BUILDER_SIZE_INSTRUCTION).toContain("Select the body bust/chest measurement closest to your own");
   expect(builderSource).toContain(sizeFitCopy.fitHeading);
   expect(builderSource).toContain(sizeFitCopy.fitInstruction);
   expect(whoSizeSection).toContain(sizeFitCopy.summaryMarker);
