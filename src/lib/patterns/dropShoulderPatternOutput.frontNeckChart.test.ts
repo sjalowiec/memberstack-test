@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { generateDropShoulderPattern } from "./dropShoulderPatternOutput";
 import { buildDropShoulderFrontJapaneseNotationReplacements } from "./dropShoulderBodyJapaneseNotation";
+import {
+  dropShoulderFrontChartActiveSideRcStart,
+  dropShoulderFrontNeckChartTableOptions,
+} from "./dropShoulderFrontNeckShapingChart";
 import { formatBindOffNotation } from "./sleevelessBackJapaneseNotation";
 import {
   centerBindOffStitchesFromNeckShoulderChart,
@@ -12,7 +16,11 @@ import {
   renderNeckShoulderShapingChartTableOnlyHtml,
 } from "./neckShoulderShapingChartHtml";
 import { DROP_SHOULDER_NO_SHOULDER_SHAPING_NOTE } from "./neckShoulderActiveIntroCopy";
-import { armholeLocalRcActiveShoulderChecklistStart } from "./neckShoulderActiveSideChecklist";
+import {
+  armholeLocalRcActiveShoulderChecklistStart,
+  buildActiveSideInstructionTableRows,
+  isCenterNecklineSetupChecklistRow,
+} from "./neckShoulderActiveSideChecklist";
 
 const DROP_SHOULDER_BASE = {
   fit: {
@@ -59,21 +67,61 @@ describe("drop-shoulder front neckline shaping chart", () => {
     const center = centerBindOffStitchesFromNeckShoulderChart(result.frontNeckShoulderShapingChart);
     expect(center).toBeGreaterThan(0);
 
+    const activeSideRcStart = dropShoulderFrontChartActiveSideRcStart(
+      result.frontNeckShoulderShapingChart,
+      result.debug.frontNecklineStartRC,
+    );
     const html = renderNeckShoulderShapingChartTableOnlyHtml(
       result.frontNeckShoulderShapingChart,
       "test-drop-front-round",
       undefined,
-      {
-        activeSideOnly: true,
-        activeSideRcStart: armholeLocalRcActiveShoulderChecklistStart(
-          result.frontNeckShoulderShapingChart,
-          result.debug.armholeStartRow,
-        ),
-        tableHeading: "Front Neckline Shaping Chart",
-      },
+      dropShoulderFrontNeckChartTableOptions(activeSideRcStart),
     );
     expect(html).toContain("Front Neckline Shaping Chart");
     expect(html).not.toContain("First Shoulder Checklist");
+  });
+
+  it("omits the Before Shaping / Divide the Neckline preamble and starts the chart at RC:000", () => {
+    const result = generateDropShoulderPattern(DROP_SHOULDER_BASE);
+    const chart = result.frontNeckShoulderShapingChart;
+    const activeSideRcStart = dropShoulderFrontChartActiveSideRcStart(
+      chart,
+      result.debug.frontNecklineStartRC,
+    );
+    const options = dropShoulderFrontNeckChartTableOptions(activeSideRcStart);
+
+    // Origin is neckline reset — not armhole-local (e.g. 013 = neckStart − armholeStart).
+    expect(activeSideRcStart).toBe(0);
+    const armholeLocalStart = armholeLocalRcActiveShoulderChecklistStart(
+      chart,
+      result.debug.armholeStartRow,
+      { includeCenterNecklineSetupRow: true },
+    );
+    expect(armholeLocalStart).toBeGreaterThan(0);
+    expect(activeSideRcStart).not.toBe(armholeLocalStart);
+
+    const checklist = buildActiveSideInstructionTableRows(chart, activeSideRcStart, {
+      includeCenterNecklineSetupRow: true,
+    });
+    expect(checklist.length).toBeGreaterThan(0);
+    expect(checklist[0]!.rc).toBe(0);
+    expect(isCenterNecklineSetupChecklistRow(checklist[0]!)).toBe(true);
+
+    // Mount/print path: no workflow intro HTML above the table.
+    const html = renderNeckShoulderShapingChartTableOnlyHtml(
+      chart,
+      "test-drop-front-no-preamble",
+      undefined,
+      options,
+    );
+    expect(html).not.toContain("Before Shaping");
+    expect(html).not.toContain("Divide the Neckline");
+    expect(html).toContain('data-rc="0"');
+    expect(html).toContain(
+      '<span class="ns-shaping-chart__row-counter-number">000</span>',
+    );
+    expect(html).toMatch(/Scrap off center \d+ neckline/);
+    expect(html).toContain("Front Neckline Shaping Chart");
   });
 
   it("drops shoulder-shaping wording from the front chart second-shoulder copy (straight shoulders)", () => {
@@ -83,15 +131,12 @@ describe("drop-shoulder front neckline shaping chart", () => {
       result.frontNeckShoulderShapingChart,
       "test-drop-front-round-copy",
       undefined,
-      {
-        activeSideOnly: true,
-        activeSideRcStart: armholeLocalRcActiveShoulderChecklistStart(
+      dropShoulderFrontNeckChartTableOptions(
+        dropShoulderFrontChartActiveSideRcStart(
           result.frontNeckShoulderShapingChart,
-          result.debug.armholeStartRow,
+          result.debug.frontNecklineStartRC,
         ),
-        tableHeading: "Front Neckline Shaping Chart",
-        shouldersShaped: false,
-      },
+      ),
     );
 
     expect(html).not.toMatch(/shoulder shaping/i);

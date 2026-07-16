@@ -34,7 +34,7 @@ import {
   formatBodyRowsNotation,
   formatCastOnNotation,
   formatRcNotation,
-  formatRcResetNotation,
+  formatRcResetSymbol,
   formatShapingSegment,
   bodyShapingJapaneseNotationFromAlinePlan,
   JP_BACK_NOTATION_SVG_TOKEN_KEYS,
@@ -308,19 +308,9 @@ export function buildDropShoulderBackJapaneseNotationReplacements(
       ? roundNeckPlanOneSideBackNeckEdgeJpLines(backRoundNeckPlan, "right")
       : [];
   const armholeMarkerRc = armholeMarkerGarmentRc(d);
-  const finalGarmentRc = isFiniteNumber(d.finalRC)
-    ? Math.max(0, Math.floor(d.finalRC))
-    : isFiniteNumber(d.backNecklineStartRC)
-      ? Math.max(0, Math.floor(d.backNecklineStartRC))
-      : isFiniteNumber(d.totalCalculatedRows)
-        ? Math.max(0, Math.floor(d.totalCalculatedRows))
-        : undefined;
-  const necklineRc =
-    isFiniteNumber(d.backNecklineStartRC)
-      ? Math.max(armholeMarkerRc ?? 0, Math.floor(d.backNecklineStartRC))
-      : backNeckDepthRows > 0 && finalGarmentRc !== undefined
-        ? Math.max(armholeMarkerRc ?? 0, finalGarmentRc - backNeckDepthRows)
-        : finalGarmentRc;
+  // After the written-instruction neckline reset, shaping starts at local RC:000.
+  // Show the reset marker and post-reset origin — not the pre-reset garment RC.
+  const hasBackNecklineReset = isFiniteNumber(d.backNecklineStartRC);
 
   return {
     "jp-caston": formatCastOnNotation(castOnSts),
@@ -337,8 +327,9 @@ export function buildDropShoulderBackJapaneseNotationReplacements(
     "rc-caston": formatRcNotation(0),
     "rc-hem": formatRcNotation(d.hemRows),
     "rc-armhole-bo": armholeMarkerRc !== undefined ? formatRcNotation(armholeMarkerRc) : "",
-    rc_reset: formatRcResetNotation(0),
-    "rc-neckline-start": necklineRc !== undefined ? formatRcNotation(necklineRc) : "",
+    // Symbol only — `rc-neckline-start` already carries rc000 (avoid "↺ rc000" + "rc000").
+    rc_reset: hasBackNecklineReset ? formatRcResetSymbol() : "",
+    "rc-neckline-start": hasBackNecklineReset ? formatRcNotation(0) : "",
   };
 }
 
@@ -398,9 +389,9 @@ export function buildDropShoulderFrontJapaneseNotationReplacements(
   const isCardigan = isDropShoulderCardigan(mergedPatternData);
   const isVNeck = isDropShoulderVNeck(mergedPatternData);
   const armholeMarkerRc = armholeMarkerGarmentRc(d);
-  const necklineRc = isFiniteNumber(d.frontNecklineStartRC)
-    ? Math.max(0, Math.floor(d.frontNecklineStartRC))
-    : undefined;
+  // Garment frontNecklineStartRC is where the written instructions reset; after reset,
+  // notation labels use local RC:000 (same origin as the front shaping map).
+  const hasFrontNecklineReset = isFiniteNumber(d.frontNecklineStartRC);
   const frontNeckDepthRows = resolveDropShoulderFrontNeckDepthRows(result, mergedPatternData);
 
   let centerNeckBindOff = 0;
@@ -449,7 +440,8 @@ export function buildDropShoulderFrontJapaneseNotationReplacements(
     "rc-caston": formatRcNotation(0),
     "rc-hem": formatRcNotation(d.hemRows),
     "rc-armhole-bo": armholeMarkerRc !== undefined ? formatRcNotation(armholeMarkerRc) : "",
-    rc_reset: formatRcResetNotation(0),
-    "rc-neckline-start": necklineRc !== undefined ? formatRcNotation(necklineRc) : "",
+    // Symbol only — `rc-neckline-start` already carries rc000 (avoid "↺ rc000" + "rc000").
+    rc_reset: hasFrontNecklineReset ? formatRcResetSymbol() : "",
+    "rc-neckline-start": hasFrontNecklineReset ? formatRcNotation(0) : "",
   };
 }

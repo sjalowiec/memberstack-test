@@ -55,6 +55,15 @@ describe("drop shoulder mount Visual Guides (full generation ? mount HTML path)"
     );
     expect(backShapingMapData).not.toBeNull();
     expect(frontShapingMapData).not.toBeNull();
+    // Back/front maps use the neckline reset origin (RC:000), not armhole-local RC.
+    expect(backShapingMapData!.rowMin).toBe(0);
+    expect(frontShapingMapData!.rowMin).toBe(0);
+    expect(result.debug.backNecklineStartRC).toBeGreaterThan(result.debug.armholeStartRow!);
+    expect(result.debug.frontNecklineStartRC).toBeGreaterThan(result.debug.armholeStartRow!);
+    const frontArmholeLocal =
+      result.debug.frontNecklineStartRC! - result.debug.armholeStartRow!;
+    expect(frontArmholeLocal).toBeGreaterThan(0);
+    expect(frontShapingMapData!.rowMin).not.toBe(frontArmholeLocal);
 
     const mountHtml = buildDropShoulderBackMountHtml(result, DROP_SHOULDER_ROUND, {
       notationSupported: true,
