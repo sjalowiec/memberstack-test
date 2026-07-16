@@ -11,7 +11,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-
+/tmp
 /scripts/*
 !/scripts/prepare-transition-site.mjs
 !/scripts/check-utf8.mjs

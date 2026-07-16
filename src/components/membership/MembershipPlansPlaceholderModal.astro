@@ -1,0 +1,148 @@
+---
+/**
+ * Visual-only membership plans modal opened by the corner CTA.
+ * Plan buttons are display-only; no Memberstack / Stripe yet.
+ */
+import { MEMBERSHIP_PLANS_PLACEHOLDER_MODAL_ID } from "../../lib/membership/membershipPlansPlaceholderModal";
+---
+
+<dialog
+  id={MEMBERSHIP_PLANS_PLACEHOLDER_MODAL_ID}
+  class="membership-plans-placeholder-modal"
+  data-membership-plans-placeholder-modal
+  aria-labelledby="membership-plans-placeholder-title"
+>
+  <div class="membership-plans-placeholder-modal__inner">
+    <button
+      type="button"
+      class="membership-plans-placeholder-modal__close"
+      data-membership-plans-placeholder-close
+      aria-label="Close membership options"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+
+    <h2 id="membership-plans-placeholder-title" class="membership-plans-placeholder-modal__title">
+      Become a Knit It Now Member
+    </h2>
+    <p class="membership-plans-placeholder-modal__body">
+      Choose the membership that works best for you.
+    </p>
+
+    <div
+      class="membership-plans-placeholder-modal__actions"
+      role="group"
+      aria-label="Membership plan options (preview)"
+    >
+      <button type="button" class="kbm-btn kbm-btn-primary membership-plans-placeholder-modal__plan-btn">
+        Basic Monthly
+      </button>
+      <button type="button" class="kbm-btn kbm-btn-primary membership-plans-placeholder-modal__plan-btn">
+        Basic Annual
+      </button>
+      <button type="button" class="kbm-btn kbm-btn-accent membership-plans-placeholder-modal__plan-btn">
+        Premium Monthly
+      </button>
+      <button type="button" class="kbm-btn kbm-btn-accent membership-plans-placeholder-modal__plan-btn">
+        Premium Annual
+      </button>
+      <button type="button" class="kbm-btn kbm-btn-outline membership-plans-placeholder-modal__plan-btn">
+        Sign In
+      </button>
+    </div>
+
+    <p class="membership-plans-placeholder-modal__note">
+      Visual preview only. Buttons do not work yet.
+    </p>
+  </div>
+</dialog>
+
+<script>
+  import { initMembershipPlansPlaceholderModal } from "../../lib/membership/membershipPlansPlaceholderModal";
+
+  initMembershipPlansPlaceholderModal();
+</script>
+
+<style>
+  .membership-plans-placeholder-modal {
+    max-width: min(92vw, 28rem);
+    width: 100%;
+    margin: auto;
+    padding: 0;
+    border: none;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.18);
+  }
+
+  .membership-plans-placeholder-modal::backdrop {
+    background: rgba(15, 23, 42, 0.45);
+  }
+
+  .membership-plans-placeholder-modal__inner {
+    position: relative;
+    padding: clamp(1.5rem, 3vw, 2rem);
+  }
+
+  .membership-plans-placeholder-modal__close {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.65rem;
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: #4b5563;
+    font-size: 1.75rem;
+    line-height: 1;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 8px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+  }
+
+  .membership-plans-placeholder-modal__close:hover {
+    background: #f3f4f6;
+    color: #111827;
+  }
+
+  .membership-plans-placeholder-modal__close:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  .membership-plans-placeholder-modal__title {
+    margin: 0 1.75rem 0.4rem 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #2c3a57;
+    line-height: 1.25;
+    text-align: center;
+  }
+
+  .membership-plans-placeholder-modal__body {
+    margin: 0 0 1.25rem;
+    font-size: 0.98rem;
+    line-height: 1.5;
+    color: #4b5563;
+    text-align: center;
+  }
+
+  .membership-plans-placeholder-modal__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .membership-plans-placeholder-modal__plan-btn {
+    width: 100%;
+  }
+
+  .membership-plans-placeholder-modal__note {
+    margin: 1rem 0 0;
+    font-size: 0.78rem;
+    color: #6b7280;
+    text-align: center;
+  }
+</style>

@@ -8,6 +8,7 @@ import PublicSignupModal from "../components/PublicSignupModal.astro";
 import KinCatalogVideoModal from "../components/common/KinCatalogVideoModal.astro";
 import ToolPrintFooter from "../components/tools/ToolPrintFooter.astro";
 import EnvBanner from "../components/EnvBanner.astro";
+import MembershipCornerControl from "../components/membership/MembershipCornerControl.astro";
 
 interface Props {
   title?: string;
@@ -247,6 +248,7 @@ const isProduction =
     <AccountPasswordResetModal />
     <PublicSignupModal />
     <KinCatalogVideoModal />
+    <MembershipCornerControl />
 
     <script>
       import "../scripts/accountPasswordResetModal.ts";
