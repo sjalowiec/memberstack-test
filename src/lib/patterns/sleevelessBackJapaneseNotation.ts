@@ -78,6 +78,14 @@ export function formatRcResetNotation(rc = 0): string {
   return `↺ ${formatRcNotation(rc)}`;
 }
 
+/**
+ * Reset symbol only (`↺`), for drop-shoulder neckline notation where `rc-neckline-start`
+ * already shows `rc000` beside the reset marker.
+ */
+export function formatRcResetSymbol(): string {
+  return "↺";
+}
+
 /** Garment RC at the first armhole bind-off row (body counter, before reset). */
 export function garmentRcAtArmholeStart(debug: SleevelessBackPatternResult["debug"]): number | undefined {
   if (debug.armholeStartRow !== undefined && Number.isFinite(debug.armholeStartRow)) {

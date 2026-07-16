@@ -76,6 +76,10 @@ import { buildPatternVisualGuidesHtml } from "../lib/patterns/patternVisualGuide
 import { renderSleevelessBodyShapingChartHtml } from "../lib/patterns/sleevelessBodyShapingChartHtml.ts";
 import { renderDropShoulderSleeveShapingChartHtml } from "../lib/patterns/dropShoulderSleeveShapingChart.ts";
 import { buildDropShoulderMountShapingMapData } from "../lib/patterns/dropShoulderMountVisualGuides.ts";
+import {
+  dropShoulderFrontChartActiveSideRcStart,
+  dropShoulderFrontNeckChartTableOptions,
+} from "../lib/patterns/dropShoulderFrontNeckShapingChart.ts";
 // Dynamic "Shaping Map" SVG. The sleeveless round-neck FRONT is driven by real shaping math via
 // buildSleevelessRoundNeckShapingMapData below; patterns without a real schedule render no map
 // (SAMPLE_SHAPING_MAP_DATA is intentionally not imported — it is dev/test-only, never customer-facing).
@@ -3899,34 +3903,20 @@ table {
     );
     if (renderSeq !== sleevelessRenderMountSeq) return;
 
-    const frontArmholeLocalChartStartRc = 0;
-    const armholeGarmentStartRc = result?.debug?.armholeStartRow;
-    const frontChecklistOptions = { includeCenterNecklineSetupRow: true as const };
-    const frontActiveSideRcStart = armholeLocalRcActiveShoulderChecklistStart(
+    // Front chart uses neckline-reset origin (frontNecklineStartRC → RC:000), matching the map.
+    // No "Before Shaping" / "Divide the Neckline" preamble — written instructions already cover that.
+    const frontActiveSideRcStart = dropShoulderFrontChartActiveSideRcStart(
       result.frontNeckShoulderShapingChart,
-      armholeGarmentStartRc,
-      frontChecklistOptions,
+      result?.debug?.frontNecklineStartRC,
     );
+    const frontChartTableOptions = dropShoulderFrontNeckChartTableOptions(frontActiveSideRcStart);
     const frontChartTableHost = mount.querySelector("#sg-neck-shoulder-chart-table-front");
     if (frontChartTableHost && result.frontNeckShoulderChartUsesLiveRows) {
       frontChartTableHost.innerHTML = renderNeckShoulderShapingChartTableOnlyHtml(
         result.frontNeckShoulderShapingChart,
         "ns-shaping-chart-front",
-        neckShoulderChartHelpRowHtml(
-          `RC:${String(frontArmholeLocalChartStartRc).padStart(3, "0")}`,
-          result?.frontNeckShoulderShapingChart,
-          "front",
-          false,
-          false,
-        ),
-        {
-          activeSideOnly: true,
-          activeSideRcStart: frontActiveSideRcStart,
-          includeCenterNecklineSetupRow: true,
-          hideCenterNecklineSetupRow: true,
-          tableHeading: "Front Neckline Shaping Chart",
-          shouldersShaped: false,
-        },
+        undefined,
+        frontChartTableOptions,
       );
     }
 
@@ -3934,21 +3924,8 @@ table {
       front: {
         chart: result.frontNeckShoulderShapingChart,
         idPrefix: "ns-shaping-chart-front",
-        introHtml: neckShoulderChartHelpRowHtml(
-          `RC:${String(frontArmholeLocalChartStartRc).padStart(3, "0")}`,
-          result?.frontNeckShoulderShapingChart,
-          "front",
-          undefined,
-          false,
-        ),
-        options: {
-          activeSideOnly: true,
-          activeSideRcStart: frontActiveSideRcStart,
-          includeCenterNecklineSetupRow: true,
-          hideCenterNecklineSetupRow: true,
-          tableHeading: "Front Neckline Shaping Chart",
-          shouldersShaped: false,
-        },
+        introHtml: "",
+        options: frontChartTableOptions,
       },
     };
 

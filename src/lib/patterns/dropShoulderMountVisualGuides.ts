@@ -22,7 +22,13 @@ type DropShoulderMountPatternResult = {
   backNeckShoulderTimeline?: RowEntry[];
   frontNeckShoulderTimeline?: RowEntry[];
   frontNeckShoulderChartUsesLiveRows?: boolean;
-  debug?: { armholeStartRow?: number };
+  debug?: {
+    armholeStartRow?: number;
+    /** Garment RC where the back neckline counter resets to 000. */
+    backNecklineStartRC?: number;
+    /** Garment RC where the front neckline counter resets to 000. */
+    frontNecklineStartRC?: number;
+  };
 };
 
 function sectionStyle(patternData: unknown): Record<string, unknown> {
@@ -47,19 +53,22 @@ export function buildDropShoulderMountShapingMapData(
   const neckline = String(sectionStyle(generatorPatternData).neckline || "");
   const isRoundNeckPullover = neckline !== "v-neck" && !isCardigan;
 
+  // Front neckline map uses the post-reset neckline counter (origin = frontNecklineStartRC → RC:000).
+  // Do NOT use armholeStartRow — that yields armhole-local RC (e.g. 12 = 129 − 117).
   const frontShapingMapData =
     isRoundNeckPullover && result?.frontNeckShoulderChartUsesLiveRows
       ? buildSleevelessRoundNeckShapingMapData(result.frontNeckShoulderTimeline, {
-          firstArmholeRc: result.debug?.armholeStartRow,
+          firstArmholeRc: result.debug?.frontNecklineStartRC,
           title: "Front neckline shaping map",
         })
       : null;
 
-  // Pass generatorPatternData (not diagram rebuild) so the back map V-neck gate matches generation.
+  // Back neckline map uses the post-reset neckline counter (origin = backNecklineStartRC → RC:000).
+  // Do NOT use armholeStartRow here — that yields armhole-local RC (e.g. 34) after the neckline reset.
   const backShapingMapData = buildSleevelessRoundNeckBackShapingMapData(
     result?.backNeckShoulderTimeline,
     {
-      firstArmholeRc: result?.debug?.armholeStartRow,
+      firstArmholeRc: result?.debug?.backNecklineStartRC,
       title: "Back neckline shaping map",
       patternData: generatorPatternData,
     },

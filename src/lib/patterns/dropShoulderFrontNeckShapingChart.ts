@@ -14,6 +14,8 @@ import {
   neckShoulderChartRowsFromTimeline,
   type NeckShoulderShapingPatternNumbers,
 } from "./neckShoulderShapingChartRows";
+import { armholeLocalRcActiveShoulderChecklistStart } from "./neckShoulderActiveSideChecklist";
+import type { NeckShoulderChartRenderOptions } from "./neckShoulderShapingChartHtml";
 import { cardiganFrontInitialNeckBindOffStitches } from "./roundNeckNotation";
 import type { RowEntry, ShapingEvent } from "./shapingTimeline";
 import { buildVNeckFrontFullWidthTimeline } from "./vNeckFrontFullWidthTimeline";
@@ -283,4 +285,34 @@ export function buildDropShoulderFrontNeckShapingChart(
   });
 
   return { chart, timeline, usesLiveRows: true };
+}
+
+/**
+ * Checklist RC origin for the drop-shoulder front chart: neckline reset
+ * (`frontNecklineStartRC` → local RC:000), not armhole-local garment offset.
+ */
+export function dropShoulderFrontChartActiveSideRcStart(
+  chart: NeckShoulderShapingChart,
+  frontNecklineStartRC: number | null | undefined,
+): number {
+  return armholeLocalRcActiveShoulderChecklistStart(chart, frontNecklineStartRC, {
+    includeCenterNecklineSetupRow: true,
+  });
+}
+
+/**
+ * Online/print table options for the drop-shoulder front neckline chart.
+ * No workflow preamble — center bind-off is the first table row at RC:000.
+ */
+export function dropShoulderFrontNeckChartTableOptions(
+  activeSideRcStart: number,
+): NeckShoulderChartRenderOptions {
+  return {
+    activeSideOnly: true,
+    activeSideRcStart,
+    includeCenterNecklineSetupRow: true,
+    hideCenterNecklineSetupRow: false,
+    tableHeading: "Front Neckline Shaping Chart",
+    shouldersShaped: false,
+  };
 }

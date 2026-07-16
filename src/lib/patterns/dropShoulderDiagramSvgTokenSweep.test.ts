@@ -33,7 +33,7 @@ const BODY_JP_SHARED = [
 ] as const;
 
 const EXPECTED_JP_INVENTORY: Record<string, readonly string[]> = {
-  back: [...BODY_JP_SHARED, "jp-body-shaping"],
+  back: [...BODY_JP_SHARED, "jp-body-shaping", "rc_reset"],
   "pullover-front": [...BODY_JP_SHARED, "jp-body-rows", "jp-armhole-bo", "jp-armhole-shaping", "rc_reset"],
   "cardigan-front": [
     "jp-caston",

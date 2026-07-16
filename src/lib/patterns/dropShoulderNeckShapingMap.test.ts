@@ -68,17 +68,44 @@ describe("drop-shoulder front round-neck shaping map", () => {
     expect(schedule.shoulderOps).toHaveLength(1);
     expect(schedule.shoulderOps[0]!.endRow).toBe(schedule.endRow);
 
+    // Origin = neckline reset (frontNecklineStartRC), matching written RC:000.
     const map = buildSleevelessRoundNeckShapingMapData(result.frontNeckShoulderTimeline, {
-      firstArmholeRc: result.debug.armholeStartRow,
+      firstArmholeRc: result.debug.frontNecklineStartRC,
     });
     expect(map).not.toBeNull();
+    expect(map!.rowMin).toBe(0);
     expect(map!.rowMax).toBeGreaterThan(map!.rowMin);
+    // Initial center-neck bind-off is at the neckline reset origin.
+    expect(schedule.startRow).toBe(result.debug.frontNecklineStartRC);
+    expect(schedule.startRow - result.debug.frontNecklineStartRC!).toBe(0);
+  });
+
+  it("locks the initial center-neck bind-off to local RC:000 after the neckline reset", () => {
+    const result = generateDropShoulderPattern(DROP_SHOULDER_ROUND);
+    const schedule = buildSleevelessRoundNeckShapingSchedule(result.frontNeckShoulderTimeline)!;
+    const map = buildSleevelessRoundNeckShapingMapData(result.frontNeckShoulderTimeline, {
+      firstArmholeRc: result.debug.frontNecklineStartRC,
+    })!;
+
+    expect(result.debug.frontNecklineStartRC).toBeGreaterThan(result.debug.armholeStartRow!);
+    expect(map.rowMin).toBe(0);
+    expect(schedule.startRow).toBe(result.debug.frontNecklineStartRC);
+
+    const firstTimelineRow = result.frontNeckShoulderTimeline![0]!;
+    expect(firstTimelineRow.row).toBe(result.debug.frontNecklineStartRC);
+    expect(firstTimelineRow.events.some((e) => e.side === "center" && e.amount > 0)).toBe(true);
+
+    // Armhole-local offset would start the map at (neckStart − armholeStart), e.g. 12.
+    const armholeLocalStart =
+      result.debug.frontNecklineStartRC! - result.debug.armholeStartRow!;
+    expect(armholeLocalStart).toBeGreaterThan(0);
+    expect(map.rowMin).not.toBe(armholeLocalStart);
   });
 
   it("completion bind-off produces vertical side edge and flat horizontal shoulder top", () => {
     const result = generateDropShoulderPattern(DROP_SHOULDER_ROUND);
     const map = buildSleevelessRoundNeckShapingMapData(result.frontNeckShoulderTimeline, {
-      firstArmholeRc: result.debug.armholeStartRow,
+      firstArmholeRc: result.debug.frontNecklineStartRC,
     })!;
 
     const shoulderPath = map.paths.find((p) => p.id === "shoulder")!;
@@ -106,7 +133,7 @@ describe("drop-shoulder front round-neck shaping map", () => {
   it("does not use shaped shoulder stepping for drop-shoulder timelines", () => {
     const result = generateDropShoulderPattern(DROP_SHOULDER_ROUND);
     const map = buildSleevelessRoundNeckShapingMapData(result.frontNeckShoulderTimeline, {
-      firstArmholeRc: result.debug.armholeStartRow,
+      firstArmholeRc: result.debug.frontNecklineStartRC,
     })!;
 
     const shoulderPath = map.paths.find((p) => p.id === "shoulder")!;
@@ -154,15 +181,22 @@ describe("drop-shoulder back round-neck shaping map", () => {
     expect(schedule.neckStitchesTotal).toBeGreaterThan(0);
     expect(schedule.shoulderMode).toBe("straight");
 
+    // Local origin = neckline reset (backNecklineStartRC), matching written RC:000.
     const map = buildSleevelessRoundNeckBackShapingMapData(result.backNeckShoulderTimeline, {
-      firstArmholeRc: result.debug.armholeStartRow,
+      firstArmholeRc: result.debug.backNecklineStartRC,
       title: "Back neckline shaping map",
       patternData: DROP_SHOULDER_ROUND,
     });
     expect(map).not.toBeNull();
+    expect(map!.rowMin).toBe(0);
     expect(map!.paths.find((p) => p.id === "neck")).toBeDefined();
     expect(map!.paths.find((p) => p.id === "shoulder")).toBeDefined();
     expect(map!.rowMax).toBeGreaterThan(map!.rowMin);
+    // Armhole-local origin would yield a non-zero start (armholeRows − backNeckDepthRows).
+    const armholeLocalStart =
+      result.debug.backNecklineStartRC! - result.debug.armholeStartRow!;
+    expect(armholeLocalStart).toBeGreaterThan(0);
+    expect(map!.rowMin).not.toBe(armholeLocalStart);
 
     const html = buildPatternVisualGuidesHtml({
       piece: "back",
@@ -184,10 +218,11 @@ describe("drop-shoulder back round-neck shaping map", () => {
     expect(schedule.shoulderOps.every((op) => op.endRow === schedule.endRow)).toBe(true);
 
     const map = buildSleevelessRoundNeckBackShapingMapData(result.backNeckShoulderTimeline, {
-      firstArmholeRc: result.debug.armholeStartRow,
+      firstArmholeRc: result.debug.backNecklineStartRC,
       patternData: DROP_SHOULDER_ROUND,
     });
     expect(map).not.toBeNull();
+    expect(map!.rowMin).toBe(0);
     expect(map!.paths.some((p) => p.id === "neck")).toBe(true);
 
     const svg = renderShapingMapSvg(map!);
@@ -199,16 +234,18 @@ describe("drop-shoulder back round-neck shaping map", () => {
     const result = generateDropShoulderPattern(DROP_SHOULDER_ROUND);
 
     const frontMap = buildSleevelessRoundNeckShapingMapData(result.frontNeckShoulderTimeline, {
-      firstArmholeRc: result.debug.armholeStartRow,
+      firstArmholeRc: result.debug.frontNecklineStartRC,
       title: "Front neckline shaping map",
     });
     const backMap = buildSleevelessRoundNeckBackShapingMapData(result.backNeckShoulderTimeline, {
-      firstArmholeRc: result.debug.armholeStartRow,
+      firstArmholeRc: result.debug.backNecklineStartRC,
       patternData: DROP_SHOULDER_ROUND,
     });
 
     expect(frontMap).not.toBeNull();
     expect(backMap).not.toBeNull();
+    expect(frontMap!.rowMin).toBe(0);
+    expect(backMap!.rowMin).toBe(0);
     expect(frontMap!.title).toBe("Front neckline shaping map");
     expect(backMap!.title).toBe("Back neckline shaping map");
 
