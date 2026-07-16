@@ -12,7 +12,7 @@ import { saveCurrentPattern } from "./patternStorage";
 const SUES_PATTERN = "Sue's test pattern";
 const CREATE_TAB_ASTRO = join(
   process.cwd(),
-  "src/pages/patterns/sleeveless-express.astro",
+  "src/pages/patterns/sleeveless/builder.astro",
 );
 const PATTERN_OUTPUT_ASTRO = join(
   process.cwd(),

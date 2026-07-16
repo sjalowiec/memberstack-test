@@ -265,8 +265,14 @@ describe("discoverAdminCourseCatalog", () => {
 });
 
 describe("listAdminCourseSummaries", () => {
-  it("marks migrated courses as draft in admin summaries", () => {
-    const draft = listAdminCourseSummaries().find((item) => item.id === 2);
+  it("marks published migrated Course 2 as public in admin summaries", () => {
+    const course2 = listAdminCourseSummaries().find((item) => item.id === 2);
+    expect(course2?.isDraft).toBe(false);
+    expect(course2?.isPublic).toBe(true);
+  });
+
+  it("marks draft migrated courses as draft in admin summaries", () => {
+    const draft = listAdminCourseSummaries().find((item) => item.id === 24);
     expect(draft?.isDraft).toBe(true);
     expect(draft?.isPublic).toBe(false);
   });
@@ -347,10 +353,10 @@ describe("readCourseContentFile discovery", () => {
     expect(data.lessons.length).toBeGreaterThan(0);
   });
 
-  it("loads migrated draft course 2 for admin editing", () => {
+  it("loads published migrated course 2 for admin editing", () => {
     const data = readCourseContentFile(2);
-    expect(data.course.status).toBe("draft");
-    expect(data.course.published).toBe(false);
+    expect(data.course.status).toBe("published");
+    expect(data.course.published).toBe(true);
   });
 
   it("loads ribber basic bootcamp as cleaned for landing-ready behavior", () => {

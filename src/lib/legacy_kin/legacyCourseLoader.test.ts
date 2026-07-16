@@ -9,11 +9,12 @@ import {
 describe("getLegacyCourses public visibility", () => {
   it("hides migrated draft courses from the public index", () => {
     const slugs = getLegacyCourses().map((course) => course.slug);
-    expect(slugs).not.toContain("not-enough-needles");
+    expect(slugs).not.toContain("nothing-fits-draft");
   });
 
-  it("keeps hand-cleaned courses without publish flags visible", () => {
+  it("keeps published and hand-cleaned courses visible", () => {
     const slugs = getLegacyCourses().map((course) => course.slug);
+    expect(slugs).toContain("not-enough-needles");
     expect(slugs).toContain("lk-150-quick-start");
     expect(slugs).toContain("lk-150-fun");
     expect(slugs).toContain("ribber-basic-bootcamp");
@@ -21,7 +22,7 @@ describe("getLegacyCourses public visibility", () => {
 
   it("includes draft courses when includeDrafts is true", () => {
     const slugs = getLegacyCourses({ includeDrafts: true }).map((course) => course.slug);
-    expect(slugs).toContain("not-enough-needles");
+    expect(slugs).toContain("nothing-fits-draft");
     expect(slugs).toContain("lk-150-quick-start");
   });
 });
@@ -38,13 +39,19 @@ describe("getLegacyCourseBySlug", () => {
     expect(course?.course.legacyChallengeId).toBe(51);
   });
 
+  it("returns published migrated Course 2 on public routes", () => {
+    const course = getLegacyCourseBySlug("not-enough-needles");
+    expect(course?.course.legacyChallengeId).toBe(2);
+    expect(course?.course.status).toBe("published");
+  });
+
   it("does not return draft migrated courses on public routes", () => {
-    expect(getLegacyCourseBySlug("not-enough-needles")).toBeUndefined();
+    expect(getLegacyCourseBySlug("nothing-fits-draft")).toBeUndefined();
   });
 
   it("returns draft migrated courses when includeDrafts is true", () => {
-    const course = getLegacyCourseBySlug("not-enough-needles", { includeDrafts: true });
-    expect(course?.course.legacyChallengeId).toBe(2);
+    const course = getLegacyCourseBySlug("nothing-fits-draft", { includeDrafts: true });
+    expect(course?.course.legacyChallengeId).toBe(24);
     expect(course?.course.status).toBe("draft");
   });
 });

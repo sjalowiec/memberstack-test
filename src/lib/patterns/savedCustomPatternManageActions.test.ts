@@ -17,12 +17,22 @@ vi.mock("./customPatternProjectClient", () => ({
   buildSavePayloadFromWorkingDraft: vi.fn(),
 }));
 
+vi.mock("./sleevelessPatternSystemAccessClient", () => ({
+  resolveSleevelessUserAccessSnapshot: vi.fn(async () => ({
+    loggedIn: true,
+    memberId: "ms_member",
+    hasSystemAccess: true,
+    freeClaimsBySystem: {},
+  })),
+}));
+
 import {
   createCustomPatternProject,
   listCustomPatternProjects,
   loadCustomPatternProject,
   updateCustomPatternProject,
 } from "./customPatternProjectClient";
+import { resolveSleevelessUserAccessSnapshot } from "./sleevelessPatternSystemAccessClient";
 
 const womensProject = {
   id: "proj-womens",

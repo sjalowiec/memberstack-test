@@ -83,9 +83,10 @@ describe("syncSavedCustomPatternCopyAccess", () => {
     );
 
     expect(allowed).toBe(false);
-    // Button is never hidden — only disabled / grayed.
+    // Button stays clickable (native disabled=false) so the unlock modal can open;
+    // visual/ARIA lock uses is-disabled + aria-disabled.
     expect(btn.textContent).toBe("Save a Copy");
-    expect(btn.disabled).toBe(true);
+    expect(btn.disabled).toBe(false);
     expect(btn.hasClass("is-disabled")).toBe(true);
     expect(btn.getAttribute("aria-disabled")).toBe("true");
     expect(btn.getAttribute("title")).toBe(SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT);

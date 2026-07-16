@@ -100,10 +100,12 @@ describe("sleeveless front is linear and self-contained", () => {
         }
       });
 
-      it("keeps the Armhole RC after-reset note intact", () => {
+      it("keeps the Armhole RC after-reset note intact on cardigan half-fronts only", () => {
+        // Pullover fronts intentionally omit the intro block; cardigan half-fronts keep it.
+        const expectNote = label === "A-line cardigan";
         expect(
           frontParas.some((p) => p.includes("After the armhole reset, use Armhole RC"))
-        ).toBe(true);
+        ).toBe(expectNote);
       });
 
       it("writes explicit front armhole shaping rows", () => {

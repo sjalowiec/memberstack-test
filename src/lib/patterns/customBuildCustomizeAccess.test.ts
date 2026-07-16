@@ -11,8 +11,17 @@ const DENIED_URL = new URL(
 );
 
 describe("canAccessCustomBuildStyleAndShaping", () => {
-  it("allows access by default for dev", () => {
-    expect(canAccessCustomBuildStyleAndShaping(new URL("https://example.test/design"))).toBe(true);
+  it("defaults locked until an explicit override or resolved member access", () => {
+    // Access is conservative (locked) when no query/localStorage override and no cached snapshot.
+    expect(canAccessCustomBuildStyleAndShaping(new URL("https://example.test/design"))).toBe(false);
+  });
+
+  it("allows access when customize=1 is on the URL", () => {
+    expect(
+      canAccessCustomBuildStyleAndShaping(
+        new URL("https://example.test/design?customize=1"),
+      ),
+    ).toBe(true);
   });
 
   it("denies access when customize=0 is on the URL", () => {

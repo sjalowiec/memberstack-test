@@ -47,7 +47,8 @@ function collectParagraphs(rows: readonly SleevelessPatternDisplayRow[]): string
   const out: string[] = [];
   for (const row of rows) {
     if (row.kind === "block") {
-      out.push(...row.paragraphs);
+      // Glossary blocks may carry only trustedParagraphs (plain paragraphs omitted).
+      out.push(...(row.paragraphs ?? []), ...(row.trustedParagraphs ?? []));
     }
   }
   return out;
@@ -156,12 +157,14 @@ describe("sleeveless armhole RC wording", () => {
     expect(armhole.some((p) => /^Knit to RC \d+\.$/i.test(p.trim()))).toBe(false);
   });
 
-  it("V-neck front intro and milestone explain Armhole RC after reset", () => {
+  it("V-neck front milestone explains Armhole RC after reset (pullover has no intro block)", () => {
     const r = generateSleevelessBackPattern(basePattern("v-neck"));
     const frontParas = collectParagraphs(r.frontDisplayRows);
+    // Full-width (pullover) fronts intentionally omit the cardigan-only intro that carried the
+    // "After the armhole reset…" sentence; Armhole RC targets + milestones convey the same rule.
     expect(
       frontParas.some((p) => p.includes("After the armhole reset, use Armhole RC"))
-    ).toBe(true);
+    ).toBe(false);
     expect(
       frontParas.some((p) =>
         /row counter was reset at the beginning of armhole shaping/i.test(p)

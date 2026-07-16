@@ -714,7 +714,7 @@ const PLAIN_KNIT_PATTERN_FOR_ROWS_RE = /^Knit in pattern for (\d+) rows?\.?$/i;
 const PLAIN_KNIT_UNTIL_RC_RE = /^Knit in pattern until RC (\d{1,4})\.\s*$/i;
 
 /** Preferred plain-span wording: next instruction row RC (not the last work-even RC). */
-const KNIT_TO_RC_RE = /^Knit to (?:Armhole )?RC:?s*(\d{1,4})\.\s*$/i;
+const KNIT_TO_RC_RE = /^Knit to (?:Armhole )?RC:?\s*(\d{1,4})\.\s*$/i;
 
 /**
  * Plain-span bridge line: “Knit in pattern to [Armhole ]RC:…”. The RC heading above the block

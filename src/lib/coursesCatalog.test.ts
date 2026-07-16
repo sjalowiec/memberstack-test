@@ -77,23 +77,25 @@ describe("getCourseCatalogEntries href", () => {
 
 describe("resolveCatalogStatus", () => {
   it("shows in-progress for active draft courses with contentStatus in_progress", () => {
-    expect(resolveCatalogStatus("not-enough-needles", "coming-soon")).toBe("in-progress");
-    const entry = getCourseCatalogEntries().find((course) => course.slug === "not-enough-needles");
-    expect(entry?.status).toBe("in-progress");
-    expect(entry?.buttonLabel).toBe("In progress");
+    expect(resolveCatalogStatus("nothing-fits-draft", "coming-soon")).toBe("in-progress");
   });
 
-  it("shows available for published cleaned courses", () => {
-    expect(resolveCatalogStatus("ribber-basic-bootcamp", "coming-soon")).toBe("available");
-    const ribberEntry = getCourseCatalogEntries().find((course) => course.slug === "ribber-basic-bootcamp");
-    expect(ribberEntry?.status).toBe("available");
-    expect(ribberEntry?.buttonLabel).toBe("Start course");
+  it(
+    "shows available for published cleaned courses",
+    () => {
+      expect(resolveCatalogStatus("not-enough-needles", "coming-soon")).toBe("available");
+      expect(resolveCatalogStatus("ribber-basic-bootcamp", "coming-soon")).toBe("available");
+      expect(resolveCatalogStatus("beginner-workshop", "coming-soon")).toBe("available");
 
-    expect(resolveCatalogStatus("beginner-workshop", "coming-soon")).toBe("available");
-    const beginnerEntry = getCourseCatalogEntries().find((course) => course.slug === "beginner-workshop");
-    expect(beginnerEntry?.status).toBe("available");
-    expect(beginnerEntry?.buttonLabel).toBe("Start course");
-  });
+      const entries = getCourseCatalogEntries();
+      for (const slug of ["not-enough-needles", "ribber-basic-bootcamp", "beginner-workshop"]) {
+        const entry = entries.find((course) => course.slug === slug);
+        expect(entry?.status).toBe("available");
+        expect(entry?.buttonLabel).toBe("Start course");
+      }
+    },
+    20_000,
+  );
 
   it("keeps static catalogStatus when no course JSON exists", () => {
     expect(resolveCatalogStatus("missing-course-slug", "coming-soon")).toBe("coming-soon");

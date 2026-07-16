@@ -208,7 +208,7 @@ describe("Express builder size-selection parity", () => {
 
   it("sleeveless builder links to the sweater sizing chart with sleeveless returnTo", () => {
     expect(sleevelessBuilderAstro).toContain("ExpressBuilderWhoSizeSection");
-    expect(whoSizeSection).toContain("View the sweater sizing chart");
+    expect(whoSizeSection).toContain("EXPRESS_BUILDER_SWEATER_SIZING_CHART_LINK_LABEL");
     expect(sleevelessBuilderAstro).toContain(
       'buildSweaterSizingChartHref("/patterns/sleeveless/builder")',
     );

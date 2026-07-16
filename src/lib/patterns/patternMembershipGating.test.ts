@@ -20,6 +20,7 @@ import { resolveHasAdvancedPatternAccessForAccess } from "./sleevelessPatternAcc
 vi.mock("../devBypass", () => ({ devBypass: false }));
 vi.mock("./sleevelessPatternLoginGate", () => ({
   waitForMemberstackDom: vi.fn().mockResolvedValue(true),
+  waitForMemberstackReady: vi.fn().mockResolvedValue(undefined),
 }));
 vi.mock("./patternEditGateDebug", () => ({
   logPatternEditGateDebug: vi.fn(),

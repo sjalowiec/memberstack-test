@@ -13,12 +13,13 @@ function extractBodyPlainRowCount(rows: readonly SleevelessPatternDisplayRow[]):
       inBody = false;
     }
     if (!inBody || row.kind !== "block") continue;
-    const p0 = row.paragraphs?.[0]?.trim() ?? "";
+    const p0 = (row.paragraphs?.[0] ?? row.trustedParagraphs?.[0] ?? "").trim();
     const m1 = p0.match(/^Knit in pattern for (\d+) rows\.?$/i);
     if (m1) return parseInt(m1[1], 10);
-    const m2 = p0.match(/^Knit to RC (\d+)\.?$/i);
+    // Preferred wording: "Knit to RC N." with block header `RC: 014` (space after colon).
+    const m2 = p0.match(/^Knit to RC:?\s*(\d+)\.?$/i);
     if (m2 && row.rc) {
-      const rm = row.rc.match(/^RC:(\d+)$/);
+      const rm = row.rc.match(/^RC:\s*(\d+)$/);
       const start = rm ? parseInt(rm[1], 10) : NaN;
       const target = parseInt(m2[1], 10);
       if (Number.isFinite(start) && Number.isFinite(target) && target > start) return target - start;

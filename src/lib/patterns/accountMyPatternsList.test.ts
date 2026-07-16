@@ -36,6 +36,12 @@ vi.mock("./patternEditingUnlockModal", () => ({
   offerPatternEditingUnlockModal: (...args: unknown[]) => offerPatternEditingUnlockModalMock(...args),
 }));
 
+// Avoid the real Memberstack poll (40×200ms) when tests stub window without $memberstackDom.
+vi.mock("./sleevelessPatternLoginGate", () => ({
+  waitForMemberstackDom: vi.fn().mockResolvedValue(false),
+  waitForMemberstackReady: vi.fn().mockResolvedValue(undefined),
+}));
+
 class MockHTMLElement {}
 class MockHTMLButtonElement extends MockHTMLElement {}
 
@@ -622,7 +628,7 @@ describe("accountMyPatternsList", () => {
     expect(editBtns[0].getAttribute("title")).toMatch(/included with membership/i);
     expect(copyBtns.every((b) => b.getAttribute("aria-disabled") === "true")).toBe(true);
 
-    // Clicking the disabled Delete / Edit never reaches their APIs.
+    // Native-disabled Delete is a no-op; locked Edit opens the unlock modal (never reaches APIs).
     await delA?._click?.();
     const editA = editBtns.find((b) => b.dataset.projectId === "proj-a");
     await editA?._click?.();

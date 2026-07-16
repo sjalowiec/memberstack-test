@@ -6,7 +6,10 @@ import {
   buildActiveSideInstructionTableRows,
   armholeLocalRcActiveShoulderChecklistStart,
 } from "./neckShoulderActiveSideChecklist";
-import { initialCenterNeckStitches } from "./legoBlocks/roundNeckline";
+import {
+  initialBackCenterNeckStitches,
+  initialCenterNeckStitches,
+} from "./legoBlocks/roundNeckline";
 import { cardiganFrontInitialNeckBindOffStitches } from "./roundNeckNotation";
 import {
   centerBindOffStitchesFromNeckShoulderChart,
@@ -125,17 +128,20 @@ describe("round cardigan front neckline / shoulder chart stitch counts", () => {
 
   it("initial CF-edge neckline bind-off is half-panel math, not pullover center bind-off", () => {
     const neckFull = d.necklineStitches!;
-    const neckHalf = Math.max(1, Math.round(neckFull / 2));
-    const pulloverCenter = initialCenterNeckStitches(neckFull);
+    // Cardigan CF-edge first bind-off is half of the *front* deep-round center, not back shallow.
+    const pulloverFrontCenter = initialCenterNeckStitches(neckFull);
+    // debug.centerNeckBindOffStitches is the back / full-neckline shallow center (always).
+    const backCenter = initialBackCenterNeckStitches(neckFull);
     const cardiganInitial = initialNeckBindOffFromNeckShoulderChart(chart, {
       fullNecklineStitches: neckFull,
     });
     const chartCenterColumn = centerBindOffStitchesFromNeckShoulderChart(chart);
 
-    expect(cardiganInitial).toBe(Math.max(1, Math.round(pulloverCenter / 2)));
+    expect(cardiganInitial).toBe(Math.max(1, Math.round(pulloverFrontCenter / 2)));
     expect(cardiganInitial).toBe(d.cardiganFrontInitialNeckBindOffStitches);
     expect(chartCenterColumn).toBe(0);
-    expect(d.centerNeckBindOffStitches).toBe(pulloverCenter);
+    expect(d.centerNeckBindOffStitches).toBe(backCenter);
+    expect(d.centerNeckBindOffStitches).not.toBe(cardiganInitial);
 
     const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, result.firstArmholeGarmentRc);
     const firstNeck = buildActiveSideInstructionTableRows(chart, rcStart).find(
@@ -145,7 +151,7 @@ describe("round cardigan front neckline / shoulder chart stitch counts", () => {
 
     const repl = buildFrontJapaneseNotationReplacements(result, cardiganRoundPattern());
     expect(repl["jp-neckline-bo"]).toBe(formatBindOffNotation(cardiganInitial));
-    expect(repl["jp-neckline-bo"]).not.toBe(formatBindOffNotation(pulloverCenter));
+    expect(repl["jp-neckline-bo"]).not.toBe(formatBindOffNotation(pulloverFrontCenter));
 
     const pulloverPattern = {
       ...cardiganRoundPattern(),

@@ -12,17 +12,23 @@ import {
 import { LEGACY_TABLE_DEFINITIONS } from "./tableDefinitions";
 
 describe("resolveExportFiles", () => {
-  it("finds all eight 2026-07-11 export files by table-name prefix", () => {
-    const exportDir = path.resolve("legacy-data/exports/2026-07-11");
-    const { resolved, missingRequired } = resolveExportFiles(
-      exportDir,
-      LEGACY_TABLE_DEFINITIONS,
-    );
+  // Export CSVs are gitignored local fixtures; skip when the directory is absent.
+  const exportDir20260711 = path.resolve("legacy-data/exports/2026-07-11");
+  const hasLocalExportFixture = fs.existsSync(exportDir20260711);
 
-    expect(missingRequired).toEqual([]);
-    expect(resolved).toHaveLength(8);
-    expect(resolved.every((entry) => entry.fileName.endsWith("_2026-07-11.csv"))).toBe(true);
-  });
+  it.skipIf(!hasLocalExportFixture)(
+    "finds all eight 2026-07-11 export files by table-name prefix",
+    () => {
+      const { resolved, missingRequired } = resolveExportFiles(
+        exportDir20260711,
+        LEGACY_TABLE_DEFINITIONS,
+      );
+
+      expect(missingRequired).toEqual([]);
+      expect(resolved).toHaveLength(8);
+      expect(resolved.every((entry) => entry.fileName.endsWith("_2026-07-11.csv"))).toBe(true);
+    },
+  );
 
   it("matches export prefixes case-insensitively", () => {
     expect(fileMatchesExportName("pattern_library_2026-07-11.csv", "Pattern_Library")).toBe(

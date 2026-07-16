@@ -29,6 +29,28 @@ vi.mock("./customPatternProjectClient", async (importOriginal) => {
     updateCustomPatternProject: vi.fn(),
   };
 });
+
+vi.mock("./sleevelessPatternSystemAccessClient", () => ({
+  resolveSleevelessUserAccess: vi.fn(async () => ({
+    loggedIn: true,
+    memberId: "ms_member",
+    hasSystemAccess: true,
+    freeClaimsBySystem: {},
+  })),
+  resolveSleevelessUserAccessSnapshot: vi.fn(async () => ({
+    loggedIn: true,
+    memberId: "ms_member",
+    hasSystemAccess: true,
+    freeClaimsBySystem: {},
+  })),
+  getCachedSleevelessUserAccess: vi.fn(() => ({
+    loggedIn: true,
+    memberId: "ms_member",
+    hasSystemAccess: true,
+    freeClaimsBySystem: {},
+  })),
+  invalidateSleevelessUserAccessCache: vi.fn(),
+}));
 import type { CustomPatternProject } from "./customPatternProjectTypes";
 import {
   captureSavedCustomPatternDirtyBaseline,

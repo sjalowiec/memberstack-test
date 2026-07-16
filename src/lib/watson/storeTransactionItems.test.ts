@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import path from "path";
 
 import { describe, expect, it } from "vitest";
@@ -10,6 +11,8 @@ import { getLegacyTableDefByPgTable } from "./tableDefinitions";
 const ITEMS_CSV = path.resolve(
   "legacy-data/exports/2026-07-11/Store_Transactions_items_2026-07-11.csv",
 );
+// Export CSVs are gitignored local fixtures; skip file-backed cases when absent.
+const hasItemsCsv = fs.existsSync(ITEMS_CSV);
 
 function coerceCsvRows(pgTable: string, csvPath: string): {
   coerced: number;
@@ -71,17 +74,20 @@ describe("legacy_store_transaction_items import mapping", () => {
     expect(def?.columns.some((column) => column.source === "ItemName")).toBe(true);
   });
 
-  it("coerces all Store_Transactions_items export rows without rejection", () => {
-    const { coerced, rejected } = coerceCsvRows(
-      "legacy_store_transaction_items",
-      ITEMS_CSV,
-    );
+  it.skipIf(!hasItemsCsv)(
+    "coerces all Store_Transactions_items export rows without rejection",
+    () => {
+      const { coerced, rejected } = coerceCsvRows(
+        "legacy_store_transaction_items",
+        ITEMS_CSV,
+      );
 
-    expect(rejected).toEqual([]);
-    expect(coerced).toBe(30_137);
-  });
+      expect(rejected).toEqual([]);
+      expect(coerced).toBe(30_137);
+    },
+  );
 
-  it("coerces a representative line-item row", () => {
+  it.skipIf(!hasItemsCsv)("coerces a representative line-item row", () => {
     const parsed = readCsvFile(ITEMS_CSV);
     const row = parsed.rows[0];
     const transactionItemId = coerceCellValue(row.Transaction_itemid, {
