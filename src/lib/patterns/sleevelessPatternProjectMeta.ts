@@ -263,6 +263,35 @@ export function getPatternProjectPrintFields(): { title: string; notes: string }
   return { title: meta.title.trim(), notes: meta.notes };
 }
 
+/**
+ * Makes a pattern name safe to use as a suggested PDF / Save-as filename.
+ * Strips control chars and OS-illegal filename characters; keeps spaces, apostrophes,
+ * and other readable characters so member names stay intact.
+ */
+export function sanitizePatternPrintFilenameTitle(name: string): string {
+  const trimmed = name.trim();
+  if (!trimmed) return "";
+  return trimmed
+    .replace(/[\u0000-\u001f\u007f]/g, "")
+    .replace(/[<>:"/\\|?*]/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/^[.\s]+|[.\s]+$/g, "")
+    .slice(0, 120)
+    .trim();
+}
+
+/**
+ * Document title used for browser Save-as-PDF filename suggestions.
+ * Prefers the sanitized pattern/project name; falls back to the page title when empty.
+ */
+export function resolvePatternPrintDocumentTitle(
+  patternTitle: string,
+  fallbackDocumentTitle: string,
+): string {
+  const sanitized = sanitizePatternPrintFilenameTitle(patternTitle);
+  return sanitized || fallbackDocumentTitle;
+}
+
 export const SLEEVELESS_PATTERN_ONLINE_HEADING_FALLBACK =
   "Sleeveless sweater · Pattern instructions";
 

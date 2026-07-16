@@ -9,8 +9,10 @@ import {
   getSleevelessPatternOnlineHeading,
   getSleevelessPatternOnlineNotesText,
   resetPatternProjectMetaForNewDraft,
+  resolvePatternPrintDocumentTitle,
   resolvePatternProjectSaveName,
   resolvePatternProjectSaveNameFromState,
+  sanitizePatternPrintFilenameTitle,
   SLEEVELESS_PATTERN_ONLINE_HEADING_FALLBACK,
 } from "./sleevelessPatternProjectMeta";
 import {
@@ -164,5 +166,54 @@ describe("formatPatternProjectNotesPreview", () => {
 
   it("normalizes Windows line endings", () => {
     expect(formatPatternProjectNotesPreview("a\r\nb")).toBe("a b");
+  });
+});
+
+describe("sanitizePatternPrintFilenameTitle", () => {
+  it("preserves readable custom names including apostrophes", () => {
+    expect(sanitizePatternPrintFilenameTitle("Sue's Summer Vest")).toBe("Sue's Summer Vest");
+  });
+
+  it("replaces OS-illegal filename characters with spaces while keeping the rest", () => {
+    expect(sanitizePatternPrintFilenameTitle('My Vest: "V2"/final?')).toBe("My Vest V2 final");
+  });
+
+  it("collapses whitespace and trims", () => {
+    expect(sanitizePatternPrintFilenameTitle("  Soft   Cardigan  ")).toBe("Soft Cardigan");
+  });
+
+  it("returns empty for blank or punctuation-only names", () => {
+    expect(sanitizePatternPrintFilenameTitle("   ")).toBe("");
+    expect(sanitizePatternPrintFilenameTitle('<>:"/\\|?*')).toBe("");
+  });
+});
+
+describe("resolvePatternPrintDocumentTitle", () => {
+  const sleevelessPageTitle = "Sleeveless Sweater Pattern | Knit it Now";
+  const dropShoulderPageTitle = "Drop Shoulder Sweater Pattern | Knit it Now";
+
+  it("uses a custom pattern name for the PDF filename suggestion", () => {
+    expect(resolvePatternPrintDocumentTitle("Aubrey's Green Vest", sleevelessPageTitle)).toBe(
+      "Aubrey's Green Vest",
+    );
+    expect(resolvePatternPrintDocumentTitle("My Drop Shoulder", dropShoulderPageTitle)).toBe(
+      "My Drop Shoulder",
+    );
+  });
+
+  it("falls back to the page/default pattern title when no custom name exists", () => {
+    expect(resolvePatternPrintDocumentTitle("", sleevelessPageTitle)).toBe(sleevelessPageTitle);
+    expect(resolvePatternPrintDocumentTitle("   ", dropShoulderPageTitle)).toBe(
+      dropShoulderPageTitle,
+    );
+  });
+
+  it("uses the auto-generated default pattern name when present", () => {
+    expect(resolvePatternPrintDocumentTitle("Women's Sleeveless", sleevelessPageTitle)).toBe(
+      "Women's Sleeveless",
+    );
+    expect(resolvePatternPrintDocumentTitle("Men's Drop Shoulder", dropShoulderPageTitle)).toBe(
+      "Men's Drop Shoulder",
+    );
   });
 });
