@@ -5,6 +5,7 @@ import {
   AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
   EXPRESS_AVAILABLE_NEEDLES_INPUT_ID,
 } from "./sleevelessExpressAvailableNeedles";
+import { validateAvailableNeedlesFieldValue } from "./availableNeedlesFieldValidation";
 import {
   computeExpressGaugeStepComplete,
   evaluateExpressGaugeFormSubmit,
@@ -190,10 +191,21 @@ describe("syncExpressNeedleBlockVisibility", () => {
 });
 
 describe("isExpressReviewCtaReady", () => {
-  it("shows the CTA only when wizard steps and the full gauge step are complete", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("shows the CTA when wizard steps and stitch/row gauge are complete (needles not required)", () => {
     expect(isExpressReviewCtaReady(true, true)).toBe(true);
     expect(isExpressReviewCtaReady(true, false)).toBe(false);
     expect(isExpressReviewCtaReady(false, true)).toBe(false);
+  });
+
+  it("keeps the CTA ready when needles are still empty so submit can show validation", () => {
+    // Second arg is stitch/row gauge only — empty needles still allow an enabled CTA.
+    expect(isExpressReviewCtaReady(true, true)).toBe(true);
+    const { doc } = mountBuilderDom();
+    expect(computeExpressGaugeStepComplete(true, false, doc)).toBe(false);
   });
 });
 
@@ -214,6 +226,10 @@ describe("evaluateExpressGaugeFormSubmit", () => {
     expect(needles.classList.toggle).toHaveBeenCalledWith("error", true);
     expect(needles.getAttribute("aria-invalid")).toBe("true");
     expect(needles.focus).toHaveBeenCalled();
+    expect(needles.scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth", block: "center" });
+    expect(validateAvailableNeedlesFieldValue("").message).toBe(
+      AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
+    );
   });
 
   it("allows navigation when needles are a valid positive whole number", () => {
@@ -319,11 +335,18 @@ describe("builder needles field parity", () => {
     expect(dropShoulderBuilderAstro).toContain('class="express-needle-block" hidden');
   });
 
-  it("keeps review CTA, gauge-step completion, and needle visibility in sync in the shared client", () => {
+  it("enables the review CTA from stitch/row gauge and validates needles on submit", () => {
     expect(expressPageSrc).toContain("computeExpressGaugeStepComplete");
     expect(expressPageSrc).toContain("syncExpressNeedleBlockVisibility");
-    expect(expressPageSrc).not.toMatch(
+    expect(expressPageSrc).toMatch(
       /isExpressReviewCtaReady\(wizardStepsComplete,\s*gaugeOk\(\)\)/,
     );
+  });
+
+  it("keeps the shared needles required message on both builders", () => {
+    expect(sleevelessBuilderAstro).toContain("AVAILABLE_NEEDLES_REQUIRED_MESSAGE");
+    expect(dropShoulderBuilderAstro).toContain("AVAILABLE_NEEDLES_REQUIRED_MESSAGE");
+    expect(sleevelessBuilderAstro).toContain('id="express-available-needles"');
+    expect(dropShoulderBuilderAstro).toContain('id="express-available-needles"');
   });
 });

@@ -39,12 +39,16 @@ export function computeExpressGaugeStepComplete(
   return needlesOk;
 }
 
-/** Review CTA is ready only when wizard choices and the full gauge step are complete. */
+/**
+ * Review CTA is ready when wizard choices and stitch/row gauge are complete.
+ * Available needles are validated on submit (not a CTA gate) so knitters get
+ * the inline required-field message instead of a silent disabled button.
+ */
 export function isExpressReviewCtaReady(
   wizardStepsComplete: boolean,
-  gaugeStepComplete: boolean,
+  stitchRowGaugeOk: boolean,
 ): boolean {
-  return wizardStepsComplete && gaugeStepComplete;
+  return wizardStepsComplete && stitchRowGaugeOk;
 }
 
 /** Reveal the needles block once stitch/row gauge is entered; hide it until then. */

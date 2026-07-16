@@ -263,9 +263,9 @@ function needlesOk(): boolean {
   return validateAvailableNeedlesFieldValue(readExpressAvailableNeedlesInput()).valid;
 }
 
-/** Gauge step complete: swatch gauge + available needles (no machine-width checks yet). */
+/** Gauge step complete: swatch gauge + available needles when the field is present. */
 function gaugeStepOk(): boolean {
-  return gaugeOk() && needlesOk();
+  return computeExpressGaugeStepComplete(gaugeOk(), needlesOk(), document);
 }
 
 function formatGaugeSummary(): string {
@@ -518,8 +518,9 @@ function initExpressPage() {
       nonEmptyTrimmed(values.front) &&
       !!values.neckline &&
       !!values.fit;
-    const gaugeStepComplete = computeExpressGaugeStepComplete(gaugeOk(), needlesOk(), document);
-    const reviewCtaReady = isExpressReviewCtaReady(wizardStepsComplete, gaugeStepComplete);
+    // CTA readiness is stitch/row gauge only; needles are validated on submit
+    // so knitters get the required-field message instead of a silent disabled button.
+    const reviewCtaReady = isExpressReviewCtaReady(wizardStepsComplete, gaugeOk());
 
     if (wrap) {
       if (reviewCtaReady) wrap.removeAttribute("hidden");

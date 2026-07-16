@@ -202,57 +202,16 @@ function resolveSideSeamAboveHemRows(d: SleevelessBackPatternResult["debug"]): n
 }
 
 /**
- * Drop-shoulder garment diagrams label straight knitting from the armhole marker to neckline
- * start separately from {@link NECK_DEPTH_ROWS}. Full derived armhole depth (marker → shoulder)
- * double-counts the neck band when both labels appear on the schematic.
+ * Full armhole depth rows for garment diagram labels (shoulder → underarm).
+ * For drop shoulder this is upper-arm ÷ 2 in rows — independent of neckline depth.
+ * Neck depth is labeled separately via {@link NECK_DEPTH_ROWS} / {@link NECK_DEPTH}.
  */
 export function resolveArmholeRowsForGarmentDiagram(
-  result: SleevelessBackPatternResult,
-  measurementPiece: SleevelessDiagramReplacementPiece,
+  _result: SleevelessBackPatternResult,
+  _measurementPiece: SleevelessDiagramReplacementPiece,
   d: SleevelessBackPatternResult["debug"],
 ): number | undefined {
-  if (!result.isDropShoulder) {
-    return isFiniteNumber(d.armholeRows) ? Math.round(d.armholeRows) : undefined;
-  }
-
-  const markerRc = isFiniteNumber(d.rowsFromCastOnToArmholeStart)
-    ? Math.round(d.rowsFromCastOnToArmholeStart)
-    : isFiniteNumber(d.hemRows) && isFiniteNumber(d.bodyRows)
-      ? Math.round(d.hemRows + d.bodyRows)
-      : undefined;
-
-  const necklineStartRc =
-    measurementPiece === "front"
-      ? isFiniteNumber(d.frontNecklineStartRC)
-        ? Math.round(d.frontNecklineStartRC)
-        : undefined
-      : isFiniteNumber(d.backNecklineStartRC)
-        ? Math.round(d.backNecklineStartRC)
-        : isFiniteNumber(d.finalRC)
-          ? Math.round(d.finalRC)
-          : undefined;
-
-  if (markerRc !== undefined && necklineStartRc !== undefined) {
-    return Math.max(0, necklineStartRc - markerRc);
-  }
-
-  const fullArmholeRows = isFiniteNumber(d.armholeRows) ? Math.round(d.armholeRows) : undefined;
-  const neckDepthRows =
-    measurementPiece === "front"
-      ? isFiniteNumber(d.frontNeckDepthRows)
-        ? Math.round(d.frontNeckDepthRows)
-        : undefined
-      : isFiniteNumber(d.backNeckDepthRows)
-        ? Math.round(d.backNeckDepthRows)
-        : isFiniteNumber(d.reservedNecklineShoulderRows)
-          ? Math.round(d.reservedNecklineShoulderRows)
-          : undefined;
-
-  if (fullArmholeRows !== undefined && neckDepthRows !== undefined) {
-    return Math.max(0, fullArmholeRows - neckDepthRows);
-  }
-
-  return fullArmholeRows;
+  return isFiniteNumber(d.armholeRows) ? Math.round(d.armholeRows) : undefined;
 }
 
 /** Hem band rows + depth for `{{HEM_ROWS}}` / `{{HEM_INCHES}}` diagram labels. */

@@ -428,6 +428,11 @@
   margin-top: 1.5rem;
 }
 
+/* display:flex above would otherwise override the UA [hidden] rule */
+.express-page .express-generate-wrap[hidden] {
+  display: none !important;
+}
+
 .express-page .express-generate-wrap--footer {
   margin-top: 0.75rem;
   padding-top: 1rem;

@@ -639,14 +639,20 @@ describe("dropShoulderBodyDiagramReplacements", () => {
     expect(Number(repl["cross-shoulder-width"])).toBeLessThan(Number(repl.HIP_STS));
     expect(repl["cross-shoulder"]).toBe(repl.SHOULDER_WIDTH);
 
-    const markerRc = result.debug.rowsFromCastOnToArmholeStart!;
-    const neckStartRc = result.debug.backNecklineStartRC!;
-    const straightAboveMarker = neckStartRc - markerRc;
-    expect(straightAboveMarker).toBeGreaterThan(0);
-    expect(straightAboveMarker).toBeLessThan(result.debug.armholeRows!);
-    expect(repl.ARMHOLE_ROWS).toBe(String(straightAboveMarker));
+    // Diagram armhole depth is the full shoulder→underarm span (upper arm ÷ 2),
+    // not the knit-even span from marker to neckline start.
+    expect(repl.ARMHOLE_ROWS).toBe(String(result.debug.armholeRows));
     expect(repl.NECK_DEPTH_ROWS).toBe(String(result.debug.backNeckDepthRows));
-    expect(Number(repl.ARMHOLE_ROWS) + Number(repl.NECK_DEPTH_ROWS)).toBe(result.debug.armholeRows);
+    expect(Number(repl.NECK_DEPTH_ROWS)).toBeGreaterThan(0);
+    expect(Number(repl.NECK_DEPTH_ROWS)).toBeLessThan(Number(repl.ARMHOLE_ROWS));
+
+    const frontRepl = buildDropShoulderBodyDiagramReplacements(result, "in", {
+      patternData: alinePattern,
+      measurementPiece: "front",
+    });
+    expect(frontRepl.ARMHOLE_ROWS).toBe(String(result.debug.armholeRows));
+    expect(frontRepl.ARMHOLE_ROWS).toBe(repl.ARMHOLE_ROWS);
+    expect(frontRepl.NECK_DEPTH_ROWS).toBe(String(result.debug.frontNeckDepthRows));
   });
 
   it("replaces shoulder-stitches in diagram-jp-back-aline shaping notation", () => {
