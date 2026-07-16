@@ -83,8 +83,9 @@ describe("syncSavedCustomPatternCopyAccess", () => {
     );
 
     expect(allowed).toBe(false);
-    // Button stays clickable (native disabled=false) so the unlock modal can open;
-    // visual/ARIA lock uses is-disabled + aria-disabled.
+    // Button is never hidden and stays natively clickable (disabled === false) so the
+    // click can drive the membership upsell; it is only visually disabled via the
+    // is-disabled class + aria-disabled/title tooltip.
     expect(btn.textContent).toBe("Save a Copy");
     expect(btn.disabled).toBe(false);
     expect(btn.hasClass("is-disabled")).toBe(true);

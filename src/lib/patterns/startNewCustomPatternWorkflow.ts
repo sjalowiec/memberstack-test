@@ -154,6 +154,7 @@ export function createStartNewCustomPatternWorkflowDeps(options: {
                   root,
                   resolveNewPatternBlockedCopy(access, system, doc),
                   system,
+                  access,
                 );
               });
             }),

@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
+import { PATTERN_BUILDER_LIFETIME_PURCHASES } from "../../config/patternBuilderLifetime";
+import { MEMBERSHIPS } from "../../config/memberships";
 import {
   canCreatePatternForSystem,
   canCreateSleevelessPattern,
   canEditSleevelessPatternNotes,
   canEditSleevelessPatternSettings,
+  hasPatternSystemAccess,
   hasSleevelessPatternSystemAccess,
   LOGGED_OUT_SLEEVELESS_ACCESS,
   mergeFreeClaimIntoMemberJson,
@@ -11,6 +14,7 @@ import {
   planIdsGrantSleevelessSystemAccess,
   readFreeClaimFromMemberJson,
   readSleevelessSystemUnlockFromMemberJson,
+  resolvePatternSystemAccess,
   SLEEVELESS_SYSTEM_MEMBERSHIP_PLAN_IDS,
   type SleevelessUserAccess,
 } from "./sleevelessPatternSystemAccess";
@@ -42,6 +46,21 @@ const freeDropShoulderClaimed: SleevelessUserAccess = {
 const member: SleevelessUserAccess = {
   loggedIn: true,
   memberId: "ms_member",
+  activePlanIds: [MEMBERSHIPS.basic.memberstackPlanId],
+  hasSystemAccess: true,
+  freeClaimsBySystem: {},
+};
+const sleevelessLifetimeOwner: SleevelessUserAccess = {
+  loggedIn: true,
+  memberId: "ms_lifetime_sl",
+  activePlanIds: [PATTERN_BUILDER_LIFETIME_PURCHASES.sleeveless.memberstackPlanId],
+  hasSystemAccess: true,
+  freeClaimsBySystem: {},
+};
+const dropShoulderLifetimeOwner: SleevelessUserAccess = {
+  loggedIn: true,
+  memberId: "ms_lifetime_ds",
+  activePlanIds: [PATTERN_BUILDER_LIFETIME_PURCHASES.dropShoulder.memberstackPlanId],
   hasSystemAccess: true,
   freeClaimsBySystem: {},
 };
@@ -144,6 +163,38 @@ describe("canEditSleevelessPatternNotes", () => {
     expect(canEditSleevelessPatternNotes(freeUnclaimed)).toBe(true);
     expect(canEditSleevelessPatternNotes(freeSleevelessClaimed)).toBe(true);
     expect(canEditSleevelessPatternNotes(member)).toBe(true);
+  });
+});
+
+describe("hasPatternSystemAccess (lifetime builder ownership)", () => {
+  it("grants Sleeveless-only access for a Sleeveless lifetime plan", () => {
+    expect(hasPatternSystemAccess(sleevelessLifetimeOwner, "sleeveless")).toBe(true);
+    expect(hasPatternSystemAccess(sleevelessLifetimeOwner, "drop-shoulder")).toBe(false);
+  });
+
+  it("grants Drop Shoulder-only access for a Drop Shoulder lifetime plan", () => {
+    expect(hasPatternSystemAccess(dropShoulderLifetimeOwner, "drop-shoulder")).toBe(true);
+    expect(hasPatternSystemAccess(dropShoulderLifetimeOwner, "sleeveless")).toBe(false);
+  });
+
+  it("still allows a lifetime owner their one free pattern on the other system", () => {
+    expect(canCreatePatternForSystem(sleevelessLifetimeOwner, "drop-shoulder")).toBe(true);
+    expect(canCreatePatternForSystem(dropShoulderLifetimeOwner, "sleeveless")).toBe(true);
+  });
+
+  it("resolves per-system access from active plan ids", () => {
+    expect(
+      resolvePatternSystemAccess({
+        activePlanIds: [PATTERN_BUILDER_LIFETIME_PURCHASES.sleeveless.memberstackPlanId],
+        patternSystemId: "sleeveless",
+      }).hasSystemAccess,
+    ).toBe(true);
+    expect(
+      resolvePatternSystemAccess({
+        activePlanIds: [PATTERN_BUILDER_LIFETIME_PURCHASES.sleeveless.memberstackPlanId],
+        patternSystemId: "drop-shoulder",
+      }).hasSystemAccess,
+    ).toBe(false);
   });
 });
 

@@ -40,7 +40,7 @@ export function isPatternDeleteProtectedForSystem({
   totalSavedCountForSystem,
 }: PatternDeleteProtectionInput): boolean {
   if (!access?.loggedIn) return false;
-  if (hasSleevelessPatternSystemAccess(access)) return false;
+  if (hasSleevelessPatternSystemAccess(access, patternSystem)) return false;
   if (!isFreeClaimedForSystem(access.freeClaimsBySystem, patternSystem)) return false;
 
   const claimedId = freeClaimedPatternIdForSystem(access.freeClaimsBySystem, patternSystem);
@@ -102,7 +102,7 @@ export async function resolvePatternDeleteDecision(
 
   if (
     !access.loggedIn ||
-    hasSleevelessPatternSystemAccess(access) ||
+    hasSleevelessPatternSystemAccess(access, patternSystem) ||
     !isFreeClaimedForSystem(access.freeClaimsBySystem, patternSystem)
   ) {
     return allow();

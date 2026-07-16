@@ -15,7 +15,7 @@
 /* Locked / upgrade screen shown when a free user who already claimed their one-time pattern
    tries to start a new one (replaces the setup wizard — see sleevelessNewPatternAccessGuard.ts). */
 .sleeveless-new-pattern-locked {
-  max-width: 36rem;
+  max-width: 48rem;
   margin: 1.5rem auto 2rem;
   padding: clamp(1.25rem, 3vw, 2rem);
   text-align: center;
@@ -27,7 +27,7 @@
 
 .sleeveless-new-pattern-locked__title {
   margin: 0 0 0.65rem;
-  font-size: 1.35rem;
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
   font-weight: 700;
   color: #2c3a57;
 }
@@ -37,8 +37,129 @@
   line-height: 1.55;
   color: #374151;
   font-size: 1rem;
-  /* Render the \n\n paragraph breaks in the shared copy as visual paragraphs. */
   white-space: pre-line;
+}
+
+.sleeveless-new-pattern-locked__status {
+  margin: 0 0 0;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.sleeveless-new-pattern-locked__status:not([hidden]) {
+  margin-top: 1rem;
+}
+
+.sleeveless-new-pattern-locked__status--info {
+  color: #374151;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+}
+
+.sleeveless-new-pattern-locked__status--error {
+  color: #7f1d1d;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.sleeveless-new-pattern-locked__options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 1rem;
+  align-items: stretch;
+  margin: 0;
+  text-align: left;
+}
+
+@media (min-width: 720px) {
+  .sleeveless-new-pattern-locked__options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.sleeveless-new-pattern-locked__card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: clamp(1.1rem, 2.5vw, 1.5rem);
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.sleeveless-new-pattern-locked__card--featured {
+  border: 2px solid var(--kbm-green, #52682d);
+  box-shadow: 0 6px 18px rgba(82, 104, 45, 0.12);
+}
+
+.sleeveless-new-pattern-locked__badge {
+  align-self: flex-start;
+  margin: 0 0 0.65rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--kbm-green, #52682d);
+  background: #eef2e6;
+  border-radius: 999px;
+}
+
+.sleeveless-new-pattern-locked__card-title {
+  margin: 0 0 0.55rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #2c3a57;
+}
+
+.sleeveless-new-pattern-locked__card-body {
+  margin: 0 0 1rem;
+  line-height: 1.55;
+  color: #4b5563;
+  font-size: 0.98rem;
+}
+
+.sleeveless-new-pattern-locked__price {
+  margin: 0 0 0.75rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #2c3a57;
+}
+
+.sleeveless-new-pattern-locked__card-cta {
+  margin-top: auto;
+}
+
+.sleeveless-new-pattern-locked__saved-patterns {
+  width: 100%;
+  margin-top: clamp(2rem, 4vw, 3rem);
+  text-align: center;
+}
+
+.sleeveless-new-pattern-locked__saved-patterns-heading {
+  margin: 0 0 0.5rem;
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #4b5563;
+}
+
+.sleeveless-new-pattern-locked__saved-patterns-link {
+  display: inline-block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--kbm-green, #52682d);
+  text-decoration: underline;
+  text-underline-offset: 0.14em;
+}
+
+.sleeveless-new-pattern-locked__saved-patterns-link:hover,
+.sleeveless-new-pattern-locked__saved-patterns-link:focus,
+.sleeveless-new-pattern-locked__saved-patterns-link:focus-visible {
+  color: var(--kbm-green-hover, #3d4f22);
+  text-decoration-thickness: 2px;
 }
 
 .sleeveless-new-pattern-locked__actions {
@@ -50,14 +171,11 @@
   margin: 0 auto;
 }
 
-/* The two unlock paths are the primary, prominent actions. */
-.sleeveless-new-pattern-locked__btn--primary {
+.sleeveless-new-pattern-locked__btn {
   width: 100%;
   font-weight: 700;
 }
 
-/* Keep the saved-pattern link available, but visually secondary so it reads as
-   an alternate path rather than the main action. */
 .sleeveless-new-pattern-locked__btn--secondary {
   width: 100%;
   margin-top: 0.35rem;
@@ -73,6 +191,30 @@
   background: transparent;
   color: var(--kbm-green-hover);
   text-decoration: underline;
+}
+
+.sleeveless-lifetime-unlocked-banner {
+  max-width: 48rem;
+  margin: 1rem auto 0;
+  padding: 1rem 1.25rem;
+  text-align: center;
+  border: 1px solid #c7d2fe;
+  border-radius: 12px;
+  background: #eef2ff;
+}
+
+.sleeveless-lifetime-unlocked-banner__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #2c3a57;
+}
+
+.sleeveless-lifetime-unlocked-banner__body {
+  margin: 0;
+  line-height: 1.5;
+  color: #374151;
+  font-size: 0.98rem;
 }
 
 .express-page .hat-length-picker__grid {

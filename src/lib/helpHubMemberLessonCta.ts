@@ -22,10 +22,10 @@ export type HelpHubMemberLessonCtaSpec = {
 };
 
 export const HELP_HUB_MEMBER_LESSON_LOCKED_STATUS =
-  "This full lesson is for Knit It Now members.";
+  "This lesson is for Knit It Now members.";
 
 export const HELP_HUB_MEMBER_LESSON_LOCKED_SUPPORT =
-  "Become a member to watch the lesson and access the complete member library.";
+  "The full lesson is included with Basic and Premium membership.";
 
 const MEMBERSHIP_URL = "/membership";
 

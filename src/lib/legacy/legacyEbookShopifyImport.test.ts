@@ -97,6 +97,7 @@ describe("legacyEbookShopifyImport", () => {
     const generated = serializeLegacyEbookShopifyImportCsv(
       buildLegacyEbookShopifyImportRows()
     );
-    expect(onDisk).toBe(generated);
+    // Checkout may rewrite EOL on Windows; compare content, not platform line endings.
+    expect(onDisk.replace(/\r\n/g, "\n")).toBe(generated.replace(/\r\n/g, "\n"));
   });
 });

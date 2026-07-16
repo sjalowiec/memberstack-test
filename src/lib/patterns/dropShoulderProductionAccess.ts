@@ -1,11 +1,9 @@
 /**
- * Drop Shoulder is in development — block member-facing production hosts while keeping
- * localhost, Astro dev, and Netlify deploy previews accessible for testing.
+ * Drop Shoulder has launched — it is now available on member-facing production hosts.
+ * The gate is retired (always returns false); the route matcher below is kept so the
+ * gate can be re-enabled later by restoring the env check if needed.
  */
-import {
-  detectSiteEnvironment,
-  type DetectSiteEnvironmentOptions,
-} from "../env/siteEnvironment";
+import { type DetectSiteEnvironmentOptions } from "../env/siteEnvironment";
 
 export const DROP_SHOULDER_PATH_PREFIX = "/patterns/drop-shoulder";
 
@@ -20,11 +18,12 @@ export function isDropShoulderRoute(pathname: string): boolean {
 
 /**
  * When true, Drop Shoulder must not appear in catalogs and direct routes should redirect.
- * Uses the same host/env rules as {@link detectSiteEnvironment} (production custom domains only).
+ * Drop Shoulder is now launched, so this is always false (nothing is blocked). The
+ * signature is preserved for the callers in the catalog page and middleware.
  */
 export function isDropShoulderProductionBlocked(
-  hostname: string | null | undefined,
-  options: DetectSiteEnvironmentOptions = {},
+  _hostname: string | null | undefined,
+  _options: DetectSiteEnvironmentOptions = {},
 ): boolean {
-  return detectSiteEnvironment(hostname, options) === "production";
+  return false;
 }

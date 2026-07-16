@@ -1,10 +1,16 @@
 import {
+  LESSON_MEMBER_BODY_MOUNT_ATTR,
+  LESSON_MEMBER_BODY_TEMPLATE_ATTR,
+} from "../lib/lessonMemberBodyGate";
+import {
   getViewerAccessState,
   logMemberAccessDebug,
   type ViewerAccessState,
 } from "../lib/memberAccess";
 import { helpHubMemberLessonCtaSpec } from "../lib/helpHubMemberLessonCta";
 import { openMemberstackLoginModal } from "../lib/memberstackLogin";
+import { initGatedVimeoEmbeds } from "./gatedVimeoEmbedClient";
+import { initLessonVideoModal } from "./lessonVideoModal";
 
 async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
   for (let i = 0; i < attempts; i++) {
@@ -96,6 +102,70 @@ export function clearHelpHubMemberLessonCtas(): void {
   });
 }
 
+function getLessonBodyTemplate(): HTMLTemplateElement | null {
+  return document.querySelector<HTMLTemplateElement>(`template[${LESSON_MEMBER_BODY_TEMPLATE_ATTR}]`);
+}
+
+function getLessonBodyMount(): HTMLElement | null {
+  return document.querySelector<HTMLElement>(`[${LESSON_MEMBER_BODY_MOUNT_ATTR}]`);
+}
+
+/** Clone deferred lesson instructional markup into the live mount point. */
+export function mountLessonMemberBody(): void {
+  const template = getLessonBodyTemplate();
+  const mount = getLessonBodyMount();
+  if (!template || !mount || mount.dataset.lessonBodyMounted === "true") return;
+
+  mount.replaceChildren(template.content.cloneNode(true));
+  mount.dataset.lessonBodyMounted = "true";
+  initLessonVideoModal(mount);
+  initGatedVimeoEmbeds(mount);
+}
+
+/** Remove mounted instructional markup so protected media is not in the active DOM. */
+export function unmountLessonMemberBody(): void {
+  const mount = getLessonBodyMount();
+  if (!mount) return;
+  mount.replaceChildren();
+  mount.dataset.lessonBodyMounted = "false";
+}
+
+/** Toggle lesson-page locked panel and deferred instructional body. */
+export function syncLessonPageMemberGate(hasMemberAccess: boolean): void {
+  document.querySelectorAll('[data-gated="locked"]').forEach((el) => {
+    if (hasMemberAccess) el.setAttribute("hidden", "");
+    else el.removeAttribute("hidden");
+  });
+
+  const mount = getLessonBodyMount();
+  if (mount) {
+    if (hasMemberAccess) {
+      mountLessonMemberBody();
+      mount.removeAttribute("hidden");
+    } else {
+      unmountLessonMemberBody();
+      mount.setAttribute("hidden", "");
+    }
+    return;
+  }
+
+  document.querySelectorAll('[data-gated="content"]').forEach((el) => {
+    if (hasMemberAccess) el.removeAttribute("hidden");
+    else el.setAttribute("hidden", "");
+  });
+}
+
+function wireLessonGateLoginButtons(): void {
+  document.querySelectorAll<HTMLElement>("[data-lesson-gate-login]").forEach((btn) => {
+    if (btn.dataset.lessonGateLoginBound === "true") return;
+    btn.dataset.lessonGateLoginBound = "true";
+    btn.addEventListener("click", (event) => {
+      event.preventDefault();
+      openMemberstackLoginModal();
+    });
+  });
+}
+
 let authListenersBound = false;
 
 function bindMemberLessonGateRefresh(onRefresh: () => void): void {
@@ -127,8 +197,28 @@ export function runHelpHubMemberLessonCtaGate(): void {
   });
 }
 
+export function runLessonPageMemberGate(): void {
+  async function refresh(): Promise<void> {
+    const state = await resolveHelpHubMemberLessonViewerState("lessons/[slug].pageGate");
+    syncLessonPageMemberGate(state === "memberAccess");
+    wireLessonGateLoginButtons();
+  }
+
+  void refresh();
+  bindMemberLessonGateRefresh(() => {
+    void refresh();
+  });
+}
+
 export function bootHelpHubMemberLessonGates(): void {
   if (document.querySelector("[data-help-hub-lessons]")) {
     runHelpHubMemberLessonCtaGate();
   }
+  if (document.querySelector("[data-lesson-member-gate]")) {
+    runLessonPageMemberGate();
+  }
+}
+
+export function bootLessonVideoModalForPublicLesson(): void {
+  initLessonVideoModal();
 }

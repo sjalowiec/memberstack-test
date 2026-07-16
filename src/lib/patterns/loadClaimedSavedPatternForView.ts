@@ -6,7 +6,7 @@ import { loadSavedCustomPatternProject } from "./loadSavedCustomPatternProject";
 import { freeClaimedPatternIdForSystem, isFreeClaimedForSystem } from "./patternSystemFreeClaim";
 import { resolvePatternSystemFromPage, type PatternSystemId } from "./patternSystemId";
 import { waitForMemberstackDom } from "./sleevelessPatternLoginGate";
-import type { SleevelessUserAccess } from "./sleevelessPatternSystemAccess";
+import { hasPatternSystemAccess, type SleevelessUserAccess } from "./sleevelessPatternSystemAccess";
 import { resolveSleevelessUserAccess } from "./sleevelessPatternSystemAccessClient";
 
 export type EnsureClaimedSavedPatternResult =
@@ -42,7 +42,7 @@ export async function ensureClaimedSavedPatternHydratedForView(
   const access = await resolveAccess();
 
   if (!access.loggedIn) return "logged-out";
-  if (access.hasSystemAccess) return "has-system-access";
+  if (hasPatternSystemAccess(access, patternSystem)) return "has-system-access";
 
   if (!isFreeClaimedForSystem(access.freeClaimsBySystem, patternSystem)) {
     return "no-claimed-pattern";

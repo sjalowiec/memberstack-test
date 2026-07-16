@@ -17,13 +17,15 @@ vi.mock("./customPatternProjectClient", () => ({
   buildSavePayloadFromWorkingDraft: vi.fn(),
 }));
 
+// Copy is member-gated: stub an authorized member snapshot so the copy path runs.
+// (Test-only — does not change production access logic.)
 vi.mock("./sleevelessPatternSystemAccessClient", () => ({
-  resolveSleevelessUserAccessSnapshot: vi.fn(async () => ({
+  resolveSleevelessUserAccessSnapshot: vi.fn().mockResolvedValue({
     loggedIn: true,
     memberId: "ms_member",
     hasSystemAccess: true,
     freeClaimsBySystem: {},
-  })),
+  }),
 }));
 
 import {
@@ -32,7 +34,6 @@ import {
   loadCustomPatternProject,
   updateCustomPatternProject,
 } from "./customPatternProjectClient";
-import { resolveSleevelessUserAccessSnapshot } from "./sleevelessPatternSystemAccessClient";
 
 const womensProject = {
   id: "proj-womens",

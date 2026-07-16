@@ -28,11 +28,15 @@ describe("pattern builder My Patterns drawer wiring", () => {
     expect(src).not.toContain("/account#my-patterns");
   });
 
-  it("routes the free-pattern locked screen to the in-page library drawer", () => {
-    const src = readRepo("lib/patterns/sleevelessNewPatternAccessGuard.ts");
-    expect(src).toContain('data-pattern-workspace-library-trigger');
-    expect(src).toContain('"Open your saved patterns"');
-    expect(src).not.toContain('viewLink.href = "/account#my-patterns"');
+  it("routes the free-pattern locked screen through the upgrade screen to account My Patterns", () => {
+    const guard = readRepo("lib/patterns/sleevelessNewPatternAccessGuard.ts");
+    const upgradeScreen = readRepo("lib/patterns/patternBuilderNewPatternUpgradeScreen.ts");
+    const upgradeConfig = readRepo("lib/patterns/patternBuilderUpgradeConfig.ts");
+
+    expect(guard).toContain("mountPatternBuilderNewPatternUpgradeScreen");
+    expect(upgradeScreen).toContain("PATTERN_BUILDER_SAVED_PATTERNS_HREF");
+    expect(upgradeConfig).toContain('"/account#my-patterns"');
+    expect(guard).not.toContain("data-pattern-workspace-library-trigger");
   });
 
   it("keeps a single drawer shell mounted via the site header", () => {

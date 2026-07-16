@@ -22,13 +22,10 @@ describe("isDropShoulderRoute", () => {
 });
 
 describe("isDropShoulderProductionBlocked", () => {
-  it("blocks production custom domains", () => {
-    expect(isDropShoulderProductionBlocked("knititnow.com")).toBe(true);
-    expect(isDropShoulderProductionBlocked("www.knititnow.com")).toBe(true);
-    expect(isDropShoulderProductionBlocked("app.knitbymachine.com")).toBe(true);
-  });
-
-  it("allows localhost, Astro dev, and Netlify previews", () => {
+  it("never blocks now that Drop Shoulder has launched", () => {
+    expect(isDropShoulderProductionBlocked("knititnow.com")).toBe(false);
+    expect(isDropShoulderProductionBlocked("www.knititnow.com")).toBe(false);
+    expect(isDropShoulderProductionBlocked("app.knitbymachine.com")).toBe(false);
     expect(isDropShoulderProductionBlocked("localhost", { isViteDev: true })).toBe(false);
     expect(isDropShoulderProductionBlocked("localhost")).toBe(false);
     expect(isDropShoulderProductionBlocked("127.0.0.1")).toBe(false);

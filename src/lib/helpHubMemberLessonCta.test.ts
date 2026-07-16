@@ -80,36 +80,26 @@ describe("helpHubMemberLessonCtaSpec", () => {
     ]);
   });
 
-  it("loggedInNoAccess shows member-only status, support copy, and one Become a Member button", () => {
+  it("loggedInNoAccess shows locked copy and one Become a Member button", () => {
     const state = getViewerAccessState({
       data: { id: "ms_nosub", planConnections: [] },
     });
     expect(state).toBe("loggedInNoAccess");
 
     const spec = helpHubMemberLessonCtaSpec(state, LESSON_HREF);
-    expect(spec.lockedStatus).toBe(
-      "This full lesson is for Knit It Now members.",
-    );
-    expect(spec.lockedSupport).toBe(
-      "Become a member to watch the lesson and access the complete member library.",
-    );
-    expect(spec.showMembershipNote).toBe(false);
-    expect(spec.buttons).toEqual([
-      {
-        href: "/membership",
-        text: "Become a Member",
-        action: "membership",
-        variant: "primary",
-      },
-    ]);
-  });
-
-  it("loggedInNoAccess does not include a login button", () => {
-    const state = getViewerAccessState({
-      data: { id: "ms_nosub", planConnections: [] },
+    expect(spec).toEqual({
+      lockedStatus: HELP_HUB_MEMBER_LESSON_LOCKED_STATUS,
+      lockedSupport: HELP_HUB_MEMBER_LESSON_LOCKED_SUPPORT,
+      buttons: [
+        {
+          href: "/membership",
+          text: "Become a Member",
+          action: "membership",
+          variant: "primary",
+        },
+      ],
+      showMembershipNote: false,
     });
-    const spec = helpHubMemberLessonCtaSpec(state, LESSON_HREF);
-    expect(spec.buttons.some((button) => button.action === "login")).toBe(false);
   });
 
   it("beta members still receive only the direct lesson link", () => {

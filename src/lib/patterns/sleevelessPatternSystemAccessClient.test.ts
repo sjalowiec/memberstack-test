@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { PATTERN_BUILDER_LIFETIME_PURCHASES } from "../../config/patternBuilderLifetime";
+import { getActivePlanIds } from "../memberAccess";
 
 vi.mock("../devBypass", () => ({ devBypass: false }));
 vi.mock("./sleevelessPatternLoginGate", () => ({
@@ -13,11 +15,14 @@ import {
   getCachedSleevelessUserAccess,
   invalidateSleevelessUserAccessCache,
   markFreeSleevelessPatternClaimed,
-  planIdsFromMemberstackPayload,
   resetFreeSleevelessPatternClaimForCurrentMember,
   resolveSleevelessUserAccess,
 } from "./sleevelessPatternSystemAccessClient";
-import { SLEEVELESS_SYSTEM_MEMBERSHIP_PLAN_IDS } from "./sleevelessPatternSystemAccess";
+import {
+  canCreatePatternForSystem,
+  hasPatternSystemAccess,
+  SLEEVELESS_SYSTEM_MEMBERSHIP_PLAN_IDS,
+} from "./sleevelessPatternSystemAccess";
 
 type MsMock = {
   getCurrentMember: ReturnType<typeof vi.fn>;
@@ -38,18 +43,39 @@ afterEach(() => {
   invalidateSleevelessUserAccessCache();
 });
 
-describe("planIdsFromMemberstackPayload", () => {
-  it("extracts plan ids from nested payloads", () => {
-    expect(
-      planIdsFromMemberstackPayload({
-        data: { id: "ms_1", planConnections: [{ planId: "pln_a" }, { planId: "pln_b" }] },
+describe("getActivePlanIds (via resolver)", () => {
+  it("excludes canceled or inactive plan connections", async () => {
+    stubMemberstack({
+      getCurrentMember: vi.fn().mockResolvedValue({
+        data: {
+          id: "ms_free",
+          planConnections: [
+            {
+              planId: PATTERN_BUILDER_LIFETIME_PURCHASES.sleeveless.memberstackPlanId,
+              status: "CANCELED",
+            },
+            {
+              planId: SLEEVELESS_SYSTEM_MEMBERSHIP_PLAN_IDS[0],
+              status: "ACTIVE",
+              active: true,
+            },
+          ],
+        },
       }),
-    ).toEqual(["pln_a", "pln_b"]);
-  });
+      getMemberJSON: vi.fn().mockResolvedValue({ data: {} }),
+    });
 
-  it("returns an empty array when there are no plans", () => {
-    expect(planIdsFromMemberstackPayload({ data: { id: "ms_1" } })).toEqual([]);
-    expect(planIdsFromMemberstackPayload(null)).toEqual([]);
+    const access = await resolveSleevelessUserAccess();
+    expect(access.activePlanIds).toEqual([SLEEVELESS_SYSTEM_MEMBERSHIP_PLAN_IDS[0]]);
+    expect(getActivePlanIds({
+      data: {
+        id: "ms_free",
+        planConnections: [
+          { planId: "pln_canceled", status: "CANCELED" },
+          { planId: "pln_active", status: "ACTIVE" },
+        ],
+      },
+    })).toEqual(["pln_active"]);
   });
 });
 
@@ -59,6 +85,7 @@ describe("resolveSleevelessUserAccess", () => {
     await expect(resolveSleevelessUserAccess()).resolves.toMatchObject({
       loggedIn: false,
       hasSystemAccess: false,
+      activePlanIds: [],
       freeClaimsBySystem: {},
     });
   });
@@ -72,6 +99,7 @@ describe("resolveSleevelessUserAccess", () => {
       loggedIn: true,
       memberId: "ms_free",
       hasSystemAccess: false,
+      activePlanIds: [],
       freeClaimsBySystem: {},
     });
   });
@@ -97,15 +125,40 @@ describe("resolveSleevelessUserAccess", () => {
       getCurrentMember: vi.fn().mockResolvedValue({
         data: {
           id: "ms_member",
-          planConnections: [{ planId: SLEEVELESS_SYSTEM_MEMBERSHIP_PLAN_IDS[0] }],
+          planConnections: [{ planId: SLEEVELESS_SYSTEM_MEMBERSHIP_PLAN_IDS[0], status: "ACTIVE" }],
         },
       }),
       getMemberJSON: vi.fn().mockResolvedValue({ data: {} }),
     });
-    await expect(resolveSleevelessUserAccess()).resolves.toMatchObject({
+    const access = await resolveSleevelessUserAccess();
+    expect(access).toMatchObject({
       loggedIn: true,
       hasSystemAccess: true,
     });
+    expect(hasPatternSystemAccess(access, "sleeveless")).toBe(true);
+    expect(hasPatternSystemAccess(access, "drop-shoulder")).toBe(true);
+  });
+
+  it("grants Sleeveless-only access for a Sleeveless lifetime plan", async () => {
+    stubMemberstack({
+      getCurrentMember: vi.fn().mockResolvedValue({
+        data: {
+          id: "ms_lifetime_sl",
+          planConnections: [
+            {
+              planId: PATTERN_BUILDER_LIFETIME_PURCHASES.sleeveless.memberstackPlanId,
+              status: "ACTIVE",
+            },
+          ],
+        },
+      }),
+      getMemberJSON: vi.fn().mockResolvedValue({ data: {} }),
+    });
+    const access = await resolveSleevelessUserAccess();
+    expect(hasPatternSystemAccess(access, "sleeveless")).toBe(true);
+    expect(hasPatternSystemAccess(access, "drop-shoulder")).toBe(false);
+    expect(canCreatePatternForSystem(access, "sleeveless")).toBe(true);
+    expect(canCreatePatternForSystem(access, "drop-shoulder")).toBe(true);
   });
 
   it("grants system access via the member-JSON unlock flag", async () => {
@@ -113,10 +166,10 @@ describe("resolveSleevelessUserAccess", () => {
       getCurrentMember: vi.fn().mockResolvedValue({ data: { id: "ms_unlock", planConnections: [] } }),
       getMemberJSON: vi.fn().mockResolvedValue({ data: { sleevelessPatternSystemUnlocked: true } }),
     });
-    await expect(resolveSleevelessUserAccess()).resolves.toMatchObject({
-      loggedIn: true,
-      hasSystemAccess: true,
-    });
+    const access = await resolveSleevelessUserAccess();
+    expect(access).toMatchObject({ loggedIn: true, hasSystemAccess: true });
+    expect(hasPatternSystemAccess(access, "sleeveless")).toBe(true);
+    expect(hasPatternSystemAccess(access, "drop-shoulder")).toBe(false);
   });
 });
 

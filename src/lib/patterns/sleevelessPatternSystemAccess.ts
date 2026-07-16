@@ -1,5 +1,10 @@
 import { MEMBER_PLAN_IDS } from "../../config/memberships";
 import {
+  hasMemberAccessFromActivePlanIds,
+  hasPatternBuilderAccess,
+  patternBuilderKeyForSystemId,
+} from "./patternBuilderAccess";
+import {
   type FreeClaimsBySystem,
   freeClaimedPatternIdForSystem,
   isFreeClaimedForSystem,
@@ -40,7 +45,14 @@ export const FREE_SLEEVELESS_CLAIMED_PATTERN_ID_JSON_KEY = "freeSleevelessPatter
 export interface SleevelessUserAccess {
   loggedIn: boolean;
   memberId?: string;
-  /** Member or owns/unlocks the pattern system → full editing + unlimited creation. */
+  /** Active Memberstack plan ids (canonical source for paid entitlement resolution). */
+  activePlanIds?: readonly string[];
+  /** Legacy standalone Sleeveless unlock stored on member JSON. Sleeveless only. */
+  sleevelessUnlockedViaJson?: boolean;
+  /**
+   * True when the visitor has full access to at least one pattern builder system.
+   * Prefer {@link hasPatternSystemAccess} for builder-specific checks.
+   */
   hasSystemAccess: boolean;
   /** Per-system one-time free pattern claims (canonical). */
   freeClaimsBySystem: FreeClaimsBySystem;
@@ -48,6 +60,7 @@ export interface SleevelessUserAccess {
 
 export const LOGGED_OUT_SLEEVELESS_ACCESS: SleevelessUserAccess = {
   loggedIn: false,
+  activePlanIds: [],
   hasSystemAccess: false,
   freeClaimsBySystem: {},
 };
@@ -99,11 +112,63 @@ function asRecord(value: unknown): Record<string, unknown> {
 }
 
 export function planIdsGrantSleevelessSystemAccess(planIds: readonly string[]): boolean {
-  const granting = new Set<string>([
-    ...SLEEVELESS_SYSTEM_MEMBERSHIP_PLAN_IDS,
-    ...SLEEVELESS_SYSTEM_UNLOCK_PLAN_IDS,
-  ]);
-  return planIds.some((id) => typeof id === "string" && granting.has(id.trim()));
+  return (
+    hasPatternBuilderAccess({ builder: "sleeveless", activePlanIds: planIds }) ||
+    hasPatternBuilderAccess({ builder: "dropShoulder", activePlanIds: planIds })
+  );
+}
+
+export interface ResolvePatternSystemAccessParams {
+  activePlanIds: readonly string[];
+  patternSystemId: PatternSystemId;
+  sleevelessUnlockedViaJson?: boolean;
+}
+
+/** Full paid access for one pattern system from active plans and optional legacy JSON unlock. */
+export function resolvePatternSystemAccess(params: ResolvePatternSystemAccessParams): {
+  hasSystemAccess: boolean;
+} {
+  const { activePlanIds, patternSystemId, sleevelessUnlockedViaJson = false } = params;
+  const builderKey = patternBuilderKeyForSystemId(patternSystemId);
+  if (builderKey) {
+    if (hasPatternBuilderAccess({ builder: builderKey, activePlanIds })) {
+      return { hasSystemAccess: true };
+    }
+  } else if (hasMemberAccessFromActivePlanIds(activePlanIds)) {
+    return { hasSystemAccess: true };
+  }
+  if (patternSystemId === "sleeveless" && sleevelessUnlockedViaJson) {
+    return { hasSystemAccess: true };
+  }
+  return { hasSystemAccess: false };
+}
+
+/** Full paid access for one pattern system from a resolved access snapshot. */
+export function hasPatternSystemAccess(
+  access: SleevelessUserAccess,
+  systemId: PatternSystemId,
+): boolean {
+  if (!access?.loggedIn) return false;
+  if (Array.isArray(access.activePlanIds)) {
+    return resolvePatternSystemAccess({
+      activePlanIds: access.activePlanIds,
+      patternSystemId: systemId,
+      sleevelessUnlockedViaJson: access.sleevelessUnlockedViaJson,
+    }).hasSystemAccess;
+  }
+  // Legacy/test snapshots without plan ids: honor the boolean only when no per-system data exists.
+  return access.hasSystemAccess === true;
+}
+
+function hasAnyPatternBuilderSystemAccess(access: SleevelessUserAccess): boolean {
+  return (
+    hasPatternSystemAccess(access, "sleeveless") ||
+    hasPatternSystemAccess(access, "drop-shoulder")
+  );
+}
+
+export function computeHasSystemAccessFlag(access: Omit<SleevelessUserAccess, "hasSystemAccess">): boolean {
+  return hasAnyPatternBuilderSystemAccess(access as SleevelessUserAccess);
 }
 
 export function readSleevelessSystemUnlockFromMemberJson(json: unknown): boolean {
@@ -141,8 +206,12 @@ export function mergeFreeClaimResetIntoMemberJson(json: unknown): Record<string,
   return merged;
 }
 
-export function hasSleevelessPatternSystemAccess(user: SleevelessUserAccess): boolean {
-  return Boolean(user?.hasSystemAccess);
+export function hasSleevelessPatternSystemAccess(
+  user: SleevelessUserAccess,
+  systemId?: PatternSystemId,
+): boolean {
+  if (systemId) return hasPatternSystemAccess(user, systemId);
+  return hasAnyPatternBuilderSystemAccess(user);
 }
 
 /** Whether the user may create/save a NEW pattern for the given system right now. */
@@ -151,7 +220,17 @@ export function canCreatePatternForSystem(
   systemId: PatternSystemId,
 ): boolean {
   if (!user?.loggedIn) return false;
-  if (hasSleevelessPatternSystemAccess(user)) return true;
+  if (hasPatternSystemAccess(user, systemId)) return true;
+  return !isFreeClaimedForSystem(user.freeClaimsBySystem ?? {}, systemId);
+}
+
+/** Whether the user may edit pattern-building choices and regenerate for the given system. */
+export function canEditPatternSettingsForSystem(
+  user: SleevelessUserAccess,
+  systemId: PatternSystemId,
+): boolean {
+  if (hasPatternSystemAccess(user, systemId)) return true;
+  if (!user?.loggedIn) return false;
   return !isFreeClaimedForSystem(user.freeClaimsBySystem ?? {}, systemId);
 }
 
@@ -161,16 +240,6 @@ export function canCreateSleevelessPattern(
   systemId: PatternSystemId = "sleeveless",
 ): boolean {
   return canCreatePatternForSystem(user, systemId);
-}
-
-/** Whether the user may edit pattern-building choices and regenerate for the given system. */
-export function canEditPatternSettingsForSystem(
-  user: SleevelessUserAccess,
-  systemId: PatternSystemId,
-): boolean {
-  if (hasSleevelessPatternSystemAccess(user)) return true;
-  if (!user?.loggedIn) return false;
-  return !isFreeClaimedForSystem(user.freeClaimsBySystem ?? {}, systemId);
 }
 
 /** @deprecated Use {@link canEditPatternSettingsForSystem} with an explicit system id. */

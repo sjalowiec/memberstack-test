@@ -30,27 +30,20 @@ vi.mock("./customPatternProjectClient", async (importOriginal) => {
   };
 });
 
-vi.mock("./sleevelessPatternSystemAccessClient", () => ({
-  resolveSleevelessUserAccess: vi.fn(async () => ({
-    loggedIn: true,
-    memberId: "ms_member",
-    hasSystemAccess: true,
-    freeClaimsBySystem: {},
-  })),
-  resolveSleevelessUserAccessSnapshot: vi.fn(async () => ({
-    loggedIn: true,
-    memberId: "ms_member",
-    hasSystemAccess: true,
-    freeClaimsBySystem: {},
-  })),
-  getCachedSleevelessUserAccess: vi.fn(() => ({
-    loggedIn: true,
-    memberId: "ms_member",
-    hasSystemAccess: true,
-    freeClaimsBySystem: {},
-  })),
-  invalidateSleevelessUserAccessCache: vi.fn(),
-}));
+// Saving from the workspace is member/owner-gated. Stub an authorized member snapshot so the
+// save path proceeds; all other client exports stay real. (Test-only — no production logic change.)
+vi.mock("./sleevelessPatternSystemAccessClient", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./sleevelessPatternSystemAccessClient")>();
+  return {
+    ...actual,
+    resolveSleevelessUserAccess: vi.fn().mockResolvedValue({
+      loggedIn: true,
+      memberId: "ms_member",
+      hasSystemAccess: true,
+      freeClaimsBySystem: {},
+    }),
+  };
+});
 import type { CustomPatternProject } from "./customPatternProjectTypes";
 import {
   captureSavedCustomPatternDirtyBaseline,

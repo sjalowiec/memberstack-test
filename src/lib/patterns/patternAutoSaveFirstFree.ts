@@ -10,7 +10,7 @@ import {
   resolvePatternSystemFromPage,
   type PatternSystemId,
 } from "./patternSystemId";
-import { canCreatePatternForSystem } from "./sleevelessPatternSystemAccess";
+import { canCreatePatternForSystem, hasPatternSystemAccess } from "./sleevelessPatternSystemAccess";
 import {
   markFreePatternClaimedForSystem,
   resolveSleevelessUserAccess,
@@ -43,7 +43,7 @@ export async function maybeAutoSaveFirstFreePattern(
   if (!access.loggedIn) {
     return { status: "skipped", reason: "logged-out" };
   }
-  if (access.hasSystemAccess) {
+  if (hasPatternSystemAccess(access, patternSystem)) {
     return { status: "skipped", reason: "has-system-access" };
   }
   if (!canCreatePatternForSystem(access, patternSystem)) {
