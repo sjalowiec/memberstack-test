@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buildSleevelessGarmentDiagramReplacements } from "./sleevelessGarmentDiagramReplacements";
+import {
+  buildSleevelessGarmentDiagramReplacements,
+  resolveArmholeRowsForGarmentDiagram,
+} from "./sleevelessGarmentDiagramReplacements";
 import { applyGarmentDiagramSvgReplacements } from "./sleevelessGarmentDiagramSvg";
 import { calculateHemRows, getDefaultHemLengthInches } from "./hemDefaults";
 import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
@@ -338,6 +341,44 @@ describe("buildSleevelessGarmentDiagramReplacements", () => {
     expect(replCardigan.HEIGHT).toBe(replPullover.HEIGHT);
     expect(replCardigan.HEM_ROWS).toBe(replPullover.HEM_ROWS);
     expect(replCardigan.HEM_INCHES).toBe(replPullover.HEM_INCHES);
+  });
+
+  it("uses full armhole rows on drop-shoulder front and back (not reduced by neck depth)", () => {
+    const fullArmholeRows = 70;
+    const result = {
+      isDropShoulder: true,
+      debug: {
+        ...baseDebug,
+        armholeRows: fullArmholeRows,
+        armholeDepth: 7,
+        rowsFromCastOnToArmholeStart: 100,
+        backNecklineStartRC: 155,
+        frontNecklineStartRC: 140,
+        backNeckDepthRows: 15,
+        frontNeckDepthRows: 30,
+      },
+    } as unknown as SleevelessBackPatternResult;
+
+    expect(resolveArmholeRowsForGarmentDiagram(result, "back", result.debug)).toBe(fullArmholeRows);
+    expect(resolveArmholeRowsForGarmentDiagram(result, "front", result.debug)).toBe(fullArmholeRows);
+
+    const backRepl = buildSleevelessGarmentDiagramReplacements(result, "in", {
+      patternData: {},
+      measurementPiece: "back",
+    });
+    const frontRepl = buildSleevelessGarmentDiagramReplacements(result, "in", {
+      patternData: {},
+      measurementPiece: "front",
+    });
+
+    expect(backRepl.ARMHOLE_ROWS).toBe(String(fullArmholeRows));
+    expect(frontRepl.ARMHOLE_ROWS).toBe(String(fullArmholeRows));
+    expect(backRepl.ARMHOLE_DEPTH).toBe(frontRepl.ARMHOLE_DEPTH);
+    expect(backRepl.NECK_DEPTH_ROWS).toBe("15");
+    expect(frontRepl.NECK_DEPTH_ROWS).toBe("30");
+    // Must not equal marker→neckline (would be 55 back / 40 front).
+    expect(backRepl.ARMHOLE_ROWS).not.toBe("55");
+    expect(frontRepl.ARMHOLE_ROWS).not.toBe("40");
   });
 
   it("uses right half cast-on from same body/back geometry", () => {

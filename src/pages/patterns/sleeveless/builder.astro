@@ -704,6 +704,11 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
     width: 100%;
   }
 
+  /* display:flex above would otherwise override the UA [hidden] rule */
+  .express-needle-block[hidden] {
+    display: none !important;
+  }
+
   @media (max-width: 480px) {
     .express-needle-block {
       max-width: 100%;
