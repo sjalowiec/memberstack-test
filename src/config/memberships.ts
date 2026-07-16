@@ -32,7 +32,7 @@ export const MEMBERSHIPS = {
       name: "KIN Membership - Premium",
       memberstackPlanId: "pln_kin-membership-annual-premium-tn5b0cxj",
       prices: {
-        monthly: { price: 19.99, memberstackPriceId: "prc_knit-it-now-premium-monthly--en1b307jv" },
+        monthly: { price: 19.99, memberstackPriceId: "prc_monthly-subscription-to-knititnow-webw0nzy" },
         annual: { price: 228, memberstackPriceId: "prc_knit-it-now-premium-annual-membership-1g1bg070r" },
       },
     },

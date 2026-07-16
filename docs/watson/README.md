@@ -20,6 +20,7 @@ When the legacy ColdFusion site is retired, customer support still needs access 
 |---|---|
 | [architecture.md](./architecture.md) | Data flow, Postgres roles, read-only vs editable boundaries |
 | [data-model.md](./data-model.md) | Approved export tables and business rules |
+| [membership-reports.md](./membership-reports.md) | Current Legacy Members and Remaining Annual Access report rules |
 | [ui-plan.md](./ui-plan.md) | First-version interface and workflows |
 | [import-plan.md](./import-plan.md) | CSV export and Postgres import process |
 | [importer.md](./importer.md) | Importer CLI, env vars, validation, reruns |

@@ -1,0 +1,40 @@
+---
+import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
+import WatsonCurrentLegacyMembersReport from "../../../components/watson/WatsonCurrentLegacyMembersReport.astro";
+import {
+  loadCurrentLegacyMembersReport,
+  type CurrentLegacyMembersReport,
+} from "../../../lib/watson/currentLegacyMembersReport";
+
+export const prerender = false;
+
+let reportError: string | null = null;
+let report: CurrentLegacyMembersReport | null = null;
+
+try {
+  report = await loadCurrentLegacyMembersReport();
+} catch (error) {
+  reportError =
+    error instanceof Error ? error.message : "Current legacy members report failed to load.";
+}
+---
+
+<WatsonPageShell
+  title="Current Legacy Members | Watson Reports"
+  description="Current membership state from imported legacy Knit It Now member fields."
+  heading="Current Legacy Members"
+  intro="Read-only reproduction of the legacy current-member universe."
+>
+  <p class="watson-report__meta">
+    <a href="/watson/reports">? All reports</a>
+  </p>
+  {
+    reportError ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {reportError}
+      </p>
+    ) : report ? (
+      <WatsonCurrentLegacyMembersReport report={report} />
+    ) : null
+  }
+</WatsonPageShell>

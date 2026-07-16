@@ -57,8 +57,10 @@ These rules reflect legacy ColdFusion behavior and data quality quirks. Implemen
 
 ### Subscriptions
 
-- **`CurrentSubscriber` is unreliable.** Do not use it as the sole indicator of active membership. Prefer `SubscriptionDate`, `SubscriptionExpiring`, and related fields for historical context; cross-check with current Memberstack/Stripe data outside Watson when answering ùis this member active today?ù
+- **`CurrentSubscriber` is unreliable.** Do not use it as the sole indicator of active membership. Prefer `SubscriptionDate`, `SubscriptionExpiring`, and related fields for historical context; cross-check with current Memberstack/Stripe data outside Watson when answering whether a member is active today.
 - **`SubscriptionDate` and `SubscriptionExpiring` are historical.** They describe legacy subscription records at export time, not necessarily current billing state on the new site.
+- **Legacy ?current members? report rule** (Matthew / ColdFusion list screens): `betaactive = 0` and `subscriptionexpiring::date >= CURRENT_DATE` on `legacy_members`. See [membership-reports.md](./membership-reports.md). Do not use `legacy_subscriptions` alone to decide current status.
+- **`Single Payment` is not synonymous with annual membership.** It mixes monthly ($19.99) and one-time/annual purchases.
 
 ### Members ù dates and notes
 
