@@ -7,6 +7,7 @@ import {
   getPatternProjectPrintFields,
   migrateLegacyPrintSessionToPatternProject,
   PROJECT_NOTES_MAX_LENGTH,
+  resolvePatternPrintDocumentTitle,
   syncPatternProjectToPrintSession,
 } from "../lib/patterns/sleevelessPatternProjectMeta";
 import { syncPatternTipDismissBeforePrint } from "../lib/patterns/patternTipDismiss";
@@ -146,7 +147,7 @@ function bindModalListenersOnce(): void {
     const opts = pendingOpts;
     pendingOpts = undefined;
     dialog.close();
-    runPatternPrint(opts);
+    runPatternPrint(opts, "");
   });
 
   addBtn?.addEventListener("click", () => {
@@ -165,7 +166,7 @@ function bindModalListenersOnce(): void {
     const opts = pendingOpts;
     pendingOpts = undefined;
     dialog.close();
-    runPatternPrint(opts);
+    runPatternPrint(opts, title.trim());
   });
 
   /** Escape closes without printing — drop deferred callbacks. */
@@ -190,13 +191,30 @@ function syncAllPatternTipDismissBeforePrint(): void {
   });
 }
 
-function runPatternPrint(opts?: PatternPrintTriggerOptions): void {
+/**
+ * Runs window.print(), temporarily setting document.title from the pattern name so
+ * browser Save-as-PDF suggests that filename. Restores the page title afterward.
+ * Callers that already set document.title in onBeforePrint (e.g. diy-blanket) are left alone.
+ */
+function runPatternPrint(opts?: PatternPrintTriggerOptions, printTitle = ""): void {
   syncAllPatternTipDismissBeforePrint();
+  const originalTitle = document.title;
   try {
     opts?.onBeforePrint?.();
+    if (document.title === originalTitle) {
+      const resolved = resolvePatternPrintDocumentTitle(printTitle, originalTitle);
+      if (resolved !== originalTitle) {
+        document.title = resolved;
+      }
+    }
     window.print();
   } finally {
     opts?.onAfterPrint?.();
+    if (document.title !== originalTitle) {
+      window.setTimeout(() => {
+        document.title = originalTitle;
+      }, 100);
+    }
   }
 }
 
@@ -209,14 +227,14 @@ export function triggerPatternPrint(
   applyPatternPrintPersonalizationToDom(title, notes);
 
   if (shouldSkipPersonalizationModal()) {
-    runPatternPrint(opts);
+    runPatternPrint(opts, title);
     return;
   }
 
   const dialog = getDialog();
 
   if (!dialog || typeof dialog.showModal !== "function") {
-    runPatternPrint(opts);
+    runPatternPrint(opts, title);
     return;
   }
 
@@ -227,7 +245,7 @@ export function triggerPatternPrint(
   try {
     dialog.showModal();
   } catch {
-    runPatternPrint(opts);
+    runPatternPrint(opts, title);
     return;
   }
 
