@@ -1,6 +1,7 @@
 ---
 import WorkspaceHeader from '../components/layout/WorkspaceHeader.astro';
 import WorkspaceFooter from '../components/layout/WorkspaceFooter.astro';
+import RobotsMeta from '../components/seo/RobotsMeta.astro';
 
 const { title = 'Private Project Workspace' } = Astro.props;
 ---
@@ -10,6 +11,7 @@ const { title = 'Private Project Workspace' } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
+    <RobotsMeta />
     <slot name="head" />
   </head>
   <body class="workspace-page">

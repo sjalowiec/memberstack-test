@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import Header from "../../components/Header.astro";
 import Footer from "../../components/Footer.astro";
 import WizardFlowRenderer from "../../components/wizards/WizardFlowRenderer.astro";
+import RobotsMeta from "../../components/seo/RobotsMeta.astro";
 import "../../styles/global.css";
 
 export const prerender = true;
@@ -46,6 +47,7 @@ const hasWizardFlow = data.wizardFlow && data.wizardFlow.options && data.wizardF
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{pageTitle}</title>
   <meta name="description" content={pageDescription} />
+  <RobotsMeta />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   
   {data.schemaMarkup && (

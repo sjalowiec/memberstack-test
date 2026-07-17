@@ -1,4 +1,6 @@
 ---
+import RobotsMeta from "../components/seo/RobotsMeta.astro";
+
 const { title, description } = Astro.props;
 ---
 
@@ -8,6 +10,7 @@ const { title, description } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title ? `${title} | Knit it Now` : "Knit it Now"}</title>
     {description && <meta name="description" content={description} />}
+    <RobotsMeta />
     <link rel="icon" type="image/png" href="/favicon.png" />
   </head>
 
