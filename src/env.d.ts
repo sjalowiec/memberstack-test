@@ -5,6 +5,11 @@
  * Inline scripts check this to show gated content without Memberstack login.
  */
 interface ImportMetaEnv {
+  /**
+   * Temporary pre-launch: when "true", emit site-wide noindex/nofollow robots meta.
+   * Remove or set "false" at launch and redeploy.
+   */
+  readonly PUBLIC_NOINDEX?: string;
   /** Server-only: Watson owner password for private admin access. */
   readonly WATSON_ADMIN_PASSWORD?: string;
   /** Server-only: Memberstack Admin API key for token verification (My Library APIs). */

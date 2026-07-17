@@ -1,0 +1,7 @@
+---
+import { isSiteNoindexEnabled } from "../../lib/seo/siteIndexing";
+
+const noindex = isSiteNoindexEnabled();
+---
+
+{noindex && <meta name="robots" content="noindex, nofollow" />}

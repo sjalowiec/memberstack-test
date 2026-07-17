@@ -2,6 +2,7 @@
 import '../../../styles/global.css';
 import '../../../styles/wizard.css';
 import { PATTERN_BUILDERS_HOME_HREF } from '../../../lib/patterns/customPatternProjectNavigation';
+import RobotsMeta from '../../../components/seo/RobotsMeta.astro';
 
 const pageTitle = "Hybrid Blanket Pattern • Knit it Now";
 const pageDescription = "A customizable blanket pattern for mixing stitch patterns — whether they're hand knit, machine knit, or both.";
@@ -27,6 +28,7 @@ const pageDescription = "A customizable blanket pattern for mixing stitch patter
     </style>
     <title>{pageTitle}</title>
     <meta name="description" content={pageDescription} />
+    <RobotsMeta />
 
     <!-- Favicons -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />

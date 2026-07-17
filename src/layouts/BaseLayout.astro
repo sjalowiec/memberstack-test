@@ -9,6 +9,7 @@ import KinCatalogVideoModal from "../components/common/KinCatalogVideoModal.astr
 import ToolPrintFooter from "../components/tools/ToolPrintFooter.astro";
 import EnvBanner from "../components/EnvBanner.astro";
 import MembershipCornerControl from "../components/membership/MembershipCornerControl.astro";
+import RobotsMeta from "../components/seo/RobotsMeta.astro";
 
 interface Props {
   title?: string;
@@ -59,6 +60,7 @@ const isProduction =
 
     <title>{title}</title>
     <meta name="description" content={description} />
+    <RobotsMeta />
 
     <!-- Favicons -->
     <link rel="icon" href="/favicon.ico" />
