@@ -163,7 +163,7 @@ async function launchPurchaseCheckout(
   try {
     const checkoutResult = await purchasePlansWithCheckout.call(ms, {
       priceId: plan.priceId,
-      successUrl: `${window.location.origin}/account`,
+      successUrl: `${window.location.origin}/signup/thank-you`,
       cancelUrl,
       autoRedirect: false,
     });

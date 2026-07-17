@@ -103,6 +103,7 @@ describe("startJoinCheckout (Phase 1 login-first)", () => {
     expect(purchasePlansWithCheckout).toHaveBeenCalledWith(
       expect.objectContaining({
         priceId: MEMBERSHIP_PRICE_IDS.basicMonthly,
+        successUrl: "https://example.com/signup/thank-you",
         autoRedirect: false,
       }),
     );
@@ -256,7 +257,10 @@ describe("startJoinCheckout (Phase 1 login-first)", () => {
     expect(resumed).toBe(true);
     expect(openModal).not.toHaveBeenCalled();
     expect(purchasePlansWithCheckout).toHaveBeenCalledWith(
-      expect.objectContaining({ priceId: MEMBERSHIP_PRICE_IDS.premiumMonthly }),
+      expect.objectContaining({
+        priceId: MEMBERSHIP_PRICE_IDS.premiumMonthly,
+        successUrl: "https://example.com/signup/thank-you",
+      }),
     );
   });
 
