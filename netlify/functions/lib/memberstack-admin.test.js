@@ -28,6 +28,8 @@ describe("memberstack-admin client secret injection", () => {
     const client = getMemberstackAdminClient();
     expect(client).not.toBeNull();
     expect(client).toHaveProperty("listMembers");
+    expect(client).toHaveProperty("createMember");
+    expect(client).toHaveProperty("updateMember");
   });
 
   it("uses an explicit Netlify runtime secret without reading process.env", () => {
@@ -35,6 +37,8 @@ describe("memberstack-admin client secret injection", () => {
     const client = getMemberstackAdminClient({ secretKey: "sk_explicit_netlify" });
     expect(client).not.toBeNull();
     expect(client).toHaveProperty("listMembers");
+    expect(client).toHaveProperty("createMember");
+    expect(client).toHaveProperty("updateMember");
   });
 
   it("returns null when an explicit secret is missing", () => {
