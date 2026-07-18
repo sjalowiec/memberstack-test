@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import FavoriteHeading from "../../components/favorites/FavoriteHeading.astro";
 import abbreviations from "../../data/reference/abbreviations.json";
 
 const sortedAbbreviations = [...abbreviations].sort((a, b) => {
@@ -7,14 +8,15 @@ const sortedAbbreviations = [...abbreviations].sort((a, b) => {
   const bVal = (b.Abbreviation ?? "").toString();
   return aVal.localeCompare(bVal);
 });
+const pageTitle = "Machine Knitting Abbreviations";
 ---
-<Layout title="Machine Knitting Abbreviations">
+<Layout title={pageTitle}>
 
     <div class="page-nav">
         <a class="page-nav__back" href="/reference">← Back to References</a>
       </div>
 
-  <h1>Machine Knitting Abbreviations</h1>
+  <FavoriteHeading title={pageTitle} contentType="reference" />
   <div class="kbm-intro-callout">
     <p>
       Machine knitting patterns often use abbreviations to keep instructions short and readable.

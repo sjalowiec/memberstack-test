@@ -5,8 +5,12 @@ import {
 } from "./favoriteContentTypes";
 
 describe("favoriteContentTypes", () => {
-  it("recognizes video only in version one", () => {
+  it("recognizes supported content types", () => {
     expect(isFavoriteContentType("video")).toBe(true);
+    expect(isFavoriteContentType("stitch")).toBe(true);
+    expect(isFavoriteContentType("reference")).toBe(true);
+    expect(isFavoriteContentType("tool")).toBe(true);
+    expect(isFavoriteContentType("stitches")).toBe(false);
     expect(isFavoriteContentType("skill-builder")).toBe(false);
   });
 

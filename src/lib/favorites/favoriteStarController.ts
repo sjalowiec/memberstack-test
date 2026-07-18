@@ -11,7 +11,7 @@ import {
   toggleFavorite,
   type FavoritesChangeDetail,
 } from "./favoritesClient";
-import type { FavoriteContentType } from "./favoriteContentTypes";
+import { isFavoriteContentType, type FavoriteContentType } from "./favoriteContentTypes";
 import { applyFavoriteStarState, syncFavoriteStarsInDocument } from "./favoriteStarUi";
 
 export type FavoriteStarControllerOptions = {
@@ -35,12 +35,12 @@ function readButtonState(button: HTMLButtonElement): {
   title: string;
   isFavorite: boolean;
 } | null {
-  const contentType = button.getAttribute("data-content-type");
+  const contentTypeRaw = button.getAttribute("data-content-type");
   const contentId = button.getAttribute("data-content-id")?.trim() || "";
-  if (contentType !== "video" || !contentId) return null;
+  if (!isFavoriteContentType(contentTypeRaw) || !contentId) return null;
   const title = button.getAttribute("data-favorite-title")?.trim() || "this item";
   const isFavorite = button.getAttribute("aria-pressed") === "true";
-  return { contentType, contentId, title, isFavorite };
+  return { contentType: contentTypeRaw, contentId, title, isFavorite };
 }
 
 /**

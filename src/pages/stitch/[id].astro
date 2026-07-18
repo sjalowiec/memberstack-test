@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import PageBackLink from "../../components/common/PageBackLink.astro";
 import GlossaryTooltip from "../../components/common/GlossaryTooltip.astro";
+import FavoriteHeading from "../../components/favorites/FavoriteHeading.astro";
 import {
   getPatternById,
   getImagesForPattern,
@@ -220,7 +221,13 @@ function getStitchFileCleanName(file: StitchFile): string {
       </div>
 
       <div class="stitch-fe__rail">
-        <p class="stitch-fe__meta">{metaLine}</p>
+        <FavoriteHeading
+          title={displayTitle}
+          contentType="stitch"
+          contentId={patternId}
+          headingClass="stitch-fe__title"
+        />
+        {displayTitle !== metaLine ? <p class="stitch-fe__meta">{metaLine}</p> : null}
 
         {hasNotes ? <div class="stitch-fe__intro" set:html={pattern.notes} /> : null}
 
@@ -834,6 +841,14 @@ function getStitchFileCleanName(file: StitchFile): string {
       gap: 1.25rem;
       font-family: var(--font, "Poppins", system-ui, sans-serif);
       min-width: 0;
+    }
+
+    .stitch-fe__title {
+      margin: 0 0 0.35rem;
+      font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--kbm-green, #52682d);
     }
 
     .stitch-fe__meta {

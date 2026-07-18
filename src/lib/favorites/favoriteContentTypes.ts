@@ -1,9 +1,9 @@
 /**
  * Shared favorite content-type definitions.
- * Version one implements `video` only; add new literals here when extending.
+ * Add new literals here (and in the Netlify store allowlist) when extending.
  */
 
-export const FAVORITE_CONTENT_TYPES = ["video"] as const;
+export const FAVORITE_CONTENT_TYPES = ["video", "stitch", "reference", "tool"] as const;
 
 export type FavoriteContentType = (typeof FAVORITE_CONTENT_TYPES)[number];
 

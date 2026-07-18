@@ -1,23 +1,53 @@
 ---
 /**
- * Account My Favorites dashboard summary — Videos for v1.
- * Hydrated by account-favorites.ts (preview of recent favorites).
+ * Account My Favorites dashboard — Videos, Stitches, Reference, Tools.
+ * Hydrated by account-favorites.ts.
  */
 import "../../styles/favorites.css";
 import videosRaw from "../../data/videos-public.json";
 import { filterPublicCatalogVideos } from "../../lib/videoPublic";
+import { getStitchCatalogItems } from "../../lib/stitch-data";
+import toolsRaw from "../../../data/tools.json";
+import { REFERENCE_FAVORITE_CATALOG } from "../../lib/favorites/referenceFavoriteCatalog";
+import { FAVORITE_GROUP_ORDER } from "../../lib/favorites/favoriteCatalog";
 
 const publicVideos = filterPublicCatalogVideos(Array.isArray(videosRaw) ? videosRaw : []);
 const videoMeta = publicVideos
   .map((v) => ({
     content_id: String(v.content_id ?? ""),
     title: typeof v.title === "string" ? v.title : "Video",
+    href: `/videos/${encodeURIComponent(String(v.content_id ?? ""))}`,
     posterUrl:
       typeof (v as { posterUrl?: string }).posterUrl === "string"
         ? (v as { posterUrl?: string }).posterUrl
         : "",
   }))
   .filter((v) => v.content_id);
+
+const stitchMeta = getStitchCatalogItems().map((it) => ({
+  content_id: String(it.id),
+  title: it.title || `Stitch #${it.id}`,
+  href: `/stitch/${it.id}`,
+  posterUrl: it.swatchSrc || "",
+}));
+
+const toolMeta = (Array.isArray(toolsRaw) ? toolsRaw : [])
+  .filter((t: { id?: number; href?: string; active?: boolean }) => t.active !== false && t.id != null)
+  .map((t: { id: number; title?: string; href?: string; icon?: string }) => ({
+    content_id: String(t.id),
+    title: typeof t.title === "string" && t.title.trim() ? t.title : "Tool",
+    href: typeof t.href === "string" && t.href.startsWith("/") ? t.href : "/tools",
+    posterUrl: t.icon ? `/icons/tools/${t.icon}` : "",
+  }));
+
+const referenceMeta = REFERENCE_FAVORITE_CATALOG;
+
+const groupMeta = {
+  video: videoMeta,
+  stitch: stitchMeta,
+  reference: referenceMeta,
+  tool: toolMeta,
+};
 ---
 
 <section
@@ -28,7 +58,7 @@ const videoMeta = publicVideos
 >
   <h2 id="my-favorites-heading" class="dashboard-card__title">My Favorites</h2>
   <p class="dashboard-card__subtitle">
-    Recent videos you have starred. Open any title to watch, or remove it from favorites here.
+    Items you have starred. Open any title to view it, or remove it from favorites here.
   </p>
 
   <p
@@ -40,26 +70,47 @@ const videoMeta = publicVideos
     Loading your favorites...
   </p>
 
-  <div class="account-favorites__group" data-kbm-my-favorites-videos hidden>
-    <h3 class="account-favorites__group-title">Videos</h3>
-    <ul class="account-favorites__list" data-kbm-my-favorites-list></ul>
-    <p class="account-favorites__view-all-wrap">
-      <a
-        href="/videos/?cat=favorites"
-        class="kbm-btn kbm-btn-outline account-favorites__view-all"
-        data-kbm-my-favorites-view-all
-      >
-        View favorite videos
-      </a>
-    </p>
+  <div class="account-favorites__groups" data-kbm-my-favorites-groups>
+    {
+      FAVORITE_GROUP_ORDER.map((group) => (
+        <div
+          class="account-favorites__group"
+          data-kbm-my-favorites-group={group.contentType}
+          hidden
+        >
+          <h3 class="account-favorites__group-title">{group.label}</h3>
+          <ul class="account-favorites__list" data-kbm-my-favorites-list={group.contentType}></ul>
+          {group.viewAllHref ? (
+            <p class="account-favorites__view-all-wrap">
+              <a
+                href={group.viewAllHref}
+                class="kbm-btn kbm-btn-outline account-favorites__view-all"
+                data-kbm-my-favorites-view-all={group.contentType}
+              >
+                View favorite {group.label.toLowerCase()}
+              </a>
+            </p>
+          ) : null}
+        </div>
+      ))
+    }
   </div>
 
   <div class="account-favorites__empty" data-kbm-my-favorites-empty hidden>
-    <p class="account-favorites__empty-text">You haven't added any favorite videos yet.</p>
-    <a href="/videos" class="kbm-btn kbm-btn-accent account-favorites__browse-btn">Browse Videos</a>
+    <p class="account-favorites__empty-text">You haven't added any favorites yet.</p>
+    <div class="account-favorites__empty-actions">
+      <a href="/videos" class="kbm-btn kbm-btn-accent account-favorites__browse-btn">Browse Videos</a>
+      <a href="/stitch" class="kbm-btn kbm-btn-outline account-favorites__browse-btn">Browse Stitches</a>
+      <a href="/reference" class="kbm-btn kbm-btn-outline account-favorites__browse-btn">Browse Reference</a>
+      <a href="/tools" class="kbm-btn kbm-btn-outline account-favorites__browse-btn">Browse Tools</a>
+    </div>
   </div>
 
-  <script id="account-favorites-video-meta" type="application/json" set:html={JSON.stringify(videoMeta)} />
+  <script
+    id="account-favorites-meta"
+    type="application/json"
+    set:html={JSON.stringify(groupMeta)}
+  />
 </section>
 
 <style>
@@ -74,6 +125,12 @@ const videoMeta = publicVideos
 
   .account-favorites__status {
     margin: 0 0 0.75rem;
+  }
+
+  .account-favorites__groups {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
   }
 
   .account-favorites__group-title {
@@ -112,6 +169,12 @@ const videoMeta = publicVideos
     line-height: 1.5;
   }
 
+  .account-favorites__empty-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
   .account-favorites__browse-btn {
     display: inline-flex;
     align-items: center;
@@ -137,11 +200,29 @@ const videoMeta = publicVideos
     background: #e5e7eb;
   }
 
+  :global(.account-favorites__thumb--square) {
+    aspect-ratio: 1;
+  }
+
+  :global(.account-favorites__thumb--icon) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    background: #f3f4f6;
+  }
+
   :global(.account-favorites__thumb img) {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  :global(.account-favorites__thumb--icon img) {
+    width: 70%;
+    height: 70%;
+    object-fit: contain;
   }
 
   :global(.account-favorites__body) {

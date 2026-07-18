@@ -1,11 +1,15 @@
 ---
 /**
- * Tool page header: title + optional icon from tools JSON.
+ * Tool page header: title + optional icon from tools JSON + favorite star.
  * Pass the tool object from the page (page looks up by pathname in tools JSON).
  */
+import FavoriteStar from "../favorites/FavoriteStar.astro";
+import FavoritesRuntime from "../favorites/FavoritesRuntime.astro";
+import "../../styles/favorites.css";
+
 interface Props {
-  /** Tool entry from tools JSON (title, icon); when missing, fallbackTitle is used and no icon shown */
-  tool?: { title?: string; icon?: string } | null;
+  /** Tool entry from tools JSON (id, title, icon); when missing, fallbackTitle is used and no icon shown */
+  tool?: { id?: number | string; title?: string; icon?: string } | null;
   /** Title used when tool is not provided or has no title */
   fallbackTitle?: string;
 }
@@ -14,14 +18,19 @@ const { tool = null, fallbackTitle = "Tool" } = Astro.props;
 
 const title = tool?.title ?? fallbackTitle;
 const iconUrl = tool?.icon ? `/icons/tools/${tool.icon}` : null;
+const contentId = tool?.id != null && String(tool.id).trim() ? String(tool.id).trim() : "";
 ---
 
-<div class="tool-title">
+<div class="tool-title favorite-title-row">
   {iconUrl && (
     <img src={iconUrl} alt="" class="tool-title-icon" />
   )}
   <h1>{title}</h1>
+  {contentId ? (
+    <FavoriteStar contentType="tool" contentId={contentId} title={title} />
+  ) : null}
 </div>
+{contentId ? <FavoritesRuntime contentType="tool" /> : null}
 
 <style>
   .tool-title {
@@ -42,5 +51,7 @@ const iconUrl = tool?.icon ? `/icons/tools/${tool.icon}` : null;
     color: var(--kbm-green);
     font-size: 2rem;
     font-weight: 700;
+    flex: 1 1 auto;
+    min-width: 0;
   }
 </style>

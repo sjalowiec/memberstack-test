@@ -1,17 +1,30 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
+import FavoriteStar from "../../components/favorites/FavoriteStar.astro";
+import FavoritesRuntime from "../../components/favorites/FavoritesRuntime.astro";
 import "../../styles/pages/machine-brands.css";
+import "../../styles/favorites.css";
 import PageBackLink from "../../components/common/PageBackLink.astro";
+
+const brandsTitle = "Knitting Machine Brands";
 ---
 
-<Layout title="Knitting Machine Brands">
+<Layout title={brandsTitle}>
   <PageBackLink href="/reference" text="Back to Reference" />
   <div class="page-wrap machine-brands-page">
     <PageHead
-      title="Knitting Machine Brands"
+      title={brandsTitle}
       subhead="Use this guide to identify your knitting machine brand — and uncover the different names it may go by around the world."
-    />
+    >
+      <FavoriteStar
+        slot="after-title"
+        contentType="reference"
+        contentId="/reference/machine-brands"
+        title={brandsTitle}
+      />
+    </PageHead>
+    <FavoritesRuntime contentType="reference" />
   
     <div class="easter-egg-callout">
       <span class="easter-egg-icon"></span>

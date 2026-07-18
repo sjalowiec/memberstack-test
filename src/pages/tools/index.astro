@@ -1,7 +1,10 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import CardRibbon from "../../components/ui/CardRibbon.astro";
+import FavoriteStar from "../../components/favorites/FavoriteStar.astro";
+import FavoritesRuntime from "../../components/favorites/FavoritesRuntime.astro";
 import tools from "../../../data/tools.json";
+import "../../styles/favorites.css";
 
 export const prerender = true;
 
@@ -84,6 +87,7 @@ const NEW_TOOL_HREF = "/tools/stitch-multiple-calculator";
               "data-coming-soon": isComingSoon ? "true" : "false",
               "data-tool-search": searchBlob,
             };
+            const toolId = tool.id != null ? String(tool.id) : "";
             const inner = (
               <>
                 {isComingSoon && <CardRibbon label="Coming Soon" variant="soon" />}
@@ -93,7 +97,12 @@ const NEW_TOOL_HREF = "/tools/stitch-multiple-calculator";
                   alt=""
                   class="tool-icon"
                 />
-                <h3>{tool.title} </h3>
+                <div class="favorite-title-row tools-card-title-row">
+                  <h3>{tool.title} </h3>
+                  {toolId && !isComingSoon ? (
+                    <FavoriteStar contentType="tool" contentId={toolId} title={tool.title} />
+                  ) : null}
+                </div>
                 <p>{tool.description}</p>
                 {membersOnly && !isNew && (
                   <span class="tool-member-lock">
@@ -134,6 +143,7 @@ const NEW_TOOL_HREF = "/tools/stitch-multiple-calculator";
     </section>
   ))}
 
+  <FavoritesRuntime contentType="tool" />
 </section>
 
 <script>

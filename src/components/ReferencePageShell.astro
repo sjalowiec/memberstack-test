@@ -1,5 +1,9 @@
 ---
 import PageHead from "./PageHead.astro";
+import FavoriteStar from "./favorites/FavoriteStar.astro";
+import FavoritesRuntime from "./favorites/FavoritesRuntime.astro";
+import { normalizeFavoriteHref } from "../lib/favorites/favoriteHref";
+import "../styles/favorites.css";
 
 interface Props {
   title?: string;
@@ -11,6 +15,10 @@ interface Props {
   backLabel: string;
   /** Match site main column (~1100px); default shell matches legacy .page-wrap max-width (860px). */
   wide?: boolean;
+  /** When false, omit the favorite star (rare). Default true when a title is present. */
+  enableFavorite?: boolean;
+  /** Override path used as favorite content_id (defaults to current pathname). */
+  favoriteContentId?: string;
 }
 
 const {
@@ -22,7 +30,14 @@ const {
   backHref,
   backLabel,
   wide = false,
+  enableFavorite = true,
+  favoriteContentId,
 } = Astro.props;
+
+const favoriteId =
+  enableFavorite && title
+    ? normalizeFavoriteHref(favoriteContentId ?? Astro.url.pathname)
+    : null;
 ---
 
 <div class:list={["reference-shell", wide && "reference-shell--wide"]}>
@@ -34,9 +49,12 @@ const {
 
   <div class="page-wrap">
     {icon && title && (
-      <h1 class="page-title reference-shell__title-row">
+      <h1 class="page-title reference-shell__title-row favorite-title-row">
         <i class={`${icon} reference-shell__title-icon`} aria-hidden="true"></i>
         <span class="reference-shell__title-text">{title}</span>
+        {favoriteId ? (
+          <FavoriteStar contentType="reference" contentId={favoriteId} title={title} />
+        ) : null}
       </h1>
     )}
     <PageHead
@@ -45,11 +63,16 @@ const {
       breadcrumb={breadcrumb}
       meta={meta}
       hideTitle={!!icon}
-    />
+    >
+      {!icon && favoriteId && title ? (
+        <FavoriteStar slot="after-title" contentType="reference" contentId={favoriteId} title={title} />
+      ) : null}
+    </PageHead>
 
     <slot />
   </div>
 </div>
+{favoriteId ? <FavoritesRuntime contentType="reference" /> : null}
 
 <style>
   .reference-shell :global(.page-nav) {
@@ -89,5 +112,7 @@ const {
 
   .reference-shell__title-text {
     white-space: pre-line;
+    flex: 1 1 auto;
+    min-width: 0;
   }
 </style>

@@ -3,8 +3,11 @@ export const prerender = true;
 
 import Layout from "../../layouts/Layout.astro";
 import FloatingInput from "../../components/tools/FloatingInput.astro";
+import FavoriteStar from "../../components/favorites/FavoriteStar.astro";
+import FavoritesRuntime from "../../components/favorites/FavoritesRuntime.astro";
 import techniquesJson from "../../data/stitch/techniques.json" assert { type: "json" };
 import { getStitchCatalogItems } from "../../lib/stitch-data";
+import "../../styles/favorites.css";
 
 const items = getStitchCatalogItems();
 
@@ -199,7 +202,14 @@ const pageDescription =
               )}
             </div>
             <div class="stitch-cat__caption">
-              <span class="stitch-cat__tile-title">{it.title}</span>
+              <div class="favorite-title-row stitch-cat__title-row">
+                <span class="stitch-cat__tile-title">{it.title}</span>
+                <FavoriteStar
+                  contentType="stitch"
+                  contentId={it.id}
+                  title={it.title || `Stitch #${it.id}`}
+                />
+              </div>
               {it.techniqueTitle || it.stitchMultiple ? (
                 <span class="stitch-cat__tile-meta">
                   {[it.techniqueTitle, it.stitchMultiple].filter(Boolean).join(" · ")}
@@ -210,6 +220,7 @@ const pageDescription =
         ))
       }
     </div>
+    <FavoritesRuntime contentType="stitch" />
   </div>
 
   <button

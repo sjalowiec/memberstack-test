@@ -1,0 +1,28 @@
+---
+/**
+ * Bind favorite-star clicks and hydrate pressed state for one content type.
+ * Safe to include multiple times on a page (boot is idempotent).
+ */
+import type { FavoriteContentType } from "../../lib/favorites/favoriteContentTypes";
+
+interface Props {
+  contentType: FavoriteContentType;
+  /** When false, omit the shared status element (page already has one). */
+  includeStatus?: boolean;
+}
+
+const { contentType, includeStatus = true } = Astro.props;
+---
+
+{
+  includeStatus ? (
+    <p class="sr-only" data-favorites-status aria-live="polite" role="status"></p>
+  ) : null
+}
+<div hidden data-favorites-boot={contentType} aria-hidden="true"></div>
+
+<script>
+  import { bootFavoriteStarsFromDom } from "../../lib/favorites/bootFavoriteStars";
+
+  void bootFavoriteStarsFromDom();
+</script>

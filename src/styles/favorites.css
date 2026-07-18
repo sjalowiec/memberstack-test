@@ -105,3 +105,27 @@
 .page-title.page-title--with-aside .favorite-star {
   margin-top: -0.1rem;
 }
+
+.favorite-title-row h1,
+.favorite-title-row h3,
+.tools-card-title-row h3,
+.stitch-cat__title-row .stitch-cat__tile-title {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Keep catalog card stars from dominating dense grids */
+.stitch-cat__title-row .favorite-star,
+.tools-card-title-row .favorite-star,
+.ref-card .favorite-star {
+  width: 40px;
+  height: 40px;
+  --favorite-star-size: 22px;
+}
+
+.glossary-after-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 0 0 auto;
+}

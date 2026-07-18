@@ -79,6 +79,19 @@ describe("favorites Netlify function", () => {
     expect(body.error).toMatch(/content_type/i);
   });
 
+  it("accepts stitch content_type on list", async () => {
+    const res = await handler(
+      makeRequest("GET", {
+        url: "https://example.com/.netlify/functions/favorites?content_type=stitch",
+      }),
+    );
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.ok).toBe(true);
+    expect(body.content_type).toBe("stitch");
+    expect(body.favorites).toEqual([]);
+  });
+
   it("rejects missing content_id on add", async () => {
     const res = await handler(
       makeRequest("POST", { body: { content_type: "video", content_id: "" } }),

@@ -1,10 +1,14 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 import "../../../styles/wizard.css";
+import "../../../styles/favorites.css";
 import WizardBackLink from "../../../components/wizards/WizardBackLink.astro";
 import ProgressNav from "../../../components/ProgressNav.astro";
+import FavoriteStar from "../../../components/favorites/FavoriteStar.astro";
+import FavoritesRuntime from "../../../components/favorites/FavoritesRuntime.astro";
 import { gettingStartedItems } from "../../../lib/gettingStartedNav";
 
+const chooseTitle = "Choose a Knitting Machine";
 ---
 
 <Layout 
@@ -92,9 +96,17 @@ import { gettingStartedItems } from "../../../lib/gettingStartedNav";
   <div class="header-panel">
     <img src="/images/machines/knitting-machine-and-ribber.webp" alt="Machine Choice Wizard" class="intro-icon">
     <div class="header-right">
-      <h1 class="header-title">Choose a Knitting Machine</h1>
+      <div class="favorite-title-row">
+        <h1 class="header-title">{chooseTitle}</h1>
+        <FavoriteStar
+          contentType="reference"
+          contentId="/reference/machines/choose"
+          title={chooseTitle}
+        />
+      </div>
       <p class="intro-tagline">Answer a few questions to discover which knitting machine control types and features fit your goals.</p>
     </div>
+    <FavoritesRuntime contentType="reference" />
   </div>
 
   <div class="wizard-container">

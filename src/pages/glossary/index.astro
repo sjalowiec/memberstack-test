@@ -3,6 +3,9 @@ import Layout from "../../layouts/Layout.astro";
 import glossaryRaw from "../../data/glossary.json";
 import { slugify } from "../../lib/slugify";
 import PageHead from "../../components/PageHead.astro";
+import FavoriteStar from "../../components/favorites/FavoriteStar.astro";
+import FavoritesRuntime from "../../components/favorites/FavoritesRuntime.astro";
+import "../../styles/favorites.css";
 
 export const prerender = true;
 
@@ -60,10 +63,12 @@ const glossaryJson = JSON.stringify(
 
   <main class="glossary">
     <PageHead title="Glossary">
-      <span slot="after-title" class="term-count" style="font-size:0.4em;">
-        ({termCount} terms)
+      <span slot="after-title" class="glossary-after-title">
+        <span class="term-count" style="font-size:0.4em;">({termCount} terms)</span>
+        <FavoriteStar contentType="reference" contentId="/glossary" title="Glossary" />
       </span>
     </PageHead>
+    <FavoritesRuntime contentType="reference" />
 
     <div class="kbm-intro-callout">
       <p>
