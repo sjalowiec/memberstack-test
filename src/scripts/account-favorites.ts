@@ -1,7 +1,11 @@
 /**
- * Hydrate the account My Favorites dashboard (all supported content types).
+ * Hydrate the account My Favorites dashboard (accordion by content type).
+ * Accordion exclusivity matches My Patterns (`name` + toggle handler).
  */
-import { selectFavoritePreviewIds } from "../lib/favorites/accountFavoritesPreview";
+import {
+  formatFavoriteGroupHeading,
+  sortFavoriteIdsByTitle,
+} from "../lib/favorites/accountFavoritesPreview";
 import {
   FAVORITE_GROUP_ORDER,
   hrefForFavorite,
@@ -74,22 +78,43 @@ function thumbHtml(
   );
 }
 
+function wireExclusiveAccordionGroups(root: HTMLElement): void {
+  const groups = [
+    ...root.querySelectorAll<HTMLDetailsElement>("[data-kbm-my-favorites-group]"),
+  ];
+  for (const details of groups) {
+    if (details.dataset.kbmMyFavoritesGroupBound === "1") continue;
+    details.dataset.kbmMyFavoritesGroupBound = "1";
+    details.addEventListener("toggle", () => {
+      if (!details.open) return;
+      for (const other of groups) {
+        if (other !== details && other.open) other.open = false;
+      }
+    });
+  }
+}
+
 function renderGroup(options: {
+  detailsEl: HTMLDetailsElement;
   listEl: HTMLElement;
-  groupEl: HTMLElement;
+  labelEl: HTMLElement;
   contentType: FavoriteContentType;
+  label: string;
   ids: string[];
   meta: Map<string, FavoriteItemMeta>;
 }): void {
-  const { listEl, groupEl, contentType, ids, meta } = options;
+  const { detailsEl, listEl, labelEl, contentType, label, ids, meta } = options;
+
+  labelEl.textContent = formatFavoriteGroupHeading(label, ids.length);
 
   if (ids.length === 0) {
     listEl.innerHTML = "";
-    groupEl.hidden = true;
+    detailsEl.hidden = true;
+    detailsEl.open = false;
     return;
   }
 
-  groupEl.hidden = false;
+  detailsEl.hidden = false;
   listEl.innerHTML = ids
     .map((id) => {
       const info = meta.get(id) ?? null;
@@ -145,34 +170,39 @@ async function boot(): Promise<void> {
     FAVORITE_CONTENT_TYPES.map((t) => [t, [] as FavoriteRecord[]]),
   ) as Record<FavoriteContentType, FavoriteRecord[]>;
 
+  wireExclusiveAccordionGroups(root);
+
   const paint = () => {
     let total = 0;
 
     for (const group of FAVORITE_GROUP_ORDER) {
-      const groupEl = root.querySelector<HTMLElement>(
-        `[data-kbm-my-favorites-group="${group.contentType}"]`,
+      const detailsEl = root.querySelector<HTMLDetailsElement>(
+        `details[data-kbm-my-favorites-group="${group.contentType}"]`,
       );
       const listEl = root.querySelector<HTMLElement>(
         `[data-kbm-my-favorites-list="${group.contentType}"]`,
       );
-      if (!groupEl || !listEl) continue;
+      const labelEl = root.querySelector<HTMLElement>(
+        `[data-kbm-my-favorites-group-label="${group.contentType}"]`,
+      );
+      if (!detailsEl || !listEl || !labelEl) continue;
 
       const rows = favoritesByType[group.contentType] ?? [];
-      const ids =
-        group.contentType === "video"
-          ? selectFavoritePreviewIds(rows)
-          : [...rows]
-              .sort((a, b) => String(b.created_at ?? "").localeCompare(String(a.created_at ?? "")))
-              .map((f) => f.content_id)
-              .filter(Boolean);
+      const meta = metaByType[group.contentType];
+      const ids = sortFavoriteIdsByTitle(
+        rows.map((f) => f.content_id).filter(Boolean),
+        (id) => titleForFavorite(group.contentType, id, meta.get(id) ?? null),
+      );
 
-      total += rows.length;
+      total += ids.length;
       renderGroup({
+        detailsEl,
         listEl,
-        groupEl,
+        labelEl,
         contentType: group.contentType,
+        label: group.label,
         ids,
-        meta: metaByType[group.contentType],
+        meta,
       });
     }
 
@@ -217,10 +247,13 @@ async function boot(): Promise<void> {
       statusEl.textContent = "Sign in to see your favorites.";
       emptyEl.hidden = true;
       FAVORITE_GROUP_ORDER.forEach((group) => {
-        const groupEl = root.querySelector<HTMLElement>(
-          `[data-kbm-my-favorites-group="${group.contentType}"]`,
+        const detailsEl = root.querySelector<HTMLDetailsElement>(
+          `details[data-kbm-my-favorites-group="${group.contentType}"]`,
         );
-        if (groupEl) groupEl.hidden = true;
+        if (detailsEl) {
+          detailsEl.hidden = true;
+          detailsEl.open = false;
+        }
       });
       return;
     }

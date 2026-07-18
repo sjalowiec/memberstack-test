@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   ACCOUNT_FAVORITES_PREVIEW_LIMIT,
+  formatFavoriteGroupHeading,
   selectFavoritePreviewIds,
+  sortFavoriteIdsByTitle,
 } from "./accountFavoritesPreview";
 
 describe("selectFavoritePreviewIds", () => {
@@ -23,5 +25,32 @@ describe("selectFavoritePreviewIds", () => {
 
   it("returns an empty list when there are no favorites", () => {
     expect(selectFavoritePreviewIds([])).toEqual([]);
+  });
+});
+
+describe("formatFavoriteGroupHeading", () => {
+  it("includes the count in parentheses", () => {
+    expect(formatFavoriteGroupHeading("Videos", 3)).toBe("Videos (3)");
+    expect(formatFavoriteGroupHeading("Stitches", 1)).toBe("Stitches (1)");
+    expect(formatFavoriteGroupHeading("Tools", 0)).toBe("Tools (0)");
+  });
+});
+
+describe("sortFavoriteIdsByTitle", () => {
+  it("sorts by resolved display title, not content id", () => {
+    const titles: Record<string, string> = {
+      "10": "Zebra stitch",
+      "2": "apple cable",
+      "3": "Mittens tip",
+    };
+    expect(sortFavoriteIdsByTitle(["10", "2", "3"], (id) => titles[id] || id)).toEqual([
+      "2",
+      "3",
+      "10",
+    ]);
+  });
+
+  it("breaks ties with content id", () => {
+    expect(sortFavoriteIdsByTitle(["b", "a"], () => "Same")).toEqual(["a", "b"]);
   });
 });

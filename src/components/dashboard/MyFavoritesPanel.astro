@@ -1,7 +1,7 @@
 ---
 /**
- * Account My Favorites dashboard ó Videos, Stitches, Reference, Tools.
- * Hydrated by account-favorites.ts.
+ * Account My Favorites dashboard ù accordion by content type (account-favorites.ts).
+ * Visual pattern mirrors My Patterns (`details` / `summary` groups).
  */
 import "../../styles/favorites.css";
 import videosRaw from "../../data/videos-public.json";
@@ -48,6 +48,8 @@ const groupMeta = {
   reference: referenceMeta,
   tool: toolMeta,
 };
+
+const ACCORDION_NAME = "account-my-favorites-groups";
 ---
 
 <section
@@ -58,7 +60,7 @@ const groupMeta = {
 >
   <h2 id="my-favorites-heading" class="dashboard-card__title">My Favorites</h2>
   <p class="dashboard-card__subtitle">
-    Items you have starred. Open any title to view it, or remove it from favorites here.
+    Items you have starred. Open a category to browse, open any title to view it, or remove it from favorites here.
   </p>
 
   <p
@@ -73,15 +75,26 @@ const groupMeta = {
   <div class="account-favorites__groups" data-kbm-my-favorites-groups>
     {
       FAVORITE_GROUP_ORDER.map((group) => (
-        <div
+        <details
           class="account-favorites__group"
           data-kbm-my-favorites-group={group.contentType}
+          name={ACCORDION_NAME}
           hidden
         >
-          <h3 class="account-favorites__group-title">{group.label}</h3>
-          <ul class="account-favorites__list" data-kbm-my-favorites-list={group.contentType}></ul>
+          <summary class="account-favorites__group-summary">
+            <span
+              class="account-favorites__group-label"
+              data-kbm-my-favorites-group-label={group.contentType}
+            >
+              {group.label}
+            </span>
+          </summary>
+          <ul
+            class="account-favorites__list"
+            data-kbm-my-favorites-list={group.contentType}
+          ></ul>
           {group.viewAllHref ? (
-            <p class="account-favorites__view-all-wrap">
+            <p class="account-favorites__view-all-wrap" data-kbm-my-favorites-view-all-wrap={group.contentType}>
               <a
                 href={group.viewAllHref}
                 class="kbm-btn kbm-btn-outline account-favorites__view-all"
@@ -91,7 +104,7 @@ const groupMeta = {
               </a>
             </p>
           ) : null}
-        </div>
+        </details>
       ))
     }
   </div>
@@ -130,27 +143,80 @@ const groupMeta = {
   .account-favorites__groups {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 0.55rem;
+    margin-top: 0.25rem;
+    min-width: 0;
   }
 
-  .account-favorites__group-title {
-    margin: 0 0 0.65rem;
+  .account-favorites__group {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+    min-width: 0;
+  }
+
+  .account-favorites__group-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.65rem 0.85rem;
+    cursor: pointer;
+    list-style: none;
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: #2c3a57;
+  }
+
+  .account-favorites__group-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .account-favorites__group-summary::after {
+    content: "+";
+    margin-left: auto;
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
     font-size: 1rem;
-    font-weight: 700;
-    color: #374151;
+    font-weight: 600;
+    color: #6b7280;
+    background: #fff;
+    line-height: 1;
+  }
+
+  .account-favorites__group[open] > .account-favorites__group-summary::after {
+    content: "?";
+  }
+
+  .account-favorites__group-summary:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  .account-favorites__group-label {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   .account-favorites__list {
     list-style: none;
     margin: 0;
-    padding: 0;
+    padding: 0 0.75rem 0.75rem;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.55rem;
   }
 
   .account-favorites__view-all-wrap {
-    margin: 0.85rem 0 0;
+    margin: 0;
+    padding: 0 0.75rem 0.85rem;
   }
 
   .account-favorites__view-all {
@@ -185,10 +251,11 @@ const groupMeta = {
     display: flex;
     align-items: flex-start;
     gap: 0.75rem;
-    padding: 0.55rem 0.65rem;
-    border: 1px solid #e5e7eb;
+    padding: 0.65rem 0.7rem;
+    border: 1px solid #eef0f2;
     border-radius: 8px;
-    background: #fff;
+    background: #fafbfa;
+    min-width: 0;
   }
 
   :global(.account-favorites__thumb) {
@@ -235,6 +302,7 @@ const groupMeta = {
     text-decoration: none;
     font-weight: 600;
     line-height: 1.35;
+    overflow-wrap: anywhere;
   }
 
   :global(.account-favorites__title-link:hover) {
