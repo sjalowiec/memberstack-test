@@ -1,7 +1,7 @@
 ---
 /**
- * Account My Favorites - Videos group for version one.
- * Hydrated by account-favorites.ts from the member favorites API + catalog metadata.
+ * Account My Favorites dashboard summary — Videos for v1.
+ * Hydrated by account-favorites.ts (preview of recent favorites).
  */
 import "../../styles/favorites.css";
 import videosRaw from "../../data/videos-public.json";
@@ -28,7 +28,7 @@ const videoMeta = publicVideos
 >
   <h2 id="my-favorites-heading" class="dashboard-card__title">My Favorites</h2>
   <p class="dashboard-card__subtitle">
-    Videos you have saved with the star. Open any item to watch, or remove it from favorites here.
+    Recent videos you have starred. Open any title to watch, or remove it from favorites here.
   </p>
 
   <p
@@ -43,6 +43,15 @@ const videoMeta = publicVideos
   <div class="account-favorites__group" data-kbm-my-favorites-videos hidden>
     <h3 class="account-favorites__group-title">Videos</h3>
     <ul class="account-favorites__list" data-kbm-my-favorites-list></ul>
+    <p class="account-favorites__view-all-wrap">
+      <a
+        href="/videos/?cat=favorites"
+        class="kbm-btn kbm-btn-outline account-favorites__view-all"
+        data-kbm-my-favorites-view-all
+      >
+        View favorite videos
+      </a>
+    </p>
   </div>
 
   <div class="account-favorites__empty" data-kbm-my-favorites-empty hidden>
@@ -54,6 +63,11 @@ const videoMeta = publicVideos
 </section>
 
 <style>
+  .dashboard-card--favorites {
+    scroll-margin-top: calc(var(--header-offset, 170px) + 1rem);
+    min-width: 0;
+  }
+
   .dashboard-card--favorites .dashboard-card__subtitle {
     margin-bottom: 0.85rem;
   }
@@ -76,6 +90,16 @@ const videoMeta = publicVideos
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+  }
+
+  .account-favorites__view-all-wrap {
+    margin: 0.85rem 0 0;
+  }
+
+  .account-favorites__view-all {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .account-favorites__empty {

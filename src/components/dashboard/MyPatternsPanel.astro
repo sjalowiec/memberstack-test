@@ -1,5 +1,5 @@
 ---
-/** Saved custom patterns table — wired by account-my-patterns.ts. */
+/** Saved patterns dashboard summary — accordion by pattern system (account-my-patterns.ts). */
 ---
 
 <section
@@ -8,9 +8,9 @@
   aria-labelledby="my-patterns-heading"
   data-kbm-my-patterns
 >
-  <h2 id="my-patterns-heading" class="dashboard-card__title">Saved Patterns</h2>
+  <h2 id="my-patterns-heading" class="dashboard-card__title">My Patterns</h2>
   <p class="dashboard-card__subtitle">
-    Select a pattern to continue knitting.
+    Recently updated saved patterns by type. Open one to continue knitting, or view all in My Patterns.
   </p>
 
   <p
@@ -29,48 +29,34 @@
   </div>
 
   <div
-    class="account-my-patterns__table-wrap"
+    class="account-my-patterns__groups"
     data-kbm-my-patterns-list-wrap
+    data-kbm-my-patterns-list
     hidden
-  >
-    <table class="account-my-patterns__table" aria-label="Saved custom patterns">
-      <thead>
-        <tr>
-          <th scope="col">
-            <button
-              type="button"
-              class="account-my-patterns__sort"
-              data-kbm-my-patterns-sort="name"
-              aria-sort="none"
-            >
-              Pattern name
-              <span class="account-my-patterns__sort-indicator" aria-hidden="true"></span>
-            </button>
-          </th>
-          <th scope="col">Type</th>
-          <th scope="col">Gauge</th>
-          <th scope="col">
-            <button
-              type="button"
-              class="account-my-patterns__sort"
-              data-kbm-my-patterns-sort="updatedAt"
-              aria-sort="descending"
-            >
-              Last updated
-              <span class="account-my-patterns__sort-indicator" aria-hidden="true"></span>
-            </button>
-          </th>
-          <th scope="col" class="account-my-patterns__actions-header">
-            <span class="sr-only">Actions</span>
-          </th>
-        </tr>
-      </thead>
-      <tbody data-kbm-my-patterns-list></tbody>
-    </table>
-  </div>
+  ></div>
+
+  <p class="account-my-patterns__view-all-wrap" data-kbm-my-patterns-view-all-wrap hidden>
+    <button
+      type="button"
+      class="kbm-btn kbm-btn-outline account-my-patterns__view-all"
+      data-kbm-my-patterns-view-all
+      data-pattern-workspace-library-trigger
+      data-testid="account-my-patterns-view-all"
+      aria-haspopup="dialog"
+      aria-controls="pattern-workspace-library-drawer-panel"
+      aria-expanded="false"
+    >
+      View all patterns
+    </button>
+  </p>
 </section>
 
 <style>
+  .dashboard-card--patterns {
+    scroll-margin-top: calc(var(--header-offset, 170px) + 1rem);
+    min-width: 0;
+  }
+
   .dashboard-card--patterns .dashboard-card__subtitle {
     margin-bottom: 0.85rem;
   }
@@ -79,9 +65,181 @@
     margin-top: 1rem;
   }
 
-  .account-my-patterns__create-btn {
+  .account-my-patterns__create-btn,
+  .account-my-patterns__view-all {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+  }
+
+  .account-my-patterns__view-all-wrap {
+    margin: 0.85rem 0 0;
+  }
+
+  .account-my-patterns__groups {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    margin-top: 0.25rem;
+    min-width: 0;
+  }
+
+  :global(.account-my-patterns__group) {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #fff;
+    min-width: 0;
+  }
+
+  :global(.account-my-patterns__group-summary) {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.65rem 0.85rem;
+    cursor: pointer;
+    list-style: none;
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: #2c3a57;
+  }
+
+  :global(.account-my-patterns__group-summary::-webkit-details-marker) {
+    display: none;
+  }
+
+  :global(.account-my-patterns__group-summary::after) {
+    content: "+";
+    margin-left: auto;
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #6b7280;
+    background: #fff;
+    line-height: 1;
+  }
+
+  :global(.account-my-patterns__group[open] > .account-my-patterns__group-summary::after) {
+    content: "−";
+  }
+
+  :global(.account-my-patterns__group-summary:focus-visible) {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  :global(.account-my-patterns__group-label) {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  :global(.account-my-patterns__group-body) {
+    margin: 0;
+    padding: 0 0.75rem 0.75rem;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  :global(.account-my-patterns__item) {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.45rem;
+    padding: 0.65rem 0.7rem;
+    border: 1px solid #eef0f2;
+    border-radius: 8px;
+    background: #fafbfa;
+    min-width: 0;
+  }
+
+  :global(.account-my-patterns__item[aria-disabled="true"]) {
+    opacity: 0.65;
+    pointer-events: none;
+  }
+
+  :global(.account-my-patterns__pattern-name) {
+    margin: 0;
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: #2c3a57;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  :global(.account-my-patterns__meta) {
+    margin: 0.2rem 0 0;
+    font-size: 0.88rem;
+    line-height: 1.4;
+    color: #6b7280;
+  }
+
+  :global(.account-my-patterns__gauge--empty) {
+    font-style: italic;
+  }
+
+  :global(.account-my-patterns__actions) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  :global(.account-my-patterns__action) {
+    appearance: none;
+    margin: 0;
+    padding: 0.35rem 0.7rem;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    color: #374151;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+  }
+
+  :global(.account-my-patterns__action:hover:not(:disabled)) {
+    border-color: #9ca3af;
+    background: #f9fafb;
+  }
+
+  :global(.account-my-patterns__action:focus-visible) {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  :global(.account-my-patterns__action--view) {
+    border-color: rgba(82, 104, 45, 0.35);
+    background: rgba(82, 104, 45, 0.08);
+    color: var(--kbm-green, #52682d);
+  }
+
+  :global(.account-my-patterns__action--view:hover:not(:disabled)) {
+    background: rgba(82, 104, 45, 0.14);
+  }
+
+  :global(.account-my-patterns__action--edit.is-disabled),
+  :global(.account-my-patterns__action--edit[aria-disabled="true"]) {
+    opacity: 0.55;
+    cursor: not-allowed;
+    color: #9ca3af;
+    border-color: #e5e7eb;
+    background: #f3f4f6;
+  }
+
+  :global(.account-my-patterns__action--edit.is-disabled:hover),
+  :global(.account-my-patterns__action--edit[aria-disabled="true"]:hover) {
+    background: #f3f4f6;
+    border-color: #e5e7eb;
   }
 </style>

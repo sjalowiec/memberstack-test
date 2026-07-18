@@ -2,7 +2,13 @@
 /** Account settings — collapsed by default; preserves MemberStack forms. */
 ---
 
-<section id="account" class="dashboard-card dashboard-card--account" aria-labelledby="account-settings-heading">
+<section
+  id="account-settings"
+  class="dashboard-card dashboard-card--account"
+  aria-labelledby="account-settings-heading"
+>
+  <!-- Legacy deep-link target for /account#account -->
+  <span id="account" class="account-settings__legacy-anchor" tabindex="-1" aria-hidden="true"></span>
   <details class="account-settings">
     <summary class="account-settings__summary">
       <span class="account-settings__summary-main">
@@ -120,6 +126,18 @@
     /* Match peer dashboard cards (padding comes from .dashboard-card). */
     background: #fff;
     border-color: #e5e7eb;
+    scroll-margin-top: calc(var(--header-offset, 170px) + 1rem);
+  }
+
+  .account-settings__legacy-anchor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
   }
 
   .account-settings {

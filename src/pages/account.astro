@@ -74,7 +74,11 @@ const description =
             // set the final value. The My Patterns entry uses a `view` query param so the post-login
             // redirect is a real navigation, not a same-URL fragment change that never reloads.
             var target =
-              hash === "#my-patterns" ? "/account?view=my-patterns#my-patterns" : "/account" + hash;
+              hash === "#my-patterns"
+                ? "/account?view=my-patterns#my-patterns"
+                : hash === "#account"
+                  ? "/account#account-settings"
+                  : "/account" + hash;
             form.setAttribute("redirect", target);
           })();
         </script>
@@ -104,10 +108,12 @@ const description =
     <div data-ms-content="members">
       <DashboardShell>
         <AccountWelcomeBlock />
-        <AccountMembershipPanel />
-        <AccountSettingsPanel />
-        <MyFavoritesPanel />
-        <MyPatternsPanel />
+        <div class="account-dashboard-grid">
+          <AccountMembershipPanel />
+          <AccountSettingsPanel />
+          <MyFavoritesPanel />
+          <MyPatternsPanel />
+        </div>
       </DashboardShell>
     </div>
   </div>
@@ -130,9 +136,13 @@ const description =
     padding-right: 0;
   }
 
+  /* Wider than the default --max-content-width (1100px); matches other wide pages (e.g. whats-new). */
   .account-dashboard {
     width: 100%;
+    max-width: min(1240px, calc(100vw - 2rem));
+    margin: 0 auto;
     background: linear-gradient(180deg, #f7f8f5 0%, #fff 12rem);
+    box-sizing: border-box;
   }
 
   .account-page__guest {
@@ -207,10 +217,30 @@ const description =
     color: #4b5563;
   }
 
+  .account-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  @media (max-width: 900px) {
+    .account-dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
   :global(.dashboard-mini-card),
   :global(#my-favorites),
-  :global(#account) {
+  :global(#membership),
+  :global(#account-settings),
+  :global(#account),
+  :global(#my-patterns) {
     scroll-margin-top: calc(var(--header-offset, 170px) + 1rem);
+  }
+
+  :global(.account-dashboard-grid .dashboard-card) {
+    min-width: 0;
   }
 
   :global(.account-details-grid) {

@@ -31,6 +31,10 @@ export function resolveAccountLoginRedirectPath(loc: Location = window.location)
         ? MY_PATTERNS_RETURN_PATH
         : MY_PATTERNS_LOGIN_REDIRECT_PATH;
     }
+    // Legacy settings hash → current dashboard panel id.
+    if (loc.hash === "#account") {
+      return "/account#account-settings";
+    }
     return getMemberstackReturnPath(loc);
   }
   return getMemberstackReturnPath(loc);

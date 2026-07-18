@@ -1,14 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { stubLocalStorage } from "./test/stubLocalStorage";
 import {
-  clearActiveCustomPatternProjectId,
-  readActiveCustomPatternProjectId,
-  writeActiveCustomPatternProjectId,
-} from "./customPatternProjectActiveId";
-import {
-  DELETE_SAVED_PATTERN_CONFIRM_MESSAGE,
-  RENAME_SAVED_PATTERN_PROMPT_MESSAGE,
+  ACCOUNT_MY_PATTERNS_GROUP_PREVIEW_LIMIT,
+  buildAccountMyPatternsGroups,
+  formatAccountMyPatternsCountLabel,
   initAccountMyPatternsList,
+  resolveAccountMyPatternsSystem,
 } from "./accountMyPatternsList";
 
 const listCustomPatternProjectsMock = vi.fn();
@@ -36,7 +33,6 @@ vi.mock("./patternEditingUnlockModal", () => ({
   offerPatternEditingUnlockModal: (...args: unknown[]) => offerPatternEditingUnlockModalMock(...args),
 }));
 
-// Avoid the real Memberstack poll (40×200ms) when tests stub window without $memberstackDom.
 vi.mock("./sleevelessPatternLoginGate", () => ({
   waitForMemberstackDom: vi.fn().mockResolvedValue(false),
   waitForMemberstackReady: vi.fn().mockResolvedValue(undefined),
@@ -60,7 +56,9 @@ function makeClassList() {
 
 type MockEl = HTMLElement & {
   _click?: () => unknown;
+  _toggle?: () => unknown;
   _children: MockEl[];
+  open?: boolean;
 };
 
 function makeEl(tag = "div"): MockEl {
@@ -73,10 +71,17 @@ function makeEl(tag = "div"): MockEl {
     textContent: "",
     disabled: false,
     tabIndex: 0,
+    open: false,
     dataset: {} as DOMStringMap,
     _children: [] as MockEl[],
     setAttribute(name: string, value: string) {
       attrs.set(name, value);
+      if (name.startsWith("data-")) {
+        const key = name
+          .slice(5)
+          .replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
+        (el.dataset as Record<string, string>)[key] = value;
+      }
     },
     getAttribute(name: string) {
       return attrs.get(name) ?? null;
@@ -102,15 +107,20 @@ function makeEl(tag = "div"): MockEl {
           await handler({ stopPropagation: () => {} });
         };
       }
+      if (event === "toggle") {
+        el._toggle = async () => {
+          await handler({});
+        };
+      }
     },
     matches(sel: string) {
       if (sel === "[data-kbm-my-patterns-row]") return attrs.has("data-kbm-my-patterns-row");
-      if (sel === "[data-kbm-my-patterns-delete]") return attrs.has("data-kbm-my-patterns-delete");
-      if (sel === "[data-kbm-my-patterns-sort]") return attrs.has("data-kbm-my-patterns-sort");
-      if (sel === "[data-kbm-my-patterns-copy]") return attrs.has("data-kbm-my-patterns-copy");
+      if (sel === "[data-kbm-my-patterns-group]") return attrs.has("data-kbm-my-patterns-group");
       if (sel === "[data-kbm-my-patterns-view]") return attrs.has("data-kbm-my-patterns-view");
       if (sel === "[data-kbm-my-patterns-edit]") return attrs.has("data-kbm-my-patterns-edit");
+      if (sel === "[data-kbm-my-patterns-copy]") return attrs.has("data-kbm-my-patterns-copy");
       if (sel === "[data-kbm-my-patterns-rename]") return attrs.has("data-kbm-my-patterns-rename");
+      if (sel === "[data-kbm-my-patterns-delete]") return attrs.has("data-kbm-my-patterns-delete");
       return false;
     },
     focus: vi.fn(),
@@ -144,54 +154,36 @@ function makeAccountRoot() {
   const status = makeEl("p");
   status.setAttribute("data-kbm-my-patterns-status", "");
 
-  const listWrap = makeEl("div");
-  listWrap.setAttribute("data-kbm-my-patterns-list-wrap", "");
-  listWrap.hidden = true;
+  const emptyCta = makeEl("div");
+  emptyCta.setAttribute("data-kbm-my-patterns-empty-cta", "");
+  emptyCta.hidden = true;
 
-  const table = makeEl("table");
-  const thead = makeEl("thead");
-  const sortName = makeEl("button");
-  sortName.setAttribute("data-kbm-my-patterns-sort", "name");
-  const sortUpdated = makeEl("button");
-  sortUpdated.setAttribute("data-kbm-my-patterns-sort", "updatedAt");
-  thead.append(sortName, sortUpdated);
+  const list = makeEl("div");
+  list.setAttribute("data-kbm-my-patterns-list-wrap", "");
+  list.setAttribute("data-kbm-my-patterns-list", "");
+  list.hidden = true;
 
-  const tbody = makeEl("tbody");
-  tbody.setAttribute("data-kbm-my-patterns-list", "");
-  table.append(thead, tbody);
-  listWrap.append(table);
+  const viewAllWrap = makeEl("p");
+  viewAllWrap.setAttribute("data-kbm-my-patterns-view-all-wrap", "");
+  viewAllWrap.hidden = true;
 
-  root.append(status, listWrap);
+  root.append(status, emptyCta, list, viewAllWrap);
 
   root.querySelector = (sel: string) => {
     if (sel === "[data-kbm-my-patterns-status]") return status;
-    if (sel === "[data-kbm-my-patterns-list-wrap]") return listWrap;
-    if (sel === "[data-kbm-my-patterns-list]") return tbody;
-    if (sel === "[data-kbm-my-patterns-row]") return collectMatches(tbody._children, sel)[0] ?? null;
-    if (sel === "[data-kbm-my-patterns-delete]") {
-      return collectMatches(tbody._children, sel)[0] ?? null;
-    }
-    return null;
+    if (sel === "[data-kbm-my-patterns-empty-cta]") return emptyCta;
+    if (sel === "[data-kbm-my-patterns-list-wrap]") return list;
+    if (sel === "[data-kbm-my-patterns-list]") return list;
+    if (sel === "[data-kbm-my-patterns-view-all-wrap]") return viewAllWrap;
+    return findFirst(list._children, sel);
   };
-  root.querySelectorAll = (sel: string) => {
-    if (
-      sel === "[data-kbm-my-patterns-row]" ||
-      sel === "[data-kbm-my-patterns-delete]" ||
-      sel === "[data-kbm-my-patterns-sort]"
-    ) {
-      if (sel === "[data-kbm-my-patterns-sort]") {
-        return [sortName, sortUpdated] as unknown as NodeListOf<HTMLButtonElement>;
-      }
-      return collectMatches(tbody._children, sel) as unknown as NodeListOf<HTMLElement>;
-    }
-    return [] as unknown as NodeListOf<HTMLElement>;
-  };
+  root.querySelectorAll = (sel: string) =>
+    collectMatches(list._children, sel) as unknown as NodeListOf<HTMLElement>;
 
-  return { root, status, listWrap, tbody, sortName, sortUpdated };
+  return { root, status, list, viewAllWrap, emptyCta };
 }
 
-const flushAsync = (): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, 0));
+const flushAsync = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
 const sampleProjects = [
   {
@@ -199,6 +191,7 @@ const sampleProjects = [
     name: "Alpha pullover",
     family: "sleeveless" as const,
     source: "express" as const,
+    patternSystem: "sleeveless",
     updatedAt: "2026-01-01T00:00:00.000Z",
     gauge: { stitchesPerInch: 7, rowsPerInch: 11 },
   },
@@ -207,9 +200,64 @@ const sampleProjects = [
     name: "Beta vest",
     family: "sleeveless" as const,
     source: "custom-build" as const,
+    patternSystem: "sleeveless",
     updatedAt: "2026-01-02T00:00:00.000Z",
   },
 ];
+
+describe("accountMyPatterns grouping helpers", () => {
+  it("resolves canonical pattern systems and defaults unknown values to sleeveless", () => {
+    expect(resolveAccountMyPatternsSystem({ patternSystem: "drop-shoulder" })).toBe("drop-shoulder");
+    expect(resolveAccountMyPatternsSystem({ patternSystem: "raglan" })).toBe("raglan");
+    expect(resolveAccountMyPatternsSystem({ patternSystem: "mystery" })).toBe("sleeveless");
+    expect(resolveAccountMyPatternsSystem({})).toBe("sleeveless");
+  });
+
+  it("formats singular and plural pattern counts", () => {
+    expect(formatAccountMyPatternsCountLabel(1)).toBe("1 pattern");
+    expect(formatAccountMyPatternsCountLabel(3)).toBe("3 patterns");
+  });
+
+  it("groups by pattern system, newest group first, and newest patterns within a group", () => {
+    const groups = buildAccountMyPatternsGroups([
+      {
+        id: "s1",
+        name: "Old sleeveless",
+        family: "sleeveless",
+        source: "express",
+        patternSystem: "sleeveless",
+        createdAt: "2026-01-01T00:00:00.000Z",
+        updatedAt: "2026-01-01T00:00:00.000Z",
+        version: 1,
+      },
+      {
+        id: "d1",
+        name: "Newer drop",
+        family: "sleeveless",
+        source: "express",
+        patternSystem: "drop-shoulder",
+        createdAt: "2026-01-03T00:00:00.000Z",
+        updatedAt: "2026-01-03T00:00:00.000Z",
+        version: 1,
+      },
+      {
+        id: "s2",
+        name: "Newer sleeveless",
+        family: "sleeveless",
+        source: "express",
+        patternSystem: "sleeveless",
+        createdAt: "2026-01-02T00:00:00.000Z",
+        updatedAt: "2026-01-02T00:00:00.000Z",
+        version: 1,
+      },
+    ]);
+
+    expect(groups.map((g) => g.patternSystem)).toEqual(["drop-shoulder", "sleeveless"]);
+    expect(groups[0].label).toBe("Drop Shoulder");
+    expect(groups[0].projects.map((p) => p.id)).toEqual(["d1"]);
+    expect(groups[1].projects.map((p) => p.id)).toEqual(["s2", "s1"]);
+  });
+});
 
 describe("accountMyPatternsList", () => {
   beforeEach(() => {
@@ -229,8 +277,8 @@ describe("accountMyPatternsList", () => {
     });
   });
 
-  it("renders saved projects with delete actions", async () => {
-    const { root, listWrap, tbody } = makeAccountRoot();
+  it("renders accordion groups with Open and Edit only", async () => {
+    const { root, list, viewAllWrap } = makeAccountRoot();
     listCustomPatternProjectsMock.mockResolvedValue({
       ok: true,
       projects: sampleProjects,
@@ -238,174 +286,126 @@ describe("accountMyPatternsList", () => {
 
     await initAccountMyPatternsList(root);
 
-    expect(listWrap.hidden).toBe(false);
-    const rows = collectMatches(tbody._children, "[data-kbm-my-patterns-row]");
+    expect(list.hidden).toBe(false);
+    expect(viewAllWrap.hidden).toBe(false);
+
+    const groups = collectMatches(list._children, "[data-kbm-my-patterns-group]");
+    expect(groups.length).toBe(1);
+    expect(groups[0].open).toBe(false);
+    expect(groups[0]._children[0]?._children[0]?.textContent).toBe("Sleeveless · 2 patterns");
+
+    const rows = collectMatches(list._children, "[data-kbm-my-patterns-row]");
     expect(rows.length).toBe(2);
-    const deleteBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-delete]");
-    expect(deleteBtns.length).toBe(2);
+
+    expect(collectMatches(list._children, "[data-kbm-my-patterns-view]").length).toBe(2);
+    expect(collectMatches(list._children, "[data-kbm-my-patterns-edit]").length).toBe(2);
+    expect(collectMatches(list._children, "[data-kbm-my-patterns-copy]").length).toBe(0);
+    expect(collectMatches(list._children, "[data-kbm-my-patterns-rename]").length).toBe(0);
+    expect(collectMatches(list._children, "[data-kbm-my-patterns-delete]").length).toBe(0);
+    expect(collectMatches(list._children, "[data-kbm-my-patterns-view]")[0].textContent).toBe("Open");
   });
 
-  it("renders a gauge column and never shows the internal Express source", async () => {
-    const { root, tbody } = makeAccountRoot();
+  it("starts every pattern-system accordion collapsed", async () => {
+    const { root, list } = makeAccountRoot();
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: [
+        {
+          id: "s1",
+          name: "Sleeveless old",
+          family: "sleeveless",
+          source: "express",
+          patternSystem: "sleeveless",
+          updatedAt: "2026-01-01T00:00:00.000Z",
+        },
+        {
+          id: "d1",
+          name: "Drop newest",
+          family: "sleeveless",
+          source: "express",
+          patternSystem: "drop-shoulder",
+          updatedAt: "2026-02-01T00:00:00.000Z",
+        },
+      ],
+    });
+
+    await initAccountMyPatternsList(root);
+
+    const groups = collectMatches(list._children, "[data-kbm-my-patterns-group]");
+    expect(groups.map((g) => g.dataset.patternSystem)).toEqual(["drop-shoulder", "sleeveless"]);
+    expect(groups.every((g) => g.open === false)).toBe(true);
+    expect(groups[0]._children[0]?._children[0]?.textContent).toBe("Drop Shoulder · 1 pattern");
+  });
+
+  it("limits each group preview to three recent patterns", async () => {
+    const { root, list } = makeAccountRoot();
+    const many = Array.from({ length: 5 }, (_, i) => ({
+      id: `proj-${i}`,
+      name: `Pattern ${i}`,
+      family: "sleeveless" as const,
+      source: "express" as const,
+      patternSystem: "sleeveless",
+      updatedAt: `2026-01-${String(i + 1).padStart(2, "0")}T00:00:00.000Z`,
+    }));
+    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: many });
+
+    await initAccountMyPatternsList(root);
+
+    const rows = collectMatches(list._children, "[data-kbm-my-patterns-row]");
+    expect(rows.length).toBe(ACCOUNT_MY_PATTERNS_GROUP_PREVIEW_LIMIT);
+    const names = rows.map((row) => row._children[0]?._children[0]?.textContent);
+    expect(names).toEqual(["Pattern 4", "Pattern 3", "Pattern 2"]);
+  });
+
+  it("shows gauge and updated date on a secondary meta line", async () => {
+    const { root, list } = makeAccountRoot();
     listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
     vi.stubGlobal("window", {});
 
     await initAccountMyPatternsList(root);
 
-    const rows = collectMatches(tbody._children, "[data-kbm-my-patterns-row]");
-    // Row cells: [name, type, gauge, updated, actions]; name text lives in a child span.
-    const rowA = rows.find((r) => r._children[0]?._children[0]?.textContent === "Alpha pullover");
-    expect(rowA).toBeTruthy();
-    const typeCell = rowA!._children[1];
-    const gaugeCell = rowA!._children[2];
-    expect(typeCell.textContent).toBe("Sleeveless");
-    expect(typeCell.textContent).not.toMatch(/Express/);
-    expect(gaugeCell.textContent).toBe("7 sts / 11 rows");
+    const rows = collectMatches(list._children, "[data-kbm-my-patterns-row]");
+    const alpha = rows.find((r) => r._children[0]?._children[0]?.textContent === "Alpha pullover");
+    expect(alpha).toBeTruthy();
+    const alphaMeta = alpha!._children[0]?._children[1]?._children ?? [];
+    expect(alphaMeta[0]?.textContent).toBe("7 sts / 11 rows");
+    expect(alphaMeta[2]?.textContent).toMatch(/^Updated /);
+    expect(alphaMeta.map((n) => n.textContent).join("")).not.toMatch(/Sleeveless|Express/);
+
+    const beta = rows.find((r) => r._children[0]?._children[0]?.textContent === "Beta vest");
+    expect(beta?._children[0]?._children[1]?._children[0]?.textContent).toBe("Gauge not set");
   });
 
-  it("shows a graceful gauge fallback when a saved pattern has no gauge", async () => {
-    const { root, tbody } = makeAccountRoot();
-    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
-    vi.stubGlobal("window", {});
-
-    await initAccountMyPatternsList(root);
-
-    const rows = collectMatches(tbody._children, "[data-kbm-my-patterns-row]");
-    const rowB = rows.find((r) => r._children[0]?._children[0]?.textContent === "Beta vest");
-    expect(rowB).toBeTruthy();
-    expect(rowB!._children[2].textContent).toBe("Gauge not set");
-  });
-
-  it("deletes a saved pattern and refreshes the list", async () => {
-    const { root, status, listWrap, tbody } = makeAccountRoot();
-    listCustomPatternProjectsMock.mockResolvedValue({
-      ok: true,
-      projects: sampleProjects,
-    });
-
-    const confirm = vi.fn(() => true);
-    vi.stubGlobal("window", { confirm });
-
-    await initAccountMyPatternsList(root);
-
-    const deleteBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-delete]");
-    const delA = deleteBtns.find((b) => b.dataset.projectId === "proj-a");
-    expect(delA).toBeTruthy();
-
-    await delA?._click?.();
-    await flushAsync();
-
-    expect(confirm).toHaveBeenCalledWith(DELETE_SAVED_PATTERN_CONFIRM_MESSAGE);
-    expect(deleteCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "sleeveless");
-    expect(listCustomPatternProjectsMock).toHaveBeenCalledTimes(1);
-
-    const remaining = collectMatches(tbody._children, "[data-kbm-my-patterns-row]");
-    expect(remaining.length).toBe(1);
-    expect(listWrap.hidden).toBe(false);
-    expect(status.hidden).toBe(true);
-  });
-
-  it("cancels delete without modifying the list", async () => {
-    const { root, tbody } = makeAccountRoot();
-    listCustomPatternProjectsMock.mockResolvedValue({
-      ok: true,
-      projects: sampleProjects,
-    });
-
-    const confirm = vi.fn(() => false);
-    vi.stubGlobal("window", { confirm });
-
-    await initAccountMyPatternsList(root);
-
-    const deleteBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-delete]");
-    const delA = deleteBtns.find((b) => b.dataset.projectId === "proj-a");
-    await delA?._click?.();
-
-    expect(confirm).toHaveBeenCalledWith(DELETE_SAVED_PATTERN_CONFIRM_MESSAGE);
-    expect(deleteCustomPatternProjectMock).not.toHaveBeenCalled();
-    expect(collectMatches(tbody._children, "[data-kbm-my-patterns-row]").length).toBe(2);
-  });
-
-  it("clears active selection when deleting the active saved pattern", async () => {
-    const { root, tbody } = makeAccountRoot();
-    writeActiveCustomPatternProjectId("proj-a", "Alpha pullover");
-    listCustomPatternProjectsMock.mockResolvedValue({
-      ok: true,
-      projects: sampleProjects,
-    });
-
-    const confirm = vi.fn(() => true);
-    vi.stubGlobal("window", { confirm });
-
-    await initAccountMyPatternsList(root);
-    expect(readActiveCustomPatternProjectId()).toBe("proj-a");
-
-    const delA = collectMatches(tbody._children, "[data-kbm-my-patterns-delete]").find(
-      (b) => b.dataset.projectId === "proj-a",
-    );
-    await delA?._click?.();
-    await flushAsync();
-
-    expect(deleteCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "sleeveless");
-    expect(readActiveCustomPatternProjectId()).toBe("");
-    expect(collectMatches(tbody._children, "[data-kbm-my-patterns-row]").length).toBe(1);
-  });
-
-  it("renders View Pattern, Edit, Copy, Rename, and Delete actions for each saved pattern", async () => {
-    const { root, tbody } = makeAccountRoot();
-    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
-    vi.stubGlobal("window", {});
-
-    await initAccountMyPatternsList(root);
-
-    const viewBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-view]");
-    const editBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-edit]");
-    const copyBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-copy]");
-    const renameBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-rename]");
-    const deleteBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-delete]");
-    expect(viewBtns.length).toBe(2);
-    expect(editBtns.length).toBe(2);
-    expect(copyBtns.length).toBe(2);
-    expect(renameBtns.length).toBe(2);
-    expect(deleteBtns.length).toBe(2);
-    expect(viewBtns[0].textContent).toBe("View Pattern");
-    expect(editBtns[0].textContent).toBe("Edit");
-    expect(copyBtns[0].textContent).toBe("Copy");
-    expect(renameBtns[0].textContent).toBe("Rename");
-    // Delete is a text-labeled action, not an unlabeled trash icon.
-    expect(deleteBtns[0].textContent).toBe("Delete");
-  });
-
-  it("views a saved pattern and navigates directly to its pattern instructions page", async () => {
-    const { root, tbody } = makeAccountRoot();
+  it("opens a saved pattern from the Open action", async () => {
+    const { root, list } = makeAccountRoot();
     listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
     const assign = vi.fn();
     vi.stubGlobal("window", { location: { assign } });
 
     await initAccountMyPatternsList(root);
 
-    const viewA = collectMatches(tbody._children, "[data-kbm-my-patterns-view]").find(
+    const openA = collectMatches(list._children, "[data-kbm-my-patterns-view]").find(
       (b) => b.dataset.projectId === "proj-a",
     );
-    expect(viewA).toBeTruthy();
-    await viewA?._click?.();
+    await openA?._click?.();
     await flushAsync();
 
-    // View opens the read-only pattern page, never the edit/build/setup workspace.
     expect(loadSavedCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "view");
     expect(assign).toHaveBeenCalledWith("/patterns/sleeveless/pattern/");
   });
 
-  it("edits a saved pattern and opens the editable builder workspace", async () => {
-    const { root, tbody } = makeAccountRoot();
+  it("edits a saved pattern from the Edit action when entitled", async () => {
+    const { root, list } = makeAccountRoot();
     listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
     const assign = vi.fn();
-    // A member with Sleeveless Pattern System access — Edit is enabled and opens the builder.
     vi.stubGlobal("window", {
       location: { assign },
       $memberstackDom: {
         getCurrentMember: async () => ({
-          data: { id: "ms_member", planConnections: [{ planId: "pln_kin-membership-annual-qf9g01et" }] },
+          data: {
+            id: "ms_member",
+            planConnections: [{ planId: "pln_kin-membership-annual-qf9g01et" }],
+          },
         }),
         getMemberJSON: async () => ({ data: {} }),
       },
@@ -417,187 +417,19 @@ describe("accountMyPatternsList", () => {
 
     await initAccountMyPatternsList(root);
 
-    const editA = collectMatches(tbody._children, "[data-kbm-my-patterns-edit]").find(
+    const editA = collectMatches(list._children, "[data-kbm-my-patterns-edit]").find(
       (b) => b.dataset.projectId === "proj-a",
     );
-    expect(editA).toBeTruthy();
     await editA?._click?.();
     await flushAsync();
 
-    // Edit uses the "open" action (editable workspace), distinct from the read-only "view" action.
     expect(loadSavedCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "open");
     expect(assign).toHaveBeenCalledWith("/patterns/sleeveless/custom-build/design/?edit=choices");
   });
 
-  it("copies a saved pattern and adds the new copy to the list", async () => {
-    const { root, status, tbody } = makeAccountRoot();
+  it("locks Edit for free users and offers the unlock modal", async () => {
+    const { root, list } = makeAccountRoot();
     listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
-    // A member with Sleeveless Pattern System access — Copy is enabled.
-    vi.stubGlobal("window", {
-      $memberstackDom: {
-        getCurrentMember: async () => ({
-          data: { id: "ms_member", planConnections: [{ planId: "pln_kin-membership-annual-qf9g01et" }] },
-        }),
-        getMemberJSON: async () => ({ data: {} }),
-      },
-    });
-    copyByIdMock.mockResolvedValue({
-      ok: true,
-      project: {
-        id: "proj-a-copy",
-        name: "Alpha pullover - Copy",
-        family: "sleeveless",
-        source: "express",
-        createdAt: "2026-02-01T00:00:00.000Z",
-        updatedAt: "2026-02-01T00:00:00.000Z",
-        version: 1,
-      },
-    });
-
-    await initAccountMyPatternsList(root);
-
-    const copyA = collectMatches(tbody._children, "[data-kbm-my-patterns-copy]").find(
-      (b) => b.dataset.projectId === "proj-a",
-    );
-    await copyA?._click?.();
-    await flushAsync();
-
-    expect(copyByIdMock).toHaveBeenCalledWith("proj-a", "sleeveless");
-    expect(collectMatches(tbody._children, "[data-kbm-my-patterns-row]").length).toBe(3);
-    expect(status.textContent).toMatch(/Created/i);
-  });
-
-  it("keeps Copy visible but disabled for free / non-owner users", async () => {
-    const { root, tbody } = makeAccountRoot();
-    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
-    vi.stubGlobal("window", {});
-    // Force the entitlement gate to deny edit/copy access.
-    localStorage.setItem("kbm_sleeveless_advanced_pattern_access", "0");
-
-    await initAccountMyPatternsList(root);
-
-    const copyBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-copy]");
-    expect(copyBtns.length).toBe(2);
-    // Button stays in the DOM (not hidden) but is locked with the helper tooltip.
-    expect(copyBtns[0].textContent).toBe("Copy");
-    expect(copyBtns[0].disabled).toBe(false);
-    expect(copyBtns[0].getAttribute("aria-disabled")).toBe("true");
-    expect(copyBtns[0].getAttribute("title")).toMatch(/included with membership/i);
-  });
-
-  it("does not copy when the entitlement gate denies access", async () => {
-    const { root, tbody } = makeAccountRoot();
-    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
-    vi.stubGlobal("window", {});
-    localStorage.setItem("kbm_sleeveless_advanced_pattern_access", "0");
-
-    await initAccountMyPatternsList(root);
-
-    const copyA = collectMatches(tbody._children, "[data-kbm-my-patterns-copy]").find(
-      (b) => b.dataset.projectId === "proj-a",
-    );
-    expect(copyA?.disabled).toBe(false);
-    expect(copyA?.getAttribute("aria-disabled")).toBe("true");
-    await copyA?._click?.();
-    await flushAsync();
-
-    expect(copyByIdMock).not.toHaveBeenCalled();
-  });
-
-  it("renames a saved pattern via prompt and updates the row name", async () => {
-    const { root, tbody, status } = makeAccountRoot();
-    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
-    const prompt = vi.fn(() => "Renamed pullover");
-    // Renaming is an edit and requires membership; use a member with Sleeveless access.
-    vi.stubGlobal("window", {
-      prompt,
-      $memberstackDom: {
-        getCurrentMember: async () => ({
-          data: { id: "ms_member", planConnections: [{ planId: "pln_kin-membership-annual-qf9g01et" }] },
-        }),
-        getMemberJSON: async () => ({ data: {} }),
-      },
-    });
-    renameMock.mockResolvedValue({
-      ok: true,
-      project: { ...sampleProjects[0], name: "Renamed pullover" },
-    });
-
-    await initAccountMyPatternsList(root);
-
-    const renameA = collectMatches(tbody._children, "[data-kbm-my-patterns-rename]").find(
-      (b) => b.dataset.projectId === "proj-a",
-    );
-    await renameA?._click?.();
-    await flushAsync();
-
-    expect(prompt).toHaveBeenCalledWith(RENAME_SAVED_PATTERN_PROMPT_MESSAGE, "Alpha pullover");
-    expect(renameMock).toHaveBeenCalledWith("proj-a", "Renamed pullover", "sleeveless");
-    expect(status.textContent).toMatch(/Renamed to/i);
-  });
-
-  it("does not rename when the prompt is cancelled", async () => {
-    const { root, tbody } = makeAccountRoot();
-    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
-    const prompt = vi.fn(() => null);
-    // Member access so the prompt is reached; cancelling it must abort the rename.
-    vi.stubGlobal("window", {
-      prompt,
-      $memberstackDom: {
-        getCurrentMember: async () => ({
-          data: { id: "ms_member", planConnections: [{ planId: "pln_kin-membership-annual-qf9g01et" }] },
-        }),
-        getMemberJSON: async () => ({ data: {} }),
-      },
-    });
-
-    await initAccountMyPatternsList(root);
-
-    const renameA = collectMatches(tbody._children, "[data-kbm-my-patterns-rename]").find(
-      (b) => b.dataset.projectId === "proj-a",
-    );
-    await renameA?._click?.();
-
-    expect(prompt).toHaveBeenCalledWith(RENAME_SAVED_PATTERN_PROMPT_MESSAGE, "Alpha pullover");
-    expect(renameMock).not.toHaveBeenCalled();
-  });
-
-  it("keeps Rename visible but locked for free / view-only users and offers the unlock modal", async () => {
-    const { root, tbody } = makeAccountRoot();
-    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
-    const prompt = vi.fn(() => "Should not be used");
-    // A logged-in free user who claimed proj-a as their one free pattern, no system access.
-    vi.stubGlobal("window", {
-      prompt,
-      $memberstackDom: {
-        getCurrentMember: async () => ({ data: { id: "ms_free" } }),
-        getMemberJSON: async () => ({
-          data: { freeSleevelessPatternClaimed: true, freeSleevelessPatternId: "proj-a" },
-        }),
-      },
-    });
-
-    await initAccountMyPatternsList(root);
-
-    const renameBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-rename]");
-    expect(renameBtns.length).toBe(2);
-    expect(renameBtns[0].textContent).toBe("Rename");
-    expect(renameBtns.every((b) => b.getAttribute("aria-disabled") === "true")).toBe(true);
-    expect(renameBtns[0].getAttribute("title")).toMatch(/included with membership/i);
-
-    const renameA = renameBtns.find((b) => b.dataset.projectId === "proj-a");
-    await renameA?._click?.();
-    await flushAsync();
-
-    expect(prompt).not.toHaveBeenCalled();
-    expect(renameMock).not.toHaveBeenCalled();
-    expect(offerPatternEditingUnlockModalMock).toHaveBeenCalledTimes(1);
-  });
-
-  it("disables Delete on the free user's protected pattern but keeps others deletable", async () => {
-    const { root, tbody } = makeAccountRoot();
-    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
-    // A logged-in free user who claimed proj-a as their one free pattern, no system access.
     vi.stubGlobal("window", {
       $memberstackDom: {
         getCurrentMember: async () => ({ data: { id: "ms_free" } }),
@@ -609,40 +441,18 @@ describe("accountMyPatternsList", () => {
 
     await initAccountMyPatternsList(root);
 
-    const deleteBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-delete]");
-    const delA = deleteBtns.find((b) => b.dataset.projectId === "proj-a");
-    const delB = deleteBtns.find((b) => b.dataset.projectId === "proj-b");
-
-    expect(delA?.disabled).toBe(true);
-    expect(delA?.getAttribute("aria-disabled")).toBe("true");
-    expect(delA?.getAttribute("title")).toMatch(/free Sleeveless Pattern/i);
-    expect(delB?.disabled).toBe(false);
-    expect(delB?.getAttribute("aria-disabled")).toBeNull();
-
-    // Locked: every Edit and Copy action stays visible with a helper tooltip.
-    const editBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-edit]");
-    const copyBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-copy]");
-    expect(editBtns.length).toBe(2);
-    expect(copyBtns.length).toBe(2);
+    const editBtns = collectMatches(list._children, "[data-kbm-my-patterns-edit]");
     expect(editBtns.every((b) => b.getAttribute("aria-disabled") === "true")).toBe(true);
-    expect(editBtns[0].getAttribute("title")).toMatch(/included with membership/i);
-    expect(copyBtns.every((b) => b.getAttribute("aria-disabled") === "true")).toBe(true);
 
-    // Native-disabled Delete is a no-op; locked Edit opens the unlock modal (never reaches APIs).
-    await delA?._click?.();
     const editA = editBtns.find((b) => b.dataset.projectId === "proj-a");
     await editA?._click?.();
     await flushAsync();
-    expect(deleteCustomPatternProjectMock).not.toHaveBeenCalled();
+
     expect(loadSavedCustomPatternProjectMock).not.toHaveBeenCalled();
     expect(offerPatternEditingUnlockModalMock).toHaveBeenCalledTimes(1);
-    expect(offerPatternEditingUnlockModalMock).toHaveBeenCalledWith(
-      expect.objectContaining({ loggedIn: true, hasSystemAccess: false }),
-      expect.objectContaining({ patternSystem: "sleeveless" }),
-    );
   });
 
-  it("opens the unlock modal when a drop-shoulder free user clicks Edit (not a silent no-op)", async () => {
+  it("opens the unlock modal for a drop-shoulder free user Edit click", async () => {
     const dropShoulderProject = {
       id: "proj-ds",
       name: "Drop shoulder pullover",
@@ -651,7 +461,7 @@ describe("accountMyPatternsList", () => {
       patternSystem: "drop-shoulder" as const,
       updatedAt: "2026-02-01T00:00:00.000Z",
     };
-    const { root, tbody } = makeAccountRoot();
+    const { root, list } = makeAccountRoot();
     listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: [dropShoulderProject] });
     vi.stubGlobal("window", {
       $memberstackDom: {
@@ -668,62 +478,27 @@ describe("accountMyPatternsList", () => {
 
     await initAccountMyPatternsList(root);
 
-    const editBtn = collectMatches(tbody._children, "[data-kbm-my-patterns-edit]")[0];
+    const editBtn = collectMatches(list._children, "[data-kbm-my-patterns-edit]")[0];
     expect(editBtn?.getAttribute("aria-disabled")).toBe("true");
     await editBtn?._click?.();
     await flushAsync();
 
     expect(loadSavedCustomPatternProjectMock).not.toHaveBeenCalled();
-    expect(offerPatternEditingUnlockModalMock).toHaveBeenCalledTimes(1);
     expect(offerPatternEditingUnlockModalMock).toHaveBeenCalledWith(
       expect.objectContaining({ loggedIn: true, hasSystemAccess: false }),
       expect.objectContaining({ patternSystem: "drop-shoulder" }),
     );
   });
 
-  it("keeps Delete enabled for a member with system access", async () => {
-    const { root, tbody } = makeAccountRoot();
-    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
-    // A member whose plan grants Sleeveless Pattern System access (even though freeClaimed is set).
-    vi.stubGlobal("window", {
-      $memberstackDom: {
-        getCurrentMember: async () => ({
-          data: {
-            id: "ms_member",
-            planConnections: [{ planId: "pln_kin-membership-annual-qf9g01et" }],
-          },
-        }),
-        getMemberJSON: async () => ({
-          data: { freeSleevelessPatternClaimed: true, freeSleevelessPatternId: "proj-a" },
-        }),
-      },
-    });
+  it("shows the empty state when there are no saved patterns", async () => {
+    const { root, status, list, emptyCta, viewAllWrap } = makeAccountRoot();
+    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: [] });
 
     await initAccountMyPatternsList(root);
 
-    const deleteBtns = collectMatches(tbody._children, "[data-kbm-my-patterns-delete]");
-    expect(deleteBtns.every((b) => b.disabled === false)).toBe(true);
-  });
-
-  it("shows empty state after deleting the last saved pattern", async () => {
-    const { root, status, listWrap, tbody } = makeAccountRoot();
-    listCustomPatternProjectsMock.mockResolvedValue({
-      ok: true,
-      projects: [sampleProjects[0]],
-    });
-
-    const confirm = vi.fn(() => true);
-    vi.stubGlobal("window", { confirm });
-
-    await initAccountMyPatternsList(root);
-
-    const delA = collectMatches(tbody._children, "[data-kbm-my-patterns-delete]")[0];
-    await delA?._click?.();
-    await flushAsync();
-
-    expect(listWrap.hidden).toBe(true);
-    expect(status.hidden).toBe(false);
+    expect(list.hidden).toBe(true);
+    expect(viewAllWrap.hidden).toBe(true);
+    expect(emptyCta.hidden).toBe(false);
     expect(status.textContent).toMatch(/do not have any saved patterns yet/i);
-    expect(collectMatches(tbody._children, "[data-kbm-my-patterns-row]").length).toBe(0);
   });
 });

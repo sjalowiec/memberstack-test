@@ -1,8 +1,10 @@
 /**
- * Hydrate the account My Favorites panel (Videos group).
+ * Hydrate the account My Favorites dashboard summary (Videos group).
  */
+import { selectFavoritePreviewIds } from "../lib/favorites/accountFavoritesPreview";
 import { favoriteStarButtonHtml, escapeHtml } from "../lib/favorites/favoriteStarUi";
 import { initFavoriteStarController } from "../lib/favorites/favoriteStarController";
+import type { FavoriteRecord } from "../lib/favorites/favoriteContentTypes";
 import { FavoritesAuthError, listFavorites } from "../lib/favorites/favoritesClient";
 
 type VideoMeta = {
@@ -95,10 +97,11 @@ async function boot(): Promise<void> {
   if (!statusEl || !groupEl || !listEl || !emptyEl) return;
 
   const meta = readVideoMeta();
-  let favoriteIds: string[] = [];
+  let favorites: FavoriteRecord[] = [];
 
   const paint = () => {
-    renderList({ listEl, groupEl, emptyEl, statusEl, ids: favoriteIds, meta });
+    const previewIds = selectFavoritePreviewIds(favorites);
+    renderList({ listEl, groupEl, emptyEl, statusEl, ids: previewIds, meta });
   };
 
   initFavoriteStarController({
@@ -107,15 +110,14 @@ async function boot(): Promise<void> {
     onChanged: (detail) => {
       if (detail.contentType !== "video") return;
       if (!detail.isFavorite) {
-        favoriteIds = favoriteIds.filter((id) => id !== detail.contentId);
+        favorites = favorites.filter((f) => f.content_id !== detail.contentId);
         paint();
       }
     },
   });
 
   try {
-    const favorites = await listFavorites("video");
-    favoriteIds = favorites.map((f) => f.content_id);
+    favorites = await listFavorites("video");
     paint();
   } catch (error) {
     if (error instanceof FavoritesAuthError) {
