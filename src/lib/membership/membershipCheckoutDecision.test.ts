@@ -14,13 +14,21 @@ function memberWithPlans(
 }
 
 describe("resolveMembershipCheckoutDecision", () => {
-  it("allows a logged-in member with no active paid plan", () => {
+  it("uses purchase for a free member buying Basic", () => {
     const member = memberWithPlans([]);
-    expect(resolveMembershipCheckoutDecision(member, "basicMonthly").action).toBe("allow");
-    expect(resolveMembershipCheckoutDecision(member, "premiumAnnual").action).toBe("allow");
+    expect(resolveMembershipCheckoutDecision(member, "basicMonthly")).toEqual({
+      action: "purchase",
+    });
   });
 
-  it("allows a canceled member to restart (non-active connections ignored)", () => {
+  it("uses purchase for a free member buying Premium", () => {
+    const member = memberWithPlans([]);
+    expect(resolveMembershipCheckoutDecision(member, "premiumAnnual")).toEqual({
+      action: "purchase",
+    });
+  });
+
+  it("uses purchase for canceled / expired paid connections", () => {
     const member = memberWithPlans([
       {
         planId: MEMBERSHIPS.basic.memberstackPlanId,
@@ -32,92 +40,124 @@ describe("resolveMembershipCheckoutDecision", () => {
         status: "EXPIRED",
       },
     ]);
-    expect(resolveMembershipCheckoutDecision(member, "basicMonthly").action).toBe("allow");
-    expect(resolveMembershipCheckoutDecision(member, "premiumAnnual").action).toBe("allow");
+    expect(resolveMembershipCheckoutDecision(member, "basicMonthly").action).toBe("purchase");
+    expect(resolveMembershipCheckoutDecision(member, "premiumAnnual").action).toBe("purchase");
   });
 
-  it("blocks active Basic from buying Basic again", () => {
+  it("marks active Basic choosing Basic as current (not purchase)", () => {
     const member = memberWithPlans([
       {
         planId: MEMBERSHIPS.basic.memberstackPlanId,
         status: "ACTIVE",
       },
     ]);
-    const decision = resolveMembershipCheckoutDecision(member, "basicAnnual");
-    expect(decision).toMatchObject({ action: "manage", reason: "basic-rebuy" });
+    expect(resolveMembershipCheckoutDecision(member, "basicAnnual")).toEqual({
+      action: "current",
+      tier: "basic",
+    });
   });
 
-  it("allows active Basic to buy Premium (upgrade path)", () => {
+  it("uses update for active Basic choosing Premium", () => {
     const member = memberWithPlans([
       {
         planId: MEMBERSHIPS.basic.memberstackPlanId,
         status: "ACTIVE",
       },
     ]);
-    expect(resolveMembershipCheckoutDecision(member, "premiumMonthly").action).toBe("allow");
+    expect(resolveMembershipCheckoutDecision(member, "premiumMonthly")).toEqual({
+      action: "update",
+    });
   });
 
-  it("blocks active Premium from starting another Premium checkout", () => {
+  it("marks active Premium choosing Premium as current (not purchase)", () => {
     const member = memberWithPlans([
       {
         planId: MEMBERSHIPS.premium.memberstackPlanId,
         status: "TRIALING",
       },
     ]);
-    const decision = resolveMembershipCheckoutDecision(member, "premiumAnnual");
-    expect(decision).toMatchObject({ action: "manage", reason: "premium-active" });
+    expect(resolveMembershipCheckoutDecision(member, "premiumAnnual")).toEqual({
+      action: "current",
+      tier: "premium",
+    });
   });
 
-  it("blocks active Premium from starting Basic checkout (manage billing)", () => {
+  it("uses update for active Premium choosing Basic (never a second subscription)", () => {
     const member = memberWithPlans([
       {
         planId: MEMBERSHIPS.premium.memberstackPlanId,
         status: "ACTIVE",
       },
     ]);
-    expect(resolveMembershipCheckoutDecision(member, "basicMonthly")).toMatchObject({
-      action: "manage",
-      reason: "premium-active",
+    expect(resolveMembershipCheckoutDecision(member, "basicMonthly")).toEqual({
+      action: "update",
     });
   });
 
-  it("treats legacy Basic as Basic for rebuy protection", () => {
+  it("never returns purchase when any paid Basic/Premium membership is active", () => {
+    const cases: Array<{
+      planId: string;
+      planKey: "basicMonthly" | "basicAnnual" | "premiumMonthly" | "premiumAnnual";
+    }> = [
+      { planId: MEMBERSHIPS.basic.memberstackPlanId, planKey: "basicMonthly" },
+      { planId: MEMBERSHIPS.basic.memberstackPlanId, planKey: "premiumMonthly" },
+      { planId: MEMBERSHIPS.premium.memberstackPlanId, planKey: "premiumAnnual" },
+      { planId: MEMBERSHIPS.premium.memberstackPlanId, planKey: "basicAnnual" },
+      { planId: LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId, planKey: "premiumAnnual" },
+      {
+        planId: LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId,
+        planKey: "basicMonthly",
+      },
+    ];
+
+    for (const { planId, planKey } of cases) {
+      const decision = resolveMembershipCheckoutDecision(
+        memberWithPlans([{ planId, status: "ACTIVE" }]),
+        planKey,
+      );
+      expect(decision.action, `${planId} ? ${planKey}`).not.toBe("purchase");
+    }
+  });
+
+  it("treats legacy Basic as Basic current / Premium update", () => {
     const member = memberWithPlans([
       {
         planId: LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId,
         status: "ACTIVE",
       },
     ]);
-    expect(resolveMembershipCheckoutDecision(member, "basicMonthly")).toMatchObject({
-      action: "manage",
-      reason: "basic-rebuy",
+    expect(resolveMembershipCheckoutDecision(member, "basicMonthly")).toEqual({
+      action: "current",
+      tier: "basic",
+    });
+    expect(resolveMembershipCheckoutDecision(member, "premiumMonthly")).toEqual({
+      action: "update",
     });
   });
 
-  it("treats legacy Monthly Subscription plan shell as Premium (manage billing)", () => {
+  it("treats legacy Monthly Subscription plan shell as Premium", () => {
     const member = memberWithPlans([
       {
         planId: LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId,
         status: "ACTIVE",
       },
     ]);
-    expect(resolveMembershipCheckoutDecision(member, "premiumMonthly")).toMatchObject({
-      action: "manage",
-      reason: "premium-active",
+    expect(resolveMembershipCheckoutDecision(member, "premiumMonthly")).toEqual({
+      action: "current",
+      tier: "premium",
     });
-    expect(resolveMembershipCheckoutDecision(member, "basicMonthly")).toMatchObject({
-      action: "manage",
-      reason: "premium-active",
+    expect(resolveMembershipCheckoutDecision(member, "basicMonthly")).toEqual({
+      action: "update",
     });
   });
 
-  it("allows beta-only members to subscribe to a paid plan", () => {
+  it("allows beta-only members to purchase a paid plan", () => {
     const member = memberWithPlans([
       {
         planId: MEMBERSHIPS.beta.memberstackPlanId,
         status: "ACTIVE",
       },
     ]);
-    expect(resolveMembershipCheckoutDecision(member, "basicMonthly").action).toBe("allow");
+    expect(resolveMembershipCheckoutDecision(member, "basicMonthly").action).toBe("purchase");
   });
 });

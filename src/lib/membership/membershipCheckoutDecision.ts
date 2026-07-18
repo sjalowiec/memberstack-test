@@ -1,12 +1,11 @@
 /**
- * Decide whether a logged-in member may start a membership checkout for a plan.
+ * Decide how a logged-in member may start a membership plan action.
  *
- * Phase 1 rules:
- * - Active Premium ? manage billing (do not start checkout)
- * - Active Basic buying Basic again ? manage billing
- * - Active Basic buying Premium ? allow (upgrade path; labels come later)
- * - Canceled / expired / no active paid Basic|Premium ? allow
- * - Beta-only does not block paid subscribe
+ * Business rule: one active recurring Knit It Now membership only.
+ * - No active paid plan ? purchase (Stripe Checkout via purchasePlansWithCheckout)
+ * - Active member choosing their current tier ? current (disabled UI; no checkout)
+ * - Active member switching tiers ? update (Memberstack data-ms-price:update)
+ * - Beta-only does not count as paid membership
  */
 
 import {
@@ -34,11 +33,11 @@ const premiumPlanIdSet = new Set<string>(PREMIUM_MEMBERSHIP_PLAN_IDS);
 export type MembershipCheckoutTier = "basic" | "premium";
 
 export type MembershipCheckoutDecision =
-  | { action: "allow" }
+  | { action: "purchase" }
+  | { action: "update" }
   | {
-      action: "manage";
-      reason: "premium-active" | "basic-rebuy";
-      message: string;
+      action: "current";
+      tier: MembershipCheckoutTier;
     };
 
 export function membershipTierFromPlanKey(planKey: JoinCheckoutPlanKey): MembershipCheckoutTier {
@@ -53,28 +52,30 @@ export function memberHasActivePremiumPlan(memberOrPayload: unknown): boolean {
   return getActivePlanIds(memberOrPayload).some((id) => premiumPlanIdSet.has(id));
 }
 
+/** Active paid tier for CTA labels. Premium wins if both somehow appear. */
+export function memberActivePaidMembershipTier(
+  memberOrPayload: unknown,
+): MembershipCheckoutTier | null {
+  if (memberHasActivePremiumPlan(memberOrPayload)) return "premium";
+  if (memberHasActiveBasicPlan(memberOrPayload)) return "basic";
+  return null;
+}
+
 export function resolveMembershipCheckoutDecision(
   memberOrPayload: unknown,
   planKey: JoinCheckoutPlanKey,
 ): MembershipCheckoutDecision {
-  if (memberHasActivePremiumPlan(memberOrPayload)) {
-    return {
-      action: "manage",
-      reason: "premium-active",
-      message:
-        "You already have an active Premium membership. Manage billing from your workspace instead of starting a new checkout.",
-    };
+  const targetTier = membershipTierFromPlanKey(planKey);
+  const activeTier = memberActivePaidMembershipTier(memberOrPayload);
+
+  if (!activeTier) {
+    return { action: "purchase" };
   }
 
-  const tier = membershipTierFromPlanKey(planKey);
-  if (tier === "basic" && memberHasActiveBasicPlan(memberOrPayload)) {
-    return {
-      action: "manage",
-      reason: "basic-rebuy",
-      message:
-        "You already have an active Basic membership. Manage billing from your workspace instead of buying Basic again.",
-    };
+  if (activeTier === targetTier) {
+    return { action: "current", tier: activeTier };
   }
 
-  return { action: "allow" };
+  // Cross-tier switch: Memberstack data-ms-price:update (replace), never add/purchase.
+  return { action: "update" };
 }

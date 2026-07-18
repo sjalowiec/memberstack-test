@@ -1,6 +1,7 @@
 import {
   resolveMembershipCheckoutDecision,
 } from "../lib/membership/membershipCheckoutDecision";
+import { resolveJoinCtaPresentation } from "../lib/membership/membershipPricingUi";
 import {
   buildPendingMembershipCheckout,
   clearPendingMembershipCheckout,
@@ -40,6 +41,7 @@ const LOGIN_FIRST_MESSAGE =
 /** Prevents double-click / overlapping checkout sessions. */
 let checkoutInFlight = false;
 let resumeListenerBound = false;
+let lastKnownMemberPayload: unknown = null;
 
 function showJoinStatus(message: string, tone: "info" | "error" | "success" = "info"): void {
   const el = document.getElementById(STATUS_ID);
@@ -102,13 +104,76 @@ async function openBillingPortal(ms: NonNullable<Window["$memberstackDom"]>): Pr
 
 function setButtonsBusy(busy: boolean): void {
   document.querySelectorAll<HTMLButtonElement>("[data-join-checkout]").forEach((btn) => {
+    const key = btn.getAttribute("data-join-checkout");
+    if (!isJoinCheckoutPlanKey(key)) {
+      btn.disabled = busy;
+      return;
+    }
+    const presentation = resolveJoinCtaPresentation(lastKnownMemberPayload, key);
+    if (presentation.disabled) {
+      btn.disabled = true;
+      return;
+    }
     btn.disabled = busy;
     btn.setAttribute("aria-busy", busy ? "true" : "false");
   });
 }
 
+/** Sync Join CTA labels/disabled state from the current member (no flash messages). */
+export function applyJoinCheckoutButtonStates(memberOrPayload: unknown): void {
+  lastKnownMemberPayload = memberOrPayload;
+  document.querySelectorAll<HTMLButtonElement>("[data-join-checkout]").forEach((btn) => {
+    const key = btn.getAttribute("data-join-checkout");
+    if (!isJoinCheckoutPlanKey(key)) return;
+    const presentation = resolveJoinCtaPresentation(memberOrPayload, key);
+    btn.textContent = presentation.label;
+    btn.disabled = presentation.disabled;
+    btn.setAttribute("aria-disabled", presentation.disabled ? "true" : "false");
+    btn.setAttribute("data-join-cta-state", presentation.kind);
+    if (!presentation.disabled) {
+      btn.setAttribute("aria-busy", "false");
+    }
+  });
+}
+
+async function syncJoinCheckoutButtonStatesFromMemberstack(
+  ms?: NonNullable<Window["$memberstackDom"]> | null,
+): Promise<void> {
+  const dom = ms ?? (await waitForMemberstackDom());
+  if (!dom?.getCurrentMember) {
+    applyJoinCheckoutButtonStates(null);
+    return;
+  }
+  try {
+    const payload = await dom.getCurrentMember();
+    applyJoinCheckoutButtonStates(payload);
+  } catch {
+    applyJoinCheckoutButtonStates(null);
+  }
+}
+
 function currentReturnUrl(): string {
   return typeof window !== "undefined" ? window.location.href : "/membership";
+}
+
+/**
+ * Invoke Memberstack's documented data-ms-price:update handler via a page-load-bound
+ * hidden trigger. Do not call undocumented portal priceIds APIs directly.
+ */
+function invokeMembershipPriceUpdate(planKey: JoinCheckoutPlanKey): boolean {
+  const trigger = document.querySelector<HTMLElement>(
+    `[data-join-price-update="${planKey}"]`,
+  );
+  if (!trigger) {
+    console.error("[join checkout] missing data-ms-price:update trigger for", planKey);
+    showJoinStatus("Could not start plan update. Please refresh and try again.", "error");
+    return false;
+  }
+  console.log("[join checkout] invoking data-ms-price:update trigger", planKey);
+  clearPendingMembershipCheckout();
+  clearJoinStatus();
+  trigger.click();
+  return true;
 }
 
 async function openMembershipLoginModal(
@@ -210,7 +275,7 @@ export type StartJoinCheckoutOptions = {
 };
 
 /**
- * Start (or resume) membership checkout for one Join plan button.
+ * Start (or resume) membership checkout / update for one Join plan button.
  * Logged-out visitors are sent to LOGIN (never SIGNUP) with a pending intent.
  */
 export async function startJoinCheckout(
@@ -294,16 +359,24 @@ export async function startJoinCheckout(
 
     const memberId = memberIdFromMemberstackPayload(memberPayload);
     console.log("[join checkout] authenticated member:", memberId);
+    applyJoinCheckoutButtonStates(memberPayload);
 
     const decision = resolveMembershipCheckoutDecision(memberPayload, planKey);
-    if (decision.action === "manage") {
+
+    if (decision.action === "current") {
       clearPendingMembershipCheckout();
-      console.log("[join checkout] blocked — manage billing:", decision.reason);
-      showJoinStatus(decision.message, "info");
-      await openBillingPortal(ms);
+      console.log("[join checkout] current plan — no checkout or redirect:", decision.tier);
+      // Button already shows Current Plan; do not flash a status message.
       return;
     }
 
+    if (decision.action === "update") {
+      console.log("[join checkout] update/replace via data-ms-price:update");
+      invokeMembershipPriceUpdate(planKey);
+      return;
+    }
+
+    // decision.action === "purchase"
     const cancelUrl =
       peekPendingMembershipCheckout()?.returnUrl ||
       returnUrl ||
@@ -348,6 +421,7 @@ function bindPendingCheckoutResumeListener(): void {
   if (resumeListenerBound || typeof window === "undefined") return;
   resumeListenerBound = true;
   window.addEventListener("auth:updated", () => {
+    void syncJoinCheckoutButtonStatesFromMemberstack();
     void resumePendingMembershipCheckout();
   });
 }
@@ -376,10 +450,14 @@ export function initJoinCheckout(root: ParentNode = document): void {
         showJoinStatus("Unknown membership option. Please refresh and try again.", "error");
         return;
       }
+      if (btn instanceof HTMLButtonElement && btn.disabled) {
+        return;
+      }
       void startJoinCheckout(key);
     });
   });
 
+  void syncJoinCheckoutButtonStatesFromMemberstack();
   // If the visitor logged in elsewhere and returned with a pending intent, resume.
   void resumePendingMembershipCheckout();
 }
@@ -388,6 +466,7 @@ export function initJoinCheckout(root: ParentNode = document): void {
 export function __resetJoinCheckoutForTests(): void {
   checkoutInFlight = false;
   resumeListenerBound = false;
+  lastKnownMemberPayload = null;
 }
 
 if (typeof document !== "undefined") {

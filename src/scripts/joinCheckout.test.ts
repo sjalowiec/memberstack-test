@@ -8,6 +8,7 @@ import {
 } from "../lib/membership/pendingMembershipCheckout";
 import {
   __resetJoinCheckoutForTests,
+  applyJoinCheckoutButtonStates,
   resumePendingMembershipCheckout,
   startJoinCheckout,
 } from "./joinCheckout";
@@ -25,7 +26,10 @@ function memberPayload(
   };
 }
 
-function stubDom() {
+function stubDom(options?: {
+  updateTriggers?: Partial<Record<string, { click: ReturnType<typeof vi.fn> }>>;
+  buttons?: Array<{ planKey: string; disabled?: boolean }>;
+}) {
   const status = {
     hidden: true,
     textContent: "",
@@ -34,13 +38,41 @@ function stubDom() {
       add: vi.fn(),
     },
   };
+
+  const updateTriggers = new Map<string, { click: ReturnType<typeof vi.fn> }>();
+  for (const [key, trigger] of Object.entries(options?.updateTriggers ?? {})) {
+    if (trigger) updateTriggers.set(key, trigger);
+  }
+
+  const buttons = (options?.buttons ?? []).map((b) => {
+    const attrs = new Map<string, string>([["data-join-checkout", b.planKey]]);
+    return {
+      disabled: Boolean(b.disabled),
+      textContent: "",
+      getAttribute: (name: string) => attrs.get(name) ?? null,
+      setAttribute: (name: string, value: string) => {
+        attrs.set(name, value);
+      },
+      addEventListener: vi.fn(),
+    };
+  });
+
   vi.stubGlobal("document", {
     getElementById: (id: string) => (id === "join-checkout-status" ? status : null),
-    querySelectorAll: () => [],
-    querySelector: () => null,
+    querySelectorAll: (sel: string) => {
+      if (sel === "[data-join-checkout]") return buttons;
+      return [];
+    },
+    querySelector: (sel: string) => {
+      const match = /^\[data-join-price-update="([^"]+)"\]$/.exec(sel);
+      if (match) {
+        return updateTriggers.get(match[1]) ?? null;
+      }
+      return null;
+    },
     addEventListener: vi.fn(),
   });
-  return status;
+  return { status, buttons, updateTriggers };
 }
 
 function installMemberstack(ms: Record<string, unknown>) {
@@ -59,7 +91,7 @@ function installMemberstack(ms: Record<string, unknown>) {
   return win;
 }
 
-describe("startJoinCheckout (Phase 1 login-first)", () => {
+describe("startJoinCheckout (purchase / update / current)", () => {
   beforeEach(() => {
     stubSessionStorage();
     stubDom();
@@ -69,6 +101,159 @@ describe("startJoinCheckout (Phase 1 login-first)", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
+  });
+
+  it("1. free member buying Basic uses normal checkout", async () => {
+    const purchasePlansWithCheckout = vi.fn().mockResolvedValue({
+      data: { url: "https://checkout.stripe.test/basic" },
+    });
+    installMemberstack({
+      getCurrentMember: vi.fn().mockResolvedValue(memberPayload("mem_free", [])),
+      openModal: vi.fn(),
+      purchasePlansWithCheckout,
+      hideModal: vi.fn(),
+    });
+
+    await startJoinCheckout("basicMonthly");
+
+    expect(purchasePlansWithCheckout).toHaveBeenCalledWith(
+      expect.objectContaining({
+        priceId: MEMBERSHIP_PRICE_IDS.basicMonthly,
+        successUrl: "https://example.com/signup/thank-you",
+        autoRedirect: false,
+      }),
+    );
+  });
+
+  it("2. free member buying Premium uses normal checkout", async () => {
+    const purchasePlansWithCheckout = vi.fn().mockResolvedValue({
+      data: { url: "https://checkout.stripe.test/premium" },
+    });
+    installMemberstack({
+      getCurrentMember: vi.fn().mockResolvedValue(memberPayload("mem_free2", [])),
+      openModal: vi.fn(),
+      purchasePlansWithCheckout,
+      hideModal: vi.fn(),
+    });
+
+    await startJoinCheckout("premiumAnnual");
+
+    expect(purchasePlansWithCheckout).toHaveBeenCalledWith(
+      expect.objectContaining({ priceId: MEMBERSHIP_PRICE_IDS.premiumAnnual }),
+    );
+  });
+
+  it("3. active Basic choosing Basic is current — no checkout, portal, or status flash", async () => {
+    const { status } = stubDom();
+    const purchasePlansWithCheckout = vi.fn();
+    const launchStripeCustomerPortal = vi.fn();
+    installMemberstack({
+      getCurrentMember: vi.fn().mockResolvedValue(
+        memberPayload("mem_basic", [
+          { planId: MEMBERSHIPS.basic.memberstackPlanId, status: "ACTIVE" },
+        ]),
+      ),
+      openModal: vi.fn(),
+      purchasePlansWithCheckout,
+      launchStripeCustomerPortal,
+      hideModal: vi.fn(),
+    });
+
+    await startJoinCheckout("basicMonthly");
+
+    expect(purchasePlansWithCheckout).not.toHaveBeenCalled();
+    expect(launchStripeCustomerPortal).not.toHaveBeenCalled();
+    expect(status.hidden).toBe(true);
+    expect(status.textContent).toBe("");
+  });
+
+  it("4. active Basic choosing Premium clicks hidden data-ms-price:update trigger", async () => {
+    const updateClick = vi.fn();
+    stubDom({
+      updateTriggers: {
+        premiumMonthly: { click: updateClick },
+      },
+    });
+    const purchasePlansWithCheckout = vi.fn();
+    const launchStripeCustomerPortal = vi.fn();
+    installMemberstack({
+      getCurrentMember: vi.fn().mockResolvedValue(
+        memberPayload("mem_basic_up", [
+          { planId: MEMBERSHIPS.basic.memberstackPlanId, status: "ACTIVE" },
+        ]),
+      ),
+      openModal: vi.fn(),
+      purchasePlansWithCheckout,
+      launchStripeCustomerPortal,
+      hideModal: vi.fn(),
+    });
+
+    await startJoinCheckout("premiumMonthly");
+
+    expect(updateClick).toHaveBeenCalledTimes(1);
+    expect(purchasePlansWithCheckout).not.toHaveBeenCalled();
+    expect(launchStripeCustomerPortal).not.toHaveBeenCalled();
+  });
+
+  it("5. active Premium choosing Premium is current — no checkout or portal", async () => {
+    const purchasePlansWithCheckout = vi.fn();
+    const launchStripeCustomerPortal = vi.fn();
+    installMemberstack({
+      getCurrentMember: vi.fn().mockResolvedValue(
+        memberPayload("mem_prem", [
+          { planId: MEMBERSHIPS.premium.memberstackPlanId, status: "ACTIVE" },
+        ]),
+      ),
+      openModal: vi.fn(),
+      purchasePlansWithCheckout,
+      launchStripeCustomerPortal,
+      hideModal: vi.fn(),
+    });
+
+    await startJoinCheckout("premiumAnnual");
+
+    expect(purchasePlansWithCheckout).not.toHaveBeenCalled();
+    expect(launchStripeCustomerPortal).not.toHaveBeenCalled();
+  });
+
+  it("6. no active-member plan switch can call add/purchase checkout", async () => {
+    const updateClick = vi.fn();
+    stubDom({
+      updateTriggers: {
+        premiumMonthly: { click: updateClick },
+        basicMonthly: { click: updateClick },
+      },
+    });
+    const purchasePlansWithCheckout = vi.fn();
+    const launchStripeCustomerPortal = vi.fn();
+
+    const basicMember = memberPayload("mem_b", [
+      { planId: MEMBERSHIPS.basic.memberstackPlanId, status: "ACTIVE" },
+    ]);
+    const premiumMember = memberPayload("mem_p", [
+      { planId: MEMBERSHIPS.premium.memberstackPlanId, status: "ACTIVE" },
+    ]);
+
+    installMemberstack({
+      getCurrentMember: vi
+        .fn()
+        .mockResolvedValueOnce(basicMember)
+        .mockResolvedValueOnce(basicMember)
+        .mockResolvedValueOnce(premiumMember)
+        .mockResolvedValueOnce(premiumMember),
+      openModal: vi.fn(),
+      purchasePlansWithCheckout,
+      launchStripeCustomerPortal,
+      hideModal: vi.fn(),
+    });
+
+    await startJoinCheckout("basicMonthly"); // current
+    await startJoinCheckout("premiumMonthly"); // update
+    await startJoinCheckout("premiumAnnual"); // current
+    await startJoinCheckout("basicMonthly"); // update
+
+    expect(purchasePlansWithCheckout).not.toHaveBeenCalled();
+    expect(updateClick).toHaveBeenCalledTimes(2);
   });
 
   it("logged-out Basic monthly click opens LOGIN (not SIGNUP) and stores pending checkout", async () => {
@@ -110,61 +295,7 @@ describe("startJoinCheckout (Phase 1 login-first)", () => {
     expect(sessionStorage.getItem(PENDING_MEMBERSHIP_CHECKOUT_KEY)).toBeNull();
   });
 
-  it("logged-out Premium annual click stores pending Premium annual before login", async () => {
-    const openModal = vi.fn().mockImplementation(async () => {
-      const pending = JSON.parse(String(sessionStorage.getItem(PENDING_MEMBERSHIP_CHECKOUT_KEY)));
-      expect(pending.planKey).toBe("premiumAnnual");
-      expect(pending.priceId).toBe(MEMBERSHIP_PRICE_IDS.premiumAnnual);
-      expect(pending.returnUrl).toBe("https://example.com/membership");
-      return { type: "LOGIN" };
-    });
-    const getCurrentMember = vi
-      .fn()
-      .mockResolvedValueOnce(memberPayload(null))
-      .mockResolvedValueOnce(memberPayload("mem_2"));
-    const purchasePlansWithCheckout = vi.fn().mockResolvedValue({
-      data: { url: "https://checkout.stripe.test/p" },
-    });
-
-    installMemberstack({
-      getCurrentMember,
-      openModal,
-      purchasePlansWithCheckout,
-      hideModal: vi.fn(),
-    });
-
-    await startJoinCheckout("premiumAnnual");
-
-    expect(openModal).toHaveBeenCalledWith("LOGIN");
-    expect(purchasePlansWithCheckout).toHaveBeenCalledWith(
-      expect.objectContaining({ priceId: MEMBERSHIP_PRICE_IDS.premiumAnnual }),
-    );
-  });
-
-  it("resumes checkout after login for a no-plan member", async () => {
-    const openModal = vi.fn().mockResolvedValue({ type: "LOGIN" });
-    const getCurrentMember = vi
-      .fn()
-      .mockResolvedValueOnce(memberPayload(null))
-      .mockResolvedValueOnce(memberPayload("mem_nopaln", []));
-    const purchasePlansWithCheckout = vi.fn().mockResolvedValue({
-      data: { url: "https://checkout.stripe.test/resume" },
-    });
-
-    installMemberstack({
-      getCurrentMember,
-      openModal,
-      purchasePlansWithCheckout,
-      hideModal: vi.fn(),
-    });
-
-    await startJoinCheckout("basicAnnual");
-
-    expect(getCurrentMember).toHaveBeenCalledTimes(2);
-    expect(purchasePlansWithCheckout).toHaveBeenCalledTimes(1);
-  });
-
-  it("allows a canceled member to restart", async () => {
+  it("allows a canceled member to restart via purchase", async () => {
     const purchasePlansWithCheckout = vi.fn().mockResolvedValue({
       data: { url: "https://checkout.stripe.test/restart" },
     });
@@ -186,51 +317,29 @@ describe("startJoinCheckout (Phase 1 login-first)", () => {
     expect(openModal).not.toHaveBeenCalled();
   });
 
-  it("blocks active Basic from buying Basic again and opens billing portal", async () => {
+  it("active Premium choosing Basic uses update trigger, not purchase", async () => {
+    const updateClick = vi.fn();
+    stubDom({
+      updateTriggers: {
+        basicAnnual: { click: updateClick },
+      },
+    });
     const purchasePlansWithCheckout = vi.fn();
-    const launchStripeCustomerPortal = vi.fn().mockResolvedValue({
-      data: { url: "https://billing.stripe.test/portal" },
-    });
-    const win = installMemberstack({
-      getCurrentMember: vi.fn().mockResolvedValue(
-        memberPayload("mem_basic", [
-          { planId: MEMBERSHIPS.basic.memberstackPlanId, status: "ACTIVE" },
-        ]),
-      ),
-      openModal: vi.fn(),
-      purchasePlansWithCheckout,
-      launchStripeCustomerPortal,
-      hideModal: vi.fn(),
-    });
-
-    await startJoinCheckout("basicMonthly");
-
-    expect(purchasePlansWithCheckout).not.toHaveBeenCalled();
-    expect(launchStripeCustomerPortal).toHaveBeenCalled();
-    expect(win.location.href).toBe("https://billing.stripe.test/portal");
-  });
-
-  it("blocks active Premium from starting another Premium checkout", async () => {
-    const purchasePlansWithCheckout = vi.fn();
-    const launchStripeCustomerPortal = vi.fn().mockResolvedValue({
-      data: { url: "https://billing.stripe.test/portal2" },
-    });
     installMemberstack({
       getCurrentMember: vi.fn().mockResolvedValue(
-        memberPayload("mem_prem", [
+        memberPayload("mem_prem_switch", [
           { planId: MEMBERSHIPS.premium.memberstackPlanId, status: "ACTIVE" },
         ]),
       ),
       openModal: vi.fn(),
       purchasePlansWithCheckout,
-      launchStripeCustomerPortal,
       hideModal: vi.fn(),
     });
 
-    await startJoinCheckout("premiumAnnual");
+    await startJoinCheckout("basicAnnual");
 
+    expect(updateClick).toHaveBeenCalledTimes(1);
     expect(purchasePlansWithCheckout).not.toHaveBeenCalled();
-    expect(launchStripeCustomerPortal).toHaveBeenCalled();
   });
 
   it("pending checkout survives login elsewhere and resumePendingMembershipCheckout continues", async () => {
@@ -298,6 +407,26 @@ describe("startJoinCheckout (Phase 1 login-first)", () => {
     await Promise.all([first, second]);
 
     expect(purchasePlansWithCheckout).toHaveBeenCalledTimes(1);
+  });
+
+  it("applyJoinCheckoutButtonStates sets Current Plan / Upgrade labels", () => {
+    const { buttons } = stubDom({
+      buttons: [
+        { planKey: "basicMonthly" },
+        { planKey: "premiumMonthly" },
+      ],
+    });
+
+    applyJoinCheckoutButtonStates(
+      memberPayload("mem_labels", [
+        { planId: MEMBERSHIPS.basic.memberstackPlanId, status: "ACTIVE" },
+      ]),
+    );
+
+    expect(buttons[0].textContent).toBe("Current Plan");
+    expect(buttons[0].disabled).toBe(true);
+    expect(buttons[1].textContent).toBe("Upgrade to Premium");
+    expect(buttons[1].disabled).toBe(false);
   });
 });
 
