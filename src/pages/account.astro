@@ -127,6 +127,7 @@ const description =
   import "/src/scripts/account-favorites.ts";
   import "/src/scripts/account-welcome.ts";
   import "/src/scripts/account-membership.ts";
+  import "/src/scripts/account-password-change.ts";
 </script>
 
 <style>
@@ -349,6 +350,20 @@ const description =
     font-size: 0.95rem;
     line-height: 1.45;
     color: #4b5563;
+  }
+
+  :global(.account-page__password-status) {
+    margin: 0.35rem 0 0.15rem;
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+
+  :global(.account-page__password-status--error) {
+    color: #b42318;
+  }
+
+  :global(.account-page__password-status--success) {
+    color: #17663a;
   }
 
   :global(.account-my-patterns__status--error) {

@@ -82,13 +82,21 @@
 
         <section class="account-details-block" aria-labelledby="password-heading">
           <h3 id="password-heading" class="account-details-block__title">Password</h3>
-          <form data-ms-form="password" class="contact-form account-page__form">
+          <!--
+            Programmatic Memberstack updateMemberAuth (not data-ms-form="password").
+            Current password is verified only as part of the update request — there is
+            no separate Memberstack verify-current-password API.
+          -->
+          <form
+            data-kbm-password-change-form
+            class="contact-form account-page__form"
+            novalidate
+          >
             <div class="contact-form__field">
               <label for="current-password">Current Password</label>
               <input
                 type="password"
                 id="current-password"
-                data-ms-member="current-password"
                 name="current-password"
                 autocomplete="current-password"
                 required
@@ -99,12 +107,43 @@
               <input
                 type="password"
                 id="new-password"
-                data-ms-member="new-password"
                 name="new-password"
                 autocomplete="new-password"
+                minlength="8"
+                required
+                aria-describedby="new-password-hint"
+              />
+              <p
+                class="account-page__field-hint"
+                id="new-password-hint"
+                data-kbm-password-change-hint
+              >
+                New password must be at least 8 characters.
+              </p>
+            </div>
+            <div class="contact-form__field">
+              <label for="confirm-password">Confirm New Password</label>
+              <input
+                type="password"
+                id="confirm-password"
+                name="confirm-password"
+                autocomplete="new-password"
+                minlength="8"
                 required
               />
             </div>
+            <p
+              class="account-page__password-status account-page__password-status--error"
+              data-kbm-password-change-error
+              role="alert"
+              hidden
+            ></p>
+            <p
+              class="account-page__password-status account-page__password-status--success"
+              data-kbm-password-change-success
+              role="status"
+              hidden
+            ></p>
             <button type="submit" class="contact-form__submit">Update Password</button>
           </form>
           <p class="account-page__password-reset-hint">
