@@ -1,0 +1,43 @@
+---
+/**
+ * Reusable favorite star button — place immediately beside an item title.
+ */
+import "../../styles/favorites.css";
+import {
+  favoriteAriaLabel,
+  FAVORITE_STAR_CLASS,
+  FAVORITE_STAR_ICON_CLASS,
+} from "../../lib/favorites/favoriteStarUi";
+import type { FavoriteContentType } from "../../lib/favorites/favoriteContentTypes";
+import { normalizeFavoriteContentId } from "../../lib/favorites/favoriteContentTypes";
+
+interface Props {
+  contentType: FavoriteContentType;
+  contentId: string | number;
+  title: string;
+  isFavorite?: boolean;
+  class?: string;
+}
+
+const { contentType, contentId, title, isFavorite = false, class: className } = Astro.props;
+const id = normalizeFavoriteContentId(contentId) ?? "";
+const label = favoriteAriaLabel(title, isFavorite);
+const iconClass = isFavorite ? "fa-solid fa-star" : "fa-regular fa-star";
+---
+
+{
+  id ? (
+    <button
+      type="button"
+      class:list={[FAVORITE_STAR_CLASS, isFavorite && "is-favorite", className]}
+      data-favorite-star
+      data-content-type={contentType}
+      data-content-id={id}
+      data-favorite-title={title.trim() || "this item"}
+      aria-pressed={isFavorite ? "true" : "false"}
+      aria-label={label}
+    >
+      <i class:list={[FAVORITE_STAR_ICON_CLASS, iconClass]} aria-hidden="true" />
+    </button>
+  ) : null
+}

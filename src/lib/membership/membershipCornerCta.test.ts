@@ -104,12 +104,13 @@ describe("resolveMembershipCornerCta", () => {
     ).toEqual(MEMBERSHIP_CORNER_CTA.upgrade);
   });
 
-  it("active Premium ? Manage Membership ? /account#membership", () => {
+  it("active Premium ? Manage Membership (portal via corner control)", () => {
     expect(
       resolveMembershipCornerCta(
         memberWithPlans([{ planId: MEMBERSHIPS.premium.memberstackPlanId, status: "ACTIVE" }]),
       ),
     ).toEqual(MEMBERSHIP_CORNER_CTA.manage);
+    expect(MEMBERSHIP_CORNER_CTA.manage.label).toBe("Manage Membership");
   });
 
   it("legacy Monthly Subscription plan shell ? Manage Membership", () => {

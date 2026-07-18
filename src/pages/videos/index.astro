@@ -4,6 +4,7 @@ import PageHead from "../../components/PageHead.astro";
 import videosRaw from "../../data/videos-public.json";
 import { getPreviewMember } from "../../lib/getPreviewMember";
 import { filterPublicCatalogVideos } from "../../lib/videoPublic";
+import "../../styles/favorites.css";
 
 const publicVideos = filterPublicCatalogVideos(Array.isArray(videosRaw) ? videosRaw : []);
 
@@ -153,6 +154,7 @@ const forceMemberView =
     </div>
 
     <p id="video-results-summary" class="video-results-summary" aria-live="polite" role="status"></p>
+    <p id="video-favorites-status" class="sr-only" aria-live="polite" role="status"></p>
 
     <div id="video-grid" class="video-grid"></div>
     
@@ -171,9 +173,15 @@ const forceMemberView =
       hasMemberAccess,
       logMemberAccessDebug,
     } from "../../lib/memberAccess";
+    import { openMemberstackLoginModal } from "../../lib/memberstackLogin";
+    import { getMemberstackReturnPath } from "../../lib/memberstackReturnUrl";
+    import { favoriteStarButtonHtml, filterVideosByFavoriteIds } from "../../lib/favorites/favoriteStarUi";
+    import { initFavoriteStarController } from "../../lib/favorites/favoriteStarController";
+    import { listFavorites } from "../../lib/favorites/favoritesClient";
 
     (function () {
       const FREE_FILTER_VALUE = "__free__";
+      const FAVORITES_FILTER_VALUE = "__favorites__";
       const raw = document.getElementById("videos-data")?.textContent || "{}";
       let parsed;
       try {
@@ -191,6 +199,7 @@ const forceMemberView =
       const grid = document.getElementById("video-grid");
       const selectEl = document.getElementById("category-select");
       const searchInput = document.getElementById("videoSearch");
+      const favoritesStatusEl = document.getElementById("video-favorites-status");
 
       const categories = Array.from(new Set(videos.map(v => v.category).filter(Boolean))).sort();
 
@@ -199,11 +208,15 @@ const forceMemberView =
     const matchedCategory = requested && categories.find((c) => c.toLowerCase() === requested.toLowerCase());
     const requestedIsFree =
       requested && (requested.toLowerCase() === "free" || requested === FREE_FILTER_VALUE);
+    const requestedIsFavorites =
+      requested && (requested.toLowerCase() === "favorites" || requested === FAVORITES_FILTER_VALUE);
+    // Favorites filter requires login; apply only after auth resolves when requested via URL.
     const defaultCategory = requestedIsFree
       ? FREE_FILTER_VALUE
       : matchedCategory
         ? matchedCategory
         : "";
+    const pendingFavoritesFilter = Boolean(requestedIsFavorites);
     const initialQ = urlParams.get("q") || "";
     const initialSort = urlParams.get("sort") || "";
 
@@ -211,6 +224,8 @@ const forceMemberView =
     let currentCategory = defaultCategory;
     let currentSort = initialSort;
     let searchTimer;
+    /** @type {Set<string>} */
+    let favoriteIds = new Set();
 
     async function getViewerState() {
       try {
@@ -292,12 +307,24 @@ const forceMemberView =
     function updateUrl() {
       const params = new URLSearchParams();
       if (currentCategory) {
-        params.set("cat", currentCategory === FREE_FILTER_VALUE ? "free" : currentCategory);
+        const catParam =
+          currentCategory === FREE_FILTER_VALUE
+            ? "free"
+            : currentCategory === FAVORITES_FILTER_VALUE
+              ? "favorites"
+              : currentCategory;
+        params.set("cat", catParam);
       }
       if (currentSearch) params.set("q", currentSearch);
       if (currentSort) params.set("sort", currentSort);
       const qs = params.toString();
       history.replaceState(null, "", location.pathname + (qs ? "?" + qs : ""));
+    }
+
+    function categoryLabel(cat) {
+      if (cat === FREE_FILTER_VALUE) return "Free Videos";
+      if (cat === FAVORITES_FILTER_VALUE) return "My Favorites";
+      return cat || "All Videos";
     }
 
     function isVideoFree(video) {
@@ -324,8 +351,7 @@ const forceMemberView =
         msg += " for '" + currentSearch + "'";
       }
       if (currentCategory) {
-        const catLabel = currentCategory === FREE_FILTER_VALUE ? "Free Videos" : currentCategory;
-        msg += " in " + catLabel;
+        msg += " in " + categoryLabel(currentCategory);
       }
       el.textContent = msg;
     }
@@ -337,7 +363,9 @@ const forceMemberView =
       let filtered = currentCategory
         ? currentCategory === FREE_FILTER_VALUE
           ? videos.filter(v => isVideoFree(v))
-          : videos.filter(v => v.category === currentCategory)
+          : currentCategory === FAVORITES_FILTER_VALUE
+            ? filterVideosByFavoriteIds(videos, favoriteIds)
+            : videos.filter(v => v.category === currentCategory)
         : videos;
 
       if (currentSearch) {
@@ -356,15 +384,28 @@ const forceMemberView =
       if (!grid) return;
 
       if (filtered.length === 0) {
+        const favoritesEmpty =
+          currentCategory === FAVORITES_FILTER_VALUE && !currentSearch
+            ? "<p class=\"video-grid-empty-state__title\">You haven't added any favorite videos yet.</p>" +
+              "<p class=\"video-grid-empty-state__text\">" +
+              "Tap the star beside a video title to save it here. " +
+              "<a href=\"#\" class=\"video-grid-empty-state__link empty-state-try-again\">Browse all videos</a>" +
+              "</p>"
+            : currentCategory === FAVORITES_FILTER_VALUE && currentSearch
+              ? "<p class=\"video-grid-empty-state__title\">No favorite videos match your search.</p>" +
+                "<p class=\"video-grid-empty-state__text\">" +
+                "<a href=\"#\" class=\"video-grid-empty-state__link empty-state-try-again\">Clear search</a>" +
+                " or browse all videos.</p>"
+              : "<p class=\"video-grid-empty-state__title\">We couldn't find that.</p>" +
+                "<p class=\"video-grid-empty-state__text\">" +
+                "<a href=\"#\" class=\"video-grid-empty-state__link empty-state-try-again\">Try again</a>" +
+                " or take a look at this week's " +
+                "<a href=\"tips\" class=\"video-grid-empty-state__link\">Tuesday Tip.</a>" +
+                "</p>";
         grid.innerHTML =
           "<div class=\"video-grid-empty-state\">" +
           "<div class=\"video-grid-empty-state__card\">" +
-          "<p class=\"video-grid-empty-state__title\">We couldn't find that.</p>" +
-          "<p class=\"video-grid-empty-state__text\">" +
-          "<a href=\"#\" class=\"video-grid-empty-state__link empty-state-try-again\">Try again</a>" +
-          " or take a look at this week's " +
-          "<a href=\"tips\" class=\"video-grid-empty-state__link\">Tuesday Tip.</a>" +
-          "</p>" +
+          favoritesEmpty +
           "<button type=\"button\" class=\"kbm-clear-filters\">Clear all filters</button>" +
           "</div>" +
           "</div>";
@@ -373,7 +414,13 @@ const forceMemberView =
 
       const listParams = new URLSearchParams();
       if (currentCategory) {
-        listParams.set("cat", currentCategory === FREE_FILTER_VALUE ? "free" : currentCategory);
+        const catParam =
+          currentCategory === FREE_FILTER_VALUE
+            ? "free"
+            : currentCategory === FAVORITES_FILTER_VALUE
+              ? "favorites"
+              : currentCategory;
+        listParams.set("cat", catParam);
       }
       if (currentSearch) listParams.set("q", currentSearch);
       if (currentSort) listParams.set("sort", currentSort);
@@ -382,9 +429,11 @@ const forceMemberView =
 
       const hasVideoAccess = ACCESS_STATE === "has_access" || Boolean(VIEWER.hasVideoAccess);
       grid.innerHTML = filtered.map(v => {
-        const baseHref = v.content_id ? "/videos/" + v.content_id : "/videos/" + (v.slug || "");
+        const contentId = v.content_id != null && String(v.content_id).trim() ? String(v.content_id) : "";
+        const baseHref = contentId ? "/videos/" + contentId : "/videos/" + (v.slug || "");
         const href = baseHref + listQueryString;
-        const title = (v.title || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const titleText = v.title || "Video";
+        const title = titleText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
         const catalogPlayOverlay =
           "<span class=\"tip-play video-thumb__play\" aria-hidden=\"true\">" +
           "<svg viewBox=\"0 0 68 68\" class=\"tip-play__icon\" focusable=\"false\">" +
@@ -406,14 +455,25 @@ const forceMemberView =
             "</div>"
           : "";
         const desc = (v.description || v.summary || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const starHtml = contentId
+          ? favoriteStarButtonHtml({
+              contentType: "video",
+              contentId,
+              title: titleText,
+              isFavorite: favoriteIds.has(contentId),
+            })
+          : "";
 
         return (
           "<a class=\"kbm-card video-card kbm-video-card" + (showLocked ? " is-locked" : "") + "\" href=\"" + href + "\">" +
             poster +
             "<div class=\"kbm-card-body\">" +
+            "<div class=\"favorite-title-row\">" +
             "<h3 class=\"kbm-card__title kbm-card-title\">" +
             title +
             "</h3>" +
+            starHtml +
+            "</div>" +
             (desc ? "<p class=\"kbm-card__desc kbm-card-description\">" + desc + "</p>" : "") +
             "</div>" +
             "</a>"
@@ -432,15 +492,7 @@ const forceMemberView =
 
     function setLabelFromValue(val) {
       if (!label) return;
-      if (!val) {
-        label.textContent = "All Videos";
-        return;
-      }
-      if (val === FREE_FILTER_VALUE) {
-        label.textContent = "Free Videos";
-        return;
-      }
-      label.textContent = val;
+      label.textContent = categoryLabel(val || "");
     }
 
     function openMenu() {
@@ -484,6 +536,14 @@ const forceMemberView =
       freeBtn.textContent = "Free Videos";
       menu.appendChild(freeBtn);
 
+      const favoritesBtn = document.createElement("button");
+      favoritesBtn.type = "button";
+      favoritesBtn.className = "category-option kbm-dropdown-item";
+      favoritesBtn.setAttribute("role", "option");
+      favoritesBtn.setAttribute("data-value", FAVORITES_FILTER_VALUE);
+      favoritesBtn.textContent = "My Favorites";
+      menu.appendChild(favoritesBtn);
+
       cats.forEach((c) => {
         const btn = document.createElement("button");
         btn.type = "button";
@@ -524,6 +584,11 @@ const forceMemberView =
       optFree.textContent = "Free Videos";
       selectEl.appendChild(optFree);
 
+      const optFavorites = document.createElement("option");
+      optFavorites.value = FAVORITES_FILTER_VALUE;
+      optFavorites.textContent = "My Favorites";
+      selectEl.appendChild(optFavorites);
+
       categories.forEach((c) => {
         const o = document.createElement("option");
         o.value = c;
@@ -540,6 +605,35 @@ const forceMemberView =
       searchInput.value = currentSearch;
     }
 
+    initFavoriteStarController({
+      root: grid || document,
+      statusEl: favoritesStatusEl,
+      onChanged: (detail) => {
+        if (detail.contentType !== "video") return;
+        if (detail.isFavorite) favoriteIds.add(detail.contentId);
+        else favoriteIds.delete(detail.contentId);
+        if (currentCategory === FAVORITES_FILTER_VALUE) {
+          render(currentCategory);
+        }
+      },
+    });
+
+    async function hydrateFavorites() {
+      if (!VIEWER.isLoggedIn) {
+        favoriteIds = new Set();
+        return;
+      }
+      try {
+        const rows = await listFavorites("video");
+        favoriteIds = new Set(rows.map((row) => String(row.content_id)));
+      } catch {
+        favoriteIds = new Set();
+        if (favoritesStatusEl) {
+          favoritesStatusEl.textContent = "Could not load favorites.";
+        }
+      }
+    }
+
     (async function () {
       render(currentCategory);
 
@@ -550,6 +644,22 @@ const forceMemberView =
         : VIEWER.hasVideoAccess
           ? "has_access"
           : "no_access";
+
+      await hydrateFavorites();
+
+      if (pendingFavoritesFilter) {
+        if (VIEWER.isLoggedIn) {
+          currentCategory = FAVORITES_FILTER_VALUE;
+          syncSelectedUI(currentCategory);
+          updateUrl();
+        } else {
+          openMemberstackLoginModal(getMemberstackReturnPath());
+          currentCategory = "";
+          syncSelectedUI("");
+          updateUrl();
+        }
+      }
+
       render(currentCategory);
       applyAccessUiState();
     })();
@@ -565,6 +675,13 @@ const forceMemberView =
         const btn = e.target && e.target.closest ? e.target.closest(".category-option") : null;
         if (!btn) return;
         const val = btn.getAttribute("data-value") || "";
+
+        if (val === FAVORITES_FILTER_VALUE && !VIEWER.isLoggedIn) {
+          openMemberstackLoginModal(getMemberstackReturnPath());
+          closeMenu();
+          return;
+        }
+
         setCat(val);
         render(val);
         syncSelectedUI(val);
@@ -637,6 +754,10 @@ const forceMemberView =
         e.preventDefault();
         currentSearch = "";
         if (searchInput instanceof HTMLInputElement) searchInput.value = "";
+        if (currentCategory === FAVORITES_FILTER_VALUE) {
+          currentCategory = "";
+          syncSelectedUI("");
+        }
         updateUrl();
         render(currentCategory);
       });

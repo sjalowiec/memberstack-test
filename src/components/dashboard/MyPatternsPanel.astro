@@ -4,18 +4,14 @@
 
 <section
   id="my-patterns"
-  class="dashboard-card dashboard-card--patterns dashboard-card--primary"
+  class="dashboard-card dashboard-card--patterns"
   aria-labelledby="my-patterns-heading"
   data-kbm-my-patterns
 >
-  <div class="dashboard-card__header-row dashboard-card__header-row--primary">
-    <h2 id="my-patterns-heading" class="dashboard-card__title dashboard-card__title--primary">
-      Your Saved Patterns
-    </h2>
-    <p class="dashboard-card__subtitle dashboard-card__subtitle--primary">
-      Your saved projects — select a pattern to continue knitting.
-    </p>
-  </div>
+  <h2 id="my-patterns-heading" class="dashboard-card__title">Saved Patterns</h2>
+  <p class="dashboard-card__subtitle">
+    Select a pattern to continue knitting.
+  </p>
 
   <p
     class="dashboard-muted account-my-patterns__status"
@@ -75,6 +71,10 @@
 </section>
 
 <style>
+  .dashboard-card--patterns .dashboard-card__subtitle {
+    margin-bottom: 0.85rem;
+  }
+
   .account-my-patterns__empty-cta {
     margin-top: 1rem;
   }

@@ -3,6 +3,23 @@ import { MEMBERSHIPS, LEGACY_MEMBERSHIPS } from "../../config/memberships";
 export const MEMBERSHIP_SUMMARY_MAX_PAGES = 50;
 export const MEMBERSHIP_SUMMARY_PAGE_SIZE = 100;
 
+/** Stripe-backed payment details on a Memberstack plan connection (null for free). */
+export type PlanConnectionPayment = {
+  priceId?: string;
+  amount?: number;
+  currency?: string;
+  status?: string;
+  /** Unix timestamp in seconds, or null. */
+  lastBillingDate?: number | null;
+  /** Unix timestamp in seconds, or null. */
+  nextBillingDate?: number | null;
+  /** Unix timestamp in seconds, or null. Present when cancellation is scheduled. */
+  cancelAtDate?: number | null;
+  /** Legacy / alternate shapes still seen in some payloads. */
+  price?: string;
+  plan?: { id?: string };
+};
+
 export type PlanConnection = {
   id?: string;
   active?: boolean;
@@ -10,7 +27,7 @@ export type PlanConnection = {
   planId?: string;
   planName?: string;
   type?: string;
-  payment?: Record<string, unknown> | null;
+  payment?: PlanConnectionPayment | null;
   priceId?: string;
   canceledAt?: string;
   cancelledAt?: string;
@@ -111,12 +128,9 @@ export function buildPriceIndex(): Map<string, PriceInfo> {
 /** Best-effort price id lookup across the field names Memberstack's paid connections might use. */
 export function paidConnectionPriceId(connection: PlanConnection): string | null {
   const payment = connection.payment;
-  const fromPayment =
-    payment && typeof payment === "object"
-      ? (payment.priceId as string | undefined) ??
-        (payment.price as string | undefined) ??
-        ((payment.plan as Record<string, unknown> | undefined)?.id as string | undefined)
-      : undefined;
+  const fromPayment = payment
+    ? payment.priceId ?? payment.price ?? payment.plan?.id
+    : undefined;
   const candidate = fromPayment ?? connection.priceId;
   return typeof candidate === "string" && candidate.trim() ? candidate.trim() : null;
 }
@@ -189,7 +203,7 @@ export async function fetchAllMembers(
 
 export function buildRevenueNote(unresolvedPaidConnections: number): string | null {
   return unresolvedPaidConnections > 0
-    ? "Some active paid plan connections could not be matched to a known price id ó mrrEstimate excludes them. See the code comment at the top of admin-membership-report.ts."
+    ? "Some active paid plan connections could not be matched to a known price id ù mrrEstimate excludes them. See the code comment at the top of admin-membership-report.ts."
     : null;
 }
 

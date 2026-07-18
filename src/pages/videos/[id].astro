@@ -2,6 +2,7 @@
 import videosRaw from "../../data/videos-public.json";
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
+import FavoriteStar from "../../components/favorites/FavoriteStar.astro";
 import LoginNudge from "../../components/auth/LoginNudge.astro";
 import GatedVimeoEmbed from "../../components/videos/GatedVimeoEmbed.astro";
 import { catalogChaptersFromVideoRow, type CatalogChapterRow } from "../../lib/catalogVideoChapters";
@@ -89,7 +90,15 @@ const enableVideoChapterControls = hasCatalogChapters;
       </>
     ) : (
       <>
-        <PageHead title={title} />
+        <PageHead title={title}>
+          <FavoriteStar
+            slot="after-title"
+            contentType="video"
+            contentId={id}
+            title={title}
+          />
+        </PageHead>
+        <p id="video-favorites-status" class="sr-only" aria-live="polite" role="status"></p>
 
         <article class="video-detail">
           {/* PLAYER AREA */}
@@ -530,4 +539,28 @@ const enableVideoChapterControls = hasCatalogChapters;
       });
     })();
   </script>
+
+  {video && (
+    <script>
+      import { initFavoriteStarController, hydrateFavoriteStars } from "../../lib/favorites/favoriteStarController";
+      import { listFavorites } from "../../lib/favorites/favoritesClient";
+      import { isFavoritesMemberLoggedIn } from "../../lib/favorites/favoritesClient";
+
+      (async function () {
+        const statusEl = document.getElementById("video-favorites-status");
+        initFavoriteStarController({ statusEl });
+
+        const loggedIn = await isFavoritesMemberLoggedIn();
+        if (!loggedIn) return;
+
+        try {
+          const rows = await listFavorites("video");
+          const ids = new Set(rows.map((row) => String(row.content_id)));
+          hydrateFavoriteStars("video", ids);
+        } catch {
+          if (statusEl) statusEl.textContent = "Could not load favorite status.";
+        }
+      })();
+    </script>
+  )}
 </Layout>

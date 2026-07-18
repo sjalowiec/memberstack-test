@@ -11,12 +11,22 @@
  *   - PATCH /members/:id            ({ json } REPLACES the stored JSON — caller must merge first)
  */
 
+import { readDotEnvValue } from "./local-dotenv.js";
+
 export const MEMBERSTACK_ADMIN_BASE_URL = "https://admin.memberstack.com";
 
-/** Reads the server-only Memberstack secret key, or null when unconfigured. */
+/**
+ * Reads the server-only Memberstack secret key, or null when unconfigured.
+ * Production: `process.env.MEMBERSTACK_SECRET_KEY` only.
+ * Non-production: falls back to project-root `.env` when process env is unset
+ * (Astro `npm run dev` often does not inject secrets into function `process.env`).
+ */
 export function getMemberstackSecretKey() {
-  const key = (process.env.MEMBERSTACK_SECRET_KEY || "").trim();
-  return key || null;
+  const fromProcess = (process.env.MEMBERSTACK_SECRET_KEY || "").trim();
+  if (fromProcess) return fromProcess;
+  if (process.env.NODE_ENV === "production") return null;
+  const fromDotEnv = readDotEnvValue("MEMBERSTACK_SECRET_KEY");
+  return fromDotEnv || null;
 }
 
 /** TEMPORARY DEBUG: gated by `DEBUG_SLEEVELESS_LOOKUP=true`. Remove once the lookup is diagnosed. */

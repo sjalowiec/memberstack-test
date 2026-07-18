@@ -12,13 +12,10 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: "Account", href: "#account", sectionId: "account" },
-  { label: "My Patterns", href: "#my-patterns", sectionId: "my-patterns" },
-  { label: "My Tags", href: "#my-tags", sectionId: "my-tags" },
-  { label: "Calculators", href: "#calculators", sectionId: "calculators" },
-  { label: "Purchases", href: "#purchases", sectionId: "purchases" },
   { label: "Membership", href: "#membership", sectionId: "membership" },
-  { label: "Help", href: "#help", sectionId: "help" },
+  { label: "Account", href: "#account", sectionId: "account" },
+  { label: "My Favorites", href: "#my-favorites", sectionId: "my-favorites" },
+  { label: "My Patterns", href: "#my-patterns", sectionId: "my-patterns" },
 ];
 ---
 
@@ -154,6 +151,14 @@ const navItems: NavItem[] = [
 <script>
   /** Highlight in-page nav links when their section is in view. */
   function initDashboardNav() {
+    // Remove orphaned sidebar entries whose target section is not on the page.
+    document.querySelectorAll<HTMLAnchorElement>("[data-dashboard-nav]").forEach((link) => {
+      const id = link.getAttribute("data-dashboard-nav");
+      if (!id || !document.getElementById(id)) {
+        link.closest("li")?.remove();
+      }
+    });
+
     const links = document.querySelectorAll<HTMLAnchorElement>("[data-dashboard-nav]");
     if (links.length === 0) return;
 
