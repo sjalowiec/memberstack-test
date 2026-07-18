@@ -3,7 +3,9 @@ import {
   LESSON_MEMBER_BODY_TEMPLATE_ATTR,
 } from "../lib/lessonMemberBodyGate";
 import {
+  getActivePlanIds,
   getViewerAccessState,
+  isMemberLoggedIn,
   logMemberAccessDebug,
   type ViewerAccessState,
 } from "../lib/memberAccess";
@@ -12,25 +14,71 @@ import { openMemberstackLoginModal } from "../lib/memberstackLogin";
 import { initGatedVimeoEmbeds } from "./gatedVimeoEmbedClient";
 import { initLessonVideoModal } from "./lessonVideoModal";
 
-async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
+console.log(
+  "[KIN lesson gate] script loaded",
+  typeof location !== "undefined" ? location.pathname : "(no location)",
+);
+
+export type KinMemberAccessDetail = {
+  hasMemberAccess: boolean;
+  viewerAccessState: ViewerAccessState;
+};
+
+declare global {
+  interface Window {
+    __KIN_MEMBER_ACCESS__?: KinMemberAccessDetail | null;
+  }
+}
+
+/**
+ * Wait for getAppAndMember only (never fall back to getCurrentMember).
+ * Early getCurrentMember can return a logged-in member without planConnections.
+ */
+async function waitForMemberstackAppAndMember({
+  attempts = 40,
+  delayMs = 200,
+} = {}): Promise<unknown> {
   for (let i = 0; i < attempts; i++) {
     try {
       const ms = window.$memberstackDom;
-      const api = ms?.getAppAndMember ?? ms?.getCurrentMember;
-      if (typeof api === "function") return await api.call(ms);
+      const api = ms?.getAppAndMember;
+      if (typeof api === "function") {
+        const res = await api.call(ms);
+        if (
+          res &&
+          isMemberLoggedIn(res) &&
+          getActivePlanIds(res).length === 0 &&
+          i < attempts - 1
+        ) {
+          await new Promise((r) => setTimeout(r, delayMs));
+          continue;
+        }
+        console.log("[KIN lesson gate] getAppAndMember resolved", {
+          viewerAccessState: getViewerAccessState(res),
+          activePlanIds: getActivePlanIds(res),
+        });
+        return res;
+      }
     } catch {
-      /* keep polling until Memberstack is ready */
+      /* keep polling until getAppAndMember is ready */
     }
     await new Promise((r) => setTimeout(r, delayMs));
   }
+  console.log("[KIN lesson gate] getAppAndMember timed out");
   return null;
 }
 
 export async function resolveHelpHubMemberLessonViewerState(
   gate: string,
 ): Promise<ViewerAccessState> {
-  const res = await waitForMemberstackReady();
-  logMemberAccessDebug(gate, res);
+  const res = await waitForMemberstackAppAndMember();
+  logMemberAccessDebug(gate, res, {
+    templateChildCount: getLessonBodyTemplate()?.content.childElementCount ?? null,
+    mountChildCount: getLessonBodyMount()?.childElementCount ?? null,
+    mountHidden: getLessonBodyMount()?.hasAttribute("hidden") ?? null,
+    msLoggedIn: document.body.classList.contains("ms-logged-in"),
+    persisted: window.__KIN_MEMBER_ACCESS__ ?? null,
+  });
   return getViewerAccessState(res);
 }
 
@@ -110,16 +158,54 @@ function getLessonBodyMount(): HTMLElement | null {
   return document.querySelector<HTMLElement>(`[${LESSON_MEMBER_BODY_MOUNT_ATTR}]`);
 }
 
-/** Clone deferred lesson instructional markup into the live mount point. */
+/** True when the mount already has cloned instructional children. */
+export function lessonMemberBodyIsMounted(mount: HTMLElement | null = getLessonBodyMount()): boolean {
+  return Boolean(mount && mount.dataset.lessonBodyMounted === "true" && mount.childElementCount > 0);
+}
+
+function revealLessonMemberBodyMount(mount: HTMLElement): void {
+  mount.hidden = false;
+  mount.removeAttribute("hidden");
+  const style = mount.style;
+  if (style?.display === "none") style.removeProperty("display");
+  if (style?.visibility === "hidden") style.removeProperty("visibility");
+}
+
+/** Clone deferred lesson instructional markup into the live mount point (idempotent). */
 export function mountLessonMemberBody(): void {
   const template = getLessonBodyTemplate();
   const mount = getLessonBodyMount();
-  if (!template || !mount || mount.dataset.lessonBodyMounted === "true") return;
+  console.log("[KIN lesson gate] mount immediately before", {
+    templateExists: Boolean(template),
+    templateChildCount: template?.content.childElementCount ?? null,
+    mountExists: Boolean(mount),
+    mountChildCount: mount?.childElementCount ?? null,
+    alreadyMounted: lessonMemberBodyIsMounted(mount),
+  });
+  if (!template || !mount) return;
+  if (lessonMemberBodyIsMounted(mount)) {
+    revealLessonMemberBodyMount(mount);
+    return;
+  }
 
-  mount.replaceChildren(template.content.cloneNode(true));
-  mount.dataset.lessonBodyMounted = "true";
-  initLessonVideoModal(mount);
-  initGatedVimeoEmbeds(mount);
+  try {
+    mount.replaceChildren(template.content.cloneNode(true));
+    mount.dataset.lessonBodyMounted = "true";
+    revealLessonMemberBodyMount(mount);
+    initLessonVideoModal(mount);
+    initGatedVimeoEmbeds(mount);
+    console.log("[KIN lesson gate] mount immediately after", {
+      templateChildCount: template.content.childElementCount,
+      mountChildCount: mount.childElementCount,
+      mountHidden: mount.hidden,
+      mountDisplay:
+        typeof getComputedStyle === "function" ? getComputedStyle(mount).display : null,
+    });
+  } catch (error) {
+    console.error("[KIN lesson gate] mountFailed", error);
+    mount.replaceChildren();
+    mount.dataset.lessonBodyMounted = "false";
+  }
 }
 
 /** Remove mounted instructional markup so protected media is not in the active DOM. */
@@ -128,30 +214,47 @@ export function unmountLessonMemberBody(): void {
   if (!mount) return;
   mount.replaceChildren();
   mount.dataset.lessonBodyMounted = "false";
+  mount.hidden = true;
+  mount.setAttribute("hidden", "");
 }
 
 /** Toggle lesson-page locked panel and deferred instructional body. */
 export function syncLessonPageMemberGate(hasMemberAccess: boolean): void {
+  console.log("[KIN lesson gate] syncLessonPageMemberGate entry", {
+    hasMemberAccess,
+    msLoggedIn: document.body.classList.contains("ms-logged-in"),
+    persisted: window.__KIN_MEMBER_ACCESS__ ?? null,
+  });
+
   document.querySelectorAll('[data-gated="locked"]').forEach((el) => {
-    if (hasMemberAccess) el.setAttribute("hidden", "");
-    else el.removeAttribute("hidden");
+    if (hasMemberAccess) {
+      (el as HTMLElement).hidden = true;
+      el.setAttribute("hidden", "");
+    } else {
+      (el as HTMLElement).hidden = false;
+      el.removeAttribute("hidden");
+    }
   });
 
   const mount = getLessonBodyMount();
   if (mount) {
     if (hasMemberAccess) {
       mountLessonMemberBody();
-      mount.removeAttribute("hidden");
+      revealLessonMemberBodyMount(mount);
     } else {
       unmountLessonMemberBody();
-      mount.setAttribute("hidden", "");
     }
     return;
   }
 
   document.querySelectorAll('[data-gated="content"]').forEach((el) => {
-    if (hasMemberAccess) el.removeAttribute("hidden");
-    else el.setAttribute("hidden", "");
+    if (hasMemberAccess) {
+      (el as HTMLElement).hidden = false;
+      el.removeAttribute("hidden");
+    } else {
+      (el as HTMLElement).hidden = true;
+      el.setAttribute("hidden", "");
+    }
   });
 }
 
@@ -167,19 +270,71 @@ function wireLessonGateLoginButtons(): void {
 }
 
 let authListenersBound = false;
+let memberstackListenersAttached = false;
+
+function applyPersistedOrBodyAccess(): boolean {
+  const persisted = window.__KIN_MEMBER_ACCESS__;
+  if (persisted && typeof persisted.hasMemberAccess === "boolean") {
+    console.log("[KIN lesson gate] init from persisted __KIN_MEMBER_ACCESS__", persisted);
+    syncLessonPageMemberGate(persisted.hasMemberAccess);
+    return persisted.hasMemberAccess;
+  }
+  if (document.body.classList.contains("ms-logged-in")) {
+    console.log("[KIN lesson gate] init from body.ms-logged-in fallback");
+    syncLessonPageMemberGate(true);
+    return true;
+  }
+  return false;
+}
 
 function bindMemberLessonGateRefresh(onRefresh: () => void): void {
+  console.log("[KIN lesson gate] before listener registration");
   if (authListenersBound) return;
   authListenersBound = true;
-  window.addEventListener("auth:updated", onRefresh);
-  const ms = window.$memberstackDom;
-  if (ms?.on) {
-    ms.on("member.login", onRefresh);
-    ms.on("member.logout", onRefresh);
-  }
-  void ms?.onReady?.then(() => {
+
+  window.addEventListener("auth:updated", () => {
+    console.log("[KIN lesson gate] auth:updated received");
     onRefresh();
   });
+
+  window.addEventListener("kin:member-access", ((event: Event) => {
+    const detail = (event as CustomEvent<KinMemberAccessDetail>).detail;
+    console.log("[KIN lesson gate] kin:member-access received", detail);
+    if (detail && typeof detail.hasMemberAccess === "boolean") {
+      window.__KIN_MEMBER_ACCESS__ = detail;
+      syncLessonPageMemberGate(detail.hasMemberAccess);
+      wireLessonGateLoginButtons();
+      return;
+    }
+    onRefresh();
+  }) as EventListener);
+
+  const attachMemberstack = (): boolean => {
+    if (memberstackListenersAttached) return true;
+    const ms = window.$memberstackDom;
+    if (!ms) return false;
+    if (typeof ms.on === "function") {
+      ms.on("member.login", onRefresh);
+      ms.on("member.logout", onRefresh);
+    }
+    void ms.onReady?.then(() => {
+      onRefresh();
+    });
+    memberstackListenersAttached = true;
+    return true;
+  };
+
+  if (!attachMemberstack()) {
+    void (async () => {
+      for (let i = 0; i < 40; i++) {
+        await new Promise((r) => setTimeout(r, 200));
+        if (attachMemberstack()) {
+          onRefresh();
+          return;
+        }
+      }
+    })();
+  }
 }
 
 export function runHelpHubMemberLessonCtaGate(): void {
@@ -204,6 +359,11 @@ export function runLessonPageMemberGate(): void {
     wireLessonGateLoginButtons();
   }
 
+  // If BaseLayout already resolved paid access before this module loaded, mount now.
+  applyPersistedOrBodyAccess();
+  wireLessonGateLoginButtons();
+
+  // Always resolve via getAppAndMember as well (does not depend only on the event).
   void refresh();
   bindMemberLessonGateRefresh(() => {
     void refresh();
@@ -211,6 +371,10 @@ export function runLessonPageMemberGate(): void {
 }
 
 export function bootHelpHubMemberLessonGates(): void {
+  console.log("[KIN lesson gate] bootHelpHubMemberLessonGates", {
+    hasHelpHubLessons: Boolean(document.querySelector("[data-help-hub-lessons]")),
+    hasLessonMemberGate: Boolean(document.querySelector("[data-lesson-member-gate]")),
+  });
   if (document.querySelector("[data-help-hub-lessons]")) {
     runHelpHubMemberLessonCtaGate();
   }

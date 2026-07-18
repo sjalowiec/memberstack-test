@@ -399,27 +399,37 @@ const lessonBodyProps = {
   </main>
 </Layout>
 
-{requiresMemberAccess ? (
-  <script>
-    import { bootHelpHubMemberLessonGates } from "../../scripts/helpHubMemberLessonGateClient";
+{/*
+  Single client script (not a ternary of two <script> tags).
+  Astro can hoist/emit only one branch of conditional scripts, which previously
+  shipped bootLessonVideoModalForPublicLesson on member lessons and never mounted
+  the deferred body. Runtime presence of [data-lesson-member-gate] selects the path.
+*/}
+<script>
+  import {
+    bootHelpHubMemberLessonGates,
+    bootLessonVideoModalForPublicLesson,
+  } from "../../scripts/helpHubMemberLessonGateClient";
 
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", bootHelpHubMemberLessonGates);
-    } else {
+  function bootLessonPageClient() {
+    const needsMemberGate = Boolean(document.querySelector("[data-lesson-member-gate]"));
+    console.log("[KIN lesson gate] page boot", {
+      pathname: location.pathname,
+      needsMemberGate,
+    });
+    if (needsMemberGate) {
       bootHelpHubMemberLessonGates();
-    }
-  </script>
-) : (
-  <script>
-    import { bootLessonVideoModalForPublicLesson } from "../../scripts/helpHubMemberLessonGateClient";
-
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", bootLessonVideoModalForPublicLesson);
     } else {
       bootLessonVideoModalForPublicLesson();
     }
-  </script>
-)}
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootLessonPageClient);
+  } else {
+    bootLessonPageClient();
+  }
+</script>
 
 <style>
   .site-content {

@@ -35,6 +35,11 @@ declare global {
     __DEV_BYPASS_GATING?: boolean;
     /** Localhost + ?member=true: set in BaseLayout for client-side gates (videos, etc.). */
     __KBM_DEV_MEMBER__?: boolean;
+    /** Latest member-access resolution from BaseLayout (for late-loading page gates). */
+    __KIN_MEMBER_ACCESS__?: {
+      hasMemberAccess: boolean;
+      viewerAccessState: "loggedOut" | "loggedInNoAccess" | "memberAccess";
+    } | null;
     /** Global member gate: true when logged in with an active allowed plan (beta/basic/premium/legacy). */
     kbmHasMemberAccess?: (memberOrPayload: unknown) => boolean;
     /** Global viewer state: "loggedOut" | "loggedInNoAccess" | "memberAccess". */

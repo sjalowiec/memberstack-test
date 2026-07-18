@@ -1,6 +1,10 @@
 ---
 import GlossaryHtml from "../GlossaryHtml.astro";
 import GatedVimeoEmbed from "../videos/GatedVimeoEmbed.astro";
+import {
+  lessonNonBlocksEmbedSrc,
+  lessonShowsSidebarVideoThumb,
+} from "../../lib/lessonInlineVideoEmbed";
 
 type LessonBodyBlock =
   | { type: "text"; content?: string }
@@ -61,6 +65,24 @@ const {
   hasLessonModalVideo,
   vimeoPlayerSrc,
 } = Astro.props;
+
+const embedSrc = lessonNonBlocksEmbedSrc({
+  inlineVimeoSrc,
+  hasLessonVideo,
+  vimeoPlayerSrc,
+});
+const showVideoThumb = lessonShowsSidebarVideoThumb({
+  hasLessonBlocks,
+  hasLessonVideo,
+  embedSrc,
+});
+/** If the thumb is omitted, still show the preview image in the support card. */
+const showSupportImage =
+  showSupportImageInCard ||
+  (!showVideoThumb &&
+    videoPreviewUsesSupportImage &&
+    typeof supportImageForPreview === "string" &&
+    supportImageForPreview.trim() !== "");
 ---
 
 <div class="lesson-member-body" data-lesson-member-body>
@@ -135,11 +157,11 @@ const {
             </p>
           ) : (
             <>
-              {inlineVimeoSrc && (
+              {embedSrc && (
                 <div class="lesson-block lesson-video-block">
                   <div class="lesson-video-frame lesson-video-frame--modal-trigger">
                     <iframe
-                      src={inlineVimeoSrc}
+                      src={embedSrc}
                       title={lesson.title}
                       allow="autoplay; fullscreen; picture-in-picture"
                       allowfullscreen
@@ -149,7 +171,7 @@ const {
                       type="button"
                       class="lesson-video-frame__open"
                       aria-label={`Open larger video: ${lesson.title}`}
-                      data-player-src={inlineVimeoSrc}
+                      data-player-src={embedSrc}
                     />
                   </div>
                 </div>
@@ -225,7 +247,7 @@ const {
     </div>
 
     <div class="lesson-media">
-      {hasLessonVideo && (
+      {showVideoThumb && (
         <div class="lesson-video-card">
           <button
             type="button"
@@ -259,11 +281,17 @@ const {
         </div>
       )}
 
-      {hasSupportCard && (
+      {(hasSupportCard || showSupportImage) && (
         <div class="lesson-support">
-          {showSupportImageInCard && (
+          {showSupportImage && (
             <img
-              src={lesson.supportImage}
+              src={
+                showSupportImageInCard &&
+                typeof lesson.supportImage === "string" &&
+                lesson.supportImage.trim() !== ""
+                  ? lesson.supportImage
+                  : supportImageForPreview
+              }
               alt={
                 typeof lesson.supportImageAlt === "string" && lesson.supportImageAlt.trim() !== ""
                   ? lesson.supportImageAlt
@@ -298,7 +326,7 @@ const {
     >
       <div class="lesson-video-modal__inner">
         <button type="button" class="lesson-video-modal__close" aria-label="Close video">
-          ×
+          ?
         </button>
         <h2 id="lesson-video-modal-title" class="lesson-video-modal__sr-title">Lesson video</h2>
         <div class="lesson-video-modal__frame-wrap">
