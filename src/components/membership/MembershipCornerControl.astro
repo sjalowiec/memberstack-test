@@ -2,21 +2,14 @@
 /**
  * Site-wide floating membership corner control.
  *
- * Composes the presentational pill CTA with the placeholder plans modal.
- * Click behavior is wired in membershipCornerControl.ts so label/action
- * can change later without redesigning the UI.
+ * Presentational pill + client wiring that resolves label/destination from
+ * Memberstack (Become / Upgrade / Manage; Restart gated until sandbox confirm).
  */
 import MembershipCornerCta from "./MembershipCornerCta.astro";
-import MembershipPlansPlaceholderModal from "./MembershipPlansPlaceholderModal.astro";
 import { MEMBERSHIP_CORNER_CTA_LABEL } from "../../lib/membership/membershipCornerControl";
-import { MEMBERSHIP_PLANS_PLACEHOLDER_MODAL_ID } from "../../lib/membership/membershipPlansPlaceholderModal";
 ---
 
-<MembershipCornerCta
-  label={MEMBERSHIP_CORNER_CTA_LABEL}
-  controls={MEMBERSHIP_PLANS_PLACEHOLDER_MODAL_ID}
-/>
-<MembershipPlansPlaceholderModal />
+<MembershipCornerCta label={MEMBERSHIP_CORNER_CTA_LABEL} />
 
 <script>
   import { initMembershipCornerControl } from "../../lib/membership/membershipCornerControl";

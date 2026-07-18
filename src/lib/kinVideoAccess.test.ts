@@ -134,6 +134,7 @@ describe("activeVideoPlanIdsFromMemberPayload", () => {
       MEMBERSHIPS.premium.memberstackPlanId,
       LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId,
       LEGACY_MEMBERSHIPS.monthlyPremium.memberstackPlanId,
+      LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId,
       LEGACY_MEMBERSHIPS.annualBasic.memberstackPlanId,
     ]);
   });

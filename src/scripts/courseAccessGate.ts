@@ -7,7 +7,8 @@
  * hidden), and this script flips them once Memberstack resolves.
  *
  * Access uses the PREMIUM-only rule from `courseAccess` (`canAccessCourse`), so
- * Beta/Premium unlock premium courses while Basic/legacy/logged-out stay locked.
+ * Beta/Premium/legacy Premium unlock courses while Basic/legacy Basic/logged-out
+ * stay locked.
  * "purchase" courses are handled server-side (locked placeholder, no content
  * rendered) and never appear as a `[data-course-gate]` needing a flip.
  */

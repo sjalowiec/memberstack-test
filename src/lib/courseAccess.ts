@@ -1,21 +1,21 @@
 /**
- * Course access � Premium-tier gating for courses.
+ * Course access — Premium-tier gating for courses.
  *
  * Courses use a NARROWER allow list than the global member gate. The global
  * `hasMemberAccess` (in `memberAccess.ts`) grants access to Basic, Premium,
  * Beta, and legacy members. Courses key off the PREMIUM subset only:
  *
- *   - "free"     ? open to everyone (no login required).
- *   - "premium"  ? Beta or Premium plans only (`PREMIUM_PLAN_IDS`). Basic and
- *                  legacy plans do NOT unlock premium courses.
- *   - "purchase" ? reserved for individually purchased courses (later phase).
+ *   - "free"     — open to everyone (no login required).
+ *   - "premium"  — Beta, current Premium, and legacy Premium (`PREMIUM_PLAN_IDS`).
+ *                  Basic and legacy Basic do NOT unlock courses.
+ *   - "purchase" — reserved for individually purchased courses (later phase).
  *                  There is no entitlement lookup, checkout, or webhook yet, so
  *                  a purchase course is treated as locked with a "buy soon"
  *                  placeholder for now.
  *
- * Beta counts as Premium (both live in `PREMIUM_PLAN_IDS`). This helper reuses
- * the global Memberstack payload parsing (`getActivePlanIds`, `isMemberLoggedIn`)
- * so course gating stays consistent with every other gated section.
+ * This helper reuses the global Memberstack payload parsing
+ * (`getActivePlanIds`, `isMemberLoggedIn`) so course gating stays consistent
+ * with every other gated section.
  */
 import { PREMIUM_PLAN_IDS } from "../config/memberships";
 import { getActivePlanIds, isMemberLoggedIn } from "./memberAccess";
@@ -24,10 +24,10 @@ export type CourseAccessLevel = "free" | "premium" | "purchase";
 
 /**
  * Resolved viewer state for a course, used to pick CTAs / gate copy:
- *   - "open"          ? render content (free course, or member with premium)
- *   - "loggedOut"     ? premium course, not logged in ? prompt login/join
- *   - "needsPremium"  ? premium course, logged in but no premium plan ? join
- *   - "needsPurchase" ? purchase course (reserved) ? "buy soon" placeholder
+ *   - "open"          — render content (free course, or member with Premium)
+ *   - "loggedOut"     — course requires Premium; not logged in
+ *   - "needsPremium"  — course requires Premium; logged in but no Premium plan
+ *   - "needsPurchase" — purchase course (reserved) — "buy soon" placeholder
  */
 export type CourseViewerState =
   | "open"
@@ -66,9 +66,9 @@ export function normalizeCourseAccessLevel(
 }
 
 /**
- * True when the member holds an active Beta or Premium plan. Basic and legacy
- * plans do NOT grant premium course access (this is the key difference from the
- * global `hasMemberAccess`).
+ * True when the member holds an active Beta, current Premium, or legacy Premium
+ * plan. Basic and legacy Basic do NOT grant course access (the key difference
+ * from the global `hasMemberAccess`).
  */
 export function hasPremiumCourseAccess(memberOrPayload: unknown): boolean {
   return getActivePlanIds(memberOrPayload).some((id) => premiumPlanIds.has(id));

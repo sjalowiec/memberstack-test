@@ -94,6 +94,23 @@ describe("resolveMembershipCheckoutDecision", () => {
     });
   });
 
+  it("treats legacy Monthly Subscription plan shell as Premium (manage billing)", () => {
+    const member = memberWithPlans([
+      {
+        planId: LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId,
+        status: "ACTIVE",
+      },
+    ]);
+    expect(resolveMembershipCheckoutDecision(member, "premiumMonthly")).toMatchObject({
+      action: "manage",
+      reason: "premium-active",
+    });
+    expect(resolveMembershipCheckoutDecision(member, "basicMonthly")).toMatchObject({
+      action: "manage",
+      reason: "premium-active",
+    });
+  });
+
   it("allows beta-only members to subscribe to a paid plan", () => {
     const member = memberWithPlans([
       {

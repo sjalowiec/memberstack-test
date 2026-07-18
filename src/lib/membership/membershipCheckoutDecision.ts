@@ -9,7 +9,11 @@
  * - Beta-only does not block paid subscribe
  */
 
-import { LEGACY_MEMBERSHIPS, MEMBERSHIPS } from "../../config/memberships";
+import {
+  LEGACY_MEMBERSHIPS,
+  LEGACY_PREMIUM_MEMBER_PLAN_IDS,
+  MEMBERSHIPS,
+} from "../../config/memberships";
 import { getActivePlanIds } from "../memberAccess";
 import type { JoinCheckoutPlanKey } from "./pendingMembershipCheckout";
 
@@ -21,7 +25,7 @@ export const BASIC_MEMBERSHIP_PLAN_IDS = [
 
 export const PREMIUM_MEMBERSHIP_PLAN_IDS = [
   MEMBERSHIPS.premium.memberstackPlanId,
-  LEGACY_MEMBERSHIPS.monthlyPremium.memberstackPlanId,
+  ...LEGACY_PREMIUM_MEMBER_PLAN_IDS,
 ] as const;
 
 const basicPlanIdSet = new Set<string>(BASIC_MEMBERSHIP_PLAN_IDS);

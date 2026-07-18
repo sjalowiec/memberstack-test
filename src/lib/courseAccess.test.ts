@@ -70,12 +70,23 @@ describe("hasPremiumCourseAccess", () => {
     );
   });
 
-  it("is false for legacy member plans", () => {
-    expect(
-      hasPremiumCourseAccess(payloadWithPlan(LEGACY_MEMBERSHIPS.annualBasic.memberstackPlanId)),
-    ).toBe(false);
+  it("is true for legacy Premium plans", () => {
     expect(
       hasPremiumCourseAccess(payloadWithPlan(LEGACY_MEMBERSHIPS.monthlyPremium.memberstackPlanId)),
+    ).toBe(true);
+    expect(
+      hasPremiumCourseAccess(
+        payloadWithPlan(LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId),
+      ),
+    ).toBe(true);
+  });
+
+  it("is false for legacy Basic plans", () => {
+    expect(
+      hasPremiumCourseAccess(payloadWithPlan(LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId)),
+    ).toBe(false);
+    expect(
+      hasPremiumCourseAccess(payloadWithPlan(LEGACY_MEMBERSHIPS.annualBasic.memberstackPlanId)),
     ).toBe(false);
   });
 
@@ -106,16 +117,25 @@ describe("canAccessCourse", () => {
     );
   });
 
-  it("premium courses unlock for Beta/Premium only", () => {
+  it("premium courses unlock for Beta/Premium/legacy Premium only", () => {
     expect(canAccessCourse("premium", payloadWithPlan(MEMBERSHIPS.premium.memberstackPlanId))).toBe(
       true,
     );
     expect(canAccessCourse("premium", payloadWithPlan(MEMBERSHIPS.beta.memberstackPlanId))).toBe(
       true,
     );
+    expect(
+      canAccessCourse(
+        "premium",
+        payloadWithPlan(LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId),
+      ),
+    ).toBe(true);
     expect(canAccessCourse("premium", payloadWithPlan(MEMBERSHIPS.basic.memberstackPlanId))).toBe(
       false,
     );
+    expect(
+      canAccessCourse("premium", payloadWithPlan(LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId)),
+    ).toBe(false);
     expect(canAccessCourse("premium", loggedOut)).toBe(false);
   });
 
