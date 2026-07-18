@@ -1,13 +1,12 @@
 ---
 /**
- * CourseAccessGate � soft gate for course content.
+ * CourseAccessGate — soft gate for course content.
  *
  * - "free":     renders the `content` slot for everyone (no gate markup).
- * - "premium":  renders a locked teaser + the hidden `content` slot; the client
- *               script (`courseAccessGate.ts`) flips them for Beta/Premium members.
- * - "purchase": renders a "buy soon" placeholder ONLY. The content slot is not
- *               emitted (reserved tier, no entitlement system yet), so premium
- *               course media is never shipped to the page for purchase courses.
+ * - "premium" / "purchase":
+ *               locked teaser + hidden `content` slot; client script flips them
+ *               when `canAccessCourse` grants access (Premium/Beta always;
+ *               purchase entitlements for non-Premium when available).
  *
  * Provide a custom locked state via the `locked` slot (e.g. on the landing page);
  * otherwise a default teaser card is rendered.
@@ -35,9 +34,9 @@ const isFree = access === "free";
 const isPurchase = access === "purchase";
 const hasLockedSlot = Astro.slots.has("locked");
 
-const defaultLockedTitle = isPurchase ? "Available to buy soon" : "Premium course";
+const defaultLockedTitle = isPurchase ? "Course access" : "Premium course";
 const defaultLockedMessage = isPurchase
-  ? "Individual course purchases are coming soon. This course isn�t available to buy just yet."
+  ? "This course is included with a Premium membership. Individual purchases for non-members are coming soon."
   : "This course is included with a Premium membership.";
 ---
 
@@ -59,23 +58,19 @@ const defaultLockedMessage = isPurchase
           <div class="course-gate__card">
             <h2 class="course-gate__title">{lockedTitle ?? defaultLockedTitle}</h2>
             <p class="course-gate__msg">{lockedMessage ?? defaultLockedMessage}</p>
-            {!isPurchase ? (
-              <div class="course-gate__actions">
-                <a class="kbm-btn kbm-btn-accent course-gate__cta" href={joinHref}>
-                  Join to unlock
-                </a>
-                <LoginNudge className="course-gate__nudge" />
-              </div>
-            ) : null}
+            <div class="course-gate__actions">
+              <a class="kbm-btn kbm-btn-accent course-gate__cta" href={joinHref}>
+                Join to unlock
+              </a>
+              <LoginNudge className="course-gate__nudge" />
+            </div>
           </div>
         )}
       </div>
 
-      {!isPurchase ? (
-        <div class="course-gate__content" data-gated="content" hidden>
-          <slot name="content" />
-        </div>
-      ) : null}
+      <div class="course-gate__content" data-gated="content" hidden>
+        <slot name="content" />
+      </div>
     </div>
   )
 }

@@ -8,10 +8,9 @@
  *   - "free"     — open to everyone (no login required).
  *   - "premium"  — Beta, current Premium, and legacy Premium (`PREMIUM_PLAN_IDS`).
  *                  Basic and legacy Basic do NOT unlock courses.
- *   - "purchase" — reserved for individually purchased courses (later phase).
- *                  There is no entitlement lookup, checkout, or webhook yet, so
- *                  a purchase course is treated as locked with a "buy soon"
- *                  placeholder for now.
+ *   - "purchase" — included with Premium/Beta (same as premium courses).
+ *                  Non-Premium members may unlock via individual purchase
+ *                  entitlement when that system exists; until then they stay locked.
  *
  * This helper reuses the global Memberstack payload parsing
  * (`getActivePlanIds`, `isMemberLoggedIn`) so course gating stays consistent
@@ -24,10 +23,10 @@ export type CourseAccessLevel = "free" | "premium" | "purchase";
 
 /**
  * Resolved viewer state for a course, used to pick CTAs / gate copy:
- *   - "open"          — render content (free course, or member with Premium)
- *   - "loggedOut"     — course requires Premium; not logged in
+ *   - "open"          — render content (free, Premium member, or entitled purchase)
+ *   - "loggedOut"     — course requires Premium (or purchase); not logged in
  *   - "needsPremium"  — course requires Premium; logged in but no Premium plan
- *   - "needsPurchase" — purchase course (reserved) — "buy soon" placeholder
+ *   - "needsPurchase" — purchase course; logged in without Premium or purchase entitlement
  */
 export type CourseViewerState =
   | "open"
@@ -74,29 +73,43 @@ export function hasPremiumCourseAccess(memberOrPayload: unknown): boolean {
   return getActivePlanIds(memberOrPayload).some((id) => premiumPlanIds.has(id));
 }
 
+/**
+ * Individual course purchase entitlement for non-Premium members.
+ * No entitlement lookup exists yet — always false. Hook future purchase
+ * records here so catalog locks and CourseAccessGate stay aligned.
+ */
+export function hasIndividualCoursePurchase(
+  _courseSlug: string | null | undefined,
+  _memberOrPayload: unknown,
+): boolean {
+  return false;
+}
+
 /** Whether the given course access level unlocks content for this viewer. */
 export function canAccessCourse(
   access: CourseAccessLevel,
   memberOrPayload: unknown,
+  options?: { courseSlug?: string | null },
 ): boolean {
   if (access === "free") return true;
-  if (access === "premium") return hasPremiumCourseAccess(memberOrPayload);
-  // "purchase": reserved � no entitlement system yet, so always locked.
-  return false;
+  if (hasPremiumCourseAccess(memberOrPayload)) return true;
+  if (access === "premium") return false;
+  // "purchase": Premium already returned true above; otherwise require entitlement.
+  return hasIndividualCoursePurchase(options?.courseSlug, memberOrPayload);
 }
 
 /** Resolve the viewer's state for a course, for choosing CTAs / gate copy. */
 export function getCourseViewerState(
   access: CourseAccessLevel,
   memberOrPayload: unknown,
+  options?: { courseSlug?: string | null },
 ): CourseViewerState {
-  if (access === "free") return "open";
+  if (canAccessCourse(access, memberOrPayload, options)) return "open";
 
-  if (access === "premium") {
-    if (hasPremiumCourseAccess(memberOrPayload)) return "open";
-    return isMemberLoggedIn(memberOrPayload) ? "needsPremium" : "loggedOut";
+  if (access === "purchase") {
+    return isMemberLoggedIn(memberOrPayload) ? "needsPurchase" : "loggedOut";
   }
 
-  // "purchase": always locked for now; login state cannot change the outcome.
-  return "needsPurchase";
+  // premium (and unknown fallbacks treated as premium-gated)
+  return isMemberLoggedIn(memberOrPayload) ? "needsPremium" : "loggedOut";
 }

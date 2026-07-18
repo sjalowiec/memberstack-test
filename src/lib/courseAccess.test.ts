@@ -139,11 +139,27 @@ describe("canAccessCourse", () => {
     expect(canAccessCourse("premium", loggedOut)).toBe(false);
   });
 
-  it("purchase courses are always locked for now (no entitlement system)", () => {
+  it("purchase courses unlock for Premium/Beta (membership includes all courses)", () => {
     expect(canAccessCourse("purchase", payloadWithPlan(MEMBERSHIPS.premium.memberstackPlanId))).toBe(
+      true,
+    );
+    expect(canAccessCourse("purchase", payloadWithPlan(MEMBERSHIPS.beta.memberstackPlanId))).toBe(
+      true,
+    );
+    expect(
+      canAccessCourse(
+        "purchase",
+        payloadWithPlan(LEGACY_MEMBERSHIPS.monthlyPremium.memberstackPlanId),
+      ),
+    ).toBe(true);
+  });
+
+  it("purchase courses stay locked for logged-out, Basic, and no-plan members", () => {
+    expect(canAccessCourse("purchase", loggedOut)).toBe(false);
+    expect(canAccessCourse("purchase", loggedInNoPlan)).toBe(false);
+    expect(canAccessCourse("purchase", payloadWithPlan(MEMBERSHIPS.basic.memberstackPlanId))).toBe(
       false,
     );
-    expect(canAccessCourse("purchase", loggedOut)).toBe(false);
   });
 });
 
@@ -175,10 +191,23 @@ describe("getCourseViewerState", () => {
     expect(getCourseViewerState("premium", loggedInNoPlan)).toBe("needsPremium");
   });
 
-  it("purchase ? needsPurchase regardless of login/plan", () => {
-    expect(getCourseViewerState("purchase", loggedOut)).toBe("needsPurchase");
+  it("purchase ? open for Premium/Beta", () => {
     expect(
       getCourseViewerState("purchase", payloadWithPlan(MEMBERSHIPS.premium.memberstackPlanId)),
+    ).toBe("open");
+    expect(
+      getCourseViewerState("purchase", payloadWithPlan(MEMBERSHIPS.beta.memberstackPlanId)),
+    ).toBe("open");
+  });
+
+  it("purchase ? loggedOut when signed out", () => {
+    expect(getCourseViewerState("purchase", loggedOut)).toBe("loggedOut");
+  });
+
+  it("purchase ? needsPurchase for logged-in non-Premium members", () => {
+    expect(
+      getCourseViewerState("purchase", payloadWithPlan(MEMBERSHIPS.basic.memberstackPlanId)),
     ).toBe("needsPurchase");
+    expect(getCourseViewerState("purchase", loggedInNoPlan)).toBe("needsPurchase");
   });
 });
