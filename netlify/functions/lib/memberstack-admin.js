@@ -11,12 +11,22 @@
  *   - PATCH /members/:id            ({ json } REPLACES the stored JSON — caller must merge first)
  */
 
+import { readDotEnvValue } from "./local-dotenv.js";
+
 export const MEMBERSTACK_ADMIN_BASE_URL = "https://admin.memberstack.com";
 
-/** Reads the server-only Memberstack secret key, or null when unconfigured. */
+/**
+ * Reads the server-only Memberstack secret key, or null when unconfigured.
+ * Production: `process.env.MEMBERSTACK_SECRET_KEY` only.
+ * Non-production: falls back to project-root `.env` when process env is unset
+ * (Astro `npm run dev` often does not inject secrets into function `process.env`).
+ */
 export function getMemberstackSecretKey() {
-  const key = (process.env.MEMBERSTACK_SECRET_KEY || "").trim();
-  return key || null;
+  const fromProcess = (process.env.MEMBERSTACK_SECRET_KEY || "").trim();
+  if (fromProcess) return fromProcess;
+  if (process.env.NODE_ENV === "production") return null;
+  const fromDotEnv = readDotEnvValue("MEMBERSTACK_SECRET_KEY");
+  return fromDotEnv || null;
 }
 
 /** TEMPORARY DEBUG: gated by `DEBUG_SLEEVELESS_LOOKUP=true`. Remove once the lookup is diagnosed. */
@@ -50,6 +60,51 @@ export function describeSecretKeyEnvironment() {
 }
 
 /**
+ * Safe endpoint label for logs (never includes query secrets; member ids/emails stay encoded path).
+ * @param {string} method
+ * @param {string} url
+ */
+export function describeMemberstackEndpoint(method, url) {
+  try {
+    const u = new URL(url);
+    return `${method.toUpperCase()} ${u.origin}${u.pathname}`;
+  } catch {
+    return `${method.toUpperCase()} ${String(url)}`;
+  }
+}
+
+/**
+ * Flatten undici/node fetch error causes into a readable summary
+ * (ENOTFOUND, ECONNREFUSED, ETIMEDOUT, UNABLE_TO_VERIFY_LEAF_SIGNATURE, …).
+ * @param {unknown} err
+ */
+export function summarizeFetchCause(err) {
+  const parts = [];
+  let cur = err;
+  let depth = 0;
+  while (cur && depth < 6) {
+    const rec = /** @type {{ name?: string, code?: string, message?: string, cause?: unknown, errors?: unknown[] }} */ (
+      cur
+    );
+    const code = typeof rec.code === "string" ? rec.code : "";
+    const message = typeof rec.message === "string" ? rec.message : "";
+    const name = typeof rec.name === "string" ? rec.name : "";
+    const bit = [name, code, message].filter(Boolean).join(": ");
+    if (bit) parts.push(bit);
+    if (Array.isArray(rec.errors)) {
+      for (const nested of rec.errors) {
+        const n = /** @type {{ code?: string, message?: string }} */ (nested);
+        const nestedBit = [n.code, n.message].filter(Boolean).join(": ");
+        if (nestedBit) parts.push(nestedBit);
+      }
+    }
+    cur = rec.cause;
+    depth++;
+  }
+  return parts.join(" | ") || "(no cause details)";
+}
+
+/**
  * Builds a small Memberstack admin client. `fetchImpl` is injectable for tests.
  * @param {{ secretKey: string, baseUrl?: string, fetchImpl?: typeof fetch }} options
  */
@@ -68,31 +123,91 @@ export function createMemberstackAdminClient({
   };
 
   /**
+   * @param {string} method
+   * @param {string} url
+   * @param {RequestInit} [init]
+   */
+  async function request(method, url, init = {}) {
+    const endpoint = describeMemberstackEndpoint(method, url);
+    let res;
+    try {
+      res = await fetchImpl(url, {
+        ...init,
+        method,
+        headers: {
+          ...baseHeaders,
+          ...(init.headers || {}),
+        },
+      });
+    } catch (err) {
+      const cause = summarizeFetchCause(err);
+      const error = new Error(
+        `Memberstack ${endpoint} fetch failed (no HTTP response). Cause: ${cause}`,
+      );
+      error.cause = err;
+      /** @type {any} */ (error).endpoint = endpoint;
+      /** @type {any} */ (error).fetchCause = cause;
+      throw error;
+    }
+
+    if (!res.ok) {
+      const detail = await readErrorDetail(res);
+      const error = new Error(
+        `Memberstack ${endpoint} failed (HTTP ${res.status})${detail ? `: ${detail}` : "."}`,
+      );
+      /** @type {any} */ (error).endpoint = endpoint;
+      /** @type {any} */ (error).httpStatus = res.status;
+      /** @type {any} */ (error).responseBody = detail;
+      throw error;
+    }
+    return res;
+  }
+
+  /** @param {Response} res */
+  async function readErrorDetail(res) {
+    try {
+      const text = await res.text();
+      if (!text) return "";
+      try {
+        const body = JSON.parse(text);
+        if (body && typeof body === "object") {
+          const msg = body.message || body.code || body.error;
+          if (msg) return String(msg);
+          return text.slice(0, 500);
+        }
+      } catch {
+        return text.slice(0, 500);
+      }
+      return text.slice(0, 500);
+    } catch {
+      return "";
+    }
+  }
+
+  /**
    * Retrieves a member by Memberstack id (`mem_...`) or email. Returns the member object
    * (the API `data` payload) or `null` when not found (404).
    * @param {string} idOrEmail
    * @returns {Promise<Record<string, unknown> | null>}
    */
   async function getMember(idOrEmail) {
-    const res = await fetchImpl(`${baseUrl}/members/${encodeURIComponent(idOrEmail)}`, {
-      method: "GET",
-      headers: baseHeaders,
-    });
-    if (res.status === 404) {
-      // NOTE: per the Admin API docs a missing member is 200 + { data: null }, NOT 404. This 404
-      // branch is defensive only.
-      if (isLookupDebugEnabled()) {
-        console.log("[memberstack-admin][DEBUG] getMember -> HTTP 404 (unexpected per docs)");
+    const url = `${baseUrl}/members/${encodeURIComponent(idOrEmail)}`;
+    let res;
+    try {
+      res = await request("GET", url);
+    } catch (err) {
+      const status = /** @type {any} */ (err).httpStatus;
+      if (status === 404) {
+        if (isLookupDebugEnabled()) {
+          console.log("[memberstack-admin][DEBUG] getMember -> HTTP 404 (unexpected per docs)");
+        }
+        return null;
       }
-      return null;
-    }
-    if (!res.ok) {
-      throw new Error(`Memberstack getMember failed (${res.status}).`);
+      throw err;
     }
     const body = await res.json();
     const data = body && typeof body === "object" && "data" in body ? body.data : body ?? null;
     if (isLookupDebugEnabled()) {
-      // TEMPORARY DEBUG: raw response shape, redacted. `data: null` = no such member in this app/env.
       console.log(
         `[memberstack-admin][DEBUG] getMember status=${res.status} hasData=${Boolean(data)} ` +
           `keys=${data && typeof data === "object" ? Object.keys(data).join(",") : "(none)"}`,
@@ -109,16 +224,48 @@ export function createMemberstackAdminClient({
    * @returns {Promise<Record<string, unknown> | null>}
    */
   async function updateMemberJson(memberId, json) {
-    const res = await fetchImpl(`${baseUrl}/members/${encodeURIComponent(memberId)}`, {
-      method: "PATCH",
-      headers: baseHeaders,
-      body: JSON.stringify({ json }),
+    return updateMember(memberId, { json });
+  }
+
+  /**
+   * Partial update of a member. `customFields` / `metaData` are shallow-merged by Memberstack;
+   * `json` is fully replaced when sent. Returns the updated member object (API `data`) or `null`.
+   * @param {string} memberId
+   * @param {Record<string, unknown>} patch
+   * @returns {Promise<Record<string, unknown> | null>}
+   */
+  async function updateMember(memberId, patch) {
+    const res = await request("PATCH", `${baseUrl}/members/${encodeURIComponent(memberId)}`, {
+      body: JSON.stringify(patch ?? {}),
     });
-    if (!res.ok) {
-      throw new Error(`Memberstack updateMemberJson failed (${res.status}).`);
-    }
     const body = await res.json();
     return body && typeof body === "object" && "data" in body ? body.data : body ?? null;
+  }
+
+  /**
+   * Creates a member. `plans` may only include free plans; paid Premium must come from Stripe sync
+   * (CSV import with Customer + Subscription IDs). Returns the created member (API `data`).
+   * @param {{
+   *   email: string,
+   *   password?: string,
+   *   plans?: Array<{ planId: string }>,
+   *   customFields?: Record<string, unknown>,
+   *   metaData?: Record<string, unknown>,
+   *   json?: Record<string, unknown>,
+   *   loginRedirect?: string,
+   * }} payload
+   * @returns {Promise<Record<string, unknown>>}
+   */
+  async function createMember(payload) {
+    const res = await request("POST", `${baseUrl}/members`, {
+      body: JSON.stringify(payload ?? {}),
+    });
+    const body = await res.json();
+    const data = body && typeof body === "object" && "data" in body ? body.data : body;
+    if (!data || typeof data !== "object") {
+      throw new Error("Memberstack createMember returned no member data.");
+    }
+    return /** @type {Record<string, unknown>} */ (data);
   }
 
   /**
@@ -132,10 +279,7 @@ export function createMemberstackAdminClient({
     url.searchParams.set("limit", String(limit));
     if (after !== undefined) url.searchParams.set("after", String(after));
     if (order) url.searchParams.set("order", order);
-    const res = await fetchImpl(url.toString(), { method: "GET", headers: baseHeaders });
-    if (!res.ok) {
-      throw new Error(`Memberstack listMembers failed (${res.status}).`);
-    }
+    const res = await request("GET", url.toString());
     return res.json();
   }
 
@@ -174,7 +318,7 @@ export function createMemberstackAdminClient({
     );
   }
 
-  return { getMember, updateMemberJson, listMembers, verifyMemberToken };
+  return { getMember, updateMember, updateMemberJson, createMember, listMembers, verifyMemberToken };
 }
 
 /**

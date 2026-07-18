@@ -2,9 +2,9 @@
 export const prerender = true;
 import Layout from "../layouts/Layout.astro";
 import DashboardShell from "../components/dashboard/DashboardShell.astro";
+import AccountMembershipPanel from "../components/dashboard/AccountMembershipPanel.astro";
 import MyPatternsPanel from "../components/dashboard/MyPatternsPanel.astro";
-import TagsPlaceholder from "../components/dashboard/TagsPlaceholder.astro";
-import WorkspaceToolsGrid from "../components/dashboard/WorkspaceToolsGrid.astro";
+import MyFavoritesPanel from "../components/dashboard/MyFavoritesPanel.astro";
 import AccountSettingsPanel from "../components/dashboard/AccountSettingsPanel.astro";
 import AccountWelcomeBlock from "../components/dashboard/AccountWelcomeBlock.astro";
 import PatternEditingUnlockModal from "../components/patterns/PatternEditingUnlockModal.astro";
@@ -74,7 +74,11 @@ const description =
             // set the final value. The My Patterns entry uses a `view` query param so the post-login
             // redirect is a real navigation, not a same-URL fragment change that never reloads.
             var target =
-              hash === "#my-patterns" ? "/account?view=my-patterns#my-patterns" : "/account" + hash;
+              hash === "#my-patterns"
+                ? "/account?view=my-patterns#my-patterns"
+                : hash === "#account"
+                  ? "/account#account-settings"
+                  : "/account" + hash;
             form.setAttribute("redirect", target);
           })();
         </script>
@@ -104,10 +108,12 @@ const description =
     <div data-ms-content="members">
       <DashboardShell>
         <AccountWelcomeBlock />
-        <MyPatternsPanel />
-        <TagsPlaceholder />
-        <WorkspaceToolsGrid />
-        <AccountSettingsPanel />
+        <div class="account-dashboard-grid">
+          <AccountMembershipPanel />
+          <AccountSettingsPanel />
+          <MyFavoritesPanel />
+          <MyPatternsPanel />
+        </div>
       </DashboardShell>
     </div>
   </div>
@@ -118,7 +124,10 @@ const description =
   import "/src/scripts/account-login-redirect.ts";
   import "/src/scripts/account-signup-return.ts";
   import "/src/scripts/account-my-patterns.ts";
+  import "/src/scripts/account-favorites.ts";
   import "/src/scripts/account-welcome.ts";
+  import "/src/scripts/account-membership.ts";
+  import "/src/scripts/account-password-change.ts";
 </script>
 
 <style>
@@ -128,9 +137,13 @@ const description =
     padding-right: 0;
   }
 
+  /* Wider than the default --max-content-width (1100px); matches other wide pages (e.g. whats-new). */
   .account-dashboard {
     width: 100%;
+    max-width: min(1240px, calc(100vw - 2rem));
+    margin: 0 auto;
     background: linear-gradient(180deg, #f7f8f5 0%, #fff 12rem);
+    box-sizing: border-box;
   }
 
   .account-page__guest {
@@ -181,18 +194,8 @@ const description =
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   }
 
-  :global(.dashboard-card--primary) {
-    padding: 1.65rem 1.65rem 1.5rem;
-    border-color: #d8dfd0;
-    box-shadow: 0 2px 8px rgba(82, 104, 45, 0.06);
-  }
-
   :global(.dashboard-card--patterns) {
     scroll-margin-top: calc(var(--header-offset, 170px) + 1rem);
-  }
-
-  :global(.dashboard-card__header-row--primary) {
-    margin-bottom: 1rem;
   }
 
   :global(.dashboard-card__title) {
@@ -202,22 +205,11 @@ const description =
     color: #2c3a57;
   }
 
-  :global(.dashboard-card__title--primary) {
-    font-size: clamp(1.35rem, 2.2vw, 1.65rem);
-    font-weight: 700;
-    margin-bottom: 0.4rem;
-  }
-
   :global(.dashboard-card__subtitle) {
     margin: 0;
     font-size: 0.95rem;
     line-height: 1.5;
     color: #6b7280;
-  }
-
-  :global(.dashboard-card__subtitle--primary) {
-    font-size: 1rem;
-    color: #4b5563;
   }
 
   :global(.dashboard-muted) {
@@ -226,10 +218,30 @@ const description =
     color: #4b5563;
   }
 
+  .account-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  @media (max-width: 900px) {
+    .account-dashboard-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
   :global(.dashboard-mini-card),
-  :global(#my-tags),
-  :global(#account) {
+  :global(#my-favorites),
+  :global(#membership),
+  :global(#account-settings),
+  :global(#account),
+  :global(#my-patterns) {
     scroll-margin-top: calc(var(--header-offset, 170px) + 1rem);
+  }
+
+  :global(.account-dashboard-grid .dashboard-card) {
+    min-width: 0;
   }
 
   :global(.account-details-grid) {
@@ -338,6 +350,20 @@ const description =
     font-size: 0.95rem;
     line-height: 1.45;
     color: #4b5563;
+  }
+
+  :global(.account-page__password-status) {
+    margin: 0.35rem 0 0.15rem;
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+
+  :global(.account-page__password-status--error) {
+    color: #b42318;
+  }
+
+  :global(.account-page__password-status--success) {
+    color: #17663a;
   }
 
   :global(.account-my-patterns__status--error) {

@@ -8,6 +8,8 @@ import PublicSignupModal from "../components/PublicSignupModal.astro";
 import KinCatalogVideoModal from "../components/common/KinCatalogVideoModal.astro";
 import ToolPrintFooter from "../components/tools/ToolPrintFooter.astro";
 import EnvBanner from "../components/EnvBanner.astro";
+import MembershipCornerControl from "../components/membership/MembershipCornerControl.astro";
+import RobotsMeta from "../components/seo/RobotsMeta.astro";
 
 import MembershipCornerControl from "../components/membership/MembershipCornerControl.astro";
 import RobotsMeta from "../components/seo/RobotsMeta.astro";
@@ -251,6 +253,7 @@ const isProduction =
     <AccountPasswordResetModal />
     <PublicSignupModal />
     <KinCatalogVideoModal />
+    <MembershipCornerControl />
 
     <script>
       import "../scripts/accountPasswordResetModal.ts";
@@ -470,13 +473,13 @@ const isProduction =
       async function waitForMemberstackReady(attempts: number, delayMs: number) {
         for (let i = 0; i < attempts; i++) {
           const ms = window.$memberstackDom;
-          const api = ms?.getAppAndMember ?? ms?.getCurrentMember;
+          // Prefer getAppAndMember only — getCurrentMember can omit planConnections.
+          const api = ms?.getAppAndMember;
           if (typeof api === "function") {
             try {
               return await api.call(ms);
             } catch (error) {
               console.warn("MemberStack member check failed", error);
-              return null;
             }
           }
           await new Promise((r) => setTimeout(r, delayMs));
@@ -523,11 +526,23 @@ const isProduction =
           msLoggedIn: document.body.classList.contains("ms-logged-in"),
           hasMemberAccess: memberHasAccess,
         });
+
+        // Persist then notify so late-loading lesson gate can mount even if it
+        // missed this event (BaseLayout often resolves before the page module).
+        const accessDetail = {
+          hasMemberAccess: memberHasAccess,
+          viewerAccessState: getViewerAccessState(res),
+        };
+        window.__KIN_MEMBER_ACCESS__ = accessDetail;
+        window.dispatchEvent(
+          new CustomEvent("kin:member-access", { detail: accessDetail }),
+        );
+        window.dispatchEvent(new Event("auth:updated"));
       }
 
       function refreshMemberAccess() {
         const ms = window.$memberstackDom;
-        const api = ms?.getAppAndMember ?? ms?.getCurrentMember;
+        const api = ms?.getAppAndMember;
         if (typeof api !== "function") return;
         api.call(ms).then(applyMsLoggedIn).catch(() => {});
       }
@@ -540,6 +555,15 @@ const isProduction =
         ms.on("member.login", refreshMemberAccess);
         ms.on("member.logout", () => {
           document.body.classList.remove("ms-logged-in");
+          window.__KIN_MEMBER_ACCESS__ = {
+            hasMemberAccess: false,
+            viewerAccessState: "loggedOut",
+          };
+          window.dispatchEvent(
+            new CustomEvent("kin:member-access", {
+              detail: window.__KIN_MEMBER_ACCESS__,
+            }),
+          );
         });
       }
 

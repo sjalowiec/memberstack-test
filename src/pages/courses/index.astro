@@ -1,9 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import {
-  courseCatalogStatusLabel,
-  getCourseCatalogEntriesByCategory,
-} from "../../lib/coursesCatalog";
+import { getCourseCatalogEntriesByCategory } from "../../lib/coursesCatalog";
 
 const categorySections = getCourseCatalogEntriesByCategory();
 const availableCount = categorySections
@@ -14,11 +11,10 @@ const pageTitle = "Courses | Knit it Now";
 const pageDescription =
   "Structured machine knitting courses with step-by-step lessons, exercises, and video guidance.";
 
-const ACCESS_LABELS = {
-  free: "Free",
-  premium: "Premium",
-  purchase: "Buy soon",
-} as const;
+function courseLockAriaLabel(access: "free" | "premium" | "purchase"): string {
+  if (access === "purchase") return "Premium membership or purchase required";
+  return "Premium membership required";
+}
 ---
 
 <Layout title={pageTitle} description={pageDescription} bodyClass="page--tight-header">
@@ -55,76 +51,73 @@ const ACCESS_LABELS = {
           <div class="courses-grid">
             {
               courses.map((course) => {
-                const statusLabel = courseCatalogStatusLabel(course.status);
-                const statusClass =
-                  course.status === "available"
-                    ? "course-card__status--available"
-                    : course.status === "in-progress"
-                      ? "course-card__status--progress"
-                      : "course-card__status--soon";
                 const isLink = Boolean(course.href);
-                const accessLabel = ACCESS_LABELS[course.access];
-                const accessClass = `course-card__access--${course.access}`;
+                const showLock = course.access !== "free";
+                const lockLabel = courseLockAriaLabel(course.access);
+                const cardAttrs = {
+                  class: isLink ? "course-card course-card--link" : "course-card course-card--disabled",
+                  "data-course-catalog-card": "",
+                  "data-course-access": course.access,
+                  "data-course-slug": course.slug,
+                };
+
+                const media = (
+                  <div class="course-card__media">
+                    {
+                      course.hasThumbnail && course.thumbnail ? (
+                        <img
+                          src={course.thumbnail}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : (
+                        <div class="course-card__placeholder" aria-hidden="true">
+                          <span class="course-card__placeholder-label">Course</span>
+                        </div>
+                      )
+                    }
+                    {
+                      showLock ? (
+                        <span
+                          class="kbm-lock-overlay"
+                          data-course-catalog-lock
+                          aria-label={lockLabel}
+                        >
+                          <i class="fa-solid fa-lock" aria-hidden="true" />
+                        </span>
+                      ) : null
+                    }
+                  </div>
+                );
+
+                const body = (
+                  <div class="course-card__body">
+                    <h3 class="course-card__title">{course.title}</h3>
+                    <p class="course-card__copy">{course.description ?? "\u00a0"}</p>
+                    <div class="course-card__footer">
+                      <span
+                        class:list={[
+                          "course-card__cta",
+                          "kbm-btn",
+                          isLink ? "kbm-btn-primary" : "kbm-btn-outline course-card__cta--disabled",
+                        ]}
+                      >
+                        {course.buttonLabel}
+                      </span>
+                    </div>
+                  </div>
+                );
 
                 return isLink ? (
-                  <a href={course.href} class="course-card course-card--link">
-                    <div class="course-card__media">
-                      {
-                        course.hasThumbnail && course.thumbnail ? (
-                          <img
-                            src={course.thumbnail}
-                            alt=""
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        ) : (
-                          <div class="course-card__placeholder" aria-hidden="true">
-                            <span class="course-card__placeholder-label">Course</span>
-                          </div>
-                        )
-                      }
-                      <span class={`course-card__status ${statusClass}`}>{statusLabel}</span>
-                      <span class={`course-card__access ${accessClass}`}>{accessLabel}</span>
-                    </div>
-                    <div class="course-card__body">
-                      <h3 class="course-card__title">{course.title}</h3>
-                      <p class="course-card__copy">{course.description ?? "\u00a0"}</p>
-                      <div class="course-card__footer">
-                        <span class="course-card__cta kbm-btn kbm-btn-primary">
-                          {course.buttonLabel}
-                        </span>
-                      </div>
-                    </div>
+                  <a href={course.href} {...cardAttrs}>
+                    {media}
+                    {body}
                   </a>
                 ) : (
-                  <div class="course-card course-card--disabled" aria-disabled="true">
-                    <div class="course-card__media">
-                      {
-                        course.hasThumbnail && course.thumbnail ? (
-                          <img
-                            src={course.thumbnail}
-                            alt=""
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        ) : (
-                          <div class="course-card__placeholder" aria-hidden="true">
-                            <span class="course-card__placeholder-label">Course</span>
-                          </div>
-                        )
-                      }
-                      <span class={`course-card__status ${statusClass}`}>{statusLabel}</span>
-                      <span class={`course-card__access ${accessClass}`}>{accessLabel}</span>
-                    </div>
-                    <div class="course-card__body">
-                      <h3 class="course-card__title">{course.title}</h3>
-                      <p class="course-card__copy">{course.description ?? "\u00a0"}</p>
-                      <div class="course-card__footer">
-                        <span class="course-card__cta kbm-btn kbm-btn-outline course-card__cta--disabled">
-                          {course.buttonLabel}
-                        </span>
-                      </div>
-                    </div>
+                  <div {...cardAttrs} aria-disabled="true">
+                    {media}
+                    {body}
                   </div>
                 );
               })
@@ -134,6 +127,11 @@ const ACCESS_LABELS = {
       ))
     }
   </div>
+
+  <script>
+    import { runCourseCatalogLocksBoot } from "../../scripts/courseCatalogLocks";
+    runCourseCatalogLocksBoot();
+  </script>
 </Layout>
 
 <style>
@@ -279,66 +277,6 @@ const ACCESS_LABELS = {
     color: #7a8468;
     background: rgba(255, 255, 255, 0.82);
     border: 1px solid #d6dbc9;
-  }
-
-  .course-card__status {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    z-index: 1;
-    display: inline-block;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    padding: 3px 9px;
-    border-radius: 999px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-  }
-
-  .course-card__status--available {
-    color: #52682d;
-    background: #eef2e3;
-  }
-
-  .course-card__status--progress {
-    color: #8a6d1f;
-    background: #f7f0da;
-  }
-
-  .course-card__status--soon {
-    color: #6b7280;
-    background: #f0f1ee;
-  }
-
-  .course-card__access {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 1;
-    display: inline-block;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    padding: 3px 9px;
-    border-radius: 999px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-  }
-
-  .course-card__access--free {
-    color: #166534;
-    background: #dcfce7;
-  }
-
-  .course-card__access--premium {
-    color: #7c3a00;
-    background: #ffe8cc;
-  }
-
-  .course-card__access--purchase {
-    color: #3730a3;
-    background: #e0e7ff;
   }
 
   .course-card__body {

@@ -35,6 +35,11 @@ declare global {
     __DEV_BYPASS_GATING?: boolean;
     /** Localhost + ?member=true: set in BaseLayout for client-side gates (videos, etc.). */
     __KBM_DEV_MEMBER__?: boolean;
+    /** Latest member-access resolution from BaseLayout (for late-loading page gates). */
+    __KIN_MEMBER_ACCESS__?: {
+      hasMemberAccess: boolean;
+      viewerAccessState: "loggedOut" | "loggedInNoAccess" | "memberAccess";
+    } | null;
     /** Global member gate: true when logged in with an active allowed plan (beta/basic/premium/legacy). */
     kbmHasMemberAccess?: (memberOrPayload: unknown) => boolean;
     /** Global viewer state: "loggedOut" | "loggedInNoAccess" | "memberAccess". */
@@ -67,6 +72,12 @@ declare global {
       /** Account-tied free-form member metadata (`{ data }`). Used for the free-pattern claim. */
       getMemberJSON?: () => Promise<unknown>;
       updateMemberJSON?: (args: { json: Record<string, unknown> }) => Promise<unknown>;
+      /** Update email and/or password for the logged-in member. */
+      updateMemberAuth?: (args: {
+        email?: string;
+        oldPassword?: string;
+        newPassword?: string;
+      }) => Promise<unknown>;
       /** Auth lifecycle events (`member.login`, `member.logout`, …). */
       on?: (event: string, handler: (...args: unknown[]) => void) => void;
       openModal?: (type: string, opts?: Record<string, unknown>) => Promise<unknown>;

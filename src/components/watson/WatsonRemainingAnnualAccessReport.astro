@@ -1,0 +1,366 @@
+---
+import type { RemainingAnnualAccessReport } from "../../lib/watson/remainingAnnualAccessReport";
+import { remainingAnnualAccessRowToCsvCells } from "../../lib/watson/remainingAnnualAccessReport";
+
+interface Props {
+  report: RemainingAnnualAccessReport;
+}
+
+const { report } = Astro.props;
+const { rows, summary, note, asOfDateDisplay } = report;
+
+const classifications = [
+  { value: "confirmed_annual_single", label: "Confirmed annual, single payment" },
+  { value: "probable_annual_single", label: "Probable annual, single payment" },
+  { value: "annual_installment", label: "Annual access, installment plan" },
+  { value: "manual_complimentary", label: "Manual or complimentary access" },
+  { value: "unresolved_non_monthly", label: "Unresolved non-monthly" },
+];
+---
+
+<section
+  class="watson__panel watson--report-wide"
+  aria-labelledby="remaining-annual-access-heading"
+  data-remaining-annual-report
+>
+  <h2 id="remaining-annual-access-heading" class="watson__panel-title">
+    Remaining Annual Access
+  </h2>
+  <p class="watson-report__note">{note}</p>
+  <p class="watson-report__meta">
+    As of {asOfDateDisplay} · current members only · sorted by paid-through date
+  </p>
+
+  <div class="watson-report__cards">
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Confirmed annual single-payment</h3>
+      <p class="watson-report__card-value" data-summary="confirmed">
+        {summary.confirmedAnnualSingle.toLocaleString("en-US")}
+      </p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Probable annual single-payment</h3>
+      <p class="watson-report__card-value" data-summary="probable">
+        {summary.probableAnnualSingle.toLocaleString("en-US")}
+      </p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Annual installment access</h3>
+      <p class="watson-report__card-value" data-summary="installment">
+        {summary.annualInstallment.toLocaleString("en-US")}
+      </p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Manual / complimentary</h3>
+      <p class="watson-report__card-value" data-summary="manual">
+        {summary.manualComplimentary.toLocaleString("en-US")}
+      </p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Unresolved non-monthly</h3>
+      <p class="watson-report__card-value" data-summary="unresolved">
+        {summary.unresolvedNonMonthly.toLocaleString("en-US")}
+      </p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Expiring ? 30 days</h3>
+      <p class="watson-report__card-value" data-summary="exp30">
+        {summary.expiring30.toLocaleString("en-US")}
+      </p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Expiring ? 60 days</h3>
+      <p class="watson-report__card-value" data-summary="exp60">
+        {summary.expiring60.toLocaleString("en-US")}
+      </p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Expiring ? 90 days</h3>
+      <p class="watson-report__card-value" data-summary="exp90">
+        {summary.expiring90.toLocaleString("en-US")}
+      </p>
+    </article>
+  </div>
+
+  <div class="watson-report__filters">
+    <div class="watson-report__filter">
+      <label for="raa-filter-class">Classification</label>
+      <select id="raa-filter-class" multiple size="5" data-filter="classification">
+        {
+          classifications.map((item) => (
+            <option value={item.value}>{item.label}</option>
+          ))
+        }
+      </select>
+    </div>
+    <div class="watson-report__filter">
+      <label for="raa-filter-confidence">Confidence</label>
+      <select id="raa-filter-confidence" data-filter="confidence">
+        <option value="">All</option>
+        <option value="Confirmed">Confirmed</option>
+        <option value="Probable">Probable</option>
+        <option value="Unresolved">Unresolved</option>
+      </select>
+    </div>
+    <div class="watson-report__filter">
+      <label for="raa-filter-processor">Processor</label>
+      <select id="raa-filter-processor" data-filter="processor">
+        <option value="">All</option>
+        <option value="Stripe">Stripe</option>
+        <option value="PayPal">PayPal</option>
+        <option value="Authorize.net">Authorize.net</option>
+        <option value="Payment Request">Payment Request</option>
+        <option value="Unknown">Unknown</option>
+      </select>
+    </div>
+    <div class="watson-report__filter">
+      <label for="raa-filter-exp">Expiration range</label>
+      <select id="raa-filter-exp" data-filter="exp">
+        <option value="">All</option>
+        <option value="30">Within 30 days</option>
+        <option value="60">Within 60 days</option>
+        <option value="90">Within 90 days</option>
+      </select>
+    </div>
+    <div class="watson-report__filter">
+      <label for="raa-filter-exceptions">
+        <input type="checkbox" id="raa-filter-exceptions" data-filter="exceptionsOnly" />
+        Exceptions only
+      </label>
+      <label for="raa-filter-manual">
+        <input type="checkbox" id="raa-filter-manual" data-filter="manualOnly" />
+        Manual migration only
+      </label>
+    </div>
+    <div class="watson-report__filter">
+      <label for="raa-filter-search">Search</label>
+      <input id="raa-filter-search" type="search" placeholder="Name, email, ID" data-filter="search" />
+    </div>
+    <div class="watson-report__actions">
+      <button type="button" class="watson-report__button watson-report__button--secondary" data-action="reset">
+        Reset filters
+      </button>
+      <button type="button" class="watson-report__button" data-action="csv">
+        Export CSV
+      </button>
+    </div>
+  </div>
+
+  <p class="watson-report__count">
+    Showing <span data-visible-count>{rows.length}</span> of {rows.length} members
+  </p>
+
+  {
+    rows.length === 0 ? (
+      <p class="watson__placeholder">No remaining annual-access candidates were found.</p>
+    ) : (
+      <div class="watson__table-wrap">
+        <table class="watson-table" data-sortable-table data-report-table>
+          <thead>
+            <tr>
+              <th scope="col" data-sort-key="name" data-sort-type="string" tabindex="0">Name</th>
+              <th scope="col" data-sort-key="email" data-sort-type="string" tabindex="0">Email</th>
+              <th scope="col" data-sort-key="memberid" data-sort-type="string" tabindex="0">
+                Legacy member ID
+              </th>
+              <th scope="col" data-sort-key="type" data-sort-type="string" tabindex="0">
+                Subscription type
+              </th>
+              <th scope="col" data-sort-key="class" data-sort-type="string" tabindex="0">
+                Classification
+              </th>
+              <th scope="col" data-sort-key="confidence" data-sort-type="string" tabindex="0">
+                Confidence
+              </th>
+              <th
+                scope="col"
+                data-sort-key="paidThrough"
+                data-sort-type="string"
+                data-sort-default="true"
+                data-sort-default-direction="asc"
+                tabindex="0"
+              >
+                Paid through
+              </th>
+              <th scope="col">Latest sub expiration</th>
+              <th scope="col">Latest amount</th>
+              <th scope="col">Latest rate ID</th>
+              <th scope="col">Processor</th>
+              <th scope="col">Stripe customer ID</th>
+              <th scope="col">Relevant sub rows</th>
+              <th scope="col">Exceptions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              rows.map((row) => (
+                <tr
+                  data-report-row
+                  data-classification={row.classification}
+                  data-confidence={row.confidence}
+                  data-processor={row.processorDisplay.replace(" (inferred)", "")}
+                  data-days={row.daysRemaining ?? ""}
+                  data-exceptions={row.exceptions.length > 0 ? "1" : "0"}
+                  data-manual={row.requiresManualMigration ? "1" : "0"}
+                  data-search={`${row.name} ${row.email ?? ""} ${row.memberid}`.toLowerCase()}
+                  data-csv={JSON.stringify(remainingAnnualAccessRowToCsvCells(row))}
+                >
+                  <td data-sort-value={row.name}>
+                    <a href={row.profileHref}>{row.name}</a>
+                  </td>
+                  <td data-sort-value={row.email ?? ""}>{row.email ?? ""}</td>
+                  <td data-sort-value={row.memberid}>
+                    <code>{row.memberid}</code>
+                  </td>
+                  <td data-sort-value={row.subscriptionTypeDisplay}>
+                    {row.subscriptionTypeDisplay}
+                  </td>
+                  <td data-sort-value={row.classificationLabel}>{row.classificationLabel}</td>
+                  <td data-sort-value={row.confidence}>{row.confidence}</td>
+                  <td data-sort-value={row.memberExpirationSort}>
+                    {row.paidThroughDisplay ?? ""}
+                  </td>
+                  <td>{row.latestExpirationDisplay ?? ""}</td>
+                  <td>{row.latestAmountDisplay ?? ""}</td>
+                  <td>{row.latestRateId ? <code>{row.latestRateId}</code> : ""}</td>
+                  <td>{row.processorDisplay}</td>
+                  <td>{row.stripeCustomerId ?? ""}</td>
+                  <td>{row.relevantSubscriptionRowCount}</td>
+                  <td class="watson-report__exceptions">{row.exceptionsDisplay}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+</section>
+
+<script>
+  import { buildCsv, downloadCsv, parseMultiSelectValues } from "../../lib/watson/reportClientFilters";
+
+  const root = document.querySelector("[data-remaining-annual-report]");
+  if (root instanceof HTMLElement) {
+    const classSelect = root.querySelector<HTMLSelectElement>('[data-filter="classification"]');
+    const confidenceSelect = root.querySelector<HTMLSelectElement>('[data-filter="confidence"]');
+    const processorSelect = root.querySelector<HTMLSelectElement>('[data-filter="processor"]');
+    const expSelect = root.querySelector<HTMLSelectElement>('[data-filter="exp"]');
+    const exceptionsOnly = root.querySelector<HTMLInputElement>('[data-filter="exceptionsOnly"]');
+    const manualOnly = root.querySelector<HTMLInputElement>('[data-filter="manualOnly"]');
+    const searchInput = root.querySelector<HTMLInputElement>('[data-filter="search"]');
+    const rows = [...root.querySelectorAll<HTMLTableRowElement>("[data-report-row]")];
+    const visibleCount = root.querySelector("[data-visible-count]");
+    const csvHeaders = [
+      "Name",
+      "Email",
+      "Legacy member ID",
+      "Current subscription type",
+      "Classification",
+      "Confidence",
+      "Paid through date",
+      "Latest subscription expiration",
+      "Latest amount",
+      "Latest rate ID",
+      "Processor",
+      "Stripe customer ID",
+      "Relevant subscription rows",
+      "Requires manual migration",
+      "Exception reasons",
+    ];
+
+    function applyFilters() {
+      const classes = classSelect ? parseMultiSelectValues(classSelect) : [];
+      const confidence = confidenceSelect?.value ?? "";
+      const processor = processorSelect?.value ?? "";
+      const exp = expSelect?.value ?? "";
+      const onlyExceptions = Boolean(exceptionsOnly?.checked);
+      const onlyManual = Boolean(manualOnly?.checked);
+      const search = searchInput?.value.trim().toLowerCase() ?? "";
+
+      let visible = 0;
+      let confirmed = 0;
+      let probable = 0;
+      let installment = 0;
+      let manual = 0;
+      let unresolved = 0;
+      let exp30 = 0;
+      let exp60 = 0;
+      let exp90 = 0;
+
+      for (const row of rows) {
+        const rowClass = row.dataset.classification ?? "";
+        const rowConfidence = row.dataset.confidence ?? "";
+        const rowProcessor = row.dataset.processor ?? "";
+        const days = row.dataset.days === "" ? null : Number(row.dataset.days);
+        const hasExceptions = row.dataset.exceptions === "1";
+        const needsManual = row.dataset.manual === "1";
+        const haystack = row.dataset.search ?? "";
+        let show = true;
+        if (classes.length > 0 && !classes.includes(rowClass)) show = false;
+        if (confidence && rowConfidence !== confidence) show = false;
+        if (processor && rowProcessor !== processor) show = false;
+        if (exp && (days == null || days > Number(exp))) show = false;
+        if (onlyExceptions && !hasExceptions) show = false;
+        if (onlyManual && !needsManual) show = false;
+        if (search && !haystack.includes(search)) show = false;
+        row.hidden = !show;
+        if (!show) continue;
+        visible += 1;
+        if (rowClass === "confirmed_annual_single") confirmed += 1;
+        if (rowClass === "probable_annual_single") probable += 1;
+        if (rowClass === "annual_installment") installment += 1;
+        if (rowClass === "manual_complimentary") manual += 1;
+        if (rowClass === "unresolved_non_monthly") unresolved += 1;
+        if (days != null && days <= 30) exp30 += 1;
+        if (days != null && days <= 60) exp60 += 1;
+        if (days != null && days <= 90) exp90 += 1;
+      }
+
+      if (visibleCount) visibleCount.textContent = String(visible);
+      const setSummary = (key: string, value: number) => {
+        const el = root.querySelector(`[data-summary="${key}"]`);
+        if (el) el.textContent = value.toLocaleString("en-US");
+      };
+      setSummary("confirmed", confirmed);
+      setSummary("probable", probable);
+      setSummary("installment", installment);
+      setSummary("manual", manual);
+      setSummary("unresolved", unresolved);
+      setSummary("exp30", exp30);
+      setSummary("exp60", exp60);
+      setSummary("exp90", exp90);
+    }
+
+    root.querySelector('[data-action="reset"]')?.addEventListener("click", () => {
+      if (classSelect) [...classSelect.options].forEach((o) => (o.selected = false));
+      if (confidenceSelect) confidenceSelect.value = "";
+      if (processorSelect) processorSelect.value = "";
+      if (expSelect) expSelect.value = "";
+      if (exceptionsOnly) exceptionsOnly.checked = false;
+      if (manualOnly) manualOnly.checked = false;
+      if (searchInput) searchInput.value = "";
+      applyFilters();
+    });
+
+    root.querySelector('[data-action="csv"]')?.addEventListener("click", () => {
+      const visibleRows = rows
+        .filter((row) => !row.hidden)
+        .map((row) => JSON.parse(row.dataset.csv ?? "[]") as string[]);
+      downloadCsv("watson-remaining-annual-access.csv", buildCsv(csvHeaders, visibleRows));
+    });
+
+    for (const el of [
+      classSelect,
+      confidenceSelect,
+      processorSelect,
+      expSelect,
+      exceptionsOnly,
+      manualOnly,
+      searchInput,
+    ]) {
+      el?.addEventListener("change", applyFilters);
+      el?.addEventListener("input", applyFilters);
+    }
+  }
+</script>

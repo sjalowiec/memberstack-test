@@ -32,10 +32,31 @@ try {
   intro="Historical business reporting from imported legacy data."
 >
   <nav class="watson-reports__nav" aria-label="Available reports">
+    <a class="watson-reports__nav-link" href="/watson/reports/current-legacy-members">
+      Current Legacy Members
+    </a>
+    <a class="watson-reports__nav-link" href="/watson/reports/remaining-annual-access">
+      Remaining Annual Access
+    </a>
     <a class="watson-reports__nav-link" href="#legacy-store-sales-by-year">
       Legacy Store Sales by Year
     </a>
   </nav>
+
+  <section class="watson__panel" aria-labelledby="membership-reports-heading">
+    <h2 id="membership-reports-heading" class="watson__panel-title">Membership reports</h2>
+    <ul class="watson-reports__list">
+      <li>
+        <a href="/watson/reports/current-legacy-members">Current Legacy Members</a>
+        — reproduces the legacy current-member universe from member fields
+        (<code>betaactive = 0</code>, <code>subscriptionexpiring &gt;= today</code>).
+      </li>
+      <li>
+        <a href="/watson/reports/remaining-annual-access">Remaining Annual Access</a>
+        — classifies current non-monthly members who may need annual/installment migration handling.
+      </li>
+    </ul>
+  </section>
 
   {
     reportError ? (
@@ -64,5 +85,26 @@ try {
 
   .watson-reports__nav-link:hover {
     text-decoration: underline;
+  }
+
+  .watson-reports__list {
+    margin: 0;
+    padding-left: 1.2rem;
+    color: #475569;
+    line-height: 1.55;
+  }
+
+  .watson-reports__list a {
+    color: #3f6212;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .watson-reports__list a:hover {
+    text-decoration: underline;
+  }
+
+  .watson-reports__list code {
+    font-size: 0.86em;
   }
 </style>

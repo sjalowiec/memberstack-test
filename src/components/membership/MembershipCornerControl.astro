@@ -1,0 +1,18 @@
+---
+/**
+ * Site-wide floating membership corner control.
+ *
+ * Presentational pill + client wiring that resolves label/destination from
+ * Memberstack (Become / Upgrade / Manage; Restart gated until sandbox confirm).
+ */
+import MembershipCornerCta from "./MembershipCornerCta.astro";
+import { MEMBERSHIP_CORNER_CTA_LABEL } from "../../lib/membership/membershipCornerControl";
+---
+
+<MembershipCornerCta label={MEMBERSHIP_CORNER_CTA_LABEL} />
+
+<script>
+  import { initMembershipCornerControl } from "../../lib/membership/membershipCornerControl";
+
+  initMembershipCornerControl();
+</script>

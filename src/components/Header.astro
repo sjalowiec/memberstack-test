@@ -8,7 +8,7 @@ import PatternWorkspaceLibraryDrawer from "./patterns/PatternWorkspaceLibraryDra
 interface Props {
   /**
    * Onboarding mode: render a stripped-down header (logo only) for focused
-   * flows like /signup/thank-you. Hides primary nav, search, account actions,
+   * focused signup/checklist flows. Hides primary nav, search, account actions,
    * the hamburger menu, and the beta banner while keeping the logo → home link.
    */
   onboarding?: boolean;
@@ -1986,7 +1986,7 @@ div[data-ms-modal-overlay] {
                   class="kbm-btn kbm-btn--primary"
                   data-testid="nav-my-account-mobile"
                 >
-                  My Account
+                  Account
                 </a>
                 <a
                   href="#"
@@ -2025,12 +2025,12 @@ div[data-ms-modal-overlay] {
               id="kbm-header-account-link"
               class="kbm-btn kbm-btn-outline kbm-header-account-btn"
               data-testid="nav-my-account"
-              aria-label="My Account"
-              title="My Account"
+              aria-label="Account"
+              title="Account"
             >
               <span class="kbm-header-account-label">
                 <span class="kbm-header-account-name" id="kbm-header-account-name" hidden></span><span class="kbm-header-account-suffix" id="kbm-header-account-suffix" hidden>'s Account</span>
-                <span class="kbm-header-account-fallback" id="kbm-header-account-fallback">My Account</span>
+                <span class="kbm-header-account-fallback" id="kbm-header-account-fallback">Account</span>
               </span>
             </a>
             <a
@@ -2159,8 +2159,8 @@ div[data-ms-modal-overlay] {
         nameEl.textContent = "";
         suffixEl.hidden = true;
         fallbackEl.hidden = false;
-        link.setAttribute("aria-label", "My Account");
-        link.setAttribute("title", "My Account");
+        link.setAttribute("aria-label", "Account");
+        link.setAttribute("title", "Account");
         return;
       }
 
@@ -2178,8 +2178,8 @@ div[data-ms-modal-overlay] {
         nameEl.textContent = "";
         suffixEl.hidden = true;
         fallbackEl.hidden = false;
-        link.setAttribute("aria-label", "My Account");
-        link.setAttribute("title", "My Account");
+        link.setAttribute("aria-label", "Account");
+        link.setAttribute("title", "Account");
       }
     }
 

@@ -32,7 +32,7 @@ export const MEMBERSHIPS = {
       name: "KIN Membership - Premium",
       memberstackPlanId: "pln_kin-membership-annual-premium-tn5b0cxj",
       prices: {
-        monthly: { price: 19.99, memberstackPriceId: "prc_knit-it-now-premium-monthly--en1b307jv" },
+        monthly: { price: 19.99, memberstackPriceId: "prc_monthly-subscription-to-knititnow-webw0nzy" },
         annual: { price: 228, memberstackPriceId: "prc_knit-it-now-premium-annual-membership-1g1bg070r" },
       },
     },
@@ -54,16 +54,32 @@ export const LEGACY_MEMBERSHIPS = {
       name: "KIN Membership Monthly Premium (retired)",
       memberstackPlanId: "pln_kin-membership-monthly-premium-915u0c2f",
     },
+    /**
+     * Old Memberstack plan shell still used by some Stripe-synced monthly Premium
+     * members. Same price as current Premium monthly
+     * (`prc_monthly-subscription-to-knititnow-webw0nzy`); plan product is now
+     * `MEMBERSHIPS.premium`.
+     */
+    monthlySubscription: {
+      name: "Monthly Subscription to Knititnow (retired plan shell)",
+      memberstackPlanId: "pln_monthly-subscription-to-knititnow-webx0nz5",
+    },
     annualBasic: {
       name: "KIN Membership Annual (grandfathered)",
       memberstackPlanId: "pln_kin-membership-annual-qf9g01et",
     },
   } as const;
 
+/** Legacy Premium plan ids (retired Premium products / plan shells). */
+export const LEGACY_PREMIUM_MEMBER_PLAN_IDS = [
+    LEGACY_MEMBERSHIPS.monthlyPremium.memberstackPlanId,
+    LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId,
+  ] as const;
+
 /** Legacy plan ids retained for access only. */
 export const LEGACY_MEMBER_PLAN_IDS = [
     LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId,
-    LEGACY_MEMBERSHIPS.monthlyPremium.memberstackPlanId,
+    ...LEGACY_PREMIUM_MEMBER_PLAN_IDS,
     LEGACY_MEMBERSHIPS.annualBasic.memberstackPlanId,
   ] as const;
 
@@ -84,10 +100,11 @@ export const MEMBER_PLAN_IDS = [
     ...LEGACY_MEMBER_PLAN_IDS,
   ] as const;
 
-/** Premium-tier plan ids (beta + premium). Currently unused; kept for parity. */
+/** Premium-tier plan ids for course access: Beta, current Premium, and legacy Premium. */
 export const PREMIUM_PLAN_IDS = [
     MEMBERSHIPS.beta.memberstackPlanId,
     MEMBERSHIPS.premium.memberstackPlanId,
+    ...LEGACY_PREMIUM_MEMBER_PLAN_IDS,
   ] as const;
 
 /** Beta, basic, premium, and legacy plans that grant catalog video access. */

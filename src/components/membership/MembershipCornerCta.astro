@@ -1,0 +1,140 @@
+---
+/**
+ * Presentational membership CTA.
+ *
+ * Desktop / tablet (min-width: 768px): rounded floating pill, lower-right.
+ * Phone (max-width: 767px): full-width sticky bottom action bar.
+ *
+ * Visual-only: pass `label`; click/navigation wired in membershipCornerControl.ts.
+ */
+interface Props {
+  label?: string;
+}
+
+const { label = "Become a Member" } = Astro.props;
+---
+
+<button
+  type="button"
+  class="membership-corner-cta"
+  data-membership-corner-cta
+  data-membership-corner-kind="become"
+  data-membership-corner-href="/membership"
+>
+  {label}
+</button>
+
+<style>
+  /* ---- Desktop / tablet: floating pill (unchanged) ---- */
+  .membership-corner-cta {
+    --membership-corner-inset: 1.5rem; /* 24px */
+    --membership-bar-tap-h: 3.375rem; /* 54px; used on phone + body padding */
+    position: fixed;
+    z-index: 2800;
+    bottom: max(var(--membership-corner-inset), env(safe-area-inset-bottom, 0px));
+    right: max(var(--membership-corner-inset), env(safe-area-inset-right, 0px));
+    appearance: none;
+    border: none;
+    cursor: pointer;
+    margin: 0;
+    padding: 0.65rem 1.2rem;
+    border-radius: 999px;
+    background: var(--kbm-accent, #c2614e);
+    color: #fff;
+    font-family: var(--font, "Poppins", system-ui, Arial, sans-serif);
+    font-size: clamp(0.85rem, 2.4vw, 0.95rem);
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    text-align: center;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.14);
+    transition:
+      background-color 0.2s ease,
+      box-shadow 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .membership-corner-cta:hover {
+    background: var(--kbm-accent-hover, #a94e3d);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.2);
+    transform: translateY(-2px);
+  }
+
+  .membership-corner-cta:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 3px;
+    box-shadow:
+      0 0 0 5px var(--kbm-green, #52682d),
+      0 8px 20px rgba(15, 23, 42, 0.2);
+  }
+
+  .membership-corner-cta:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.14);
+  }
+
+  .membership-corner-cta:disabled {
+    cursor: wait;
+    opacity: 0.75;
+    transform: none;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .membership-corner-cta {
+      transition: background-color 0.2s ease;
+    }
+
+    .membership-corner-cta:hover,
+    .membership-corner-cta:active {
+      transform: none;
+    }
+  }
+
+  /*
+   * Phone: full-width bottom action bar.
+   * Breakpoint matches common site phone queries (max-width: 767px)
+   * so tablet widths keep the floating pill.
+   */
+  @media (max-width: 767px) {
+    .membership-corner-cta {
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      max-width: none;
+      box-sizing: border-box;
+      border-radius: 0;
+      /* 54px tap band + home-indicator inset */
+      min-height: calc(var(--membership-bar-tap-h) + env(safe-area-inset-bottom, 0px));
+      padding: 0 1.25rem env(safe-area-inset-bottom, 0px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      box-shadow: 0 -3px 12px rgba(15, 23, 42, 0.12);
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .membership-corner-cta:hover,
+    .membership-corner-cta:active {
+      transform: none;
+      box-shadow: 0 -3px 12px rgba(15, 23, 42, 0.12);
+    }
+
+    .membership-corner-cta:focus-visible {
+      outline-offset: -3px;
+      box-shadow:
+        inset 0 0 0 3px var(--kbm-green, #52682d),
+        0 -3px 12px rgba(15, 23, 42, 0.12);
+    }
+
+    /* Keep final page content clear of the sticky bar */
+    :global(body) {
+      --membership-bar-tap-h: 3.375rem;
+      padding-bottom: calc(
+        var(--membership-bar-tap-h) + env(safe-area-inset-bottom, 0px)
+      );
+    }
+  }
+</style>

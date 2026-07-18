@@ -3,6 +3,15 @@ import Layout from "../../layouts/Layout.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
 import GlossaryTooltip from "../../components/common/GlossaryTooltip.astro";
+import FavoriteStar from "../../components/favorites/FavoriteStar.astro";
+import FavoritesRuntime from "../../components/favorites/FavoritesRuntime.astro";
+import toolsData from "../../../data/tools.json";
+import "../../styles/favorites.css";
+
+const tools = toolsData as Array<{ id?: number; href?: string; title?: string }>;
+const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
+const toolTitle = tool?.title ?? "Gauge Comparison";
+const toolContentId = tool?.id != null ? String(tool.id) : "34";
 ---
 
 <Layout
@@ -346,7 +355,11 @@ import GlossaryTooltip from "../../components/common/GlossaryTooltip.astro";
     </div>
 
     <div class="page-header">
-      <h1>Gauge Comparison</h1>
+      <div class="favorite-title-row" style="justify-content: center;">
+        <h1>{toolTitle}</h1>
+        <FavoriteStar contentType="tool" contentId={toolContentId} title={toolTitle} />
+      </div>
+      <FavoritesRuntime contentType="tool" />
       <p class="lede">Small Difference, Big Impact</p>
       <p id="lede-description">
         See how a small gauge difference can add or subtract inches from your project.

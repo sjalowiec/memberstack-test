@@ -1,0 +1,42 @@
+---
+/**
+ * h1 + favorite star for pages that do not use PageHead / ReferencePageShell.
+ */
+import FavoriteStar from "./FavoriteStar.astro";
+import FavoritesRuntime from "./FavoritesRuntime.astro";
+import type { FavoriteContentType } from "../../lib/favorites/favoriteContentTypes";
+import { normalizeFavoriteHref } from "../../lib/favorites/favoriteHref";
+import "../../styles/favorites.css";
+
+interface Props {
+  title: string;
+  contentType: FavoriteContentType;
+  /** Defaults to pathname for reference; required for other types. */
+  contentId?: string | number;
+  class?: string;
+  headingClass?: string;
+}
+
+const { title, contentType, contentId, class: className, headingClass } = Astro.props;
+
+const resolvedId =
+  contentType === "reference"
+    ? normalizeFavoriteHref(contentId ?? Astro.url.pathname)
+    : contentId != null
+      ? String(contentId).trim()
+      : null;
+---
+
+{
+  resolvedId ? (
+    <>
+      <div class:list={["favorite-title-row", className]}>
+        <h1 class={headingClass}>{title}</h1>
+        <FavoriteStar contentType={contentType} contentId={resolvedId} title={title} />
+      </div>
+      <FavoritesRuntime contentType={contentType} />
+    </>
+  ) : (
+    <h1 class={headingClass}>{title}</h1>
+  )
+}

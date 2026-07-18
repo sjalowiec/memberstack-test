@@ -9,14 +9,15 @@ interface Props {
 
 const { title, breadcrumb, meta, subhead, hideTitle = false } = Astro.props;
 const isEmpty = hideTitle && !subhead && !meta && !breadcrumb;
+const hasAfterTitle = await Astro.slots.has("after-title");
 ---
 
 <header class:list={["page-head", isEmpty && "page-head--empty"]}>
 
 
   {title && !hideTitle && (
-    <h1 class="page-title">
-      {title}
+    <h1 class:list={["page-title", hasAfterTitle && "page-title--with-aside"]}>
+      {hasAfterTitle ? <span class="page-title__text">{title}</span> : title}
       <slot name="after-title" />
     </h1>
   )}
@@ -43,6 +44,10 @@ const isEmpty = hideTitle && !subhead && !meta && !breadcrumb;
     margin: 0 0 0.75rem 0;
     font-size: var(--text-xxl);
     line-height: 1.2;
+  }
+
+  .page-title__text {
+    min-width: 0;
   }
 
   .page-subhead {

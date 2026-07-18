@@ -1,0 +1,131 @@
+/* Shared My Favorites star + title-row styles */
+
+.favorite-star {
+  --favorite-star-size: 26px;
+  --favorite-star-gold: #d4a017;
+  --favorite-star-gold-hover: #c4920f;
+  --favorite-star-outline: #6b7280;
+
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--favorite-star-outline);
+  cursor: pointer;
+  line-height: 1;
+  vertical-align: top;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.favorite-star:hover {
+  color: var(--favorite-star-gold-hover);
+}
+
+.favorite-star:focus {
+  outline: none;
+}
+
+.favorite-star:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+}
+
+.favorite-star.is-favorite {
+  color: var(--favorite-star-gold);
+}
+
+.favorite-star.is-favorite:hover {
+  color: var(--favorite-star-gold-hover);
+}
+
+.favorite-star[aria-busy="true"],
+.favorite-star:disabled {
+  cursor: wait;
+  opacity: 0.85;
+}
+
+.favorite-star__icon {
+  font-size: var(--favorite-star-size);
+  width: 1em;
+  height: 1em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .favorite-star__icon {
+    transition: color 120ms ease, transform 120ms ease;
+  }
+
+  .favorite-star.is-favorite .favorite-star__icon {
+    transform: scale(1.04);
+  }
+}
+
+.favorite-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.15rem 0.35rem;
+  min-width: 0;
+}
+
+.favorite-title-row .kbm-card__title,
+.favorite-title-row .kbm-card-title,
+.favorite-title-row .page-title__text,
+.favorite-title-row .account-favorites__title-link {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.favorite-title-row .favorite-star {
+  margin-top: -0.15rem;
+}
+
+.page-title.page-title--with-aside {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.25rem 0.4rem;
+}
+
+.page-title.page-title--with-aside .page-title__text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.page-title.page-title--with-aside .favorite-star {
+  margin-top: -0.1rem;
+}
+
+.favorite-title-row h1,
+.favorite-title-row h3,
+.tools-card-title-row h3,
+.stitch-cat__title-row .stitch-cat__tile-title {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Keep catalog card stars from dominating dense grids */
+.stitch-cat__title-row .favorite-star,
+.tools-card-title-row .favorite-star,
+.ref-card .favorite-star {
+  width: 40px;
+  height: 40px;
+  --favorite-star-size: 22px;
+}
+
+.glossary-after-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 0 0 auto;
+}

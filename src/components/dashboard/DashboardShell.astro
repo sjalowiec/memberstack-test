@@ -1,51 +1,11 @@
 ---
-interface Props {
-  activeNav?: string;
-}
-
-const { activeNav } = Astro.props;
-
-interface NavItem {
-  label: string;
-  href: string;
-  sectionId: string;
-}
-
-const navItems: NavItem[] = [
-  { label: "Account", href: "#account", sectionId: "account" },
-  { label: "My Patterns", href: "#my-patterns", sectionId: "my-patterns" },
-  { label: "My Tags", href: "#my-tags", sectionId: "my-tags" },
-  { label: "Calculators", href: "#calculators", sectionId: "calculators" },
-  { label: "Purchases", href: "#purchases", sectionId: "purchases" },
-  { label: "Membership", href: "#membership", sectionId: "membership" },
-  { label: "Help", href: "#help", sectionId: "help" },
-];
+/**
+ * Full-width account dashboard wrapper (no side navigation).
+ * Kept as a shared shell so account page padding/layout stays consistent.
+ */
 ---
 
 <div class="dashboard-shell">
-  <aside class="dashboard-shell__nav" aria-label="Workspace navigation">
-    <nav>
-      <ul class="dashboard-shell__nav-list">
-        {
-          navItems.map((item) => (
-            <li>
-              <a
-                href={item.href}
-                class:list={[
-                  "dashboard-shell__nav-link",
-                  activeNav === item.sectionId && "dashboard-shell__nav-link--active",
-                ]}
-                data-dashboard-nav={item.sectionId}
-              >
-                {item.label}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </nav>
-  </aside>
-
   <main class="dashboard-shell__main">
     <div class="dashboard-shell__content">
       <slot />
@@ -55,53 +15,11 @@ const navItems: NavItem[] = [
 
 <style>
   .dashboard-shell {
-    display: grid;
-    grid-template-columns: 10.75rem minmax(0, 1fr);
-    gap: 0 2.75rem;
     width: 100%;
     max-width: none;
     margin: 0;
     padding: 0 clamp(1.25rem, 3.5vw, 3rem) 3.5rem;
-    align-items: start;
     box-sizing: border-box;
-  }
-
-  .dashboard-shell__nav {
-    position: sticky;
-    top: calc(var(--header-offset, 170px) + 0.75rem);
-    padding: 0.5rem 0 1rem;
-    border-right: 1px solid #e5e7eb;
-  }
-
-  .dashboard-shell__nav-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-  }
-
-  .dashboard-shell__nav-link {
-    display: block;
-    padding: 0.5rem 0.65rem 0.5rem 0;
-    border-radius: 6px;
-    font-size: 0.92rem;
-    font-weight: 500;
-    color: #4b5563;
-    text-decoration: none;
-    transition: color 0.15s;
-  }
-
-  .dashboard-shell__nav-link:hover {
-    color: #2c3a57;
-  }
-
-  .dashboard-shell__nav-link--active,
-  .dashboard-shell__nav-link:focus-visible {
-    color: var(--kbm-green, #52682d);
-    font-weight: 600;
-    outline: none;
   }
 
   .dashboard-shell__main {
@@ -117,93 +35,7 @@ const navItems: NavItem[] = [
 
   @media (max-width: 900px) {
     .dashboard-shell {
-      grid-template-columns: 1fr;
-      gap: 0;
       padding-bottom: 3rem;
-    }
-
-    .dashboard-shell__nav {
-      position: static;
-      border-right: none;
-      border-bottom: 1px solid #e5e7eb;
-      padding: 0 0 0.85rem;
-      margin-bottom: 1.15rem;
-    }
-
-    .dashboard-shell__nav-list {
-      flex-direction: row;
-      flex-wrap: wrap;
-      gap: 0.35rem;
-    }
-
-    .dashboard-shell__nav-link {
-      padding: 0.4rem 0.65rem;
-      font-size: 0.88rem;
-      background: #f9fafb;
-      border: 1px solid #e5e7eb;
-      border-radius: 999px;
-    }
-
-    .dashboard-shell__nav-link--active {
-      border-color: rgba(82, 104, 45, 0.35);
-      background: rgba(82, 104, 45, 0.08);
     }
   }
 </style>
-
-<script>
-  /** Highlight in-page nav links when their section is in view. */
-  function initDashboardNav() {
-    const links = document.querySelectorAll<HTMLAnchorElement>("[data-dashboard-nav]");
-    if (links.length === 0) return;
-
-    const sectionIds = [...links]
-      .map((link) => link.getAttribute("data-dashboard-nav"))
-      .filter((id): id is string => Boolean(id));
-
-    const sections = sectionIds
-      .map((id) => document.getElementById(id))
-      .filter((el): el is HTMLElement => el instanceof HTMLElement);
-
-    if (sections.length === 0) return;
-
-    function setActive(id: string | null) {
-      links.forEach((link) => {
-        const match = link.getAttribute("data-dashboard-nav") === id;
-        link.classList.toggle("dashboard-shell__nav-link--active", match);
-      });
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-        if (visible.length > 0) {
-          setActive(visible[0].target.id);
-        }
-      },
-      {
-        rootMargin: "-12% 0px -60% 0px",
-        threshold: [0, 0.15, 0.35, 0.6],
-      },
-    );
-
-    sections.forEach((section) => observer.observe(section));
-
-    links.forEach((link) => {
-      link.addEventListener("click", () => {
-        const id = link.getAttribute("data-dashboard-nav");
-        if (id) setActive(id);
-      });
-    });
-  }
-
-  if (typeof document !== "undefined") {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", initDashboardNav);
-    } else {
-      initDashboardNav();
-    }
-  }
-</script>

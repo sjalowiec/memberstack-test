@@ -2,6 +2,10 @@
 export const prerender = true;
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
+import FavoriteStar from "../../components/favorites/FavoriteStar.astro";
+import FavoritesRuntime from "../../components/favorites/FavoritesRuntime.astro";
+import { normalizeFavoriteHref } from "../../lib/favorites/favoriteHref";
+import "../../styles/favorites.css";
 
 const title = "Reference";
 const description = "Quick look-up resources for machine knitters: glossary, abbreviations, machine reference, DesignaKnit, needle charts, and sizing guides.";
@@ -49,6 +53,23 @@ const referenceCategories = [
     ],
   },
 ];
+
+const newToMkCards = [
+  {
+    title: "Wisdom from Machine Knitters",
+    href: "/start-here/wisdom-from-machine-knitters",
+    description:
+      "Real knitters share what they wish they knew when they started — a great place to begin.",
+    testid: "ref-card-start-here-wisdom-from-machine-knitters",
+  },
+  {
+    title: "Choose a Knitting Machine",
+    href: "/reference/machines/choose",
+    description:
+      "Not sure which machine is right for you? Answer a few simple questions to discover the machine type and features that best fit your goals.",
+    testid: "ref-card-new-to-mk-choose-a-knitting-machine",
+  },
+];
 ---
 
 <Layout {title} {description}>
@@ -62,26 +83,22 @@ const referenceCategories = [
       <h2 id="category-new-to-machine-knitting" class="ref-category-title">New to Machine Knitting?</h2>
    
       <div class="ref-cards">
-        <a
-          href="/start-here/wisdom-from-machine-knitters"
-          class="ref-card"
-          data-testid="ref-card-start-here-wisdom-from-machine-knitters"
-        >
-          <h3 class="ref-card-title">Wisdom from Machine Knitters</h3>
-          <p class="ref-card-desc">
-            Real knitters share what they wish they knew when they started — a great place to begin.
-          </p>
-        </a>
-        <a
-          href="/reference/machines/choose"
-          class="ref-card"
-          data-testid="ref-card-new-to-mk-choose-a-knitting-machine"
-        >
-          <h3 class="ref-card-title">Choose a Knitting Machine</h3>
-          <p class="ref-card-desc">
-            Not sure which machine is right for you? Answer a few simple questions to discover the machine type and features that best fit your goals.
-          </p>
-        </a>
+        {newToMkCards.map((item) => {
+          const contentId = normalizeFavoriteHref(item.href) || item.href;
+          return (
+            <a
+              href={item.href}
+              class="ref-card"
+              data-testid={item.testid}
+            >
+              <div class="favorite-title-row">
+                <h3 class="ref-card-title">{item.title}</h3>
+                <FavoriteStar contentType="reference" contentId={contentId} title={item.title} />
+              </div>
+              <p class="ref-card-desc">{item.description}</p>
+            </a>
+          );
+        })}
       </div>
     </section>
 
@@ -103,12 +120,18 @@ const referenceCategories = [
       <section class="ref-category" aria-labelledby={`category-${category.id}`}>
         <h2 id={`category-${category.id}`} class="ref-category-title">{category.title}</h2>
         <div class="ref-cards">
-          {category.items.filter((item) => !item.hidden).map((item) => (
-            <a href={item.href} class="ref-card" data-testid={`ref-card-${category.id}-${item.title.toLowerCase().replace(/\s+/g, "-")}`}>
-              <h3 class="ref-card-title">{item.title}</h3>
-              {item.description && <p class="ref-card-desc">{item.description}</p>}
-            </a>
-          ))}
+          {category.items.filter((item) => !item.hidden).map((item) => {
+            const contentId = normalizeFavoriteHref(item.href) || item.href;
+            return (
+              <a href={item.href} class="ref-card" data-testid={`ref-card-${category.id}-${item.title.toLowerCase().replace(/\s+/g, "-")}`}>
+                <div class="favorite-title-row">
+                  <h3 class="ref-card-title">{item.title}</h3>
+                  <FavoriteStar contentType="reference" contentId={contentId} title={item.title} />
+                </div>
+                {item.description && <p class="ref-card-desc">{item.description}</p>}
+              </a>
+            );
+          })}
         </div>
       </section>
     ))}
@@ -116,6 +139,7 @@ const referenceCategories = [
     <p class="reference-footer-note">
       Need help applying this in your knitting? <a href="/videos">Visit Tutorials</a>.
     </p>
+    <FavoritesRuntime contentType="reference" />
   </div>
 </Layout>
 

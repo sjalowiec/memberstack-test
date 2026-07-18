@@ -6,10 +6,9 @@
  * (`[data-gated="locked"]`) and the real content (`[data-gated="content"]`,
  * hidden), and this script flips them once Memberstack resolves.
  *
- * Access uses the PREMIUM-only rule from `courseAccess` (`canAccessCourse`), so
- * Beta/Premium unlock premium courses while Basic/legacy/logged-out stay locked.
- * "purchase" courses are handled server-side (locked placeholder, no content
- * rendered) and never appear as a `[data-course-gate]` needing a flip.
+ * Access uses `canAccessCourse` from `courseAccess`:
+ * Beta/Premium unlock every course (including "purchase"); Basic/logged-out
+ * stay locked except for free courses (and future individual purchase entitlements).
  */
 import { canAccessCourse, normalizeCourseAccessLevel } from "../lib/courseAccess";
 import { logMemberAccessDebug } from "../lib/memberAccess";
@@ -41,6 +40,7 @@ function setGateAccess(gate: HTMLElement, unlocked: boolean): void {
 
 async function resolveGate(gate: HTMLElement): Promise<void> {
   const access = normalizeCourseAccessLevel(gate.dataset.courseAccess);
+  const courseSlug = gate.dataset.courseSlug ?? null;
 
   if (access === "free") {
     setGateAccess(gate, true);
@@ -49,11 +49,6 @@ async function resolveGate(gate: HTMLElement): Promise<void> {
 
   // Default to locked while we resolve membership.
   setGateAccess(gate, false);
-
-  if (access === "purchase") {
-    // Reserved tier � never unlockable yet.
-    return;
-  }
 
   if (videoDevBypass) {
     setGateAccess(gate, true);
@@ -67,11 +62,11 @@ async function resolveGate(gate: HTMLElement): Promise<void> {
   }
 
   const res = await waitForMemberstackReady();
-  const unlocked = canAccessCourse(access, res);
+  const unlocked = canAccessCourse(access, res, { courseSlug });
 
   logMemberAccessDebug("courses.gate", res, {
     courseAccess: access,
-    courseSlug: gate.dataset.courseSlug ?? null,
+    courseSlug,
     unlocked,
   });
 

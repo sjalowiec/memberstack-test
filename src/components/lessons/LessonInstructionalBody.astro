@@ -1,6 +1,10 @@
 ---
 import GlossaryHtml from "../GlossaryHtml.astro";
 import GatedVimeoEmbed from "../videos/GatedVimeoEmbed.astro";
+import {
+  lessonNonBlocksEmbedSrc,
+  lessonShowsSidebarVideoThumb,
+} from "../../lib/lessonInlineVideoEmbed";
 
 type LessonBodyBlock =
   | { type: "text"; content?: string }
@@ -61,6 +65,24 @@ const {
   hasLessonModalVideo,
   vimeoPlayerSrc,
 } = Astro.props;
+
+const embedSrc = lessonNonBlocksEmbedSrc({
+  inlineVimeoSrc,
+  hasLessonVideo,
+  vimeoPlayerSrc,
+});
+const showVideoThumb = lessonShowsSidebarVideoThumb({
+  hasLessonBlocks,
+  hasLessonVideo,
+  embedSrc,
+});
+/** If the thumb is omitted, still show the preview image in the support card. */
+const showSupportImage =
+  showSupportImageInCard ||
+  (!showVideoThumb &&
+    videoPreviewUsesSupportImage &&
+    typeof supportImageForPreview === "string" &&
+    supportImageForPreview.trim() !== "");
 ---
 
 <div class="lesson-member-body" data-lesson-member-body>
@@ -135,11 +157,11 @@ const {
             </p>
           ) : (
             <>
-              {inlineVimeoSrc && (
+              {embedSrc && (
                 <div class="lesson-block lesson-video-block">
                   <div class="lesson-video-frame lesson-video-frame--modal-trigger">
                     <iframe
-                      src={inlineVimeoSrc}
+                      src={embedSrc}
                       title={lesson.title}
                       allow="autoplay; fullscreen; picture-in-picture"
                       allowfullscreen
@@ -149,7 +171,7 @@ const {
                       type="button"
                       class="lesson-video-frame__open"
                       aria-label={`Open larger video: ${lesson.title}`}
-                      data-player-src={inlineVimeoSrc}
+                      data-player-src={embedSrc}
                     />
                   </div>
                 </div>
@@ -225,7 +247,7 @@ const {
     </div>
 
     <div class="lesson-media">
-      {hasLessonVideo && (
+      {showVideoThumb && (
         <div class="lesson-video-card">
           <button
             type="button"
@@ -259,11 +281,17 @@ const {
         </div>
       )}
 
-      {hasSupportCard && (
+      {(hasSupportCard || showSupportImage) && (
         <div class="lesson-support">
-          {showSupportImageInCard && (
+          {showSupportImage && (
             <img
-              src={lesson.supportImage}
+              src={
+                showSupportImageInCard &&
+                typeof lesson.supportImage === "string" &&
+                lesson.supportImage.trim() !== ""
+                  ? lesson.supportImage
+                  : supportImageForPreview
+              }
               alt={
                 typeof lesson.supportImageAlt === "string" && lesson.supportImageAlt.trim() !== ""
                   ? lesson.supportImageAlt
@@ -298,7 +326,7 @@ const {
     >
       <div class="lesson-video-modal__inner">
         <button type="button" class="lesson-video-modal__close" aria-label="Close video">
-          ×
+          ?
         </button>
         <h2 id="lesson-video-modal-title" class="lesson-video-modal__sr-title">Lesson video</h2>
         <div class="lesson-video-modal__frame-wrap">
@@ -313,3 +341,650 @@ const {
     </dialog>
   )}
 </div>
+
+<style>
+  .lesson-body-blocks {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+  }
+
+  .lesson-block {
+    margin: 0;
+  }
+
+  .lesson-text-block {
+    padding: 1.15rem 1.25rem;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(82, 104, 45, 0.1);
+    border-radius: 10px;
+    font-size: 1.02rem;
+    line-height: 1.7;
+    color: #2b2f26;
+  }
+
+  .lesson-text-block :first-child {
+    margin-top: 0;
+  }
+
+  .lesson-text-block :last-child {
+    margin-bottom: 0;
+  }
+
+  .lesson-text-block p {
+    margin: 0 0 1em;
+  }
+
+  .lesson-text-block p:last-child {
+    margin-bottom: 0;
+  }
+
+  .lesson-text-block h2,
+  .lesson-text-block h3,
+  .lesson-text-block h4 {
+    margin: 1.35em 0 0.55em;
+    line-height: 1.25;
+    color: #243015;
+    font-weight: 700;
+  }
+
+  .lesson-text-block h2:first-child,
+  .lesson-text-block h3:first-child,
+  .lesson-text-block h4:first-child {
+    margin-top: 0;
+  }
+
+  .lesson-text-block h2 {
+    font-size: 1.2rem;
+  }
+
+  .lesson-text-block h3 {
+    font-size: 1.08rem;
+  }
+
+  .lesson-text-block h4 {
+    font-size: 1rem;
+  }
+
+  .lesson-text-block ul,
+  .lesson-text-block ol {
+    margin: 0 0 1em;
+    padding-left: 1.35rem;
+  }
+
+  .lesson-text-block li {
+    margin-bottom: 0.4em;
+  }
+
+  .lesson-text-block li:last-child {
+    margin-bottom: 0;
+  }
+
+  .lesson-text-block a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.12em;
+  }
+
+  .lesson-text-block a:hover {
+    color: #3d4f22;
+  }
+
+  .lesson-text-block strong {
+    font-weight: 700;
+    color: #1f2418;
+  }
+
+  .lesson-text-block em {
+    font-style: italic;
+  }
+
+  .lesson-text-block span[title] {
+    cursor: help;
+    border-bottom: 1px dotted rgba(82, 104, 45, 0.45);
+  }
+
+  .lesson-text-block img,
+  .lesson-text-block :global(.lesson-img) {
+    display: block;
+    max-width: 100%;
+    width: auto;
+    height: auto;
+    margin: 1.15rem 0;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  }
+
+  .lesson-text-block img:first-child,
+  .lesson-text-block :global(.lesson-img):first-child {
+    margin-top: 0;
+  }
+
+  .lesson-text-block img:last-child,
+  .lesson-text-block :global(.lesson-img):last-child {
+    margin-bottom: 0;
+  }
+
+  .lesson-video-block {
+    padding: 0 0 0.25rem;
+  }
+
+  .lesson-video-block__label {
+    margin: 0 0 0.55rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #243015;
+    line-height: 1.35;
+  }
+
+  .lesson-video-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(82, 104, 45, 0.12);
+    background: #0f172a;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  }
+
+  .lesson-video-frame iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+
+  .lesson-video-frame--modal-trigger {
+    cursor: pointer;
+  }
+
+  .lesson-video-frame__open {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .lesson-video-frame__open:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: -2px;
+  }
+
+  .lesson-empty {
+    margin: 0;
+    padding: 1.25rem 1.35rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #4a5244;
+    background: rgba(82, 104, 45, 0.05);
+    border: 1px dashed rgba(82, 104, 45, 0.2);
+    border-radius: 10px;
+  }
+
+  .lesson-empty a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+  }
+
+  .lesson-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(200px, 300px);
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .lesson-video-card {
+    margin: 0;
+  }
+
+  .lesson-video-thumb {
+    display: block;
+    position: relative;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #d9ddd2;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    background: #0f172a;
+    text-align: left;
+    box-sizing: border-box;
+  }
+
+  .lesson-video-thumb:hover,
+  .lesson-video-thumb:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  .lesson-video-thumb__img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+
+  .lesson-video-thumb__placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 16 / 9;
+    background: #0f172a;
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  .lesson-video-thumb__placeholder-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+    padding: 0 0.75rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .lesson-video-thumb__play {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    color: #fff;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
+  }
+
+  .lesson-video-thumb__play::before {
+    content: "";
+    position: absolute;
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .lesson-video-thumb__play svg {
+    position: relative;
+    z-index: 1;
+    margin-left: 3px;
+    color: #243015;
+  }
+
+  .lesson-video-thumb__hint {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.9rem;
+    color: #555;
+    text-align: center;
+  }
+
+  /* Closed <dialog> must stay display:none; author `display:flex` was overriding UA and showed a huge black panel. */
+  .lesson-video-modal {
+    padding: 0;
+    border: none;
+    margin: 0;
+    max-width: none;
+    background: transparent;
+    display: none;
+  }
+
+  .lesson-video-modal[open] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    box-sizing: border-box;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+
+  .lesson-video-modal::backdrop {
+    background: rgba(0, 0, 0, 0.62);
+  }
+
+  .lesson-video-modal__inner {
+    position: relative;
+    width: min(920px, 100%);
+    max-height: min(85dvh, 100%);
+    padding: 0.65rem;
+    background: #111;
+    border-radius: 12px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .lesson-video-modal__close {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.35rem;
+    z-index: 2;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #243015;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lesson-video-modal__close:hover,
+  .lesson-video-modal__close:focus-visible {
+    background: #fff;
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 1px;
+  }
+
+  .lesson-video-modal__sr-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .lesson-video-modal__frame-wrap {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    max-height: min(72dvh, calc((100vw - 3rem) * 9 / 16));
+  }
+
+  .lesson-video-modal__frame-wrap iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 8px;
+    display: block;
+  }
+
+  @media (max-width: 768px) {
+    .lesson-video-modal[open] {
+      padding: 0.35rem;
+    }
+
+    .lesson-video-modal__inner {
+      width: 100%;
+      max-height: 100dvh;
+      border-radius: 10px;
+      padding: 0.4rem;
+    }
+
+    .lesson-video-modal__frame-wrap {
+      max-height: calc(100dvh - 1rem);
+    }
+  }
+
+  .lesson-support {
+    margin-top: 1.5rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .lesson-support-image {
+    width: 100%;
+    border-radius: 10px;
+  }
+
+  .lesson-support-note {
+    background: #f5f5f5;
+    padding: 1rem;
+    border-radius: 10px;
+  }
+
+  .lesson-support-note__html {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: inherit;
+  }
+
+  .lesson-support-note__html :first-child {
+    margin-top: 0;
+  }
+
+  .lesson-support-note__html :last-child {
+    margin-bottom: 0;
+  }
+
+  .lesson-content {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .lesson-library-videos {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .lesson-encouragement {
+    background: rgba(245, 245, 245, 0.95);
+    padding: 1.1rem 1.2rem;
+    border-radius: 10px;
+    border: 1px solid rgba(82, 104, 45, 0.08);
+    font-size: 0.98rem;
+    line-height: 1.65;
+    color: #2b2f26;
+  }
+
+  .lesson-encouragement a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.12em;
+  }
+
+  .lesson-encouragement a:hover {
+    color: #3d4f22;
+  }
+
+  .lesson-template .kbm-btn {
+    margin-top: 0.5rem;
+  }
+
+  .lesson-exercise {
+    margin-top: 1.5rem;
+    background: #f5f5f5;
+    border: 1px solid #d9ddd2;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .lesson-exercise__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .lesson-exercise__title {
+    margin: 0;
+    font-size: 1.25rem;
+    line-height: 1.2;
+  }
+
+  .lesson-exercise__print {
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid #52682d;
+    background: #ffffff;
+    color: #52682d;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    line-height: 1.2;
+  }
+
+  .lesson-exercise__print:hover {
+    background: #f5f5f5;
+  }
+
+  .lesson-exercise__list {
+    list-style-position: outside;
+    padding-left: 1.35rem;
+    margin: 0;
+  }
+
+  .lesson-exercise__item {
+    margin-bottom: 0.7rem;
+    padding-left: 0.25rem;
+    line-height: 1.55;
+  }
+
+  .lesson-exercise__item:last-child {
+    margin-bottom: 0;
+  }
+
+  .lesson-exercise__print-title {
+    display: none;
+    margin: 0;
+  }
+
+  .lesson-exercise__brand,
+  .lesson-exercise__print-footer {
+    display: none;
+  }
+
+  @media print {
+    :global(body.print-exercise-only),
+    :global(body.print-exercise-only *) {
+      visibility: hidden !important;
+      box-shadow: none !important;
+      background: transparent !important;
+    }
+
+    :global(body.print-exercise-only #lesson-exercise),
+    :global(body.print-exercise-only #lesson-exercise *) {
+      visibility: visible !important;
+    }
+
+    :global(body.print-exercise-only #lesson-exercise) {
+      position: absolute !important;
+      top: 0;
+      left: 0;
+      width: 100%;
+      border: 0;
+      border-radius: 0;
+      margin: 0;
+      padding: 0.25in;
+      color: #000;
+      background: #fff !important;
+    }
+
+    .lesson-exercise__print {
+      display: none !important;
+    }
+
+    .lesson-exercise__header {
+      margin-bottom: 0.75rem;
+    }
+
+    .lesson-exercise__brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding-bottom: 0.65rem;
+      margin-bottom: 0.75rem;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .lesson-exercise__brand-logo {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .lesson-exercise__brand-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+      line-height: 1.2;
+    }
+
+    .lesson-exercise__brand-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .lesson-exercise__brand-label {
+      font-size: 0.72rem;
+      font-weight: 400;
+      color: #555;
+    }
+
+    .lesson-exercise__print-title {
+      display: block;
+      font-size: 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .lesson-exercise__print-footer {
+      display: block;
+      margin-top: 1rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid #ddd;
+      font-size: 0.8rem;
+      color: #444;
+      text-align: center;
+    }
+
+    .lesson-exercise__list {
+      list-style: decimal outside;
+      padding-left: 1.2rem;
+      margin: 0;
+    }
+
+    @page {
+      size: auto;
+      margin: 0.5in;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .lesson-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .lesson-media {
+      order: -1;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+      width: 100%;
+    }
+  }
+</style>

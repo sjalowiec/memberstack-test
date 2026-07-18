@@ -1,5 +1,5 @@
 ---
-import { MEMBERSHIPS } from "../../config/memberships";
+import { MEMBERSHIP_PRICE_IDS, MEMBERSHIPS } from "../../config/memberships";
 
 interface Props {
   showStatus?: boolean;
@@ -20,6 +20,14 @@ const basicMonthlyPrice = MEMBERSHIPS.basic.prices.monthly.price;
 const basicAnnualPrice = MEMBERSHIPS.basic.prices.annual.price;
 const premiumMonthlyPrice = MEMBERSHIPS.premium.prices.monthly.price;
 const premiumAnnualPrice = MEMBERSHIPS.premium.prices.annual.price;
+
+/** Hidden data-ms-price:update triggers (bound by Memberstack at page load). */
+const priceUpdateTriggers = [
+  { planKey: "basicMonthly", priceId: MEMBERSHIP_PRICE_IDS.basicMonthly },
+  { planKey: "basicAnnual", priceId: MEMBERSHIP_PRICE_IDS.basicAnnual },
+  { planKey: "premiumMonthly", priceId: MEMBERSHIP_PRICE_IDS.premiumMonthly },
+  { planKey: "premiumAnnual", priceId: MEMBERSHIP_PRICE_IDS.premiumAnnual },
+] as const;
 
 const basicAnnualSavings = Math.round(basicMonthlyPrice * 12 - basicAnnualPrice);
 const premiumAnnualSavings = Math.round(premiumMonthlyPrice * 12 - premiumAnnualPrice);
@@ -63,6 +71,20 @@ const premiumCompactSummary = "Everything in Basic, plus all pattern builders an
           value="annual"
           class="membership-billing-radio"
         />
+        {/*
+          Memberstack binds data-ms-price:update at page load.
+          Join checkout programmatically clicks these for Basic↔Premium replace.
+        */}
+        <div class="membership-price-update-triggers" hidden aria-hidden="true">
+          {priceUpdateTriggers.map(({ planKey, priceId }) => (
+            <button
+              type="button"
+              tabindex="-1"
+              data-join-price-update={planKey}
+              {...{ "data-ms-price:update": priceId }}
+            />
+          ))}
+        </div>
       </>
     ) : null
   }
@@ -194,9 +216,11 @@ const premiumCompactSummary = "Everything in Basic, plus all pattern builders an
   {
     showFooter ? (
       <p class="join-footer">
-        Already a member?
-        <a href="#" data-ms-modal="login" data-ms-redirect="current-url">Log in</a>,
-        visit <a href="/account">your workspace</a>,
+        Returning or canceled members: <a href="#" data-ms-modal="login" data-ms-redirect="current-url">log in with your existing account</a>
+        before joining again — do not create a second account.
+        New here? Use Sign Up in the menu for a free account, then join.
+        Already subscribed?
+        Visit <a href="/account">your workspace</a>
         or <a href="#" data-join-billing-portal>manage billing</a>.
       </p>
     ) : null
@@ -432,6 +456,16 @@ const premiumCompactSummary = "Everything in Basic, plus all pattern builders an
     text-decoration: none;
     cursor: pointer;
     font: inherit;
+  }
+
+  .join-plan__cta:disabled,
+  .join-plan__cta[aria-disabled="true"] {
+    cursor: default;
+    opacity: 0.72;
+  }
+
+  .membership-price-update-triggers {
+    display: none;
   }
 
   .join-footer {

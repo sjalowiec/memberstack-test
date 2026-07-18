@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+import FavoriteHeading from '../../components/favorites/FavoriteHeading.astro';
 import brotherCablesData from '../../../data/brother-cables.json';
 
 const pageTitle = 'Brother DesignaKnit Cable Comparison';
@@ -29,7 +30,7 @@ const machines = (brotherCablesData as Array<{
   <section class="kbm-page-section cable-compare-page">
     <div class="kbm-container">
       <header class="kbm-page-header">
-               <h1>{pageTitle}</h1>
+        <FavoriteHeading title={pageTitle} contentType="reference" />
         <p class="kbm-page-intro">
           Use this quick comparison to help decide which Brother cable setup best
           matches your machine and the way you want to use DesignaKnit.

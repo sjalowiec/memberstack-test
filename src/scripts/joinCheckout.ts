@@ -1,25 +1,20 @@
-import { MEMBERSHIPS, MEMBERSHIP_PRICE_IDS } from "../config/memberships";
+import {
+  resolveMembershipCheckoutDecision,
+} from "../lib/membership/membershipCheckoutDecision";
+import { resolveJoinCtaPresentation } from "../lib/membership/membershipPricingUi";
+import {
+  buildPendingMembershipCheckout,
+  clearPendingMembershipCheckout,
+  isJoinCheckoutPlanKey,
+  joinCheckoutPlanMeta,
+  peekPendingMembershipCheckout,
+  savePendingMembershipCheckout,
+  type JoinCheckoutPlanKey,
+} from "../lib/membership/pendingMembershipCheckout";
+import { notifyMemberstackLoginSuccess } from "../lib/memberstackPostLogin";
 import {
   memberIdFromMemberstackPayload,
-  memberRecordFromMemberstackPayload,
 } from "../lib/patterns/memberstackMember";
-
-// Fallback map for "you already have this plan" detection when a member's
-// active plan connection has no explicit priceId. Each current paid plan maps
-// to its annual price id (a stable representative price for the plan).
-const PLAN_ID_TO_PRICE_ID = new Map<string, string>([
-  [MEMBERSHIPS.basic.memberstackPlanId, MEMBERSHIPS.basic.prices.annual.memberstackPriceId],
-  [MEMBERSHIPS.premium.memberstackPlanId, MEMBERSHIPS.premium.prices.annual.memberstackPriceId],
-]);
-
-const JOIN_CHECKOUT_PLANS = {
-  basicMonthly: { label: "Basic Monthly", priceId: MEMBERSHIP_PRICE_IDS.basicMonthly },
-  basicAnnual: { label: "Basic Annual", priceId: MEMBERSHIP_PRICE_IDS.basicAnnual },
-  premiumMonthly: { label: "Premium Monthly", priceId: MEMBERSHIP_PRICE_IDS.premiumMonthly },
-  premiumAnnual: { label: "Premium Annual", priceId: MEMBERSHIP_PRICE_IDS.premiumAnnual },
-} as const;
-
-type JoinCheckoutPlanKey = keyof typeof JOIN_CHECKOUT_PLANS;
 
 type MemberstackPurchaseCheckout = (opts: {
   priceId: string;
@@ -39,6 +34,14 @@ type MemberstackError = {
 };
 
 const STATUS_ID = "join-checkout-status";
+
+const LOGIN_FIRST_MESSAGE =
+  "Log in with your existing Knit It Now account to continue checkout. Returning and canceled members must use the account they already have — do not create a new one. New here? Use Sign Up in the menu to create a free account, then return to join.";
+
+/** Prevents double-click / overlapping checkout sessions. */
+let checkoutInFlight = false;
+let resumeListenerBound = false;
+let lastKnownMemberPayload: unknown = null;
 
 function showJoinStatus(message: string, tone: "info" | "error" | "success" = "info"): void {
   const el = document.getElementById(STATUS_ID);
@@ -60,29 +63,6 @@ function memberstackErrorInfo(error: unknown): MemberstackError {
   if (error && typeof error === "object") return error as MemberstackError;
   if (typeof error === "string") return { message: error };
   return { message: "Something went wrong starting checkout." };
-}
-
-function activePriceIdsFromMemberPayload(payload: unknown): Set<string> {
-  const member = memberRecordFromMemberstackPayload(payload);
-  const connections = Array.isArray(member?.planConnections)
-    ? (member!.planConnections as Record<string, unknown>[])
-    : [];
-
-  const ids = new Set<string>();
-  for (const conn of connections) {
-    const status = String(conn?.status ?? "").toUpperCase();
-    if (status && status !== "ACTIVE" && status !== "TRIALING") continue;
-
-    const priceId = conn?.priceId;
-    if (typeof priceId === "string" && priceId.trim()) ids.add(priceId.trim());
-
-    const planId = conn?.planId;
-    if (typeof planId === "string" && planId.trim()) {
-      const mappedPriceId = PLAN_ID_TO_PRICE_ID.get(planId.trim());
-      if (mappedPriceId) ids.add(mappedPriceId);
-    }
-  }
-  return ids;
 }
 
 async function waitForMemberstackDom() {
@@ -124,46 +104,208 @@ async function openBillingPortal(ms: NonNullable<Window["$memberstackDom"]>): Pr
 
 function setButtonsBusy(busy: boolean): void {
   document.querySelectorAll<HTMLButtonElement>("[data-join-checkout]").forEach((btn) => {
+    const key = btn.getAttribute("data-join-checkout");
+    if (!isJoinCheckoutPlanKey(key)) {
+      btn.disabled = busy;
+      return;
+    }
+    const presentation = resolveJoinCtaPresentation(lastKnownMemberPayload, key);
+    if (presentation.disabled) {
+      btn.disabled = true;
+      return;
+    }
     btn.disabled = busy;
     btn.setAttribute("aria-busy", busy ? "true" : "false");
   });
 }
 
-async function startJoinCheckout(planKey: JoinCheckoutPlanKey): Promise<void> {
-  const plan = JOIN_CHECKOUT_PLANS[planKey];
+/** Sync Join CTA labels/disabled state from the current member (no flash messages). */
+export function applyJoinCheckoutButtonStates(memberOrPayload: unknown): void {
+  lastKnownMemberPayload = memberOrPayload;
+  document.querySelectorAll<HTMLButtonElement>("[data-join-checkout]").forEach((btn) => {
+    const key = btn.getAttribute("data-join-checkout");
+    if (!isJoinCheckoutPlanKey(key)) return;
+    const presentation = resolveJoinCtaPresentation(memberOrPayload, key);
+    btn.textContent = presentation.label;
+    btn.disabled = presentation.disabled;
+    btn.setAttribute("aria-disabled", presentation.disabled ? "true" : "false");
+    btn.setAttribute("data-join-cta-state", presentation.kind);
+    if (!presentation.disabled) {
+      btn.setAttribute("aria-busy", "false");
+    }
+  });
+}
+
+async function syncJoinCheckoutButtonStatesFromMemberstack(
+  ms?: NonNullable<Window["$memberstackDom"]> | null,
+): Promise<void> {
+  const dom = ms ?? (await waitForMemberstackDom());
+  if (!dom?.getCurrentMember) {
+    applyJoinCheckoutButtonStates(null);
+    return;
+  }
+  try {
+    const payload = await dom.getCurrentMember();
+    applyJoinCheckoutButtonStates(payload);
+  } catch {
+    applyJoinCheckoutButtonStates(null);
+  }
+}
+
+function currentReturnUrl(): string {
+  return typeof window !== "undefined" ? window.location.href : "/membership";
+}
+
+/**
+ * Invoke Memberstack's documented data-ms-price:update handler via a page-load-bound
+ * hidden trigger. Do not call undocumented portal priceIds APIs directly.
+ */
+function invokeMembershipPriceUpdate(planKey: JoinCheckoutPlanKey): boolean {
+  const trigger = document.querySelector<HTMLElement>(
+    `[data-join-price-update="${planKey}"]`,
+  );
+  if (!trigger) {
+    console.error("[join checkout] missing data-ms-price:update trigger for", planKey);
+    showJoinStatus("Could not start plan update. Please refresh and try again.", "error");
+    return false;
+  }
+  console.log("[join checkout] invoking data-ms-price:update trigger", planKey);
+  clearPendingMembershipCheckout();
+  clearJoinStatus();
+  trigger.click();
+  return true;
+}
+
+async function openMembershipLoginModal(
+  ms: NonNullable<Window["$memberstackDom"]>,
+): Promise<boolean> {
+  if (typeof ms.openModal !== "function") return false;
+
+  showJoinStatus(LOGIN_FIRST_MESSAGE, "info");
+
+  try {
+    const result = await ms.openModal("LOGIN");
+    // Prefer the resolved modal result; also treat a logged-in member as success
+    // in case Memberstack resolves without a typed payload.
+    const resultType = (result as { type?: string } | undefined)?.type;
+    if (resultType && resultType !== "LOGIN") {
+      return false;
+    }
+    try {
+      notifyMemberstackLoginSuccess();
+    } catch {
+      /* hideModal / auth event may be unavailable in some environments */
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function launchPurchaseCheckout(
+  ms: NonNullable<Window["$memberstackDom"]>,
+  planKey: JoinCheckoutPlanKey,
+  cancelUrl: string,
+): Promise<boolean> {
+  const plan = joinCheckoutPlanMeta(planKey);
+  const purchasePlansWithCheckout = (ms as Record<string, unknown>)
+    .purchasePlansWithCheckout as MemberstackPurchaseCheckout | undefined;
+
+  if (typeof purchasePlansWithCheckout !== "function") {
+    console.error(
+      "[join checkout] purchasePlansWithCheckout is not available on $memberstackDom",
+    );
+    showJoinStatus("Checkout is unavailable. Please refresh and try again.", "error");
+    return false;
+  }
+
+  console.log("[join checkout] calling purchasePlansWithCheckout", {
+    planKey,
+    priceId: plan.priceId,
+  });
+  showJoinStatus(`Opening checkout for ${plan.label}...`, "info");
+
+  try {
+    const checkoutResult = await purchasePlansWithCheckout.call(ms, {
+      priceId: plan.priceId,
+      successUrl: `${window.location.origin}/signup/thank-you`,
+      cancelUrl,
+      autoRedirect: false,
+    });
+
+    console.log("[join checkout] purchasePlansWithCheckout result:", checkoutResult);
+
+    const checkoutUrl = checkoutResult?.data?.url;
+    if (typeof checkoutUrl === "string" && checkoutUrl.trim()) {
+      clearPendingMembershipCheckout();
+      console.log("[join checkout] redirecting to Stripe checkout:", checkoutUrl);
+      window.location.href = checkoutUrl;
+      return true;
+    }
+
+    showJoinStatus("Checkout did not return a redirect URL. Please try again.", "error");
+    return false;
+  } catch (error) {
+    const info = memberstackErrorInfo(error);
+    console.error("[join checkout] Memberstack error:", error);
+
+    if (info.code === "already-have-plan") {
+      clearPendingMembershipCheckout();
+      showJoinStatus(
+        `You already have ${plan.label}. Manage your membership from your workspace.`,
+        "info",
+      );
+      await openBillingPortal(ms);
+      return false;
+    }
+
+    const message =
+      info.message?.trim() ||
+      "Could not start checkout. Try a different plan or manage billing from your workspace.";
+    showJoinStatus(message, "error");
+    return false;
+  }
+}
+
+export type StartJoinCheckoutOptions = {
+  /** When true, do not open login again; pending intent is being resumed. */
+  fromResume?: boolean;
+  /** Override cancel/return URL (defaults to current location or pending returnUrl). */
+  returnUrl?: string;
+};
+
+/**
+ * Start (or resume) membership checkout / update for one Join plan button.
+ * Logged-out visitors are sent to LOGIN (never SIGNUP) with a pending intent.
+ */
+export async function startJoinCheckout(
+  planKey: JoinCheckoutPlanKey,
+  options: StartJoinCheckoutOptions = {},
+): Promise<void> {
+  if (checkoutInFlight) {
+    console.log("[join checkout] ignored — checkout already in flight");
+    return;
+  }
+
+  checkoutInFlight = true;
   clearJoinStatus();
   setButtonsBusy(true);
+
+  const plan = joinCheckoutPlanMeta(planKey);
+  const returnUrl = options.returnUrl?.trim() || currentReturnUrl();
 
   console.log("[join checkout] button clicked", {
     planKey,
     label: plan.label,
     priceId: plan.priceId,
+    fromResume: Boolean(options.fromResume),
   });
 
   try {
     const ms = await waitForMemberstackDom();
-    const msAvailable = Boolean(ms?.getCurrentMember);
-    const msMethods =
-      ms && typeof ms === "object"
-        ? Object.keys(ms).filter((key) => typeof (ms as Record<string, unknown>)[key] === "function")
-        : [];
-
-    console.log("[join checkout] Memberstack available:", msAvailable, msMethods);
-
     if (!ms?.getCurrentMember) {
       console.error("[join checkout] Memberstack DOM not available");
       showJoinStatus("Membership checkout is not ready yet. Please refresh and try again.", "error");
-      return;
-    }
-
-    const purchasePlansWithCheckout = (ms as Record<string, unknown>)
-      .purchasePlansWithCheckout as MemberstackPurchaseCheckout | undefined;
-
-    if (typeof purchasePlansWithCheckout !== "function") {
-      console.error(
-        "[join checkout] purchasePlansWithCheckout is not available on $memberstackDom",
-      );
-      showJoinStatus("Checkout is unavailable. Please refresh and try again.", "error");
       return;
     }
 
@@ -174,85 +316,119 @@ async function startJoinCheckout(planKey: JoinCheckoutPlanKey): Promise<void> {
       console.error("[join checkout] getCurrentMember failed:", error);
     }
 
-    const loggedIn = Boolean(memberIdFromMemberstackPayload(memberPayload));
+    let loggedIn = Boolean(memberIdFromMemberstackPayload(memberPayload));
     console.log("[join checkout] logged in:", loggedIn);
 
     if (!loggedIn) {
-      console.log("[join checkout] opening SIGNUP modal");
-      showJoinStatus("Create your account to continue to checkout...", "info");
-
-      const signupResult = await ms.openModal?.("SIGNUP");
-      console.log("[join checkout] signup modal result:", signupResult);
-
-      const signupType = (signupResult as { type?: string } | undefined)?.type;
-      if (signupType !== "SIGNUP") {
-        console.log("[join checkout] signup cancelled or closed, aborting checkout");
-        clearJoinStatus();
+      if (options.fromResume) {
+        console.log("[join checkout] resume aborted — still logged out");
+        showJoinStatus(LOGIN_FIRST_MESSAGE, "info");
         return;
       }
 
-      memberPayload = await ms.getCurrentMember();
-      if (!memberIdFromMemberstackPayload(memberPayload)) {
-        console.error("[join checkout] still not logged in after signup");
-        showJoinStatus("Account created, but login did not complete. Try again or log in first.", "error");
+      // Persist intent before login so header login / auth:updated can also resume.
+      savePendingMembershipCheckout(buildPendingMembershipCheckout(planKey, returnUrl));
+      console.log("[join checkout] opening LOGIN modal (not signup)");
+
+      const loginOk = await openMembershipLoginModal(ms);
+      if (!loginOk) {
+        console.log("[join checkout] login cancelled or closed, keeping pending intent");
+        showJoinStatus(
+          "Checkout paused. Log in with your existing account to continue, or use Sign Up in the menu only if you are new.",
+          "info",
+        );
+        return;
+      }
+
+      try {
+        memberPayload = await ms.getCurrentMember();
+      } catch (error) {
+        console.error("[join checkout] getCurrentMember after login failed:", error);
+      }
+
+      loggedIn = Boolean(memberIdFromMemberstackPayload(memberPayload));
+      if (!loggedIn) {
+        console.error("[join checkout] still not logged in after LOGIN modal");
+        showJoinStatus(
+          "Login did not complete. Please log in with your existing account, then try Join again.",
+          "error",
+        );
         return;
       }
     }
 
-    const activePriceIds = activePriceIdsFromMemberPayload(memberPayload);
-    console.log("[join checkout] active price IDs:", [...activePriceIds]);
+    const memberId = memberIdFromMemberstackPayload(memberPayload);
+    console.log("[join checkout] authenticated member:", memberId);
+    applyJoinCheckoutButtonStates(memberPayload);
 
-    if (activePriceIds.has(plan.priceId)) {
-      const message = `You already have ${plan.label}. Manage your membership from your workspace or billing portal.`;
-      console.log("[join checkout] already have this price:", plan.priceId);
-      showJoinStatus(message, "info");
+    const decision = resolveMembershipCheckoutDecision(memberPayload, planKey);
+
+    if (decision.action === "current") {
+      clearPendingMembershipCheckout();
+      console.log("[join checkout] current plan — no checkout or redirect:", decision.tier);
+      // Button already shows Current Plan; do not flash a status message.
       return;
     }
 
-    console.log("[join checkout] calling purchasePlansWithCheckout", {
-      priceId: plan.priceId,
-    });
-    showJoinStatus(`Opening checkout for ${plan.label}...`, "info");
-
-    const checkoutResult = await purchasePlansWithCheckout.call(ms, {
-      priceId: plan.priceId,
-      successUrl: `${window.location.origin}/account`,
-      cancelUrl: window.location.href,
-      autoRedirect: false,
-    });
-
-    console.log("[join checkout] purchasePlansWithCheckout result:", checkoutResult);
-
-    const checkoutUrl = checkoutResult?.data?.url;
-    if (typeof checkoutUrl === "string" && checkoutUrl.trim()) {
-      console.log("[join checkout] redirecting to Stripe checkout:", checkoutUrl);
-      window.location.href = checkoutUrl;
+    if (decision.action === "update") {
+      console.log("[join checkout] update/replace via data-ms-price:update");
+      invokeMembershipPriceUpdate(planKey);
       return;
     }
 
-    showJoinStatus("Checkout did not return a redirect URL. Please try again.", "error");
-  } catch (error) {
-    const info = memberstackErrorInfo(error);
-    console.error("[join checkout] Memberstack error:", error);
+    // decision.action === "purchase"
+    const cancelUrl =
+      peekPendingMembershipCheckout()?.returnUrl ||
+      returnUrl ||
+      currentReturnUrl();
 
-    if (info.code === "already-have-plan") {
-      showJoinStatus(
-        `You already have ${plan.label}. Manage your membership from your workspace.`,
-        "info",
-      );
-      return;
-    }
-
-    const message =
-      info.message?.trim() ||
-      "Could not start checkout. Try a different plan or manage billing from your workspace.";
-    showJoinStatus(message, "error");
+    await launchPurchaseCheckout(ms, planKey, cancelUrl);
   } finally {
+    checkoutInFlight = false;
     setButtonsBusy(false);
   }
 }
 
+/** Resume a stashed membership checkout after login (auth:updated or page load). */
+export async function resumePendingMembershipCheckout(): Promise<boolean> {
+  const pending = peekPendingMembershipCheckout();
+  if (!pending) return false;
+  if (checkoutInFlight) return false;
+
+  const ms = await waitForMemberstackDom();
+  if (!ms?.getCurrentMember) return false;
+
+  let memberPayload: unknown = null;
+  try {
+    memberPayload = await ms.getCurrentMember();
+  } catch {
+    return false;
+  }
+
+  if (!memberIdFromMemberstackPayload(memberPayload)) {
+    return false;
+  }
+
+  console.log("[join checkout] resuming pending checkout", pending.planKey);
+  await startJoinCheckout(pending.planKey, {
+    fromResume: true,
+    returnUrl: pending.returnUrl,
+  });
+  return true;
+}
+
+function bindPendingCheckoutResumeListener(): void {
+  if (resumeListenerBound || typeof window === "undefined") return;
+  resumeListenerBound = true;
+  window.addEventListener("auth:updated", () => {
+    void syncJoinCheckoutButtonStatesFromMemberstack();
+    void resumePendingMembershipCheckout();
+  });
+}
+
 export function initJoinCheckout(root: ParentNode = document): void {
+  bindPendingCheckoutResumeListener();
+
   const billingLink = root.querySelector<HTMLAnchorElement>("[data-join-billing-portal]");
   billingLink?.addEventListener("click", (event) => {
     event.preventDefault();
@@ -268,15 +444,29 @@ export function initJoinCheckout(root: ParentNode = document): void {
 
   root.querySelectorAll<HTMLElement>("[data-join-checkout]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const key = btn.getAttribute("data-join-checkout") as JoinCheckoutPlanKey | null;
-      if (!key || !(key in JOIN_CHECKOUT_PLANS)) {
+      const key = btn.getAttribute("data-join-checkout");
+      if (!isJoinCheckoutPlanKey(key)) {
         console.error("[join checkout] unknown plan key:", key);
         showJoinStatus("Unknown membership option. Please refresh and try again.", "error");
+        return;
+      }
+      if (btn instanceof HTMLButtonElement && btn.disabled) {
         return;
       }
       void startJoinCheckout(key);
     });
   });
+
+  void syncJoinCheckoutButtonStatesFromMemberstack();
+  // If the visitor logged in elsewhere and returned with a pending intent, resume.
+  void resumePendingMembershipCheckout();
+}
+
+/** Test-only: reset module locks between cases. */
+export function __resetJoinCheckoutForTests(): void {
+  checkoutInFlight = false;
+  resumeListenerBound = false;
+  lastKnownMemberPayload = null;
 }
 
 if (typeof document !== "undefined") {

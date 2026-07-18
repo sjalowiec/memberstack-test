@@ -74,9 +74,22 @@ describe("lesson body gate markup contract", () => {
 describe("deferred lesson body DOM contract", () => {
   it("uses an empty mount point for non-member viewers", () => {
     expect(lessonPageSource).toMatch(
+      new RegExp(`<div ${LESSON_MEMBER_BODY_MOUNT_ATTR} hidden></div>`),
+    );
+    // Must not participate in global body.ms-logged-in [data-gated="content"] unlock.
+    expect(lessonPageSource).not.toMatch(
       new RegExp(
-        `<div ${LESSON_MEMBER_BODY_MOUNT_ATTR} data-gated="content" hidden></div>`,
+        `<div ${LESSON_MEMBER_BODY_MOUNT_ATTR}[^>]*data-gated="content"`,
       ),
+    );
+  });
+
+  it("keeps embedded video aspect-ratio CSS with the instructional body component", () => {
+    expect(instructionalBodySource).toMatch(
+      /\.lesson-video-frame\s*\{[\s\S]*aspect-ratio:\s*16\s*\/\s*9/,
+    );
+    expect(instructionalBodySource).toMatch(
+      /\.lesson-video-frame iframe\s*\{[\s\S]*position:\s*absolute/,
     );
   });
 });

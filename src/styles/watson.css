@@ -764,3 +764,157 @@
 .watson-customer__notes {
   margin-top: 1.25rem;
 }
+
+/* Watson membership reports */
+.watson:has(.watson--report-wide) {
+  max-width: 1400px;
+}
+
+.watson--report-wide {
+  max-width: none;
+}
+
+.watson-report__note {
+  margin: 0 0 1rem;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.watson-report__meta {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.watson-report__cards {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  margin-bottom: 1.25rem;
+}
+
+.watson-report__card {
+  padding: 0.75rem 0.85rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.watson-report__card-label {
+  margin: 0 0 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #64748b;
+}
+
+.watson-report__card-value {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #243015;
+}
+
+.watson-report__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: end;
+  margin-bottom: 1rem;
+  padding: 0.85rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.watson-report__filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 10rem;
+}
+
+.watson-report__filter label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.watson-report__filter select,
+.watson-report__filter input {
+  padding: 0.45rem 0.55rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font: inherit;
+  min-width: 10rem;
+}
+
+.watson-report__filter select[multiple] {
+  min-height: 5.5rem;
+}
+
+.watson-report__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.watson-report__button {
+  padding: 0.5rem 0.85rem;
+  border: 1px solid #3f6212;
+  border-radius: 8px;
+  background: #3f6212;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.watson-report__button--secondary {
+  background: #fff;
+  color: #3f6212;
+}
+
+.watson-report__button:hover {
+  filter: brightness(0.96);
+}
+
+.watson-report__count {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.watson-report__exceptions {
+  color: #9a3412;
+  font-size: 0.85rem;
+}
+
+.watson-report__type-list {
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.35rem 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+}
+
+.watson-report__type-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.9rem;
+}
+
+.watson-report__type-list span:last-child {
+  font-weight: 700;
+  color: #243015;
+}

@@ -9,10 +9,20 @@ import RightTriangleIcon from "../../components/tools/triangle-right-icon.svg";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
 import FloatingInput from "../../components/tools/FloatingInput.astro";
 import ToolGate from "../../components/ui/ToolGate.astro";
+import FavoriteStar from "../../components/favorites/FavoriteStar.astro";
+import FavoritesRuntime from "../../components/favorites/FavoritesRuntime.astro";
 import toolsData from "../../../data/tools.json";
+import "../../styles/favorites.css";
 
-const tools = toolsData as Array<{ href?: string; membersonly?: boolean }>;
+const tools = toolsData as Array<{
+  id?: number;
+  href?: string;
+  title?: string;
+  membersonly?: boolean;
+}>;
 const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
+const toolTitle = tool?.title ?? "Triangle Calculator";
+const toolContentId = tool?.id != null ? String(tool.id) : "";
 
 const toolsSvgDir = path.join(process.cwd(), "public", "images", "tools");
 const trianglePreviewIsoHtml = fs.readFileSync(
@@ -31,7 +41,7 @@ const trianglePreviewRightHtml = fs.readFileSync(
       <WizardBackLink category="tool" />
 
       <section class="wizard-hero">
-        <div class="triangle-v2-hero-title-row">
+        <div class="triangle-v2-hero-title-row favorite-title-row">
           <img
             src="/icons/tools/triangle1.svg"
             alt=""
@@ -41,8 +51,12 @@ const trianglePreviewRightHtml = fs.readFileSync(
             loading="lazy"
             decoding="async"
           />
-          <h1>Triangle Calculator</h1>
+          <h1>{toolTitle}</h1>
+          {toolContentId ? (
+            <FavoriteStar contentType="tool" contentId={toolContentId} title={toolTitle} />
+          ) : null}
         </div>
+        {toolContentId ? <FavoritesRuntime contentType="tool" /> : null}
         <p class="wizard-intro">
           Choose your triangle style, enter your finished measurements and gauge,
           and the calculator will generate the knitting numbers.

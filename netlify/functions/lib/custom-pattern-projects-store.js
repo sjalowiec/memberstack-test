@@ -2,13 +2,12 @@
  * Netlify Blobs access for saved Custom Pattern projects.
  * Key layout: `{family}/{userId}/{projectId}.json` in store `custom-pattern-projects`.
  */
-import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { getStore } from "@netlify/blobs";
 import {
   patternSystemDisplayName,
   resolvePatternSystemFromProject,
 } from "./pattern-system-id.js";
+import { readDotEnvValue } from "./local-dotenv.js";
 
 export const CUSTOM_PATTERN_PROJECTS_BLOB_STORE = "custom-pattern-projects";
 
@@ -405,16 +404,8 @@ let dotEnvAllowDevCached = null;
  */
 export function readAllowDevPatternUserFromDotEnv() {
   if (dotEnvAllowDevCached !== null) return dotEnvAllowDevCached;
-  dotEnvAllowDevCached = false;
-  if (process.env.NODE_ENV === "production") return false;
-  try {
-    const envPath = resolve(process.cwd(), ".env");
-    if (!existsSync(envPath)) return false;
-    const text = readFileSync(envPath, "utf8");
-    dotEnvAllowDevCached = /\bALLOW_DEV_PATTERN_USER\s*=\s*["']?true["']?\s*$/m.test(text);
-  } catch {
-    dotEnvAllowDevCached = false;
-  }
+  // Shared non-production `.env` reader (same helper used for MEMBERSTACK_SECRET_KEY locally).
+  dotEnvAllowDevCached = readDotEnvValue("ALLOW_DEV_PATTERN_USER") === "true";
   return dotEnvAllowDevCached;
 }
 

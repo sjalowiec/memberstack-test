@@ -3,6 +3,9 @@ import Header from "../../components/Header.astro";
 import Footer from "../../components/Footer.astro";
 import YarnWeightsTable from "../../components/reference/YarnWeightsTable.astro";
 import RobotsMeta from "../../components/seo/RobotsMeta.astro";
+
+import FavoriteHeading from "../../components/favorites/FavoriteHeading.astro";
+
 import { yarnWeights } from "../../data/yarn-weights";
 import "../../styles/global.css";
 
@@ -36,7 +39,7 @@ const symbolImages = yarnWeights.map((yarn) => ({
       </div>
 
       <section class="reference-hero reference-card">
-        <h1>Yarn Weight Comparison</h1>
+        <FavoriteHeading title="Yarn Weight Comparison" contentType="reference" />
         <p>
           Yarn standards are general categories that describe how thick a yarn
           is. For machine knitters, they help you estimate which yarns might

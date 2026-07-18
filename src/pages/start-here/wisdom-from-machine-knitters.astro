@@ -1,7 +1,12 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import FavoriteStar from "../../components/favorites/FavoriteStar.astro";
+import FavoritesRuntime from "../../components/favorites/FavoritesRuntime.astro";
 import wisdomData from "../../data/wisdom-from-machine-knitters.json";
 import { PATTERN_BUILDERS_HOME_HREF } from "../../lib/patterns/customPatternProjectNavigation";
+import "../../styles/favorites.css";
+
+const wisdomFavoriteTitle = "Wisdom from Machine Knitters";
 
 type WisdomEntry = {
   id: string;
@@ -26,7 +31,15 @@ const entries = wisdomData.entries as WisdomEntry[];
     </div>
     <div class="wisdom-page-grid">
       <aside class="wisdom-page-aside" aria-label="What knitters agree on">
-        <p class="wisdom-page-kicker">Wisdom from Machine Knitters</p>
+        <div class="favorite-title-row wisdom-favorite-row">
+          <p class="wisdom-page-kicker">Wisdom from Machine Knitters</p>
+          <FavoriteStar
+            contentType="reference"
+            contentId="/start-here/wisdom-from-machine-knitters"
+            title={wisdomFavoriteTitle}
+          />
+        </div>
+        <FavoritesRuntime contentType="reference" />
         <h1 class="wisdom-page-h1">The Common Thread</h1>
         <p class="wisdom-page-lead">
           If there is one thing our community of knitters agrees on, it's this: Start simple, practice often, and give

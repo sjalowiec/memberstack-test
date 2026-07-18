@@ -1,0 +1,40 @@
+---
+import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
+import WatsonRemainingAnnualAccessReport from "../../../components/watson/WatsonRemainingAnnualAccessReport.astro";
+import {
+  loadRemainingAnnualAccessReport,
+  type RemainingAnnualAccessReport,
+} from "../../../lib/watson/remainingAnnualAccessReport";
+
+export const prerender = false;
+
+let reportError: string | null = null;
+let report: RemainingAnnualAccessReport | null = null;
+
+try {
+  report = await loadRemainingAnnualAccessReport();
+} catch (error) {
+  reportError =
+    error instanceof Error ? error.message : "Remaining annual access report failed to load.";
+}
+---
+
+<WatsonPageShell
+  title="Remaining Annual Access | Watson Reports"
+  description="Current non-monthly legacy members who may have annual or installment paid-through access."
+  heading="Remaining Annual Access"
+  intro="Read-only classification of current members with possible annual or installment access for migration handling."
+>
+  <p class="watson-report__meta">
+    <a href="/watson/reports">? All reports</a>
+  </p>
+  {
+    reportError ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {reportError}
+      </p>
+    ) : report ? (
+      <WatsonRemainingAnnualAccessReport report={report} />
+    ) : null
+  }
+</WatsonPageShell>

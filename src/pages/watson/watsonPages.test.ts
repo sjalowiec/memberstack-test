@@ -86,6 +86,28 @@ describe("Watson member search pages", () => {
     );
   });
 
+  it("defines membership report routes under /watson/reports", () => {
+    const reportsIndex = fs.readFileSync(
+      path.resolve("src/pages/watson/reports/index.astro"),
+      "utf8",
+    );
+    const currentMembers = fs.readFileSync(
+      path.resolve("src/pages/watson/reports/current-legacy-members.astro"),
+      "utf8",
+    );
+    const annualAccess = fs.readFileSync(
+      path.resolve("src/pages/watson/reports/remaining-annual-access.astro"),
+      "utf8",
+    );
+
+    expect(reportsIndex).toContain("/watson/reports/current-legacy-members");
+    expect(reportsIndex).toContain("/watson/reports/remaining-annual-access");
+    expect(currentMembers).toContain("loadCurrentLegacyMembersReport");
+    expect(currentMembers).toContain('export const prerender = false');
+    expect(annualAccess).toContain("loadRemainingAnnualAccessReport");
+    expect(annualAccess).toContain('export const prerender = false');
+  });
+
   it("defines server-rendered search and member detail routes", () => {
     const searchPage = fs.readFileSync(
       path.resolve("src/pages/watson/index.astro"),

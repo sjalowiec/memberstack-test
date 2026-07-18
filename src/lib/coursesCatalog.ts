@@ -25,7 +25,7 @@ export type CourseCatalogEntry = {
   status: CourseCatalogStatus;
   href?: string;
   buttonLabel: string;
-  /** Gating tier: free (open), premium (Beta/Premium), purchase (reserved). */
+  /** Gating tier: free (open), premium / purchase (Premium+; purchase also for future individual buys). */
   access: CourseAccessLevel;
 };
 
