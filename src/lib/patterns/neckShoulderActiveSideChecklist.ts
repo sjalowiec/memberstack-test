@@ -32,7 +32,7 @@ export type ActiveSideInstructionTableRow = {
   stitchesRemaining: number;
   /**
    * When set, the Sts Remaining cell renders this string instead of the numeric
-   * {@link stitchesRemaining} (center neckline divide/transition row only, e.g. `50 total / 20 active`).
+   * {@link stitchesRemaining} (center neckline divide/transition row only, e.g. `37 needles in work`).
    * `stitchesRemaining` still tracks the active-shoulder count so downstream rows and bind-off math are unaffected.
    */
   stitchesRemainingDisplay?: string;
@@ -60,6 +60,12 @@ type CenterNecklineDivideInfo = {
 function stitchCountPhrase(n: number): string {
   const k = Math.max(0, Math.floor(n));
   return k === 1 ? "1 stitch" : `${k} stitches`;
+}
+
+/** Active-shoulder needles phrase for setup-row Sts Remaining / second-shoulder reminder copy. */
+function needlesInWorkPhrase(n: number): string {
+  const k = Math.max(0, Math.floor(n));
+  return k === 1 ? "1 needle in work" : `${k} needles in work`;
 }
 
 function timelineHasCenterDivideRow(timeline: readonly RowEntry[]): boolean {
@@ -157,17 +163,11 @@ export function neckShoulderChartUsesShallowHoldBackCenter(
 }
 
 /**
- * Sts Remaining label for the center neckline divide row: full pre-divide count → active shoulder.
- * "Total" is the whole back width before the center stitches are scrapped off
- * (both shoulders + center); "active" is the working shoulder kept on the machine after the divide.
+ * Sts Remaining label for the center neckline divide/setup row after the neckline is divided:
+ * active shoulder needles only (no pre-divide full-piece total).
  */
 export function formatCenterNecklineSetupStsRemainingDisplay(info: CenterNecklineDivideInfo): string {
-  const active = Math.max(0, Math.floor(info.stitchesRightAfter));
-  const total =
-    Math.max(0, Math.floor(info.stitchesLeftAfter)) +
-    Math.max(0, Math.floor(info.centerBindOff)) +
-    active;
-  return `${total} total / ${active} active`;
+  return needlesInWorkPhrase(info.stitchesRightAfter);
 }
 
 function buildCenterNecklineSetupChecklistRow(
@@ -537,11 +537,33 @@ function carriagePositionForSecondShoulderRc(rc: number): "Right" | "Left" {
   return oppositeCarriagePosition(carriagePositionForActiveSideRc(rc));
 }
 
+/**
+ * Second-shoulder replacement for the center neckline divide/setup action.
+ * The divide already happened on the first shoulder — remind the knitter to resume the held
+ * side using the same active-shoulder stitch count ({@link ActiveSideInstructionTableRow.stitchesRemaining}).
+ */
+export function formatSecondShoulderCenterSetupChecklistAction(
+  activeShoulderStitches: number,
+): string {
+  return `Return to the held shoulder with ${needlesInWorkPhrase(activeShoulderStitches)}.`;
+}
+
+/**
+ * Mirror the first-shoulder checklist for the held side: invert carriage parity from RC, and
+ * rewrite any center neckline divide/setup row so the scrap-off/hold divide is not repeated
+ * (presentation only — RC, edge, and stitch counts are unchanged).
+ */
 export function buildSecondShoulderInstructionTableRows(
   rows: readonly ActiveSideInstructionTableRow[],
 ): ActiveSideInstructionTableRow[] {
-  return rows.map((r) => ({
-    ...r,
-    carriagePosition: carriagePositionForSecondShoulderRc(r.rc),
-  }));
+  return rows.map((r) => {
+    const mirrored: ActiveSideInstructionTableRow = {
+      ...r,
+      carriagePosition: carriagePositionForSecondShoulderRc(r.rc),
+    };
+    if (isCenterNecklineSetupChecklistRow(r)) {
+      mirrored.action = formatSecondShoulderCenterSetupChecklistAction(r.stitchesRemaining);
+    }
+    return mirrored;
+  });
 }

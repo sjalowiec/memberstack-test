@@ -3,6 +3,8 @@ import { buildTimeline } from "./shapingTimeline";
 import {
   armholeLocalRcActiveShoulderChecklistStart,
   buildActiveSideInstructionTableRows,
+  buildSecondShoulderInstructionTableRows,
+  formatSecondShoulderCenterSetupChecklistAction,
   isCenterNecklineSetupChecklistRow,
 } from "./neckShoulderActiveSideChecklist";
 import { NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL } from "./neckShoulderShapingChart";
@@ -235,5 +237,53 @@ describe("back active-shoulder checklist center neckline setup row", () => {
       (row) => row.edge === "Armhole" && /^Bind off OR hold /.test(row.action),
     );
     expect(armholeBindOff.length).toBeGreaterThan(0);
+  });
+});
+
+describe("second shoulder checklist center neckline setup row", () => {
+  it("replaces the divide/setup action with a held-shoulder reminder; keeps RC and stitch counts", () => {
+    const r = generateSleevelessBackPattern(baseRoundNeckPattern());
+    const rcStart = armholeLocalRcActiveShoulderChecklistStart(
+      r.frontNeckShoulderShapingChart,
+      r.debug.armholeStartRow,
+      BACK_CHECKLIST_OPTIONS,
+    );
+    const first = buildActiveSideInstructionTableRows(
+      r.frontNeckShoulderShapingChart,
+      rcStart,
+      BACK_CHECKLIST_OPTIONS,
+    );
+    const setup = first.find(isCenterNecklineSetupChecklistRow);
+    expect(setup).toBeDefined();
+    expect(setup!.action).toMatch(/scrap off center/i);
+    expect(setup!.stitchesRemainingDisplay).toBe(
+      `${setup!.stitchesRemaining} needles in work`,
+    );
+    expect(setup!.stitchesRemainingDisplay).not.toMatch(/total\s*\//i);
+
+    const second = buildSecondShoulderInstructionTableRows(first);
+    const secondSetup = second.find(isCenterNecklineSetupChecklistRow);
+    expect(secondSetup).toBeDefined();
+    expect(secondSetup!.rc).toBe(setup!.rc);
+    expect(secondSetup!.edge).toBe(setup!.edge);
+    expect(secondSetup!.stitchesRemaining).toBe(setup!.stitchesRemaining);
+    expect(secondSetup!.stitchesRemainingDisplay).toBe(setup!.stitchesRemainingDisplay);
+    expect(secondSetup!.action).toBe(
+      formatSecondShoulderCenterSetupChecklistAction(setup!.stitchesRemaining),
+    );
+    expect(secondSetup!.action).toBe(
+      `Return to the held shoulder with ${setup!.stitchesRemaining} needles in work.`,
+    );
+    expect(secondSetup!.action).not.toMatch(/scrap off|to divide/i);
+
+    // Non-setup rows stay presentation-identical except carriage parity.
+    expect(second.length).toBe(first.length);
+    for (let i = 0; i < first.length; i++) {
+      if (isCenterNecklineSetupChecklistRow(first[i]!)) continue;
+      expect(second[i]!.rc).toBe(first[i]!.rc);
+      expect(second[i]!.action).toBe(first[i]!.action);
+      expect(second[i]!.edge).toBe(first[i]!.edge);
+      expect(second[i]!.stitchesRemaining).toBe(first[i]!.stitchesRemaining);
+    }
   });
 });

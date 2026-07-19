@@ -122,6 +122,21 @@ describe("drop-shoulder front neckline shaping chart", () => {
     );
     expect(html).toMatch(/Scrap off center \d+ neckline/);
     expect(html).toContain("Front Neckline Shaping Chart");
+
+    // Center divide is only the first-shoulder setup action; second shoulder keeps the same RC /
+    // stitch-count row but rewrites the action to a held-side reminder (action text also appears in
+    // data-row-id, so assert on the second checklist tbody cells rather than global match counts).
+    const firstTbody = html.match(/<tbody>([\s\S]*?)<\/tbody>/i)?.[1] ?? "";
+    const secondTbody =
+      html.match(/Second Shoulder Checklist[\s\S]*?<tbody>([\s\S]*?)<\/tbody>/i)?.[1] ?? "";
+    const y = checklist[0]!.stitchesRemaining;
+    expect(firstTbody).toMatch(/Scrap off center \d+ neckline/);
+    expect(firstTbody).toContain(`${y} needles in work`);
+    expect(firstTbody).not.toMatch(/\d+\s+total\s*\/\s*\d+\s+active/);
+    expect(secondTbody).toContain(`Return to the held shoulder with ${y} needles in work.`);
+    expect(secondTbody).toContain(`${y} needles in work`);
+    expect(secondTbody).not.toMatch(/Scrap off center|to divide/i);
+    expect(secondTbody).not.toMatch(/\d+\s+total\s*\/\s*\d+\s+active/);
   });
 
   it("drops shoulder-shaping wording from the front chart second-shoulder copy (straight shoulders)", () => {

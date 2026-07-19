@@ -388,6 +388,49 @@ describe("center neckline divide/setup row moved out of the online checklist", (
   });
 });
 
+describe("front round-neck First/Second Shoulder setup row presentation", () => {
+  function firstChecklistTbody(html: string): string {
+    return html.match(/First Shoulder Checklist[\s\S]*?<tbody>([\s\S]*?)<\/tbody>/i)?.[1] ?? "";
+  }
+
+  function secondChecklistTbody(html: string): string {
+    return html.match(/Second Shoulder Checklist[\s\S]*?<tbody>([\s\S]*?)<\/tbody>/i)?.[1] ?? "";
+  }
+
+  it("sleeveless: First keeps divide once; Second returns to held shoulder; Sts Remaining is needles in work", () => {
+    const r = generateSleevelessBackPattern(baseRoundNeckPattern());
+    const chart = r.frontNeckShoulderShapingChart;
+    const rcStart = armholeLocalRcActiveShoulderChecklistStart(chart, r.firstArmholeGarmentRc, {
+      includeCenterNecklineSetupRow: true,
+    });
+    const built = buildActiveSideInstructionTableRows(chart, rcStart, {
+      includeCenterNecklineSetupRow: true,
+    });
+    const setup = built.find((row) => row.edge === "Center");
+    expect(setup).toBeDefined();
+    const y = setup!.stitchesRemaining;
+
+    // Matches sleeveless front online options: setup row kept visible in both checklists.
+    const html = renderNeckShoulderShapingChartTableOnlyHtml(chart, "test-sleeveless-front-setup", undefined, {
+      activeSideOnly: true,
+      activeSideRcStart: rcStart,
+      includeCenterNecklineSetupRow: true,
+      hideCenterNecklineSetupRow: false,
+      tableHeading: "First Shoulder Checklist",
+    });
+
+    const firstTbody = firstChecklistTbody(html);
+    const secondTbody = secondChecklistTbody(html);
+    expect(firstTbody).toMatch(/Scrap off center \d+ neckline/);
+    expect(firstTbody).toContain(`${y} needles in work`);
+    expect(firstTbody).not.toMatch(/\d+\s+total\s*\/\s*\d+\s+active/);
+    expect(secondTbody).toContain(`Return to the held shoulder with ${y} needles in work.`);
+    expect(secondTbody).toContain(`${y} needles in work`);
+    expect(secondTbody).not.toMatch(/Scrap off center|to divide/i);
+    expect(secondTbody).not.toMatch(/\d+\s+total\s*\/\s*\d+\s+active/);
+  });
+});
+
 describe("shoulder checklist full-width collapsible layout", () => {
   it("renders First and Second Shoulder checklists as separate full-width disclosures", () => {
     const r = generateSleevelessBackPattern(baseRoundNeckPattern());

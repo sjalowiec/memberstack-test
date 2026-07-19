@@ -4216,7 +4216,10 @@ table {
           activeSideOnly: true,
           activeSideRcStart: frontActiveSideRcStart,
           includeCenterNecklineSetupRow: true,
-          hideCenterNecklineSetupRow: true,
+          // Keep the center divide/setup row in the First/Second Shoulder checklists so the shared
+          // renderer can show scrap-off once on First and the held-shoulder reminder on Second
+          // (same presentation as drop-shoulder front round-neck).
+          hideCenterNecklineSetupRow: false,
           tableHeading: "First Shoulder Checklist",
           secondShoulderExtraHtml: frontSecondShoulderMapHtml,
           suppressCarriagePositionTip: frontIsRoundNeck,
@@ -4270,7 +4273,7 @@ table {
           activeSideOnly: true,
           activeSideRcStart: frontActiveSideRcStart,
           includeCenterNecklineSetupRow: true,
-          hideCenterNecklineSetupRow: true,
+          hideCenterNecklineSetupRow: false,
           tableHeading: "First Shoulder Checklist",
           secondShoulderExtraHtml: frontSecondShoulderMapHtml,
         },

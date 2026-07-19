@@ -723,7 +723,7 @@ function formatActiveSideRc(rc: number): string {
 
 /**
  * Sts Remaining cell text for a checklist row — uses the optional divide/transition display string
- * (e.g. `50 total / 20 active`) when present, otherwise the numeric active-shoulder count.
+ * (e.g. `37 needles in work`) when present, otherwise the numeric active-shoulder count.
  */
 function activeSideStsRemainingCellHtml(r: ActiveSideInstructionTableRow): string {
   const override =
