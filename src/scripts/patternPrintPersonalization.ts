@@ -12,6 +12,25 @@ import {
 } from "../lib/patterns/sleevelessPatternProjectMeta";
 import { syncPatternTipDismissBeforePrint } from "../lib/patterns/patternTipDismiss";
 
+/** Ensures Ctrl+P / system print also suggest the user pattern name as the PDF filename. */
+function syncDocumentTitleForNativePrint(): void {
+  if (!document.querySelector("[data-pattern-print-skip-modal]")) return;
+  const { title } = getPatternProjectPrintFields();
+  const resolved = resolvePatternPrintDocumentTitle(title, document.title);
+  if (!resolved || resolved === document.title) return;
+
+  const originalTitle = document.title;
+  document.title = resolved;
+  const restore = (): void => {
+    window.removeEventListener("afterprint", restore);
+    if (document.title === resolved) {
+      document.title = originalTitle;
+    }
+  };
+  window.addEventListener("afterprint", restore);
+  window.setTimeout(restore, 60_000);
+}
+
 const STORAGE_TITLE_KEY = "kbm-pattern-print-personalization-title";
 const STORAGE_NOTES_KEY = "kbm-pattern-print-personalization-notes";
 
@@ -125,6 +144,9 @@ if (typeof document !== "undefined") {
   document.addEventListener("DOMContentLoaded", () => {
     hydratePatternPrintPersonalizationSlotsFromSession();
   });
+  window.addEventListener("beforeprint", () => {
+    syncDocumentTitleForNativePrint();
+  });
 }
 
 function bindModalListenersOnce(): void {
@@ -193,12 +215,29 @@ function syncAllPatternTipDismissBeforePrint(): void {
 
 /**
  * Runs window.print(), temporarily setting document.title from the pattern name so
- * browser Save-as-PDF suggests that filename. Restores the page title afterward.
- * Callers that already set document.title in onBeforePrint (e.g. diy-blanket) are left alone.
+ * browser Save-as-PDF suggests that filename.
+ *
+ * Important: `window.print()` returns immediately while the print dialog is still open.
+ * Restoring `document.title` too early (e.g. a short timeout) makes Chrome/Edge suggest the
+ * generic page title for every PDF. Restore only on `afterprint` (with a long fallback).
+ *
+ * Callers that already set document.title in onBeforePrint (e.g. diy-blanket) are left alone
+ * until afterprint, then restored to the title captured at the start of this call.
  */
 function runPatternPrint(opts?: PatternPrintTriggerOptions, printTitle = ""): void {
   syncAllPatternTipDismissBeforePrint();
   const originalTitle = document.title;
+  let restoreScheduled = false;
+
+  const restoreTitle = (): void => {
+    if (!restoreScheduled) return;
+    restoreScheduled = false;
+    window.removeEventListener("afterprint", restoreTitle);
+    if (document.title !== originalTitle) {
+      document.title = originalTitle;
+    }
+  };
+
   try {
     opts?.onBeforePrint?.();
     if (document.title === originalTitle) {
@@ -207,14 +246,15 @@ function runPatternPrint(opts?: PatternPrintTriggerOptions, printTitle = ""): vo
         document.title = resolved;
       }
     }
+    if (document.title !== originalTitle) {
+      restoreScheduled = true;
+      window.addEventListener("afterprint", restoreTitle);
+      // Some environments never fire afterprint; do not restore while the dialog may still be open.
+      window.setTimeout(restoreTitle, 60_000);
+    }
     window.print();
   } finally {
     opts?.onAfterPrint?.();
-    if (document.title !== originalTitle) {
-      window.setTimeout(() => {
-        document.title = originalTitle;
-      }, 100);
-    }
   }
 }
 

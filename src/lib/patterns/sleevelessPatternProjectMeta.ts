@@ -179,10 +179,15 @@ export function buildDefaultPatternTitleForPattern(
 }
 
 /**
- * Resolves the pattern name for save/update from working draft state only (no DOM).
- * Falls back to the linked saved-project name, then the auto-generated title from selections.
+ * Single source of truth for the user-facing pattern name (save, My Patterns hydration,
+ * online heading, print/PDF filename).
+ *
+ * Fallback order:
+ * 1. Current draft title (`patternProject.title` — includes a hydrated saved project name)
+ * 2. Linked saved-project name (active Blob project link)
+ * 3. Construction-aware auto title (audience + family), e.g. "Women's Drop Shoulder"
  */
-export function resolvePatternProjectSaveNameFromState(
+export function resolvePatternDisplayName(
   pattern: SleevelessPatternRecord = getCurrentPattern(),
 ): string {
   const meta = getPatternProjectMeta(pattern);
@@ -192,10 +197,17 @@ export function resolvePatternProjectSaveNameFromState(
   const linked = readActiveCustomPatternProjectLinkedName().trim();
   if (linked) return linked;
 
-  return buildDefaultSleevelessPatternTitle(
-    inferSleevelessPatternTitleContext(pattern),
-    patternFamilyNameForPattern(pattern),
-  ).trim();
+  return buildDefaultPatternTitleForPattern(pattern);
+}
+
+/**
+ * Resolves the pattern name for save/update from working draft state only (no DOM).
+ * Same fallback order as {@link resolvePatternDisplayName}.
+ */
+export function resolvePatternProjectSaveNameFromState(
+  pattern: SleevelessPatternRecord = getCurrentPattern(),
+): string {
+  return resolvePatternDisplayName(pattern);
 }
 
 /**
@@ -260,7 +272,7 @@ export function refreshAutoPatternProjectTitle(
 
 export function getPatternProjectPrintFields(): { title: string; notes: string } {
   const meta = getPatternProjectMeta();
-  return { title: meta.title.trim(), notes: meta.notes };
+  return { title: resolvePatternDisplayName(), notes: meta.notes };
 }
 
 /**
@@ -298,13 +310,21 @@ export const SLEEVELESS_PATTERN_ONLINE_HEADING_FALLBACK =
 export const DROP_SHOULDER_PATTERN_ONLINE_HEADING_FALLBACK =
   "Drop shoulder sweater · Pattern instructions";
 
-/** Online pattern tab heading from saved project title, or construction-aware generic fallback. */
+/**
+ * Online pattern tab heading from draft/linked user name, or construction-aware generic fallback.
+ * Does not use the Astro page title — that is only a last resort for browser PDF Save-as when
+ * {@link resolvePatternPrintDocumentTitle} receives an empty sanitized name.
+ */
 export function getSleevelessPatternOnlineHeading(
   meta: SleevelessPatternProjectMeta,
   fallback?: string,
 ): string {
   const title = meta.title.trim();
   if (title) return title;
+
+  const linked = readActiveCustomPatternProjectLinkedName().trim();
+  if (linked) return linked;
+
   if (fallback !== undefined) return fallback;
   return isDropShoulderPattern()
     ? DROP_SHOULDER_PATTERN_ONLINE_HEADING_FALLBACK

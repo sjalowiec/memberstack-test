@@ -1,14 +1,23 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { writeActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
+import { loadProjectIntoWorkingDraft } from "./customPatternProjectClient";
+import type { CustomPatternProject } from "./customPatternProjectTypes";
+import {
+  CONSTRUCTION_FAMILY_OVERRIDE_KEY,
+  DROP_SHOULDER_CONSTRUCTION,
+  withDropShoulderConstructionAuthored,
+} from "./patternConstructionIdentity";
 import { saveCurrentPattern } from "./patternStorage";
 import { stubLocalStorage } from "./test/stubLocalStorage";
 import {
   buildDefaultSleevelessPatternTitle,
   formatPatternProjectNotesPreview,
   getPatternProjectMeta,
+  getPatternProjectPrintFields,
   getSleevelessPatternOnlineHeading,
   getSleevelessPatternOnlineNotesText,
   resetPatternProjectMetaForNewDraft,
+  resolvePatternDisplayName,
   resolvePatternPrintDocumentTitle,
   resolvePatternProjectSaveName,
   resolvePatternProjectSaveNameFromState,
@@ -19,6 +28,46 @@ import {
   EXPRESS_EDITING_FALLBACK_LABEL,
   getExpressEditingProjectLabel,
 } from "./sleevelessExpressResume";
+
+function minimalSavedProject(
+  name: string,
+  options: { dropShoulder?: boolean } = {},
+): CustomPatternProject {
+  const style = options.dropShoulder
+    ? withDropShoulderConstructionAuthored(
+        {
+          garmentStyle: "pullover",
+          neckline: "round",
+          patternMode: "express",
+        },
+        "long",
+      )
+    : { garmentStyle: "pullover", neckline: "round" };
+  return {
+    id: `proj-${name.replace(/\s+/g, "-").toLowerCase()}`,
+    name,
+    family: "sleeveless",
+    source: "express",
+    notes: "",
+    customOverrides: options.dropShoulder
+      ? { [CONSTRUCTION_FAMILY_OVERRIDE_KEY]: DROP_SHOULDER_CONSTRUCTION }
+      : {},
+    createdAt: "t1",
+    updatedAt: "t2",
+    version: 1,
+    pattern: {
+      id: `pattern-${name.replace(/\s+/g, "-").toLowerCase()}`,
+      patternType: "sleeveless",
+      status: "draft",
+      version: 1,
+      createdAt: "t1",
+      updatedAt: "t1",
+      style,
+      fit: { sizingChart: "misses", selectedSize: "4" },
+      patternProject: { title: "", notes: "" },
+    },
+  };
+}
 
 describe("buildDefaultSleevelessPatternTitle", () => {
   it("uses only audience + family (no neckline/size/garment details)", () => {
@@ -74,6 +123,11 @@ describe("buildDefaultSleevelessPatternTitle", () => {
 });
 
 describe("online pattern project display", () => {
+  beforeEach(() => {
+    stubLocalStorage();
+    localStorage.clear();
+  });
+
   it("uses saved title when present", () => {
     expect(
       getSleevelessPatternOnlineHeading({ title: "Sue's Special pattern", notes: "" }),
@@ -215,5 +269,125 @@ describe("resolvePatternPrintDocumentTitle", () => {
     expect(resolvePatternPrintDocumentTitle("Men's Drop Shoulder", dropShoulderPageTitle)).toBe(
       "Men's Drop Shoulder",
     );
+  });
+
+  it("two differently named patterns produce two different PDF filenames", () => {
+    const a = resolvePatternPrintDocumentTitle("Aubrey's Green Vest", dropShoulderPageTitle);
+    const b = resolvePatternPrintDocumentTitle("Mom's Birthday Cardigan", dropShoulderPageTitle);
+    expect(a).toBe("Aubrey's Green Vest");
+    expect(b).toBe("Mom's Birthday Cardigan");
+    expect(a).not.toBe(b);
+    expect(a).not.toBe(dropShoulderPageTitle);
+    expect(b).not.toBe(dropShoulderPageTitle);
+  });
+});
+
+describe("resolvePatternDisplayName — saved name is source of truth", () => {
+  beforeEach(() => {
+    stubLocalStorage();
+    localStorage.clear();
+  });
+
+  it("uses a named saved Sleeveless pattern title for display and PDF fields", () => {
+    saveCurrentPattern({
+      style: { garmentStyle: "pullover", neckline: "round" },
+      fit: { sizingChart: "misses", selectedSize: "4" },
+      patternProject: { title: "Sue's Sleeveless Vest", notes: "", titleCustomized: true },
+    });
+    writeActiveCustomPatternProjectId("proj-sl", "Sue's Sleeveless Vest");
+
+    expect(resolvePatternDisplayName()).toBe("Sue's Sleeveless Vest");
+    expect(getPatternProjectPrintFields().title).toBe("Sue's Sleeveless Vest");
+    expect(getSleevelessPatternOnlineHeading(getPatternProjectMeta())).toBe("Sue's Sleeveless Vest");
+    expect(
+      resolvePatternPrintDocumentTitle(
+        getPatternProjectPrintFields().title,
+        "Sleeveless Sweater Pattern | Knit it Now",
+      ),
+    ).toBe("Sue's Sleeveless Vest");
+  });
+
+  it("uses a named saved Drop Shoulder pattern title for display and PDF fields", () => {
+    saveCurrentPattern({
+      style: withDropShoulderConstructionAuthored(
+        { garmentStyle: "pullover", neckline: "round", patternMode: "express" },
+        "long",
+      ),
+      fit: { sizingChart: "misses", selectedSize: "4" },
+      patternProject: { title: "Cynthia's Drop Shoulder", notes: "", titleCustomized: true },
+    });
+    writeActiveCustomPatternProjectId("proj-ds", "Cynthia's Drop Shoulder");
+
+    expect(resolvePatternDisplayName()).toBe("Cynthia's Drop Shoulder");
+    expect(getPatternProjectPrintFields().title).toBe("Cynthia's Drop Shoulder");
+    expect(getSleevelessPatternOnlineHeading(getPatternProjectMeta())).toBe(
+      "Cynthia's Drop Shoulder",
+    );
+    expect(
+      resolvePatternPrintDocumentTitle(
+        getPatternProjectPrintFields().title,
+        "Drop Shoulder Sweater Pattern | Knit it Now",
+      ),
+    ).toBe("Cynthia's Drop Shoulder");
+  });
+
+  it("preserves the saved name when reopening and editing a saved pattern", () => {
+    const project = minimalSavedProject("Aubrey's Green Vest", { dropShoulder: true });
+    loadProjectIntoWorkingDraft(project);
+    writeActiveCustomPatternProjectId(project.id, project.name);
+
+    expect(getPatternProjectMeta().title).toBe("Aubrey's Green Vest");
+    expect(getPatternProjectMeta().titleCustomized).toBe(true);
+    expect(resolvePatternDisplayName()).toBe("Aubrey's Green Vest");
+    expect(resolvePatternProjectSaveNameFromState()).toBe("Aubrey's Green Vest");
+    expect(getPatternProjectPrintFields().title).toBe("Aubrey's Green Vest");
+  });
+
+  it("falls back to the linked saved name when draft title is empty", () => {
+    writeActiveCustomPatternProjectId("proj-1", "Linked Saved Name");
+    saveCurrentPattern({ patternProject: { title: "", notes: "" } });
+    expect(resolvePatternDisplayName()).toBe("Linked Saved Name");
+    expect(getPatternProjectPrintFields().title).toBe("Linked Saved Name");
+    expect(getSleevelessPatternOnlineHeading({ title: "", notes: "" })).toBe("Linked Saved Name");
+  });
+
+  it("falls back to a generic auto title only when no user name exists", () => {
+    saveCurrentPattern({
+      fit: { sizingChart: "misses", selectedSize: "4" },
+      style: { garmentStyle: "pullover", neckline: "round" },
+      patternProject: { title: "", notes: "" },
+    });
+    expect(resolvePatternDisplayName()).toBe("Women's Sleeveless");
+    expect(getPatternProjectPrintFields().title).toBe("Women's Sleeveless");
+    expect(
+      resolvePatternPrintDocumentTitle(
+        getPatternProjectPrintFields().title,
+        "Sleeveless Sweater Pattern | Knit it Now",
+      ),
+    ).toBe("Women's Sleeveless");
+  });
+
+  it("two differently named patterns resolve to two different PDF filenames", () => {
+    const pageTitle = "Drop Shoulder Sweater Pattern | Knit it Now";
+
+    saveCurrentPattern({
+      patternProject: { title: "Pattern One Vest", notes: "", titleCustomized: true },
+    });
+    const filenameA = resolvePatternPrintDocumentTitle(
+      getPatternProjectPrintFields().title,
+      pageTitle,
+    );
+
+    saveCurrentPattern({
+      patternProject: { title: "Pattern Two Cardigan", notes: "", titleCustomized: true },
+    });
+    const filenameB = resolvePatternPrintDocumentTitle(
+      getPatternProjectPrintFields().title,
+      pageTitle,
+    );
+
+    expect(filenameA).toBe("Pattern One Vest");
+    expect(filenameB).toBe("Pattern Two Cardigan");
+    expect(filenameA).not.toBe(filenameB);
   });
 });

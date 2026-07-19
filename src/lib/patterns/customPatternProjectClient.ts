@@ -208,6 +208,10 @@ export function buildSavePayloadFromWorkingDraft(
   let pattern = mergeWorkingDraftForCustomPatternSave(getCurrentPattern());
   const meta = getPatternProjectMeta(pattern);
   const resolvedName = (name ?? meta.title).trim() || "Untitled pattern";
+  // An explicit save/update name pins the title as user-owned so auto-title refresh cannot
+  // replace it after save. Unnamed payload builds keep the existing titleCustomized flag.
+  const titleCustomized =
+    meta.titleCustomized === true || (typeof name === "string" && Boolean(name.trim()));
   const measurementOverrides = loadMeasurementOverrides();
   const fitBase = patternSectionRecord(pattern.fit);
   const { cbMeasurementOverrides: _dropCb, ...fitWithoutCb } = fitBase;
@@ -244,6 +248,7 @@ export function buildSavePayloadFromWorkingDraft(
       patternProject: {
         ...meta,
         title: resolvedName,
+        ...(titleCustomized ? { titleCustomized: true } : {}),
       },
     },
     { customOverrides, allowDropShoulder },

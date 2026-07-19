@@ -409,6 +409,9 @@ export async function smartSaveCustomPatternProject(
       });
     }
     writeActiveCustomPatternProjectId(activeId, res.project.name);
+    // Pin the saved name on the working draft (as customized), same as create — so print/PDF and
+    // auto-title refresh keep the user-defined name instead of falling back to the page title.
+    savePatternProjectMeta({ title: res.project.name, titleCustomized: true });
     writeHydratedConstructionBaseline(res.project);
     captureSavedCustomPatternDirtyBaseline();
     notifySavedProjectLinkChanged(options.root ?? undefined);
