@@ -74,6 +74,22 @@ describe("resolveEffectiveNeckOpeningWidthInches", () => {
     ).toBe(8);
   });
 
+  it("falls back to legacy neck_opening_width when other neck keys are absent", () => {
+    expect(
+      resolveEffectiveNeckOpeningWidthInches({
+        fit: {
+          selectedMeasurements: {
+            finished_bust_chest: 40,
+            back_neck_to_hem: 22,
+            shoulder_width: 12,
+            neck_opening_width: 6,
+          },
+        },
+        style: { patternMode: "express" },
+      }),
+    ).toBe(6);
+  });
+
   it("uses override for custom-build when finishedNeckOpeningWidth is valid", () => {
     expect(
       resolveEffectiveNeckOpeningWidthInches(

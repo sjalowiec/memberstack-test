@@ -6,7 +6,7 @@ Status: partially implemented. Written after auditing the current data layer, St
 
 **No traditional database.** There's no Postgres/MySQL/Mongo anywhere in this repo. Persistent runtime data lives in **Netlify Blobs** (`@netlify/blobs`), used as a set of independent key-value stores, one per feature:
 
-- `custom-pattern-projects` — saved patterns, one JSON blob per project plus a hand-maintained `index.json` summary per user (`netlify/functions/lib/custom-pattern-projects-store.js`)
+- `custom-pattern-projects` — saved patterns, one JSON blob per project plus a hand-maintained `index.json` summary per user (`netlify/functions/lib/custom-pattern-projects-store.js`). Owner-only local inspect (by project UUID when Memberstack id is unknown): see `scripts/README.md` → `inspect-custom-pattern-project.mjs`.
 - `pattern-activity-log` — append-only events, one blob per event under `events/{date}/{id}.json` (`netlify/functions/lib/pattern-activity-store.js`)
 - `bookshelf-activity-log` — same append-only shape, separate store (`netlify/functions/admin-bookshelf-activity.ts`)
 

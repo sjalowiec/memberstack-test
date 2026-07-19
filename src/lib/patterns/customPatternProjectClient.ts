@@ -17,6 +17,7 @@ import {
   sanitizeSavedProjectForHydration,
   withDropShoulderConstructionFamily,
 } from "./patternConstructionIdentity";
+import { normalizePatternRecordNeckWidth } from "./customBuildEffectiveNeckOpeningWidth";
 import {
   getCurrentPattern,
   getPatternData,
@@ -496,7 +497,8 @@ function mergeWorkingDraftForCustomPatternSave(
  */
 export function loadProjectIntoWorkingDraft(project: CustomPatternProject): SleevelessPatternRecord {
   const sanitized = sanitizeSavedProjectForHydration(project);
-  const pattern = sanitized.pattern;
+  // Shared Sleeveless + Drop Shoulder load path: promote legacy neck aliases → neck_width.
+  const pattern = normalizePatternRecordNeckWidth(sanitized.pattern);
   const notes =
     typeof sanitized.notes === "string"
       ? sanitized.notes

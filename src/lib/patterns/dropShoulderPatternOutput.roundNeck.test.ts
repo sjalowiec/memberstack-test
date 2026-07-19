@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { generateDropShoulderPattern } from "./dropShoulderPatternOutput";
 import { buildDropShoulderBodyDiagramReplacements } from "./dropShoulderBodyNotationSvg";
+import {
+  buildDropShoulderBackJapaneseNotationReplacements,
+  buildDropShoulderFrontJapaneseNotationReplacements,
+} from "./dropShoulderBodyJapaneseNotation";
 import { buildDropShoulderSleeveDiagramReplacements } from "./sleevelessGarmentDiagramReplacements";
 import { computeDefaultMeasurementsFromChartRow } from "./sleevelessExpressSizeChartClient";
 import type { ChartRow } from "./sleevelessExpressSizeChartTypes";
@@ -89,6 +93,114 @@ function sleeveInstructionText(rows: SleevelessPatternDisplayRow[]): string {
     })
     .join("\n");
 }
+
+function blockParagraphText(rows: SleevelessPatternDisplayRow[]): string {
+  return frontBlockParagraphs(rows).join("\n");
+}
+
+function indexOfSection(rows: SleevelessPatternDisplayRow[], title: string): number {
+  return rows.findIndex((row) => row.kind === "section" && row.title === title);
+}
+
+function indexOfPiece(rows: SleevelessPatternDisplayRow[], title: string): number {
+  return rows.findIndex((row) => row.kind === "piece" && row.title === title);
+}
+
+/**
+ * Regression: some Drop Shoulder drafts store neck inches as `neck_opening_width` only
+ * (no `neck_width` / `neck_opening`). Written neckline generation must still run.
+ */
+function pulloverRoundWithNeckOpeningWidthAlias(): Record<string, unknown> {
+  const chart = computeDefaultMeasurementsFromChartRow(WOMENS_SIZE_1_CHART_ROW, "standard", {
+    bodyShape: "straight",
+  });
+  const { neck_width: _omitNeckWidth, ...rest } = chart as Record<string, number> & {
+    neck_width?: number;
+  };
+  return {
+    fit: {
+      sizingChart: "misses",
+      selectedSize: 1,
+      easeChoice: "standard",
+      selectedMeasurements: {
+        ...rest,
+        neck_opening_width: WOMENS_SIZE_1_CHART_ROW.neck_opening,
+      },
+    },
+    style: {
+      construction: "drop-shoulder",
+      constructionAuthored: "drop-shoulder",
+      recipientCategory: "misses",
+      neckline: "round",
+      bodyShape: "straight",
+      frontStyle: "closed",
+    },
+    yarnGaugeMachine: {
+      gaugeStitchesPerInch: 4,
+      gaugeRowsPerInch: 6,
+      availableNeedles: 200,
+    },
+  };
+}
+
+describe("generateDropShoulderPattern round-neck neck_opening_width alias", () => {
+  it("generates written back + front neckline instructions (no builder placeholder, no 0-stitch neck)", () => {
+    const patternData = pulloverRoundWithNeckOpeningWidthAlias();
+    const result = generateDropShoulderPattern(patternData);
+
+    expect(result.debug.necklineWidthInches).toBe(6);
+    expect(result.debug.necklineStitches).toBeGreaterThan(0);
+    expect(result.debug.shoulderStitches).toBeGreaterThan(0);
+
+    const backText = blockParagraphText(result.displayRows);
+    const frontText = blockParagraphText(result.frontDisplayRows);
+
+    expect(backText).toMatch(/Begin back neckline shaping/i);
+    expect(backText).toMatch(/Bind off/i);
+    expect(backText).not.toMatch(/Set neck opening width and shoulder width in the builder/);
+
+    expect(frontText).toMatch(/bind off the center/i);
+    expect(frontText).toMatch(/Place the opposite shoulder stitches on hold/i);
+    expect(frontText).toMatch(/Bind off the \d+ shoulder stitches/i);
+    expect(frontText).not.toMatch(/Set neck opening width and shoulder width in the builder/);
+
+    const backNeckIdx = indexOfSection(result.displayRows, "BACK NECKLINE & SHOULDERS");
+    const frontPieceIdx = indexOfPiece(result.frontDisplayRows, "FRONT");
+    const frontNeckIdx = indexOfSection(result.frontDisplayRows, "FRONT NECKLINE & SHOULDERS");
+    const sleevePieceIdx = indexOfPiece(result.sleeveDisplayRows, "SLEEVE");
+
+    expect(backNeckIdx).toBeGreaterThanOrEqual(0);
+    expect(frontNeckIdx).toBeGreaterThanOrEqual(0);
+    expect(frontPieceIdx).toBe(0);
+    expect(sleevePieceIdx).toBe(0);
+    // Neckline sections exist on their pieces before the next garment piece begins.
+    expect(backNeckIdx).toBeLessThan(result.displayRows.length);
+    expect(frontNeckIdx).toBeGreaterThan(frontPieceIdx);
+
+    const backPrint = renderSleevelessPrintPieceHtml(result.displayRows, "", "back");
+    const frontPrint = renderSleevelessPrintPieceHtml(result.frontDisplayRows, "", "front");
+    expect(backPrint).toMatch(/BACK NECKLINE/i);
+    expect(backPrint).toMatch(/Begin back neckline shaping/i);
+    expect(backPrint).not.toMatch(/Set neck opening width and shoulder width in the builder/);
+    expect(frontPrint).toMatch(/FRONT NECKLINE/i);
+    expect(frontPrint).toMatch(/bind off the center/i);
+    expect(frontPrint).not.toMatch(/Set neck opening width and shoulder width in the builder/);
+
+    const bodyRepl = buildDropShoulderBodyDiagramReplacements(result, "in", {
+      patternData,
+      measurementPiece: "back",
+    });
+    expect(Number(bodyRepl.NECK_STS)).toBeGreaterThan(0);
+    expect(bodyRepl.NECK_STS).not.toBe("0");
+
+    const backJp = buildDropShoulderBackJapaneseNotationReplacements(result, patternData);
+    const frontJp = buildDropShoulderFrontJapaneseNotationReplacements(result, patternData);
+    expect(backJp["jp-neckline-bo"]).toMatch(/^(bo|hold)\d+/);
+    expect(backJp["jp-neckline-bo"]).not.toMatch(/^(bo|hold)0$/);
+    expect(frontJp["jp-neckline-bo"]).toMatch(/^bo\d+/);
+    expect(frontJp["jp-neckline-bo"]).not.toBe("bo0");
+  });
+});
 
 describe("generateDropShoulderPattern round-neck front instructions", () => {
   it("Women's size 1 · 16/24 · pullover round: clarifies hold, one shoulder at a time, and even rows before bind-off", () => {

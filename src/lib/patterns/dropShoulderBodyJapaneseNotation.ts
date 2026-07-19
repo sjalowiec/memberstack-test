@@ -12,7 +12,6 @@ import {
   resolveEffectiveFrontNeckDepthInches,
 } from "./customBuildEffectiveNeckDepth";
 import { resolveEffectiveNeckOpeningWidthInches } from "./customBuildEffectiveNeckOpeningWidth";
-import { positiveMeasurementInches } from "./customBuildEffectiveArmholeDepth";
 import { calculateRoundNecklinePlan, isShallowHoldRoundPlan } from "./legoBlocks/roundNeckline";
 import { neckDecreaseStitchesPerSideFromOpening } from "./legoBlocks/vNeckline";
 import {
@@ -104,10 +103,8 @@ export function mergeDropShoulderNotationPatternData(
 }
 
 function neckOpeningInchesFromPatternData(patternData: Record<string, unknown>): number | undefined {
-  const resolved = resolveEffectiveNeckOpeningWidthInches(patternData);
-  if (resolved !== undefined) return resolved;
-  const sm = section(section(patternData.fit).selectedMeasurements);
-  return positiveMeasurementInches(sm.neck_opening_width);
+  // Includes legacy `neck_opening_width` via {@link resolveEffectiveNeckOpeningWidthInches}.
+  return resolveEffectiveNeckOpeningWidthInches(patternData);
 }
 
 /** Full neck opening stitch count — debug first, then body/shoulder math, then pattern measurements. */

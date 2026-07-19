@@ -112,4 +112,26 @@ describe("generateDropShoulderPattern V-neck front instructions", () => {
     expect(text).toMatch(/Decrease 1 stitch at the center-front \(neck\) edge/i);
     expect(text).toMatch(/stitches removed/i);
   });
+
+  it("still generates pullover V-neck written steps when only neck_opening_width is present", () => {
+    const { neck_opening: _omit, ...smWithoutNeckOpening } =
+      DROP_SHOULDER_PATTERN.fit.selectedMeasurements;
+    const pattern = {
+      ...DROP_SHOULDER_PATTERN,
+      fit: {
+        ...DROP_SHOULDER_PATTERN.fit,
+        selectedMeasurements: {
+          ...smWithoutNeckOpening,
+          neck_opening_width: 7,
+        },
+      },
+      style: { ...DROP_SHOULDER_PATTERN.style, neckline: "v" },
+    };
+    const result = generateDropShoulderPattern(pattern);
+    const text = frontBlockParagraphs(result.frontDisplayRows).join("\n");
+
+    expect(result.debug.necklineStitches).toBe(36);
+    expect(text).toMatch(/Divide for the V-neck at the center\./);
+    expect(text).not.toMatch(/Set neck opening width and shoulder width in the builder/);
+  });
 });

@@ -92,7 +92,6 @@ export type MeasurementOverrideKey =
   | "finishedNeckOpeningWidth"
   | "neckDepth"
   | "neckbandWidth"
-  | "sweaterNeckOpeningWidth"
   | "armholeDepth"
   | "shoulderWidth";
 

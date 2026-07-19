@@ -2629,7 +2629,7 @@ export function generateSleevelessBackPattern(
     (neckOpeningStitchesExplicit === undefined || neckOpeningStitchesExplicit <= 0)
   ) {
     warnings.push(
-      "Neck opening not set (neck_width, neck_opening, neckOpening, or neck_opening_stitches) — neckline stitch counts are placeholders."
+      "Neck opening not set (neck_width, neck_opening, neckOpening, neck_opening_width, or neck_opening_stitches) — neckline stitch counts are placeholders."
     );
   }
 
