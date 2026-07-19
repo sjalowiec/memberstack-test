@@ -153,7 +153,17 @@ export function distributeEvenly(count: number, startRow: number, endRow: number
   return out;
 }
 
-/** Inner-neck events for one post-center row index (stair bind-offs, hold groups, or deep singles). */
+/**
+ * Inner-neck events for one post-center row index (stair bind-offs, hold groups, or deep singles).
+ *
+ * Post-center garment RC is `firstRow + 1 + i` (local RC from neckline reset = `i + 1`).
+ *
+ * Deep round (center bind-off): matches written neck-edge schedule —
+ * stairs/singles on every other row starting at local RC:002 (002, 004, 006…).
+ * Local RC:001 is knit-even after the RC:000 center bind-off.
+ *
+ * Shallow hold (back): keeps the historical consecutive-stair then every-other hold layout.
+ */
 function backInnerNeckRow(
   i: number,
   neckPlan: RoundNecklineShapingResult,
@@ -167,6 +177,42 @@ function backInnerNeckRow(
   if (i >= neckInnerRowSpan) {
     return { events, innerNetL, innerNetR };
   }
+
+  if (!shallowHold) {
+    // Deep: local RC 2, 4, 6… → action index 0, 1, 2…
+    const localFromCenter = i + 1;
+    if (localFromCenter % 2 !== 0) {
+      return { events, innerNetL, innerNetR };
+    }
+    const actionIndex = localFromCenter / 2 - 1;
+    if (actionIndex < stairRowCount) {
+      const leftStair = neckPlan.left.stairSteps;
+      const rightStair = neckPlan.right.stairSteps;
+      const lb = leftStair[actionIndex] ?? 0;
+      const rb = rightStair[actionIndex] ?? 0;
+      if (lb > 0) {
+        events.push({ kind: "bindOff", side: "left", edge: "inner", amount: lb });
+        innerNetL += lb;
+      }
+      if (rb > 0) {
+        events.push({ kind: "bindOff", side: "right", edge: "inner", amount: rb });
+        innerNetR += rb;
+      }
+      return { events, innerNetL, innerNetR };
+    }
+    const si = actionIndex - stairRowCount;
+    if (si < neckPlan.left.singleDecreaseCount) {
+      events.push({ kind: "decrease", side: "left", edge: "inner", amount: 1 });
+      innerNetL += 1;
+    }
+    if (si < neckPlan.right.singleDecreaseCount) {
+      events.push({ kind: "decrease", side: "right", edge: "inner", amount: 1 });
+      innerNetR += 1;
+    }
+    return { events, innerNetL, innerNetR };
+  }
+
+  // Shallow hold: stairs on consecutive post-center rows, then holds every other row.
   if (i < stairRowCount) {
     const leftStair = neckPlan.left.stairSteps;
     const rightStair = neckPlan.right.stairSteps;
@@ -187,26 +233,15 @@ function backInnerNeckRow(
     return { events, innerNetL, innerNetR };
   }
   const si = j / 2;
-  if (shallowHold) {
-    const lb = neckPlan.left.holdGroups[si] ?? 0;
-    const rb = neckPlan.right.holdGroups[si] ?? 0;
-    if (lb > 0) {
-      events.push({ kind: "hold", side: "left", edge: "inner", amount: lb });
-      innerNetL += lb;
-    }
-    if (rb > 0) {
-      events.push({ kind: "hold", side: "right", edge: "inner", amount: rb });
-      innerNetR += rb;
-    }
-  } else {
-    if (si < neckPlan.left.singleDecreaseCount) {
-      events.push({ kind: "decrease", side: "left", edge: "inner", amount: 1 });
-      innerNetL += 1;
-    }
-    if (si < neckPlan.right.singleDecreaseCount) {
-      events.push({ kind: "decrease", side: "right", edge: "inner", amount: 1 });
-      innerNetR += 1;
-    }
+  const lb = neckPlan.left.holdGroups[si] ?? 0;
+  const rb = neckPlan.right.holdGroups[si] ?? 0;
+  if (lb > 0) {
+    events.push({ kind: "hold", side: "left", edge: "inner", amount: lb });
+    innerNetL += lb;
+  }
+  if (rb > 0) {
+    events.push({ kind: "hold", side: "right", edge: "inner", amount: rb });
+    innerNetR += rb;
   }
   return { events, innerNetL, innerNetR };
 }
@@ -277,7 +312,8 @@ function neckInnerRowSpanForPlan(neckPlan: RoundNecklineShapingResult, stairRowC
     return stairRowCount + (maxHold > 0 ? 2 * maxHold - 1 : 0);
   }
   const maxSingles = Math.max(neckPlan.left.singleDecreaseCount, neckPlan.right.singleDecreaseCount);
-  return stairRowCount + (maxSingles > 0 ? 2 * maxSingles - 1 : 0);
+  // Deep: actions at local RC 2, 4, …, 2*(stairs+singles) → max post-center index i = 2*(s+n)-1.
+  return 2 * (stairRowCount + maxSingles);
 }
 
 /**
@@ -755,24 +791,12 @@ export function buildTimeline(inputs: ShapingTimelineInputs, options?: BuildTime
     innerNetL = inner.innerNetL;
     innerNetR = inner.innerNetR;
     if (innerNetL > 0) {
-      const lb = neckPlan.left.stairSteps[i] ?? 0;
-      if (i < stairRowCount && lb > 0) {
-        leftInnerEdge -= lb;
-        leftCount -= lb;
-      } else if (i >= stairRowCount) {
-        leftInnerEdge -= innerNetL;
-        leftCount -= innerNetL;
-      }
+      leftInnerEdge -= innerNetL;
+      leftCount -= innerNetL;
     }
     if (innerNetR > 0) {
-      const rb = neckPlan.right.stairSteps[i] ?? 0;
-      if (i < stairRowCount && rb > 0) {
-        rightInnerEdge += rb;
-        rightCount -= rb;
-      } else if (i >= stairRowCount) {
-        rightInnerEdge += innerNetR;
-        rightCount -= innerNetR;
-      }
+      rightInnerEdge += innerNetR;
+      rightCount -= innerNetR;
     }
 
     const wantShoulderL = (shoulderLeftPerRow[i] ?? 0) + carryShoulderL;

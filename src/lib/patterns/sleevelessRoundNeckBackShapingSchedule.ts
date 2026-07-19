@@ -361,7 +361,7 @@ export function backShapingScheduleToMapData(
     rowMax: localEnd,
     centerStitches: schedule.centerStitches,
     paths,
-    edgeLabels: { shoulder: "Shoulder Edge", neck: "Neck Edge" },
+    edgeLabels: { shoulder: "Armhole Edge", neck: "Neck Edge" },
   };
 }
 

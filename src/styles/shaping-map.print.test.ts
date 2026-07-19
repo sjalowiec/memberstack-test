@@ -11,6 +11,17 @@ function printBlock(css: string): string {
   return match?.[0] ?? "";
 }
 
+describe("shaping-map label typography", () => {
+  const shapingMapCss = readWorkspaceFile("src/styles/shaping-map.css");
+
+  it("keeps row-number font size at least the step-label font size", () => {
+    const stepSize = Number(shapingMapCss.match(/\.shaping-map-step-label\s*\{[^}]*font-size:\s*([\d.]+)px/)?.[1]);
+    const rowSize = Number(shapingMapCss.match(/\.shaping-map-row-number\s*\{[^}]*font-size:\s*([\d.]+)px/)?.[1]);
+    expect(stepSize).toBeGreaterThan(0);
+    expect(rowSize).toBeGreaterThanOrEqual(stepSize);
+  });
+});
+
 describe("ns-visual-guides print layout regression", () => {
   const shapingMapCss = readWorkspaceFile("src/styles/shaping-map.css");
   const printCss = printBlock(shapingMapCss);

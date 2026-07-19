@@ -235,22 +235,24 @@ describe("shapingScheduleToMapData (adapter)", () => {
     expect(neckPath.startX).toBe(0);
   });
 
-  it("labels the outer edge Shoulder Edge and the center-front edge Neck Edge (never Left/Right)", () => {
+  it("labels the outer edge Armhole Edge and the center-front edge Neck Edge (never Left/Right)", () => {
     const timeline = [
       mkRow(500, [center(10)]),
       mkRow(502, [rightNeck(1)]),
       mkRow(504, [rightShoulder(6)]),
     ];
     const map = buildSleevelessRoundNeckShapingMapData(timeline)!;
-    expect(map.edgeLabels).toEqual({ shoulder: "Shoulder Edge", neck: "Neck Edge" });
+    expect(map.edgeLabels).toEqual({ shoulder: "Armhole Edge", neck: "Neck Edge" });
 
     // The renderer emits both callouts as upright <text>, exactly once each, never Left/Right Edge.
     const svg = renderShapingMapSvg(map);
     expect(svg).toContain("shaping-map-edge-label");
-    expect(svg).toContain(">Shoulder Edge<");
+    expect(svg).toContain(">Armhole Edge<");
+    expect(svg).not.toContain("Shoulder Edge");
     expect(svg).toContain(">Neck Edge<");
     expect(svg.match(/>Neck Edge</g)).toHaveLength(1);
-    expect(svg).toContain(">10 Center Stitches<"); // center-stitch label kept
+    expect(svg).toContain(">Bind off 10 center stitches<");
+    expect(svg).not.toContain("Center Stitches");
     expect(svg).not.toMatch(/Left Edge|Right Edge/);
   });
 
@@ -264,11 +266,13 @@ describe("shapingScheduleToMapData (adapter)", () => {
     const normal = renderShapingMapSvg(map, { mirror: false });
     const mirrored = renderShapingMapSvg(map, { mirror: true });
 
-    // Both orientations show the identical upright labels and center-stitch callout.
+    // Both orientations show the identical upright labels and center bind-off callout.
     for (const svg of [normal, mirrored]) {
-      expect(svg).toContain(">Shoulder Edge<");
+      expect(svg).toContain(">Armhole Edge<");
+      expect(svg).not.toContain("Shoulder Edge");
       expect(svg).toContain(">Neck Edge<");
-      expect(svg).toContain(">8 Center Stitches<");
+      expect(svg).toContain(">Bind off 8 center stitches<");
+      expect(svg).not.toContain("Center Stitches");
     }
     // The mirror must NOT be done with a scale(-1) transform (which would render text backward).
     expect(mirrored).not.toMatch(/scale\(\s*-1/);
@@ -310,7 +314,7 @@ describe("sleeveless shaped-shoulder regression ? frozen ShapingMapData", () => 
       rowMin: 500,
       rowMax: 509,
       centerStitches: 10,
-      edgeLabels: { shoulder: "Shoulder Edge", neck: "Neck Edge" },
+      edgeLabels: { shoulder: "Armhole Edge", neck: "Neck Edge" },
       paths: [
         {
           id: "shoulder",
@@ -347,7 +351,7 @@ describe("sleeveless shaped-shoulder regression ? frozen ShapingMapData", () => 
       rowMin: 200,
       rowMax: 202,
       centerStitches: 10,
-      edgeLabels: { shoulder: "Shoulder Edge", neck: "Neck Edge" },
+      edgeLabels: { shoulder: "Armhole Edge", neck: "Neck Edge" },
       paths: [
         {
           id: "neck",

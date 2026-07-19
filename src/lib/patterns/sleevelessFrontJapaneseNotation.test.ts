@@ -478,7 +478,8 @@ describe("buildFrontJapaneseNotationReplacements", () => {
     expect(repl["jp-neckline-shaping"]).not.toBe(timelineOnly);
     const shapingLines = repl["jp-neckline-shaping"].split("\n").filter(Boolean);
     if (fromChart.length > 1) {
-      expect(shapingLines).toEqual(expect.arrayContaining(["1s-2r-2x", "2s-1r-1x"]));
+      // Deep round: stairs every other row (2s-2r-…), then singles every other row (1s-2r-…).
+      expect(shapingLines).toEqual(expect.arrayContaining(["1s-2r-2x", "2s-2r-1x"]));
     } else {
       expect(shapingLines.some((l) => /^1s-1r-\d+x$/.test(l) || /^1s-2r-\d+x$/.test(l))).toBe(true);
     }

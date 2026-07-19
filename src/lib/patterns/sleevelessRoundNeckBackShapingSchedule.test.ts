@@ -224,18 +224,20 @@ describe("backShapingScheduleToMapData", () => {
     expect(shoulderPath.startRow).toBe(122 - firstArmholeRc);
   });
 
-  it("labels edges Shoulder Edge / Neck Edge for the SVG renderer", () => {
+  it("labels edges Armhole Edge / Neck Edge for the SVG renderer", () => {
     const timeline = [
       mkRow(500, [centerHold(8)]),
       mkRow(502, [rightNeck(1)]),
       mkRow(504, [rightShoulder(6)]),
     ];
     const map = buildSleevelessRoundNeckBackShapingMapData(timeline)!;
-    expect(map!.edgeLabels).toEqual({ shoulder: "Shoulder Edge", neck: "Neck Edge" });
+    expect(map!.edgeLabels).toEqual({ shoulder: "Armhole Edge", neck: "Neck Edge" });
     const svg = renderShapingMapSvg(map!);
-    expect(svg).toContain(">Shoulder Edge<");
+    expect(svg).toContain(">Armhole Edge<");
+    expect(svg).not.toContain("Shoulder Edge");
     expect(svg).toContain(">Neck Edge<");
-    expect(svg).toContain(">8 Center Stitches<");
+    expect(svg).toContain(">Bind off 8 center stitches<");
+    expect(svg).not.toContain("Center Stitches");
   });
 });
 

@@ -21,6 +21,10 @@ import {
   buildActiveSideInstructionTableRows,
   isCenterNecklineSetupChecklistRow,
 } from "./neckShoulderActiveSideChecklist";
+import { calculateRoundNecklinePlan } from "./legoBlocks/roundNeckline";
+import { shapingActionRowNumbers } from "./evenShapingSchedule";
+import { roundNeckPlanOneSideNeckEdgeWrittenLines } from "./roundNeckPlanPresentation";
+import { NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL } from "./neckShoulderShapingChart";
 
 const DROP_SHOULDER_BASE = {
   fit: {
@@ -79,6 +83,74 @@ describe("drop-shoulder front neckline shaping chart", () => {
     );
     expect(html).toContain("Front Neckline Shaping Chart");
     expect(html).not.toContain("First Shoulder Checklist");
+  });
+
+  it("matches written front neck-edge RCs: center at 000, first edge BO at 002, then every 2 rows", () => {
+    const result = generateDropShoulderPattern(DROP_SHOULDER_BASE);
+    const plan = calculateRoundNecklinePlan({
+      necklineStitches: result.debug.necklineStitches!,
+      necklineDepthRows: result.debug.frontNeckDepthRows!,
+    });
+    expect(plan.strategy).not.toBe("shallow-round");
+    expect(plan.centerBindOff).toBeGreaterThan(0);
+    expect(plan.right.stairSteps.length).toBeGreaterThan(0);
+
+    const writtenLines = roundNeckPlanOneSideNeckEdgeWrittenLines(plan, "right", {
+      necklineStartRc: 0,
+    });
+    const expectedStairRcs = shapingActionRowNumbers(2, plan.right.stairSteps.length, 2);
+    const expectedSingleRcs = shapingActionRowNumbers(
+      2 * (plan.right.stairSteps.length + 1),
+      plan.right.singleDecreaseCount,
+      2,
+    );
+    const expectedNeckRcs = [...expectedStairRcs, ...expectedSingleRcs];
+
+    expect(writtenLines.some((line) => line.includes(`RC: ${expectedStairRcs.join(", ")}`))).toBe(
+      true,
+    );
+    if (expectedSingleRcs.length > 0) {
+      expect(
+        writtenLines.some((line) => line.includes(`RC: ${expectedSingleRcs.join(", ")}`)),
+      ).toBe(true);
+    }
+
+    const neckStart = result.debug.frontNecklineStartRC!;
+    const timelineNeckLocals = (result.frontNeckShoulderTimeline ?? [])
+      .filter((row) =>
+        row.events.some(
+          (e) =>
+            e.edge === "inner" &&
+            e.side === "right" &&
+            (e.kind === "bindOff" || e.kind === "decrease"),
+        ),
+      )
+      .map((row) => row.row - neckStart);
+    expect(timelineNeckLocals).toEqual(expectedNeckRcs);
+
+    const chart = result.frontNeckShoulderShapingChart;
+    const activeSideRcStart = dropShoulderFrontChartActiveSideRcStart(
+      chart,
+      result.debug.frontNecklineStartRC,
+    );
+    expect(activeSideRcStart).toBe(0);
+    const checklist = buildActiveSideInstructionTableRows(chart, activeSideRcStart, {
+      includeCenterNecklineSetupRow: true,
+    });
+    expect(checklist[0]!.rc).toBe(0);
+    expect(isCenterNecklineSetupChecklistRow(checklist[0]!)).toBe(true);
+
+    const chartNeckRcs = checklist
+      .filter(
+        (row) =>
+          row.edge === "Neck" &&
+          row.action !== NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL &&
+          !isCenterNecklineSetupChecklistRow(row),
+      )
+      .map((row) => row.rc);
+    expect(chartNeckRcs[0]).toBe(2);
+    expect(chartNeckRcs).toEqual(expectedNeckRcs);
+    expect(chartNeckRcs).toEqual(timelineNeckLocals);
   });
 
   it("omits the Before Shaping / Divide the Neckline preamble and starts the chart at RC:000", () => {

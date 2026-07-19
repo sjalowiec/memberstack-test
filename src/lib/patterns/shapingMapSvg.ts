@@ -7,7 +7,7 @@
  *   - a black stepped shaping path that reads as ONE continuous neckline/shoulder edge
  *   - small step labels showing bind-off / decrease counts (e.g. -6, -5, -1, -4)
  *   - row numbers down the right side
- *   - a "N Center Stitches" label at the lower right (under the final neck step)
+ *   - a "Bind off N center stitches" label at the lower neck (under the final neck step)
  *
  * IMPORTANT: This renderer is intentionally isolated and driven ENTIRELY by a small
  * normalized data structure ({@link ShapingMapData}). It does NOT parse written
@@ -60,9 +60,9 @@ export type ShapingMapData = {
   /** Highest row number shown (top of the map). */
   rowMax: number;
   /**
-   * Optional "N Center Stitches" callout. Drawn as a flat bind-off segment that
-   * continues from the END of the last path (so it connects to the neck shaping),
-   * with the label placed just below it at the lower right.
+   * Optional center bind-off callout (`Bind off N center stitches`). Drawn as a flat
+   * bind-off segment that continues from the END of the last path (so it connects to
+   * the neck shaping), with the label placed just below it.
    */
   centerStitches?: number;
   paths: ShapingMapPath[];
@@ -105,23 +105,37 @@ export type RenderShapingMapOptions = {
 
 const DEFAULT_CELL = 14;
 const PAD_LEFT = 18;
-const PAD_TOP = 20;
-const PAD_RIGHT = 66; // room for right-side row numbers
-const PAD_BOTTOM = 46; // room for the center-stitches label
+/** Top margin above the grid — keeps the top shoulder bind-off label from hugging the SVG edge. */
+export const SHAPING_MAP_PAD_TOP_PX = 32;
+const PAD_RIGHT = 72; // room for enlarged right-side row numbers
+const PAD_BOTTOM = 46; // room for the center bind-off label
 const MIN_SIDE_MARGIN = 8;
 /** Keep in sync with `.shaping-map-step-label` in shaping-map.css */
 export const SHAPING_MAP_STEP_LABEL_FONT_PX = 20;
-/** Vertical gap between the black outline and step-label center (consistent for every step). */
-export const SHAPING_MAP_STEP_LABEL_OUTLINE_OFFSET_PX = 16;
+/**
+ * Horizontal gap (px) between the black outline and a step label.
+ * Labels sit to the visual left of the outline so they never sit on the stroke.
+ */
+export const SHAPING_MAP_STEP_LABEL_OUTLINE_OFFSET_PX = 18;
+/**
+ * Extra upward offset (px) for the centered final shoulder bind-off label so it sits
+ * clearly above the horizontal shoulder line (SVG y decreases upward).
+ */
+export const SHAPING_MAP_SHOULDER_LABEL_ABOVE_LINE_PX = 14;
+/** Keep in sync with `.shaping-map-row-number` in shaping-map.css */
+export const SHAPING_MAP_ROW_NUMBER_FONT_PX = SHAPING_MAP_STEP_LABEL_FONT_PX;
 /** Keep in sync with `.shaping-map-center-label` in shaping-map.css */
-export const SHAPING_MAP_CENTER_LABEL_FONT_PX = 11.5;
+export const SHAPING_MAP_CENTER_LABEL_FONT_PX = 12;
 /** Extra left reserve beyond measured center-label width (scales with digit count). */
-const CENTER_LABEL_MARGIN_PAD_PX = 12;
+const CENTER_LABEL_MARGIN_PAD_PX = 16;
+/** Vertical offset of the center bind-off label below its row line (smaller = closer to the outline). */
+const CENTER_LABEL_BELOW_ROW_PX = 12;
 // Extra breathing room reserved only when the optional edge callouts are present, so
-// "Shoulder Edge" sits in a clear band above the top step and "Neck Edge" sits clearly
-// below the center-stitches label. Sized for the larger edge-label font.
+// "Armhole Edge" sits in a clear band above the top step and "Neck Edge" sits clearly
+// below the center bind-off label. Sized for the larger edge-label font.
 const EDGE_LABEL_TOP_GAP = 26;
-const EDGE_LABEL_BOTTOM_GAP = 30;
+/** Space from the center bind-off baseline down to the "Neck Edge" callout. */
+const EDGE_LABEL_BOTTOM_GAP = 40;
 
 function escapeXml(text: string): string {
   return String(text ?? "")
@@ -131,10 +145,10 @@ function escapeXml(text: string): string {
     .replace(/"/g, "&quot;");
 }
 
-/** Shared center-stitch callout used by every pattern adapter that supplies `centerStitches`. */
+/** Shared center bind-off callout used by every pattern adapter that supplies `centerStitches`. */
 export function formatCenterStitchesLabel(centerStitches: number): string {
   const n = Math.max(0, Math.floor(centerStitches));
-  return `${n} Center Stitches`;
+  return n === 1 ? "Bind off 1 center stitch" : `Bind off ${n} center stitches`;
 }
 
 /** Rough width estimate for upright sans-serif labels (avoids clipping without a DOM measure). */
@@ -142,16 +156,29 @@ function estimateTextWidthPx(text: string, fontSizePx: number): number {
   return Math.max(0, text.length) * fontSizePx * 0.62;
 }
 
-/** Pixel y for a step label: centered above the horizontal outline, never on the stroke. */
+/**
+ * Pixel y for a step label: vertically centered on the grid row where the action occurs.
+ * Keep in sync with `dominant-baseline: central` on `.shaping-map-step-label`.
+ */
 export function stepLabelCenterY(
   row: number,
   yPx: (row: number) => number,
 ): number {
-  return (
-    yPx(row) -
-    SHAPING_MAP_STEP_LABEL_OUTLINE_OFFSET_PX -
-    SHAPING_MAP_STEP_LABEL_FONT_PX / 2
-  );
+  return yPx(row);
+}
+
+/**
+ * Pixel x for a step label (pre-layout-shift, post-mirror): sits to the visual left of
+ * the outline with a consistent gap. Pass both ends of the horizontal segment in
+ * data-space pixels; the visual-left end is chosen after `fx` so mirror stays correct.
+ */
+export function stepLabelDrawX(
+  segX0Px: number,
+  segX1Px: number,
+  fx: (px: number) => number,
+): number {
+  const visualLeftOutlineX = Math.min(fx(segX0Px), fx(segX1Px));
+  return visualLeftOutlineX - SHAPING_MAP_STEP_LABEL_OUTLINE_OFFSET_PX;
 }
 
 function textLeftExtent(
@@ -164,11 +191,29 @@ function textLeftExtent(
   return x - widthPx / 2;
 }
 
+type StepLabelGeometry = {
+  segX0: number;
+  segX1: number;
+  row: number;
+  text: string;
+  /**
+   * When true, the label is centered on its horizontal segment (`text-anchor="middle"`)
+   * and lifted above the stroke. Used for every labeled step on the shoulder path.
+   * Neck-edge step labels stay left of the outline.
+   */
+  centerOnSegment: boolean;
+};
+
 type PathGeometry = {
   /** Absolute grid points (stitch X, row) tracing the stepped path. */
   points: { x: number; row: number }[];
-  /** One entry per step, for placing the small count label on the horizontal run. */
-  labels: { midX: number; row: number; text: string }[];
+  /**
+   * One entry per step, for placing the count label beside the horizontal run.
+   * `segX0` / `segX1` are the stitch-space ends of that run; the renderer picks the
+   * visual-left end after mirroring so labels stay clear of the outline (unless
+   * `centerOnSegment` is set).
+   */
+  labels: StepLabelGeometry[];
   /** Final point of the path (where a center segment can attach). */
   endX: number;
   endRow: number;
@@ -195,11 +240,22 @@ function tracePath(path: ShapingMapPath): PathGeometry {
   let maxRow = row;
   let minRow = row;
 
+  const centerShoulderLabels = path.id === "shoulder";
+
   for (const step of path.steps) {
     const nx = x + dir * step.stitches;
     if (step.stitches !== 0) {
       const text = step.label ?? `-${step.stitches}`;
-      if (text) labels.push({ midX: (x + nx) / 2, row, text });
+      if (text) {
+        labels.push({
+          segX0: x,
+          segX1: nx,
+          row,
+          text,
+          // Every shoulder bind-off sits centered above its segment; neck stays left-of-outline.
+          centerOnSegment: centerShoulderLabels,
+        });
+      }
     }
     x = nx;
     points.push({ x, row });
@@ -211,6 +267,11 @@ function tracePath(path: ShapingMapPath): PathGeometry {
   }
 
   return { points, labels, endX: x, endRow: row, dir, maxX, maxRow, minRow };
+}
+
+/** Midpoint of a horizontal step segment in stitch space. */
+export function stepLabelSegmentMidX(segX0: number, segX1: number): number {
+  return (segX0 + segX1) / 2;
 }
 
 /**
@@ -258,7 +319,7 @@ export function renderShapingMapSvg(
 
   const shoulderEdgeLabel = data.edgeLabels?.shoulder?.trim() ?? "";
   const neckEdgeLabel = data.edgeLabels?.neck?.trim() ?? "";
-  const padTop = PAD_TOP + (shoulderEdgeLabel ? EDGE_LABEL_TOP_GAP : 0);
+  const padTop = SHAPING_MAP_PAD_TOP_PX + (shoulderEdgeLabel ? EDGE_LABEL_TOP_GAP : 0);
   const padBottom = PAD_BOTTOM + (neckEdgeLabel ? EDGE_LABEL_BOTTOM_GAP : 0);
 
   const centerLabelText = centerStitches > 0 ? formatCenterStitchesLabel(centerStitches) : "";
@@ -290,7 +351,9 @@ export function renderShapingMapSvg(
     !mirror ? anchor : anchor === "start" ? "end" : anchor === "end" ? "start" : "middle";
 
   const neckSideX = centerSeg ? xPx(Math.max(centerSeg.x1, centerSeg.x2)) : gridRight;
-  const centerLabelBaseY = centerSeg ? yPx(centerSeg.row) + 18 : gridBottom + 26;
+  const centerLabelBaseY = centerSeg
+    ? yPx(centerSeg.row) + CENTER_LABEL_BELOW_ROW_PX
+    : gridBottom + 26;
   const neckAnchor = flipAnchor("end");
 
   let minContentX = gridLeft;
@@ -298,10 +361,14 @@ export function renderShapingMapSvg(
     for (const lbl of t.labels) {
       if (!lbl.text.trim()) continue;
       const stepWidth = estimateTextWidthPx(lbl.text, SHAPING_MAP_STEP_LABEL_FONT_PX);
-      minContentX = Math.min(
-        minContentX,
-        textLeftExtent(fx(xPx(lbl.midX)), "middle", stepWidth),
-      );
+      if (lbl.centerOnSegment) {
+        const midX = fx(xPx(stepLabelSegmentMidX(lbl.segX0, lbl.segX1)));
+        minContentX = Math.min(minContentX, textLeftExtent(midX, "middle", stepWidth));
+      } else {
+        const stepX = stepLabelDrawX(xPx(lbl.segX0), xPx(lbl.segX1), fx);
+        // Left-of-outline labels use text-anchor="end".
+        minContentX = Math.min(minContentX, textLeftExtent(stepX, "end", stepWidth));
+      }
     }
   }
   if (centerLabelText) {
@@ -325,16 +392,11 @@ export function renderShapingMapSvg(
     );
   }
 
-  const layoutOffsetX = Math.max(
-    0,
-    MIN_SIDE_MARGIN - minContentX,
-    centerLabelText && neckAnchor === "end"
-      ? centerLabelWidthPx + CENTER_LABEL_MARGIN_PAD_PX - fx(neckSideX)
-      : 0,
-    centerLabelText && neckAnchor === "start"
-      ? CENTER_LABEL_MARGIN_PAD_PX - fx(neckSideX)
-      : 0,
-  );
+  // Expand the viewBox so every callout (especially long center bind-off labels) stays
+  // inside x >= MIN_SIDE_MARGIN. Uses measured left extents — not CSS overflow hacks.
+  const leftOverflow = MIN_SIDE_MARGIN - minContentX;
+  const layoutOffsetX =
+    leftOverflow > 0 ? leftOverflow + CENTER_LABEL_MARGIN_PAD_PX : 0;
   const shiftX = (px: number): number => px + layoutOffsetX;
   const width = baseWidth + mirroredRowNumberShift + layoutOffsetX;
   const drawX = (px: number): number => shiftX(fx(px));
@@ -378,8 +440,9 @@ export function renderShapingMapSvg(
   const rowNumX = shiftX(gridRight + 8 + mirroredRowNumberShift);
   for (let r = rowMin; r <= rowMax; r++) {
     if (r % rowNumberInterval !== 0) continue;
+    // y = grid row line; dominant-baseline="central" keeps the glyph centered on that line.
     rowNumbers.push(
-      `<text class="shaping-map-row-number" x="${fmt(rowNumX)}" y="${fmt(yPx(r))}">${r}</text>`,
+      `<text class="shaping-map-row-number" x="${fmt(rowNumX)}" y="${fmt(yPx(r))}" dominant-baseline="central">${r}</text>`,
     );
   }
   parts.push(`<g>${rowNumbers.join("")}</g>`);
@@ -401,9 +464,21 @@ export function renderShapingMapSvg(
   for (const t of traced) {
     for (const lbl of t.labels) {
       if (!lbl.text.trim()) continue;
-      parts.push(
-        `<text class="shaping-map-step-label" x="${fmt(drawX(xPx(lbl.midX)))}" y="${fmt(stepLabelCenterY(lbl.row, yPx))}">${escapeXml(lbl.text)}</text>`,
-      );
+      if (lbl.centerOnSegment) {
+        // Shoulder bind-off: centered over its horizontal segment, lifted above the stroke.
+        const stepX = drawX(xPx(stepLabelSegmentMidX(lbl.segX0, lbl.segX1)));
+        const labelY =
+          stepLabelCenterY(lbl.row, yPx) - SHAPING_MAP_SHOULDER_LABEL_ABOVE_LINE_PX;
+        parts.push(
+          `<text class="shaping-map-step-label shaping-map-step-label--centered" x="${fmt(stepX)}" y="${fmt(labelY)}" text-anchor="middle" dominant-baseline="central">${escapeXml(lbl.text)}</text>`,
+        );
+      } else {
+        const stepX = shiftX(stepLabelDrawX(xPx(lbl.segX0), xPx(lbl.segX1), fx));
+        const labelY = stepLabelCenterY(lbl.row, yPx);
+        parts.push(
+          `<text class="shaping-map-step-label" x="${fmt(stepX)}" y="${fmt(labelY)}" text-anchor="end" dominant-baseline="central">${escapeXml(lbl.text)}</text>`,
+        );
+      }
     }
   }
 

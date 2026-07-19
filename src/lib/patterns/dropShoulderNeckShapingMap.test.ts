@@ -143,9 +143,11 @@ describe("drop-shoulder front round-neck shaping map", () => {
     expect(steppedMidAscent).toHaveLength(0);
 
     const svg = renderShapingMapSvg(map, { mirror: true });
-    expect(svg).toContain(">Shoulder Edge<");
+    expect(svg).toContain(">Armhole Edge<");
+    expect(svg).not.toContain("Shoulder Edge");
     expect(svg).toContain(">Neck Edge<");
-    expect(svg).toContain("Center Stitches");
+    expect(svg).toMatch(/>Bind off \d+ center stitch(?:es)?</);
+    expect(svg).not.toContain("Center Stitches");
   });
 
   it("detectShoulderRepresentationMode classifies completion-only bind-offs as straight", () => {
@@ -227,7 +229,10 @@ describe("drop-shoulder back round-neck shaping map", () => {
 
     const svg = renderShapingMapSvg(map!);
     expect(svg).toContain(">Neck Edge<");
-    expect(svg).toContain("Center Stitches");
+    expect(svg).toContain(">Armhole Edge<");
+    expect(svg).not.toContain("Shoulder Edge");
+    expect(svg).toMatch(/>Bind off \d+ center stitch(?:es)?</);
+    expect(svg).not.toContain("Center Stitches");
   });
 
   it("keeps the drop-shoulder front shaping map working alongside the back map", () => {

@@ -73,36 +73,43 @@
   stroke-linecap: round;
 }
 
-/* Step count labels (e.g. -6, -5, -1, -34). Sized for legibility in card, modal, and print. */
+/* Step count labels (e.g. -6, -5, -1, -34). Sized for legibility in card, modal, and print.
+ * text-anchor / dominant-baseline are also set inline so placement stays reliable. */
 .shaping-map-step-label {
   fill: #111111;
   font-size: 20px;
   font-weight: 700;
-  text-anchor: middle;
-  dominant-baseline: middle;
+  text-anchor: end;
+  dominant-baseline: central;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Right-side row numbers. */
+/* Shoulder bind-offs: centered over each horizontal segment (overrides end-anchor). */
+.shaping-map-step-label--centered {
+  text-anchor: middle;
+}
+
+/* Right-side row numbers — same size/weight as step labels; Y aligns to the grid row. */
 .shaping-map-row-number {
-  fill: #4b5563;
-  font-size: 9px;
+  fill: #111111;
+  font-size: 20px;
+  font-weight: 700;
   text-anchor: start;
-  dominant-baseline: middle;
+  dominant-baseline: central;
   font-variant-numeric: tabular-nums;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
-/* "N Center Stitches" callout, lower right (slightly stronger than the row numbers). */
+/* "Bind off N center stitches" callout. text-anchor is set inline (mirror flips start/end);
+ * do not pin text-anchor here — CSS would override the attribute and clip mirrored labels. */
 .shaping-map-center-label {
   fill: #1f2937;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
-  text-anchor: end;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
-/* Edge callouts ("Shoulder Edge" / "Neck Edge"). Larger than the step labels so they stay
+/* Edge callouts ("Armhole Edge" / "Neck Edge"). Larger than the step labels so they stay
  * legible at the embedded size, in the enlarged modal copy, and in print. Text-anchor is set
  * inline per label (so a mirrored map can flip the anchor while keeping the text upright). */
 .shaping-map-edge-label {

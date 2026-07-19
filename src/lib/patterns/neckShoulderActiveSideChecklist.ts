@@ -8,6 +8,7 @@ import { ACTIVE_SHOULDER_PARK_NONWORKING_SIDE_SENTENCE } from "./neckShoulderAct
 import type { NeckShoulderShapingChart, NeckShoulderShapingChartRow } from "./neckShoulderShapingChart";
 import {
   NECK_SHOULDER_PRINT_KNIT_EVEN_LABEL,
+  isFullWidthVNeckFrontStyleChart,
   isSleevelessCardiganFrontNeckShoulderChart,
 } from "./neckShoulderShapingChart";
 import type { RowEntry, ShapingEvent } from "./shapingTimeline";
@@ -20,6 +21,18 @@ type ActiveSideScheduledAction = {
   edge: ActiveSideEdge;
   amount: number;
   kind: "bindOff" | "decrease" | "hold";
+};
+
+type ActiveSideActionSource = {
+  initialStitches: number;
+  finalSourceRelativeRow: number;
+  actions: ActiveSideScheduledAction[];
+  /**
+   * When true, checklist RCs follow the timeline/written deep-round schedule
+   * (center BO at local 000, neck-edge actions at 002, 004, …) without Neck-odd padding.
+   * Cardigan, V-neck, shallow-front, and back-neck keep the legacy parity path.
+   */
+  alignDisplayRcToTimeline: boolean;
 };
 
 export type ActiveSideInstructionTableRow = {
@@ -245,8 +258,18 @@ function edgeForActiveSideCarriagePosition(position: "Right" | "Left"): ActiveSi
   return position === "Right" ? "Armhole" : "Neck";
 }
 
+/** Legacy carriage parity: Armhole on even RC, Neck on odd RC. */
 function requiredParityForActiveSideEdge(edge: ActiveSideEdge): 0 | 1 {
   return edge === "Armhole" ? 0 : 1;
+}
+
+/** Deep round pullover: center stitches are bound off (not held). */
+function timelineHasDeepRoundCenterBindOff(timeline: readonly RowEntry[]): boolean {
+  const first = timeline[0];
+  if (!first) return false;
+  return first.events.some(
+    (e) => e.side === "center" && e.edge === "center" && e.kind === "bindOff" && e.amount > 0,
+  );
 }
 
 function activeSideActionText(action: ActiveSideScheduledAction): string {
@@ -284,13 +307,18 @@ function addActiveSideKnitEvenRow(
 function activeSideActionFromTimelineEvent(
   entry: RowEntry,
   event: ShapingEvent,
-  centerRow: number
+  relativeOriginRow: number,
+  /** When true, relative RC is `entry.row - origin` (deep round). Legacy uses `entry.row - origin - 1`. */
+  alignDisplayRcToTimeline: boolean,
 ): ActiveSideScheduledAction | null {
   if (event.side !== "right" || event.amount <= 0) return null;
   if (event.edge !== "inner" && event.edge !== "outer") return null;
   if (event.kind !== "bindOff" && event.kind !== "decrease" && event.kind !== "hold") return null;
+  const rel = alignDisplayRcToTimeline
+    ? Math.max(0, Math.floor(entry.row - relativeOriginRow))
+    : Math.max(0, Math.floor(entry.row - relativeOriginRow - 1));
   return {
-    sourceRelativeRow: Math.max(0, Math.floor(entry.row - centerRow - 1)),
+    sourceRelativeRow: rel,
     edge: event.edge === "inner" ? "Neck" : "Armhole",
     amount: Math.max(0, Math.floor(event.amount)),
     kind: event.kind,
@@ -300,31 +328,46 @@ function activeSideActionFromTimelineEvent(
 function buildActiveSideActionsFromTimeline(
   timeline: readonly RowEntry[],
   chart?: NeckShoulderShapingChart,
-): {
-  initialStitches: number;
-  finalSourceRelativeRow: number;
-  actions: ActiveSideScheduledAction[];
-} | null {
+): ActiveSideActionSource | null {
   const sorted = [...timeline].sort((a, b) => a.row - b.row);
   const first = sorted[0];
   if (!first) return null;
   const cardiganFront =
     chart !== undefined && isSleevelessCardiganFrontNeckShoulderChart(chart);
+  const vNeckFront = chart !== undefined && isFullWidthVNeckFrontStyleChart(chart);
   const hasCenterDivide = !cardiganFront && timelineHasCenterBindOffRow(timeline);
   const center = hasCenterDivide ? first : null;
   const shapingEntries = hasCenterDivide ? sorted.slice(1) : sorted;
-  const baseRow = hasCenterDivide && center ? center.row : first.row - 1;
+  /**
+   * Deep round pullover only: center bind-off (not hold), not cardigan/V-neck.
+   * Align checklist RCs to the written/timeline even schedule (000 / 002 / 004…).
+   */
+  const alignDisplayRcToTimeline =
+    hasCenterDivide &&
+    !cardiganFront &&
+    !vNeckFront &&
+    timelineHasDeepRoundCenterBindOff(timeline);
+
+  const relativeOriginRow =
+    hasCenterDivide && center
+      ? center.row
+      : alignDisplayRcToTimeline
+        ? first.row
+        : first.row - 1;
 
   const actions: ActiveSideScheduledAction[] = [];
   let finalSourceRelativeRow = 0;
   for (const entry of shapingEntries) {
-    const rel = Math.max(0, Math.floor(entry.row - baseRow - 1));
+    const rel = alignDisplayRcToTimeline
+      ? Math.max(0, Math.floor(entry.row - relativeOriginRow))
+      : Math.max(0, Math.floor(entry.row - relativeOriginRow - 1));
     finalSourceRelativeRow = Math.max(finalSourceRelativeRow, rel);
     for (const event of entry.events) {
       const action = activeSideActionFromTimelineEvent(
         entry,
         event,
-        hasCenterDivide && center ? center.row : baseRow,
+        relativeOriginRow,
+        alignDisplayRcToTimeline,
       );
       if (action) actions.push(action);
     }
@@ -349,23 +392,36 @@ function buildActiveSideActionsFromTimeline(
     initialStitches,
     finalSourceRelativeRow,
     actions,
+    alignDisplayRcToTimeline,
   };
 }
 
-function buildActiveSideActionsFromChartRows(rows: readonly NeckShoulderShapingChartRow[]): {
-  initialStitches: number;
-  finalSourceRelativeRow: number;
-  actions: ActiveSideScheduledAction[];
-} {
+function buildActiveSideActionsFromChartRows(
+  rows: readonly NeckShoulderShapingChartRow[],
+): ActiveSideActionSource {
   const sorted = [...rows].sort((a, b) => a.row - b.row);
   const first = sorted[0];
   if (!first) {
-    return { initialStitches: 0, finalSourceRelativeRow: 0, actions: [] };
+    return {
+      initialStitches: 0,
+      finalSourceRelativeRow: 0,
+      actions: [],
+      alignDisplayRcToTimeline: false,
+    };
   }
   const firstHasCenterBindOff = parseDecreaseCell(first.centerNeck) > 0;
   const sourceRows = firstHasCenterBindOff ? sorted.slice(1) : sorted;
-  const sourceBaseRow = firstHasCenterBindOff ? first.row + 1 : first.row;
   const firstSource = sourceRows[0];
+  // Deep-round timeline places the first neck-edge action at center+2; shallow/legacy at center+1.
+  const alignDisplayRcToTimeline =
+    firstHasCenterBindOff &&
+    firstSource !== undefined &&
+    firstSource.row >= first.row + 2;
+  const sourceBaseRow = alignDisplayRcToTimeline
+    ? first.row
+    : firstHasCenterBindOff
+      ? first.row + 1
+      : first.row;
   const firstSourceDecrease =
     firstSource !== undefined
       ? parseDecreaseCell(firstSource.rightNeck) + parseDecreaseCell(firstSource.rightSide)
@@ -399,7 +455,7 @@ function buildActiveSideActionsFromChartRows(rows: readonly NeckShoulderShapingC
     });
     finalSourceRelativeRow += 1;
   }
-  return { initialStitches, finalSourceRelativeRow, actions };
+  return { initialStitches, finalSourceRelativeRow, actions, alignDisplayRcToTimeline };
 }
 
 export function buildActiveSideInstructionTableRows(
@@ -438,10 +494,16 @@ export function buildActiveSideInstructionTableRows(
       checklistIdx += 1;
     }
     let displayRc = rcBase + checklistIdx;
-    while (displayRc % 2 !== requiredParityForActiveSideEdge(action.edge)) {
-      addActiveSideKnitEvenRow(out, displayRc, stitchesRemaining);
-      checklistIdx += 1;
-      displayRc = rcBase + checklistIdx;
+    if (source.alignDisplayRcToTimeline) {
+      // Deep round pullover: use timeline/written RCs directly (002, 004, …).
+      displayRc = rcBase + action.sourceRelativeRow;
+    } else {
+      // Legacy: pad so Neck lands on odd RC and Armhole on even RC.
+      while (displayRc % 2 !== requiredParityForActiveSideEdge(action.edge)) {
+        addActiveSideKnitEvenRow(out, displayRc, stitchesRemaining);
+        checklistIdx += 1;
+        displayRc = rcBase + checklistIdx;
+      }
     }
     const carriagePosition = carriagePositionForActiveSideRc(displayRc);
     stitchesRemaining = Math.max(0, stitchesRemaining - action.amount);
@@ -452,7 +514,9 @@ export function buildActiveSideInstructionTableRows(
       edge: action.edge,
       stitchesRemaining,
     });
-    checklistIdx += 1;
+    checklistIdx = source.alignDisplayRcToTimeline
+      ? Math.max(checklistIdx, action.sourceRelativeRow + 1)
+      : checklistIdx + 1;
   }
 
   while (checklistIdx <= source.finalSourceRelativeRow) {
@@ -495,7 +559,7 @@ function isPlainKnitActiveSideRow(row: ActiveSideInstructionTableRow): boolean {
 
 /**
  * Armhole-local RC of the first neckline shaping action in the generated active-shoulder
- * checklist (after carriage parity — same rows as the print/online shaping table).
+ * checklist (same rows as the print/online shaping table).
  */
 export function armholeLocalRcFirstActiveSideNecklineShapingAction(
   chart: NeckShoulderShapingChart,
