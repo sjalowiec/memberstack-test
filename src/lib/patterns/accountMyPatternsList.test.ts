@@ -3,10 +3,15 @@ import { stubLocalStorage } from "./test/stubLocalStorage";
 import {
   ACCOUNT_MY_PATTERNS_GROUP_PREVIEW_LIMIT,
   buildAccountMyPatternsGroups,
+  DELETE_SAVED_PATTERN_CONFIRM_MESSAGE,
   formatAccountMyPatternsCountLabel,
   initAccountMyPatternsList,
   resolveAccountMyPatternsSystem,
 } from "./accountMyPatternsList";
+import {
+  readActiveCustomPatternProjectId,
+  writeActiveCustomPatternProjectId,
+} from "./customPatternProjectActiveId";
 
 const listCustomPatternProjectsMock = vi.fn();
 const deleteCustomPatternProjectMock = vi.fn();
@@ -50,7 +55,22 @@ function makeClassList() {
     add: (...names: string[]) => names.forEach((n) => classes.add(n)),
     remove: (...names: string[]) => names.forEach((n) => classes.delete(n)),
     contains: (name: string) => classes.has(name),
-    toggle: () => false,
+    toggle: (name: string, force?: boolean) => {
+      if (force === true) {
+        classes.add(name);
+        return true;
+      }
+      if (force === false) {
+        classes.delete(name);
+        return false;
+      }
+      if (classes.has(name)) {
+        classes.delete(name);
+        return false;
+      }
+      classes.add(name);
+      return true;
+    },
   };
 }
 
@@ -277,7 +297,7 @@ describe("accountMyPatternsList", () => {
     });
   });
 
-  it("renders accordion groups with Open and Edit only", async () => {
+  it("renders accordion groups with Open, Edit, and Delete on each card", async () => {
     const { root, list, viewAllWrap } = makeAccountRoot();
     listCustomPatternProjectsMock.mockResolvedValue({
       ok: true,
@@ -299,10 +319,13 @@ describe("accountMyPatternsList", () => {
 
     expect(collectMatches(list._children, "[data-kbm-my-patterns-view]").length).toBe(2);
     expect(collectMatches(list._children, "[data-kbm-my-patterns-edit]").length).toBe(2);
+    expect(collectMatches(list._children, "[data-kbm-my-patterns-delete]").length).toBe(2);
     expect(collectMatches(list._children, "[data-kbm-my-patterns-copy]").length).toBe(0);
     expect(collectMatches(list._children, "[data-kbm-my-patterns-rename]").length).toBe(0);
-    expect(collectMatches(list._children, "[data-kbm-my-patterns-delete]").length).toBe(0);
     expect(collectMatches(list._children, "[data-kbm-my-patterns-view]")[0].textContent).toBe("Open");
+    expect(collectMatches(list._children, "[data-kbm-my-patterns-delete]")[0].textContent).toBe(
+      "Delete",
+    );
   });
 
   it("starts every pattern-system accordion collapsed", async () => {
@@ -500,5 +523,249 @@ describe("accountMyPatternsList", () => {
     expect(viewAllWrap.hidden).toBe(true);
     expect(emptyCta.hidden).toBe(false);
     expect(status.textContent).toMatch(/do not have any saved patterns yet/i);
+  });
+
+  it("deletes a saved pattern, updates the group count, and keeps other cards", async () => {
+    const { root, status, list } = makeAccountRoot();
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: sampleProjects,
+    });
+    const confirm = vi.fn(() => true);
+    vi.stubGlobal("window", { confirm });
+
+    await initAccountMyPatternsList(root);
+
+    const delA = collectMatches(list._children, "[data-kbm-my-patterns-delete]").find(
+      (b) => b.dataset.projectId === "proj-a",
+    );
+    await delA?._click?.();
+    await flushAsync();
+
+    expect(confirm).toHaveBeenCalledWith(DELETE_SAVED_PATTERN_CONFIRM_MESSAGE);
+    expect(deleteCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "sleeveless");
+    expect(listCustomPatternProjectsMock).toHaveBeenCalledTimes(1);
+
+    const remaining = collectMatches(list._children, "[data-kbm-my-patterns-row]");
+    expect(remaining.length).toBe(1);
+    expect(remaining[0]?._children[0]?._children[0]?.textContent).toBe("Beta vest");
+    expect(collectMatches(list._children, "[data-kbm-my-patterns-group]")[0]?._children[0]
+      ?._children[0]?.textContent).toBe("Sleeveless · 1 pattern");
+    expect(list.hidden).toBe(false);
+    expect(status.hidden).toBe(true);
+  });
+
+  it("cancels delete without modifying the list", async () => {
+    const { root, list } = makeAccountRoot();
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: sampleProjects,
+    });
+    const confirm = vi.fn(() => false);
+    vi.stubGlobal("window", { confirm });
+
+    await initAccountMyPatternsList(root);
+
+    const delA = collectMatches(list._children, "[data-kbm-my-patterns-delete]").find(
+      (b) => b.dataset.projectId === "proj-a",
+    );
+    await delA?._click?.();
+
+    expect(confirm).toHaveBeenCalledWith(DELETE_SAVED_PATTERN_CONFIRM_MESSAGE);
+    expect(deleteCustomPatternProjectMock).not.toHaveBeenCalled();
+    expect(collectMatches(list._children, "[data-kbm-my-patterns-row]").length).toBe(2);
+  });
+
+  it("keeps the card and shows an error when deletion fails", async () => {
+    const { root, status, list } = makeAccountRoot();
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: sampleProjects,
+    });
+    deleteCustomPatternProjectMock.mockResolvedValue({
+      ok: false,
+      error: "Server refused this delete.",
+    });
+    const confirm = vi.fn(() => true);
+    vi.stubGlobal("window", { confirm });
+
+    await initAccountMyPatternsList(root);
+
+    const delA = collectMatches(list._children, "[data-kbm-my-patterns-delete]").find(
+      (b) => b.dataset.projectId === "proj-a",
+    );
+    await delA?._click?.();
+    await flushAsync();
+
+    expect(deleteCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "sleeveless");
+    expect(collectMatches(list._children, "[data-kbm-my-patterns-row]").length).toBe(2);
+    expect(status.hidden).toBe(false);
+    expect(status.textContent).toBe("Server refused this delete.");
+    expect(status.classList.contains("account-my-patterns__status--error")).toBe(true);
+  });
+
+  it("removes an empty system group after its final pattern is deleted", async () => {
+    const { root, list } = makeAccountRoot();
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: [
+        {
+          id: "proj-ds",
+          name: "Drop shoulder pullover",
+          family: "sleeveless" as const,
+          source: "express" as const,
+          patternSystem: "drop-shoulder",
+          updatedAt: "2026-02-01T00:00:00.000Z",
+        },
+        {
+          id: "proj-sl",
+          name: "Sleeveless vest",
+          family: "sleeveless" as const,
+          source: "express" as const,
+          patternSystem: "sleeveless",
+          updatedAt: "2026-01-01T00:00:00.000Z",
+        },
+      ],
+    });
+    const confirm = vi.fn(() => true);
+    vi.stubGlobal("window", { confirm });
+
+    await initAccountMyPatternsList(root);
+    expect(collectMatches(list._children, "[data-kbm-my-patterns-group]").length).toBe(2);
+
+    const delDs = collectMatches(list._children, "[data-kbm-my-patterns-delete]").find(
+      (b) => b.dataset.projectId === "proj-ds",
+    );
+    await delDs?._click?.();
+    await flushAsync();
+
+    expect(deleteCustomPatternProjectMock).toHaveBeenCalledWith("proj-ds", "sleeveless");
+    const groups = collectMatches(list._children, "[data-kbm-my-patterns-group]");
+    expect(groups.length).toBe(1);
+    expect(groups[0].dataset.patternSystem).toBe("sleeveless");
+    expect(groups[0]._children[0]?._children[0]?.textContent).toBe("Sleeveless · 1 pattern");
+    expect(collectMatches(list._children, "[data-kbm-my-patterns-row]").length).toBe(1);
+  });
+
+  it("shows empty state after deleting the last saved pattern", async () => {
+    const { root, status, list, emptyCta, viewAllWrap } = makeAccountRoot();
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: [sampleProjects[0]],
+    });
+    const confirm = vi.fn(() => true);
+    vi.stubGlobal("window", { confirm });
+
+    await initAccountMyPatternsList(root);
+
+    const delA = collectMatches(list._children, "[data-kbm-my-patterns-delete]")[0];
+    await delA?._click?.();
+    await flushAsync();
+
+    expect(list.hidden).toBe(true);
+    expect(viewAllWrap.hidden).toBe(true);
+    expect(emptyCta.hidden).toBe(false);
+    expect(status.hidden).toBe(false);
+    expect(status.textContent).toMatch(/do not have any saved patterns yet/i);
+    expect(collectMatches(list._children, "[data-kbm-my-patterns-row]").length).toBe(0);
+  });
+
+  it("clears active selection when deleting the active saved pattern", async () => {
+    const { root, list } = makeAccountRoot();
+    writeActiveCustomPatternProjectId("proj-a", "Alpha pullover");
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: sampleProjects,
+    });
+    const confirm = vi.fn(() => true);
+    vi.stubGlobal("window", { confirm });
+
+    await initAccountMyPatternsList(root);
+    expect(readActiveCustomPatternProjectId()).toBe("proj-a");
+
+    const delA = collectMatches(list._children, "[data-kbm-my-patterns-delete]").find(
+      (b) => b.dataset.projectId === "proj-a",
+    );
+    await delA?._click?.();
+    await flushAsync();
+
+    expect(deleteCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "sleeveless");
+    expect(readActiveCustomPatternProjectId()).toBe("");
+    expect(collectMatches(list._children, "[data-kbm-my-patterns-row]").length).toBe(1);
+  });
+
+  it("disables Delete on the free user's protected pattern but keeps others deletable", async () => {
+    const { root, list } = makeAccountRoot();
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: sampleProjects,
+    });
+    vi.stubGlobal("window", {
+      $memberstackDom: {
+        getCurrentMember: async () => ({ data: { id: "ms_free" } }),
+        getMemberJSON: async () => ({
+          data: { freeSleevelessPatternClaimed: true, freeSleevelessPatternId: "proj-a" },
+        }),
+      },
+    });
+
+    await initAccountMyPatternsList(root);
+
+    const deleteBtns = collectMatches(list._children, "[data-kbm-my-patterns-delete]");
+    const delA = deleteBtns.find((b) => b.dataset.projectId === "proj-a");
+    const delB = deleteBtns.find((b) => b.dataset.projectId === "proj-b");
+
+    expect(delA?.disabled).toBe(true);
+    expect(delA?.getAttribute("aria-disabled")).toBe("true");
+    expect(delA?.getAttribute("title")).toMatch(/free Sleeveless Pattern/i);
+    expect(delB?.disabled).toBe(false);
+    expect(delB?.getAttribute("aria-disabled")).toBeNull();
+
+    await delA?._click?.();
+    await flushAsync();
+    expect(deleteCustomPatternProjectMock).not.toHaveBeenCalled();
+  });
+
+  it("deletes a Drop Shoulder pattern from its system group", async () => {
+    const { root, list } = makeAccountRoot();
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: [
+        {
+          id: "proj-ds",
+          name: "Drop shoulder pullover",
+          family: "sleeveless" as const,
+          source: "express" as const,
+          patternSystem: "drop-shoulder",
+          updatedAt: "2026-02-01T00:00:00.000Z",
+        },
+        {
+          id: "proj-sl",
+          name: "Sleeveless vest",
+          family: "sleeveless" as const,
+          source: "express" as const,
+          patternSystem: "sleeveless",
+          updatedAt: "2026-01-01T00:00:00.000Z",
+        },
+      ],
+    });
+    const confirm = vi.fn(() => true);
+    vi.stubGlobal("window", { confirm });
+
+    await initAccountMyPatternsList(root);
+
+    const delDs = collectMatches(list._children, "[data-kbm-my-patterns-delete]").find(
+      (b) => b.dataset.projectId === "proj-ds",
+    );
+    await delDs?._click?.();
+    await flushAsync();
+
+    expect(confirm).toHaveBeenCalledWith(DELETE_SAVED_PATTERN_CONFIRM_MESSAGE);
+    expect(deleteCustomPatternProjectMock).toHaveBeenCalledWith("proj-ds", "sleeveless");
+    expect(
+      collectMatches(list._children, "[data-kbm-my-patterns-row]").map(
+        (r) => r._children[0]?._children[0]?.textContent,
+      ),
+    ).toEqual(["Sleeveless vest"]);
   });
 });

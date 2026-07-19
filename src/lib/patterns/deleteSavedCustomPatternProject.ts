@@ -1,6 +1,7 @@
 import { clearActiveCustomPatternProjectId, readActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
 import { deleteCustomPatternProject } from "./customPatternProjectClient";
 import type { CustomPatternFamily } from "./customPatternProjectTypes";
+import type { PatternSystemId } from "./patternSystemId";
 import { resolveSleevelessPatternDeleteDecision } from "./sleevelessPatternDeleteGuard";
 
 export type DeleteSavedCustomPatternResult = { ok: true } | { ok: false; error: string };
@@ -18,11 +19,12 @@ export type DeleteSavedCustomPatternResult = { ok: true } | { ok: false; error: 
 export async function deleteSavedCustomPatternProject(
   projectId: string,
   family: CustomPatternFamily = "sleeveless",
-  options: { totalSavedCount?: number } = {},
+  options: { totalSavedCount?: number; patternSystem?: PatternSystemId } = {},
 ): Promise<DeleteSavedCustomPatternResult> {
   const decision = await resolveSleevelessPatternDeleteDecision(projectId, {
     family,
     totalSavedCount: options.totalSavedCount,
+    patternSystem: options.patternSystem,
   });
   if (decision.blocked) {
     return { ok: false, error: decision.message ?? "This pattern can't be deleted." };

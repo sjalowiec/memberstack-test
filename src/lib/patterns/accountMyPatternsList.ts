@@ -1,9 +1,9 @@
 /**
- * Saved patterns accordion on /account — load, group by pattern system, open/edit preview.
- * Full manage actions (copy/rename/delete) live in the global My Patterns drawer.
+ * Saved patterns accordion on /account — load, group by pattern system, open/edit/delete.
  */
 import { listCustomPatternProjects } from "./customPatternProjectClient";
 import type { CustomPatternProjectSummary } from "./customPatternProjectTypes";
+import { deleteSavedCustomPatternProject } from "./deleteSavedCustomPatternProject";
 import { loadSavedCustomPatternProject } from "./loadSavedCustomPatternProject";
 import {
   memberstackReadinessSnapshot,
@@ -20,6 +20,10 @@ import {
   type SleevelessUserAccess,
 } from "./sleevelessPatternSystemAccess";
 import {
+  freePatternDeleteBlockedText,
+  isPatternDeleteProtectedForSystem,
+} from "./sleevelessPatternDeleteGuard";
+import {
   PATTERN_SYSTEM_IDS,
   patternSystemDisplayName,
   type PatternSystemId,
@@ -29,6 +33,7 @@ const SIGN_IN_REQUIRED_ERROR = "Sign in to save Custom Pattern projects.";
 /** Tooltip shown when Edit is disabled for a free claimed / downgraded knitter. */
 export const SAVED_CUSTOM_PATTERN_EDIT_DISABLED_TEXT =
   "Pattern editing is included with membership. You can still view, print, and knit from this pattern.";
+export const DELETE_SAVED_PATTERN_CONFIRM_MESSAGE = "Delete this saved pattern?";
 const EMPTY_LIST_MESSAGE =
   "You do not have any saved patterns yet. Create your first pattern to get started.";
 
@@ -47,7 +52,7 @@ export type AccountMyPatternsGroup = {
 
 type ListState = {
   projects: CustomPatternProjectSummary[];
-  /** Resolved access; gates Edit. Null until resolved. */
+  /** Resolved access; gates Edit and free-pattern Delete protection. Null until resolved. */
   access: SleevelessUserAccess | null;
 };
 
@@ -146,7 +151,15 @@ function setViewAllVisible(root: HTMLElement, visible: boolean): void {
 const ROW_ACTION_SELECTORS = [
   "[data-kbm-my-patterns-view]",
   "[data-kbm-my-patterns-edit]",
+  "[data-kbm-my-patterns-delete]",
 ] as const;
+
+function countProjectsForSystem(
+  projects: CustomPatternProjectSummary[],
+  patternSystem: PatternSystemId,
+): number {
+  return projects.filter((p) => projectPatternSystem(p) === patternSystem).length;
+}
 
 function lockMyPatternsListInteraction(root: HTMLElement): void {
   root.querySelectorAll<HTMLElement>("[data-kbm-my-patterns-row]").forEach((row) => {
@@ -167,6 +180,63 @@ function releaseMyPatternsListInteraction(root: HTMLElement): void {
     b.disabled = false;
   });
   syncMyPatternsEditAccess(root);
+  syncMyPatternsDeleteAccess(root);
+}
+
+function isProtectedDeleteTarget(root: HTMLElement, projectId: string): boolean {
+  const state = listStateByRoot.get(root);
+  if (!state?.access) return false;
+  const project = state.projects.find((p) => p.id === projectId);
+  const patternSystem = project ? projectPatternSystem(project) : "sleeveless";
+  return isPatternDeleteProtectedForSystem({
+    access: state.access,
+    projectId,
+    patternSystem,
+    totalSavedCountForSystem: countProjectsForSystem(state.projects, patternSystem),
+  });
+}
+
+/**
+ * Reflects free-pattern delete protection onto every Delete button: the protected pattern's button
+ * is disabled, grayed, and given an explanatory tooltip; all others are enabled. Never hides.
+ */
+function syncMyPatternsDeleteAccess(root: HTMLElement): void {
+  root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-delete]").forEach((btn) => {
+    const projectId = btn.dataset.projectId ?? "";
+    const protectedTarget = isProtectedDeleteTarget(root, projectId);
+    btn.disabled = protectedTarget;
+    btn.classList.toggle("is-disabled", protectedTarget);
+    if (protectedTarget) {
+      btn.setAttribute("aria-disabled", "true");
+      const project = listStateByRoot.get(root)?.projects.find((p) => p.id === projectId);
+      const system = project ? projectPatternSystem(project) : "sleeveless";
+      btn.setAttribute("title", freePatternDeleteBlockedText(system));
+    } else {
+      btn.removeAttribute("aria-disabled");
+      btn.removeAttribute("title");
+    }
+  });
+}
+
+function showEmptyListState(root: HTMLElement): void {
+  listStateByRoot.delete(root);
+  const container = root.querySelector("[data-kbm-my-patterns-list]");
+  if (container instanceof HTMLElement) container.replaceChildren();
+  setListVisible(root, false);
+  setViewAllVisible(root, false);
+  setStatus(root, EMPTY_LIST_MESSAGE);
+  setEmptyCtaVisible(root, true);
+}
+
+/** Keep the global My Patterns drawer list in sync when it is already on the page. */
+function refreshOpenPatternLibraryDrawer(): void {
+  const doc = typeof document !== "undefined" ? document : null;
+  if (!doc || typeof doc.querySelector !== "function") return;
+  const drawer = doc.querySelector("[data-pattern-workspace-library-drawer]");
+  if (!(drawer instanceof HTMLElement)) return;
+  void import("./patternWorkspaceLibraryDrawer").then(({ refreshPatternWorkspaceLibraryList }) => {
+    void refreshPatternWorkspaceLibraryList(drawer);
+  });
 }
 
 function listAccess(root: HTMLElement): SleevelessUserAccess | null {
@@ -288,6 +358,87 @@ async function onProjectEdit(root: HTMLElement, projectId: string, label: string
   }
 }
 
+async function onProjectDelete(
+  root: HTMLElement,
+  projectId: string,
+  label: string,
+): Promise<void> {
+  // Guard before the confirm dialog: a free user's protected pattern can never be deleted.
+  if (isProtectedDeleteTarget(root, projectId)) {
+    const project = listStateByRoot.get(root)?.projects.find((p) => p.id === projectId);
+    const system = project ? projectPatternSystem(project) : "sleeveless";
+    setStatus(root, freePatternDeleteBlockedText(system), true);
+    return;
+  }
+
+  const confirmed = window.confirm(DELETE_SAVED_PATTERN_CONFIRM_MESSAGE);
+  if (!confirmed) return;
+
+  const stateBefore = listStateByRoot.get(root);
+  const project = stateBefore?.projects.find((p) => p.id === projectId);
+  const patternSystem = project ? projectPatternSystem(project) : "sleeveless";
+  const savedCountForSystem = stateBefore
+    ? countProjectsForSystem(stateBefore.projects, patternSystem)
+    : undefined;
+
+  const actionStart = perfStart();
+  perfMark("6-account-list-action start", { action: "delete", projectId, label });
+  setStatus(root, `Deleting “${label}”…`);
+  lockMyPatternsListInteraction(root);
+
+  try {
+    const deleteStart = perfStart();
+    const result = await deleteSavedCustomPatternProject(projectId, "sleeveless", {
+      totalSavedCount: savedCountForSystem,
+      patternSystem,
+    });
+    perfEnd("6-account-list-action deleteSavedCustomPatternProject", deleteStart, {
+      action: "delete",
+      projectId,
+      ok: result.ok,
+    });
+    if (!result.ok) {
+      setStatus(root, result.error, true);
+      perfEnd("6-account-list-action total", actionStart, { action: "delete", ok: false });
+      return;
+    }
+
+    const state = listStateByRoot.get(root);
+    if (!state) {
+      perfEnd("6-account-list-action total", actionStart, { action: "delete", ok: true, noState: true });
+      return;
+    }
+
+    state.projects = state.projects.filter((p) => p.id !== projectId);
+
+    if (state.projects.length === 0) {
+      showEmptyListState(root);
+      refreshOpenPatternLibraryDrawer();
+      perfEnd("6-account-list-action total", actionStart, {
+        action: "delete",
+        ok: true,
+        outcome: "empty-list",
+      });
+      return;
+    }
+
+    hideStatus(root);
+    renderProjectList(root);
+    refreshOpenPatternLibraryDrawer();
+    perfEnd("6-account-list-action total", actionStart, {
+      action: "delete",
+      ok: true,
+      remainingCount: state.projects.length,
+    });
+  } catch (error) {
+    console.error("[kbm] Failed to delete saved pattern from My Patterns.", error);
+    setStatus(root, "Could not delete this saved pattern. Please try again.", true);
+    perfEnd("6-account-list-action total", actionStart, { action: "delete", ok: false, thrown: true });
+  } finally {
+    releaseMyPatternsListInteraction(root);
+  }
+}
+
 function renderPatternEntry(
   root: HTMLElement,
   listEl: HTMLElement,
@@ -359,7 +510,21 @@ function renderPatternEntry(
   });
   applyEditAccessToButton(editBtn, listAccess(root), patternSystem);
 
-  actions.append(openBtn, editBtn);
+  const deleteBtn = document.createElement("button");
+  deleteBtn.type = "button";
+  deleteBtn.className =
+    "account-my-patterns__action account-my-patterns__action--delete account-my-patterns__delete";
+  deleteBtn.setAttribute("data-kbm-my-patterns-delete", "");
+  deleteBtn.dataset.projectId = project.id;
+  deleteBtn.setAttribute("aria-label", `Delete ${displayName}`);
+  deleteBtn.textContent = "Delete";
+  deleteBtn.addEventListener("click", (event) => {
+    event?.stopPropagation?.();
+    if (deleteBtn.disabled) return;
+    void onProjectDelete(root, project.id, displayName);
+  });
+
+  actions.append(openBtn, editBtn, deleteBtn);
   item.append(main, actions);
   listEl.append(item);
 }
@@ -425,6 +590,7 @@ export function renderProjectList(root: HTMLElement): void {
   }
   wireExclusiveAccordionGroups(root);
   syncMyPatternsEditAccess(root);
+  syncMyPatternsDeleteAccess(root);
   setViewAllVisible(root, state.projects.length > 0);
 }
 
