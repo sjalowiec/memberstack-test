@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  decodeEventBody,
   handlerEventToRequest,
   isHandlerEvent,
+  looksLikeRawMultipartEventBody,
   parseContactFormData,
 } from "./parse-contact-body.js";
 
@@ -169,5 +171,77 @@ describe("parseContactFormData", () => {
 
     expect(formData.get("email")).toBe("handler@example.com");
     expect(formData.get("message")).toBe("From HandlerEvent");
+  });
+
+  it("recovers Netlify Dev multipart events mislabeled as base64 (localhost regression)", async () => {
+    // Mirrors @netlify/functions-dev lambdaEventFromWebRequest:
+    // body = await request.text(), isBase64Encoded = true for multipart.
+    const buffer = buildMultipartBuffer({
+      name: "Sue",
+      email: "visitor@example.com",
+      message: "Hello from localhost Contact Us",
+      "bot-field": "",
+      form_source: "contact_page",
+    });
+    const rawMultipartText = buffer.toString("utf8");
+
+    expect(looksLikeRawMultipartEventBody(rawMultipartText)).toBe(true);
+
+    /** @type {import("@netlify/functions").HandlerEvent} */
+    const event = {
+      httpMethod: "POST",
+      path: "/.netlify/functions/contact",
+      rawUrl: "http://localhost:4321/.netlify/functions/contact",
+      headers: {
+        "content-type": `multipart/form-data; boundary=${BOUNDARY}`,
+        "content-length": String(buffer.length),
+      },
+      body: rawMultipartText,
+      isBase64Encoded: true,
+    };
+
+    // Wrong path used by v2 bootstrap: base64-decoding plaintext multipart.
+    const corrupted = Buffer.from(rawMultipartText, "base64");
+    expect(corrupted.length).toBeLessThan(buffer.length);
+    expect(corrupted.includes(Buffer.from("Content-Disposition:"))).toBe(false);
+
+    const decoded = decodeEventBody(event);
+    expect(decoded.length).toBe(buffer.length);
+    expect(decoded.includes(Buffer.from("Content-Disposition:"))).toBe(true);
+
+    const req = handlerEventToRequest(event);
+    const formData = await parseContactFormData(req, event);
+
+    expect(formData.get("email")).toBe("visitor@example.com");
+    expect(formData.get("message")).toBe("Hello from localhost Contact Us");
+    expect(formData.get("form_source")).toBe("contact_page");
+  });
+
+  it("still decodes genuine base64 multipart HandlerEvent bodies", async () => {
+    const buffer = buildMultipartBuffer({
+      name: "Prod",
+      email: "prod@example.com",
+      message: "Real base64 body",
+      "bot-field": "",
+    });
+
+    /** @type {import("@netlify/functions").HandlerEvent} */
+    const event = {
+      httpMethod: "POST",
+      path: "/.netlify/functions/contact",
+      rawUrl: "https://knititnow.com/.netlify/functions/contact",
+      headers: {
+        "content-type": `multipart/form-data; boundary=${BOUNDARY}`,
+        "content-length": String(buffer.length),
+      },
+      body: buffer.toString("base64"),
+      isBase64Encoded: true,
+    };
+
+    expect(looksLikeRawMultipartEventBody(event.body)).toBe(false);
+
+    const formData = await parseContactFormData(handlerEventToRequest(event), event);
+    expect(formData.get("email")).toBe("prod@example.com");
+    expect(formData.get("message")).toBe("Real base64 body");
   });
 });

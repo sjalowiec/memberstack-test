@@ -1,6 +1,11 @@
 import "dotenv/config";
 import { getStore } from "@netlify/blobs";
 import {
+  getContactMessagesStore,
+  saveContactMessage,
+  updateContactMessage,
+} from "../../src/lib/contact/contactMessagesStore.ts";
+import {
   handlerEventToRequest,
   isHandlerEvent,
   parseContactFormData,
@@ -17,7 +22,9 @@ function getContactFromAddress() {
 }
 
 /**
- * Prefer Web Request (full body stream). Legacy HandlerEvent only when needed.
+ * Prefer Web Request (Functions 2.0 / Blobs context on localhost).
+ * Also accepts HandlerEvent when invoked that way (tests / older runtimes).
+ *
  * @param {Request | import('@netlify/functions').HandlerEvent} reqOrEvent
  */
 export default async (reqOrEvent) => {
@@ -32,10 +39,70 @@ export default async (reqOrEvent) => {
 };
 
 /**
+ * Classic Lambda handler — used by unit tests and any v1 invoke path.
+ * Keeps decodeEventBody() recovery for mislabeled multipart events.
+ *
+ * @param {import('@netlify/functions').HandlerEvent} event
+ */
+export async function handler(event) {
+  if (!isHandlerEvent(event)) {
+    return {
+      statusCode: 400,
+      headers: { "Content-Type": "text/plain; charset=utf-8" },
+      body: "Bad Request",
+    };
+  }
+
+  const req = handlerEventToRequest(event);
+  const response = await handleContactPost(req, event);
+  return webResponseToLambdaResult(response);
+}
+
+/**
+ * @param {Response} response
+ */
+async function webResponseToLambdaResult(response) {
+  /** @type {Record<string, string>} */
+  const headers = {};
+  response.headers.forEach((value, key) => {
+    headers[key] = value;
+  });
+
+  let body = "";
+  if (response.status !== 204 && response.body != null) {
+    body = await response.text();
+  }
+
+  return {
+    statusCode: response.status,
+    headers,
+    body,
+  };
+}
+
+/**
+ * @typedef {object} ContactHandlerDeps
+ * @property {import("@netlify/blobs").Store} [messagesStore]
+ * @property {typeof fetch} [fetchImpl]
+ * @property {(image: File | Blob, req: Request) => Promise<{
+ *   link: string | null,
+ *   warning: string | null,
+ *   blobKey: string | null,
+ *   accessToken: string | null,
+ *   contentType: string | null,
+ *   originalFilename: string | null,
+ * }>} [persistImage]
+ * @property {() => string} [getResendApiKey]
+ * @property {() => string} [getFromAddress]
+ * @property {() => string} [nowIso]
+ */
+
+/**
  * @param {Request} req
  * @param {import('@netlify/functions').HandlerEvent | null} event
+ * @param {ContactHandlerDeps} [deps]
  */
-async function handleContactPost(req, event) {
+export async function handleContactPost(req, event, deps = {}) {
   try {
     if (req.method !== "POST") {
       return new Response("Method Not Allowed", { status: 405 });
@@ -58,16 +125,20 @@ async function handleContactPost(req, event) {
         null;
       const parseMessage =
         parseError instanceof Error ? parseError.message : String(parseError);
-      console.error("[contact] Failed to parse form body:", parseMessage, {
-        contentType,
-        contentLength,
-        boundaryFound: /boundary=/i.test(contentType),
-        handlerMode: event ? "HandlerEvent" : "Request",
-        hasEventBody: !!(event && event.body),
-        eventBodyLength:
-          event && typeof event.body === "string" ? event.body.length : null,
+      const exceptionName =
+        parseError instanceof Error ? parseError.name : "Error";
+      console.error("[contact] Failed to parse form body:", {
+        contentType: contentType || null,
+        hasBody: !!(event?.body || req.body),
+        bodyLength:
+          typeof event?.body === "string"
+            ? event.body.length
+            : contentLength,
         isBase64Encoded: !!(event && event.isBase64Encoded),
-        requestHasBody: req.body != null,
+        parserStage: "parseContactFormData",
+        exceptionName,
+        exceptionMessage: parseMessage,
+        handlerMode: event ? "HandlerEvent" : "Request",
       });
       return formParseErrorResponse();
     }
@@ -114,17 +185,17 @@ async function handleContactPost(req, event) {
 
     const now = Date.now();
     globalThis.__kbmRateLimit ??= new Map(); // key: ip, value: {count, resetAt}
-    const store = globalThis.__kbmRateLimit;
+    const rateLimitStore = globalThis.__kbmRateLimit;
 
     const windowMs = 60 * 1000; // 1 minute
-    const maxPerWindow = 5;     // allow 5 submits per minute per IP
+    const maxPerWindow = 5; // allow 5 submits per minute per IP
 
-    const entry = store.get(ip);
+    const entry = rateLimitStore.get(ip);
     if (!entry || now > entry.resetAt) {
-      store.set(ip, { count: 1, resetAt: now + windowMs });
+      rateLimitStore.set(ip, { count: 1, resetAt: now + windowMs });
     } else {
       entry.count += 1;
-      store.set(ip, entry);
+      rateLimitStore.set(ip, entry);
       if (entry.count > maxPerWindow) {
         console.warn("[contact] Rate limit exceeded — returning decoy success", {
           ip,
@@ -176,30 +247,76 @@ async function handleContactPost(req, event) {
     }
     const submittedImage = imageResult.image;
 
-    /** @type {{ link: string | null, warning: string | null }} */
+    const persistImage = deps.persistImage || persistContactImage;
+    /** @type {{
+     *   link: string | null,
+     *   warning: string | null,
+     *   blobKey: string | null,
+     *   accessToken: string | null,
+     *   contentType: string | null,
+     *   originalFilename: string | null,
+     * }} */
     const imageStorage = submittedImage
-      ? await persistContactImage(submittedImage, req)
-      : { link: null, warning: null };
+      ? await persistImage(submittedImage, req)
+      : {
+          link: null,
+          warning: null,
+          blobKey: null,
+          accessToken: null,
+          contentType: null,
+          originalFilename: null,
+        };
 
-    // --- Resend send ---
-    const RESEND_API_KEY = (process.env.RESEND_API_KEY || "").trim();
-    const contactFrom = getContactFromAddress();
+    const messagesStore = deps.messagesStore || getContactMessagesStore();
+    const nowIso = deps.nowIso || (() => new Date().toISOString());
 
-    if (!RESEND_API_KEY) {
-      console.error(
-        "[contact] Missing RESEND_API_KEY — add it in Netlify site environment variables",
-      );
-      return serverConfigErrorResponse();
+    /** @type {import("../../src/lib/contact/contactMessagesStore.ts").ContactMessage} */
+    let savedMessage;
+    try {
+      savedMessage = await saveContactMessage(messagesStore, {
+        name,
+        email,
+        message,
+        source: formSource || undefined,
+        page_url: pageUrl || undefined,
+        now: nowIso(),
+        ...(imageStorage.blobKey && imageStorage.accessToken
+          ? {
+              attachment: {
+                blob_key: imageStorage.blobKey,
+                access_token: imageStorage.accessToken,
+                ...(imageStorage.contentType
+                  ? { content_type: imageStorage.contentType }
+                  : {}),
+                ...(imageStorage.originalFilename
+                  ? { original_filename: imageStorage.originalFilename }
+                  : {}),
+              },
+            }
+          : {}),
+      });
+    } catch (storageError) {
+      const storageMessage =
+        storageError instanceof Error ? storageError.message : String(storageError);
+      console.error("[contact] Failed to save contact message:", storageMessage);
+      return storageFailureResponse();
     }
 
-    if (!contactFrom) {
-      console.error(
-        "[contact] CONTACT_FROM_EMAIL is empty and no default from address is configured",
-      );
-      return serverConfigErrorResponse();
-    }
+    console.info("[contact] Contact message saved", {
+      id: savedMessage.id,
+      hasAttachment: !!savedMessage.attachment,
+      formSource: formSource || null,
+    });
 
-    const subject =
+    // --- Resend notification (must not lose the saved message on failure) ---
+    const fetchImpl = deps.fetchImpl || fetch;
+    const getResendApiKey =
+      deps.getResendApiKey || (() => (process.env.RESEND_API_KEY || "").trim());
+    const getFromAddress = deps.getFromAddress || getContactFromAddress;
+    const RESEND_API_KEY = getResendApiKey();
+    const contactFrom = getFromAddress();
+
+    const emailSubject =
       formSource === "help-hub"
         ? "New Help Hub Question – Knit it Now"
         : "New Contact Message – Knit it Now";
@@ -232,43 +349,103 @@ ${submittedImage ? imageTextSection(submittedImage, imageStorage) : ""}
     `;
 
     const to = "sue@knititnow.com";
+    let notificationSent = false;
+    /** @type {string | undefined} */
+    let notificationError;
 
-    console.info("[contact] Sending email via Resend", {
-      from: contactFrom,
-      to,
-      hasImage: !!submittedImage,
-      imageStored: !!imageStorage.link,
-    });
-
-    const resendResp = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    if (!RESEND_API_KEY) {
+      notificationError = "Missing RESEND_API_KEY";
+      console.error(
+        "[contact] Missing RESEND_API_KEY — message saved; notification not sent",
+        { id: savedMessage.id },
+      );
+    } else if (!contactFrom) {
+      notificationError = "Missing CONTACT_FROM_EMAIL";
+      console.error(
+        "[contact] CONTACT_FROM_EMAIL is empty — message saved; notification not sent",
+        { id: savedMessage.id },
+      );
+    } else {
+      console.info("[contact] Sending email via Resend", {
         from: contactFrom,
         to,
-        subject,
-        text: textBody,
-        html: htmlBody,
-        reply_to: email || undefined,
-      }),
-    });
-
-    if (!resendResp.ok) {
-      const errText = await resendResp.text();
-      console.error("[contact] Resend API error:", resendResp.status, errText, {
-        from: contactFrom,
-        to,
+        hasImage: !!submittedImage,
+        imageStored: !!imageStorage.link,
+        messageId: savedMessage.id,
       });
-      return resendFailureResponse();
+
+      try {
+        const resendResp = await fetchImpl("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: contactFrom,
+            to,
+            subject: emailSubject,
+            text: textBody,
+            html: htmlBody,
+            reply_to: email || undefined,
+          }),
+        });
+
+        if (!resendResp.ok) {
+          const errText = await resendResp.text();
+          notificationError = `Resend API error ${resendResp.status}`;
+          console.error("[contact] Resend API error:", resendResp.status, {
+            messageId: savedMessage.id,
+            // Do not log full Resend body (may include PII).
+          });
+          // Keep a short safe detail for the stored record only.
+          if (errText && errText.length < 200) {
+            notificationError = `${notificationError}: ${errText.slice(0, 180)}`;
+          }
+        } else {
+          notificationSent = true;
+          console.info("[contact] Resend email accepted", {
+            to,
+            messageId: savedMessage.id,
+          });
+        }
+      } catch (sendError) {
+        notificationError =
+          sendError instanceof Error ? sendError.message : "Resend request failed";
+        console.error("[contact] Resend request failed:", notificationError, {
+          messageId: savedMessage.id,
+        });
+      }
     }
 
-    console.info("[contact] Resend email accepted", { to });
+    try {
+      await updateContactMessage(messagesStore, savedMessage.id, {
+        notification_email_sent: notificationSent,
+        notification_email_error: notificationSent ? null : notificationError || "Unknown error",
+        now: nowIso(),
+      });
+    } catch (updateError) {
+      const updateMessage =
+        updateError instanceof Error ? updateError.message : String(updateError);
+      console.error(
+        "[contact] Failed to update notification status on saved message:",
+        updateMessage,
+        { messageId: savedMessage.id },
+      );
+    }
 
-    // Redirect user to thank-you page
-    return new Response(`
+    // Visitor success whenever the message was stored, even if notification failed.
+    return successRedirectResponse();
+  } catch (error) {
+    const errMessage = error instanceof Error ? error.message : String(error);
+    console.error("[contact] Unhandled error in contact handler:", errMessage, error);
+    return new Response("Internal server error", { status: 500 });
+  }
+}
+
+function successRedirectResponse() {
+  return new Response(
+    `
 <!doctype html>
 <html lang="en">
   <head>
@@ -281,35 +458,19 @@ ${submittedImage ? imageTextSection(submittedImage, imageStorage) : ""}
     <p>Redirecting...</p>
   </body>
 </html>
-`, {
-  status: 200,
-  headers: { "Content-Type": "text/html; charset=utf-8" },
-});
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error("[contact] Unhandled error in contact handler:", message, error);
-    return new Response("Internal server error", { status: 500 });
-  }
-}
-
-function serverConfigErrorResponse() {
-  console.error(
-    "[contact] Server misconfiguration — check RESEND_API_KEY and CONTACT_FROM_EMAIL in Netlify",
-  );
-  return new Response(
-    "We couldn't send your message right now. Please try again later or email us directly.",
+`,
     {
-      status: 500,
-      headers: { "Content-Type": "text/plain; charset=utf-8" },
+      status: 200,
+      headers: { "Content-Type": "text/html; charset=utf-8" },
     },
   );
 }
 
-function resendFailureResponse() {
+function storageFailureResponse() {
   return new Response(
-    "We couldn't send your message right now. Please try again in a moment.",
+    "We couldn't save your message right now. Please try again later or email us directly.",
     {
-      status: 502,
+      status: 500,
       headers: { "Content-Type": "text/plain; charset=utf-8" },
     },
   );
@@ -397,7 +558,14 @@ function formatImageSize(bytes) {
 /**
  * @param {File | Blob} image
  * @param {Request} req
- * @returns {Promise<{ link: string | null, warning: string | null }>}
+ * @returns {Promise<{
+ *   link: string | null,
+ *   warning: string | null,
+ *   blobKey: string | null,
+ *   accessToken: string | null,
+ *   contentType: string | null,
+ *   originalFilename: string | null,
+ * }>}
  */
 async function persistContactImage(image, req) {
   try {
@@ -415,23 +583,36 @@ async function persistContactImage(image, req) {
       consistency: "strong",
     });
 
+    const originalFilename = sanitizeOriginalFilename(image.name);
+
     await store.set(blobKey, bytes, {
       metadata: {
         accessToken,
         contentType: image.type,
-        originalFilename: sanitizeOriginalFilename(image.name),
+        originalFilename,
         uploadedAt: new Date().toISOString(),
       },
     });
 
     const link = buildContactImageUrl(req, blobKey, accessToken);
-    return { link, warning: null };
+    return {
+      link,
+      warning: null,
+      blobKey,
+      accessToken,
+      contentType: image.type,
+      originalFilename,
+    };
   } catch (error) {
     console.error("Failed to store contact image:", error);
     return {
       link: null,
       warning:
         "An image was attached but could not be saved for viewing. Please ask the sender to resend the photo if needed.",
+      blobKey: null,
+      accessToken: null,
+      contentType: null,
+      originalFilename: null,
     };
   }
 }

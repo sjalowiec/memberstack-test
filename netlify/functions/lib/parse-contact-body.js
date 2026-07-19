@@ -17,6 +17,25 @@ export function isHandlerEvent(event) {
 }
 
 /**
+ * Netlify Dev (`@netlify/functions-dev`) builds Lambda events with
+ * `body = await request.text()` and `isBase64Encoded: true` for multipart.
+ * The body is therefore raw multipart text, not base64. Detect that mislabel
+ * so we do not base64-decode plaintext into garbage.
+ *
+ * Real base64 cannot contain `--` or `Content-Disposition:` (hyphen is outside
+ * the base64 alphabet), so this check is safe for production bodies too.
+ *
+ * @param {string} body
+ */
+export function looksLikeRawMultipartEventBody(body) {
+  if (typeof body !== "string" || body.length === 0) {
+    return false;
+  }
+  const head = body.slice(0, Math.min(body.length, 256));
+  return head.startsWith("--") || head.includes("Content-Disposition:");
+}
+
+/**
  * @param {import("@netlify/functions").HandlerEvent} event
  */
 export function decodeEventBody(event) {
@@ -24,6 +43,9 @@ export function decodeEventBody(event) {
     return Buffer.alloc(0);
   }
   if (event.isBase64Encoded) {
+    if (looksLikeRawMultipartEventBody(event.body)) {
+      return Buffer.from(event.body, "utf8");
+    }
     return Buffer.from(event.body, "base64");
   }
   return Buffer.from(event.body, "latin1");
@@ -486,11 +508,14 @@ function logBodyDebug(debug, buffer) {
 
 /**
  * Primary parser: platform Request.formData(). Only returns when parsing succeeds.
+ * Skipped for multipart when a HandlerEvent is present — Netlify Dev may have
+ * already rebuilt a corrupted Request body; event.body is the recoverable source.
  *
  * @param {Request} req
+ * @param {{ skipMultipart?: boolean }} [options]
  * @returns {Promise<{ ok: true, formData: FormData } | { ok: false, reason: "skipped" | "failed", message?: string }>}
  */
-async function tryNativeRequestFormData(req) {
+async function tryNativeRequestFormData(req, options = {}) {
   if (!(req instanceof Request) || req.body == null) {
     return { ok: false, reason: "skipped" };
   }
@@ -500,6 +525,10 @@ async function tryNativeRequestFormData(req) {
     !contentType.includes("multipart/form-data") &&
     !contentType.includes("application/x-www-form-urlencoded")
   ) {
+    return { ok: false, reason: "skipped" };
+  }
+
+  if (options.skipMultipart && contentType.includes("multipart/form-data")) {
     return { ok: false, reason: "skipped" };
   }
 
@@ -519,24 +548,56 @@ async function tryNativeRequestFormData(req) {
 }
 
 /**
+ * Safe diagnostics only — never log name/email/message/file bytes.
+ * @param {Record<string, unknown>} fields
+ */
+function logParseStage(fields) {
+  console.info("[contact] parse stage", fields);
+}
+
+/**
  * @param {Request} req
  * @param {import("@netlify/functions").HandlerEvent | null | undefined} [event]
  * @returns {Promise<FormData>}
  */
 export async function parseContactFormData(req, event) {
-  const contentType = (
+  const rawContentType =
     event?.headers?.["content-type"] ||
     event?.headers?.["Content-Type"] ||
     req.headers.get("content-type") ||
-    ""
-  ).toLowerCase();
+    "";
+  const contentType = rawContentType.toLowerCase();
+  // Keep original casing for the multipart boundary (Busboy is case-sensitive).
+  const boundary = extractBoundary(rawContentType);
 
-  const nativeResult = await tryNativeRequestFormData(req);
+  const hasHandlerEvent = !!(event && isHandlerEvent(event));
+  logParseStage({
+    stage: "start",
+    contentType: contentType || null,
+    hasBody: !!(event?.body || req.body),
+    bodyLength:
+      typeof event?.body === "string"
+        ? event.body.length
+        : null,
+    isBase64Encoded: !!(event && event.isBase64Encoded),
+    hasHandlerEvent,
+  });
+
+  const nativeResult = await tryNativeRequestFormData(req, {
+    // Prefer event.body for multipart under Netlify Dev (see decodeEventBody).
+    skipMultipart: hasHandlerEvent,
+  });
   if (nativeResult.ok) {
+    logParseStage({
+      stage: "native-formData",
+      contentType: contentType || null,
+      hasBody: true,
+      bodyLength: null,
+      isBase64Encoded: !!(event && event.isBase64Encoded),
+    });
     return nativeResult.formData;
   }
 
-  const boundary = extractBoundary(contentType);
   const contentLengthHeader =
     event?.headers?.["content-length"] ||
     event?.headers?.["Content-Length"] ||
@@ -600,6 +661,14 @@ export async function parseContactFormData(req, event) {
     debug.bodyLength = buffer.length;
     debug.hasClosingBoundary = hasClosingMultipartBoundary(buffer, boundary);
     logBodyDebug(debug, buffer);
+    logParseStage({
+      stage: "multipart-buffer",
+      contentType: contentType || null,
+      hasBody: buffer.length > 0,
+      bodyLength: buffer.length,
+      isBase64Encoded: !!(event && event.isBase64Encoded),
+      bodySource: debug.bodySource,
+    });
 
     if (buffer.length === 0) {
       const extracted = extractMultipartFieldsBestEffort(buffer, boundary);
@@ -609,12 +678,25 @@ export async function parseContactFormData(req, event) {
         );
         return extracted;
       }
-      throw new Error(
+      const err = new Error(
         "Multipart body unavailable (no body buffer from request or event)",
       );
+      logParseStage({
+        stage: "multipart-empty",
+        contentType: contentType || null,
+        hasBody: false,
+        bodyLength: 0,
+        isBase64Encoded: !!(event && event.isBase64Encoded),
+        exceptionName: err.name,
+        exceptionMessage: err.message,
+      });
+      throw err;
     }
 
-    const headers = event ? { ...event.headers } : headersFromRequest(req);
+    // Prefer original content-type (boundary casing) for Busboy.
+    const headers = event
+      ? { ...event.headers, "content-type": rawContentType }
+      : { ...headersFromRequest(req), "content-type": rawContentType };
     try {
       const formData = await parseMultipartBuffer(headers, buffer, {
         bestEffort: true,
@@ -623,10 +705,19 @@ export async function parseContactFormData(req, event) {
         "[contact] Parser succeeded via Busboy",
         { source: debug.bodySource, bytes: buffer.length },
       );
+      logParseStage({
+        stage: "busboy-ok",
+        contentType: contentType || null,
+        hasBody: true,
+        bodyLength: buffer.length,
+        isBase64Encoded: !!(event && event.isBase64Encoded),
+      });
       return formData;
     } catch (parseError) {
       const message =
         parseError instanceof Error ? parseError.message : String(parseError);
+      const exceptionName =
+        parseError instanceof Error ? parseError.name : "Error";
       const extracted = extractMultipartFieldsBestEffort(buffer, boundary);
       if (extracted.keys().next().done === false) {
         console.warn(
@@ -635,6 +726,15 @@ export async function parseContactFormData(req, event) {
         );
         return extracted;
       }
+      logParseStage({
+        stage: "multipart-failed",
+        contentType: contentType || null,
+        hasBody: true,
+        bodyLength: buffer.length,
+        isBase64Encoded: !!(event && event.isBase64Encoded),
+        exceptionName,
+        exceptionMessage: message,
+      });
       throw new Error(
         `Multipart parse failed (${debug.bodySource}, ${buffer.length} bytes): ${message}`,
       );

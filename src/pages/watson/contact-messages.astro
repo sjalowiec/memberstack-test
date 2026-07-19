@@ -1,0 +1,520 @@
+---
+import WatsonPageShell from "../../components/watson/WatsonPageShell.astro";
+import {
+  buildContactAttachmentUrl,
+  computeContactMessageCounts,
+  getContactMessagesStore,
+  listContactMessages,
+  matchesListFilter,
+  messagePreview,
+  statusLabel,
+  type ContactMessage,
+  type ContactMessageListFilter,
+} from "../../lib/contact/contactMessagesStore";
+import { buildContactReplyMailto } from "../../lib/contact/contactMessageMailto";
+
+export const prerender = false;
+
+const FILTERS: { value: ContactMessageListFilter; label: string }[] = [
+  { value: "open", label: "Open" },
+  { value: "new", label: "New" },
+  { value: "in_progress", label: "In progress" },
+  { value: "waiting_for_customer", label: "Waiting for customer" },
+  { value: "resolved", label: "Resolved" },
+  { value: "all", label: "All" },
+];
+
+function parseFilter(value: string | null): ContactMessageListFilter {
+  if (value && FILTERS.some((f) => f.value === value)) {
+    return value as ContactMessageListFilter;
+  }
+  return "open";
+}
+
+const filter = parseFilter(Astro.url.searchParams.get("filter"));
+const siteOrigin = Astro.url.origin;
+
+let loadError: string | null = null;
+let allMessages: ContactMessage[] = [];
+let messages: ContactMessage[] = [];
+let counts = { new: 0, open: 0, older_than_48_hours: 0 };
+
+try {
+  const store = getContactMessagesStore();
+  allMessages = await listContactMessages(store, { filter: "all" });
+  messages = allMessages.filter((message) => matchesListFilter(message, filter));
+  counts = computeContactMessageCounts(allMessages);
+} catch (error) {
+  loadError =
+    error instanceof Error ? error.message : "Unable to load contact messages.";
+}
+
+function formatDateTime(iso: string): string {
+  const ms = Date.parse(iso);
+  if (!Number.isFinite(ms)) return iso || "ù";
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(ms));
+}
+
+function notificationLabel(message: ContactMessage): string {
+  if (message.notification_email_sent) return "Email sent";
+  if (message.notification_email_error) return "Email failed";
+  return "Email pending";
+}
+---
+
+<WatsonPageShell
+  title="Contact Messages | Watson"
+  description="Review Contact Us submissions, add notes, and track resolution."
+  heading="Contact Messages"
+  intro="Review visitor messages, track status, add notes, and reply from Gmail. Messages are saved even when the notification email fails."
+>
+  <section class="watson__panel watson-contact__counts" aria-label="Message counts">
+    <div class="watson-contact__count">
+      <span class="watson-contact__count-value">{counts.new}</span>
+      <span class="watson-contact__count-label">New</span>
+    </div>
+    <div class="watson-contact__count">
+      <span class="watson-contact__count-value">{counts.open}</span>
+      <span class="watson-contact__count-label">Open</span>
+    </div>
+    <div class="watson-contact__count">
+      <span class="watson-contact__count-value">{counts.older_than_48_hours}</span>
+      <span class="watson-contact__count-label">Older than 48 hours</span>
+    </div>
+  </section>
+
+  <nav class="watson-contact__filters" aria-label="Filter contact messages">
+    {
+      FILTERS.map((item) => (
+        <a
+          class:list={[
+            "watson-contact__filter",
+            item.value === filter && "watson-contact__filter--active",
+          ]}
+          href={`/watson/contact-messages?filter=${item.value}`}
+        >
+          {item.label}
+        </a>
+      ))
+    }
+  </nav>
+
+  {
+    loadError ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {loadError}
+      </p>
+    ) : null
+  }
+
+  {
+    !loadError && messages.length === 0 ? (
+      <p class="watson__status">No contact messages match this filter.</p>
+    ) : null
+  }
+
+  {
+    !loadError && messages.length > 0 ? (
+      <div class="watson-contact__list">
+        {messages.map((message) => {
+          const mailto = buildContactReplyMailto({
+            email: message.email,
+            name: message.name,
+            source: message.source,
+            createdAt: formatDateTime(message.created_at),
+          });
+          const attachmentUrl = message.attachment
+            ? buildContactAttachmentUrl(siteOrigin, message.attachment)
+            : null;
+          const sourceOrSubject = message.subject || message.category || message.source || "";
+
+          return (
+            <article
+              class="watson__panel watson-contact__item"
+              data-contact-id={message.id}
+              data-status={message.status}
+            >
+              <header class="watson-contact__item-head">
+                <div class="watson-contact__item-meta">
+                  <span
+                    class:list={[
+                      "watson-contact__badge",
+                      `watson-contact__badge--${message.status}`,
+                    ]}
+                  >
+                    {statusLabel(message.status)}
+                  </span>
+                  <time datetime={message.created_at}>{formatDateTime(message.created_at)}</time>
+                  <span
+                    class:list={[
+                      "watson-contact__notify",
+                      message.notification_email_sent
+                        ? "watson-contact__notify--ok"
+                        : "watson-contact__notify--fail",
+                    ]}
+                    title={message.notification_email_error || undefined}
+                  >
+                    {notificationLabel(message)}
+                  </span>
+                </div>
+                <h2 class="watson-contact__name">{message.name || "(No name)"}</h2>
+                <p class="watson-contact__email">
+                  <a href={mailto}>{message.email}</a>
+                </p>
+                {sourceOrSubject ? (
+                  <p class="watson-contact__source">{sourceOrSubject}</p>
+                ) : null}
+                <p class="watson-contact__preview">{messagePreview(message.message)}</p>
+              </header>
+
+              <details class="watson-contact__details">
+                <summary>View full message &amp; actions</summary>
+                <div class="watson-contact__details-body">
+                  <p class="watson-contact__full-message">{message.message}</p>
+
+                  {message.page_url ? (
+                    <p class="watson-contact__page">
+                      Page:{" "}
+                      <a href={message.page_url} target="_blank" rel="noopener noreferrer">
+                        {message.page_url}
+                      </a>
+                    </p>
+                  ) : null}
+
+                  {attachmentUrl ? (
+                    <p class="watson-contact__attachment">
+                      <a href={attachmentUrl} target="_blank" rel="noopener noreferrer">
+                        Open attachment
+                      </a>
+                      {message.attachment?.original_filename
+                        ? ` (${message.attachment.original_filename})`
+                        : ""}
+                    </p>
+                  ) : null}
+
+                  {!message.notification_email_sent && message.notification_email_error ? (
+                    <p class="watson-contact__notify-error">
+                      Notification error: {message.notification_email_error}
+                    </p>
+                  ) : null}
+
+                  <p class="watson-contact__updated">
+                    Last updated:{" "}
+                    <time datetime={message.updated_at}>{formatDateTime(message.updated_at)}</time>
+                  </p>
+
+                  <div class="watson-contact__actions">
+                    <label class="watson-contact__field">
+                      <span>Status</span>
+                      <select class="watson-contact__status" data-contact-status>
+                        <option value="new" selected={message.status === "new"}>
+                          New
+                        </option>
+                        <option
+                          value="in_progress"
+                          selected={message.status === "in_progress"}
+                        >
+                          In progress
+                        </option>
+                        <option
+                          value="waiting_for_customer"
+                          selected={message.status === "waiting_for_customer"}
+                        >
+                          Waiting for customer
+                        </option>
+                        <option value="resolved" selected={message.status === "resolved"}>
+                          Resolved
+                        </option>
+                      </select>
+                    </label>
+
+                    <label class="watson-contact__field watson-contact__field--notes">
+                      <span>Admin notes</span>
+                      <textarea
+                        class="watson-contact__notes"
+                        data-contact-notes
+                        rows="3"
+                        maxlength="10000"
+                      >{message.admin_notes || ""}</textarea>
+                    </label>
+
+                    <div class="watson-contact__action-row">
+                      <button type="button" class="watson__button" data-contact-save>
+                        Save changes
+                      </button>
+                      {message.status === "resolved" ? (
+                        <button
+                          type="button"
+                          class="watson__button watson__button--secondary"
+                          data-contact-reopen
+                        >
+                          Reopen
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          class="watson__button watson__button--secondary"
+                          data-contact-resolve
+                        >
+                          Mark resolved
+                        </button>
+                      )}
+                      <a class="watson__button watson__button--secondary" href={mailto}>
+                        Reply
+                      </a>
+                    </div>
+                    <p class="watson-contact__action-status" data-contact-action-status hidden></p>
+                  </div>
+                </div>
+              </details>
+            </article>
+          );
+        })}
+      </div>
+    ) : null
+  }
+</WatsonPageShell>
+
+<style>
+  .watson-contact__counts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 1rem;
+  }
+
+  .watson-contact__count {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .watson-contact__count-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #243015;
+    line-height: 1.1;
+  }
+
+  .watson-contact__count-label {
+    color: #64748b;
+    font-size: 0.9rem;
+  }
+
+  .watson-contact__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1.25rem 0 0.5rem;
+  }
+
+  .watson-contact__filter {
+    display: inline-block;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    color: #334155;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    background: #fff;
+  }
+
+  .watson-contact__filter:hover {
+    border-color: #3f6212;
+    color: #3f6212;
+  }
+
+  .watson-contact__filter--active {
+    background: #3f6212;
+    border-color: #3f6212;
+    color: #fff;
+  }
+
+  .watson-contact__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    margin-top: 1rem;
+  }
+
+  .watson-contact__item-head {
+    margin-bottom: 0.75rem;
+  }
+
+  .watson-contact__item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    align-items: center;
+    margin-bottom: 0.45rem;
+    font-size: 0.9rem;
+    color: #64748b;
+  }
+
+  .watson-contact__badge {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    background: #e2e8f0;
+    color: #334155;
+  }
+
+  .watson-contact__badge--new {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .watson-contact__badge--in_progress {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .watson-contact__badge--waiting_for_customer {
+    background: #ede9fe;
+    color: #5b21b6;
+  }
+
+  .watson-contact__badge--resolved {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .watson-contact__notify--ok {
+    color: #166534;
+    font-weight: 600;
+  }
+
+  .watson-contact__notify--fail {
+    color: #b91c1c;
+    font-weight: 600;
+  }
+
+  .watson-contact__name {
+    margin: 0 0 0.2rem;
+    font-size: 1.15rem;
+    color: #243015;
+  }
+
+  .watson-contact__email,
+  .watson-contact__source,
+  .watson-contact__preview {
+    margin: 0.15rem 0;
+    color: #475569;
+    line-height: 1.45;
+  }
+
+  .watson-contact__email a {
+    color: #3f6212;
+    font-weight: 600;
+  }
+
+  .watson-contact__details summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: #3f6212;
+  }
+
+  .watson-contact__details-body {
+    margin-top: 0.85rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .watson-contact__full-message {
+    white-space: pre-wrap;
+    margin: 0 0 0.85rem;
+    color: #1f2937;
+    line-height: 1.5;
+  }
+
+  .watson-contact__page,
+  .watson-contact__attachment,
+  .watson-contact__updated,
+  .watson-contact__notify-error {
+    margin: 0.4rem 0;
+    font-size: 0.92rem;
+    color: #475569;
+  }
+
+  .watson-contact__notify-error {
+    color: #b91c1c;
+  }
+
+  .watson-contact__attachment a {
+    color: #3f6212;
+    font-weight: 600;
+  }
+
+  .watson-contact__actions {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .watson-contact__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-weight: 600;
+    color: #334155;
+    font-size: 0.92rem;
+  }
+
+  .watson-contact__field select,
+  .watson-contact__field textarea {
+    font: inherit;
+    font-weight: 400;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    color: #1f2937;
+  }
+
+  .watson-contact__field select:focus,
+  .watson-contact__field textarea:focus {
+    outline: 2px solid #3f6212;
+    outline-offset: 1px;
+    border-color: #3f6212;
+  }
+
+  .watson-contact__action-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    align-items: center;
+  }
+
+  .watson__button--secondary {
+    background: #fff;
+    color: #3f6212;
+    border: 1px solid #3f6212;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .watson__button--secondary:hover {
+    background: #f7fee7;
+  }
+
+  .watson-contact__action-status {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #166534;
+  }
+
+  .watson-contact__action-status[data-error="true"] {
+    color: #b91c1c;
+  }
+</style>
+
+<script>
+  import { initWatsonContactMessageActions } from "../../scripts/watsonContactMessages";
+  initWatsonContactMessageActions(document);
+</script>
