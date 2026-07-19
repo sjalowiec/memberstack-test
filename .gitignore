@@ -18,6 +18,7 @@ tmp/
 /scripts/*
 !/scripts/prepare-transition-site.mjs
 !/scripts/check-utf8.mjs
+!/scripts/patch-netlify-functions-dev-multipart.mjs
 !/scripts/memberstack/
 !/scripts/memberstack/**
 src/data/glossary.backup.before-strip-html.json
