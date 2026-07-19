@@ -109,6 +109,10 @@ import {
 import { buildGlossaryTooltipPlaceholderHtml } from "../glossary/glossaryTooltipPrint";
 import { buildPatternHelpCardInnerHtml } from "./patternHelpCard";
 import { buildPatternQuickTipInnerHtml } from "./patternQuickTip";
+import {
+  roundBackNecklineShapingVideoRow,
+  splitAfterRoundBackNecklineIntro,
+} from "./roundBackNecklineShapingVideoTip";
 
 /** Visual presentation for structured pattern tips (style only). */
 export type PatternTipPresentation = "quick-tip" | "help-card";
@@ -1524,6 +1528,68 @@ function backNeckSummaryRcHeading(
   return formatArmholeLocalRc(backNecklineStartRC, firstArmholeRC);
 }
 
+/**
+ * BACK neckline summary blocks with the shared round-back divide video tip inserted after
+ * begin + lifeline (before first-shoulder / needle-setup instructions). Front must not call this.
+ */
+function sleevelessBackNecklineSummaryWithVideoTipRows(args: {
+  summary: string[] | null;
+  backRoundNeckPlan?: RoundNecklinePlanResult | null;
+  backNecklineStartRC?: number;
+  firstArmholeRC?: number | null;
+  missingSummaryParagraphs: string[];
+}): Extract<SleevelessPatternDisplayRow, { kind: "block" }>[] {
+  const summary = args.summary;
+  if (!summary) {
+    return [
+      {
+        kind: "block",
+        paragraphs: args.missingSummaryParagraphs,
+      },
+    ];
+  }
+
+  const rc = backNeckSummaryRcHeading(
+    args.backRoundNeckPlan,
+    args.backNecklineStartRC,
+    args.firstArmholeRC,
+  );
+  const orientationTip = {
+    tipHtml: necklineShoulderOrientationHelpCardInnerHtml(),
+    tipHtmlIsFull: true as const,
+    tipPresentation: "help-card" as const,
+    tipId: "sleeveless-neckline-orientation",
+  };
+  const split = splitAfterRoundBackNecklineIntro(summary);
+  if (!split) {
+    return [
+      {
+        kind: "block",
+        rc,
+        ...backNeckSummaryInstructionFields(summary),
+        ...orientationTip,
+      },
+    ];
+  }
+
+  const out: Extract<SleevelessPatternDisplayRow, { kind: "block" }>[] = [
+    {
+      kind: "block",
+      rc,
+      ...backNeckSummaryInstructionFields(split.intro),
+      ...orientationTip,
+    },
+    roundBackNecklineShapingVideoRow(),
+  ];
+  if (split.rest.length > 0) {
+    out.push({
+      kind: "block",
+      ...backNeckSummaryInstructionFields(split.rest),
+    });
+  }
+  return out;
+}
+
 export function buildSleevelessBackDisplayRows(args: {
   castOnSts: number;
   /** Stitches on the needle at the armhole (bust width when A-line); defaults to {@link castOnSts}. */
@@ -1989,28 +2055,17 @@ export function buildSleevelessBackDisplayRows(args: {
       backNecklineStartRC: args.backNecklineStartRC,
       firstArmholeRC: args.firstArmholeRC,
     });
-    if (summary) {
-      rows.push({
-        kind: "block",
-        rc: backNeckSummaryRcHeading(
-          args.backRoundNeckPlan,
-          args.backNecklineStartRC,
-          args.firstArmholeRC,
-        ),
-        ...backNeckSummaryInstructionFields(summary),
-        tipHtml: necklineShoulderOrientationHelpCardInnerHtml(),
-        tipHtmlIsFull: true,
-        tipPresentation: "help-card",
-        tipId: "sleeveless-neckline-orientation",
-      });
-    } else {
-      rows.push({
-        kind: "block",
-        paragraphs: [
+    rows.push(
+      ...sleevelessBackNecklineSummaryWithVideoTipRows({
+        summary,
+        backRoundNeckPlan: args.backRoundNeckPlan,
+        backNecklineStartRC: args.backNecklineStartRC,
+        firstArmholeRC: args.firstArmholeRC,
+        missingSummaryParagraphs: [
           "Set neck opening width (and shoulder width) in the builder to generate row-by-row neckline and shoulder steps.",
         ],
-      });
-    }
+      }),
+    );
   } else if (
     args.necklineStitches !== undefined &&
     args.shoulderStitches !== undefined &&
@@ -2027,31 +2082,17 @@ export function buildSleevelessBackDisplayRows(args: {
       backNecklineStartRC: args.backNecklineStartRC,
       firstArmholeRC: args.firstArmholeRC,
     });
-    rows.push({
-      kind: "block",
-      ...(summary
-        ? {
-            rc: backNeckSummaryRcHeading(
-              args.backRoundNeckPlan,
-              args.backNecklineStartRC,
-              args.firstArmholeRC,
-            ),
-            ...backNeckSummaryInstructionFields(summary),
-          }
-        : {
-            paragraphs: [
-              "Neckline summary could not be generated. Confirm neck opening and shoulder width in Fit, then open this tab again.",
-            ],
-          }),
-      ...(summary
-        ? {
-            tipHtml: necklineShoulderOrientationHelpCardInnerHtml(),
-            tipHtmlIsFull: true,
-            tipPresentation: "help-card" as const,
-            tipId: "sleeveless-neckline-orientation",
-          }
-        : {}),
-    });
+    rows.push(
+      ...sleevelessBackNecklineSummaryWithVideoTipRows({
+        summary,
+        backRoundNeckPlan: args.backRoundNeckPlan,
+        backNecklineStartRC: args.backNecklineStartRC,
+        firstArmholeRC: args.firstArmholeRC,
+        missingSummaryParagraphs: [
+          "Neckline summary could not be generated. Confirm neck opening and shoulder width in Fit, then open this tab again.",
+        ],
+      }),
+    );
   } else {
     rows.push({ kind: "section", title: "BACK NECKLINE & SHOULDERS" });
     rows.push({

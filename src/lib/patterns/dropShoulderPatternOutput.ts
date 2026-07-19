@@ -70,6 +70,7 @@ import {
 } from "./roundNeckPlanPresentation";
 import { cardiganFrontInitialNeckBindOffStitches } from "./roundNeckNotation";
 import { dropShoulderShoulderBindOffVideoRow } from "./dropShoulderShoulderBindOffVideo";
+import { roundBackNecklineShapingVideoRow } from "./roundBackNecklineShapingVideoTip";
 import {
   castOnMethodQuickTipInnerHtml,
   pieceMarkersSeamingTipDisplayRow,
@@ -679,6 +680,11 @@ function buildBackRows(args: {
     // Isolated, hardcoded explainer video shown immediately before the shoulder
     // bind-off instructions. See `dropShoulderShoulderBindOffVideo.ts`.
     rows.push(dropShoulderShoulderBindOffVideoRow());
+    // Round-back divide video: attach to the intro instruction block (same Quick Tip
+    // pattern as cast-on) so it renders after begin/lifeline/straight-shoulder copy and
+    // immediately before the next block (RIGHT SIDE). A tip-only row here was easy to
+    // miss relative to the surrounding instruction blocks.
+    const roundBackNeckVideoTip = roundBackNecklineShapingVideoRow();
     rows.push({
       kind: "block",
       rc: dropShoulderNecklineFirstBlockRc(true, neckStartRc),
@@ -687,6 +693,10 @@ function buildBackRows(args: {
         "Drop-shoulder shoulders are worked straight — there is no shoulder shaping.",
       ]),
       paragraphs: [],
+      tipHtml: roundBackNeckVideoTip.tipHtml,
+      tipHtmlIsFull: true,
+      tipPresentation: "quick-tip",
+      tipId: roundBackNeckVideoTip.tipId,
     });
     rows.push(...splitTrustedParagraphsAtShoulderCompletion(executionLines, args.shoulderStsEach));
   } else {
