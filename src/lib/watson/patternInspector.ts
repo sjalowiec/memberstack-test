@@ -408,14 +408,11 @@ export function notFoundMessage(projectId: string): string {
   return [
     `No saved pattern was found for project ID "${projectId}".`,
     "",
-    "This project may have been:",
-    "- deleted",
-    "- never cloud-saved",
-    "- generated from a local working draft",
-    "- created on another environment",
-    "",
-    `Searched store: ${PATTERN_INSPECTOR_BLOB_STORE}`,
-    `Searched prefix: ${PATTERN_INSPECTOR_PREFIX}`,
+    "This can happen when:",
+    "- the project was deleted",
+    "- it was never cloud-saved",
+    "- it belongs to another environment",
+    "- the Project ID was copied incorrectly",
   ].join("\n");
 }
 
@@ -520,8 +517,8 @@ export async function inspectSavedPatternByProjectId(
       store: storeName,
       prefix,
       message: projectId
-        ? `Invalid project ID: expected a UUID, got "${projectId}".`
-        : "Enter a project ID (UUID) from a pattern URL or PDF.",
+        ? `That Project ID does not look valid: "${projectId}". Copy only the value after project= in the pattern URL or PDF footer.`
+        : "Paste a Project ID from a pattern URL or the footer of a printed PDF.",
     };
   }
 

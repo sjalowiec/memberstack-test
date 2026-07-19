@@ -139,8 +139,8 @@ describe("inspectSavedPatternByProjectId", () => {
       expect(result.prefix).toBe(PATTERN_INSPECTOR_PREFIX);
       expect(result.message).toContain("deleted");
       expect(result.message).toContain("never cloud-saved");
-      expect(result.message).toContain(PATTERN_INSPECTOR_BLOB_STORE);
-      expect(result.message).toContain(PATTERN_INSPECTOR_PREFIX);
+      expect(result.message).toContain("another environment");
+      expect(result.message).toContain("copied incorrectly");
     }
   });
 
@@ -263,14 +263,12 @@ describe("pattern inspector display helpers", () => {
     expect(page).not.toContain("set:html");
   });
 
-  it("explains not-found reasons and searched store/prefix", () => {
+  it("explains not-found reasons in support-friendly language", () => {
     const message = notFoundMessage(PROJECT_ID);
     expect(message).toContain("deleted");
     expect(message).toContain("never cloud-saved");
-    expect(message).toContain("local working draft");
     expect(message).toContain("another environment");
-    expect(message).toContain(PATTERN_INSPECTOR_BLOB_STORE);
-    expect(message).toContain(PATTERN_INSPECTOR_PREFIX);
+    expect(message).toContain("copied incorrectly");
   });
 });
 

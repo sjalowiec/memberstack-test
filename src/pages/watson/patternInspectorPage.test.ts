@@ -19,6 +19,16 @@ describe("Watson Saved Pattern Inspector page", () => {
     expect(page).toContain('export const prerender = false');
     expect(page).toContain("WatsonPageShell");
     expect(page).toContain("Saved Pattern Inspector");
+    expect(page).toContain("How to use this tool");
+    expect(page).toContain("Where do I find the Project ID?");
+    expect(page).toContain("No project loaded yet.");
+    expect(page).toContain("Paste the Project ID from a pattern URL or the footer of a printed PDF.");
+    expect(page).toContain("project=");
+    expect(page).toContain(
+      "https://app.knititnow.com/patterns/drop-shoulder/pattern/?project=5b04bde9-914f-485f-b2bc-b0db5eff5ccf",
+    );
+    expect(page).toContain("the project was deleted");
+    expect(page).toContain("it was never cloud-saved");
     expect(page).toContain("Project ID");
     expect(page).toContain("Find Saved Pattern");
     expect(page).toContain('name="projectId"');
@@ -34,6 +44,8 @@ describe("Watson Saved Pattern Inspector page", () => {
     expect(page).not.toContain("Delete");
     expect(page).not.toContain("Impersonat");
     expect(page).not.toContain("set:html");
+    expect(page).not.toContain("custom-pattern-projects");
+    expect(page).not.toContain("sleeveless/");
 
     expect(shell).toContain('href="/watson/pattern-inspector"');
     expect(shell).toContain("Saved Pattern Inspector");
