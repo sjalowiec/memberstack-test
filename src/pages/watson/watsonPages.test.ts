@@ -102,6 +102,7 @@ describe("Watson member search pages", () => {
 
     expect(reportsIndex).toContain("/watson/reports/current-legacy-members");
     expect(reportsIndex).toContain("/watson/reports/remaining-annual-access");
+    expect(reportsIndex).toContain("/watson/pattern-inspector");
     expect(currentMembers).toContain("loadCurrentLegacyMembersReport");
     expect(currentMembers).toContain('export const prerender = false');
     expect(annualAccess).toContain("loadRemainingAnnualAccessReport");
