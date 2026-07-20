@@ -410,19 +410,38 @@ const sueIntroParagraphs = [
 
   @media (min-width: 900px) {
     .home-v2-hero {
-      background-position: 60% center;
-      /* If cover still feels too zoomed after height/position tweaks, test: background-size: 100% auto; */
-      margin-bottom: clamp(2.25rem, 4vw, 3.25rem);
+      /* Favor machine + green fabric; crop more window (top) and table/basket (bottom) */
+      background-position: 62% 38%;
+      background-size: cover;
+      margin-bottom: 1.75rem;
     }
 
     .home-v2-hero__frame {
-      min-height: clamp(520px, 36vw, 580px);
-      padding: 2.75rem var(--home-gutter);
+      height: 430px;
+      min-height: 430px;
+      max-height: 430px;
+      padding: 1.5rem var(--home-gutter);
       align-items: center;
     }
 
     .home-v2-hero__card {
-      padding: 1.35rem 1.4rem;
+      padding: 1.05rem 1.25rem;
+    }
+
+    .home-v2-hero__card h1 {
+      margin-bottom: 0.55rem;
+    }
+
+    .home-v2-hero__copy {
+      margin-bottom: 0.9rem;
+    }
+
+    .home-v2-hero__actions {
+      gap: 0.5rem;
+    }
+
+    .home-v2-hero__login {
+      margin-top: 0.7rem;
     }
   }
 
@@ -470,6 +489,60 @@ const sueIntroParagraphs = [
     font-weight: 600;
     text-decoration: underline;
     text-underline-offset: 2px;
+  }
+
+  /*
+   * Narrow mobile only (phones). Matches the fixed membership bar breakpoint.
+   * Tablet (768–899) and desktop (900+) keep their existing hero rules.
+   */
+  @media (max-width: 767px) {
+    .home-v2-hero {
+      margin-bottom: 2rem;
+    }
+
+    .home-v2-hero__frame {
+      min-height: clamp(220px, 48vw, 280px);
+      padding: 1.15rem var(--home-gutter) 0;
+      align-items: flex-end;
+    }
+
+    .home-v2-hero__card {
+      padding: 1rem 1.1rem;
+      /*
+       * Lift the full card above the fixed membership bar.
+       * Bar is position:fixed; z-index:2800 — spacing (not z-index) keeps them separate.
+       * Clearance = bar tap height + safe-area + ~14px visible gap.
+       */
+      margin-bottom: calc(
+        var(--membership-bar-tap-h, 3.375rem) + env(safe-area-inset-bottom, 0px) + 14px
+      );
+    }
+
+    .home-v2-hero__card h1 {
+      margin-bottom: 0.45rem;
+      font-size: 1.28rem;
+      line-height: 1.25;
+    }
+
+    .home-v2-hero__copy {
+      margin-bottom: 0.55rem;
+      font-size: 0.9375rem;
+      line-height: 1.45;
+    }
+
+    .home-v2-hero__actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.4rem;
+    }
+
+    .home-v2-hero__actions .kbm-btn {
+      width: 100%;
+    }
+
+    .home-v2-hero__login {
+      margin-top: 0.5rem;
+    }
   }
 
   @media (min-width: 768px) {
