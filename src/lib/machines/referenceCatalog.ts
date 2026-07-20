@@ -17,10 +17,15 @@
  */
 import { readFileSync, statSync } from "node:fs";
 import path from "node:path";
-import { normalizeSale, type MachineSale } from "./machineAdminFields";
+import {
+  normalizeProductType,
+  normalizeSale,
+  type MachineSale,
+  type ShopProductType,
+} from "./machineAdminFields";
 import machineImageManifest from "../../data/generated/machine-images-manifest.json";
 
-export type { MachineSale } from "./machineAdminFields";
+export type { MachineSale, ShopProductType } from "./machineAdminFields";
 
 export interface MachineImage {
   url?: string | null;
@@ -32,6 +37,7 @@ interface RawMachine {
   machineId?: number | null;
   brand?: string | null;
   model?: string | null;
+  productType?: string | null;
   bed?: string | null;
   gauge?: string | null;
   needleCount?: number | null;
@@ -52,6 +58,8 @@ export interface Machine {
   slug: string;
   brand: string;
   model: string;
+  /** Shop catalog type; missing raw values default to `"machine"`. */
+  productType: ShopProductType;
   bed: string | null;
   /** Display gauge category (PitchAlpha), e.g. "Standard Gauge". */
   gauge: string;
@@ -186,6 +194,7 @@ function toMachine(raw: RawMachine): Machine | null {
     slug: makeSlug(brand, model),
     brand,
     model,
+    productType: normalizeProductType(raw.productType),
     bed: clean(raw.bed) || null,
     gauge: pitchAlpha,
     pitchAlpha,
@@ -264,19 +273,50 @@ export function getMachineBySlug(slug: string | undefined): Machine | undefined 
   return getAllMachines().find((m) => m.slug === slug);
 }
 
+/** Featured first, then alphabetically by display title. */
+function sortShopProducts(list: Machine[]): Machine[] {
+  return list.slice().sort((a, b) => {
+    const fa = a.sale?.featured ? 0 : 1;
+    const fb = b.sale?.featured ? 0 : 1;
+    if (fa !== fb) return fa - fb;
+    return machineTitle(a).localeCompare(machineTitle(b), "en", { sensitivity: "base" });
+  });
+}
+
 /**
- * Machines currently listed for sale (`sale.forSale === true`), for the shop
- * page. Featured machines sort first, then alphabetically by display title.
+ * All for-sale shop products (`sale.forSale === true`), both machines and
+ * accessories. Used for detail-page static paths so accessory URLs stay under
+ * `/shop/machines/[slug]`.
+ */
+export function getShopProductsForSale(): Machine[] {
+  return sortShopProducts(getAllMachines().filter((m) => m.sale?.forSale === true));
+}
+
+/**
+ * Machines currently listed for sale on `/shop/machines`
+ * (`sale.forSale === true` and `productType === "machine"`).
  */
 export function getMachinesForSale(): Machine[] {
-  return getAllMachines()
-    .filter((m) => m.sale?.forSale === true)
-    .sort((a, b) => {
-      const fa = a.sale?.featured ? 0 : 1;
-      const fb = b.sale?.featured ? 0 : 1;
-      if (fa !== fb) return fa - fb;
-      return machineTitle(a).localeCompare(machineTitle(b), "en", { sensitivity: "base" });
-    });
+  return getShopProductsForSale().filter((m) => m.productType === "machine");
+}
+
+/**
+ * Accessories currently listed for sale on `/shop/accessories`
+ * (`sale.forSale === true` and `productType === "accessory"`).
+ */
+export function getAccessoriesForSale(): Machine[] {
+  return getShopProductsForSale().filter((m) => m.productType === "accessory");
+}
+
+/** Breadcrumb / CTA back-link for a shop product detail page. */
+export function shopCatalogBackLink(productType: ShopProductType): {
+  href: string;
+  label: string;
+} {
+  if (productType === "accessory") {
+    return { href: "/shop/accessories", label: "← Back to Accessories" };
+  }
+  return { href: "/shop/machines", label: "← Back to Machines" };
 }
 
 /** Unique, sorted list of brands for the brand filter. */

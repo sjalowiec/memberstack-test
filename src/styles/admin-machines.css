@@ -77,6 +77,21 @@ body.admin-machines-body {
 .am__status.is-ok {
   color: #166534;
 }
+.am__form-status {
+  font-size: 0.9rem;
+  color: #475569;
+  align-self: center;
+  min-height: 1.2em;
+  flex: 1 1 auto;
+}
+.am__form-status.is-error {
+  color: #b91c1c;
+  font-weight: 600;
+}
+.am__form-status.is-ok {
+  color: #166534;
+  font-weight: 600;
+}
 .am__panel {
   background: #fff;
   border: 1px solid #e5e7eb;
@@ -98,16 +113,21 @@ body.admin-machines-body {
   margin-bottom: 0.5rem;
 }
 .am__search-label {
-  flex: 1 1 18rem;
+  flex: 1 1 14rem;
   min-width: 0;
 }
-.am__search-label input {
+.am__toolbar .am__search-label:has(select) {
+  flex: 0 1 12rem;
+}
+.am__search-label input,
+.am__search-label select {
   width: 100%;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   padding: 0.55rem 0.65rem;
   font: inherit;
   box-sizing: border-box;
+  background: #fff;
 }
 .am__count {
   margin: 0 0 0.6rem 0;
@@ -350,6 +370,92 @@ body.admin-machines-body {
   border-color: #fcd34d;
   color: #92400e;
 }
+.am__editing-id {
+  margin: 0 0 1rem 0;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  background: #243015;
+  color: #f7fee7;
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.am__editing-id[hidden] {
+  display: none;
+}
+.am__machine-id-field {
+  font-weight: 700;
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+.am__stripe-input {
+  font-family: ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
+  font-size: 0.85rem;
+  /* Never ellipsize the stored Stripe URL in the editor. */
+  text-overflow: clip;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.am__checkout-summary {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #c5d0a8;
+}
+.am__checkout-summary__title {
+  margin: 0 0 0.55rem 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #243015;
+}
+.am__checkout-summary__list {
+  margin: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+.am__checkout-summary__list > div {
+  display: grid;
+  grid-template-columns: 10.5rem 1fr;
+  gap: 0.5rem 0.75rem;
+  align-items: start;
+}
+.am__checkout-summary__list dt {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #64748b;
+}
+.am__checkout-summary__list dd {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #1e293b;
+  word-break: break-word;
+}
+.am__checkout-summary__link {
+  font-family: ui-monospace, "Cascadia Code", Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+  /* Full stored value — wrap rather than truncate. */
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  white-space: normal;
+}
+.am__checkout-summary__active.is-yes {
+  color: #166534;
+  font-weight: 700;
+}
+.am__checkout-summary__active.is-no {
+  color: #b91c1c;
+  font-weight: 700;
+}
+@media (max-width: 640px) {
+  .am__checkout-summary__list > div {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+  }
+}
 .am__grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -560,6 +666,10 @@ body.admin-machines-body {
 .am__btn:hover:not(:disabled) {
   background: #365314;
   border-color: #365314;
+}
+.am__btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 .am__btn:focus-visible {
   outline: 2px solid #3f6212;

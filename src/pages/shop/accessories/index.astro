@@ -1,96 +1,307 @@
 ---
-import Layout from '../../../layouts/Layout.astro';
+import Layout from "../../../layouts/Layout.astro";
+import PageHead from "../../../components/PageHead.astro";
+import MachinesShopSubnav from "../../../components/shop/MachinesShopSubnav.astro";
+import {
+  getAccessoriesForSale,
+  primaryImageUrl,
+  machineTitle,
+  formatPitch,
+} from "../../../lib/machines/referenceCatalog";
+import { availabilityLabel } from "../../../lib/machines/machineAdminFields";
 
-const title = "Accessories | Knit by Machine";
-const description = "Tools and add-ons for the knitting machines you already own.";
+const title = "Knitting Machine Accessories for Sale | Knit it Now";
+const description =
+  "Ribbers, carriages, and other accessories currently available for purchase.";
+
+const accessories = getAccessoriesForSale();
+
+function formatPrice(value: number | null): string | null {
+  if (value == null) return null;
+  return Number.isInteger(value)
+    ? `$${value.toLocaleString("en-US")}`
+    : `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
 ---
 
 <Layout {title} {description}>
-  <div class="placeholder-page">
-    <a class="back-link back-to-shop-link" id="back-to-shop" href="/shop">← Back to Shop</a>
+  <PageHead title="Accessories for Sale" />
+
+  <div class="machines-page">
     <header class="page-header">
-      <h1 data-testid="text-page-title">Accessories</h1>
+      <a class="back-link" href="/shop">← Back to Shop</a>
+      <h1 class="page-title">Accessories for Sale</h1>
+      <p class="page-intro">
+        These accessories are currently available for purchase. Select
+        <strong>View Details</strong> to learn more before you buy.
+      </p>
     </header>
 
-    <div class="content-section">
-      <p>
-        We're putting together a selection of tools and add-ons for the machines you already own. 
-        This page is coming soon.
+    <MachinesShopSubnav current="accessories" />
+
+    {accessories.length === 0 ? (
+      <p class="machines-empty">
+        No accessories are listed for sale right now. Please check back soon.
       </p>
-      <p>
-        In the meantime, if you're looking for something specific, let us know and we'll help you find it.
-      </p>
-      <a href="/contact" class="btn-primary kbm-cta-guide" data-testid="button-contact">Contact us</a>
-    </div>
+    ) : (
+      <div class="machines-grid">
+        {accessories.map((machine) => {
+          const sale = machine.sale!;
+          const imageSrc = primaryImageUrl(machine);
+          const name = machineTitle(machine);
+          const pitch = formatPitch(machine);
+          const priceLabel = formatPrice(sale.price);
+          const availLabel = availabilityLabel(sale);
+          const shortHtml = sale.shortDescriptionHtml || null;
+          return (
+            <article class="machine-card">
+              <div class="machine-card-image-wrap">
+                {imageSrc ? (
+                  <img
+                    src={imageSrc}
+                    alt={name}
+                    class="machine-card-image"
+                    width="280"
+                    height="180"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : (
+                  <div class="machine-card-image-placeholder" aria-hidden="true">
+                    Image coming soon
+                  </div>
+                )}
+                <span class={`machine-status machine-status--${sale.availabilityStatus}`}>{availLabel}</span>
+              </div>
+
+              <div class="machine-card-body">
+                <h2 class="machine-name">{name}</h2>
+
+                <ul class="machine-specs" aria-label="Quick specs">
+                  {machine.gauge && <li>{machine.gauge}</li>}
+                  {pitch && <li>{pitch}</li>}
+                  {machine.machineStyle && <li>{machine.machineStyle}</li>}
+                </ul>
+
+                {shortHtml && <div class="machine-short" set:html={shortHtml} />}
+
+                {priceLabel && <p class="machine-price">{priceLabel}</p>}
+
+                <div class="machine-actions">
+                  <a href={`/shop/machines/${machine.slug}`} class="machine-details-link">
+                    View Details
+                  </a>
+                </div>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    )}
   </div>
 </Layout>
 
 <style>
-  .back-link {
-    display: inline-block;
-    color: var(--kbm-green);
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 0.95rem;
-  }
-
-  .back-link:hover {
-    color: #3d4e21;
-    text-decoration: underline;
-  }
-
-  .back-to-shop-link {
-    margin-bottom: 1rem;
-  }
-
-  .placeholder-page {
-    max-width: 700px;
+  .machines-page {
+    max-width: 1000px;
     margin: 0 auto;
     padding: 2rem 1rem 4rem;
   }
 
-  .page-header {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
-
-  .page-header h1 {
-    font-size: 2rem;
+  .back-link {
+    display: inline-block;
+    margin-bottom: 1rem;
+    font-weight: 600;
     color: var(--kbm-green);
-    margin-bottom: 0.5rem;
+    text-decoration: underline;
   }
 
-  .content-section {
-    background: #f9fdf5;
-    border-radius: 12px;
-    padding: 2rem;
-    text-align: center;
+  .back-link:hover {
+    color: var(--kbm-green-hover, #445626);
   }
 
-  .content-section p {
-    font-size: 1.1rem;
-    color: #5a6b47;
-    line-height: 1.7;
+  .page-header {
     margin-bottom: 1.25rem;
   }
 
-  .content-section p:last-of-type {
-    margin-bottom: 1.5rem;
+  .page-title {
+    font-size: 1.75rem;
+    color: var(--kbm-green);
+    margin: 0 0 0.75rem;
   }
 
-  .btn-primary {
+  .page-intro {
+    font-size: 1.125rem;
+    color: #5a6b47;
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .machines-empty {
+    font-size: 1.05rem;
+    color: #6b7b55;
+    background: #fafbf9;
+    border: 1px solid #e8ebe4;
+    border-radius: 12px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+  }
+
+  .machines-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+
+  @media (min-width: 640px) {
+    .machines-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .machines-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .machine-card {
+    background: #fafbf9;
+    border: 1px solid #e8ebe4;
+    border-radius: 12px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.2s ease;
+  }
+
+  .machine-card:hover {
+    box-shadow: 0 4px 12px rgba(82, 104, 45, 0.1);
+  }
+
+  .machine-card-image-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 280 / 180;
+    overflow: hidden;
+    border-radius: 12px 12px 0 0;
+    background: #eef3e6;
+  }
+
+  .machine-card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .machine-card-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    color: #8a9a6e;
+    background: #eef3e6;
+  }
+
+  .machine-status {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
+    color: #fff;
+    background: #52682d;
+  }
+
+  .machine-status--available {
+    background: #3f6212;
+  }
+
+  .machine-status--backorder {
+    background: #b45309;
+  }
+
+  .machine-status--unavailable {
+    background: #475569;
+  }
+
+  .machine-card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 1.25rem;
+  }
+
+  .machine-name {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--kbm-green);
+    margin: 0;
+  }
+
+  .machine-specs {
+    list-style: none;
+    margin: 0.6rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .machine-specs li {
+    font-size: 0.78rem;
+    color: #52682d;
+    background: #f0f4e7;
+    border: 1px solid #dbe6c5;
+    border-radius: 6px;
+    padding: 0.15rem 0.5rem;
+  }
+
+  .machine-short {
+    font-size: 0.95rem;
+    color: #5a6b47;
+    line-height: 1.55;
+    margin: 1rem 0 0;
+  }
+
+  .machine-price {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--kbm-green);
+    margin: 1rem 0 0;
+  }
+
+  .machine-actions {
+    padding-top: 1.25rem;
+    margin-top: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem 1rem;
+  }
+
+  .machine-details-link {
     display: inline-block;
-    padding: 0.875rem 2rem;
+    padding: 0.6rem 1.5rem;
     background: var(--kbm-green);
     color: #ffffff;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 0.95rem;
     border-radius: 8px;
     text-decoration: none;
     transition: background 0.2s ease;
   }
 
-  .btn-primary:hover {
+  .machine-details-link:hover {
     background: var(--kbm-green-hover, #445626);
+    color: #ffffff;
   }
 </style>

@@ -1,0 +1,100 @@
+---
+/**
+ * Category nav between /shop/machines and /shop/accessories.
+ * Pill styling matches DesignaKnitSubnav.
+ */
+interface Props {
+  current: "machines" | "accessories";
+}
+
+const { current } = Astro.props;
+
+const links = [
+  { key: "machines", label: "Machines", href: "/shop/machines" },
+  { key: "accessories", label: "Accessories", href: "/shop/accessories" },
+] as const;
+---
+
+<nav class="machines-shop-subnav" aria-label="Shop machines and accessories">
+  <ul class="machines-shop-subnav-list">
+    {links.map((link) => {
+      const isActive = current === link.key;
+      return (
+        <li>
+          {isActive ? (
+            <span class="machines-shop-subnav-link is-active" aria-current="page">
+              {link.label}
+            </span>
+          ) : (
+            <a href={link.href} class="machines-shop-subnav-link">
+              {link.label}
+            </a>
+          )}
+        </li>
+      );
+    })}
+  </ul>
+</nav>
+
+<style>
+  .machines-shop-subnav {
+    margin: 0 0 1.5rem;
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .machines-shop-subnav-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0;
+    margin: 0;
+  }
+
+  .machines-shop-subnav-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.55rem 1rem;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    border: 1px solid #d7e2c8;
+    background: #f6f8f2;
+    color: var(--kbm-green);
+    transition:
+      background 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .machines-shop-subnav-link:hover {
+    background: #eef3e6;
+    border-color: #c9d8b2;
+    color: #3f5222;
+  }
+
+  .machines-shop-subnav-link.is-active {
+    background: var(--kbm-green);
+    color: #fff;
+    border-color: var(--kbm-green);
+  }
+
+  @media (max-width: 640px) {
+    .machines-shop-subnav {
+      margin-bottom: 1.25rem;
+    }
+
+    .machines-shop-subnav-list {
+      gap: 0.5rem;
+    }
+
+    .machines-shop-subnav-link {
+      font-size: 0.9rem;
+      padding: 0.5rem 0.9rem;
+    }
+  }
+</style>

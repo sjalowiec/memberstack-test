@@ -8,21 +8,27 @@
 export const prerender = true;
 
 import Layout from "../../../layouts/Layout.astro";
+import GlossaryTermModal from "../../../components/glossary/GlossaryTermModal.astro";
 import {
-  getMachinesForSale,
+  getShopProductsForSale,
   getMachineBySlug,
   primaryImageUrl,
   machineImageUrl,
   machineTitle,
   formatPitch,
+  shopCatalogBackLink,
   type Machine,
 } from "../../../lib/machines/referenceCatalog";
-import { availabilityLabel, canCheckout } from "../../../lib/machines/machineAdminFields";
+import {
+  availabilityLabel,
+  canCheckout,
+  formatExpectedDate,
+} from "../../../lib/machines/machineAdminFields";
 
 const CONTACT_HREF = "/contact";
 
 export function getStaticPaths() {
-  return getMachinesForSale().map((machine) => ({
+  return getShopProductsForSale().map((machine) => ({
     params: { slug: machine.slug },
     props: { machine },
   }));
@@ -55,6 +61,13 @@ const extraImages = gallery.filter((url) => url !== heroImage);
 const pitch = formatPitch(resolved);
 const availLabel = availabilityLabel(sale);
 const canBuy = canCheckout(sale);
+// Taitexma backorders with a ship date use "Reserve"; otherwise keep "Buy Now".
+const purchaseLabel =
+  canBuy && resolved.brand === "Taitexma" && !!sale.expectedDate
+    ? "Reserve This Machine"
+    : "Buy Now";
+// Same formatting as the Expected Ship Date badge (e.g. "August 15").
+const expectedShipDateLabel = formatExpectedDate(sale.expectedDate);
 // Detail copy: prefer long HTML, else fall back to the short HTML.
 const longHtml = sale.longDescriptionHtml || sale.shortDescriptionHtml || null;
 
@@ -176,6 +189,7 @@ function formatPrice(value: number | null): string | null {
     : `$${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 const priceLabel = formatPrice(sale.price);
+const catalogBack = shopCatalogBackLink(resolved.productType);
 ---
 
 <Layout {title} {description}>
@@ -183,7 +197,7 @@ const priceLabel = formatPrice(sale.price);
     <h1 class="machine-name">{name}</h1>
 
     <nav class="machine-breadcrumb" aria-label="Breadcrumb">
-      <a href="/shop/machines" class="back-link">← Back to Machines</a>
+      <a href={catalogBack.href} class="back-link">{catalogBack.label}</a>
     </nav>
 
     <header class="machine-header">
@@ -206,7 +220,7 @@ const priceLabel = formatPrice(sale.price);
         <div class="machine-buy-row">
           {canBuy ? (
             <a href={sale.stripePaymentLink!} class="machine-buy" rel="noopener">
-              Buy Now
+              {purchaseLabel}
             </a>
           ) : (
             <a href={CONTACT_HREF} class="machine-contact">
@@ -215,7 +229,9 @@ const priceLabel = formatPrice(sale.price);
           )}
         </div>
       </div>
-      {sale.shippingNotes && <div class="machine-shipping" set:html={sale.shippingNotes} />}
+      {sale.shippingNotes && resolved.brand !== "Taitexma" && (
+        <div class="machine-shipping" set:html={sale.shippingNotes} />
+      )}
     </section>
 
     {(longHtml || heroImage) && (
@@ -232,6 +248,24 @@ const priceLabel = formatPrice(sale.price);
           </figure>
         )}
         {longHtmlDisplay && <div class="machine-long" set:html={longHtmlDisplay} />}
+      </section>
+    )}
+
+    {resolved.brand === "Taitexma" && (
+      <section class="machine-section machine-ordering" aria-label="Ordering Information">
+        <h2 class="section-title">Ordering Information</h2>
+        <p class="machine-intro-text">
+          Taitexma machines are available for customers in the United States only.
+        </p>
+        <p class="machine-intro-text">
+          Machines are imported directly from Taiwan, so they are not always in stock. The Expected
+          Ship Date shown above indicates when we anticipate the next shipment.
+        </p>
+        <p class="machine-intro-text">
+          {expectedShipDateLabel
+            ? `You may place your order now to reserve a machine from the shipment expected on ${expectedShipDateLabel}. We'll keep you informed of the delivery schedule and notify you as soon as your machine ships.`
+            : `You may place your order now to reserve a machine from the next available shipment. We'll keep you informed of the delivery schedule and notify you as soon as your machine ships.`}
+        </p>
       </section>
     )}
 
@@ -254,9 +288,11 @@ const priceLabel = formatPrice(sale.price);
     )}
 
     <section class="machine-section machine-cta">
-      <a href="/shop/machines" class="cta-secondary">← Back to Machines</a>
+      <a href={catalogBack.href} class="cta-secondary">{catalogBack.label}</a>
     </section>
   </div>
+
+  <GlossaryTermModal />
 </Layout>
 
 <style>
@@ -554,6 +590,10 @@ const priceLabel = formatPrice(sale.price);
     color: #5a6b47;
     line-height: 1.7;
     margin: 0;
+  }
+
+  .machine-ordering .machine-intro-text + .machine-intro-text {
+    margin-top: 0.75rem;
   }
 
   .machine-gallery {

@@ -37,6 +37,17 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return context.redirect(`${normalizedPathname}${u.search}`, 301);
   }
 
+  // Taitexma ribber slug cleanup (misnamed TR-860 / broken Silver Reed link).
+  // Keep in sync with [[redirects]] in netlify.toml.
+  const shopMachineSlugRedirects: Record<string, string> = {
+    "/shop/machines/taitexma-tr-860": "/shop/machines/taitexma-tr-850",
+    "/shop/machines/silver-reed-tr-860": "/shop/machines/taitexma-tr-850",
+  };
+  const shopMachineRedirectTo = shopMachineSlugRedirects[normalizedPathname];
+  if (shopMachineRedirectTo) {
+    return context.redirect(`${shopMachineRedirectTo}${u.search}`, 301);
+  }
+
   if (
     isDropShoulderRoute(u.pathname) &&
     isDropShoulderProductionBlocked(u.hostname, devOnlyRouteEnv)

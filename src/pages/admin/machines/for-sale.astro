@@ -17,7 +17,7 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       <div>
         <h1 class="am__title">For Sale Machines</h1>
         <p class="am__sub">
-          Inventory view ù only machines with <strong>For sale</strong> checked
+          Inventory view ? only machines with <strong>For sale</strong> checked
           appear here. Toggle <strong>For sale</strong>, change <strong>Status</strong>,
           or edit <strong>Price</strong> inline; use <strong>View / Edit</strong>
           to open the full record on the main database.
@@ -28,17 +28,25 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       </div>
     </header>
 
-    <p id="am-status" class="am__status" aria-live="polite"></p>
+    <p id="am-status" class="am__status" role="status" aria-live="polite"></p>
 
     <section class="am__panel" aria-labelledby="am-list-heading">
       <div class="am__toolbar">
         <h2 id="am-list-heading" class="am__panel-title">Listed for sale</h2>
         <label class="am__search-label">
+          <span class="sr-only">Filter by product type</span>
+          <select id="am-type-filter" aria-label="Filter by product type">
+            <option value="all">All</option>
+            <option value="machine">Machines</option>
+            <option value="accessory">Accessories</option>
+          </select>
+        </label>
+        <label class="am__search-label">
           <span class="sr-only">Search for-sale machines</span>
           <input
             type="search"
             id="am-search"
-            placeholder="Search brand, model, gauge, style, punchcard, year, techniqueù"
+            placeholder="Search brand, model, type, gauge?"
             autocomplete="off"
           />
         </label>
@@ -51,6 +59,7 @@ const techniquesByMachineId = loadTechniquesByMachineId();
             <tr>
               <th scope="col">Brand</th>
               <th scope="col">Model</th>
+              <th scope="col">Type</th>
               <th scope="col" class="am__num">Sale</th>
               <th scope="col">Status</th>
               <th scope="col">Expected Date</th>
@@ -76,9 +85,16 @@ const techniquesByMachineId = loadTechniquesByMachineId();
   ></script>
 
   <script>
-    import { machineId as readMachineId, normalizeSale, type MachineRecord } from "../../../lib/machines/machineAdminFields";
+    import {
+      machineId as readMachineId,
+      normalizeProductType,
+      normalizeSale,
+      type MachineRecord,
+      type ShopProductType,
+    } from "../../../lib/machines/machineAdminFields";
     import {
       API_BASE,
+      machineEditHref,
       machineForSaleRowHtml,
       matchesQuery,
       quickSaveSale,
@@ -91,10 +107,13 @@ const techniquesByMachineId = loadTechniquesByMachineId();
     // the admin save pattern); only for-sale records are displayed.
     let machines: MachineRecord[] = [];
     let techniquesByMachineId: Record<string, string[]> = {};
+    /** Guards against overlapping inline quick-saves for the same machineId. */
+    const quickSavingIds = new Set<number>();
 
     const statusEl = document.getElementById("am-status");
     const countEl = document.getElementById("am-count");
     const searchEl = document.getElementById("am-search") as HTMLInputElement | null;
+    const typeFilterEl = document.getElementById("am-type-filter") as HTMLSelectElement | null;
     const rowsEl = document.getElementById("am-rows");
     const emptyEl = document.getElementById("am-empty");
 
@@ -103,6 +122,14 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       statusEl.textContent = message;
       statusEl.classList.toggle("is-error", kind === "err");
       statusEl.classList.toggle("is-ok", kind === "ok");
+    }
+
+    function setRowQuickBusy(id: number, busy: boolean) {
+      rowsEl?.querySelectorAll(`[data-qid="${id}"]`).forEach((el) => {
+        if (el instanceof HTMLInputElement || el instanceof HTMLSelectElement) {
+          el.disabled = busy;
+        }
+      });
     }
 
     function techNames(id: number | null): string[] {
@@ -117,35 +144,53 @@ const techniquesByMachineId = loadTechniquesByMachineId();
     function render() {
       if (!rowsEl || !countEl) return;
       const q = (searchEl?.value || "").trim().toLowerCase();
+      const typeFilter = (typeFilterEl?.value || "all") as "all" | ShopProductType;
       const forSale = machines.filter(isForSale);
       const filtered = sortMachines(
-        forSale.filter((m) => matchesQuery(m, q, techNames(readMachineId(m))))
+        forSale.filter((m) => {
+          if (typeFilter !== "all" && normalizeProductType(m.productType) !== typeFilter) {
+            return false;
+          }
+          return matchesQuery(m, q, techNames(readMachineId(m)));
+        })
       );
 
-      countEl.textContent = `${filtered.length} of ${forSale.length} for-sale machine(s)`;
+      countEl.textContent = `${filtered.length} of ${forSale.length} for-sale item(s)`;
       if (emptyEl) emptyEl.hidden = forSale.length !== 0;
 
       rowsEl.innerHTML = filtered
         .map((m) => {
           const id = readMachineId(m);
           return machineForSaleRowHtml(m, {
-            actionHtml: `<a href="/admin/machines?edit=${id ?? ""}" class="am__btn am__btn--small">View / Edit</a>`,
+            actionHtml: `<a href="${machineEditHref(id)}" class="am__btn am__btn--small">View / Edit</a>`,
           });
         })
         .join("");
     }
 
     async function quickEdit(id: number, patch: Parameters<typeof quickSaveSale>[2]) {
-      setQuickFeedback(rowsEl, id, "Savingù", "neutral");
+      if (quickSavingIds.has(id)) return;
+      quickSavingIds.add(id);
+      setRowQuickBusy(id, true);
+      setQuickFeedback(rowsEl, id, "Saving?", "neutral");
+      setStatus("Saving?", "neutral");
       try {
+        // Success when quickSaveSale ? persistMachine resolves (HTTP ok + `{ ok: true }`).
         machines = await quickSaveSale(machines, id, patch);
-        setStatus("Saved.", "ok");
+        setStatus("Machine saved successfully.", "ok");
         // Re-render so the inventory list reflects any newly (un)listed machine.
         render();
+        // Row markup is rebuilt by render(); restore per-row confirmation after.
+        setQuickFeedback(rowsEl, id, "Machine saved successfully.", "ok");
       } catch (err) {
-        const msg = err instanceof Error ? err.message : "Save failed";
+        const detail = err instanceof Error ? err.message.trim() : "";
+        const base = "The machine could not be saved. Please try again.";
+        const msg = detail ? `${base} ${detail}` : base;
         setStatus(msg, "err");
-        setQuickFeedback(rowsEl, id, "Save failed", "err");
+        setQuickFeedback(rowsEl, id, msg, "err");
+        setRowQuickBusy(id, false);
+      } finally {
+        quickSavingIds.delete(id);
       }
     }
 
@@ -159,7 +204,7 @@ const techniquesByMachineId = loadTechniquesByMachineId();
         }
       }
 
-      setStatus("Loading machinesù");
+      setStatus("Loading machines?");
       try {
         const res = await fetch(API_BASE);
         const data = await res.json();
@@ -176,6 +221,7 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       }
 
       searchEl?.addEventListener("input", render);
+      typeFilterEl?.addEventListener("change", render);
 
       // Inline quick-edit: For sale / Status / Price (same controls as the main list).
       rowsEl?.addEventListener("change", (event) => {

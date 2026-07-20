@@ -12,11 +12,13 @@
 import {
   asString,
   machineId,
+  normalizeProductType,
   normalizeSale,
   numberOrNull,
   normalizeExpectedDate,
   SALE_STATUSES,
   SALE_STATUS_LABELS,
+  SHOP_PRODUCT_TYPE_LABELS,
   MACHINE_AVAILABILITY_STATUSES,
   AVAILABILITY_STATUS_LABELS,
   type MachineRecord,
@@ -49,12 +51,14 @@ export function countOf(value: unknown): number {
 
 function cell(value: string): string {
   const v = value.trim();
-  return `<td>${v ? escapeHtml(v) : "ù"}</td>`;
+  return `<td>${v ? escapeHtml(v) : "?"}</td>`;
 }
 
 /** Case-insensitive substring match across the visible + technique fields. */
-export function matchesQuery(m: MachineRecord, q: string, techList: string[]): boolean {
+export function matchesQuery(m: MachineRecord, q: string, techList: string[] = []): boolean {
   if (!q) return true;
+  const productType = normalizeProductType(m.productType);
+  const id = machineId(m);
   const haystack = [
     asString(m.brand),
     asString(m.model),
@@ -62,6 +66,9 @@ export function matchesQuery(m: MachineRecord, q: string, techList: string[]): b
     asString(m.machineStyle),
     asString(m.punchcardWidth),
     asString(m.year),
+    id != null ? String(id) : "",
+    productType,
+    SHOP_PRODUCT_TYPE_LABELS[productType],
     techList.join(" "),
   ]
     .join(" ")
@@ -194,7 +201,29 @@ export function machineRowHtml(
 }
 
 /**
- * Compact inventory row for /admin/machines/for-sale ù only the columns needed
+ * Compact full-catalog row for /admin/machines ? every product (for sale or not)
+ * so any record can be opened for edit.
+ */
+export function machineCatalogRowHtml(
+  m: MachineRecord,
+  opts: { activeId: number | null; actionHtml: string }
+): string {
+  const id = machineId(m);
+  const active = id !== null && id === opts.activeId ? " is-active" : "";
+  const productType = normalizeProductType(m.productType);
+  const forSale = normalizeSale(m.sale)?.forSale === true;
+  return `<tr class="am__row${active}" data-id="${id ?? ""}" data-product-type="${productType}">
+    ${cell(asString(m.brand))}
+    ${cell(asString(m.model))}
+    ${cell(SHOP_PRODUCT_TYPE_LABELS[productType])}
+    <td>${forSale ? "Yes" : "?"}</td>
+    <td class="am__num">${id ?? "?"}</td>
+    <td class="am__row-action">${opts.actionHtml}</td>
+  </tr>`;
+}
+
+/**
+ * Compact inventory row for /admin/machines/for-sale ? only the columns needed
  * to manage stock: Brand, Model, Sale, Status (availability), Expected date,
  * Price, Actions. Reuses the same quick-edit cell builders and save wiring, so
  * the reference/catalog columns from the main list are simply omitted here.
@@ -203,9 +232,11 @@ export function machineForSaleRowHtml(m: MachineRecord, opts: { actionHtml: stri
   const id = machineId(m);
   const disabled = id === null ? " disabled" : "";
   const sale = normalizeSale(m.sale);
-  return `<tr class="am__row" data-id="${id ?? ""}">
+  const productType = normalizeProductType(m.productType);
+  return `<tr class="am__row" data-id="${id ?? ""}" data-product-type="${productType}">
     ${cell(asString(m.brand))}
     ${cell(asString(m.model))}
+    ${cell(SHOP_PRODUCT_TYPE_LABELS[productType])}
     ${forSaleCell(id, sale, disabled)}
     ${availabilityCell(id, sale, disabled)}
     ${expectedDateCell(id, sale, disabled)}
@@ -215,6 +246,11 @@ export function machineForSaleRowHtml(m: MachineRecord, opts: { actionHtml: stri
       <span class="am__qfeedback" data-qfeedback="${id ?? ""}" aria-live="polite"></span>
     </td>
   </tr>`;
+}
+
+/** Build the for-sale "View / Edit" href for a record (exact machineId only). */
+export function machineEditHref(id: number | null): string {
+  return id === null ? "/admin/machines" : `/admin/machines?edit=${id}`;
 }
 
 /** Show transient per-row save feedback next to the row's action button. */
@@ -239,12 +275,19 @@ export function setQuickFeedback(
   }
 }
 
-/** POST the full machines array; resolve with the saved list or throw. */
-export async function persistMachines(next: MachineRecord[]): Promise<MachineRecord[]> {
+export type PersistMachineOpts = {
+  machine: MachineRecord;
+  expectedMachineId: number;
+  mode: "edit" | "new";
+  routeMachineId?: number | null;
+};
+
+/** POST a single-record create/update; resolve with the saved list or throw. */
+export async function persistMachine(opts: PersistMachineOpts): Promise<MachineRecord[]> {
   const res = await fetch(API_BASE, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(next),
+    body: JSON.stringify(opts),
   });
   const data = await res.json().catch(() => null);
   if (!res.ok || !data?.ok || !Array.isArray(data.machines)) {
@@ -254,8 +297,8 @@ export async function persistMachines(next: MachineRecord[]): Promise<MachineRec
 }
 
 /**
- * Apply a quick-edit sale patch to one record within the full list and save.
- * Only the three sale fields exposed inline are touched; all other sale data on
+ * Apply a quick-edit sale patch to one record by exact machineId and save.
+ * Only the sale fields exposed inline are touched; all other sale data on
  * the record is preserved. Returns the authoritative list from the server.
  */
 export async function quickSaveSale(
@@ -286,9 +329,12 @@ export async function quickSaveSale(
   if (nextSale === null) delete current.sale;
   else current.sale = nextSale;
 
-  const next = machines.slice();
-  next[idx] = current;
-  return persistMachines(next);
+  return persistMachine({
+    machine: current,
+    expectedMachineId: id,
+    mode: "edit",
+    routeMachineId: id,
+  });
 }
 
 /** Read a quick-edit control's patch from a change event target, or null. */

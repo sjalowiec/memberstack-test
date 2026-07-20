@@ -21,3 +21,14 @@
   ALLOW_DEV_PATTERN_USER = "true"
   # Reduce Windows EPERM failures from chokidar on `.netlify/functions-serve`
   CHOKIDAR_USEPOLLING = "true"
+
+# Taitexma ribber slug cleanup (misnamed TR-860 / broken Silver Reed link).
+[[redirects]]
+  from = "/shop/machines/taitexma-tr-860"
+  to = "/shop/machines/taitexma-tr-850"
+  status = 301
+
+[[redirects]]
+  from = "/shop/machines/silver-reed-tr-860"
+  to = "/shop/machines/taitexma-tr-850"
+  status = 301

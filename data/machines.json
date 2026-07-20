@@ -16,7 +16,8 @@
       }
     ],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 202,
@@ -30,7 +31,8 @@
     "year": null,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 216,
@@ -69,7 +71,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/brother-kh588-service-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 390,
@@ -94,7 +97,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com//downloadable/download/sample/sample_id/1633/"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 204,
@@ -128,7 +132,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/brother-kr120-kr710-ribber-user-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 205,
@@ -159,7 +164,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/brother-kh210user-guide-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 206,
@@ -193,7 +199,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/brother-kh212-kh218-ribber-user-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 207,
@@ -239,7 +246,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/brother-kr230-ribber-user-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 208,
@@ -305,7 +313,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/brother-kh260-service-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 210,
@@ -360,7 +369,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/brother-kh270-user-guide-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 240,
@@ -389,7 +399,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/brother-kh341-user-guide-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 203,
@@ -403,7 +414,8 @@
     "year": 1955,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 243,
@@ -417,7 +429,8 @@
     "year": 1982,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 246,
@@ -442,7 +455,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/brother-kh400-user-guide-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 247,
@@ -456,7 +470,8 @@
     "year": 1960,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 384,
@@ -489,7 +504,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/brother-kr531-kr551-ribber-user-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 212,
@@ -522,7 +538,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com//brother-kh551-user-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 375,
@@ -541,7 +558,8 @@
       }
     ],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 213,
@@ -555,7 +573,8 @@
     "year": 1964,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 248,
@@ -590,7 +609,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com//brother-kr580-ribber-user-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 376,
@@ -624,7 +644,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/brother-kh588-service-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 249,
@@ -638,7 +659,8 @@
     "year": null,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 263,
@@ -677,7 +699,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/brother-kh710-user-guide-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 217,
@@ -710,7 +733,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/brother-kh800-user-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 250,
@@ -733,7 +757,8 @@
       }
     ],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 251,
@@ -774,7 +799,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/brother-kh820-user-guide-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 218,
@@ -903,7 +929,8 @@
         "type": "Ribber Manuals",
         "url": "https://mkmanuals.com/brother-kh830-kr830-kl116-khc820-khc830-service-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 220,
@@ -1023,7 +1050,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/brother-kh836-parts-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 222,
@@ -1153,7 +1181,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/brother-kh840-supplimentary-carriage-service-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 224,
@@ -1277,7 +1306,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/brother-kh860-thru-kh891-user-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 225,
@@ -1358,7 +1388,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/brother-kh864-kh868-user-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 228,
@@ -1503,7 +1534,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/brother-kh890-parts-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 226,
@@ -1577,7 +1609,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/brother-kh868-kh894-parts-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 386,
@@ -1596,7 +1629,8 @@
       }
     ],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 227,
@@ -1706,7 +1740,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/brother-kh881-parts-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 371,
@@ -1736,7 +1771,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/brother-kh890-parts-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 230,
@@ -1822,7 +1858,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/brother-kh891-parts-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 231,
@@ -1867,7 +1904,8 @@
         "category": "Color Changer"
       }
     ],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 232,
@@ -1927,7 +1965,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/brother-kh894-user-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 233,
@@ -2023,7 +2062,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/using-the-brother-garter-carriage-with-kh900.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 235,
@@ -2152,7 +2192,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/instruction-manual-for-kg-88-on-the-electronic-knitting-machine-modified-kh-910.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 236,
@@ -2282,7 +2323,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/brother-kh950-user-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 238,
@@ -2408,7 +2450,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/brother-kh950-user-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 239,
@@ -2544,7 +2587,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/brother-kh965-service-and-parts-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 241,
@@ -2581,7 +2625,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/brother-kx350-user-guide-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 242,
@@ -2595,7 +2640,8 @@
     "year": null,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 244,
@@ -2620,7 +2666,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com//brother-kx390-user-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 378,
@@ -2650,7 +2697,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/brother-kx395-user-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 372,
@@ -2679,7 +2727,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/brother-kh552-user-guide-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 252,
@@ -2813,7 +2862,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/brother-kh930-service-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 253,
@@ -2962,7 +3012,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/brother-kh970-parts-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 254,
@@ -3111,7 +3162,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/brother-kh940-service-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 255,
@@ -3251,7 +3303,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/brother-kh965-service-and-parts-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 256,
@@ -3274,7 +3327,8 @@
       }
     ],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 257,
@@ -3305,7 +3359,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/155-chunky-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 259,
@@ -3330,7 +3385,8 @@
         "category": "Ribber"
       }
     ],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 261,
@@ -3355,7 +3411,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/hk160-and-mk70-knitting-machine-service-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 262,
@@ -3384,7 +3441,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/brother-empisal-supermatic-kh880-user-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 387,
@@ -3398,7 +3456,8 @@
     "year": 1969,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 385,
@@ -3423,7 +3482,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/knitmaster-es302-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 380,
@@ -3462,7 +3522,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/zippy-deluxe-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 374,
@@ -3489,7 +3550,8 @@
       }
     ],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 373,
@@ -3516,7 +3578,8 @@
       }
     ],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 388,
@@ -3530,7 +3593,8 @@
     "year": 1950,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 266,
@@ -3569,7 +3633,8 @@
         "category": "Passap Deco"
       }
     ],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 268,
@@ -3583,7 +3648,8 @@
     "year": null,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 269,
@@ -3597,7 +3663,8 @@
     "year": null,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 267,
@@ -3611,7 +3678,8 @@
     "year": 1953,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 264,
@@ -3625,7 +3693,8 @@
     "year": null,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 265,
@@ -3639,7 +3708,8 @@
     "year": null,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 271,
@@ -3666,7 +3736,8 @@
       }
     ],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 325,
@@ -3753,7 +3824,8 @@
       "longDescriptionHtml": null,
       "shippingNotes": null,
       "featured": false
-    }
+    },
+    "productType": "machine"
   },
   {
     "machineId": 379,
@@ -3792,7 +3864,8 @@
         "type": "Ribber Manuals",
         "url": "https://mkmanuals.com/knitmaster-302-ribber-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 382,
@@ -3858,7 +3931,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/studio-580-electronic-knitting-machine-supplimentary-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 307,
@@ -3913,7 +3987,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/f370k-pattern-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 323,
@@ -3953,7 +4028,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/singer-lk100-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 324,
@@ -3989,7 +4065,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/singer-lk140-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 322,
@@ -4014,7 +4091,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/singer-mk70-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 328,
@@ -4039,7 +4117,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/silver-reed-sk101-user-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 329,
@@ -4068,7 +4147,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/silver-reed-sk105-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 279,
@@ -4088,7 +4168,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/silver-reed-sk105-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 330,
@@ -4108,7 +4189,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/brother-kr120-kr710-ribber-user-guide.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 280,
@@ -4152,7 +4234,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/sk120-knitting-machine-service-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 282,
@@ -4172,7 +4255,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/bulky-eight-s-120-s-140-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 283,
@@ -4208,7 +4292,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/mod-150-chunky-knitter-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 285,
@@ -4233,7 +4318,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/mod-151-chunky-knitter-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 287,
@@ -4300,7 +4386,8 @@
       "longDescriptionHtml": null,
       "shippingNotes": null,
       "featured": false
-    }
+    },
+    "productType": "machine"
   },
   {
     "machineId": 288,
@@ -4334,7 +4421,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/silver-reed-sk160-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 289,
@@ -4359,7 +4447,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/silver-reed-sk-280-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 290,
@@ -4415,7 +4504,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/sk260-sk360-knitting-machine-service-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 291,
@@ -4491,7 +4581,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/f270-370-knitting-machine-service-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 292,
@@ -4584,7 +4675,8 @@
       "longDescriptionHtml": "<p>If you're looking for a standard gauge knitting machine, the Silver Reed SK-280 is one of my favorite recommendations. It's dependable, easy to learn, and gives you plenty of room to grow as your skills improve.</p>\n\n<p>The SK-280 has a 4.5 mm needle gauge with 200 needles and uses punch cards to create stitch patterns automatically. <strong>You don't need a computer or additional software</strong> to knit Fair Isle, tuck, slip, punch lace, weaving, plating, and other decorative stitch patterns. Just insert a punch card and start knitting.</p>\n\n<p>This machine works beautifully with lace, fingering, sport, and many DK weight yarns, making it a great choice for sweaters, baby clothes, shawls, and lightweight garments.</p>\n\n<p>If you decide to expand later, the optional Lace Carriage automates lace knitting, while the SRP60N Ribber lets you knit ribbing and opens up even more techniques. You can certainly knit without these accessories, but they're nice additions when you're ready.</p>\n\n<h3>Key Features</h3>\n\n<ul>\n<li>4.5 mm standard gauge</li>\n<li>200-needle metal bed</li>\n<li>24-stitch repeating punch card patterns</li>\n<li>Automatic punch card patterning</li>\n<li>Single bed knitting machine</li>\n<li>Made in China</li>\n<li>Ships within the United States</li>\n</ul>\n<h3>Compatible Accessories</h3>\n\n<ul>\n  <li><a href=\"/shop/accessories/coming-soon?item=Silver%20Reed%20SK280%20Lace%20Carriage\">Silver Reed SK280 Lace Carriage</a></li>\n  <li><a href=\"/shop/accessories/coming-soon?item=Silver%20Reed%20SRP60N%20Ribber\">Silver Reed SRP60N Ribber</a></li>\n</ul>\n<p><a href=\"downloads/Silver_Reed_warranty.pdf\" target=\"_blank\"><em><small>Warranty Information</small></em></a></p>",
       "shippingNotes": null,
       "featured": false
-    }
+    },
+    "productType": "machine"
   },
   {
     "machineId": 332,
@@ -4609,7 +4701,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com//silver-sk301-knitting-manual-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 293,
@@ -4656,7 +4749,8 @@
         "type": "Ribber Manuals",
         "url": "https://mkmanuals.com/knitmaster-302-ribber-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 334,
@@ -4681,7 +4775,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/silver-reed-sk-303-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 335,
@@ -4714,7 +4809,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/empisal-knitmaster-305-user-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 336,
@@ -4739,7 +4835,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/silver-reed-sk-312-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 294,
@@ -4764,7 +4861,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com//singer-313-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 295,
@@ -4794,7 +4892,8 @@
         "category": "Linker"
       }
     ],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 296,
@@ -4848,7 +4947,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/singer-321-memomatic-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 298,
@@ -4903,7 +5003,8 @@
         "category": "Ribber Transfer Carriage"
       }
     ],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 299,
@@ -4928,7 +5029,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/knitmaster-321-323-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 300,
@@ -4948,7 +5050,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/knitmaster-324-326-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 301,
@@ -4993,7 +5096,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/knitmaster-324-326-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 302,
@@ -5028,7 +5132,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com//singer-memomatic-327-329-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 303,
@@ -5054,7 +5159,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/studio-328-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 304,
@@ -5068,7 +5174,8 @@
     "year": 1977,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 305,
@@ -5082,7 +5189,8 @@
     "year": 1980,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 306,
@@ -5162,7 +5270,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/sk260-sk360-knitting-machine-service-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 308,
@@ -5203,7 +5312,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/sk500-knitting-machine-service-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 338,
@@ -5217,7 +5327,8 @@
     "year": 1965,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 339,
@@ -5231,7 +5342,8 @@
     "year": 1967,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 309,
@@ -5245,7 +5357,8 @@
     "year": 1982,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 310,
@@ -5285,7 +5398,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/knitmaster-550-560-operation-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 311,
@@ -5359,7 +5473,8 @@
         "type": "Service and Parts Manuals",
         "url": "https://mkmanuals.com/sk560-knitting-machine-service-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 312,
@@ -5373,7 +5488,8 @@
     "year": null,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 314,
@@ -5387,7 +5503,8 @@
     "year": 1987,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 326,
@@ -5401,7 +5518,8 @@
     "year": 1959,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 315,
@@ -5452,7 +5570,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/knitmaster-600-700-operation-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 321,
@@ -5466,7 +5585,8 @@
     "year": 1960,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 340,
@@ -5480,7 +5600,8 @@
     "year": 1972,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 316,
@@ -5560,7 +5681,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/silver-reed-sk830-operation-manual-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 317,
@@ -5686,7 +5808,8 @@
       "longDescriptionHtml": "<p>If you're looking for a standard gauge electronic knitting machine, the Silver Reed SK840 gives you 4.5 mm needle spacing with electronic patterning instead of punch cards.</p>\n\n<p>The SK840 has a 200-needle metal bed and is a good choice for lace, light fingering, fingering, and sport weight yarns. It's well suited for lightweight sweaters, baby garments, lace work, and detailed stitch patterns.</p>\n\n<p><strong>To use automatic stitch patterning and interactive garment shaping, the SK840 requires DesignaKnit 9 software and a SilverLink 5 connecting cable.</strong></p>\n\n<p>The SK840 includes the Silver Reed curl cord.</p>\n\n<h3>Key Features</h3>\n\n<ul>\n  <li>4.5 mm standard gauge</li>\n  <li>200-needle metal bed</li>\n  <li>Electronic patterning capability</li>\n  <li>Includes the Silver Reed curl cord</li>\n  <li>Single bed knitting machine</li>\n  <li>Made in China</li>\n  <li>Ships within the United States</li>\n</ul>\n\n<h3>Required Accessories</h3>\n\n<ul>\n  <li><a href=\"/shop/designaknit\">DesignaKnit 9 PC Software</a></li>\n  <li><a href=\"/shop/accessories/coming-soon?item=Silver%20Reed%20SilverLink%205%20Connecting%20Cable\">Silver Reed SilverLink 5 Connecting Cable</a></li>\n</ul>\n\n<h3>Compatible Accessories</h3>\n\n<ul>\n  <li><a href=\"/shop/accessories/coming-soon?item=Silver%20Reed%20LC580%20Lace%20Carriage\">Silver Reed LC580 Lace Carriage</a></li>\n  <li><a href=\"/shop/accessories/coming-soon?item=Silver%20Reed%20SRP60N%20Ribber\">Silver Reed SRP60N Ribber</a></li>\n</ul>",
       "shippingNotes": null,
       "featured": false
-    }
+    },
+    "productType": "machine"
   },
   {
     "machineId": 318,
@@ -5756,7 +5879,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/silver-reed-sk860-kc860-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 320,
@@ -5832,7 +5956,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/studio-sk890-electronic-knitting-machine-supplimentary-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 341,
@@ -5857,7 +5982,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/singer-hk100-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 367,
@@ -5871,7 +5997,8 @@
     "year": null,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 342,
@@ -5885,7 +6012,8 @@
     "year": null,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 369,
@@ -5899,7 +6027,8 @@
     "year": null,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 368,
@@ -5913,7 +6042,8 @@
     "year": null,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 343,
@@ -5927,7 +6057,8 @@
     "year": null,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 344,
@@ -5941,7 +6072,8 @@
     "year": null,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 359,
@@ -5973,12 +6105,13 @@
       "stripePaymentLink": null,
       "status": "available",
       "availabilityStatus": "backorder",
-      "expectedDate": "2026-09-01",
+      "expectedDate": "2026-09-15",
       "shortDescriptionHtml": null,
       "longDescriptionHtml": null,
       "shippingNotes": null,
       "featured": false
-    }
+    },
+    "productType": "machine"
   },
   {
     "machineId": 358,
@@ -6020,12 +6153,13 @@
       "stripePaymentLink": null,
       "status": "available",
       "availabilityStatus": "backorder",
-      "expectedDate": "2026-09-01",
+      "expectedDate": "2026-09-15",
       "shortDescriptionHtml": null,
       "longDescriptionHtml": null,
       "shippingNotes": null,
       "featured": false
-    }
+    },
+    "productType": "machine"
   },
   {
     "machineId": 361,
@@ -6072,7 +6206,8 @@
       "longDescriptionHtml": null,
       "shippingNotes": null,
       "featured": false
-    }
+    },
+    "productType": "machine"
   },
   {
     "machineId": 360,
@@ -6082,7 +6217,7 @@
     "gauge": "Standard Gauge",
     "needleCount": 200,
     "machineStyle": "Punchcard",
-    "punchcardWidth": 18,
+    "punchcardWidth": 24,
     "year": 2000,
     "images": [
       {
@@ -6105,16 +6240,17 @@
     "manuals": [],
     "sale": {
       "forSale": true,
-      "price": 1499,
-      "stripePaymentLink": null,
+      "price": 1449,
+      "stripePaymentLink": "https://buy.stripe.com/00wcN45hQ8mv7Pof8K0oM0H",
       "status": "available",
       "availabilityStatus": "backorder",
-      "expectedDate": "2026-09-01",
-      "shortDescriptionHtml": null,
-      "longDescriptionHtml": null,
-      "shippingNotes": null,
+      "expectedDate": "2026-08-15",
+      "shortDescriptionHtml": "At 4.5mm this Taitexma <em>(tie-tex-ma)</em> machine is the perfect gauge for finer yarns and lighter weight knits.",
+      "longDescriptionHtml": "<p>\n  Metal bed, this machine will provide years of service.\n  Get all of the domestic knitting machine functionality with minimal fuss.\n <ul>\n  <li> The punchcard feature offers automatic needle selection for amazing texture and color stitch patterns.</li>\n  <li>The included lace carriage combined with punchcards creates \"true\" eyelet lace, equivalent to (k2tog, yo) in hand knitting.</li>\n</ul>\n</p>\n\n<p><strong>Compatible Accessories</strong></p>\n\n<ul>\n  <li><a href=\"/shop/machines/taitexma-ta-8200\">Intarsia Carriage (TA-8200)</a></li>\n  <li><a href=\"/shop/machines/taitexma-tr-850\">Ribber (TR-850)</a></li>\n</ul>",
+      "shippingNotes": "Ordering Information\n\nTaitexma machines are available for U.S. customers only.\n\nMachines are imported directly from Taiwan and inventory varies throughout the year. The expected availability date above indicates when we anticipate the next shipment.\n\nYou may place your order now to reserve a machine from the next available shipment. We'll keep you informed of the delivery schedule and notify you as soon as your machine ships.",
       "featured": false
-    }
+    },
+    "productType": "machine"
   },
   {
     "machineId": 362,
@@ -6156,7 +6292,8 @@
       "longDescriptionHtml": null,
       "shippingNotes": null,
       "featured": false
-    }
+    },
+    "productType": "machine"
   },
   {
     "machineId": 345,
@@ -6170,7 +6307,8 @@
     "year": 1978,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 365,
@@ -6184,7 +6322,8 @@
     "year": null,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 352,
@@ -6198,7 +6337,8 @@
     "year": 1969,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 364,
@@ -6223,7 +6363,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/mod-151-chunky-knitter-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 353,
@@ -6254,7 +6395,8 @@
         "type": "Machine Manuals",
         "url": "https://mkmanuals.com/155-chunky-knitting-machine-instruction-manual.html"
       }
-    ]
+    ],
+    "productType": "machine"
   },
   {
     "machineId": 346,
@@ -6268,7 +6410,8 @@
     "year": null,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 347,
@@ -6293,7 +6436,8 @@
         "category": "Ribber"
       }
     ],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 348,
@@ -6323,7 +6467,8 @@
         "category": "Miscellaneous"
       }
     ],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 349,
@@ -6346,7 +6491,8 @@
       }
     ],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 351,
@@ -6375,7 +6521,8 @@
         "category": "Ribber"
       }
     ],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 350,
@@ -6408,7 +6555,8 @@
         "category": "Intarsia Carriage"
       }
     ],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 389,
@@ -6422,7 +6570,8 @@
     "year": 1950,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 354,
@@ -6441,7 +6590,8 @@
       }
     ],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 355,
@@ -6455,7 +6605,8 @@
     "year": null,
     "images": [],
     "accessories": [],
-    "manuals": []
+    "manuals": [],
+    "productType": "machine"
   },
   {
     "machineId": 356,
@@ -6468,6 +6619,105 @@
     "punchcardWidth": null,
     "year": 1987,
     "images": [],
+    "accessories": [],
+    "manuals": [],
+    "productType": "machine"
+  },
+  {
+    "machineId": 391,
+    "brand": "Silver Reed",
+    "model": "SRP 60N",
+    "productType": "accessory",
+    "bed": "Metal",
+    "gauge": "4.5 Standard Gauge",
+    "needleCount": 200,
+    "machineStyle": null,
+    "punchcardWidth": null,
+    "year": null,
+    "notes": "Standard Gauge ribber for SK280 and SK840 machines.\nAlso for older model SK210, SK700, SK740, SK500, SK580 whether Singer, Silver Reed, Studio or Knitmaster, Empisal brands, also made by Silver Reed.",
+    "images": [
+      {
+        "url": "/images/machines/srp60N4.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [],
+    "sale": {
+      "forSale": true,
+      "price": 1050,
+      "stripePaymentLink": "https://buy.stripe.com/00w3cubGebyH6Lk3q20oM0S",
+      "status": "available",
+      "availabilityStatus": "available",
+      "expectedDate": null,
+      "shortDescriptionHtml": "Standard Gauge ribber for SK280 and SK840 machines.\nAlso for older model SK210, SK700, SK740, SK500, SK580 whether Singer, Silver Reed, Studio or Knitmaster, Empisal brands, also made by Silver Reed.",
+      "longDescriptionHtml": "US RESIDENTS ONLY\n\nThe ribbing attachment will add a whole new dimension to your knitting. It will convert your machine into a true double bed knitter. The ribber doubles your needle bed size by adding a set of purl needles giving you the ability to create a variety of rib stitches 1X1, 2X2, or any configuration you choose. But it doesn't stop there it also gives you the option of creating dimensional fabric by using the tuck and slip stitch designs. Adding interest to the fabric has never been easier.",
+      "shippingNotes": "<h2>Ordering Information</h2>\n\n<ul>\n  <li>Ships via UPS Ground.</li>\n  <li>Shipping is available within the United States only.</li>\n  <li>All knitting machine sales are final. We do not accept returns or exchanges on knitting machines.</li>\n  <li>Includes a 90-day manufacturer's warranty. See our <a href=\"/warranty\">Warranty Policy</a> for complete details.</li>\n  <li>Your machine will be carefully packed, and tracking information will be provided when your order ships.</li>\n</ul>",
+      "featured": false
+    }
+  },
+  {
+    "machineId": 392,
+    "brand": "Taitexma",
+    "model": "TA-8200",
+    "productType": "accessory",
+    "bed": "Plastic",
+    "gauge": "4.5 Standard Gauge",
+    "needleCount": null,
+    "machineStyle": null,
+    "punchcardWidth": null,
+    "year": null,
+    "notes": "TA-8200 For the Taitexma TH-868 and TH0860 and TH-860L",
+    "images": [
+      {
+        "url": "/images/machines/ta8200_intarsia_carriage1.jpg",
+        "isMain": false
+      }
+    ],
+    "accessories": [],
+    "manuals": [],
+    "sale": {
+      "forSale": true,
+      "price": 90,
+      "stripePaymentLink": "https://buy.stripe.com/bJedR87pY5aj2v45ya0oM0U",
+      "status": "available",
+      "availabilityStatus": "available",
+      "expectedDate": null,
+      "shortDescriptionHtml": "Knit multiple colors across the row (picture knitting) with this Intarsia carriage accessory.",
+      "longDescriptionHtml": "<p>The TA-8200 Intarsia Carriage lets you create beautiful multicolored designs without carrying floats across the back of your knitting. Instead of hand-manipulating each color, the carriage makes it easy to knit picture motifs, geometric patterns, lettering, and other colorwork one row at a time.</p>\n<p>New to Intarsia? Visit our <a href=\"/glossary/intarsia-picture-knitting\" class=\"glossary-link\">Glossary: Intarsia </a> to learn how this technique differs from Fair Isle and other colorwork methods.</p>\n<p>Designed for use with compatible Taitexma standard gauge knitting machines, the TA-8200 is ideal for knitters who want to expand their creative options while maintaining professional-looking results. Simply follow your intarsia pattern, changing yarn colors as needed, and the carriage handles the knitting without trapping unused yarn behind the work.</p>\n\n<p>Whether you're adding a simple motif to a sweater or creating an intricate scene, the TA-8200 Intarsia Carriage opens up endless design possibilities. It is an excellent accessory for machine knitters who enjoy colorwork and want greater flexibility than traditional Fair Isle techniques provide.</p>\n\n<p>Compatible with Taitexma TH-868 and TH-860 and TH-860L</p>",
+      "shippingNotes": null,
+      "featured": false
+    }
+  },
+  {
+    "machineId": 393,
+    "brand": "Taitexma",
+    "model": "TR-850",
+    "productType": "accessory",
+    "bed": "Metal",
+    "gauge": "4.5 Standard Gauge",
+    "needleCount": 200,
+    "machineStyle": null,
+    "punchcardWidth": null,
+    "year": null,
+    "images": [
+      {
+        "url": "/images/machines/tr-850-ribber.jpg",
+        "isMain": false
+      }
+    ],
+    "sale": {
+      "forSale": true,
+      "price": 1399,
+      "stripePaymentLink": "https://buy.stripe.com/bJe8wO7pY46f4Dc7Gi0oM0V",
+      "status": "available",
+      "availabilityStatus": "backorder",
+      "expectedDate": "2026-09-15",
+      "shortDescriptionHtml": "Expand your knitting machine's capabilities by making it easy to knit professional ribbing, cuffs, waistbands, collars, and a wide variety of textured stitch patterns",
+      "longDescriptionHtml": "<p>The Taitexma TR-850 Ribber transforms your Taitexma TH860 knitting machine into a versatile double-bed knitting system. By working two needle beds together, the ribber allows you to create beautiful, elastic fabrics that are impossible to produce with a single bed alone.</p>\n\n<p>Use the TR-850 to knit 1x1, 2x2, and other rib patterns, as well as fisherman's rib, full cardigan, half cardigan, circular knitting, tubular hems, and many other decorative and functional stitch combinations. Whether you're creating sweater cuffs, waistbands, neckbands, hats, scarves, or other projects, the ribber adds flexibility and a professional finish to your knitting.</p>\n\n<p>Built to integrate seamlessly with the Taitexma TH850 standard gauge machine, the TR-850 is easy to attach and provides smooth, reliable operation. It is an ideal addition for knitters who want to expand their techniques and create garments with the polished appearance and stretch of commercially knit pieces.\n</p>\n<p>Compatible with: <a href=\"/shop/machines/taitexma-th860\">Taitexma TH-860 Standard Gauge Knitting Machine.</a></p>",
+      "shippingNotes": null,
+      "featured": false
+    },
     "accessories": [],
     "manuals": []
   }

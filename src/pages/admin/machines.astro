@@ -1,10 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import HtmlHelperToolbar from "../../components/admin/HtmlHelperToolbar.astro";
-import { loadTechniquesByMachineId } from "../../lib/machines/techniquesCatalog";
 import "../../styles/admin-machines.css";
-
-const techniquesByMachineId = loadTechniquesByMachineId();
 ---
 
 <BaseLayout
@@ -17,15 +14,13 @@ const techniquesByMachineId = loadTechniquesByMachineId();
     <header class="am__head">
       <h1 class="am__title">Machine Database</h1>
       <p class="am__sub">
-        Add, edit, and review machine records in <code>data/machines.json</code>
-        via <code>/api/admin/machines</code>. Search the table, then click
-        <strong>View / Edit</strong> on a row, or use <strong>Add New Machine</strong>.
-        Technique assignments are sourced from the technique catalog and shown
-        read-only.
+        Add or edit any machine or accessory in <code>data/machines.json</code>.
+        Search the full catalog below, open a listed item from
+        <strong>For Sale Machines</strong>, or use <strong>Add New Machine</strong>.
       </p>
     </header>
 
-    <p id="am-status" class="am__status" aria-live="polite"></p>
+    <p id="am-status" class="am__status" role="status" aria-live="polite"></p>
 
     <div class="am__actionbar">
       <a href="/admin/machines/for-sale" class="am__btn am__btn--accent">
@@ -45,22 +40,35 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       <div class="am__form-topbar">
         <h2 id="am-form-heading" class="am__panel-title">Edit machine</h2>
         <div class="am__form-topbar-actions">
+          <span id="am-form-status-top" class="am__form-status" role="status" aria-live="polite"></span>
           <button type="button" id="am-save-top" class="am__btn am__btn--primary">Save</button>
           <button type="button" id="am-cancel-top" class="am__btn am__btn--outline">Cancel</button>
         </div>
       </div>
       <p id="am-mode" class="am__mode"></p>
+      <p id="am-editing-id" class="am__editing-id" hidden></p>
 
       <form id="am-form" class="am__form" autocomplete="off">
         <fieldset class="am__sales">
           <legend class="am__sales-legend">Sales</legend>
           <p class="am__sales-intro">
-            Only machines with <strong>For sale</strong> checked appear on
-            <code>/shop/machines</code>. Buy Now shows only when status is
-            <em>Available</em> and a Stripe Payment Link is set.
+            Records with <strong>For sale</strong> checked appear on the shop:
+            <strong>Machine</strong> → <code>/shop/machines</code>,
+            <strong>Accessory</strong> → <code>/shop/accessories</code>.
+            Buy Now shows only when status is <em>Available</em> and a Stripe
+            Payment Link is set. Paste the full Stripe link — do not use a
+            truncated URL with <code>...</code>.
           </p>
 
           <div class="am__sales-grid">
+            <label>
+              <span>Shop Product Type <em class="req">*</em></span>
+              <select name="productType" id="am-field-productType" required>
+                <option value="machine">Machine</option>
+                <option value="accessory">Accessory</option>
+              </select>
+            </label>
+
             <label class="am__check">
               <input type="checkbox" name="saleForSale" id="am-field-saleForSale" />
               <span>For sale (list on shop page)</span>
@@ -111,12 +119,21 @@ const techniquesByMachineId = loadTechniquesByMachineId();
             <label class="am__full">
               <span>Stripe Payment Link</span>
               <input
-                type="url"
+                type="text"
                 name="saleStripeLink"
                 id="am-field-saleStripeLink"
-                placeholder="https://buy.stripe.com/…"
+                class="am__stripe-input"
+                spellcheck="false"
+                autocomplete="off"
+                placeholder="https://buy.stripe.com/"
               />
             </label>
+
+            <div
+              id="am-checkout-summary"
+              class="am__checkout-summary am__full"
+              aria-live="polite"
+            ></div>
 
             <label class="am__full">
               <span>Short Description (HTML)</span>
@@ -146,6 +163,12 @@ const techniquesByMachineId = loadTechniquesByMachineId();
                 <code>/shop/machines/[slug]</code>. Falls back to the Short
                 Description when empty.
               </span>
+              <span class="am__hint am__hint--note">
+                Glossary modal link:
+                <code>&lt;a href="/glossary/TERM-SLUG" class="glossary-link"&gt;TERM NAME&lt;/a&gt;</code>
+                Example (ID 352 Intarsia):
+                <code>&lt;a href="/glossary/intarsia-picture-knitting" class="glossary-link"&gt;Intarsia&lt;/a&gt;</code>
+              </span>
             </label>
 
             <label class="am__full">
@@ -167,8 +190,8 @@ const techniquesByMachineId = loadTechniquesByMachineId();
 
         <div class="am__grid">
           <label>
-            <span>machineId (read-only)</span>
-            <input type="text" name="machineId" id="am-field-machineId" readonly />
+            <span>machineId (immutable — do not confuse with similar models)</span>
+            <input type="text" name="machineId" id="am-field-machineId" class="am__machine-id-field" readonly />
           </label>
           <label>
             <span>Brand <em class="req">*</em></span>
@@ -214,15 +237,6 @@ const techniquesByMachineId = loadTechniquesByMachineId();
           </label>
 
           <label class="am__full">
-            <span>Description</span>
-            <textarea name="notes" id="am-field-notes" rows="4"></textarea>
-            <span class="am__hint">
-              Public description shown under the “Notes” heading on the machine’s
-              detail page. Stored as the <code>notes</code> field.
-            </span>
-          </label>
-
-          <label class="am__full">
             <span>Images</span>
             <textarea
               name="images"
@@ -238,34 +252,12 @@ const techniquesByMachineId = loadTechniquesByMachineId();
               Example: <code>sk840_1.jpg | main</code>
             </span>
           </label>
-
-          <label class="am__full">
-            <span>Accessories</span>
-            <textarea name="accessories" id="am-field-accessories" rows="3"></textarea>
-            <span class="am__hint">
-              One accessory per line as <code>model | title | category</code>.
-              Example: <code>KL-116 | Knit Leader | Charting Device</code>
-            </span>
-          </label>
-
-          <label class="am__full">
-            <span>Manuals</span>
-            <textarea name="manuals" id="am-field-manuals" rows="3"></textarea>
-            <span class="am__hint">
-              One manual per line as <code>title | type | url</code>. Example:
-              <code>KH864 User Guide | Machine Manuals | https://…</code>
-            </span>
-          </label>
-
-          <div class="am__full am__techniques">
-            <span class="am__techniques-label">Techniques (read-only)</span>
-            <p id="am-techniques" class="am__techniques-list">—</p>
-          </div>
         </div>
 
         <div class="am__form-actions">
           <button type="button" id="am-save" class="am__btn am__btn--primary">Save</button>
           <button type="button" id="am-cancel" class="am__btn am__btn--outline">Cancel</button>
+          <span id="am-form-status" class="am__form-status" role="status" aria-live="polite"></span>
         </div>
       </form>
 
@@ -280,19 +272,29 @@ const techniquesByMachineId = loadTechniquesByMachineId();
 
     <details class="am__panel am__find" id="am-find" open>
       <summary class="am__find-summary">
-        <span class="am__find-title">Find a machine</span>
+        <span class="am__find-title">All products</span>
         <span id="am-count" class="am__count"></span>
       </summary>
       <div class="am__find-body">
-        <label class="am__search-label">
-          <span class="sr-only">Search machines</span>
-          <input
-            type="search"
-            id="am-search"
-            placeholder="Search brand, model, gauge, style, punchcard, year, technique…"
-            autocomplete="off"
-          />
-        </label>
+        <div class="am__toolbar">
+          <label class="am__search-label">
+            <span class="sr-only">Filter by product type</span>
+            <select id="am-type-filter" aria-label="Filter by product type">
+              <option value="all">All types</option>
+              <option value="machine">Machines</option>
+              <option value="accessory">Accessories</option>
+            </select>
+          </label>
+          <label class="am__search-label">
+            <span class="sr-only">Search products</span>
+            <input
+              type="search"
+              id="am-search"
+              placeholder="Search brand, model, id, type…"
+              autocomplete="off"
+            />
+          </label>
+        </div>
 
         <div class="am__table-wrap">
           <table class="am__table">
@@ -300,19 +302,9 @@ const techniquesByMachineId = loadTechniquesByMachineId();
               <tr>
                 <th scope="col">Brand</th>
                 <th scope="col">Model</th>
-                <th scope="col">Gauge</th>
-                <th scope="col">Style</th>
-                <th scope="col">Punchcard</th>
-                <th scope="col">Year</th>
-                <th scope="col" class="am__num">Img</th>
-                <th scope="col" class="am__num">Man</th>
-                <th scope="col" class="am__num">Acc</th>
-                <th scope="col" class="am__num">Tech</th>
-                <th scope="col" class="am__num">Sale</th>
-                <th scope="col">Status</th>
-                <th scope="col">Price</th>
-                <th scope="col">Avail</th>
-                <th scope="col">Expected</th>
+                <th scope="col">Type</th>
+                <th scope="col">For sale</th>
+                <th scope="col" class="am__num">ID</th>
                 <th scope="col"><span class="sr-only">Actions</span></th>
               </tr>
             </thead>
@@ -322,12 +314,6 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       </div>
     </details>
   </main>
-
-  <script
-    type="application/json"
-    id="am-techniques-data"
-    set:html={JSON.stringify(techniquesByMachineId)}
-  ></script>
 
   <script>
     import {
@@ -339,33 +325,34 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       brandModelKey,
       parseImages,
       serializeImages,
-      parseAccessories,
-      serializeAccessories,
-      parseManuals,
-      serializeManuals,
       normalizeImages,
-      normalizeAccessories,
-      normalizeManuals,
+      normalizeProductType,
       normalizeSale,
       defaultOrderingInfoHtml,
+      buildSaleCheckoutSummary,
+      formatEditingMachineIdLabel,
+      getSaleAdminWarnings,
+      validateStripePaymentLink,
       type MachineRecord,
+      type ShopProductType,
     } from "../../lib/machines/machineAdminFields";
     import {
       API_BASE,
-      machineRowHtml,
+      machineCatalogRowHtml,
       matchesQuery,
-      persistMachines,
-      quickSaveSale,
-      readQuickPatch,
-      setQuickFeedback,
+      persistMachine,
       sortMachines,
     } from "../../lib/machines/adminListShared";
+    import {
+      assertMachineEditIdentity,
+      parseEditQueryParam,
+      selectMachineForEdit,
+    } from "../../lib/machines/machineAdminSave";
     import { initHtmlHelperToolbars } from "../../lib/machines/htmlHelperToolbar";
 
     type EditorMode = "none" | "edit" | "new";
 
     let machines: MachineRecord[] = [];
-    let techniquesByMachineId: Record<string, string[]> = {};
     let mode: EditorMode = "none";
     /** machineId of the record loaded in the form (edit mode). */
     let editingId: number | null = null;
@@ -375,19 +362,30 @@ const techniquesByMachineId = loadTechniquesByMachineId();
      * new machine, the field tracks the brand's default template.
      */
     let orderingInfoDirty = false;
+    /** Guards against duplicate full-form saves while a request is in flight. */
+    let saving = false;
 
     const statusEl = document.getElementById("am-status");
+    const formStatusEls = [
+      document.getElementById("am-form-status"),
+      document.getElementById("am-form-status-top"),
+    ];
+    const saveButtons = [
+      document.getElementById("am-save"),
+      document.getElementById("am-save-top"),
+    ].filter((el): el is HTMLButtonElement => el instanceof HTMLButtonElement);
     const countEl = document.getElementById("am-count");
     const searchEl = document.getElementById("am-search") as HTMLInputElement | null;
+    const typeFilterEl = document.getElementById("am-type-filter") as HTMLSelectElement | null;
     const rowsEl = document.getElementById("am-rows");
     const formPanel = document.getElementById("am-form-panel");
     const form = document.getElementById("am-form") as HTMLFormElement | null;
     const modeEl = document.getElementById("am-mode");
+    const editingIdEl = document.getElementById("am-editing-id");
+    const checkoutSummaryEl = document.getElementById("am-checkout-summary");
     const previewEl = document.getElementById("am-preview");
-    const techniquesEl = document.getElementById("am-techniques");
     const findEl = document.getElementById("am-find") as HTMLDetailsElement | null;
 
-    /** Collapse the "Find a machine" list when editing; expand it otherwise. */
     function setFindOpen(open: boolean) {
       if (findEl) findEl.open = open;
     }
@@ -399,13 +397,35 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       statusEl.classList.toggle("is-ok", kind === "ok");
     }
 
-    function deepClone<T>(x: T): T {
-      return JSON.parse(JSON.stringify(x)) as T;
+    /** Page-level + form-adjacent save feedback (mirrors help-hub dual status). */
+    function setFormSaveStatus(message: string, kind: "ok" | "err" | "neutral" = "neutral") {
+      setStatus(message, kind);
+      for (const el of formStatusEls) {
+        if (!el) continue;
+        el.textContent = message;
+        el.classList.toggle("is-error", kind === "err");
+        el.classList.toggle("is-ok", kind === "ok");
+      }
     }
 
-    function techNames(id: number | null): string[] {
-      if (id === null) return [];
-      return techniquesByMachineId[String(id)] ?? [];
+    function clearFormSaveStatus() {
+      for (const el of formStatusEls) {
+        if (!el) continue;
+        el.textContent = "";
+        el.classList.remove("is-error", "is-ok");
+      }
+    }
+
+    function setSaveButtonsBusy(busy: boolean) {
+      for (const btn of saveButtons) {
+        btn.disabled = busy;
+        btn.textContent = busy ? "Saving…" : "Save";
+        btn.setAttribute("aria-busy", busy ? "true" : "false");
+      }
+    }
+
+    function deepClone<T>(x: T): T {
+      return JSON.parse(JSON.stringify(x)) as T;
     }
 
     function fieldEl(name: string): HTMLInputElement | HTMLTextAreaElement | null {
@@ -459,23 +479,28 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       refreshPreview();
     }
 
-    // ----- search + table ---------------------------------------------------
+    // ----- catalog list ------------------------------------------------------
 
     function renderTable() {
       if (!rowsEl || !countEl) return;
       const q = (searchEl?.value || "").trim().toLowerCase();
+      const typeFilter = (typeFilterEl?.value || "all") as "all" | ShopProductType;
       const filtered = sortMachines(
-        machines.filter((m) => matchesQuery(m, q, techNames(readMachineId(m))))
+        machines.filter((m) => {
+          if (typeFilter !== "all" && normalizeProductType(m.productType) !== typeFilter) {
+            return false;
+          }
+          return matchesQuery(m, q);
+        })
       );
 
-      countEl.textContent = `${filtered.length} of ${machines.length} machine(s)`;
+      countEl.textContent = `${filtered.length} of ${machines.length} product(s)`;
       rowsEl.innerHTML = filtered
         .map((m) => {
           const id = readMachineId(m);
-          return machineRowHtml(m, {
+          return machineCatalogRowHtml(m, {
             activeId: editingId,
-            techCount: techNames(id).length,
-            actionHtml: `<button type="button" class="am__btn am__btn--small" data-edit="${id ?? ""}">View / Edit</button>`,
+            actionHtml: `<button type="button" class="am__btn am__btn--small" data-edit="${id ?? ""}">Edit</button>`,
           });
         })
         .join("");
@@ -485,31 +510,43 @@ const techniquesByMachineId = loadTechniquesByMachineId();
 
     function findById(id: number | null): MachineRecord | undefined {
       if (id === null) return undefined;
-      return machines.find((m) => readMachineId(m) === id);
+      return selectMachineForEdit(machines, id);
     }
 
-    function loadToForm(id: number) {
+    /** Keep `?edit=<machineId>` in sync with the loaded record so refresh cannot reopen the wrong product. */
+    function syncEditUrl(id: number | null) {
+      const url = new URL(window.location.href);
+      if (id === null) url.searchParams.delete("edit");
+      else url.searchParams.set("edit", String(id));
+      const next = url.pathname + url.search + url.hash;
+      if (next !== window.location.pathname + window.location.search + window.location.hash) {
+        history.replaceState({}, "", next);
+      }
+    }
+
+    function loadToForm(id: number, opts?: { scroll?: boolean; keepSaveStatus?: boolean }) {
       const m = findById(id);
       if (!m || !form || !formPanel) return;
       mode = "edit";
       editingId = id;
       // Existing records keep their stored Ordering Information; never auto-fill.
       orderingInfoDirty = true;
+      if (!opts?.keepSaveStatus) clearFormSaveStatus();
       formPanel.hidden = false;
+      // Clear every control first so fields from the previously opened product cannot linger.
+      form.reset();
 
       setField("machineId", asString(m.machineId));
       setField("brand", asString(m.brand));
       setField("model", asString(m.model));
+      setSelect("productType", normalizeProductType(m.productType));
       setField("bed", asString(m.bed));
       setField("gauge", asString(m.gauge));
       setField("needleCount", asString(m.needleCount));
       setField("machineStyle", asString(m.machineStyle));
       setField("punchcardWidth", asString(m.punchcardWidth));
       setField("year", asString(m.year));
-      setField("notes", asString(m.notes));
       setField("images", serializeImages(m.images));
-      setField("accessories", serializeAccessories(m.accessories));
-      setField("manuals", serializeManuals(m.manuals));
 
       const sale = normalizeSale(m.sale);
       setCheck("saleForSale", sale?.forSale ?? false);
@@ -523,8 +560,7 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       setField("saleLongDescriptionHtml", sale?.longDescriptionHtml ?? "");
       setField("saleShippingNotes", sale?.shippingNotes ?? "");
 
-      const names = techNames(id);
-      if (techniquesEl) techniquesEl.textContent = names.length ? names.join(", ") : "None assigned";
+      syncEditUrl(id);
 
       if (modeEl) {
         modeEl.textContent = `Editing: ${asString(m.brand)} ${asString(m.model)} (machineId ${id})`;
@@ -533,7 +569,9 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       renderTable();
       refreshPreview();
       setFindOpen(false);
-      formPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (opts?.scroll !== false) {
+        formPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     }
 
     function startNew() {
@@ -542,12 +580,14 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       editingId = null;
       // Fresh record: Ordering Information tracks the brand default until edited.
       orderingInfoDirty = false;
+      clearFormSaveStatus();
       formPanel.hidden = false;
       form.reset();
+      syncEditUrl(null);
 
       const newId = nextMachineId(machines);
       setField("machineId", String(newId));
-      if (techniquesEl) techniquesEl.textContent = "None assigned";
+      setSelect("productType", "machine");
       if (modeEl) {
         modeEl.textContent = `Creating new machine (machineId ${newId}) — fill in brand and model, then Save.`;
         modeEl.classList.add("is-new");
@@ -573,20 +613,14 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       row.machineId = numberOrNull(textVal("machineId"));
       row.brand = textVal("brand").trim();
       row.model = textVal("model").trim();
+      row.productType = normalizeProductType(selectVal("productType"));
       row.bed = stringOrNull(textVal("bed"));
       row.gauge = stringOrNull(textVal("gauge"));
       row.needleCount = numberOrNull(textVal("needleCount"));
       row.machineStyle = stringOrNull(textVal("machineStyle"));
       row.punchcardWidth = numberOrNull(textVal("punchcardWidth"));
       row.year = numberOrNull(textVal("year"));
-
-      const notes = stringOrNull(textVal("notes"));
-      if (notes === null) delete row.notes;
-      else row.notes = notes;
-
       row.images = normalizeImages(parseImages(textVal("images")));
-      row.accessories = normalizeAccessories(parseAccessories(textVal("accessories")));
-      row.manuals = normalizeManuals(parseManuals(textVal("manuals")));
 
       const sale = normalizeSale({
         forSale: checkVal("saleForSale"),
@@ -606,108 +640,185 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       return row;
     }
 
+    function refreshEditingIdBanner() {
+      if (!editingIdEl) return;
+      if (mode !== "edit" && mode !== "new") {
+        editingIdEl.hidden = true;
+        editingIdEl.textContent = "";
+        return;
+      }
+      const id = numberOrNull(textVal("machineId"));
+      const label = formatEditingMachineIdLabel(id, mode);
+      editingIdEl.textContent = label;
+      editingIdEl.hidden = !label;
+    }
+
+    function refreshCheckoutSummary() {
+      if (!checkoutSummaryEl) return;
+      if (mode !== "edit" && mode !== "new") {
+        checkoutSummaryEl.innerHTML = "";
+        return;
+      }
+
+      const summary = buildSaleCheckoutSummary({
+        machineId: numberOrNull(textVal("machineId")),
+        brand: textVal("brand"),
+        model: textVal("model"),
+        productType: selectVal("productType"),
+        status: selectVal("saleStatus"),
+        availabilityStatus: selectVal("saleAvailabilityStatus"),
+        expectedDate: textVal("saleExpectedDate"),
+        stripePaymentLink: textVal("saleStripeLink"),
+      });
+
+      const activeClass = summary.checkoutActive
+        ? "am__checkout-summary__active is-yes"
+        : "am__checkout-summary__active is-no";
+
+      checkoutSummaryEl.innerHTML = `
+        <h3 class="am__checkout-summary__title">Checkout status (live)</h3>
+        <dl class="am__checkout-summary__list">
+          <div><dt>Product ID</dt><dd data-summary="productId"></dd></div>
+          <div><dt>Product name</dt><dd data-summary="productName"></dd></div>
+          <div><dt>Product type</dt><dd data-summary="productType"></dd></div>
+          <div><dt>Status</dt><dd data-summary="status"></dd></div>
+          <div><dt>Availability</dt><dd data-summary="availability"></dd></div>
+          <div class="am__checkout-summary__link-row">
+            <dt>Stripe Payment Link</dt>
+            <dd data-summary="stripePaymentLink" class="am__checkout-summary__link"></dd>
+          </div>
+          <div class="am__checkout-summary__checkout-row">
+            <dt>Checkout</dt>
+            <dd data-summary="checkoutActiveLine" class="${activeClass}"></dd>
+          </div>
+        </dl>
+      `;
+
+      const setSummaryText = (key: string, value: string) => {
+        const el = checkoutSummaryEl.querySelector(`[data-summary="${key}"]`);
+        if (el) el.textContent = value;
+      };
+      setSummaryText("productId", summary.productId);
+      setSummaryText("productName", summary.productName);
+      setSummaryText("productType", summary.productType);
+      setSummaryText("status", summary.status);
+      setSummaryText("availability", summary.availability);
+      // Full stored value — never truncated or replaced with a placeholder.
+      setSummaryText("stripePaymentLink", summary.stripePaymentLink);
+      setSummaryText("checkoutActiveLine", summary.checkoutActiveLine);
+    }
+
     function refreshPreview() {
       if (!previewEl) return;
       const row = buildFromForm();
       previewEl.textContent = row
         ? JSON.stringify(row, null, 2)
-        : "// Select a machine or add a new one to see its JSON.";
+        : "// Search All products below, or add a new one, to see its JSON.";
+      refreshEditingIdBanner();
+      refreshCheckoutSummary();
     }
 
     async function save() {
+      if (saving) return;
+      if (mode !== "edit" && mode !== "new") return;
+
       const row = buildFromForm();
       if (!row) return;
 
       const id = readMachineId(row);
-      if (!asString(row.brand).trim()) return setStatus("Brand is required.", "err");
-      if (!asString(row.model).trim()) return setStatus("Model is required.", "err");
-      if (id === null) return setStatus("Could not determine machineId.", "err");
+      if (!asString(row.brand).trim()) return setFormSaveStatus("Brand is required.", "err");
+      if (!asString(row.model).trim()) return setFormSaveStatus("Model is required.", "err");
+      if (id === null) return setFormSaveStatus("Could not determine machineId.", "err");
+
+      const stripeCheck = validateStripePaymentLink(textVal("saleStripeLink"));
+      if (!stripeCheck.ok) return setFormSaveStatus(stripeCheck.error, "err");
+
+      // Route id, loaded id, and submitted id must all agree before any write.
+      const routeMachineId = parseEditQueryParam(window.location.search);
+      const identity = assertMachineEditIdentity({
+        mode,
+        editingId,
+        submittedId: id,
+        routeMachineId,
+      });
+      if (!identity.ok) return setFormSaveStatus(identity.error, "err");
 
       // Prevent creating NEW duplicate brand + model combinations.
       const key = brandModelKey(row);
       const clash = machines.find((m) => readMachineId(m) !== id && brandModelKey(m) === key);
       if (clash) {
-        setStatus(
+        setFormSaveStatus(
           `A machine with brand "${asString(row.brand)}" and model "${asString(row.model)}" already exists (machineId ${readMachineId(clash)}).`,
           "err"
         );
         return;
       }
 
-      let next: MachineRecord[];
-      const wasNew = mode === "new";
-      if (mode === "new") {
-        if (machines.some((m) => readMachineId(m) === id)) {
-          return setStatus(`machineId ${id} already exists. Reload and try again.`, "err");
-        }
-        next = [...machines, row];
-      } else {
-        const idx = machines.findIndex((m) => readMachineId(m) === editingId);
-        if (idx < 0) return setStatus("Original machine not found; reload the page.", "err");
-        next = machines.slice();
-        next[idx] = row;
+      if (mode === "new" && machines.some((m) => readMachineId(m) === id)) {
+        return setFormSaveStatus(`machineId ${id} already exists. Reload and try again.`, "err");
+      }
+      if (mode === "edit" && !findById(editingId)) {
+        return setFormSaveStatus("Original machine not found; reload the page.", "err");
       }
 
-      setStatus("Saving…");
-      try {
-        machines = await persistMachines(next);
-        setStatus(
-          wasNew
-            ? `Created "${asString(row.brand)} ${asString(row.model)}" (machineId ${id}).`
-            : `Saved "${asString(row.brand)} ${asString(row.model)}".`,
-          "ok"
+      const warnings = getSaleAdminWarnings({
+        forSale: checkVal("saleForSale"),
+        productType: selectVal("productType"),
+        featured: checkVal("saleFeatured"),
+        stripePaymentLink: textVal("saleStripeLink"),
+        status: selectVal("saleStatus"),
+      });
+      if (warnings.length > 0) {
+        const proceed = window.confirm(
+          `Please confirm before saving:\n\n• ${warnings.join("\n• ")}\n\nSave anyway?`
         );
-        if (wasNew && searchEl) searchEl.value = "";
-        renderTable();
-        loadToForm(id);
-      } catch (err) {
-        setStatus(err instanceof Error ? err.message : "Network error while saving.", "err");
-      }
-    }
-
-    /**
-     * Save a single sale field edited inline in the list, without opening the
-     * form. Reuses the shared quick-save path, then keeps the open details form
-     * (if it's showing this record) in sync without a disruptive re-render.
-     */
-    async function quickSave(id: number, patch: Parameters<typeof quickSaveSale>[2]) {
-      setQuickFeedback(rowsEl, id, "Saving…", "neutral");
-      try {
-        machines = await quickSaveSale(machines, id, patch);
-        if (editingId === id) {
-          const sale = normalizeSale(findById(id)?.sale);
-          setCheck("saleForSale", sale?.forSale ?? false);
-          setSelect("saleStatus", sale?.status ?? "available");
-          setField("salePrice", sale?.price != null ? String(sale.price) : "");
-          setSelect("saleAvailabilityStatus", sale?.availabilityStatus ?? "available");
-          setField("saleExpectedDate", sale?.expectedDate ?? "");
-          refreshPreview();
+        if (!proceed) {
+          setFormSaveStatus("Save cancelled — review the Sales fields above.", "err");
+          return;
         }
-        setQuickFeedback(rowsEl, id, "Saved ✓", "ok");
+      }
+
+      saving = true;
+      setSaveButtonsBusy(true);
+      setFormSaveStatus("Saving…", "neutral");
+      try {
+        // Single-record upsert by exact machineId (server rejects identity mismatches).
+        machines = await persistMachine({
+          machine: row,
+          expectedMachineId: id,
+          mode,
+          routeMachineId,
+        });
+        setFormSaveStatus("Machine saved successfully.", "ok");
+        // Stay on the form; do not scroll away from the nearby success message.
+        loadToForm(id, { scroll: false, keepSaveStatus: true });
       } catch (err) {
-        setQuickFeedback(rowsEl, id, err instanceof Error ? err.message : "Save failed", "err");
+        const detail = err instanceof Error ? err.message.trim() : "";
+        const base = "The machine could not be saved. Please try again.";
+        setFormSaveStatus(detail ? `${base} ${detail}` : base, "err");
+      } finally {
+        saving = false;
+        setSaveButtonsBusy(false);
       }
     }
 
     function cancel() {
       mode = "none";
       editingId = null;
+      clearFormSaveStatus();
       if (form) form.reset();
       if (formPanel) formPanel.hidden = true;
+      if (editingIdEl) {
+        editingIdEl.hidden = true;
+        editingIdEl.textContent = "";
+      }
+      if (checkoutSummaryEl) checkoutSummaryEl.innerHTML = "";
+      syncEditUrl(null);
       renderTable();
       setFindOpen(true);
     }
 
     async function init() {
-      const dataEl = document.getElementById("am-techniques-data");
-      if (dataEl?.textContent) {
-        try {
-          techniquesByMachineId = JSON.parse(dataEl.textContent) as Record<string, string[]>;
-        } catch {
-          techniquesByMachineId = {};
-        }
-      }
-
       setStatus("Loading machines…");
       try {
         const res = await fetch(API_BASE);
@@ -717,7 +828,7 @@ const techniquesByMachineId = loadTechniquesByMachineId();
           return;
         }
         machines = data.machines as MachineRecord[];
-        setStatus(`${machines.length} machine(s) loaded.`, "ok");
+        setStatus(`${machines.length} product(s) loaded.`, "ok");
         renderTable();
         openFromUrl();
       } catch {
@@ -726,6 +837,7 @@ const techniquesByMachineId = loadTechniquesByMachineId();
       }
 
       searchEl?.addEventListener("input", renderTable);
+      typeFilterEl?.addEventListener("change", renderTable);
       document.getElementById("am-add")?.addEventListener("click", startNew);
       document.getElementById("am-save")?.addEventListener("click", () => void save());
       document.getElementById("am-cancel")?.addEventListener("click", cancel);
@@ -741,15 +853,19 @@ const techniquesByMachineId = loadTechniquesByMachineId();
         if (Number.isFinite(id)) loadToForm(id);
       });
 
-      // Inline quick-edit: For sale / Status / Price. `change` fires on toggle,
-      // select change, and on blur/Enter for the number input.
-      rowsEl?.addEventListener("change", (event) => {
-        const parsed = readQuickPatch(event.target);
-        if (parsed) void quickSave(parsed.id, parsed.patch);
-      });
-
-      form?.addEventListener("input", refreshPreview);
-      form?.addEventListener("change", refreshPreview);
+      const onFormEdited = () => {
+        // Drop stale success feedback once the user edits again.
+        if (formStatusEls.some((el) => el?.classList.contains("is-ok"))) {
+          clearFormSaveStatus();
+          if (statusEl?.classList.contains("is-ok")) {
+            statusEl.textContent = "";
+            statusEl.classList.remove("is-ok");
+          }
+        }
+        refreshPreview();
+      };
+      form?.addEventListener("input", onFormEdited);
+      form?.addEventListener("change", onFormEdited);
 
       // Auto-fill Ordering Information from the brand default on new machines,
       // and stop as soon as the user edits the field themselves.
@@ -763,10 +879,8 @@ const techniquesByMachineId = loadTechniquesByMachineId();
 
     /** Open a machine's form directly when linked as `?edit=<machineId>`. */
     function openFromUrl() {
-      const raw = new URLSearchParams(window.location.search).get("edit");
-      if (!raw) return;
-      const id = Number.parseInt(raw, 10);
-      if (Number.isFinite(id) && findById(id)) loadToForm(id);
+      const id = parseEditQueryParam(window.location.search);
+      if (id !== null && findById(id)) loadToForm(id);
     }
 
     void init();

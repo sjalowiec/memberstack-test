@@ -412,12 +412,17 @@ const sueIntroParagraphs = [
     .home-v2-hero {
       background-position: 60% center;
       /* If cover still feels too zoomed after height/position tweaks, test: background-size: 100% auto; */
+      margin-bottom: clamp(2.25rem, 4vw, 3.25rem);
     }
 
     .home-v2-hero__frame {
-      min-height: clamp(520px, 42vw, 650px);
-      padding: 4rem var(--home-gutter);
+      min-height: clamp(520px, 36vw, 580px);
+      padding: 2.75rem var(--home-gutter);
       align-items: center;
+    }
+
+    .home-v2-hero__card {
+      padding: 1.35rem 1.4rem;
     }
   }
 

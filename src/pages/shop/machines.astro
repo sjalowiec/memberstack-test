@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
+import MachinesShopSubnav from "../../components/shop/MachinesShopSubnav.astro";
 import {
   getMachinesForSale,
   primaryImageUrl,
@@ -28,6 +29,7 @@ function formatPrice(value: number | null): string | null {
 
   <div class="machines-page">
     <header class="page-header">
+      <a class="back-link" href="/shop">← Back to Shop</a>
       <h1 class="page-title">Knitting Machines for Sale</h1>
       <p class="page-intro">
         These machines are currently available for purchase. Each card shows the
@@ -35,6 +37,8 @@ function formatPrice(value: number | null): string | null {
         machine and its specs before you buy.
       </p>
     </header>
+
+    <MachinesShopSubnav current="machines" />
 
     {machines.length === 0 ? (
       <p class="machines-empty">
@@ -106,8 +110,20 @@ function formatPrice(value: number | null): string | null {
     padding: 2rem 1rem 4rem;
   }
 
+  .back-link {
+    display: inline-block;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    color: var(--kbm-green);
+    text-decoration: underline;
+  }
+
+  .back-link:hover {
+    color: var(--kbm-green-hover, #445626);
+  }
+
   .page-header {
-    margin-bottom: 2.5rem;
+    margin-bottom: 1.25rem;
   }
 
   .page-title {

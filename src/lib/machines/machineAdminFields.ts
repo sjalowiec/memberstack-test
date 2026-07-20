@@ -19,6 +19,19 @@ export type MachineImage = { url: string; isMain: boolean };
 export type MachineAccessory = { model: string; title: string; category: string };
 export type MachineManual = { title: string; type: string; url: string };
 
+/**
+ * Shop catalog classification for for-sale records.
+ * Missing / unknown values normalize to `"machine"` for backward compatibility.
+ */
+export type ShopProductType = "machine" | "accessory";
+
+export const SHOP_PRODUCT_TYPES: ShopProductType[] = ["machine", "accessory"];
+
+export const SHOP_PRODUCT_TYPE_LABELS: Record<ShopProductType, string> = {
+  machine: "Machine",
+  accessory: "Accessory",
+};
+
 /** Sales status shown on the shop page. */
 export type MachineSaleStatus = "available" | "sold-out" | "coming-soon" | "inquiry-only";
 
@@ -88,6 +101,11 @@ export function asString(value: unknown): string {
   if (value === null || value === undefined) return "";
   if (typeof value === "number" && Number.isNaN(value)) return "";
   return String(value);
+}
+
+/** Coerce to a known shop product type; anything else (including missing) → machine. */
+export function normalizeProductType(value: unknown): ShopProductType {
+  return asString(value).trim().toLowerCase() === "accessory" ? "accessory" : "machine";
 }
 
 /** Coerce a form/string/number value to a finite number or null. */
@@ -346,15 +364,176 @@ export function availabilityLabel(
 ): string {
   if (sale.availabilityStatus === "backorder") {
     const when = formatExpectedDate(sale.expectedDate);
-    return when ? `Expected ${when}` : "Backorder";
+    return when ? `Expected Ship Date ${when}` : "Backorder";
   }
   if (sale.availabilityStatus === "unavailable") return "Unavailable";
   return "Available";
 }
 
-/** Whether online checkout (Buy) is offered: available + a payment link set. */
-export function canCheckout(sale: MachineSale): boolean {
-  return sale.availabilityStatus === "available" && !!sale.stripePaymentLink;
+/** Required prefix for Stripe Payment Links pasted into admin. */
+export const STRIPE_PAYMENT_LINK_PREFIX = "https://buy.stripe.com/";
+
+/**
+ * Whether online checkout is offered: status is Available and a Stripe Payment
+ * Link is set. Availability status / expectedDate do not block checkout.
+ * Matches the admin Sales intro and the live checkout status summary.
+ */
+export function canCheckout(
+  sale: Pick<MachineSale, "stripePaymentLink" | "status">
+): boolean {
+  return getCheckoutInactiveReason(sale) === null;
+}
+
+/**
+ * Exact reason checkout is inactive, or `null` when checkout is active.
+ * Check order matches admin copy:
+ *   1. Stripe Payment Link missing
+ *   2. status must be Available
+ */
+export function getCheckoutInactiveReason(
+  sale: Pick<MachineSale, "stripePaymentLink" | "status">
+): string | null {
+  if (!stringOrNull(sale.stripePaymentLink)) {
+    return "Stripe Payment Link is missing";
+  }
+  if (normalizeSaleStatus(sale.status) !== "available") {
+    return "status must be Available";
+  }
+  return null;
+}
+
+/** "Checkout active: Yes" or "Checkout active: No — <reason>". */
+export function formatCheckoutActiveLine(
+  sale: Pick<MachineSale, "stripePaymentLink" | "status">
+): string {
+  const reason = getCheckoutInactiveReason(sale);
+  return reason === null
+    ? "Checkout active: Yes"
+    : `Checkout active: No \u2014 ${reason}`;
+}
+
+export type StripePaymentLinkValidation =
+  | { ok: true; link: string | null }
+  | { ok: false; error: string };
+
+/**
+ * Validate a Stripe Payment Link before save.
+ * Empty is allowed (checkout simply stays inactive). Truncated `...` links and
+ * non-buy.stripe.com URLs are rejected.
+ */
+export function validateStripePaymentLink(value: unknown): StripePaymentLinkValidation {
+  const link = stringOrNull(value);
+  if (link === null) return { ok: true, link: null };
+  if (link.includes("...")) {
+    return {
+      ok: false,
+      error:
+        'Stripe Payment Link looks truncated (contains "..."). Paste the full link from Stripe.',
+    };
+  }
+  if (!link.startsWith(STRIPE_PAYMENT_LINK_PREFIX)) {
+    return {
+      ok: false,
+      error: `Stripe Payment Link must begin with ${STRIPE_PAYMENT_LINK_PREFIX}`,
+    };
+  }
+  return { ok: true, link };
+}
+
+/** Full stored Stripe Payment Link for display — never truncated or replaced. */
+export function displayStripePaymentLink(value: unknown): string {
+  const link = stringOrNull(value);
+  return link ?? "(none)";
+}
+
+export type SaleCheckoutSummaryInput = {
+  machineId: number | null;
+  brand: string;
+  model: string;
+  productType: ShopProductType | string;
+  status: MachineSaleStatus | string;
+  availabilityStatus: MachineAvailabilityStatus | string;
+  expectedDate?: string | null;
+  stripePaymentLink: string | null | undefined;
+};
+
+export type SaleCheckoutSummary = {
+  productId: string;
+  productName: string;
+  productType: string;
+  status: string;
+  availability: string;
+  /** Complete stored Stripe Payment Link (or "(none)"). Never truncated. */
+  stripePaymentLink: string;
+  checkoutActive: boolean;
+  checkoutActiveLine: string;
+  inactiveReason: string | null;
+};
+
+/** Live read-only status summary for the Sales admin section. */
+export function buildSaleCheckoutSummary(input: SaleCheckoutSummaryInput): SaleCheckoutSummary {
+  const status = normalizeSaleStatus(input.status);
+  const availabilityStatus = normalizeAvailabilityStatus(input.availabilityStatus);
+  const stripePaymentLink = stringOrNull(input.stripePaymentLink);
+  const sale = { stripePaymentLink, status };
+  const inactiveReason = getCheckoutInactiveReason(sale);
+  const productType = normalizeProductType(input.productType);
+
+  return {
+    productId: input.machineId === null ? "(none)" : String(input.machineId),
+    productName: `${asString(input.brand).trim()} ${asString(input.model).trim()}`.trim() || "(unnamed)",
+    productType: SHOP_PRODUCT_TYPE_LABELS[productType],
+    status: SALE_STATUS_LABELS[status],
+    availability: availabilityLabel({
+      availabilityStatus,
+      expectedDate: input.expectedDate ?? null,
+    }),
+    stripePaymentLink: displayStripePaymentLink(stripePaymentLink),
+    checkoutActive: inactiveReason === null,
+    checkoutActiveLine: formatCheckoutActiveLine(sale),
+    inactiveReason,
+  };
+}
+
+/** Prominent editing-id label shown while a record is open in the form. */
+export function formatEditingMachineIdLabel(
+  id: number | null,
+  mode: "edit" | "new" | "none" = "edit"
+): string {
+  if (id === null) return "";
+  if (mode === "new") return `Creating machineId: ${id}`;
+  return `Editing machineId: ${id}`;
+}
+
+export type SaleAdminWarningInput = {
+  forSale: boolean;
+  productType: ShopProductType | string;
+  featured: boolean;
+  stripePaymentLink: string | null | undefined;
+  status: MachineSaleStatus | string;
+};
+
+/** Non-blocking warnings to confirm before save. */
+export function getSaleAdminWarnings(input: SaleAdminWarningInput): string[] {
+  const warnings: string[] = [];
+  const sale = {
+    stripePaymentLink: stringOrNull(input.stripePaymentLink),
+    status: normalizeSaleStatus(input.status),
+  };
+  if (input.forSale) {
+    const reason = getCheckoutInactiveReason(sale);
+    if (reason !== null) {
+      warnings.push(
+        `For Sale is checked but checkout will not be active (${reason}).`
+      );
+    }
+  }
+  if (normalizeProductType(input.productType) === "accessory" && input.featured) {
+    warnings.push(
+      "Product type is Accessory but Feature on /shop/machines is checked."
+    );
+  }
+  return warnings;
 }
 
 /**
@@ -440,6 +619,7 @@ export function normalizeMachineForSave(
   out.machineId = id;
   out.brand = brand;
   out.model = model;
+  out.productType = normalizeProductType(out.productType);
   out.bed = stringOrNull(out.bed);
   out.gauge = stringOrNull(out.gauge);
   out.needleCount = numberOrNull(out.needleCount);
