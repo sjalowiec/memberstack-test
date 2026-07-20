@@ -7,6 +7,16 @@ import {
 import { formatMemberDisplayName, type WatsonQueryFn } from "./memberSearch";
 import { queryWatson } from "./db";
 
+/**
+ * Matthew / Sub_details_list.cfm current-member universe filter.
+ * Alias the members table as `m` when embedding this fragment.
+ */
+export const CURRENT_LEGACY_MEMBER_WHERE_SQL = `
+  COALESCE(m.betaactive, 0) = 0
+  AND m.subscriptionexpiring IS NOT NULL
+  AND m.subscriptionexpiring::date >= CURRENT_DATE
+`;
+
 /** Matthew / Sub_details_list.cfm current-member universe. */
 export const CURRENT_LEGACY_MEMBERS_SQL = `
   WITH current_members AS (
@@ -23,9 +33,7 @@ export const CURRENT_LEGACY_MEMBERS_SQL = `
       m.currentsubscriber,
       m.stripcustomerid
     FROM legacy_members m
-    WHERE COALESCE(m.betaactive, 0) = 0
-      AND m.subscriptionexpiring IS NOT NULL
-      AND m.subscriptionexpiring::date >= CURRENT_DATE
+    WHERE ${CURRENT_LEGACY_MEMBER_WHERE_SQL.trim()}
   ),
   latest_sub AS (
     SELECT DISTINCT ON (s.memberid_fk)
