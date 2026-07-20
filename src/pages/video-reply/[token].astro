@@ -1,0 +1,148 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import {
+  getVideoRepliesStore,
+  isVideoReplyPubliclyAvailable,
+  recordVideoReplyOpen,
+  toPublicVideoReplyView,
+} from "../../lib/videoReplies/videoRepliesStore";
+import { isPlausibleVideoReplyPublicToken } from "../../lib/videoReplies/videoReplyToken";
+
+export const prerender = false;
+
+Astro.response.headers.set("Cache-Control", "private, no-store");
+
+const tokenParam = Astro.params.token ?? "";
+const token = decodeURIComponent(tokenParam).trim();
+
+let available = false;
+let topic = "";
+let memberFirstName = "";
+let embedUrl = "";
+
+if (isPlausibleVideoReplyPublicToken(token)) {
+  try {
+    const store = getVideoRepliesStore();
+    const opened = await recordVideoReplyOpen(store, token);
+    if (opened && isVideoReplyPubliclyAvailable(opened)) {
+      const view = toPublicVideoReplyView(opened);
+      available = true;
+      topic = view.topic;
+      memberFirstName = view.memberFirstName;
+      embedUrl = view.safeVimeoEmbedUrl;
+    }
+  } catch {
+    available = false;
+  }
+}
+
+const pageTitle = available ? `${topic} | Knit It Now` : "Video unavailable | Knit It Now";
+---
+
+<BaseLayout
+  title={pageTitle}
+  description="A personalized Knit It Now support video."
+  skipGlobalHyvor={true}
+  bodyClass="video-reply-body"
+>
+  <Fragment slot="head">
+    <meta name="robots" content="noindex, nofollow" />
+  </Fragment>
+
+  <main class="video-reply">
+    {
+      available ? (
+        <section class="video-reply__card" aria-labelledby="video-reply-title">
+          <p class="video-reply__brand">Knit It Now</p>
+          <h1 id="video-reply-title" class="video-reply__title">
+            {topic}
+          </h1>
+          <p class="video-reply__for">
+            This video was created for {memberFirstName}.
+          </p>
+          <div class="video-reply__embed">
+            <iframe
+              src={embedUrl}
+              title={topic}
+              allow="autoplay; fullscreen; picture-in-picture; clipboard-write"
+              allowfullscreen
+              loading="lazy"
+            />
+          </div>
+        </section>
+      ) : (
+        <section class="video-reply__card video-reply__card--unavailable" aria-labelledby="video-reply-unavailable">
+          <p class="video-reply__brand">Knit It Now</p>
+          <h1 id="video-reply-unavailable" class="video-reply__title">
+            This video is unavailable
+          </h1>
+          <p class="video-reply__for">
+            The link may be incorrect, expired, or no longer active. If you need help, reply to
+            your Knit It Now email and Sue will assist you.
+          </p>
+        </section>
+      )
+    }
+  </main>
+</BaseLayout>
+
+<style>
+  .video-reply-body {
+    background:
+      radial-gradient(circle at top left, rgba(163, 191, 106, 0.18), transparent 40%),
+      linear-gradient(180deg, #f8faf3 0%, #eef2e6 100%);
+    min-height: 100vh;
+  }
+
+  .video-reply {
+    width: min(100% - 2rem, 720px);
+    margin: 0 auto;
+    padding: calc(var(--header-height, 7rem) + 1.5rem) 0 3rem;
+  }
+
+  .video-reply__card {
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.5rem 1.35rem 1.75rem;
+    box-shadow: 0 10px 30px rgba(36, 48, 21, 0.06);
+  }
+
+  .video-reply__brand {
+    margin: 0 0 0.35rem;
+    font-family: "Handlee", cursive;
+    font-size: 1.55rem;
+    color: #3f6212;
+  }
+
+  .video-reply__title {
+    margin: 0 0 0.5rem;
+    font-size: 1.45rem;
+    color: #243015;
+    line-height: 1.25;
+  }
+
+  .video-reply__for {
+    margin: 0 0 1.1rem;
+    color: #475569;
+    line-height: 1.5;
+  }
+
+  .video-reply__embed {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #0f172a;
+  }
+
+  .video-reply__embed iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+</style>

@@ -1,0 +1,576 @@
+---
+import WatsonPageShell from "../../components/watson/WatsonPageShell.astro";
+import {
+  dateSortValue,
+  formatVideoReplyDateTime,
+  linkStatusLabel,
+  openedStatusLabel,
+  sentStatusLabel,
+} from "../../lib/videoReplies/videoReplyDisplay";
+import { buildDefaultVideoReplyEmailMessage } from "../../lib/videoReplies/videoReplyMessage";
+import {
+  getVideoRepliesStore,
+  listVideoReplies,
+  withAdminPresentation,
+  type VideoReply,
+} from "../../lib/videoReplies/videoRepliesStore";
+
+export const prerender = false;
+
+Astro.response.headers.set("Cache-Control", "no-store");
+
+const siteOrigin = Astro.url.origin;
+let loadError: string | null = null;
+let replies: VideoReply[] = [];
+
+try {
+  const store = getVideoRepliesStore();
+  replies = await listVideoReplies(store);
+} catch (error) {
+  loadError =
+    error instanceof Error ? error.message : "Unable to load video replies.";
+}
+
+function publicUrl(reply: VideoReply): string {
+  return withAdminPresentation(reply, siteOrigin).publicViewingUrl || "";
+}
+
+function emailMessage(reply: VideoReply): string {
+  return buildDefaultVideoReplyEmailMessage({
+    memberName: reply.memberName,
+    publicViewingUrl: publicUrl(reply),
+  });
+}
+---
+
+<WatsonPageShell
+  title="Video Replies | Watson"
+  description="Create personalized support video links and track who opened them."
+  heading="Video Replies"
+  intro="Record a Camtasia video, upload it to Vimeo, then create a private viewing link and copy a message into your email."
+>
+  <div data-video-replies-page>
+    <section class="watson__panel" aria-labelledby="vr-create-heading">
+      <h2 id="vr-create-heading" class="watson__panel-title">Create Video Reply</h2>
+      <form class="watson-vr__form" data-vr-create-form>
+        <div class="watson-vr__grid">
+          <label class="watson-vr__field">
+            <span>Member / customer name</span>
+            <input
+              class="watson__search-input"
+              name="memberName"
+              type="text"
+              required
+              autocomplete="name"
+              maxlength="200"
+            />
+          </label>
+          <label class="watson-vr__field">
+            <span>Email address</span>
+            <input
+              class="watson__search-input"
+              name="memberEmail"
+              type="email"
+              required
+              autocomplete="email"
+              maxlength="320"
+            />
+          </label>
+          <label class="watson-vr__field watson-vr__field--full">
+            <span>Video topic or short title</span>
+            <input
+              class="watson__search-input"
+              name="topic"
+              type="text"
+              required
+              maxlength="200"
+            />
+          </label>
+          <label class="watson-vr__field watson-vr__field--full">
+            <span>Vimeo URL</span>
+            <input
+              class="watson__search-input"
+              name="vimeoUrl"
+              type="url"
+              required
+              placeholder="https://vimeo.com/123456789"
+              maxlength="500"
+            />
+          </label>
+          <label class="watson-vr__field watson-vr__field--full">
+            <span>Private notes (optional ù never shown on the public page)</span>
+            <textarea
+              class="watson-vr__textarea"
+              name="privateNotes"
+              rows="3"
+              maxlength="5000"
+            ></textarea>
+          </label>
+        </div>
+        <div class="watson-vr__actions">
+          <button type="submit" class="watson__button">Save Video Reply</button>
+          <p class="watson__status" data-vr-form-status hidden></p>
+        </div>
+      </form>
+
+      <section
+        id="vr-result"
+        class="watson-vr__result"
+        data-vr-result
+        hidden
+        aria-label="Saved video reply"
+      >
+        <h3 class="watson-vr__result-title">Ready to send</h3>
+        <label class="watson-vr__field">
+          <span>Public viewing link</span>
+          <div class="watson-vr__copy-row">
+            <input class="watson__search-input" type="text" readonly data-vr-result-link />
+            <button type="button" class="watson__button watson__button--secondary" data-vr-copy="link">
+              Copy Link
+            </button>
+            <span class="watson-vr__copy-status" data-vr-copy-status aria-live="polite"></span>
+          </div>
+        </label>
+        <label class="watson-vr__field">
+          <span>Email message (editable before copy)</span>
+          <textarea
+            class="watson-vr__textarea watson-vr__message"
+            rows="10"
+            data-vr-result-message
+          ></textarea>
+          <div class="watson-vr__copy-row">
+            <button
+              type="button"
+              class="watson__button watson__button--secondary"
+              data-vr-copy="message"
+            >
+              Copy Message
+            </button>
+            <span class="watson-vr__copy-status" data-vr-copy-status aria-live="polite"></span>
+          </div>
+        </label>
+        <div class="watson-vr__actions">
+          <button type="button" class="watson__button" data-vr-mark-sent>Mark Sent</button>
+          <p class="watson__status" data-vr-result-status hidden></p>
+        </div>
+      </section>
+    </section>
+
+    <section class="watson__panel" aria-labelledby="vr-history-heading">
+      <div class="watson-vr__history-head">
+        <h2 id="vr-history-heading" class="watson__panel-title">Video Reply History</h2>
+        <label class="watson-vr__search">
+          <span class="visually-hidden">Search by member or email</span>
+          <input
+            class="watson__search-input"
+            type="search"
+            placeholder="Search name or email"
+            data-vr-search
+          />
+        </label>
+      </div>
+
+      {
+        loadError ? (
+          <p class="watson__status watson__status--error" role="alert">
+            {loadError}
+          </p>
+        ) : null
+      }
+
+      {
+        !loadError && replies.length === 0 ? (
+          <p class="watson__status">No video replies yet.</p>
+        ) : null
+      }
+
+      {
+        !loadError && replies.length > 0 ? (
+          <div class="watson__table-wrap">
+            <table
+              class="watson-table"
+              data-sortable-table
+              data-vr-history-table
+            >
+              <thead>
+                <tr>
+                  <th
+                    scope="col"
+                    data-sort-key="member"
+                    data-sort-type="string"
+                    tabindex="0"
+                  >
+                    Member
+                  </th>
+                  <th
+                    scope="col"
+                    data-sort-key="email"
+                    data-sort-type="string"
+                    tabindex="0"
+                  >
+                    Email
+                  </th>
+                  <th
+                    scope="col"
+                    data-sort-key="topic"
+                    data-sort-type="string"
+                    tabindex="0"
+                  >
+                    Topic
+                  </th>
+                  <th
+                    scope="col"
+                    data-sort-key="created"
+                    data-sort-type="date"
+                    data-sort-default="true"
+                    data-sort-default-direction="desc"
+                    tabindex="0"
+                  >
+                    Created
+                  </th>
+                  <th
+                    scope="col"
+                    data-sort-key="sent"
+                    data-sort-type="date"
+                    tabindex="0"
+                  >
+                    Sent
+                  </th>
+                  <th
+                    scope="col"
+                    data-sort-key="opened"
+                    data-sort-type="date"
+                    tabindex="0"
+                  >
+                    Opened
+                  </th>
+                  <th
+                    scope="col"
+                    data-sort-key="opens"
+                    data-sort-type="string"
+                    tabindex="0"
+                  >
+                    Opens
+                  </th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {replies.map((reply) => {
+                  const url = publicUrl(reply);
+                  const message = emailMessage(reply);
+                  const disabled = reply.status === "disabled";
+                  return (
+                    <tr
+                      data-vr-row
+                      data-reply-id={reply.id}
+                      data-vr-search={`${reply.memberName} ${reply.memberEmail}`}
+                      data-member-name={reply.memberName}
+                      data-member-email={reply.memberEmail}
+                      data-topic={reply.topic}
+                      data-vimeo-url={reply.originalVimeoUrl}
+                      data-private-notes={reply.privateNotes}
+                    >
+                      <td data-sort-value={reply.memberName}>
+                        {reply.memberName}
+                        {disabled ? (
+                          <div class="watson-vr__muted">{linkStatusLabel(reply.status, reply.disabledAt)}</div>
+                        ) : null}
+                      </td>
+                      <td data-sort-value={reply.memberEmail}>{reply.memberEmail}</td>
+                      <td data-sort-value={reply.topic}>{reply.topic}</td>
+                      <td data-sort-value={dateSortValue(reply.createdAt)}>
+                        {formatVideoReplyDateTime(reply.createdAt)}
+                      </td>
+                      <td data-sort-value={dateSortValue(reply.sentAt)}>
+                        {sentStatusLabel(reply.sentAt)}
+                      </td>
+                      <td
+                        data-sort-value={dateSortValue(
+                          reply.lastOpenedAt || reply.firstOpenedAt,
+                        )}
+                      >
+                        {openedStatusLabel(reply.firstOpenedAt, reply.lastOpenedAt)}
+                      </td>
+                      <td data-sort-value={String(reply.openCount)}>{reply.openCount}</td>
+                      <td class="watson-vr__row-actions">
+                        <button
+                          type="button"
+                          class="watson-vr__link-btn"
+                          data-vr-row-action="view"
+                          data-view-url={url}
+                          disabled={disabled}
+                        >
+                          View
+                        </button>
+                        <button
+                          type="button"
+                          class="watson-vr__link-btn"
+                          data-vr-row-action="copy-link"
+                          data-copy-text={url}
+                        >
+                          Copy Link
+                        </button>
+                        <button
+                          type="button"
+                          class="watson-vr__link-btn"
+                          data-vr-row-action="copy-message"
+                          data-copy-text={message}
+                        >
+                          Copy Message
+                        </button>
+                        <button
+                          type="button"
+                          class="watson-vr__link-btn"
+                          data-vr-row-action="mark-sent"
+                          data-force={reply.sentAt ? "true" : "false"}
+                        >
+                          {reply.sentAt ? "Mark Sent Again" : "Mark Sent"}
+                        </button>
+                        <button
+                          type="button"
+                          class="watson-vr__link-btn"
+                          data-vr-row-action="edit"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          class="watson-vr__link-btn watson-vr__link-btn--danger"
+                          data-vr-row-action="disable"
+                          disabled={disabled}
+                        >
+                          Disable Link
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : null
+      }
+    </section>
+
+    <dialog class="watson-vr__dialog" data-vr-edit-dialog>
+      <form class="watson-vr__form" data-vr-edit-form>
+        <h3 class="watson__panel-title">Edit Video Reply</h3>
+        <p class="watson-vr__muted">The public viewing token does not change when you edit.</p>
+        <div class="watson-vr__grid">
+          <label class="watson-vr__field">
+            <span>Member / customer name</span>
+            <input class="watson__search-input" name="memberName" type="text" required maxlength="200" />
+          </label>
+          <label class="watson-vr__field">
+            <span>Email address</span>
+            <input class="watson__search-input" name="memberEmail" type="email" required maxlength="320" />
+          </label>
+          <label class="watson-vr__field watson-vr__field--full">
+            <span>Topic</span>
+            <input class="watson__search-input" name="topic" type="text" required maxlength="200" />
+          </label>
+          <label class="watson-vr__field watson-vr__field--full">
+            <span>Vimeo URL</span>
+            <input class="watson__search-input" name="vimeoUrl" type="url" required maxlength="500" />
+          </label>
+          <label class="watson-vr__field watson-vr__field--full">
+            <span>Private notes</span>
+            <textarea class="watson-vr__textarea" name="privateNotes" rows="3" maxlength="5000"></textarea>
+          </label>
+        </div>
+        <p class="watson__status" data-vr-edit-status hidden></p>
+        <div class="watson-vr__actions">
+          <button type="submit" class="watson__button">Save changes</button>
+          <button type="button" class="watson__button watson__button--secondary" data-vr-edit-cancel>
+            Cancel
+          </button>
+        </div>
+      </form>
+    </dialog>
+  </div>
+</WatsonPageShell>
+
+<style>
+  .watson-vr__form {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .watson-vr__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem 1rem;
+  }
+
+  .watson-vr__field {
+    display: grid;
+    gap: 0.35rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #334155;
+  }
+
+  .watson-vr__field--full {
+    grid-column: 1 / -1;
+  }
+
+  .watson-vr__textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.55rem 0.75rem;
+    font: inherit;
+    font-weight: 400;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    resize: vertical;
+  }
+
+  .watson-vr__textarea:focus {
+    outline: 2px solid #3f6212;
+    outline-offset: 1px;
+    border-color: #3f6212;
+  }
+
+  .watson-vr__message {
+    font-weight: 400;
+    white-space: pre-wrap;
+  }
+
+  .watson-vr__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    align-items: center;
+  }
+
+  .watson-vr__result {
+    margin-top: 1.25rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid #e2e8f0;
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .watson-vr__result-title {
+    margin: 0;
+    font-size: 1rem;
+    color: #243015;
+  }
+
+  .watson-vr__copy-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .watson-vr__copy-status {
+    font-size: 0.85rem;
+    color: #3f6212;
+    font-weight: 600;
+  }
+
+  .watson__button--secondary {
+    background: #fff;
+    color: #3f6212;
+    border: 1px solid #3f6212;
+  }
+
+  .watson__button--secondary:hover {
+    background: #f7fee7;
+  }
+
+  .watson-vr__history-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .watson-vr__history-head .watson__panel-title {
+    margin: 0;
+  }
+
+  .watson-vr__search {
+    flex: 1 1 14rem;
+    max-width: 22rem;
+  }
+
+  .watson-vr__row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.55rem;
+    min-width: 12rem;
+  }
+
+  .watson-vr__link-btn {
+    border: 0;
+    background: transparent;
+    color: #3f6212;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  .watson-vr__link-btn:disabled {
+    color: #94a3b8;
+    cursor: not-allowed;
+    text-decoration: none;
+  }
+
+  .watson-vr__link-btn--danger {
+    color: #b91c1c;
+  }
+
+  .watson-vr__muted {
+    margin: 0.15rem 0 0;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #64748b;
+  }
+
+  .watson-vr__dialog {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.15rem;
+    max-width: 36rem;
+    width: calc(100% - 2rem);
+  }
+
+  .watson-vr__dialog::backdrop {
+    background: rgba(15, 23, 42, 0.35);
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .watson__status[data-error="true"] {
+    color: #b91c1c;
+  }
+
+  @media (max-width: 720px) {
+    .watson-vr__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  import { initWatsonVideoReplies } from "../../scripts/watsonVideoReplies";
+  initWatsonVideoReplies(document);
+</script>
