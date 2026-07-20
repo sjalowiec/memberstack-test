@@ -49,6 +49,8 @@ describe("Watson member search pages", () => {
     expect(adminReport).toContain("process.env.MEMBERSTACK_SECRET_KEY");
 
     expect(shell).toContain('<a href="/watson/current">Current</a>');
+    expect(shell).toContain('<a href="/watson/video-replies">Video Replies</a>');
+    expect(shell).toContain('<a href="/watson/contact-messages">Contact Messages</a>');
 
     expect(component).toContain("loadError");
     expect(component).toContain("watson__status--error");
@@ -84,6 +86,31 @@ describe("Watson member search pages", () => {
     expect(cards.every((card) => card.displayValue === CURRENT_BUSINESS_PLACEHOLDER)).toBe(
       true,
     );
+  });
+
+  it("defines Video Replies Watson page with create form and sortable history", () => {
+    const page = fs.readFileSync(
+      path.resolve("src/pages/watson/video-replies.astro"),
+      "utf8",
+    );
+    const shell = fs.readFileSync(
+      path.resolve("src/components/watson/WatsonPageShell.astro"),
+      "utf8",
+    );
+
+    expect(page).toContain('export const prerender = false');
+    expect(page).toContain("WatsonPageShell");
+    expect(page).toContain("Create Video Reply");
+    expect(page).toContain("Video Reply History");
+    expect(page).toContain('data-sortable-table');
+    expect(page).toContain('data-sort-default="true"');
+    expect(page).toContain("Mark Sent");
+    expect(page).toContain("Copy Link");
+    expect(page).toContain("Copy Message");
+    expect(page).toContain("Disable Link");
+    expect(page).toContain("privateNotes");
+    expect(page).toContain("initWatsonVideoReplies");
+    expect(shell).toContain('<a href="/watson/video-replies">Video Replies</a>');
   });
 
   it("defines membership report routes under /watson/reports", () => {

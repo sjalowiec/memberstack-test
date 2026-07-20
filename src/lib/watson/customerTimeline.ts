@@ -32,6 +32,33 @@ export const CUSTOMER_TIMELINE_EVENT_LABELS: Record<CustomerTimelineEventType, s
   note_added: "Note added",
 };
 
+/** Timeline milestone from legacy_subscriptions.expirationdate — not real activity. */
+export const LEGACY_MEMBERSHIP_EXPIRATION_DESCRIPTION = "Legacy membership expiration date";
+
+export function isLegacyMembershipExpirationEvent(event: CustomerTimelineEvent): boolean {
+  return (
+    event.source === "legacy_subscriptions" &&
+    event.description === LEGACY_MEMBERSHIP_EXPIRATION_DESCRIPTION
+  );
+}
+
+/** Newest legacy membership expiration/access-through date from the timeline. */
+export function resolveLegacyAccessThroughDate(
+  timeline: CustomerTimelineEvent[],
+): string | null {
+  return timeline.find((event) => isLegacyMembershipExpirationEvent(event))?.dateDisplay ?? null;
+}
+
+/**
+ * Newest timeline date that represents activity (orders, notes, plan changes, etc.),
+ * excluding legacy membership expiration milestones.
+ */
+export function resolveLastActivityDate(timeline: CustomerTimelineEvent[]): string | null {
+  return (
+    timeline.find((event) => !isLegacyMembershipExpirationEvent(event))?.dateDisplay ?? null
+  );
+}
+
 function pushEvent(
   events: CustomerTimelineEvent[],
   event: CustomerTimelineEvent | null,
@@ -114,7 +141,7 @@ export function buildMembershipTimelineEvents(
         eventTypeLabel: CUSTOMER_TIMELINE_EVENT_LABELS.membership_changed,
         dateDisplay: record.expirationDate ?? record.expirationDateSort,
         dateSort: record.expirationDateSort,
-        description: "Legacy membership expiration date",
+        description: LEGACY_MEMBERSHIP_EXPIRATION_DESCRIPTION,
         source: "legacy_subscriptions",
       });
     }

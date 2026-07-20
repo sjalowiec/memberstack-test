@@ -81,6 +81,14 @@ const statusClass = `watson-customer__status-badge watson-customer__status-badge
       ) : null
     }
     {
+      header.legacyAccessThroughDate ? (
+        <div class="watson-customer__header-meta-item">
+          <dt>Legacy access through</dt>
+          <dd>{header.legacyAccessThroughDate}</dd>
+        </div>
+      ) : null
+    }
+    {
       header.lastActivityDate ? (
         <div class="watson-customer__header-meta-item">
           <dt>Last activity</dt>

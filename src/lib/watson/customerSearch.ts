@@ -218,12 +218,12 @@ async function enrichLegacyRowWithMemberstack(
   searchQuery: string,
   deps: SearchDeps,
 ): Promise<CustomerSearchResultRow> {
-  const member = await resolveMemberstackMemberByExactEmail(legacyMember.email, {
+  const lookup = await resolveMemberstackMemberByExactEmail(legacyMember.email, {
     secretKey: deps.secretKey,
     getClient: deps.getClient,
   });
-  if (member) {
-    return buildLinkedSearchRow(member, legacyMember, searchQuery);
+  if (lookup.ok) {
+    return buildLinkedSearchRow(lookup.member, legacyMember, searchQuery);
   }
   return buildLegacyOnlySearchRow(legacyMember, searchQuery);
 }
@@ -295,22 +295,25 @@ export async function searchCustomers(
   }
 
   if (kind === "email") {
-    const member = await resolveMemberstackMemberByExactEmail(normalized, {
+    const memberLookup = await resolveMemberstackMemberByExactEmail(normalized, {
       secretKey: deps.secretKey,
       getClient: deps.getClient,
     });
-    if (member) {
+    if (memberLookup.ok) {
       const legacyRow = await resolveUniqueLegacySearchRow(normalized, deps.queryFn);
       rows.push(
         legacyRow
-          ? buildLinkedSearchRow(member, legacyRow, normalized)
-          : buildMemberstackOnlySearchRow(member, normalized),
+          ? buildLinkedSearchRow(memberLookup.member, legacyRow, normalized)
+          : buildMemberstackOnlySearchRow(memberLookup.member, normalized),
       );
+    } else if (memberLookup.status === "load_error") {
+      searchError = memberLookup.error;
+      configured = memberLookup.error !== "Memberstack admin API is not configured.";
     }
 
     const legacyLink = await resolveLegacyLinkByMemberstackEmail(normalized, deps.queryFn);
     if (legacyLink.status === "unique") {
-      if (!member) {
+      if (!memberLookup.ok) {
         rows.push(
           buildLegacyOnlySearchRow(
             {

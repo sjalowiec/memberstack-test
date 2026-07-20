@@ -18,9 +18,16 @@ export type MemberstackGetMemberClient = MemberstackListMembersClient & {
   getMember: (idOrEmail: string) => Promise<Record<string, unknown> | null>;
 };
 
+export type CustomerMemberstackLookupStatus = "linked" | "not_found" | "load_error";
+
 export type CustomerMemberstackLoadResult =
-  | { ok: true; member: MemberstackMember }
-  | { ok: false; error: string };
+  | { ok: true; status: "linked"; member: MemberstackMember }
+  | { ok: false; status: "not_found"; error: string }
+  | { ok: false; status: "load_error"; error: string };
+
+export const MEMBERSTACK_LOOKUP_UNAVAILABLE_LABEL = "Memberstack lookup unavailable";
+export const MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL =
+  "No Memberstack member found for this email";
 
 export interface CustomerPlanConnectionDisplay {
   connectionId: string | null;
@@ -233,18 +240,39 @@ export async function loadCustomerMemberstackMember(options: {
   const client = await getClient(secretKey);
 
   if (!client) {
-    return { ok: false, error: "Memberstack admin API is not configured." };
+    return {
+      ok: false,
+      status: "load_error",
+      error: "Memberstack admin API is not configured.",
+    };
   }
 
   try {
     const raw = await client.getMember(options.lookupValue);
+    if (raw == null) {
+      return {
+        ok: false,
+        status: "not_found",
+        error: "No Memberstack member found for this identifier.",
+      };
+    }
+
     const member = parseMemberstackMember(raw);
     if (!member) {
-      return { ok: false, error: "No Memberstack member found for this identifier." };
+      return {
+        ok: false,
+        status: "load_error",
+        error: "Memberstack returned a malformed member response.",
+      };
     }
-    return { ok: true, member };
+
+    return { ok: true, status: "linked", member };
   } catch {
-    return { ok: false, error: "Failed to load Memberstack member data." };
+    return {
+      ok: false,
+      status: "load_error",
+      error: "Failed to load Memberstack member data.",
+    };
   }
 }
 
@@ -287,7 +315,7 @@ export async function loadCustomerMemberstackSummaryById(
   if (!result.ok) {
     return buildCustomerMemberstackSummary({
       member: null,
-      configured: true,
+      configured: result.error !== "Memberstack admin API is not configured.",
       loadError: result.error,
     });
   }
@@ -299,16 +327,29 @@ export async function loadCustomerMemberstackSummaryById(
   });
 }
 
+/**
+ * Looks up a Memberstack member by normalized (trim + lowercase) email.
+ * Preserves lowercase lookup because Memberstack's Admin API email match is case-sensitive.
+ *
+ * Distinguishes:
+ * - linked: member found
+ * - not_found: API completed and returned no member
+ * - load_error: missing config, API failure, malformed response, or unexpected exception
+ */
 export async function resolveMemberstackMemberByExactEmail(
   email: string | null | undefined,
   options?: {
     secretKey?: string | null;
     getClient?: (secretKey: string | null) => Promise<MemberstackGetMemberClient | null>;
   },
-): Promise<MemberstackMember | null> {
+): Promise<CustomerMemberstackLoadResult> {
   const normalized = normalizeCustomerEmail(email);
   if (!normalized) {
-    return null;
+    return {
+      ok: false,
+      status: "not_found",
+      error: MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL,
+    };
   }
 
   const result = await loadCustomerMemberstackMember({
@@ -316,7 +357,20 @@ export async function resolveMemberstackMemberByExactEmail(
     secretKey: options?.secretKey,
     getClient: options?.getClient,
   });
-  return result.ok ? result.member : null;
+
+  if (result.ok) {
+    return result;
+  }
+
+  if (result.status === "not_found") {
+    return {
+      ok: false,
+      status: "not_found",
+      error: MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL,
+    };
+  }
+
+  return result;
 }
 
 export function memberstackMemberMatchesQuery(

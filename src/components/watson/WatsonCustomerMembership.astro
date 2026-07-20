@@ -1,20 +1,25 @@
 ---
 import WatsonMemberMembershipTable from "./WatsonMemberMembershipTable.astro";
-import { type CustomerMemberstackSummary } from "../../lib/watson/customerMemberstack";
+import {
+  MEMBERSTACK_LOOKUP_UNAVAILABLE_LABEL,
+  MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL,
+  type CustomerMemberstackSummary,
+} from "../../lib/watson/customerMemberstack";
 import { type MemberMembershipDisplay } from "../../lib/watson/memberMembership";
+import { type MemberstackLinkStatus } from "../../lib/watson/customerProfile";
 
 interface Props {
   memberstack: CustomerMemberstackSummary;
   legacyMemberships?: MemberMembershipDisplay[];
   hasLegacyHistory?: boolean;
-  notLinkedToMemberstack?: boolean;
+  memberstackLinkStatus?: MemberstackLinkStatus;
 }
 
 const {
   memberstack,
   legacyMemberships = [],
   hasLegacyHistory = false,
-  notLinkedToMemberstack = false,
+  memberstackLinkStatus = "not_applicable",
 } = Astro.props;
 const hasConnections = memberstack.connections.length > 0;
 ---
@@ -33,14 +38,20 @@ const hasConnections = memberstack.connections.length > 0;
     </p>
 
     {
-      notLinkedToMemberstack ? (
-        <p class="watson__placeholder">Not yet linked to Memberstack.</p>
+      memberstackLinkStatus === "load_error" ? (
+        <p class="watson__placeholder watson-customer__unavailable">
+          {MEMBERSTACK_LOOKUP_UNAVAILABLE_LABEL}
+        </p>
+      ) : memberstackLinkStatus === "not_found" ? (
+        <p class="watson__placeholder">{MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL}</p>
       ) : !memberstack.configured ? (
         <p class="watson__placeholder watson-customer__unavailable">
-          Not available yet - Memberstack admin API is not configured.
+          {MEMBERSTACK_LOOKUP_UNAVAILABLE_LABEL}
         </p>
       ) : memberstack.loadError ? (
-        <p class="watson__placeholder watson-customer__unavailable">{memberstack.loadError}</p>
+        <p class="watson__placeholder watson-customer__unavailable">
+          {MEMBERSTACK_LOOKUP_UNAVAILABLE_LABEL}
+        </p>
       ) : !hasConnections ? (
         <p class="watson__placeholder">No plan connections returned from Memberstack for this customer.</p>
       ) : (

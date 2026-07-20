@@ -31,7 +31,7 @@ describe("Watson customer profile pages", () => {
     expect(legacyProfilePage).toContain('export const prerender = false');
     expect(legacyProfilePage).toContain("loadLegacyCustomerProfile");
     expect(legacyProfilePage).toContain("watsonCustomerNotFoundHtml");
-    expect(legacyProfilePage).toContain("notLinkedToMemberstack");
+    expect(legacyProfilePage).toContain("memberstackLinkStatus");
     expect(legacyProfilePage).toContain("WatsonCustomerNotes");
     expect(legacyProfilePage).toContain("WatsonCustomerTimeline");
     expect(legacyProfilePage).toContain("WatsonCustomerSnapshot");

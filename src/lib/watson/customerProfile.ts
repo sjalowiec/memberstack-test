@@ -14,10 +14,17 @@ import {
   buildCustomerMemberstackSummary,
   formatCustomerDisplayName,
   loadCustomerMemberstackMemberById,
+  MEMBERSTACK_LOOKUP_UNAVAILABLE_LABEL,
+  MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL,
   resolveMemberstackMemberByExactEmail,
   type CustomerMemberstackSummary,
 } from "./customerMemberstack";
-import { buildCustomerTimeline, type CustomerTimelineEvent } from "./customerTimeline";
+import {
+  buildCustomerTimeline,
+  resolveLastActivityDate,
+  resolveLegacyAccessThroughDate,
+  type CustomerTimelineEvent,
+} from "./customerTimeline";
 import { hasDisplayValue, type LegacyMemberDetailRow } from "./memberDetail";
 import { getMemberMemberships, type MemberMembershipDisplay } from "./memberMembership";
 import {
@@ -34,7 +41,12 @@ import {
   type WatsonNoteDisplay,
 } from "./watsonNotes";
 
-export type MemberstackLinkStatus = "linked" | "not_linked" | "ambiguous" | "not_applicable";
+export type MemberstackLinkStatus =
+  | "linked"
+  | "not_found"
+  | "load_error"
+  | "ambiguous"
+  | "not_applicable";
 
 export interface CustomerHeaderField {
   label: string;
@@ -58,7 +70,10 @@ export interface CustomerProfileHeaderView {
   legacyMemberid: string | null;
   memberstackId: string | null;
   joinDate: string | null;
+  /** Newest non-expiration timeline event date (orders, notes, plan changes, etc.). */
   lastActivityDate: string | null;
+  /** Newest legacy_subscriptions.expirationdate from the timeline. */
+  legacyAccessThroughDate: string | null;
 }
 
 export interface CustomerSnapshotMetric {
@@ -137,8 +152,10 @@ export function buildCustomerHeaderFields(
   pushHeaderField(fields, "Legacy member ID", member?.memberid, "legacy");
   pushHeaderField(fields, "Memberstack member ID", memberstack.memberstackId || null, "memberstack");
 
-  if (linkStatus === "not_linked") {
-    pushHeaderField(fields, "Current membership status", "Not yet linked to Memberstack", "legacy");
+  if (linkStatus === "not_found") {
+    pushHeaderField(fields, "Current membership status", MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL, "legacy");
+  } else if (linkStatus === "load_error") {
+    pushHeaderField(fields, "Current membership status", MEMBERSTACK_LOOKUP_UNAVAILABLE_LABEL, "legacy");
   } else if (memberstack.configured && !memberstack.loadError && memberstack.memberstackId) {
     pushHeaderField(
       fields,
@@ -182,10 +199,15 @@ function resolveMembershipStatusTone(
   memberstackLinkStatus: MemberstackLinkStatus,
   memberstack: CustomerMemberstackSummary,
 ): CustomerMembershipStatusTone {
-  if (memberstackLinkStatus === "not_linked") {
+  if (memberstackLinkStatus === "not_found") {
     return "not_linked";
   }
-  if (!memberstack.configured || memberstack.loadError || !memberstack.memberstackId) {
+  if (
+    memberstackLinkStatus === "load_error" ||
+    !memberstack.configured ||
+    memberstack.loadError ||
+    !memberstack.memberstackId
+  ) {
     return "unknown";
   }
   if (memberstack.hasActiveConnection) {
@@ -247,8 +269,11 @@ function resolveCurrentPlanLabel(
   memberstack: CustomerMemberstackSummary,
   memberstackLinkStatus: MemberstackLinkStatus,
 ): string {
-  if (memberstackLinkStatus === "not_linked") {
-    return "Not yet linked to Memberstack";
+  if (memberstackLinkStatus === "not_found") {
+    return MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL;
+  }
+  if (memberstackLinkStatus === "load_error") {
+    return MEMBERSTACK_LOOKUP_UNAVAILABLE_LABEL;
   }
   if (!memberstack.configured || memberstack.loadError) {
     return NOT_AVAILABLE_YET;
@@ -312,8 +337,10 @@ export function buildCustomerProfileHeaderView(input: {
   );
 
   let membershipStatus: string | null = null;
-  if (input.memberstackLinkStatus === "not_linked") {
-    membershipStatus = "Not yet linked to Memberstack";
+  if (input.memberstackLinkStatus === "not_found") {
+    membershipStatus = MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL;
+  } else if (input.memberstackLinkStatus === "load_error") {
+    membershipStatus = MEMBERSTACK_LOOKUP_UNAVAILABLE_LABEL;
   } else if (input.memberstack.configured && !input.memberstack.loadError && input.memberstackId) {
     membershipStatus = input.memberstack.membershipStatusLabel ?? "Unknown";
   }
@@ -324,8 +351,6 @@ export function buildCustomerProfileHeaderView(input: {
       (input.member?.datejoined ? formatMemberJoinedDateDisplay(input.member.datejoined) : null)
     : null;
 
-  const lastActivityDate = input.timeline[0]?.dateDisplay ?? null;
-
   return {
     displayName: input.displayName,
     email: hasDisplayValue(email) ? String(email).trim() : null,
@@ -334,7 +359,8 @@ export function buildCustomerProfileHeaderView(input: {
     legacyMemberid: input.legacyMemberid,
     memberstackId: input.memberstackId,
     joinDate,
-    lastActivityDate,
+    lastActivityDate: resolveLastActivityDate(input.timeline),
+    legacyAccessThroughDate: resolveLegacyAccessThroughDate(input.timeline),
   };
 }
 
@@ -413,11 +439,20 @@ export function buildCustomerSnapshot(input: {
     unavailable: !mostRecentPurchase,
   });
 
+  const lastActivityDate = resolveLastActivityDate(input.timeline);
   metrics.push({
     label: "Last activity",
-    value: input.timeline[0]?.dateDisplay ?? NOT_AVAILABLE_YET,
-    unavailable: !input.timeline[0],
+    value: lastActivityDate ?? NOT_AVAILABLE_YET,
+    unavailable: !lastActivityDate,
   });
+
+  const legacyAccessThroughDate = resolveLegacyAccessThroughDate(input.timeline);
+  if (legacyAccessThroughDate) {
+    metrics.push({
+      label: "Legacy access through",
+      value: legacyAccessThroughDate,
+    });
+  }
 
   return metrics;
 }
@@ -507,7 +542,7 @@ export function buildProfileLegacyLinkState(
       hasLegacyHistory: emailMatches,
       legacyLinkAmbiguous: false,
       ambiguousLegacyMemberids: [],
-      memberstackLinkStatus: emailMatches ? "linked" : "not_linked",
+      memberstackLinkStatus: emailMatches ? "linked" : "not_applicable",
     };
   }
 
@@ -528,11 +563,11 @@ export function buildProfileLegacyLinkState(
     hasLegacyHistory: false,
     legacyLinkAmbiguous: false,
     ambiguousLegacyMemberids: [],
-    memberstackLinkStatus: memberstackEmail ? "not_linked" : "not_applicable",
+    memberstackLinkStatus: "not_applicable",
   };
 }
 
-export function buildNotLinkedMemberstackSummary(): CustomerMemberstackSummary {
+export function buildNotFoundMemberstackSummary(): CustomerMemberstackSummary {
   return {
     memberstackId: "",
     email: null,
@@ -544,6 +579,21 @@ export function buildNotLinkedMemberstackSummary(): CustomerMemberstackSummary {
     membershipStatusLabel: null,
     configured: true,
     loadError: null,
+  };
+}
+
+export function buildLoadErrorMemberstackSummary(error: string): CustomerMemberstackSummary {
+  return {
+    memberstackId: "",
+    email: null,
+    displayName: null,
+    accountCreatedAt: null,
+    accountCreatedAtSort: "",
+    connections: [],
+    hasActiveConnection: false,
+    membershipStatusLabel: null,
+    configured: error !== "Memberstack admin API is not configured.",
+    loadError: error,
   };
 }
 
@@ -612,22 +662,23 @@ export async function loadLegacyCustomerProfile(
       secretKey: deps.secretKey,
       getClient: deps.getClient,
     };
-    const linkedMember = await resolveMemberstackMemberByExactEmail(
+    const memberstackLookup = await resolveMemberstackMemberByExactEmail(
       member.email,
       memberstackOptions,
     );
-    const linkedMemberstackId = linkedMember?.id ?? null;
-    const memberstack = linkedMember
+    const linkedMemberstackId = memberstackLookup.ok ? memberstackLookup.member.id : null;
+    const memberstackLinkStatus: MemberstackLinkStatus = memberstackLookup.ok
+      ? "linked"
+      : memberstackLookup.status;
+    const memberstack = memberstackLookup.ok
       ? buildCustomerMemberstackSummary({
-          member: linkedMember,
+          member: memberstackLookup.member,
           configured: true,
           loadError: null,
         })
-      : buildNotLinkedMemberstackSummary();
-
-    const memberstackLinkStatus: MemberstackLinkStatus = linkedMemberstackId
-      ? "linked"
-      : "not_linked";
+      : memberstackLookup.status === "load_error"
+        ? buildLoadErrorMemberstackSummary(memberstackLookup.error)
+        : buildNotFoundMemberstackSummary();
 
     const legacyData = await loadLegacyHistoryData(member.memberid);
     const notesRead = resolveNotesReadIds(
@@ -727,10 +778,18 @@ export async function loadMemberstackCustomerProfile(
       memberstackOptions,
     );
     if (!memberstackResult.ok) {
+      if (memberstackResult.status === "not_found") {
+        return {
+          ok: false,
+          reason: "not_found",
+          identifier: memberstackId,
+          profileType: "memberstack",
+        };
+      }
       return {
         ok: false,
-        reason: "not_found",
-        identifier: memberstackId,
+        reason: "error",
+        message: memberstackResult.error,
         profileType: "memberstack",
       };
     }

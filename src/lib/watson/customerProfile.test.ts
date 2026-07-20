@@ -7,11 +7,16 @@ import {
   buildCustomerProfileActions,
   buildCustomerProfileHeaderView,
   buildCustomerSnapshot,
-  buildNotLinkedMemberstackSummary,
+  buildLoadErrorMemberstackSummary,
+  buildNotFoundMemberstackSummary,
   loadLegacyCustomerProfile,
   loadMemberstackCustomerProfile,
 } from "./customerProfile";
-import { type CustomerMemberstackSummary } from "./customerMemberstack";
+import {
+  MEMBERSTACK_LOOKUP_UNAVAILABLE_LABEL,
+  MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL,
+  type CustomerMemberstackSummary,
+} from "./customerMemberstack";
 
 const memberstackSummary = (
   overrides: Partial<CustomerMemberstackSummary> = {},
@@ -68,13 +73,25 @@ describe("customerProfile", () => {
     );
   });
 
-  it("shows not linked membership status for legacy-only header fields", () => {
-    const fields = buildCustomerHeaderFields(legacyMember, buildNotLinkedMemberstackSummary(), {
-      memberstackLinkStatus: "not_linked",
+  it("shows confirmed not-found membership status for legacy-only header fields", () => {
+    const fields = buildCustomerHeaderFields(legacyMember, buildNotFoundMemberstackSummary(), {
+      memberstackLinkStatus: "not_found",
     });
 
     expect(fields.find((field) => field.label === "Current membership status")?.value).toBe(
-      "Not yet linked to Memberstack",
+      MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL,
+    );
+  });
+
+  it("shows lookup-unavailable status for Memberstack load errors", () => {
+    const fields = buildCustomerHeaderFields(
+      legacyMember,
+      buildLoadErrorMemberstackSummary("Failed to load Memberstack member data."),
+      { memberstackLinkStatus: "load_error" },
+    );
+
+    expect(fields.find((field) => field.label === "Current membership status")?.value).toBe(
+      MEMBERSTACK_LOOKUP_UNAVAILABLE_LABEL,
     );
   });
 
@@ -82,8 +99,8 @@ describe("customerProfile", () => {
     const header = buildCustomerProfileHeaderView({
       displayName: "Sue Hall",
       member: legacyMember,
-      memberstack: buildNotLinkedMemberstackSummary(),
-      memberstackLinkStatus: "not_linked",
+      memberstack: buildNotFoundMemberstackSummary(),
+      memberstackLinkStatus: "not_found",
       legacyMemberid: "M1",
       memberstackId: null,
       timeline: [],
@@ -93,9 +110,42 @@ describe("customerProfile", () => {
     expect(header.email).toBe("sue@example.com");
     expect(header.legacyMemberid).toBe("M1");
     expect(header.memberstackId).toBeNull();
-    expect(header.membershipStatus).toBe("Not yet linked to Memberstack");
+    expect(header.membershipStatus).toBe(MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL);
     expect(header.joinDate).toBeTruthy();
     expect(header.lastActivityDate).toBeNull();
+    expect(header.legacyAccessThroughDate).toBeNull();
+  });
+
+  it("separates legacy access-through from last activity in the header", () => {
+    const header = buildCustomerProfileHeaderView({
+      displayName: "Terri Smith",
+      member: legacyMember,
+      memberstack: buildNotFoundMemberstackSummary(),
+      memberstackLinkStatus: "not_found",
+      legacyMemberid: "M1",
+      memberstackId: null,
+      timeline: [
+        {
+          eventType: "membership_changed",
+          eventTypeLabel: "Membership changed",
+          dateDisplay: "Jul 30, 2026",
+          dateSort: "2026-07-30T00:00:00.000Z",
+          description: "Legacy membership expiration date",
+          source: "legacy_subscriptions",
+        },
+        {
+          eventType: "store_order",
+          eventTypeLabel: "Store order",
+          dateDisplay: "Mar 16, 2019",
+          dateSort: "2019-03-16T00:00:00.000Z",
+          description: "Order",
+          source: "legacy_store_transactions",
+        },
+      ],
+    });
+
+    expect(header.legacyAccessThroughDate).toBe("Jul 30, 2026");
+    expect(header.lastActivityDate).toBe("Mar 16, 2019");
   });
 
   it("builds snapshot metrics with unavailable placeholders when legacy history is missing", () => {
@@ -122,8 +172,8 @@ describe("customerProfile", () => {
   it("builds snapshot metrics from legacy purchase data", () => {
     const snapshot = buildCustomerSnapshot({
       member: legacyMember,
-      memberstack: buildNotLinkedMemberstackSummary(),
-      memberstackLinkStatus: "not_linked",
+      memberstack: buildNotFoundMemberstackSummary(),
+      memberstackLinkStatus: "not_found",
       courses: [
         {
           libraryRecordId: "1",
@@ -217,11 +267,65 @@ describe("customerProfile", () => {
     expect(result.profile.profileType).toBe("legacy");
     expect(result.profile.memberstackId).toBeNull();
     expect(result.profile.hasLegacyHistory).toBe(true);
-    expect(result.profile.memberstackLinkStatus).toBe("not_linked");
+    expect(result.profile.memberstackLinkStatus).toBe("not_found");
+    expect(result.profile.headerView.membershipStatus).toBe(MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL);
     expect(result.profile.notesWriteId).toBe("M1");
     expect(result.profile.headerView.legacyMemberid).toBe("M1");
     expect(result.profile.snapshot.length).toBeGreaterThan(0);
     expect(result.profile.pdfPurchaseCount).toBe(0);
+  });
+
+  it("marks legacy Memberstack lookup as load_error when the Admin API throws", async () => {
+    const queryFn = vi.fn(async (sql: string) => {
+      if (sql.includes("memberid = $1")) {
+        return [legacyMember];
+      }
+      return [];
+    });
+
+    const result = await loadLegacyCustomerProfile("M1", {
+      queryFn,
+      getClient: async () => ({
+        getMember: async () => {
+          throw new Error("TLS failure");
+        },
+        listMembers: async () => ({ data: [], hasNextPage: false }),
+      }),
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+
+    expect(result.profile.memberstackLinkStatus).toBe("load_error");
+    expect(result.profile.memberstackId).toBeNull();
+    expect(result.profile.headerView.membershipStatus).toBe(MEMBERSTACK_LOOKUP_UNAVAILABLE_LABEL);
+    expect(result.profile.memberstack.loadError).toBe("Failed to load Memberstack member data.");
+  });
+
+  it("marks legacy Memberstack lookup as load_error when the secret is missing", async () => {
+    const queryFn = vi.fn(async (sql: string) => {
+      if (sql.includes("memberid = $1")) {
+        return [legacyMember];
+      }
+      return [];
+    });
+
+    const result = await loadLegacyCustomerProfile("M1", {
+      queryFn,
+      secretKey: null,
+      getClient: async () => null,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+
+    expect(result.profile.memberstackLinkStatus).toBe("load_error");
+    expect(result.profile.headerView.membershipStatus).toBe(MEMBERSTACK_LOOKUP_UNAVAILABLE_LABEL);
+    expect(result.profile.memberstack.configured).toBe(false);
   });
 
   it("loads a linked legacy profile when Memberstack email matches", async () => {
@@ -255,6 +359,63 @@ describe("customerProfile", () => {
     expect(result.profile.memberstackId).toBe("mem_linked");
     expect(result.profile.memberstackLinkStatus).toBe("linked");
     expect(result.profile.hasLiveMembership).toBe(true);
+  });
+
+  it("links Terri-shaped mixed-case legacy email via normalized lowercase lookup", async () => {
+    const terriLegacy = {
+      ...legacyMember,
+      memberid: "745B35EE-C3DC-FAA7-F9B4-BA8D875688D8",
+      fristname: "Terri",
+      lastname: "Smith",
+      email: "Thesmith@charter.net",
+    };
+    const queryFn = vi.fn(async (sql: string) => {
+      if (sql.includes("memberid = $1")) {
+        return [terriLegacy];
+      }
+      return [];
+    });
+    const lookups: string[] = [];
+
+    const result = await loadLegacyCustomerProfile(terriLegacy.memberid, {
+      queryFn,
+      getClient: async () => ({
+        getMember: async (lookup: string) => {
+          lookups.push(lookup);
+          if (lookup === "thesmith@charter.net") {
+            return {
+              id: "mem_cmohorhxj058z0ssd5yc6gcct",
+              auth: {
+                email: "thesmith@charter.net",
+                firstName: "Terri",
+                lastName: "Smith",
+              },
+              planConnections: [
+                {
+                  id: "pc_beta",
+                  planId: "pln_kin-beta-access-vyek0a38",
+                  status: "ACTIVE",
+                  active: true,
+                },
+              ],
+            };
+          }
+          return null;
+        },
+        listMembers: async () => ({ data: [], hasNextPage: false }),
+      }),
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+
+    expect(lookups).toEqual(["thesmith@charter.net"]);
+    expect(result.profile.memberstackId).toBe("mem_cmohorhxj058z0ssd5yc6gcct");
+    expect(result.profile.memberstackLinkStatus).toBe("linked");
+    expect(result.profile.headerView.membershipStatus).toBe("Active");
+    expect(result.profile.memberstack.hasActiveConnection).toBe(true);
   });
 
   it("loads a full Memberstack-only profile without legacy history", async () => {

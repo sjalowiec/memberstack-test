@@ -4,6 +4,9 @@ import {
   buildCustomerMemberstackSummary,
   buildCustomerPlanConnectionDisplay,
   formatMemberstackDisplayName,
+  loadCustomerMemberstackMember,
+  MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL,
+  resolveMemberstackMemberByExactEmail,
 } from "./customerMemberstack";
 import { type MemberstackMember } from "../membership/membershipSummary";
 
@@ -45,5 +48,136 @@ describe("customerMemberstack", () => {
     };
 
     expect(formatMemberstackDisplayName(member)).toBe("only@example.com");
+  });
+
+  it("returns load_error when the Memberstack secret/client is missing", async () => {
+    const result = await loadCustomerMemberstackMember({
+      lookupValue: "thesmith@charter.net",
+      secretKey: null,
+      getClient: async () => null,
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      status: "load_error",
+      error: "Memberstack admin API is not configured.",
+    });
+  });
+
+  it("returns load_error when the Admin API throws", async () => {
+    const result = await loadCustomerMemberstackMember({
+      lookupValue: "thesmith@charter.net",
+      getClient: async () => ({
+        getMember: async () => {
+          throw new Error("network down");
+        },
+        listMembers: async () => ({ data: [], hasNextPage: false }),
+      }),
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      status: "load_error",
+      error: "Failed to load Memberstack member data.",
+    });
+  });
+
+  it("returns load_error for a malformed Memberstack response", async () => {
+    const result = await loadCustomerMemberstackMember({
+      lookupValue: "thesmith@charter.net",
+      getClient: async () => ({
+        getMember: async () => ({ auth: { email: "thesmith@charter.net" } }),
+        listMembers: async () => ({ data: [], hasNextPage: false }),
+      }),
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) {
+      return;
+    }
+    expect(result.status).toBe("load_error");
+    expect(result.error).toContain("malformed");
+  });
+
+  it("returns not_found for a confirmed empty Admin API response", async () => {
+    const result = await loadCustomerMemberstackMember({
+      lookupValue: "missing@example.com",
+      getClient: async () => ({
+        getMember: async () => null,
+        listMembers: async () => ({ data: [], hasNextPage: false }),
+      }),
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      status: "not_found",
+      error: "No Memberstack member found for this identifier.",
+    });
+  });
+
+  it("returns linked for a successful Admin API lookup", async () => {
+    const result = await loadCustomerMemberstackMember({
+      lookupValue: "thesmith@charter.net",
+      getClient: async () => ({
+        getMember: async (lookup) =>
+          lookup === "thesmith@charter.net"
+            ? {
+                id: "mem_cmohorhxj058z0ssd5yc6gcct",
+                auth: { email: "thesmith@charter.net" },
+                planConnections: [],
+              }
+            : null,
+        listMembers: async () => ({ data: [], hasNextPage: false }),
+      }),
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+    expect(result.status).toBe("linked");
+    expect(result.member.id).toBe("mem_cmohorhxj058z0ssd5yc6gcct");
+  });
+
+  it("normalizes mixed-case email before Memberstack lookup and links on success", async () => {
+    const lookups: string[] = [];
+    const result = await resolveMemberstackMemberByExactEmail("Thesmith@charter.net", {
+      getClient: async () => ({
+        getMember: async (lookup) => {
+          lookups.push(lookup);
+          return lookup === "thesmith@charter.net"
+            ? {
+                id: "mem_cmohorhxj058z0ssd5yc6gcct",
+                auth: { email: "thesmith@charter.net" },
+                planConnections: [],
+              }
+            : null;
+        },
+        listMembers: async () => ({ data: [], hasNextPage: false }),
+      }),
+    });
+
+    expect(lookups).toEqual(["thesmith@charter.net"]);
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+    expect(result.status).toBe("linked");
+    expect(result.member.id).toBe("mem_cmohorhxj058z0ssd5yc6gcct");
+  });
+
+  it("maps confirmed email not-found to the email-specific label", async () => {
+    const result = await resolveMemberstackMemberByExactEmail("missing@example.com", {
+      getClient: async () => ({
+        getMember: async () => null,
+        listMembers: async () => ({ data: [], hasNextPage: false }),
+      }),
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      status: "not_found",
+      error: MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL,
+    });
   });
 });
