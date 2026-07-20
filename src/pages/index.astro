@@ -63,8 +63,7 @@ const exploreCards = [
     alt: "Skill Builder lesson screen showing guided technique practice",
     placeholder: "Skill Builder screenshot",
     button: "Try a Skill Builder",
-    // TODO: Link to Skill Builders catalog when /skill-builders exists
-    href: "/tools/neckline-and-shoulder-shaping",
+    href: "/learn/skill-builders",
   },
   {
     title: "Learning Library",
@@ -198,7 +197,7 @@ const sueIntroParagraphs = [
         <header class="home-v2-section__header">
           <h2 id="home-explore-heading">Explore Knit It Now</h2>
           <p class="home-v2-section__lede">
-            Pick an area and take a look — no commitment required.
+            Pick an area and start exploring.
           </p>
         </header>
         <div class="home-v2-grid home-v2-grid--four">
@@ -206,13 +205,15 @@ const sueIntroParagraphs = [
             <article class="home-v2-feature-card">
               <div class="home-v2-feature-card__media">
                 {card.image ? (
-                  <img
-                    src={card.image}
-                    alt={card.alt ?? ""}
-                    class="home-v2-feature-card__img"
-                    loading="lazy"
-                    decoding="async"
-                  />
+                  <a href={card.href} class="home-v2-feature-card__media-link">
+                    <img
+                      src={card.image}
+                      alt={card.alt ?? ""}
+                      class="home-v2-feature-card__img"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </a>
                 ) : (
                   <HomeImagePlaceholder label={card.placeholder} aspect="16 / 9" compact={true} />
                 )}
@@ -683,6 +684,18 @@ const sueIntroParagraphs = [
     aspect-ratio: 16 / 9;
     overflow: hidden;
     background: #eef1e8;
+  }
+
+  .home-v2-feature-card__media-link {
+    display: block;
+    height: 100%;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .home-v2-feature-card__media-link:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: -2px;
   }
 
   .home-v2-feature-card__media :global(.home-img-placeholder) {
