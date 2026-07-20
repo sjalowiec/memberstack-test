@@ -85,12 +85,12 @@ const exploreCards = [
   },
 ];
 
-/** Section 4 — connected workflow (5 steps on desktop) */
+/** Section 4 — machine knitting workflow (5 steps on desktop) */
 const workflowSteps = [
-  { label: "Learn", hint: "Courses & videos" },
+  { label: "Learn", hint: "Courses & Videos" },
   { label: "Practice", hint: "Skill Builders" },
   { label: "Build", hint: "Pattern Builders" },
-  { label: "Knit", hint: "At your machine" },
+  { label: "Knit", hint: "At Your Machine" },
   { label: "Get Help", hint: "Help Hub • Tools • Glossary" },
 ];
 
@@ -228,18 +228,23 @@ const sueIntroParagraphs = [
         </div>
       </section>
 
-      <!-- ========== SECTION 4: Everything works together ========== -->
+      <!-- ========== SECTION 4: Your machine knitting workflow ========== -->
       <section class="home-v2-section" aria-labelledby="home-workflow-heading">
         <header class="home-v2-section__header">
-          <h2 id="home-workflow-heading">Everything works together</h2>
+          <h2 id="home-workflow-heading">Your machine knitting workflow</h2>
           <p class="home-v2-section__lede">
-            Everything is designed to work together, from learning new skills to knitting with confidence.
+            Start wherever you are. Every tool, lesson, and pattern builder is designed to support your next step.
           </p>
         </header>
-        <ol class="home-v2-workflow" aria-label="How Knit It Now fits together">
+        <ol class="home-v2-workflow" aria-label="Your machine knitting workflow">
           {workflowSteps.map((step, index) => (
             <li class="home-v2-workflow__item">
-              <div class="home-v2-workflow__block">
+              <div
+                class:list={[
+                  "home-v2-workflow__block",
+                  index === workflowSteps.length - 1 && "home-v2-workflow__block--final",
+                ]}
+              >
                 <span class="home-v2-workflow__label">{step.label}</span>
                 <span class="home-v2-workflow__hint">{step.hint}</span>
               </div>
@@ -768,29 +773,54 @@ const sueIntroParagraphs = [
     align-items: center;
     justify-content: center;
     width: 100%;
-    min-height: 5.5rem;
-    padding: 1.1rem 0.95rem;
-    background: #fff;
+    min-height: 4.75rem;
+    padding: 0.9rem 0.85rem;
     border: 1px solid rgba(82, 104, 45, 0.18);
-    border-radius: 0.85rem;
-    box-shadow: 0 2px 8px rgba(82, 104, 45, 0.06);
+    border-radius: 9px;
+    box-shadow: none;
     text-align: center;
+  }
+
+  .home-v2-workflow__item:nth-child(1) .home-v2-workflow__block {
+    background: rgba(82, 104, 45, 0.1);
+  }
+
+  .home-v2-workflow__item:nth-child(2) .home-v2-workflow__block {
+    background: rgba(82, 104, 45, 0.18);
+  }
+
+  .home-v2-workflow__item:nth-child(3) .home-v2-workflow__block {
+    background: rgba(82, 104, 45, 0.28);
+  }
+
+  .home-v2-workflow__item:nth-child(4) .home-v2-workflow__block {
+    background: rgba(82, 104, 45, 0.4);
+  }
+
+  .home-v2-workflow__block--final {
+    background: #52682d;
   }
 
   .home-v2-workflow__label {
     font-size: 1.3rem;
     font-weight: 800;
-    color: var(--kbm-green, #52682d);
+    color: #2c3a57;
     line-height: 1.15;
     letter-spacing: -0.01em;
   }
 
   .home-v2-workflow__hint {
     margin-top: 0.4rem;
-    font-size: 0.74rem;
+    font-size: 0.875rem;
     font-weight: 400;
-    line-height: 1.4;
-    color: #8a9484;
+    line-height: 1.5;
+    color: #4d5a48;
+    text-align: center;
+  }
+
+  .home-v2-workflow__block--final .home-v2-workflow__label,
+  .home-v2-workflow__block--final .home-v2-workflow__hint {
+    color: #fff;
   }
 
   .home-v2-workflow__arrow {
@@ -831,9 +861,9 @@ const sueIntroParagraphs = [
     }
 
     .home-v2-workflow__block {
-      flex: 0 1 86%;
-      width: 86%;
-      min-height: 7rem;
+      flex: 0 1 80%;
+      width: 80%;
+      min-height: 6rem;
       height: 100%;
       align-self: stretch;
       box-sizing: border-box;
@@ -847,8 +877,8 @@ const sueIntroParagraphs = [
       display: flex;
       flex: 1 1 auto;
       align-self: center;
-      min-width: 1.75rem;
-      padding: 0 0.15rem;
+      min-width: 2.35rem;
+      padding: 0 0.4rem;
     }
 
     .home-v2-workflow__arrow--right svg {
