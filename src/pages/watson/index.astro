@@ -6,22 +6,9 @@ import {
   buildDashboardSummaryCards,
   loadWatsonDashboard,
 } from "../../lib/watson/watsonDashboard";
-import {
-  formatMemberDisplayName,
-  formatMemberJoinedDate,
-  formatMemberJoinedDateDisplay,
-  formatMemberLocation,
-  isMemberSearchQueryUsable,
-  MEMBER_SEARCH_LIMIT,
-  searchLegacyMembers,
-} from "../../lib/watson/memberSearch";
 
 export const prerender = false;
 
-const rawQuery = Astro.url.searchParams.get("q") ?? "";
-let rows: Awaited<ReturnType<typeof searchLegacyMembers>>["rows"] = [];
-let truncated = false;
-let searchError: string | null = null;
 let dashboardError: string | null = null;
 let dashboardCards = buildDashboardSummaryCards({
   totalMembers: { ok: true, value: 0 },
@@ -39,24 +26,12 @@ let recentActivity: Awaited<ReturnType<typeof loadWatsonDashboard>>["recentActiv
   savedPatterns: [],
 };
 
-const hasQuery = isMemberSearchQueryUsable(rawQuery);
-
 try {
   const dashboard = await loadWatsonDashboard();
   dashboardCards = buildDashboardSummaryCards(dashboard.summary);
   recentActivity = dashboard.recentActivity;
 } catch (error) {
   dashboardError = error instanceof Error ? error.message : "Dashboard metrics failed to load.";
-}
-
-if (hasQuery) {
-  try {
-    const result = await searchLegacyMembers(rawQuery);
-    rows = result.rows;
-    truncated = result.truncated;
-  } catch (error) {
-    searchError = error instanceof Error ? error.message : "Member search failed.";
-  }
 }
 ---
 
@@ -66,21 +41,6 @@ if (hasQuery) {
   heading="Watson"
   intro="Legacy support and business data for Knit It Now"
 >
-  <form class="watson__search" method="get" action="/watson" role="search">
-    <label class="visually-hidden" for="watson-member-search">Search members</label>
-    <input
-      id="watson-member-search"
-      class="watson__search-input"
-      type="search"
-      name="q"
-      value={rawQuery}
-      placeholder="Email, name, or member ID"
-      autocomplete="off"
-      required
-    />
-    <button class="watson__button" type="submit">Search</button>
-  </form>
-
   <section class="watson__panel watson-dashboard__tools" aria-labelledby="watson-support-tools-heading">
     <h2 id="watson-support-tools-heading" class="watson__panel-title">Support tools</h2>
     <article class="watson-dashboard__tool-card">
@@ -100,101 +60,9 @@ if (hasQuery) {
 
   <WatsonDashboardSummary cards={dashboardCards} />
   <WatsonDashboardRecentActivity activity={recentActivity} />
-
-  {
-    searchError ? (
-      <p class="watson__status watson__status--error" role="alert">
-        {searchError}
-      </p>
-    ) : hasQuery ? (
-      <p class="watson__status">
-        {rows.length === 0
-          ? `No members matched "${rawQuery}".`
-          : `Showing ${rows.length} result${rows.length === 1 ? "" : "s"} for "${rawQuery}".`}
-        {truncated ? ` Results limited to ${MEMBER_SEARCH_LIMIT}. Refine your search for more.` : null}
-      </p>
-    ) : (
-      <p class="watson__status">Enter at least one character to search members.</p>
-    )
-  }
-
-  {
-    rows.length > 0 ? (
-      <section class="watson__panel" aria-label="Search results">
-        <h2 class="watson__panel-title">Search results</h2>
-        <div class="watson__table-wrap">
-          <table class="watson-table" data-sortable-table>
-            <thead>
-              <tr>
-                <th scope="col" data-sort-key="memberid" data-sort-type="string" tabindex="0">
-                  Member ID
-                </th>
-                <th scope="col" data-sort-key="name" data-sort-type="string" tabindex="0">
-                  Name
-                </th>
-                <th scope="col" data-sort-key="email" data-sort-type="string" tabindex="0">
-                  Email
-                </th>
-                <th scope="col" data-sort-key="location" data-sort-type="string" tabindex="0">
-                  City / State
-                </th>
-                <th
-                  scope="col"
-                  data-sort-key="datejoined"
-                  data-sort-type="date"
-                  data-sort-default="true"
-                  data-sort-default-direction="desc"
-                  tabindex="0"
-                >
-                  Date joined
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => {
-                const name = formatMemberDisplayName(row);
-                const location = formatMemberLocation(row);
-                const joinedSort = formatMemberJoinedDate(row.datejoined);
-                const joinedDisplay = formatMemberJoinedDateDisplay(row.datejoined);
-                const detailHref = `/watson/members/${encodeURIComponent(row.memberid)}${
-                  rawQuery ? `?q=${encodeURIComponent(rawQuery)}` : ""
-                }`;
-
-                return (
-                  <tr>
-                    <td data-sort-value={row.memberid}>
-                      <a href={detailHref}>{row.memberid}</a>
-                    </td>
-                    <td data-sort-value={name}>
-                      <a href={detailHref}>{name}</a>
-                    </td>
-                    <td data-sort-value={row.email ?? ""}>{row.email ?? ""}</td>
-                    <td data-sort-value={location}>{location}</td>
-                    <td data-sort-value={joinedSort}>{joinedDisplay}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    ) : null
-  }
 </WatsonPageShell>
 
 <style>
-  .visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
-
   .watson-dashboard__tools {
     margin-top: 1.25rem;
   }

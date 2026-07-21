@@ -1,4 +1,5 @@
 ---
+import WatsonCustomerAccordionSection from "./WatsonCustomerAccordionSection.astro";
 import WatsonMemberLegacyNotesContent from "./WatsonMemberLegacyNotesContent.astro";
 import WatsonMemberWatsonNotesContent from "./WatsonMemberWatsonNotesContent.astro";
 import { getMemberLegacySupportNotes } from "../../lib/watson/memberSupportNotes";
@@ -30,42 +31,44 @@ try {
 }
 ---
 
-<section
+{
+  loadError ? (
+    <p class="watson__status watson__status--error" role="alert">
+      {loadError}
+    </p>
+  ) : null
+}
+
+<WatsonCustomerAccordionSection
   id="customer-notes"
-  class="watson__panel watson-customer__notes"
-  aria-labelledby="watson-customer-notes-heading"
+  title="Customer Notes"
+  count={legacyNotes.length}
+  class="watson-customer__notes"
 >
-  <h2 id="watson-customer-notes-heading" class="watson__panel-title">Customer notes</h2>
+  <p class="watson__section-note">
+    Read-only notes imported from the legacy <code>Members.Notes</code> field.
+  </p>
   {
-    loadError ? (
-      <p class="watson__status watson__status--error" role="alert">{loadError}</p>
+    legacyMemberid ? (
+      <WatsonMemberLegacyNotesContent notes={legacyNotes} />
     ) : (
-      <div class="watson-member-notes__grid">
-        <div class="watson-member-notes__column">
-          <h3 class="watson-member-notes__column-title">Legacy Notes</h3>
-          <p class="watson__section-note">
-            Read-only notes imported from the legacy <code>Members.Notes</code> field.
-          </p>
-          {
-            legacyMemberid ? (
-              <WatsonMemberLegacyNotesContent notes={legacyNotes} />
-            ) : (
-              <p class="watson__placeholder watson-customer__unavailable">No legacy history</p>
-            )
-          }
-        </div>
-        <div class="watson-member-notes__column">
-          <h3 class="watson-member-notes__column-title">Watson Notes</h3>
-          <p class="watson__section-note">
-            Private admin notes keyed to the customer ID for this profile route. Notes stored under
-            the other identifier remain visible when linked.
-          </p>
-          <WatsonMemberWatsonNotesContent memberid={notesWriteId} notes={watsonNotes} />
-        </div>
-      </div>
+      <p class="watson__placeholder watson-customer__unavailable">No legacy history</p>
     )
   }
-</section>
+</WatsonCustomerAccordionSection>
+
+<WatsonCustomerAccordionSection
+  id="customer-watson-notes"
+  title="Watson Notes"
+  count={watsonNotes.length}
+  class="watson-customer__watson-notes"
+>
+  <p class="watson__section-note">
+    Private admin notes keyed to the customer ID for this profile route. Notes stored under the
+    other identifier remain visible when linked.
+  </p>
+  <WatsonMemberWatsonNotesContent memberid={notesWriteId} notes={watsonNotes} />
+</WatsonCustomerAccordionSection>
 
 <script>
   import { initWatsonNotesPanel } from "../../lib/watson/watsonMemberWatsonNotesSection";

@@ -572,13 +572,121 @@
   text-decoration: underline;
 }
 
+/* Customer detail pages only — nearly full desktop width with gutters */
+.watson:has(.watson-customer__dashboard) {
+  max-width: 1800px;
+}
+
+@media (min-width: 1280px) {
+  .watson:has(.watson-customer__dashboard) {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
 .watson-customer__dashboard {
-  display: grid;
-  gap: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
 }
 
 .watson-customer__header {
   margin-top: 0;
+  margin-bottom: 0.35rem;
+}
+
+.watson-customer__legacy-ambiguity {
+  margin-top: 0;
+}
+
+.watson-customer__accordion {
+  margin: 0;
+  padding: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+
+.watson-customer__accordion-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.7rem 0.95rem;
+  list-style: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #243015;
+  border-radius: 10px;
+  user-select: none;
+}
+
+.watson-customer__accordion-summary::-webkit-details-marker {
+  display: none;
+}
+
+.watson-customer__accordion-summary::marker {
+  content: "";
+}
+
+.watson-customer__accordion-summary:hover {
+  background: #f8fafc;
+}
+
+.watson-customer__accordion-summary:focus {
+  outline: none;
+}
+
+.watson-customer__accordion-summary:focus-visible {
+  outline: 2px solid #3f6212;
+  outline-offset: 2px;
+}
+
+.watson-customer__accordion-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 1.35rem;
+  width: 1.35rem;
+  height: 1.35rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #f8fafc;
+  color: #3f6212;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.watson-customer__accordion-indicator::before {
+  content: "+";
+}
+
+.watson-customer__accordion[open] .watson-customer__accordion-indicator::before {
+  content: "\2212";
+}
+
+.watson-customer__accordion[open] .watson-customer__accordion-summary {
+  border-bottom: 1px solid #e2e8f0;
+  border-radius: 10px 10px 0 0;
+  background: #f8fafc;
+}
+
+.watson-customer__accordion-title {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.watson-customer__accordion-body {
+  padding: 0.95rem 1.05rem 1.1rem;
+}
+
+.watson-customer__purchases {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
 }
 
 .watson-customer__header-main {
@@ -755,14 +863,13 @@
   color: #334155;
 }
 
-.watson-customer__timeline-more {
-  margin: 0.75rem 0 0;
-  font-size: 0.85rem;
-  color: #64748b;
-}
-
-.watson-customer__notes {
-  margin-top: 1.25rem;
+/* Customer notes expand with the page — no nested scroll containers */
+.watson-customer__notes .watson-member-notes__legacy-list,
+.watson-customer__watson-notes .watson-watson-notes,
+.watson-customer__watson-notes .watson-watson-notes__list {
+  max-height: none;
+  overflow: visible;
+  overflow-y: visible;
 }
 
 /* Watson membership reports */

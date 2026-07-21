@@ -1,4 +1,5 @@
 ---
+import WatsonCustomerAccordionInit from "../../../../components/watson/WatsonCustomerAccordionInit.astro";
 import WatsonCustomerInternalInfo from "../../../../components/watson/WatsonCustomerInternalInfo.astro";
 import WatsonCustomerMembership from "../../../../components/watson/WatsonCustomerMembership.astro";
 import WatsonCustomerNotes from "../../../../components/watson/WatsonCustomerNotes.astro";
@@ -65,7 +66,7 @@ if (!result.ok && result.reason === "not_found") {
         <a href={backHref}>? Back to customer search</a>
       </p>
 
-      <div class="watson-customer__dashboard">
+      <div class="watson-customer__dashboard" data-watson-customer-accordion-group>
         <WatsonCustomerProfileHeader
           header={result.profile.headerView}
           actions={result.profile.actions}
@@ -92,6 +93,7 @@ if (!result.ok && result.reason === "not_found") {
           profileType="legacy"
         />
         <WatsonCustomerInternalInfo />
+        <WatsonCustomerAccordionInit />
       </div>
     </WatsonPageShell>
   ) : null

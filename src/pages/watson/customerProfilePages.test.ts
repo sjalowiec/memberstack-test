@@ -38,6 +38,9 @@ describe("Watson customer profile pages", () => {
     expect(legacyProfilePage).toContain("WatsonCustomerInternalInfo");
     expect(legacyProfilePage).toContain("notesWriteId");
     expect(legacyProfilePage).toContain("headerView");
+    expect(legacyProfilePage).toContain("data-watson-customer-accordion-group");
+    expect(legacyProfilePage).toContain("WatsonCustomerAccordionInit");
+    expect(legacyProfilePage).toContain("WatsonCustomerProfileHeader");
 
     expect(memberstackProfilePage).toContain('export const prerender = false');
     expect(memberstackProfilePage).toContain("loadMemberstackCustomerProfile");
@@ -45,6 +48,9 @@ describe("Watson customer profile pages", () => {
     expect(memberstackProfilePage).toContain("legacyLinkAmbiguous");
     expect(memberstackProfilePage).toContain("WatsonCustomerMembership");
     expect(memberstackProfilePage).toContain("WatsonCustomerSnapshot");
+    expect(memberstackProfilePage).toContain("data-watson-customer-accordion-group");
+    expect(memberstackProfilePage).toContain("WatsonCustomerAccordionInit");
+    expect(memberstackProfilePage).toContain("WatsonCustomerProfileHeader");
 
     expect(middleware).toContain("isWatsonRoute");
     expect(middleware).toContain("isWatsonSessionAuthenticated");
@@ -91,7 +97,27 @@ describe("Watson customer profile pages", () => {
     expect(memberNotesApi).not.toContain("MEMBERSTACK_SECRET_KEY");
   });
 
-  it("renders dashboard sections with appropriate empty states", () => {
+  it("renders major customer data sections as collapsed accordions", () => {
+    const accordion = fs.readFileSync(
+      path.resolve("src/components/watson/WatsonCustomerAccordionSection.astro"),
+      "utf8",
+    );
+    const accordionLib = fs.readFileSync(
+      path.resolve("src/lib/watson/customerDetailAccordion.ts"),
+      "utf8",
+    );
+    const header = fs.readFileSync(
+      path.resolve("src/components/watson/WatsonCustomerProfileHeader.astro"),
+      "utf8",
+    );
+    const snapshot = fs.readFileSync(
+      path.resolve("src/components/watson/WatsonCustomerSnapshot.astro"),
+      "utf8",
+    );
+    const membership = fs.readFileSync(
+      path.resolve("src/components/watson/WatsonCustomerMembership.astro"),
+      "utf8",
+    );
     const purchases = fs.readFileSync(
       path.resolve("src/components/watson/WatsonCustomerPurchases.astro"),
       "utf8",
@@ -108,11 +134,60 @@ describe("Watson customer profile pages", () => {
       path.resolve("src/components/watson/WatsonCustomerInternalInfo.astro"),
       "utf8",
     );
+    const ambiguity = fs.readFileSync(
+      path.resolve("src/components/watson/WatsonCustomerLegacyAmbiguity.astro"),
+      "utf8",
+    );
 
+    expect(accordion).toContain("<details");
+    expect(accordion).toContain("<summary");
+    expect(accordion).toContain("data-watson-customer-accordion");
+    expect(accordion).not.toContain(" open");
+    expect(accordionLib).toContain("closeOtherCustomerAccordions");
+    expect(accordionLib).toContain("initCustomerDetailAccordions");
+
+    expect(header).toContain("watson-customer__header");
+    expect(header).toContain("header.displayName");
+    expect(header).toContain("header.email");
+    expect(header).not.toContain("WatsonCustomerAccordionSection");
+
+    expect(ambiguity).toContain("watson-customer__legacy-ambiguity");
+    expect(ambiguity).not.toContain("WatsonCustomerAccordionSection");
+
+    expect(snapshot).toContain("WatsonCustomerAccordionSection");
+    expect(snapshot).toContain('title="Customer Snapshot"');
+    expect(membership).toContain("WatsonCustomerAccordionSection");
+    expect(membership).toContain('title="Membership"');
+    expect(purchases).toContain('title="Store Purchases"');
+    expect(purchases).toContain('title="Course Access"');
+    expect(purchases).toContain('title="PDF Purchases"');
+    expect(purchases).toContain("data-watson-customer-pdf-panel");
     expect(purchases).toContain("Not available yet");
     expect(purchases).toContain("No legacy history");
-    expect(timeline).toContain("unified customer timeline is coming next");
+    expect(timeline).toContain("WatsonCustomerAccordionSection");
+    expect(timeline).toContain('title="Timeline"');
+    expect(timeline).toContain("events.map");
+    expect(timeline).not.toContain("previewLimit");
+    expect(timeline).not.toContain("Showing ");
+    expect(notes).toContain('title="Customer Notes"');
+    expect(notes).toContain('title="Watson Notes"');
     expect(notes).toContain("WatsonMemberWatsonNotesContent");
+    expect(notes).toContain('id="customer-notes"');
+    expect(internalInfo).toContain('title="Internal Information"');
     expect(internalInfo).toContain("Not available yet");
+  });
+
+  it("keeps a wide single-column customer-detail accordion layout", () => {
+    const styles = fs.readFileSync(path.resolve("src/styles/watson.css"), "utf8");
+
+    expect(styles).toContain(".watson:has(.watson-customer__dashboard)");
+    expect(styles).toContain("max-width: 1800px");
+    expect(styles).toContain(".watson-customer__accordion");
+    expect(styles).toContain(".watson-customer__accordion-indicator::before");
+    expect(styles).not.toContain("grid-template-areas:");
+    expect(styles).not.toContain('"membership timeline"');
+    expect(styles).toMatch(
+      /\.watson-customer__notes[\s\S]*?max-height:\s*none[\s\S]*?overflow-y:\s*visible/,
+    );
   });
 });

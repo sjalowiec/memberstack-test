@@ -1,4 +1,5 @@
 ---
+import WatsonCustomerAccordionSection from "./WatsonCustomerAccordionSection.astro";
 import { type CustomerSnapshotMetric } from "../../lib/watson/customerProfile";
 
 interface Props {
@@ -8,8 +9,11 @@ interface Props {
 const { metrics } = Astro.props;
 ---
 
-<section class="watson__panel watson-customer__snapshot" aria-labelledby="watson-customer-snapshot-heading">
-  <h2 id="watson-customer-snapshot-heading" class="watson__panel-title">Quick snapshot</h2>
+<WatsonCustomerAccordionSection
+  id="customer-snapshot"
+  title="Customer Snapshot"
+  class="watson-customer__snapshot"
+>
   {
     metrics.length > 0 ? (
       <dl class="watson-customer__snapshot-grid">
@@ -28,4 +32,4 @@ const { metrics } = Astro.props;
       <p class="watson__placeholder">No snapshot metrics are available for this customer.</p>
     )
   }
-</section>
+</WatsonCustomerAccordionSection>

@@ -1,0 +1,81 @@
+Hello Sue! By querying your active and inactive plans separately, I was able to bypass the truncation limit. Here is the complete list of all 13 member plans configured in your Knit it Now app.
+
+Active Member Plans (11)
+KIn Beta Access
+
+Plan ID: pln_kin-beta-access-vyek0a38
+Type: Free
+Member Count: 86 members
+Legacy: Original Pattern Drafting 101
+
+Plan ID: pln_legacy-original-pattern-drafting-101-jkp50pyg
+Type: Free
+Member Count: 149 members
+DAK: DAK 9 | What's New
+
+Plan ID: pln_dak-dak-9-what-s-new-rq780or2
+Type: Free
+Member Count: 14 members
+DAK: Stitch Designer 101
+
+Plan ID: pln_dak-stitch-designer-101-ic80083g
+Price ID: prc_1-time-purchase-vp770omk
+Type: One-time purchase ($49.99 USD)
+Member Count: 4 members
+DAK: Stitch Designer 201
+
+Plan ID: pln_dak-stitch-designer-201-t7ap0a9b
+Price ID: prc_dak-stitch-designer-201-h3aq0avj
+Type: One-time purchase ($49.99 USD)
+Member Count: 3 members
+DAK: Standard Garment Styling
+
+Plan ID: pln_dak-standard-garment-styling-4ue208ep
+Price ID: prc_dak-standard-garment-styling-j4ao0ahs
+Type: One-time purchase ($49.99 USD)
+Member Count: 3 members
+DAK: DesignaKnit and Lace
+
+Plan ID: pln_dak-designaknit-and-lace-xhas0ar4
+Price ID: prc_dak-designaknit-and-lace-hjat0avv
+Type: One-time purchase ($49.99 USD)
+Member Count: 3 members
+DAK: Fairisle Sweater
+
+Plan ID: pln_dak-fairisle-sweater-laau0ami
+Price ID: prc_dak-fairisle-sweater-keav0aoh
+Type: One-time purchase ($49.99 USD)
+Member Count: 2 members
+DAK: Graphics Studio
+
+Plan ID: pln_dak-graphics-studio-h2e308ag
+Price ID: prc_dak-graphics-studio-hjar0am0
+Type: One-time purchase ($49.99 USD)
+Member Count: 1 member
+DAK: LK150 and DAK
+
+Plan ID: pln_dak-lk150-and-dak-68e408fn
+Price ID: prc_dak-lk150-and-dak-0l1y0oew
+Type: One-time purchase ($49.99 USD)
+Member Count: 1 member
+DAK : Plus Size Sweaters
+
+Plan ID: pln_dak-plus-size-sweaters-nf2y0ok2
+Price ID: prc_dak-plus-size-sweaters-g92z0oq0
+Type: One-time purchase ($49.99 USD)
+Member Count: 0 members
+Inactive Member Plans (2)
+DELETE THIS KIN Membership - Monthly Premium
+
+Plan ID: pln_kin-membership-annual-qf9g01et
+Price IDs:
+prc_premium-membership-monthly-u3430vnh (Active): Monthly subscription ($19.99 USD)
+prc_annual-199-k110fou (Inactive): Yearly subscription ($199.00 USD)
+Member Count: 0 members
+KIN Membership - Monthly Basic
+
+Plan ID: pln_kin-membership-monthly-a59701wy
+Price IDs:
+prc_basic-membership-monthly-z05k0css (Active): Monthly subscription ($13.99 USD)
+prc_monthly-u1h20u83 (Inactive): Monthly subscription ($19.99 USD)
+Member Count: 0 members

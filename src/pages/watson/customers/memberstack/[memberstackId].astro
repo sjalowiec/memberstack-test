@@ -1,4 +1,5 @@
 ---
+import WatsonCustomerAccordionInit from "../../../../components/watson/WatsonCustomerAccordionInit.astro";
 import WatsonCustomerInternalInfo from "../../../../components/watson/WatsonCustomerInternalInfo.astro";
 import WatsonCustomerLegacyAmbiguity from "../../../../components/watson/WatsonCustomerLegacyAmbiguity.astro";
 import WatsonCustomerMembership from "../../../../components/watson/WatsonCustomerMembership.astro";
@@ -68,17 +69,17 @@ if (!result.ok && result.reason === "not_found") {
         <a href={backHref}>? Back to customer search</a>
       </p>
 
-      <div class="watson-customer__dashboard">
+      <div class="watson-customer__dashboard" data-watson-customer-accordion-group>
         <WatsonCustomerProfileHeader
           header={result.profile.headerView}
           actions={result.profile.actions}
         />
-        <WatsonCustomerSnapshot metrics={result.profile.snapshot} />
         {
           result.profile.legacyLinkAmbiguous ? (
             <WatsonCustomerLegacyAmbiguity memberids={result.profile.ambiguousLegacyMemberids} />
           ) : null
         }
+        <WatsonCustomerSnapshot metrics={result.profile.snapshot} />
         <WatsonCustomerMembership
           memberstack={result.profile.memberstack}
           legacyMemberships={result.profile.memberships}
@@ -100,6 +101,7 @@ if (!result.ok && result.reason === "not_found") {
           profileType="memberstack"
         />
         <WatsonCustomerInternalInfo />
+        <WatsonCustomerAccordionInit />
       </div>
     </WatsonPageShell>
   ) : null

@@ -1,0 +1,28 @@
+---
+import { formatCustomerAccordionTitle } from "../../lib/watson/customerDetailAccordion";
+
+interface Props {
+  id: string;
+  title: string;
+  count?: number | null;
+  class?: string;
+}
+
+const { id, title, count = null, class: className = "" } = Astro.props;
+const heading = formatCustomerAccordionTitle(title, count);
+---
+
+<details
+  id={id}
+  class:list={["watson-customer__accordion", className]}
+  data-watson-customer-accordion
+  name="watson-customer-section"
+>
+  <summary class="watson-customer__accordion-summary">
+    <span class="watson-customer__accordion-indicator" aria-hidden="true"></span>
+    <span class="watson-customer__accordion-title">{heading}</span>
+  </summary>
+  <div class="watson-customer__accordion-body">
+    <slot />
+  </div>
+</details>

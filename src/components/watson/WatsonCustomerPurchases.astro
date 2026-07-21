@@ -1,7 +1,10 @@
 ---
+import WatsonCustomerAccordionSection from "./WatsonCustomerAccordionSection.astro";
 import WatsonMemberCourses from "./WatsonMemberCourses.astro";
 import WatsonMemberOrdersTable from "./WatsonMemberOrdersTable.astro";
-import WatsonMemberPdfPurchases from "./WatsonMemberPdfPurchases.astro";
+import {
+  buildPdfPurchasesFragmentUrl,
+} from "../../lib/watson/watsonMemberPdfPurchasesSection";
 import { type MemberCourseDisplay } from "../../lib/watson/memberCourses";
 import { type MemberOrderDisplay } from "../../lib/watson/memberOrders";
 
@@ -21,6 +24,10 @@ const {
   pdfPurchaseCount = null,
 } = Astro.props;
 
+const pdfCount = pdfPurchaseCount ?? 0;
+const pdfFragmentUrl =
+  hasLegacyHistory && legacyMemberid ? buildPdfPurchasesFragmentUrl(legacyMemberid) : "";
+
 function formatRecentSummary(count: number, label: string, recentDate: string | null | undefined): string {
   const plural = count === 1 ? label : `${label}s`;
   if (recentDate) {
@@ -31,8 +38,11 @@ function formatRecentSummary(count: number, label: string, recentDate: string | 
 ---
 
 <div class="watson-customer__purchases" aria-label="Purchases and enrollments">
-  <section id="customer-store-orders" class="watson__panel" aria-labelledby="watson-customer-orders-heading">
-    <h2 id="watson-customer-orders-heading" class="watson__panel-title">Store purchases</h2>
+  <WatsonCustomerAccordionSection
+    id="customer-store-orders"
+    title="Store Purchases"
+    count={hasLegacyHistory ? orders.length : 0}
+  >
     {
       hasLegacyHistory ? (
         <>
@@ -52,58 +62,63 @@ function formatRecentSummary(count: number, label: string, recentDate: string | 
         <p class="watson__placeholder watson-customer__unavailable">No legacy history</p>
       )
     }
-  </section>
+  </WatsonCustomerAccordionSection>
 
-  <div id="customer-course-enrollments">
+  <WatsonCustomerAccordionSection
+    id="customer-course-enrollments"
+    title="Course Access"
+    count={hasLegacyHistory ? courses.length : 0}
+  >
     {
       hasLegacyHistory ? (
-        <WatsonMemberCourses
-          courses={courses}
-          heading="Learn DesignaKnit purchases and enrollments"
-        />
+        <WatsonMemberCourses courses={courses} embedded={true} />
       ) : (
-        <section class="watson__panel" aria-labelledby="watson-customer-courses-heading">
-          <h2 id="watson-customer-courses-heading" class="watson__panel-title">
-            Learn DesignaKnit purchases and enrollments
-          </h2>
-          <p class="watson__placeholder watson-customer__unavailable">No legacy history</p>
-        </section>
+        <p class="watson__placeholder watson-customer__unavailable">No legacy history</p>
       )
     }
-  </div>
+  </WatsonCustomerAccordionSection>
 
-  {
-    hasLegacyHistory && legacyMemberid ? (
-      <WatsonMemberPdfPurchases memberid={legacyMemberid} recordCount={pdfPurchaseCount ?? 0} />
-    ) : (
-      <section class="watson__panel" aria-labelledby="watson-customer-pdf-heading">
-        <h2 id="watson-customer-pdf-heading" class="watson__panel-title">Pattern PDF purchases</h2>
+  <WatsonCustomerAccordionSection
+    id="customer-pdf-purchases"
+    title="PDF Purchases"
+    count={hasLegacyHistory ? pdfCount : 0}
+  >
+    {
+      hasLegacyHistory && legacyMemberid ? (
+        <>
+          <p class="watson__section-note">
+            Imported from <code>legacy_pattern_library_purchases</code>, with PDF metadata from
+            <code>legacy_pattern_library</code> and optional store totals from
+            <code>legacy_store_transactions.transactionid</code> when the transaction GUID matches.
+            There is no separate download-status field in this export.
+          </p>
+          <div
+            data-watson-customer-pdf-panel
+            data-record-count={String(pdfCount)}
+            data-pdf-purchases-fragment-url={pdfFragmentUrl}
+          ></div>
+        </>
+      ) : (
         <p class="watson__placeholder watson-customer__unavailable">
           {hasLegacyHistory ? "Not available yet" : "No legacy history"}
         </p>
-      </section>
-    )
-  }
+      )
+    }
+  </WatsonCustomerAccordionSection>
 
-  <section class="watson__panel" aria-labelledby="watson-customer-kin-courses-heading">
-    <h2 id="watson-customer-kin-courses-heading" class="watson__panel-title">
-      Knit It Now course ownership
-    </h2>
+  <WatsonCustomerAccordionSection
+    id="customer-kin-courses"
+    title="Knit It Now Course Ownership"
+  >
     <p class="watson__placeholder watson-customer__unavailable">Not available yet</p>
-  </section>
+  </WatsonCustomerAccordionSection>
 
-  <section class="watson__panel" aria-labelledby="watson-customer-quick-help-heading">
-    <h2 id="watson-customer-quick-help-heading" class="watson__panel-title">Quick Help purchases</h2>
+  <WatsonCustomerAccordionSection id="customer-quick-help" title="Quick Help Purchases">
     <p class="watson__placeholder watson-customer__unavailable">Not available yet</p>
-  </section>
+  </WatsonCustomerAccordionSection>
 </div>
 
 <style>
-  .watson-customer__purchases > :global(.watson__panel),
-  .watson-customer__purchases > div > :global(.watson__panel) {
-    margin-top: 1.25rem;
-  }
-
   .watson-customer__purchase-summary {
     margin: 0 0 0.85rem;
     font-size: 0.9rem;

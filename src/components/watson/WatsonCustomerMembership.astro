@@ -1,4 +1,5 @@
 ---
+import WatsonCustomerAccordionSection from "./WatsonCustomerAccordionSection.astro";
 import WatsonMemberMembershipTable from "./WatsonMemberMembershipTable.astro";
 import {
   MEMBERSTACK_LOOKUP_UNAVAILABLE_LABEL,
@@ -22,15 +23,16 @@ const {
   memberstackLinkStatus = "not_applicable",
 } = Astro.props;
 const hasConnections = memberstack.connections.length > 0;
+const membershipCount =
+  memberstack.connections.length + (hasLegacyHistory ? legacyMemberships.length : 0);
 ---
 
-<section
+<WatsonCustomerAccordionSection
   id="customer-membership"
-  class="watson__panel watson-customer__membership"
-  aria-labelledby="watson-customer-membership-heading"
+  title="Membership"
+  count={membershipCount}
+  class="watson-customer__membership"
 >
-  <h2 id="watson-customer-membership-heading" class="watson__panel-title">Membership</h2>
-
   <div class="watson-customer__membership-section">
     <h3 class="watson-customer__subsection-title">Current Memberstack membership</h3>
     <p class="watson__section-note">
@@ -125,4 +127,4 @@ const hasConnections = memberstack.connections.length > 0;
       )
     }
   </div>
-</section>
+</WatsonCustomerAccordionSection>

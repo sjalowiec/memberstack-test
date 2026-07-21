@@ -137,8 +137,8 @@ describe("Watson member search pages", () => {
     expect(annualAccess).toContain('export const prerender = false');
   });
 
-  it("defines server-rendered search and member detail routes", () => {
-    const searchPage = fs.readFileSync(
+  it("defines server-rendered dashboard and member detail routes", () => {
+    const dashboardPage = fs.readFileSync(
       path.resolve("src/pages/watson/index.astro"),
       "utf8",
     );
@@ -148,10 +148,13 @@ describe("Watson member search pages", () => {
     );
     const middleware = fs.readFileSync(path.resolve("src/middleware.ts"), "utf8");
 
-    expect(searchPage).toContain('export const prerender = false');
-    expect(searchPage).toContain("searchLegacyMembers");
-    expect(searchPage).toContain('data-sortable-table');
-    expect(searchPage).toContain("/watson/members/${encodeURIComponent(row.memberid)}");
+    expect(dashboardPage).toContain('export const prerender = false');
+    expect(dashboardPage).toContain("loadWatsonDashboard");
+    expect(dashboardPage).toContain("WatsonDashboardSummary");
+    expect(dashboardPage).toContain("WatsonDashboardRecentActivity");
+    expect(dashboardPage).not.toContain("watson__search");
+    expect(dashboardPage).not.toContain("searchLegacyMembers");
+    expect(dashboardPage).not.toContain("watson-member-search");
 
     expect(detailPage).toContain('export const prerender = false');
     expect(detailPage).toContain("getLegacyMemberById");

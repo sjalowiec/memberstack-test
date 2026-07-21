@@ -1,18 +1,20 @@
 ---
+import WatsonCustomerAccordionSection from "./WatsonCustomerAccordionSection.astro";
 import { type CustomerTimelineEvent } from "../../lib/watson/customerTimeline";
 
 interface Props {
   events: CustomerTimelineEvent[];
-  previewLimit?: number;
 }
 
-const { events, previewLimit = 8 } = Astro.props;
-const previewEvents = events.slice(0, previewLimit);
-const hasMoreEvents = events.length > previewLimit;
+const { events } = Astro.props;
 ---
 
-<section class="watson__panel" aria-labelledby="watson-customer-timeline-heading">
-  <h2 id="watson-customer-timeline-heading" class="watson__panel-title">Customer timeline</h2>
+<WatsonCustomerAccordionSection
+  id="customer-timeline"
+  title="Timeline"
+  count={events.length}
+  class="watson-customer__timeline"
+>
   {
     events.length === 0 ? (
       <>
@@ -25,8 +27,8 @@ const hasMoreEvents = events.length > previewLimit;
     ) : (
       <>
         <p class="watson__section-note">
-          Recent events from confirmed legacy imports and Memberstack API data. A fuller unified
-          timeline is coming next.
+          Events from confirmed legacy imports and Memberstack API data. A fuller unified timeline
+          is coming next.
         </p>
         <div class="watson__table-wrap">
           <table class="watson-table" data-sortable-table data-customer-timeline-table>
@@ -51,7 +53,7 @@ const hasMoreEvents = events.length > previewLimit;
             </thead>
             <tbody>
               {
-                previewEvents.map((event) => (
+                events.map((event) => (
                   <tr>
                     <td data-sort-value={event.dateSort}>{event.dateDisplay}</td>
                     <td data-sort-value={event.eventTypeLabel}>{event.eventTypeLabel}</td>
@@ -63,14 +65,7 @@ const hasMoreEvents = events.length > previewLimit;
             </tbody>
           </table>
         </div>
-        {
-          hasMoreEvents ? (
-            <p class="watson-customer__timeline-more">
-              Showing {previewLimit} of {events.length} events.
-            </p>
-          ) : null
-        }
       </>
     )
   }
-</section>
+</WatsonCustomerAccordionSection>
