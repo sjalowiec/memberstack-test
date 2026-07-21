@@ -6,6 +6,7 @@ import PageHead from "../../components/PageHead.astro";
 import FavoriteStar from "../../components/favorites/FavoriteStar.astro";
 import FavoritesRuntime from "../../components/favorites/FavoritesRuntime.astro";
 import "../../styles/favorites.css";
+import "../../styles/glossary-tooltip.css";
 
 export const prerender = true;
 
@@ -1109,18 +1110,10 @@ const glossaryJson = JSON.stringify(
       display: inline;
     }
 
+    /* Highlight underline/swipe comes from glossary-tooltip.css; only tune weight/color here. */
     .glossaryModal .glossaryModal__body .glossary-entry-helpinfo .glossary-tooltip-trigger {
-      display: inline;
-      padding: 0;
-      margin: 0;
-      border: 0;
-      background: none;
-      font: inherit;
       font-weight: 600;
       color: var(--kbm-green, #52682d);
-      text-decoration: underline;
-      text-underline-offset: 0.12em;
-      cursor: pointer;
     }
 
     .glossaryModal .glossaryModal__body .glossary-entry-helpinfo .glossary-tooltip-icon {

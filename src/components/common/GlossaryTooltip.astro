@@ -399,26 +399,52 @@ const titleId = `gt-title-${randomUUID()}`;
     isolation: isolate;
   }
 
-  .glossary-tooltip {
-    background: none;
+  .glossary-tooltip-trigger {
+    appearance: none;
+    background-color: transparent;
+    /* Layer 1: crisp resting underline. Layer 2: soft hover wash (raised slightly). */
+    background-image:
+      linear-gradient(var(--kbm-green, #52682d), var(--kbm-green, #52682d)),
+      linear-gradient(
+        color-mix(in srgb, var(--kbm-green, #52682d) 19%, transparent),
+        color-mix(in srgb, var(--kbm-green, #52682d) 19%, transparent)
+      );
+    background-repeat: no-repeat;
+    background-position:
+      left 0 bottom 0,
+      left 0 bottom 1.5px;
+    background-size: 100% 2px, 100% 0;
     border: none;
     padding: 0;
+    margin: 0;
     font: inherit;
     color: inherit;
     cursor: pointer;
-    text-decoration: underline dotted;
-    text-underline-offset: 3px;
+    text-decoration: none;
+    display: inline;
+    max-width: none;
+    width: auto;
+    transition: background-size 350ms ease;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
   }
 
-  .glossary-tooltip:hover,
-  .glossary-tooltip:focus-visible {
-    text-decoration-thickness: 2px;
+  .glossary-tooltip-trigger:hover,
+  .glossary-tooltip-trigger:focus-visible {
+    /* Partial-height swipe behind the lower half of the letters (~50% of the line box). */
+    background-size: 100% 2px, 100% 50%;
   }
 
-  .glossary-tooltip:focus-visible {
+  .glossary-tooltip-trigger:focus-visible {
     outline: 2px solid rgba(82, 104, 45, 0.35);
     outline-offset: 2px;
     border-radius: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .glossary-tooltip-trigger {
+      transition: none;
+    }
   }
 
   .glossary-tooltip-label {

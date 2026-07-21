@@ -3,6 +3,7 @@ import videosPublic from "../data/videos-public.json";
 import { buildGlossaryRelatedVideosHtml } from "../lib/glossary/glossaryCatalogVideos";
 import type { PublicVideoRow } from "../lib/lessonVideo";
 import { filterPublicCatalogVideos } from "../lib/videoPublic";
+import "../styles/glossary-tooltip.css";
 
 interface Props {
   entry: any;
@@ -269,18 +270,10 @@ const showRelatedTools = relatedTools.length > 0;
     display: inline;
   }
 
+  /* Highlight underline/swipe comes from glossary-tooltip.css; only tune weight/color here. */
   .glossary-entry-helpinfo :global(.glossary-tooltip-trigger) {
-    display: inline;
-    padding: 0;
-    margin: 0;
-    border: 0;
-    background: none;
-    font: inherit;
     font-weight: 600;
     color: var(--kbm-green, #52682d);
-    text-decoration: underline;
-    text-underline-offset: 0.12em;
-    cursor: pointer;
   }
 
   .glossary-entry-helpinfo :global(.glossary-tooltip-icon) {
