@@ -54,7 +54,8 @@ src/data/*.csv
 !/scripts/watson-validate-import.ts
 !/scripts/watson-generate-schema.ts
 !/scripts/watson-analyze-csv.mjs
-
+!/scripts/sql/
+!/scripts/sql/watson-store-fulfillments.sql
 # Backup files
 *.backup
 *.bak.json
