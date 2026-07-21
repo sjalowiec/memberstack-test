@@ -1,0 +1,156 @@
+---
+import WatsonPageShell from "../../components/watson/WatsonPageShell.astro";
+
+export const prerender = false;
+
+const dakLicenseDeliveryResponse = `Hello {Customer Name},
+
+Thank you for your order for DesignaKnit 9 {Version}.
+
+You can download your software here:
+
+https://softbyte.co.uk/_dk9webinst/MiniSetup_D9_US.exe
+
+If you have any questions about downloading or installing DesignaKnit, please contact Knitcraft Technical Support at knitcraft@knitcraft.com.
+
+An official proof of ownership certificate will be mailed to you. This certificate also includes the download information. Please keep it in a safe place. You will need to complete the bottom portion and return it to Knitcraft Inc. to register your software. Unregistered licenses are not eligible for future upgrade pricing.
+
+License Number:
+{License Number}
+
+I've added our course, DesignaKnit Demystified, to your library at Learn DesignaKnit:
+
+https://learndesignaknit.com/courses/designaknit-quick-start/
+
+Use your Knit It Now login to access the course.
+
+DesignaKnit Demystified will give you a good overview of what DesignaKnit can do for your knitting.
+
+I've also added a token for one free course of your choice. Look for the Use a Token button.
+
+Please let me know if you have any questions.
+
+Sue`;
+---
+
+<WatsonPageShell
+  title="Responses | Watson"
+  description="Saved email responses for Knit It Now support."
+  heading="Responses"
+  intro="Copy a saved email response into your message."
+>
+  <section
+    class="watson__panel watson-responses__card"
+    aria-labelledby="watson-response-dak-heading"
+    data-responses-page
+  >
+    <h2 id="watson-response-dak-heading" class="watson__panel-title">
+      DAK License Delivery
+    </h2>
+
+    <label class="watson-responses__label" for="watson-response-dak-text">
+      Response text
+    </label>
+    <textarea
+      id="watson-response-dak-text"
+      class="watson-responses__textarea"
+      rows="22"
+      readonly
+      data-response-text
+    >{dakLicenseDeliveryResponse}</textarea>
+
+    <div class="watson-responses__actions">
+      <button type="button" class="watson__button" data-copy-response>
+        Copy Response
+      </button>
+      <p
+        class="watson__status watson-responses__copy-status"
+        data-copy-status
+        role="status"
+        aria-live="polite"
+        hidden
+      ></p>
+    </div>
+  </section>
+</WatsonPageShell>
+
+<style>
+  .watson-responses__label {
+    display: block;
+    margin: 0 0 0.45rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #334155;
+  }
+
+  .watson-responses__textarea {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 22rem;
+    padding: 0.85rem 0.95rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #0f172a;
+    font: inherit;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    resize: vertical;
+  }
+
+  .watson-responses__textarea:focus {
+    outline: 2px solid #3f6212;
+    outline-offset: 1px;
+    border-color: #3f6212;
+    background: #fff;
+  }
+
+  .watson-responses__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    margin-top: 0.9rem;
+  }
+
+  .watson-responses__copy-status {
+    margin: 0;
+  }
+</style>
+
+<script>
+  function initWatsonResponses(root: ParentNode = document) {
+    const page = root.querySelector("[data-responses-page]");
+    if (!(page instanceof HTMLElement)) return;
+
+    const responseField = page.querySelector("[data-response-text]");
+    const copyButton = page.querySelector("[data-copy-response]");
+    const statusEl = page.querySelector("[data-copy-status]");
+    if (
+      !(responseField instanceof HTMLTextAreaElement) ||
+      !(copyButton instanceof HTMLButtonElement) ||
+      !(statusEl instanceof HTMLElement)
+    ) {
+      return;
+    }
+
+    copyButton.addEventListener("click", () => {
+      void (async () => {
+        const text = responseField.value;
+        try {
+          await navigator.clipboard.writeText(text);
+          statusEl.hidden = false;
+          statusEl.textContent = "Copied";
+        } catch {
+          statusEl.hidden = false;
+          statusEl.textContent = "Could not copy - select the text manually.";
+          responseField.focus();
+          responseField.select();
+        }
+      })();
+    });
+  }
+
+  initWatsonResponses(document);
+</script>
