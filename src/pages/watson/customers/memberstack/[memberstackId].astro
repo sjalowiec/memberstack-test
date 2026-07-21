@@ -7,6 +7,7 @@ import WatsonCustomerNotes from "../../../../components/watson/WatsonCustomerNot
 import WatsonCustomerProfileHeader from "../../../../components/watson/WatsonCustomerProfileHeader.astro";
 import WatsonCustomerPurchases from "../../../../components/watson/WatsonCustomerPurchases.astro";
 import WatsonCustomerSnapshot from "../../../../components/watson/WatsonCustomerSnapshot.astro";
+import WatsonCustomerSupportResponses from "../../../../components/watson/WatsonCustomerSupportResponses.astro";
 import WatsonCustomerTimeline from "../../../../components/watson/WatsonCustomerTimeline.astro";
 import WatsonPageShell from "../../../../components/watson/WatsonPageShell.astro";
 import { buildCustomerSearchReturnUrl } from "../../../../lib/watson/customerIdentifier";
@@ -14,6 +15,7 @@ import {
   loadMemberstackCustomerProfile,
   watsonCustomerNotFoundHtml,
 } from "../../../../lib/watson/customerProfile";
+import { customerFirstNameFromProfile } from "../../../../lib/watson/supportResponses";
 
 export const prerender = false;
 
@@ -99,6 +101,12 @@ if (!result.ok && result.reason === "not_found") {
           memberstackId={result.profile.memberstackId}
           legacyMemberid={result.profile.hasLegacyHistory ? result.profile.legacyMemberid : null}
           profileType="memberstack"
+        />
+        <WatsonCustomerSupportResponses
+          firstName={customerFirstNameFromProfile({
+            legacyFirstName: result.profile.member?.fristname,
+            displayName: result.profile.displayName,
+          })}
         />
         <WatsonCustomerInternalInfo />
         <WatsonCustomerAccordionInit />

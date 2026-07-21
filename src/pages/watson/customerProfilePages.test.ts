@@ -35,7 +35,9 @@ describe("Watson customer profile pages", () => {
     expect(legacyProfilePage).toContain("WatsonCustomerNotes");
     expect(legacyProfilePage).toContain("WatsonCustomerTimeline");
     expect(legacyProfilePage).toContain("WatsonCustomerSnapshot");
+    expect(legacyProfilePage).toContain("WatsonCustomerSupportResponses");
     expect(legacyProfilePage).toContain("WatsonCustomerInternalInfo");
+    expect(legacyProfilePage).toContain("customerFirstNameFromProfile");
     expect(legacyProfilePage).toContain("notesWriteId");
     expect(legacyProfilePage).toContain("headerView");
     expect(legacyProfilePage).toContain("data-watson-customer-accordion-group");
@@ -48,6 +50,8 @@ describe("Watson customer profile pages", () => {
     expect(memberstackProfilePage).toContain("legacyLinkAmbiguous");
     expect(memberstackProfilePage).toContain("WatsonCustomerMembership");
     expect(memberstackProfilePage).toContain("WatsonCustomerSnapshot");
+    expect(memberstackProfilePage).toContain("WatsonCustomerSupportResponses");
+    expect(memberstackProfilePage).toContain("customerFirstNameFromProfile");
     expect(memberstackProfilePage).toContain("data-watson-customer-accordion-group");
     expect(memberstackProfilePage).toContain("WatsonCustomerAccordionInit");
     expect(memberstackProfilePage).toContain("WatsonCustomerProfileHeader");
@@ -134,6 +138,10 @@ describe("Watson customer profile pages", () => {
       path.resolve("src/components/watson/WatsonCustomerInternalInfo.astro"),
       "utf8",
     );
+    const supportResponses = fs.readFileSync(
+      path.resolve("src/components/watson/WatsonCustomerSupportResponses.astro"),
+      "utf8",
+    );
     const ambiguity = fs.readFileSync(
       path.resolve("src/components/watson/WatsonCustomerLegacyAmbiguity.astro"),
       "utf8",
@@ -173,6 +181,11 @@ describe("Watson customer profile pages", () => {
     expect(notes).toContain('title="Watson Notes"');
     expect(notes).toContain("WatsonMemberWatsonNotesContent");
     expect(notes).toContain('id="customer-notes"');
+    expect(supportResponses).toContain('title="Support Responses"');
+    expect(supportResponses).toContain("getCustomerSupportResponseTemplates");
+    expect(supportResponses).toContain("Copy Response");
+    expect(supportResponses).toContain("data-temporary-password");
+    expect(supportResponses).toContain("fillSupportResponse");
     expect(internalInfo).toContain('title="Internal Information"');
     expect(internalInfo).toContain("Not available yet");
   });

@@ -1,0 +1,222 @@
+---
+import {
+  fillSupportResponse,
+  getCustomerSupportResponseTemplates,
+} from "../../lib/watson/supportResponses";
+import WatsonCustomerAccordionSection from "./WatsonCustomerAccordionSection.astro";
+
+interface Props {
+  firstName?: string | null;
+}
+
+const { firstName = null } = Astro.props;
+const templates = getCustomerSupportResponseTemplates().map((template) => ({
+  ...template,
+  preparedBody: fillSupportResponse(template.body, { firstName }),
+}));
+---
+
+<WatsonCustomerAccordionSection
+  id="customer-support-responses"
+  title="Support Responses"
+  class="watson-customer__support-responses"
+>
+  <p class="watson__section-note">
+    Copy a login-help email for this customer. First name is filled in when available.
+  </p>
+
+  <div class="watson-customer-responses" data-customer-support-responses>
+    {
+      templates.map((template) => {
+        const passwordInputId = `watson-customer-temp-password-${template.id}`;
+        return (
+          <article
+            class="watson-customer-responses__item"
+            data-support-response
+            data-response-id={template.id}
+            data-requires-temporary-password={template.requiresTemporaryPassword ? "true" : "false"}
+          >
+            <h3 class="watson-customer-responses__title">{template.title}</h3>
+
+            {
+              template.requiresTemporaryPassword ? (
+                <div class="watson-customer-responses__password">
+                  <label class="watson-customer-responses__label" for={passwordInputId}>
+                    Temporary password
+                  </label>
+                  <input
+                    id={passwordInputId}
+                    class="watson-customer-responses__input"
+                    type="text"
+                    autocomplete="off"
+                    spellcheck="false"
+                    placeholder="Enter temporary password"
+                    data-temporary-password
+                  />
+                </div>
+              ) : null
+            }
+
+            <textarea class="watson-customer-responses__template" hidden data-response-template
+              >{template.preparedBody}</textarea>
+
+            <div class="watson-customer-responses__actions">
+              <button type="button" class="watson__button" data-copy-support-response>
+                Copy Response
+              </button>
+              <p
+                class="watson__status watson-customer-responses__status"
+                data-copy-status
+                role="status"
+                aria-live="polite"
+                hidden
+              ></p>
+            </div>
+          </article>
+        );
+      })
+    }
+  </div>
+</WatsonCustomerAccordionSection>
+
+<style>
+  .watson-customer-responses {
+    display: grid;
+    gap: 1.1rem;
+  }
+
+  .watson-customer-responses__item {
+    padding: 0.85rem 0 0;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .watson-customer-responses__item:first-child {
+    padding-top: 0;
+    border-top: none;
+  }
+
+  .watson-customer-responses__title {
+    margin: 0 0 0.65rem;
+    font-size: 1rem;
+    font-weight: 650;
+    color: #0f172a;
+  }
+
+  .watson-customer-responses__password {
+    margin: 0 0 0.75rem;
+  }
+
+  .watson-customer-responses__label {
+    display: block;
+    margin: 0 0 0.35rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #334155;
+  }
+
+  .watson-customer-responses__input {
+    display: block;
+    width: min(100%, 22rem);
+    box-sizing: border-box;
+    padding: 0.5rem 0.7rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #0f172a;
+    font: inherit;
+    font-size: 0.95rem;
+  }
+
+  .watson-customer-responses__input:focus {
+    outline: 2px solid #3f6212;
+    outline-offset: 1px;
+    border-color: #3f6212;
+  }
+
+  .watson-customer-responses__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem 0.9rem;
+  }
+
+  .watson-customer-responses__status {
+    margin: 0;
+  }
+</style>
+
+<script>
+  import { fillSupportResponse } from "../../lib/watson/supportResponses";
+
+  async function copyText(text: string): Promise<boolean> {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function initCustomerSupportResponses(root: ParentNode = document) {
+    const panel = root.querySelector("[data-customer-support-responses]");
+    if (!(panel instanceof HTMLElement)) return;
+
+    panel.querySelectorAll("[data-support-response]").forEach((item) => {
+      if (!(item instanceof HTMLElement)) return;
+
+      const copyButton = item.querySelector("[data-copy-support-response]");
+      const statusEl = item.querySelector("[data-copy-status]");
+      const templateField = item.querySelector("[data-response-template]");
+      const passwordInput = item.querySelector("[data-temporary-password]");
+      const requiresTemporaryPassword =
+        item.getAttribute("data-requires-temporary-password") === "true";
+
+      if (
+        !(copyButton instanceof HTMLButtonElement) ||
+        !(statusEl instanceof HTMLElement) ||
+        !(templateField instanceof HTMLTextAreaElement)
+      ) {
+        return;
+      }
+
+      copyButton.addEventListener("click", () => {
+        void (async () => {
+          let text = templateField.value;
+          if (requiresTemporaryPassword) {
+            let temporaryPassword =
+              passwordInput instanceof HTMLInputElement ? passwordInput.value.trim() : "";
+            if (!temporaryPassword) {
+              const prompted = window.prompt("Enter the temporary password to include:");
+              if (prompted == null) {
+                statusEl.hidden = false;
+                statusEl.textContent = "Copy canceled";
+                return;
+              }
+              temporaryPassword = prompted.trim();
+              if (passwordInput instanceof HTMLInputElement) {
+                passwordInput.value = temporaryPassword;
+              }
+            }
+            if (!temporaryPassword) {
+              statusEl.hidden = false;
+              statusEl.textContent = "Temporary password is required.";
+              if (passwordInput instanceof HTMLInputElement) {
+                passwordInput.focus();
+              }
+              return;
+            }
+            text = fillSupportResponse(text, { temporaryPassword });
+          }
+
+          const copied = await copyText(text);
+          statusEl.hidden = false;
+          statusEl.textContent = copied
+            ? "Copied"
+            : "Could not copy - try again or copy manually.";
+        })();
+      });
+    });
+  }
+
+  initCustomerSupportResponses(document);
+</script>
