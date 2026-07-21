@@ -30,10 +30,18 @@ describe("schema", () => {
     expect(indexStatements[0]?.label).toBe("index idx_legacy_members_email");
 
     const nativeStatements = getWatsonNativeSchemaStatements();
-    expect(nativeStatements).toHaveLength(2);
+    expect(nativeStatements).toHaveLength(10);
     expect(nativeStatements[0]?.label).toBe("table watson_notes");
     expect(nativeStatements[0]?.sql).toContain("CREATE TABLE IF NOT EXISTS watson_notes");
     expect(nativeStatements[1]?.label).toBe("index idx_watson_notes_memberid_created");
+    expect(nativeStatements[2]?.label).toBe("table watson_store_fulfillments");
+    expect(nativeStatements[2]?.sql).toContain(
+      "CREATE TABLE IF NOT EXISTS watson_store_fulfillments",
+    );
+    expect(nativeStatements[2]?.sql).toContain("actual_shipping_cost NUMERIC(12, 4)");
+    expect(nativeStatements.some((statement) => statement.label.includes("order_tracking_unique"))).toBe(
+      true,
+    );
   });
 
   it("keeps generated schema.sql content in sync with statement builders", () => {

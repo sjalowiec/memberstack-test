@@ -1,0 +1,79 @@
+---
+import WatsonCustomerAccordionSection from "./WatsonCustomerAccordionSection.astro";
+import WatsonMemberStoreFulfillmentContent from "./WatsonMemberStoreFulfillmentContent.astro";
+import { getCustomerStoreFulfillments } from "../../lib/watson/storeFulfillments";
+
+interface Props {
+  notesWriteId: string;
+  memberstackId?: string | null;
+  legacyMemberid?: string | null;
+  profileType: "legacy" | "memberstack";
+  destinationState?: string | null;
+  destinationPostal?: string | null;
+}
+
+const {
+  notesWriteId,
+  memberstackId = null,
+  legacyMemberid = null,
+  profileType,
+  destinationState = null,
+  destinationPostal = null,
+} = Astro.props;
+
+const notesReadMemberstackId =
+  profileType === "memberstack" ? notesWriteId : (memberstackId ?? notesWriteId);
+const notesReadLegacyMemberid = legacyMemberid;
+
+let fulfillments: Awaited<ReturnType<typeof getCustomerStoreFulfillments>> = [];
+let loadError: string | null = null;
+
+try {
+  fulfillments = await getCustomerStoreFulfillments(
+    notesReadMemberstackId,
+    notesReadLegacyMemberid,
+  );
+} catch (error) {
+  loadError =
+    error instanceof Error ? error.message : "Unable to load store fulfillment records.";
+}
+---
+
+<WatsonCustomerAccordionSection
+  id="customer-store-fulfillment"
+  title="Store Fulfillment"
+  count={fulfillments.length}
+  class="watson-customer__store-fulfillment"
+>
+  <p class="watson__section-note">
+    Internal shipping-cost and supplier-invoice records for drop-shipped machines and related
+    products. Shopify remains the source for customer-facing fulfillment and tracking notices.
+  </p>
+  {
+    loadError ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {loadError}
+      </p>
+    ) : (
+      <WatsonMemberStoreFulfillmentContent
+        memberid={notesWriteId}
+        fulfillments={fulfillments}
+        destinationState={destinationState}
+        destinationPostal={destinationPostal}
+      />
+    )
+  }
+</WatsonCustomerAccordionSection>
+
+<script>
+  import { initStoreFulfillmentPanel } from "../../lib/watson/watsonMemberStoreFulfillmentSection";
+
+  const root = document.querySelector<HTMLElement>("[data-watson-fulfillments-root]");
+  if (root) {
+    initStoreFulfillmentPanel(root, {
+      onFulfillmentsChanged: async () => {
+        window.location.reload();
+      },
+    });
+  }
+</script>

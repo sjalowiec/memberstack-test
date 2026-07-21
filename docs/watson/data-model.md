@@ -78,6 +78,7 @@ The following are **not** legacy exports; they are created in Watson and stored 
 | Concept | Description |
 |---|---|
 | **Support notes** | New notes added by support staff in Watson; editable, with audit metadata |
+| **Store fulfillments** | Internal shipping-cost / supplier-invoice records for drop-shipped machines and related products (`watson_store_fulfillments`). See [store-fulfillment.md](./store-fulfillment.md). |
 | **(Future) Timeline entries** | May combine imported legacy events with support notes for a unified member chronology |
 
 Legacy `Members.Notes` remain read-only imported data and must be visually distinct from Watson support notes in the UI.

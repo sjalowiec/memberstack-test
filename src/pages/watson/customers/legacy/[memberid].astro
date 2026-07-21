@@ -86,6 +86,11 @@ if (!result.ok && result.reason === "not_found") {
           hasLegacyHistory={result.profile.hasLegacyHistory}
           legacyMemberid={result.profile.legacyMemberid}
           pdfPurchaseCount={result.profile.pdfPurchaseCount}
+          notesWriteId={result.profile.notesWriteId}
+          memberstackId={result.profile.memberstackId}
+          profileType="legacy"
+          destinationState={result.profile.member?.state ?? null}
+          destinationPostal={result.profile.member?.postalcode ?? null}
         />
         <WatsonCustomerTimeline events={result.profile.timeline} />
         <WatsonCustomerNotes

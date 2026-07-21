@@ -1,0 +1,447 @@
+---
+import {
+  STORE_FULFILLMENT_CARRIERS,
+  STORE_FULFILLMENT_SUPPLIER_OPTIONS,
+  formatStoreFulfillmentTodayDate,
+  supplierOptionFromStored,
+  type StoreFulfillmentDisplay,
+} from "../../lib/watson/storeFulfillments";
+
+interface Props {
+  memberid: string;
+  fulfillments: StoreFulfillmentDisplay[];
+  destinationState?: string | null;
+  destinationPostal?: string | null;
+}
+
+const {
+  memberid,
+  fulfillments,
+  destinationState = null,
+  destinationPostal = null,
+} = Astro.props;
+
+const today = formatStoreFulfillmentTodayDate();
+const defaultState = destinationState?.trim() ?? "";
+const defaultPostal = destinationPostal?.trim() ?? "";
+
+function differenceClass(tone: StoreFulfillmentDisplay["shippingDifference"]["tone"]): string {
+  if (tone === "surplus") return "watson-store-fulfillment__diff--surplus";
+  if (tone === "shortfall") return "watson-store-fulfillment__diff--shortfall";
+  if (tone === "match") return "watson-store-fulfillment__diff--match";
+  return "";
+}
+---
+
+<div
+  class="watson-store-fulfillment"
+  data-watson-fulfillments-root
+  data-memberid={memberid}
+>
+  <form
+    class="watson-store-fulfillment__form"
+    data-watson-fulfillment-add-form
+    data-destination-state={defaultState}
+    data-destination-postal={defaultPostal}
+  >
+    <h4 class="watson-store-fulfillment__form-title">Add fulfillment</h4>
+    <div class="watson-store-fulfillment__form-grid">
+      <label class="watson-store-fulfillment__label">
+        Shopify order number
+        <input name="shopifyOrderNumber" type="text" required autocomplete="off" />
+      </label>
+      <label class="watson-store-fulfillment__label">
+        Product
+        <input name="productDescription" type="text" required autocomplete="off" />
+      </label>
+      <label class="watson-store-fulfillment__label">
+        Product / variant ID
+        <input name="productVariantId" type="text" autocomplete="off" />
+      </label>
+      <label class="watson-store-fulfillment__label">
+        Supplier
+        <select name="supplierOption" required>
+          {
+            STORE_FULFILLMENT_SUPPLIER_OPTIONS.map((supplier) => (
+              <option value={supplier} selected={supplier === "Silver Reed"}>
+                {supplier}
+              </option>
+            ))
+          }
+        </select>
+      </label>
+      <label
+        class="watson-store-fulfillment__label"
+        data-watson-fulfillment-supplier-other
+        hidden
+      >
+        Other supplier name
+        <input name="supplierOther" type="text" autocomplete="off" />
+      </label>
+      <label class="watson-store-fulfillment__label">
+        Carrier
+        <select name="carrier" required>
+          {
+            STORE_FULFILLMENT_CARRIERS.map((carrier) => (
+              <option value={carrier} selected={carrier === "UPS"}>
+                {carrier}
+              </option>
+            ))
+          }
+        </select>
+      </label>
+      <label class="watson-store-fulfillment__label">
+        Tracking number
+        <input name="trackingNumber" type="text" autocomplete="off" />
+      </label>
+      <label class="watson-store-fulfillment__label">
+        Actual shipping cost
+        <input
+          name="actualShippingCost"
+          type="number"
+          min="0"
+          step="0.01"
+          required
+          inputmode="decimal"
+        />
+      </label>
+      <label class="watson-store-fulfillment__label">
+        Customer shipping charge
+        <input
+          name="customerShippingCharge"
+          type="number"
+          min="0"
+          step="0.01"
+          inputmode="decimal"
+        />
+      </label>
+      <label class="watson-store-fulfillment__label">
+        Boxes
+        <input name="boxCount" type="number" min="1" step="1" value="1" required />
+      </label>
+      <label class="watson-store-fulfillment__label">
+        Ship date
+        <input name="shipDate" type="date" value={today} required />
+      </label>
+      <label class="watson-store-fulfillment__label">
+        Supplier invoice number
+        <input name="supplierInvoiceNumber" type="text" autocomplete="off" />
+      </label>
+      <label class="watson-store-fulfillment__label">
+        Destination state
+        <input name="destinationState" type="text" value={defaultState} autocomplete="off" />
+      </label>
+      <label class="watson-store-fulfillment__label">
+        Destination ZIP / postal
+        <input name="destinationPostal" type="text" value={defaultPostal} autocomplete="off" />
+      </label>
+      <label class="watson-store-fulfillment__label watson-store-fulfillment__label--wide">
+        Notes
+        <textarea name="internalNotes" rows="3"></textarea>
+      </label>
+    </div>
+    <div class="watson-store-fulfillment__form-actions">
+      <button type="submit" class="watson__button">Add fulfillment</button>
+    </div>
+    <p class="watson-store-fulfillment__status" data-watson-fulfillment-form-status hidden></p>
+  </form>
+
+  {
+    fulfillments.length === 0 ? (
+      <p class="watson__placeholder" data-watson-fulfillments-empty>
+        No store fulfillment records yet.
+      </p>
+    ) : (
+      <ul class="watson-store-fulfillment__list" data-watson-fulfillments-list>
+        {fulfillments.map((fulfillment) => {
+          const supplierFields = supplierOptionFromStored(fulfillment.supplier);
+          return (
+            <li
+              class="watson-store-fulfillment__item"
+              data-watson-fulfillment-item
+              data-fulfillment-id={fulfillment.id}
+            >
+              <div data-watson-fulfillment-details>
+                <div class="watson-store-fulfillment__item-header">
+                  <span class="watson-store-fulfillment__order">
+                    Order #{fulfillment.shopifyOrderNumber}
+                  </span>
+                  <span class="watson-store-fulfillment__meta">
+                    Shipped {fulfillment.shipDate}
+                  </span>
+                </div>
+                <dl class="watson-store-fulfillment__details">
+                  <div>
+                    <dt>Product</dt>
+                    <dd>{fulfillment.productDescription}</dd>
+                  </div>
+                  <div>
+                    <dt>Supplier</dt>
+                    <dd>{fulfillment.supplier}</dd>
+                  </div>
+                  <div>
+                    <dt>Carrier</dt>
+                    <dd>{fulfillment.carrier}</dd>
+                  </div>
+                  <div>
+                    <dt>Tracking</dt>
+                    <dd class="watson-store-fulfillment__tracking">
+                      {fulfillment.trackingNumber ? (
+                        <>
+                          <code data-watson-fulfillment-tracking-value>
+                            {fulfillment.trackingNumber}
+                          </code>
+                          <button
+                            type="button"
+                            class="watson-store-fulfillment__action"
+                            data-watson-fulfillment-copy-tracking
+                            data-tracking={fulfillment.trackingNumber}
+                          >
+                            Copy
+                          </button>
+                        </>
+                      ) : (
+                        "—"
+                      )}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Boxes</dt>
+                    <dd>{fulfillment.boxCount}</dd>
+                  </div>
+                  <div>
+                    <dt>Actual shipping cost</dt>
+                    <dd>{fulfillment.actualShippingCost}</dd>
+                  </div>
+                  <div>
+                    <dt>Customer shipping charge</dt>
+                    <dd>{fulfillment.customerShippingCharge ?? "—"}</dd>
+                  </div>
+                  <div>
+                    <dt>Difference</dt>
+                    <dd class:list={[differenceClass(fulfillment.shippingDifference.tone)]}>
+                      {fulfillment.shippingDifference.formattedAmount
+                        ? `${fulfillment.shippingDifference.formattedAmount} (${fulfillment.shippingDifference.label})`
+                        : "—"}
+                    </dd>
+                  </div>
+                  {fulfillment.supplierInvoiceNumber ? (
+                    <div>
+                      <dt>Supplier invoice</dt>
+                      <dd>{fulfillment.supplierInvoiceNumber}</dd>
+                    </div>
+                  ) : null}
+                  {fulfillment.destinationState || fulfillment.destinationPostal ? (
+                    <div>
+                      <dt>Destination</dt>
+                      <dd>
+                        {[fulfillment.destinationState, fulfillment.destinationPostal]
+                          .filter(Boolean)
+                          .join(" ")}
+                      </dd>
+                    </div>
+                  ) : null}
+                  {fulfillment.internalNotes ? (
+                    <div class="watson-store-fulfillment__notes-row">
+                      <dt>Notes</dt>
+                      <dd class="watson-store-fulfillment__notes">{fulfillment.internalNotes}</dd>
+                    </div>
+                  ) : null}
+                </dl>
+              </div>
+
+              <div class="watson-store-fulfillment__item-actions">
+                <button
+                  type="button"
+                  class="watson-store-fulfillment__action"
+                  data-watson-fulfillment-edit
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  class="watson-store-fulfillment__action watson-store-fulfillment__action--danger"
+                  data-watson-fulfillment-delete
+                >
+                  Delete
+                </button>
+              </div>
+
+              <form
+                class="watson-store-fulfillment__edit-form"
+                data-watson-fulfillment-edit-form
+                hidden
+              >
+                <div class="watson-store-fulfillment__form-grid">
+                  <label class="watson-store-fulfillment__label">
+                    Shopify order number
+                    <input
+                      name="shopifyOrderNumber"
+                      type="text"
+                      required
+                      value={fulfillment.shopifyOrderNumber}
+                      autocomplete="off"
+                    />
+                  </label>
+                  <label class="watson-store-fulfillment__label">
+                    Product
+                    <input
+                      name="productDescription"
+                      type="text"
+                      required
+                      value={fulfillment.productDescription}
+                      autocomplete="off"
+                    />
+                  </label>
+                  <label class="watson-store-fulfillment__label">
+                    Product / variant ID
+                    <input
+                      name="productVariantId"
+                      type="text"
+                      value={fulfillment.productVariantId ?? ""}
+                      autocomplete="off"
+                    />
+                  </label>
+                  <label class="watson-store-fulfillment__label">
+                    Supplier
+                    <select name="supplierOption" required>
+                      {STORE_FULFILLMENT_SUPPLIER_OPTIONS.map((supplier) => (
+                        <option
+                          value={supplier}
+                          selected={supplier === supplierFields.supplierOption}
+                        >
+                          {supplier}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label
+                    class="watson-store-fulfillment__label"
+                    data-watson-fulfillment-supplier-other
+                    hidden={supplierFields.supplierOption !== "Other"}
+                  >
+                    Other supplier name
+                    <input
+                      name="supplierOther"
+                      type="text"
+                      value={supplierFields.supplierOther}
+                      autocomplete="off"
+                      required={supplierFields.supplierOption === "Other"}
+                    />
+                  </label>
+                  <label class="watson-store-fulfillment__label">
+                    Carrier
+                    <select name="carrier" required>
+                      {STORE_FULFILLMENT_CARRIERS.map((carrier) => (
+                        <option value={carrier} selected={carrier === fulfillment.carrier}>
+                          {carrier}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label class="watson-store-fulfillment__label">
+                    Tracking number
+                    <input
+                      name="trackingNumber"
+                      type="text"
+                      value={fulfillment.trackingNumber ?? ""}
+                      autocomplete="off"
+                    />
+                  </label>
+                  <label class="watson-store-fulfillment__label">
+                    Actual shipping cost
+                    <input
+                      name="actualShippingCost"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      required
+                      value={String(fulfillment.actualShippingCostValue)}
+                      inputmode="decimal"
+                    />
+                  </label>
+                  <label class="watson-store-fulfillment__label">
+                    Customer shipping charge
+                    <input
+                      name="customerShippingCharge"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={
+                        fulfillment.customerShippingChargeValue == null
+                          ? ""
+                          : String(fulfillment.customerShippingChargeValue)
+                      }
+                      inputmode="decimal"
+                    />
+                  </label>
+                  <label class="watson-store-fulfillment__label">
+                    Boxes
+                    <input
+                      name="boxCount"
+                      type="number"
+                      min="1"
+                      step="1"
+                      required
+                      value={String(fulfillment.boxCount)}
+                    />
+                  </label>
+                  <label class="watson-store-fulfillment__label">
+                    Ship date
+                    <input
+                      name="shipDate"
+                      type="date"
+                      required
+                      value={fulfillment.shipDateValue}
+                    />
+                  </label>
+                  <label class="watson-store-fulfillment__label">
+                    Supplier invoice number
+                    <input
+                      name="supplierInvoiceNumber"
+                      type="text"
+                      value={fulfillment.supplierInvoiceNumber ?? ""}
+                      autocomplete="off"
+                    />
+                  </label>
+                  <label class="watson-store-fulfillment__label">
+                    Destination state
+                    <input
+                      name="destinationState"
+                      type="text"
+                      value={fulfillment.destinationState ?? ""}
+                      autocomplete="off"
+                    />
+                  </label>
+                  <label class="watson-store-fulfillment__label">
+                    Destination ZIP / postal
+                    <input
+                      name="destinationPostal"
+                      type="text"
+                      value={fulfillment.destinationPostal ?? ""}
+                      autocomplete="off"
+                    />
+                  </label>
+                  <label class="watson-store-fulfillment__label watson-store-fulfillment__label--wide">
+                    Notes
+                    <textarea name="internalNotes" rows="3">{fulfillment.internalNotes ?? ""}</textarea>
+                  </label>
+                </div>
+                <div class="watson-store-fulfillment__form-actions">
+                  <button type="submit" class="watson__button">Save</button>
+                  <button
+                    type="button"
+                    class="watson-store-fulfillment__action"
+                    data-watson-fulfillment-cancel
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </li>
+          );
+        })}
+      </ul>
+    )
+  }
+</div>

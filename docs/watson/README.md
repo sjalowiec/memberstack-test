@@ -24,6 +24,7 @@ When the legacy ColdFusion site is retired, customer support still needs access 
 | [ui-plan.md](./ui-plan.md) | First-version interface and workflows |
 | [import-plan.md](./import-plan.md) | CSV export and Postgres import process |
 | [importer.md](./importer.md) | Importer CLI, env vars, validation, reruns |
+| [store-fulfillment.md](./store-fulfillment.md) | Machine/drop-ship shipping-cost records and apply SQL |
 | [todo.md](./todo.md) | Phased implementation checklist |
 
 ## Out of scope (for now)

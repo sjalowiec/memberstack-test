@@ -512,6 +512,190 @@
   margin-top: 0.5rem;
 }
 
+.watson-store-fulfillment__form {
+  display: grid;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.watson-store-fulfillment__form-title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #243015;
+}
+
+.watson-store-fulfillment__form-grid {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.watson-store-fulfillment__label {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.watson-store-fulfillment__label--wide {
+  grid-column: 1 / -1;
+}
+
+.watson-store-fulfillment__label select,
+.watson-store-fulfillment__label input,
+.watson-store-fulfillment__label textarea {
+  font: inherit;
+  font-weight: 400;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #334155;
+}
+
+.watson-store-fulfillment__label textarea {
+  resize: vertical;
+  min-height: 4rem;
+}
+
+.watson-store-fulfillment__form-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.watson-store-fulfillment__status {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.watson-store-fulfillment__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.watson-store-fulfillment__item {
+  padding: 0.75rem 0.85rem;
+  background: #fff;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+}
+
+.watson-store-fulfillment__item-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  align-items: baseline;
+  margin-bottom: 0.55rem;
+}
+
+.watson-store-fulfillment__order {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1d4ed8;
+}
+
+.watson-store-fulfillment__meta {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.watson-store-fulfillment__details {
+  display: grid;
+  gap: 0.45rem 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  margin: 0 0 0.65rem;
+}
+
+.watson-store-fulfillment__details > div {
+  margin: 0;
+}
+
+.watson-store-fulfillment__details dt {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #64748b;
+}
+
+.watson-store-fulfillment__details dd {
+  margin: 0.15rem 0 0;
+  color: #334155;
+  word-break: break-word;
+}
+
+.watson-store-fulfillment__tracking {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.watson-store-fulfillment__tracking code {
+  font-size: 0.88rem;
+  user-select: all;
+}
+
+.watson-store-fulfillment__notes-row {
+  grid-column: 1 / -1;
+}
+
+.watson-store-fulfillment__notes {
+  white-space: pre-wrap;
+}
+
+.watson-store-fulfillment__diff--surplus {
+  color: #166534;
+}
+
+.watson-store-fulfillment__diff--shortfall {
+  color: #b91c1c;
+}
+
+.watson-store-fulfillment__diff--match {
+  color: #334155;
+}
+
+.watson-store-fulfillment__item-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.watson-store-fulfillment__action {
+  padding: 0.25rem 0.55rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #3f6212;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.watson-store-fulfillment__action:hover {
+  background: #f1f5f9;
+}
+
+.watson-store-fulfillment__action--danger {
+  color: #b91c1c;
+}
+
+.watson-store-fulfillment__edit-form {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.5rem;
+}
+
 .watson-customer__source {
   font-weight: 400;
   text-transform: none;

@@ -39,6 +39,9 @@ describe("Watson customer profile pages", () => {
     expect(legacyProfilePage).toContain("WatsonCustomerInternalInfo");
     expect(legacyProfilePage).toContain("customerFirstNameFromProfile");
     expect(legacyProfilePage).toContain("notesWriteId");
+    expect(legacyProfilePage).toContain("destinationState");
+    expect(legacyProfilePage).toContain("destinationPostal");
+    expect(legacyProfilePage).toContain('profileType="legacy"');
     expect(legacyProfilePage).toContain("headerView");
     expect(legacyProfilePage).toContain("data-watson-customer-accordion-group");
     expect(legacyProfilePage).toContain("WatsonCustomerAccordionInit");
@@ -52,6 +55,9 @@ describe("Watson customer profile pages", () => {
     expect(memberstackProfilePage).toContain("WatsonCustomerSnapshot");
     expect(memberstackProfilePage).toContain("WatsonCustomerSupportResponses");
     expect(memberstackProfilePage).toContain("customerFirstNameFromProfile");
+    expect(memberstackProfilePage).toContain("notesWriteId");
+    expect(memberstackProfilePage).toContain("destinationState");
+    expect(memberstackProfilePage).toContain('profileType="memberstack"');
     expect(memberstackProfilePage).toContain("data-watson-customer-accordion-group");
     expect(memberstackProfilePage).toContain("WatsonCustomerAccordionInit");
     expect(memberstackProfilePage).toContain("WatsonCustomerProfileHeader");
@@ -167,11 +173,22 @@ describe("Watson customer profile pages", () => {
     expect(membership).toContain("WatsonCustomerAccordionSection");
     expect(membership).toContain('title="Membership"');
     expect(purchases).toContain('title="Store Purchases"');
+    expect(purchases).toContain("WatsonCustomerStoreFulfillment");
+    expect(purchases).toContain("notesWriteId");
     expect(purchases).toContain('title="Course Access"');
     expect(purchases).toContain('title="PDF Purchases"');
     expect(purchases).toContain("data-watson-customer-pdf-panel");
     expect(purchases).toContain("Not available yet");
     expect(purchases).toContain("No legacy history");
+
+    const storeFulfillment = fs.readFileSync(
+      path.resolve("src/components/watson/WatsonCustomerStoreFulfillment.astro"),
+      "utf8",
+    );
+    expect(storeFulfillment).toContain('title="Store Fulfillment"');
+    expect(storeFulfillment).toContain('id="customer-store-fulfillment"');
+    expect(storeFulfillment).toContain("getCustomerStoreFulfillments");
+    expect(storeFulfillment).toContain("WatsonMemberStoreFulfillmentContent");
     expect(timeline).toContain("WatsonCustomerAccordionSection");
     expect(timeline).toContain('title="Timeline"');
     expect(timeline).toContain("events.map");
