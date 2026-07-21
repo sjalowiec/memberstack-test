@@ -196,7 +196,9 @@ export function buildCustomerMemberstackSummary(options: {
     membershipStatusLabel: options.member
       ? hasActiveConnection
         ? "Active"
-        : "Inactive"
+        : connections.length === 0
+          ? "No Plan"
+          : "Inactive"
       : null,
     configured: options.configured,
     loadError: options.loadError,

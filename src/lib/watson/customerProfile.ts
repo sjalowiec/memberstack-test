@@ -213,6 +213,9 @@ function resolveMembershipStatusTone(
   if (memberstack.hasActiveConnection) {
     return "active";
   }
+  if (memberstack.membershipStatusLabel === "No Plan") {
+    return "unknown";
+  }
   if (memberstack.membershipStatusLabel) {
     return "inactive";
   }

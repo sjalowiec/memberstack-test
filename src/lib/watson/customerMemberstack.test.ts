@@ -40,6 +40,53 @@ describe("customerMemberstack", () => {
     expect(summary.connections).toEqual([]);
   });
 
+  it("labels membership Active when any plan connection is active", () => {
+    const summary = buildCustomerMemberstackSummary({
+      member: {
+        id: "mem_active",
+        auth: { email: "active@example.com" },
+        planConnections: [{ id: "pc_1", status: "ACTIVE", active: true }],
+      },
+      configured: true,
+      loadError: null,
+    });
+
+    expect(summary.hasActiveConnection).toBe(true);
+    expect(summary.membershipStatusLabel).toBe("Active");
+  });
+
+  it("labels membership No Plan when the Memberstack account has zero plan connections", () => {
+    const summary = buildCustomerMemberstackSummary({
+      member: {
+        id: "mem_no_plan",
+        auth: { email: "noplan@example.com" },
+        planConnections: [],
+      },
+      configured: true,
+      loadError: null,
+    });
+
+    expect(summary.hasActiveConnection).toBe(false);
+    expect(summary.connections).toEqual([]);
+    expect(summary.membershipStatusLabel).toBe("No Plan");
+  });
+
+  it("labels membership Inactive when plan connections exist but none are active", () => {
+    const summary = buildCustomerMemberstackSummary({
+      member: {
+        id: "mem_inactive",
+        auth: { email: "inactive@example.com" },
+        planConnections: [{ id: "pc_1", status: "CANCELED", active: false }],
+      },
+      configured: true,
+      loadError: null,
+    });
+
+    expect(summary.hasActiveConnection).toBe(false);
+    expect(summary.connections).toHaveLength(1);
+    expect(summary.membershipStatusLabel).toBe("Inactive");
+  });
+
   it("uses Memberstack email when no name fields are available", () => {
     const member: MemberstackMember = {
       id: "mem_only",

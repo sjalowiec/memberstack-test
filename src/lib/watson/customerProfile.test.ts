@@ -28,7 +28,7 @@ const memberstackSummary = (
   accountCreatedAtSort: "2020-01-01T00:00:00.000Z",
   connections: [],
   hasActiveConnection: false,
-  membershipStatusLabel: "Inactive",
+  membershipStatusLabel: "No Plan",
   configured: true,
   loadError: null,
   ...overrides,
@@ -114,6 +114,58 @@ describe("customerProfile", () => {
     expect(header.joinDate).toBeTruthy();
     expect(header.lastActivityDate).toBeNull();
     expect(header.legacyAccessThroughDate).toBeNull();
+  });
+
+  it("uses unknown tone for No Plan membership status badges", () => {
+    const header = buildCustomerProfileHeaderView({
+      displayName: "Johnetta Greentree Hyde",
+      member: null,
+      memberstack: memberstackSummary({
+        membershipStatusLabel: "No Plan",
+        hasActiveConnection: false,
+        connections: [],
+      }),
+      memberstackLinkStatus: "linked",
+      legacyMemberid: null,
+      memberstackId: "mem_123",
+      timeline: [],
+    });
+
+    expect(header.membershipStatus).toBe("No Plan");
+    expect(header.membershipStatusTone).toBe("unknown");
+  });
+
+  it("uses inactive tone when plan connections exist but none are active", () => {
+    const header = buildCustomerProfileHeaderView({
+      displayName: "Former Member",
+      member: null,
+      memberstack: memberstackSummary({
+        membershipStatusLabel: "Inactive",
+        hasActiveConnection: false,
+        connections: [
+          {
+            connectionId: "pc_1",
+            planName: "Basic Annual",
+            planId: "pln_1",
+            status: "CANCELED",
+            activeLabel: "Canceled",
+            billingInterval: null,
+            startDate: null,
+            startDateSort: "",
+            canceledAt: null,
+            canceledAtSort: "",
+            isPaidPlan: true,
+          },
+        ],
+      }),
+      memberstackLinkStatus: "linked",
+      legacyMemberid: null,
+      memberstackId: "mem_123",
+      timeline: [],
+    });
+
+    expect(header.membershipStatus).toBe("Inactive");
+    expect(header.membershipStatusTone).toBe("inactive");
   });
 
   it("separates legacy access-through from last activity in the header", () => {
