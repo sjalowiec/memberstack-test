@@ -144,6 +144,8 @@ describe("buildMembershipStatusSummary", () => {
     expect(result.customerFacingMessage).toBe(
       "Your Knit it Now Membership is active. You do not need to subscribe again.",
     );
+    expect(result.recommendedAction).toBe("manage");
+    expect(membershipStatusAllowsPurchase(result)).toBe(false);
     expect(membershipStatusPanelHeading(result)).toBe("Your membership is active");
   });
 
@@ -187,8 +189,11 @@ describe("buildMembershipStatusSummary", () => {
     expect(result.currentStatus).toBe("canceling");
     expect(result.recommendedAction).toBe("manage");
     expect(result.activeThroughDate).toMatch(/2026/);
-    expect(result.customerFacingMessage).toMatch(/remains active through/i);
+    expect(result.customerFacingMessage).toMatch(
+      /Your Knit it Now Membership remains active through .+ You do not need to subscribe again before then\./,
+    );
     expect(membershipStatusAllowsPurchase(result)).toBe(false);
+    expect(membershipStatusPanelHeading(result)).toMatch(/^Your membership is active through /);
   });
 
   it("treats no plan as non_paid_account with purchase", () => {
@@ -300,37 +305,73 @@ describe("buildMembershipStatusSummary", () => {
     expect(membershipStatusPanelHeading(result)).toBe("Your Knit it Now membership status");
   });
 
-  it("legacy expiration yesterday ? purchase", () => {
+  it("past legacy without plan name uses generic ended-on wording", () => {
+    const noPlan = buildMembershipStatusSummary({
+      memberstackMember: { id: "mem_past", planConnections: [] },
+      memberstackSummary: summaryFromConnections([]),
+      memberstackLookupOk: true,
+      todayYmd: TODAY,
+      legacy: legacy({
+        linkState: "linked",
+        legacyExpirationYmd: "2026-06-30",
+        legacyExpirationDate: "June 30, 2026",
+        previousPlanName: null,
+      }),
+    });
+    expect(noPlan.customerFacingMessage).toBe(
+      "You have a Knit it Now account, but we do not currently see an active membership. Your previous annual membership ended on June 30, 2026.",
+    );
+    expect(noPlan.recommendedAction).toBe("purchase");
+  });
+
+  it("legacy expiration yesterday recommends purchase", () => {
     const result = summaryWithLegacy({ ymd: "2026-07-21" });
     expect(result.recommendedAction).toBe("purchase");
     expect(membershipStatusAllowsPurchase(result)).toBe(true);
   });
 
-  it("legacy expiration today ? contact_support (not yet safely expired)", () => {
+  it("legacy expiration today ? contact_support with reassuring wording", () => {
     const result = summaryWithLegacy({ ymd: "2026-07-22" });
     expect(result.recommendedAction).toBe("contact_support");
     expect(membershipStatusAllowsPurchase(result)).toBe(false);
-    expect(membershipStatusPanelHeading(result)).toBe("We need to check your membership");
+    expect(membershipStatusPanelHeading(result)).toBe("Your membership needs a quick update");
+    expect(result.customerFacingMessage).toBe(
+      "Good news! It looks like your Premium annual membership still has paid time remaining through July 22, 2026. Before you purchase another membership, please contact us so we can make sure you do not lose any of that time.",
+    );
   });
 
-  it("legacy expiration tomorrow ? contact_support and does not call membership previous", () => {
+  it("legacy expiration tomorrow ? contact_support and does not claim access or say previous", () => {
     const result = summaryWithLegacy({ ymd: "2026-07-23" });
     expect(result.recommendedAction).toBe("contact_support");
     expect(result.legacyExpirationDate).toBe("July 23, 2026");
     expect(result.customerFacingMessage).toBe(
-      "Our records show that your Premium annual membership was paid through July 23, 2026, but we do not currently see an active membership on your new account. Please contact us before purchasing another membership so we can check your account.",
+      "Good news! It looks like your Premium annual membership still has paid time remaining through July 23, 2026. Before you purchase another membership, please contact us so we can make sure you do not lose any of that time.",
     );
     expect(result.customerFacingMessage).not.toMatch(/previous/i);
-    expect(result.customerFacingMessage).not.toMatch(/still have access|currently have access|you have access/i);
+    expect(result.customerFacingMessage).not.toMatch(
+      /active membership on|currently have access|you have access|site access/i,
+    );
     expect(membershipStatusAllowsPurchase(result)).toBe(false);
+    expect(membershipStatusPanelHeading(result)).toBe("Your membership needs a quick update");
   });
 
-  it("future legacy expiration (Jul 30) suppresses purchase and asks to contact support", () => {
-    const result = summaryWithLegacy({ ymd: "2026-07-30" });
+  it("future legacy without plan name uses generic reassuring wording", () => {
+    const result = buildMembershipStatusSummary({
+      memberstackMember: { id: "mem_future", planConnections: [] },
+      memberstackSummary: summaryFromConnections([]),
+      memberstackLookupOk: true,
+      todayYmd: TODAY,
+      legacy: legacy({
+        linkState: "linked",
+        legacyExpirationYmd: "2026-07-30",
+        legacyExpirationDate: "July 30, 2026",
+        previousPlanName: null,
+      }),
+    });
+    expect(result.customerFacingMessage).toBe(
+      "Good news! It looks like you still have paid membership time remaining through July 30, 2026. Before you purchase another membership, please contact us so we can make sure you do not lose any of that time.",
+    );
     expect(result.recommendedAction).toBe("contact_support");
-    expect(result.customerFacingMessage).toMatch(/paid through July 30, 2026/i);
-    expect(result.customerFacingMessage).toMatch(/contact us before purchasing/i);
-    expect(membershipStatusAllowsPurchase(result)).toBe(false);
   });
 
   it("active Memberstack membership wins regardless of future legacy expiration", () => {

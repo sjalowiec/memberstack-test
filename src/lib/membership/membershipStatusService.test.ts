@@ -76,8 +76,11 @@ describe("loadMembershipStatusForMemberId", () => {
     expect(summary.legacyExpirationDate).toBe("July 30, 2026");
     expect(summary.previousPlanName).toBe("Premium");
     expect(summary.recommendedAction).toBe("contact_support");
-    expect(summary.customerFacingMessage).toMatch(/paid through July 30, 2026/i);
+    expect(summary.customerFacingMessage).toMatch(
+      /Good news! It looks like your Premium annual membership still has paid time remaining through July 30, 2026/,
+    );
     expect(summary.customerFacingMessage).not.toMatch(/previous/i);
+    expect(summary.customerFacingMessage).not.toMatch(/active membership on your new account/i);
   });
 
   it("does not auto-link ambiguous legacy emails", async () => {

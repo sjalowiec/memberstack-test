@@ -92,6 +92,7 @@ describe("membershipStatusCta overlay", () => {
     applyMembershipStatusCtaMode("contact_support", root);
     expect(checkout.disabled).toBe(true);
     expect(contact.hidden).toBe(false);
+    expect(salesCta.textContent).toBe("Contact us about my membership");
 
     applyMembershipStatusCtaMode("wait", root);
     expect(checkout.disabled).toBe(true);

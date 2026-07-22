@@ -14,7 +14,7 @@
 >
   <div class="membership-status-panel__inner">
     <p class="membership-status-panel__loading" data-membership-status-loading hidden>
-      Checking your membership status…
+      Checking your membership status...
     </p>
 
     <div class="membership-status-panel__body" data-membership-status-body hidden>
@@ -56,7 +56,7 @@
           data-contact-source="membership-status"
           hidden
         >
-          Contact support
+          Contact us about my membership
         </a>
         <button
           type="button"
@@ -116,6 +116,13 @@
     margin: 0;
   }
 
+  @media (max-width: 520px) {
+    .membership-status-panel__fact {
+      grid-template-columns: 1fr;
+      gap: 0.15rem;
+    }
+  }
+
   .membership-status-panel__fact dt {
     margin: 0;
     font-size: 0.82rem;
@@ -136,11 +143,25 @@
     margin-top: 1rem;
   }
 
-  .membership-status-panel[data-membership-status-state="error"] .membership-status-panel__inner,
-  .membership-status-panel[data-membership-status-cta-mode="wait"] .membership-status-panel__inner,
+  /* Calm amber for contact / retry — not an error alert for active members. */
   .membership-status-panel[data-membership-status-cta-mode="contact_support"]
+    .membership-status-panel__inner,
+  .membership-status-panel[data-membership-status-cta-mode="wait"]
     .membership-status-panel__inner {
     border-color: rgba(122, 92, 45, 0.28);
     background: rgba(196, 149, 74, 0.1);
+  }
+
+  .membership-status-panel[data-membership-status-state="error"] .membership-status-panel__inner {
+    border-color: rgba(122, 92, 45, 0.28);
+    background: rgba(196, 149, 74, 0.1);
+  }
+
+  /* Active / manage and purchase stay on the calm green panel treatment. */
+  .membership-status-panel[data-membership-status-cta-mode="manage"] .membership-status-panel__inner,
+  .membership-status-panel[data-membership-status-cta-mode="purchase"]
+    .membership-status-panel__inner {
+    border-color: rgba(82, 104, 45, 0.22);
+    background: rgba(82, 104, 45, 0.07);
   }
 </style>

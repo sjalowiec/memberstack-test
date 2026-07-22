@@ -99,7 +99,7 @@ export function applyMembershipStatusCtaMode(
     });
   } else if (mode === "contact_support" || mode === "wait") {
     root.querySelectorAll<HTMLAnchorElement>("[data-membership-sales-cta]").forEach((el) => {
-      el.textContent = "Contact support";
+      el.textContent = "Contact us about my membership";
       el.setAttribute("href", "#");
       el.setAttribute("data-membership-sales-cta-kind", "contact");
       el.classList.add("contact-modal-trigger");

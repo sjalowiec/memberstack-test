@@ -67,29 +67,44 @@ function renderSummary(root: ParentNode, summary: MembershipStatusSummary): void
   message.textContent = summary.customerFacingMessage;
 
   if (facts) {
-    facts.hidden = false;
-    setFact(root, "status", statusLabel(summary));
-    setFact(root, "plan", summary.currentPlanName);
-    setFact(root, "through", summary.activeThroughDate);
-    // Future/today legacy paid-through is explained in the message ó do not label it "previous".
-    if (
-      summary.recommendedAction === "contact_support" &&
-      summary.legacyLinkState === "linked" &&
-      summary.legacyExpirationDate
-    ) {
+    // Future/today legacy paid-through and ambiguous/unavailable states: message is enough.
+    const hideFacts =
+      summary.recommendedAction === "contact_support" ||
+      summary.recommendedAction === "wait" ||
+      summary.currentStatus === "unknown";
+
+    if (hideFacts) {
+      facts.hidden = true;
+      setFact(root, "status", null);
+      setFact(root, "plan", null);
+      setFact(root, "through", null);
       setFact(root, "previous", null);
-    } else if (summary.previousPlanName && summary.legacyExpirationDate) {
-      setFact(
-        root,
-        "previous",
-        `${summary.previousPlanName} (ended ${summary.legacyExpirationDate})`,
-      );
-    } else if (summary.previousPlanName) {
-      setFact(root, "previous", summary.previousPlanName);
-    } else if (summary.legacyExpirationDate) {
-      setFact(root, "previous", `Previous membership ended ${summary.legacyExpirationDate}`);
     } else {
-      setFact(root, "previous", null);
+      facts.hidden = false;
+      setFact(root, "status", statusLabel(summary));
+      setFact(root, "plan", summary.currentPlanName);
+      setFact(root, "through", summary.activeThroughDate);
+      if (summary.previousPlanName && summary.legacyExpirationDate) {
+        setFact(
+          root,
+          "previous",
+          `${summary.previousPlanName} (ended ${summary.legacyExpirationDate})`,
+        );
+      } else if (summary.legacyExpirationDate) {
+        setFact(root, "previous", `Ended ${summary.legacyExpirationDate}`);
+      } else if (summary.previousPlanName) {
+        setFact(root, "previous", summary.previousPlanName);
+      } else {
+        setFact(root, "previous", null);
+      }
+
+      // If every fact row is empty/hidden, hide the whole list (no blank labels).
+      const visibleFact = facts.querySelector(
+        "[data-membership-status-fact]:not([hidden])",
+      );
+      if (!visibleFact) {
+        facts.hidden = true;
+      }
     }
   }
 
@@ -108,7 +123,7 @@ function renderLoading(root: ParentNode): void {
   panel.setAttribute("data-membership-status-state", "loading");
   loading.hidden = false;
   body.hidden = true;
-  // Block purchase until status is verified ù do not rewrite hero CTA yet.
+  // Block purchase until status is verified ó do not rewrite hero CTA yet.
   applyMembershipStatusCtaMode("loading", root);
 }
 

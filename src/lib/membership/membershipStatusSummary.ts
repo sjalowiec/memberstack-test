@@ -2,7 +2,7 @@
  * Customer-facing membership status summary for /membership.
  *
  * Live paid status comes from Memberstack plan connections (request-time).
- * Legacy Watson history is optional context only ó never proof of current access.
+ * Legacy Watson history is optional context only ù never proof of current access.
  */
 
 import {
@@ -46,7 +46,7 @@ export type MembershipRecommendedAction =
   | "contact_support"
   | "wait";
 
-/** Internal only ó never sent in the public DTO. */
+/** Internal only ù never sent in the public DTO. */
 export type LegacyExpirationTiming = "legacy_expired" | "legacy_paid_through_future";
 
 export type MembershipStatusSummary = {
@@ -196,16 +196,44 @@ export function resolveLegacyExpirationTiming(
   return "legacy_expired";
 }
 
+/** Customer-facing plan phrase for active/canceling copy (avoids "Membership membership"). */
+function activePlanPhrase(planLabel: string | null | undefined): string {
+  const name = (planLabel || MEMBERSHIPS.membership.name).trim();
+  return /membership$/i.test(name) ? name : `${name} membership`;
+}
+
 function activeMembershipSentence(planLabel: string, throughDate: string | null): string {
-  const labelAlreadySaysMembership = /membership/i.test(planLabel);
+  const phrase = activePlanPhrase(planLabel);
   if (throughDate) {
-    return labelAlreadySaysMembership
-      ? `Your ${planLabel} remains active through ${throughDate}. You do not need to subscribe again before then.`
-      : `Your ${planLabel} membership remains active through ${throughDate}. You do not need to subscribe again before then.`;
+    return `Your ${phrase} remains active through ${throughDate}. You do not need to subscribe again before then.`;
   }
-  return labelAlreadySaysMembership
-    ? `Your ${planLabel} is active. You do not need to subscribe again.`
-    : `Your ${planLabel} membership is active. You do not need to subscribe again.`;
+  return `Your ${phrase} is active. You do not need to subscribe again.`;
+}
+
+/** Reliable prior-plan label for customer copy (null when we should omit the name). */
+function reliablePriorPlanName(planName: string | null | undefined): string | null {
+  const trimmed = planName?.trim();
+  if (!trimmed) return null;
+  // Generic fallback is not a reliable tier/plan label for "[plan name] annual membership".
+  if (trimmed === "Knit it Now") return null;
+  return trimmed;
+}
+
+function futureLegacyPaidThroughMessage(
+  planName: string | null,
+  dateDisplay: string,
+): string {
+  if (planName) {
+    return `Good news! It looks like your ${planName} annual membership still has paid time remaining through ${dateDisplay}. Before you purchase another membership, please contact us so we can make sure you do not lose any of that time.`;
+  }
+  return `Good news! It looks like you still have paid membership time remaining through ${dateDisplay}. Before you purchase another membership, please contact us so we can make sure you do not lose any of that time.`;
+}
+
+function pastLegacyEndedMessage(planName: string | null, dateDisplay: string): string {
+  if (planName) {
+    return `You have a Knit it Now account, but we do not currently see an active membership. Your previous ${planName} annual membership ended on ${dateDisplay}.`;
+  }
+  return `You have a Knit it Now account, but we do not currently see an active membership. Your previous annual membership ended on ${dateDisplay}.`;
 }
 
 function isPaidPlanId(planId: string | null): boolean {
@@ -260,7 +288,7 @@ export function previousPlanNameFromLegacyMemberships(
   // Only label Premium/Basic when the legacy premium flag is present.
   if (row.premiumFlag === "1") return "Premium";
   if (row.premiumFlag === "0") return "Basic";
-  return "Knit it Now";
+  return null;
 }
 
 function resolveLegacyDisplayDate(legacy: MembershipStatusLegacyContext): string | null {
@@ -407,22 +435,24 @@ export function buildMembershipStatusSummary(input: {
     : "no_plan";
 
   if (legacy.linkState === "linked" && legacyExpirationDisplay && legacyTiming) {
-    const planLabel = previousPlanName ?? planFromLegacy ?? "Knit it Now";
+    const planForCopy = reliablePriorPlanName(planFromLegacy ?? previousFromMemberstack);
 
     if (legacyTiming === "legacy_paid_through_future") {
       // Do not call the plan "previous" while paid-through is still today/future.
-      // previousPlanName still carries the label for panel facts when useful.
       return {
         identified,
         currentStatus,
         currentPlanName: null,
-        previousPlanName: planFromLegacy ?? previousFromMemberstack,
+        previousPlanName: planForCopy,
         activeThroughDate: null,
         legacyExpirationDate: legacyExpirationDisplay,
         legacyLinkState: "linked",
         accountType: "non_paid_account",
         recommendedAction: "contact_support",
-        customerFacingMessage: `Our records show that your ${planLabel} annual membership was paid through ${legacyExpirationDisplay}, but we do not currently see an active membership on your new account. Please contact us before purchasing another membership so we can check your account.`,
+        customerFacingMessage: futureLegacyPaidThroughMessage(
+          planForCopy,
+          legacyExpirationDisplay,
+        ),
       };
     }
 
@@ -431,18 +461,18 @@ export function buildMembershipStatusSummary(input: {
       identified,
       currentStatus,
       currentPlanName: null,
-      previousPlanName: planLabel,
+      previousPlanName: planForCopy,
       activeThroughDate: null,
       legacyExpirationDate: legacyExpirationDisplay,
       legacyLinkState: "linked",
       accountType: "non_paid_account",
       recommendedAction: "purchase",
-      customerFacingMessage: `You have a Knit it Now account, but we do not currently see an active membership. Your previous ${planLabel} annual membership ended on ${legacyExpirationDisplay}.`,
+      customerFacingMessage: pastLegacyEndedMessage(planForCopy, legacyExpirationDisplay),
     };
   }
 
   if (legacy.linkState === "linked" && legacyExpirationDisplay) {
-    // Linked date present but timing unknown ó do not encourage purchase.
+    // Linked date present but timing unknown ù do not encourage purchase.
     return {
       identified,
       currentStatus,
@@ -486,16 +516,24 @@ export function membershipStatusPanelHeading(
       : "Your membership is active";
   }
   if (
-    summary.recommendedAction === "contact_support" ||
-    summary.legacyLinkState === "ambiguous"
-  ) {
-    return "We need to check your membership";
-  }
-  if (
     summary.currentStatus === "unknown" ||
     summary.recommendedAction === "wait"
   ) {
     return "We could not confirm your membership";
+  }
+  if (summary.legacyLinkState === "ambiguous") {
+    return "We need to check your membership";
+  }
+  // Future/today uniquely linked legacy paid-through ó warm, not alarming.
+  if (
+    summary.recommendedAction === "contact_support" &&
+    summary.legacyLinkState === "linked" &&
+    summary.legacyExpirationDate
+  ) {
+    return "Your membership needs a quick update";
+  }
+  if (summary.recommendedAction === "contact_support") {
+    return "We need to check your membership";
   }
   return "Your Knit it Now membership status";
 }
