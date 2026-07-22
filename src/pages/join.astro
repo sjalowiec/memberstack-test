@@ -7,8 +7,9 @@ import MembershipPricing from "../components/membership/MembershipPricing.astro"
 <Layout
   title="Become a Member"
   description="Join Knit It Now membership — monthly or annual billing."
+  bodyClass="page--tight-header"
 >
-  <div class="page-wrap">
+  <div class="join-page page-wrap">
     <PageHead title="Become a Member" breadcrumb="Home / Join" />
 
     <div class="join-content membership-billing-scope">
@@ -21,6 +22,11 @@ import MembershipPricing from "../components/membership/MembershipPricing.astro"
   </div>
 
   <style>
+    /* main.site-content already clears the fixed header; avoid stacking .page-wrap’s default top padding */
+    .join-page.page-wrap {
+      padding-top: 8px;
+    }
+
     .join-content {
       max-width: 56rem;
       margin-bottom: 2rem;

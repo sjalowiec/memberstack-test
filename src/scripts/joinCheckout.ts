@@ -4,7 +4,11 @@ import {
 } from "../lib/membership/membershipCheckoutDecision";
 import { resolveJoinCtaPresentation } from "../lib/membership/membershipPricingUi";
 import { resolveMembershipSalesCta } from "../lib/membership/membershipSalesCta";
-import { shouldBlockPurchaseForStatusMode } from "../lib/membership/membershipStatusCta";
+import {
+  getMembershipStatusCtaMode,
+  membershipStatusModeOwnsHeroCta,
+  shouldBlockPurchaseForStatusMode,
+} from "../lib/membership/membershipStatusCta";
 import {
   buildPendingMembershipCheckout,
   clearPendingMembershipCheckout,
@@ -219,13 +223,21 @@ function applyActiveMembershipConfirmation(memberOrPayload: unknown): void {
     });
 }
 
-/** Sync the hero sales CTA (scroll to pricing vs manage) — never opens auth. */
+/**
+ * Sync the hero sales CTA (scroll to pricing vs manage) — never opens auth.
+ * No-op when the authenticated status overlay owns the hero (loading / wait /
+ * contact_support / manage) so DOM active-member detection cannot contradict it.
+ */
 export function applyMembershipSalesCtaState(memberOrPayload: unknown): void {
+  if (membershipStatusModeOwnsHeroCta()) return;
   const cta = resolveMembershipSalesCta(memberOrPayload);
   document.querySelectorAll<HTMLAnchorElement>("[data-membership-sales-cta]").forEach((el) => {
     el.textContent = cta.label;
     el.setAttribute("href", cta.href);
     el.setAttribute("data-membership-sales-cta-kind", cta.kind);
+    el.setAttribute("aria-disabled", "false");
+    el.classList.remove("contact-modal-trigger");
+    el.removeAttribute("data-contact-source");
   });
 }
 
@@ -233,6 +245,7 @@ export function applyMembershipSalesCtaState(memberOrPayload: unknown): void {
 export function applyJoinCheckoutButtonStates(memberOrPayload: unknown): void {
   lastKnownMemberPayload = memberOrPayload;
   const statusBlocksPurchase = shouldBlockPurchaseForStatusMode();
+  const statusOwnsHero = membershipStatusModeOwnsHeroCta();
   document.querySelectorAll<HTMLButtonElement>("[data-join-checkout]").forEach((btn) => {
     const key = btn.getAttribute("data-join-checkout");
     if (!isJoinCheckoutPlanKey(key)) return;
@@ -249,7 +262,16 @@ export function applyJoinCheckoutButtonStates(memberOrPayload: unknown): void {
       btn.setAttribute("aria-busy", "false");
     }
   });
-  applyActiveMembershipConfirmation(memberOrPayload);
+  // Do not show DOM "active" confirmation while status overlay is still loading/wait/contact.
+  if (!statusOwnsHero || getMembershipStatusCtaMode() === "manage") {
+    applyActiveMembershipConfirmation(memberOrPayload);
+  } else {
+    document
+      .querySelectorAll<HTMLElement>("[data-membership-active-confirmation]")
+      .forEach((el) => {
+        el.hidden = true;
+      });
+  }
   applyMembershipSalesCtaState(memberOrPayload);
 }
 

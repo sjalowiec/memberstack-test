@@ -30,8 +30,10 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import {
+  applyMemberstackLocalTlsInsecureIfRequested,
   createMemberstackAdminClient,
   describeSecretKeyEnvironment,
+  isMemberstackTlsInsecureFlagEnabled,
   MEMBERSTACK_ADMIN_BASE_URL,
   summarizeFetchCause,
 } from "../../netlify/functions/lib/memberstack-admin.js";
@@ -292,30 +294,7 @@ function parseArgs(argv) {
   };
 }
 
-function envFlagEnabled(name) {
-  const v = String(process.env[name] ?? "")
-    .trim()
-    .toLowerCase();
-  return v === "1" || v === "true" || v === "yes";
-}
-
-/**
- * Opt-in local workaround for SSL-inspection / incomplete cert chains.
- * Never enabled by default. Does not print secret values.
- */
-function applyLocalTlsInsecureIfRequested() {
-  const allowInsecure =
-    envFlagEnabled("MEMBERSTACK_TLS_INSECURE") ||
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED === "0";
-  if (!allowInsecure) return { applied: false };
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-  console.warn(
-    "[TLS] Certificate verification disabled for this process (MEMBERSTACK_TLS_INSECURE / NODE_TLS_REJECT_UNAUTHORIZED=0). Use only on trusted local networks.",
-  );
-  return { applied: true };
-}
-
-/** Presence report for required env vars ù never prints secret values. */
+/** Presence report for required env vars - never prints secret values. */
 function describeEnvPresence() {
   const secret = (process.env.MEMBERSTACK_SECRET_KEY || "").trim();
   const keyEnv = describeSecretKeyEnvironment();
@@ -324,10 +303,7 @@ function describeEnvPresence() {
       ? `present (${keyEnv.mode}, ${secret.length} chars, hint ${keyEnv.keyHint})`
       : "MISSING",
     MEMBERSTACK_TLS_INSECURE: process.env.MEMBERSTACK_TLS_INSECURE
-      ? `present (value=${envFlagEnabled("MEMBERSTACK_TLS_INSECURE") ? "enabled" : "set-but-not-truthy"})`
-      : "not set",
-    NODE_TLS_REJECT_UNAUTHORIZED: process.env.NODE_TLS_REJECT_UNAUTHORIZED
-      ? `present (value=${process.env.NODE_TLS_REJECT_UNAUTHORIZED === "0" ? "0/insecure" : "set"})`
+      ? `present (value=${isMemberstackTlsInsecureFlagEnabled() ? "enabled" : "set-but-not-truthy"})`
       : "not set",
     MEMBERSTACK_ADMIN_BASE_URL,
   };
@@ -667,7 +643,7 @@ async function processNew({ neu, client, execute, logs, stripeAttachRows }) {
         continue;
       }
 
-      // Lookup must use lowercase ù Memberstack stores emails lowercased and GET is case-sensitive.
+      // Lookup must use lowercase ? Memberstack stores emails lowercased and GET is case-sensitive.
       const { member: existing } = await getMemberByEmailNormalized(client, email);
       await sleep(45);
       if (email !== normEmail(email)) await sleep(45);
@@ -925,7 +901,7 @@ async function verifyState({ existing, neu, client }) {
 
     const { member, matchedVia } = await getMemberByEmailNormalized(client, emailRaw);
     await sleep(45);
-    // Extra sleep only when we also tried original case inside helper ù helper may do 1ù2 GETs.
+    // Extra sleep only when we also tried original case inside helper ? helper may do 1?2 GETs.
     if (emailRaw !== emailNorm) await sleep(45);
 
     report.newChecked++;
@@ -1165,7 +1141,7 @@ async function main() {
   }
 
   loadEnv();
-  applyLocalTlsInsecureIfRequested();
+  applyMemberstackLocalTlsInsecureIfRequested();
 
   const secret = (process.env.MEMBERSTACK_SECRET_KEY || "").trim();
   if (!secret) {
@@ -1216,7 +1192,7 @@ async function main() {
     const createImportPath = path.join(OUTPUT_DIR, "memberstack-import-new-members.csv");
     const stripeAttachPath = path.join(OUTPUT_DIR, "memberstack-stripe-attach.csv");
     const verifyReportPath = path.join(OUTPUT_DIR, "verify-report.json");
-    // Do not clobber execution skipped-members.csv ù verify only refreshes summary + verify-report.
+    // Do not clobber execution skipped-members.csv ? verify only refreshes summary + verify-report.
     fs.writeFileSync(verifyReportPath, JSON.stringify(verifyReport, null, 2), "utf8");
     const summaryPath = writeSummary({
       mode: "verify",
@@ -1265,7 +1241,7 @@ async function main() {
     console.log(`Wrote ${path.relative(REPO_ROOT, summaryPath)}`);
     console.log(`Wrote ${path.relative(REPO_ROOT, verifyReportPath)}`);
     if (!verifyReport.ok) {
-      console.error("[verify] FAILED ù unexpected missing members or Betty not found.");
+      console.error("[verify] FAILED ? unexpected missing members or Betty not found.");
       process.exit(1);
     }
     console.log("[verify] OK");

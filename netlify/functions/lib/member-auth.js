@@ -2,11 +2,15 @@
  * Verified Memberstack session gate for member-owned endpoints (e.g. favorites).
  *
  * Same cryptographic verification as admin-auth.js (Bearer token ? verifyMemberToken),
- * but without an admin allowlist ù any verified Memberstack member is accepted.
+ * but without an admin allowlist ? any verified Memberstack member is accepted.
  * The member id is always taken from the verified token, never from client-supplied headers/body.
  */
 import { isAllowDevPatternUser } from "./custom-pattern-projects-store.js";
-import { getMemberstackAdminClient } from "./memberstack-admin.js";
+import {
+  getMemberstackAdminClient,
+  getMemberstackSecretKey,
+  logMemberstackEnvironmentMismatch,
+} from "./memberstack-admin.js";
 
 /** Stable identity used only when ALLOW_DEV_PATTERN_USER=true (never true in production). */
 export const DEV_MEMBER = { id: "dev_local_favorites_member", email: "dev-favorites@local" };
@@ -44,7 +48,7 @@ export async function requireMember(req) {
 
   const client = getMemberstackAdminClient();
   if (!client) {
-    console.error("member-auth: MEMBERSTACK_SECRET_KEY is not configured.");
+    console.error("member-auth: Memberstack Admin secret is not configured.");
     return {
       ok: false,
       status: 503,
@@ -58,12 +62,21 @@ export async function requireMember(req) {
   }
 
   const id = verified.id.trim();
+  const secretKey = getMemberstackSecretKey();
+  const envMismatch = logMemberstackEnvironmentMismatch(
+    id,
+    secretKey,
+    "requireMember.getMember",
+  );
+
   let email = null;
-  try {
-    const record = await client.getMember(id);
-    email = typeof record?.auth?.email === "string" ? record.auth.email : null;
-  } catch {
-    /* email is optional for member-owned data paths */
+  if (!envMismatch) {
+    try {
+      const record = await client.getMember(id);
+      email = typeof record?.auth?.email === "string" ? record.auth.email : null;
+    } catch {
+      /* email is optional for member-owned data paths */
+    }
   }
 
   return { ok: true, member: { id, email }, mode: "verified" };

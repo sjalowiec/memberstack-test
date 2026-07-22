@@ -1,0 +1,124 @@
+---
+/**
+ * Simple thank-you section for active / canceling paid members on /membership.
+ * Replaces sales content; not a dashboard or “What’s New” page.
+ */
+import {
+  MEMBERSHIP_THANK_YOU_FAVORITES_HREF,
+  MEMBERSHIP_THANK_YOU_FAVORITES_LABEL,
+  MEMBERSHIP_THANK_YOU_HEADING,
+  MEMBERSHIP_THANK_YOU_MESSAGE,
+  MEMBERSHIP_THANK_YOU_PATTERNS_HREF,
+  MEMBERSHIP_THANK_YOU_PATTERNS_LABEL,
+} from "../../lib/membership/membershipThankYou";
+---
+
+<section
+  class="membership-thank-you"
+  data-membership-thank-you
+  hidden
+  aria-labelledby="membership-thank-you-heading"
+>
+  <div class="membership-thank-you__inner">
+    <img
+      class="membership-thank-you__mark"
+      src="/images/KINlogo.svg"
+      alt=""
+      width="56"
+      height="56"
+      decoding="async"
+    />
+    <h2 id="membership-thank-you-heading" class="membership-thank-you__heading">
+      {MEMBERSHIP_THANK_YOU_HEADING}
+    </h2>
+    <p class="membership-thank-you__message">{MEMBERSHIP_THANK_YOU_MESSAGE}</p>
+    <div class="membership-thank-you__actions">
+      <a href={MEMBERSHIP_THANK_YOU_FAVORITES_HREF} class="kbm-btn kbm-btn-accent">
+        {MEMBERSHIP_THANK_YOU_FAVORITES_LABEL}
+      </a>
+      <a href={MEMBERSHIP_THANK_YOU_PATTERNS_HREF} class="kbm-btn kbm-btn-outline">
+        {MEMBERSHIP_THANK_YOU_PATTERNS_LABEL}
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .membership-thank-you {
+    margin: 0 0 1.25rem;
+  }
+
+  .membership-thank-you__inner {
+    text-align: center;
+    padding: 1.5rem 1.25rem 1.65rem;
+    border-radius: 1rem;
+    background: linear-gradient(160deg, #f9f9f6 0%, #fff 60%);
+    border: 1px solid #d6dbc9;
+  }
+
+  .membership-thank-you__mark {
+    display: block;
+    width: 3.5rem;
+    height: 3.5rem;
+    margin: 0 auto 0.9rem;
+    transform-origin: 50% 50%;
+  }
+
+  .membership-thank-you__heading {
+    margin: 0 0 0.55rem;
+    font-size: clamp(1.2rem, 2.6vw, 1.55rem);
+    line-height: 1.3;
+    color: #2c3a57;
+  }
+
+  .membership-thank-you__message {
+    margin: 0 auto;
+    max-width: 32rem;
+    color: #4d5a48;
+    line-height: 1.55;
+    font-size: 1rem;
+  }
+
+  .membership-thank-you__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+
+  .membership-thank-you[data-membership-thank-you-enter="1"] {
+    animation: membership-thank-you-enter 0.85s ease-out both;
+  }
+
+  .membership-thank-you[data-membership-thank-you-enter="1"] .membership-thank-you__mark {
+    animation: membership-thank-you-pin 0.9s ease-in-out both;
+  }
+
+  @keyframes membership-thank-you-enter {
+    from {
+      opacity: 0;
+      transform: translateY(0.55rem);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes membership-thank-you-pin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .membership-thank-you[data-membership-thank-you-enter="1"],
+    .membership-thank-you[data-membership-thank-you-enter="1"] .membership-thank-you__mark {
+      animation: none;
+    }
+  }
+</style>

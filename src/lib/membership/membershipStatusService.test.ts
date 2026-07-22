@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { MEMBERSHIPS } from "../../config/memberships";
+import { resolveCustomerMemberstackSecretKey } from "../watson/customerMemberstack";
 import { loadMembershipStatusForMemberId } from "./membershipStatusService";
 
 describe("loadMembershipStatusForMemberId", () => {
@@ -15,7 +16,7 @@ describe("loadMembershipStatusForMemberId", () => {
     });
 
     const summary = await loadMembershipStatusForMemberId("mem_verified", {
-      // July 22, 2026 afternoon Pacific — future legacy paid-through must not recommend purchase.
+      // July 22, 2026 afternoon Pacific  future legacy paid-through must not recommend purchase.
       now: new Date("2026-07-22T20:00:00.000Z"),
       secretKey: "sk_test",
       getClient: async () =>
@@ -147,7 +148,8 @@ describe("loadMembershipStatusForMemberId", () => {
     expect(JSON.stringify(summary)).not.toContain('"A"');
   });
 
-  it("returns lookup unavailable when Memberstack getMember fails", async () => {
+  it("returns calm unknown/wait publicly when Admin getMember fails, with distinguishable logs", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const summary = await loadMembershipStatusForMemberId("mem_missing", {
       secretKey: "sk_test",
       getClient: async () =>
@@ -161,6 +163,76 @@ describe("loadMembershipStatusForMemberId", () => {
     expect(summary.identified).toBe(false);
     expect(summary.currentStatus).toBe("unknown");
     expect(summary.recommendedAction).toBe("wait");
+    expect(warn).toHaveBeenCalledWith(
+      "[membership-status] Memberstack Admin lookup unsuccessful",
+      expect.objectContaining({
+        failureReason: "admin_lookup_failed",
+        operation: "getMember by id",
+      }),
+    );
+    expect(JSON.stringify(warn.mock.calls)).not.toContain("sk_test");
+    warn.mockRestore();
+  });
+
+  it("distinguishes member_not_found internally while keeping calm public wait", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const summary = await loadMembershipStatusForMemberId("mem_gone", {
+      secretKey: "sk_test",
+      getClient: async () =>
+        ({
+          getMember: async () => null,
+          listMembers: async () => ({ data: [] }),
+        }) as never,
+    });
+    expect(summary.currentStatus).toBe("unknown");
+    expect(summary.recommendedAction).toBe("wait");
+    expect(warn).toHaveBeenCalledWith(
+      "[membership-status] Memberstack Admin lookup unsuccessful",
+      expect.objectContaining({ failureReason: "member_not_found" }),
+    );
+    warn.mockRestore();
+  });
+
+  it("distinguishes admin_not_configured internally while keeping calm public wait", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const summary = await loadMembershipStatusForMemberId("mem_any", {
+      secretKey: null,
+    });
+    expect(summary.currentStatus).toBe("unknown");
+    expect(summary.recommendedAction).toBe("wait");
+    expect(warn).toHaveBeenCalledWith(
+      "[membership-status] Memberstack Admin lookup unsuccessful",
+      expect.objectContaining({ failureReason: "admin_not_configured" }),
+    );
+    warn.mockRestore();
+  });
+
+  it("distinguishes environment_mismatch for mem_sb_ + live secret without leaking secrets", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const secret = "sk_live_should_not_appear";
+    const summary = await loadMembershipStatusForMemberId("mem_sb_testmember", {
+      secretKey: secret,
+      getClient: async () =>
+        ({
+          getMember: async () => ({
+            id: "mem_sb_testmember",
+            planConnections: [{ planId: "pln_x", status: "ACTIVE", active: true }],
+          }),
+          listMembers: async () => ({ data: [] }),
+        }) as never,
+    });
+    expect(summary.currentStatus).toBe("unknown");
+    expect(summary.recommendedAction).toBe("wait");
+    expect(warn).toHaveBeenCalledWith(
+      "[membership-status] Memberstack Admin lookup unsuccessful",
+      expect.objectContaining({ failureReason: "environment_mismatch" }),
+    );
+    expect(JSON.stringify(summary)).not.toContain(secret);
+    expect(JSON.stringify(warn.mock.calls)).not.toContain(secret);
+    expect(JSON.stringify(error.mock.calls)).not.toContain(secret);
+    warn.mockRestore();
+    error.mockRestore();
   });
 
   it("keeps active paid members on manage even with legacy history", async () => {
@@ -186,5 +258,69 @@ describe("loadMembershipStatusForMemberId", () => {
     });
     expect(summary.currentStatus).toBe("active");
     expect(summary.recommendedAction).toBe("manage");
+  });
+
+  it("returns canceling/manage for canceling active paid members", async () => {
+    const cancelAt = Math.floor(Date.UTC(2026, 7, 18) / 1000);
+    const summary = await loadMembershipStatusForMemberId("mem_canceling", {
+      secretKey: "sk_test",
+      getClient: async () =>
+        ({
+          getMember: async (id: string) => ({
+            id,
+            auth: { email: "canceling@example.com" },
+            planConnections: [
+              {
+                planId: MEMBERSHIPS.membership.memberstackPlanId,
+                planName: MEMBERSHIPS.membership.name,
+                status: "ACTIVE",
+                active: true,
+                payment: { cancelAtDate: cancelAt },
+              },
+            ],
+          }),
+          listMembers: async () => ({ data: [] }),
+        }) as never,
+      resolveLegacyLink: async () => ({ status: "none" }),
+    });
+    expect(summary.currentStatus).toBe("canceling");
+    expect(summary.recommendedAction).toBe("manage");
+  });
+
+  it("reaches Admin getMember when secret is resolved via shared helper (no import.meta.env)", async () => {
+    const getMember = vi.fn(async (id: string) => ({
+      id,
+      auth: { email: "paid@example.com" },
+      planConnections: [
+        {
+          planId: MEMBERSHIPS.membership.memberstackPlanId,
+          planName: MEMBERSHIPS.membership.name,
+          status: "ACTIVE",
+          active: true,
+        },
+      ],
+    }));
+
+    // Same shape membership-status uses after JWT verify: id only, secret from shared resolver.
+    const secretKey = resolveCustomerMemberstackSecretKey(undefined, {
+      getSharedSecretKey: () => "sk_shared_status_path",
+    });
+
+    const summary = await loadMembershipStatusForMemberId("mem_paid", {
+      secretKey,
+      getClient: async (key) => {
+        expect(key).toBe("sk_shared_status_path");
+        return {
+          getMember,
+          listMembers: async () => ({ data: [] }),
+        } as never;
+      },
+      resolveLegacyLink: async () => ({ status: "none" }),
+    });
+
+    expect(getMember).toHaveBeenCalledWith("mem_paid");
+    expect(summary.currentStatus).toBe("active");
+    expect(summary.recommendedAction).toBe("manage");
+    expect(JSON.stringify(summary)).not.toContain("sk_shared_status_path");
   });
 });

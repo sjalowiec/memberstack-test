@@ -24,8 +24,10 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import {
+  applyMemberstackLocalTlsInsecureIfRequested,
   createMemberstackAdminClient,
   describeSecretKeyEnvironment,
+  isMemberstackTlsInsecureFlagEnabled,
   MEMBERSTACK_ADMIN_BASE_URL,
   summarizeFetchCause,
 } from "../../netlify/functions/lib/memberstack-admin.js";
@@ -79,25 +81,6 @@ function loadEnv() {
   }
 }
 
-function envFlagEnabled(name) {
-  const v = String(process.env[name] ?? "")
-    .trim()
-    .toLowerCase();
-  return v === "1" || v === "true" || v === "yes";
-}
-
-function applyLocalTlsInsecureIfRequested() {
-  const allow =
-    envFlagEnabled("MEMBERSTACK_TLS_INSECURE") ||
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED === "0";
-  if (!allow) return { applied: false };
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-  console.warn(
-    "[TLS] Certificate verification disabled for this process (MEMBERSTACK_TLS_INSECURE). Use only on trusted local networks.",
-  );
-  return { applied: true };
-}
-
 function describeEnvPresence() {
   const secret = (process.env.MEMBERSTACK_SECRET_KEY || "").trim();
   const keyEnv = describeSecretKeyEnvironment();
@@ -106,7 +89,7 @@ function describeEnvPresence() {
       ? `present (${keyEnv.mode}, ${secret.length} chars, hint ${keyEnv.keyHint})`
       : "MISSING",
     MEMBERSTACK_TLS_INSECURE: process.env.MEMBERSTACK_TLS_INSECURE
-      ? `present (enabled=${envFlagEnabled("MEMBERSTACK_TLS_INSECURE")})`
+      ? `present (enabled=${isMemberstackTlsInsecureFlagEnabled()})`
       : "not set",
     MEMBERSTACK_ADMIN_BASE_URL,
   };
@@ -713,7 +696,7 @@ async function main() {
   }
 
   loadEnv();
-  applyLocalTlsInsecureIfRequested();
+  applyMemberstackLocalTlsInsecureIfRequested();
 
   const secret = (process.env.MEMBERSTACK_SECRET_KEY || "").trim();
   if (!secret) {

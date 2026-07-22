@@ -1,4 +1,9 @@
 import {
+  getMemberstackSecretKey as sharedGetMemberstackSecretKey,
+  isMemberstackEnvironmentMismatch,
+  logMemberstackEnvironmentMismatch,
+} from "../../../netlify/functions/lib/memberstack-admin.js";
+import {
   buildPlanIndex,
   buildPriceIndex,
   connectionCanceledAt,
@@ -20,10 +25,40 @@ export type MemberstackGetMemberClient = MemberstackListMembersClient & {
 
 export type CustomerMemberstackLookupStatus = "linked" | "not_found" | "load_error";
 
+/** Internal failure taxonomy for logs / status loader — not customer-facing copy. */
+export type MemberstackAdminFailureReason =
+  | "admin_not_configured"
+  | "member_not_found"
+  | "admin_lookup_failed"
+  | "environment_mismatch";
+
+/** Sanitized Admin API failure details for server logs only — never shown in Watson UI. */
+export type MemberstackLoadDiagnostic = {
+  operation: string;
+  name: string | null;
+  code: string | null;
+  message: string;
+  fetchCause?: string;
+};
+
 export type CustomerMemberstackLoadResult =
   | { ok: true; status: "linked"; member: MemberstackMember }
-  | { ok: false; status: "not_found"; error: string }
-  | { ok: false; status: "load_error"; error: string };
+  | {
+      ok: false;
+      status: "not_found";
+      error: string;
+      failureReason: "member_not_found";
+    }
+  | {
+      ok: false;
+      status: "load_error";
+      error: string;
+      failureReason:
+        | "admin_not_configured"
+        | "admin_lookup_failed"
+        | "environment_mismatch";
+      diagnostic?: MemberstackLoadDiagnostic;
+    };
 
 export const MEMBERSTACK_LOOKUP_UNAVAILABLE_LABEL = "Memberstack lookup unavailable";
 export const MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL =
@@ -205,24 +240,73 @@ export function buildCustomerMemberstackSummary(options: {
   };
 }
 
-export function resolveCustomerMemberstackSecretKey(
-  env: { MEMBERSTACK_SECRET_KEY?: string } = import.meta.env,
-): string | null {
-  const key = (env.MEMBERSTACK_SECRET_KEY || "").trim();
-  return key || null;
-}
+export type MemberstackSecretEnv = {
+  MEMBERSTACK_SECRET_KEY?: string;
+};
 
-async function getMemberstackClient(
-  secretKey: string | null,
-): Promise<MemberstackGetMemberClient | null> {
-  if (!secretKey) {
+export type ResolveCustomerMemberstackSecretKeyDeps = {
+  /** Injected for tests; defaults to shared Admin helper used by requireMember. */
+  getSharedSecretKey?: () => string | null;
+};
+
+/**
+ * Resolve the Memberstack Admin secret for Watson loaders / tests.
+ *
+ * - Explicit `env` object wins (Astro SSR / tests).
+ * - Otherwise uses shared `getMemberstackSecretKey()` (process.env + local dotenv),
+ *   the same helper `requireMember` / `getMemberstackAdminClient()` use.
+ * - Never assumes `import.meta.env` exists (undefined in the function runtime).
+ * - Resolver failures are logged; they are not swallowed without a trace.
+ */
+export function resolveCustomerMemberstackSecretKey(
+  env?: MemberstackSecretEnv | null,
+  deps: ResolveCustomerMemberstackSecretKeyDeps = {},
+): string | null {
+  if (env != null && typeof env === "object") {
+    const fromEnv = (env.MEMBERSTACK_SECRET_KEY || "").trim();
+    return fromEnv || null;
+  }
+
+  const getShared = deps.getSharedSecretKey ?? sharedGetMemberstackSecretKey;
+  if (typeof getShared !== "function") {
+    console.warn("[watson-memberstack] Shared secret resolver unavailable", {
+      operation: "resolveCustomerMemberstackSecretKey",
+      failureReason: "admin_not_configured",
+    });
     return null;
   }
 
+  try {
+    const shared = getShared();
+    if (typeof shared !== "string") return null;
+    const trimmed = shared.trim();
+    return trimmed || null;
+  } catch (err) {
+    console.warn("[watson-memberstack] Shared secret resolver failed", {
+      operation: "resolveCustomerMemberstackSecretKey",
+      failureReason: "admin_not_configured",
+      name: err instanceof Error ? err.name : null,
+      message: err instanceof Error ? err.message.slice(0, 200) : "unknown",
+    });
+    return null;
+  }
+}
+
+/**
+ * Obtain the Admin client the same way as `requireMember`:
+ * `getMemberstackAdminClient()` with no args (process.env + dotenv).
+ * Explicit secretKey is only for tests / callers that already resolved one.
+ */
+export async function getSharedMemberstackAdminClient(
+  explicitSecretKey?: string,
+): Promise<MemberstackGetMemberClient | null> {
   const { getMemberstackAdminClient } = await import(
     "../../../netlify/functions/lib/memberstack-admin.js"
   );
-  const client = getMemberstackAdminClient({ secretKey });
+  const client =
+    typeof explicitSecretKey === "string"
+      ? getMemberstackAdminClient({ secretKey: explicitSecretKey })
+      : getMemberstackAdminClient();
   if (!client || typeof client.getMember !== "function" || typeof client.listMembers !== "function") {
     return null;
   }
@@ -234,46 +318,142 @@ export async function loadCustomerMemberstackMember(options: {
   secretKey?: string | null;
   getClient?: (secretKey: string | null) => Promise<MemberstackGetMemberClient | null>;
 }): Promise<CustomerMemberstackLoadResult> {
-  const secretKey =
+  let client: MemberstackGetMemberClient | null = null;
+  let resolvedSecretKey: string | null =
     options.secretKey !== undefined
       ? options.secretKey
       : resolveCustomerMemberstackSecretKey();
-  const getClient = options.getClient ?? getMemberstackClient;
-  const client = await getClient(secretKey);
 
-  if (!client) {
+  try {
+    if (options.getClient) {
+      client = await options.getClient(resolvedSecretKey);
+    } else if (options.secretKey === null) {
+      client = null;
+    } else if (typeof options.secretKey === "string") {
+      client = await getSharedMemberstackAdminClient(options.secretKey);
+    } else {
+      // Default production/dev path — identical to requireMember (shared env resolver).
+      resolvedSecretKey = resolveCustomerMemberstackSecretKey();
+      client = await getSharedMemberstackAdminClient();
+    }
+  } catch (err) {
+    const diagnostic = await buildMemberstackLoadDiagnostic(err, options.lookupValue);
+    console.warn("[watson-memberstack] Admin client init failed", {
+      failureReason: "admin_not_configured" satisfies MemberstackAdminFailureReason,
+      ...diagnostic,
+    });
     return {
       ok: false,
       status: "load_error",
+      failureReason: "admin_not_configured",
       error: "Memberstack admin API is not configured.",
+      diagnostic,
+    };
+  }
+
+  if (!client) {
+    console.warn("[watson-memberstack] Admin client unavailable", {
+      operation: options.lookupValue.includes("@") ? "getMember by email" : "getMember by id",
+      failureReason: "admin_not_configured" satisfies MemberstackAdminFailureReason,
+    });
+    return {
+      ok: false,
+      status: "load_error",
+      failureReason: "admin_not_configured",
+      error: "Memberstack admin API is not configured.",
+    };
+  }
+
+  // Never look up a sandbox member id with a live Admin secret (or the reverse).
+  if (
+    resolvedSecretKey &&
+    isMemberstackEnvironmentMismatch(options.lookupValue, resolvedSecretKey)
+  ) {
+    logMemberstackEnvironmentMismatch(
+      options.lookupValue,
+      resolvedSecretKey,
+      options.lookupValue.includes("@") ? "getMember by email" : "getMember by id",
+    );
+    return {
+      ok: false,
+      status: "load_error",
+      failureReason: "environment_mismatch",
+      error: "Memberstack Admin environment does not match the authenticated member.",
     };
   }
 
   try {
     const raw = await client.getMember(options.lookupValue);
     if (raw == null) {
+      console.warn("[watson-memberstack] Admin getMember returned no member", {
+        operation: options.lookupValue.includes("@") ? "getMember by email" : "getMember by id",
+        failureReason: "member_not_found" satisfies MemberstackAdminFailureReason,
+      });
       return {
         ok: false,
         status: "not_found",
+        failureReason: "member_not_found",
         error: "No Memberstack member found for this identifier.",
       };
     }
 
     const member = parseMemberstackMember(raw);
     if (!member) {
+      console.warn("[watson-memberstack] Admin getMember returned malformed member", {
+        operation: options.lookupValue.includes("@") ? "getMember by email" : "getMember by id",
+        failureReason: "admin_lookup_failed" satisfies MemberstackAdminFailureReason,
+      });
       return {
         ok: false,
         status: "load_error",
+        failureReason: "admin_lookup_failed",
         error: "Memberstack returned a malformed member response.",
       };
     }
 
     return { ok: true, status: "linked", member };
-  } catch {
+  } catch (err) {
+    const diagnostic = await buildMemberstackLoadDiagnostic(err, options.lookupValue);
+    console.warn("[watson-memberstack] Admin lookup failed", {
+      failureReason: "admin_lookup_failed" satisfies MemberstackAdminFailureReason,
+      ...diagnostic,
+    });
     return {
       ok: false,
       status: "load_error",
+      failureReason: "admin_lookup_failed",
       error: "Failed to load Memberstack member data.",
+      diagnostic,
+    };
+  }
+}
+
+async function buildMemberstackLoadDiagnostic(
+  err: unknown,
+  lookupValue: string,
+): Promise<MemberstackLoadDiagnostic> {
+  try {
+    const {
+      describeGetMemberOperation,
+      sanitizeMemberstackErrorDiagnostic,
+    } = await import("../../../netlify/functions/lib/memberstack-admin.js");
+    return sanitizeMemberstackErrorDiagnostic(
+      err,
+      describeGetMemberOperation(lookupValue),
+    ) as MemberstackLoadDiagnostic;
+  } catch {
+    const message =
+      err instanceof Error
+        ? err.message.slice(0, 300)
+        : "Failed to load Memberstack member data.";
+    return {
+      operation: lookupValue.includes("@") ? "getMember by email" : "getMember by id",
+      name: err instanceof Error ? err.name : null,
+      code:
+        err && typeof err === "object" && typeof (err as { code?: unknown }).code === "string"
+          ? ((err as { code: string }).code)
+          : null,
+      message,
     };
   }
 }
@@ -350,6 +530,7 @@ export async function resolveMemberstackMemberByExactEmail(
     return {
       ok: false,
       status: "not_found",
+      failureReason: "member_not_found",
       error: MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL,
     };
   }
@@ -368,6 +549,7 @@ export async function resolveMemberstackMemberByExactEmail(
     return {
       ok: false,
       status: "not_found",
+      failureReason: "member_not_found",
       error: MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL,
     };
   }

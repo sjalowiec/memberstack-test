@@ -1,7 +1,13 @@
 ---
 /**
- * Logged-in membership status panel for /membership.
- * Content is filled client-side after the authenticated membership-status endpoint responds.
+ * Logged-in membership status for /membership.
+ *
+ * - Active / canceling: once-per-session modal + reopen trigger (native <dialog>).
+ * - Blocking transition / lookup failure: inline visible panel.
+ * - Free / purchase: compact inline note only.
+ *
+ * Current paid status uses Memberstack DOM (same view model as Account).
+ * Legacy transition context may come from the membership-status endpoint.
  */
 ---
 
@@ -22,13 +28,21 @@
       <p class="membership-status-panel__message" data-membership-status-message></p>
 
       <dl class="membership-status-panel__facts" data-membership-status-facts hidden>
-        <div class="membership-status-panel__fact" data-membership-status-fact="status">
+        <div class="membership-status-panel__fact" data-membership-status-fact="plan" hidden>
+          <dt>Plan</dt>
+          <dd data-membership-status-value="plan"></dd>
+        </div>
+        <div class="membership-status-panel__fact" data-membership-status-fact="status" hidden>
           <dt>Status</dt>
           <dd data-membership-status-value="status"></dd>
         </div>
-        <div class="membership-status-panel__fact" data-membership-status-fact="plan" hidden>
-          <dt>Current plan</dt>
-          <dd data-membership-status-value="plan"></dd>
+        <div class="membership-status-panel__fact" data-membership-status-fact="billing" hidden>
+          <dt>Billing</dt>
+          <dd data-membership-status-value="billing"></dd>
+        </div>
+        <div class="membership-status-panel__fact" data-membership-status-fact="renews" hidden>
+          <dt>Renews</dt>
+          <dd data-membership-status-value="renews"></dd>
         </div>
         <div class="membership-status-panel__fact" data-membership-status-fact="through" hidden>
           <dt>Active through</dt>
@@ -56,7 +70,7 @@
           data-contact-source="membership-status"
           hidden
         >
-          Contact us about my membership
+          Contact us
         </a>
         <button
           type="button"
@@ -70,6 +84,87 @@
     </div>
   </div>
 </section>
+
+<dialog
+  class="membership-status-modal"
+  data-membership-status-modal
+  aria-labelledby="membership-status-modal-heading"
+>
+  <div class="membership-status-modal__inner">
+    <button
+      type="button"
+      class="membership-status-modal__close"
+      data-membership-status-modal-close
+      aria-label="Close membership status"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+
+    <h2 id="membership-status-modal-heading" class="membership-status-modal__heading" data-membership-status-modal-heading></h2>
+    <p class="membership-status-modal__message" data-membership-status-modal-message></p>
+
+    <dl class="membership-status-modal__facts" data-membership-status-modal-facts hidden>
+      <div class="membership-status-modal__fact" data-membership-status-modal-fact="plan" hidden>
+        <dt>Plan</dt>
+        <dd data-membership-status-modal-value="plan"></dd>
+      </div>
+      <div class="membership-status-modal__fact" data-membership-status-modal-fact="status" hidden>
+        <dt>Status</dt>
+        <dd data-membership-status-modal-value="status"></dd>
+      </div>
+      <div class="membership-status-modal__fact" data-membership-status-modal-fact="billing" hidden>
+        <dt>Billing</dt>
+        <dd data-membership-status-modal-value="billing"></dd>
+      </div>
+      <div class="membership-status-modal__fact" data-membership-status-modal-fact="renews" hidden>
+        <dt>Renews</dt>
+        <dd data-membership-status-modal-value="renews"></dd>
+      </div>
+      <div class="membership-status-modal__fact" data-membership-status-modal-fact="through" hidden>
+        <dt>Active through</dt>
+        <dd data-membership-status-modal-value="through"></dd>
+      </div>
+    </dl>
+
+    <div class="membership-status-modal__actions">
+      <a
+        href="/account#membership"
+        class="kbm-btn kbm-btn-accent"
+        data-membership-status-modal-manage
+      >
+        Manage Membership
+      </a>
+    </div>
+  </div>
+</dialog>
+
+<style is:global>
+  /* Trigger lives in membership.astro hero; keep styles with this feature. */
+  .membership-status-open {
+    display: block;
+    margin: 0.85rem auto 0;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #52682d;
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+    cursor: pointer;
+  }
+
+  .membership-status-open[hidden] {
+    display: none !important;
+  }
+
+  .membership-status-open:focus-visible {
+    outline: 2px solid #52682d;
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+</style>
 
 <style>
   .membership-status-panel {
@@ -143,7 +238,6 @@
     margin-top: 1rem;
   }
 
-  /* Calm amber for contact / retry — not an error alert for active members. */
   .membership-status-panel[data-membership-status-cta-mode="contact_support"]
     .membership-status-panel__inner,
   .membership-status-panel[data-membership-status-cta-mode="wait"]
@@ -157,11 +251,114 @@
     background: rgba(196, 149, 74, 0.1);
   }
 
-  /* Active / manage and purchase stay on the calm green panel treatment. */
   .membership-status-panel[data-membership-status-cta-mode="manage"] .membership-status-panel__inner,
   .membership-status-panel[data-membership-status-cta-mode="purchase"]
     .membership-status-panel__inner {
     border-color: rgba(82, 104, 45, 0.22);
     background: rgba(82, 104, 45, 0.07);
+  }
+
+  .membership-status-modal {
+    max-width: min(92vw, 28rem);
+    width: 100%;
+    margin: auto;
+    padding: 0;
+    border: none;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.18);
+  }
+
+  .membership-status-modal::backdrop {
+    background: rgba(15, 23, 42, 0.45);
+  }
+
+  .membership-status-modal__inner {
+    position: relative;
+    padding: clamp(1.25rem, 3vw, 1.75rem);
+  }
+
+  .membership-status-modal__close {
+    position: absolute;
+    top: 0.65rem;
+    right: 0.65rem;
+    width: 2rem;
+    height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #6b7280;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .membership-status-modal__close:hover {
+    background: #f3f4f6;
+    color: #374151;
+  }
+
+  .membership-status-modal__close:focus-visible {
+    outline: 2px solid #52682d;
+    outline-offset: 2px;
+  }
+
+  .membership-status-modal__heading {
+    margin: 0 1.75rem 0.55rem 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #2c3a57;
+  }
+
+  .membership-status-modal__message {
+    margin: 0;
+    color: #4d5a48;
+    line-height: 1.55;
+    font-size: 0.98rem;
+  }
+
+  .membership-status-modal__facts {
+    display: grid;
+    gap: 0.55rem;
+    margin: 1rem 0 0;
+  }
+
+  .membership-status-modal__fact {
+    display: grid;
+    grid-template-columns: minmax(7rem, 9rem) 1fr;
+    gap: 0.35rem 0.75rem;
+    margin: 0;
+  }
+
+  @media (max-width: 520px) {
+    .membership-status-modal__fact {
+      grid-template-columns: 1fr;
+      gap: 0.15rem;
+    }
+  }
+
+  .membership-status-modal__fact dt {
+    margin: 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #2c3a57;
+  }
+
+  .membership-status-modal__fact dd {
+    margin: 0;
+    color: #4d5a48;
+    font-size: 0.92rem;
+  }
+
+  .membership-status-modal__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.65rem;
+    margin-top: 1.25rem;
   }
 </style>

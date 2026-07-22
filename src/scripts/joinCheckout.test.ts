@@ -13,6 +13,10 @@ import {
   resumePendingMembershipCheckout,
   startJoinCheckout,
 } from "./joinCheckout";
+import {
+  __resetMembershipStatusCtaForTests,
+  applyMembershipStatusCtaMode,
+} from "../lib/membership/membershipStatusCta";
 import { MEMBERSHIP_SALES_CTA } from "../lib/membership/membershipSalesCta";
 
 function memberPayload(
@@ -70,6 +74,9 @@ function stubDom(options?: {
       setAttribute: (name: string, value: string) => {
         attrs.set(name, value);
       },
+      removeAttribute: (name: string) => {
+        attrs.delete(name);
+      },
       addEventListener: vi.fn(),
     };
   });
@@ -83,11 +90,23 @@ function stubDom(options?: {
               ["href", MEMBERSHIP_SALES_CTA.choosePlan.href],
               ["data-membership-sales-cta-kind", MEMBERSHIP_SALES_CTA.choosePlan.kind],
             ]);
+            const classes = new Set<string>();
             return {
               textContent: MEMBERSHIP_SALES_CTA.choosePlan.label,
+              classList: {
+                add: (name: string) => {
+                  classes.add(name);
+                },
+                remove: (name: string) => {
+                  classes.delete(name);
+                },
+              },
               getAttribute: (name: string) => attrs.get(name) ?? null,
               setAttribute: (name: string, value: string) => {
                 attrs.set(name, value);
+              },
+              removeAttribute: (name: string) => {
+                attrs.delete(name);
               },
             };
           })(),
@@ -142,11 +161,13 @@ describe("startJoinCheckout (purchase / current)", () => {
     stubSessionStorage();
     stubDom();
     __resetJoinCheckoutForTests();
+    __resetMembershipStatusCtaForTests();
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
+    __resetMembershipStatusCtaForTests();
   });
 
   it("1. free member buying monthly uses normal checkout", async () => {
@@ -540,6 +561,61 @@ describe("startJoinCheckout (purchase / current)", () => {
       ]),
     );
 
+    expect(salesCtas[0].textContent).toBe("Manage Membership");
+    expect(salesCtas[0].getAttribute("href")).toBe("/account#membership");
+  });
+
+  it("does not let DOM Manage Membership overwrite loading / wait / contact_support hero", () => {
+    const { salesCtas, buttons } = stubDom({
+      buttons: [{ planKey: "monthly" }],
+      salesCta: true,
+    });
+    const paid = memberPayload("mem_dom_active", [
+      { planId: MEMBERSHIPS.membership.memberstackPlanId, status: "ACTIVE" },
+    ]);
+
+    for (const mode of ["loading", "wait", "contact_support"] as const) {
+      __resetMembershipStatusCtaForTests();
+      applyMembershipStatusCtaMode(mode);
+      applyJoinCheckoutButtonStates(paid);
+      expect(salesCtas[0].textContent).not.toBe("Manage Membership");
+      expect(salesCtas[0].getAttribute("data-membership-sales-cta-kind")).not.toBe("manage");
+      expect(buttons[0].disabled).toBe(true);
+    }
+  });
+
+  it("purchase mode restores DOM purchase presentation after status settle", () => {
+    const { salesCtas, buttons } = stubDom({
+      buttons: [{ planKey: "monthly" }],
+      salesCta: true,
+    });
+
+    applyMembershipStatusCtaMode("wait");
+    applyJoinCheckoutButtonStates(
+      memberPayload("mem_restore", [
+        { planId: MEMBERSHIPS.membership.memberstackPlanId, status: "ACTIVE" },
+      ]),
+    );
+    expect(salesCtas[0].textContent).not.toBe("Manage Membership");
+
+    applyMembershipStatusCtaMode("purchase");
+    applyJoinCheckoutButtonStates(memberPayload("mem_free_restore", []));
+    expect(salesCtas[0].textContent).toBe("Become a Member");
+    expect(salesCtas[0].getAttribute("href")).toBe("#pricing");
+    expect(buttons[0].disabled).toBe(false);
+  });
+
+  it("manage mode keeps Manage Membership and ignores later DOM rewrite attempts", () => {
+    const { salesCtas } = stubDom({
+      buttons: [{ planKey: "monthly" }],
+      salesCta: true,
+    });
+
+    applyMembershipStatusCtaMode("manage");
+    expect(salesCtas[0].textContent).toBe("Manage Membership");
+
+    // joinCheckout must not clear/replace status-owned manage CTA.
+    applyMembershipSalesCtaState(memberPayload("mem_free_ignored", []));
     expect(salesCtas[0].textContent).toBe("Manage Membership");
     expect(salesCtas[0].getAttribute("href")).toBe("/account#membership");
   });

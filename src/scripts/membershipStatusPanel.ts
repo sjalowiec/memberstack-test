@@ -1,43 +1,102 @@
 /**
- * Hydrate the /membership status panel from the authenticated membership-status endpoint.
+ * Hydrate the /membership status UI.
+ *
+ * - Active / canceling: once-per-session modal + reopen trigger near the hero.
+ * - Blocking transition / lookup failure: inline beige panel (always visible).
+ * - Free / purchase: compact inline note only (no auto-modal).
+ *
+ * Current paid membership comes from the same Memberstack client payload as
+ * AccountMembershipPanel / joinCheckout. The membership-status server endpoint
+ * supplies legacy transition context only when the client has no active paid plan.
  */
 
+import { isMemberLoggedIn } from "../lib/memberAccess";
 import {
   fetchMembershipStatus,
-  isMembershipStatusMemberLoggedIn,
   MembershipStatusAuthError,
 } from "../lib/membership/membershipStatusClient";
+import { applyMembershipStatusCtaMode } from "../lib/membership/membershipStatusCta";
 import {
-  applyMembershipStatusCtaMode,
-  membershipStatusCtaModeFromAction,
-} from "../lib/membership/membershipStatusCta";
+  MEMBERSHIP_STATUS_FREE_ACCOUNT_COMPACT_MESSAGE,
+  membershipStatusUiMode,
+  resolveMembershipStatusPageView,
+  type MembershipStatusPageFactKey,
+  type MembershipStatusPageView,
+} from "../lib/membership/membershipStatusPageView";
 import {
-  membershipStatusPanelHeading,
-  type MembershipStatusSummary,
-} from "../lib/membership/membershipStatusSummary";
+  hasMembershipStatusModalAutoOpened,
+  markMembershipStatusModalAutoOpened,
+} from "../lib/membership/membershipStatusSession";
+import { applyMembershipHeroHeading } from "../lib/membership/membershipHero";
+import { applyMembershipPageContentMode } from "../lib/membership/membershipThankYou";
+import { bindMembershipWhatsIncludedModal } from "../lib/membership/membershipWhatsIncluded";
+import type { MembershipStatusSummary } from "../lib/membership/membershipStatusSummary";
+import { memberRecordFromMemberstackPayload } from "../lib/patterns/memberstackMember";
 
-function statusLabel(summary: MembershipStatusSummary): string {
-  switch (summary.currentStatus) {
-    case "active":
-      return "Active";
-    case "canceling":
-      return "Active through paid-through date";
-    case "no_plan":
-      return "No active membership";
-    case "inactive":
-      return "No active membership";
-    default:
-      return "Status unavailable";
+const BOUND_ATTR = "data-membership-status-modal-bound";
+const FACT_KEYS: MembershipStatusPageFactKey[] = [
+  "status",
+  "plan",
+  "billing",
+  "renews",
+  "through",
+  "previous",
+];
+
+/** Ignore stale async results when auth:updated overlaps a prior load. */
+let loadGeneration = 0;
+
+/** Element that opened the modal (reopen trigger or null for auto-open). */
+let modalReturnFocus: HTMLElement | null = null;
+
+async function waitForMemberstackPayload(
+  attempts = 35,
+  delayMs = 200,
+): Promise<unknown | null> {
+  for (let i = 0; i < attempts; i++) {
+    const ms = window.$memberstackDom;
+    const api = ms?.getAppAndMember ?? ms?.getCurrentMember;
+    if (typeof api === "function") {
+      if (ms?.onReady) await ms.onReady;
+      try {
+        return await api.call(ms);
+      } catch (error) {
+        console.warn("[membership status] Memberstack member check failed", error);
+        return null;
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
   }
+  return null;
+}
+
+function memberIdFromPayload(payload: unknown): string | null {
+  const member = memberRecordFromMemberstackPayload(payload);
+  const id = member?.id ?? member?._id;
+  return typeof id === "string" && id.trim() ? id.trim() : null;
+}
+
+function isDialogElement(el: Element | null): el is HTMLDialogElement {
+  return (
+    !!el &&
+    typeof (el as HTMLDialogElement).showModal === "function" &&
+    typeof (el as HTMLDialogElement).close === "function"
+  );
+}
+
+function getDialog(root: ParentNode): HTMLDialogElement | null {
+  const el = root.querySelector("[data-membership-status-modal]");
+  return isDialogElement(el) ? el : null;
 }
 
 function setFact(
   root: ParentNode,
-  key: string,
+  key: MembershipStatusPageFactKey,
   value: string | null | undefined,
+  opts: { factAttr: string; valueAttr: string },
 ): void {
-  const row = root.querySelector<HTMLElement>(`[data-membership-status-fact="${key}"]`);
-  const valueEl = root.querySelector<HTMLElement>(`[data-membership-status-value="${key}"]`);
+  const row = root.querySelector<HTMLElement>(`[${opts.factAttr}="${key}"]`);
+  const valueEl = root.querySelector<HTMLElement>(`[${opts.valueAttr}="${key}"]`);
   if (!row || !valueEl) return;
   if (!value) {
     row.hidden = true;
@@ -48,7 +107,138 @@ function setFact(
   valueEl.textContent = value;
 }
 
-function renderSummary(root: ParentNode, summary: MembershipStatusSummary): void {
+function applyFacts(
+  root: ParentNode,
+  facts: MembershipStatusPageView["facts"],
+  opts: {
+    factsSelector: string;
+    factAttr: string;
+    valueAttr: string;
+    keys?: MembershipStatusPageFactKey[];
+  },
+): void {
+  const factsEl = root.querySelector<HTMLElement>(opts.factsSelector);
+  if (!factsEl) return;
+  const keys = opts.keys ?? FACT_KEYS;
+  // Hide any fact rows not in this presentation (e.g. Active through on the active modal).
+  for (const key of FACT_KEYS) {
+    if (!keys.includes(key)) {
+      setFact(root, key, null, opts);
+      continue;
+    }
+    setFact(root, key, facts[key], opts);
+  }
+  const visibleFact = factsEl.querySelector(`[${opts.factAttr}]:not([hidden])`);
+  factsEl.hidden = !visibleFact;
+}
+
+function hideInlinePanel(root: ParentNode): void {
+  const panel = root.querySelector<HTMLElement>("[data-membership-status-panel]");
+  if (!panel) return;
+  panel.hidden = true;
+  panel.setAttribute("data-membership-status-state", "idle");
+  panel.removeAttribute("data-membership-status-ui");
+}
+
+function setOpenTriggerVisible(root: ParentNode, visible: boolean): void {
+  root.querySelectorAll<HTMLElement>("[data-membership-status-open]").forEach((el) => {
+    el.hidden = !visible;
+  });
+}
+
+function modalFactKeys(
+  view: MembershipStatusPageView,
+): MembershipStatusPageFactKey[] {
+  if (view.source === "client_canceling") {
+    return ["plan", "status", "billing", "through"];
+  }
+  // Active membership modal: Plan, Status, Billing, Renews only.
+  return ["plan", "status", "billing", "renews"];
+}
+
+function renderModalContent(root: ParentNode, view: MembershipStatusPageView): void {
+  const heading = root.querySelector<HTMLElement>("[data-membership-status-modal-heading]");
+  const message = root.querySelector<HTMLElement>("[data-membership-status-modal-message]");
+  if (heading) heading.textContent = view.heading;
+  if (message) message.textContent = view.message;
+  applyFacts(root, view.facts, {
+    factsSelector: "[data-membership-status-modal-facts]",
+    factAttr: "data-membership-status-modal-fact",
+    valueAttr: "data-membership-status-modal-value",
+    keys: modalFactKeys(view),
+  });
+}
+
+export function openMembershipStatusModal(
+  root: ParentNode = document,
+  options?: { returnFocus?: HTMLElement | null },
+): boolean {
+  const dialog = getDialog(root);
+  if (!dialog) return false;
+
+  if (options && "returnFocus" in options) {
+    modalReturnFocus = options.returnFocus ?? null;
+  } else if (document.activeElement instanceof HTMLElement) {
+    modalReturnFocus = document.activeElement;
+  }
+
+  if (!dialog.open) {
+    dialog.showModal();
+  }
+
+  const closeBtn = dialog.querySelector<HTMLElement>("[data-membership-status-modal-close]");
+  (closeBtn ?? dialog).focus({ preventScroll: true });
+  return true;
+}
+
+export function closeMembershipStatusModal(root: ParentNode = document): void {
+  const dialog = getDialog(root);
+  if (!dialog?.open) return;
+  dialog.close();
+}
+
+function restoreModalFocus(): void {
+  const target = modalReturnFocus;
+  modalReturnFocus = null;
+  if (target && typeof target.focus === "function" && document.contains(target)) {
+    target.focus({ preventScroll: true });
+  }
+}
+
+function renderInlineBlocking(root: ParentNode, view: MembershipStatusPageView): void {
+  const panel = root.querySelector<HTMLElement>("[data-membership-status-panel]");
+  const loading = root.querySelector<HTMLElement>("[data-membership-status-loading]");
+  const body = root.querySelector<HTMLElement>("[data-membership-status-body]");
+  const heading = root.querySelector<HTMLElement>("[data-membership-status-heading]");
+  const message = root.querySelector<HTMLElement>("[data-membership-status-message]");
+
+  if (!panel || !loading || !body || !heading || !message) return;
+
+  setOpenTriggerVisible(root, false);
+  panel.hidden = false;
+  panel.setAttribute(
+    "data-membership-status-state",
+    view.source === "client_unavailable" ? "error" : "ready",
+  );
+  panel.setAttribute("data-membership-status-source", view.source);
+  panel.setAttribute("data-membership-status-ui", "inline_blocking");
+  loading.hidden = true;
+  body.hidden = false;
+
+  heading.hidden = false;
+  heading.textContent = view.heading;
+  message.textContent = view.message;
+
+  applyFacts(root, view.facts, {
+    factsSelector: "[data-membership-status-facts]",
+    factAttr: "data-membership-status-fact",
+    valueAttr: "data-membership-status-value",
+  });
+
+  applyMembershipStatusCtaMode(view.ctaMode, root);
+}
+
+function renderInlineCompact(root: ParentNode, view: MembershipStatusPageView): void {
   const panel = root.querySelector<HTMLElement>("[data-membership-status-panel]");
   const loading = root.querySelector<HTMLElement>("[data-membership-status-loading]");
   const body = root.querySelector<HTMLElement>("[data-membership-status-body]");
@@ -58,60 +248,78 @@ function renderSummary(root: ParentNode, summary: MembershipStatusSummary): void
 
   if (!panel || !loading || !body || !heading || !message) return;
 
+  setOpenTriggerVisible(root, false);
   panel.hidden = false;
   panel.setAttribute("data-membership-status-state", "ready");
+  panel.setAttribute("data-membership-status-source", view.source);
+  panel.setAttribute("data-membership-status-ui", "inline_compact");
   loading.hidden = true;
   body.hidden = false;
 
-  heading.textContent = membershipStatusPanelHeading(summary);
-  message.textContent = summary.customerFacingMessage;
+  heading.hidden = true;
+  heading.textContent = "";
+  message.textContent = MEMBERSHIP_STATUS_FREE_ACCOUNT_COMPACT_MESSAGE;
 
   if (facts) {
-    // Future/today legacy paid-through and ambiguous/unavailable states: message is enough.
-    const hideFacts =
-      summary.recommendedAction === "contact_support" ||
-      summary.recommendedAction === "wait" ||
-      summary.currentStatus === "unknown";
-
-    if (hideFacts) {
-      facts.hidden = true;
-      setFact(root, "status", null);
-      setFact(root, "plan", null);
-      setFact(root, "through", null);
-      setFact(root, "previous", null);
-    } else {
-      facts.hidden = false;
-      setFact(root, "status", statusLabel(summary));
-      setFact(root, "plan", summary.currentPlanName);
-      setFact(root, "through", summary.activeThroughDate);
-      if (summary.previousPlanName && summary.legacyExpirationDate) {
-        setFact(
-          root,
-          "previous",
-          `${summary.previousPlanName} (ended ${summary.legacyExpirationDate})`,
-        );
-      } else if (summary.legacyExpirationDate) {
-        setFact(root, "previous", `Ended ${summary.legacyExpirationDate}`);
-      } else if (summary.previousPlanName) {
-        setFact(root, "previous", summary.previousPlanName);
-      } else {
-        setFact(root, "previous", null);
-      }
-
-      // If every fact row is empty/hidden, hide the whole list (no blank labels).
-      const visibleFact = facts.querySelector(
-        "[data-membership-status-fact]:not([hidden])",
-      );
-      if (!visibleFact) {
-        facts.hidden = true;
-      }
-    }
+    applyFacts(root, {
+      status: null,
+      plan: null,
+      billing: null,
+      renews: null,
+      through: null,
+      previous: null,
+    }, {
+      factsSelector: "[data-membership-status-facts]",
+      factAttr: "data-membership-status-fact",
+      valueAttr: "data-membership-status-value",
+    });
   }
 
-  applyMembershipStatusCtaMode(
-    membershipStatusCtaModeFromAction(summary.recommendedAction),
-    root,
-  );
+  applyMembershipStatusCtaMode(view.ctaMode, root);
+}
+
+function presentPageView(
+  root: ParentNode,
+  view: MembershipStatusPageView,
+  memberId: string | null,
+  memberPayload: unknown | null = null,
+  options?: { autoOpenModal?: boolean },
+): void {
+  const uiMode = membershipStatusUiMode(view);
+
+  if (uiMode === "modal") {
+    hideInlinePanel(root);
+    setOpenTriggerVisible(root, true);
+    renderModalContent(root, view);
+    applyMembershipStatusCtaMode(view.ctaMode, root);
+    // Active / canceling paid: thank-you replaces sales content.
+    applyMembershipPageContentMode("thank_you", root);
+    applyMembershipHeroHeading("welcome", root, memberPayload);
+
+    const shouldAutoOpen =
+      options?.autoOpenModal !== false &&
+      Boolean(memberId) &&
+      !hasMembershipStatusModalAutoOpened(memberId!);
+
+    if (shouldAutoOpen && memberId) {
+      markMembershipStatusModalAutoOpened(memberId);
+      openMembershipStatusModal(root, { returnFocus: null });
+    }
+    return;
+  }
+
+  const dialog = getDialog(root);
+  if (dialog?.open) dialog.close();
+  setOpenTriggerVisible(root, false);
+  applyMembershipPageContentMode("sales", root);
+  applyMembershipHeroHeading("default", root);
+
+  if (uiMode === "inline_compact") {
+    renderInlineCompact(root, view);
+    return;
+  }
+
+  renderInlineBlocking(root, view);
 }
 
 function renderLoading(root: ParentNode): void {
@@ -119,36 +327,24 @@ function renderLoading(root: ParentNode): void {
   const loading = root.querySelector<HTMLElement>("[data-membership-status-loading]");
   const body = root.querySelector<HTMLElement>("[data-membership-status-body]");
   if (!panel || !loading || !body) return;
+  setOpenTriggerVisible(root, false);
   panel.hidden = false;
   panel.setAttribute("data-membership-status-state", "loading");
+  panel.setAttribute("data-membership-status-ui", "loading");
   loading.hidden = false;
   body.hidden = true;
-  // Block purchase until status is verified — do not rewrite hero CTA yet.
   applyMembershipStatusCtaMode("loading", root);
 }
 
-function renderUnavailable(root: ParentNode, message: string): void {
-  const panel = root.querySelector<HTMLElement>("[data-membership-status-panel]");
-  const loading = root.querySelector<HTMLElement>("[data-membership-status-loading]");
-  const body = root.querySelector<HTMLElement>("[data-membership-status-body]");
-  const heading = root.querySelector<HTMLElement>("[data-membership-status-heading]");
-  const messageEl = root.querySelector<HTMLElement>("[data-membership-status-message]");
-  const facts = root.querySelector<HTMLElement>("[data-membership-status-facts]");
-
-  if (!panel || !loading || !body || !heading || !messageEl) return;
-
-  panel.hidden = false;
-  panel.setAttribute("data-membership-status-state", "error");
-  loading.hidden = true;
-  body.hidden = false;
-  heading.textContent = "We could not confirm your membership";
-  messageEl.textContent = message;
-  if (facts) facts.hidden = true;
-  setFact(root, "status", null);
-  setFact(root, "plan", null);
-  setFact(root, "through", null);
-  setFact(root, "previous", null);
-  applyMembershipStatusCtaMode("wait", root);
+async function loadServerSummaryForLegacy(): Promise<MembershipStatusSummary | null> {
+  try {
+    return await fetchMembershipStatus();
+  } catch (err) {
+    if (err instanceof MembershipStatusAuthError) {
+      return null;
+    }
+    return null;
+  }
 }
 
 export async function loadAndRenderMembershipStatusPanel(
@@ -157,55 +353,152 @@ export async function loadAndRenderMembershipStatusPanel(
   const panel = root.querySelector<HTMLElement>("[data-membership-status-panel]");
   if (!panel) return;
 
-  // Do not encourage purchase until login + status are resolved.
+  const generation = ++loadGeneration;
   applyMembershipStatusCtaMode("loading", root);
 
-  const loggedIn = await isMembershipStatusMemberLoggedIn();
-  if (!loggedIn) {
-    panel.hidden = true;
+  const payload = await waitForMemberstackPayload();
+  if (generation !== loadGeneration) return;
+
+  if (!payload || !isMemberLoggedIn(payload)) {
+    // Distinguish "logged out" from "Memberstack failed while cookies look logged in".
+    if (!payload) {
+      renderLoading(root);
+      presentPageView(
+        root,
+        resolveMembershipStatusPageView({
+          clientLoaded: false,
+          memberPayload: null,
+          serverSummary: null,
+        }),
+        null,
+        null,
+        { autoOpenModal: false },
+      );
+      return;
+    }
+    hideInlinePanel(root);
+    setOpenTriggerVisible(root, false);
+    const dialog = getDialog(root);
+    if (dialog?.open) dialog.close();
+    applyMembershipPageContentMode("sales", root);
+    applyMembershipHeroHeading("default", root);
     panel.setAttribute("data-membership-status-state", "idle");
     applyMembershipStatusCtaMode("hidden", root);
     return;
   }
 
+  const memberId = memberIdFromPayload(payload);
   renderLoading(root);
 
-  try {
-    const summary = await fetchMembershipStatus();
-    renderSummary(root, summary);
-  } catch (err) {
-    if (err instanceof MembershipStatusAuthError) {
-      panel.hidden = true;
-      applyMembershipStatusCtaMode("hidden", root);
-      return;
-    }
-    renderUnavailable(
-      root,
-      "We could not confirm your membership status right now. Please try again or contact us before purchasing another membership.",
-    );
+  // Client paid membership wins immediately — do not wait on / fail because of the server.
+  const clientFirst = resolveMembershipStatusPageView({
+    clientLoaded: true,
+    memberPayload: payload,
+    serverSummary: null,
+  });
+
+  if (
+    clientFirst.source === "client_active" ||
+    clientFirst.source === "client_canceling"
+  ) {
+    if (generation !== loadGeneration) return;
+    presentPageView(root, clientFirst, memberId, payload);
+    return;
   }
+
+  // No active paid plan on the client — legacy / transition context from the server.
+  const serverSummary = await loadServerSummaryForLegacy();
+  if (generation !== loadGeneration) return;
+
+  presentPageView(
+    root,
+    resolveMembershipStatusPageView({
+      clientLoaded: true,
+      memberPayload: payload,
+      serverSummary,
+    }),
+    memberId,
+    payload,
+  );
+}
+
+function bindMembershipStatusModal(root: ParentNode): void {
+  const dialog = getDialog(root);
+  if (!dialog || dialog.getAttribute(BOUND_ATTR) === "true") return;
+  dialog.setAttribute(BOUND_ATTR, "true");
+
+  const close = (): void => {
+    if (dialog.open) dialog.close();
+  };
+
+  dialog.querySelectorAll("[data-membership-status-modal-close]").forEach((el) => {
+    el.addEventListener("click", (event) => {
+      event.preventDefault();
+      close();
+    });
+  });
+
+  // Backdrop click closes; clicks inside the inner content do not.
+  dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) close();
+  });
+
+  dialog.addEventListener("cancel", (event) => {
+    event.preventDefault();
+    close();
+  });
+
+  dialog.addEventListener("close", () => {
+    restoreModalFocus();
+  });
 }
 
 export function initMembershipStatusPanel(root: ParentNode = document): void {
   const panel = root.querySelector<HTMLElement>("[data-membership-status-panel]");
   if (!panel) return;
 
+  bindMembershipStatusModal(root);
+  bindMembershipWhatsIncludedModal(root);
+
   const retry = root.querySelector<HTMLButtonElement>("[data-membership-status-retry]");
   retry?.addEventListener("click", () => {
     void loadAndRenderMembershipStatusPanel(root);
   });
 
-  window.addEventListener("auth:updated", () => {
-    void loadAndRenderMembershipStatusPanel(root);
+  root.querySelectorAll<HTMLElement>("[data-membership-status-open]").forEach((trigger) => {
+    if (trigger.getAttribute("data-membership-status-open-bound") === "true") return;
+    trigger.setAttribute("data-membership-status-open-bound", "true");
+    trigger.addEventListener("click", () => {
+      openMembershipStatusModal(root, { returnFocus: trigger });
+    });
   });
+
+  if (panel.getAttribute("data-membership-status-auth-bound") !== "true") {
+    panel.setAttribute("data-membership-status-auth-bound", "true");
+    window.addEventListener("auth:updated", () => {
+      void loadAndRenderMembershipStatusPanel(root);
+    });
+  }
 
   void loadAndRenderMembershipStatusPanel(root);
 }
 
+/** Test-only: reset in-flight generation between cases. */
+export function __resetMembershipStatusPanelForTests(): void {
+  loadGeneration = 0;
+  modalReturnFocus = null;
+}
+
+function bootMembershipStatusPanel(): void {
+  if (document.querySelector("[data-membership-status-panel]")) {
+    initMembershipStatusPanel();
+  }
+}
+
 if (typeof document !== "undefined") {
-  document.addEventListener("DOMContentLoaded", () => {
-    if (document.querySelector("[data-membership-status-panel]")) {
-      initMembershipStatusPanel();
-    }
-  });
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootMembershipStatusPanel);
+  } else {
+    bootMembershipStatusPanel();
+  }
 }

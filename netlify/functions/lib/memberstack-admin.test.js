@@ -6,20 +6,27 @@ vi.mock("./local-dotenv.js", () => ({
 }));
 
 import {
+  classifyMemberstackMemberIdMode,
+  classifyMemberstackSecretMode,
   createMemberstackAdminClient,
   getMemberstackAdminClient,
   getMemberstackSecretKey,
+  isMemberstackEnvironmentMismatch,
+  logMemberstackEnvironmentMismatch,
+  resolveMemberstackAdminSecret,
 } from "./memberstack-admin.js";
 import { readDotEnvValue } from "./local-dotenv.js";
 
-const ENV_KEY = "MEMBERSTACK_SECRET_KEY";
-const ENV_KEYS = [ENV_KEY, "NODE_ENV"];
+const LIVE_KEY = "MEMBERSTACK_SECRET_KEY";
+const SANDBOX_KEY = "MEMBERSTACK_SANDBOX_SECRET_KEY";
+const ENV_KEYS = [LIVE_KEY, SANDBOX_KEY, "NODE_ENV", "CONTEXT"];
 let savedEnv = {};
 
 beforeEach(() => {
   savedEnv = {};
   for (const key of ENV_KEYS) {
     savedEnv[key] = process.env[key];
+    delete process.env[key];
   }
   vi.mocked(readDotEnvValue).mockReturnValue(null);
 });
@@ -33,38 +40,62 @@ afterEach(() => {
 });
 
 describe("memberstack-admin client secret injection", () => {
-  it("uses process.env.MEMBERSTACK_SECRET_KEY when available", () => {
-    process.env[ENV_KEY] = "sk_from_process_env";
-    delete process.env.NODE_ENV;
+  it("uses process.env.MEMBERSTACK_SECRET_KEY when available and sandbox unset", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    process.env[LIVE_KEY] = "sk_from_process_env";
     expect(getMemberstackSecretKey()).toBe("sk_from_process_env");
-    expect(readDotEnvValue).not.toHaveBeenCalled();
+    expect(readDotEnvValue).not.toHaveBeenCalledWith(LIVE_KEY);
     const client = getMemberstackAdminClient();
     expect(client).not.toBeNull();
     expect(client).toHaveProperty("listMembers");
     expect(client).toHaveProperty("createMember");
     expect(client).toHaveProperty("updateMember");
+    warn.mockRestore();
+  });
+
+  it("in non-production, prefers MEMBERSTACK_SANDBOX_SECRET_KEY over live", () => {
+    process.env[LIVE_KEY] = "sk_live_should_not_win";
+    process.env[SANDBOX_KEY] = "sk_sb_sandbox_wins";
+    const resolved = resolveMemberstackAdminSecret();
+    expect(resolved.secretKey).toBe("sk_sb_sandbox_wins");
+    expect(resolved.mode).toBe("sandbox");
+    expect(resolved.usedSandboxEnv).toBe(true);
+    expect(getMemberstackSecretKey()).toBe("sk_sb_sandbox_wins");
   });
 
   it("in non-production, falls back to local .env when process env is missing", () => {
-    delete process.env[ENV_KEY];
-    delete process.env.NODE_ENV;
-    vi.mocked(readDotEnvValue).mockReturnValue("sk_from_dotenv_file");
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.mocked(readDotEnvValue).mockImplementation((name) =>
+      name === LIVE_KEY ? "sk_from_dotenv_file" : null,
+    );
     expect(getMemberstackSecretKey()).toBe("sk_from_dotenv_file");
-    expect(readDotEnvValue).toHaveBeenCalledWith("MEMBERSTACK_SECRET_KEY");
+    expect(readDotEnvValue).toHaveBeenCalledWith(SANDBOX_KEY);
+    expect(readDotEnvValue).toHaveBeenCalledWith(LIVE_KEY);
     expect(getMemberstackAdminClient()).not.toBeNull();
+    warn.mockRestore();
   });
 
-  it("does not read the .env fallback in production", () => {
-    delete process.env[ENV_KEY];
+  it("does not read the sandbox secret or .env fallback in production", () => {
     process.env.NODE_ENV = "production";
-    vi.mocked(readDotEnvValue).mockReturnValue("sk_should_be_ignored");
+    process.env[SANDBOX_KEY] = "sk_sb_must_never_be_used";
+    vi.mocked(readDotEnvValue).mockReturnValue("sk_sb_dotenv_ignored");
     expect(getMemberstackSecretKey()).toBeNull();
     expect(readDotEnvValue).not.toHaveBeenCalled();
     expect(getMemberstackAdminClient()).toBeNull();
   });
 
+  it("production uses only the live secret even when sandbox is set", () => {
+    process.env.CONTEXT = "production";
+    process.env[LIVE_KEY] = "sk_live_prod_only";
+    process.env[SANDBOX_KEY] = "sk_sb_must_never_be_used";
+    const resolved = resolveMemberstackAdminSecret();
+    expect(resolved.secretKey).toBe("sk_live_prod_only");
+    expect(resolved.usedSandboxEnv).toBe(false);
+    expect(resolved.source).toContain(LIVE_KEY);
+    expect(JSON.stringify(resolved)).not.toContain("sk_sb_must_never_be_used");
+  });
+
   it("uses an explicit Netlify runtime secret without reading process.env", () => {
-    delete process.env[ENV_KEY];
     const client = getMemberstackAdminClient({ secretKey: "sk_explicit_netlify" });
     expect(client).not.toBeNull();
     expect(client).toHaveProperty("listMembers");
@@ -73,14 +104,13 @@ describe("memberstack-admin client secret injection", () => {
   });
 
   it("returns null when an explicit secret is missing", () => {
-    process.env[ENV_KEY] = "sk_from_process_env";
+    process.env[LIVE_KEY] = "sk_from_process_env";
     expect(getMemberstackAdminClient({ secretKey: null })).toBeNull();
     expect(getMemberstackAdminClient({ secretKey: "" })).toBeNull();
     expect(getMemberstackAdminClient({ secretKey: "   " })).toBeNull();
   });
 
   it("does not create a client when process env is unset, production, and no secret is passed", () => {
-    delete process.env[ENV_KEY];
     process.env.NODE_ENV = "production";
     expect(getMemberstackAdminClient()).toBeNull();
   });
@@ -89,5 +119,52 @@ describe("memberstack-admin client secret injection", () => {
     expect(() => createMemberstackAdminClient({ secretKey: "" })).toThrow(
       /secretKey is required/i,
     );
+  });
+});
+
+describe("memberstack environment alignment", () => {
+  it("classifies secret and member id modes", () => {
+    expect(classifyMemberstackSecretMode("sk_sb_abc")).toBe("sandbox");
+    expect(classifyMemberstackSecretMode("sk_live_abc")).toBe("live");
+    expect(classifyMemberstackMemberIdMode("mem_sb_cmrw4wref06jb0tv923kw5dq2")).toBe(
+      "sandbox",
+    );
+    expect(classifyMemberstackMemberIdMode("mem_cmrq9lzwl02c70sor1uuwamcf")).toBe("live");
+    expect(classifyMemberstackMemberIdMode("member@example.com")).toBe("unknown");
+  });
+
+  it("detects mem_sb_ + live Admin as a mismatch", () => {
+    expect(
+      isMemberstackEnvironmentMismatch(
+        "mem_sb_cmrw4wref06jb0tv923kw5dq2",
+        "sk_live_only",
+      ),
+    ).toBe(true);
+    expect(
+      isMemberstackEnvironmentMismatch(
+        "mem_cmrq9lzwl02c70sor1uuwamcf",
+        "sk_live_only",
+      ),
+    ).toBe(false);
+    expect(
+      isMemberstackEnvironmentMismatch(
+        "mem_sb_cmrw4wref06jb0tv923kw5dq2",
+        "sk_sb_sandbox",
+      ),
+    ).toBe(false);
+  });
+
+  it("logs environment mismatch without secret values", () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+    const secret = "sk_live_super_secret_value_do_not_log";
+    expect(
+      logMemberstackEnvironmentMismatch("mem_sb_example", secret, "getMember by id"),
+    ).toBe(true);
+    const logged = JSON.stringify(error.mock.calls);
+    expect(logged).toContain("environment mismatch");
+    expect(logged).toContain("sandbox");
+    expect(logged).toContain("live");
+    expect(logged).not.toContain(secret);
+    error.mockRestore();
   });
 });

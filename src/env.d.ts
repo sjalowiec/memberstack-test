@@ -12,8 +12,13 @@ interface ImportMetaEnv {
   readonly PUBLIC_NOINDEX?: string;
   /** Server-only: Watson owner password for private admin access. */
   readonly WATSON_ADMIN_PASSWORD?: string;
-  /** Server-only: Memberstack Admin API key for token verification (My Library APIs). */
+  /** Server-only: live Memberstack Admin API secret (production). */
   readonly MEMBERSTACK_SECRET_KEY?: string;
+  /**
+   * Server-only: sandbox/test Memberstack Admin API secret for local/dev.
+   * Preferred outside production so Admin matches browser TEST mode.
+   */
+  readonly MEMBERSTACK_SANDBOX_SECRET_KEY?: string;
   /** Server-only: Resend API key for transactional email. */
   readonly RESEND_API_KEY?: string;
   /** Server-only: verified sender for Resend (defaults to hello@knititnow.com). */

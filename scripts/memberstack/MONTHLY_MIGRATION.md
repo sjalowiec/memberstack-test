@@ -21,7 +21,9 @@ $env:MEMBERSTACK_TLS_INSECURE="1"
 node scripts/memberstack/run-monthly-migration.mjs --preflight-only
 ```
 
-Or add `MEMBERSTACK_TLS_INSECURE=1` to `.env` (local only).
+Or set `MEMBERSTACK_TLS_INSECURE=1` in a **local-only** shell / untracked `.env` (never commit it; production ignores the flag).
+
+This reuses the shared Memberstack Admin client opt-in (`netlify/functions/lib/memberstack-admin.js`). It relaxes TLS **only for that client** (not process-wide `NODE_TLS_REJECT_UNAUTHORIZED`). The same flag unblocks Watson local customer profiles — see `docs/watson/README.md`.
 
 ## Exact execution (after approval)
 

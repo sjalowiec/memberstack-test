@@ -1,0 +1,106 @@
+---
+/**
+ * ùWhatùs includedù modal for active / canceling paid members on /membership.
+ * Content is the same body as the sales-page section (no duplicated copy).
+ */
+import { MEMBERSHIP_WHATS_INCLUDED_HEADING } from "../../lib/membership/membershipWhatsIncluded";
+import MembershipWhatsIncludedBody from "./MembershipWhatsIncludedBody.astro";
+---
+
+<dialog
+  class="membership-whats-included-modal"
+  data-membership-whats-included-modal
+  aria-labelledby="membership-whats-included-modal-heading"
+>
+  <div class="membership-whats-included-modal__inner">
+    <button
+      type="button"
+      class="membership-whats-included-modal__close"
+      data-membership-whats-included-modal-close
+      aria-label="Close what's included"
+    >
+      <span aria-hidden="true">&times;</span>
+    </button>
+
+    <h2
+      id="membership-whats-included-modal-heading"
+      class="membership-whats-included-modal__heading"
+    >
+      {MEMBERSHIP_WHATS_INCLUDED_HEADING}
+    </h2>
+
+    <div class="membership-whats-included-modal__body">
+      <MembershipWhatsIncludedBody />
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .membership-whats-included-modal {
+    max-width: min(94vw, 36rem);
+    width: 100%;
+    margin: auto;
+    padding: 0;
+    border: none;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.18);
+  }
+
+  .membership-whats-included-modal::backdrop {
+    background: rgba(15, 23, 42, 0.45);
+  }
+
+  .membership-whats-included-modal__inner {
+    position: relative;
+    padding: clamp(1.25rem, 3vw, 1.75rem);
+    max-height: min(85vh, 40rem);
+    overflow: auto;
+  }
+
+  .membership-whats-included-modal__close {
+    position: absolute;
+    top: 0.65rem;
+    right: 0.65rem;
+    width: 2rem;
+    height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #6b7280;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .membership-whats-included-modal__close:hover {
+    background: #f3f4f6;
+    color: #374151;
+  }
+
+  .membership-whats-included-modal__close:focus-visible {
+    outline: 2px solid #52682d;
+    outline-offset: 2px;
+  }
+
+  .membership-whats-included-modal__heading {
+    margin: 0 1.75rem 1rem 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #2c3a57;
+  }
+
+  .membership-whats-included-modal__body :global(.membership-included-grid) {
+    gap: 1rem;
+  }
+
+  @media (max-width: 719px) {
+    .membership-whats-included-modal__body :global(.membership-included-grid) {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

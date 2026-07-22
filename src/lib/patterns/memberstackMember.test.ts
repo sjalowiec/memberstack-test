@@ -30,6 +30,22 @@ describe("memberstackMember", () => {
     ).toBe("Sue");
   });
 
+  it("reads first name from auth.firstName when custom fields are empty", () => {
+    expect(
+      memberFirstNameFromMemberstackPayload({
+        data: { auth: { firstName: " Mary " } },
+      }),
+    ).toBe("Mary");
+  });
+
+  it("does not use email as a first-name fallback", () => {
+    expect(
+      memberFirstNameFromMemberstackPayload({
+        data: { auth: { email: "knitter@example.com" } },
+      }),
+    ).toBeUndefined();
+  });
+
   it("falls back to email local part when first name is missing", () => {
     expect(
       memberDisplayFirstNameFromMemberstackPayload({

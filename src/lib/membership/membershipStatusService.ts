@@ -7,6 +7,7 @@ import {
   buildCustomerMemberstackSummary,
   loadCustomerMemberstackMemberById,
   type CustomerMemberstackSummary,
+  type MemberstackAdminFailureReason,
   type MemberstackGetMemberClient,
 } from "../watson/customerMemberstack";
 import {
@@ -132,12 +133,25 @@ export async function loadMembershipStatusForMemberId(
     });
   }
 
+  // Pass the verified JWT member id straight to Admin getMember (via shared client path).
   const memberstackResult = await loadCustomerMemberstackMemberById(normalizedId, {
     secretKey: deps.secretKey,
     getClient: deps.getClient,
   });
 
   if (!memberstackResult.ok) {
+    const failureReason: MemberstackAdminFailureReason =
+      memberstackResult.failureReason ??
+      (memberstackResult.status === "not_found"
+        ? "member_not_found"
+        : "admin_lookup_failed");
+    console.warn("[membership-status] Memberstack Admin lookup unsuccessful", {
+      operation: "getMember by id",
+      failureReason,
+      memberstackStatus: memberstackResult.status,
+      message: memberstackResult.error,
+      diagnostic: "diagnostic" in memberstackResult ? memberstackResult.diagnostic : undefined,
+    });
     return buildMembershipStatusSummary({
       memberstackMember: null,
       memberstackSummary: null,

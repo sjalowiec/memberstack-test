@@ -1,0 +1,75 @@
+---
+/**
+ * Shared "What's included" body — used by the sales-page section and the member modal.
+ */
+import {
+  MEMBERSHIP_WHATS_INCLUDED_CALLOUT_BODY,
+  MEMBERSHIP_WHATS_INCLUDED_CALLOUT_TITLE,
+  MEMBERSHIP_WHATS_INCLUDED_GROUPS,
+} from "../../lib/membership/membershipWhatsIncluded";
+---
+
+<div class="membership-included-grid" data-membership-whats-included-body>
+  <div class="membership-included-groups">
+    {
+      MEMBERSHIP_WHATS_INCLUDED_GROUPS.map((group) => (
+        <div class="membership-included-group">
+          <h3 class="membership-included-group__title">{group.title}</h3>
+          <ul class="membership-included-list">
+            {group.items.map((item) => (
+              <li>{item}</li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+  <div class="kbm-intro-callout" data-membership-whats-included-callout>
+    <strong>{MEMBERSHIP_WHATS_INCLUDED_CALLOUT_TITLE}</strong>
+    <p>{MEMBERSHIP_WHATS_INCLUDED_CALLOUT_BODY}</p>
+  </div>
+</div>
+
+<style>
+  .membership-included-grid {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  @media (min-width: 720px) {
+    .membership-included-grid {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+  }
+
+  .membership-included-groups {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .membership-included-group + .membership-included-group {
+    margin-top: 0.9rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid rgba(82, 104, 45, 0.14);
+  }
+
+  .membership-included-group__title {
+    margin: 0 0 0.35rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: 0.02em;
+    color: #2c3a57;
+  }
+
+  .membership-included-list {
+    margin: 0;
+    padding-left: 1.25rem;
+    line-height: 1.6;
+  }
+
+  .membership-included-list li {
+    margin-bottom: 0.4rem;
+  }
+</style>

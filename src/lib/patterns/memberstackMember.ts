@@ -76,11 +76,21 @@ export function memberEmailFromMemberstackPayload(payload: unknown): string | un
   return trimmedString(data.email) ?? trimmedString(member?.email);
 }
 
-/** First name from Memberstack custom fields (`first-name` / `firstName`). */
+/**
+ * First name from Memberstack (trimmed).
+ * Prefers custom fields (`first-name` / `firstName`), then `auth.firstName`.
+ * Does not fall back to email or username.
+ */
 export function memberFirstNameFromMemberstackPayload(payload: unknown): string | undefined {
   const member = memberRecordFromMemberstackPayload(payload);
   if (!member) return undefined;
-  return customFieldString(member.customFields, "first-name", "firstName");
+  const fromCustom = customFieldString(member.customFields, "first-name", "firstName");
+  if (fromCustom) return fromCustom;
+  const auth = member.auth;
+  if (auth && typeof auth === "object" && !Array.isArray(auth)) {
+    return trimmedString((auth as Record<string, unknown>).firstName);
+  }
+  return undefined;
 }
 
 /** Display first name with email local-part fallback (before `@`). */

@@ -3,6 +3,7 @@ import {
   __resetMembershipStatusCtaForTests,
   applyMembershipStatusCtaMode,
   membershipStatusModeAllowsPurchase,
+  membershipStatusModeOwnsHeroCta,
   shouldBlockPurchaseForStatusMode,
 } from "./membershipStatusCta";
 import {
@@ -92,7 +93,7 @@ describe("membershipStatusCta overlay", () => {
     applyMembershipStatusCtaMode("contact_support", root);
     expect(checkout.disabled).toBe(true);
     expect(contact.hidden).toBe(false);
-    expect(salesCta.textContent).toBe("Contact us about my membership");
+    expect(salesCta.textContent).toBe("Contact us");
 
     applyMembershipStatusCtaMode("wait", root);
     expect(checkout.disabled).toBe(true);
@@ -137,5 +138,46 @@ describe("membershipStatusCta overlay", () => {
     applyMembershipStatusCtaMode("purchase", root);
     expect(checkout.disabled).toBe(false);
     expect(shouldBlockPurchaseForStatusMode()).toBe(false);
+  });
+
+  it("status overlay owns hero CTA for loading / wait / contact_support / manage", () => {
+    expect(membershipStatusModeOwnsHeroCta("loading")).toBe(true);
+    expect(membershipStatusModeOwnsHeroCta("wait")).toBe(true);
+    expect(membershipStatusModeOwnsHeroCta("contact_support")).toBe(true);
+    expect(membershipStatusModeOwnsHeroCta("manage")).toBe(true);
+    expect(membershipStatusModeOwnsHeroCta("purchase")).toBe(false);
+    expect(membershipStatusModeOwnsHeroCta("hidden")).toBe(false);
+  });
+
+  it("loading mode sets a checking hero CTA and blocks purchase", () => {
+    const checkout = el(["[data-join-checkout]"]);
+    const salesCta = el(["[data-membership-sales-cta]"]);
+    const manage = el(["[data-membership-status-manage]"]);
+    manage.hidden = true;
+    const root = makeRoot([checkout, salesCta, manage]);
+
+    applyMembershipStatusCtaMode("loading", root);
+    expect(salesCta.textContent).toBe("Checking membership...");
+    expect(salesCta.getAttribute("data-membership-sales-cta-kind")).toBe("loading");
+    expect(checkout.disabled).toBe(true);
+    expect(manage.hidden).toBe(true);
+    expect(shouldBlockPurchaseForStatusMode()).toBe(true);
+  });
+
+  it("hidden and purchase modes clear Checking membership hero text", () => {
+    const salesCta = el(["[data-membership-sales-cta]"]);
+    const root = makeRoot([salesCta]);
+
+    applyMembershipStatusCtaMode("loading", root);
+    expect(salesCta.textContent).toBe("Checking membership...");
+
+    applyMembershipStatusCtaMode("hidden", root);
+    expect(salesCta.textContent).toBe("Become a Member");
+    expect(salesCta.getAttribute("data-membership-sales-cta-kind")).toBe("choose-plan");
+
+    applyMembershipStatusCtaMode("loading", root);
+    applyMembershipStatusCtaMode("purchase", root);
+    expect(salesCta.textContent).toBe("Become a Member");
+    expect(salesCta.getAttribute("data-membership-sales-cta-kind")).toBe("choose-plan");
   });
 });

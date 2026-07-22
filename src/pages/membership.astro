@@ -5,6 +5,10 @@ import PatternHeaderImage from "../components/patterns/PatternHeaderImage.astro"
 import { PATTERN_BUILDERS_HOME_HREF } from "../lib/patterns/customPatternProjectNavigation";
 import MembershipPricing from "../components/membership/MembershipPricing.astro";
 import MembershipStatusPanel from "../components/membership/MembershipStatusPanel.astro";
+import MembershipThankYou from "../components/membership/MembershipThankYou.astro";
+import MembershipWhatsIncludedBody from "../components/membership/MembershipWhatsIncludedBody.astro";
+import MembershipWhatsIncludedModal from "../components/membership/MembershipWhatsIncludedModal.astro";
+import { MEMBERSHIP_WHATS_INCLUDED_HEADING } from "../lib/membership/membershipWhatsIncluded";
 
 const memberStories = [
   {
@@ -52,31 +56,6 @@ const memberOutcomes = [
   "Print knit-ready layouts designed to work beside your machine",
 ];
 
-const includedGroups = [
-  {
-    title: "Pattern Builders",
-    items: [
-      "Access every current and future Pattern Builder",
-      "Customize patterns using your measurements and preferences",
-    ],
-  },
-  {
-    title: "Learning and Support",
-    items: [
-      "Technique guides and instructional videos",
-      "Troubleshooting help and practical machine knitting fixes",
-      "Help Hub answers focused on real machine knitting problems",
-      "All Knit It Now courses",
-    ],
-  },
-  {
-    title: "Tools and Resources",
-    items: [
-      "Project planning tools and calculators",
-      "Ongoing updates, new tools, and future learning resources",
-    ],
-  },
-];
 ---
 
 <Layout
@@ -104,9 +83,24 @@ const includedGroups = [
         >
           Become a Member
         </a>
-        <a href="#whats-included" class="kbm-btn kbm-btn-outline">See what's included</a>
+        <a
+          href="#whats-included"
+          class="kbm-btn kbm-btn-outline"
+          data-membership-whats-included-open
+          data-membership-whats-included-mode="anchor"
+        >
+          See what's included
+        </a>
       </div>
-      <p class="kbm-member-note">
+      <button
+        type="button"
+        class="membership-status-open"
+        data-membership-status-open
+        hidden
+      >
+        View membership details
+      </button>
+      <p class="kbm-member-note" data-ms-content="!members">
         Already a member?
         <a href="#" data-ms-modal="login" data-ms-redirect="current-url">Log in</a>.
       </p>
@@ -114,9 +108,16 @@ const includedGroups = [
 
     <hr class="section-divider" />
 
-    <!-- Logged-in status (Watson-backed; hidden when logged out) -->
+    <!-- Logged-in status: blocking/inline panel + active/canceling modal -->
     <MembershipStatusPanel />
 
+    <!-- Active / canceling paid members: thank-you (sales content hidden via script) -->
+    <MembershipThankYou />
+
+    <!-- Active / canceling: hero “See what’s included” opens this; sales visitors use inline section -->
+    <MembershipWhatsIncludedModal />
+
+    <div data-membership-sales-content>
     <!-- 2. Pricing -->
     <section
       id="pricing"
@@ -227,39 +228,17 @@ const includedGroups = [
 
     <hr class="section-divider" />
 
-    <!-- 7. What's included -->
+    <!-- 7. What's included (sales visitors / non-members; hidden with sales content for active members) -->
     <section
       id="whats-included"
       class="membership-section membership-section--anchor"
       aria-labelledby="membership-included-heading"
+      data-membership-whats-included-section
     >
       <header class="membership-section__header">
-        <h2 id="membership-included-heading">What's included</h2>
+        <h2 id="membership-included-heading">{MEMBERSHIP_WHATS_INCLUDED_HEADING}</h2>
       </header>
-      <div class="membership-included-grid">
-        <div class="membership-included-groups">
-          {
-            includedGroups.map((group) => (
-              <div class="membership-included-group">
-                <h3 class="membership-included-group__title">{group.title}</h3>
-                <ul class="membership-included-list">
-                  {group.items.map((item) => (
-                    <li>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            ))
-          }
-        </div>
-        <div class="kbm-intro-callout">
-          <strong>More than just patterns</strong>
-          <p>
-            Knit It Now supports the entire knitting process. Use your included Pattern Builders to
-            customize garments, then turn to lessons, planning tools, troubleshooting help, and
-            practical resources created specifically for machine knitters.
-          </p>
-        </div>
-      </div>
+      <MembershipWhatsIncludedBody />
     </section>
 
     <hr class="section-divider" />
@@ -349,6 +328,7 @@ const includedGroups = [
         </details>
       </div>
     </section>
+    </div>
   </div>
 
   <script>
@@ -488,48 +468,6 @@ const includedGroups = [
 
     .membership-outcomes li:last-child {
       margin-bottom: 0;
-    }
-
-    .membership-included-grid {
-      display: grid;
-      gap: 1.25rem;
-    }
-
-    @media (min-width: 720px) {
-      .membership-included-grid {
-        grid-template-columns: 1fr 1fr;
-        align-items: start;
-      }
-    }
-
-    .membership-included-groups {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .membership-included-group + .membership-included-group {
-      margin-top: 0.9rem;
-      padding-top: 0.9rem;
-      border-top: 1px solid rgba(82, 104, 45, 0.14);
-    }
-
-    .membership-included-group__title {
-      margin: 0 0 0.35rem;
-      font-size: 0.9rem;
-      font-weight: 600;
-      line-height: 1.35;
-      letter-spacing: 0.02em;
-      color: #2c3a57;
-    }
-
-    .membership-included-list {
-      margin: 0;
-      padding-left: 1.25rem;
-      line-height: 1.6;
-    }
-
-    .membership-included-list li {
-      margin-bottom: 0.4rem;
     }
 
     .membership-stories {

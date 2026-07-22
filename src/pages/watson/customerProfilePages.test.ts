@@ -91,8 +91,12 @@ describe("Watson customer profile pages", () => {
     expect(memberstackProfilePage).not.toContain("MEMBERSTACK_SECRET_KEY");
     expect(legacyProfilePage).not.toMatch(/sk_[a-z0-9_]+/i);
     expect(memberstackProfilePage).not.toMatch(/sk_[a-z0-9_]+/i);
-    expect(memberstackLoader).toContain("import.meta.env");
+    expect(memberstackLoader).toContain("getMemberstackSecretKey");
     expect(memberstackLoader).not.toContain("PUBLIC_MEMBERSTACK");
+    // Netlify functions do not provide import.meta.env; secret resolution must not require it.
+    expect(memberstackLoader).not.toMatch(
+      /resolveCustomerMemberstackSecretKey\([\s\S]*import\.meta\.env/,
+    );
     expect(notesSection).toContain("/api/watson/members/");
     expect(notesSection).not.toContain("MEMBERSTACK_SECRET_KEY");
   });

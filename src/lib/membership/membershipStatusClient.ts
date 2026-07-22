@@ -25,14 +25,26 @@ async function waitForMemberstackDom(maxAttempts = 35, intervalMs = 200) {
   return window.$memberstackDom;
 }
 
-/** Authorization header from Memberstack session cookie, or {} when logged out. */
-export async function getMembershipStatusAuthHeaders(): Promise<Record<string, string>> {
+/**
+ * Authorization header from Memberstack session cookie, or {} when logged out.
+ * Retries briefly: getCurrentMember can be ready before getMemberCookie returns a JWT.
+ */
+export async function getMembershipStatusAuthHeaders(
+  options: { attempts?: number; intervalMs?: number } = {},
+): Promise<Record<string, string>> {
   if (typeof window === "undefined") return {};
+  const attempts = options.attempts ?? 6;
+  const intervalMs = options.intervalMs ?? 150;
   try {
     const ms = await waitForMemberstackDom();
-    const token = await ms?.getMemberCookie?.();
-    if (typeof token === "string" && token.trim()) {
-      return { Authorization: `Bearer ${token.trim()}` };
+    for (let i = 0; i < attempts; i++) {
+      const token = await ms?.getMemberCookie?.();
+      if (typeof token === "string" && token.trim()) {
+        return { Authorization: `Bearer ${token.trim()}` };
+      }
+      if (i < attempts - 1) {
+        await new Promise((resolve) => setTimeout(resolve, intervalMs));
+      }
     }
   } catch {
     /* unauthenticated */

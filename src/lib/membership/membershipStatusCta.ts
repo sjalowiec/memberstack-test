@@ -4,6 +4,7 @@
  * suppresses purchase CTAs for manage / ambiguous / unavailable states.
  */
 
+import { MEMBERSHIP_SALES_CTA } from "./membershipSalesCta";
 import type { MembershipRecommendedAction } from "./membershipStatusSummary";
 
 export type MembershipStatusCtaMode =
@@ -35,8 +36,26 @@ export function membershipStatusModeAllowsPurchase(
 }
 
 /**
+ * When true, the authenticated status overlay owns the hero CTA.
+ * joinCheckout must not overwrite with DOM-derived Manage Membership.
+ */
+export function membershipStatusModeOwnsHeroCta(
+  mode: MembershipStatusCtaMode = currentMode,
+): boolean {
+  return (
+    mode === "loading" ||
+    mode === "wait" ||
+    mode === "contact_support" ||
+    mode === "manage"
+  );
+}
+
+/**
  * Apply purchase/manage/contact/wait overlay on the membership sales page.
  * Safe to call repeatedly as status loads.
+ *
+ * Ownership: for loading / wait / contact_support / manage this module owns the hero CTA.
+ * joinCheckout may only apply DOM purchase/manage presentation in purchase or hidden modes.
  */
 export function applyMembershipStatusCtaMode(
   mode: MembershipStatusCtaMode,
@@ -88,22 +107,43 @@ export function applyMembershipStatusCtaMode(
     }
   });
 
-  // Rewrite hero CTA only for settled non-purchase states (not while loading).
-  if (mode === "manage") {
+  // Hero CTA: every settled mode must replace "Checking membership..." ù never leave loading text.
+  if (mode === "loading") {
+    root.querySelectorAll<HTMLAnchorElement>("[data-membership-sales-cta]").forEach((el) => {
+      el.textContent = "Checking membership...";
+      el.setAttribute("href", "#");
+      el.setAttribute("data-membership-sales-cta-kind", "loading");
+      el.setAttribute("aria-disabled", "true");
+      el.classList.remove("contact-modal-trigger");
+      el.removeAttribute("data-contact-source");
+    });
+  } else if (mode === "manage") {
     root.querySelectorAll<HTMLAnchorElement>("[data-membership-sales-cta]").forEach((el) => {
       el.textContent = "Manage Membership";
       el.setAttribute("href", "/account#membership");
       el.setAttribute("data-membership-sales-cta-kind", "manage");
+      el.setAttribute("aria-disabled", "false");
       el.classList.remove("contact-modal-trigger");
       el.removeAttribute("data-contact-source");
     });
   } else if (mode === "contact_support" || mode === "wait") {
     root.querySelectorAll<HTMLAnchorElement>("[data-membership-sales-cta]").forEach((el) => {
-      el.textContent = "Contact us about my membership";
+      el.textContent = "Contact us";
       el.setAttribute("href", "#");
       el.setAttribute("data-membership-sales-cta-kind", "contact");
+      el.setAttribute("aria-disabled", "false");
       el.classList.add("contact-modal-trigger");
       el.setAttribute("data-contact-source", "membership-status");
+    });
+  } else if (mode === "hidden" || mode === "purchase") {
+    // Clear loading hero. joinCheckout may refine this for DOM-active members when mode is purchase/hidden.
+    root.querySelectorAll<HTMLAnchorElement>("[data-membership-sales-cta]").forEach((el) => {
+      el.textContent = MEMBERSHIP_SALES_CTA.choosePlan.label;
+      el.setAttribute("href", MEMBERSHIP_SALES_CTA.choosePlan.href);
+      el.setAttribute("data-membership-sales-cta-kind", MEMBERSHIP_SALES_CTA.choosePlan.kind);
+      el.setAttribute("aria-disabled", "false");
+      el.classList.remove("contact-modal-trigger");
+      el.removeAttribute("data-contact-source");
     });
   }
 }

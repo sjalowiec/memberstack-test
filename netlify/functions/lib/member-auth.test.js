@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("./memberstack-admin.js", () => ({
   getMemberstackAdminClient: vi.fn(),
+  getMemberstackSecretKey: vi.fn(() => "sk_test_secret"),
+  logMemberstackEnvironmentMismatch: vi.fn(() => false),
 }));
 
 vi.mock("./custom-pattern-projects-store.js", async (importOriginal) => {
@@ -13,7 +15,11 @@ vi.mock("./custom-pattern-projects-store.js", async (importOriginal) => {
 });
 
 import { requireMember, DEV_MEMBER } from "./member-auth.js";
-import { getMemberstackAdminClient } from "./memberstack-admin.js";
+import {
+  getMemberstackAdminClient,
+  getMemberstackSecretKey,
+  logMemberstackEnvironmentMismatch,
+} from "./memberstack-admin.js";
 import { isAllowDevPatternUser } from "./custom-pattern-projects-store.js";
 
 const MEMBER_ID = "mem_favorites_123";
@@ -38,6 +44,8 @@ beforeEach(() => {
   }
   process.env.MEMBERSTACK_SECRET_KEY = "sk_test_secret";
   vi.mocked(isAllowDevPatternUser).mockReturnValue(false);
+  vi.mocked(getMemberstackSecretKey).mockReturnValue("sk_test_secret");
+  vi.mocked(logMemberstackEnvironmentMismatch).mockReturnValue(false);
   vi.mocked(getMemberstackAdminClient).mockReturnValue({
     verifyMemberToken: vi.fn(async (token) => (token === "good-token" ? { id: MEMBER_ID } : null)),
     getMember: vi.fn(async () => ({ auth: { email: "member@example.com" } })),
