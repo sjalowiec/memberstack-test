@@ -46,10 +46,10 @@ I'm sorry you're having trouble logging in.
 
 Before I reset your password, please check the following:
 
-ù Make sure you're using the correct email address.
-ù Passwords on the new Knit It Now site are case-sensitive, so check that Caps Lock is off and that you're entering your password exactly as you created it.
-ù Click "Forgot Password" on the login page to request a password reset email.
-ù If you don't receive the email within a few minutes, please check your Spam, Junk, and Promotions folders.
+- Make sure you're using the correct email address.
+- Passwords on the new Knit It Now site are case-sensitive, so check that Caps Lock is off and that you're entering your password exactly as you created it.
+- Click "Forgot Password" on the login page to request a password reset email.
+- If you don't receive the email within a few minutes, please check your Spam, Junk, and Promotions folders.
 
 If you're still unable to log in, simply reply to this email and I'll reset your password for you.
 

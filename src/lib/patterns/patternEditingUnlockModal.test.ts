@@ -66,7 +66,7 @@ describe("patternEditingUnlockModal", () => {
     expect(shouldOfferPatternEditingUnlockModal(null)).toBe(false);
   });
 
-  it("checks edit access per pattern system when the system is passed explicitly", () => {
+  it("offers the unlock modal for free-claim-only access on every pattern system", () => {
     const dropShoulderClaimed = testAccess({
       loggedIn: true,
       memberId: "ms_free",
@@ -75,10 +75,10 @@ describe("patternEditingUnlockModal", () => {
       freeClaimed: true,
       freeClaimedPatternId: "pat_ds",
     });
-    // On /account (or any page without drop-shoulder context), page resolution defaults to sleeveless.
-    expect(shouldOfferPatternEditingUnlockModal(dropShoulderClaimed)).toBe(false);
+    // Historical free claims never grant edit access; membership is required for every system.
+    expect(shouldOfferPatternEditingUnlockModal(dropShoulderClaimed)).toBe(true);
     expect(shouldOfferPatternEditingUnlockModal(dropShoulderClaimed, "drop-shoulder")).toBe(true);
-    expect(shouldOfferPatternEditingUnlockModal(dropShoulderClaimed, "sleeveless")).toBe(false);
+    expect(shouldOfferPatternEditingUnlockModal(dropShoulderClaimed, "sleeveless")).toBe(true);
   });
 
   it("remembers dismiss for the browser session", () => {

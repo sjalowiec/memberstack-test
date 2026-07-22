@@ -1,12 +1,8 @@
 ---
 /**
- * Site-wide clean public signup modal. Rendered once globally from BaseLayout so any CTA
- * (header Sign Up, Hat/Blanket account gate, sleeveless gate) can open it via
- * `window.kbmOpenPublicSignupModal()` or a `data-open-public-signup` attribute.
- *
- * Uses a CUSTOM Memberstack signup form (First Name / Email / Password) - never the prebuilt
- * `data-ms-modal="signup"` modal, which exposes internal member fields. Creates a free member
- * (no plan attached).
+ * Custom Memberstack signup form (First Name / Email / Password). Kept for intentional
+ * purchase, checkout, beta, or entitlement flows that mount it explicitly.
+ * Not mounted globally from BaseLayout — anonymous visitors no longer get a public free-signup path.
  */
 import {
   PUBLIC_SIGNUP_EMAIL_LABEL,

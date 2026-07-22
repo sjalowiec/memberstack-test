@@ -100,30 +100,28 @@ describe("pattern membership gating (pure rules)", () => {
     expect(resolveHasAdvancedPatternAccessForAccess(LOGGED_OUT_SLEEVELESS_ACCESS)).toBe(false);
   });
 
-  it("logged-in no-plan users may start one pattern per system but not member-only actions", () => {
-    expect(canCreatePatternForSystem(nosubUnclaimed, "sleeveless")).toBe(true);
-    expect(canCreatePatternForSystem(nosubUnclaimed, "drop-shoulder")).toBe(true);
-    expect(canEditPatternSettingsForSystem(nosubUnclaimed, "sleeveless")).toBe(true);
-    expect(canStartNewSleevelessPattern(nosubUnclaimed)).toBe(true);
+  it("logged-in no-plan users cannot create or edit patterns (membership required)", () => {
+    expect(canCreatePatternForSystem(nosubUnclaimed, "sleeveless")).toBe(false);
+    expect(canCreatePatternForSystem(nosubUnclaimed, "drop-shoulder")).toBe(false);
+    expect(canEditPatternSettingsForSystem(nosubUnclaimed, "sleeveless")).toBe(false);
+    expect(canStartNewSleevelessPattern(nosubUnclaimed)).toBe(false);
     expect(canCopySavedCustomPatternForAccess(nosubUnclaimed)).toBe(false);
     expect(resolveHasAdvancedPatternAccessForAccess(nosubUnclaimed)).toBe(false);
   });
 
-  it("sleeveless claim blocks only sleeveless, not drop-shoulder", () => {
+  it("historical free claims never grant create/edit without active entitlement", () => {
     expect(canCreatePatternForSystem(nosubSleevelessClaimed, "sleeveless")).toBe(false);
-    expect(canCreatePatternForSystem(nosubSleevelessClaimed, "drop-shoulder")).toBe(true);
+    expect(canCreatePatternForSystem(nosubSleevelessClaimed, "drop-shoulder")).toBe(false);
     expect(canEditPatternSettingsForSystem(nosubSleevelessClaimed, "sleeveless")).toBe(false);
-    expect(canEditPatternSettingsForSystem(nosubSleevelessClaimed, "drop-shoulder")).toBe(true);
+    expect(canEditPatternSettingsForSystem(nosubSleevelessClaimed, "drop-shoulder")).toBe(false);
     expect(canStartNewSleevelessPattern(nosubSleevelessClaimed)).toBe(false);
     expect(canCopySavedCustomPatternForAccess(nosubSleevelessClaimed)).toBe(false);
-  });
 
-  it("drop-shoulder claim blocks only drop-shoulder, not sleeveless", () => {
     expect(canCreatePatternForSystem(nosubDropShoulderClaimed, "drop-shoulder")).toBe(false);
-    expect(canCreatePatternForSystem(nosubDropShoulderClaimed, "sleeveless")).toBe(true);
+    expect(canCreatePatternForSystem(nosubDropShoulderClaimed, "sleeveless")).toBe(false);
     expect(canEditPatternSettingsForSystem(nosubDropShoulderClaimed, "drop-shoulder")).toBe(false);
-    expect(canEditPatternSettingsForSystem(nosubDropShoulderClaimed, "sleeveless")).toBe(true);
-    expect(canStartNewSleevelessPattern(nosubDropShoulderClaimed)).toBe(true);
+    expect(canEditPatternSettingsForSystem(nosubDropShoulderClaimed, "sleeveless")).toBe(false);
+    expect(canStartNewSleevelessPattern(nosubDropShoulderClaimed)).toBe(false);
   });
 
   it("active members and beta users get full access", () => {
@@ -182,17 +180,8 @@ describe("pattern membership gating (Memberstack resolver)", () => {
   });
 });
 
-describe("pattern membership gating (devBypass does not override signed-in nosub)", () => {
-  beforeEach(async () => {
-    vi.resetModules();
-  });
-
-  it("uses real Memberstack entitlement when devBypass is active but nosub is logged in", async () => {
-    vi.doMock("../devBypass", () => ({ devBypass: true }));
-    const { resolveSleevelessUserAccess: resolveWithBypass } = await import(
-      "./sleevelessPatternSystemAccessClient"
-    );
-
+describe("pattern membership gating (no localhost bypass)", () => {
+  it("never grants access without an active membership plan", async () => {
     stubMemberstack({
       getCurrentMember: vi.fn().mockResolvedValue({
         data: {
@@ -204,7 +193,7 @@ describe("pattern membership gating (devBypass does not override signed-in nosub
       getMemberJSON: vi.fn().mockResolvedValue({ data: {} }),
     });
 
-    await expect(resolveWithBypass()).resolves.toMatchObject({
+    await expect(resolveSleevelessUserAccess()).resolves.toMatchObject({
       loggedIn: true,
       memberId: "ms_nosub",
       hasSystemAccess: false,

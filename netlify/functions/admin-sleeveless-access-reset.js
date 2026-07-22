@@ -16,9 +16,9 @@
  */
 import {
   jsonResponse,
-  resolveProjectUserId,
   withCors,
 } from "./lib/custom-pattern-projects-store.js";
+import { resolveVerifiedProjectUserId } from "./lib/require-member-access.js";
 import { isActivityAdmin } from "./lib/pattern-activity-store.js";
 import {
   describeSecretKeyEnvironment,
@@ -44,13 +44,14 @@ export default async (req) => {
     return withCors(jsonResponse({ ok: false, error: "Method not allowed" }, 405));
   }
 
-  // Must be signed in (mirrors pattern-activity-log) …
-  const user = resolveProjectUserId(req);
+  // Must be signed in (verified Bearer JWT — mirrors pattern-activity-log) …
+  const user = await resolveVerifiedProjectUserId(req);
   if ("error" in user) {
     return withCors(jsonResponse({ ok: false, error: user.error }, user.status));
   }
   // … and an admin. Same allowlist as the activity dashboard. Fail closed.
-  if (!isActivityAdmin(req)) {
+  // Pass verified userId so X-KBM-Member-Id cannot spoof admin.
+  if (!isActivityAdmin(req, user.userId)) {
     return withCors(jsonResponse({ ok: false, error: "Admin access required." }, 403));
   }
 

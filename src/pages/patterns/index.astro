@@ -1,6 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import PatternBuilderMyPatternsLink from '../../components/patterns/PatternBuilderMyPatternsLink.astro';
+import SleevelessPatternMemberGate from '../../components/patterns/SleevelessPatternMemberGate.astro';
 import { isDropShoulderProductionBlocked } from '../../lib/patterns/dropShoulderProductionAccess';
 import { PATTERN_BUILDERS_HOME_HREF } from '../../lib/patterns/customPatternProjectNavigation';
 
@@ -73,6 +74,7 @@ const comingSoonPatterns = [
 
 <Layout title="Choose a Pattern">
 
+  <SleevelessPatternMemberGate>
   <div class="patterns-page">
 
     <header class="patterns-hero">
@@ -130,6 +132,7 @@ const comingSoonPatterns = [
     </section>
 
   </div>
+  </SleevelessPatternMemberGate>
 
 </Layout>
 

@@ -23,7 +23,7 @@ import {
 import type { SleevelessUserAccess } from "./sleevelessPatternSystemAccess";
 
 describe("resolvePatternBuilderNewPatternUpgradeUiMode (Drop Shoulder)", () => {
-  it("shows membership and lifetime cards when the Drop Shoulder free claim is used", () => {
+  it("shows membership-only when the visitor lacks active membership", () => {
     const access = testAccess({
       loggedIn: true,
       hasSystemAccess: false,
@@ -32,7 +32,7 @@ describe("resolvePatternBuilderNewPatternUpgradeUiMode (Drop Shoulder)", () => {
       claimedSystem: "drop-shoulder",
     });
     expect(resolvePatternBuilderNewPatternUpgradeUiMode(access, "drop-shoulder")).toBe(
-      "membership-and-lifetime",
+      "membership-only",
     );
   });
 });
@@ -66,26 +66,27 @@ describe("shouldBypassPatternBuilderNewPatternUpgradeScreen (Drop Shoulder)", ()
     expect(shouldBypassPatternBuilderNewPatternUpgradeScreen(access, "drop-shoulder")).toBe(false);
   });
 
-  it("bypasses for Drop Shoulder lifetime owners without membership", () => {
-    const access = testAccess({
+  it("does not bypass lifetime-only owners without membership", () => {
+    const dropLifetime = testAccess({
       loggedIn: true,
-      hasSystemAccess: true,
+      hasSystemAccess: false,
       activePlanIds: [PATTERN_BUILDER_LIFETIME_PURCHASES.dropShoulder.memberstackPlanId],
       freeClaimed: true,
       claimedSystem: "drop-shoulder",
     });
-    expect(shouldBypassPatternBuilderNewPatternUpgradeScreen(access, "drop-shoulder")).toBe(true);
-  });
-
-  it("does not bypass Sleeveless lifetime owners for Drop Shoulder", () => {
-    const access = testAccess({
+    const sleevelessLifetime = testAccess({
       loggedIn: true,
-      hasSystemAccess: true,
+      hasSystemAccess: false,
       activePlanIds: [PATTERN_BUILDER_LIFETIME_PURCHASES.sleeveless.memberstackPlanId],
       freeClaimed: true,
       claimedSystem: "drop-shoulder",
     });
-    expect(shouldBypassPatternBuilderNewPatternUpgradeScreen(access, "drop-shoulder")).toBe(false);
+    expect(shouldBypassPatternBuilderNewPatternUpgradeScreen(dropLifetime, "drop-shoulder")).toBe(
+      false,
+    );
+    expect(
+      shouldBypassPatternBuilderNewPatternUpgradeScreen(sleevelessLifetime, "drop-shoulder"),
+    ).toBe(false);
   });
 });
 
@@ -158,13 +159,13 @@ function dropShoulderLifetimeOwnerAccess(): SleevelessUserAccess {
     loggedIn: true,
     memberId: "ms_drop_lifetime",
     activePlanIds: [PATTERN_BUILDER_LIFETIME_PURCHASES.dropShoulder.memberstackPlanId],
-    hasSystemAccess: true,
+    hasSystemAccess: false,
     freeClaimsBySystem: { "drop-shoulder": { claimed: true, patternId: "pat_ds_1" } },
   };
 }
 
 describe("processPatternBuilderPurchaseReturn (Drop Shoulder)", () => {
-  it("refreshes access and unlocks Drop Shoulder after a successful shared-format purchase", async () => {
+  it("refreshes access but does not treat lifetime purchase as Dynamic Pattern unlock", async () => {
     const invalidateCache = vi.fn();
     const resolveAccess = vi.fn().mockResolvedValue(dropShoulderLifetimeOwnerAccess());
 
@@ -177,11 +178,11 @@ describe("processPatternBuilderPurchaseReturn (Drop Shoulder)", () => {
 
     expect(invalidateCache).toHaveBeenCalled();
     expect(resolveAccess).toHaveBeenCalled();
-    expect(result).toMatchObject({ kind: "success", unlocked: true, builderKey: "dropShoulder" });
-    expect(result.message).toMatch(/Drop Shoulder Sweater patterns/i);
+    expect(result).toMatchObject({ kind: "failed", unlocked: false, builderKey: "dropShoulder" });
+    expect(result.errorMessage).toBeTruthy();
   });
 
-  it("does not unlock Sleeveless when only Drop Shoulder lifetime is purchased", async () => {
+  it("does not grant pattern system access from Drop Shoulder lifetime alone", async () => {
     const access = dropShoulderLifetimeOwnerAccess();
     const resolveAccess = vi.fn().mockResolvedValue(access);
     const { hasPatternSystemAccess } = await import("./sleevelessPatternSystemAccess");
@@ -193,7 +194,7 @@ describe("processPatternBuilderPurchaseReturn (Drop Shoulder)", () => {
       { invalidateCache: vi.fn(), resolveAccess },
     );
 
-    expect(hasPatternSystemAccess(access, "drop-shoulder")).toBe(true);
+    expect(hasPatternSystemAccess(access, "drop-shoulder")).toBe(false);
     expect(hasPatternSystemAccess(access, "sleeveless")).toBe(false);
   });
 

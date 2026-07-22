@@ -87,6 +87,38 @@ function serverExpiredLegacy(): MembershipStatusSummary {
   };
 }
 
+function serverNoLegacyRecord(): MembershipStatusSummary {
+  return {
+    identified: true,
+    currentStatus: "no_plan",
+    currentPlanName: null,
+    previousPlanName: null,
+    activeThroughDate: null,
+    legacyExpirationDate: null,
+    legacyLinkState: "not_found",
+    accountType: "non_paid_account",
+    recommendedAction: "purchase",
+    customerFacingMessage:
+      "You have a Knit it Now account, but it does not currently include an active Knit it Now membership.",
+  };
+}
+
+function serverLegacyLookupFailed(): MembershipStatusSummary {
+  return {
+    identified: true,
+    currentStatus: "no_plan",
+    currentPlanName: null,
+    previousPlanName: null,
+    activeThroughDate: null,
+    legacyExpirationDate: null,
+    legacyLinkState: "lookup_unavailable",
+    accountType: "non_paid_account",
+    recommendedAction: "wait",
+    customerFacingMessage:
+      "We could not confirm your membership status right now. Please try again or contact us before purchasing another membership.",
+  };
+}
+
 describe("resolveMembershipStatusPageView precedence", () => {
   it("active client membership overrides server unknown/wait", () => {
     const payload = memberWithPaid();
@@ -159,6 +191,54 @@ describe("resolveMembershipStatusPageView precedence", () => {
     });
     expect(view.source).toBe("server_legacy");
     expect(view.ctaMode).toBe("purchase");
+    expect(view.heading).toBe("Your Knit it Now membership status");
+    expect(view.message).toBe(MEMBERSHIP_STATUS_FREE_ACCOUNT_COMPACT_MESSAGE);
+    expect(view.facts.plan).toBeNull();
+    expect(view.facts.status).toBeNull();
+    expect(view.facts.previous).toBeNull();
+  });
+
+  it("brand-new account with no legacy record is purchase-eligible (not a lookup failure)", () => {
+    const view = resolveMembershipStatusPageView({
+      clientLoaded: true,
+      memberPayload: { data: { id: "mem_sb_new", planConnections: [] } },
+      serverSummary: serverNoLegacyRecord(),
+    });
+    expect(view.ctaMode).toBe("purchase");
+    expect(view.heading).toBe("Your Knit it Now membership status");
+    expect(view.message).toBe(MEMBERSHIP_STATUS_FREE_ACCOUNT_COMPACT_MESSAGE);
+    expect(view.heading).not.toMatch(/could not confirm/i);
+    expect(Object.values(view.facts).every((value) => value == null)).toBe(true);
+  });
+
+  it("no paid plan on a loaded client is not treated as lookup failure when server says purchase", () => {
+    const view = resolveMembershipStatusPageView({
+      clientLoaded: true,
+      memberPayload: { data: { id: "mem_free", planConnections: [] } },
+      serverSummary: serverNoLegacyRecord(),
+    });
+    expect(view.source).not.toBe("client_unavailable");
+    expect(view.ctaMode).toBe("purchase");
+  });
+
+  it("no legacy record is not treated as lookup failure", () => {
+    const view = resolveMembershipStatusPageView({
+      clientLoaded: true,
+      memberPayload: { data: { id: "mem_free", planConnections: [] } },
+      serverSummary: serverNoLegacyRecord(),
+    });
+    expect(view.ctaMode).toBe("purchase");
+    expect(view.heading).not.toBe("We could not confirm your membership");
+  });
+
+  it("legacy lookup failure remains wait/cannot-confirm", () => {
+    const view = resolveMembershipStatusPageView({
+      clientLoaded: true,
+      memberPayload: { data: { id: "mem_free", planConnections: [] } },
+      serverSummary: serverLegacyLookupFailed(),
+    });
+    expect(view.ctaMode).toBe("wait");
+    expect(view.heading).toBe("We could not confirm your membership");
   });
 
   it("client Memberstack failure is the cannot-confirm case", () => {
@@ -177,6 +257,16 @@ describe("resolveMembershipStatusPageView precedence", () => {
       clientLoaded: true,
       memberPayload: { data: { id: "mem_free", planConnections: [] } },
       serverSummary: null,
+    });
+    expect(view.ctaMode).toBe("wait");
+    expect(view.heading).toBe("We could not confirm your membership");
+  });
+
+  it("server Admin unknown/wait remains cannot-confirm while free", () => {
+    const view = resolveMembershipStatusPageView({
+      clientLoaded: true,
+      memberPayload: { data: { id: "mem_free", planConnections: [] } },
+      serverSummary: serverUnknown(),
     });
     expect(view.ctaMode).toBe("wait");
     expect(view.heading).toBe("We could not confirm your membership");
@@ -207,6 +297,15 @@ describe("resolveMembershipStatusPageView precedence", () => {
           clientLoaded: true,
           memberPayload: { data: { id: "mem_free", planConnections: [] } },
           serverSummary: serverExpiredLegacy(),
+        }),
+      ),
+    ).toBe("inline_compact");
+    expect(
+      membershipStatusUiMode(
+        resolveMembershipStatusPageView({
+          clientLoaded: true,
+          memberPayload: { data: { id: "mem_sb_new", planConnections: [] } },
+          serverSummary: serverNoLegacyRecord(),
         }),
       ),
     ).toBe("inline_compact");

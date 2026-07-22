@@ -6,7 +6,7 @@ import {
 } from "./custom-pattern-projects-store.js";
 
 describe("isPatternCreateBlockedForSystem", () => {
-  it("never blocks members", () => {
+  it("never blocks members with system access", () => {
     expect(
       isPatternCreateBlockedForSystem({
         hasSystemAccess: true,
@@ -14,6 +14,16 @@ describe("isPatternCreateBlockedForSystem", () => {
         existingProjectCountForSystem: 99,
       }),
     ).toBe(false);
+  });
+
+  it("blocks logged-in non-members even with unused historical free claim", () => {
+    expect(
+      isPatternCreateBlockedForSystem({
+        hasSystemAccess: false,
+        freeClaimedForSystem: false,
+        existingProjectCountForSystem: 0,
+      }),
+    ).toBe(true);
   });
 
   it("blocks when client reports the system is already claimed", () => {
@@ -26,24 +36,10 @@ describe("isPatternCreateBlockedForSystem", () => {
     ).toBe(true);
   });
 
-  it("blocks when the user already has a saved project for that system (server count fallback)", () => {
-    expect(
-      isPatternCreateBlockedForSystem({
-        hasSystemAccess: false,
-        freeClaimedForSystem: false,
-        existingProjectCountForSystem: 1,
-      }),
-    ).toBe(true);
-  });
-
-  it("allows first save for a system when unclaimed and no existing projects", () => {
-    expect(
-      isPatternCreateBlockedForSystem({
-        hasSystemAccess: false,
-        freeClaimedForSystem: false,
-        existingProjectCountForSystem: 0,
-      }),
-    ).toBe(false);
+  it("fails closed when entitlement snapshot is missing", () => {
+    expect(isPatternCreateBlockedForSystem(null)).toBe(true);
+    expect(isPatternCreateBlockedForSystem(undefined)).toBe(true);
+    expect(isPatternCreateBlockedForSystem({})).toBe(true);
   });
 });
 
@@ -60,8 +56,10 @@ describe("countProjectsForPatternSystem", () => {
 });
 
 describe("patternSystemCreateBlockedMessage", () => {
-  it("includes the pattern system display name", () => {
+  it("includes the pattern system display name and membership requirement", () => {
     expect(patternSystemCreateBlockedMessage("drop-shoulder")).toMatch(/Drop Shoulder/i);
+    expect(patternSystemCreateBlockedMessage("sleeveless")).toMatch(/membership/i);
+    expect(patternSystemCreateBlockedMessage("sleeveless")).not.toMatch(/free/i);
   });
 });
 

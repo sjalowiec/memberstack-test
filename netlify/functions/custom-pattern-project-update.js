@@ -1,24 +1,22 @@
 /**
  * PUT /.netlify/functions/custom-pattern-project-update
  * Update an existing saved Custom Pattern project.
+ *
+ * Auth: Bearer JWT + active membership. Client entitlement flags ignored.
+ * Ownership: blob key is scoped to the verified member id (404 if not owned).
  */
 import {
   buildProjectRecord,
   getProjectsStore,
-  isPatternSettingsEditBlockedForSystem,
-  isSavedPatternRenameAttempt,
   jsonResponse,
   parseJsonBody,
-  patternSystemSettingsEditBlockedMessage,
   projectBlobKey,
   publicProject,
-  readPatternEntitlementFromSaveBody,
   readProjectJson,
-  resolveProjectUserId,
   upsertProjectSummaryInIndex,
   withCors,
 } from "./lib/custom-pattern-projects-store.js";
-import { resolvePatternSystemFromProject } from "./lib/pattern-system-id.js";
+import { requirePatternProjectAccess } from "./lib/require-member-access.js";
 
 export default async (req) => {
   if (req.method === "OPTIONS") {
@@ -28,9 +26,9 @@ export default async (req) => {
     return withCors(jsonResponse({ ok: false, error: "Method not allowed" }, 405));
   }
 
-  const user = resolveProjectUserId(req);
-  if ("error" in user) {
-    return withCors(jsonResponse({ ok: false, error: user.error }, user.status));
+  const access = await requirePatternProjectAccess(req);
+  if (!access.ok) {
+    return withCors(jsonResponse({ ok: false, error: access.error }, access.status));
   }
 
   let body;
@@ -52,7 +50,7 @@ export default async (req) => {
     typeof body.data.family === "string" && body.data.family.trim()
       ? body.data.family.trim()
       : "sleeveless";
-  const key = projectBlobKey(family, user.userId, id);
+  const key = projectBlobKey(family, access.userId, id);
   const store = getProjectsStore();
   const existing = await readProjectJson(store, key);
   if (!existing) {
@@ -75,47 +73,23 @@ export default async (req) => {
     try {
       await store.set(key, JSON.stringify(publicProject(project)), {
         metadata: {
-          userId: user.userId,
+          userId: access.userId,
           family: project.family,
           projectId: project.id,
           updatedAt: project.updatedAt,
         },
       });
-      await upsertProjectSummaryInIndex(store, project.family, user.userId, project);
+      await upsertProjectSummaryInIndex(store, project.family, access.userId, project);
       return withCors(
         jsonResponse({
           ok: true,
           project: publicProject(project),
-          authMode: user.mode,
+          authMode: access.mode,
         }),
       );
     } catch (err) {
       console.error("custom-pattern-project-update workflowOnly failed:", err);
       return withCors(jsonResponse({ ok: false, error: "Failed to update project." }, 500));
-    }
-  }
-
-  // A full update is a pattern-settings edit (gauge, measurements, size, style, regenerate) and
-  // requires membership. A metadataOnly update stays open for permitted fields (e.g. notes), EXCEPT
-  // renaming: changing the saved pattern name/title is an edit that also requires membership.
-  const isMetadataOnly = body.data.metadataOnly === true;
-  const gateEdit = !isMetadataOnly || isSavedPatternRenameAttempt(existing.name, body.data.name);
-  if (gateEdit) {
-    const entitlement = readPatternEntitlementFromSaveBody(body.data);
-    const patternSystem =
-      entitlement?.patternSystem ?? resolvePatternSystemFromProject(existing);
-    if (
-      isPatternSettingsEditBlockedForSystem({
-        hasSystemAccess: entitlement?.hasSystemAccess,
-        freeClaimedForSystem: entitlement?.freeClaimedForSystem,
-      })
-    ) {
-      return withCors(
-        jsonResponse(
-          { ok: false, error: patternSystemSettingsEditBlockedMessage(patternSystem) },
-          403,
-        ),
-      );
     }
   }
 
@@ -127,7 +101,7 @@ export default async (req) => {
     readingWorkflow: existing.readingWorkflow,
   };
 
-  const built = buildProjectRecord(mergedInput, user.userId, id);
+  const built = buildProjectRecord(mergedInput, access.userId, id);
   if (!built.ok) {
     return withCors(jsonResponse({ ok: false, error: built.error }, 400));
   }
@@ -137,18 +111,18 @@ export default async (req) => {
   try {
     await store.set(key, JSON.stringify(publicProject(project)), {
       metadata: {
-        userId: user.userId,
+        userId: access.userId,
         family: project.family,
         projectId: project.id,
         updatedAt: project.updatedAt,
       },
     });
-    await upsertProjectSummaryInIndex(store, project.family, user.userId, project);
+    await upsertProjectSummaryInIndex(store, project.family, access.userId, project);
     return withCors(
       jsonResponse({
         ok: true,
         project: publicProject(project),
-        authMode: user.mode,
+        authMode: access.mode,
       }),
     );
   } catch (err) {

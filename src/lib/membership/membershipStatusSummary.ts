@@ -488,6 +488,24 @@ export function buildMembershipStatusSummary(input: {
     };
   }
 
+  // Legacy Watson lookup failed — not the same as "no legacy record".
+  if (legacy.linkState === "lookup_unavailable") {
+    return {
+      identified,
+      currentStatus,
+      currentPlanName: null,
+      previousPlanName: previousFromMemberstack,
+      activeThroughDate: null,
+      legacyExpirationDate: null,
+      legacyLinkState: "lookup_unavailable",
+      accountType: "non_paid_account",
+      recommendedAction: "wait",
+      customerFacingMessage:
+        "We could not confirm your membership status right now. Please try again or contact us before purchasing another membership.",
+    };
+  }
+
+  // not_found (and any other non-blocking legacy state): purchase-eligible.
   return {
     identified,
     currentStatus,

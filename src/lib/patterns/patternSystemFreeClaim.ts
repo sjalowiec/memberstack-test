@@ -1,9 +1,9 @@
 /**
  * Per-pattern-system free claim storage in Memberstack member JSON.
  *
- * Each logged-in non-member may save one free pattern per pattern system (Sleeveless, Drop
- * Shoulder, Blanket, ...). Claims are account-tied via Memberstack `getMemberJSON` /
- * `updateMemberJSON`, not localStorage.
+ * Historical: logged-in non-members once received one free saved pattern per system.
+ * Dynamic Patterns now require active membership; these helpers remain for admin/migration
+ * and for reading legacy claim metadata. They must not grant create/edit access.
  */
 import type { PatternSystemId } from "./patternSystemId";
 import {

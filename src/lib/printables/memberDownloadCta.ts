@@ -56,15 +56,15 @@ export function memberDownloadCtaSpec(
       lockedStatus: PRINTABLE_DOWNLOAD_LOCKED_STATUS,
       buttons: [
         {
-          href: "#",
-          text: "Log in to download",
-          action: "login",
-          variant: "primary",
-        },
-        {
           href: MEMBERSHIP_URL,
           text: "Become a Member",
           action: "membership",
+          variant: "primary",
+        },
+        {
+          href: "#",
+          text: "Already a member? Log in",
+          action: "login",
           variant: "secondary",
         },
       ],

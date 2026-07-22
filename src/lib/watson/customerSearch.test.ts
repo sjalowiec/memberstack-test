@@ -119,6 +119,7 @@ describe("customerSearch", () => {
 
   it("finds Memberstack-only customers by directory search", async () => {
     const result = await searchCustomers("mem_only", {
+      secretKey: "sk_live_test_key",
       getClient: async () => ({
         getMember: async (lookup: string) =>
           lookup === "mem_only"

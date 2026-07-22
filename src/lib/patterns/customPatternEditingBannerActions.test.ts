@@ -411,7 +411,7 @@ describe("runSaveCustomPatternFromWorkspace", () => {
     const res = await runSaveCustomPatternFromWorkspace(undefined, { skipPreSavePrepare: true });
     expect(res.ok).toBe(false);
     if (res.ok) return;
-    expect(res.error).toMatch(/Editing is included with membership/i);
+    expect(res.error).toMatch(/active Knit it Now membership/i);
     expect(smartSaveCustomPatternProject).not.toHaveBeenCalled();
   });
 

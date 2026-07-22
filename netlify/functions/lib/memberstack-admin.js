@@ -31,13 +31,19 @@ let insecureTlsWarned = false;
  * @param {NodeJS.ProcessEnv} [env]
  */
 export function isMemberstackProductionRuntime(env = process.env) {
-  const nodeEnv = String(env.NODE_ENV || "")
-    .trim()
-    .toLowerCase();
   const context = String(env.CONTEXT || "")
     .trim()
     .toLowerCase();
-  return nodeEnv === "production" || context === "production";
+  // Netlify sets NODE_ENV=production on every deploy (including branch deploys and
+  // deploy previews). Prefer CONTEXT so staging/preview keep the sandbox Admin
+  // secret and match browser Memberstack TEST members (mem_sb_…).
+  if (context) {
+    return context === "production";
+  }
+  const nodeEnv = String(env.NODE_ENV || "")
+    .trim()
+    .toLowerCase();
+  return nodeEnv === "production";
 }
 
 /**
@@ -279,9 +285,10 @@ export function describeMemberstackSecretKey(key) {
 /**
  * Shared Admin secret resolver used by requireMember, membership-status, and Watson.
  *
- * - Production (`NODE_ENV=production` or Netlify `CONTEXT=production`):
- *   only {@link MEMBERSTACK_LIVE_SECRET_ENV}. Never reads the sandbox secret.
- * - Non-production (localhost / deploy previews / staging):
+ * - Production (Netlify `CONTEXT=production`, or `NODE_ENV=production` when
+ *   CONTEXT is unset): only {@link MEMBERSTACK_LIVE_SECRET_ENV}. Never reads
+ *   the sandbox secret.
+ * - Non-production (localhost / deploy previews / branch deploys / staging):
  *   prefers {@link MEMBERSTACK_SANDBOX_SECRET_ENV} so Admin matches the browser's
  *   automatic Memberstack TEST/sandbox mode on non-production domains.
  *   Falls back to the live secret only when sandbox is unset (with a warning).

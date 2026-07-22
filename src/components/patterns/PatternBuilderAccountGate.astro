@@ -1,14 +1,16 @@
 ---
 /**
- * Signup-first account gate modal for the Hat and Blanket pattern builders.
- * Shown to logged-out visitors when they try to Create a pattern or open the Pattern tab.
- * Primary CTA opens Memberstack signup/register; secondary CTA opens Memberstack login.
+ * Membership prompt for the Hat and Blanket pattern builders.
+ * Become a Member + Log In (or View Membership when signed in without access).
  */
 import {
   PATTERN_BUILDER_ACCOUNT_GATE_BODY,
+  PATTERN_BUILDER_ACCOUNT_GATE_LOGIN_LABEL,
+  PATTERN_BUILDER_ACCOUNT_GATE_PRIMARY_HREF,
   PATTERN_BUILDER_ACCOUNT_GATE_PRIMARY_LABEL,
-  PATTERN_BUILDER_ACCOUNT_GATE_SECONDARY_LABEL,
   PATTERN_BUILDER_ACCOUNT_GATE_TITLE,
+  PATTERN_BUILDER_ACCOUNT_GATE_VIEW_MEMBERSHIP_HREF,
+  PATTERN_BUILDER_ACCOUNT_GATE_VIEW_MEMBERSHIP_LABEL,
 } from "../../lib/patterns/patternBuilderAccountGate";
 ---
 
@@ -27,22 +29,32 @@ import {
     <h2 id="pattern-builder-account-gate-title" class="pattern-builder-account-gate__title">
       {PATTERN_BUILDER_ACCOUNT_GATE_TITLE}
     </h2>
-    <p class="pattern-builder-account-gate__message">{PATTERN_BUILDER_ACCOUNT_GATE_BODY}</p>
+    <p class="pattern-builder-account-gate__message" data-account-gate-body>
+      {PATTERN_BUILDER_ACCOUNT_GATE_BODY}
+    </p>
     <div class="pattern-builder-account-gate__actions">
-      <button
-        type="button"
+      <a
+        href={PATTERN_BUILDER_ACCOUNT_GATE_PRIMARY_HREF}
         class="pattern-builder-account-gate__primary kbm-btn kbm-btn-primary"
-        data-account-gate-signup
+        data-account-gate-membership
       >
         {PATTERN_BUILDER_ACCOUNT_GATE_PRIMARY_LABEL}
-      </button>
+      </a>
       <button
         type="button"
-        class="pattern-builder-account-gate__secondary"
+        class="pattern-builder-account-gate__secondary kbm-btn kbm-btn-outline"
         data-account-gate-login
       >
-        {PATTERN_BUILDER_ACCOUNT_GATE_SECONDARY_LABEL}
+        {PATTERN_BUILDER_ACCOUNT_GATE_LOGIN_LABEL}
       </button>
+      <a
+        href={PATTERN_BUILDER_ACCOUNT_GATE_VIEW_MEMBERSHIP_HREF}
+        class="pattern-builder-account-gate__secondary kbm-btn kbm-btn-outline"
+        data-account-gate-view-membership
+        hidden
+      >
+        {PATTERN_BUILDER_ACCOUNT_GATE_VIEW_MEMBERSHIP_LABEL}
+      </a>
     </div>
   </div>
 </dialog>
@@ -118,27 +130,13 @@ import {
     gap: 0.75rem;
   }
 
-  .pattern-builder-account-gate__primary {
+  .pattern-builder-account-gate__primary,
+  .pattern-builder-account-gate__secondary {
     width: 100%;
     text-decoration: none;
   }
 
-  .pattern-builder-account-gate__secondary {
-    appearance: none;
-    border: none;
-    background: transparent;
-    color: #52682d;
-    font: inherit;
-    font-weight: 600;
-    text-decoration: underline;
-    cursor: pointer;
-    padding: 0.25rem 0.5rem;
-  }
-
-  .pattern-builder-account-gate__secondary:hover {
-    color: #3f5122;
-  }
-
+  .pattern-builder-account-gate__primary:focus-visible,
   .pattern-builder-account-gate__secondary:focus-visible,
   .pattern-builder-account-gate__close:focus-visible {
     outline: 2px solid #52682d;

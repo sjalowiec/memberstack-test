@@ -15,22 +15,24 @@ describe("isPatternSettingsEditBlockedForSystem", () => {
     ).toBe(false);
   });
 
-  it("blocks when client reports the system is claimed for a free user", () => {
+  it("blocks non-members including unused historical free claims", () => {
     expect(
       isPatternSettingsEditBlockedForSystem({
         hasSystemAccess: false,
         freeClaimedForSystem: true,
       }),
     ).toBe(true);
-  });
-
-  it("allows unclaimed free users", () => {
     expect(
       isPatternSettingsEditBlockedForSystem({
         hasSystemAccess: false,
         freeClaimedForSystem: false,
       }),
-    ).toBe(false);
+    ).toBe(true);
+  });
+
+  it("fails closed when entitlement snapshot is missing", () => {
+    expect(isPatternSettingsEditBlockedForSystem(null)).toBe(true);
+    expect(isPatternSettingsEditBlockedForSystem({})).toBe(true);
   });
 });
 

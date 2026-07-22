@@ -46,7 +46,7 @@ describe("memberDownloadCtaSpec", () => {
     });
   });
 
-  it("loggedOut shows login as the primary CTA and membership as secondary", () => {
+  it("loggedOut shows membership as the primary CTA and login as secondary", () => {
     const state = viewerStateForPlan(null);
     expect(state).toBe("loggedOut");
 
@@ -54,15 +54,15 @@ describe("memberDownloadCtaSpec", () => {
     expect(spec.lockedStatus).toBe(PRINTABLE_DOWNLOAD_LOCKED_STATUS);
     expect(spec.buttons).toEqual([
       {
-        href: "#",
-        text: "Log in to download",
-        action: "login",
-        variant: "primary",
-      },
-      {
         href: "/membership",
         text: "Become a Member",
         action: "membership",
+        variant: "primary",
+      },
+      {
+        href: "#",
+        text: "Already a member? Log in",
+        action: "login",
         variant: "secondary",
       },
     ]);

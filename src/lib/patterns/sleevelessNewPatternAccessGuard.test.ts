@@ -49,15 +49,12 @@ const member: SleevelessUserAccess = testAccess({
 const memberAfterClaim: SleevelessUserAccess = testAccess({ ...member, freeClaimed: true });
 
 describe("canStartNewSleevelessPattern", () => {
-  it("blocks a free user who already claimed their one-time free pattern", () => {
+  it("blocks logged-in users without active entitlement", () => {
     expect(canStartNewSleevelessPattern(freeClaimed)).toBe(false);
+    expect(canStartNewSleevelessPattern(freeUnclaimed)).toBe(false);
   });
 
-  it("allows a free user their first (unclaimed) pattern", () => {
-    expect(canStartNewSleevelessPattern(freeUnclaimed)).toBe(true);
-  });
-
-  it("allows members / system owners (even after claiming)", () => {
+  it("allows members / system owners (even after a historical claim)", () => {
     expect(canStartNewSleevelessPattern(member)).toBe(true);
     expect(canStartNewSleevelessPattern(memberAfterClaim)).toBe(true);
   });
@@ -68,17 +65,19 @@ describe("canStartNewSleevelessPattern", () => {
 });
 
 describe("resolveSleevelessNewPatternBlockedCopy", () => {
-  it("uses the already-claimed / upgrade copy for a logged-in free user", () => {
+  it("uses membership copy for a logged-in non-member", () => {
     expect(resolveSleevelessNewPatternBlockedCopy(freeClaimed)).toBe(
       SLEEVELESS_SAVE_ALREADY_CLAIMED_COPY,
     );
-    expect(SLEEVELESS_SAVE_ALREADY_CLAIMED_COPY).toMatch(/already created your free/i);
+    expect(SLEEVELESS_SAVE_ALREADY_CLAIMED_COPY).toMatch(/active Knit it Now membership/i);
+    expect(SLEEVELESS_SAVE_ALREADY_CLAIMED_COPY).not.toMatch(/free pattern/i);
   });
 
-  it("uses the log-in copy for logged-out visitors", () => {
+  it("uses membership-oriented copy for logged-out visitors", () => {
     expect(resolveSleevelessNewPatternBlockedCopy(loggedOut)).toBe(
       SLEEVELESS_SAVE_LOGGED_OUT_COPY,
     );
+    expect(SLEEVELESS_SAVE_LOGGED_OUT_COPY).toMatch(/membership/i);
   });
 });
 
@@ -209,7 +208,7 @@ describe("showSleevelessNewPatternLockedScreen", () => {
     vi.unstubAllGlobals();
   });
 
-  it("shows membership and lifetime options for a claimed free Sleeveless user", () => {
+  it("shows membership-only options for a claimed free Sleeveless user", () => {
     vi.stubGlobal("document", { createElement: (tag: string) => fakeEl(tag) });
     const dom = buildExpressDomStub();
 
@@ -222,9 +221,14 @@ describe("showSleevelessNewPatternLockedScreen", () => {
 
     expect(dom.builder.hidden).toBe(true);
     expect(notice).not.toBeNull();
-    expect(findDescendant(notice!, (el) => el.textContent === SLEEVELESS_NEW_PATTERN_UPGRADE_HEADING)).toBeTruthy();
+    expect(
+      findDescendant(
+        notice!,
+        (el) => el.textContent === "Create another Sleeveless pattern with membership",
+      ),
+    ).toBeTruthy();
     expect(findDescendant(notice!, (el) => el.textContent === SLEEVELESS_MEMBERSHIP_OPTION_CTA)).toBeTruthy();
-    expect(findDescendant(notice!, (el) => el.textContent === SLEEVELESS_LIFETIME_OPTION_CTA)).toBeTruthy();
+    expect(findDescendant(notice!, (el) => el.textContent === SLEEVELESS_LIFETIME_OPTION_CTA)).toBeNull();
     expect(findDescendant(notice!, (el) => el.textContent === SLEEVELESS_SAVED_PATTERNS_HEADING)).toBeTruthy();
     expect(findDescendant(notice!, (el) => el.textContent === SLEEVELESS_SAVED_PATTERNS_CTA)).toBeTruthy();
   });
@@ -249,7 +253,7 @@ describe("showSleevelessNewPatternLockedScreen", () => {
     expect(savedLink?.className).not.toContain("kbm-btn");
   });
 
-  it("shows membership and lifetime options for a claimed free Drop Shoulder user", () => {
+  it("shows membership-only options for a claimed free Drop Shoulder user", () => {
     vi.stubGlobal("document", { createElement: (tag: string) => fakeEl(tag) });
     const dom = buildExpressDomStub();
 
@@ -270,9 +274,13 @@ describe("showSleevelessNewPatternLockedScreen", () => {
 
     expect(notice).not.toBeNull();
     expect(
-      findDescendant(notice!, (el) => el.textContent === "Create another Drop Shoulder Sweater"),
+      findDescendant(
+        notice!,
+        (el) => el.textContent === "Create another Drop Shoulder pattern with membership",
+      ),
     ).toBeTruthy();
-    expect(findDescendant(notice!, (el) => el.textContent === "Buy the Drop Shoulder Builder")).toBeTruthy();
+    expect(findDescendant(notice!, (el) => el.textContent === "Buy the Drop Shoulder Builder")).toBeNull();
+    expect(findDescendant(notice!, (el) => el.textContent === SLEEVELESS_MEMBERSHIP_OPTION_CTA)).toBeTruthy();
     expect(findDescendant(notice!, (el) => el.textContent === SLEEVELESS_SAVED_PATTERNS_HEADING)).toBeTruthy();
   });
 

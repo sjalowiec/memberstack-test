@@ -1,7 +1,11 @@
 ---
 /**
- * Wraps sleeveless pattern page content. Logged-out visitors see a login prompt;
- * pattern builder / review / print UI stays hidden until Memberstack reports a member.
+ * Wraps Dynamic Pattern pages (catalog, builders, workspaces, print).
+ * Content stays hidden until active Knit it Now membership (or lifetime builder
+ * entitlement) is confirmed. Login alone never unlocks pattern UI.
+ *
+ * Logged-out: Become a Member + Log In
+ * Logged-in without access: Become a Member + View Membership
  */
 ---
 
@@ -12,36 +16,60 @@
     aria-labelledby="sleeveless-pattern-gate-heading"
   >
     <p class="sleeveless-pattern-gate__loading" data-sleeveless-pattern-gate-loading>
-      Checking sign-in…
+      Checking membership…
     </p>
+
     <div class="sleeveless-pattern-gate__signin" data-sleeveless-pattern-gate-signin hidden>
       <h2 id="sleeveless-pattern-gate-heading" class="sleeveless-pattern-gate__title">
-        Log in or create a free account
+        Available with Knit it Now membership
       </h2>
       <p class="sleeveless-pattern-gate__lead">
-        Log in or create a free Knit It Now account to build, save, and print your custom pattern.
+        Dynamic Patterns are included with an active Knit it Now membership. Each pattern is
+        customized for your machine, gauge, yarn, and measurements.
       </p>
       <div class="sleeveless-pattern-gate__actions">
-        <button
-          type="button"
+        <a
+          href="/membership"
           class="kbm-btn kbm-btn-primary"
-          data-sleeveless-gate-signup
+          data-sleeveless-gate-membership
         >
-          Create Free Account
-        </button>
+          Become a Member
+        </a>
         <a
           href="#"
           class="kbm-btn kbm-btn-outline"
           data-ms-modal="login"
           data-ms-redirect="current-url"
         >
-          Log In
+          Already a Member? Log In
         </a>
       </div>
-      <p class="sleeveless-pattern-gate__account-hint">
-        Already saved patterns? After signing in, open them from
-        <a href="/account#my-patterns">My Patterns</a>.
+    </div>
+
+    <div
+      class="sleeveless-pattern-gate__signin"
+      data-sleeveless-pattern-gate-no-access
+      hidden
+    >
+      <h2 id="sleeveless-pattern-gate-no-access-heading" class="sleeveless-pattern-gate__title">
+        Membership required for Dynamic Patterns
+      </h2>
+      <p class="sleeveless-pattern-gate__lead">
+        You're signed in, but Dynamic Patterns need an active Knit it Now membership. Other
+        purchases or an account without membership do not unlock the pattern builders.
       </p>
+      <div class="sleeveless-pattern-gate__actions">
+        <a
+          href="/membership"
+          class="kbm-btn kbm-btn-primary"
+          data-sleeveless-gate-membership
+        >
+          Become a Member
+        </a>
+        <a href="/account#membership" class="kbm-btn kbm-btn-outline">
+          View Membership
+        </a>
+      </div>
     </div>
   </section>
 
@@ -94,18 +122,7 @@
     flex-wrap: wrap;
     gap: 0.65rem;
     justify-content: center;
-    margin-bottom: 1rem;
-  }
-
-  .sleeveless-pattern-gate__account-hint {
-    margin: 0;
-    font-size: 0.92rem;
-    color: #6b7280;
-    line-height: 1.45;
-  }
-
-  .sleeveless-pattern-gate__account-hint a {
-    font-weight: 600;
+    margin-bottom: 0.25rem;
   }
 
   .sleeveless-pattern-gate[data-gate-state="member"] .sleeveless-pattern-gate__locked {

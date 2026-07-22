@@ -2267,10 +2267,9 @@ select.disabled {
 
   installPatternBuilderAccountGate();
 
-  // Upfront account gate: lock the interactive builder for logged-out visitors and prompt them to
-  // create/log into a free account before they start building. Closing the prompt leaves the builder
-  // locked; clicking/focusing any control re-opens the prompt. Logging in unlocks the builder. The
-  // Create / Pattern tab gates remain the fail-closed backup. Logged-in visitors are never blocked.
+  // Upfront membership gate: lock the interactive builder until active Knit it Now membership is
+  // confirmed. Closing the prompt leaves the builder locked; clicking/focusing any control re-opens
+  // the prompt. Login alone does not unlock. Create / Pattern tab gates remain the fail-closed backup.
   void lockPatternBuilderForLoggedOut(
     document.querySelector<HTMLElement>("[data-pattern-builder-lock]"),
   );
@@ -2656,7 +2655,7 @@ async function initHatBuilder() {
       if (button.classList.contains('is-disabled')) return;
       const target = button.dataset.tab;
       if (!target) return;
-      // Account gate: viewing the generated Pattern tab requires a free account (matches
+      // Membership gate: viewing the generated Pattern tab requires active membership (matches
       // the Create My Pattern gate). Other tabs stay open to anonymous visitors.
       if (target === 'pattern') {
         const gate = window.kbmEnsurePatternBuilderAccountGate;
@@ -3442,9 +3441,8 @@ async function initHatBuilder() {
     };
 
     createPatternBtnForClick.addEventListener('click', () => {
-      // Account gate: anonymous visitors may view the builder, but generating the pattern
-      // requires a free account. The gate opens the signup-first prompt when logged out
-      // (no silent fail). Hat patterns are free for any logged-in visitor (no membership check).
+      // Membership gate: generating the pattern requires active Knit it Now membership.
+      // The gate opens the membership prompt when access is denied (no silent fail).
       kbmGateDebug('Create My Pattern clicked');
       const gate = window.kbmEnsurePatternBuilderAccountGate;
       if (typeof gate !== 'function') {

@@ -321,7 +321,7 @@ describe("runStartNewCustomPatternWorkflow access gate", () => {
     expect(readActiveCustomPatternProjectId()).toBe("proj-sue");
   });
 
-  it("lets a free user start their one free pattern when the gate allows it", async () => {
+  it("lets an entitled user start a new pattern when the gate allows it", async () => {
     writeActiveCustomPatternProjectId("proj-sue", savedProject.name);
     const applyFreshSession = vi.fn(applyStartNewCustomPatternSession);
     const navigate = vi.fn();

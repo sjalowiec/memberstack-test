@@ -54,27 +54,17 @@ beforeEach(() => {
 });
 
 describe("maybeAutoSaveFirstFreePattern", () => {
-  it("auto-saves and marks claim for first drop-shoulder pattern", async () => {
+  it("skips logged-in non-members (no free auto-save path)", async () => {
     resolveAccessMock.mockResolvedValue(nosubUnclaimed);
-    smartSaveMock.mockResolvedValue({
-      ok: true,
-      created: true,
-      project: { id: "proj_1", name: "My Drop Shoulder" },
-    });
-    markClaimMock.mockResolvedValue(true);
 
     const result = await maybeAutoSaveFirstFreePattern({
       patternSystem: "drop-shoulder",
       showSuccessDialog: false,
     });
 
-    expect(result).toEqual({
-      status: "saved",
-      patternSystem: "drop-shoulder",
-      projectId: "proj_1",
-      projectName: "My Drop Shoulder",
-    });
-    expect(markClaimMock).toHaveBeenCalledWith("drop-shoulder", "proj_1");
+    expect(result).toEqual({ status: "skipped", reason: "membership-required" });
+    expect(smartSaveMock).not.toHaveBeenCalled();
+    expect(markClaimMock).not.toHaveBeenCalled();
   });
 
   it("skips when the system is already claimed", async () => {
@@ -84,7 +74,7 @@ describe("maybeAutoSaveFirstFreePattern", () => {
     });
 
     const result = await maybeAutoSaveFirstFreePattern({ patternSystem: "drop-shoulder" });
-    expect(result).toEqual({ status: "skipped", reason: "already-claimed" });
+    expect(result).toEqual({ status: "skipped", reason: "membership-required" });
     expect(smartSaveMock).not.toHaveBeenCalled();
   });
 

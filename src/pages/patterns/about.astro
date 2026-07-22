@@ -3,19 +3,63 @@ import Layout from '../../layouts/Layout.astro';
 import PatternsMarketingHero from '../../components/patterns/PatternsMarketingHero.astro';
 import PatternsFeaturesSection from '../../components/patterns/PatternsFeaturesSection.astro';
 import PatternBuilderMyPatternsLink from '../../components/patterns/PatternBuilderMyPatternsLink.astro';
-import { PATTERN_CATALOG_HREF } from '../../lib/patterns/customPatternProjectNavigation';
+import {
+  PATTERNS_LANDING_BECOME_MEMBER_HREF,
+  PATTERNS_LANDING_BECOME_MEMBER_LABEL,
+  PATTERNS_LANDING_LOGIN_LABEL,
+  PATTERNS_LANDING_MEMBER_CTA_HREF,
+  PATTERNS_LANDING_MEMBER_CTA_LABEL,
+  PATTERNS_LANDING_MEMBERSHIP_BODY,
+  PATTERNS_LANDING_MEMBERSHIP_HEADING,
+} from '../../lib/patterns/patternsLandingCta';
 ---
 
 <Layout title="Pattern Builders">
 
     <div class="patterns-page">
 
-        <nav class="patterns-action-bar" aria-label="Pattern builder actions">
-          <a href={PATTERN_CATALOG_HREF} class="patterns-action-bar__primary kbm-btn kbm-btn-accent">
-            Choose a Pattern
-          </a>
-          <PatternBuilderMyPatternsLink />
+        <nav
+          class="patterns-action-bar"
+          aria-label="Pattern builder actions"
+          data-patterns-landing-cta
+          data-cta-mode="prospect"
+        >
+          <div class="patterns-action-bar__member" data-patterns-landing-cta-member hidden>
+            <a
+              href={PATTERNS_LANDING_MEMBER_CTA_HREF}
+              class="patterns-action-bar__primary kbm-btn kbm-btn-accent"
+            >
+              {PATTERNS_LANDING_MEMBER_CTA_LABEL}
+            </a>
+            <PatternBuilderMyPatternsLink />
+          </div>
+
+          <div class="patterns-action-bar__prospect" data-patterns-landing-cta-prospect>
+            <div class="patterns-action-bar__membership-copy">
+              <h2 class="patterns-action-bar__heading">{PATTERNS_LANDING_MEMBERSHIP_HEADING}</h2>
+              <p class="patterns-action-bar__body">{PATTERNS_LANDING_MEMBERSHIP_BODY}</p>
+            </div>
+            <div class="patterns-action-bar__prospect-actions">
+              <a
+                href={PATTERNS_LANDING_BECOME_MEMBER_HREF}
+                class="patterns-action-bar__primary kbm-btn kbm-btn-accent"
+              >
+                {PATTERNS_LANDING_BECOME_MEMBER_LABEL}
+              </a>
+              <a
+                href="#"
+                class="patterns-action-bar__login kbm-btn kbm-btn-outline"
+                data-ms-modal="login"
+                data-ms-redirect="current-url"
+              >
+                {PATTERNS_LANDING_LOGIN_LABEL}
+              </a>
+            </div>
+          </div>
         </nav>
+
+        {/* Future: "See How Dynamic Patterns Work" ActivePresenter demo — connect via data-patterns-landing-demo-placeholder. Do not invent a video URL. */}
+        <div data-patterns-landing-demo-placeholder hidden aria-hidden="true"></div>
 
         <PatternsMarketingHero />
 
@@ -28,6 +72,22 @@ import { PATTERN_CATALOG_HREF } from '../../lib/patterns/customPatternProjectNav
 
 </Layout>
 
+<script>
+  import { initPatternsLandingCta } from "../../lib/patterns/patternsLandingCta";
+
+  function boot(): void {
+    const root = document.querySelector("[data-patterns-landing-cta]");
+    if (!(root instanceof HTMLElement)) return;
+    void initPatternsLandingCta(root);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+</script>
+
 <style>
 .patterns-page {
   max-width: 1000px;
@@ -37,14 +97,60 @@ import { PATTERN_CATALOG_HREF } from '../../lib/patterns/customPatternProjectNav
 
 .patterns-action-bar {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 12px;
   margin: 0 0 20px;
 }
 
-.patterns-action-bar__primary {
+.patterns-action-bar__member {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.patterns-action-bar__prospect {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 40rem;
+  text-align: center;
+}
+
+.patterns-action-bar__membership-copy {
+  max-width: 36rem;
+}
+
+.patterns-action-bar__heading {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2c3a57;
+}
+
+.patterns-action-bar__body {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: #374151;
+}
+
+.patterns-action-bar__prospect-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.patterns-action-bar__primary,
+.patterns-action-bar__login {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -56,5 +162,13 @@ import { PATTERN_CATALOG_HREF } from '../../lib/patterns/customPatternProjectNav
   font-weight: 600;
   text-align: center;
   text-decoration: none;
+}
+
+.patterns-action-bar[data-cta-mode="member"] .patterns-action-bar__prospect {
+  display: none;
+}
+
+.patterns-action-bar[data-cta-mode="prospect"] .patterns-action-bar__member {
+  display: none;
 }
 </style>

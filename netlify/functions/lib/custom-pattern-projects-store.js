@@ -168,10 +168,10 @@ export function freePatternDeleteBlockedMessage(systemId = "sleeveless") {
 export const FREE_SLEEVELESS_PATTERN_DELETE_BLOCKED_MESSAGE =
   freePatternDeleteBlockedMessage("sleeveless");
 
-/** Explanatory text when a non-member tries to create/copy another saved pattern for a system. */
+/** Explanatory text when a non-member tries to create/copy a saved pattern for a system. */
 export function patternSystemCreateBlockedMessage(systemId = "sleeveless") {
   const name = patternSystemDisplayName(systemId);
-  return `You've already created your free ${name} pattern. Create another ${name} pattern with membership.`;
+  return `${name} patterns are included with an active Knit it Now membership. Become a member to create and save custom patterns.`;
 }
 
 /** @deprecated Use {@link patternSystemCreateBlockedMessage}. */
@@ -180,16 +180,15 @@ export const SLEEVELESS_PATTERN_CREATE_BLOCKED_MESSAGE =
 
 /** Server mirror of the client settings-edit rule (gauge, measurements, size, style, regenerate). */
 export function isPatternSettingsEditBlockedForSystem(input) {
-  if (!input || typeof input !== "object") return false;
+  if (!input || typeof input !== "object") return true;
   if (input.hasSystemAccess === true) return false;
-  if (input.freeClaimedForSystem === true) return true;
-  return false;
+  return true;
 }
 
-/** Explanatory text when a non-member tries to edit pattern settings for a claimed free pattern. */
+/** Explanatory text when a non-member tries to edit pattern settings. */
 export function patternSystemSettingsEditBlockedMessage(systemId = "sleeveless") {
   const name = patternSystemDisplayName(systemId);
-  return `Pattern editing is included with membership. You can still view, print, and knit from your free ${name} pattern.`;
+  return `${name} pattern editing is included with an active Knit it Now membership.`;
 }
 
 /**
@@ -212,16 +211,15 @@ export function isSavedPatternRenameAttempt(existingName, incomingName) {
  * Server mirror of the client create/copy rule. Returns true when a new saved project must be
  * refused for the given pattern system.
  *
+ * Active membership / system entitlement required — free claims no longer grant create access.
+ * Missing entitlement snapshots fail closed.
+ *
  * @param {{ hasSystemAccess?: boolean, freeClaimedForSystem?: boolean, existingProjectCountForSystem?: number }} input
  */
 export function isPatternCreateBlockedForSystem(input) {
-  if (!input || typeof input !== "object") return false;
+  if (!input || typeof input !== "object") return true;
   if (input.hasSystemAccess === true) return false;
-  if (input.freeClaimedForSystem === true) return true;
-
-  const count = Number(input.existingProjectCountForSystem);
-  if (Number.isFinite(count) && count > 0) return true;
-  return false;
+  return true;
 }
 
 /** @deprecated Use {@link isPatternCreateBlockedForSystem}. */
@@ -431,20 +429,16 @@ export function resolveDevPatternUserId(req) {
 }
 
 /**
- * Resolves storage user id.
- * Production: `X-KBM-Member-Id` from Memberstack (client must be logged in).
- * Dev only: stable dev user when ALLOW_DEV_PATTERN_USER=true (header optional).
- * TODO: Verify Memberstack JWT via MEMBERSTACK_SECRET_KEY before trusting member id.
+ * @deprecated Prefer {@link resolveVerifiedProjectUserId} from `require-member-access.js`
+ * (JWT identity) or {@link requirePatternProjectAccess} (JWT + membership).
+ * Kept as a thin sync helper for tests that only exercise the fail-closed path when
+ * neither a verified session nor local-dev mode is available. Does **not** trust
+ * `X-KBM-Member-Id`.
  *
  * @param {Request} req
  * @returns {{ userId: string, mode: "member" | "dev" } | { error: string, status: number }}
  */
 export function resolveProjectUserId(req) {
-  const memberId = req.headers.get("x-kbm-member-id")?.trim();
-  if (memberId) {
-    return { userId: sanitizeKeySegment(memberId), mode: "member" };
-  }
-
   if (isAllowDevPatternUser()) {
     return { userId: resolveDevPatternUserId(req), mode: "dev" };
   }

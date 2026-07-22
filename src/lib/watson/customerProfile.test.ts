@@ -472,6 +472,7 @@ describe("customerProfile", () => {
 
   it("loads a full Memberstack-only profile without legacy history", async () => {
     const result = await loadMemberstackCustomerProfile("mem_only", {
+      secretKey: "sk_live_test_key",
       getClient: async () => ({
         getMember: async (lookup: string) =>
           lookup === "mem_only"
@@ -507,6 +508,7 @@ describe("customerProfile", () => {
     });
 
     const result = await loadMemberstackCustomerProfile("mem_linked", {
+      secretKey: "sk_live_test_key",
       getClient: async () => ({
         getMember: async (lookup: string) =>
           lookup === "mem_linked"

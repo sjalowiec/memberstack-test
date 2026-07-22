@@ -63,22 +63,12 @@ describe("Sleeveless express new-pattern routing (per-system entitlement)", () =
     vi.unstubAllGlobals();
   });
 
-  it("allows a nosub knitter with a drop-shoulder free claim to start a sleeveless pattern", () => {
-    expect(canStartNewSleevelessPattern(nosubDropShoulderClaimed)).toBe(true);
-  });
-
-  it("blocks a nosub knitter with a sleeveless free claim even when a drop-shoulder draft remains", () => {
+  it("blocks a nosub knitter regardless of historical free claims", () => {
+    expect(canStartNewSleevelessPattern(nosubDropShoulderClaimed)).toBe(false);
     expect(canStartNewSleevelessPattern(nosubSleevelessClaimed)).toBe(false);
     const copy = resolveSleevelessNewPatternBlockedCopy(nosubSleevelessClaimed);
     expect(copy).toMatch(/Sleeveless/i);
-    expect(copy).not.toMatch(/Drop Shoulder/i);
-  });
-
-  it("does not treat a drop-shoulder claim as blocking a sleeveless builder request", () => {
-    expect(canStartNewSleevelessPattern(nosubDropShoulderClaimed)).toBe(true);
-    expect(resolveSleevelessNewPatternBlockedCopy(nosubDropShoulderClaimed)).not.toMatch(
-      /Drop Shoulder/i,
-    );
+    expect(copy).toMatch(/membership/i);
   });
 });
 
@@ -95,15 +85,16 @@ describe("Drop-shoulder builder new-pattern routing (per-system entitlement)", (
     vi.unstubAllGlobals();
   });
 
-  it("blocks a nosub knitter with a drop-shoulder free claim on the drop-shoulder builder", () => {
+  it("blocks a nosub knitter on the drop-shoulder builder without membership", () => {
     expect(canStartNewPatternForSystem(nosubDropShoulderClaimed, "drop-shoulder")).toBe(false);
     expect(canStartNewSleevelessPattern(nosubDropShoulderClaimed)).toBe(false);
     const copy = resolveNewPatternBlockedCopy(nosubDropShoulderClaimed);
     expect(copy).toMatch(/Drop Shoulder/i);
-    expect(copy).not.toMatch(/^You've already created your free Sleeveless/i);
+    expect(copy).toMatch(/membership/i);
+    expect(copy).not.toMatch(/free Sleeveless/i);
   });
 
-  it("allows a nosub knitter with only a sleeveless free claim on the drop-shoulder builder", () => {
-    expect(canStartNewSleevelessPattern(nosubSleevelessClaimed)).toBe(true);
+  it("blocks a nosub knitter with only a sleeveless historical claim on the drop-shoulder builder", () => {
+    expect(canStartNewSleevelessPattern(nosubSleevelessClaimed)).toBe(false);
   });
 });

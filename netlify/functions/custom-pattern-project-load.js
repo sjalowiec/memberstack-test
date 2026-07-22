@@ -1,5 +1,7 @@
 /**
  * GET /.netlify/functions/custom-pattern-project-load?id=...&family=sleeveless
+ *
+ * Auth: Bearer JWT + active membership. Owner scope from verified member id only.
  */
 import {
   getProjectsStore,
@@ -7,9 +9,9 @@ import {
   projectBlobKey,
   publicProject,
   readProjectJson,
-  resolveProjectUserId,
   withCors,
 } from "./lib/custom-pattern-projects-store.js";
+import { requirePatternProjectAccess } from "./lib/require-member-access.js";
 
 export default async (req) => {
   if (req.method === "OPTIONS") {
@@ -19,9 +21,9 @@ export default async (req) => {
     return withCors(jsonResponse({ ok: false, error: "Method not allowed" }, 405));
   }
 
-  const user = resolveProjectUserId(req);
-  if ("error" in user) {
-    return withCors(jsonResponse({ ok: false, error: user.error }, user.status));
+  const access = await requirePatternProjectAccess(req);
+  if (!access.ok) {
+    return withCors(jsonResponse({ ok: false, error: access.error }, access.status));
   }
 
   const url = new URL(req.url);
@@ -33,7 +35,7 @@ export default async (req) => {
 
   try {
     const store = getProjectsStore();
-    const key = projectBlobKey(family, user.userId, id);
+    const key = projectBlobKey(family, access.userId, id);
     const project = await readProjectJson(store, key);
     if (!project) {
       return withCors(jsonResponse({ ok: false, error: "Project not found." }, 404));
@@ -42,7 +44,7 @@ export default async (req) => {
       jsonResponse({
         ok: true,
         project: publicProject(project),
-        authMode: user.mode,
+        authMode: access.mode,
       }),
     );
   } catch (err) {

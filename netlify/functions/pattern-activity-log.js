@@ -1,7 +1,7 @@
 /**
  * Lightweight pattern activity log.
  *
- * - POST: append one activity event for any logged-in user (id resolved from `X-KBM-Member-Id`).
+ * - POST: append one activity event for any logged-in user (id from verified Bearer JWT).
  * - GET:  return recent events across all users for the admin dashboard — **admin-only**
  *         (see {@link isActivityAdmin}); regular members receive 403.
  *
@@ -10,9 +10,9 @@
  */
 import {
   jsonResponse,
-  resolveProjectUserId,
   withCors,
 } from "./lib/custom-pattern-projects-store.js";
+import { resolveVerifiedProjectUserId } from "./lib/require-member-access.js";
 import {
   appendActivityEvent,
   getActivityStore,
@@ -26,14 +26,14 @@ export default async (req) => {
     return withCors(new Response(null, { status: 204 }));
   }
 
-  const user = resolveProjectUserId(req);
+  const user = await resolveVerifiedProjectUserId(req);
   if ("error" in user) {
     return withCors(jsonResponse({ ok: false, error: user.error }, user.status));
   }
 
   if (req.method === "GET") {
     // Reporting is admin-only — never expose other users' activity/emails to regular members.
-    if (!isActivityAdmin(req)) {
+    if (!isActivityAdmin(req, user.userId)) {
       return withCors(jsonResponse({ ok: false, error: "Admin access required." }, 403));
     }
     const url = new URL(req.url);

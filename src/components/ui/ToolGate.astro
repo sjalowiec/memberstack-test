@@ -37,7 +37,16 @@ const isMemberOnly = tool?.membersonly === true;
     <h2 class="tool-gate-notice__title">This tool is for members</h2>
     <p class="tool-gate-notice__body">You'll need an active membership to use this tool.</p>
     <p class="tool-gate-notice__actions">
-      <a href="/membership" class="tool-gate-notice__cta">Become a member</a>
+      <a href="/membership" class="tool-gate-notice__cta">Become a Member</a>
+      <a
+        href="#"
+        class="tool-gate-notice__login"
+        data-ms-content="!members"
+        data-ms-modal="login"
+        data-ms-redirect="current-url"
+      >
+        Already a member? Log in
+      </a>
     </p>
   </div>
 )}
@@ -68,6 +77,10 @@ const isMemberOnly = tool?.membersonly === true;
 
   .tool-gate-notice__actions {
     margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
   }
 
   .tool-gate-notice__cta {
@@ -84,5 +97,16 @@ const isMemberOnly = tool?.membersonly === true;
   .tool-gate-notice__cta:hover {
     background: var(--kbm-green-hover, #445925);
     color: #fff;
+  }
+
+  .tool-gate-notice__login {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+    text-decoration: underline;
+  }
+
+  .tool-gate-notice__login:hover {
+    color: var(--kbm-green-hover, #445925);
   }
 </style>

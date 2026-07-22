@@ -1,76 +1,49 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
+import { MEMBERSHIPS } from "../../../config/memberships";
 
-// Placeholder links — checkout/payment is wired elsewhere.
-const buyHref = "#";
-const annualHref = "#";
-const monthlyHref = "#";
+/**
+ * Legacy unlock URL — kept so bookmarks and old links do not 404.
+ * Individual pattern-system purchases are not sold; Dynamic Patterns require
+ * active membership only (docs/membership-rules.md).
+ */
+const membershipHref = "/membership";
 const myPatternsHref = "/account";
+const monthlyPrice = MEMBERSHIPS.membership.prices.monthly.price;
+const annualPrice = MEMBERSHIPS.membership.prices.annual.price;
 ---
 
 <Layout
-  title="Unlock the Sleeveless Pattern System | Knit it Now"
-  description="Keep viewing and printing your free sleeveless pattern, or unlock the Sleeveless Pattern System to edit, create new versions, and keep customizing."
+  title="Sleeveless Pattern System | Knit it Now"
+  description="Dynamic Patterns are included with an active Knit it Now membership. Become a member to create, edit, and save custom sleeveless patterns."
 >
   <div class="sleeveless-unlock-page page-wrap">
     <section class="sleeveless-unlock">
       <header class="sleeveless-unlock__intro">
-        <h1 class="sleeveless-unlock__title">Unlock the Sleeveless Pattern System</h1>
+        <h1 class="sleeveless-unlock__title">Sleeveless Pattern System</h1>
         <p class="sleeveless-unlock__lead">
-          Good news — your free pattern isn’t going anywhere. You can still
-          <strong>view and print it</strong> any time from your account.
+          Dynamic Patterns are included with an <strong>active Knit it Now membership</strong>.
+          Become a member to create, edit, save, and print custom sleeveless patterns.
         </p>
         <p class="sleeveless-unlock__lead">
-          To <strong>edit this pattern</strong>, <strong>create another version</strong>, or
-          <strong>keep customizing</strong> your fit, gauge, and style choices, you’ll need access to
-          the full Sleeveless Pattern System. Here are your choices:
+          Membership is billed monthly (${monthlyPrice}) or annually (${annualPrice}).
+          An account alone does not unlock pattern builders.
         </p>
       </header>
 
-      <div class="sleeveless-unlock__options">
-        <article class="sleeveless-unlock__card">
-          <h2 class="sleeveless-unlock__card-title">Buy the Sleeveless Pattern System</h2>
-          <p class="sleeveless-unlock__card-body">
-            A one-time purchase that unlocks full editing, gauge changes, and unlimited new versions of
-            the Sleeveless Pattern System — for Women, Men, Kids &amp; Babies.
-          </p>
-          <div class="sleeveless-unlock__price-block">
-            <p class="sleeveless-unlock__price">$24.95</p>
-          </div>
-          <a href={buyHref} class="kbm-btn kbm-btn-accent sleeveless-unlock__btn">
-            Buy This Pattern System
-          </a>
-        </article>
-
-        <article class="sleeveless-unlock__card sleeveless-unlock__card--featured">
-          <p class="sleeveless-unlock__badge">⭐ BEST VALUE</p>
-          <h2 class="sleeveless-unlock__card-title">Become an Annual Member</h2>
-          <p class="sleeveless-unlock__card-body">
-            Get instant access to every pattern system, plus our growing library of video tutorials,
-            masterclasses, planning tools, and troubleshooting help.
-          </p>
-          <div class="sleeveless-unlock__price-block">
-            <p class="sleeveless-unlock__price">$199 <span class="sleeveless-unlock__price-unit">/ year</span></p>
-            <p class="sleeveless-unlock__price-sub">Breaks down to just $16.58/mo</p>
-          </div>
-          <a href={annualHref} class="kbm-btn kbm-btn-primary sleeveless-unlock__btn">
-            Join Annually &amp; Save
-          </a>
-        </article>
-
-        <article class="sleeveless-unlock__card">
-          <h2 class="sleeveless-unlock__card-title">Become a Monthly Member</h2>
-          <p class="sleeveless-unlock__card-body">
-            Get instant access to all current pattern systems, video masterclasses, planning tools, and
-            ongoing updates. Perfect for trying things out.
-          </p>
-          <div class="sleeveless-unlock__price-block">
-            <p class="sleeveless-unlock__price">$19.99 <span class="sleeveless-unlock__price-unit">/ month</span></p>
-          </div>
-          <a href={monthlyHref} class="kbm-btn kbm-btn-outline sleeveless-unlock__btn">
-            Join Monthly
-          </a>
-        </article>
+      <div class="sleeveless-unlock__actions">
+        <a href={membershipHref} class="kbm-btn kbm-btn-accent sleeveless-unlock__btn">
+          Become a Member
+        </a>
+        <a
+          href="#"
+          class="sleeveless-unlock__login"
+          data-ms-content="!members"
+          data-ms-modal="login"
+          data-ms-redirect="current-url"
+        >
+          Already a member? Log in
+        </a>
       </div>
     </section>
 
@@ -89,14 +62,14 @@ const myPatternsHref = "/account";
   }
 
   .sleeveless-unlock {
-    max-width: 64rem;
+    max-width: 40rem;
     margin: 0 auto;
     padding: 0.5rem 0 0.5rem;
   }
 
   .sleeveless-unlock__intro {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 1.75rem;
   }
 
   .sleeveless-unlock__title {
@@ -114,96 +87,29 @@ const myPatternsHref = "/account";
     font-size: 1.05rem;
   }
 
-  .sleeveless-unlock__options {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
-    gap: 1.1rem;
-    align-items: stretch;
-    margin-bottom: 1.75rem;
-  }
-
-  /* Three side-by-side once there's room for it. */
-  @media (min-width: 880px) {
-    .sleeveless-unlock__options {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
-  .sleeveless-unlock__card {
+  .sleeveless-unlock__actions {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    padding: clamp(1.25rem, 3vw, 1.75rem);
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    background: #f9fafb;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  }
-
-  .sleeveless-unlock__card--featured {
-    border: 2px solid var(--kbm-green, #52682d);
-    background: #ffffff;
-    box-shadow: 0 6px 18px rgba(82, 104, 45, 0.12);
-  }
-
-  .sleeveless-unlock__badge {
-    align-self: flex-start;
-    margin: 0 0 0.75rem;
-    padding: 0.2rem 0.6rem;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    color: var(--kbm-green, #52682d);
-    background: #eef2e6;
-    border-radius: 999px;
-  }
-
-  .sleeveless-unlock__card-title {
-    margin: 0 0 0.6rem;
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #2c3a57;
-  }
-
-  .sleeveless-unlock__card-body {
-    margin: 0 0 1.25rem;
-    line-height: 1.55;
-    color: #4b5563;
-    font-size: 0.98rem;
-  }
-
-  /*
-   * Pushes the price + button to the bottom of each card. The reserved min-height keeps
-   * the price line at the same vertical position across all three cards (even though only
-   * the Annual card has a sub-line), so prices and buttons line up on one horizontal row.
-   */
-  .sleeveless-unlock__price-block {
-    margin-top: auto;
-    margin-bottom: 1rem;
-    min-height: 3.75rem;
-  }
-
-  .sleeveless-unlock__price {
-    margin: 0;
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: #2c3a57;
-  }
-
-  .sleeveless-unlock__price-unit {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #6b7280;
-  }
-
-  .sleeveless-unlock__price-sub {
-    margin: 0.25rem 0 0;
-    font-size: 0.88rem;
-    color: #6b7280;
+    align-items: center;
+    gap: 0.85rem;
+    margin-bottom: 1.5rem;
   }
 
   .sleeveless-unlock__btn {
     text-align: center;
+    min-width: 12rem;
+  }
+
+  .sleeveless-unlock__login {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+    text-decoration: underline;
+    text-underline-offset: 0.14em;
+  }
+
+  .sleeveless-unlock__login:hover {
+    text-decoration-thickness: 2px;
   }
 
   .sleeveless-unlock__back {

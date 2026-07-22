@@ -54,10 +54,17 @@ function parseAdminAllowList(value) {
  * @param {Request} req
  * @returns {boolean}
  */
-export function isActivityAdmin(req) {
+/**
+ * @param {Request} req
+ * @param {string} [verifiedMemberId] Prefer the JWT-verified member id when available
+ *   so `X-KBM-Member-Id` cannot spoof admin access.
+ */
+export function isActivityAdmin(req, verifiedMemberId = "") {
   if (isAllowDevPatternUser()) return true;
 
-  const memberId = (req.headers.get("x-kbm-member-id") || "").trim().toLowerCase();
+  const memberId = String(verifiedMemberId || req.headers.get("x-kbm-member-id") || "")
+    .trim()
+    .toLowerCase();
   if (memberId && parseAdminAllowList(process.env.PATTERN_ACTIVITY_ADMIN_MEMBER_IDS).has(memberId)) {
     return true;
   }

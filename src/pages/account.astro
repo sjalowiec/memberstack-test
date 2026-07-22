@@ -18,9 +18,10 @@ const description =
   <div class="account-dashboard">
     <div class="account-page__guest" data-ms-content="!members">
       <section class="dashboard-card account-page__login-card" aria-labelledby="account-login-heading">
-        <h1 id="account-login-heading" class="dashboard-card__title">Create or open your saved patterns</h1>
+        <h1 id="account-login-heading" class="dashboard-card__title">Already have an account?</h1>
         <p class="account-page__lead account-page__lead--guest">
-          Log in or create a free Knit It Now account to save and reopen your patterns.
+          Log in to access your saved or purchased resources. Accounts are created when you purchase
+          a membership or another protected product.
         </p>
         <form
           data-ms-form="login"
@@ -55,15 +56,13 @@ const description =
           <button type="submit" class="contact-form__submit">Log In</button>
         </form>
         <div class="account-page__signup-alt">
-          <p class="account-page__signup-alt-text">New to Knit It Now?</p>
-          <button
-            type="button"
+          <a
+            href="/membership"
             class="kbm-btn kbm-btn-outline account-page__signup-btn"
-            data-account-signup
-            data-testid="account-guest-signup"
+            data-testid="account-guest-become-member"
           >
-            Create Free Account
-          </button>
+            Become a Member
+          </a>
         </div>
         <script is:inline>
           (function () {
@@ -122,7 +121,6 @@ const description =
 
 <script>
   import "/src/scripts/account-login-redirect.ts";
-  import "/src/scripts/account-signup-return.ts";
   import "/src/scripts/account-my-patterns.ts";
   import "/src/scripts/account-favorites.ts";
   import "/src/scripts/account-welcome.ts";

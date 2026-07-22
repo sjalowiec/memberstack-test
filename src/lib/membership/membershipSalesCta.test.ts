@@ -19,12 +19,14 @@ function memberWithPlans(connections: Array<{ planId: string; status: string }>)
 }
 
 describe("resolveMembershipSalesCta (main sales CTA)", () => {
-  it("logged-out visitor ? Become a Member ? #pricing (no auth)", () => {
+  it("logged-out visitor → Choose a membership → #pricing (no auth)", () => {
     expect(resolveMembershipSalesCta({ data: null })).toEqual(MEMBERSHIP_SALES_CTA.choosePlan);
     expect(resolveMembershipSalesCta(null)).toEqual(MEMBERSHIP_SALES_CTA.choosePlan);
+    expect(MEMBERSHIP_SALES_CTA.choosePlan.label).toBe("Choose a membership");
+    expect(MEMBERSHIP_SALES_CTA.choosePlan.href).toBe("#pricing");
   });
 
-  it("logged-in free user ? Become a Member ? #pricing", () => {
+  it("logged-in free user → Choose a membership → #pricing", () => {
     expect(resolveMembershipSalesCta(memberWithPlans([]))).toEqual(
       MEMBERSHIP_SALES_CTA.choosePlan,
     );

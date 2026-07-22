@@ -206,8 +206,36 @@ describe("buildMembershipStatusSummary", () => {
     expect(result.currentStatus).toBe("no_plan");
     expect(result.accountType).toBe("non_paid_account");
     expect(result.recommendedAction).toBe("purchase");
+    expect(result.legacyLinkState).toBe("not_found");
     expect(result.customerFacingMessage).toMatch(/does not currently include an active/i);
     expect(result.customerFacingMessage).not.toMatch(/new customer/i);
+    expect(membershipStatusAllowsPurchase(result)).toBe(true);
+    expect(membershipStatusPanelHeading(result)).toBe("Your Knit it Now membership status");
+  });
+
+  it("legacy not_found is purchase-eligible (not a lookup failure)", () => {
+    const result = buildMembershipStatusSummary({
+      memberstackMember: { id: "mem_sb_new", planConnections: [] },
+      memberstackSummary: summaryFromConnections([]),
+      memberstackLookupOk: true,
+      legacy: legacy({ linkState: "not_found" }),
+    });
+    expect(result.recommendedAction).toBe("purchase");
+    expect(result.legacyLinkState).toBe("not_found");
+    expect(membershipStatusAllowsPurchase(result)).toBe(true);
+  });
+
+  it("legacy lookup_unavailable waits and does not invent purchase", () => {
+    const result = buildMembershipStatusSummary({
+      memberstackMember: { id: "mem_free", planConnections: [] },
+      memberstackSummary: summaryFromConnections([]),
+      memberstackLookupOk: true,
+      legacy: legacy({ linkState: "lookup_unavailable" }),
+    });
+    expect(result.recommendedAction).toBe("wait");
+    expect(result.legacyLinkState).toBe("lookup_unavailable");
+    expect(membershipStatusAllowsPurchase(result)).toBe(false);
+    expect(result.customerFacingMessage).toMatch(/could not confirm/i);
   });
 
   it("treats beta / non-paid active plan as no paid membership", () => {

@@ -86,17 +86,13 @@ describe("canCreatePatternForSystem (per-system)", () => {
     expect(canCreatePatternForSystem(loggedOut, "drop-shoulder")).toBe(false);
   });
 
-  it("allows a free user their first pattern per system independently", () => {
-    expect(canCreatePatternForSystem(freeUnclaimed, "sleeveless")).toBe(true);
-    expect(canCreatePatternForSystem(freeUnclaimed, "drop-shoulder")).toBe(true);
-  });
-
-  it("blocks only the claimed system, not other systems", () => {
+  it("blocks logged-in users without system entitlement (no free create path)", () => {
+    expect(canCreatePatternForSystem(freeUnclaimed, "sleeveless")).toBe(false);
+    expect(canCreatePatternForSystem(freeUnclaimed, "drop-shoulder")).toBe(false);
     expect(canCreatePatternForSystem(freeSleevelessClaimed, "sleeveless")).toBe(false);
-    expect(canCreatePatternForSystem(freeSleevelessClaimed, "drop-shoulder")).toBe(true);
-
+    expect(canCreatePatternForSystem(freeSleevelessClaimed, "drop-shoulder")).toBe(false);
     expect(canCreatePatternForSystem(freeDropShoulderClaimed, "drop-shoulder")).toBe(false);
-    expect(canCreatePatternForSystem(freeDropShoulderClaimed, "sleeveless")).toBe(true);
+    expect(canCreatePatternForSystem(freeDropShoulderClaimed, "sleeveless")).toBe(false);
   });
 
   it("always allows members / system owners", () => {
@@ -107,9 +103,10 @@ describe("canCreatePatternForSystem (per-system)", () => {
 });
 
 describe("canCreateSleevelessPattern (default system)", () => {
-  it("uses sleeveless as the default system id", () => {
-    expect(canCreateSleevelessPattern(freeUnclaimed)).toBe(true);
+  it("uses sleeveless as the default system id and requires entitlement", () => {
+    expect(canCreateSleevelessPattern(freeUnclaimed)).toBe(false);
     expect(canCreateSleevelessPattern(freeSleevelessClaimed)).toBe(false);
+    expect(canCreateSleevelessPattern(member)).toBe(true);
   });
 });
 
@@ -118,10 +115,10 @@ describe("canEditSleevelessPatternSettings", () => {
     expect(canEditSleevelessPatternSettings(loggedOut)).toBe(false);
   });
 
-  it("allows a free user while still creating, blocks after claiming for that system", () => {
-    expect(canEditSleevelessPatternSettings(freeUnclaimed)).toBe(true);
+  it("blocks logged-in users without system entitlement", () => {
+    expect(canEditSleevelessPatternSettings(freeUnclaimed)).toBe(false);
     expect(canEditSleevelessPatternSettings(freeSleevelessClaimed)).toBe(false);
-    expect(canEditSleevelessPatternSettings(freeSleevelessClaimed, "drop-shoulder")).toBe(true);
+    expect(canEditSleevelessPatternSettings(freeSleevelessClaimed, "drop-shoulder")).toBe(false);
   });
 
   it("always allows members / system owners", () => {
@@ -140,13 +137,14 @@ describe("downgrade lifecycle (had access → entitlement ended)", () => {
     },
   };
 
-  it("locks creation of new patterns for claimed systems", () => {
+  it("locks creation of new patterns", () => {
     expect(canCreatePatternForSystem(downgraded, "sleeveless")).toBe(false);
+    expect(canCreatePatternForSystem(downgraded, "drop-shoulder")).toBe(false);
   });
 
-  it("locks settings/regeneration on claimed systems", () => {
+  it("locks settings/regeneration without entitlement", () => {
     expect(canEditSleevelessPatternSettings(downgraded)).toBe(false);
-    expect(canEditSleevelessPatternSettings(downgraded, "drop-shoulder")).toBe(true);
+    expect(canEditSleevelessPatternSettings(downgraded, "drop-shoulder")).toBe(false);
   });
 
   it("keeps title/notes editable (library management)", () => {
@@ -166,33 +164,28 @@ describe("canEditSleevelessPatternNotes", () => {
   });
 });
 
-describe("hasPatternSystemAccess (lifetime builder ownership)", () => {
-  it("grants Sleeveless-only access for a Sleeveless lifetime plan", () => {
-    expect(hasPatternSystemAccess(sleevelessLifetimeOwner, "sleeveless")).toBe(true);
+describe("hasPatternSystemAccess (lifetime builder ownership does not grant access)", () => {
+  it("denies lifetime-only owners for every builder", () => {
+    expect(hasPatternSystemAccess(sleevelessLifetimeOwner, "sleeveless")).toBe(false);
     expect(hasPatternSystemAccess(sleevelessLifetimeOwner, "drop-shoulder")).toBe(false);
-  });
-
-  it("grants Drop Shoulder-only access for a Drop Shoulder lifetime plan", () => {
-    expect(hasPatternSystemAccess(dropShoulderLifetimeOwner, "drop-shoulder")).toBe(true);
+    expect(hasPatternSystemAccess(dropShoulderLifetimeOwner, "drop-shoulder")).toBe(false);
     expect(hasPatternSystemAccess(dropShoulderLifetimeOwner, "sleeveless")).toBe(false);
+    expect(canCreatePatternForSystem(sleevelessLifetimeOwner, "sleeveless")).toBe(false);
+    expect(canCreatePatternForSystem(dropShoulderLifetimeOwner, "drop-shoulder")).toBe(false);
   });
 
-  it("still allows a lifetime owner their one free pattern on the other system", () => {
-    expect(canCreatePatternForSystem(sleevelessLifetimeOwner, "drop-shoulder")).toBe(true);
-    expect(canCreatePatternForSystem(dropShoulderLifetimeOwner, "sleeveless")).toBe(true);
-  });
-
-  it("resolves per-system access from active plan ids", () => {
+  it("ignores lifetime plan ids and legacy JSON unlock flags", () => {
     expect(
       resolvePatternSystemAccess({
         activePlanIds: [PATTERN_BUILDER_LIFETIME_PURCHASES.sleeveless.memberstackPlanId],
         patternSystemId: "sleeveless",
       }).hasSystemAccess,
-    ).toBe(true);
+    ).toBe(false);
     expect(
       resolvePatternSystemAccess({
-        activePlanIds: [PATTERN_BUILDER_LIFETIME_PURCHASES.sleeveless.memberstackPlanId],
-        patternSystemId: "drop-shoulder",
+        activePlanIds: [],
+        patternSystemId: "sleeveless",
+        sleevelessUnlockedViaJson: true,
       }).hasSystemAccess,
     ).toBe(false);
   });

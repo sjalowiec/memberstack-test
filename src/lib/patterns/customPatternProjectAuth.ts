@@ -1,12 +1,11 @@
 /**
- * Resolves user id headers for Custom Pattern project APIs.
+ * Resolves auth headers for Custom Pattern project APIs (and related admin callers).
  *
- * Auth wiring status:
- * - **Member id (preferred):** `X-KBM-Member-Id` from Memberstack `getCurrentMember()` when logged in.
- * - **Dev fallback:** stable id in localStorage (sent as `X-KBM-Dev-User-Id` when available) — server uses
- *   the same id or a built-in fallback when `ALLOW_DEV_PATTERN_USER=true`. Not account-backed.
+ * Production: `Authorization: Bearer <Memberstack JWT>` from `getMemberCookie()`.
+ * The server verifies the token and derives membership from Admin API + MEMBER_PLAN_IDS.
+ * Never sends `X-KBM-Member-Id` as authoritative identity.
  *
- * TODO: Verify Memberstack session/JWT server-side (`MEMBERSTACK_SECRET_KEY`) instead of trusting client-sent id.
+ * Dev fallback: `X-KBM-Dev-User-Id` when Astro/Netlify local-dev allow anonymous pattern user.
  */
 
 import { memberIdFromMemberstackPayload } from "./memberstackMember";
@@ -34,6 +33,8 @@ export type CustomPatternProjectAuthMode = "member" | "dev" | "none";
 export type CustomPatternProjectAuth = {
   mode: CustomPatternProjectAuthMode;
   memberId?: string;
+  /** Present when a Bearer token was resolved for the current Memberstack session. */
+  bearerToken?: string;
   devUserId?: string;
 };
 
@@ -48,6 +49,18 @@ export function getOrCreateDevPatternUserId(): string {
   } catch {
     return DEFAULT_DEV_PATTERN_USER_ID;
   }
+}
+
+async function readMemberstackBearerToken(): Promise<string | null> {
+  if (typeof window === "undefined") return null;
+  try {
+    const ms = window.$memberstackDom;
+    const token = await ms?.getMemberCookie?.();
+    if (typeof token === "string" && token.trim()) return token.trim();
+  } catch {
+    /* unauthenticated */
+  }
+  return null;
 }
 
 export async function resolveCustomPatternProjectAuth(): Promise<CustomPatternProjectAuth> {
@@ -69,8 +82,18 @@ export async function resolveCustomPatternProjectAuth(): Promise<CustomPatternPr
         memberIdResolved: Boolean(memberId),
       });
       if (memberId) {
+        const bearerToken = (await readMemberstackBearerToken()) ?? undefined;
+        // Without a JWT the server cannot verify identity — treat as unauthenticated.
+        if (!bearerToken) {
+          perfEnd("2-member-auth total", authStart, {
+            mode: "none",
+            reason: "missing-bearer",
+            ...readiness,
+          });
+          return { mode: "none" };
+        }
         perfEnd("2-member-auth total", authStart, { mode: "member", ...readiness });
-        return { mode: "member", memberId };
+        return { mode: "member", memberId, bearerToken };
       }
     } catch (error) {
       perfEnd("2-member-auth getCurrentMember (failed)", memberStart, {
@@ -96,9 +119,15 @@ export async function resolveCustomPatternProjectAuth(): Promise<CustomPatternPr
   return { mode: "none" };
 }
 
-export function authHeadersForCustomPatternProjects(auth: CustomPatternProjectAuth): Record<string, string> {
-  if (auth.mode === "member" && auth.memberId) {
-    return { "X-KBM-Member-Id": auth.memberId };
+/**
+ * Headers for pattern project (and related) Netlify functions.
+ * Member mode sends only a verified Bearer token — never a client-chosen member id.
+ */
+export function authHeadersForCustomPatternProjects(
+  auth: CustomPatternProjectAuth,
+): Record<string, string> {
+  if (auth.mode === "member" && auth.bearerToken) {
+    return { Authorization: `Bearer ${auth.bearerToken}` };
   }
   if (auth.mode === "dev" && auth.devUserId) {
     return { "X-KBM-Dev-User-Id": auth.devUserId };

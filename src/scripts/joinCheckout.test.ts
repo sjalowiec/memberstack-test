@@ -515,22 +515,22 @@ describe("startJoinCheckout (purchase / current)", () => {
     expect(purchasePlansWithCheckout).toHaveBeenCalledTimes(1);
   });
 
-  it("main sales CTA: logged-out visitor stays on Become a Member ? #pricing", () => {
+  it("main sales CTA: logged-out visitor stays on Choose a membership ? #pricing", () => {
     const { salesCtas } = stubDom({ salesCta: true });
 
     applyMembershipSalesCtaState(memberPayload(null));
 
-    expect(salesCtas[0].textContent).toBe("Become a Member");
+    expect(salesCtas[0].textContent).toBe("Choose a membership");
     expect(salesCtas[0].getAttribute("href")).toBe("#pricing");
     expect(salesCtas[0].getAttribute("data-membership-sales-cta-kind")).toBe("choose-plan");
   });
 
-  it("main sales CTA: logged-in free user stays on Become a Member ? #pricing", () => {
+  it("main sales CTA: logged-in free user stays on Choose a membership ? #pricing", () => {
     const { salesCtas } = stubDom({ salesCta: true });
 
     applyMembershipSalesCtaState(memberPayload("mem_free_sales", []));
 
-    expect(salesCtas[0].textContent).toBe("Become a Member");
+    expect(salesCtas[0].textContent).toBe("Choose a membership");
     expect(salesCtas[0].getAttribute("href")).toBe("#pricing");
     expect(salesCtas[0].getAttribute("data-membership-sales-cta-kind")).toBe("choose-plan");
   });
@@ -600,7 +600,7 @@ describe("startJoinCheckout (purchase / current)", () => {
 
     applyMembershipStatusCtaMode("purchase");
     applyJoinCheckoutButtonStates(memberPayload("mem_free_restore", []));
-    expect(salesCtas[0].textContent).toBe("Become a Member");
+    expect(salesCtas[0].textContent).toBe("Choose a membership");
     expect(salesCtas[0].getAttribute("href")).toBe("#pricing");
     expect(buttons[0].disabled).toBe(false);
   });

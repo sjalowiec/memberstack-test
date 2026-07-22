@@ -7,6 +7,8 @@ import UnitToggle from "../../components/wizards/UnitToggle.astro";
 import GaugeInput from "../../components/wizards/GaugeInput.astro";
 import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
 import FloatingInput from "../../components/tools/FloatingInput.astro";
+import ToolGate from "../../components/ui/ToolGate.astro";
+import ToolPreviewGate from "../../components/ui/ToolPreviewGate.astro";
 import toolsData from "../../../data/tools.json";
 import "../../styles/wizard.css";
 
@@ -14,7 +16,7 @@ const pageTitle = "Magic Formula – Shaping Calculator | Knit it Now";
 const pageDescription = "The \"Magic Formula\" is the industry standard for distributing increases or decreases evenly across a slope. Whether you're shaping a sleeve, a neckline, or a waist, just plug in your starting and ending counts to get perfectly spaced instructions. No math, no \"rounding errors,\" just a smooth edge.";
 const whyUseText = "Use this tool to evenly distribute increases or decreases across a shaping section. Enter either stitch counts and rows, or measurements and gauge, and get clear pattern-style instructions for one side or both sides of your piece.";
 
-const tools = toolsData as Array<{ href?: string; title?: string; icon?: string }>;
+const tools = toolsData as Array<{ href?: string; title?: string; icon?: string; membersonly?: boolean }>;
 const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
 const toolPrintTitle = tool?.title ?? "Magic Formula";
 ---
@@ -37,6 +39,9 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
           </ul>
       </section>
 
+      <ToolGate tool={tool} />
+
+      <ToolPreviewGate tool={tool}>
       <div class="action-bar-wrap no-print">
         <ActionBar formScrollTarget="wizard-form" />
       </div>
@@ -112,6 +117,7 @@ const toolPrintTitle = tool?.title ?? "Magic Formula";
           <div id="resultsContent" class="results-content mf-screen-results"></div>
         </div>
       </div>
+      </ToolPreviewGate>
     </div>
   </main>
 

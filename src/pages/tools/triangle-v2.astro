@@ -9,6 +9,7 @@ import RightTriangleIcon from "../../components/tools/triangle-right-icon.svg";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
 import FloatingInput from "../../components/tools/FloatingInput.astro";
 import ToolGate from "../../components/ui/ToolGate.astro";
+import ToolPreviewGate from "../../components/ui/ToolPreviewGate.astro";
 import FavoriteStar from "../../components/favorites/FavoriteStar.astro";
 import FavoritesRuntime from "../../components/favorites/FavoritesRuntime.astro";
 import toolsData from "../../../data/tools.json";
@@ -62,6 +63,10 @@ const trianglePreviewRightHtml = fs.readFileSync(
           and the calculator will generate the knitting numbers.
         </p>
       </section>
+
+      <ToolGate tool={tool} />
+
+      <ToolPreviewGate tool={tool}>
       <div class="triangle-tool-wrap">
       <div class="triangle-calculator-panel">
         <div class="triangle-tool-layout">
@@ -160,9 +165,8 @@ const trianglePreviewRightHtml = fs.readFileSync(
         </aside>
         </div>
       </div>
-
-        <ToolGate tool={tool} />
       </div>
+      </ToolPreviewGate>
     </div>
   </main>
 

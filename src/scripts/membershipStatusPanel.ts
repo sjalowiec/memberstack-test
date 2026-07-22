@@ -1,6 +1,10 @@
 /**
  * Hydrate the /membership status UI.
  *
+ * Logged-out visitors keep the normal sales page: no status panel, no loading /
+ * wait overlays, and no membership-status endpoint call. Personalized status
+ * runs only after Memberstack confirms the visitor is logged in.
+ *
  * - Active / canceling: once-per-session modal + reopen trigger near the hero.
  * - Blocking transition / lookup failure: inline beige panel (always visible).
  * - Free / purchase: compact inline note only (no auto-modal).
@@ -138,6 +142,25 @@ function hideInlinePanel(root: ParentNode): void {
   panel.hidden = true;
   panel.setAttribute("data-membership-status-state", "idle");
   panel.removeAttribute("data-membership-status-ui");
+  panel.removeAttribute("data-membership-status-source");
+}
+
+/**
+ * Ordinary logged-out sales experience: no status panel, no modal, no overlays.
+ * Purchase CTAs stay enabled; hero stays on the normal choose-plan CTA.
+ */
+function settleLoggedOutSalesExperience(
+  root: ParentNode,
+  panel: HTMLElement,
+): void {
+  hideInlinePanel(root);
+  setOpenTriggerVisible(root, false);
+  const dialog = getDialog(root);
+  if (dialog?.open) dialog.close();
+  applyMembershipPageContentMode("sales", root);
+  applyMembershipHeroHeading("default", root);
+  panel.setAttribute("data-membership-status-state", "idle");
+  applyMembershipStatusCtaMode("hidden", root);
 }
 
 function setOpenTriggerVisible(root: ParentNode, visible: boolean): void {
@@ -256,9 +279,10 @@ function renderInlineCompact(root: ParentNode, view: MembershipStatusPageView): 
   loading.hidden = true;
   body.hidden = false;
 
-  heading.hidden = true;
-  heading.textContent = "";
-  message.textContent = MEMBERSHIP_STATUS_FREE_ACCOUNT_COMPACT_MESSAGE;
+  heading.hidden = false;
+  heading.textContent = view.heading;
+  message.textContent =
+    view.message?.trim() || MEMBERSHIP_STATUS_FREE_ACCOUNT_COMPACT_MESSAGE;
 
   if (facts) {
     applyFacts(root, {
@@ -354,39 +378,21 @@ export async function loadAndRenderMembershipStatusPanel(
   if (!panel) return;
 
   const generation = ++loadGeneration;
-  applyMembershipStatusCtaMode("loading", root);
 
+  // Do not apply loading/wait/contact overlays until Memberstack confirms login.
+  // Logged-out prospects must keep the SSR sales page fully usable meanwhile.
   const payload = await waitForMemberstackPayload();
   if (generation !== loadGeneration) return;
 
   if (!payload || !isMemberLoggedIn(payload)) {
-    // Distinguish "logged out" from "Memberstack failed while cookies look logged in".
-    if (!payload) {
-      renderLoading(root);
-      presentPageView(
-        root,
-        resolveMembershipStatusPageView({
-          clientLoaded: false,
-          memberPayload: null,
-          serverSummary: null,
-        }),
-        null,
-        null,
-        { autoOpenModal: false },
-      );
-      return;
-    }
-    hideInlinePanel(root);
-    setOpenTriggerVisible(root, false);
-    const dialog = getDialog(root);
-    if (dialog?.open) dialog.close();
-    applyMembershipPageContentMode("sales", root);
-    applyMembershipHeroHeading("default", root);
-    panel.setAttribute("data-membership-status-state", "idle");
-    applyMembershipStatusCtaMode("hidden", root);
+    // Anonymous / logged-out (including Memberstack not ready): normal sales page.
+    // Never show status panel, cannot-confirm, or call the authenticated endpoint.
+    settleLoggedOutSalesExperience(root, panel);
     return;
   }
 
+  // Authenticated only from here.
+  applyMembershipStatusCtaMode("loading", root);
   const memberId = memberIdFromPayload(payload);
   renderLoading(root);
 

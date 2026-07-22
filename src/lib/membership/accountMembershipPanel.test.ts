@@ -75,11 +75,11 @@ describe("formatMemberstackUnixDate", () => {
 });
 
 describe("resolveAccountMembershipPanelView", () => {
-  it("shows free account when there are no paid plan connections", () => {
+  it("shows no active membership when there are no paid plan connections", () => {
     expect(resolveAccountMembershipPanelView(memberWithPlans([]))).toEqual({
       kind: "free",
       planLabel: "No active membership",
-      statusLabel: "Free account",
+      statusLabel: "No Active Membership",
       billingInterval: null,
       billingLabel: null,
       renewsLabel: null,

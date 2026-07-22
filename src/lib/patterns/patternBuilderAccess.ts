@@ -1,20 +1,18 @@
 /**
- * Centralized Pattern Builder entitlement ù full access to a specific builder.
+ * Pattern Builder entitlement ù active Knit it Now membership only.
  *
- * Full access is granted when the visitor has global member access (paid membership, Beta,
- * or legacy plans via {@link hasMemberAccess}) OR owns the lifetime Memberstack product for
- * that builder only.
+ * Single source of truth: {@link hasMemberAccess} / {@link hasMemberAccessFromActivePlanIds}
+ * (`MEMBER_PLAN_IDS`: paid membership, Beta, and legacy member shells).
  *
- * This layer does not replace the one-free-pattern allowance for logged-in non-members;
- * free-pattern rules remain in `sleevelessPatternSystemAccess` until wired in a later step.
+ * Lifetime builder plans, Memberstack JSON unlock flags, and free claims do **not**
+ * grant Dynamic Pattern access.
  */
+import type { PatternSystemId } from "./patternSystemId";
+import { hasMemberAccess } from "../memberAccess";
 import {
-  isKnownPatternBuilderKey,
   patternBuilderLifetimePlanId,
   type PatternBuilderKey,
 } from "../../config/patternBuilderLifetime";
-import type { PatternSystemId } from "./patternSystemId";
-import { hasMemberAccess } from "../memberAccess";
 
 export type { PatternBuilderKey };
 
@@ -55,7 +53,10 @@ function activePlanIdsIncludeAny(activePlanIds: readonly string[], candidates: r
   return candidates.some((id) => normalizedActive.has(id.trim()));
 }
 
-/** True when `activePlanIds` includes the lifetime Memberstack plan id for exactly this builder. */
+/**
+ * True when `activePlanIds` includes the lifetime Memberstack plan id for this builder.
+ * Ownership detection only ù does **not** grant Dynamic Pattern access.
+ */
 export function hasLifetimePatternBuilderAccess(
   builder: PatternBuilderKey,
   activePlanIds: readonly string[],
@@ -64,12 +65,11 @@ export function hasLifetimePatternBuilderAccess(
 }
 
 /**
- * Full paid access to one Pattern Builder (unlimited create/save/edit/copy/print).
- * Unknown builder keys fail closed (false). Global membership unlocks every builder.
+ * Dynamic Pattern access for one builder.
+ * Active membership unlocks every builder. Lifetime ownership alone does not.
+ * The `builder` field is accepted for call-site compatibility and is not used for access.
  */
 export function hasPatternBuilderAccess(params: HasPatternBuilderAccessParams): boolean {
-  const activePlanIds = normalizePlanIds(params.activePlanIds);
-  if (hasMemberAccessFromActivePlanIds(activePlanIds)) return true;
-  if (!isKnownPatternBuilderKey(params.builder)) return false;
-  return hasLifetimePatternBuilderAccess(params.builder, activePlanIds);
+  void params.builder;
+  return hasMemberAccessFromActivePlanIds(params.activePlanIds);
 }

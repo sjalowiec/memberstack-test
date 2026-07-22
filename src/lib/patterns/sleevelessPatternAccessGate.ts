@@ -2,11 +2,10 @@
  * Entitlement gate for advanced Sleeveless customization (measurement fine-tuning) on the
  * unified review page.
  *
- * Resolution order: explicit dev/test overrides (query param, then localStorage) win; otherwise
- * the resolved Memberstack access snapshot decides (`hasSystemAccess`). Before the async snapshot
- * resolves, callers that have not awaited resolution fall back to locked (non-member) so free and
- * downgraded users are not briefly granted member-only controls. Review-page scripts await
- * {@link resolveSleevelessUserAccess} first so the snapshot is primed before reading.
+ * Resolution order: in development only, explicit overrides (query param, then localStorage)
+ * may win; otherwise the resolved Memberstack access snapshot decides. Production builds always
+ * ignore query-string and localStorage bypasses. Before the async snapshot resolves, callers that
+ * have not awaited resolution fall back to locked so non-members are not briefly granted controls.
  */
 import { getCachedSleevelessUserAccess } from "./sleevelessPatternSystemAccessClient";
 import {
@@ -21,6 +20,22 @@ export const SLEEVELESS_PATTERN_ACCESS_LS_KEY = "kbm_sleeveless_advanced_pattern
 const ADVANCED_QUERY_PARAM = "advanced";
 const CUSTOMIZE_QUERY_PARAM = "customize";
 
+export type AdvancedAccessResolveOptions = {
+  /**
+   * When true, ignore query/localStorage overrides (simulates production).
+   * Production builds always ignore overrides regardless of this flag.
+   */
+  ignoreDevOverrides?: boolean;
+};
+
+/** True only in local/dev builds — never in production. */
+export function isAdvancedAccessDevOverrideEnabled(
+  options?: AdvancedAccessResolveOptions,
+): boolean {
+  if (options?.ignoreDevOverrides === true) return false;
+  return Boolean(import.meta.env?.DEV);
+}
+
 function parseAccessOverride(raw: string | null | undefined): boolean | null {
   const v = raw?.trim().toLowerCase();
   if (v === "1" || v === "true" || v === "yes") return true;
@@ -29,20 +44,15 @@ function parseAccessOverride(raw: string | null | undefined): boolean | null {
 }
 
 /**
- * When true, review-page measurement fields are editable and full validation runs.
- * When false, measurements are read-only; knitters can still generate/print the pattern.
- *
- * Default: locked until access resolves (conservative for free / downgraded users).
- *
- * Force read-only for future free-state testing:
- * - `?advanced=0` or `?customize=0` on the review URL
- * - `localStorage.setItem('kbm_sleeveless_advanced_pattern_access', '0')`
+ * Explicit dev/test override (query param, then localStorage), or null when none is set /
+ * overrides are disabled (production).
  */
-/**
- * Explicit dev/test override (query param, then localStorage), or null when none is set.
- * Shared by the cache-reading and access-aware resolvers so overrides behave identically.
- */
-function readAdvancedPatternAccessOverride(pageUrl?: URL): boolean | null {
+function readAdvancedPatternAccessOverride(
+  pageUrl?: URL,
+  options?: AdvancedAccessResolveOptions,
+): boolean | null {
+  if (!isAdvancedAccessDevOverrideEnabled(options)) return null;
+
   let url: URL | null = pageUrl ?? null;
   if (!url && typeof window !== "undefined") {
     try {
@@ -59,7 +69,7 @@ function readAdvancedPatternAccessOverride(pageUrl?: URL): boolean | null {
     if (fromCustomize !== null) return fromCustomize;
   }
 
-  if (typeof window !== "undefined" && typeof localStorage !== "undefined") {
+  if (typeof localStorage !== "undefined") {
     try {
       const stored = parseAccessOverride(localStorage.getItem(SLEEVELESS_PATTERN_ACCESS_LS_KEY));
       if (stored !== null) return stored;
@@ -71,8 +81,11 @@ function readAdvancedPatternAccessOverride(pageUrl?: URL): boolean | null {
   return null;
 }
 
-export function resolveHasAdvancedPatternAccess(pageUrl?: URL): boolean {
-  const override = readAdvancedPatternAccessOverride(pageUrl);
+export function resolveHasAdvancedPatternAccess(
+  pageUrl?: URL,
+  options?: AdvancedAccessResolveOptions,
+): boolean {
+  const override = readAdvancedPatternAccessOverride(pageUrl, options);
   if (override !== null) return override;
 
   const access = getCachedSleevelessUserAccess();
@@ -86,22 +99,25 @@ export function resolveHasAdvancedPatternAccess(pageUrl?: URL): boolean {
 
 /**
  * Same as {@link resolveHasAdvancedPatternAccess} but decided against an explicitly-resolved access
- * snapshot rather than the shared cache. Use this on pages that resolve access without priming the
- * cache (e.g. My Patterns), so the gate reflects the real entitlement instead of the open default.
+ * snapshot rather than the shared cache.
  */
 export function resolveHasAdvancedPatternAccessForAccess(
   access: SleevelessUserAccess | null,
   pageUrl?: URL,
+  options?: AdvancedAccessResolveOptions,
 ): boolean {
-  const override = readAdvancedPatternAccessOverride(pageUrl);
+  const override = readAdvancedPatternAccessOverride(pageUrl, options);
   if (override !== null) return override;
   if (access) {
     return hasPatternSystemAccess(access, resolvePatternSystemForEntitlement());
   }
-  return resolveHasAdvancedPatternAccess(pageUrl);
+  return resolveHasAdvancedPatternAccess(pageUrl, options);
 }
 
 /** When true, review-page title, notes, measurements, and save controls are editable. */
-export function canCustomizePattern(pageUrl?: URL): boolean {
-  return resolveHasAdvancedPatternAccess(pageUrl);
+export function canCustomizePattern(
+  pageUrl?: URL,
+  options?: AdvancedAccessResolveOptions,
+): boolean {
+  return resolveHasAdvancedPatternAccess(pageUrl, options);
 }

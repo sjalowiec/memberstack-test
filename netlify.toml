@@ -32,3 +32,26 @@
   from = "/shop/machines/silver-reed-tr-860"
   to = "/shop/machines/taitexma-tr-850"
   status = 301
+
+# Community excluded from launch — do not serve Talkyard community UI.
+[[redirects]]
+  from = "/community"
+  to = "/membership"
+  status = 301
+
+[[redirects]]
+  from = "/community-intro-old"
+  to = "/membership"
+  status = 301
+
+# Canonical troubleshooting guide lives at /troubleshoot.
+[[redirects]]
+  from = "/its-not-you-might-be-your-machine"
+  to = "/troubleshoot"
+  status = 301
+
+# Individual Hybrid Blanket pattern sale retired — Dynamic Patterns are membership-only.
+[[redirects]]
+  from = "/patterns/hybrid-blanket/sales"
+  to = "/patterns/about"
+  status = 301

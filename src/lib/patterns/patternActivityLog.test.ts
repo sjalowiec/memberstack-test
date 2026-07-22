@@ -2,8 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("./customPatternProjectAuth", () => ({
   resolveCustomPatternProjectAuth: vi.fn(),
-  authHeadersForCustomPatternProjects: (auth: { mode: string; memberId?: string }) =>
-    auth.mode === "member" && auth.memberId ? { "X-KBM-Member-Id": auth.memberId } : {},
+  authHeadersForCustomPatternProjects: (auth: {
+    mode: string;
+    memberId?: string;
+    bearerToken?: string;
+  }) =>
+    auth.mode === "member" && auth.bearerToken
+      ? { Authorization: `Bearer ${auth.bearerToken}` }
+      : {},
 }));
 
 import {
@@ -201,7 +207,11 @@ describe("logPatternActivity", () => {
   });
 
   it("posts an event for a signed-in member", async () => {
-    resolveAuthMock.mockResolvedValue({ mode: "member", memberId: "mem_42" });
+    resolveAuthMock.mockResolvedValue({
+      mode: "member",
+      memberId: "mem_42",
+      bearerToken: "test-jwt",
+    });
     fetchMock.mockResolvedValue({ ok: true });
 
     const sent = await logPatternActivity({
@@ -217,11 +227,16 @@ describe("logPatternActivity", () => {
     expect(body.userId).toBe("mem_42");
     expect(body.eventType).toBe("pattern_saved");
     expect(body.patternId).toBe("proj_1");
-    expect(init.headers["X-KBM-Member-Id"]).toBe("mem_42");
+    expect(init.headers.Authorization).toBe("Bearer test-jwt");
+    expect(init.headers["X-KBM-Member-Id"]).toBeUndefined();
   });
 
   it("never throws when the request fails (save/update flow keeps working)", async () => {
-    resolveAuthMock.mockResolvedValue({ mode: "member", memberId: "mem_42" });
+    resolveAuthMock.mockResolvedValue({
+      mode: "member",
+      memberId: "mem_42",
+      bearerToken: "test-jwt",
+    });
     fetchMock.mockRejectedValue(new Error("network down"));
 
     await expect(
@@ -230,7 +245,11 @@ describe("logPatternActivity", () => {
   });
 
   it("returns false on a non-ok response without throwing", async () => {
-    resolveAuthMock.mockResolvedValue({ mode: "member", memberId: "mem_42" });
+    resolveAuthMock.mockResolvedValue({
+      mode: "member",
+      memberId: "mem_42",
+      bearerToken: "test-jwt",
+    });
     fetchMock.mockResolvedValue({ ok: false, status: 500 });
 
     await expect(

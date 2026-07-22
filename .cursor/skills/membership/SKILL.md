@@ -46,8 +46,11 @@ Friendly, clear, reassuring, and practical. For machine knitters. Not corporate 
 
 ## CTA
 
-- Hero primary CTA (`data-membership-sales-cta`): `Become a Member` → `#pricing` for prospects/free users; active paid members see `Manage Membership` → `/account#membership`
-- Plan checkout labels (monthly/annual): `Become a Member` → Memberstack signup/login then Stripe checkout
+- Hero primary CTA (`data-membership-sales-cta`): `Choose a membership` → `#pricing` for prospects/free (no paid plan) accounts; active paid members see `Manage Membership` → `/account#membership`
+- Plan checkout labels (monthly/annual): `Become a Member` → Memberstack signup/login then Stripe checkout (account is created as part of purchase — do not require a Memberstack account merely to collect email)
 - Paid members see `Current Plan` on plan buttons; manage billing via account or portal
-- Logged-in status panel (Watson-backed) explains membership history/context; it must not weaken checkout protection (`memberHasActivePaidMembership` / `resolveMembershipCheckoutDecision`)
-- Ambiguous or unavailable status: suppress purchase CTAs and point to contact support / retry — never default endpoint failure to “please buy”
+- **Logged-out sales page must stay untouched:** no status panel, loading/wait/contact/manage overlays, membership modal, or authenticated `membership-status` endpoint call. Detect login from the Memberstack client first; only then run personalized status UI.
+- Logged-in status panel: client Memberstack is authoritative for current paid status; server legacy context is consulted only when the client has no paid plan. A successfully loaded member with no paid plan is purchase-eligible (not a lookup failure). No legacy record (`not_found`) is also purchase-eligible. Genuine authenticated client/server/legacy lookup failures use wait/contact — never invent purchase when status cannot be confirmed safely. Future legacy paid-through and ambiguous legacy remain contact-support and suppress purchase.
+- Ambiguous or unavailable status (authenticated only): suppress purchase CTAs and point to contact support / retry — never default endpoint failure to “please buy”
+- Do not auto-open the membership details modal for non-members; once-per-session modal is only for active/canceling paid members
+- Fact rows render only when they have real values (never blank Plan/Status/Billing/Renews/Active through/Previous membership labels)

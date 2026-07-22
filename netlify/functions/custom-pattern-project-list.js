@@ -1,13 +1,15 @@
 /**
  * GET /.netlify/functions/custom-pattern-project-list?family=sleeveless
+ *
+ * Auth: Bearer JWT + active membership. Lists only the verified member's projects.
  */
 import {
   getProjectsStore,
   jsonResponse,
   listProjectSummaries,
-  resolveProjectUserId,
   withCors,
 } from "./lib/custom-pattern-projects-store.js";
+import { requirePatternProjectAccess } from "./lib/require-member-access.js";
 
 export default async (req) => {
   if (req.method === "OPTIONS") {
@@ -17,9 +19,9 @@ export default async (req) => {
     return withCors(jsonResponse({ ok: false, error: "Method not allowed" }, 405));
   }
 
-  const user = resolveProjectUserId(req);
-  if ("error" in user) {
-    return withCors(jsonResponse({ ok: false, error: user.error }, user.status));
+  const access = await requirePatternProjectAccess(req);
+  if (!access.ok) {
+    return withCors(jsonResponse({ ok: false, error: access.error }, access.status));
   }
 
   const url = new URL(req.url);
@@ -27,12 +29,12 @@ export default async (req) => {
 
   try {
     const store = getProjectsStore();
-    const projects = await listProjectSummaries(store, family, user.userId);
+    const projects = await listProjectSummaries(store, family, access.userId);
     return withCors(
       jsonResponse({
         ok: true,
         projects,
-        authMode: user.mode,
+        authMode: access.mode,
       }),
     );
   } catch (err) {

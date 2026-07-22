@@ -1,6 +1,8 @@
 /**
- * Automatically saves the first free pattern for a logged-in non-member when they successfully
- * generate a pattern in a pattern system they have not yet claimed.
+ * Legacy first-free-pattern auto-save helper.
+ *
+ * Dynamic Patterns now require active membership, so {@link canCreatePatternForSystem} is false
+ * for non-members and this path always skips. Kept so call sites remain stable.
  */
 import { readActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
 import { smartSaveCustomPatternProject } from "./customPatternSavedProjectsPanel";
@@ -31,8 +33,7 @@ export type MaybeAutoSaveFirstFreePatternOptions = {
 };
 
 /**
- * Saves the working draft when a logged-in free user completes their first pattern for a system.
- * No-op when already linked, already claimed, member, or logged out.
+ * No-op for non-members (membership required). Members skip because they already have access.
  */
 export async function maybeAutoSaveFirstFreePattern(
   options: MaybeAutoSaveFirstFreePatternOptions = {},
@@ -47,7 +48,7 @@ export async function maybeAutoSaveFirstFreePattern(
     return { status: "skipped", reason: "has-system-access" };
   }
   if (!canCreatePatternForSystem(access, patternSystem)) {
-    return { status: "skipped", reason: "already-claimed" };
+    return { status: "skipped", reason: "membership-required" };
   }
   if (isFreeClaimedForSystem(access.freeClaimsBySystem, patternSystem)) {
     return { status: "skipped", reason: "already-claimed" };

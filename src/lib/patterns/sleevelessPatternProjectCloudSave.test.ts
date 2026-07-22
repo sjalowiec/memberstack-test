@@ -221,33 +221,19 @@ describe("sleevelessPatternProjectCloudSave", () => {
     expect(smartSaveCustomPatternProject).not.toHaveBeenCalled();
   });
 
-  it("marks the free pattern claimed after the first create", async () => {
+  it("blocks a logged-in non-member from creating their first pattern", async () => {
     const root = makeSaveRoot();
     vi.mocked(resolveDefaultCustomPatternSaveMode).mockReturnValue("create");
     vi.mocked(resolveSleevelessUserAccess).mockResolvedValue(
       testAccess({ loggedIn: true, hasSystemAccess: false, freeClaimed: false }),
     );
-    vi.mocked(smartSaveCustomPatternProject).mockResolvedValue({
-      ok: true,
-      created: true,
-      project: {
-        id: "free-1",
-        name: "My first vest",
-        family: "sleeveless",
-        source: "express",
-        notes: "",
-        pattern: {},
-        customOverrides: {},
-        createdAt: "",
-        updatedAt: "",
-      },
-    });
 
     await runSleevelessPatternProjectCloudSave(root, { resolveName: () => "My first vest" });
 
-    expect(smartSaveCustomPatternProject).toHaveBeenCalledTimes(1);
-    expect(markFreePatternClaimedForSystem).toHaveBeenCalledWith("sleeveless", "free-1");
-    expect(root._status.textContent).toBe('Saved “My first vest”.');
+    expect(root._status.textContent).toBe(SLEEVELESS_SAVE_ALREADY_CLAIMED_COPY);
+    expect(root._status._error).toBe(true);
+    expect(smartSaveCustomPatternProject).not.toHaveBeenCalled();
+    expect(markFreePatternClaimedForSystem).not.toHaveBeenCalled();
   });
 
   it("records the one-time allowance on a member's first create too", async () => {

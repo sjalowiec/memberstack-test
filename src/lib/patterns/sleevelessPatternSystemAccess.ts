@@ -1,9 +1,5 @@
 import { MEMBER_PLAN_IDS } from "../../config/memberships";
-import {
-  hasMemberAccessFromActivePlanIds,
-  hasPatternBuilderAccess,
-  patternBuilderKeyForSystemId,
-} from "./patternBuilderAccess";
+import { hasMemberAccessFromActivePlanIds } from "./patternBuilderAccess";
 import {
   type FreeClaimsBySystem,
   freeClaimedPatternIdForSystem,
@@ -17,12 +13,14 @@ import {
 /**
  * Pure access rules for Custom Pattern systems (no DOM / Memberstack imports).
  *
- * Business rules:
- * - Logged-out visitors cannot create patterns.
- * - Each account gets ONE one-time saved pattern per pattern system (Sleeveless, Drop Shoulder, …).
- * - Ownership preserves viewing/printing forever for saved patterns.
- * - Active entitlement re-enables unlimited creation and full editing.
- * - User-owned text fields (name/title + notes) stay editable for any logged-in user.
+ * Business rules (Dynamic Patterns — active membership only):
+ * - Logged-out visitors cannot create, edit, or use builders.
+ * - Logged-in accounts without active membership cannot create or edit patterns.
+ * - A Memberstack account alone (DesignaKnit, course, prior membership, etc.) is not enough.
+ * - Active entitlement = global member access only (`hasMemberAccess` / MEMBER_PLAN_IDS).
+ * - Lifetime builder plans, Memberstack JSON unlock flags, and free claims do **not** grant access.
+ * - User-owned text fields (name/title + notes) stay editable for any logged-in user when
+ *   they can reach a saved pattern they own (library management).
  *
  * DOM/Memberstack wiring lives in `sleevelessPatternSystemAccessClient.ts`.
  */
@@ -112,38 +110,29 @@ function asRecord(value: unknown): Record<string, unknown> {
 }
 
 export function planIdsGrantSleevelessSystemAccess(planIds: readonly string[]): boolean {
-  return (
-    hasPatternBuilderAccess({ builder: "sleeveless", activePlanIds: planIds }) ||
-    hasPatternBuilderAccess({ builder: "dropShoulder", activePlanIds: planIds })
-  );
+  return hasMemberAccessFromActivePlanIds(planIds);
 }
 
 export interface ResolvePatternSystemAccessParams {
   activePlanIds: readonly string[];
   patternSystemId: PatternSystemId;
+  /** @deprecated Ignored — JSON unlock no longer grants access. */
   sleevelessUnlockedViaJson?: boolean;
 }
 
-/** Full paid access for one pattern system from active plans and optional legacy JSON unlock. */
+/** Access for one pattern system: active membership only (system id does not change the rule). */
 export function resolvePatternSystemAccess(params: ResolvePatternSystemAccessParams): {
   hasSystemAccess: boolean;
 } {
-  const { activePlanIds, patternSystemId, sleevelessUnlockedViaJson = false } = params;
-  const builderKey = patternBuilderKeyForSystemId(patternSystemId);
-  if (builderKey) {
-    if (hasPatternBuilderAccess({ builder: builderKey, activePlanIds })) {
-      return { hasSystemAccess: true };
-    }
-  } else if (hasMemberAccessFromActivePlanIds(activePlanIds)) {
-    return { hasSystemAccess: true };
-  }
-  if (patternSystemId === "sleeveless" && sleevelessUnlockedViaJson) {
+  void params.patternSystemId;
+  void params.sleevelessUnlockedViaJson;
+  if (hasMemberAccessFromActivePlanIds(params.activePlanIds)) {
     return { hasSystemAccess: true };
   }
   return { hasSystemAccess: false };
 }
 
-/** Full paid access for one pattern system from a resolved access snapshot. */
+/** Access for one pattern system from a resolved access snapshot (membership only). */
 export function hasPatternSystemAccess(
   access: SleevelessUserAccess,
   systemId: PatternSystemId,
@@ -153,10 +142,9 @@ export function hasPatternSystemAccess(
     return resolvePatternSystemAccess({
       activePlanIds: access.activePlanIds,
       patternSystemId: systemId,
-      sleevelessUnlockedViaJson: access.sleevelessUnlockedViaJson,
     }).hasSystemAccess;
   }
-  // Legacy/test snapshots without plan ids: honor the boolean only when no per-system data exists.
+  // Legacy/test snapshots without plan ids: honor the boolean only when no plan data exists.
   return access.hasSystemAccess === true;
 }
 
@@ -219,9 +207,7 @@ export function canCreatePatternForSystem(
   user: SleevelessUserAccess,
   systemId: PatternSystemId,
 ): boolean {
-  if (!user?.loggedIn) return false;
-  if (hasPatternSystemAccess(user, systemId)) return true;
-  return !isFreeClaimedForSystem(user.freeClaimsBySystem ?? {}, systemId);
+  return hasPatternSystemAccess(user, systemId);
 }
 
 /** Whether the user may edit pattern-building choices and regenerate for the given system. */
@@ -229,9 +215,7 @@ export function canEditPatternSettingsForSystem(
   user: SleevelessUserAccess,
   systemId: PatternSystemId,
 ): boolean {
-  if (hasPatternSystemAccess(user, systemId)) return true;
-  if (!user?.loggedIn) return false;
-  return !isFreeClaimedForSystem(user.freeClaimsBySystem ?? {}, systemId);
+  return hasPatternSystemAccess(user, systemId);
 }
 
 /** @deprecated Use {@link canCreatePatternForSystem} with an explicit system id. */
@@ -257,16 +241,16 @@ export function canEditSleevelessPatternNotes(
   return Boolean(user?.loggedIn);
 }
 
-/** User-facing copy when a free user already claimed their pattern for a system. */
+/** User-facing copy when create/edit is blocked for lack of active membership. */
 export function resolvePatternSystemAlreadyClaimedCopy(systemId: PatternSystemId): string {
   const name = patternSystemDisplayName(systemId);
-  return `You've already created your free ${name} pattern.\n\nEditing is included with membership. You can still view, print, and knit from this pattern.\n\nCreate another ${name} pattern with membership.`;
+  return `${name} patterns are included with an active Knit it Now membership.\n\nBecome a member to create, edit, and save custom patterns.`;
 }
 
 /** User-facing copy when a logged-out visitor tries to save. */
 export function resolvePatternSystemSaveLoggedOutCopy(systemId: PatternSystemId): string {
   const name = patternSystemDisplayName(systemId);
-  return `Log in to create your free ${name} pattern.`;
+  return `${name} patterns are included with an active Knit it Now membership. Become a member or log in to continue.`;
 }
 
 export {

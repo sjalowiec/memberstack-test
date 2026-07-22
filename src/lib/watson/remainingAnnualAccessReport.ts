@@ -358,7 +358,7 @@ export function buildRemainingAnnualAccessReport(
     rows,
     summary: buildRemainingAnnualAccessSummary(rows),
     note:
-      "Annual memberships did not automatically renew. This report lists current non-monthly members who may have annual or installment paid-through access and may need manual migration handling. Classification uses legacy member current-state fields plus the latest legacy_subscriptions row for product evidence. Totals are shown by classification only — not as one combined annual count.",
+      "Annual memberships did not automatically renew. This report lists current non-monthly members who may have annual or installment paid-through access and may need manual migration handling. Classification uses legacy member current-state fields plus the latest legacy_subscriptions row for product evidence. Totals are shown by classification only - not as one combined annual count.",
   };
 }
 

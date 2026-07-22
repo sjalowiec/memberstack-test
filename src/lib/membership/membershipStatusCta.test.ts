@@ -172,12 +172,14 @@ describe("membershipStatusCta overlay", () => {
     expect(salesCta.textContent).toBe("Checking membership...");
 
     applyMembershipStatusCtaMode("hidden", root);
-    expect(salesCta.textContent).toBe("Become a Member");
+    expect(salesCta.textContent).toBe("Choose a membership");
     expect(salesCta.getAttribute("data-membership-sales-cta-kind")).toBe("choose-plan");
+    expect(salesCta.getAttribute("href")).toBe("#pricing");
 
     applyMembershipStatusCtaMode("loading", root);
     applyMembershipStatusCtaMode("purchase", root);
-    expect(salesCta.textContent).toBe("Become a Member");
+    expect(salesCta.textContent).toBe("Choose a membership");
     expect(salesCta.getAttribute("data-membership-sales-cta-kind")).toBe("choose-plan");
+    expect(salesCta.getAttribute("href")).toBe("#pricing");
   });
 });

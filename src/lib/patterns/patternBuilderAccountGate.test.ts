@@ -2,17 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Default deps come from these modules; mock them so we can assert the gate reuses them
 // without pulling in the real Memberstack / DOM stack.
-const showPublicSignupModal = vi.fn<[{ root?: ParentNode; redirectPath?: string }?], boolean>();
 const openMemberstackLoginModal = vi.fn<[string?], void>();
 
 // The strict login check waits for Memberstack, then reads window.$memberstackDom directly. Mock
 // only the wait; tests drive the login decision via a stubbed window.$memberstackDom.getCurrentMember.
 vi.mock("./sleevelessPatternLoginGate", () => ({
   waitForMemberstackDom: async () => true,
-}));
-vi.mock("../publicSignupModal", () => ({
-  showPublicSignupModal: (options?: { root?: ParentNode; redirectPath?: string }) =>
-    showPublicSignupModal(options),
+  waitForMemberstackReady: async () => undefined,
 }));
 vi.mock("../memberstackLogin", () => ({
   openMemberstackLoginModal: (returnPath?: string) => openMemberstackLoginModal(returnPath),
@@ -26,7 +22,6 @@ import {
 } from "./patternBuilderAccountGate";
 
 beforeEach(() => {
-  showPublicSignupModal.mockReset();
   openMemberstackLoginModal.mockReset();
 });
 
@@ -50,20 +45,20 @@ function makeButton() {
   };
 }
 
-/** Minimal fake <dialog> + root container for the account gate modal. */
 function makeDialogFixture() {
+  const loginBtn = makeButton();
+  const dismissBtn = makeButton();
   const buttons: Record<string, ReturnType<typeof makeButton>[]> = {
-    "[data-account-gate-signup]": [makeButton()],
-    "[data-account-gate-login]": [makeButton()],
-    "[data-account-gate-dismiss]": [makeButton()],
+    "[data-account-gate-login]": [loginBtn],
+    "[data-account-gate-dismiss]": [dismissBtn],
   };
   const attrs: Record<string, string> = {};
   const dialog = {
     open: false,
-    showModal: vi.fn(function showModal(this: { open: boolean }) {
+    showModal: vi.fn(() => {
       dialog.open = true;
     }),
-    close: vi.fn(function close() {
+    close: vi.fn(() => {
       dialog.open = false;
     }),
     getAttribute: (k: string) => attrs[k] ?? null,
@@ -79,7 +74,7 @@ function makeDialogFixture() {
   return { dialog, root, buttons };
 }
 
-describe("ensurePatternBuilderAccount - logged-out visitors see the signup-first prompt", () => {
+describe("ensurePatternBuilderAccount - logged-out visitors see the login prompt", () => {
   it("Hat Create: blocks generation and opens the account prompt", async () => {
     const openAccountPrompt = vi.fn();
     const allowed = await ensurePatternBuilderAccount({
@@ -132,7 +127,7 @@ describe("ensurePatternBuilderAccount - logged-out visitors see the signup-first
     expect(openAccountPrompt).toHaveBeenCalledTimes(1);
   });
 
-  it("default prompt shows the signup-first gate modal", async () => {
+  it("default prompt shows the account gate modal", async () => {
     const { dialog } = makeDialogFixture();
     vi.stubGlobal("document", { querySelector: () => dialog });
 
@@ -143,18 +138,17 @@ describe("ensurePatternBuilderAccount - logged-out visitors see the signup-first
   });
 
   it("fails closed when Memberstack reports no signed-in member (regression: dev-bypass must not open the gate)", async () => {
-    const { dialog } = makeDialogFixture();
-    vi.stubGlobal("document", { querySelector: () => dialog });
+    const openAccountPrompt = vi.fn();
     // Memberstack present but no member (logged out). Previously the shared login check fell back to
     // the localhost dev bypass and reported this as logged in — letting anonymous users generate.
     vi.stubGlobal("window", {
       $memberstackDom: { getCurrentMember: async () => ({ data: {} }) },
     });
 
-    const allowed = await ensurePatternBuilderAccount();
+    const allowed = await ensurePatternBuilderAccount({ openAccountPrompt });
 
     expect(allowed).toBe(false);
-    expect(dialog.showModal).toHaveBeenCalledTimes(1);
+    expect(openAccountPrompt).toHaveBeenCalledTimes(1);
   });
 
   it("fails closed when Memberstack is unavailable (never treats 'not ready' as logged in)", async () => {
@@ -169,98 +163,70 @@ describe("ensurePatternBuilderAccount - logged-out visitors see the signup-first
   });
 });
 
-describe("ensurePatternBuilderAccount - logged-in visitors generate for free (no membership gate)", () => {
-  it("logged-in with no subscription can generate (no prompt)", async () => {
+describe("ensurePatternBuilderAccount - active membership required", () => {
+  it("allows generation when membership access is confirmed", async () => {
+    const allowed = await ensurePatternBuilderAccount({
+      hasAccess: async () => true,
+      openAccountPrompt: vi.fn(),
+    });
+    expect(allowed).toBe(true);
+  });
+
+  it("does not open the prompt when membership access is confirmed", async () => {
     const openAccountPrompt = vi.fn();
     const allowed = await ensurePatternBuilderAccount({
-      isLoggedIn: async () => true,
+      hasAccess: async () => true,
       openAccountPrompt,
     });
     expect(allowed).toBe(true);
     expect(openAccountPrompt).not.toHaveBeenCalled();
   });
 
-  it("Member / Beta account can generate (no prompt)", async () => {
+  it("blocks logged-in users without membership access", async () => {
     const openAccountPrompt = vi.fn();
     const allowed = await ensurePatternBuilderAccount({
-      isLoggedIn: async () => true,
+      hasAccess: async () => false,
       openAccountPrompt,
     });
-    expect(allowed).toBe(true);
-    expect(openAccountPrompt).not.toHaveBeenCalled();
+    expect(allowed).toBe(false);
+    expect(openAccountPrompt).toHaveBeenCalledTimes(1);
   });
 
-  it("applies NO entitlement/free-claim check: a real Memberstack login alone permits generation", async () => {
-    // A signed-in member (any account — no-sub / member / beta) is allowed regardless of
-    // subscription/free claims, and no login/signup modal is shown.
-    vi.stubGlobal("window", {
-      $memberstackDom: { getCurrentMember: async () => ({ data: { id: "mem_123" } }) },
-    });
-
-    const allowed = await ensurePatternBuilderAccount();
-
-    expect(allowed).toBe(true);
-    expect(showPublicSignupModal).not.toHaveBeenCalled();
-    expect(openMemberstackLoginModal).not.toHaveBeenCalled();
-  });
-});
-
-describe("showPatternBuilderAccountGate", () => {
-  it("opens the dialog when present", () => {
-    const { dialog, root } = makeDialogFixture();
-    expect(showPatternBuilderAccountGate({ root })).toBe(true);
-    expect(dialog.showModal).toHaveBeenCalledTimes(1);
-  });
-
-  it("returns false when no dialog exists", () => {
+  it("showPatternBuilderAccountGate returns false when dialog is missing", async () => {
     vi.stubGlobal("document", { querySelector: () => null });
-    expect(showPatternBuilderAccountGate()).toBe(false);
+    await expect(showPatternBuilderAccountGate()).resolves.toBe(false);
   });
 });
 
 describe("initPatternBuilderAccountGate - modal CTAs", () => {
-  it("primary CTA routes to public signup, secondary CTA opens login", () => {
-    const openSignup = vi.fn();
+  it("primary CTA opens login", () => {
     const openLogin = vi.fn();
     const { dialog, root, buttons } = makeDialogFixture();
 
-    initPatternBuilderAccountGate(root, { openSignup, openLogin });
-
-    dialog.open = true; // dialog is shown when the user clicks a CTA
-    buttons["[data-account-gate-signup]"][0].click();
-    expect(openSignup).toHaveBeenCalledTimes(1);
-    expect(openLogin).not.toHaveBeenCalled();
-    expect(dialog.close).toHaveBeenCalledTimes(1);
+    initPatternBuilderAccountGate(root, { openLogin });
 
     dialog.open = true;
     buttons["[data-account-gate-login]"][0].click();
     expect(openLogin).toHaveBeenCalledTimes(1);
-    expect(openSignup).toHaveBeenCalledTimes(1);
-    expect(dialog.close).toHaveBeenCalledTimes(2);
+    expect(dialog.close).toHaveBeenCalledTimes(1);
   });
 
-  it("default signup CTA returns the new member to the current builder page", () => {
+  it("default login CTA uses Memberstack login modal", () => {
     const { dialog, root, buttons } = makeDialogFixture();
-    vi.stubGlobal("window", {
-      location: { pathname: "/patterns/hat", search: "", hash: "" },
-    });
-    showPublicSignupModal.mockReturnValue(true);
 
-    // No deps: exercise the real default openSignup, which must scope the post-signup redirect
-    // to the current builder page (not the site-wide /signup/thank-you landing).
     initPatternBuilderAccountGate(root);
 
     dialog.open = true;
-    buttons["[data-account-gate-signup]"][0].click();
-    expect(showPublicSignupModal).toHaveBeenCalledWith({ redirectPath: "/patterns/hat" });
+    buttons["[data-account-gate-login]"][0].click();
+    expect(openMemberstackLoginModal).toHaveBeenCalledTimes(1);
   });
 
   it("is idempotent per dialog instance (binds once)", () => {
     const { root, buttons } = makeDialogFixture();
-    initPatternBuilderAccountGate(root, { openSignup: vi.fn(), openLogin: vi.fn() });
+    initPatternBuilderAccountGate(root, { openLogin: vi.fn() });
     // Second call should no-op because the dialog is already marked bound.
-    initPatternBuilderAccountGate(root, { openSignup: vi.fn(), openLogin: vi.fn() });
-    expect(buttons["[data-account-gate-signup]"][0].wired).toBe(true);
+    initPatternBuilderAccountGate(root, { openLogin: vi.fn() });
+    expect(buttons["[data-account-gate-login]"][0].wired).toBe(true);
   });
 });
 

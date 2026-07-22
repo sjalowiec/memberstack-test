@@ -4,8 +4,7 @@
  * Per-system free claims are stored on Memberstack member JSON (`getMemberJSON` /
  * `updateMemberJSON`) — account-tied, not localStorage.
  */
-import { getActivePlanIds } from "../memberAccess";
-import { devBypass } from "../devBypass";
+import { getActivePlanIds, hasMemberAccess } from "../memberAccess";
 import { memberIdFromMemberstackPayload } from "./memberstackMember";
 import { logPatternEditGateDebug } from "./patternEditGateDebug";
 import { waitForMemberstackDom, waitForMemberstackReady } from "./sleevelessPatternLoginGate";
@@ -17,7 +16,6 @@ import {
 import type { PatternSystemId } from "./patternSystemId";
 import {
   computeHasSystemAccessFlag,
-  hasSleevelessPatternSystemAccess as hasSystemAccessRule,
   LOGGED_OUT_SLEEVELESS_ACCESS,
   readSleevelessSystemUnlockFromMemberJson,
   type SleevelessUserAccess,
@@ -26,9 +24,7 @@ import {
 type MemberstackDom = NonNullable<Window["$memberstackDom"]>;
 
 export type SleevelessAccessSource =
-  | "dev-bypass"
   | "memberstack-plan"
-  | "member-json-unlock"
   | "free"
   | "logged-out";
 
@@ -80,25 +76,6 @@ async function readMemberJson(ms: MemberstackDom): Promise<unknown> {
   }
 }
 
-function devBypassAccessSnapshot(): SleevelessUserAccess {
-  const access: SleevelessUserAccess = {
-    loggedIn: true,
-    activePlanIds: [],
-    hasSystemAccess: true,
-    freeClaimsBySystem: {},
-  };
-  recordAccessDebug({
-    source: "dev-bypass",
-    loggedIn: true,
-    hasSystemAccess: true,
-    freeClaimsBySystem: {},
-    planIds: [],
-    unlockedViaJson: false,
-    at: Date.now(),
-  });
-  return access;
-}
-
 function loggedOutAccessSnapshot(reason: string): SleevelessUserAccess {
   recordAccessDebug({
     source: "logged-out",
@@ -113,22 +90,8 @@ function loggedOutAccessSnapshot(reason: string): SleevelessUserAccess {
   return LOGGED_OUT_SLEEVELESS_ACCESS;
 }
 
-function resolveAccessSource(
-  activePlanIds: readonly string[],
-  sleevelessUnlockedViaJson: boolean,
-): SleevelessAccessSource {
-  const snapshot: SleevelessUserAccess = {
-    loggedIn: true,
-    activePlanIds,
-    sleevelessUnlockedViaJson,
-    hasSystemAccess: false,
-    freeClaimsBySystem: {},
-  };
-  if (hasSystemAccessRule(snapshot, "sleeveless") || hasSystemAccessRule(snapshot, "drop-shoulder")) {
-    if (activePlanIds.length > 0) return "memberstack-plan";
-    if (sleevelessUnlockedViaJson) return "member-json-unlock";
-  }
-  return "free";
+function resolveAccessSource(memberPayload: unknown): SleevelessAccessSource {
+  return hasMemberAccess(memberPayload) ? "memberstack-plan" : "free";
 }
 
 async function resolveMemberstackAccess(ms: MemberstackDom): Promise<SleevelessUserAccess | null> {
@@ -144,6 +107,7 @@ async function resolveMemberstackAccess(ms: MemberstackDom): Promise<SleevelessU
 
   const activePlanIds = getActivePlanIds(memberPayload);
   const memberJson = await readMemberJson(ms);
+  // Historical JSON unlock / free-claim metadata — read for admin/debug only; never grants access.
   const sleevelessUnlockedViaJson = readSleevelessSystemUnlockFromMemberJson(memberJson);
   const freeClaimsBySystem = readFreeClaimsBySystemFromMemberJson(memberJson);
 
@@ -157,7 +121,7 @@ async function resolveMemberstackAccess(ms: MemberstackDom): Promise<SleevelessU
   const hasSystemAccess = computeHasSystemAccessFlag(base);
 
   recordAccessDebug({
-    source: resolveAccessSource(activePlanIds, sleevelessUnlockedViaJson),
+    source: resolveAccessSource(memberPayload),
     loggedIn: true,
     hasSystemAccess,
     freeClaimsBySystem,
@@ -176,28 +140,20 @@ async function resolveMemberstackAccess(ms: MemberstackDom): Promise<SleevelessU
 async function resolveAccessUncached(): Promise<SleevelessUserAccess> {
   if (typeof window === "undefined") return LOGGED_OUT_SLEEVELESS_ACCESS;
 
-  // Wait for Memberstack before resolving — avoids caching dev-bypass access on localhost
-  // while a real nosub/member session is still loading.
+  // Wait for Memberstack before resolving so a real session is not mis-read as logged-out.
   await waitForMemberstackDom();
 
   const ms = window.$memberstackDom;
   if (ms?.getCurrentMember) {
     // Also wait for the session to be RESTORED (not just the method to exist) so a member
     // returning right after a login reload — when `member.login` does not fire — is not read as
-    // logged-out and cached that way, which would block them from creating their first pattern.
+    // logged-out and cached that way.
     await waitForMemberstackReady(ms);
     const memberAccess = await resolveMemberstackAccess(ms);
     if (memberAccess) return memberAccess;
   }
 
-  if (devBypass) {
-    logPatternEditGateDebug("resolveAccessUncached.dev-bypass-fallback", {
-      accessSource: "dev-bypass",
-      extra: { memberstackReady: Boolean(ms?.getCurrentMember) },
-    });
-    return devBypassAccessSnapshot();
-  }
-
+  // No localhost/dev bypass: pattern access always requires active membership.
   if (!ms?.getCurrentMember) return loggedOutAccessSnapshot("memberstack-dom-unavailable");
   return loggedOutAccessSnapshot("no-member-id");
 }

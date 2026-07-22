@@ -164,12 +164,35 @@ function statusFactFromServer(summary: MembershipStatusSummary): string | null {
 }
 
 /**
+ * Purchase-eligible logged-in account (client confirms no paid plan).
+ * Not a lookup failure — monthly/annual checkout remains available.
+ */
+export function membershipStatusPageViewPurchaseEligible(
+  message = MEMBERSHIP_STATUS_FREE_ACCOUNT_COMPACT_MESSAGE,
+): MembershipStatusPageView {
+  return {
+    source: "server_legacy",
+    heading: "Your Knit it Now membership status",
+    message,
+    ctaMode: "purchase",
+    facts: { ...EMPTY_FACTS },
+  };
+}
+
+/**
  * Map a server membership-status summary into the page panel view.
  * Used only when the client confirms there is no active paid membership.
  */
 export function membershipStatusPageViewFromServerSummary(
   summary: MembershipStatusSummary,
 ): MembershipStatusPageView {
+  if (summary.recommendedAction === "purchase") {
+    // Brand-new / expired-legacy purchase path: compact account message, no empty facts.
+    return membershipStatusPageViewPurchaseEligible(
+      MEMBERSHIP_STATUS_FREE_ACCOUNT_COMPACT_MESSAGE,
+    );
+  }
+
   const hideFacts =
     summary.recommendedAction === "contact_support" ||
     summary.recommendedAction === "wait" ||
@@ -211,8 +234,12 @@ export function membershipStatusPageViewClientUnavailable(
  * Precedence:
  * 1. Client Memberstack load failure ? cannot confirm
  * 2. Client active / canceling paid ? Account view wins (ignore server unknown)
- * 3. Else server legacy context (when available)
- * 4. Else wait (server missing/failed while client is free)
+ * 3. Client free ? consult server legacy context when available
+ *    - purchase / not_found / expired legacy ? purchase-eligible
+ *    - future legacy / ambiguous ? contact support
+ *    - genuine server wait/unknown ? cannot confirm
+ * 4. Client free + server missing/failed ? cannot confirm (do not invent purchase
+ *    when legacy paid-through could not be checked)
  */
 export function resolveMembershipStatusPageView(options: {
   /** False when Memberstack DOM payload could not be loaded. */
@@ -233,10 +260,12 @@ export function resolveMembershipStatusPageView(options: {
     return fromClient;
   }
 
+  // Client loaded successfully with no paid plan — that alone is not a lookup failure.
   if (options.serverSummary) {
     return membershipStatusPageViewFromServerSummary(options.serverSummary);
   }
 
+  // Server summary missing: genuine fetch/auth/server failure while free.
   return membershipStatusPageViewClientUnavailable();
 }
 

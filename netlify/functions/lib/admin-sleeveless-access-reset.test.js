@@ -34,6 +34,16 @@ vi.mock("./memberstack-admin.js", () => {
   };
 });
 
+// Identity from Bearer JWT only (never X-KBM-Member-Id). Token value = member id in these tests.
+vi.mock("./require-member-access.js", () => ({
+  resolveVerifiedProjectUserId: async (req) => {
+    const header = req.headers.get("authorization") || "";
+    const match = header.match(/^Bearer\s+(.+)$/i);
+    if (!match) return { error: "Sign in required.", status: 401 };
+    return { userId: match[1].trim(), mode: "member" };
+  },
+}));
+
 import handler from "../admin-sleeveless-access-reset.js";
 
 const ADMIN_ID = "mem_admin";
@@ -55,7 +65,7 @@ let savedEnv = {};
 
 function makeReq(method, { memberId, email, body, query } = {}) {
   const headers = {};
-  if (memberId) headers["x-kbm-member-id"] = memberId;
+  if (memberId) headers.authorization = `Bearer ${memberId}`;
   if (email) headers["x-kbm-member-email"] = email;
   if (body) headers["content-type"] = "application/json";
   const url = `https://site.test/.netlify/functions/admin-sleeveless-access-reset${query ? `?${query}` : ""}`;

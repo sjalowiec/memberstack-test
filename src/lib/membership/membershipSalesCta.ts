@@ -1,5 +1,5 @@
 /**
- * Primary sales-page CTA on /membership (hero "Become a Member").
+ * Primary sales-page CTA on /membership (hero "Choose a membership").
  *
  * Prospects and free accounts scroll to the monthly/annual purchase choices.
  * Active paid members are sent to manage billing — never into a login/signup modal.
@@ -21,7 +21,7 @@ export const MEMBERSHIP_SALES_MANAGE_HREF = "/account#membership";
 export const MEMBERSHIP_SALES_CTA = {
   choosePlan: {
     kind: "choose-plan",
-    label: "Become a Member",
+    label: "Choose a membership",
     href: MEMBERSHIP_SALES_PRICING_HASH,
   },
   manage: {

@@ -186,7 +186,16 @@ function mountPanel() {
     el(["[data-membership-sales-content]"], { hidden: false }),
     whatsIncludedOpen,
     whatsIncludedModal,
-    el(["[data-join-checkout]"]),
+    (() => {
+      const monthly = el(["[data-join-checkout]"]);
+      monthly.setAttribute("data-join-checkout", "monthly");
+      return monthly;
+    })(),
+    (() => {
+      const annual = el(["[data-join-checkout]"]);
+      annual.setAttribute("data-join-checkout", "annual");
+      return annual;
+    })(),
     el(["[data-membership-sales-cta]"]),
     Object.assign(el(["#membership-hero-heading"]), {
       textContent: "Knit it Now Membership",
@@ -273,13 +282,14 @@ afterEach(() => {
 });
 
 describe("membership status panel page behavior", () => {
-  it("keeps the panel hidden when logged out (sales page unchanged)", async () => {
+  it("logged-out visitor sees the normal sales page with no status UI", async () => {
     installMemberstack({ data: null });
     await loadAndRenderMembershipStatusPanel(root);
     const panel = root.querySelector("[data-membership-status-panel]") as unknown as StubEl;
     expect(panel.hidden).toBe(true);
     expect(fetchMembershipStatus).not.toHaveBeenCalled();
     expect(getMembershipStatusCtaMode()).toBe("hidden");
+    expect(shouldBlockPurchaseForStatusMode()).toBe(false);
     expect((root.querySelector("[data-membership-status-open]") as unknown as StubEl).hidden).toBe(
       true,
     );
@@ -297,6 +307,68 @@ describe("membership status panel page behavior", () => {
     expect(
       (root.querySelector("#membership-hero-heading") as unknown as StubEl).textContent,
     ).toBe("Knit it Now Membership");
+    expect(
+      (root.querySelector("[data-membership-sales-cta]") as unknown as StubEl).textContent,
+    ).toBe("Choose a membership");
+    expect(
+      (root.querySelector("[data-membership-sales-cta]") as unknown as StubEl).getAttribute("href"),
+    ).toBe("#pricing");
+    expect(
+      (root.querySelector("[data-membership-status-manage]") as unknown as StubEl).hidden,
+    ).toBe(true);
+    expect(
+      (root.querySelector("[data-membership-status-contact]") as unknown as StubEl).hidden,
+    ).toBe(true);
+    expect(
+      (root.querySelector("[data-membership-status-retry]") as unknown as StubEl).hidden,
+    ).toBe(true);
+    expect((root.querySelector("[data-membership-status-modal]") as unknown as StubEl).open).toBe(
+      false,
+    );
+    for (const btn of root.querySelectorAll("[data-join-checkout]") as unknown as StubEl[]) {
+      expect(btn.disabled).toBe(false);
+      expect(btn.getAttribute("data-membership-status-blocked")).toBeNull();
+    }
+  });
+
+  it("logged-out visitor does not see loading, warning, or account-status copy", async () => {
+    installMemberstack({ data: null });
+    await loadAndRenderMembershipStatusPanel(root);
+    expect(
+      (root.querySelector("[data-membership-status-loading]") as unknown as StubEl).hidden,
+    ).toBe(true);
+    expect((root.querySelector("[data-membership-status-body]") as unknown as StubEl).hidden).toBe(
+      true,
+    );
+    expect(
+      (root.querySelector("[data-membership-status-heading]") as unknown as StubEl).textContent,
+    ).not.toMatch(/membership status|could not confirm/i);
+    expect(
+      (root.querySelector("[data-membership-status-message]") as unknown as StubEl).textContent,
+    ).not.toMatch(/Knit it Now account|could not confirm/i);
+    expect(
+      (root.querySelector("[data-membership-sales-cta]") as unknown as StubEl).textContent,
+    ).not.toBe("Checking membership...");
+    expect(
+      (root.querySelector("[data-membership-sales-cta]") as unknown as StubEl).textContent,
+    ).not.toBe("Contact us");
+  });
+
+  it("Memberstack unavailable for anonymous visitors keeps the sales page (not cannot-confirm)", async () => {
+    installMemberstack(null);
+    await loadAndRenderMembershipStatusPanel(root);
+    expect(fetchMembershipStatus).not.toHaveBeenCalled();
+    expect((root.querySelector("[data-membership-status-panel]") as unknown as StubEl).hidden).toBe(
+      true,
+    );
+    expect(getMembershipStatusCtaMode()).toBe("hidden");
+    expect(shouldBlockPurchaseForStatusMode()).toBe(false);
+    expect(
+      (root.querySelector("[data-membership-sales-content]") as unknown as StubEl).hidden,
+    ).toBe(false);
+    expect(
+      (root.querySelector("[data-membership-status-heading]") as unknown as StubEl).textContent,
+    ).not.toBe("We could not confirm your membership");
   });
 
   it("active member auto-opens modal once per session and hides inline panel", async () => {
@@ -538,10 +610,39 @@ describe("membership status panel page behavior", () => {
     expect(shouldBlockPurchaseForStatusMode()).toBe(true);
   });
 
-  it("ambiguous / lookup failure remains inline and does not auto-open", async () => {
-    installMemberstack(null);
+  it("ambiguous legacy remains contact-support and blocks purchase", async () => {
+    installMemberstack({ data: { id: "mem_ambig", planConnections: [] } });
+    vi.mocked(fetchMembershipStatus).mockResolvedValue({
+      ok: true,
+      identified: true,
+      currentStatus: "no_plan",
+      currentPlanName: null,
+      previousPlanName: null,
+      activeThroughDate: null,
+      legacyExpirationDate: null,
+      legacyLinkState: "ambiguous",
+      accountType: "non_paid_account",
+      recommendedAction: "contact_support",
+      customerFacingMessage:
+        "We found your account, but we could not safely match all of your previous membership information. Please contact us before purchasing another membership.",
+    });
+
     await loadAndRenderMembershipStatusPanel(root);
-    expect(fetchMembershipStatus).not.toHaveBeenCalled();
+    expect(getMembershipStatusCtaMode()).toBe("contact_support");
+    expect(shouldBlockPurchaseForStatusMode()).toBe(true);
+    expect((root.querySelector("[data-membership-status-modal]") as unknown as StubEl).open).toBe(
+      false,
+    );
+    expect(
+      (root.querySelector("[data-membership-status-contact]") as unknown as StubEl).hidden,
+    ).toBe(false);
+  });
+
+  it("authenticated lookup failure remains inline and does not auto-open", async () => {
+    installMemberstack({ data: { id: "mem_free", planConnections: [] } });
+    vi.mocked(fetchMembershipStatus).mockRejectedValue(new Error("network down"));
+    await loadAndRenderMembershipStatusPanel(root);
+    expect(fetchMembershipStatus).toHaveBeenCalledTimes(1);
     expect((root.querySelector("[data-membership-status-panel]") as unknown as StubEl).hidden).toBe(
       false,
     );
@@ -555,6 +656,12 @@ describe("membership status panel page behavior", () => {
     expect(
       (root.querySelector("[data-membership-status-manage]") as unknown as StubEl).hidden,
     ).toBe(true);
+    expect(
+      (root.querySelector("[data-membership-status-contact]") as unknown as StubEl).hidden,
+    ).toBe(false);
+    expect(
+      (root.querySelector("[data-membership-status-retry]") as unknown as StubEl).hidden,
+    ).toBe(false);
   });
 
   it("free account does not auto-open and shows compact inline message", async () => {
@@ -591,15 +698,145 @@ describe("membership status panel page behavior", () => {
       (root.querySelector("#membership-hero-heading") as unknown as StubEl).textContent,
     ).toBe("Knit it Now Membership");
     expect(
+      (root.querySelector("[data-membership-status-heading]") as unknown as StubEl).textContent,
+    ).toBe("Your Knit it Now membership status");
+    expect(
+      (root.querySelector("[data-membership-status-heading]") as unknown as StubEl).hidden,
+    ).toBe(false);
+    expect(
       (root.querySelector("[data-membership-status-message]") as unknown as StubEl).textContent,
     ).toBe(
       "You have a Knit it Now account, but it does not currently include an active Knit it Now membership.",
     );
-    expect(
-      (root.querySelector("[data-membership-status-heading]") as unknown as StubEl).hidden,
-    ).toBe(true);
     expect(getMembershipStatusCtaMode()).toBe("purchase");
     expect(shouldBlockPurchaseForStatusMode()).toBe(false);
+  });
+
+  it("brand-new logged-in account with no paid plan is purchase mode", async () => {
+    installMemberstack({ data: { id: "mem_sb_annual_test", planConnections: [] } });
+    vi.mocked(fetchMembershipStatus).mockResolvedValue({
+      ok: true,
+      identified: true,
+      currentStatus: "no_plan",
+      currentPlanName: null,
+      previousPlanName: null,
+      activeThroughDate: null,
+      legacyExpirationDate: null,
+      legacyLinkState: "not_found",
+      accountType: "non_paid_account",
+      recommendedAction: "purchase",
+      customerFacingMessage:
+        "You have a Knit it Now account, but it does not currently include an active Knit it Now membership.",
+    });
+
+    await loadAndRenderMembershipStatusPanel(root);
+
+    expect(fetchMembershipStatus).toHaveBeenCalledTimes(1);
+    expect(getMembershipStatusCtaMode()).toBe("purchase");
+    expect(shouldBlockPurchaseForStatusMode()).toBe(false);
+
+    const salesCta = root.querySelector("[data-membership-sales-cta]") as unknown as StubEl;
+    expect(salesCta.textContent).toBe("Choose a membership");
+    expect(salesCta.getAttribute("href")).toBe("#pricing");
+
+    expect((root.querySelector("[data-membership-status-modal]") as unknown as StubEl).open).toBe(
+      false,
+    );
+    expect((root.querySelector("[data-membership-status-open]") as unknown as StubEl).hidden).toBe(
+      true,
+    );
+    expect(
+      (root.querySelector("[data-membership-status-heading]") as unknown as StubEl).textContent,
+    ).toBe("Your Knit it Now membership status");
+    expect(
+      (root.querySelector("[data-membership-status-message]") as unknown as StubEl).textContent,
+    ).toMatch(/does not currently include an active Knit it Now membership/);
+
+    expect(
+      (root.querySelector("[data-membership-status-manage]") as unknown as StubEl).hidden,
+    ).toBe(true);
+    expect(
+      (root.querySelector("[data-membership-status-contact]") as unknown as StubEl).hidden,
+    ).toBe(true);
+    expect(
+      (root.querySelector("[data-membership-status-retry]") as unknown as StubEl).hidden,
+    ).toBe(true);
+
+    for (const key of ["plan", "status", "billing", "renews", "through", "previous"]) {
+      expect(
+        (root.querySelector(`[data-membership-status-fact="${key}"]`) as unknown as StubEl)
+          .hidden,
+      ).toBe(true);
+      expect(
+        (root.querySelector(`[data-membership-status-value="${key}"]`) as unknown as StubEl)
+          .textContent,
+      ).toBe("");
+    }
+
+    const checkoutButtons = root.querySelectorAll(
+      "[data-join-checkout]",
+    ) as unknown as StubEl[];
+    expect(checkoutButtons).toHaveLength(2);
+    for (const btn of checkoutButtons) {
+      expect(btn.disabled).toBe(false);
+      expect(btn.getAttribute("data-membership-status-blocked")).toBeNull();
+    }
+  });
+
+  it("no paid plan does not use cannot-confirm when server returns purchase", async () => {
+    installMemberstack({ data: { id: "mem_free", planConnections: [] } });
+    vi.mocked(fetchMembershipStatus).mockResolvedValue({
+      ok: true,
+      identified: true,
+      currentStatus: "no_plan",
+      currentPlanName: null,
+      previousPlanName: null,
+      activeThroughDate: null,
+      legacyExpirationDate: null,
+      legacyLinkState: "not_found",
+      accountType: "non_paid_account",
+      recommendedAction: "purchase",
+      customerFacingMessage:
+        "You have a Knit it Now account, but it does not currently include an active Knit it Now membership.",
+    });
+    await loadAndRenderMembershipStatusPanel(root);
+    expect(
+      (root.querySelector("[data-membership-status-heading]") as unknown as StubEl).textContent,
+    ).not.toBe("We could not confirm your membership");
+    expect(getMembershipStatusCtaMode()).toBe("purchase");
+  });
+
+  it("genuine server wait still shows cannot-confirm for free client", async () => {
+    installMemberstack({ data: { id: "mem_free", planConnections: [] } });
+    vi.mocked(fetchMembershipStatus).mockResolvedValue({
+      ok: true,
+      identified: false,
+      currentStatus: "unknown",
+      currentPlanName: null,
+      previousPlanName: null,
+      activeThroughDate: null,
+      legacyExpirationDate: null,
+      legacyLinkState: "lookup_unavailable",
+      accountType: "unknown",
+      recommendedAction: "wait",
+      customerFacingMessage:
+        "We could not confirm your membership status right now. Please try again or contact us before purchasing another membership.",
+    });
+    await loadAndRenderMembershipStatusPanel(root);
+    expect(
+      (root.querySelector("[data-membership-status-heading]") as unknown as StubEl).textContent,
+    ).toBe("We could not confirm your membership");
+    expect(getMembershipStatusCtaMode()).toBe("wait");
+    expect(shouldBlockPurchaseForStatusMode()).toBe(true);
+    expect(
+      (root.querySelector("[data-membership-status-contact]") as unknown as StubEl).hidden,
+    ).toBe(false);
+    expect(
+      (root.querySelector("[data-membership-status-retry]") as unknown as StubEl).hidden,
+    ).toBe(false);
+    expect(
+      (root.querySelector("[data-membership-status-manage]") as unknown as StubEl).hidden,
+    ).toBe(true);
   });
 
   it("active modal shows only Plan, Status, Billing, Renews", async () => {

@@ -95,6 +95,25 @@ describe("memberstack-admin client secret injection", () => {
     expect(JSON.stringify(resolved)).not.toContain("sk_sb_must_never_be_used");
   });
 
+  it("Netlify branch-deploy keeps sandbox Admin even when NODE_ENV is production", () => {
+    process.env.NODE_ENV = "production";
+    process.env.CONTEXT = "branch-deploy";
+    process.env[LIVE_KEY] = "sk_live_should_not_win";
+    process.env[SANDBOX_KEY] = "sk_sb_branch_wins";
+    const resolved = resolveMemberstackAdminSecret();
+    expect(resolved.secretKey).toBe("sk_sb_branch_wins");
+    expect(resolved.mode).toBe("sandbox");
+    expect(resolved.usedSandboxEnv).toBe(true);
+  });
+
+  it("Netlify deploy-preview prefers sandbox Admin over live", () => {
+    process.env.NODE_ENV = "production";
+    process.env.CONTEXT = "deploy-preview";
+    process.env[LIVE_KEY] = "sk_live_should_not_win";
+    process.env[SANDBOX_KEY] = "sk_sb_preview_wins";
+    expect(getMemberstackSecretKey()).toBe("sk_sb_preview_wins");
+  });
+
   it("uses an explicit Netlify runtime secret without reading process.env", () => {
     const client = getMemberstackAdminClient({ secretKey: "sk_explicit_netlify" });
     expect(client).not.toBeNull();

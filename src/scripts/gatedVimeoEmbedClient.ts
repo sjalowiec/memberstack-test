@@ -56,18 +56,19 @@ function initGatedVimeoEmbed(root: HTMLElement) {
 
   function buildLockedMarkup(showLogin: boolean) {
     const loginBtn = showLogin
-      ? `<button type="button" class="kbm-video__cta kbm-video__cta--login" data-kbm-video-login>Log in to watch</button>`
+      ? `<button type="button" class="kbm-video__cta kbm-video__cta--login" data-kbm-video-login>Already a member? Log in</button>`
       : "";
+    const membershipCta = `<a href="${ctaHref}" class="kbm-video__cta">${ctaText}</a>`;
     return `
   <div class="kbm-video__locked">
     <div class="kbm-video__overlay">
       <div class="kbm-video__lockline">
-        ?? <strong>Members only</strong>
+        <strong>Members only</strong>
       </div>
       <p>This video is available with membership.</p>
       <div class="kbm-video__actions">
+        ${membershipCta}
         ${loginBtn}
-        <a href="${ctaHref}" class="kbm-video__cta">${ctaText}</a>
       </div>
     </div>
   </div>

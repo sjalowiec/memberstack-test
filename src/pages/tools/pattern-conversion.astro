@@ -3,12 +3,15 @@ import Layout from "../../layouts/Layout.astro";
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
 import FloatingInput from "../../components/tools/FloatingInput.astro";
+import ToolGate from "../../components/ui/ToolGate.astro";
+import ToolPreviewGate from "../../components/ui/ToolPreviewGate.astro";
 import toolsData from "../../../data/tools.json";
 
 const tools = toolsData as Array<{
   href?: string;
   title?: string;
   icon?: string;
+  membersonly?: boolean;
 }>;
 const tool = tools.find((entry) => entry.href === Astro.url.pathname) ?? null;
 ---
@@ -32,6 +35,9 @@ const tool = tools.find((entry) => entry.href === Astro.url.pathname) ?? null;
         </p>
       </section>
 
+      <ToolGate tool={tool} />
+
+      <ToolPreviewGate tool={tool}>
       <div class="wizard-container">
         <form id="pattern-conversion-form" class="pattern-conversion-form" novalidate>
           <div class="gauge-sections">
@@ -147,6 +153,7 @@ const tool = tools.find((entry) => entry.href === Astro.url.pathname) ?? null;
           </div>
         </form>
       </div>
+      </ToolPreviewGate>
     </div>
   </main>
 

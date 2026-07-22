@@ -2,7 +2,7 @@
  * Birthday member data access.
  *
  * v1 source: legacy Postgres `legacy_members`.
- * Calendar UI consumes `BirthdayMember` only ù swap the source later
+ * Calendar UI consumes `BirthdayMember` only - swap the source later
  * (e.g. Memberstack) without rewriting the month-view UI.
  */
 

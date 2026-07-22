@@ -1,20 +1,16 @@
 /**
- * LOCALHOST-ONLY access-source debug badge for the Sleeveless Pattern System.
+ * LOCALHOST-ONLY access-source debug badge for Dynamic Patterns.
  *
  * Renders a small fixed overlay showing HOW the current visitor's access was resolved:
- *   - dev-bypass         → PUBLIC_DEV_BYPASS_GATING short-circuit (NOT real Memberstack)
- *   - memberstack-plan   → a granting Memberstack plan id was found on the member
- *   - member-json-unlock → the `sleevelessPatternSystemUnlocked` member-JSON flag
- *   - free               → logged-in member with no granting plan / unlock
- *   - logged-out         → no Memberstack member
+ *   - memberstack-plan → active membership plan id in MEMBER_PLAN_IDS
+ *   - free             → logged-in without active membership (no pattern access)
+ *   - logged-out       → no Memberstack member
  *
- * This is diagnostic only. It never changes access rules — it just reads the snapshot from
- * `resolveSleevelessUserAccess()` and the diagnostic recorded by `sleevelessPatternSystemAccessClient`.
+ * Diagnostic only. Lifetime / JSON unlock metadata may appear in the detail text but never
+ * grant access.
  *
- * Safety: the whole module is gated behind `import.meta.env.DEV` (Astro dev server) AND a localhost
- * hostname check, so production builds dead-code-eliminate it and it never appears on deployed sites.
+ * Safety: gated behind `import.meta.env.DEV` AND a localhost hostname check.
  */
-import { devBypass } from "../lib/devBypass";
 import { memberIdFromMemberstackPayload } from "../lib/patterns/memberstackMember";
 import { waitForMemberstackDom } from "../lib/patterns/sleevelessPatternLoginGate";
 import {
@@ -26,16 +22,9 @@ import {
 const BADGE_ID = "kbm-sleeveless-access-debug-badge";
 const COLLAPSED_LS_KEY = "kbm_sleeveless_access_debug_collapsed";
 
-/**
- * Independent read of the REAL Memberstack member, ignoring dev bypass entirely.
- * The access snapshot's `loggedIn` is forced true under dev bypass; this probe reflects whether an
- * actual current Memberstack member exists (matching what the site header shows).
- */
 interface RealMemberProbe {
-  /** True only when Memberstack reports an actual current member. */
   loggedIn: boolean;
   memberId?: string;
-  /** True once the probe has run (so the badge can show "checking…" first). */
   resolved: boolean;
 }
 
@@ -62,25 +51,15 @@ interface SourceStyle {
 }
 
 const SOURCE_STYLES: Record<SleevelessAccessSource, SourceStyle> = {
-  "dev-bypass": {
-    label: "DEV BYPASS",
-    bg: "#b45309",
-    note: "Not real Memberstack. Set PUBLIC_DEV_BYPASS_GATING=false to test real plans.",
-  },
   "memberstack-plan": {
     label: "MEMBERSTACK PLAN",
     bg: "#15803d",
-    note: "Access granted by a Memberstack plan connection.",
-  },
-  "member-json-unlock": {
-    label: "MEMBER JSON UNLOCK",
-    bg: "#0e7490",
-    note: "Access granted by the sleevelessPatternSystemUnlocked member-JSON flag.",
+    note: "Access granted by active membership (hasMemberAccess / MEMBER_PLAN_IDS).",
   },
   free: {
-    label: "FREE USER",
+    label: "NO MEMBERSHIP",
     bg: "#475569",
-    note: "Logged in, no granting plan/unlock — free one-time allowance applies.",
+    note: "Logged in without active membership — Dynamic Patterns stay locked.",
   },
   "logged-out": {
     label: "LOGGED OUT",
@@ -91,48 +70,11 @@ const SOURCE_STYLES: Record<SleevelessAccessSource, SourceStyle> = {
 
 function isLocalhost(): boolean {
   if (typeof window === "undefined") return false;
-  const h = window.location.hostname;
-  return h === "localhost" || h === "127.0.0.1" || h === "[::1]" || h.endsWith(".local");
+  const host = window.location.hostname;
+  return host === "localhost" || host === "127.0.0.1" || host === "[::1]";
 }
 
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
-function row(label: string, value: string): string {
-  return `<div style="display:flex;gap:8px;justify-content:space-between;">
-    <span style="opacity:.7;">${escapeHtml(label)}</span>
-    <span style="font-weight:600;text-align:right;word-break:break-all;">${escapeHtml(value)}</span>
-  </div>`;
-}
-
-function ensureBadgeEl(): HTMLElement {
-  let el = document.getElementById(BADGE_ID);
-  if (el) return el;
-  el = document.createElement("div");
-  el.id = BADGE_ID;
-  el.style.cssText = [
-    "position:fixed",
-    "z-index:2147483646",
-    "bottom:12px",
-    "left:12px",
-    "max-width:320px",
-    "font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace",
-    "color:#f8fafc",
-    "background:#0f172a",
-    "border:1px solid rgba(248,250,252,.18)",
-    "border-radius:10px",
-    "box-shadow:0 6px 20px rgba(0,0,0,.35)",
-    "overflow:hidden",
-  ].join(";");
-  document.body.appendChild(el);
-  return el;
-}
-
-function isCollapsed(): boolean {
+function readCollapsed(): boolean {
   try {
     return localStorage.getItem(COLLAPSED_LS_KEY) === "1";
   } catch {
@@ -140,120 +82,113 @@ function isCollapsed(): boolean {
   }
 }
 
-function setCollapsed(next: boolean): void {
+function writeCollapsed(collapsed: boolean): void {
   try {
-    localStorage.setItem(COLLAPSED_LS_KEY, next ? "1" : "0");
+    localStorage.setItem(COLLAPSED_LS_KEY, collapsed ? "1" : "0");
   } catch {
     /* ignore */
   }
 }
 
-function render(): void {
+function ensureBadge(): HTMLElement | null {
+  if (typeof document === "undefined") return null;
+  let el = document.getElementById(BADGE_ID);
+  if (el) return el;
+
+  el = document.createElement("aside");
+  el.id = BADGE_ID;
+  el.setAttribute("data-kbm-sleeveless-access-debug", "");
+  el.style.cssText = [
+    "position:fixed",
+    "bottom:12px",
+    "right:12px",
+    "z-index:99999",
+    "max-width:min(92vw,22rem)",
+    "font:12px/1.4 ui-sans-serif,system-ui,sans-serif",
+    "color:#fff",
+    "border-radius:10px",
+    "box-shadow:0 8px 24px rgba(0,0,0,.25)",
+    "overflow:hidden",
+  ].join(";");
+
+  const header = document.createElement("button");
+  header.type = "button";
+  header.setAttribute("data-debug-header", "");
+  header.style.cssText =
+    "display:flex;width:100%;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border:0;background:inherit;color:inherit;cursor:pointer;text-align:left;font:inherit;";
+  header.innerHTML = `<strong data-debug-label>PATTERN ACCESS</strong><span data-debug-toggle aria-hidden="true">▾</span>`;
+  el.appendChild(header);
+
+  const body = document.createElement("div");
+  body.setAttribute("data-debug-body", "");
+  body.style.cssText = "padding:0 10px 10px;white-space:pre-wrap;";
+  el.appendChild(body);
+
+  header.addEventListener("click", () => {
+    const collapsed = el!.getAttribute("data-collapsed") !== "1";
+    el!.setAttribute("data-collapsed", collapsed ? "1" : "0");
+    body.hidden = collapsed;
+    const toggle = header.querySelector("[data-debug-toggle]");
+    if (toggle) toggle.textContent = collapsed ? "▸" : "▾";
+    writeCollapsed(collapsed);
+  });
+
+  document.body.appendChild(el);
+  if (readCollapsed()) {
+    el.setAttribute("data-collapsed", "1");
+    body.hidden = true;
+    const toggle = header.querySelector("[data-debug-toggle]");
+    if (toggle) toggle.textContent = "▸";
+  }
+  return el;
+}
+
+function renderBadge(): void {
+  const el = ensureBadge();
+  if (!el) return;
+
   const debug = getSleevelessAccessDebug();
   const source: SleevelessAccessSource = debug?.source ?? "logged-out";
   const style = SOURCE_STYLES[source];
-  const el = ensureBadgeEl();
-  const collapsed = isCollapsed();
+  el.style.background = style.bg;
 
-  const envBypass = String(import.meta.env.PUBLIC_DEV_BYPASS_GATING ?? "(unset)");
+  const label = el.querySelector("[data-debug-label]");
+  if (label) label.textContent = style.label;
 
-  // Authoritative real-login readout (matches the site header), independent of dev bypass.
-  const realLoggedIn = realMember.resolved ? realMember.loggedIn : null;
-  const realLoggedInLabel = realLoggedIn === null ? "checking…" : String(realLoggedIn);
+  const body = el.querySelector("[data-debug-body]");
+  if (!(body instanceof HTMLElement)) return;
 
-  // Header label clarifies dev-bypass-while-logged-out, the case that was misleading before.
-  let headerLabel = style.label;
-  if (source === "dev-bypass" && realLoggedIn === false) {
-    headerLabel = "DEV BYPASS · NOT LOGGED IN";
-  } else if (source === "dev-bypass" && realLoggedIn === true) {
-    headerLabel = "DEV BYPASS · LOGGED IN";
-  }
-
-  const mismatchNote =
-    source === "dev-bypass" && realLoggedIn === false
-      ? `<div style="margin-top:4px;padding:6px 8px;border-radius:6px;background:rgba(248,250,252,.12);">
-          No real Memberstack member. <b>hasSystemAccess</b> here comes from dev bypass, not a login.
-        </div>`
-      : "";
-
-  const header = `<div data-kbm-access-debug-header
-      style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 10px;background:${style.bg};">
-      <span style="width:8px;height:8px;border-radius:50%;background:#f8fafc;flex:0 0 auto;"></span>
-      <span style="font-weight:700;letter-spacing:.04em;flex:1 1 auto;">${escapeHtml(headerLabel)}</span>
-      <span style="opacity:.85;">${collapsed ? "▸" : "▾"}</span>
-    </div>`;
-
-  const body = collapsed
-    ? ""
-    : `<div style="padding:10px;display:flex;flex-direction:column;gap:5px;">
-        <div style="opacity:.85;margin-bottom:2px;">${escapeHtml(style.note)}</div>
-        ${row("Memberstack member", realLoggedInLabel)}
-        ${realMember.memberId ? row("real memberId", realMember.memberId) : ""}
-        <hr style="border:none;border-top:1px solid rgba(248,250,252,.15);margin:4px 0;" />
-        ${row("source", source)}
-        ${row("hasSystemAccess", String(debug?.hasSystemAccess ?? false))}
-        ${row("freeClaimed", String(debug?.freeClaimed ?? false))}
-        ${debug?.freeClaimedPatternId ? row("claimedPatternId", debug.freeClaimedPatternId) : ""}
-        ${row("planIds", debug?.planIds?.length ? debug.planIds.join(", ") : "(none)")}
-        ${row("jsonUnlock", String(debug?.unlockedViaJson ?? false))}
-        ${row("snapshot.loggedIn", String(debug?.loggedIn ?? false))}
-        ${debug?.reason ? row("reason", debug.reason) : ""}
-        ${mismatchNote}
-        <hr style="border:none;border-top:1px solid rgba(248,250,252,.15);margin:4px 0;" />
-        ${row("PUBLIC_DEV_BYPASS_GATING", envBypass)}
-        ${row("devBypass active", String(devBypass))}
-        <div style="opacity:.7;margin-top:2px;">
-          To test real plans: set PUBLIC_DEV_BYPASS_GATING=false in .env and restart dev, then log in.
-        </div>
-      </div>`;
-
-  el.innerHTML = header + body;
-
-  const headerEl = el.querySelector<HTMLElement>("[data-kbm-access-debug-header]");
-  headerEl?.addEventListener("click", () => {
-    setCollapsed(!isCollapsed());
-    render();
-  });
+  const lines = [
+    style.note,
+    "",
+    `hasSystemAccess: ${debug?.hasSystemAccess ?? false}`,
+    `loggedIn (access): ${debug?.loggedIn ?? false}`,
+    `real Memberstack: ${realMember.resolved ? (realMember.loggedIn ? "yes" : "no") : "checking…"}`,
+    `memberId: ${debug?.memberId ?? realMember.memberId ?? "—"}`,
+    `planIds: ${(debug?.planIds ?? []).join(", ") || "—"}`,
+    `jsonUnlock (ignored): ${debug?.unlockedViaJson ? "yes" : "no"}`,
+  ];
+  body.textContent = lines.join("\n");
 }
 
-async function init(): Promise<void> {
-  if (!import.meta.env.DEV) return;
-  if (!isLocalhost()) return;
-  if (typeof document === "undefined") return;
-
-  // Render immediately with whatever is cached, then refresh after both reads complete.
-  render();
-  try {
-    await Promise.all([
-      resolveSleevelessUserAccess(),
-      probeRealMemberstackMember().then((probe) => {
-        realMember = probe;
-      }),
-    ]);
-  } catch {
-    /* ignore — render still shows whatever resolved */
-  }
-  render();
-
-  const ms = window.$memberstackDom;
-  if (ms && typeof ms.on === "function") {
-    const refresh = (): void => {
-      void Promise.all([
-        resolveSleevelessUserAccess(),
-        probeRealMemberstackMember().then((probe) => {
-          realMember = probe;
-        }),
-      ]).then(() => render());
-    };
-    ms.on("member.login", refresh);
-    ms.on("member.logout", refresh);
-  }
+async function boot(): Promise<void> {
+  if (!import.meta.env.DEV || !isLocalhost()) return;
+  await resolveSleevelessUserAccess();
+  realMember = await probeRealMemberstackMember();
+  renderBadge();
+  window.setInterval(() => {
+    void resolveSleevelessUserAccess().then(() => {
+      renderBadge();
+    });
+  }, 2500);
 }
 
-if (import.meta.env.DEV && typeof document !== "undefined") {
+if (typeof document !== "undefined") {
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", () => void init());
+    document.addEventListener("DOMContentLoaded", () => {
+      void boot();
+    });
   } else {
-    void init();
+    void boot();
   }
 }

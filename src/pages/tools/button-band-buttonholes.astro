@@ -7,11 +7,13 @@ import GaugeInput from "../../components/wizards/GaugeInput.astro";
 import FloatingInput from "../../components/tools/FloatingInput.astro";
 import ToolResultCard from "../../components/tools/ToolResultCard.astro";
 import PrintButton from "../../components/common/PrintButton.astro";
+import ToolGate from "../../components/ui/ToolGate.astro";
+import ToolPreviewGate from "../../components/ui/ToolPreviewGate.astro";
 import toolsData from "../../../data/tools.json";
 import buttonBandDiagram from "../../../public/icons/tools/button_band_detail.svg?raw";
 import "../../styles/wizard.css";
 
-const tools = toolsData as Array<{ href?: string; title?: string; icon?: string }>;
+const tools = toolsData as Array<{ href?: string; title?: string; icon?: string; membersonly?: boolean }>;
 const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
 const toolPrintTitle = tool?.title ?? "Button Band Buttonhole Calculator";
 ---
@@ -32,6 +34,9 @@ const toolPrintTitle = tool?.title ?? "Button Band Buttonhole Calculator";
         </p>
       </section>
 
+      <ToolGate tool={tool} />
+
+      <ToolPreviewGate tool={tool}>
       <div class="bb-calculator-panel kbm-tool-calculator-area">
         <div class="section-header-with-toggle">
           <h2>Enter Your Measurements</h2>
@@ -180,6 +185,7 @@ const toolPrintTitle = tool?.title ?? "Button Band Buttonhole Calculator";
       >
         <PrintButton slot="actions" label="" ariaLabel="Print instructions" />
       </ToolResultCard>
+      </ToolPreviewGate>
     </div>
   </main>
 

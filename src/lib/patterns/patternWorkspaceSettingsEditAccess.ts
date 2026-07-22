@@ -18,7 +18,7 @@ import {
   type PatternSystemId,
 } from "./patternSystemId";
 
-/** Beta, paid members (and JSON unlock) may open the pattern-page edit workspace. */
+/** Active members (hasMemberAccess / hasSystemAccess) may open the pattern-page edit workspace. */
 export function canOpenPatternWorkspaceEditWorkspace(access: SleevelessUserAccess): boolean {
   return hasSleevelessPatternSystemAccess(access);
 }

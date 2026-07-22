@@ -1,20 +1,15 @@
 /**
- * Clean public signup modal - the single "create a free account" experience used site-wide
- * (main menu Sign Up, Hat/Blanket account gate, sleeveless gate, and any `[data-open-public-signup]`
- * CTA).
+ * Custom Memberstack signup form helpers (`data-ms-form="signup"` with First Name, Email, Password).
+ * Not mounted globally — keep available for intentional purchase/checkout/beta/entitlement mounts
+ * that still call `showPublicSignupModal` or render `PublicSignupModal` explicitly.
  *
- * It is backed by a CUSTOM Memberstack signup form (`data-ms-form="signup"` with only First Name,
- * Email, and Password). It deliberately does NOT use the prebuilt Memberstack signup modal
- * (`openModal("SIGNUP")` / `data-ms-modal="signup"`), which auto-renders every internal member
- * custom field (birthday, date-joined, legacyMemberID). It also creates a free member - no plan is
- * attached - so it is not tied to the beta-specific `/beta-signup` page.
+ * Deliberately does NOT use the prebuilt Memberstack signup modal (`openModal("SIGNUP")` /
+ * `data-ms-modal="signup"`), which auto-renders every internal member custom field.
  */
 import { openMemberstackLoginModal } from "./memberstackLogin";
 
 /**
- * Post-signup destination for the public "create a free account" flow. A successful signup lands
- * here (a friendly account-created confirmation with next steps) instead of the current page or the
- * Memberstack dashboard default signup redirect (`/beta-welcome`).
+ * Default post-signup destination when this modal is mounted by an intentional flow.
  */
 export const PUBLIC_SIGNUP_REDIRECT_PATH = "/signup/thank-you";
 
@@ -227,8 +222,8 @@ export function initPublicSignupModal(
 }
 
 /**
- * Installs `window.kbmOpenPublicSignupModal` and a delegated click handler so any element with
- * `data-open-public-signup` opens the modal (header Sign Up, gate CTAs, etc.).
+ * Installs `window.kbmOpenPublicSignupModal` and a delegated click handler for
+ * `[data-open-public-signup]` when this modal is explicitly mounted.
  */
 export function installPublicSignupModal(): void {
   if (typeof window === "undefined") return;

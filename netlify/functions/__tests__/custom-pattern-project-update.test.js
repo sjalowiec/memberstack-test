@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const h = vi.hoisted(() => {
   const setMock = vi.fn(async () => {});
   const upsertMock = vi.fn(async () => {});
+  const accessMock = vi.fn(async () => ({ ok: true, userId: "u1", mode: "member" }));
   const existing = {
     id: "proj-1",
     name: "Old name",
@@ -14,15 +15,18 @@ const h = vi.hoisted(() => {
     createdAt: "2026-01-01T00:00:00.000Z",
     version: 1,
   };
-  return { setMock, upsertMock, existing };
+  return { setMock, upsertMock, accessMock, existing };
 });
 
-// Keep the real guard/build helpers; only stub the blob IO + auth resolution.
+vi.mock("../lib/require-member-access.js", () => ({
+  requirePatternProjectAccess: (...args) => h.accessMock(...args),
+}));
+
+// Keep the real guard/build helpers; only stub the blob IO.
 vi.mock("../lib/custom-pattern-projects-store.js", async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
-    resolveProjectUserId: () => ({ userId: "u1", mode: "member" }),
     getProjectsStore: () => ({ set: h.setMock }),
     readProjectJson: async () => ({ ...h.existing, pattern: { ...h.existing.pattern } }),
     upsertProjectSummaryInIndex: h.upsertMock,
@@ -31,19 +35,18 @@ vi.mock("../lib/custom-pattern-projects-store.js", async (importOriginal) => {
 
 import handler from "../custom-pattern-project-update.js";
 
-const FREE_ENTITLEMENT = {
-  patternSystem: "sleeveless",
-  hasSystemAccess: false,
-  freeClaimedForSystem: true,
-};
-const MEMBER_ENTITLEMENT = {
+const SPOOFED_ENTITLEMENT = {
   patternSystem: "sleeveless",
   hasSystemAccess: true,
   freeClaimedForSystem: false,
 };
 
 function makeReq(data) {
-  return { method: "PUT", json: async () => data };
+  return {
+    method: "PUT",
+    headers: new Headers({ Authorization: "Bearer good-token" }),
+    json: async () => data,
+  };
 }
 
 function metadataBody(overrides = {}) {
@@ -60,38 +63,38 @@ function metadataBody(overrides = {}) {
   };
 }
 
-describe("custom-pattern-project-update — metadataOnly rename gate", () => {
+describe("custom-pattern-project-update — membership gate", () => {
   beforeEach(() => {
     h.setMock.mockClear();
     h.upsertMock.mockClear();
+    h.accessMock.mockReset();
+    h.accessMock.mockResolvedValue({ ok: true, userId: "u1", mode: "member" });
   });
 
-  it("blocks a free (claimed) user from renaming via a metadataOnly update", async () => {
+  it("rejects non-members even when body.entitlement.hasSystemAccess is spoofed", async () => {
+    h.accessMock.mockResolvedValue({
+      ok: false,
+      status: 403,
+      error: "An active Knit it Now membership is required.",
+    });
     const res = await handler(
-      makeReq(metadataBody({ name: "Brand new name", entitlement: FREE_ENTITLEMENT })),
+      makeReq(metadataBody({ name: "Brand new name", entitlement: SPOOFED_ENTITLEMENT })),
     );
     expect(res.status).toBe(403);
     const json = await res.json();
     expect(json.ok).toBe(false);
-    expect(json.error).toMatch(/included with membership/i);
+    expect(json.error).toMatch(/membership/i);
     expect(h.setMock).not.toHaveBeenCalled();
   });
 
-  it("allows a free user to update notes when the name is unchanged (metadataOnly)", async () => {
+  it("allows an authenticated member to rename (client entitlement ignored)", async () => {
     const res = await handler(
       makeReq(
-        metadataBody({ name: "Old name", notes: "Use cotton DK", entitlement: FREE_ENTITLEMENT }),
+        metadataBody({
+          name: "Brand new name",
+          entitlement: { hasSystemAccess: false, freeClaimedForSystem: true },
+        }),
       ),
-    );
-    expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.ok).toBe(true);
-    expect(h.setMock).toHaveBeenCalledTimes(1);
-  });
-
-  it("allows a member to rename via a metadataOnly update", async () => {
-    const res = await handler(
-      makeReq(metadataBody({ name: "Brand new name", entitlement: MEMBER_ENTITLEMENT })),
     );
     expect(res.status).toBe(200);
     const json = await res.json();
@@ -100,7 +103,17 @@ describe("custom-pattern-project-update — metadataOnly rename gate", () => {
     expect(h.setMock).toHaveBeenCalledTimes(1);
   });
 
-  it("still blocks a free user's full (non-metadataOnly) settings edit", async () => {
+  it("allows an authenticated member to update notes", async () => {
+    const res = await handler(
+      makeReq(metadataBody({ name: "Old name", notes: "Use cotton DK" })),
+    );
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.ok).toBe(true);
+    expect(h.setMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("allows an authenticated member full settings edit", async () => {
     const res = await handler(
       makeReq({
         id: "proj-1",
@@ -110,10 +123,21 @@ describe("custom-pattern-project-update — metadataOnly rename gate", () => {
         source: "custom-build",
         pattern: { patternType: "sleeveless" },
         customOverrides: {},
-        entitlement: FREE_ENTITLEMENT,
+        entitlement: { hasSystemAccess: false },
       }),
     );
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(200);
+    expect(h.setMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects anonymous / invalid auth before touching storage", async () => {
+    h.accessMock.mockResolvedValue({
+      ok: false,
+      status: 401,
+      error: "Sign in required.",
+    });
+    const res = await handler(makeReq(metadataBody({ name: "Nope" })));
+    expect(res.status).toBe(401);
     expect(h.setMock).not.toHaveBeenCalled();
   });
 });

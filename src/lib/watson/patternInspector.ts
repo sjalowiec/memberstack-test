@@ -1,5 +1,5 @@
 /**
- * Watson Saved Pattern Inspector ù read-only lookup of cloud-saved projects
+ * Watson Saved Pattern Inspector - read-only lookup of cloud-saved projects
  * in Netlify Blobs store `custom-pattern-projects` under the shared family prefix.
  *
  * Uses only Blob list + get. Never set / update / delete.
@@ -136,7 +136,7 @@ function formatGaugeDisplay(pattern: Record<string, unknown>): string {
   }
   const sts = displayScalar(yarnGauge.stitchGauge);
   const rows = displayScalar(yarnGauge.rowGauge);
-  if (sts && rows) return `${sts} sts/in ù ${rows} rows/in`;
+  if (sts && rows) return `${sts} sts/in - ${rows} rows/in`;
   return "";
 }
 
@@ -353,7 +353,7 @@ export function extractProjectNotes(project: Record<string, unknown>): string | 
   return nested || null;
 }
 
-/** Compact text for clipboard ù settings only, no reading-workflow noise. */
+/** Compact text for clipboard - settings only, no reading-workflow noise. */
 export function buildSanitizedSettingsText(input: {
   projectId: string;
   blobKey: string;
@@ -364,7 +364,7 @@ export function buildSanitizedSettingsText(input: {
   notes: string | null;
 }): string {
   const lines: string[] = [
-    "Saved Pattern Inspector ù sanitized settings",
+    "Saved Pattern Inspector - sanitized settings",
     `Project ID: ${input.projectId}`,
     `Blob key: ${input.blobKey}`,
   ];
@@ -546,7 +546,7 @@ export async function inspectSavedPatternByProjectId(
         store: storeName,
         prefix,
         matchingKeys,
-        message: `Multiple blobs matched project ID "${projectId}". Refusing to guess ù review the matching keys below.`,
+        message: `Multiple blobs matched project ID "${projectId}". Refusing to guess - review the matching keys below.`,
       };
     }
 

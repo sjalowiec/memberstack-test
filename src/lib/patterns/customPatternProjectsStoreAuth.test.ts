@@ -35,12 +35,12 @@ describe("resolveProjectUserId (Netlify store)", () => {
     expect(result).toMatchObject({ error: expect.any(String), status: 401 });
   });
 
-  it("uses member id when present", () => {
-    process.env.ALLOW_DEV_PATTERN_USER = "true";
+  it("never trusts X-KBM-Member-Id as identity (dev fallback only when allowed)", () => {
+    process.env.ALLOW_DEV_PATTERN_USER = "false";
     const result = resolveProjectUserId(
       mockRequest({ "X-KBM-Member-Id": "ms_member_1" }),
     );
-    expect(result).toEqual({ userId: "ms_member_1", mode: "member" });
+    expect(result).toMatchObject({ error: expect.any(String), status: 401 });
   });
 
   it("uses dev fallback without headers when ALLOW_DEV_PATTERN_USER is true", () => {

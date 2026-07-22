@@ -20,20 +20,15 @@ if (!product) {
 const previewMember = Astro.url.searchParams.get("previewMember");
 const previewMode =
   previewMember === "member"
-    ? true
+    ? "memberAccess"
     : previewMember === "nonmember"
-      ? false
+      ? "loggedOut"
       : null;
 
-// Adjust this if you already have a real member check in place
-const actualIsMember = false;
-const isMember = previewMode !== null ? previewMode : actualIsMember;
-
-const showMemberDownload = !!product.memberFree && isMember;
 const pageTitle = `${product.title} | Knit it Now`;
 const pageDescription = product.description;
-
 const productImg = product.productImage?.value || product.image;
+const downloadLabel = "Download Your Printable";
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
@@ -48,7 +43,6 @@ const productImg = product.productImage?.value || product.image;
         <div class="product-copy">
           <h1 class="printable-details__title">{product.title}</h1>
 
-        
           <p class="printable-details__intro">{product.description}</p>
           {product.salesFocus && (
             <p class="printable-details__focus">{product.salesFocus}</p>
@@ -59,7 +53,7 @@ const productImg = product.productImage?.value || product.image;
           )}
 
           <div class="printable-details__section">
-            <h2>What’s Included</h2>
+            <h2>What's Included</h2>
             <ul>
               {product.includes.map((item) => (
                 <li>{item}</li>
@@ -67,31 +61,40 @@ const productImg = product.productImage?.value || product.image;
             </ul>
           </div>
 
-       
+          <div
+            class="printable-details__actions"
+            data-printable-product-actions
+            data-member-free={product.memberFree ? "true" : "false"}
+            data-preview-mode={previewMode ?? ""}
+            data-download-href={product.file}
+            data-download-label={downloadLabel}
+            data-stripe-link={product.stripeLink}
+          >
+            {product.memberFree ? (
+              <div
+                class="printable-details__member-download"
+                data-printable-download
+                data-download-href={product.file}
+                data-download-label={downloadLabel}
+              >
+                <div
+                  class="printable-download-card__cta-mount"
+                  data-printable-download-cta
+                  aria-live="polite"
+                ></div>
+              </div>
+            ) : null}
 
-          <div class="printable-details__actions">
-            {showMemberDownload && (
-              <a
-                href={product.file}
-                class="kbm-btn kbm-btn-accent"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Download Your Printable
-              </a>
-            )}
-            {!showMemberDownload && (
-              <a
-                href={product.stripeLink}
-                class="kbm-btn kbm-btn-accent"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Buy Now
-              </a>
-            )}
+            <a
+              href={product.stripeLink}
+              class="kbm-btn kbm-btn-accent printable-details__buy"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-buy-now
+            >
+              Buy Now
+            </a>
           </div>
-          
         </div>
 
         {productImg && (
@@ -108,6 +111,72 @@ const productImg = product.productImage?.value || product.image;
     </div>
   </section>
 </Layout>
+
+<script>
+  import type { ViewerAccessState } from "../../lib/memberAccess";
+  import {
+    renderPrintableDownloadCta,
+    resolvePrintableDownloadViewerState,
+  } from "../../scripts/printableDownloadGate";
+
+  function previewOverride(): ViewerAccessState | null {
+    const root = document.querySelector<HTMLElement>("[data-printable-product-actions]");
+    const mode = root?.dataset.previewMode?.trim() ?? "";
+    if (mode === "memberAccess" || mode === "loggedOut" || mode === "loggedInNoAccess") {
+      return mode;
+    }
+    return null;
+  }
+
+  async function refreshProductActions(): Promise<void> {
+    const root = document.querySelector<HTMLElement>("[data-printable-product-actions]");
+    if (!root) return;
+
+    const memberFree = root.dataset.memberFree === "true";
+    const buy = root.querySelector<HTMLElement>("[data-buy-now]");
+    const mount = root.querySelector<HTMLElement>("[data-printable-download-cta]");
+    const downloadHref = root.dataset.downloadHref?.trim() ?? "";
+    const downloadLabel = root.dataset.downloadLabel?.trim() || "Download Your Printable";
+
+    const state =
+      previewOverride() ??
+      (await resolvePrintableDownloadViewerState("downloads/[slug].printableProduct"));
+
+    if (memberFree && mount) {
+      renderPrintableDownloadCta(mount, state, downloadHref, downloadLabel);
+    }
+
+    if (buy) {
+      // Active Members with memberFree get the included download; keep Buy Now for everyone else.
+      buy.hidden = memberFree && state === "memberAccess";
+    }
+  }
+
+  function bindRefresh(): void {
+    void refreshProductActions();
+    window.addEventListener("auth:updated", () => {
+      void refreshProductActions();
+    });
+    const ms = window.$memberstackDom;
+    if (ms?.on) {
+      ms.on("member.login", () => {
+        void refreshProductActions();
+      });
+      ms.on("member.logout", () => {
+        void refreshProductActions();
+      });
+    }
+    void ms?.onReady?.then(() => {
+      void refreshProductActions();
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bindRefresh);
+  } else {
+    bindRefresh();
+  }
+</script>
 
 <style>
   .printable-details {
@@ -183,21 +252,38 @@ const productImg = product.productImage?.value || product.image;
     margin: 2rem 0;
   }
 
-  .printable-details__member-note {
-    margin: 1.5rem 0;
-    font-weight: 600;
-  }
-
   .printable-details__actions {
     margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
     text-align: center;
   }
 
-  .printable-details__cta {
+  .printable-details__member-download :global(.printable-download-card__cta-mount) {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+  }
+
+  .printable-details__member-download :global(.printable-download-card__cta),
+  .printable-details__buy {
     display: inline-block;
-    padding: 0.85rem 1.25rem;
-    border-radius: 999px;
+    text-align: center;
     text-decoration: none;
+  }
+
+  .printable-details__member-download :global(.printable-download-card__locked-status),
+  .printable-details__member-download :global(.printable-download-card__locked-support) {
+    margin: 0 0 0.5rem;
+    text-align: left;
+    color: #4d5a48;
+    line-height: 1.5;
+  }
+
+  .printable-details__member-download :global(.printable-download-card__locked-status) {
     font-weight: 600;
   }
 </style>

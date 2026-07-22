@@ -207,7 +207,7 @@ export function resolveAccountMembershipPanelView(
   return {
     kind: "free",
     planLabel: "No active membership",
-    statusLabel: "Free account",
+    statusLabel: "No Active Membership",
     billingInterval: null,
     billingLabel: null,
     renewsLabel: null,

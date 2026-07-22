@@ -56,7 +56,7 @@ describe("hasMemberAccessFromActivePlanIds", () => {
   });
 });
 
-describe("hasPatternBuilderAccess  global membership", () => {
+describe("hasPatternBuilderAccess — active membership only", () => {
   it("allows active members to access both builders", () => {
     const planIds = activePlans(MEMBERSHIPS.membership.memberstackPlanId);
     expect(hasPatternBuilderAccess({ builder: "sleeveless", activePlanIds: planIds })).toBe(true);
@@ -71,19 +71,13 @@ describe("hasPatternBuilderAccess  global membership", () => {
     );
   });
 
-  it("allows remaining legacy monthly Basic members to access both builders", () => {
-    const planIds = activePlans(LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId);
-    expect(hasPatternBuilderAccess({ builder: "sleeveless", activePlanIds: planIds })).toBe(true);
-    expect(hasPatternBuilderAccess({ builder: "dropShoulder", activePlanIds: planIds })).toBe(true);
-  });
-
   it("allows Beta members to access both builders", () => {
     const planIds = activePlans(MEMBERSHIPS.beta.memberstackPlanId);
     expect(hasPatternBuilderAccess({ builder: "sleeveless", activePlanIds: planIds })).toBe(true);
     expect(hasPatternBuilderAccess({ builder: "dropShoulder", activePlanIds: planIds })).toBe(true);
   });
 
-  it("allows every configured global member plan id through the shared helper", () => {
+  it("allows every configured global member plan id", () => {
     for (const planId of MEMBER_PLAN_IDS) {
       expect(hasPatternBuilderAccess({ builder: "sleeveless", activePlanIds: [planId] })).toBe(
         true,
@@ -93,72 +87,37 @@ describe("hasPatternBuilderAccess  global membership", () => {
       );
     }
   });
-});
 
-describe("hasPatternBuilderAccess  lifetime builder ownership", () => {
-  const sleevelessLifetimePlanId = PATTERN_BUILDER_LIFETIME_PURCHASES.sleeveless.memberstackPlanId;
-  const dropShoulderLifetimePlanId = PATTERN_BUILDER_LIFETIME_PURCHASES.dropShoulder.memberstackPlanId;
-  const sleevelessLifetimePriceId = PATTERN_BUILDER_LIFETIME_PURCHASES.sleeveless.memberstackPriceId;
-
-  it("allows Sleeveless lifetime owner to access Sleeveless only", () => {
-    const planIds = activePlans(sleevelessLifetimePlanId);
-    expect(hasPatternBuilderAccess({ builder: "sleeveless", activePlanIds: planIds })).toBe(true);
-    expect(hasPatternBuilderAccess({ builder: "dropShoulder", activePlanIds: planIds })).toBe(
-      false,
-    );
-  });
-
-  it("allows Drop Shoulder lifetime owner to access Drop Shoulder only", () => {
-    const planIds = activePlans(dropShoulderLifetimePlanId);
-    expect(hasPatternBuilderAccess({ builder: "dropShoulder", activePlanIds: planIds })).toBe(
-      true,
-    );
-    expect(hasPatternBuilderAccess({ builder: "sleeveless", activePlanIds: planIds })).toBe(false);
-  });
-
-  it("does not treat lifetime ownership as global membership", () => {
+  it("does not grant access from lifetime builder plans alone", () => {
+    const sleevelessLifetimePlanId = PATTERN_BUILDER_LIFETIME_PURCHASES.sleeveless.memberstackPlanId;
+    const dropShoulderLifetimePlanId =
+      PATTERN_BUILDER_LIFETIME_PURCHASES.dropShoulder.memberstackPlanId;
     expect(
-      hasMemberAccessFromActivePlanIds(activePlans(sleevelessLifetimePlanId, dropShoulderLifetimePlanId)),
+      hasPatternBuilderAccess({ builder: "sleeveless", activePlanIds: [sleevelessLifetimePlanId] }),
     ).toBe(false);
-  });
-
-  it("does not grant access from checkout price ids alone", () => {
     expect(
       hasPatternBuilderAccess({
-        builder: "sleeveless",
-        activePlanIds: activePlans(sleevelessLifetimePriceId),
+        builder: "dropShoulder",
+        activePlanIds: [dropShoulderLifetimePlanId],
       }),
     ).toBe(false);
+    expect(
+      hasMemberAccessFromActivePlanIds(
+        activePlans(sleevelessLifetimePlanId, dropShoulderLifetimePlanId),
+      ),
+    ).toBe(false);
   });
-});
 
-describe("hasPatternBuilderAccess  no paid access", () => {
-  it("denies users with no membership and no lifetime plan", () => {
+  it("denies users with no membership", () => {
     expect(hasPatternBuilderAccess({ builder: "sleeveless", activePlanIds: [] })).toBe(false);
-    expect(hasPatternBuilderAccess({ builder: "dropShoulder", activePlanIds: [] })).toBe(false);
     expect(
       hasPatternBuilderAccess({ builder: "sleeveless", activePlanIds: activePlans("pln_other") }),
     ).toBe(false);
   });
-
-  it("fails safely for unknown builder keys", () => {
-    expect(
-      hasPatternBuilderAccess({
-        builder: "raglan",
-        activePlanIds: activePlans(MEMBERSHIPS.membership.memberstackPlanId),
-      }),
-    ).toBe(true);
-    expect(
-      hasPatternBuilderAccess({
-        builder: "unknownBuilder",
-        activePlanIds: activePlans(PATTERN_BUILDER_LIFETIME_PURCHASES.sleeveless.memberstackPlanId),
-      }),
-    ).toBe(false);
-  });
 });
 
-describe("hasLifetimePatternBuilderAccess", () => {
-  it("matches only the configured plan id for each builder", () => {
+describe("hasLifetimePatternBuilderAccess (ownership detection only)", () => {
+  it("matches only the configured plan id for each builder and does not imply access", () => {
     expect(
       hasLifetimePatternBuilderAccess(
         "sleeveless",
@@ -170,6 +129,14 @@ describe("hasLifetimePatternBuilderAccess", () => {
         "dropShoulder",
         activePlans(PATTERN_BUILDER_LIFETIME_PURCHASES.sleeveless.memberstackPlanId),
       ),
+    ).toBe(false);
+    expect(
+      hasPatternBuilderAccess({
+        builder: "sleeveless",
+        activePlanIds: activePlans(
+          PATTERN_BUILDER_LIFETIME_PURCHASES.sleeveless.memberstackPlanId,
+        ),
+      }),
     ).toBe(false);
   });
 });

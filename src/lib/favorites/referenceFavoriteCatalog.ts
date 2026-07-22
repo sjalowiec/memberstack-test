@@ -19,6 +19,10 @@ const RAW_REFERENCE_ITEMS: RefItem[] = [
   { title: "Abbreviations", href: "/reference/abbreviations" },
   { title: "Machine Database", href: "/reference/machines" },
   {
+    title: "It's Not You, It Might Be Your Machine",
+    href: "/troubleshoot",
+  },
+  {
     title: "Silver Reed vs. Taitexma",
     href: "/reference/machines/silver-reed-vs-taitexma",
   },

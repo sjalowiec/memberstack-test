@@ -18,9 +18,9 @@ import { getStore } from "@netlify/blobs";
 import { isActivityAdmin } from "./lib/pattern-activity-store.js";
 import {
   jsonResponse,
-  resolveProjectUserId,
   withCors,
 } from "./lib/custom-pattern-projects-store.js";
+import { resolveVerifiedProjectUserId } from "./lib/require-member-access.js";
 
 const STORE_NAME = "bookshelf-activity-log";
 const EVENT_PREFIX = "events/";
@@ -228,12 +228,12 @@ export default async (req: Request): Promise<Response> => {
     return withCors(jsonResponse({ ok: false, error: "Method not allowed" }, 405));
   }
 
-  // Resolve identity (401 when signed out), then enforce the admin allowlist (403).
-  const user = resolveProjectUserId(req);
+  // Resolve identity from verified Bearer JWT (401 when signed out), then admin allowlist (403).
+  const user = await resolveVerifiedProjectUserId(req);
   if ("error" in user) {
     return withCors(jsonResponse({ ok: false, error: user.error }, user.status));
   }
-  if (!isActivityAdmin(req)) {
+  if (!isActivityAdmin(req, user.userId)) {
     return withCors(jsonResponse({ ok: false, error: "Admin access required." }, 403));
   }
 

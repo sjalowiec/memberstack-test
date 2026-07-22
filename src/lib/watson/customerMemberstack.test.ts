@@ -263,6 +263,7 @@ describe("customerMemberstack", () => {
 
     const result = await loadCustomerMemberstackMember({
       lookupValue: "mem_cmrq9lzwl02c70sor1uuwamcf",
+      secretKey: "sk_live_test_key",
       getClient: async () => ({
         getMember: async () => {
           throw tlsError;
@@ -403,6 +404,9 @@ describe("customerMemberstack", () => {
 
   it("default Admin path uses bare getMemberstackAdminClient() like requireMember", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    // Non-prod Admin prefers the sandbox secret; use a matching mem_sb_ id so the
+    // environment-mismatch guard does not block before getMember runs.
+    const memberId = "mem_sb_verified_shared_client";
     const getMember = vi.fn(async (id: string) => ({
       id,
       auth: { email: "paid@example.com" },
@@ -416,11 +420,11 @@ describe("customerMemberstack", () => {
     } as never);
 
     const result = await loadCustomerMemberstackMember({
-      lookupValue: "mem_verified_shared_client",
+      lookupValue: memberId,
     });
 
     expect(spy).toHaveBeenCalledWith();
-    expect(getMember).toHaveBeenCalledWith("mem_verified_shared_client");
+    expect(getMember).toHaveBeenCalledWith(memberId);
     expect(result.ok).toBe(true);
     spy.mockRestore();
     warn.mockRestore();

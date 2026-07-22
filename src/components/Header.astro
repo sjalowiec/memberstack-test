@@ -1,7 +1,6 @@
 ---
 /* Centered Logo Header for Knit it Now — soft launch (simplified nav) */
 
-import { MEMBER_PLAN_IDS } from "../config/memberships";
 import { PATTERN_BUILDERS_HOME_HREF } from "../lib/patterns/customPatternProjectNavigation";
 import PatternWorkspaceLibraryDrawer from "./patterns/PatternWorkspaceLibraryDrawer.astro";
 
@@ -21,8 +20,6 @@ interface Props {
 
 const { onboarding = false, marketing = false } = Astro.props;
 const minimalHeader = onboarding || marketing;
-
-const memberPlanIds = [...MEMBER_PLAN_IDS];
 ---
 <style is:global>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
@@ -1974,12 +1971,11 @@ div[data-ms-modal-overlay] {
                   Log In
                 </a>
                 <a
-                  href="#"
+                  href="/membership"
                   class="kbm-btn kbm-btn-outline"
-                  data-open-public-signup
-                  data-testid="nav-signup-mobile"
+                  data-testid="nav-become-member-mobile"
                 >
-                  Sign Up
+                  Become a Member
                 </a>
               </div>
 
@@ -2013,12 +2009,11 @@ div[data-ms-modal-overlay] {
               Log In
             </a>
             <a
-              href="#"
+              href="/membership"
               class="kbm-btn kbm-btn-outline"
-              data-open-public-signup
-              data-testid="nav-signup"
+              data-testid="nav-become-member"
             >
-              Sign Up
+              Become a Member
             </a>
           </div>
 
@@ -2105,10 +2100,13 @@ div[data-ms-modal-overlay] {
 
 {!minimalHeader && <PatternWorkspaceLibraryDrawer />}
 
-<script is:inline define:vars={{ memberPlanIds }}>
-  (function () {
-    const PAID_PLAN_IDS = memberPlanIds;
+<script>
+  import {
+    headerAuthWindowState,
+    resolveHeaderAuthState,
+  } from "../lib/headerAuthState";
 
+  (function () {
     const pill = document.getElementById("auth-pill");
     const authMsg = document.getElementById("auth-msg");
     const authMsgText = document.getElementById("auth-msg-text");
@@ -2194,17 +2192,16 @@ div[data-ms-modal-overlay] {
       }
       try {
         const res = await ms.getCurrentMember();
-        const data = res?.data;
-        const member = (data?.member ?? data) || null;
-        const loggedIn = Boolean(member);
-        const planConnections = member?.planConnections || [];
-        const isMember = planConnections.some((p) => PAID_PLAN_IDS.includes(p?.planId));
-        window.__KBM_AUTH = {
-          loggedIn,
-          member: isMember,
-          memberId: member?.id || null
-        };
-        const planLabels = planConnections.map((p) => p?.planId || p?.planName || "?").join(",");
+        // Same ACTIVE/TRIALING ∩ MEMBER_PLAN_IDS rule as BaseLayout / hasMemberAccess.
+        const auth = resolveHeaderAuthState(res);
+        window.__KBM_AUTH = headerAuthWindowState(auth);
+        const member = auth.member as Record<string, any> | null;
+        const planConnections = Array.isArray(member?.planConnections)
+          ? member.planConnections
+          : [];
+        const planLabels = planConnections
+          .map((p: any) => p?.planId || p?.planName || "?")
+          .join(",");
         const plansDebug = `plans:${planConnections.length}:${planLabels}`;
         const displayName =
           member?.name ||
@@ -2214,12 +2211,12 @@ div[data-ms-modal-overlay] {
         const email = member?.auth?.email || member?.email || "";
         return {
           ms: "ready",
-          loggedIn,
-          isMember,
+          loggedIn: auth.loggedIn,
+          isMember: auth.isMember,
           displayName,
           email,
           plansDebug,
-          memberId: member?.id || null,
+          memberId: auth.memberId,
           _member: member,
         };
       } catch (e) {
@@ -2293,7 +2290,7 @@ div[data-ms-modal-overlay] {
       try {
         await ms.logout();
         // Full reload guarantees the header re-renders to the logged-out state
-        // (Sign Up / Log In) instead of leaving "Log Out" visible.
+        // (Become a Member / Log In) instead of leaving "Log Out" visible.
         window.location.reload();
       } catch (err) {
         console.error("[kbm] Logout failed:", err);

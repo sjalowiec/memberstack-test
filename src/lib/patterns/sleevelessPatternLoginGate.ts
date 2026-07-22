@@ -1,13 +1,18 @@
 /**
- * Memberstack login gate for sleeveless pattern builder pages.
- * Logged-out visitors cannot use builder, review, pattern, print, or saved-pattern UI.
+ * Memberstack helpers shared by Dynamic Pattern page gates.
+ *
+ * Page-shell membership enforcement lives in `patternMembershipPageGate.ts`
+ * (active membership / lifetime builder entitlement — login alone is never enough).
+ * These helpers remain for session readiness, draft ownership, and tests.
  */
-import { getMemberstackReturnPath } from "../memberstackReturnUrl";
-import { showPublicSignupModal } from "../publicSignupModal";
 import { isMemberstackLoggedInPayload, memberIdFromMemberstackPayload } from "./memberstackMember";
-import { enforcePatternDraftOwner } from "./patternDraftOwnerGuard";
 
-export type SleevelessPatternGateState = "pending" | "member" | "locked";
+/** @deprecated Use PatternMembershipGateState from patternMembershipPageGate. */
+export type SleevelessPatternGateState =
+  | "pending"
+  | "member"
+  | "locked"
+  | "locked-no-access";
 
 export async function waitForMemberstackDom(
   attempts = 40,
@@ -86,83 +91,11 @@ export async function isSleevelessPatternMemberLoggedIn(): Promise<boolean> {
   }
 }
 
-function setGateState(root: HTMLElement, state: SleevelessPatternGateState): void {
-  root.dataset.gateState = state;
-  root.removeAttribute("data-gate-pending");
-
-  const content = root.querySelector("[data-sleeveless-pattern-gate-content]");
-  const locked = root.querySelector("[data-sleeveless-pattern-gate-locked]");
-  const loading = root.querySelector("[data-sleeveless-pattern-gate-loading]");
-  const signin = root.querySelector("[data-sleeveless-pattern-gate-signin]");
-
-  const isMember = state === "member";
-
-  if (content instanceof HTMLElement) {
-    content.hidden = !isMember;
-    content.setAttribute("aria-hidden", isMember ? "false" : "true");
-    if (!isMember) {
-      content.setAttribute("inert", "");
-    } else {
-      content.removeAttribute("inert");
-    }
-  }
-
-  if (locked instanceof HTMLElement) {
-    locked.hidden = isMember;
-  }
-
-  if (loading instanceof HTMLElement) {
-    loading.hidden = state !== "pending";
-  }
-
-  if (signin instanceof HTMLElement) {
-    signin.hidden = state !== "locked";
-  }
-}
-
 /**
- * Wires the gate's "Create Free Account" CTA to the shared public signup modal — the same helper
- * the Hat/Blanket account gate uses — passing the current builder URL so a brand-new member is
- * returned to the builder they were on (not the site-wide `/signup/thank-you` landing). The "Log In"
- * CTA uses Memberstack's login modal with a current-url redirect (in the markup), so it likewise
- * returns to the builder; a successful login is also caught by the `member.login` refresh below,
- * which reveals the builder in place.
+ * @deprecated Prefer {@link initPatternMembershipPageGate} from patternMembershipPageGate.
+ * Kept as a thin alias so older imports keep working.
  */
-function wireGateSignupCta(root: HTMLElement): void {
-  root.querySelectorAll<HTMLElement>("[data-sleeveless-gate-signup]").forEach((btn) => {
-    if (btn.dataset.signupBound === "true") return;
-    btn.dataset.signupBound = "true";
-    btn.addEventListener("click", (event) => {
-      event.preventDefault();
-      showPublicSignupModal({ redirectPath: getMemberstackReturnPath() });
-    });
-  });
-}
-
-/** Wires `[data-sleeveless-pattern-gate]` on sleeveless pattern pages. */
 export async function initSleevelessPatternMemberGate(root: HTMLElement): Promise<void> {
-  setGateState(root, "pending");
-  wireGateSignupCta(root);
-
-  await waitForMemberstackDom();
-  const loggedIn = await isSleevelessPatternMemberLoggedIn();
-  setGateState(root, loggedIn ? "member" : "locked");
-  // Scope the local working draft to its owner: clears another member's draft when the signed-in
-  // member changes. Best-effort here (other pages); the Express builder also reconciles before it
-  // hydrates so the catalog "Create" / direct entry never renders a stale draft.
-  enforcePatternDraftOwner(await resolveCurrentMemberIdForDraftGuard());
-
-  const ms = window.$memberstackDom;
-  if (ms && typeof ms.on === "function") {
-    const refresh = (): void => {
-      void isSleevelessPatternMemberLoggedIn().then((ok) => {
-        setGateState(root, ok ? "member" : "locked");
-      });
-      void resolveCurrentMemberIdForDraftGuard().then((memberId) => {
-        enforcePatternDraftOwner(memberId);
-      });
-    };
-    ms.on("member.login", refresh);
-    ms.on("member.logout", refresh);
-  }
+  const { initPatternMembershipPageGate } = await import("./patternMembershipPageGate");
+  return initPatternMembershipPageGate(root);
 }

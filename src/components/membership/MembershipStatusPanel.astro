@@ -211,6 +211,21 @@
     margin: 0;
   }
 
+  /* `.kbm-btn { display }` / fact `display: grid` must not override [hidden]. */
+  .membership-status-panel__fact[hidden],
+  .membership-status-panel__actions [hidden],
+  .membership-status-panel__heading[hidden],
+  .membership-status-panel__facts[hidden],
+  .membership-status-panel__loading[hidden],
+  .membership-status-panel__body[hidden] {
+    display: none !important;
+  }
+
+  .membership-status-panel[data-membership-status-cta-mode="purchase"]
+    .membership-status-panel__actions {
+    display: none;
+  }
+
   @media (max-width: 520px) {
     .membership-status-panel__fact {
       grid-template-columns: 1fr;
@@ -332,6 +347,11 @@
     grid-template-columns: minmax(7rem, 9rem) 1fr;
     gap: 0.35rem 0.75rem;
     margin: 0;
+  }
+
+  .membership-status-modal__fact[hidden],
+  .membership-status-modal__facts[hidden] {
+    display: none !important;
   }
 
   @media (max-width: 520px) {

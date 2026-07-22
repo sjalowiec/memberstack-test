@@ -13,7 +13,7 @@ function lifetimeOwnerAccess(): SleevelessUserAccess {
     loggedIn: true,
     memberId: "ms_lifetime",
     activePlanIds: [PATTERN_BUILDER_LIFETIME_PURCHASES.sleeveless.memberstackPlanId],
-    hasSystemAccess: true,
+    hasSystemAccess: false,
     freeClaimsBySystem: { sleeveless: { claimed: true, patternId: "pat_1" } },
   };
 }
@@ -48,7 +48,7 @@ describe("stripSleevelessLifetimePurchaseReturnParams", () => {
 });
 
 describe("processSleevelessLifetimePurchaseReturn", () => {
-  it("refreshes access and unlocks Sleeveless after a successful purchase", async () => {
+  it("refreshes access but does not unlock Dynamic Patterns from lifetime purchase alone", async () => {
     const invalidateCache = vi.fn();
     const resolveAccess = vi.fn().mockResolvedValue(lifetimeOwnerAccess());
 
@@ -59,11 +59,11 @@ describe("processSleevelessLifetimePurchaseReturn", () => {
 
     expect(invalidateCache).toHaveBeenCalled();
     expect(resolveAccess).toHaveBeenCalled();
-    expect(result).toMatchObject({ kind: "success", unlocked: true });
-    expect(result.message).toMatch(/Sleeveless Sweater patterns/i);
+    expect(result).toMatchObject({ kind: "failed", unlocked: false });
+    expect(result.errorMessage).toBeTruthy();
   });
 
-  it("does not unlock Drop Shoulder when only Sleeveless lifetime is purchased", async () => {
+  it("does not grant pattern system access from Sleeveless lifetime alone", async () => {
     const access = lifetimeOwnerAccess();
     const resolveAccess = vi.fn().mockResolvedValue(access);
     const { hasPatternSystemAccess } = await import("./sleevelessPatternSystemAccess");
@@ -73,7 +73,7 @@ describe("processSleevelessLifetimePurchaseReturn", () => {
       { invalidateCache: vi.fn(), resolveAccess },
     );
 
-    expect(hasPatternSystemAccess(access, "sleeveless")).toBe(true);
+    expect(hasPatternSystemAccess(access, "sleeveless")).toBe(false);
     expect(hasPatternSystemAccess(access, "drop-shoulder")).toBe(false);
   });
 

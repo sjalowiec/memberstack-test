@@ -139,7 +139,7 @@ describe("resolveSleevelessUserAccess", () => {
     expect(hasPatternSystemAccess(access, "drop-shoulder")).toBe(true);
   });
 
-  it("grants Sleeveless-only access for a Sleeveless lifetime plan", async () => {
+  it("does not grant access for a Sleeveless lifetime plan alone", async () => {
     stubMemberstack({
       getCurrentMember: vi.fn().mockResolvedValue({
         data: {
@@ -155,20 +155,24 @@ describe("resolveSleevelessUserAccess", () => {
       getMemberJSON: vi.fn().mockResolvedValue({ data: {} }),
     });
     const access = await resolveSleevelessUserAccess();
-    expect(hasPatternSystemAccess(access, "sleeveless")).toBe(true);
+    expect(access).toMatchObject({ loggedIn: true, hasSystemAccess: false });
+    expect(hasPatternSystemAccess(access, "sleeveless")).toBe(false);
     expect(hasPatternSystemAccess(access, "drop-shoulder")).toBe(false);
-    expect(canCreatePatternForSystem(access, "sleeveless")).toBe(true);
-    expect(canCreatePatternForSystem(access, "drop-shoulder")).toBe(true);
+    expect(canCreatePatternForSystem(access, "sleeveless")).toBe(false);
   });
 
-  it("grants system access via the member-JSON unlock flag", async () => {
+  it("does not grant access via the member-JSON unlock flag", async () => {
     stubMemberstack({
       getCurrentMember: vi.fn().mockResolvedValue({ data: { id: "ms_unlock", planConnections: [] } }),
       getMemberJSON: vi.fn().mockResolvedValue({ data: { sleevelessPatternSystemUnlocked: true } }),
     });
     const access = await resolveSleevelessUserAccess();
-    expect(access).toMatchObject({ loggedIn: true, hasSystemAccess: true });
-    expect(hasPatternSystemAccess(access, "sleeveless")).toBe(true);
+    expect(access).toMatchObject({
+      loggedIn: true,
+      hasSystemAccess: false,
+      sleevelessUnlockedViaJson: true,
+    });
+    expect(hasPatternSystemAccess(access, "sleeveless")).toBe(false);
     expect(hasPatternSystemAccess(access, "drop-shoulder")).toBe(false);
   });
 });

@@ -2,10 +2,9 @@
 /**
  * ToolPreviewGate - member gate that keeps the tool visible as a disabled preview.
  *
- * Works alongside <ToolGate /> (which renders the member-only notice near the top
- * of the page). Wrap the tool's interactive UI in this component so that:
- *   - Non-members SEE the full tool as a preview (reduced opacity, no interaction),
- *     with a small "Member Tool" overlay card inviting them to join.
+ * Works alongside <ToolGate /> (which renders the page-level membership notice).
+ * Wrap the tool's interactive UI in this component so that:
+ *   - Non-members SEE the full tool as a preview (readable, no interaction).
  *   - Members with access see and use the tool normally.
  *
  * Access is decided the same way as the rest of the site: BaseLayout adds one of
@@ -14,6 +13,7 @@
  * toggles the `inert` attribute so keyboard/focus is blocked for non-members too.
  *
  * Usage (member-only tool pages):
+ *   <ToolGate tool={tool} />
  *   <ToolPreviewGate tool={tool}>
  *     <div class="my-tool-wrap"> ...interactive tool UI... </div>
  *   </ToolPreviewGate>
@@ -35,16 +35,6 @@ const isMemberOnly = tool?.membersonly === true;
     <div class="tool-preview__inner" data-tool-preview-inner inert>
       <slot />
     </div>
-
-    <div class="tool-preview__overlay" data-tool-preview-overlay>
-      <div class="tool-preview__card" role="note">
-        <p class="tool-preview__eyebrow">Member Tool</p>
-        <p class="tool-preview__text">
-          See how this tool works, then become a member to use the calculator.
-        </p>
-        <a href="/membership" class="tool-preview__cta">Become a member</a>
-      </div>
-    </div>
   </div>
 ) : (
   <slot />
@@ -63,76 +53,13 @@ const isMemberOnly = tool?.membersonly === true;
     transition: opacity 0.2s ease;
   }
 
-  .tool-preview__overlay {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: clamp(1rem, 6vh, 3rem) 1rem;
-    z-index: 2;
-    pointer-events: none;
-  }
-
-  .tool-preview__card {
-    position: sticky;
-    top: clamp(1rem, 6vh, 3rem);
-    max-width: 22rem;
-    width: min(100%, 22rem);
-    text-align: center;
-    padding: 1.25rem 1.5rem;
-    border-radius: 14px;
-    border: 1px solid #d7e2c8;
-    background: rgba(255, 255, 255, 0.96);
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.14);
-    pointer-events: auto;
-  }
-
-  .tool-preview__eyebrow {
-    margin: 0 0 0.4rem;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--kbm-green, #52682d);
-  }
-
-  .tool-preview__text {
-    margin: 0 0 1rem;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    color: #374151;
-  }
-
-  .tool-preview__cta {
-    display: inline-block;
-    padding: 10px 18px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    border-radius: 8px;
-    background: var(--kbm-green, #52682d);
-    color: #fff;
-    text-decoration: none;
-  }
-
-  .tool-preview__cta:hover {
-    background: var(--kbm-green-hover, #445925);
-    color: #fff;
-  }
-
-  /* Members with access: unlock the tool and hide the preview overlay. */
+  /* Members with access: unlock the tool. */
   :global(body.ms-logged-in) .tool-preview__inner,
   :global(body.dev-member) .tool-preview__inner,
   :global(body.dev-bypass-gating) .tool-preview__inner {
     opacity: 1;
     pointer-events: auto;
     user-select: auto;
-  }
-
-  :global(body.ms-logged-in) .tool-preview__overlay,
-  :global(body.dev-member) .tool-preview__overlay,
-  :global(body.dev-bypass-gating) .tool-preview__overlay {
-    display: none;
   }
 
   @media (prefers-reduced-motion: reduce) {

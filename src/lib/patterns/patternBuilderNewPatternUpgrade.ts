@@ -2,21 +2,17 @@
  * Decision logic for the logged-in "create another pattern" upgrade screen.
  */
 import { MEMBERSHIPS } from "../../config/memberships";
-import {
-  resolvePatternBuilderUpgradeConfig,
-  type PatternBuilderUpgradeConfig,
-} from "./patternBuilderUpgradeConfig";
-import { isFreeClaimedForSystem } from "./patternSystemFreeClaim";
+import type { PatternBuilderUpgradeConfig } from "./patternBuilderUpgradeConfig";
 import type { PatternSystemId } from "./patternSystemId";
 import {
   canCreatePatternForSystem,
-  hasPatternSystemAccess,
   type SleevelessUserAccess,
 } from "./sleevelessPatternSystemAccess";
 
 export type PatternBuilderNewPatternUpgradeUiMode =
   | "none"
   | "membership-only"
+  /** @deprecated Lifetime no longer grants access; treated as membership-only in UI. */
   | "membership-and-lifetime";
 
 /** True when the visitor may start a new pattern without seeing an upgrade screen. */
@@ -34,16 +30,8 @@ export function resolvePatternBuilderNewPatternUpgradeUiMode(
   systemId: PatternSystemId,
 ): PatternBuilderNewPatternUpgradeUiMode {
   if (shouldBypassPatternBuilderNewPatternUpgradeScreen(access, systemId)) return "none";
-
-  const config = resolvePatternBuilderUpgradeConfig(systemId);
-  if (
-    config &&
-    !hasPatternSystemAccess(access, config.patternSystemId) &&
-    isFreeClaimedForSystem(access.freeClaimsBySystem, config.patternSystemId)
-  ) {
-    return "membership-and-lifetime";
-  }
-
+  void systemId;
+  // Dynamic Patterns require membership; do not offer lifetime as an access path.
   return "membership-only";
 }
 

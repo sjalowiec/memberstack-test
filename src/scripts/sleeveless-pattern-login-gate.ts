@@ -1,15 +1,15 @@
-import { initSleevelessPatternMemberGate } from "../lib/patterns/sleevelessPatternLoginGate";
+import { initPatternMembershipPageGate } from "../lib/patterns/patternMembershipPageGate";
 
-function bootSleevelessPatternLoginGate(): void {
+function bootPatternMembershipPageGate(): void {
   const root = document.querySelector("[data-sleeveless-pattern-gate]");
   if (!(root instanceof HTMLElement)) return;
-  void initSleevelessPatternMemberGate(root);
+  void initPatternMembershipPageGate(root);
 }
 
 if (typeof document !== "undefined") {
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", bootSleevelessPatternLoginGate);
+    document.addEventListener("DOMContentLoaded", bootPatternMembershipPageGate);
   } else {
-    bootSleevelessPatternLoginGate();
+    bootPatternMembershipPageGate();
   }
 }

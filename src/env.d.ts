@@ -102,12 +102,12 @@ declare global {
     /** Opens the clean public signup modal (custom signup form, not the prebuilt MS modal). */
     kbmOpenPublicSignupModal?: () => void;
     /**
-     * Hat/Blanket builder account gate: resolves true when the visitor has an account (may
-     * generate a pattern), otherwise opens the signup-first prompt and resolves false.
-     * Installed by the PatternBuilderAccountGate modal component.
+     * Hat/Blanket builder membership gate: resolves true when the visitor has active
+     * Knit it Now membership (may generate a pattern), otherwise opens the membership
+     * prompt and resolves false. Installed by the PatternBuilderAccountGate modal.
      */
     kbmEnsurePatternBuilderAccountGate?: () => Promise<boolean>;
-    /** Opens the Hat/Blanket signup-first account gate prompt. */
+    /** Opens the Hat/Blanket membership gate prompt. */
     kbmOpenPatternBuilderAccountPrompt?: () => void;
     /** Two-step password reset modal (see AccountPasswordResetModal.astro). */
     kbmOpenAccountPasswordResetModal?: (prefillEmail?: string) => void;

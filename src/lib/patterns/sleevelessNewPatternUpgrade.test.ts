@@ -53,45 +53,41 @@ describe("shouldBypassSleevelessNewPatternUpgradeScreen", () => {
     expect(shouldBypassSleevelessNewPatternUpgradeScreen(access, "sleeveless")).toBe(true);
   });
 
-  it("bypasses for Sleeveless lifetime owners without membership", () => {
-    const access = testAccess({
+  it("does not bypass lifetime-only owners without membership", () => {
+    const sleevelessLifetime = testAccess({
       loggedIn: true,
-      hasSystemAccess: true,
+      hasSystemAccess: false,
       activePlanIds: [PATTERN_BUILDER_LIFETIME_PURCHASES.sleeveless.memberstackPlanId],
       freeClaimed: true,
     });
-    expect(shouldBypassSleevelessNewPatternUpgradeScreen(access, "sleeveless")).toBe(true);
-  });
-
-  it("does not bypass Drop Shoulder lifetime owners for Sleeveless", () => {
-    const access = testAccess({
+    const dropLifetime = testAccess({
       loggedIn: true,
-      hasSystemAccess: true,
+      hasSystemAccess: false,
       activePlanIds: [PATTERN_BUILDER_LIFETIME_PURCHASES.dropShoulder.memberstackPlanId],
       freeClaimed: true,
       claimedSystem: "sleeveless",
     });
-    expect(shouldBypassSleevelessNewPatternUpgradeScreen(access, "sleeveless")).toBe(false);
+    expect(shouldBypassSleevelessNewPatternUpgradeScreen(sleevelessLifetime, "sleeveless")).toBe(
+      false,
+    );
+    expect(shouldBypassSleevelessNewPatternUpgradeScreen(dropLifetime, "sleeveless")).toBe(false);
   });
 
-  it("allows logged-in no-plan users with unused free claim through existing free path", () => {
-    const access = testAccess({
+  it("does not bypass logged-in users without entitlement (membership required)", () => {
+    const unclaimed = testAccess({
       loggedIn: true,
       hasSystemAccess: false,
       activePlanIds: [],
       freeClaimed: false,
     });
-    expect(shouldBypassSleevelessNewPatternUpgradeScreen(access, "sleeveless")).toBe(true);
-  });
-
-  it("does not bypass logged-in no-plan users who already used their free Sleeveless pattern", () => {
-    const access = testAccess({
+    const claimed = testAccess({
       loggedIn: true,
       hasSystemAccess: false,
       activePlanIds: [],
       freeClaimed: true,
     });
-    expect(shouldBypassSleevelessNewPatternUpgradeScreen(access, "sleeveless")).toBe(false);
+    expect(shouldBypassSleevelessNewPatternUpgradeScreen(unclaimed, "sleeveless")).toBe(false);
+    expect(shouldBypassSleevelessNewPatternUpgradeScreen(claimed, "sleeveless")).toBe(false);
   });
 
   it("still resolves normally when membership and lifetime ownership coexist", () => {
@@ -110,28 +106,25 @@ describe("shouldBypassSleevelessNewPatternUpgradeScreen", () => {
 });
 
 describe("resolveSleevelessNewPatternUpgradeUiMode", () => {
-  it("shows membership and lifetime options for a claimed free Sleeveless user", () => {
-    const access = testAccess({
+  it("shows membership-only options for non-members (lifetime is not an access path)", () => {
+    const sleevelessClaimed = testAccess({
       loggedIn: true,
       hasSystemAccess: false,
       activePlanIds: [],
       freeClaimed: true,
     });
-    expect(resolveSleevelessNewPatternUpgradeUiMode(access, "sleeveless")).toBe(
-      "membership-and-lifetime",
-    );
-  });
-
-  it("shows membership and lifetime options for a claimed free Drop Shoulder user", () => {
-    const access = testAccess({
+    const dropClaimed = testAccess({
       loggedIn: true,
       hasSystemAccess: false,
       activePlanIds: [],
       freeClaimed: true,
       claimedSystem: "drop-shoulder",
     });
-    expect(resolveSleevelessNewPatternUpgradeUiMode(access, "drop-shoulder")).toBe(
-      "membership-and-lifetime",
+    expect(resolveSleevelessNewPatternUpgradeUiMode(sleevelessClaimed, "sleeveless")).toBe(
+      "membership-only",
+    );
+    expect(resolveSleevelessNewPatternUpgradeUiMode(dropClaimed, "drop-shoulder")).toBe(
+      "membership-only",
     );
   });
 });

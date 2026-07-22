@@ -201,7 +201,7 @@ function differenceClass(tone: StoreFulfillmentDisplay["shippingDifference"]["to
                           </button>
                         </>
                       ) : (
-                        "—"
+                        "-"
                       )}
                     </dd>
                   </div>
@@ -215,14 +215,14 @@ function differenceClass(tone: StoreFulfillmentDisplay["shippingDifference"]["to
                   </div>
                   <div>
                     <dt>Customer shipping charge</dt>
-                    <dd>{fulfillment.customerShippingCharge ?? "—"}</dd>
+                    <dd>{fulfillment.customerShippingCharge ?? "-"}</dd>
                   </div>
                   <div>
                     <dt>Difference</dt>
                     <dd class:list={[differenceClass(fulfillment.shippingDifference.tone)]}>
                       {fulfillment.shippingDifference.formattedAmount
                         ? `${fulfillment.shippingDifference.formattedAmount} (${fulfillment.shippingDifference.label})`
-                        : "—"}
+                        : "-"}
                     </dd>
                   </div>
                   {fulfillment.supplierInvoiceNumber ? (
