@@ -133,22 +133,39 @@ const forceMemberView =
           />
         </div>
       </section>
-      <div class="video-category video-control-group">
-        <div class="category-bar" id="categoryBar">
-          <label for="category-select" class="sr-only">Category</label>
-          <select id="category-select" class="sr-only" aria-label="Video category"></select>
-          <button
-            id="categoryTrigger"
-            class="category-trigger"
-            type="button"
-            aria-haspopup="listbox"
-            aria-expanded="false"
-            aria-controls="categoryMenu"
-          >
-            <span id="categoryLabel" class="category-label">All Videos</span>
-            <span class="category-chevron" aria-hidden="true">▾</span>
+
+      <div class="video-filter-controls">
+        <div class="video-primary-filters" role="group" aria-label="Video filters">
+          <button type="button" class="video-filter-btn" data-filter="" aria-pressed="false">
+            All Videos
           </button>
-          <div id="categoryMenu" class="category-menu" role="listbox" aria-label="Video categories" hidden></div>
+          <button type="button" class="video-filter-btn" data-filter="__free__" aria-pressed="false">
+            Free Videos
+          </button>
+          <button type="button" class="video-filter-btn" data-filter="__favorites__" aria-pressed="false">
+            My Favorites
+          </button>
+        </div>
+
+        <div class="video-category video-control-group">
+          <span class="video-category__title" id="categoryBrowseTitle">Category</span>
+          <div class="category-bar" id="categoryBar">
+            <label for="category-select" class="sr-only">Category</label>
+            <select id="category-select" class="sr-only" aria-label="Category"></select>
+            <button
+              id="categoryTrigger"
+              class="category-trigger"
+              type="button"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              aria-controls="categoryMenu"
+              aria-labelledby="categoryBrowseTitle categoryLabel"
+            >
+              <span id="categoryLabel" class="category-label">All Categories</span>
+              <span class="category-chevron" aria-hidden="true">▾</span>
+            </button>
+            <div id="categoryMenu" class="category-menu" role="listbox" aria-label="Video categories" hidden></div>
+          </div>
         </div>
       </div>
     </div>
@@ -173,6 +190,7 @@ const forceMemberView =
       hasMemberAccess,
       logMemberAccessDebug,
     } from "../../lib/memberAccess";
+    import { sortWithFreeContentFirst } from "../../lib/catalogFreeContentFirst";
     import { openMemberstackLoginModal } from "../../lib/memberstackLogin";
     import { getMemberstackReturnPath } from "../../lib/memberstackReturnUrl";
     import { favoriteStarButtonHtml, filterVideosByFavoriteIds } from "../../lib/favorites/favoriteStarUi";
@@ -211,12 +229,16 @@ const forceMemberView =
     const requestedIsFavorites =
       requested && (requested.toLowerCase() === "favorites" || requested === FAVORITES_FILTER_VALUE);
     // Favorites filter requires login; apply only after auth resolves when requested via URL.
+    // URL ?cat= wins; otherwise active members keep All Videos (""), no-access default to Free after auth.
     const defaultCategory = requestedIsFree
       ? FREE_FILTER_VALUE
       : matchedCategory
         ? matchedCategory
         : "";
     const pendingFavoritesFilter = Boolean(requestedIsFavorites);
+    const hasExplicitCategoryRequest = Boolean(
+      requestedIsFree || matchedCategory || pendingFavoritesFilter,
+    );
     const initialQ = urlParams.get("q") || "";
     const initialSort = urlParams.get("sort") || "";
 
@@ -224,6 +246,8 @@ const forceMemberView =
     let currentCategory = defaultCategory;
     let currentSort = initialSort;
     let searchTimer;
+    /** True once the visitor changes the category after load (do not re-apply auth default). */
+    let categoryTouchedByUser = false;
     /** @type {Set<string>} */
     let favoriteIds = new Set();
 
@@ -333,6 +357,7 @@ const forceMemberView =
     }
 
     function setCat(cat) {
+      categoryTouchedByUser = true;
       currentCategory = cat || "";
       currentSearch = "";
       if (searchInput instanceof HTMLInputElement) {
@@ -377,7 +402,14 @@ const forceMemberView =
         );
       }
 
-      filtered.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+      // Non-members: free/open videos first; members keep alphabetical order only.
+      const preferFreeFirst =
+        ACCESS_STATE === "logged_out" || ACCESS_STATE === "no_access";
+      filtered = sortWithFreeContentFirst(filtered, {
+        isFree: isVideoFree,
+        preferFreeFirst,
+        compare: (a, b) => (a.title || "").localeCompare(b.title || ""),
+      });
 
       updateResultsSummary(filtered.length);
 
@@ -485,14 +517,22 @@ const forceMemberView =
       }
     }
 
-    /* ---------- Custom dropdown UI (build and sync before first render so URL category wins) ---------- */
+    /* ---------- Filter buttons + category dropdown (sync before first render so URL category wins) ---------- */
     const trigger = document.getElementById("categoryTrigger");
     const label = document.getElementById("categoryLabel");
     const menu = document.getElementById("categoryMenu");
+    const categoryBar = document.getElementById("categoryBar");
+    const primaryFilterBtns = Array.from(
+      document.querySelectorAll(".video-primary-filters .video-filter-btn"),
+    );
+
+    function isCatalogCategory(val) {
+      return Boolean(val) && val !== FREE_FILTER_VALUE && val !== FAVORITES_FILTER_VALUE;
+    }
 
     function setLabelFromValue(val) {
       if (!label) return;
-      label.textContent = categoryLabel(val || "");
+      label.textContent = isCatalogCategory(val) ? val : "All Categories";
     }
 
     function openMenu() {
@@ -519,31 +559,6 @@ const forceMemberView =
       if (!menu) return;
       menu.innerHTML = "";
 
-      // Add "All Videos"
-      const allBtn = document.createElement("button");
-      allBtn.type = "button";
-      allBtn.className = "category-option kbm-dropdown-item";
-      allBtn.setAttribute("role", "option");
-      allBtn.setAttribute("data-value", "");
-      allBtn.textContent = "All Videos";
-      menu.appendChild(allBtn);
-
-      const freeBtn = document.createElement("button");
-      freeBtn.type = "button";
-      freeBtn.className = "category-option kbm-dropdown-item";
-      freeBtn.setAttribute("role", "option");
-      freeBtn.setAttribute("data-value", FREE_FILTER_VALUE);
-      freeBtn.textContent = "Free Videos";
-      menu.appendChild(freeBtn);
-
-      const favoritesBtn = document.createElement("button");
-      favoritesBtn.type = "button";
-      favoritesBtn.className = "category-option kbm-dropdown-item";
-      favoritesBtn.setAttribute("role", "option");
-      favoritesBtn.setAttribute("data-value", FAVORITES_FILTER_VALUE);
-      favoritesBtn.textContent = "My Favorites";
-      menu.appendChild(favoritesBtn);
-
       cats.forEach((c) => {
         const btn = document.createElement("button");
         btn.type = "button";
@@ -556,38 +571,52 @@ const forceMemberView =
     }
 
     function syncSelectedUI(val) {
-      setLabelFromValue(val);
+      const selected = val || "";
+      const categoryActive = isCatalogCategory(selected);
+
+      setLabelFromValue(selected);
+
+      primaryFilterBtns.forEach((btn) => {
+        const filterVal = btn.getAttribute("data-filter") || "";
+        const active = !categoryActive && filterVal === selected;
+        btn.classList.toggle("is-active", active);
+        btn.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+
+      if (categoryBar) {
+        categoryBar.classList.toggle("is-category-active", categoryActive);
+      }
 
       if (menu) {
         Array.from(menu.querySelectorAll(".category-option")).forEach((btn) => {
           const v = btn.getAttribute("data-value") || "";
-          btn.setAttribute("aria-selected", v === (val || "") ? "true" : "false");
+          btn.setAttribute("aria-selected", categoryActive && v === selected ? "true" : "false");
         });
       }
 
-      // Keep the hidden select in sync (fallback)
       if (selectEl) {
-        selectEl.value = val || "";
+        selectEl.value = categoryActive ? selected : "";
       }
     }
 
-    // Build hidden select options + custom menu options
+    function applyFilterSelection(val) {
+      if (val === FAVORITES_FILTER_VALUE && !VIEWER.isLoggedIn) {
+        openMemberstackLoginModal(getMemberstackReturnPath());
+        return;
+      }
+      setCat(val);
+      render(val);
+      syncSelectedUI(val);
+      closeMenu();
+    }
+
+    // Build hidden select options + category-only menu
     if (selectEl) {
       selectEl.innerHTML = "";
-      const optAll = document.createElement("option");
-      optAll.value = "";
-      optAll.textContent = "All Videos";
-      selectEl.appendChild(optAll);
-
-      const optFree = document.createElement("option");
-      optFree.value = FREE_FILTER_VALUE;
-      optFree.textContent = "Free Videos";
-      selectEl.appendChild(optFree);
-
-      const optFavorites = document.createElement("option");
-      optFavorites.value = FAVORITES_FILTER_VALUE;
-      optFavorites.textContent = "My Favorites";
-      selectEl.appendChild(optFavorites);
+      const optBrowse = document.createElement("option");
+      optBrowse.value = "";
+      optBrowse.textContent = "All Categories";
+      selectEl.appendChild(optBrowse);
 
       categories.forEach((c) => {
         const o = document.createElement("option");
@@ -658,37 +687,40 @@ const forceMemberView =
           syncSelectedUI("");
           updateUrl();
         }
+      } else if (
+        !hasExplicitCategoryRequest &&
+        !categoryTouchedByUser &&
+        !VIEWER.hasVideoAccess
+      ) {
+        // No member access (anonymous or logged-in non-member): Free Videos.
+        // Active members (hasMemberAccess) keep All Videos / URL selection.
+        currentCategory = FREE_FILTER_VALUE;
+        syncSelectedUI(currentCategory);
+        updateUrl();
       }
 
       render(currentCategory);
       applyAccessUiState();
     })();
 
+    primaryFilterBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        applyFilterSelection(btn.getAttribute("data-filter") || "");
+      });
+    });
+
     // Toggle open/close
     if (trigger) {
       trigger.addEventListener("click", () => toggleMenu());
     }
 
-    // Click option to select
+    // Category option select
     if (menu) {
       menu.addEventListener("click", (e) => {
         const btn = e.target && e.target.closest ? e.target.closest(".category-option") : null;
         if (!btn) return;
-        const val = btn.getAttribute("data-value") || "";
-
-        if (val === FAVORITES_FILTER_VALUE && !VIEWER.isLoggedIn) {
-          openMemberstackLoginModal(getMemberstackReturnPath());
-          closeMenu();
-          return;
-        }
-
-        setCat(val);
-        render(val);
-        syncSelectedUI(val);
-        closeMenu();
-
-        const bar = document.getElementById("categoryBar");
-        if (bar) bar.scrollIntoView({ behavior: "smooth", block: "start" });
+        applyFilterSelection(btn.getAttribute("data-value") || "");
+        if (categoryBar) categoryBar.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     }
 
@@ -740,6 +772,7 @@ const forceMemberView =
         if (clearFilters) {
           e.preventDefault();
           clearTimeout(searchTimer);
+          categoryTouchedByUser = true;
           currentSearch = "";
           currentCategory = "";
           currentSort = "";
@@ -755,6 +788,7 @@ const forceMemberView =
         currentSearch = "";
         if (searchInput instanceof HTMLInputElement) searchInput.value = "";
         if (currentCategory === FAVORITES_FILTER_VALUE) {
+          categoryTouchedByUser = true;
           currentCategory = "";
           syncSelectedUI("");
         }
@@ -987,15 +1021,70 @@ const forceMemberView =
       padding: 0;
     }
 
+    .video-filter-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: flex-end;
+      gap: 12px;
+      flex: 1 1 420px;
+      min-width: min(100%, 280px);
+    }
+
+    .video-primary-filters {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .video-filter-btn {
+      appearance: none;
+      border: 2px solid var(--kbm-green, #52682d);
+      background: #fff;
+      color: var(--kbm-green, #52682d);
+      border-radius: 999px;
+      min-height: 42px;
+      padding: 8px 14px;
+      font: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      line-height: 1.2;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .video-filter-btn:hover,
+    .video-filter-btn:focus-visible {
+      background: rgba(82, 104, 45, 0.08);
+      outline: none;
+    }
+
+    .video-filter-btn.is-active {
+      background: var(--kbm-green, #52682d);
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.18), 0 3px 10px rgba(82, 104, 45, 0.28);
+    }
+
     .video-category {
       display: flex;
+      flex-direction: column;
       align-items: stretch;
-      align-self: flex-end;
-      justify-content: flex-start;
-      gap: 0;
+      justify-content: flex-end;
+      gap: 0.5rem;
       flex: 0 1 260px;
       min-width: min(100%, 220px);
       max-width: 320px;
+    }
+
+    .video-category__title {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      line-height: 1.3;
+      color: #1f2937;
     }
 
     .video-toolbar .video-category #categoryBar.category-bar {
@@ -1013,6 +1102,7 @@ const forceMemberView =
       }
 
       .video-filter-search,
+      .video-filter-controls,
       .video-category {
         flex: 1 1 auto;
         min-width: 0;
@@ -1021,13 +1111,25 @@ const forceMemberView =
         align-self: stretch;
       }
 
+      .video-filter-controls {
+        justify-content: flex-start;
+        order: 2;
+      }
+
       .video-filter-search {
         order: 1;
       }
 
+      .video-primary-filters {
+        width: 100%;
+      }
+
+      .video-filter-btn {
+        flex: 1 1 auto;
+      }
+
       .video-category {
-        order: 2;
-        justify-content: flex-start;
+        width: 100%;
       }
 
       .video-filter-search__input {
@@ -1066,6 +1168,8 @@ const forceMemberView =
     .category-label {
       display: block;
       white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .category-chevron {
@@ -1474,21 +1578,8 @@ const forceMemberView =
     #categoryBar.category-bar {
       position: relative; /* NOT sticky now */
       top: auto;
-      z-index: 1;
-      margin: 0;
-
-      background: var(--kbm-green, #52682d);
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-    }
-
-    /* --- Category dropdown: force [hidden] to work --- */
-    #categoryBar #categoryMenu[hidden] {
-      display: none !important;
-    }
-
-    /* --- Sticky bar sizing/shape --- */
-    #categoryBar.category-bar {
       z-index: 50;
+      margin: 0;
 
       display: inline-flex;
       align-items: center;
@@ -1500,6 +1591,20 @@ const forceMemberView =
 
       padding: 0 12px;
       border-radius: 10px;
+      border: 2px solid var(--kbm-green, #52682d);
+      background: #fff;
+      box-shadow: none;
+      transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    #categoryBar.category-bar.is-category-active {
+      background: var(--kbm-green, #52682d);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    }
+
+    /* --- Category dropdown: force [hidden] to work --- */
+    #categoryBar #categoryMenu[hidden] {
+      display: none !important;
     }
 
     /* Button */
@@ -1511,6 +1616,11 @@ const forceMemberView =
 
       font-size: 1.05rem;
       font-weight: 500;
+      color: var(--kbm-green, #52682d);
+    }
+
+    #categoryBar.category-bar.is-category-active .category-trigger {
+      color: #fff;
     }
 
     .category-chevron {
@@ -1526,6 +1636,7 @@ const forceMemberView =
       #categoryBar.category-bar {
         width: 100%;
         display: flex;
+        min-width: 0;
       }
     }
   </style>

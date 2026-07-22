@@ -1,8 +1,19 @@
 /**
  * Show/hide course catalog card locks from Memberstack + course access rules.
  * Markup uses the shared `.kbm-lock-overlay` pattern (see videos catalog / global.css).
+ *
+ * Also applies free-first catalog ordering for visitors without member access:
+ * sections that contain free courses rise above member-only sections, and free
+ * cards rise within each section. Active members restore stamped catalog order.
  */
-import { canAccessCourse, normalizeCourseAccessLevel } from "../lib/courseAccess";
+import {
+  canAccessCourse,
+  normalizeCourseAccessLevel,
+} from "../lib/courseAccess";
+import {
+  applyCourseCatalogDomOrder,
+  preferCourseCatalogFreeFirst,
+} from "../lib/coursesCatalogFreeFirst";
 import { logMemberAccessDebug } from "../lib/memberAccess";
 import { videoDevBypass } from "../lib/devBypass";
 
@@ -19,29 +30,47 @@ async function waitForMemberstackReady({ attempts = 30, delayMs = 200 } = {}) {
   return null;
 }
 
-function applyLocks(memberOrPayload: unknown): void {
-  const forceUnlock =
-    videoDevBypass || new URLSearchParams(window.location.search).get("mode") === "full";
-
-  document.querySelectorAll<HTMLElement>("[data-course-catalog-card]").forEach((card) => {
-    const access = normalizeCourseAccessLevel(card.dataset.courseAccess);
-    const lock = card.querySelector<HTMLElement>("[data-course-catalog-lock]");
-    if (!lock) return;
-
-    // Free courses never render a lock; keep this defensive.
-    if (access === "free") {
-      setLockVisible(lock, false);
-      return;
-    }
-
-    const courseSlug = card.dataset.courseSlug ?? null;
-    const unlocked =
-      forceUnlock || canAccessCourse(access, memberOrPayload, { courseSlug });
-    setLockVisible(lock, !unlocked);
-  });
+function isForceUnlock(): boolean {
+  return (
+    videoDevBypass ||
+    new URLSearchParams(window.location.search).get("mode") === "full"
+  );
 }
 
-/** Prefer style over [hidden]  `.kbm-lock-overlay { display:flex }` can override [hidden]. */
+function applyCatalogOrder(memberOrPayload: unknown): void {
+  // Missing/delayed Memberstack => non-member ordering (never assume member).
+  const preferFreeFirst = preferCourseCatalogFreeFirst(memberOrPayload);
+  applyCourseCatalogDomOrder(document, preferFreeFirst);
+}
+
+function applyLocks(memberOrPayload: unknown): void {
+  const forceUnlock = isForceUnlock();
+
+  document
+    .querySelectorAll<HTMLElement>("[data-course-catalog-card]")
+    .forEach((card) => {
+      const access = normalizeCourseAccessLevel(card.dataset.courseAccess);
+      const lock = card.querySelector<HTMLElement>(
+        "[data-course-catalog-lock]",
+      );
+      if (!lock) return;
+
+      // Free courses never render a lock; keep this defensive.
+      if (access === "free") {
+        setLockVisible(lock, false);
+        return;
+      }
+
+      const courseSlug = card.dataset.courseSlug ?? null;
+      const unlocked =
+        forceUnlock || canAccessCourse(access, memberOrPayload, { courseSlug });
+      setLockVisible(lock, !unlocked);
+    });
+
+  applyCatalogOrder(memberOrPayload);
+}
+
+/** Prefer style over [hidden]: `.kbm-lock-overlay { display:flex }` can override [hidden]. */
 function setLockVisible(lock: HTMLElement, visible: boolean): void {
   lock.hidden = !visible;
   lock.style.display = visible ? "" : "none";
@@ -49,11 +78,13 @@ function setLockVisible(lock: HTMLElement, visible: boolean): void {
 }
 
 async function resolveLocks(): Promise<void> {
-  // Default SSR state: locks visible on gated cards (guest / unknown).
+  // Default immediately to non-member ordering + guest locks (SSR is also free-first).
   applyLocks(null);
 
   const res = await waitForMemberstackReady();
-  logMemberAccessDebug("courses.catalogLocks", res, {});
+  logMemberAccessDebug("courses.catalogLocks", res, {
+    preferFreeFirst: preferCourseCatalogFreeFirst(res),
+  });
   applyLocks(res);
 }
 

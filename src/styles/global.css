@@ -811,7 +811,7 @@ p {
   border-color: var(--kbm-green, #52682d);
 }
 
-/* --- Videos catalog: category dropdown under “All Videos” (#categoryBar) --- */
+/* --- Videos catalog: Browse by Category dropdown (#categoryBar) --- */
 #categoryBar .category-menu {
   position: absolute;
   left: 0;

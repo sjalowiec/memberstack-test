@@ -1188,7 +1188,8 @@
     "description": "Consider using a hand knitting pattern for your next machine knitting project. All it takes is little planning, familiarity with the capabilities of your machine and a bit of creativity. This tutorial 'translates' some of the more common hand knitting instructions to familiar terms for machine knitters. Included: m1 k2tog k3tog yo skp,psso provisional cast on Center double decrease left/right leaning decreases pm and more",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/1019175928-a643dcd91b6aa5b3f02f2e2a9d41f09d5c4e5a5f49562c2e95a1d53d63f65a01-d_1280x720?r=pad",
-    "vimeo_id": 151858518
+    "vimeo_id": 151858518,
+    "category": "Knitwear Design"
   },
   {
     "content_id": 530,
@@ -1197,7 +1198,8 @@
     "description": "Using hand knitting patterns for your machine knitting is easier than you may think! All it takes is little planning, familiarity with the capabilities of your machine and just a little bit of math. When considering using a hand knit pattern ask yourself: Can it be done? Is it practical? Are you willing? This tutorial helps you examine the pattern and walks you through the basic math needed to translate the instructions to machine knitting.",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/1270049673-6ae64a8675053d2b51d2897aabbebf71bc9b3e500fe6419eb_1280x720?r=pad",
-    "vimeo_id": 151858524
+    "vimeo_id": 151858524,
+    "category": "Knitwear Design"
   },
   {
     "content_id": 533,
@@ -1649,7 +1651,7 @@
     "slug": "bind-off-basics",
     "title": "Bind off Basics",
     "description": "Most knitting patterns tell you to bind off stitches at the end of a piece. Beginners will sit with a question mark over their heads? Which bind off method should they use? OOPs 'Round the Gatepeg 1 'Round the Gatepeg 2 Stitch thru Stitch Gather technique",
-        "access_level": "public",
+    "access_level": "public",
     "posterUrl": "https://i.vimeocdn.com/video/1019567305-d301d46e52ab78e5a9c8bfa007343f6e6d1ce7a407719a2f037a8d0aaab83f02-d_1280x720?r=pad",
     "category": "Basics",
     "subcategory": "Bind Off",
@@ -2167,7 +2169,8 @@
     "description": "Why struggle with complicated math? Let the Knit it Now Bust Dart Tool calculate the short-row shaping for darts. Adding bust darts will improve the fit of your sweaters. Let us do the math for you! This tool is FREE for Knit it Now subscribers and is included in our dynamic patterns that offer optional bust dart shaping. Knit it Now Bust Dart Tool",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/1023925617-b63dab6ef3701d93d6a904fdc9179380aede84e5baad4bc4e4bbb233d8e3faa3-d_1280x720?r=pad",
-    "vimeo_id": 151859480
+    "vimeo_id": 151859480,
+    "category": "Shaping"
   },
   {
     "content_id": 643,
@@ -2319,7 +2322,8 @@
     "description": "In hand knitting there are times when you are instructed to knit through the back loop. You may be working a decorative stitch, or the designer may want the stitch to be twisted and lean to the left for a decorative effect. This technique can be easily re-produced on the knitting machine.",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/551703596-ed8decc1c7919807ea4f2f0f33971f9f7150cac444df0ed85cfc0636c4e40036-d_1280x720?r=pad",
-    "vimeo_id": 151859570
+    "vimeo_id": 151859570,
+    "category": "Stitch patterns"
   },
   {
     "content_id": 657,
@@ -2328,7 +2332,8 @@
     "description": "Calculate knitted circles for your machine. Use ANY yarn, ANY machine, ANY gauge, ANY size! 6 or 8 wedges hats blankets pillows shawls ... you name it!",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/1890367807-769948fb3c5460a539a9782d877a9d5c9e83cdabe8e192b1908de48b1fc74b95-d_1280x720?r=pad",
-    "vimeo_id": 151859576
+    "vimeo_id": 151859576,
+    "category": "Circles"
   },
   {
     "content_id": 658,
@@ -2370,7 +2375,8 @@
     "description": "You've found a pattern that you love. Maybe the yarn is obsolete or it's not in your budget, or you want to use something from your stash. Here's a simple conversion tool that can help. Here's a link to the tool.",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/551703477-6a11c4c18d75a5ed2b0c43899db3c36e33732232e59c2261caac63bf120a401a-d_1280x720?r=pad",
-    "vimeo_id": 151859608
+    "vimeo_id": 151859608,
+    "category": "Swatching and Gauge"
   },
   {
     "content_id": 662,
@@ -2654,7 +2660,8 @@
     "description": "Create your own scarves, shawls, pillows, and blankets. Use any yarn, any machine and any stitch gauge. Let us do the math for you and generate your own custom knitting patterns based on YOUR gauge.",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/551703611-71e82a5b177ac74694cbeeb2d1aaf9242bae3d1210190542c5a63007fe18e7c9-d_1280x720?r=pad",
-    "vimeo_id": 151859796
+    "vimeo_id": 151859796,
+    "category": "Knitwear Design"
   },
   {
     "content_id": 697,
@@ -3478,7 +3485,8 @@
     "description": "Easily shape your knitting with the Magic Formula and no math! Often used to shorten or lengthen sleeves or add waist shaping, this tool is invaluable when you have a schematic that indicates the dimensions of the piece you want to alter.",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/609189270-67d8d1fad31f0a506eefd6f5b57fb7dd0672338f65eb5348bc8e953b144f1232-d_1280x720?r=pad",
-    "vimeo_id": 196648775
+    "vimeo_id": 196648775,
+    "category": "Knitwear Design"
   },
   {
     "content_id": 758,
@@ -3487,7 +3495,8 @@
     "description": "Easily shape your knitting with the Magic Formula and no math! Often used to shorten or lengthen sleeves or add waist shaping, this tool is invaluable and easy to use. Enter in the stitch and row values from your pattern and adjust as needed. The tool will generate custom shaping instructions for you.",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/609198584-7db28a96423a1545af52298b5ae23c45bb3b933ce42978d81131a69a55690c89-d_1280x720?r=pad",
-    "vimeo_id": 196656033
+    "vimeo_id": 196656033,
+    "category": "Knitwear Design"
   },
   {
     "content_id": 759,
@@ -3551,7 +3560,8 @@
     "description": "Shaping and finishing necklines can be one of the more challenging things in machine knitting. Use the Knit it Now Neckline tool to help you create your bands to perfection!",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/1024321851-31d76d0c765545475551f953ccf5360be804f2f3b51197f7849bd1bb1a440548-d_1280x720?r=pad",
-    "vimeo_id": 211136246
+    "vimeo_id": 211136246,
+    "category": "Bands"
   },
   {
     "content_id": 766,
@@ -3736,7 +3746,8 @@
     "description": "Cut your ravel cord? Heaven forbid! Let's talk about alternative ravel cord materials and uses for a machine knitters best friend ... ravel cord.",
     "access_level": "public",
     "posterUrl": "https://i.vimeocdn.com/video/655773004-90225aa0747d76f2aa3a4ad83fd2d529968378630df2458868b0d9d9063c8e38-d_1280x720?r=pad",
-    "vimeo_id": 234233904
+    "vimeo_id": 234233904,
+    "category": "Basics"
   },
   {
     "content_id": 786,
@@ -3783,15 +3794,6 @@
     "vimeo_id": 237470165
   },
   {
-    "content_id": 792,
-    "slug": "wheres-my-pattern",
-    "title": "Where's my Pattern?",
-    "description": "Waiting for the delivery of a pattern in your email? With our Dynamic Patterns, you build a custom pattern based on YOUR gauge. The patterns live in your personal library on the Knit it Now website.",
-    "access_level": "draft",
-    "posterUrl": "https://i.vimeocdn.com/video/660319415-7ec8099fb31ace37bc804617ae47d281dca7bfb7edf12911bd7ead9a110a2fe7-d_1280x720?r=pad",
-    "vimeo_id": 237802674
-  },
-  {
     "content_id": 793,
     "slug": "ready-set-knit",
     "title": "Ready, Set, KNIT!",
@@ -3809,7 +3811,8 @@
     "description": "It's inevitable, making mistakes and ripping. Ever have trouble keeping track of how many rows you knit? Try this tip.",
     "access_level": "public",
     "posterUrl": "https://i.vimeocdn.com/video/661851722-09b9699cf6c198a1463a7749b3af5dd90a6d5d0b41207473788a2f1207434580-d_1280x720?r=pad",
-    "vimeo_id": 238999772
+    "vimeo_id": 238999772,
+    "category": "Basics"
   },
   {
     "content_id": 795,
@@ -3818,7 +3821,8 @@
     "description": "The purpose of the yarn mast is to provide steady, even tension on your working yarn. Sometimes things can go wrong ...",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/662079186-09d71eb3e5333ff14af343113918771a5560ab2c5e113557507d7eb82c65eb3c-d_1280x720?r=pad",
-    "vimeo_id": 239179511
+    "vimeo_id": 239179511,
+    "category": "Troubleshooting"
   },
   {
     "content_id": 796,
@@ -3860,7 +3864,8 @@
     "description": "More and more machine knitters are using hand knitting yarn that is put up in balls, skeins and hanks. What happens when your favorite is discontinued? Here are 2 ways to use the yarn information from the ball band to compare yarns and find a replacement.",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/668727682-dd62a0a3f4d81fac9ec46364f3df93762b780018c0d20c12b8bdce90ee7c56d9-d_1280x720?r=pad",
-    "vimeo_id": 244347021
+    "vimeo_id": 244347021,
+    "category": "Basics"
   },
   {
     "content_id": 804,
@@ -3869,7 +3874,8 @@
     "description": "Have you ever knit a garment that ended up too long? Do you measure your swatches flat? Watch as we play with gravity.",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/669709250-a566ff7612859d113d69715da98688b87bd67529edfc92778ae5ab79a165d2a0-d_1280x720?r=pad",
-    "vimeo_id": 245117927
+    "vimeo_id": 245117927,
+    "category": "Swatching and Gauge"
   },
   {
     "content_id": 805,
@@ -3900,7 +3906,8 @@
     "description": "Why does the sleeve cap have less rows than the armhole opening? Tips for understanding set in sleeve construction.",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/675079396-ac0c041967981db2748d7e198bf6502c174f297d54d0a44a640349165030f51f-d_1280x720?r=pad",
-    "vimeo_id": 249302960
+    "vimeo_id": 249302960,
+    "category": "Knitwear Design"
   },
   {
     "content_id": 808,
@@ -4214,7 +4221,8 @@
     "description": "These handy knitting machine accessories have been called a number of names and come in different forms. Knit Leader, Knit radar ... the concept is the same. Instead of using someone else's pattern, gauge and size differences, draw what you want to knit based on your measurements. If you've never used or seen a charting device, here are the basics to get you started.",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/692748179-2b7f378a95a5b62ca373f42c48d7afe1b038e8949b9bd6d319572774b112b4b8-d_1280x720?r=pad",
-    "vimeo_id": 263260805
+    "vimeo_id": 263260805,
+    "category": "Knitwear Design"
   },
   {
     "content_id": 840,
@@ -4323,7 +4331,8 @@
     "description": "One thing that will guarantee success with your knitting. READ!",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/698994652-c7ee43f9d089402a7fbb5fb25c76bd74c4a8e08082849a47294b9e2a0f9477da-d_1280x720?r=pad",
-    "vimeo_id": 268297056
+    "vimeo_id": 268297056,
+    "category": "Basics"
   },
   {
     "content_id": 2120,
@@ -5058,7 +5067,8 @@
     "description": "Use crochet to crate button loops. As you work crochet along the edge, work chain loops at the same time",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/786924164-7575bc3c28d070a4f12f19d0fbebfbd7ea9363f90f310f0f599544821223f25c-d_1280x720?r=pad",
-    "vimeo_id": 339011754
+    "vimeo_id": 339011754,
+    "category": "Buttonholes"
   },
   {
     "content_id": 924,
@@ -5309,7 +5319,8 @@
     "description": "Calculating how many stitches to pick up for a cardigan band can be a challenge. Use the Knit it Now Band Pickup Tool for beautiful bands.",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/795899429-3257f6fa737aa58d0382d40c680e25ec6eea1dea3271cff16ff5abc28ca8619f-d_1280x720?r=pad",
-    "vimeo_id": 345981696
+    "vimeo_id": 345981696,
+    "category": "Bands"
   },
   {
     "content_id": 2098,
@@ -5340,7 +5351,8 @@
     "description": "Use to calculate shoulder shaping. Enter your gauge, width and depth (height) and Knit In Now will produce your line by line instructions for your slopes.",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/796465618-302f48395d772f902737deb084daf2e7016b8b0179f200a823a8dd2a44125d08-d_1280x720?r=pad",
-    "vimeo_id": 346419104
+    "vimeo_id": 346419104,
+    "category": "Shaping"
   },
   {
     "content_id": 2138,
@@ -5591,7 +5603,8 @@
     "description": "Follow your pattern on your tablet for easier knitting.",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/832315428-f7b5f23c42980dbe87479e67e3edcb0fc038b31e3ea4d95b24e33b50aef75f98-d_1280x720?r=pad",
-    "vimeo_id": 374009611
+    "vimeo_id": 374009611,
+    "category": "Basics"
   },
   {
     "content_id": 962,
@@ -5688,7 +5701,8 @@
     "description": "Expand your horizons by using skinny yarn on any machine. Although demonstrated on an LK-150, the ideas in this experiment apply to all machines. The video refers to \"get-acquainted\" swatches. Watch the video here",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/856437175-74dd412109140d4d371959e78a782440e193b58389e51f683b8e67d9ca53e7dd-d_1280x720?r=pad",
-    "vimeo_id": 391660712
+    "vimeo_id": 391660712,
+    "category": "Swatching and Gauge"
   },
   {
     "content_id": 972,
@@ -6182,7 +6196,8 @@
     "description": "Using the Knit it Now Cut 'n Sew Templates for beautiful neckines every time.",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/1112471031-5e7fc4086971bcabeb2313a973120346145dc122ef12ee43e470b9a0fedbba66-d_1280x720?r=pad",
-    "vimeo_id": 537425558
+    "vimeo_id": 537425558,
+    "category": "Cut N Sew"
   },
   {
     "content_id": 2035,
@@ -6257,7 +6272,8 @@
     "description": "Replace a needle and spongebar to keep your machine in tip-top condition. Purchase replacement needles from Knit it Now",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/1177915461-abdd8317aec525c9328b4fea4d29ca713655053c9907cf5f0be2c19b615a8212-d_1280x720?r=pad",
-    "vimeo_id": 569614718
+    "vimeo_id": 569614718,
+    "category": "Machine Maintenance"
   },
   {
     "content_id": 2040,
@@ -6793,7 +6809,8 @@
     "description": "Add sleeves to a sleeveless sweater pattern and make it your own. Use the Knit it Now Custom Sleeves tool and let us do the math.",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/1611669281-b52eb6887634bc30dbdd0a997a6e4b8bc05a1b859782dfbb65d61944aec895da-d_1280x720?r=pad",
-    "vimeo_id": 799143778
+    "vimeo_id": 799143778,
+    "category": "Knitwear Design"
   },
   {
     "content_id": 2164,
@@ -6889,7 +6906,8 @@
     "description": "Put that machine to work, use up that stash and give back. Disover the joy in knitting for those in need.",
     "access_level": "member",
     "posterUrl": "https://i.vimeocdn.com/video/1679902716-e5fbb45612c12504adec01478b79ef7263e6fa99f3f1b73adfa40a7b6c3b3053-d_1280x720?r=pad",
-    "vimeo_id": 833480988
+    "vimeo_id": 833480988,
+    "category": "Start to Finish"
   },
   {
     "content_id": 2116,

@@ -1,8 +1,17 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCourseCatalogEntriesByCategory } from "../../lib/coursesCatalog";
+import {
+  sortCourseCatalogSectionsForViewer,
+  withCourseCatalogOrders,
+} from "../../lib/coursesCatalogFreeFirst";
 
-const categorySections = getCourseCatalogEntriesByCategory();
+// Anonymous-first SSR: free courses/sections first. Active members are restored
+// to catalog order client-side after Memberstack resolves.
+const categorySections = sortCourseCatalogSectionsForViewer(
+  withCourseCatalogOrders(getCourseCatalogEntriesByCategory()),
+  true,
+);
 const availableCount = categorySections
   .flatMap((section) => section.courses)
   .filter((course) => course.status === "available").length;
@@ -37,9 +46,10 @@ function courseLockAriaLabel(access: "free" | "member" | "purchase"): string {
     </header>
 
     {
-      categorySections.map(({ category, courses }) => (
+      categorySections.map(({ category, catalogSectionOrder, courses }) => (
         <section
           class="courses-catalog"
+          data-catalog-section-order={catalogSectionOrder}
           aria-labelledby={`courses-category-${category.replace(/\s+/g, "-").toLowerCase()}`}
         >
           <h2
@@ -59,6 +69,7 @@ function courseLockAriaLabel(access: "free" | "member" | "purchase"): string {
                   "data-course-catalog-card": "",
                   "data-course-access": course.access,
                   "data-course-slug": course.slug,
+                  "data-catalog-card-order": String(course.catalogCardOrder),
                 };
 
                 const media = (
