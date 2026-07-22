@@ -109,7 +109,7 @@ describe("processSleevelessLifetimePurchaseReturn", () => {
     const access: SleevelessUserAccess = {
       loggedIn: true,
       activePlanIds: [
-        MEMBERSHIPS.premium.memberstackPlanId,
+        MEMBERSHIPS.membership.memberstackPlanId,
         PATTERN_BUILDER_LIFETIME_PURCHASES.sleeveless.memberstackPlanId,
       ],
       hasSystemAccess: true,

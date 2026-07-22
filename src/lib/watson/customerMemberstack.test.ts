@@ -14,12 +14,12 @@ describe("customerMemberstack", () => {
   it("builds plan connection display from Memberstack API fields", () => {
     const display = buildCustomerPlanConnectionDisplay({
       id: "pc_1",
-      planId: "pln_kin-membership-annual-basic-je3s0vpe",
+      planId: "pln_kin-membership-annual-premium-tn5b0cxj",
       planName: "Basic Annual",
       status: "ACTIVE",
       active: true,
       createdAt: "2026-01-15T00:00:00.000Z",
-      payment: { priceId: "prc_basic-monthly-membership-s71690r6w" },
+      payment: { priceId: "prc_monthly-subscription-to-knititnow-webw0nzy" },
     });
 
     expect(display.activeLabel).toBe("Active");

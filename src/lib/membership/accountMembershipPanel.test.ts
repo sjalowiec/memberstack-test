@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { LEGACY_MEMBERSHIPS, MEMBERSHIPS } from "../../config/memberships";
+import {
+  LEGACY_MEMBERSHIPS,
+  MEMBERSHIPS,
+  REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
+} from "../../config/memberships";
 import {
   accountMembershipPanelActions,
   billingIntervalFromActivePaidConnection,
@@ -31,7 +35,7 @@ function memberWithPlans(
   };
 }
 
-/** Same formatter the panel uses — keeps assertions timezone-stable. */
+/** Same formatter the panel uses  keeps assertions timezone-stable. */
 function expectedLocalDateLabel(unixSeconds: number): string {
   return new Intl.DateTimeFormat("en-US", {
     month: "long",
@@ -41,21 +45,16 @@ function expectedLocalDateLabel(unixSeconds: number): string {
 }
 
 describe("accountMembershipPanelActions", () => {
-  it("shows Join Basic and Join Premium for free members", () => {
-    expect(accountMembershipPanelActions("free")).toEqual(["join-basic", "join-premium"]);
+  it("shows Join for free members", () => {
+    expect(accountMembershipPanelActions("free")).toEqual(["join"]);
   });
 
-  it("shows Upgrade and Manage for Basic members", () => {
-    expect(accountMembershipPanelActions("basic")).toEqual(["upgrade", "manage"]);
+  it("shows Manage for members", () => {
+    expect(accountMembershipPanelActions("member")).toEqual(["manage"]);
   });
 
-  it("shows only Manage for Premium members", () => {
-    expect(accountMembershipPanelActions("premium")).toEqual(["manage"]);
-  });
-
-  it("shows only Manage for canceling Basic or Premium", () => {
-    expect(accountMembershipPanelActions("basic", { canceling: true })).toEqual(["manage"]);
-    expect(accountMembershipPanelActions("premium", { canceling: true })).toEqual(["manage"]);
+  it("shows only Manage for canceling members", () => {
+    expect(accountMembershipPanelActions("member", { canceling: true })).toEqual(["manage"]);
   });
 });
 
@@ -86,11 +85,11 @@ describe("resolveAccountMembershipPanelView", () => {
       renewsLabel: null,
       isCanceling: false,
       activeUntilMessage: null,
-      visibleActions: ["join-basic", "join-premium"],
+      visibleActions: ["join"],
     });
   });
 
-  it("treats beta-only as free for this panel (not a paid Basic/Premium plan)", () => {
+  it("treats beta-only as free for this panel (not a paid membership)", () => {
     const member = memberWithPlans([
       { planId: MEMBERSHIPS.beta.memberstackPlanId, status: "ACTIVE" },
     ]);
@@ -98,38 +97,38 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(view.kind).toBe("free");
     expect(view.renewsLabel).toBeNull();
     expect(view.activeUntilMessage).toBeNull();
-    expect(view.visibleActions).toEqual(["join-basic", "join-premium"]);
+    expect(view.visibleActions).toEqual(["join"]);
   });
 
-  it("shows active Basic without billing when price id is unknown", () => {
+  it("shows active member without billing when price id is unknown", () => {
     const member = memberWithPlans([
       {
-        planId: MEMBERSHIPS.basic.memberstackPlanId,
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
         status: "ACTIVE",
       },
     ]);
     expect(resolveAccountMembershipPanelView(member)).toEqual({
-      kind: "basic",
-      planLabel: "Basic",
+      kind: "member",
+      planLabel: "Knit it Now Membership",
       statusLabel: "Active",
       billingInterval: null,
       billingLabel: null,
       renewsLabel: null,
       isCanceling: false,
       activeUntilMessage: null,
-      visibleActions: ["upgrade", "manage"],
+      visibleActions: ["manage"],
     });
   });
 
-  it("shows Active Premium with Renews when cancelAtDate is null", () => {
+  it("shows Active member with Renews when cancelAtDate is null", () => {
     const nextBillingDate = 1786838400;
     const member = memberWithPlans([
       {
-        planId: MEMBERSHIPS.premium.memberstackPlanId,
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
         status: "ACTIVE",
         active: true,
         payment: {
-          priceId: MEMBERSHIPS.premium.prices.monthly.memberstackPriceId,
+          priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
           nextBillingDate,
           cancelAtDate: null,
         },
@@ -137,8 +136,8 @@ describe("resolveAccountMembershipPanelView", () => {
     ]);
     const view = resolveAccountMembershipPanelView(member);
     expect(view).toMatchObject({
-      kind: "premium",
-      planLabel: "Premium",
+      kind: "member",
+      planLabel: "Knit it Now Membership",
       statusLabel: "Active",
       billingInterval: "monthly",
       billingLabel: "Monthly",
@@ -149,15 +148,15 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(view.renewsLabel).toBe(expectedLocalDateLabel(nextBillingDate));
   });
 
-  it("shows Canceling Premium with active-until message and Manage only", () => {
+  it("shows Canceling member with active-until message and Manage only", () => {
     const cancelAtDate = 1787055395;
     const member = memberWithPlans([
       {
-        planId: MEMBERSHIPS.premium.memberstackPlanId,
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
         status: "ACTIVE",
         active: true,
         payment: {
-          priceId: MEMBERSHIPS.premium.prices.monthly.memberstackPriceId,
+          priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
           nextBillingDate: cancelAtDate,
           cancelAtDate,
         },
@@ -166,8 +165,8 @@ describe("resolveAccountMembershipPanelView", () => {
     const view = resolveAccountMembershipPanelView(member);
     const dateLabel = expectedLocalDateLabel(cancelAtDate);
     expect(view).toMatchObject({
-      kind: "premium",
-      planLabel: "Premium",
+      kind: "member",
+      planLabel: "Knit it Now Membership",
       statusLabel: "Canceling",
       billingLabel: "Monthly",
       renewsLabel: null,
@@ -177,20 +176,37 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(view.activeUntilMessage).toBe(
       `Your membership remains active until ${dateLabel}.`,
     );
-    expect(view.visibleActions).not.toContain("upgrade");
-    expect(view.visibleActions).not.toContain("join-basic");
-    expect(view.visibleActions).not.toContain("join-premium");
+    expect(view.visibleActions).not.toContain("join");
   });
 
-  it("shows Canceling Basic with active-until message, Manage only, Upgrade hidden", () => {
+  it("treats removed annual Basic canceling connection as free for this panel", () => {
     const cancelAtDate = 1787055395;
     const member = memberWithPlans([
       {
-        planId: MEMBERSHIPS.basic.memberstackPlanId,
+        planId: REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
         status: "ACTIVE",
         active: true,
         payment: {
-          priceId: MEMBERSHIPS.basic.prices.annual.memberstackPriceId,
+          priceId: MEMBERSHIPS.membership.prices.annual.memberstackPriceId,
+          nextBillingDate: cancelAtDate,
+          cancelAtDate,
+        },
+      },
+    ]);
+    const view = resolveAccountMembershipPanelView(member);
+    expect(view.kind).toBe("free");
+    expect(view.visibleActions).toEqual(["join"]);
+  });
+
+  it("shows Canceling remaining legacy monthly Basic with active-until message and Manage only", () => {
+    const cancelAtDate = 1787055395;
+    const member = memberWithPlans([
+      {
+        planId: LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId,
+        status: "ACTIVE",
+        active: true,
+        payment: {
+          priceId: MEMBERSHIPS.membership.prices.annual.memberstackPriceId,
           nextBillingDate: cancelAtDate,
           cancelAtDate,
         },
@@ -198,8 +214,8 @@ describe("resolveAccountMembershipPanelView", () => {
     ]);
     const view = resolveAccountMembershipPanelView(member);
     expect(view).toMatchObject({
-      kind: "basic",
-      planLabel: "Basic",
+      kind: "member",
+      planLabel: "Knit it Now Membership",
       statusLabel: "Canceling",
       billingLabel: "Annual",
       renewsLabel: null,
@@ -209,19 +225,17 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(view.activeUntilMessage).toBe(
       `Your membership remains active until ${expectedLocalDateLabel(cancelAtDate)}.`,
     );
-    expect(view.visibleActions).not.toContain("upgrade");
-    expect(view.visibleActions).not.toContain("join-basic");
-    expect(view.visibleActions).not.toContain("join-premium");
+    expect(view.visibleActions).not.toContain("join");
   });
 
   it("does not treat invalid cancelAtDate as canceling", () => {
     const nextBillingDate = 1786838400;
     const member = memberWithPlans([
       {
-        planId: MEMBERSHIPS.premium.memberstackPlanId,
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
         status: "ACTIVE",
         payment: {
-          priceId: MEMBERSHIPS.premium.prices.monthly.memberstackPriceId,
+          priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
           nextBillingDate,
           cancelAtDate: 0,
         },
@@ -239,11 +253,11 @@ describe("resolveAccountMembershipPanelView", () => {
     const cancelAtDate = 1787055395;
     const member = memberWithPlans([
       {
-        planId: MEMBERSHIPS.premium.memberstackPlanId,
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
         status: "ACTIVE",
         active: true,
         payment: {
-          priceId: MEMBERSHIPS.premium.prices.monthly.memberstackPriceId,
+          priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
           nextBillingDate: null,
           cancelAtDate,
         },
@@ -263,21 +277,21 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(view.isCanceling).toBe(false);
   });
 
-  it("shows Renews for Basic annual with nextBillingDate", () => {
+  it("shows Renews for membership annual with nextBillingDate", () => {
     const nextBillingDate = 1798761600;
     const member = memberWithPlans([
       {
-        planId: MEMBERSHIPS.basic.memberstackPlanId,
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
         status: "ACTIVE",
         payment: {
-          priceId: MEMBERSHIPS.basic.prices.annual.memberstackPriceId,
+          priceId: MEMBERSHIPS.membership.prices.annual.memberstackPriceId,
           nextBillingDate,
           cancelAtDate: null,
         },
       },
     ]);
     const view = resolveAccountMembershipPanelView(member);
-    expect(view.kind).toBe("basic");
+    expect(view.kind).toBe("member");
     expect(view.billingLabel).toBe("Annual");
     expect(view.renewsLabel).toBe(expectedLocalDateLabel(nextBillingDate));
   });
@@ -290,27 +304,27 @@ describe("resolveAccountMembershipPanelView", () => {
   it("hides Renews when nextBillingDate is null", () => {
     const member = memberWithPlans([
       {
-        planId: MEMBERSHIPS.premium.memberstackPlanId,
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
         status: "ACTIVE",
         payment: {
-          priceId: MEMBERSHIPS.premium.prices.monthly.memberstackPriceId,
+          priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
           nextBillingDate: null,
           cancelAtDate: null,
         },
       },
     ]);
     const view = resolveAccountMembershipPanelView(member);
-    expect(view.kind).toBe("premium");
+    expect(view.kind).toBe("member");
     expect(view.renewsLabel).toBeNull();
   });
 
   it("hides Renews for invalid nextBillingDate timestamps", () => {
     const member = memberWithPlans([
       {
-        planId: MEMBERSHIPS.basic.memberstackPlanId,
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
         status: "ACTIVE",
         payment: {
-          priceId: MEMBERSHIPS.basic.prices.monthly.memberstackPriceId,
+          priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
           nextBillingDate: 0,
           cancelAtDate: null,
         },
@@ -319,38 +333,38 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(resolveAccountMembershipPanelView(member).renewsLabel).toBeNull();
   });
 
-  it("shows active Basic monthly when price id matches", () => {
+  it("shows active membership monthly when price id matches", () => {
     const member = memberWithPlans([
       {
-        planId: MEMBERSHIPS.basic.memberstackPlanId,
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
         status: "ACTIVE",
-        priceId: MEMBERSHIPS.basic.prices.monthly.memberstackPriceId,
+        priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
       },
     ]);
     expect(resolveAccountMembershipPanelView(member)).toEqual({
-      kind: "basic",
-      planLabel: "Basic",
+      kind: "member",
+      planLabel: "Knit it Now Membership",
       statusLabel: "Active",
       billingInterval: "monthly",
       billingLabel: "Monthly",
       renewsLabel: null,
       isCanceling: false,
       activeUntilMessage: null,
-      visibleActions: ["upgrade", "manage"],
+      visibleActions: ["manage"],
     });
   });
 
-  it("shows active Premium annual when price id is nested under payment", () => {
+  it("shows active membership annual when price id is nested under payment", () => {
     const member = memberWithPlans([
       {
-        planId: MEMBERSHIPS.premium.memberstackPlanId,
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
         status: "TRIALING",
-        payment: { priceId: MEMBERSHIPS.premium.prices.annual.memberstackPriceId },
+        payment: { priceId: MEMBERSHIPS.membership.prices.annual.memberstackPriceId },
       },
     ]);
     expect(resolveAccountMembershipPanelView(member)).toEqual({
-      kind: "premium",
-      planLabel: "Premium",
+      kind: "member",
+      planLabel: "Knit it Now Membership",
       statusLabel: "Active",
       billingInterval: "annual",
       billingLabel: "Annual",
@@ -361,53 +375,46 @@ describe("resolveAccountMembershipPanelView", () => {
     });
   });
 
-  it("prefers Premium when both Basic and Premium are somehow active", () => {
-    const member = memberWithPlans([
-      {
-        planId: MEMBERSHIPS.basic.memberstackPlanId,
-        status: "ACTIVE",
-        priceId: MEMBERSHIPS.basic.prices.monthly.memberstackPriceId,
-      },
-      {
-        planId: MEMBERSHIPS.premium.memberstackPlanId,
-        status: "ACTIVE",
-        priceId: MEMBERSHIPS.premium.prices.monthly.memberstackPriceId,
-      },
-    ]);
-    const view = resolveAccountMembershipPanelView(member);
-    expect(view.kind).toBe("premium");
-    expect(view.visibleActions).toEqual(["manage"]);
-  });
-
   it("treats fully inactive canceled connections as free for this panel", () => {
     const member = memberWithPlans([
       {
-        planId: MEMBERSHIPS.basic.memberstackPlanId,
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
         status: "CANCELED",
-        priceId: MEMBERSHIPS.basic.prices.monthly.memberstackPriceId,
+        priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
       },
     ]);
     const view = resolveAccountMembershipPanelView(member);
     expect(view.kind).toBe("free");
     expect(view.renewsLabel).toBeNull();
     expect(view.activeUntilMessage).toBeNull();
-    expect(view.visibleActions).toEqual(["join-basic", "join-premium"]);
+    expect(view.visibleActions).toEqual(["join"]);
   });
 
-  it("recognizes legacy Basic plan ids", () => {
+  it("does not recognize the removed annual Basic plan as a member", () => {
+    const member = memberWithPlans([
+      {
+        planId: REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
+        status: "ACTIVE",
+        priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
+      },
+    ]);
+    expect(resolveAccountMembershipPanelView(member).kind).toBe("free");
+  });
+
+  it("recognizes remaining legacy monthly Basic plan ids as members", () => {
     const member = memberWithPlans([
       {
         planId: LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId,
         status: "ACTIVE",
-        priceId: MEMBERSHIPS.basic.prices.monthly.memberstackPriceId,
+        priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
       },
     ]);
     expect(resolveAccountMembershipPanelView(member)).toMatchObject({
-      kind: "basic",
-      planLabel: "Basic",
+      kind: "member",
+      planLabel: "Knit it Now Membership",
       billingLabel: "Monthly",
       renewsLabel: null,
-      visibleActions: ["upgrade", "manage"],
+      visibleActions: ["manage"],
     });
   });
 });
@@ -416,7 +423,7 @@ describe("billingIntervalFromActivePaidConnection", () => {
   it("returns null when price id is not in the known price index", () => {
     const member = memberWithPlans([
       {
-        planId: MEMBERSHIPS.basic.memberstackPlanId,
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
         status: "ACTIVE",
         priceId: "prc_unknown-legacy",
       },

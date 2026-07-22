@@ -50,8 +50,7 @@ export function resolvePatternBuilderNewPatternUpgradeUiMode(
 export function memberPlanGrantsPatternBuilderBypass(planId: string): boolean {
   return (
     planId === MEMBERSHIPS.beta.memberstackPlanId ||
-    planId === MEMBERSHIPS.basic.memberstackPlanId ||
-    planId === MEMBERSHIPS.premium.memberstackPlanId
+    planId === MEMBERSHIPS.membership.memberstackPlanId
   );
 }
 

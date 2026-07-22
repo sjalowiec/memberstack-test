@@ -1,5 +1,5 @@
 /**
- * Account page membership panel ù plan/status/actions from Memberstack.
+ * Account page membership panel ? plan/status/actions from Memberstack.
  *
  * Prefer getAppAndMember (includes planConnections reliably); fall back to
  * getCurrentMember. Manage Membership opens Stripe Customer Portal via the
@@ -17,12 +17,7 @@ import {
   STRIPE_PORTAL_UNAVAILABLE_MESSAGE,
 } from "../lib/membership/openStripeCustomerPortal";
 
-const ALL_PANEL_ACTIONS: AccountMembershipPanelAction[] = [
-  "join-basic",
-  "join-premium",
-  "upgrade",
-  "manage",
-];
+const ALL_PANEL_ACTIONS: AccountMembershipPanelAction[] = ["join", "manage"];
 
 const LOAD_ERROR_MESSAGE =
   "We couldn't load your membership details. Please refresh the page and try again.";
@@ -99,7 +94,7 @@ function applyView(root: Element, view: AccountMembershipPanelView): void {
     '[data-kbm-account-membership-action="manage"]',
   );
   if (manageBtn) {
-    const manageIsPrimary = view.kind === "premium" || view.isCanceling;
+    const manageIsPrimary = view.kind === "member" || view.isCanceling;
     manageBtn.classList.toggle("kbm-btn-accent", manageIsPrimary);
     manageBtn.classList.toggle("kbm-btn-outline", !manageIsPrimary);
   }

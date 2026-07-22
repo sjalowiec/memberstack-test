@@ -4,18 +4,24 @@ import PatternsFeaturesSection from "../components/patterns/PatternsFeaturesSect
 import PatternHeaderImage from "../components/patterns/PatternHeaderImage.astro";
 import { PATTERN_BUILDERS_HOME_HREF } from "../lib/patterns/customPatternProjectNavigation";
 import MembershipPricing from "../components/membership/MembershipPricing.astro";
-import wisdomData from "../data/wisdom-from-machine-knitters.json";
 
-type WisdomEntry = {
-  id: string;
-  name: string;
-  lead: string;
-};
-
-const storyIds = ["w-04", "w-05", "w-01"];
-const memberStories = storyIds
-  .map((id) => (wisdomData.entries as WisdomEntry[]).find((entry) => entry.id === id))
-  .filter((entry): entry is WisdomEntry => Boolean(entry));
+const memberStories = [
+  {
+    name: "Jean",
+    heading: "Gauge matters.",
+    quote: "Yes, gauge is important... and no, it's not a waste of yarn!",
+  },
+  {
+    name: "Joann",
+    heading: "Keep it simple.",
+    quote: "Repeat after me: One machine. One pattern. One yarn. Work it.",
+  },
+  {
+    name: "Michelle",
+    heading: "Give yourself grace.",
+    quote: "Be kind to yourself. Everyone learns at different rates and in different ways.",
+  },
+];
 
 const audienceCards = [
   {
@@ -40,7 +46,7 @@ const memberOutcomes = [
   "Build custom patterns with the pattern systems included in your membership",
   "Plan yarn, sizing, and project details with interactive tools and calculators",
   "Troubleshoot machine problems with practical fixes and technique guidance",
-  "Follow courses and video lessons at your own pace (Premium includes all courses)",
+  "Follow courses and video lessons at your own pace",
   "Track rows, shaping, and progress inside supported pattern workflows",
   "Print knit-ready layouts designed to work beside your machine",
 ];
@@ -49,8 +55,7 @@ const includedGroups = [
   {
     title: "Pattern Builders",
     items: [
-      "Basic includes the Sleeveless Sweater Pattern Builder",
-      "Premium includes every current and future Pattern Builder",
+      "Access every current and future Pattern Builder",
       "Customize patterns using your measurements and preferences",
     ],
   },
@@ -60,7 +65,7 @@ const includedGroups = [
       "Technique guides and instructional videos",
       "Troubleshooting help and practical machine knitting fixes",
       "Help Hub answers focused on real machine knitting problems",
-      "Premium includes all Knit It Now courses",
+      "All Knit It Now courses",
     ],
   },
   {
@@ -77,7 +82,6 @@ const includedGroups = [
   title="Membership | Knit it Now"
   description="Knit it Now membership gives machine knitters lessons, practical tools, and pattern-building support for the full knitting process."
   bodyClass="page--tight-header"
-  marketing
 >
   <div class="membership-sales-page membership-billing-scope page-wrap">
     <!-- 1. Hero -->
@@ -88,10 +92,18 @@ const includedGroups = [
         support needed to knit with greater confidence.
       </p>
       <p class="membership-hero__subline">
-        Choose the membership that fits how you like to learn and knit.
+        One membership for lessons, tools, pattern builders, and courses.
       </p>
       <div class="membership-hero__actions">
-        <a href="#see-inside" class="kbm-btn kbm-btn-outline">See what's included</a>
+        <a
+          href="#pricing"
+          class="kbm-btn kbm-btn-accent"
+          data-membership-sales-cta
+          data-membership-sales-cta-kind="choose-plan"
+        >
+          Become a Member
+        </a>
+        <a href="#whats-included" class="kbm-btn kbm-btn-outline">See what's included</a>
       </div>
       <p class="kbm-member-note">
         Already a member?
@@ -108,10 +120,10 @@ const includedGroups = [
       aria-labelledby="membership-pricing-heading"
     >
       <header class="membership-section__header">
-        <h2 id="membership-pricing-heading">Choose Your Membership</h2>
+        <h2 id="membership-pricing-heading">Join Knit it Now</h2>
         <p class="membership-section__lead">
-          Start with the help and resources you need, or choose full access to every pattern builder
-          and course.
+          One membership gives you access to every lesson, every tool, every pattern builder, and
+          every course — choose monthly or annual billing.
         </p>
       </header>
       <MembershipPricing />
@@ -119,35 +131,7 @@ const includedGroups = [
 
     <hr class="section-divider" />
 
-    <!-- 3. Plan guidance -->
-    <section class="membership-section" aria-labelledby="membership-guidance-heading">
-      <header class="membership-section__header">
-        <h2 id="membership-guidance-heading">Which membership is right for you?</h2>
-      </header>
-      <div class="membership-guidance-grid">
-        <article class="kbm-card membership-guidance-card">
-          <h3 class="kbm-card__title">Basic</h3>
-          <p class="kbm-card__desc">
-            Choose Basic if you want ongoing lessons, troubleshooting help, practical tools, stitch
-            resources, and the Sleeveless Sweater Pattern Builder.
-          </p>
-        </article>
-        <article class="kbm-card membership-guidance-card">
-          <h3 class="kbm-card__title">Premium</h3>
-          <p class="kbm-card__desc">
-            Choose Premium if you want to use every pattern builder, take Knit It Now courses, and
-            receive access to new pattern systems as they are released.
-          </p>
-        </article>
-      </div>
-      <p class="membership-guidance-note">
-        Basic members can upgrade to Premium whenever they are ready.
-      </p>
-    </section>
-
-    <hr class="section-divider" />
-
-    <!-- 4. Who this is for -->
+    <!-- 3. Who this is for -->
     <section class="membership-section" aria-labelledby="membership-audience-heading">
       <header class="membership-section__header">
         <h2 id="membership-audience-heading">Who this is for</h2>
@@ -239,7 +223,11 @@ const includedGroups = [
     <hr class="section-divider" />
 
     <!-- 7. What's included -->
-    <section class="membership-section" aria-labelledby="membership-included-heading">
+    <section
+      id="whats-included"
+      class="membership-section membership-section--anchor"
+      aria-labelledby="membership-included-heading"
+    >
       <header class="membership-section__header">
         <h2 id="membership-included-heading">What's included</h2>
       </header>
@@ -274,23 +262,26 @@ const includedGroups = [
     <!-- 8. Member stories -->
     <section class="membership-section" aria-labelledby="membership-stories-heading">
       <header class="membership-section__header">
-        <h2 id="membership-stories-heading">Member stories</h2>
+        <h2 id="membership-stories-heading">Wisdom from Fellow Knitters</h2>
         <p class="membership-section__lead">
-          Real machine knitters share what helped them keep going — you may see yourself in more than
-          one.
+          Every machine knitter has moments of frustration and breakthrough. Here are a few reminders
+          from members who've been there.
         </p>
       </header>
       <div class="membership-stories">
         {
           memberStories.map((story) => (
             <article class="kbm-card membership-story-card">
-              <h3 class="kbm-card__title">{story.name}</h3>
-              <p class="kbm-card__desc">{story.lead}</p>
+              <p class="membership-story-card__name">{story.name}</p>
+              <h3 class="kbm-card__title">{story.heading}</h3>
+              <p class="kbm-card__desc">{story.quote}</p>
             </article>
           ))
         }
       </div>
-      <p class="membership-stories-closing">If you saw yourself in these, you're in the right place.</p>
+      <p class="membership-stories-closing">
+        Sometimes the best advice comes from someone who's already been there.
+      </p>
     </section>
 
     <hr class="section-divider" />
@@ -315,41 +306,24 @@ const includedGroups = [
       </header>
       <div class="faq-accordion">
         <details class="faq-item">
-          <summary>What's the difference between Basic and Premium?</summary>
+          <summary>What does membership include?</summary>
           <p>
-            Basic includes the Sleeveless Sweater Pattern Builder, along with member lessons, tools,
-            Help Hub resources, and downloads. Premium includes everything in Basic, plus every
-            Pattern Builder and every Knit It Now course.
-          </p>
-        </details>
-        <details class="faq-item">
-          <summary>Which membership should I choose?</summary>
-          <p>
-            Choose Basic if you want to learn, get help, and build custom sleeveless sweater
-            patterns. Choose Premium if you want access to every Pattern Builder and every Knit It
-            Now course. You can upgrade later at any time.
-          </p>
-        </details>
-        <details class="faq-item">
-          <summary>Can I upgrade from Basic to Premium later?</summary>
-          <p>
-            Yes. You can upgrade from Basic to Premium at any time from your account. Your membership
-            will update automatically so you can continue without starting over.
+            Membership includes member lessons, tools, Help Hub resources, downloads, every Pattern
+            Builder, and every Knit It Now course.
           </p>
         </details>
         <details class="faq-item">
           <summary>Do I keep access to the pattern builders?</summary>
           <p>
-            Pattern-builder access depends on your active membership. Basic includes the Sleeveless
-            Sweater Pattern Builder. Premium includes all pattern builders. Details about purchasing
+            Yes. Active members have access to all pattern builders. Details about purchasing
             individual pattern systems will be provided separately if that option becomes available.
           </p>
         </details>
         <details class="faq-item">
-          <summary>Can I switch plans or cancel?</summary>
+          <summary>Can I change billing or cancel?</summary>
           <p>
-            Yes. After you join, you can manage billing, switch plans, or cancel from your workspace
-            or the billing portal link on this page.
+            Yes. After you join, you can manage billing, switch between monthly and annual, or cancel
+            from your workspace or the billing portal link on this page.
           </p>
         </details>
         <details class="faq-item">
@@ -363,16 +337,15 @@ const includedGroups = [
           <summary>What if I'm not logged in when I choose a plan?</summary>
           <p>
             You'll be prompted to create an account or log in first, then checkout continues with
-            your selected plan.
+            your selected billing option.
           </p>
         </details>
         <details class="faq-item">
           <summary>Is everything on the site included?</summary>
           <p>
-            Membership covers the core Knit It Now library — lessons, tools, videos, help hubs, and
-            reference resources, plus pattern builders according to your plan. Basic includes the
-            Sleeveless Sweater Pattern Builder; Premium includes all pattern builders and all courses.
-            Some individual shop items or specialty content may be sold separately.
+            Membership covers the core Knit It Now library — lessons, tools, videos, help hubs,
+            reference resources, all pattern builders, and all courses. Some individual shop items or
+            specialty content may be sold separately.
           </p>
         </details>
       </div>
@@ -450,27 +423,6 @@ const includedGroups = [
       line-height: 1.55;
     }
 
-    .membership-guidance-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
-      gap: 1rem;
-    }
-
-    .membership-guidance-card {
-      cursor: default;
-      padding: 1.25rem 1.5rem;
-    }
-
-    .membership-guidance-card:hover {
-      transform: none;
-    }
-
-    .membership-guidance-note {
-      margin: 1rem 0 0;
-      text-align: center;
-      color: #4d5a48;
-      line-height: 1.55;
-    }
 
     .membership-audience-grid {
       display: grid;
@@ -598,6 +550,22 @@ const includedGroups = [
 
     .membership-story-card:hover {
       transform: none;
+    }
+
+    .membership-story-card__name {
+      margin: 0 0 0.35rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      line-height: 1.35;
+      color: #4d5a48;
+    }
+
+    .membership-story-card .kbm-card__title {
+      margin-bottom: 0.4rem;
+    }
+
+    .membership-story-card .kbm-card__desc {
+      font-weight: 400;
     }
 
     .membership-stories-closing {

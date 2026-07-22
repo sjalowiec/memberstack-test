@@ -1,7 +1,14 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { MEMBERSHIPS } from "../../config/memberships";
+import {
+  COURSE_ACCESS_PLAN_IDS,
+  LEGACY_MEMBERSHIPS,
+  LEGACY_PAID_MEMBER_PLAN_IDS,
+  MEMBERSHIPS,
+  MEMBER_PLAN_IDS,
+  REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
+} from "../../config/memberships";
 import { LOGGED_OUT_SLEEVELESS_ACCESS } from "./sleevelessPatternSystemAccess";
 import { testAccess } from "./patternAccessTestFixtures";
 import {
@@ -28,8 +35,13 @@ const editDrawerSrc = readFileSync(
 );
 
 const betaMember = testAccess({ loggedIn: true, hasSystemAccess: true, memberId: "ms_beta" });
-const basicMember = testAccess({ loggedIn: true, hasSystemAccess: true, memberId: "ms_basic" });
-const premiumMember = testAccess({ loggedIn: true, hasSystemAccess: true, memberId: "ms_premium" });
+const legacyMonthlyBasicMember = testAccess({
+  loggedIn: true,
+  hasSystemAccess: true,
+  memberId: "ms_legacy_basic",
+  activePlanIds: [LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId],
+});
+const paidMember = testAccess({ loggedIn: true, hasSystemAccess: true, memberId: "ms_member" });
 const freeUnclaimed = testAccess({
   loggedIn: true,
   hasSystemAccess: false,
@@ -46,10 +58,10 @@ const freeClaimed = testAccess({
 });
 
 describe("canOpenPatternWorkspaceEditWorkspace", () => {
-  it("allows Beta, Basic, and Premium members", () => {
+  it("allows Beta, remaining legacy monthly Basic, and paid members", () => {
     expect(canOpenPatternWorkspaceEditWorkspace(betaMember)).toBe(true);
-    expect(canOpenPatternWorkspaceEditWorkspace(basicMember)).toBe(true);
-    expect(canOpenPatternWorkspaceEditWorkspace(premiumMember)).toBe(true);
+    expect(canOpenPatternWorkspaceEditWorkspace(legacyMonthlyBasicMember)).toBe(true);
+    expect(canOpenPatternWorkspaceEditWorkspace(paidMember)).toBe(true);
   });
 
   it("denies free claimed, free unclaimed, and logged-out users", () => {
@@ -69,7 +81,7 @@ describe("isPatternWorkspaceSettingsEditingLocked", () => {
 
   it("unlocks members for any pattern system context", () => {
     expect(isPatternWorkspaceSettingsEditingLocked(betaMember, "drop-shoulder")).toBe(false);
-    expect(isPatternWorkspaceSettingsEditingLocked(premiumMember, "sleeveless")).toBe(false);
+    expect(isPatternWorkspaceSettingsEditingLocked(paidMember, "sleeveless")).toBe(false);
   });
 });
 
@@ -129,11 +141,35 @@ describe("edit drawer integration", () => {
 });
 
 describe("membership plan ids grant edit workspace access", () => {
-  it("includes beta, basic, and premium plan ids in MEMBER_PLAN_IDS", () => {
+  it("includes beta, membership, and remaining legacy plan ids; excludes removed Basic", () => {
     expect(MEMBERSHIPS.beta.memberstackPlanId).toBe("pln_kin-beta-access-vyek0a38");
-    expect(MEMBERSHIPS.basic.memberstackPlanId).toBe("pln_kin-membership-annual-basic-je3s0vpe");
-    expect(MEMBERSHIPS.premium.memberstackPlanId).toBe(
+    expect(MEMBERSHIPS.membership.memberstackPlanId).toBe(
       "pln_kin-membership-annual-premium-tn5b0cxj",
     );
+    expect(REMOVED_BASIC_MEMBERSHIP_PLAN_ID).toBe("pln_kin-membership-annual-basic-je3s0vpe");
+
+    for (const ids of [MEMBER_PLAN_IDS, COURSE_ACCESS_PLAN_IDS, LEGACY_PAID_MEMBER_PLAN_IDS]) {
+      expect(ids).not.toContain(REMOVED_BASIC_MEMBERSHIP_PLAN_ID);
+    }
+
+    expect(MEMBER_PLAN_IDS).toContain(MEMBERSHIPS.beta.memberstackPlanId);
+    expect(MEMBER_PLAN_IDS).toContain(MEMBERSHIPS.membership.memberstackPlanId);
+    expect(COURSE_ACCESS_PLAN_IDS).toContain(MEMBERSHIPS.beta.memberstackPlanId);
+    expect(COURSE_ACCESS_PLAN_IDS).toContain(MEMBERSHIPS.membership.memberstackPlanId);
+
+    expect(LEGACY_PAID_MEMBER_PLAN_IDS).toContain(
+      LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId,
+    );
+    expect(LEGACY_PAID_MEMBER_PLAN_IDS).toContain(
+      LEGACY_MEMBERSHIPS.grandfatheredAnnual.memberstackPlanId,
+    );
+    expect(LEGACY_PAID_MEMBER_PLAN_IDS).toContain(
+      LEGACY_MEMBERSHIPS.monthlyPremium.memberstackPlanId,
+    );
+    expect(LEGACY_PAID_MEMBER_PLAN_IDS).toContain(
+      LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId,
+    );
+    expect(MEMBER_PLAN_IDS).toEqual(expect.arrayContaining([...LEGACY_PAID_MEMBER_PLAN_IDS]));
+    expect(COURSE_ACCESS_PLAN_IDS).toEqual(expect.arrayContaining([...LEGACY_PAID_MEMBER_PLAN_IDS]));
   });
 });

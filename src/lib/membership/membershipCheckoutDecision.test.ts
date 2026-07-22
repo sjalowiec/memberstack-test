@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { LEGACY_MEMBERSHIPS, MEMBERSHIPS } from "../../config/memberships";
-import { resolveMembershipCheckoutDecision } from "./membershipCheckoutDecision";
+import {
+  LEGACY_MEMBERSHIPS,
+  MEMBERSHIPS,
+  REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
+} from "../../config/memberships";
+import {
+  memberHasActivePaidMembership,
+  resolveMembershipCheckoutDecision,
+} from "./membershipCheckoutDecision";
 
 function memberWithPlans(
   connections: Array<{ planId: string; status: string; priceId?: string }>,
@@ -14,16 +21,16 @@ function memberWithPlans(
 }
 
 describe("resolveMembershipCheckoutDecision", () => {
-  it("uses purchase for a free member buying Basic", () => {
+  it("uses purchase for a free member buying monthly", () => {
     const member = memberWithPlans([]);
-    expect(resolveMembershipCheckoutDecision(member, "basicMonthly")).toEqual({
+    expect(resolveMembershipCheckoutDecision(member, "monthly")).toEqual({
       action: "purchase",
     });
   });
 
-  it("uses purchase for a free member buying Premium", () => {
+  it("uses purchase for a free member buying annual", () => {
     const member = memberWithPlans([]);
-    expect(resolveMembershipCheckoutDecision(member, "premiumAnnual")).toEqual({
+    expect(resolveMembershipCheckoutDecision(member, "annual")).toEqual({
       action: "purchase",
     });
   });
@@ -31,82 +38,58 @@ describe("resolveMembershipCheckoutDecision", () => {
   it("uses purchase for canceled / expired paid connections", () => {
     const member = memberWithPlans([
       {
-        planId: MEMBERSHIPS.basic.memberstackPlanId,
+        planId: LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId,
         status: "CANCELED",
         priceId: "prc_old",
       },
       {
-        planId: MEMBERSHIPS.premium.memberstackPlanId,
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
         status: "EXPIRED",
       },
     ]);
-    expect(resolveMembershipCheckoutDecision(member, "basicMonthly").action).toBe("purchase");
-    expect(resolveMembershipCheckoutDecision(member, "premiumAnnual").action).toBe("purchase");
+    expect(resolveMembershipCheckoutDecision(member, "monthly").action).toBe("purchase");
+    expect(resolveMembershipCheckoutDecision(member, "annual").action).toBe("purchase");
   });
 
-  it("marks active Basic choosing Basic as current (not purchase)", () => {
+  it("marks active membership choosing monthly or annual as current", () => {
     const member = memberWithPlans([
       {
-        planId: MEMBERSHIPS.basic.memberstackPlanId,
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
         status: "ACTIVE",
       },
     ]);
-    expect(resolveMembershipCheckoutDecision(member, "basicAnnual")).toEqual({
+    expect(resolveMembershipCheckoutDecision(member, "monthly")).toEqual({
       action: "current",
-      tier: "basic",
+    });
+    expect(resolveMembershipCheckoutDecision(member, "annual")).toEqual({
+      action: "current",
     });
   });
 
-  it("uses update for active Basic choosing Premium", () => {
+  it("marks trialing membership as current", () => {
     const member = memberWithPlans([
       {
-        planId: MEMBERSHIPS.basic.memberstackPlanId,
-        status: "ACTIVE",
-      },
-    ]);
-    expect(resolveMembershipCheckoutDecision(member, "premiumMonthly")).toEqual({
-      action: "update",
-    });
-  });
-
-  it("marks active Premium choosing Premium as current (not purchase)", () => {
-    const member = memberWithPlans([
-      {
-        planId: MEMBERSHIPS.premium.memberstackPlanId,
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
         status: "TRIALING",
       },
     ]);
-    expect(resolveMembershipCheckoutDecision(member, "premiumAnnual")).toEqual({
+    expect(resolveMembershipCheckoutDecision(member, "annual")).toEqual({
       action: "current",
-      tier: "premium",
     });
   });
 
-  it("uses update for active Premium choosing Basic (never a second subscription)", () => {
-    const member = memberWithPlans([
-      {
-        planId: MEMBERSHIPS.premium.memberstackPlanId,
-        status: "ACTIVE",
-      },
-    ]);
-    expect(resolveMembershipCheckoutDecision(member, "basicMonthly")).toEqual({
-      action: "update",
-    });
-  });
-
-  it("never returns purchase when any paid Basic/Premium membership is active", () => {
+  it("never returns purchase when any paid membership is active", () => {
     const cases: Array<{
       planId: string;
-      planKey: "basicMonthly" | "basicAnnual" | "premiumMonthly" | "premiumAnnual";
+      planKey: "monthly" | "annual";
     }> = [
-      { planId: MEMBERSHIPS.basic.memberstackPlanId, planKey: "basicMonthly" },
-      { planId: MEMBERSHIPS.basic.memberstackPlanId, planKey: "premiumMonthly" },
-      { planId: MEMBERSHIPS.premium.memberstackPlanId, planKey: "premiumAnnual" },
-      { planId: MEMBERSHIPS.premium.memberstackPlanId, planKey: "basicAnnual" },
-      { planId: LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId, planKey: "premiumAnnual" },
+      { planId: MEMBERSHIPS.membership.memberstackPlanId, planKey: "monthly" },
+      { planId: MEMBERSHIPS.membership.memberstackPlanId, planKey: "annual" },
+      { planId: LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId, planKey: "annual" },
+      { planId: LEGACY_MEMBERSHIPS.grandfatheredAnnual.memberstackPlanId, planKey: "monthly" },
       {
         planId: LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId,
-        planKey: "basicMonthly",
+        planKey: "monthly",
       },
     ];
 
@@ -115,39 +98,48 @@ describe("resolveMembershipCheckoutDecision", () => {
         memberWithPlans([{ planId, status: "ACTIVE" }]),
         planKey,
       );
-      expect(decision.action, `${planId} ? ${planKey}`).not.toBe("purchase");
+      expect(decision.action, `${planId} ? ${planKey}`).toBe("current");
     }
   });
 
-  it("treats legacy Basic as Basic current / Premium update", () => {
+  it("does not treat the removed annual Basic plan as current paid membership", () => {
+    const member = memberWithPlans([
+      {
+        planId: REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
+        status: "ACTIVE",
+      },
+    ]);
+    expect(resolveMembershipCheckoutDecision(member, "monthly")).toEqual({
+      action: "purchase",
+    });
+    expect(memberHasActivePaidMembership(member)).toBe(false);
+  });
+
+  it("treats remaining legacy monthly Basic as current paid membership", () => {
     const member = memberWithPlans([
       {
         planId: LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId,
         status: "ACTIVE",
       },
     ]);
-    expect(resolveMembershipCheckoutDecision(member, "basicMonthly")).toEqual({
+    expect(resolveMembershipCheckoutDecision(member, "monthly")).toEqual({
       action: "current",
-      tier: "basic",
     });
-    expect(resolveMembershipCheckoutDecision(member, "premiumMonthly")).toEqual({
-      action: "update",
-    });
+    expect(memberHasActivePaidMembership(member)).toBe(true);
   });
 
-  it("treats legacy Monthly Subscription plan shell as Premium", () => {
+  it("treats legacy Monthly Subscription plan shell as current", () => {
     const member = memberWithPlans([
       {
         planId: LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId,
         status: "ACTIVE",
       },
     ]);
-    expect(resolveMembershipCheckoutDecision(member, "premiumMonthly")).toEqual({
+    expect(resolveMembershipCheckoutDecision(member, "monthly")).toEqual({
       action: "current",
-      tier: "premium",
     });
-    expect(resolveMembershipCheckoutDecision(member, "basicMonthly")).toEqual({
-      action: "update",
+    expect(resolveMembershipCheckoutDecision(member, "annual")).toEqual({
+      action: "current",
     });
   });
 
@@ -158,6 +150,7 @@ describe("resolveMembershipCheckoutDecision", () => {
         status: "ACTIVE",
       },
     ]);
-    expect(resolveMembershipCheckoutDecision(member, "basicMonthly").action).toBe("purchase");
+    expect(resolveMembershipCheckoutDecision(member, "monthly").action).toBe("purchase");
+    expect(memberHasActivePaidMembership(member)).toBe(false);
   });
 });

@@ -3,10 +3,10 @@
  * CourseAccessGate — soft gate for course content.
  *
  * - "free":     renders the `content` slot for everyone (no gate markup).
- * - "premium" / "purchase":
+ * - "member" / "purchase":
  *               locked teaser + hidden `content` slot; client script flips them
- *               when `canAccessCourse` grants access (Premium/Beta always;
- *               purchase entitlements for non-Premium when available).
+ *               when `canAccessCourse` grants access (members/Beta always;
+ *               purchase entitlements for non-members when available).
  *
  * Provide a custom locked state via the `locked` slot (e.g. on the landing page);
  * otherwise a default teaser card is rendered.
@@ -34,10 +34,10 @@ const isFree = access === "free";
 const isPurchase = access === "purchase";
 const hasLockedSlot = Astro.slots.has("locked");
 
-const defaultLockedTitle = isPurchase ? "Course access" : "Premium course";
+const defaultLockedTitle = isPurchase ? "Course access" : "Member course";
 const defaultLockedMessage = isPurchase
-  ? "This course is included with a Premium membership. Individual purchases for non-members are coming soon."
-  : "This course is included with a Premium membership.";
+  ? "This course is included with membership. Individual purchases for non-members are coming soon."
+  : "This course is included with membership.";
 ---
 
 {

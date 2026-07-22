@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import { PATTERN_BUILDER_LIFETIME_PURCHASES } from "../../config/patternBuilderLifetime";
-import { MEMBERSHIPS } from "../../config/memberships";
+import {
+  LEGACY_MEMBERSHIPS,
+  MEMBERSHIPS,
+  REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
+} from "../../config/memberships";
 import {
   buildPatternBuilderLifetimeCheckoutReturnUrls,
   startPatternBuilderLifetimeCheckout,
@@ -34,11 +38,11 @@ describe("resolvePatternBuilderNewPatternUpgradeUiMode (Drop Shoulder)", () => {
 });
 
 describe("shouldBypassPatternBuilderNewPatternUpgradeScreen (Drop Shoulder)", () => {
-  it("bypasses for Beta, Basic, and Premium members", () => {
+  it("bypasses for Beta, membership, and remaining legacy monthly Basic members", () => {
     for (const planId of [
       MEMBERSHIPS.beta.memberstackPlanId,
-      MEMBERSHIPS.basic.memberstackPlanId,
-      MEMBERSHIPS.premium.memberstackPlanId,
+      MEMBERSHIPS.membership.memberstackPlanId,
+      LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId,
     ]) {
       const access = testAccess({
         loggedIn: true,
@@ -49,6 +53,17 @@ describe("shouldBypassPatternBuilderNewPatternUpgradeScreen (Drop Shoulder)", ()
       });
       expect(shouldBypassPatternBuilderNewPatternUpgradeScreen(access, "drop-shoulder")).toBe(true);
     }
+  });
+
+  it("does not bypass for the removed annual Basic plan", () => {
+    const access = testAccess({
+      loggedIn: true,
+      hasSystemAccess: false,
+      activePlanIds: [REMOVED_BASIC_MEMBERSHIP_PLAN_ID],
+      freeClaimed: true,
+      claimedSystem: "drop-shoulder",
+    });
+    expect(shouldBypassPatternBuilderNewPatternUpgradeScreen(access, "drop-shoulder")).toBe(false);
   });
 
   it("bypasses for Drop Shoulder lifetime owners without membership", () => {

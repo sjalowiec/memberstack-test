@@ -40,7 +40,7 @@ describe("helpHubMemberLessonCtaSpec", () => {
   });
 
   it("memberAccess shows the lesson link and membership note only", () => {
-    const state = viewerStateForPlan(MEMBERSHIPS.premium.memberstackPlanId);
+    const state = viewerStateForPlan(MEMBERSHIPS.membership.memberstackPlanId);
     expect(state).toBe("memberAccess");
 
     expect(helpHubMemberLessonCtaSpec(state, LESSON_HREF)).toEqual({

@@ -22,7 +22,7 @@ export type CourseLandingView = {
   lessonCount: number;
   startHref: string;
   interestTag: string;
-  /** Gating tier: free (open), premium (Beta/Premium), purchase (reserved). */
+  /** Gating tier: free (open), member (Beta/paid membership), purchase (reserved). */
   access: CourseAccessLevel;
 };
 

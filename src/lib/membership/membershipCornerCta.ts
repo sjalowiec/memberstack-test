@@ -11,14 +11,12 @@ import {
 } from "../memberAccess";
 import { memberRecordFromMemberstackPayload } from "../patterns/memberstackMember";
 import {
-  BASIC_MEMBERSHIP_PLAN_IDS,
-  PREMIUM_MEMBERSHIP_PLAN_IDS,
-  memberHasActiveBasicPlan,
-  memberHasActivePremiumPlan,
+  PAID_MEMBERSHIP_PLAN_IDS,
+  memberHasActivePaidMembership,
 } from "./membershipCheckoutDecision";
 import { isCanceledConnectionStatus } from "./membershipSummary";
 
-export type MembershipCornerCtaKind = "become" | "restart" | "upgrade" | "manage";
+export type MembershipCornerCtaKind = "become" | "restart" | "manage";
 
 export type MembershipCornerCta = {
   kind: MembershipCornerCtaKind;
@@ -40,11 +38,6 @@ export const MEMBERSHIP_CORNER_CTA = {
     label: "Restart Membership",
     href: "/membership",
   },
-  upgrade: {
-    kind: "upgrade",
-    label: "Upgrade to Premium",
-    href: "/membership",
-  },
   manage: {
     kind: "manage",
     label: "Manage Membership",
@@ -52,10 +45,7 @@ export const MEMBERSHIP_CORNER_CTA = {
   },
 } as const satisfies Record<MembershipCornerCtaKind, MembershipCornerCta>;
 
-const paidPlanIdSet = new Set<string>([
-  ...BASIC_MEMBERSHIP_PLAN_IDS,
-  ...PREMIUM_MEMBERSHIP_PLAN_IDS,
-]);
+const paidPlanIdSet = new Set<string>(PAID_MEMBERSHIP_PLAN_IDS);
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -81,7 +71,7 @@ function planConnectionsFromPayload(memberOrPayload: unknown): unknown[] {
 }
 
 /**
- * Positive evidence only: a known paid Basic/Premium connection that is not
+ * Positive evidence only: a known paid membership connection that is not
  * currently entitled and has an explicit canceled/expired status.
  * Never infer from "no active plan" alone.
  */
@@ -101,11 +91,8 @@ export function memberHasCanceledPaidMembership(memberOrPayload: unknown): boole
 
 export function resolveMembershipCornerCta(memberOrPayload: unknown): MembershipCornerCta {
   if (isMemberLoggedIn(memberOrPayload)) {
-    if (memberHasActivePremiumPlan(memberOrPayload)) {
+    if (memberHasActivePaidMembership(memberOrPayload)) {
       return { ...MEMBERSHIP_CORNER_CTA.manage };
-    }
-    if (memberHasActiveBasicPlan(memberOrPayload)) {
-      return { ...MEMBERSHIP_CORNER_CTA.upgrade };
     }
     if (MEMBERSHIP_CORNER_RESTART_ENABLED && memberHasCanceledPaidMembership(memberOrPayload)) {
       return { ...MEMBERSHIP_CORNER_CTA.restart };

@@ -46,7 +46,7 @@ const freeDropShoulderClaimed: SleevelessUserAccess = {
 const member: SleevelessUserAccess = {
   loggedIn: true,
   memberId: "ms_member",
-  activePlanIds: [MEMBERSHIPS.basic.memberstackPlanId],
+  activePlanIds: [MEMBERSHIPS.membership.memberstackPlanId],
   hasSystemAccess: true,
   freeClaimsBySystem: {},
 };

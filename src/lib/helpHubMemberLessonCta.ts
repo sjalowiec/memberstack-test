@@ -25,7 +25,7 @@ export const HELP_HUB_MEMBER_LESSON_LOCKED_STATUS =
   "This lesson is for Knit It Now members.";
 
 export const HELP_HUB_MEMBER_LESSON_LOCKED_SUPPORT =
-  "The full lesson is included with Basic and Premium membership.";
+  "The full lesson is included with membership.";
 
 const MEMBERSHIP_URL = "/membership";
 

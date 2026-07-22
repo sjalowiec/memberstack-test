@@ -25,7 +25,7 @@ export type CourseCatalogEntry = {
   status: CourseCatalogStatus;
   href?: string;
   buttonLabel: string;
-  /** Gating tier: free (open), premium / purchase (Premium+; purchase also for future individual buys). */
+  /** Gating tier: free (open), member / purchase (members; purchase also for future individual buys). */
   access: CourseAccessLevel;
 };
 
@@ -34,7 +34,7 @@ type CatalogFileEntry = {
   category: string;
   catalogStatus: CourseCatalogStatus;
   description?: string;
-  /** Gating tier: "free" | "premium" | "purchase". Untagged → premium (locked). */
+  /** Gating tier: "free" | "member" | "purchase". Untagged → member (locked). */
   access?: string;
   /** @deprecated Prefer `course.thumbnail` in the course JSON file. */
   thumbnail?: string;

@@ -4,13 +4,16 @@ import PageHead from "../components/PageHead.astro";
 import MembershipPricing from "../components/membership/MembershipPricing.astro";
 ---
 
-<Layout title="Become a Member" description="Join Knit It Now — Basic or Premium membership, monthly or annual.">
+<Layout
+  title="Become a Member"
+  description="Join Knit It Now membership — monthly or annual billing."
+>
   <div class="page-wrap">
     <PageHead title="Become a Member" breadcrumb="Home / Join" />
 
     <div class="join-content membership-billing-scope">
       <p class="join-intro">
-        Choose the membership that fits how you knit. Checkout is handled securely through Memberstack.
+        Choose monthly or annual billing. Checkout is handled securely through Memberstack.
       </p>
 
       <MembershipPricing />

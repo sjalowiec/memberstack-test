@@ -11,9 +11,9 @@ const pageTitle = "Courses | Knit it Now";
 const pageDescription =
   "Structured machine knitting courses with step-by-step lessons, exercises, and video guidance.";
 
-function courseLockAriaLabel(access: "free" | "premium" | "purchase"): string {
-  if (access === "purchase") return "Premium membership or purchase required";
-  return "Premium membership required";
+function courseLockAriaLabel(access: "free" | "member" | "purchase"): string {
+  if (access === "purchase") return "Membership or purchase required";
+  return "Membership required";
 }
 ---
 

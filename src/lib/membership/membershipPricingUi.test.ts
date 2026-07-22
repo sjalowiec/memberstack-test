@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { MEMBERSHIPS } from "../../config/memberships";
+import {
+  LEGACY_MEMBERSHIPS,
+  MEMBERSHIPS,
+  REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
+} from "../../config/memberships";
 import { resolveJoinCtaPresentation } from "./membershipPricingUi";
 
 function memberWithPlans(connections: Array<{ planId: string; status: string }>) {
@@ -12,46 +16,87 @@ function memberWithPlans(connections: Array<{ planId: string; status: string }>)
 }
 
 describe("resolveJoinCtaPresentation", () => {
-  it("shows Join labels for free members", () => {
+  it("shows Become a Member for free members on monthly and annual", () => {
     const member = memberWithPlans([]);
-    expect(resolveJoinCtaPresentation(member, "basicMonthly")).toMatchObject({
-      label: "Join Basic",
+    expect(resolveJoinCtaPresentation(member, "monthly")).toEqual({
+      kind: "join",
+      label: "Become a Member",
       disabled: false,
     });
-    expect(resolveJoinCtaPresentation(member, "premiumAnnual")).toMatchObject({
-      label: "Join Premium",
-      disabled: false,
-    });
-  });
-
-  it("shows Current Plan on Basic and Upgrade to Premium for active Basic", () => {
-    const member = memberWithPlans([
-      { planId: MEMBERSHIPS.basic.memberstackPlanId, status: "ACTIVE" },
-    ]);
-    expect(resolveJoinCtaPresentation(member, "basicMonthly")).toEqual({
-      kind: "current",
-      label: "Current Plan",
-      disabled: true,
-    });
-    expect(resolveJoinCtaPresentation(member, "premiumMonthly")).toEqual({
-      kind: "upgrade-premium",
-      label: "Upgrade to Premium",
+    expect(resolveJoinCtaPresentation(member, "annual")).toEqual({
+      kind: "join",
+      label: "Become a Member",
       disabled: false,
     });
   });
 
-  it("shows Current Plan on Premium and Switch to Basic for active Premium", () => {
+  it("shows Current Plan for active paid membership on both intervals", () => {
     const member = memberWithPlans([
-      { planId: MEMBERSHIPS.premium.memberstackPlanId, status: "ACTIVE" },
+      { planId: MEMBERSHIPS.membership.memberstackPlanId, status: "ACTIVE" },
     ]);
-    expect(resolveJoinCtaPresentation(member, "premiumAnnual")).toEqual({
+    expect(resolveJoinCtaPresentation(member, "monthly")).toEqual({
       kind: "current",
       label: "Current Plan",
       disabled: true,
     });
-    expect(resolveJoinCtaPresentation(member, "basicMonthly")).toEqual({
-      kind: "switch-basic",
-      label: "Switch to Basic",
+    expect(resolveJoinCtaPresentation(member, "annual")).toEqual({
+      kind: "current",
+      label: "Current Plan",
+      disabled: true,
+    });
+  });
+
+  it("shows Become a Member for the removed annual Basic plan", () => {
+    const member = memberWithPlans([
+      { planId: REMOVED_BASIC_MEMBERSHIP_PLAN_ID, status: "ACTIVE" },
+    ]);
+    expect(resolveJoinCtaPresentation(member, "monthly")).toEqual({
+      kind: "join",
+      label: "Become a Member",
+      disabled: false,
+    });
+  });
+
+  it("shows Current Plan for remaining legacy monthly Basic paid members", () => {
+    const member = memberWithPlans([
+      { planId: LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId, status: "ACTIVE" },
+    ]);
+    expect(resolveJoinCtaPresentation(member, "monthly")).toEqual({
+      kind: "current",
+      label: "Current Plan",
+      disabled: true,
+    });
+  });
+
+  it("shows Become a Member for beta-only members", () => {
+    const member = memberWithPlans([
+      { planId: MEMBERSHIPS.beta.memberstackPlanId, status: "ACTIVE" },
+    ]);
+    expect(resolveJoinCtaPresentation(member, "monthly")).toMatchObject({
+      kind: "join",
+      label: "Become a Member",
+      disabled: false,
+    });
+  });
+
+  it("shows Become a Member for unexpected/unknown plan ids", () => {
+    const member = memberWithPlans([
+      { planId: "pln_unknown_legacy_value", status: "ACTIVE" },
+    ]);
+    expect(resolveJoinCtaPresentation(member, "monthly")).toEqual({
+      kind: "join",
+      label: "Become a Member",
+      disabled: false,
+    });
+  });
+
+  it("shows Become a Member for expired paid membership", () => {
+    const member = memberWithPlans([
+      { planId: MEMBERSHIPS.membership.memberstackPlanId, status: "EXPIRED" },
+    ]);
+    expect(resolveJoinCtaPresentation(member, "annual")).toEqual({
+      kind: "join",
+      label: "Become a Member",
       disabled: false,
     });
   });

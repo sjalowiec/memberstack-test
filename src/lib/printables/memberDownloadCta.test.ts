@@ -31,7 +31,7 @@ describe("memberDownloadCtaSpec", () => {
   });
 
   it("memberAccess shows the download button only", () => {
-    const state = viewerStateForPlan(MEMBERSHIPS.premium.memberstackPlanId);
+    const state = viewerStateForPlan(MEMBERSHIPS.membership.memberstackPlanId);
     expect(state).toBe("memberAccess");
 
     expect(memberDownloadCtaSpec(state, DOWNLOAD_HREF, DOWNLOAD_LABEL)).toEqual({

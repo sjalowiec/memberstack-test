@@ -243,7 +243,7 @@ export function createMemberstackAdminClient({
   }
 
   /**
-   * Creates a member. `plans` may only include free plans; paid Premium must come from Stripe sync
+   * Creates a member. `plans` may only include free plans; paid membership must come from Stripe sync
    * (CSV import with Customer + Subscription IDs). Returns the created member (API `data`).
    * @param {{
    *   email: string,

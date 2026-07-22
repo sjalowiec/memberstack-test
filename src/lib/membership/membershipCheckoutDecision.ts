@@ -1,81 +1,41 @@
 /**
- * Decide how a logged-in member may start a membership plan action.
+ * Decide how a logged-in member may start a membership checkout action.
  *
  * Business rule: one active recurring Knit It Now membership only.
- * - No active paid plan ? purchase (Stripe Checkout via purchasePlansWithCheckout)
- * - Active member choosing their current tier ? current (disabled UI; no checkout)
- * - Active member switching tiers ? update (Memberstack data-ms-price:update)
+ * - No active paid plan → purchase (Stripe Checkout via purchasePlansWithCheckout)
+ * - Active paid member → current (disabled UI; manage billing via portal)
  * - Beta-only does not count as paid membership
  */
 
 import {
-  LEGACY_MEMBERSHIPS,
-  LEGACY_PREMIUM_MEMBER_PLAN_IDS,
+  LEGACY_PAID_MEMBER_PLAN_IDS,
   MEMBERSHIPS,
 } from "../../config/memberships";
 import { getActivePlanIds } from "../memberAccess";
 import type { JoinCheckoutPlanKey } from "./pendingMembershipCheckout";
 
-export const BASIC_MEMBERSHIP_PLAN_IDS = [
-  MEMBERSHIPS.basic.memberstackPlanId,
-  LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId,
-  LEGACY_MEMBERSHIPS.annualBasic.memberstackPlanId,
+/** Current + legacy plan ids that count as paid Knit it Now membership. */
+export const PAID_MEMBERSHIP_PLAN_IDS = [
+  MEMBERSHIPS.membership.memberstackPlanId,
+  ...LEGACY_PAID_MEMBER_PLAN_IDS,
 ] as const;
 
-export const PREMIUM_MEMBERSHIP_PLAN_IDS = [
-  MEMBERSHIPS.premium.memberstackPlanId,
-  ...LEGACY_PREMIUM_MEMBER_PLAN_IDS,
-] as const;
-
-const basicPlanIdSet = new Set<string>(BASIC_MEMBERSHIP_PLAN_IDS);
-const premiumPlanIdSet = new Set<string>(PREMIUM_MEMBERSHIP_PLAN_IDS);
-
-export type MembershipCheckoutTier = "basic" | "premium";
+const paidPlanIdSet = new Set<string>(PAID_MEMBERSHIP_PLAN_IDS);
 
 export type MembershipCheckoutDecision =
   | { action: "purchase" }
-  | { action: "update" }
-  | {
-      action: "current";
-      tier: MembershipCheckoutTier;
-    };
+  | { action: "current" };
 
-export function membershipTierFromPlanKey(planKey: JoinCheckoutPlanKey): MembershipCheckoutTier {
-  return planKey.startsWith("basic") ? "basic" : "premium";
-}
-
-export function memberHasActiveBasicPlan(memberOrPayload: unknown): boolean {
-  return getActivePlanIds(memberOrPayload).some((id) => basicPlanIdSet.has(id));
-}
-
-export function memberHasActivePremiumPlan(memberOrPayload: unknown): boolean {
-  return getActivePlanIds(memberOrPayload).some((id) => premiumPlanIdSet.has(id));
-}
-
-/** Active paid tier for CTA labels. Premium wins if both somehow appear. */
-export function memberActivePaidMembershipTier(
-  memberOrPayload: unknown,
-): MembershipCheckoutTier | null {
-  if (memberHasActivePremiumPlan(memberOrPayload)) return "premium";
-  if (memberHasActiveBasicPlan(memberOrPayload)) return "basic";
-  return null;
+export function memberHasActivePaidMembership(memberOrPayload: unknown): boolean {
+  return getActivePlanIds(memberOrPayload).some((id) => paidPlanIdSet.has(id));
 }
 
 export function resolveMembershipCheckoutDecision(
   memberOrPayload: unknown,
-  planKey: JoinCheckoutPlanKey,
+  _planKey: JoinCheckoutPlanKey,
 ): MembershipCheckoutDecision {
-  const targetTier = membershipTierFromPlanKey(planKey);
-  const activeTier = memberActivePaidMembershipTier(memberOrPayload);
-
-  if (!activeTier) {
-    return { action: "purchase" };
+  if (memberHasActivePaidMembership(memberOrPayload)) {
+    return { action: "current" };
   }
-
-  if (activeTier === targetTier) {
-    return { action: "current", tier: activeTier };
-  }
-
-  // Cross-tier switch: Memberstack data-ms-price:update (replace), never add/purchase.
-  return { action: "update" };
+  return { action: "purchase" };
 }

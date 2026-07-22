@@ -3,6 +3,7 @@ import {
   LEGACY_MEMBERSHIPS,
   MEMBERSHIPS,
   MEMBER_PLAN_IDS,
+  REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
 } from "../../config/memberships";
 import { PATTERN_BUILDER_LIFETIME_PURCHASES } from "../../config/patternBuilderLifetime";
 import {
@@ -16,19 +17,27 @@ function activePlans(...planIds: string[]): string[] {
 }
 
 describe("hasMemberAccessFromActivePlanIds", () => {
-  it("grants access for Basic, Premium, and Beta plan ids", () => {
-    expect(hasMemberAccessFromActivePlanIds(activePlans(MEMBERSHIPS.basic.memberstackPlanId))).toBe(
-      true,
-    );
+  it("grants access for membership, Beta, and remaining legacy Basic plan ids", () => {
     expect(
-      hasMemberAccessFromActivePlanIds(activePlans(MEMBERSHIPS.premium.memberstackPlanId)),
+      hasMemberAccessFromActivePlanIds(activePlans(MEMBERSHIPS.membership.memberstackPlanId)),
     ).toBe(true);
     expect(hasMemberAccessFromActivePlanIds(activePlans(MEMBERSHIPS.beta.memberstackPlanId))).toBe(
       true,
     );
+    expect(
+      hasMemberAccessFromActivePlanIds(
+        activePlans(LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId),
+      ),
+    ).toBe(true);
   });
 
-  it("still grants access for legacy membership plan ids", () => {
+  it("denies access for the removed annual Basic plan", () => {
+    expect(
+      hasMemberAccessFromActivePlanIds(activePlans(REMOVED_BASIC_MEMBERSHIP_PLAN_ID)),
+    ).toBe(false);
+  });
+
+  it("still grants access for remaining legacy membership plan ids", () => {
     expect(
       hasMemberAccessFromActivePlanIds(
         activePlans(LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId),
@@ -36,7 +45,7 @@ describe("hasMemberAccessFromActivePlanIds", () => {
     ).toBe(true);
     expect(
       hasMemberAccessFromActivePlanIds(
-        activePlans(LEGACY_MEMBERSHIPS.annualBasic.memberstackPlanId),
+        activePlans(LEGACY_MEMBERSHIPS.grandfatheredAnnual.memberstackPlanId),
       ),
     ).toBe(true);
   });
@@ -47,15 +56,23 @@ describe("hasMemberAccessFromActivePlanIds", () => {
   });
 });
 
-describe("hasPatternBuilderAccess — global membership", () => {
-  it("allows active Basic members to access both builders", () => {
-    const planIds = activePlans(MEMBERSHIPS.basic.memberstackPlanId);
+describe("hasPatternBuilderAccess  global membership", () => {
+  it("allows active members to access both builders", () => {
+    const planIds = activePlans(MEMBERSHIPS.membership.memberstackPlanId);
     expect(hasPatternBuilderAccess({ builder: "sleeveless", activePlanIds: planIds })).toBe(true);
     expect(hasPatternBuilderAccess({ builder: "dropShoulder", activePlanIds: planIds })).toBe(true);
   });
 
-  it("allows active Premium members to access both builders", () => {
-    const planIds = activePlans(MEMBERSHIPS.premium.memberstackPlanId);
+  it("denies the removed annual Basic plan for both builders", () => {
+    const planIds = activePlans(REMOVED_BASIC_MEMBERSHIP_PLAN_ID);
+    expect(hasPatternBuilderAccess({ builder: "sleeveless", activePlanIds: planIds })).toBe(false);
+    expect(hasPatternBuilderAccess({ builder: "dropShoulder", activePlanIds: planIds })).toBe(
+      false,
+    );
+  });
+
+  it("allows remaining legacy monthly Basic members to access both builders", () => {
+    const planIds = activePlans(LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId);
     expect(hasPatternBuilderAccess({ builder: "sleeveless", activePlanIds: planIds })).toBe(true);
     expect(hasPatternBuilderAccess({ builder: "dropShoulder", activePlanIds: planIds })).toBe(true);
   });
@@ -78,7 +95,7 @@ describe("hasPatternBuilderAccess — global membership", () => {
   });
 });
 
-describe("hasPatternBuilderAccess — lifetime builder ownership", () => {
+describe("hasPatternBuilderAccess  lifetime builder ownership", () => {
   const sleevelessLifetimePlanId = PATTERN_BUILDER_LIFETIME_PURCHASES.sleeveless.memberstackPlanId;
   const dropShoulderLifetimePlanId = PATTERN_BUILDER_LIFETIME_PURCHASES.dropShoulder.memberstackPlanId;
   const sleevelessLifetimePriceId = PATTERN_BUILDER_LIFETIME_PURCHASES.sleeveless.memberstackPriceId;
@@ -115,7 +132,7 @@ describe("hasPatternBuilderAccess — lifetime builder ownership", () => {
   });
 });
 
-describe("hasPatternBuilderAccess — no paid access", () => {
+describe("hasPatternBuilderAccess  no paid access", () => {
   it("denies users with no membership and no lifetime plan", () => {
     expect(hasPatternBuilderAccess({ builder: "sleeveless", activePlanIds: [] })).toBe(false);
     expect(hasPatternBuilderAccess({ builder: "dropShoulder", activePlanIds: [] })).toBe(false);
@@ -128,7 +145,7 @@ describe("hasPatternBuilderAccess — no paid access", () => {
     expect(
       hasPatternBuilderAccess({
         builder: "raglan",
-        activePlanIds: activePlans(MEMBERSHIPS.premium.memberstackPlanId),
+        activePlanIds: activePlans(MEMBERSHIPS.membership.memberstackPlanId),
       }),
     ).toBe(true);
     expect(

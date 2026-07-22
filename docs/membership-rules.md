@@ -1,11 +1,13 @@
 # Membership Rules
-proposed 7-13-2026
+
+updated 2026-07-22
+
 ## Membership plans
 
-- Basic Monthly: $13.99
-- Basic Annual: $129.99
-- Premium Monthly: $19.99
-- Premium Annual: $228.00
+- Knit it Now Membership Monthly: $19.99
+- Knit it Now Membership Annual: $228.00
+
+There is one paid membership. Beta access remains a separate free plan for invited beta members.
 
 ## Billing rules
 
@@ -14,12 +16,14 @@ proposed 7-13-2026
 - Cancellation leaves access available through the paid-through date.
 - Failed payments follow the Stripe retry and cancellation settings.
 
-## Plan changes
+## Billing interval changes
 
-- Basic to Premium: immediate upgrade, with proration if supported by the configured checkout flow.
-- Premium to Basic: takes effect at the next renewal.
-- Monthly to Annual: immediate change, with billing adjustment if supported.
-- Annual to Monthly: takes effect at the next renewal.
+- Monthly to Annual and Annual to Monthly are managed through the billing portal when supported by Stripe/Memberstack.
+- New members choose monthly or annual at checkout.
+
+## Member benefits
+
+- Active members have access to member lessons, tools, Help Hub resources, downloads, all Pattern Builders, and all Knit It Now courses.
 
 ## Lifetime Pattern Builder purchases
 

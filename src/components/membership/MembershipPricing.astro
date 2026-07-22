@@ -16,40 +16,21 @@ const {
   billingRadioHost = true,
 } = Astro.props;
 
-const basicMonthlyPrice = MEMBERSHIPS.basic.prices.monthly.price;
-const basicAnnualPrice = MEMBERSHIPS.basic.prices.annual.price;
-const premiumMonthlyPrice = MEMBERSHIPS.premium.prices.monthly.price;
-const premiumAnnualPrice = MEMBERSHIPS.premium.prices.annual.price;
+const monthlyPrice = MEMBERSHIPS.membership.prices.monthly.price;
+const annualPrice = MEMBERSHIPS.membership.prices.annual.price;
+const annualSavings = Math.round(monthlyPrice * 12 - annualPrice);
 
-/** Hidden data-ms-price:update triggers (bound by Memberstack at page load). */
-const priceUpdateTriggers = [
-  { planKey: "basicMonthly", priceId: MEMBERSHIP_PRICE_IDS.basicMonthly },
-  { planKey: "basicAnnual", priceId: MEMBERSHIP_PRICE_IDS.basicAnnual },
-  { planKey: "premiumMonthly", priceId: MEMBERSHIP_PRICE_IDS.premiumMonthly },
-  { planKey: "premiumAnnual", priceId: MEMBERSHIP_PRICE_IDS.premiumAnnual },
-] as const;
-
-const basicAnnualSavings = Math.round(basicMonthlyPrice * 12 - basicAnnualPrice);
-const premiumAnnualSavings = Math.round(premiumMonthlyPrice * 12 - premiumAnnualPrice);
-
-const basicFeatures = [
+const membershipFeatures = [
   "Instructional videos and Help Hub",
   "Tools, calculators, and Skill Builders",
   "Stitch downloads and reference resources",
   "Community and member features",
-  "Includes the Sleeveless Sweater Pattern Builder",
-];
-
-const premiumFeatures = [
-  "Everything in Basic",
   "Unlimited access to every Pattern Builder, including Sleeveless, Drop Shoulder, Raglan, Cardigans, Set-In Sleeves, and future releases",
   "All Knit It Now courses",
 ];
 
-const basicCompactSummary =
-  "Lessons, tools, member resources, and the Sleeveless Sweater Pattern Builder.";
-
-const premiumCompactSummary = "Everything in Basic, plus all pattern builders and all courses.";
+const compactSummary =
+  "Lessons, tools, member resources, every pattern builder, and all courses.";
 ---
 
 <div class="membership-pricing" data-variant={variant}>
@@ -71,20 +52,6 @@ const premiumCompactSummary = "Everything in Basic, plus all pattern builders an
           value="annual"
           class="membership-billing-radio"
         />
-        {/*
-          Memberstack binds data-ms-price:update at page load.
-          Join checkout programmatically clicks these for Basic↔Premium replace.
-        */}
-        <div class="membership-price-update-triggers" hidden aria-hidden="true">
-          {priceUpdateTriggers.map(({ planKey, priceId }) => (
-            <button
-              type="button"
-              tabindex="-1"
-              data-join-price-update={planKey}
-              {...{ "data-ms-price:update": priceId }}
-            />
-          ))}
-        </div>
       </>
     ) : null
   }
@@ -112,101 +79,71 @@ const premiumCompactSummary = "Everything in Basic, plus all pattern builders an
     </div>
   </div>
 
-  <div class="join-plans">
-    <article class="join-plan">
-      <h3 class="join-plan__title">Basic Membership</h3>
-      {
-        variant === "full" ? (
-          <>
-            <p class="join-plan__tagline">Learn, knit, and build confidence.</p>
-            <p class="join-plan__summary">
-              Access Knit It Now lessons, tools, reference resources, member features, and the
-              Sleeveless Sweater Pattern Builder.
-            </p>
-            <ul class="join-plan__features">
-              {basicFeatures.map((item) => (
-                <li>{item}</li>
-              ))}
-            </ul>
-          </>
-        ) : (
-          <p class="join-plan__summary">{basicCompactSummary}</p>
-        )
-      }
-      <div class="join-plan__checkout">
-        <div class="join-plan__billing join-plan__billing--monthly">
-          <p class="join-plan__price">
-            ${basicMonthlyPrice}<span class="join-plan__period">/month</span>
-          </p>
-          <button
-            type="button"
-            class="kbm-btn kbm-btn-primary join-plan__cta"
-            data-join-checkout="basicMonthly"
-          >
-            Join Basic
-          </button>
-        </div>
-        <div class="join-plan__billing join-plan__billing--annual">
-          <p class="join-plan__price">
-            ${basicAnnualPrice}<span class="join-plan__period">/year</span>
-          </p>
-          <p class="join-plan__savings">Save ${basicAnnualSavings}/year</p>
-          <button
-            type="button"
-            class="kbm-btn kbm-btn-primary join-plan__cta"
-            data-join-checkout="basicAnnual"
-          >
-            Join Basic
-          </button>
-        </div>
+  {
+    variant === "full" ? (
+      <div
+        class="membership-active-confirmation"
+        data-membership-active-confirmation
+        role="status"
+        hidden
+      >
+        <p class="membership-active-confirmation__title">
+          Your Knit it Now membership is active.
+        </p>
+        <p class="membership-active-confirmation__thanks">
+          Thank you for being part of the community.
+        </p>
       </div>
-    </article>
+    ) : null
+  }
 
-    <article class="join-plan join-plan--premium">
-      <p class="join-plan__badge" aria-label="Best value plan">Best Value</p>
-      <h3 class="join-plan__title">Premium Membership</h3>
+  <div class="join-plans">
+    <article class="join-plan join-plan--featured">
+      <h3 class="join-plan__title">Knit it Now Membership</h3>
       {
         variant === "full" ? (
           <>
             <p class="join-plan__tagline">Full access for active makers.</p>
             <p class="join-plan__summary">
-              Everything in Basic, plus every Knit It Now pattern builder and every Knit It Now
-              course.
+              Access Knit It Now lessons, tools, reference resources, member features, every pattern
+              builder, and every Knit It Now course.
             </p>
             <ul class="join-plan__features">
-              {premiumFeatures.map((item) => (
+              {membershipFeatures.map((item) => (
                 <li>{item}</li>
               ))}
             </ul>
           </>
         ) : (
-          <p class="join-plan__summary">{premiumCompactSummary}</p>
+          <p class="join-plan__summary">{compactSummary}</p>
         )
       }
       <div class="join-plan__checkout">
         <div class="join-plan__billing join-plan__billing--monthly">
           <p class="join-plan__price">
-            ${premiumMonthlyPrice}<span class="join-plan__period">/month</span>
+            ${monthlyPrice}<span class="join-plan__period">/month</span>
           </p>
           <button
             type="button"
             class="kbm-btn kbm-btn-primary join-plan__cta"
-            data-join-checkout="premiumMonthly"
+            data-join-checkout="monthly"
+            data-membership-price-id={MEMBERSHIP_PRICE_IDS.monthly}
           >
-            Join Premium
+            Become a Member
           </button>
         </div>
         <div class="join-plan__billing join-plan__billing--annual">
           <p class="join-plan__price">
-            ${premiumAnnualPrice}<span class="join-plan__period">/year</span>
+            ${annualPrice}<span class="join-plan__period">/year</span>
           </p>
-          <p class="join-plan__savings">Save ${premiumAnnualSavings}/year</p>
+          <p class="join-plan__savings">Save ${annualSavings}/year</p>
           <button
             type="button"
             class="kbm-btn kbm-btn-primary join-plan__cta"
-            data-join-checkout="premiumAnnual"
+            data-join-checkout="annual"
+            data-membership-price-id={MEMBERSHIP_PRICE_IDS.annual}
           >
-            Join Premium
+            Become a Member
           </button>
         </div>
       </div>
@@ -218,7 +155,7 @@ const premiumCompactSummary = "Everything in Basic, plus all pattern builders an
       <p class="join-footer">
         Returning or canceled members: <a href="#" data-ms-modal="login" data-ms-redirect="current-url">log in with your existing account</a>
         before joining again — do not create a second account.
-        New here? Use Sign Up in the menu for a free account, then join.
+        New here? Choose monthly or annual above, then create your account at checkout.
         Already subscribed?
         Visit <a href="/account">your workspace</a>
         or <a href="#" data-join-billing-portal>manage billing</a>.
@@ -337,6 +274,46 @@ const premiumCompactSummary = "Everything in Basic, plus all pattern builders an
     color: #991b1b;
   }
 
+  .join-checkout-status__message {
+    margin: 0 0 0.75rem;
+  }
+
+  .join-checkout-status__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+
+  .membership-active-confirmation {
+    margin: 0 0 1rem;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    border-radius: 0.75rem;
+    background: rgba(82, 104, 45, 0.08);
+    border: 1px solid rgba(82, 104, 45, 0.2);
+  }
+
+  .membership-active-confirmation[hidden] {
+    display: none;
+  }
+
+  .membership-active-confirmation__title,
+  .membership-active-confirmation__thanks {
+    margin: 0;
+    color: #4d5a48;
+    line-height: 1.45;
+  }
+
+  .membership-active-confirmation__title {
+    font-size: 0.98rem;
+    font-weight: 600;
+  }
+
+  .membership-active-confirmation__thanks {
+    margin-top: 0.25rem;
+    font-size: 0.92rem;
+  }
+
   .join-plan__cta:disabled {
     opacity: 0.65;
     cursor: wait;
@@ -344,7 +321,8 @@ const premiumCompactSummary = "Everything in Basic, plus all pattern builders an
 
   .join-plans {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    grid-template-columns: minmax(0, 28rem);
+    justify-content: center;
     gap: 1.25rem;
     margin-bottom: 1.5rem;
   }
@@ -359,22 +337,9 @@ const premiumCompactSummary = "Everything in Basic, plus all pattern builders an
     background: #fafafa;
   }
 
-  .join-plan--premium {
+  .join-plan--featured {
     border-color: rgba(82, 104, 45, 0.35);
     background: #f8faf6;
-  }
-
-  .join-plan__badge {
-    align-self: flex-start;
-    margin: 0;
-    padding: 0.2rem 0.55rem;
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    color: #4d5a48;
-    background: rgba(82, 104, 45, 0.12);
-    border-radius: 999px;
   }
 
   .join-plan__title {
@@ -462,10 +427,6 @@ const premiumCompactSummary = "Everything in Basic, plus all pattern builders an
   .join-plan__cta[aria-disabled="true"] {
     cursor: default;
     opacity: 0.72;
-  }
-
-  .membership-price-update-triggers {
-    display: none;
   }
 
   .join-footer {

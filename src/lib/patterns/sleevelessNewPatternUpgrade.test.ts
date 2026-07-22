@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { MEMBERSHIPS } from "../../config/memberships";
+import {
+  LEGACY_MEMBERSHIPS,
+  MEMBERSHIPS,
+  REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
+} from "../../config/memberships";
 import { PATTERN_BUILDER_LIFETIME_PURCHASES } from "../../config/patternBuilderLifetime";
 import { testAccess } from "./patternAccessTestFixtures";
 import {
@@ -19,21 +23,31 @@ describe("shouldBypassSleevelessNewPatternUpgradeScreen", () => {
     expect(shouldBypassSleevelessNewPatternUpgradeScreen(access, "sleeveless")).toBe(true);
   });
 
-  it("bypasses for active Basic members", () => {
+  it("does not bypass for the removed annual Basic plan", () => {
+    const access = testAccess({
+      loggedIn: true,
+      hasSystemAccess: false,
+      activePlanIds: [REMOVED_BASIC_MEMBERSHIP_PLAN_ID],
+      freeClaimed: true,
+    });
+    expect(shouldBypassSleevelessNewPatternUpgradeScreen(access, "sleeveless")).toBe(false);
+  });
+
+  it("bypasses for active remaining legacy monthly Basic members", () => {
     const access = testAccess({
       loggedIn: true,
       hasSystemAccess: true,
-      activePlanIds: [MEMBERSHIPS.basic.memberstackPlanId],
+      activePlanIds: [LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId],
       freeClaimed: true,
     });
     expect(shouldBypassSleevelessNewPatternUpgradeScreen(access, "sleeveless")).toBe(true);
   });
 
-  it("bypasses for active Premium members", () => {
+  it("bypasses for active paid members", () => {
     const access = testAccess({
       loggedIn: true,
       hasSystemAccess: true,
-      activePlanIds: [MEMBERSHIPS.premium.memberstackPlanId],
+      activePlanIds: [MEMBERSHIPS.membership.memberstackPlanId],
       freeClaimed: true,
     });
     expect(shouldBypassSleevelessNewPatternUpgradeScreen(access, "sleeveless")).toBe(true);
@@ -85,7 +99,7 @@ describe("shouldBypassSleevelessNewPatternUpgradeScreen", () => {
       loggedIn: true,
       hasSystemAccess: true,
       activePlanIds: [
-        MEMBERSHIPS.basic.memberstackPlanId,
+        MEMBERSHIPS.membership.memberstackPlanId,
         PATTERN_BUILDER_LIFETIME_PURCHASES.sleeveless.memberstackPlanId,
       ],
       freeClaimed: true,

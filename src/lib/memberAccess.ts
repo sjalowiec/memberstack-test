@@ -10,7 +10,7 @@
  *   never grants member access.
  *
  * The allow list itself lives in `src/config/memberships.ts` (`MEMBER_PLAN_IDS`)
- * so beta, basic, premium, legacy, and any future allowed plans are all
+ * so beta, paid membership, legacy, and any future allowed plans are all
  * controlled from one place. Do NOT keep a separate plan list in any section.
  */
 import { MEMBER_PLAN_IDS } from "../config/memberships";

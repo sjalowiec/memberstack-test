@@ -7,8 +7,8 @@
  * hidden), and this script flips them once Memberstack resolves.
  *
  * Access uses `canAccessCourse` from `courseAccess`:
- * Beta/Premium unlock every course (including "purchase"); Basic/logged-out
- * stay locked except for free courses (and future individual purchase entitlements).
+ * Beta and paid members unlock every course (including "purchase"); logged-out
+ * visitors stay locked except for free courses (and future individual purchase entitlements).
  */
 import { canAccessCourse, normalizeCourseAccessLevel } from "../lib/courseAccess";
 import { logMemberAccessDebug } from "../lib/memberAccess";

@@ -1,8 +1,9 @@
 /**
  * Pending membership checkout intent (sessionStorage).
  *
- * Used when a logged-out visitor clicks Join: we stash the plan they requested,
- * open LOGIN, then resume the exact checkout after authentication.
+ * Used when a logged-out visitor chooses monthly/annual: we stash the plan they
+ * requested, open Memberstack signup/login, then resume the exact checkout after
+ * authentication (including when auth completes via the header).
  */
 
 import { MEMBERSHIP_PRICE_IDS } from "../../config/memberships";
@@ -12,12 +13,7 @@ export const PENDING_MEMBERSHIP_CHECKOUT_KEY = "kbm:pending-membership-checkout"
 /** Pending intents older than this are ignored. */
 export const PENDING_MEMBERSHIP_CHECKOUT_TTL_MS = 30 * 60 * 1000;
 
-export const JOIN_CHECKOUT_PLAN_KEYS = [
-  "basicMonthly",
-  "basicAnnual",
-  "premiumMonthly",
-  "premiumAnnual",
-] as const;
+export const JOIN_CHECKOUT_PLAN_KEYS = ["monthly", "annual"] as const;
 
 export type JoinCheckoutPlanKey = (typeof JOIN_CHECKOUT_PLAN_KEYS)[number];
 
@@ -32,10 +28,8 @@ export type PendingMembershipCheckout = {
 };
 
 const PLAN_META: Record<JoinCheckoutPlanKey, { label: string; priceId: string }> = {
-  basicMonthly: { label: "Basic Monthly", priceId: MEMBERSHIP_PRICE_IDS.basicMonthly },
-  basicAnnual: { label: "Basic Annual", priceId: MEMBERSHIP_PRICE_IDS.basicAnnual },
-  premiumMonthly: { label: "Premium Monthly", priceId: MEMBERSHIP_PRICE_IDS.premiumMonthly },
-  premiumAnnual: { label: "Premium Annual", priceId: MEMBERSHIP_PRICE_IDS.premiumAnnual },
+  monthly: { label: "Membership Monthly", priceId: MEMBERSHIP_PRICE_IDS.monthly },
+  annual: { label: "Membership Annual", priceId: MEMBERSHIP_PRICE_IDS.annual },
 };
 
 export function isJoinCheckoutPlanKey(value: unknown): value is JoinCheckoutPlanKey {

@@ -68,11 +68,11 @@ describe("currentBusiness", () => {
           createdAt: "2026-07-01T00:00:00.000Z",
           planConnections: [
             {
-              planId: MEMBERSHIPS.basic.memberstackPlanId,
+              planId: MEMBERSHIPS.membership.memberstackPlanId,
               active: true,
               status: "ACTIVE",
               payment: {
-                priceId: MEMBERSHIPS.basic.prices.monthly.memberstackPriceId,
+                priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
               },
             },
           ],

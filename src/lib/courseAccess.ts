@@ -1,42 +1,41 @@
 /**
- * Course access — Premium-tier gating for courses.
+ * Course access — member gating for courses.
  *
- * Courses use a NARROWER allow list than the global member gate. The global
- * `hasMemberAccess` (in `memberAccess.ts`) grants access to Basic, Premium,
- * Beta, and legacy members. Courses key off the PREMIUM subset only:
+ * Courses use the same allow list as the global member gate: Beta, the paid
+ * Knit it Now Membership, and legacy paid plan shells (`COURSE_ACCESS_PLAN_IDS`
+ * / `MEMBER_PLAN_IDS`). Login alone never unlocks member courses.
  *
  *   - "free"     — open to everyone (no login required).
- *   - "premium"  — Beta, current Premium, and legacy Premium (`PREMIUM_PLAN_IDS`).
- *                  Basic and legacy Basic do NOT unlock courses.
- *   - "purchase" — included with Premium/Beta (same as premium courses).
- *                  Non-Premium members may unlock via individual purchase
- *                  entitlement when that system exists; until then they stay locked.
+ *   - "member"   — requires active member access (Beta or paid membership).
+ *   - "purchase" — included with membership (same as member courses).
+ *                  Non-members may unlock via individual purchase entitlement
+ *                  when that system exists; until then they stay locked.
  *
  * This helper reuses the global Memberstack payload parsing
  * (`getActivePlanIds`, `isMemberLoggedIn`) so course gating stays consistent
  * with every other gated section.
  */
-import { PREMIUM_PLAN_IDS } from "../config/memberships";
+import { COURSE_ACCESS_PLAN_IDS } from "../config/memberships";
 import { getActivePlanIds, isMemberLoggedIn } from "./memberAccess";
 
-export type CourseAccessLevel = "free" | "premium" | "purchase";
+export type CourseAccessLevel = "free" | "member" | "purchase";
 
 /**
  * Resolved viewer state for a course, used to pick CTAs / gate copy:
- *   - "open"          — render content (free, Premium member, or entitled purchase)
- *   - "loggedOut"     — course requires Premium (or purchase); not logged in
- *   - "needsPremium"  — course requires Premium; logged in but no Premium plan
- *   - "needsPurchase" — purchase course; logged in without Premium or purchase entitlement
+ *   - "open"          — render content (free, member, or entitled purchase)
+ *   - "loggedOut"     — course requires membership (or purchase); not logged in
+ *   - "needsMembership" — course requires membership; logged in without access
+ *   - "needsPurchase" — purchase course; logged in without membership or purchase
  */
 export type CourseViewerState =
   | "open"
   | "loggedOut"
-  | "needsPremium"
+  | "needsMembership"
   | "needsPurchase";
 
-export const COURSE_ACCESS_LEVELS = ["free", "premium", "purchase"] as const;
+export const COURSE_ACCESS_LEVELS = ["free", "member", "purchase"] as const;
 
-const premiumPlanIds = new Set<string>(PREMIUM_PLAN_IDS);
+const courseAccessPlanIds = new Set<string>(COURSE_ACCESS_PLAN_IDS);
 
 /** Type guard for a valid course access level string. */
 export function isCourseAccessLevel(value: unknown): value is CourseAccessLevel {
@@ -48,33 +47,38 @@ export function isCourseAccessLevel(value: unknown): value is CourseAccessLevel 
 
 /**
  * Normalize an arbitrary value to a `CourseAccessLevel`. Unknown or absent
- * values fall back to `fallback` (default "premium", i.e. locked by default so
- * nothing leaks through omission).
+ * values fall back to `fallback` (default "member", i.e. locked by default so
+ * nothing leaks through omission). Legacy catalog value `"premium"` maps to
+ * `"member"`.
  */
 export function normalizeCourseAccessLevel(
   value: unknown,
-  fallback: CourseAccessLevel = "premium",
+  fallback: CourseAccessLevel = "member",
 ): CourseAccessLevel {
   if (typeof value === "string") {
     const v = value.trim().toLowerCase();
     if (v === "free") return "free";
-    if (v === "premium") return "premium";
+    if (v === "member" || v === "premium") return "member";
     if (v === "purchase") return "purchase";
   }
   return fallback;
 }
 
 /**
- * True when the member holds an active Beta, current Premium, or legacy Premium
- * plan. Basic and legacy Basic do NOT grant course access (the key difference
- * from the global `hasMemberAccess`).
+ * True when the member holds an active plan that unlocks member courses
+ * (Beta, paid membership, or legacy paid shells).
  */
+export function hasCourseMembershipAccess(memberOrPayload: unknown): boolean {
+  return getActivePlanIds(memberOrPayload).some((id) => courseAccessPlanIds.has(id));
+}
+
+/** @deprecated Use {@link hasCourseMembershipAccess}. */
 export function hasPremiumCourseAccess(memberOrPayload: unknown): boolean {
-  return getActivePlanIds(memberOrPayload).some((id) => premiumPlanIds.has(id));
+  return hasCourseMembershipAccess(memberOrPayload);
 }
 
 /**
- * Individual course purchase entitlement for non-Premium members.
+ * Individual course purchase entitlement for non-members.
  * No entitlement lookup exists yet — always false. Hook future purchase
  * records here so catalog locks and CourseAccessGate stay aligned.
  */
@@ -92,9 +96,9 @@ export function canAccessCourse(
   options?: { courseSlug?: string | null },
 ): boolean {
   if (access === "free") return true;
-  if (hasPremiumCourseAccess(memberOrPayload)) return true;
-  if (access === "premium") return false;
-  // "purchase": Premium already returned true above; otherwise require entitlement.
+  if (hasCourseMembershipAccess(memberOrPayload)) return true;
+  if (access === "member") return false;
+  // "purchase": membership already returned true above; otherwise require entitlement.
   return hasIndividualCoursePurchase(options?.courseSlug, memberOrPayload);
 }
 
@@ -110,6 +114,6 @@ export function getCourseViewerState(
     return isMemberLoggedIn(memberOrPayload) ? "needsPurchase" : "loggedOut";
   }
 
-  // premium (and unknown fallbacks treated as premium-gated)
-  return isMemberLoggedIn(memberOrPayload) ? "needsPremium" : "loggedOut";
+  // member (and unknown fallbacks treated as member-gated)
+  return isMemberLoggedIn(memberOrPayload) ? "needsMembership" : "loggedOut";
 }

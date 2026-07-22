@@ -72,7 +72,7 @@ export const faqGroups: FaqGroup[] = [
       },
     ],
     summary:
-      "Your membership isn't going away. If you're an active Basic or Premium member, you'll continue to enjoy the benefits of your membership on the new site.",
+      "Your membership isn't going away. If you're an active member, you'll continue to enjoy the benefits of your membership on the new site.",
   },
   {
     title: "Your Patterns, Downloads & Courses",

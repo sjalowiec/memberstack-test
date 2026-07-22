@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { MEMBERSHIPS } from "../../config/memberships";
+import { MEMBERSHIPS, REMOVED_BASIC_MEMBERSHIP_PLAN_ID } from "../../config/memberships";
 import {
   computeMembershipSummary,
   connectionCanceledAt,
@@ -11,9 +11,9 @@ import {
 } from "./membershipSummary";
 
 const NOW = new Date("2026-07-12T15:30:00.000Z");
-const BASIC_PLAN_ID = MEMBERSHIPS.basic.memberstackPlanId;
-const BASIC_MONTHLY_PRICE_ID = MEMBERSHIPS.basic.prices.monthly.memberstackPriceId;
-const PREMIUM_ANNUAL_PRICE_ID = MEMBERSHIPS.premium.prices.annual.memberstackPriceId;
+const MEMBERSHIP_PLAN_ID = MEMBERSHIPS.membership.memberstackPlanId;
+const MEMBERSHIP_MONTHLY_PRICE_ID = MEMBERSHIPS.membership.prices.monthly.memberstackPriceId;
+const MEMBERSHIP_ANNUAL_PRICE_ID = MEMBERSHIPS.membership.prices.annual.memberstackPriceId;
 
 describe("membershipSummary", () => {
   it("counts active members, new members, and revenue from Memberstack-shaped fixtures", () => {
@@ -24,10 +24,10 @@ describe("membershipSummary", () => {
           createdAt: "2026-07-10T00:00:00.000Z",
           planConnections: [
             {
-              planId: BASIC_PLAN_ID,
+              planId: MEMBERSHIP_PLAN_ID,
               active: true,
               status: "ACTIVE",
-              payment: { priceId: BASIC_MONTHLY_PRICE_ID },
+              payment: { priceId: MEMBERSHIP_MONTHLY_PRICE_ID },
             },
           ],
         },
@@ -36,9 +36,9 @@ describe("membershipSummary", () => {
           createdAt: "2026-05-01T00:00:00.000Z",
           planConnections: [
             {
-              planId: MEMBERSHIPS.premium.memberstackPlanId,
+              planId: MEMBERSHIP_PLAN_ID,
               status: "ACTIVE",
-              payment: { priceId: PREMIUM_ANNUAL_PRICE_ID },
+              payment: { priceId: MEMBERSHIP_ANNUAL_PRICE_ID },
             },
           ],
         },
@@ -53,11 +53,10 @@ describe("membershipSummary", () => {
 
     expect(summary.activeMembersTotal).toBe(2);
     expect(summary.newMembers.thisMonth).toBe(1);
-    expect(summary.revenue.mrrEstimate).toBeCloseTo(13.99 + 228 / 12, 2);
+    expect(summary.revenue.mrrEstimate).toBeCloseTo(19.99 + 228 / 12, 2);
     expect(summary.revenue.arrEstimate).toBeCloseTo(summary.revenue.mrrEstimate * 12, 2);
     expect(summary.activeByPlan).toEqual([
-      { planKey: "basic", planName: MEMBERSHIPS.basic.name, activeMembers: 1 },
-      { planKey: "premium", planName: MEMBERSHIPS.premium.name, activeMembers: 1 },
+      { planKey: "membership", planName: MEMBERSHIPS.membership.name, activeMembers: 2 },
     ]);
   });
 
@@ -68,12 +67,12 @@ describe("membershipSummary", () => {
           id: "mem_cancelled",
           planConnections: [
             {
-              planId: BASIC_PLAN_ID,
+              planId: MEMBERSHIP_PLAN_ID,
               status: "CANCELED",
               canceledAt: "2026-07-05T00:00:00.000Z",
             },
             {
-              planId: BASIC_PLAN_ID,
+              planId: REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
               status: "EXPIRED",
               cancelledAt: "2026-05-01T00:00:00.000Z",
             },
@@ -94,7 +93,7 @@ describe("membershipSummary", () => {
           id: "mem_unresolved",
           planConnections: [
             {
-              planId: BASIC_PLAN_ID,
+              planId: MEMBERSHIP_PLAN_ID,
               active: true,
               status: "ACTIVE",
               payment: { priceId: "prc_unknown" },
@@ -140,9 +139,9 @@ describe("membershipSummary", () => {
     expect(isCanceledConnectionStatus("cancelled")).toBe(true);
     expect(
       paidConnectionPriceId({
-        payment: { priceId: BASIC_MONTHLY_PRICE_ID },
+        payment: { priceId: MEMBERSHIP_MONTHLY_PRICE_ID },
       }),
-    ).toBe(BASIC_MONTHLY_PRICE_ID);
+    ).toBe(MEMBERSHIP_MONTHLY_PRICE_ID);
     expect(
       connectionCanceledAt({
         canceledAt: "2026-07-01T00:00:00.000Z",
@@ -150,7 +149,7 @@ describe("membershipSummary", () => {
     ).toBe("2026-07-01T00:00:00.000Z");
     expect(
       monthlyEquivalent({
-        planKey: "premium",
+        planKey: "membership",
         interval: "annual",
         amount: 228,
       }),

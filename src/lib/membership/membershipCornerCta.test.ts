@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { LEGACY_MEMBERSHIPS, MEMBERSHIPS } from "../../config/memberships";
+import {
+  LEGACY_MEMBERSHIPS,
+  MEMBERSHIPS,
+  REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
+} from "../../config/memberships";
 import {
   MEMBERSHIP_CORNER_CTA,
   MEMBERSHIP_CORNER_RESTART_ENABLED,
@@ -35,21 +39,25 @@ describe("memberHasCanceledPaidMembership", () => {
     ).toBe(false);
   });
 
-  it("is true for canceled Basic", () => {
+  it("is false for canceled removed annual Basic (not a paid plan)", () => {
     expect(
       memberHasCanceledPaidMembership(
         memberWithPlans([
-          { planId: MEMBERSHIPS.basic.memberstackPlanId, status: "CANCELED", active: false },
+          {
+            planId: REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
+            status: "CANCELED",
+            active: false,
+          },
         ]),
       ),
-    ).toBe(true);
+    ).toBe(false);
   });
 
-  it("is true for expired Premium", () => {
+  it("is true for expired membership", () => {
     expect(
       memberHasCanceledPaidMembership(
         memberWithPlans([
-          { planId: MEMBERSHIPS.premium.memberstackPlanId, status: "EXPIRED" },
+          { planId: MEMBERSHIPS.membership.memberstackPlanId, status: "EXPIRED" },
         ]),
       ),
     ).toBe(true);
@@ -72,7 +80,7 @@ describe("memberHasCanceledPaidMembership", () => {
     expect(
       memberHasCanceledPaidMembership(
         memberWithPlans([
-          { planId: MEMBERSHIPS.basic.memberstackPlanId, status: "ACTIVE" },
+          { planId: MEMBERSHIPS.membership.memberstackPlanId, status: "ACTIVE" },
         ]),
       ),
     ).toBe(false);
@@ -80,15 +88,15 @@ describe("memberHasCanceledPaidMembership", () => {
 });
 
 describe("resolveMembershipCornerCta", () => {
-  it("logged out ? Become a Member ? /membership", () => {
+  it("logged out → Become a Member → /membership", () => {
     expect(resolveMembershipCornerCta({ data: null })).toEqual(MEMBERSHIP_CORNER_CTA.become);
   });
 
-  it("logged in with no plans ? Become a Member", () => {
+  it("logged in with no plans → Become a Member", () => {
     expect(resolveMembershipCornerCta(memberWithPlans([]))).toEqual(MEMBERSHIP_CORNER_CTA.become);
   });
 
-  it("beta-only ? Become a Member", () => {
+  it("beta-only → Become a Member", () => {
     expect(
       resolveMembershipCornerCta(
         memberWithPlans([{ planId: MEMBERSHIPS.beta.memberstackPlanId, status: "ACTIVE" }]),
@@ -96,24 +104,34 @@ describe("resolveMembershipCornerCta", () => {
     ).toEqual(MEMBERSHIP_CORNER_CTA.become);
   });
 
-  it("active Basic ? Upgrade to Premium ? /membership", () => {
+  it("active removed annual Basic → Become a Member", () => {
     expect(
       resolveMembershipCornerCta(
-        memberWithPlans([{ planId: MEMBERSHIPS.basic.memberstackPlanId, status: "ACTIVE" }]),
+        memberWithPlans([{ planId: REMOVED_BASIC_MEMBERSHIP_PLAN_ID, status: "ACTIVE" }]),
       ),
-    ).toEqual(MEMBERSHIP_CORNER_CTA.upgrade);
+    ).toEqual(MEMBERSHIP_CORNER_CTA.become);
   });
 
-  it("active Premium ? Manage Membership (portal via corner control)", () => {
+  it("active remaining legacy monthly Basic → Manage Membership", () => {
     expect(
       resolveMembershipCornerCta(
-        memberWithPlans([{ planId: MEMBERSHIPS.premium.memberstackPlanId, status: "ACTIVE" }]),
+        memberWithPlans([
+          { planId: LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId, status: "ACTIVE" },
+        ]),
+      ),
+    ).toEqual(MEMBERSHIP_CORNER_CTA.manage);
+  });
+
+  it("active membership → Manage Membership (portal via corner control)", () => {
+    expect(
+      resolveMembershipCornerCta(
+        memberWithPlans([{ planId: MEMBERSHIPS.membership.memberstackPlanId, status: "ACTIVE" }]),
       ),
     ).toEqual(MEMBERSHIP_CORNER_CTA.manage);
     expect(MEMBERSHIP_CORNER_CTA.manage.label).toBe("Manage Membership");
   });
 
-  it("legacy Monthly Subscription plan shell ? Manage Membership", () => {
+  it("legacy Monthly Subscription plan shell → Manage Membership", () => {
     expect(
       resolveMembershipCornerCta(
         memberWithPlans([
@@ -126,23 +144,16 @@ describe("resolveMembershipCornerCta", () => {
     ).toEqual(MEMBERSHIP_CORNER_CTA.manage);
   });
 
-  it("Premium wins over Basic when both active", () => {
-    expect(
-      resolveMembershipCornerCta(
-        memberWithPlans([
-          { planId: MEMBERSHIPS.basic.memberstackPlanId, status: "ACTIVE" },
-          { planId: MEMBERSHIPS.premium.memberstackPlanId, status: "ACTIVE" },
-        ]),
-      ),
-    ).toEqual(MEMBERSHIP_CORNER_CTA.manage);
-  });
-
   it("canceled paid history does not Restart while restart is disabled", () => {
     expect(MEMBERSHIP_CORNER_RESTART_ENABLED).toBe(false);
     expect(
       resolveMembershipCornerCta(
         memberWithPlans([
-          { planId: MEMBERSHIPS.basic.memberstackPlanId, status: "CANCELED", active: false },
+          {
+            planId: MEMBERSHIPS.membership.memberstackPlanId,
+            status: "CANCELED",
+            active: false,
+          },
         ]),
       ),
     ).toEqual(MEMBERSHIP_CORNER_CTA.become);

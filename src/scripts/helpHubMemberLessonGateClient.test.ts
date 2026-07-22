@@ -2,7 +2,11 @@
  * @vitest-environment node
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { MEMBERSHIPS, LEGACY_MEMBERSHIPS } from "../config/memberships";
+import {
+  LEGACY_MEMBERSHIPS,
+  MEMBERSHIPS,
+  REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
+} from "../config/memberships";
 import { hasMemberAccess, getViewerAccessState } from "../lib/memberAccess";
 import {
   LESSON_MEMBER_BODY_MOUNT_ATTR,
@@ -161,7 +165,7 @@ function makeEl(tag: string): FakeEl {
     cloneNode(deep = false) {
       const copy = makeEl(this.tagName);
       for (const [k, v] of this.attributes) copy.setAttribute(k, v);
-      // classList is separate from attributes in this stub  copy known classes.
+      // classList is separate from attributes in this stub ? copy known classes.
       for (const name of ["lesson-member-body", "lesson-video-frame"]) {
         if (this.classList.contains(name)) copy.classList.add(name);
       }
@@ -321,15 +325,17 @@ function memberPayload(planId: string | null) {
   };
 }
 
-describe("hasMemberAccess plan allow list (paid monthly / premium / beta)", () => {
-  it("recognizes current Premium plan (monthly price uses this plan id)", () => {
-    const res = memberPayload(MEMBERSHIPS.premium.memberstackPlanId);
+describe("hasMemberAccess plan allow list (membership / beta / legacy)", () => {
+  it("recognizes current membership plan (monthly price uses this plan id)", () => {
+    const res = memberPayload(MEMBERSHIPS.membership.memberstackPlanId);
     expect(hasMemberAccess(res)).toBe(true);
     expect(getViewerAccessState(res)).toBe("memberAccess");
   });
 
-  it("recognizes current Basic, Beta, and legacy Premium monthly shells", () => {
-    expect(hasMemberAccess(memberPayload(MEMBERSHIPS.basic.memberstackPlanId))).toBe(true);
+  it("recognizes remaining legacy Basic, Beta, and legacy Premium monthly shells", () => {
+    expect(
+      hasMemberAccess(memberPayload(LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId)),
+    ).toBe(true);
     expect(hasMemberAccess(memberPayload(MEMBERSHIPS.beta.memberstackPlanId))).toBe(true);
     expect(
       hasMemberAccess(memberPayload(LEGACY_MEMBERSHIPS.monthlyPremium.memberstackPlanId)),
@@ -339,6 +345,10 @@ describe("hasMemberAccess plan allow list (paid monthly / premium / beta)", () =
         memberPayload(LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId),
       ),
     ).toBe(true);
+  });
+
+  it("denies the removed annual Basic plan", () => {
+    expect(hasMemberAccess(memberPayload(REMOVED_BASIC_MEMBERSHIP_PLAN_ID))).toBe(false);
   });
 
   it("denies logged-in members with no active paid plan", () => {

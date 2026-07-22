@@ -1,7 +1,7 @@
 /**
  * Centralized Pattern Builder entitlement ù full access to a specific builder.
  *
- * Full access is granted when the visitor has global member access (Basic, Premium, Beta,
+ * Full access is granted when the visitor has global member access (paid membership, Beta,
  * or legacy plans via {@link hasMemberAccess}) OR owns the lifetime Memberstack product for
  * that builder only.
  *

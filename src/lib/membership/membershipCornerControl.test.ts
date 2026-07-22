@@ -1,7 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { MEMBERSHIP_CORNER_CTA, resolveMembershipCornerCta } from "./membershipCornerCta";
 import { performMembershipCornerAction } from "./membershipCornerControl";
-import { MEMBERSHIPS } from "../../config/memberships";
+import {
+  LEGACY_MEMBERSHIPS,
+  MEMBERSHIPS,
+  REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
+} from "../../config/memberships";
 
 function memberWithPlans(
   connections: Array<{ planId: string; status: string; active?: boolean }>,
@@ -30,12 +34,12 @@ describe("performMembershipCornerAction", () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
-  it("navigates for Upgrade / Become and does not open the portal", async () => {
+  it("navigates for Become and does not open the portal", async () => {
     const openPortal = vi.fn();
     const navigate = vi.fn();
 
     await expect(
-      performMembershipCornerAction("upgrade", "/membership", {
+      performMembershipCornerAction("become", "/membership", {
         openPortal,
         navigate,
       }),
@@ -62,20 +66,30 @@ describe("performMembershipCornerAction", () => {
 });
 
 describe("resolveMembershipCornerCta (corner control contract)", () => {
-  it("Premium resolves to Manage Membership", () => {
+  it("paid membership resolves to Manage Membership", () => {
     expect(
       resolveMembershipCornerCta(
-        memberWithPlans([{ planId: MEMBERSHIPS.premium.memberstackPlanId, status: "ACTIVE" }]),
+        memberWithPlans([{ planId: MEMBERSHIPS.membership.memberstackPlanId, status: "ACTIVE" }]),
       ),
     ).toEqual(MEMBERSHIP_CORNER_CTA.manage);
   });
 
-  it("Basic keeps Upgrade to Premium", () => {
+  it("removed annual Basic resolves to Become a Member", () => {
     expect(
       resolveMembershipCornerCta(
-        memberWithPlans([{ planId: MEMBERSHIPS.basic.memberstackPlanId, status: "ACTIVE" }]),
+        memberWithPlans([{ planId: REMOVED_BASIC_MEMBERSHIP_PLAN_ID, status: "ACTIVE" }]),
       ),
-    ).toEqual(MEMBERSHIP_CORNER_CTA.upgrade);
+    ).toEqual(MEMBERSHIP_CORNER_CTA.become);
+  });
+
+  it("remaining legacy monthly Basic resolves to Manage Membership", () => {
+    expect(
+      resolveMembershipCornerCta(
+        memberWithPlans([
+          { planId: LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId, status: "ACTIVE" },
+        ]),
+      ),
+    ).toEqual(MEMBERSHIP_CORNER_CTA.manage);
   });
 
   it("free / logged-out keep Become a Member", () => {

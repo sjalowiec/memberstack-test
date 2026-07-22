@@ -88,14 +88,9 @@ export function buildPlanIndex(): Map<string, PlanInfo> {
     name: MEMBERSHIPS.beta.name,
     paid: false,
   });
-  index.set(MEMBERSHIPS.basic.memberstackPlanId, {
-    key: "basic",
-    name: MEMBERSHIPS.basic.name,
-    paid: true,
-  });
-  index.set(MEMBERSHIPS.premium.memberstackPlanId, {
-    key: "premium",
-    name: MEMBERSHIPS.premium.name,
+  index.set(MEMBERSHIPS.membership.memberstackPlanId, {
+    key: "membership",
+    name: MEMBERSHIPS.membership.name,
     paid: true,
   });
   for (const [key, plan] of Object.entries(LEGACY_MEMBERSHIPS)) {
@@ -111,16 +106,14 @@ export function buildPlanIndex(): Map<string, PlanInfo> {
 
 export function buildPriceIndex(): Map<string, PriceInfo> {
   const index = new Map<string, PriceInfo>();
-  for (const key of ["basic", "premium"] as const) {
-    const plan = MEMBERSHIPS[key];
-    for (const interval of ["monthly", "annual"] as const) {
-      const priceEntry = plan.prices[interval];
-      index.set(priceEntry.memberstackPriceId, {
-        planKey: key,
-        interval,
-        amount: priceEntry.price,
-      });
-    }
+  const plan = MEMBERSHIPS.membership;
+  for (const interval of ["monthly", "annual"] as const) {
+    const priceEntry = plan.prices[interval];
+    index.set(priceEntry.memberstackPriceId, {
+      planKey: "membership",
+      interval,
+      amount: priceEntry.price,
+    });
   }
   return index;
 }

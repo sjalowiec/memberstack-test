@@ -1,7 +1,9 @@
 import {
+  memberHasActivePaidMembership,
   resolveMembershipCheckoutDecision,
 } from "../lib/membership/membershipCheckoutDecision";
 import { resolveJoinCtaPresentation } from "../lib/membership/membershipPricingUi";
+import { resolveMembershipSalesCta } from "../lib/membership/membershipSalesCta";
 import {
   buildPendingMembershipCheckout,
   clearPendingMembershipCheckout,
@@ -35,28 +37,116 @@ type MemberstackError = {
 
 const STATUS_ID = "join-checkout-status";
 
-const LOGIN_FIRST_MESSAGE =
-  "Log in with your existing Knit It Now account to continue checkout. Returning and canceled members must use the account they already have — do not create a new one. New here? Use Sign Up in the menu to create a free account, then return to join.";
-
 /** Prevents double-click / overlapping checkout sessions. */
 let checkoutInFlight = false;
 let resumeListenerBound = false;
 let lastKnownMemberPayload: unknown = null;
 
+type MembershipAuthModalOutcome =
+  | { status: "authenticated"; memberPayload: unknown }
+  | { status: "dismissed" }
+  | { status: "failed-to-open" };
+
+function setJoinStatusTone(el: HTMLElement, tone: "info" | "error" | "success"): void {
+  el.classList.remove(
+    "join-checkout-status--info",
+    "join-checkout-status--error",
+    "join-checkout-status--success",
+  );
+  el.classList.add(`join-checkout-status--${tone}`);
+}
+
 function showJoinStatus(message: string, tone: "info" | "error" | "success" = "info"): void {
   const el = document.getElementById(STATUS_ID);
   if (!el) return;
   el.hidden = false;
+  el.replaceChildren();
   el.textContent = message;
-  el.classList.remove("join-checkout-status--info", "join-checkout-status--error", "join-checkout-status--success");
-  el.classList.add(`join-checkout-status--${tone}`);
+  setJoinStatusTone(el, tone);
 }
 
 function clearJoinStatus(): void {
   const el = document.getElementById(STATUS_ID);
   if (!el) return;
   el.hidden = true;
-  el.textContent = "";
+  el.replaceChildren();
+}
+
+async function readCurrentMemberPayload(
+  ms: NonNullable<Window["$memberstackDom"]>,
+): Promise<unknown> {
+  try {
+    return await ms.getCurrentMember();
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fallback only when the Memberstack modal genuinely fails to open (e.g. localhost ORB).
+ * Inline Signup / Login — never send visitors to the nav Sign Up link.
+ */
+function showAuthModalFailedFallback(
+  ms: NonNullable<Window["$memberstackDom"]>,
+  planKey: JoinCheckoutPlanKey,
+): void {
+  const el = document.getElementById(STATUS_ID);
+  if (!el) return;
+
+  el.hidden = false;
+  el.replaceChildren();
+  setJoinStatusTone(el, "error");
+
+  const message = document.createElement("p");
+  message.className = "join-checkout-status__message";
+  message.textContent = "Could not open the signup window. Continue here:";
+
+  const actions = document.createElement("div");
+  actions.className = "join-checkout-status__actions";
+
+  const signupBtn = document.createElement("button");
+  signupBtn.type = "button";
+  signupBtn.className = "kbm-btn kbm-btn-accent";
+  signupBtn.textContent = "Sign Up";
+  signupBtn.addEventListener("click", () => {
+    clearJoinStatus();
+    void startJoinCheckout(planKey);
+  });
+
+  const loginBtn = document.createElement("button");
+  loginBtn.type = "button";
+  loginBtn.className = "kbm-btn kbm-btn-outline";
+  loginBtn.textContent = "Log In";
+  loginBtn.addEventListener("click", () => {
+    clearJoinStatus();
+    void (async () => {
+      if (typeof ms.openModal !== "function") {
+        showAuthModalFailedFallback(ms, planKey);
+        return;
+      }
+      try {
+        await ms.openModal("LOGIN");
+      } catch (error) {
+        console.error("[join checkout] LOGIN fallback failed to open:", error);
+        showAuthModalFailedFallback(ms, planKey);
+        return;
+      }
+      const memberPayload = await readCurrentMemberPayload(ms);
+      if (!memberIdFromMemberstackPayload(memberPayload)) {
+        clearJoinStatus();
+        return;
+      }
+      try {
+        notifyMemberstackLoginSuccess();
+      } catch {
+        /* ignore */
+      }
+      await resumePendingMembershipCheckout();
+    })();
+  });
+
+  actions.append(signupBtn, loginBtn);
+  el.append(message, actions);
 }
 
 function memberstackErrorInfo(error: unknown): MemberstackError {
@@ -119,6 +209,25 @@ function setButtonsBusy(busy: boolean): void {
   });
 }
 
+function applyActiveMembershipConfirmation(memberOrPayload: unknown): void {
+  const isActiveMember = memberHasActivePaidMembership(memberOrPayload);
+  document
+    .querySelectorAll<HTMLElement>("[data-membership-active-confirmation]")
+    .forEach((el) => {
+      el.hidden = !isActiveMember;
+    });
+}
+
+/** Sync the hero sales CTA (scroll to pricing vs manage) — never opens auth. */
+export function applyMembershipSalesCtaState(memberOrPayload: unknown): void {
+  const cta = resolveMembershipSalesCta(memberOrPayload);
+  document.querySelectorAll<HTMLAnchorElement>("[data-membership-sales-cta]").forEach((el) => {
+    el.textContent = cta.label;
+    el.setAttribute("href", cta.href);
+    el.setAttribute("data-membership-sales-cta-kind", cta.kind);
+  });
+}
+
 /** Sync Join CTA labels/disabled state from the current member (no flash messages). */
 export function applyJoinCheckoutButtonStates(memberOrPayload: unknown): void {
   lastKnownMemberPayload = memberOrPayload;
@@ -134,6 +243,8 @@ export function applyJoinCheckoutButtonStates(memberOrPayload: unknown): void {
       btn.setAttribute("aria-busy", "false");
     }
   });
+  applyActiveMembershipConfirmation(memberOrPayload);
+  applyMembershipSalesCtaState(memberOrPayload);
 }
 
 async function syncJoinCheckoutButtonStatesFromMemberstack(
@@ -157,48 +268,50 @@ function currentReturnUrl(): string {
 }
 
 /**
- * Invoke Memberstack's documented data-ms-price:update handler via a page-load-bound
- * hidden trigger. Do not call undocumented portal priceIds APIs directly.
+ * After a plan is chosen, open Memberstack SIGNUP (login available in-modal).
+ *
+ * Important Memberstack behavior: calling `hideModal()` (including from the
+ * site-wide `member.login` → `notifyMemberstackLoginSuccess` handler) resolves
+ * the openModal promise with `{ type: "CLOSED" }`. That must not be treated as
+ * auth failure when the member is already logged in.
  */
-function invokeMembershipPriceUpdate(planKey: JoinCheckoutPlanKey): boolean {
-  const trigger = document.querySelector<HTMLElement>(
-    `[data-join-price-update="${planKey}"]`,
-  );
-  if (!trigger) {
-    console.error("[join checkout] missing data-ms-price:update trigger for", planKey);
-    showJoinStatus("Could not start plan update. Please refresh and try again.", "error");
-    return false;
-  }
-  console.log("[join checkout] invoking data-ms-price:update trigger", planKey);
-  clearPendingMembershipCheckout();
-  clearJoinStatus();
-  trigger.click();
-  return true;
-}
-
-async function openMembershipLoginModal(
+async function openMembershipAuthModal(
   ms: NonNullable<Window["$memberstackDom"]>,
-): Promise<boolean> {
-  if (typeof ms.openModal !== "function") return false;
-
-  showJoinStatus(LOGIN_FIRST_MESSAGE, "info");
+): Promise<MembershipAuthModalOutcome> {
+  if (typeof ms.openModal !== "function") {
+    return { status: "failed-to-open" };
+  }
 
   try {
-    const result = await ms.openModal("LOGIN");
-    // Prefer the resolved modal result; also treat a logged-in member as success
-    // in case Memberstack resolves without a typed payload.
+    const result = await ms.openModal("SIGNUP");
     const resultType = (result as { type?: string } | undefined)?.type;
-    if (resultType && resultType !== "LOGIN") {
-      return false;
+    const memberPayload = await readCurrentMemberPayload(ms);
+    const loggedIn = Boolean(memberIdFromMemberstackPayload(memberPayload));
+
+    if (loggedIn) {
+      try {
+        notifyMemberstackLoginSuccess();
+      } catch {
+        /* hideModal / auth event may be unavailable in some environments */
+      }
+      return { status: "authenticated", memberPayload };
     }
-    try {
-      notifyMemberstackLoginSuccess();
-    } catch {
-      /* hideModal / auth event may be unavailable in some environments */
+
+    // User dismissed, or hideModal closed the modal before auth completed.
+    if (resultType === "CLOSED" || resultType === undefined) {
+      return { status: "dismissed" };
     }
-    return true;
-  } catch {
-    return false;
+
+    // Typed SIGNUP/LOGIN without a member session — treat as incomplete, not open failure.
+    if (resultType === "SIGNUP" || resultType === "LOGIN") {
+      return { status: "dismissed" };
+    }
+
+    return { status: "dismissed" };
+  } catch (error) {
+    // Common on http://localhost when the prebuilt modal CDN script is ORB-blocked.
+    console.error("[join checkout] SIGNUP modal failed to open:", error);
+    return { status: "failed-to-open" };
   }
 }
 
@@ -275,8 +388,9 @@ export type StartJoinCheckoutOptions = {
 };
 
 /**
- * Start (or resume) membership checkout / update for one Join plan button.
- * Logged-out visitors are sent to LOGIN (never SIGNUP) with a pending intent.
+ * Start (or resume) membership checkout for one plan button (monthly / annual).
+ * Logged-out visitors authenticate via SIGNUP (with login available in-modal)
+ * after choosing a plan; pending intent resumes if auth completes elsewhere.
  */
 export async function startJoinCheckout(
   planKey: JoinCheckoutPlanKey,
@@ -322,37 +436,32 @@ export async function startJoinCheckout(
     if (!loggedIn) {
       if (options.fromResume) {
         console.log("[join checkout] resume aborted — still logged out");
-        showJoinStatus(LOGIN_FIRST_MESSAGE, "info");
+        clearJoinStatus();
         return;
       }
 
-      // Persist intent before login so header login / auth:updated can also resume.
+      // Persist intent before auth so header login / auth:updated can also resume.
       savePendingMembershipCheckout(buildPendingMembershipCheckout(planKey, returnUrl));
-      console.log("[join checkout] opening LOGIN modal (not signup)");
+      console.log("[join checkout] opening SIGNUP modal (login available in-modal)");
 
-      const loginOk = await openMembershipLoginModal(ms);
-      if (!loginOk) {
-        console.log("[join checkout] login cancelled or closed, keeping pending intent");
-        showJoinStatus(
-          "Checkout paused. Log in with your existing account to continue, or use Sign Up in the menu only if you are new.",
-          "info",
-        );
+      const authOutcome = await openMembershipAuthModal(ms);
+      if (authOutcome.status === "failed-to-open") {
+        console.log("[join checkout] auth modal failed to open — showing inline fallback");
+        showAuthModalFailedFallback(ms, planKey);
+        return;
+      }
+      if (authOutcome.status === "dismissed") {
+        // Keep pending intent; do not strand the visitor with a "Checkout paused" banner.
+        console.log("[join checkout] auth dismissed, keeping pending intent silently");
+        clearJoinStatus();
         return;
       }
 
-      try {
-        memberPayload = await ms.getCurrentMember();
-      } catch (error) {
-        console.error("[join checkout] getCurrentMember after login failed:", error);
-      }
-
+      memberPayload = authOutcome.memberPayload;
       loggedIn = Boolean(memberIdFromMemberstackPayload(memberPayload));
       if (!loggedIn) {
-        console.error("[join checkout] still not logged in after LOGIN modal");
-        showJoinStatus(
-          "Login did not complete. Please log in with your existing account, then try Join again.",
-          "error",
-        );
+        console.error("[join checkout] authenticated outcome but member session missing");
+        clearJoinStatus();
         return;
       }
     }
@@ -365,14 +474,8 @@ export async function startJoinCheckout(
 
     if (decision.action === "current") {
       clearPendingMembershipCheckout();
-      console.log("[join checkout] current plan — no checkout or redirect:", decision.tier);
+      console.log("[join checkout] current plan — no checkout or redirect");
       // Button already shows Current Plan; do not flash a status message.
-      return;
-    }
-
-    if (decision.action === "update") {
-      console.log("[join checkout] update/replace via data-ms-price:update");
-      invokeMembershipPriceUpdate(planKey);
       return;
     }
 
@@ -457,9 +560,22 @@ export function initJoinCheckout(root: ParentNode = document): void {
     });
   });
 
-  void syncJoinCheckoutButtonStatesFromMemberstack();
-  // If the visitor logged in elsewhere and returned with a pending intent, resume.
-  void resumePendingMembershipCheckout();
+  void (async () => {
+    const ms = await waitForMemberstackDom();
+    // Warm the prebuilt modal UI so the first SIGNUP open is not delayed.
+    const preload = (ms as { preloadModals?: () => Promise<unknown> } | null | undefined)
+      ?.preloadModals;
+    if (typeof preload === "function") {
+      try {
+        void preload.call(ms);
+      } catch {
+        /* optional */
+      }
+    }
+    await syncJoinCheckoutButtonStatesFromMemberstack(ms);
+    // If the visitor logged in elsewhere and returned with a pending intent, resume.
+    await resumePendingMembershipCheckout();
+  })();
 }
 
 /** Test-only: reset module locks between cases. */

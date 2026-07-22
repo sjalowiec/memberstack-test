@@ -1,7 +1,7 @@
 /**
  * Resolve Account page membership panel display from a Memberstack payload.
  *
- * Uses existing Basic/Premium detection — does not invent access rules.
+ * Uses paid-membership detection — does not invent access rules.
  * Billing interval is shown only when an active paid connection maps to a
  * known Memberstack price id in `MEMBERSHIPS`.
  *
@@ -12,11 +12,8 @@
 import { isActiveMemberstackPlanConnection } from "../memberAccess";
 import { memberRecordFromMemberstackPayload } from "../patterns/memberstackMember";
 import {
-  BASIC_MEMBERSHIP_PLAN_IDS,
-  PREMIUM_MEMBERSHIP_PLAN_IDS,
-  memberActivePaidMembershipTier,
-  memberHasActiveBasicPlan,
-  memberHasActivePremiumPlan,
+  PAID_MEMBERSHIP_PLAN_IDS,
+  memberHasActivePaidMembership,
 } from "./membershipCheckoutDecision";
 import {
   buildPriceIndex,
@@ -26,14 +23,10 @@ import {
 
 export type AccountMembershipBillingInterval = "monthly" | "annual";
 
-export type AccountMembershipPanelKind = "free" | "basic" | "premium";
+export type AccountMembershipPanelKind = "free" | "member";
 
 /** Action keys rendered as buttons/links on the Account membership panel. */
-export type AccountMembershipPanelAction =
-  | "join-basic"
-  | "join-premium"
-  | "upgrade"
-  | "manage";
+export type AccountMembershipPanelAction = "join" | "manage";
 
 export type AccountMembershipPanelView = {
   kind: AccountMembershipPanelKind;
@@ -58,10 +51,9 @@ export function accountMembershipPanelActions(
   kind: AccountMembershipPanelKind,
   options?: { canceling?: boolean },
 ): AccountMembershipPanelAction[] {
-  if (kind === "free") return ["join-basic", "join-premium"];
-  // Canceling Basic or Premium: manage only (no upgrade / join while still entitled).
+  if (kind === "free") return ["join"];
+  // Canceling or active member: manage only.
   if (options?.canceling) return ["manage"];
-  if (kind === "basic") return ["upgrade", "manage"];
   return ["manage"];
 }
 
@@ -99,16 +91,13 @@ function planConnectionsFromPayload(memberOrPayload: unknown): unknown[] {
   return Array.isArray(connections) ? connections : [];
 }
 
-/** Active Basic/Premium connection for the member's current paid tier, if any. */
+/** Active paid membership connection, if any. */
 export function activePaidPlanConnection(
   memberOrPayload: unknown,
 ): PlanConnection | null {
-  const tier = memberActivePaidMembershipTier(memberOrPayload);
-  if (!tier) return null;
+  if (!memberHasActivePaidMembership(memberOrPayload)) return null;
 
-  const planIdSet = new Set<string>(
-    tier === "premium" ? PREMIUM_MEMBERSHIP_PLAN_IDS : BASIC_MEMBERSHIP_PLAN_IDS,
-  );
+  const planIdSet = new Set<string>(PAID_MEMBERSHIP_PLAN_IDS);
 
   for (const conn of planConnectionsFromPayload(memberOrPayload)) {
     const record = asRecord(conn);
@@ -155,7 +144,7 @@ export function activeUntilMessageFromCancelAtLabel(cancelAtLabel: string): stri
 }
 
 /**
- * Billing interval from the active Basic/Premium connection's known price id.
+ * Billing interval from the active paid connection's known price id.
  * Returns null when the price id is missing or not in the current price index.
  */
 export function billingIntervalFromActivePaidConnection(
@@ -201,31 +190,17 @@ export function resolveAccountMembershipPanelView(
     ? activeUntilMessageFromCancelAtLabel(cancelAtLabel)
     : null;
 
-  if (memberHasActivePremiumPlan(memberOrPayload)) {
+  if (memberHasActivePaidMembership(memberOrPayload)) {
     return {
-      kind: "premium",
-      planLabel: "Premium",
+      kind: "member",
+      planLabel: "Knit it Now Membership",
       statusLabel: isCanceling ? "Canceling" : "Active",
       billingInterval,
       billingLabel,
       renewsLabel,
       isCanceling,
       activeUntilMessage,
-      visibleActions: accountMembershipPanelActions("premium", { canceling: isCanceling }),
-    };
-  }
-
-  if (memberHasActiveBasicPlan(memberOrPayload)) {
-    return {
-      kind: "basic",
-      planLabel: "Basic",
-      statusLabel: isCanceling ? "Canceling" : "Active",
-      billingInterval,
-      billingLabel,
-      renewsLabel,
-      isCanceling,
-      activeUntilMessage,
-      visibleActions: accountMembershipPanelActions("basic", { canceling: isCanceling }),
+      visibleActions: accountMembershipPanelActions("member", { canceling: isCanceling }),
     };
   }
 

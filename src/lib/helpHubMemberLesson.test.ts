@@ -32,11 +32,11 @@ function viewerStateForPlan(planId: string | null): ViewerAccessState {
 
 describe("memberAccess viewer states for Help Hub Member Lessons", () => {
   it("memberAccess: logged-in member with an allowed plan", () => {
-    expect(viewerStateForPlan(MEMBERSHIPS.basic.memberstackPlanId)).toBe("memberAccess");
+    expect(viewerStateForPlan(MEMBERSHIPS.membership.memberstackPlanId)).toBe("memberAccess");
     expect(hasMemberAccess({
       data: {
         id: "ms_member",
-        planConnections: [{ planId: MEMBERSHIPS.basic.memberstackPlanId, status: "ACTIVE" }],
+        planConnections: [{ planId: MEMBERSHIPS.membership.memberstackPlanId, status: "ACTIVE" }],
       },
     })).toBe(true);
   });
