@@ -4,6 +4,7 @@ import PatternsFeaturesSection from "../components/patterns/PatternsFeaturesSect
 import PatternHeaderImage from "../components/patterns/PatternHeaderImage.astro";
 import { PATTERN_BUILDERS_HOME_HREF } from "../lib/patterns/customPatternProjectNavigation";
 import MembershipPricing from "../components/membership/MembershipPricing.astro";
+import MembershipStatusPanel from "../components/membership/MembershipStatusPanel.astro";
 
 const memberStories = [
   {
@@ -113,11 +114,15 @@ const includedGroups = [
 
     <hr class="section-divider" />
 
+    <!-- Logged-in status (Watson-backed; hidden when logged out) -->
+    <MembershipStatusPanel />
+
     <!-- 2. Pricing -->
     <section
       id="pricing"
       class="membership-section membership-section--anchor"
       aria-labelledby="membership-pricing-heading"
+      data-membership-purchase-region
     >
       <header class="membership-section__header">
         <h2 id="membership-pricing-heading">Join Knit it Now</h2>
@@ -326,13 +331,7 @@ const includedGroups = [
             from your workspace or the billing portal link on this page.
           </p>
         </details>
-        <details class="faq-item">
-          <summary>Do I keep access to free patterns?</summary>
-          <p>
-            Free patterns you have already saved to your account remain available. Membership unlocks
-            editing, customization, and the broader library of member tools and resources.
-          </p>
-        </details>
+       
         <details class="faq-item">
           <summary>What if I'm not logged in when I choose a plan?</summary>
           <p>
@@ -355,6 +354,7 @@ const includedGroups = [
   <script>
     import "../scripts/joinCheckout.ts";
     import "../scripts/membershipBillingToggle.ts";
+    import "../scripts/membershipStatusPanel.ts";
   </script>
 
   <style>

@@ -27,8 +27,17 @@ When the legacy ColdFusion site is retired, customer support still needs access 
 | [store-fulfillment.md](./store-fulfillment.md) | Machine/drop-ship shipping-cost records and apply SQL |
 | [todo.md](./todo.md) | Phased implementation checklist |
 
+## Public membership status (narrow exception)
+
+Watson staff UI remains support-only. A narrow member-facing endpoint reuses Watson?s merged customer helpers for `/membership`:
+
+- `GET /.netlify/functions/membership-status` (Bearer Memberstack JWT via `requireMember`)
+- Live plan status from Memberstack Admin API; legacy history from Watson Postgres (unique email link only)
+- Restricted customer-facing fields only ? no notes, orders, addresses, or staff labels
+- See [membership-reports.md](./membership-reports.md) and `docs/membership-rules.md`
+
 ## Out of scope (for now)
 
 - Replacing ColdFusion admin features (content editing, catalog management, live billing).
 - Writing back to legacy SQL Server.
-- End-user (member-facing) functionality.
+- Broad end-user (member-facing) Watson functionality beyond the restricted membership-status summary above.

@@ -4,6 +4,7 @@ import {
 } from "../lib/membership/membershipCheckoutDecision";
 import { resolveJoinCtaPresentation } from "../lib/membership/membershipPricingUi";
 import { resolveMembershipSalesCta } from "../lib/membership/membershipSalesCta";
+import { shouldBlockPurchaseForStatusMode } from "../lib/membership/membershipStatusCta";
 import {
   buildPendingMembershipCheckout,
   clearPendingMembershipCheckout,
@@ -231,15 +232,20 @@ export function applyMembershipSalesCtaState(memberOrPayload: unknown): void {
 /** Sync Join CTA labels/disabled state from the current member (no flash messages). */
 export function applyJoinCheckoutButtonStates(memberOrPayload: unknown): void {
   lastKnownMemberPayload = memberOrPayload;
+  const statusBlocksPurchase = shouldBlockPurchaseForStatusMode();
   document.querySelectorAll<HTMLButtonElement>("[data-join-checkout]").forEach((btn) => {
     const key = btn.getAttribute("data-join-checkout");
     if (!isJoinCheckoutPlanKey(key)) return;
     const presentation = resolveJoinCtaPresentation(memberOrPayload, key);
     btn.textContent = presentation.label;
-    btn.disabled = presentation.disabled;
-    btn.setAttribute("aria-disabled", presentation.disabled ? "true" : "false");
+    const disabled = presentation.disabled || statusBlocksPurchase;
+    btn.disabled = disabled;
+    btn.setAttribute("aria-disabled", disabled ? "true" : "false");
     btn.setAttribute("data-join-cta-state", presentation.kind);
-    if (!presentation.disabled) {
+    if (statusBlocksPurchase) {
+      btn.setAttribute("data-membership-status-blocked", "true");
+    }
+    if (!disabled) {
       btn.setAttribute("aria-busy", "false");
     }
   });
@@ -476,6 +482,17 @@ export async function startJoinCheckout(
       clearPendingMembershipCheckout();
       console.log("[join checkout] current plan — no checkout or redirect");
       // Button already shows Current Plan; do not flash a status message.
+      return;
+    }
+
+    // Status panel overlay (ambiguous / unavailable / manage) must not be bypassed.
+    if (shouldBlockPurchaseForStatusMode()) {
+      clearPendingMembershipCheckout();
+      console.log("[join checkout] blocked by membership status recommendation");
+      showJoinStatus(
+        "Please review your membership status above before purchasing.",
+        "info",
+      );
       return;
     }
 

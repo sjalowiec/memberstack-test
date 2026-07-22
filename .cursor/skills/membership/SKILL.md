@@ -15,7 +15,9 @@ Membership landing page linked from membership prompts across the site (patterns
 
 - `src/pages/membership.astro`
 - `src/components/membership/MembershipPricing.astro`
+- `src/components/membership/MembershipStatusPanel.astro`
 - `src/pages/join.astro`
+- `GET /.netlify/functions/membership-status` (logged-in status summary)
 
 ## Tone
 
@@ -47,3 +49,5 @@ Friendly, clear, reassuring, and practical. For machine knitters. Not corporate 
 - Hero primary CTA (`data-membership-sales-cta`): `Become a Member` → `#pricing` for prospects/free users; active paid members see `Manage Membership` → `/account#membership`
 - Plan checkout labels (monthly/annual): `Become a Member` → Memberstack signup/login then Stripe checkout
 - Paid members see `Current Plan` on plan buttons; manage billing via account or portal
+- Logged-in status panel (Watson-backed) explains membership history/context; it must not weaken checkout protection (`memberHasActivePaidMembership` / `resolveMembershipCheckoutDecision`)
+- Ambiguous or unavailable status: suppress purchase CTAs and point to contact support / retry — never default endpoint failure to “please buy”

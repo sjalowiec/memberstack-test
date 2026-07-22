@@ -4,13 +4,26 @@ Read-only reports under `/watson/reports` that help support and migration work u
 
 These reports are **not** live Memberstack/Stripe status. They use the Watson legacy import snapshot.
 
+## Public membership status (related)
+
+The member-facing endpoint `GET /.netlify/functions/membership-status` is **not** a Watson staff report. It reuses Watson identity/legacy-link helpers plus live Memberstack Admin lookup to show a small summary on `/membership`.
+
+Rules that also apply here:
+
+- Memberstack remains authoritative for live membership.
+- Unique email-linked legacy rows may supply `legacyExpirationDate` / previous plan labels as history only.
+- Ambiguous shared emails never auto-link another customerùs history.
+- Legacy expiration never grants current access and must not be worded as current access.
+- Future/today legacy paid-through (America/Los_Angeles calendar compare) ? contact support before purchase; past ? ìended onî + purchase allowed.
+- Checkout protection on the sales page stays independent of this summary.
+
 ## Current Legacy Members
 
 **Route:** `/watson/reports/current-legacy-members`
 
 ### Purpose
 
-Reproduce the current-membership universe used by Matthewís legacy ColdFusion active-subscriptions screens.
+Reproduce the current-membership universe used by Matthewùs legacy ColdFusion active-subscriptions screens.
 
 ### Universe (legacy current-state fields)
 
@@ -28,7 +41,7 @@ One row per `legacy_members` row. Active status is **not** taken from `legacy_su
 ### Display notes
 
 - Null/blank `subscriptiontype` is shown as **Membership, legacy type blank**.
-- Latest subscription amount, processor, rate ID, and expiration are enrichment from the memberís latest `legacy_subscriptions` row (`ORDER BY datebought DESC`). They are not what the legacy screen used to decide ìactive.î
+- Latest subscription amount, processor, rate ID, and expiration are enrichment from the memberùs latest `legacy_subscriptions` row (`ORDER BY datebought DESC`). They are not what the legacy screen used to decide ùactive.ù
 - This report reflects imported current-state fields. It does **not** claim perfect accuracy.
 
 ### Summary cards
@@ -71,7 +84,7 @@ Applied in this order:
    Three-payment subscription types, known installment rate IDs, or amounts `$45 / $50 / $80`.
 
 4. **Probable annual, single payment**  
-   Non-monthly with annual-looking amount and/or ~300ñ450 day member term, but missing/blank/inconsistent type or rate.
+   Non-monthly with annual-looking amount and/or ~300ù450 day member term, but missing/blank/inconsistent type or rate.
 
 5. **Unresolved non-monthly**  
    Remaining current non-monthly members that do not fit a reliable product rule.

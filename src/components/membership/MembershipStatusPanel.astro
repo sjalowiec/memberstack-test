@@ -1,0 +1,146 @@
+---
+/**
+ * Logged-in membership status panel for /membership.
+ * Content is filled client-side after the authenticated membership-status endpoint responds.
+ */
+---
+
+<section
+  class="membership-status-panel"
+  data-membership-status-panel
+  data-membership-status-state="idle"
+  hidden
+  aria-live="polite"
+>
+  <div class="membership-status-panel__inner">
+    <p class="membership-status-panel__loading" data-membership-status-loading hidden>
+      Checking your membership status…
+    </p>
+
+    <div class="membership-status-panel__body" data-membership-status-body hidden>
+      <h2 class="membership-status-panel__heading" data-membership-status-heading></h2>
+      <p class="membership-status-panel__message" data-membership-status-message></p>
+
+      <dl class="membership-status-panel__facts" data-membership-status-facts hidden>
+        <div class="membership-status-panel__fact" data-membership-status-fact="status">
+          <dt>Status</dt>
+          <dd data-membership-status-value="status"></dd>
+        </div>
+        <div class="membership-status-panel__fact" data-membership-status-fact="plan" hidden>
+          <dt>Current plan</dt>
+          <dd data-membership-status-value="plan"></dd>
+        </div>
+        <div class="membership-status-panel__fact" data-membership-status-fact="through" hidden>
+          <dt>Active through</dt>
+          <dd data-membership-status-value="through"></dd>
+        </div>
+        <div class="membership-status-panel__fact" data-membership-status-fact="previous" hidden>
+          <dt>Previous membership</dt>
+          <dd data-membership-status-value="previous"></dd>
+        </div>
+      </dl>
+
+      <div class="membership-status-panel__actions">
+        <a
+          href="/account#membership"
+          class="kbm-btn kbm-btn-accent"
+          data-membership-status-manage
+          hidden
+        >
+          Manage Membership
+        </a>
+        <a
+          href="#"
+          class="kbm-btn kbm-btn-accent contact-modal-trigger"
+          data-membership-status-contact
+          data-contact-source="membership-status"
+          hidden
+        >
+          Contact support
+        </a>
+        <button
+          type="button"
+          class="kbm-btn kbm-btn-outline"
+          data-membership-status-retry
+          hidden
+        >
+          Try again
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .membership-status-panel {
+    margin: 0 0 1.25rem;
+  }
+
+  .membership-status-panel__inner {
+    padding: 1.15rem 1.25rem;
+    border-radius: 0.85rem;
+    border: 1px solid rgba(82, 104, 45, 0.22);
+    background: rgba(82, 104, 45, 0.07);
+  }
+
+  .membership-status-panel__loading {
+    margin: 0;
+    color: #4d5a48;
+    font-size: 0.95rem;
+  }
+
+  .membership-status-panel__heading {
+    margin: 0 0 0.45rem;
+    font-size: 1.15rem;
+    line-height: 1.3;
+    color: #2c3a57;
+  }
+
+  .membership-status-panel__message {
+    margin: 0;
+    color: #4d5a48;
+    line-height: 1.55;
+    font-size: 0.98rem;
+  }
+
+  .membership-status-panel__facts {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0.9rem 0 0;
+  }
+
+  .membership-status-panel__fact {
+    display: grid;
+    grid-template-columns: minmax(7rem, 9.5rem) 1fr;
+    gap: 0.35rem 0.75rem;
+    margin: 0;
+  }
+
+  .membership-status-panel__fact dt {
+    margin: 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #2c3a57;
+  }
+
+  .membership-status-panel__fact dd {
+    margin: 0;
+    color: #4d5a48;
+    font-size: 0.92rem;
+  }
+
+  .membership-status-panel__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 1rem;
+  }
+
+  .membership-status-panel[data-membership-status-state="error"] .membership-status-panel__inner,
+  .membership-status-panel[data-membership-status-cta-mode="wait"] .membership-status-panel__inner,
+  .membership-status-panel[data-membership-status-cta-mode="contact_support"]
+    .membership-status-panel__inner {
+    border-color: rgba(122, 92, 45, 0.28);
+    background: rgba(196, 149, 74, 0.1);
+  }
+</style>
