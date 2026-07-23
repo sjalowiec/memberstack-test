@@ -15,11 +15,34 @@ import { MACHINE_SALES_HOLD } from "../../lib/machines/machineSalesHold";
 // Flip MACHINE_SALES_HOLD to false in machineSalesHold.ts to restore the catalog below.
 const salesHold = MACHINE_SALES_HOLD;
 
-const title = salesHold
-  ? "Machine Sales Coming Soon | Knit it Now"
-  : "Knitting Machines for Sale | Knit it Now";
+/**
+ * Temporary Shopify-only offers while the full catalog remains on hold.
+ * Hardcoded here on purpose — does not read or modify the machine reference database.
+ */
+const TEMP_SHOPIFY_PRODUCTS = [
+  {
+    name: "Taitexma TH860 Punchcard Knitting Machine",
+    href: "https://vjzu11-86.myshopify.com/products/taitexma-th860-punchcard-knitting-machine",
+    imageSrc: "/images/machines/8601.jpg",
+    priceLabel: "$1,449",
+    specs: ["Standard Gauge", "Punchcard", "200 needles"],
+    shortHtml:
+      "At 4.5mm this Taitexma <em>(tie-tex-ma)</em> machine is the perfect gauge for finer yarns and lighter weight knits.",
+  },
+  {
+    name: "Taitexma TR-850 Standard Ribber",
+    href: "https://vjzu11-86.myshopify.com/products/tr-850-taitexma-standard-ribber",
+    imageSrc: "/images/machines/tr-850-ribber.jpg",
+    priceLabel: "$1,399",
+    specs: ["4.5 Standard Gauge", "200 needles"],
+    shortHtml:
+      "Expand your knitting machine's capabilities by making it easy to knit professional ribbing, cuffs, waistbands, collars, and a wide variety of textured stitch patterns.",
+  },
+] as const;
+
+const title = "Knitting Machines for Sale | Knit it Now";
 const description = salesHold
-  ? "Machine ordering is coming soon. Contact Sue about knitting machines, ribbers, and availability."
+  ? "Purchase select Taitexma knitting machines and ribbers online through our Shopify store."
   : "Knitting machines currently available for purchase. Compare gauge and specs, then buy securely online.";
 
 const machines = salesHold ? [] : getMachinesForSale();
@@ -33,27 +56,66 @@ function formatPrice(value: number | null): string | null {
 ---
 
 <Layout {title} {description}>
-  <PageHead title={salesHold ? "Machine Sales Coming Soon" : "Knitting Machines for Sale"} />
+  <PageHead title="Knitting Machines for Sale" />
 
   <div class="machines-page">
     {/* === TEMPORARY MACHINE SALES HOLD (start) ===
-        Remove this block (or set MACHINE_SALES_HOLD = false) to restore the catalog. */}
+        Shopify product cards below. Set MACHINE_SALES_HOLD = false to restore the full catalog. */}
     {salesHold ? (
-      <header class="page-header">
-        <a class="back-link" href="/shop">← Back to Shop</a>
-        <h1 class="page-title">Machine Sales Coming Soon</h1>
-        <p class="page-intro">
-          We're putting the finishing touches on our new machine ordering process.
-        </p>
-        <p class="page-intro page-intro--follow">
-          In the meantime, please contact Sue if you're interested in purchasing a knitting
-          machine or ribber, checking availability, or asking a question about a model.
-        </p>
-        <div class="machines-hold-actions">
-          <a href="/contact" class="machine-details-link">Contact Sue</a>
-          <a href="/shop" class="machines-hold-secondary">Return to Shop</a>
+      <>
+        <header class="page-header">
+          <a class="back-link" href="/shop">← Back to Shop</a>
+          <h1 class="page-title">Knitting Machines for Sale</h1>
+          <p class="page-intro">
+            These Taitexma products are available to purchase now. Select
+            <strong> View and Purchase</strong> to complete your order on our Shopify store.
+          </p>
+          <p class="page-intro page-intro--follow">
+            Taitexma machines are available for customers in the United States only. Questions?
+            <a href="/contact"> Contact Sue</a>.
+          </p>
+        </header>
+
+        <div class="machines-grid machines-grid--temp">
+          {
+            TEMP_SHOPIFY_PRODUCTS.map((product) => (
+              <article class="machine-card">
+                <div class="machine-card-image-wrap">
+                  <img
+                    src={product.imageSrc}
+                    alt={product.name}
+                    class="machine-card-image"
+                    width="280"
+                    height="180"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <div class="machine-card-body">
+                  <h2 class="machine-name">{product.name}</h2>
+                  <ul class="machine-specs" aria-label="Quick specs">
+                    {product.specs.map((spec) => (
+                      <li>{spec}</li>
+                    ))}
+                  </ul>
+                  <div class="machine-short" set:html={product.shortHtml} />
+                  <p class="machine-price">{product.priceLabel}</p>
+                  <div class="machine-actions">
+                    <a
+                      href={product.href}
+                      class="machine-buy"
+                      rel="noopener"
+                      target="_blank"
+                    >
+                      Buy Now
+                    </a>
+                  </div>
+                </div>
+              </article>
+            ))
+          }
         </div>
-      </header>
+      </>
     ) : (
       <>
         {/* === ORIGINAL MACHINE CATALOG (preserved for restore) === */}
@@ -219,6 +281,10 @@ function formatPrice(value: number | null): string | null {
   @media (min-width: 900px) {
     .machines-grid {
       grid-template-columns: repeat(3, 1fr);
+    }
+
+    .machines-grid--temp {
+      grid-template-columns: repeat(2, 1fr);
     }
   }
 
