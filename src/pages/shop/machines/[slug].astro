@@ -24,6 +24,7 @@ import {
   canCheckout,
   formatExpectedDate,
 } from "../../../lib/machines/machineAdminFields";
+import { MACHINE_SALES_HOLD } from "../../../lib/machines/machineSalesHold";
 
 const CONTACT_HREF = "/contact";
 
@@ -39,6 +40,13 @@ const { machine } = Astro.props as { machine: Machine };
 // Defensive: only for-sale machines should reach here; send strays back.
 const resolved = machine ?? getMachineBySlug(Astro.params.slug);
 if (!resolved || resolved.sale?.forSale !== true) {
+  return Astro.redirect("/shop/machines");
+}
+
+// TEMPORARY: launch hold while shipping/ordering is finalized.
+// Machine product pages redirect to the Coming Soon listing; accessories stay available.
+// Flip MACHINE_SALES_HOLD to false in machineSalesHold.ts to restore checkout.
+if (MACHINE_SALES_HOLD && resolved.productType === "machine") {
   return Astro.redirect("/shop/machines");
 }
 

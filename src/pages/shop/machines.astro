@@ -9,12 +9,20 @@ import {
   formatPitch,
 } from "../../lib/machines/referenceCatalog";
 import { availabilityLabel } from "../../lib/machines/machineAdminFields";
+import { MACHINE_SALES_HOLD } from "../../lib/machines/machineSalesHold";
 
-const title = "Knitting Machines for Sale | Knit it Now";
-const description =
-  "Knitting machines currently available for purchase. Compare gauge and specs, then buy securely online.";
+// TEMPORARY: launch hold while shipping/ordering is finalized.
+// Flip MACHINE_SALES_HOLD to false in machineSalesHold.ts to restore the catalog below.
+const salesHold = MACHINE_SALES_HOLD;
 
-const machines = getMachinesForSale();
+const title = salesHold
+  ? "Machine Sales Coming Soon | Knit it Now"
+  : "Knitting Machines for Sale | Knit it Now";
+const description = salesHold
+  ? "Machine ordering is coming soon. Contact Sue about knitting machines, ribbers, and availability."
+  : "Knitting machines currently available for purchase. Compare gauge and specs, then buy securely online.";
+
+const machines = salesHold ? [] : getMachinesForSale();
 
 function formatPrice(value: number | null): string | null {
   if (value == null) return null;
@@ -25,81 +33,106 @@ function formatPrice(value: number | null): string | null {
 ---
 
 <Layout {title} {description}>
-  <PageHead title="Knitting Machines for Sale" />
+  <PageHead title={salesHold ? "Machine Sales Coming Soon" : "Knitting Machines for Sale"} />
 
   <div class="machines-page">
-    <header class="page-header">
-      <a class="back-link" href="/shop">← Back to Shop</a>
-      <h1 class="page-title">Knitting Machines for Sale</h1>
-      <p class="page-intro">
-        These machines are currently available for purchase. Each card shows the
-        key details—select <strong>View Details</strong> to learn more about a
-        machine and its specs before you buy.
-      </p>
-    </header>
-
-    <MachinesShopSubnav current="machines" />
-
-    {machines.length === 0 ? (
-      <p class="machines-empty">
-        No machines are listed for sale right now. Please check back soon.
-      </p>
+    {/* === TEMPORARY MACHINE SALES HOLD (start) ===
+        Remove this block (or set MACHINE_SALES_HOLD = false) to restore the catalog. */}
+    {salesHold ? (
+      <header class="page-header">
+        <a class="back-link" href="/shop">← Back to Shop</a>
+        <h1 class="page-title">Machine Sales Coming Soon</h1>
+        <p class="page-intro">
+          We're putting the finishing touches on our new machine ordering process.
+        </p>
+        <p class="page-intro page-intro--follow">
+          In the meantime, please contact Sue if you're interested in purchasing a knitting
+          machine or ribber, checking availability, or asking a question about a model.
+        </p>
+        <div class="machines-hold-actions">
+          <a href="/contact" class="machine-details-link">Contact Sue</a>
+          <a href="/shop" class="machines-hold-secondary">Return to Shop</a>
+        </div>
+      </header>
     ) : (
-      <div class="machines-grid">
-        {machines.map((machine) => {
-          const sale = machine.sale!;
-          const imageSrc = primaryImageUrl(machine);
-          const name = machineTitle(machine);
-          const pitch = formatPitch(machine);
-          const priceLabel = formatPrice(sale.price);
-          const availLabel = availabilityLabel(sale);
-          // Short blurb for the card.
-          const shortHtml = sale.shortDescriptionHtml || null;
-          return (
-            <article class="machine-card">
-              <div class="machine-card-image-wrap">
-                {imageSrc ? (
-                  <img
-                    src={imageSrc}
-                    alt={name}
-                    class="machine-card-image"
-                    width="280"
-                    height="180"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ) : (
-                  <div class="machine-card-image-placeholder" aria-hidden="true">
-                    Image coming soon
+      <>
+        {/* === ORIGINAL MACHINE CATALOG (preserved for restore) === */}
+        <header class="page-header">
+          <a class="back-link" href="/shop">← Back to Shop</a>
+          <h1 class="page-title">Knitting Machines for Sale</h1>
+          <p class="page-intro">
+            These machines are currently available for purchase. Each card shows the
+            key details—select <strong>View Details</strong> to learn more about a
+            machine and its specs before you buy.
+          </p>
+        </header>
+
+        <MachinesShopSubnav current="machines" />
+
+        {machines.length === 0 ? (
+          <p class="machines-empty">
+            No machines are listed for sale right now. Please check back soon.
+          </p>
+        ) : (
+          <div class="machines-grid">
+            {machines.map((machine) => {
+              const sale = machine.sale!;
+              const imageSrc = primaryImageUrl(machine);
+              const name = machineTitle(machine);
+              const pitch = formatPitch(machine);
+              const priceLabel = formatPrice(sale.price);
+              const availLabel = availabilityLabel(sale);
+              // Short blurb for the card.
+              const shortHtml = sale.shortDescriptionHtml || null;
+              return (
+                <article class="machine-card">
+                  <div class="machine-card-image-wrap">
+                    {imageSrc ? (
+                      <img
+                        src={imageSrc}
+                        alt={name}
+                        class="machine-card-image"
+                        width="280"
+                        height="180"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <div class="machine-card-image-placeholder" aria-hidden="true">
+                        Image coming soon
+                      </div>
+                    )}
+                    <span class={`machine-status machine-status--${sale.availabilityStatus}`}>{availLabel}</span>
                   </div>
-                )}
-                <span class={`machine-status machine-status--${sale.availabilityStatus}`}>{availLabel}</span>
-              </div>
 
-              <div class="machine-card-body">
-                <h2 class="machine-name">{name}</h2>
+                  <div class="machine-card-body">
+                    <h2 class="machine-name">{name}</h2>
 
-                <ul class="machine-specs" aria-label="Quick specs">
-                  <li>{machine.gauge}</li>
-                  {pitch && <li>{pitch}</li>}
-                  {machine.machineStyle && <li>{machine.machineStyle}</li>}
-                </ul>
+                    <ul class="machine-specs" aria-label="Quick specs">
+                      <li>{machine.gauge}</li>
+                      {pitch && <li>{pitch}</li>}
+                      {machine.machineStyle && <li>{machine.machineStyle}</li>}
+                    </ul>
 
-                {shortHtml && <div class="machine-short" set:html={shortHtml} />}
+                    {shortHtml && <div class="machine-short" set:html={shortHtml} />}
 
-                {priceLabel && <p class="machine-price">{priceLabel}</p>}
+                    {priceLabel && <p class="machine-price">{priceLabel}</p>}
 
-                <div class="machine-actions">
-                  <a href={`/shop/machines/${machine.slug}`} class="machine-details-link">
-                    View Details
-                  </a>
-                </div>
-              </div>
-            </article>
-          );
-        })}
-      </div>
+                    <div class="machine-actions">
+                      <a href={`/shop/machines/${machine.slug}`} class="machine-details-link">
+                        View Details
+                      </a>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+        {/* === END ORIGINAL MACHINE CATALOG === */}
+      </>
     )}
+    {/* === TEMPORARY MACHINE SALES HOLD (end) === */}
   </div>
 </Layout>
 
@@ -137,6 +170,28 @@ function formatPrice(value: number | null): string | null {
     color: #5a6b47;
     line-height: 1.6;
     margin: 0;
+  }
+
+  .page-intro--follow {
+    margin-top: 1rem;
+  }
+
+  .machines-hold-actions {
+    margin-top: 1.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
+  }
+
+  .machines-hold-secondary {
+    font-weight: 600;
+    color: var(--kbm-green);
+    text-decoration: underline;
+  }
+
+  .machines-hold-secondary:hover {
+    color: var(--kbm-green-hover, #445626);
   }
 
   .machines-empty {
