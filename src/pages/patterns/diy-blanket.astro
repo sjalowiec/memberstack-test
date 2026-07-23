@@ -6,7 +6,6 @@ import PatternPrintPersonalization from "../../components/common/PatternPrintPer
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import GaugeInput from "../../components/wizards/GaugeInput.astro";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
-import PatternComments from "../../components/patterns/PatternComments.astro";
 import NeedleCheckDrawer from "../../components/patterns/NeedleCheckDrawer.astro";
 import PatternHeaderImage from "../../components/patterns/PatternHeaderImage.astro";
 import PatternBuilderAccountGate from "../../components/patterns/PatternBuilderAccountGate.astro";
@@ -828,7 +827,6 @@ const patternPersistWarning =
     display: none !important;
   }
 
-  .pattern-tabs .tab-panel#tab-share,
   .pattern-tabs .tab-panel#tab-inspiration {
     display: none !important;
   }
@@ -1233,7 +1231,6 @@ const patternPersistWarning =
             data-tab="pattern"
             aria-disabled="true"
           >Pattern</button>
-          <button type="button" class="tab-btn" data-tab="share">Ask / Share</button>
           <button type="button" class="tab-btn" data-tab="inspiration">Inspiration</button>
         </div>
 
@@ -1488,11 +1485,6 @@ const patternPersistWarning =
             </div>
           </div>
 
-          <div class="tab-panel" id="tab-share">
-            <p>Ask questions or share your results here.</p>
-            <PatternComments />
-          </div>
-
           <div class="tab-panel" id="tab-inspiration">
             <div class="inspiration-section">
               <h3 class="inspiration-heading">Get Inspired</h3>
@@ -1605,54 +1597,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const tabButtons = document.querySelectorAll('.pattern-tabs .tab-btn');
   const tabPanels = document.querySelectorAll('.pattern-tabs .tab-panel');
 
-  function loadPatternComments() {
-    const el = document.querySelector('[data-pattern-comments]');
-    if (!el || !(el instanceof HTMLElement)) return;
-
-    const commentsEl = el;
-    const alreadyLoaded = commentsEl.dataset.hyvorLoaded === 'true';
-    const websiteId = commentsEl.dataset.hyvorWebsiteId;
-    const cleanPath = window.location.pathname.replace(/\/$/, '') || '/';
-
-    const w = window;
-    w.HYVOR_TALK_WEBSITE = Number(websiteId);
-    w.HYVOR_TALK_CONFIG = {
-      url: window.location.origin + cleanPath,
-      id: cleanPath,
-    };
-
-    if (alreadyLoaded) {
-      if (w.HyvorTalk && typeof w.HyvorTalk.reload === 'function') {
-        w.HyvorTalk.reload();
-      }
-      return;
-    }
-
-    const existingScript = document.querySelector('script[data-hyvor-embed]');
-    if (existingScript) {
-      commentsEl.dataset.hyvorLoaded = 'true';
-      if (w.HyvorTalk && typeof w.HyvorTalk.reload === 'function') {
-        w.HyvorTalk.reload();
-      }
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = 'https://talk.hyvor.com/web-api/embed.js';
-    script.async = true;
-    script.type = 'text/javascript';
-    script.setAttribute('data-hyvor-embed', 'true');
-
-    script.onload = () => {
-      commentsEl.dataset.hyvorLoaded = 'true';
-      if (w.HyvorTalk && typeof w.HyvorTalk.reload === 'function') {
-        w.HyvorTalk.reload();
-      }
-    };
-
-    document.body.appendChild(script);
-  }
-
   function activateWizardTab(target) {
     const panel = document.getElementById(`tab-${target}`);
     if (!panel) return;
@@ -1662,9 +1606,6 @@ document.addEventListener('DOMContentLoaded', function() {
     tabPanels.forEach((p) => {
       p.classList.toggle('active', p.id === `tab-${target}`);
     });
-    if (target === 'share') {
-      loadPatternComments();
-    }
     if (target === 'inspiration') {
       if (window.PinUtils && typeof window.PinUtils.build === 'function') {
         window.PinUtils.build();
@@ -1699,13 +1640,6 @@ document.addEventListener('DOMContentLoaded', function() {
       activateWizardTab(target);
     });
   });
-
-  if (
-    document.querySelector('.pattern-tabs .tab-btn[data-tab="share"]')?.classList.contains('active') ||
-    document.querySelector('#tab-share')?.classList.contains('active')
-  ) {
-    loadPatternComments();
-  }
 
   window.kbmSchedulePinterestEmbedsRefresh?.();
 

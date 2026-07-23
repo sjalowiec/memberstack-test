@@ -15,8 +15,7 @@ import WorkspaceLayout from '../../layouts/WorkspaceLayout.astro';
     <h2>Start Here</h2>
     <p>
       Welcome to your project workspace. Review each lesson video in order to keep your
-      progress smooth and consistent. Use the comments section below to ask questions or
-      share progress notes as you move through each step.
+      progress smooth and consistent.
     </p>
   </section>
 
@@ -56,48 +55,6 @@ import WorkspaceLayout from '../../layouts/WorkspaceLayout.astro';
         <a href="#" class="workspace-download-link">Download chart (placeholder)</a>
       </article>
     </div>
-  </section>
-
-  <section class="workspace-section workspace-comments">
-    <h2>Questions &amp; Project Conversation</h2>
-    <p>
-      Use this space to ask questions, share updates, or let me know when you&apos;re ready
-      for the next step.
-    </p>
-    <div id="hyvor-talk-view">
-      <p class="workspace-comments-loading">Comments are loading...</p>
-    </div>
-    <script is:inline define:vars={{ "hyvorWebsiteId": "14706" }}>
-      window.HYVOR_TALK_WEBSITE = Number("14706");
-      window.HYVOR_TALK_CONFIG = {
-        url: window.location.origin + "/private/sample-project",
-        id: "sample-project",
-      };
-    </script>
-    <script is:inline>
-      (function () {
-        var mount = document.getElementById("hyvor-talk-view");
-        if (!mount) return;
-
-        var existing = document.querySelector('script[data-hyvor-embed="sample-project"]');
-        if (existing && window.HyvorTalk && typeof window.HyvorTalk.reload === "function") {
-          window.HyvorTalk.reload();
-          return;
-        }
-
-        var s = document.createElement("script");
-        s.async = true;
-        s.type = "text/javascript";
-        s.src = "https://talk.hyvor.com/web-api/embed";
-        s.setAttribute("data-hyvor-embed", "sample-project");
-        s.onload = function () {
-          if (window.HyvorTalk && typeof window.HyvorTalk.reload === "function") {
-            window.HyvorTalk.reload();
-          }
-        };
-        (document.body || document.documentElement).appendChild(s);
-      })();
-    </script>
   </section>
 </WorkspaceLayout>
 
@@ -186,31 +143,6 @@ import WorkspaceLayout from '../../layouts/WorkspaceLayout.astro';
     color: #1d4ed8;
     text-decoration: underline;
     text-underline-offset: 2px;
-  }
-
-  .workspace-comments {
-    margin-top: 2rem;
-    margin-bottom: 0;
-    padding: 1.5rem;
-    background: #fff;
-    border: 1px solid var(--color-border, #ddd);
-    border-radius: 12px;
-  }
-
-  #hyvor-talk-view {
-    margin-top: 1rem;
-    min-height: 200px;
-  }
-
-  .workspace-comments-loading,
-  .workspace-comments-error {
-    margin: 0;
-    color: #4b5563;
-    font-size: 0.95rem;
-  }
-
-  .workspace-comments-error {
-    color: #b91c1c;
   }
 
   @media (min-width: 920px) {

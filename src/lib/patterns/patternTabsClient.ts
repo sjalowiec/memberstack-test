@@ -4,62 +4,7 @@ export interface PatternTabsControl {
   activateTab: (name: PatternTabName) => void;
 }
 
-/** Load Hyvor Talk for `[data-pattern-comments]` (used by tab switchers and standalone Ask/Share pages). */
-export function loadPatternComments(): void {
-  const el = document.querySelector("[data-pattern-comments]");
-  if (!el || !(el instanceof HTMLElement)) return;
-
-  const commentsEl = el;
-  const alreadyLoaded = commentsEl.dataset.hyvorLoaded === "true";
-  const websiteId = commentsEl.dataset.hyvorWebsiteId;
-  const cleanPath = window.location.pathname.replace(/\/$/, "") || "/";
-
-  const w = window as Window &
-    typeof globalThis & {
-      HYVOR_TALK_WEBSITE?: number;
-      HYVOR_TALK_CONFIG?: { url: string; id: string };
-      HyvorTalk?: { reload?: () => void };
-    };
-
-  w.HYVOR_TALK_WEBSITE = Number(websiteId);
-  w.HYVOR_TALK_CONFIG = {
-    url: window.location.origin + cleanPath,
-    id: cleanPath,
-  };
-
-  if (alreadyLoaded) {
-    if (w.HyvorTalk && typeof w.HyvorTalk.reload === "function") {
-      w.HyvorTalk.reload();
-    }
-    return;
-  }
-
-  const existingScript = document.querySelector("script[data-hyvor-embed]");
-  if (existingScript) {
-    commentsEl.dataset.hyvorLoaded = "true";
-    if (w.HyvorTalk && typeof w.HyvorTalk.reload === "function") {
-      w.HyvorTalk.reload();
-    }
-    return;
-  }
-
-  const script = document.createElement("script");
-  script.src = "https://talk.hyvor.com/web-api/embed.js";
-  script.async = true;
-  script.type = "text/javascript";
-  script.setAttribute("data-hyvor-embed", "true");
-
-  script.onload = () => {
-    commentsEl.dataset.hyvorLoaded = "true";
-    if (w.HyvorTalk && typeof w.HyvorTalk.reload === "function") {
-      w.HyvorTalk.reload();
-    }
-  };
-
-  document.body.appendChild(script);
-}
-
-/** Activate a tab inside a `.pattern-tabs` root (Hyvor / Pinterest side effects included). */
+/** Activate a tab inside a `.pattern-tabs` root (Pinterest side effects included). */
 export function applyPatternTabsActivation(tabsRoot: Element, target: PatternTabName): void {
   const panel = tabsRoot.querySelector<HTMLElement>(`#tab-${target}`);
   if (!panel) return;
@@ -75,9 +20,6 @@ export function applyPatternTabsActivation(tabsRoot: Element, target: PatternTab
     p.classList.toggle("active", p.id === `tab-${target}`);
   });
 
-  if (target === "share") {
-    loadPatternComments();
-  }
   if (target === "inspiration") {
     const win = window as Window &
       typeof globalThis & {
@@ -163,14 +105,6 @@ export function initPatternTabs(root: ParentNode | null | undefined): PatternTab
       applyPatternTabsActivation(tabsRoot, tab);
     });
   });
-
-  const shareTabIsActive =
-    tabsRoot.querySelector(".pattern-tab-nav .tab-btn[data-tab='share']")?.classList.contains("active") ||
-    tabsRoot.querySelector("#tab-share")?.classList.contains("active");
-
-  if (shareTabIsActive) {
-    loadPatternComments();
-  }
 
   return {
     activateTab: (name: PatternTabName) => applyPatternTabsActivation(tabsRoot, name),

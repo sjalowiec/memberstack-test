@@ -2790,47 +2790,6 @@ table {
       p.classList.toggle("active", p.id === `tab-${target}`);
     });
 
-    if (target === "share") {
-      const el = document.querySelector("[data-pattern-comments]");
-      if (!el || !(el instanceof HTMLElement)) return;
-      const commentsEl = el;
-      const alreadyLoaded = commentsEl.dataset.hyvorLoaded === "true";
-      const websiteId = commentsEl.dataset.hyvorWebsiteId;
-      const cleanPath = window.location.pathname.replace(/\/$/, "") || "/";
-      const w = window;
-      w.HYVOR_TALK_WEBSITE = Number(websiteId);
-      w.HYVOR_TALK_CONFIG = {
-        url: window.location.origin + cleanPath,
-        id: cleanPath,
-      };
-      if (alreadyLoaded) {
-        if (w.HyvorTalk && typeof w.HyvorTalk.reload === "function") {
-          w.HyvorTalk.reload();
-        }
-        return;
-      }
-      const existingScript = document.querySelector("script[data-hyvor-embed]");
-      if (existingScript) {
-        commentsEl.dataset.hyvorLoaded = "true";
-        if (w.HyvorTalk && typeof w.HyvorTalk.reload === "function") {
-          w.HyvorTalk.reload();
-        }
-        return;
-      }
-      const script = document.createElement("script");
-      script.src = "https://talk.hyvor.com/web-api/embed.js";
-      script.async = true;
-      script.type = "text/javascript";
-      script.setAttribute("data-hyvor-embed", "true");
-      script.onload = () => {
-        commentsEl.dataset.hyvorLoaded = "true";
-        if (w.HyvorTalk && typeof w.HyvorTalk.reload === "function") {
-          w.HyvorTalk.reload();
-        }
-      };
-      document.body.appendChild(script);
-    }
-
     if (target === "inspiration") {
       if (window.PinUtils && typeof window.PinUtils.build === "function") {
         window.PinUtils.build();

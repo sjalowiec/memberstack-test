@@ -11,7 +11,6 @@ import PatternPrintPersonalization from "../../components/common/PatternPrintPer
 import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import FloatingInput from "../../components/tools/FloatingInput.astro";
 import YarnRequirement from "../../components/tools/YarnRequirement.astro";
-import PatternComments from "../../components/patterns/PatternComments.astro";
 import PatternHeaderImage from "../../components/patterns/PatternHeaderImage.astro";
 import PatternBuilderAccountGate from "../../components/patterns/PatternBuilderAccountGate.astro";
 import WarningBox from "../../components/ui/WarningBox.astro";
@@ -1599,7 +1598,6 @@ select.disabled {
     display: none !important;
   }
 
-  .pattern-tabs .tab-panel#tab-share,
   .pattern-tabs .tab-panel#tab-inspiration {
     display: none !important;
   }
@@ -1715,10 +1713,6 @@ select.disabled {
           >
             <span class="tab-icon" aria-hidden="true">📝</span>
             <span class="tab-label">Pattern</span>
-          </button>
-          <button type="button" class="tab-btn" data-tab="share">
-            <span class="tab-icon" aria-hidden="true">💬</span>
-            <span class="tab-label">Ask / Share</span>
           </button>
           <button type="button" class="tab-btn" data-tab="inspiration">
             <span class="tab-icon" aria-hidden="true">💡</span>
@@ -2152,11 +2146,6 @@ select.disabled {
             </div>
           </div>
 
-          <div class="tab-panel" id="tab-share">
-            <p>Ask questions or share your results here.</p>
-            <PatternComments />
-          </div>
-
           <div class="tab-panel" id="tab-inspiration">
             <div class="inspiration-section">
               <h3 class="inspiration-heading">Get Inspired</h3>
@@ -2558,54 +2547,6 @@ async function initHatBuilder() {
   const tabButtons = document.querySelectorAll('.pattern-tabs .tab-btn');
   const tabPanels = document.querySelectorAll('.pattern-tabs .tab-panel');
 
-  function loadPatternComments() {
-    const el = document.querySelector('[data-pattern-comments]');
-    if (!el || !(el instanceof HTMLElement)) return;
-
-    const commentsEl = el;
-    const alreadyLoaded = commentsEl.dataset.hyvorLoaded === 'true';
-    const websiteId = commentsEl.dataset.hyvorWebsiteId;
-    const cleanPath = window.location.pathname.replace(/\/$/, '') || '/';
-
-    const w = window;
-    w.HYVOR_TALK_WEBSITE = Number(websiteId);
-    w.HYVOR_TALK_CONFIG = {
-      url: window.location.origin + cleanPath,
-      id: cleanPath
-    };
-
-    if (alreadyLoaded) {
-      if (w.HyvorTalk && typeof w.HyvorTalk.reload === 'function') {
-        w.HyvorTalk.reload();
-      }
-      return;
-    }
-
-    const existingScript = document.querySelector('script[data-hyvor-embed]');
-    if (existingScript) {
-      commentsEl.dataset.hyvorLoaded = 'true';
-      if (w.HyvorTalk && typeof w.HyvorTalk.reload === 'function') {
-        w.HyvorTalk.reload();
-      }
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = 'https://talk.hyvor.com/web-api/embed.js';
-    script.async = true;
-    script.type = 'text/javascript';
-    script.setAttribute('data-hyvor-embed', 'true');
-
-    script.onload = () => {
-      commentsEl.dataset.hyvorLoaded = 'true';
-      if (w.HyvorTalk && typeof w.HyvorTalk.reload === 'function') {
-        w.HyvorTalk.reload();
-      }
-    };
-
-    document.body.appendChild(script);
-  }
-
   function activateWizardTab(target) {
     const activeTabBtnsBefore = Array.from(
       document.querySelectorAll('.pattern-tabs .tab-btn.active')
@@ -2639,9 +2580,6 @@ async function initHatBuilder() {
       activeTabButtons: activeTabBtnsAfter,
       activePanels: activePanelsAfter,
     });
-    if (target === 'share') {
-      loadPatternComments();
-    }
     if (target === 'inspiration') {
       if (window.PinUtils && typeof window.PinUtils.build === 'function') {
         window.PinUtils.build();
@@ -2679,16 +2617,6 @@ async function initHatBuilder() {
       activateWizardTab(target);
     });
   });
-
-  const shareTabIsActive =
-    document
-      .querySelector('.pattern-tabs .tab-btn[data-tab="share"]')
-      ?.classList.contains('active') ||
-    document.querySelector('#tab-share')?.classList.contains('active');
-
-  if (shareTabIsActive) {
-    loadPatternComments();
-  }
 
   // Do not run Pinterest refresh on load: Inspiration tab is display:none, so
   // pinit sees parent offsetWidth 0 and can fail to render the board. Refresh

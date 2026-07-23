@@ -7,7 +7,6 @@ import YarnRequirement from "../../components/tools/YarnRequirement.astro";
 import PatternPrintFooter from "../../components/common/PatternPrintFooter.astro";
 import PatternPrintPersonalization from "../../components/common/PatternPrintPersonalization.astro";
 import PatternTabs from "../../components/patterns/PatternTabs.astro";
-import PatternComments from "../../components/patterns/PatternComments.astro";
 import PinterestEmbed from "../../components/PinterestEmbed.astro";
 import "../../styles/wizard.css";
 
@@ -77,7 +76,7 @@ const toolHref = "/tools/triangle-v2";
     <div class="ts-pattern-shell">
       <div id="triangle-scarf-builder-top" class="wizard-container scroll-mt-[96px]">
         <div class="calculator-card ts-builder-inputs">
-          <PatternTabs rootClass="pattern-tabs-scope">
+          <PatternTabs rootClass="pattern-tabs-scope" hideShare>
             <div slot="build" class="ts-tab-slot-build">
               <h2 class="ts-pattern-panel-title">Your measurements</h2>
               <div class="section-header-with-toggle ts-unit-row">
@@ -220,11 +219,6 @@ const toolHref = "/tools/triangle-v2";
                   <div class="ts-pattern-results-inner" id="ts-pattern-results" set:html={initialPatternHtml} />
                 </div>
               </div>
-            </div>
-
-            <div slot="share" class="ts-tab-slot-share">
-              <p>Ask questions or share how your scarf turned out.</p>
-              <PatternComments title="Ask or Share" />
             </div>
 
             <div slot="inspiration" class="ts-tab-slot-inspiration">
@@ -665,12 +659,6 @@ const toolHref = "/tools/triangle-v2";
       color: var(--kbm-green);
     }
 
-    .ts-tab-slot-share :global(.pattern-comments) {
-      margin-top: 1rem;
-      padding-top: 0;
-      border-top: none;
-    }
-
     @media (max-width: 767px) {
       :global(main.site-content):has(#triangle-scarf-builder-top),
       :global(.pattern-page):has(#triangle-scarf-builder-top),
@@ -705,7 +693,6 @@ const toolHref = "/tools/triangle-v2";
       .ts-hero,
       .ts-pattern-page .pattern-tab-nav,
       .ts-pattern-page .pattern-tabs .tab-panel#tab-build,
-      .ts-pattern-page .pattern-tabs .tab-panel#tab-share,
       .ts-pattern-page .pattern-tabs .tab-panel#tab-inspiration,
       .ts-pattern-form,
       .ts-notation-key,

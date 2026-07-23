@@ -21,8 +21,6 @@ import VimeoEmbed from "../../components/media/VimeoEmbed.astro";
 import wizardData from "../../content/wizards/hand-machine-blanket.json";
 import "../../styles/wizard.css";
 
-const hyvorPageId = wizardData.hyvorPageId || "wizards-hand-machine-blanket";
-
 // Access level from JSON - "free" or "paid"
 const accessLevel = wizardData.accessLevel || "free";
 const price = wizardData.price || "$9.99";
@@ -53,24 +51,21 @@ const price = wizardData.price || "$9.99";
 }
 
 .inspiration-content,
-.resources-content,
-.discussion-content {
+.resources-content {
   max-width: 900px;
   margin: 0 auto;
   padding: 0 1rem;
 }
 
 .inspiration-content h3,
-.resources-content h3,
-.discussion-content h3 {
+.resources-content h3 {
   color: var(--kbm-green);
   font-size: 1.2rem;
   margin-bottom: 0.5rem;
 }
 
 .inspiration-intro,
-.resources-intro,
-.discussion-intro {
+.resources-intro {
   color: #6b7280;
   font-size: 0.95rem;
   margin-bottom: 1rem;
@@ -261,10 +256,6 @@ const price = wizardData.price || "$9.99";
   color: #dc2626;
   font-size: 0.85rem;
   margin: 0.5rem 0 0;
-}
-
-#hyvor-talk-view {
-  min-height: 200px;
 }
 
 /* Universal hide class */
@@ -2132,14 +2123,6 @@ const price = wizardData.price || "$9.99";
   </div>
 </div>
 
-<div slot="discussion">
-  <div class="discussion-content">
-    <h3>Ask and Share</h3>
-    <p class="discussion-intro">Share your projects, ask questions, and connect with other knitters.</p>
-    <div id="hyvor-talk-view" data-testid="hyvor-talk-view"></div>
-  </div>
-</div>
-
 <div slot="inspiration">
   <div class="inspiration-content">
     <h3>Inspiration</h3>
@@ -3585,48 +3568,5 @@ updateGaugeLabels();
   updateUnitsUI();
   // Delay reading DOM dimensions to ensure pattern engine has initialized
   setTimeout(readDimensionsFromDOM, 100);
-})();
-</script>
-
-<script define:vars={{ hyvorPageId }}>
-// Hyvor Talk loader for Discussion tab
-(function() {
-  let hyvorLoaded = false;
-  
-  function loadHyvor() {
-    if (hyvorLoaded) return;
-    
-    const pageId = hyvorPageId;
-    
-    window.HYVOR_TALK_WEBSITE = 14706;
-    window.HYVOR_TALK_CONFIG = {
-      url: false,
-      id: pageId
-    };
-
-    if (window.hyvorTalkReload) {
-      window.hyvorTalkReload();
-      hyvorLoaded = true;
-      return;
-    }
-
-    const existingScript = document.querySelector('script[src*="talk.hyvor.com/web-api/embed"]');
-    if (!existingScript) {
-      const script = document.createElement("script");
-      script.src = "https://talk.hyvor.com/web-api/embed.js";
-      script.async = true;
-      script.type = "text/javascript";
-      document.body.appendChild(script);
-    }
-    hyvorLoaded = true;
-  }
-
-  // Load Hyvor when Discussion tab is clicked
-  document.addEventListener('DOMContentLoaded', function() {
-    const discussionTab = document.getElementById('tab-discussion');
-    if (discussionTab) {
-      discussionTab.addEventListener('click', loadHyvor);
-    }
-  });
 })();
 </script>
