@@ -76,3 +76,4 @@ public/challenge/
 # Legacy SQL exports (contains customer data)
 legacy-data/exports/
 legacy-data/import-errors/
+docs/launch/*.csv
