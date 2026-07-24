@@ -1,0 +1,775 @@
+---
+/**
+ * RectangleBuilder ù visual drag-to-shape rectangle / square pattern calculator.
+ *
+ * Self-contained Astro island (vanilla SVG + JS). Drag corner handles; dimensions
+ * mirror about the center. Live stitch/row counts from gauge.
+ *
+ * Usage:
+ *   import RectangleBuilder from "../../components/calculators/RectangleBuilder.astro";
+ *   <RectangleBuilder />
+ *   <RectangleBuilder instanceId="scarf" />
+ */
+interface Props {
+  /** Unique suffix when more than one builder is on the page. */
+  instanceId?: string;
+  /** Default stitch gauge (stitches per 4"). */
+  defaultStitchGauge?: number;
+  /** Default row gauge (rows per 4"). */
+  defaultRowGauge?: number;
+  /** Default finished width in inches. */
+  defaultWidthIn?: number;
+  /** Default finished length in inches. */
+  defaultLengthIn?: number;
+}
+
+const {
+  instanceId = "default",
+  defaultStitchGauge = 28,
+  defaultRowGauge = 40,
+  defaultWidthIn = 8,
+  defaultLengthIn = 10,
+} = Astro.props;
+
+const rootId = `rect-builder-${instanceId}`;
+---
+
+<div
+  class="rect-builder"
+  id={rootId}
+  data-rectangle-builder
+  data-instance={instanceId}
+  data-default-stitch-gauge={defaultStitchGauge}
+  data-default-row-gauge={defaultRowGauge}
+  data-default-width-in={defaultWidthIn}
+  data-default-length-in={defaultLengthIn}
+>
+  <!-- Controls -->
+  <div class="rect-builder__controls">
+    <div class="rect-builder__gauge">
+      <label class="rect-builder__field">
+        <span class="rect-builder__label">Stitches <span class="rect-builder__hint">per 4?</span></span>
+        <input
+          type="number"
+          class="rect-builder__input"
+          data-rb-stitch-gauge
+          min="1"
+          step="0.1"
+          value={defaultStitchGauge}
+          inputmode="decimal"
+        />
+      </label>
+      <label class="rect-builder__field">
+        <span class="rect-builder__label">Rows <span class="rect-builder__hint">per 4?</span></span>
+        <input
+          type="number"
+          class="rect-builder__input"
+          data-rb-row-gauge
+          min="1"
+          step="0.1"
+          value={defaultRowGauge}
+          inputmode="decimal"
+        />
+      </label>
+    </div>
+
+    <div class="rect-builder__toggles">
+      <div class="rect-builder__units" role="group" aria-label="Units">
+        <button type="button" class="rect-builder__unit-btn is-active" data-rb-unit="in" aria-pressed="true">
+          Inches
+        </button>
+        <button type="button" class="rect-builder__unit-btn" data-rb-unit="cm" aria-pressed="false">
+          Centimeters
+        </button>
+      </div>
+
+      <label class="rect-builder__snap">
+        <input type="checkbox" data-rb-snap />
+        <span>Snap to whole stitches</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Canvas -->
+  <div class="rect-builder__canvas-wrap">
+    <button type="button" class="rect-builder__reset" data-rb-reset aria-label="Reset rectangle">
+      Reset
+    </button>
+
+    <svg
+      class="rect-builder__svg"
+      data-rb-svg
+      viewBox="0 0 520 400"
+      role="img"
+      aria-label="Draggable rectangle. Drag green corner handles to change size."
+    >
+      <defs>
+        <pattern id={`${rootId}-grid`} width="13" height="13" patternUnits="userSpaceOnUse">
+          <path d="M 13 0 L 0 0 0 13" fill="none" stroke="#e8ebe3" stroke-width="1"></path>
+        </pattern>
+      </defs>
+
+      <rect class="rect-builder__grid" x="0" y="0" width="520" height="400" fill={`url(#${rootId}-grid)`}></rect>
+
+      <!-- Dimension labels -->
+      <text class="rect-builder__dim" data-rb-label-top text-anchor="middle" dominant-baseline="auto"></text>
+      <text class="rect-builder__dim" data-rb-label-bottom text-anchor="middle" dominant-baseline="hanging"></text>
+      <text class="rect-builder__dim rect-builder__dim--side" data-rb-label-left text-anchor="middle" dominant-baseline="middle"></text>
+      <text class="rect-builder__dim rect-builder__dim--side" data-rb-label-right text-anchor="middle" dominant-baseline="middle"></text>
+
+      <rect
+        class="rect-builder__shape"
+        data-rb-rect
+        fill="rgba(74, 94, 40, 0.12)"
+        stroke="#4a5e28"
+        stroke-width="2"
+      ></rect>
+
+      <circle class="rect-builder__handle" data-rb-handle="nw" r="9" cx="0" cy="0"></circle>
+      <circle class="rect-builder__handle" data-rb-handle="ne" r="9" cx="0" cy="0"></circle>
+      <circle class="rect-builder__handle" data-rb-handle="sw" r="9" cx="0" cy="0"></circle>
+      <circle class="rect-builder__handle" data-rb-handle="se" r="9" cx="0" cy="0"></circle>
+    </svg>
+  </div>
+
+  <!-- Stats -->
+  <div class="rect-builder__stats" aria-live="polite">
+    <div class="rect-builder__stat">
+      <span class="rect-builder__stat-label">Cast on stitches</span>
+      <span class="rect-builder__stat-value" data-rb-stat-stitches>ù</span>
+    </div>
+    <div class="rect-builder__stat">
+      <span class="rect-builder__stat-label">Total rows</span>
+      <span class="rect-builder__stat-value" data-rb-stat-rows>ù</span>
+    </div>
+    <div class="rect-builder__stat">
+      <span class="rect-builder__stat-label">Finished width</span>
+      <span class="rect-builder__stat-value" data-rb-stat-width>ù</span>
+    </div>
+    <div class="rect-builder__stat">
+      <span class="rect-builder__stat-label">Finished length</span>
+      <span class="rect-builder__stat-value" data-rb-stat-length>ù</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .rect-builder {
+    --rb-primary: #4a5e28;
+    --rb-primary-dark: #3a4a1f;
+    --rb-primary-soft: #f4f7ef;
+    --rb-border: #e5e7eb;
+    --rb-text: #1f2937;
+    --rb-muted: #6b7280;
+    --rb-radius: 12px;
+
+    background: #fff;
+    border: 1px solid var(--rb-border);
+    border-radius: var(--rb-radius);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    padding: 1.5rem;
+    color: var(--rb-text);
+  }
+
+  .rect-builder__controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem 1.75rem;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+
+  .rect-builder__gauge {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    flex: 1 1 240px;
+    max-width: 360px;
+  }
+
+  .rect-builder__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .rect-builder__label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--rb-text);
+  }
+
+  .rect-builder__hint {
+    font-weight: 400;
+    color: var(--rb-muted);
+  }
+
+  .rect-builder__input {
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    line-height: 1.25;
+    color: var(--rb-text);
+    background: #fff;
+  }
+
+  .rect-builder__input:focus {
+    outline: 2px solid color-mix(in srgb, var(--rb-primary) 55%, #fff);
+    outline-offset: 1px;
+    border-color: var(--rb-primary);
+  }
+
+  .rect-builder__toggles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.25rem;
+    align-items: center;
+  }
+
+  .rect-builder__units {
+    display: inline-flex;
+    border: 1px solid var(--rb-border);
+    border-radius: 8px;
+    overflow: hidden;
+    height: 36px;
+  }
+
+  .rect-builder__unit-btn {
+    appearance: none;
+    border: none;
+    background: #fff;
+    color: var(--rb-muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0 0.9rem;
+    cursor: pointer;
+  }
+
+  .rect-builder__unit-btn.is-active {
+    background: var(--rb-primary);
+    color: #fff;
+  }
+
+  .rect-builder__unit-btn:not(.is-active):hover {
+    background: var(--rb-primary-soft);
+    color: var(--rb-primary);
+  }
+
+  .rect-builder__snap {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--rb-text);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .rect-builder__snap input {
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--rb-primary);
+    cursor: pointer;
+  }
+
+  .rect-builder__canvas-wrap {
+    position: relative;
+    background: var(--rb-primary-soft);
+    border: 1px solid var(--rb-border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .rect-builder__reset {
+    position: absolute;
+    top: 0.65rem;
+    right: 0.65rem;
+    z-index: 2;
+    appearance: none;
+    border: 1px solid color-mix(in srgb, var(--rb-primary) 40%, #d1d5db);
+    background: #fff;
+    color: var(--rb-primary);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .rect-builder__reset:hover {
+    background: var(--rb-primary);
+    color: #fff;
+    border-color: var(--rb-primary);
+  }
+
+  .rect-builder__svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    touch-action: none;
+    user-select: none;
+  }
+
+  .rect-builder__shape {
+    pointer-events: none;
+  }
+
+  .rect-builder__handle {
+    fill: var(--rb-primary);
+    stroke: #fff;
+    stroke-width: 2;
+    cursor: nwse-resize;
+    touch-action: none;
+  }
+
+  .rect-builder__handle[data-rb-handle="ne"],
+  .rect-builder__handle[data-rb-handle="sw"] {
+    cursor: nesw-resize;
+  }
+
+  .rect-builder__handle:hover,
+  .rect-builder__handle.is-active {
+    fill: var(--rb-primary-dark);
+  }
+
+  .rect-builder__dim {
+    font-size: 12px;
+    font-weight: 600;
+    fill: var(--rb-primary-dark);
+    pointer-events: none;
+  }
+
+  .rect-builder__stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+  }
+
+  .rect-builder__stat {
+    background: var(--rb-primary-soft);
+    border: 1px solid var(--rb-border);
+    border-left: 4px solid var(--rb-primary);
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    min-width: 0;
+  }
+
+  .rect-builder__stat-label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--rb-muted);
+    margin-bottom: 0.25rem;
+  }
+
+  .rect-builder__stat-value {
+    display: block;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--rb-primary);
+    line-height: 1.2;
+  }
+
+  @media (max-width: 720px) {
+    .rect-builder {
+      padding: 1.15rem;
+    }
+
+    .rect-builder__stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 420px) {
+    .rect-builder__gauge {
+      grid-template-columns: 1fr;
+      max-width: none;
+    }
+
+    .rect-builder__stats {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  const CM_PER_IN = 2.54;
+  /** 1 SVG user unit = approximately 1/13 inch */
+  const SVG_PER_INCH = 13;
+  const VIEW_W = 520;
+  const VIEW_H = 400;
+  const CX = VIEW_W / 2;
+  const CY = VIEW_H / 2;
+  const PAD = 36;
+  const MIN_IN = 0.5;
+
+  type Unit = "in" | "cm";
+  type Corner = "nw" | "ne" | "sw" | "se";
+
+  type BuilderEls = {
+    root: HTMLElement;
+    stitchGauge: HTMLInputElement;
+    rowGauge: HTMLInputElement;
+    snap: HTMLInputElement;
+    svg: SVGSVGElement;
+    rect: SVGRectElement;
+    handles: Record<Corner, SVGCircleElement>;
+    labelTop: SVGTextElement;
+    labelBottom: SVGTextElement;
+    labelLeft: SVGTextElement;
+    labelRight: SVGTextElement;
+    statStitches: HTMLElement;
+    statRows: HTMLElement;
+    statWidth: HTMLElement;
+    statLength: HTMLElement;
+    unitBtns: HTMLButtonElement[];
+    resetBtn: HTMLButtonElement;
+  };
+
+  function qs<T extends Element>(root: ParentNode, sel: string): T | null {
+    return root.querySelector(sel) as T | null;
+  }
+
+  function collect(root: HTMLElement): BuilderEls | null {
+    const stitchGauge = qs<HTMLInputElement>(root, "[data-rb-stitch-gauge]");
+    const rowGauge = qs<HTMLInputElement>(root, "[data-rb-row-gauge]");
+    const snap = qs<HTMLInputElement>(root, "[data-rb-snap]");
+    const svg = qs<SVGSVGElement>(root, "[data-rb-svg]");
+    const rect = qs<SVGRectElement>(root, "[data-rb-rect]");
+    const labelTop = qs<SVGTextElement>(root, "[data-rb-label-top]");
+    const labelBottom = qs<SVGTextElement>(root, "[data-rb-label-bottom]");
+    const labelLeft = qs<SVGTextElement>(root, "[data-rb-label-left]");
+    const labelRight = qs<SVGTextElement>(root, "[data-rb-label-right]");
+    const statStitches = qs<HTMLElement>(root, "[data-rb-stat-stitches]");
+    const statRows = qs<HTMLElement>(root, "[data-rb-stat-rows]");
+    const statWidth = qs<HTMLElement>(root, "[data-rb-stat-width]");
+    const statLength = qs<HTMLElement>(root, "[data-rb-stat-length]");
+    const resetBtn = qs<HTMLButtonElement>(root, "[data-rb-reset]");
+    const unitBtns = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-rb-unit]"));
+
+    const handles = {
+      nw: qs<SVGCircleElement>(root, '[data-rb-handle="nw"]'),
+      ne: qs<SVGCircleElement>(root, '[data-rb-handle="ne"]'),
+      sw: qs<SVGCircleElement>(root, '[data-rb-handle="sw"]'),
+      se: qs<SVGCircleElement>(root, '[data-rb-handle="se"]'),
+    };
+
+    if (
+      !stitchGauge ||
+      !rowGauge ||
+      !snap ||
+      !svg ||
+      !rect ||
+      !labelTop ||
+      !labelBottom ||
+      !labelLeft ||
+      !labelRight ||
+      !statStitches ||
+      !statRows ||
+      !statWidth ||
+      !statLength ||
+      !resetBtn ||
+      !handles.nw ||
+      !handles.ne ||
+      !handles.sw ||
+      !handles.se
+    ) {
+      return null;
+    }
+
+    return {
+      root,
+      stitchGauge,
+      rowGauge,
+      snap,
+      svg,
+      rect,
+      handles: handles as Record<Corner, SVGCircleElement>,
+      labelTop,
+      labelBottom,
+      labelLeft,
+      labelRight,
+      statStitches,
+      statRows,
+      statWidth,
+      statLength,
+      unitBtns,
+      resetBtn,
+    };
+  }
+
+  function clamp(n: number, min: number, max: number): number {
+    return Math.min(max, Math.max(min, n));
+  }
+
+  function formatDim(value: number, unit: Unit): string {
+    const rounded = Math.round(value * 100) / 100;
+    const text = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2).replace(/\.?0+$/, "");
+    return unit === "cm" ? `${text} cm` : `${text}?`;
+  }
+
+  function initBuilder(els: BuilderEls): void {
+    const defaults = {
+      stitchGauge: Number(els.root.dataset.defaultStitchGauge) || 28,
+      rowGauge: Number(els.root.dataset.defaultRowGauge) || 40,
+      widthIn: Number(els.root.dataset.defaultWidthIn) || 8,
+      lengthIn: Number(els.root.dataset.defaultLengthIn) || 10,
+    };
+
+    let unit: Unit = "in";
+    /** Half-width / half-height in SVG units (rectangle always centered). */
+    let halfW = (defaults.widthIn * SVG_PER_INCH) / 2;
+    let halfH = (defaults.lengthIn * SVG_PER_INCH) / 2;
+
+    const maxHalfW = CX - PAD;
+    const maxHalfH = CY - PAD;
+
+    function gaugeSts(): number {
+      return Math.max(0.0001, parseFloat(els.stitchGauge.value) || defaults.stitchGauge);
+    }
+
+    function gaugeRows(): number {
+      return Math.max(0.0001, parseFloat(els.rowGauge.value) || defaults.rowGauge);
+    }
+
+    function widthInches(): number {
+      return (halfW * 2) / SVG_PER_INCH;
+    }
+
+    function lengthInches(): number {
+      return (halfH * 2) / SVG_PER_INCH;
+    }
+
+    function stitchesFromWidth(widthIn: number): number {
+      return (widthIn / 4) * gaugeSts();
+    }
+
+    function rowsFromLength(lengthIn: number): number {
+      return (lengthIn / 4) * gaugeRows();
+    }
+
+    function widthFromStitches(stitches: number): number {
+      return (stitches * 4) / gaugeSts();
+    }
+
+    function lengthFromRows(rows: number): number {
+      return (rows * 4) / gaugeRows();
+    }
+
+    function applySnap(nextHalfW: number, nextHalfH: number): { halfW: number; halfH: number } {
+      if (!els.snap.checked) {
+        return { halfW: nextHalfW, halfH: nextHalfH };
+      }
+
+      let wIn = (nextHalfW * 2) / SVG_PER_INCH;
+      let lIn = (nextHalfH * 2) / SVG_PER_INCH;
+
+      let sts = Math.max(1, Math.round(stitchesFromWidth(wIn)));
+      let rows = Math.max(1, Math.round(rowsFromLength(lIn)));
+
+      wIn = widthFromStitches(sts);
+      lIn = lengthFromRows(rows);
+
+      return {
+        halfW: clamp((wIn * SVG_PER_INCH) / 2, (MIN_IN * SVG_PER_INCH) / 2, maxHalfW),
+        halfH: clamp((lIn * SVG_PER_INCH) / 2, (MIN_IN * SVG_PER_INCH) / 2, maxHalfH),
+      };
+    }
+
+    function setHalfSize(rawHalfW: number, rawHalfH: number): void {
+      const minHalf = (MIN_IN * SVG_PER_INCH) / 2;
+      let nextW = clamp(rawHalfW, minHalf, maxHalfW);
+      let nextH = clamp(rawHalfH, minHalf, maxHalfH);
+      const snapped = applySnap(nextW, nextH);
+      halfW = snapped.halfW;
+      halfH = snapped.halfH;
+      render();
+    }
+
+    function displayWidth(): number {
+      const inches = widthInches();
+      return unit === "cm" ? inches * CM_PER_IN : inches;
+    }
+
+    function displayLength(): number {
+      const inches = lengthInches();
+      return unit === "cm" ? inches * CM_PER_IN : inches;
+    }
+
+    function stitchCount(): number {
+      const raw = stitchesFromWidth(widthInches());
+      return els.snap.checked ? Math.max(1, Math.round(raw)) : Math.round(raw * 10) / 10;
+    }
+
+    function rowCount(): number {
+      const raw = rowsFromLength(lengthInches());
+      return els.snap.checked ? Math.max(1, Math.round(raw)) : Math.round(raw * 10) / 10;
+    }
+
+    function formatCount(n: number): string {
+      return Number.isInteger(n) ? String(n) : n.toFixed(1);
+    }
+
+    function render(): void {
+      const x = CX - halfW;
+      const y = CY - halfH;
+      const w = halfW * 2;
+      const h = halfH * 2;
+
+      els.rect.setAttribute("x", String(x));
+      els.rect.setAttribute("y", String(y));
+      els.rect.setAttribute("width", String(w));
+      els.rect.setAttribute("height", String(h));
+
+      const corners: Record<Corner, { x: number; y: number }> = {
+        nw: { x: x, y: y },
+        ne: { x: x + w, y: y },
+        sw: { x: x, y: y + h },
+        se: { x: x + w, y: y + h },
+      };
+
+      (Object.keys(corners) as Corner[]).forEach((key) => {
+        els.handles[key].setAttribute("cx", String(corners[key].x));
+        els.handles[key].setAttribute("cy", String(corners[key].y));
+      });
+
+      const dW = displayWidth();
+      const dL = displayLength();
+      const sts = stitchCount();
+      const rows = rowCount();
+      const widthLine = `${formatDim(dW, unit)} ù ${formatCount(sts)} sts`;
+      const lengthLine = `${formatDim(dL, unit)} ù ${formatCount(rows)} rows`;
+
+      els.labelTop.setAttribute("x", String(CX));
+      els.labelTop.setAttribute("y", String(y - 10));
+      els.labelTop.textContent = widthLine;
+
+      els.labelBottom.setAttribute("x", String(CX));
+      els.labelBottom.setAttribute("y", String(y + h + 10));
+      els.labelBottom.textContent = widthLine;
+
+      els.labelLeft.setAttribute("x", String(x - 14));
+      els.labelLeft.setAttribute("y", String(CY));
+      els.labelLeft.setAttribute("transform", `rotate(-90 ${x - 14} ${CY})`);
+      els.labelLeft.textContent = lengthLine;
+
+      els.labelRight.setAttribute("x", String(x + w + 14));
+      els.labelRight.setAttribute("y", String(CY));
+      els.labelRight.setAttribute("transform", `rotate(90 ${x + w + 14} ${CY})`);
+      els.labelRight.textContent = lengthLine;
+
+      els.statStitches.textContent = formatCount(sts);
+      els.statRows.textContent = formatCount(rows);
+      els.statWidth.textContent = formatDim(dW, unit);
+      els.statLength.textContent = formatDim(dL, unit);
+    }
+
+    function svgPointFromClient(clientX: number, clientY: number): { x: number; y: number } {
+      const pt = els.svg.createSVGPoint();
+      pt.x = clientX;
+      pt.y = clientY;
+      const ctm = els.svg.getScreenCTM();
+      if (!ctm) return { x: CX, y: CY };
+      const local = pt.matrixTransform(ctm.inverse());
+      return { x: local.x, y: local.y };
+    }
+
+    function beginDrag(corner: Corner, pointerId: number, target: Element, clientX: number, clientY: number): void {
+      els.handles[corner].classList.add("is-active");
+      target.setPointerCapture?.(pointerId);
+
+      const onMove = (ev: PointerEvent) => {
+        const p = svgPointFromClient(ev.clientX, ev.clientY);
+        // Mirror about center: absolute distance becomes half-size for both sides.
+        setHalfSize(Math.abs(p.x - CX), Math.abs(p.y - CY));
+      };
+
+      const onUp = (ev: PointerEvent) => {
+        els.handles[corner].classList.remove("is-active");
+        try {
+          target.releasePointerCapture?.(ev.pointerId);
+        } catch {
+          /* already released */
+        }
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        window.removeEventListener("pointercancel", onUp);
+      };
+
+      // Apply once so touch/click without move still feels responsive from pointerdown position.
+      onMove({ clientX, clientY } as PointerEvent);
+
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointercancel", onUp);
+    }
+
+    (Object.keys(els.handles) as Corner[]).forEach((corner) => {
+      const handle = els.handles[corner];
+      handle.addEventListener("pointerdown", (ev) => {
+        ev.preventDefault();
+        beginDrag(corner, ev.pointerId, handle, ev.clientX, ev.clientY);
+      });
+    });
+
+    els.unitBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const next = (btn.dataset.rbUnit === "cm" ? "cm" : "in") as Unit;
+        unit = next;
+        els.unitBtns.forEach((b) => {
+          const active = b.dataset.rbUnit === unit;
+          b.classList.toggle("is-active", active);
+          b.setAttribute("aria-pressed", active ? "true" : "false");
+        });
+        render();
+      });
+    });
+
+    const onGaugeOrSnap = () => {
+      // Re-apply snap (or refresh counts) when gauge/snap changes at current size.
+      setHalfSize(halfW, halfH);
+    };
+
+    els.stitchGauge.addEventListener("input", onGaugeOrSnap);
+    els.stitchGauge.addEventListener("change", onGaugeOrSnap);
+    els.rowGauge.addEventListener("input", onGaugeOrSnap);
+    els.rowGauge.addEventListener("change", onGaugeOrSnap);
+    els.snap.addEventListener("change", onGaugeOrSnap);
+
+    els.resetBtn.addEventListener("click", () => {
+      els.stitchGauge.value = String(defaults.stitchGauge);
+      els.rowGauge.value = String(defaults.rowGauge);
+      els.snap.checked = false;
+      unit = "in";
+      els.unitBtns.forEach((b) => {
+        const active = b.dataset.rbUnit === "in";
+        b.classList.toggle("is-active", active);
+        b.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+      halfW = (defaults.widthIn * SVG_PER_INCH) / 2;
+      halfH = (defaults.lengthIn * SVG_PER_INCH) / 2;
+      render();
+    });
+
+    render();
+  }
+
+  function boot(): void {
+    document.querySelectorAll<HTMLElement>("[data-rectangle-builder]").forEach((root) => {
+      if (root.dataset.rbReady === "1") return;
+      const els = collect(root);
+      if (!els) return;
+      root.dataset.rbReady = "1";
+      initBuilder(els);
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+</script>

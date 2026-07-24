@@ -1,0 +1,23 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import RectangleBuilder from "../../components/calculators/RectangleBuilder.astro";
+import "../../styles/wizard.css";
+---
+
+<Layout title="Visual Rectangle Builder">
+  <main class="wizard-page">
+    <div class="wizard-shell">
+      <WizardBackLink className="back-link" />
+
+      <section class="wizard-hero">
+        <h1>Visual Rectangle Builder</h1>
+        <p class="wizard-intro">
+          Drag the green corner handles to shape your rectangle. Stitch and row counts update live from your gauge.
+        </p>
+      </section>
+
+      <RectangleBuilder instanceId="demo" />
+    </div>
+  </main>
+</Layout>
