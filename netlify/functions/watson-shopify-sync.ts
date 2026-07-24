@@ -4,7 +4,8 @@
  * Requires Netlify env:
  *   WATSON_DATABASE_URL
  *   SHOPIFY_STORE_DOMAIN
- *   SHOPIFY_ADMIN_ACCESS_TOKEN
+ *   SHOPIFY_CLIENT_ID + SHOPIFY_CLIENT_SECRET  (Dev Dashboard)
+ *     OR SHOPIFY_ADMIN_ACCESS_TOKEN             (legacy static token)
  * Optional:
  *   SHOPIFY_API_VERSION
  *   WATSON_SHOPIFY_SYNC_SECRET  (if set, POST/GET must send header X-Watson-Sync-Secret)

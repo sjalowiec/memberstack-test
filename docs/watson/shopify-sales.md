@@ -47,9 +47,17 @@ Canonical builders: `getWatsonNativeSchemaStatements()` in `src/lib/watson/schem
 
 ## Credentials (Sue / ops)
 
-Create a Shopify **custom app** on the store with Admin API scope:
+Create a Shopify app on the store with Admin API scope:
 
 - `read_orders` only (least privilege)
+
+**Dev Dashboard apps (Spring '26+)** no longer show a pasteable Admin API token. Use **Client ID** and **Client secret** from the app Settings page. Watson requests a short-lived access token via:
+
+`POST https://{SHOPIFY_STORE_DOMAIN}/admin/oauth/access_token`
+
+with form body `grant_type=client_credentials`, `client_id`, and `client_secret`. The token is sent as `X-Shopify-Access-Token`, cached in memory, and refreshed shortly before `expires_in` (~24 hours).
+
+**Legacy custom apps** may still use a static Admin API access token (`shpat_…`). If `SHOPIFY_ADMIN_ACCESS_TOKEN` is set, Watson uses it and does not call the client-credentials endpoint.
 
 Set Netlify / `.env` (see `.env.example`):
 
@@ -57,11 +65,15 @@ Set Netlify / `.env` (see `.env.example`):
 |---|---|---|
 | `WATSON_DATABASE_URL` | Yes | Existing Watson Postgres |
 | `SHOPIFY_STORE_DOMAIN` | Yes | e.g. `vjzu11-86.myshopify.com` |
-| `SHOPIFY_ADMIN_ACCESS_TOKEN` | Yes | Admin API access token (`shpat_…`) |
+| `SHOPIFY_CLIENT_ID` | Yes* | Dev Dashboard Client ID |
+| `SHOPIFY_CLIENT_SECRET` | Yes* | Dev Dashboard Client secret |
+| `SHOPIFY_ADMIN_ACCESS_TOKEN` | Yes* | Legacy static Admin API token (`shpat_…`); preferred when set |
 | `SHOPIFY_API_VERSION` | No | Default `2025-01` |
 | `WATSON_SHOPIFY_SYNC_SECRET` | No | If set, scheduled function requires `X-Watson-Sync-Secret` |
 
-Tokens stay server-side only. Never expose them to the browser.
+\* Provide either `SHOPIFY_ADMIN_ACCESS_TOKEN`, or both `SHOPIFY_CLIENT_ID` and `SHOPIFY_CLIENT_SECRET`.
+
+Tokens and secrets stay server-side only. Never expose them to the browser.
 
 ## Sync
 

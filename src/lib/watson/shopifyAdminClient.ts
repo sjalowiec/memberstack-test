@@ -1,3 +1,4 @@
+import { resolveShopifyAccessToken } from "./shopifyAccessToken";
 import {
   getShopifyAdminConfig,
   shopifyAdminBaseUrl,
@@ -76,6 +77,7 @@ export async function fetchShopifyOrdersSince(
   }
   const config = configResult;
   const fetchImpl = options.fetchImpl ?? fetch;
+  const accessToken = await resolveShopifyAccessToken(config, fetchImpl);
 
   const fields = [
     "id",
@@ -117,7 +119,7 @@ export async function fetchShopifyOrdersSince(
 
   while (nextUrl) {
     page += 1;
-    const response = await fetchWithRetry(nextUrl, config.accessToken, fetchImpl);
+    const response = await fetchWithRetry(nextUrl, accessToken, fetchImpl);
     if (!response.ok) {
       const body = await response.text().catch(() => "");
       const snippet = body.slice(0, 300);
