@@ -69,9 +69,9 @@ describe("hasCourseMembershipAccess", () => {
     ).toBe(true);
   });
 
-  it("treats Beta as member course access", () => {
+  it("does not treat retired Beta as member course access", () => {
     expect(hasCourseMembershipAccess(payloadWithPlan(MEMBERSHIPS.beta.memberstackPlanId))).toBe(
-      true,
+      false,
     );
   });
 
@@ -130,12 +130,12 @@ describe("canAccessCourse", () => {
     ).toBe(true);
   });
 
-  it("member courses unlock for Beta / membership / legacy paid plans", () => {
+  it("member courses unlock for membership / legacy paid plans (not retired Beta)", () => {
     expect(
       canAccessCourse("member", payloadWithPlan(MEMBERSHIPS.membership.memberstackPlanId)),
     ).toBe(true);
     expect(canAccessCourse("member", payloadWithPlan(MEMBERSHIPS.beta.memberstackPlanId))).toBe(
-      true,
+      false,
     );
     expect(
       canAccessCourse(
@@ -153,12 +153,12 @@ describe("canAccessCourse", () => {
     expect(canAccessCourse("member", loggedInNoPlan)).toBe(false);
   });
 
-  it("purchase courses unlock for membership / Beta (membership includes all courses)", () => {
+  it("purchase courses unlock for membership / legacy paid (not retired Beta)", () => {
     expect(
       canAccessCourse("purchase", payloadWithPlan(MEMBERSHIPS.membership.memberstackPlanId)),
     ).toBe(true);
     expect(canAccessCourse("purchase", payloadWithPlan(MEMBERSHIPS.beta.memberstackPlanId))).toBe(
-      true,
+      false,
     );
     expect(
       canAccessCourse(
@@ -185,12 +185,12 @@ describe("getCourseViewerState", () => {
     ).toBe("open");
   });
 
-  it("member → open for Beta / membership", () => {
+  it("member → open for membership; retired Beta → needsMembership", () => {
     expect(
       getCourseViewerState("member", payloadWithPlan(MEMBERSHIPS.membership.memberstackPlanId)),
     ).toBe("open");
     expect(getCourseViewerState("member", payloadWithPlan(MEMBERSHIPS.beta.memberstackPlanId))).toBe(
-      "open",
+      "needsMembership",
     );
   });
 
@@ -202,13 +202,13 @@ describe("getCourseViewerState", () => {
     expect(getCourseViewerState("member", loggedInNoPlan)).toBe("needsMembership");
   });
 
-  it("purchase → open for membership / Beta", () => {
+  it("purchase → open for membership; retired Beta → needsPurchase", () => {
     expect(
       getCourseViewerState("purchase", payloadWithPlan(MEMBERSHIPS.membership.memberstackPlanId)),
     ).toBe("open");
     expect(
       getCourseViewerState("purchase", payloadWithPlan(MEMBERSHIPS.beta.memberstackPlanId)),
-    ).toBe("open");
+    ).toBe("needsPurchase");
   });
 
   it("purchase → loggedOut when signed out", () => {

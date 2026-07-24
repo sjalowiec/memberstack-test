@@ -30,7 +30,7 @@ export function activeVideoPlanIdsFromMemberPayload(memberOrPayload: unknown): s
 
 /**
  * @deprecated Use `hasMemberAccess` from `memberAccess`.
- * True when the member has an active beta, basic, premium, or legacy plan.
+ * True when the member has an active paid membership or legacy paid plan.
  */
 export function hasKinVideoAccess(memberOrPayload: unknown): boolean {
   return hasMemberAccess(memberOrPayload);

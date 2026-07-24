@@ -25,6 +25,7 @@ When the legacy ColdFusion site is retired, customer support still needs access 
 | [import-plan.md](./import-plan.md) | CSV export and Postgres import process |
 | [importer.md](./importer.md) | Importer CLI, env vars, validation, reruns |
 | [store-fulfillment.md](./store-fulfillment.md) | Machine/drop-ship shipping-cost records and apply SQL |
+| [shopify-sales.md](./shopify-sales.md) | Live Shopify order sync, Recent Sales UI, DesignaKnit licenses |
 | [todo.md](./todo.md) | Phased implementation checklist |
 
 ## Local Memberstack sandbox vs live secrets

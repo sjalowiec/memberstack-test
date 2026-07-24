@@ -5,9 +5,11 @@
  * IDs (checkout). Do not hard-code these values elsewhere in the application.
  *
  * Model:
- *   - One paid membership (Knit it Now Membership), plus Beta.
+ *   - One paid membership (Knit it Now Membership).
  *   - The paid membership has two prices: monthly and annual.
  *   - Access control keys off the PLAN id; checkout keys off the PRICE id.
+ *   - KIN Beta Access is retired: kept as a named plan id for reference only.
+ *     It must not appear in any content-access allow list.
  *
  * Plan/price IDs below are the former Premium product IDs — kept as the live
  * paid membership. Do not change them here without matching Memberstack/Stripe.
@@ -17,6 +19,10 @@
  * CURRENT PLANS — active Memberstack products
  * ==========================================================================*/
 export const MEMBERSHIPS = {
+  /**
+   * Retired free beta plan. Do not add to MEMBER_PLAN_IDS or other access lists.
+   * Historical Memberstack id only (signup assignment disabled).
+   */
   beta: {
     name: "KIN Beta Access",
     memberstackPlanId: "pln_kin-beta-access-vyek0a38",
@@ -95,15 +101,15 @@ export const LEGACY_PREMIUM_MEMBER_PLAN_IDS = [
 /** Legacy plan ids retained for access only. */
 export const LEGACY_MEMBER_PLAN_IDS = LEGACY_PAID_MEMBER_PLAN_IDS;
 
-/** Current plan ids that grant member access (Beta + paid membership). */
+/** Current plan ids that grant member access (paid membership only). */
 export const CURRENT_MEMBER_PLAN_IDS = [
-  MEMBERSHIPS.beta.memberstackPlanId,
   MEMBERSHIPS.membership.memberstackPlanId,
 ] as const;
 
 /**
  * Global allow list of Memberstack plan ids that grant member access:
- * current plans + legacy plans (kept for migration). Gating consumes this as a
+ * current paid membership + legacy paid shells (kept for migration).
+ * Retired KIN Beta Access is intentionally omitted. Gating consumes this as a
  * set, so order does not matter.
  */
 export const MEMBER_PLAN_IDS = [
@@ -112,8 +118,8 @@ export const MEMBER_PLAN_IDS = [
 ] as const;
 
 /**
- * Plan ids that unlock member courses: same as global member access (Beta,
- * paid membership, and legacy paid shells).
+ * Plan ids that unlock member courses: same as global member access (paid
+ * membership and legacy paid shells).
  */
 export const COURSE_ACCESS_PLAN_IDS = MEMBER_PLAN_IDS;
 

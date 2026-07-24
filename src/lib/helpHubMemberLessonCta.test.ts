@@ -102,16 +102,23 @@ describe("helpHubMemberLessonCtaSpec", () => {
     });
   });
 
-  it("beta members still receive only the direct lesson link", () => {
+  it("beta-only members get the logged-in non-member CTA (no lesson unlock)", () => {
     const state = viewerStateForPlan(MEMBERSHIPS.beta.memberstackPlanId);
-    expect(state).toBe("memberAccess");
+    expect(state).toBe("loggedInNoAccess");
 
-    const spec = helpHubMemberLessonCtaSpec(state, LESSON_HREF);
-    expect(spec.buttons).toHaveLength(1);
-    expect(spec.buttons[0]?.action).toBe("lesson");
-    expect(spec.buttons[0]?.href).toBe(LESSON_HREF);
-    expect(spec.lockedStatus).toBeUndefined();
-    expect(spec.showMembershipNote).toBe(true);
+    expect(helpHubMemberLessonCtaSpec(state, LESSON_HREF)).toEqual({
+      lockedStatus: HELP_HUB_MEMBER_LESSON_LOCKED_STATUS,
+      lockedSupport: HELP_HUB_MEMBER_LESSON_LOCKED_SUPPORT,
+      buttons: [
+        {
+          href: "/membership",
+          text: "Become a Member",
+          action: "membership",
+          variant: "primary",
+        },
+      ],
+      showMembershipNote: false,
+    });
   });
 });
 

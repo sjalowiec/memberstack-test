@@ -1,0 +1,291 @@
+---
+import type { ShopifyOrderListRow } from "../../lib/watson/shopifyOrdersQuery";
+import {
+  formatShopifyOrderMoney,
+  shopifyBrandBadgeLabel,
+} from "../../lib/watson/shopifyOrdersQuery";
+import type { ShopifySyncStatus } from "../../lib/watson/shopifyOrdersSync";
+import type { ShopifySalesPeriodTotals } from "../../lib/watson/shopifySalesTotals";
+import { formatShopifyMoney } from "../../lib/watson/shopifySalesTotals";
+
+interface Filters {
+  q: string;
+  brand: string;
+  payment: string;
+  fulfillment: string;
+  product: string;
+  from: string;
+  to: string;
+}
+
+interface Props {
+  orders: ShopifyOrderListRow[];
+  totals: ShopifySalesPeriodTotals | null;
+  syncStatus: ShopifySyncStatus | null;
+  loadError: string | null;
+  filters: Filters;
+}
+
+const { orders, totals, syncStatus, loadError, filters } = Astro.props;
+
+function formatWhen(iso: string | null): string {
+  if (!iso) return "—";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return date.toLocaleString("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
+const periodCards = totals
+  ? [
+      { id: "today", label: "Today (UTC)", bucket: totals.today },
+      { id: "week", label: "This week (UTC)", bucket: totals.week },
+      { id: "month", label: "This month (UTC)", bucket: totals.month },
+      { id: "last30", label: "Last 30 days", bucket: totals.last30Days },
+    ]
+  : [];
+---
+
+{
+  loadError ? (
+    <p class="watson__status watson__status--error" role="alert">
+      {loadError}
+    </p>
+  ) : null
+}
+
+<section class="watson__panel" aria-labelledby="watson-shopify-sync-heading">
+  <div class="watson-sales__sync-row">
+    <div>
+      <h2 id="watson-shopify-sync-heading" class="watson__panel-title">Shopify sync</h2>
+      <p class="watson-sales__sync-meta">
+        Last successful sync:{" "}
+        {syncStatus?.lastSuccessfulSyncAt
+          ? formatWhen(syncStatus.lastSuccessfulSyncAt)
+          : "Never"}
+      </p>
+      {
+        syncStatus?.lastRun ? (
+          <p class="watson-sales__sync-meta">
+            Last run: {syncStatus.lastRun.status}
+            {syncStatus.lastRun.status === "completed"
+              ? ` — added ${syncStatus.lastRun.ordersAdded}, updated ${syncStatus.lastRun.ordersUpdated}`
+              : ""}
+            {syncStatus.lastRun.errorMessage
+              ? ` — ${syncStatus.lastRun.errorMessage}`
+              : ""}
+          </p>
+        ) : null
+      }
+    </div>
+    <button type="button" class="watson-report__button" id="watson-shopify-sync-btn">
+      Sync Shopify Orders
+    </button>
+  </div>
+  <p class="watson-sales__sync-status" id="watson-shopify-sync-status" aria-live="polite"></p>
+</section>
+
+{
+  periodCards.length > 0 ? (
+    <section class="watson__panel" aria-labelledby="watson-sales-totals-heading">
+      <h2 id="watson-sales-totals-heading" class="watson__panel-title">Sales totals</h2>
+      <p class="watson-report__note">
+        Gross = order total paid; refunds from Shopify total_refunded; net = gross ? refunds.
+        Live Shopify only.
+      </p>
+      <div class="watson-report__cards">
+        {periodCards.map((card) => (
+          <article class="watson-report__card" data-period={card.id}>
+            <h3 class="watson-report__card-label">{card.label}</h3>
+            <p class="watson-report__card-value">{formatShopifyMoney(card.bucket.netSales)}</p>
+            <p class="watson-sales__card-detail">
+              {card.bucket.orderCount} orders · gross {formatShopifyMoney(card.bucket.grossSales)} ·
+              refunds {formatShopifyMoney(card.bucket.refunds)}
+            </p>
+          </article>
+        ))}
+      </div>
+    </section>
+  ) : null
+}
+
+<section class="watson__panel" aria-labelledby="watson-sales-orders-heading">
+  <h2 id="watson-sales-orders-heading" class="watson__panel-title">Orders</h2>
+
+  <form class="watson-report__filters" method="get" action="/watson/sales">
+    <div class="watson-report__filter">
+      <label for="watson-sales-q">Search</label>
+      <input
+        id="watson-sales-q"
+        name="q"
+        type="search"
+        value={filters.q}
+        placeholder="Email, name, order #, product"
+      />
+    </div>
+    <div class="watson-report__filter">
+      <label for="watson-sales-brand">Site / brand</label>
+      <select id="watson-sales-brand" name="brand">
+        <option value="all" selected={filters.brand === "all"}>All</option>
+        <option value="knit_it_now" selected={filters.brand === "knit_it_now"}>Knit it Now</option>
+        <option value="designaknit" selected={filters.brand === "designaknit"}>DesignaKnit</option>
+      </select>
+    </div>
+    <div class="watson-report__filter">
+      <label for="watson-sales-payment">Payment status</label>
+      <input
+        id="watson-sales-payment"
+        name="payment"
+        type="text"
+        value={filters.payment}
+        placeholder="paid, refunded, …"
+      />
+    </div>
+    <div class="watson-report__filter">
+      <label for="watson-sales-fulfillment">Fulfillment</label>
+      <input
+        id="watson-sales-fulfillment"
+        name="fulfillment"
+        type="text"
+        value={filters.fulfillment}
+        placeholder="fulfilled, unfulfilled, …"
+      />
+    </div>
+    <div class="watson-report__filter">
+      <label for="watson-sales-product">Product</label>
+      <input
+        id="watson-sales-product"
+        name="product"
+        type="text"
+        value={filters.product}
+        placeholder="Product title"
+      />
+    </div>
+    <div class="watson-report__filter">
+      <label for="watson-sales-from">From</label>
+      <input id="watson-sales-from" name="from" type="date" value={filters.from} />
+    </div>
+    <div class="watson-report__filter">
+      <label for="watson-sales-to">To</label>
+      <input id="watson-sales-to" name="to" type="date" value={filters.to} />
+    </div>
+    <div class="watson-report__actions">
+      <button type="submit" class="watson-report__button">Apply filters</button>
+      <a class="watson-report__button watson-report__button--secondary" href="/watson/sales">Clear</a>
+    </div>
+  </form>
+
+  <p class="watson-report__count">{orders.length} order{orders.length === 1 ? "" : "s"}</p>
+
+  {
+    orders.length === 0 ? (
+      <p class="watson__placeholder">
+        No live Shopify orders match. Run Sync Shopify Orders if this is the first time.
+      </p>
+    ) : (
+      <div class="watson__table-wrap">
+        <table class="watson__table" data-sortable>
+          <thead>
+            <tr>
+              <th data-sort="text">Source</th>
+              <th data-sort="text">Order</th>
+              <th data-sort="date">Date</th>
+              <th data-sort="text">Customer</th>
+              <th data-sort="text">Brand</th>
+              <th data-sort="text">Items</th>
+              <th data-sort="number">Total</th>
+              <th data-sort="text">Payment</th>
+              <th data-sort="text">Fulfillment</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {orders.map((order) => (
+              <tr>
+                <td>
+                  <span class="watson-sales__badge watson-sales__badge--live">Live Shopify</span>
+                </td>
+                <td>
+                  <a href={`/watson/sales/${encodeURIComponent(order.shopifyOrderId)}`}>
+                    {order.orderName ?? `#${order.orderNumber}`}
+                  </a>
+                  <div class="watson-sales__muted">ID {order.shopifyOrderId}</div>
+                </td>
+                <td data-sort-value={order.processedAt ?? ""}>{formatWhen(order.processedAt)}</td>
+                <td>
+                  {order.customerName ?? "—"}
+                  <div class="watson-sales__muted">{order.customerEmail ?? "guest / no email"}</div>
+                </td>
+                <td>{shopifyBrandBadgeLabel(order.siteBrand)}</td>
+                <td>{order.lineItemSummary || "—"}</td>
+                <td data-sort-value={order.totalPrice}>
+                  {formatShopifyOrderMoney(order.totalPrice, order.currency)}
+                  {order.totalRefunded > 0 ? (
+                    <div class="watson-sales__muted">
+                      refunded {formatShopifyOrderMoney(order.totalRefunded, order.currency)}
+                    </div>
+                  ) : null}
+                  {order.cancelledAt ? <div class="watson-sales__muted">cancelled</div> : null}
+                </td>
+                <td>{order.financialStatus ?? "—"}</td>
+                <td>{order.fulfillmentStatus ?? "—"}</td>
+                <td>
+                  <a href={`/watson/sales/${encodeURIComponent(order.shopifyOrderId)}`}>View</a>
+                  {order.isDesignaknit ? (
+                    <>
+                      {" · "}
+                      <a
+                        href={`/watson/sales/${encodeURIComponent(order.shopifyOrderId)}#license`}
+                      >
+                        {order.hasLicenseRecord ? "License" : "Record license"}
+                      </a>
+                    </>
+                  ) : null}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+</section>
+
+<script>
+  const button = document.getElementById("watson-shopify-sync-btn");
+  const statusEl = document.getElementById("watson-shopify-sync-status");
+
+  button?.addEventListener("click", async () => {
+    if (!(button instanceof HTMLButtonElement) || !statusEl) return;
+    button.disabled = true;
+    statusEl.textContent = "Syncing Shopify orders (last 90 days)…";
+    try {
+      const response = await fetch("/api/watson/shopify/sync", { method: "POST" });
+      const payload = (await response.json()) as {
+        ok?: boolean;
+        error?: string;
+        result?: {
+          ordersAdded?: number;
+          ordersUpdated?: number;
+          ordersFetched?: number;
+          errorMessage?: string | null;
+        };
+      };
+      if (!response.ok || !payload.ok) {
+        statusEl.textContent =
+          payload.error ||
+          payload.result?.errorMessage ||
+          "Sync failed. Check Shopify credentials and Watson database.";
+        return;
+      }
+      statusEl.textContent = `Sync complete: fetched ${payload.result?.ordersFetched ?? 0}, added ${payload.result?.ordersAdded ?? 0}, updated ${payload.result?.ordersUpdated ?? 0}. Reloading…`;
+      window.location.reload();
+    } catch {
+      statusEl.textContent = "Sync failed. Network or server error.";
+    } finally {
+      button.disabled = false;
+    }
+  });
+</script>

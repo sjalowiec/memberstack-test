@@ -1,0 +1,191 @@
+---
+import type { DakLicenseRecord } from "../../lib/watson/dakLicenses";
+import { DAK_LICENSE_STATUSES } from "../../lib/watson/dakLicenses";
+import type { ShopifyOrderDetail } from "../../lib/watson/shopifyOrdersQuery";
+import {
+  formatShopifyOrderMoney,
+  shopifyBrandBadgeLabel,
+} from "../../lib/watson/shopifyOrdersQuery";
+
+interface Props {
+  order: ShopifyOrderDetail;
+  license: DakLicenseRecord | null;
+}
+
+const { order, license } = Astro.props;
+
+function formatWhen(iso: string | null): string {
+  if (!iso) return "—";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return date.toLocaleString("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+---
+
+<section class="watson__panel">
+  <p>
+    <span class="watson-sales__badge watson-sales__badge--live">Live Shopify</span>
+    {" "}
+    <span class="watson-sales__badge">{shopifyBrandBadgeLabel(order.siteBrand)}</span>
+  </p>
+  <dl class="watson-sales__dl">
+    <div><dt>Shopify order ID</dt><dd>{order.shopifyOrderId}</dd></div>
+    <div><dt>Order number</dt><dd>{order.orderName ?? `#${order.orderNumber}`}</dd></div>
+    <div><dt>Date</dt><dd>{formatWhen(order.processedAt)}</dd></div>
+    <div><dt>Customer</dt><dd>{order.customerName ?? "—"}</dd></div>
+    <div><dt>Email</dt><dd>{order.customerEmail ?? "guest / no email"}</dd></div>
+    <div><dt>Payment</dt><dd>{order.financialStatus ?? "—"}</dd></div>
+    <div><dt>Fulfillment</dt><dd>{order.fulfillmentStatus ?? "—"}</dd></div>
+    <div>
+      <dt>Cancelled</dt>
+      <dd>
+        {order.cancelledAt
+          ? `${formatWhen(order.cancelledAt)}${order.cancelReason ? ` (${order.cancelReason})` : ""}`
+          : "No"}
+      </dd>
+    </div>
+    <div><dt>Subtotal</dt><dd>{formatShopifyOrderMoney(order.subtotalAmount, order.currency)}</dd></div>
+    <div><dt>Discounts</dt><dd>{formatShopifyOrderMoney(order.totalDiscounts, order.currency)}</dd></div>
+    <div><dt>Taxes</dt><dd>{formatShopifyOrderMoney(order.totalTax, order.currency)}</dd></div>
+    <div><dt>Shipping</dt><dd>{formatShopifyOrderMoney(order.totalShipping, order.currency)}</dd></div>
+    <div><dt>Total paid</dt><dd>{formatShopifyOrderMoney(order.totalPrice, order.currency)}</dd></div>
+    <div><dt>Refunded</dt><dd>{formatShopifyOrderMoney(order.totalRefunded, order.currency)}</dd></div>
+    <div><dt>Currency</dt><dd>{order.currency}</dd></div>
+  </dl>
+</section>
+
+<section class="watson__panel" aria-labelledby="watson-order-items-heading">
+  <h2 id="watson-order-items-heading" class="watson__panel-title">Line items</h2>
+  <div class="watson__table-wrap">
+    <table class="watson__table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Qty</th>
+          <th>SKU</th>
+          <th>Vendor</th>
+          <th>Unit price</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          order.lineItems.map((item) => (
+            <tr>
+              <td>
+                {item.title}
+                {item.variantTitle ? ` (${item.variantTitle})` : ""}
+                {item.productHandle ? (
+                  <div class="watson-sales__muted">{item.productHandle}</div>
+                ) : null}
+              </td>
+              <td>{item.quantity}</td>
+              <td>{item.sku ?? "—"}</td>
+              <td>{item.vendor ?? "—"}</td>
+              <td>{formatShopifyOrderMoney(item.unitPrice, order.currency)}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+{
+  order.isDesignaknit ? (
+    <section class="watson__panel" id="license" aria-labelledby="watson-dak-license-heading">
+      <h2 id="watson-dak-license-heading" class="watson__panel-title">
+        DesignaKnit license
+      </h2>
+      <p class="watson-report__note">
+        Record the Soft Byte license number for this order. This is Watson-native ops data (not
+        written back to Shopify). Use Responses ? DAK License Delivery after assigning.
+      </p>
+      <form id="watson-dak-license-form" class="watson-sales__license-form">
+        <input type="hidden" name="shopifyOrderId" value={order.shopifyOrderId} />
+        <label>
+          License number
+          <input
+            name="licenseNumber"
+            type="text"
+            autocomplete="off"
+            value={license?.licenseNumber ?? ""}
+          />
+        </label>
+        <label>
+          License assigned date
+          <input
+            name="licenseAssignedDate"
+            type="date"
+            value={license?.licenseAssignedDate ?? ""}
+          />
+        </label>
+        <label>
+          Fulfillment status
+          <select name="fulfillmentStatus">
+            {DAK_LICENSE_STATUSES.map((status) => (
+              <option
+                value={status}
+                selected={(license?.fulfillmentStatus ?? "pending") === status}
+              >
+                {status}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Internal notes
+          <textarea name="internalNotes" rows="4">{license?.internalNotes ?? ""}</textarea>
+        </label>
+        <button type="submit" class="watson-report__button">Save license record</button>
+        <p class="watson-sales__sync-status" id="watson-dak-license-status" aria-live="polite"></p>
+      </form>
+    </section>
+  ) : (
+    <section class="watson__panel">
+      <p class="watson-report__note">
+        Not a DesignaKnit software order. For machine/drop-ship shipping costs, use Store
+        Fulfillment on the customer profile (enter Shopify order number{" "}
+        {order.orderNumber}).
+      </p>
+    </section>
+  )
+}
+
+<script>
+  const form = document.getElementById("watson-dak-license-form");
+  const statusEl = document.getElementById("watson-dak-license-status");
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!(form instanceof HTMLFormElement) || !statusEl) return;
+    const data = new FormData(form);
+    const orderId = String(data.get("shopifyOrderId") ?? "");
+    statusEl.textContent = "Saving…";
+    try {
+      const response = await fetch(
+        `/api/watson/shopify/dak-licenses/${encodeURIComponent(orderId)}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            licenseNumber: data.get("licenseNumber"),
+            licenseAssignedDate: data.get("licenseAssignedDate"),
+            fulfillmentStatus: data.get("fulfillmentStatus"),
+            internalNotes: data.get("internalNotes"),
+          }),
+        },
+      );
+      const payload = (await response.json()) as { ok?: boolean; error?: string };
+      if (!response.ok || !payload.ok) {
+        statusEl.textContent = payload.error || "Unable to save license.";
+        return;
+      }
+      statusEl.textContent = "License record saved.";
+    } catch {
+      statusEl.textContent = "Unable to save license (network error).";
+    }
+  });
+</script>

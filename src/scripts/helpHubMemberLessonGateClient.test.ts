@@ -325,18 +325,18 @@ function memberPayload(planId: string | null) {
   };
 }
 
-describe("hasMemberAccess plan allow list (membership / beta / legacy)", () => {
+describe("hasMemberAccess plan allow list (membership / legacy; beta retired)", () => {
   it("recognizes current membership plan (monthly price uses this plan id)", () => {
     const res = memberPayload(MEMBERSHIPS.membership.memberstackPlanId);
     expect(hasMemberAccess(res)).toBe(true);
     expect(getViewerAccessState(res)).toBe("memberAccess");
   });
 
-  it("recognizes remaining legacy Basic, Beta, and legacy Premium monthly shells", () => {
+  it("recognizes remaining legacy Basic and legacy Premium monthly shells; denies retired Beta", () => {
     expect(
       hasMemberAccess(memberPayload(LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId)),
     ).toBe(true);
-    expect(hasMemberAccess(memberPayload(MEMBERSHIPS.beta.memberstackPlanId))).toBe(true);
+    expect(hasMemberAccess(memberPayload(MEMBERSHIPS.beta.memberstackPlanId))).toBe(false);
     expect(
       hasMemberAccess(memberPayload(LEGACY_MEMBERSHIPS.monthlyPremium.memberstackPlanId)),
     ).toBe(true);

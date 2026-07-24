@@ -36,10 +36,7 @@ export function resolvePatternBuilderNewPatternUpgradeUiMode(
 }
 
 export function memberPlanGrantsPatternBuilderBypass(planId: string): boolean {
-  return (
-    planId === MEMBERSHIPS.beta.memberstackPlanId ||
-    planId === MEMBERSHIPS.membership.memberstackPlanId
-  );
+  return planId === MEMBERSHIPS.membership.memberstackPlanId;
 }
 
 export type { PatternBuilderUpgradeConfig };

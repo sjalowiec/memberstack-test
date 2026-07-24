@@ -54,10 +54,16 @@ describe("currentBusiness", () => {
 
   it("uses a single coming-soon placeholder for cards without live data", () => {
     const cards = buildCurrentBusinessSummaryCardViews(null);
-    expect(cards.every((card) => card.displayValue === CURRENT_BUSINESS_PLACEHOLDER)).toBe(
-      true,
-    );
-    expect(cards.filter((card) => card.isLive)).toHaveLength(0);
+    const shopify = cards.find((card) => card.id === "shopify-sales");
+    expect(shopify).toMatchObject({
+      displayValue: "Open Recent Sales",
+      isLive: true,
+    });
+    expect(
+      cards
+        .filter((card) => card.id !== "shopify-sales")
+        .every((card) => card.displayValue === CURRENT_BUSINESS_PLACEHOLDER),
+    ).toBe(true);
   });
 
   it("renders live membership summary cards with labeled money estimates", () => {
@@ -93,8 +99,8 @@ describe("currentBusiness", () => {
     expect(arr?.displayValue).toContain("(estimate)");
     expect(newMembers).toMatchObject({ displayValue: "1", isLive: true });
     expect(shopify).toMatchObject({
-      displayValue: CURRENT_BUSINESS_PLACEHOLDER,
-      isLive: false,
+      displayValue: "Open Recent Sales",
+      isLive: true,
     });
   });
 

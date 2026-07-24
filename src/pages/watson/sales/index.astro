@@ -1,0 +1,75 @@
+---
+import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
+import WatsonShopifyRecentSales from "../../../components/watson/WatsonShopifyRecentSales.astro";
+import type { ShopifySiteBrand } from "../../../lib/watson/shopifyOrderClassify";
+import {
+  listShopifyOrders,
+  loadShopifySalesTotals,
+} from "../../../lib/watson/shopifyOrdersQuery";
+import { getShopifySyncStatus } from "../../../lib/watson/shopifyOrdersSync";
+
+export const prerender = false;
+
+const params = Astro.url.searchParams;
+const q = params.get("q")?.trim() ?? "";
+const siteBrandParam = params.get("brand")?.trim() ?? "all";
+const siteBrand =
+  siteBrandParam === "designaknit" || siteBrandParam === "knit_it_now"
+    ? (siteBrandParam as ShopifySiteBrand)
+    : "all";
+const financialStatus = params.get("payment")?.trim() ?? "";
+const fulfillmentStatus = params.get("fulfillment")?.trim() ?? "";
+const product = params.get("product")?.trim() ?? "";
+const dateFrom = params.get("from")?.trim() ?? "";
+const dateTo = params.get("to")?.trim() ?? "";
+
+let loadError: string | null = null;
+let orders: Awaited<ReturnType<typeof listShopifyOrders>> = [];
+let totals: Awaited<ReturnType<typeof loadShopifySalesTotals>> | null = null;
+let syncStatus: Awaited<ReturnType<typeof getShopifySyncStatus>> | null = null;
+
+try {
+  [orders, totals, syncStatus] = await Promise.all([
+    listShopifyOrders({
+      q,
+      siteBrand,
+      financialStatus,
+      fulfillmentStatus,
+      product,
+      dateFrom,
+      dateTo,
+      limit: 200,
+    }),
+    loadShopifySalesTotals(),
+    getShopifySyncStatus(),
+  ]);
+} catch (error) {
+  loadError =
+    error instanceof Error
+      ? error.message
+      : "Unable to load live Shopify sales. Check WATSON_DATABASE_URL and run Sync.";
+}
+---
+
+<WatsonPageShell
+  title="Recent Sales | Watson"
+  description="Live Shopify orders for Knit it Now and DesignaKnit."
+  heading="Recent Sales"
+  intro="Live Shopify orders (not legacy ColdFusion). Sync pulls at least the last 90 days."
+>
+  <WatsonShopifyRecentSales
+    orders={orders}
+    totals={totals}
+    syncStatus={syncStatus}
+    loadError={loadError}
+    filters={{
+      q,
+      brand: siteBrand,
+      payment: financialStatus,
+      fulfillment: fulfillmentStatus,
+      product,
+      from: dateFrom,
+      to: dateTo,
+    }}
+  />
+</WatsonPageShell>

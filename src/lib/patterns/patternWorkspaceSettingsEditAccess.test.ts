@@ -65,7 +65,7 @@ describe("isPatternWorkspaceSettingsEditingLocked", () => {
     expect(isPatternWorkspaceSettingsEditingLocked(access, "sleeveless")).toBe(true);
   });
 
-  it("allows members and beta for both systems", () => {
+  it("allows members with system access for both systems", () => {
     const member = testAccess({ loggedIn: true, hasSystemAccess: true, freeClaimed: true });
     expect(isPatternWorkspaceSettingsEditingLocked(member, "drop-shoulder")).toBe(false);
     expect(isPatternWorkspaceSettingsEditingLocked(member, "sleeveless")).toBe(false);

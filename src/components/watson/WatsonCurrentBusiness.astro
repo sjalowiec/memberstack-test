@@ -57,7 +57,11 @@ const { cards, asOf, notes, loadError } = Astro.props;
               { "watson-current__card-status--live": card.isLive },
             ]}
           >
-            {card.displayValue}
+            {card.id === "shopify-sales" ? (
+              <a href="/watson/sales">{card.displayValue}</a>
+            ) : (
+              card.displayValue
+            )}
           </p>
           {card.note ? <p class="watson-current__card-note">{card.note}</p> : null}
         </article>

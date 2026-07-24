@@ -65,10 +65,27 @@ describe("resolveHeaderAuthState", () => {
     expect(getViewerAccessState(res)).toBe("memberAccess");
   });
 
-  it("Beta plan in MEMBER_PLAN_IDS ? isMember true", () => {
+  it("retired Beta plan alone ? isMember false (loggedInNoAccess)", () => {
     const res = payload([{ planId: BETA, status: "ACTIVE" }]);
+    expect(resolveHeaderAuthState(res).isMember).toBe(false);
+    expect(hasMemberAccess(res)).toBe(false);
+    expect(getViewerAccessState(res)).toBe("loggedInNoAccess");
+  });
+
+  it("Beta plus active paid plan ? isMember true via paid plan", () => {
+    const res = payload([
+      { planId: BETA, status: "ACTIVE" },
+      { planId: PAID, status: "ACTIVE" },
+    ]);
     expect(resolveHeaderAuthState(res).isMember).toBe(true);
     expect(hasMemberAccess(res)).toBe(true);
+    expect(getViewerAccessState(res)).toBe("memberAccess");
+  });
+
+  it("inactive Beta plan ? isMember false", () => {
+    const res = payload([{ planId: BETA, status: "CANCELED", active: false }]);
+    expect(resolveHeaderAuthState(res).isMember).toBe(false);
+    expect(hasMemberAccess(res)).toBe(false);
   });
 
   it("approved legacy membership shell ? isMember true", () => {

@@ -124,15 +124,23 @@ describe("pattern membership gating (pure rules)", () => {
     expect(canStartNewSleevelessPattern(nosubDropShoulderClaimed)).toBe(false);
   });
 
-  it("active members and beta users get full access", () => {
-    for (const access of [paidMember, betaMember]) {
-      expect(canCreatePatternForSystem(access, "sleeveless")).toBe(true);
-      expect(canCreatePatternForSystem(access, "drop-shoulder")).toBe(true);
-      expect(canEditPatternSettingsForSystem(access, "sleeveless")).toBe(true);
-      expect(canStartNewSleevelessPattern(access)).toBe(true);
-      expect(canCopySavedCustomPatternForAccess(access)).toBe(true);
-      expect(resolveHasAdvancedPatternAccessForAccess(access)).toBe(true);
-    }
+  it("active paid members get full access", () => {
+    expect(canCreatePatternForSystem(paidMember, "sleeveless")).toBe(true);
+    expect(canCreatePatternForSystem(paidMember, "drop-shoulder")).toBe(true);
+    expect(canEditPatternSettingsForSystem(paidMember, "sleeveless")).toBe(true);
+    expect(canStartNewSleevelessPattern(paidMember)).toBe(true);
+    expect(canCopySavedCustomPatternForAccess(paidMember)).toBe(true);
+    expect(resolveHasAdvancedPatternAccessForAccess(paidMember)).toBe(true);
+  });
+
+  it("retired beta-only access objects without system entitlement stay locked", () => {
+    const betaOnlyNoAccess: SleevelessUserAccess = {
+      ...betaMember,
+      hasSystemAccess: false,
+    };
+    expect(canCreatePatternForSystem(betaOnlyNoAccess, "sleeveless")).toBe(false);
+    expect(canStartNewSleevelessPattern(betaOnlyNoAccess)).toBe(false);
+    expect(resolveHasAdvancedPatternAccessForAccess(betaOnlyNoAccess)).toBe(false);
   });
 
   it("surfaces membership copy when copy is blocked", () => {
@@ -161,13 +169,34 @@ describe("pattern membership gating (Memberstack resolver)", () => {
     });
   });
 
-  it("resolves beta plan users as members", async () => {
+  it("resolves retired beta-only users as logged in without system access", async () => {
     stubMemberstack({
       getCurrentMember: vi.fn().mockResolvedValue({
         data: {
           id: "ms_beta",
           auth: { email: "betatest@knititnow.com" },
           planConnections: [{ planId: MEMBERSHIPS.beta.memberstackPlanId, status: "ACTIVE" }],
+        },
+      }),
+      getMemberJSON: vi.fn().mockResolvedValue({ data: {} }),
+    });
+
+    await expect(resolveSleevelessUserAccess()).resolves.toMatchObject({
+      loggedIn: true,
+      hasSystemAccess: false,
+    });
+  });
+
+  it("resolves beta plus paid plan as members via the paid plan", async () => {
+    stubMemberstack({
+      getCurrentMember: vi.fn().mockResolvedValue({
+        data: {
+          id: "ms_dual",
+          auth: { email: "dual@knititnow.com" },
+          planConnections: [
+            { planId: MEMBERSHIPS.beta.memberstackPlanId, status: "ACTIVE" },
+            { planId: MEMBERSHIPS.membership.memberstackPlanId, status: "ACTIVE" },
+          ],
         },
       }),
       getMemberJSON: vi.fn().mockResolvedValue({ data: {} }),

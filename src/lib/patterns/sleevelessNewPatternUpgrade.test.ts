@@ -7,20 +7,28 @@ import {
 import { PATTERN_BUILDER_LIFETIME_PURCHASES } from "../../config/patternBuilderLifetime";
 import { testAccess } from "./patternAccessTestFixtures";
 import {
+  memberPlanGrantsSleevelessBypass,
   resolveSleevelessNewPatternUpgradeUiMode,
   shouldBypassSleevelessNewPatternUpgradeScreen,
   sleevelessLifetimeCheckoutPriceId,
 } from "./sleevelessNewPatternUpgrade";
 
+describe("memberPlanGrantsSleevelessBypass", () => {
+  it("grants for the paid membership plan only; not retired beta", () => {
+    expect(memberPlanGrantsSleevelessBypass(MEMBERSHIPS.membership.memberstackPlanId)).toBe(true);
+    expect(memberPlanGrantsSleevelessBypass(MEMBERSHIPS.beta.memberstackPlanId)).toBe(false);
+  });
+});
+
 describe("shouldBypassSleevelessNewPatternUpgradeScreen", () => {
-  it("bypasses for active Beta members", () => {
+  it("does not bypass for retired beta-only members without system access", () => {
     const access = testAccess({
       loggedIn: true,
-      hasSystemAccess: true,
+      hasSystemAccess: false,
       activePlanIds: [MEMBERSHIPS.beta.memberstackPlanId],
       freeClaimed: true,
     });
-    expect(shouldBypassSleevelessNewPatternUpgradeScreen(access, "sleeveless")).toBe(true);
+    expect(shouldBypassSleevelessNewPatternUpgradeScreen(access, "sleeveless")).toBe(false);
   });
 
   it("does not bypass for the removed annual Basic plan", () => {

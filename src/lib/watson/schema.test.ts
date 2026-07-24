@@ -30,18 +30,24 @@ describe("schema", () => {
     expect(indexStatements[0]?.label).toBe("index idx_legacy_members_email");
 
     const nativeStatements = getWatsonNativeSchemaStatements();
-    expect(nativeStatements).toHaveLength(10);
+    const labels = nativeStatements.map((statement) => statement.label);
     expect(nativeStatements[0]?.label).toBe("table watson_notes");
     expect(nativeStatements[0]?.sql).toContain("CREATE TABLE IF NOT EXISTS watson_notes");
-    expect(nativeStatements[1]?.label).toBe("index idx_watson_notes_memberid_created");
-    expect(nativeStatements[2]?.label).toBe("table watson_store_fulfillments");
-    expect(nativeStatements[2]?.sql).toContain(
-      "CREATE TABLE IF NOT EXISTS watson_store_fulfillments",
-    );
-    expect(nativeStatements[2]?.sql).toContain("actual_shipping_cost NUMERIC(12, 4)");
+    expect(labels).toContain("table watson_store_fulfillments");
+    expect(labels).toContain("table watson_shopify_orders");
+    expect(labels).toContain("table watson_shopify_order_items");
+    expect(labels).toContain("table watson_shopify_sync_runs");
+    expect(labels).toContain("table watson_dak_licenses");
+    expect(
+      nativeStatements.find((statement) => statement.label === "table watson_store_fulfillments")
+        ?.sql,
+    ).toContain("actual_shipping_cost NUMERIC(12, 4)");
     expect(nativeStatements.some((statement) => statement.label.includes("order_tracking_unique"))).toBe(
       true,
     );
+    expect(
+      nativeStatements.find((statement) => statement.label === "table watson_shopify_orders")?.sql,
+    ).toContain("source TEXT NOT NULL DEFAULT 'shopify'");
   });
 
   it("keeps generated schema.sql content in sync with statement builders", () => {

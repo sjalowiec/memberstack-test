@@ -16,7 +16,7 @@ Table: `watson_store_fulfillments` (Watson-native Postgres; not part of the lega
 
 Customer linking uses the same `memberid` / dual-ID pattern as Watson Notes (`notesWriteId` for writes; linked Memberstack + legacy IDs for reads).
 
-Shopify order number is entered manually today. `shopify_order_id` is nullable for a future Shopify order import. Watson does **not** change Shopify fulfillment status.
+Shopify order number may still be entered manually for shipping-cost records. Live Shopify order headers/line items sync separately into `watson_shopify_*` (see [shopify-sales.md](./shopify-sales.md)); DesignaKnit license numbers are stored on `watson_dak_licenses`, not on this shipping table. Watson does **not** change Shopify fulfillment status.
 
 ## Apply schema to an existing Watson database
 

@@ -117,13 +117,29 @@ describe("requirePatternProjectAccess", () => {
     expect(result).toEqual({ ok: true, userId: MEMBER_ID, mode: "member" });
   });
 
-  it("allows Beta membership shells in MEMBER_PLAN_IDS", async () => {
+  it("rejects retired Beta-only members with 403", async () => {
     vi.mocked(getMemberstackAdminClient).mockReturnValue({
       verifyMemberToken: vi.fn(async () => ({ id: MEMBER_ID })),
       getMember: vi.fn(async () => memberRecord(BETA_PLAN)),
     });
     const result = await requirePatternProjectAccess(makeRequest("good-token"));
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.status).toBe(403);
+  });
+
+  it("allows Beta plus an active paid plan via the paid plan", async () => {
+    vi.mocked(getMemberstackAdminClient).mockReturnValue({
+      verifyMemberToken: vi.fn(async () => ({ id: MEMBER_ID })),
+      getMember: vi.fn(async () => ({
+        id: MEMBER_ID,
+        planConnections: [
+          { planId: BETA_PLAN, status: "ACTIVE", active: true },
+          { planId: ACTIVE_PLAN, status: "ACTIVE", active: true },
+        ],
+      })),
+    });
+    const result = await requirePatternProjectAccess(makeRequest("good-token"));
+    expect(result).toEqual({ ok: true, userId: MEMBER_ID, mode: "member" });
   });
 
   it("allows approved legacy membership shells in MEMBER_PLAN_IDS", async () => {

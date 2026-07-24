@@ -7,7 +7,7 @@ updated 2026-07-22
 - Knit it Now Membership Monthly: $19.99
 - Knit it Now Membership Annual: $228.00
 
-There is one paid membership. Beta access remains a separate free plan for invited beta members.
+There is one paid membership. KIN Beta Access (`pln_kin-beta-access-vyek0a38`) is retired and no longer grants site content access.
 
 ## Live status vs legacy history
 
@@ -38,7 +38,7 @@ There is one paid membership. Beta access remains a separate free plan for invit
 
 ## Dynamic Patterns access
 
-- Dynamic Patterns (catalog, builders, saved/generated patterns, print) require **active Knit it Now membership** only — canonical `hasMemberAccess` / `MEMBER_PLAN_IDS` (paid membership, Beta, and legacy member shells).
+- Dynamic Patterns (catalog, builders, saved/generated patterns, print) require **active Knit it Now membership** only — canonical `hasMemberAccess` / `MEMBER_PLAN_IDS` (paid membership and legacy member shells). Retired KIN Beta Access does not grant access.
 - A Memberstack account alone (login, DesignaKnit, course, prior/canceled membership) does **not** grant Dynamic Pattern access.
 - Lifetime Pattern Builder plan connections, Memberstack JSON unlock flags (`sleevelessPatternSystemUnlocked`), free-claim JSON, and localhost/dev bypass do **not** grant Dynamic Pattern access.
 - There is no free-account or one-free-pattern path for Dynamic Patterns.

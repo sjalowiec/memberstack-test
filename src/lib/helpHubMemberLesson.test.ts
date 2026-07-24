@@ -57,14 +57,14 @@ describe("memberAccess viewer states for Help Hub Member Lessons", () => {
     expect(getViewerAccessState({ data: null })).toBe("loggedOut");
   });
 
-  it("memberAccess: active beta plan counts as member access", () => {
-    expect(viewerStateForPlan(MEMBERSHIPS.beta.memberstackPlanId)).toBe("memberAccess");
+  it("loggedInNoAccess: retired beta plan alone does not count as member access", () => {
+    expect(viewerStateForPlan(MEMBERSHIPS.beta.memberstackPlanId)).toBe("loggedInNoAccess");
     expect(hasMemberAccess({
       data: {
         id: "ms_beta",
         planConnections: [{ planId: MEMBERSHIPS.beta.memberstackPlanId, status: "ACTIVE" }],
       },
-    })).toBe(true);
+    })).toBe(false);
   });
 });
 

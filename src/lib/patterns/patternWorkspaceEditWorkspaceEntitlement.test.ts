@@ -34,7 +34,12 @@ const editDrawerSrc = readFileSync(
   "utf8",
 );
 
-const betaMember = testAccess({ loggedIn: true, hasSystemAccess: true, memberId: "ms_beta" });
+const betaOnlyMember = testAccess({
+  loggedIn: true,
+  hasSystemAccess: false,
+  memberId: "ms_beta",
+  activePlanIds: [MEMBERSHIPS.beta.memberstackPlanId],
+});
 const legacyMonthlyBasicMember = testAccess({
   loggedIn: true,
   hasSystemAccess: true,
@@ -58,13 +63,13 @@ const freeClaimed = testAccess({
 });
 
 describe("canOpenPatternWorkspaceEditWorkspace", () => {
-  it("allows Beta, remaining legacy monthly Basic, and paid members", () => {
-    expect(canOpenPatternWorkspaceEditWorkspace(betaMember)).toBe(true);
+  it("allows remaining legacy monthly Basic and paid members", () => {
     expect(canOpenPatternWorkspaceEditWorkspace(legacyMonthlyBasicMember)).toBe(true);
     expect(canOpenPatternWorkspaceEditWorkspace(paidMember)).toBe(true);
   });
 
-  it("denies free claimed, free unclaimed, and logged-out users", () => {
+  it("denies retired beta-only, free claimed, free unclaimed, and logged-out users", () => {
+    expect(canOpenPatternWorkspaceEditWorkspace(betaOnlyMember)).toBe(false);
     expect(canOpenPatternWorkspaceEditWorkspace(freeUnclaimed)).toBe(false);
     expect(canOpenPatternWorkspaceEditWorkspace(freeClaimed)).toBe(false);
     expect(canOpenPatternWorkspaceEditWorkspace(LOGGED_OUT_SLEEVELESS_ACCESS)).toBe(false);
@@ -80,8 +85,12 @@ describe("isPatternWorkspaceSettingsEditingLocked", () => {
   });
 
   it("unlocks members for any pattern system context", () => {
-    expect(isPatternWorkspaceSettingsEditingLocked(betaMember, "drop-shoulder")).toBe(false);
+    expect(isPatternWorkspaceSettingsEditingLocked(paidMember, "drop-shoulder")).toBe(false);
     expect(isPatternWorkspaceSettingsEditingLocked(paidMember, "sleeveless")).toBe(false);
+  });
+
+  it("locks retired beta-only users", () => {
+    expect(isPatternWorkspaceSettingsEditingLocked(betaOnlyMember, "drop-shoulder")).toBe(true);
   });
 });
 
@@ -109,7 +118,7 @@ describe("blockPatternWorkspaceSettingsEditOrOfferUnlock", () => {
   });
 
   it("returns false for members", () => {
-    expect(blockPatternWorkspaceSettingsEditOrOfferUnlock(betaMember, "drop-shoulder")).toBe(false);
+    expect(blockPatternWorkspaceSettingsEditOrOfferUnlock(paidMember, "drop-shoulder")).toBe(false);
     expect(showPatternEditingUnlockModal).not.toHaveBeenCalled();
   });
 });
@@ -141,7 +150,7 @@ describe("edit drawer integration", () => {
 });
 
 describe("membership plan ids grant edit workspace access", () => {
-  it("includes beta, membership, and remaining legacy plan ids; excludes removed Basic", () => {
+  it("includes membership and remaining legacy plan ids; excludes retired beta and removed Basic", () => {
     expect(MEMBERSHIPS.beta.memberstackPlanId).toBe("pln_kin-beta-access-vyek0a38");
     expect(MEMBERSHIPS.membership.memberstackPlanId).toBe(
       "pln_kin-membership-annual-premium-tn5b0cxj",
@@ -150,11 +159,10 @@ describe("membership plan ids grant edit workspace access", () => {
 
     for (const ids of [MEMBER_PLAN_IDS, COURSE_ACCESS_PLAN_IDS, LEGACY_PAID_MEMBER_PLAN_IDS]) {
       expect(ids).not.toContain(REMOVED_BASIC_MEMBERSHIP_PLAN_ID);
+      expect(ids).not.toContain(MEMBERSHIPS.beta.memberstackPlanId);
     }
 
-    expect(MEMBER_PLAN_IDS).toContain(MEMBERSHIPS.beta.memberstackPlanId);
     expect(MEMBER_PLAN_IDS).toContain(MEMBERSHIPS.membership.memberstackPlanId);
-    expect(COURSE_ACCESS_PLAN_IDS).toContain(MEMBERSHIPS.beta.memberstackPlanId);
     expect(COURSE_ACCESS_PLAN_IDS).toContain(MEMBERSHIPS.membership.memberstackPlanId);
 
     expect(LEGACY_PAID_MEMBER_PLAN_IDS).toContain(

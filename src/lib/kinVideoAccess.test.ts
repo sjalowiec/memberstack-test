@@ -51,13 +51,26 @@ describe("hasKinVideoAccess", () => {
     ).toBe(true);
   });
 
-  it("returns true for active beta plan", () => {
+  it("returns false for retired beta plan alone", () => {
     expect(
       hasKinVideoAccess({
         data: {
           auth: { email: "betatest@knititnow.com" },
           planConnections: [
             { planId: MEMBERSHIPS.beta.memberstackPlanId, status: "ACTIVE" },
+          ],
+        },
+      }),
+    ).toBe(false);
+  });
+
+  it("returns true when beta is paired with an active paid plan", () => {
+    expect(
+      hasKinVideoAccess({
+        data: {
+          planConnections: [
+            { planId: MEMBERSHIPS.beta.memberstackPlanId, status: "ACTIVE" },
+            { planId: MEMBERSHIPS.membership.memberstackPlanId, status: "ACTIVE" },
           ],
         },
       }),
@@ -126,10 +139,12 @@ describe("activeVideoPlanIdsFromMemberPayload", () => {
     expect(
       activeVideoPlanIdsFromMemberPayload({
         data: {
-          planConnections: [{ plan: MEMBERSHIPS.beta.memberstackPlanId, status: "ACTIVE" }],
+          planConnections: [
+            { plan: MEMBERSHIPS.membership.memberstackPlanId, status: "ACTIVE" },
+          ],
         },
       }),
-    ).toEqual([MEMBERSHIPS.beta.memberstackPlanId]);
+    ).toEqual([MEMBERSHIPS.membership.memberstackPlanId]);
   });
 
   it("lists every configured video membership plan id", () => {

@@ -1,12 +1,13 @@
 /**
  * Course access — member gating for courses.
  *
- * Courses use the same allow list as the global member gate: Beta, the paid
- * Knit it Now Membership, and legacy paid plan shells (`COURSE_ACCESS_PLAN_IDS`
- * / `MEMBER_PLAN_IDS`). Login alone never unlocks member courses.
+ * Courses use the same allow list as the global member gate: the paid
+ * Knit it Now Membership and legacy paid plan shells (`COURSE_ACCESS_PLAN_IDS`
+ * / `MEMBER_PLAN_IDS`). Retired KIN Beta Access does not unlock courses.
+ * Login alone never unlocks member courses.
  *
  *   - "free"     — open to everyone (no login required).
- *   - "member"   — requires active member access (Beta or paid membership).
+ *   - "member"   — requires active member access (paid membership / legacy shells).
  *   - "purchase" — included with membership (same as member courses).
  *                  Non-members may unlock via individual purchase entitlement
  *                  when that system exists; until then they stay locked.
@@ -66,7 +67,7 @@ export function normalizeCourseAccessLevel(
 
 /**
  * True when the member holds an active plan that unlocks member courses
- * (Beta, paid membership, or legacy paid shells).
+ * (paid membership or legacy paid shells).
  */
 export function hasCourseMembershipAccess(memberOrPayload: unknown): boolean {
   return getActivePlanIds(memberOrPayload).some((id) => courseAccessPlanIds.has(id));

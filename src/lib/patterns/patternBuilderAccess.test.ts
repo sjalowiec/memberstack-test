@@ -17,12 +17,12 @@ function activePlans(...planIds: string[]): string[] {
 }
 
 describe("hasMemberAccessFromActivePlanIds", () => {
-  it("grants access for membership, Beta, and remaining legacy Basic plan ids", () => {
+  it("grants access for membership and remaining legacy Basic plan ids; not retired Beta", () => {
     expect(
       hasMemberAccessFromActivePlanIds(activePlans(MEMBERSHIPS.membership.memberstackPlanId)),
     ).toBe(true);
     expect(hasMemberAccessFromActivePlanIds(activePlans(MEMBERSHIPS.beta.memberstackPlanId))).toBe(
-      true,
+      false,
     );
     expect(
       hasMemberAccessFromActivePlanIds(
@@ -56,7 +56,7 @@ describe("hasMemberAccessFromActivePlanIds", () => {
   });
 });
 
-describe("hasPatternBuilderAccess — active membership only", () => {
+describe("hasPatternBuilderAccess  active membership only", () => {
   it("allows active members to access both builders", () => {
     const planIds = activePlans(MEMBERSHIPS.membership.memberstackPlanId);
     expect(hasPatternBuilderAccess({ builder: "sleeveless", activePlanIds: planIds })).toBe(true);
@@ -71,8 +71,19 @@ describe("hasPatternBuilderAccess — active membership only", () => {
     );
   });
 
-  it("allows Beta members to access both builders", () => {
+  it("denies retired Beta-only members for both builders", () => {
     const planIds = activePlans(MEMBERSHIPS.beta.memberstackPlanId);
+    expect(hasPatternBuilderAccess({ builder: "sleeveless", activePlanIds: planIds })).toBe(false);
+    expect(hasPatternBuilderAccess({ builder: "dropShoulder", activePlanIds: planIds })).toBe(
+      false,
+    );
+  });
+
+  it("allows Beta plus paid membership via the paid plan", () => {
+    const planIds = activePlans(
+      MEMBERSHIPS.beta.memberstackPlanId,
+      MEMBERSHIPS.membership.memberstackPlanId,
+    );
     expect(hasPatternBuilderAccess({ builder: "sleeveless", activePlanIds: planIds })).toBe(true);
     expect(hasPatternBuilderAccess({ builder: "dropShoulder", activePlanIds: planIds })).toBe(true);
   });

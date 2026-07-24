@@ -1,0 +1,48 @@
+---
+import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
+import WatsonShopifyOrderDetail from "../../../components/watson/WatsonShopifyOrderDetail.astro";
+import { getDakLicenseByOrderId } from "../../../lib/watson/dakLicenses";
+import { getShopifyOrderDetail } from "../../../lib/watson/shopifyOrdersQuery";
+
+export const prerender = false;
+
+const orderId = Astro.params.orderId ? decodeURIComponent(Astro.params.orderId) : "";
+
+let loadError: string | null = null;
+let order: Awaited<ReturnType<typeof getShopifyOrderDetail>> = null;
+let license: Awaited<ReturnType<typeof getDakLicenseByOrderId>> = null;
+
+if (!orderId.trim()) {
+  loadError = "Order ID is required.";
+} else {
+  try {
+    order = await getShopifyOrderDetail(orderId.trim());
+    if (!order) {
+      loadError = "Order not found. Sync Shopify orders, then try again.";
+    } else if (order.isDesignaknit) {
+      license = await getDakLicenseByOrderId(order.shopifyOrderId);
+    }
+  } catch (error) {
+    loadError =
+      error instanceof Error ? error.message : "Unable to load Shopify order.";
+  }
+}
+---
+
+<WatsonPageShell
+  title={order ? `Order ${order.orderName ?? order.orderNumber} | Watson` : "Shopify Order | Watson"}
+  description="Live Shopify order detail."
+  heading={order ? `Order ${order.orderName ?? `#${order.orderNumber}`}` : "Shopify Order"}
+  intro="Live Shopify order (not a legacy ColdFusion record)."
+>
+  <p class="watson__subtitle"><a href="/watson/sales">? Back to Recent Sales</a></p>
+  {
+    loadError ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {loadError}
+      </p>
+    ) : order ? (
+      <WatsonShopifyOrderDetail order={order} license={license} />
+    ) : null
+  }
+</WatsonPageShell>

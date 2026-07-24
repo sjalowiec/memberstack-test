@@ -198,9 +198,18 @@ describe("plan entitlement", () => {
     expect(planIdsGrantSleevelessSystemAccess([])).toBe(false);
   });
 
-  it("grants access for the Beta Access plan id", () => {
-    expect(SLEEVELESS_SYSTEM_MEMBERSHIP_PLAN_IDS).toContain("pln_kin-beta-access-vyek0a38");
-    expect(planIdsGrantSleevelessSystemAccess(["pln_kin-beta-access-vyek0a38"])).toBe(true);
+  it("does not grant access for the retired Beta Access plan id", () => {
+    expect(SLEEVELESS_SYSTEM_MEMBERSHIP_PLAN_IDS).not.toContain("pln_kin-beta-access-vyek0a38");
+    expect(planIdsGrantSleevelessSystemAccess(["pln_kin-beta-access-vyek0a38"])).toBe(false);
+  });
+
+  it("grants access when retired beta is paired with a paid membership plan id", () => {
+    expect(
+      planIdsGrantSleevelessSystemAccess([
+        "pln_kin-beta-access-vyek0a38",
+        MEMBERSHIPS.membership.memberstackPlanId,
+      ]),
+    ).toBe(true);
   });
 
   it("reads the standalone unlock flag from member JSON", () => {

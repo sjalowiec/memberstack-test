@@ -1,16 +1,16 @@
 /**
- * Global membership access — the single source of truth for member-only gating.
+ * Global membership access  the single source of truth for member-only gating.
  *
  * The GLOBAL RULE (used by every gated section: videos, tools, skill builders,
- * stitches/downloads, custom pattern systems, …):
+ * stitches/downloads, custom pattern systems, ):
  *
  *   Member access is granted only when the visitor is LOGGED IN **and** has at
  *   least one ACTIVE plan connection whose planId is in the global allow list
- *   (`MEMBER_ACCESS_PLAN_IDS`). Beta access counts as member access. Login alone
- *   never grants member access.
+ *   (`MEMBER_ACCESS_PLAN_IDS`). Retired KIN Beta Access does not count. Login
+ *   alone never grants member access.
  *
  * The allow list itself lives in `src/config/memberships.ts` (`MEMBER_PLAN_IDS`)
- * so beta, paid membership, legacy, and any future allowed plans are all
+ * so paid membership, legacy paid shells, and any future allowed plans are all
  * controlled from one place. Do NOT keep a separate plan list in any section.
  */
 import { MEMBER_PLAN_IDS } from "../config/memberships";
@@ -87,7 +87,7 @@ export function isMemberLoggedIn(memberOrPayload: unknown): boolean {
 
 /**
  * The global member-access check. True only when the viewer is logged in AND has
- * at least one active plan connection in the global allow list (beta included).
+ * at least one active plan connection in the global allow list.
  */
 export function hasMemberAccess(memberOrPayload: unknown): boolean {
   return getActivePlanIds(memberOrPayload).some((id) => allowedPlanIds.has(id));

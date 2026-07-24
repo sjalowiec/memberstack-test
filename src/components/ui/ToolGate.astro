@@ -5,7 +5,7 @@
  * Reuses the site-wide access system used by Videos and Skill Builders:
  *   - Access is decided by the shared `hasKinVideoAccess` helper
  *     (via `window.kbmHasKinVideoAccess` in BaseLayout), which grants access to
- *     beta, paid membership, and legacy plans (VIDEO_MEMBERSHIP_PLAN_IDS).
+ *     paid membership and legacy paid plans (VIDEO_MEMBERSHIP_PLAN_IDS).
  *   - BaseLayout sets `body.ms-logged-in` from that helper. global.css then
  *     hides `[data-gated="locked"]` and reveals `[data-gated="content"]` for
  *     that tier (and for dev-member / dev-bypass-gating preview modes).

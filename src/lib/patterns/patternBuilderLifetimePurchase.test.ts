@@ -38,9 +38,8 @@ describe("resolvePatternBuilderNewPatternUpgradeUiMode (Drop Shoulder)", () => {
 });
 
 describe("shouldBypassPatternBuilderNewPatternUpgradeScreen (Drop Shoulder)", () => {
-  it("bypasses for Beta, membership, and remaining legacy monthly Basic members", () => {
+  it("bypasses for membership and remaining legacy monthly Basic members; not retired beta-only", () => {
     for (const planId of [
-      MEMBERSHIPS.beta.memberstackPlanId,
       MEMBERSHIPS.membership.memberstackPlanId,
       LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId,
     ]) {
@@ -53,6 +52,17 @@ describe("shouldBypassPatternBuilderNewPatternUpgradeScreen (Drop Shoulder)", ()
       });
       expect(shouldBypassPatternBuilderNewPatternUpgradeScreen(access, "drop-shoulder")).toBe(true);
     }
+
+    const betaOnly = testAccess({
+      loggedIn: true,
+      hasSystemAccess: false,
+      activePlanIds: [MEMBERSHIPS.beta.memberstackPlanId],
+      freeClaimed: true,
+      claimedSystem: "drop-shoulder",
+    });
+    expect(shouldBypassPatternBuilderNewPatternUpgradeScreen(betaOnly, "drop-shoulder")).toBe(
+      false,
+    );
   });
 
   it("does not bypass for the removed annual Basic plan", () => {

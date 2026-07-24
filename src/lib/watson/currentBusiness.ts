@@ -101,6 +101,16 @@ export function buildCurrentBusinessSummaryCardViews(
   summary: MembershipSummary | null,
 ): CurrentBusinessSummaryCardView[] {
   return CURRENT_BUSINESS_SUMMARY_CARDS.map((card) => {
+    if (card.id === "shopify-sales") {
+      return {
+        id: card.id,
+        label: card.label,
+        displayValue: "Open Recent Sales",
+        note: "Live Shopify orders at /watson/sales (Sync Shopify Orders).",
+        isLive: true,
+      };
+    }
+
     if (!LIVE_MEMBERSHIP_CARD_IDS.has(card.id) || !summary) {
       return {
         id: card.id,

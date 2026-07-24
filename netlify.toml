@@ -22,6 +22,11 @@
   # Reduce Windows EPERM failures from chokidar on `.netlify/functions-serve`
   CHOKIDAR_USEPOLLING = "true"
 
+# Watson live Shopify order sync (every 6 hours). Requires WATSON_DATABASE_URL +
+# SHOPIFY_* env vars in the Netlify site. Manual sync: POST /api/watson/shopify/sync
+[functions."watson-shopify-sync"]
+  schedule = "0 */6 * * *"
+
 # Taitexma ribber slug cleanup (misnamed TR-860 / broken Silver Reed link).
 [[redirects]]
   from = "/shop/machines/taitexma-tr-860"
