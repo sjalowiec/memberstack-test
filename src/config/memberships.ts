@@ -34,7 +34,7 @@ export const MEMBERSHIPS = {
     prices: {
       monthly: {
         price: 19.99,
-        memberstackPriceId: "prc_monthly-subscription-to-knititnow-webw0nzy",
+        memberstackPriceId: "prc_knit-it-now-premium-monthly--en1b307jv",
       },
       annual: {
         price: 228,
