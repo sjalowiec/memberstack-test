@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  FREE_ACCESS_MEMBERSHIPS,
   LEGACY_MEMBERSHIPS,
   MEMBERSHIPS,
   REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
@@ -167,6 +168,57 @@ describe("buildMembershipStatusSummary", () => {
     expect(result.currentStatus).toBe("active");
     expect(result.recommendedAction).toBe("manage");
     expect(result.accountType).toBe("paid_membership");
+  });
+
+  it("marks an active free legacy membership as active/manage (no purchase, no billing)", () => {
+    const connections = [
+      connection({
+        planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+        planName: FREE_ACCESS_MEMBERSHIPS.legacyMembership.name,
+        status: "ACTIVE",
+        active: true,
+      }),
+    ];
+    const result = buildMembershipStatusSummary({
+      memberstackMember: { id: "mem_free_legacy", planConnections: connections },
+      memberstackSummary: summaryFromConnections(connections),
+      memberstackLookupOk: true,
+      legacy: legacy(),
+    });
+    expect(result.currentStatus).toBe("active");
+    expect(result.currentPlanName).toBe("Legacy Membership");
+    expect(result.accountType).toBe("free_membership");
+    expect(result.recommendedAction).toBe("manage");
+    expect(membershipStatusAllowsPurchase(result)).toBe(false);
+    expect(result.customerFacingMessage).toMatch(/Legacy Membership is active/);
+  });
+
+  it("preserves a linked legacy expiration date on an active free legacy membership", () => {
+    const connections = [
+      connection({
+        planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+        status: "ACTIVE",
+        active: true,
+      }),
+    ];
+    const result = buildMembershipStatusSummary({
+      memberstackMember: { id: "mem_free_legacy_exp", planConnections: connections },
+      memberstackSummary: summaryFromConnections(connections),
+      memberstackLookupOk: true,
+      todayYmd: TODAY,
+      legacy: legacy({
+        linkState: "linked",
+        legacyExpirationYmd: "2026-07-30",
+        legacyExpirationDate: formatMembershipCalendarDateFromYmd("2026-07-30"),
+        previousPlanName: "Premium",
+      }),
+    });
+    expect(result.currentStatus).toBe("active");
+    expect(result.currentPlanName).toBe("Legacy Membership");
+    expect(result.recommendedAction).toBe("manage");
+    expect(result.legacyExpirationDate).toBe(
+      formatMembershipCalendarDateFromYmd("2026-07-30"),
+    );
   });
 
   it("marks canceling-but-active as manage with activeThroughDate", () => {

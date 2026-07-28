@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  FREE_ACCESS_MEMBERSHIPS,
   LEGACY_MEMBERSHIPS,
   MEMBERSHIPS,
   REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
@@ -399,6 +400,30 @@ describe("resolveAccountMembershipPanelView", () => {
       },
     ]);
     expect(resolveAccountMembershipPanelView(member).kind).toBe("free");
+  });
+
+  it("shows an active Legacy Membership (free plan) with no billing and no Become a Member", () => {
+    const member = memberWithPlans([
+      {
+        planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+        status: "ACTIVE",
+        active: true,
+      },
+    ]);
+    expect(resolveAccountMembershipPanelView(member)).toEqual({
+      kind: "member",
+      planLabel: "Legacy Membership",
+      statusLabel: "Active",
+      billingInterval: null,
+      billingLabel: null,
+      renewsLabel: null,
+      isCanceling: false,
+      activeUntilMessage: null,
+      visibleActions: [],
+    });
+    expect(
+      resolveAccountMembershipPanelView(member).visibleActions,
+    ).not.toContain("join");
   });
 
   it("recognizes remaining legacy monthly Basic plan ids as members", () => {

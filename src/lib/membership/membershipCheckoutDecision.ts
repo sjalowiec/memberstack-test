@@ -8,6 +8,7 @@
  */
 
 import {
+  FREE_ACCESS_MEMBER_PLAN_IDS,
   LEGACY_PAID_MEMBER_PLAN_IDS,
   MEMBERSHIPS,
 } from "../../config/memberships";
@@ -22,12 +23,34 @@ export const PAID_MEMBERSHIP_PLAN_IDS = [
 
 const paidPlanIdSet = new Set<string>(PAID_MEMBERSHIP_PLAN_IDS);
 
+/**
+ * Active free plan ids that grant full member access without any Stripe billing,
+ * checkout, or renewal (e.g. the "legacy membership" free plan). These are NOT
+ * paid membership: they never affect `memberHasActivePaidMembership`, checkout
+ * decisions, billing intervals, or pricing.
+ */
+export const FREE_MEMBERSHIP_PLAN_IDS = [...FREE_ACCESS_MEMBER_PLAN_IDS] as const;
+
+/** Customer-facing display label for the active free legacy membership plan. */
+export const FREE_MEMBERSHIP_DISPLAY_LABEL = "Legacy Membership";
+
+const freePlanIdSet = new Set<string>(FREE_MEMBERSHIP_PLAN_IDS);
+
 export type MembershipCheckoutDecision =
   | { action: "purchase" }
   | { action: "current" };
 
 export function memberHasActivePaidMembership(memberOrPayload: unknown): boolean {
   return getActivePlanIds(memberOrPayload).some((id) => paidPlanIdSet.has(id));
+}
+
+/**
+ * True when the member has an active connection to a free membership plan (no
+ * paid subscription). Used only for status/account display so these members are
+ * not shown as having no membership. Does not grant billing or checkout state.
+ */
+export function memberHasActiveFreeMembership(memberOrPayload: unknown): boolean {
+  return getActivePlanIds(memberOrPayload).some((id) => freePlanIdSet.has(id));
 }
 
 export function resolveMembershipCheckoutDecision(

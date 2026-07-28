@@ -1,7 +1,7 @@
 /**
  * Resolve Account page membership panel display from a Memberstack payload.
  *
- * Uses paid-membership detection ó does not invent access rules.
+ * Uses paid-membership detection ù does not invent access rules.
  * Billing interval is shown only when an active paid connection maps to a
  * known Memberstack price id in `MEMBERSHIPS`.
  *
@@ -12,7 +12,9 @@
 import { isActiveMemberstackPlanConnection } from "../memberAccess";
 import { memberRecordFromMemberstackPayload } from "../patterns/memberstackMember";
 import {
+  FREE_MEMBERSHIP_DISPLAY_LABEL,
   PAID_MEMBERSHIP_PLAN_IDS,
+  memberHasActiveFreeMembership,
   memberHasActivePaidMembership,
 } from "./membershipCheckoutDecision";
 import {
@@ -201,6 +203,23 @@ export function resolveAccountMembershipPanelView(
       isCanceling,
       activeUntilMessage,
       visibleActions: accountMembershipPanelActions("member", { canceling: isCanceling }),
+    };
+  }
+
+  // Active free membership (e.g. "legacy membership"): full access, no Stripe
+  // billing/checkout/renewal. Show an active member panel with no billing rows
+  // and no purchase ("Become a Member") or Stripe-portal manage action.
+  if (memberHasActiveFreeMembership(memberOrPayload)) {
+    return {
+      kind: "member",
+      planLabel: FREE_MEMBERSHIP_DISPLAY_LABEL,
+      statusLabel: "Active",
+      billingInterval: null,
+      billingLabel: null,
+      renewsLabel: null,
+      isCanceling: false,
+      activeUntilMessage: null,
+      visibleActions: [],
     };
   }
 

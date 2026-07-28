@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { MEMBERSHIPS, MEMBERSHIP_PRICE_IDS } from "../../config/memberships";
+import {
+  FREE_ACCESS_MEMBERSHIPS,
+  MEMBERSHIPS,
+  MEMBERSHIP_PRICE_IDS,
+} from "../../config/memberships";
 import {
   formatMemberstackUnixDate,
   resolveAccountMembershipPanelView,
@@ -137,6 +141,37 @@ describe("resolveMembershipStatusPageView precedence", () => {
     expect(view.facts.renews).toBe(formatMemberstackUnixDate(NEXT_BILLING));
     expect(view.facts.previous).toBeNull();
     expect(view.message).toBe("Your Knit it Now Membership is active.");
+  });
+
+  it("recognizes an active free legacy membership from the client (no purchase CTA)", () => {
+    const payload = {
+      data: {
+        id: "mem_free_legacy",
+        planConnections: [
+          {
+            planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+            status: "ACTIVE",
+            active: true,
+          },
+        ],
+      },
+    };
+    const account = resolveAccountMembershipPanelView(payload);
+    expect(account.kind).toBe("member");
+    expect(account.planLabel).toBe("Legacy Membership");
+    expect(account.visibleActions).not.toContain("join");
+
+    const view = resolveMembershipStatusPageView({
+      clientLoaded: true,
+      memberPayload: payload,
+      serverSummary: serverUnknown(),
+    });
+    expect(view.source).toBe("client_active");
+    expect(view.ctaMode).toBe("manage");
+    expect(view.facts.plan).toBe("Legacy Membership");
+    expect(view.facts.status).toBe("Active");
+    expect(view.facts.billing).toBeNull();
+    expect(view.facts.renews).toBeNull();
   });
 
   it("canceling client membership overrides server unknown/wait", () => {

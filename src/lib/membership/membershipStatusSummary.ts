@@ -2,7 +2,7 @@
  * Customer-facing membership status summary for /membership.
  *
  * Live paid status comes from Memberstack plan connections (request-time).
- * Legacy Watson history is optional context only ù never proof of current access.
+ * Legacy Watson history is optional context only ? never proof of current access.
  */
 
 import {
@@ -14,6 +14,8 @@ import type { MemberMembershipDisplay } from "../watson/memberMembership";
 import type { CustomerMemberstackSummary } from "../watson/customerMemberstack";
 import type { PlanConnection } from "./membershipSummary";
 import {
+  FREE_MEMBERSHIP_DISPLAY_LABEL,
+  memberHasActiveFreeMembership,
   memberHasActivePaidMembership,
   PAID_MEMBERSHIP_PLAN_IDS,
 } from "./membershipCheckoutDecision";
@@ -37,6 +39,7 @@ export type MembershipLegacyLinkState =
 
 export type MembershipAccountType =
   | "paid_membership"
+  | "free_membership"
   | "non_paid_account"
   | "unknown";
 
@@ -46,7 +49,7 @@ export type MembershipRecommendedAction =
   | "contact_support"
   | "wait";
 
-/** Internal only ù never sent in the public DTO. */
+/** Internal only ? never sent in the public DTO. */
 export type LegacyExpirationTiming = "legacy_expired" | "legacy_paid_through_future";
 
 export type MembershipStatusSummary = {
@@ -372,6 +375,29 @@ export function buildMembershipStatusSummary(input: {
       ? resolveLegacyExpirationTiming(legacy.legacyExpirationYmd, todayYmd)
       : null;
 
+  // Active free membership (e.g. "legacy membership"): full access with no Stripe
+  // billing/checkout/renewal. Present as an active membership (never "no
+  // membership"/purchase) while still preserving any legacy expiration date for
+  // display. Paid membership is handled above and always takes precedence.
+  const hasFreeMembership = !hasPaid && memberHasActiveFreeMembership(payload);
+  if (hasFreeMembership) {
+    return {
+      identified,
+      currentStatus: "active",
+      currentPlanName: FREE_MEMBERSHIP_DISPLAY_LABEL,
+      previousPlanName,
+      activeThroughDate: null,
+      legacyExpirationDate: legacyExpirationDisplay,
+      legacyLinkState: legacy.linkState,
+      accountType: "free_membership",
+      recommendedAction: "manage",
+      customerFacingMessage: activeMembershipSentence(
+        FREE_MEMBERSHIP_DISPLAY_LABEL,
+        null,
+      ),
+    };
+  }
+
   if (legacy.linkState === "ambiguous" && !hasPaid) {
     const hasInactivePaidHistory = memberstackSummary.connections.some(
       (connection) =>
@@ -472,7 +498,7 @@ export function buildMembershipStatusSummary(input: {
   }
 
   if (legacy.linkState === "linked" && legacyExpirationDisplay) {
-    // Linked date present but timing unknown ù do not encourage purchase.
+    // Linked date present but timing unknown ? do not encourage purchase.
     return {
       identified,
       currentStatus,
@@ -488,7 +514,7 @@ export function buildMembershipStatusSummary(input: {
     };
   }
 
-  // Legacy Watson lookup failed ó not the same as "no legacy record".
+  // Legacy Watson lookup failed ? not the same as "no legacy record".
   if (legacy.linkState === "lookup_unavailable") {
     return {
       identified,
@@ -542,7 +568,7 @@ export function membershipStatusPanelHeading(
   if (summary.legacyLinkState === "ambiguous") {
     return "We need to check your membership";
   }
-  // Future/today uniquely linked legacy paid-through ó warm, not alarming.
+  // Future/today uniquely linked legacy paid-through ? warm, not alarming.
   if (
     summary.recommendedAction === "contact_support" &&
     summary.legacyLinkState === "linked" &&
