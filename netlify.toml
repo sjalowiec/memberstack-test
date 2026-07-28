@@ -37,6 +37,17 @@
 [functions."legacy-annual-expiry"]
   schedule = "0 9 * * *"
 
+# Legacy annual renewal reminders (daily at 08:00 UTC, ~midnight America/Los_Angeles).
+# Tags legacy annual members in ActiveCampaign at 30 / 7 / 1 day before their Watson
+# paid-through date, after re-checking Memberstack for an active paid plan. Scheduled
+# runs perform LIVE changes ONLY when LEGACY_RENEWAL_REMINDER_LIVE_ENABLED === "true";
+# otherwise they run dry-run. Manual HTTP is dry-run by default; a live manual run
+# requires POST ?confirm=LIVE AND a correct X-Legacy-Renewal-Secret header. Never
+# modifies Watson dates. Requires WATSON_DATABASE_URL + MEMBERSTACK_SECRET_KEY +
+# ACTIVECAMPAIGN_* (API key, base url, KIN list id, paid-through field id).
+[functions."legacy-renewal-reminders"]
+  schedule = "0 8 * * *"
+
 # Taitexma ribber slug cleanup (misnamed TR-860 / broken Silver Reed link).
 [[redirects]]
   from = "/shop/machines/taitexma-tr-860"

@@ -375,6 +375,33 @@ CREATE TABLE IF NOT EXISTS watson_dak_licenses (
 
 CREATE INDEX IF NOT EXISTS idx_watson_dak_licenses_order_number ON watson_dak_licenses (shopify_order_number);
 
+CREATE TABLE IF NOT EXISTS watson_legacy_renewal_reminders (
+  id BIGSERIAL PRIMARY KEY,
+  as_of_date DATE NOT NULL,
+  window_days SMALLINT NOT NULL CHECK (window_days IN (30, 7, 1)),
+  tag_name TEXT NOT NULL,
+  legacy_memberid TEXT NOT NULL,
+  email TEXT,
+  paid_through DATE,
+  memberstack_id TEXT,
+  memberstack_resolution TEXT,
+  ac_contact_id TEXT,
+  list_status TEXT,
+  outcome TEXT NOT NULL,
+  dry_run BOOLEAN NOT NULL DEFAULT FALSE,
+  trigger_source TEXT NOT NULL DEFAULT 'manual',
+  error TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_watson_legacy_renewal_reminders_tagged_unique
+ON watson_legacy_renewal_reminders (legacy_memberid, tag_name)
+WHERE outcome = 'tagged' AND dry_run = FALSE;
+
+CREATE INDEX IF NOT EXISTS idx_watson_legacy_renewal_reminders_as_of ON watson_legacy_renewal_reminders (as_of_date, window_days);
+
+CREATE INDEX IF NOT EXISTS idx_watson_legacy_renewal_reminders_memberid ON watson_legacy_renewal_reminders (legacy_memberid);
+
 CREATE INDEX IF NOT EXISTS idx_legacy_members_email ON legacy_members (LOWER(email));
 
 CREATE INDEX IF NOT EXISTS idx_legacy_members_lastname ON legacy_members (lastname);
