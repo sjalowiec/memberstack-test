@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { MEMBERSHIPS, LEGACY_MEMBERSHIPS } from "../../../src/config/memberships.ts";
+import {
+  MEMBERSHIPS,
+  LEGACY_MEMBERSHIPS,
+  FREE_ACCESS_MEMBERSHIPS,
+} from "../../../src/config/memberships.ts";
 
 vi.mock("./memberstack-admin.js", () => ({
   getMemberstackAdminClient: vi.fn(),
@@ -24,6 +28,7 @@ const OTHER_ID = "mem_other_owner";
 const ACTIVE_PLAN = MEMBERSHIPS.membership.memberstackPlanId;
 const BETA_PLAN = MEMBERSHIPS.beta.memberstackPlanId;
 const LEGACY_PLAN = LEGACY_MEMBERSHIPS.grandfatheredAnnual.memberstackPlanId;
+const LEGACY_FREE_PLAN = FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId;
 
 function makeRequest(token, extraHeaders = {}) {
   const headers = new Headers(extraHeaders);
@@ -149,6 +154,15 @@ describe("requirePatternProjectAccess", () => {
     });
     const result = await requirePatternProjectAccess(makeRequest("good-token"));
     expect(result.ok).toBe(true);
+  });
+
+  it("allows the active free legacy membership plan in MEMBER_PLAN_IDS", async () => {
+    vi.mocked(getMemberstackAdminClient).mockReturnValue({
+      verifyMemberToken: vi.fn(async () => ({ id: MEMBER_ID })),
+      getMember: vi.fn(async () => memberRecord(LEGACY_FREE_PLAN)),
+    });
+    const result = await requirePatternProjectAccess(makeRequest("good-token"));
+    expect(result).toEqual({ ok: true, userId: MEMBER_ID, mode: "member" });
   });
 
   it("fails closed with 503 when Memberstack client is unavailable", async () => {

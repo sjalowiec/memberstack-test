@@ -3,6 +3,7 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  FREE_ACCESS_MEMBERSHIPS,
   LEGACY_MEMBERSHIPS,
   MEMBERSHIPS,
   REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
@@ -345,6 +346,12 @@ describe("hasMemberAccess plan allow list (membership / legacy; beta retired)", 
         memberPayload(LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId),
       ),
     ).toBe(true);
+  });
+
+  it("recognizes the active free legacy membership plan", () => {
+    const res = memberPayload(FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId);
+    expect(hasMemberAccess(res)).toBe(true);
+    expect(getViewerAccessState(res)).toBe("memberAccess");
   });
 
   it("denies the removed annual Basic plan", () => {

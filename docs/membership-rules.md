@@ -9,6 +9,13 @@ updated 2026-07-22
 
 There is one paid membership. KIN Beta Access (`pln_kin-beta-access-vyek0a38`) is retired and no longer grants site content access.
 
+## Legacy membership (free access plan)
+
+- The active Memberstack free plan **legacy membership** (`pln_legacy-membership-t012x0xw0`) grants full Knit It Now member access — the same access as the paid membership.
+- It is part of the shared allow list (`MEMBER_PLAN_IDS`) consumed by `hasMemberAccess`, so courses, videos, patterns, tools, and server-side member access checks all recognize it.
+- It is a free plan with no checkout price or Stripe association; it must never appear in `MEMBERSHIP_PRICE_IDS` and does not affect checkout pricing or billing.
+- **Expiration is managed separately and is not enforced by the access gate.** The access gate only checks that an ACTIVE Memberstack connection to this plan id exists; when/how the plan expires is handled outside `hasMemberAccess`.
+
 ## Live status vs legacy history
 
 - **Memberstack is authoritative for live membership.** Current paid status, canceling-but-still-active access, and plan connections are read from the Memberstack Admin API at request time.

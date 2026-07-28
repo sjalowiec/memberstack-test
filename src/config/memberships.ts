@@ -80,6 +80,29 @@ export const LEGACY_MEMBERSHIPS = {
   },
 } as const;
 
+/* ============================================================================
+ * ACTIVE FREE ACCESS PLANS — allow list ONLY (never used for checkout)
+ * --------------------------------------------------------------------------
+ * Active Memberstack free plans that grant full member access without a paid
+ * subscription or checkout price. They have no Stripe/price association and
+ * must not appear in `MEMBERSHIP_PRICE_IDS`.
+ *
+ * Expiration for these plans is managed separately (outside this access gate);
+ * the access gate only checks that an ACTIVE connection to one of these plan
+ * ids exists.
+ * ==========================================================================*/
+export const FREE_ACCESS_MEMBERSHIPS = {
+  legacyMembership: {
+    name: "legacy membership",
+    memberstackPlanId: "pln_legacy-membership-t012x0xw0",
+  },
+} as const;
+
+/** Active free plan ids that grant the same access as the current membership. */
+export const FREE_ACCESS_MEMBER_PLAN_IDS = [
+  FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+] as const;
+
 /** Legacy paid plan shells that grant the same access as the current membership. */
 export const LEGACY_PAID_MEMBER_PLAN_IDS = [
   LEGACY_MEMBERSHIPS.monthlyBasic.memberstackPlanId,
@@ -108,13 +131,15 @@ export const CURRENT_MEMBER_PLAN_IDS = [
 
 /**
  * Global allow list of Memberstack plan ids that grant member access:
- * current paid membership + legacy paid shells (kept for migration).
- * Retired KIN Beta Access is intentionally omitted. Gating consumes this as a
- * set, so order does not matter.
+ * current paid membership + legacy paid shells (kept for migration) + active
+ * free access plans (e.g. "legacy membership"). Retired KIN Beta Access is
+ * intentionally omitted. Gating consumes this as a set, so order does not
+ * matter.
  */
 export const MEMBER_PLAN_IDS = [
   ...CURRENT_MEMBER_PLAN_IDS,
   ...LEGACY_MEMBER_PLAN_IDS,
+  ...FREE_ACCESS_MEMBER_PLAN_IDS,
 ] as const;
 
 /**
