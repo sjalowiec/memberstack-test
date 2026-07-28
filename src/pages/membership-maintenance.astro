@@ -1,0 +1,148 @@
+---
+import "../styles/global.css";
+
+const title = "We're Upgrading Our Membership System";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>{title}</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body class="maintenance-body">
+    <main class="maintenance">
+      <div class="maintenance__card">
+        <a href="https://knititnow.com" class="maintenance__logo" aria-label="Knit it Now">
+          <img src="/KINlogo.svg" alt="Knit it Now" width="72" height="72" />
+          <span class="maintenance__wordmark">Knit it Now</span>
+        </a>
+
+        <h1 class="maintenance__title">We're Upgrading Our Membership System</h1>
+
+        <p>
+          We're completing an upgrade to our membership system.
+          New memberships and renewals are temporarily on hold while we finish the transition.
+        </p>
+
+        <p>
+          <strong>Existing members can continue to <a href="https://knititnow.com" target="_blank">log in and use Knit it Now</a> as usual.</strong>
+        </p>
+
+        <p>
+          If you were planning to purchase or renew a membership today, please check back.
+        </p>
+
+        <p>
+          Thank you for your patience. We'll be back shortly.
+        </p>
+
+        <p class="maintenance__contact">
+          <a href="https://www.knititnow.com/elements/contactus.cfm">Contact us</a>
+        </p>
+      </div>
+    </main>
+  </body>
+</html>
+
+<style>
+  .maintenance-body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    background: var(--kbm-bg, #e9ece7);
+    font-family: "Poppins", sans-serif;
+    color: #243015;
+  }
+
+  .maintenance {
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 4rem;
+    text-align: center;
+  }
+
+  .maintenance__card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    padding: 2.75rem 2.5rem 3rem;
+  }
+
+  .maintenance__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+    color: var(--kbm-green, #52682d);
+    margin-bottom: 0.5rem;
+  }
+
+  .maintenance__logo img {
+    display: block;
+  }
+
+  .maintenance__wordmark {
+    font-size: 1.9rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+
+  .maintenance__title {
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+    margin: 0.25rem 0 1.25rem;
+  }
+
+  .maintenance p {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin: 0 0 1rem;
+  }
+
+  .maintenance a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .maintenance__logo:hover,
+  .maintenance a:hover {
+    color: var(--kbm-green-hover, #445626);
+  }
+
+  .maintenance__contact {
+    margin-top: 1.75rem;
+  }
+
+  @media (max-width: 600px) {
+    .maintenance {
+      padding: 2rem 1rem 3rem;
+    }
+
+    .maintenance__card {
+      padding: 2rem 1.5rem 2.25rem;
+    }
+
+    .maintenance__wordmark,
+    .maintenance__title {
+      font-size: 1.55rem;
+    }
+
+    .maintenance p {
+      font-size: 1rem;
+    }
+  }
+</style>
