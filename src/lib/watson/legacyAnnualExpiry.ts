@@ -29,9 +29,13 @@ import {
   calendarYmdForNow,
   MEMBERSHIP_STATUS_CALENDAR_TIMEZONE,
 } from "../membership/membershipStatusSummary";
+import { fetchAllMembers } from "../membership/membershipSummary";
 import type { MemberstackMember } from "../membership/membershipSummary";
 import { normalizeCustomerEmail } from "./customerIdentifier";
-import { resolveMemberstackMemberByExactEmail } from "./customerMemberstack";
+import {
+  getSharedMemberstackAdminClient,
+  resolveMemberstackMemberByExactEmail,
+} from "./customerMemberstack";
 import { queryWatson } from "./db";
 import type { WatsonQueryFn } from "./memberSearch";
 
@@ -110,6 +114,12 @@ export type ResolveMemberstackMemberByEmail = (
   email: string,
 ) => Promise<MemberstackEmailResolution>;
 
+/** Bulk Memberstack member loader (single paged Admin `listMembers` scan). */
+export type LoadMemberstackMembers = () => Promise<{
+  members: MemberstackMember[];
+  truncated: boolean;
+}>;
+
 export type RemoveLegacyPlan = (
   memberId: string,
   planId: string,
@@ -157,7 +167,14 @@ export interface RunLegacyAnnualExpiryOptions {
   /** Deterministic "now" for the LA calendar day (tests inject this). */
   now?: Date;
   queryFn?: WatsonQueryFn;
+  /**
+   * Per-email resolver (legacy path). When omitted, the run loads all
+   * Memberstack members once via {@link loadMemberstackMembers} and resolves
+   * candidates against an in-memory email index instead.
+   */
   resolveMemberstackMemberByEmail?: ResolveMemberstackMemberByEmail;
+  /** Bulk member loader (defaults to a single paged Admin `listMembers` scan). */
+  loadMemberstackMembers?: LoadMemberstackMembers;
   removeLegacyPlan?: RemoveLegacyPlan;
 }
 
@@ -173,6 +190,59 @@ export async function defaultResolveMemberstackMemberByEmail(
     return { status: "not_found" };
   }
   return { status: "error", error: result.error };
+}
+
+/**
+ * Loads every Memberstack member once (paged Admin `listMembers`) so the
+ * reconciliation can resolve Watson candidates from memory instead of issuing
+ * one Admin `getMember` request per expired member. Building the Admin client
+ * once here also avoids the repeated non-production secret-warning log that a
+ * per-member client rebuild produced.
+ */
+export async function defaultLoadMemberstackMembers(): Promise<{
+  members: MemberstackMember[];
+  truncated: boolean;
+}> {
+  const client = await getSharedMemberstackAdminClient();
+  if (!client) {
+    throw new Error("Memberstack admin API is not configured.");
+  }
+  return fetchAllMembers(client);
+}
+
+/**
+ * Index Memberstack members by normalized email. An email shared by more than
+ * one distinct Memberstack member id is preserved so it can be treated as
+ * ambiguous (skipped) rather than silently reconciled.
+ */
+export function buildMemberstackEmailIndex(
+  members: MemberstackMember[],
+): Map<string, MemberstackMember[]> {
+  const index = new Map<string, MemberstackMember[]>();
+  for (const member of members) {
+    const normalizedEmail = normalizeCustomerEmail(member.auth?.email);
+    if (!normalizedEmail) continue;
+    const group = index.get(normalizedEmail) ?? [];
+    group.push(member);
+    index.set(normalizedEmail, group);
+  }
+  return index;
+}
+
+/** Resolve one normalized email against a prebuilt index (pure / testable). */
+export function resolveMemberstackMemberFromIndex(
+  index: Map<string, MemberstackMember[]>,
+  normalizedEmail: string,
+): MemberstackEmailResolution {
+  const matches = index.get(normalizedEmail) ?? [];
+  if (matches.length === 0) {
+    return { status: "not_found" };
+  }
+  const distinctIds = new Set(matches.map((member) => member.id));
+  if (distinctIds.size > 1) {
+    return { status: "ambiguous" };
+  }
+  return { status: "unique", member: matches[0] };
 }
 
 /** Production legacy-plan remover (Memberstack Admin `remove-plan`). */
@@ -212,9 +282,6 @@ export async function runLegacyAnnualExpiry(
   const dryRun = options.dryRun ?? true;
   const triggerSource = options.triggerSource ?? "manual";
   const queryFn = options.queryFn ?? queryWatson;
-  const resolveMember =
-    options.resolveMemberstackMemberByEmail ??
-    defaultResolveMemberstackMemberByEmail;
   const removeLegacyPlan = options.removeLegacyPlan ?? defaultRemoveLegacyPlan;
 
   const result: LegacyAnnualExpiryResult = {
@@ -259,6 +326,25 @@ export async function runLegacyAnnualExpiry(
       const group = byEmail.get(normalizedEmail) ?? [];
       group.push(candidate);
       byEmail.set(normalizedEmail, group);
+    }
+
+    // Resolve Memberstack membership for the candidate emails. Default path:
+    // load every Memberstack member once and reconcile against an in-memory
+    // email index (one paged scan, not one Admin lookup per expired member).
+    // An injected `resolveMemberstackMemberByEmail` keeps the legacy per-email
+    // path available for tests.
+    let resolveMember: ResolveMemberstackMemberByEmail;
+    if (options.resolveMemberstackMemberByEmail) {
+      resolveMember = options.resolveMemberstackMemberByEmail;
+    } else if (byEmail.size === 0) {
+      resolveMember = async () => ({ status: "not_found" });
+    } else {
+      const loadMembers =
+        options.loadMemberstackMembers ?? defaultLoadMemberstackMembers;
+      const { members } = await loadMembers();
+      const index = buildMemberstackEmailIndex(members);
+      resolveMember = async (email) =>
+        resolveMemberstackMemberFromIndex(index, email);
     }
 
     for (const [email, group] of byEmail) {

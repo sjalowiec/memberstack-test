@@ -266,6 +266,92 @@ describe("runLegacyAnnualExpiry - Memberstack decisions", () => {
   });
 });
 
+describe("runLegacyAnnualExpiry - bulk member index (default path)", () => {
+  function memberWithEmail(
+    id: string,
+    email: string,
+    planConnections: MemberstackMember["planConnections"] = [
+      { planId: LEGACY_ANNUAL_PLAN_ID, active: true },
+    ],
+  ): MemberstackMember {
+    return { id, auth: { email }, planConnections };
+  }
+
+  it("loads all members once and reconciles many candidates in memory", async () => {
+    const removeLegacyPlan = vi.fn(async () => {});
+    const loadMemberstackMembers = vi.fn(async () => ({
+      members: [
+        memberWithEmail("mem_a", "a@x.com"),
+        memberWithEmail("mem_b", "B@x.com"), // upper-case, must still match
+        memberWithEmail("mem_other", "unrelated@x.com"),
+      ],
+      truncated: false,
+    }));
+
+    const result = await runLegacyAnnualExpiry({
+      now: NOW,
+      dryRun: false,
+      queryFn: makeExpiredQueryFn([
+        { memberid: "m1", email: "a@x.com", subscriptionexpiring: "2026-07-27" },
+        { memberid: "m2", email: "b@x.com", subscriptionexpiring: "2026-07-26" },
+        { memberid: "m3", email: "missing@x.com", subscriptionexpiring: "2026-07-25" },
+      ]),
+      loadMemberstackMembers,
+      removeLegacyPlan,
+    });
+
+    // A single Admin scan regardless of how many candidates were reconciled.
+    expect(loadMemberstackMembers).toHaveBeenCalledTimes(1);
+    expect(result.candidatesFound).toBe(3);
+    expect(result.legacyPlansRemoved).toBe(2);
+    expect(result.skippedNoUniqueMatch).toBe(1);
+    expect(removeLegacyPlan).toHaveBeenCalledTimes(2);
+    expect(removeLegacyPlan).toHaveBeenCalledWith("mem_a", LEGACY_ANNUAL_PLAN_ID);
+    expect(removeLegacyPlan).toHaveBeenCalledWith("mem_b", LEGACY_ANNUAL_PLAN_ID);
+  });
+
+  it("treats an email shared by two Memberstack members as ambiguous", async () => {
+    const removeLegacyPlan = vi.fn(async () => {});
+    const result = await runLegacyAnnualExpiry({
+      now: NOW,
+      dryRun: false,
+      queryFn: makeExpiredQueryFn([
+        { memberid: "m1", email: "dup@x.com", subscriptionexpiring: "2026-07-27" },
+      ]),
+      loadMemberstackMembers: async () => ({
+        members: [
+          memberWithEmail("mem_1", "dup@x.com"),
+          memberWithEmail("mem_2", "dup@x.com"),
+        ],
+        truncated: false,
+      }),
+      removeLegacyPlan,
+    });
+
+    expect(result.skippedNoUniqueMatch).toBe(1);
+    expect(result.details[0]?.reason).toBe("ambiguous_memberstack_match");
+    expect(result.legacyPlansRemoved).toBe(0);
+    expect(removeLegacyPlan).not.toHaveBeenCalled();
+  });
+
+  it("does not scan Memberstack when there are no resolvable candidates", async () => {
+    const loadMemberstackMembers = vi.fn(async () => ({
+      members: [] as MemberstackMember[],
+      truncated: false,
+    }));
+    const result = await runLegacyAnnualExpiry({
+      now: NOW,
+      dryRun: false,
+      queryFn: makeExpiredQueryFn([]),
+      loadMemberstackMembers,
+    });
+
+    expect(loadMemberstackMembers).not.toHaveBeenCalled();
+    expect(result.candidatesFound).toBe(0);
+    expect(result.ok).toBe(true);
+  });
+});
+
 describe("runLegacyAnnualExpiry - dry run", () => {
   it("reports would-remove without calling Memberstack", async () => {
     const removeLegacyPlan = vi.fn(async () => {});
