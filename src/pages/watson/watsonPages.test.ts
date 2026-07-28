@@ -137,6 +137,35 @@ describe("Watson member search pages", () => {
     expect(annualAccess).toContain('export const prerender = false');
   });
 
+  it("defines the read-only legacy renewals preview page and nav link", () => {
+    const page = fs.readFileSync(
+      path.resolve("src/pages/watson/legacy-renewals.astro"),
+      "utf8",
+    );
+    const component = fs.readFileSync(
+      path.resolve("src/components/watson/WatsonLegacyRenewalPreview.astro"),
+      "utf8",
+    );
+    const shell = fs.readFileSync(
+      path.resolve("src/components/watson/WatsonPageShell.astro"),
+      "utf8",
+    );
+
+    expect(page).toContain('export const prerender = false');
+    expect(page).toContain("loadLegacyRenewalReminderPreview");
+    expect(page).toContain("WatsonLegacyRenewalPreview");
+    // The page must never invoke live mode; it relies on the loader's forced dry run.
+    expect(page).not.toContain("dryRun: false");
+    expect(page).not.toContain("confirm=LIVE");
+
+    expect(component).toContain("Renewal Reminder Preview");
+    expect(component).toContain("Refresh Preview");
+    expect(component).toContain("Legacy Expiration Date");
+    expect(component).toContain("Days Until Expiration");
+
+    expect(shell).toContain('<a href="/watson/legacy-renewals">Legacy Renewals</a>');
+  });
+
   it("defines server-rendered dashboard and member detail routes", () => {
     const dashboardPage = fs.readFileSync(
       path.resolve("src/pages/watson/index.astro"),

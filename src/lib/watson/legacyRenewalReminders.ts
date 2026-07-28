@@ -72,6 +72,7 @@ export type ReminderOutcome =
 export interface ReminderCandidateRow {
   memberid: string;
   fristname: string | null;
+  lastname: string | null;
   email: string | null;
   subscriptionexpiring: Date | string | null;
 }
@@ -80,7 +81,14 @@ export interface ReminderDetail {
   windowDays: ReminderWindowDays;
   tag: string;
   legacyMemberId: string;
+  fristname: string | null;
+  lastname: string | null;
   email: string | null;
+  /**
+   * The Watson paid-through / legacy expiration calendar day (YYYY-MM-DD).
+   * By construction this equals the member's `subscriptionexpiring` day, since
+   * candidates are selected where `subscriptionexpiring = today + windowDays`.
+   */
   paidThrough: string | null;
   memberstackId: string | null;
   memberstackResolution: "unique" | "not_found" | "ambiguous" | "missing_email" | null;
@@ -168,6 +176,7 @@ export const REMINDER_WINDOW_MEMBERS_SQL = `
   SELECT
     m.memberid,
     m.fristname,
+    m.lastname,
     m.email,
     m.subscriptionexpiring
   FROM legacy_members m
@@ -241,12 +250,41 @@ async function defaultRecordAttempt(
   );
 }
 
+/**
+ * ActiveCampaign settings the reminder job needs beyond API auth. Kept next to
+ * `getActiveCampaignConfig` (which resolves the API key / base URL) so all AC
+ * environment reads follow one pattern: an injectable `env` defaulting to
+ * `process.env`.
+ */
+export interface LegacyReminderActiveCampaignSettings {
+  /** Existing Knit It Now list id (ACTIVECAMPAIGN_KIN_LIST_ID). */
+  listId: string | null;
+  /** "Legacy Membership Paid Through" date field id. */
+  paidThroughFieldId: string | null;
+}
+
+export function getLegacyReminderActiveCampaignSettings(
+  env: NodeJS.ProcessEnv = process.env,
+): LegacyReminderActiveCampaignSettings {
+  return {
+    listId: (env.ACTIVECAMPAIGN_KIN_LIST_ID || "").trim() || null,
+    paidThroughFieldId: (env.ACTIVECAMPAIGN_PAID_THROUGH_FIELD_ID || "").trim() || null,
+  };
+}
+
 export interface RunLegacyRenewalRemindersOptions {
   /** When true (default), report intended changes without any AC/audit writes. */
   dryRun?: boolean;
   triggerSource?: ReminderTriggerSource;
   /** Deterministic "now" for the LA calendar day (tests inject this). */
   now?: Date;
+  /**
+   * Environment source for all ActiveCampaign settings (list id, field id, API
+   * key, base URL). Defaults to `process.env`. Netlify Functions populate
+   * `process.env` directly; Astro SSR callers must ensure `.env` is loaded into
+   * `process.env` first (see `loadEnvFile`) before relying on the default.
+   */
+  env?: NodeJS.ProcessEnv;
   queryFn?: WatsonQueryFn;
   /** Injected AC client (tests). Defaults to the real HTTP client from env. */
   activeCampaign?: ActiveCampaignClient;
@@ -363,12 +401,11 @@ export async function runLegacyRenewalReminders(
   const dryRun = options.dryRun ?? true;
   const triggerSource = options.triggerSource ?? "manual";
   const queryFn = options.queryFn ?? queryWatson;
+  const env = options.env ?? process.env;
 
-  const listId =
-    options.listId ?? ((process.env.ACTIVECAMPAIGN_KIN_LIST_ID || "").trim() || null);
-  const paidThroughFieldId =
-    options.paidThroughFieldId ??
-    ((process.env.ACTIVECAMPAIGN_PAID_THROUGH_FIELD_ID || "").trim() || null);
+  const settings = getLegacyReminderActiveCampaignSettings(env);
+  const listId = options.listId ?? settings.listId;
+  const paidThroughFieldId = options.paidThroughFieldId ?? settings.paidThroughFieldId;
 
   const windows = REMINDER_WINDOW_DAYS.map((days) => emptyWindowSummary(days));
   const details: ReminderDetail[] = [];
@@ -419,7 +456,7 @@ export async function runLegacyRenewalReminders(
     // Resolve the ActiveCampaign client (real HTTP client from env unless injected).
     let ac = options.activeCampaign;
     if (!ac) {
-      const config = getActiveCampaignConfig();
+      const config = getActiveCampaignConfig(env);
       if (!config) {
         throw new Error(
           "Missing ACTIVECAMPAIGN_API_KEY or ACTIVECAMPAIGN_BASE_URL for renewal reminders.",
@@ -506,6 +543,8 @@ export async function runLegacyRenewalReminders(
         windowDays,
         tag,
         legacyMemberId: row.memberid,
+        fristname: row.fristname,
+        lastname: row.lastname,
         email: row.email,
         paidThrough,
         memberstackId: null,

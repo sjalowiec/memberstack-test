@@ -10,6 +10,7 @@ import { LEGACY_ANNUAL_PLAN_ID } from "./legacyAnnualExpiry";
 import type { WatsonQueryFn } from "./memberSearch";
 import {
   addDaysYmd,
+  getLegacyReminderActiveCampaignSettings,
   REMINDER_TAG_BY_WINDOW,
   runLegacyRenewalReminders,
   type ReminderAuditRow,
@@ -115,6 +116,7 @@ function row(
   return {
     memberid: overrides.memberid,
     fristname: "fristname" in overrides ? (overrides.fristname ?? null) : "Ada",
+    lastname: "lastname" in overrides ? (overrides.lastname ?? null) : "Lovelace",
     email: "email" in overrides ? (overrides.email ?? null) : "a@x.com",
     subscriptionexpiring: overrides.subscriptionexpiring ?? "2026-08-27",
   };
@@ -437,6 +439,7 @@ describe("runLegacyRenewalReminders - configuration guards", () => {
     const result = await runLegacyRenewalReminders({
       now: NOW,
       dryRun: true,
+      env: {},
       listId: undefined,
       paidThroughFieldId: FIELD_ID,
       activeCampaign: makeAc().client,
@@ -450,6 +453,7 @@ describe("runLegacyRenewalReminders - configuration guards", () => {
     const result = await runLegacyRenewalReminders({
       now: NOW,
       dryRun: true,
+      env: {},
       listId: LIST_ID,
       paidThroughFieldId: undefined,
       activeCampaign: makeAc().client,
@@ -457,5 +461,47 @@ describe("runLegacyRenewalReminders - configuration guards", () => {
     });
     expect(result.ok).toBe(false);
     expect(result.errorMessage).toContain("ACTIVECAMPAIGN_PAID_THROUGH_FIELD_ID");
+  });
+
+  it("reads the list id and field id from the supplied env (process.env pattern)", async () => {
+    const ac = makeAc();
+    const result = await runLegacyRenewalReminders({
+      now: NOW,
+      dryRun: true,
+      env: {
+        ACTIVECAMPAIGN_KIN_LIST_ID: "2",
+        ACTIVECAMPAIGN_PAID_THROUGH_FIELD_ID: "42",
+      } as NodeJS.ProcessEnv,
+      activeCampaign: ac.client,
+      skipListValidation: true,
+      queryFn: makeQueryFn({}),
+    });
+    expect(result.ok).toBe(true);
+    expect(result.listId).toBe("2");
+    expect(result.paidThroughFieldId).toBe("42");
+    expect(result.errorMessage).toBeNull();
+  });
+});
+
+describe("getLegacyReminderActiveCampaignSettings", () => {
+  it("reads ACTIVECAMPAIGN_KIN_LIST_ID and field id from the env object", () => {
+    expect(
+      getLegacyReminderActiveCampaignSettings({
+        ACTIVECAMPAIGN_KIN_LIST_ID: " 2 ",
+        ACTIVECAMPAIGN_PAID_THROUGH_FIELD_ID: "42",
+      } as NodeJS.ProcessEnv),
+    ).toEqual({ listId: "2", paidThroughFieldId: "42" });
+  });
+
+  it("returns null for blank/missing values", () => {
+    expect(getLegacyReminderActiveCampaignSettings({} as NodeJS.ProcessEnv)).toEqual({
+      listId: null,
+      paidThroughFieldId: null,
+    });
+    expect(
+      getLegacyReminderActiveCampaignSettings({
+        ACTIVECAMPAIGN_KIN_LIST_ID: "   ",
+      } as NodeJS.ProcessEnv),
+    ).toEqual({ listId: null, paidThroughFieldId: null });
   });
 });
