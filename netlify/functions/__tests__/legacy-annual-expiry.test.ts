@@ -1,19 +1,19 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { MemberstackMember } from "../../src/lib/membership/membershipSummary";
-import type { WatsonQueryFn } from "../../src/lib/watson/memberSearch";
+import type { MemberstackMember } from "../../../src/lib/membership/membershipSummary";
+import type { WatsonQueryFn } from "../../../src/lib/watson/memberSearch";
 import {
   LEGACY_ANNUAL_PLAN_ID,
   runLegacyAnnualExpiry,
   type MemberstackEmailResolution,
   type ResolveMemberstackMemberByEmail,
-} from "../../src/lib/watson/legacyAnnualExpiry";
+} from "../../../src/lib/watson/legacyAnnualExpiry";
 import {
   isConfirmedLive,
   isScheduledInvocation,
   isScheduledLiveEnabled,
   resolveExpiryExecution,
-} from "./legacy-annual-expiry";
+} from "../legacy-annual-expiry";
 
 const SECRET = "s3cr3t-value";
 
