@@ -773,6 +773,35 @@ export function createMemberstackAdminClient({
   }
 
   /**
+   * Removes a FREE plan connection from a member via the Admin REST API
+   * (`POST /members/:id/remove-plan`, body `{ planId }`). Only free plans
+   * (e.g. the legacy membership access plan) can be removed this way. Paid plans
+   * must be canceled through Stripe/the DOM checkout flow. Memberstack returns
+   * `200` with an empty body on success. Idempotent callers should confirm the
+   * connection exists first; removing an already-absent plan is treated as a
+   * no-op by this client (it does not throw when the API accepts the request).
+   * @param {string} memberId
+   * @param {string} planId free plan id (starts with `pln_`)
+   * @returns {Promise<Record<string, unknown> | null>}
+   */
+  async function removePlan(memberId, planId) {
+    const res = await request(
+      "POST",
+      `${baseUrl}/members/${encodeURIComponent(memberId)}/remove-plan`,
+      { body: JSON.stringify({ planId }) },
+      "removePlan",
+    );
+    try {
+      const text = await res.text();
+      if (!text) return null;
+      const body = JSON.parse(text);
+      return body && typeof body === "object" && "data" in body ? body.data : body ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
    * Creates a member. `plans` may only include free plans; paid membership must come from Stripe sync
    * (CSV import with Customer + Subscription IDs). Returns the created member (API `data`).
    * @param {{
@@ -853,7 +882,15 @@ export function createMemberstackAdminClient({
     );
   }
 
-  return { getMember, updateMember, updateMemberJson, createMember, listMembers, verifyMemberToken };
+  return {
+    getMember,
+    updateMember,
+    updateMemberJson,
+    removePlan,
+    createMember,
+    listMembers,
+    verifyMemberToken,
+  };
 }
 
 /**

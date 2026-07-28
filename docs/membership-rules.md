@@ -14,7 +14,37 @@ There is one paid membership. KIN Beta Access (`pln_kin-beta-access-vyek0a38`) i
 - The active Memberstack free plan **legacy membership** (`pln_legacy-membership-t012x0xw0`) grants full Knit It Now member access — the same access as the paid membership.
 - It is part of the shared allow list (`MEMBER_PLAN_IDS`) consumed by `hasMemberAccess`, so courses, videos, patterns, tools, and server-side member access checks all recognize it.
 - It is a free plan with no checkout price or Stripe association; it must never appear in `MEMBERSHIP_PRICE_IDS` and does not affect checkout pricing or billing.
-- **Expiration is managed separately and is not enforced by the access gate.** The access gate only checks that an ACTIVE Memberstack connection to this plan id exists; when/how the plan expires is handled outside `hasMemberAccess`.
+- **Expiration is managed separately and is not enforced by the access gate.** The access gate only checks that an ACTIVE Memberstack connection to this plan id exists; when/how the plan expires is handled outside `hasMemberAccess`. See [Legacy annual expiration](#legacy-annual-expiration) for the process that removes this connection when a legacy annual member's paid-through date passes.
+
+## Legacy annual expiration
+
+Legacy annual members were migrated into Memberstack with the free legacy membership access plan (`pln_legacy-membership-t012x0xw0`) but have **no Stripe subscription**. Their paid-through date lives only in Watson (`legacy_members.subscriptionexpiring`). Because Memberstack plan connections are authoritative for access, an expired annual member would keep access indefinitely until the free plan connection is removed.
+
+A scheduled reconciliation closes this gap:
+
+- **Job:** `netlify/functions/legacy-annual-expiry.ts` (core logic in `src/lib/watson/legacyAnnualExpiry.ts`), scheduled daily at 09:00 UTC in `netlify.toml` (safely after midnight in America/Los_Angeles).
+- **Scheduled live guard:** a scheduled run performs live Memberstack changes **only when `LEGACY_ANNUAL_EXPIRY_LIVE_ENABLED` is exactly `"true"`**. Any other value (unset, `false`, etc.) keeps scheduled runs in dry-run mode.
+- **Paid-through source:** `legacy_members.subscriptionexpiring` is the authoritative date.
+- **Calendar rule:** same as the membership status API — the paid-through day itself still has access; expiration occurs only when `subscriptionexpiring::date` is **strictly earlier** than today in America/Los_Angeles.
+- **Action:** for each expired member, look up the Memberstack member by exact email and remove **only** the `pln_legacy-membership-t012x0xw0` connection via the Admin API (`POST /members/:id/remove-plan`).
+- **Renewal safety:** members who hold any other active paid membership plan are skipped and keep access. Members whose legacy plan is already absent are skipped (idempotent, so repeated runs are safe).
+- **Robustness:** members with a blank email, a duplicate legacy email, or no unique Memberstack match are skipped and reported; per-member failures never abort the batch.
+- **`hasMemberAccess` is never changed.** This process only removes plan connections; Memberstack connections remain the single source of truth for access.
+
+### Running the reconciliation
+
+- **Scheduled runs are live only when opted in.** They run dry-run unless `LEGACY_ANNUAL_EXPIRY_LIVE_ENABLED === "true"`.
+- **Manual HTTP runs default to dry-run.** `GET`/`POST` to `/.netlify/functions/legacy-annual-expiry` reports exactly what would change without modifying Memberstack.
+- **A manual live run requires BOTH** `?confirm=LIVE` **and a correct** `X-Legacy-Expiry-Secret` **header** (matching `LEGACY_ANNUAL_EXPIRY_SECRET`). A manual live run does **not** depend on `LEGACY_ANNUAL_EXPIRY_LIVE_ENABLED` — the explicit confirmation plus the secret are the safeguard. If the secret is unset or the header is wrong, a live manual request is rejected with `401`.
+- **Result summary** counts: candidates found, legacy plans removed, skipped (already removed), skipped (another paid plan active), skipped (no unique Memberstack match), and failures.
+
+### Deployment sequence (first rollout)
+
+1. **Deploy with `LEGACY_ANNUAL_EXPIRY_LIVE_ENABLED=false`** (and `LEGACY_ANNUAL_EXPIRY_SECRET` set). Every scheduled run is dry-run, so nothing is modified automatically.
+2. **Run and inspect a dry run** via the manual endpoint (plain POST). Confirm `ok: true`, `dryRun: true`, `failures: 0`, and that the counters/`details[]` look correct.
+3. **Perform a controlled manual live run if approved:** POST with `?confirm=LIVE` and the `X-Legacy-Expiry-Secret` header.
+4. **Verify the results** — check the returned counts and spot-check affected members in Memberstack/Watson.
+5. **Only then set `LEGACY_ANNUAL_EXPIRY_LIVE_ENABLED=true`** so future scheduled runs enforce expirations automatically.
 
 ## Live status vs legacy history
 

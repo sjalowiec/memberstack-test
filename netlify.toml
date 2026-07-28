@@ -27,6 +27,16 @@
 [functions."watson-shopify-sync"]
   schedule = "0 */6 * * *"
 
+# Legacy annual membership expiration reconciliation (daily at 09:00 UTC, safely
+# after midnight in America/Los_Angeles). Removes the free legacy membership plan
+# from Memberstack members whose Watson paid-through date has passed. Scheduled
+# runs perform LIVE changes ONLY when LEGACY_ANNUAL_EXPIRY_LIVE_ENABLED === "true";
+# otherwise they run dry-run. Manual HTTP is dry-run by default; a live manual run
+# requires POST ?confirm=LIVE AND a correct X-Legacy-Expiry-Secret header.
+# Requires WATSON_DATABASE_URL + MEMBERSTACK_SECRET_KEY.
+[functions."legacy-annual-expiry"]
+  schedule = "0 9 * * *"
+
 # Taitexma ribber slug cleanup (misnamed TR-860 / broken Silver Reed link).
 [[redirects]]
   from = "/shop/machines/taitexma-tr-860"
