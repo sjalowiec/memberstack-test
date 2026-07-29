@@ -159,3 +159,13 @@ export const MEMBERSHIP_PRICE_IDS = {
   monthly: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
   annual: MEMBERSHIPS.membership.prices.annual.memberstackPriceId,
 } as const;
+
+/**
+ * Retired "Monthly Subscription to Knititnow" plan-shell price id. It is not
+ * sold (never used for new checkout), but Stripe-synced members still carry it
+ * and are billed the same monthly amount as the current membership. Mapped to
+ * the monthly interval so billing frequency and membership history render
+ * correctly for members still on the shell.
+ */
+export const RETIRED_MONTHLY_SUBSCRIPTION_PRICE_ID =
+  "prc_monthly-subscription-to-knititnow-webw0nzy" as const;

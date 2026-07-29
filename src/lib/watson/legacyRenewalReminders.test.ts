@@ -332,6 +332,40 @@ describe("runLegacyRenewalReminders - skips and protections", () => {
     expect(ac.spies.addTag).not.toHaveBeenCalled();
   });
 
+  it("treats a missing audit table as no reminder history (no failure)", async () => {
+    const ac = makeAc({ "a@x.com": { id: "ac_1", listStatus: "active", tags: new Set() } });
+    // Candidate SELECT returns rows; the audit SELECT fails as if the table is absent.
+    const queryFn = (async (sql: string, params?: unknown[]) => {
+      if (sql.includes("watson_legacy_renewal_reminders")) {
+        const err = new Error(
+          'relation "watson_legacy_renewal_reminders" does not exist',
+        ) as Error & { code?: string };
+        err.code = "42P01";
+        throw err;
+      }
+      const windowDays = Number(params?.[1]);
+      return windowDays === 30 ? [row({ memberid: "m1" })] : [];
+    }) as unknown as WatsonQueryFn;
+
+    const result = await runLegacyRenewalReminders({
+      now: NOW,
+      dryRun: true,
+      listId: LIST_ID,
+      paidThroughFieldId: FIELD_ID,
+      skipListValidation: true,
+      activeCampaign: ac.client,
+      queryFn,
+      resolveMemberstackMemberByEmail: resolverFor({
+        "a@x.com": { status: "unique", member: legacyOnlyMember },
+      }),
+      // Use the real default hasTaggedRecord so the missing-table path is exercised.
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.totals.failures).toBe(0);
+    expect(result.totals.wouldTag).toBe(1);
+  });
+
   it("skips (without contacting AC) when the durable audit already recorded a tag", async () => {
     const ac = makeAc({ "a@x.com": { id: "ac_1", listStatus: "active", tags: new Set() } });
     const findContact = vi.spyOn(ac.client, "findContactByEmail");

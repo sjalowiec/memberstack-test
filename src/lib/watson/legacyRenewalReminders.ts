@@ -206,19 +206,44 @@ export function addDaysYmd(ymd: string, days: number): string {
   return base.toISOString().slice(0, 10);
 }
 
+/**
+ * Postgres "undefined_table" (SQLSTATE 42P01). The durable audit table
+ * (`watson_legacy_renewal_reminders`) is created by the Watson schema migration
+ * (`applyLegacySchema`). Until that migration is applied, the read below fails
+ * with this code.
+ */
+export function isUndefinedTableError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  if ((error as { code?: unknown }).code === "42P01") return true;
+  const message = (error as { message?: unknown }).message;
+  return (
+    typeof message === "string" &&
+    /relation .* does not exist/i.test(message)
+  );
+}
+
 /** Default durable audit reader: has this member already been tagged (live)? */
 async function defaultHasTaggedRecord(
   legacyMemberId: string,
   tagName: string,
   queryFn: WatsonQueryFn,
 ): Promise<boolean> {
-  const rows = await queryFn<{ one: number }>(
-    `SELECT 1 AS one FROM watson_legacy_renewal_reminders
-     WHERE legacy_memberid = $1 AND tag_name = $2 AND outcome = 'tagged'
-     LIMIT 1`,
-    [legacyMemberId, tagName],
-  );
-  return rows.length > 0;
+  try {
+    const rows = await queryFn<{ one: number }>(
+      `SELECT 1 AS one FROM watson_legacy_renewal_reminders
+       WHERE legacy_memberid = $1 AND tag_name = $2 AND outcome = 'tagged'
+       LIMIT 1`,
+      [legacyMemberId, tagName],
+    );
+    return rows.length > 0;
+  } catch (error) {
+    // If the audit table has not been created yet, there is by definition no
+    // reminder history. Treat that as "not tagged" instead of failing so the
+    // read-only preview (and dry runs) keep working before the migration runs.
+    // Live writes still surface a hard error via defaultRecordAttempt.
+    if (isUndefinedTableError(error)) return false;
+    throw error;
+  }
 }
 
 /** Default durable audit writer (called for LIVE attempts only). */

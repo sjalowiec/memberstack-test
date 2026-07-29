@@ -14,6 +14,8 @@ export interface LegacyMemberDetailRow {
   country: string | null;
   birthdayinfo: Date | string | null;
   datejoined: Date | string | null;
+  /** Watson authoritative legacy paid-through date (calendar day). */
+  subscriptionexpiring: Date | string | null;
   active: number | null;
   betaactive: number | null;
   currentsubscriber: number | null;
@@ -38,6 +40,7 @@ export const MEMBER_DETAIL_SQL = `
     country,
     birthdayinfo,
     datejoined,
+    subscriptionexpiring,
     active,
     betaactive,
     currentsubscriber

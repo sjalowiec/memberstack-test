@@ -36,6 +36,10 @@ import {
 import { getMemberLegacySupportNoteCount } from "./memberSupportNotes";
 import { formatMemberDisplayName, formatMemberJoinedDateDisplay } from "./memberSearch";
 import {
+  formatLegacyPaidThroughDisplay,
+  legacyPaidThroughYmd,
+} from "./legacyPaidThrough";
+import {
   getCustomerWatsonNoteCount,
   getCustomerWatsonNotes,
   type WatsonNoteDisplay,
@@ -72,8 +76,16 @@ export interface CustomerProfileHeaderView {
   joinDate: string | null;
   /** Newest non-expiration timeline event date (orders, notes, plan changes, etc.). */
   lastActivityDate: string | null;
-  /** Newest legacy_subscriptions.expirationdate from the timeline. */
+  /**
+   * Watson authoritative legacy paid-through date display.
+   * Prefers `legacy_members.subscriptionexpiring`; falls back to the newest
+   * `legacy_subscriptions.expirationdate` timeline event when unset.
+   */
   legacyAccessThroughDate: string | null;
+  /** YYYY-MM-DD for the editable paid-through date input (null when unset). */
+  legacyPaidThroughYmd: string | null;
+  /** True when this profile has a legacy member row that can be edited. */
+  canEditLegacyPaidThrough: boolean;
 }
 
 export interface CustomerSnapshotMetric {
@@ -354,6 +366,13 @@ export function buildCustomerProfileHeaderView(input: {
       (input.member?.datejoined ? formatMemberJoinedDateDisplay(input.member.datejoined) : null)
     : null;
 
+  const paidThroughYmd = input.member
+    ? legacyPaidThroughYmd(input.member.subscriptionexpiring)
+    : null;
+  const paidThroughDisplay = paidThroughYmd
+    ? formatLegacyPaidThroughDisplay(paidThroughYmd)
+    : resolveLegacyAccessThroughDate(input.timeline);
+
   return {
     displayName: input.displayName,
     email: hasDisplayValue(email) ? String(email).trim() : null,
@@ -363,7 +382,9 @@ export function buildCustomerProfileHeaderView(input: {
     memberstackId: input.memberstackId,
     joinDate,
     lastActivityDate: resolveLastActivityDate(input.timeline),
-    legacyAccessThroughDate: resolveLegacyAccessThroughDate(input.timeline),
+    legacyAccessThroughDate: paidThroughDisplay,
+    legacyPaidThroughYmd: paidThroughYmd,
+    canEditLegacyPaidThrough: Boolean(input.legacyMemberid && input.member),
   };
 }
 
@@ -449,10 +470,15 @@ export function buildCustomerSnapshot(input: {
     unavailable: !lastActivityDate,
   });
 
-  const legacyAccessThroughDate = resolveLegacyAccessThroughDate(input.timeline);
+  const paidThroughYmd = input.member
+    ? legacyPaidThroughYmd(input.member.subscriptionexpiring)
+    : null;
+  const legacyAccessThroughDate = paidThroughYmd
+    ? formatLegacyPaidThroughDisplay(paidThroughYmd)
+    : resolveLegacyAccessThroughDate(input.timeline);
   if (legacyAccessThroughDate) {
     metrics.push({
-      label: "Legacy access through",
+      label: "Legacy paid-through",
       value: legacyAccessThroughDate,
     });
   }

@@ -15,7 +15,7 @@ interface Props {
 const { order, license } = Astro.props;
 
 function formatWhen(iso: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "â€”";
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return iso;
   return date.toLocaleString("en-US", {
@@ -35,10 +35,10 @@ function formatWhen(iso: string | null): string {
     <div><dt>Shopify order ID</dt><dd>{order.shopifyOrderId}</dd></div>
     <div><dt>Order number</dt><dd>{order.orderName ?? `#${order.orderNumber}`}</dd></div>
     <div><dt>Date</dt><dd>{formatWhen(order.processedAt)}</dd></div>
-    <div><dt>Customer</dt><dd>{order.customerName ?? "—"}</dd></div>
+    <div><dt>Customer</dt><dd>{order.customerName ?? "â€”"}</dd></div>
     <div><dt>Email</dt><dd>{order.customerEmail ?? "guest / no email"}</dd></div>
-    <div><dt>Payment</dt><dd>{order.financialStatus ?? "—"}</dd></div>
-    <div><dt>Fulfillment</dt><dd>{order.fulfillmentStatus ?? "—"}</dd></div>
+    <div><dt>Payment</dt><dd>{order.financialStatus ?? "â€”"}</dd></div>
+    <div><dt>Fulfillment</dt><dd>{order.fulfillmentStatus ?? "â€”"}</dd></div>
     <div>
       <dt>Cancelled</dt>
       <dd>
@@ -82,8 +82,8 @@ function formatWhen(iso: string | null): string {
                 ) : null}
               </td>
               <td>{item.quantity}</td>
-              <td>{item.sku ?? "—"}</td>
-              <td>{item.vendor ?? "—"}</td>
+              <td>{item.sku ?? "â€”"}</td>
+              <td>{item.vendor ?? "â€”"}</td>
               <td>{formatShopifyOrderMoney(item.unitPrice, order.currency)}</td>
             </tr>
           ))
@@ -163,7 +163,7 @@ function formatWhen(iso: string | null): string {
     if (!(form instanceof HTMLFormElement) || !statusEl) return;
     const data = new FormData(form);
     const orderId = String(data.get("shopifyOrderId") ?? "");
-    statusEl.textContent = "Saving…";
+    statusEl.textContent = "Savingâ€¦";
     try {
       const response = await fetch(
         `/api/watson/shopify/dak-licenses/${encodeURIComponent(orderId)}`,

@@ -29,7 +29,7 @@ interface Props {
 const { orders, totals, syncStatus, loadError, filters } = Astro.props;
 
 function formatWhen(iso: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "â€”";
   const date = new Date(iso);
   if (Number.isNaN(date.getTime())) return iso;
   return date.toLocaleString("en-US", {
@@ -71,10 +71,10 @@ const periodCards = totals
           <p class="watson-sales__sync-meta">
             Last run: {syncStatus.lastRun.status}
             {syncStatus.lastRun.status === "completed"
-              ? ` — added ${syncStatus.lastRun.ordersAdded}, updated ${syncStatus.lastRun.ordersUpdated}`
+              ? ` â€” added ${syncStatus.lastRun.ordersAdded}, updated ${syncStatus.lastRun.ordersUpdated}`
               : ""}
             {syncStatus.lastRun.errorMessage
-              ? ` — ${syncStatus.lastRun.errorMessage}`
+              ? ` â€” ${syncStatus.lastRun.errorMessage}`
               : ""}
           </p>
         ) : null
@@ -101,7 +101,7 @@ const periodCards = totals
             <h3 class="watson-report__card-label">{card.label}</h3>
             <p class="watson-report__card-value">{formatShopifyMoney(card.bucket.netSales)}</p>
             <p class="watson-sales__card-detail">
-              {card.bucket.orderCount} orders · gross {formatShopifyMoney(card.bucket.grossSales)} ·
+              {card.bucket.orderCount} orders Â· gross {formatShopifyMoney(card.bucket.grossSales)} Â·
               refunds {formatShopifyMoney(card.bucket.refunds)}
             </p>
           </article>
@@ -140,7 +140,7 @@ const periodCards = totals
         name="payment"
         type="text"
         value={filters.payment}
-        placeholder="paid, refunded, …"
+        placeholder="paid, refunded, â€¦"
       />
     </div>
     <div class="watson-report__filter">
@@ -150,7 +150,7 @@ const periodCards = totals
         name="fulfillment"
         type="text"
         value={filters.fulfillment}
-        placeholder="fulfilled, unfulfilled, …"
+        placeholder="fulfilled, unfulfilled, â€¦"
       />
     </div>
     <div class="watson-report__filter">
@@ -215,11 +215,11 @@ const periodCards = totals
                 </td>
                 <td data-sort-value={order.processedAt ?? ""}>{formatWhen(order.processedAt)}</td>
                 <td>
-                  {order.customerName ?? "—"}
+                  {order.customerName ?? "â€”"}
                   <div class="watson-sales__muted">{order.customerEmail ?? "guest / no email"}</div>
                 </td>
                 <td>{shopifyBrandBadgeLabel(order.siteBrand)}</td>
-                <td>{order.lineItemSummary || "—"}</td>
+                <td>{order.lineItemSummary || "â€”"}</td>
                 <td data-sort-value={order.totalPrice}>
                   {formatShopifyOrderMoney(order.totalPrice, order.currency)}
                   {order.totalRefunded > 0 ? (
@@ -229,13 +229,13 @@ const periodCards = totals
                   ) : null}
                   {order.cancelledAt ? <div class="watson-sales__muted">cancelled</div> : null}
                 </td>
-                <td>{order.financialStatus ?? "—"}</td>
-                <td>{order.fulfillmentStatus ?? "—"}</td>
+                <td>{order.financialStatus ?? "â€”"}</td>
+                <td>{order.fulfillmentStatus ?? "â€”"}</td>
                 <td>
                   <a href={`/watson/sales/${encodeURIComponent(order.shopifyOrderId)}`}>View</a>
                   {order.isDesignaknit ? (
                     <>
-                      {" · "}
+                      {" Â· "}
                       <a
                         href={`/watson/sales/${encodeURIComponent(order.shopifyOrderId)}#license`}
                       >
@@ -260,7 +260,7 @@ const periodCards = totals
   button?.addEventListener("click", async () => {
     if (!(button instanceof HTMLButtonElement) || !statusEl) return;
     button.disabled = true;
-    statusEl.textContent = "Syncing Shopify orders (last 90 days)…";
+    statusEl.textContent = "Syncing Shopify orders (last 90 days)â€¦";
     try {
       const response = await fetch("/api/watson/shopify/sync", { method: "POST" });
       const payload = (await response.json()) as {
@@ -280,7 +280,7 @@ const periodCards = totals
           "Sync failed. Check Shopify credentials and Watson database.";
         return;
       }
-      statusEl.textContent = `Sync complete: fetched ${payload.result?.ordersFetched ?? 0}, added ${payload.result?.ordersAdded ?? 0}, updated ${payload.result?.ordersUpdated ?? 0}. Reloading…`;
+      statusEl.textContent = `Sync complete: fetched ${payload.result?.ordersFetched ?? 0}, added ${payload.result?.ordersAdded ?? 0}, updated ${payload.result?.ordersUpdated ?? 0}. Reloadingâ€¦`;
       window.location.reload();
     } catch {
       statusEl.textContent = "Sync failed. Network or server error.";

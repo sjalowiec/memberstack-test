@@ -7,14 +7,25 @@ import {
 interface Props {
   header: CustomerProfileHeaderView;
   actions?: CustomerProfileAction[];
+  paidThroughUpdated?: boolean;
 }
 
-const { header, actions = [] } = Astro.props;
+const { header, actions = [], paidThroughUpdated = false } = Astro.props;
 
 const statusClass = `watson-customer__status-badge watson-customer__status-badge--${header.membershipStatusTone}`;
+const memberLabel = header.email ?? header.displayName;
 ---
 
 <section class="watson__panel watson-customer__header" aria-labelledby="watson-customer-header-heading">
+  {
+    paidThroughUpdated ? (
+      <p class="watson__status watson__status--success" role="status">
+        Legacy paid-through date updated. Membership status on this page now reflects the new date.
+        Future renewal reminders will use this date.
+      </p>
+    ) : null
+  }
+
   <div class="watson-customer__header-main">
     <div class="watson-customer__header-identity">
       <h2 id="watson-customer-header-heading" class="watson-customer__header-name">
@@ -81,9 +92,52 @@ const statusClass = `watson-customer__status-badge watson-customer__status-badge
       ) : null
     }
     {
-      header.legacyAccessThroughDate ? (
+      header.canEditLegacyPaidThrough && header.legacyMemberid ? (
+        <div
+          class="watson-customer__header-meta-item watson-customer__paid-through"
+          data-legacy-paid-through
+          data-memberid={header.legacyMemberid}
+          data-member-label={memberLabel}
+          data-old-ymd={header.legacyPaidThroughYmd ?? ""}
+          data-old-display={header.legacyAccessThroughDate ?? "(none)"}
+        >
+          <dt>Legacy paid-through</dt>
+          <dd>
+            <span data-paid-through-display>
+              {header.legacyAccessThroughDate ?? "Not set"}
+            </span>
+            <button
+              type="button"
+              class="watson-customer__paid-through-edit"
+              data-paid-through-edit
+            >
+              Edit
+            </button>
+            <form class="watson-customer__paid-through-form" data-paid-through-form hidden>
+              <label class="watson-customer__paid-through-label" for="legacy-paid-through-date">
+                New paid-through date
+              </label>
+              <input
+                id="legacy-paid-through-date"
+                type="date"
+                name="paidThroughYmd"
+                required
+                value={header.legacyPaidThroughYmd ?? ""}
+                data-paid-through-input
+              />
+              <button type="submit" class="watson__button" data-paid-through-save>
+                Save
+              </button>
+              <button type="button" class="watson__button watson__button--secondary" data-paid-through-cancel>
+                Cancel
+              </button>
+            </form>
+            <p class="watson__status watson__status--error" data-paid-through-error hidden></p>
+          </dd>
+        </div>
+      ) : header.legacyAccessThroughDate ? (
         <div class="watson-customer__header-meta-item">
-          <dt>Legacy access through</dt>
+          <dt>Legacy paid-through</dt>
           <dd>{header.legacyAccessThroughDate}</dd>
         </div>
       ) : null
@@ -98,3 +152,156 @@ const statusClass = `watson-customer__status-badge watson-customer__status-badge
     }
   </dl>
 </section>
+
+<style>
+  .watson-customer__paid-through dd {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.65rem;
+  }
+
+  .watson-customer__paid-through-edit {
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #3f6212;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  .watson-customer__paid-through-form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem 0.65rem;
+    width: 100%;
+  }
+
+  .watson-customer__paid-through-label {
+    font-size: 0.82rem;
+    color: #64748b;
+  }
+
+  .watson-customer__paid-through-form input[type="date"] {
+    padding: 0.25rem 0.4rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font: inherit;
+  }
+</style>
+
+<script>
+  function formatConfirmDate(ymd: string): string {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd);
+    if (!match) return ymd;
+    const utc = new Date(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+    return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      timeZone: "UTC",
+    }).format(utc);
+  }
+
+  function initLegacyPaidThroughEditor(root: HTMLElement) {
+    const memberid = root.dataset.memberid ?? "";
+    const memberLabel = root.dataset.memberLabel ?? memberid;
+    const oldYmd = root.dataset.oldYmd ?? "";
+    const oldDisplay = root.dataset.oldDisplay ?? "(none)";
+    const editBtn = root.querySelector<HTMLButtonElement>("[data-paid-through-edit]");
+    const form = root.querySelector<HTMLFormElement>("[data-paid-through-form]");
+    const input = root.querySelector<HTMLInputElement>("[data-paid-through-input]");
+    const cancelBtn = root.querySelector<HTMLButtonElement>("[data-paid-through-cancel]");
+    const errorEl = root.querySelector<HTMLElement>("[data-paid-through-error]");
+    const displayEl = root.querySelector<HTMLElement>("[data-paid-through-display]");
+    if (!editBtn || !form || !input || !cancelBtn || !errorEl || !displayEl || !memberid) {
+      return;
+    }
+
+    const showError = (message: string) => {
+      errorEl.hidden = false;
+      errorEl.textContent = message;
+    };
+    const clearError = () => {
+      errorEl.hidden = true;
+      errorEl.textContent = "";
+    };
+
+    editBtn.addEventListener("click", () => {
+      clearError();
+      form.hidden = false;
+      editBtn.hidden = true;
+      displayEl.hidden = true;
+      input.focus();
+    });
+
+    cancelBtn.addEventListener("click", () => {
+      clearError();
+      form.hidden = true;
+      editBtn.hidden = false;
+      displayEl.hidden = false;
+      input.value = oldYmd;
+    });
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      clearError();
+      const newYmd = input.value.trim();
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(newYmd)) {
+        showError("Enter a valid paid-through date (YYYY-MM-DD).");
+        return;
+      }
+
+      const newDisplay = formatConfirmDate(newYmd);
+      const confirmed = window.confirm(
+        [
+          "Update legacy paid-through date?",
+          "",
+          `Member: ${memberLabel}`,
+          `Current: ${oldDisplay}${oldYmd ? ` (${oldYmd})` : ""}`,
+          `New: ${newDisplay} (${newYmd})`,
+          "",
+          "This updates Watson only. It does not change Memberstack.",
+          "Future renewal reminders will use the new date.",
+        ].join("\n"),
+      );
+      if (!confirmed) return;
+
+      const saveBtn = form.querySelector<HTMLButtonElement>("[data-paid-through-save]");
+      if (saveBtn) saveBtn.disabled = true;
+
+      try {
+        const response = await fetch(
+          `/api/watson/members/${encodeURIComponent(memberid)}/paid-through`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ paidThroughYmd: newYmd }),
+          },
+        );
+        const payload = (await response.json()) as { ok?: boolean; error?: string };
+        if (!response.ok || !payload.ok) {
+          showError(payload.error ?? "Unable to update paid-through date.");
+          return;
+        }
+
+        const url = new URL(window.location.href);
+        url.searchParams.set("paidThroughUpdated", "1");
+        window.location.assign(url.toString());
+      } catch {
+        showError("Unable to update paid-through date.");
+      } finally {
+        if (saveBtn) saveBtn.disabled = false;
+      }
+    });
+  }
+
+  const roots = document.querySelectorAll<HTMLElement>("[data-legacy-paid-through]");
+  for (const root of roots) {
+    initLegacyPaidThroughEditor(root);
+  }
+</script>

@@ -47,6 +47,7 @@ const legacyMember = {
   country: null,
   birthdayinfo: null,
   datejoined: "2019-05-10T00:00:00.000Z",
+  subscriptionexpiring: null as string | null,
   active: 1,
   betaactive: null,
   currentsubscriber: null,
@@ -196,8 +197,36 @@ describe("customerProfile", () => {
       ],
     });
 
+    // When subscriptionexpiring is unset, fall back to the timeline expiration event.
     expect(header.legacyAccessThroughDate).toBe("Jul 30, 2026");
+    expect(header.legacyPaidThroughYmd).toBeNull();
+    expect(header.canEditLegacyPaidThrough).toBe(true);
     expect(header.lastActivityDate).toBe("Mar 16, 2019");
+  });
+
+  it("prefers legacy_members.subscriptionexpiring over subscription-history timeline", () => {
+    const header = buildCustomerProfileHeaderView({
+      displayName: "Sue Hall",
+      member: { ...legacyMember, subscriptionexpiring: "2026-08-29" },
+      memberstack: buildNotFoundMemberstackSummary(),
+      memberstackLinkStatus: "not_found",
+      legacyMemberid: "M1",
+      memberstackId: null,
+      timeline: [
+        {
+          eventType: "membership_changed",
+          eventTypeLabel: "Membership changed",
+          dateDisplay: "Jul 29, 2026",
+          dateSort: "2026-07-29T00:00:00.000Z",
+          description: "Legacy membership expiration date",
+          source: "legacy_subscriptions",
+        },
+      ],
+    });
+
+    expect(header.legacyPaidThroughYmd).toBe("2026-08-29");
+    expect(header.legacyAccessThroughDate).toBe("August 29, 2026");
+    expect(header.canEditLegacyPaidThrough).toBe(true);
   });
 
   it("builds snapshot metrics with unavailable placeholders when legacy history is missing", () => {
@@ -550,6 +579,7 @@ describe("customerProfile", () => {
             country: null,
             birthdayinfo: null,
             datejoined: "2020-01-01T00:00:00.000Z",
+            subscriptionexpiring: null,
             active: null,
             betaactive: null,
             currentsubscriber: null,
@@ -567,6 +597,7 @@ describe("customerProfile", () => {
             country: null,
             birthdayinfo: null,
             datejoined: "2019-01-01T00:00:00.000Z",
+            subscriptionexpiring: null,
             active: null,
             betaactive: null,
             currentsubscriber: null,

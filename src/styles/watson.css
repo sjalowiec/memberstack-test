@@ -103,6 +103,16 @@
   background: #365314;
 }
 
+.watson__button--secondary {
+  color: #3f6212;
+  background: #f7fee7;
+  border: 1px solid #d9f99d;
+}
+
+.watson__button--secondary:hover {
+  background: #ecfccb;
+}
+
 .watson__status {
   margin: 1rem 0 0;
   color: #64748b;
@@ -111,6 +121,15 @@
 
 .watson__status--error {
   color: #b91c1c;
+}
+
+.watson__status--success {
+  margin: 0 0 0.85rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  background: #f0fdf4;
+  color: #166534;
 }
 
 .watson__panel {

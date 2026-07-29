@@ -54,7 +54,7 @@ export type MembershipStatusServiceDeps = {
   now?: Date;
 };
 
-function legacyContextFromLink(options: {
+export function legacyContextFromLink(options: {
   link: LegacyEmailLinkResult;
   memberstackEmail: string | null | undefined;
   memberships: MemberMembershipDisplay[];
