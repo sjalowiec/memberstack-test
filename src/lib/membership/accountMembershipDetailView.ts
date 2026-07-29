@@ -20,6 +20,17 @@ export interface AccountMembershipDetailView {
   statusOverride: string | null;
   /** Legacy access row value, e.g. "Available through {date}" / "Ended {date}". */
   legacyAccessValue: string | null;
+  /**
+   * Label for the panel's single primary date row. Legacy members (any state
+   * with a legacy access date) read "Legacy Access Through"; everyone else reads
+   * "Member Since". Null when there is no date to show.
+   */
+  membershipDateLabel: string | null;
+  /**
+   * Value for the primary date row: the authoritative legacy access-through date
+   * for legacy members, otherwise the member-since date. Null hides the row.
+   */
+  membershipDateValue: string | null;
   history: {
     /** Whether the history accordion should be shown at all. */
     visible: boolean;
@@ -36,8 +47,12 @@ type AccountMembershipDetailViewInput = Pick<
   | "membershipName"
   | "legacyPaidThroughDate"
   | "legacyAccessActive"
+  | "memberSince"
   | "history"
 >;
+
+export const LEGACY_ACCESS_THROUGH_LABEL = "Legacy Access Through";
+export const MEMBER_SINCE_LABEL = "Member Since";
 
 export function resolveAccountMembershipDetailView(
   detail: AccountMembershipDetailViewInput,
@@ -54,6 +69,21 @@ export function resolveAccountMembershipDetailView(
 
   const legacyEnded = detail.legacyAccessActive === false;
 
+  // Single primary date row. Legacy members (a legacy access date is present,
+  // which is only the case for non-paid states) show the authoritative
+  // access-through date; everyone else keeps Member Since untouched.
+  const hasLegacyAccessDate =
+    detail.identified === true && detail.legacyPaidThroughDate != null;
+  const memberSince = detail.memberSince ?? null;
+  const membershipDateValue = hasLegacyAccessDate
+    ? detail.legacyPaidThroughDate
+    : memberSince;
+  const membershipDateLabel = membershipDateValue
+    ? hasLegacyAccessDate
+      ? LEGACY_ACCESS_THROUGH_LABEL
+      : MEMBER_SINCE_LABEL
+    : null;
+
   return {
     planOverride: isLegacyOnly ? FREE_MEMBERSHIP_DISPLAY_LABEL : null,
     statusOverride: isLegacyOnly ? (legacyEnded ? "Expired" : "Legacy Access") : null,
@@ -62,6 +92,8 @@ export function resolveAccountMembershipDetailView(
         ? `Ended ${detail.legacyPaidThroughDate}`
         : `Available through ${detail.legacyPaidThroughDate}`
       : null,
+    membershipDateLabel,
+    membershipDateValue,
     history: {
       visible,
       count,

@@ -20,10 +20,12 @@ describe("Watson Responses page", () => {
       path.resolve("src/lib/watson/customerDetailAccordion.ts"),
       "utf8",
     );
-    const supportResponses = fs.readFileSync(
-      path.resolve("src/lib/watson/supportResponses.ts"),
-      "utf8",
-    );
+    // Normalize CRLF/CR so body comparisons are OS-agnostic (Windows checkouts
+    // store template source with \r\n while template.body uses \n).
+    const supportResponses = fs
+      .readFileSync(path.resolve("src/lib/watson/supportResponses.ts"), "utf8")
+      .replace(/\r\n/g, "\n")
+      .replace(/\r/g, "\n");
     const shell = fs.readFileSync(
       path.resolve("src/components/watson/WatsonPageShell.astro"),
       "utf8",

@@ -157,6 +157,12 @@ export function buildAccountMembershipDetail(input: {
   legacy: MembershipStatusLegacyContext;
   legacyJoinedDate?: string | Date | null;
   legacyMemberships?: MemberMembershipDisplay[];
+  /**
+   * Authoritative Watson legacy paid-through date (`legacy_members.subscriptionexpiring`),
+   * as a YYYY-MM-DD calendar day. When present it wins over the older
+   * subscription-history expiration for the displayed legacy access date.
+   */
+  legacySubscriptionExpiringYmd?: string | null;
   now?: Date;
 }): AccountMembershipDetail {
   if (!input.memberstackLookupOk || !input.memberstackMember || !input.memberstackSummary) {
@@ -180,13 +186,25 @@ export function buildAccountMembershipDetail(input: {
     input.now ?? new Date(),
     MEMBERSHIP_STATUS_CALENDAR_TIMEZONE,
   );
+
+  // Prefer the authoritative Watson paid-through field; fall back to the
+  // history-derived expiration only when it is null/missing. This is a
+  // display-only choice for the account detail DTO and never touches the shared
+  // expiration/access logic in buildMembershipStatusSummary.
+  const authoritativeLegacyYmd = input.legacySubscriptionExpiringYmd ?? null;
+  const authoritativeLegacyDate = authoritativeLegacyYmd
+    ? formatMembershipCalendarDateFromYmd(authoritativeLegacyYmd)
+    : null;
+  const legacyDisplayYmd = authoritativeLegacyYmd ?? input.legacy.legacyExpirationYmd;
+  const legacyDisplayDate = authoritativeLegacyDate ?? summary.legacyExpirationDate;
+
   const legacyTiming =
     input.legacy.linkState === "linked"
-      ? resolveLegacyExpirationTiming(input.legacy.legacyExpirationYmd, todayYmd)
+      ? resolveLegacyExpirationTiming(legacyDisplayYmd, todayYmd)
       : null;
 
   // Legacy paid-through is historical context; hide it for active paying members.
-  const legacyPaidThroughDate = isPaidMember ? null : summary.legacyExpirationDate;
+  const legacyPaidThroughDate = isPaidMember ? null : legacyDisplayDate;
 
   // Display order (newest-first) is decided here in shared logic so the client
   // renders the received order as-is (no CSS/DOM reversing).
@@ -270,6 +288,7 @@ export async function loadAccountMembershipDetail(
   let legacy: MembershipStatusLegacyContext;
   let legacyMemberships: MemberMembershipDisplay[] = [];
   let legacyJoinedDate: string | Date | null = null;
+  let legacySubscriptionExpiringYmd: string | null = null;
 
   try {
     const link = await resolveLegacyLink(member.auth?.email, deps.queryFn);
@@ -277,6 +296,9 @@ export async function loadAccountMembershipDetail(
       const linkState = buildProfileLegacyLinkState(link, member.auth?.email);
       if (linkState.legacyMemberid && linkState.legacyMember) {
         legacyJoinedDate = joinedDateFromLegacyMember(linkState.legacyMember);
+        legacySubscriptionExpiringYmd = ymdFromDateOnlyValue(
+          linkState.legacyMember.subscriptionexpiring ?? null,
+        );
         legacyMemberships = await loadMemberships(linkState.legacyMemberid, deps.queryFn);
       }
     }
@@ -294,6 +316,7 @@ export async function loadAccountMembershipDetail(
     };
     legacyMemberships = [];
     legacyJoinedDate = null;
+    legacySubscriptionExpiringYmd = null;
   }
 
   return buildAccountMembershipDetail({
@@ -303,6 +326,7 @@ export async function loadAccountMembershipDetail(
     legacy,
     legacyJoinedDate,
     legacyMemberships,
+    legacySubscriptionExpiringYmd,
     now: deps.now,
   });
 }
