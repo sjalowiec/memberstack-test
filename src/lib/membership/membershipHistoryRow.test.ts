@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { buildMembershipHistoryRow } from "./membershipHistoryRow";
+import {
+  buildMembershipHistoryRow,
+  formatMembershipHistoryDate,
+} from "./membershipHistoryRow";
 import type { MembershipHistoryEvent } from "./membershipHistory";
 
 interface FakeElement {
@@ -8,17 +11,16 @@ interface FakeElement {
   className: string;
   textContent: string | null;
   children: FakeElement[];
+  attributes: Record<string, string>;
   appendChild(child: FakeElement): FakeElement;
   setAttribute(name: string, value: string): void;
-  attributes: Record<string, string>;
 }
 
 /** Minimal, environment-agnostic DOM stub - no jsdom/happy-dom required. */
-function createFakeDocument(): { doc: Document; created: FakeElement[] } {
-  const created: FakeElement[] = [];
+function createFakeDocument(): { doc: Document } {
   const doc = {
     createElement(tag: string): FakeElement {
-      const el: FakeElement = {
+      return {
         tagName: tag.toUpperCase(),
         className: "",
         textContent: null,
@@ -32,11 +34,9 @@ function createFakeDocument(): { doc: Document; created: FakeElement[] } {
           this.attributes[name] = value;
         },
       };
-      created.push(el);
-      return el;
     },
   };
-  return { doc: doc as unknown as Document, created };
+  return { doc: doc as unknown as Document };
 }
 
 function event(overrides: Partial<MembershipHistoryEvent>): MembershipHistoryEvent {
@@ -49,17 +49,7 @@ function event(overrides: Partial<MembershipHistoryEvent>): MembershipHistoryEve
   };
 }
 
-function allText(el: FakeElement): string[] {
-  const out: string[] = [];
-  const walk = (node: FakeElement) => {
-    if (node.textContent != null) out.push(node.textContent);
-    node.children.forEach(walk);
-  };
-  walk(el);
-  return out;
-}
-
-function allClasses(el: FakeElement): string[] {
+function classesOf(el: FakeElement): string[] {
   const out: string[] = [];
   const walk = (node: FakeElement) => {
     out.push(node.className);
@@ -69,38 +59,81 @@ function allClasses(el: FakeElement): string[] {
   return out;
 }
 
+function textOf(el: FakeElement): string {
+  let out = "";
+  const walk = (node: FakeElement) => {
+    if (node.textContent != null) out += node.textContent;
+    node.children.forEach(walk);
+  };
+  walk(el);
+  return out;
+}
+
+describe("formatMembershipHistoryDate", () => {
+  it("formats YYYY-MM-DD sort keys as MM/DD/YYYY", () => {
+    expect(formatMembershipHistoryDate(event({ dateSort: "2026-04-30" }))).toBe("04/30/2026");
+    expect(formatMembershipHistoryDate(event({ dateSort: "2026-04-27" }))).toBe("04/27/2026");
+    expect(formatMembershipHistoryDate(event({ dateSort: "2025-03-15" }))).toBe("03/15/2025");
+  });
+});
+
 describe("buildMembershipHistoryRow", () => {
-  it("renders a compact row: date first, label second", () => {
+  it("renders a true two-column row: MM/DD/YYYY date in its own <time>, then a content column", () => {
     const { doc } = createFakeDocument();
     const row = buildMembershipHistoryRow(
       doc,
-      event({ type: "renewed", title: "Monthly Membership Renewed", date: "April 30, 2026" }),
+      event({ type: "renewed", title: "Monthly Membership Renewed", dateSort: "2026-04-30" }),
     ) as unknown as FakeElement;
 
     expect(row.tagName).toBe("LI");
-    expect(row.className).toBe("account-membership-panel__event");
-    expect(row.children).toHaveLength(2);
+    expect(row.className).toBe("membership-history-row");
 
-    const [date, label] = row.children;
-    expect(date.className).toBe("account-membership-panel__event-date");
-    expect(date.textContent).toBe("April 30, 2026");
-    expect(label.className).toBe("account-membership-panel__event-label");
+    // Column 1: the date, as a <time> element with MM/DD/YYYY text + datetime.
+    const time = row.children[0];
+    expect(time.tagName).toBe("TIME");
+    expect(time.className).toBe("membership-history-date");
+    expect(time.textContent).toBe("04/30/2026");
+    expect(time.attributes.datetime).toBe("2026-04-30");
+
+    // Column 2: a single content container holding the label.
+    const content = row.children[1];
+    expect(content.tagName).toBe("DIV");
+    expect(content.className).toBe("membership-history-content");
+    const label = content.children[0];
+    expect(label.tagName).toBe("SPAN");
+    expect(label.className).toBe("membership-history-label");
     expect(label.textContent).toBe("Monthly Membership Renewed");
+
+    // Exactly two top-level columns; nothing runs full-width.
+    expect(row.children).toHaveLength(2);
   });
 
-  it("renders secondary detail directly below the label", () => {
+  it("groups the description inside the content column, not as a full-width row sibling", () => {
     const { doc } = createFakeDocument();
     const row = buildMembershipHistoryRow(
       doc,
       event({ description: "Your Knit it Now account moved to our new platform." }),
     ) as unknown as FakeElement;
 
-    expect(row.children).toHaveLength(3);
-    const description = row.children[2];
+    // The <li> still has only the two columns (date + content).
+    expect(row.children).toHaveLength(2);
+    expect(row.children.map((c) => c.tagName)).toEqual(["TIME", "DIV"]);
+
+    const content = row.children[1];
+    // Label + description both live in the second column.
+    expect(content.children.map((c) => c.className)).toEqual([
+      "membership-history-label",
+      "membership-history-description",
+    ]);
+    const description = content.children[1];
     expect(description.tagName).toBe("P");
-    expect(description.className).toBe("account-membership-panel__event-description");
     expect(description.textContent).toBe(
       "Your Knit it Now account moved to our new platform.",
+    );
+
+    // The description must NOT be a direct child of the row (no full-width sibling).
+    expect(row.children.some((c) => c.className === "membership-history-description")).toBe(
+      false,
     );
   });
 
@@ -111,13 +144,9 @@ describe("buildMembershipHistoryRow", () => {
       event({ description: "Your Knit it Now account moved to our new platform." }),
     ) as unknown as FakeElement;
 
-    const classes = allClasses(row);
-    // Old timeline/checkmark markup is gone.
-    expect(classes).not.toContain("account-membership-panel__event-marker");
-    expect(classes).not.toContain("account-membership-panel__event-title");
+    const classes = classesOf(row);
     expect(classes.some((c) => c.includes("marker"))).toBe(false);
-
-    // No checkmark glyph anywhere in the row text.
-    expect(allText(row).join("")).not.toContain("\u2713");
+    expect(classes).not.toContain("account-membership-panel__event-title");
+    expect(textOf(row)).not.toContain("\u2713");
   });
 });

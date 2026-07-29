@@ -312,8 +312,6 @@
     margin-top: 0.9rem;
   }
 
-  /* Compact chronological list (newest-first): date column, then label; any
-     secondary detail sits directly below the label in smaller text. */
   .account-membership-panel__timeline {
     list-style: none;
     margin: 0;
@@ -321,46 +319,61 @@
     display: flex;
     flex-direction: column;
   }
+</style>
 
-  .account-membership-panel__event {
+<!-- History rows are created dynamically by account-membership-history.ts, so
+     scoped styles would never match them. Scope these globally under the panel's
+     data attribute instead. Compact newest-first two-column list: fixed MM/DD/YYYY
+     date, then the label (with any secondary detail beneath it in column 2). -->
+<style is:global>
+  [data-kbm-account-membership] .membership-history-row {
     display: grid;
-    grid-template-columns: minmax(6.5rem, max-content) 1fr;
-    column-gap: 0.85rem;
-    row-gap: 0.1rem;
-    align-items: baseline;
+    grid-template-columns: 92px minmax(0, 1fr);
+    column-gap: 16px;
+    align-items: start;
     padding: 0.3rem 0;
   }
 
-  .account-membership-panel__event + .account-membership-panel__event {
+  [data-kbm-account-membership]
+    .membership-history-row
+    + .membership-history-row {
     border-top: 1px solid #eef0f2;
   }
 
-  .account-membership-panel__event-date {
+  [data-kbm-account-membership] .membership-history-date {
     font-size: 0.88rem;
-    line-height: 1.35;
+    line-height: 1.4;
     color: #6b7280;
     white-space: nowrap;
+    font-variant-numeric: tabular-nums;
   }
 
-  .account-membership-panel__event-label {
+  [data-kbm-account-membership] .membership-history-content {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  [data-kbm-account-membership] .membership-history-label {
     font-size: 0.95rem;
     font-weight: 600;
-    line-height: 1.35;
+    line-height: 1.4;
     color: #2c3a57;
   }
 
-  .account-membership-panel__event-description {
-    grid-column: 2;
+  [data-kbm-account-membership] .membership-history-description {
     margin: 0;
     font-size: 0.82rem;
     line-height: 1.35;
     color: #6b7280;
   }
 
-  @media (max-width: 400px) {
-    .account-membership-panel__event {
-      grid-template-columns: minmax(5.5rem, max-content) 1fr;
-      column-gap: 0.6rem;
+  /* Only stack the date above the label on very narrow screens. */
+  @media (max-width: 360px) {
+    [data-kbm-account-membership] .membership-history-row {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 0.1rem;
     }
   }
 </style>
