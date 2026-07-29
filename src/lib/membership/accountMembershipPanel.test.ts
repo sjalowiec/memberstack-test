@@ -50,12 +50,14 @@ describe("accountMembershipPanelActions", () => {
     expect(accountMembershipPanelActions("free")).toEqual(["join"]);
   });
 
-  it("shows Manage for members", () => {
-    expect(accountMembershipPanelActions("member")).toEqual(["manage"]);
+  it("shows Manage Billing for members", () => {
+    expect(accountMembershipPanelActions("member")).toEqual(["manageBilling"]);
   });
 
-  it("shows only Manage for canceling members", () => {
-    expect(accountMembershipPanelActions("member", { canceling: true })).toEqual(["manage"]);
+  it("shows only Manage Billing for canceling members", () => {
+    expect(accountMembershipPanelActions("member", { canceling: true })).toEqual([
+      "manageBilling",
+    ]);
   });
 });
 
@@ -80,12 +82,15 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(resolveAccountMembershipPanelView(memberWithPlans([]))).toEqual({
       kind: "free",
       planLabel: "No active membership",
+      planDisplayLabel: "No active membership",
       statusLabel: "No Active Membership",
       billingInterval: null,
       billingLabel: null,
       renewsLabel: null,
       isCanceling: false,
       activeUntilMessage: null,
+      autoRenewNote: null,
+      manageBillingDescription: null,
       visibleActions: ["join"],
     });
   });
@@ -111,13 +116,17 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(resolveAccountMembershipPanelView(member)).toEqual({
       kind: "member",
       planLabel: "Knit it Now Membership",
+      planDisplayLabel: "Knit it Now Membership",
       statusLabel: "Active",
       billingInterval: null,
       billingLabel: null,
       renewsLabel: null,
       isCanceling: false,
       activeUntilMessage: null,
-      visibleActions: ["manage"],
+      autoRenewNote: null,
+      manageBillingDescription:
+        "Update your payment method, change your subscription, or cancel your membership.",
+      visibleActions: ["manageBilling"],
     });
   });
 
@@ -139,12 +148,14 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(view).toMatchObject({
       kind: "member",
       planLabel: "Knit it Now Membership",
+      planDisplayLabel: "Monthly Membership",
       statusLabel: "Active",
       billingInterval: "monthly",
       billingLabel: "Monthly",
       isCanceling: false,
       activeUntilMessage: null,
-      visibleActions: ["manage"],
+      autoRenewNote: "Membership renews automatically each month.",
+      visibleActions: ["manageBilling"],
     });
     expect(view.renewsLabel).toBe(expectedLocalDateLabel(nextBillingDate));
   });
@@ -168,11 +179,15 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(view).toMatchObject({
       kind: "member",
       planLabel: "Knit it Now Membership",
+      planDisplayLabel: "Monthly Membership",
       statusLabel: "Canceling",
       billingLabel: "Monthly",
       renewsLabel: null,
       isCanceling: true,
-      visibleActions: ["manage"],
+      autoRenewNote: null,
+      manageBillingDescription:
+        "You can update your payment information or reverse your cancellation from the billing portal if available.",
+      visibleActions: ["manageBilling"],
     });
     expect(view.activeUntilMessage).toBe(
       `Your membership remains active until ${dateLabel}.`,
@@ -217,11 +232,13 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(view).toMatchObject({
       kind: "member",
       planLabel: "Knit it Now Membership",
+      planDisplayLabel: "Annual Membership",
       statusLabel: "Canceling",
       billingLabel: "Annual",
       renewsLabel: null,
       isCanceling: true,
-      visibleActions: ["manage"],
+      autoRenewNote: null,
+      visibleActions: ["manageBilling"],
     });
     expect(view.activeUntilMessage).toBe(
       `Your membership remains active until ${expectedLocalDateLabel(cancelAtDate)}.`,
@@ -247,7 +264,7 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(view.isCanceling).toBe(false);
     expect(view.activeUntilMessage).toBeNull();
     expect(view.renewsLabel).toBe(expectedLocalDateLabel(nextBillingDate));
-    expect(view.visibleActions).toEqual(["manage"]);
+    expect(view.visibleActions).toEqual(["manageBilling"]);
   });
 
   it("shows active-until from cancelAtDate when nextBillingDate is missing", () => {
@@ -293,7 +310,9 @@ describe("resolveAccountMembershipPanelView", () => {
     ]);
     const view = resolveAccountMembershipPanelView(member);
     expect(view.kind).toBe("member");
+    expect(view.billingInterval).toBe("annual");
     expect(view.billingLabel).toBe("Annual");
+    expect(view.planDisplayLabel).toBe("Annual Membership");
     expect(view.renewsLabel).toBe(expectedLocalDateLabel(nextBillingDate));
   });
 
@@ -345,13 +364,17 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(resolveAccountMembershipPanelView(member)).toEqual({
       kind: "member",
       planLabel: "Knit it Now Membership",
+      planDisplayLabel: "Monthly Membership",
       statusLabel: "Active",
       billingInterval: "monthly",
       billingLabel: "Monthly",
       renewsLabel: null,
       isCanceling: false,
       activeUntilMessage: null,
-      visibleActions: ["manage"],
+      autoRenewNote: "Membership renews automatically each month.",
+      manageBillingDescription:
+        "Update your payment method, change your subscription, or cancel your membership.",
+      visibleActions: ["manageBilling"],
     });
   });
 
@@ -366,13 +389,17 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(resolveAccountMembershipPanelView(member)).toEqual({
       kind: "member",
       planLabel: "Knit it Now Membership",
+      planDisplayLabel: "Annual Membership",
       statusLabel: "Active",
       billingInterval: "annual",
       billingLabel: "Annual",
       renewsLabel: null,
       isCanceling: false,
       activeUntilMessage: null,
-      visibleActions: ["manage"],
+      autoRenewNote: "Membership renews automatically each year.",
+      manageBillingDescription:
+        "Update your payment method, change your subscription, or cancel your membership.",
+      visibleActions: ["manageBilling"],
     });
   });
 
@@ -402,7 +429,7 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(resolveAccountMembershipPanelView(member).kind).toBe("free");
   });
 
-  it("shows an active Legacy Membership (free plan) with no billing and no Become a Member", () => {
+  it("shows an active Legacy Membership (free plan) with renew/monthly checkout actions", () => {
     const member = memberWithPlans([
       {
         planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
@@ -413,17 +440,21 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(resolveAccountMembershipPanelView(member)).toEqual({
       kind: "member",
       planLabel: "Legacy Membership",
+      planDisplayLabel: "Legacy Membership",
       statusLabel: "Active",
       billingInterval: null,
       billingLabel: null,
       renewsLabel: null,
       isCanceling: false,
       activeUntilMessage: null,
-      visibleActions: [],
+      autoRenewNote: null,
+      manageBillingDescription: null,
+      visibleActions: ["renewAnnual", "becomeMonthly"],
     });
-    expect(
-      resolveAccountMembershipPanelView(member).visibleActions,
-    ).not.toContain("join");
+    // Legacy members are not active Stripe subscribers: no Manage Billing, no join.
+    const actions = resolveAccountMembershipPanelView(member).visibleActions;
+    expect(actions).not.toContain("join");
+    expect(actions).not.toContain("manageBilling");
   });
 
   it("recognizes remaining legacy monthly Basic plan ids as members", () => {
@@ -437,9 +468,11 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(resolveAccountMembershipPanelView(member)).toMatchObject({
       kind: "member",
       planLabel: "Knit it Now Membership",
+      planDisplayLabel: "Monthly Membership",
+      billingInterval: "monthly",
       billingLabel: "Monthly",
       renewsLabel: null,
-      visibleActions: ["manage"],
+      visibleActions: ["manageBilling"],
     });
   });
 });

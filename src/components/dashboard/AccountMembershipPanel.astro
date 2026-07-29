@@ -28,7 +28,7 @@
   <div class="account-membership-panel__content" data-kbm-account-membership-content hidden>
     <dl class="account-membership-panel__facts">
       <div class="account-membership-panel__fact">
-        <dt>Plan</dt>
+        <dt>Current Plan</dt>
         <dd data-kbm-account-membership-plan></dd>
       </div>
       <div class="account-membership-panel__fact">
@@ -37,18 +37,10 @@
       </div>
       <div
         class="account-membership-panel__fact"
-        data-kbm-account-membership-billing-row
-        hidden
-      >
-        <dt>Billing</dt>
-        <dd data-kbm-account-membership-billing></dd>
-      </div>
-      <div
-        class="account-membership-panel__fact"
         data-kbm-account-membership-renews-row
         hidden
       >
-        <dt>Renews</dt>
+        <dt>Next Renewal</dt>
         <dd data-kbm-account-membership-renews></dd>
       </div>
       <div
@@ -70,6 +62,12 @@
     </dl>
 
     <p
+      class="account-membership-panel__auto-renew"
+      data-kbm-account-membership-auto-renew
+      hidden
+    ></p>
+
+    <p
       class="account-membership-panel__active-until"
       data-kbm-account-membership-active-until
       hidden
@@ -86,14 +84,38 @@
       </a>
       <button
         type="button"
-        class="kbm-btn kbm-btn-outline"
-        data-kbm-account-membership-action="manage"
-        data-kbm-account-membership-manage
+        class="kbm-btn kbm-btn-accent"
+        data-kbm-account-membership-action="manageBilling"
+        data-kbm-account-membership-manage-billing
         hidden
       >
-        Manage Membership
+        Manage Billing
+      </button>
+      <button
+        type="button"
+        class="kbm-btn kbm-btn-accent"
+        data-kbm-account-membership-action="renewAnnual"
+        data-kbm-account-membership-renew-annual
+        hidden
+      >
+        Renew Annual Membership
+      </button>
+      <button
+        type="button"
+        class="kbm-btn kbm-btn-outline"
+        data-kbm-account-membership-action="becomeMonthly"
+        data-kbm-account-membership-become-monthly
+        hidden
+      >
+        Become a Monthly Member
       </button>
     </div>
+
+    <p
+      class="account-membership-panel__billing-description"
+      data-kbm-account-membership-billing-description
+      hidden
+    ></p>
 
     <p
       class="account-membership-panel__action-status"
@@ -209,6 +231,13 @@
     color: #2c3a57;
   }
 
+  .account-membership-panel__auto-renew {
+    margin: 0 0 1.15rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #4b5563;
+  }
+
   .account-membership-panel__active-until {
     margin: 0 0 1.15rem;
     padding: 0.85rem 1rem;
@@ -219,6 +248,13 @@
     font-weight: 600;
     line-height: 1.45;
     color: #2c3a57;
+  }
+
+  .account-membership-panel__billing-description {
+    margin: 0.6rem 0 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #6b7280;
   }
 
   .account-membership-panel__actions {
