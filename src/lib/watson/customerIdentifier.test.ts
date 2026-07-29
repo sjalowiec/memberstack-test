@@ -26,6 +26,12 @@ describe("customerIdentifier", () => {
     expect(isMemberstackMemberId("M123")).toBe(false);
   });
 
+  it("selects subscriptionexpiring so the memberstack route reads the authoritative paid-through date", () => {
+    // Regression: without this column the Memberstack profile fell back to a
+    // stale legacy_subscriptions timeline event after a paid-through edit.
+    expect(MEMBER_BY_EMAIL_SQL).toContain("subscriptionexpiring");
+  });
+
   it("normalizes emails for exact legacy linking", () => {
     expect(normalizeCustomerEmail("  Sue@Example.com ")).toBe("sue@example.com");
     expect(emailsMatchForLegacyLink("Sue@Example.com", "sue@example.com")).toBe(true);

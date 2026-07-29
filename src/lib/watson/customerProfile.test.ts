@@ -561,6 +561,46 @@ describe("customerProfile", () => {
     expect(result.profile.legacyMemberid).toBe("M1");
   });
 
+  it("shows the saved legacy_members.subscriptionexpiring on the Memberstack profile after a paid-through edit", async () => {
+    // Regression: the Memberstack route resolves its legacy member via
+    // MEMBER_BY_EMAIL_SQL. When that query omitted subscriptionexpiring, the
+    // header always fell back to the stale legacy_subscriptions timeline event,
+    // making a successful paid-through save look like it had failed.
+    const queryFn = vi.fn(async (sql: string) => {
+      if (sql === MEMBER_BY_EMAIL_SQL) {
+        return [{ ...legacyMember, subscriptionexpiring: "2026-09-01" }];
+      }
+      return [];
+    });
+
+    const result = await loadMemberstackCustomerProfile("mem_linked", {
+      secretKey: "sk_live_test_key",
+      getClient: async () => ({
+        getMember: async (lookup: string) =>
+          lookup === "mem_linked"
+            ? {
+                id: "mem_linked",
+                auth: { email: "sue@example.com" },
+                planConnections: [],
+              }
+            : null,
+        listMembers: async () => ({ data: [], hasNextPage: false }),
+      }),
+      queryFn,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+
+    // Authoritative field wins over the stale July 2026 timeline event.
+    expect(result.profile.member?.subscriptionexpiring).toBe("2026-09-01");
+    expect(result.profile.headerView.legacyPaidThroughYmd).toBe("2026-09-01");
+    expect(result.profile.headerView.legacyAccessThroughDate).toBe("September 1, 2026");
+    expect(result.profile.headerView.canEditLegacyPaidThrough).toBe(true);
+  });
+
   it("does not attach legacy history when multiple legacy emails match", () => {
     const state = buildProfileLegacyLinkState(
       {

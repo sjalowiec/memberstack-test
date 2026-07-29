@@ -14,13 +14,16 @@ const { header, actions = [], paidThroughUpdated = false } = Astro.props;
 
 const statusClass = `watson-customer__status-badge watson-customer__status-badge--${header.membershipStatusTone}`;
 const memberLabel = header.email ?? header.displayName;
+const paidThroughUpdatedMessage = header.legacyAccessThroughDate
+  ? `Legacy paid-through date updated to ${header.legacyAccessThroughDate}.`
+  : "Legacy paid-through date updated.";
 ---
 
 <section class="watson__panel watson-customer__header" aria-labelledby="watson-customer-header-heading">
   {
     paidThroughUpdated ? (
-      <p class="watson__status watson__status--success" role="status">
-        Legacy paid-through date updated. Membership status on this page now reflects the new date.
+      <p class="watson__status watson__status--success" role="status" data-paid-through-updated-banner>
+        {paidThroughUpdatedMessage} Membership status on this page now reflects the new date.
         Future renewal reminders will use this date.
       </p>
     ) : null
