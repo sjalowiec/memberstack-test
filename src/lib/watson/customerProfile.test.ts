@@ -47,6 +47,7 @@ const legacyMember = {
   country: null,
   birthdayinfo: null,
   datejoined: "2019-05-10T00:00:00.000Z",
+  subscriptionexpiring: null as string | null,
   active: 1,
   betaactive: null,
   currentsubscriber: null,
@@ -196,8 +197,36 @@ describe("customerProfile", () => {
       ],
     });
 
+    // When subscriptionexpiring is unset, fall back to the timeline expiration event.
     expect(header.legacyAccessThroughDate).toBe("Jul 30, 2026");
+    expect(header.legacyPaidThroughYmd).toBeNull();
+    expect(header.canEditLegacyPaidThrough).toBe(true);
     expect(header.lastActivityDate).toBe("Mar 16, 2019");
+  });
+
+  it("prefers legacy_members.subscriptionexpiring over subscription-history timeline", () => {
+    const header = buildCustomerProfileHeaderView({
+      displayName: "Sue Hall",
+      member: { ...legacyMember, subscriptionexpiring: "2026-08-29" },
+      memberstack: buildNotFoundMemberstackSummary(),
+      memberstackLinkStatus: "not_found",
+      legacyMemberid: "M1",
+      memberstackId: null,
+      timeline: [
+        {
+          eventType: "membership_changed",
+          eventTypeLabel: "Membership changed",
+          dateDisplay: "Jul 29, 2026",
+          dateSort: "2026-07-29T00:00:00.000Z",
+          description: "Legacy membership expiration date",
+          source: "legacy_subscriptions",
+        },
+      ],
+    });
+
+    expect(header.legacyPaidThroughYmd).toBe("2026-08-29");
+    expect(header.legacyAccessThroughDate).toBe("August 29, 2026");
+    expect(header.canEditLegacyPaidThrough).toBe(true);
   });
 
   it("builds snapshot metrics with unavailable placeholders when legacy history is missing", () => {
@@ -532,6 +561,46 @@ describe("customerProfile", () => {
     expect(result.profile.legacyMemberid).toBe("M1");
   });
 
+  it("shows the saved legacy_members.subscriptionexpiring on the Memberstack profile after a paid-through edit", async () => {
+    // Regression: the Memberstack route resolves its legacy member via
+    // MEMBER_BY_EMAIL_SQL. When that query omitted subscriptionexpiring, the
+    // header always fell back to the stale legacy_subscriptions timeline event,
+    // making a successful paid-through save look like it had failed.
+    const queryFn = vi.fn(async (sql: string) => {
+      if (sql === MEMBER_BY_EMAIL_SQL) {
+        return [{ ...legacyMember, subscriptionexpiring: "2026-09-01" }];
+      }
+      return [];
+    });
+
+    const result = await loadMemberstackCustomerProfile("mem_linked", {
+      secretKey: "sk_live_test_key",
+      getClient: async () => ({
+        getMember: async (lookup: string) =>
+          lookup === "mem_linked"
+            ? {
+                id: "mem_linked",
+                auth: { email: "sue@example.com" },
+                planConnections: [],
+              }
+            : null,
+        listMembers: async () => ({ data: [], hasNextPage: false }),
+      }),
+      queryFn,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) {
+      return;
+    }
+
+    // Authoritative field wins over the stale July 2026 timeline event.
+    expect(result.profile.member?.subscriptionexpiring).toBe("2026-09-01");
+    expect(result.profile.headerView.legacyPaidThroughYmd).toBe("2026-09-01");
+    expect(result.profile.headerView.legacyAccessThroughDate).toBe("September 1, 2026");
+    expect(result.profile.headerView.canEditLegacyPaidThrough).toBe(true);
+  });
+
   it("does not attach legacy history when multiple legacy emails match", () => {
     const state = buildProfileLegacyLinkState(
       {
@@ -550,6 +619,7 @@ describe("customerProfile", () => {
             country: null,
             birthdayinfo: null,
             datejoined: "2020-01-01T00:00:00.000Z",
+            subscriptionexpiring: null,
             active: null,
             betaactive: null,
             currentsubscriber: null,
@@ -567,6 +637,7 @@ describe("customerProfile", () => {
             country: null,
             birthdayinfo: null,
             datejoined: "2019-01-01T00:00:00.000Z",
+            subscriptionexpiring: null,
             active: null,
             betaactive: null,
             currentsubscriber: null,

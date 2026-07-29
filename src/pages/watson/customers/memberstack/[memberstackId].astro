@@ -23,6 +23,7 @@ const memberstackId = Astro.params.memberstackId
   ? decodeURIComponent(Astro.params.memberstackId)
   : "";
 const searchQuery = Astro.url.searchParams.get("q");
+const paidThroughUpdated = Astro.url.searchParams.get("paidThroughUpdated") === "1";
 const backHref = buildCustomerSearchReturnUrl(searchQuery);
 
 if (!memberstackId) {
@@ -75,6 +76,7 @@ if (!result.ok && result.reason === "not_found") {
         <WatsonCustomerProfileHeader
           header={result.profile.headerView}
           actions={result.profile.actions}
+          paidThroughUpdated={paidThroughUpdated}
         />
         {
           result.profile.legacyLinkAmbiguous ? (

@@ -77,3 +77,5 @@ public/challenge/
 legacy-data/exports/
 legacy-data/import-errors/
 docs/launch/*.csv
+
+legacy-expiry-*.json

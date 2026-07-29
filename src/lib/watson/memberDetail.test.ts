@@ -23,10 +23,15 @@ describe("memberDetail", () => {
     country: "US",
     birthdayinfo: "1900-03-15",
     datejoined: "2009-08-21T00:43:14.703Z",
+    subscriptionexpiring: "2026-07-29",
     active: 1,
     betaactive: 1,
     currentsubscriber: 1,
   };
+
+  it("selects subscriptionexpiring for the Watson paid-through date", () => {
+    expect(MEMBER_DETAIL_SQL).toContain("subscriptionexpiring");
+  });
 
   it("loads a member by legacy member ID", async () => {
     const queryFn = vi.fn(async () => [sampleMember]);

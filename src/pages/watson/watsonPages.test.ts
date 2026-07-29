@@ -77,16 +77,30 @@ describe("Watson member search pages", () => {
     const cards = buildCurrentBusinessSummaryCardViews(summary);
 
     expect(cards.find((card) => card.id === "new-members")?.displayValue).toBe("1");
-    expect(cards.find((card) => card.id === "shopify-sales")?.displayValue).toBe(
-      CURRENT_BUSINESS_PLACEHOLDER,
-    );
+    // Recent Sales is implemented: the Shopify card is a navigation/action card
+    // that links to live Shopify orders rather than showing a summary metric.
+    const shopifyCard = cards.find((card) => card.id === "shopify-sales");
+    expect(shopifyCard?.displayValue).toBe("Open Recent Sales");
+    expect(shopifyCard?.isLive).toBe(true);
   });
 
   it("renders placeholder cards when the live summary is unavailable", () => {
     const cards = buildCurrentBusinessSummaryCardViews(null);
-    expect(cards.every((card) => card.displayValue === CURRENT_BUSINESS_PLACEHOLDER)).toBe(
-      true,
+
+    // The Shopify sales card is a navigation/action card and stays available
+    // (links to Recent Sales) even without live summary data.
+    expect(cards.find((card) => card.id === "shopify-sales")?.displayValue).toBe(
+      "Open Recent Sales",
     );
+
+    // Every card that genuinely depends on live summary data falls back to the
+    // placeholder when the summary is unavailable.
+    const summaryDependentCards = cards.filter((card) => card.id !== "shopify-sales");
+    expect(
+      summaryDependentCards.every(
+        (card) => card.displayValue === CURRENT_BUSINESS_PLACEHOLDER,
+      ),
+    ).toBe(true);
   });
 
   it("defines Video Replies Watson page with create form and sortable history", () => {
@@ -135,6 +149,35 @@ describe("Watson member search pages", () => {
     expect(currentMembers).toContain('export const prerender = false');
     expect(annualAccess).toContain("loadRemainingAnnualAccessReport");
     expect(annualAccess).toContain('export const prerender = false');
+  });
+
+  it("defines the read-only legacy renewals preview page and nav link", () => {
+    const page = fs.readFileSync(
+      path.resolve("src/pages/watson/legacy-renewals.astro"),
+      "utf8",
+    );
+    const component = fs.readFileSync(
+      path.resolve("src/components/watson/WatsonLegacyRenewalPreview.astro"),
+      "utf8",
+    );
+    const shell = fs.readFileSync(
+      path.resolve("src/components/watson/WatsonPageShell.astro"),
+      "utf8",
+    );
+
+    expect(page).toContain('export const prerender = false');
+    expect(page).toContain("loadLegacyRenewalReminderPreview");
+    expect(page).toContain("WatsonLegacyRenewalPreview");
+    // The page must never invoke live mode; it relies on the loader's forced dry run.
+    expect(page).not.toContain("dryRun: false");
+    expect(page).not.toContain("confirm=LIVE");
+
+    expect(component).toContain("Renewal Reminder Preview");
+    expect(component).toContain("Refresh Preview");
+    expect(component).toContain("Legacy Expiration Date");
+    expect(component).toContain("Days Until Expiration");
+
+    expect(shell).toContain('<a href="/watson/legacy-renewals">Legacy Renewals</a>');
   });
 
   it("defines server-rendered dashboard and member detail routes", () => {

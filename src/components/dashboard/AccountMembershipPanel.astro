@@ -28,7 +28,7 @@
   <div class="account-membership-panel__content" data-kbm-account-membership-content hidden>
     <dl class="account-membership-panel__facts">
       <div class="account-membership-panel__fact">
-        <dt>Plan</dt>
+        <dt>Current Plan</dt>
         <dd data-kbm-account-membership-plan></dd>
       </div>
       <div class="account-membership-panel__fact">
@@ -37,21 +37,35 @@
       </div>
       <div
         class="account-membership-panel__fact"
-        data-kbm-account-membership-billing-row
-        hidden
-      >
-        <dt>Billing</dt>
-        <dd data-kbm-account-membership-billing></dd>
-      </div>
-      <div
-        class="account-membership-panel__fact"
         data-kbm-account-membership-renews-row
         hidden
       >
-        <dt>Renews</dt>
+        <dt>Next Renewal</dt>
         <dd data-kbm-account-membership-renews></dd>
       </div>
+      <div
+        class="account-membership-panel__fact"
+        data-kbm-account-membership-legacy-access-row
+        hidden
+      >
+        <dt>Legacy Access</dt>
+        <dd data-kbm-account-membership-legacy-access></dd>
+      </div>
+      <div
+        class="account-membership-panel__fact"
+        data-kbm-account-membership-member-since-row
+        hidden
+      >
+        <dt>Member Since</dt>
+        <dd data-kbm-account-membership-member-since></dd>
+      </div>
     </dl>
+
+    <p
+      class="account-membership-panel__auto-renew"
+      data-kbm-account-membership-auto-renew
+      hidden
+    ></p>
 
     <p
       class="account-membership-panel__active-until"
@@ -70,14 +84,38 @@
       </a>
       <button
         type="button"
-        class="kbm-btn kbm-btn-outline"
-        data-kbm-account-membership-action="manage"
-        data-kbm-account-membership-manage
+        class="kbm-btn kbm-btn-accent"
+        data-kbm-account-membership-action="manageBilling"
+        data-kbm-account-membership-manage-billing
         hidden
       >
-        Manage Membership
+        Manage Billing
+      </button>
+      <button
+        type="button"
+        class="kbm-btn kbm-btn-accent"
+        data-kbm-account-membership-action="renewAnnual"
+        data-kbm-account-membership-renew-annual
+        hidden
+      >
+        Renew Annual Membership
+      </button>
+      <button
+        type="button"
+        class="kbm-btn kbm-btn-outline"
+        data-kbm-account-membership-action="becomeMonthly"
+        data-kbm-account-membership-become-monthly
+        hidden
+      >
+        Become a Monthly Member
       </button>
     </div>
+
+    <p
+      class="account-membership-panel__billing-description"
+      data-kbm-account-membership-billing-description
+      hidden
+    ></p>
 
     <p
       class="account-membership-panel__action-status"
@@ -86,6 +124,42 @@
       role="status"
       aria-live="polite"
     ></p>
+
+    <section
+      class="account-membership-panel__history"
+      data-kbm-account-membership-history
+      hidden
+    >
+      <h3 class="account-membership-panel__history-heading">
+        <button
+          type="button"
+          class="account-membership-panel__history-toggle"
+          data-kbm-account-membership-history-toggle
+          aria-expanded="false"
+          aria-controls="membership-history-panel"
+        >
+          <span
+            class="account-membership-panel__history-title"
+            data-kbm-account-membership-history-title
+          >Membership History</span>
+          <span
+            class="account-membership-panel__history-chevron"
+            aria-hidden="true"
+          ></span>
+        </button>
+      </h3>
+      <div
+        id="membership-history-panel"
+        class="account-membership-panel__history-panel"
+        data-kbm-account-membership-history-panel
+        hidden
+      >
+        <ol
+          class="account-membership-panel__timeline"
+          data-kbm-account-membership-history-list
+        ></ol>
+      </div>
+    </section>
   </div>
 </section>
 
@@ -157,6 +231,13 @@
     color: #2c3a57;
   }
 
+  .account-membership-panel__auto-renew {
+    margin: 0 0 1.15rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: #4b5563;
+  }
+
   .account-membership-panel__active-until {
     margin: 0 0 1.15rem;
     padding: 0.85rem 1rem;
@@ -167,6 +248,13 @@
     font-weight: 600;
     line-height: 1.45;
     color: #2c3a57;
+  }
+
+  .account-membership-panel__billing-description {
+    margin: 0.6rem 0 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #6b7280;
   }
 
   .account-membership-panel__actions {
@@ -190,6 +278,138 @@
     .account-membership-panel__actions .kbm-btn {
       width: 100%;
       min-width: 0;
+    }
+  }
+
+  .account-membership-panel__history {
+    margin-top: 1.5rem;
+    padding-top: 1.35rem;
+    border-top: 1px solid #eef0f2;
+  }
+
+  .account-membership-panel__history-heading {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .account-membership-panel__history-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    width: 100%;
+    margin: 0;
+    padding: 0.35rem 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    color: #374151;
+    text-align: left;
+  }
+
+  .account-membership-panel__history-toggle:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  .account-membership-panel__history-title {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .account-membership-panel__history-chevron {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #6b7280;
+    line-height: 1;
+  }
+
+  .account-membership-panel__history-chevron::after {
+    content: "+";
+  }
+
+  .account-membership-panel__history-toggle[aria-expanded="true"]
+    .account-membership-panel__history-chevron::after {
+    content: "-";
+  }
+
+  .account-membership-panel__history-panel {
+    margin-top: 0.9rem;
+  }
+
+  .account-membership-panel__timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+</style>
+
+<!-- History rows are created dynamically by account-membership-history.ts, so
+     scoped styles would never match them. Scope these globally under the panel's
+     data attribute instead. Compact newest-first two-column list: fixed MM/DD/YYYY
+     date, then the label (with any secondary detail beneath it in column 2). -->
+<style is:global>
+  [data-kbm-account-membership] .membership-history-row {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    column-gap: 16px;
+    align-items: start;
+    padding: 0.3rem 0;
+  }
+
+  [data-kbm-account-membership]
+    .membership-history-row
+    + .membership-history-row {
+    border-top: 1px solid #eef0f2;
+  }
+
+  [data-kbm-account-membership] .membership-history-date {
+    font-size: 0.88rem;
+    line-height: 1.4;
+    color: #6b7280;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  [data-kbm-account-membership] .membership-history-content {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  [data-kbm-account-membership] .membership-history-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #2c3a57;
+  }
+
+  [data-kbm-account-membership] .membership-history-description {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.35;
+    color: #6b7280;
+  }
+
+  /* Only stack the date above the label on very narrow screens. */
+  @media (max-width: 360px) {
+    [data-kbm-account-membership] .membership-history-row {
+      grid-template-columns: minmax(0, 1fr);
+      row-gap: 0.1rem;
     }
   }
 </style>

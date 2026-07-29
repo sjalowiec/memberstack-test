@@ -1,0 +1,170 @@
+---
+import type { LegacyRenewalReminderPreview } from "../../lib/watson/legacyRenewalReminderPreview";
+
+interface Props {
+  preview: LegacyRenewalReminderPreview;
+  generatedAtDisplay: string | null;
+}
+
+const { preview, generatedAtDisplay } = Astro.props;
+const { cards, rows, todayLosAngeles, ok, errorMessage } = preview;
+---
+
+<section class="watson__panel watson--report-wide" aria-labelledby="legacy-renewal-preview-heading">
+  <div class="watson-renewal__head">
+    <h2 id="legacy-renewal-preview-heading" class="watson__panel-title">
+      Renewal Reminder Preview
+    </h2>
+    <a class="watson__button" href="/watson/legacy-renewals" data-refresh>Refresh Preview</a>
+  </div>
+
+  <p class="watson-renewal__note" role="note">
+    Read-only dry run. This page never sends emails, applies tags, creates contacts,
+    or modifies ActiveCampaign, Memberstack, or the database. It shows exactly who
+    the scheduled reminder job would contact if it ran today.
+  </p>
+
+  <p class="watson-report__meta">
+    Evaluated for {todayLosAngeles} (America/Los_Angeles){
+      generatedAtDisplay ? ` - generated ${generatedAtDisplay}` : ""
+    } - sorted by legacy expiration date ascending
+  </p>
+
+  {
+    !ok && errorMessage ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {errorMessage}
+      </p>
+    ) : null
+  }
+
+  <div class="watson-report__cards">
+    {
+      cards.map((card) => (
+        <article class="watson-report__card" data-card-id={card.id}>
+          <h3 class="watson-report__card-label">{card.label}</h3>
+          <p class="watson-report__card-value">{card.value.toLocaleString("en-US")}</p>
+        </article>
+      ))
+    }
+  </div>
+
+  {
+    rows.length === 0 ? (
+      <p class="watson__placeholder">
+        No renewal reminder candidates were found for {todayLosAngeles}.
+      </p>
+    ) : (
+      <div class="watson__table-wrap">
+        <table class="watson-table" data-sortable-table>
+          <thead>
+            <tr>
+              <th scope="col" data-sort-key="email" data-sort-type="string" tabindex="0">
+                Email
+              </th>
+              <th scope="col" data-sort-key="firstName" data-sort-type="string" tabindex="0">
+                First Name
+              </th>
+              <th scope="col" data-sort-key="lastName" data-sort-type="string" tabindex="0">
+                Last Name
+              </th>
+              <th
+                scope="col"
+                data-sort-key="legacyExpiration"
+                data-sort-type="string"
+                data-sort-default="true"
+                data-sort-default-direction="asc"
+                tabindex="0"
+              >
+                Legacy Expiration Date
+              </th>
+              <th scope="col" data-sort-key="days" data-sort-type="number" tabindex="0">
+                Days Until Expiration
+              </th>
+              <th scope="col" data-sort-key="status" data-sort-type="string" tabindex="0">
+                Status
+              </th>
+              <th scope="col">Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              rows.map((row) => (
+                <tr>
+                  <td data-sort-value={row.email}>{row.email || "-"}</td>
+                  <td data-sort-value={row.firstName}>{row.firstName || "-"}</td>
+                  <td data-sort-value={row.lastName}>{row.lastName || "-"}</td>
+                  <td data-sort-value={row.legacyExpiration}>{row.legacyExpiration || "-"}</td>
+                  <td data-sort-value={String(row.daysUntilExpiration)}>
+                    {row.daysUntilExpiration}
+                  </td>
+                  <td data-sort-value={row.status}>
+                    <span
+                      class:list={[
+                        "watson-renewal__status",
+                        `watson-renewal__status--${row.statusModifier}`,
+                      ]}
+                    >
+                      {row.status}
+                    </span>
+                  </td>
+                  <td class="watson-renewal__reason">{row.reason || "-"}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+</section>
+
+<style>
+  .watson-renewal__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .watson-renewal__note {
+    margin: 0.25rem 0 1rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    background: #f0fdf4;
+    color: #166534;
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+
+  .watson-renewal__status {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .watson-renewal__status--eligible {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .watson-renewal__status--skipped {
+    background: #f1f5f9;
+    color: #475569;
+  }
+
+  .watson-renewal__status--failure {
+    background: #fee2e2;
+    color: #b91c1c;
+  }
+
+  .watson-renewal__reason {
+    color: #64748b;
+    font-size: 0.86rem;
+  }
+</style>

@@ -16,8 +16,14 @@ import {
   openStripeCustomerPortal,
   STRIPE_PORTAL_UNAVAILABLE_MESSAGE,
 } from "../lib/membership/openStripeCustomerPortal";
+import { startJoinCheckout } from "./joinCheckout";
 
-const ALL_PANEL_ACTIONS: AccountMembershipPanelAction[] = ["join", "manage"];
+const ALL_PANEL_ACTIONS: AccountMembershipPanelAction[] = [
+  "join",
+  "manageBilling",
+  "renewAnnual",
+  "becomeMonthly",
+];
 
 const LOAD_ERROR_MESSAGE =
   "We couldn't load your membership details. Please refresh the page and try again.";
@@ -51,23 +57,17 @@ function setVisible(el: Element | null, visible: boolean): void {
 function applyView(root: Element, view: AccountMembershipPanelView): void {
   const planEl = root.querySelector("[data-kbm-account-membership-plan]");
   const statusEl = root.querySelector("[data-kbm-account-membership-status]");
-  const billingRow = root.querySelector("[data-kbm-account-membership-billing-row]");
-  const billingEl = root.querySelector("[data-kbm-account-membership-billing]");
   const renewsRow = root.querySelector("[data-kbm-account-membership-renews-row]");
   const renewsEl = root.querySelector("[data-kbm-account-membership-renews]");
+  const autoRenewEl = root.querySelector("[data-kbm-account-membership-auto-renew]");
   const activeUntilEl = root.querySelector("[data-kbm-account-membership-active-until]");
+  const billingDescriptionEl = root.querySelector(
+    "[data-kbm-account-membership-billing-description]",
+  );
   const visible = new Set(view.visibleActions);
 
-  if (planEl) planEl.textContent = view.planLabel;
+  if (planEl) planEl.textContent = view.planDisplayLabel;
   if (statusEl) statusEl.textContent = view.statusLabel;
-
-  if (view.billingLabel && billingEl && billingRow) {
-    billingEl.textContent = view.billingLabel;
-    setVisible(billingRow, true);
-  } else {
-    if (billingEl) billingEl.textContent = "";
-    setVisible(billingRow, false);
-  }
 
   if (view.renewsLabel && renewsEl && renewsRow) {
     renewsEl.textContent = view.renewsLabel;
@@ -75,6 +75,14 @@ function applyView(root: Element, view: AccountMembershipPanelView): void {
   } else {
     if (renewsEl) renewsEl.textContent = "";
     setVisible(renewsRow, false);
+  }
+
+  if (view.autoRenewNote && autoRenewEl instanceof HTMLElement) {
+    autoRenewEl.textContent = view.autoRenewNote;
+    setVisible(autoRenewEl, true);
+  } else if (autoRenewEl instanceof HTMLElement) {
+    autoRenewEl.textContent = "";
+    setVisible(autoRenewEl, false);
   }
 
   if (view.activeUntilMessage && activeUntilEl instanceof HTMLElement) {
@@ -90,13 +98,12 @@ function applyView(root: Element, view: AccountMembershipPanelView): void {
     setVisible(el, visible.has(action));
   }
 
-  const manageBtn = root.querySelector<HTMLElement>(
-    '[data-kbm-account-membership-action="manage"]',
-  );
-  if (manageBtn) {
-    const manageIsPrimary = view.kind === "member" || view.isCanceling;
-    manageBtn.classList.toggle("kbm-btn-accent", manageIsPrimary);
-    manageBtn.classList.toggle("kbm-btn-outline", !manageIsPrimary);
+  if (view.manageBillingDescription && billingDescriptionEl instanceof HTMLElement) {
+    billingDescriptionEl.textContent = view.manageBillingDescription;
+    setVisible(billingDescriptionEl, true);
+  } else if (billingDescriptionEl instanceof HTMLElement) {
+    billingDescriptionEl.textContent = "";
+    setVisible(billingDescriptionEl, false);
   }
 
   root.setAttribute("data-kbm-account-membership-kind", view.kind);
@@ -138,31 +145,62 @@ async function populateAccountMembership(): Promise<void> {
   setVisible(contentEl, true);
 }
 
-function bindManageMembershipButtons(root: Element): void {
-  root.querySelectorAll<HTMLButtonElement>("[data-kbm-account-membership-manage]").forEach((btn) => {
+/**
+ * Manage Billing is the ONLY control that launches the existing Stripe Customer
+ * Portal. Renew / Become Monthly reuse the existing Memberstack checkout for
+ * legacy members (not active Stripe subscribers) — no new checkout logic.
+ */
+function bindMembershipActionButtons(root: Element): void {
+  const statusEl = root.querySelector<HTMLElement>(
+    "[data-kbm-account-membership-action-status]",
+  );
+  const clearStatus = (): void => {
+    if (statusEl) {
+      statusEl.hidden = true;
+      statusEl.textContent = "";
+    }
+  };
+
+  root
+    .querySelectorAll<HTMLButtonElement>("[data-kbm-account-membership-manage-billing]")
+    .forEach((btn) => {
+      if (btn.dataset.kbmBound === "1") return;
+      btn.dataset.kbmBound = "1";
+
+      btn.addEventListener("click", () => {
+        clearStatus();
+        btn.disabled = true;
+        void openStripeCustomerPortal({ ms: window.$memberstackDom })
+          .then((opened) => {
+            if (!opened && statusEl) {
+              statusEl.hidden = false;
+              statusEl.textContent = STRIPE_PORTAL_UNAVAILABLE_MESSAGE;
+            }
+          })
+          .finally(() => {
+            btn.disabled = false;
+          });
+      });
+    });
+
+  bindLegacyCheckoutButton(root, "[data-kbm-account-membership-renew-annual]", "annual");
+  bindLegacyCheckoutButton(root, "[data-kbm-account-membership-become-monthly]", "monthly");
+}
+
+function bindLegacyCheckoutButton(
+  root: Element,
+  selector: string,
+  planKey: "annual" | "monthly",
+): void {
+  root.querySelectorAll<HTMLButtonElement>(selector).forEach((btn) => {
     if (btn.dataset.kbmBound === "1") return;
     btn.dataset.kbmBound = "1";
 
     btn.addEventListener("click", () => {
-      const statusEl = root.querySelector<HTMLElement>(
-        "[data-kbm-account-membership-action-status]",
-      );
-      if (statusEl) {
-        statusEl.hidden = true;
-        statusEl.textContent = "";
-      }
-
       btn.disabled = true;
-      void openStripeCustomerPortal({ ms: window.$memberstackDom })
-        .then((opened) => {
-          if (!opened && statusEl) {
-            statusEl.hidden = false;
-            statusEl.textContent = STRIPE_PORTAL_UNAVAILABLE_MESSAGE;
-          }
-        })
-        .finally(() => {
-          btn.disabled = false;
-        });
+      void startJoinCheckout(planKey).finally(() => {
+        btn.disabled = false;
+      });
     });
   });
 }
@@ -171,7 +209,7 @@ export function bootAccountMembership(): void {
   const root = document.querySelector("[data-kbm-account-membership]");
   if (!root) return;
 
-  bindManageMembershipButtons(root);
+  bindMembershipActionButtons(root);
   void populateAccountMembership();
 
   window.addEventListener("auth:updated", () => {

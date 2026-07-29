@@ -19,49 +19,34 @@ function memberWithPlans(
 }
 
 describe("performMembershipCornerAction", () => {
-  it("opens the Stripe portal for Manage Membership and does not navigate", async () => {
-    const openPortal = vi.fn().mockResolvedValue(true);
+  it("navigates to the Account page for Manage Membership (no direct Stripe portal)", async () => {
     const navigate = vi.fn();
 
     await expect(
-      performMembershipCornerAction("manage", "/account#membership", {
-        openPortal,
-        navigate,
-      }),
-    ).resolves.toBe("portal");
+      performMembershipCornerAction("manage", "/account#membership", { navigate }),
+    ).resolves.toBe("navigate");
 
-    expect(openPortal).toHaveBeenCalledOnce();
-    expect(navigate).not.toHaveBeenCalled();
+    expect(navigate).toHaveBeenCalledWith("/account#membership");
   });
 
-  it("navigates for Become and does not open the portal", async () => {
-    const openPortal = vi.fn();
+  it("navigates for Become", async () => {
     const navigate = vi.fn();
 
     await expect(
-      performMembershipCornerAction("become", "/membership", {
-        openPortal,
-        navigate,
-      }),
+      performMembershipCornerAction("become", "/membership", { navigate }),
     ).resolves.toBe("navigate");
 
     expect(navigate).toHaveBeenCalledWith("/membership");
-    expect(openPortal).not.toHaveBeenCalled();
   });
 
-  it("restores control opportunity when portal launch fails (caller re-enables)", async () => {
-    const openPortal = vi.fn().mockResolvedValue(false);
+  it("falls back to the Become href when no href is provided", async () => {
     const navigate = vi.fn();
 
     await expect(
-      performMembershipCornerAction("manage", "/account#membership", {
-        openPortal,
-        navigate,
-      }),
-    ).resolves.toBe("portal");
+      performMembershipCornerAction("manage", "", { navigate }),
+    ).resolves.toBe("navigate");
 
-    expect(openPortal).toHaveBeenCalledOnce();
-    expect(navigate).not.toHaveBeenCalled();
+    expect(navigate).toHaveBeenCalledWith(MEMBERSHIP_CORNER_CTA.become.href);
   });
 });
 

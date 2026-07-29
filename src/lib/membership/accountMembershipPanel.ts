@@ -1,7 +1,7 @@
 /**
  * Resolve Account page membership panel display from a Memberstack payload.
  *
- * Uses paid-membership detection ù does not invent access rules.
+ * Uses paid-membership detection ? does not invent access rules.
  * Billing interval is shown only when an active paid connection maps to a
  * known Memberstack price id in `MEMBERSHIPS`.
  *
@@ -27,14 +27,36 @@ export type AccountMembershipBillingInterval = "monthly" | "annual";
 
 export type AccountMembershipPanelKind = "free" | "member";
 
-/** Action keys rendered as buttons/links on the Account membership panel. */
-export type AccountMembershipPanelAction = "join" | "manage";
+/**
+ * Action keys rendered as buttons/links on the Account membership panel.
+ * - join: link to /membership (no active membership)
+ * - manageBilling: open the existing Stripe Customer Portal (active paid members)
+ * - renewAnnual / becomeMonthly: reuse the existing Memberstack checkout for
+ *   legacy members who are not active Stripe subscribers
+ */
+export type AccountMembershipPanelAction =
+  | "join"
+  | "manageBilling"
+  | "renewAnnual"
+  | "becomeMonthly";
 
 export type AccountMembershipPanelView = {
   kind: AccountMembershipPanelKind;
+  /**
+   * Canonical membership name, shared with the /membership status panel/modal
+   * (e.g. "Knit it Now Membership"). Kept stable so membership status display
+   * does not change.
+   */
   planLabel: string;
+  /**
+   * Account page "Current Plan" label, which folds the billing interval into
+   * the name (e.g. "Monthly Membership" / "Annual Membership"). Account panel
+   * only ? the status panel keeps using {@link planLabel}.
+   */
+  planDisplayLabel: string;
   statusLabel: string;
   billingInterval: AccountMembershipBillingInterval | null;
+  /** "Monthly" / "Annual" for the /membership status panel; null when unknown. */
   billingLabel: string | null;
   /** Formatted local date for Renews, or null when the field should be hidden. */
   renewsLabel: string | null;
@@ -45,24 +67,52 @@ export type AccountMembershipPanelView = {
    * "Your membership remains active until August 18, 2026."
    */
   activeUntilMessage: string | null;
+  /**
+   * Auto-renew reassurance line for active paid members, e.g.
+   * "Membership renews automatically each month." Null while canceling or for
+   * legacy/free/no-membership states.
+   */
+  autoRenewNote: string | null;
+  /** Copy shown beneath the Manage Billing button; null when it is not shown. */
+  manageBillingDescription: string | null;
   visibleActions: AccountMembershipPanelAction[];
 };
 
 /** Which action controls should be visible for a resolved membership kind. */
 export function accountMembershipPanelActions(
   kind: AccountMembershipPanelKind,
-  options?: { canceling?: boolean },
+  _options?: { canceling?: boolean },
 ): AccountMembershipPanelAction[] {
   if (kind === "free") return ["join"];
-  // Canceling or active member: manage only.
-  if (options?.canceling) return ["manage"];
-  return ["manage"];
+  // Active or canceling paid member: a single Manage Billing action opens the
+  // Stripe Customer Portal, where payment method, plan change, cancellation and
+  // reversing a cancellation already live.
+  return ["manageBilling"];
 }
 
 const BILLING_LABEL: Record<AccountMembershipBillingInterval, string> = {
   monthly: "Monthly",
   annual: "Annual",
 };
+
+const PAID_PLAN_LABEL: Record<AccountMembershipBillingInterval, string> = {
+  monthly: "Monthly Membership",
+  annual: "Annual Membership",
+};
+
+const AUTO_RENEW_NOTE: Record<AccountMembershipBillingInterval, string> = {
+  monthly: "Membership renews automatically each month.",
+  annual: "Membership renews automatically each year.",
+};
+
+const MANAGE_BILLING_DESCRIPTION_ACTIVE =
+  "Update your payment method, change your subscription, or cancel your membership.";
+
+const MANAGE_BILLING_DESCRIPTION_CANCELING =
+  "You can update your payment information or reverse your cancellation from the billing portal if available.";
+
+/** Plan label when an active paid connection has no recognized billing interval. */
+const PAID_PLAN_FALLBACK_LABEL = "Knit it Now Membership";
 
 const MEMBERSHIP_DATE_FORMAT: Intl.DateTimeFormatOptions = {
   month: "long",
@@ -195,43 +245,59 @@ export function resolveAccountMembershipPanelView(
   if (memberHasActivePaidMembership(memberOrPayload)) {
     return {
       kind: "member",
-      planLabel: "Knit it Now Membership",
+      planLabel: PAID_PLAN_FALLBACK_LABEL,
+      planDisplayLabel: billingInterval
+        ? PAID_PLAN_LABEL[billingInterval]
+        : PAID_PLAN_FALLBACK_LABEL,
       statusLabel: isCanceling ? "Canceling" : "Active",
       billingInterval,
       billingLabel,
       renewsLabel,
       isCanceling,
       activeUntilMessage,
+      autoRenewNote:
+        !isCanceling && billingInterval ? AUTO_RENEW_NOTE[billingInterval] : null,
+      manageBillingDescription: isCanceling
+        ? MANAGE_BILLING_DESCRIPTION_CANCELING
+        : MANAGE_BILLING_DESCRIPTION_ACTIVE,
       visibleActions: accountMembershipPanelActions("member", { canceling: isCanceling }),
     };
   }
 
   // Active free membership (e.g. "legacy membership"): full access, no Stripe
-  // billing/checkout/renewal. Show an active member panel with no billing rows
-  // and no purchase ("Become a Member") or Stripe-portal manage action.
+  // subscription. These legacy members are not active Stripe subscribers, so
+  // offer the existing Memberstack checkout to renew annually or move to
+  // monthly. No Stripe portal / manage billing action (there is no subscription
+  // to manage).
   if (memberHasActiveFreeMembership(memberOrPayload)) {
     return {
       kind: "member",
       planLabel: FREE_MEMBERSHIP_DISPLAY_LABEL,
+      planDisplayLabel: FREE_MEMBERSHIP_DISPLAY_LABEL,
       statusLabel: "Active",
       billingInterval: null,
       billingLabel: null,
       renewsLabel: null,
       isCanceling: false,
       activeUntilMessage: null,
-      visibleActions: [],
+      autoRenewNote: null,
+      manageBillingDescription: null,
+      visibleActions: ["renewAnnual", "becomeMonthly"],
     };
   }
 
   return {
     kind: "free",
     planLabel: "No active membership",
+    planDisplayLabel: "No active membership",
     statusLabel: "No Active Membership",
     billingInterval: null,
     billingLabel: null,
     renewsLabel: null,
     isCanceling: false,
     activeUntilMessage: null,
+    autoRenewNote: null,
+    manageBillingDescription: null,
     visibleActions: accountMembershipPanelActions("free"),
   };
 }

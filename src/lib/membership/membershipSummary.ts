@@ -1,4 +1,8 @@
-import { MEMBERSHIPS, LEGACY_MEMBERSHIPS } from "../../config/memberships";
+import {
+  MEMBERSHIPS,
+  LEGACY_MEMBERSHIPS,
+  RETIRED_MONTHLY_SUBSCRIPTION_PRICE_ID,
+} from "../../config/memberships";
 
 export const MEMBERSHIP_SUMMARY_MAX_PAGES = 50;
 export const MEMBERSHIP_SUMMARY_PAGE_SIZE = 100;
@@ -115,6 +119,13 @@ export function buildPriceIndex(): Map<string, PriceInfo> {
       amount: priceEntry.price,
     });
   }
+  // Retired monthly-subscription shell: same monthly amount as the current
+  // membership. Mapping it lets billing frequency / history resolve to monthly.
+  index.set(RETIRED_MONTHLY_SUBSCRIPTION_PRICE_ID, {
+    planKey: "membership",
+    interval: "monthly",
+    amount: plan.prices.monthly.price,
+  });
   return index;
 }
 
@@ -196,7 +207,7 @@ export async function fetchAllMembers(
 
 export function buildRevenueNote(unresolvedPaidConnections: number): string | null {
   return unresolvedPaidConnections > 0
-    ? "Some active paid plan connections could not be matched to a known price id ù mrrEstimate excludes them. See the code comment at the top of admin-membership-report.ts."
+    ? "Some active paid plan connections could not be matched to a known price id ? mrrEstimate excludes them. See the code comment at the top of admin-membership-report.ts."
     : null;
 }
 

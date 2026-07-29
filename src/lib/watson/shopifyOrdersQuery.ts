@@ -188,7 +188,7 @@ export async function listShopifyOrders(
       o.is_designaknit,
       o.source,
       (
-        SELECT string_agg(i.title || ' ' || i.quantity::text, ', ' ORDER BY i.title)
+        SELECT string_agg(i.title || ' Ã—' || i.quantity::text, ', ' ORDER BY i.title)
         FROM watson_shopify_order_items i
         WHERE i.shopify_order_id = o.shopify_order_id
       ) AS line_item_summary,
@@ -327,7 +327,7 @@ export async function getShopifyOrderDetail(
     siteBrand: header.site_brand,
     isDesignaknit: header.is_designaknit,
     source: header.source,
-    lineItemSummary: items.map((item) => `${item.title} ${item.quantity}`).join(", "),
+    lineItemSummary: items.map((item) => `${item.title} Ã—${item.quantity}`).join(", "),
     hasLicenseRecord: Boolean(header.has_license_record),
     licenseStatus: header.license_status,
     lineItems: items.map((item) => ({

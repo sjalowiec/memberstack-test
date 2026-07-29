@@ -1,0 +1,51 @@
+---
+import WatsonLegacyRenewalPreview from "../../components/watson/WatsonLegacyRenewalPreview.astro";
+import WatsonPageShell from "../../components/watson/WatsonPageShell.astro";
+import {
+  loadLegacyRenewalReminderPreview,
+  type LegacyRenewalReminderPreview,
+} from "../../lib/watson/legacyRenewalReminderPreview";
+
+export const prerender = false;
+
+let preview: LegacyRenewalReminderPreview | null = null;
+let loadError: string | null = null;
+
+try {
+  // Always a dry run - the loader forces dryRun:true and shares the exact
+  // selection logic used by the scheduled reminder job.
+  preview = await loadLegacyRenewalReminderPreview();
+} catch (error) {
+  loadError =
+    error instanceof Error ? error.message : "Legacy renewal reminder preview failed to load.";
+}
+
+const generatedAtDisplay = preview?.generatedAt
+  ? new Date(preview.generatedAt).toLocaleString("en-US", {
+      timeZone: "America/Los_Angeles",
+      dateStyle: "medium",
+      timeStyle: "short",
+    }) + " PT"
+  : null;
+---
+
+<WatsonPageShell
+  title="Legacy Renewals | Watson"
+  description="Read-only preview of who would receive a legacy renewal reminder if the job ran today."
+  heading="Legacy Renewals"
+  intro="Read-only dry-run preview of legacy annual renewal reminder candidates. No emails, tags, or data changes are ever made from this page."
+>
+  <p class="watson-report__meta">
+    <a href="/watson/reports">Back to all reports</a>
+  </p>
+
+  {
+    loadError ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {loadError}
+      </p>
+    ) : preview ? (
+      <WatsonLegacyRenewalPreview preview={preview} generatedAtDisplay={generatedAtDisplay} />
+    ) : null
+  }
+</WatsonPageShell>

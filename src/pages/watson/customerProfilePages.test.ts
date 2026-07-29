@@ -169,6 +169,14 @@ describe("Watson customer profile pages", () => {
     expect(header).toContain("header.email");
     expect(header).not.toContain("WatsonCustomerAccordionSection");
 
+    // Success banner shows the saved date and only appears when paidThroughUpdated=1.
+    expect(header).toContain("paidThroughUpdated ?");
+    expect(header).toContain("data-paid-through-updated-banner");
+    expect(header).toContain("Legacy paid-through date updated to ${header.legacyAccessThroughDate}");
+    expect(header).toContain("{paidThroughUpdatedMessage}");
+    // Edit input repopulates with the newly saved authoritative date after redirect.
+    expect(header).toContain('value={header.legacyPaidThroughYmd ?? ""}');
+
     expect(ambiguity).toContain("watson-customer__legacy-ambiguity");
     expect(ambiguity).not.toContain("WatsonCustomerAccordionSection");
 
