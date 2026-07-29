@@ -296,3 +296,20 @@ export function buildMembershipHistory(
     return SAME_DATE_ORDER[a.type] - SAME_DATE_ORDER[b.type];
   });
 }
+
+/**
+ * Order a built history for customer display: newest date first, oldest last.
+ * This is the single source of truth for display ordering - callers should not
+ * re-sort in CSS or DOM order. Same-day ties keep the later lifecycle stage on
+ * top (e.g. a same-day "Renewed" reads above the "Started"/"Migrated" it
+ * followed), which is the reverse of the oldest-first build order.
+ */
+export function sortMembershipHistoryForDisplay(
+  events: MembershipHistoryEvent[],
+): MembershipHistoryEvent[] {
+  return [...events].sort((a, b) => {
+    const byDate = b.dateSort.localeCompare(a.dateSort);
+    if (byDate !== 0) return byDate;
+    return SAME_DATE_ORDER[b.type] - SAME_DATE_ORDER[a.type];
+  });
+}

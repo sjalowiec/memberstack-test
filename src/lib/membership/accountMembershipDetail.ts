@@ -37,6 +37,7 @@ import {
 } from "./accountMembershipPanel";
 import {
   buildMembershipHistory,
+  sortMembershipHistoryForDisplay,
   type MembershipHistoryEvent,
 } from "./membershipHistory";
 import { legacyContextFromLink } from "./membershipStatusService";
@@ -75,7 +76,7 @@ export interface AccountMembershipDetail {
   legacyAccessActive: boolean | null;
   /** Earliest known join date across all sources. */
   memberSince: string | null;
-  /** Chronological, customer-safe membership milestones (oldest-first). */
+  /** Customer-safe membership milestones, ordered newest-first for display. */
   history: MembershipHistoryEvent[];
 }
 
@@ -187,13 +188,17 @@ export function buildAccountMembershipDetail(input: {
   // Legacy paid-through is historical context; hide it for active paying members.
   const legacyPaidThroughDate = isPaidMember ? null : summary.legacyExpirationDate;
 
-  const history = buildMembershipHistory({
-    legacyJoinedDate: input.legacyJoinedDate ?? null,
-    legacyMemberships,
-    connections: input.memberstackSummary.connections,
-    memberstackAccountCreatedDate: input.memberstackSummary.accountCreatedAtSort || null,
-    hasLegacyHistory: input.legacy.linkState === "linked",
-  });
+  // Display order (newest-first) is decided here in shared logic so the client
+  // renders the received order as-is (no CSS/DOM reversing).
+  const history = sortMembershipHistoryForDisplay(
+    buildMembershipHistory({
+      legacyJoinedDate: input.legacyJoinedDate ?? null,
+      legacyMemberships,
+      connections: input.memberstackSummary.connections,
+      memberstackAccountCreatedDate: input.memberstackSummary.accountCreatedAtSort || null,
+      hasLegacyHistory: input.legacy.linkState === "linked",
+    }),
+  );
 
   return {
     identified: true,

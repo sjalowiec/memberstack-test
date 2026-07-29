@@ -16,6 +16,7 @@ import {
 } from "../lib/membership/accountMembershipDetailClient";
 import { resolveAccountMembershipDetailView } from "../lib/membership/accountMembershipDetailView";
 import type { MembershipHistoryEvent } from "../lib/membership/membershipHistory";
+import { buildMembershipHistoryRow } from "../lib/membership/membershipHistoryRow";
 
 function setText(root: Element, selector: string, value: string): void {
   const el = root.querySelector(selector);
@@ -38,38 +39,6 @@ function setRow(
     valueEl.textContent = "";
     row.hidden = true;
   }
-}
-
-function buildEventItem(event: MembershipHistoryEvent): HTMLLIElement {
-  const item = document.createElement("li");
-  item.className = "account-membership-panel__event";
-
-  const marker = document.createElement("span");
-  marker.className = "account-membership-panel__event-marker";
-  marker.setAttribute("aria-hidden", "true");
-  marker.textContent = "\u2713"; // ?
-  item.appendChild(marker);
-
-  const title = document.createElement("p");
-  title.className = "account-membership-panel__event-title";
-  title.textContent = event.title;
-  item.appendChild(title);
-
-  if (event.date) {
-    const date = document.createElement("p");
-    date.className = "account-membership-panel__event-date";
-    date.textContent = event.date;
-    item.appendChild(date);
-  }
-
-  if (event.description) {
-    const description = document.createElement("p");
-    description.className = "account-membership-panel__event-description";
-    description.textContent = event.description;
-    item.appendChild(description);
-  }
-
-  return item;
 }
 
 /** Collapse the history accordion (used on every (re)render). */
@@ -99,8 +68,9 @@ function renderHistory(
   setText(section, "[data-kbm-account-membership-history-title]", headerLabel);
   collapseHistory(section); // Collapsed by default; expands on demand.
 
+  // Events arrive newest-first from the server DTO (shared display ordering).
   for (const event of events) {
-    list.appendChild(buildEventItem(event));
+    list.appendChild(buildMembershipHistoryRow(document, event));
   }
   section.hidden = false;
 }

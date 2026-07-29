@@ -181,7 +181,8 @@ describe("loadAccountMembershipDetail", () => {
     expect(detail.memberSince).toBe("January 5, 2012");
     expect(detail.legacyPaidThroughDate).toBe("December 31, 2026");
     const titles = detail.history.map((event) => event.title);
-    expect(titles[0]).toBe("Joined Knit it Now");
+    // History is delivered newest-first, so the oldest "Joined" milestone is last.
+    expect(titles[titles.length - 1]).toBe("Joined Knit it Now");
     expect(titles).toContain("Migrated to the new Knit it Now");
   });
 

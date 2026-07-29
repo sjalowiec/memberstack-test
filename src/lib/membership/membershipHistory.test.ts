@@ -4,6 +4,7 @@ import type { CustomerPlanConnectionDisplay } from "../watson/customerMemberstac
 import type { MemberMembershipDisplay } from "../watson/memberMembership";
 import {
   buildMembershipHistory,
+  sortMembershipHistoryForDisplay,
   type MembershipHistoryEvent,
 } from "./membershipHistory";
 
@@ -253,5 +254,74 @@ describe("buildMembershipHistory", () => {
     expect(serialized).not.toContain("pln_secret_id");
     expect(serialized).not.toContain("cus_secret");
     expect(serialized).not.toContain("228");
+  });
+});
+
+describe("sortMembershipHistoryForDisplay", () => {
+  const built = buildMembershipHistory({
+    legacyJoinedDate: "2017-03-14",
+    legacyMemberships: [
+      legacyRow({ startDateSort: "2025-01-01T00:00:00.000Z", renewalFlag: "1" }),
+    ],
+    memberstackAccountCreatedDate: "2026-07-30T12:00:00.000Z",
+    hasLegacyHistory: true,
+    connections: [
+      connection({
+        isPaidPlan: true,
+        billingInterval: "monthly",
+        startDateSort: "2026-08-01T00:00:00.000Z",
+      }),
+    ],
+  });
+
+  it("puts the newest event first and the oldest event last", () => {
+    const ordered = sortMembershipHistoryForDisplay(built);
+
+    // Newest first, oldest last (the reverse of the oldest-first build order).
+    expect(ordered[0]?.title).toBe("Monthly Membership Started");
+    expect(ordered[0]?.date).toBe("August 1, 2026");
+    expect(ordered[ordered.length - 1]?.title).toBe("Joined Knit it Now");
+    expect(ordered[ordered.length - 1]?.date).toBe("March 14, 2017");
+
+    // Dates are strictly non-increasing.
+    for (let i = 1; i < ordered.length; i++) {
+      expect(ordered[i - 1]!.dateSort >= ordered[i]!.dateSort).toBe(true);
+    }
+  });
+
+  it("preserves every event (count unchanged) and does not mutate the input", () => {
+    const inputOrder = built.map((event) => event.title);
+    const ordered = sortMembershipHistoryForDisplay(built);
+
+    expect(ordered).toHaveLength(built.length);
+    // Same set of events, just reordered.
+    expect([...ordered].map((e) => e.title).sort()).toEqual(
+      [...built].map((e) => e.title).sort(),
+    );
+    // Input array untouched.
+    expect(built.map((event) => event.title)).toEqual(inputOrder);
+  });
+
+  it("keeps the later lifecycle stage on top for same-day events", () => {
+    const sameDay = buildMembershipHistory({
+      hasLegacyHistory: true,
+      memberstackAccountCreatedDate: "2026-04-27T12:00:00.000Z",
+      connections: [
+        connection({
+          isPaidPlan: true,
+          billingInterval: "monthly",
+          startDateSort: "2026-04-27T12:00:00.000Z",
+        }),
+      ],
+    });
+
+    const ordered = sortMembershipHistoryForDisplay(sameDay);
+    const startedIdx = ordered.findIndex((e) => e.type === "monthly_started");
+    const migratedIdx = ordered.findIndex((e) => e.type === "migrated");
+
+    expect(startedIdx).toBeGreaterThanOrEqual(0);
+    expect(migratedIdx).toBeGreaterThanOrEqual(0);
+    // On the same day, "Monthly Membership Started" reads above "Migrated".
+    expect(startedIdx).toBeLessThan(migratedIdx);
   });
 });
