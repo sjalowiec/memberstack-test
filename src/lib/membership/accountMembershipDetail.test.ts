@@ -2,7 +2,12 @@ import { describe, expect, it } from "vitest";
 import { FREE_ACCESS_MEMBERSHIPS, MEMBERSHIPS } from "../../config/memberships";
 import type { LegacyMemberDetailRow } from "../watson/memberDetail";
 import type { MemberMembershipDisplay } from "../watson/memberMembership";
-import { loadAccountMembershipDetail } from "./accountMembershipDetail";
+import {
+  buildAccountMembershipDetail,
+  loadAccountMembershipDetail,
+} from "./accountMembershipDetail";
+import { resolveAccountMembershipDetailView } from "./accountMembershipDetailView";
+import { buildCustomerMemberstackSummary } from "../watson/customerMemberstack";
 
 function legacyMember(
   overrides: Partial<LegacyMemberDetailRow> & { memberid: string; email: string },
@@ -184,6 +189,188 @@ describe("loadAccountMembershipDetail", () => {
     // History is delivered newest-first, so the oldest "Joined" milestone is last.
     expect(titles[titles.length - 1]).toBe("Joined Knit it Now");
     expect(titles).toContain("Migrated to the new Knit it Now");
+  });
+
+  it("prefers legacy_members.subscriptionexpiring over the latest timeline expiration event", async () => {
+    // Production regression (Watson customer "Watson"):
+    //   subscriptionexpiring = 2026-09-15
+    //   timeline latest expiration event = 2026-08-02
+    // Account page must show September 15, 2026 — never August 2, 2026.
+    const detail = await loadAccountMembershipDetail("mem_legacy_authoritative", {
+      secretKey: "sk_test",
+      now: new Date("2026-07-28T20:00:00.000Z"),
+      getClient: async () =>
+        ({
+          getMember: async (id: string) => ({
+            id,
+            auth: { email: "legacy@example.com" },
+            createdAt: "2026-04-27T00:00:00.000Z",
+            planConnections: [
+              {
+                planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+                planName: FREE_ACCESS_MEMBERSHIPS.legacyMembership.name,
+                status: "ACTIVE",
+                active: true,
+                createdAt: "2026-04-27T00:00:00.000Z",
+              },
+            ],
+          }),
+          listMembers: async () => ({ data: [] }),
+        }) as never,
+      resolveLegacyLink: async () => ({
+        status: "unique",
+        member: legacyMember({
+          memberid: "L-AUTH",
+          email: "legacy@example.com",
+          datejoined: "2012-01-05T00:00:00.000Z",
+          // Authoritative Watson paid-through date.
+          subscriptionexpiring: "2026-09-15",
+        }),
+      }),
+      // Stale timeline/subscription-history expiration that must NOT win.
+      loadMemberships: async () => [
+        legacyRow({
+          startDateSort: "2012-01-05T00:00:00.000Z",
+          expirationDate: "Aug 2, 2026",
+          expirationDateSort: "2026-08-02T00:00:00.000Z",
+        }),
+      ],
+    });
+
+    expect(detail.identified).toBe(true);
+    expect(detail.statusLabel).toBe("Legacy Access");
+    expect(detail.legacyPaidThroughDate).toBe("September 15, 2026");
+    expect(detail.legacyPaidThroughDate).not.toBe("August 2, 2026");
+    expect(detail.legacyAccessActive).toBe(true);
+
+    // Account panel display (Legacy Access Through + Available through) must match Watson.
+    const view = resolveAccountMembershipDetailView(detail);
+    expect(view.membershipDateLabel).toBe("Legacy Access Through");
+    expect(view.membershipDateValue).toBe("September 15, 2026");
+    expect(view.legacyAccessValue).toBe("Available through September 15, 2026");
+  });
+
+  it("buildAccountMembershipDetail uses subscriptionexpiring over history-derived legacyExpirationYmd", () => {
+    const member = {
+      id: "mem_pure",
+      auth: { email: "pure@example.com" },
+      createdAt: "2026-04-27T00:00:00.000Z",
+      planConnections: [
+        {
+          planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+          planName: FREE_ACCESS_MEMBERSHIPS.legacyMembership.name,
+          status: "ACTIVE",
+          active: true,
+          createdAt: "2026-04-27T00:00:00.000Z",
+        },
+      ],
+    };
+    const detail = buildAccountMembershipDetail({
+      memberstackMember: member,
+      memberstackSummary: buildCustomerMemberstackSummary({
+        member,
+        configured: true,
+        loadError: null,
+      }),
+      memberstackLookupOk: true,
+      legacy: {
+        linkState: "linked",
+        // Wrong field previously used for Account display (timeline / legacy_subscriptions).
+        legacyExpirationYmd: "2026-08-02",
+        legacyExpirationDate: "August 2, 2026",
+        previousPlanName: null,
+      },
+      legacySubscriptionExpiringYmd: "2026-09-15",
+      now: new Date("2026-07-28T20:00:00.000Z"),
+    });
+
+    expect(detail.legacyPaidThroughDate).toBe("September 15, 2026");
+    expect(detail.legacyPaidThroughDate).not.toBe("August 2, 2026");
+  });
+
+  it("falls back to the subscription-history date when subscriptionexpiring is empty", async () => {
+    const detail = await loadAccountMembershipDetail("mem_legacy_fallback", {
+      secretKey: "sk_test",
+      now: new Date("2026-07-28T20:00:00.000Z"),
+      getClient: async () =>
+        ({
+          getMember: async (id: string) => ({
+            id,
+            auth: { email: "legacy@example.com" },
+            createdAt: "2026-04-27T00:00:00.000Z",
+            planConnections: [
+              {
+                planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+                planName: FREE_ACCESS_MEMBERSHIPS.legacyMembership.name,
+                status: "ACTIVE",
+                active: true,
+                createdAt: "2026-04-27T00:00:00.000Z",
+              },
+            ],
+          }),
+          listMembers: async () => ({ data: [] }),
+        }) as never,
+      resolveLegacyLink: async () => ({
+        status: "unique",
+        member: legacyMember({
+          memberid: "L-FALLBACK",
+          email: "legacy@example.com",
+          datejoined: "2012-01-05T00:00:00.000Z",
+          subscriptionexpiring: null,
+        }),
+      }),
+      loadMemberships: async () => [
+        legacyRow({
+          startDateSort: "2012-01-05T00:00:00.000Z",
+          expirationDate: "Dec 31, 2026",
+          expirationDateSort: "2026-12-31T00:00:00.000Z",
+        }),
+      ],
+    });
+
+    expect(detail.legacyPaidThroughDate).toBe("December 31, 2026");
+    expect(detail.legacyAccessActive).toBe(true);
+  });
+
+  it("shows no legacy paid-through date when neither the authoritative field nor history has one", async () => {
+    const detail = await loadAccountMembershipDetail("mem_legacy_no_date", {
+      secretKey: "sk_test",
+      now: new Date("2026-07-28T20:00:00.000Z"),
+      getClient: async () =>
+        ({
+          getMember: async (id: string) => ({
+            id,
+            auth: { email: "legacy@example.com" },
+            createdAt: "2026-04-27T00:00:00.000Z",
+            planConnections: [
+              {
+                planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+                planName: FREE_ACCESS_MEMBERSHIPS.legacyMembership.name,
+                status: "ACTIVE",
+                active: true,
+                createdAt: "2026-04-27T00:00:00.000Z",
+              },
+            ],
+          }),
+          listMembers: async () => ({ data: [] }),
+        }) as never,
+      resolveLegacyLink: async () => ({
+        status: "unique",
+        member: legacyMember({
+          memberid: "L-NODATE",
+          email: "legacy@example.com",
+          datejoined: "2012-01-05T00:00:00.000Z",
+          subscriptionexpiring: null,
+        }),
+      }),
+      loadMemberships: async () => [
+        legacyRow({ startDateSort: "2012-01-05T00:00:00.000Z" }),
+      ],
+    });
+
+    expect(detail.legacyPaidThroughDate).toBeNull();
+    expect(detail.legacyAccessActive).toBeNull();
+    expect(detail.memberSince).toBe("January 5, 2012");
   });
 
   it("shows Legacy Access for future legacy paid-through with no active Memberstack plan", async () => {

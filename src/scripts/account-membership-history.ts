@@ -23,16 +23,24 @@ function setText(root: Element, selector: string, value: string): void {
   if (el instanceof HTMLElement) el.textContent = value;
 }
 
-function setRow(
-  root: Element,
-  rowSelector: string,
-  valueSelector: string,
-  value: string | null,
-): void {
-  const row = root.querySelector(rowSelector);
-  const valueEl = root.querySelector(valueSelector);
-  if (!(row instanceof HTMLElement) || !(valueEl instanceof HTMLElement)) return;
-  if (value && value.trim()) {
+/**
+ * Fill the single primary date row (label + value). Legacy members read
+ * "Legacy Access Through {date}"; everyone else keeps "Member Since {date}".
+ * Hidden when there is no date/label so we never show an empty row.
+ */
+function setDateRow(root: Element, label: string | null, value: string | null): void {
+  const row = root.querySelector("[data-kbm-account-membership-date-row]");
+  const labelEl = root.querySelector("[data-kbm-account-membership-date-label]");
+  const valueEl = root.querySelector("[data-kbm-account-membership-date-value]");
+  if (
+    !(row instanceof HTMLElement) ||
+    !(labelEl instanceof HTMLElement) ||
+    !(valueEl instanceof HTMLElement)
+  ) {
+    return;
+  }
+  if (label && label.trim() && value && value.trim()) {
+    labelEl.textContent = label.trim();
     valueEl.textContent = value.trim();
     row.hidden = false;
   } else {
@@ -92,19 +100,9 @@ function applyDetail(root: Element, detail: AccountMembershipDetailResponse): vo
     setText(root, "[data-kbm-account-membership-status]", view.statusOverride);
   }
 
-  setRow(
-    root,
-    "[data-kbm-account-membership-legacy-access-row]",
-    "[data-kbm-account-membership-legacy-access]",
-    view.legacyAccessValue,
-  );
-
-  setRow(
-    root,
-    "[data-kbm-account-membership-member-since-row]",
-    "[data-kbm-account-membership-member-since]",
-    detail.memberSince,
-  );
+  // One primary date row: "Legacy Access Through {date}" for legacy members,
+  // otherwise "Member Since {date}". Paid members keep Next Renewal separately.
+  setDateRow(root, view.membershipDateLabel, view.membershipDateValue);
 
   renderHistory(
     root,
