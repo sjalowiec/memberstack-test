@@ -12,6 +12,10 @@
 import { isActiveMemberstackPlanConnection } from "../memberAccess";
 import { memberRecordFromMemberstackPayload } from "../patterns/memberstackMember";
 import {
+  annualSwitchOverlapWarning,
+  canPurchaseAnnualWhileCancelingMonthly,
+} from "./cancelingMonthlyAnnualCheckout";
+import {
   FREE_MEMBERSHIP_DISPLAY_LABEL,
   PAID_MEMBERSHIP_PLAN_IDS,
   memberHasActiveFreeMembership,
@@ -31,12 +35,14 @@ export type AccountMembershipPanelKind = "free" | "member";
  * Action keys rendered as buttons/links on the Account membership panel.
  * - join: link to /membership (no active membership)
  * - manageBilling: open the existing Stripe Customer Portal (active paid members)
+ * - switchToAnnual: annual checkout for canceling monthly members (period still active)
  * - renewAnnual / becomeMonthly: reuse the existing Memberstack checkout for
  *   legacy members who are not active Stripe subscribers
  */
 export type AccountMembershipPanelAction =
   | "join"
   | "manageBilling"
+  | "switchToAnnual"
   | "renewAnnual"
   | "becomeMonthly";
 
@@ -75,18 +81,25 @@ export type AccountMembershipPanelView = {
   autoRenewNote: string | null;
   /** Copy shown beneath the Manage Billing button; null when it is not shown. */
   manageBillingDescription: string | null;
+  /**
+   * Overlap notice when Switch to Annual is shown, including the formatted
+   * monthly active-through date. Null when that action is hidden.
+   */
+  annualSwitchWarning: string | null;
   visibleActions: AccountMembershipPanelAction[];
 };
 
 /** Which action controls should be visible for a resolved membership kind. */
 export function accountMembershipPanelActions(
   kind: AccountMembershipPanelKind,
-  _options?: { canceling?: boolean },
+  options?: { canceling?: boolean; switchToAnnual?: boolean },
 ): AccountMembershipPanelAction[] {
   if (kind === "free") return ["join"];
-  // Active or canceling paid member: a single Manage Billing action opens the
-  // Stripe Customer Portal, where payment method, plan change, cancellation and
-  // reversing a cancellation already live.
+  // Manage Billing always for paid members. Switch to Annual only when a
+  // canceling monthly member is eligible for the annual checkout exception.
+  if (options?.switchToAnnual) {
+    return ["manageBilling", "switchToAnnual"];
+  }
   return ["manageBilling"];
 }
 
@@ -243,6 +256,7 @@ export function resolveAccountMembershipPanelView(
     : null;
 
   if (memberHasActivePaidMembership(memberOrPayload)) {
+    const switchToAnnual = canPurchaseAnnualWhileCancelingMonthly(memberOrPayload);
     return {
       kind: "member",
       planLabel: PAID_PLAN_FALLBACK_LABEL,
@@ -260,7 +274,14 @@ export function resolveAccountMembershipPanelView(
       manageBillingDescription: isCanceling
         ? MANAGE_BILLING_DESCRIPTION_CANCELING
         : MANAGE_BILLING_DESCRIPTION_ACTIVE,
-      visibleActions: accountMembershipPanelActions("member", { canceling: isCanceling }),
+      annualSwitchWarning:
+        switchToAnnual && cancelAtLabel
+          ? annualSwitchOverlapWarning(cancelAtLabel)
+          : null,
+      visibleActions: accountMembershipPanelActions("member", {
+        canceling: isCanceling,
+        switchToAnnual,
+      }),
     };
   }
 
@@ -282,6 +303,7 @@ export function resolveAccountMembershipPanelView(
       activeUntilMessage: null,
       autoRenewNote: null,
       manageBillingDescription: null,
+      annualSwitchWarning: null,
       visibleActions: ["renewAnnual", "becomeMonthly"],
     };
   }
@@ -298,6 +320,7 @@ export function resolveAccountMembershipPanelView(
     activeUntilMessage: null,
     autoRenewNote: null,
     manageBillingDescription: null,
+    annualSwitchWarning: null,
     visibleActions: accountMembershipPanelActions("free"),
   };
 }

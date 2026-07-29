@@ -54,10 +54,19 @@ describe("accountMembershipPanelActions", () => {
     expect(accountMembershipPanelActions("member")).toEqual(["manageBilling"]);
   });
 
-  it("shows only Manage Billing for canceling members", () => {
+  it("shows only Manage Billing for canceling members without annual switch", () => {
     expect(accountMembershipPanelActions("member", { canceling: true })).toEqual([
       "manageBilling",
     ]);
+  });
+
+  it("shows Manage Billing and Switch to Annual when eligible", () => {
+    expect(
+      accountMembershipPanelActions("member", {
+        canceling: true,
+        switchToAnnual: true,
+      }),
+    ).toEqual(["manageBilling", "switchToAnnual"]);
   });
 });
 
@@ -91,6 +100,7 @@ describe("resolveAccountMembershipPanelView", () => {
       activeUntilMessage: null,
       autoRenewNote: null,
       manageBillingDescription: null,
+      annualSwitchWarning: null,
       visibleActions: ["join"],
     });
   });
@@ -126,6 +136,7 @@ describe("resolveAccountMembershipPanelView", () => {
       autoRenewNote: null,
       manageBillingDescription:
         "Update your payment method, change your subscription, or cancel your membership.",
+      annualSwitchWarning: null,
       visibleActions: ["manageBilling"],
     });
   });
@@ -160,7 +171,7 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(view.renewsLabel).toBe(expectedLocalDateLabel(nextBillingDate));
   });
 
-  it("shows Canceling member with active-until message and Manage only", () => {
+  it("shows Canceling monthly with Switch to Annual, Manage Billing, and overlap warning", () => {
     const cancelAtDate = 1787055395;
     const member = memberWithPlans([
       {
@@ -187,12 +198,75 @@ describe("resolveAccountMembershipPanelView", () => {
       autoRenewNote: null,
       manageBillingDescription:
         "You can update your payment information or reverse your cancellation from the billing portal if available.",
-      visibleActions: ["manageBilling"],
+      visibleActions: ["manageBilling", "switchToAnnual"],
     });
     expect(view.activeUntilMessage).toBe(
       `Your membership remains active until ${dateLabel}.`,
     );
+    expect(view.annualSwitchWarning).toBe(
+      `Purchasing annual now will start the annual membership immediately. Your monthly membership will remain active until ${dateLabel}.`,
+    );
+    expect(view.visibleActions).toContain("manageBilling");
     expect(view.visibleActions).not.toContain("join");
+  });
+
+  it("does not show Switch to Annual for active monthly members", () => {
+    const member = memberWithPlans([
+      {
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
+        status: "ACTIVE",
+        payment: {
+          priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
+          nextBillingDate: 1786838400,
+          cancelAtDate: null,
+        },
+      },
+    ]);
+    const view = resolveAccountMembershipPanelView(member);
+    expect(view.visibleActions).toEqual(["manageBilling"]);
+    expect(view.annualSwitchWarning).toBeNull();
+  });
+
+  it("does not show Switch to Annual for annual members", () => {
+    const member = memberWithPlans([
+      {
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
+        status: "ACTIVE",
+        payment: {
+          priceId: MEMBERSHIPS.membership.prices.annual.memberstackPriceId,
+          nextBillingDate: 1798761600,
+          cancelAtDate: null,
+        },
+      },
+    ]);
+    const view = resolveAccountMembershipPanelView(member);
+    expect(view.visibleActions).toEqual(["manageBilling"]);
+    expect(view.annualSwitchWarning).toBeNull();
+  });
+
+  it("does not show Switch to Annual for canceling monthly who already has annual", () => {
+    const cancelAtDate = 1787055395;
+    const member = memberWithPlans([
+      {
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
+        status: "ACTIVE",
+        payment: {
+          priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
+          cancelAtDate,
+        },
+      },
+      {
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
+        status: "ACTIVE",
+        payment: {
+          priceId: MEMBERSHIPS.membership.prices.annual.memberstackPriceId,
+          cancelAtDate: null,
+        },
+      },
+    ]);
+    const view = resolveAccountMembershipPanelView(member);
+    expect(view.visibleActions).toEqual(["manageBilling"]);
+    expect(view.annualSwitchWarning).toBeNull();
   });
 
   it("treats removed annual Basic canceling connection as free for this panel", () => {
@@ -238,12 +312,14 @@ describe("resolveAccountMembershipPanelView", () => {
       renewsLabel: null,
       isCanceling: true,
       autoRenewNote: null,
+      annualSwitchWarning: null,
       visibleActions: ["manageBilling"],
     });
     expect(view.activeUntilMessage).toBe(
       `Your membership remains active until ${expectedLocalDateLabel(cancelAtDate)}.`,
     );
     expect(view.visibleActions).not.toContain("join");
+    expect(view.visibleActions).not.toContain("switchToAnnual");
   });
 
   it("does not treat invalid cancelAtDate as canceling", () => {
@@ -374,6 +450,7 @@ describe("resolveAccountMembershipPanelView", () => {
       autoRenewNote: "Membership renews automatically each month.",
       manageBillingDescription:
         "Update your payment method, change your subscription, or cancel your membership.",
+      annualSwitchWarning: null,
       visibleActions: ["manageBilling"],
     });
   });
@@ -399,6 +476,7 @@ describe("resolveAccountMembershipPanelView", () => {
       autoRenewNote: "Membership renews automatically each year.",
       manageBillingDescription:
         "Update your payment method, change your subscription, or cancel your membership.",
+      annualSwitchWarning: null,
       visibleActions: ["manageBilling"],
     });
   });
@@ -449,12 +527,20 @@ describe("resolveAccountMembershipPanelView", () => {
       activeUntilMessage: null,
       autoRenewNote: null,
       manageBillingDescription: null,
+      annualSwitchWarning: null,
       visibleActions: ["renewAnnual", "becomeMonthly"],
     });
     // Legacy members are not active Stripe subscribers: no Manage Billing, no join.
     const actions = resolveAccountMembershipPanelView(member).visibleActions;
     expect(actions).not.toContain("join");
     expect(actions).not.toContain("manageBilling");
+    expect(actions).not.toContain("switchToAnnual");
+  });
+
+  it("does not show Switch to Annual for no-plan members", () => {
+    const view = resolveAccountMembershipPanelView(memberWithPlans([]));
+    expect(view.visibleActions).toEqual(["join"]);
+    expect(view.annualSwitchWarning).toBeNull();
   });
 
   it("recognizes remaining legacy monthly Basic plan ids as members", () => {

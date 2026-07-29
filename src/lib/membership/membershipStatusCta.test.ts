@@ -100,7 +100,7 @@ describe("membershipStatusCta overlay", () => {
     expect(retry.hidden).toBe(false);
   });
 
-  it("regression: active and canceling paid members cannot start checkout", () => {
+  it("regression: active paid and ambiguous canceling (no monthly price) cannot start checkout", () => {
     const active = {
       data: {
         id: "mem_a",
@@ -109,6 +109,7 @@ describe("membershipStatusCta overlay", () => {
         ],
       },
     };
+    // Canceling without a known monthly price id stays blocked (ambiguous interval).
     const canceling = {
       data: {
         id: "mem_c",

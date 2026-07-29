@@ -85,6 +85,15 @@
       </button>
       <button
         type="button"
+        class="kbm-btn kbm-btn-outline"
+        data-kbm-account-membership-action="switchToAnnual"
+        data-kbm-account-membership-switch-annual
+        hidden
+      >
+        Switch to Annual Membership
+      </button>
+      <button
+        type="button"
         class="kbm-btn kbm-btn-accent"
         data-kbm-account-membership-action="renewAnnual"
         data-kbm-account-membership-renew-annual
@@ -102,6 +111,12 @@
         Become a Monthly Member
       </button>
     </div>
+
+    <p
+      class="account-membership-panel__annual-switch-warning"
+      data-kbm-account-membership-annual-switch-warning
+      hidden
+    ></p>
 
     <p
       class="account-membership-panel__billing-description"
@@ -240,6 +255,13 @@
     font-weight: 600;
     line-height: 1.45;
     color: #2c3a57;
+  }
+
+  .account-membership-panel__annual-switch-warning {
+    margin: 0.65rem 0 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #4b5563;
   }
 
   .account-membership-panel__billing-description {

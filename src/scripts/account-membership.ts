@@ -21,6 +21,7 @@ import { startJoinCheckout } from "./joinCheckout";
 const ALL_PANEL_ACTIONS: AccountMembershipPanelAction[] = [
   "join",
   "manageBilling",
+  "switchToAnnual",
   "renewAnnual",
   "becomeMonthly",
 ];
@@ -64,6 +65,9 @@ function applyView(root: Element, view: AccountMembershipPanelView): void {
   const billingDescriptionEl = root.querySelector(
     "[data-kbm-account-membership-billing-description]",
   );
+  const annualSwitchWarningEl = root.querySelector(
+    "[data-kbm-account-membership-annual-switch-warning]",
+  );
   const visible = new Set(view.visibleActions);
 
   if (planEl) planEl.textContent = view.planDisplayLabel;
@@ -96,6 +100,14 @@ function applyView(root: Element, view: AccountMembershipPanelView): void {
   for (const action of ALL_PANEL_ACTIONS) {
     const el = root.querySelector(`[data-kbm-account-membership-action="${action}"]`);
     setVisible(el, visible.has(action));
+  }
+
+  if (view.annualSwitchWarning && annualSwitchWarningEl instanceof HTMLElement) {
+    annualSwitchWarningEl.textContent = view.annualSwitchWarning;
+    setVisible(annualSwitchWarningEl, true);
+  } else if (annualSwitchWarningEl instanceof HTMLElement) {
+    annualSwitchWarningEl.textContent = "";
+    setVisible(annualSwitchWarningEl, false);
   }
 
   if (view.manageBillingDescription && billingDescriptionEl instanceof HTMLElement) {
@@ -146,9 +158,8 @@ async function populateAccountMembership(): Promise<void> {
 }
 
 /**
- * Manage Billing is the ONLY control that launches the existing Stripe Customer
- * Portal. Renew / Become Monthly reuse the existing Memberstack checkout for
- * legacy members (not active Stripe subscribers) — no new checkout logic.
+ * Manage Billing launches the existing Stripe Customer Portal. Switch to Annual
+ * / Renew / Become Monthly reuse startJoinCheckout — no new checkout endpoints.
  */
 function bindMembershipActionButtons(root: Element): void {
   const statusEl = root.querySelector<HTMLElement>(
@@ -183,6 +194,7 @@ function bindMembershipActionButtons(root: Element): void {
       });
     });
 
+  bindLegacyCheckoutButton(root, "[data-kbm-account-membership-switch-annual]", "annual");
   bindLegacyCheckoutButton(root, "[data-kbm-account-membership-renew-annual]", "annual");
   bindLegacyCheckoutButton(root, "[data-kbm-account-membership-become-monthly]", "monthly");
 }
