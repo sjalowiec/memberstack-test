@@ -4,6 +4,7 @@
  * Business rule: one active recurring Knit It Now membership only.
  * - No active paid plan → purchase (Stripe Checkout via purchasePlansWithCheckout)
  * - Active paid member → current (disabled UI; manage billing via portal)
+ * - Exception: canceling monthly (no active annual) may purchase annual only
  * - Beta-only does not count as paid membership
  */
 
@@ -13,6 +14,7 @@ import {
   MEMBERSHIPS,
 } from "../../config/memberships";
 import { getActivePlanIds } from "../memberAccess";
+import { canPurchaseAnnualWhileCancelingMonthly } from "./cancelingMonthlyAnnualCheckout";
 import type { JoinCheckoutPlanKey } from "./pendingMembershipCheckout";
 
 /** Current + legacy plan ids that count as paid Knit it Now membership. */
@@ -55,9 +57,15 @@ export function memberHasActiveFreeMembership(memberOrPayload: unknown): boolean
 
 export function resolveMembershipCheckoutDecision(
   memberOrPayload: unknown,
-  _planKey: JoinCheckoutPlanKey,
+  planKey: JoinCheckoutPlanKey,
 ): MembershipCheckoutDecision {
   if (memberHasActivePaidMembership(memberOrPayload)) {
+    if (
+      planKey === "annual" &&
+      canPurchaseAnnualWhileCancelingMonthly(memberOrPayload)
+    ) {
+      return { action: "purchase" };
+    }
     return { action: "current" };
   }
   return { action: "purchase" };

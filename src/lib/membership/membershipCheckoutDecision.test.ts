@@ -10,7 +10,15 @@ import {
 } from "./membershipCheckoutDecision";
 
 function memberWithPlans(
-  connections: Array<{ planId: string; status: string; priceId?: string }>,
+  connections: Array<{
+    planId: string;
+    status: string;
+    priceId?: string;
+    payment?: {
+      priceId?: string;
+      cancelAtDate?: number | null;
+    };
+  }>,
 ) {
   return {
     data: {
@@ -152,5 +160,53 @@ describe("resolveMembershipCheckoutDecision", () => {
     ]);
     expect(resolveMembershipCheckoutDecision(member, "monthly").action).toBe("purchase");
     expect(memberHasActivePaidMembership(member)).toBe(false);
+  });
+
+  it("allows annual purchase only for canceling monthly without active annual", () => {
+    const cancelingMonthly = memberWithPlans([
+      {
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
+        status: "ACTIVE",
+        payment: {
+          priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
+          cancelAtDate: 1787055395,
+        },
+      },
+    ]);
+    expect(resolveMembershipCheckoutDecision(cancelingMonthly, "annual")).toEqual({
+      action: "purchase",
+    });
+    expect(resolveMembershipCheckoutDecision(cancelingMonthly, "monthly")).toEqual({
+      action: "current",
+    });
+  });
+
+  it("still blocks annual for active monthly and canceling annual", () => {
+    const activeMonthly = memberWithPlans([
+      {
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
+        status: "ACTIVE",
+        payment: {
+          priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
+          cancelAtDate: null,
+        },
+      },
+    ]);
+    const cancelingAnnual = memberWithPlans([
+      {
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
+        status: "ACTIVE",
+        payment: {
+          priceId: MEMBERSHIPS.membership.prices.annual.memberstackPriceId,
+          cancelAtDate: 1787055395,
+        },
+      },
+    ]);
+    expect(resolveMembershipCheckoutDecision(activeMonthly, "annual")).toEqual({
+      action: "current",
+    });
+    expect(resolveMembershipCheckoutDecision(cancelingAnnual, "annual")).toEqual({
+      action: "current",
+    });
   });
 });
