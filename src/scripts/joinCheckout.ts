@@ -1,3 +1,4 @@
+import { canPurchaseAnnualWhileCancelingMonthly } from "../lib/membership/cancelingMonthlyAnnualCheckout";
 import {
   memberHasActivePaidMembership,
   resolveMembershipCheckoutDecision,
@@ -41,6 +42,9 @@ type MemberstackError = {
 };
 
 const STATUS_ID = "join-checkout-status";
+/** Account panel status fallback when #join-checkout-status is absent. */
+const ACCOUNT_ACTION_STATUS_SELECTOR =
+  "[data-kbm-account-membership-action-status]";
 
 /** Prevents double-click / overlapping checkout sessions. */
 let checkoutInFlight = false;
@@ -52,6 +56,12 @@ type MembershipAuthModalOutcome =
   | { status: "dismissed" }
   | { status: "failed-to-open" };
 
+function resolveJoinStatusElement(): HTMLElement | null {
+  const byId = document.getElementById(STATUS_ID);
+  if (byId) return byId;
+  return document.querySelector<HTMLElement>(ACCOUNT_ACTION_STATUS_SELECTOR);
+}
+
 function setJoinStatusTone(el: HTMLElement, tone: "info" | "error" | "success"): void {
   el.classList.remove(
     "join-checkout-status--info",
@@ -62,29 +72,54 @@ function setJoinStatusTone(el: HTMLElement, tone: "info" | "error" | "success"):
 }
 
 function showJoinStatus(message: string, tone: "info" | "error" | "success" = "info"): void {
-  const el = document.getElementById(STATUS_ID);
+  const el = resolveJoinStatusElement();
   if (!el) return;
   el.hidden = false;
-  el.replaceChildren();
+  if (typeof el.replaceChildren === "function") {
+    el.replaceChildren();
+  }
   el.textContent = message;
   setJoinStatusTone(el, tone);
 }
 
 function clearJoinStatus(): void {
-  const el = document.getElementById(STATUS_ID);
+  const el = resolveJoinStatusElement();
   if (!el) return;
   el.hidden = true;
-  el.replaceChildren();
+  if (typeof el.replaceChildren === "function") {
+    el.replaceChildren();
+  } else {
+    el.textContent = "";
+  }
+}
+
+/**
+ * Prefer getAppAndMember (includes planConnections / payment.cancelAtDate reliably),
+ * then fall back to getCurrentMember — same preference as the Account membership panel.
+ */
+async function readMemberPayloadForCheckout(
+  ms: NonNullable<Window["$memberstackDom"]>,
+): Promise<unknown> {
+  const api = ms.getAppAndMember ?? ms.getCurrentMember;
+  if (typeof api !== "function") return null;
+  try {
+    return await api.call(ms);
+  } catch {
+    if (api === ms.getCurrentMember || typeof ms.getCurrentMember !== "function") {
+      return null;
+    }
+    try {
+      return await ms.getCurrentMember();
+    } catch {
+      return null;
+    }
+  }
 }
 
 async function readCurrentMemberPayload(
   ms: NonNullable<Window["$memberstackDom"]>,
 ): Promise<unknown> {
-  try {
-    return await ms.getCurrentMember();
-  } catch {
-    return null;
-  }
+  return readMemberPayloadForCheckout(ms);
 }
 
 /**
@@ -279,12 +314,12 @@ async function syncJoinCheckoutButtonStatesFromMemberstack(
   ms?: NonNullable<Window["$memberstackDom"]> | null,
 ): Promise<void> {
   const dom = ms ?? (await waitForMemberstackDom());
-  if (!dom?.getCurrentMember) {
+  if (!dom?.getCurrentMember && !dom?.getAppAndMember) {
     applyJoinCheckoutButtonStates(null);
     return;
   }
   try {
-    const payload = await dom.getCurrentMember();
+    const payload = await readMemberPayloadForCheckout(dom!);
     applyJoinCheckoutButtonStates(payload);
   } catch {
     applyJoinCheckoutButtonStates(null);
@@ -347,6 +382,7 @@ async function launchPurchaseCheckout(
   ms: NonNullable<Window["$memberstackDom"]>,
   planKey: JoinCheckoutPlanKey,
   cancelUrl: string,
+  memberPayload: unknown,
 ): Promise<boolean> {
   const plan = joinCheckoutPlanMeta(planKey);
   const purchasePlansWithCheckout = (ms as Record<string, unknown>)
@@ -360,9 +396,13 @@ async function launchPurchaseCheckout(
     return false;
   }
 
+  const allowAnnualWhileCancelingMonthly =
+    planKey === "annual" && canPurchaseAnnualWhileCancelingMonthly(memberPayload);
+
   console.log("[join checkout] calling purchasePlansWithCheckout", {
     planKey,
     priceId: plan.priceId,
+    allowAnnualWhileCancelingMonthly,
   });
   showJoinStatus(`Opening checkout for ${plan.label}...`, "info");
 
@@ -392,6 +432,18 @@ async function launchPurchaseCheckout(
 
     if (info.code === "already-have-plan") {
       clearPendingMembershipCheckout();
+      // Canceling-monthly → annual is an explicit allowed purchase of a different
+      // price. Do NOT fall through to the Stripe portal (that was the production bug).
+      if (allowAnnualWhileCancelingMonthly) {
+        console.warn(
+          "[join checkout] already-have-plan during allowed canceling-monthly annual switch; not opening portal",
+        );
+        showJoinStatus(
+          "Could not start annual checkout while your monthly membership is still active. Please try again, or contact support if this continues.",
+          "error",
+        );
+        return false;
+      }
       showJoinStatus(
         `You already have ${plan.label}. Manage your membership from your workspace.`,
         "info",
@@ -413,6 +465,12 @@ export type StartJoinCheckoutOptions = {
   fromResume?: boolean;
   /** Override cancel/return URL (defaults to current location or pending returnUrl). */
   returnUrl?: string;
+  /**
+   * Account "Switch to Annual" path. Still requires
+   * canPurchaseAnnualWhileCancelingMonthly; never opens the billing portal as a
+   * substitute for checkout.
+   */
+  checkoutIntent?: "switchToAnnual";
 };
 
 /**
@@ -436,16 +494,19 @@ export async function startJoinCheckout(
   const plan = joinCheckoutPlanMeta(planKey);
   const returnUrl = options.returnUrl?.trim() || currentReturnUrl();
 
+  const switchToAnnualIntent = options.checkoutIntent === "switchToAnnual";
+
   console.log("[join checkout] button clicked", {
     planKey,
     label: plan.label,
     priceId: plan.priceId,
     fromResume: Boolean(options.fromResume),
+    checkoutIntent: options.checkoutIntent ?? null,
   });
 
   try {
     const ms = await waitForMemberstackDom();
-    if (!ms?.getCurrentMember) {
+    if (!ms?.getCurrentMember && !ms?.getAppAndMember) {
       console.error("[join checkout] Memberstack DOM not available");
       showJoinStatus("Membership checkout is not ready yet. Please refresh and try again.", "error");
       return;
@@ -453,15 +514,21 @@ export async function startJoinCheckout(
 
     let memberPayload: unknown = null;
     try {
-      memberPayload = await ms.getCurrentMember();
+      memberPayload = await readMemberPayloadForCheckout(ms);
     } catch (error) {
-      console.error("[join checkout] getCurrentMember failed:", error);
+      console.error("[join checkout] member payload read failed:", error);
     }
 
     let loggedIn = Boolean(memberIdFromMemberstackPayload(memberPayload));
     console.log("[join checkout] logged in:", loggedIn);
 
     if (!loggedIn) {
+      if (switchToAnnualIntent) {
+        // Switch-to-annual is only for an authenticated canceling monthly member.
+        clearPendingMembershipCheckout();
+        showJoinStatus("Please log in to switch to annual membership.", "error");
+        return;
+      }
       if (options.fromResume) {
         console.log("[join checkout] resume aborted — still logged out");
         clearJoinStatus();
@@ -498,17 +565,40 @@ export async function startJoinCheckout(
     console.log("[join checkout] authenticated member:", memberId);
     applyJoinCheckoutButtonStates(memberPayload);
 
+    // Explicit Account switch path: only when canceling-monthly eligibility holds.
+    if (switchToAnnualIntent) {
+      if (planKey !== "annual" || !canPurchaseAnnualWhileCancelingMonthly(memberPayload)) {
+        clearPendingMembershipCheckout();
+        console.log(
+          "[join checkout] switchToAnnual rejected — not eligible for canceling-monthly annual purchase",
+        );
+        showJoinStatus(
+          "Annual checkout is only available while a monthly membership is canceling.",
+          "info",
+        );
+        return;
+      }
+    }
+
     const decision = resolveMembershipCheckoutDecision(memberPayload, planKey);
 
     if (decision.action === "current") {
       clearPendingMembershipCheckout();
       console.log("[join checkout] current plan — no checkout or redirect");
-      // Button already shows Current Plan; do not flash a status message.
+      // Never open the billing portal here. Manage Billing is a separate control.
+      if (switchToAnnualIntent) {
+        showJoinStatus(
+          "Annual checkout is only available while a monthly membership is canceling.",
+          "info",
+        );
+      }
       return;
     }
 
-    // Status panel overlay (ambiguous / unavailable / manage) must not be bypassed.
-    if (shouldBlockPurchaseForStatusMode()) {
+    // Status panel overlay (ambiguous / unavailable / manage) must not be bypassed
+    // for normal Join CTAs. The explicit Account switchToAnnual path is allowed when
+    // canPurchaseAnnualWhileCancelingMonthly already passed above.
+    if (!switchToAnnualIntent && shouldBlockPurchaseForStatusMode()) {
       clearPendingMembershipCheckout();
       console.log("[join checkout] blocked by membership status recommendation");
       showJoinStatus(
@@ -524,7 +614,7 @@ export async function startJoinCheckout(
       returnUrl ||
       currentReturnUrl();
 
-    await launchPurchaseCheckout(ms, planKey, cancelUrl);
+    await launchPurchaseCheckout(ms, planKey, cancelUrl, memberPayload);
   } finally {
     checkoutInFlight = false;
     setButtonsBusy(false);
@@ -538,11 +628,11 @@ export async function resumePendingMembershipCheckout(): Promise<boolean> {
   if (checkoutInFlight) return false;
 
   const ms = await waitForMemberstackDom();
-  if (!ms?.getCurrentMember) return false;
+  if (!ms?.getCurrentMember && !ms?.getAppAndMember) return false;
 
   let memberPayload: unknown = null;
   try {
-    memberPayload = await ms.getCurrentMember();
+    memberPayload = await readMemberPayloadForCheckout(ms);
   } catch {
     return false;
   }

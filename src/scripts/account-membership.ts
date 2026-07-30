@@ -194,7 +194,9 @@ function bindMembershipActionButtons(root: Element): void {
       });
     });
 
-  bindLegacyCheckoutButton(root, "[data-kbm-account-membership-switch-annual]", "annual");
+  bindLegacyCheckoutButton(root, "[data-kbm-account-membership-switch-annual]", "annual", {
+    checkoutIntent: "switchToAnnual",
+  });
   bindLegacyCheckoutButton(root, "[data-kbm-account-membership-renew-annual]", "annual");
   bindLegacyCheckoutButton(root, "[data-kbm-account-membership-become-monthly]", "monthly");
 }
@@ -203,6 +205,7 @@ function bindLegacyCheckoutButton(
   root: Element,
   selector: string,
   planKey: "annual" | "monthly",
+  options?: { checkoutIntent?: "switchToAnnual" },
 ): void {
   root.querySelectorAll<HTMLButtonElement>(selector).forEach((btn) => {
     if (btn.dataset.kbmBound === "1") return;
@@ -210,7 +213,7 @@ function bindLegacyCheckoutButton(
 
     btn.addEventListener("click", () => {
       btn.disabled = true;
-      void startJoinCheckout(planKey).finally(() => {
+      void startJoinCheckout(planKey, options).finally(() => {
         btn.disabled = false;
       });
     });
