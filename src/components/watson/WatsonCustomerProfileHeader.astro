@@ -1,5 +1,6 @@
 ---
 import {
+  LEGACY_RECORD_PAID_THROUGH_LABEL,
   type CustomerProfileAction,
   type CustomerProfileHeaderView,
 } from "../../lib/watson/customerProfile";
@@ -15,16 +16,24 @@ const { header, actions = [], paidThroughUpdated = false } = Astro.props;
 const statusClass = `watson-customer__status-badge watson-customer__status-badge--${header.membershipStatusTone}`;
 const memberLabel = header.email ?? header.displayName;
 const paidThroughUpdatedMessage = header.legacyAccessThroughDate
-  ? `Legacy paid-through date updated to ${header.legacyAccessThroughDate}.`
-  : "Legacy paid-through date updated.";
+  ? `${LEGACY_RECORD_PAID_THROUGH_LABEL} updated to ${header.legacyAccessThroughDate}.`
+  : `${LEGACY_RECORD_PAID_THROUGH_LABEL} updated.`;
+const showCurrentMembership =
+  Boolean(header.currentPlan) ||
+  Boolean(header.primaryDateValue) ||
+  Boolean(header.membershipSource) ||
+  (Boolean(header.membershipStatus) &&
+    header.membershipStatus !== "No Plan" &&
+    header.membershipStatus !== "Memberstack lookup unavailable" &&
+    header.membershipStatus !== "No Memberstack member found for this email");
 ---
 
 <section class="watson__panel watson-customer__header" aria-labelledby="watson-customer-header-heading">
   {
     paidThroughUpdated ? (
       <p class="watson__status watson__status--success" role="status" data-paid-through-updated-banner>
-        {paidThroughUpdatedMessage} Membership status on this page now reflects the new date.
-        Future renewal reminders will use this date.
+        {paidThroughUpdatedMessage} This is a Watson legacy record only and does not change
+        Memberstack or Stripe. Future renewal reminders will use this date when Legacy is current.
       </p>
     ) : null
   }
@@ -69,6 +78,54 @@ const paidThroughUpdatedMessage = header.legacyAccessThroughDate
     }
   </div>
 
+  {
+    showCurrentMembership ? (
+      <section
+        class="watson-customer__current-membership"
+        aria-labelledby="watson-current-membership-heading"
+        data-current-membership
+      >
+        <h3 id="watson-current-membership-heading" class="watson-customer__current-membership-title">
+          Current membership
+        </h3>
+        <dl class="watson-customer__current-membership-grid">
+          {
+            header.currentPlan ? (
+              <div class="watson-customer__current-membership-item">
+                <dt>Current plan</dt>
+                <dd data-current-plan>{header.currentPlan}</dd>
+              </div>
+            ) : null
+          }
+          {
+            header.membershipStatus ? (
+              <div class="watson-customer__current-membership-item">
+                <dt>Current status</dt>
+                <dd data-current-status>{header.membershipStatus}</dd>
+              </div>
+            ) : null
+          }
+          {
+            header.primaryDateLabel && header.primaryDateValue ? (
+              <div class="watson-customer__current-membership-item">
+                <dt data-primary-date-label>{header.primaryDateLabel}</dt>
+                <dd data-primary-date-value>{header.primaryDateValue}</dd>
+              </div>
+            ) : null
+          }
+          {
+            header.membershipSource ? (
+              <div class="watson-customer__current-membership-item">
+                <dt>Membership source</dt>
+                <dd data-membership-source>{header.membershipSource}</dd>
+              </div>
+            ) : null
+          }
+        </dl>
+      </section>
+    ) : null
+  }
+
   <dl class="watson-customer__header-meta">
     {
       header.legacyMemberid ? (
@@ -104,7 +161,7 @@ const paidThroughUpdatedMessage = header.legacyAccessThroughDate
           data-old-ymd={header.legacyPaidThroughYmd ?? ""}
           data-old-display={header.legacyAccessThroughDate ?? "(none)"}
         >
-          <dt>Legacy paid-through</dt>
+          <dt>{LEGACY_RECORD_PAID_THROUGH_LABEL}</dt>
           <dd>
             <span data-paid-through-display>
               {header.legacyAccessThroughDate ?? "Not set"}
@@ -118,7 +175,7 @@ const paidThroughUpdatedMessage = header.legacyAccessThroughDate
             </button>
             <form class="watson-customer__paid-through-form" data-paid-through-form hidden>
               <label class="watson-customer__paid-through-label" for="legacy-paid-through-date">
-                New paid-through date
+                New legacy record paid-through date
               </label>
               <input
                 id="legacy-paid-through-date"
@@ -140,7 +197,7 @@ const paidThroughUpdatedMessage = header.legacyAccessThroughDate
         </div>
       ) : header.legacyAccessThroughDate ? (
         <div class="watson-customer__header-meta-item">
-          <dt>Legacy paid-through</dt>
+          <dt>{LEGACY_RECORD_PAID_THROUGH_LABEL}</dt>
           <dd>{header.legacyAccessThroughDate}</dd>
         </div>
       ) : null
@@ -157,6 +214,51 @@ const paidThroughUpdatedMessage = header.legacyAccessThroughDate
 </section>
 
 <style>
+  .watson-customer__current-membership {
+    margin: 0.85rem 0 0.35rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid #d9e2ec;
+    border-radius: 8px;
+    background: #f8fafc;
+  }
+
+  .watson-customer__current-membership-title {
+    margin: 0 0 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #334155;
+  }
+
+  .watson-customer__current-membership-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.75rem;
+    margin: 0;
+  }
+
+  .watson-customer__current-membership-item {
+    margin: 0;
+    min-width: 8.5rem;
+  }
+
+  .watson-customer__current-membership-item dt {
+    margin: 0 0 0.15rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+
+  .watson-customer__current-membership-item dd {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #243015;
+  }
+
   .watson-customer__paid-through dd {
     display: flex;
     flex-wrap: wrap;
@@ -262,14 +364,14 @@ const paidThroughUpdatedMessage = header.legacyAccessThroughDate
       const newDisplay = formatConfirmDate(newYmd);
       const confirmed = window.confirm(
         [
-          "Update legacy paid-through date?",
+          "Update legacy record paid-through date?",
           "",
           `Member: ${memberLabel}`,
           `Current: ${oldDisplay}${oldYmd ? ` (${oldYmd})` : ""}`,
           `New: ${newDisplay} (${newYmd})`,
           "",
-          "This updates Watson only. It does not change Memberstack.",
-          "Future renewal reminders will use the new date.",
+          "This updates the Watson legacy record only. It does not change Memberstack or Stripe.",
+          "Future renewal reminders will use the new date when Legacy is current.",
         ].join("\n"),
       );
       if (!confirmed) return;

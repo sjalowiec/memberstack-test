@@ -10,6 +10,7 @@ import {
   type CustomerProfileRouteType,
   type LegacyEmailLinkResult,
 } from "./customerIdentifier";
+import type { MemberstackMember } from "../membership/membershipSummary";
 import {
   buildCustomerMemberstackSummary,
   formatCustomerDisplayName,
@@ -40,10 +41,19 @@ import {
   legacyPaidThroughYmd,
 } from "./legacyPaidThrough";
 import {
+  buildWatsonCustomerCurrentMembership,
+  watsonLegacyContextFromPaidThrough,
+  type WatsonCustomerCurrentMembership,
+  type WatsonMembershipSource,
+} from "./watsonCustomerCurrentMembership";
+import {
   getCustomerWatsonNoteCount,
   getCustomerWatsonNotes,
   type WatsonNoteDisplay,
 } from "./watsonNotes";
+
+/** Snapshot / header label for Watson `subscriptionexpiring` (historical record). */
+export const LEGACY_RECORD_PAID_THROUGH_LABEL = "Legacy record paid-through";
 
 export type MemberstackLinkStatus =
   | "linked"
@@ -71,15 +81,22 @@ export interface CustomerProfileHeaderView {
   email: string | null;
   membershipStatus: string | null;
   membershipStatusTone: CustomerMembershipStatusTone;
+  /** Current plan label (paid Monthly/Annual, Legacy Membership, or prior plan). */
+  currentPlan: string | null;
+  /** "Next renewal" | "Active through" | "Paid through" when a primary date applies. */
+  primaryDateLabel: string | null;
+  primaryDateValue: string | null;
+  membershipSource: WatsonMembershipSource | null;
   legacyMemberid: string | null;
   memberstackId: string | null;
   joinDate: string | null;
   /** Newest non-expiration timeline event date (orders, notes, plan changes, etc.). */
   lastActivityDate: string | null;
   /**
-   * Watson authoritative legacy paid-through date display.
+   * Watson authoritative legacy paid-through date display (historical record).
    * Prefers `legacy_members.subscriptionexpiring`; falls back to the newest
    * `legacy_subscriptions.expirationdate` timeline event when unset.
+   * Never deleted when a paid Memberstack plan is current — only relabeled in UI.
    */
   legacyAccessThroughDate: string | null;
   /** YYYY-MM-DD for the editable paid-through date input (null when unset). */
@@ -176,10 +193,19 @@ export function buildCustomerHeaderFields(
       "memberstack",
     );
 
-    const activePlans = memberstack.connections
-      .filter((connection) => connection.activeLabel === "Active")
+    const paidActivePlans = memberstack.connections
+      .filter(
+        (connection) => connection.activeLabel === "Active" && connection.isPaidPlan === true,
+      )
       .map((connection) => connection.planName)
       .filter(Boolean);
+    const activePlans =
+      paidActivePlans.length > 0
+        ? paidActivePlans
+        : memberstack.connections
+            .filter((connection) => connection.activeLabel === "Active")
+            .map((connection) => connection.planName)
+            .filter(Boolean);
     if (activePlans.length > 0) {
       pushHeaderField(fields, "Current plan", activePlans.join(", "), "memberstack");
     }
@@ -283,7 +309,11 @@ export function formatCustomerTenure(joinDateIso: string): string | null {
 function resolveCurrentPlanLabel(
   memberstack: CustomerMemberstackSummary,
   memberstackLinkStatus: MemberstackLinkStatus,
+  currentMembership?: WatsonCustomerCurrentMembership | null,
 ): string {
+  if (currentMembership?.currentPlan) {
+    return currentMembership.currentPlan;
+  }
   if (memberstackLinkStatus === "not_found") {
     return MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL;
   }
@@ -292,6 +322,16 @@ function resolveCurrentPlanLabel(
   }
   if (!memberstack.configured || memberstack.loadError) {
     return NOT_AVAILABLE_YET;
+  }
+
+  const paidActivePlans = memberstack.connections
+    .filter(
+      (connection) => connection.activeLabel === "Active" && connection.isPaidPlan === true,
+    )
+    .map((connection) => connection.planName)
+    .filter(Boolean);
+  if (paidActivePlans.length > 0) {
+    return paidActivePlans.join(", ");
   }
 
   const activePlans = memberstack.connections
@@ -303,6 +343,45 @@ function resolveCurrentPlanLabel(
   }
 
   return memberstack.membershipStatusLabel ?? NOT_AVAILABLE_YET;
+}
+
+function resolveProfileCurrentMembership(input: {
+  member: LegacyMemberDetailRow | null;
+  memberstackMember: MemberstackMember | null;
+  memberstack: CustomerMemberstackSummary;
+  memberstackLinkStatus: MemberstackLinkStatus;
+  timeline: CustomerTimelineEvent[];
+  legacyLinkAmbiguous?: boolean;
+  now?: Date;
+}): {
+  paidThroughYmd: string | null;
+  paidThroughDisplay: string | null;
+  currentMembership: WatsonCustomerCurrentMembership;
+} {
+  const paidThroughYmd = input.member
+    ? legacyPaidThroughYmd(input.member.subscriptionexpiring)
+    : null;
+  const paidThroughDisplay = paidThroughYmd
+    ? formatLegacyPaidThroughDisplay(paidThroughYmd)
+    : resolveLegacyAccessThroughDate(input.timeline);
+
+  const legacy = watsonLegacyContextFromPaidThrough({
+    hasLegacyHistory: Boolean(input.member),
+    legacyExpirationYmd: paidThroughYmd,
+    legacyExpirationDate: paidThroughDisplay,
+    ambiguous: input.legacyLinkAmbiguous,
+  });
+
+  const currentMembership = buildWatsonCustomerCurrentMembership({
+    memberstackMember: input.memberstackMember,
+    memberstackSummary: input.memberstack,
+    memberstackLinkStatus: input.memberstackLinkStatus,
+    legacy,
+    legacyAccessThroughDisplay: paidThroughDisplay,
+    now: input.now,
+  });
+
+  return { paidThroughYmd, paidThroughDisplay, currentMembership };
 }
 
 function sumStoreLifetimeSales(orders: MemberOrderDisplay[]): number {
@@ -344,20 +423,55 @@ export function buildCustomerProfileHeaderView(input: {
   legacyMemberid: string | null;
   memberstackId: string | null;
   timeline: CustomerTimelineEvent[];
+  /** Raw Memberstack member used by the shared membership-status helpers. */
+  memberstackMember?: MemberstackMember | null;
+  legacyLinkAmbiguous?: boolean;
+  now?: Date;
 }): CustomerProfileHeaderView {
   const email = input.memberstack.email ?? input.member?.email ?? null;
-  const membershipStatusTone = resolveMembershipStatusTone(
+  const { paidThroughYmd, paidThroughDisplay, currentMembership } =
+    resolveProfileCurrentMembership({
+      member: input.member,
+      memberstackMember: input.memberstackMember ?? null,
+      memberstack: input.memberstack,
+      memberstackLinkStatus: input.memberstackLinkStatus,
+      timeline: input.timeline,
+      legacyLinkAmbiguous: input.legacyLinkAmbiguous,
+      now: input.now,
+    });
+
+  let membershipStatus: string | null = null;
+  let membershipStatusTone = resolveMembershipStatusTone(
     input.memberstackLinkStatus,
     input.memberstack,
   );
 
-  let membershipStatus: string | null = null;
   if (input.memberstackLinkStatus === "not_found") {
-    membershipStatus = MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL;
+    // Prefer Legacy Access / Expired when Watson paid-through is the only signal.
+    membershipStatus =
+      currentMembership.currentStatus ?? MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL;
+    if (currentMembership.currentStatus) {
+      membershipStatusTone = currentMembership.membershipStatusTone;
+    } else {
+      membershipStatusTone = "not_linked";
+    }
   } else if (input.memberstackLinkStatus === "load_error") {
-    membershipStatus = MEMBERSTACK_LOOKUP_UNAVAILABLE_LABEL;
+    membershipStatus =
+      currentMembership.currentStatus ?? MEMBERSTACK_LOOKUP_UNAVAILABLE_LABEL;
+    if (currentMembership.currentStatus) {
+      membershipStatusTone = currentMembership.membershipStatusTone;
+    }
   } else if (input.memberstack.configured && !input.memberstack.loadError && input.memberstackId) {
-    membershipStatus = input.memberstack.membershipStatusLabel ?? "Unknown";
+    membershipStatus =
+      currentMembership.currentStatus ??
+      input.memberstack.membershipStatusLabel ??
+      "Unknown";
+    if (currentMembership.currentStatus) {
+      membershipStatusTone = currentMembership.membershipStatusTone;
+    }
+  } else if (currentMembership.currentStatus) {
+    membershipStatus = currentMembership.currentStatus;
+    membershipStatusTone = currentMembership.membershipStatusTone;
   }
 
   const joinDateIso = resolveJoinDateIso(input.member, input.memberstack);
@@ -366,18 +480,15 @@ export function buildCustomerProfileHeaderView(input: {
       (input.member?.datejoined ? formatMemberJoinedDateDisplay(input.member.datejoined) : null)
     : null;
 
-  const paidThroughYmd = input.member
-    ? legacyPaidThroughYmd(input.member.subscriptionexpiring)
-    : null;
-  const paidThroughDisplay = paidThroughYmd
-    ? formatLegacyPaidThroughDisplay(paidThroughYmd)
-    : resolveLegacyAccessThroughDate(input.timeline);
-
   return {
     displayName: input.displayName,
     email: hasDisplayValue(email) ? String(email).trim() : null,
     membershipStatus,
     membershipStatusTone,
+    currentPlan: currentMembership.currentPlan,
+    primaryDateLabel: currentMembership.primaryDateLabel,
+    primaryDateValue: currentMembership.primaryDateValue,
+    membershipSource: currentMembership.membershipSource,
     legacyMemberid: input.legacyMemberid,
     memberstackId: input.memberstackId,
     joinDate,
@@ -397,14 +508,52 @@ export function buildCustomerSnapshot(input: {
   pdfPurchaseCount: number | null;
   timeline: CustomerTimelineEvent[];
   hasLegacyHistory: boolean;
+  memberstackMember?: MemberstackMember | null;
+  legacyLinkAmbiguous?: boolean;
+  now?: Date;
 }): CustomerSnapshotMetric[] {
   const metrics: CustomerSnapshotMetric[] = [];
+  const { paidThroughDisplay, currentMembership } = resolveProfileCurrentMembership({
+    member: input.member,
+    memberstackMember: input.memberstackMember ?? null,
+    memberstack: input.memberstack,
+    memberstackLinkStatus: input.memberstackLinkStatus,
+    timeline: input.timeline,
+    legacyLinkAmbiguous: input.legacyLinkAmbiguous,
+    now: input.now,
+  });
 
+  const currentPlanLabel = resolveCurrentPlanLabel(
+    input.memberstack,
+    input.memberstackLinkStatus,
+    currentMembership,
+  );
   metrics.push({
     label: "Current membership plan",
-    value: resolveCurrentPlanLabel(input.memberstack, input.memberstackLinkStatus),
-    unavailable: resolveCurrentPlanLabel(input.memberstack, input.memberstackLinkStatus) === NOT_AVAILABLE_YET,
+    value: currentPlanLabel,
+    unavailable: currentPlanLabel === NOT_AVAILABLE_YET,
   });
+
+  if (currentMembership.currentStatus) {
+    metrics.push({
+      label: "Current membership status",
+      value: currentMembership.currentStatus,
+    });
+  }
+
+  if (currentMembership.primaryDateLabel && currentMembership.primaryDateValue) {
+    metrics.push({
+      label: currentMembership.primaryDateLabel,
+      value: currentMembership.primaryDateValue,
+    });
+  }
+
+  if (currentMembership.membershipSource) {
+    metrics.push({
+      label: "Membership source",
+      value: currentMembership.membershipSource,
+    });
+  }
 
   const joinDateIso = resolveJoinDateIso(input.member, input.memberstack);
   const tenure = joinDateIso ? formatCustomerTenure(joinDateIso) : null;
@@ -470,16 +619,10 @@ export function buildCustomerSnapshot(input: {
     unavailable: !lastActivityDate,
   });
 
-  const paidThroughYmd = input.member
-    ? legacyPaidThroughYmd(input.member.subscriptionexpiring)
-    : null;
-  const legacyAccessThroughDate = paidThroughYmd
-    ? formatLegacyPaidThroughDisplay(paidThroughYmd)
-    : resolveLegacyAccessThroughDate(input.timeline);
-  if (legacyAccessThroughDate) {
+  if (paidThroughDisplay) {
     metrics.push({
-      label: "Legacy paid-through",
-      value: legacyAccessThroughDate,
+      label: LEGACY_RECORD_PAID_THROUGH_LABEL,
+      value: paidThroughDisplay,
     });
   }
 
@@ -699,6 +842,7 @@ export async function loadLegacyCustomerProfile(
     const memberstackLinkStatus: MemberstackLinkStatus = memberstackLookup.ok
       ? "linked"
       : memberstackLookup.status;
+    const memberstackMember = memberstackLookup.ok ? memberstackLookup.member : null;
     const memberstack = memberstackLookup.ok
       ? buildCustomerMemberstackSummary({
           member: memberstackLookup.member,
@@ -739,6 +883,7 @@ export async function loadLegacyCustomerProfile(
       legacyMemberid: member.memberid,
       memberstackId: linkedMemberstackId,
       timeline,
+      memberstackMember,
     });
     const snapshot = buildCustomerSnapshot({
       member,
@@ -749,6 +894,7 @@ export async function loadLegacyCustomerProfile(
       pdfPurchaseCount: legacyData.pdfPurchaseCount,
       timeline,
       hasLegacyHistory: true,
+      memberstackMember,
     });
 
     const profile: CustomerProfileData = {
@@ -832,8 +978,9 @@ export async function loadMemberstackCustomerProfile(
       memberstackResult.member.auth?.email,
     );
 
+    const memberstackMember = memberstackResult.member;
     const memberstack = buildCustomerMemberstackSummary({
-      member: memberstackResult.member,
+      member: memberstackMember,
       configured: true,
       loadError: null,
     });
@@ -881,6 +1028,8 @@ export async function loadMemberstackCustomerProfile(
       legacyMemberid,
       memberstackId,
       timeline,
+      memberstackMember,
+      legacyLinkAmbiguous: linkState.legacyLinkAmbiguous,
     });
     const snapshot = buildCustomerSnapshot({
       member: hasLegacyHistory ? legacyMember : null,
@@ -891,6 +1040,8 @@ export async function loadMemberstackCustomerProfile(
       pdfPurchaseCount: legacyData.pdfPurchaseCount,
       timeline,
       hasLegacyHistory,
+      memberstackMember,
+      legacyLinkAmbiguous: linkState.legacyLinkAmbiguous,
     });
 
     const profile: CustomerProfileData = {

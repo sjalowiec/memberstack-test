@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { FREE_ACCESS_MEMBERSHIPS, MEMBERSHIPS } from "../../config/memberships";
 import { MEMBER_BY_EMAIL_SQL, resolveLegacyLinkByMemberstackEmail } from "./customerIdentifier";
 import {
   buildProfileLegacyLinkState,
@@ -9,10 +10,12 @@ import {
   buildCustomerSnapshot,
   buildLoadErrorMemberstackSummary,
   buildNotFoundMemberstackSummary,
+  LEGACY_RECORD_PAID_THROUGH_LABEL,
   loadLegacyCustomerProfile,
   loadMemberstackCustomerProfile,
 } from "./customerProfile";
 import {
+  buildCustomerMemberstackSummary,
   MEMBERSTACK_LOOKUP_UNAVAILABLE_LABEL,
   MEMBERSTACK_NOT_FOUND_FOR_EMAIL_LABEL,
   type CustomerMemberstackSummary,
@@ -222,11 +225,191 @@ describe("customerProfile", () => {
           source: "legacy_subscriptions",
         },
       ],
+      now: new Date("2026-07-30T18:00:00.000Z"),
     });
 
     expect(header.legacyPaidThroughYmd).toBe("2026-08-29");
     expect(header.legacyAccessThroughDate).toBe("August 29, 2026");
     expect(header.canEditLegacyPaidThrough).toBe(true);
+  });
+
+  it("Ana Coffy: current membership is Monthly Active with next renewal; legacy record stays historical", () => {
+    const anaMember = {
+      id: "mem_ana",
+      auth: { email: "amc0117@icloud.com", firstName: "Ana", lastName: "Coffy" },
+      createdAt: "2024-01-15T00:00:00.000Z",
+      planConnections: [
+        {
+          id: "pc_monthly",
+          planId: MEMBERSHIPS.membership.memberstackPlanId,
+          planName: MEMBERSHIPS.membership.name,
+          status: "ACTIVE",
+          active: true,
+          createdAt: "2026-07-30T00:00:00.000Z",
+          payment: {
+            priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
+            nextBillingDate: Math.floor(Date.UTC(2026, 7, 30, 12) / 1000),
+          },
+        },
+      ],
+    };
+    const memberstack = buildCustomerMemberstackSummary({
+      member: anaMember,
+      configured: true,
+      loadError: null,
+    });
+    const anaLegacy = {
+      ...legacyMember,
+      memberid: "ANA1",
+      fristname: "Ana",
+      lastname: "Coffy",
+      email: "amc0117@icloud.com",
+      subscriptionexpiring: "2026-07-31",
+    };
+
+    const header = buildCustomerProfileHeaderView({
+      displayName: "Ana Coffy",
+      member: anaLegacy,
+      memberstack,
+      memberstackLinkStatus: "linked",
+      legacyMemberid: "ANA1",
+      memberstackId: "mem_ana",
+      timeline: [],
+      memberstackMember: anaMember,
+      now: new Date("2026-07-30T18:00:00.000Z"),
+    });
+
+    expect(header.membershipStatus).toBe("Active");
+    expect(header.currentPlan).toBe("Monthly Membership");
+    expect(header.primaryDateLabel).toBe("Next renewal");
+    expect(header.primaryDateValue).toBe("August 30, 2026");
+    expect(header.membershipSource).toBe("Memberstack/Stripe");
+    // Watson subscriptionexpiring is preserved and labeled as a legacy record only.
+    expect(header.legacyPaidThroughYmd).toBe("2026-07-31");
+    expect(header.legacyAccessThroughDate).toBe("July 31, 2026");
+    expect(header.canEditLegacyPaidThrough).toBe(true);
+
+    const snapshot = buildCustomerSnapshot({
+      member: anaLegacy,
+      memberstack,
+      memberstackLinkStatus: "linked",
+      courses: [],
+      orders: [],
+      pdfPurchaseCount: 0,
+      timeline: [],
+      hasLegacyHistory: true,
+      memberstackMember: anaMember,
+      now: new Date("2026-07-30T18:00:00.000Z"),
+    });
+
+    expect(snapshot.find((m) => m.label === "Current membership plan")?.value).toBe(
+      "Monthly Membership",
+    );
+    expect(snapshot.find((m) => m.label === "Current membership status")?.value).toBe("Active");
+    expect(snapshot.find((m) => m.label === "Next renewal")?.value).toBe("August 30, 2026");
+    expect(snapshot.find((m) => m.label === "Membership source")?.value).toBe("Memberstack/Stripe");
+    expect(snapshot.find((m) => m.label === LEGACY_RECORD_PAID_THROUGH_LABEL)?.value).toBe(
+      "July 31, 2026",
+    );
+    expect(snapshot.find((m) => m.label === "Legacy paid-through")).toBeUndefined();
+  });
+
+  it("loads Ana-shaped Memberstack profile without overwriting subscriptionexpiring", async () => {
+    const queryFn = vi.fn(async (sql: string) => {
+      if (sql === MEMBER_BY_EMAIL_SQL) {
+        return [
+          {
+            ...legacyMember,
+            memberid: "ANA1",
+            fristname: "Ana",
+            lastname: "Coffy",
+            email: "amc0117@icloud.com",
+            subscriptionexpiring: "2026-07-31",
+          },
+        ];
+      }
+      return [];
+    });
+
+    const result = await loadMemberstackCustomerProfile("mem_ana", {
+      secretKey: "sk_live_test_key",
+      getClient: async () => ({
+        getMember: async (lookup: string) =>
+          lookup === "mem_ana"
+            ? {
+                id: "mem_ana",
+                auth: { email: "amc0117@icloud.com", firstName: "Ana", lastName: "Coffy" },
+                createdAt: "2024-01-15T00:00:00.000Z",
+                planConnections: [
+                  {
+                    id: "pc_monthly",
+                    planId: MEMBERSHIPS.membership.memberstackPlanId,
+                    planName: MEMBERSHIPS.membership.name,
+                    status: "ACTIVE",
+                    active: true,
+                    createdAt: "2026-07-30T00:00:00.000Z",
+                    payment: {
+                      priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
+                      nextBillingDate: Math.floor(Date.UTC(2026, 7, 30, 12) / 1000),
+                    },
+                  },
+                ],
+              }
+            : null,
+        listMembers: async () => ({ data: [], hasNextPage: false }),
+      }),
+      queryFn,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(result.profile.member?.subscriptionexpiring).toBe("2026-07-31");
+    expect(result.profile.headerView.currentPlan).toBe("Monthly Membership");
+    expect(result.profile.headerView.membershipStatus).toBe("Active");
+    expect(result.profile.headerView.primaryDateLabel).toBe("Next renewal");
+    expect(result.profile.headerView.primaryDateValue).toBe("August 30, 2026");
+    expect(result.profile.headerView.membershipSource).toBe("Memberstack/Stripe");
+    expect(result.profile.headerView.legacyAccessThroughDate).toBe("July 31, 2026");
+  });
+
+  it("shows Legacy Membership as current for bridged free legacy plan holders", () => {
+    const member = {
+      id: "mem_bridge",
+      auth: { email: "bridge@example.com" },
+      planConnections: [
+        {
+          id: "pc_legacy",
+          planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+          planName: FREE_ACCESS_MEMBERSHIPS.legacyMembership.name,
+          status: "ACTIVE",
+          active: true,
+          createdAt: "2026-06-01T00:00:00.000Z",
+        },
+      ],
+    };
+    const header = buildCustomerProfileHeaderView({
+      displayName: "Bridge Member",
+      member: { ...legacyMember, email: "bridge@example.com", subscriptionexpiring: "2026-09-15" },
+      memberstack: buildCustomerMemberstackSummary({
+        member,
+        configured: true,
+        loadError: null,
+      }),
+      memberstackLinkStatus: "linked",
+      legacyMemberid: "M1",
+      memberstackId: "mem_bridge",
+      timeline: [],
+      memberstackMember: member,
+      now: new Date("2026-07-30T18:00:00.000Z"),
+    });
+
+    expect(header.currentPlan).toBe("Legacy Membership");
+    expect(header.membershipStatus).toBe("Legacy Access");
+    expect(header.primaryDateLabel).toBe("Paid through");
+    expect(header.primaryDateValue).toBe("September 15, 2026");
+    expect(header.membershipSource).toBe("Legacy");
+    expect(header.legacyAccessThroughDate).toBe("September 15, 2026");
   });
 
   it("builds snapshot metrics with unavailable placeholders when legacy history is missing", () => {
