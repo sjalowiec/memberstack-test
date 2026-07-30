@@ -31,7 +31,8 @@ describe("Watson legacy paid-through API", () => {
 
     expect(detail).toContain("subscriptionexpiring");
     expect(page).toContain("paidThroughUpdated");
-    expect(header).toContain("Legacy paid-through");
+    expect(header).toContain("LEGACY_RECORD_PAID_THROUGH_LABEL");
+    expect(header).toContain("legacy record paid-through");
     expect(header).toContain('type="date"');
     expect(header).toContain("/api/watson/members/");
     expect(header).toContain("paid-through");
