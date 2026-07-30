@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import HomeImagePlaceholder from "../components/home/HomeImagePlaceholder.astro";
+import HomeWelcomeModal from "../components/home/HomeWelcomeModal.astro";
 import { PATTERN_BUILDERS_HOME_HREF } from "../lib/patterns/customPatternProjectNavigation";
 import "../styles/global.css";
 
@@ -353,6 +354,8 @@ const sueIntroParagraphs = [
       </section>
     </div>
   </div>
+
+  <HomeWelcomeModal />
 </Layout>
 
 <style is:global>
