@@ -81,3 +81,10 @@
   from = "/patterns/hybrid-blanket/sales"
   to = "/patterns/about"
   status = 301
+
+# Pre-launch transition page → permanent new-site welcome.
+[[redirects]]
+  from = "/transition"
+  to = "/new-site"
+  status = 301
+  force = true

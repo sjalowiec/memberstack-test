@@ -1,17 +1,6 @@
 ﻿---
 export const prerender = true;
 
-import BaseLayout from "../layouts/BaseLayout.astro";
-import TransitionPage from "../components/transition/TransitionPage.astro";
-import { description, pageTitle } from "../components/transition/transitionPageData";
+// Pre-launch transition announcement now lives at /new-site.
+return Astro.redirect("/new-site", 301);
 ---
-
-<BaseLayout
-  title={`${pageTitle} | Knit it Now`}
-  {description}
-  skipGlobalHyvor={true}
-  skipGlobalPinterest={true}
-  bodyClass="transition-page-body"
->
-  <TransitionPage contactHref="/contact/" />
-</BaseLayout>

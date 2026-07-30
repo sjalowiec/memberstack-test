@@ -1,0 +1,213 @@
+---
+export const prerender = true;
+import Layout from "../layouts/Layout.astro";
+
+const pageTitle = "Welcome to the New Knit It Now";
+const description =
+  "Knit It Now has been rebuilt. Learn what carried over with your account and membership, what changed for saved items, and how to get help on the new site.";
+
+const whatsNewItems = [
+  "Easier navigation",
+  "Faster pages",
+  "Improved search",
+  "New and improved pattern builders",
+  "Skill Builders for focused practice",
+  "Better tools and knitting references",
+  "A new account area for your membership and saved patterns",
+];
+
+const savedItemsNotes = [
+  "Anything you downloaded or printed should still be available on your device.",
+  "Anything saved only inside your account on the old website is no longer available.",
+  "Patterns created and saved on the new website will appear in your new account.",
+];
+---
+
+<Layout
+  title={`${pageTitle} | Knit it Now`}
+  {description}
+  bodyClass="page--tight-header"
+  skipGlobalHyvor={true}
+>
+  <article class="new-site-page page-wrap" aria-label="Welcome to the new Knit It Now">
+    <h1>{pageTitle}</h1>
+
+    <div class="new-site-page__intro">
+      <p>
+        Knit It Now has been completely rebuilt to create a faster, easier-to-use website for
+        machine knitters.
+      </p>
+      <p>
+        If you recently visited the previous website and things now look different, you are in the
+        right place. Here is what you need to know.
+      </p>
+    </div>
+
+    <div class="new-site-page__cta">
+      <a class="kbm-btn kbm-btn-primary new-site-page__cta-btn" href="/contact/">Contact Sue</a>
+    </div>
+
+    <section class="new-site-page__section" aria-labelledby="new-site-account-heading">
+      <h2 id="new-site-account-heading">Your Account and Membership</h2>
+      <p>Your Knit It Now account and active membership carried over to the new website.</p>
+      <p>
+        Use the same email address to log in. If you have trouble accessing your account, please
+        contact me and I'll be happy to help.
+      </p>
+    </section>
+
+    <section class="new-site-page__section" aria-labelledby="new-site-saved-heading">
+      <h2 id="new-site-saved-heading">What Happened to My Saved Items?</h2>
+      <p>
+        The previous Knit It Now website and the new website use completely different systems.
+        Unfortunately, patterns and other items saved inside the old website could not be
+        transferred.
+      </p>
+      <ul class="new-site-page__list">
+        {savedItemsNotes.map((item) => <li>{item}</li>)}
+      </ul>
+      <p>
+        I understand how disappointing this may be, especially if you discovered Knit It Now shortly
+        before the change and did not see the earlier announcements.
+      </p>
+      <p>
+        If you tell me what you were looking for or what you saved, I'll do my best to help you find
+        the same information or its replacement on the new site.
+      </p>
+    </section>
+
+    <section class="new-site-page__section" aria-labelledby="new-site-whats-new-heading">
+      <h2 id="new-site-whats-new-heading">What's New?</h2>
+      <p>The rebuilt Knit It Now includes:</p>
+      <ul class="new-site-page__list">
+        {whatsNewItems.map((item) => <li>{item}</li>)}
+      </ul>
+      <p>
+        This is a new beginning for Knit It Now. More patterns, tools, and resources will continue to
+        be added.
+      </p>
+    </section>
+
+    <section class="new-site-page__section" aria-labelledby="new-site-help-heading">
+      <h2 id="new-site-help-heading">Need Help?</h2>
+      <p>
+        If you cannot find something, have trouble logging in, or have a question about your
+        membership, please contact me.
+      </p>
+      <p>
+        I know that changing a familiar website can be confusing. I'm here to help you get
+        comfortable with the new Knit It Now and get back to knitting.
+      </p>
+      <p class="new-site-page__signoff">
+        Sue<br />
+        Knit It Now
+      </p>
+
+      <div class="new-site-page__cta new-site-page__cta--footer">
+        <a class="kbm-btn kbm-btn-primary new-site-page__cta-btn" href="/contact/">Contact Sue</a>
+      </div>
+    </section>
+  </article>
+</Layout>
+
+<style>
+  .new-site-page.page-wrap {
+    /* Layout main already clears the fixed header */
+    padding-top: 0.5rem;
+    max-width: 42rem;
+  }
+
+  .new-site-page {
+    padding-bottom: 3rem;
+  }
+
+  .new-site-page h1 {
+    margin: 0 0 1.25rem;
+    font-size: clamp(1.75rem, 4vw, 2.15rem);
+    line-height: 1.25;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .new-site-page h2 {
+    margin: 0 0 1rem;
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
+    line-height: 1.3;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .new-site-page__intro p,
+  .new-site-page__section p {
+    margin: 0 0 1rem;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: #374151;
+  }
+
+  .new-site-page__list {
+    margin: 0 0 1rem;
+    padding-left: 1.35rem;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: #374151;
+  }
+
+  .new-site-page__list li + li {
+    margin-top: 0.4rem;
+  }
+
+  .new-site-page__section {
+    margin-top: 2.25rem;
+  }
+
+  .new-site-page__signoff {
+    margin-top: 1.5rem;
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: #374151;
+  }
+
+  .new-site-page__cta {
+    margin: 1.5rem 0 0.25rem;
+    text-align: center;
+  }
+
+  .new-site-page__cta--footer {
+    margin-top: 2rem;
+  }
+
+  .new-site-page__cta-btn {
+    min-width: min(100%, 280px);
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  /* Short landscape viewports: keep content usable under the fixed header */
+  @media (max-height: 500px) and (orientation: landscape) {
+    .new-site-page.page-wrap {
+      padding-top: 0.25rem;
+    }
+
+    .new-site-page h1 {
+      margin-bottom: 0.75rem;
+      font-size: clamp(1.35rem, 3.5vw, 1.75rem);
+    }
+
+    .new-site-page__section {
+      margin-top: 1.5rem;
+    }
+
+    .new-site-page__intro p,
+    .new-site-page__section p,
+    .new-site-page__list {
+      font-size: 1rem;
+      line-height: 1.55;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .new-site-page.page-wrap {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+</style>
