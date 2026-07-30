@@ -1,7 +1,7 @@
 # Temporary pre-launch: block search indexing site-wide (see src/components/seo/RobotsMeta.astro).
 # At launch: remove PUBLIC_NOINDEX (or set "false") and redeploy.
 [build.environment]
-  PUBLIC_NOINDEX = "true"
+  PUBLIC_NOINDEX = "false"
 
 [[headers]]
   for = "/admin/*"
