@@ -1,6 +1,7 @@
 ---
 // TODO(about-page): Sales/marketing hero for the Pattern Builder home at /patterns/about.
 // Pair this with <PatternsFeaturesSection /> on that page.
+const PATTERNS_INTRO_VIMEO_ID = "1214676784";
 ---
 
 <section class="patterns-hero" aria-labelledby="patterns-hero-heading">
@@ -12,18 +13,64 @@
       </p>
     </div>
     <div class="patterns-hero__media">
-      <img
-        class="patterns-hero__img"
-        src="/images/patterns/patterns-intro.webp"
-        alt="Sleeveless sweater pattern workspace showing size, fit, neckline, and gauge choices"
-        width="720"
-        height="540"
-        loading="eager"
-        decoding="async"
-      />
+      <button
+        type="button"
+        class="patterns-hero__video-trigger"
+        id="patterns-hero-video-trigger"
+        data-vimeo-id={PATTERNS_INTRO_VIMEO_ID}
+        aria-haspopup="dialog"
+        aria-controls="patterns-hero-video-modal"
+        aria-label="Play pattern builder intro video"
+      >
+        <img
+          class="patterns-hero__img"
+          src="/images/patterns/patterns-intro.webp"
+          alt="Sleeveless sweater pattern workspace showing size, fit, neckline, and gauge choices"
+          width="720"
+          height="540"
+          loading="eager"
+          decoding="async"
+        />
+        <span class="patterns-hero__play" aria-hidden="true">
+          <svg viewBox="0 0 68 68" class="patterns-hero__play-icon" focusable="false">
+            <circle cx="34" cy="34" r="34"></circle>
+            <polygon points="28,22 28,46 48,34"></polygon>
+          </svg>
+        </span>
+      </button>
     </div>
   </div>
 </section>
+
+<div
+  id="patterns-hero-video-modal"
+  class="patterns-hero-modal"
+  hidden
+  aria-hidden="true"
+>
+  <div class="patterns-hero-modal__backdrop" data-patterns-hero-modal-close></div>
+  <div
+    class="patterns-hero-modal__panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="patterns-hero-video-modal-title"
+  >
+    <h2 id="patterns-hero-video-modal-title" class="patterns-hero-modal__sr-only">
+      Pattern builder intro video
+    </h2>
+    <div class="patterns-hero-modal__toolbar">
+      <button
+        type="button"
+        class="patterns-hero-modal__close"
+        data-patterns-hero-modal-close
+        aria-label="Close video"
+      >
+        Close
+      </button>
+    </div>
+    <div class="patterns-hero-modal__frame" data-patterns-hero-modal-frame></div>
+  </div>
+</div>
 
 <style>
   /* Hero — sleeveless pattern experience */
@@ -71,6 +118,24 @@
     min-width: 0;
   }
 
+  .patterns-hero__video-trigger {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 10px;
+    text-align: left;
+  }
+
+  .patterns-hero__video-trigger:focus-visible {
+    outline: 2px solid #52682d;
+    outline-offset: 3px;
+  }
+
   .patterns-hero__img {
     display: block;
     width: 100%;
@@ -82,6 +147,121 @@
     box-shadow:
       0 10px 28px rgba(0, 0, 0, 0.08),
       0 2px 8px rgba(82, 104, 45, 0.12);
+  }
+
+  .patterns-hero__play {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .patterns-hero__play-icon {
+    width: 72px;
+    height: 72px;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.28));
+    transition: transform 0.18s ease;
+  }
+
+  .patterns-hero__play-icon circle {
+    fill: rgba(0, 0, 0, 0.5);
+  }
+
+  .patterns-hero__play-icon polygon {
+    fill: #ffffff;
+  }
+
+  .patterns-hero__video-trigger:hover .patterns-hero__play-icon,
+  .patterns-hero__video-trigger:focus-visible .patterns-hero__play-icon {
+    transform: scale(1.06);
+  }
+
+  .patterns-hero-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .patterns-hero-modal[hidden] {
+    display: none !important;
+  }
+
+  .patterns-hero-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+  }
+
+  .patterns-hero-modal__panel {
+    position: relative;
+    z-index: 1;
+    width: min(960px, calc(100vw - 2rem));
+    max-width: 100%;
+    background: transparent;
+  }
+
+  .patterns-hero-modal__toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 0 0.5rem;
+  }
+
+  .patterns-hero-modal__close {
+    min-width: 4.5rem;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.95);
+    color: #111;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .patterns-hero-modal__close:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
+
+  .patterns-hero-modal__frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  }
+
+  /* :global — iframe is created at runtime and has no Astro scope attribute */
+  .patterns-hero-modal__frame :global(iframe) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .patterns-hero-modal__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
   }
 
   @media (max-width: 720px) {
@@ -106,5 +286,95 @@
       max-width: min(100%, 440px);
       margin: 0 auto;
     }
+
+    .patterns-hero__play-icon {
+      width: 64px;
+      height: 64px;
+    }
   }
 </style>
+
+<script>
+  function initPatternsHeroVideoModal(): void {
+    const triggerEl = document.getElementById("patterns-hero-video-trigger");
+    const modalEl = document.getElementById("patterns-hero-video-modal");
+    if (!(triggerEl instanceof HTMLButtonElement) || !(modalEl instanceof HTMLElement)) return;
+
+    const frameEl = modalEl.querySelector("[data-patterns-hero-modal-frame]");
+    const closeButtonEl = modalEl.querySelector(".patterns-hero-modal__close");
+    if (!(frameEl instanceof HTMLElement) || !(closeButtonEl instanceof HTMLButtonElement)) return;
+
+    const trigger = triggerEl;
+    const modal = modalEl;
+    const frame = frameEl;
+    const closeButton = closeButtonEl;
+    const closeControls = modal.querySelectorAll("[data-patterns-hero-modal-close]");
+
+    const vimeoId = (trigger.getAttribute("data-vimeo-id") || "").trim();
+    if (!/^\d+$/.test(vimeoId)) return;
+
+    let lastFocused: HTMLElement | null = null;
+
+    function isOpen(): boolean {
+      return !modal.hidden;
+    }
+
+    function stopVideo(): void {
+      frame.replaceChildren();
+    }
+
+    function openModal(): void {
+      if (isOpen()) return;
+      lastFocused = document.activeElement instanceof HTMLElement ? document.activeElement : trigger;
+
+      const iframe = document.createElement("iframe");
+      iframe.src = `https://player.vimeo.com/video/${vimeoId}?autoplay=1`;
+      iframe.title = "Pattern builder intro video";
+      iframe.allow = "autoplay; fullscreen; picture-in-picture";
+      iframe.allowFullscreen = true;
+      iframe.removeAttribute("width");
+      iframe.removeAttribute("height");
+      frame.replaceChildren(iframe);
+
+      modal.hidden = false;
+      modal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+      closeButton.focus();
+    }
+
+    function closeModal(): void {
+      if (!isOpen()) return;
+      modal.hidden = true;
+      modal.setAttribute("aria-hidden", "true");
+      stopVideo();
+      document.body.style.overflow = "";
+      const focusTarget =
+        lastFocused && document.contains(lastFocused) ? lastFocused : trigger;
+      focusTarget.focus();
+      lastFocused = null;
+    }
+
+    trigger.addEventListener("click", () => {
+      openModal();
+    });
+
+    closeControls.forEach((el) => {
+      el.addEventListener("click", () => {
+        closeModal();
+      });
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && isOpen()) {
+        event.preventDefault();
+        closeModal();
+      }
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initPatternsHeroVideoModal, { once: true });
+  } else {
+    initPatternsHeroVideoModal();
+  }
+</script>
