@@ -48,6 +48,14 @@
 [functions."legacy-renewal-reminders"]
   schedule = "0 8 * * *"
 
+# Former beta domain → canonical production host (path-preserving).
+# Does not affect legacy.knititnow.com (separate host, not matched here).
+[[redirects]]
+  from = "https://app.knititnow.com/*"
+  to = "https://knititnow.com/:splat"
+  status = 301
+  force = true
+
 # Taitexma ribber slug cleanup (misnamed TR-860 / broken Silver Reed link).
 [[redirects]]
   from = "/shop/machines/taitexma-tr-860"
@@ -86,5 +94,12 @@
 [[redirects]]
   from = "/transition"
   to = "/new-site"
+  status = 301
+  force = true
+
+# Legacy repairs URL → References repairs guide.
+[[redirects]]
+  from = "/repairs"
+  to = "/references/repairs"
   status = 301
   force = true
