@@ -100,6 +100,6 @@
 # Legacy repairs URL → References repairs guide.
 [[redirects]]
   from = "/repairs"
-  to = "/references/repairs"
+  to = "/reference/repairs"
   status = 301
   force = true
