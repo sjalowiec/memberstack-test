@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -7,14 +7,15 @@ const referenceIndexSource = readFileSync(
   resolve("src/pages/reference/index.astro"),
   "utf8"
 );
+const builtReferencePath = resolve("dist/reference/index.html");
 
 describe("manuals resource page", () => {
   it("targets /manuals with knititnow.com canonical and indexable SEO metadata", () => {
-    expect(pageSource).toContain('export const prerender = true');
+    expect(pageSource).toContain("export const prerender = true");
     expect(pageSource).toContain(
       'const CANONICAL_URL = "https://knititnow.com/manuals"'
     );
-    expect(pageSource).toContain('href={CANONICAL_URL}');
+    expect(pageSource).toContain("href={CANONICAL_URL}");
     expect(pageSource).toContain(
       'const SEO_TITLE = "Knitting Machine Manuals | Free Machine Knitting Manuals"'
     );
@@ -50,11 +51,32 @@ describe("manuals resource page", () => {
     expect(pageSource).not.toContain("/reference/manuals");
   });
 
-  it("is listed on the References index at /manuals", () => {
+  it("lists Knitting Machine Manuals on the References catalog source", () => {
     expect(referenceIndexSource).toContain(
-      '{ title: "Machine Manuals", href: "/manuals"'
+      '{ title: "Knitting Machine Manuals", href: "/manuals", description: "Find free knitting machine, ribber, accessory, and service manuals." }'
     );
-    expect(referenceIndexSource).toContain('href="/manuals"');
-    expect(referenceIndexSource).not.toContain('href="/reference/manuals"');
+    expect(referenceIndexSource).toContain(
+      '<a href="/manuals" class="reference-quick-links__item">Knitting Machine Manuals</a>'
+    );
+  });
+
+  it("built /reference HTML contains exactly two /manuals links", () => {
+    expect(existsSync(builtReferencePath)).toBe(true);
+
+    const html = readFileSync(builtReferencePath, "utf8");
+    const manualsHrefs = html.match(/href="\/manuals"/g) ?? [];
+    expect(manualsHrefs).toHaveLength(2);
+
+    const popularButtons =
+      html.match(
+        /<a\b(?=[^>]*href="\/manuals")(?=[^>]*class="[^"]*reference-quick-links__item[^"]*")[^>]*>\s*Knitting Machine Manuals\s*<\/a>/g
+      ) ?? [];
+    expect(popularButtons).toHaveLength(1);
+
+    const machineCards =
+      html.match(
+        /<a\b(?=[^>]*href="\/manuals")(?=[^>]*class="[^"]*\bref-card\b[^"]*")[^>]*>[\s\S]*?Knitting Machine Manuals[\s\S]*?Find free knitting machine, ribber, accessory, and service manuals\.[\s\S]*?<\/a>/g
+      ) ?? [];
+    expect(machineCards).toHaveLength(1);
   });
 });
