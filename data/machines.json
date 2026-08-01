@@ -6081,6 +6081,7 @@
     "model": "TH160",
     "bed": "Metal",
     "gauge": "Mid-Gauge",
+    "pitch": 6.0,
     "needleCount": 164,
     "machineStyle": "Manual",
     "punchcardWidth": null,
