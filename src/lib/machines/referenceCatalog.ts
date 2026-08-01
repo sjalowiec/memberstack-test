@@ -11,6 +11,10 @@
  *   - pitchAlpha: the gauge category used for filtering ("Standard Gauge", …)
  *   - pitch:      the needle pitch in millimetres (well-known standard values)
  *
+ * An optional per-record `pitch` number overrides the inferred millimetre value
+ * when a machine differs from its category default (e.g. Mid-Gauge is usually
+ * 6.5 mm, but TH160 is 6.0 mm).
+ *
  * Pages and components consume these helpers, never the JSON directly, so the
  * data source can later move (e.g. to a content collection or Supabase) without
  * touching the UI.
@@ -39,7 +43,13 @@ interface RawMachine {
   model?: string | null;
   productType?: string | null;
   bed?: string | null;
+  /** Gauge category label (e.g. "Mid-Gauge"), or a legacy numeric pitch string. */
   gauge?: string | null;
+  /**
+   * Optional explicit needle pitch in millimetres. When present, overrides the
+   * pitch inferred from `gauge` / category defaults (e.g. Mid-Gauge → 6.5).
+   */
+  pitch?: number | null;
   needleCount?: number | null;
   machineStyle?: string | null;
   punchcardWidth?: number | null;
@@ -175,7 +185,10 @@ function toMachine(raw: RawMachine): Machine | null {
   const model = clean(raw.model);
   if (!brand || !model) return null;
 
-  const { pitchAlpha, pitch } = normalizeGauge(clean(raw.gauge));
+  const { pitchAlpha, pitch: inferredPitch } = normalizeGauge(clean(raw.gauge));
+  const explicitPitch =
+    typeof raw.pitch === "number" && Number.isFinite(raw.pitch) ? raw.pitch : null;
+  const pitch = explicitPitch ?? inferredPitch;
   const images = Array.isArray(raw.images)
     ? raw.images.filter((img): img is MachineImage => !!img && !!clean(img.url))
     : [];
@@ -410,9 +423,11 @@ export function primaryImageUrl(machine: Machine): string | null {
   return main ? machineImageUrl(main.url) : null;
 }
 
-/** Display the pitch as a millimetre string, e.g. "4.5 mm". */
+/** Display the pitch as a millimetre string, e.g. "4.5 mm" or "6.0 mm". */
 export function formatPitch(machine: Machine): string | null {
-  return machine.pitch != null ? `${machine.pitch} mm` : null;
+  // One decimal place matches knitting pitch notation and keeps whole values
+  // like 6.0 from collapsing to "6 mm" via JS number stringification.
+  return machine.pitch != null ? `${machine.pitch.toFixed(1)} mm` : null;
 }
 
 /**
