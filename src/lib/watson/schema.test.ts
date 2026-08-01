@@ -38,6 +38,16 @@ describe("schema", () => {
     expect(labels).toContain("table watson_shopify_order_items");
     expect(labels).toContain("table watson_shopify_sync_runs");
     expect(labels).toContain("table watson_dak_licenses");
+    expect(labels).toContain("table watson_whats_new_cards");
+    expect(labels).toContain("table watson_whats_new_settings");
+    expect(labels).toContain("alter watson_whats_new_settings billboard columns");
+    expect(
+      nativeStatements.find((statement) => statement.label === "table watson_whats_new_cards")?.sql,
+    ).toContain("board_column TEXT NOT NULL");
+    expect(
+      nativeStatements.find((statement) => statement.label === "table watson_whats_new_settings")
+        ?.sql,
+    ).toContain("button_destination_url TEXT");
     expect(
       nativeStatements.find((statement) => statement.label === "table watson_store_fulfillments")
         ?.sql,

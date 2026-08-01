@@ -1,0 +1,773 @@
+---
+import WatsonPageShell from "../../components/watson/WatsonPageShell.astro";
+import {
+  WHATS_NEW_BOARD_COLUMNS,
+  WHATS_NEW_CATEGORIES,
+  WHATS_NEW_CATEGORY_LABELS,
+  WHATS_NEW_DEFAULT_BUTTON_TEXT,
+} from "../../lib/whatsNew/types";
+import {
+  WHATS_NEW_COLUMN_ACCENTS,
+  whatsNewCategoryCardStyle,
+  whatsNewThemeStyle,
+} from "../../lib/whatsNew/palette";
+import {
+  boardColumnMeta,
+  formatQuietPublishDate,
+  groupWhatsNewCardsByColumn,
+} from "../../lib/whatsNew/public";
+import {
+  getWhatsNewBillboardSettings,
+  listAllWhatsNewCards,
+} from "../../lib/whatsNew/store";
+
+export const prerender = false;
+
+const themeStyle = whatsNewThemeStyle();
+
+Astro.response.headers.set("Cache-Control", "no-store");
+
+let loadError: string | null = null;
+let activeCards: Awaited<ReturnType<typeof listAllWhatsNewCards>> = [];
+let archivedCards: Awaited<ReturnType<typeof listAllWhatsNewCards>> = [];
+let billboard: Awaited<ReturnType<typeof getWhatsNewBillboardSettings>> = null;
+
+try {
+  const allCards = await listAllWhatsNewCards();
+  activeCards = allCards.filter((card) => !card.archived);
+  archivedCards = allCards.filter((card) => card.archived);
+} catch (error) {
+  loadError =
+    error instanceof Error
+      ? error.message
+      : "Unable to load What's New. Apply the schema SQL first.";
+}
+
+if (!loadError) {
+  try {
+    billboard = await getWhatsNewBillboardSettings();
+  } catch {
+    billboard = null;
+  }
+}
+
+const board = groupWhatsNewCardsByColumn(activeCards);
+const today = new Date().toISOString().slice(0, 10);
+
+function cardDataAttr(card: (typeof activeCards)[number]): string {
+  return encodeURIComponent(
+    JSON.stringify({
+      id: card.id,
+      title: card.title,
+      description: card.description,
+      category: card.category,
+      destinationUrl: card.destinationUrl ?? "",
+      buttonText: card.buttonText ?? "",
+      boardColumn: card.boardColumn,
+      publishDate: card.publishDate,
+      featured: card.featured,
+      status: card.status,
+      displayOrder: card.displayOrder,
+      archived: card.archived,
+    }),
+  );
+}
+---
+
+<WatsonPageShell
+  title="What's New | Watson"
+  description="Manage the public What's New board and the What's New Billboard."
+  heading="What's New"
+  intro="Add updates, organize the public board, and manage the What's New Billboard."
+>
+  <div data-whats-new-admin class="watson-wn" style={themeStyle}>
+    <div class="watson-wn__toolbar">
+      <button type="button" class="watson__button" data-wn-open-create>Add Update</button>
+      <a class="watson__button watson__button--secondary" href="/whats-new" target="_blank" rel="noopener">
+        View public page
+      </a>
+    </div>
+
+    <p class="watson__status watson-wn__flash" data-wn-flash role="status" hidden></p>
+
+    {
+      loadError ? (
+        <p class="watson__status watson__status--error" role="alert">
+          {loadError}
+        </p>
+      ) : null
+    }
+
+    <section class="watson__panel" aria-labelledby="wn-billboard-heading">
+      <h2 id="wn-billboard-heading" class="watson__panel-title">What's New Billboard</h2>
+      <p class="watson-wn__hint">
+        Optional top message for /whats-new. Video and button are optional. Dates use America/Los_Angeles
+        calendar days. Leave disabled to hide the billboard.
+      </p>
+      {
+        billboard === null && !loadError ? (
+          <p class="watson__status watson__status--error" role="status">
+            Billboard fields are not available yet. Apply scripts/sql/watson-whats-new-billboard.sql,
+            then refresh.
+          </p>
+        ) : null
+      }
+      <form class="watson-wn__form" data-wn-video-form>
+        <div class="watson-wn__grid">
+          <label class="watson-wn__field watson-wn__field--full">
+            <span>Headline</span>
+            <input
+              class="watson__search-input"
+              name="headline"
+              type="text"
+              maxlength="160"
+              value={billboard?.headline ?? ""}
+            />
+          </label>
+          <div class="watson-wn__field watson-wn__field--full">
+            <span id="wn-billboard-message-label">Short message</span>
+            <div class="watson-wn__rte" data-wn-rte>
+              <div
+                class="watson-wn__rte-toolbar"
+                data-wn-rte-toolbar
+                role="toolbar"
+                aria-label="Message formatting"
+              >
+                <button type="button" class="watson-wn__rte-btn" data-wn-rte-cmd="bold" title="Bold">
+                  <strong>B</strong>
+                </button>
+                <button type="button" class="watson-wn__rte-btn" data-wn-rte-cmd="italic" title="Italic">
+                  <em>I</em>
+                </button>
+                <button type="button" class="watson-wn__rte-btn" data-wn-rte-cmd="paragraph" title="Paragraph">
+                  ù
+                </button>
+                <button type="button" class="watson-wn__rte-btn" data-wn-rte-cmd="ul" title="Bulleted list">
+                  ù List
+                </button>
+                <button type="button" class="watson-wn__rte-btn" data-wn-rte-cmd="ol" title="Numbered list">
+                  1. List
+                </button>
+                <button type="button" class="watson-wn__rte-btn" data-wn-rte-cmd="link" title="Add or edit link">
+                  Link
+                </button>
+                <button
+                  type="button"
+                  class="watson-wn__rte-btn"
+                  data-wn-rte-cmd="clear"
+                  title="Remove formatting"
+                >
+                  Clear
+                </button>
+              </div>
+              <div
+                class="watson-wn__rte-editor"
+                data-wn-rte-editor
+                contenteditable="true"
+                role="textbox"
+                aria-multiline="true"
+                aria-labelledby="wn-billboard-message-label"
+              ></div>
+              <textarea
+                class="watson-wn__rte-input"
+                data-wn-rte-input
+                name="message"
+                maxlength="5000"
+                hidden
+                tabindex="-1"
+                aria-hidden="true">{billboard?.message ?? ""}</textarea>
+            </div>
+          </div>
+          <label class="watson-wn__field watson-wn__field--full">
+            <span>Vimeo URL (optional)</span>
+            <input
+              class="watson__search-input"
+              name="videoUrl"
+              type="url"
+              maxlength="500"
+              placeholder="https://vimeo.com/123456789"
+              value={billboard?.originalVideoUrl ?? ""}
+            />
+          </label>
+          <label class="watson-wn__field">
+            <span>Button text (optional)</span>
+            <input
+              class="watson__search-input"
+              name="buttonText"
+              type="text"
+              maxlength="60"
+              value={billboard?.buttonText ?? ""}
+            />
+          </label>
+          <label class="watson-wn__field">
+            <span>Button destination URL (optional)</span>
+            <input
+              class="watson__search-input"
+              name="buttonDestinationUrl"
+              type="text"
+              maxlength="500"
+              placeholder="/tools or https://..."
+              value={billboard?.buttonDestinationUrl ?? ""}
+            />
+          </label>
+          <label class="watson-wn__field">
+            <span>Start date (optional)</span>
+            <input
+              class="watson__search-input"
+              name="startDate"
+              type="date"
+              value={billboard?.startDate ?? ""}
+            />
+          </label>
+          <label class="watson-wn__field">
+            <span>End date (optional)</span>
+            <input
+              class="watson__search-input"
+              name="endDate"
+              type="date"
+              value={billboard?.endDate ?? ""}
+            />
+          </label>
+        </div>
+        <div class="watson-wn__actions watson-wn__actions--billboard">
+          <label class="watson-wn__check">
+            <input type="checkbox" name="enabled" checked={billboard?.enabled === true} />
+            <span>Enabled on public page</span>
+          </label>
+          {
+            billboard?.updatedAt ? (
+              <p class="watson-wn__updated">
+                Last updated: {formatQuietPublishDate(billboard.updatedAt.slice(0, 10))}
+              </p>
+            ) : null
+          }
+          <button type="submit" class="watson__button">Save billboard</button>
+          <p class="watson__status" data-wn-video-status hidden></p>
+        </div>
+      </form>
+    </section>
+
+    <section class="watson__panel" aria-labelledby="wn-form-heading" data-wn-form-panel hidden>
+      <h2 id="wn-form-heading" class="watson__panel-title" data-wn-form-title>Add Update</h2>
+      <form class="watson-wn__form" data-wn-card-form>
+        <input type="hidden" name="id" value="" />
+        <div class="watson-wn__grid">
+          <label class="watson-wn__field watson-wn__field--full">
+            <span>Title</span>
+            <input class="watson__search-input" name="title" type="text" required maxlength="160" />
+          </label>
+          <label class="watson-wn__field watson-wn__field--full">
+            <span>Short description</span>
+            <textarea
+              class="watson-wn__textarea"
+              name="description"
+              rows="3"
+              required
+              maxlength="500"></textarea>
+          </label>
+          <label class="watson-wn__field">
+            <span>Category</span>
+            <select class="watson__search-input" name="category" required>
+              {
+                WHATS_NEW_CATEGORIES.map((category) => (
+                  <option value={category}>{WHATS_NEW_CATEGORY_LABELS[category]}</option>
+                ))
+              }
+            </select>
+          </label>
+          <label class="watson-wn__field">
+            <span>Board column</span>
+            <select class="watson__search-input" name="boardColumn" required>
+              {
+                WHATS_NEW_BOARD_COLUMNS.map((column) => (
+                  <option value={column}>{boardColumnMeta(column).title}</option>
+                ))
+              }
+            </select>
+          </label>
+          <label class="watson-wn__field watson-wn__field--full">
+            <span>Destination URL (optional)</span>
+            <input
+              class="watson__search-input"
+              name="destinationUrl"
+              type="text"
+              maxlength="500"
+              placeholder="/tools/slope or https://..."
+            />
+          </label>
+          <label class="watson-wn__field">
+            <span>Button text</span>
+            <input
+              class="watson__search-input"
+              name="buttonText"
+              type="text"
+              maxlength="60"
+              value={WHATS_NEW_DEFAULT_BUTTON_TEXT.tool}
+            />
+          </label>
+          <label class="watson-wn__field">
+            <span>Publish date</span>
+            <input class="watson__search-input" name="publishDate" type="date" value={today} required />
+          </label>
+          <label class="watson-wn__field">
+            <span>Status</span>
+            <select class="watson__search-input" name="status">
+              <option value="published" selected>Published</option>
+              <option value="draft">Draft</option>
+            </select>
+          </label>
+          <label class="watson-wn__field">
+            <span>Display order</span>
+            <input class="watson__search-input" name="displayOrder" type="number" value="0" step="1" />
+          </label>
+          <label class="watson-wn__check">
+            <input type="checkbox" name="featured" />
+            <span>Featured</span>
+          </label>
+          <label class="watson-wn__check">
+            <input type="checkbox" name="archived" />
+            <span>Archived</span>
+          </label>
+        </div>
+        <div class="watson-wn__actions">
+          <button type="submit" class="watson__button">Save</button>
+          <button type="button" class="watson__button watson__button--secondary" data-wn-cancel-form>
+            Cancel
+          </button>
+          <button type="button" class="watson__button watson__button--secondary" data-wn-open-create>
+            Reset as new
+          </button>
+          <p class="watson__status" data-wn-form-status hidden></p>
+        </div>
+      </form>
+    </section>
+
+    <section class="watson__panel" aria-labelledby="wn-board-heading">
+      <div class="watson-wn__board-head">
+        <h2 id="wn-board-heading" class="watson__panel-title">Board</h2>
+        <button type="button" class="watson__button" data-wn-open-create>Add Update</button>
+      </div>
+
+      <div class="watson-wn__board">
+        {
+          WHATS_NEW_BOARD_COLUMNS.map((column) => {
+            const meta = boardColumnMeta(column);
+            const cards = board[column];
+            return (
+              <section
+                class={`watson-wn__column watson-wn__column--${column}`}
+                style={`--wn-col-accent: ${WHATS_NEW_COLUMN_ACCENTS[column]}`}
+                aria-labelledby={`wn-col-${column}`}
+              >
+                <h3 id={`wn-col-${column}`} class="watson-wn__column-title">
+                  {meta.title}
+                </h3>
+                <p class="watson-wn__column-sub">{meta.subtitle}</p>
+                {cards.length === 0 ? (
+                  <p class="watson-wn__empty">No cards in this column.</p>
+                ) : (
+                  <ul class="watson-wn__cards">
+                    {cards.map((card) => (
+                      <li
+                        class={`watson-wn__card${card.featured ? " watson-wn__card--featured" : ""}`}
+                        style={whatsNewCategoryCardStyle(card.category)}
+                      >
+                        <div class="watson-wn__card-meta">
+                          <span class="watson-wn__category">{card.categoryLabel}</span>
+                          <span>{card.status}</span>
+                          {card.featured ? (
+                            <span class="watson-wn__badge watson-wn__badge--featured">featured</span>
+                          ) : null}
+                        </div>
+                        <strong>{card.title}</strong>
+                        <p>{card.description}</p>
+                        <p class="watson-wn__quiet">
+                          {formatQuietPublishDate(card.publishDate)}
+                          {card.destinationUrl ? ` ù ${card.destinationUrl}` : " ù no URL"}
+                          {` ù order ${card.displayOrder}`}
+                        </p>
+                        <div class="watson-wn__card-actions">
+                          <button
+                            type="button"
+                            class="watson__button watson__button--secondary"
+                            data-wn-edit={cardDataAttr(card)}
+                          >
+                            Edit
+                          </button>
+                          <label class="watson-wn__move">
+                            <span class="visually-hidden">Move to</span>
+                            <select class="watson__search-input" data-wn-move data-wn-id={card.id}>
+                              {WHATS_NEW_BOARD_COLUMNS.map((option) => (
+                                <option value={option} selected={option === card.boardColumn}>
+                                  Move to {boardColumnMeta(option).title}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                          <button
+                            type="button"
+                            class="watson__button watson__button--secondary"
+                            data-wn-action={card.featured ? "unfeature" : "feature"}
+                            data-wn-id={card.id}
+                          >
+                            {card.featured ? "Unfeature" : "Feature"}
+                          </button>
+                          <button
+                            type="button"
+                            class="watson__button watson__button--secondary"
+                            data-wn-action={card.status === "published" ? "unpublish" : "publish"}
+                            data-wn-id={card.id}
+                          >
+                            {card.status === "published" ? "Unpublish" : "Publish"}
+                          </button>
+                          <button
+                            type="button"
+                            class="watson__button watson__button--secondary"
+                            data-wn-action="archive"
+                            data-wn-id={card.id}
+                          >
+                            Archive
+                          </button>
+                          {card.status === "draft" || card.archived ? (
+                            <button
+                              type="button"
+                              class="watson__button watson-wn__button--danger"
+                              data-wn-delete
+                              data-wn-id={card.id}
+                              data-wn-title={card.title}
+                            >
+                              Delete permanently
+                            </button>
+                          ) : null}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            );
+          })
+        }
+      </div>
+    </section>
+
+    <details class="watson__panel watson-wn__archived">
+      <summary class="watson__panel-title">Archived items ({archivedCards.length})</summary>
+      <p class="watson-wn__hint">Archiving hides a card from the public page without deleting it.</p>
+      {
+        archivedCards.length === 0 ? (
+          <p class="watson-wn__empty">No archived cards.</p>
+        ) : (
+          <ul class="watson-wn__cards">
+            {archivedCards.map((card) => (
+              <li class="watson-wn__card" style={whatsNewCategoryCardStyle(card.category)}>
+                <div class="watson-wn__card-meta">
+                  <span class="watson-wn__category">{card.categoryLabel}</span>
+                  <span>{boardColumnMeta(card.boardColumn).title}</span>
+                  <span>{card.status}</span>
+                </div>
+                <strong>{card.title}</strong>
+                <p>{card.description}</p>
+                <div class="watson-wn__card-actions">
+                  <button
+                    type="button"
+                    class="watson__button watson__button--secondary"
+                    data-wn-edit={cardDataAttr(card)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    class="watson__button"
+                    data-wn-action="restore"
+                    data-wn-id={card.id}
+                  >
+                    Restore
+                  </button>
+                  <button
+                    type="button"
+                    class="watson__button watson-wn__button--danger"
+                    data-wn-delete
+                    data-wn-id={card.id}
+                    data-wn-title={card.title}
+                  >
+                    Delete permanently
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )
+      }
+    </details>
+  </div>
+</WatsonPageShell>
+
+<script>
+  import { initWatsonBillboardRichText } from "../../scripts/watsonBillboardRichText";
+  import { initWatsonWhatsNew } from "../../scripts/watsonWhatsNew";
+  initWatsonBillboardRichText(document);
+  initWatsonWhatsNew(document);
+</script>
+
+<style>
+  .watson-wn__toolbar,
+  .watson-wn__board-head,
+  .watson-wn__actions,
+  .watson-wn__card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    align-items: center;
+  }
+
+  .watson-wn__toolbar,
+  .watson-wn__board-head {
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .watson-wn__hint,
+  .watson-wn__column-sub,
+  .watson-wn__quiet,
+  .watson-wn__empty {
+    color: #5b6470;
+    font-size: 0.92rem;
+  }
+
+  .watson-wn__form {
+    margin-top: 0.75rem;
+  }
+
+  .watson-wn__actions--billboard {
+    margin-top: 0.85rem;
+  }
+
+  .watson-wn__updated {
+    margin: 0;
+    color: #5b6470;
+    font-size: 0.9rem;
+  }
+
+  .watson-wn__grid {
+    display: grid;
+    gap: 0.85rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .watson-wn__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  /*
+   * The shared .watson__search-input uses flex-basis (16rem) sized for the
+   * horizontal search toolbar. Inside these column-flex fields that basis
+   * becomes the height, producing very tall boxes. Reset to content height so
+   * single-line inputs render at their normal ~40px height.
+   */
+  .watson-wn__field .watson__search-input {
+    flex: 0 0 auto;
+    width: 100%;
+  }
+
+  .watson-wn__field--full,
+  .watson-wn__grid .watson-wn__check {
+    grid-column: 1 / -1;
+  }
+
+  .watson-wn__check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .watson-wn__textarea {
+    width: 100%;
+    border: 1px solid #c9d0c0;
+    border-radius: 8px;
+    padding: 0.55rem 0.7rem;
+    font: inherit;
+  }
+
+  .watson-wn__rte {
+    border: 1px solid #c9d0c0;
+    border-radius: 8px;
+    background: #fff;
+    overflow: hidden;
+  }
+
+  .watson-wn__rte-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    padding: 0.4rem 0.45rem;
+    border-bottom: 1px solid #dfe5d4;
+    background: #f7f8f3;
+  }
+
+  .watson-wn__rte-btn {
+    appearance: none;
+    border: 1px solid #c9d0c0;
+    border-radius: 6px;
+    background: #fff;
+    color: #2c3a57;
+    font: inherit;
+    font-size: 0.85rem;
+    line-height: 1;
+    padding: 0.3rem 0.45rem;
+    cursor: pointer;
+  }
+
+  .watson-wn__rte-btn:hover,
+  .watson-wn__rte-btn:focus-visible {
+    border-color: #8fa07a;
+    outline: 2px solid #c5d4b0;
+    outline-offset: 1px;
+  }
+
+  .watson-wn__rte-editor {
+    min-height: 11rem;
+    padding: 0.55rem 0.7rem;
+    font: inherit;
+    color: #2c3a57;
+    line-height: 1.45;
+  }
+
+  .watson-wn__rte-editor:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 2px #c5d4b0;
+  }
+
+  .watson-wn__rte-editor p {
+    margin: 0 0 0.5rem;
+  }
+
+  .watson-wn__rte-editor p:last-child {
+    margin-bottom: 0;
+  }
+
+  .watson-wn__rte-editor ul,
+  .watson-wn__rte-editor ol {
+    margin: 0.25rem 0 0.5rem;
+    padding-left: 1.3rem;
+  }
+
+  .watson-wn__board {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+  }
+
+  .watson-wn__column {
+    border: 1px solid var(--wn-board-border, #d6dbc9);
+    border-top: 3px solid var(--wn-col-accent, #be352f);
+    border-radius: 12px;
+    padding: 0.85rem;
+    background: var(--wn-column-bg, #fbfcf8);
+  }
+
+  .watson-wn__column-title {
+    margin: 0 0 0.25rem;
+    font-size: 1.05rem;
+  }
+
+  .watson-wn__cards {
+    list-style: none;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .watson-wn__card {
+    border: 1px solid var(--wn-board-border, #d6dbc9);
+    border-left: 5px solid var(--wn-accent, #2b4859);
+    border-radius: 10px;
+    padding: 0.75rem;
+    background: #fff;
+  }
+
+  .watson-wn__card--featured {
+    background: linear-gradient(180deg, var(--wn-soft, #f3f6f8) 0%, #ffffff 58%);
+  }
+
+  .watson-wn__card strong {
+    display: block;
+    margin: 0.25rem 0;
+  }
+
+  .watson-wn__card p {
+    margin: 0.25rem 0;
+  }
+
+  .watson-wn__card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #5b6470;
+  }
+
+  .watson-wn__card-meta span {
+    background: #f3f4f1;
+    border-radius: 999px;
+    padding: 0.1rem 0.45rem;
+  }
+
+  .watson-wn__category {
+    color: var(--wn-label, #2b4859) !important;
+    background: var(--wn-soft, #f3f6f8) !important;
+    border: 1px solid color-mix(in srgb, var(--wn-accent, #2b4859) 45%, white);
+    font-weight: 700;
+  }
+
+  .watson-wn__badge--featured {
+    background: var(--wn-badge-featured-bg, #5c254b) !important;
+    color: var(--wn-badge-featured-text, #fff) !important;
+  }
+
+  .watson-wn__button--danger {
+    background: #b91c1c;
+    border-color: #b91c1c;
+    color: #fff;
+  }
+
+  .watson-wn__button--danger:hover,
+  .watson-wn__button--danger:focus-visible {
+    background: #991b1b;
+    border-color: #991b1b;
+  }
+
+  .watson-wn__flash {
+    margin: 0 0 1rem;
+  }
+
+  .watson-wn__move {
+    min-width: 11rem;
+  }
+
+  .watson-wn__archived {
+    margin-top: 1rem;
+  }
+
+  .watson-wn__archived summary {
+    cursor: pointer;
+  }
+
+  @media (min-width: 960px) {
+    .watson-wn__board {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-items: start;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .watson-wn__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
