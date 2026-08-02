@@ -225,7 +225,7 @@ const description =
     border-left: 6px solid var(--wn-col-just-added);
   }
 
-  /* Text-only: single column, full billboard width ù never reserve a media slot. */
+  /* Text-only: single column, full billboard width ? never reserve a media slot. */
   .whats-new__billboard--text {
     display: block;
   }
@@ -421,9 +421,13 @@ const description =
 
   .whats-new__card-desc {
     margin: 0 0 0.65rem;
-    color: #3d4635;
+    /* Inherit the normal site body-text color rather than the card's green. */
+    color: #243015;
     font-size: 0.95rem;
-    line-height: 1.45;
+    /* Override the global bold .kbm-card weight so the description reads as
+       normal body copy while the title stays bold. */
+    font-weight: 400 !important;
+    line-height: 1.55;
   }
 
   .whats-new__quiet-date {
