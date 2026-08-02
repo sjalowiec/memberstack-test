@@ -5,7 +5,10 @@ import { WATSON_DB_STATEMENT_TIMEOUT_MS } from "./env";
 import { LEGACY_TABLE_DEFINITIONS } from "./tableDefinitions";
 import type { LegacyTableDef, PgColumnType } from "./types";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// Do NOT name this `__dirname`: Netlify's function bundler injects its own
+// top-level `__dirname` shim, and a same-named const here collides with
+// "Identifier '__dirname' has already been declared" at module init.
+const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
 
 export interface SchemaStatement {
   label: string;
@@ -435,7 +438,7 @@ export function buildLegacySchemaSql(definitions: LegacyTableDef[]): string {
 }
 
 export function getLegacySchemaSqlPath(): string {
-  return path.join(__dirname, "schema.sql");
+  return path.join(moduleDirectory, "schema.sql");
 }
 
 export function quoteIdent(identifier: string): string {
