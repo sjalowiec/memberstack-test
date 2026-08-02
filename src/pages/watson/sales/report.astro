@@ -1,0 +1,48 @@
+---
+import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
+import WatsonSalesReport from "../../../components/watson/WatsonSalesReport.astro";
+import { loadSalesReport, type SalesReport } from "../../../lib/watson/salesReport";
+import { resolveDayRange } from "../../../lib/watson/salesReportDates";
+
+export const prerender = false;
+
+const params = Astro.url.searchParams;
+const presetParam = params.get("preset")?.trim() ?? "";
+const fromParam = params.get("from")?.trim() ?? "";
+const toParam = params.get("to")?.trim() ?? "";
+
+const resolved = resolveDayRange({ preset: presetParam, from: fromParam, to: toParam });
+
+let report: SalesReport | null = null;
+let rangeError: string | null = null;
+
+if (!resolved.ok) {
+  rangeError = resolved.error;
+} else {
+  try {
+    report = await loadSalesReport({ range: resolved.range });
+  } catch (error) {
+    rangeError =
+      error instanceof Error
+        ? error.message
+        : "Sales report failed to load. Check WATSON_DATABASE_URL and Stripe configuration.";
+  }
+}
+---
+
+<WatsonPageShell
+  title="Sales | Watson"
+  description="Actual revenue collected from Shopify and Stripe membership payments."
+  heading="Sales"
+  intro="Read-only report of actual money collected (Shopify orders + Knit It Now membership payments). Defaults to the last 3 days in America/Los_Angeles time."
+>
+  <WatsonSalesReport
+    report={report}
+    rangeError={rangeError}
+    filters={{
+      preset: resolved.ok ? resolved.range.preset : presetParam || "last3",
+      from: resolved.ok ? resolved.range.fromCivil : fromParam,
+      to: resolved.ok ? resolved.range.toCivil : toParam,
+    }}
+  />
+</WatsonPageShell>

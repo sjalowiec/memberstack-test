@@ -1,0 +1,198 @@
+import { describe, it, expect } from "vitest";
+
+import {
+  describeStripeConnectionError,
+  describeStripeHttpError,
+  fetchStripeChargesInRange,
+  isStripeTlsInsecureFlagEnabled,
+  normalizeStripeCharge,
+  readStripeReportingConfig,
+  shouldUseStripeTlsInsecure,
+  stripeMinorToMajor,
+  summarizeStripeFetchCause,
+} from "./stripeReportingClient";
+
+describe("readStripeReportingConfig", () => {
+  it("returns an error when STRIPE_SECRET_KEY is missing", () => {
+    const result = readStripeReportingConfig({});
+    expect("error" in result).toBe(true);
+  });
+
+  it("returns config when the key is present", () => {
+    const result = readStripeReportingConfig({ STRIPE_SECRET_KEY: "sk_test_123" });
+    expect("error" in result).toBe(false);
+    if ("error" in result) return;
+    expect(result.secretKey).toBe("sk_test_123");
+    expect(result.apiBase).toContain("api.stripe.com");
+  });
+});
+
+describe("stripeMinorToMajor", () => {
+  it("converts cents to dollars for decimal currencies", () => {
+    expect(stripeMinorToMajor(1999, "usd")).toBe(19.99);
+    expect(stripeMinorToMajor(22800, "usd")).toBe(228);
+  });
+
+  it("keeps zero-decimal currencies as-is", () => {
+    expect(stripeMinorToMajor(1000, "jpy")).toBe(1000);
+  });
+});
+
+describe("normalizeStripeCharge", () => {
+  it("extracts money, line price/product refs, and Shopify markers", () => {
+    const normalized = normalizeStripeCharge({
+      id: "ch_1",
+      amount: 22800,
+      amount_refunded: 5000,
+      currency: "USD",
+      created: 1_764_600_000,
+      livemode: true,
+      paid: true,
+      status: "succeeded",
+      invoice: {
+        id: "in_1",
+        lines: {
+          data: [{ price: { id: "price_a", product: "prod_mem" } }],
+        },
+      },
+    });
+    expect(normalized.amount).toBe(228);
+    expect(normalized.amountRefunded).toBe(50);
+    expect(normalized.currency).toBe("usd");
+    expect(normalized.lines).toEqual([{ priceId: "price_a", productId: "prod_mem" }]);
+    expect(normalized.hasShopifyMarker).toBe(false);
+  });
+
+  it("flags Shopify-origin charges via description/metadata", () => {
+    expect(
+      normalizeStripeCharge({ id: "ch_2", description: "Shopify order #1234" }).hasShopifyMarker,
+    ).toBe(true);
+    expect(
+      normalizeStripeCharge({ id: "ch_3", metadata: { shopify_order_id: "555" } }).hasShopifyMarker,
+    ).toBe(true);
+  });
+
+  it("returns no line refs for a charge without an expanded invoice", () => {
+    expect(normalizeStripeCharge({ id: "ch_4", invoice: "in_unexpanded" }).lines).toEqual([]);
+    expect(normalizeStripeCharge({ id: "ch_5", invoice: null }).lines).toEqual([]);
+  });
+});
+
+describe("fetchStripeChargesInRange pagination", () => {
+  it("follows cursor pagination and de-duplicates charge ids", async () => {
+    const pages: Record<string, { data: Array<{ id: string }>; has_more: boolean }> = {
+      first: { data: [{ id: "ch_a" }, { id: "ch_b" }], has_more: true },
+      "ch_b": { data: [{ id: "ch_b" }, { id: "ch_c" }], has_more: false },
+    };
+
+    const calls: string[] = [];
+    const fetchImpl = (async (url: string) => {
+      calls.push(url);
+      const parsed = new URL(url);
+      const after = parsed.searchParams.get("starting_after");
+      const page = after ? pages[after] : pages.first;
+      return new Response(JSON.stringify(page), { status: 200 });
+    }) as unknown as typeof fetch;
+
+    const charges = await fetchStripeChargesInRange({
+      startUtc: new Date("2026-08-01T07:00:00Z"),
+      endUtc: new Date("2026-08-02T07:00:00Z"),
+      config: { secretKey: "sk_test", apiBase: "https://api.stripe.test/v1" },
+      fetchImpl,
+    });
+
+    expect(charges.map((c) => c.id)).toEqual(["ch_a", "ch_b", "ch_c"]);
+    expect(calls.length).toBe(2);
+    const firstParams = new URL(calls[0]!).searchParams;
+    expect(firstParams.get("created[gte]")).toBe("1785567600");
+    expect(firstParams.get("created[lt]")).toBe("1785654000");
+    expect(firstParams.getAll("expand[]")).toContain("data.invoice");
+  });
+
+  it("throws a Stripe authentication error on HTTP 401", async () => {
+    const fetchImpl = (async () =>
+      new Response(
+        JSON.stringify({ error: { type: "invalid_request_error", message: "Invalid API Key" } }),
+        { status: 401 },
+      )) as unknown as typeof fetch;
+
+    await expect(
+      fetchStripeChargesInRange({
+        startUtc: new Date("2026-08-01T07:00:00Z"),
+        endUtc: new Date("2026-08-02T07:00:00Z"),
+        config: { secretKey: "sk_bad", apiBase: "https://api.stripe.test/v1" },
+        fetchImpl,
+      }),
+    ).rejects.toThrow(/Stripe authentication failed \(HTTP 401\)/);
+  });
+
+  it("classifies a TLS handshake failure as an unable-to-connect error", async () => {
+    const fetchImpl = (async () => {
+      const cause = Object.assign(new Error("unable to verify the first certificate"), {
+        code: "UNABLE_TO_VERIFY_LEAF_SIGNATURE",
+      });
+      throw Object.assign(new TypeError("fetch failed"), { cause });
+    }) as unknown as typeof fetch;
+
+    await expect(
+      fetchStripeChargesInRange({
+        startUtc: new Date("2026-08-01T07:00:00Z"),
+        endUtc: new Date("2026-08-02T07:00:00Z"),
+        config: { secretKey: "sk_test", apiBase: "https://api.stripe.test/v1" },
+        fetchImpl,
+      }),
+    ).rejects.toThrow(/Unable to connect to Stripe: TLS certificate verification failed/);
+  });
+});
+
+describe("stripe error classification", () => {
+  it("maps HTTP statuses to safe, useful messages", () => {
+    expect(describeStripeHttpError(401, "{}")).toMatch(/authentication failed \(HTTP 401\)/);
+    expect(describeStripeHttpError(403, "{}")).toMatch(/permission denied \(HTTP 403\)/);
+    expect(describeStripeHttpError(429, "{}")).toMatch(/rate limit reached \(HTTP 429\)/);
+    expect(describeStripeHttpError(500, "{}")).toMatch(/HTTP 500 \(Stripe-side error\)/);
+    expect(describeStripeHttpError(402, "{}")).toMatch(/HTTP 402/);
+  });
+
+  it("includes Stripe's structured error detail without secrets", () => {
+    const msg = describeStripeHttpError(
+      403,
+      JSON.stringify({ error: { code: "permission_error", message: "missing scope" } }),
+    );
+    expect(msg).toContain("permission_error");
+    expect(msg).toContain("missing scope");
+  });
+
+  it("summarizes and classifies TLS/DNS/network causes", () => {
+    const tls = Object.assign(new TypeError("fetch failed"), {
+      cause: Object.assign(new Error("bad cert"), { code: "UNABLE_TO_VERIFY_LEAF_SIGNATURE" }),
+    });
+    expect(summarizeStripeFetchCause(tls)).toContain("UNABLE_TO_VERIFY_LEAF_SIGNATURE");
+    expect(describeStripeConnectionError(tls)).toMatch(/TLS certificate verification failed/);
+
+    const dns = Object.assign(new TypeError("fetch failed"), {
+      cause: Object.assign(new Error("nope"), { code: "ENOTFOUND" }),
+    });
+    expect(describeStripeConnectionError(dns)).toMatch(/DNS lookup failed/);
+
+    const refused = Object.assign(new TypeError("fetch failed"), {
+      cause: Object.assign(new Error("nope"), { code: "ECONNREFUSED" }),
+    });
+    expect(describeStripeConnectionError(refused)).toMatch(/network error \(ECONNREFUSED\)/);
+  });
+});
+
+describe("stripe TLS opt-in", () => {
+  it("recognizes explicit opt-in values only", () => {
+    expect(isStripeTlsInsecureFlagEnabled({ STRIPE_TLS_INSECURE: "1" })).toBe(true);
+    expect(isStripeTlsInsecureFlagEnabled({ STRIPE_TLS_INSECURE: "true" })).toBe(true);
+    expect(isStripeTlsInsecureFlagEnabled({ STRIPE_TLS_INSECURE: "0" })).toBe(false);
+    expect(isStripeTlsInsecureFlagEnabled({})).toBe(false);
+  });
+
+  it("never relaxes TLS in production", () => {
+    expect(shouldUseStripeTlsInsecure({ STRIPE_TLS_INSECURE: "1", NODE_ENV: "production" })).toBe(false);
+    expect(shouldUseStripeTlsInsecure({ STRIPE_TLS_INSECURE: "1", CONTEXT: "production" })).toBe(false);
+    expect(shouldUseStripeTlsInsecure({ STRIPE_TLS_INSECURE: "1" })).toBe(true);
+  });
+});
