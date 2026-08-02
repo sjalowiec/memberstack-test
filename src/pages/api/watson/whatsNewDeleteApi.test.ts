@@ -28,7 +28,10 @@ function authedCookies(): DeleteContext["cookies"] {
 
 describe("Watson What's New DELETE route", () => {
   afterEach(() => {
-    delete (import.meta.env as Record<string, unknown>).WATSON_ADMIN_PASSWORD;
+    Reflect.deleteProperty(
+      import.meta.env as Record<string, unknown>,
+      "WATSON_ADMIN_PASSWORD",
+    );
   });
 
   it("rejects unauthorized requests with 401 before touching the database", async () => {
