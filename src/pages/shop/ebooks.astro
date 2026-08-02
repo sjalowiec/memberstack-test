@@ -5,6 +5,8 @@ import { plainTextFromLegacyEbookBrief } from "../../lib/legacy/legacyEbookPlain
 import { loadLegacyEbookStorefrontWithSlugs } from "../../lib/legacy/legacyEbookSlug";
 import {
   formatLegacyEbookPrice,
+  isLegacyEbookTemporarilyUnavailable,
+  LEGACY_EBOOK_UNAVAILABLE_LABEL,
   legacyStoreThumbnailPath,
   SHOW_LEGACY_EBOOK_MEMBER_FREE_BADGE,
 } from "../../lib/legacy/legacyEbookStorefrontUi";
@@ -41,6 +43,9 @@ const products = loadLegacyEbookStorefrontWithSlugs();
     <div class="ebooks-grid">
       {products.map((product) => {
         const detailHref = `/shop/ebooks/${product.slug}`;
+        const temporarilyUnavailable = isLegacyEbookTemporarilyUnavailable(
+          product.itemId
+        );
         return (
         <article class="ebook-store-card">
           <div class="ebook-store-card__media">
@@ -71,9 +76,15 @@ const products = loadLegacyEbookStorefrontWithSlugs();
               </p>
             )}
             <div class="ebook-store-card__actions">
-              <a href={detailHref} class="ebook-store-card__cta">
-                Learn More
-              </a>
+              {temporarilyUnavailable ? (
+                <p class="ebook-store-card__unavailable" role="status">
+                  {LEGACY_EBOOK_UNAVAILABLE_LABEL}
+                </p>
+              ) : (
+                <a href={detailHref} class="ebook-store-card__cta">
+                  Learn More
+                </a>
+              )}
             </div>
           </div>
         </article>
@@ -250,6 +261,18 @@ const products = loadLegacyEbookStorefrontWithSlugs();
   .ebook-store-card__cta:focus-visible {
     outline: 2px solid #445626;
     outline-offset: 2px;
+  }
+
+  .ebook-store-card__unavailable {
+    margin: 0;
+    padding: 0.5rem 0.85rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #8a5a00;
+    background: #fdf3e2;
+    border: 1px solid #f0d9ad;
+    border-radius: 8px;
+    text-align: center;
   }
 
   @media (min-width: 640px) {

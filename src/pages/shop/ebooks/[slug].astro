@@ -3,7 +3,10 @@ export const prerender = true;
 
 import Layout from "../../../layouts/Layout.astro";
 import PageHead from "../../../components/PageHead.astro";
-import { sanitizeLegacyEbookDescriptionHtml } from "../../../lib/legacy/legacyEbookDescriptionHtml";
+import {
+  sanitizeLegacyEbookDescriptionHtml,
+  stripLegacyEbookDescriptionImages,
+} from "../../../lib/legacy/legacyEbookDescriptionHtml";
 import {
   findLegacyEbookStorefrontBySlug,
   loadLegacyEbookStorefrontWithSlugs,
@@ -11,6 +14,8 @@ import {
 import { plainTextFromLegacyEbookBrief } from "../../../lib/legacy/legacyEbookPlainText";
 import {
   formatLegacyEbookPrice,
+  isLegacyEbookTemporarilyUnavailable,
+  LEGACY_EBOOK_UNAVAILABLE_LABEL,
   legacyStoreThumbnailPath,
   SHOW_LEGACY_EBOOK_MEMBER_FREE_BADGE,
 } from "../../../lib/legacy/legacyEbookStorefrontUi";
@@ -39,9 +44,18 @@ const title = `${product.title} | Knit it Now`;
 const description =
   plainTextFromLegacyEbookBrief(product.shortDescription) ||
   `${product.title} — machine knitting eBook.`;
-const descriptionHtml = sanitizeLegacyEbookDescriptionHtml(
+const temporarilyUnavailable = isLegacyEbookTemporarilyUnavailable(
+  product.itemId
+);
+const sanitizedDescriptionHtml = sanitizeLegacyEbookDescriptionHtml(
   product.descriptionHtml
 );
+// While a product is temporarily unavailable, strip embedded description images
+// (e.g. the "free for subscribers" promo) so a missing/broken purchase-area image
+// doesn't display. The separate cover image is unaffected.
+const descriptionHtml = temporarilyUnavailable
+  ? stripLegacyEbookDescriptionImages(sanitizedDescriptionHtml)
+  : sanitizedDescriptionHtml;
 ---
 
 <Layout {title} {description}>
@@ -70,17 +84,25 @@ const descriptionHtml = sanitizeLegacyEbookDescriptionHtml(
         <PageHead title={product.title} />
         <p class="ebook-detail-price">{formatLegacyEbookPrice(product.sellPrice)}</p>
 
-        {product.shopifyUrl && (
+        {temporarilyUnavailable ? (
           <div class="ebook-detail-actions">
-            <a
-              href={product.shopifyUrl}
-              class="kbm-btn kbm-btn-primary ebook-detail-buy"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Buy eBook
-            </a>
+            <p class="ebook-detail-unavailable" role="status">
+              {LEGACY_EBOOK_UNAVAILABLE_LABEL}
+            </p>
           </div>
+        ) : (
+          product.shopifyUrl && (
+            <div class="ebook-detail-actions">
+              <a
+                href={product.shopifyUrl}
+                class="kbm-btn kbm-btn-primary ebook-detail-buy"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Buy eBook
+              </a>
+            </div>
+          )
         )}
 
         {descriptionHtml ? (
@@ -197,6 +219,17 @@ const descriptionHtml = sanitizeLegacyEbookDescriptionHtml(
   .ebook-detail-buy {
     display: inline-block;
     text-decoration: none;
+  }
+
+  .ebook-detail-unavailable {
+    display: inline-block;
+    margin: 0;
+    padding: 0.6rem 1rem;
+    font-weight: 700;
+    color: #8a5a00;
+    background: #fdf3e2;
+    border: 1px solid #f0d9ad;
+    border-radius: 8px;
   }
 
   .ebook-detail-empty {
