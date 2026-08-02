@@ -5,6 +5,7 @@ import {
   civilDayKey,
   civilToString,
   eachCivilDay,
+  formatLaTimestamp,
   laCivilDateOf,
   laCivilMidnightUtc,
   parseCivil,
@@ -59,6 +60,50 @@ describe("Los Angeles calendar-day boundaries", () => {
       month: 3,
       day: 9,
     });
+  });
+});
+
+describe("formatLaTimestamp", () => {
+  it("renders a UTC instant in Los Angeles summer time (PDT) with a tz label", () => {
+    // 2026-08-01T20:00:00Z = 1:00 PM in Los Angeles during PDT (UTC-7).
+    const out = formatLaTimestamp("2026-08-01T20:00:00Z");
+    expect(out).toContain("PDT");
+    expect(out).not.toContain("PST");
+    expect(out).toContain("Aug 1, 2026");
+    expect(out).toContain("1:00");
+    expect(out).toContain("PM");
+  });
+
+  it("renders a UTC instant in Los Angeles winter time (PST) with a tz label", () => {
+    // 2026-01-15T20:00:00Z = 12:00 PM in Los Angeles during PST (UTC-8).
+    const out = formatLaTimestamp("2026-01-15T20:00:00Z");
+    expect(out).toContain("PST");
+    expect(out).not.toContain("PDT");
+    expect(out).toContain("Jan 15, 2026");
+    expect(out).toContain("12:00");
+    expect(out).toContain("PM");
+  });
+
+  it("reproduces the reported bug: a late-morning UTC stamp is early-morning LA (PDT)", () => {
+    // 11:17 UTC displayed as 11:17 was wrong; in LA it is 4:17 AM PDT.
+    const out = formatLaTimestamp("2026-08-02T11:17:00Z");
+    expect(out).toContain("4:17");
+    expect(out).toContain("AM");
+    expect(out).toContain("PDT");
+  });
+
+  it("accepts a Date instance", () => {
+    expect(formatLaTimestamp(new Date("2026-01-15T20:00:00Z"))).toContain("PST");
+  });
+
+  it("returns a dash for nullish or empty input", () => {
+    expect(formatLaTimestamp(null)).toBe("-");
+    expect(formatLaTimestamp(undefined)).toBe("-");
+    expect(formatLaTimestamp("")).toBe("-");
+  });
+
+  it("echoes an unparseable string unchanged", () => {
+    expect(formatLaTimestamp("not-a-date")).toBe("not-a-date");
   });
 });
 
