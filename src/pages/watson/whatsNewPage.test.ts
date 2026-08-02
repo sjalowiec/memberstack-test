@@ -129,6 +129,23 @@ describe("Watson Whats New page", () => {
     );
   });
 
+  it("renders the public card description as normal body copy, keeping the title bold", () => {
+    const descMatch = publicPage.match(/\.whats-new__card-desc\s*\{([^}]*)\}/);
+    expect(descMatch).not.toBeNull();
+    const descBody = descMatch![1];
+    // Normal weight, forced to beat the global `.kbm-card { font-weight: 700 !important }`.
+    expect(descBody).toMatch(/font-weight:\s*400\s*!important/);
+    // Uses the normal site body-text color, not the card's green.
+    expect(descBody).toMatch(/color:\s*#243015/);
+    // Comfortable line-height for multi-line descriptions.
+    expect(descBody).toMatch(/line-height:\s*1\.55/);
+
+    // The title keeps its own styling and does not force a normal weight.
+    const titleMatch = publicPage.match(/\.whats-new__card-title\s*\{([^}]*)\}/);
+    expect(titleMatch).not.toBeNull();
+    expect(titleMatch![1]).not.toMatch(/font-weight:\s*400/);
+  });
+
   it("places the billboard above the board title, without a generic lead paragraph", () => {
     expect(publicPage).toContain("What's New at Knit It Now");
     expect(publicPage).toContain('title={`${pageTitle} | Knit it Now`}');
