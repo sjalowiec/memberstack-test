@@ -1,0 +1,424 @@
+---
+import { formatReportUsd, type SalesReport, type SourceStatus } from "../../lib/watson/salesReport";
+import { formatCivilLabel } from "../../lib/watson/salesReportDates";
+
+interface Props {
+  report: SalesReport | null;
+  rangeError: string | null;
+  filters: { preset: string; from: string; to: string };
+}
+
+const { report, rangeError, filters } = Astro.props;
+
+const PRESETS: Array<{ id: string; label: string }> = [
+  { id: "today", label: "Today" },
+  { id: "yesterday", label: "Yesterday" },
+  { id: "last3", label: "Last 3 Days" },
+  { id: "last7", label: "Last 7 Days" },
+  { id: "month", label: "This Month" },
+  { id: "custom", label: "Custom" },
+];
+
+const activePreset = report?.range.preset ?? filters.preset ?? "last3";
+
+function presetHref(id: string): string {
+  const params = new URLSearchParams({ preset: id });
+  if (id === "custom") {
+    if (filters.from) params.set("from", filters.from);
+    if (filters.to) params.set("to", filters.to);
+  }
+  return `/watson/sales/report?${params.toString()}`;
+}
+
+function formatWhen(iso: string | null): string {
+  if (!iso) return "-";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return date.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
+}
+
+function sourceBadge(status: SourceStatus): { text: string; kind: string } {
+  if (!status.available) return { text: "Unavailable", kind: "error" };
+  if (status.stale) return { text: "Stale", kind: "warn" };
+  return { text: "OK", kind: "ok" };
+}
+
+/** Render money for a source: dashes when the source is unavailable. */
+function money(value: number, available: boolean): string {
+  return available ? formatReportUsd(value) : "-";
+}
+
+const shopify = report?.summary.shopify ?? null;
+const membership = report?.summary.membership ?? null;
+const combined = report?.summary.combined ?? null;
+const shopifyOk = report?.sources.shopify.available ?? false;
+const stripeOk = report?.sources.stripe.available ?? false;
+const breakdown = report?.membershipBreakdown ?? null;
+
+const breakdownRows = breakdown
+  ? [
+      { key: "monthly", label: "Monthly membership payments", totals: breakdown.monthly },
+      { key: "annual", label: "Annual membership payments", totals: breakdown.annual },
+      { key: "other", label: "Other membership payments", totals: breakdown.other },
+    ]
+  : [];
+---
+
+{
+  rangeError ? (
+    <p class="watson__status watson__status--error" role="alert">
+      {rangeError}
+    </p>
+  ) : null
+}
+
+{
+  report && report.warnings.length > 0 ? (
+    <section class="watson__panel watson-salesreport__warnings" role="alert">
+      <h2 class="watson__panel-title">Data warnings</h2>
+      <ul class="watson-salesreport__warning-list">
+        {report.warnings.map((warning) => (
+          <li>{warning}</li>
+        ))}
+      </ul>
+    </section>
+  ) : null
+}
+
+<section class="watson__panel" aria-labelledby="watson-salesreport-range-heading">
+  <h2 id="watson-salesreport-range-heading" class="watson__panel-title">Date range</h2>
+  {report ? <p class="watson-report__note">Showing: <strong>{report.range.label}</strong> - America/Los_Angeles calendar days.</p> : null}
+  <div class="watson-salesreport__presets">
+    {PRESETS.map((preset) => (
+      <a
+        href={presetHref(preset.id)}
+        class:list={[
+          "watson-report__button",
+          "watson-report__button--secondary",
+          { "watson-salesreport__preset--active": activePreset === preset.id },
+        ]}
+        aria-current={activePreset === preset.id ? "true" : undefined}
+      >
+        {preset.label}
+      </a>
+    ))}
+  </div>
+
+  <form class="watson-report__filters watson-salesreport__custom" method="get" action="/watson/sales/report">
+    <input type="hidden" name="preset" value="custom" />
+    <div class="watson-report__filter">
+      <label for="watson-salesreport-from">From (LA)</label>
+      <input id="watson-salesreport-from" name="from" type="date" value={filters.from} required />
+    </div>
+    <div class="watson-report__filter">
+      <label for="watson-salesreport-to">To (LA)</label>
+      <input id="watson-salesreport-to" name="to" type="date" value={filters.to} required />
+    </div>
+    <div class="watson-report__actions">
+      <button type="submit" class="watson-report__button">Apply custom range</button>
+    </div>
+  </form>
+</section>
+
+{
+  report ? (
+    <>
+      <section class="watson__panel" aria-labelledby="watson-salesreport-freshness-heading">
+        <div class="watson-salesreport__freshness-head">
+          <h2 id="watson-salesreport-freshness-heading" class="watson__panel-title">Data freshness</h2>
+          <a class="watson-salesreport__orders-link" href="/watson/sales">View Shopify orders</a>
+        </div>
+        <ul class="watson-salesreport__freshness">
+          {(["shopify", "stripe"] as const).map((key) => {
+            const status = report.sources[key];
+            const badge = sourceBadge(status);
+            const name = key === "shopify" ? "Shopify (synced)" : "Stripe (live)";
+            const stamp =
+              key === "shopify" ? "Last synchronized" : "Last retrieved";
+            return (
+              <li class="watson-salesreport__freshness-row">
+                <span class={`watson-salesreport__badge watson-salesreport__badge--${badge.kind}`}>
+                  {badge.text}
+                </span>
+                <span class="watson-salesreport__freshness-name">{name}</span>
+                <span class="watson-salesreport__freshness-when">
+                  {stamp}: {formatWhen(status.lastAt)}
+                </span>
+                <span class="watson-sales__muted watson-salesreport__freshness-detail">
+                  {status.error ?? status.detail}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
+      <section class="watson__panel" aria-labelledby="watson-salesreport-summary-heading">
+        <h2 id="watson-salesreport-summary-heading" class="watson__panel-title">Summary</h2>
+        <p class="watson-report__note">
+          Net collected equals gross collected minus refunds. Refunds are attributed to the
+          original transaction date. Read-only.
+        </p>
+        <div class="watson-report__cards">
+          <article class="watson-report__card">
+            <h3 class="watson-report__card-label">Shopify revenue</h3>
+            <p class="watson-report__card-value">{money(shopify?.netCollected ?? 0, shopifyOk)}</p>
+            <p class="watson-sales__card-detail">
+              {shopifyOk
+                ? `${shopify?.transactionCount ?? 0} orders - gross ${formatReportUsd(shopify?.grossCollected ?? 0)}`
+                : "Source unavailable"}
+            </p>
+          </article>
+          <article class="watson-report__card">
+            <h3 class="watson-report__card-label">Membership revenue</h3>
+            <p class="watson-report__card-value">{money(membership?.netCollected ?? 0, stripeOk)}</p>
+            <p class="watson-sales__card-detail">
+              {stripeOk
+                ? `${membership?.transactionCount ?? 0} payments - gross ${formatReportUsd(membership?.grossCollected ?? 0)}`
+                : "Source unavailable"}
+            </p>
+          </article>
+          <article class="watson-report__card">
+            <h3 class="watson-report__card-label">Combined revenue</h3>
+            <p class="watson-report__card-value">{formatReportUsd(combined?.netCollected ?? 0)}</p>
+            <p class="watson-sales__card-detail">
+              {report.summary.combinedPartial
+                ? "Partial - a source is unavailable"
+                : `gross ${formatReportUsd(combined?.grossCollected ?? 0)}`}
+            </p>
+          </article>
+          <article class="watson-report__card">
+            <h3 class="watson-report__card-label">Transactions</h3>
+            <p class="watson-report__card-value">{combined?.transactionCount ?? 0}</p>
+            <p class="watson-sales__card-detail">Shopify orders + membership payments</p>
+          </article>
+          <article class="watson-report__card">
+            <h3 class="watson-report__card-label">Refunds</h3>
+            <p class="watson-report__card-value">{formatReportUsd(combined?.refunds ?? 0)}</p>
+            <p class="watson-sales__card-detail">
+              Shopify {money(shopify?.refunds ?? 0, shopifyOk)} - Membership{" "}
+              {money(membership?.refunds ?? 0, stripeOk)}
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="watson__panel" aria-labelledby="watson-salesreport-membership-heading">
+        <h2 id="watson-salesreport-membership-heading" class="watson__panel-title">
+          Membership breakdown
+        </h2>
+        <p class="watson-report__note">
+          Knit It Now membership payments only (DesignaKnit and other Stripe products excluded).
+          Monthly vs annual is classified by the configured Stripe price ids, never by amount.
+        </p>
+        {stripeOk ? (
+          <div class="watson__table-wrap">
+            <table class="watson__table" data-sortable>
+              <thead>
+                <tr>
+                  <th data-sort="text">Category</th>
+                  <th data-sort="number">Payments</th>
+                  <th data-sort="number">Gross collected</th>
+                  <th data-sort="number">Refunds</th>
+                  <th data-sort="number">Net collected</th>
+                </tr>
+              </thead>
+              <tbody>
+                {breakdownRows.map((row) => (
+                  <tr>
+                    <td>{row.label}</td>
+                    <td data-sort-value={row.totals.transactionCount}>{row.totals.transactionCount}</td>
+                    <td data-sort-value={row.totals.grossCollected}>{formatReportUsd(row.totals.grossCollected)}</td>
+                    <td data-sort-value={row.totals.refunds}>{formatReportUsd(row.totals.refunds)}</td>
+                    <td data-sort-value={row.totals.netCollected}>{formatReportUsd(row.totals.netCollected)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p class="watson__placeholder">
+            Membership revenue is unavailable: {report.sources.stripe.error ?? "Stripe not configured."}
+          </p>
+        )}
+      </section>
+
+      <section class="watson__panel" aria-labelledby="watson-salesreport-daily-heading">
+        <h2 id="watson-salesreport-daily-heading" class="watson__panel-title">Daily breakdown</h2>
+        <div class="watson__table-wrap">
+          <table class="watson__table" data-sortable>
+            <thead>
+              <tr>
+                <th data-sort="date">Date (LA)</th>
+                <th data-sort="number">Shopify revenue</th>
+                <th data-sort="number">Shopify orders</th>
+                <th data-sort="number">Membership revenue</th>
+                <th data-sort="number">Membership payments</th>
+                <th data-sort="number">Refunds</th>
+                <th data-sort="number">Net collected</th>
+                <th data-sort="text">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {report.daily.map((row) => (
+                <tr class:list={[{ "watson-salesreport__row--today": row.inProgress }]}>
+                  <td data-sort-value={row.date}>{formatCivilLabel(row.date)}</td>
+                  <td data-sort-value={row.shopify.netCollected}>{money(row.shopify.netCollected, shopifyOk)}</td>
+                  <td data-sort-value={row.shopify.transactionCount}>{shopifyOk ? row.shopify.transactionCount : "-"}</td>
+                  <td data-sort-value={row.membership.netCollected}>{money(row.membership.netCollected, stripeOk)}</td>
+                  <td data-sort-value={row.membership.transactionCount}>{stripeOk ? row.membership.transactionCount : "-"}</td>
+                  <td data-sort-value={row.refunds}>{formatReportUsd(row.refunds)}</td>
+                  <td data-sort-value={row.netCollected}>{formatReportUsd(row.netCollected)}</td>
+                  <td>
+                    {row.inProgress ? (
+                      <span class="watson-salesreport__badge watson-salesreport__badge--warn">In progress</span>
+                    ) : (
+                      "Complete"
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p class="watson-report__note">
+          Generated {formatWhen(report.generatedAtIso)}. Today's LA calendar day is still
+          collecting payments and is marked "In progress".
+        </p>
+      </section>
+    </>
+  ) : null
+}
+
+<style>
+  .watson-salesreport__presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .watson-salesreport__preset--active {
+    background: #3f6212;
+    color: #fff;
+    border-color: #3f6212;
+  }
+
+  .watson-salesreport__custom {
+    margin-top: 0.5rem;
+  }
+
+  .watson-salesreport__warnings {
+    border-left: 4px solid #b45309;
+    background: #fffbeb;
+  }
+
+  .watson-salesreport__warning-list {
+    margin: 0;
+    padding-left: 1.2rem;
+    color: #92400e;
+    line-height: 1.5;
+  }
+
+  .watson-salesreport__freshness {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .watson-salesreport__freshness-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 0.75rem;
+  }
+
+  .watson-salesreport__freshness-name {
+    font-weight: 600;
+  }
+
+  .watson-salesreport__freshness-detail {
+    flex-basis: 100%;
+  }
+
+  .watson-salesreport__badge {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  .watson-salesreport__badge--ok {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .watson-salesreport__badge--warn {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .watson-salesreport__badge--error {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .watson-salesreport__row--today td {
+    background: #fefce8;
+    font-weight: 600;
+  }
+
+  .watson-salesreport__freshness-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+  }
+
+  .watson-salesreport__orders-link {
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /*
+   * The shared watson.css table rules target `.watson-table`, but these tables
+   * use the `.watson__table` class, so cells would otherwise render with no
+   * padding and headers/values run together. Scope the spacing fix here.
+   */
+  .watson__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  .watson__table th,
+  .watson__table td {
+    padding: 0.55rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: top;
+  }
+
+  .watson__table th {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #64748b;
+    white-space: nowrap;
+  }
+
+  .watson__table td {
+    color: #334155;
+  }
+
+  .watson__table tbody tr:last-child td {
+    border-bottom: none;
+  }
+</style>

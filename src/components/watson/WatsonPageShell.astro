@@ -17,6 +17,7 @@ const { title, description, heading, intro } = Astro.props;
     <header class="watson__head">
       <nav class="watson__nav" aria-label="Watson">
         <a href="/watson">Dashboard</a>
+        <a href="/watson/sales/report">Sales</a>
         <a href="/watson/customers">Customers</a>
         <a href="/watson/birthdays">Birthdays</a>
         <a href="/watson/contact-messages">Contact Messages</a>
@@ -25,8 +26,6 @@ const { title, description, heading, intro } = Astro.props;
         <a href="/watson/pattern-inspector">Saved Pattern Inspector</a>
         <a href="/watson/current">Current</a>
         <a href="/watson/legacy-renewals">Legacy Renewals</a>
-        <a href="/watson/sales">Recent Sales</a>
-        <a href="/watson/reports">Reports</a>
         <a href="/admin">Admin</a>
         <form class="watson__logout" method="post" action="/api/watson/logout">
           <button type="submit">Logout</button>

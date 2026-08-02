@@ -19,6 +19,29 @@ interface ImportMetaEnv {
    * Preferred outside production so Admin matches browser TEST mode.
    */
   readonly MEMBERSTACK_SANDBOX_SECRET_KEY?: string;
+  /**
+   * Server-only: Stripe secret (restricted, read-only) key used by the Watson
+   * Sales Report to retrieve actual collected membership payments. NEVER expose
+   * to the browser.
+   */
+  readonly STRIPE_SECRET_KEY?: string;
+  /** Server-only: optional Stripe API base override (tests/mocks). */
+  readonly STRIPE_API_BASE?: string;
+  /** Server-only: comma/space-separated Stripe price ids billed as MONTHLY membership. */
+  readonly STRIPE_MEMBERSHIP_MONTHLY_PRICE_IDS?: string;
+  /** Server-only: comma/space-separated Stripe price ids billed as ANNUAL membership. */
+  readonly STRIPE_MEMBERSHIP_ANNUAL_PRICE_IDS?: string;
+  /** Server-only: additional (legacy) membership Stripe price ids classified as "other". */
+  readonly STRIPE_MEMBERSHIP_OTHER_PRICE_IDS?: string;
+  /** Server-only: Stripe product ids that are Knit It Now membership products. */
+  readonly STRIPE_MEMBERSHIP_PRODUCT_IDS?: string;
+  /**
+   * Server-only, LOCAL DEV ONLY: when "1"/"true"/"yes" outside production, the
+   * Stripe reporting client relaxes TLS verification (client-scoped https.Agent)
+   * to work around local SSL inspection / incomplete cert chains. Ignored in
+   * production. Prefer NODE_EXTRA_CA_CERTS for a proper fix.
+   */
+  readonly STRIPE_TLS_INSECURE?: string;
   /** Server-only: Resend API key for transactional email. */
   readonly RESEND_API_KEY?: string;
   /** Server-only: verified sender for Resend (defaults to hello@knititnow.com). */
