@@ -1,6 +1,6 @@
 ---
 import { formatReportUsd, type SalesReport, type SourceStatus } from "../../lib/watson/salesReport";
-import { formatCivilLabel } from "../../lib/watson/salesReportDates";
+import { formatCivilLabel, formatLaTimestamp } from "../../lib/watson/salesReportDates";
 
 interface Props {
   report: SalesReport | null;
@@ -30,11 +30,9 @@ function presetHref(id: string): string {
   return `/watson/sales/report?${params.toString()}`;
 }
 
+/** Freshness/generated stamps render in America/Los_Angeles with a PDT/PST label. */
 function formatWhen(iso: string | null): string {
-  if (!iso) return "-";
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return iso;
-  return date.toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
+  return formatLaTimestamp(iso);
 }
 
 function sourceBadge(status: SourceStatus): { text: string; kind: string } {

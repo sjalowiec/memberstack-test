@@ -182,6 +182,35 @@ export function formatCivilLabel(value: string): string {
   return `${MONTH_NAMES[civil.month - 1]} ${civil.day}, ${civil.year}`;
 }
 
+/**
+ * Wall-clock display formatter for America/Los_Angeles that includes the
+ * timezone abbreviation (e.g. "PDT"/"PST"), so freshness stamps are unambiguous
+ * regardless of the server timezone. `timeZoneName` cannot be combined with
+ * `dateStyle`/`timeStyle`, so explicit component options are used instead.
+ */
+const laDisplayFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: SALES_REPORT_TZ,
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  hour12: true,
+  timeZoneName: "short",
+});
+
+/**
+ * Format an instant as a human-readable America/Los_Angeles timestamp with an
+ * explicit timezone abbreviation, e.g. "Aug 1, 2026, 1:00 PM PDT". Returns "-"
+ * for nullish/empty input and echoes the original string if it cannot be parsed.
+ */
+export function formatLaTimestamp(value: string | Date | null | undefined): string {
+  if (value == null || value === "") return "-";
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return typeof value === "string" ? value : "-";
+  return laDisplayFormatter.format(date);
+}
+
 function rangeLabel(preset: SalesRangePreset, from: string, to: string): string {
   const presetName: Record<SalesRangePreset, string> = {
     today: "Today",
