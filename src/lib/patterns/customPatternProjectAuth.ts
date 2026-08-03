@@ -51,12 +51,60 @@ export function getOrCreateDevPatternUserId(): string {
   }
 }
 
-async function readMemberstackBearerToken(): Promise<string | null> {
+/**
+ * Wait for the Memberstack DOM package to load and finish `onReady`.
+ *
+ * The save/update request runs the instant "Save Changes" is clicked, which can be before the
+ * Memberstack SDK has finished initialising the session (especially for a just-registered member
+ * or a freshly loaded Edit Pattern page). Reading the session before it is ready yields a stale or
+ * missing token that the server rejects with "Invalid or expired session." This mirrors the
+ * membership-status client's readiness handling so both authenticated callers behave the same —
+ * it is not a second auth system.
+ */
+async function waitForMemberstackDom(
+  maxAttempts = 35,
+  intervalMs = 200,
+): Promise<Window["$memberstackDom"] | undefined> {
+  if (typeof window === "undefined") return undefined;
+  for (let i = 0; i < maxAttempts; i++) {
+    const ms = window.$memberstackDom;
+    if (ms?.getCurrentMember) {
+      if (ms.onReady) {
+        try {
+          await ms.onReady;
+        } catch {
+          /* readiness errors are non-fatal — fall through and try to read the session */
+        }
+      }
+      return ms;
+    }
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+  return window.$memberstackDom;
+}
+
+/**
+ * Read the current Memberstack session JWT for the Authorization header.
+ *
+ * Retries briefly: `getCurrentMember` can resolve before `getMemberCookie` returns a JWT, so a
+ * single early read can miss a token that is about to be written. Retrying re-reads the *current*
+ * session token rather than reusing a stale captured value.
+ */
+async function readMemberstackBearerToken(
+  options: { attempts?: number; intervalMs?: number } = {},
+): Promise<string | null> {
   if (typeof window === "undefined") return null;
+  const attempts = options.attempts ?? 6;
+  const intervalMs = options.intervalMs ?? 150;
   try {
     const ms = window.$memberstackDom;
-    const token = await ms?.getMemberCookie?.();
-    if (typeof token === "string" && token.trim()) return token.trim();
+    for (let i = 0; i < attempts; i++) {
+      const token = await ms?.getMemberCookie?.();
+      if (typeof token === "string" && token.trim()) return token.trim();
+      if (i < attempts - 1) {
+        await new Promise((resolve) => setTimeout(resolve, intervalMs));
+      }
+    }
   } catch {
     /* unauthenticated */
   }
@@ -71,7 +119,7 @@ export async function resolveCustomPatternProjectAuth(): Promise<CustomPatternPr
   }
 
   const readiness = memberstackReadinessSnapshot();
-  const ms = window.$memberstackDom;
+  const ms = await waitForMemberstackDom();
   if (ms?.getCurrentMember) {
     const memberStart = perfStart();
     try {

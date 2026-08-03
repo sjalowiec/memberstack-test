@@ -6,6 +6,12 @@ import {
   formatSwatchCountForGaugeInput,
   swatchCountFromPerInchForDisplay,
 } from "../lib/patterns/gaugeDisplayFormat";
+import {
+  formatMeasurementDisplayFromInches,
+  inchesToCmRounded,
+  parseMeasurementInputToInches,
+  type MeasurementDisplayUnit,
+} from "../lib/patterns/patternMeasurementDisplayUnit";
 import { getDefaultHemLengthInches, getDefaultCuffLengthInches } from "../lib/patterns/hemDefaults";
 import {
   getCurrentPattern,
@@ -200,6 +206,13 @@ export type CustomBuildMeasurementsInitOptions = {
   readOnly?: boolean;
   /** Keep unit toggle in summary host when rendering build summary (unified review). */
   preserveUnitsHost?: boolean;
+  /**
+   * Explicit display unit for pages WITHOUT a unit toggle (e.g. the Edit Pattern workspace).
+   * The diagram displays / accepts edits in the returned unit and converts to canonical inches
+   * on save, honoring the unit chosen at build time — no unit switcher is added. When omitted,
+   * unit display is driven by `preserveUnitsHost` (toggle) or defaults to inches.
+   */
+  resolveDisplayUnit?: () => MeasurementDisplayUnit;
 };
 
 /**
@@ -503,21 +516,7 @@ function parseInchesInput(raw: string): number | undefined {
   return roundQuarter(n);
 }
 
-type UiLengthUnit = "in" | "cm";
-
-function inchesToCmRounded(inches: number): number {
-  return Math.round(inches * 2.54 * 10) / 10;
-}
-
-/** Display-only: stored inches → input/value text for the active UI unit. */
-function formatMeasurementDisplayFromInches(
-  inches: number | undefined,
-  unit: UiLengthUnit,
-): string {
-  if (inches === undefined || !Number.isFinite(inches)) return "";
-  if (unit === "cm") return String(inchesToCmRounded(inches));
-  return formatInchesInput(inches);
-}
+type UiLengthUnit = MeasurementDisplayUnit;
 
 /** Display-only: stored inch string → readonly chip text. */
 function formatReadonlyMeasurementDisplay(rawInches: string, unit: UiLengthUnit): string {
@@ -527,16 +526,6 @@ function formatReadonlyMeasurementDisplay(rawInches: string, unit: UiLengthUnit)
   if (inches === undefined) return trimmed;
   if (unit === "cm") return `${inchesToCmRounded(inches)} cm`;
   return `${formatSwatchCountForGaugeInput(inches)} in`;
-}
-
-/** Parse visible field text in the active UI unit; returns stored inches. */
-function parseMeasurementInputToInches(raw: string, unit: UiLengthUnit): number | undefined {
-  const s = raw.trim();
-  if (!s) return undefined;
-  const n = parseFloat(s.replace(/[^\d.-]/g, ""));
-  if (!Number.isFinite(n) || n <= 0) return undefined;
-  const inches = unit === "cm" ? n / 2.54 : n;
-  return roundQuarter(inches);
 }
 
 function readExpressValues(): Record<string, string> {
@@ -1332,15 +1321,25 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
   stampDropShoulderMeasurementPageShell(root);
 
   const readOnly = options?.readOnly === true;
+  // `preserveUnitsHost` keeps the summary unit-toggle host AND wires the live unit-switch
+  // listener (review pages). `resolveDisplayUnit` honors a fixed build-time unit with no toggle
+  // (Edit workspace). Either activates display conversion; only the toggle adds a switcher.
   const useUiUnitDisplay = options?.preserveUnitsHost === true;
+  const explicitDisplayUnitResolver = options?.resolveDisplayUnit ?? null;
+  const unitDisplayActive = useUiUnitDisplay || explicitDisplayUnitResolver != null;
   const summaryEl = root.querySelector("[data-cb-build-summary]");
   const missingEl = root.querySelector("[data-cb-measure-missing]");
   const diagramHost = root.querySelector("[data-cb-measure-diagram]");
   const continueBtn = root.querySelector("[data-cb-measure-continue]");
 
-  const getDisplayUnit = (): UiLengthUnit | null => (useUiUnitDisplay ? getExpressUiUnit() : null);
+  const getDisplayUnit = (): UiLengthUnit | null => {
+    if (explicitDisplayUnitResolver) {
+      return explicitDisplayUnitResolver() === "cm" ? "cm" : "in";
+    }
+    return useUiUnitDisplay ? getExpressUiUnit() : null;
+  };
   let diagramInches = {} as Record<DiagramFieldKey, string>;
-  let lastDisplayUnit: UiLengthUnit = useUiUnitDisplay ? getExpressUiUnit() : "in";
+  let lastDisplayUnit: UiLengthUnit = getDisplayUnit() ?? "in";
   let diagramUnitDisplayReady = false;
 
   if (useUiUnitDisplay) {
@@ -1420,11 +1419,11 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
     diagramInches = displayMerged;
     if (!(diagramHost instanceof HTMLElement)) return;
 
-    const renderKey = `${JSON.stringify(displayMerged)}|${useUiUnitDisplay ? getExpressUiUnit() : "in"}|${readOnly}`;
+    const renderKey = `${JSON.stringify(displayMerged)}|${getDisplayUnit() ?? "in"}|${readOnly}`;
     const hasDiagram = !!diagramHost.querySelector(".express-mbp--diagram");
     if (renderKey === lastSummaryDiagramRenderKey && hasDiagram) {
       diagramUnitDisplayReady = true;
-      if (useUiUnitDisplay) {
+      if (unitDisplayActive) {
         applyDiagramUnitDisplay(diagramHost, diagramInches, readOnly, lastDisplayUnit);
       }
       if (!readOnly) refreshPatternValidationUi(root, getDisplayUnit());
@@ -1434,13 +1433,13 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
 
     suppressDropShoulderSleeveUserEditTracking = true;
     try {
-      lastDisplayUnit = useUiUnitDisplay ? getExpressUiUnit() : "in";
+      lastDisplayUnit = getDisplayUnit() ?? "in";
       await renderDiagram(
         diagramHost,
         root,
         displayMerged,
         readOnly,
-        useUiUnitDisplay ? lastDisplayUnit : null,
+        unitDisplayActive ? lastDisplayUnit : null,
         getDisplayUnit,
       );
     } finally {
@@ -1448,7 +1447,7 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
     }
     diagramUnitDisplayReady = true;
     scheduleCaptureCustomPatternDirtyBaselineAfterHydration();
-    if (useUiUnitDisplay) {
+    if (unitDisplayActive) {
       const stats = applyDiagramUnitDisplay(diagramHost, diagramInches, readOnly, lastDisplayUnit);
       logReviewUnitDebug("diagram unit display", {
         unit: lastDisplayUnit,

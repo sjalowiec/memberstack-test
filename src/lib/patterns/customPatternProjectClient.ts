@@ -51,6 +51,7 @@ import { applySleevelessReadingWorkflow } from "./patternReadingWorkflow";
 import {
   authHeadersForCustomPatternProjects,
   resolveCustomPatternProjectAuth,
+  type CustomPatternProjectAuth,
   type CustomPatternProjectAuthMode,
 } from "./customPatternProjectAuth";
 import { perfEnd, perfStart } from "./savedPatternsPerfLog";
@@ -68,6 +69,14 @@ import {
 import { hasPatternSystemAccess, type SleevelessUserAccess } from "./sleevelessPatternSystemAccess";
 
 const FN_BASE = "/.netlify/functions";
+
+/**
+ * User-facing message when the server rejects the Memberstack session (HTTP 401) even after the
+ * token is re-read from the current session. Shown by the Edit Pattern / banner save handlers,
+ * which keep the unsaved edits in the browser so nothing is lost.
+ */
+export const SESSION_EXPIRED_SAVE_MESSAGE =
+  "Your session has expired. Please sign in again to save your changes — your edits are safe.";
 
 export type PatternSaveEntitlementSnapshot = {
   patternSystem: PatternSystemId;
@@ -111,25 +120,21 @@ export function resolvePatternSystemForSavePayload(
 type ApiOk<T> = { ok: true; authMode?: CustomPatternProjectAuthMode } & T;
 type ApiErr = { ok: false; error: string };
 
-async function projectFetch<T>(
+type SendResult =
+  | { ok: true; status: number; body: Record<string, unknown> }
+  | { ok: false; status: number; error: string };
+
+/** One request attempt: attach auth headers, fetch, parse the JSON envelope. */
+async function sendProjectRequest(
   path: string,
   init: RequestInit,
-): Promise<(ApiOk<T> & T) | ApiErr> {
-  const requestStart = perfStart();
-  const auth = await resolveCustomPatternProjectAuth();
+  auth: CustomPatternProjectAuth,
+): Promise<SendResult> {
   const headers = {
     "Content-Type": "application/json",
     ...authHeadersForCustomPatternProjects(auth),
     ...(init.headers as Record<string, string> | undefined),
   };
-
-  if (auth.mode === "none") {
-    perfEnd(`3-saved-patterns-request ${path} (auth blocked)`, requestStart, { authMode: auth.mode });
-    return {
-      ok: false,
-      error: "Sign in to save Custom Pattern projects.",
-    };
-  }
 
   const fetchStart = perfStart();
   const res = await fetch(`${FN_BASE}/${path}`, { ...init, headers });
@@ -144,8 +149,7 @@ async function projectFetch<T>(
     data = await res.json();
   } catch {
     perfEnd(`4-response-json-parse ${path} (failed)`, parseStart, { status: res.status });
-    perfEnd(`3-saved-patterns-request ${path} total`, requestStart, { ok: false });
-    return { ok: false, error: `Request failed (${res.status}).` };
+    return { ok: false, status: res.status, error: `Request failed (${res.status}).` };
   }
   perfEnd(`4-response-json-parse ${path}`, parseStart, {
     status: res.status,
@@ -153,16 +157,69 @@ async function projectFetch<T>(
   });
 
   if (!data || typeof data !== "object") {
-    perfEnd(`3-saved-patterns-request ${path} total`, requestStart, { ok: false });
-    return { ok: false, error: `Request failed (${res.status}).` };
+    return { ok: false, status: res.status, error: `Request failed (${res.status}).` };
   }
   const body = data as Record<string, unknown>;
   if (!body.ok) {
-    perfEnd(`3-saved-patterns-request ${path} total`, requestStart, { ok: false });
-    return { ok: false, error: typeof body.error === "string" ? body.error : "Request failed." };
+    return {
+      ok: false,
+      status: res.status,
+      error: typeof body.error === "string" ? body.error : "Request failed.",
+    };
   }
-  perfEnd(`3-saved-patterns-request ${path} total`, requestStart, { ok: true, authMode: auth.mode });
-  return body as ApiOk<T> & T;
+  return { ok: true, status: res.status, body };
+}
+
+async function projectFetch<T>(
+  path: string,
+  init: RequestInit,
+): Promise<(ApiOk<T> & T) | ApiErr> {
+  const requestStart = perfStart();
+  let auth = await resolveCustomPatternProjectAuth();
+
+  if (auth.mode === "none") {
+    perfEnd(`3-saved-patterns-request ${path} (auth blocked)`, requestStart, { authMode: auth.mode });
+    return {
+      ok: false,
+      error: "Sign in to save Custom Pattern projects.",
+    };
+  }
+
+  // Retry a 401 exactly once, re-reading the *current* Memberstack session token first. A member's
+  // token can be briefly stale (SDK still refreshing the session cookie after navigation / signup);
+  // re-resolving auth reads the live token instead of reusing the earlier value. A second 401 means
+  // the session is genuinely invalid/expired, so we return a clear re-sign-in message. We never
+  // fall back to create here, so a failed update cannot silently duplicate the project.
+  const maxAttempts = 2;
+  let result: SendResult | null = null;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    if (attempt > 0) {
+      auth = await resolveCustomPatternProjectAuth();
+      if (auth.mode !== "member") break;
+    }
+    result = await sendProjectRequest(path, init, auth);
+    if (result.ok || result.status !== 401) break;
+  }
+
+  if (!result) {
+    perfEnd(`3-saved-patterns-request ${path} total`, requestStart, { ok: false });
+    return { ok: false, error: SESSION_EXPIRED_SAVE_MESSAGE };
+  }
+  if (result.ok) {
+    perfEnd(`3-saved-patterns-request ${path} total`, requestStart, {
+      ok: true,
+      authMode: auth.mode,
+    });
+    return result.body as ApiOk<T> & T;
+  }
+  perfEnd(`3-saved-patterns-request ${path} total`, requestStart, {
+    ok: false,
+    status: result.status,
+  });
+  if (result.status === 401) {
+    return { ok: false, error: SESSION_EXPIRED_SAVE_MESSAGE };
+  }
+  return { ok: false, error: result.error };
 }
 
 export function inferCustomPatternProjectSource(

@@ -58,6 +58,7 @@ import {
   resolveCustomBuildSaveMeasureFlushRoot,
 } from "../lib/patterns/sleevelessCustomMeasurementStorage";
 import { deriveSleevelessEditWorkspaceBodyShape } from "../lib/patterns/sleevelessEditWorkspaceBodyShape";
+import { resolveSavedPatternMeasurementDisplayUnit } from "../lib/patterns/patternMeasurementDisplayUnit";
 import { syncCustomBuildToPatternStorage } from "../lib/patterns/syncCustomBuildToPatternStorage";
 import {
   isPositiveNumericMeasurement,
@@ -602,7 +603,7 @@ function initSleevelessPatternEditDrawer(): void {
       // first time the workspace opens (after layout so its overlay anchors measure correctly).
       if (!measureInitialized && measurePane) {
         measureInitialized = true;
-        initCustomBuildMeasurementsPage();
+        initCustomBuildMeasurementsPage({ resolveDisplayUnit: resolveSavedPatternMeasurementDisplayUnit });
       }
       ensureDropShoulderMeasurementEditorReady();
       captureMeasureFieldBaseline();
@@ -851,7 +852,7 @@ function initSleevelessPatternEditDrawer(): void {
   function ensureDropShoulderMeasurementEditorReady(): void {
     if (!isDropShoulderWorkspaceMeasurementSummaryPage() || !measurePane || measureInitialized) return;
     measureInitialized = true;
-    initCustomBuildMeasurementsPage();
+    initCustomBuildMeasurementsPage({ resolveDisplayUnit: resolveSavedPatternMeasurementDisplayUnit });
   }
 
   async function handleDropShoulderQuickEditSizeChanged(oldSize: string): Promise<void> {

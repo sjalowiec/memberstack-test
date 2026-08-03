@@ -226,9 +226,29 @@ export function resolveCustomBuildSaveMeasureFlushRoot(
   return resolveCustomBuildMeasureFlushRoot(scope ?? undefined);
 }
 
+/** The `[data-cb-measure-root]` element — `root` itself when it matches, else a descendant. */
+function resolveDiagramMeasureRootElement(root: ParentNode): HTMLElement | null {
+  if (
+    isDomElement(root) &&
+    typeof (root as HTMLElement).matches === "function" &&
+    (root as HTMLElement).matches("[data-cb-measure-root]")
+  ) {
+    return root as HTMLElement;
+  }
+  const found = root.querySelector("[data-cb-measure-root]");
+  return isDomElement(found) ? found : null;
+}
+
+/**
+ * The unit the diagram inputs are CURRENTLY displaying, so the save/flush path converts the
+ * visible text back to canonical inches with the same unit the user is looking at.
+ * - Review pages: a visible units-toggle host reflects the live UI unit.
+ * - Edit workspace: no toggle; the rendered field suffix chip carries the build-time unit.
+ * Returns `null` (treated as inches) when nothing indicates centimeters.
+ */
 function resolveDiagramDisplayUnit(root: ParentNode): "in" | "cm" | null {
-  const measureRoot = root.querySelector("[data-cb-measure-root]");
-  if (!isDomElement(measureRoot)) return null;
+  const measureRoot = resolveDiagramMeasureRootElement(root);
+  if (!measureRoot) return null;
   const unitsHost = measureRoot.querySelector("[data-express-measurements-units-host]");
   if (
     isDomElement(unitsHost) &&
@@ -236,6 +256,12 @@ function resolveDiagramDisplayUnit(root: ParentNode): "in" | "cm" | null {
     !unitsHost.hasAttribute("hidden")
   ) {
     return getExpressUiUnit();
+  }
+  const suffix = measureRoot.querySelector("[data-cb-measure-unit-suffix]");
+  if (isDomElement(suffix)) {
+    const text = (suffix.textContent ?? "").trim().toLowerCase();
+    if (text === "cm") return "cm";
+    if (text === "in") return "in";
   }
   return null;
 }
