@@ -20,7 +20,26 @@ import {
 import {
   flushCustomBuildMeasurementOverridesToCanonical,
 } from "./sleevelessCustomMeasurementStorage";
-import { formatMeasurementDisplayFromInches } from "./patternMeasurementDisplayUnit";
+import {
+  formatMeasurementDisplayFromInches,
+  parseStoredInchesForDisplay,
+} from "./patternMeasurementDisplayUnit";
+
+/** Models the editor field hydration exactly (measurements page): stored canonical inch string ->
+ *  visible field text, WITHOUT the quarter-inch snap that produced the reopen drift. */
+function reopenFieldText(storedOverride: number, unit: "in" | "cm"): string {
+  return formatMeasurementDisplayFromInches(
+    parseStoredInchesForDisplay(String(storedOverride)),
+    unit,
+  );
+}
+
+/** The pre-fix hydration (parseInchesInput) quarter-snapped before display — shown here to prove the
+ *  regression is closed: this is what produced 15.9 / 10.2 / 43.8 cm. */
+function buggyQuarterSnappedReopenText(storedOverride: number, unit: "in" | "cm"): string {
+  const snapped = Math.round(storedOverride * 4) / 4;
+  return formatMeasurementDisplayFromInches(snapped, unit);
+}
 import {
   saveCurrentPattern,
   savePatternData,
@@ -118,10 +137,15 @@ describe.each(["sleeveless", "drop-shoulder"] as const)(
       expect(armhole).not.toBe(4);
       expect(bust).not.toBe(17.25);
 
-      // Reopen: each field re-displays exactly the cm the user typed (15.9/10.2/43.8 was the bug).
-      expect(formatMeasurementDisplayFromInches(neck, "cm")).toBe("16");
-      expect(formatMeasurementDisplayFromInches(armhole, "cm")).toBe("10");
-      expect(formatMeasurementDisplayFromInches(bust, "cm")).toBe("44");
+      // Reopen through the editor's hydration parser: each field re-displays exactly the cm typed.
+      expect(reopenFieldText(neck, "cm")).toBe("16");
+      expect(reopenFieldText(armhole, "cm")).toBe("10");
+      expect(reopenFieldText(bust, "cm")).toBe("44");
+
+      // Regression guard: the old quarter-snapping hydration produced the reported drift.
+      expect(buggyQuarterSnappedReopenText(neck, "cm")).toBe("15.9");
+      expect(buggyQuarterSnappedReopenText(armhole, "cm")).toBe("10.2");
+      expect(buggyQuarterSnappedReopenText(bust, "cm")).toBe("43.8");
     });
 
     it("explicit unit from the drawer save also preserves physical width", () => {
@@ -147,9 +171,16 @@ describe.each(["sleeveless", "drop-shoulder"] as const)(
         skipFlushMeasurementOverrides: true,
       });
       // Inch inputs use the quarter-inch grid (unchanged): 6.3 -> 6.25, 8.1 -> 8, 44 -> 44.
-      expect(payloadOverride(payload, "finishedNeckOpeningWidth")).toBe(6.25);
-      expect(payloadOverride(payload, "armholeDepth")).toBe(8);
-      expect(payloadOverride(payload, "chestBust")).toBe(44);
+      const neck = payloadOverride(payload, "finishedNeckOpeningWidth");
+      const armhole = payloadOverride(payload, "armholeDepth");
+      const bust = payloadOverride(payload, "chestBust");
+      expect(neck).toBe(6.25);
+      expect(armhole).toBe(8);
+      expect(bust).toBe(44);
+      // Reopen keeps the inch quarter-grid display unchanged.
+      expect(reopenFieldText(neck, "in")).toBe("6.25");
+      expect(reopenFieldText(armhole, "in")).toBe("8");
+      expect(reopenFieldText(bust, "in")).toBe("44");
     });
   },
 );
