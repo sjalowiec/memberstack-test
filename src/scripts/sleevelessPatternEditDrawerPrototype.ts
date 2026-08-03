@@ -799,7 +799,12 @@ function initSleevelessPatternEditDrawer(): void {
       const measureFlushRoot = resolveCustomBuildSaveMeasureFlushRoot(
         measureBody ?? measurePane ?? drawer ?? undefined,
       );
-      flushCustomBuildMeasurementOverridesToCanonical({ root: measureFlushRoot ?? undefined });
+      // Pass the workspace's active unit explicitly so cm entries convert to canonical inches once
+      // (no quarter-inch snap) regardless of whether a DOM unit chip is present on the flush root.
+      flushCustomBuildMeasurementOverridesToCanonical({
+        root: measureFlushRoot ?? undefined,
+        displayUnit: editDisplayUnit,
+      });
       if (isDropShoulderWorkspaceMeasurementSummaryPage()) {
         // Numeric sleeve length on the diagram is the source of truth after save on the Edit page.
         const sleeveInput = (measureFlushRoot ?? measurePane ?? drawer)?.querySelector<HTMLInputElement>(
