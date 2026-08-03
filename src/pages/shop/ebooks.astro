@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
+import { EBOOK_SALES_PAUSED } from "../../lib/legacy/legacyEbookSalesHold";
 import { plainTextFromLegacyEbookBrief } from "../../lib/legacy/legacyEbookPlainText";
 import { loadLegacyEbookStorefrontWithSlugs } from "../../lib/legacy/legacyEbookSlug";
 import {
@@ -11,11 +12,15 @@ import {
   SHOW_LEGACY_EBOOK_MEMBER_FREE_BADGE,
 } from "../../lib/legacy/legacyEbookStorefrontUi";
 
-const title = "eBooks | Knit it Now";
-const description =
-  "Downloadable machine knitting eBooks — techniques, patterns, and reference from experienced teachers.";
+// TEMPORARY: Flip EBOOK_SALES_PAUSED to false in legacyEbookSalesHold.ts to restore the catalog.
+const salesPaused = EBOOK_SALES_PAUSED;
 
-const products = loadLegacyEbookStorefrontWithSlugs();
+const title = "eBooks | Knit it Now";
+const description = salesPaused
+  ? "eBook sales are temporarily unavailable."
+  : "Downloadable machine knitting eBooks — techniques, patterns, and reference from experienced teachers.";
+
+const products = salesPaused ? [] : loadLegacyEbookStorefrontWithSlugs();
 ---
 
 <Layout {title} {description}>
@@ -23,74 +28,86 @@ const products = loadLegacyEbookStorefrontWithSlugs();
     <a class="back-link back-to-shop-link" id="back-to-shop" href="/shop">← Back to Shop</a>
     <PageHead title="Machine Knitting eBooks" />
 
-    <div class="ebooks-intro">
-      <p>
-        Browse our collection of downloadable machine knitting eBooks. Each title
-        is a digital PDF you can save and use on your computer or tablet while you
-        knit.
-      </p>
-      <p>
-        You will find practical techniques, classic patterns, and reference material
-        from teachers and designers who have shared their expertise with machine
-        knitters for decades.
-      </p>
-    </div>
+    {salesPaused ? (
+      <div class="ebooks-paused" role="status">
+        <p class="ebooks-paused__label">{LEGACY_EBOOK_UNAVAILABLE_LABEL}</p>
+        <p>
+          eBook sales are temporarily unavailable. Please check back later, or
+          <a href="/contact">contact Sue</a> with questions.
+        </p>
+      </div>
+    ) : (
+      <>
+        <div class="ebooks-intro">
+          <p>
+            Browse our collection of downloadable machine knitting eBooks. Each title
+            is a digital PDF you can save and use on your computer or tablet while you
+            knit.
+          </p>
+          <p>
+            You will find practical techniques, classic patterns, and reference material
+            from teachers and designers who have shared their expertise with machine
+            knitters for decades.
+          </p>
+        </div>
 
-    <p class="ebooks-count" aria-live="polite">
-      {products.length} titles available
-    </p>
+        <p class="ebooks-count" aria-live="polite">
+          {products.length} titles available
+        </p>
 
-    <div class="ebooks-grid">
-      {products.map((product) => {
-        const detailHref = `/shop/ebooks/${product.slug}`;
-        const temporarilyUnavailable = isLegacyEbookTemporarilyUnavailable(
-          product.itemId
-        );
-        return (
-        <article class="ebook-store-card">
-          <div class="ebook-store-card__media">
-            <a href={detailHref} class="ebook-store-card__thumb-link">
-              <img
-                src={legacyStoreThumbnailPath(product.thumbnail)}
-                alt={product.title}
-                class="ebook-store-card__thumb"
-                loading="lazy"
-                width="160"
-                height="210"
-              />
-            </a>
-            {/* Member Free badge hidden until Memberstack entitlement flow is implemented. */}
-            {SHOW_LEGACY_EBOOK_MEMBER_FREE_BADGE && product.subscriberFree && (
-              <span class="ebook-store-badge">Member Free</span>
-            )}
-          </div>
-
-          <div class="ebook-store-card__body">
-            <h2 class="ebook-store-card__title">{product.title}</h2>
-            <p class="ebook-store-card__price">
-              {formatLegacyEbookPrice(product.sellPrice)}
-            </p>
-            {product.shortDescription && (
-              <p class="ebook-store-card__desc">
-                {plainTextFromLegacyEbookBrief(product.shortDescription)}
-              </p>
-            )}
-            <div class="ebook-store-card__actions">
-              {temporarilyUnavailable ? (
-                <p class="ebook-store-card__unavailable" role="status">
-                  {LEGACY_EBOOK_UNAVAILABLE_LABEL}
-                </p>
-              ) : (
-                <a href={detailHref} class="ebook-store-card__cta">
-                  Learn More
+        <div class="ebooks-grid">
+          {products.map((product) => {
+            const detailHref = `/shop/ebooks/${product.slug}`;
+            const temporarilyUnavailable = isLegacyEbookTemporarilyUnavailable(
+              product.itemId
+            );
+            return (
+            <article class="ebook-store-card">
+              <div class="ebook-store-card__media">
+                <a href={detailHref} class="ebook-store-card__thumb-link">
+                  <img
+                    src={legacyStoreThumbnailPath(product.thumbnail)}
+                    alt={product.title}
+                    class="ebook-store-card__thumb"
+                    loading="lazy"
+                    width="160"
+                    height="210"
+                  />
                 </a>
-              )}
-            </div>
-          </div>
-        </article>
-        );
-      })}
-    </div>
+                {/* Member Free badge hidden until Memberstack entitlement flow is implemented. */}
+                {SHOW_LEGACY_EBOOK_MEMBER_FREE_BADGE && product.subscriberFree && (
+                  <span class="ebook-store-badge">Member Free</span>
+                )}
+              </div>
+
+              <div class="ebook-store-card__body">
+                <h2 class="ebook-store-card__title">{product.title}</h2>
+                <p class="ebook-store-card__price">
+                  {formatLegacyEbookPrice(product.sellPrice)}
+                </p>
+                {product.shortDescription && (
+                  <p class="ebook-store-card__desc">
+                    {plainTextFromLegacyEbookBrief(product.shortDescription)}
+                  </p>
+                )}
+                <div class="ebook-store-card__actions">
+                  {temporarilyUnavailable ? (
+                    <p class="ebook-store-card__unavailable" role="status">
+                      {LEGACY_EBOOK_UNAVAILABLE_LABEL}
+                    </p>
+                  ) : (
+                    <a href={detailHref} class="ebook-store-card__cta">
+                      Learn More
+                    </a>
+                  )}
+                </div>
+              </div>
+            </article>
+            );
+          })}
+        </div>
+      </>
+    )}
   </div>
 </Layout>
 
@@ -116,6 +133,32 @@ const products = loadLegacyEbookStorefrontWithSlugs();
     max-width: 1100px;
     margin: 0 auto;
     padding: 0 1rem 4rem;
+  }
+
+  .ebooks-paused {
+    max-width: 42rem;
+    margin: 1rem 0 2rem;
+    padding: 1.25rem 1.35rem;
+    background: #fdf3e2;
+    border: 1px solid #f0d9ad;
+    border-radius: 12px;
+    color: #444;
+    line-height: 1.6;
+  }
+
+  .ebooks-paused p {
+    margin: 0;
+  }
+
+  .ebooks-paused__label {
+    margin-bottom: 0.5rem !important;
+    font-weight: 700;
+    color: #8a5a00;
+  }
+
+  .ebooks-paused a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
   }
 
   .ebooks-intro {

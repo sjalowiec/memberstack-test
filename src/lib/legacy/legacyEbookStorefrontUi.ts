@@ -1,3 +1,5 @@
+import { EBOOK_SALES_PAUSED } from "./legacyEbookSalesHold";
+
 // Member Free badge hidden until Memberstack entitlement flow is implemented.
 export const SHOW_LEGACY_EBOOK_MEMBER_FREE_BADGE = false;
 
@@ -5,6 +7,7 @@ export const SHOW_LEGACY_EBOOK_MEMBER_FREE_BADGE = false;
 // legacy-ebook-shopify-urls.json). Products listed here render as
 // "Temporarily unavailable" with no purchase link/button, but their data is left
 // intact. To re-enable a product, remove its itemId from this set.
+// Global pause (EBOOK_SALES_PAUSED) takes precedence over this per-item set.
 export const TEMPORARILY_UNAVAILABLE_EBOOK_ITEM_IDS = new Set<string>([
   // "A Guide to Knitting with Yarn on Cones" — Shopify product receiving
   // high-risk orders; disabled temporarily on request.
@@ -13,6 +16,7 @@ export const TEMPORARILY_UNAVAILABLE_EBOOK_ITEM_IDS = new Set<string>([
 
 /** True when an eBook's sales are temporarily disabled. */
 export function isLegacyEbookTemporarilyUnavailable(itemId: string): boolean {
+  if (EBOOK_SALES_PAUSED) return true;
   return TEMPORARILY_UNAVAILABLE_EBOOK_ITEM_IDS.has(itemId.trim());
 }
 

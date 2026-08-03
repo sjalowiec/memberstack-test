@@ -2,6 +2,7 @@
 /* Centered Logo Header for Knit it Now — soft launch (simplified nav) */
 
 import { PATTERN_BUILDERS_HOME_HREF } from "../lib/patterns/customPatternProjectNavigation";
+import { EBOOK_SALES_PAUSED } from "../lib/legacy/legacyEbookSalesHold";
 import PatternWorkspaceLibraryDrawer from "./patterns/PatternWorkspaceLibraryDrawer.astro";
 
 interface Props {
@@ -1930,9 +1931,11 @@ div[data-ms-modal-overlay] {
                 <li>
                   <a href="/shop/accessories" data-testid="nav-shop-accessories">Accessories</a>
                 </li>
-                <li>
-                  <a href="/shop/ebooks" data-testid="nav-shop-ebooks">eBooks</a>
-                </li>
+                {!EBOOK_SALES_PAUSED && (
+                  <li>
+                    <a href="/shop/ebooks" data-testid="nav-shop-ebooks">eBooks</a>
+                  </li>
+                )}
                 <li>
                   <a href="/shop/downloads" data-testid="nav-shop-downloads">Downloads</a>
                 </li>
