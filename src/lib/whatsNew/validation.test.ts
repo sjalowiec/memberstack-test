@@ -70,6 +70,74 @@ describe("validateWhatsNewCardInput", () => {
     );
     expect(result.ok).toBe(false);
   });
+
+  const baseCard = {
+    title: "Title",
+    category: "tool" as const,
+    boardColumn: "just_added" as const,
+  };
+
+  it("normalizes plain-text descriptions into safe paragraph markup", () => {
+    const result = validateWhatsNewCardInput(
+      { ...baseCard, description: "A short update" },
+      now,
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.description).toBe("<p>A short update</p>");
+    }
+  });
+
+  it("sanitizes rich description HTML and strips links, scripts, and unsupported tags", () => {
+    const result = validateWhatsNewCardInput(
+      {
+        ...baseCard,
+        description:
+          '<p><b>Bold</b> <i>italic</i> <a href="/tools">Tools</a><script>x</script></p><ul><li>One</li></ul>',
+      },
+      now,
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.description).toBe(
+        "<p><strong>Bold</strong> <em>italic</em> Tools</p><ul><li>One</li></ul>",
+      );
+    }
+  });
+
+  it("rejects descriptions with no visible text", () => {
+    expect(validateWhatsNewCardInput({ ...baseCard, description: "   " }, now).ok).toBe(false);
+    expect(
+      validateWhatsNewCardInput({ ...baseCard, description: "<p><br></p>" }, now).ok,
+    ).toBe(false);
+    expect(
+      validateWhatsNewCardInput(
+        { ...baseCard, description: "<script>alert(1)</script>" },
+        now,
+      ).ok,
+    ).toBe(false);
+  });
+
+  it("survives a create then edit round trip without changing sanitized markup", () => {
+    const created = validateWhatsNewCardInput(
+      { ...baseCard, description: "<p><strong>Saved</strong> update</p><ol><li>Step</li></ol>" },
+      now,
+    );
+    expect(created.ok).toBe(true);
+    if (!created.ok) return;
+    // Feeding the stored value back through validation (an edit) is idempotent.
+    const edited = validateWhatsNewCardInput(
+      { ...baseCard, description: created.value.description },
+      now,
+    );
+    expect(edited.ok).toBe(true);
+    if (edited.ok) {
+      expect(edited.value.description).toBe(created.value.description);
+      expect(edited.value.description).toBe(
+        "<p><strong>Saved</strong> update</p><ol><li>Step</li></ol>",
+      );
+    }
+  });
 });
 
 describe("validateBillboardInput", () => {

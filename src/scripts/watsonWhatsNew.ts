@@ -1,4 +1,7 @@
-import { sanitizeBillboardHtml } from "../lib/whatsNew/sanitizeBillboardHtml";
+import {
+  sanitizeBillboardHtml,
+  sanitizeCardDescriptionHtml,
+} from "../lib/whatsNew/sanitizeBillboardHtml";
 
 const DEFAULT_BUTTON_TEXT: Record<string, string> = {
   tool: "Try It",
@@ -110,6 +113,34 @@ function fillForm(form: HTMLFormElement, card: Record<string, unknown>): void {
   set("archived", Boolean(card.archived));
 }
 
+function cardDescriptionParts(form: HTMLFormElement): {
+  editor: HTMLElement;
+  hidden: HTMLTextAreaElement;
+} | null {
+  const wrap = form.querySelector<HTMLElement>("[data-wn-card-rte]");
+  if (!wrap) return null;
+  const editor = wrap.querySelector<HTMLElement>("[data-wn-rte-editor]");
+  const hidden = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-input]");
+  if (!editor || !hidden) return null;
+  return { editor, hidden };
+}
+
+/** Seed the description editor (and its hidden input) from stored text or HTML. */
+function setCardDescription(form: HTMLFormElement, value: string): void {
+  const parts = cardDescriptionParts(form);
+  if (!parts) return;
+  const clean = sanitizeCardDescriptionHtml(value || "");
+  parts.editor.innerHTML = clean || "<p><br></p>";
+  parts.hidden.value = clean;
+}
+
+/** Push the current editor HTML into the hidden field before reading the form. */
+function syncCardDescription(form: HTMLFormElement): void {
+  const parts = cardDescriptionParts(form);
+  if (!parts) return;
+  parts.hidden.value = sanitizeCardDescriptionHtml(parts.editor.innerHTML);
+}
+
 function resetForm(form: HTMLFormElement): void {
   form.reset();
   const idInput = form.elements.namedItem("id");
@@ -172,6 +203,7 @@ export function initWatsonWhatsNew(root: ParentNode = document): void {
   function showCreateForm(): void {
     if (!form || !formPanel) return;
     resetForm(form);
+    setCardDescription(form, "");
     if (formTitle) formTitle.textContent = "Add Update";
     formPanel.hidden = false;
     formPanel.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -182,6 +214,7 @@ export function initWatsonWhatsNew(root: ParentNode = document): void {
     try {
       const card = JSON.parse(decodeURIComponent(cardPayload)) as Record<string, unknown>;
       fillForm(form, card);
+      setCardDescription(form, String(card.description || ""));
       const buttonEl = form.elements.namedItem("buttonText");
       if (buttonEl instanceof HTMLInputElement) {
         buttonEl.dataset.userEdited = card.buttonText ? "true" : "false";
@@ -218,11 +251,13 @@ export function initWatsonWhatsNew(root: ParentNode = document): void {
   form?.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!form) return;
+    // Ensure the rich-text editor has synced into the hidden description field.
+    syncCardDescription(form);
     const payload = readForm(form);
     const idInput = form.elements.namedItem("id");
     const id = idInput instanceof HTMLInputElement ? idInput.value.trim() : "";
 
-    setStatus(formStatus, id ? "Savingù" : "Publishingù");
+    setStatus(formStatus, id ? "Saving?" : "Publishing?");
     const result = id
       ? await jsonFetch(`/api/watson/whats-new/${encodeURIComponent(id)}`, "PATCH", payload)
       : await jsonFetch("/api/watson/whats-new", "POST", payload);
@@ -250,7 +285,7 @@ export function initWatsonWhatsNew(root: ParentNode = document): void {
       const title = deleteBtn.getAttribute("data-wn-title") || "this card";
       if (!id) return;
       const confirmed = window.confirm(
-        `Delete ì${title}î permanently?\n\nThis cannot be undone.`,
+        `Delete ?${title}? permanently?\n\nThis cannot be undone.`,
       );
       // Cancel leaves the card unchanged.
       if (!confirmed) return;
@@ -265,7 +300,7 @@ export function initWatsonWhatsNew(root: ParentNode = document): void {
         setStatus(flash, result.error || "Unable to delete card.", true);
         return;
       }
-      queueFlash(`Deleted ì${title}î.`);
+      queueFlash(`Deleted ?${title}?.`);
       window.location.reload();
       return;
     }
@@ -338,6 +373,13 @@ export function initWatsonWhatsNew(root: ParentNode = document): void {
     const result = await jsonFetch("/api/watson/whats-new/settings", "PUT", payload);
     if (!result.ok) {
       setStatus(videoStatus, result.error || "Unable to save billboard settings.", true);
+      // Keep the billboard accordion open on failure and surface the error.
+      const panel = videoForm.closest<HTMLDetailsElement>("[data-wn-billboard-panel]");
+      if (panel) panel.open = true;
+      if (videoStatus) {
+        videoStatus.focus();
+        videoStatus.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
       return;
     }
     window.location.reload();

@@ -8,7 +8,9 @@ import {
 } from "./public";
 import {
   billboardMessageHasText,
+  cardDescriptionPlainText,
   sanitizeBillboardHtml,
+  sanitizeCardDescriptionHtml,
 } from "./sanitizeBillboardHtml";
 import {
   WHATS_NEW_BUTTON_TEXT_MAX_LENGTH,
@@ -126,12 +128,26 @@ export function validateWhatsNewCardInput(
   const title = requireTrimmedString(input.title, "Title", WHATS_NEW_TITLE_MAX_LENGTH);
   if (!title.ok) return title;
 
-  const description = requireTrimmedString(
-    input.description,
-    "Short description",
-    WHATS_NEW_DESCRIPTION_MAX_LENGTH,
-  );
-  if (!description.ok) return description;
+  if (input.description != null && typeof input.description !== "string") {
+    return { ok: false, error: "Short description is required." };
+  }
+  const descriptionRaw = typeof input.description === "string" ? input.description.trim() : "";
+  // Length gate uses the visible text so markup overhead never rejects short copy.
+  const descriptionText = cardDescriptionPlainText(descriptionRaw);
+  if (!descriptionText) {
+    return { ok: false, error: "Short description is required." };
+  }
+  if (descriptionText.length > WHATS_NEW_DESCRIPTION_MAX_LENGTH) {
+    return {
+      ok: false,
+      error: `Short description must be ${WHATS_NEW_DESCRIPTION_MAX_LENGTH} characters or fewer.`,
+    };
+  }
+  // Sanitize server-side before saving; plain text becomes safe paragraph markup.
+  const descriptionHtml = sanitizeCardDescriptionHtml(descriptionRaw);
+  if (!billboardMessageHasText(descriptionHtml)) {
+    return { ok: false, error: "Short description is required." };
+  }
 
   if (typeof input.category !== "string" || !isWhatsNewCategory(input.category.trim())) {
     return {
@@ -199,7 +215,7 @@ export function validateWhatsNewCardInput(
     ok: true,
     value: {
       title: title.value,
-      description: description.value,
+      description: descriptionHtml,
       category,
       destinationUrl: destination.value,
       buttonText,

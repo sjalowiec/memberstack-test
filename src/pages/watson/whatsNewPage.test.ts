@@ -146,6 +146,146 @@ describe("Watson Whats New page", () => {
     expect(titleMatch![1]).not.toMatch(/font-weight:\s*400/);
   });
 
+  it("renders public card descriptions through the sanitizer, never raw DB HTML", () => {
+    expect(publicPage).toContain("sanitizeCardDescriptionHtml");
+    // Public boundary re-sanitizes before injecting formatted markup.
+    expect(publicPage).toMatch(
+      /class="whats-new__card-desc"[\s\S]*?set:html=\{sanitizeCardDescriptionHtml\(card\.description\)\}/,
+    );
+    // The old raw interpolation is gone.
+    expect(publicPage).not.toContain('class="whats-new__card-desc">{card.description}');
+    // Formatted children get compact spacing via :global rules.
+    expect(publicPage).toMatch(/\.whats-new__card-desc\s*:global\(ul\)/);
+  });
+
+  it("gives the compact card editor the supported toolbar without a link button", () => {
+    const cardRte = fs.readFileSync(
+      path.resolve("src/scripts/watsonCardRichText.ts"),
+      "utf8",
+    );
+    // The card description field is a compact rich-text editor with a hidden input.
+    expect(page).toContain("data-wn-card-rte");
+    expect(page).toContain("watson-wn__rte--compact");
+    expect(page).toMatch(/data-wn-rte-input\s+name="description"/);
+    // Toolbar exposes bold, italic, bulleted list, numbered list, and clear only.
+    const rteIdx = page.indexOf("data-wn-card-rte");
+    const rteBlock = page.slice(rteIdx, page.indexOf("</textarea>", rteIdx));
+    expect(rteBlock).toContain('data-wn-rte-cmd="bold"');
+    expect(rteBlock).toContain('data-wn-rte-cmd="italic"');
+    expect(rteBlock).toContain('data-wn-rte-cmd="ul"');
+    expect(rteBlock).toContain('data-wn-rte-cmd="ol"');
+    expect(rteBlock).toContain('data-wn-rte-cmd="clear"');
+    expect(rteBlock).not.toContain('data-wn-rte-cmd="link"');
+    // Card editor reuses the shared sanitizer for descriptions.
+    expect(cardRte).toContain("sanitizeCardDescriptionHtml");
+    expect(cardRte).toContain("initCompactRichText");
+    expect(page).toContain("initWatsonCardRichText");
+  });
+
+  it("loads and syncs saved descriptions when adding or editing an update", () => {
+    // Seeds the editor for both create and edit, and syncs before saving.
+    expect(script).toContain("setCardDescription");
+    expect(script).toContain("syncCardDescription");
+    expect(script).toContain("sanitizeCardDescriptionHtml");
+    expect(script).toMatch(/setCardDescription\(form, String\(card\.description/);
+    // Admin previews show a safe plain-text summary rather than raw markup.
+    expect(page).toContain("cardDescriptionPlainText(card.description)");
+    expect(page).not.toContain("<p>{card.description}</p>");
+  });
+
+  it("renders a registered tool icon on public cards only when one resolves", () => {
+    expect(publicPage).toContain("resolveWhatsNewToolIcon");
+    expect(publicPage).toContain("const toolIcon = resolveWhatsNewToolIcon(card)");
+    // The icon <img> is rendered only inside the truthy guard (no empty placeholder).
+    expect(publicPage).toMatch(
+      /toolIcon \?\s*\(\s*<img[\s\S]*?class="whats-new__tool-icon"[\s\S]*?alt=""/,
+    );
+    // Decorative icon: empty alt, and no external/placeholder fallback branch.
+    expect(publicPage).not.toMatch(/whats-new__tool-icon[\s\S]*?alt="[^"]+"/);
+    // Compact, non-distorting sizing.
+    expect(publicPage).toMatch(
+      /\.whats-new__tool-icon\s*\{[^}]*width:\s*48px[^}]*height:\s*48px[^}]*object-fit:\s*contain/,
+    );
+  });
+
+  it("shows the resolved tool icon in the Watson board preview without extra admin steps", () => {
+    expect(page).toContain("resolveWhatsNewToolIcon");
+    expect(page).toContain("const toolIcon = resolveWhatsNewToolIcon(card)");
+    // Guarded render, decorative alt, no icon input field added to the form.
+    expect(page).toMatch(
+      /toolIcon \?\s*\(\s*<img[\s\S]*?class="watson-wn__tool-icon"[\s\S]*?alt=""/,
+    );
+    expect(page).not.toContain('name="icon"');
+    expect(page).not.toContain('name="toolIcon"');
+  });
+
+  it("collapses the billboard into a native details accordion by default", () => {
+    // Native <details> with our hook, collapsed (no `open`) by default.
+    expect(page).toMatch(
+      /<details[^>]*class="watson__panel watson-wn__billboard"[^>]*data-wn-billboard-panel/,
+    );
+    const detailsTag = page.match(/<details[^>]*data-wn-billboard-panel[^>]*>/)?.[0] ?? "";
+    expect(detailsTag).not.toMatch(/\sopen(\s|=|>)/);
+    // Preserves the existing panel styling/border.
+    expect(detailsTag).toContain("watson__panel");
+    // Uses a <summary> trigger and does not force a large collapsed height.
+    expect(page).toContain("watson-wn__billboard-summary");
+    expect(page).toMatch(/\.watson-wn__billboard-summary\s*\{[^}]*padding:\s*0\.1rem 0/);
+  });
+
+  it("summarizes billboard status, headline, and last updated with an edit cue", () => {
+    const summary = page.slice(page.indexOf("<summary"), page.indexOf("</summary>"));
+    expect(summary).toContain("What's New Billboard");
+    expect(summary).toContain('billboard?.enabled ? "Enabled" : "Disabled"');
+    // Headline shown only when present.
+    expect(summary).toContain("billboard?.headline ?");
+    expect(summary).toContain("{billboard.headline}");
+    // Last updated shown only when present, using the shared quiet-date format.
+    expect(summary).toContain("billboard?.updatedAt ?");
+    expect(summary).toContain("Last updated");
+    expect(summary).toContain("formatQuietPublishDate(billboard.updatedAt.slice(0, 10))");
+    // Clear cue to open the editor.
+    expect(summary).toContain("Edit billboard");
+  });
+
+  it("keeps the full billboard form inside the accordion so opening reveals it", () => {
+    const detailsIdx = page.indexOf("data-wn-billboard-panel");
+    const summaryClose = page.indexOf("</summary>", detailsIdx);
+    const bodyIdx = page.indexOf("watson-wn__billboard-body", detailsIdx);
+    const formIdx = page.indexOf("data-wn-video-form", detailsIdx);
+    const detailsClose = page.indexOf("</details>", detailsIdx);
+    expect(summaryClose).toBeGreaterThan(detailsIdx);
+    expect(bodyIdx).toBeGreaterThan(summaryClose);
+    expect(formIdx).toBeGreaterThan(bodyIdx);
+    expect(detailsClose).toBeGreaterThan(formIdx);
+  });
+
+  it("keeps the billboard rich-text editor inside the accordion, initialized at load", () => {
+    const detailsIdx = page.indexOf("data-wn-billboard-panel");
+    const detailsClose = page.indexOf("</details>", detailsIdx);
+    const rteIdx = page.indexOf("data-wn-rte", detailsIdx);
+    // The billboard RTE wrap lives within the details, so expanding shows a live editor.
+    expect(rteIdx).toBeGreaterThan(detailsIdx);
+    expect(rteIdx).toBeLessThan(detailsClose);
+    // Editor is wired at document scope, so a collapsed accordion is still seeded on load.
+    expect(page).toContain("initWatsonBillboardRichText(document)");
+  });
+
+  it("saves the billboard normally and returns to collapsed after success", () => {
+    expect(script).toContain('jsonFetch("/api/watson/whats-new/settings", "PUT", payload)');
+    // Success reloads the page, which renders the accordion collapsed again.
+    const afterSave = script.slice(script.indexOf("/api/watson/whats-new/settings"));
+    expect(afterSave).toContain("window.location.reload()");
+  });
+
+  it("forces the billboard accordion open and focuses the error on a failed save", () => {
+    expect(script).toContain('closest<HTMLDetailsElement>("[data-wn-billboard-panel]")');
+    expect(script).toContain("panel.open = true");
+    expect(script).toContain("videoStatus.focus()");
+    // The status target is focusable so the error can receive focus.
+    expect(page).toMatch(/data-wn-video-status[^>]*tabindex="-1"/);
+  });
+
   it("places the billboard above the board title, without a generic lead paragraph", () => {
     expect(publicPage).toContain("What's New at Knit It Now");
     expect(publicPage).toContain('title={`${pageTitle} | Knit it Now`}');
