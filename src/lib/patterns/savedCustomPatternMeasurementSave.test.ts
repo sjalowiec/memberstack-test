@@ -8,6 +8,10 @@ import {
   updateCustomPatternProject,
 } from "./customPatternProjectClient";
 import { getDefaultHemLengthInches } from "./hemDefaults";
+import {
+  formatMeasurementDisplayFromInches,
+  parseMeasurementInputToInches,
+} from "./patternMeasurementDisplayUnit";
 import { smartSaveCustomPatternProject } from "./customPatternSavedProjectsPanel";
 import {
   createSavedPatternUnsavedViewWorkflowDeps,
@@ -681,6 +685,37 @@ describe("saved custom-build measurement save", () => {
       hemDepth: "3",
       chestBust: "41",
     });
+  });
+
+  it("centimeter edit converts to canonical inches and persists in the save payload", async () => {
+    const project = customBuildProject({
+      chestBust: "40",
+      finishedLength: "24",
+      armholeDepth: "8",
+      shoulderWidth: "14",
+      finishedNeckOpeningWidth: "6",
+      neckDepth: "3",
+      hip: "40",
+    });
+    hydrateSavedCustomPatternProjectSession(project);
+    writeActiveCustomPatternProjectId(project.id, project.name);
+
+    // The Edit workspace shows chest ~101.6 cm; the member types 104 cm.
+    const editedInches = parseMeasurementInputToInches("104", "cm");
+    expect(editedInches).toBe(41); // 104 / 2.54 = 40.94… -> snapped to the quarter-inch grid
+
+    persistMeasurementOverrides({
+      ...loadMeasurementOverrides(),
+      chestBust: String(editedInches),
+    });
+    flushCustomBuildMeasurementOverridesToCanonical();
+
+    // Canonical storage stays in inches, so the save payload carries the converted value.
+    const payload = buildSavePayloadFromWorkingDraft(project.name);
+    expect(overrideFromPayload(payload, "chestBust")).toBe("41");
+
+    // Round-trips back to cm for display on reopen.
+    expect(formatMeasurementDisplayFromInches(41, "cm")).toBe("104.1");
   });
 
   it("smartSave update uses pinned activeProjectId when the localStorage link was cleared", async () => {
