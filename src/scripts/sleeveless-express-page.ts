@@ -41,6 +41,7 @@ import {
   writeSleevelessGarmentTypeLocalStorage,
 } from "../lib/patterns/writeSleevelessGarmentSelection";
 import { formatSwatchCountForGaugeInput } from "../lib/patterns/gaugeDisplayFormat";
+import { applyFitEaseUnitLabels } from "../lib/patterns/fitEaseUnitLabels";
 import {
   loadExpressSweaterCharts,
   expressWhoToChartAudience,
@@ -1150,12 +1151,21 @@ function initExpressPage() {
     },
   });
 
+  /** Keep the Fit-card ease copy (`Approx. +3" ease`) in the active measurement unit. */
+  function refreshFitEaseLabels(): void {
+    applyFitEaseUnitLabels(document, getExpressUiUnit());
+  }
+
   window.addEventListener("kbm:units-change", (ev: Event) => {
     const tid = (ev as CustomEvent<{ toggleId?: string }>).detail?.toggleId;
     if (tid != null && tid !== SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID) return;
     refreshExpressWhoSizePanel();
+    refreshFitEaseLabels();
     onGaugeInput();
   });
+
+  // Reflect the persisted/default unit into the Fit cards on first paint (they render in inches).
+  refreshFitEaseLabels();
 
   void loadExpressSweaterCharts()
     .then(() => {

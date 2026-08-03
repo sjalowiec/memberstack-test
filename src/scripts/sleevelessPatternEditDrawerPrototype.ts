@@ -24,6 +24,7 @@ import {
   initCustomBuildMeasurementsPage,
   readDropShoulderWorkspaceQuickEditSizingFromDom,
   refreshDropShoulderWorkspaceMeasurementSummary,
+  rehydratePatternWorkspaceMeasurementDiagram,
   rehydrateDropShoulderWorkspaceMeasurementDiagramFromQuickEdit,
 } from "./sleeveless-custom-build-measurements-page";
 import {
@@ -86,6 +87,7 @@ import {
   type SleevelessGarmentType,
 } from "../lib/patterns/writeSleevelessGarmentSelection";
 import { rawSwatchToPerInch } from "../lib/patterns/syncExpressWizardToPatternStorage";
+import { convertGaugeSwatchDisplayBetweenUnits } from "../lib/patterns/editWorkspaceGaugeUnitDisplay";
 import {
   formatSwatchCountForGaugeInput,
   swatchCountFromPerInchForDisplay,
@@ -300,6 +302,9 @@ function swatchDisplayValue(raw: unknown, perInch: unknown, basis: GaugeSwatchBa
   return "";
 }
 
+/** Id for the Edit workspace's Inches/Centimeters control (its `kbm:units-change` events). */
+const EDIT_WORKSPACE_UNIT_TOGGLE_ID = "sleeveless-edit-unit";
+
 function getRequestRefresh(): (() => unknown) | null {
   const fn = (window as unknown as { kbmRefreshSleevelessPattern?: () => unknown })
     .kbmRefreshSleevelessPattern;
@@ -341,6 +346,18 @@ function initSleevelessPatternEditDrawer(): void {
   const needlesInput = drawer.querySelector<HTMLInputElement>("#sl-edit-needles");
   bindAvailableNeedlesFieldValidation(needlesInput);
 
+  const unitsToggle = drawer.querySelector<HTMLElement>("[data-sl-edit-units]");
+  const unitButtons = unitsToggle
+    ? Array.from(unitsToggle.querySelectorAll<HTMLButtonElement>("[data-sl-edit-unit]"))
+    : [];
+
+  /**
+   * The unit the workspace currently DISPLAYS body measurements + gauge in. Seeded from the saved
+   * project's unit (`gaugeRawUnit`, inches for legacy projects) each time the drawer opens, and
+   * only persisted back on a successful Save. Canonical measurement storage stays in inches.
+   */
+  let editDisplayUnit: GaugeSwatchBasis = "in";
+
   // Measurement SVG editor lives in the right column of the SAME workspace now
   // (no separate full-screen surface). `.sl-measure-workspace__body` is kept so the
   // existing scoped diagram-sizing CSS still applies.
@@ -376,18 +393,52 @@ function initSleevelessPatternEditDrawer(): void {
     return getSleevelessChartAudience(getCurrentPattern()) || "misses";
   }
 
-  /** Swatch basis (4" vs 10 cm) the saved gauge was entered in — mirrors the pattern summary. */
-  function resolveGaugeBasis(): GaugeSwatchBasis {
-    const yg = section(getCurrentPattern().yarnGauge);
-    const ygm = section(getPatternData().yarnGaugeMachine);
-    return ygm.gaugeRawUnit === "cm" || yg.gaugeRawUnit === "cm" ? "cm" : "in";
-  }
-
   function updateGaugeLabels(basis: GaugeSwatchBasis): void {
     const suffix = gaugeBasisLabelSuffix(basis);
     if (spiLabel) spiLabel.textContent = `Stitch gauge (${suffix})`;
     if (rpiLabel) rpiLabel.textContent = `Row gauge (${suffix})`;
   }
+
+  /** Reflect the active display unit on the Inches/Centimeters control. */
+  function reflectUnitToggleUi(unit: GaugeSwatchBasis): void {
+    unitButtons.forEach((btn) => {
+      const on = (btn.getAttribute("data-sl-edit-unit") === "cm" ? "cm" : "in") === unit;
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
+  /** Re-express the visible gauge fields in `toUnit` (same physical gauge; invalid values kept). */
+  function convertGaugeFieldsDisplay(fromUnit: GaugeSwatchBasis, toUnit: GaugeSwatchBasis): void {
+    if (spiInput) spiInput.value = convertGaugeSwatchDisplayBetweenUnits(spiInput.value, fromUnit, toUnit);
+    if (rpiInput) rpiInput.value = convertGaugeSwatchDisplayBetweenUnits(rpiInput.value, fromUnit, toUnit);
+  }
+
+  /**
+   * Switch the working display unit. Converts the gauge fields' presentation, relabels the gauge
+   * inputs, then dispatches `kbm:units-change` so the reused measurement editor re-displays the
+   * body-measurement diagram in the new unit — preserving any unsaved edits (it re-reads the
+   * visible fields as canonical inches before re-rendering). No canonical values are rewritten.
+   */
+  function setEditDisplayUnit(next: GaugeSwatchBasis): void {
+    if (next === editDisplayUnit) return;
+    const prev = editDisplayUnit;
+    convertGaugeFieldsDisplay(prev, next);
+    editDisplayUnit = next;
+    updateGaugeLabels(next);
+    reflectUnitToggleUi(next);
+    window.dispatchEvent(
+      new CustomEvent("kbm:units-change", {
+        detail: { unit: next, toggleId: EDIT_WORKSPACE_UNIT_TOGGLE_ID },
+      }),
+    );
+  }
+
+  unitButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      setEditDisplayUnit(btn.getAttribute("data-sl-edit-unit") === "cm" ? "cm" : "in");
+    });
+  });
 
   function populateSizeOptions(audience: string, currentSize: string): void {
     if (!sizeSelect) return;
@@ -471,9 +522,15 @@ function initSleevelessPatternEditDrawer(): void {
       readCustomBuildWizardNeckline() || (st.neckline === "v" ? "v-neck" : "round");
     setRadio("sl-edit-neckline", neckline === "v" ? "v-neck" : neckline);
 
+    // Open in the project's saved display unit (inches for legacy projects). This drives both the
+    // gauge basis and — via `resolveDisplayUnit` on the reused measurement editor — the body
+    // measurement diagram, so the whole workspace opens in one consistent unit.
+    editDisplayUnit = resolveSavedPatternMeasurementDisplayUnit();
+    reflectUnitToggleUi(editDisplayUnit);
+
     // Gauge is shown in the machine-knitting convention (sts/rows over 4" or 10 cm), matching
     // the pattern summary. Per-inch values used by the engine are derived on save.
-    const gaugeBasis = resolveGaugeBasis();
+    const gaugeBasis = editDisplayUnit;
     updateGaugeLabels(gaugeBasis);
     if (spiInput) {
       spiInput.value = swatchDisplayValue(
@@ -599,14 +656,25 @@ function initSleevelessPatternEditDrawer(): void {
     window.requestAnimationFrame(() => {
       // Re-measure after layout/fonts settle so the panel stays flush with the header.
       syncPanelTop();
+      const alreadyInitialized = measureInitialized;
       // The measurement SVG editor is part of the workspace — initialise it lazily the
       // first time the workspace opens (after layout so its overlay anchors measure correctly).
       if (!measureInitialized && measurePane) {
         measureInitialized = true;
-        initCustomBuildMeasurementsPage({ resolveDisplayUnit: resolveSavedPatternMeasurementDisplayUnit });
+        initCustomBuildMeasurementsPage({
+          resolveDisplayUnit: () => editDisplayUnit,
+          unitChangeToggleId: EDIT_WORKSPACE_UNIT_TOGGLE_ID,
+        });
       }
       ensureDropShoulderMeasurementEditorReady();
-      captureMeasureFieldBaseline();
+      if (alreadyInitialized) {
+        // Reopen: re-render the diagram from the saved draft in the (freshly reset) display unit
+        // so a canceled unit switch or discarded edit never leaves a stale display behind. Capture
+        // the Cancel baseline only after that re-render settles.
+        void rehydratePatternWorkspaceMeasurementDiagram().then(() => captureMeasureFieldBaseline());
+      } else {
+        captureMeasureFieldBaseline();
+      }
       (drawerPanel ?? drawer!).focus();
     });
   }
@@ -659,7 +727,10 @@ function initSleevelessPatternEditDrawer(): void {
     const neckline = radioValue("sl-edit-neckline") === "v-neck" ? "v-neck" : "round";
     const fit = readStoredFitPreference();
     // Inputs hold swatch counts (sts/rows over 4" or 10 cm); the engine consumes per-inch.
-    const gaugeBasis = resolveGaugeBasis();
+    // Interpret them in the workspace's active display unit and persist that as the saved unit,
+    // so Save Changes both converts gauge correctly and records the chosen Inches/Centimeters
+    // preference (`gaugeRawUnit`) with the project.
+    const gaugeBasis = editDisplayUnit;
     const stitchSwatch = spiInput?.value.trim() ?? "";
     const rowSwatch = rpiInput?.value.trim() ?? "";
     const needles = needlesInput?.value.trim() ?? "";
@@ -852,7 +923,10 @@ function initSleevelessPatternEditDrawer(): void {
   function ensureDropShoulderMeasurementEditorReady(): void {
     if (!isDropShoulderWorkspaceMeasurementSummaryPage() || !measurePane || measureInitialized) return;
     measureInitialized = true;
-    initCustomBuildMeasurementsPage({ resolveDisplayUnit: resolveSavedPatternMeasurementDisplayUnit });
+    initCustomBuildMeasurementsPage({
+      resolveDisplayUnit: () => editDisplayUnit,
+      unitChangeToggleId: EDIT_WORKSPACE_UNIT_TOGGLE_ID,
+    });
   }
 
   async function handleDropShoulderQuickEditSizeChanged(oldSize: string): Promise<void> {

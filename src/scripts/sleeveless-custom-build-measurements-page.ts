@@ -110,6 +110,19 @@ let dropShoulderWorkspaceRehydrateImpl:
 
 let dropShoulderWorkspaceSummaryRefreshImpl: (() => Promise<void>) | null = null;
 
+let patternWorkspaceMeasurementDiagramRehydrateImpl: (() => Promise<void>) | null = null;
+
+/**
+ * Re-render the Edit Pattern measurement diagram from the current saved working draft, in the
+ * workspace's active display unit. Used when the Edit drawer reopens so a canceled unit switch (or
+ * any discarded edit) always reappears reading canonical inches — never a stale display unit or
+ * an unsaved value left in memory. No-op until the measurement editor has been initialised.
+ */
+export async function rehydratePatternWorkspaceMeasurementDiagram(): Promise<void> {
+  if (!patternWorkspaceMeasurementDiagramRehydrateImpl) return;
+  await patternWorkspaceMeasurementDiagramRehydrateImpl();
+}
+
 /** Called from Edit Pattern → Measurements when Quick edits Size changes (Drop Shoulder only). */
 export async function rehydrateDropShoulderWorkspaceMeasurementDiagramFromQuickEdit(
   sizing: DropShoulderQuickEditSizing,
@@ -207,12 +220,20 @@ export type CustomBuildMeasurementsInitOptions = {
   /** Keep unit toggle in summary host when rendering build summary (unified review). */
   preserveUnitsHost?: boolean;
   /**
-   * Explicit display unit for pages WITHOUT a unit toggle (e.g. the Edit Pattern workspace).
-   * The diagram displays / accepts edits in the returned unit and converts to canonical inches
-   * on save, honoring the unit chosen at build time — no unit switcher is added. When omitted,
-   * unit display is driven by `preserveUnitsHost` (toggle) or defaults to inches.
+   * Explicit display unit for pages WITHOUT the built-in review unit toggle (e.g. the Edit
+   * Pattern workspace). The diagram displays / accepts edits in the returned unit and converts to
+   * canonical inches on save. The Edit workspace supplies a mutable resolver so its own Inches/
+   * Centimeters control can switch the working unit live. When omitted, unit display is driven by
+   * `preserveUnitsHost` (toggle) or defaults to inches.
    */
   resolveDisplayUnit?: () => MeasurementDisplayUnit;
+  /**
+   * Toggle id whose `kbm:units-change` events should re-display the diagram. Defaults to the
+   * review/builder toggle ({@link SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID}). The Edit Pattern
+   * workspace passes its own control id so switching units there re-renders the diagram (while
+   * preserving unsaved edits) via the same conversion path.
+   */
+  unitChangeToggleId?: string;
 };
 
 /**
@@ -1327,6 +1348,7 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
   const useUiUnitDisplay = options?.preserveUnitsHost === true;
   const explicitDisplayUnitResolver = options?.resolveDisplayUnit ?? null;
   const unitDisplayActive = useUiUnitDisplay || explicitDisplayUnitResolver != null;
+  const expectedUnitToggleId = options?.unitChangeToggleId ?? SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID;
   const summaryEl = root.querySelector("[data-cb-build-summary]");
   const missingEl = root.querySelector("[data-cb-measure-missing]");
   const diagramHost = root.querySelector("[data-cb-measure-diagram]");
@@ -1342,11 +1364,11 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
   let lastDisplayUnit: UiLengthUnit = getDisplayUnit() ?? "in";
   let diagramUnitDisplayReady = false;
 
-  if (useUiUnitDisplay) {
+  if (unitDisplayActive) {
     const onReviewUnitsChange = (ev: Event): void => {
       const ce = ev as CustomEvent<{ unit?: string; toggleId?: string }>;
       const toggleId = ce.detail?.toggleId;
-      if (toggleId != null && toggleId !== SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID) {
+      if (toggleId != null && toggleId !== expectedUnitToggleId) {
         logReviewUnitDebug("ignored: other toggle", { toggleId });
         return;
       }
@@ -1355,7 +1377,7 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
       logReviewUnitDebug("kbm:units-change received", {
         event: "kbm:units-change",
         unit,
-        toggleId: toggleId ?? SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID,
+        toggleId: toggleId ?? expectedUnitToggleId,
         diagramReady: diagramUnitDisplayReady,
       });
 
@@ -1385,7 +1407,7 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
 
     window.addEventListener("kbm:units-change", onReviewUnitsChange);
     logReviewUnitDebug("listener attached (sync at init)", {
-      toggleId: SLEEVELESS_EXPRESS_SIZE_UNIT_TOGGLE_ID,
+      toggleId: expectedUnitToggleId,
     });
   }
 
@@ -1676,6 +1698,15 @@ export function initCustomBuildMeasurementsPage(options?: CustomBuildMeasurement
   };
 
   dropShoulderWorkspaceSummaryRefreshImpl = async (): Promise<void> => {
+    await loadExpressSweaterCharts();
+    await hydrateWorkspaceSummaryDiagram();
+  };
+
+  // Edit workspace reopen / unit-reset: re-render the diagram from the saved draft so a discarded
+  // unit switch or measurement edit never leaves a stale display behind (shared by both families).
+  patternWorkspaceMeasurementDiagramRehydrateImpl = async (): Promise<void> => {
+    diagramUnitDisplayReady = false;
+    lastSummaryDiagramRenderKey = "";
     await loadExpressSweaterCharts();
     await hydrateWorkspaceSummaryDiagram();
   };
