@@ -17,6 +17,8 @@ import {
   getPublicBillboardSettings,
   getPublicWhatsNewBoard,
 } from "../lib/whatsNew/store";
+import { sanitizeCardDescriptionHtml } from "../lib/whatsNew/sanitizeBillboardHtml";
+import { resolveWhatsNewToolIcon } from "../lib/whatsNew/toolIcon";
 
 const themeStyle = whatsNewThemeStyle();
 
@@ -140,13 +142,27 @@ const description =
                 ) : (
                   <ul class="whats-new__cards">
                     {cards.map((card) => {
+                      const toolIcon = resolveWhatsNewToolIcon(card);
                       return (
                         <li
                           class={`whats-new__card kbm-card${card.featured ? " whats-new__card--featured" : ""}`}
                           style={whatsNewCategoryCardStyle(card.category)}
                         >
                           <div class="whats-new__card-top">
-                            <span class="whats-new__category">{card.categoryLabel}</span>
+                            <div class="whats-new__card-top-lead">
+                              {toolIcon ? (
+                                <img
+                                  class="whats-new__tool-icon"
+                                  src={toolIcon}
+                                  alt=""
+                                  width="48"
+                                  height="48"
+                                  loading="lazy"
+                                  decoding="async"
+                                />
+                              ) : null}
+                              <span class="whats-new__category">{card.categoryLabel}</span>
+                            </div>
                             {
                               card.featured ? (
                                 <span class="whats-new__badge whats-new__badge--featured">Featured</span>
@@ -154,7 +170,11 @@ const description =
                             }
                           </div>
                           <h3 class="whats-new__card-title">{card.title}</h3>
-                          <p class="whats-new__card-desc">{card.description}</p>
+                          <div
+                            class="whats-new__card-desc"
+                            set:html={sanitizeCardDescriptionHtml(card.description)}
+                          />
+
                           <p class="whats-new__quiet-date">
                             <time datetime={card.publishDate}>
                               {formatQuietPublishDate(card.publishDate)}
@@ -385,6 +405,21 @@ const description =
     margin-bottom: 0.55rem;
   }
 
+  .whats-new__card-top-lead {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .whats-new__tool-icon {
+    flex: 0 0 auto;
+    width: 48px;
+    height: 48px;
+    /* Keep the registered icon crisp without stretching or distorting it. */
+    object-fit: contain;
+  }
+
   .whats-new__category {
     display: inline-block;
     font-size: 0.75rem;
@@ -428,6 +463,37 @@ const description =
        normal body copy while the title stays bold. */
     font-weight: 400 !important;
     line-height: 1.55;
+    /* Keep long words/URLs from spilling out of the narrow cards. */
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  /* Compact spacing for formatted descriptions inside the narrow cards. */
+  .whats-new__card-desc :global(p) {
+    margin: 0 0 0.5rem;
+  }
+
+  .whats-new__card-desc :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .whats-new__card-desc :global(ul),
+  .whats-new__card-desc :global(ol) {
+    margin: 0.25rem 0 0.5rem;
+    padding-left: 1.25rem;
+  }
+
+  .whats-new__card-desc :global(li) {
+    margin: 0.1rem 0;
+  }
+
+  .whats-new__card-desc :global(li:last-child) {
+    margin-bottom: 0;
+  }
+
+  /* Normal weight for emphasis so descriptions stay readable body copy. */
+  .whats-new__card-desc :global(strong) {
+    font-weight: 600;
   }
 
   .whats-new__quiet-date {

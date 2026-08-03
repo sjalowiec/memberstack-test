@@ -1,6 +1,8 @@
 import { normalizeWhatsNewDestinationUrl } from "./destinationUrl";
 
 const ALLOWED_TAGS = new Set(["p", "br", "strong", "em", "ul", "ol", "li", "a"]);
+/** Card descriptions reuse the billboard allowlist minus links. */
+const CARD_ALLOWED_TAGS = new Set(["p", "br", "strong", "em", "ul", "ol", "li"]);
 const VOID_TAGS = new Set(["br"]);
 /** Drop these tags and their inner content entirely. */
 const SKIP_CONTENT_TAGS = new Set([
@@ -45,6 +47,14 @@ function normalizeTagName(name: string): string | null {
   if (lower === "b") return "strong";
   if (lower === "i") return "em";
   if (ALLOWED_TAGS.has(lower)) return lower;
+  return null;
+}
+
+function normalizeCardTagName(name: string): string | null {
+  const lower = name.toLowerCase();
+  if (lower === "b") return "strong";
+  if (lower === "i") return "em";
+  if (CARD_ALLOWED_TAGS.has(lower)) return lower;
   return null;
 }
 
@@ -197,6 +207,95 @@ export function sanitizeBillboardHtml(input: string): string {
       const rel = isExternal ? ' rel="noopener noreferrer"' : "";
       out += `<a href="${escapeText(href)}"${rel}>`;
       stack.push("a");
+      continue;
+    }
+
+    out += `<${tag}>`;
+    stack.push(tag);
+  }
+
+  while (stack.length) {
+    out += `</${stack.pop()}>`;
+  }
+
+  if (!billboardMessageHasText(out)) return "";
+
+  // Ensure block structure for orphan inline fragments (e.g. pasted "hello <b>there</b>").
+  if (!/<(?:p|ul|ol)\b/i.test(out)) {
+    return `<p>${out}</p>`;
+  }
+
+  return out;
+}
+
+/** Visible text summary for a card description (admin previews, length checks). */
+export function cardDescriptionPlainText(html: string): string {
+  return billboardMessagePlainText(html);
+}
+
+/**
+ * Sanitize What's New card description HTML.
+ * Mirrors sanitizeBillboardHtml but drops links: card CTAs use dedicated fields.
+ * Allows only: p, br, strong (b?strong), em (i?em), ul, ol, li.
+ * Plain text is wrapped in safe paragraphs.
+ */
+export function sanitizeCardDescriptionHtml(input: string): string {
+  if (typeof input !== "string") return "";
+  const trimmed = input.trim();
+  if (!trimmed) return "";
+
+  if (!looksLikeHtml(trimmed)) {
+    return plainTextToBillboardHtml(trimmed);
+  }
+
+  const cleaned = trimmed.replace(/<!--[\s\S]*?-->/g, "").replace(/<\?[\s\S]*?\?>/g, "");
+  const tokens = tokenize(cleaned);
+  const stack: string[] = [];
+  let out = "";
+  let skipUntil: string | null = null;
+
+  const closeUntil = (tag: string): void => {
+    while (stack.length) {
+      const top = stack.pop()!;
+      out += `</${top}>`;
+      if (top === tag) break;
+    }
+  };
+
+  for (const tok of tokens) {
+    if (skipUntil) {
+      if (tok.type === "tag" && tok.closing && tok.name.toLowerCase() === skipUntil) {
+        skipUntil = null;
+      }
+      continue;
+    }
+
+    if (tok.type === "text") {
+      out += escapeText(tok.value);
+      continue;
+    }
+
+    const lowerName = tok.name.toLowerCase();
+
+    if (!tok.closing && SKIP_CONTENT_TAGS.has(lowerName)) {
+      skipUntil = lowerName;
+      continue;
+    }
+
+    const tag = normalizeCardTagName(tok.name);
+    // Unsupported tags (including links) are dropped; their text is preserved.
+    if (!tag) {
+      continue;
+    }
+
+    if (tok.closing) {
+      if (VOID_TAGS.has(tag)) continue;
+      if (stack.includes(tag)) closeUntil(tag);
+      continue;
+    }
+
+    if (tag === "br") {
+      out += "<br>";
       continue;
     }
 

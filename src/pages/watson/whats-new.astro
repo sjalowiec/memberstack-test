@@ -20,6 +20,8 @@ import {
   getWhatsNewBillboardSettings,
   listAllWhatsNewCards,
 } from "../../lib/whatsNew/store";
+import { cardDescriptionPlainText } from "../../lib/whatsNew/sanitizeBillboardHtml";
+import { resolveWhatsNewToolIcon } from "../../lib/whatsNew/toolIcon";
 
 export const prerender = false;
 
@@ -98,8 +100,35 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
       ) : null
     }
 
-    <section class="watson__panel" aria-labelledby="wn-billboard-heading">
-      <h2 id="wn-billboard-heading" class="watson__panel-title">What's New Billboard</h2>
+    <details class="watson__panel watson-wn__billboard" data-wn-billboard-panel>
+      <summary class="watson-wn__billboard-summary">
+        <span class="watson-wn__billboard-summary-heading">
+          <span class="watson__panel-title watson-wn__billboard-summary-title">
+            What's New Billboard
+          </span>
+          <span
+            class={`watson-wn__billboard-status watson-wn__billboard-status--${billboard?.enabled ? "on" : "off"}`}
+          >
+            {billboard?.enabled ? "Enabled" : "Disabled"}
+          </span>
+        </span>
+        <span class="watson-wn__billboard-summary-meta">
+          {
+            billboard?.headline ? (
+              <span class="watson-wn__billboard-summary-headline">{billboard.headline}</span>
+            ) : null
+          }
+          {
+            billboard?.updatedAt ? (
+              <span class="watson-wn__billboard-summary-updated">
+                Last updated {formatQuietPublishDate(billboard.updatedAt.slice(0, 10))}
+              </span>
+            ) : null
+          }
+        </span>
+        <span class="watson-wn__billboard-edit-cue">Edit billboard</span>
+      </summary>
+      <div class="watson-wn__billboard-body">
       <p class="watson-wn__hint">
         Optional top message for /whats-new. Video and button are optional. Dates use America/Los_Angeles
         calendar days. Leave disabled to hide the billboard.
@@ -140,10 +169,10 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
                   <em>I</em>
                 </button>
                 <button type="button" class="watson-wn__rte-btn" data-wn-rte-cmd="paragraph" title="Paragraph">
-                  ù
+                  ?
                 </button>
                 <button type="button" class="watson-wn__rte-btn" data-wn-rte-cmd="ul" title="Bulleted list">
-                  ù List
+                  ? List
                 </button>
                 <button type="button" class="watson-wn__rte-btn" data-wn-rte-cmd="ol" title="Numbered list">
                   1. List
@@ -242,10 +271,11 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
             ) : null
           }
           <button type="submit" class="watson__button">Save billboard</button>
-          <p class="watson__status" data-wn-video-status hidden></p>
+          <p class="watson__status" data-wn-video-status tabindex="-1" hidden></p>
         </div>
       </form>
-    </section>
+      </div>
+    </details>
 
     <section class="watson__panel" aria-labelledby="wn-form-heading" data-wn-form-panel hidden>
       <h2 id="wn-form-heading" class="watson__panel-title" data-wn-form-title>Add Update</h2>
@@ -256,15 +286,54 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
             <span>Title</span>
             <input class="watson__search-input" name="title" type="text" required maxlength="160" />
           </label>
-          <label class="watson-wn__field watson-wn__field--full">
-            <span>Short description</span>
-            <textarea
-              class="watson-wn__textarea"
-              name="description"
-              rows="3"
-              required
-              maxlength="500"></textarea>
-          </label>
+          <div class="watson-wn__field watson-wn__field--full">
+            <span id="wn-card-description-label">Short description</span>
+            <div class="watson-wn__rte watson-wn__rte--compact" data-wn-card-rte>
+              <div
+                class="watson-wn__rte-toolbar"
+                data-wn-rte-toolbar
+                role="toolbar"
+                aria-label="Description formatting"
+              >
+                <button type="button" class="watson-wn__rte-btn" data-wn-rte-cmd="bold" title="Bold">
+                  <strong>B</strong>
+                </button>
+                <button type="button" class="watson-wn__rte-btn" data-wn-rte-cmd="italic" title="Italic">
+                  <em>I</em>
+                </button>
+                <button type="button" class="watson-wn__rte-btn" data-wn-rte-cmd="ul" title="Bulleted list">
+                  ? List
+                </button>
+                <button type="button" class="watson-wn__rte-btn" data-wn-rte-cmd="ol" title="Numbered list">
+                  1. List
+                </button>
+                <button
+                  type="button"
+                  class="watson-wn__rte-btn"
+                  data-wn-rte-cmd="clear"
+                  title="Clear formatting"
+                >
+                  Clear
+                </button>
+              </div>
+              <div
+                class="watson-wn__rte-editor"
+                data-wn-rte-editor
+                contenteditable="true"
+                role="textbox"
+                aria-multiline="true"
+                aria-labelledby="wn-card-description-label"
+              ></div>
+              <textarea
+                class="watson-wn__rte-input"
+                data-wn-rte-input
+                name="description"
+                maxlength="4000"
+                hidden
+                tabindex="-1"
+                aria-hidden="true"></textarea>
+            </div>
+          </div>
           <label class="watson-wn__field">
             <span>Category</span>
             <select class="watson__search-input" name="category" required>
@@ -367,7 +436,9 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
                   <p class="watson-wn__empty">No cards in this column.</p>
                 ) : (
                   <ul class="watson-wn__cards">
-                    {cards.map((card) => (
+                    {cards.map((card) => {
+                      const toolIcon = resolveWhatsNewToolIcon(card);
+                      return (
                       <li
                         class={`watson-wn__card${card.featured ? " watson-wn__card--featured" : ""}`}
                         style={whatsNewCategoryCardStyle(card.category)}
@@ -379,12 +450,25 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
                             <span class="watson-wn__badge watson-wn__badge--featured">featured</span>
                           ) : null}
                         </div>
-                        <strong>{card.title}</strong>
-                        <p>{card.description}</p>
+                        <div class="watson-wn__card-head">
+                          {toolIcon ? (
+                            <img
+                              class="watson-wn__tool-icon"
+                              src={toolIcon}
+                              alt=""
+                              width="40"
+                              height="40"
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          ) : null}
+                          <strong>{card.title}</strong>
+                        </div>
+                        <p class="watson-wn__card-desc">{cardDescriptionPlainText(card.description)}</p>
                         <p class="watson-wn__quiet">
                           {formatQuietPublishDate(card.publishDate)}
-                          {card.destinationUrl ? ` ù ${card.destinationUrl}` : " ù no URL"}
-                          {` ù order ${card.displayOrder}`}
+                          {card.destinationUrl ? ` ? ${card.destinationUrl}` : " ? no URL"}
+                          {` ? order ${card.displayOrder}`}
                         </p>
                         <div class="watson-wn__card-actions">
                           <button
@@ -441,7 +525,8 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
                           ) : null}
                         </div>
                       </li>
-                    ))}
+                      );
+                    })}
                   </ul>
                 )}
               </section>
@@ -467,7 +552,7 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
                   <span>{card.status}</span>
                 </div>
                 <strong>{card.title}</strong>
-                <p>{card.description}</p>
+                <p class="watson-wn__card-desc">{cardDescriptionPlainText(card.description)}</p>
                 <div class="watson-wn__card-actions">
                   <button
                     type="button"
@@ -505,8 +590,10 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
 
 <script>
   import { initWatsonBillboardRichText } from "../../scripts/watsonBillboardRichText";
+  import { initWatsonCardRichText } from "../../scripts/watsonCardRichText";
   import { initWatsonWhatsNew } from "../../scripts/watsonWhatsNew";
   initWatsonBillboardRichText(document);
+  initWatsonCardRichText(document);
   initWatsonWhatsNew(document);
 </script>
 
@@ -547,6 +634,118 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
     margin: 0;
     color: #5b6470;
     font-size: 0.9rem;
+  }
+
+  /* Billboard accordion: edited occasionally, so collapsed by default to keep
+     the card editor and board within easy reach. Uses native <details>. */
+  .watson-wn__billboard-summary {
+    list-style: none;
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.2rem 0.75rem;
+    /* Compact: no large minimum height when collapsed. */
+    padding: 0.1rem 0;
+  }
+
+  .watson-wn__billboard-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .watson-wn__billboard-summary-heading {
+    grid-column: 1;
+    grid-row: 1;
+    display: inline-flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.5rem;
+    min-width: 0;
+  }
+
+  .watson-wn__billboard-summary-title {
+    margin: 0;
+  }
+
+  .watson-wn__billboard-status {
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+
+  .watson-wn__billboard-status::before {
+    content: "\00b7";
+    margin-right: 0.5rem;
+    color: #9aa2ac;
+    font-weight: 400;
+  }
+
+  .watson-wn__billboard-status--on {
+    color: #2f7d32;
+  }
+
+  .watson-wn__billboard-status--off {
+    color: #5b6470;
+  }
+
+  .watson-wn__billboard-edit-cue {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    justify-self: end;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+    border: 1px solid #c9d0c0;
+    border-radius: 999px;
+    padding: 0.2rem 0.6rem;
+    white-space: nowrap;
+  }
+
+  .watson-wn__billboard[open] .watson-wn__billboard-edit-cue::after {
+    content: " \2013 open";
+    color: #5b6470;
+    font-weight: 400;
+  }
+
+  .watson-wn__billboard-summary-meta {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35rem;
+    color: #5b6470;
+    font-size: 0.9rem;
+    min-width: 0;
+  }
+
+  .watson-wn__billboard-summary-meta:empty {
+    display: none;
+  }
+
+  .watson-wn__billboard-summary-meta > *:not(:first-child)::before {
+    content: "\00b7";
+    margin-right: 0.35rem;
+    color: #9aa2ac;
+  }
+
+  .watson-wn__billboard-summary-headline {
+    font-weight: 600;
+    color: #2c3a57;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: min(48ch, 100%);
+  }
+
+  .watson-wn__billboard-summary:focus-visible {
+    outline: 2px solid #c5d4b0;
+    outline-offset: 3px;
+    border-radius: 8px;
+  }
+
+  .watson-wn__billboard-body {
+    margin-top: 0.85rem;
   }
 
   .watson-wn__grid {
@@ -635,6 +834,11 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
     line-height: 1.45;
   }
 
+  /* Card descriptions stay short, so the editor gets a shorter default height. */
+  .watson-wn__rte--compact .watson-wn__rte-editor {
+    min-height: 5.5rem;
+  }
+
   .watson-wn__rte-editor:focus {
     outline: none;
     box-shadow: inset 0 0 0 2px #c5d4b0;
@@ -696,6 +900,23 @@ function cardDataAttr(card: (typeof activeCards)[number]): string {
   .watson-wn__card strong {
     display: block;
     margin: 0.25rem 0;
+  }
+
+  .watson-wn__card-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .watson-wn__card-head strong {
+    margin: 0.25rem 0;
+  }
+
+  .watson-wn__tool-icon {
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
   }
 
   .watson-wn__card p {
