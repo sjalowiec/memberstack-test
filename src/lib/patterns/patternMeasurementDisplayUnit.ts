@@ -32,6 +32,33 @@ export function inchesToCmRounded(inches: number): number {
 }
 
 /**
+ * A centimeter value the user typed/saw ? canonical inches, preserving the physical width.
+ *
+ * The cm field shows the 0.1 cm grid, so we snap to that grid (removing float noise from a live
+ * field) and convert ONCE. We deliberately do NOT snap the result to the quarter-inch grid: the
+ * quarter-inch grid is the inch *input* grid, and forcing cm entries onto it silently shrinks them
+ * (e.g. 16 cm ? 6.299 in would collapse to 6.25 in = 15.875 cm). Inches are still canonical; this
+ * only decides how faithfully a cm entry is stored. Rounded to 1e-4 in so equal cm entries produce
+ * identical strings and repeated save/reopen cycles are idempotent.
+ */
+export function centimetersToCanonicalInches(cm: number): number {
+  const cmOnGrid = Math.round(cm * 10) / 10;
+  return Math.round((cmOnGrid / INCH_TO_CM) * 10000) / 10000;
+}
+
+/**
+ * Serialize canonical inches that were derived from a centimeter entry, WITHOUT snapping to the
+ * quarter-inch grid (that snap is a cm-only precision loss). Kept to 4 decimals with trailing zeros
+ * trimmed so equal cm entries always serialize to the identical string (idempotent save/reopen).
+ */
+export function formatCanonicalInchesFromCm(inches: number): string {
+  if (!Number.isFinite(inches) || inches <= 0) return "";
+  const rounded = Math.round(inches * 10000) / 10000;
+  if (Math.abs(rounded - Math.round(rounded)) < 1e-9) return String(Math.round(rounded));
+  return String(rounded).replace(/\.?0+$/, "");
+}
+
+/**
  * Canonical stored inches ? visible field text for the active display unit.
  * Returns "" for missing / non-finite values so empty fields stay empty.
  */
@@ -56,8 +83,9 @@ export function parseMeasurementInputToInches(
   if (!s) return undefined;
   const n = parseFloat(s.replace(/[^\d.-]/g, ""));
   if (!Number.isFinite(n) || n <= 0) return undefined;
-  const inches = unit === "cm" ? n / INCH_TO_CM : n;
-  return roundQuarterInches(inches);
+  // Inches use the quarter-inch input grid; centimeters preserve the physical width the user typed
+  // (converted once, NOT re-snapped to quarter inches — see centimetersToCanonicalInches).
+  return unit === "cm" ? centimetersToCanonicalInches(n) : roundQuarterInches(n);
 }
 
 function section(obj: unknown): Record<string, unknown> {

@@ -12,6 +12,10 @@
  */
 import { isCustomBuildPatternMode, positiveMeasurementInches } from "./customBuildEffectiveArmholeDepth";
 import { formatSwatchCountForGaugeInput } from "./gaugeDisplayFormat";
+import {
+  centimetersToCanonicalInches,
+  formatCanonicalInchesFromCm,
+} from "./patternMeasurementDisplayUnit";
 import { getExpressUiUnit } from "./sleevelessExpressSizeChartClient";
 import {
   getCurrentPattern,
@@ -61,6 +65,7 @@ function parsePositiveInches(raw: string): number | undefined {
 function formatOverrideInches(n: number): string {
   return formatSwatchCountForGaugeInput(roundQuarter(n));
 }
+
 
 /**
  * Ensures diagram hip reaches {@link generateSleevelessBackPattern} when stored on the working draft
@@ -184,14 +189,17 @@ export function collectCustomBuildMeasurementOverridesFromDom(
     if (!isDiagramMeasureInput(input)) continue;
     const raw = input.value.trim();
     if (!raw) continue;
-    let inches: number | undefined;
     if (unit === "cm") {
+      // Preserve the physical width typed in cm; converting via the shared helper avoids the
+      // quarter-inch snap that silently shrank cm entries (e.g. 16 cm neck opening -> 6.25 in).
       const n = parseFloat(raw.replace(/[^\d.-]/g, ""));
-      if (Number.isFinite(n) && n > 0) inches = roundQuarter(n / 2.54);
+      if (Number.isFinite(n) && n > 0) {
+        out[key] = formatCanonicalInchesFromCm(centimetersToCanonicalInches(n));
+      }
     } else {
-      inches = parsePositiveInches(raw);
+      const inches = parsePositiveInches(raw);
+      if (inches !== undefined) out[key] = formatOverrideInches(inches);
     }
-    if (inches !== undefined) out[key] = formatOverrideInches(inches);
   }
   return out;
 }
