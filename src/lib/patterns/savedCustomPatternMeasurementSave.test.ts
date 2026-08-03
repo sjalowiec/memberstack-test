@@ -701,8 +701,9 @@ describe("saved custom-build measurement save", () => {
     writeActiveCustomPatternProjectId(project.id, project.name);
 
     // The Edit workspace shows chest ~101.6 cm; the member types 104 cm.
+    // cm entries preserve the physical width (converted ONCE), NOT snapped to the quarter-inch grid.
     const editedInches = parseMeasurementInputToInches("104", "cm");
-    expect(editedInches).toBe(41); // 104 / 2.54 = 40.94… -> snapped to the quarter-inch grid
+    expect(editedInches).toBeCloseTo(40.9449, 3); // 104 / 2.54, physical width preserved
 
     persistMeasurementOverrides({
       ...loadMeasurementOverrides(),
@@ -712,10 +713,10 @@ describe("saved custom-build measurement save", () => {
 
     // Canonical storage stays in inches, so the save payload carries the converted value.
     const payload = buildSavePayloadFromWorkingDraft(project.name);
-    expect(overrideFromPayload(payload, "chestBust")).toBe("41");
+    expect(Number(overrideFromPayload(payload, "chestBust"))).toBeCloseTo(40.9449, 3);
 
-    // Round-trips back to cm for display on reopen.
-    expect(formatMeasurementDisplayFromInches(41, "cm")).toBe("104.1");
+    // Round-trips back to the same cm the member typed on reopen (no drift).
+    expect(formatMeasurementDisplayFromInches(editedInches as number, "cm")).toBe("104");
   });
 
   it("smartSave update uses pinned activeProjectId when the localStorage link was cleared", async () => {

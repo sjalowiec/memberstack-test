@@ -7,6 +7,7 @@ import {
   swatchCountFromPerInchForDisplay,
 } from "../lib/patterns/gaugeDisplayFormat";
 import {
+  formatCanonicalInchesFromCm,
   formatMeasurementDisplayFromInches,
   inchesToCmRounded,
   parseMeasurementInputToInches,
@@ -928,9 +929,22 @@ function collectValues(
       continue;
     }
     const inches = parseMeasurementInputToInches(raw, displayUnit);
-    out[key] = inches !== undefined ? formatInchesInput(inches) : raw;
+    out[key] =
+      inches !== undefined ? formatCanonicalInchesForUnit(inches, displayUnit) : raw;
   }
   return out;
+}
+
+/**
+ * Serialize canonical inches for storage. Inches use the quarter-inch grid; centimeters preserve
+ * the physical width (no quarter snap) so a cm entry is not silently shrunk (see the neck-opening
+ * cm regression — 16 cm must reach generation as ~6.299 in, not 6.25 in).
+ */
+function formatCanonicalInchesForUnit(
+  inches: number,
+  displayUnit: UiLengthUnit | null | undefined,
+): string {
+  return displayUnit === "cm" ? formatCanonicalInchesFromCm(inches) : formatInchesInput(inches);
 }
 
 function setFieldError(root: HTMLElement, key: DiagramFieldKey, message: string | null): void {
@@ -979,8 +993,13 @@ function persistFromRoot(root: HTMLElement, displayUnit: UiLengthUnit | null): v
   const values = collectValues(root, { displayUnit });
   const toStore: Record<string, string> = { ...loadMeasurementOverrides() };
   for (const key of activeFieldKeys()) {
-    const n = parseInchesInput(values[key]);
-    if (n !== undefined) toStore[key] = formatInchesInput(n);
+    // `values` are already canonical inches from collectValues; preserve cm precision here so the
+    // quarter-inch snap in parseInchesInput/formatInchesInput does not re-shrink a cm entry.
+    const raw = values[key];
+    if (!raw) continue;
+    const n = parseFloat(raw.replace(/[^\d.-]/g, ""));
+    if (!Number.isFinite(n) || n <= 0) continue;
+    toStore[key] = formatCanonicalInchesForUnit(n, displayUnit);
   }
   if (isDropShoulderConstruction()) {
     delete toStore.shoulderWidth;
