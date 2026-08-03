@@ -15,6 +15,7 @@ import { formatSwatchCountForGaugeInput } from "./gaugeDisplayFormat";
 import {
   centimetersToCanonicalInches,
   formatCanonicalInchesFromCm,
+  resolveSavedPatternMeasurementDisplayUnit,
 } from "./patternMeasurementDisplayUnit";
 import { getExpressUiUnit } from "./sleevelessExpressSizeChartClient";
 import {
@@ -252,11 +253,13 @@ function resolveDiagramMeasureRootElement(root: ParentNode): HTMLElement | null 
  * visible text back to canonical inches with the same unit the user is looking at.
  * - Review pages: a visible units-toggle host reflects the live UI unit.
  * - Edit workspace: no toggle; the rendered field suffix chip carries the build-time unit.
- * Returns `null` (treated as inches) when nothing indicates centimeters.
+ * When no DOM signal is present we fall back to the saved pattern's build unit (`gaugeRawUnit`)
+ * rather than assuming inches, so a centimeter-built pattern is never collected as inches (which
+ * would either mis-scale the value or force the visible cm text onto the quarter-inch grid).
  */
 function resolveDiagramDisplayUnit(root: ParentNode): "in" | "cm" | null {
   const measureRoot = resolveDiagramMeasureRootElement(root);
-  if (!measureRoot) return null;
+  if (!measureRoot) return resolveSavedPatternMeasurementDisplayUnit();
   const unitsHost = measureRoot.querySelector("[data-express-measurements-units-host]");
   if (
     isDomElement(unitsHost) &&
@@ -271,7 +274,7 @@ function resolveDiagramDisplayUnit(root: ParentNode): "in" | "cm" | null {
     if (text === "cm") return "cm";
     if (text === "in") return "in";
   }
-  return null;
+  return resolveSavedPatternMeasurementDisplayUnit();
 }
 
 /**
