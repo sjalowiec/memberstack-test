@@ -9,6 +9,7 @@ import {
   loadLegacyEbookStorefrontWithSlugs,
 } from "../../../lib/legacy/legacyEbookSlug";
 import { plainTextFromLegacyEbookBrief } from "../../../lib/legacy/legacyEbookPlainText";
+import { EBOOK_SALES_PAUSED } from "../../../lib/legacy/legacyEbookSalesHold";
 import {
   formatLegacyEbookPrice,
   legacyStoreThumbnailPath,
@@ -21,6 +22,11 @@ export function getStaticPaths() {
     params: { slug: product.slug },
     props: { product },
   }));
+}
+
+// TEMPORARY: Flip EBOOK_SALES_PAUSED to false in legacyEbookSalesHold.ts to restore product pages.
+if (EBOOK_SALES_PAUSED) {
+  return Astro.redirect("/shop/ebooks");
 }
 
 const products = loadLegacyEbookStorefrontWithSlugs();

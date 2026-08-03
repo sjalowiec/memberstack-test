@@ -2,6 +2,12 @@
 import Layout from "../../layouts/Layout.astro";
 import PageHead from "../../components/PageHead.astro";
 import books from "../../data/ebooks.json";
+import { EBOOK_SALES_PAUSED } from "../../lib/legacy/legacyEbookSalesHold";
+
+// TEMPORARY: orphan Stripe catalog. Flip EBOOK_SALES_PAUSED to false to restore.
+if (EBOOK_SALES_PAUSED) {
+  return Astro.redirect("/shop/ebooks");
+}
 
 const title = "Books | Knit it Now";
 const description = "Downloadable reference books for machine knitters.";

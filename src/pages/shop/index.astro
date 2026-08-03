@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 
 import PageHead from "../../components/PageHead.astro";
+import { EBOOK_SALES_PAUSED } from "../../lib/legacy/legacyEbookSalesHold";
 
 const title = "Shop | Knit it Now";
 const description = "Find knitting machines, accessories, software, cables, and guided workshops. Choose what you're looking for.";
@@ -31,12 +32,17 @@ const categories = [
     href: "/shop/cables",
     cta: "Shop cables"
   },
-  {
-    name: "eBooks",
-    description: "Downloadble reference books for machine knitters.",
-    href: "/shop/ebooks",
-    cta: "Shop eBooks"
-  },
+  // Hidden while EBOOK_SALES_PAUSED — restore by setting the flag to false.
+  ...(!EBOOK_SALES_PAUSED
+    ? [
+        {
+          name: "eBooks",
+          description: "Downloadble reference books for machine knitters.",
+          href: "/shop/ebooks",
+          cta: "Shop eBooks",
+        },
+      ]
+    : []),
   {
     name: "Downloads",
     description: "Downloadable templates, and other resources for machine knitters.",
