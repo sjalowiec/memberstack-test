@@ -11,6 +11,7 @@ import {
   formatMeasurementDisplayFromInches,
   inchesToCmRounded,
   parseMeasurementInputToInches,
+  parseStoredInchesForDisplay,
   type MeasurementDisplayUnit,
 } from "../lib/patterns/patternMeasurementDisplayUnit";
 import { getDefaultHemLengthInches, getDefaultCuffLengthInches } from "../lib/patterns/hemDefaults";
@@ -538,16 +539,18 @@ function parseInchesInput(raw: string): number | undefined {
   return roundQuarter(n);
 }
 
+
 type UiLengthUnit = MeasurementDisplayUnit;
 
 /** Display-only: stored inch string → readonly chip text. */
 function formatReadonlyMeasurementDisplay(rawInches: string, unit: UiLengthUnit): string {
   const trimmed = rawInches.trim();
   if (!trimmed) return "—";
-  const inches = parseInchesInput(trimmed);
+  const inches = parseStoredInchesForDisplay(trimmed);
   if (inches === undefined) return trimmed;
+  // cm shows the true physical width; inches keep the quarter-inch grid (unchanged behavior).
   if (unit === "cm") return `${inchesToCmRounded(inches)} cm`;
-  return `${formatSwatchCountForGaugeInput(inches)} in`;
+  return `${formatSwatchCountForGaugeInput(roundQuarter(inches))} in`;
 }
 
 function readExpressValues(): Record<string, string> {
@@ -812,7 +815,10 @@ function createDiagramFieldBox(
   input.className = "measurement-input express-mbp-box__input";
   input.setAttribute("data-cb-measure-input", field.key);
   input.setAttribute("aria-label", `${field.label} in ${unit === "cm" ? "centimeters" : "inches"}`);
-  input.value = formatMeasurementDisplayFromInches(parseInchesInput(valueInches), unit);
+  input.value = formatMeasurementDisplayFromInches(
+    parseStoredInchesForDisplay(valueInches),
+    unit,
+  );
 
   const unitEl = document.createElement("span");
   unitEl.className = "measurement-unit express-mbp-box__unit";
@@ -1201,7 +1207,7 @@ function applyDiagramUnitDisplay(
     const input = box.querySelector<HTMLInputElement>(`[data-cb-measure-input="${field.key}"]`);
     const unitEl =
       box.querySelector("[data-cb-measure-unit-suffix]") ?? box.querySelector(".express-mbp-box__unit");
-    const inches = parseInchesInput(inchesRaw);
+    const inches = parseStoredInchesForDisplay(inchesRaw);
     if (input) {
       input.value = formatMeasurementDisplayFromInches(inches, unit);
       input.setAttribute(

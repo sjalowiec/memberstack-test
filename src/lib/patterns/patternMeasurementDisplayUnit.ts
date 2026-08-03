@@ -88,6 +88,21 @@ export function parseMeasurementInputToInches(
   return unit === "cm" ? centimetersToCanonicalInches(n) : roundQuarterInches(n);
 }
 
+/**
+ * Parse a stored canonical inch value for DISPLAY, WITHOUT the quarter-inch snap. Canonical storage
+ * keeps the true physical width for cm-built measurements (e.g. 6.2992 in = 16 cm); snapping on the
+ * way to the field is what made a reopened editor show 15.9 cm. Feed the result to
+ * {@link formatMeasurementDisplayFromInches}, which still applies the quarter-inch grid for INCH
+ * fields, so inch display is unchanged. Returns undefined for empty / non-positive input.
+ */
+export function parseStoredInchesForDisplay(
+  raw: string | number | null | undefined,
+): number | undefined {
+  if (raw === undefined || raw === null) return undefined;
+  const n = typeof raw === "number" ? raw : parseFloat(String(raw).replace(/[^\d.-]/g, ""));
+  return Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
 function section(obj: unknown): Record<string, unknown> {
   return obj && typeof obj === "object" && !Array.isArray(obj)
     ? (obj as Record<string, unknown>)
