@@ -8,7 +8,22 @@ export const FIT_EASE_INCHES_BY_CHOICE = {
   relaxed: 5,
 } as const;
 
+/**
+ * Approximate centimeter ease shown on the Fit cards when centimeters are the active display
+ * unit. These are the rounded "nice" cm figures knitters expect (2.5 / 7.5 / 12.5 cm), NOT a raw
+ * 2.54× conversion of the inch ease. They are presentational only — the pattern math always uses
+ * {@link FIT_EASE_INCHES_BY_CHOICE}, so switching units never changes the generated garment.
+ */
+export const FIT_EASE_CM_BY_CHOICE = {
+  close: 2.5,
+  standard: 7.5,
+  relaxed: 12.5,
+} as const;
+
 export type FitEaseChoice = keyof typeof FIT_EASE_INCHES_BY_CHOICE;
+
+/** Display unit for the Fit card ease copy — mirrors the builder measurement unit. */
+export type FitEaseDisplayUnit = "in" | "cm";
 
 const DEFAULT_FIT_EASE_CHOICE: FitEaseChoice = "standard";
 
@@ -21,8 +36,18 @@ export function fitEaseInchesForChoice(fitPreference: string): number {
   return typeof ease === "number" ? ease : FIT_EASE_INCHES_BY_CHOICE[DEFAULT_FIT_EASE_CHOICE];
 }
 
-/** Builder card subtext, e.g. `Approx. +5" ease`. */
-export function formatFitEaseApproxLabel(fitPreference: FitEaseChoice): string {
+/**
+ * Builder card subtext, e.g. `Approx. +5" ease` (inches) or `Approx. +12.5 cm ease` (centimeters).
+ * The unit follows the builder's active measurement-unit toggle; defaults to inches so server
+ * rendering and inch-only callers are unchanged.
+ */
+export function formatFitEaseApproxLabel(
+  fitPreference: FitEaseChoice,
+  unit: FitEaseDisplayUnit = "in",
+): string {
+  if (unit === "cm") {
+    return `Approx. +${FIT_EASE_CM_BY_CHOICE[fitPreference]} cm ease`;
+  }
   return `Approx. +${FIT_EASE_INCHES_BY_CHOICE[fitPreference]}${INCH_MARK} ease`;
 }
 

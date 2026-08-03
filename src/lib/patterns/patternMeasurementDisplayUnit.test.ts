@@ -28,6 +28,20 @@ function saveFieldInches(displayText: string, unit: MeasurementDisplayUnit): str
   return inches === undefined ? "" : formatMeasurementDisplayFromInches(inches, "in");
 }
 
+/**
+ * Models a LIVE unit switch on the Edit page diagram exactly as the measurement editor does when
+ * the Inches/Centimeters control changes: read the visible field text as canonical inches in the
+ * OLD unit, then re-display in the NEW unit. Preserves unsaved edits; canonical inches unchanged.
+ */
+function switchDisplayedUnit(
+  displayText: string,
+  from: MeasurementDisplayUnit,
+  to: MeasurementDisplayUnit,
+): string {
+  const inches = parseMeasurementInputToInches(displayText, from);
+  return formatMeasurementDisplayFromInches(inches, to);
+}
+
 /** Seed a saved pattern's gauge so the persisted build unit (`gaugeRawUnit`) is `unit`. */
 function seedGaugeUnit(unit: MeasurementDisplayUnit | null, family: "sleeveless" | "drop-shoulder" = "sleeveless"): void {
   const gaugeBase = { gaugeStitchRaw: "28", gaugeRowRaw: "44", gaugeStitchesPerInch: "7", gaugeRowsPerInch: "11" };
@@ -165,6 +179,52 @@ describe("patternMeasurementDisplayUnit", () => {
     localStorage.clear();
     seedGaugeUnit("in", "drop-shoulder");
     expect(resolveSavedPatternMeasurementDisplayUnit()).toBe("in");
+  });
+
+  // Live Edit-page switch (Issue 2): flipping the toggle must not move the physical measurement.
+  it("switching inches -> centimeters on the diagram preserves the physical measurement", () => {
+    // A canonical 40" bust shown in inches, switched to cm, is the same physical size (101.6 cm).
+    const shownInches = formatMeasurementDisplayFromInches(40, "in");
+    expect(shownInches).toBe("40");
+    const shownCm = switchDisplayedUnit(shownInches, "in", "cm");
+    expect(shownCm).toBe("101.6");
+    // Saving from the cm display returns to the exact canonical inches — no drift.
+    expect(saveFieldInches(shownCm, "cm")).toBe("40");
+  });
+
+  it("switching centimeters -> inches on the diagram preserves the physical measurement", () => {
+    const shownCm = formatMeasurementDisplayFromInches(40, "cm"); // 101.6
+    const shownInches = switchDisplayedUnit(shownCm, "cm", "in");
+    expect(shownInches).toBe("40");
+    expect(saveFieldInches(shownInches, "in")).toBe("40");
+  });
+
+  it("switching repeatedly does not double-convert or drift", () => {
+    for (const startInches of [40, 18.75, 8.25, 2, 24.25]) {
+      let text = formatMeasurementDisplayFromInches(startInches, "in");
+      let unit: MeasurementDisplayUnit = "in";
+      const settledInch = text; // canonical inch text after initial display
+      for (let i = 0; i < 8; i += 1) {
+        const next: MeasurementDisplayUnit = unit === "in" ? "cm" : "in";
+        text = switchDisplayedUnit(text, unit, next);
+        unit = next;
+      }
+      // Land back on inches and confirm we are exactly where we started.
+      const backToInch = unit === "in" ? text : switchDisplayedUnit(text, unit, "in");
+      expect(backToInch).toBe(settledInch);
+      expect(saveFieldInches(backToInch, "in")).toBe(settledInch);
+    }
+  });
+
+  it("an unsaved valid edit survives a unit switch (edit in cm, keep the edited value)", () => {
+    // User is viewing inches, types a new value, then flips to cm before saving.
+    const editedInchText = "42";
+    const shownCm = switchDisplayedUnit(editedInchText, "in", "cm");
+    expect(shownCm).toBe("106.7"); // 42 in -> 106.68 -> 106.7 cm
+    // Flip back to inches: the edit is intact (42), not silently reset to the saved value.
+    expect(switchDisplayedUnit(shownCm, "cm", "in")).toBe("42");
+    // And it saves as the edited canonical inches.
+    expect(saveFieldInches(shownCm, "cm")).toBe("42");
   });
 
   it("resolveMeasurementDisplayUnitFromPatternData reads any cm gauge source", () => {
