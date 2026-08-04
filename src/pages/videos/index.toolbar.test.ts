@@ -6,15 +6,15 @@ import { describe, expect, it } from "vitest";
 const pageDir = dirname(fileURLToPath(import.meta.url));
 const pageSource = readFileSync(join(pageDir, "index.astro"), "utf8");
 
-/** Scoped CSS for `.video-toolbar` only (avoids unrelated sticky/fixed rules on the page). */
+/** First `.video-toolbar { ... }` rule only (not the floating back-to-search button). */
 function videoToolbarCssBlock(source: string): string {
   const marker = ".video-toolbar {";
   const start = source.indexOf(marker);
   expect(start).toBeGreaterThan(-1);
   const after = source.slice(start);
-  const end = after.indexOf("\n    .video-toolbar__inputs");
+  const end = after.indexOf("\n    }");
   expect(end).toBeGreaterThan(-1);
-  return after.slice(0, end);
+  return after.slice(0, end + "\n    }".length);
 }
 
 describe("Videos catalog filter toolbar", () => {
@@ -27,12 +27,13 @@ describe("Videos catalog filter toolbar", () => {
     expect(pageSource).not.toContain(".video-toolbar.is-stuck");
   });
 
-  it("keeps filter controls compact with accessible labels and a search/category row", () => {
+  it("keeps desktop compact controls with accessible labels only", () => {
     expect(pageSource).toContain('class="video-primary-filters"');
     expect(pageSource).toContain("All Videos");
     expect(pageSource).toContain("Free Videos");
     expect(pageSource).toContain("My Favorites");
-    expect(pageSource).toContain('class="video-toolbar__inputs"');
+    expect(pageSource).toContain('class="video-toolbar__search-row"');
+    expect(pageSource).toContain('class="video-toolbar__panel"');
 
     expect(pageSource).toContain('id="video-filter-search-title" class="sr-only"');
     expect(pageSource).toContain(">Find a Video</label>");
@@ -47,11 +48,38 @@ describe("Videos catalog filter toolbar", () => {
     expect(pageSource).not.toMatch(
       /<span class="video-category__title"(?! sr-only)[^>]*>\s*Category\s*<\/span>/,
     );
+  });
 
-    const buttonsIdx = pageSource.indexOf('class="video-primary-filters"');
-    const inputsIdx = pageSource.indexOf('class="video-toolbar__inputs"');
-    expect(buttonsIdx).toBeGreaterThan(-1);
-    expect(inputsIdx).toBeGreaterThan(buttonsIdx);
+  it("collapses mobile filters by default behind an accessible Filters disclosure", () => {
+    expect(pageSource).toContain('id="videoFiltersToggle"');
+    expect(pageSource).toContain('aria-controls="videoFiltersPanel"');
+    expect(pageSource).toContain('aria-expanded="false"');
+    expect(pageSource).toMatch(
+      /id="videoFiltersPanel"[^>]*class="video-toolbar__panel"[^>]*\bhidden\b/,
+    );
+    expect(pageSource).toContain("toggleVideoFiltersPanel");
+    expect(pageSource).toContain("syncVideoFiltersLayoutForViewport");
+    expect(pageSource).toContain("syncVideoSearchPlaceholder");
+    expect(pageSource).toContain('placeholder="Search videos."');
+    expect(pageSource).toContain("(max-width: 700px)");
+  });
+
+  it("adds a floating Back to search control that starts hidden", () => {
+    expect(pageSource).toContain('id="videoBackToSearch"');
+    expect(pageSource).toContain('id="videoToolbar"');
+    expect(pageSource).toContain('aria-label="Back to video search and filters"');
+    expect(pageSource).toMatch(
+      /id="videoBackToSearch"[\s\S]*?\bhidden\b[\s\S]*?Back to search/,
+    );
+    expect(pageSource).toContain("IntersectionObserver");
+    expect(pageSource).toContain("syncVideoBackToSearchFromIntersection");
+    expect(pageSource).toContain("activateVideoBackToSearch");
+    expect(pageSource).toContain("prefersReducedMotion");
+    expect(pageSource).toContain(".video-back-to-search");
+    // Floating button may be fixed; the toolbar itself must not be.
+    const toolbarCss = videoToolbarCssBlock(pageSource);
+    expect(toolbarCss).toMatch(/position:\s*relative/);
+    expect(toolbarCss).not.toMatch(/position:\s*(sticky|fixed)/);
   });
 
   it("preserves catalog filter control ids and primary filter values", () => {
