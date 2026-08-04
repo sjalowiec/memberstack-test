@@ -87,7 +87,7 @@ import {
   type SleevelessGarmentType,
 } from "../lib/patterns/writeSleevelessGarmentSelection";
 import { rawSwatchToPerInch } from "../lib/patterns/syncExpressWizardToPatternStorage";
-import { convertGaugeSwatchDisplayBetweenUnits } from "../lib/patterns/editWorkspaceGaugeUnitDisplay";
+import { convertGaugeSwatchDisplayBetweenUnits, editWorkspaceGaugeUnitDescription } from "../lib/patterns/editWorkspaceGaugeUnitDisplay";
 import {
   formatSwatchCountForGaugeInput,
   swatchCountFromPerInchForDisplay,
@@ -289,9 +289,6 @@ function escapeHtml(s: string): string {
  * read gauge as stitches/rows over 4" (or 10 cm), never per-inch. The drawer therefore shows
  * and collects swatch counts; per-inch values for the pattern engine are derived on save.
  */
-function gaugeBasisLabelSuffix(basis: GaugeSwatchBasis): string {
-  return basis === "cm" ? 'per 10cm' : 'per 4"';
-}
 
 /** Swatch count to show in a gauge input: prefer the stored raw count, else derive from per-inch. */
 function swatchDisplayValue(raw: unknown, perInch: unknown, basis: GaugeSwatchBasis): string {
@@ -341,8 +338,8 @@ function initSleevelessPatternEditDrawer(): void {
   const sizeSelect = drawer.querySelector<HTMLSelectElement>("[data-sl-edit-size]");
   const spiInput = drawer.querySelector<HTMLInputElement>("#sl-edit-spi");
   const rpiInput = drawer.querySelector<HTMLInputElement>("#sl-edit-rpi");
-  const spiLabel = drawer.querySelector<HTMLElement>("[data-sl-edit-spi-label]");
-  const rpiLabel = drawer.querySelector<HTMLElement>("[data-sl-edit-rpi-label]");
+  const spiHint = drawer.querySelector<HTMLElement>("[data-sl-edit-spi-hint]");
+  const rpiHint = drawer.querySelector<HTMLElement>("[data-sl-edit-rpi-hint]");
   const needlesInput = drawer.querySelector<HTMLInputElement>("#sl-edit-needles");
   bindAvailableNeedlesFieldValidation(needlesInput);
 
@@ -394,9 +391,12 @@ function initSleevelessPatternEditDrawer(): void {
   }
 
   function updateGaugeLabels(basis: GaugeSwatchBasis): void {
-    const suffix = gaugeBasisLabelSuffix(basis);
-    if (spiLabel) spiLabel.textContent = `Stitch gauge (${suffix})`;
-    if (rpiLabel) rpiLabel.textContent = `Row gauge (${suffix})`;
+    const stitchDesc = editWorkspaceGaugeUnitDescription("stitch", basis);
+    const rowDesc = editWorkspaceGaugeUnitDescription("row", basis);
+    if (spiHint) spiHint.textContent = stitchDesc;
+    if (rpiHint) rpiHint.textContent = rowDesc;
+    if (spiInput) spiInput.setAttribute("aria-label", `Stitch gauge, ${stitchDesc}`);
+    if (rpiInput) rpiInput.setAttribute("aria-label", `Row gauge, ${rowDesc}`);
   }
 
   /** Reflect the active display unit on the Inches/Centimeters control. */

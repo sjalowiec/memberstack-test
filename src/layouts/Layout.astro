@@ -23,6 +23,12 @@ interface Props {
    * nav or search) without onboarding-only UI such as "Skip for now".
    */
   marketing?: boolean;
+  /**
+   * Pattern Builder / Edit / saved-view workspaces: compact phone header
+   * (hide tall search strip; keep logo + hamburger + search icon).
+   * Desktop/tablet headers are unchanged.
+   */
+  patternWorkspace?: boolean;
 }
 
 const {
@@ -34,6 +40,7 @@ const {
   toolPrintTitle,
   onboarding = false,
   marketing = false,
+  patternWorkspace = false,
 } = Astro.props;
 
 // Onboarding and marketing pages get a body hook so the minimal header height is
@@ -42,6 +49,7 @@ const resolvedBodyClass = [
   bodyClass,
   onboarding ? "page--onboarding" : "",
   marketing ? "page--marketing" : "",
+  patternWorkspace ? "page--pattern-workspace page--tight-header" : "",
 ]
   .filter(Boolean)
   .join(" ");
@@ -56,7 +64,7 @@ const resolvedBodyClass = [
   skipGlobalPinterest={skipGlobalPinterest}
 >
   <slot name="head" slot="head" />
-  <Header onboarding={onboarding} marketing={marketing} />
+  <Header onboarding={onboarding} marketing={marketing} patternWorkspace={patternWorkspace} />
 
  
 
@@ -168,6 +176,14 @@ const resolvedBodyClass = [
     }
   }
 
+  /* Pattern workspaces: provisional compact phone offset until JS measures the shorter header. */
+  @media (max-width: 767.98px) {
+    body.page--pattern-workspace {
+      --header-offset: 64px;
+      --header-buffer: 8px;
+    }
+  }
+
   /* "Skip for now" text link near the bottom of onboarding pages */
   .onboarding-skip {
     margin-top: 2.5rem;
@@ -214,13 +230,19 @@ const resolvedBodyClass = [
 
   function setHeaderOffset() {
     const fallback = 170;
+    const isPatternWorkspacePhone =
+      document.body.classList.contains("page--pattern-workspace") &&
+      window.matchMedia("(max-width: 767.98px)").matches;
 
     /* Use full fixed header (billboard + green bar) so content starts below both layers */
     const headerWrap = document.querySelector(".kbm-header-wrap");
     const headerEl = headerWrap || document.querySelector("header");
 
     if (!headerEl) {
-      document.documentElement.style.setProperty("--header-offset", fallback + "px");
+      document.documentElement.style.setProperty(
+        "--header-offset",
+        (isPatternWorkspacePhone ? 64 : fallback) + "px",
+      );
       return;
     }
 
@@ -239,8 +261,12 @@ const resolvedBodyClass = [
 
     // Add a small safety margin so content never kisses the header
     const safety = 12;
+    const measured = headerHeight - debugHeight + safety;
 
-    const corrected = Math.max(fallback, headerHeight - debugHeight + safety);
+    // Pattern workspace phones: trust the measured compact header (do not floor at 170px).
+    const corrected = isPatternWorkspacePhone
+      ? Math.max(52, measured)
+      : Math.max(fallback, measured);
 
     document.documentElement.style.setProperty("--header-offset", corrected + "px");
   }

@@ -5,6 +5,8 @@ import PatternPrintFooter from "../../../../components/common/PatternPrintFooter
 import PatternPrintPersonalization from "../../../../components/common/PatternPrintPersonalization.astro";
 import PatternTipsToggle from "../../../../components/patterns/PatternTipsToggle.astro";
 import PatternEditablePencilIcon from "../../../../components/patterns/PatternEditablePencilIcon.astro";
+import PatternPhoneWorkspaceNotice from "../../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
+import EditWorkspaceGaugeFields from "../../../../components/patterns/EditWorkspaceGaugeFields.astro";
 import SleevelessPatternPrintNotice from "../../../../components/patterns/SleevelessPatternPrintNotice.astro";
 import PatternEditingUnlockModal from "../../../../components/patterns/PatternEditingUnlockModal.astro";
 import PatternAutoSaveSuccessDialog from "../../../../components/patterns/PatternAutoSaveSuccessDialog.astro";
@@ -37,6 +39,7 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
   title="Sleeveless Sweater Pattern | Knit it Now"
   description="Generated sleeveless sweater pattern instructions, diagrams, glossary help, and videos from your saved builder choices."
   bodyClass="pattern-print-global-footer"
+  patternWorkspace={true}
 >
   <PatternPrintFooter footerBottomLeftExtra=" · KnitItNow.com/sleeveless" />
   <SleevelessPatternMemberGate>
@@ -197,6 +200,7 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
         aria-label="Edit pattern"
         tabindex="-1"
       >
+        <PatternPhoneWorkspaceNotice />
         <div class="sl-edit-workspace__layout">
           <!-- LEFT: quick edits panel (narrower). `.sl-edit-drawer__body` is the JS field scope. -->
           <div class="sl-edit-workspace__quick">
@@ -323,32 +327,7 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
                   Gauge
                   <PatternEditablePencilIcon />
                 </h3>
-                <div class="sl-edit-grid">
-                  <div class="sl-edit-subfield">
-                    <label class="sl-edit-sublabel" for="sl-edit-spi" data-sl-edit-spi-label>Stitch gauge (per 4")</label>
-                    <input
-                      type="number"
-                      id="sl-edit-spi"
-                      class="sl-edit-input"
-                      inputmode="decimal"
-                      min="0"
-                      step="1"
-                      placeholder="e.g. 28"
-                    />
-                  </div>
-                  <div class="sl-edit-subfield">
-                    <label class="sl-edit-sublabel" for="sl-edit-rpi" data-sl-edit-rpi-label>Row gauge (per 4")</label>
-                    <input
-                      type="number"
-                      id="sl-edit-rpi"
-                      class="sl-edit-input"
-                      inputmode="decimal"
-                      min="0"
-                      step="1"
-                      placeholder="e.g. 44"
-                    />
-                  </div>
-                </div>
+                <EditWorkspaceGaugeFields />
                 <div class="sl-edit-needles-field">
                   <FloatingInput
                     id="sl-edit-needles"

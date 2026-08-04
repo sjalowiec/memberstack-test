@@ -1,0 +1,50 @@
+---
+/**
+ * Shared Edit Pattern gauge fields (Sleeveless + Drop Shoulder).
+ * Short titles + unit descriptions; wording updates with the display unit via JS.
+ */
+import {
+  editWorkspaceGaugeFieldTitle,
+  editWorkspaceGaugeUnitDescription,
+} from "../../lib/patterns/editWorkspaceGaugeUnitDisplay";
+
+const stitchTitle = editWorkspaceGaugeFieldTitle("stitch");
+const rowTitle = editWorkspaceGaugeFieldTitle("row");
+const stitchHint = editWorkspaceGaugeUnitDescription("stitch", "in");
+const rowHint = editWorkspaceGaugeUnitDescription("row", "in");
+---
+
+<div class="sl-edit-grid pattern-workspace-gauge-grid">
+  <div class="sl-edit-subfield pattern-workspace-form-field">
+    <label class="sl-edit-sublabel" for="sl-edit-spi">{stitchTitle}</label>
+    <input
+      type="number"
+      id="sl-edit-spi"
+      class="sl-edit-input"
+      inputmode="decimal"
+      min="0"
+      step="1"
+      placeholder="e.g. 28"
+      aria-describedby="sl-edit-spi-hint"
+    />
+    <p class="pattern-workspace-field-hint" id="sl-edit-spi-hint" data-sl-edit-spi-hint>
+      {stitchHint}
+    </p>
+  </div>
+  <div class="sl-edit-subfield pattern-workspace-form-field">
+    <label class="sl-edit-sublabel" for="sl-edit-rpi">{rowTitle}</label>
+    <input
+      type="number"
+      id="sl-edit-rpi"
+      class="sl-edit-input"
+      inputmode="decimal"
+      min="0"
+      step="1"
+      placeholder="e.g. 44"
+      aria-describedby="sl-edit-rpi-hint"
+    />
+    <p class="pattern-workspace-field-hint" id="sl-edit-rpi-hint" data-sl-edit-rpi-hint>
+      {rowHint}
+    </p>
+  </div>
+</div>
