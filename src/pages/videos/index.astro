@@ -111,44 +111,39 @@ const forceMemberView =
     </section>
 
     <div class="video-toolbar" aria-label="Video controls">
-      <section class="video-filter-search video-control-group" aria-labelledby="video-filter-search-title">
-        <h2 id="video-filter-search-title" class="video-filter-search__title">
-          <svg class="icon-search" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none"></circle>
-            <line x1="16.65" y1="16.65" x2="21" y2="21" stroke="currentColor" stroke-width="2"></line>
-          </svg>
-          <span>Find a Video</span>
-        </h2>
-        <div class="search-input-wrapper">
-          <svg class="icon-search" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none"></circle>
-            <line x1="16.65" y1="16.65" x2="21" y2="21" stroke="currentColor" stroke-width="2"></line>
-          </svg>
-          <input
-            id="videoSearch"
-            class="video-filter-search__input"
-            type="search"
-            placeholder="Search by title or description"
-            autocomplete="off"
-          />
-        </div>
-      </section>
+      <div class="video-primary-filters" role="group" aria-label="Video filters">
+        <button type="button" class="video-filter-btn" data-filter="" aria-pressed="false">
+          All Videos
+        </button>
+        <button type="button" class="video-filter-btn" data-filter="__free__" aria-pressed="false">
+          Free Videos
+        </button>
+        <button type="button" class="video-filter-btn" data-filter="__favorites__" aria-pressed="false">
+          My Favorites
+        </button>
+      </div>
 
-      <div class="video-filter-controls">
-        <div class="video-primary-filters" role="group" aria-label="Video filters">
-          <button type="button" class="video-filter-btn" data-filter="" aria-pressed="false">
-            All Videos
-          </button>
-          <button type="button" class="video-filter-btn" data-filter="__free__" aria-pressed="false">
-            Free Videos
-          </button>
-          <button type="button" class="video-filter-btn" data-filter="__favorites__" aria-pressed="false">
-            My Favorites
-          </button>
-        </div>
+      <div class="video-toolbar__inputs">
+        <section class="video-filter-search" aria-label="Find a Video">
+          <label for="videoSearch" id="video-filter-search-title" class="sr-only">Find a Video</label>
+          <div class="search-input-wrapper">
+            <svg class="icon-search" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" fill="none"></circle>
+              <line x1="16.65" y1="16.65" x2="21" y2="21" stroke="currentColor" stroke-width="2"></line>
+            </svg>
+            <input
+              id="videoSearch"
+              class="video-filter-search__input"
+              type="search"
+              placeholder="Search by title or description"
+              autocomplete="off"
+              aria-label="Find a Video"
+            />
+          </div>
+        </section>
 
-        <div class="video-category video-control-group">
-          <span class="video-category__title" id="categoryBrowseTitle">Category</span>
+        <div class="video-category">
+          <span class="video-category__title sr-only" id="categoryBrowseTitle">Category</span>
           <div class="category-bar" id="categoryBar">
             <label for="category-select" class="sr-only">Category</label>
             <select id="category-select" class="sr-only" aria-label="Category"></select>
@@ -737,20 +732,6 @@ const forceMemberView =
       if (e.key === "Escape") closeMenu();
     });
 
-    // Add a "stuck" class for polish once the toolbar pins to the top
-    const band = document.querySelector(".video-toolbar");
-    if (band) {
-      const onScroll = () => {
-        const r = band.getBoundingClientRect();
-        const root = document.documentElement;
-        const offset = parseFloat(getComputedStyle(root).getPropertyValue("--header-offset")) || 170;
-        const buffer = parseFloat(getComputedStyle(root).getPropertyValue("--header-buffer")) || 24;
-        const top = offset + buffer;
-        band.classList.toggle("is-stuck", r.top <= top + 1);
-      };
-      window.addEventListener("scroll", onScroll, { passive: true });
-      onScroll(); // run once so it sets correctly on load
-    }
     /* ---------- end custom dropdown ---------- */
 
     if (searchInput instanceof HTMLInputElement) {
@@ -949,20 +930,9 @@ const forceMemberView =
     .video-filter-search {
       margin-bottom: 0;
       display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: flex-end;
-      flex: 1 1 360px;
-      min-width: min(100%, 260px);
+      flex: 1 1 240px;
+      min-width: min(100%, 200px);
       max-width: 100%;
-    }
-    .video-filter-search__title {
-      margin: 0 0 0.5rem;
-      font-size: 1rem;
-      font-weight: 700;
-      letter-spacing: 0.01em;
-      line-height: 1.3;
-      color: #1f2937;
     }
     .search-input-wrapper {
       width: 100%;
@@ -972,8 +942,8 @@ const forceMemberView =
       box-sizing: border-box;
       width: 100%;
       max-width: none;
-      min-height: 42px;
-      padding: 10px 14px 10px 38px;
+      min-height: 40px;
+      padding: 8px 12px 8px 36px;
       border-radius: 10px;
       border: 1px solid #94a3b8;
       font-size: 15px;
@@ -985,50 +955,29 @@ const forceMemberView =
       box-shadow: 0 0 0 2px rgba(115, 140, 82, 0.15);
     }
 
-    /* --- Video toolbar (category + search) --- */
+    /* --- Video toolbar (filters + search/category) — scrolls with page --- */
     .video-toolbar {
-      position: sticky;
-      top: calc(var(--header-offset, 170px) + var(--header-buffer, 24px));
+      position: relative;
       z-index: 40;
 
       display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: flex-end;
-      gap: 14px;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
 
-      padding: 18px;
+      padding: 12px 14px;
       background: var(--kbm-video-toolbar-bg, #f1f3f5);
       border-radius: 10px;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
       border: 1px solid rgba(0, 0, 0, 0.08);
       box-shadow: var(--kbm-video-toolbar-shadow, 0 2px 6px rgba(0, 0, 0, 0.05));
-
-      transition: box-shadow 200ms ease;
     }
 
-    .video-toolbar.is-stuck {
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-    }
-
-    .video-control-group {
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      gap: 0;
-      background: transparent;
-      border-radius: 0;
-      padding: 0;
-    }
-
-    .video-filter-controls {
+    .video-toolbar__inputs {
       display: flex;
       flex-wrap: wrap;
-      align-items: flex-end;
-      justify-content: flex-end;
-      gap: 12px;
-      flex: 1 1 420px;
-      min-width: min(100%, 280px);
+      align-items: center;
+      gap: 10px;
     }
 
     .video-primary-filters {
@@ -1044,8 +993,8 @@ const forceMemberView =
       background: #fff;
       color: var(--kbm-green, #52682d);
       border-radius: 999px;
-      min-height: 42px;
-      padding: 8px 14px;
+      min-height: 40px;
+      padding: 7px 14px;
       font: inherit;
       font-size: 0.95rem;
       font-weight: 600;
@@ -1069,55 +1018,35 @@ const forceMemberView =
 
     .video-category {
       display: flex;
-      flex-direction: column;
-      align-items: stretch;
-      justify-content: flex-end;
-      gap: 0.5rem;
-      flex: 0 1 260px;
-      min-width: min(100%, 220px);
+      flex: 1 1 220px;
+      min-width: min(100%, 200px);
       max-width: 320px;
-    }
-
-    .video-category__title {
-      margin: 0;
-      font-size: 1rem;
-      font-weight: 700;
-      letter-spacing: 0.01em;
-      line-height: 1.3;
-      color: #1f2937;
+      align-items: stretch;
     }
 
     .video-toolbar .video-category #categoryBar.category-bar {
       margin: 0;
       align-self: stretch;
+      width: 100%;
     }
 
     @media (max-width: 700px) {
       .video-toolbar {
+        gap: 10px;
+        padding: 10px 12px;
+      }
+
+      .video-toolbar__inputs {
         flex-direction: column;
-        flex-wrap: nowrap;
         align-items: stretch;
-        justify-content: flex-start;
-        gap: 16px;
       }
 
       .video-filter-search,
-      .video-filter-controls,
       .video-category {
         flex: 1 1 auto;
         min-width: 0;
         max-width: none;
-        margin-left: 0;
-        align-self: stretch;
-      }
-
-      .video-filter-controls {
-        justify-content: flex-start;
-        order: 2;
-      }
-
-      .video-filter-search {
-        order: 1;
+        width: 100%;
       }
 
       .video-primary-filters {
@@ -1126,10 +1055,6 @@ const forceMemberView =
 
       .video-filter-btn {
         flex: 1 1 auto;
-      }
-
-      .video-category {
-        width: 100%;
       }
 
       .video-filter-search__input {
@@ -1574,9 +1499,9 @@ const forceMemberView =
   <style is:global>
     /* Catalog grid + cards: see global.css (.video-grid, #video-grid .kbm-card, .kbm-card-thumb, .kbm-card-body) */
 
-    /* Make the inner dropdown pill use its own sticky behavior = off (band handles stickiness) */
+    /* Category dropdown pill (toolbar scrolls with page; no sticky) */
     #categoryBar.category-bar {
-      position: relative; /* NOT sticky now */
+      position: relative;
       top: auto;
       z-index: 50;
       margin: 0;
@@ -1584,9 +1509,9 @@ const forceMemberView =
       display: inline-flex;
       align-items: center;
       width: auto;
-      min-width: 260px;
+      min-width: 0;
       max-width: min(100%, 600px);
-      min-height: 42px;
+      min-height: 40px;
       box-sizing: border-box;
 
       padding: 0 12px;
@@ -1610,7 +1535,7 @@ const forceMemberView =
     /* Button */
     #categoryBar .category-trigger {
       width: 100%;
-      min-height: 42px;
+      min-height: 40px;
       padding: 0 2px;
       box-sizing: border-box;
 
