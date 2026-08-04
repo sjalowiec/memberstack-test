@@ -2,6 +2,7 @@
 import Layout from "../../../layouts/Layout.astro";
 import SleevelessPatternMemberGate from "../../../components/patterns/SleevelessPatternMemberGate.astro";
 import PatternBuilderMyPatternsLink from "../../../components/patterns/PatternBuilderMyPatternsLink.astro";
+import PatternPhoneWorkspaceNotice from "../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
 import ExpressBuilderWhoSizeSection from "../../../components/patterns/ExpressBuilderWhoSizeSection.astro";
 import GlossaryTooltip from "../../../components/common/GlossaryTooltip.astro";
 import GaugeInput from "../../../components/wizards/GaugeInput.astro";
@@ -44,6 +45,7 @@ const imgGarmentCardigan = "/images/patterns/drop-shoulder/picker/drop-cardigan-
 <Layout
   title="Drop Shoulder Pattern Builder"
   description="Create a ready-to-knit drop shoulder sweater pattern in guided steps."
+  patternWorkspace={true}
 >
   <SleevelessPatternMemberGate>
   <main
@@ -54,6 +56,7 @@ const imgGarmentCardigan = "/images/patterns/drop-shoulder/picker/drop-cardigan-
   >
     <div id="express-pattern-top" class="wizard-container express-wizard scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
+        <PatternPhoneWorkspaceNotice />
         <div class="sg-tab-build">
             <div class="sg-builder-nav-row express-builder-nav-row no-print">
               <nav class="express-step-nav sg-builder-nav" aria-label="Drop shoulder pattern steps">
@@ -663,10 +666,7 @@ const imgGarmentCardigan = "/images/patterns/drop-shoulder/picker/drop-cardigan-
                     showGaugeSubLabel={false}
                     showToggle={false}
                     toggleId="sleeveless-fit"
-                    stitchLabelInches='Stitch gauge — stitches over 4"'
-                    stitchLabelCm="Stitch gauge — stitches over 10 cm"
-                    rowLabelInches='Row gauge — rows over 4"'
-                    rowLabelCm="Row gauge — rows over 10 cm"
+                    formFields={true}
                   />
                 </div>
                 <div class="express-needle-block" hidden>

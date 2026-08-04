@@ -1,6 +1,11 @@
 /**
  * Position HTML measurement overlay chips on pattern_summary.svg target anchors.
- * Targets are green circles in the SVG (left visible intentionally).
+ * Targets are green/orange circles in the SVG (left visible intentionally).
+ *
+ * Desktop (≥700px): center each chip on its SVG target.
+ * Mobile (<700px): clear inline coords so shared CSS stacks editable chips in a
+ * labeled Measurements panel under the diagram (practical phone editing; not a
+ * phone diagram editor).
  */
 
 export const PATTERN_SUMMARY_MEASUREMENT_TARGETS = {
@@ -80,6 +85,7 @@ export function applyMeasurementBlueprintViewBoxAspect(
   return size;
 }
 
+/** Desktop: chips centered on SVG targets. Below this, mobile panel stack CSS takes over. */
 export const DESKTOP_MEASUREMENT_OVERLAY_MQ = "(min-width: 700px)";
 
 export type PositionMeasurementBoxOptions = {
@@ -172,7 +178,11 @@ export function collectOverlayAnchors(overlay: HTMLElement): MeasurementOverlayA
   return anchors;
 }
 
-/** Keep overlay chips attached to SVG targets on desktop; clear inline coords on mobile stack layout. */
+/**
+ * Keep overlay chips attached to SVG targets on desktop (≥700px).
+ * Below 700px, clear inline left/top/transform so shared CSS can stack chips
+ * in the Measurements panel under the diagram.
+ */
 export function bindPatternSummaryOverlayPositioning(
   stageInner: HTMLElement,
   svg: SVGElement,
@@ -184,19 +194,26 @@ export function bindPatternSummaryOverlayPositioning(
   let lastStageWidth = -1;
   let lastStageHeight = -1;
 
+  const applyModeClass = (desktop: boolean): void => {
+    stageInner.dataset.measurementOverlayMode = desktop ? "desktop" : "mobile";
+    overlay.dataset.measurementOverlayMode = desktop ? "desktop" : "mobile";
+  };
+
   const runReposition = (): void => {
-    if (!mq.matches) {
+    const desktop = mq.matches;
+    applyModeClass(desktop);
+
+    if (!desktop) {
       for (const anchor of anchors) clearMeasurementBoxPosition(anchor.box);
       lastStageWidth = -1;
       lastStageHeight = -1;
       return;
     }
+
     for (const anchor of anchors) {
       const placed = positionMeasurementBox(anchor.box, svg, overlay, anchor.targetId, anchor);
       if (!placed && import.meta.env.DEV) {
-        console.warn(
-          `[pattern-summary-overlay] Missing SVG target: #${anchor.targetId}`,
-        );
+        console.warn(`[pattern-summary-overlay] Missing SVG target: #${anchor.targetId}`);
       }
     }
   };
@@ -242,6 +259,8 @@ export function bindPatternSummaryOverlayPositioning(
     window.removeEventListener("resize", onWindowResize);
     mq.removeEventListener("change", onMqChange);
     window.removeEventListener("orientationchange", onOrientationChange);
+    delete stageInner.dataset.measurementOverlayMode;
+    delete overlay.dataset.measurementOverlayMode;
     for (const anchor of anchors) clearMeasurementBoxPosition(anchor.box);
   };
 }

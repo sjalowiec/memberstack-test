@@ -1,11 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { convertGaugeSwatchDisplayBetweenUnits } from "./editWorkspaceGaugeUnitDisplay";
+import {
+  convertGaugeSwatchDisplayBetweenUnits,
+  editWorkspaceGaugeFieldTitle,
+  editWorkspaceGaugeUnitDescription,
+} from "./editWorkspaceGaugeUnitDisplay";
 import { rawSwatchToPerInch } from "./syncExpressWizardToPatternStorage";
 
 /** Per-inch gauge the engine actually uses for a given swatch count + basis. */
 function perInch(value: string, unit: "in" | "cm"): number {
   return parseFloat(rawSwatchToPerInch(value, value, unit).gaugeStitchesPerInch);
 }
+
+describe("editWorkspaceGaugeUnitDescription", () => {
+  it("uses short titles and unit descriptions from the active display unit", () => {
+    expect(editWorkspaceGaugeFieldTitle("stitch")).toBe("Stitch gauge");
+    expect(editWorkspaceGaugeFieldTitle("row")).toBe("Row gauge");
+    expect(editWorkspaceGaugeUnitDescription("stitch", "in")).toBe('stitches per 4"');
+    expect(editWorkspaceGaugeUnitDescription("row", "in")).toBe('rows per 4"');
+    expect(editWorkspaceGaugeUnitDescription("stitch", "cm")).toBe("stitches per 10 cm");
+    expect(editWorkspaceGaugeUnitDescription("row", "cm")).toBe("rows per 10 cm");
+  });
+});
 
 describe("convertGaugeSwatchDisplayBetweenUnits", () => {
   it("returns the value unchanged when the unit does not change", () => {

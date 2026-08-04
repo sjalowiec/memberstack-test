@@ -1,6 +1,7 @@
 ---
 import Layout from "../../../../../layouts/Layout.astro";
 import SleevelessPatternMemberGate from "../../../../../components/patterns/SleevelessPatternMemberGate.astro";
+import PatternPhoneWorkspaceNotice from "../../../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
 import WizardBackLink from "../../../../../components/wizards/WizardBackLink.astro";
 import "../../../../../styles/sleeveless-express-wizard-layout.css";
 import "../../../../../styles/sleeveless-express-measurements-confirm.css";
@@ -29,6 +30,7 @@ const customWizardSteps: WizardStep[] = [
 <Layout
   title="Custom Pattern — Measurements | Sleeveless Sweater"
   description="Enter custom body measurements for your sleeveless sweater pattern."
+  patternWorkspace={true}
 >
   <SleevelessPatternMemberGate>
   <main
@@ -37,6 +39,7 @@ const customWizardSteps: WizardStep[] = [
   >
     <div class="wizard-container express-wizard scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
+        <PatternPhoneWorkspaceNotice />
         <WizardBackLink className="back-link no-print" fallback="/patterns" />
         <div data-cb-editing-banner-host hidden></div>
 

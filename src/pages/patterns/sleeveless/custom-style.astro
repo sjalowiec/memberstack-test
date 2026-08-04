@@ -1,6 +1,7 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 import SleevelessPatternMemberGate from "../../../components/patterns/SleevelessPatternMemberGate.astro";
+import PatternPhoneWorkspaceNotice from "../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
 import WizardBackLink from "../../../components/wizards/WizardBackLink.astro";
 import "../../../styles/sleeveless-express-builder-cards.css";
 import "../../../styles/sleeveless-express-wizard-layout.css";
@@ -26,11 +27,13 @@ const imgGarmentCardigan = "/images/patterns/cardigan.png";
 <Layout
   title="Custom Pattern — Style &amp; Shaping | Sleeveless Sweater"
   description="Choose neckline, fit, body shape, and garment type for your custom sleeveless sweater. Style choices are saved for pattern generation."
+  patternWorkspace={true}
 >
   <SleevelessPatternMemberGate>
   <main class="express-page wizard-page sleeveless-express-page" data-express-page="sleeveless-custom-style">
     <div class="wizard-container express-wizard scroll-mt-[96px]">
       <div class="calculator-card hat-builder-inputs">
+        <PatternPhoneWorkspaceNotice />
         <WizardBackLink className="back-link no-print" fallback="/patterns" />
         <div data-cb-editing-banner-host hidden></div>
 

@@ -13,6 +13,27 @@ import {
   type GaugeSwatchBasis,
 } from "./gaugeDisplayFormat";
 
+export type EditWorkspaceGaugeKind = "stitch" | "row";
+
+/** Short field title above the gauge input (unit-agnostic). */
+export function editWorkspaceGaugeFieldTitle(kind: EditWorkspaceGaugeKind): string {
+  return kind === "stitch" ? "Stitch gauge" : "Row gauge";
+}
+
+/**
+ * Unit description shown under the gauge input. Follows the site swatch convention
+ * (stitches/rows over 4" or over 10 cm) — never hardcode only centimeters.
+ */
+export function editWorkspaceGaugeUnitDescription(
+  kind: EditWorkspaceGaugeKind,
+  basis: GaugeSwatchBasis,
+): string {
+  if (basis === "cm") {
+    return kind === "stitch" ? "stitches per 10 cm" : "rows per 10 cm";
+  }
+  return kind === "stitch" ? 'stitches per 4"' : 'rows per 4"';
+}
+
 /**
  * Re-express a visible gauge swatch count in `toUnit` while preserving the physical gauge.
  * An empty, whitespace, or unparseable value is returned unchanged so an in-progress / invalid

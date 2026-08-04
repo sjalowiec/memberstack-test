@@ -17,13 +17,19 @@ interface Props {
    * for sales pages such as /membership.
    */
   marketing?: boolean;
+  /**
+   * Pattern Builder / Edit / saved-view: compact phone header (search strip hidden;
+   * search remains available via a green-bar icon). Desktop unchanged.
+   */
+  patternWorkspace?: boolean;
 }
 
-const { onboarding = false, marketing = false } = Astro.props;
+const { onboarding = false, marketing = false, patternWorkspace = false } = Astro.props;
 const minimalHeader = onboarding || marketing;
 ---
 <style is:global>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+@import "../styles/patterns/pattern-phone-workspace.css";
 
 /* Global variables and typography now defined in global.css to avoid Astro CSS bundling issues */
 
@@ -2028,8 +2034,21 @@ div[data-ms-modal-overlay] {
         </div>
       </div>
 
-      <!-- Mobile: hamburger only -->
+      <!-- Mobile: search (pattern workspace phones) + hamburger -->
       <div class="kbm-nav-right">
+        {patternWorkspace && !minimalHeader && (
+          <button
+            type="button"
+            class="kbm-pattern-workspace-search"
+            data-open-search-modal
+            aria-label="Search videos, tools, patterns, glossary, and more"
+          >
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </button>
+        )}
         <button class="kbm-hamburger" aria-label="Toggle menu" aria-expanded="false">
           <span></span>
           <span></span>
@@ -2052,6 +2071,7 @@ div[data-ms-modal-overlay] {
         <div
           class="kbm-search-bar"
           id="openSearchModal"
+          data-open-search-modal
           role="button"
           tabindex="0"
           aria-label="Search videos, tools, patterns, glossary, and more"
@@ -2887,6 +2907,16 @@ div[data-ms-modal-overlay] {
         e.preventDefault();
         openModal();
       }
+    });
+    document.querySelectorAll("[data-open-search-modal]").forEach((el) => {
+      if (el === openBtn) return;
+      el.addEventListener("click", openModal);
+      el.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openModal();
+        }
+      });
     });
     overlay?.addEventListener("click", closeModal);
     closeBtn?.addEventListener("click", closeModal);

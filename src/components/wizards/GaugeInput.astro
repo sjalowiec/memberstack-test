@@ -3,37 +3,22 @@
  * ============================================================================
  * KBM LEGO BLOCK: Gauge Input Component
  * ============================================================================
- * 
+ *
  * Standardized gauge input for all KBM wizards.
  * Collects stitch and row gauge over 4" (or 10cm when metric).
- * Uses FloatingInput lego block for the input fields.
- * 
- * FEATURES:
- * - Two inputs side-by-side (desktop), stacked (mobile)
- * - Floating labels that animate on focus/value
- * - Dynamic label text based on unit selection (inches/cm)
- * - Unit toggle integrated (optional)
- * - Helper text explaining the input format
- * 
- * USAGE:
- * Standalone (includes its own toggle):
- *   <GaugeInput id="mywizard" />
- * 
- * With external toggle (wizard has UnitToggle in header):
- *   <GaugeInput id="mywizard" showToggle={false} toggleId="hat" />
- * 
- * OUTPUT IDS:
- * - {id}-stitch-gauge: stitch count input
- * - {id}-row-gauge: row count input
- * - {id}-stitch-label: stitch label (for JS updates)
- * - {id}-row-label: row label (for JS updates)
- * - {toggleId}-btn-inches: inches toggle button (if using external toggle)
- * - {toggleId}-btn-cm: cm toggle button (if using external toggle)
+ *
+ * Modes:
+ * - Default: FloatingInput chips (tools / hat / etc.)
+ * - formFields: short titles + unit hints below (pattern Builder workspaces)
  */
 
 import { Fragment } from 'astro/jsx-runtime';
 import UnitToggle from './UnitToggle.astro';
 import FloatingInput from '../tools/FloatingInput.astro';
+import {
+  editWorkspaceGaugeFieldTitle,
+  editWorkspaceGaugeUnitDescription,
+} from '../../lib/patterns/editWorkspaceGaugeUnitDisplay';
 
 interface Props {
   /** ID prefix for form elements (e.g., 'hat' creates 'hat-stitch-gauge') */
@@ -55,15 +40,20 @@ interface Props {
   flatRow?: boolean;
   /** When true, adds no-print on the wrapper so the Sts/Rows UI is hidden when printing (pattern copy can still show gauge in prose). */
   noPrint?: boolean;
-  /** Optional floating-label copy when inches / cm (defaults to Sts/Rows 4″ / 10 cm). */
+  /** Optional floating-label copy when inches / cm (defaults to Sts/Rows 4″ / 10 cm). Ignored when formFields is true. */
   stitchLabelInches?: string;
   stitchLabelCm?: string;
   rowLabelInches?: string;
   rowLabelCm?: string;
+  /**
+   * Pattern workspace form layout: short titles above inputs, unit descriptions below.
+   * Avoids floating-label nowrap clipping of long combined labels on phones.
+   */
+  formFields?: boolean;
 }
 
-const { 
-  id = 'gauge', 
+const {
+  id = 'gauge',
   showTitle = true,
   title = 'Your Gauge',
   showGaugeSubLabel = true,
@@ -75,6 +65,7 @@ const {
   stitchLabelCm,
   rowLabelInches,
   rowLabelCm,
+  formFields = false,
 } = Astro.props;
 
 const effectiveToggleId = toggleId || "kbm-unit-toggle";
@@ -83,6 +74,13 @@ const stitchLabelInchesResolved = stitchLabelInches ?? 'Sts (4")';
 const stitchLabelCmResolved = stitchLabelCm ?? 'Sts (10 cm)';
 const rowLabelInchesResolved = rowLabelInches ?? 'Rows (4")';
 const rowLabelCmResolved = rowLabelCm ?? 'Rows (10 cm)';
+
+const stitchTitle = editWorkspaceGaugeFieldTitle("stitch");
+const rowTitle = editWorkspaceGaugeFieldTitle("row");
+const stitchHintIn = editWorkspaceGaugeUnitDescription("stitch", "in");
+const stitchHintCm = editWorkspaceGaugeUnitDescription("stitch", "cm");
+const rowHintIn = editWorkspaceGaugeUnitDescription("row", "in");
+const rowHintCm = editWorkspaceGaugeUnitDescription("row", "cm");
 
 /** When flatRow, omit inner row wrapper if there is nothing above the stitch/row fields (hat builder). */
 const hasGaugePrefix =
@@ -95,13 +93,15 @@ const hasGaugePrefix =
   class:list={[
     'gauge-input-wrapper',
     flatRow && !hasGaugePrefix && 'gauge-input-wrapper--flat',
+    formFields && 'gauge-input-wrapper--form-fields',
     noPrint && 'no-print',
   ]}
   data-toggle-id={effectiveToggleId}
-  data-gauge-stitch-in={stitchLabelInchesResolved}
-  data-gauge-stitch-cm={stitchLabelCmResolved}
-  data-gauge-row-in={rowLabelInchesResolved}
-  data-gauge-row-cm={rowLabelCmResolved}
+  data-gauge-stitch-in={formFields ? stitchHintIn : stitchLabelInchesResolved}
+  data-gauge-stitch-cm={formFields ? stitchHintCm : stitchLabelCmResolved}
+  data-gauge-row-in={formFields ? rowHintIn : rowLabelInchesResolved}
+  data-gauge-row-cm={formFields ? rowHintCm : rowLabelCmResolved}
+  data-gauge-form-fields={formFields ? "true" : undefined}
 >
   {showTitle && showToggle && (
     <div class="kbm-header-layout">
@@ -111,11 +111,11 @@ const hasGaugePrefix =
       </div>
     </div>
   )}
-  
+
   {showTitle && !showToggle && (
     <h3 class="section-title">{title}</h3>
   )}
-  
+
   {!showTitle && showToggle && (
     <div class="gauge-toggle-only">
       <UnitToggle id={effectiveToggleId} />
@@ -123,80 +123,128 @@ const hasGaugePrefix =
   )}
 
   {showGaugeSubLabel && <div class="gauge-label">Gauge</div>}
-  {!flatRow && (
-    <div class="gauge-box">
-      <FloatingInput 
-        id={`${id}-stitch-gauge`}
-        labelId={`${id}-stitch-label`}
-        labelClass="floating-label"
-        label={stitchLabelInchesResolved}
-        type="number"
-        step="0.01"
-        min="1"
-        dataTestid={`input-${id}-stitch-gauge`}
-      />
-      <span class="gauge-divider">×</span>
-      <FloatingInput 
-        id={`${id}-row-gauge`}
-        labelId={`${id}-row-label`}
-        labelClass="floating-label"
-        label={rowLabelInchesResolved}
-        type="number"
-        step="0.01"
-        min="1"
-        dataTestid={`input-${id}-row-gauge`}
-      />
+
+  {formFields ? (
+    <div class="gauge-form-fields pattern-workspace-gauge-grid">
+      <div class="gauge-form-field pattern-workspace-form-field">
+        <label class="gauge-form-field__label" for={`${id}-stitch-gauge`}>{stitchTitle}</label>
+        <input
+          type="number"
+          id={`${id}-stitch-gauge`}
+          class="gauge-form-field__input"
+          step="0.01"
+          min="1"
+          inputmode="decimal"
+          data-testid={`input-${id}-stitch-gauge`}
+          aria-describedby={`${id}-stitch-hint`}
+        />
+        <p
+          class="pattern-workspace-field-hint gauge-form-field__hint"
+          id={`${id}-stitch-hint`}
+          data-gauge-hint="stitch"
+        >
+          {stitchHintIn}
+        </p>
+      </div>
+      <div class="gauge-form-field pattern-workspace-form-field">
+        <label class="gauge-form-field__label" for={`${id}-row-gauge`}>{rowTitle}</label>
+        <input
+          type="number"
+          id={`${id}-row-gauge`}
+          class="gauge-form-field__input"
+          step="0.01"
+          min="1"
+          inputmode="decimal"
+          data-testid={`input-${id}-row-gauge`}
+          aria-describedby={`${id}-row-hint`}
+        />
+        <p
+          class="pattern-workspace-field-hint gauge-form-field__hint"
+          id={`${id}-row-hint`}
+          data-gauge-hint="row"
+        >
+          {rowHintIn}
+        </p>
+      </div>
     </div>
-  )}
-  {flatRow && hasGaugePrefix && (
-    <div class="gauge-row">
-      <FloatingInput 
-        id={`${id}-stitch-gauge`}
-        labelId={`${id}-stitch-label`}
-        labelClass="floating-label"
-        label={stitchLabelInchesResolved}
-        type="number"
-        step="0.01"
-        min="1"
-        dataTestid={`input-${id}-stitch-gauge`}
-      />
-      <span class="gauge-divider">×</span>
-      <FloatingInput 
-        id={`${id}-row-gauge`}
-        labelId={`${id}-row-label`}
-        labelClass="floating-label"
-        label={rowLabelInchesResolved}
-        type="number"
-        step="0.01"
-        min="1"
-        dataTestid={`input-${id}-row-gauge`}
-      />
-    </div>
-  )}
-  {flatRow && !hasGaugePrefix && (
-    <Fragment>
-      <FloatingInput 
-        id={`${id}-stitch-gauge`}
-        labelId={`${id}-stitch-label`}
-        labelClass="floating-label"
-        label={stitchLabelInchesResolved}
-        type="number"
-        step="0.01"
-        min="1"
-        dataTestid={`input-${id}-stitch-gauge`}
-      />
-      <span class="gauge-divider">×</span>
-      <FloatingInput 
-        id={`${id}-row-gauge`}
-        labelId={`${id}-row-label`}
-        labelClass="floating-label"
-        label={rowLabelInchesResolved}
-        type="number"
-        step="0.01"
-        min="1"
-        dataTestid={`input-${id}-row-gauge`}
-      />
-    </Fragment>
+  ) : (
+    <>
+      {!flatRow && (
+        <div class="gauge-box">
+          <FloatingInput
+            id={`${id}-stitch-gauge`}
+            labelId={`${id}-stitch-label`}
+            labelClass="floating-label"
+            label={stitchLabelInchesResolved}
+            type="number"
+            step="0.01"
+            min="1"
+            dataTestid={`input-${id}-stitch-gauge`}
+          />
+          <span class="gauge-divider">×</span>
+          <FloatingInput
+            id={`${id}-row-gauge`}
+            labelId={`${id}-row-label`}
+            labelClass="floating-label"
+            label={rowLabelInchesResolved}
+            type="number"
+            step="0.01"
+            min="1"
+            dataTestid={`input-${id}-row-gauge`}
+          />
+        </div>
+      )}
+      {flatRow && hasGaugePrefix && (
+        <div class="gauge-row">
+          <FloatingInput
+            id={`${id}-stitch-gauge`}
+            labelId={`${id}-stitch-label`}
+            labelClass="floating-label"
+            label={stitchLabelInchesResolved}
+            type="number"
+            step="0.01"
+            min="1"
+            dataTestid={`input-${id}-stitch-gauge`}
+          />
+          <span class="gauge-divider">×</span>
+          <FloatingInput
+            id={`${id}-row-gauge`}
+            labelId={`${id}-row-label`}
+            labelClass="floating-label"
+            label={rowLabelInchesResolved}
+            type="number"
+            step="0.01"
+            min="1"
+            dataTestid={`input-${id}-row-gauge`}
+          />
+        </div>
+      )}
+      {flatRow && !hasGaugePrefix && (
+        <Fragment>
+          <FloatingInput
+            id={`${id}-stitch-gauge`}
+            labelId={`${id}-stitch-label`}
+            labelClass="floating-label"
+            label={stitchLabelInchesResolved}
+            type="number"
+            step="0.01"
+            min="1"
+            dataTestid={`input-${id}-stitch-gauge`}
+          />
+          <span class="gauge-divider">×</span>
+          <FloatingInput
+            id={`${id}-row-gauge`}
+            labelId={`${id}-row-label`}
+            labelClass="floating-label"
+            label={rowLabelInchesResolved}
+            type="number"
+            step="0.01"
+            min="1"
+            dataTestid={`input-${id}-row-gauge`}
+          />
+        </Fragment>
+      )}
+    </>
   )}
 </div>
 
@@ -263,6 +311,77 @@ const hasGaugePrefix =
   margin-top: 0.5rem;
   margin-bottom: 0;
   font-style: italic;
+}
+
+/* Pattern workspace form-fields mode (shared with EditWorkspaceGaugeFields wording). */
+.gauge-input-wrapper--form-fields .gauge-form-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+@media (min-width: 700px) {
+  .gauge-input-wrapper--form-fields .gauge-form-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+  }
+}
+
+.gauge-form-field {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.28rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.gauge-form-field__label {
+  display: block;
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #3f4a36;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+}
+
+.gauge-form-field__input {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  min-height: 2.75rem;
+  margin: 0;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #1f2937;
+  background: #fff;
+}
+
+.gauge-form-field__input:focus {
+  outline: none;
+  border-color: var(--kbm-green, #52682d);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--kbm-green, #52682d) 16%, transparent);
+}
+
+.gauge-form-field__hint {
+  margin: 0;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
 }
 
 /* ===========================================
@@ -376,12 +495,34 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!stitchInput || !toggleId) return;
 
     const id = stitchInput.id.replace('-stitch-gauge','');
+    const isFormFields = (wrapper as HTMLElement).dataset.gaugeFormFields === "true";
 
     const stitchLabel = document.getElementById(`${id}-stitch-label`);
     const rowLabel = document.getElementById(`${id}-row-label`);
+    const stitchHint = wrapper.querySelector<HTMLElement>('[data-gauge-hint="stitch"]');
+    const rowHint = wrapper.querySelector<HTMLElement>('[data-gauge-hint="row"]');
 
     const w = wrapper as HTMLElement;
     function updateLabels(unit: string) {
+      if (isFormFields) {
+        if (stitchHint) {
+          stitchHint.textContent =
+            unit === "cm" ? (w.dataset.gaugeStitchCm ?? "stitches per 10 cm") : (w.dataset.gaugeStitchIn ?? 'stitches per 4"');
+        }
+        if (rowHint) {
+          rowHint.textContent =
+            unit === "cm" ? (w.dataset.gaugeRowCm ?? "rows per 10 cm") : (w.dataset.gaugeRowIn ?? 'rows per 4"');
+        }
+        if (stitchInput instanceof HTMLInputElement && stitchHint) {
+          stitchInput.setAttribute("aria-label", `Stitch gauge, ${stitchHint.textContent}`);
+        }
+        const rowInput = wrapper.querySelector(`#${CSS.escape(id)}-row-gauge`);
+        if (rowInput instanceof HTMLInputElement && rowHint) {
+          rowInput.setAttribute("aria-label", `Row gauge, ${rowHint.textContent}`);
+        }
+        return;
+      }
+
       if (!stitchLabel || !rowLabel) return;
 
       if (unit === 'cm') {

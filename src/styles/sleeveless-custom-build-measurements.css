@@ -286,42 +286,27 @@
   }
 }
 
+/*
+ * Mobile (<700px): editable fields inherit shared form-field panel styles from
+ * sleeveless-express-measurements-confirm.css. Keep chips/boxes in document flow.
+ * Validation messages stay in-panel (not absolutely pinned over fields).
+ */
 @media (max-width: 699.98px) {
-  .cb-measure-page .cb-validation-overlay {
-    top: 100%;
-    right: 0;
-    left: 0;
-    margin-top: 0.4rem;
-    width: auto;
+  .cb-measure-page:not(.sleeveless-unified-review-page) .express-mbp-box {
     max-width: none;
   }
-}
 
-/* Mobile: keep inputs on diagram (no separate form column). Not used on unified review. */
-@media (max-width: 699.98px) {
-  .cb-measure-page:not(.sleeveless-unified-review-page) .express-mbp-overlay {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
+  .cb-measure-page:not(.sleeveless-unified-review-page) .measurement-chip:focus-within {
+    border-color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #9fa59a);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--kbm-green, #52682d) 16%, transparent);
   }
 
-  .cb-measure-page:not(.sleeveless-unified-review-page) .express-mbp-box {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    max-width: min(44vw, 7.25rem);
-  }
-
-  .cb-measure-page:not(.sleeveless-unified-review-page) .express-mbp-box__lab {
-    font-size: 0.58rem;
-  }
-
-  .cb-measure-page:not(.sleeveless-unified-review-page) .measurement-input {
-    font-size: 0.85rem;
-    max-width: 2.85rem;
-  }
-
-  .cb-measure-page:not(.sleeveless-unified-review-page) .measurement-chip {
-    min-width: 3rem;
-    padding: 0.16rem 0.28rem 0.16rem 0.32rem;
+  .cb-measure-page .cb-validation-overlay {
+    position: static;
+    inset: auto;
+    width: 100%;
+    max-width: none;
+    margin: 0.5rem 0 0;
+    box-sizing: border-box;
   }
 }
