@@ -22,20 +22,26 @@ function helpHubPanel(): string {
 }
 
 describe("Header Help Hub navigation dropdown", () => {
-  it("keeps Help Hub first and adds What's New second, linking to /whats-new", () => {
+  it("keeps Help Hub first, What's New second, and Tip of the Week third", () => {
     const panel = helpHubPanel();
 
     const helpHubLinkIdx = panel.indexOf('href="/help-hub"');
     const whatsNewLinkIdx = panel.indexOf('href="/whats-new"');
+    const tipLinkIdx = panel.indexOf('href="/tip-of-the-week"');
 
     expect(helpHubLinkIdx).toBeGreaterThan(-1);
     expect(whatsNewLinkIdx).toBeGreaterThan(-1);
-    // Help Hub stays the first item; What's New is the second.
+    expect(tipLinkIdx).toBeGreaterThan(-1);
+    // Help Hub stays first; What's New second; Tip of the Week third.
     expect(whatsNewLinkIdx).toBeGreaterThan(helpHubLinkIdx);
+    expect(tipLinkIdx).toBeGreaterThan(whatsNewLinkIdx);
 
     // The What's New item uses the shared dropdown item markup and its own testid.
     expect(panel).toMatch(
       /<li><a href="\/whats-new" data-testid="nav-whats-new">What's New<\/a><\/li>/,
+    );
+    expect(panel).toMatch(
+      /data-testid="nav-tip-of-the-week"[\s\S]*?>\s*Tip of the Week\s*</,
     );
   });
 
@@ -50,10 +56,29 @@ describe("Header Help Hub navigation dropdown", () => {
     expect(whatsNewLi).not.toContain("is-hidden");
   });
 
+  it("exposes Tip of the Week to everyone (not member-gated) and always visible", () => {
+    const panel = helpHubPanel();
+    const tipLi =
+      panel.match(
+        /<li[^>]*>\s*<a href="\/tip-of-the-week"[\s\S]*?<\/a>\s*<\/li>/,
+      )?.[0] ?? "";
+
+    expect(tipLi).not.toBe("");
+    expect(tipLi).not.toMatch(/data-ms-/);
+    expect(tipLi).not.toContain("is-hidden");
+  });
+
   it("adds exactly one What's New navigation entry", () => {
     const testIds = [...headerSource.matchAll(/data-testid="nav-whats-new"/g)];
     expect(testIds).toHaveLength(1);
     const links = [...headerSource.matchAll(/href="\/whats-new"/g)];
+    expect(links).toHaveLength(1);
+  });
+
+  it("adds exactly one Tip of the Week navigation entry", () => {
+    const testIds = [...headerSource.matchAll(/data-testid="nav-tip-of-the-week"/g)];
+    expect(testIds).toHaveLength(1);
+    const links = [...headerSource.matchAll(/href="\/tip-of-the-week"/g)];
     expect(links).toHaveLength(1);
   });
 

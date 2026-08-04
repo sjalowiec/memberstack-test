@@ -1,0 +1,598 @@
+---
+/**
+ * Tip of the Week — standalone weekly Learning Library lesson.
+ * Featured tip content is managed in Watson (runtime). JSON is a documented
+ * dev-only fallback when TIP_OF_THE_WEEK_DEV_JSON=true.
+ */
+import Layout from "../layouts/Layout.astro";
+import TipReactions from "../components/tip-of-the-week/TipReactions.astro";
+import { resolveTipCatalogVideo } from "../lib/tipOfTheWeek";
+import {
+  loadPublicTipOfTheWeekPage,
+  loadTipOfTheWeekPreview,
+} from "../lib/tipOfTheWeek/publicPage";
+import { isWatsonSessionAuthenticated } from "../lib/watson/watsonAuth";
+
+export const prerender = false;
+
+Astro.response.headers.set("Cache-Control", "no-store");
+
+const previewId = Astro.url.searchParams.get("preview")?.trim() || "";
+const watsonAuthed = isWatsonSessionAuthenticated(Astro.cookies);
+
+const pageState =
+  previewId && watsonAuthed
+    ? await loadTipOfTheWeekPreview(previewId)
+    : await loadPublicTipOfTheWeekPage();
+
+const featured = pageState.kind === "featured" ? pageState.model : null;
+const isPreview = Boolean(featured?.isPreview);
+const tip = featured?.tip ?? null;
+const video = tip ? resolveTipCatalogVideo({ videoContentId: tip.videoContentId }) : null;
+const relatedLinks = featured?.relatedLinks ?? [];
+const availableThroughDisplay = featured?.availableThroughDisplay ?? "";
+const availabilityFooter = featured?.availabilityFooter ?? "";
+const pageTitle = tip?.title ?? "Tip of the Week";
+const pageDescription =
+  tip?.intro ??
+  "A free weekly knitting lesson from the Knit It Now Learning Library.";
+---
+
+<Layout
+  title={`${isPreview ? "Preview: " : ""}${pageTitle} | Tip of the Week | Knit it Now`}
+  description={pageDescription}
+  bodyClass="page--tight-header"
+>
+  {
+    featured && tip ? (
+      <article
+        class:list={["totw", "page-wrap", "totw--featured", isPreview && "totw--preview"]}
+        data-tip-of-the-week
+        data-tip-id={tip.tipId}
+        data-tip-source={featured.source}
+        data-tip-preview={isPreview ? "true" : undefined}
+      >
+        {
+          isPreview ? (
+            <p class="totw-preview-banner" role="status" data-testid="totw-preview-banner">
+              Watson preview — not publicly live. Status: {tip.status}. Free window:{" "}
+              {tip.availableFrom} through {tip.availableThrough} (America/Los_Angeles).
+            </p>
+          ) : null
+        }
+        <header class="totw-intro">
+          <div class="totw-intro__layout" data-totw-intro-layout>
+            <img
+              class="totw-intro__icon"
+              src="/images/tow_lightbulb.svg"
+              alt=""
+              width="70"
+              height="127"
+              decoding="async"
+              aria-hidden="true"
+              data-testid="totw-lightbulb"
+            />
+            <div class="totw-intro__copy">
+              <p class="totw-eyebrow">{tip.eyebrow}</p>
+              <h1 class="totw-title">{tip.title}</h1>
+              <p class="totw-lede">{tip.intro}</p>
+              <p
+                class="totw-availability"
+                data-tip-available-through={tip.availableThrough}
+              >
+                <span class="totw-availability__badge">{tip.availabilityNotice}</span>
+                <span class="totw-availability__through">
+                  Available through {availableThroughDisplay}
+                </span>
+              </p>
+            </div>
+          </div>
+        </header>
+
+        {tip.learnPoints.length > 0 ? (
+          <section
+            class="totw-section totw-section--learn"
+            aria-labelledby="totw-learn-heading"
+          >
+            <h2 id="totw-learn-heading" class="totw-section__title">
+              What You’ll Learn
+            </h2>
+            <ul class="totw-learn-list kbm-card">
+              {tip.learnPoints.map((point) => (
+                <li>{point}</li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        <section class="totw-video" aria-labelledby="totw-video-heading">
+          <h2 id="totw-video-heading" class="totw-sr-only">Featured video</h2>
+          {video ? (
+            <div class="totw-video__shell">
+              <button
+                type="button"
+                class="totw-video__trigger kbm-kin-catalog-video tip-of-week-card"
+                data-vimeo-id={video.vimeoId}
+                data-video-title={tip.title}
+                aria-label={`Play video: ${tip.title}`}
+                data-testid="totw-video-trigger"
+              >
+                {video.posterUrl ? (
+                  <span class="tip-thumb-wrap">
+                    <img
+                      src={video.posterUrl}
+                      alt=""
+                      class="tip-image totw-video__poster"
+                      width="1280"
+                      height="720"
+                      decoding="async"
+                      fetchpriority="high"
+                    />
+                    <span class="tip-play" aria-hidden="true">
+                      <svg viewBox="0 0 68 68" class="tip-play__icon" focusable="false">
+                        <circle cx="34" cy="34" r="34" />
+                        <polygon points="28,22 28,46 48,34" />
+                      </svg>
+                    </span>
+                  </span>
+                ) : (
+                  <span class="totw-video__fallback tip-image-placeholder">Play video</span>
+                )}
+              </button>
+              <p class="totw-video__caption">
+                From the Learning Library: {video.catalogTitle}
+              </p>
+            </div>
+          ) : (
+            <p class="totw-video__missing" role="status">
+              The featured video could not be resolved from the Learning Library catalog.
+              Check that video content_id {tip.videoContentId} exists in videos-public.json
+              with a numeric Vimeo id.
+            </p>
+          )}
+        </section>
+
+        <TipReactions tipId={tip.tipId} />
+
+        {tip.tryCopy ? (
+          <section class="totw-section" aria-labelledby="totw-try-heading">
+            <h2 id="totw-try-heading" class="totw-section__title">
+              Try It
+            </h2>
+            <p class="totw-section__copy">{tip.tryCopy}</p>
+          </section>
+        ) : null}
+
+        {tip.sueTipCopy ? (
+          <section class="totw-sue" aria-labelledby="totw-sue-heading">
+            <h2 id="totw-sue-heading" class="totw-sue__title">
+              Sue’s Tip
+            </h2>
+            <p class="totw-sue__copy">{tip.sueTipCopy}</p>
+          </section>
+        ) : null}
+
+        {relatedLinks.length > 0 ? (
+          <section class="totw-section" aria-labelledby="totw-related-heading">
+            <h2 id="totw-related-heading" class="totw-section__title">
+              Related Help
+            </h2>
+            <ul class="totw-related">
+              {relatedLinks.map((link) => (
+                <li class="totw-related__item">
+                  <a class="totw-related__link" href={link.href}>
+                    {link.label}
+                  </a>
+                  {link.note ? <span class="totw-related__note">{link.note}</span> : null}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        <footer class="totw-footer" data-tip-available-through={tip.availableThrough}>
+          <p>{availabilityFooter}</p>
+        </footer>
+      </article>
+    ) : (
+      <article
+        class="totw page-wrap totw--coming-soon"
+        data-tip-of-the-week
+        data-tip-coming-soon
+      >
+        <header class="totw-intro">
+          <div class="totw-intro__layout" data-totw-intro-layout>
+            <img
+              class="totw-intro__icon"
+              src="/images/tow_lightbulb.svg"
+              alt=""
+              width="70"
+              height="127"
+              decoding="async"
+              aria-hidden="true"
+              data-testid="totw-lightbulb"
+            />
+            <div class="totw-intro__copy">
+              <p class="totw-eyebrow">TIP OF THE WEEK</p>
+              <h1 class="totw-title">Tip of the Week</h1>
+              <p class="totw-lede" data-testid="totw-coming-soon">
+                The next Tip of the Week is coming soon.
+              </p>
+              <p class="totw-section__copy">
+                Check back for a free weekly lesson from the Learning Library — or browse the
+                library anytime if you’re a member.
+              </p>
+              <p class="totw-coming-soon__actions">
+                <a class="kbm-btn kbm-btn-primary" href="/videos/">
+                  Browse the Learning Library
+                </a>
+              </p>
+            </div>
+          </div>
+        </header>
+      </article>
+    )
+  }
+</Layout>
+
+<style>
+  /* Match What's New: widen past default .page-wrap 860px, tighten header gap locally. */
+  .totw.page-wrap {
+    max-width: min(var(--max-content-width, 1100px), 960px);
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 0.75rem;
+    padding-bottom: 2.5rem;
+  }
+
+  .totw-intro {
+    margin-bottom: 1.25rem;
+  }
+
+  .totw-intro__layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem 1.15rem;
+  }
+
+  .totw-intro__icon {
+    flex: none;
+    width: 70px;
+    height: auto;
+    display: block;
+  }
+
+  .totw-intro__copy {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .totw-preview-banner {
+    margin: 0 0 1rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: 8px;
+    border: 1px solid #c4b39a;
+    background: #fff8e8;
+    color: #6b4f1d;
+    font-size: 0.92rem;
+    line-height: 1.4;
+  }
+
+  .totw-eyebrow {
+    margin: 0 0 0.4rem;
+    font-size: 0.78rem;
+    font-weight: 650;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .totw-title {
+    margin: 0 0 0.75rem;
+    font-size: clamp(1.45rem, 3.5vw, 1.85rem);
+    line-height: 1.25;
+    color: #1f2937;
+    font-weight: 650;
+  }
+
+  .totw-lede {
+    margin: 0 0 0.85rem;
+    font-size: 1.02rem;
+    line-height: 1.55;
+    color: #374151;
+    max-width: 42rem;
+  }
+
+  .totw-availability {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.85rem;
+    margin: 0;
+    font-size: 0.92rem;
+    color: #4b5563;
+  }
+
+  .totw-availability__badge {
+    display: inline-block;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    background: #eef2e6;
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+
+  .totw-video {
+    margin: 0 0 0.25rem;
+    max-width: 860px;
+  }
+
+  .totw-video__shell {
+    margin: 0;
+  }
+
+  .totw-video__trigger {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    text-align: left;
+    border-radius: 12px;
+  }
+
+  .totw-video__trigger:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 3px;
+  }
+
+  .totw-video__trigger .tip-thumb-wrap {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 12px;
+    background: #e5e7eb;
+  }
+
+  .totw-video__poster,
+  .totw-video__trigger .tip-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 12px;
+  }
+
+  .totw-video__trigger .tip-play {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .totw-video__trigger .tip-play__icon {
+    width: 68px;
+    height: 68px;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.22));
+    transition: transform 0.18s ease;
+  }
+
+  .totw-video__trigger .tip-play__icon circle {
+    fill: rgba(0, 0, 0, 0.45);
+  }
+
+  .totw-video__trigger .tip-play__icon polygon {
+    fill: #ffffff;
+  }
+
+  .totw-video__trigger:hover .tip-play__icon,
+  .totw-video__trigger:focus-visible .tip-play__icon {
+    transform: scale(1.04);
+  }
+
+  .totw-video__fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+    color: #374151;
+    font-weight: 600;
+  }
+
+  .totw-video__caption {
+    margin: 0.55rem 0 0;
+    font-size: 0.88rem;
+    color: var(--text-muted, #6b7280);
+  }
+
+  .totw-video__missing {
+    margin: 0;
+    padding: 1rem;
+    border-radius: 10px;
+    background: #fef3c7;
+    color: #92400e;
+    font-size: 0.95rem;
+  }
+
+  .totw-section {
+    margin-top: 1.75rem;
+    max-width: 42rem;
+  }
+
+  /* Compact learn block above the video so the player stays prominent. */
+  .totw-section--learn {
+    margin-top: 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  .totw-section__title {
+    margin: 0 0 0.65rem;
+    font-size: 1.2rem;
+    font-weight: 650;
+    color: #1f2937;
+  }
+
+  .totw-section__copy {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.55;
+    color: #374151;
+    max-width: 42rem;
+  }
+
+  .totw-learn-list {
+    margin: 0;
+    padding: 1rem 1.15rem 1rem 1.9rem;
+    list-style: disc;
+    max-width: 42rem;
+  }
+
+  .totw-learn-list li {
+    margin: 0.35rem 0;
+    line-height: 1.45;
+    color: #374151;
+  }
+
+  .totw-sue {
+    margin-top: 1.75rem;
+    padding: 1rem 1.15rem;
+    border-left: 3px solid var(--kbm-green-2, #738c52);
+    background: linear-gradient(180deg, #f4f6f1 0%, #eef1ea 100%);
+    border-radius: 0 10px 10px 0;
+    max-width: 42rem;
+  }
+
+  .totw-sue__title {
+    margin: 0 0 0.45rem;
+    font-size: 1.05rem;
+    font-weight: 650;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .totw-sue__copy {
+    margin: 0;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: #374151;
+  }
+
+  .totw-related {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.65rem;
+    max-width: 42rem;
+  }
+
+  .totw-related__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid var(--ring, #e5e8e0);
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  .totw-related__link {
+    font-weight: 600;
+    color: var(--kbm-green, #52682d);
+    text-decoration: none;
+  }
+
+  .totw-related__link:hover,
+  .totw-related__link:focus-visible {
+    text-decoration: underline;
+  }
+
+  .totw-related__note {
+    font-size: 0.9rem;
+    color: var(--text-muted, #6b7280);
+  }
+
+  .totw-footer {
+    margin-top: 2rem;
+    padding-top: 1.15rem;
+    border-top: 1px solid var(--ring, #e5e8e0);
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: #4b5563;
+    max-width: 42rem;
+  }
+
+  .totw-footer p {
+    margin: 0;
+  }
+
+  .totw-coming-soon__actions {
+    margin-top: 1.25rem;
+  }
+
+  .totw-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 640px) {
+    .totw.page-wrap {
+      padding-top: 0.5rem;
+    }
+
+    .totw-intro {
+      margin-bottom: 1rem;
+    }
+
+    .totw-intro__icon {
+      width: 48px;
+    }
+
+    .totw-title {
+      font-size: 1.35rem;
+      margin-bottom: 0.55rem;
+    }
+
+    .totw-lede {
+      font-size: 0.98rem;
+      margin-bottom: 0.65rem;
+    }
+
+    .totw-video__trigger .tip-play__icon {
+      width: 56px;
+      height: 56px;
+    }
+
+    .totw-section {
+      margin-top: 1.4rem;
+    }
+  }
+
+  /* Narrow phones: stack icon above the heading to avoid a cramped title row. */
+  @media (max-width: 480px) {
+    .totw-intro__layout {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.55rem;
+    }
+
+    .totw-intro__icon {
+      width: 46px;
+    }
+  }
+</style>
