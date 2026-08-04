@@ -6,7 +6,7 @@ The Slope Tool draft seed lives separately in `scripts/sql/watson-whats-new-seed
 
 ## 1. Pattern Systems overview
 - **Category:** Pattern
-- **Column:** Worth Exploring
+- **Column:** Bugs & Improvements (`worth_exploring`)
 - **Suggested title:** Build Garments from Shared Pattern Systems
 - **Suggested description:** Start with systems that keep sizing, shaping, and instructions consistent across projects.
 - **Destination:** `/patterns` (confirm best landing URL)
@@ -14,7 +14,7 @@ The Slope Tool draft seed lives separately in `scripts/sql/watson-whats-new-seed
 
 ## 2. Help Hub answers
 - **Category:** Learning
-- **Column:** Worth Exploring
+- **Column:** Bugs & Improvements (`worth_exploring`)
 - **Suggested title:** Find Quick Answers in the Help Hub
 - **Suggested description:** Short, practical answers for machine-knitting questions you run into mid-project.
 - **Destination:** `/help-hub`
@@ -22,7 +22,7 @@ The Slope Tool draft seed lives separately in `scripts/sql/watson-whats-new-seed
 
 ## 3. Machine manuals library
 - **Category:** Resource
-- **Column:** Worth Exploring
+- **Column:** Bugs & Improvements (`worth_exploring`)
 - **Suggested title:** Keep Manuals Within Reach
 - **Suggested description:** Browse machine manuals and reference material without digging through old bookmarks.
 - **Destination:** `/manuals`
@@ -30,7 +30,7 @@ The Slope Tool draft seed lives separately in `scripts/sql/watson-whats-new-seed
 
 ## 4. Charting tools collection
 - **Category:** Tool
-- **Column:** Worth Exploring
+- **Column:** Bugs & Improvements (`worth_exploring`)
 - **Suggested title:** Let the Tools Handle the Math
 - **Suggested description:** Adjust counts, multiples, and shaping numbers so you can stay focused on knitting.
 - **Destination:** `/tools`

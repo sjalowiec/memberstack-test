@@ -42,17 +42,21 @@ export const WHATS_NEW_BOARD_COLUMN_META: Record<
 > = {
   just_added: {
     title: "Just Added",
-    subtitle: "Available now",
+    subtitle: "New tools, patterns, resources, and features",
   },
+  // Stored slug stays worth_exploring so existing DB rows keep working.
   worth_exploring: {
-    title: "Worth Exploring",
-    subtitle: "Things you may have missed",
+    title: "Bugs & Improvements",
+    subtitle: "Fixes and improvements to your Knit It Now experience",
   },
   in_the_pipeline: {
     title: "In the Pipeline",
     subtitle: "A peek at what's being developed",
   },
 };
+
+/** How many cards each public column shows before "Show more". */
+export const WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT = 3;
 
 export const WHATS_NEW_NEW_BADGE_DAYS = 30;
 export const WHATS_NEW_FEATURED_VIDEO_SETTINGS_KEY = "featured_video";

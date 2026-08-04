@@ -12,6 +12,7 @@ import {
 import {
   boardColumnMeta,
   formatQuietPublishDate,
+  splitPublicColumnCards,
 } from "../lib/whatsNew/public";
 import {
   getPublicBillboardSettings,
@@ -56,7 +57,7 @@ const billboardButton = billboard && billboardHasButton(billboard);
 
 const pageTitle = "What's New at Knit It Now";
 const description =
-  "See what's just been added, worth exploring, and in the pipeline at Knit It Now.";
+  "See what's just been added, bugs and improvements, and what's in the pipeline at Knit It Now.";
 ---
 
 <Layout
@@ -125,6 +126,57 @@ const description =
         WHATS_NEW_BOARD_COLUMNS.map((column) => {
           const meta = boardColumnMeta(column);
           const cards = board[column];
+          const { initial, remaining, hasMore } = splitPublicColumnCards(cards);
+          const listId = `whats-new-cards-${column}`;
+          const renderCard = (card: (typeof cards)[number], extra = false) => {
+            const toolIcon = resolveWhatsNewToolIcon(card);
+            return (
+              <li
+                class={`whats-new__card kbm-card${card.featured ? " whats-new__card--featured" : ""}`}
+                style={whatsNewCategoryCardStyle(card.category)}
+                data-wn-extra={extra ? "" : undefined}
+                hidden={extra || undefined}
+              >
+                <div class="whats-new__card-top">
+                  <div class="whats-new__card-top-lead">
+                    {toolIcon ? (
+                      <img
+                        class="whats-new__tool-icon"
+                        src={toolIcon}
+                        alt=""
+                        width="48"
+                        height="48"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : null}
+                    <span class="whats-new__category">{card.categoryLabel}</span>
+                  </div>
+                  {
+                    card.featured ? (
+                      <span class="whats-new__badge whats-new__badge--featured">Featured</span>
+                    ) : null
+                  }
+                </div>
+                <h3 class="whats-new__card-title">{card.title}</h3>
+                <div
+                  class="whats-new__card-desc"
+                  set:html={sanitizeCardDescriptionHtml(card.description)}
+                />
+
+                <p class="whats-new__quiet-date">
+                  <time datetime={card.publishDate}>
+                    {formatQuietPublishDate(card.publishDate)}
+                  </time>
+                </p>
+                {card.destinationUrl && card.buttonText ? (
+                  <a class="kbm-btn kbm-btn-primary whats-new__cta" href={card.destinationUrl}>
+                    {card.buttonText}
+                  </a>
+                ) : null}
+              </li>
+            );
+          };
           return (
             <section
               class={`whats-new__column whats-new__column--${column}`}
@@ -140,55 +192,23 @@ const description =
                 {cards.length === 0 ? (
                   <p class="whats-new__empty">Nothing here yet.</p>
                 ) : (
-                  <ul class="whats-new__cards">
-                    {cards.map((card) => {
-                      const toolIcon = resolveWhatsNewToolIcon(card);
-                      return (
-                        <li
-                          class={`whats-new__card kbm-card${card.featured ? " whats-new__card--featured" : ""}`}
-                          style={whatsNewCategoryCardStyle(card.category)}
-                        >
-                          <div class="whats-new__card-top">
-                            <div class="whats-new__card-top-lead">
-                              {toolIcon ? (
-                                <img
-                                  class="whats-new__tool-icon"
-                                  src={toolIcon}
-                                  alt=""
-                                  width="48"
-                                  height="48"
-                                  loading="lazy"
-                                  decoding="async"
-                                />
-                              ) : null}
-                              <span class="whats-new__category">{card.categoryLabel}</span>
-                            </div>
-                            {
-                              card.featured ? (
-                                <span class="whats-new__badge whats-new__badge--featured">Featured</span>
-                              ) : null
-                            }
-                          </div>
-                          <h3 class="whats-new__card-title">{card.title}</h3>
-                          <div
-                            class="whats-new__card-desc"
-                            set:html={sanitizeCardDescriptionHtml(card.description)}
-                          />
-
-                          <p class="whats-new__quiet-date">
-                            <time datetime={card.publishDate}>
-                              {formatQuietPublishDate(card.publishDate)}
-                            </time>
-                          </p>
-                          {card.destinationUrl && card.buttonText ? (
-                            <a class="kbm-btn kbm-btn-primary whats-new__cta" href={card.destinationUrl}>
-                              {card.buttonText}
-                            </a>
-                          ) : null}
-                        </li>
-                      );
-                    })}
-                  </ul>
+                  <>
+                    <ul class="whats-new__cards" id={listId}>
+                      {initial.map((card) => renderCard(card, false))}
+                      {remaining.map((card) => renderCard(card, true))}
+                    </ul>
+                    {hasMore ? (
+                      <button
+                        type="button"
+                        class="whats-new__toggle kbm-btn kbm-btn-secondary"
+                        data-wn-column-toggle
+                        aria-expanded="false"
+                        aria-controls={listId}
+                      >
+                        Show more
+                      </button>
+                    ) : null}
+                  </>
                 )}
               </div>
             </section>
@@ -197,6 +217,11 @@ const description =
       }
     </div>
   </article>
+
+  <script>
+    import { initWhatsNewColumnToggles } from "../scripts/whatsNewPublicBoard";
+    initWhatsNewColumnToggles();
+  </script>
 </Layout>
 
 <style>
@@ -311,18 +336,20 @@ const description =
     display: grid;
     gap: 1.5rem;
     grid-template-columns: 1fr;
-    align-items: stretch;
+    align-items: start;
   }
 
   .whats-new__column {
     min-width: 0;
     display: flex;
     flex-direction: column;
+    align-self: start;
     background: var(--wn-column-bg);
     border: 1px solid var(--wn-board-border);
     border-radius: 18px;
     overflow: hidden;
     padding: 0;
+    height: fit-content;
   }
 
   .whats-new__column-accent {
@@ -347,7 +374,7 @@ const description =
   .whats-new__column-body {
     display: flex;
     flex-direction: column;
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     padding: 1rem;
     min-width: 0;
   }
@@ -390,6 +417,12 @@ const description =
     border-left: 5px solid var(--wn-accent);
     background: #fff;
     box-shadow: none;
+  }
+
+  /* Author display rules (.whats-new__card / global .kbm-card) beat the UA
+     [hidden] { display: none } stylesheet. Keep extras truly hidden. */
+  .whats-new__card[hidden] {
+    display: none !important;
   }
 
   .whats-new__card--featured {
@@ -507,6 +540,17 @@ const description =
     text-decoration: none;
   }
 
+  .whats-new__toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.9rem;
+    width: 100%;
+    min-height: 2.75rem;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
   .whats-new__empty {
     margin: 0;
     color: var(--text-muted, #6b7280);
@@ -516,7 +560,7 @@ const description =
   @media (min-width: 900px) {
     .whats-new__board {
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      align-items: stretch;
+      align-items: start;
     }
 
     .whats-new__billboard--with-video {

@@ -5,6 +5,7 @@ import {
   WHATS_NEW_CATEGORY_LABELS,
   WHATS_NEW_DEFAULT_BUTTON_TEXT,
   WHATS_NEW_NEW_BADGE_DAYS,
+  WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT,
   WHATS_NEW_STATUSES,
   type WhatsNewBoardColumn,
   type WhatsNewCard,
@@ -12,6 +13,8 @@ import {
   type WhatsNewCategory,
   type WhatsNewStatus,
 } from "./types";
+
+export { WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT } from "./types";
 
 export {
   buildBillboardSettings,
@@ -150,9 +153,30 @@ export function filterPublicWhatsNewCards(cards: WhatsNewCard[]): WhatsNewCard[]
   return cards.filter(isPublicWhatsNewCard);
 }
 
+/**
+ * Schema default is `display_order = 0` for every new card, so 0 cannot mean
+ * "Sue intentionally pinned this at position 0." Treat 0 as unset/automatic.
+ * Any non-zero value is a deliberate manual order.
+ */
+export function hasManualWhatsNewDisplayOrder(displayOrder: number): boolean {
+  return Number.isFinite(displayOrder) && displayOrder !== 0;
+}
+
+/**
+ * Public + Watson column sort:
+ * 1. Deliberate manual orders (non-zero) first, ascending
+ * 2. Otherwise publishDate newest → oldest
+ * 3. Title as the stable final tie-breaker
+ */
 export function compareWhatsNewCards(a: WhatsNewCard, b: WhatsNewCard): number {
-  if (a.displayOrder !== b.displayOrder) {
+  const aManual = hasManualWhatsNewDisplayOrder(a.displayOrder);
+  const bManual = hasManualWhatsNewDisplayOrder(b.displayOrder);
+
+  if (aManual && bManual && a.displayOrder !== b.displayOrder) {
     return a.displayOrder - b.displayOrder;
+  }
+  if (aManual !== bManual) {
+    return aManual ? -1 : 1;
   }
   if (a.publishDate !== b.publishDate) {
     return a.publishDate < b.publishDate ? 1 : -1;
@@ -186,4 +210,18 @@ export function buildPublicWhatsNewBoard(cards: WhatsNewCard[]): WhatsNewBoardGr
 
 export function boardColumnMeta(column: WhatsNewBoardColumn) {
   return WHATS_NEW_BOARD_COLUMN_META[column];
+}
+
+/** Split a sorted public column into the initial visible set and the rest. */
+export function splitPublicColumnCards<T>(
+  cards: readonly T[],
+  limit: number = WHATS_NEW_PUBLIC_COLUMN_INITIAL_LIMIT,
+): { initial: T[]; remaining: T[]; hasMore: boolean } {
+  const initial = cards.slice(0, limit);
+  const remaining = cards.slice(limit);
+  return {
+    initial,
+    remaining,
+    hasMore: remaining.length > 0,
+  };
 }
