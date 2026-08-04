@@ -3,7 +3,7 @@
  * Presentational membership CTA.
  *
  * Desktop / tablet (min-width: 768px): rounded floating pill, lower-right.
- * Phone (max-width: 767px): full-width sticky bottom action bar.
+ * Phone (max-width: 767px): hidden — sticky bar was covering content/controls.
  *
  * Visual-only: pass `label`; click/navigation wired in membershipCornerControl.ts.
  */
@@ -25,10 +25,9 @@ const { label = "Become a Member" } = Astro.props;
 </button>
 
 <style>
-  /* ---- Desktop / tablet: floating pill (unchanged) ---- */
+  /* ---- Desktop / tablet: floating pill ---- */
   .membership-corner-cta {
     --membership-corner-inset: 1.5rem; /* 24px */
-    --membership-bar-tap-h: 3.375rem; /* 54px; used on phone + body padding */
     position: fixed;
     z-index: 2800;
     bottom: max(var(--membership-corner-inset), env(safe-area-inset-bottom, 0px));
@@ -92,49 +91,18 @@ const { label = "Become a Member" } = Astro.props;
   }
 
   /*
-   * Phone: full-width bottom action bar.
-   * Breakpoint matches common site phone queries (max-width: 767px)
-   * so tablet widths keep the floating pill.
+   * Phone: hide site-wide corner CTA (covers content/controls).
+   * Also clear reserved body offset + CSS var so no blank bottom gap remains.
+   * Tablet (768px+) keeps the floating pill.
    */
   @media (max-width: 767px) {
     .membership-corner-cta {
-      left: 0;
-      right: 0;
-      bottom: 0;
-      width: 100%;
-      max-width: none;
-      box-sizing: border-box;
-      border-radius: 0;
-      /* 54px tap band + home-indicator inset */
-      min-height: calc(var(--membership-bar-tap-h) + env(safe-area-inset-bottom, 0px));
-      padding: 0 1.25rem env(safe-area-inset-bottom, 0px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
-      box-shadow: 0 -3px 12px rgba(15, 23, 42, 0.12);
-      border-top: 1px solid rgba(0, 0, 0, 0.06);
+      display: none;
     }
 
-    .membership-corner-cta:hover,
-    .membership-corner-cta:active {
-      transform: none;
-      box-shadow: 0 -3px 12px rgba(15, 23, 42, 0.12);
-    }
-
-    .membership-corner-cta:focus-visible {
-      outline-offset: -3px;
-      box-shadow:
-        inset 0 0 0 3px var(--kbm-green, #52682d),
-        0 -3px 12px rgba(15, 23, 42, 0.12);
-    }
-
-    /* Keep final page content clear of the sticky bar */
     :global(body) {
-      --membership-bar-tap-h: 3.375rem;
-      padding-bottom: calc(
-        var(--membership-bar-tap-h) + env(safe-area-inset-bottom, 0px)
-      );
+      --membership-bar-tap-h: 0;
+      padding-bottom: 0;
     }
   }
 </style>

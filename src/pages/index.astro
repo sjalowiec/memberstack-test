@@ -501,7 +501,7 @@ const sueIntroParagraphs = [
   }
 
   /*
-   * Narrow mobile only (phones). Matches the fixed membership bar breakpoint.
+   * Narrow mobile only (phones). Matches max-width: 767px site phone queries.
    * Tablet (768–899) and desktop (900+) keep their existing hero rules.
    */
   @media (max-width: 767px) {
@@ -517,14 +517,6 @@ const sueIntroParagraphs = [
 
     .home-v2-hero__card {
       padding: 1rem 1.1rem;
-      /*
-       * Lift the full card above the fixed membership bar.
-       * Bar is position:fixed; z-index:2800 — spacing (not z-index) keeps them separate.
-       * Clearance = bar tap height + safe-area + ~14px visible gap.
-       */
-      margin-bottom: calc(
-        var(--membership-bar-tap-h, 3.375rem) + env(safe-area-inset-bottom, 0px) + 14px
-      );
     }
 
     .home-v2-hero__card h1 {
