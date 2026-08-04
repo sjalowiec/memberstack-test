@@ -1,0 +1,166 @@
+---
+/**
+ * One-click Tip of the Week reactions (client-hydrated).
+ * Selection is local + best-effort upsert to Netlify Blobs via log-tip-reaction.
+ */
+import {
+  TIP_REACTIONS,
+  TIP_REACTION_THANKS,
+} from "../../lib/tipOfTheWeekReactions";
+
+interface Props {
+  tipId: string;
+}
+
+const { tipId } = Astro.props;
+---
+
+<section
+  class="totw-reactions"
+  data-tip-reactions
+  data-tip-id={tipId}
+  aria-labelledby="totw-reactions-heading"
+>
+  <h2 id="totw-reactions-heading" class="totw-reactions__prompt">
+    Was this tip helpful?
+  </h2>
+  <div class="totw-reactions__buttons" role="group" aria-label="Tip reactions">
+    {
+      TIP_REACTIONS.map((reaction) => (
+        <button
+          type="button"
+          class="totw-reactions__btn"
+          data-tip-reaction={reaction.id}
+          aria-pressed="false"
+        >
+          <span class="totw-reactions__emoji" aria-hidden="true">
+            {reaction.emoji}
+          </span>
+          <span class="totw-reactions__label">{reaction.label}</span>
+        </button>
+      ))
+    }
+  </div>
+  <p
+    class="totw-reactions__thanks"
+    data-tip-reaction-thanks
+    hidden
+    aria-live="polite"
+  >
+    {TIP_REACTION_THANKS}
+  </p>
+</section>
+
+<script>
+  import {
+    hydrateTipReactions,
+    isTipReactionId,
+    selectTipReaction,
+  } from "../../lib/tipOfTheWeekReactions";
+
+  function boot() {
+    const root = document.querySelector<HTMLElement>("[data-tip-reactions]");
+    if (!root) return;
+    const tipId = root.getAttribute("data-tip-id")?.trim() || "";
+    if (!tipId) return;
+
+    hydrateTipReactions(root, tipId);
+
+    root.querySelectorAll<HTMLButtonElement>("[data-tip-reaction]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const reaction = btn.getAttribute("data-tip-reaction");
+        if (!isTipReactionId(reaction)) return;
+        selectTipReaction(root, tipId, reaction);
+      });
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot, { once: true });
+  } else {
+    boot();
+  }
+</script>
+
+<style>
+  .totw-reactions {
+    margin: 1.25rem 0 0;
+  }
+
+  .totw-reactions__prompt {
+    margin: 0 0 0.85rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .totw-reactions__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+
+  .totw-reactions__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 44px;
+    padding: 0.65rem 1rem;
+    border: 2px solid var(--ring, #e5e8e0);
+    border-radius: 10px;
+    background: #fff;
+    color: #1f2937;
+    font: inherit;
+    font-size: 0.95rem;
+    font-weight: 550;
+    cursor: pointer;
+    text-align: left;
+    transition:
+      border-color 0.15s ease,
+      background-color 0.15s ease,
+      box-shadow 0.15s ease;
+  }
+
+  .totw-reactions__btn:hover {
+    border-color: var(--kbm-green-2, #738c52);
+    background: #f7f8f5;
+  }
+
+  .totw-reactions__btn:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  .totw-reactions__btn.is-selected {
+    border-color: var(--kbm-green, #52682d);
+    background: #eef2e6;
+    box-shadow: inset 0 0 0 1px var(--kbm-green, #52682d);
+  }
+
+  .totw-reactions__emoji {
+    font-size: 1.15rem;
+    line-height: 1;
+  }
+
+  .totw-reactions__label {
+    line-height: 1.25;
+  }
+
+  .totw-reactions__thanks {
+    margin: 0.85rem 0 0;
+    font-size: 0.95rem;
+    color: var(--kbm-green, #52682d);
+    font-weight: 550;
+  }
+
+  @media (max-width: 640px) {
+    .totw-reactions__buttons {
+      flex-direction: column;
+    }
+
+    .totw-reactions__btn {
+      width: 100%;
+      justify-content: flex-start;
+    }
+  }
+</style>

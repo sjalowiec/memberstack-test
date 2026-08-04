@@ -1,0 +1,42 @@
+{
+  "_comment": "DEV/SEED ONLY. Production Tip of the Week is managed in Watson Postgres. This file is used only when TIP_OF_THE_WEEK_DEV_JSON=true, and as the source wording for scripts/sql/watson-tip-of-the-week-seed.sql. Do not treat it as the live featured tip.",
+  "tipId": "taming-the-curl-2026-08",
+  "eyebrow": "TIP OF THE WEEK",
+  "title": "Tame the Dreaded Stockinette Curl",
+  "intro": "Stockinette naturally curls at the edges. It isn’t something you’re doing wrong, but it can make knitting and finishing more difficult. This week, explore six ways to control the curl.",
+  "availabilityNotice": "Free to watch this week",
+  "availableFrom": "2026-08-08",
+  "availableThrough": "2026-08-14",
+  "videoContentId": 339,
+  "videoTitle": "Tame the Dreaded Stockinette Curl",
+  "learnHeading": "What You’ll Learn",
+  "learnPoints": [
+    "Why stockinette curls",
+    "When the curl will disappear during finishing",
+    "When you need to control it while knitting",
+    "Six techniques you can use"
+  ],
+  "tryHeading": "Try It",
+  "tryCopy": "Knit a small stockinette swatch and try one of the edge treatments from the video. Compare it with an untreated edge.",
+  "sueTipHeading": "Sue’s Tip",
+  "sueTipCopy": "Machine-knit stockinette can appear to curl even more than hand knitting because the stitches are so uniform. Don’t judge the finished fabric while it is still on the machine.",
+  "relatedHeading": "Related Help",
+  "relatedLinks": [
+    {
+      "label": "Easy (Lazy) Edge Finish",
+      "href": "/videos/784",
+      "note": "A simple edge finish for slits and openings"
+    },
+    {
+      "label": "Wet Blocking",
+      "href": "/videos/456",
+      "note": "Four reasons to wet block instead of steam"
+    },
+    {
+      "label": "Stockinette Stitch",
+      "href": "/glossary/stockinette-stitch",
+      "note": "Glossary: the basic smooth knit fabric"
+    }
+  ],
+  "availabilityFooterTemplate": "This Learning Library video is free for everyone through {date}. After that, it returns to the member Learning Library."
+}

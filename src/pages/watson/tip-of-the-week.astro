@@ -1,0 +1,604 @@
+---
+import WatsonPageShell from "../../components/watson/WatsonPageShell.astro";
+import { resolveVideoForTip } from "../../lib/tipOfTheWeek/map";
+import { formatTipAvailabilityDate } from "../../lib/tipOfTheWeek/map";
+import {
+  statusLabel,
+  tipLosAngelesCalendarDate,
+  tipScheduleBucket,
+} from "../../lib/tipOfTheWeek/schedule";
+import { listAllTipOfTheWeek } from "../../lib/tipOfTheWeek/store";
+import type { TipOfTheWeekRecord } from "../../lib/tipOfTheWeek/types";
+import {
+  loadTipReactionTotals,
+  tipReactionDisplayRows,
+} from "../../lib/tipOfTheWeek/reactionsAggregate";
+
+export const prerender = false;
+
+Astro.response.headers.set("Cache-Control", "no-store");
+
+let loadError: string | null = null;
+let tips: TipOfTheWeekRecord[] = [];
+const todayLa = tipLosAngelesCalendarDate();
+
+try {
+  tips = await listAllTipOfTheWeek();
+} catch (error) {
+  loadError =
+    error instanceof Error
+      ? error.message
+      : "Unable to load Tip of the Week. Apply the schema SQL first.";
+}
+
+const current = tips.filter((t) => tipScheduleBucket(t, todayLa) === "current");
+const scheduled = tips.filter((t) => tipScheduleBucket(t, todayLa) === "scheduled");
+const drafts = tips.filter((t) => tipScheduleBucket(t, todayLa) === "draft");
+const archived = tips.filter(
+  (t) =>
+    tipScheduleBucket(t, todayLa) === "archived" ||
+    tipScheduleBucket(t, todayLa) === "expired",
+);
+
+const reactionSummaries = new Map<
+  string,
+  Awaited<ReturnType<typeof tipReactionDisplayRows>>
+>();
+
+if (!loadError) {
+  for (const tip of tips) {
+    try {
+      const totals = await loadTipReactionTotals(tip.tipId);
+      reactionSummaries.set(tip.tipId, tipReactionDisplayRows(totals));
+    } catch {
+      reactionSummaries.set(tip.tipId, []);
+    }
+  }
+}
+
+function tipDataAttr(tip: TipOfTheWeekRecord): string {
+  return encodeURIComponent(JSON.stringify(tip));
+}
+
+function renderTipCard(tip: TipOfTheWeekRecord) {
+  const video = resolveVideoForTip(tip);
+  const bucket = tipScheduleBucket(tip, todayLa);
+  const reactions = reactionSummaries.get(tip.tipId) || [];
+  return {
+    tip,
+    video,
+    bucket,
+    reactions,
+    fromLabel: formatTipAvailabilityDate(tip.availableFrom),
+    throughLabel: formatTipAvailabilityDate(tip.availableThrough),
+  };
+}
+---
+
+<WatsonPageShell
+  title="Tip of the Week | Watson"
+  heading="Tip of the Week"
+  intro="Manage the free weekly Learning Library lesson: wording, dates, video, and reaction totals."
+>
+  {
+    loadError ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {loadError} Apply <code>scripts/sql/watson-tip-of-the-week.sql</code> (and the seed
+        SQL if needed) against <code>WATSON_DATABASE_URL</code>.
+      </p>
+    ) : null
+  }
+
+  <p class="watson-totw__today" data-totw-today={todayLa}>
+    Today in America/Los_Angeles: <strong>{todayLa}</strong>
+    · Public page: <a href="/tip-of-the-week" target="_blank" rel="noopener">/tip-of-the-week</a>
+  </p>
+
+  <p class="watson-totw__toolbar">
+    <button type="button" class="watson-totw__btn" data-totw-new>New tip</button>
+  </p>
+
+  <div class="watson-totw__status" data-totw-status hidden></div>
+
+  <section class="watson-totw__board" aria-label="Tip lists">
+    {
+      [
+        { key: "current", title: "Current (public)", items: current },
+        { key: "scheduled", title: "Scheduled", items: scheduled },
+        { key: "draft", title: "Drafts", items: drafts },
+        { key: "archived", title: "Archived / past", items: archived },
+      ].map((group) => (
+        <section class="watson-totw__group" aria-labelledby={`totw-group-${group.key}`}>
+          <h2 id={`totw-group-${group.key}`}>{group.title}</h2>
+          {group.items.length === 0 ? (
+            <p class="watson-totw__empty">None</p>
+          ) : (
+            <ul class="watson-totw__cards">
+              {group.items.map((tip) => {
+                const card = renderTipCard(tip);
+                return (
+                  <li class="watson-totw__card">
+                    <div class="watson-totw__card-top">
+                      <h3>{tip.title}</h3>
+                      <span class="watson-totw__badge">{statusLabel(tip.status)}</span>
+                    </div>
+                    <p class="watson-totw__meta">
+                      tip_id <code>{tip.tipId}</code> · video {tip.videoContentId}
+                      {card.video ? ` · ${card.video.catalogTitle}` : " · video unresolved"}
+                    </p>
+                    <p class="watson-totw__meta">
+                      {card.fromLabel} → {card.throughLabel}
+                    </p>
+                    {card.reactions.length > 0 ? (
+                      <ul class="watson-totw__mini-reactions">
+                        {card.reactions.map((row) => (
+                          <li>
+                            {row.label}: <strong>{row.count}</strong>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                    <div class="watson-totw__card-actions">
+                      <button
+                        type="button"
+                        class="watson-totw__btn watson-totw__btn--small"
+                        data-totw-edit={tipDataAttr(tip)}
+                      >
+                        Edit
+                      </button>
+                      <a
+                        class="watson-totw__btn watson-totw__btn--small watson-totw__btn--link"
+                        href={`/tip-of-the-week?preview=${tip.id}`}
+                        target="_blank"
+                        rel="noopener"
+                      >
+                        Preview
+                      </a>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+      ))
+    }
+  </section>
+
+  <section class="watson-totw__editor" aria-labelledby="totw-form-heading">
+    <h2 id="totw-form-heading" data-totw-form-heading>New tip</h2>
+    <form class="watson-totw__form" data-totw-form>
+      <input type="hidden" name="id" value="" />
+
+      <div class="watson-totw__grid">
+        <label>
+          Tip ID (stable slug for reactions)
+          <input name="tipId" required maxlength="80" placeholder="taming-the-curl-2026-08" />
+        </label>
+        <label>
+          Status
+          <select name="status">
+            <option value="draft">Draft</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="active">Active</option>
+            <option value="archived">Archived</option>
+          </select>
+        </label>
+        <label>
+          Available from
+          <input type="date" name="availableFrom" data-totw-available-from required />
+        </label>
+        <label class="watson-totw__through-field">
+          Available through
+          <span class="watson-totw__through-row">
+            <input type="date" name="availableThrough" data-totw-available-through required />
+            <button
+              type="button"
+              class="watson-totw__btn watson-totw__btn--small"
+              data-totw-reset-seven-days
+            >
+              Reset to 7 days
+            </button>
+          </span>
+          <span class="watson-totw__hint">
+            Defaults to a 7-day window (start + 6 days). Edit freely, or reset to recalculate.
+          </span>
+        </label>
+      </div>
+
+      <label>
+        Public page title
+        <input name="title" required maxlength="160" />
+      </label>
+
+      <label>
+        Short introduction
+        <textarea name="intro" required rows="3" maxlength="1200"></textarea>
+      </label>
+
+      <label>
+        Eyebrow
+        <input name="eyebrow" maxlength="80" value="TIP OF THE WEEK" />
+      </label>
+
+      <label>
+        Learning Library content ID
+        <span class="watson-totw__hint">
+          Enter the catalog content_id (for example 339). Use Resolve to confirm title, Vimeo
+          ID, and poster — no Vimeo ID pasting required.
+        </span>
+        <div class="watson-totw__video-row">
+          <input name="videoContentId" required inputmode="numeric" pattern="[0-9]+" />
+          <button type="button" class="watson-totw__btn" data-video-resolve>
+            Resolve video
+          </button>
+        </div>
+      </label>
+      <div class="watson-totw__preview" data-video-preview hidden></div>
+
+      <label>
+        Availability notice
+        <input name="availabilityNotice" maxlength="120" />
+      </label>
+
+      <label>
+        Availability footer (must include {"{date}"})
+        <textarea name="availabilityFooterTemplate" rows="2" maxlength="2000"></textarea>
+      </label>
+
+      <fieldset class="watson-totw__fieldset">
+        <legend>What You’ll Learn</legend>
+        <div data-learn-points></div>
+        <button type="button" class="watson-totw__btn watson-totw__btn--small" data-learn-add>
+          Add point
+        </button>
+      </fieldset>
+
+      <label>
+        Try It
+        <textarea name="tryCopy" rows="3" maxlength="2000"></textarea>
+      </label>
+
+      <label>
+        Sue’s Tip
+        <textarea name="sueTipCopy" rows="3" maxlength="2000"></textarea>
+      </label>
+
+      <fieldset class="watson-totw__fieldset">
+        <legend>Related Help</legend>
+        <div data-related-links></div>
+        <button type="button" class="watson-totw__btn watson-totw__btn--small" data-related-add>
+          Add link
+        </button>
+      </fieldset>
+
+      <section class="watson-totw__reactions" aria-labelledby="totw-reactions-heading">
+        <h3 id="totw-reactions-heading">Reaction totals</h3>
+        <div data-reaction-totals>
+          <p>Save a tip to see reaction totals.</p>
+        </div>
+      </section>
+
+      <div class="watson-totw__actions">
+        <button type="submit" class="watson-totw__btn watson-totw__btn--primary">Save</button>
+        <button type="button" class="watson-totw__btn" data-totw-save-draft>Save draft</button>
+        <button type="button" class="watson-totw__btn" data-totw-schedule>Schedule</button>
+        <button type="button" class="watson-totw__btn" data-totw-activate>Activate</button>
+        <button type="button" class="watson-totw__btn" data-totw-archive>Archive</button>
+      </div>
+    </form>
+  </section>
+</WatsonPageShell>
+
+<script>
+  import { initWatsonTipOfTheWeek } from "../../scripts/watsonTipOfTheWeek";
+  initWatsonTipOfTheWeek();
+</script>
+
+<style>
+  .watson-totw__today {
+    margin: 0 0 1rem;
+    color: #4b5563;
+    font-size: 0.95rem;
+  }
+
+  .watson-totw__toolbar {
+    margin: 0 0 1rem;
+  }
+
+  .watson-totw__status {
+    margin: 0 0 1rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: 8px;
+    background: #eef2e6;
+    color: #374151;
+  }
+
+  .watson-totw__status[data-kind="error"] {
+    background: #fef2f2;
+    color: #991b1b;
+  }
+
+  .watson-totw__status[data-kind="warn"] {
+    background: #fffbeb;
+    color: #92400e;
+  }
+
+  .watson-totw__board {
+    display: grid;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (min-width: 900px) {
+    .watson-totw__board {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .watson-totw__group h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+  }
+
+  .watson-totw__empty {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.9rem;
+  }
+
+  .watson-totw__cards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .watson-totw__card {
+    border: 1px solid #e5e8e0;
+    border-radius: 10px;
+    background: #fff;
+    padding: 0.85rem 1rem;
+  }
+
+  .watson-totw__card-top {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  .watson-totw__card-top h3 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .watson-totw__badge {
+    flex: none;
+    font-size: 0.75rem;
+    font-weight: 650;
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    background: #eef2e6;
+    color: #52682d;
+  }
+
+  .watson-totw__meta {
+    margin: 0.35rem 0 0;
+    font-size: 0.85rem;
+    color: #6b7280;
+  }
+
+  .watson-totw__mini-reactions {
+    margin: 0.5rem 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.85rem;
+  }
+
+  .watson-totw__card-actions {
+    margin-top: 0.65rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .watson-totw__editor {
+    border-top: 1px solid #e5e8e0;
+    padding-top: 1.25rem;
+  }
+
+  .watson-totw__form label {
+    display: grid;
+    gap: 0.35rem;
+    margin-bottom: 0.85rem;
+    font-weight: 600;
+    font-size: 0.92rem;
+  }
+
+  .watson-totw__form input,
+  .watson-totw__form textarea,
+  .watson-totw__form select {
+    font: inherit;
+    font-weight: 400;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+  }
+
+  .watson-totw__grid {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 700px) {
+    .watson-totw__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .watson-totw__through-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    align-items: center;
+  }
+
+  .watson-totw__through-row input[type="date"] {
+    flex: 1;
+    min-width: 10rem;
+  }
+
+  .watson-totw__hint {
+    font-weight: 400;
+    color: #6b7280;
+    font-size: 0.85rem;
+  }
+
+  .watson-totw__through-field .watson-totw__hint {
+    margin-top: 0.25rem;
+  }
+
+
+  .watson-totw__video-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .watson-totw__video-row input {
+    flex: 1;
+    min-width: 8rem;
+  }
+
+  .watson-totw__preview-card {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.65rem;
+    border: 1px solid #e5e8e0;
+    border-radius: 8px;
+    background: #f8faf7;
+    margin-bottom: 0.85rem;
+  }
+
+  .watson-totw__preview-card img {
+    width: 120px;
+    height: auto;
+    border-radius: 6px;
+  }
+
+  .watson-totw__preview-card p {
+    margin: 0.2rem 0 0;
+    font-size: 0.85rem;
+    color: #6b7280;
+    font-weight: 400;
+  }
+
+  .watson-totw__preview-error {
+    color: #991b1b;
+  }
+
+  .watson-totw__fieldset {
+    border: 1px solid #e5e8e0;
+    border-radius: 10px;
+    padding: 0.85rem;
+    margin: 0 0 1rem;
+  }
+
+  .watson-totw__list-row,
+  .watson-totw__related-row {
+    display: grid;
+    gap: 0.4rem;
+    grid-template-columns: 1fr auto;
+    margin-bottom: 0.45rem;
+  }
+
+  .watson-totw__related-row {
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 700px) {
+    .watson-totw__related-row {
+      grid-template-columns: 1.2fr 1fr 1.2fr auto;
+      align-items: center;
+    }
+  }
+
+  .watson-totw__icon-btn {
+    border: 1px solid #d1d5db;
+    background: #fff;
+    border-radius: 6px;
+    width: 2rem;
+    height: 2rem;
+    cursor: pointer;
+  }
+
+  .watson-totw__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #52682d;
+    background: #fff;
+    color: #52682d;
+    border-radius: 8px;
+    padding: 0.45rem 0.85rem;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .watson-totw__btn--primary {
+    background: #52682d;
+    color: #fff;
+  }
+
+  .watson-totw__btn--small {
+    padding: 0.3rem 0.65rem;
+    font-size: 0.85rem;
+  }
+
+  .watson-totw__btn--link {
+    border-color: #9ca3af;
+    color: #374151;
+  }
+
+  .watson-totw__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .watson-totw__reactions {
+    margin: 1rem 0;
+    padding: 0.85rem;
+    border-radius: 10px;
+    background: #f8faf7;
+  }
+
+  .watson-totw__reactions h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+  }
+
+  .watson-totw__reaction-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .watson-totw__reaction-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.25rem 0;
+  }
+
+  .watson-totw__muted {
+    color: #6b7280;
+    font-size: 0.85rem;
+  }
+</style>
