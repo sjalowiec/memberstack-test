@@ -269,6 +269,19 @@
     "embeddable": false
   },
   {
+    "id": 37,
+    "title": "Slope Tool",
+    "href": "/tools/slope",
+    "icon": "slope.svg",
+    "description": "Calculate evenly distributed shaping when there are more stitches than rows, such as shoulder shaping.",
+    "membersonly": true,
+    "helpID": "NULL",
+    "category": "Shaping and Charting",
+    "help_text": "Use the Slope Tool when you have more stitches to shape than rows available — the opposite of the Magic Formula.\n\nEnter the number of stitches to shape and the number of rows available. The tool distributes the shaping evenly across every other row and gives you clear knitting instructions.\n\nA common use is shoulder shaping. If you have more rows than stitches, use the Magic Formula tool instead.",
+    "active": true,
+    "embeddable": false
+  },
+  {
     "id": 30,
     "title": "Triangle Tool",
     "href": "/tools/triangle-v2",

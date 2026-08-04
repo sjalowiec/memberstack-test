@@ -13,8 +13,11 @@ import type { SleevelessBackPatternResult } from "./sleevelessPatternOutput";
 import { shoulderStitchesPerSideForDiagram } from "./sleevelessGarmentDiagramReplacements";
 import {
   compressStitchDecreasePointsToNotationLines,
+  formatShapingSegment,
   type StitchDecreasePoint,
 } from "./shapingNotationCompress";
+
+export { formatShapingSegment };
 import {
   collectCompleteShoulderShapingPoints,
   shoulderShapingNotationLinesFromTimeline,
@@ -125,13 +128,6 @@ export function formatBindOffNotation(totalStitches: number): string {
 export function formatHoldNotation(stitchCount: number): string {
   const n = Math.max(0, Math.round(stitchCount));
   return n > 0 ? `hold${n}` : "";
-}
-
-export function formatShapingSegment(stitches: number, rows: number, times: number): string {
-  const s = Math.max(1, Math.round(stitches));
-  const r = Math.max(1, Math.round(rows));
-  const t = Math.max(1, Math.round(times));
-  return `${s}s-${r}r-${t}x`;
 }
 
 export function formatDecreaseNotationLines(points: readonly StitchDecreasePoint[]): string[] {

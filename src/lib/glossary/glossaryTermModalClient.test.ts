@@ -8,6 +8,10 @@ describe("glossarySlugFromTermHref", () => {
     expect(glossarySlugFromTermHref("/glossary/shaping-notation-knit-it-now?x=1")).toBe(
       "shaping-notation-knit-it-now",
     );
+    expect(glossarySlugFromTermHref("/glossary/japanese-notation/")).toBe("japanese-notation");
+    expect(glossarySlugFromTermHref("/glossary/japanese-notation-traditional/")).toBe(
+      "japanese-notation-traditional",
+    );
   });
 
   it("returns null for non-glossary hrefs", () => {

@@ -1,6 +1,7 @@
 ---
 import videosPublic from "../data/videos-public.json";
 import { buildGlossaryRelatedVideosHtml } from "../lib/glossary/glossaryCatalogVideos";
+import { shouldPlaceGlossaryImageAfterHelpinfo } from "../lib/glossary/glossaryEntryImagePlacement";
 import type { PublicVideoRow } from "../lib/lessonVideo";
 import { filterPublicCatalogVideos } from "../lib/videoPublic";
 import "../styles/glossary-tooltip.css";
@@ -32,6 +33,9 @@ const imageSrc = entry?.image
     ? entry.image
     : `/images/glossary/${String(entry.image).replace(/^\.?\//, "")}`)
   : "";
+const imageAfterHelpinfo = shouldPlaceGlossaryImageAfterHelpinfo(entry);
+const imageAlt = entry?.image_alt ?? entry?.imageAlt ?? entry?.english ?? "";
+const imageLink = entry?.link && String(entry.link).trim() ? String(entry.link).trim() : "";
 
 const helpinfoRaw = (entry?.helpinfo ?? entry?.helpInfo ?? entry?.Helpinfo ?? "").toString();
 function isNonemptyHelpinfo(raw: string): boolean {
@@ -98,6 +102,11 @@ const showRelatedTools = relatedTools.length > 0;
     margin: 0 0 1.25rem;
     text-align: center;
     box-sizing: border-box;
+  }
+
+  /* When image follows helpinfo, keep a clear gap above for page + modal scrolling. */
+  .glossary-entry-helpinfo + .glossary-entry-image {
+    margin-top: 1.25rem;
   }
 
   .glossary-entry-image .glossary-image {
@@ -630,30 +639,52 @@ const showRelatedTools = relatedTools.length > 0;
         ))}
       </div>
     )}
-    {imageSrc && (
+    {imageSrc && !imageAfterHelpinfo && (
       <div class="glossary-entry-image">
-        {entry?.link && String(entry.link).trim() ? (
-          <a href={String(entry.link).trim()} class="easter-egg-link">
+        {imageLink ? (
+          <a href={imageLink} class="easter-egg-link">
             <img
-  src={imageSrc}
-  alt={entry?.image_alt ?? entry?.imageAlt ?? entry?.english ?? ""}
-  class="glossary-image"
-  style="cursor:pointer; transition: transform 0.2s ease;"
-  onmouseover="this.style.transform='scale(1.05)'"
-  onmouseout="this.style.transform='scale(1)'"
-/>
+              src={imageSrc}
+              alt={imageAlt}
+              class="glossary-image"
+              style="cursor:pointer; transition: transform 0.2s ease;"
+              onmouseover="this.style.transform='scale(1.05)'"
+              onmouseout="this.style.transform='scale(1)'"
+            />
           </a>
         ) : (
           <img
             class="glossary-image"
             src={imageSrc}
-            alt={entry?.image_alt ?? entry?.imageAlt ?? entry?.english ?? ""}
+            alt={imageAlt}
           />
         )}
       </div>
     )}
     {showHelpinfo && (
       <div class="glossary-entry-helpinfo" set:html={helpinfoRaw} />
+    )}
+    {imageSrc && imageAfterHelpinfo && (
+      <div class="glossary-entry-image">
+        {imageLink ? (
+          <a href={imageLink} class="easter-egg-link">
+            <img
+              src={imageSrc}
+              alt={imageAlt}
+              class="glossary-image"
+              style="cursor:pointer; transition: transform 0.2s ease;"
+              onmouseover="this.style.transform='scale(1.05)'"
+              onmouseout="this.style.transform='scale(1)'"
+            />
+          </a>
+        ) : (
+          <img
+            class="glossary-image"
+            src={imageSrc}
+            alt={imageAlt}
+          />
+        )}
+      </div>
     )}
     {relatedVideosHtml ? (
       <div class="glossary-related-videos-mount" style="display: contents" set:html={relatedVideosHtml} />

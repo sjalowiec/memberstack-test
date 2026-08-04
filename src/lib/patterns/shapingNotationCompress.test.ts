@@ -2,8 +2,17 @@ import { describe, expect, it } from "vitest";
 import {
   compressStitchDecreasePointsToNotationLines,
   consolidateConsecutiveJapaneseNotationLines,
+  formatShapingSegment,
   type StitchDecreasePoint,
 } from "./shapingNotationCompress";
+
+describe("formatShapingSegment", () => {
+  it("formats Ns-Mr-Kx in stitches → rows → times order", () => {
+    expect(formatShapingSegment(1, 2, 10)).toBe("1s-2r-10x");
+    expect(formatShapingSegment(10, 2, 5)).toBe("10s-2r-5x");
+    expect(formatShapingSegment(3, 2, 2)).toBe("3s-2r-2x");
+  });
+});
 
 describe("consolidateConsecutiveJapaneseNotationLines", () => {
   it("merges two consecutive identical shaping segments into one repeat count of 2", () => {
