@@ -110,20 +110,8 @@ const forceMemberView =
       </div>
     </section>
 
-    <div class="video-toolbar" aria-label="Video controls">
-      <div class="video-primary-filters" role="group" aria-label="Video filters">
-        <button type="button" class="video-filter-btn" data-filter="" aria-pressed="false">
-          All Videos
-        </button>
-        <button type="button" class="video-filter-btn" data-filter="__free__" aria-pressed="false">
-          Free Videos
-        </button>
-        <button type="button" class="video-filter-btn" data-filter="__favorites__" aria-pressed="false">
-          My Favorites
-        </button>
-      </div>
-
-      <div class="video-toolbar__inputs">
+    <div class="video-toolbar" id="videoToolbar" aria-label="Video controls">
+      <div class="video-toolbar__search-row">
         <section class="video-filter-search" aria-label="Find a Video">
           <label for="videoSearch" id="video-filter-search-title" class="sr-only">Find a Video</label>
           <div class="search-input-wrapper">
@@ -135,12 +123,36 @@ const forceMemberView =
               id="videoSearch"
               class="video-filter-search__input"
               type="search"
-              placeholder="Search by title or description"
+              placeholder="Search videos."
               autocomplete="off"
               aria-label="Find a Video"
             />
           </div>
         </section>
+        <button
+          type="button"
+          id="videoFiltersToggle"
+          class="video-filters-toggle"
+          aria-expanded="false"
+          aria-controls="videoFiltersPanel"
+        >
+          <span class="video-filters-toggle__label">Filters</span>
+          <span class="video-filters-toggle__chevron" aria-hidden="true">▾</span>
+        </button>
+      </div>
+
+      <div id="videoFiltersPanel" class="video-toolbar__panel" hidden>
+        <div class="video-primary-filters" role="group" aria-label="Video filters">
+          <button type="button" class="video-filter-btn" data-filter="" aria-pressed="false">
+            All Videos
+          </button>
+          <button type="button" class="video-filter-btn" data-filter="__free__" aria-pressed="false">
+            Free Videos
+          </button>
+          <button type="button" class="video-filter-btn" data-filter="__favorites__" aria-pressed="false">
+            My Favorites
+          </button>
+        </div>
 
         <div class="video-category">
           <span class="video-category__title sr-only" id="categoryBrowseTitle">Category</span>
@@ -172,6 +184,22 @@ const forceMemberView =
     
   </div>
 
+  <button
+    type="button"
+    id="videoBackToSearch"
+    class="video-back-to-search"
+    hidden
+    aria-label="Back to video search and filters"
+  >
+    <svg class="video-back-to-search__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path
+        fill="currentColor"
+        d="M12 4.5 5.5 11h3.75v8.5h5.5V11H18.5L12 4.5z"
+      ></path>
+    </svg>
+    <span class="video-back-to-search__label">Back to search</span>
+  </button>
+
   <script id="videos-data" type="application/json" set:html={JSON.stringify(publicVideos)} />
   <script is:inline define:vars={{ forceMemberView, FORCE_ALL_VIDEOS_LOCKED }}>
     window.__PREVIEW_FORCE_MEMBER__ = forceMemberView;
@@ -191,6 +219,16 @@ const forceMemberView =
     import { favoriteStarButtonHtml, filterVideosByFavoriteIds } from "../../lib/favorites/favoriteStarUi";
     import { initFavoriteStarController } from "../../lib/favorites/favoriteStarController";
     import { listFavorites } from "../../lib/favorites/favoritesClient";
+    import {
+      syncVideoFiltersLayoutForViewport,
+      syncVideoSearchPlaceholder,
+      toggleVideoFiltersPanel,
+    } from "../../lib/videos/videoToolbarFiltersDisclosure";
+    import {
+      activateVideoBackToSearch,
+      prefersReducedMotion,
+      syncVideoBackToSearchFromIntersection,
+    } from "../../lib/videos/videoBackToSearch";
 
     (function () {
       const FREE_FILTER_VALUE = "__free__";
@@ -734,6 +772,59 @@ const forceMemberView =
 
     /* ---------- end custom dropdown ---------- */
 
+    // Mobile Filters disclosure (collapsed by default below 700px; desktop always open)
+    const filtersToggle = document.getElementById("videoFiltersToggle");
+    const filtersPanel = document.getElementById("videoFiltersPanel");
+    const mobileFiltersMq = window.matchMedia("(max-width: 700px)");
+    function syncFiltersChrome() {
+      const isMobile = mobileFiltersMq.matches;
+      if (searchInput instanceof HTMLInputElement) {
+        syncVideoSearchPlaceholder(searchInput, isMobile);
+      }
+      if (filtersToggle && filtersPanel) {
+        syncVideoFiltersLayoutForViewport(
+          { toggle: filtersToggle, panel: filtersPanel },
+          isMobile,
+        );
+      }
+    }
+    if (filtersToggle && filtersPanel) {
+      filtersToggle.addEventListener("click", function () {
+        if (!mobileFiltersMq.matches) return;
+        toggleVideoFiltersPanel({ toggle: filtersToggle, panel: filtersPanel });
+      });
+    }
+    syncFiltersChrome();
+    if (typeof mobileFiltersMq.addEventListener === "function") {
+      mobileFiltersMq.addEventListener("change", syncFiltersChrome);
+    } else if (typeof mobileFiltersMq.addListener === "function") {
+      mobileFiltersMq.addListener(syncFiltersChrome);
+    }
+
+    // Floating “Back to search” — IntersectionObserver, /videos only
+    const videoToolbar = document.getElementById("videoToolbar");
+    const backToSearchBtn = document.getElementById("videoBackToSearch");
+    if (videoToolbar && backToSearchBtn && typeof IntersectionObserver === "function") {
+      const io = new IntersectionObserver(
+        function (entries) {
+          const entry = entries[0];
+          if (!entry) return;
+          syncVideoBackToSearchFromIntersection(backToSearchBtn, entry.isIntersecting);
+        },
+        { root: null, threshold: 0, rootMargin: "0px" },
+      );
+      io.observe(videoToolbar);
+
+      backToSearchBtn.addEventListener("click", function () {
+        if (!(searchInput instanceof HTMLInputElement)) return;
+        activateVideoBackToSearch({
+          toolbar: videoToolbar,
+          searchInput: searchInput,
+          reduceMotion: prefersReducedMotion(),
+        });
+      });
+    }
+
     if (searchInput instanceof HTMLInputElement) {
       searchInput.addEventListener("input", function () {
         clearTimeout(searchTimer);
@@ -955,7 +1046,7 @@ const forceMemberView =
       box-shadow: 0 0 0 2px rgba(115, 140, 82, 0.15);
     }
 
-    /* --- Video toolbar (filters + search/category) — scrolls with page --- */
+    /* --- Video toolbar — scrolls with page (never sticky/fixed) --- */
     .video-toolbar {
       position: relative;
       z-index: 40;
@@ -973,11 +1064,147 @@ const forceMemberView =
       box-shadow: var(--kbm-video-toolbar-shadow, 0 2px 6px rgba(0, 0, 0, 0.05));
     }
 
-    .video-toolbar__inputs {
+    /* Floating return control — fixed button only; toolbar stays in normal flow */
+    .video-back-to-search {
+      position: fixed;
+      z-index: 1200;
+      right: max(1rem, env(safe-area-inset-right, 0px));
+      /* Sit above the desktop membership corner CTA (z-index 2800, ~bottom 1.5rem) */
+      bottom: max(
+        5.75rem,
+        calc(env(safe-area-inset-bottom, 0px) + 4.75rem)
+      );
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      min-height: 44px;
+      margin: 0;
+      padding: 0.55rem 0.95rem;
+      border: 1px solid rgba(82, 104, 45, 0.28);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.97);
+      color: var(--kbm-green, #52682d);
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      line-height: 1.2;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.14);
+      cursor: pointer;
+      transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+    }
+
+    .video-back-to-search[hidden] {
+      display: none !important;
+    }
+
+    .video-back-to-search:hover {
+      background: #fff;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.18);
+    }
+
+    .video-back-to-search:focus-visible {
+      outline: 2px solid var(--kbm-green, #52682d);
+      outline-offset: 3px;
+    }
+
+    .video-back-to-search:active {
+      transform: translateY(1px);
+    }
+
+    .video-back-to-search__icon {
+      width: 1.1rem;
+      height: 1.1rem;
+      flex: 0 0 auto;
+    }
+
+    .video-back-to-search__label {
+      white-space: nowrap;
+    }
+
+    @media (max-width: 767.98px) {
+      .video-back-to-search {
+        bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+        width: 44px;
+        height: 44px;
+        min-height: 44px;
+        padding: 0;
+        border-radius: 12px;
+        gap: 0;
+      }
+
+      .video-back-to-search__label {
+        display: none;
+      }
+
+      .video-back-to-search__icon {
+        width: 1.25rem;
+        height: 1.25rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .video-back-to-search {
+        transition: none;
+      }
+
+      .video-back-to-search:active {
+        transform: none;
+      }
+    }
+
+    .video-toolbar__search-row {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       gap: 10px;
+    }
+
+    .video-toolbar__panel {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
+    .video-filters-toggle {
+      display: none;
+      appearance: none;
+      flex: 0 0 auto;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 40px;
+      padding: 7px 12px;
+      border-radius: 10px;
+      border: 2px solid var(--kbm-green, #52682d);
+      background: #fff;
+      color: var(--kbm-green, #52682d);
+      font: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      line-height: 1.2;
+      cursor: pointer;
+    }
+
+    .video-filters-toggle:hover,
+    .video-filters-toggle:focus-visible {
+      background: rgba(82, 104, 45, 0.08);
+      outline: none;
+    }
+
+    .video-filters-toggle.is-expanded {
+      background: var(--kbm-green, #52682d);
+      color: #fff;
+    }
+
+    .video-filters-toggle__chevron {
+      display: inline-block;
+      transition: transform 0.15s ease;
+    }
+
+    .video-filters-toggle.is-expanded .video-filters-toggle__chevron {
+      transform: rotate(180deg);
     }
 
     .video-primary-filters {
@@ -985,6 +1212,7 @@ const forceMemberView =
       flex-wrap: wrap;
       align-items: center;
       gap: 8px;
+      flex: 1 1 auto;
     }
 
     .video-filter-btn {
@@ -1030,27 +1258,86 @@ const forceMemberView =
       width: 100%;
     }
 
-    @media (max-width: 700px) {
+    /* Desktop: buttons row, then search + category row; Filters toggle hidden */
+    @media (min-width: 701px) {
       .video-toolbar {
-        gap: 10px;
-        padding: 10px 12px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(200px, 320px);
+        grid-template-areas:
+          "primary primary"
+          "search category";
+        align-items: center;
+        column-gap: 10px;
+        row-gap: 10px;
       }
 
-      .video-toolbar__inputs {
-        flex-direction: column;
-        align-items: stretch;
+      .video-toolbar__panel {
+        display: contents;
       }
 
-      .video-filter-search,
-      .video-category {
-        flex: 1 1 auto;
-        min-width: 0;
-        max-width: none;
-        width: 100%;
+      .video-toolbar__panel[hidden] {
+        display: contents !important;
       }
 
       .video-primary-filters {
+        grid-area: primary;
+      }
+
+      .video-toolbar__search-row {
+        grid-area: search;
+        flex-wrap: nowrap;
+        min-width: 0;
+      }
+
+      .video-category {
+        grid-area: category;
+        max-width: none;
+      }
+
+      .video-filters-toggle {
+        display: none !important;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .video-toolbar {
+        gap: 8px;
+        padding: 8px 10px;
+      }
+
+      .video-toolbar__search-row {
+        flex-wrap: nowrap;
+        gap: 8px;
+      }
+
+      .video-filter-search {
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: none;
+      }
+
+      .video-filters-toggle {
+        display: inline-flex;
+      }
+
+      .video-toolbar__panel {
+        flex-direction: column;
+        align-items: stretch;
+        flex-wrap: nowrap;
+        gap: 8px;
+        padding-top: 2px;
+      }
+
+      .video-toolbar__panel[hidden] {
+        display: none !important;
+      }
+
+      .video-primary-filters,
+      .video-category {
         width: 100%;
+        max-width: none;
+        min-width: 0;
+        flex: 1 1 auto;
       }
 
       .video-filter-btn {
