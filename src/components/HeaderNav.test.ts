@@ -68,3 +68,28 @@ describe("Header Help Hub navigation dropdown", () => {
     expect(panel).toContain('role="menu"');
   });
 });
+
+describe("Header mobile drawer visible-viewport sizing", () => {
+  it("keeps .kbm-nav-row as the scroll container with border-box and svh fallback", () => {
+    const mobileDrawerBlock = headerSource.match(
+      /\.kbm-nav-row\s*\{[\s\S]*?\.kbm-nav-row\.mobile-open/,
+    )?.[0];
+    expect(mobileDrawerBlock).toBeTruthy();
+    expect(mobileDrawerBlock).toContain("overflow-y: auto");
+    expect(mobileDrawerBlock).toContain("box-sizing: border-box");
+    expect(mobileDrawerBlock).toContain(
+      "var(--mobile-drawer-max-height, calc(100svh - var(--header-height, 90px)))",
+    );
+    expect(mobileDrawerBlock).toContain("calc(56px + env(safe-area-inset-bottom, 0px))");
+  });
+
+  it("wires visualViewport sync on open and imports the shared viewport helper", () => {
+    expect(headerSource).toContain('from "../lib/mobileNavDrawerViewport"');
+    expect(headerSource).toContain("attachMobileDrawerViewportListeners");
+    expect(headerSource).toContain("computeMobileDrawerMaxHeightPx");
+    expect(headerSource).toContain("kbm:mobile-nav-viewport-sync");
+    expect(headerSource).toContain("window.visualViewport");
+    // Preserve existing header-bottom measurement into --header-height.
+    expect(headerSource).toContain('setProperty("--header-height"');
+  });
+});

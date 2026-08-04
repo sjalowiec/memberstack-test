@@ -1271,12 +1271,23 @@ const minimalHeader = onboarding || marketing;
     right: -100%;
     width: 320px;
     max-width: 85vw;
+    /* Visible viewport: JS sets --mobile-drawer-max-height from visualViewport.
+       100svh is the CSS fallback (small viewport / browser chrome visible). */
     height: calc(100vh - var(--header-height, 90px));
+    height: calc(100svh - var(--header-height, 90px));
+    height: var(--mobile-drawer-max-height, calc(100svh - var(--header-height, 90px)));
+    max-height: calc(100vh - var(--header-height, 90px));
+    max-height: calc(100svh - var(--header-height, 90px));
+    max-height: var(--mobile-drawer-max-height, calc(100svh - var(--header-height, 90px)));
+    box-sizing: border-box;
     background: var(--kbm-bg);
     box-shadow: -4px 0 12px rgba(0, 0, 0, .1);
     transition: right 0.3s ease;
     overflow-y: auto;
-    padding: 0 20px 20px 20px;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    /* Breathing room above browser controls + home-indicator safe area */
+    padding: 0 20px calc(56px + env(safe-area-inset-bottom, 0px)) 20px;
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start !important;
@@ -2494,6 +2505,8 @@ div[data-ms-modal-overlay] {
         
         if (isOpen) {
           document.body.style.overflow = 'hidden';
+          // Ask the module script to size the drawer to the visible viewport.
+          window.dispatchEvent(new CustomEvent('kbm:mobile-nav-viewport-sync'));
         } else {
           document.body.style.overflow = '';
           closeAll();
@@ -2514,6 +2527,48 @@ div[data-ms-modal-overlay] {
         }
       });
     }
+  })();
+</script>
+<script>
+  import {
+    MOBILE_DRAWER_MAX_HEIGHT_VAR,
+    attachMobileDrawerViewportListeners,
+    computeMobileDrawerMaxHeightPx,
+  } from "../lib/mobileNavDrawerViewport";
+
+  (function bindMobileNavDrawerViewport() {
+    function measureHeaderBottomPx() {
+      const header = document.querySelector(".kbm-header-wrap");
+      if (!header) return 0;
+      // Same rule as syncHeaderHeight: use the header's bottom edge so DEV/env
+      // stripe offset is included in --header-height.
+      const headerBottom = Math.max(0, Math.round(header.getBoundingClientRect().bottom));
+      document.documentElement.style.setProperty("--header-height", `${headerBottom}px`);
+      return headerBottom;
+    }
+
+    function syncMobileDrawerViewport() {
+      const headerBottomPx = measureHeaderBottomPx();
+      const maxHeightPx = computeMobileDrawerMaxHeightPx({
+        visualViewportHeight: window.visualViewport?.height,
+        fallbackViewportHeight: window.innerHeight,
+        headerBottomPx,
+      });
+      document.documentElement.style.setProperty(
+        MOBILE_DRAWER_MAX_HEIGHT_VAR,
+        `${maxHeightPx}px`,
+      );
+    }
+
+    syncMobileDrawerViewport();
+
+    attachMobileDrawerViewportListeners({
+      onSync: syncMobileDrawerViewport,
+      windowTarget: window,
+      visualViewport: window.visualViewport ?? null,
+    });
+
+    window.addEventListener("kbm:mobile-nav-viewport-sync", syncMobileDrawerViewport);
   })();
 </script>
 <script is:inline>
