@@ -3,7 +3,7 @@
  * Presentational membership CTA.
  *
  * Desktop / tablet (min-width: 768px): rounded floating pill, lower-right.
- * Phone (max-width: 767px): hidden — sticky bar was covering content/controls.
+ * Phone (max-width: 767.98px): hidden — sticky/full-width bar covers content/controls.
  *
  * Visual-only: pass `label`; click/navigation wired in membershipCornerControl.ts.
  */
@@ -92,12 +92,17 @@ const { label = "Become a Member" } = Astro.props;
 
   /*
    * Phone: hide site-wide corner CTA (covers content/controls).
+   * Breakpoint matches site phone queries (max-width: 767.98px).
    * Also clear reserved body offset + CSS var so no blank bottom gap remains.
    * Tablet (768px+) keeps the floating pill.
+   *
+   * Use the data-attribute + !important so Astro :where() scoping (0 specificity)
+   * cannot lose to a leftover full-width phone `display: flex` rule.
    */
-  @media (max-width: 767px) {
-    .membership-corner-cta {
-      display: none;
+  @media (max-width: 767.98px) {
+    .membership-corner-cta,
+    :global([data-membership-corner-cta]) {
+      display: none !important;
     }
 
     :global(body) {
