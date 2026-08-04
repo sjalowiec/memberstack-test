@@ -71,9 +71,75 @@ describe("Watson Whats New page", () => {
     expect(publicPage).toContain("boardColumnMeta");
     expect(publicPage).toContain("grid-template-columns: 1fr");
     expect(publicPage).toContain("repeat(3, minmax(0, 1fr))");
+    expect(publicPage).toContain("align-items: start");
     expect(publicPage).not.toContain("overflow-x: auto");
     expect(publicPage).toContain("getPublicWhatsNewBoard");
     expect(publicPage).toContain("getPublicBillboardSettings");
+  });
+
+  it("public board columns use natural heights and do not stretch to match siblings", () => {
+    // Grid aligns columns to the top instead of stretching equal heights.
+    expect(publicPage).toMatch(
+      /\.whats-new__board\s*\{[^}]*align-items:\s*start/,
+    );
+    expect(publicPage).toMatch(
+      /@media \(min-width: 900px\)\s*\{[^}]*\.whats-new__board\s*\{[^}]*align-items:\s*start/s,
+    );
+    // No stretch rule left on the board grid.
+    expect(publicPage).not.toMatch(
+      /\.whats-new__board\s*\{[^}]*align-items:\s*stretch/,
+    );
+    // Columns size to their own content.
+    expect(publicPage).toMatch(
+      /\.whats-new__column\s*\{[^}]*align-self:\s*start/,
+    );
+    expect(publicPage).toMatch(
+      /\.whats-new__column\s*\{[^}]*height:\s*fit-content/,
+    );
+    expect(publicPage).toMatch(
+      /\.whats-new__column-body\s*\{[^}]*flex:\s*0 1 auto/,
+    );
+    expect(publicPage).not.toMatch(
+      /\.whats-new__column-body\s*\{[^}]*flex:\s*1 1 auto/,
+    );
+  });
+
+  it("public page shows Bugs & Improvements label and limits columns with Show more/less", () => {
+    const types = fs.readFileSync(path.resolve("src/lib/whatsNew/types.ts"), "utf8");
+    expect(types).toContain('title: "Bugs & Improvements"');
+    expect(types).toContain(
+      'subtitle: "Fixes and improvements to your Knit It Now experience"',
+    );
+    expect(types).toContain(
+      'subtitle: "New tools, patterns, resources, and features"',
+    );
+    // Stored slug stays worth_exploring so existing records keep working.
+    expect(types).toContain('"worth_exploring"');
+    expect(types).not.toContain('title: "Worth Exploring"');
+
+    expect(publicPage).toContain("splitPublicColumnCards");
+    expect(publicPage).toContain('data-wn-column-toggle');
+    expect(publicPage).toContain('aria-expanded="false"');
+    expect(publicPage).toContain("aria-controls={listId}");
+    expect(publicPage).toContain("Show more");
+    expect(publicPage).toContain("data-wn-extra");
+    expect(publicPage).toContain("hidden={extra || undefined}");
+    // Card display rules override UA [hidden]; page must force extras off.
+    expect(publicPage).toMatch(
+      /\.whats-new__card\s*\[\s*hidden\s*\]\s*\{[^}]*display:\s*none\s*!important/,
+    );
+    // Toggle is a real button, not a link or card click.
+    expect(publicPage).toMatch(/<button[\s\S]*?data-wn-column-toggle/);
+    expect(publicPage).toContain('type="button"');
+    expect(publicPage).toContain("whatsNewPublicBoard");
+    expect(publicPage).toContain("initWhatsNewColumnToggles");
+
+    const toggleScript = fs.readFileSync(
+      path.resolve("src/scripts/whatsNewPublicBoard.ts"),
+      "utf8",
+    );
+    expect(toggleScript).toContain("Show less");
+    expect(toggleScript).toContain("Show more");
   });
 
   it("uses the shared pinwheel palette helpers on public and Watson pages", () => {
