@@ -90,6 +90,60 @@ export function focusVideoSearchInput(input: FocusableSearch): void {
   input.focus({ preventScroll: true });
 }
 
+/**
+ * Desktop horizontal offset: distance from the viewport’s right edge to just
+ * inside the live `#video-grid` right edge. The grid has no declared max-width
+ * (it fills `.page-wrap`), so CSS guesses from `--max-content-width` drift when
+ * nested `main` padding / scrollbars / zoom differ from the formula.
+ */
+export const VIDEO_BACK_TO_SEARCH_RIGHT_VAR = "--video-back-to-search-right";
+/** Sit slightly inside the grid’s right edge (over the third column). */
+export const VIDEO_BACK_TO_SEARCH_GRID_INSET_PX = 8;
+
+export function computeVideoBackToSearchRightPx(opts: {
+  viewportWidth: number;
+  gridRight: number;
+  insetPx?: number;
+  minRightPx?: number;
+}): number {
+  const inset = opts.insetPx ?? VIDEO_BACK_TO_SEARCH_GRID_INSET_PX;
+  const fromViewportRight = opts.viewportWidth - opts.gridRight + inset;
+  const minRight = opts.minRightPx ?? 0;
+  return Math.max(minRight, fromViewportRight);
+}
+
+export type CssVarStyleTarget = {
+  style: {
+    setProperty(name: string, value: string): void;
+    removeProperty(name: string): void;
+  };
+};
+
+/**
+ * Measure `#video-grid` and write `--video-back-to-search-right` for desktop.
+ * On mobile viewports, clears the var so CSS safe-area rules apply unchanged.
+ */
+export function syncVideoBackToSearchDesktopPosition(opts: {
+  grid: { getBoundingClientRect(): { right: number; width: number } };
+  styleTarget: CssVarStyleTarget;
+  viewportWidth: number;
+  isMobile: boolean;
+  insetPx?: number;
+}): number | null {
+  if (opts.isMobile) {
+    opts.styleTarget.style.removeProperty(VIDEO_BACK_TO_SEARCH_RIGHT_VAR);
+    return null;
+  }
+  const gridRight = opts.grid.getBoundingClientRect().right;
+  const rightPx = computeVideoBackToSearchRightPx({
+    viewportWidth: opts.viewportWidth,
+    gridRight,
+    insetPx: opts.insetPx,
+  });
+  opts.styleTarget.style.setProperty(VIDEO_BACK_TO_SEARCH_RIGHT_VAR, `${rightPx}px`);
+  return rightPx;
+}
+
 export function activateVideoBackToSearch(opts: {
   toolbar: RectLike;
   searchInput: FocusableSearch;

@@ -82,6 +82,27 @@ describe("Videos catalog filter toolbar", () => {
     expect(toolbarCss).not.toMatch(/position:\s*(sticky|fixed)/);
   });
 
+  it("positions Back to search from the measured video grid, not .page-wrap", () => {
+    expect(pageSource).toContain("syncVideoBackToSearchDesktopPosition");
+    expect(pageSource).toContain("--video-back-to-search-right");
+    expect(pageSource).toContain("ResizeObserver");
+    expect(pageSource).toMatch(
+      /right:\s*var\(--video-back-to-search-right/,
+    );
+    // Must not reintroduce a guessed 1100px / page-wrap formula for the button.
+    expect(pageSource).not.toContain("--video-content-max-width");
+    expect(pageSource).not.toMatch(
+      /\.video-back-to-search\s*\{[^}]*100vw - var\(--max-content-width/,
+    );
+    expect(pageSource).not.toMatch(
+      /\.video-back-to-search\s*\{[^}]*100vw - var\(--video-content-max-width/,
+    );
+    // Mobile keeps a simple viewport-edge gutter (unchanged).
+    expect(pageSource).toMatch(
+      /@media \(max-width: 767\.98px\)\s*\{[\s\S]*?\.video-back-to-search\s*\{[\s\S]*?right:\s*max\(1rem,\s*env\(safe-area-inset-right/,
+    );
+  });
+
   it("preserves catalog filter control ids and primary filter values", () => {
     expect(pageSource).toContain('id="videoSearch"');
     expect(pageSource).toContain('id="category-select"');

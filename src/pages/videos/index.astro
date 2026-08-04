@@ -227,6 +227,7 @@ const forceMemberView =
     import {
       activateVideoBackToSearch,
       prefersReducedMotion,
+      syncVideoBackToSearchDesktopPosition,
       syncVideoBackToSearchFromIntersection,
     } from "../../lib/videos/videoBackToSearch";
 
@@ -801,9 +802,19 @@ const forceMemberView =
       mobileFiltersMq.addListener(syncFiltersChrome);
     }
 
-    // Floating “Back to search” — IntersectionObserver, /videos only
+    // Floating “Back to search” — IntersectionObserver + grid-measured desktop position
     const videoToolbar = document.getElementById("videoToolbar");
     const backToSearchBtn = document.getElementById("videoBackToSearch");
+    const desktopBackToSearchMq = window.matchMedia("(max-width: 767.98px)");
+    function syncBackToSearchDesktopPosition() {
+      if (!backToSearchBtn || !grid) return;
+      syncVideoBackToSearchDesktopPosition({
+        grid: grid,
+        styleTarget: backToSearchBtn,
+        viewportWidth: window.innerWidth,
+        isMobile: desktopBackToSearchMq.matches,
+      });
+    }
     if (videoToolbar && backToSearchBtn && typeof IntersectionObserver === "function") {
       const io = new IntersectionObserver(
         function (entries) {
@@ -823,6 +834,19 @@ const forceMemberView =
           reduceMotion: prefersReducedMotion(),
         });
       });
+    }
+    syncBackToSearchDesktopPosition();
+    window.addEventListener("resize", syncBackToSearchDesktopPosition, { passive: true });
+    if (typeof desktopBackToSearchMq.addEventListener === "function") {
+      desktopBackToSearchMq.addEventListener("change", syncBackToSearchDesktopPosition);
+    } else if (typeof desktopBackToSearchMq.addListener === "function") {
+      desktopBackToSearchMq.addListener(syncBackToSearchDesktopPosition);
+    }
+    if (grid && typeof ResizeObserver === "function") {
+      const gridRo = new ResizeObserver(function () {
+        syncBackToSearchDesktopPosition();
+      });
+      gridRo.observe(grid);
     }
 
     if (searchInput instanceof HTMLInputElement) {
@@ -873,7 +897,7 @@ const forceMemberView =
 
   <style>
     .page-wrap {
-      max-width: 1100px;
+      max-width: var(--max-content-width, 1100px);
       margin: 0 auto;
       padding: 4px 20px 80px;
     }
@@ -1064,11 +1088,12 @@ const forceMemberView =
       box-shadow: var(--kbm-video-toolbar-shadow, 0 2px 6px rgba(0, 0, 0, 0.05));
     }
 
-    /* Floating return control — fixed button only; toolbar stays in normal flow */
+    /* Floating return control — fixed button only; toolbar stays in normal flow.
+       Desktop `right` comes from JS measuring #video-grid (see --video-back-to-search-right). */
     .video-back-to-search {
       position: fixed;
       z-index: 1200;
-      right: max(1rem, env(safe-area-inset-right, 0px));
+      right: var(--video-back-to-search-right, max(1rem, env(safe-area-inset-right, 0px)));
       /* Sit above the desktop membership corner CTA (z-index 2800, ~bottom 1.5rem) */
       bottom: max(
         5.75rem,
@@ -1124,6 +1149,7 @@ const forceMemberView =
 
     @media (max-width: 767.98px) {
       .video-back-to-search {
+        right: max(1rem, env(safe-area-inset-right, 0px));
         bottom: max(1rem, env(safe-area-inset-bottom, 0px));
         width: 44px;
         height: 44px;
