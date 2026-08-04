@@ -6013,6 +6013,7 @@
     "image": "/images/glossary/japanese-knitting-notation-symbols-diagram.jpg",
     "image_alt": "Diagram of Japanese knitting notation symbols on a garment piece",
     "image_description": "Illustration of traditional Japanese notation symbols used on garment shaping diagrams",
+    "imageAfterHelpinfo": true,
     "metaTitle": "Japanese Notation (Traditional) | Machine Knitting Glossary",
     "metaDescription": "Learn traditional Japanese garment notation: stitches, rows, and times. Example 1-2-9 means 1 stitch every 2 rows 9 times.",
     "active": true,

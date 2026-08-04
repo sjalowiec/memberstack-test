@@ -1,6 +1,8 @@
 /**
  * Japanese-style diagram notation segments (`1s-2r-3x`) from ordered stitch-decrease points.
- * Shared by neckline overlay (round + V) and tests.
+ * Shared by neckline overlay (round + V), slope tool, and tests.
+ *
+ * Token order is always stitches → rows (interval) → times: `Ns-Mr-Kx`.
  */
 
 export type StitchDecreasePoint = {
@@ -10,6 +12,17 @@ export type StitchDecreasePoint = {
 
 /** Shaping segment token, e.g. `3s-2r-1x` (not `bo12`, `hold18`, etc.). */
 const SHAPING_SEGMENT_PATTERN = /^(\d+)s-(\d+)r-(\d+)x$/;
+
+/**
+ * Format one Japanese shaping segment.
+ * Order: stitches (`s`), rows between actions (`r`), times (`x`).
+ */
+export function formatShapingSegment(stitches: number, rows: number, times: number): string {
+  const s = Math.max(1, Math.round(stitches));
+  const r = Math.max(1, Math.round(rows));
+  const t = Math.max(1, Math.round(times));
+  return `${s}s-${r}r-${t}x`;
+}
 
 /**
  * Merge consecutive identical shaping segments by summing repeat counts.

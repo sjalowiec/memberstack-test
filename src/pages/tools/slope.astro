@@ -1,0 +1,696 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
+import FloatingInput from "../../components/tools/FloatingInput.astro";
+import PrintButton from "../../components/common/PrintButton.astro";
+import ToolResultCard from "../../components/tools/ToolResultCard.astro";
+import ToolGate from "../../components/ui/ToolGate.astro";
+import ToolPreviewGate from "../../components/ui/ToolPreviewGate.astro";
+import GlossaryTermModal from "../../components/glossary/GlossaryTermModal.astro";
+import toolsData from "../../../data/tools.json";
+import "../../styles/wizard.css";
+
+export const prerender = true;
+
+const tools = toolsData as Array<{
+  href?: string;
+  title?: string;
+  icon?: string;
+  membersonly?: boolean;
+}>;
+const tool = tools.find((t) => t.href === Astro.url.pathname) ?? null;
+const toolPrintTitle = tool?.title ?? "Slope Tool";
+---
+
+<Layout
+  title="Slope Tool | Knit by Machine"
+  description="Calculate evenly distributed shaping when there are more stitches than rows, such as shoulder shaping."
+  toolPrintTitle={toolPrintTitle}
+>
+  <main class="wizard-page">
+    <div class="wizard-shell">
+      <WizardBackLink className="back-link" />
+
+      <section class="wizard-hero slope-hero">
+        <ToolPageHeader tool={tool} fallbackTitle="Slope Tool" />
+        <p class="wizard-intro slope-hero-intro">
+          Use this tool when you have more stitches to shape than rows available, the opposite of the
+          <a href="/tools/magic-formula">Magic Formula</a>.
+        </p>
+        <p class="wizard-intro slope-hero-intro">
+          A common use is shoulder shaping. Enter your stitch and row counts to get evenly distributed
+          shaping instructions.
+        </p>
+      </section>
+
+      <ToolGate tool={tool} />
+
+      <ToolPreviewGate tool={tool}>
+        <div class="slope-tool-wrap">
+          <div class="slope-entry-layout">
+            <div class="slope-calculator-panel kbm-tool-calculator-area">
+              <form id="wizard-form" class="slope-form" novalidate>
+                <h2 class="slope-form-section-title">Enter your details</h2>
+
+                <div class="slope-input-grid">
+                  <div class="slope-field">
+                    <FloatingInput
+                      id="slopeStitches"
+                      name="slopeStitches"
+                      label="Number of stitches to shape"
+                      type="number"
+                      min={1}
+                      step={1}
+                      inputmode="numeric"
+                      placeholder=" "
+                    />
+                    <p class="slope-field-hint">Positive whole number only</p>
+                  </div>
+                  <div class="slope-field">
+                    <FloatingInput
+                      id="slopeRows"
+                      name="slopeRows"
+                      label="Number of rows available"
+                      type="number"
+                      min={1}
+                      step={1}
+                      inputmode="numeric"
+                      placeholder=" "
+                    />
+                    <p class="slope-field-hint">Positive whole number only</p>
+                  </div>
+                </div>
+
+                <div class="slope-actions">
+                  <button type="submit" class="wizard-button" id="slopeCalculateBtn">Calculate Slope</button>
+                </div>
+
+                <div id="slopeValidation" class="slope-validation" role="alert" hidden></div>
+
+                <p class="slope-help-copy">
+                  This tool is for steep shaping: more stitches than rows. Shaping is worked every 2 rows.
+                  If you have more rows than stitches, use the
+                  <a href="/tools/magic-formula">Magic Formula</a> instead.
+                </p>
+              </form>
+            </div>
+
+            <div class="slope-diagram" id="slopeDiagramPanel" data-slope-ready="false">
+              <svg
+                id="slopeDiagramSvg"
+                class="slope-diagram-svg"
+                viewBox="0 0 340 250"
+                xmlns="http://www.w3.org/2000/svg"
+                role="img"
+                aria-labelledby="slopeDiagramTitle slopeDiagramDesc"
+              >
+                <title id="slopeDiagramTitle">Slope shaping diagram</title>
+                <desc id="slopeDiagramDesc">
+                  Right triangle showing stitches along the base, rows along the vertical side, and the
+                  shaping edge along the hypotenuse.
+                </desc>
+                <!-- Right triangle: vertical left (rows), base bottom (stitches), hypotenuse = shaping edge -->
+                <path
+                  class="slope-diagram-outline"
+                  d="M 70 36 L 70 186 L 280 186 Z"
+                  fill="none"
+                  stroke="#52682d"
+                  stroke-width="2.25"
+                  stroke-linejoin="round"
+                />
+                <text
+                  id="slopeBaseLabel"
+                  class="slope-diagram-label"
+                  x="175"
+                  y="216"
+                  text-anchor="middle"
+                >Stitches</text>
+                <text
+                  id="slopeHeightLabel"
+                  class="slope-diagram-label"
+                  text-anchor="middle"
+                  transform="translate(34 111) rotate(-90)"
+                >Rows</text>
+                <g id="slopeNotationGroup" aria-hidden="true"></g>
+              </svg>
+              <p class="slope-diagram-caption">
+                The diagram uses
+                <a
+                  href="/glossary/japanese-notation-traditional/"
+                  class="glossary-link"
+                  >Japanese knitting notation</a
+                >. Learn how to read it.
+              </p>
+              <p id="slopeNotationSr" class="slope-notation-sr visually-hidden" hidden></p>
+            </div>
+          </div>
+
+          <ToolResultCard
+            id="slope-results"
+            hidden
+            title="Your slope shaping"
+            resultsContentId="slopeResultsContent"
+            singleColumn={true}
+          >
+            <PrintButton slot="actions" label="" ariaLabel="Print slope shaping results" />
+            <div class="slope-results-body">
+              <div class="slope-result-block">
+                <p class="slope-summary" id="slopeSummaryResult"></p>
+              </div>
+
+              <div class="slope-result-block">
+                <div class="slope-result-row__label">Row by row</div>
+                <ol class="slope-row-directions" id="slopeRowDirectionsResult"></ol>
+              </div>
+            </div>
+          </ToolResultCard>
+        </div>
+      </ToolPreviewGate>
+    </div>
+  </main>
+
+  <GlossaryTermModal />
+
+  <style>
+    .slope-hero .slope-hero-intro {
+      margin: 0.2rem 0;
+      max-width: 44rem;
+    }
+
+    .slope-hero .slope-hero-intro:last-of-type {
+      margin-bottom: 0.65rem;
+    }
+
+    .slope-hero .slope-hero-intro a {
+      color: var(--kbm-green, #52682d);
+      font-weight: 600;
+      text-decoration: underline;
+    }
+
+    .slope-tool-wrap {
+      position: relative;
+      margin-bottom: 2rem;
+    }
+
+    .slope-entry-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 1.5rem 2rem;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .slope-calculator-panel {
+      background: #fff;
+      padding: 1.75rem;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      min-width: 0;
+    }
+
+    .slope-diagram {
+      min-width: 0;
+      max-width: 100%;
+      width: 100%;
+    }
+
+    .slope-diagram-svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-width: 100%;
+      background: transparent;
+    }
+
+    .slope-diagram-caption {
+      margin: 0.5rem 0 0;
+      font-size: 0.85rem;
+      line-height: 1.45;
+      color: #6b7280;
+    }
+
+    .slope-diagram-caption a {
+      color: var(--kbm-green, #52682d);
+      font-weight: 600;
+      text-decoration: underline;
+    }
+
+    .slope-diagram-label,
+    :global(.slope-diagram-notation) {
+      fill: #2f3a2f;
+      font-family: var(--font, "Poppins", system-ui, Arial, sans-serif);
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    :global(.slope-diagram-notation) {
+      font-size: 14px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 768px) {
+      .slope-entry-layout {
+        grid-template-columns: minmax(0, 1fr);
+        align-items: stretch;
+      }
+
+      .slope-calculator-panel {
+        padding: 1.25rem;
+      }
+    }
+
+    .slope-form-section-title {
+      margin: 0 0 0.75rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #2f3a2f;
+      line-height: 1.3;
+    }
+
+    .slope-input-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.85rem;
+    }
+
+    .slope-field-hint {
+      margin: 0.2rem 0 0;
+      font-size: 0.8rem;
+      line-height: 1.35;
+      color: #6b7280;
+    }
+
+    .slope-actions {
+      margin-top: 1rem;
+    }
+
+    .slope-actions .wizard-button {
+      padding: 12px 22px;
+      font-size: 1rem;
+      font-weight: 600;
+      border-radius: 8px;
+      background: #52682d;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .slope-actions .wizard-button:hover {
+      background: #445626;
+    }
+
+    .slope-validation {
+      margin-top: 1.25rem;
+      padding: 14px 18px;
+      border-left: 6px solid #d9534f;
+      background: #fff4f4;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      color: #333;
+      line-height: 1.5;
+    }
+
+    .slope-validation--info {
+      border-left-color: #52682d;
+      background: #f4f7ee;
+    }
+
+    .slope-validation[hidden] {
+      display: none;
+    }
+
+    .slope-validation:not([hidden]) {
+      display: block;
+    }
+
+    .slope-validation a {
+      color: var(--kbm-green, #52682d);
+      font-weight: 600;
+      text-decoration: underline;
+    }
+
+    .slope-help-copy {
+      margin: 1rem 0 0;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: #4b5563;
+    }
+
+    .slope-help-copy a {
+      color: var(--kbm-green, #52682d);
+      font-weight: 600;
+      text-decoration: underline;
+    }
+
+    :global(#slopeResultsContent) {
+      line-height: 1.55;
+    }
+
+    .slope-results-body {
+      display: flex;
+      flex-direction: column;
+      gap: 1.35rem;
+    }
+
+    .slope-result-row__label {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #52682d;
+      margin-bottom: 0.35rem;
+    }
+
+    .slope-summary {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #2f3a2f;
+      line-height: 1.55;
+    }
+
+    .slope-row-directions {
+      margin: 0;
+      padding-left: 1.35rem;
+      font-size: 1.02rem;
+      font-weight: 400;
+      color: #2f3a2f;
+      line-height: 1.55;
+    }
+
+    .slope-row-directions li + li {
+      margin-top: 0.28rem;
+    }
+
+    .slope-row-directions__rc {
+      font-weight: 700;
+    }
+
+    @media print {
+      .wizard-hero,
+      .back-link,
+      .slope-calculator-panel,
+      .slope-help-copy,
+      .slope-validation {
+        display: none !important;
+      }
+
+      /* Do not print empty results or the pre-calc diagram. */
+      :global(#slope-results[hidden]) {
+        display: none !important;
+        visibility: hidden !important;
+      }
+
+      .slope-diagram[data-slope-ready="false"] {
+        display: none !important;
+      }
+
+      .slope-entry-layout {
+        display: block !important;
+        margin-bottom: 0.75rem;
+      }
+
+      .slope-diagram {
+        max-width: 4.5in;
+        margin: 0 auto 0.75rem;
+      }
+
+      .slope-diagram-svg {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .slope-diagram-caption {
+        display: block !important;
+        visibility: visible !important;
+        color: #444 !important;
+        font-size: 9pt;
+      }
+
+      .slope-diagram-caption a {
+        color: #000 !important;
+        text-decoration: underline;
+      }
+
+      .slope-summary {
+        color: #000 !important;
+      }
+
+      .slope-row-directions {
+        color: #000 !important;
+        font-weight: 400;
+      }
+
+      .slope-row-directions__rc {
+        font-weight: 700;
+      }
+
+      .slope-result-row__label {
+        color: #000 !important;
+      }
+    }
+  </style>
+
+  <script>
+    import {
+      buildSlopeShapingPresentation,
+      calculateSlopeShaping,
+      type SlopeShapingPresentation,
+      type SlopeShapingSuccess,
+    } from "../../lib/patterns/legoBlocks/slopeShaping.ts";
+
+    const form = document.getElementById("wizard-form") as HTMLFormElement | null;
+    const validationEl = document.getElementById("slopeValidation");
+    const resultsCard = document.getElementById("slope-results");
+    const summaryResult = document.getElementById("slopeSummaryResult");
+    const rowDirectionsResult = document.getElementById("slopeRowDirectionsResult");
+    const baseLabel = document.getElementById("slopeBaseLabel");
+    const heightLabel = document.getElementById("slopeHeightLabel");
+    const notationGroup = document.getElementById("slopeNotationGroup");
+    const notationSr = document.getElementById("slopeNotationSr");
+    const diagramDesc = document.getElementById("slopeDiagramDesc");
+    const diagramPanel = document.getElementById("slopeDiagramPanel");
+
+    if (
+      !form ||
+      !validationEl ||
+      !resultsCard ||
+      !summaryResult ||
+      !rowDirectionsResult ||
+      !baseLabel ||
+      !heightLabel ||
+      !notationGroup ||
+      !notationSr ||
+      !diagramDesc ||
+      !diagramPanel
+    ) {
+      throw new Error("Slope Tool: missing DOM elements");
+    }
+
+    const formEl = form;
+    const validationElEl = validationEl;
+    const resultsCardEl = resultsCard;
+    const summaryResultEl = summaryResult;
+    const rowDirectionsResultEl = rowDirectionsResult;
+    const baseLabelEl = baseLabel;
+    const heightLabelEl = heightLabel;
+    const notationGroupEl = notationGroup;
+    const notationSrEl = notationSr;
+    const diagramDescEl = diagramDesc;
+    const diagramPanelEl = diagramPanel;
+
+    /** Triangle geometry matching the static SVG path. */
+    const TRI = {
+      topX: 70,
+      topY: 36,
+      baseLeftX: 70,
+      baseLeftY: 186,
+      baseRightX: 280,
+      baseRightY: 186,
+    } as const;
+
+    function parsePositiveWholeNumber(raw: string): number | null {
+      const t = raw.trim();
+      if (t === "") return null;
+      if (!/^\d+$/.test(t)) return null;
+      const n = Number(t);
+      if (!Number.isInteger(n) || n <= 0) return null;
+      return n;
+    }
+
+    function hideResults(): void {
+      resultsCardEl.hidden = true;
+    }
+
+    function showValidation(messageHtml: string, info = false): void {
+      validationElEl.hidden = false;
+      validationElEl.classList.toggle("slope-validation--info", info);
+      validationElEl.innerHTML = messageHtml;
+    }
+
+    function clearValidation(): void {
+      validationElEl.hidden = true;
+      validationElEl.classList.remove("slope-validation--info");
+      validationElEl.textContent = "";
+    }
+
+    function resetDiagram(): void {
+      baseLabelEl.textContent = "Stitches";
+      heightLabelEl.textContent = "Rows";
+      notationGroupEl.replaceChildren();
+      notationSrEl.hidden = true;
+      notationSrEl.textContent = "";
+      diagramPanelEl.setAttribute("data-slope-ready", "false");
+      diagramDescEl.textContent =
+        "Right triangle showing stitches along the base, rows along the vertical side, and the shaping edge along the hypotenuse.";
+    }
+
+    function pointOnHypotenuse(t: number): { x: number; y: number } {
+      return {
+        x: TRI.topX + (TRI.baseRightX - TRI.topX) * t,
+        y: TRI.topY + (TRI.baseRightY - TRI.topY) * t,
+      };
+    }
+
+    function updateDiagram(result: SlopeShapingSuccess, presentation: SlopeShapingPresentation): void {
+      const stitchLabel =
+        result.stitches === 1 ? "1 stitch" : `${result.stitches} stitches`;
+      const rowLabel = result.rows === 1 ? "1 row" : `${result.rows} rows`;
+      baseLabelEl.textContent = stitchLabel;
+      heightLabelEl.textContent = rowLabel;
+
+      notationGroupEl.replaceChildren();
+      const lines = presentation.japaneseNotationLines;
+      const steps = result.steps;
+      const totalActions = Math.max(1, result.shapingActions);
+
+      let actionOffset = 0;
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i]!;
+        const step = steps[i]!;
+        const startT = actionOffset / totalActions;
+        const endT = (actionOffset + step.times) / totalActions;
+        const midT = (startT + endT) / 2;
+        actionOffset += step.times;
+
+        const pt = pointOnHypotenuse(midT);
+        // Offset outward (above/right of hypotenuse) so labels clear the edge.
+        const nx = 18;
+        const ny = -14;
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("class", "slope-diagram-notation");
+        text.setAttribute("x", String(pt.x + nx));
+        text.setAttribute("y", String(pt.y + ny));
+        text.setAttribute("text-anchor", "start");
+        text.textContent = line;
+        notationGroupEl.appendChild(text);
+      }
+
+      if (lines.length > 0) {
+        notationSrEl.hidden = false;
+        notationSrEl.textContent = `Japanese shaping notation: ${lines.join(", ")}.`;
+        diagramDescEl.textContent = `Slope of ${stitchLabel} over ${rowLabel}. Japanese notation along the shaping edge: ${lines.join(", ")}.`;
+      } else {
+        notationSrEl.hidden = true;
+        notationSrEl.textContent = "";
+      }
+      diagramPanelEl.setAttribute("data-slope-ready", "true");
+    }
+
+    function renderResults(result: SlopeShapingSuccess): void {
+      const presentation = buildSlopeShapingPresentation(result);
+
+      summaryResultEl.textContent = presentation.summary;
+
+      rowDirectionsResultEl.replaceChildren();
+      for (const action of presentation.rowByRow) {
+        const li = document.createElement("li");
+        const amount =
+          action.stitches === 1 ? "1 stitch" : `${action.stitches} stitches`;
+        const rc = document.createElement("strong");
+        rc.className = "slope-row-directions__rc";
+        rc.textContent = `RC ${action.rc}:`;
+        li.append(rc, ` Bind off or hold ${amount} at the shaping edge.`);
+        rowDirectionsResultEl.appendChild(li);
+      }
+
+      updateDiagram(result, presentation);
+      resultsCardEl.hidden = false;
+      resultsCardEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function validateAndCollect():
+      | { ok: true; stitches: number; rows: number }
+      | { ok: false; message: string } {
+      const fd = new FormData(formEl);
+      const stitchesRaw = (fd.get("slopeStitches") ?? "").toString();
+      const rowsRaw = (fd.get("slopeRows") ?? "").toString();
+
+      const stitches = parsePositiveWholeNumber(stitchesRaw);
+      const rows = parsePositiveWholeNumber(rowsRaw);
+
+      const missing: string[] = [];
+      if (stitches === null) missing.push("number of stitches to shape");
+      if (rows === null) missing.push("number of rows available");
+
+      if (missing.length > 0) {
+        return {
+          ok: false,
+          message: `Please enter a positive whole number for: ${missing.join(" and ")}.`,
+        };
+      }
+
+      return { ok: true, stitches: stitches!, rows: rows! };
+    }
+
+    formEl.addEventListener("input", () => {
+      clearValidation();
+      hideResults();
+      resetDiagram();
+    });
+
+    formEl.addEventListener("submit", (e) => {
+      e.preventDefault();
+      clearValidation();
+
+      const parsed = validateAndCollect();
+      if (!parsed.ok) {
+        showValidation(parsed.message);
+        hideResults();
+        resetDiagram();
+        return;
+      }
+
+      const result = calculateSlopeShaping(parsed.stitches, parsed.rows);
+
+      if (!result.ok) {
+        hideResults();
+        resetDiagram();
+        if (result.reason === "not-slope") {
+          showValidation(
+            `This tool is for shaping when there are more stitches than rows. You entered ${parsed.stitches} stitches and ${parsed.rows} rows. If you have more rows than stitches, use the <a href="/tools/magic-formula">Magic Formula</a> tool instead.`,
+            true,
+          );
+          return;
+        }
+        showValidation("Please enter a positive whole number for stitches and rows.");
+        return;
+      }
+
+      renderResults(result);
+    });
+  </script>
+</Layout>
