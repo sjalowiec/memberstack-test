@@ -1,0 +1,282 @@
+---
+/**
+ * Reusable first-party email list signup form fields.
+ * On Tip of the Week, mount inside WeeklyTipSignup modal (`embedded`).
+ * Posts to /api/email-list-signup (ActiveCampaign server-side).
+ * Turnstile can be added later via data-turnstile-token / reserved payload field.
+ */
+interface Props {
+  /** Optional id prefix when multiple instances appear on one page. */
+  idPrefix?: string;
+  class?: string;
+  /**
+   * When true, omit the outer marketing card chrome (used inside a dialog that
+   * already provides the heading).
+   */
+  embedded?: boolean;
+}
+
+const {
+  idPrefix = "email-list-signup",
+  class: className = "",
+  embedded = false,
+} = Astro.props;
+
+const firstNameId = `${idPrefix}-first-name`;
+const emailId = `${idPrefix}-email`;
+const honeypotId = `${idPrefix}-bot-field`;
+---
+
+<div
+  class:list={["email-list-signup", embedded && "email-list-signup--embedded", className]}
+  data-email-list-signup-root
+>
+  <div class="email-list-signup__inner">
+    <form
+      class="email-list-signup__form"
+      data-email-list-signup
+      data-testid="email-list-signup-form"
+      novalidate
+    >
+      {/* Honeypot — visually hidden; leave empty. */}
+      <p class="email-list-signup__honeypot" aria-hidden="true">
+        <label for={honeypotId}>Company</label>
+        <input
+          type="text"
+          id={honeypotId}
+          name="bot-field"
+          tabindex="-1"
+          autocomplete="off"
+        />
+      </p>
+
+      <div class="email-list-signup__fields">
+        <div class="email-list-signup__field">
+          <label class="email-list-signup__label" for={firstNameId}>
+            First name
+            <span class="email-list-signup__required" aria-hidden="true">*</span>
+            <span class="email-list-signup__sr-only">(required)</span>
+          </label>
+          <input
+            class="email-list-signup__input"
+            id={firstNameId}
+            name="firstName"
+            type="text"
+            autocomplete="given-name"
+            maxlength="80"
+            required
+            aria-required="true"
+          />
+        </div>
+
+        <div class="email-list-signup__field">
+          <label class="email-list-signup__label" for={emailId}>
+            Email address
+            <span class="email-list-signup__required" aria-hidden="true">*</span>
+            <span class="email-list-signup__sr-only">(required)</span>
+          </label>
+          <input
+            class="email-list-signup__input"
+            id={emailId}
+            name="email"
+            type="email"
+            autocomplete="email"
+            maxlength="254"
+            required
+            aria-required="true"
+            inputmode="email"
+          />
+        </div>
+      </div>
+
+      <button
+        class="kbm-btn kbm-btn-primary email-list-signup__submit"
+        type="submit"
+        data-testid="email-list-signup-submit"
+      >
+        Send Me the Weekly Tip
+      </button>
+
+      <p class="email-list-signup__consent">
+        By signing up, you agree to receive emails from Knit It Now. You can unsubscribe at
+        any time. See our
+        <a href="/privacy">Privacy Policy</a>.
+      </p>
+
+      <p
+        class="email-list-signup__error"
+        hidden
+        data-signup-error
+        role="alert"
+        data-testid="email-list-signup-error"
+      ></p>
+    </form>
+
+    <div
+      class="email-list-signup__thanks-wrap"
+      hidden
+      data-signup-thanks
+      data-testid="email-list-signup-thanks"
+    >
+      <p class="email-list-signup__thanks" role="status">
+        <span data-signup-thanks-message></span>
+      </p>
+      <button
+        type="button"
+        class="kbm-btn kbm-btn-primary email-list-signup__done"
+        data-signup-done
+        data-testid="email-list-signup-done"
+        hidden
+      >
+        Done
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .email-list-signup {
+    margin-top: 1.75rem;
+    max-width: 42rem;
+  }
+
+  .email-list-signup--embedded {
+    margin-top: 0;
+    max-width: none;
+  }
+
+  .email-list-signup__inner {
+    padding: 1.15rem 1.2rem 1.25rem;
+    border: 1px solid var(--ring, #e5e8e0);
+    border-radius: 12px;
+    background: linear-gradient(180deg, #f7f8f4 0%, #f1f3ec 100%);
+  }
+
+  .email-list-signup--embedded .email-list-signup__inner {
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .email-list-signup__fields {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 0.9rem;
+  }
+
+  @media (min-width: 560px) {
+    .email-list-signup:not(.email-list-signup--embedded) .email-list-signup__fields {
+      grid-template-columns: 1fr 1.35fr;
+      gap: 0.85rem;
+    }
+  }
+
+  .email-list-signup__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 0;
+  }
+
+  .email-list-signup__label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  .email-list-signup__required {
+    color: var(--kbm-green, #52682d);
+    margin-left: 0.15rem;
+  }
+
+  .email-list-signup__input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid #c5cbb8;
+    border-radius: 8px;
+    font: inherit;
+    font-size: 1rem;
+    color: #1f2937;
+    background: #fff;
+  }
+
+  .email-list-signup__input:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  .email-list-signup__submit {
+    width: 100%;
+    margin: 0 0 0.75rem;
+  }
+
+  .email-list-signup__consent {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: #4b5563;
+  }
+
+  .email-list-signup__consent a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-decoration: underline;
+  }
+
+  .email-list-signup__error {
+    margin: 0.75rem 0 0;
+    padding: 0.55rem 0.7rem;
+    border-radius: 8px;
+    background: #fef2f2;
+    color: #991b1b;
+    font-size: 0.92rem;
+    line-height: 1.4;
+  }
+
+  .email-list-signup__thanks-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .email-list-signup__thanks {
+    margin: 0;
+    padding: 0.75rem 0.85rem;
+    border-radius: 8px;
+    background: #eef2e6;
+    color: var(--kbm-green, #52682d);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.45;
+  }
+
+  .email-list-signup__done {
+    width: 100%;
+  }
+
+  .email-list-signup__honeypot {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .email-list-signup__sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+</style>
