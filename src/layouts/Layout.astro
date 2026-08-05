@@ -25,8 +25,7 @@ interface Props {
   /**
    * Pattern Builder / Edit / saved-view workspaces: compact phone header
    * (hide tall search strip; keep logo + hamburger + search icon).
-   * On desktop (≥1025px) the shared header stays in document flow so the full
-   * chrome can scroll away; ≤1024px keeps the existing fixed header + drawer.
+   * Desktop/tablet headers are unchanged.
    */
   patternWorkspace?: boolean;
 }
@@ -182,41 +181,6 @@ const resolvedBodyClass = [
     }
   }
 
-  /*
-   * Pattern workspaces on desktop (no hamburger drawer): keep the shared header
-   * markup/design, but stop fixing it so green nav + search strip scroll away.
-   * Ordinary pages and ≤1024px pattern pages are untouched (fixed header remains).
-   */
-  @media (min-width: 1025px) {
-    body.page--pattern-workspace {
-      --header-offset: 0px;
-      --header-buffer: 8px;
-    }
-
-    body.page--pattern-workspace .kbm-header-wrap {
-      position: relative;
-      /* Override EnvBanner's fixed-header `top` nudge; clear the banner with margin instead. */
-      top: auto !important;
-    }
-
-    html[data-kbm-env-banner="on"] body.page--pattern-workspace .kbm-header-wrap {
-      margin-top: var(--kbm-env-banner-h, 0px);
-    }
-
-    /*
-     * Header is in document flow, so main must not also reserve full header height.
-     * Env clearance is on the header margin above (avoid double-counting --kbm-env-banner-h).
-     * !important beats the inline padding-top on main.site-content.
-     */
-    body.page--pattern-workspace main.site-content {
-      padding-top: var(--header-buffer, 8px) !important;
-    }
-
-    body.page--pattern-workspace {
-      scroll-padding-top: var(--header-buffer, 8px);
-    }
-  }
-
   /* "Skip for now" text link near the bottom of onboarding pages */
   .onboarding-skip {
     margin-top: 2.5rem;
@@ -263,19 +227,9 @@ const resolvedBodyClass = [
 
   function setHeaderOffset() {
     const fallback = 170;
-    const isPatternWorkspace =
-      document.body.classList.contains("page--pattern-workspace");
     const isPatternWorkspacePhone =
-      isPatternWorkspace && window.matchMedia("(max-width: 767.98px)").matches;
-    // Desktop pattern workspaces: header is in-flow (not fixed). Do not reserve
-    // a fixed-header gap. Ordinary pages and ≤1024px pattern pages keep measuring.
-    const isPatternWorkspaceDesktop =
-      isPatternWorkspace && window.matchMedia("(min-width: 1025px)").matches;
-
-    if (isPatternWorkspaceDesktop) {
-      document.documentElement.style.setProperty("--header-offset", "0px");
-      return;
-    }
+      document.body.classList.contains("page--pattern-workspace") &&
+      window.matchMedia("(max-width: 767.98px)").matches;
 
     /* Use full fixed header (billboard + green bar) so content starts below both layers */
     const headerWrap = document.querySelector(".kbm-header-wrap");
