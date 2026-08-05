@@ -69,11 +69,7 @@
     text-overflow: unset;
   }
 
-  /* Compact site header on pattern workspace pages (hide tall search strip). */
-  body.page--pattern-workspace .kbm-search-strip {
-    display: none !important;
-  }
-
+  /* Compact site header on pattern workspace phones (green bar only; shared search icon). */
   body.page--pattern-workspace .kbm-nav-bar {
     padding-block: 0.2rem;
   }
@@ -91,10 +87,6 @@
     font-size: 1.05rem;
     line-height: 1.15;
     white-space: nowrap;
-  }
-
-  body.page--pattern-workspace .kbm-pattern-workspace-search {
-    display: inline-flex;
   }
 
   body.page--pattern-workspace .kbm-container {
@@ -129,39 +121,5 @@
     display: block;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-  }
-}
-
-/* Compact search affordance (green bar) — phones only on pattern workspaces. */
-.kbm-pattern-workspace-search {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  appearance: none;
-  box-sizing: border-box;
-  width: 44px;
-  height: 44px;
-  margin: 0;
-  padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 8px;
-  background: transparent;
-  color: #fff;
-  cursor: pointer;
-}
-
-.kbm-pattern-workspace-search:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
-}
-
-.kbm-pattern-workspace-search svg {
-  width: 20px;
-  height: 20px;
-}
-
-@media (min-width: 768px) {
-  body.page--pattern-workspace .kbm-pattern-workspace-search {
-    display: none !important;
   }
 }

@@ -18,13 +18,14 @@ interface Props {
    */
   marketing?: boolean;
   /**
-   * Pattern Builder / Edit / saved-view: compact phone header (search strip hidden;
-   * search remains available via a green-bar icon). Desktop unchanged.
+   * Pattern Builder / Edit / saved-view: compact phone header (tighter logo/spacing).
+   * Site search uses the shared green-bar magnifying-glass button on all viewports.
    */
   patternWorkspace?: boolean;
 }
 
-const { onboarding = false, marketing = false, patternWorkspace = false } = Astro.props;
+const { onboarding = false, marketing = false, patternWorkspace: _patternWorkspace = false } =
+  Astro.props;
 const minimalHeader = onboarding || marketing;
 ---
 <style is:global>
@@ -249,89 +250,65 @@ const minimalHeader = onboarding || marketing;
   }
 }
 
-/* ===== SITE-WIDE SEARCH STRIP (full-width search bar below nav) ===== */
-.kbm-search-strip {
-  width: 100%;
-  background: var(--kbm-accent, #c2614e);
-  padding: 0.6rem 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.18);
-}
-
-.kbm-search-strip-inner {
-  width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
-  padding-inline: 24px;
-  box-sizing: border-box;
-}
-
-.kbm-search-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  min-height: 52px;
-  padding: 10px 20px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 999px;
-  background: #fff;
-  color: #5b5b5b;
-  cursor: text;
-  box-sizing: border-box;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-  transition: box-shadow 0.15s ease, border-color 0.15s ease;
-}
-
-.kbm-search-bar:hover {
-  border-color: rgba(0, 0, 0, 0.16);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
-}
-
-.kbm-search-bar:focus,
-.kbm-search-bar:focus-visible {
-  outline: none;
-  border-color: var(--kbm-green, #52682d);
-  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.85), 0 3px 10px rgba(0, 0, 0, 0.18);
-}
-
-.kbm-search-bar__icon {
+/* ===== GREEN-BAR SEARCH BUTTON (opens shared Pagefind modal) ===== */
+.kbm-header-search {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 auto;
-  color: var(--kbm-green, #52682d);
+  appearance: none;
+  box-sizing: border-box;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
-.kbm-search-bar__placeholder {
-  font-family: var(--font, "Poppins", sans-serif);
-  font-size: 1.05rem;
-  color: #6a6a6a;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.kbm-header-search:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.kbm-header-search:focus,
+.kbm-header-search:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.9);
+  outline-offset: 2px;
+}
+
+.kbm-header-search svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+/* Desktop trigger lives in the account/secondary zone; mobile trigger in nav-right. */
+.kbm-header-search--desktop {
+  display: none;
+}
+
+.kbm-header-search--mobile {
+  display: none;
+}
+
+@media (min-width: 1025px) {
+  .kbm-header-search--desktop {
+    display: inline-flex;
+  }
 }
 
 @media (max-width: 1024px) {
-  .kbm-search-strip {
-    padding: 0.5rem 0;
-  }
-  .kbm-search-strip-inner {
-    padding-inline: 16px;
-  }
-}
-
-@media (max-width: 600px) {
-  .kbm-search-bar {
-    min-height: 48px;
-    padding: 8px 16px;
-    gap: 10px;
-  }
-  .kbm-search-bar__placeholder {
-    font-size: 0.95rem;
-  }
-  .kbm-search-bar__icon svg {
-    width: 20px;
-    height: 20px;
+  .kbm-header-search--mobile {
+    display: inline-flex;
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 8px;
   }
 }
 
@@ -583,30 +560,6 @@ const minimalHeader = onboarding || marketing;
   color: var(--kbm-green);
 }
 
-.kbm-nav-bar .kbm-search-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border: none;
-  background: transparent;
-  color: #fff;
-  cursor: pointer;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.kbm-nav-bar .kbm-search-icon:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
-}
-
-.kbm-nav-bar .kbm-search-icon:focus {
-  outline: 2px solid rgba(255, 255, 255, 0.8);
-  outline-offset: 2px;
-}
-
 .kbm-cta-guide {
   display: inline-flex;
   align-items: center;
@@ -810,18 +763,14 @@ const minimalHeader = onboarding || marketing;
   gap: 40px;
 }
 
-/* Desktop: nav row in flow; search icon as last nav item; hide full search bar in bar; hide hamburger */
-.kbm-nav-bar .kbm-nav-row .kbm-search-icon {
+/* Desktop: nav row in flow; hide hamburger */
+.kbm-nav-bar .kbm-nav-row .kbm-search-wrap {
   display: none;
 }
 
 @media (min-width: 1025px) {
-  .kbm-nav-bar .kbm-nav-row .kbm-search-icon {
-    display: inline-flex;
-  }
-
   .kbm-nav-bar .kbm-nav-row .kbm-search-wrap {
-    display: none; /* full search only in mobile drawer */
+    display: none; /* full search only via modal */
   }
 
   .kbm-nav-bar .kbm-nav-row {
@@ -870,9 +819,8 @@ const minimalHeader = onboarding || marketing;
     flex: 0 0 0;
   }
 
-  /* Mobile header = logo (left) + hamburger (right) only.
-     Search pill and account buttons move into the drawer, so the whole
-     secondary zone is hidden here to stop it competing with the logo. */
+  /* Mobile header = logo (left) + search + hamburger (right).
+     Account buttons move into the drawer, so the secondary zone is hidden here. */
   .kbm-nav-bar .kbm-nav-secondary {
     display: none;
   }
@@ -2008,8 +1956,20 @@ div[data-ms-modal-overlay] {
         </div>
       </div>
 
-      <!-- Secondary row on tablet: account actions; inline on desktop -->
+      <!-- Secondary row on tablet: search + account; inline on desktop -->
       <div class="kbm-nav-secondary">
+        <button
+          type="button"
+          class="kbm-header-search kbm-header-search--desktop"
+          data-open-search-modal
+          data-testid="header-search"
+          aria-label="Search Knit It Now"
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
         <div class="kbm-header-auth">
           <div data-ms-content="!members">
             <a href="#" data-ms-modal="login" data-ms-redirect="current-url" class="kbm-btn kbm-btn-outline">
@@ -2050,21 +2010,20 @@ div[data-ms-modal-overlay] {
         </div>
       </div>
 
-      <!-- Mobile: search (pattern workspace phones) + hamburger -->
+      <!-- Mobile: search + hamburger -->
       <div class="kbm-nav-right">
-        {patternWorkspace && !minimalHeader && (
-          <button
-            type="button"
-            class="kbm-pattern-workspace-search"
-            data-open-search-modal
-            aria-label="Search videos, tools, patterns, glossary, and more"
-          >
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="11" cy="11" r="7"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-          </button>
-        )}
+        <button
+          type="button"
+          class="kbm-header-search kbm-header-search--mobile"
+          data-open-search-modal
+          data-testid="header-search-mobile"
+          aria-label="Search Knit It Now"
+        >
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
         <button class="kbm-hamburger" aria-label="Toggle menu" aria-expanded="false">
           <span></span>
           <span></span>
@@ -2080,29 +2039,6 @@ div[data-ms-modal-overlay] {
       <button type="button" id="auth-msg-close" class="auth-msg-close" aria-label="Dismiss">×</button>
     </div>
   </header>
-
-  {!minimalHeader && (
-    <div class="kbm-search-strip" role="region" aria-label="Site-wide search">
-      <div class="kbm-search-strip-inner">
-        <div
-          class="kbm-search-bar"
-          id="openSearchModal"
-          data-open-search-modal
-          role="button"
-          tabindex="0"
-          aria-label="Search videos, tools, patterns, glossary, and more"
-        >
-          <span class="kbm-search-bar__icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="7"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-          </span>
-          <span class="kbm-search-bar__placeholder">Search videos, tools, patterns, glossary, and more...</span>
-        </div>
-      </div>
-    </div>
-  )}
 </section>
 
 {!minimalHeader && (
@@ -2578,10 +2514,11 @@ div[data-ms-modal-overlay] {
 </script>
 <script is:inline>
   (() => {
-    const openBtn = document.getElementById("openSearchModal");
     const modal = document.getElementById("searchModal");
     const overlay = document.getElementById("closeSearchModal");
     const closeBtn = document.getElementById("closeSearchModalBtn");
+    /** @type {HTMLElement | null} */
+    let lastSearchTrigger = null;
 
     // Custom site-wide search results (presentation only).
     // We drive Pagefind's own JS API (/pagefind/pagefind.js) so we can render a
@@ -2944,8 +2881,11 @@ div[data-ms-modal-overlay] {
       input.addEventListener("input", () => runSearch(input.value));
     }
 
-    function openModal() {
+    function openModal(trigger) {
       if (!modal) return;
+      if (trigger instanceof HTMLElement) {
+        lastSearchTrigger = trigger;
+      }
       loadPagefind();
       modal.classList.add("active");
       modal.setAttribute("aria-hidden", "false");
@@ -2959,24 +2899,15 @@ div[data-ms-modal-overlay] {
       modal.classList.remove("active");
       modal.setAttribute("aria-hidden", "true");
       if (!menuDrawerOpen()) document.body.style.overflow = "";
+      const restore = lastSearchTrigger;
+      lastSearchTrigger = null;
+      if (restore && typeof restore.focus === "function") {
+        window.requestAnimationFrame(() => restore.focus());
+      }
     }
 
-    openBtn?.addEventListener("click", openModal);
-    openBtn?.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        openModal();
-      }
-    });
     document.querySelectorAll("[data-open-search-modal]").forEach((el) => {
-      if (el === openBtn) return;
-      el.addEventListener("click", openModal);
-      el.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          openModal();
-        }
-      });
+      el.addEventListener("click", () => openModal(el));
     });
     overlay?.addEventListener("click", closeModal);
     closeBtn?.addEventListener("click", closeModal);

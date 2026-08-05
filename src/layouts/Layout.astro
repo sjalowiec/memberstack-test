@@ -118,7 +118,7 @@ const resolvedBodyClass = [
     })();
   </script>
 
-  <main class="site-content" data-pagefind-body style="padding-top: calc(var(--header-offset, 150px) + var(--header-buffer, 24px) + var(--kbm-env-banner-h, 0px));">
+  <main class="site-content" data-pagefind-body style="padding-top: calc(var(--header-offset, 100px) + var(--header-buffer, 24px) + var(--kbm-env-banner-h, 0px));">
     <slot />
     {onboarding && (
       <nav class="onboarding-skip" aria-label="Skip onboarding">
@@ -149,7 +149,8 @@ const resolvedBodyClass = [
 
 <style is:global>
   :root {
-    --header-offset: 170px;   /* fallback if measurement fails */
+    /* Green-bar-only provisional; JS measures .kbm-header-wrap and refines. */
+    --header-offset: 100px;
     --header-buffer: 36px;   /* EXTRA breathing room */
   }
 
@@ -215,7 +216,7 @@ const resolvedBodyClass = [
   }
 
   html {
-    scroll-padding-top: calc(var(--header-offset, 170px) + var(--header-buffer, 24px));
+    scroll-padding-top: calc(var(--header-offset, 100px) + var(--header-buffer, 24px));
   }
 
   .site-content > :first-child {
@@ -226,12 +227,14 @@ const resolvedBodyClass = [
 (function () {
 
   function setHeaderOffset() {
-    const fallback = 170;
+    // Missing-element fallback only. Live measure of .kbm-header-wrap is preferred
+    // so removing the search strip does not leave a permanent blank gap.
+    const fallback = 100;
     const isPatternWorkspacePhone =
       document.body.classList.contains("page--pattern-workspace") &&
       window.matchMedia("(max-width: 767.98px)").matches;
 
-    /* Use full fixed header (billboard + green bar) so content starts below both layers */
+    /* Use full fixed header (green bar) so content starts below site chrome */
     const headerWrap = document.querySelector(".kbm-header-wrap");
     const headerEl = headerWrap || document.querySelector("header");
 
@@ -260,10 +263,10 @@ const resolvedBodyClass = [
     const safety = 12;
     const measured = headerHeight - debugHeight + safety;
 
-    // Pattern workspace phones: trust the measured compact header (do not floor at 170px).
+    // Trust the measured green-bar height (do not floor at the old strip-inclusive 170px).
     const corrected = isPatternWorkspacePhone
       ? Math.max(52, measured)
-      : Math.max(fallback, measured);
+      : Math.max(72, measured);
 
     document.documentElement.style.setProperty("--header-offset", corrected + "px");
   }
