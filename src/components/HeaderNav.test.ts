@@ -137,10 +137,10 @@ describe("Header green-bar search button replaces terracotta strip", () => {
     expect(headerSource).toContain("kbm-header-search--mobile");
     // Desktop vs mobile visibility is CSS-scoped (no second search system).
     expect(headerSource).toMatch(
-      /@media\s*\(min-width:\s*1025px\)\s*\{[\s\S]*\.kbm-header-search--desktop\s*\{[\s\S]*display:\s*inline-flex/,
+      /@media\s*\(min-width:\s*1280px\)\s*\{[\s\S]*\.kbm-header-search--desktop\s*\{[\s\S]*display:\s*inline-flex/,
     );
     expect(headerSource).toMatch(
-      /@media\s*\(max-width:\s*1024px\)\s*\{[\s\S]*\.kbm-header-search--mobile\s*\{[\s\S]*display:\s*inline-flex/,
+      /@media\s*\(max-width:\s*1279px\)\s*\{[\s\S]*\.kbm-header-search--mobile\s*\{[\s\S]*display:\s*inline-flex/,
     );
   });
 
