@@ -214,11 +214,6 @@ const pageDescription =
         : "") ||
   "Machine knitting help from Knit it Now.";
 
-const hyvorId =
-  typeof tip.slug === "string" && tip.slug.trim() !== ""
-    ? tip.slug.trim()
-    : slugParam;
-
 const aboutHeading =
   typeof tip.aboutTitle === "string" && tip.aboutTitle.trim() !== ""
     ? tip.aboutTitle.trim()
@@ -524,41 +519,6 @@ const faqJsonLd = faqPage ? serializeJsonLd(faqPage) : "";
         bootHelpHubMemberLessonGates();
       }
     </script>
-
-    <section class="tuesday-tip__section tuesday-tip-discussion">
-      <h2>Did you try this? I’d love to hear how it went</h2>
-      Join the discussion below! Knitters love to help each other master new skills.
-      <div
-        id="hyvor-talk-view"
-        data-hyvor-website="14706"
-        data-talk-id={hyvorId}
-      >
-      </div>
-      <script is:inline>
-        (function () {
-          var el = document.getElementById("hyvor-talk-view");
-          if (!el) return;
-          var talkId = el.getAttribute("data-talk-id") || "";
-          var websiteStr = el.getAttribute("data-hyvor-website") || "14706";
-          var websiteId = parseInt(websiteStr, 10);
-          if (!Number.isFinite(websiteId)) websiteId = 14706;
-          window.HYVOR_TALK_WEBSITE = websiteId;
-          window.HYVOR_TALK_CONFIG = {
-            url: window.location.href,
-            id: talkId,
-          };
-          var s = document.createElement("script");
-          s.async = true;
-          s.type = "text/javascript";
-          s.src = "https://talk.hyvor.com/web-api/embed";
-          if (el.parentNode) {
-            el.parentNode.insertBefore(s, el.nextSibling);
-          } else {
-            (document.head || document.documentElement).appendChild(s);
-          }
-        })();
-      </script>
-    </section>
   </section>
 </Layout>
 
@@ -774,14 +734,6 @@ const faqJsonLd = faqPage ? serializeJsonLd(faqPage) : "";
     color: #64748b;
     text-align: center;
     max-width: 16rem;
-  }
-
-  .tuesday-tip-discussion {
-    margin-top: 40px;
-  }
-
-  .tuesday-tip-discussion h2 {
-    margin-bottom: 15px;
   }
 
   .tuesday-tip__section {

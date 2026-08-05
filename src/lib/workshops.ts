@@ -98,11 +98,6 @@ export interface Workshop {
     todayLabel: string;
     showVideoReplyPlaceholder: boolean;
   };
-  hyvor: {
-    enabled: boolean;
-    websiteId: string;
-    pageId: string;
-  };
   curriculum?: Curriculum;
 }
 
@@ -183,11 +178,6 @@ function adaptGuidedWorkshop(gw: GuidedWorkshopFile): Workshop {
       welcomeBody: gw.welcomeBody || gw.description,
       todayLabel: 'Your workshop is ready',
       showVideoReplyPlaceholder: true // Enable video reply placeholder by default
-    },
-    hyvor: {
-      enabled: true,
-      websiteId: '14706', // Default Hyvor website ID
-      pageId: `guided-workshop-${gw.workshopId}-hub`
     },
     curriculum: {
       version: gw.curriculum.version,

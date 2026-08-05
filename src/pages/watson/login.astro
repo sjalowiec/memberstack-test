@@ -9,7 +9,7 @@ const next = sanitizeWatsonLoginNextPath(Astro.url.searchParams.get("next"));
 const showError = Astro.url.searchParams.get("error") === "1";
 ---
 
-<BaseLayout title="Watson Login" description="Sign in to Watson." skipGlobalHyvor={true} bodyClass="watson-body">
+<BaseLayout title="Watson Login" description="Sign in to Watson." bodyClass="watson-body">
   <main class="watson watson-login">
     <section class="watson-login__card">
       <h1 class="watson-login__title">Watson</h1>

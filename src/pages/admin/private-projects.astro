@@ -10,7 +10,6 @@ const projectDraftSeeds: Record<string, unknown> = {
 <BaseLayout
   title="Private Project Workspaces | Knit it Now"
   description="Draft and manage private knitter project workspace pages."
-  skipGlobalHyvor={true}
   bodyClass="private-projects-admin-body"
 >
   <main class="private-projects-admin">
@@ -176,23 +175,6 @@ const projectDraftSeeds: Record<string, unknown> = {
             </article>
           ))
         }
-      </div>
-    </section>
-
-    <section class="admin-panel" aria-labelledby="hyvor-settings-heading">
-      <h2 id="hyvor-settings-heading" class="private-projects-admin__section-title">
-        Hyvor Settings
-      </h2>
-      <div class="private-projects-admin__grid">
-        <label class="private-projects-admin__field">
-          <span>Hyvor website ID</span>
-          <input type="text" name="hyvorWebsiteId" value="14706" readonly />
-        </label>
-        <label class="private-projects-admin__field">
-          <span>Hyvor conversation ID / page ID</span>
-          <input type="text" name="hyvorPageId" placeholder="sample-project" />
-          <small>Suggested default: same as project slug.</small>
-        </label>
       </div>
     </section>
   </main>
@@ -449,7 +431,6 @@ const projectDraftSeeds: Record<string, unknown> = {
 
     function normalizeDraftInput(raw) {
       const source = raw && typeof raw === "object" ? raw : {};
-      const hyvor = source.hyvor && typeof source.hyvor === "object" ? source.hyvor : {};
       const normalizedMaterials = Array.isArray(source.materials)
         ? source.materials.map((item) => {
             const row = item && typeof item === "object" ? item : {};
@@ -473,8 +454,6 @@ const projectDraftSeeds: Record<string, unknown> = {
         status: source.status,
         intro: source.intro,
         startHere: source.startHere,
-        hyvorId: source.hyvorId ?? hyvor.websiteId,
-        hyvorPageId: source.hyvorPageId ?? hyvor.pageId,
         materials: normalizedMaterials,
       };
     }
@@ -497,8 +476,6 @@ const projectDraftSeeds: Record<string, unknown> = {
         status: getTextValue("currentStatus"),
         intro: getTextValue("introNote"),
         startHere: getTextValue("startHereInstructions"),
-        hyvorId: getTextValue("hyvorWebsiteId"),
-        hyvorPageId: getTextValue("hyvorPageId"),
         materials,
       };
     }
@@ -511,8 +488,6 @@ const projectDraftSeeds: Record<string, unknown> = {
       setTextValue("currentStatus", normalizedDraft.status);
       setTextValue("introNote", normalizedDraft.intro);
       setTextValue("startHereInstructions", normalizedDraft.startHere);
-      setTextValue("hyvorWebsiteId", normalizedDraft.hyvorId ?? "14706");
-      setTextValue("hyvorPageId", normalizedDraft.hyvorPageId);
 
       const materials = Array.isArray(normalizedDraft.materials) ? normalizedDraft.materials : [];
       for (let i = 1; i <= 3; i += 1) {
@@ -530,7 +505,6 @@ const projectDraftSeeds: Record<string, unknown> = {
     function clearFields() {
       if (!formEl) return;
       formEl.reset();
-      setTextValue("hyvorWebsiteId", "14706");
     }
 
     function saveDraft() {
@@ -556,9 +530,6 @@ const projectDraftSeeds: Record<string, unknown> = {
         },
       }));
 
-      const hyvorWebsiteIdRaw = getTextValue("hyvorWebsiteId");
-      const hyvorWebsiteId = Number.parseInt(hyvorWebsiteIdRaw, 10);
-
       return {
         title: getTextValue("projectName"),
         slug: getTextValue("projectSlug"),
@@ -566,10 +537,6 @@ const projectDraftSeeds: Record<string, unknown> = {
         status: getTextValue("currentStatus"),
         intro: getTextValue("introNote"),
         startHere: getTextValue("startHereInstructions"),
-        hyvor: {
-          websiteId: Number.isNaN(hyvorWebsiteId) ? 14706 : hyvorWebsiteId,
-          pageId: getTextValue("hyvorPageId"),
-        },
         materials,
       };
     }
