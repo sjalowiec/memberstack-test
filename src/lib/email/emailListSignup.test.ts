@@ -180,6 +180,7 @@ describe("handleEmailListSignupRequest", () => {
 
   it("creates a new contact, subscribes, and applies the source tag", async () => {
     const ac = makeAc();
+    const recorded: unknown[] = [];
     const result = await handleEmailListSignupRequest(
       { firstName: "Ada", email: "ada@example.com" },
       {
@@ -187,6 +188,9 @@ describe("handleEmailListSignupRequest", () => {
         createClient: () => ac.client,
         rateLimitStore: new Map(),
         clientIp: "1.1.1.4",
+        recordSignup: async (row) => {
+          recorded.push(row);
+        },
       },
     );
 
@@ -206,6 +210,15 @@ describe("handleEmailListSignupRequest", () => {
       { create: true },
     );
     expect(ac.spies.addTag).toHaveBeenCalled();
+    expect(recorded).toEqual([
+      {
+        email: "ada@example.com",
+        source: "tip-of-the-week",
+        status: "added",
+        outcome: "created_and_subscribed",
+        errorSummary: null,
+      },
+    ]);
   });
 
   it("updates an existing contact without creating a duplicate and subscribes when not on list", async () => {
@@ -217,6 +230,7 @@ describe("handleEmailListSignupRequest", () => {
         tags: new Set(),
       },
     });
+    const recorded: unknown[] = [];
 
     const result = await handleEmailListSignupRequest(
       { firstName: "Ada", email: "ada@example.com" },
@@ -225,6 +239,9 @@ describe("handleEmailListSignupRequest", () => {
         createClient: () => ac.client,
         rateLimitStore: new Map(),
         clientIp: "1.1.1.5",
+        recordSignup: async (row) => {
+          recorded.push(row);
+        },
       },
     );
 
@@ -236,6 +253,12 @@ describe("handleEmailListSignupRequest", () => {
     expect(ac.contacts.size).toBe(1);
     expect(ac.contacts.get("ada@example.com")?.firstName).toBe("Ada");
     expect(ac.spies.subscribeToList).toHaveBeenCalledWith("ac_1");
+    expect(recorded).toEqual([
+      expect.objectContaining({
+        status: "added",
+        outcome: "subscribed_existing",
+      }),
+    ]);
   });
 
   it("returns the neutral already message for an active subscriber and does not re-subscribe", async () => {
@@ -247,6 +270,7 @@ describe("handleEmailListSignupRequest", () => {
         tags: new Set(),
       },
     });
+    const recorded: unknown[] = [];
 
     const result = await handleEmailListSignupRequest(
       { firstName: "Ada", email: "ada@example.com" },
@@ -255,6 +279,9 @@ describe("handleEmailListSignupRequest", () => {
         createClient: () => ac.client,
         rateLimitStore: new Map(),
         clientIp: "1.1.1.6",
+        recordSignup: async (row) => {
+          recorded.push(row);
+        },
       },
     );
 
@@ -266,6 +293,12 @@ describe("handleEmailListSignupRequest", () => {
     });
     expect(ac.spies.subscribeToList).not.toHaveBeenCalled();
     expect(ac.spies.addTag).toHaveBeenCalled();
+    expect(recorded).toEqual([
+      expect.objectContaining({
+        status: "already-subscribed",
+        outcome: "already_subscribed",
+      }),
+    ]);
   });
 
   it("does not silently resubscribe a previously unsubscribed contact", async () => {
@@ -277,6 +310,7 @@ describe("handleEmailListSignupRequest", () => {
         tags: new Set(),
       },
     });
+    const recorded: unknown[] = [];
 
     const result = await handleEmailListSignupRequest(
       { firstName: "Ada", email: "ada@example.com" },
@@ -285,6 +319,9 @@ describe("handleEmailListSignupRequest", () => {
         createClient: () => ac.client,
         rateLimitStore: new Map(),
         clientIp: "1.1.1.7",
+        recordSignup: async (row) => {
+          recorded.push(row);
+        },
       },
     );
 
@@ -297,6 +334,12 @@ describe("handleEmailListSignupRequest", () => {
     expect(ac.spies.subscribeToList).not.toHaveBeenCalled();
     expect(ac.spies.addTag).not.toHaveBeenCalled();
     expect(ac.contacts.get("ada@example.com")?.listStatus).toBe("unsubscribed");
+    expect(recorded).toEqual([
+      expect.objectContaining({
+        status: "not-added",
+        outcome: "skipped_unsubscribed",
+      }),
+    ]);
 
     const publicBody = toPublicEmailListSignupResponse(result);
     expect(publicBody).toEqual({
@@ -308,6 +351,7 @@ describe("handleEmailListSignupRequest", () => {
 
   it("returns a decoy success for honeypot submissions", async () => {
     const ac = makeAc();
+    const recorded: unknown[] = [];
     const result = await handleEmailListSignupRequest(
       {
         firstName: "Ada",
@@ -319,6 +363,9 @@ describe("handleEmailListSignupRequest", () => {
         createClient: () => ac.client,
         rateLimitStore: new Map(),
         clientIp: "1.1.1.8",
+        recordSignup: async (row) => {
+          recorded.push(row);
+        },
       },
     );
 
@@ -328,10 +375,12 @@ describe("handleEmailListSignupRequest", () => {
       messageKey: "already",
     });
     expect(ac.spies.syncContact).not.toHaveBeenCalled();
+    expect(recorded).toEqual([]);
   });
 
   it("rate-limits repeated submissions from the same IP with a decoy success", async () => {
     const ac = makeAc();
+    const recorded: unknown[] = [];
     const store = new Map();
     const opts = {
       env: baseEnv,
@@ -339,6 +388,9 @@ describe("handleEmailListSignupRequest", () => {
       rateLimitStore: store,
       clientIp: "9.9.9.9",
       now: 1_000_000,
+      recordSignup: async (row: unknown) => {
+        recorded.push(row);
+      },
     };
 
     for (let i = 0; i < 5; i += 1) {
@@ -361,6 +413,11 @@ describe("handleEmailListSignupRequest", () => {
       outcome: "rate_limited",
       messageKey: "already",
     });
+    // Five successful adds recorded; rate-limit decoy is not stored.
+    expect(recorded).toHaveLength(5);
+    expect(recorded.every((row) => (row as { status: string }).status === "added")).toBe(
+      true,
+    );
   });
 
   it("returns a safe generic message when ActiveCampaign fails", async () => {
@@ -368,6 +425,7 @@ describe("handleEmailListSignupRequest", () => {
     ac.client.findContactByEmail = async () => {
       throw new Error("ActiveCampaign contact lookup failed (HTTP 500): secret-body");
     };
+    const recorded: unknown[] = [];
 
     const result = await handleEmailListSignupRequest(
       { firstName: "Ada", email: "ada@example.com" },
@@ -376,6 +434,9 @@ describe("handleEmailListSignupRequest", () => {
         createClient: () => ac.client,
         rateLimitStore: new Map(),
         clientIp: "1.1.1.9",
+        recordSignup: async (row) => {
+          recorded.push(row);
+        },
       },
     );
 
@@ -386,10 +447,20 @@ describe("handleEmailListSignupRequest", () => {
     });
     expect(JSON.stringify(result)).not.toContain("secret-body");
     expect(JSON.stringify(result)).not.toContain("ada@example.com");
+    expect(recorded).toEqual([
+      {
+        email: "ada@example.com",
+        source: "tip-of-the-week",
+        status: "failed",
+        outcome: "ac_request_failed",
+        errorSummary: "ActiveCampaign request failed (HTTP 500)",
+      },
+    ]);
   });
 
   it("fails safely when the ActiveCampaign hostname is the retired host", async () => {
     const ac = makeAc();
+    const recorded: unknown[] = [];
     const result = await handleEmailListSignupRequest(
       { firstName: "Ada", email: "ada@example.com" },
       {
@@ -400,6 +471,9 @@ describe("handleEmailListSignupRequest", () => {
         createClient: () => ac.client,
         rateLimitStore: new Map(),
         clientIp: "1.1.1.10",
+        recordSignup: async (row) => {
+          recorded.push(row);
+        },
       },
     );
 
@@ -409,5 +483,42 @@ describe("handleEmailListSignupRequest", () => {
       error: EMAIL_LIST_SIGNUP_MESSAGES.genericFailure,
     });
     expect(ac.spies.syncContact).not.toHaveBeenCalled();
+    expect(recorded).toEqual([
+      expect.objectContaining({
+        status: "failed",
+        outcome: "hostname_invalid",
+      }),
+    ]);
+  });
+
+  it("records a duplicate resubmission as already-subscribed without counting a second add", async () => {
+    const ac = makeAc();
+    const recorded: Array<{ status: string; outcome: string | null }> = [];
+    const opts = {
+      env: baseEnv,
+      createClient: () => ac.client,
+      rateLimitStore: new Map(),
+      clientIp: "1.1.1.11",
+      recordSignup: async (row: { status: string; outcome: string | null }) => {
+        recorded.push({ status: row.status, outcome: row.outcome });
+      },
+    };
+
+    const first = await handleEmailListSignupRequest(
+      { firstName: "Ada", email: "ada@example.com" },
+      opts,
+    );
+    expect(first).toMatchObject({ ok: true, outcome: "created_and_subscribed" });
+
+    const second = await handleEmailListSignupRequest(
+      { firstName: "Ada", email: "ada@example.com" },
+      opts,
+    );
+    expect(second).toMatchObject({ ok: true, outcome: "already_subscribed" });
+    expect(recorded).toEqual([
+      { status: "added", outcome: "created_and_subscribed" },
+      { status: "already-subscribed", outcome: "already_subscribed" },
+    ]);
+    expect(recorded.filter((row) => row.status === "added")).toHaveLength(1);
   });
 });

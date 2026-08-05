@@ -52,6 +52,7 @@ describe("Watson member search pages", () => {
     expect(shell).toContain('<a href="/watson/video-replies">Video Replies</a>');
     expect(shell).toContain('href="/watson/whats-new"');
     expect(shell).toContain('href="/watson/tip-of-the-week"');
+    expect(shell).toContain('<a href="/watson/email-signups">Email Signups</a>');
     expect(shell).toContain('<a href="/watson/responses">Responses</a>');
     expect(shell).toContain('<a href="/watson/contact-messages">Contact Messages</a>');
 

@@ -1,0 +1,118 @@
+---
+import {
+  formatCivilLabel,
+  formatLaTimestamp,
+} from "../../lib/watson/salesReportDates";
+import {
+  formatEmailSignupsChange,
+  formatEmailSignupsPercentChange,
+  formatEmailSignupsPeriodLabel,
+  type EmailSignupsReport,
+  type PeriodComparison,
+} from "../../lib/watson/emailSignupsReport";
+
+interface Props {
+  report: EmailSignupsReport | null;
+  loadError: string | null;
+}
+
+const { report, loadError } = Astro.props;
+
+function comparisonNote(comparison: PeriodComparison): string {
+  const prevLabel = formatEmailSignupsPeriodLabel(comparison.previous);
+  const changeText = formatEmailSignupsChange(comparison.change);
+  const percentText = formatEmailSignupsPercentChange(comparison.percentChange);
+  if (comparison.percentChange == null) {
+    return `Previous period (${prevLabel}): ${comparison.previous.newSignups}. Change: ${changeText}.`;
+  }
+  return `Previous period (${prevLabel}): ${comparison.previous.newSignups}. Change: ${changeText} (${percentText}).`;
+}
+---
+
+{
+  loadError ? (
+    <p class="watson__status watson__status--error" role="alert">
+      {loadError}
+    </p>
+  ) : null
+}
+
+{
+  report ? (
+    <>
+      <p class="watson-report__meta">
+        Source: <strong>{report.sourceLabel}</strong>
+        {" · "}
+        Generated {formatLaTimestamp(report.generatedAtIso)}
+        {" · "}
+        {report.timezone}
+      </p>
+
+      <section class="watson__panel" aria-labelledby="email-signups-summary-heading">
+        <h2 id="email-signups-summary-heading" class="watson__panel-title">
+          New signups
+        </h2>
+        <p class="watson-report__note">
+          Only status <code>added</code> counts — ActiveCampaign confirmed the
+          email was newly subscribed to the mailing list. Already-subscribed,
+          consent-protected, duplicate, and failed attempts are excluded.
+        </p>
+
+        <div class="watson-report__cards">
+          <article class="watson-report__card">
+            <p class="watson-report__card-label">Today</p>
+            <p class="watson-report__card-value">{report.today.newSignups}</p>
+            <p class="watson-report__note">
+              {formatCivilLabel(report.today.fromCivil)}
+            </p>
+          </article>
+
+          <article class="watson-report__card">
+            <p class="watson-report__card-label">Last 7 days</p>
+            <p class="watson-report__card-value">{report.last7.current.newSignups}</p>
+            <p class="watson-report__note">
+              {formatEmailSignupsPeriodLabel(report.last7.current)}
+            </p>
+            <p class="watson-report__note">{comparisonNote(report.last7)}</p>
+          </article>
+
+          <article class="watson-report__card">
+            <p class="watson-report__card-label">Last 30 days</p>
+            <p class="watson-report__card-value">{report.last30.current.newSignups}</p>
+            <p class="watson-report__note">
+              {formatEmailSignupsPeriodLabel(report.last30.current)}
+            </p>
+            <p class="watson-report__note">{comparisonNote(report.last30)}</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="watson__panel" aria-labelledby="email-signups-daily-heading">
+        <h2 id="email-signups-daily-heading" class="watson__panel-title">
+          Daily breakdown (last 30 days)
+        </h2>
+        <div class="watson-table-wrap">
+          <table class="watson-table" data-sortable>
+            <thead>
+              <tr>
+                <th scope="col" data-sort="text">Date</th>
+                <th scope="col" data-sort="number">New signups</th>
+              </tr>
+            </thead>
+            <tbody>
+              {report.daily.map((row) => (
+                <tr class:list={[{ "watson-table__row--muted": row.newSignups === 0 }]}>
+                  <td>
+                    {formatCivilLabel(row.date)}
+                    {row.inProgress ? " (in progress)" : ""}
+                  </td>
+                  <td>{row.newSignups}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </>
+  ) : null
+}

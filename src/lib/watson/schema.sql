@@ -446,6 +446,56 @@ ALTER TABLE watson_whats_new_settings
   ADD COLUMN IF NOT EXISTS start_date DATE,
   ADD COLUMN IF NOT EXISTS end_date DATE;
 
+CREATE TABLE IF NOT EXISTS watson_tip_of_the_week (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  tip_id TEXT NOT NULL UNIQUE,
+  title TEXT NOT NULL,
+  intro TEXT NOT NULL,
+  video_content_id TEXT NOT NULL,
+  available_from DATE NOT NULL,
+  available_through DATE NOT NULL,
+  status TEXT NOT NULL DEFAULT 'draft'
+    CHECK (status IN ('draft', 'scheduled', 'active', 'archived')),
+  availability_notice TEXT NOT NULL DEFAULT 'Free to watch this week',
+  availability_footer_template TEXT NOT NULL DEFAULT
+    'This Learning Library video is free for everyone through {date}. After that, it returns to the member Learning Library.',
+  try_copy TEXT NOT NULL DEFAULT '',
+  sue_tip_copy TEXT NOT NULL DEFAULT '',
+  learn_points_json TEXT NOT NULL DEFAULT '[]',
+  related_links_json TEXT NOT NULL DEFAULT '[]',
+  eyebrow TEXT NOT NULL DEFAULT 'TIP OF THE WEEK',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT watson_tip_of_the_week_dates_ok
+    CHECK (available_from <= available_through)
+);
+
+CREATE INDEX IF NOT EXISTS idx_watson_tip_of_the_week_public
+ON watson_tip_of_the_week (status, available_from, available_through)
+WHERE status IN ('scheduled', 'active');
+
+CREATE INDEX IF NOT EXISTS idx_watson_tip_of_the_week_admin
+ON watson_tip_of_the_week (status, available_from DESC, updated_at DESC);
+
+CREATE TABLE IF NOT EXISTS watson_email_signups (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  email TEXT NOT NULL,
+  source TEXT NOT NULL,
+  status TEXT NOT NULL
+    CHECK (status IN ('added', 'already-subscribed', 'not-added', 'failed')),
+  outcome TEXT,
+  error_summary TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_watson_email_signups_added_created
+ON watson_email_signups (created_at)
+WHERE status = 'added';
+
+CREATE INDEX IF NOT EXISTS idx_watson_email_signups_source_created ON watson_email_signups (source, created_at);
+
+CREATE INDEX IF NOT EXISTS idx_watson_email_signups_status_created ON watson_email_signups (status, created_at);
+
 CREATE INDEX IF NOT EXISTS idx_legacy_members_email ON legacy_members (LOWER(email));
 
 CREATE INDEX IF NOT EXISTS idx_legacy_members_lastname ON legacy_members (lastname);

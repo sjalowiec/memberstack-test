@@ -381,6 +381,33 @@ WHERE status IN ('scheduled', 'active')`,
       sql: `CREATE INDEX IF NOT EXISTS idx_watson_tip_of_the_week_admin
 ON watson_tip_of_the_week (status, available_from DESC, updated_at DESC)`,
     },
+    {
+      label: "table watson_email_signups",
+      sql: `CREATE TABLE IF NOT EXISTS watson_email_signups (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  email TEXT NOT NULL,
+  source TEXT NOT NULL,
+  status TEXT NOT NULL
+    CHECK (status IN ('added', 'already-subscribed', 'not-added', 'failed')),
+  outcome TEXT,
+  error_summary TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+)`,
+    },
+    {
+      label: "index idx_watson_email_signups_added_created",
+      sql: `CREATE INDEX IF NOT EXISTS idx_watson_email_signups_added_created
+ON watson_email_signups (created_at)
+WHERE status = 'added'`,
+    },
+    {
+      label: "index idx_watson_email_signups_source_created",
+      sql: "CREATE INDEX IF NOT EXISTS idx_watson_email_signups_source_created ON watson_email_signups (source, created_at)",
+    },
+    {
+      label: "index idx_watson_email_signups_status_created",
+      sql: "CREATE INDEX IF NOT EXISTS idx_watson_email_signups_status_created ON watson_email_signups (status, created_at)",
+    },
   ];
 }
 
