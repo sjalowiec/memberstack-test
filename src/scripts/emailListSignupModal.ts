@@ -15,6 +15,9 @@ export const WEEKLY_TIP_SIGNUP_OPEN_SELECTOR = "[data-weekly-tip-signup-open]";
 export const WEEKLY_TIP_SIGNUP_CHROME_SELECTOR = "[data-weekly-tip-signup-chrome]";
 
 const BOUND_ATTR = "data-weekly-tip-signup-bound";
+const DELEGATED_ATTR = "data-weekly-tip-signup-delegated";
+const BOOT_ATTR = "data-weekly-tip-signup-boot";
+
 const FOCUSABLE_SELECTOR = [
   "a[href]",
   "button:not([disabled])",
@@ -101,31 +104,72 @@ export type WeeklyTipSignupModalController = {
   isOpen: () => boolean;
 };
 
+/** Rebuild open/close without attaching more listeners (dialog already bound). */
+function createControllerForBoundDialog(
+  dialog: HTMLDialogElement,
+  root: ParentNode,
+): WeeklyTipSignupModalController {
+  const open = (opener?: HTMLElement | null): void => {
+    syncWeeklyTipSignupChromeVisibility(root, activeOptions.now);
+    if (isWeeklyTipSubscriberRecognized(activeOptions.now)) return;
+    void opener;
+    if (!isSuccessVisible(dialog)) {
+      restoreFormView(dialog);
+    }
+    if (!dialog.open) {
+      dialog.showModal();
+    }
+    const focusTarget =
+      dialog.querySelector<HTMLElement>("[data-signup-close]") ||
+      dialog.querySelector<HTMLElement>('input[name="firstName"]') ||
+      getFocusable(dialog)[0];
+    focusTarget?.focus();
+  };
+
+  return {
+    open,
+    close: () => {
+      if (dialog.open) dialog.close();
+    },
+    isOpen: () => dialog.open,
+  };
+}
+
+type InitOptions = {
+  now?: number;
+  locationLike?: {
+    pathname: string;
+    search: string;
+    hash: string;
+  };
+  replaceState?: (url: string) => void;
+};
+
+let activeController: WeeklyTipSignupModalController | null = null;
+let activeOptions: InitOptions = {};
+
+/**
+ * Wire the dialog once. Safe to call repeatedly — skips duplicate listeners via BOUND_ATTR.
+ * Returns null when the dialog is not in the DOM yet (caller may retry after DOM ready).
+ */
 export function initWeeklyTipSignupModal(
   root: ParentNode = document,
-  options: {
-    now?: number;
-    locationLike?: {
-      pathname: string;
-      search: string;
-      hash: string;
-    };
-    replaceState?: (url: string) => void;
-  } = {},
+  options: InitOptions = {},
 ): WeeklyTipSignupModalController | null {
   const dialog = getDialog(root);
   if (!dialog) return null;
+
+  activeOptions = { ...activeOptions, ...options };
+
   if (dialog.getAttribute(BOUND_ATTR) === "true") {
-    return {
-      open: () => {
-        if (!dialog.open) dialog.showModal();
-      },
-      close: () => {
-        if (dialog.open) dialog.close();
-      },
-      isOpen: () => dialog.open,
-    };
+    syncWeeklyTipSignupChromeVisibility(root, activeOptions.now);
+    if (activeController) return activeController;
+    // Module singleton was lost (e.g. remount) but listeners already exist —
+    // rebuild the controller without attaching duplicate handlers.
+    activeController = createControllerForBoundDialog(dialog, root);
+    return activeController;
   }
+
   dialog.setAttribute(BOUND_ATTR, "true");
 
   // Presentation hint from ActiveCampaign email links — never auth.
@@ -171,7 +215,10 @@ export function initWeeklyTipSignupModal(
   };
 
   const open = (opener?: HTMLElement | null): void => {
-    if (isWeeklyTipSubscriberRecognized(options.now)) return;
+    // Recover chrome visibility if recognition flipped after first paint.
+    syncWeeklyTipSignupChromeVisibility(root, activeOptions.now);
+    if (isWeeklyTipSubscriberRecognized(activeOptions.now)) return;
+
     lastOpener = opener ?? null;
     if (!isSuccessVisible(dialog)) {
       restoreFormView(dialog);
@@ -236,16 +283,9 @@ export function initWeeklyTipSignupModal(
     }
   });
 
-  root.querySelectorAll<HTMLElement>(WEEKLY_TIP_SIGNUP_OPEN_SELECTOR).forEach((btn) => {
-    btn.addEventListener("click", (event) => {
-      event.preventDefault();
-      open(btn);
-    });
-  });
-
   root.addEventListener("email-list-signup:success", ((event: CustomEvent) => {
-    markWeeklyTipSubscriberRecognized(options.now);
-    syncWeeklyTipSignupChromeVisibility(root, options.now);
+    markWeeklyTipSubscriberRecognized(activeOptions.now);
+    syncWeeklyTipSignupChromeVisibility(root, activeOptions.now);
     const doneBtn = dialog.querySelector<HTMLElement>("[data-signup-done]");
     if (doneBtn) {
       doneBtn.hidden = false;
@@ -254,5 +294,83 @@ export function initWeeklyTipSignupModal(
     void event;
   }) as EventListener);
 
-  return { open, close, isOpen: () => dialog.open };
+  activeController = { open, close, isOpen: () => dialog.open };
+  return activeController;
+}
+
+/**
+ * Document-level open-button delegation (idempotent). Survives timing where
+ * per-button listeners were never attached, and works after DOM swaps.
+ */
+export function ensureWeeklyTipSignupOpenDelegation(
+  doc: Document = document,
+): void {
+  const host = doc.documentElement;
+  if (!host || host.getAttribute(DELEGATED_ATTR) === "true") return;
+  host.setAttribute(DELEGATED_ATTR, "true");
+
+  doc.addEventListener("click", (event) => {
+    const target = event.target;
+    if (!target || typeof (target as { closest?: unknown }).closest !== "function") {
+      return;
+    }
+    const btn = (target as Element).closest<HTMLElement>(WEEKLY_TIP_SIGNUP_OPEN_SELECTOR);
+    if (!btn) return;
+
+    event.preventDefault();
+
+    const controller =
+      activeController ??
+      initWeeklyTipSignupModal(doc, activeOptions);
+    if (!controller) return;
+    controller.open(btn);
+  });
+}
+
+/**
+ * Boot entry used by the Astro page script.
+ * - Waits for DOMContentLoaded when the dialog is not ready yet
+ * - Re-runs on astro:page-load when present
+ * - Uses delegated clicks so triggers always work once the dialog exists
+ */
+export function bootWeeklyTipSignupModal(
+  options: InitOptions = {},
+  doc: Document = document,
+): WeeklyTipSignupModalController | null {
+  activeOptions = { ...activeOptions, ...options };
+  ensureWeeklyTipSignupOpenDelegation(doc);
+
+  const run = (): WeeklyTipSignupModalController | null =>
+    initWeeklyTipSignupModal(doc, activeOptions);
+
+  let controller = run();
+
+  if (!controller && doc.readyState === "loading") {
+    doc.addEventListener(
+      "DOMContentLoaded",
+      () => {
+        controller = run();
+      },
+      { once: true },
+    );
+  }
+
+  if (typeof document !== "undefined" && document.documentElement) {
+    const rootEl = document.documentElement;
+    if (rootEl.getAttribute(BOOT_ATTR) !== "true") {
+      rootEl.setAttribute(BOOT_ATTR, "true");
+      document.addEventListener("astro:page-load", () => {
+        // Client navigation may swap markup; re-init if a fresh unbound dialog appears.
+        run();
+      });
+    }
+  }
+
+  return controller;
+}
+
+/** Test helper: reset module singletons between cases. */
+export function resetWeeklyTipSignupModalForTests(): void {
+  activeController = null;
+  activeOptions = {};
 }
