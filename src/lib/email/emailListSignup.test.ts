@@ -5,6 +5,7 @@ import type {
 } from "../activecampaign/client";
 import {
   checkActiveCampaignSignupHostname,
+  EMAIL_LIST_SIGNUP_DASHBOARD_HOST,
   EMAIL_LIST_SIGNUP_EXPECTED_HOST,
   EMAIL_LIST_SIGNUP_MESSAGES,
   EMAIL_LIST_SIGNUP_RETIRED_HOST,
@@ -88,12 +89,13 @@ const baseEnv = {
 };
 
 describe("checkActiveCampaignSignupHostname", () => {
-  it("accepts the Knit It Now ActiveCampaign host", () => {
+  it("accepts the Knit It Now ActiveCampaign Admin API host", () => {
     expect(
       checkActiveCampaignSignupHostname(
         `https://${EMAIL_LIST_SIGNUP_EXPECTED_HOST}`,
       ),
     ).toEqual({ ok: true, hostname: EMAIL_LIST_SIGNUP_EXPECTED_HOST });
+    expect(EMAIL_LIST_SIGNUP_EXPECTED_HOST).toBe("knititnow.api-us1.com");
   });
 
   it("rejects the retired Knit By Machine host", () => {
@@ -105,6 +107,18 @@ describe("checkActiveCampaignSignupHostname", () => {
       ok: false,
       hostname: EMAIL_LIST_SIGNUP_RETIRED_HOST,
       reason: "retired_host",
+    });
+  });
+
+  it("rejects the dashboard host — API base URL must be api-us1, not activehosted", () => {
+    expect(
+      checkActiveCampaignSignupHostname(
+        `https://${EMAIL_LIST_SIGNUP_DASHBOARD_HOST}`,
+      ),
+    ).toEqual({
+      ok: false,
+      hostname: EMAIL_LIST_SIGNUP_DASHBOARD_HOST,
+      reason: "unexpected_host",
     });
   });
 });

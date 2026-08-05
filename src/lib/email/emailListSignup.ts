@@ -31,8 +31,11 @@ export {
   EMAIL_LIST_SIGNUP_SOURCE_TAG,
 } from "./emailListSignupShared";
 
-export const EMAIL_LIST_SIGNUP_EXPECTED_HOST = "knititnow.activehosted.com";
+/** Admin API hostname (ACTIVECAMPAIGN_BASE_URL). Not the browser dashboard host. */
+export const EMAIL_LIST_SIGNUP_EXPECTED_HOST = "knititnow.api-us1.com";
 export const EMAIL_LIST_SIGNUP_RETIRED_HOST = "knitbymachine.activehosted.com";
+/** Dashboard / marketing UI host — valid in the browser, not for Admin API calls. */
+export const EMAIL_LIST_SIGNUP_DASHBOARD_HOST = "knititnow.activehosted.com";
 
 /** List statuses that must never be overridden by subscribeToList. */
 const CONSENT_PROTECTED_STATUSES: ReadonlySet<ActiveCampaignListStatus> =
