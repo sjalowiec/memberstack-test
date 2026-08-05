@@ -7,8 +7,13 @@ import {
   bootWeeklyTipSignupModal,
   ensureWeeklyTipSignupOpenDelegation,
   initWeeklyTipSignupModal,
+  refreshWeeklyTipSignupMemberstackState,
   resetWeeklyTipSignupModalForTests,
   setWeeklyTipSignupChromeVisible,
+  setWeeklyTipSignupMemberstackLoggedInForTests,
+  setWeeklyTipSignupMemberstackResolverForTests,
+  shouldShowWeeklyTipSignupChrome,
+  syncWeeklyTipSignupChromeVisibility,
 } from "./emailListSignupModal";
 
 const componentDir = dirname(fileURLToPath(import.meta.url));
@@ -41,28 +46,78 @@ function memoryStorage(seed: Record<string, string> = {}): Storage {
   };
 }
 
-function withLocalStorage(storage: Storage, run: () => void): void {
+function withLocalStorage(storage: Storage, run: () => void): void;
+function withLocalStorage(storage: Storage, run: () => Promise<void>): Promise<void>;
+function withLocalStorage(
+  storage: Storage,
+  run: (() => void) | (() => Promise<void>),
+): void | Promise<void> {
   const original = globalThis.localStorage;
   Object.defineProperty(globalThis, "localStorage", {
     configurable: true,
     value: storage,
   });
   try {
-    run();
-  } finally {
+    const result = run();
+    if (result && typeof (result as Promise<void>).then === "function") {
+      return Promise.resolve(result).finally(() => {
+        Object.defineProperty(globalThis, "localStorage", {
+          configurable: true,
+          value: original,
+        });
+      });
+    }
+  } catch (error) {
     Object.defineProperty(globalThis, "localStorage", {
       configurable: true,
       value: original,
     });
+    throw error;
   }
+  Object.defineProperty(globalThis, "localStorage", {
+    configurable: true,
+    value: original,
+  });
 }
 
 beforeEach(() => {
   resetWeeklyTipSignupModalForTests();
+  // Avoid production Memberstack polling in unit tests.
+  setWeeklyTipSignupMemberstackResolverForTests(async () => false);
   if (typeof document !== "undefined" && document.documentElement) {
     document.documentElement.removeAttribute("data-weekly-tip-signup-delegated");
     document.documentElement.removeAttribute("data-weekly-tip-signup-boot");
+    document.documentElement.removeAttribute("data-weekly-tip-signup-ms-auth");
   }
+});
+
+describe("weekly tip signup chrome visibility rule", () => {
+  it("shows only for logged-out unrecognized visitors", () => {
+    expect(
+      shouldShowWeeklyTipSignupChrome({
+        recognizedSubscriber: false,
+        memberstackLoggedIn: false,
+      }),
+    ).toBe(true);
+    expect(
+      shouldShowWeeklyTipSignupChrome({
+        recognizedSubscriber: true,
+        memberstackLoggedIn: false,
+      }),
+    ).toBe(false);
+    expect(
+      shouldShowWeeklyTipSignupChrome({
+        recognizedSubscriber: false,
+        memberstackLoggedIn: true,
+      }),
+    ).toBe(false);
+    expect(
+      shouldShowWeeklyTipSignupChrome({
+        recognizedSubscriber: true,
+        memberstackLoggedIn: true,
+      }),
+    ).toBe(false);
+  });
 });
 
 describe("weekly tip signup modal presentation", () => {
@@ -487,6 +542,134 @@ describe("weekly tip signup modal presentation", () => {
       } as unknown as Event);
 
       expect(showModal).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("hides CTA for logged-in Memberstack members even without recognition key", async () => {
+    const storage = memoryStorage();
+    const chrome = {
+      hidden: false,
+      setAttribute: vi.fn(),
+      removeAttribute: vi.fn(),
+    };
+    const showModal = vi.fn();
+    const dialog = {
+      open: false,
+      getAttribute() {
+        return null;
+      },
+      setAttribute() {},
+      showModal,
+      close() {},
+      querySelector() {
+        return { focus: vi.fn(), value: "" };
+      },
+      querySelectorAll() {
+        return [];
+      },
+      addEventListener() {},
+    };
+    const root = {
+      querySelector() {
+        return dialog;
+      },
+      querySelectorAll(selector: string) {
+        if (selector.includes("chrome")) return [chrome];
+        return [];
+      },
+      addEventListener() {},
+    } as unknown as ParentNode;
+
+    setWeeklyTipSignupMemberstackResolverForTests(async () => true);
+
+    await withLocalStorage(storage, async () => {
+      expect(storage.getItem(WEEKLY_TIP_SUBSCRIBER_STORAGE_KEY)).toBeNull();
+      const controller = initWeeklyTipSignupModal(root, {
+        locationLike: { pathname: "/tip-of-the-week", search: "", hash: "" },
+      });
+      // First paint may still show CTA until Memberstack resolves.
+      expect(chrome.hidden).toBe(false);
+
+      await refreshWeeklyTipSignupMemberstackState(root);
+      expect(chrome.hidden).toBe(true);
+      expect(chrome.setAttribute).toHaveBeenCalledWith("aria-hidden", "true");
+
+      controller?.open({ focus: vi.fn() } as unknown as HTMLElement);
+      expect(showModal).not.toHaveBeenCalled();
+    });
+  });
+
+  it("keeps CTA for logged-out unrecognized visitors after Memberstack resolves", async () => {
+    const storage = memoryStorage();
+    const chrome = {
+      hidden: false,
+      setAttribute: vi.fn(),
+      removeAttribute: vi.fn(),
+    };
+    const showModal = vi.fn();
+    const dialog = {
+      open: false,
+      getAttribute() {
+        return null;
+      },
+      setAttribute() {},
+      showModal,
+      close() {},
+      querySelector() {
+        return { focus: vi.fn(), value: "" };
+      },
+      querySelectorAll() {
+        return [];
+      },
+      addEventListener() {},
+    };
+    const root = {
+      querySelector() {
+        return dialog;
+      },
+      querySelectorAll(selector: string) {
+        if (selector.includes("chrome")) return [chrome];
+        return [];
+      },
+      addEventListener() {},
+    } as unknown as ParentNode;
+
+    setWeeklyTipSignupMemberstackResolverForTests(async () => false);
+
+    await withLocalStorage(storage, async () => {
+      const controller = initWeeklyTipSignupModal(root, {
+        locationLike: { pathname: "/tip-of-the-week", search: "", hash: "" },
+      });
+      await refreshWeeklyTipSignupMemberstackState(root);
+      expect(chrome.hidden).toBe(false);
+      controller?.open({ focus: vi.fn() } as unknown as HTMLElement);
+      expect(showModal).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("re-shows CTA after logout when the visitor is not a recognized subscriber", () => {
+    const storage = memoryStorage();
+    const chrome = {
+      hidden: true,
+      setAttribute: vi.fn(),
+      removeAttribute: vi.fn(),
+    };
+    const root = {
+      querySelectorAll(selector: string) {
+        if (selector.includes("chrome")) return [chrome];
+        return [];
+      },
+    } as unknown as ParentNode;
+
+    withLocalStorage(storage, () => {
+      setWeeklyTipSignupMemberstackLoggedInForTests(true);
+      syncWeeklyTipSignupChromeVisibility(root);
+      expect(chrome.hidden).toBe(true);
+
+      setWeeklyTipSignupMemberstackLoggedInForTests(false);
+      syncWeeklyTipSignupChromeVisibility(root);
+      expect(chrome.hidden).toBe(false);
+      expect(chrome.removeAttribute).toHaveBeenCalledWith("aria-hidden");
     });
   });
 });

@@ -3,6 +3,7 @@
  * Does not call ActiveCampaign on page load. Server signup path unchanged.
  */
 
+import { isMemberstackLoggedInPayload } from "../lib/patterns/memberstackMember";
 import {
   applyWeeklyTipSubscriberQueryHint,
   isWeeklyTipSubscriberRecognized,
@@ -17,6 +18,7 @@ export const WEEKLY_TIP_SIGNUP_CHROME_SELECTOR = "[data-weekly-tip-signup-chrome
 const BOUND_ATTR = "data-weekly-tip-signup-bound";
 const DELEGATED_ATTR = "data-weekly-tip-signup-delegated";
 const BOOT_ATTR = "data-weekly-tip-signup-boot";
+const MS_AUTH_ATTR = "data-weekly-tip-signup-ms-auth";
 
 const FOCUSABLE_SELECTOR = [
   "a[href]",
@@ -26,6 +28,52 @@ const FOCUSABLE_SELECTOR = [
   "textarea:not([disabled])",
   "[tabindex]:not([tabindex='-1'])",
 ].join(", ");
+
+export type ResolveWeeklyTipMemberstackLoggedIn = () => Promise<boolean>;
+
+/**
+ * Pure visibility rule:
+ * - show for logged-out unrecognized visitors
+ * - hide for recognized email subscribers
+ * - hide for logged-in Memberstack members (regardless of localStorage)
+ */
+export function shouldShowWeeklyTipSignupChrome(args: {
+  recognizedSubscriber: boolean;
+  memberstackLoggedIn: boolean;
+}): boolean {
+  return !args.recognizedSubscriber && !args.memberstackLoggedIn;
+}
+
+async function defaultResolveMemberstackLoggedIn(): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+
+  for (let i = 0; i < 30; i++) {
+    const ms = window.$memberstackDom;
+    const api = ms?.getAppAndMember ?? ms?.getCurrentMember;
+    if (ms && typeof api === "function") {
+      try {
+        const onReady = ms.onReady;
+        if (onReady && typeof (onReady as Promise<unknown>).then === "function") {
+          await Promise.race([
+            Promise.resolve(onReady).catch(() => undefined),
+            new Promise<void>((resolve) => setTimeout(resolve, 4000)),
+          ]);
+        }
+        const payload = await api.call(ms);
+        return isMemberstackLoggedInPayload(payload);
+      } catch {
+        return false;
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+  return false;
+}
+
+let resolveMemberstackLoggedIn: ResolveWeeklyTipMemberstackLoggedIn =
+  defaultResolveMemberstackLoggedIn;
+/** Cached Memberstack session flag; updated after Memberstack is ready / on login/logout. */
+let memberstackLoggedIn = false;
 
 function isDialogElement(el: Element | null): el is HTMLDialogElement {
   return (
@@ -75,8 +123,71 @@ export function syncWeeklyTipSignupChromeVisibility(
   root: ParentNode = document,
   now: number = Date.now(),
 ): void {
-  const recognized = isWeeklyTipSubscriberRecognized(now);
-  setWeeklyTipSignupChromeVisible(!recognized, root);
+  const recognizedSubscriber = isWeeklyTipSubscriberRecognized(now);
+  setWeeklyTipSignupChromeVisible(
+    shouldShowWeeklyTipSignupChrome({
+      recognizedSubscriber,
+      memberstackLoggedIn,
+    }),
+    root,
+  );
+}
+
+function chromeAllowsOpen(now?: number): boolean {
+  return shouldShowWeeklyTipSignupChrome({
+    recognizedSubscriber: isWeeklyTipSubscriberRecognized(now),
+    memberstackLoggedIn,
+  });
+}
+
+export async function refreshWeeklyTipSignupMemberstackState(
+  root: ParentNode = document,
+): Promise<boolean> {
+  try {
+    memberstackLoggedIn = await resolveMemberstackLoggedIn();
+  } catch {
+    memberstackLoggedIn = false;
+  }
+  syncWeeklyTipSignupChromeVisibility(root, activeOptions.now);
+  return memberstackLoggedIn;
+}
+
+function bindWeeklyTipSignupMemberstackListeners(root: ParentNode): void {
+  if (typeof window === "undefined") return;
+  const host =
+    typeof document !== "undefined" ? document.documentElement : null;
+  if (host?.getAttribute(MS_AUTH_ATTR) === "true") return;
+
+  const ms = window.$memberstackDom;
+  if (!ms || typeof ms.on !== "function") return;
+  if (host) host.setAttribute(MS_AUTH_ATTR, "true");
+
+  ms.on("member.login", () => {
+    memberstackLoggedIn = true;
+    syncWeeklyTipSignupChromeVisibility(root, activeOptions.now);
+    void refreshWeeklyTipSignupMemberstackState(root);
+  });
+  ms.on("member.logout", () => {
+    memberstackLoggedIn = false;
+    syncWeeklyTipSignupChromeVisibility(root, activeOptions.now);
+    void refreshWeeklyTipSignupMemberstackState(root);
+  });
+}
+
+/**
+ * Idempotent Memberstack wiring: resolve session after onReady, then keep chrome
+ * in sync on login/logout. Logged-out visitors keep the CTA until/unless recognized.
+ * defaultResolve already waits (bounded) for `$memberstackDom` before deciding.
+ */
+export function ensureWeeklyTipSignupMemberstackAuth(
+  root: ParentNode = document,
+): void {
+  if (typeof window === "undefined") return;
+
+  void (async () => {
+    await refreshWeeklyTipSignupMemberstackState(root);
+    bindWeeklyTipSignupMemberstackListeners(root);
+  })();
 }
 
 function restoreFormView(dialog: HTMLDialogElement): void {
@@ -111,7 +222,7 @@ function createControllerForBoundDialog(
 ): WeeklyTipSignupModalController {
   const open = (opener?: HTMLElement | null): void => {
     syncWeeklyTipSignupChromeVisibility(root, activeOptions.now);
-    if (isWeeklyTipSubscriberRecognized(activeOptions.now)) return;
+    if (!chromeAllowsOpen(activeOptions.now)) return;
     void opener;
     if (!isSuccessVisible(dialog)) {
       restoreFormView(dialog);
@@ -163,6 +274,7 @@ export function initWeeklyTipSignupModal(
 
   if (dialog.getAttribute(BOUND_ATTR) === "true") {
     syncWeeklyTipSignupChromeVisibility(root, activeOptions.now);
+    ensureWeeklyTipSignupMemberstackAuth(root);
     if (activeController) return activeController;
     // Module singleton was lost (e.g. remount) but listeners already exist —
     // rebuild the controller without attaching duplicate handlers.
@@ -192,7 +304,9 @@ export function initWeeklyTipSignupModal(
     });
   }
 
+  // Keep CTA visible for logged-out visitors on first paint; Memberstack may hide it shortly after.
   syncWeeklyTipSignupChromeVisibility(root, options.now);
+  ensureWeeklyTipSignupMemberstackAuth(root);
 
   initEmailListSignupForms(root);
 
@@ -215,9 +329,9 @@ export function initWeeklyTipSignupModal(
   };
 
   const open = (opener?: HTMLElement | null): void => {
-    // Recover chrome visibility if recognition flipped after first paint.
+    // Recover chrome visibility if recognition / auth flipped after first paint.
     syncWeeklyTipSignupChromeVisibility(root, activeOptions.now);
-    if (isWeeklyTipSubscriberRecognized(activeOptions.now)) return;
+    if (!chromeAllowsOpen(activeOptions.now)) return;
 
     lastOpener = opener ?? null;
     if (!isSuccessVisible(dialog)) {
@@ -332,6 +446,7 @@ export function ensureWeeklyTipSignupOpenDelegation(
  * - Waits for DOMContentLoaded when the dialog is not ready yet
  * - Re-runs on astro:page-load when present
  * - Uses delegated clicks so triggers always work once the dialog exists
+ * - Resolves Memberstack after load so logged-in members hide the CTA
  */
 export function bootWeeklyTipSignupModal(
   options: InitOptions = {},
@@ -340,8 +455,11 @@ export function bootWeeklyTipSignupModal(
   activeOptions = { ...activeOptions, ...options };
   ensureWeeklyTipSignupOpenDelegation(doc);
 
-  const run = (): WeeklyTipSignupModalController | null =>
-    initWeeklyTipSignupModal(doc, activeOptions);
+  const run = (): WeeklyTipSignupModalController | null => {
+    const controller = initWeeklyTipSignupModal(doc, activeOptions);
+    ensureWeeklyTipSignupMemberstackAuth(doc);
+    return controller;
+  };
 
   let controller = run();
 
@@ -373,4 +491,18 @@ export function bootWeeklyTipSignupModal(
 export function resetWeeklyTipSignupModalForTests(): void {
   activeController = null;
   activeOptions = {};
+  memberstackLoggedIn = false;
+  resolveMemberstackLoggedIn = defaultResolveMemberstackLoggedIn;
+}
+
+/** Test helper: inject Memberstack logged-in resolution. */
+export function setWeeklyTipSignupMemberstackResolverForTests(
+  resolver?: ResolveWeeklyTipMemberstackLoggedIn,
+): void {
+  resolveMemberstackLoggedIn = resolver ?? defaultResolveMemberstackLoggedIn;
+}
+
+/** Test helper: set cached Memberstack logged-in flag directly. */
+export function setWeeklyTipSignupMemberstackLoggedInForTests(value: boolean): void {
+  memberstackLoggedIn = value;
 }
