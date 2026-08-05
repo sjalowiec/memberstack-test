@@ -134,6 +134,7 @@ describe("pattern phone workspace — notice + compact header", () => {
     expect(headerAstro).toContain("patternWorkspace");
     expect(layoutAstro).toContain("page--pattern-workspace");
     expect(layoutAstro).toContain("isPatternWorkspacePhone");
+    expect(layoutAstro).toContain("isPatternWorkspaceDesktop");
   });
 
   it("opts Builder, Edit, and Custom Build into the shared pattern workspace phone mode", () => {
