@@ -2,6 +2,9 @@
 
 export const EMAIL_LIST_SIGNUP_SOURCE_TAG = "source-website-weekly-tips";
 
+/** Reporting source key for Tip of the Week signups (safe for browser + server). */
+export const EMAIL_SIGNUP_SOURCE_TIP_OF_THE_WEEK = "tip-of-the-week";
+
 export const EMAIL_LIST_SIGNUP_MAX_FIRST_NAME = 80;
 export const EMAIL_LIST_SIGNUP_MAX_EMAIL = 254;
 

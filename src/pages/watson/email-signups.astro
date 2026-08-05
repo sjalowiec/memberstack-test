@@ -1,0 +1,31 @@
+---
+import WatsonPageShell from "../../components/watson/WatsonPageShell.astro";
+import WatsonEmailSignupsReport from "../../components/watson/WatsonEmailSignupsReport.astro";
+import {
+  loadEmailSignupsReport,
+} from "../../lib/watson/emailSignupsReportLoad";
+import type { EmailSignupsReport } from "../../lib/watson/emailSignupsReport";
+
+export const prerender = false;
+
+let report: EmailSignupsReport | null = null;
+let loadError: string | null = null;
+
+try {
+  report = await loadEmailSignupsReport({});
+} catch (error) {
+  loadError =
+    error instanceof Error
+      ? error.message
+      : "Email signups report failed to load. Check WATSON_DATABASE_URL and apply the watson-email-signups migration.";
+}
+---
+
+<WatsonPageShell
+  title="Email Signups | Watson"
+  description="New Tip of the Week email list signups by America/Los_Angeles calendar day."
+  heading="Email Signups"
+  intro="How many new people joined the email list? Counts only contacts ActiveCampaign newly added to the Knit It Now mailing list. Calendar days use America/Los_Angeles."
+>
+  <WatsonEmailSignupsReport report={report} loadError={loadError} />
+</WatsonPageShell>

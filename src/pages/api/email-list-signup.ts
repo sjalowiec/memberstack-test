@@ -4,6 +4,7 @@ import {
   toPublicEmailListSignupResponse,
   EMAIL_LIST_SIGNUP_MESSAGES,
 } from "../../lib/email/emailListSignup";
+import { insertEmailSignupRecord } from "../../lib/email/emailSignupRecordDb";
 import { getClientIpFromHeaders } from "../../lib/security/ipRateLimit";
 
 export const prerender = false;
@@ -43,7 +44,10 @@ export const POST: APIRoute = async ({ request }) => {
 
   const result = await handleEmailListSignupRequest(
     body as Record<string, unknown>,
-    { clientIp: getClientIpFromHeaders(request.headers) },
+    {
+      clientIp: getClientIpFromHeaders(request.headers),
+      recordSignup: insertEmailSignupRecord,
+    },
   );
 
   const publicBody = toPublicEmailListSignupResponse(result);

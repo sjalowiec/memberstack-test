@@ -22,7 +22,15 @@ import {
   EMAIL_LIST_SIGNUP_MAX_FIRST_NAME,
   EMAIL_LIST_SIGNUP_MESSAGES,
   EMAIL_LIST_SIGNUP_SOURCE_TAG,
+  EMAIL_SIGNUP_SOURCE_TIP_OF_THE_WEEK,
 } from "./emailListSignupShared";
+import {
+  mapSignupResultToRecord,
+  recordEmailSignupQuietly,
+  safeActiveCampaignErrorSummary,
+  type EmailListSignupOutcome,
+  type EmailSignupRecorder,
+} from "./emailSignupRecord";
 
 export {
   EMAIL_LIST_SIGNUP_MAX_EMAIL,
@@ -30,6 +38,8 @@ export {
   EMAIL_LIST_SIGNUP_MESSAGES,
   EMAIL_LIST_SIGNUP_SOURCE_TAG,
 } from "./emailListSignupShared";
+
+export type { EmailListSignupOutcome } from "./emailSignupRecord";
 
 /** Admin API hostname (ACTIVECAMPAIGN_BASE_URL). Not the browser dashboard host. */
 export const EMAIL_LIST_SIGNUP_EXPECTED_HOST = "knititnow.api-us1.com";
@@ -64,17 +74,6 @@ export type EmailListSignupHandlerResult =
     }
   | { ok: false; status: 400 | 429 | 500 | 502; error: string };
 
-export type EmailListSignupOutcome =
-  | "created_and_subscribed"
-  | "subscribed_existing"
-  | "already_subscribed"
-  | "skipped_unsubscribed"
-  | "skipped_bounced"
-  | "skipped_unconfirmed"
-  | "skipped_unknown_status"
-  | "honeypot"
-  | "rate_limited";
-
 type HandlerOptions = {
   env?: NodeJS.ProcessEnv;
   createClient?: (
@@ -86,6 +85,10 @@ type HandlerOptions = {
   now?: number;
   /** Override hostname check (tests). */
   assertHostname?: (baseUrl: string) => HostnameCheckResult;
+  /** Persist signup results for Watson reporting (defaults to Watson DB). */
+  recordSignup?: EmailSignupRecorder;
+  /** Signup source label for reporting; defaults to tip-of-the-week. */
+  signupSource?: string;
 };
 
 export type HostnameCheckResult =
@@ -181,6 +184,24 @@ function outcomeForProtectedStatus(
   }
 }
 
+async function persistSignupResult(input: {
+  email: string;
+  source: string;
+  result: EmailListSignupHandlerResult;
+  recordSignup?: EmailSignupRecorder;
+  failureOutcome?: string | null;
+  errorSummary?: string | null;
+}): Promise<void> {
+  const record = mapSignupResultToRecord({
+    email: input.email,
+    source: input.source,
+    result: input.result,
+    failureOutcome: input.failureOutcome,
+    errorSummary: input.errorSummary,
+  });
+  await recordEmailSignupQuietly(record, { recorder: input.recordSignup });
+}
+
 /**
  * Process a public email-list signup. Never includes list/contact status
  * details in the public message — only generic subscribed / already copy.
@@ -190,6 +211,8 @@ export async function handleEmailListSignupRequest(
   options: HandlerOptions = {},
 ): Promise<EmailListSignupHandlerResult> {
   const env = options.env ?? process.env;
+  const signupSource =
+    options.signupSource ?? EMAIL_SIGNUP_SOURCE_TIP_OF_THE_WEEK;
 
   // Honeypot: decoy success (same idea as contact form).
   if (readHoneypot(body)) {
@@ -242,11 +265,20 @@ export async function handleEmailListSignupRequest(
     console.error(
       "[email-list-signup] Missing ActiveCampaign config or KIN list id",
     );
-    return {
+    const result: EmailListSignupHandlerResult = {
       ok: false,
       status: 500,
       error: EMAIL_LIST_SIGNUP_MESSAGES.genericFailure,
     };
+    await persistSignupResult({
+      email,
+      source: signupSource,
+      result,
+      recordSignup: options.recordSignup,
+      failureOutcome: "config_missing",
+      errorSummary: "Missing ActiveCampaign configuration",
+    });
+    return result;
   }
 
   const hostnameCheck = (options.assertHostname ?? checkActiveCampaignSignupHostname)(
@@ -261,11 +293,20 @@ export async function handleEmailListSignupRequest(
         expected: EMAIL_LIST_SIGNUP_EXPECTED_HOST,
       },
     );
-    return {
+    const result: EmailListSignupHandlerResult = {
       ok: false,
       status: 500,
       error: EMAIL_LIST_SIGNUP_MESSAGES.genericFailure,
     };
+    await persistSignupResult({
+      email,
+      source: signupSource,
+      result,
+      recordSignup: options.recordSignup,
+      failureOutcome: "hostname_invalid",
+      errorSummary: "ActiveCampaign hostname is not compatible",
+    });
+    return result;
   }
 
   const createClient =
@@ -277,11 +318,20 @@ export async function handleEmailListSignupRequest(
     const listOk = await ac.listExists(listId);
     if (!listOk) {
       console.error("[email-list-signup] Configured KIN list id was not found");
-      return {
+      const result: EmailListSignupHandlerResult = {
         ok: false,
         status: 500,
         error: EMAIL_LIST_SIGNUP_MESSAGES.genericFailure,
       };
+      await persistSignupResult({
+        email,
+        source: signupSource,
+        result,
+        recordSignup: options.recordSignup,
+        failureOutcome: "list_not_found",
+        errorSummary: "Configured mailing list was not found",
+      });
+      return result;
     }
 
     const existing = await ac.findContactByEmail(email);
@@ -290,7 +340,14 @@ export async function handleEmailListSignupRequest(
       const synced = await ac.syncContact({ email, firstName });
       await ac.subscribeToList(synced.id, listId);
       await ensureSourceTag(ac, synced.id);
-      return success("subscribed", "created_and_subscribed");
+      const result = success("subscribed", "created_and_subscribed");
+      await persistSignupResult({
+        email,
+        source: signupSource,
+        result,
+        recordSignup: options.recordSignup,
+      });
+      return result;
     }
 
     const contactId = existing.id;
@@ -299,7 +356,14 @@ export async function handleEmailListSignupRequest(
     if (CONSENT_PROTECTED_STATUSES.has(listStatus)) {
       // Consent remains authoritative: update name only, never subscribeToList.
       await ac.syncContact({ email, firstName });
-      return success("already", outcomeForProtectedStatus(listStatus));
+      const result = success("already", outcomeForProtectedStatus(listStatus));
+      await persistSignupResult({
+        email,
+        source: signupSource,
+        result,
+        recordSignup: options.recordSignup,
+      });
+      return result;
     }
 
     // Refresh first name on existing contacts when they submit the form.
@@ -308,12 +372,26 @@ export async function handleEmailListSignupRequest(
     if (listStatus === "not_on_list") {
       await ac.subscribeToList(contactId, listId);
       await ensureSourceTag(ac, contactId);
-      return success("subscribed", "subscribed_existing");
+      const result = success("subscribed", "subscribed_existing");
+      await persistSignupResult({
+        email,
+        source: signupSource,
+        result,
+        recordSignup: options.recordSignup,
+      });
+      return result;
     }
 
     // Already active on the list — tag only, no re-subscribe.
     await ensureSourceTag(ac, contactId);
-    return success("already", "already_subscribed");
+    const result = success("already", "already_subscribed");
+    await persistSignupResult({
+      email,
+      source: signupSource,
+      result,
+      recordSignup: options.recordSignup,
+    });
+    return result;
   } catch (err) {
     // Never log emails, names, API keys, or AC response bodies.
     const raw = err instanceof Error ? err.message : "";
@@ -321,11 +399,20 @@ export async function handleEmailListSignupRequest(
     console.error("[email-list-signup] ActiveCampaign request failed", {
       httpStatus: httpMatch?.[1] ?? null,
     });
-    return {
+    const result: EmailListSignupHandlerResult = {
       ok: false,
       status: 502,
       error: EMAIL_LIST_SIGNUP_MESSAGES.genericFailure,
     };
+    await persistSignupResult({
+      email,
+      source: signupSource,
+      result,
+      recordSignup: options.recordSignup,
+      failureOutcome: "ac_request_failed",
+      errorSummary: safeActiveCampaignErrorSummary(err),
+    });
+    return result;
   }
 }
 
