@@ -73,6 +73,28 @@ describe("Watson Tip of the Week page", () => {
     expect(linkIdx).toBeLessThan(formIdx);
   });
 
+  it("links View Email Signups to the Watson report in the same tab near admin actions", () => {
+    expect(page).toContain("View Email Signups");
+    expect(page).toContain('href="/watson/email-signups"');
+    expect(page).toContain("data-totw-email-signups");
+
+    const linkStart = page.indexOf("data-totw-email-signups");
+    const linkBlock = page.slice(
+      page.lastIndexOf("<a", linkStart),
+      page.indexOf("View Email Signups") + "View Email Signups".length,
+    );
+    expect(linkBlock).toContain('href="/watson/email-signups"');
+    expect(linkBlock).toContain("watson-totw__btn watson-totw__btn--link");
+    expect(linkBlock).not.toContain('target="_blank"');
+
+    const toolbarIdx = page.indexOf('class="watson-totw__toolbar"');
+    const emailSignupsIdx = page.indexOf("data-totw-email-signups");
+    const formIdx = page.indexOf("data-totw-form");
+    expect(toolbarIdx).toBeGreaterThan(-1);
+    expect(emailSignupsIdx).toBeGreaterThan(toolbarIdx);
+    expect(emailSignupsIdx).toBeLessThan(formIdx);
+  });
+
   it("auto-defaults Available Through to a 7-day window with Reset control", () => {
     expect(page).toContain("data-totw-reset-seven-days");
     expect(page).toContain("Reset to 7 days");
