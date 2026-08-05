@@ -79,7 +79,13 @@ describe("loadPublicTipOfTheWeekPage", () => {
       tryCopy: "Try it",
       sueTipCopy: "Sue tip",
       learnPoints: ["A"],
-      relatedLinks: [{ label: "Wet Blocking", href: "/videos/456" }],
+      relatedLinks: [
+        {
+          type: "video",
+          videoId: "456",
+          title: "Wet Blocking",
+        },
+      ],
       eyebrow: "TIP OF THE WEEK",
       createdAt: "",
       updatedAt: "",

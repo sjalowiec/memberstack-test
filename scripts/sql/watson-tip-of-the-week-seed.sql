@@ -36,7 +36,7 @@ INSERT INTO watson_tip_of_the_week (
   'Knit a small stockinette swatch and try one of the edge treatments from the video. Compare it with an untreated edge.',
   'Machine-knit stockinette can appear to curl even more than hand knitting because the stitches are so uniform. Don’t judge the finished fabric while it is still on the machine.',
   '["Why stockinette curls","When the curl will disappear during finishing","When you need to control it while knitting","Six techniques you can use"]',
-  '[{"label":"Easy (Lazy) Edge Finish","href":"/videos/784","note":"A simple edge finish for slits and openings"},{"label":"Wet Blocking","href":"/videos/456","note":"Four reasons to wet block instead of steam"},{"label":"Stockinette Stitch","href":"/glossary/stockinette-stitch","note":"Glossary: the basic smooth knit fabric"}]',
+  '[{"type":"video","videoId":"784","title":"Easy (Lazy) Edge Finish","note":"A simple edge finish for slits and openings"},{"type":"video","videoId":"456","title":"Wet Blocking","note":"Four reasons to wet block instead of steam"},{"type":"link","title":"Stockinette Stitch","url":"/glossary/stockinette-stitch","note":"Glossary: the basic smooth knit fabric"}]',
   'TIP OF THE WEEK',
   NOW()
 )

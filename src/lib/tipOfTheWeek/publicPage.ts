@@ -11,18 +11,19 @@ import type { TipOfTheWeekConfig } from "../tipOfTheWeek";
 import {
   filterPublicRelatedLinks,
   formatTipAvailabilityDate,
+  normalizeRelatedResources,
   tipAvailabilityFooterFromRecord,
 } from "./map";
 import { tipIsPubliclyFeatured, tipLosAngelesCalendarDate } from "./schedule";
 import { getPublicFeaturedTip, getTipOfTheWeekById } from "./store";
-import type { TipOfTheWeekRecord, TipRelatedLink } from "./types";
+import type { TipOfTheWeekRecord, TipRelatedPublicLink } from "./types";
 
 export type PublicTipPageModel = {
   source: "watson" | "dev-json" | "watson-preview";
   tip: TipOfTheWeekRecord;
   availableThroughDisplay: string;
   availabilityFooter: string;
-  relatedLinks: TipRelatedLink[];
+  relatedLinks: TipRelatedPublicLink[];
   isPlayable: true;
   isPreview?: boolean;
 };
@@ -49,7 +50,7 @@ function tipConfigToRecord(config: TipOfTheWeekConfig): TipOfTheWeekRecord {
     tryCopy: config.tryCopy,
     sueTipCopy: config.sueTipCopy,
     learnPoints: [...config.learnPoints],
-    relatedLinks: [...config.relatedLinks],
+    relatedLinks: normalizeRelatedResources(config.relatedLinks),
     eyebrow: config.eyebrow,
     createdAt: "",
     updatedAt: "",

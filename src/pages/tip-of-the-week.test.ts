@@ -54,6 +54,18 @@ describe("Tip of the Week page route", () => {
     expect(pageSource).toContain("totw-footer");
   });
 
+  it("renders sanitized Try It HTML safely without changing Sue’s Tip", () => {
+    expect(pageSource).toContain("sanitizeBillboardHtml");
+    expect(pageSource).toContain("billboardMessageHasText");
+    expect(pageSource).toContain("set:html={tryCopyHtml}");
+    expect(pageSource).toContain('class="totw-section__copy"');
+    expect(pageSource).toMatch(
+      /<p class="totw-sue__copy">\{tip\.sueTipCopy\}<\/p>/,
+    );
+    expect(pageSource).not.toContain("set:html={tip.sueTipCopy}");
+    expect(pageSource).not.toContain("set:html={tip.tryCopy}");
+  });
+
   it("places What You’ll Learn above the featured video", () => {
     const learnIdx = pageSource.indexOf('id="totw-learn-heading"');
     const videoIdx = pageSource.indexOf('class="totw-video"');
@@ -118,10 +130,24 @@ describe("Tip of the Week page route", () => {
     expect(video?.catalogTitle).toBe("Taming the Curl");
   });
 
+  it("wires Related Help external-link attributes on the public page", () => {
+    expect(pageSource).toContain("data-related-type={link.type}");
+    expect(pageSource).toContain('target: "_blank"');
+    expect(pageSource).toContain('rel: "noopener noreferrer"');
+    expect(pageSource).toContain("link.external");
+  });
+
   it("only keeps real related-resource paths in seed/dev JSON", () => {
     for (const link of tipOfTheWeek.relatedLinks) {
-      expect(link.href.startsWith("/")).toBe(true);
-      expect(link.href).not.toContain("example.com");
+      if (link.type === "video") {
+        expect(link.videoId).toMatch(/^\d+$/);
+        expect(`/videos/${link.videoId}`).not.toContain("example.com");
+      } else {
+        expect(link.url.startsWith("/") || link.url.startsWith("https://")).toBe(
+          true,
+        );
+        expect(link.url).not.toContain("example.com");
+      }
     }
     expect(tipConfig.availableThrough).toBe("2026-08-14");
     expect(tipConfig.availableFrom).toBe("2026-08-08");

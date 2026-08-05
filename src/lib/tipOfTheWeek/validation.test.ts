@@ -12,8 +12,8 @@ const base = {
   learnPoints: ["Why stockinette curls", "Six techniques you can use"],
   relatedLinks: [
     {
-      label: "Wet Blocking",
-      href: "/videos/456",
+      type: "video" as const,
+      videoId: "456",
       note: "Blocking basics",
     },
   ],
@@ -27,16 +27,45 @@ describe("validateTipOfTheWeekInput", () => {
       ...base,
       learnPoints: ["A", "B", "C"],
       relatedLinks: [
-        { label: "One", href: "/videos/1" },
-        { label: "Two", href: "/videos/2" },
+        { type: "video", videoId: "784" },
+        { type: "link", title: "Two", url: "/glossary/stockinette-stitch" },
       ],
     });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.value.learnPoints).toEqual(["A", "B", "C"]);
-    expect(result.value.relatedLinks.map((l) => l.label)).toEqual(["One", "Two"]);
-    expect(result.value.tryCopy).toBe("Knit a swatch.");
+    expect(result.value.relatedLinks.map((l) => l.type)).toEqual(["video", "link"]);
+    expect(result.value.relatedLinks[1]).toMatchObject({
+      type: "link",
+      title: "Two",
+      url: "/glossary/stockinette-stitch",
+    });
+    expect(result.value.tryCopy).toBe("<p>Knit a swatch.</p>");
     expect(result.value.sueTipCopy).toContain("machine");
+  });
+
+  it("converts plain Try It text to safe HTML and strips unsafe markup", () => {
+    const plain = validateTipOfTheWeekInput({
+      ...base,
+      tryCopy: "Line one\n\nLine two",
+    });
+    expect(plain.ok).toBe(true);
+    if (!plain.ok) return;
+    expect(plain.value.tryCopy).toBe("<p>Line one</p><p>Line two</p>");
+
+    const rich = validateTipOfTheWeekInput({
+      ...base,
+      tryCopy:
+        '<p><strong>Bold</strong> and <em>italic</em></p><ul><li>One</li></ul><p><a href="/glossary">Link</a></p><script>alert(1)</script>',
+    });
+    expect(rich.ok).toBe(true);
+    if (!rich.ok) return;
+    expect(rich.value.tryCopy).toContain("<strong>Bold</strong>");
+    expect(rich.value.tryCopy).toContain("<em>italic</em>");
+    expect(rich.value.tryCopy).toContain("<ul><li>One</li></ul>");
+    expect(rich.value.tryCopy).toContain('<a href="/glossary">Link</a>');
+    expect(rich.value.tryCopy).not.toContain("<script");
+    expect(rich.value.tryCopy).not.toContain("alert");
   });
 
   it("rejects overlapping scheduled/active ranges", () => {
@@ -58,10 +87,10 @@ describe("validateTipOfTheWeekInput", () => {
     expect(result.error).toMatch(/overlap/i);
   });
 
-  it("rejects fake related destinations", () => {
+  it("rejects unsafe related destinations", () => {
     const result = validateTipOfTheWeekInput({
       ...base,
-      relatedLinks: [{ label: "Bad", href: "https://example.com/x" }],
+      relatedLinks: [{ type: "link", title: "Bad", url: "javascript:alert(1)" }],
     });
     expect(result.ok).toBe(false);
   });
