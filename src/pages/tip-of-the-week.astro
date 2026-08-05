@@ -6,6 +6,7 @@
  */
 import Layout from "../layouts/Layout.astro";
 import TipReactions from "../components/tip-of-the-week/TipReactions.astro";
+import WeeklyTipSignup from "../components/tip-of-the-week/WeeklyTipSignup.astro";
 import { resolveTipCatalogVideo } from "../lib/tipOfTheWeek";
 import {
   loadPublicTipOfTheWeekPage,
@@ -73,18 +74,19 @@ const pageDescription =
               data-testid="totw-lightbulb"
             />
             <div class="totw-intro__copy">
-              <p class="totw-eyebrow">{tip.eyebrow}</p>
-              <h1 class="totw-title">{tip.title}</h1>
-              <p class="totw-lede">{tip.intro}</p>
-              <p
-                class="totw-availability"
-                data-tip-available-through={tip.availableThrough}
-              >
-                <span class="totw-availability__badge">{tip.availabilityNotice}</span>
-                <span class="totw-availability__through">
-                  Available through {availableThroughDisplay}
+              <p class="totw-meta">
+                <span class="totw-eyebrow">{tip.eyebrow}</span>
+                <span class="totw-meta__sep" aria-hidden="true">·</span>
+                <span
+                  class="totw-availability"
+                  data-tip-available-through={tip.availableThrough}
+                >
+                  Free to watch through {availableThroughDisplay}
                 </span>
               </p>
+              <h1 class="totw-title">{tip.title}</h1>
+              <p class="totw-lede">{tip.intro}</p>
+              <WeeklyTipSignup variant="inline" />
             </div>
           </div>
         </header>
@@ -94,14 +96,16 @@ const pageDescription =
             class="totw-section totw-section--learn"
             aria-labelledby="totw-learn-heading"
           >
-            <h2 id="totw-learn-heading" class="totw-section__title">
-              What You’ll Learn
-            </h2>
-            <ul class="totw-learn-list kbm-card">
-              {tip.learnPoints.map((point) => (
-                <li>{point}</li>
-              ))}
-            </ul>
+            <div class="totw-learn-card kbm-card">
+              <h2 id="totw-learn-heading" class="totw-learn-card__title">
+                What You’ll Learn
+              </h2>
+              <ul class="totw-learn-list">
+                {tip.learnPoints.map((point) => (
+                  <li>{point}</li>
+                ))}
+              </ul>
+            </div>
           </section>
         ) : null}
 
@@ -190,9 +194,13 @@ const pageDescription =
           </section>
         ) : null}
 
+        <WeeklyTipSignup variant="secondary" />
+
         <footer class="totw-footer" data-tip-available-through={tip.availableThrough}>
           <p>{availabilityFooter}</p>
         </footer>
+
+        <WeeklyTipSignup variant="modal" />
       </article>
     ) : (
       <article
@@ -222,6 +230,7 @@ const pageDescription =
                 Check back for a free weekly lesson from the Learning Library — or browse the
                 library anytime if you’re a member.
               </p>
+              <WeeklyTipSignup variant="coming-soon" />
               <p class="totw-coming-soon__actions">
                 <a class="kbm-btn kbm-btn-primary" href="/videos/">
                   Browse the Learning Library
@@ -230,6 +239,8 @@ const pageDescription =
             </div>
           </div>
         </header>
+
+        <WeeklyTipSignup variant="modal" />
       </article>
     )
   }
@@ -278,13 +289,39 @@ const pageDescription =
     line-height: 1.4;
   }
 
-  .totw-eyebrow {
+  .totw-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35rem 0.45rem;
     margin: 0 0 0.4rem;
+    max-width: 42rem;
+  }
+
+  .totw-eyebrow {
+    margin: 0;
     font-size: 0.78rem;
     font-weight: 650;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--kbm-green, #52682d);
+  }
+
+  .totw-meta__sep {
+    color: #9ca3af;
+    font-size: 0.78rem;
+    font-weight: 400;
+    line-height: 1;
+  }
+
+  .totw-availability {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.35;
+    color: #6b7280;
+    font-weight: 400;
+    letter-spacing: normal;
+    text-transform: none;
   }
 
   .totw-title {
@@ -301,26 +338,6 @@ const pageDescription =
     line-height: 1.55;
     color: #374151;
     max-width: 42rem;
-  }
-
-  .totw-availability {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem 0.85rem;
-    margin: 0;
-    font-size: 0.92rem;
-    color: #4b5563;
-  }
-
-  .totw-availability__badge {
-    display: inline-block;
-    padding: 0.2rem 0.55rem;
-    border-radius: 6px;
-    background: #eef2e6;
-    color: var(--kbm-green, #52682d);
-    font-weight: 600;
-    font-size: 0.85rem;
   }
 
   .totw-video {
@@ -449,17 +466,51 @@ const pageDescription =
     max-width: 42rem;
   }
 
+  .totw-learn-card {
+    margin: 0;
+    max-width: 42rem;
+    padding: 1.2rem 1.2rem 1.15rem;
+    box-sizing: border-box;
+  }
+
+  .totw-learn-card__title {
+    margin: 0 0 0.7rem;
+    font-size: 1.2rem;
+    font-weight: 650;
+    color: #1f2937;
+    line-height: 1.3;
+  }
+
   .totw-learn-list {
     margin: 0;
-    padding: 1rem 1.15rem 1rem 1.9rem;
+    padding: 0 0 0 1.15rem;
     list-style: disc;
-    max-width: 42rem;
   }
 
   .totw-learn-list li {
     margin: 0.35rem 0;
-    line-height: 1.45;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
     color: #374151;
+  }
+
+  .totw-learn-list li:first-child {
+    margin-top: 0;
+  }
+
+  .totw-learn-list li:last-child {
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 640px) {
+    .totw-learn-card {
+      padding: 1rem;
+    }
+
+    .totw-learn-card__title {
+      margin-bottom: 0.65rem;
+    }
   }
 
   .totw-sue {

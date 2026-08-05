@@ -13,6 +13,14 @@ const reactionsSource = readFileSync(
   join(pageDir, "../components/tip-of-the-week/TipReactions.astro"),
   "utf8",
 );
+const emailSignupSource = readFileSync(
+  join(pageDir, "../components/EmailListSignup.astro"),
+  "utf8",
+);
+const weeklySignupSource = readFileSync(
+  join(pageDir, "../components/tip-of-the-week/WeeklyTipSignup.astro"),
+  "utf8",
+);
 const watsonPage = readFileSync(
   join(pageDir, "watson/tip-of-the-week.astro"),
   "utf8",
@@ -56,8 +64,44 @@ describe("Tip of the Week page route", () => {
     expect(reactionsIdx).toBeGreaterThan(videoIdx);
     expect(tryIdx).toBeGreaterThan(reactionsIdx);
     expect(pageSource).toContain("totw-section--learn");
+    expect(pageSource).toContain("totw-learn-card");
+    // Heading lives inside the rounded card, before the bullet list.
+    const cardIdx = pageSource.indexOf('class="totw-learn-card kbm-card"');
+    const listIdx = pageSource.indexOf('class="totw-learn-list"');
+    expect(cardIdx).toBeGreaterThan(-1);
+    expect(learnIdx).toBeGreaterThan(cardIdx);
+    expect(listIdx).toBeGreaterThan(learnIdx);
     // Single learn section only (no duplicate after reactions).
     expect(pageSource.split('id="totw-learn-heading"').length - 1).toBe(1);
+  });
+
+  it("keeps availability beside the TIP OF THE WEEK label in one compact meta row", () => {
+    expect(pageSource).toContain('class="totw-meta"');
+    expect(pageSource).toContain('class="totw-eyebrow"');
+    expect(pageSource).toContain('class="totw-meta__sep"');
+    expect(pageSource).toContain("data-tip-available-through={tip.availableThrough}");
+    expect(pageSource).toContain("availableThroughDisplay");
+    expect(pageSource).toContain("availabilityFooter");
+    expect(pageSource).toContain("Free to watch through {availableThroughDisplay}");
+    expect(pageSource).not.toContain("totw-availability__badge");
+    expect(pageSource).not.toContain("justify-content: space-between");
+    expect(pageSource).toMatch(/\.totw-meta\s*\{[^}]*flex-wrap:\s*wrap/);
+    expect(pageSource).toMatch(/\.totw-meta\s*\{[^}]*gap:\s*0\.35rem 0\.45rem/);
+    const metaIdx = pageSource.indexOf('class="totw-meta"');
+    const titleIdx = pageSource.indexOf('class="totw-title"');
+    const availabilityIdx = pageSource.indexOf("totw-availability");
+    expect(metaIdx).toBeGreaterThan(-1);
+    expect(availabilityIdx).toBeGreaterThan(metaIdx);
+    expect(titleIdx).toBeGreaterThan(availabilityIdx);
+  });
+
+  it("uses normal-weight learn bullets with balanced card padding", () => {
+    expect(pageSource).toContain(".totw-learn-list li");
+    expect(pageSource).toMatch(/\.totw-learn-list li\s*\{[^}]*font-weight:\s*400/);
+    expect(pageSource).toMatch(/\.totw-learn-card__title\s*\{[^}]*font-weight:\s*650/);
+    expect(pageSource).toMatch(/\.totw-learn-card\s*\{[^}]*padding:\s*1\.2rem/);
+    expect(pageSource).toMatch(/@media \(max-width: 640px\)[\s\S]*?\.totw-learn-card\s*\{[^}]*padding:\s*1rem/);
+    expect(pageSource).toMatch(/\.totw-learn-list li\s*\{[^}]*line-height:\s*1\.5/);
   });
 
   it("widens the page and tightens top spacing locally", () => {
@@ -65,13 +109,6 @@ describe("Tip of the Week page route", () => {
     expect(pageSource).toContain("max-width: min(var(--max-content-width, 1100px), 960px)");
     expect(pageSource).toContain("padding-top: 0.75rem");
     expect(pageSource).toContain('bodyClass="page--tight-header"');
-  });
-
-  it("keeps availability dates on one shared tip.availableThrough value", () => {
-    expect(pageSource).toContain("data-tip-available-through={tip.availableThrough}");
-    expect(pageSource).toContain("availableThroughDisplay");
-    expect(pageSource).toContain("availabilityFooter");
-    expect(pageSource).not.toMatch(/Available through August/);
   });
 
   it("resolves Learning Library video 339 from the catalog", () => {
@@ -142,6 +179,75 @@ describe("Tip of the Week navigation", () => {
     expect(headerSource).toContain('data-testid="nav-tip-of-the-week"');
     expect(watsonShell).toContain('href="/watson/tip-of-the-week"');
     expect(watsonShell).toContain("Tip of the Week");
+  });
+});
+
+describe("Tip of the Week email list signup", () => {
+  it("shows compact CTAs and a modal — not the full form in page flow", () => {
+    expect(pageSource).toContain("WeeklyTipSignup");
+    expect(pageSource).toContain('variant="inline"');
+    expect(pageSource).toContain('variant="coming-soon"');
+    expect(pageSource).toContain('variant="secondary"');
+    expect(pageSource).toContain('variant="modal"');
+    expect(pageSource).not.toContain('variant="top"');
+    expect(pageSource).not.toMatch(/<EmailListSignup[\s\S]*?<\/EmailListSignup>/);
+    expect(weeklySignupSource).toContain("Want next week’s tip?");
+    expect(weeklySignupSource).toContain("Get the Weekly Tip");
+    expect(weeklySignupSource).toContain("data-weekly-tip-signup-modal");
+    expect(weeklySignupSource).toContain("weekly-tip-signup-inline");
+    const inlineBlock = weeklySignupSource.match(
+      /variant === "inline"[\s\S]*?variant === "coming-soon"/,
+    )?.[0];
+    expect(inlineBlock).toBeTruthy();
+    expect(inlineBlock).not.toContain("Join the email list");
+    expect(weeklySignupSource).toContain(
+      "Join the email list and I’ll let you know when it’s ready.",
+    );
+    expect(emailSignupSource).toContain("data-email-list-signup");
+    expect(emailSignupSource).not.toContain("Enjoyed this tip?");
+  });
+
+  it("places the inline header CTA after availability and before learn/video", () => {
+    const metaIdx = pageSource.indexOf('class="totw-meta"');
+    const inlineIdx = pageSource.indexOf('variant="inline"');
+    const learnIdx = pageSource.indexOf('id="totw-learn-heading"');
+    const videoIdx = pageSource.indexOf('class="totw-video"');
+    const secondaryIdx = pageSource.indexOf('variant="secondary"');
+    const footerIdx = pageSource.indexOf("totw-footer");
+    expect(metaIdx).toBeGreaterThan(-1);
+    expect(inlineIdx).toBeGreaterThan(metaIdx);
+    expect(learnIdx).toBeGreaterThan(inlineIdx);
+    expect(videoIdx).toBeGreaterThan(inlineIdx);
+    expect(secondaryIdx).toBeGreaterThan(videoIdx);
+    expect(footerIdx).toBeGreaterThan(secondaryIdx);
+  });
+
+  it("shows the coming-soon invite with explanation and keeps tip content ungated", () => {
+    expect(pageSource).toContain("totw--coming-soon");
+    expect(pageSource).toContain('data-testid="totw-coming-soon"');
+    expect(pageSource.split('variant="coming-soon"').length - 1).toBe(1);
+    expect(pageSource.split('variant="inline"').length - 1).toBe(1);
+    expect(pageSource.split('variant="modal"').length - 1).toBe(2);
+    expect(pageSource).not.toContain("ActiveCampaignForm");
+    expect(pageSource).toContain("totw-video");
+    expect(pageSource).toContain("TipReactions");
+    expect(weeklySignupSource).toContain(".weekly-tip-signup-inline");
+    expect(weeklySignupSource).not.toMatch(
+      /\.weekly-tip-signup-inline\s*\{[^}]*border:/,
+    );
+    expect(weeklySignupSource).not.toMatch(
+      /\.weekly-tip-signup-inline\s*\{[^}]*background:/,
+    );
+  });
+
+  it("does not expose ActiveCampaign credentials in page or signup markup", () => {
+    expect(pageSource).not.toMatch(/ACTIVECAMPAIGN_API_KEY/);
+    expect(pageSource).not.toMatch(/Api-Token/);
+    expect(emailSignupSource).not.toMatch(/ACTIVECAMPAIGN/);
+    expect(emailSignupSource).not.toMatch(/activehosted\.com/);
+    expect(emailSignupSource).not.toMatch(/Api-Token/);
+    expect(weeklySignupSource).not.toMatch(/ACTIVECAMPAIGN/);
+    expect(weeklySignupSource).not.toMatch(/Api-Token/);
   });
 });
 
