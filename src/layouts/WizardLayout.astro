@@ -36,7 +36,7 @@ interface Props {
 const { title, description = "", schemaMarkup, toolPrintTitle } = Astro.props;
 ---
 
-<BaseLayout title={title} description={description} skipGlobalHyvor={true}>
+<BaseLayout title={title} description={description}>
   {schemaMarkup && (
     <script type="application/ld+json" set:html={JSON.stringify(schemaMarkup)} />
   )}

@@ -38,7 +38,7 @@ interface Props {
 const { title, description, heading, intro, statCards } = Astro.props;
 ---
 
-<BaseLayout title={title} description={description} skipGlobalHyvor={true} bodyClass="admin-dash-body">
+<BaseLayout title={title} description={description} bodyClass="admin-dash-body">
   <main class="admin-report">
     <header class="admin-report__head">
       <h1 class="admin-report__title">{heading}</h1>

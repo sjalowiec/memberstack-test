@@ -11,7 +11,6 @@
  * - totalDays: number
  * - nextStep: { day: number, title: string, bullets: string[] }
  * - steps: { day: number | string, title: string, status: 'completed' | 'current' | 'upcoming' }[]
- * - hyvor: { websiteId: string, pageId: string }
  * - workshopSlug: string
  */
 
@@ -33,11 +32,10 @@ interface Props {
   totalDays: number;
   nextStep: NextStepData;
   steps: Step[];
-  hyvor: { websiteId: string; pageId: string };
   workshopSlug: string;
 }
 
-const { workshopTitle, currentDay, totalDays, nextStep, steps, hyvor, workshopSlug } = Astro.props;
+const { workshopTitle, currentDay, totalDays, nextStep, steps, workshopSlug } = Astro.props;
 ---
 
 <div class="hub-v2" data-workshop-slug={workshopSlug}>
@@ -64,20 +62,7 @@ const { workshopTitle, currentDay, totalDays, nextStep, steps, hyvor, workshopSl
     </div>
   </section>
 
-  <!-- 3. Workshop Conversation -->
-  <section class="hub-conversation">
-    <h2 class="hub-conversation__heading">Workshop Conversation</h2>
-    <p class="hub-conversation__helper">Ask questions, share progress, and get feedback here.</p>
-    
-    <div 
-      id="hyvor-talk-view-v2" 
-      class="hub-conversation__embed" 
-      data-website-id={hyvor.websiteId} 
-      data-page-id={hyvor.pageId}
-    ></div>
-  </section>
-
-  <!-- 4. Workshop Steps / Progress -->
+  <!-- 3. Workshop Steps / Progress -->
   <section class="hub-steps">
     <h2 class="hub-steps__heading">Workshop Steps</h2>
     <ol class="hub-steps__list">
@@ -96,7 +81,7 @@ const { workshopTitle, currentDay, totalDays, nextStep, steps, hyvor, workshopSl
     </ol>
   </section>
 
-  <!-- 5. Support Expectations -->
+  <!-- 4. Support Expectations -->
   <aside class="hub-support">
     <h3 class="hub-support__heading">Support</h3>
     <p class="hub-support__text">
@@ -105,37 +90,6 @@ const { workshopTitle, currentDay, totalDays, nextStep, steps, hyvor, workshopSl
     </p>
   </aside>
 </div>
-
-<!-- Hyvor Talk Loader Script -->
-<script type="module">
-  import { waitForAuth, setHyvorIdentity, loadHyvorScript } from '/scripts/hyvorLoader.js';
-
-  const mount = document.getElementById('hyvor-talk-view-v2');
-
-  if (mount) {
-    const websiteId = mount.dataset.websiteId || '14706';
-    const pageId = mount.dataset.pageId || 'workshop-hub';
-
-    // Dev bypass for testing
-    const devUnlock = new URLSearchParams(window.location.search).get('dev') === '1';
-
-    // Quick auth check
-    const result = await waitForAuth({ timeoutMs: 2000, intervalMs: 100 });
-    const authorized = (result.ok && result.user) || devUnlock;
-
-    if (authorized && result.user) {
-      setHyvorIdentity({ websiteId, user: result.user });
-    }
-    
-    // Create Hyvor Talk element
-    const hyvorEl = document.createElement('hyvor-talk-comments');
-    hyvorEl.setAttribute('website-id', websiteId);
-    hyvorEl.setAttribute('page-id', pageId);
-    mount.appendChild(hyvorEl);
-    
-    loadHyvorScript();
-  }
-</script>
 
 <style>
   /* ===== Hub V2 Base ===== */
@@ -234,31 +188,7 @@ const { workshopTitle, currentDay, totalDays, nextStep, steps, hyvor, workshopSl
     transform: scale(0.98);
   }
 
-  /* ===== 3. Workshop Conversation ===== */
-  .hub-conversation {
-    margin-bottom: 2.5rem;
-  }
-
-  .hub-conversation__heading {
-    margin: 0 0 0.25rem;
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: #1a1a1a;
-  }
-
-  .hub-conversation__helper {
-    margin: 0 0 1rem;
-    font-size: 0.9rem;
-    color: #666;
-  }
-
-  .hub-conversation__embed {
-    min-height: 300px;
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
-  /* ===== 4. Workshop Steps ===== */
+  /* ===== 3. Workshop Steps ===== */
   .hub-steps {
     margin-bottom: 2.5rem;
   }
@@ -331,7 +261,7 @@ const { workshopTitle, currentDay, totalDays, nextStep, steps, hyvor, workshopSl
     color: #999;
   }
 
-  /* ===== 5. Support Expectations ===== */
+  /* ===== 4. Support Expectations ===== */
   .hub-support {
     padding: 1.25rem 1.5rem;
     background: rgba(0, 0, 0, 0.02);

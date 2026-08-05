@@ -29,7 +29,7 @@ const lessons = getSortedLessons(courseId);
 const pageTitle = `DEV Preview: ${course.title}`;
 ---
 
-<Layout title={pageTitle} description="Internal dev preview of legacy KIN course POC JSON." skipGlobalHyvor>
+<Layout title={pageTitle} description="Internal dev preview of legacy KIN course POC JSON.">
   {/* Dev-only POC, production-blocked in middleware: keep it out of Pagefind. */}
   <div class="course-preview course-preview--reader" data-pagefind-ignore>
     <p class="course-preview__banner course-preview__banner--compact" role="status">

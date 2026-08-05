@@ -22,7 +22,6 @@ import wizardData from "../../../content/wizards/hand-machine-blanket.json";
 import "../../../styles/wizard.css";
 
 const pageUrl = "https://knitbymachine.com/wizards/hand-machine-blanket";
-const hyvorPageId = wizardData.hyvorPageId || "wizards-hand-machine-blanket";
 
 // Access level from JSON - "free" or "paid"
 const accessLevel = wizardData.accessLevel || "free";
@@ -262,10 +261,6 @@ const price = wizardData.price || "$9.99";
   color: #dc2626;
   font-size: 0.85rem;
   margin: 0.5rem 0 0;
-}
-
-#hyvor-talk-view {
-  min-height: 200px;
 }
 
 /* Universal hide class */
@@ -2137,7 +2132,6 @@ const price = wizardData.price || "$9.99";
   <div class="discussion-content">
     <h3>Ask and Share</h3>
     <p class="discussion-intro">Share your projects, ask questions, and connect with other knitters.</p>
-    <div id="hyvor-talk-view" data-testid="hyvor-talk-view"></div>
   </div>
 </div>
 
@@ -3586,48 +3580,5 @@ updateGaugeLabels();
   updateUnitsUI();
   // Delay reading DOM dimensions to ensure pattern engine has initialized
   setTimeout(readDimensionsFromDOM, 100);
-})();
-</script>
-
-<script define:vars={{ hyvorPageId }}>
-// Hyvor Talk loader for Discussion tab
-(function() {
-  let hyvorLoaded = false;
-  
-  function loadHyvor() {
-    if (hyvorLoaded) return;
-    
-    const pageId = hyvorPageId;
-    
-    window.HYVOR_TALK_WEBSITE = 14706;
-    window.HYVOR_TALK_CONFIG = {
-      url: false,
-      id: pageId
-    };
-
-    if (window.hyvorTalkReload) {
-      window.hyvorTalkReload();
-      hyvorLoaded = true;
-      return;
-    }
-
-    const existingScript = document.querySelector('script[src*="talk.hyvor.com/web-api/embed"]');
-    if (!existingScript) {
-      const script = document.createElement("script");
-      script.src = "https://talk.hyvor.com/web-api/embed.js";
-      script.async = true;
-      script.type = "text/javascript";
-      document.body.appendChild(script);
-    }
-    hyvorLoaded = true;
-  }
-
-  // Load Hyvor when Discussion tab is clicked
-  document.addEventListener('DOMContentLoaded', function() {
-    const discussionTab = document.getElementById('tab-discussion');
-    if (discussionTab) {
-      discussionTab.addEventListener('click', loadHyvor);
-    }
-  });
 })();
 </script>

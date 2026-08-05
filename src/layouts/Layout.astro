@@ -8,7 +8,6 @@ interface Props {
   title?: string;
   description?: string;
   bodyClass?: string;
-  skipGlobalHyvor?: boolean;
   skipGlobalPinterest?: boolean;
   /** Print-only tool attribution (see ToolPrintFooter). */
   toolPrintTitle?: string;
@@ -35,7 +34,6 @@ const {
   title,
   description,
   bodyClass = "",
-  skipGlobalHyvor = false,
   skipGlobalPinterest = false,
   toolPrintTitle,
   onboarding = false,
@@ -60,7 +58,6 @@ const resolvedBodyClass = [
   title={title}
   description={description}
   bodyClass={resolvedBodyClass}
-  skipGlobalHyvor={skipGlobalHyvor}
   skipGlobalPinterest={skipGlobalPinterest}
 >
   <slot name="head" slot="head" />

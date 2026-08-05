@@ -2447,38 +2447,6 @@ div[data-ms-message="error"]:empty {
   margin-top: 8px;
 }
 
-/* Hyvor Talk ANSWER STYLING */
-
-.kin-discussion {
-  margin-top: 60px;
-  padding: 32px;
-  background: #fafafa;
-  border: 1px solid #738c52;
-
-  border-radius: 12px;
-}
-/* Hyvor empty state */
-.kin-discussion .hyvor-talk-empty-state {
-  padding: 20px;
-  margin-top: 20px;
-  background: #f8faf5;
-  border: 1px dashed #738c52;
-  border-radius: 8px;
-  font-style: italic;
-  color: #55624a;
-  .kin-discussion {
-    margin: 60px 0;
-  } 
-
-/* Hide Hyvor login button */
-.hyvor-talk-login {
-  display: none !important;
-}
-
-/* Optional: hide "0 comments" label */
-.hyvor-talk-comment-count {
-  display: none !important;
-}
 /* Small page-level navigation */
 .page-nav {
   margin-bottom: 1.25rem;
@@ -2522,7 +2490,6 @@ div[data-ms-message="error"]:empty {
   color: #52682d;
   border-color: #cfd8c2;
   font-weight: 600;
-}
 }
 
 /* DesignaKnit local navigation (DesignaKnit | Compare | Buyer's Guide) */
