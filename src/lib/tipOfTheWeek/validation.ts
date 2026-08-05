@@ -2,6 +2,8 @@
  * Tip of the Week input validation (Watson create/update).
  */
 import { normalizeWhatsNewDestinationUrl } from "../whatsNew/destinationUrl";
+import { sanitizeBillboardHtml } from "../whatsNew/sanitizeBillboardHtml";
+import { normalizeRelatedResource, resolveVideoForTip } from "./map";
 import { isIsoDateOnly, tipDateRangesOverlap } from "./schedule";
 import {
   TIP_COPY_MAX,
@@ -19,7 +21,7 @@ import {
   isTipOfTheWeekStatus,
   type TipOfTheWeekRecord,
   type TipOfTheWeekStatus,
-  type TipRelatedLink,
+  type TipRelatedResource,
   type TipValidationResult,
 } from "./types";
 
@@ -36,7 +38,7 @@ export type ValidatedTipInput = {
   tryCopy: string;
   sueTipCopy: string;
   learnPoints: string[];
-  relatedLinks: TipRelatedLink[];
+  relatedLinks: TipRelatedResource[];
   eyebrow: string;
 };
 
@@ -121,7 +123,115 @@ function parseLearnPoints(raw: unknown): TipValidationResult<string[]> {
   return { ok: true, value: points };
 }
 
-function parseRelatedLinks(raw: unknown): TipValidationResult<TipRelatedLink[]> {
+function parseOptionalRelatedNote(
+  raw: unknown,
+): TipValidationResult<string | undefined> {
+  if (raw == null || raw === "") return { ok: true, value: undefined };
+  if (typeof raw !== "string") {
+    return { ok: false, error: "Related resource notes must be text." };
+  }
+  const trimmed = raw.trim();
+  if (!trimmed) return { ok: true, value: undefined };
+  if (trimmed.length > TIP_RELATED_NOTE_MAX) {
+    return {
+      ok: false,
+      error: `Related resource notes must be ${TIP_RELATED_NOTE_MAX} characters or fewer.`,
+    };
+  }
+  return { ok: true, value: trimmed };
+}
+
+function isBlankRelatedRow(row: Record<string, unknown>): boolean {
+  const typeRaw =
+    typeof row.type === "string" ? row.type.trim().toLowerCase() : "";
+  const videoId =
+    row.videoId ?? row.video_id ?? row.contentId ?? row.content_id ?? row.videoContentId;
+  const title = row.title ?? row.label;
+  const url = row.url ?? row.href ?? row.destinationUrl;
+  const note = row.note ?? row.description;
+
+  const hasType = Boolean(typeRaw);
+  const hasVideoId =
+    (typeof videoId === "string" && videoId.trim()) ||
+    (typeof videoId === "number" && Number.isFinite(videoId));
+  const hasTitle = typeof title === "string" && title.trim();
+  const hasUrl = typeof url === "string" && url.trim();
+  const hasNote = typeof note === "string" && note.trim();
+
+  return !hasType && !hasVideoId && !hasTitle && !hasUrl && !hasNote;
+}
+
+function parseRelatedVideoResource(
+  row: Record<string, unknown>,
+): TipValidationResult<TipRelatedResource> {
+  const videoId = parseVideoContentId(
+    row.videoId ?? row.video_id ?? row.contentId ?? row.content_id ?? row.videoContentId,
+  );
+  if (!videoId.ok) {
+    return {
+      ok: false,
+      error:
+        videoId.error === "Learning Library content ID is required."
+          ? "Related video content ID is required."
+          : videoId.error.replace(
+              "Learning Library content ID",
+              "Related video content ID",
+            ),
+    };
+  }
+
+  const catalog = resolveVideoForTip({ videoContentId: videoId.value });
+  if (!catalog) {
+    return {
+      ok: false,
+      error: `No Learning Library video found for content ID ${videoId.value}.`,
+    };
+  }
+
+  const note = parseOptionalRelatedNote(row.note ?? row.description);
+  if (!note.ok) return note;
+
+  const resource: TipRelatedResource = {
+    type: "video",
+    videoId: videoId.value,
+    title: catalog.catalogTitle.slice(0, TIP_RELATED_LABEL_MAX) || catalog.contentId,
+  };
+  if (note.value) resource.note = note.value;
+  return { ok: true, value: resource };
+}
+
+function parseRelatedLinkResource(
+  row: Record<string, unknown>,
+): TipValidationResult<TipRelatedResource> {
+  const titleResult = requireTrimmed(
+    row.title ?? row.label,
+    "Related link title",
+    TIP_RELATED_LABEL_MAX,
+  );
+  if (!titleResult.ok) return titleResult;
+
+  const hrefRaw = row.url ?? row.href ?? row.destinationUrl;
+  const hrefResult = normalizeWhatsNewDestinationUrl(hrefRaw);
+  if (!hrefResult.ok) return hrefResult;
+  if (!hrefResult.value) {
+    return { ok: false, error: "Related link URL is required." };
+  }
+
+  const note = parseOptionalRelatedNote(row.note ?? row.description);
+  if (!note.ok) return note;
+
+  const resource: TipRelatedResource = {
+    type: "link",
+    title: titleResult.value,
+    url: hrefResult.value,
+  };
+  if (note.value) resource.note = note.value;
+  return { ok: true, value: resource };
+}
+
+function parseRelatedLinks(
+  raw: unknown,
+): TipValidationResult<TipRelatedResource[]> {
   let list: unknown[] = [];
   if (Array.isArray(raw)) {
     list = raw;
@@ -141,51 +251,58 @@ function parseRelatedLinks(raw: unknown): TipValidationResult<TipRelatedLink[]> 
     return { ok: false, error: "Related links must be a list." };
   }
 
-  if (list.length > TIP_RELATED_LINKS_MAX) {
+  const links: TipRelatedResource[] = [];
+  for (const item of list) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) {
+      return { ok: false, error: "Each related resource must be an object." };
+    }
+    const row = item as Record<string, unknown>;
+    if (isBlankRelatedRow(row)) continue;
+
+    const typeRaw =
+      typeof row.type === "string" ? row.type.trim().toLowerCase() : "";
+
+    let parsed: TipValidationResult<TipRelatedResource>;
+    if (typeRaw === "video") {
+      parsed = parseRelatedVideoResource(row);
+    } else if (typeRaw === "link" || typeRaw === "document") {
+      parsed = parseRelatedLinkResource(row);
+    } else {
+      // Legacy or untyped payload — normalize then re-validate as typed.
+      const normalized = normalizeRelatedResource(row);
+      if (!normalized) {
+        return {
+          ok: false,
+          error:
+            "Each related resource needs a type (video or link) with the required fields.",
+        };
+      }
+      if (normalized.type === "video") {
+        parsed = parseRelatedVideoResource({
+          type: "video",
+          videoId: normalized.videoId,
+          note: normalized.note,
+        });
+      } else {
+        parsed = parseRelatedLinkResource({
+          type: "link",
+          title: normalized.title,
+          url: normalized.url,
+          note: normalized.note,
+        });
+      }
+    }
+    if (!parsed.ok) return parsed;
+    links.push(parsed.value);
+  }
+
+  if (links.length > TIP_RELATED_LINKS_MAX) {
     return {
       ok: false,
-      error: `At most ${TIP_RELATED_LINKS_MAX} related links are allowed.`,
+      error: `At most ${TIP_RELATED_LINKS_MAX} related resources are allowed.`,
     };
   }
 
-  const links: TipRelatedLink[] = [];
-  for (const item of list) {
-    if (!item || typeof item !== "object" || Array.isArray(item)) {
-      return { ok: false, error: "Each related link must be an object." };
-    }
-    const row = item as Record<string, unknown>;
-    const labelResult = requireTrimmed(
-      row.label ?? row.title,
-      "Related link title",
-      TIP_RELATED_LABEL_MAX,
-    );
-    if (!labelResult.ok) return labelResult;
-
-    const hrefRaw = row.href ?? row.url ?? row.destinationUrl;
-    const hrefResult = normalizeWhatsNewDestinationUrl(hrefRaw);
-    if (!hrefResult.ok) return hrefResult;
-    if (!hrefResult.value || !hrefResult.value.startsWith("/")) {
-      return {
-        ok: false,
-        error: "Related links must use an internal site path (starting with /).",
-      };
-    }
-
-    let note: string | undefined;
-    const noteRaw = row.note ?? row.description;
-    if (typeof noteRaw === "string" && noteRaw.trim()) {
-      const trimmed = noteRaw.trim();
-      if (trimmed.length > TIP_RELATED_NOTE_MAX) {
-        return {
-          ok: false,
-          error: `Related link notes must be ${TIP_RELATED_NOTE_MAX} characters or fewer.`,
-        };
-      }
-      note = trimmed;
-    }
-
-    links.push({ label: labelResult.value, href: hrefResult.value, note });
-  }
   return { ok: true, value: links };
 }
 
@@ -304,13 +421,23 @@ export function validateTipOfTheWeekInput(
     };
   }
 
-  const tryCopy = optionalTrimmed(
-    input.tryCopy ?? input.try_copy,
-    "Try It text",
-    TIP_COPY_MAX,
-    "",
-  );
-  if (!tryCopy.ok) return tryCopy;
+  const tryCopyRaw = input.tryCopy ?? input.try_copy;
+  let tryCopy = "";
+  if (tryCopyRaw != null && tryCopyRaw !== "") {
+    if (typeof tryCopyRaw !== "string") {
+      return { ok: false, error: "Try It text must be a string." };
+    }
+    const trimmed = tryCopyRaw.trim();
+    if (trimmed) {
+      tryCopy = sanitizeBillboardHtml(trimmed);
+      if (tryCopy.length > TIP_COPY_MAX) {
+        return {
+          ok: false,
+          error: `Try It text must be ${TIP_COPY_MAX} characters or fewer.`,
+        };
+      }
+    }
+  }
 
   const sueTipCopy = optionalTrimmed(
     input.sueTipCopy ?? input.sue_tip_copy,
@@ -373,7 +500,7 @@ export function validateTipOfTheWeekInput(
     status,
     availabilityNotice: availabilityNotice.value,
     availabilityFooterTemplate: availabilityFooterTemplate.value,
-    tryCopy: tryCopy.value,
+    tryCopy,
     sueTipCopy: sueTipCopy.value,
     learnPoints: learnPoints.value,
     relatedLinks: relatedLinks.value,

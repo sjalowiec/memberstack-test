@@ -8,10 +8,14 @@ import {
   resetTipAvailableThroughToSevenDays,
   type TipDateFormState,
 } from "../lib/tipOfTheWeek/schedule";
+import { sanitizeBillboardHtml } from "../lib/whatsNew/sanitizeBillboardHtml";
+import { initWatsonTipTryItRichText } from "./watsonTipTryItRichText";
 
 type TipStatus = "draft" | "scheduled" | "active" | "archived";
 
-type RelatedLink = { label: string; href: string; note?: string };
+type RelatedResource =
+  | { type: "video"; videoId: string; title: string; note?: string }
+  | { type: "link"; title: string; url: string; note?: string };
 
 type TipRecord = {
   id: string;
@@ -27,7 +31,7 @@ type TipRecord = {
   tryCopy: string;
   sueTipCopy: string;
   learnPoints: string[];
-  relatedLinks: RelatedLink[];
+  relatedLinks: RelatedResource[];
   eyebrow: string;
 };
 
@@ -39,12 +43,21 @@ type CatalogVideo = {
 };
 
 const API = "/api/watson/tip-of-the-week";
+const RELATED_MAX = 8;
 
 /** Tracks whether Available Through was manually edited in this form session. */
 let tipDateState: TipDateFormState = initTipDateFormState(null);
 
 function el<T extends HTMLElement>(sel: string, root: ParentNode = document): T | null {
   return root.querySelector(sel) as T | null;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 function applyTipDateStateToForm(form: HTMLFormElement, state: TipDateFormState) {
@@ -69,17 +82,177 @@ function readLearnPoints(form: HTMLFormElement): string[] {
     .filter(Boolean);
 }
 
-function readRelatedLinks(form: HTMLFormElement): RelatedLink[] {
+function emptyRelatedResource(): RelatedResource {
+  return { type: "video", videoId: "", title: "", note: "" };
+}
+
+function tryCopyParts(form: HTMLFormElement): {
+  editor: HTMLElement;
+  hidden: HTMLTextAreaElement;
+} | null {
+  const wrap = form.querySelector<HTMLElement>("[data-totw-try-rte]");
+  if (!wrap) return null;
+  const editor = wrap.querySelector<HTMLElement>("[data-wn-rte-editor]");
+  const hidden = wrap.querySelector<HTMLTextAreaElement>("[data-wn-rte-input]");
+  if (!editor || !hidden) return null;
+  return { editor, hidden };
+}
+
+/** Seed the Try It editor (and its hidden input) from stored plain text or HTML. */
+function setTryCopy(form: HTMLFormElement, value: string): void {
+  const parts = tryCopyParts(form);
+  if (!parts) return;
+  const clean = sanitizeBillboardHtml(value || "");
+  parts.editor.innerHTML = clean || "<p><br></p>";
+  parts.hidden.value = clean;
+}
+
+/** Push the current editor HTML into the hidden field before reading the form. */
+function syncTryCopy(form: HTMLFormElement): void {
+  const parts = tryCopyParts(form);
+  if (!parts) return;
+  parts.hidden.value = sanitizeBillboardHtml(parts.editor.innerHTML);
+}
+
+function normalizeIncomingRelated(raw: unknown): RelatedResource {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    return emptyRelatedResource();
+  }
+  const row = raw as Record<string, unknown>;
+  const type =
+    typeof row.type === "string" && row.type.trim().toLowerCase() === "link"
+      ? "link"
+      : typeof row.type === "string" && row.type.trim().toLowerCase() === "video"
+        ? "video"
+        : null;
+  const note =
+    typeof row.note === "string" && row.note.trim() ? row.note.trim() : undefined;
+
+  if (type === "video") {
+    return {
+      type: "video",
+      videoId: String(row.videoId ?? row.video_id ?? "").trim(),
+      title: String(row.title ?? "").trim(),
+      note,
+    };
+  }
+  if (type === "link") {
+    return {
+      type: "link",
+      title: String(row.title ?? row.label ?? "").trim(),
+      url: String(row.url ?? row.href ?? "").trim(),
+      note,
+    };
+  }
+
+  // Legacy { label, href, note? }
+  const label = String(row.label ?? row.title ?? "").trim();
+  const href = String(row.href ?? row.url ?? "").trim();
+  const videoMatch = /^\/videos\/(\d{1,12})\/?$/i.exec(href);
+  if (videoMatch) {
+    return { type: "video", videoId: videoMatch[1], title: label, note };
+  }
+  if (label || href) {
+    return { type: "link", title: label, url: href, note };
+  }
+  return emptyRelatedResource();
+}
+
+function readRelatedLinks(form: HTMLFormElement): RelatedResource[] {
   const rows = form.querySelectorAll<HTMLElement>("[data-related-row]");
-  const links: RelatedLink[] = [];
+  const links: RelatedResource[] = [];
   rows.forEach((row) => {
-    const label = el<HTMLInputElement>("[data-related-label]", row)?.value.trim() || "";
-    const href = el<HTMLInputElement>("[data-related-href]", row)?.value.trim() || "";
-    const note = el<HTMLInputElement>("[data-related-note]", row)?.value.trim() || "";
-    if (!label && !href) return;
-    links.push({ label, href, note: note || undefined });
+    const typeSelect = el<HTMLSelectElement>("[data-related-type]", row);
+    const type = typeSelect?.value === "link" ? "link" : "video";
+    const note =
+      el<HTMLInputElement>("[data-related-note]", row)?.value.trim() || undefined;
+
+    if (type === "video") {
+      const videoId =
+        el<HTMLInputElement>("[data-related-video-id]", row)?.value.trim() || "";
+      const title =
+        el<HTMLInputElement>("[data-related-video-title]", row)?.value.trim() || "";
+      if (!videoId && !title && !note) return;
+      links.push({ type: "video", videoId, title, note });
+      return;
+    }
+
+    const title = el<HTMLInputElement>("[data-related-title]", row)?.value.trim() || "";
+    const url = el<HTMLInputElement>("[data-related-url]", row)?.value.trim() || "";
+    if (!title && !url && !note) return;
+    links.push({ type: "link", title, url, note });
   });
   return links;
+}
+
+function setRelatedStatus(
+  row: HTMLElement,
+  message: string,
+  kind: "ok" | "error" | "muted" = "muted",
+) {
+  const status = el<HTMLElement>("[data-related-status]", row);
+  if (!status) return;
+  status.textContent = message;
+  status.dataset.kind = kind === "muted" ? "" : kind;
+}
+
+function updateRelatedFieldsVisibility(row: HTMLElement) {
+  const type = el<HTMLSelectElement>("[data-related-type]", row)?.value || "video";
+  const videoFields = el<HTMLElement>("[data-related-video-fields]", row);
+  const linkFields = el<HTMLElement>("[data-related-link-fields]", row);
+  if (videoFields) videoFields.hidden = type !== "video";
+  if (linkFields) linkFields.hidden = type !== "link";
+}
+
+async function resolveRelatedVideoRow(row: HTMLElement) {
+  const videoId =
+    el<HTMLInputElement>("[data-related-video-id]", row)?.value.trim() || "";
+  const titleInput = el<HTMLInputElement>("[data-related-video-title]", row);
+  const dest = el<HTMLElement>("[data-related-video-dest]", row);
+
+  if (!videoId) {
+    if (titleInput) titleInput.value = "";
+    if (dest) dest.textContent = "";
+    setRelatedStatus(row, "Enter a Learning Library content ID.", "muted");
+    return;
+  }
+
+  if (!/^\d{1,12}$/.test(videoId)) {
+    if (titleInput) titleInput.value = "";
+    if (dest) dest.textContent = "";
+    setRelatedStatus(row, "Content ID must be numeric.", "error");
+    return;
+  }
+
+  setRelatedStatus(row, "Looking up video…", "muted");
+  try {
+    const res = await fetch(`${API}/video/${encodeURIComponent(videoId)}`, {
+      credentials: "same-origin",
+    });
+    const data = await res.json();
+    if (!res.ok || !data?.ok || !data.video) {
+      if (titleInput) titleInput.value = "";
+      if (dest) dest.textContent = "";
+      setRelatedStatus(
+        row,
+        data?.error || `No Learning Library video found for content ID ${videoId}.`,
+        "error",
+      );
+      return;
+    }
+    const video = data.video as CatalogVideo;
+    if (titleInput) titleInput.value = video.catalogTitle || "";
+    if (dest) dest.textContent = `Destination: /videos/${video.contentId}`;
+    setRelatedStatus(
+      row,
+      `Video title: ${video.catalogTitle || video.contentId}`,
+      "ok",
+    );
+  } catch {
+    if (titleInput) titleInput.value = "";
+    if (dest) dest.textContent = "";
+    setRelatedStatus(row, "Unable to resolve video.", "error");
+  }
 }
 
 function renderLearnPoints(container: HTMLElement, points: string[]) {
@@ -98,27 +271,96 @@ function renderLearnPoints(container: HTMLElement, points: string[]) {
   });
 }
 
-function renderRelatedLinks(container: HTMLElement, links: RelatedLink[]) {
+function renderRelatedLinks(container: HTMLElement, links: RelatedResource[]) {
   container.innerHTML = "";
-  const list = links.length ? links : [{ label: "", href: "", note: "" }];
+  const list = links.length ? links : [emptyRelatedResource()];
   list.forEach((link, index) => {
     const row = document.createElement("div");
     row.className = "watson-totw__related-row";
     row.setAttribute("data-related-row", "");
+    const n = index + 1;
     row.innerHTML = `
-      <input type="text" data-related-label maxlength="120" placeholder="Title" aria-label="Related link title ${index + 1}" />
-      <input type="text" data-related-href maxlength="300" placeholder="/path" aria-label="Related link URL ${index + 1}" />
-      <input type="text" data-related-note maxlength="240" placeholder="Short description (optional)" aria-label="Related link note ${index + 1}" />
-      <button type="button" class="watson-totw__icon-btn" data-related-remove aria-label="Remove related link">×</button>
+      <div class="watson-totw__related-row-header">
+        <label>
+          Type
+          <select class="watson-totw__related-type" data-related-type aria-label="Related resource type ${n}">
+            <option value="video">Knit It Now Video</option>
+            <option value="link">Link or Document</option>
+          </select>
+        </label>
+        <div class="watson-totw__related-actions">
+          <button type="button" class="watson-totw__btn watson-totw__btn--small" data-related-up aria-label="Move related resource ${n} up">Move Up</button>
+          <button type="button" class="watson-totw__btn watson-totw__btn--small" data-related-down aria-label="Move related resource ${n} down">Move Down</button>
+          <button type="button" class="watson-totw__icon-btn" data-related-remove aria-label="Remove related resource ${n}">×</button>
+        </div>
+      </div>
+      <div class="watson-totw__related-fields" data-related-video-fields>
+        <label>
+          Learning Library content ID
+          <input type="text" data-related-video-id maxlength="12" inputmode="numeric" placeholder="e.g. 456" aria-label="Related video content ID ${n}" />
+        </label>
+        <input type="hidden" data-related-video-title value="" />
+        <p class="watson-totw__related-status" data-related-status></p>
+        <p class="watson-totw__related-dest" data-related-video-dest></p>
+      </div>
+      <div class="watson-totw__related-fields" data-related-link-fields hidden>
+        <label>
+          Display title
+          <input type="text" data-related-title maxlength="120" placeholder="Title" aria-label="Related link title ${n}" />
+        </label>
+        <label>
+          Destination URL
+          <input type="text" data-related-url maxlength="300" placeholder="/path, /downloads/file.pdf, or https://…" aria-label="Related link URL ${n}" />
+        </label>
+      </div>
+      <label>
+        Short description (optional)
+        <input type="text" data-related-note maxlength="240" placeholder="Optional note" aria-label="Related resource note ${n}" />
+      </label>
     `;
-    const label = row.querySelector<HTMLInputElement>("[data-related-label]");
-    const href = row.querySelector<HTMLInputElement>("[data-related-href]");
+
+    const typeSelect = row.querySelector<HTMLSelectElement>("[data-related-type]");
     const note = row.querySelector<HTMLInputElement>("[data-related-note]");
-    if (label) label.value = link.label || "";
-    if (href) href.value = link.href || "";
     if (note) note.value = link.note || "";
+
+    if (link.type === "link") {
+      if (typeSelect) typeSelect.value = "link";
+      const title = row.querySelector<HTMLInputElement>("[data-related-title]");
+      const url = row.querySelector<HTMLInputElement>("[data-related-url]");
+      if (title) title.value = link.title || "";
+      if (url) url.value = link.url || "";
+    } else {
+      if (typeSelect) typeSelect.value = "video";
+      const videoId = row.querySelector<HTMLInputElement>("[data-related-video-id]");
+      const title = row.querySelector<HTMLInputElement>("[data-related-video-title]");
+      if (videoId) videoId.value = link.videoId || "";
+      if (title) title.value = link.title || "";
+      if (link.videoId && link.title) {
+        setRelatedStatus(row, `Video title: ${link.title}`, "ok");
+        const dest = row.querySelector<HTMLElement>("[data-related-video-dest]");
+        if (dest) dest.textContent = `Destination: /videos/${link.videoId}`;
+      }
+    }
+
+    updateRelatedFieldsVisibility(row);
     container.appendChild(row);
+
+    if (link.type === "video" && link.videoId && !link.title) {
+      void resolveRelatedVideoRow(row);
+    }
   });
+}
+
+function moveRelatedRow(container: HTMLElement, row: HTMLElement, direction: -1 | 1) {
+  const rows = Array.from(container.querySelectorAll<HTMLElement>("[data-related-row]"));
+  const index = rows.indexOf(row);
+  const target = index + direction;
+  if (index < 0 || target < 0 || target >= rows.length) return;
+  if (direction < 0) {
+    container.insertBefore(row, rows[target]);
+  } else {
+    container.insertBefore(rows[target], row);
+  }
 }
 
 function fillForm(form: HTMLFormElement, tip: TipRecord | null) {
@@ -141,14 +383,17 @@ function fillForm(form: HTMLFormElement, tip: TipRecord | null) {
     tip?.availabilityFooterTemplate ||
       "This Learning Library video is free for everyone through {date}. After that, it returns to the member Learning Library.",
   );
-  set("tryCopy", tip?.tryCopy || "");
+  setTryCopy(form, tip?.tryCopy || "");
   set("sueTipCopy", tip?.sueTipCopy || "");
   set("eyebrow", tip?.eyebrow || "TIP OF THE WEEK");
 
   const learnBox = el<HTMLElement>("[data-learn-points]", form);
   const relatedBox = el<HTMLElement>("[data-related-links]", form);
   if (learnBox) renderLearnPoints(learnBox, tip?.learnPoints || []);
-  if (relatedBox) renderRelatedLinks(relatedBox, tip?.relatedLinks || []);
+  if (relatedBox) {
+    const related = (tip?.relatedLinks || []).map(normalizeIncomingRelated);
+    renderRelatedLinks(relatedBox, related);
+  }
 
   const heading = el<HTMLElement>("[data-totw-form-heading]");
   if (heading) heading.textContent = tip?.id ? "Edit tip" : "New tip";
@@ -205,17 +450,17 @@ async function refreshVideoPreview(form: HTMLFormElement) {
     const data = await res.json();
     if (!res.ok || !data?.ok || !data.video) {
       preview.hidden = false;
-      preview.innerHTML = `<p class="watson-totw__preview-error">${data?.error || "Video not found."}</p>`;
+      preview.innerHTML = `<p class="watson-totw__preview-error">${escapeHtml(data?.error || "Video not found.")}</p>`;
       return;
     }
     const video = data.video as CatalogVideo;
     preview.hidden = false;
     preview.innerHTML = `
       <div class="watson-totw__preview-card">
-        ${video.posterUrl ? `<img src="${video.posterUrl}" alt="" width="160" height="90" />` : ""}
+        ${video.posterUrl ? `<img src="${escapeHtml(video.posterUrl)}" alt="" width="160" height="90" />` : ""}
         <div>
-          <strong>${video.catalogTitle}</strong>
-          <p>content_id ${video.contentId} · Vimeo ${video.vimeoId}</p>
+          <strong>${escapeHtml(video.catalogTitle)}</strong>
+          <p>content_id ${escapeHtml(video.contentId)} · Vimeo ${escapeHtml(video.vimeoId)}</p>
         </div>
       </div>
     `;
@@ -238,7 +483,7 @@ async function refreshReactions(tipId: string) {
     });
     const data = await res.json();
     if (!res.ok || !data?.ok) {
-      box.innerHTML = `<p>${data?.error || "Unable to load reactions."}</p>`;
+      box.innerHTML = `<p>${escapeHtml(data?.error || "Unable to load reactions.")}</p>`;
       return;
     }
     const rows = Array.isArray(data.rows) ? data.rows : [];
@@ -247,7 +492,7 @@ async function refreshReactions(tipId: string) {
         ${rows
           .map(
             (row: { label: string; count: number }) =>
-              `<li><span>${row.label}</span><strong>${row.count}</strong></li>`,
+              `<li><span>${escapeHtml(row.label)}</span><strong>${row.count}</strong></li>`,
           )
           .join("")}
       </ul>
@@ -259,6 +504,8 @@ async function refreshReactions(tipId: string) {
 }
 
 async function saveTip(form: HTMLFormElement, statusOverride?: TipStatus) {
+  // Ensure the rich-text editor has synced into the hidden tryCopy field.
+  syncTryCopy(form);
   const id = (form.elements.namedItem("id") as HTMLInputElement | null)?.value.trim();
   const payload = formPayload(form);
   if (statusOverride) payload.status = statusOverride;
@@ -286,6 +533,8 @@ export function initWatsonTipOfTheWeek() {
   const form = el<HTMLFormElement>("[data-totw-form]");
   if (!form) return;
 
+  initWatsonTipTryItRichText(form);
+
   const learnBox = el<HTMLElement>("[data-learn-points]", form);
   const relatedBox = el<HTMLElement>("[data-related-links]", form);
 
@@ -301,17 +550,63 @@ export function initWatsonTipOfTheWeek() {
       if (!learnBox.querySelector("[data-learn-point]")) renderLearnPoints(learnBox, [""]);
     }
     if (target.matches("[data-related-add]") && relatedBox) {
-      renderRelatedLinks(relatedBox, [
-        ...readRelatedLinks(form),
-        { label: "", href: "", note: "" },
-      ]);
+      const current = readRelatedLinks(form);
+      if (current.length >= RELATED_MAX) {
+        showStatus(`At most ${RELATED_MAX} related resources are allowed.`, "error");
+        return;
+      }
+      renderRelatedLinks(relatedBox, [...current, emptyRelatedResource()]);
     }
     if (target.matches("[data-related-remove]") && relatedBox) {
       target.closest("[data-related-row]")?.remove();
       if (!relatedBox.querySelector("[data-related-row]")) {
-        renderRelatedLinks(relatedBox, [{ label: "", href: "", note: "" }]);
+        renderRelatedLinks(relatedBox, [emptyRelatedResource()]);
       }
     }
+    if (target.matches("[data-related-up]") && relatedBox) {
+      const row = target.closest<HTMLElement>("[data-related-row]");
+      if (row) moveRelatedRow(relatedBox, row, -1);
+    }
+    if (target.matches("[data-related-down]") && relatedBox) {
+      const row = target.closest<HTMLElement>("[data-related-row]");
+      if (row) moveRelatedRow(relatedBox, row, 1);
+    }
+  });
+
+  form.addEventListener("change", (event) => {
+    const target = event.target as HTMLElement | null;
+    if (!target) return;
+    const row = target.closest<HTMLElement>("[data-related-row]");
+    if (!row) return;
+
+    if (target.matches("[data-related-type]")) {
+      updateRelatedFieldsVisibility(row);
+      if ((target as HTMLSelectElement).value === "video") {
+        void resolveRelatedVideoRow(row);
+      } else {
+        setRelatedStatus(row, "", "muted");
+      }
+    }
+  });
+
+  form.addEventListener("blur", (event) => {
+    const target = event.target as HTMLElement | null;
+    if (!target?.matches("[data-related-video-id]")) return;
+    const row = target.closest<HTMLElement>("[data-related-row]");
+    if (row) void resolveRelatedVideoRow(row);
+  }, true);
+
+  form.addEventListener("input", (event) => {
+    const target = event.target as HTMLElement | null;
+    if (!target?.matches("[data-related-video-id]")) return;
+    const row = target.closest<HTMLElement>("[data-related-row]");
+    if (!row) return;
+    // Clear stale title while typing; resolve on blur.
+    const title = el<HTMLInputElement>("[data-related-video-title]", row);
+    if (title) title.value = "";
+    setRelatedStatus(row, "Press Tab or click away to look up the video title.", "muted");
+    const dest = el<HTMLElement>("[data-related-video-dest]", row);
+    if (dest) dest.textContent = "";
   });
 
   el<HTMLButtonElement>("[data-video-resolve]", form)?.addEventListener("click", () => {
@@ -409,7 +704,7 @@ export function initWatsonTipOfTheWeek() {
     renderLearnPoints(learnBox, [""]);
   }
   if (relatedBox && !relatedBox.querySelector("[data-related-row]")) {
-    renderRelatedLinks(relatedBox, [{ label: "", href: "", note: "" }]);
+    renderRelatedLinks(relatedBox, [emptyRelatedResource()]);
   }
 
   // New-form default: end date stays auto-linked until manually edited.

@@ -28,11 +28,42 @@ export const TIP_RELATED_LINKS_MAX = 8;
 export const TIP_RELATED_LABEL_MAX = 120;
 export const TIP_RELATED_NOTE_MAX = 240;
 
-export type TipRelatedLink = {
+export const TIP_RELATED_RESOURCE_TYPES = ["video", "link"] as const;
+export type TipRelatedResourceType = (typeof TIP_RELATED_RESOURCE_TYPES)[number];
+
+/** Knit It Now Learning Library video — `videoId` is catalog content_id. */
+export type TipRelatedVideoResource = {
+  type: "video";
+  videoId: string;
+  /** Catalog title resolved at save (display cache). */
+  title: string;
+  note?: string;
+};
+
+/** Manual link or document (internal path, PDF/download, or https URL). */
+export type TipRelatedLinkResource = {
+  type: "link";
+  title: string;
+  url: string;
+  note?: string;
+};
+
+export type TipRelatedResource = TipRelatedVideoResource | TipRelatedLinkResource;
+
+/** Public Related Help row after filtering / live video title resolve. */
+export type TipRelatedPublicLink = {
+  type: TipRelatedResourceType;
   label: string;
   href: string;
   note?: string;
+  external: boolean;
 };
+
+/**
+ * @deprecated Prefer TipRelatedResource. Kept as an alias for older call sites
+ * that still mean “a related help entry.”
+ */
+export type TipRelatedLink = TipRelatedResource;
 
 /** Public / Watson tip record (camelCase DTO). */
 export type TipOfTheWeekRecord = {
@@ -49,7 +80,7 @@ export type TipOfTheWeekRecord = {
   tryCopy: string;
   sueTipCopy: string;
   learnPoints: string[];
-  relatedLinks: TipRelatedLink[];
+  relatedLinks: TipRelatedResource[];
   eyebrow: string;
   createdAt: string;
   updatedAt: string;

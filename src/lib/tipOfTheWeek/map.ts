@@ -7,10 +7,13 @@ import {
   TIP_DEFAULT_AVAILABILITY_NOTICE,
   TIP_DEFAULT_EYEBROW,
   TIP_DEFAULT_FOOTER_TEMPLATE,
+  TIP_RELATED_LABEL_MAX,
+  TIP_RELATED_NOTE_MAX,
   isTipOfTheWeekStatus,
   type TipOfTheWeekRecord,
   type TipOfTheWeekRow,
-  type TipRelatedLink,
+  type TipRelatedPublicLink,
+  type TipRelatedResource,
 } from "./types";
 
 function toIsoDateOnly(value: string | Date | null | undefined): string {
@@ -54,21 +57,164 @@ export function parseLearnPointsJson(raw: string | null | undefined): string[] {
     .filter(Boolean);
 }
 
+function optionalNote(raw: unknown): string | undefined {
+  if (typeof raw !== "string") return undefined;
+  const trimmed = raw.trim();
+  if (!trimmed || trimmed.length > TIP_RELATED_NOTE_MAX) return undefined;
+  return trimmed;
+}
+
+function optionalTitle(raw: unknown): string {
+  if (typeof raw !== "string") return "";
+  return raw.trim().slice(0, TIP_RELATED_LABEL_MAX);
+}
+
+function parseVideoContentIdLoose(raw: unknown): string {
+  if (typeof raw === "number" && Number.isFinite(raw)) {
+    return String(Math.trunc(raw));
+  }
+  if (typeof raw === "string") {
+    const trimmed = raw.trim();
+    if (/^\d{1,12}$/.test(trimmed)) return trimmed;
+  }
+  return "";
+}
+
+/** Build the gated Learning Library video page path from a content_id. */
+export function tipRelatedVideoHref(videoId: string): string {
+  return `/videos/${String(videoId).trim()}`;
+}
+
+const LEGACY_VIDEO_HREF =
+  /^\/videos\/(\d{1,12})\/?(?:[?#].*)?$/i;
+
+/**
+ * Normalize a Related Help entry from typed or legacy JSON.
+ * Preserves legacy labels, destinations, and notes.
+ */
+export function normalizeRelatedResource(
+  item: unknown,
+): TipRelatedResource | null {
+  if (!item || typeof item !== "object" || Array.isArray(item)) return null;
+  const row = item as Record<string, unknown>;
+  const note = optionalNote(row.note ?? row.description);
+  const typeRaw =
+    typeof row.type === "string" ? row.type.trim().toLowerCase() : "";
+
+  if (typeRaw === "video") {
+    const videoId = parseVideoContentIdLoose(
+      row.videoId ?? row.video_id ?? row.contentId ?? row.content_id ?? row.videoContentId,
+    );
+    const title = optionalTitle(row.title ?? row.label);
+    if (!videoId || !title) return null;
+    return note
+      ? { type: "video", videoId, title, note }
+      : { type: "video", videoId, title };
+  }
+
+  if (typeRaw === "link" || typeRaw === "document") {
+    const title = optionalTitle(row.title ?? row.label);
+    const urlRaw = row.url ?? row.href ?? row.destinationUrl;
+    const url = typeof urlRaw === "string" ? urlRaw.trim() : "";
+    if (!title || !url) return null;
+    if (url.startsWith("//")) return null;
+    if (!(url.startsWith("/") || /^https:\/\//i.test(url))) return null;
+    return note
+      ? { type: "link", title, url, note }
+      : { type: "link", title, url };
+  }
+
+  // Legacy { label, href, note? } — no type field.
+  const label = optionalTitle(row.label ?? row.title);
+  const hrefRaw = row.href ?? row.url ?? row.destinationUrl;
+  const href = typeof hrefRaw === "string" ? hrefRaw.trim() : "";
+  if (!label || !href || href.startsWith("//")) return null;
+
+  const videoMatch = LEGACY_VIDEO_HREF.exec(href);
+  if (videoMatch) {
+    return note
+      ? {
+          type: "video",
+          videoId: videoMatch[1],
+          title: label,
+          note,
+        }
+      : {
+          type: "video",
+          videoId: videoMatch[1],
+          title: label,
+        };
+  }
+
+  if (href.startsWith("/") || /^https:\/\//i.test(href)) {
+    return note
+      ? { type: "link", title: label, url: href, note }
+      : { type: "link", title: label, url: href };
+  }
+
+  return null;
+}
+
 export function parseRelatedLinksJson(
   raw: string | null | undefined,
-): TipRelatedLink[] {
-  const links: TipRelatedLink[] = [];
+): TipRelatedResource[] {
+  const links: TipRelatedResource[] = [];
   for (const item of parseJsonArray(raw)) {
-    if (!item || typeof item !== "object" || Array.isArray(item)) continue;
-    const row = item as Record<string, unknown>;
-    const label = typeof row.label === "string" ? row.label.trim() : "";
-    const href = typeof row.href === "string" ? row.href.trim() : "";
-    if (!label || !href.startsWith("/") || href.startsWith("//")) continue;
-    const note =
-      typeof row.note === "string" && row.note.trim() ? row.note.trim() : undefined;
-    links.push({ label, href, note });
+    const normalized = normalizeRelatedResource(item);
+    if (normalized) links.push(normalized);
   }
   return links;
+}
+
+/** Normalize an in-memory related-links array (e.g. from dev JSON). */
+export function normalizeRelatedResources(
+  items: unknown[] | null | undefined,
+): TipRelatedResource[] {
+  if (!Array.isArray(items)) return [];
+  const links: TipRelatedResource[] = [];
+  for (const item of items) {
+    const normalized = normalizeRelatedResource(item);
+    if (normalized) links.push(normalized);
+  }
+  return links;
+}
+
+export function relatedResourceHref(resource: TipRelatedResource): string {
+  return resource.type === "video"
+    ? tipRelatedVideoHref(resource.videoId)
+    : resource.url;
+}
+
+export function relatedResourceLabel(resource: TipRelatedResource): string {
+  if (resource.type === "video") {
+    const live = resolveVideoForTip({ videoContentId: resource.videoId });
+    return (live?.catalogTitle || resource.title).trim();
+  }
+  return resource.title.trim();
+}
+
+export function isExternalRelatedHref(href: string): boolean {
+  return /^https:\/\//i.test(String(href || "").trim());
+}
+
+export function toPublicRelatedLink(
+  resource: TipRelatedResource,
+): TipRelatedPublicLink | null {
+  const label = relatedResourceLabel(resource);
+  const href = relatedResourceHref(resource);
+  if (!label || !href) return null;
+  if (href.startsWith("//")) return null;
+  if (!(href.startsWith("/") || isExternalRelatedHref(href))) return null;
+  if (href.includes("example.com") || href.includes("#todo")) return null;
+
+  const link: TipRelatedPublicLink = {
+    type: resource.type,
+    label,
+    href,
+    external: isExternalRelatedHref(href),
+  };
+  if (resource.note) link.note = resource.note;
+  return link;
 }
 
 export function buildTipOfTheWeekRecord(
@@ -152,16 +298,12 @@ export function resolveVideoForTip(
 }
 
 export function filterPublicRelatedLinks(
-  links: TipRelatedLink[],
-): TipRelatedLink[] {
-  return (links || []).filter(
-    (link) =>
-      typeof link?.href === "string" &&
-      link.href.startsWith("/") &&
-      !link.href.startsWith("//") &&
-      !link.href.includes("example.com") &&
-      !link.href.includes("#todo") &&
-      typeof link.label === "string" &&
-      link.label.trim().length > 0,
-  );
+  links: TipRelatedResource[],
+): TipRelatedPublicLink[] {
+  const out: TipRelatedPublicLink[] = [];
+  for (const resource of links || []) {
+    const publicLink = toPublicRelatedLink(resource);
+    if (publicLink) out.push(publicLink);
+  }
+  return out;
 }

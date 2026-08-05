@@ -13,6 +13,10 @@ import {
   loadTipOfTheWeekPreview,
 } from "../lib/tipOfTheWeek/publicPage";
 import { isWatsonSessionAuthenticated } from "../lib/watson/watsonAuth";
+import {
+  billboardMessageHasText,
+  sanitizeBillboardHtml,
+} from "../lib/whatsNew/sanitizeBillboardHtml";
 
 export const prerender = false;
 
@@ -33,6 +37,8 @@ const video = tip ? resolveTipCatalogVideo({ videoContentId: tip.videoContentId 
 const relatedLinks = featured?.relatedLinks ?? [];
 const availableThroughDisplay = featured?.availableThroughDisplay ?? "";
 const availabilityFooter = featured?.availabilityFooter ?? "";
+const tryCopyHtml = tip ? sanitizeBillboardHtml(tip.tryCopy) : "";
+const hasTryCopy = billboardMessageHasText(tryCopyHtml);
 const pageTitle = tip?.title ?? "Tip of the Week";
 const pageDescription =
   tip?.intro ??
@@ -158,12 +164,12 @@ const pageDescription =
 
         <TipReactions tipId={tip.tipId} />
 
-        {tip.tryCopy ? (
+        {hasTryCopy ? (
           <section class="totw-section" aria-labelledby="totw-try-heading">
             <h2 id="totw-try-heading" class="totw-section__title">
               Try It
             </h2>
-            <p class="totw-section__copy">{tip.tryCopy}</p>
+            <div class="totw-section__copy" set:html={tryCopyHtml} />
           </section>
         ) : null}
 
@@ -183,8 +189,14 @@ const pageDescription =
             </h2>
             <ul class="totw-related">
               {relatedLinks.map((link) => (
-                <li class="totw-related__item">
-                  <a class="totw-related__link" href={link.href}>
+                <li class="totw-related__item" data-related-type={link.type}>
+                  <a
+                    class="totw-related__link"
+                    href={link.href}
+                    {...(link.external
+                      ? { target: "_blank", rel: "noopener noreferrer" }
+                      : {})}
+                  >
                     {link.label}
                   </a>
                   {link.note ? <span class="totw-related__note">{link.note}</span> : null}
@@ -464,6 +476,26 @@ const pageDescription =
     line-height: 1.55;
     color: #374151;
     max-width: 42rem;
+  }
+
+  .totw-section__copy p {
+    margin: 0 0 0.65rem;
+  }
+
+  .totw-section__copy p:last-child {
+    margin-bottom: 0;
+  }
+
+  .totw-section__copy ul,
+  .totw-section__copy ol {
+    margin: 0.35rem 0 0.65rem;
+    padding-left: 1.35rem;
+  }
+
+  .totw-section__copy a {
+    color: #1f5f7a;
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
 
   .totw-learn-card {

@@ -9,12 +9,9 @@
  */
 import tipConfig from "../data/tip-of-the-week.json";
 import videosPublic from "../data/videos-public.json";
+import type { TipRelatedResource } from "./tipOfTheWeek/types";
 
-export type TipRelatedLink = {
-  label: string;
-  href: string;
-  note?: string;
-};
+export type TipRelatedLink = TipRelatedResource;
 
 export type TipOfTheWeekConfig = {
   tipId: string;
@@ -35,7 +32,7 @@ export type TipOfTheWeekConfig = {
   sueTipHeading: string;
   sueTipCopy: string;
   relatedHeading: string;
-  relatedLinks: TipRelatedLink[];
+  relatedLinks: TipRelatedResource[];
   availabilityFooterTemplate: string;
 };
 

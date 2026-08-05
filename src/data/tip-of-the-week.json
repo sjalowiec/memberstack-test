@@ -23,18 +23,21 @@
   "relatedHeading": "Related Help",
   "relatedLinks": [
     {
-      "label": "Easy (Lazy) Edge Finish",
-      "href": "/videos/784",
+      "type": "video",
+      "videoId": "784",
+      "title": "Easy (Lazy) Edge Finish",
       "note": "A simple edge finish for slits and openings"
     },
     {
-      "label": "Wet Blocking",
-      "href": "/videos/456",
+      "type": "video",
+      "videoId": "456",
+      "title": "Wet Blocking",
       "note": "Four reasons to wet block instead of steam"
     },
     {
-      "label": "Stockinette Stitch",
-      "href": "/glossary/stockinette-stitch",
+      "type": "link",
+      "title": "Stockinette Stitch",
+      "url": "/glossary/stockinette-stitch",
       "note": "Glossary: the basic smooth knit fabric"
     }
   ],

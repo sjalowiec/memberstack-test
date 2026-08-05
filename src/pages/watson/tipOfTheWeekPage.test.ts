@@ -102,4 +102,35 @@ describe("Watson Tip of the Week page", () => {
     expect(script).toContain("resetTipAvailableThroughToSevenDays");
     expect(script).toContain("initTipDateFormState");
   });
+
+  it("edits typed Related Help resources with video lookup and reorder controls", () => {
+    expect(page).toContain("Add Related Resource");
+    expect(page).toContain("data-related-links");
+    expect(script).toContain("Knit It Now Video");
+    expect(script).toContain("Link or Document");
+    expect(script).toContain("data-related-video-id");
+    expect(script).toContain("data-related-up");
+    expect(script).toContain("data-related-down");
+    expect(script).toContain("${API}/video/");
+    expect(script).toContain('const API = "/api/watson/tip-of-the-week"');
+    expect(script).not.toMatch(/drag-and-drop|draggable/i);
+  });
+
+  it("uses the billboard-style rich-text editor for Try It only", () => {
+    expect(page).toContain("data-totw-try-rte");
+    expect(page).toContain('data-wn-rte-cmd="bold"');
+    expect(page).toContain('data-wn-rte-cmd="italic"');
+    expect(page).toContain('data-wn-rte-cmd="paragraph"');
+    expect(page).toContain('data-wn-rte-cmd="ul"');
+    expect(page).toContain('data-wn-rte-cmd="ol"');
+    expect(page).toContain('data-wn-rte-cmd="link"');
+    expect(page).toContain('name="tryCopy"');
+    expect(page).toMatch(/name="tryCopy"[^>]*hidden|hidden[^>]*name="tryCopy"/);
+    expect(page).not.toMatch(/<textarea name="tryCopy"[^>]*rows=/);
+    expect(page).toMatch(/<textarea name="sueTipCopy"/);
+    expect(script).toContain("initWatsonTipTryItRichText");
+    expect(script).toContain("setTryCopy");
+    expect(script).toContain("syncTryCopy");
+    expect(script).toContain("sanitizeBillboardHtml");
+  });
 });
