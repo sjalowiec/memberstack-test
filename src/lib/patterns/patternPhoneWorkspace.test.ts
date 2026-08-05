@@ -127,10 +127,11 @@ describe("pattern phone workspace — notice + compact header", () => {
     );
   });
 
-  it("hides the tall search strip on pattern workspace phones and keeps a search icon", () => {
-    expect(phoneWorkspaceCss).toContain("body.page--pattern-workspace .kbm-search-strip");
-    expect(phoneWorkspaceCss).toContain("display: none !important");
-    expect(headerAstro).toContain("kbm-pattern-workspace-search");
+  it("keeps a green-bar search icon on pattern workspace phones (no terracotta search strip)", () => {
+    expect(phoneWorkspaceCss).not.toContain("body.page--pattern-workspace .kbm-search-strip");
+    expect(headerAstro).not.toContain("kbm-search-strip");
+    expect(headerAstro).toContain("kbm-header-search");
+    expect(headerAstro).toContain('aria-label="Search Knit It Now"');
     expect(headerAstro).toContain("patternWorkspace");
     expect(layoutAstro).toContain("page--pattern-workspace");
     expect(layoutAstro).toContain("isPatternWorkspacePhone");

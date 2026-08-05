@@ -118,3 +118,45 @@ describe("Header mobile drawer visible-viewport sizing", () => {
     expect(headerSource).toContain('setProperty("--header-height"');
   });
 });
+
+describe("Header green-bar search button replaces terracotta strip", () => {
+  it("removes the site-wide .kbm-search-strip markup and styles", () => {
+    expect(headerSource).not.toContain("kbm-search-strip");
+    expect(headerSource).not.toContain("kbm-search-bar");
+    expect(headerSource).not.toContain('id="openSearchModal"');
+  });
+
+  it("exposes accessible magnifying-glass triggers that open the shared Pagefind modal", () => {
+    expect(headerSource).toContain('id="searchModal"');
+    expect(headerSource).toContain('id="pagefind-search"');
+    expect(headerSource).toContain("data-open-search-modal");
+    expect(headerSource).toContain('aria-label="Search Knit It Now"');
+    expect(headerSource).toContain('data-testid="header-search"');
+    expect(headerSource).toContain('data-testid="header-search-mobile"');
+    expect(headerSource).toContain("kbm-header-search--desktop");
+    expect(headerSource).toContain("kbm-header-search--mobile");
+    // Desktop vs mobile visibility is CSS-scoped (no second search system).
+    expect(headerSource).toMatch(
+      /@media\s*\(min-width:\s*1025px\)\s*\{[\s\S]*\.kbm-header-search--desktop\s*\{[\s\S]*display:\s*inline-flex/,
+    );
+    expect(headerSource).toMatch(
+      /@media\s*\(max-width:\s*1024px\)\s*\{[\s\S]*\.kbm-header-search--mobile\s*\{[\s\S]*display:\s*inline-flex/,
+    );
+  });
+
+  it("keeps Escape-to-close and restores focus to the search trigger", () => {
+    expect(headerSource).toContain('e.key !== "Escape"');
+    expect(headerSource).toContain("lastSearchTrigger");
+    expect(headerSource).toContain("restore.focus");
+    expect(headerSource).toContain('querySelectorAll("[data-open-search-modal]")');
+  });
+
+  it("keeps visible hover and focus styles on the green-bar search button", () => {
+    expect(headerSource).toMatch(
+      /\.kbm-header-search:hover\s*\{[\s\S]*background:\s*rgba\(255,\s*255,\s*255,\s*0\.15\)/,
+    );
+    expect(headerSource).toMatch(
+      /\.kbm-header-search:focus(?:-visible)?\s*,?\s*\.kbm-header-search:focus-visible\s*\{[\s\S]*outline:\s*2px solid/,
+    );
+  });
+});
