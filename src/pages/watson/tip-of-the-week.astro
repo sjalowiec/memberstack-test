@@ -96,6 +96,15 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
 
   <p class="watson-totw__toolbar">
     <button type="button" class="watson-totw__btn" data-totw-new>New tip</button>
+    <a
+      class="watson-totw__btn watson-totw__btn--link"
+      href="https://knititnow.activehosted.com/app/campaigns"
+      target="_blank"
+      rel="noopener noreferrer"
+      data-totw-activecampaign-calendar
+    >
+      ActiveCampaign Calendar
+    </a>
   </p>
 
   <div class="watson-totw__status" data-totw-status hidden></div>
@@ -304,6 +313,10 @@ function renderTipCard(tip: TipOfTheWeekRecord) {
 
   .watson-totw__toolbar {
     margin: 0 0 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
   }
 
   .watson-totw__status {

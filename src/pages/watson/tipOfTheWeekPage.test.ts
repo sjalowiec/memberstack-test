@@ -50,6 +50,29 @@ describe("Watson Tip of the Week page", () => {
     expect(script).toContain("/api/watson/tip-of-the-week");
   });
 
+  it("exposes an ActiveCampaign Calendar external link near admin actions", () => {
+    expect(page).toContain("ActiveCampaign Calendar");
+    expect(page).toContain('href="https://knititnow.activehosted.com/app/campaigns"');
+    expect(page).toContain('data-totw-activecampaign-calendar');
+    expect(page).toContain('target="_blank"');
+    expect(page).toContain('rel="noopener noreferrer"');
+
+    const linkBlock = page.slice(
+      page.indexOf('href="https://knititnow.activehosted.com/app/campaigns"'),
+      page.indexOf("ActiveCampaign Calendar") + "ActiveCampaign Calendar".length,
+    );
+    expect(linkBlock).toContain('target="_blank"');
+    expect(linkBlock).toContain('rel="noopener noreferrer"');
+    expect(linkBlock).toContain("ActiveCampaign Calendar");
+
+    const toolbarIdx = page.indexOf('class="watson-totw__toolbar"');
+    const linkIdx = page.indexOf("data-totw-activecampaign-calendar");
+    const formIdx = page.indexOf("data-totw-form");
+    expect(toolbarIdx).toBeGreaterThan(-1);
+    expect(linkIdx).toBeGreaterThan(toolbarIdx);
+    expect(linkIdx).toBeLessThan(formIdx);
+  });
+
   it("auto-defaults Available Through to a 7-day window with Reset control", () => {
     expect(page).toContain("data-totw-reset-seven-days");
     expect(page).toContain("Reset to 7 days");
