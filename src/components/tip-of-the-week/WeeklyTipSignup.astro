@@ -110,8 +110,8 @@ const { variant } = Astro.props;
 {
   variant === "modal" ? (
     <script>
-      import { initWeeklyTipSignupModal } from "../../scripts/emailListSignupModal.ts";
-      initWeeklyTipSignupModal();
+      import { bootWeeklyTipSignupModal } from "../../scripts/emailListSignupModal.ts";
+      bootWeeklyTipSignupModal();
     </script>
   ) : null
 }
@@ -127,6 +127,16 @@ const { variant } = Astro.props;
     font-size: 0.95rem;
     line-height: 1.45;
     color: #374151;
+  }
+
+  /*
+   * Author `display: flex` overrides the UA [hidden] { display: none } rule.
+   * Without this, subscriber recognition left the CTA visible while open() no-op'd.
+   */
+  .weekly-tip-signup-inline[hidden],
+  .weekly-tip-signup-coming-soon[hidden],
+  .weekly-tip-signup-secondary[hidden] {
+    display: none !important;
   }
 
   .weekly-tip-signup-inline__text {
