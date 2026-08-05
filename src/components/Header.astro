@@ -34,114 +34,22 @@ const minimalHeader = onboarding || marketing;
 
 /* Global variables and typography now defined in global.css to avoid Astro CSS bundling issues */
 
-/* Desktop header-specific adjustments */
-@media (min-width: 1025px) {
+/*
+ * Header layout breakpoints (keep CSS + JS in sync):
+ * - min-width 1280px: single-row desktop (logo + nav + search + account)
+ * - max-width 1279px: compact green bar + hamburger / mobile drawer
+ * There is no intermediate two-row header.
+ */
+@media (min-width: 1280px) {
   .kbm-logo-section {
     padding: 4px 24px 0 20px;
   }
 
-  .kbm-nav-row { 
+  .kbm-nav-row {
     padding: 0.25rem 0;
     margin-top: 0;
   }
-}
 
-/* Tablet / medium desktop: row 1 = logo + nav, row 2 = search + account (mobile unchanged ≤1024px) */
-@media (min-width: 1025px) and (max-width: 1400px) {
-  .kbm-nav-bar .kbm-container {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-areas:
-      "brand nav"
-      "secondary secondary";
-    align-items: center;
-    gap: 0.35rem 0.65rem;
-    padding-inline: 16px;
-  }
-
-  .kbm-nav-bar .brand {
-    grid-area: brand;
-    min-width: 0;
-  }
-
-  .kbm-nav-bar .kbm-nav-primary {
-    grid-area: nav;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-  }
-
-  .kbm-nav-bar .kbm-nav-secondary {
-    grid-area: secondary;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 0.5rem 0.75rem;
-    width: 100%;
-    min-width: 0;
-  }
-
-  .kbm-logo-section {
-    padding: 4px 12px 0 8px;
-  }
-
-  .kbm-nav-bar .kbm-logo-img {
-    width: 40px;
-    height: 40px;
-  }
-
-  .kbm-nav-bar .kbm-logo-text {
-    font-size: 1.45rem;
-  }
-
-  .kbm-nav-bar .kbm-nav-row {
-    gap: 0.65rem;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-    min-width: 0;
-  }
-
-  .kbm-menu {
-    gap: 0.65rem;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-  }
-
-  .kbm-menu > li > a,
-  .kbm-menu > li > .dd-trigger {
-    font-size: 0.95rem;
-    padding: 6px 0;
-  }
-
-  .kbm-nav-bar .kbm-header-auth {
-    flex: 0 1 auto;
-    min-width: 0;
-  }
-
-  .kbm-nav-bar .kbm-header-auth .kbm-header-account-btn {
-    max-width: min(12rem, 42vw);
-  }
-
-  .kbm-nav-bar .kbm-header-auth > [data-ms-content] {
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    margin-left: auto;
-  }
-
-  .kbm-nav-bar .kbm-header-auth .kbm-btn-outline {
-    font-size: 0.85rem;
-    padding: 6px 10px;
-  }
-
-  .kbm-nav-bar .kbm-nav-right {
-    display: none;
-  }
-}
-
-/* Wide desktop single row — only when the full header fits without clipping */
-@media (min-width: 1401px) {
   .kbm-nav-bar .kbm-container {
     display: flex;
     align-items: center;
@@ -223,7 +131,7 @@ const minimalHeader = onboarding || marketing;
 }
 
 /* Mobile: compact announcement strip (Layer 1); secondary to brand bar and CTA */
-@media (max-width: 1024px) {
+@media (max-width: 1279px) {
   .kbm-billboard {
     padding: 0.28rem 0;
   }
@@ -296,13 +204,13 @@ const minimalHeader = onboarding || marketing;
   display: none;
 }
 
-@media (min-width: 1025px) {
+@media (min-width: 1280px) {
   .kbm-header-search--desktop {
     display: inline-flex;
   }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1279px) {
   .kbm-header-search--mobile {
     display: inline-flex;
     width: 44px;
@@ -317,7 +225,7 @@ const minimalHeader = onboarding || marketing;
   display: none;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1279px) {
   .kbm-nav-row .kbm-drawer-actions {
     display: flex;
     flex-direction: column;
@@ -768,7 +676,7 @@ const minimalHeader = onboarding || marketing;
   display: none;
 }
 
-@media (min-width: 1025px) {
+@media (min-width: 1280px) {
   .kbm-nav-bar .kbm-nav-row .kbm-search-wrap {
     display: none; /* full search only via modal */
   }
@@ -799,7 +707,7 @@ const minimalHeader = onboarding || marketing;
 }
 
 /* Mobile: two-layer header — billboard + green bar with logo, Free Guide CTA, hamburger */
-@media (max-width: 1024px) {
+@media (max-width: 1279px) {
   /* Green bar: logo (left), CTA (middle-right), hamburger (far right) */
   .kbm-nav-bar .kbm-container {
     display: flex;
@@ -1094,7 +1002,7 @@ const minimalHeader = onboarding || marketing;
   text-decoration: none;
 }
 
-@media (min-width: 1025px) {
+@media (min-width: 1280px) {
   .kbm-menu .nav-dropdown .nav-dropdown-menu {
     position: absolute;
     top: 100%;
@@ -1158,7 +1066,7 @@ const minimalHeader = onboarding || marketing;
 }
 
 /* ===== MOBILE RESPONSIVE ===== */
-@media (max-width: 1024px) {
+@media (max-width: 1279px) {
   .kbm-hamburger {
     display: flex;
     top: 10px;
@@ -1308,7 +1216,7 @@ const minimalHeader = onboarding || marketing;
 }
 
 /* Tablet and small laptop screens - scale down header */
-@media (min-width: 600px) and (max-width: 1024px) {
+@media (min-width: 600px) and (max-width: 1279px) {
   .kbm-logo-section {
     padding: 0.5rem 1rem 0.25rem 1rem;
   }
@@ -2296,6 +2204,8 @@ div[data-ms-modal-overlay] {
 </script>
 <script is:inline>
   (() => {
+    // Keep in sync with Header CSS: compact chrome + drawer at max-width 1279px.
+    const KBM_HEADER_COMPACT_MAX_PX = 1279;
     const dds = document.querySelectorAll('.kbm-menu .dd');
     const hamburger = document.querySelector('.kbm-hamburger');
     const navRow = document.querySelector('.kbm-nav-row');
@@ -2315,7 +2225,8 @@ div[data-ms-modal-overlay] {
     }
 
     function isTouchMode() {
-      return matchMedia('(hover: none), (pointer: coarse)').matches || window.innerWidth <= 1024;
+      return matchMedia('(hover: none), (pointer: coarse)').matches ||
+        window.innerWidth <= KBM_HEADER_COMPACT_MAX_PX;
     }
 
     function setupDropdownBehavior() {
@@ -2461,7 +2372,7 @@ div[data-ms-modal-overlay] {
 
       // Close menu when clicking outside
       document.addEventListener('click', (e) => {
-        if (window.innerWidth <= 1024 && 
+        if (window.innerWidth <= KBM_HEADER_COMPACT_MAX_PX && 
             !navRow.contains(e.target) && 
             !hamburger.contains(e.target) && 
             navRow.classList.contains('mobile-open')) {
