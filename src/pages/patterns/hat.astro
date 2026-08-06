@@ -15,6 +15,7 @@ import PatternHeaderImage from "../../components/patterns/PatternHeaderImage.ast
 import WarningBox from "../../components/ui/WarningBox.astro";
 import glossaryJson from "../../data/glossary.json";
 import hatSizingRows from "../../data/sizing_hats.json";
+import { roundFinishedHatSizeFromHead } from "../../lib/patterns/hat/hatMath";
 
 type HatGlossaryRow = { glossaryId?: number; english?: string; example?: string };
 const hatGlossaryRows: HatGlossaryRow[] = Array.isArray(glossaryJson) ? (glossaryJson as HatGlossaryRow[]) : [];
@@ -28,13 +29,6 @@ function hatPlainGlossaryExample(raw: string | undefined): string {
 }
 const scrapOffPatternTooltip =
   hatPlainGlossaryExample(hatGlossary311?.example) || (hatGlossary311?.english ?? "Scrap Off").trim();
-
-/** Chart JSON circumference = head size (inches). Builder uses 10% negative ease, rounded to 0.5". */
-function roundFinishedHatSizeFromHead(headInches: number): number {
-  const n = Number(headInches);
-  if (!Number.isFinite(n)) return NaN;
-  return Math.round(n * 0.9 * 2) / 2;
-}
 
 function formatFinishedInchesForLabel(n: number): string {
   if (!Number.isFinite(n)) return "";
@@ -2260,11 +2254,59 @@ select.disabled {
 <!-- Load shared wizard utilities -->
 <script is:inline src="/js/wizard-utils.js"></script>
 
+<!-- Phase A: extracted hat math / draft / instructions / diagram (page still owns UI + print). -->
+<script>
+  import {
+    applyHatCrownCastOnAdjustment,
+    calculateHatPattern,
+    HAT_FIT_HEIGHTS_INCHES,
+    resolveTotalHatLengthInches,
+    roundFinishedHatSizeFromHead,
+    roundToEvenPreferUp,
+  } from "../../lib/patterns/hat/hatMath";
+  import {
+    ensureHatDraftMigrated,
+    syncHatDraftFromBuilderFields,
+  } from "../../lib/patterns/hat/hatDraft";
+  import { buildHatPatternHtml } from "../../lib/patterns/hat/hatInstructions";
+  import { loadHatDiagramSvg } from "../../lib/patterns/hat/hatDiagram";
+
+  window.__kbmHatPhaseA = {
+    applyHatCrownCastOnAdjustment,
+    calculateHatPattern,
+    HAT_FIT_HEIGHTS_INCHES,
+    resolveTotalHatLengthInches,
+    roundToEvenPreferUp,
+    roundFinishedHatSizeFromHead,
+    ensureHatDraftMigrated,
+    syncHatDraftFromBuilderFields,
+    buildHatPatternHtml,
+    loadHatDiagramSvg,
+  };
+</script>
+
 <script define:vars={{ hatSizingBuilderRows, scrapOffPatternTooltip }}>
 async function initHatBuilder() {
   console.log('Wizard initializing...');
 
   console.log('HAT BUILDER FILE LOADED');
+
+  const HatPhaseA = window.__kbmHatPhaseA;
+  if (!HatPhaseA) {
+    console.error('[hat-builder] Phase A modules failed to load (window.__kbmHatPhaseA missing)');
+  }
+  const {
+    applyHatCrownCastOnAdjustment,
+    calculateHatPattern,
+    HAT_FIT_HEIGHTS_INCHES,
+    resolveTotalHatLengthInches: resolveTotalHatLengthInchesLib,
+    roundFinishedHatSizeFromHead,
+    roundToEvenPreferUp,
+    ensureHatDraftMigrated,
+    syncHatDraftFromBuilderFields,
+    buildHatPatternHtml,
+    loadHatDiagramSvg,
+  } = HatPhaseA || {};
   
   // Use shared wizard utilities from window.WizardUtils (or shorthand WU)
   const {
@@ -2279,31 +2321,6 @@ async function initHatBuilder() {
     updateHTML
   } = window.WizardUtils;
 
-  /** Escape for HTML attribute (pattern-term data-tooltip). */
-  function escapePatternTermAttr(s) {
-    return String(s ?? '')
-      .replace(/&/g, '&amp;')
-      .replace(/"/g, '&quot;')
-      .replace(/</g, '&lt;');
-  }
-
-  /**
-   * Collapsible pattern section: checkbox checked = collapsed (is-collapsed + hidden content).
-   * Persists via localStorage hatPattern_section_[sectionId].
-   */
-  function wrapHatPatternSection(sectionId, titleHtml, contentHtml) {
-    const sid = String(sectionId).replace(/[^a-zA-Z0-9_-]/g, '');
-    return `<section class="hat-pattern-section" data-section-id="${sid}">
-  <div class="hat-pattern-section__header">
-    <label class="hat-pattern-section__collapse-label">
-      <input type="checkbox" class="hat-pattern-section__collapse" data-section-id="${sid}" aria-label="Collapse this section" />
-    </label>
-    <div class="hat-pattern-section__heading">${titleHtml}</div>
-  </div>
-  <div class="hat-pattern-section__content">${contentHtml}</div>
-</section>`;
-  }
-
   /** Restore collapsed state from localStorage after pattern HTML is injected. */
   function applyHatPatternSectionCollapseState(root) {
     if (!root) return;
@@ -2317,203 +2334,6 @@ async function initHatBuilder() {
       checkbox.checked = collapsed;
       section.classList.toggle('is-collapsed', collapsed);
     });
-  }
-
-  /** Round to integer; if odd, bump up to next even (stitch/row parity). @param {number} value */
-  function roundToEvenPreferUp(value) {
-    const n = Math.round(value);
-    return n % 2 === 0 ? n : n + 1;
-  }
-
-  /** Spiral crown: stitch count must be divisible by 6 (six decrease sections). Snaps to nearest multiple of 6. */
-  function snapCastOnToNearestMultipleOf6(castOnStitches) {
-    let n = castOnStitches;
-    if (n % 6 !== 0) {
-      const lower = Math.floor(n / 6) * 6;
-      const upper = Math.ceil(n / 6) * 6;
-      n = Math.abs(n - lower) <= Math.abs(upper - n) ? lower : upper;
-    }
-    return n;
-  }
-
-  /** Wedge crown: trim cast-on for legacy wedge-4; 4-wedge decrease rounds up to multiple of 4. */
-  function applyHatCrownCastOnAdjustment(castOnSts, crown) {
-    if (crown === 'wedge-4') return castOnSts - (castOnSts % 4);
-    if (crown === 'wedge-4-decrease') {
-      // 4 wedge crown setup
-      // stitch count must be divisible by 4
-      const r = castOnSts % 4;
-      return r === 0 ? castOnSts : castOnSts + (4 - r);
-    }
-    if (crown === 'spiral') return snapCastOnToNearestMultipleOf6(castOnSts);
-    return castOnSts;
-  }
-
-  /**
-   * Shared crown planning logic used by calculations + instruction generation.
-   * All values returned in inches unless otherwise stated.
-   */
-  function buildHatCrownPlan({
-    crown,
-    finishedHatLength,
-    suggestedCrownDepth,
-    castOnStitches,
-    rowGaugePerInch,
-  }) {
-    const safeLength = Number.isFinite(finishedHatLength) ? finishedHatLength : 0;
-    const safeSuggestedDepth = Number.isFinite(suggestedCrownDepth) ? suggestedCrownDepth : 0;
-    const safeCastOn = Number.isFinite(castOnStitches) ? castOnStitches : 0;
-    const safeRowGauge = Number.isFinite(rowGaugePerInch) && rowGaugePerInch > 0 ? rowGaugePerInch : 0;
-
-    if (crown === 'gathered') {
-      return {
-        crownDepth: 0,
-        bodyLength: safeLength,
-        note: 'Gathered crowns are closed after the full hat length is knitted.',
-        crownRows: 0,
-        spiral: null,
-      };
-    }
-
-    if (crown === 'spiral') {
-      const decreasePoints = 6;
-      const targetStitches = 6;
-      let castOnStitches = snapCastOnToNearestMultipleOf6(safeCastOn);
-      if ((castOnStitches - targetStitches) % 6 !== 0) {
-        console.warn('Spiral crown math mismatch: stitches not reducing cleanly by 6.');
-      }
-      const decreaseRows = Math.max(0, (castOnStitches - targetStitches) / decreasePoints);
-      const gradual = Math.round(decreaseRows * 0.67);
-      const rapid = decreaseRows - gradual;
-      const gradualRows = Math.max(0, gradual > 0 ? gradual * 2 - 1 : 0);
-      const rapidRows = rapid;
-      const crownRows = gradualRows + rapidRows;
-      const crownDepth = safeRowGauge > 0 ? crownRows / safeRowGauge : 0;
-      return {
-        crownDepth,
-        bodyLength: safeLength - crownDepth,
-        note: 'Spiral crown depth is calculated from the shaping schedule.',
-        crownRows,
-        spiral: {
-          decreasePoints,
-          targetStitches,
-          decreaseRows,
-          gradual,
-          rapid,
-          gradualRows,
-          rapidRows,
-          crownRows,
-        },
-      };
-    }
-
-    const crownDepth = safeSuggestedDepth;
-    return {
-      crownDepth,
-      bodyLength: safeLength - crownDepth,
-      note: 'Wedge crown depth is based on the sizing chart.',
-      crownRows: Math.max(0, Math.round(crownDepth * safeRowGauge)),
-      spiral: null,
-    };
-  }
-
-  /**
-   * Centered cast-on: half the stitches on the left of center (L1 = next to center on the left),
-   * half on the right (R1 = next to center on the right). Physical order left → right along the bed:
-   * L(half), L(half−1), …, L1, R1, …, R(half). Matches the hat builder’s even split for cast-on count.
-   * @param {number} stitchIndex 0 … N−1 left to right
-   * @param {number} N total cast-on stitches (even)
-   */
-  function hatCastOnNeedleAtIndex(stitchIndex, N) {
-    const half = N / 2;
-    if (stitchIndex < half) {
-      const num = half - stitchIndex;
-      return { side: 'L', num, label: `L${num}` };
-    }
-    const num = stitchIndex - half + 1;
-    return { side: 'R', num, label: `R${num}` };
-  }
-
-  /**
-   * map 4 wedge crown stitches to actual needles
-   * never output needle 0
-   * @param {number} startIdx inclusive, left-to-right position
-   * @param {number} endIdx inclusive
-   * @param {number} N total cast-on stitches
-   */
-  function formatHatWedgeNeedleDisplayRange(startIdx, endIdx, N) {
-    const half = N / 2;
-    if (
-      !Number.isFinite(startIdx) ||
-      !Number.isFinite(endIdx) ||
-      !Number.isFinite(N) ||
-      N <= 0 ||
-      startIdx > endIdx
-    ) {
-      return '';
-    }
-    const a = Math.max(0, Math.min(N - 1, startIdx));
-    const b = Math.max(0, Math.min(N - 1, endIdx));
-
-    function leftSpan(s, e) {
-      if (s > e) return '';
-      const outer = half - s;
-      const inner = half - e;
-      if (outer < 1 || inner < 1) return '';
-      if (outer === inner) return `L${outer}`;
-      return `L${outer} to L${inner}`;
-    }
-    function rightSpan(s, e) {
-      if (s > e) return '';
-      const lo = s - half + 1;
-      const hi = e - half + 1;
-      if (lo < 1 || hi < 1) return '';
-      if (lo === hi) return `R${lo}`;
-      return `R${lo} to R${hi}`;
-    }
-
-    if (b < half) {
-      return leftSpan(a, b);
-    }
-    if (a >= half) {
-      return rightSpan(a, b);
-    }
-    const leftPart = leftSpan(a, half - 1);
-    const rightPart = rightSpan(half, b);
-    if (leftPart && rightPart) return `${leftPart}, then ${rightPart}`;
-    return leftPart || rightPart || '';
-  }
-
-  /**
-   * @param {number} N adjusted cast-on (must be divisible by 4)
-   * @returns {{ wedgeNumber: number, stitchCount: number, startNeedleLabel: string, endNeedleLabel: string, displayRange: string, needleLabels: string[] }[]}
-   */
-  function buildFourWedgeNeedleRanges(N, wedgeStitchCount) {
-    const w = wedgeStitchCount;
-    if (!Number.isFinite(N) || N <= 0 || N % 4 !== 0 || !Number.isFinite(w) || w !== N / 4) {
-      return [];
-    }
-    const wedges = [];
-    for (let wn = 1; wn <= 4; wn += 1) {
-      const physicalSlot = 4 - wn;
-      const startIdx = physicalSlot * w;
-      const endIdx = startIdx + w - 1;
-      const needleLabels = [];
-      for (let i = startIdx; i <= endIdx; i += 1) {
-        needleLabels.push(hatCastOnNeedleAtIndex(i, N).label);
-      }
-      const startL = hatCastOnNeedleAtIndex(startIdx, N);
-      const endL = hatCastOnNeedleAtIndex(endIdx, N);
-      wedges.push({
-        wedgeNumber: wn,
-        stitchCount: w,
-        startNeedleLabel: startL.label,
-        endNeedleLabel: endL.label,
-        displayRange: formatHatWedgeNeedleDisplayRange(startIdx, endIdx, N),
-        needleLabels,
-      });
-    }
-    return wedges;
   }
 
   const resultsVisibilityConfig = {
@@ -2607,11 +2427,7 @@ async function initHatBuilder() {
   // ========== HAT BUILDER SPECIFIC CODE ==========
 
   /** Chart JSON circumference = head (in). finishedSizeInches = head × 0.9, rounded to 0.5". */
-  function roundFinishedHatSizeFromHead(headInches) {
-    const n = Number(headInches);
-    if (!Number.isFinite(n)) return NaN;
-    return Math.round(n * 0.9 * 2) / 2;
-  }
+  // roundFinishedHatSizeFromHead comes from hatMath via window.__kbmHatPhaseA
   function formatFinishedInchesForLabel(n) {
     if (!Number.isFinite(n)) return '';
     const rounded = Math.round(n * 2) / 2;
@@ -2690,7 +2506,19 @@ async function initHatBuilder() {
   /** Must be declared before any syncHatSelectCompletion() → updatePatternReadinessUi() (avoid TDZ on `let`). */
   let isPatternReady = false;
   const unitStore = createUnitStore('hat-unit', 'inches');
-  const fitHeightsPreset = { beanie: 7, watchcap: 8.5, slouchy: 10, relaxed: 9 };
+  const fitHeightsPreset = HAT_FIT_HEIGHTS_INCHES || {
+    beanie: 7,
+    watchcap: 8.5,
+    slouchy: 10,
+    relaxed: 9,
+  };
+
+  // Migrate legacy fragmented keys → kbm_hat_draft (legacy keys remain for this page).
+  try {
+    ensureHatDraftMigrated?.();
+  } catch (_) {
+    /* ignore */
+  }
 
   /** @param {'inches'|'cm'|undefined} displayUnitOverride — use when unit store has not been updated yet (e.g. kbm:units-change before button handler). */
   function refreshHatSizeDropdownLabels(displayUnitOverride) {
@@ -3087,6 +2915,29 @@ async function initHatBuilder() {
   /** Preset used when switching fit → custom (before customHatLengthInput exists in DOM order). */
   let previousFit = 'beanie';
 
+  function syncCanonicalHatDraft() {
+    if (typeof syncHatDraftFromBuilderFields !== 'function') return;
+    try {
+      syncHatDraftFromBuilderFields({
+        unit: unitStore.get() === 'cm' ? 'cm' : 'inches',
+        sizeSel: hatSizeSelect?.value ?? '',
+        customCircumference: customCircInput?.value ?? '',
+        brimType: brimTypeSelect?.value ?? '',
+        brimLength: brimLengthInput?.value ?? '',
+        crownShaping: crownSelect?.value ?? '',
+        fit: fitSelect?.value ?? '',
+        customHatLength:
+          fitSelect?.value === 'custom' && customHatLengthInput
+            ? customHatLengthInput.value ?? ''
+            : '',
+        gaugeSlots,
+        showTips: localStorage.getItem('hat-show-tips') === 'true',
+      });
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
   function persistPatternInputs() {
     if (!brimTypeSelect && !crownSelect && !fitSelect && !brimLengthInput) return;
     try {
@@ -3103,6 +2954,7 @@ async function initHatBuilder() {
               : ''
         })
       );
+      syncCanonicalHatDraft();
     } catch (_) {
       /* ignore */
     }
@@ -3332,6 +3184,7 @@ async function initHatBuilder() {
   function persistHatGaugeSlots() {
     try {
       localStorage.setItem(HAT_GAUGE_SLOTS_KEY, JSON.stringify(gaugeSlots));
+      syncCanonicalHatDraft();
     } catch (_) {
       /* ignore */
     }
@@ -3443,6 +3296,16 @@ async function initHatBuilder() {
 
   /** Total finished hat length (inches): custom input, size chart hatLength, or fit style preset. */
   function resolveTotalHatLengthInches(fit, hatSizeValue, currentUnit) {
+    if (typeof resolveTotalHatLengthInchesLib === 'function') {
+      return resolveTotalHatLengthInchesLib({
+        fit,
+        hatSizeValue,
+        customLengthDisplay: parseFloat(customHatLengthInput?.value) || 0,
+        displayUnit: currentUnit === 'cm' ? 'cm' : 'inches',
+        sizingRows: hatSizingData,
+        convertCmToInches: (cm) => convertLength(cm, 'cm', 'inches'),
+      });
+    }
     if (!fit) return null;
     if (fit === 'custom') {
       const customLengthValue = parseFloat(customHatLengthInput?.value) || 0;
@@ -3835,6 +3698,7 @@ async function initHatBuilder() {
       const sel = hatSizeSelect.value;
       if (!sel) {
         localStorage.removeItem(HAT_SIZE_STORAGE_KEY);
+        syncCanonicalHatDraft();
         return;
       }
       localStorage.setItem(
@@ -3844,6 +3708,7 @@ async function initHatBuilder() {
           circ: sel === 'custom' && customCircInput ? customCircInput.value : ''
         })
       );
+      syncCanonicalHatDraft();
     } catch (_) {
       /* ignore quota / private mode */
     }
@@ -4155,6 +4020,7 @@ async function initHatBuilder() {
     const newState = !isShowing;
     patternContent.dataset.showTips = newState ? 'true' : 'false';
     localStorage.setItem('hat-show-tips', newState ? 'true' : 'false');
+    syncCanonicalHatDraft();
     updatePatternTipsIntroUi(newState);
   });
 
@@ -4224,20 +4090,12 @@ async function initHatBuilder() {
       finishedHatCircInches = finishedCircRaw;
     }
 
-    const stGaugePerInch = gaugeToPerUnit(stitchGauge, currentUnit);
-    const rowGaugePerInch = gaugeToPerUnit(rowGauge, currentUnit);
-
-    // Body width = finished circumference (chart applies 10% negative ease vs head; custom is direct)
-    const targetWidth = finishedHatCircInches;
-    const castOnSts = roundToEvenPreferUp(targetWidth * stGaugePerInch);
-    
     const totalHatLength = resolveTotalHatLengthInches(fit, hatSizeValue, currentUnit);
     if (totalHatLength == null || totalHatLength <= 0) {
       abortIncomplete();
       return;
     }
-    const hatHeight = totalHatLength;
-    
+
     const brimLengthRaw = parseFloat(brimLengthInput.value) || 0;
     const brimDepth =
       currentUnit === 'inches'
@@ -4250,48 +4108,33 @@ async function initHatBuilder() {
     const suggestedCrownDepth = Number(
       selectedSizeRow?.suggestedCrownDepth ?? selectedSizeRow?.defaultCrownDepth
     );
-    const crownPlan = buildHatCrownPlan({
-      crown,
-      finishedHatLength: hatHeight,
-      suggestedCrownDepth: Number.isFinite(suggestedCrownDepth) ? suggestedCrownDepth : 0,
-      castOnStitches: castOnSts,
-      rowGaugePerInch,
-    });
-    const crownHeightInches = Math.max(0, crownPlan.crownDepth);
     const brimType = brimTypeSelect?.value === 'folded' ? 'folded' : 'single';
-    const brimRows =
-      brimType === 'folded'
-        ? roundToEvenPreferUp(brimDepth * 2 * rowGaugePerInch)
-        : roundToEvenPreferUp(brimDepth * rowGaugePerInch);
-    const crownRowCount =
-      crown === 'spiral'
-        ? Math.max(0, crownPlan.crownRows)
-        : roundToEvenPreferUp(crownHeightInches * rowGaugePerInch);
-    
-    // Calculate body height: total height minus brim minus crown
-    const bodyHeightInches = Math.max(0, crownPlan.bodyLength - brimDepth);
-    const bodyRows = roundToEvenPreferUp(bodyHeightInches * rowGaugePerInch);
-    
-    // Generate pattern
-    const patternCalc = {
+
+    const patternCalc = calculateHatPattern({
+      finishedHatCircInches,
+      stitchGaugeDisplay: stitchGauge,
+      rowGaugeDisplay: rowGauge,
+      displayUnit: currentUnit === 'cm' ? 'cm' : 'inches',
+      totalHatLengthInches: totalHatLength,
+      brimDepthInches: brimDepth,
+      brimType,
+      crown,
+      suggestedCrownDepthInches: Number.isFinite(suggestedCrownDepth) ? suggestedCrownDepth : 0,
+      fit,
+    });
+    const {
       targetWidth,
       castOnSts,
       hatHeight,
-      brimDepth,
       brimRows,
-      brimType,
       bodyRows,
       crownRowCount,
       bodyHeightInches,
       crownHeightInches,
-      crownPlan,
-      crown,
-      fit,
       stGaugePerInch,
       rowGaugePerInch,
-      stitchGaugeRaw: stitchGauge,
-      rowGaugeRaw: rowGauge
-    };
+    } = patternCalc;
+
     generatePattern(patternCalc);
     setHatZeroBodyWarningVisible(bodyRows <= 0);
     console.log('[hat-builder debug] pattern data (after generatePattern)', {
@@ -4358,7 +4201,7 @@ async function initHatBuilder() {
       headCirc: finishedCircRaw,
       brimDepth,
       crownDepthInches: crownHeightInches,
-      crownPlan,
+      crownPlan: patternCalc.crownPlan,
       crown,
       fit,
       hatHeight,
@@ -4444,433 +4287,40 @@ async function initHatBuilder() {
   }
   
   function generatePattern(calc) {
-    const currentUnit = unitStore.get();
-    const {
-      targetWidth,
-      castOnSts,
-      hatHeight,
-      brimDepth,
-      brimRows,
-      brimType,
-      bodyRows,
-      crownRowCount,
-      crown,
-      fit,
-      stGaugePerInch,
-      rowGaugePerInch,
-      stitchGaugeRaw,
-      rowGaugeRaw,
-      bodyHeightInches,
-      crownHeightInches,
-      crownPlan,
-    } = calc;
+    const currentUnit = unitStore.get() === 'cm' ? 'cm' : 'inches';
+    const savedShowTipsForBtn = localStorage.getItem('hat-show-tips') === 'true';
+    const renderControl = window.kbmPatternTipsControlBoxHtml;
+    const tipsIntroHtml =
+      typeof renderControl === 'function' ? renderControl(savedShowTipsForBtn) : '';
 
-    // Finished body circumference (same as targetWidth; chart + custom are finished size)
-    const displayWidth = currentUnit === 'inches'
-      ? formatLength(targetWidth, 'inches')
-      : formatLength(convertLength(targetWidth, 'inches', 'cm'), 'cm');
-    
-    const displayHeight = currentUnit === 'inches'
-      ? formatLength(hatHeight, 'inches')
-      : formatLength(convertLength(hatHeight, 'inches', 'cm'), 'cm');
-    
-    const displayBrimDepth = currentUnit === 'inches'
-      ? formatLength(brimDepth, 'inches')
-      : formatLength(convertLength(brimDepth, 'inches', 'cm'), 'cm');
-    const displayCrownDepth = currentUnit === 'inches'
-      ? formatLength(crownPlan.crownDepth, 'inches')
-      : formatLength(convertLength(crownPlan.crownDepth, 'inches', 'cm'), 'cm');
-    const displayCrownStartLength = currentUnit === 'inches'
-      ? formatLength(crownPlan.bodyLength, 'inches')
-      : formatLength(convertLength(crownPlan.bodyLength, 'inches', 'cm'), 'cm');
-
-    const crownStartRow = brimRows + bodyRows;
-
-    const unit = currentUnit === 'inches' ? 'inches' : 'cm';
-    
-    const brimInstructionHtml =
-      'Work even in your chosen brim treatment — for example 1x1 or 2x2 ribbing or <span class="pattern-term" data-tooltip="Stitch pattern that copies knit and purl ribbing by having needles out of work. A favorite for knitters without a ribber.">mock ribbing</span>, a rolled stockinette edge, a fold-up band, or a <span class="pattern-term" data-tooltip="A folded, double-layer hem formed by hanging the cast-on stitches back onto the needles.">hung hem</span> — for the depth shown.';
-    
-    // Adjusted cast-on for wedge crown sizes (diagram + cast-on line only; crown text is unified below)
-    const patternCastOnSts = applyHatCrownCastOnAdjustment(castOnSts, crown);
-
-    // 4 wedge crown setup
-    // stitch count must be divisible by 4
-    if (crown === 'wedge-4-decrease') {
-      const adjustedCastOnStitches = patternCastOnSts;
-      const wedgeStitchCount = adjustedCastOnStitches / 4;
-      // map 4 wedge crown stitches to actual needles
-      // never output needle 0
-      const N = adjustedCastOnStitches;
-      const wedgeNeedleRanges = buildFourWedgeNeedleRanges(N, wedgeStitchCount);
-      const scrapOffEndIdx = 3 * wedgeStitchCount - 1;
-      const firstWedgeStartIdx = 3 * wedgeStitchCount;
-      const firstWedgeEndIdx = N - 1;
-      // simplify scrap-off display to a single L→R range for readability
-      const scrapOffDisplayRange = `${hatCastOnNeedleAtIndex(0, N).label} to ${hatCastOnNeedleAtIndex(scrapOffEndIdx, N).label}`;
-      calc.fourWedgeCrownSetup = {
-        baseCastOnStitches: castOnSts,
-        adjustedCastOnStitches,
-        castOnAdjustedFromBase: adjustedCastOnStitches !== castOnSts,
-        wedgeStitchCount,
-        scrapOffStitchCount: adjustedCastOnStitches - wedgeStitchCount,
-        crownStartRow: brimRows + bodyRows,
-        wedgeNeedleRanges,
-        scrapOffDisplayRange,
-        firstWedgeDisplayRange: formatHatWedgeNeedleDisplayRange(
-          firstWedgeStartIdx,
-          firstWedgeEndIdx,
-          N
-        ),
-      };
-    } else {
-      calc.fourWedgeCrownSetup = null;
-    }
+    const patternHTML = buildHatPatternHtml({
+      calc,
+      currentUnit,
+      scrapOffPatternTooltip,
+      tipsIntroHtml,
+      showTips: savedShowTipsForBtn,
+      formatters: { convertLength, formatLength },
+    });
 
     if (typeof window !== 'undefined') {
       window.hatPatternLastCalc = calc;
     }
 
-    const crownHeading =
-      crown === 'wedge-4-decrease' && calc.fourWedgeCrownSetup
-        ? 'Crown Setup'
-        : 'Crown Decrease';
-    const breakYarnTailPhrase =
-      currentUnit === 'inches'
-        ? 'a 12" tail'
-        : `a ${Math.round(convertLength(12, 'inches', 'cm'))} cm tail`;
-
-    function buildSpiralCrownInstructions(startStitches, crownStartRowNumber, spiralPlan) {
-      const transferStepDefinition =
-        '<p class="pattern-transfer-step"><span class="instruction-tag"><span class="icon">↔</span> [Transfer Step]</span> Using a garter bar or the method of your choice, transfer all stitches to fill emptied needles and knit across the row.</p>';
-      const transferMarker =
-        '<span class="instruction-tag"><span class="icon">↔</span> [Transfer]</span>';
-      const buildRowInstruction = (rowNumber, instruction) =>
-        `<p class="pattern-row-instruction"><span class="pattern-row-check" aria-hidden="true"></span><strong class="pattern-row-label">Row ${rowNumber}:</strong> ${instruction}</p>`;
-      const stitchesRemovedPerDecreaseRow = spiralPlan.decreasePoints;
-      const targetFinalStitches = spiralPlan.targetStitches;
-
-      let currentStitches = startStitches;
-      /** @type {string[]} */
-      const lines = [
-        transferStepDefinition,
-        `<p>Plan ${spiralPlan.decreaseRows} decrease rows across ${spiralPlan.crownRows} crown rows: ${spiralPlan.gradual} decreases every other row, then ${spiralPlan.rapid} decreases every row.</p>`,
-      ];
-
-      for (let i = 0; i < spiralPlan.gradual && currentStitches > targetFinalStitches; i += 1) {
-        const rowNumber = crownStartRowNumber + i * 2;
-        const spacing = Math.max(
-          0,
-          Math.floor(currentStitches / stitchesRemovedPerDecreaseRow) - 1
-        );
-        const nextStitches = Math.max(
-          targetFinalStitches,
-          currentStitches - stitchesRemovedPerDecreaseRow
-        );
-        const decreaseInstruction = `Count ${spacing} needles, transfer the next stitch to the needle on the left, and repeat across the row.`;
-        lines.push(
-          buildRowInstruction(
-            rowNumber,
-            `${decreaseInstruction} ${transferMarker} (${nextStitches} stitches)`
-          )
-        );
-        currentStitches = nextStitches;
-      }
-      for (let i = 0; i < spiralPlan.rapid && currentStitches > targetFinalStitches; i += 1) {
-        const rowNumber = crownStartRowNumber + spiralPlan.gradualRows + i;
-        const spacing = Math.max(
-          0,
-          Math.floor(currentStitches / stitchesRemovedPerDecreaseRow) - 1
-        );
-        const nextStitches = Math.max(
-          targetFinalStitches,
-          currentStitches - stitchesRemovedPerDecreaseRow
-        );
-        const decreaseInstruction = `Count ${spacing} needles, transfer the next stitch to the needle on the left, and repeat across the row.`;
-        lines.push(
-          buildRowInstruction(
-            rowNumber,
-            `${decreaseInstruction} ${transferMarker} (${nextStitches} stitches)`
-          )
-        );
-        currentStitches = nextStitches;
-      }
-
-      lines.push('<p>Gather the remaining stitches and secure.</p>');
-
-      return lines.join('\n');
-    }
-
-    // Crown decrease instructions
-    /** @type {string} */
-    let crownInstructions = '';
-    /** @type {string} */
-    let crownSectionsHtml = '';
-    if (crown === 'wedge-4-decrease' && calc.fourWedgeCrownSetup) {
-      const fws = calc.fourWedgeCrownSetup;
-      const {
-        wedgeStitchCount,
-        scrapOffStitchCount,
-        scrapOffDisplayRange,
-        firstWedgeDisplayRange,
-        castOnAdjustedFromBase,
-        wedgeNeedleRanges,
-      } = fws;
-      const adjustNote = castOnAdjustedFromBase
-        ? '<p>The stitch count was adjusted so the crown can be divided evenly into 4 wedges.</p>'
-        : '';
-      const finalWedgeStitchCount = wedgeStitchCount % 2 === 1 ? 1 : 2;
-      const decreaseCount = (wedgeStitchCount - finalWedgeStitchCount) / 2;
-      const rowFrequency =
-        decreaseCount > 0
-          ? Math.max(1, Math.round(crownRowCount / decreaseCount))
-          : 1;
-      const rowFrequencyPhrase =
-        rowFrequency === 1 ? 'every 1 row' : `every ${rowFrequency} rows`;
-      const wedgeFinishLine = `<p>When ${finalWedgeStitchCount} ${finalWedgeStitchCount === 1 ? 'stitch remains' : 'stitches remain'}, break yarn and secure.</p>`;
-      const wedgeShapingBlock =
-        decreaseCount > 0
-          ? `<p>Decrease 1 stitch at each edge ${rowFrequencyPhrase}, ${decreaseCount} times.</p>
-      ${wedgeFinishLine}`
-          : wedgeFinishLine;
-      const [, w2r, w3r, w4r] = wedgeNeedleRanges;
-      const wedgeCrownBody = (html) =>
-        `<div class="pattern-wedge-crown-body">${html}</div>`;
-      const scrapOffFirstUseHtml = `<span class="pattern-term" data-tooltip="${escapePatternTermAttr(scrapOffPatternTooltip)}">Scrap off</span>`;
-      const introHtml = `
-      <p>The stitches are divided into 4 equal wedges of ${wedgeStitchCount} stitches each.</p>
-      ${adjustNote}
-      <p>${scrapOffFirstUseHtml} ${scrapOffStitchCount} stitches from needles ${scrapOffDisplayRange}.</p>`;
-      const wedge1Html = wedgeCrownBody(`<p>Knit Wedge 1 over ${wedgeStitchCount} stitches on needles ${firstWedgeDisplayRange}.</p>
-      ${wedgeShapingBlock}`);
-      const wedge2Html = wedgeCrownBody(`<p>Pick up and rehang ${wedgeStitchCount} stitches from needles ${w2r.displayRange} back onto those same needles.</p>
-      ${wedgeShapingBlock}`);
-      const wedge3Html = wedgeCrownBody(`<p>Pick up and rehang ${wedgeStitchCount} stitches from needles ${w3r.displayRange} back onto those same needles.</p>
-      ${wedgeShapingBlock}`);
-      const wedge4Html = wedgeCrownBody(`<p>Pick up and rehang ${wedgeStitchCount} stitches from needles ${w4r.displayRange} back onto those same needles.</p>
-      ${wedgeShapingBlock}`);
-      crownSectionsHtml = [
-        wrapHatPatternSection('crown-intro', '<h4>Crown setup</h4>', introHtml),
-        wrapHatPatternSection('crown-wedge-1', '<h4>Wedge 1</h4>', wedge1Html),
-        wrapHatPatternSection('crown-wedge-2', '<h4>Wedge 2</h4>', wedge2Html),
-        wrapHatPatternSection('crown-wedge-3', '<h4>Wedge 3</h4>', wedge3Html),
-        wrapHatPatternSection('crown-wedge-4', '<h4>Wedge 4</h4>', wedge4Html),
-      ].join('\n');
-    } else if (crown === 'spiral') {
-      const spiralPlan = crownPlan.spiral || {
-        decreasePoints: 6,
-        targetStitches: 6,
-        decreaseRows: 0,
-        gradual: 0,
-        rapid: 0,
-        gradualRows: 0,
-        rapidRows: 0,
-        crownRows: 0,
-      };
-      crownInstructions = `
-      <figure class="pattern-diagram">
-        <img src="/images/hats/spiral_shaping.jpg" alt="Spiral crown shaping with 6 evenly spaced decrease points forming wedges" />
-        <figcaption>Spiral crown shaping: 6 evenly spaced decrease points worked across the row.</figcaption>
-      </figure>
-      ${buildSpiralCrownInstructions(patternCastOnSts, crownStartRow, spiralPlan)}`;
-    } else if (crown === 'gathered') {
-      crownInstructions = `
-      <p>Transfer every other needle to its neighbor, leaving emptied needles out of work.</p>
-      <div class="pattern-tip" data-tip data-tip-id="hat-crown-seaming-edges"><strong>Tip:</strong> Keep 2 stitches in work on each edge for seaming.</div>
-      <p>After knitting the full hat length, break the yarn, leaving ${breakYarnTailPhrase}.</p>
-      <p>Use a darning needle to run the yarn tail through the remaining live stitches and draw closed.</p>
-    `;
-    } else {
-      crownInstructions = `
-      <p>Transfer every other needle to its neighbor, leaving emptied needles out of work.</p>
-      <div class="pattern-tip" data-tip data-tip-id="hat-crown-seaming-edges"><strong>Tip:</strong> Keep 2 stitches in work on each edge for seaming.</div>
-      <p>Knit ${crownRowCount} rows.</p>
-      <p>Break yarn, leaving ${breakYarnTailPhrase}.</p>
-    `;
-    }
-
-    if (!crownSectionsHtml) {
-      crownSectionsHtml = wrapHatPatternSection(
-        'crown',
-        `<h4>${crownHeading}</h4>`,
-        crownInstructions
-      );
-    }
-
-    const finishingGathered = `
-        <p>Block the hat to set the shape.</p>
-      <p>Pull the tail tight to gather the top of the hat.</p>
-      <p>Use the tail to seam the body.</p>
-      <p>Work in yarn ends.</p>`;
-    const finishingSpiral = `
-      <p>Run the end of the yarn through the remaining stitches, tighten and tie off, leaving a tail to sew the seam. Finish with a pompom or tassel if you choose.</p>
-      <p>Seam the body using <span class="pattern-term" data-tooltip="An invisible, right-side seaming method that joins two edges neatly.">mattress stitch</span> or your preferred method. <span class="pattern-term" data-tooltip="Wet or steam to set the finished shape.">Block</span> if desired and weave in all ends.</p>`;
-    const finishingWedgeSeamed = `
-      <p>Seam each crown wedge first, then seam the body using <span class="pattern-term" data-tooltip="An invisible, right-side seaming method that joins two edges neatly.">mattress stitch</span> or your preferred method. <span class="pattern-term" data-tooltip="Wet or steam to set the finished shape.">Block</span> if desired and weave in all ends.</p>`;
-    const finishingHtml =
-      crown === 'gathered'
-        ? finishingGathered
-        : crown === 'spiral'
-          ? finishingSpiral
-          : finishingWedgeSeamed;
-    
-    // Pattern HTML — ON: full intro tip + Hide link; OFF: quiet “Show pattern tips” row only
-    const savedShowTipsForBtn = localStorage.getItem('hat-show-tips') === 'true';
-    const renderControl = window.kbmPatternTipsControlBoxHtml;
-    const tipsIntroSlotHtml = `<div class="pattern-tips-intro-slot">${
-      typeof renderControl === 'function' ? renderControl(savedShowTipsForBtn) : ''
-    }</div>`;
-    const brimDeeperBodyTipHtml =
-      bodyRows > 0
-        ? `<div class="pattern-tip" data-tip data-tip-id="hat-deeper-brim"><strong>Tip:</strong> Want a deeper brim? Knit extra brim rows before continuing to the body.</div>`
-        : '';
-    const bodySectionWrapped =
-      bodyRows > 0
-        ? wrapHatPatternSection(
-            'body',
-            '<h4>Body</h4>',
-            `<p>Work ${bodyRows} rows in pattern after the brim.</p>`
-          )
-        : '';
-    const patternHTML = `
-      ${tipsIntroSlotHtml}
-      ${wrapHatPatternSection(
-        'measurements',
-        '<h4>Finished measurements</h4>',
-        `<div class="highlight-box">
-        <p>Finished hat circumference (body): ${displayWidth} ${unit}</p>
-        <p>Finished Hat Length: ${displayHeight} ${unit} | Visible Brim Height: ${displayBrimDepth} ${unit}</p>
-      </div>`
-      )}
-      ${wrapHatPatternSection(
-        'gauge',
-        '<h4>Gauge (from your swatch)</h4>',
-        `<p>${stitchGaugeRaw} stitches & ${rowGaugeRaw} rows per ${currentUnit === 'inches' ? '4"' : '10 cm'}</p>`
-      )}
-      ${wrapHatPatternSection(
-        'cast-on',
-        '<h4>Cast-On</h4>',
-        `<p>Cast on <strong>${patternCastOnSts} stitches</strong>.</p>
-      <div class="pattern-tip" data-tip data-tip-id="hat-cast-on-method"><strong>Tip:</strong> Use the cast-on method of your choice.</div>`
-      )}
-      ${wrapHatPatternSection(
-        'brim',
-        `<h4>Visible Brim Height (${displayBrimDepth} ${unit})</h4>`,
-        `<p>Work ${brimRows} rows:</p>
-      ${brimType === 'folded' ? '<div class="pattern-tip" data-tip data-tip-id="hat-folded-brim-length"><strong>Tip:</strong> This length includes extra rows for folding.</div>' : ''}
-      <p>${brimInstructionHtml}</p>
-      ${brimDeeperBodyTipHtml}`
-      )}
-      ${bodySectionWrapped}
-      ${wrapHatPatternSection(
-        'crown-timing',
-        '<h4>Crown depth &amp; start</h4>',
-        `<p><strong>Calculated crown depth: ${displayCrownDepth} ${unit}.</strong></p>
-      <p><strong>Begin crown shaping when hat measures ${displayCrownStartLength} ${unit} from the cast-on edge.</strong></p>
-      <p>${crownPlan.note}</p>`
-      )}
-      ${crownSectionsHtml}
-      ${wrapHatPatternSection('finishing', '<h4>Finishing</h4>', finishingHtml)}
-    `;
-    
     updateHTML('#pattern-content', patternHTML);
     patternContent.dataset.showTips = savedShowTipsForBtn ? 'true' : 'false';
     window.dispatchEvent(new CustomEvent('kbm:hat-pattern-rendered'));
     applyHatPatternSectionCollapseState(patternContent);
 
-    // Generate diagram
     generateDiagram(calc);
   }
   
   async function generateDiagram(calc) {
-    const currentUnit = unitStore.get();
-    const { hatHeight, brimDepth, targetWidth, castOnSts, brimRows, bodyRows, crown, crownRowCount, bodyHeightInches, crownHeightInches, stGaugePerInch } = calc;
-    
-    // Format values with units
-    const displayWidth = formatLengthWithUnit(
-      currentUnit === 'inches' ? targetWidth : convertLength(targetWidth, 'inches', currentUnit),
-      currentUnit
-    );
-    
-    const displayHeight = formatLengthWithUnit(
-      currentUnit === 'inches' ? hatHeight : convertLength(hatHeight, 'inches', currentUnit),
-      currentUnit
-    );
-    
-    const displayBrimDepth = formatLengthWithUnit(
-      currentUnit === 'inches' ? brimDepth : convertLength(brimDepth, 'inches', currentUnit),
-      currentUnit
-    );
-    
-    const displayBodyHeight = formatLengthWithUnit(
-      currentUnit === 'inches'
-        ? bodyHeightInches
-        : convertLength(bodyHeightInches, 'inches', currentUnit),
-      currentUnit
-    );
-    
-    const displayCrownDepth = formatLengthWithUnit(
-      currentUnit === 'inches'
-        ? crownHeightInches
-        : convertLength(crownHeightInches, 'inches', currentUnit),
-      currentUnit
-    );
-    
-    const displayCastOnSts = applyHatCrownCastOnAdjustment(castOnSts, crown);
-
-    const isWedgeCrown = crown === 'wedge-4' || crown === 'wedge-4-decrease';
-
-    let wedgeStsLabel = '';
-    let wedgeWidthLabel = '';
-
-    if (isWedgeCrown && castOnSts) {
-      const wedgeSts = Math.round(castOnSts / 4);
-
-      const finishedWidth = targetWidth || (castOnSts / stGaugePerInch);
-      const wedgeWidth = finishedWidth / 4;
-
-      wedgeStsLabel = String(wedgeSts);
-      wedgeWidthLabel = formatLengthWithUnit(
-        currentUnit === 'inches' ? wedgeWidth : convertLength(wedgeWidth, 'inches', currentUnit),
-        currentUnit
-      );
-    }
-
-    // Map crown type to template name
-    let templateName;
-    
-    // Map crown values to correct SVG filenames
-    if (crown === 'wedge-4' || crown === 'wedge-4-decrease') {
-      templateName = 'hat-4-wedge';
-    } else {
-      // gathered + spiral: use gathered dimension diagram (no hat-spiral.svg in /diagrams yet)
-      templateName = 'hat-gathered';
-    }
-    
-    try {
-      // Load SVG template from diagrams directory
-      const response = await fetch(`/diagrams/${templateName}.svg`);
-      let svgContent = await response.text();
-      
-      // Replace placeholders with fully-formatted values (including units)
-      svgContent = svgContent
-        .replace(/{{WIDTH}}/g, displayWidth)
-        .replace(/{{HEIGHT}}/g, displayHeight)
-        .replace(/{{BRIM_DEPTH}}/g, displayBrimDepth)
-        .replace(/{{BODY_HEIGHT}}/g, displayBodyHeight)
-        .replace(/{{CROWN_DEPTH}}/g, displayCrownDepth)
-        .replace(/{{CAST_ON_STS}}/g, `${displayCastOnSts} sts`)
-        .replace(/{{BRIM_ROWS}}/g, `${brimRows} rows`)
-        .replace(/{{BODY_ROWS}}/g, `${bodyRows} rows`)
-        .replace(/{{CROWN_ROWS}}/g, `${crownRowCount} rows`)
-        .replace(/{{WEDGE_STS}}/g, wedgeStsLabel)
-        .replace(/{{WEDGE_WIDTH}}/g, wedgeWidthLabel);
-      
-      updateHTML('#diagram-content', svgContent);
-    } catch (error) {
-      console.error('Failed to load diagram template:', templateName, error);
-      updateHTML('#diagram-content', '<p style="text-align: center; color: #6b7280;">Diagram unavailable</p>');
-    }
+    const currentUnit = unitStore.get() === 'cm' ? 'cm' : 'inches';
+    const svgContent = await loadHatDiagramSvg(calc, currentUnit, {
+      convertLength,
+      formatLengthWithUnit,
+    });
+    updateHTML('#diagram-content', svgContent);
   }
 }
 
@@ -4897,6 +4347,7 @@ if (document.readyState === 'loading') {
       localStorage.removeItem('hat-builder-gauge-slots');
       localStorage.removeItem('hat-unit');
       localStorage.removeItem('hat-show-tips');
+      localStorage.removeItem('kbm_hat_draft');
 
       // Reset form
       const form = document.querySelector('#hat-builder-form');
