@@ -12,7 +12,6 @@ import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
 import FloatingInput from "../../components/tools/FloatingInput.astro";
 import YarnRequirement from "../../components/tools/YarnRequirement.astro";
 import PatternHeaderImage from "../../components/patterns/PatternHeaderImage.astro";
-import PatternBuilderAccountGate from "../../components/patterns/PatternBuilderAccountGate.astro";
 import WarningBox from "../../components/ui/WarningBox.astro";
 import glossaryJson from "../../data/glossary.json";
 import hatSizingRows from "../../data/sizing_hats.json";
@@ -1697,7 +1696,7 @@ select.disabled {
   </div>
   
   <div id="hat-builder-form-top" class="wizard-container scroll-mt-[96px]">
-    <div class="calculator-card hat-builder-inputs" data-pattern-builder-lock>
+    <div class="calculator-card hat-builder-inputs">
       <div class="pattern-tabs">
         <div class="pattern-tab-nav">
           <button type="button" class="tab-btn active" data-tab="build">
@@ -1816,7 +1815,6 @@ select.disabled {
                               class="hat-length-picker__img"
                               width="120"
                               height="120"
-                              loading="lazy"
                             />
                             <span class="hat-length-picker__option-label">Beanie</span>
                           </button>
@@ -1832,7 +1830,6 @@ select.disabled {
                               class="hat-length-picker__img"
                               width="120"
                               height="120"
-                              loading="lazy"
                             />
                             <span class="hat-length-picker__option-label">Classic</span>
                           </button>
@@ -1848,7 +1845,6 @@ select.disabled {
                               class="hat-length-picker__img"
                               width="120"
                               height="120"
-                              loading="lazy"
                             />
                             <span class="hat-length-picker__option-label">Slouchy</span>
                           </button>
@@ -1921,12 +1917,11 @@ select.disabled {
                               aria-pressed="false"
                             >
                               <img
-                                src="/images/hats/single-layer.svg"
+                                src="/images/hats/single-layer.png"
                                 alt=""
                                 class="hat-length-picker__img hat-brim-picker__img"
                                 width="120"
                                 height="120"
-                                loading="lazy"
                               />
                               <span class="hat-length-picker__option-label">Single Layer</span>
                             </button>
@@ -1937,12 +1932,11 @@ select.disabled {
                               aria-pressed="false"
                             >
                               <img
-                                src="/images/hats/folded-hem.svg"
+                                src="/images/hats/folded-hem.png"
                                 alt=""
                                 class="hat-length-picker__img hat-brim-picker__img"
                                 width="120"
                                 height="120"
-                                loading="lazy"
                               />
                               <span class="hat-length-picker__option-label">Folded Hem</span>
                             </button>
@@ -2018,7 +2012,6 @@ select.disabled {
                                 class="hat-length-picker__img hat-crown-picker__img"
                                 width="120"
                                 height="120"
-                                loading="lazy"
                               />
                               <span class="hat-length-picker__option-label">Gathered</span>
                             </button>
@@ -2034,7 +2027,6 @@ select.disabled {
                                 class="hat-length-picker__img hat-crown-picker__img"
                                 width="120"
                                 height="120"
-                                loading="lazy"
                               />
                               <span class="hat-length-picker__option-label">Wedge</span>
                             </button>
@@ -2050,7 +2042,6 @@ select.disabled {
                                 class="hat-length-picker__img hat-crown-picker__img"
                                 width="120"
                                 height="120"
-                                loading="lazy"
                               />
                               <span class="hat-length-picker__option-label">Spiral</span>
                             </button>
@@ -2249,20 +2240,7 @@ select.disabled {
     refreshPatternTipDismiss,
     updateTipsResetLinkVisibility,
   } from "../../lib/patterns/patternTipDismiss";
-  import {
-    installPatternBuilderAccountGate,
-    lockPatternBuilderForLoggedOut,
-  } from "../../lib/patterns/patternBuilderAccountGate";
-
-  installPatternBuilderAccountGate();
-
-  // Upfront membership gate: lock the interactive builder until active Knit it Now membership is
-  // confirmed. Closing the prompt leaves the builder locked; clicking/focusing any control re-opens
-  // the prompt. Login alone does not unlock. Create / Pattern tab gates remain the fail-closed backup.
-  void lockPatternBuilderForLoggedOut(
-    document.querySelector<HTMLElement>("[data-pattern-builder-lock]"),
-  );
-
+  // Hat is free for owner review: no membership lock. Blanket still uses PatternBuilderAccountGate.
   const HAT_TIPS_STORAGE_KEY = "hat-show-tips";
   window.kbmPatternTipsControlBoxHtml = patternTipsControlBoxHtml;
   window.kbmUpdateTipsResetLinkVisibility = updateTipsResetLinkVisibility;
@@ -2593,27 +2571,8 @@ async function initHatBuilder() {
       if (button.classList.contains('is-disabled')) return;
       const target = button.dataset.tab;
       if (!target) return;
-      // Membership gate: viewing the generated Pattern tab requires active membership (matches
-      // the Create My Pattern gate). Other tabs stay open to anonymous visitors.
-      if (target === 'pattern') {
-        const gate = window.kbmEnsurePatternBuilderAccountGate;
-        if (typeof gate !== 'function') {
-          // Gate helper unavailable: fail closed so an anonymous visitor can never open the
-          // finished Pattern tab. Surface the signup/login prompt if we can, then block.
-          window.kbmOpenPatternBuilderAccountPrompt?.();
-          return;
-        }
-        void gate()
-          .then((allowed) => {
-            // Strict: ONLY open the Pattern tab when the gate positively confirms an account.
-            if (allowed === true) activateWizardTab('pattern');
-          })
-          .catch(() => {
-            // Fail closed on any error: never open the Pattern tab; re-surface the prompt.
-            window.kbmOpenPatternBuilderAccountPrompt?.();
-          });
-        return;
-      }
+      // Hat is free: Pattern tab opens without membership once a pattern has been generated
+      // (tab stays disabled until Create My Pattern succeeds).
       activateWizardTab(target);
     });
   });
@@ -3357,45 +3316,9 @@ async function initHatBuilder() {
       activateWizardTab('pattern');
     };
 
-    /** Dev-only account-gate tracing (localhost hosts only; no-op in production). */
-    const kbmGateDebug = (...args) => {
-      try {
-        if (/(^|\.)localhost$|^127\.0\.0\.1$|^0\.0\.0\.0$/.test(location.hostname)) {
-          console.debug('[account-gate][hat]', ...args);
-        }
-      } catch (_) {
-        /* ignore */
-      }
-    };
-
+    // Hat is free for owner review: generate without membership / login.
     createPatternBtnForClick.addEventListener('click', () => {
-      // Membership gate: generating the pattern requires active Knit it Now membership.
-      // The gate opens the membership prompt when access is denied (no silent fail).
-      kbmGateDebug('Create My Pattern clicked');
-      const gate = window.kbmEnsurePatternBuilderAccountGate;
-      if (typeof gate !== 'function') {
-        // Gate helper unavailable: fail closed so an anonymous visitor can never generate the
-        // pattern. Surface the signup/login prompt if we can, then block (never generate).
-        kbmGateDebug('gate helper missing — blocking + prompting');
-        window.kbmOpenPatternBuilderAccountPrompt?.();
-        return;
-      }
-      void gate()
-        .then((allowed) => {
-          kbmGateDebug('Create gate resolved — allowed:', allowed);
-          // Strict: ONLY generate when the gate positively confirms an account.
-          if (allowed === true) {
-            kbmGateDebug('allowed — running runCreateHatPattern()');
-            runCreateHatPattern();
-          } else {
-            kbmGateDebug('blocked — pattern NOT generated');
-          }
-        })
-        .catch((err) => {
-          // Fail closed on any error: never generate; re-surface the prompt.
-          kbmGateDebug('gate errored — blocking + prompting', err);
-          window.kbmOpenPatternBuilderAccountPrompt?.();
-        });
+      runCreateHatPattern();
     });
     console.log('build listener attached');
   } else {
@@ -5012,7 +4935,5 @@ if (document.readyState === 'loading') {
     });
   }
 </script>
-
-<PatternBuilderAccountGate />
 
 </Layout>

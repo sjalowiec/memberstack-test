@@ -1,8 +1,9 @@
 /**
- * Membership gate for the Hat and Blanket pattern builders.
+ * Membership gate for the Blanket pattern builder (and any other builders that
+ * opt in). Hat is free and does not use this module.
  *
- * Dynamic Patterns (including Hat/Blanket) require active Knit it Now membership
- * via {@link hasMemberAccess}. Login alone never grants generate/print access.
+ * Gated builders require active Knit it Now membership via {@link hasMemberAccess}.
+ * Login alone never grants generate/print access.
  *
  * Customer-facing UI offers Become a Member + Log In (or View Membership when
  * already signed in without access). No free-account signup path.
@@ -13,7 +14,7 @@ import { waitForMemberstackDom, waitForMemberstackReady } from "./sleevelessPatt
 
 export const PATTERN_BUILDER_ACCOUNT_GATE_TITLE = "Available with Knit it Now membership";
 export const PATTERN_BUILDER_ACCOUNT_GATE_BODY =
-  "Dynamic Patterns are included with an active Knit it Now membership. Become a member to build and print custom hat and blanket patterns.";
+  "Dynamic Patterns are included with an active Knit it Now membership. Become a member to build and print custom blanket patterns.";
 export const PATTERN_BUILDER_ACCOUNT_GATE_PRIMARY_LABEL = "Become a Member";
 export const PATTERN_BUILDER_ACCOUNT_GATE_PRIMARY_HREF = "/membership";
 export const PATTERN_BUILDER_ACCOUNT_GATE_LOGIN_LABEL = "Already a Member? Log In";
