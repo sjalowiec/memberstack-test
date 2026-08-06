@@ -262,7 +262,7 @@ export function syncExpressWizardToPatternStorage(
   const prevMachine = section(getPatternData().yarnGaugeMachine);
   const prevCanonMachine = section(getCurrentPattern().machine);
   const prevPbMachine = section(getPatternData().machine);
-  const stylePayload: Record<string, string> = {};
+  const stylePayload: Record<string, unknown> = {};
   const fitPayload: Record<string, unknown> = {};
   const sm = mapExpressStyleKey(values.style ?? "");
 
@@ -282,6 +282,8 @@ export function syncExpressWizardToPatternStorage(
   if (values.neckline) {
     stylePayload.neckline = mapExpressNecklineToStorage(values.neckline);
   }
+  // Bust darts are a post-build pattern customization (`style.bustDart`) — never written
+  // from Express builder values. Existing imported darts are preserved by section merge.
   if (values.fit) {
     fitPayload.easeChoice = values.fit;
     fitPayload.fitChoice = values.fit;

@@ -81,6 +81,10 @@ import {
   type SleevelessBackPatternDebug,
 } from "./sleevelessPatternOutput";
 import { hemSectionRow } from "./legoBlocks/hem";
+import {
+  insertBustDartIntoFrontBodyDisplayRows,
+  resolveBustDartForSweaterFront,
+} from "./legoBlocks/bustDart";
 import type { NeckShoulderShapingChart } from "./neckShoulderShapingChart";
 import {
   buildDropShoulderBackNeckShapingTimeline,
@@ -1457,6 +1461,30 @@ export function generateDropShoulderPattern(
   if (frontNeckChartBuilt) {
     frontDisplayRows = [...frontDisplayRows, { kind: "neckShoulderChartTableMount" }];
   }
+
+  const bustDartFrontStitchCount = isCardigan
+    ? (cardiganHalfLeftBustBodySts ?? bustBodySts)
+    : bustBodySts;
+  const bustDart = resolveBustDartForSweaterFront({
+    patternData,
+    frontConstruction: isCardigan ? "cardigan" : "pullover",
+    frontStitchCount: bustDartFrontStitchCount,
+    armholeOpeningGarmentRc: armholeMarkerRc,
+    hemRows,
+    bodyToArmholeRows,
+    stitchesPerInch: spi,
+    rowsPerInch: rpi,
+  });
+  if (bustDart.errors.length) {
+    warnings.push(...bustDart.errors.map((e) => `Bust darts: ${e}`));
+  }
+  if (bustDart.warnings.length) {
+    warnings.push(...bustDart.warnings);
+  }
+  frontDisplayRows = insertBustDartIntoFrontBodyDisplayRows(frontDisplayRows, bustDart, {
+    formatRc: formatRcColon,
+    knitToRcLine: (targetRc) => `Knit to RC ${Math.max(0, Math.floor(targetRc))}.`,
+  });
 
   // Back timeline feeds the Visual Guides Shaping Map only (no back checklist chart mount).
   const backNeckShoulderTimeline =

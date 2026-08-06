@@ -40,6 +40,14 @@ describe("sleeveless basics summary — Fit row", () => {
     expect(html).toContain("<dt>Gauge</dt>");
     // The choice under test:
     expect(html).toContain("<dt>Fit</dt><dd>Relaxed</dd>");
+    expect(html).not.toContain("Bust darts");
+  });
+
+  it("includes Bust darts row when style.bustDart is enabled", () => {
+    const merged = mergedPattern({ fitChoice: "standard" });
+    (merged.style as Record<string, unknown>).bustDart = { enabled: true, cupSize: "C" };
+    const html = buildSleevelessPrintBasicsSummaryDlHtml(merged, patternData());
+    expect(html).toContain("<dt>Bust darts</dt><dd>Cup C</dd>");
   });
 
   it("renders Created and Last updated rows from metadata when provided", () => {

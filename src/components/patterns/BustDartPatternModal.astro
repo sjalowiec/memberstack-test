@@ -1,0 +1,202 @@
+---
+/**
+ * Finished-pattern optional Bust Dart customization dialog.
+ * Prefills gauge / construction from the pattern; user chooses cup size, then Add to Pattern.
+ */
+import FloatingSelect from "../tools/FloatingSelect.astro";
+import { DART_CUP_SIZES, formatDartCupOptionLabel } from "../../lib/tools/dartFormulaMath";
+
+const cupOptions = DART_CUP_SIZES.map((value) => ({
+  label: formatDartCupOptionLabel(value, "in"),
+  value,
+}));
+---
+
+<dialog
+  class="bust-dart-pattern-modal"
+  data-bust-dart-pattern-modal
+  aria-labelledby="bust-dart-modal-title"
+>
+  <form method="dialog" class="bust-dart-pattern-modal__panel" data-bust-dart-modal-form>
+    <header class="bust-dart-pattern-modal__header">
+      <h2 id="bust-dart-modal-title" class="bust-dart-pattern-modal__title">Optional Bust Dart</h2>
+      <button
+        type="submit"
+        value="cancel"
+        class="bust-dart-pattern-modal__close"
+        aria-label="Close"
+        data-bust-dart-modal-close
+      >
+        ×
+      </button>
+    </header>
+
+    <p class="bust-dart-pattern-modal__intro">
+      Add short-row bust darts to the <strong>front only</strong>, starting 1″ below the armhole opening.
+      Gauge and placement come from this pattern — choose a cup size, preview, then add to the pattern.
+    </p>
+
+    <dl class="bust-dart-pattern-modal__summary" data-bust-dart-modal-summary>
+      <div><dt>Pattern</dt><dd data-bust-dart-summary-construction>—</dd></div>
+      <div><dt>Style</dt><dd data-bust-dart-summary-garment>—</dd></div>
+      <div><dt>Gauge</dt><dd data-bust-dart-summary-gauge>—</dd></div>
+      <div><dt>Front stitches</dt><dd data-bust-dart-summary-front-sts>—</dd></div>
+      <div><dt>Placement</dt><dd data-bust-dart-summary-placement>—</dd></div>
+    </dl>
+
+    <div class="bust-dart-pattern-modal__field">
+      <FloatingSelect
+        id="bust-dart-pattern-cup"
+        name="bustDartCupSize"
+        label="Cup size"
+        placeholder="Select cup size"
+        options={cupOptions}
+        required
+        dataTestid="select-bust-dart-pattern-cup"
+      />
+    </div>
+
+    <p class="bust-dart-pattern-modal__error" data-bust-dart-modal-error hidden role="alert"></p>
+
+    <div class="bust-dart-pattern-modal__preview" data-bust-dart-modal-preview hidden>
+      <h3 class="bust-dart-pattern-modal__preview-title">Preview</h3>
+      <ul data-bust-dart-modal-preview-list></ul>
+    </div>
+
+    <footer class="bust-dart-pattern-modal__footer">
+      <button
+        type="button"
+        class="btn btn-outline-secondary"
+        data-bust-dart-modal-remove
+        hidden
+      >
+        Remove bust dart
+      </button>
+      <div class="bust-dart-pattern-modal__footer-end">
+        <button type="submit" value="cancel" class="btn btn-outline-secondary" data-bust-dart-modal-cancel>
+          Cancel
+        </button>
+        <button
+          type="button"
+          class="btn btn-primary wizard-button"
+          data-bust-dart-modal-add
+          data-testid="button-bust-dart-add-to-pattern"
+        >
+          Add to Pattern
+        </button>
+      </div>
+    </footer>
+  </form>
+</dialog>
+
+<style>
+  .bust-dart-pattern-modal {
+    border: none;
+    border-radius: 12px;
+    padding: 0;
+    max-width: min(32rem, calc(100vw - 2rem));
+    width: 100%;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  }
+  .bust-dart-pattern-modal::backdrop {
+    background: rgba(17, 24, 39, 0.45);
+  }
+  .bust-dart-pattern-modal__panel {
+    margin: 0;
+    padding: 1.25rem 1.35rem 1.35rem;
+  }
+  .bust-dart-pattern-modal__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .bust-dart-pattern-modal__title {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #1f2937;
+  }
+  .bust-dart-pattern-modal__close {
+    border: none;
+    background: transparent;
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    color: #6b7280;
+    padding: 0.1rem 0.35rem;
+  }
+  .bust-dart-pattern-modal__intro {
+    margin: 0.75rem 0 1rem;
+    color: #4b5563;
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+  .bust-dart-pattern-modal__summary {
+    margin: 0 0 1rem;
+    display: grid;
+    gap: 0.35rem 1rem;
+    font-size: 0.9rem;
+  }
+  .bust-dart-pattern-modal__summary > div {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr;
+    gap: 0.5rem;
+  }
+  .bust-dart-pattern-modal__summary dt {
+    margin: 0;
+    font-weight: 600;
+    color: #374151;
+  }
+  .bust-dart-pattern-modal__summary dd {
+    margin: 0;
+    color: #4b5563;
+  }
+  .bust-dart-pattern-modal__field {
+    margin-bottom: 0.75rem;
+  }
+  .bust-dart-pattern-modal__error {
+    color: #b91c1c;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+  }
+  .bust-dart-pattern-modal__preview {
+    margin: 0.75rem 0 1rem;
+    padding: 0.75rem 0.9rem;
+    background: #f9fafb;
+    border-radius: 8px;
+    border-left: 4px solid var(--kbm-green, #52682d);
+  }
+  .bust-dart-pattern-modal__preview-title {
+    margin: 0 0 0.35rem;
+    font-size: 0.95rem;
+  }
+  .bust-dart-pattern-modal__preview ul {
+    margin: 0;
+    padding-left: 1.15rem;
+  }
+  .bust-dart-pattern-modal__preview li {
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+    color: #374151;
+  }
+  .bust-dart-pattern-modal__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+  .bust-dart-pattern-modal__footer-end {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-left: auto;
+  }
+  .bust-dart-pattern-modal .wizard-button,
+  .bust-dart-pattern-modal .btn-primary {
+    background: #52682d;
+    border-color: #52682d;
+    color: #fff;
+  }
+</style>

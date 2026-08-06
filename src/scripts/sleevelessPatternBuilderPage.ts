@@ -8,6 +8,10 @@ import {
   runPatternWorkspaceBuilderGenerationHandoff,
 } from "../lib/patterns/patternWorkspaceBuilderGenerationHandoff.ts";
 import { maybeAutoSaveFirstFreePattern } from "../lib/patterns/patternAutoSaveFirstFree.ts";
+import {
+  initBustDartPatternCustomization,
+  syncBustDartPatternActionVisibility,
+} from "./bustDartPatternModalClient.ts";
 
 declare global {
   interface Window {
@@ -68,6 +72,8 @@ async function boot(): Promise<void> {
   }
   applySleevelessPatternOnlineProjectHeader();
   void initSleevelessPatternBuilderPage();
+  initBustDartPatternCustomization();
+  syncBustDartPatternActionVisibility();
 }
 
 if (document.readyState === "loading") {
