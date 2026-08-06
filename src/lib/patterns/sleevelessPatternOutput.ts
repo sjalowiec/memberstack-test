@@ -4,6 +4,10 @@
  */
 
 import { calculateArmholeShaping, type ArmholeResult } from "./legoBlocks/armholeBlock";
+import {
+  insertBustDartIntoFrontBodyDisplayRows,
+  resolveBustDartForSweaterFront,
+} from "./legoBlocks/bustDart";
 import { shapingActionRowNumbers } from "./evenShapingSchedule";
 import { hemSectionRow } from "./legoBlocks/hem";
 import { formatRowCounterResetGarmentRcLabel, RESET_ROW_COUNTER_TEXT } from "./rowCounterReset";
@@ -3511,7 +3515,7 @@ export function generateSleevelessBackPattern(
         : necklineStitches;
 
   const displayRows = mergeAdjacentPlainKnitBlocks(backDisplayRowsRaw);
-  const frontDisplayRows = mergeAdjacentPlainKnitBlocks(
+  const frontDisplayRowsBase = mergeAdjacentPlainKnitBlocks(
     buildSleevelessFrontDisplayRows({
       frontNecklineStartRC,
       frontNecklineStartLocalRC,
@@ -3537,6 +3541,35 @@ export function generateSleevelessBackPattern(
       garmentArmholeStartRC: armholeStartRC,
       isVNeck: isSleevelessVNeckChoice(patternData),
     })
+  );
+
+  const bustDartFrontStitchCount = isCardiganHalfFrontBody
+    ? (cardiganHalfLeftBustBodySts ?? stitchesAtArmholeStart)
+    : stitchesAtArmholeStart;
+  const bustDartArmholeOpeningRc =
+    armholeStartRC ??
+    (bodyToArmholeRows > 0 ? hemRows + bodyToArmholeRows : 0);
+  const bustDart = resolveBustDartForSweaterFront({
+    patternData,
+    frontConstruction: isCardigan ? "cardigan" : "pullover",
+    frontStitchCount: bustDartFrontStitchCount,
+    armholeOpeningGarmentRc: bustDartArmholeOpeningRc,
+    hemRows,
+    bodyToArmholeRows,
+    stitchesPerInch,
+    rowsPerInch,
+  });
+  if (bustDart.errors.length) {
+    warnings.push(...bustDart.errors.map((e) => `Bust darts: ${e}`));
+  }
+  if (bustDart.warnings.length) {
+    warnings.push(...bustDart.warnings);
+  }
+  const frontDisplayRows = mergeAdjacentPlainKnitBlocks(
+    insertBustDartIntoFrontBodyDisplayRows(frontDisplayRowsBase, bustDart, {
+      formatRc: formatRcColon,
+      knitToRcLine: (targetRc) => `Knit to RC ${Math.max(0, Math.floor(targetRc))}.`,
+    }),
   );
 
   const lines = flattenDisplayRowsToLines(displayRows);

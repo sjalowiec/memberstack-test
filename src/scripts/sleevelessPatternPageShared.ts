@@ -28,6 +28,7 @@ import {
   getSleevelessGoldenBetaCanonicalPattern,
   getSleevelessGoldenBetaPatternBuilderData,
 } from "../lib/patterns/sleevelessGoldenBeta.ts";
+import { syncBustDartPatternActionVisibility } from "./bustDartPatternModalClient.ts";
 import { validatePatternBuilderRequired } from "../lib/patterns/patternBuilderValidation";
 import { setPatternTabsReadiness } from "../lib/patterns/patternTabsClient.ts";
 import {
@@ -369,6 +370,7 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       });
     }
     printBtn.style.display = "inline-flex";
+    syncBustDartPatternActionVisibility();
   }
 
   function section(obj) {
@@ -4497,6 +4499,7 @@ table {
       }
     } finally {
       sleevelessPatternRefreshInFlight = false;
+      syncBustDartPatternActionVisibility();
       if (sleevelessPatternRefreshQueued) {
         sleevelessPatternRefreshQueued = false;
         if (sleevelessPatternRefreshExternalTrigger) {

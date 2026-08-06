@@ -8,6 +8,7 @@ import { resolveDiagramFinishedHipInches } from "./customBuildEffectiveFinishedH
 import { resolveEffectiveSleevelessBodyShapePhrase } from "./sleevelessAlineShaping";
 import { hasAuthoritativeDropShoulderConstruction } from "./patternConstructionIdentity";
 import { SLEEVELESS_CHART_AUDIENCE_LABELS } from "./patternStorage.ts";
+import { normalizeBustDartSavedConfig, BUST_DART_STYLE_KEY } from "./legoBlocks/bustDart";
 
 const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
 
@@ -256,6 +257,11 @@ function collectSleevelessBasicsSummaryRows(
   const neckLabel = necklineBasicsLabel(st);
   if (neckLabel) {
     rows.push({ term: "Neckline", def: neckLabel });
+  }
+
+  const bustDart = normalizeBustDartSavedConfig(st[BUST_DART_STYLE_KEY]);
+  if (bustDart.enabled && bustDart.cupSize) {
+    rows.push({ term: "Bust darts", def: `Cup ${bustDart.cupSize}` });
   }
 
   const fitDef = fitBasicsLabel(ft);
