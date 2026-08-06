@@ -641,6 +641,25 @@
     color: #4b5563;
   }
 
+  .sleeveless-pattern-page .bust-dart-front-slot__help {
+    margin: 0 0 0.7rem;
+    padding: 0.55rem 0.65rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 14%, #e5e7eb);
+  }
+
+  .sleeveless-pattern-page .bust-dart-front-slot__help-note {
+    margin: 0 0 0.45rem;
+    font-size: 0.84rem;
+    line-height: 1.4;
+    color: #4b5563;
+  }
+
+  .sleeveless-pattern-page .bust-dart-front-slot__watch {
+    font-size: 0.82rem;
+  }
+
   .sleeveless-pattern-page .bust-dart-front-slot__error {
     margin: 0 0 0.55rem;
     font-size: 0.86rem;

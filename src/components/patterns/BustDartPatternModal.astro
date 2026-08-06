@@ -6,11 +6,17 @@
 import FloatingSelect from "../tools/FloatingSelect.astro";
 import FloatingInput from "../tools/FloatingInput.astro";
 import { DART_CUP_SIZES, formatDartCupOptionLabel } from "../../lib/tools/dartFormulaMath";
+import {
+  renderBustDartModalHelpHtml,
+  resolveBustDartHelpVideo,
+} from "../../lib/tools/dartFormulaHelpVideo";
 
 const cupOptions = DART_CUP_SIZES.map((value) => ({
   label: formatDartCupOptionLabel(value, "in"),
   value,
 }));
+
+const modalHelpHtml = renderBustDartModalHelpHtml(resolveBustDartHelpVideo());
 ---
 
 <dialog
@@ -36,6 +42,10 @@ const cupOptions = DART_CUP_SIZES.map((value) => ({
       Add short-row bust darts to the <strong>front only</strong>, starting 1″ below the armhole opening.
       Gauge and placement come from this pattern — choose a cup size, adjust width and depth if needed, preview, then add to the pattern.
     </p>
+
+    {modalHelpHtml ? (
+      <div class="bust-dart-pattern-modal__help-mount" set:html={modalHelpHtml} />
+    ) : null}
 
     <dl class="bust-dart-pattern-modal__summary" data-bust-dart-modal-summary>
       <div><dt>Pattern</dt><dd data-bust-dart-summary-construction>—</dd></div>
@@ -161,6 +171,33 @@ const cupOptions = DART_CUP_SIZES.map((value) => ({
     color: #4b5563;
     font-size: 0.95rem;
     line-height: 1.45;
+  }
+  .bust-dart-pattern-modal__help-mount {
+    margin: 0 0 1rem;
+  }
+  .bust-dart-pattern-modal__help {
+    margin: 0;
+    padding: 0.65rem 0.8rem;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: #f9fafb;
+  }
+  .bust-dart-pattern-modal__help-title {
+    display: block;
+    margin: 0 0 0.25rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #374151;
+  }
+  .bust-dart-pattern-modal__help-desc {
+    margin: 0 0 0.55rem;
+    font-size: 0.86rem;
+    line-height: 1.4;
+    color: #4b5563;
+  }
+  .bust-dart-pattern-modal__watch {
+    font-size: 0.85rem;
+    padding: 0.28rem 0.65rem;
   }
   .bust-dart-pattern-modal__summary {
     margin: 0 0 1rem;
