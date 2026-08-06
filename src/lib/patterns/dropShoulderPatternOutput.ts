@@ -1515,6 +1515,9 @@ export function generateDropShoulderPattern(
     necklineStitches: neckSts || undefined,
     shoulderStitches: shoulderStsEach || undefined,
     centerNeckBindOffStitches: backRoundNeckPlan?.centerBindOff,
+    ...(frontRoundNeckPlan
+      ? { frontCenterNeckBindOffStitches: frontRoundNeckPlan.centerBindOff }
+      : {}),
     backNeckRoundNecklineStrategy: backRoundNeckPlan?.strategy,
     frontNeckRoundNecklineStrategy: frontRoundNeckPlan?.strategy,
     frontNeckDepth: frontNeckDepthIn,

@@ -403,6 +403,11 @@ export type SleevelessBackPatternDebug = {
   necklineStitches: number | undefined;
   /** Initial center bind-off/hold on the back / full neckline (round-neck formula on full N). */
   centerNeckBindOffStitches: number | undefined;
+  /**
+   * Front horizontal center bind-off/hold from the full-opening front round plan
+   * (`calculateRoundNecklinePlan` on N). Used by shared neckband pickup; undefined for V-neck.
+   */
+  frontCenterNeckBindOffStitches?: number;
   /** Round back: always shallow-round; front uses deep-round when depth allows. */
   backNeckRoundNecklineStrategy?: "deep-round" | "shallow-round";
   frontNeckRoundNecklineStrategy?: "deep-round" | "shallow-round";
@@ -3313,6 +3318,9 @@ export function generateSleevelessBackPattern(
     necklineStitches,
     centerNeckBindOffStitches:
       necklineStitches !== undefined ? initialBackCenterNeckStitches(necklineStitches) : undefined,
+    ...(frontRoundNeckPlan
+      ? { frontCenterNeckBindOffStitches: frontRoundNeckPlan.centerBindOff }
+      : {}),
     backNeckRoundNecklineStrategy: backRoundNeckPlan?.strategy,
     frontNeckRoundNecklineStrategy: frontRoundNeckPlan?.strategy,
     ...(isCardiganRoundHalfFront &&

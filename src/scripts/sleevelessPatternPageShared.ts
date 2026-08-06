@@ -2770,6 +2770,7 @@ table {
       dropShoulderSleeveDirection: finishing.isDropShoulder ? dropShoulderSleeveDirection : undefined,
       cardiganFrontEdgeFinishingMode: finishing.cardiganFrontEdgeFinishingMode,
       frontEdgePickupSts: finishing.frontEdgePickupSts,
+      neckbandPickup: finishing.neckbandPickup,
       deps: {
         escapeHtml,
         glossaryTooltip,

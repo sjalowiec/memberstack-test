@@ -6,6 +6,7 @@ import {
 } from "./sleevelessPatternFinishing";
 import type { DropShoulderSleeveDirection } from "./dropShoulderSleeveConstruction";
 import { DROP_SHOULDER_SLEEVE_DIRECTION_DEFAULT } from "./dropShoulderSleeveConstruction";
+import type { NeckbandPickupInstructionViewModel } from "./legoBlocks/neckbandPickup";
 
 export type SleevelessFinishingHtmlDeps = {
   escapeHtml: (s: string) => string;
@@ -120,11 +121,22 @@ function necklineFinishingHelpBody(): string {
     </aside>`;
 }
 
-function finishNecklineBody(deps: SleevelessFinishingHtmlDeps): string {
+function finishNecklineBody(
+  deps: SleevelessFinishingHtmlDeps,
+  neckbandPickup: NeckbandPickupInstructionViewModel | null | undefined,
+): string {
+  const listItems: string[] = [];
+  if (neckbandPickup) {
+    listItems.push(`<li>${deps.escapeHtml(neckbandPickup.primaryText)}</li>`);
+    if (neckbandPickup.estimateNoteText) {
+      listItems.push(`<li>${deps.escapeHtml(neckbandPickup.estimateNoteText)}</li>`);
+    }
+  }
+  listItems.push("<li>Work the neckline trim or neckband.</li>");
+  listItems.push("<li>Finish the neckband as desired.</li>");
+  listItems.push("<li>Join the remaining shoulder seam and neckband seam.</li>");
   return `<ul>
-      <li>Work the neckline trim or neckband.</li>
-      <li>Finish the neckband as desired.</li>
-      <li>Join the remaining shoulder seam and neckband seam.</li>
+      ${listItems.join("\n      ")}
     </ul>
     ${deps.neckFinishingLeadHtml}
     <p class="pattern-finishing-video-help pattern-help-link no-print">
@@ -207,6 +219,7 @@ function stepBodyHtml(
   frontEdgePickupSts: number | undefined,
   isDropShoulder: boolean,
   dropShoulderSleeveDirection: DropShoulderSleeveDirection,
+  neckbandPickup: NeckbandPickupInstructionViewModel | null | undefined,
 ): string {
   switch (id) {
     case "blockPieces":
@@ -222,7 +235,7 @@ function stepBodyHtml(
         deps,
       );
     case "finishNeckline":
-      return finishNecklineBody(deps);
+      return finishNecklineBody(deps, neckbandPickup);
     case "attachSleeves":
       return attachSleevesBody(dropShoulderSleeveDirection);
     case "joinSideSeams":
@@ -240,6 +253,7 @@ export function buildSleevelessFinishingStepsHtml(options: {
   dropShoulderSleeveDirection?: DropShoulderSleeveDirection;
   cardiganFrontEdgeFinishingMode?: SleevelessCardiganFrontEdgeFinishingMode;
   frontEdgePickupSts?: number;
+  neckbandPickup?: NeckbandPickupInstructionViewModel | null;
   deps: SleevelessFinishingHtmlDeps;
 }): string {
   const isDropShoulder = options.isDropShoulder === true;
@@ -260,6 +274,7 @@ export function buildSleevelessFinishingStepsHtml(options: {
         options.frontEdgePickupSts,
         isDropShoulder,
         dropShoulderSleeveDirection,
+        options.neckbandPickup,
       ),
     ),
   );
@@ -284,12 +299,27 @@ function finishFrontEdgesPrintLine(
   return `${stepNumber}. Finish front edges: pick up ${xx} stitches evenly along each front edge from hem to neckline; work the band, bind off loosely, and repeat on the opposite edge (add buttonholes if desired).`;
 }
 
+function finishNecklinePrintLine(
+  stepNumber: number,
+  neckbandPickup: NeckbandPickupInstructionViewModel | null | undefined,
+): string {
+  if (!neckbandPickup) {
+    return `${stepNumber}. Finish the neckline (work trim or neckband, finish as desired, join the remaining shoulder and neckband seams).`;
+  }
+  const note =
+    neckbandPickup.estimateNoteText !== undefined
+      ? ` ${neckbandPickup.estimateNoteText}`
+      : "";
+  return `${stepNumber}. Finish the neckline: ${neckbandPickup.primaryText}${note} Work trim or neckband, finish as desired, join the remaining shoulder and neckband seams.`;
+}
+
 export function buildSleevelessFinishingPrintListHtml(options: {
   isCardigan: boolean;
   isDropShoulder?: boolean;
   dropShoulderSleeveDirection?: DropShoulderSleeveDirection;
   cardiganFrontEdgeFinishingMode?: SleevelessCardiganFrontEdgeFinishingMode;
   frontEdgePickupSts?: number;
+  neckbandPickup?: NeckbandPickupInstructionViewModel | null;
 }): string {
   const isDropShoulder = options.isDropShoulder === true;
   const dropShoulderSleeveDirection =
@@ -322,9 +352,7 @@ export function buildSleevelessFinishingPrintListHtml(options: {
         );
         break;
       case "finishNeckline":
-        items.push(
-          `${n}. Finish the neckline (work trim or neckband, finish as desired, join the remaining shoulder and neckband seams).`,
-        );
+        items.push(finishNecklinePrintLine(n, options.neckbandPickup));
         break;
       case "attachSleeves":
         items.push(attachSleevesPrintLine(n, dropShoulderSleeveDirection));
