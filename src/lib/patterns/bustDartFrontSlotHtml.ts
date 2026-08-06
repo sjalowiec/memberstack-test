@@ -6,6 +6,8 @@
  * via a stable `data-tip-id`. Active dart instructions are never tip-dismissable.
  */
 
+import { renderBustDartInactivePromptHelpHtml } from "../tools/dartFormulaHelpVideo";
+
 function escapeHtml(s: string): string {
   return String(s)
     .replace(/&/g, "&amp;")
@@ -63,7 +65,7 @@ export function renderBustDartCustomizationScreenHtml(
         <button type="button" class="sleeveless-pattern-edit-action" data-bust-dart-pattern-remove data-testid="button-remove-bust-dart">Remove Bust Dart</button>
       </div>`;
 
-    // Active instructions are pattern content — not a dismissable tip.
+    // Active instructions are pattern content — not a dismissable tip. No help-video note here.
     return `<div class="bust-dart-front-slot sleeveless-pattern-row sleeveless-pattern-row--full" data-bust-dart-front-slot data-bust-dart-active="true">
   <div class="sleeveless-pattern-left">
     <h4 class="bust-dart-front-slot__title">${title}</h4>
@@ -75,16 +77,19 @@ export function renderBustDartCustomizationScreenHtml(
   }
 
   const hint = `<p class="bust-dart-front-slot__hint no-print">Short-row bust darts on the front only, starting here (1″ / ${row.placementOffsetRows} rows before the armhole).</p>`;
+  const help = renderBustDartInactivePromptHelpHtml();
   const controls = `<div class="bust-dart-front-slot__actions no-print">
         <button type="button" class="sleeveless-pattern-edit-action" data-bust-dart-pattern-open data-testid="button-optional-bust-dart" aria-haspopup="dialog" aria-label="Add bust dart">Add Bust Dart</button>
       </div>`;
 
-  // Inactive prompt: standard `.pattern-tip[data-tip-id]` so Hide / Restore hidden tips apply.
+  // Inactive prompt: standard `.pattern-tip[data-tip-id]` so Hide / Restore hidden tips apply
+  // (help note + Watch live inside the same tip wrapper).
   // `pattern-print-personalization-never-print` keeps it out of browser print; print-route HTML already omits inactive slots.
   return `<div class="pattern-tip bust-dart-front-slot bust-dart-front-slot--optional pattern-print-personalization-never-print no-print sleeveless-pattern-row sleeveless-pattern-row--full" data-tip data-tip-id="${OPTIONAL_BUST_DART_TIP_ID}" data-bust-dart-front-slot data-bust-dart-active="false">
   <div class="sleeveless-pattern-left">
     <h4 class="bust-dart-front-slot__title">Optional Bust Dart</h4>
     ${hint}
+    ${help}
     ${errors}
     ${controls}
   </div>
