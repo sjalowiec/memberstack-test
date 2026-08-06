@@ -1,13 +1,17 @@
 /**
  * Shared LEGO block: neckband pickup along a shaped neckline.
  *
- * Round neck (pullover + cardigan): pickup = round(actual edge length × stitch gauge),
- * where edge length is the finished neckline polyline reconstructed from
- * {@link calculateRoundNecklinePlan} / {@link calculateBackRoundNecklinePlan}
- * (center horizontals, stair/hold horizontals, single-decrease diagonals, leftover
- * vertical rows). No depth-only shortcut and no correction factor.
+ * Round and V-neck: pickup = round(actual edge length × stitch gauge), where
+ * edge length is the finished neckline polyline reconstructed from existing
+ * shaping plans / decrease schedules (not a depth-row shortcut).
  *
- * V-neck: unchanged row-edge gauge ratio (audit did not require path correction).
+ * Round: {@link calculateRoundNecklinePlan} / {@link calculateBackRoundNecklinePlan}
+ * (center horizontals, stair/hold horizontals, single-decrease diagonals, leftover
+ * vertical rows).
+ *
+ * V-neck fronts: zero center-front stitches; each slope from
+ * {@link neckDecreaseStitchesPerSideFromOpening} + {@link distributeVNeckInnerDecreaseRows}.
+ * V-neck back: same back round plan path as round neck.
  *
  * Rounding rule (documented, used everywhere in this module):
  *   Whole-number stitch counts use `Math.round` (nearest integer; ties round
@@ -26,6 +30,10 @@ import {
   type RoundNecklinePlanResult,
   type RoundNecklineSidePlan,
 } from "./roundNeckline";
+import {
+  distributeVNeckInnerDecreaseRows,
+  neckDecreaseStitchesPerSideFromOpening,
+} from "./vNeckline";
 
 export type NeckbandPickupNecklineKind = "v-neck" | "round";
 export type NeckbandPickupGarment = "pullover" | "cardigan";
@@ -74,11 +82,17 @@ export type NeckbandPickupGeometryInput = {
   secondFrontNeckEdgeRows?: number;
   /**
    * First front horizontal neck stitches (round: CF-corner neck BO on that half;
-   * V-neck: 0). Never includes button/buttonhole band stitches.
+   * V-neck: always treated as 0). Never includes button/buttonhole band stitches.
    */
   firstFrontHorizontalStitches?: number;
-  /** Second front horizontal neck stitches (may differ from the first). */
+  /** Second front horizontal neck stitches (may differ from the first; V-neck: 0). */
   secondFrontHorizontalStitches?: number;
+  /**
+   * Optional override for V-neck decreases per front slope (defaults to
+   * {@link neckDecreaseStitchesPerSideFromOpening}(N)).
+   */
+  firstFrontVNeckDecreaseStitches?: number;
+  secondFrontVNeckDecreaseStitches?: number;
 };
 
 /**
@@ -299,12 +313,53 @@ function resolveBackRoundPlan(
   return calculateBackRoundNecklinePlan({ necklineStitches: N, necklineDepthRows: depth });
 }
 
-function cardiganVNeckFrontStitches(args: {
-  edgeRows: number;
-  stitchesPerUnit: number;
-  rowsPerUnit: number;
-}): number {
-  return pickupStitchesFromRowEdge(args.edgeRows, args.stitchesPerUnit, args.rowsPerUnit);
+/**
+ * One V-neck front slope edge length (center-front stitches = 0).
+ * Rebuilds the decrease row list via {@link distributeVNeckInnerDecreaseRows}
+ * over the front depth budget and sums diagonal segments (plus leftover vertical).
+ */
+export function vNeckFrontSlopeEdgeLength(
+  decreaseStitches: number,
+  depthRows: number,
+  stitchesPerUnit: number,
+  rowsPerUnit: number,
+): number {
+  const spi = Number(stitchesPerUnit);
+  const rpi = Number(rowsPerUnit);
+  const depth = wholeNonNeg(depthRows);
+  const count = wholeNonNeg(decreaseStitches);
+  if (!Number.isFinite(spi) || spi <= 0 || !Number.isFinite(rpi) || rpi <= 0) {
+    return 0;
+  }
+  if (depth <= 0) return 0;
+  if (count <= 0) {
+    return depth / rpi;
+  }
+  const decreaseRows = distributeVNeckInnerDecreaseRows(count, 1, depth);
+  let length = 0;
+  let prevRow = 0;
+  for (const raw of decreaseRows) {
+    const row = Math.max(0, Math.floor(raw));
+    const dRows = Math.max(0, row - prevRow);
+    if (dRows === 0) {
+      // Multiple decreases on the same row: horizontal stitch only.
+      length += 1 / spi;
+    } else {
+      length += Math.hypot(1 / spi, dRows / rpi);
+    }
+    prevRow = row;
+  }
+  if (prevRow < depth) {
+    length += (depth - prevRow) / rpi;
+  }
+  return length;
+}
+
+function resolveVNeckDecreasesPerSide(input: NeckbandPickupGeometryInput): number {
+  if (input.firstFrontVNeckDecreaseStitches !== undefined) {
+    return wholeNonNeg(input.firstFrontVNeckDecreaseStitches);
+  }
+  return neckDecreaseStitchesPerSideFromOpening(wholeNonNeg(input.necklineStitches));
 }
 
 /**
@@ -320,41 +375,52 @@ export function calculateNeckbandPickup(input: NeckbandPickupGeometryInput): Nec
   );
   const verticalProjectionPickup = pickupStitchesFromRowEdge(necklineEdgeRows, spi, rpi);
 
-  // ---- V-neck (unchanged depth-based model) ----
+  // ---- V-neck: path-length (front slopes + back plan; zero center-front) ----
   if (input.neckline === "v-neck") {
-    if (garment === "cardigan") {
-      const frontDepth = wholeNonNeg(input.frontNeckDepthRows);
-      const firstFrontEdgeRows =
-        input.firstFrontNeckEdgeRows !== undefined
-          ? wholeNonNeg(input.firstFrontNeckEdgeRows)
-          : frontDepth;
-      const secondFrontEdgeRows =
-        input.secondFrontNeckEdgeRows !== undefined
-          ? wholeNonNeg(input.secondFrontNeckEdgeRows)
-          : frontDepth;
-      const firstFrontStitches = cardiganVNeckFrontStitches({
-        edgeRows: firstFrontEdgeRows,
-        stitchesPerUnit: spi,
-        rowsPerUnit: rpi,
-      });
-      const secondFrontStitches = cardiganVNeckFrontStitches({
-        edgeRows: secondFrontEdgeRows,
-        stitchesPerUnit: spi,
-        rowsPerUnit: rpi,
-      });
-      // V-neck cardigan back: keep prior depth-based model (audit did not require path fix).
-      const backCenter = wholeNonNeg(input.backCenterNeckStitches);
-      const backStitches =
-        backCenter +
+    const frontDepth = wholeNonNeg(input.frontNeckDepthRows);
+    const firstDepth =
+      input.firstFrontNeckEdgeRows !== undefined
+        ? wholeNonNeg(input.firstFrontNeckEdgeRows)
+        : frontDepth;
+    const secondDepth =
+      input.secondFrontNeckEdgeRows !== undefined
+        ? wholeNonNeg(input.secondFrontNeckEdgeRows)
+        : frontDepth;
+    const firstDecreases =
+      input.firstFrontVNeckDecreaseStitches !== undefined
+        ? wholeNonNeg(input.firstFrontVNeckDecreaseStitches)
+        : resolveVNeckDecreasesPerSide(input);
+    const secondDecreases =
+      input.secondFrontVNeckDecreaseStitches !== undefined
+        ? wholeNonNeg(input.secondFrontVNeckDecreaseStitches)
+        : resolveVNeckDecreasesPerSide(input);
+
+    const firstFrontStitches = pickupStitchesFromEdgeLength(
+      vNeckFrontSlopeEdgeLength(firstDecreases, firstDepth, spi, rpi),
+      spi,
+    );
+    const secondFrontStitches = pickupStitchesFromEdgeLength(
+      vNeckFrontSlopeEdgeLength(secondDecreases, secondDepth, spi, rpi),
+      spi,
+    );
+
+    const backPlan = resolveBackRoundPlan(input);
+    const backStitches = backPlan
+      ? pickupStitchesFromEdgeLength(
+          roundNeckPieceEdgeLength(backPlan, input.backNeckDepthRows, spi, rpi),
+          spi,
+        )
+      : wholeNonNeg(input.backCenterNeckStitches) +
         pickupStitchesFromRowEdge(2 * wholeNonNeg(input.backNeckDepthRows), spi, rpi);
+    const backCenter = wholeNonNeg(backPlan?.centerBindOff ?? input.backCenterNeckStitches);
+
+    if (garment === "cardigan") {
       const sections: NeckbandPickupSections = {
+        // Front center is always 0 for V-neck; report back center only.
         centerNeckStitches: backCenter,
         necklineEdgeRows:
-          firstFrontEdgeRows + secondFrontEdgeRows + 2 * wholeNonNeg(input.backNeckDepthRows),
-        curvedEdgePickupStitches:
-          pickupStitchesFromRowEdge(firstFrontEdgeRows, spi, rpi) +
-          pickupStitchesFromRowEdge(secondFrontEdgeRows, spi, rpi) +
-          pickupStitchesFromRowEdge(2 * wholeNonNeg(input.backNeckDepthRows), spi, rpi),
+          firstDepth + secondDepth + 2 * wholeNonNeg(input.backNeckDepthRows),
+        curvedEdgePickupStitches: verticalProjectionPickup,
         firstFrontStitches,
         backStitches,
         secondFrontStitches,
@@ -368,16 +434,21 @@ export function calculateNeckbandPickup(input: NeckbandPickupGeometryInput): Nec
       };
     }
 
+    const frontPickupStitches = firstFrontStitches + secondFrontStitches;
     const sections: NeckbandPickupSections = {
-      centerNeckStitches: 0,
+      centerNeckStitches: backCenter, // no center-front contribution
       necklineEdgeRows,
       curvedEdgePickupStitches: verticalProjectionPickup,
+      frontPickupStitches,
+      backPickupStitches: backStitches,
+      firstFrontStitches,
+      secondFrontStitches,
+      backStitches,
     };
     return {
       kind: "v-neck",
       garment,
-      pickupStitches: verticalProjectionPickup,
-      necklineEdgeRows,
+      pickupStitches: frontPickupStitches + backStitches,
       sections,
     };
   }
@@ -502,26 +573,20 @@ export function formatNeckbandPickupInstruction(
       backStitches: back,
       secondFrontStitches: second,
       primaryText,
-      estimateNoteText:
-        result.kind === "round" ? NECKBAND_ROUND_PICKUP_ESTIMATE_NOTE : undefined,
+      estimateNoteText: NECKBAND_ROUND_PICKUP_ESTIMATE_NOTE,
     };
   }
 
-  if (result.kind === "v-neck") {
-    return {
-      kind: "v-neck",
-      garment: "pullover",
-      pickupStitches: result.pickupStitches,
-      necklineEdgeRows: result.necklineEdgeRows,
-      primaryText: `Pick up ${result.pickupStitches} stitches evenly over ${result.necklineEdgeRows} rows around the neckline.`,
-    };
-  }
+  // Pullover round and V-neck share the same approximate-around-neckline wording.
   return {
-    kind: "round",
+    kind: result.kind,
     garment: "pullover",
     pickupStitches: result.pickupStitches,
     frontPickupStitches: result.sections.frontPickupStitches,
     backPickupStitches: result.sections.backPickupStitches,
+    firstFrontStitches: result.sections.firstFrontStitches,
+    secondFrontStitches: result.sections.secondFrontStitches,
+    backStitches: result.sections.backStitches,
     primaryText: `Pick up approximately ${result.pickupStitches} stitches evenly around the neckline.`,
     estimateNoteText: NECKBAND_ROUND_PICKUP_ESTIMATE_NOTE,
   };
@@ -541,6 +606,8 @@ export type NeckbandPickupDebugFields = {
   secondFrontNeckEdgeRows?: number;
   firstFrontHorizontalStitches?: number;
   secondFrontHorizontalStitches?: number;
+  firstFrontVNeckDecreaseStitches?: number;
+  secondFrontVNeckDecreaseStitches?: number;
 };
 
 /**
@@ -603,6 +670,14 @@ export function neckbandPickupGeometryFromDebug(
       debug.secondFrontHorizontalStitches !== undefined
         ? wholeNonNeg(debug.secondFrontHorizontalStitches)
         : defaultHorizontal,
+    firstFrontVNeckDecreaseStitches:
+      debug.firstFrontVNeckDecreaseStitches !== undefined
+        ? wholeNonNeg(debug.firstFrontVNeckDecreaseStitches)
+        : undefined,
+    secondFrontVNeckDecreaseStitches:
+      debug.secondFrontVNeckDecreaseStitches !== undefined
+        ? wholeNonNeg(debug.secondFrontVNeckDecreaseStitches)
+        : undefined,
   };
 }
 
