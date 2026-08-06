@@ -199,7 +199,6 @@ function shapingSummary(s: DartShapingSuccess): BustDartShapingSummary {
 
 function buildInstructionParagraphs(args: {
   dartStartGarmentRc: number;
-  armholeOpeningGarmentRc: number;
   frontConstruction: BustDartFrontConstruction;
   holdLines: string[];
   cupKey: DartCupSize;
@@ -209,7 +208,8 @@ function buildInstructionParagraphs(args: {
       ? "Work the short-row bust dart from the side (armhole) edge toward the center front."
       : "Work the short-row bust dart on the front only (both sides of center).";
 
-  // Tool hold lines end with turn-off / reset-RC / continue — sweater patterns own RC reset wording.
+  // Tool hold lines end with turn-off / reset-RC / continue — sweater patterns own RC reset
+  // and the following Front BODY block owns knitting from dart start to the armhole.
   const holdOnly = args.holdLines.filter(
     (l) => l.startsWith("Place ") || l === "Turn off hold settings.",
   );
@@ -221,7 +221,6 @@ function buildInstructionParagraphs(args: {
     "Work the short-row shaping:",
     ...holdOnly,
     `Reset the row counter to RC ${args.dartStartGarmentRc} so the next plain row is counted correctly.`,
-    `Continue knitting across all stitches to RC ${args.armholeOpeningGarmentRc} (armhole opening).`,
   ];
 
   const cardiganRightMirrorParagraph =
@@ -230,6 +229,82 @@ function buildInstructionParagraphs(args: {
       : null;
 
   return { paragraphs, cardiganRightMirrorParagraph };
+}
+
+export type BustDartPlacementGeometry = {
+  placementOffsetRows: number;
+  dartStartGarmentRc: number;
+  rowsFromHemToDartStart: number;
+  rowsFromDartToArmhole: number;
+  errors: string[];
+};
+
+/**
+ * Dart begins {@link BUST_DART_PLACEMENT_INCHES_BELOW_ARMHOLE} below the armhole opening
+ * (bottom-up): `dartStartGarmentRc = armholeOpeningGarmentRc − inchesToRows(1″, rpi)`.
+ * Returns null when row gauge / armhole RC cannot produce a placement.
+ */
+export function resolveBustDartPlacementGeometry(args: {
+  rowsPerInch: number;
+  armholeOpeningGarmentRc: number;
+  hemRows: number;
+  bodyToArmholeRows: number;
+}): BustDartPlacementGeometry | null {
+  const errors: string[] = [];
+  const rpi = Number(args.rowsPerInch);
+  const hemRows = Math.max(0, Math.floor(Number(args.hemRows) || 0));
+  const bodyToArmholeRows = Math.max(0, Math.floor(Number(args.bodyToArmholeRows) || 0));
+  const armholeRc = Math.floor(Number(args.armholeOpeningGarmentRc));
+
+  if (!Number.isFinite(rpi) || rpi <= 0) {
+    return null;
+  }
+  if (!Number.isFinite(armholeRc) || armholeRc <= 0) {
+    return null;
+  }
+
+  const placementOffsetRows = inchesToRows(BUST_DART_PLACEMENT_INCHES_BELOW_ARMHOLE, rpi);
+  if (placementOffsetRows < 1) {
+    errors.push(
+      "Row gauge is too coarse to place the dart 1″ below the armhole. Increase row gauge or omit bust darts.",
+    );
+    return {
+      placementOffsetRows,
+      dartStartGarmentRc: armholeRc,
+      rowsFromHemToDartStart: Math.max(0, armholeRc - hemRows),
+      rowsFromDartToArmhole: 0,
+      errors,
+    };
+  }
+
+  const dartStartGarmentRc = armholeRc - placementOffsetRows;
+  if (dartStartGarmentRc <= hemRows) {
+    errors.push(
+      "Not enough rows below the armhole for bust darts (dart would fall inside the hem). Lengthen the body or omit bust darts.",
+    );
+  }
+  if (bodyToArmholeRows < placementOffsetRows) {
+    errors.push(
+      "Not enough body rows below the armhole for a 1″ dart placement. Lengthen the body or omit bust darts.",
+    );
+  }
+  if (dartStartGarmentRc >= armholeRc) {
+    errors.push("Bust dart placement collides with the armhole opening.");
+  }
+
+  const rowsFromHemToDartStart = Math.max(0, dartStartGarmentRc - hemRows);
+  const rowsFromDartToArmhole = Math.max(0, armholeRc - dartStartGarmentRc);
+  if (rowsFromDartToArmhole < 1) {
+    errors.push("No rows remain between the dart and the armhole opening after placement rounding.");
+  }
+
+  return {
+    placementOffsetRows,
+    dartStartGarmentRc,
+    rowsFromHemToDartStart,
+    rowsFromDartToArmhole,
+    errors,
+  };
 }
 
 /**
@@ -255,68 +330,61 @@ export function calculateBustDart(input: BustDartInput): BustDartResult {
     });
   }
 
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  const spi = Number(input.stitchesPerInch);
+  const rpi = Number(input.rowsPerInch);
+  const hemRows = Math.max(0, Math.floor(Number(input.hemRows) || 0));
+  const bodyToArmholeRows = Math.max(0, Math.floor(Number(input.bodyToArmholeRows) || 0));
+  const armholeRc = Math.floor(Number(input.armholeOpeningGarmentRc));
+  const frontSts = Math.floor(Number(input.frontStitchCount));
+
+  // Placement is computed for eligible patterns even when darts are off so the Front can
+  // offer Optional Bust Dart at the dart RC. The dart *begins* at armholeRc − 1″ (rounded).
+  const placement = resolveBustDartPlacementGeometry({
+    rowsPerInch: rpi,
+    armholeOpeningGarmentRc: armholeRc,
+    hemRows,
+    bodyToArmholeRows,
+  });
+  const placementOffsetRows = placement?.placementOffsetRows ?? 0;
+  const dartStartGarmentRc = placement?.dartStartGarmentRc ?? null;
+  const rowsFromHemToDartStart = placement?.rowsFromHemToDartStart ?? null;
+  const rowsFromDartToArmhole = placement?.rowsFromDartToArmhole ?? null;
+
   if (!config.enabled) {
     return emptyDisabledResult({
       eligible: true,
       config: { enabled: false, cupSize: null },
+      placementOffsetRows,
+      dartStartGarmentRc,
+      rowsFromHemToDartStart,
+      rowsFromDartToArmhole,
+      errors: placement?.errors ?? [],
     });
   }
-
-  const errors: string[] = [];
-  const warnings: string[] = [];
 
   if (!cupSize) {
     errors.push("Select a cup size to add bust darts.");
   }
-
-  const spi = Number(input.stitchesPerInch);
-  const rpi = Number(input.rowsPerInch);
   if (!Number.isFinite(spi) || spi <= 0) {
     errors.push("Stitch gauge must be greater than 0.");
   }
   if (!Number.isFinite(rpi) || rpi <= 0) {
     errors.push("Row gauge must be greater than 0.");
   }
-
-  const hemRows = Math.max(0, Math.floor(Number(input.hemRows) || 0));
-  const bodyToArmholeRows = Math.max(0, Math.floor(Number(input.bodyToArmholeRows) || 0));
-  const armholeRc = Math.floor(Number(input.armholeOpeningGarmentRc));
-  const frontSts = Math.floor(Number(input.frontStitchCount));
-
   if (!Number.isFinite(armholeRc) || armholeRc <= 0) {
     errors.push("Armhole opening row is required to place bust darts.");
   }
   if (!Number.isFinite(frontSts) || frontSts < 1) {
     errors.push("Front stitch count is required to validate bust darts.");
   }
-
-  const placementOffsetRows = rpi > 0 ? inchesToRows(BUST_DART_PLACEMENT_INCHES_BELOW_ARMHOLE, rpi) : 0;
-  if (placementOffsetRows < 1) {
-    errors.push(
-      "Row gauge is too coarse to place the dart 1″ below the armhole. Increase row gauge or omit bust darts.",
-    );
+  if (placement?.errors.length) {
+    errors.push(...placement.errors);
   }
 
-  const dartStartGarmentRc =
-    Number.isFinite(armholeRc) && placementOffsetRows >= 1 ? armholeRc - placementOffsetRows : null;
-
-  if (dartStartGarmentRc != null) {
-    if (dartStartGarmentRc <= hemRows) {
-      errors.push(
-        "Not enough rows below the armhole for bust darts (dart would fall inside the hem). Lengthen the body or omit bust darts.",
-      );
-    }
-    if (bodyToArmholeRows < placementOffsetRows) {
-      errors.push(
-        "Not enough body rows below the armhole for a 1″ dart placement. Lengthen the body or omit bust darts.",
-      );
-    }
-    if (dartStartGarmentRc >= armholeRc) {
-      errors.push("Bust dart placement collides with the armhole opening.");
-    }
-  }
-
-  if (errors.length || !cupSize || dartStartGarmentRc == null) {
+  if (errors.length || !cupSize || dartStartGarmentRc == null || rowsFromDartToArmhole == null) {
     return emptyDisabledResult({
       eligible: true,
       config,
@@ -324,6 +392,8 @@ export function calculateBustDart(input: BustDartInput): BustDartResult {
       warnings,
       placementOffsetRows,
       dartStartGarmentRc,
+      rowsFromHemToDartStart,
+      rowsFromDartToArmhole,
     });
   }
 
@@ -341,6 +411,8 @@ export function calculateBustDart(input: BustDartInput): BustDartResult {
       warnings,
       placementOffsetRows,
       dartStartGarmentRc,
+      rowsFromHemToDartStart,
+      rowsFromDartToArmhole,
     });
   }
 
@@ -352,14 +424,6 @@ export function calculateBustDart(input: BustDartInput): BustDartResult {
         ? "This cardigan front is too narrow for the selected dart. Choose a smaller cup size or omit bust darts."
         : "The front does not have enough stitches for the selected dart. Choose a smaller cup size or omit bust darts.",
     );
-  }
-
-  // Depth rows are worked with RC stopped — they must not consume the 1″ placement gap alone,
-  // but warn if depth is large relative to remaining body below the dart.
-  const rowsFromHemToDartStart = Math.max(0, dartStartGarmentRc - hemRows);
-  const rowsFromDartToArmhole = Math.max(0, armholeRc - dartStartGarmentRc);
-  if (rowsFromDartToArmhole < 1) {
-    errors.push("No rows remain between the dart and the armhole opening after placement rounding.");
   }
 
   if (errors.length) {
@@ -379,7 +443,6 @@ export function calculateBustDart(input: BustDartInput): BustDartResult {
   const holdStepLines = dartShapingHoldStepLines(shapingResult);
   const { paragraphs, cardiganRightMirrorParagraph } = buildInstructionParagraphs({
     dartStartGarmentRc,
-    armholeOpeningGarmentRc: armholeRc,
     frontConstruction: input.frontConstruction,
     holdLines: holdStepLines,
     cupKey: cupSize,
@@ -436,6 +499,18 @@ export type BustDartPatternDisplayRow =
   | { kind: "section"; title: string; titleHtml?: string }
   | { kind: "neckShoulderChartTableMount" }
   | {
+      kind: "bustDartCustomization";
+      active: boolean;
+      cupSize: string | null;
+      dartStartGarmentRc: number;
+      armholeOpeningGarmentRc: number;
+      placementOffsetRows: number;
+      rowsFromHemToDartStart: number;
+      rowsFromDartToArmhole: number;
+      instructionParagraphs: string[];
+      errors: string[];
+    }
+  | {
       kind: "block";
       rc?: string;
       paragraphs: string[];
@@ -491,13 +566,54 @@ export function resolveBustDartForSweaterFront(args: {
   });
 }
 
+function canSplitFrontBodyForBustDart(result: BustDartResult): result is BustDartResult & {
+  dartStartGarmentRc: number;
+  rowsFromHemToDartStart: number;
+  rowsFromDartToArmhole: number;
+} {
+  return (
+    result.eligible === true &&
+    result.dartStartGarmentRc != null &&
+    result.rowsFromHemToDartStart != null &&
+    result.rowsFromDartToArmhole != null &&
+    result.rowsFromDartToArmhole >= 1 &&
+    !(result.errors ?? []).some((e) =>
+      /row gauge is too coarse|not enough rows below|not enough body rows|collides with the armhole|no rows remain between the dart/i.test(
+        e,
+      ),
+    )
+  );
+}
+
+function buildBustDartCustomizationRow(
+  result: BustDartResult & {
+    dartStartGarmentRc: number;
+    rowsFromHemToDartStart: number;
+    rowsFromDartToArmhole: number;
+  },
+): Extract<BustDartPatternDisplayRow, { kind: "bustDartCustomization" }> {
+  const armholeOpeningGarmentRc = result.dartStartGarmentRc + result.rowsFromDartToArmhole;
+  return {
+    kind: "bustDartCustomization",
+    active: result.active === true,
+    cupSize: result.config.cupSize,
+    dartStartGarmentRc: result.dartStartGarmentRc,
+    armholeOpeningGarmentRc,
+    placementOffsetRows: result.placementOffsetRows,
+    rowsFromHemToDartStart: result.rowsFromHemToDartStart,
+    rowsFromDartToArmhole: result.rowsFromDartToArmhole,
+    instructionParagraphs: result.active ? [...result.instructionParagraphs] : [],
+    errors: result.active ? [] : [...(result.errors ?? [])],
+  };
+}
+
 /**
- * Insert bust-dart instruction blocks into the FRONT piece BODY section only.
+ * Insert bust-dart instruction / optional-slot into the FRONT piece BODY section only.
  * Back / sleeve rows must not be passed through this helper.
  *
- * Straight BODY: splits the knit-to-armhole span at the dart RC.
- * A-line BODY: inserts the dart immediately before “Begin armhole shaping.” / ABOVE ARMHOLE MARKERS.
- * When inactive, returns the input rows unchanged (new array copy).
+ * Eligible women’s patterns always split at the dart RC (even when no dart is selected) so the
+ * Optional Bust Dart control sits at the knitting point. When placement is invalid, returns a
+ * shallow copy of the input rows unchanged.
  */
 export function insertBustDartIntoFrontBodyDisplayRows<T extends BustDartPatternDisplayRow>(
   rows: readonly T[],
@@ -505,19 +621,27 @@ export function insertBustDartIntoFrontBodyDisplayRows<T extends BustDartPattern
   helpers: {
     formatRc: (rc: number) => string;
     knitToRcLine: (targetRc: number) => string;
+    knitRowsToRcLine?: (rows: number, targetRc: number) => string;
+    knitRowsEvenToRcLine?: (rows: number, targetRc: number) => string;
   },
 ): T[] {
-  if (!result.active || result.dartStartGarmentRc == null) {
+  if (!canSplitFrontBodyForBustDart(result)) {
     return rows.map((r) => r);
   }
 
   const dartStart = result.dartStartGarmentRc;
-  const armholeRc = dartStart + (result.rowsFromDartToArmhole ?? 0);
-  const dartBlock = {
-    kind: "block" as const,
-    rc: helpers.formatRc(dartStart),
-    paragraphs: [...result.instructionParagraphs],
-  };
+  const afterDart = result.rowsFromDartToArmhole;
+  const toDart = result.rowsFromHemToDartStart;
+  const armholeRc = dartStart + afterDart;
+  const dartSlot = buildBustDartCustomizationRow(result);
+
+  const knitToDartLine =
+    helpers.knitRowsToRcLine && toDart > 0
+      ? helpers.knitRowsToRcLine(toDart, dartStart)
+      : helpers.knitToRcLine(dartStart);
+  const knitAfterDartLine = helpers.knitRowsEvenToRcLine
+    ? helpers.knitRowsEvenToRcLine(afterDart, armholeRc)
+    : helpers.knitToRcLine(armholeRc);
 
   const out: BustDartPatternDisplayRow[] = [];
   let inBody = false;
@@ -549,15 +673,29 @@ export function insertBustDartIntoFrontBodyDisplayRows<T extends BustDartPattern
     const paras = block.paragraphs ?? [];
     const trusted = block.trustedParagraphs;
 
-    // A-line: insert immediately before “Begin armhole shaping.”
     if (paras.some((p) => /Begin armhole shaping\.?/i.test(p))) {
-      out.push(dartBlock);
+      if (toDart > 0) {
+        out.push({
+          kind: "block",
+          rc: helpers.formatRc(Math.max(0, dartStart - toDart)),
+          paragraphs: [knitToDartLine],
+          stitchCount: block.stitchCount,
+        });
+      }
+      out.push(dartSlot);
+      if (afterDart > 0) {
+        out.push({
+          kind: "block",
+          rc: helpers.formatRc(dartStart),
+          paragraphs: [knitAfterDartLine],
+          stitchCount: block.stitchCount,
+        });
+      }
       dartInserted = true;
       out.push(row);
       continue;
     }
 
-    // Straight body / drop-shoulder even knit: rewrite knit-to-armhole into knit-to-dart + dart + knit-to-armhole.
     const knitToMatch = paras
       .map((p) => p.match(/Knit\s+to\s+RC:?\s*0*(\d+)/i))
       .find((m) => m != null);
@@ -570,44 +708,15 @@ export function insertBustDartIntoFrontBodyDisplayRows<T extends BustDartPattern
       if (target === armholeRc || target >= armholeRc) {
         out.push({
           ...block,
-          paragraphs: [helpers.knitToRcLine(dartStart)],
+          paragraphs: [knitToDartLine],
           ...(trusted ? { trustedParagraphs: undefined } : {}),
         });
-        out.push(dartBlock);
-        if ((result.rowsFromDartToArmhole ?? 0) > 0) {
-          out.push({
-            kind: "block",
-            rc: helpers.formatRc(dartStart),
-            paragraphs: [helpers.knitToRcLine(armholeRc)],
-            stitchCount: block.stitchCount,
-          });
-        }
-        dartInserted = true;
-        continue;
-      }
-    }
-
-    if (evenMatch && (result.rowsFromHemToDartStart ?? 0) >= 0) {
-      const totalEven = parseInt(evenMatch[1], 10);
-      const toDart = result.rowsFromHemToDartStart ?? 0;
-      const afterDart = result.rowsFromDartToArmhole ?? 0;
-      if (toDart + afterDart === totalEven || totalEven === (result.rowsFromHemToDartStart ?? 0) + afterDart) {
-        if (toDart > 0) {
-          out.push({
-            ...block,
-            paragraphs: [
-              toDart === 1 ? "Knit 1 row even." : `Knit ${toDart} rows even.`,
-            ],
-          });
-        }
-        out.push(dartBlock);
+        out.push(dartSlot);
         if (afterDart > 0) {
           out.push({
             kind: "block",
             rc: helpers.formatRc(dartStart),
-            paragraphs: [
-              afterDart === 1 ? "Knit 1 row even." : `Knit ${afterDart} rows even.`,
-            ],
+            paragraphs: [knitAfterDartLine],
             stitchCount: block.stitchCount,
           });
         }
@@ -616,20 +725,40 @@ export function insertBustDartIntoFrontBodyDisplayRows<T extends BustDartPattern
       }
     }
 
-    // A-line / body-block: 1″ straight buffer immediately before the armhole — dart starts here.
+    if (evenMatch && toDart >= 0) {
+      const totalEven = parseInt(evenMatch[1], 10);
+      if (toDart + afterDart === totalEven || totalEven === toDart + afterDart) {
+        if (toDart > 0) {
+          out.push({
+            ...block,
+            paragraphs: [knitToDartLine],
+          });
+        }
+        out.push(dartSlot);
+        if (afterDart > 0) {
+          out.push({
+            kind: "block",
+            rc: helpers.formatRc(dartStart),
+            paragraphs: [knitAfterDartLine],
+            stitchCount: block.stitchCount,
+          });
+        }
+        dartInserted = true;
+        continue;
+      }
+    }
+
     const straightMatch = paras
       .map((p) => p.match(/Knit\s+(\d+)\s+rows?\s+straight\.?/i))
       .find((m) => m != null);
     if (straightMatch) {
-      const straightRows = parseInt(straightMatch[1], 10);
-      const afterDart = result.rowsFromDartToArmhole ?? straightRows;
-      out.push(dartBlock);
+      out.push(dartSlot);
       if (afterDart > 0) {
         out.push({
           ...block,
           rc: helpers.formatRc(dartStart),
           paragraphs: [
-            afterDart === 1 ? "Knit 1 row straight." : `Knit ${afterDart} rows straight.`,
+            afterDart === 1 ? "Knit 1 row straight." : "Knit " + afterDart + " rows straight.",
           ],
         });
       }
@@ -640,12 +769,7 @@ export function insertBustDartIntoFrontBodyDisplayRows<T extends BustDartPattern
     out.push(row);
   }
 
-  if (!dartInserted && result.cardiganRightMirrorParagraph) {
-    // no-op — mirror is applied separately by cardigan builders
-  }
-
-  // Append cardigan mirror note after FRONT NECKLINE section content when present.
-  if (result.cardiganRightMirrorParagraph) {
+  if (result.active && result.cardiganRightMirrorParagraph) {
     const mirror = result.cardiganRightMirrorParagraph;
     const already = out.some(
       (r) =>
@@ -654,7 +778,6 @@ export function insertBustDartIntoFrontBodyDisplayRows<T extends BustDartPattern
         r.paragraphs.some((p) => p.includes("RIGHT FRONT") && /bust-dart|bust dart/i.test(p)),
     );
     if (!already) {
-      // Prefer augmenting an existing RIGHT FRONT mirror block; else append at end.
       let augmented = false;
       for (let i = 0; i < out.length; i++) {
         const r = out[i];

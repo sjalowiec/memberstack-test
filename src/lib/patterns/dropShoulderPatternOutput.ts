@@ -1484,6 +1484,14 @@ export function generateDropShoulderPattern(
   frontDisplayRows = insertBustDartIntoFrontBodyDisplayRows(frontDisplayRows, bustDart, {
     formatRc: formatRcColon,
     knitToRcLine: (targetRc) => `Knit to RC ${Math.max(0, Math.floor(targetRc))}.`,
+    knitRowsToRcLine: (rows, targetRc) =>
+      rows === 1
+        ? `Knit 1 row to RC ${Math.max(0, Math.floor(targetRc))}.`
+        : `Knit ${rows} rows to RC ${Math.max(0, Math.floor(targetRc))}.`,
+    knitRowsEvenToRcLine: (rows, targetRc) =>
+      rows === 1
+        ? `Knit 1 row even to RC ${Math.max(0, Math.floor(targetRc))}.`
+        : `Knit ${rows} rows even to RC ${Math.max(0, Math.floor(targetRc))}.`,
   });
 
   // Back timeline feeds the Visual Guides Shaping Map only (no back checklist chart mount).

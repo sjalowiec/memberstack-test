@@ -1,29 +1,23 @@
 /**
- * Finished-pattern Bust Dart action + modal client (Sleeveless / Drop Shoulder workspaces).
+ * Finished-pattern Bust Dart modal client (Sleeveless / Drop Shoulder workspaces).
+ * Controls live in the Front BODY slot; this module wires the modal + Add/Update/Remove.
  */
 import {
   applyBustDartCupToWorkingDraft,
   buildBustDartPatternContext,
   bustDartCupOptions,
-  isPatternEligibleForBustDartAction,
   parseCupSizeInput,
   persistBustDartCustomization,
   previewBustDartForPattern,
   removeBustDartFromWorkingDraft,
   type BustDartPatternContext,
 } from "../lib/patterns/bustDartPatternCustomization";
-import { readBustDartConfigFromPatternData } from "../lib/patterns/legoBlocks/bustDart";
-import { getPatternData } from "../lib/patterns/patternStorage";
 import type { DartCupSize, DartFormulaUnit } from "../lib/tools/dartFormulaMath";
 
 declare global {
   interface Window {
     kbmRefreshSleevelessPattern?: () => void | Promise<void>;
   }
-}
-
-function $(sel: string, root: ParentNode = document): HTMLElement | null {
-  return root.querySelector(sel);
 }
 
 function syncCupLabels(modal: HTMLElement, unit: DartFormulaUnit): void {
@@ -102,47 +96,9 @@ async function refreshPatternView(): Promise<void> {
   }
 }
 
-function updateActionButtonLabel(btn: HTMLButtonElement): void {
-  const imported = readBustDartConfigFromPatternData(getPatternData());
-  if (imported.enabled && imported.cupSize) {
-    btn.textContent = `Bust Dart (Cup ${imported.cupSize})`;
-    btn.setAttribute("aria-label", `Change or remove bust dart, currently cup ${imported.cupSize}`);
-  } else {
-    btn.textContent = "Optional Bust Dart";
-    btn.setAttribute("aria-label", "Add optional bust dart");
-  }
-}
-
-function mountActionButton(host: HTMLElement): HTMLButtonElement {
-  let btn = host.querySelector<HTMLButtonElement>("[data-bust-dart-pattern-open]");
-  if (!btn) {
-    btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "sleeveless-pattern-edit-action no-print";
-    btn.setAttribute("data-bust-dart-pattern-open", "");
-    btn.setAttribute("data-testid", "button-optional-bust-dart");
-    btn.setAttribute("aria-haspopup", "dialog");
-    // Insert before Print when present
-    const printBtn = host.querySelector("#print-btn");
-    if (printBtn) host.insertBefore(btn, printBtn);
-    else host.appendChild(btn);
-  }
-  updateActionButtonLabel(btn);
-  return btn;
-}
-
+/** @deprecated Action bar mounting removed — Front BODY slot owns the control. Kept as no-op for callers. */
 export function syncBustDartPatternActionVisibility(): void {
-  const host = document.querySelector<HTMLElement>("[data-sleeveless-pattern-actions]");
-  if (!host) return;
-  const eligible = isPatternEligibleForBustDartAction();
-  let btn = host.querySelector<HTMLButtonElement>("[data-bust-dart-pattern-open]");
-  if (!eligible) {
-    if (btn) btn.hidden = true;
-    return;
-  }
-  btn = mountActionButton(host);
-  btn.hidden = false;
-  updateActionButtonLabel(btn);
+  // Intentionally empty: Optional Bust Dart is rendered inside Front instructions.
 }
 
 export function initBustDartPatternCustomization(): void {
@@ -157,8 +113,14 @@ export function initBustDartPatternCustomization(): void {
   const title = modal.querySelector<HTMLElement>("#bust-dart-modal-title");
 
   function openModal(): void {
-    context = buildBustDartPatternContext();
-    if (!context.eligible) return;
+    try {
+      context = buildBustDartPatternContext();
+    } catch (err) {
+      console.error("[kbm] Bust dart context failed:", err);
+      context = null;
+      return;
+    }
+    if (!context || !context.eligible) return;
     fillSummary(modal, context);
     syncCupLabels(modal, context.unit);
     const sel = cupSelect();
@@ -188,6 +150,25 @@ export function initBustDartPatternCustomization(): void {
     else modal.removeAttribute("open");
   }
 
+  async function removeDartAndRefresh(fromModal: boolean): Promise<void> {
+    try {
+      removeBustDartFromWorkingDraft();
+      const persisted = await persistBustDartCustomization({ enabled: false, cupSize: null });
+      await refreshPatternView();
+      if (!persisted.ok && fromModal) {
+        setError(modal, persisted.error);
+        return;
+      }
+      if (fromModal) closeModal();
+    } catch (err) {
+      console.error("[kbm] Remove bust dart failed:", err);
+      if (fromModal) {
+        setError(modal, "Could not remove the bust dart. Please try again.");
+      }
+      await refreshPatternView();
+    }
+  }
+
   document.addEventListener("click", (ev) => {
     const t = ev.target;
     if (!(t instanceof Element)) return;
@@ -195,6 +176,12 @@ export function initBustDartPatternCustomization(): void {
     if (openBtn) {
       ev.preventDefault();
       openModal();
+      return;
+    }
+    const removeTrigger = t.closest("[data-bust-dart-pattern-remove]");
+    if (removeTrigger) {
+      ev.preventDefault();
+      void removeDartAndRefresh(false);
     }
   });
 
@@ -221,15 +208,16 @@ export function initBustDartPatternCustomization(): void {
       applyBustDartCupToWorkingDraft(cup);
       const persisted = await persistBustDartCustomization({ enabled: true, cupSize: cup });
       if (!persisted.ok) {
-        // Draft already has the dart; still refresh so the user sees instructions.
         await refreshPatternView();
-        syncBustDartPatternActionVisibility();
         setError(modal, persisted.error);
         return;
       }
       await refreshPatternView();
-      syncBustDartPatternActionVisibility();
       closeModal();
+    } catch (err) {
+      console.error("[kbm] Add bust dart failed:", err);
+      setError(modal, "Could not add the bust dart. Please try again.");
+      await refreshPatternView();
     } finally {
       addBtn.disabled = false;
     }
@@ -239,15 +227,7 @@ export function initBustDartPatternCustomization(): void {
     removeBtn.disabled = true;
     setError(modal, null);
     try {
-      removeBustDartFromWorkingDraft();
-      const persisted = await persistBustDartCustomization({ enabled: false, cupSize: null });
-      await refreshPatternView();
-      syncBustDartPatternActionVisibility();
-      if (!persisted.ok) {
-        setError(modal, persisted.error);
-        return;
-      }
-      closeModal();
+      await removeDartAndRefresh(true);
     } finally {
       removeBtn.disabled = false;
     }
@@ -256,6 +236,4 @@ export function initBustDartPatternCustomization(): void {
   modal.addEventListener("close", () => {
     setError(modal, null);
   });
-
-  syncBustDartPatternActionVisibility();
 }

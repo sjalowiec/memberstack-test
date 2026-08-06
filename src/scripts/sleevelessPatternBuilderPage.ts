@@ -10,7 +10,6 @@ import {
 import { maybeAutoSaveFirstFreePattern } from "../lib/patterns/patternAutoSaveFirstFree.ts";
 import {
   initBustDartPatternCustomization,
-  syncBustDartPatternActionVisibility,
 } from "./bustDartPatternModalClient.ts";
 
 declare global {
@@ -73,7 +72,6 @@ async function boot(): Promise<void> {
   applySleevelessPatternOnlineProjectHeader();
   void initSleevelessPatternBuilderPage();
   initBustDartPatternCustomization();
-  syncBustDartPatternActionVisibility();
 }
 
 if (document.readyState === "loading") {

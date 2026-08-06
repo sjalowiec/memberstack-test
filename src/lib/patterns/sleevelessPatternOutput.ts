@@ -519,6 +519,22 @@ export type SleevelessPatternDisplayRow =
   | { kind: "section"; title: string; titleHtml?: string }
   /** Filled client-side with chart table (see pattern tab). */
   | { kind: "neckShoulderChartTableMount" }
+  /**
+   * Optional Bust Dart control + (when active) full dart knitting instructions.
+   * Placed in Front BODY at the dart RC. Screen shows controls; print omits inactive slots.
+   */
+  | {
+      kind: "bustDartCustomization";
+      active: boolean;
+      cupSize: string | null;
+      dartStartGarmentRc: number;
+      armholeOpeningGarmentRc: number;
+      placementOffsetRows: number;
+      rowsFromHemToDartStart: number;
+      rowsFromDartToArmhole: number;
+      instructionParagraphs: string[];
+      errors: string[];
+    }
   | {
       kind: "block";
       /** e.g. RC:014 — optional when block is prose-only */
@@ -684,6 +700,13 @@ function flattenDisplayRowsToLines(rows: readonly SleevelessPatternDisplayRow[])
       out.push(r.title, "");
     } else if (r.kind === "neckShoulderChartTableMount") {
       out.push("Neckline / shoulder shaping chart", "");
+    } else if (r.kind === "bustDartCustomization") {
+      if (r.active && r.cupSize) out.push(`Bust Dart (Cup ${r.cupSize})`);
+      else if (r.active) out.push("Bust Dart");
+      for (const p of r.instructionParagraphs) {
+        if (String(p).trim()) out.push(String(p));
+      }
+      out.push("");
     } else {
       if (r.rowCounterReset) {
         if (r.rowCounterResetGarmentRc !== undefined) {
@@ -3569,6 +3592,14 @@ export function generateSleevelessBackPattern(
     insertBustDartIntoFrontBodyDisplayRows(frontDisplayRowsBase, bustDart, {
       formatRc: formatRcColon,
       knitToRcLine: (targetRc) => `Knit to RC ${Math.max(0, Math.floor(targetRc))}.`,
+      knitRowsToRcLine: (rows, targetRc) =>
+        rows === 1
+          ? `Knit 1 row to RC ${Math.max(0, Math.floor(targetRc))}.`
+          : `Knit ${rows} rows to RC ${Math.max(0, Math.floor(targetRc))}.`,
+      knitRowsEvenToRcLine: (rows, targetRc) =>
+        rows === 1
+          ? `Knit 1 row even to RC ${Math.max(0, Math.floor(targetRc))}.`
+          : `Knit ${rows} rows even to RC ${Math.max(0, Math.floor(targetRc))}.`,
     }),
   );
 

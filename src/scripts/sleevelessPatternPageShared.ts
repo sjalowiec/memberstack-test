@@ -28,7 +28,6 @@ import {
   getSleevelessGoldenBetaCanonicalPattern,
   getSleevelessGoldenBetaPatternBuilderData,
 } from "../lib/patterns/sleevelessGoldenBeta.ts";
-import { syncBustDartPatternActionVisibility } from "./bustDartPatternModalClient.ts";
 import { validatePatternBuilderRequired } from "../lib/patterns/patternBuilderValidation";
 import { setPatternTabsReadiness } from "../lib/patterns/patternTabsClient.ts";
 import {
@@ -76,6 +75,7 @@ import {
 import { buildPatternVisualGuidesHtml } from "../lib/patterns/patternVisualGuides.ts";
 import { renderSleevelessBodyShapingChartHtml } from "../lib/patterns/sleevelessBodyShapingChartHtml.ts";
 import { renderDropShoulderSleeveShapingChartHtml } from "../lib/patterns/dropShoulderSleeveShapingChart.ts";
+import { renderBustDartCustomizationScreenHtml } from "../lib/patterns/bustDartFrontSlotHtml.ts";
 import { buildDropShoulderMountShapingMapData } from "../lib/patterns/dropShoulderMountVisualGuides.ts";
 import {
   dropShoulderFrontChartActiveSideRcStart,
@@ -370,7 +370,6 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       });
     }
     printBtn.style.display = "inline-flex";
-    syncBustDartPatternActionVisibility();
   }
 
   function section(obj) {
@@ -784,6 +783,12 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         postParts.push(
           `<section class="sleeveless-piece-chart-fullwidth">${chartChunk}</section>`
         );
+        continue;
+      }
+      if (row.kind === "bustDartCustomization") {
+        const chunk = renderBustDartCustomizationScreenHtml(row);
+        if (openSectionSlugSource) openSectionParts.push(chunk);
+        else splitParts.push(chunk);
         continue;
       }
       if (row.kind !== "block") continue;
@@ -4499,7 +4504,6 @@ table {
       }
     } finally {
       sleevelessPatternRefreshInFlight = false;
-      syncBustDartPatternActionVisibility();
       if (sleevelessPatternRefreshQueued) {
         sleevelessPatternRefreshQueued = false;
         if (sleevelessPatternRefreshExternalTrigger) {
