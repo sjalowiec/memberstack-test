@@ -3,16 +3,27 @@
  * Controls live in the Front BODY slot; this module wires the modal + Add/Update/Remove.
  */
 import {
-  applyBustDartCupToWorkingDraft,
+  applyBustDartConfigToWorkingDraft,
   buildBustDartPatternContext,
   bustDartCupOptions,
+  bustDartDisplayDimensionsFromConfig,
+  bustDartPresetDisplayDimensions,
+  emptyBustDartSavedConfig,
   parseCupSizeInput,
   persistBustDartCustomization,
   previewBustDartForPattern,
   removeBustDartFromWorkingDraft,
   type BustDartPatternContext,
 } from "../lib/patterns/bustDartPatternCustomization";
-import type { DartCupSize, DartFormulaUnit } from "../lib/tools/dartFormulaMath";
+import { bustDartSavedConfigIsActive } from "../lib/patterns/legoBlocks/bustDart";
+import {
+  dartDimensionUnitLabel,
+  isCustomDartDimensions,
+  inchesFromDisplayDartLength,
+  parsePositiveDartMeasurement,
+  type DartCupSize,
+  type DartFormulaUnit,
+} from "../lib/tools/dartFormulaMath";
 
 declare global {
   interface Window {
@@ -29,6 +40,14 @@ function syncCupLabels(modal: HTMLElement, unit: DartFormulaUnit): void {
     const hit = opts.find((o) => o.value === opt.value);
     if (hit) opt.textContent = hit.label;
   }
+}
+
+function syncDimLabels(modal: HTMLElement, unit: DartFormulaUnit): void {
+  const suffix = dartDimensionUnitLabel(unit);
+  const widthLabel = modal.querySelector("#bust-dart-pattern-width-label");
+  const depthLabel = modal.querySelector("#bust-dart-pattern-depth-label");
+  if (widthLabel) widthLabel.textContent = `Dart width (${suffix})`;
+  if (depthLabel) depthLabel.textContent = `Dart depth (${suffix})`;
 }
 
 function fillSummary(modal: HTMLElement, ctx: BustDartPatternContext): void {
@@ -55,16 +74,69 @@ function setError(modal: HTMLElement, message: string | null): void {
   el.textContent = message;
 }
 
+function widthInput(modal: HTMLElement): HTMLInputElement | null {
+  return modal.querySelector<HTMLInputElement>("#bust-dart-pattern-width");
+}
+
+function depthInput(modal: HTMLElement): HTMLInputElement | null {
+  return modal.querySelector<HTMLInputElement>("#bust-dart-pattern-depth");
+}
+
+function setDimInputs(modal: HTMLElement, width: number | null, depth: number | null): void {
+  const w = widthInput(modal);
+  const d = depthInput(modal);
+  if (w) {
+    w.value = width == null ? "" : String(width);
+    w.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+  if (d) {
+    d.value = depth == null ? "" : String(depth);
+    d.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+}
+
+function readDimInputs(modal: HTMLElement): {
+  dartWidth: number | null;
+  dartDepth: number | null;
+} {
+  const wRaw = widthInput(modal)?.value;
+  const dRaw = depthInput(modal)?.value;
+  return {
+    dartWidth: parsePositiveDartMeasurement(wRaw),
+    dartDepth: parsePositiveDartMeasurement(dRaw),
+  };
+}
+
+function updateCustomizedBadge(
+  modal: HTMLElement,
+  cup: DartCupSize | null,
+  unit: DartFormulaUnit,
+): void {
+  const badge = modal.querySelector<HTMLElement>("[data-bust-dart-modal-customized]");
+  if (!badge) return;
+  const { dartWidth, dartDepth } = readDimInputs(modal);
+  if (!cup || dartWidth == null || dartDepth == null) {
+    badge.hidden = true;
+    return;
+  }
+  const wIn = inchesFromDisplayDartLength(dartWidth, unit);
+  const dIn = inchesFromDisplayDartLength(dartDepth, unit);
+  badge.hidden = !isCustomDartDimensions(cup, wIn, dIn);
+}
+
 function renderPreview(modal: HTMLElement, ctx: BustDartPatternContext, cup: DartCupSize | null): void {
   const box = modal.querySelector<HTMLElement>("[data-bust-dart-modal-preview]");
   const list = modal.querySelector<HTMLElement>("[data-bust-dart-modal-preview-list]");
   if (!box || !list) return;
-  if (!cup) {
+  const { dartWidth, dartDepth } = readDimInputs(modal);
+  updateCustomizedBadge(modal, cup, ctx.unit);
+
+  if (!cup || dartWidth == null || dartDepth == null) {
     box.hidden = true;
     list.innerHTML = "";
     return;
   }
-  const result = previewBustDartForPattern(ctx, cup);
+  const result = previewBustDartForPattern(ctx, { cupSize: cup, dartWidth, dartDepth });
   if (!result.active) {
     box.hidden = true;
     list.innerHTML = "";
@@ -72,8 +144,17 @@ function renderPreview(modal: HTMLElement, ctx: BustDartPatternContext, cup: Dar
     return;
   }
   setError(modal, null);
+  const cupLabel = result.config.cupSize
+    ? result.shaping?.customized
+      ? `Cup ${result.config.cupSize} · Customized`
+      : `Cup ${result.config.cupSize}`
+    : result.shaping?.customized
+      ? "Customized"
+      : "Dart";
+  const unitLabel = dartDimensionUnitLabel(ctx.unit);
   const lines = [
-    `Cup ${result.config.cupSize}`,
+    cupLabel,
+    `Width ${dartWidth} ${unitLabel} · Depth ${dartDepth} ${unitLabel}`,
     `Starts at RC ${result.dartStartGarmentRc} (1″ below armhole)`,
     `${result.shaping?.totalHeldStitches ?? "—"} stitches held across ${result.shaping?.shapingPasses ?? "—"} shaping passes`,
     ...result.holdStepLines.filter((l) => l.startsWith("Place ")),
@@ -106,6 +187,8 @@ export function initBustDartPatternCustomization(): void {
   if (!modal) return;
 
   let context: BustDartPatternContext | null = null;
+  /** When true, cup change reloads preset width/depth. Cleared after restore-from-saved. */
+  let reloadPresetOnCupChange = true;
 
   const cupSelect = () => modal.querySelector<HTMLSelectElement>("#bust-dart-pattern-cup");
   const removeBtn = modal.querySelector<HTMLButtonElement>("[data-bust-dart-modal-remove]");
@@ -123,21 +206,37 @@ export function initBustDartPatternCustomization(): void {
     if (!context || !context.eligible) return;
     fillSummary(modal, context);
     syncCupLabels(modal, context.unit);
+    syncDimLabels(modal, context.unit);
     const sel = cupSelect();
     const existing = context.config;
+    const hasActive = bustDartSavedConfigIsActive(existing);
     if (sel) {
-      sel.value = existing.enabled && existing.cupSize ? existing.cupSize : "";
+      sel.value = hasActive && existing.cupSize ? existing.cupSize : "";
+    }
+    if (hasActive) {
+      reloadPresetOnCupChange = false;
+      const restored = bustDartDisplayDimensionsFromConfig(existing, context.unit);
+      setDimInputs(modal, restored.dartWidth, restored.dartDepth);
+      // After restore, further cup changes should reload presets.
+      reloadPresetOnCupChange = true;
+    } else {
+      reloadPresetOnCupChange = true;
+      const cup = parseCupSizeInput(sel?.value);
+      if (cup) {
+        const preset = bustDartPresetDisplayDimensions(cup, context.unit);
+        setDimInputs(modal, preset.dartWidth, preset.dartDepth);
+      } else {
+        setDimInputs(modal, null, null);
+      }
     }
     if (removeBtn) {
-      removeBtn.hidden = !(existing.enabled && existing.cupSize);
+      removeBtn.hidden = !hasActive;
     }
     if (title) {
-      title.textContent =
-        existing.enabled && existing.cupSize ? "Change Bust Dart" : "Optional Bust Dart";
+      title.textContent = hasActive ? "Change Bust Dart" : "Optional Bust Dart";
     }
     if (addBtn) {
-      addBtn.textContent =
-        existing.enabled && existing.cupSize ? "Update Pattern" : "Add to Pattern";
+      addBtn.textContent = hasActive ? "Update Pattern" : "Add to Pattern";
     }
     setError(modal, null);
     renderPreview(modal, context, parseCupSizeInput(sel?.value));
@@ -153,7 +252,7 @@ export function initBustDartPatternCustomization(): void {
   async function removeDartAndRefresh(fromModal: boolean): Promise<void> {
     try {
       removeBustDartFromWorkingDraft();
-      const persisted = await persistBustDartCustomization({ enabled: false, cupSize: null });
+      const persisted = await persistBustDartCustomization(emptyBustDartSavedConfig());
       await refreshPatternView();
       if (!persisted.ok && fromModal) {
         setError(modal, persisted.error);
@@ -187,8 +286,20 @@ export function initBustDartPatternCustomization(): void {
 
   cupSelect()?.addEventListener("change", () => {
     if (!context) return;
-    renderPreview(modal, context, parseCupSizeInput(cupSelect()?.value));
+    const cup = parseCupSizeInput(cupSelect()?.value);
+    if (cup && reloadPresetOnCupChange) {
+      const preset = bustDartPresetDisplayDimensions(cup, context.unit);
+      setDimInputs(modal, preset.dartWidth, preset.dartDepth);
+    }
+    renderPreview(modal, context, cup);
   });
+
+  const onDimEdit = () => {
+    if (!context) return;
+    renderPreview(modal, context, parseCupSizeInput(cupSelect()?.value));
+  };
+  widthInput(modal)?.addEventListener("input", onDimEdit);
+  depthInput(modal)?.addEventListener("input", onDimEdit);
 
   addBtn?.addEventListener("click", async () => {
     if (!context) return;
@@ -197,16 +308,25 @@ export function initBustDartPatternCustomization(): void {
       setError(modal, "Select a cup size.");
       return;
     }
-    const preview = previewBustDartForPattern(context, cup);
-    if (!preview.active) {
+    const { dartWidth, dartDepth } = readDimInputs(modal);
+    if (dartWidth == null || dartDepth == null) {
+      setError(modal, "Enter dart width and depth greater than 0.");
+      return;
+    }
+    const preview = previewBustDartForPattern(context, { cupSize: cup, dartWidth, dartDepth });
+    if (!preview.active || !preview.shaping) {
       setError(modal, preview.errors[0] || "Could not add this dart.");
       return;
     }
     addBtn.disabled = true;
     setError(modal, null);
     try {
-      applyBustDartCupToWorkingDraft(cup);
-      const persisted = await persistBustDartCustomization({ enabled: true, cupSize: cup });
+      const stored = applyBustDartConfigToWorkingDraft({
+        cupSize: cup,
+        dartWidthInches: preview.shaping.dartWidthInches,
+        dartDepthInches: preview.shaping.dartDepthInches,
+      });
+      const persisted = await persistBustDartCustomization(stored);
       if (!persisted.ok) {
         await refreshPatternView();
         setError(modal, persisted.error);

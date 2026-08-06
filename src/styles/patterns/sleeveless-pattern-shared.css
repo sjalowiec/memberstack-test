@@ -619,6 +619,14 @@
     background: color-mix(in srgb, var(--kbm-green, #52682d) 5%, #fff);
   }
 
+  /* Inactive prompt is a dismissable .pattern-tip — keep green look; room for Hide × */
+  .sleeveless-pattern-page .bust-dart-front-slot.pattern-tip {
+    position: relative;
+    padding-right: 2rem;
+    border-left: 4px solid color-mix(in srgb, var(--kbm-green, #52682d) 55%, #e5e7eb);
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 5%, #fff);
+  }
+
   .sleeveless-pattern-page .bust-dart-front-slot__title {
     margin: 0 0 0.35rem;
     font-size: 0.95rem;

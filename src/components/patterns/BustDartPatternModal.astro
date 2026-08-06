@@ -1,9 +1,10 @@
 ---
 /**
  * Finished-pattern optional Bust Dart customization dialog.
- * Prefills gauge / construction from the pattern; user chooses cup size, then Add to Pattern.
+ * Prefills gauge / construction from the pattern; user chooses cup size, edits width/depth, then Add to Pattern.
  */
 import FloatingSelect from "../tools/FloatingSelect.astro";
+import FloatingInput from "../tools/FloatingInput.astro";
 import { DART_CUP_SIZES, formatDartCupOptionLabel } from "../../lib/tools/dartFormulaMath";
 
 const cupOptions = DART_CUP_SIZES.map((value) => ({
@@ -33,7 +34,7 @@ const cupOptions = DART_CUP_SIZES.map((value) => ({
 
     <p class="bust-dart-pattern-modal__intro">
       Add short-row bust darts to the <strong>front only</strong>, starting 1″ below the armhole opening.
-      Gauge and placement come from this pattern — choose a cup size, preview, then add to the pattern.
+      Gauge and placement come from this pattern — choose a cup size, adjust width and depth if needed, preview, then add to the pattern.
     </p>
 
     <dl class="bust-dart-pattern-modal__summary" data-bust-dart-modal-summary>
@@ -55,6 +56,36 @@ const cupOptions = DART_CUP_SIZES.map((value) => ({
         dataTestid="select-bust-dart-pattern-cup"
       />
     </div>
+
+    <div class="bust-dart-pattern-modal__dims">
+      <FloatingInput
+        id="bust-dart-pattern-width"
+        name="bustDartWidth"
+        label="Dart width (in)"
+        type="number"
+        min={0.01}
+        step="any"
+        inputmode="decimal"
+        required
+        labelId="bust-dart-pattern-width-label"
+        dataTestid="input-bust-dart-pattern-width"
+      />
+      <FloatingInput
+        id="bust-dart-pattern-depth"
+        name="bustDartDepth"
+        label="Dart depth (in)"
+        type="number"
+        min={0.01}
+        step="any"
+        inputmode="decimal"
+        required
+        labelId="bust-dart-pattern-depth-label"
+        dataTestid="input-bust-dart-pattern-depth"
+      />
+    </div>
+    <p class="bust-dart-pattern-modal__customized" data-bust-dart-modal-customized hidden>
+      Customized
+    </p>
 
     <p class="bust-dart-pattern-modal__error" data-bust-dart-modal-error hidden role="alert"></p>
 
@@ -153,6 +184,23 @@ const cupOptions = DART_CUP_SIZES.map((value) => ({
   }
   .bust-dart-pattern-modal__field {
     margin-bottom: 0.75rem;
+  }
+  .bust-dart-pattern-modal__dims {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 0.35rem;
+  }
+  @media (max-width: 420px) {
+    .bust-dart-pattern-modal__dims {
+      grid-template-columns: 1fr;
+    }
+  }
+  .bust-dart-pattern-modal__customized {
+    margin: 0 0 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #52682d;
   }
   .bust-dart-pattern-modal__error {
     color: #b91c1c;

@@ -11,6 +11,9 @@ import { normalizeSleevelessAudience } from "../patternStorage";
 import {
   computeDartShapingFromPerInch,
   isDartCupSize,
+  parsePositiveDartMeasurement,
+  resolveDartDimensionsInches,
+  roundToTwoDecimals,
   type DartCupSize,
   type DartShapingSuccess,
 } from "../../tools/dartFormulaMath";
@@ -28,11 +31,19 @@ export type BustDartEligibleAudience = (typeof BUST_DART_ELIGIBLE_AUDIENCES)[num
 
 export type BustDartFrontConstruction = "pullover" | "cardigan";
 
-/** Canonical saved / style field for bust darts (version-tolerant). */
+/**
+ * Canonical saved / style field for bust darts (version-tolerant).
+ * Width/depth are stored in inches. When enabled with only `cupSize` (legacy),
+ * calculate-time resolution uses the cup preset defaults.
+ */
 export type BustDartSavedConfig = {
   enabled: boolean;
-  /** Required when enabled; ignored when disabled. */
+  /** Cup preset context; optional when width+depth are present. */
   cupSize: DartCupSize | null;
+  /** Authoritative dart width in inches when set; null → resolve from cup preset. */
+  dartWidthInches: number | null;
+  /** Authoritative dart depth in inches when set; null → resolve from cup preset. */
+  dartDepthInches: number | null;
 };
 
 export const BUST_DART_STYLE_KEY = "bustDart";
@@ -41,6 +52,9 @@ export type BustDartInput = {
   /** User wants darts (before eligibility / validation). */
   enabled: boolean;
   cupSize?: string | null;
+  /** Canonical-inch overrides (authoritative when present). */
+  dartWidthInches?: number | null;
+  dartDepthInches?: number | null;
   /**
    * Size-group / chart audience (`misses`, `plus`, `men`, …) or Express `who` (`women`).
    * Normalized via {@link normalizeSleevelessAudience}.
@@ -63,7 +77,8 @@ export type BustDartInput = {
 };
 
 export type BustDartShapingSummary = {
-  cupKey: DartCupSize;
+  cupKey: DartCupSize | null;
+  customized: boolean;
   dartWidthInches: number;
   dartDepthInches: number;
   totalHeldStitches: number;
@@ -125,21 +140,53 @@ export function isBustDartEligibleAudience(raw: unknown): boolean {
   return (BUST_DART_ELIGIBLE_AUDIENCES as readonly string[]).includes(aud);
 }
 
+export function emptyBustDartSavedConfig(): BustDartSavedConfig {
+  return {
+    enabled: false,
+    cupSize: null,
+    dartWidthInches: null,
+    dartDepthInches: null,
+  };
+}
+
+function parseSavedInches(raw: unknown): number | null {
+  const n = parsePositiveDartMeasurement(raw);
+  return n == null ? null : roundToTwoDecimals(n);
+}
+
 /** Coerce untrusted saved / form values. Missing or invalid → darts off. */
 export function normalizeBustDartSavedConfig(raw: unknown): BustDartSavedConfig {
-  if (raw == null) return { enabled: false, cupSize: null };
+  if (raw == null) return emptyBustDartSavedConfig();
   if (typeof raw === "boolean") {
-    return { enabled: raw === true, cupSize: null };
+    return { ...emptyBustDartSavedConfig(), enabled: raw === true };
   }
   if (typeof raw !== "object" || Array.isArray(raw)) {
-    return { enabled: false, cupSize: null };
+    return emptyBustDartSavedConfig();
   }
   const o = raw as Record<string, unknown>;
   const enabled = o.enabled === true || o.enabled === "true" || o.addBustDarts === true;
   const cupRaw = o.cupSize ?? o.cup ?? o.dartCupSize;
   const cupSize = isDartCupSize(cupRaw) ? cupRaw : null;
-  if (!enabled) return { enabled: false, cupSize: null };
-  return { enabled: true, cupSize };
+  const dartWidthInches = parseSavedInches(
+    o.dartWidthInches ?? o.widthInches ?? o.dartWidth,
+  );
+  const dartDepthInches = parseSavedInches(
+    o.dartDepthInches ?? o.depthInches ?? o.dartDepth,
+  );
+  if (!enabled) return emptyBustDartSavedConfig();
+  return {
+    enabled: true,
+    cupSize,
+    dartWidthInches,
+    dartDepthInches,
+  };
+}
+
+/** True when saved config can produce an active dart (cup and/or dimensions). */
+export function bustDartSavedConfigIsActive(config: BustDartSavedConfig): boolean {
+  if (!config.enabled) return false;
+  if (config.cupSize != null) return true;
+  return config.dartWidthInches != null && config.dartDepthInches != null;
 }
 
 /** Read `style.bustDart` (or legacy top-level) from pattern data; missing → off. */
@@ -147,7 +194,7 @@ export function readBustDartConfigFromPatternData(
   patternData: Record<string, unknown> | null | undefined,
 ): BustDartSavedConfig {
   if (!patternData || typeof patternData !== "object") {
-    return { enabled: false, cupSize: null };
+    return emptyBustDartSavedConfig();
   }
   const style =
     patternData.style && typeof patternData.style === "object" && !Array.isArray(patternData.style)
@@ -163,7 +210,7 @@ export function readBustDartConfigFromPatternData(
       cupSize: style.bustDartCupSize,
     });
   }
-  return { enabled: false, cupSize: null };
+  return emptyBustDartSavedConfig();
 }
 
 /**
@@ -174,15 +221,38 @@ export function normalizeBustDartConfigForAudience(
   sizeGroup: unknown,
 ): BustDartSavedConfig {
   if (!isBustDartEligibleAudience(sizeGroup)) {
-    return { enabled: false, cupSize: null };
+    return emptyBustDartSavedConfig();
   }
-  if (!config.enabled) return { enabled: false, cupSize: null };
-  return { enabled: true, cupSize: config.cupSize };
+  if (!config.enabled) return emptyBustDartSavedConfig();
+  return {
+    enabled: true,
+    cupSize: config.cupSize,
+    dartWidthInches: config.dartWidthInches,
+    dartDepthInches: config.dartDepthInches,
+  };
+}
+
+/**
+ * Persist shape for a newly added/updated dart: always store exact width/depth inches.
+ * Legacy cup-only configs are left as-is until the user saves again.
+ */
+export function buildEnabledBustDartSavedConfig(args: {
+  cupSize: DartCupSize | null;
+  dartWidthInches: number;
+  dartDepthInches: number;
+}): BustDartSavedConfig {
+  return {
+    enabled: true,
+    cupSize: args.cupSize,
+    dartWidthInches: roundToTwoDecimals(args.dartWidthInches),
+    dartDepthInches: roundToTwoDecimals(args.dartDepthInches),
+  };
 }
 
 function shapingSummary(s: DartShapingSuccess): BustDartShapingSummary {
   return {
     cupKey: s.cupKey,
+    customized: s.customized,
     dartWidthInches: s.dartWidthInches,
     dartDepthInches: s.dartDepthInches,
     totalHeldStitches: s.totalHeldStitches,
@@ -197,11 +267,19 @@ function shapingSummary(s: DartShapingSuccess): BustDartShapingSummary {
   };
 }
 
+function bustDartIntroLabel(cupKey: DartCupSize | null, customized: boolean): string {
+  if (cupKey && customized) return `cup ${cupKey} · Customized`;
+  if (cupKey) return `cup ${cupKey}`;
+  if (customized) return "Customized";
+  return "custom";
+}
+
 function buildInstructionParagraphs(args: {
   dartStartGarmentRc: number;
   frontConstruction: BustDartFrontConstruction;
   holdLines: string[];
-  cupKey: DartCupSize;
+  cupKey: DartCupSize | null;
+  customized: boolean;
 }): { paragraphs: string[]; cardiganRightMirrorParagraph: string | null } {
   const edgeHint =
     args.frontConstruction === "cardigan"
@@ -214,9 +292,10 @@ function buildInstructionParagraphs(args: {
     (l) => l.startsWith("Place ") || l === "Turn off hold settings.",
   );
 
+  const label = bustDartIntroLabel(args.cupKey, args.customized);
   const paragraphs: string[] = [
     `Stop the row counter at RC ${args.dartStartGarmentRc} (1″ below the armhole opening).`,
-    `Add bust darts (cup ${args.cupKey}). Darts are worked on the front only — do not work darts on the back or sleeves.`,
+    `Add bust darts (${label}). Darts are worked on the front only — do not work darts on the back or sleeves.`,
     edgeHint,
     "Work the short-row shaping:",
     ...holdOnly,
@@ -314,15 +393,21 @@ export function resolveBustDartPlacementGeometry(args: {
 export function calculateBustDart(input: BustDartInput): BustDartResult {
   const eligible = isBustDartEligibleAudience(input.sizeGroup);
   const cupSize = isDartCupSize(input.cupSize) ? input.cupSize : null;
-  const config: BustDartSavedConfig = {
-    enabled: input.enabled === true,
-    cupSize: input.enabled === true ? cupSize : null,
-  };
+  const dartWidthInches = parsePositiveDartMeasurement(input.dartWidthInches);
+  const dartDepthInches = parsePositiveDartMeasurement(input.dartDepthInches);
+  const config: BustDartSavedConfig = input.enabled === true
+    ? {
+        enabled: true,
+        cupSize,
+        dartWidthInches: dartWidthInches == null ? null : roundToTwoDecimals(dartWidthInches),
+        dartDepthInches: dartDepthInches == null ? null : roundToTwoDecimals(dartDepthInches),
+      }
+    : emptyBustDartSavedConfig();
 
   if (!eligible) {
     return emptyDisabledResult({
       eligible: false,
-      config: { enabled: false, cupSize: null },
+      config: emptyBustDartSavedConfig(),
       warnings:
         input.enabled === true
           ? ["Bust darts are available for women’s sweater patterns only."]
@@ -356,7 +441,7 @@ export function calculateBustDart(input: BustDartInput): BustDartResult {
   if (!config.enabled) {
     return emptyDisabledResult({
       eligible: true,
-      config: { enabled: false, cupSize: null },
+      config: emptyBustDartSavedConfig(),
       placementOffsetRows,
       dartStartGarmentRc,
       rowsFromHemToDartStart,
@@ -365,9 +450,16 @@ export function calculateBustDart(input: BustDartInput): BustDartResult {
     });
   }
 
-  if (!cupSize) {
-    errors.push("Select a cup size to add bust darts.");
+  const dims = resolveDartDimensionsInches({
+    cupKey: cupSize,
+    dartWidthInches: config.dartWidthInches,
+    dartDepthInches: config.dartDepthInches,
+    unit: "in",
+  });
+  if (!dims.ok) {
+    errors.push(dims.error);
   }
+
   if (!Number.isFinite(spi) || spi <= 0) {
     errors.push("Stitch gauge must be greater than 0.");
   }
@@ -384,7 +476,7 @@ export function calculateBustDart(input: BustDartInput): BustDartResult {
     errors.push(...placement.errors);
   }
 
-  if (errors.length || !cupSize || dartStartGarmentRc == null || rowsFromDartToArmhole == null) {
+  if (errors.length || !dims.ok || dartStartGarmentRc == null || rowsFromDartToArmhole == null) {
     return emptyDisabledResult({
       eligible: true,
       config,
@@ -398,9 +490,11 @@ export function calculateBustDart(input: BustDartInput): BustDartResult {
   }
 
   const shapingResult = computeDartShapingFromPerInch({
-    cupKey: cupSize,
+    cupKey: dims.cupKey,
     stitchesPerInch: spi,
     rowsPerInch: rpi,
+    dartWidthInches: dims.dartWidthInches,
+    dartDepthInches: dims.dartDepthInches,
   });
 
   if (!shapingResult.ok) {
@@ -421,8 +515,15 @@ export function calculateBustDart(input: BustDartInput): BustDartResult {
   if (shapingResult.totalHeldStitches >= frontSts) {
     errors.push(
       input.frontConstruction === "cardigan"
-        ? "This cardigan front is too narrow for the selected dart. Choose a smaller cup size or omit bust darts."
-        : "The front does not have enough stitches for the selected dart. Choose a smaller cup size or omit bust darts.",
+        ? "This cardigan front is too narrow for the selected dart. Choose a smaller dart width or omit bust darts."
+        : "The front does not have enough stitches for the selected dart. Choose a smaller dart width or omit bust darts.",
+    );
+  }
+
+  // Depth in rows must leave a workable short-row sequence within the body span context.
+  if (shapingResult.totalDepthRows > bodyToArmholeRows) {
+    errors.push(
+      "This dart depth needs more rows than are available in the body below the armhole. Reduce dart depth or lengthen the body.",
     );
   }
 
@@ -445,13 +546,20 @@ export function calculateBustDart(input: BustDartInput): BustDartResult {
     dartStartGarmentRc,
     frontConstruction: input.frontConstruction,
     holdLines: holdStepLines,
-    cupKey: cupSize,
+    cupKey: dims.cupKey,
+    customized: shapingResult.customized,
+  });
+
+  const savedActive = buildEnabledBustDartSavedConfig({
+    cupSize: dims.cupKey,
+    dartWidthInches: shapingResult.dartWidthInches,
+    dartDepthInches: shapingResult.dartDepthInches,
   });
 
   return {
     active: true,
     eligible: true,
-    config: { enabled: true, cupSize },
+    config: savedActive,
     errors: [],
     warnings,
     placementOffsetRows,
@@ -502,6 +610,9 @@ export type BustDartPatternDisplayRow =
       kind: "bustDartCustomization";
       active: boolean;
       cupSize: string | null;
+      customized: boolean;
+      dartWidthInches: number | null;
+      dartDepthInches: number | null;
       dartStartGarmentRc: number;
       armholeOpeningGarmentRc: number;
       placementOffsetRows: number;
@@ -555,6 +666,8 @@ export function resolveBustDartForSweaterFront(args: {
   return calculateBustDart({
     enabled: normalized.enabled,
     cupSize: normalized.cupSize,
+    dartWidthInches: normalized.dartWidthInches,
+    dartDepthInches: normalized.dartDepthInches,
     sizeGroup,
     stitchesPerInch: args.stitchesPerInch,
     rowsPerInch: args.rowsPerInch,
@@ -597,6 +710,9 @@ function buildBustDartCustomizationRow(
     kind: "bustDartCustomization",
     active: result.active === true,
     cupSize: result.config.cupSize,
+    customized: result.shaping?.customized === true,
+    dartWidthInches: result.shaping?.dartWidthInches ?? result.config.dartWidthInches,
+    dartDepthInches: result.shaping?.dartDepthInches ?? result.config.dartDepthInches,
     dartStartGarmentRc: result.dartStartGarmentRc,
     armholeOpeningGarmentRc,
     placementOffsetRows: result.placementOffsetRows,

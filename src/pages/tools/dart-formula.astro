@@ -5,6 +5,7 @@ import ToolPageHeader from "../../components/tools/ToolPageHeader.astro";
 import UnitToggle from "../../components/wizards/UnitToggle.astro";
 import GaugeInput from "../../components/wizards/GaugeInput.astro";
 import FloatingSelect from "../../components/tools/FloatingSelect.astro";
+import FloatingInput from "../../components/tools/FloatingInput.astro";
 import PrintButton from "../../components/common/PrintButton.astro";
 import ToolResultCard from "../../components/tools/ToolResultCard.astro";
 import ToolGate from "../../components/ui/ToolGate.astro";
@@ -40,8 +41,7 @@ const cupOptions = DART_CUP_SIZES.map((value) => ({
       <section class="wizard-hero">
         <ToolPageHeader tool={tool} fallbackTitle="Dart Formula" />
         <p class="wizard-intro">
-          Choose inches or centimeters, your cup size, then stitch and row gauge for your swatch (per 4″ or 10&nbsp;cm). The tool figures out how many
-          needles to hold on every other row.
+          Choose inches or centimeters, your cup size, then stitch and row gauge for your swatch (per 4″ or 10&nbsp;cm). Adjust dart width and depth if needed — the tool figures out how many needles to hold on every other row.
         </p>
       </section>
 
@@ -64,6 +64,34 @@ const cupOptions = DART_CUP_SIZES.map((value) => ({
                   required
                   dataTestid="select-cup-size"
                 />
+
+                <div class="dart-dim-fields">
+                  <FloatingInput
+                    id="dartWidth"
+                    name="dartWidth"
+                    label="Dart width (in)"
+                    type="number"
+                    min={0.01}
+                    step="any"
+                    inputmode="decimal"
+                    required
+                    labelId="dartWidth-label"
+                    dataTestid="input-dart-width"
+                  />
+                  <FloatingInput
+                    id="dartDepth"
+                    name="dartDepth"
+                    label="Dart depth (in)"
+                    type="number"
+                    min={0.01}
+                    step="any"
+                    inputmode="decimal"
+                    required
+                    labelId="dartDepth-label"
+                    dataTestid="input-dart-depth"
+                  />
+                </div>
+                <p id="dartCustomizedBadge" class="dart-customized-badge" hidden>Customized</p>
 
                 <GaugeInput id="dart" showTitle={false} showToggle={false} toggleId="dart-units" />
 
@@ -132,6 +160,24 @@ const cupOptions = DART_CUP_SIZES.map((value) => ({
     }
     .dart-input-column > :global(.units-toggle) {
       margin-bottom: 1rem;
+    }
+    .dart-dim-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+      margin: 0.75rem 0 0.35rem;
+      min-width: 0;
+    }
+    @media (max-width: 480px) {
+      .dart-dim-fields {
+        grid-template-columns: 1fr;
+      }
+    }
+    .dart-customized-badge {
+      margin: 0 0 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #52682d;
     }
     .dart-image-panel {
       flex: 0 1 280px;
@@ -229,8 +275,16 @@ const cupOptions = DART_CUP_SIZES.map((value) => ({
   <script>
     import {
       computeDartShaping,
+      convertDartLength,
       DART_CUP_SIZES,
+      dartDimensionUnitLabel,
+      displayDartLengthFromInches,
       formatDartCupOptionLabel,
+      getCupDartPresetInches,
+      isCustomDartDimensions,
+      isDartCupSize,
+      parsePositiveDartMeasurement,
+      roundToTwoDecimals,
       type DartCupSize,
       type DartFormulaUnit,
     } from "../../lib/tools/dartFormulaMath.ts";
@@ -254,12 +308,51 @@ const cupOptions = DART_CUP_SIZES.map((value) => ({
       }
     }
 
+    function syncDimFieldLabels(unit: DartFormulaUnit): void {
+      const suffix = dartDimensionUnitLabel(unit);
+      const widthLabel = document.getElementById("dartWidth-label");
+      const depthLabel = document.getElementById("dartDepth-label");
+      if (widthLabel) widthLabel.textContent = `Dart width (${suffix})`;
+      if (depthLabel) depthLabel.textContent = `Dart depth (${suffix})`;
+    }
+
     function readNumber(id: string): number {
       const el = document.getElementById(id);
       if (!el || !("value" in el)) return NaN;
       const raw = String((el as HTMLInputElement).value).trim();
       if (raw === "") return NaN;
       return Number.parseFloat(raw);
+    }
+
+    function setNumberInput(id: string, value: number | null): void {
+      const el = document.getElementById(id);
+      if (!el || !("value" in el)) return;
+      (el as HTMLInputElement).value = value == null ? "" : String(value);
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+
+    function loadPresetIntoFields(cupKey: DartCupSize, unit: DartFormulaUnit): void {
+      const preset = getCupDartPresetInches(cupKey);
+      setNumberInput("dartWidth", displayDartLengthFromInches(preset.dartWidthInches, unit));
+      setNumberInput("dartDepth", displayDartLengthFromInches(preset.dartDepthInches, unit));
+      updateCustomizedBadge(unit);
+    }
+
+    function updateCustomizedBadge(unit: DartFormulaUnit): void {
+      const badge = document.getElementById("dartCustomizedBadge");
+      if (!badge) return;
+      const cupEl = document.getElementById("cupSize");
+      const cupKey =
+        cupEl && "value" in cupEl ? String((cupEl as HTMLSelectElement).value).trim() : "";
+      const width = parsePositiveDartMeasurement(readNumber("dartWidth"));
+      const depth = parsePositiveDartMeasurement(readNumber("dartDepth"));
+      if (!isDartCupSize(cupKey) || width == null || depth == null) {
+        badge.hidden = true;
+        return;
+      }
+      const wIn = unit === "cm" ? width / 2.54 : width;
+      const dIn = unit === "cm" ? depth / 2.54 : depth;
+      badge.hidden = !isCustomDartDimensions(cupKey, wIn, dIn);
     }
 
     function validateAndCompute() {
@@ -278,6 +371,15 @@ const cupOptions = DART_CUP_SIZES.map((value) => ({
         errors.push("Row gauge must be greater than 0.");
       }
 
+      const dartWidth = readNumber("dartWidth");
+      const dartDepth = readNumber("dartDepth");
+      if (Number.isNaN(dartWidth) || dartWidth <= 0) {
+        errors.push("Dart width must be greater than 0.");
+      }
+      if (Number.isNaN(dartDepth) || dartDepth <= 0) {
+        errors.push("Dart depth must be greater than 0.");
+      }
+
       const unit = getUnitFromForm();
 
       if (errors.length) {
@@ -289,6 +391,8 @@ const cupOptions = DART_CUP_SIZES.map((value) => ({
         stitchGauge,
         rowGauge,
         unit,
+        dartWidth,
+        dartDepth,
       });
 
       if (!computed.ok) {
@@ -302,6 +406,7 @@ const cupOptions = DART_CUP_SIZES.map((value) => ({
     const validationSummary = document.getElementById("validationSummary");
     const resultsEl = document.getElementById("dartResults");
     const resultsContent = document.getElementById("dartResultsContent");
+    let lastUnit: DartFormulaUnit = getUnitFromForm();
 
     function runCalculation(): void {
       if (!validationSummary || !resultsEl || !resultsContent) return;
@@ -329,18 +434,49 @@ const cupOptions = DART_CUP_SIZES.map((value) => ({
       });
     }
 
-    function onUnitsMaybeChanged(): void {
-      syncCupSizeOptionLabels(getUnitFromForm());
+    document.getElementById("cupSize")?.addEventListener("change", () => {
+      const unit = getUnitFromForm();
+      const cupEl = document.getElementById("cupSize");
+      const cupKey =
+        cupEl && "value" in cupEl ? String((cupEl as HTMLSelectElement).value).trim() : "";
+      if (isDartCupSize(cupKey)) {
+        loadPresetIntoFields(cupKey, unit);
+      }
+    });
+
+    document.getElementById("dartWidth")?.addEventListener("input", () => {
+      updateCustomizedBadge(getUnitFromForm());
+    });
+    document.getElementById("dartDepth")?.addEventListener("input", () => {
+      updateCustomizedBadge(getUnitFromForm());
+    });
+
+    function onUnitsMaybeChanged(nextUnit?: DartFormulaUnit): void {
+      const unit = nextUnit ?? getUnitFromForm();
+      syncCupSizeOptionLabels(unit);
+      syncDimFieldLabels(unit);
+      if (unit !== lastUnit) {
+        const width = readNumber("dartWidth");
+        const depth = readNumber("dartDepth");
+        if (!Number.isNaN(width) && width > 0) {
+          setNumberInput("dartWidth", roundToTwoDecimals(convertDartLength(width, lastUnit, unit)));
+        }
+        if (!Number.isNaN(depth) && depth > 0) {
+          setNumberInput("dartDepth", roundToTwoDecimals(convertDartLength(depth, lastUnit, unit)));
+        }
+        lastUnit = unit;
+      }
+      updateCustomizedBadge(unit);
     }
 
     window.addEventListener("kbm:units-change", (e) => {
       const d = (e as CustomEvent<{ unit?: string }>).detail;
       const u: DartFormulaUnit = d && d.unit === "cm" ? "cm" : "in";
-      syncCupSizeOptionLabels(u);
+      onUnitsMaybeChanged(u);
     });
 
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", onUnitsMaybeChanged);
+      document.addEventListener("DOMContentLoaded", () => onUnitsMaybeChanged());
     } else {
       onUnitsMaybeChanged();
     }
