@@ -1,0 +1,399 @@
+/**
+ * Hat Express builder — length / brim / crown visual pickers + accordion tweaks.
+ * Shared Express shell: sleeveless-express-wizard-layout.css, express-size-selection.css.
+ */
+
+/* ---- Length / brim / crown pickers (from legacy hat builder) ---- */
+
+.hat-length-picker-wrap {
+  align-items: flex-start;
+}
+
+.hat-length-picker__native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.hat-length-picker__flex-row {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.hat-length-picker {
+  flex: 1;
+  min-width: 0;
+}
+
+.hat-length-picker__summary {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.35;
+  color: #111;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.hat-length-picker__summary:hover {
+  border-color: #aeb79a;
+}
+
+.hat-length-picker-wrap.is-complete .hat-length-picker__summary {
+  border-color: #52682d;
+}
+
+.hat-length-picker__summary-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.hat-length-picker__panel {
+  margin-top: 10px;
+  padding-top: 2px;
+}
+
+.hat-length-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.hat-length-picker__grid--four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.hat-length-picker__option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background: #fff;
+  padding: 8px;
+  text-align: center;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.hat-length-picker__option:hover {
+  border-color: #aeb79a;
+}
+
+.hat-length-picker__option.is-selected {
+  border-color: #52682d;
+  background: #f7f9f3;
+}
+
+.hat-length-picker__option:disabled,
+.hat-length-picker__option[aria-disabled='true'],
+.hat-length-picker__option.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.hat-length-picker__option:disabled:hover,
+.hat-length-picker__option[aria-disabled='true']:hover,
+.hat-length-picker__option.is-disabled:hover {
+  border-color: #ddd;
+}
+
+.hat-length-picker__img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.hat-brim-picker__grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.hat-brim-picker__img {
+  width: 120px;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.hat-crown-picker__img {
+  width: 120px;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.hat-length-picker__option-label {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.hat-length-picker__custom {
+  display: block;
+  width: 100%;
+  margin: 12px 0 0;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #52682d;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.hat-length-picker__custom:hover {
+  color: #3d4e21;
+}
+
+@media (max-width: 720px) {
+  .hat-length-picker__grid--four {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 380px) {
+  .hat-length-picker__grid {
+    gap: 6px;
+  }
+
+  .hat-length-picker__option {
+    padding: 4px;
+  }
+}
+
+@media (max-width: 640px) {
+  .hat-length-picker__grid {
+    gap: 8px;
+  }
+
+  .hat-length-picker__option {
+    padding: 6px;
+  }
+}
+
+/* ---- Hat builder form rhythm inside Express accordions ---- */
+
+.hat-builder-page .hat-builder-inputs .input-group {
+  margin-bottom: 0.55rem;
+}
+
+.hat-builder-page .hat-builder-inputs .input-group:last-child {
+  margin-bottom: 0;
+}
+
+.hat-builder-page .hat-builder-custom-subfield {
+  padding-left: 14px;
+  box-sizing: border-box;
+}
+
+.hat-builder-page .helper-text {
+  display: block;
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+.hat-builder-page #hat-size {
+  accent-color: var(--kbm-green, #52682d);
+}
+
+.hat-builder-page #hat-size option:hover,
+.hat-builder-page #hat-size option:focus-visible {
+  background-color: #dce8d0;
+  color: #1f2937;
+}
+
+.hat-builder-page .hat-field__label-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.hat-builder-page .hat-field__label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #374151;
+  margin: 0;
+  line-height: 1.25;
+  text-align: left;
+}
+
+.hat-builder-page .hat-field__help-slot {
+  flex-shrink: 0;
+}
+
+.hat-builder-page .express-style-sublabel {
+  margin: 0 0 0.55rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--express-nav-green, #52682d);
+}
+
+.hat-builder-page .express-style-group + .express-style-group {
+  margin-top: 1.4rem;
+}
+
+.hat-builder-page .express-acc__body :global(.gauge-input-wrapper) {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.hat-builder-page .express-acc__body :global(.floating-input) {
+  margin-bottom: 0;
+}
+
+.hat-builder-page .express-acc__body :global(.floating-input input) {
+  min-height: 52px;
+  font-size: 1rem;
+}
+
+/* ---- Crown help modal ---- */
+
+.hat-builder-page .crown-help-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #d1d5db;
+  border-radius: 9999px;
+  background: #fff;
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.hat-builder-page .crown-help-trigger:hover {
+  color: #374151;
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+.hat-builder-page .crown-help-trigger:focus-visible {
+  outline: 2px solid #52682d;
+  outline-offset: 2px;
+}
+
+.crown-help-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  box-sizing: border-box;
+  background: rgba(17, 24, 39, 0.55);
+}
+
+.crown-help-overlay:not([hidden]) {
+  display: flex;
+}
+
+.crown-help-modal {
+  position: relative;
+  width: 90%;
+  max-width: 42rem;
+  margin: auto;
+  padding: 1.5rem 1.5rem 1.25rem;
+  background: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
+}
+
+.crown-help-modal h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  padding-right: 2rem;
+}
+
+.crown-help-modal > p {
+  margin: 0 0 1rem 0;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: #4b5563;
+}
+
+.crown-help-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 0.25rem;
+}
+
+.crown-help-close:hover {
+  color: #111827;
+  background: #f3f4f6;
+}
+
+.crown-help-close:focus-visible {
+  outline: 2px solid #52682d;
+  outline-offset: 2px;
+}
+
+.crown-help-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+/* ---- Express accordion tweaks for hat ---- */
+
+.hat-builder-page .express-acc__body .hat-select-wrap select:not(.hat-length-picker__native) {
+  width: 100%;
+  min-height: 52px;
+  font-size: 1rem;
+}
+
+.hat-builder-page .express-generate-wrap .btn-primary {
+  min-width: 12rem;
+}

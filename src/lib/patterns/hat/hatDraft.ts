@@ -283,3 +283,67 @@ export function syncHatDraftFromBuilderFields(
   writeHatDraft(draft, storage);
   return draft;
 }
+
+/** Clear canonical hat draft (and optionally legacy keys). */
+export function clearHatDraft(
+  storage: Pick<Storage, "removeItem"> = typeof localStorage !== "undefined"
+    ? localStorage
+    : { removeItem: () => undefined },
+  options: { clearLegacy?: boolean } = { clearLegacy: true },
+): void {
+  try {
+    storage.removeItem(HAT_DRAFT_STORAGE_KEY);
+    if (options.clearLegacy !== false) {
+      storage.removeItem(LEGACY_HAT_SIZE_STORAGE_KEY);
+      storage.removeItem(LEGACY_HAT_PATTERN_INPUTS_STORAGE_KEY);
+      storage.removeItem(LEGACY_HAT_GAUGE_SLOTS_KEY);
+      storage.removeItem(LEGACY_HAT_UNIT_KEY);
+      storage.removeItem(LEGACY_HAT_SHOW_TIPS_KEY);
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Also mirror draft into legacy keys so older code paths stay in sync during transition. */
+export function writeHatDraftAndLegacyMirrors(
+  draft: HatDraft,
+  storage: Pick<Storage, "getItem" | "setItem" | "removeItem"> = typeof localStorage !==
+  "undefined"
+    ? localStorage
+    : {
+        getItem: () => null,
+        setItem: () => undefined,
+        removeItem: () => undefined,
+      },
+): void {
+  writeHatDraft(draft, storage);
+  try {
+    if (draft.sizeSel) {
+      storage.setItem(
+        LEGACY_HAT_SIZE_STORAGE_KEY,
+        JSON.stringify({
+          sel: draft.sizeSel,
+          circ: draft.sizeSel === "custom" ? draft.customCircumference : "",
+        }),
+      );
+    } else {
+      storage.removeItem(LEGACY_HAT_SIZE_STORAGE_KEY);
+    }
+    storage.setItem(
+      LEGACY_HAT_PATTERN_INPUTS_STORAGE_KEY,
+      JSON.stringify({
+        brimType: draft.brimType,
+        brimLength: draft.brimLength,
+        crownShaping: draft.crownShaping,
+        fit: draft.fit,
+        customHatLength: draft.fit === "custom" ? draft.customHatLength : "",
+      }),
+    );
+    storage.setItem(LEGACY_HAT_GAUGE_SLOTS_KEY, JSON.stringify(draft.gaugeSlots));
+    storage.setItem(LEGACY_HAT_UNIT_KEY, draft.unit);
+    storage.setItem(LEGACY_HAT_SHOW_TIPS_KEY, draft.showTips ? "true" : "false");
+  } catch {
+    /* ignore */
+  }
+}

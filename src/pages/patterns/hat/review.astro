@@ -1,0 +1,11 @@
+---
+/**
+ * Legacy hat review URL — redirects to the pattern workspace (Phase 2).
+ */
+import { HAT_PATTERN_HREF } from "../../../lib/patterns/hat/hatNavigation";
+import { buildPatternReviewLegacyRedirect } from "../../../lib/patterns/patternReviewLegacyRedirect";
+
+return Astro.redirect(
+  buildPatternReviewLegacyRedirect(Astro.request.url, HAT_PATTERN_HREF),
+);
+---
