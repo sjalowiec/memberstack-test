@@ -23,6 +23,7 @@ function gauge() {
 
 function allParagraphs(rows: readonly SleevelessPatternDisplayRow[]): string[] {
   return rows.flatMap((row) => {
+    if (row.kind === "bustDartCustomization") return row.instructionParagraphs ?? [];
     if (row.kind !== "block") return [];
     return [...(row.paragraphs ?? []), ...(row.trustedParagraphs ?? [])];
   });
@@ -39,7 +40,12 @@ function sectionParagraphs(
       inSection = row.title === sectionTitle;
       continue;
     }
-    if (!inSection || row.kind !== "block") continue;
+    if (!inSection) continue;
+    if (row.kind === "bustDartCustomization") {
+      out.push(...(row.instructionParagraphs ?? []));
+      continue;
+    }
+    if (row.kind !== "block") continue;
     out.push(...(row.paragraphs ?? []), ...(row.trustedParagraphs ?? []));
   }
   return out;
@@ -69,6 +75,20 @@ describe("sleeveless bust darts integration", () => {
     const offset = inchesToRows(1, 7);
     expect(frontBody).toContain(`RC ${armholeRc - offset}`);
     expect(r.debug.hemRows + r.debug.bodyRows).toBe(armholeRc);
+
+    const slot = r.frontDisplayRows.find((row) => row.kind === "bustDartCustomization");
+    expect(slot?.kind).toBe("bustDartCustomization");
+    if (slot?.kind === "bustDartCustomization") {
+      const dartText = slot.instructionParagraphs.join("\n");
+      expect(dartText).toMatch(/Reset the row counter to RC/);
+      expect(dartText).not.toMatch(/Continue knitting across all stitches to RC/i);
+      expect(dartText).not.toMatch(new RegExp(`to RC ${armholeRc} \\(armhole opening\\)`));
+    }
+    // Post-dart BODY block is the single continue-to-armhole instruction.
+    const evenToArmhole = sectionParagraphs(r.frontDisplayRows, "BODY").filter((p) =>
+      new RegExp(`Knit ${offset} rows even to RC ${armholeRc}`).test(p),
+    );
+    expect(evenToArmhole).toHaveLength(1);
   });
 
   it("women’s cardigan with darts: left front has dart + right-front mirror note", () => {
@@ -91,7 +111,7 @@ describe("sleeveless bust darts integration", () => {
     expect(allParagraphs(r.displayRows).join("\n")).not.toMatch(/bust dart/i);
   });
 
-  it("darts off: front BODY matches no-dart wording (no bust dart prose)", () => {
+  it("darts off: eligible Front still splits at dart RC without dart knitting prose", () => {
     const withOff = generateSleevelessBackPattern({
       fit: { sizingChart: "misses", selectedMeasurements: baseFit() },
       style: {
@@ -108,10 +128,24 @@ describe("sleeveless bust darts integration", () => {
       yarnGaugeMachine: gauge(),
     });
 
-    expect(allParagraphs(withOff.frontDisplayRows).join("\n")).not.toMatch(/bust dart/i);
-    expect(allParagraphs(withOff.frontDisplayRows).join("\n")).toBe(
-      allParagraphs(legacy.frontDisplayRows).join("\n"),
-    );
+    expect(allParagraphs(withOff.frontDisplayRows).join("\n")).not.toMatch(/Add bust darts/i);
+    expect(allParagraphs(legacy.frontDisplayRows).join("\n")).not.toMatch(/Add bust darts/i);
+
+    const offSlot = withOff.frontDisplayRows.find((r) => r.kind === "bustDartCustomization");
+    const legacySlot = legacy.frontDisplayRows.find((r) => r.kind === "bustDartCustomization");
+    expect(offSlot?.kind).toBe("bustDartCustomization");
+    expect(legacySlot?.kind).toBe("bustDartCustomization");
+    if (offSlot?.kind === "bustDartCustomization" && legacySlot?.kind === "bustDartCustomization") {
+      expect(offSlot.active).toBe(false);
+      expect(legacySlot.active).toBe(false);
+      expect(offSlot.placementOffsetRows).toBe(legacySlot.placementOffsetRows);
+    }
+
+    const armholeRc = withOff.debug.rowsFromCastOnToArmholeStart;
+    const offset = inchesToRows(1, 7);
+    const body = sectionParagraphs(withOff.frontDisplayRows, "BODY").join("\n");
+    expect(body).toContain(`RC ${armholeRc - offset}`);
+    expect(body).toMatch(new RegExp(`Knit ${offset} rows even to RC ${armholeRc}`));
   });
 
   it("men’s pattern ignores enabled bust darts", () => {
@@ -180,5 +214,31 @@ describe("sleeveless bust darts integration", () => {
     expect(inchRc).toBeDefined();
     expect(cmRc).toBe(inchRc);
     expect(inchesToRows(1, fromCmSwatch.gaugeRowsPerInch)).toBe(inchesToRows(1, 7));
+  });
+
+  it("print includes active dart instructions and omits inactive optional slot", async () => {
+    const { renderSleevelessPrintPieceHtml } = await import("./sleevelessPatternPrintRender");
+    const withDart = generateSleevelessBackPattern({
+      fit: { sizingChart: "misses", selectedMeasurements: baseFit() },
+      style: {
+        recipientCategory: "misses",
+        neckline: "round",
+        frontStyle: "closed",
+        [BUST_DART_STYLE_KEY]: { enabled: true, cupSize: "C" },
+      },
+      yarnGaugeMachine: gauge(),
+    });
+    const without = generateSleevelessBackPattern({
+      fit: { sizingChart: "misses", selectedMeasurements: baseFit() },
+      style: { recipientCategory: "misses", neckline: "round", frontStyle: "closed" },
+      yarnGaugeMachine: gauge(),
+    });
+
+    const printWith = renderSleevelessPrintPieceHtml(withDart.frontDisplayRows, "", "front");
+    const printWithout = renderSleevelessPrintPieceHtml(without.frontDisplayRows, "", "front");
+    expect(printWith).toMatch(/Bust Dart \(Cup C\)/);
+    expect(printWith).toMatch(/Add bust darts \(cup C\)/i);
+    expect(printWith).not.toMatch(/data-bust-dart-pattern-open|Optional Bust Dart/);
+    expect(printWithout).not.toMatch(/Bust Dart|Optional Bust Dart|data-bust-dart/);
   });
 });

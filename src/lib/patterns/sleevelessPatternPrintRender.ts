@@ -8,6 +8,7 @@ import { rowCounterResetBlockHtml } from "./rowCounterReset";
 import { parseInlineMarkedLine } from "./inlineRcHeading";
 import { renderSleevelessBodyShapingChartHtml } from "./sleevelessBodyShapingChartHtml";
 import { renderDropShoulderSleeveShapingChartHtml } from "./dropShoulderSleeveShapingChart";
+import { renderBustDartCustomizationPrintHtml } from "./bustDartFrontSlotHtml";
 
 function escapeHtml(s: string): string {
   return String(s)
@@ -142,6 +143,10 @@ export function renderSleevelessPrintPieceHtml(
     }
     if (row.kind === "neckShoulderChartTableMount") {
       chunks.push(`<div class="print-chart-wrap">${neckChartHtml}</div>`);
+      continue;
+    }
+    if (row.kind === "bustDartCustomization") {
+      chunks.push(renderBustDartCustomizationPrintHtml(row));
       continue;
     }
     if (row.kind === "block") {

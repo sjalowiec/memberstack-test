@@ -7,7 +7,18 @@ import {
   writeBustDartConfigToWorkingDraft,
 } from "./bustDartPatternCustomization";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
+import type { SleevelessPatternDisplayRow } from "./sleevelessPatternOutput";
 import { generateDropShoulderPattern } from "./dropShoulderPatternOutput";
+
+function frontInstructionText(rows: readonly SleevelessPatternDisplayRow[]): string {
+  return rows
+    .flatMap((r) => {
+      if (r.kind === "bustDartCustomization") return r.instructionParagraphs ?? [];
+      if (r.kind === "block") return r.paragraphs ?? [];
+      return [];
+    })
+    .join("\n");
+}
 
 function womenSleevelessPattern(extraStyle: Record<string, unknown> = {}): Record<string, unknown> {
   return {
@@ -78,22 +89,17 @@ describe("bust dart post-build customization", () => {
   it("importing cup size into style regenerates front darts only", () => {
     const base = womenSleevelessPattern();
     const off = generateSleevelessBackPattern(base);
-    expect(off.frontDisplayRows.flatMap((r) => (r.kind === "block" ? r.paragraphs : [])).join("\n")).not.toMatch(
-      /bust dart/i,
-    );
+    expect(frontInstructionText(off.frontDisplayRows)).not.toMatch(/Add bust darts/i);
+    expect(off.frontDisplayRows.some((r) => r.kind === "bustDartCustomization")).toBe(true);
 
     const withDart = generateSleevelessBackPattern({
       ...base,
       style: { ...base.style, [BUST_DART_STYLE_KEY]: { enabled: true, cupSize: "C" } },
     });
-    const front = withDart.frontDisplayRows
-      .flatMap((r) => (r.kind === "block" ? r.paragraphs ?? [] : []))
-      .join("\n");
-    const back = withDart.displayRows
-      .flatMap((r) => (r.kind === "block" ? r.paragraphs ?? [] : []))
-      .join("\n");
-    expect(front).toMatch(/Add bust darts \(cup C\)/i);
-    expect(back).not.toMatch(/bust dart/i);
+    expect(frontInstructionText(withDart.frontDisplayRows)).toMatch(/Add bust darts \(cup C\)/i);
+    expect(frontInstructionText(withDart.displayRows)).not.toMatch(/bust dart/i);
+    const slot = withDart.frontDisplayRows.find((r) => r.kind === "bustDartCustomization");
+    expect(slot?.kind === "bustDartCustomization" && slot.active).toBe(true);
   });
 
   it("removing dart config restores no-dart front instructions", () => {
@@ -101,20 +107,17 @@ describe("bust dart post-build customization", () => {
       [BUST_DART_STYLE_KEY]: { enabled: true, cupSize: "B" },
     });
     const withDart = generateSleevelessBackPattern(base);
-    expect(
-      withDart.frontDisplayRows.flatMap((r) => (r.kind === "block" ? r.paragraphs ?? [] : [])).join("\n"),
-    ).toMatch(/bust dart/i);
+    expect(frontInstructionText(withDart.frontDisplayRows)).toMatch(/bust dart/i);
 
     const removed = generateSleevelessBackPattern({
       ...base,
       style: { ...base.style, [BUST_DART_STYLE_KEY]: { enabled: false, cupSize: null } },
     });
     const legacy = generateSleevelessBackPattern(womenSleevelessPattern());
-    expect(
-      removed.frontDisplayRows.flatMap((r) => (r.kind === "block" ? r.paragraphs ?? [] : [])).join("\n"),
-    ).toBe(
-      legacy.frontDisplayRows.flatMap((r) => (r.kind === "block" ? r.paragraphs ?? [] : [])).join("\n"),
-    );
+    expect(frontInstructionText(removed.frontDisplayRows)).not.toMatch(/Add bust darts/i);
+    expect(frontInstructionText(legacy.frontDisplayRows)).not.toMatch(/Add bust darts/i);
+    const removedSlot = removed.frontDisplayRows.find((r) => r.kind === "bustDartCustomization");
+    expect(removedSlot?.kind === "bustDartCustomization" && removedSlot.active).toBe(false);
   });
 
   it("drop-shoulder cardigan preview is cardigan construction", () => {
@@ -159,9 +162,7 @@ describe("bust dart post-build customization", () => {
       ...pattern,
       style: { ...pattern.style, [BUST_DART_STYLE_KEY]: { enabled: true, cupSize: "D" } },
     });
-    expect(
-      gen.frontDisplayRows.flatMap((r) => (r.kind === "block" ? r.paragraphs ?? [] : [])).join("\n"),
-    ).toMatch(/bust dart/i);
+    expect(frontInstructionText(gen.frontDisplayRows)).toMatch(/bust dart/i);
     expect(
       gen.sleeveDisplayRows.flatMap((r) => (r.kind === "block" ? r.paragraphs ?? [] : [])).join("\n"),
     ).not.toMatch(/bust dart/i);

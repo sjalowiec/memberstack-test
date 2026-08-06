@@ -26,12 +26,15 @@ function baseInput(over: Partial<BustDartInput> = {}): BustDartInput {
 }
 
 describe("bustDart lego block", () => {
-  it("returns inactive when darts are disabled", () => {
+  it("returns inactive when darts are disabled but still exposes placement", () => {
     const r = calculateBustDart(baseInput({ enabled: false }));
     expect(r.active).toBe(false);
     expect(r.eligible).toBe(true);
     expect(r.config).toEqual({ enabled: false, cupSize: null });
     expect(r.instructionParagraphs).toEqual([]);
+    expect(r.dartStartGarmentRc).toBe(140 - 7);
+    expect(r.rowsFromDartToArmhole).toBe(7);
+    expect(r.placementOffsetRows).toBe(7);
   });
 
   it("activates for eligible women’s patterns", () => {
@@ -44,6 +47,26 @@ describe("bustDart lego block", () => {
     expect(r.shaping?.totalHeldStitches).toBe(16);
     expect(r.shaping?.totalDepthRows).toBe(7);
     expect(r.instructionParagraphs.some((p) => p.includes("front only"))).toBe(true);
+  });
+
+  it("ends sweater dart instructions after RC reset — Front BODY owns knit-to-armhole", () => {
+    const r = calculateBustDart(baseInput());
+    expect(r.active).toBe(true);
+    const text = r.instructionParagraphs.join("\n");
+    expect(text).toMatch(/Reset the row counter to RC 133/);
+    expect(text).not.toMatch(/Continue knitting across all stitches to RC/i);
+    expect(text).not.toMatch(/to RC 140 \(armhole opening\)/i);
+    expect(r.instructionParagraphs.at(-1)).toMatch(/^Reset the row counter to RC 133/);
+  });
+
+  it("cardigan edge hint remains; still no continue-to-armhole in dart block", () => {
+    const r = calculateBustDart(baseInput({ frontConstruction: "cardigan" }));
+    expect(r.active).toBe(true);
+    expect(r.instructionParagraphs.some((p) => /side \(armhole\) edge/i.test(p))).toBe(true);
+    expect(r.instructionParagraphs.join("\n")).not.toMatch(
+      /Continue knitting across all stitches to RC/i,
+    );
+    expect(r.cardiganRightMirrorParagraph).toMatch(/RIGHT FRONT/i);
   });
 
   it("treats plus and women who-keys as eligible", () => {

@@ -610,6 +610,50 @@
     opacity: 0.9;
   }
 
+  /* Optional Bust Dart — Front BODY slot at the dart RC */
+  .sleeveless-pattern-page .bust-dart-front-slot {
+    margin: 0.65rem 0 0.85rem;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 22%, #e5e7eb);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 5%, #fff);
+  }
+
+  .sleeveless-pattern-page .bust-dart-front-slot__title {
+    margin: 0 0 0.35rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #2c3a57;
+  }
+
+  .sleeveless-pattern-page .bust-dart-front-slot__hint {
+    margin: 0 0 0.65rem;
+    font-size: 0.86rem;
+    line-height: 1.45;
+    color: #4b5563;
+  }
+
+  .sleeveless-pattern-page .bust-dart-front-slot__error {
+    margin: 0 0 0.55rem;
+    font-size: 0.86rem;
+    color: #b91c1c;
+  }
+
+  .sleeveless-pattern-page .bust-dart-front-slot__instructions {
+    margin: 0 0 0.65rem;
+  }
+
+  .sleeveless-pattern-page .bust-dart-front-slot__instructions .sleeveless-pattern-line {
+    margin: 0.2rem 0;
+  }
+
+  .sleeveless-pattern-page .bust-dart-front-slot__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+  }
+
   .sleeveless-pattern-page .sleeveless-pattern-edit-action.is-disabled,
   .sleeveless-pattern-page .sleeveless-pattern-edit-action.is-disabled:hover {
     color: #9ca3af;

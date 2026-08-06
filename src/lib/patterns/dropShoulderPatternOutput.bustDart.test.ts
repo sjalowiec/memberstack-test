@@ -43,6 +43,7 @@ function womenBase(styleExtra: Record<string, unknown> = {}): Record<string, unk
 
 function allParagraphs(rows: readonly SleevelessPatternDisplayRow[]): string[] {
   return rows.flatMap((row) => {
+    if (row.kind === "bustDartCustomization") return row.instructionParagraphs ?? [];
     if (row.kind !== "block") return [];
     return [...(row.paragraphs ?? []), ...(row.trustedParagraphs ?? [])];
   });
@@ -82,15 +83,17 @@ describe("drop-shoulder bust darts integration", () => {
     expect(front).toMatch(/bust-dart|bust dart/i);
   });
 
-  it("darts off leaves front without bust-dart prose", () => {
+  it("darts off: eligible Front still splits at dart RC without dart knitting prose", () => {
     const off = generateDropShoulderPattern(
       womenBase({ [BUST_DART_STYLE_KEY]: { enabled: false, cupSize: null } }),
     );
     const legacy = generateDropShoulderPattern(womenBase());
-    expect(allParagraphs(off.frontDisplayRows).join("\n")).not.toMatch(/bust dart/i);
-    expect(allParagraphs(off.frontDisplayRows).join("\n")).toBe(
-      allParagraphs(legacy.frontDisplayRows).join("\n"),
-    );
+    expect(allParagraphs(off.frontDisplayRows).join("\n")).not.toMatch(/Add bust darts/i);
+    expect(allParagraphs(legacy.frontDisplayRows).join("\n")).not.toMatch(/Add bust darts/i);
+    const offSlot = off.frontDisplayRows.find((r) => r.kind === "bustDartCustomization");
+    const legacySlot = legacy.frontDisplayRows.find((r) => r.kind === "bustDartCustomization");
+    expect(offSlot?.kind).toBe("bustDartCustomization");
+    expect(legacySlot?.kind).toBe("bustDartCustomization");
   });
 
   it("kids pattern does not generate bust darts", () => {
