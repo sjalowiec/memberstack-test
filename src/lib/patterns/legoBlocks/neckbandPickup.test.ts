@@ -9,6 +9,7 @@ import {
   pickupStitchesFromRowEdge,
   roundNeckPieceEdgeLength,
   roundNeckSideEdgeLength,
+  vNeckFrontSlopeEdgeLength,
 } from "./neckbandPickup";
 import {
   calculateBackRoundNecklinePlan,
@@ -229,26 +230,76 @@ describe("neckbandPickup — audited round-pullover regression (4.5in / 3in / 1i
   });
 });
 
-describe("neckbandPickup — V-neck pullover unchanged", () => {
-  it("uses X-over-Y depth-based format", () => {
+describe("neckbandPickup — V-neck pullover path length", () => {
+  it("uses approximately wording with estimate note and no over-Y-rows", () => {
     const result = calculateNeckbandPickup({
       neckline: "v-neck",
-      frontNeckDepthRows: 21,
-      backNeckDepthRows: 7,
+      garment: "pullover",
+      necklineStitches: 30,
+      frontNeckDepthRows: 22,
+      backNeckDepthRows: 8,
       stitchesPerUnit: 5,
       rowsPerUnit: 7,
-      frontCenterNeckStitches: 99,
-      backCenterNeckStitches: 88,
+      backCenterNeckStitches: 15,
     });
     expect(result.kind).toBe("v-neck");
-    if (result.kind !== "v-neck") return;
-    expect(result.necklineEdgeRows).toBe(56);
-    expect(result.pickupStitches).toBe(pickupStitchesFromRowEdge(56, 5, 7));
+    expect(result.garment).toBe("pullover");
+    // Center-front contribution is zero; sections report back center only.
+    expect(result.sections.firstFrontStitches).toBeGreaterThan(0);
+    expect(result.sections.secondFrontStitches).toBeGreaterThan(0);
+    expect(result.sections.firstFrontStitches).toBe(result.sections.secondFrontStitches);
+    expect(result.sections.backPickupStitches).toBeGreaterThan(0);
+    expect(result.sections.frontPickupStitches).toBe(
+      (result.sections.firstFrontStitches ?? 0) + (result.sections.secondFrontStitches ?? 0),
+    );
+    expect(result.pickupStitches).toBe(
+      (result.sections.frontPickupStitches ?? 0) + (result.sections.backPickupStitches ?? 0),
+    );
+
+    // Actual shaped-edge length > pure vertical projection of front depths alone.
+    const verticalFrontOnly = pickupStitchesFromRowEdge(2 * 22, 5, 7);
+    expect(result.sections.frontPickupStitches!).toBeGreaterThan(verticalFrontOnly);
+
     const instruction = formatNeckbandPickupInstruction(result);
     expect(instruction.primaryText).toBe(
-      `Pick up ${result.pickupStitches} stitches evenly over 56 rows around the neckline.`,
+      `Pick up approximately ${result.pickupStitches} stitches evenly around the neckline.`,
     );
-    expect(instruction.estimateNoteText).toBeUndefined();
+    expect(instruction.primaryText).toMatch(/approximately/);
+    expect(instruction.primaryText).not.toMatch(/over \d+ rows/);
+    expect(instruction.estimateNoteText).toBe(NECKBAND_ROUND_PICKUP_ESTIMATE_NOTE);
+    expect(instruction.necklineEdgeRows).toBeUndefined();
+  });
+
+  it("includes both front slopes and complete back; center-front stitches are zero", () => {
+    const decreases = 15; // floor(30/2)
+    const firstLen = vNeckFrontSlopeEdgeLength(decreases, 22, 5, 7);
+    const secondLen = vNeckFrontSlopeEdgeLength(decreases, 22, 5, 7);
+    expect(firstLen).toBeCloseTo(secondLen, 10);
+    // No center-front length in the slopes.
+    const firstPu = pickupStitchesFromEdgeLength(firstLen, 5);
+    const secondPu = pickupStitchesFromEdgeLength(secondLen, 5);
+
+    const backPlan = calculateBackRoundNecklinePlan({
+      necklineStitches: 30,
+      necklineDepthRows: 8,
+    });
+    const backPu = pickupStitchesFromEdgeLength(
+      roundNeckPieceEdgeLength(backPlan, 8, 5, 7),
+      5,
+    );
+
+    const result = calculateNeckbandPickup({
+      neckline: "v-neck",
+      necklineStitches: 30,
+      frontNeckDepthRows: 22,
+      backNeckDepthRows: 8,
+      stitchesPerUnit: 5,
+      rowsPerUnit: 7,
+    });
+    expect(result.sections.firstFrontStitches).toBe(firstPu);
+    expect(result.sections.secondFrontStitches).toBe(secondPu);
+    expect(result.sections.backPickupStitches).toBe(backPu);
+    expect(result.pickupStitches).toBe(firstPu + secondPu + backPu);
   });
 });
 
@@ -290,20 +341,36 @@ describe("neckbandPickup — inch/cm equivalence", () => {
 });
 
 describe("neckbandPickup — Sleeveless / Drop Shoulder integration", () => {
-  it("Sleeveless V-neck pickup uses X-over-Y format from debug geometry", () => {
+  it("Sleeveless V-neck pickup uses approximately wording from path-length total", () => {
     const pattern = sleevelessPattern("v-neck");
     const generated = generateSleevelessBackPattern(pattern);
     const finishing = sleevelessFinishingFromPattern(pattern, generated.debug);
     expect(finishing.neckbandPickup!.kind).toBe("v-neck");
     expect(finishing.neckbandPickup!.garment).toBe("pullover");
     expect(finishing.neckbandPickup!.primaryText).toMatch(
-      /^Pick up \d+ stitches evenly over \d+ rows around the neckline\.$/,
+      /^Pick up approximately \d+ stitches evenly around the neckline\.$/,
     );
-    const y = 2 * (generated.debug.frontNeckDepthRows + generated.debug.backNeckDepthRows);
-    expect(finishing.neckbandPickup!.necklineEdgeRows).toBe(y);
-    expect(finishing.neckbandPickup!.pickupStitches).toBe(
-      pickupStitchesFromRowEdge(y, generated.debug.stitchesPerInch, generated.debug.rowsPerInch),
+    expect(finishing.neckbandPickup!.primaryText).not.toMatch(/over \d+ rows/);
+    expect(finishing.neckbandPickup!.estimateNoteText).toBe(NECKBAND_ROUND_PICKUP_ESTIMATE_NOTE);
+    expect(finishing.neckbandPickup!.frontPickupStitches).toBe(
+      (finishing.neckbandPickup!.firstFrontStitches ?? 0) +
+        (finishing.neckbandPickup!.secondFrontStitches ?? 0),
     );
+    expect(generated.debug.frontCenterNeckBindOffStitches).toBeUndefined();
+
+    const html = buildSleevelessFinishingStepsHtml({
+      isCardigan: false,
+      neckbandPickup: finishing.neckbandPickup,
+      deps: finishingDeps,
+    });
+    const print = buildSleevelessFinishingPrintListHtml({
+      isCardigan: false,
+      neckbandPickup: finishing.neckbandPickup,
+    });
+    expect(html).toContain(finishing.neckbandPickup!.primaryText);
+    expect(html).toContain(NECKBAND_ROUND_PICKUP_ESTIMATE_NOTE);
+    expect(print).toContain(finishing.neckbandPickup!.primaryText);
+    expect(print).toContain(NECKBAND_ROUND_PICKUP_ESTIMATE_NOTE);
   });
 
   it("Sleeveless round-neck pickup is path-length total with estimate note", () => {
@@ -348,7 +415,11 @@ describe("neckbandPickup — Sleeveless / Drop Shoulder integration", () => {
     const vFin = sleevelessFinishingFromPattern(v, vGen.debug);
     expect(vFin.isDropShoulder).toBe(true);
     expect(vFin.neckbandPickup!.kind).toBe("v-neck");
-    expect(vFin.neckbandPickup!.primaryText).toMatch(/over \d+ rows around the neckline/);
+    expect(vFin.neckbandPickup!.primaryText).toMatch(
+      /^Pick up approximately \d+ stitches evenly around the neckline\.$/,
+    );
+    expect(vFin.neckbandPickup!.primaryText).not.toMatch(/over \d+ rows/);
+    expect(vFin.neckbandPickup!.estimateNoteText).toBe(NECKBAND_ROUND_PICKUP_ESTIMATE_NOTE);
 
     const r = dropShoulderPattern("round");
     const rGen = generateDropShoulderPattern(r);
@@ -377,14 +448,27 @@ describe("neckbandPickup — cardigan sections", () => {
     expect(finishing.neckbandPickup!.firstFrontStitches).not.toBe(finishing.frontEdgePickupSts);
   });
 
-  it("V-neck cardigan keeps three-section wording without estimate note", () => {
+  it("V-neck cardigan keeps three-section wording with path-length sections and estimate note", () => {
     const pattern = sleevelessPattern("v-neck", gauge(), "open");
     const generated = generateSleevelessBackPattern(pattern);
     const finishing = sleevelessFinishingFromPattern(pattern, generated.debug);
     expect(finishing.neckbandPickup!.garment).toBe("cardigan");
     expect(finishing.neckbandPickup!.kind).toBe("v-neck");
-    expect(finishing.neckbandPickup!.estimateNoteText).toBeUndefined();
+    expect(finishing.neckbandPickup!.estimateNoteText).toBe(NECKBAND_ROUND_PICKUP_ESTIMATE_NOTE);
     expect(finishing.neckbandPickup!.primaryText).toContain("first front neckline edge");
+    expect(finishing.neckbandPickup!.primaryText).toContain("across the back neckline");
+    expect(finishing.neckbandPickup!.primaryText).toContain("second front neckline edge");
+    expect(finishing.neckbandPickup!.primaryText).not.toMatch(/over \d+ rows/);
+    // No center-front stitches: front sections equal slope pickups only.
+    expect(finishing.neckbandPickup!.firstFrontStitches).toBe(
+      finishing.neckbandPickup!.secondFrontStitches,
+    );
+    const verticalOneFront = pickupStitchesFromRowEdge(
+      generated.debug.frontNeckDepthRows,
+      generated.debug.stitchesPerInch,
+      generated.debug.rowsPerInch,
+    );
+    expect(finishing.neckbandPickup!.firstFrontStitches!).toBeGreaterThan(verticalOneFront);
   });
 
   it("asymmetric cardigan fronts remain independently calculated", () => {
