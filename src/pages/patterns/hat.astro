@@ -1,0 +1,4390 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import ActionBar from "../../components/wizards/ActionBar.astro";
+import UnitToggle from "../../components/wizards/UnitToggle.astro";
+import GaugeInput from "../../components/wizards/GaugeInput.astro";
+import PatternDiagram from "../../components/wizards/PatternDiagram.astro";
+import Tooltip from "../../components/Tooltip.astro";
+import WhyUseThisToolTooltip from "../../components/common/WhyUseThisToolTooltip.astro";
+import PatternPrintFooter from "../../components/common/PatternPrintFooter.astro";
+import PatternPrintPersonalization from "../../components/common/PatternPrintPersonalization.astro";
+import WizardBackLink from "../../components/wizards/WizardBackLink.astro";
+import FloatingInput from "../../components/tools/FloatingInput.astro";
+import YarnRequirement from "../../components/tools/YarnRequirement.astro";
+import PatternHeaderImage from "../../components/patterns/PatternHeaderImage.astro";
+import WarningBox from "../../components/ui/WarningBox.astro";
+import glossaryJson from "../../data/glossary.json";
+import hatSizingRows from "../../data/sizing_hats.json";
+import { roundFinishedHatSizeFromHead } from "../../lib/patterns/hat/hatMath";
+
+type HatGlossaryRow = { glossaryId?: number; english?: string; example?: string };
+const hatGlossaryRows: HatGlossaryRow[] = Array.isArray(glossaryJson) ? (glossaryJson as HatGlossaryRow[]) : [];
+const hatGlossary311 = hatGlossaryRows.find((e) => e.glossaryId === 311);
+/** Plain text for pattern-term data-tooltip (glossary id 311 example). */
+function hatPlainGlossaryExample(raw: string | undefined): string {
+  const s = (raw ?? "").trim();
+  if (!s) return "";
+  if (!/[<>]/.test(s)) return s;
+  return s.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+}
+const scrapOffPatternTooltip =
+  hatPlainGlossaryExample(hatGlossary311?.example) || (hatGlossary311?.english ?? "Scrap Off").trim();
+
+function formatFinishedInchesForLabel(n: number): string {
+  if (!Number.isFinite(n)) return "";
+  const rounded = Math.round(n * 2) / 2;
+  return rounded % 1 === 0 ? String(rounded) : rounded.toFixed(1);
+}
+
+const INCH_TO_CM_DISPLAY = 2.54;
+
+/** Head measurement token(s) in inches (e.g. "14", "21–22") → display string for the active unit. */
+function formatHeadInchTokenForDisplay(
+  cleanInchPart: string,
+  displayUnit: "inches" | "cm"
+): string {
+  if (displayUnit === "inches") return cleanInchPart;
+  const parts = cleanInchPart.split(/[\u2013\-]/).map((s) => s.trim()).filter(Boolean);
+  if (parts.length === 0) return cleanInchPart;
+  const nums = parts.map((p) => {
+    const n = parseFloat(p);
+    if (!Number.isFinite(n)) return p;
+    return String(Math.round(n * INCH_TO_CM_DISPLAY));
+  });
+  return nums.length === 1 ? nums[0] : nums.join("–");
+}
+
+function hatSizeDisplayName(row: (typeof hatSizingRows)[number]): string {
+  const ext = row.extended_label || row.label || row.size;
+  const withoutHead = ext.replace(/\s*\([^)]*\bhead\b[^)]*\)\s*$/i, "").trim();
+  return withoutHead || row.label || row.size;
+}
+
+function hatFitsClause(
+  row: (typeof hatSizingRows)[number],
+  displayUnit: "inches" | "cm" = "inches"
+): string | null {
+  const ext = row.extended_label || row.label || "";
+  const paren = ext.match(/\(([^)]+)\)\s*$/);
+  if (paren) {
+    const inner = paren[1].trim();
+    if (/\bhead\b/i.test(inner)) {
+      let headPart = inner.replace(/\s*head\s*$/i, "").trim();
+      headPart = headPart.replace(/^approx\.\s*/i, "").trim();
+      const clean = headPart.replace(/["″]/g, "").trim();
+      if (displayUnit === "inches") {
+        return `fits ~${clean}" head`;
+      }
+      const display = formatHeadInchTokenForDisplay(clean, displayUnit);
+      return `fits ~${display} cm head`;
+    }
+    if (/\blbs\b|\bmonth\b|\bmonths\b|\byear\b|\byears\b/i.test(inner)) {
+      return null;
+    }
+    return null;
+  }
+  const head = Number(row.circumference);
+  if (Number.isFinite(head) && head > 0) {
+    if (displayUnit === "inches") {
+      const clean = String(head).replace(/["″]/g, "").trim();
+      return `fits ~${clean}" head`;
+    }
+    const cm = Math.round(head * INCH_TO_CM_DISPLAY);
+    return `fits ~${cm} cm head`;
+  }
+  return null;
+}
+
+function buildHatSizeOptionLabel(
+  row: (typeof hatSizingRows)[number],
+  finishedInches: number,
+  displayUnit: "inches" | "cm" = "inches"
+): string {
+  const name = hatSizeDisplayName(row);
+  const finStr =
+    displayUnit === "inches"
+      ? `${formatFinishedInchesForLabel(finishedInches)}"`
+      : `${Math.round(finishedInches * INCH_TO_CM_DISPLAY)} cm`;
+  const fits = hatFitsClause(row, displayUnit);
+  return fits
+    ? `${name} — ${finStr} finished (${fits})`
+    : `${name} — ${finStr} finished`;
+}
+
+const hatSizingBuilderRows = hatSizingRows.map((row) => {
+  const finishedSizeInches = roundFinishedHatSizeFromHead(Number(row.circumference));
+  return {
+    ...row,
+    finishedSizeInches,
+    optionLabel: buildHatSizeOptionLabel(row, finishedSizeInches),
+  };
+});
+
+// Import shared wizard styles
+import '../../styles/wizard.css';
+
+const whyUseThisTool = '';
+const wizardTitle = 'Machine Knit Hat Pattern Builder';
+const wizardDescription = 'Design the perfect custom hat with precise sizing, brim options, and crown shaping.';
+
+const patternPersistWarning =
+  "This builder creates a temporary pattern — it isn't saved to your account. Print it or download it as a PDF before you leave this page, or your pattern will be gone.";
+
+const hatZeroBodyRowsWarningMessage =
+  "Your current settings don't leave any room for the body of the hat. Try increasing the finished hat length, reducing the brim height, or choosing a shallower crown style.";
+---
+
+<Layout
+  title="Machine Knit Hat Pattern Builder | Knit it Now"
+  description="Create a custom machine knit hat pattern with your gauge, size, brim, and crown shaping. Get clear knitting instructions instantly."
+  bodyClass="pattern-print-global-footer"
+>
+
+<PatternPrintFooter />
+
+<style>
+/* Hat-specific styles only */
+.back-link {
+  display: inline-block;
+  color: #52682D;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  padding: 0.5rem 0;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: #3d4e21;
+  text-decoration: underline;
+}
+
+/* Pattern term tooltip styling - :global needed for dynamically generated content */
+:global(.pattern-term) {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: #52682D;
+  text-underline-offset: 2px;
+  cursor: help;
+  position: relative;
+}
+
+:global(.pattern-term)::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: #fff;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-style: normal;
+  font-weight: normal;
+  white-space: normal;
+  width: max-content;
+  max-width: 280px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+  z-index: 100;
+  pointer-events: none;
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+:global(.pattern-term):hover::after,
+:global(.pattern-term):focus::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Disabled select styling */
+select.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #f5f5f5;
+}
+
+/* Helper text for inputs */
+.helper-text {
+  display: block;
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+/* Hat builder: grouped form sections (Build tab) — soft blocks, not card-heavy */
+.hat-builder-inputs .hat-form-section {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 4.5%, var(--page-bg, #fff));
+  border: 1px solid rgba(82, 104, 45, 0.09);
+  border-radius: 12px;
+  padding: 1.15rem 1.2rem 1.2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 2px rgba(45, 55, 30, 0.04);
+}
+
+@supports not (background: color-mix(in srgb, white, black)) {
+  .hat-builder-inputs .hat-form-section {
+    background: rgba(82, 104, 45, 0.045);
+  }
+}
+
+.hat-builder-inputs .hat-form-section:last-of-type {
+  margin-bottom: 0;
+}
+
+/* Collapse yarn section until the optional trigger is shown */
+.hat-builder-inputs .hat-form-section--yarn:has(#hat-yarn-drawer-trigger-wrap[hidden]) {
+  display: none;
+}
+
+.hat-builder-inputs .tab-panel#tab-build form > .hat-form-section:first-of-type {
+  margin-top: 0.85rem;
+}
+
+#clear-hat-builder {
+  background: none;
+  border: none;
+  color: #C2614e;
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+#clear-hat-builder:hover {
+  opacity: 0.7;
+}
+
+/* Section heading — distinct from field labels (.hat-field__label, floating labels) */
+.hat-builder-inputs .hat-form-section__title,
+.hat-builder-inputs .hat-form-section__heading {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--kbm-green, #52682d);
+  letter-spacing: 0.02em;
+  line-height: 1.25;
+  margin: 0 0 0.7rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(82, 104, 45, 0.14);
+}
+
+/* Optional one-line intro under the section title (add element with this class when needed) */
+.hat-builder-inputs .hat-form-section__intro {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: -0.35rem 0 0.65rem;
+  max-width: 40rem;
+}
+
+/* Tighter rhythm inside the block than between sections */
+.hat-builder-inputs .hat-form-section .input-group {
+  margin-bottom: 0.4rem;
+}
+
+.hat-builder-inputs .hat-form-section > .input-group:last-child {
+  margin-bottom: 0;
+}
+
+.hat-builder-inputs .hat-form-section .hat-builder-custom-subfield {
+  margin-top: 0.1rem;
+}
+
+.hat-builder-inputs .hat-form-section .helper-text {
+  margin-top: 0.2rem;
+}
+
+/* Hat length: visual picker (native #fit stays for logic; UI replaces visible dropdown) */
+.hat-length-picker-wrap {
+  align-items: flex-start;
+}
+
+.hat-length-picker__native {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.hat-length-picker__flex-row {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.hat-length-picker {
+  flex: 1;
+  min-width: 0;
+}
+
+.hat-length-picker__summary {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.35;
+  color: #111;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.hat-length-picker__summary:hover {
+  border-color: #aeb79a;
+}
+
+.hat-length-picker-wrap.is-complete .hat-length-picker__summary {
+  border-color: #52682d;
+}
+
+.hat-length-picker__summary-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.hat-length-picker__panel {
+  margin-top: 10px;
+  padding-top: 2px;
+}
+
+.hat-length-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.hat-length-picker__option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  margin: 0;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background: #fff;
+  padding: 8px;
+  text-align: center;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.hat-length-picker__option:hover {
+  border-color: #aeb79a;
+}
+
+.hat-length-picker__option.is-selected {
+  border-color: #52682d;
+  background: #f7f9f3;
+}
+
+.hat-length-picker__option:disabled,
+.hat-length-picker__option[aria-disabled='true'],
+.hat-length-picker__option.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.hat-length-picker__option:disabled:hover,
+.hat-length-picker__option[aria-disabled='true']:hover,
+.hat-length-picker__option.is-disabled:hover {
+  border-color: #ddd;
+}
+
+.hat-length-picker__img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.hat-brim-picker__grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.hat-brim-picker__img {
+  width: 120px;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.hat-crown-picker__img {
+  width: 120px;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.hat-brim-preview {
+  margin-top: 10px;
+}
+
+.hat-brim-preview[hidden] {
+  display: none;
+}
+
+.hat-length-picker__option-label {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.hat-length-picker__custom {
+  display: block;
+  width: 100%;
+  margin: 12px 0 0;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #52682d;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.hat-length-picker__custom:hover {
+  color: #3d4e21;
+}
+
+@media (max-width: 380px) {
+  .hat-length-picker__grid {
+    gap: 6px;
+  }
+
+  .hat-length-picker__option {
+    padding: 4px;
+  }
+}
+
+@media (max-width: 640px) {
+  .hat-length-picker__grid {
+    gap: 8px;
+  }
+
+  .hat-length-picker__option {
+    padding: 6px;
+  }
+
+  .hat-builder-inputs .hat-form-section {
+    padding: 1.2rem 1.05rem 1.25rem;
+    margin-bottom: 1.35rem;
+  }
+
+  .hat-builder-inputs .hat-form-section__title,
+  .hat-builder-inputs .hat-form-section__heading {
+    font-size: 1.08rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
+/* Hat builder: default input stack outside sections (e.g. if any remain) */
+.hat-builder-inputs .input-group {
+  margin-bottom: 0.55rem;
+}
+
+.hat-builder-inputs .hat-form-section--gauge :global(.gauge-input-wrapper) {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Needle estimate preview (stitch gauge × finished circumference; same styling as DIY blanket) */
+.diy-blanket-needle-result-preview {
+  margin: 0.65rem 0 0;
+  padding: 0;
+}
+.diy-blanket-needle-result-preview__line {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #c2644e;
+}
+.diy-blanket-needle-result-preview__line strong {
+  font-weight: 700;
+}
+.diy-blanket-needle-result-preview__line #needle-count-value-preview {
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+.diy-blanket-needle-result-preview__context {
+  margin: 0.2rem 0 0;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.35;
+  color: #9ca3af;
+}
+.diy-blanket-needle-result-preview__context:empty {
+  display: none;
+}
+
+.hat-builder-inputs :global(.gauge-input-wrapper) {
+  margin-top: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+/* Yarn drawer: presentation styles live on YarnRequirement (yarn--presentation-drawer) */
+.hat-yarn-drawer-body :global(.yarn-requirement-tool) {
+  margin: 0;
+}
+
+.hat-builder-inputs :global(.floating-input) {
+  margin-bottom: 0;
+}
+
+.hat-builder-inputs :global(.floating-input input) {
+  min-height: 52px;
+  font-size: 1rem;
+}
+
+/* Tab labels: desktop shows text; mobile shows emoji icons (see max-width: 767px block below) */
+.hat-builder-inputs .pattern-tab-nav .tab-icon {
+  display: none;
+}
+
+/* Hat builder only: Pattern tab locked until required build fields are complete */
+.hat-builder-inputs .pattern-tab-nav .tab-btn.is-disabled {
+  color: #9ca3af;
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.hat-builder-inputs .pattern-tab-nav .tab-btn.is-disabled:hover,
+.hat-builder-inputs .pattern-tab-nav .tab-btn.is-disabled:focus-visible {
+  color: #9ca3af;
+  border-bottom-color: transparent;
+  opacity: 0.55;
+}
+
+.hat-builder-inputs .pattern-tab-nav .tab-btn.is-disabled.active {
+  color: #9ca3af;
+  border-bottom-color: transparent;
+}
+
+/* Build tab: let the form column use full main width on small screens (parent min-width / flex tracks can squeeze selects). */
+@media (max-width: 767px) {
+  :global(main.site-content):has(#hat-builder-form-top),
+  :global(.pattern-page):has(#hat-builder-form-top),
+  :global(.pattern-layout):has(#hat-builder-form-top),
+  .wizard-page,
+  #hat-builder-form-top.wizard-container,
+  .hat-builder-inputs,
+  .hat-builder-inputs .pattern-tabs,
+  .hat-builder-inputs .pattern-tab-content,
+  .hat-builder-inputs .tab-panel#tab-build,
+  .hat-builder-inputs #hat-builder-form {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  :global(main.site-content):has(#hat-builder-form-top),
+  :global(.pattern-page):has(#hat-builder-form-top),
+  :global(.pattern-layout):has(#hat-builder-form-top),
+  .wizard-page,
+  .hat-builder-inputs .pattern-tabs,
+  .hat-builder-inputs .pattern-tab-content,
+  .hat-builder-inputs .tab-panel#tab-build {
+    overflow-x: visible;
+  }
+
+  .hat-builder-inputs .pattern-tab-nav .tab-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    line-height: 1;
+  }
+
+  .hat-builder-inputs .pattern-tab-nav .tab-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .hat-builder-inputs .pattern-tab-nav .tab-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+}
+
+#create-pattern-btn.button-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.create-pattern-feedback {
+  margin: 0.75rem 0 0;
+  min-height: 1.25em;
+  font-size: 0.9375rem;
+  color: #6b7280;
+}
+
+/* Main page header: example photo + title (single intro for the whole wizard) */
+.hat-builder-page-header {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.hat-builder-page-header__media {
+  flex-shrink: 0;
+  max-width: min(420px, 100%);
+  width: 100%;
+}
+
+.hat-builder-page-header__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.hat-builder-page-header .page-header-title {
+  justify-content: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.hat-builder-page-header__main h1 {
+  text-align: left;
+  margin: 0 0 0.5rem 0;
+}
+
+.hat-builder-page-header__subtitle {
+  text-align: left;
+  margin: 0;
+  color: #6b7280;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .hat-builder-page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hat-builder-page-header__media {
+    max-width: 100%;
+  }
+
+  .hat-builder-page-header .page-header-title {
+    justify-content: center;
+  }
+
+  .hat-builder-page-header__main h1,
+  .hat-builder-page-header__subtitle {
+    text-align: center;
+  }
+
+}
+
+.inspiration-section {
+  margin-top: 20px;
+}
+
+.inspiration-heading {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.pinterest-embed {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .pinterest-embed a {
+    transform: scale(0.9);
+    transform-origin: top center;
+  }
+}
+
+.hat-pinterest-fallback-link {
+  margin: 12px 0 0;
+  font-size: 0.95rem;
+}
+
+.hat-pinterest-fallback-link a {
+  color: var(--kbm-green, #52682d);
+}
+
+/* Subtle indent: custom numeric fields read as sub-fields of the custom dropdown choice */
+.hat-builder-inputs .hat-builder-custom-subfield {
+  padding-left: 14px;
+  box-sizing: border-box;
+}
+
+/* Hat size select: site green for accent/focus; option colors where browsers allow */
+#hat-size {
+  accent-color: var(--kbm-green, #52682D);
+}
+
+/* Avoid styling option:checked on native <select>: Chromium can paint the wrong closed label. */
+
+#hat-size option:hover,
+#hat-size option:focus-visible {
+  background-color: #dce8d0;
+  color: #1f2937;
+}
+
+/* Crown Shaping: label row + slot for future help icon/tooltip */
+.hat-builder-inputs .hat-field--crown .hat-field__label-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.hat-builder-inputs .hat-field--crown .hat-field__label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #374151;
+  margin: 0;
+  line-height: 1.25;
+  text-align: left;
+  flex: 0 0 auto;
+}
+
+.hat-builder-inputs .hat-field--crown .hat-field__help-slot {
+  flex-shrink: 0;
+}
+
+.hat-builder-inputs .crown-help-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #d1d5db;
+  border-radius: 9999px;
+  background: #fff;
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.hat-builder-inputs .crown-help-trigger:hover {
+  color: #374151;
+  border-color: #9ca3af;
+  background: #f9fafb;
+}
+
+.hat-builder-inputs .crown-help-trigger:focus-visible {
+  outline: 2px solid #52682d;
+  outline-offset: 2px;
+}
+
+.crown-help-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  box-sizing: border-box;
+  background: rgba(17, 24, 39, 0.55);
+}
+
+.crown-help-overlay:not([hidden]) {
+  display: flex;
+}
+
+.crown-help-modal {
+  position: relative;
+  width: 90%;
+  max-width: 42rem;
+  margin: auto;
+  padding: 1.5rem 1.5rem 1.25rem;
+  background: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
+}
+
+.crown-help-modal h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  padding-right: 2rem;
+}
+
+.crown-help-modal > p {
+  margin: 0 0 1rem 0;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: #4b5563;
+}
+
+.crown-help-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 0.25rem;
+}
+
+.crown-help-close:hover {
+  color: #111827;
+  background: #f3f4f6;
+}
+
+.crown-help-close:focus-visible {
+  outline: 2px solid #52682d;
+  outline-offset: 2px;
+}
+
+.crown-help-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+/* Yarn estimator: right drawer (Build tab) */
+:global(body.hat-yarn-drawer-open) {
+  overflow: hidden;
+}
+
+.hat-yarn-drawer-trigger-wrap {
+  text-align: center;
+  margin-top: 0.75rem;
+}
+
+/* Unstyled button + optional yarn drawer trigger */
+.yarn-check-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--text-muted);
+  margin: 0;
+  padding: 0.25rem 0.125rem;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 0.95rem;
+  text-decoration: none;
+  text-align: center;
+}
+
+.yarn-check-link .arrow {
+  font-size: 0.9em;
+  transition: transform 0.2s ease;
+}
+
+.yarn-check-link:hover .arrow {
+  transform: translateX(3px);
+}
+
+.yarn-check-link:focus-visible {
+  outline: 2px solid #52682d;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.hat-yarn-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 10040;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.hat-yarn-drawer.is-open {
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.hat-yarn-drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: default;
+  background: rgba(30, 41, 59, 0.38);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.hat-yarn-drawer.is-open .hat-yarn-drawer-backdrop {
+  opacity: 1;
+}
+
+.hat-yarn-drawer-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  width: min(30rem, 100vw);
+  max-width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  background: linear-gradient(180deg, #faf9f6 0%, #f4f3ee 100%);
+  border-radius: 20px 0 0 20px;
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.75),
+    -1px 0 0 rgba(82, 104, 45, 0.07),
+    -16px 0 48px rgba(15, 23, 42, 0.07),
+    -6px 0 24px rgba(15, 23, 42, 0.04);
+}
+
+.hat-yarn-drawer.is-open .hat-yarn-drawer-panel {
+  transform: translateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hat-yarn-drawer-backdrop,
+  .hat-yarn-drawer-panel {
+    transition: none;
+  }
+}
+
+.hat-yarn-drawer-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem 1.25rem;
+  padding: 1.4rem 1.25rem 1rem 1.5rem;
+  border-bottom: none;
+}
+
+.hat-yarn-drawer-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.hat-yarn-drawer-eyebrow {
+  margin: 0 0 0.4rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.hat-yarn-drawer-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.28rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #374151;
+  line-height: 1.2;
+}
+
+.hat-yarn-drawer-lede {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  font-weight: 450;
+  color: #6b7280;
+  max-width: 36ch;
+}
+
+.hat-yarn-drawer-close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.375rem;
+  height: 2.375rem;
+  margin-top: 0.1rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(55, 65, 81, 0.07);
+  color: #6b7280;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.hat-yarn-drawer-close:hover {
+  background: rgba(82, 104, 45, 0.14);
+  color: #3d4a2f;
+}
+
+.hat-yarn-drawer-close:focus-visible {
+  outline: 2px solid #52682d;
+  outline-offset: 2px;
+}
+
+.hat-yarn-drawer-close svg {
+  display: block;
+}
+
+.hat-yarn-drawer-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.35rem 1.5rem 1.75rem;
+  padding-bottom: max(1.75rem, env(safe-area-inset-bottom, 0px));
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 640px) {
+  .hat-yarn-drawer-panel {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+    box-shadow: -8px 0 40px rgba(15, 23, 42, 0.08);
+  }
+
+  .hat-yarn-drawer-header {
+    padding: max(0.85rem, env(safe-area-inset-top, 0px)) 1rem 0.85rem 1.15rem;
+  }
+
+  .hat-yarn-drawer-title {
+    font-size: 1.15rem;
+  }
+
+  .hat-yarn-drawer-lede {
+    max-width: none;
+  }
+
+  .hat-yarn-drawer-close {
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hat-yarn-drawer-body {
+    padding: 0.25rem 1.1rem max(1.5rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .yarn-check-link {
+    min-height: 44px;
+    padding: 0.5rem 0.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* At-a-Glance summary block styling */
+.summary-block {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.summary-block h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.summary-total {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #52682D;
+  margin-bottom: 1rem;
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.summary-table th,
+.summary-table td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.summary-table th {
+  font-weight: 600;
+  color: #555;
+  background: #f0f0f0;
+}
+
+.summary-table td:nth-child(2),
+.summary-table td:nth-child(3),
+.summary-table th:nth-child(2),
+.summary-table th:nth-child(3) {
+  text-align: center;
+}
+
+.summary-crown-style {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.summary-crown-style-inline {
+  font-size: 0.85rem;
+  font-weight: normal;
+  color: #666;
+}
+
+/* Tips styling - :global needed for dynamically generated content */
+:global(.pattern-tip) {
+  position: relative;
+  font-size: 0.85rem;
+  color: #374151;
+  background: rgba(194, 97, 78, 0.07);
+  border-left: 4px solid #c2614e;
+  border-radius: 6px;
+  padding: 0.75rem 2rem 0.75rem 1rem;
+  margin: 0.5rem 0 0.75rem 0;
+  line-height: 1.4;
+}
+
+:global(.pattern-tip strong) {
+  font-weight: 700;
+  color: #c2614e;
+}
+
+:global(.pattern-tip-dismiss) {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  width: 1.875rem;
+  height: 1.875rem;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+:global(.pattern-tip-dismiss:hover),
+:global(.pattern-tip-dismiss:focus-visible) {
+  color: #6b7280;
+  background: rgba(194, 97, 78, 0.12);
+  outline: none;
+}
+
+:global(.pattern-tips-control-box.pattern-tip) {
+  padding: 0.5rem 0.75rem;
+  margin: 0 0 0.5rem 0;
+}
+
+:global(.pattern-tips-control__layout) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+}
+
+:global(.pattern-tips-control__lead) {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+:global(.pattern-tips-control__info-icon) {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  color: #c2614e;
+  font-size: 0.95rem;
+}
+
+:global(.pattern-tips-control__text) {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  color: #374151;
+}
+
+:global(.pattern-tips-control__actions) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  flex: 0 0 auto;
+}
+
+:global(.pattern-tips-control-btn) {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  font-family: inherit;
+  color: #6b7280;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(194, 97, 78, 0.28);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+:global(.pattern-tips-control-btn i) {
+  font-size: 0.8em;
+  opacity: 0.9;
+}
+
+:global(.pattern-tips-control-btn:hover),
+:global(.pattern-tips-control-btn:focus-visible) {
+  color: #c2614e;
+  border-color: rgba(194, 97, 78, 0.45);
+  background: rgba(255, 255, 255, 0.95);
+  outline: none;
+}
+
+:global(#pattern-content[data-show-tips="true"] .pattern-tip[data-tip-dismissed="true"]) {
+  display: none !important;
+}
+
+/* 4-wedge crown: indent instructional paragraphs under each wedge header */
+:global(#pattern-content .pattern-wedge-crown-body) {
+  padding-left: 1rem;
+  box-sizing: border-box;
+}
+
+/* Collapsible pattern sections (hat tab instructions only) */
+:global(#pattern-content .hat-pattern-section) {
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  background: #fff;
+}
+
+:global(#pattern-content .hat-pattern-section__header) {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  background: rgba(82, 104, 45, 0.07);
+}
+
+:global(#pattern-content .hat-pattern-section__heading h4) {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+:global(#pattern-content .hat-pattern-section__collapse-label) {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+:global(#pattern-content .hat-pattern-section__content) {
+  padding: 0.5rem 0.85rem 1rem;
+}
+
+:global(#pattern-content .hat-pattern-section .hat-pattern-section) {
+  margin-bottom: 0.65rem;
+  margin-top: 0.35rem;
+}
+
+:global(#pattern-content .hat-pattern-section .hat-pattern-section:last-child) {
+  margin-bottom: 0;
+}
+
+:global(#pattern-content .hat-pattern-section.is-collapsed) {
+  opacity: 0.74;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+:global(#pattern-content .hat-pattern-section.is-collapsed .hat-pattern-section__header) {
+  padding: 0.35rem 0.6rem;
+}
+
+:global(#pattern-content .hat-pattern-section.is-collapsed .hat-pattern-section__content) {
+  display: none;
+}
+
+:global(.pattern-diagram) {
+  margin: 1rem 0;
+  text-align: center;
+}
+
+:global(.pattern-diagram img) {
+  max-width: 100%;
+  height: auto;
+}
+
+:global(.pattern-row-label) {
+  font-weight: 700;
+}
+
+:global(.pattern-row-check) {
+  display: none;
+}
+
+:global(.pattern-transfer-step) {
+  margin: 0 0 0.75rem 0;
+  color: #4f4f4f;
+}
+
+:global(.instruction-tag) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-border, #ccc);
+  border-radius: 999px;
+  font-size: 0.9em;
+  background: transparent;
+  white-space: nowrap;
+}
+
+:global(.instruction-tag .icon) {
+  font-size: 0.95em;
+}
+
+@media print {
+  :global(.instruction-tag) {
+    border-color: #8a8a8a;
+    background: transparent;
+    color: #444;
+  }
+}
+
+:global(.tips-inline-toggle) {
+  color: #c2614e;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+:global(.tips-inline-toggle:hover) {
+  text-decoration: underline;
+}
+
+:global(.tips-icon) {
+  color: #c2614e;
+  margin-right: 6px;
+  font-size: 0.9em;
+  vertical-align: middle;
+  opacity: 0.85;
+}
+
+/* Tips OFF: quiet utility link only (no tip box) */
+:global(.pattern-tips-off-row) {
+  margin: 0 0 0.5rem 0;
+  padding: 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+:global(.pattern-tips-off-row .tips-icon) {
+  cursor: pointer;
+}
+
+/* Results container styling */
+.results-container {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e9ecef;
+}
+
+/* Pattern tab: output only — no duplicate intro above */
+.tab-panel#tab-pattern .results-container {
+  margin-top: 0;
+  padding-top: 0.5rem;
+  border-top: none;
+}
+
+/* Print summary - hidden on screen, shown on print */
+.print-summary {
+  display: none;
+}
+
+.print-summary h3 {
+  font-size: 0.95rem;
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+  color: #333;
+}
+
+.print-summary p {
+  margin: 0.15rem 0;
+  font-size: 0.85rem;
+  color: #444;
+}
+
+/* Hide pattern tips except the top control box */
+:global(#pattern-content[data-show-tips="false"] .pattern-tip:not(.pattern-tips-control-box)) {
+  display: none;
+}
+
+:global(#pattern-content[data-show-tips="true"] .pattern-tip) {
+  display: block;
+}
+
+/* Print-specific overrides for hat patterns */
+@media print {
+  * {
+    background: white !important;
+    background-color: white !important;
+  }
+  
+  body {
+    background: white !important;
+  }
+  
+  .page-header, .video-button {
+    display: none;
+  }
+
+  :global(.back-link) {
+    display: none !important;
+  }
+  
+  /* Print header with pattern name */
+  .print-header {
+    display: block !important;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #333;
+  }
+  
+  .highlight-box {
+    background: white !important;
+    border-left: 2px solid #333 !important;
+    padding: 0.5rem !important;
+  }
+  
+  :global(.pattern-term)::after {
+    display: none !important;
+  }
+  
+  /* Hide wizard inputs on print */
+  .section-title,
+  .input-group,
+  .checkbox-group,
+  .wizard-header,
+  #standard-size,
+  #custom-size,
+  .gauge-inputs,
+  .hat-builder-inputs .hat-form-section__title,
+  .hat-builder-inputs .hat-form-section__heading {
+    display: none !important;
+  }
+
+  .hat-builder-inputs .hat-form-section {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    display: block !important;
+  }
+
+  .hat-builder-inputs .hat-form-section__intro {
+    display: none !important;
+  }
+  
+  /* Show print summary on print */
+  .print-summary {
+    display: block !important;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  /* Print tips: when off, hide all tips including intro; when on, show all */
+  :global(#pattern-content[data-show-tips="false"] .pattern-tip) {
+    display: none !important;
+  }
+
+  :global(#pattern-content[data-show-tips="true"] .pattern-tip) {
+    display: block !important;
+    border-left: 1px solid #333 !important;
+  }
+
+  :global(.pattern-tips-off-row) {
+    display: none !important;
+  }
+
+  :global(.pattern-tip-dismiss),
+  :global(.pattern-tips-control-btn),
+  :global(.pattern-tips-control-box) {
+    display: none !important;
+  }
+
+  /* Tabs: show Build + Pattern for print (summary + instructions); hide nav and placeholder tabs */
+  .pattern-tab-nav {
+    display: none !important;
+  }
+
+  .pattern-tabs .tab-panel#tab-inspiration {
+    display: none !important;
+  }
+
+  .pattern-tabs .tab-panel#tab-build,
+  .pattern-tabs .tab-panel#tab-pattern {
+    display: block !important;
+  }
+
+  :global(.no-print) {
+    display: none !important;
+  }
+
+  :global(.pattern-row-check) {
+    display: inline-block;
+    width: 0.85em;
+    height: 0.85em;
+    border: 1px solid #444;
+    margin-right: 0.4em;
+    vertical-align: -0.05em;
+  }
+
+  /* Pattern sections: always print full instructions; hide collapse controls */
+  :global(#pattern-content .hat-pattern-section.is-collapsed .hat-pattern-section__content) {
+    display: block !important;
+  }
+
+  :global(#pattern-content .hat-pattern-section.is-collapsed) {
+    opacity: 1 !important;
+    background: white !important;
+  }
+
+  :global(#pattern-content .hat-pattern-section__collapse-label) {
+    display: none !important;
+  }
+
+  :global(#pattern-content .hat-pattern-section.is-collapsed .hat-pattern-section__header) {
+    padding: 0.65rem 0.85rem !important;
+  }
+
+  /* Build tab: only print header + settings summary; drop inputs/sections/CTA from layout. */
+  .hat-builder-inputs #hat-builder-form > *:not(.print-header):not(#print-summary) {
+    display: none !important;
+  }
+
+  /*
+   * Shared pattern print shell (hat first; same class names for blankets/sweaters later).
+   * Global print.css sets page-break-inside: avoid on .results-section / .pattern-card — override
+   * inside .pattern-print-results so instructions can flow across pages; diagram uses .pattern-print-new-page.
+   */
+  .hat-builder-inputs #results .results-section,
+  .hat-builder-inputs #results .pattern-print-results,
+  .hat-builder-inputs #results .pattern-print-results .pattern-print-section--instructions,
+  .hat-builder-inputs #results .pattern-print-results .pattern-card {
+    break-inside: auto !important;
+    page-break-inside: auto !important;
+  }
+
+  .pattern-print-new-page {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+
+  .pattern-print-keep-together {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .hat-builder-inputs #results .kbm-warning-box {
+    display: none !important;
+  }
+
+}
+</style>
+
+<div class="wizard-page">
+  <div style="max-width: 800px; margin: 0 auto; padding: 0 1rem;">
+    <WizardBackLink className="back-link no-print" category="pattern" />
+  </div>
+
+  <div class="page-header no-print hat-builder-page-header">
+    <div class="hat-builder-page-header__media">
+      <PatternHeaderImage
+        src="/images/patterns/basic-hat.webp"
+        alt="Machine knit hat"
+      />
+    </div>
+    <div class="hat-builder-page-header__main">
+      <div class="page-header-title">
+        <h1>{wizardTitle}</h1>
+        {whyUseThisTool && (
+          <WhyUseThisToolTooltip text={whyUseThisTool} variant="inline" />
+        )}
+      </div>
+      <p class="hat-builder-page-header__subtitle">{wizardDescription}</p>
+    </div>
+  </div>
+  
+  <div id="hat-builder-form-top" class="wizard-container scroll-mt-[96px]">
+    <div class="calculator-card hat-builder-inputs">
+      <div class="pattern-tabs">
+        <div class="pattern-tab-nav">
+          <button type="button" class="tab-btn active" data-tab="build">
+            <span class="tab-icon" aria-hidden="true">⚙️</span>
+            <span class="tab-label">Create</span>
+          </button>
+          <button
+            type="button"
+            id="hat-tab-pattern"
+            class="tab-btn is-disabled"
+            data-tab="pattern"
+            aria-disabled="true"
+          >
+            <span class="tab-icon" aria-hidden="true">📝</span>
+            <span class="tab-label">Pattern</span>
+          </button>
+          <button type="button" class="tab-btn" data-tab="inspiration">
+            <span class="tab-icon" aria-hidden="true">💡</span>
+            <span class="tab-label">Inspiration</span>
+          </button>
+        </div>
+
+        <div class="pattern-tab-content">
+          <div class="tab-panel active" id="tab-build">
+            <form id="hat-builder-form" autocomplete="off" novalidate>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <div>
+                <UnitToggle id="hat" />
+              </div>
+
+              <button id="clear-hat-builder" type="button">Clear</button>
+            </div>
+
+            <section class="hat-form-section" aria-labelledby="hat-section-sizing-heading">
+              <h3 id="hat-section-sizing-heading" class="hat-form-section__title hat-form-section__heading">Hat Size</h3>
+
+              <div id="standard-size" style="display: block;">
+                <div class="input-group">
+                  <div class="hat-select-wrap">
+                    <span class="hat-select-wrap__check" aria-hidden="true"></span>
+                    <select id="hat-size" data-testid="select-hat-size" aria-label="Choose a finished hat size (inches)" data-sizes-source="ssr" autocomplete="off">
+                      <option value="" disabled selected hidden>Choose a finished hat size (inches)...</option>
+                      {hatSizingBuilderRows.map((row) => (
+                        <option value={row.size} data-finished-size-inches={row.finishedSizeInches}>
+                          {row.optionLabel}
+                        </option>
+                      ))}
+                      <option value="custom">✏️ Enter your own finished hat size</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div id="custom-size" class="hat-builder-custom-subfield" style="display: none;">
+                <div class="input-group">
+                  <FloatingInput
+                    id="custom-circumference"
+                    type="number"
+                    step={0.25}
+                    label='Custom Finished Hat Size (inches)'
+                    placeholder=" "
+                    dataTestid="input-custom-circumference"
+                  />
+                </div>
+              </div>
+            </section>
+
+            <section class="hat-form-section" aria-labelledby="hat-section-hat-length-heading">
+              <h3 id="hat-section-hat-length-heading" class="hat-form-section__title hat-form-section__heading">Finished Hat Length (bottom of brim to top of crown)</h3>
+
+              <div class="input-group">
+                <div class="hat-select-wrap hat-length-picker-wrap">
+                  <select
+                    id="fit"
+                    class="hat-length-picker__native"
+                    data-testid="select-fit"
+                    aria-label="Enter Finished Hat Length (bottom of brim to top of crown)"
+                    autocomplete="off"
+                    tabindex="-1"
+                  >
+                    <option value="" disabled selected hidden>Enter Finished Hat Length...</option>
+                    <option value="beanie">Beanie (7" finished hat length)</option>
+                    <option value="watchcap">Classic (8.5" finished hat length)</option>
+                    <option value="slouchy">Slouchy (10" finished hat length)</option>
+                    <option value="relaxed">Relaxed (9" finished hat length)</option>
+                    <option value="custom">✏️ Enter your own finished hat length</option>
+                  </select>
+                  <div class="hat-length-picker__flex-row">
+                    <span class="hat-select-wrap__check" aria-hidden="true"></span>
+                    <div class="hat-length-picker">
+                      <button
+                        type="button"
+                        class="hat-length-picker__summary"
+                        id="hat-length-summary"
+                        aria-expanded="false"
+                        aria-controls="hat-length-panel"
+                        aria-haspopup="true"
+                      >
+                        <span id="hat-length-summary-text" class="hat-length-picker__summary-text"></span>
+                      </button>
+                      <div id="hat-length-panel" class="hat-length-picker__panel" hidden>
+                        <div
+                          class="hat-length-picker__grid"
+                          role="group"
+                          aria-label="Finished hat length style"
+                        >
+                          <button
+                            type="button"
+                            class="hat-length-picker__option"
+                            data-fit-value="beanie"
+                            aria-pressed="false"
+                          >
+                            <img
+                              src="/images/hats/length-beanie.png"
+                              alt=""
+                              class="hat-length-picker__img"
+                              width="120"
+                              height="120"
+                            />
+                            <span class="hat-length-picker__option-label">Beanie</span>
+                          </button>
+                          <button
+                            type="button"
+                            class="hat-length-picker__option"
+                            data-fit-value="watchcap"
+                            aria-pressed="false"
+                          >
+                            <img
+                              src="/images/hats/length-classic.png"
+                              alt=""
+                              class="hat-length-picker__img"
+                              width="120"
+                              height="120"
+                            />
+                            <span class="hat-length-picker__option-label">Classic</span>
+                          </button>
+                          <button
+                            type="button"
+                            class="hat-length-picker__option"
+                            data-fit-value="slouchy"
+                            aria-pressed="false"
+                          >
+                            <img
+                              src="/images/hats/length-slouchy.png"
+                              alt=""
+                              class="hat-length-picker__img"
+                              width="120"
+                              height="120"
+                            />
+                            <span class="hat-length-picker__option-label">Slouchy</span>
+                          </button>
+                        </div>
+                        <button type="button" class="hat-length-picker__custom" id="hat-length-custom-btn">
+                          ✏️ Enter your own finished hat length
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="custom-length-div" class="hat-builder-custom-subfield" style="display: none;">
+                <div class="input-group">
+                  <FloatingInput
+                    id="custom-hat-length"
+                    type="number"
+                    step={0.25}
+                    label='Finished Hat Length (bottom of brim to top of crown) (inches)'
+                    placeholder=" "
+                    dataTestid="input-custom-hat-length"
+                  />
+                  <small class="helper-text">Enter the finished hat length as it will be worn. We'll calculate the crown shaping and any brim adjustments for you.</small>
+                </div>
+              </div>
+
+              <div id="hat-zero-body-warning" class="no-print" hidden>
+                <WarningBox title="Notice" message={hatZeroBodyRowsWarningMessage} />
+              </div>
+            </section>
+
+            <section class="hat-form-section" aria-labelledby="hat-section-style-heading">
+              <h3 id="hat-section-style-heading" class="hat-form-section__title hat-form-section__heading">Style Options</h3>
+
+              <div class="input-group">
+                <div class="hat-field hat-field--crown">
+                  <div class="hat-field__label-row">
+                    <label class="hat-field__label" for="brimType">Brim Type</label>
+                  </div>
+                  <div class="hat-select-wrap">
+                    <span class="hat-select-wrap__check" aria-hidden="true"></span>
+                    <select id="brimType" data-testid="select-brim-type" aria-label="Brim Type" autocomplete="off" class="sr-only">
+                      <option value="" disabled selected hidden>Choose brim type</option>
+                      <option value="single">Single Layer</option>
+                      <option value="folded">Folded Hem</option>
+                    </select>
+                    <div class="hat-length-picker__flex-row">
+                      <div class="hat-length-picker">
+                        <button
+                          type="button"
+                          class="hat-length-picker__summary"
+                          id="brim-type-summary"
+                          aria-expanded="false"
+                          aria-controls="brim-type-panel"
+                          aria-haspopup="true"
+                        >
+                          <span id="brim-type-summary-text" class="hat-length-picker__summary-text"></span>
+                        </button>
+                        <div id="brim-type-panel" class="hat-length-picker__panel" hidden>
+                          <div
+                            class="hat-length-picker__grid hat-brim-picker__grid"
+                            role="group"
+                            aria-label="Brim type"
+                          >
+                            <button
+                              type="button"
+                              class="hat-length-picker__option"
+                              data-brim-type-value="single"
+                              aria-pressed="false"
+                            >
+                              <img
+                                src="/images/hats/single-layer.png"
+                                alt=""
+                                class="hat-length-picker__img hat-brim-picker__img"
+                                width="120"
+                                height="120"
+                              />
+                              <span class="hat-length-picker__option-label">Single Layer</span>
+                            </button>
+                            <button
+                              type="button"
+                              class="hat-length-picker__option"
+                              data-brim-type-value="folded"
+                              aria-pressed="false"
+                            >
+                              <img
+                                src="/images/hats/folded-hem.png"
+                                alt=""
+                                class="hat-length-picker__img hat-brim-picker__img"
+                                width="120"
+                                height="120"
+                              />
+                              <span class="hat-length-picker__option-label">Folded Hem</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="input-group">
+                <FloatingInput
+                  id="brimLength"
+                  name="brimLength"
+                  type="number"
+                  step={0.25}
+                  label='Visible Brim Height (when worn)'
+                  placeholder=" "
+                  dataTestid="input-brim-length"
+                />
+                <small class="helper-text">We'll automatically adjust the rows for the fold.</small>
+              </div>
+
+              <div class="input-group">
+                <div class="hat-field hat-field--crown">
+                  <div class="hat-field__label-row">
+                    <label class="hat-field__label" for="crown">Crown Shaping</label>
+                    <span class="hat-field__help-slot">
+                      <button
+                        type="button"
+                        class="crown-help-trigger"
+                        id="crown-help-open"
+                        aria-label="View crown shaping examples"
+                      >?</button>
+                    </span>
+                  </div>
+                  <div class="hat-select-wrap">
+                    <span class="hat-select-wrap__check" aria-hidden="true"></span>
+                    <select id="crown" data-testid="select-crown" autocomplete="off" class="sr-only">
+                      <option value="" disabled selected hidden>Choose crown shaping</option>
+                      <option value="gathered">Gathered (cinched top)</option>
+                      <option value="wedge-4-decrease">4-Wedge Decrease</option>
+                      <option value="spiral">Spiral Crown (Smooth, Continuous)</option>
+                    </select>
+                    <div class="hat-length-picker__flex-row">
+                      <div class="hat-length-picker">
+                        <button
+                          type="button"
+                          class="hat-length-picker__summary"
+                          id="crown-summary"
+                          aria-expanded="false"
+                          aria-controls="crown-panel"
+                          aria-haspopup="true"
+                        >
+                          <span id="crown-summary-text" class="hat-length-picker__summary-text"></span>
+                        </button>
+                        <div id="crown-panel" class="hat-length-picker__panel" hidden>
+                          <div
+                            class="hat-length-picker__grid"
+                            role="group"
+                            aria-label="Crown shaping"
+                          >
+                            <button
+                              type="button"
+                              class="hat-length-picker__option"
+                              data-crown-value="gathered"
+                              aria-pressed="false"
+                            >
+                              <img
+                                src="/images/hats/gathered.svg"
+                                alt=""
+                                class="hat-length-picker__img hat-crown-picker__img"
+                                width="120"
+                                height="120"
+                              />
+                              <span class="hat-length-picker__option-label">Gathered</span>
+                            </button>
+                            <button
+                              type="button"
+                              class="hat-length-picker__option"
+                              data-crown-value="wedge-4-decrease"
+                              aria-pressed="false"
+                            >
+                              <img
+                                src="/images/hats/wedge.svg"
+                                alt=""
+                                class="hat-length-picker__img hat-crown-picker__img"
+                                width="120"
+                                height="120"
+                              />
+                              <span class="hat-length-picker__option-label">Wedge</span>
+                            </button>
+                            <button
+                              type="button"
+                              class="hat-length-picker__option"
+                              data-crown-value="spiral"
+                              aria-pressed="false"
+                            >
+                              <img
+                                src="/images/hats/spiral.svg"
+                                alt=""
+                                class="hat-length-picker__img hat-crown-picker__img"
+                                width="120"
+                                height="120"
+                              />
+                              <span class="hat-length-picker__option-label">Spiral</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </section>
+
+            <section class="hat-form-section hat-form-section--gauge" aria-labelledby="hat-section-gauge-heading">
+              <h3 id="hat-section-gauge-heading" class="hat-form-section__title hat-form-section__heading">Gauge</h3>
+              <GaugeInput id="hat" showTitle={false} showToggle={false} toggleId="hat" showGaugeSubLabel={false} flatRow noPrint />
+              <div
+                id="needle-check-result-preview"
+                class="diy-blanket-needle-result-preview no-print"
+                hidden
+              >
+                <p class="diy-blanket-needle-result-preview__line">
+                  <strong><span id="needle-count-value-preview"></span> needles required</strong>
+                </p>
+                <p class="diy-blanket-needle-result-preview__context" id="needle-size-context-preview"></p>
+              </div>
+            </section>
+
+            <section class="hat-form-section hat-form-section--yarn" aria-labelledby="hat-section-yarn-heading">
+              <h3 id="hat-section-yarn-heading" class="hat-form-section__title hat-form-section__heading">Yarn</h3>
+              <div
+                id="hat-yarn-drawer-trigger-wrap"
+                class="hat-yarn-drawer-trigger-wrap no-print"
+                hidden
+              >
+                <button type="button" id="hat-yarn-drawer-open" class="yarn-check-link">
+                  (Optional) How much yarn do I need?
+                  <span class="arrow" aria-hidden="true">→</span>
+                </button>
+              </div>
+            </section>
+
+            <!-- Print Header (hidden on screen, shown on print) -->
+            <div class="print-header" style="display: none;" id="print-header-title">{wizardTitle} Pattern</div>
+
+            <!-- Print Summary (hidden on screen, shown on print) -->
+            <div id="print-summary" class="print-summary">
+              <h3>Your Hat Settings</h3>
+              <p id="print-size"></p>
+              <p id="print-brim"></p>
+              <p id="print-crown"></p>
+              <p id="print-fit"></p>
+              <p id="print-gauge"></p>
+            </div>
+                         
+            <div id="build-pattern-cta" style="display:block; text-align:center; margin-top: 24px;">
+              <button type="button" id="create-pattern-btn" class="kbm-btn kbm-btn-accent">
+                Create My Pattern
+              </button>
+              <p id="create-pattern-feedback" class="create-pattern-feedback" role="status" aria-live="polite" hidden></p>
+            </div>
+            </form>
+          </div>
+
+          <div class="tab-panel" id="tab-pattern">
+            <div id="results" class="results-container scroll-mt-[96px]" style="display: none;">
+              <WarningBox message={patternPersistWarning} />
+              <ActionBar formScrollTarget="hat-builder-form-top" />
+
+              <div class="results-section">
+                <div class="pattern-print-results">
+                  <div class="pattern-print-section pattern-print-section--instructions">
+                    <div class="pattern-card">
+                      <PatternPrintPersonalization />
+                      <div id="pattern-content" data-show-tips="false">
+                        <!-- Will be populated by JavaScript -->
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    class="pattern-print-section pattern-print-section--diagram pattern-print-new-page pattern-print-keep-together"
+                  >
+                    <div class="diagram-container">
+                      <h3>Hat Dimensions</h3>
+                      <div id="diagram-content">
+                        <!-- Will be populated by JavaScript -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-panel" id="tab-inspiration">
+            <div class="inspiration-section">
+              <h3 class="inspiration-heading">Get Inspired</h3>
+
+              <div class="pinterest-embed">
+                <a
+                  data-pin-do="embedBoard"
+                  data-pin-board-width="100%"
+                  data-pin-scale-height="900"
+                  data-pin-scale-width="80"
+                  href="https://www.pinterest.com/knititnow/hats/"
+                ></a>
+              </div>
+
+              <p class="hat-pinterest-fallback-link">
+                <a
+                  href="https://www.pinterest.com/knititnow/hats/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Open the Machine Knit Hats board on Pinterest
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="crown-help-overlay" class="crown-help-overlay" hidden aria-hidden="true">
+  <div class="crown-help-modal" role="dialog" aria-modal="true" aria-labelledby="crown-help-title">
+    <button type="button" class="crown-help-close" aria-label="Close crown shaping help">×</button>
+    <h2 id="crown-help-title">Crown Shaping</h2>
+    <p>Choose how the top of the hat is closed and shaped.</p>
+    <img
+      src="/images/glossary/hat-crown-styles.webp"
+      alt="Hat crown shaping examples: wedge, spiral, and gathered"
+      class="crown-help-image"
+    />
+  </div>
+</div>
+
+<div
+  id="hat-yarn-drawer"
+  class="hat-yarn-drawer no-print"
+  aria-hidden="true"
+>
+  <div
+    id="hat-yarn-drawer-panel"
+    class="hat-yarn-drawer-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="hat-yarn-drawer-title"
+    aria-describedby="hat-yarn-drawer-desc"
+  >
+    <header class="hat-yarn-drawer-header">
+      <div class="hat-yarn-drawer-header-text">
+        <p class="hat-yarn-drawer-eyebrow">Optional tool</p>
+        <h2 id="hat-yarn-drawer-title" class="hat-yarn-drawer-title">Check your yarn</h2>
+        <p id="hat-yarn-drawer-desc" class="hat-yarn-drawer-lede">
+          Quick estimate from a weighed swatch—uses the hat size and length you set above.
+        </p>
+      </div>
+      <button type="button" class="hat-yarn-drawer-close" id="hat-yarn-drawer-close" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M18 6L6 18M6 6l12 12"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        </svg>
+      </button>
+    </header>
+    <div class="hat-yarn-drawer-body">
+      <YarnRequirement
+        variant="hat"
+        layout="panel"
+        presentation="drawer"
+        projectWidth={0}
+        projectLength={0}
+        lengthUnit="in"
+        source="custom"
+      />
+    </div>
+  </div>
+  <div
+    id="hat-yarn-drawer-backdrop"
+    class="hat-yarn-drawer-backdrop"
+    aria-hidden="true"
+  ></div>
+</div>
+
+<script>
+  import "../../scripts/patternPrintPersonalizationBridge.ts";
+  import {
+    bindPatternTipDismiss,
+    patternTipsControlBoxHtml,
+    refreshPatternTipDismiss,
+    updateTipsResetLinkVisibility,
+  } from "../../lib/patterns/patternTipDismiss";
+  // Hat is free for owner review: no membership lock. Blanket still uses PatternBuilderAccountGate.
+  const HAT_TIPS_STORAGE_KEY = "hat-show-tips";
+  window.kbmPatternTipsControlBoxHtml = patternTipsControlBoxHtml;
+  window.kbmUpdateTipsResetLinkVisibility = updateTipsResetLinkVisibility;
+
+  function initHatPatternTipDismiss() {
+    const scope = document.getElementById("pattern-content");
+    if (!(scope instanceof HTMLElement)) return;
+    bindPatternTipDismiss(scope, HAT_TIPS_STORAGE_KEY, null);
+    refreshPatternTipDismiss(scope, HAT_TIPS_STORAGE_KEY);
+    updateTipsResetLinkVisibility(scope, HAT_TIPS_STORAGE_KEY);
+  }
+
+  document.addEventListener("DOMContentLoaded", initHatPatternTipDismiss);
+  window.addEventListener("kbm:hat-pattern-rendered", initHatPatternTipDismiss);
+</script>
+
+<!-- Load shared wizard utilities -->
+<script is:inline src="/js/wizard-utils.js"></script>
+
+<!-- Phase A: extracted hat math / draft / instructions / diagram (page still owns UI + print). -->
+<script>
+  import {
+    applyHatCrownCastOnAdjustment,
+    calculateHatPattern,
+    HAT_FIT_HEIGHTS_INCHES,
+    resolveTotalHatLengthInches,
+    roundFinishedHatSizeFromHead,
+    roundToEvenPreferUp,
+  } from "../../lib/patterns/hat/hatMath";
+  import {
+    ensureHatDraftMigrated,
+    syncHatDraftFromBuilderFields,
+  } from "../../lib/patterns/hat/hatDraft";
+  import { buildHatPatternHtml } from "../../lib/patterns/hat/hatInstructions";
+  import { loadHatDiagramSvg } from "../../lib/patterns/hat/hatDiagram";
+
+  window.__kbmHatPhaseA = {
+    applyHatCrownCastOnAdjustment,
+    calculateHatPattern,
+    HAT_FIT_HEIGHTS_INCHES,
+    resolveTotalHatLengthInches,
+    roundToEvenPreferUp,
+    roundFinishedHatSizeFromHead,
+    ensureHatDraftMigrated,
+    syncHatDraftFromBuilderFields,
+    buildHatPatternHtml,
+    loadHatDiagramSvg,
+  };
+</script>
+
+<script define:vars={{ hatSizingBuilderRows, scrapOffPatternTooltip }}>
+async function initHatBuilder() {
+  console.log('Wizard initializing...');
+
+  console.log('HAT BUILDER FILE LOADED');
+
+  const HatPhaseA = window.__kbmHatPhaseA;
+  if (!HatPhaseA) {
+    console.error('[hat-builder] Phase A modules failed to load (window.__kbmHatPhaseA missing)');
+  }
+  const {
+    applyHatCrownCastOnAdjustment,
+    calculateHatPattern,
+    HAT_FIT_HEIGHTS_INCHES,
+    resolveTotalHatLengthInches: resolveTotalHatLengthInchesLib,
+    roundFinishedHatSizeFromHead,
+    roundToEvenPreferUp,
+    ensureHatDraftMigrated,
+    syncHatDraftFromBuilderFields,
+    buildHatPatternHtml,
+    loadHatDiagramSvg,
+  } = HatPhaseA || {};
+  
+  // Use shared wizard utilities from window.WizardUtils (or shorthand WU)
+  const {
+    convertLength,
+    formatLength,
+    formatLengthWithUnit,
+    gaugeToPerUnit,
+    createUnitStore,
+    showResults,
+    hideResults,
+    setupAutoCalculate,
+    updateHTML
+  } = window.WizardUtils;
+
+  /** Restore collapsed state from localStorage after pattern HTML is injected. */
+  function applyHatPatternSectionCollapseState(root) {
+    if (!root) return;
+    root.querySelectorAll('.hat-pattern-section').forEach((section) => {
+      const id = section.dataset.sectionId;
+      if (!id) return;
+      const header = section.querySelector(':scope > .hat-pattern-section__header');
+      const checkbox = header?.querySelector('input.hat-pattern-section__collapse');
+      if (!(checkbox instanceof HTMLInputElement)) return;
+      const collapsed = localStorage.getItem(`hatPattern_section_${id}`) === 'true';
+      checkbox.checked = collapsed;
+      section.classList.toggle('is-collapsed', collapsed);
+    });
+  }
+
+  const resultsVisibilityConfig = {
+    resultsSelector: '#results',
+    actionBarSelector: '#action-bar',
+    printButtonSelector: '#print-btn',
+  };
+
+  const tabButtons = document.querySelectorAll('.pattern-tabs .tab-btn');
+  const tabPanels = document.querySelectorAll('.pattern-tabs .tab-panel');
+
+  function activateWizardTab(target) {
+    const activeTabBtnsBefore = Array.from(
+      document.querySelectorAll('.pattern-tabs .tab-btn.active')
+    ).map((b) => b.dataset.tab);
+    const activePanelsBefore = Array.from(
+      document.querySelectorAll('.pattern-tabs .tab-panel.active')
+    ).map((p) => p.id);
+    console.log('[hat-builder debug] activateWizardTab requested tabName:', target);
+    console.log('[hat-builder debug] activateWizardTab active tab before:', {
+      activeTabButtons: activeTabBtnsBefore,
+      activePanels: activePanelsBefore,
+    });
+    // Tab clicks are already blocked when .is-disabled (see tab button listeners).
+    // Do not block programmatic switches (e.g. Create My Pattern) — the Pattern tab could
+    // still carry .is-disabled if readiness UI missed that node, which would hide results.
+    const panel = document.getElementById(`tab-${target}`);
+    if (!panel) return;
+    tabButtons.forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.tab === target);
+    });
+    tabPanels.forEach((p) => {
+      p.classList.toggle('active', p.id === `tab-${target}`);
+    });
+    const activeTabBtnsAfter = Array.from(
+      document.querySelectorAll('.pattern-tabs .tab-btn.active')
+    ).map((b) => b.dataset.tab);
+    const activePanelsAfter = Array.from(
+      document.querySelectorAll('.pattern-tabs .tab-panel.active')
+    ).map((p) => p.id);
+    console.log('[hat-builder debug] activateWizardTab active tab after:', {
+      activeTabButtons: activeTabBtnsAfter,
+      activePanels: activePanelsAfter,
+    });
+    if (target === 'inspiration') {
+      if (window.PinUtils && typeof window.PinUtils.build === 'function') {
+        window.PinUtils.build();
+      }
+      window.kbmSchedulePinterestEmbedsRefresh?.();
+    }
+  }
+
+  tabButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      if (button.classList.contains('is-disabled')) return;
+      const target = button.dataset.tab;
+      if (!target) return;
+      // Hat is free: Pattern tab opens without membership once a pattern has been generated
+      // (tab stays disabled until Create My Pattern succeeds).
+      activateWizardTab(target);
+    });
+  });
+
+  // Do not run Pinterest refresh on load: Inspiration tab is display:none, so
+  // pinit sees parent offsetWidth 0 and can fail to render the board. Refresh
+  // only when the user opens Inspiration (see activateWizardTab).
+
+  const editBtn = document.getElementById('edit-btn');
+  if (editBtn) {
+    editBtn.addEventListener('click', () => {
+      activateWizardTab('build');
+      const topEl = document.getElementById('hat-builder-form-top');
+      if (topEl) {
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        topEl.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      }
+    });
+  }
+
+  const mobileEditChoicesBtn = document.getElementById('action-bar-mobile-scroll-btn');
+  if (mobileEditChoicesBtn) {
+    mobileEditChoicesBtn.addEventListener(
+      'click',
+      () => {
+        activateWizardTab('build');
+      },
+      true
+    );
+  }
+
+  // ========== HAT BUILDER SPECIFIC CODE ==========
+
+  /** Chart JSON circumference = head (in). finishedSizeInches = head × 0.9, rounded to 0.5". */
+  // roundFinishedHatSizeFromHead comes from hatMath via window.__kbmHatPhaseA
+  function formatFinishedInchesForLabel(n) {
+    if (!Number.isFinite(n)) return '';
+    const rounded = Math.round(n * 2) / 2;
+    return rounded % 1 === 0 ? String(rounded) : rounded.toFixed(1);
+  }
+  function hatSizeDisplayName(row) {
+    const ext = row.extended_label || row.label || row.size;
+    const withoutHead = ext.replace(/\s*\([^)]*\bhead\b[^)]*\)\s*$/i, '').trim();
+    return withoutHead || row.label || row.size;
+  }
+  /** Head measurement token(s) in inches (e.g. "14", "21–22") → display string for the active unit. */
+  function formatHeadInchTokenForDisplay(cleanInchPart, displayUnit) {
+    if (displayUnit === 'inches') return cleanInchPart;
+    const parts = cleanInchPart.split(/[\u2013\-]/).map((s) => s.trim()).filter(Boolean);
+    if (parts.length === 0) return cleanInchPart;
+    const nums = parts.map((p) => {
+      const n = parseFloat(p);
+      if (!Number.isFinite(n)) return p;
+      return String(Math.round(convertLength(n, 'inches', 'cm')));
+    });
+    return nums.length === 1 ? nums[0] : nums.join('–');
+  }
+  function hatFitsClause(row, displayUnit = 'inches') {
+    const ext = row.extended_label || row.label || '';
+    const paren = ext.match(/\(([^)]+)\)\s*$/);
+    if (paren) {
+      const inner = paren[1].trim();
+      if (/\bhead\b/i.test(inner)) {
+        let headPart = inner.replace(/\s*head\s*$/i, '').trim();
+        headPart = headPart.replace(/^approx\.\s*/i, '').trim();
+        const clean = headPart.replace(/["″]/g, '').trim();
+        if (displayUnit === 'inches') {
+          return `fits ~${clean}" head`;
+        }
+        const display = formatHeadInchTokenForDisplay(clean, displayUnit);
+        return `fits ~${display} cm head`;
+      }
+      if (/\blbs\b|\bmonth\b|\bmonths\b|\byear\b|\byears\b/i.test(inner)) {
+        return null;
+      }
+      return null;
+    }
+    const head = Number(row.circumference);
+    if (Number.isFinite(head) && head > 0) {
+      if (displayUnit === 'inches') {
+        const clean = String(head).replace(/["″]/g, '').trim();
+        return `fits ~${clean}" head`;
+      }
+      const cm = Math.round(convertLength(head, 'inches', 'cm'));
+      return `fits ~${cm} cm head`;
+    }
+    return null;
+  }
+  function buildHatSizeOptionLabel(row, finishedInches, displayUnit = 'inches') {
+    const name = hatSizeDisplayName(row);
+    const finStr =
+      displayUnit === 'inches'
+        ? `${formatFinishedInchesForLabel(finishedInches)}"`
+        : `${Math.round(convertLength(finishedInches, 'inches', 'cm'))} cm`;
+    const fits = hatFitsClause(row, displayUnit);
+    return fits
+      ? `${name} — ${finStr} finished (${fits})`
+      : `${name} — ${finStr} finished`;
+  }
+  function enrichHatSizingRow(row) {
+    const finishedSizeInches = roundFinishedHatSizeFromHead(Number(row.circumference));
+    return {
+      ...row,
+      finishedSizeInches,
+      optionLabel: buildHatSizeOptionLabel(row, finishedSizeInches, 'inches'),
+    };
+  }
+
+  // State (SSR options + data from bundled JSON; fetch below is fallback only)
+  let hatSizingData = Array.isArray(hatSizingBuilderRows) ? hatSizingBuilderRows.slice() : [];
+  /** Must be declared before any syncHatSelectCompletion() → updatePatternReadinessUi() (avoid TDZ on `let`). */
+  let isPatternReady = false;
+  const unitStore = createUnitStore('hat-unit', 'inches');
+  const fitHeightsPreset = HAT_FIT_HEIGHTS_INCHES || {
+    beanie: 7,
+    watchcap: 8.5,
+    slouchy: 10,
+    relaxed: 9,
+  };
+
+  // Migrate legacy fragmented keys → kbm_hat_draft (legacy keys remain for this page).
+  try {
+    ensureHatDraftMigrated?.();
+  } catch (_) {
+    /* ignore */
+  }
+
+  /** @param {'inches'|'cm'|undefined} displayUnitOverride — use when unit store has not been updated yet (e.g. kbm:units-change before button handler). */
+  function refreshHatSizeDropdownLabels(displayUnitOverride) {
+    if (!hatSizeSelect || !Array.isArray(hatSizingData)) return;
+    const displayUnit =
+      displayUnitOverride === 'cm' || displayUnitOverride === 'inches'
+        ? displayUnitOverride
+        : unitStore.get() === 'cm'
+          ? 'cm'
+          : 'inches';
+    Array.from(hatSizeSelect.options).forEach((opt) => {
+      const v = opt.value;
+      if (!v || v === 'custom') return;
+      const row = hatSizingData.find((s) => s.size === v);
+      if (!row) return;
+      const fin = Number(row.finishedSizeInches);
+      opt.textContent = buildHatSizeOptionLabel(row, fin, displayUnit);
+    });
+  }
+
+  const FIT_PRESET_LABEL_NAMES = {
+    beanie: 'Beanie',
+    watchcap: 'Classic',
+    slouchy: 'Slouchy',
+    relaxed: 'Relaxed',
+  };
+
+  function buildFitPresetOptionLabel(fitKey, displayUnit) {
+    const inches = fitHeightsPreset[fitKey];
+    const name = FIT_PRESET_LABEL_NAMES[fitKey] || fitKey;
+    if (!Number.isFinite(inches)) return `${name} ()`;
+    if (displayUnit === 'inches') {
+      const h = inches % 1 === 0 ? String(inches) : inches.toFixed(1);
+      return `${name} (${h}" finished hat length)`;
+    }
+    const cm = convertLength(inches, 'inches', 'cm');
+    return `${name} (${cm.toFixed(1)} cm finished hat length)`;
+  }
+
+  /** Preset fit row labels + placeholder follow active unit (values unchanged). */
+  function refreshFitDropdownLabels(displayUnitOverride) {
+    const displayUnit =
+      displayUnitOverride === 'cm' || displayUnitOverride === 'inches'
+        ? displayUnitOverride
+        : unitStore.get() === 'cm'
+          ? 'cm'
+          : 'inches';
+    const sel = document.getElementById('fit');
+    if (!sel || !(sel instanceof HTMLSelectElement)) return;
+    const unitWord = displayUnit === 'inches' ? 'inches' : 'cm';
+    sel.setAttribute('aria-label', `Enter Finished Hat Length (bottom of brim to top of crown) (${unitWord})`);
+    Array.from(sel.options).forEach((opt) => {
+      const v = opt.value;
+      if (v === '') {
+        opt.textContent = `Enter Finished Hat Length (${unitWord})...`;
+        return;
+      }
+      if (v === 'custom') return;
+      if (Object.prototype.hasOwnProperty.call(fitHeightsPreset, v)) {
+        opt.textContent = buildFitPresetOptionLabel(v, displayUnit);
+      }
+    });
+    syncHatLengthPickerUi();
+  }
+
+  const HAT_GAUGE_SLOTS_KEY = 'hat-builder-gauge-slots';
+  const IN_TO_CM_GAUGE = 2.54;
+  /** Stitches/rows per 4" ↔ per 10 cm (same fabric density) */
+  const GAUGE_IN_TO_CM_FACTOR = 10 / (4 * IN_TO_CM_GAUGE);
+  const GAUGE_CM_TO_IN_FACTOR = (4 * IN_TO_CM_GAUGE) / 10;
+
+  function emptyHatGaugeSlot() {
+    return { stitch: '', row: '' };
+  }
+
+  function loadHatGaugeSlots() {
+    try {
+      const raw = localStorage.getItem(HAT_GAUGE_SLOTS_KEY);
+      if (!raw) return { inches: emptyHatGaugeSlot(), cm: emptyHatGaugeSlot() };
+      const o = JSON.parse(raw);
+      return {
+        inches: {
+          stitch: String(o.inches?.stitch ?? ''),
+          row: String(o.inches?.row ?? ''),
+        },
+        cm: {
+          stitch: String(o.cm?.stitch ?? ''),
+          row: String(o.cm?.row ?? ''),
+        },
+      };
+    } catch (_) {
+      return { inches: emptyHatGaugeSlot(), cm: emptyHatGaugeSlot() };
+    }
+  }
+
+  const gaugeSlots = loadHatGaugeSlots();
+
+  // DOM Elements
+  const HAT_SIZE_STORAGE_KEY = 'hat-builder-hat-size';
+  const HAT_PATTERN_INPUTS_STORAGE_KEY = 'hat-builder-pattern-inputs';
+
+  const btnInches = document.getElementById('hat-btn-inches');
+  const btnCm = document.getElementById('hat-btn-cm');
+  const customSizeDiv = document.getElementById('custom-size');
+  const hatSizeSelect = document.getElementById('hat-size');
+  const customCircInput = document.getElementById('custom-circumference');
+  const brimLengthInput = document.getElementById('brimLength');
+  const brimTypeSelect = document.getElementById('brimType');
+
+  function formatCrownDepthInchesForInput(inches) {
+    const n = Number(inches);
+    if (!Number.isFinite(n)) return '';
+    const rounded = Math.round(n * 100) / 100;
+    return String(rounded);
+  }
+
+  /** Ensures floating-label + listeners see the new value (not placeholder-only). */
+  function setCrownDepthFieldValue(/** @type {HTMLInputElement} */ el, str) {
+    el.defaultValue = str;
+    el.value = str;
+    el.setAttribute('value', str);
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  /** Convert displayed brim length when switching units (same pattern as crown depth). */
+  function convertBrimLengthFieldBetweenUnits(prevUnit, nextUnit) {
+    const el = brimLengthInput;
+    if (!el || !(el instanceof HTMLInputElement)) return;
+    const raw = el.value?.trim();
+    if (raw === '') return;
+    const n = parseFloat(raw);
+    if (!Number.isFinite(n)) return;
+    const inches =
+      prevUnit === 'inches' ? n : convertLength(n, 'cm', 'inches');
+    const displayNum =
+      nextUnit === 'inches' ? inches : convertLength(inches, 'inches', 'cm');
+    const str =
+      nextUnit === 'inches'
+        ? formatCrownDepthInchesForInput(displayNum)
+        : displayNum.toFixed(1);
+    setCrownDepthFieldValue(el, str);
+  }
+
+  /** Convert displayed custom hat length when switching units (same pattern as crown depth / brim). */
+  function convertCustomHatLengthFieldBetweenUnits(prevUnit, nextUnit) {
+    const el = document.getElementById('custom-hat-length');
+    if (!el || !(el instanceof HTMLInputElement)) return;
+    const raw = el.value?.trim();
+    if (raw === '') return;
+    const n = parseFloat(raw);
+    if (!Number.isFinite(n)) return;
+    const inches =
+      prevUnit === 'inches' ? n : convertLength(n, 'cm', 'inches');
+    const displayNum =
+      nextUnit === 'inches' ? inches : convertLength(inches, 'inches', 'cm');
+    const str =
+      nextUnit === 'inches'
+        ? formatCrownDepthInchesForInput(displayNum)
+        : displayNum.toFixed(1);
+    setCrownDepthFieldValue(el, str);
+  }
+
+  const crownSelect = document.getElementById('crown');
+  const crownHelpOverlay = document.getElementById('crown-help-overlay');
+  const crownHelpOpenBtn = document.getElementById('crown-help-open');
+  const crownHelpCloseBtn = crownHelpOverlay?.querySelector('.crown-help-close');
+  const fitSelect = document.getElementById('fit');
+
+  function syncHatLengthPickerUi() {
+    const summaryText = document.getElementById('hat-length-summary-text');
+    const summaryBtn = document.getElementById('hat-length-summary');
+    if (!summaryText || !fitSelect || !(fitSelect instanceof HTMLSelectElement)) return;
+    const displayUnit = unitStore.get() === 'cm' ? 'cm' : 'inches';
+    const unitWord = displayUnit === 'inches' ? 'inches' : 'cm';
+    const v = fitSelect.value;
+    if (v === '') {
+      summaryText.textContent = `Enter Finished Hat Length (${unitWord})...`;
+    } else if (v === 'custom') {
+      const opt = fitSelect.querySelector('option[value="custom"]');
+      summaryText.textContent = opt?.textContent?.trim() || '✏️ Enter your own finished hat length';
+    } else if (Object.prototype.hasOwnProperty.call(fitHeightsPreset, v)) {
+      summaryText.textContent = buildFitPresetOptionLabel(v, displayUnit);
+    } else {
+      const opt = fitSelect.options[fitSelect.selectedIndex];
+      summaryText.textContent = opt?.textContent?.trim() || v;
+    }
+    summaryBtn?.setAttribute('aria-label', `Finished Hat Length: ${summaryText.textContent}`);
+    document.querySelectorAll('.hat-length-picker__option[data-fit-value]').forEach((btn) => {
+      const val = btn.getAttribute('data-fit-value');
+      const isSel = val === v;
+      btn.classList.toggle('is-selected', isSel);
+      btn.setAttribute('aria-pressed', isSel ? 'true' : 'false');
+    });
+  }
+
+  function closeHatLengthPanel() {
+    const panel = document.getElementById('hat-length-panel');
+    const summaryBtn = document.getElementById('hat-length-summary');
+    if (panel) panel.hidden = true;
+    if (summaryBtn) summaryBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  function wireHatLengthPicker() {
+    const wrap = document.querySelector('.hat-length-picker-wrap');
+    const panel = document.getElementById('hat-length-panel');
+    const summaryBtn = document.getElementById('hat-length-summary');
+    const customBtn = document.getElementById('hat-length-custom-btn');
+    if (!wrap || !panel || !summaryBtn || !fitSelect) return;
+
+    summaryBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (panel.hidden) {
+        panel.hidden = false;
+        summaryBtn.setAttribute('aria-expanded', 'true');
+      } else {
+        closeHatLengthPanel();
+      }
+    });
+
+    document.querySelectorAll('.hat-length-picker__option[data-fit-value]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const val = btn.getAttribute('data-fit-value');
+        if (!val) return;
+        fitSelect.value = val;
+        fitSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        closeHatLengthPanel();
+      });
+    });
+
+    customBtn?.addEventListener('click', () => {
+      fitSelect.value = 'custom';
+      fitSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      closeHatLengthPanel();
+    });
+
+    document.addEventListener(
+      'pointerdown',
+      (e) => {
+        if (panel.hidden) return;
+        if (wrap.contains(/** @type {Node} */ (e.target))) return;
+        closeHatLengthPanel();
+      },
+      true
+    );
+  }
+
+  wireHatLengthPicker();
+  syncHatLengthPickerUi();
+
+  function syncBrimTypePickerUi() {
+    const summaryText = document.getElementById('brim-type-summary-text');
+    const summaryBtn = document.getElementById('brim-type-summary');
+    const v = brimTypeSelect && brimTypeSelect instanceof HTMLSelectElement ? brimTypeSelect.value : '';
+    if (summaryText) {
+      summaryText.textContent =
+        v === 'single'
+          ? 'Single Layer'
+          : v === 'folded'
+            ? 'Folded Hem'
+            : 'Choose brim type';
+    }
+    summaryBtn?.setAttribute('aria-label', `Brim Type: ${summaryText?.textContent || 'Choose brim type'}`);
+
+    document.querySelectorAll('.hat-length-picker__option[data-brim-type-value]').forEach((btn) => {
+      const val = btn.getAttribute('data-brim-type-value');
+      const isSel = val === v;
+      btn.classList.toggle('is-selected', isSel);
+      btn.setAttribute('aria-pressed', isSel ? 'true' : 'false');
+    });
+  }
+
+  function closeBrimTypePanel() {
+    const panel = document.getElementById('brim-type-panel');
+    const summaryBtn = document.getElementById('brim-type-summary');
+    if (panel) panel.hidden = true;
+    if (summaryBtn) summaryBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  function wireBrimTypePicker() {
+    const wrap = brimTypeSelect?.closest('.hat-select-wrap');
+    const panel = document.getElementById('brim-type-panel');
+    const summaryBtn = document.getElementById('brim-type-summary');
+    if (!brimTypeSelect || !(brimTypeSelect instanceof HTMLSelectElement)) return;
+    if (!wrap || !panel || !summaryBtn) return;
+
+    summaryBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (panel.hidden) {
+        panel.hidden = false;
+        summaryBtn.setAttribute('aria-expanded', 'true');
+      } else {
+        closeBrimTypePanel();
+      }
+    });
+
+    document.querySelectorAll('.hat-length-picker__option[data-brim-type-value]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const val = btn.getAttribute('data-brim-type-value');
+        if (val !== 'single' && val !== 'folded') return;
+        brimTypeSelect.value = val;
+        brimTypeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        closeBrimTypePanel();
+      });
+    });
+
+    document.addEventListener(
+      'pointerdown',
+      (e) => {
+        if (panel.hidden) return;
+        if (wrap.contains(/** @type {Node} */ (e.target))) return;
+        closeBrimTypePanel();
+      },
+      true
+    );
+  }
+
+  wireBrimTypePicker();
+  syncBrimTypePickerUi();
+
+  function syncCrownPickerUi() {
+    const summaryText = document.getElementById('crown-summary-text');
+    const summaryBtn = document.getElementById('crown-summary');
+    const v = crownSelect && crownSelect instanceof HTMLSelectElement ? crownSelect.value : '';
+    const crownLabel =
+      v === 'gathered'
+        ? 'Gathered'
+        : v === 'wedge-4-decrease'
+          ? 'Wedge'
+          : v === 'spiral'
+            ? 'Spiral'
+            : 'Choose crown shaping';
+
+    if (summaryText) summaryText.textContent = crownLabel;
+    summaryBtn?.setAttribute('aria-label', `Crown Shaping: ${crownLabel}`);
+
+    document.querySelectorAll('.hat-length-picker__option[data-crown-value]').forEach((btn) => {
+      const val = btn.getAttribute('data-crown-value');
+      const isSel = val === v;
+      btn.classList.toggle('is-selected', isSel);
+      btn.setAttribute('aria-pressed', isSel ? 'true' : 'false');
+    });
+  }
+
+  function closeCrownPanel() {
+    const panel = document.getElementById('crown-panel');
+    const summaryBtn = document.getElementById('crown-summary');
+    if (panel) panel.hidden = true;
+    if (summaryBtn) summaryBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  function wireCrownPicker() {
+    const wrap = crownSelect?.closest('.hat-select-wrap');
+    const panel = document.getElementById('crown-panel');
+    const summaryBtn = document.getElementById('crown-summary');
+    if (!crownSelect || !(crownSelect instanceof HTMLSelectElement)) return;
+    if (!wrap || !panel || !summaryBtn) return;
+
+    summaryBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (panel.hidden) {
+        panel.hidden = false;
+        summaryBtn.setAttribute('aria-expanded', 'true');
+      } else {
+        closeCrownPanel();
+      }
+    });
+
+    document.querySelectorAll('.hat-length-picker__option[data-crown-value]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (btn.hasAttribute('disabled') || btn.getAttribute('aria-disabled') === 'true') return;
+        const val = btn.getAttribute('data-crown-value');
+        if (val !== 'gathered' && val !== 'wedge-4-decrease' && val !== 'spiral') return;
+        crownSelect.value = val;
+        crownSelect.dispatchEvent(new Event('change', { bubbles: true }));
+        closeCrownPanel();
+      });
+    });
+
+    document.addEventListener(
+      'pointerdown',
+      (e) => {
+        if (panel.hidden) return;
+        if (wrap.contains(/** @type {Node} */ (e.target))) return;
+        closeCrownPanel();
+      },
+      true
+    );
+  }
+
+  wireCrownPicker();
+  syncCrownPickerUi();
+
+  /** Preset used when switching fit → custom (before customHatLengthInput exists in DOM order). */
+  let previousFit = 'beanie';
+
+  function syncCanonicalHatDraft() {
+    if (typeof syncHatDraftFromBuilderFields !== 'function') return;
+    try {
+      syncHatDraftFromBuilderFields({
+        unit: unitStore.get() === 'cm' ? 'cm' : 'inches',
+        sizeSel: hatSizeSelect?.value ?? '',
+        customCircumference: customCircInput?.value ?? '',
+        brimType: brimTypeSelect?.value ?? '',
+        brimLength: brimLengthInput?.value ?? '',
+        crownShaping: crownSelect?.value ?? '',
+        fit: fitSelect?.value ?? '',
+        customHatLength:
+          fitSelect?.value === 'custom' && customHatLengthInput
+            ? customHatLengthInput.value ?? ''
+            : '',
+        gaugeSlots,
+        showTips: localStorage.getItem('hat-show-tips') === 'true',
+      });
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  function persistPatternInputs() {
+    if (!brimTypeSelect && !crownSelect && !fitSelect && !brimLengthInput) return;
+    try {
+      localStorage.setItem(
+        HAT_PATTERN_INPUTS_STORAGE_KEY,
+        JSON.stringify({
+          brimType: brimTypeSelect?.value ?? '',
+          brimLength: brimLengthInput?.value ?? '',
+          crownShaping: crownSelect?.value ?? '',
+          fit: fitSelect?.value ?? '',
+          customHatLength:
+            fitSelect?.value === 'custom' && customHatLengthInput
+              ? customHatLengthInput.value ?? ''
+              : ''
+        })
+      );
+      syncCanonicalHatDraft();
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  /**
+   * Restore brim type, visible brim length, crown, and fit from localStorage. Missing or invalid
+   * keys → "" (placeholder), never a default real option. Only keys with valid saved values are applied.
+   */
+  function loadPatternInputs() {
+    const result = {
+      restoredBrim: false,
+      restoredCrown: false,
+      restoredFit: false
+    };
+    try {
+      const raw = localStorage.getItem(HAT_PATTERN_INPUTS_STORAGE_KEY);
+      if (!raw || !raw.trim()) return result;
+      const o = JSON.parse(raw);
+      if (!o || typeof o !== 'object') return result;
+
+      const validFits = new Set(['beanie', 'watchcap', 'slouchy', 'relaxed', 'custom']);
+
+      if (brimTypeSelect) {
+        if (o.brimType === 'single' || o.brimType === 'folded') {
+          brimTypeSelect.value = o.brimType;
+          result.restoredBrim = true;
+        } else {
+          brimTypeSelect.value = '';
+        }
+      }
+
+      if (brimLengthInput && typeof o.brimLength === 'string') {
+        setCrownDepthFieldValue(brimLengthInput, o.brimLength.trim());
+      }
+
+      if (crownSelect) {
+        let crownVal =
+          typeof o.crownShaping === 'string' ? o.crownShaping.trim() : '';
+        if (crownVal === 'wedge-4') crownVal = 'wedge-4-decrease';
+        if (crownVal) {
+          const match = Array.from(crownSelect.options).find(
+            (opt) => opt.value === crownVal && !opt.disabled
+          );
+          if (match) {
+            crownSelect.value = crownVal;
+            result.restoredCrown = true;
+          } else {
+            crownSelect.value = '';
+          }
+        } else {
+          crownSelect.value = '';
+        }
+      }
+
+      if (fitSelect) {
+        const fitVal = typeof o.fit === 'string' ? o.fit.trim() : '';
+        if (fitVal && validFits.has(fitVal)) {
+          fitSelect.value = fitVal;
+          result.restoredFit = true;
+          if (fitVal === 'custom' && customHatLengthInput) {
+            const cl =
+              typeof o.customHatLength === 'string' ? o.customHatLength.trim() : '';
+            customHatLengthInput.value = cl;
+          } else if (customHatLengthInput) {
+            customHatLengthInput.value = '';
+          }
+          if (fitVal !== 'custom') previousFit = fitVal;
+        } else {
+          fitSelect.value = '';
+          if (customHatLengthInput) customHatLengthInput.value = '';
+        }
+      }
+    } catch (_) {
+      /* ignore */
+    }
+    return result;
+  }
+
+  function openCrownHelpModal() {
+    if (!crownHelpOverlay) return;
+    crownHelpOverlay.removeAttribute('hidden');
+    crownHelpOverlay.setAttribute('aria-hidden', 'false');
+    crownHelpCloseBtn?.focus();
+  }
+
+  function closeCrownHelpModal() {
+    if (!crownHelpOverlay) return;
+    crownHelpOverlay.setAttribute('hidden', '');
+    crownHelpOverlay.setAttribute('aria-hidden', 'true');
+    crownHelpOpenBtn?.focus();
+  }
+
+  crownHelpOpenBtn?.addEventListener('click', () => openCrownHelpModal());
+  crownHelpCloseBtn?.addEventListener('click', () => closeCrownHelpModal());
+  crownHelpOverlay?.addEventListener('click', (e) => {
+    if (e.target === crownHelpOverlay) closeCrownHelpModal();
+  });
+
+  const hatYarnDrawerRoot = document.getElementById('hat-yarn-drawer');
+  const hatYarnDrawerOpenBtn = document.getElementById('hat-yarn-drawer-open');
+  const hatYarnDrawerTriggerWrap = document.getElementById('hat-yarn-drawer-trigger-wrap');
+  const hatYarnDrawerCloseBtn = document.getElementById('hat-yarn-drawer-close');
+  const hatYarnDrawerBackdrop = document.getElementById('hat-yarn-drawer-backdrop');
+  /** @type {HTMLElement | null} */
+  let hatYarnDrawerLastFocus = null;
+
+  function openHatYarnDrawer() {
+    if (!hatYarnDrawerRoot) return;
+    hatYarnDrawerLastFocus =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    hatYarnDrawerRoot.classList.add('is-open');
+    hatYarnDrawerRoot.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('hat-yarn-drawer-open');
+    hatYarnDrawerCloseBtn?.focus();
+  }
+
+  function closeHatYarnDrawer() {
+    if (!hatYarnDrawerRoot?.classList.contains('is-open')) return;
+    hatYarnDrawerRoot.classList.remove('is-open');
+    hatYarnDrawerRoot.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('hat-yarn-drawer-open');
+    const restore = hatYarnDrawerLastFocus;
+    if (restore instanceof HTMLElement) {
+      restore.focus();
+    } else if (
+      hatYarnDrawerOpenBtn instanceof HTMLElement &&
+      hatYarnDrawerTriggerWrap &&
+      !hatYarnDrawerTriggerWrap.hidden
+    ) {
+      hatYarnDrawerOpenBtn.focus();
+    } else {
+      hatSizeSelect?.focus();
+    }
+    hatYarnDrawerLastFocus = null;
+  }
+
+  hatYarnDrawerBackdrop?.addEventListener('click', () => closeHatYarnDrawer());
+  hatYarnDrawerCloseBtn?.addEventListener('click', () => closeHatYarnDrawer());
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (hatYarnDrawerRoot?.classList.contains('is-open')) {
+      closeHatYarnDrawer();
+      e.preventDefault();
+      return;
+    }
+    if (crownHelpOverlay && !crownHelpOverlay.hasAttribute('hidden')) {
+      closeCrownHelpModal();
+    }
+  });
+
+  const customLengthDiv = document.getElementById('custom-length-div');
+  const customHatLengthInput = document.getElementById('custom-hat-length');
+  const stitchGaugeInput = document.getElementById('hat-stitch-gauge');
+  const rowGaugeInput = document.getElementById('hat-row-gauge');
+  const printBtn = document.getElementById('print-btn');
+
+  loadPatternInputs();
+  persistPatternInputs();
+  syncHatSelectCompletion();
+
+  const CREATE_PATTERN_BTN_SELECTOR = '#create-pattern-btn';
+  const createPatternBtnForClick = document.querySelector(CREATE_PATTERN_BTN_SELECTOR);
+  console.log('[hat-builder debug] bind create-pattern-btn', {
+    selector: CREATE_PATTERN_BTN_SELECTOR,
+    buttonFound: Boolean(createPatternBtnForClick),
+    element: createPatternBtnForClick,
+  });
+  if (createPatternBtnForClick) {
+    // Keep focus on the last edited field during mousedown so the subsequent click is not lost
+    // (browser may cancel click when focus/blur moves the layout) and .value reads stay current.
+    createPatternBtnForClick.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      e.preventDefault();
+    });
+    const runCreateHatPattern = () => {
+      console.log('build button clicked');
+      syncHatGaugeInputsToActiveSlot();
+      const requiredValuesSnapshot = {
+        hatSize: hatSizeSelect?.value,
+        customCirc: customCircInput?.value?.trim(),
+        brimLen: brimLengthInput?.value?.trim(),
+        crown: crownSelect?.value,
+        brimType: brimTypeSelect?.value,
+        fit: fitSelect?.value,
+        customHatLen: customHatLengthInput?.value?.trim(),
+        stitchGauge: stitchGaugeInput?.value?.trim(),
+        rowGauge: rowGaugeInput?.value?.trim(),
+        hatSizingDataLength: hatSizingData?.length,
+      };
+      const readyNow = requiredPatternInputsComplete();
+      isPatternReady = readyNow;
+      console.log('[hat-builder debug] completion check', {
+        completionResult: readyNow,
+        requiredValuesUsedInCheck: requiredValuesSnapshot,
+      });
+      if (!readyNow) {
+        console.log('form incomplete');
+        showFinishRequiredSectionsMessage();
+        return;
+      }
+      console.log('calling calculate()');
+      calculate();
+      console.log(
+        '[hat-builder debug] Create handler: about to call activateWizardTab("pattern")'
+      );
+      const patternNav = document.getElementById('hat-tab-pattern');
+      patternNav?.classList.remove('is-disabled');
+      patternNav?.removeAttribute('aria-disabled');
+      activateWizardTab('pattern');
+    };
+
+    // Hat is free for owner review: generate without membership / login.
+    createPatternBtnForClick.addEventListener('click', () => {
+      runCreateHatPattern();
+    });
+    console.log('build listener attached');
+  } else {
+    console.warn(
+      '[hat-builder debug] create-pattern-btn not found; listener not attached (selector:',
+      CREATE_PATTERN_BTN_SELECTOR,
+      ')'
+    );
+  }
+
+  function persistHatGaugeSlots() {
+    try {
+      localStorage.setItem(HAT_GAUGE_SLOTS_KEY, JSON.stringify(gaugeSlots));
+      syncCanonicalHatDraft();
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  /**
+   * @param {'inches'|'cm'} fromU
+   * @param {'inches'|'cm'} toU
+   */
+  function maybeFillHatGaugeSlotFromOtherUnit(fromU, toU) {
+    const to = gaugeSlots[toU];
+    if (to.stitch.trim() || to.row.trim()) return;
+    const from = gaugeSlots[fromU];
+    if (!from.stitch.trim() && !from.row.trim()) return;
+    const fs = parseFloat(from.stitch);
+    const fr = parseFloat(from.row);
+    if (fromU === 'inches' && toU === 'cm') {
+      if (Number.isFinite(fs)) to.stitch = (fs * GAUGE_IN_TO_CM_FACTOR).toFixed(1);
+      if (Number.isFinite(fr)) to.row = (fr * GAUGE_IN_TO_CM_FACTOR).toFixed(1);
+    } else if (fromU === 'cm' && toU === 'inches') {
+      if (Number.isFinite(fs)) to.stitch = (fs * GAUGE_CM_TO_IN_FACTOR).toFixed(1);
+      if (Number.isFinite(fr)) to.row = (fr * GAUGE_CM_TO_IN_FACTOR).toFixed(1);
+    }
+  }
+
+  function applyHatGaugeSlotsToInputs() {
+    if (!stitchGaugeInput || !rowGaugeInput) return;
+    const u = unitStore.get() === 'cm' ? 'cm' : 'inches';
+    stitchGaugeInput.value = gaugeSlots[u].stitch;
+    rowGaugeInput.value = gaugeSlots[u].row;
+  }
+
+  function syncHatGaugeInputsToActiveSlot() {
+    if (!stitchGaugeInput || !rowGaugeInput) return;
+    const u = unitStore.get() === 'cm' ? 'cm' : 'inches';
+    gaugeSlots[u] = {
+      stitch: stitchGaugeInput.value,
+      row: rowGaugeInput.value,
+    };
+    persistHatGaugeSlots();
+  }
+
+  stitchGaugeInput?.addEventListener('input', syncHatGaugeInputsToActiveSlot);
+  stitchGaugeInput?.addEventListener('change', syncHatGaugeInputsToActiveSlot);
+  rowGaugeInput?.addEventListener('input', syncHatGaugeInputsToActiveSlot);
+  rowGaugeInput?.addEventListener('change', syncHatGaugeInputsToActiveSlot);
+
+  function updateHatNeedleEstimate() {
+    const needleValue = document.getElementById('needle-count-value-preview');
+    const needleContext = document.getElementById('needle-size-context-preview');
+    const previewWrap = document.getElementById('needle-check-result-preview');
+
+    if (!needleValue || !needleContext || !previewWrap) return;
+
+    const currentUnit = unitStore.get() === 'cm' ? 'cm' : 'inches';
+
+    // Same finished circumference + gauge path as calculate() → cast-on line in generatePattern()
+    let finishedCircRaw = 0;
+    const hatSizeValue = hatSizeSelect?.value ?? '';
+    if (hatSizeValue === 'custom') {
+      finishedCircRaw = parseFloat(customCircInput?.value) || 0;
+    } else if (hatSizeValue) {
+      const selectedSize = hatSizingData.find((s) => s.size === hatSizeValue);
+      if (selectedSize) finishedCircRaw = selectedSize.finishedSizeInches;
+    }
+
+    let finishedHatCircInches;
+    if (hatSizeValue === 'custom') {
+      finishedHatCircInches =
+        currentUnit === 'inches'
+          ? finishedCircRaw
+          : convertLength(finishedCircRaw, 'cm', 'inches');
+    } else {
+      finishedHatCircInches = finishedCircRaw;
+    }
+
+    const stitchGauge = parseFloat(stitchGaugeInput?.value) || 0;
+    const crown = crownSelect?.value ?? '';
+
+    if (
+      !Number.isFinite(finishedHatCircInches) ||
+      finishedHatCircInches <= 0 ||
+      !Number.isFinite(stitchGauge) ||
+      stitchGauge <= 0
+    ) {
+      previewWrap.hidden = true;
+      return;
+    }
+
+    const stGaugePerInch = gaugeToPerUnit(stitchGauge, currentUnit);
+    const castOnSts = roundToEvenPreferUp(finishedHatCircInches * stGaugePerInch);
+    const needles = applyHatCrownCastOnAdjustment(castOnSts, crown);
+
+    needleValue.textContent = String(needles);
+    const finLabel =
+      finishedHatCircInches % 1 === 0
+        ? String(finishedHatCircInches)
+        : finishedHatCircInches.toFixed(1);
+    needleContext.textContent = `for ${finLabel}" hat`;
+
+    previewWrap.hidden = false;
+  }
+
+  document.getElementById('hat-stitch-gauge')?.addEventListener('input', updateHatNeedleEstimate);
+  document.getElementById('hat-size')?.addEventListener('change', updateHatNeedleEstimate);
+  crownSelect?.addEventListener('change', updateHatNeedleEstimate);
+  customCircInput?.addEventListener('input', updateHatNeedleEstimate);
+  customCircInput?.addEventListener('change', updateHatNeedleEstimate);
+
+  /** Total finished hat length (inches): custom input, size chart hatLength, or fit style preset. */
+  function resolveTotalHatLengthInches(fit, hatSizeValue, currentUnit) {
+    if (typeof resolveTotalHatLengthInchesLib === 'function') {
+      return resolveTotalHatLengthInchesLib({
+        fit,
+        hatSizeValue,
+        customLengthDisplay: parseFloat(customHatLengthInput?.value) || 0,
+        displayUnit: currentUnit === 'cm' ? 'cm' : 'inches',
+        sizingRows: hatSizingData,
+        convertCmToInches: (cm) => convertLength(cm, 'cm', 'inches'),
+      });
+    }
+    if (!fit) return null;
+    if (fit === 'custom') {
+      const customLengthValue = parseFloat(customHatLengthInput?.value) || 0;
+      if (customLengthValue <= 0) return null;
+      return currentUnit === 'inches'
+        ? customLengthValue
+        : convertLength(customLengthValue, 'cm', 'inches');
+    }
+    const selectedSize =
+      hatSizeValue && hatSizeValue !== 'custom'
+        ? hatSizingData.find((s) => s.size === hatSizeValue)
+        : null;
+    const fromChart =
+      selectedSize != null && Number(selectedSize.hatLength) > 0
+        ? Number(selectedSize.hatLength)
+        : null;
+    const fromFit = fitHeightsPreset[fit];
+    const inches = fromChart ?? fromFit;
+    return inches != null ? inches : null;
+  }
+
+  /** Keeps YarnRequirement (Build tab) aligned with size, length, and unit — no gauge needed for area estimate */
+  function syncHatYarnDimensions() {
+    const currentUnit = unitStore.get();
+    const lengthUnit = currentUnit === 'inches' ? 'in' : 'cm';
+    const emptyDetail = { projectWidth: 0, projectLength: 0, lengthUnit, source: 'custom' };
+
+    const hatSizeValue = hatSizeSelect?.value;
+    if (!hatSizeValue) {
+      window.dispatchEvent(new CustomEvent('kbm:yarnDimensions', { detail: emptyDetail }));
+      return;
+    }
+
+    let finishedHatCircInches = 0;
+    if (hatSizeValue === 'custom') {
+      const circ = parseFloat(customCircInput?.value) || 0;
+      if (circ <= 0) {
+        window.dispatchEvent(new CustomEvent('kbm:yarnDimensions', { detail: emptyDetail }));
+        return;
+      }
+      finishedHatCircInches = currentUnit === 'inches' ? circ : convertLength(circ, 'cm', 'inches');
+    } else {
+      const selectedSize = hatSizingData.find((s) => s.size === hatSizeValue);
+      if (!selectedSize) {
+        window.dispatchEvent(new CustomEvent('kbm:yarnDimensions', { detail: emptyDetail }));
+        return;
+      }
+      finishedHatCircInches = selectedSize.finishedSizeInches;
+    }
+
+    const fit = fitSelect?.value;
+    if (!fit) {
+      window.dispatchEvent(new CustomEvent('kbm:yarnDimensions', { detail: emptyDetail }));
+      return;
+    }
+
+    const totalHatLengthInches = resolveTotalHatLengthInches(fit, hatSizeValue, currentUnit);
+    if (totalHatLengthInches == null || totalHatLengthInches <= 0) {
+      window.dispatchEvent(new CustomEvent('kbm:yarnDimensions', { detail: emptyDetail }));
+      return;
+    }
+
+    const targetWidthInches = finishedHatCircInches;
+    let projectWidth;
+    let projectLength;
+    if (lengthUnit === 'in') {
+      projectWidth = targetWidthInches;
+      projectLength = totalHatLengthInches;
+    } else {
+      projectWidth = convertLength(targetWidthInches, 'inches', 'cm');
+      projectLength = convertLength(totalHatLengthInches, 'inches', 'cm');
+    }
+
+    window.dispatchEvent(
+      new CustomEvent('kbm:yarnDimensions', {
+        detail: { projectWidth, projectLength, lengthUnit, source: 'custom' },
+      })
+    );
+  }
+
+  /** Size, hat length, and gauge only — for optional yarn estimator link (not brim/crown). */
+  function isYarnEstimatorInputsReady() {
+    const size = hatSizeSelect?.value;
+    if (!size) return false;
+    if (size === 'custom') {
+      const circ = customCircInput?.value?.trim();
+      if (!circ || Number(circ) <= 0) return false;
+    } else {
+      const selectedSize = hatSizingData.find((s) => s.size === size);
+      if (!selectedSize || !(Number(selectedSize.finishedSizeInches) > 0)) return false;
+    }
+
+    const fit = fitSelect?.value;
+    if (!fit) return false;
+    if (fit === 'custom') {
+      const len = customHatLengthInput?.value?.trim();
+      if (!len || Number(len) <= 0) return false;
+    }
+
+    const gaugeSts = stitchGaugeInput?.value?.trim();
+    const gaugeRows = rowGaugeInput?.value?.trim();
+    if (!gaugeSts || !gaugeRows) return false;
+    const st = Number(gaugeSts);
+    const rg = Number(gaugeRows);
+    if (!Number.isFinite(st) || st <= 0 || !Number.isFinite(rg) || rg <= 0) return false;
+
+    return true;
+  }
+
+  /** Predicate: all required build fields complete (same rules as section checks / Pattern tab). */
+  function requiredPatternInputsComplete() {
+    const size = hatSizeSelect?.value;
+    if (!size) return false;
+    if (size === 'custom') {
+      const circ = customCircInput?.value?.trim();
+      if (!circ || Number(circ) <= 0) return false;
+    } else {
+      const selectedSize = hatSizingData.find((s) => s.size === size);
+      if (!selectedSize || !(Number(selectedSize.finishedSizeInches) > 0)) return false;
+    }
+
+    const brimLen = brimLengthInput?.value?.trim();
+    if (!brimLen || Number(brimLen) <= 0) return false;
+    const crownVal = crownSelect?.value ?? '';
+    const allowedCrowns = new Set(['gathered', 'wedge-4-decrease', 'spiral']);
+    if (!allowedCrowns.has(crownVal)) return false;
+    const bt = brimTypeSelect?.value;
+    if (bt !== 'single' && bt !== 'folded') return false;
+
+    const fit = fitSelect?.value;
+    if (!fit) return false;
+    if (fit === 'custom') {
+      const len = customHatLengthInput?.value?.trim();
+      if (!len || Number(len) <= 0) return false;
+    }
+
+    const gaugeSts = stitchGaugeInput?.value?.trim();
+    const gaugeRows = rowGaugeInput?.value?.trim();
+    if (!gaugeSts || !gaugeRows) return false;
+    const st = Number(gaugeSts);
+    const rg = Number(gaugeRows);
+    if (!Number.isFinite(st) || st <= 0 || !Number.isFinite(rg) || rg <= 0) return false;
+
+    return true;
+  }
+
+  /** Computed flag: mirrors requiredPatternInputsComplete(); refreshed in updatePatternReadinessUi and on Create click. */
+  let createPatternFeedbackTimer = 0;
+  function showFinishRequiredSectionsMessage() {
+    const el = document.getElementById('create-pattern-feedback');
+    if (!el) return;
+    window.clearTimeout(createPatternFeedbackTimer);
+    el.textContent = 'Finish the required sections to generate your pattern.';
+    el.hidden = false;
+    createPatternFeedbackTimer = window.setTimeout(() => {
+      el.textContent = '';
+      el.hidden = true;
+    }, 4000);
+  }
+
+  function updatePatternReadinessUi() {
+    const cta = document.getElementById('build-pattern-cta');
+    const patternTabBtn =
+      document.getElementById('hat-tab-pattern') ||
+      document.querySelector('.pattern-tabs .tab-btn[data-tab="pattern"]');
+    const createPatternBtn = document.getElementById('create-pattern-btn');
+    isPatternReady = requiredPatternInputsComplete();
+    const ready = isPatternReady;
+
+    if (hatYarnDrawerTriggerWrap) {
+      hatYarnDrawerTriggerWrap.hidden = !isYarnEstimatorInputsReady();
+    }
+
+    if (cta) {
+      cta.style.display = 'block';
+    }
+    if (createPatternBtn) {
+      createPatternBtn.removeAttribute('disabled');
+      createPatternBtn.classList.toggle('button-disabled', !ready);
+      if (ready) {
+        createPatternBtn.removeAttribute('aria-disabled');
+      } else {
+        createPatternBtn.setAttribute('aria-disabled', 'true');
+      }
+    }
+    if (patternTabBtn) {
+      patternTabBtn.classList.toggle('is-disabled', !ready);
+      if (ready) {
+        patternTabBtn.removeAttribute('aria-disabled');
+      } else {
+        patternTabBtn.setAttribute('aria-disabled', 'true');
+      }
+    }
+
+    if (!ready) {
+      setHatZeroBodyWarningVisible(false);
+      const patternNavBtn =
+        document.getElementById('hat-tab-pattern') ||
+        document.querySelector('.pattern-tabs .tab-btn[data-tab="pattern"]');
+      if (patternNavBtn?.classList.contains('active')) {
+        activateWizardTab('build');
+      }
+    }
+  }
+
+  window.addEventListener('kbm:units-change', (/** @type {CustomEvent<{ unit?: string }>} */ e) => {
+    const d = e.detail;
+    if (!d || !d.unit) return;
+    const nextU = d.unit === 'cm' ? 'cm' : 'inches';
+    refreshHatSizeDropdownLabels(nextU);
+    refreshFitDropdownLabels(nextU);
+    updatePlaceholders(nextU);
+
+    if (!stitchGaugeInput || !rowGaugeInput) return;
+    const prevU = unitStore.get() === 'cm' ? 'cm' : 'inches';
+    gaugeSlots[prevU] = {
+      stitch: stitchGaugeInput.value,
+      row: rowGaugeInput.value,
+    };
+    persistHatGaugeSlots();
+    maybeFillHatGaugeSlotFromOtherUnit(prevU, nextU);
+    stitchGaugeInput.value = gaugeSlots[nextU].stitch;
+    rowGaugeInput.value = gaugeSlots[nextU].row;
+    persistHatGaugeSlots();
+    updatePatternReadinessUi();
+    updateHatNeedleEstimate();
+  });
+
+  hatYarnDrawerOpenBtn?.addEventListener('click', () => {
+    if (!isYarnEstimatorInputsReady()) return;
+    openHatYarnDrawer();
+  });
+
+  /**
+   * Keep the native control's selected option in sync with .value. Some browsers report
+   * value "" while selectedIndex still points at a real option, so the closed dropdown shows
+   * the wrong label and :checked styling can mispaint.
+   */
+  function alignHatSelectPlaceholderIndex(sel) {
+    if (!(sel instanceof HTMLSelectElement)) return;
+    const v = (sel.value ?? '').trim();
+    if (v !== '') return;
+    const idx = Array.from(sel.options).findIndex(
+      (opt) => String(opt.value ?? '').trim() === ''
+    );
+    if (idx >= 0 && sel.selectedIndex !== idx) sel.selectedIndex = idx;
+  }
+
+  function syncHatSelectCompletion() {
+    [hatSizeSelect, brimTypeSelect, crownSelect, fitSelect].forEach((sel) => {
+      if (!sel) return;
+      alignHatSelectPlaceholderIndex(sel);
+      const wrap = sel.closest('.hat-select-wrap');
+      if (!wrap) return;
+      const v = (sel.value ?? '').trim();
+      wrap.classList.toggle('is-complete', v !== '');
+    });
+    syncHatLengthPickerUi();
+    syncBrimTypePickerUi();
+    updatePatternReadinessUi();
+  }
+
+  window.syncHatSelectCompletion = syncHatSelectCompletion;
+
+  // Hat sizes: options are server-rendered from src/data/sizing_hats.json. Fetch only if SSR list missing (e.g. stale HTML).
+  try {
+    const ssrOk =
+      hatSizeSelect &&
+      hatSizeSelect.getAttribute('data-sizes-source') === 'ssr' &&
+      hatSizeSelect.options.length > 2 &&
+      Array.isArray(hatSizingData) &&
+      hatSizingData.length > 0;
+
+    if (!ssrOk && hatSizeSelect) {
+      while (hatSizeSelect.options.length > 1) {
+        hatSizeSelect.remove(1);
+      }
+      hatSizingData = [];
+      const response = await fetch('/data/sizing_hats.json');
+      if (!response.ok) {
+        throw new Error(`Hat sizing fetch failed: ${response.status} ${response.statusText}`);
+      }
+      const parsed = await response.json();
+      hatSizingData = Array.isArray(parsed) ? parsed.map(enrichHatSizingRow) : [];
+      hatSizingData.forEach((size) => {
+        const option = document.createElement('option');
+        option.value = size.size;
+        if (size.finishedSizeInches != null) {
+          option.dataset.finishedSizeInches = String(size.finishedSizeInches);
+        }
+        option.textContent =
+          size.optionLabel ||
+          size.extended_label ||
+          size.label ||
+          size.size ||
+          'Unnamed size';
+        hatSizeSelect.appendChild(option);
+      });
+      const customOption = document.createElement('option');
+      customOption.value = 'custom';
+      customOption.textContent = '✏️ Enter your own finished hat size';
+      hatSizeSelect.appendChild(customOption);
+    } else if (!hatSizeSelect) {
+      console.error('hat-size select element not found; cannot populate dropdown');
+    }
+
+    restoreHatBuilderSizeFromStorage();
+    syncHatYarnDimensions();
+    updateHatNeedleEstimate();
+  } catch (error) {
+    console.error('Failed to load hat sizing data:', error);
+    if (hatSizeSelect && !Array.from(hatSizeSelect.options).some((o) => o.value === 'custom')) {
+      const customOption = document.createElement('option');
+      customOption.value = 'custom';
+      customOption.textContent = '✏️ Enter your own finished hat size';
+      hatSizeSelect.appendChild(customOption);
+    }
+    restoreHatBuilderSizeFromStorage();
+    syncHatYarnDimensions();
+    updateHatNeedleEstimate();
+  }
+
+  function syncCustomSizeSection() {
+    if (!customSizeDiv || !hatSizeSelect) return;
+    customSizeDiv.style.display = hatSizeSelect.value === 'custom' ? 'block' : 'none';
+  }
+
+  /** Restore hat size from localStorage after options exist. */
+  function restoreHatBuilderSizeFromStorage() {
+    if (!hatSizeSelect) return;
+    const clearSizeToPlaceholder = () => {
+      hatSizeSelect.selectedIndex = 0;
+      if (customCircInput) customCircInput.value = '';
+      syncCustomSizeSection();
+      persistHatSize();
+      syncHatSelectCompletion();
+    };
+    try {
+      const raw = localStorage.getItem(HAT_SIZE_STORAGE_KEY);
+      if (!raw || !String(raw).trim()) {
+        clearSizeToPlaceholder();
+        return;
+      }
+      const o = JSON.parse(raw);
+      const sel = o && typeof o.sel === 'string' ? o.sel.trim() : '';
+      if (!sel) {
+        try {
+          localStorage.removeItem(HAT_SIZE_STORAGE_KEY);
+        } catch (_) {
+          /* ignore */
+        }
+        clearSizeToPlaceholder();
+        return;
+      }
+      const ok = Array.from(hatSizeSelect.options).some((opt) => opt.value === sel);
+      if (!ok) {
+        try {
+          localStorage.removeItem(HAT_SIZE_STORAGE_KEY);
+        } catch (_) {
+          /* ignore */
+        }
+        clearSizeToPlaceholder();
+        return;
+      }
+      hatSizeSelect.value = sel;
+      if (customCircInput) {
+        if (sel === 'custom') {
+          customCircInput.value = typeof o.circ === 'string' ? o.circ : '';
+        } else {
+          customCircInput.value = '';
+        }
+      }
+      syncCustomSizeSection();
+      updatePlaceholders();
+      persistHatSize();
+      syncHatSelectCompletion();
+    } catch (_) {
+      try {
+        localStorage.removeItem(HAT_SIZE_STORAGE_KEY);
+      } catch (_) {
+        /* ignore */
+      }
+      clearSizeToPlaceholder();
+    }
+  }
+
+  function persistHatSize() {
+    if (!hatSizeSelect) return;
+    try {
+      const sel = hatSizeSelect.value;
+      if (!sel) {
+        localStorage.removeItem(HAT_SIZE_STORAGE_KEY);
+        syncCanonicalHatDraft();
+        return;
+      }
+      localStorage.setItem(
+        HAT_SIZE_STORAGE_KEY,
+        JSON.stringify({
+          sel,
+          circ: sel === 'custom' && customCircInput ? customCircInput.value : ''
+        })
+      );
+      syncCanonicalHatDraft();
+    } catch (_) {
+      /* ignore quota / private mode */
+    }
+  }
+
+  if (hatSizeSelect) {
+    syncCustomSizeSection();
+    hatSizeSelect.addEventListener('change', () => {
+      syncCustomSizeSection();
+      updatePlaceholders();
+      persistHatSize();
+      syncHatSelectCompletion();
+      syncHatYarnDimensions();
+    });
+    if (customCircInput) {
+      customCircInput.addEventListener('input', persistHatSize);
+      customCircInput.addEventListener('change', persistHatSize);
+      customCircInput.addEventListener('input', syncHatYarnDimensions);
+      customCircInput.addEventListener('change', syncHatYarnDimensions);
+    }
+    syncHatSelectCompletion();
+  }
+
+  if (crownSelect) {
+    crownSelect.addEventListener('change', () => {
+      syncCrownPickerUi();
+      persistPatternInputs();
+      syncHatSelectCompletion();
+    });
+    syncCrownPickerUi();
+  }
+
+  if (brimTypeSelect) {
+    brimTypeSelect.addEventListener('change', () => {
+      persistPatternInputs();
+      syncHatSelectCompletion();
+    });
+    syncHatSelectCompletion();
+  }
+
+  // Unit Toggle
+  function updateUnitToggle() {
+    const currentUnit = unitStore.get();
+    if (btnInches && btnCm) {
+      if (currentUnit === 'inches') {
+        btnInches.classList.add('active');
+        btnCm.classList.remove('active');
+      } else {
+        btnCm.classList.add('active');
+        btnInches.classList.remove('active');
+      }
+    }
+    updatePlaceholders();
+    refreshHatSizeDropdownLabels();
+    refreshFitDropdownLabels();
+  }
+  
+  function updateCustomFloatingLabels(displayUnitOverride) {
+    const currentUnit =
+      displayUnitOverride === 'cm' || displayUnitOverride === 'inches'
+        ? displayUnitOverride
+        : unitStore.get() === 'cm'
+          ? 'cm'
+          : 'inches';
+    const unitWord = currentUnit === 'inches' ? 'inches' : 'cm';
+    const circLab = document.querySelector('label[for="custom-circumference"]');
+    const lenLab = document.querySelector('label[for="custom-hat-length"]');
+    const brimLenLab = document.querySelector('label[for="brimLength"]');
+    if (circLab) circLab.textContent = `Custom Finished Hat Size (${unitWord})`;
+    if (lenLab)
+      lenLab.textContent = `Finished Hat Length (bottom of brim to top of crown) (${unitWord})`;
+    if (brimLenLab)
+      brimLenLab.textContent = `Visible Brim Height (when worn) (${unitWord})`;
+  }
+
+  /** @param {'inches'|'cm'|undefined} displayUnitOverride — same as refreshHatSizeDropdownLabels */
+  function updatePlaceholders(displayUnitOverride) {
+    const currentUnit =
+      displayUnitOverride === 'cm' || displayUnitOverride === 'inches'
+        ? displayUnitOverride
+        : unitStore.get() === 'cm'
+          ? 'cm'
+          : 'inches';
+    const unitWord = currentUnit === 'inches' ? 'inches' : 'cm';
+
+    updateCustomFloatingLabels(displayUnitOverride);
+    if (hatSizeSelect) {
+      hatSizeSelect.setAttribute('aria-label', `Choose a finished hat size (${unitWord})`);
+      const firstOpt = hatSizeSelect.options[0];
+      if (firstOpt && firstOpt.value === '') {
+        firstOpt.textContent = `Choose a finished hat size (${unitWord})...`;
+      }
+    }
+    if (customCircInput) {
+      customCircInput.placeholder = `Enter finished hat size (${unitWord})`;
+    }
+    if (brimLengthInput) {
+      brimLengthInput.placeholder = `Enter visible brim height (${unitWord})`;
+    }
+  }
+  
+  if (btnInches) {
+    btnInches.addEventListener('click', () => {
+      const prev = unitStore.get();
+      unitStore.set('inches');
+      convertBrimLengthFieldBetweenUnits(prev, 'inches');
+      convertCustomHatLengthFieldBetweenUnits(prev, 'inches');
+      updateUnitToggle();
+      syncHatYarnDimensions();
+      const resultsDiv = document.getElementById('results');
+      if (resultsDiv?.style.display === 'block') calculate();
+    });
+  }
+
+  if (btnCm) {
+    btnCm.addEventListener('click', () => {
+      const prev = unitStore.get();
+      unitStore.set('cm');
+      convertBrimLengthFieldBetweenUnits(prev, 'cm');
+      convertCustomHatLengthFieldBetweenUnits(prev, 'cm');
+      updateUnitToggle();
+      syncHatYarnDimensions();
+      const resultsDiv = document.getElementById('results');
+      if (resultsDiv?.style.display === 'block') calculate();
+    });
+  }
+
+  updateUnitToggle();
+  applyHatGaugeSlotsToInputs();
+
+  function syncCustomLengthSection() {
+    if (!customLengthDiv || !fitSelect) return;
+    customLengthDiv.style.display = fitSelect.value === 'custom' ? 'block' : 'none';
+  }
+
+  window.hatBuilderClearInMemory = function () {
+    gaugeSlots.inches = emptyHatGaugeSlot();
+    gaugeSlots.cm = emptyHatGaugeSlot();
+    unitStore.set('inches');
+    try {
+      localStorage.removeItem(HAT_GAUGE_SLOTS_KEY);
+    } catch (_) {
+      /* ignore */
+    }
+    updateUnitToggle();
+    applyHatGaugeSlotsToInputs();
+    syncCustomSizeSection();
+    syncCustomLengthSection();
+  };
+
+  if (fitSelect) {
+    if (fitSelect.value && fitSelect.value !== 'custom') {
+      previousFit = fitSelect.value;
+    }
+    syncCustomLengthSection();
+    fitSelect.addEventListener('change', () => {
+      const v = fitSelect.value;
+      if (v === 'custom' && customHatLengthInput) {
+        const currentHeight = fitHeightsPreset[previousFit] || 7;
+        const currentUnit = unitStore.get();
+        const displayHeight =
+          currentUnit === 'inches'
+            ? currentHeight
+            : convertLength(currentHeight, 'inches', 'cm');
+        customHatLengthInput.value = displayHeight.toFixed(1);
+        setTimeout(() => {
+          customHatLengthInput.focus();
+          customHatLengthInput.scrollIntoView({ behavior: 'auto', block: 'nearest' });
+        }, 50);
+      }
+      if (v !== 'custom') {
+        previousFit = v;
+      }
+      syncCustomLengthSection();
+      persistPatternInputs();
+      syncHatSelectCompletion();
+      syncHatYarnDimensions();
+    });
+    syncHatSelectCompletion();
+  }
+
+  if (customHatLengthInput) {
+    customHatLengthInput.addEventListener('input', () => {
+      if (fitSelect?.value === 'custom') persistPatternInputs();
+      syncHatYarnDimensions();
+    });
+    customHatLengthInput.addEventListener('change', () => {
+      if (fitSelect?.value === 'custom') persistPatternInputs();
+      syncHatYarnDimensions();
+    });
+  }
+
+  if (brimLengthInput) {
+    brimLengthInput.addEventListener('input', persistPatternInputs);
+    brimLengthInput.addEventListener('change', persistPatternInputs);
+  }
+  
+  // Auto-scroll state - resets when user edits after scrolling
+  let hasAutoScrolled = false;
+  
+  // Auto-scroll helper function
+  function maybeAutoScroll() {
+    const resultsEl = document.getElementById('results');
+    const isPatternVisible = resultsEl && resultsEl.style.display !== 'none';
+    
+    if (isPatternVisible && !hasAutoScrolled) {
+      hasAutoScrolled = true;
+      
+      // Use requestAnimationFrame for timing, then a small delay for DOM settle
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const scrollTargetEl = document.getElementById('results');
+          if (scrollTargetEl) {
+            const siteHeader = document.querySelector('.kbm-header-wrap');
+            const headerHeight = siteHeader?.offsetHeight ?? 120;
+            const headerOffset = headerHeight + 16;
+            const elementPosition = scrollTargetEl.getBoundingClientRect().top + window.scrollY;
+            const offsetPosition = elementPosition - headerOffset;
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: prefersReducedMotion ? 'auto' : 'smooth'
+            });
+          }
+        }, 150); // Small delay for DOM to settle
+      });
+    }
+  }
+  
+  // Reset scroll flag when user edits any field after scrolling
+  const allInputs = [hatSizeSelect, customCircInput, brimLengthInput, brimTypeSelect, crownSelect, fitSelect, customHatLengthInput, stitchGaugeInput, rowGaugeInput];
+  allInputs.forEach(input => {
+    if (input) {
+      input.addEventListener('input', () => {
+        if (hasAutoScrolled) {
+          hasAutoScrolled = false;
+        }
+      });
+    }
+  });
+  
+  // Auto-calculate (live updates as user types)
+  setupAutoCalculate(
+    [hatSizeSelect, customCircInput, brimLengthInput, brimTypeSelect, crownSelect, fitSelect, customHatLengthInput, stitchGaugeInput, rowGaugeInput],
+    calculate
+  );
+
+  document.querySelectorAll('#tab-build select, #tab-build input').forEach((el) => {
+    el.addEventListener('change', updatePatternReadinessUi);
+    el.addEventListener('input', updatePatternReadinessUi);
+  });
+
+  updatePatternReadinessUi();
+  syncHatYarnDimensions();
+
+  window.addEventListener(
+    'load',
+    () => {
+      syncHatSelectCompletion();
+    },
+    { once: true }
+  );
+
+  // Auto-scroll triggers on last required input (row gauge)
+  // Triggers on: blur OR Enter key press
+  if (rowGaugeInput) {
+    rowGaugeInput.addEventListener('blur', maybeAutoScroll);
+    
+    rowGaugeInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        rowGaugeInput.blur(); // Blur will trigger maybeAutoScroll
+      }
+    });
+  }
+  
+  // Action Bar
+  printBtn.addEventListener('click', () => {
+    if (typeof window.kbmTriggerPatternPrint === 'function') {
+      window.kbmTriggerPatternPrint(printBtn);
+    } else {
+      window.print();
+    }
+  });
+  
+  // Tips Toggle Functionality - called after pattern content is rendered
+  const patternContent = document.getElementById('pattern-content');
+  
+  // Apply saved preference to pattern content on initial load
+  const savedShowTips = localStorage.getItem('hat-show-tips') === 'true';
+  patternContent.dataset.showTips = savedShowTips ? 'true' : 'false';
+
+  function updatePatternTipsIntroUi(tipsOn) {
+    const slot = patternContent.querySelector('.pattern-tips-intro-slot');
+    if (!slot) return;
+    const renderControl = window.kbmPatternTipsControlBoxHtml;
+    slot.innerHTML = typeof renderControl === 'function' ? renderControl(tipsOn) : '';
+    if (typeof window.kbmUpdateTipsResetLinkVisibility === 'function') {
+      window.kbmUpdateTipsResetLinkVisibility(patternContent, 'hat-show-tips');
+    }
+    window.dispatchEvent(new CustomEvent('kbm:hat-pattern-rendered'));
+  }
+
+  patternContent.addEventListener('click', (e) => {
+    const toggleBtn = e.target.closest('.tips-inline-toggle');
+    if (!(toggleBtn && patternContent.contains(toggleBtn))) return;
+    e.preventDefault();
+    const isShowing = patternContent.dataset.showTips === 'true';
+    const newState = !isShowing;
+    patternContent.dataset.showTips = newState ? 'true' : 'false';
+    localStorage.setItem('hat-show-tips', newState ? 'true' : 'false');
+    syncCanonicalHatDraft();
+    updatePatternTipsIntroUi(newState);
+  });
+
+  patternContent.addEventListener('change', (e) => {
+    const t = e.target;
+    if (!(t instanceof HTMLInputElement) || !t.classList.contains('hat-pattern-section__collapse')) return;
+    const section = t.closest('.hat-pattern-section');
+    const id = t.dataset.sectionId || section?.dataset.sectionId;
+    if (!section || !id) return;
+    localStorage.setItem(`hatPattern_section_${id}`, t.checked ? 'true' : 'false');
+    section.classList.toggle('is-collapsed', t.checked);
+  });
+
+  function setHatZeroBodyWarningVisible(visible) {
+    const el = document.getElementById('hat-zero-body-warning');
+    if (!el) return;
+    if (visible) el.removeAttribute('hidden');
+    else el.setAttribute('hidden', '');
+  }
+
+  // Calculate Function
+  function calculate() {
+    console.log('calculate started');
+    const currentUnit = unitStore.get();
+
+    // Finished hat body circumference: standard sizes use precomputed finishedSizeInches (head × 0.9, rounded); custom = direct finished size
+    let finishedCircRaw = 0;
+
+    const hatSizeValue = hatSizeSelect.value;
+    if (hatSizeValue === 'custom') {
+      finishedCircRaw = parseFloat(customCircInput.value) || 0;
+    } else if (hatSizeValue) {
+      const selectedSize = hatSizingData.find((s) => s.size === hatSizeValue);
+      if (selectedSize) {
+        finishedCircRaw = selectedSize.finishedSizeInches;
+      }
+    }
+    
+    // Get other inputs
+    const crown = crownSelect.value;
+    const fit = fitSelect.value;
+    const stitchGauge = parseFloat(stitchGaugeInput.value) || 0;
+    const rowGauge = parseFloat(rowGaugeInput.value) || 0;
+    
+    function abortIncomplete() {
+      hideResults(resultsVisibilityConfig);
+      const printFooterEl = document.querySelector(resultsVisibilityConfig.printFooterSelector);
+      if (printFooterEl) printFooterEl.style.display = 'none';
+      setHatZeroBodyWarningVisible(false);
+    }
+
+    if (!requiredPatternInputsComplete()) {
+      abortIncomplete();
+      return;
+    }
+
+    // Convert to inches for calculations
+    // Standard sizes: finishedSizeInches is already in inches (ease baked into chart row)
+    // Custom: convert when display unit is cm
+    let finishedHatCircInches;
+    if (hatSizeValue === 'custom') {
+      finishedHatCircInches =
+        currentUnit === 'inches'
+          ? finishedCircRaw
+          : convertLength(finishedCircRaw, 'cm', 'inches');
+    } else {
+      finishedHatCircInches = finishedCircRaw;
+    }
+
+    const totalHatLength = resolveTotalHatLengthInches(fit, hatSizeValue, currentUnit);
+    if (totalHatLength == null || totalHatLength <= 0) {
+      abortIncomplete();
+      return;
+    }
+
+    const brimLengthRaw = parseFloat(brimLengthInput.value) || 0;
+    const brimDepth =
+      currentUnit === 'inches'
+        ? brimLengthRaw
+        : convertLength(brimLengthRaw, 'cm', 'inches');
+    const selectedSizeRow =
+      hatSizeValue && hatSizeValue !== 'custom'
+        ? hatSizingData.find((s) => s.size === hatSizeValue)
+        : null;
+    const suggestedCrownDepth = Number(
+      selectedSizeRow?.suggestedCrownDepth ?? selectedSizeRow?.defaultCrownDepth
+    );
+    const brimType = brimTypeSelect?.value === 'folded' ? 'folded' : 'single';
+
+    const patternCalc = calculateHatPattern({
+      finishedHatCircInches,
+      stitchGaugeDisplay: stitchGauge,
+      rowGaugeDisplay: rowGauge,
+      displayUnit: currentUnit === 'cm' ? 'cm' : 'inches',
+      totalHatLengthInches: totalHatLength,
+      brimDepthInches: brimDepth,
+      brimType,
+      crown,
+      suggestedCrownDepthInches: Number.isFinite(suggestedCrownDepth) ? suggestedCrownDepth : 0,
+      fit,
+    });
+    const {
+      targetWidth,
+      castOnSts,
+      hatHeight,
+      brimRows,
+      bodyRows,
+      crownRowCount,
+      bodyHeightInches,
+      crownHeightInches,
+      stGaugePerInch,
+      rowGaugePerInch,
+    } = patternCalc;
+
+    generatePattern(patternCalc);
+    setHatZeroBodyWarningVisible(bodyRows <= 0);
+    console.log('[hat-builder debug] pattern data (after generatePattern)', {
+      finishedHatCircInches,
+      targetWidth,
+      castOnSts,
+      hatHeight,
+      brimDepth,
+      brimRows,
+      brimType,
+      bodyRows,
+      crownRowCount,
+      bodyHeightInches,
+      crownHeightInches,
+      crown,
+      fit,
+      stGaugePerInch,
+      rowGaugePerInch,
+      stitchGaugeRaw: stitchGauge,
+      rowGaugeRaw: rowGauge,
+      fourWedgeCrownSetup: patternCalc.fourWedgeCrownSetup,
+    });
+
+    // Yarn estimator: same numbers as Finished Measurements (targetWidth = finished body circumference)
+    const yarnLengthUnit = currentUnit === 'inches' ? 'in' : 'cm';
+    const yarnProjectWidth =
+      yarnLengthUnit === 'in'
+        ? targetWidth
+        : convertLength(targetWidth, 'inches', 'cm');
+    const yarnProjectLength =
+      yarnLengthUnit === 'in'
+        ? hatHeight
+        : convertLength(hatHeight, 'inches', 'cm');
+    window.dispatchEvent(
+      new CustomEvent('kbm:yarnDimensions', {
+        detail: {
+          projectWidth: yarnProjectWidth,
+          projectLength: yarnProjectLength,
+          lengthUnit: yarnLengthUnit,
+          source: 'custom',
+        },
+      })
+    );
+    
+    // Show results (pattern content updates in the Pattern tab; tab switch only via Create My Pattern)
+    {
+      const resultsEl = document.querySelector(resultsVisibilityConfig.resultsSelector);
+      const patternTabNav = document.getElementById('hat-tab-pattern');
+      console.log('[hat-builder debug] before showResults', {
+        showResults: typeof showResults,
+        resultsContainerDisplayState: resultsEl ? resultsEl.style.display : '(no results el)',
+        patternTabIsDisabledClass: patternTabNav
+          ? patternTabNav.classList.contains('is-disabled')
+          : '(no pattern tab el)',
+        patternTabAriaDisabled: patternTabNav?.getAttribute('aria-disabled') ?? '(n/a)',
+        activateWizardTabPatternNote:
+          'activateWizardTab("pattern") runs in Create button handler after calculate() returns',
+      });
+    }
+    showResults(resultsVisibilityConfig);
+
+    // Update print summary
+    updatePrintSummary({
+      headCirc: finishedCircRaw,
+      brimDepth,
+      crownDepthInches: crownHeightInches,
+      crownPlan: patternCalc.crownPlan,
+      crown,
+      fit,
+      hatHeight,
+      stitchGauge,
+      rowGauge,
+      isCustom: hatSizeSelect.value === 'custom',
+      isCustomLength: fit === 'custom',
+      currentUnit
+    });
+  }
+  
+  function updatePrintSummary(data) {
+    const {
+      headCirc,
+      brimDepth,
+      crownDepthInches,
+      crownPlan,
+      crown,
+      fit,
+      hatHeight,
+      stitchGauge,
+      rowGauge,
+      isCustom,
+      isCustomLength,
+      currentUnit
+    } = data;
+    
+    // Size display
+    const sizeLabel = isCustom
+      ? `Custom — ${headCirc}${currentUnit === 'inches' ? '"' : ' cm'}`
+      : hatSizeSelect.value && hatSizeSelect.selectedIndex >= 0
+        ? hatSizeSelect.options[hatSizeSelect.selectedIndex].text
+        : '—';
+    document.getElementById('print-size').textContent = `Hat size: ${sizeLabel}`;
+    
+    const displayBrimLen =
+      currentUnit === 'inches'
+        ? formatLength(brimDepth, 'inches')
+        : formatLength(convertLength(brimDepth, 'inches', 'cm'), 'cm');
+    const displayCrownDep =
+      currentUnit === 'inches'
+        ? formatLength(crownDepthInches, 'inches')
+        : formatLength(convertLength(crownDepthInches, 'inches', 'cm'), 'cm');
+    const unitSuffix = currentUnit === 'inches' ? '"' : ' cm';
+    document.getElementById('print-brim').textContent = `Visible Brim Height: ${displayBrimLen}${unitSuffix}`;
+
+    // Crown display
+    const crownLabels = {
+      gathered: 'Gathered (cinched top)',
+      'wedge-4-decrease': '4-Wedge Decrease',
+      'wedge-4': '4-Wedge Decrease',
+      spiral: 'Spiral Crown (Smooth, Continuous)',
+    };
+    const crownPrintLabel = crownLabels[crown] ?? crown;
+    const displayBeginAt =
+      currentUnit === 'inches'
+        ? formatLength(crownPlan.bodyLength, 'inches')
+        : formatLength(convertLength(crownPlan.bodyLength, 'inches', 'cm'), 'cm');
+    document.getElementById('print-crown').textContent =
+      `Crown: ${crownPrintLabel} — Calculated crown depth: ${displayCrownDep}${unitSuffix}. Begin crown shaping at ${displayBeginAt}${unitSuffix} from cast-on edge.`;
+    
+    // Hat length display
+    let lengthLabel;
+    if (isCustomLength) {
+      const displayHeight = currentUnit === 'inches' 
+        ? hatHeight 
+        : convertLength(hatHeight, 'inches', 'cm');
+      lengthLabel = `Custom — ${displayHeight.toFixed(1)}${currentUnit === 'inches' ? '"' : ' cm'}`;
+    } else {
+      const fitLabels = {
+        beanie: 'Beanie (7" finished hat length)',
+        watchcap: 'Classic (8.5" finished hat length)',
+        slouchy: 'Slouchy (10" finished hat length)',
+        relaxed: 'Relaxed (9" finished hat length)'
+      };
+      lengthLabel = fit ? fitLabels[fit] : '—';
+    }
+    document.getElementById('print-fit').textContent = `Finished Hat Length: ${lengthLabel}`;
+    
+    // Gauge display (matches active measurement unit)
+    const gaugeRefPrint = currentUnit === 'inches' ? '4"' : '10 cm';
+    document.getElementById('print-gauge').textContent = `Gauge: ${stitchGauge} sts / ${rowGauge} rows per ${gaugeRefPrint}`;
+  }
+  
+  function generatePattern(calc) {
+    const currentUnit = unitStore.get() === 'cm' ? 'cm' : 'inches';
+    const savedShowTipsForBtn = localStorage.getItem('hat-show-tips') === 'true';
+    const renderControl = window.kbmPatternTipsControlBoxHtml;
+    const tipsIntroHtml =
+      typeof renderControl === 'function' ? renderControl(savedShowTipsForBtn) : '';
+
+    const patternHTML = buildHatPatternHtml({
+      calc,
+      currentUnit,
+      scrapOffPatternTooltip,
+      tipsIntroHtml,
+      showTips: savedShowTipsForBtn,
+      formatters: { convertLength, formatLength },
+    });
+
+    if (typeof window !== 'undefined') {
+      window.hatPatternLastCalc = calc;
+    }
+
+    updateHTML('#pattern-content', patternHTML);
+    patternContent.dataset.showTips = savedShowTipsForBtn ? 'true' : 'false';
+    window.dispatchEvent(new CustomEvent('kbm:hat-pattern-rendered'));
+    applyHatPatternSectionCollapseState(patternContent);
+
+    generateDiagram(calc);
+  }
+  
+  async function generateDiagram(calc) {
+    const currentUnit = unitStore.get() === 'cm' ? 'cm' : 'inches';
+    const svgContent = await loadHatDiagramSvg(calc, currentUnit, {
+      convertLength,
+      formatLengthWithUnit,
+    });
+    updateHTML('#diagram-content', svgContent);
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    void initHatBuilder();
+  });
+} else {
+  void initHatBuilder();
+}
+</script>
+
+<script is:inline>
+  const clearBtn = document.getElementById('clear-hat-builder');
+
+  if (clearBtn) {
+    clearBtn.addEventListener('click', function () {
+      const confirmed = confirm('Clear all inputs and start over?');
+      if (!confirmed) return;
+
+      // Remove hat builder storage keys
+      localStorage.removeItem('hat-builder-pattern-inputs');
+      localStorage.removeItem('hat-builder-hat-size');
+      localStorage.removeItem('hat-builder-gauge-slots');
+      localStorage.removeItem('hat-unit');
+      localStorage.removeItem('hat-show-tips');
+      localStorage.removeItem('kbm_hat_draft');
+
+      // Reset form
+      const form = document.querySelector('#hat-builder-form');
+      if (form) form.reset();
+
+      // Clear custom inputs
+      const customCirc = document.getElementById('custom-circumference');
+      if (customCirc) customCirc.value = '';
+
+      const customLength = document.getElementById('custom-hat-length');
+      if (customLength) customLength.value = '';
+
+      // Reset selects
+      document.querySelectorAll('#hat-builder-form select').forEach((sel) => {
+        sel.value = '';
+        sel.selectedIndex = 0;
+      });
+
+      if (typeof window.hatBuilderClearInMemory === 'function') {
+        window.hatBuilderClearInMemory();
+      }
+
+      // Re-sync UI if function exists
+      if (typeof syncHatSelectCompletion === 'function') {
+        syncHatSelectCompletion();
+      }
+
+      // Hide results
+      const results = document.getElementById('results');
+      if (results) results.style.display = 'none';
+
+      const zeroBodyWarn = document.getElementById('hat-zero-body-warning');
+      if (zeroBodyWarn) zeroBodyWarn.setAttribute('hidden', '');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+</script>
+
+</Layout>
