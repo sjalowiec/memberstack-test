@@ -1,7 +1,7 @@
 /**
  * Post-build bust-dart customization for finished women’s sweater patterns.
  *
- * Builders never ask about darts. The finished pattern view imports a cup size into
+ * Builders never ask about darts. The finished pattern view imports cup + width/depth into
  * `style.bustDart`, then regenerates front instructions via the shared Lego block.
  */
 import { buildCustomBuildEffectivePatternInput } from "./buildCustomBuildEffectivePatternInput";
@@ -17,7 +17,10 @@ import { generateDropShoulderPattern } from "./dropShoulderPatternOutput";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 import {
   BUST_DART_STYLE_KEY,
+  buildEnabledBustDartSavedConfig,
+  bustDartSavedConfigIsActive,
   calculateBustDart,
+  emptyBustDartSavedConfig,
   isBustDartEligibleAudience,
   normalizeBustDartConfigForAudience,
   normalizeBustDartSavedConfig,
@@ -29,8 +32,13 @@ import {
 } from "./legoBlocks/bustDart";
 import {
   CUP_DART_BY_SIZE,
+  displayDartLengthFromInches,
   formatDartCupOptionLabel,
+  getCupDartPresetInches,
+  inchesFromDisplayDartLength,
   isDartCupSize,
+  parsePositiveDartMeasurement,
+  resolveDartDimensionsInches,
   type DartCupSize,
   type DartFormulaUnit,
 } from "../tools/dartFormulaMath";
@@ -61,6 +69,13 @@ export type BustDartPatternContext = {
     placementLabel: string;
     frontStitchesLabel: string;
   };
+};
+
+export type BustDartPreviewDims = {
+  cupSize: string | null;
+  /** Display-unit width/depth matching context.unit */
+  dartWidth: number | null;
+  dartDepth: number | null;
 };
 
 function section(obj: unknown): Record<string, unknown> {
@@ -190,13 +205,58 @@ function roundDisplay(n: number): string {
   return r === Math.floor(r) ? String(Math.floor(r)) : String(r);
 }
 
+/** Resolve display-unit width/depth for the modal from saved config or cup preset. */
+export function bustDartDisplayDimensionsFromConfig(
+  config: BustDartSavedConfig,
+  unit: DartFormulaUnit,
+): { dartWidth: number | null; dartDepth: number | null; customized: boolean } {
+  const dims = resolveDartDimensionsInches({
+    cupKey: config.cupSize,
+    dartWidthInches: config.dartWidthInches,
+    dartDepthInches: config.dartDepthInches,
+    unit: "in",
+  });
+  if (!dims.ok) {
+    return { dartWidth: null, dartDepth: null, customized: false };
+  }
+  return {
+    dartWidth: displayDartLengthFromInches(dims.dartWidthInches, unit),
+    dartDepth: displayDartLengthFromInches(dims.dartDepthInches, unit),
+    customized: dims.customized,
+  };
+}
+
+export function bustDartPresetDisplayDimensions(
+  cupSize: DartCupSize,
+  unit: DartFormulaUnit,
+): { dartWidth: number; dartDepth: number } {
+  const preset = getCupDartPresetInches(cupSize);
+  return {
+    dartWidth: displayDartLengthFromInches(preset.dartWidthInches, unit),
+    dartDepth: displayDartLengthFromInches(preset.dartDepthInches, unit),
+  };
+}
+
 export function previewBustDartForPattern(
   context: BustDartPatternContext,
-  cupSize: string | null,
+  dimsOrCup: BustDartPreviewDims | string | null,
 ): BustDartResult {
+  const dims: BustDartPreviewDims =
+    typeof dimsOrCup === "string" || dimsOrCup == null
+      ? { cupSize: dimsOrCup, dartWidth: null, dartDepth: null }
+      : dimsOrCup;
+  const width = parsePositiveDartMeasurement(dims.dartWidth);
+  const depth = parsePositiveDartMeasurement(dims.dartDepth);
+  const widthIn =
+    width == null ? null : inchesFromDisplayDartLength(width, context.unit);
+  const depthIn =
+    depth == null ? null : inchesFromDisplayDartLength(depth, context.unit);
+
   const input: BustDartInput = {
     enabled: true,
-    cupSize,
+    cupSize: dims.cupSize,
+    dartWidthInches: widthIn,
+    dartDepthInches: depthIn,
     sizeGroup: context.sizeGroup,
     stitchesPerInch: context.stitchesPerInch,
     rowsPerInch: context.rowsPerInch,
@@ -212,22 +272,46 @@ export function previewBustDartForPattern(
 /** Write imported dart config into the working draft (local storage). Does not cloud-save. */
 export function writeBustDartConfigToWorkingDraft(config: BustDartSavedConfig): BustDartSavedConfig {
   const normalized = normalizeBustDartSavedConfig(config);
-  // Audience eligibility is enforced at action visibility + calculateBustDart time.
-  // Persist exactly the requested on/off + cup so reopen/print stay stable.
   const stored: BustDartSavedConfig = normalized.enabled
-    ? { enabled: true, cupSize: normalized.cupSize }
-    : { enabled: false, cupSize: null };
+    ? {
+        enabled: true,
+        cupSize: normalized.cupSize,
+        dartWidthInches: normalized.dartWidthInches,
+        dartDepthInches: normalized.dartDepthInches,
+      }
+    : emptyBustDartSavedConfig();
   saveCurrentPattern({ style: { [BUST_DART_STYLE_KEY]: stored } });
   savePatternData("style", { [BUST_DART_STYLE_KEY]: stored });
   return stored;
 }
 
+/** Persist an enabled dart using authoritative inch measurements from preview/add. */
+export function applyBustDartConfigToWorkingDraft(args: {
+  cupSize: DartCupSize | null;
+  dartWidthInches: number;
+  dartDepthInches: number;
+}): BustDartSavedConfig {
+  return writeBustDartConfigToWorkingDraft(
+    buildEnabledBustDartSavedConfig({
+      cupSize: args.cupSize,
+      dartWidthInches: args.dartWidthInches,
+      dartDepthInches: args.dartDepthInches,
+    }),
+  );
+}
+
+/** @deprecated Prefer {@link applyBustDartConfigToWorkingDraft} with explicit dimensions. */
 export function applyBustDartCupToWorkingDraft(cupSize: DartCupSize): BustDartSavedConfig {
-  return writeBustDartConfigToWorkingDraft({ enabled: true, cupSize });
+  const preset = getCupDartPresetInches(cupSize);
+  return applyBustDartConfigToWorkingDraft({
+    cupSize,
+    dartWidthInches: preset.dartWidthInches,
+    dartDepthInches: preset.dartDepthInches,
+  });
 }
 
 export function removeBustDartFromWorkingDraft(): BustDartSavedConfig {
-  return writeBustDartConfigToWorkingDraft({ enabled: false, cupSize: null });
+  return writeBustDartConfigToWorkingDraft(emptyBustDartSavedConfig());
 }
 
 export type PersistBustDartCustomizationResult =
@@ -271,8 +355,7 @@ export function parseCupSizeInput(raw: unknown): DartCupSize | null {
 export function patternHasImportedBustDart(
   patternData: Record<string, unknown> = getPatternData(),
 ): boolean {
-  const c = readBustDartConfigFromPatternData(patternData);
-  return c.enabled === true && c.cupSize != null;
+  return bustDartSavedConfigIsActive(readBustDartConfigFromPatternData(patternData));
 }
 
 export function isPatternEligibleForBustDartAction(
@@ -281,4 +364,10 @@ export function isPatternEligibleForBustDartAction(
   return isBustDartEligibleAudience(pickAudience(patternData));
 }
 
-export { normalizeBustDartSavedConfig, readBustDartConfigFromPatternData, BUST_DART_STYLE_KEY };
+export {
+  normalizeBustDartSavedConfig,
+  readBustDartConfigFromPatternData,
+  BUST_DART_STYLE_KEY,
+  emptyBustDartSavedConfig,
+  buildEnabledBustDartSavedConfig,
+};

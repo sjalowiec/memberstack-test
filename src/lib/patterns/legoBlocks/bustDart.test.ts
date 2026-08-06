@@ -30,7 +30,12 @@ describe("bustDart lego block", () => {
     const r = calculateBustDart(baseInput({ enabled: false }));
     expect(r.active).toBe(false);
     expect(r.eligible).toBe(true);
-    expect(r.config).toEqual({ enabled: false, cupSize: null });
+    expect(r.config).toEqual({
+      enabled: false,
+      cupSize: null,
+      dartWidthInches: null,
+      dartDepthInches: null,
+    });
     expect(r.instructionParagraphs).toEqual([]);
     expect(r.dartStartGarmentRc).toBe(140 - 7);
     expect(r.rowsFromDartToArmhole).toBe(7);
@@ -111,16 +116,16 @@ describe("bustDart lego block", () => {
     }
   });
 
-  it("errors when cup size is missing while enabled", () => {
+  it("errors when cup size is missing while enabled and no dimensions", () => {
     const r = calculateBustDart(baseInput({ cupSize: null }));
     expect(r.active).toBe(false);
-    expect(r.errors.some((e) => /cup size/i.test(e))).toBe(true);
+    expect(r.errors.some((e) => /cup size|width and depth/i.test(e))).toBe(true);
   });
 
   it("errors when front stitches cannot hold the dart", () => {
     const r = calculateBustDart(baseInput({ frontStitchCount: 10, cupSize: "DD" }));
     expect(r.active).toBe(false);
-    expect(r.errors.some((e) => /enough stitches|too narrow/i.test(e))).toBe(true);
+    expect(r.errors.some((e) => /enough stitches|too narrow|smaller dart/i.test(e))).toBe(true);
   });
 
   it("errors when body rows below armhole are insufficient", () => {
@@ -136,15 +141,29 @@ describe("bustDart lego block", () => {
   });
 
   it("normalizes malformed saved config to off", () => {
-    expect(normalizeBustDartSavedConfig(undefined)).toEqual({ enabled: false, cupSize: null });
-    expect(normalizeBustDartSavedConfig("nope")).toEqual({ enabled: false, cupSize: null });
+    expect(normalizeBustDartSavedConfig(undefined)).toEqual({
+      enabled: false,
+      cupSize: null,
+      dartWidthInches: null,
+      dartDepthInches: null,
+    });
+    expect(normalizeBustDartSavedConfig("nope")).toEqual({
+      enabled: false,
+      cupSize: null,
+      dartWidthInches: null,
+      dartDepthInches: null,
+    });
     expect(normalizeBustDartSavedConfig({ enabled: true, cupSize: "Z" })).toEqual({
       enabled: true,
       cupSize: null,
+      dartWidthInches: null,
+      dartDepthInches: null,
     });
     expect(normalizeBustDartSavedConfig({ enabled: true, cupSize: "B" })).toEqual({
       enabled: true,
       cupSize: "B",
+      dartWidthInches: null,
+      dartDepthInches: null,
     });
   });
 
@@ -152,13 +171,23 @@ describe("bustDart lego block", () => {
     expect(readBustDartConfigFromPatternData({ style: { bodyShape: "straight" } })).toEqual({
       enabled: false,
       cupSize: null,
+      dartWidthInches: null,
+      dartDepthInches: null,
     });
   });
 
   it("clears darts when audience becomes ineligible", () => {
     expect(
-      normalizeBustDartConfigForAudience({ enabled: true, cupSize: "C" }, "men"),
-    ).toEqual({ enabled: false, cupSize: null });
+      normalizeBustDartConfigForAudience(
+        { enabled: true, cupSize: "C", dartWidthInches: null, dartDepthInches: null },
+        "men",
+      ),
+    ).toEqual({
+      enabled: false,
+      cupSize: null,
+      dartWidthInches: null,
+      dartDepthInches: null,
+    });
   });
 
   it("is deterministic and does not mutate caller input", () => {

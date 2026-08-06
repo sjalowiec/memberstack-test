@@ -91,6 +91,22 @@ describe("dartFormulaMath", () => {
     ).toBe(false);
   });
 
+  it("accepts display-unit overrides and marks customized", () => {
+    const r = computeDartShaping({
+      cupKey: "C",
+      stitchGauge: 20,
+      rowGauge: 28,
+      unit: "in",
+      dartWidth: 4,
+      dartDepth: 1,
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.customized).toBe(true);
+    expect(r.dartWidthInches).toBe(4);
+    expect(r.totalHeldStitches).toBe(20);
+  });
+
   it("does not mutate cup preset table", () => {
     const before = { ...CUP_DART_BY_SIZE.C };
     computeDartShaping({ cupKey: "C", stitchGauge: 20, rowGauge: 28, unit: "in" });

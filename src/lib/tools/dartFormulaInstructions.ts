@@ -65,7 +65,7 @@ export function buildDartFormulaResultsHtml(result: DartShapingSuccess): string 
     .join("");
 
   const summaryRows: [string, string][] = [
-    ["Cup size", escapeHtml(result.cupKey)],
+    ["Cup size", escapeHtml(result.cupKey ? (result.customized ? `${result.cupKey} · Customized` : result.cupKey) : result.customized ? "Customized" : "—")],
     ["Stitch gauge", `${escapeHtml(String(result.stitchGauge))} sts / ${gLabel}`],
     ["Row gauge", `${escapeHtml(String(result.rowGauge))} rows / ${gLabel}`],
     ["Dart width", `${escapeHtml(String(result.dartWidth))} ${dLabel}`],

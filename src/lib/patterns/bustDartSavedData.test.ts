@@ -169,13 +169,44 @@ describe("bust dart post-build customization", () => {
   });
 
   it("writeBustDartConfigToWorkingDraft returns normalized config", () => {
-    expect(writeBustDartConfigToWorkingDraft({ enabled: true, cupSize: "C" })).toEqual({
+    expect(
+      writeBustDartConfigToWorkingDraft({
+        enabled: true,
+        cupSize: "C",
+        dartWidthInches: null,
+        dartDepthInches: null,
+      }),
+    ).toEqual({
       enabled: true,
       cupSize: "C",
+      dartWidthInches: null,
+      dartDepthInches: null,
     });
-    expect(writeBustDartConfigToWorkingDraft({ enabled: false, cupSize: "C" })).toEqual({
+    expect(
+      writeBustDartConfigToWorkingDraft({
+        enabled: false,
+        cupSize: "C",
+        dartWidthInches: 3,
+        dartDepthInches: 1,
+      }),
+    ).toEqual({
       enabled: false,
       cupSize: null,
+      dartWidthInches: null,
+      dartDepthInches: null,
+    });
+    expect(
+      writeBustDartConfigToWorkingDraft({
+        enabled: true,
+        cupSize: "C",
+        dartWidthInches: 3.5,
+        dartDepthInches: 1.25,
+      }),
+    ).toEqual({
+      enabled: true,
+      cupSize: "C",
+      dartWidthInches: 3.5,
+      dartDepthInches: 1.25,
     });
   });
 });

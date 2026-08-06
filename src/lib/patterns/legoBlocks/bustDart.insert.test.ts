@@ -5,6 +5,7 @@ import {
   type BustDartPatternDisplayRow,
 } from "./bustDart";
 import {
+  OPTIONAL_BUST_DART_TIP_ID,
   renderBustDartCustomizationPrintHtml,
   renderBustDartCustomizationScreenHtml,
 } from "../bustDartFrontSlotHtml";
@@ -148,8 +149,26 @@ describe("bustDartFrontSlotHtml print/screen", () => {
   it("screen shows Optional Bust Dart control when inactive", () => {
     const html = renderBustDartCustomizationScreenHtml(base);
     expect(html).toMatch(/Optional Bust Dart/);
+    expect(html).toMatch(/Add Bust Dart/);
     expect(html).toMatch(/data-bust-dart-pattern-open/);
     expect(html).toMatch(/no-print/);
+    expect(html).toMatch(new RegExp(`data-tip-id="${OPTIONAL_BUST_DART_TIP_ID}"`));
+    expect(html).toMatch(/pattern-tip/);
+    expect(html).toMatch(/pattern-print-personalization-never-print/);
+  });
+
+  it("active screen keeps Update/Remove and is not a dismissable tip", () => {
+    const html = renderBustDartCustomizationScreenHtml({
+      ...base,
+      active: true,
+      cupSize: "C",
+      instructionParagraphs: ["Add bust darts (cup C)."],
+    });
+    expect(html).toMatch(/Update Bust Dart/);
+    expect(html).toMatch(/Remove Bust Dart/);
+    expect(html).toMatch(/data-bust-dart-active="true"/);
+    expect(html).not.toMatch(/data-tip-id=/);
+    expect(html).not.toMatch(/class="[^"]*pattern-tip/);
   });
 
   it("print omits inactive slot entirely", () => {
