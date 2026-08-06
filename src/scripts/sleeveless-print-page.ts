@@ -81,7 +81,16 @@ function buildGeneratorPatternData(_merged: Record<string, unknown>): Record<str
 
 function printFinishingSectionHtml(
   patternMerged: Record<string, unknown>,
-  debug: { frontNecklineStartRC?: number; cardiganFrontEdgePickupSts?: number },
+  debug: {
+    frontNecklineStartRC?: number;
+    cardiganFrontEdgePickupSts?: number;
+    frontNeckDepthRows?: number;
+    backNeckDepthRows?: number;
+    stitchesPerInch?: number;
+    rowsPerInch?: number;
+    frontCenterNeckBindOffStitches?: number;
+    centerNeckBindOffStitches?: number;
+  },
 ): string {
   const finishing = sleevelessFinishingFromPattern(patternMerged, debug);
   const listItems = buildSleevelessFinishingPrintListHtml({
@@ -89,6 +98,7 @@ function printFinishingSectionHtml(
     isDropShoulder: finishing.isDropShoulder,
     cardiganFrontEdgeFinishingMode: finishing.cardiganFrontEdgeFinishingMode,
     frontEdgePickupSts: finishing.frontEdgePickupSts,
+    neckbandPickup: finishing.neckbandPickup,
   });
   return `<section class="print-major print-finishing" aria-labelledby="print-finishing-heading">
   <h2 id="print-finishing-heading" class="print-heading-major print-heading-with-checkbox"><span class="print-heading-checkbox" aria-hidden="true"></span><span class="print-heading-label">Finishing</span></h2>

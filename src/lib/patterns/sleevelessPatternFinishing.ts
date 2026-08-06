@@ -1,3 +1,8 @@
+import {
+  neckbandPickupInstructionFromDebug,
+  type NeckbandPickupInstructionViewModel,
+  type NeckbandPickupNecklineKind,
+} from "./legoBlocks/neckbandPickup";
 import { approximatePickupStitchesFromRows } from "./machineKnittingPickupRatio";
 import { hasAuthoritativeDropShoulderConstruction } from "./patternConstructionIdentity";
 import {
@@ -101,14 +106,33 @@ export function sleevelessCardiganFrontEdgeFinishingMode(
   return isSleevelessVNeckChoice(patternData) ? "verticalBand" : "pickup";
 }
 
+/** Resolve V vs round for shared neckband pickup (legacy `v` tokens included). */
+export function sleevelessNeckbandPickupNecklineKind(
+  patternData: unknown,
+): NeckbandPickupNecklineKind {
+  return isSleevelessVNeckChoice(patternData) ? "v-neck" : "round";
+}
+
+export type SleevelessFinishingNeckbandDebug = {
+  frontNecklineStartRC?: number;
+  cardiganFrontEdgePickupSts?: number;
+  frontNeckDepthRows?: number;
+  backNeckDepthRows?: number;
+  stitchesPerInch?: number;
+  rowsPerInch?: number;
+  frontCenterNeckBindOffStitches?: number;
+  centerNeckBindOffStitches?: number;
+};
+
 export function sleevelessFinishingFromPattern(
   patternData: unknown,
-  debug: { frontNecklineStartRC?: number; cardiganFrontEdgePickupSts?: number },
+  debug: SleevelessFinishingNeckbandDebug,
 ): {
   isCardigan: boolean;
   isDropShoulder: boolean;
   cardiganFrontEdgeFinishingMode: SleevelessCardiganFrontEdgeFinishingMode | undefined;
   frontEdgePickupSts: number | undefined;
+  neckbandPickup: NeckbandPickupInstructionViewModel | null;
   steps: ReturnType<typeof numberedSleevelessFinishingSteps>;
 } {
   const isCardigan = isSleevelessCardiganPattern(patternData);
@@ -118,11 +142,16 @@ export function sleevelessFinishingFromPattern(
     isCardigan && cardiganFrontEdgeFinishingMode === "pickup"
       ? debug.cardiganFrontEdgePickupSts ?? cardiganFrontEdgePickupStitchesFromDebug(debug)
       : undefined;
+  const neckbandPickup = neckbandPickupInstructionFromDebug(
+    sleevelessNeckbandPickupNecklineKind(patternData),
+    debug,
+  );
   return {
     isCardigan,
     isDropShoulder,
     cardiganFrontEdgeFinishingMode,
     frontEdgePickupSts,
+    neckbandPickup,
     steps: numberedSleevelessFinishingSteps({ isCardigan, isDropShoulder }),
   };
 }
