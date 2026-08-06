@@ -3323,9 +3323,7 @@ export function generateSleevelessBackPattern(
       : {}),
     backNeckRoundNecklineStrategy: backRoundNeckPlan?.strategy,
     frontNeckRoundNecklineStrategy: frontRoundNeckPlan?.strategy,
-    ...(isCardiganRoundHalfFront &&
-    frontNeckShoulderChartUsesLiveRows &&
-    necklineStitches !== undefined
+    ...(isCardiganRoundHalfFront && necklineStitches !== undefined
       ? {
           cardiganFrontInitialNeckBindOffStitches: cardiganFrontInitialNeckBindOffStitches(
             necklineStitches,

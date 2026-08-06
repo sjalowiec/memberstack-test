@@ -120,8 +120,14 @@ export type SleevelessFinishingNeckbandDebug = {
   backNeckDepthRows?: number;
   stitchesPerInch?: number;
   rowsPerInch?: number;
+  necklineStitches?: number;
   frontCenterNeckBindOffStitches?: number;
   centerNeckBindOffStitches?: number;
+  cardiganFrontInitialNeckBindOffStitches?: number;
+  firstFrontNeckEdgeRows?: number;
+  secondFrontNeckEdgeRows?: number;
+  firstFrontHorizontalStitches?: number;
+  secondFrontHorizontalStitches?: number;
 };
 
 export function sleevelessFinishingFromPattern(
@@ -145,6 +151,7 @@ export function sleevelessFinishingFromPattern(
   const neckbandPickup = neckbandPickupInstructionFromDebug(
     sleevelessNeckbandPickupNecklineKind(patternData),
     debug,
+    isCardigan ? "cardigan" : "pullover",
   );
   return {
     isCardigan,

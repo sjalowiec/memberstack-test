@@ -1528,6 +1528,14 @@ export function generateDropShoulderPattern(
     armholeStartRow: armholeMarkerRc,
     finalRC: totalRows,
     isCardigan,
+    ...(isCardigan && !isVNeck && neckSts > 0
+      ? {
+          cardiganFrontInitialNeckBindOffStitches: cardiganFrontInitialNeckBindOffStitches(
+            neckSts,
+            Math.max(1, frontNeckDepthRows),
+          ),
+        }
+      : {}),
     ...(isCardigan && cardiganHalfLeftCastOnSts !== undefined
       ? {
           cardiganHalfLeftCastOnSts,
