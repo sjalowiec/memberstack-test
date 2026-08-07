@@ -84,8 +84,11 @@ describe("BustDartPatternModal Add / Update commit path", () => {
     expect(formTag).not.toMatch(/method\s*=/);
   });
 
-  it("form submit preventDefault then calls commitBustDartFromModal (not Cancel)", () => {
+  it("delegated Add click and form submit both call commitBustDartFromModal (not Cancel)", () => {
     expect(clientSource).toContain("async function commitBustDartFromModal");
+    expect(clientSource).toMatch(
+      /closest\("\[data-bust-dart-modal-add\]"\)[\s\S]*?commitBustDartFromModal\(\)/,
+    );
     expect(clientSource).toMatch(
       /form\?\.addEventListener\("submit"[\s\S]*?ev\.preventDefault\(\)[\s\S]*?commitBustDartFromModal\(\)/,
     );
@@ -95,6 +98,15 @@ describe("BustDartPatternModal Add / Update commit path", () => {
     );
     expect(clientSource).toContain("applyBustDartConfigToWorkingDraft");
     expect(clientSource).toContain("persistBustDartCustomization");
+    // Local draft write must refresh the pattern before awaiting cloud persist.
+    const commitFn = clientSource.slice(
+      clientSource.indexOf("async function commitBustDartFromModal"),
+      clientSource.indexOf('form?.addEventListener("submit"'),
+    );
+    expect(commitFn.indexOf("await refreshPatternView()")).toBeLessThan(
+      commitFn.indexOf("persistBustDartCustomization"),
+    );
+    expect(clientSource).toContain("kbmInvalidateSleevelessPatternRender");
     expect(clientSource).not.toContain("requestSubmit(");
     expect(clientSource).not.toContain("reportValidity(");
     expect(clientSource).not.toContain("checkValidity(");

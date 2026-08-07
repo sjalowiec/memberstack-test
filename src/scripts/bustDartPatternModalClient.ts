@@ -28,6 +28,8 @@ import {
 declare global {
   interface Window {
     kbmRefreshSleevelessPattern?: () => void | Promise<void>;
+    /** Clears the pattern-tab render signature so the next refresh cannot no-op. */
+    kbmInvalidateSleevelessPatternRender?: () => void;
   }
 }
 
@@ -172,6 +174,11 @@ function escapeHtml(s: string): string {
 }
 
 async function refreshPatternView(): Promise<void> {
+  // Bust-dart commits must not be skipped by the pattern-tab signature short-circuit
+  // (or dropped when another refresh is already in flight).
+  if (typeof window.kbmInvalidateSleevelessPatternRender === "function") {
+    window.kbmInvalidateSleevelessPatternRender();
+  }
   if (typeof window.kbmRefreshSleevelessPattern === "function") {
     await window.kbmRefreshSleevelessPattern();
   }
@@ -185,17 +192,22 @@ export function syncBustDartPatternActionVisibility(): void {
 export function initBustDartPatternCustomization(): void {
   const modal = document.querySelector<HTMLDialogElement>("[data-bust-dart-pattern-modal]");
   if (!modal) return;
+  // Idempotent: Vite HMR / re-boot must not stack duplicate listeners on the same dialog.
+  if (modal.dataset.bustDartModalBound === "1") return;
+  modal.dataset.bustDartModalBound = "1";
 
   let context: BustDartPatternContext | null = null;
   /** When true, cup change reloads preset width/depth. Cleared after restore-from-saved. */
   let reloadPresetOnCupChange = true;
   /** Control that opened the modal — restored on close (Cancel / × / Escape). */
   let lastFocus: HTMLElement | null = null;
+  /** Prevents double commit when delegated click + form submit both fire. */
+  let commitInFlight = false;
 
   const form = modal.querySelector<HTMLFormElement>("[data-bust-dart-modal-form]");
   const cupSelect = () => modal.querySelector<HTMLSelectElement>("#bust-dart-pattern-cup");
   const removeBtn = modal.querySelector<HTMLButtonElement>("[data-bust-dart-modal-remove]");
-  const addBtn = modal.querySelector<HTMLButtonElement>("[data-bust-dart-modal-add]");
+  const addBtn = () => modal.querySelector<HTMLButtonElement>("[data-bust-dart-modal-add]");
   const cancelBtn = modal.querySelector<HTMLButtonElement>("[data-bust-dart-modal-cancel]");
   const closeBtn = modal.querySelector<HTMLButtonElement>("[data-bust-dart-modal-close]");
   const title = modal.querySelector<HTMLElement>("#bust-dart-modal-title");
@@ -240,8 +252,9 @@ export function initBustDartPatternCustomization(): void {
     if (title) {
       title.textContent = hasActive ? "Change Bust Dart" : "Optional Bust Dart";
     }
-    if (addBtn) {
-      addBtn.textContent = hasActive ? "Update Pattern" : "Add to Pattern";
+    const primary = addBtn();
+    if (primary) {
+      primary.textContent = hasActive ? "Update Pattern" : "Add to Pattern";
     }
     setError(modal, null);
     renderPreview(modal, context, parseCupSizeInput(sel?.value));
@@ -303,6 +316,14 @@ export function initBustDartPatternCustomization(): void {
     if (removeTrigger) {
       ev.preventDefault();
       void removeDartAndRefresh(false);
+      return;
+    }
+    // Delegated Add/Update — same reliability pattern as open/remove. preventDefault stops
+    // the subsequent form submit so commit runs once (Enter still uses the submit listener).
+    const addTrigger = t.closest("[data-bust-dart-modal-add]");
+    if (addTrigger && modal.contains(addTrigger)) {
+      ev.preventDefault();
+      void commitBustDartFromModal();
     }
   });
 
@@ -324,10 +345,11 @@ export function initBustDartPatternCustomization(): void {
   depthInput(modal)?.addEventListener("input", onDimEdit);
 
   /**
-   * Add / Update Pattern. Invoked from form submit (Add is type=submit formnovalidate)
-   * and from Enter in a field. Never used by Cancel / × / Escape.
+   * Add / Update Pattern. Invoked from delegated Add click and form submit (Enter).
+   * Never used by Cancel / × / Escape.
    */
   async function commitBustDartFromModal(): Promise<void> {
+    if (commitInFlight) return;
     if (!context) return;
     const cup = parseCupSizeInput(cupSelect()?.value);
     if (!cup) {
@@ -346,7 +368,9 @@ export function initBustDartPatternCustomization(): void {
       setError(modal, preview.errors[0] || "Could not add this dart.");
       return;
     }
-    if (addBtn) addBtn.disabled = true;
+    const primary = addBtn();
+    commitInFlight = true;
+    if (primary) primary.disabled = true;
     setError(modal, null);
     try {
       const stored = applyBustDartConfigToWorkingDraft({
@@ -354,24 +378,27 @@ export function initBustDartPatternCustomization(): void {
         dartWidthInches: preview.shaping.dartWidthInches,
         dartDepthInches: preview.shaping.dartDepthInches,
       });
+      // Show active knitting instructions immediately from the local draft — do not wait on
+      // cloud save (saved-project persist can block or fail while the dart is already local).
+      await refreshPatternView();
       const persisted = await persistBustDartCustomization(stored);
       if (!persisted.ok) {
-        await refreshPatternView();
         setError(modal, persisted.error);
         return;
       }
-      await refreshPatternView();
       closeModal();
     } catch (err) {
       console.error("[kbm] Add bust dart failed:", err);
       setError(modal, "Could not add the bust dart. Please try again.");
       await refreshPatternView();
     } finally {
-      if (addBtn) addBtn.disabled = false;
+      commitInFlight = false;
+      const btn = addBtn();
+      if (btn) btn.disabled = false;
     }
   }
 
-  // Submit = Add/Update only (formnovalidate). preventDefault stops navigation; then commit runs.
+  // Enter in a field submits the form; preventDefault then commit (Add click is delegated above).
   form?.addEventListener("submit", (ev) => {
     ev.preventDefault();
     void commitBustDartFromModal();
