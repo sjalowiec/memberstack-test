@@ -2162,16 +2162,7 @@
     "subcategory": "Single Bed",
     "vimeo_id": 151859471
   },
-  {
-    "content_id": 642,
-    "slug": "bust-dart-tool",
-    "title": "Bust Dart Tool",
-    "description": "Why struggle with complicated math? Let the Knit it Now Bust Dart Tool calculate the short-row shaping for darts. Adding bust darts will improve the fit of your sweaters. Let us do the math for you! This tool is FREE for Knit it Now subscribers and is included in our dynamic patterns that offer optional bust dart shaping. Knit it Now Bust Dart Tool",
-    "access_level": "member",
-    "posterUrl": "https://i.vimeocdn.com/video/1023925617-b63dab6ef3701d93d6a904fdc9179380aede84e5baad4bc4e4bbb233d8e3faa3-d_1280x720?r=pad",
-    "vimeo_id": 151859480,
-    "category": "Shaping"
-  },
+  
   {
     "content_id": 643,
     "slug": "adding-bust-darts",
@@ -7633,6 +7624,17 @@
     "category": "Shaping",
     "subcategory": "Shortrow",
     "vimeo_id": 1068850716
+  },
+  {
+    "content_id": 2208,
+    "slug": "how-to-add-bust-darts-to-your-knit-it-now-pattern",
+    "title": "How to Add Bust Darts to Your Knit It Now Pattern",
+    "description": "Learn how to use the built-in bust-dart tool to choose a standard cup size or enter custom measurements, preview the short-row instructions, and add the darts to your sweater pattern.",
+    "access_level": "member",
+    "posterUrl": "https://i.vimeocdn.com/video/2187893276-4a27fce405ca8c5c07407f525db51f5ac93c7e04a5a6c262c4f776c76eebaf4b-d_1280x720?r=pad",
+    "category": "Shaping",
+    "subcategory": "Shortrow",
+    "vimeo_id": 1216456973
   },
   {
     "content_id": 5001,
