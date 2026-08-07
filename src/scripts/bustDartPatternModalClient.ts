@@ -280,10 +280,7 @@ export function initBustDartPatternCustomization(): void {
     }
   }
 
-  // Cancel / × must never submit the form — required fields would block closing.
-  form?.addEventListener("submit", (ev) => {
-    ev.preventDefault();
-  });
+  // Cancel / × close without validation or saving (type=button — never submit).
   cancelBtn?.addEventListener("click", (ev) => {
     ev.preventDefault();
     closeModal();
@@ -326,16 +323,22 @@ export function initBustDartPatternCustomization(): void {
   widthInput(modal)?.addEventListener("input", onDimEdit);
   depthInput(modal)?.addEventListener("input", onDimEdit);
 
-  addBtn?.addEventListener("click", async () => {
+  /**
+   * Add / Update Pattern. Invoked from form submit (Add is type=submit formnovalidate)
+   * and from Enter in a field. Never used by Cancel / × / Escape.
+   */
+  async function commitBustDartFromModal(): Promise<void> {
     if (!context) return;
     const cup = parseCupSizeInput(cupSelect()?.value);
     if (!cup) {
       setError(modal, "Select a cup size.");
+      cupSelect()?.focus();
       return;
     }
     const { dartWidth, dartDepth } = readDimInputs(modal);
     if (dartWidth == null || dartDepth == null) {
       setError(modal, "Enter dart width and depth greater than 0.");
+      (dartWidth == null ? widthInput(modal) : depthInput(modal))?.focus();
       return;
     }
     const preview = previewBustDartForPattern(context, { cupSize: cup, dartWidth, dartDepth });
@@ -343,7 +346,7 @@ export function initBustDartPatternCustomization(): void {
       setError(modal, preview.errors[0] || "Could not add this dart.");
       return;
     }
-    addBtn.disabled = true;
+    if (addBtn) addBtn.disabled = true;
     setError(modal, null);
     try {
       const stored = applyBustDartConfigToWorkingDraft({
@@ -364,8 +367,14 @@ export function initBustDartPatternCustomization(): void {
       setError(modal, "Could not add the bust dart. Please try again.");
       await refreshPatternView();
     } finally {
-      addBtn.disabled = false;
+      if (addBtn) addBtn.disabled = false;
     }
+  }
+
+  // Submit = Add/Update only (formnovalidate). preventDefault stops navigation; then commit runs.
+  form?.addEventListener("submit", (ev) => {
+    ev.preventDefault();
+    void commitBustDartFromModal();
   });
 
   removeBtn?.addEventListener("click", async () => {

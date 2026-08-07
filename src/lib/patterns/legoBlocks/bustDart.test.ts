@@ -42,7 +42,7 @@ describe("bustDart lego block", () => {
     expect(r.placementOffsetRows).toBe(7);
   });
 
-  it("activates for eligible women’s patterns", () => {
+  it("activates for eligible women’s patterns with cleaned Front wording", () => {
     const r = calculateBustDart(baseInput());
     expect(r.active).toBe(true);
     expect(r.eligible).toBe(true);
@@ -51,7 +51,13 @@ describe("bustDart lego block", () => {
     expect(r.dartStartGarmentRc).toBe(140 - 7);
     expect(r.shaping?.totalHeldStitches).toBe(16);
     expect(r.shaping?.totalDepthRows).toBe(7);
-    expect(r.instructionParagraphs.some((p) => p.includes("front only"))).toBe(true);
+    const text = r.instructionParagraphs.join("\n");
+    expect(text).toContain("Work the short-row bust darts, Cup C.");
+    expect(text).toContain("On each side of the Front center");
+    expect(text).not.toMatch(/back or sleeves/i);
+    expect(text).not.toMatch(/front only/i);
+    expect(text).not.toMatch(/Add bust darts/i);
+    expect(text).not.toMatch(/Work the short-row shaping:/i);
   });
 
   it("ends sweater dart instructions after RC reset — Front BODY owns knit-to-armhole", () => {
@@ -59,18 +65,21 @@ describe("bustDart lego block", () => {
     expect(r.active).toBe(true);
     const text = r.instructionParagraphs.join("\n");
     expect(text).toMatch(/Reset the row counter to RC 133/);
+    expect(text).toMatch(/Turn off the hold settings\./);
     expect(text).not.toMatch(/Continue knitting across all stitches to RC/i);
     expect(text).not.toMatch(/to RC 140 \(armhole opening\)/i);
     expect(r.instructionParagraphs.at(-1)).toMatch(/^Reset the row counter to RC 133/);
   });
 
-  it("cardigan edge hint remains; still no continue-to-armhole in dart block", () => {
+  it("cardigan uses armhole-edge placement wording (not both-sides-of-center)", () => {
     const r = calculateBustDart(baseInput({ frontConstruction: "cardigan" }));
     expect(r.active).toBe(true);
-    expect(r.instructionParagraphs.some((p) => /side \(armhole\) edge/i.test(p))).toBe(true);
-    expect(r.instructionParagraphs.join("\n")).not.toMatch(
-      /Continue knitting across all stitches to RC/i,
-    );
+    const text = r.instructionParagraphs.join("\n");
+    expect(text).toContain("Work the short-row bust darts, Cup C.");
+    expect(text).toMatch(/From the side \(armhole\) edge toward the Front center/i);
+    expect(text).not.toMatch(/On each side of the Front center/i);
+    expect(text).not.toMatch(/back or sleeves/i);
+    expect(text).not.toMatch(/front only/i);
     expect(r.cardiganRightMirrorParagraph).toMatch(/RIGHT FRONT/i);
   });
 
@@ -206,8 +215,10 @@ describe("bustDart lego block", () => {
     );
     expect(pullover.cardiganRightMirrorParagraph).toBeNull();
     expect(cardigan.cardiganRightMirrorParagraph).toMatch(/RIGHT FRONT/i);
-    expect(cardigan.instructionParagraphs.some((p) => /side \(armhole\) edge/i.test(p))).toBe(
-      true,
-    );
+    expect(
+      cardigan.instructionParagraphs.some((p) =>
+        /From the side \(armhole\) edge toward the Front center/i.test(p),
+      ),
+    ).toBe(true);
   });
 });

@@ -267,11 +267,29 @@ function shapingSummary(s: DartShapingSuccess): BustDartShapingSummary {
   };
 }
 
-function bustDartIntroLabel(cupKey: DartCupSize | null, customized: boolean): string {
-  if (cupKey && customized) return `cup ${cupKey} · Customized`;
-  if (cupKey) return `cup ${cupKey}`;
-  if (customized) return "Customized";
-  return "custom";
+function bustDartWorkLine(cupKey: DartCupSize | null, customized: boolean): string {
+  if (cupKey && customized) return `Work the short-row bust darts, Cup ${cupKey} · Customized.`;
+  if (cupKey) return `Work the short-row bust darts, Cup ${cupKey}.`;
+  if (customized) return "Work the short-row bust darts, Customized.";
+  return "Work the short-row bust darts.";
+}
+
+function formatHoldLinesForPattern(
+  holdLines: string[],
+  frontConstruction: BustDartFrontConstruction,
+): string[] {
+  const placePrefix =
+    frontConstruction === "cardigan"
+      ? "From the side (armhole) edge toward the Front center, place "
+      : "On each side of the Front center, place ";
+
+  return holdLines
+    .filter((l) => l.startsWith("Place ") || l === "Turn off hold settings.")
+    .map((l) => {
+      if (l === "Turn off hold settings.") return "Turn off the hold settings.";
+      // "Place 6 needles…" → "On each side of the Front center, place 6 needles…"
+      return `${placePrefix}${l.slice("Place ".length)}`;
+    });
 }
 
 function buildInstructionParagraphs(args: {
@@ -281,24 +299,14 @@ function buildInstructionParagraphs(args: {
   cupKey: DartCupSize | null;
   customized: boolean;
 }): { paragraphs: string[]; cardiganRightMirrorParagraph: string | null } {
-  const edgeHint =
-    args.frontConstruction === "cardigan"
-      ? "Work the short-row bust dart from the side (armhole) edge toward the center front."
-      : "Work the short-row bust dart on the front only (both sides of center).";
-
   // Tool hold lines end with turn-off / reset-RC / continue — sweater patterns own RC reset
   // and the following Front BODY block owns knitting from dart start to the armhole.
-  const holdOnly = args.holdLines.filter(
-    (l) => l.startsWith("Place ") || l === "Turn off hold settings.",
-  );
+  const holdSteps = formatHoldLinesForPattern(args.holdLines, args.frontConstruction);
 
-  const label = bustDartIntroLabel(args.cupKey, args.customized);
   const paragraphs: string[] = [
     `Stop the row counter at RC ${args.dartStartGarmentRc} (1″ below the armhole opening).`,
-    `Add bust darts (${label}). Darts are worked on the front only — do not work darts on the back or sleeves.`,
-    edgeHint,
-    "Work the short-row shaping:",
-    ...holdOnly,
+    bustDartWorkLine(args.cupKey, args.customized),
+    ...holdSteps,
     `Reset the row counter to RC ${args.dartStartGarmentRc} so the next plain row is counted correctly.`,
   ];
 

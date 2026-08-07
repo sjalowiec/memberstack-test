@@ -205,7 +205,7 @@ describe("bust dart custom width/depth", () => {
     expect(r.shaping?.customized).toBe(true);
     expect(r.shaping?.dartWidthInches).toBe(2.5);
     expect(r.shaping?.dartDepthInches).toBe(1.5);
-    expect(r.instructionParagraphs.join("\n")).toMatch(/cup C · Customized/);
+    expect(r.instructionParagraphs.join("\n")).toMatch(/Cup C · Customized/);
     expect(r.config.dartWidthInches).toBe(2.5);
     expect(r.config.dartDepthInches).toBe(1.5);
   });
@@ -425,7 +425,8 @@ describe("bust dart custom width/depth", () => {
     for (const gen of [sleevelessPullover, sleevelessCardigan, dropPullover, dropCardigan]) {
       const text = frontText(gen.frontDisplayRows);
       expect(text).toMatch(/Customized/);
-      expect(text).toMatch(/Add bust darts/);
+      expect(text).toMatch(/Work the short-row bust darts/);
+      expect(text).not.toMatch(/back or sleeves/i);
       expect(frontText(gen.displayRows)).not.toMatch(/bust dart/i);
     }
     expect(
@@ -452,7 +453,7 @@ describe("bust dart custom width/depth", () => {
 
     const printHtml = renderBustDartCustomizationPrintHtml(slot);
     expect(printHtml).toMatch(/Customized/);
-    expect(printHtml).toMatch(/Add bust darts/);
+    expect(printHtml).toMatch(/Work the short-row bust darts/);
     expect(printHtml).not.toMatch(/Update Bust Dart|Remove Bust Dart/);
 
     const inactive = renderBustDartCustomizationScreenHtml({

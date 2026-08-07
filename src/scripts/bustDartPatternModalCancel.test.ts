@@ -1,6 +1,6 @@
 /**
- * Bust Dart modal Cancel / close must bypass required-field validation.
- * Shared by Sleeveless + Drop Shoulder finished patterns (Add and Update).
+ * Bust Dart modal: Cancel/close bypass validation; Add/Update commits via form submit.
+ * Shared by Sleeveless + Drop Shoulder finished patterns.
  */
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -13,6 +13,7 @@ const modalSource = readFileSync(
   "utf8",
 );
 const clientSource = readFileSync(join(here, "bustDartPatternModalClient.ts"), "utf8");
+const helpVideoSource = readFileSync(join(here, "../lib/tools/dartFormulaHelpVideo.ts"), "utf8");
 const sleevelessPatternPage = readFileSync(
   join(here, "../pages/patterns/sleeveless/pattern/index.astro"),
   "utf8",
@@ -37,7 +38,6 @@ describe("BustDartPatternModal Cancel / close bypass validation", () => {
     const cancel = buttonBlock("data-bust-dart-modal-cancel");
     expect(cancel).toContain('type="button"');
     expect(cancel).not.toContain('type="submit"');
-    expect(cancel).not.toContain("formnovalidate");
   });
 
   it("× close control is explicitly type=button (not submit)", () => {
@@ -46,34 +46,13 @@ describe("BustDartPatternModal Cancel / close bypass validation", () => {
     expect(close).not.toContain('type="submit"');
   });
 
-  it("Add/Update confirmation remains a non-submit button with custom validation in the client", () => {
-    const add = buttonBlock("data-bust-dart-modal-add");
-    expect(add).toContain('type="button"');
-    expect(clientSource).toContain('setError(modal, "Select a cup size.")');
-    expect(clientSource).toContain(
-      'setError(modal, "Enter dart width and depth greater than 0.")',
-    );
-    expect(clientSource).toContain("data-bust-dart-modal-add");
-    // Confirmation still validates; dismiss paths must not call these APIs.
-    expect(clientSource).not.toContain("requestSubmit(");
-    expect(clientSource).not.toContain("reportValidity(");
-    expect(clientSource).not.toContain("checkValidity(");
-  });
-
-  it("client wires Cancel and × to closeModal without saving or validating", () => {
-    expect(clientSource).toContain('"[data-bust-dart-modal-cancel]"');
-    expect(clientSource).toContain('"[data-bust-dart-modal-close]"');
+  it("client wires Cancel and × to closeModal without saving", () => {
     expect(clientSource).toMatch(
       /cancelBtn\?\.addEventListener\("click"[\s\S]*?closeModal\(\)/,
     );
     expect(clientSource).toMatch(
       /closeBtn\?\.addEventListener\("click"[\s\S]*?closeModal\(\)/,
     );
-    // Form submit is blocked so Enter / accidental submit cannot run constraint validation.
-    expect(clientSource).toMatch(
-      /form\?\.addEventListener\("submit"[\s\S]*?ev\.preventDefault\(\)/,
-    );
-    // closeModal only closes the dialog — no apply/persist/remove.
     const closeFn = clientSource.slice(
       clientSource.indexOf("function closeModal"),
       clientSource.indexOf("async function removeDartAndRefresh"),
@@ -81,8 +60,7 @@ describe("BustDartPatternModal Cancel / close bypass validation", () => {
     expect(closeFn).toContain("modal.close");
     expect(closeFn).not.toContain("applyBustDartConfigToWorkingDraft");
     expect(closeFn).not.toContain("persistBustDartCustomization");
-    expect(closeFn).not.toContain("removeBustDartFromWorkingDraft");
-    expect(closeFn).not.toContain("setError");
+    expect(closeFn).not.toContain("commitBustDartFromModal");
   });
 
   it("closing restores focus to the opener; Escape uses native dialog close", () => {
@@ -91,18 +69,35 @@ describe("BustDartPatternModal Cancel / close bypass validation", () => {
     expect(clientSource).toMatch(
       /modal\.addEventListener\("close"[\s\S]*?restore\.focus\(\)/,
     );
-    // Escape closes <dialog> natively and fires the same close handler (no form submit).
     expect(modalSource).toContain("<dialog");
-    expect(modalSource).toContain("data-bust-dart-pattern-modal");
+  });
+});
+
+describe("BustDartPatternModal Add / Update commit path", () => {
+  it("Add/Update is type=submit with formnovalidate so custom validation runs", () => {
+    const add = buttonBlock("data-bust-dart-modal-add");
+    expect(add).toContain('type="submit"');
+    expect(add).toContain("formnovalidate");
+    expect(add).toContain("kbm-btn-primary");
+    const formTag = modalSource.match(/<form\b[^>]*>/)?.[0] ?? "";
+    expect(formTag).toContain("data-bust-dart-modal-form");
+    expect(formTag).not.toMatch(/method\s*=/);
   });
 
-  it("required cup/width/depth stay on the form for Add/Update confirmation only", () => {
-    // Fields remain required for accessibility / native hints if ever submitted,
-    // but Cancel/× never submit, and the client blocks form submit.
-    expect(modalSource).toContain("required");
-    expect(modalSource).toContain('id="bust-dart-pattern-cup"');
-    expect(modalSource).toContain('id="bust-dart-pattern-width"');
-    expect(modalSource).toContain('id="bust-dart-pattern-depth"');
+  it("form submit preventDefault then calls commitBustDartFromModal (not Cancel)", () => {
+    expect(clientSource).toContain("async function commitBustDartFromModal");
+    expect(clientSource).toMatch(
+      /form\?\.addEventListener\("submit"[\s\S]*?ev\.preventDefault\(\)[\s\S]*?commitBustDartFromModal\(\)/,
+    );
+    expect(clientSource).toContain('setError(modal, "Select a cup size.")');
+    expect(clientSource).toContain(
+      'setError(modal, "Enter dart width and depth greater than 0.")',
+    );
+    expect(clientSource).toContain("applyBustDartConfigToWorkingDraft");
+    expect(clientSource).toContain("persistBustDartCustomization");
+    expect(clientSource).not.toContain("requestSubmit(");
+    expect(clientSource).not.toContain("reportValidity(");
+    expect(clientSource).not.toContain("checkValidity(");
   });
 
   it("Sleeveless and Drop Shoulder share the same modal + client", () => {
@@ -112,20 +107,33 @@ describe("BustDartPatternModal Cancel / close bypass validation", () => {
     expect(dropShoulderPatternPage).toContain("sleevelessPatternBuilderPage");
     const builderBoot = readFileSync(join(here, "sleevelessPatternBuilderPage.ts"), "utf8");
     expect(builderBoot).toContain("initBustDartPatternCustomization");
-    expect(builderBoot).toContain("bustDartPatternModalClient");
+  });
+});
+
+describe("BustDartPatternModal mobile / styled actions", () => {
+  it("principal actions use kbm-btn classes (not unstyled Bootstrap btn)", () => {
+    expect(buttonBlock("data-bust-dart-modal-cancel")).toContain("kbm-btn");
+    expect(buttonBlock("data-bust-dart-modal-cancel")).toContain("kbm-btn-outline");
+    expect(buttonBlock("data-bust-dart-modal-add")).toContain("kbm-btn-primary");
+    expect(buttonBlock("data-bust-dart-modal-remove")).toContain("kbm-btn-outline");
+    expect(buttonBlock("data-bust-dart-modal-remove")).toContain(
+      "bust-dart-pattern-modal__btn--remove",
+    );
+    expect(modalSource).not.toMatch(/class="btn /);
+    expect(helpVideoSource).toContain(
+      'className: "bust-dart-pattern-modal__watch kbm-btn kbm-btn-outline"',
+    );
+    expect(helpVideoSource).not.toContain("btn btn-outline-secondary");
   });
 
-  it("Cancel markup no longer uses method=dialog submit value=cancel", () => {
-    expect(modalSource).not.toMatch(
-      /data-bust-dart-modal-cancel[^>]*type="submit"|type="submit"[^>]*data-bust-dart-modal-cancel/,
-    );
-    expect(modalSource).not.toMatch(
-      /data-bust-dart-modal-close[^>]*type="submit"|type="submit"[^>]*data-bust-dart-modal-close/,
-    );
-    // Legacy submit-cancel pairing removed from both dismiss controls.
-    const cancel = buttonBlock("data-bust-dart-modal-cancel");
-    const close = buttonBlock("data-bust-dart-modal-close");
-    expect(cancel).not.toContain('value="cancel"');
-    expect(close).not.toContain('value="cancel"');
+  it("defines ~44px touch targets and stacks actions on a phone breakpoint", () => {
+    expect(modalSource).toContain("min-height: 44px");
+    expect(modalSource).toContain("width: 44px");
+    expect(modalSource).toContain("height: 44px");
+    expect(modalSource).toContain("@media (max-width: 480px)");
+    expect(modalSource).toContain("flex-direction: column-reverse");
+    expect(modalSource).toContain("bust-dart-pattern-modal__body");
+    expect(modalSource).toContain("overflow-y: auto");
+    expect(modalSource).toContain("max-height: min(92dvh");
   });
 });

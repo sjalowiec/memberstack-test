@@ -59,8 +59,10 @@ describe("drop-shoulder bust darts integration", () => {
     const back = allParagraphs(r.displayRows).join("\n");
     const sleeves = allParagraphs(r.sleeveDisplayRows).join("\n");
 
-    expect(front).toMatch(/Add bust darts \(cup C\)/i);
-    expect(front).toMatch(/Place \d+ needles in hold/i);
+    expect(front).toMatch(/Work the short-row bust darts, Cup C\./i);
+    expect(front).toMatch(/On each side of the Front center/i);
+    expect(front).toMatch(/place \d+ needles in hold/i);
+    expect(front).not.toMatch(/back or sleeves/i);
     expect(back).not.toMatch(/bust dart/i);
     expect(sleeves).not.toMatch(/bust dart/i);
 
@@ -78,7 +80,8 @@ describe("drop-shoulder bust darts integration", () => {
       }),
     );
     const front = allParagraphs(r.frontDisplayRows).join("\n");
-    expect(front).toMatch(/Add bust darts \(cup D\)/i);
+    expect(front).toMatch(/Work the short-row bust darts, Cup D\./i);
+    expect(front).toMatch(/From the side \(armhole\) edge toward the Front center/i);
     expect(front).toMatch(/RIGHT FRONT/i);
     expect(front).toMatch(/bust-dart|bust dart/i);
   });

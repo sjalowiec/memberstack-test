@@ -49,7 +49,7 @@ const activeRow: BustDartCustomizationDisplayRow = {
   ...inactiveRow,
   active: true,
   cupSize: "C",
-  instructionParagraphs: ["Add bust darts (cup C).", "Place 4 needles in HP."],
+  instructionParagraphs: ["Work the short-row bust darts, Cup C.", "Place 4 needles in HP."],
 };
 
 class FakeClassList {
@@ -284,7 +284,7 @@ describe("optional bust dart hideable tip (patternTipDismiss)", () => {
     const activeHtml = renderBustDartCustomizationScreenHtml(activeRow);
     expect(activeHtml).toMatch(/Update Bust Dart/);
     expect(activeHtml).toMatch(/Remove Bust Dart/);
-    expect(activeHtml).toMatch(/Add bust darts \(cup C\)/);
+    expect(activeHtml).toMatch(/Work the short-row bust darts, Cup C/);
     expect(activeHtml).not.toMatch(/data-tip-id=/);
     expect(style).toEqual(before);
   });
@@ -317,7 +317,7 @@ describe("optional bust dart hideable tip (patternTipDismiss)", () => {
     expect(renderBustDartCustomizationPrintHtml(inactiveRow)).toBe("");
     const printActive = renderBustDartCustomizationPrintHtml(activeRow);
     expect(printActive).toMatch(/Bust Dart \(Cup C\)/);
-    expect(printActive).toMatch(/Add bust darts/);
+    expect(printActive).toMatch(/Work the short-row bust darts/);
 
     const tip = new FakeElement({
       classes: ["pattern-tip", "pattern-print-personalization-never-print"],
