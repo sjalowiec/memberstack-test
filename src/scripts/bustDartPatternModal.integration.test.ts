@@ -80,7 +80,7 @@ function seedCompleteWomenPattern(unit: "in" | "cm" = "in"): Record<string, unkn
 
 async function unlockGateAndSeed(page: Page, unit: "in" | "cm" = "in"): Promise<void> {
   const seed = seedCompleteWomenPattern(unit);
-  await page.evaluate((payload) => {
+  const seedId = await page.evaluate((payload) => {
     const { now, style, fit, yarnGauge, yarnGaugeMachine } = payload as {
       now: string;
       style: Record<string, unknown>;
@@ -88,19 +88,27 @@ async function unlockGateAndSeed(page: Page, unit: "in" | "cm" = "in"): Promise<
       yarnGauge: Record<string, unknown>;
       yarnGaugeMachine: Record<string, unknown>;
     };
+    const id = "bust-dart-integration-" + Date.now();
     localStorage.removeItem("kbm_custom_pattern_active_project_id");
     localStorage.removeItem("kbm_custom_pattern_active_project_name");
     // Inactive Optional Bust Dart is a `.pattern-tip` — keep Show Tips ON so Add is visible.
     localStorage.setItem("sleeveless-show-tips", "true");
+    // Clear prior tip dismissals so the optional prompt is present after a re-seed.
+    localStorage.removeItem("sleeveless-show-tips-dismissed");
+    // Seed with bust dart explicitly off so a prior active dart cannot linger via merge.
+    const styleOff = {
+      ...style,
+      bustDart: { enabled: false, cupSize: null, dartWidthInches: null, dartDepthInches: null },
+    };
     localStorage.setItem(
       "kbm_current_pattern",
       JSON.stringify({
-        id: "bust-dart-integration-" + Date.now(),
+        id,
         status: "draft",
         version: 1,
         createdAt: now,
         updatedAt: now,
-        style,
+        style: styleOff,
         fit,
         yarnGauge,
         measurements: {},
@@ -112,7 +120,14 @@ async function unlockGateAndSeed(page: Page, unit: "in" | "cm" = "in"): Promise<
     );
     localStorage.setItem(
       "patternBuilderData",
-      JSON.stringify({ style, fit, yarnGauge, yarnGaugeMachine, createdAt: now, updatedAt: now }),
+      JSON.stringify({
+        style: styleOff,
+        fit,
+        yarnGauge,
+        yarnGaugeMachine,
+        createdAt: now,
+        updatedAt: now,
+      }),
     );
     localStorage.setItem("kbm_cb_wizard_garment_type", "pullover");
     localStorage.setItem("kbm_cb_wizard_neckline", "round");
@@ -136,6 +151,7 @@ async function unlockGateAndSeed(page: Page, unit: "in" | "cm" = "in"): Promise<
     document.querySelectorAll("[data-show-tips]").forEach((el) => {
       el.setAttribute("data-show-tips", "true");
     });
+    return id;
   }, seed);
 
   await page.evaluate(async () => {
@@ -164,32 +180,68 @@ async function unlockGateAndSeed(page: Page, unit: "in" | "cm" = "in"): Promise<
     document.querySelectorAll("[data-show-tips]").forEach((el) => {
       el.setAttribute("data-show-tips", "true");
     });
-  });
-
-  await page.waitForFunction(
-    () => {
-      const open = document.querySelectorAll("[data-bust-dart-pattern-open]").length;
-      const mountLen = (document.querySelector("[data-sleeveless-mount]")?.innerHTML || "").length;
-      return open > 0 && mountLen > 1000;
-    },
-    { timeout: 30000 },
-  );
-}
-
-async function clickOpenBustDart(page: Page): Promise<void> {
-  await page.evaluate(() => {
+    localStorage.setItem("sleeveless-show-tips", "true");
     document.querySelectorAll("[data-show-tips]").forEach((el) => {
       el.setAttribute("data-show-tips", "true");
     });
     const tip = document.querySelector("[data-bust-dart-front-slot]");
     if (tip instanceof HTMLElement) {
       tip.hidden = false;
-      tip.style.display = "";
+      tip.style.setProperty("display", "block", "important");
       tip.removeAttribute("data-tip-dismissed");
     }
   });
-  await page.locator("[data-bust-dart-pattern-open]").first().click({ force: true });
-  await page.waitForTimeout(300);
+
+  // Wait for this seed's inactive Optional Bust Dart prompt — not leftover Update buttons
+  // from a prior active dart (refresh may return before the mount swaps).
+  await page.waitForFunction(
+    (expectedId) => {
+      const canonId = (() => {
+        try {
+          return JSON.parse(localStorage.getItem("kbm_current_pattern") || "{}")?.id;
+        } catch {
+          return null;
+        }
+      })();
+      if (canonId !== expectedId) return false;
+      const optional = document.querySelector(
+        '[data-bust-dart-front-slot][data-bust-dart-active="false"]',
+      );
+      const hint = optional?.querySelector(".bust-dart-front-slot__hint")?.textContent || "";
+      const active = document.querySelector(
+        '[data-bust-dart-front-slot][data-bust-dart-active="true"]',
+      );
+      const mountLen = (document.querySelector("[data-sleeveless-mount]")?.innerHTML || "").length;
+      return !active && !!optional && hint.length > 20 && mountLen > 1000;
+    },
+    seedId,
+    { timeout: 30000 },
+  );
+}
+
+async function clickOpenBustDart(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    localStorage.setItem("sleeveless-show-tips", "true");
+    document.querySelectorAll("[data-show-tips]").forEach((el) => {
+      el.setAttribute("data-show-tips", "true");
+    });
+    const tip = document.querySelector("[data-bust-dart-front-slot]");
+    if (tip instanceof HTMLElement) {
+      tip.hidden = false;
+      tip.style.setProperty("display", "block", "important");
+      tip.removeAttribute("data-tip-dismissed");
+    }
+    // Prefer a real click via the DOM when CSS still treats the tip as hidden.
+    const open = document.querySelector(
+      "[data-bust-dart-pattern-open]",
+    ) as HTMLButtonElement | null;
+    open?.click();
+  });
+  await page.waitForFunction(
+    () => (document.querySelector("[data-bust-dart-pattern-modal]") as HTMLDialogElement | null)?.open === true,
+    { timeout: 10000 },
+  );
+  await page.waitForTimeout(200);
 }
 
 async function addCupDart(page: Page, cup: string): Promise<void> {
@@ -300,6 +352,180 @@ describe.skipIf(!hasDev)("BustDartPatternModal browser integration (Add / Update
     expect(afterAdd.bustDart).toMatchObject({ enabled: true, cupSize: "C" });
     const rcMatch = afterAdd.stepTexts[0]?.match(/RC (\d+)/);
     expect(rcMatch?.[1]).toBeTruthy();
+  }, 120000);
+
+  it("Edit Pattern unit switch updates active dart labels without removing the dart", async () => {
+    await unlockGateAndSeed(page, "cm");
+    await addCupDart(page, "C");
+    let state = await page.evaluate(readActiveSlotState);
+    expect(state.hasActive).toBe(true);
+    expect(state.stepTexts[0]).toMatch(/2\.5 cm below the armhole opening/);
+
+    // Same writes Edit Pattern applyChanges performs for the gauge unit (working draft).
+    await page.evaluate(async () => {
+      const patchUnit = (unit: "in" | "cm") => {
+        const canon = JSON.parse(localStorage.getItem("kbm_current_pattern") || "{}");
+        const pb = JSON.parse(localStorage.getItem("patternBuilderData") || "{}");
+        const yarnGauge = {
+          ...(canon.yarnGauge || {}),
+          stitchGauge: "5",
+          rowGauge: "7",
+          gaugeUnits: "per_inch",
+          gaugeStitchRaw: "20",
+          gaugeRowRaw: "28",
+          gaugeRawUnit: unit,
+        };
+        const yarnGaugeMachine = {
+          ...(pb.yarnGaugeMachine || {}),
+          gaugeStitchesPerInch: 5,
+          gaugeRowsPerInch: 7,
+          gaugeStitchRaw: 20,
+          gaugeRowRaw: 28,
+          gaugeRawUnit: unit,
+          availableNeedles: 200,
+        };
+        canon.yarnGauge = yarnGauge;
+        pb.yarnGauge = yarnGauge;
+        pb.yarnGaugeMachine = yarnGaugeMachine;
+        // Leave a stale opposite unit on a secondary mirror — must not win after the fix.
+        if (unit === "in") {
+          pb.yarnGaugeMachine = { ...yarnGaugeMachine, gaugeRawUnit: "in" };
+        }
+        localStorage.setItem("kbm_current_pattern", JSON.stringify(canon));
+        localStorage.setItem("patternBuilderData", JSON.stringify(pb));
+      };
+      patchUnit("in");
+      // Intentionally re-introduce a stale cm on yarnGaugeMachine only (pre-fix failure mode).
+      const pb = JSON.parse(localStorage.getItem("patternBuilderData") || "{}");
+      pb.yarnGaugeMachine = { ...(pb.yarnGaugeMachine || {}), gaugeRawUnit: "cm" };
+      localStorage.setItem("patternBuilderData", JSON.stringify(pb));
+      window.kbmInvalidateSleevelessPatternRender?.();
+      await window.kbmRefreshSleevelessPattern?.();
+    });
+
+    await page.waitForFunction(
+      () =>
+        (document.querySelector(".bust-dart-front-slot__instructions")?.textContent || "").includes(
+          "1″",
+        ),
+      { timeout: 15000 },
+    );
+    state = await page.evaluate(readActiveSlotState);
+    expect(state.hasActive).toBe(true);
+    expect(state.bustDart?.enabled).toBe(true);
+    expect(state.stepTexts[0]).toMatch(/1″ below the armhole opening/);
+    expect(state.instructionText).not.toMatch(/cm/);
+
+    // Switch back to centimeters — dart stays active.
+    await page.evaluate(async () => {
+      const canon = JSON.parse(localStorage.getItem("kbm_current_pattern") || "{}");
+      const pb = JSON.parse(localStorage.getItem("patternBuilderData") || "{}");
+      for (const store of [canon, pb]) {
+        store.yarnGauge = { ...(store.yarnGauge || {}), gaugeRawUnit: "cm" };
+      }
+      pb.yarnGaugeMachine = { ...(pb.yarnGaugeMachine || {}), gaugeRawUnit: "cm" };
+      localStorage.setItem("kbm_current_pattern", JSON.stringify(canon));
+      localStorage.setItem("patternBuilderData", JSON.stringify(pb));
+      window.kbmInvalidateSleevelessPatternRender?.();
+      await window.kbmRefreshSleevelessPattern?.();
+    });
+    await page.waitForFunction(
+      () =>
+        (document.querySelector(".bust-dart-front-slot__instructions")?.textContent || "").includes(
+          "2.5 cm",
+        ),
+      { timeout: 15000 },
+    );
+    state = await page.evaluate(readActiveSlotState);
+    expect(state.hasActive).toBe(true);
+    expect(state.stepTexts[0]).toMatch(/2\.5 cm below the armhole opening/);
+    expect(state.instructionText).not.toMatch(/″/);
+  }, 120000);
+
+  it("Edit Pattern unit switch updates inactive Optional Bust Dart prompt", async () => {
+    await unlockGateAndSeed(page, "cm");
+    // No dart added — inactive prompt visible with tips on.
+    await page.waitForFunction(
+      () =>
+        (document.querySelector('[data-bust-dart-active="false"] .bust-dart-front-slot__hint')
+          ?.textContent || "").includes("2.5 cm"),
+      { timeout: 15000 },
+    );
+    let hint = await page.evaluate(() => {
+      const tip = document.querySelector('[data-bust-dart-active="false"] .bust-dart-front-slot__hint');
+      return tip?.textContent || "";
+    });
+    expect(hint).toMatch(/2\.5 cm \/ \d+ rows before the armhole/);
+    expect(hint).not.toMatch(/″/);
+
+    await page.evaluate(async () => {
+      const canon = JSON.parse(localStorage.getItem("kbm_current_pattern") || "{}");
+      const pb = JSON.parse(localStorage.getItem("patternBuilderData") || "{}");
+      canon.yarnGauge = { ...(canon.yarnGauge || {}), gaugeRawUnit: "in" };
+      pb.yarnGauge = { ...(pb.yarnGauge || {}), gaugeRawUnit: "in" };
+      // Stale cm left on machine section must not keep the prompt in cm.
+      pb.yarnGaugeMachine = { ...(pb.yarnGaugeMachine || {}), gaugeRawUnit: "cm" };
+      localStorage.setItem("kbm_current_pattern", JSON.stringify(canon));
+      localStorage.setItem("patternBuilderData", JSON.stringify(pb));
+      window.kbmInvalidateSleevelessPatternRender?.();
+      await window.kbmRefreshSleevelessPattern?.();
+      document.querySelectorAll("[data-show-tips]").forEach((el) => {
+        el.setAttribute("data-show-tips", "true");
+      });
+      const tip = document.querySelector("[data-bust-dart-front-slot]");
+      if (tip instanceof HTMLElement) {
+        tip.hidden = false;
+        tip.style.display = "";
+        tip.removeAttribute("data-tip-dismissed");
+      }
+    });
+
+    await page.waitForFunction(
+      () =>
+        (document.querySelector('[data-bust-dart-active="false"] .bust-dart-front-slot__hint')
+          ?.textContent || "").includes("1″"),
+      { timeout: 15000 },
+    );
+    hint = await page.evaluate(() => {
+      const tip = document.querySelector('[data-bust-dart-active="false"] .bust-dart-front-slot__hint');
+      return tip?.textContent || "";
+    });
+    expect(hint).toMatch(/1″ \/ \d+ rows before the armhole/);
+    expect(hint).not.toMatch(/cm/);
+
+    // Reverse: inches → centimeters on the same inactive prompt.
+    await page.evaluate(async () => {
+      const canon = JSON.parse(localStorage.getItem("kbm_current_pattern") || "{}");
+      const pb = JSON.parse(localStorage.getItem("patternBuilderData") || "{}");
+      canon.yarnGauge = { ...(canon.yarnGauge || {}), gaugeRawUnit: "cm" };
+      pb.yarnGauge = { ...(pb.yarnGauge || {}), gaugeRawUnit: "cm" };
+      pb.yarnGaugeMachine = { ...(pb.yarnGaugeMachine || {}), gaugeRawUnit: "in" };
+      localStorage.setItem("kbm_current_pattern", JSON.stringify(canon));
+      localStorage.setItem("patternBuilderData", JSON.stringify(pb));
+      window.kbmInvalidateSleevelessPatternRender?.();
+      await window.kbmRefreshSleevelessPattern?.();
+      document.querySelectorAll("[data-show-tips]").forEach((el) => {
+        el.setAttribute("data-show-tips", "true");
+      });
+      const tip = document.querySelector("[data-bust-dart-front-slot]");
+      if (tip instanceof HTMLElement) {
+        tip.hidden = false;
+        tip.style.display = "";
+        tip.removeAttribute("data-tip-dismissed");
+      }
+    });
+    await page.waitForFunction(
+      () =>
+        (document.querySelector('[data-bust-dart-active="false"] .bust-dart-front-slot__hint')
+          ?.textContent || "").includes("2.5 cm"),
+      { timeout: 15000 },
+    );
+    hint = await page.evaluate(() => {
+      const tip = document.querySelector('[data-bust-dart-active="false"] .bust-dart-front-slot__hint');
+      return tip?.textContent || "";
+    });
+    expect(hint).toMatch(/2\.5 cm \/ \d+ rows before the armhole/);
+    expect(hint).not.toMatch(/″/);
   }, 120000);
 
   it("Update Pattern changes the saved cup and keeps the active card in view", async () => {

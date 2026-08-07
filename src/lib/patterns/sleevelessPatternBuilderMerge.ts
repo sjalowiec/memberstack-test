@@ -26,6 +26,7 @@ import {
   reconcileStraightTorsoOverridesPreservingUserHip,
 } from "./sleevelessCustomBuildBodyMeasurements";
 import { resolveEffectiveFinishedBustInches } from "./customBuildEffectiveFinishedBust";
+import { resolveMeasurementDisplayUnitFromPatternData } from "./patternMeasurementDisplayUnit";
 
 export function sectionPattern(obj: unknown): Record<string, unknown> {
   if (obj && typeof obj === "object" && !Array.isArray(obj)) {
@@ -80,9 +81,16 @@ export function mergedPatternForDisplayFromSources(
     }
     if ("gaugeRawUnit" in y) {
       const u = y.gaugeRawUnit;
+      const fromMachine = u === "cm" || u === "in" ? u : "";
+      const fromCanonical = sectionPattern(base.yarnGauge).gaugeRawUnit;
+      // Prefer canonical yarnGauge unit when set. Edit Pattern writes the new unit there first;
+      // a leftover opposite unit on yarnGaugeMachine must not overwrite it during merge (that
+      // kept bust-dart / diagram labels stuck on the old unit after cm↔in edits).
+      const preferred =
+        fromCanonical === "cm" || fromCanonical === "in" ? fromCanonical : fromMachine;
       yarnGauge = {
         ...yarnGauge,
-        gaugeRawUnit: u === "cm" || u === "in" ? u : "",
+        gaugeRawUnit: preferred,
       };
     }
     yarnGauge.gaugeUnits = "per_inch";
@@ -399,27 +407,26 @@ export function buildGeneratorPatternDataFromSources(
       : {};
   const ygMerged = sectionPattern(merged.yarnGauge);
   const measurements = sectionPattern(merged.measurements);
-  const rawUnitCandidate = ygm.gaugeRawUnit ?? ygMerged.gaugeRawUnit;
-  const gaugeRawUnit = rawUnitCandidate === "cm" || rawUnitCandidate === "in" ? rawUnitCandidate : undefined;
+  const gaugeRawUnit = resolveMeasurementDisplayUnitFromPatternData(
+    {
+      yarnGauge: ygMerged,
+      yarnGaugeMachine: sectionPattern(canonicalPattern?.yarnGaugeMachine),
+    },
+    { yarnGauge: ygMerged, yarnGaugeMachine: ygm },
+  );
   const gen = {
     fit,
     style,
     ...(Object.keys(measurements).length > 0 ? { measurements } : {}),
-    ...(gaugeRawUnit
-      ? {
-          yarnGauge: {
-            ...ygMerged,
-            gaugeRawUnit,
-          },
-        }
-      : Object.keys(ygMerged).length > 0
-        ? { yarnGauge: ygMerged }
-        : {}),
+    yarnGauge: {
+      ...ygMerged,
+      gaugeRawUnit,
+    },
     yarnGaugeMachine: {
       gaugeStitchesPerInch: ygm.gaugeStitchesPerInch ?? ygMerged.stitchGauge,
       gaugeRowsPerInch: ygm.gaugeRowsPerInch ?? ygMerged.rowGauge,
       availableNeedles: ygm.availableNeedles ?? sectionPattern(merged.machine).availableNeedles,
-      ...(gaugeRawUnit ? { gaugeRawUnit } : {}),
+      gaugeRawUnit,
     },
   };
   const finalGen = applyCustomBuildMeasurementOverridesToGenerator(gen);
