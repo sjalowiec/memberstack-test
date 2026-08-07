@@ -53,8 +53,11 @@ describe("insertBustDartIntoFrontBodyDisplayRows", () => {
     expect(slot?.kind).toBe("bustDartCustomization");
     if (slot?.kind === "bustDartCustomization") {
       expect(slot.active).toBe(true);
-      expect(slot.instructionParagraphs.join("\n")).toMatch(/Work the short-row bust darts/);
+      expect(slot.instructionParagraphs.join("\n")).toMatch(/Stop the row counter at RC 133/);
       expect(slot.instructionParagraphs.join("\n")).toMatch(/On each side of the Front center/);
+      expect(slot.instructionParagraphs.join("\n")).not.toMatch(/Work the short-row bust darts/);
+      expect(slot.cupSize).toBe("C");
+      expect(slot.placementDistanceLabel).toBe("1″");
     }
 
     const bodyText = out
@@ -163,11 +166,19 @@ describe("bustDartFrontSlotHtml print/screen", () => {
       ...base,
       active: true,
       cupSize: "C",
-      instructionParagraphs: ["Work the short-row bust darts, Cup C."],
+      instructionParagraphs: [
+        "Stop the row counter at RC 133, 1″ below the armhole opening.",
+        "On each side of the Front center, place 4 needles in hold.",
+      ],
     });
     expect(html).toMatch(/Update Bust Dart/);
     expect(html).toMatch(/Remove Bust Dart/);
     expect(html).toMatch(/data-bust-dart-active="true"/);
+    expect(html).toMatch(/id="bust-dart-front-slot"/);
+    expect(html).toMatch(/<ol class="bust-dart-front-slot__steps"/);
+    expect(html).toMatch(/Cup C/);
+    expect(html).toMatch(/>Bust Dart</);
+    expect(html).not.toMatch(/Work the short-row bust darts/);
     expect(html).not.toMatch(/data-tip-id=/);
     expect(html).not.toMatch(/class="[^"]*pattern-tip/);
   });
@@ -182,12 +193,15 @@ describe("bustDartFrontSlotHtml print/screen", () => {
       active: true,
       cupSize: "C",
       instructionParagraphs: [
-        "Work the short-row bust darts, Cup C.",
+        "Stop the row counter at RC 133, 1″ below the armhole opening.",
         "On each side of the Front center, place 4 needles in hold.",
       ],
     });
-    expect(html).toMatch(/Bust Dart \(Cup C\)/);
-    expect(html).toMatch(/Work the short-row bust darts/);
+    expect(html).toMatch(/Bust Dart/);
+    expect(html).toMatch(/Cup C/);
+    expect(html).toMatch(/bust-dart-front-slot__steps|print-line/);
+    expect(html).toMatch(/Stop the row counter/);
+    expect(html).not.toMatch(/Work the short-row bust darts/);
     expect(html).not.toMatch(/data-bust-dart-pattern-open|Update Bust Dart|Remove Bust Dart/);
   });
 });

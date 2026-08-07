@@ -399,14 +399,27 @@ export function buildGeneratorPatternDataFromSources(
       : {};
   const ygMerged = sectionPattern(merged.yarnGauge);
   const measurements = sectionPattern(merged.measurements);
+  const rawUnitCandidate = ygm.gaugeRawUnit ?? ygMerged.gaugeRawUnit;
+  const gaugeRawUnit = rawUnitCandidate === "cm" || rawUnitCandidate === "in" ? rawUnitCandidate : undefined;
   const gen = {
     fit,
     style,
     ...(Object.keys(measurements).length > 0 ? { measurements } : {}),
+    ...(gaugeRawUnit
+      ? {
+          yarnGauge: {
+            ...ygMerged,
+            gaugeRawUnit,
+          },
+        }
+      : Object.keys(ygMerged).length > 0
+        ? { yarnGauge: ygMerged }
+        : {}),
     yarnGaugeMachine: {
       gaugeStitchesPerInch: ygm.gaugeStitchesPerInch ?? ygMerged.stitchGauge,
       gaugeRowsPerInch: ygm.gaugeRowsPerInch ?? ygMerged.rowGauge,
       availableNeedles: ygm.availableNeedles ?? sectionPattern(merged.machine).availableNeedles,
+      ...(gaugeRawUnit ? { gaugeRawUnit } : {}),
     },
   };
   const finalGen = applyCustomBuildMeasurementOverridesToGenerator(gen);

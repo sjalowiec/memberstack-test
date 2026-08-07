@@ -9,6 +9,11 @@
 import { inchesToRows } from "../sleevelessRowAccounting";
 import { normalizeSleevelessAudience } from "../patternStorage";
 import {
+  formatMeasurementDisplayFromInches,
+  resolveMeasurementDisplayUnitFromPatternData,
+  type MeasurementDisplayUnit,
+} from "../patternMeasurementDisplayUnit";
+import {
   computeDartShapingFromPerInch,
   isDartCupSize,
   parsePositiveDartMeasurement,
@@ -23,6 +28,22 @@ export { dartShapingHoldStepLines };
 
 /** Physical placement: dart begins this many inches below the armhole opening (bottom-up). */
 export const BUST_DART_PLACEMENT_INCHES_BELOW_ARMHOLE = 1;
+
+/**
+ * Placement distance for knitting copy, using the pattern’s measurement display unit
+ * ({@link formatMeasurementDisplayFromInches} — inch quarter grid / 0.1 cm grid).
+ * Examples: `1″`, `2.5 cm`.
+ */
+export function formatBustDartPlacementDistanceLabel(
+  unit: MeasurementDisplayUnit = "in",
+): string {
+  const amount = formatMeasurementDisplayFromInches(
+    BUST_DART_PLACEMENT_INCHES_BELOW_ARMHOLE,
+    unit,
+  );
+  if (!amount) return unit === "cm" ? "2.5 cm" : "1″";
+  return unit === "cm" ? `${amount} cm` : `${amount}″`;
+}
 
 /** Chart audiences that may offer bust darts (Women’s + Plus). */
 export const BUST_DART_ELIGIBLE_AUDIENCES = ["misses", "plus"] as const;
@@ -74,6 +95,11 @@ export type BustDartInput = {
   hemRows: number;
   /** Body rows from end of hem to armhole opening. */
   bodyToArmholeRows: number;
+  /**
+   * Pattern measurement display unit for placement wording only (row math stays inch-canonical).
+   * Defaults to inches when omitted.
+   */
+  measurementDisplayUnit?: MeasurementDisplayUnit;
 };
 
 export type BustDartShapingSummary = {
@@ -114,11 +140,16 @@ export type BustDartResult = {
   cardiganRightMirrorParagraph: string | null;
   /** Short-row hold steps only (shared with Dart Tool wording). */
   holdStepLines: string[];
+  /** Display unit used for placement distance labels in instructions. */
+  measurementDisplayUnit: MeasurementDisplayUnit;
+  /** Formatted placement distance (`1″` / `2.5 cm`) matching {@link measurementDisplayUnit}. */
+  placementDistanceLabel: string;
 };
 
 function emptyDisabledResult(
   partial: Partial<BustDartResult> & { config: BustDartSavedConfig; eligible: boolean },
 ): BustDartResult {
+  const unit = partial.measurementDisplayUnit ?? "in";
   return {
     active: false,
     errors: [],
@@ -131,6 +162,8 @@ function emptyDisabledResult(
     instructionParagraphs: [],
     cardiganRightMirrorParagraph: null,
     holdStepLines: [],
+    measurementDisplayUnit: unit,
+    placementDistanceLabel: formatBustDartPlacementDistanceLabel(unit),
     ...partial,
   };
 }
@@ -267,13 +300,6 @@ function shapingSummary(s: DartShapingSuccess): BustDartShapingSummary {
   };
 }
 
-function bustDartWorkLine(cupKey: DartCupSize | null, customized: boolean): string {
-  if (cupKey && customized) return `Work the short-row bust darts, Cup ${cupKey} · Customized.`;
-  if (cupKey) return `Work the short-row bust darts, Cup ${cupKey}.`;
-  if (customized) return "Work the short-row bust darts, Customized.";
-  return "Work the short-row bust darts.";
-}
-
 function formatHoldLinesForPattern(
   holdLines: string[],
   frontConstruction: BustDartFrontConstruction,
@@ -292,20 +318,21 @@ function formatHoldLinesForPattern(
     });
 }
 
+/**
+ * Ordered knitting steps for the active dart card (cup is shown in the heading, not repeated here).
+ */
 function buildInstructionParagraphs(args: {
   dartStartGarmentRc: number;
   frontConstruction: BustDartFrontConstruction;
   holdLines: string[];
-  cupKey: DartCupSize | null;
-  customized: boolean;
+  placementDistanceLabel: string;
 }): { paragraphs: string[]; cardiganRightMirrorParagraph: string | null } {
   // Tool hold lines end with turn-off / reset-RC / continue — sweater patterns own RC reset
   // and the following Front BODY block owns knitting from dart start to the armhole.
   const holdSteps = formatHoldLinesForPattern(args.holdLines, args.frontConstruction);
 
   const paragraphs: string[] = [
-    `Stop the row counter at RC ${args.dartStartGarmentRc} (1″ below the armhole opening).`,
-    bustDartWorkLine(args.cupKey, args.customized),
+    `Stop the row counter at RC ${args.dartStartGarmentRc}, ${args.placementDistanceLabel} below the armhole opening.`,
     ...holdSteps,
     `Reset the row counter to RC ${args.dartStartGarmentRc} so the next plain row is counted correctly.`,
   ];
@@ -403,6 +430,9 @@ export function calculateBustDart(input: BustDartInput): BustDartResult {
   const cupSize = isDartCupSize(input.cupSize) ? input.cupSize : null;
   const dartWidthInches = parsePositiveDartMeasurement(input.dartWidthInches);
   const dartDepthInches = parsePositiveDartMeasurement(input.dartDepthInches);
+  const measurementDisplayUnit: MeasurementDisplayUnit =
+    input.measurementDisplayUnit === "cm" ? "cm" : "in";
+  const placementDistanceLabel = formatBustDartPlacementDistanceLabel(measurementDisplayUnit);
   const config: BustDartSavedConfig = input.enabled === true
     ? {
         enabled: true,
@@ -416,6 +446,8 @@ export function calculateBustDart(input: BustDartInput): BustDartResult {
     return emptyDisabledResult({
       eligible: false,
       config: emptyBustDartSavedConfig(),
+      measurementDisplayUnit,
+      placementDistanceLabel,
       warnings:
         input.enabled === true
           ? ["Bust darts are available for women’s sweater patterns only."]
@@ -450,6 +482,8 @@ export function calculateBustDart(input: BustDartInput): BustDartResult {
     return emptyDisabledResult({
       eligible: true,
       config: emptyBustDartSavedConfig(),
+      measurementDisplayUnit,
+      placementDistanceLabel,
       placementOffsetRows,
       dartStartGarmentRc,
       rowsFromHemToDartStart,
@@ -490,6 +524,8 @@ export function calculateBustDart(input: BustDartInput): BustDartResult {
       config,
       errors,
       warnings,
+      measurementDisplayUnit,
+      placementDistanceLabel,
       placementOffsetRows,
       dartStartGarmentRc,
       rowsFromHemToDartStart,
@@ -511,6 +547,8 @@ export function calculateBustDart(input: BustDartInput): BustDartResult {
       config,
       errors: [shapingResult.error],
       warnings,
+      measurementDisplayUnit,
+      placementDistanceLabel,
       placementOffsetRows,
       dartStartGarmentRc,
       rowsFromHemToDartStart,
@@ -541,6 +579,8 @@ export function calculateBustDart(input: BustDartInput): BustDartResult {
       config,
       errors,
       warnings,
+      measurementDisplayUnit,
+      placementDistanceLabel,
       placementOffsetRows,
       dartStartGarmentRc,
       rowsFromHemToDartStart,
@@ -554,8 +594,7 @@ export function calculateBustDart(input: BustDartInput): BustDartResult {
     dartStartGarmentRc,
     frontConstruction: input.frontConstruction,
     holdLines: holdStepLines,
-    cupKey: dims.cupKey,
-    customized: shapingResult.customized,
+    placementDistanceLabel,
   });
 
   const savedActive = buildEnabledBustDartSavedConfig({
@@ -578,6 +617,8 @@ export function calculateBustDart(input: BustDartInput): BustDartResult {
     instructionParagraphs: paragraphs,
     cardiganRightMirrorParagraph,
     holdStepLines,
+    measurementDisplayUnit,
+    placementDistanceLabel,
   };
 }
 
@@ -627,6 +668,8 @@ export type BustDartPatternDisplayRow =
       rowsFromHemToDartStart: number;
       rowsFromDartToArmhole: number;
       instructionParagraphs: string[];
+      measurementDisplayUnit: MeasurementDisplayUnit;
+      placementDistanceLabel: string;
       errors: string[];
     }
   | {
@@ -671,6 +714,10 @@ export function resolveBustDartForSweaterFront(args: {
   const config = readBustDartConfigFromPatternData(args.patternData);
   const sizeGroup = pickAudienceFromPatternData(args.patternData);
   const normalized = normalizeBustDartConfigForAudience(config, sizeGroup);
+  const measurementDisplayUnit = resolveMeasurementDisplayUnitFromPatternData(
+    args.patternData,
+    args.patternData,
+  );
   return calculateBustDart({
     enabled: normalized.enabled,
     cupSize: normalized.cupSize,
@@ -684,6 +731,7 @@ export function resolveBustDartForSweaterFront(args: {
     armholeOpeningGarmentRc: args.armholeOpeningGarmentRc,
     hemRows: args.hemRows,
     bodyToArmholeRows: args.bodyToArmholeRows,
+    measurementDisplayUnit,
   });
 }
 
@@ -727,6 +775,8 @@ function buildBustDartCustomizationRow(
     rowsFromHemToDartStart: result.rowsFromHemToDartStart,
     rowsFromDartToArmhole: result.rowsFromDartToArmhole,
     instructionParagraphs: result.active ? [...result.instructionParagraphs] : [],
+    measurementDisplayUnit: result.measurementDisplayUnit,
+    placementDistanceLabel: result.placementDistanceLabel,
     errors: result.active ? [] : [...(result.errors ?? [])],
   };
 }

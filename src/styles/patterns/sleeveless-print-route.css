@@ -578,6 +578,23 @@
     line-height: 1.55;
   }
 
+  .sleeveless-print-root .bust-dart-front-slot__steps,
+  .sleeveless-print-root .bust-dart-print-block ol {
+    margin: 0.2rem 0 0.35rem;
+    padding-left: 1.25rem;
+    list-style: decimal;
+  }
+
+  .sleeveless-print-root .bust-dart-front-slot__steps > li,
+  .sleeveless-print-root .bust-dart-print-block ol > li {
+    margin: 0.28rem 0;
+  }
+
+  .sleeveless-print-root .bust-dart-print-cup {
+    margin: 0 0 0.25rem;
+    font-weight: 600;
+  }
+
   .sleeveless-print-root .print-line .needle-range {
     font-weight: 700;
     font-size: 1.05em;

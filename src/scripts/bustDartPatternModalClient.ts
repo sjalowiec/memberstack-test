@@ -15,7 +15,9 @@ import {
   removeBustDartFromWorkingDraft,
   type BustDartPatternContext,
 } from "../lib/patterns/bustDartPatternCustomization";
+import { BUST_DART_FRONT_SLOT_ID } from "../lib/patterns/bustDartFrontSlotHtml";
 import { bustDartSavedConfigIsActive } from "../lib/patterns/legoBlocks/bustDart";
+import { scrollToSectionWithHeaderOffset } from "../lib/patterns/scrollToSectionWithHeaderOffset";
 import {
   dartDimensionUnitLabel,
   isCustomDartDimensions,
@@ -62,6 +64,12 @@ function fillSummary(modal: HTMLElement, ctx: BustDartPatternContext): void {
   set("data-bust-dart-summary-gauge", ctx.summary.gaugeLabel);
   set("data-bust-dart-summary-front-sts", ctx.summary.frontStitchesLabel);
   set("data-bust-dart-summary-placement", ctx.summary.placementLabel);
+  const introPlacement = modal.querySelector("[data-bust-dart-modal-intro-placement]");
+  if (introPlacement) {
+    // Placement label is "N″ below…" / "N cm below…" — show only the distance token in the intro.
+    const distance = ctx.summary.placementLabel.replace(/\s+below the armhole opening.*$/i, "").trim();
+    introPlacement.textContent = distance || (ctx.unit === "cm" ? "2.5 cm" : "1″");
+  }
 }
 
 function setError(modal: HTMLElement, message: string | null): void {
@@ -157,7 +165,7 @@ function renderPreview(modal: HTMLElement, ctx: BustDartPatternContext, cup: Dar
   const lines = [
     cupLabel,
     `Width ${dartWidth} ${unitLabel} · Depth ${dartDepth} ${unitLabel}`,
-    `Starts at RC ${result.dartStartGarmentRc} (1″ below armhole)`,
+    `Starts at RC ${result.dartStartGarmentRc} (${result.placementDistanceLabel} below armhole)`,
     `${result.shaping?.totalHeldStitches ?? "—"} stitches held across ${result.shaping?.shapingPasses ?? "—"} shaping passes`,
     ...result.holdStepLines.filter((l) => l.startsWith("Place ")),
   ];
@@ -184,6 +192,23 @@ async function refreshPatternView(): Promise<void> {
   }
 }
 
+/**
+ * After Add/Update/Remove, scroll the Front bust-dart slot into view below the fixed header.
+ * Suppresses the native dialog focus-restore jump toward Visual Guides.
+ */
+function scrollToBustDartSlot(kind: "active" | "optional" | "any" = "any"): void {
+  const byId = document.getElementById(BUST_DART_FRONT_SLOT_ID);
+  const byAttr =
+    kind === "any"
+      ? document.querySelector<HTMLElement>("[data-bust-dart-front-slot]")
+      : document.querySelector<HTMLElement>(
+          `[data-bust-dart-front-slot][data-bust-dart-scroll-target="${kind}"]`,
+        );
+  const target = byId || byAttr;
+  if (!(target instanceof HTMLElement)) return;
+  scrollToSectionWithHeaderOffset(target);
+}
+
 /** @deprecated Action bar mounting removed — Front BODY slot owns the control. Kept as no-op for callers. */
 export function syncBustDartPatternActionVisibility(): void {
   // Intentionally empty: Optional Bust Dart is rendered inside Front instructions.
@@ -201,8 +226,10 @@ export function initBustDartPatternCustomization(): void {
   let reloadPresetOnCupChange = true;
   /** Control that opened the modal — restored on close (Cancel / × / Escape). */
   let lastFocus: HTMLElement | null = null;
-  /** Prevents double commit when delegated click + form submit both fire. */
-  let commitInFlight = false;
+  /** Shared Add/Update/Remove guard — rapid clicks must not stack concurrent mutations. */
+  let mutationInFlight = false;
+  /** When true, skip focus restore after close (DOM was replaced; restore would jump the viewport). */
+  let suppressFocusRestore = false;
 
   const form = modal.querySelector<HTMLFormElement>("[data-bust-dart-modal-form]");
   const cupSelect = () => modal.querySelector<HTMLSelectElement>("#bust-dart-pattern-cup");
@@ -258,6 +285,7 @@ export function initBustDartPatternCustomization(): void {
     }
     setError(modal, null);
     renderPreview(modal, context, parseCupSizeInput(sel?.value));
+    suppressFocusRestore = false;
     lastFocus =
       opener instanceof HTMLElement
         ? opener
@@ -268,28 +296,43 @@ export function initBustDartPatternCustomization(): void {
     else modal.setAttribute("open", "");
   }
 
-  function closeModal(): void {
+  function closeModal(options?: { skipFocusRestore?: boolean }): void {
+    if (options?.skipFocusRestore) {
+      suppressFocusRestore = true;
+      lastFocus = null;
+    }
     // Close without form submission — never run constraint or custom validation.
     if (typeof modal.close === "function") modal.close();
     else modal.removeAttribute("open");
   }
 
   async function removeDartAndRefresh(fromModal: boolean): Promise<void> {
+    if (mutationInFlight) return;
+    mutationInFlight = true;
     try {
       removeBustDartFromWorkingDraft();
-      const persisted = await persistBustDartCustomization(emptyBustDartSavedConfig());
-      await refreshPatternView();
-      if (!persisted.ok && fromModal) {
-        setError(modal, persisted.error);
-        return;
+      // Show Optional Bust Dart immediately — do not wait on cloud save (same as Add).
+      if (fromModal) closeModal({ skipFocusRestore: true });
+      else {
+        suppressFocusRestore = true;
+        lastFocus = null;
       }
-      if (fromModal) closeModal();
+      await refreshPatternView();
+      scrollToBustDartSlot("optional");
+      const persisted = await persistBustDartCustomization(emptyBustDartSavedConfig());
+      if (!persisted.ok && fromModal) {
+        // Local removal already visible; surface cloud error only if modal still useful.
+        setError(modal, persisted.error);
+      }
     } catch (err) {
       console.error("[kbm] Remove bust dart failed:", err);
       if (fromModal) {
         setError(modal, "Could not remove the bust dart. Please try again.");
       }
       await refreshPatternView();
+      scrollToBustDartSlot("optional");
+    } finally {
+      mutationInFlight = false;
     }
   }
 
@@ -349,7 +392,7 @@ export function initBustDartPatternCustomization(): void {
    * Never used by Cancel / × / Escape.
    */
   async function commitBustDartFromModal(): Promise<void> {
-    if (commitInFlight) return;
+    if (mutationInFlight) return;
     if (!context) return;
     const cup = parseCupSizeInput(cupSelect()?.value);
     if (!cup) {
@@ -369,7 +412,7 @@ export function initBustDartPatternCustomization(): void {
       return;
     }
     const primary = addBtn();
-    commitInFlight = true;
+    mutationInFlight = true;
     if (primary) primary.disabled = true;
     setError(modal, null);
     try {
@@ -378,21 +421,26 @@ export function initBustDartPatternCustomization(): void {
         dartWidthInches: preview.shaping.dartWidthInches,
         dartDepthInches: preview.shaping.dartDepthInches,
       });
+      // Close before refresh so native dialog focus restore cannot jump to a detached opener /
+      // Visual Guides after the mount is replaced.
+      closeModal({ skipFocusRestore: true });
       // Show active knitting instructions immediately from the local draft — do not wait on
       // cloud save (saved-project persist can block or fail while the dart is already local).
       await refreshPatternView();
+      scrollToBustDartSlot("active");
       const persisted = await persistBustDartCustomization(stored);
       if (!persisted.ok) {
+        // Dart is already on-screen; reopen only if we need to show the cloud error.
+        openModal(document.querySelector("[data-bust-dart-pattern-open]"));
         setError(modal, persisted.error);
-        return;
       }
-      closeModal();
     } catch (err) {
       console.error("[kbm] Add bust dart failed:", err);
       setError(modal, "Could not add the bust dart. Please try again.");
       await refreshPatternView();
+      scrollToBustDartSlot("active");
     } finally {
-      commitInFlight = false;
+      mutationInFlight = false;
       const btn = addBtn();
       if (btn) btn.disabled = false;
     }
@@ -416,6 +464,11 @@ export function initBustDartPatternCustomization(): void {
 
   modal.addEventListener("close", () => {
     setError(modal, null);
+    if (suppressFocusRestore) {
+      suppressFocusRestore = false;
+      lastFocus = null;
+      return;
+    }
     const restore = lastFocus;
     lastFocus = null;
     if (restore && typeof restore.focus === "function" && restore.isConnected) {
