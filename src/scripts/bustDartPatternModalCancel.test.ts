@@ -107,6 +107,16 @@ describe("BustDartPatternModal Add / Update commit path", () => {
       commitFn.indexOf("persistBustDartCustomization"),
     );
     expect(clientSource).toContain("kbmInvalidateSleevelessPatternRender");
+    expect(clientSource).toContain("scrollToBustDartSlot");
+    expect(clientSource).toContain("skipFocusRestore");
+    // Remove must also refresh locally before awaiting cloud persist.
+    const removeFn = clientSource.slice(
+      clientSource.indexOf("async function removeDartAndRefresh"),
+      clientSource.indexOf("// Cancel / × close without validation"),
+    );
+    expect(removeFn.indexOf("await refreshPatternView()")).toBeLessThan(
+      removeFn.indexOf("persistBustDartCustomization"),
+    );
     expect(clientSource).not.toContain("requestSubmit(");
     expect(clientSource).not.toContain("reportValidity(");
     expect(clientSource).not.toContain("checkValidity(");

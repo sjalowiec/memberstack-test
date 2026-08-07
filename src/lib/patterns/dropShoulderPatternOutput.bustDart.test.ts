@@ -59,9 +59,10 @@ describe("drop-shoulder bust darts integration", () => {
     const back = allParagraphs(r.displayRows).join("\n");
     const sleeves = allParagraphs(r.sleeveDisplayRows).join("\n");
 
-    expect(front).toMatch(/Work the short-row bust darts, Cup C\./i);
+    expect(front).toMatch(/Stop the row counter at RC \d+, 1″ below the armhole opening/i);
     expect(front).toMatch(/On each side of the Front center/i);
     expect(front).toMatch(/place \d+ needles in hold/i);
+    expect(front).not.toMatch(/Work the short-row bust darts/i);
     expect(front).not.toMatch(/back or sleeves/i);
     expect(back).not.toMatch(/bust dart/i);
     expect(sleeves).not.toMatch(/bust dart/i);
@@ -69,6 +70,8 @@ describe("drop-shoulder bust darts integration", () => {
     const armholeRc = r.debug.armholeStartRow ?? r.debug.rowsFromCastOnToArmholeStart;
     const offset = inchesToRows(1, 7);
     expect(front).toContain(`RC ${armholeRc - offset}`);
+    const slot = r.frontDisplayRows.find((row) => row.kind === "bustDartCustomization");
+    expect(slot?.kind === "bustDartCustomization" && slot.cupSize).toBe("C");
   });
 
   it("women’s cardigan with darts includes mirrored right-front note", () => {
@@ -80,10 +83,12 @@ describe("drop-shoulder bust darts integration", () => {
       }),
     );
     const front = allParagraphs(r.frontDisplayRows).join("\n");
-    expect(front).toMatch(/Work the short-row bust darts, Cup D\./i);
     expect(front).toMatch(/From the side \(armhole\) edge toward the Front center/i);
     expect(front).toMatch(/RIGHT FRONT/i);
     expect(front).toMatch(/bust-dart|bust dart/i);
+    expect(front).not.toMatch(/Work the short-row bust darts/i);
+    const slot = r.frontDisplayRows.find((row) => row.kind === "bustDartCustomization");
+    expect(slot?.kind === "bustDartCustomization" && slot.cupSize).toBe("D");
   });
 
   it("darts off: eligible Front still splits at dart RC without dart knitting prose", () => {

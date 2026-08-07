@@ -144,20 +144,29 @@ describe("bust dart pattern help video (shared content_id 643)", () => {
       ...inactiveBase,
       active: true,
       cupSize: "C",
-      instructionParagraphs: ["Work the short-row bust darts, Cup C."],
+      instructionParagraphs: [
+        "Stop the row counter at RC 133, 1″ below the armhole opening.",
+        "On each side of the Front center, place 4 needles in hold.",
+      ],
     });
     expect(activeHtml).not.toContain(BUST_DART_INACTIVE_HELP_NOTE);
     expect(activeHtml).not.toContain("button-bust-dart-front-help-video");
     expect(activeHtml).toContain("Update Bust Dart");
     expect(activeHtml).toContain("Remove Bust Dart");
+    expect(activeHtml).toContain("Cup C");
 
     const printActive = renderBustDartCustomizationPrintHtml({
       ...inactiveBase,
       active: true,
       cupSize: "C",
-      instructionParagraphs: ["Work the short-row bust darts, Cup C."],
+      instructionParagraphs: [
+        "Stop the row counter at RC 133, 1″ below the armhole opening.",
+        "On each side of the Front center, place 4 needles in hold.",
+      ],
     });
-    expect(printActive).toMatch(/Work the short-row bust darts/);
+    expect(printActive).toMatch(/Stop the row counter/);
+    expect(printActive).toMatch(/Cup C/);
+    expect(printActive).not.toMatch(/Work the short-row bust darts/);
     expect(printActive).not.toContain(BUST_DART_INACTIVE_HELP_NOTE);
     expect(printActive).not.toContain("Watch:");
   });
@@ -261,7 +270,7 @@ describe("bust dart pattern help video (shared content_id 643)", () => {
       const screen = renderBustDartCustomizationScreenHtml(slot);
       expect(screen).not.toContain(BUST_DART_INACTIVE_HELP_NOTE);
       expect(screen).toContain("Update Bust Dart");
-      expect(renderBustDartCustomizationPrintHtml(slot)).toMatch(/Customized|Work the short-row bust darts/);
+      expect(renderBustDartCustomizationPrintHtml(slot)).toMatch(/Customized|Cup C/);
     }
   });
 });

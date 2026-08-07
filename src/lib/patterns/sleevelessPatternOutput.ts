@@ -527,12 +527,15 @@ export type SleevelessPatternDisplayRow =
       kind: "bustDartCustomization";
       active: boolean;
       cupSize: string | null;
+      customized?: boolean;
       dartStartGarmentRc: number;
       armholeOpeningGarmentRc: number;
       placementOffsetRows: number;
       rowsFromHemToDartStart: number;
       rowsFromDartToArmhole: number;
       instructionParagraphs: string[];
+      measurementDisplayUnit?: "in" | "cm";
+      placementDistanceLabel?: string;
       errors: string[];
     }
   | {
@@ -701,8 +704,12 @@ function flattenDisplayRowsToLines(rows: readonly SleevelessPatternDisplayRow[])
     } else if (r.kind === "neckShoulderChartTableMount") {
       out.push("Neckline / shoulder shaping chart", "");
     } else if (r.kind === "bustDartCustomization") {
-      if (r.active && r.cupSize) out.push(`Bust Dart (Cup ${r.cupSize})`);
-      else if (r.active) out.push("Bust Dart");
+      if (r.active) out.push("Bust Dart");
+      if (r.active && r.cupSize) {
+        out.push(r.customized ? `Cup ${r.cupSize} · Customized` : `Cup ${r.cupSize}`);
+      } else if (r.active && r.customized) {
+        out.push("Customized");
+      }
       for (const p of r.instructionParagraphs) {
         if (String(p).trim()) out.push(String(p));
       }

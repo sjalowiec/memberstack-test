@@ -21,6 +21,7 @@ import {
   bustDartSavedConfigIsActive,
   calculateBustDart,
   emptyBustDartSavedConfig,
+  formatBustDartPlacementDistanceLabel,
   isBustDartEligibleAudience,
   normalizeBustDartConfigForAudience,
   normalizeBustDartSavedConfig,
@@ -140,7 +141,7 @@ export function buildBustDartPatternContext(
       constructionLabel: isDrop ? "Drop Shoulder" : "Sleeveless",
       garmentLabel: isCardigan ? "Cardigan" : "Pullover",
       gaugeLabel: "",
-      placementLabel: "1″ below the armhole opening (front only)",
+      placementLabel: `${formatBustDartPlacementDistanceLabel(unit)} below the armhole opening (front only)`,
       frontStitchesLabel: "",
     },
     ...partial,
@@ -191,7 +192,7 @@ export function buildBustDartPatternContext(
       constructionLabel: isDrop ? "Drop Shoulder" : "Sleeveless",
       garmentLabel: isCardigan ? "Cardigan" : "Pullover",
       gaugeLabel,
-      placementLabel: "1″ below the armhole opening (front only)",
+      placementLabel: `${formatBustDartPlacementDistanceLabel(unit)} below the armhole opening (front only)`,
       frontStitchesLabel:
         frontStitchCount > 0
           ? `${frontStitchCount} sts (${isCardigan ? "one front" : "full front"})`
@@ -265,6 +266,7 @@ export function previewBustDartForPattern(
     armholeOpeningGarmentRc: context.armholeOpeningGarmentRc,
     hemRows: context.hemRows,
     bodyToArmholeRows: context.bodyToArmholeRows,
+    measurementDisplayUnit: context.unit === "cm" ? "cm" : "in",
   };
   return calculateBustDart(input);
 }
@@ -321,10 +323,16 @@ export type PersistBustDartCustomizationResult =
 /**
  * Apply or remove bust darts on the working draft, then update the active saved project when present.
  * Local draft write always succeeds first so reopen/print of the current session keeps the dart.
+ *
+ * A monotonic generation token prevents a slower earlier persist from overwriting a newer local
+ * removal/add after the cloud round-trip (the race that made Remove appear to need two clicks).
  */
+let bustDartPersistGeneration = 0;
+
 export async function persistBustDartCustomization(
   config: BustDartSavedConfig,
 ): Promise<PersistBustDartCustomizationResult> {
+  const gen = ++bustDartPersistGeneration;
   const written = writeBustDartConfigToWorkingDraft(config);
   const activeId = readActiveCustomPatternProjectId();
   if (!activeId) {
@@ -335,9 +343,21 @@ export async function persistBustDartCustomization(
     skipPreSavePrepare: true,
     activeProjectId: activeId,
   });
+  if (gen !== bustDartPersistGeneration) {
+    // A newer Add/Remove already owns the local draft — do not report success for stale cloud I/O
+    // in a way that would re-apply this config.
+    return {
+      ok: true,
+      config: readBustDartConfigFromPatternData(
+        getCurrentPattern() as unknown as Record<string, unknown>,
+      ),
+    };
+  }
   if (!save.ok) {
     return { ok: false, error: save.error || "Could not update the saved pattern." };
   }
+  // Re-assert the intended local config in case the save path mirrored older project JSON.
+  writeBustDartConfigToWorkingDraft(config);
   return { ok: true, config: written };
 }
 

@@ -51,13 +51,29 @@ describe("bustDart lego block", () => {
     expect(r.dartStartGarmentRc).toBe(140 - 7);
     expect(r.shaping?.totalHeldStitches).toBe(16);
     expect(r.shaping?.totalDepthRows).toBe(7);
+    expect(r.placementDistanceLabel).toBe("1″");
     const text = r.instructionParagraphs.join("\n");
-    expect(text).toContain("Work the short-row bust darts, Cup C.");
+    expect(text).toContain("Stop the row counter at RC 133, 1″ below the armhole opening.");
     expect(text).toContain("On each side of the Front center");
+    expect(text).not.toMatch(/Work the short-row bust darts/i);
     expect(text).not.toMatch(/back or sleeves/i);
     expect(text).not.toMatch(/front only/i);
     expect(text).not.toMatch(/Add bust darts/i);
     expect(text).not.toMatch(/Work the short-row shaping:/i);
+  });
+
+  it("formats placement distance in the pattern measurement unit", () => {
+    const inch = calculateBustDart(baseInput({ measurementDisplayUnit: "in" }));
+    const metric = calculateBustDart(baseInput({ measurementDisplayUnit: "cm" }));
+    expect(inch.instructionParagraphs[0]).toBe(
+      "Stop the row counter at RC 133, 1″ below the armhole opening.",
+    );
+    expect(metric.instructionParagraphs[0]).toBe(
+      "Stop the row counter at RC 133, 2.5 cm below the armhole opening.",
+    );
+    expect(metric.instructionParagraphs.join("\n")).not.toMatch(/″|1"/);
+    expect(inch.dartStartGarmentRc).toBe(metric.dartStartGarmentRc);
+    expect(inch.placementOffsetRows).toBe(metric.placementOffsetRows);
   });
 
   it("ends sweater dart instructions after RC reset — Front BODY owns knit-to-armhole", () => {
@@ -75,12 +91,13 @@ describe("bustDart lego block", () => {
     const r = calculateBustDart(baseInput({ frontConstruction: "cardigan" }));
     expect(r.active).toBe(true);
     const text = r.instructionParagraphs.join("\n");
-    expect(text).toContain("Work the short-row bust darts, Cup C.");
     expect(text).toMatch(/From the side \(armhole\) edge toward the Front center/i);
     expect(text).not.toMatch(/On each side of the Front center/i);
+    expect(text).not.toMatch(/Work the short-row bust darts/i);
     expect(text).not.toMatch(/back or sleeves/i);
     expect(text).not.toMatch(/front only/i);
     expect(r.cardiganRightMirrorParagraph).toMatch(/RIGHT FRONT/i);
+    expect(r.config.cupSize).toBe("C");
   });
 
   it("treats plus and women who-keys as eligible", () => {

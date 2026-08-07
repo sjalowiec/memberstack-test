@@ -97,11 +97,12 @@ describe("bust dart post-build customization", () => {
       style: { ...base.style, [BUST_DART_STYLE_KEY]: { enabled: true, cupSize: "C" } },
     });
     expect(frontInstructionText(withDart.frontDisplayRows)).toMatch(
-      /Work the short-row bust darts, Cup C\./i,
+      /Stop the row counter at RC \d+, 1″ below the armhole opening/i,
     );
     expect(frontInstructionText(withDart.displayRows)).not.toMatch(/bust dart/i);
     const slot = withDart.frontDisplayRows.find((r) => r.kind === "bustDartCustomization");
     expect(slot?.kind === "bustDartCustomization" && slot.active).toBe(true);
+    expect(slot?.kind === "bustDartCustomization" && slot.cupSize).toBe("C");
   });
 
   it("removing dart config restores no-dart front instructions", () => {
@@ -109,7 +110,11 @@ describe("bust dart post-build customization", () => {
       [BUST_DART_STYLE_KEY]: { enabled: true, cupSize: "B" },
     });
     const withDart = generateSleevelessBackPattern(base);
-    expect(frontInstructionText(withDart.frontDisplayRows)).toMatch(/bust dart/i);
+    expect(frontInstructionText(withDart.frontDisplayRows)).toMatch(
+      /Stop the row counter at RC \d+, 1″ below the armhole opening/i,
+    );
+    const withSlot = withDart.frontDisplayRows.find((r) => r.kind === "bustDartCustomization");
+    expect(withSlot?.kind === "bustDartCustomization" && withSlot.active).toBe(true);
 
     const removed = generateSleevelessBackPattern({
       ...base,
@@ -164,7 +169,10 @@ describe("bust dart post-build customization", () => {
       ...pattern,
       style: { ...pattern.style, [BUST_DART_STYLE_KEY]: { enabled: true, cupSize: "D" } },
     });
-    expect(frontInstructionText(gen.frontDisplayRows)).toMatch(/bust dart/i);
+    expect(frontInstructionText(gen.frontDisplayRows)).toMatch(/bust-dart short rows/i);
+    expect(frontInstructionText(gen.frontDisplayRows)).toMatch(
+      /From the side \(armhole\) edge toward the Front center/i,
+    );
     expect(
       gen.sleeveDisplayRows.flatMap((r) => (r.kind === "block" ? r.paragraphs ?? [] : [])).join("\n"),
     ).not.toMatch(/bust dart/i);
