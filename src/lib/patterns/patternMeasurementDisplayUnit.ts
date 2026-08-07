@@ -111,9 +111,17 @@ function section(obj: unknown): Record<string, unknown> {
 
 /**
  * The measurement display unit a saved pattern was built in, derived from the persisted
- * `gaugeRawUnit`. Mirrors the "any source says cm" rule already used by the pattern diagram and
- * the gauge inputs. Projects saved before the unit was persisted (no `gaugeRawUnit` anywhere)
- * default to inches � the legacy behavior � so older projects are unchanged.
+ * `gaugeRawUnit`.
+ *
+ * Priority (first defined `in`|`cm` wins) — NOT “any source says cm”:
+ * 1. canonical `yarnGauge.gaugeRawUnit` (Edit Pattern / create always write this)
+ * 2. builder `yarnGauge.gaugeRawUnit`
+ * 3. builder `yarnGaugeMachine.gaugeRawUnit`
+ * 4. canonical `yarnGaugeMachine.gaugeRawUnit` (legacy / uncommon)
+ *
+ * A stale `cm` left on `yarnGaugeMachine` after the user saves an inches edit must not keep
+ * bust-dart placement labels (or diagrams) stuck in centimeters. Legacy projects with no
+ * `gaugeRawUnit` anywhere still default to inches.
  *
  * Pure: pass canonical (`kbm_current_pattern`) and `patternBuilderData` objects. Read-only.
  */
@@ -124,12 +132,16 @@ export function resolveMeasurementDisplayUnitFromPatternData(
   const canon = section(canonical);
   const pb = section(patternBuilderData);
   const candidates = [
-    section(pb.yarnGaugeMachine).gaugeRawUnit,
-    section(canon.yarnGaugeMachine).gaugeRawUnit,
     section(canon.yarnGauge).gaugeRawUnit,
     section(pb.yarnGauge).gaugeRawUnit,
+    section(pb.yarnGaugeMachine).gaugeRawUnit,
+    section(canon.yarnGaugeMachine).gaugeRawUnit,
   ];
-  return candidates.some((c) => String(c ?? "").trim() === "cm") ? "cm" : "in";
+  for (const c of candidates) {
+    const u = String(c ?? "").trim();
+    if (u === "cm" || u === "in") return u;
+  }
+  return "in";
 }
 
 /**

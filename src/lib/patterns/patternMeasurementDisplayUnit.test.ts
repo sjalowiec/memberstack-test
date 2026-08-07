@@ -227,7 +227,7 @@ describe("patternMeasurementDisplayUnit", () => {
     expect(saveFieldInches(shownCm, "cm")).toBe("42");
   });
 
-  it("resolveMeasurementDisplayUnitFromPatternData reads any cm gauge source", () => {
+  it("resolveMeasurementDisplayUnitFromPatternData prefers canonical yarnGauge over stale cm mirrors", () => {
     expect(resolveMeasurementDisplayUnitFromPatternData({}, {})).toBe("in");
     expect(
       resolveMeasurementDisplayUnitFromPatternData({ yarnGauge: { gaugeRawUnit: "cm" } }, {}),
@@ -241,5 +241,18 @@ describe("patternMeasurementDisplayUnit", () => {
         { yarnGaugeMachine: { gaugeRawUnit: "in" } },
       ),
     ).toBe("in");
+    // After Edit Pattern saves inches on yarnGauge, a leftover cm on yarnGaugeMachine must not win.
+    expect(
+      resolveMeasurementDisplayUnitFromPatternData(
+        { yarnGauge: { gaugeRawUnit: "in" } },
+        { yarnGaugeMachine: { gaugeRawUnit: "cm" }, yarnGauge: { gaugeRawUnit: "in" } },
+      ),
+    ).toBe("in");
+    expect(
+      resolveMeasurementDisplayUnitFromPatternData(
+        { yarnGauge: { gaugeRawUnit: "cm" } },
+        { yarnGaugeMachine: { gaugeRawUnit: "in" }, yarnGauge: { gaugeRawUnit: "in" } },
+      ),
+    ).toBe("cm");
   });
 });

@@ -13,6 +13,7 @@ import {
   mergedPatternForDisplayFromSources,
 } from "../lib/patterns/sleevelessPatternBuilderMerge.ts";
 import { buildCustomBuildEffectivePatternInput } from "../lib/patterns/buildCustomBuildEffectivePatternInput.ts";
+import { resolveMeasurementDisplayUnitFromPatternData } from "../lib/patterns/patternMeasurementDisplayUnit.ts";
 import {
   isDedicatedSleevelessPatternWorkspacePage,
   prepareCustomBuildPatternGeneration,
@@ -4474,12 +4475,10 @@ table {
     setPatternTabsReadiness(tabsRoot, true);
     showResults(resultsVisibilityConfig);
 
-    const yg = section(effectivePatternMerged.yarnGauge);
-    const ygm =
-      patternData.yarnGaugeMachine && typeof patternData.yarnGaugeMachine === "object"
-        ? section(patternData.yarnGaugeMachine)
-        : {};
-    const unit = (ygm && ygm.gaugeRawUnit === "cm") || (yg && yg.gaugeRawUnit === "cm") ? "cm" : "in";
+    const unit = resolveMeasurementDisplayUnitFromPatternData(
+      getCurrentPattern(),
+      patternData,
+    );
 
     if (tryExpressNeedleFailSafeBlock(result, effectivePatternMerged, genInput)) {
       updateSleevelessPrintBasicsSummarySlot(patternMerged, patternData, false);
@@ -4540,12 +4539,10 @@ table {
 
     const result = generateSleevelessBackPattern(genInput);
 
-    const yg = section(patternMerged.yarnGauge);
-    const ygm =
-      patternData.yarnGaugeMachine && typeof patternData.yarnGaugeMachine === "object"
-        ? section(patternData.yarnGaugeMachine)
-        : {};
-    const unit = (ygm && ygm.gaugeRawUnit === "cm") || (yg && yg.gaugeRawUnit === "cm") ? "cm" : "in";
+    const unit = resolveMeasurementDisplayUnitFromPatternData(
+      getCurrentPattern(),
+      patternData,
+    );
 
     updateSleevelessPrintBasicsSummarySlot(patternMerged, patternData, true);
 
