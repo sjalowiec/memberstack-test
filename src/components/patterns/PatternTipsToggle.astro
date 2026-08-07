@@ -28,7 +28,7 @@ const { storageKey, scopeSelector = "#pattern-content" } = Astro.props;
     bindPatternTipDismiss,
     patternTipsControlBoxHtml,
     refreshPatternTipDismiss,
-    updateTipsResetLinkVisibility,
+    restoreAllDismissedPatternTips,
   } from "../../lib/patterns/patternTipDismiss";
   import { SLEEVELESS_PATTERN_TIPS_STORAGE_KEY } from "../../lib/patterns/patternReadingWorkflow";
   import { scheduleReadingWorkflowSync } from "../../lib/patterns/patternReadingWorkflowSync";
@@ -60,8 +60,7 @@ const { storageKey, scopeSelector = "#pattern-content" } = Astro.props;
     const visible = tipsPreferenceVisible(key);
     scope.setAttribute("data-show-tips", visible ? "true" : "false");
     renderIntro(slotEl, visible);
-    bindPatternTipDismiss(scope, key, null);
-    updateTipsResetLinkVisibility(scope, key);
+    bindPatternTipDismiss(scope, key);
 
     scope.addEventListener("click", (e) => {
       const target = e.target;
@@ -69,13 +68,17 @@ const { storageKey, scopeSelector = "#pattern-content" } = Astro.props;
       const toggleBtn = target.closest('[data-testid="link-tips-toggle"]');
       if (!(toggleBtn && scope.contains(toggleBtn))) return;
       e.preventDefault();
-      const isShowing = scope.getAttribute("data-show-tips") === "true";
-      const newState = !isShowing;
+      const wasShowing = scope.getAttribute("data-show-tips") === "true";
+      const newState = !wasShowing;
       scope.setAttribute("data-show-tips", newState ? "true" : "false");
       localStorage.setItem(key, newState ? "true" : "false");
       renderIntro(slotEl, newState);
-      refreshPatternTipDismiss(scope, key);
-      updateTipsResetLinkVisibility(scope, key);
+      // OFF → ON: clear individual dismissals so every eligible tip returns.
+      if (newState && !wasShowing) {
+        restoreAllDismissedPatternTips(scope, key);
+      } else {
+        refreshPatternTipDismiss(scope, key);
+      }
       if (key === SLEEVELESS_PATTERN_TIPS_STORAGE_KEY) {
         try {
           scheduleReadingWorkflowSync(getCurrentPattern().id);

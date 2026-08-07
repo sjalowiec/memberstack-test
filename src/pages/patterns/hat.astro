@@ -1277,35 +1277,6 @@ select.disabled {
   flex: 0 0 auto;
 }
 
-:global(.pattern-tips-control-btn) {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.28rem 0.55rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  line-height: 1.2;
-  font-family: inherit;
-  color: #6b7280;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(194, 97, 78, 0.28);
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-:global(.pattern-tips-control-btn i) {
-  font-size: 0.8em;
-  opacity: 0.9;
-}
-
-:global(.pattern-tips-control-btn:hover),
-:global(.pattern-tips-control-btn:focus-visible) {
-  color: #c2614e;
-  border-color: rgba(194, 97, 78, 0.45);
-  background: rgba(255, 255, 255, 0.95);
-  outline: none;
-}
-
 :global(#pattern-content[data-show-tips="true"] .pattern-tip[data-tip-dismissed="true"]) {
   display: none !important;
 }
@@ -1581,7 +1552,6 @@ select.disabled {
   }
 
   :global(.pattern-tip-dismiss),
-  :global(.pattern-tips-control-btn),
   :global(.pattern-tips-control-box) {
     display: none !important;
   }
@@ -2232,19 +2202,18 @@ select.disabled {
     bindPatternTipDismiss,
     patternTipsControlBoxHtml,
     refreshPatternTipDismiss,
-    updateTipsResetLinkVisibility,
+    resetDismissedTips,
   } from "../../lib/patterns/patternTipDismiss";
   // Hat is free for owner review: no membership lock. Blanket still uses PatternBuilderAccountGate.
   const HAT_TIPS_STORAGE_KEY = "hat-show-tips";
   window.kbmPatternTipsControlBoxHtml = patternTipsControlBoxHtml;
-  window.kbmUpdateTipsResetLinkVisibility = updateTipsResetLinkVisibility;
+  window.kbmResetDismissedTips = resetDismissedTips;
 
   function initHatPatternTipDismiss() {
     const scope = document.getElementById("pattern-content");
     if (!(scope instanceof HTMLElement)) return;
-    bindPatternTipDismiss(scope, HAT_TIPS_STORAGE_KEY, null);
+    bindPatternTipDismiss(scope, HAT_TIPS_STORAGE_KEY);
     refreshPatternTipDismiss(scope, HAT_TIPS_STORAGE_KEY);
-    updateTipsResetLinkVisibility(scope, HAT_TIPS_STORAGE_KEY);
   }
 
   document.addEventListener("DOMContentLoaded", initHatPatternTipDismiss);
@@ -4006,9 +3975,6 @@ async function initHatBuilder() {
     if (!slot) return;
     const renderControl = window.kbmPatternTipsControlBoxHtml;
     slot.innerHTML = typeof renderControl === 'function' ? renderControl(tipsOn) : '';
-    if (typeof window.kbmUpdateTipsResetLinkVisibility === 'function') {
-      window.kbmUpdateTipsResetLinkVisibility(patternContent, 'hat-show-tips');
-    }
     window.dispatchEvent(new CustomEvent('kbm:hat-pattern-rendered'));
   }
 
@@ -4016,10 +3982,14 @@ async function initHatBuilder() {
     const toggleBtn = e.target.closest('.tips-inline-toggle');
     if (!(toggleBtn && patternContent.contains(toggleBtn))) return;
     e.preventDefault();
-    const isShowing = patternContent.dataset.showTips === 'true';
-    const newState = !isShowing;
+    const wasShowing = patternContent.dataset.showTips === 'true';
+    const newState = !wasShowing;
     patternContent.dataset.showTips = newState ? 'true' : 'false';
     localStorage.setItem('hat-show-tips', newState ? 'true' : 'false');
+    // OFF → ON: clear individual dismissals so every eligible tip returns.
+    if (newState && !wasShowing && typeof window.kbmResetDismissedTips === 'function') {
+      window.kbmResetDismissedTips('hat-show-tips');
+    }
     syncCanonicalHatDraft();
     updatePatternTipsIntroUi(newState);
   });

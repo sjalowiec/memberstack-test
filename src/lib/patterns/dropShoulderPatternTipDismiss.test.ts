@@ -8,9 +8,12 @@ import { patternTipWrapperHtml } from "./sleevelessPatternOutput";
 import {
   dismissTipId,
   loadDismissedTipIds,
+  restoreAllDismissedPatternTips,
   restoreTipId,
+  dismissedTipsStorageKey,
 } from "./patternTipDismiss";
 import { stubLocalStorage } from "./test/stubLocalStorage";
+import { OPTIONAL_BUST_DART_TIP_ID } from "./bustDartFrontSlotHtml";
 
 const CHART_ROW: ChartRow = {
   size: 1,
@@ -113,5 +116,21 @@ describe("drop shoulder pattern tip ids", () => {
     expect(DROP_SHOULDER_SHOULDER_BIND_OFF_VIDEO_TIP_ID).not.toBe(
       DROP_SHOULDER_SLEEVE_CONSTRUCTION_CHOICE_TIP_ID,
     );
+  });
+
+  it("Show Tips OFF→ON clears individual dismissals for Drop Shoulder tip ids", () => {
+    dismissTipId(KEY, DROP_SHOULDER_SHOULDER_BIND_OFF_VIDEO_TIP_ID);
+    dismissTipId(KEY, OPTIONAL_BUST_DART_TIP_ID);
+    expect(loadDismissedTipIds(KEY).size).toBe(2);
+    expect(localStorage.getItem(dismissedTipsStorageKey(KEY))).toBeTruthy();
+
+    // Simulate the toggle OFF → ON path (storage clear); DOM refresh is shared via patternTipDismiss.
+    localStorage.setItem(KEY, "false");
+    localStorage.setItem(KEY, "true");
+    const scope = { querySelectorAll: () => [] } as unknown as Element;
+    restoreAllDismissedPatternTips(scope, KEY);
+
+    expect(loadDismissedTipIds(KEY).size).toBe(0);
+    expect(localStorage.getItem(dismissedTipsStorageKey(KEY))).toBeNull();
   });
 });

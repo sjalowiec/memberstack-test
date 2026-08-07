@@ -39,6 +39,15 @@ export function resetDismissedTips(storageKey: string): void {
   localStorage.removeItem(dismissedTipsStorageKey(storageKey));
 }
 
+/**
+ * Clear individually dismissed tip IDs and restore tip DOM.
+ * Call only when Show Tips deliberately transitions from OFF → ON.
+ */
+export function restoreAllDismissedPatternTips(scope: Element, storageKey: string): void {
+  resetDismissedTips(storageKey);
+  refreshPatternTipDismiss(scope, storageKey);
+}
+
 function notifySleevelessReadingWorkflowIfSaved(storageKey: string): void {
   if (storageKey !== SLEEVELESS_PATTERN_TIPS_STORAGE_KEY) return;
   try {
@@ -65,13 +74,6 @@ export function patternTipsControlBoxHtml(tipsOn: boolean): string {
     '<span class="pattern-tips-switch__track" aria-hidden="true"><span class="pattern-tips-switch__thumb"></span></span>' +
     `<span class="pattern-tips-switch__state">${stateLabel}</span>` +
     "</button>";
-  const restore =
-    '<button type="button" ' +
-    'class="pattern-tips-control-btn pattern-tips-reset-dismissed" ' +
-    'data-testid="link-tips-restore-dismissed" hidden>' +
-    '<i class="fa-solid fa-rotate-left" aria-hidden="true"></i>' +
-    "<span>Restore hidden tips</span>" +
-    "</button>";
   return (
     '<div class="pattern-tip pattern-tips-control-box pattern-tip-intro pattern-print-personalization-never-print" data-pattern-print-personalization-tip>' +
     '<div class="pattern-tips-control__layout">' +
@@ -79,7 +81,7 @@ export function patternTipsControlBoxHtml(tipsOn: boolean): string {
     '<i class="fa-solid fa-circle-info pattern-tips-control__info-icon" aria-hidden="true"></i>' +
     '<p class="pattern-tips-control__text">Pattern Tips give you quick, helpful reminders as you knit.</p>' +
     "</div>" +
-    `<div class="pattern-tips-control__actions">${toggle}${restore}</div>` +
+    `<div class="pattern-tips-control__actions">${toggle}</div>` +
     "</div>" +
     "</div>"
   );
@@ -216,35 +218,15 @@ function registerPrintSyncScope(scope: Element, storageKey: string): void {
   bindBeforePrintListenerOnce();
 }
 
-function resolveResetControl(scopeOrReset: Element | null): HTMLElement | null {
-  if (!(scopeOrReset instanceof HTMLElement)) return null;
-  if (scopeOrReset.classList.contains("pattern-tips-reset-dismissed")) return scopeOrReset;
-  const found = scopeOrReset.querySelector(".pattern-tips-reset-dismissed");
-  return found instanceof HTMLElement ? found : null;
-}
-
-export function updateTipsResetLinkVisibility(scopeOrResetRow: Element | null, storageKey: string): void {
-  const resetBtn = resolveResetControl(scopeOrResetRow);
-  if (!resetBtn) return;
-  const hasDismissed = loadDismissedTipIds(storageKey).size > 0;
-  resetBtn.hidden = !hasDismissed;
-}
-
 export type PatternTipDismissBinding = {
   scope: Element;
   storageKey: string;
-  resetRow: Element | null;
   observer: MutationObserver | null;
 };
 
-export function bindPatternTipDismiss(
-  scope: Element,
-  storageKey: string,
-  resetRow: Element | null,
-): PatternTipDismissBinding {
+export function bindPatternTipDismiss(scope: Element, storageKey: string): PatternTipDismissBinding {
   registerPrintSyncScope(scope, storageKey);
   refreshPatternTipDismiss(scope, storageKey);
-  updateTipsResetLinkVisibility(scope, storageKey);
 
   const alreadyBound = scope.getAttribute("data-pattern-tip-dismiss-bound") === storageKey;
   if (!alreadyBound) {
@@ -262,34 +244,20 @@ export function bindPatternTipDismiss(
         if (!id) return;
         e.preventDefault();
         setTipDismissedState(scope, storageKey, tip, true);
-        updateTipsResetLinkVisibility(scope, storageKey);
-        notifySleevelessReadingWorkflowIfSaved(storageKey);
-        return;
-      }
-
-      const resetLink = target.closest(".pattern-tips-reset-dismissed");
-      if (resetLink && scope.contains(resetLink)) {
-        e.preventDefault();
-        resetDismissedTips(storageKey);
-        refreshPatternTipDismiss(scope, storageKey);
-        updateTipsResetLinkVisibility(scope, storageKey);
         notifySleevelessReadingWorkflowIfSaved(storageKey);
       }
     });
 
     const observer = new MutationObserver(() => {
       refreshPatternTipDismiss(scope, storageKey);
-      updateTipsResetLinkVisibility(scope, storageKey);
     });
     observer.observe(scope, { childList: true, subtree: true });
     refreshPatternTipDismiss(scope, storageKey);
-    updateTipsResetLinkVisibility(scope, storageKey);
-    return { scope, storageKey, resetRow, observer };
+    return { scope, storageKey, observer };
   }
 
   refreshPatternTipDismiss(scope, storageKey);
-  updateTipsResetLinkVisibility(scope, storageKey);
-  return { scope, storageKey, resetRow, observer: null };
+  return { scope, storageKey, observer: null };
 }
 
 /** @internal Tests only — reset the global beforeprint registration. */
