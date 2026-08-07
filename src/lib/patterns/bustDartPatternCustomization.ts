@@ -6,10 +6,15 @@
  */
 import { buildCustomBuildEffectivePatternInput } from "./buildCustomBuildEffectivePatternInput";
 import { hasAuthoritativeDropShoulderConstruction } from "./patternConstructionIdentity";
-import { resolveMeasurementDisplayUnitFromPatternData } from "./patternMeasurementDisplayUnit";
+import {
+  formatMeasurementDisplayFromInches,
+  resolveMeasurementDisplayUnitFromPatternData,
+} from "./patternMeasurementDisplayUnit";
 import {
   getCurrentPattern,
   getPatternData,
+  getSleevelessChartAudienceLabel,
+  normalizeSleevelessAudience,
   saveCurrentPattern,
   savePatternData,
 } from "./patternStorage";
@@ -66,11 +71,40 @@ export type BustDartPatternContext = {
   summary: {
     constructionLabel: string;
     garmentLabel: string;
+    /** Compact line for the modal, e.g. "Sleeveless Pullover • Women's 40". */
+    summaryLine: string;
     gaugeLabel: string;
     placementLabel: string;
     frontStitchesLabel: string;
   };
 };
+
+/**
+ * One-line modal context: construction + garment • audience + finished bust.
+ * Gauge / front stitches stay available on the context for calculations, not this line.
+ */
+export function buildBustDartModalSummaryLine(args: {
+  constructionLabel: string;
+  garmentLabel: string;
+  sizeGroup: string;
+  finishedBustInches?: number | null;
+  unit?: DartFormulaUnit;
+}): string {
+  const patternStyle = [args.constructionLabel, args.garmentLabel]
+    .map((s) => String(s || "").trim())
+    .filter(Boolean)
+    .join(" ");
+  const audienceKey = normalizeSleevelessAudience(args.sizeGroup) || String(args.sizeGroup || "").trim();
+  const audience = audienceKey ? getSleevelessChartAudienceLabel(audienceKey) : "";
+  const bustIn = args.finishedBustInches;
+  let audienceSize = audience;
+  if (audience && bustIn != null && Number.isFinite(bustIn) && bustIn > 0) {
+    const unit = args.unit === "cm" ? "cm" : "in";
+    const bust = formatMeasurementDisplayFromInches(bustIn, unit);
+    audienceSize = bust ? `${audience} ${bust}` : audience;
+  }
+  return [patternStyle, audienceSize].filter(Boolean).join(" • ");
+}
 
 export type BustDartPreviewDims = {
   cupSize: string | null;
@@ -123,6 +157,14 @@ export function buildBustDartPatternContext(
   const isCardigan = isCardiganStyle(style);
   const frontConstruction: BustDartFrontConstruction = isCardigan ? "cardigan" : "pullover";
 
+  const constructionLabel = isDrop ? "Drop Shoulder" : "Sleeveless";
+  const garmentLabel = isCardigan ? "Cardigan" : "Pullover";
+  const fit = section(patternData.fit);
+  const selectedMeasurements = section(fit.selectedMeasurements);
+  const finishedBustRaw = Number(selectedMeasurements.finished_bust_chest);
+  const finishedBustInches =
+    Number.isFinite(finishedBustRaw) && finishedBustRaw > 0 ? finishedBustRaw : null;
+
   const empty = (partial: Partial<BustDartPatternContext> = {}): BustDartPatternContext => ({
     eligible,
     sizeGroup,
@@ -138,8 +180,15 @@ export function buildBustDartPatternContext(
     bodyToArmholeRows: 0,
     config,
     summary: {
-      constructionLabel: isDrop ? "Drop Shoulder" : "Sleeveless",
-      garmentLabel: isCardigan ? "Cardigan" : "Pullover",
+      constructionLabel,
+      garmentLabel,
+      summaryLine: buildBustDartModalSummaryLine({
+        constructionLabel,
+        garmentLabel,
+        sizeGroup,
+        finishedBustInches,
+        unit,
+      }),
       gaugeLabel: "",
       placementLabel: `${formatBustDartPlacementDistanceLabel(unit)} below the armhole opening (front only)`,
       frontStitchesLabel: "",
@@ -189,8 +238,15 @@ export function buildBustDartPatternContext(
     hemRows,
     bodyToArmholeRows,
     summary: {
-      constructionLabel: isDrop ? "Drop Shoulder" : "Sleeveless",
-      garmentLabel: isCardigan ? "Cardigan" : "Pullover",
+      constructionLabel,
+      garmentLabel,
+      summaryLine: buildBustDartModalSummaryLine({
+        constructionLabel,
+        garmentLabel,
+        sizeGroup,
+        finishedBustInches,
+        unit,
+      }),
       gaugeLabel,
       placementLabel: `${formatBustDartPlacementDistanceLabel(unit)} below the armhole opening (front only)`,
       frontStitchesLabel:

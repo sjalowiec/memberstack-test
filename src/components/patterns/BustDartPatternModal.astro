@@ -1,22 +1,17 @@
 ---
 /**
  * Finished-pattern optional Bust Dart customization dialog.
- * Prefills gauge / construction from the pattern; user chooses cup size, edits width/depth, then Add to Pattern.
+ * Prefills construction/style from the pattern; user chooses cup size, edits width/depth, then Add to Pattern.
+ * Help video lives on the pattern page (inactive Optional Bust Dart prompt), not in this modal.
  */
 import FloatingSelect from "../tools/FloatingSelect.astro";
 import FloatingInput from "../tools/FloatingInput.astro";
 import { DART_CUP_SIZES, formatDartCupOptionLabel } from "../../lib/tools/dartFormulaMath";
-import {
-  renderBustDartModalHelpHtml,
-  resolveBustDartHelpVideo,
-} from "../../lib/tools/dartFormulaHelpVideo";
 
 const cupOptions = DART_CUP_SIZES.map((value) => ({
   label: formatDartCupOptionLabel(value, "in"),
   value,
 }));
-
-const modalHelpHtml = renderBustDartModalHelpHtml(resolveBustDartHelpVideo());
 ---
 
 <dialog
@@ -45,20 +40,10 @@ const modalHelpHtml = renderBustDartModalHelpHtml(resolveBustDartHelpVideo());
     <div class="bust-dart-pattern-modal__body">
       <p class="bust-dart-pattern-modal__intro">
         Add short-row bust darts to the <strong>front only</strong>, starting <span data-bust-dart-modal-intro-placement>1″</span> below the armhole opening.
-        Gauge and placement come from this pattern — choose a cup size, adjust width and depth if needed, preview, then add to the pattern.
+        Choose a cup size, adjust width and depth if needed, then add to the pattern.
       </p>
 
-      {modalHelpHtml ? (
-        <div class="bust-dart-pattern-modal__help-mount" set:html={modalHelpHtml} />
-      ) : null}
-
-      <dl class="bust-dart-pattern-modal__summary" data-bust-dart-modal-summary>
-        <div><dt>Pattern</dt><dd data-bust-dart-summary-construction>—</dd></div>
-        <div><dt>Style</dt><dd data-bust-dart-summary-garment>—</dd></div>
-        <div><dt>Gauge</dt><dd data-bust-dart-summary-gauge>—</dd></div>
-        <div><dt>Front stitches</dt><dd data-bust-dart-summary-front-sts>—</dd></div>
-        <div><dt>Placement</dt><dd data-bust-dart-summary-placement>—</dd></div>
-      </dl>
+      <p class="bust-dart-pattern-modal__summary-line" data-bust-dart-modal-summary-line>—</p>
 
       <div class="bust-dart-pattern-modal__field">
         <FloatingSelect
@@ -72,7 +57,7 @@ const modalHelpHtml = renderBustDartModalHelpHtml(resolveBustDartHelpVideo());
         />
       </div>
 
-      <div class="bust-dart-pattern-modal__dims">
+      <div class="bust-dart-pattern-modal__dims" data-bust-dart-modal-dims hidden>
         <FloatingInput
           id="bust-dart-pattern-width"
           name="bustDartWidth"
@@ -117,7 +102,7 @@ const modalHelpHtml = renderBustDartModalHelpHtml(resolveBustDartHelpVideo());
         data-bust-dart-modal-remove
         hidden
       >
-        Remove bust dart
+        Remove Bust Dart
       </button>
       <div class="bust-dart-pattern-modal__footer-end">
         <button
@@ -146,7 +131,7 @@ const modalHelpHtml = renderBustDartModalHelpHtml(resolveBustDartHelpVideo());
     border: none;
     border-radius: 12px;
     padding: 0;
-    max-width: min(32rem, calc(100vw - 1.25rem));
+    max-width: min(28rem, calc(100vw - 1.25rem));
     width: 100%;
     max-height: min(92dvh, calc(100vh - 1.5rem));
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
@@ -212,62 +197,17 @@ const modalHelpHtml = renderBustDartModalHelpHtml(resolveBustDartHelpVideo());
     padding: 0.35rem 1.25rem 0.85rem;
   }
   .bust-dart-pattern-modal__intro {
-    margin: 0.5rem 0 1rem;
+    margin: 0.35rem 0 0.65rem;
     color: #4b5563;
     font-size: 0.95rem;
     line-height: 1.45;
   }
-  .bust-dart-pattern-modal__help-mount {
-    margin: 0 0 1rem;
-  }
-  .bust-dart-pattern-modal__help {
-    margin: 0;
-    padding: 0.75rem 0.85rem;
-    border-radius: 8px;
-    border: 1px solid #e5e7eb;
-    background: #f9fafb;
-  }
-  .bust-dart-pattern-modal__help-title {
-    display: block;
-    margin: 0 0 0.25rem;
+  .bust-dart-pattern-modal__summary-line {
+    margin: 0 0 0.85rem;
     font-size: 0.9rem;
-    font-weight: 700;
-    color: #374151;
-  }
-  .bust-dart-pattern-modal__help-desc {
-    margin: 0 0 0.65rem;
-    font-size: 0.86rem;
-    line-height: 1.4;
-    color: #4b5563;
-  }
-  .bust-dart-pattern-modal__watch {
-    min-height: 44px;
-    width: 100%;
-    max-width: 100%;
-    padding: 0.65rem 1rem;
-    font-size: 0.95rem;
-    white-space: normal;
-    text-align: center;
-  }
-  .bust-dart-pattern-modal__summary {
-    margin: 0 0 1rem;
-    display: grid;
-    gap: 0.35rem 1rem;
-    font-size: 0.9rem;
-  }
-  .bust-dart-pattern-modal__summary > div {
-    display: grid;
-    grid-template-columns: 7.5rem 1fr;
-    gap: 0.5rem;
-  }
-  .bust-dart-pattern-modal__summary dt {
-    margin: 0;
     font-weight: 600;
     color: #374151;
-  }
-  .bust-dart-pattern-modal__summary dd {
-    margin: 0;
-    color: #4b5563;
+    line-height: 1.35;
   }
   .bust-dart-pattern-modal__field {
     margin-bottom: 0.75rem;
@@ -277,6 +217,9 @@ const modalHelpHtml = renderBustDartModalHelpHtml(resolveBustDartHelpVideo());
     grid-template-columns: 1fr 1fr;
     gap: 0.75rem;
     margin-bottom: 0.35rem;
+  }
+  .bust-dart-pattern-modal__dims[hidden] {
+    display: none !important;
   }
   .bust-dart-pattern-modal__customized {
     margin: 0 0 0.5rem;
@@ -382,9 +325,6 @@ const modalHelpHtml = renderBustDartModalHelpHtml(resolveBustDartHelpVideo());
       margin-top: 0.15rem;
       font-size: 0.92rem;
       opacity: 0.95;
-    }
-    .bust-dart-pattern-modal__summary > div {
-      grid-template-columns: 6.25rem 1fr;
     }
   }
 </style>
