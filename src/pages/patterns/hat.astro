@@ -2247,32 +2247,18 @@ select.disabled {
     bindPatternTipDismiss,
     patternTipsControlBoxHtml,
     refreshPatternTipDismiss,
-    updateTipsResetLinkVisibility,
+    resetDismissedTips,
   } from "../../lib/patterns/patternTipDismiss";
-  import {
-    installPatternBuilderAccountGate,
-    lockPatternBuilderForLoggedOut,
-  } from "../../lib/patterns/patternBuilderAccountGate";
-
-  installPatternBuilderAccountGate();
-
-  // Upfront membership gate: lock the interactive builder until active Knit it Now membership is
-  // confirmed. Closing the prompt leaves the builder locked; clicking/focusing any control re-opens
-  // the prompt. Login alone does not unlock. Create / Pattern tab gates remain the fail-closed backup.
-  void lockPatternBuilderForLoggedOut(
-    document.querySelector<HTMLElement>("[data-pattern-builder-lock]"),
-  );
-
+  // Hat tip dismiss uses the shared patternTipDismiss API (no obsolete reset-link helper).
   const HAT_TIPS_STORAGE_KEY = "hat-show-tips";
   window.kbmPatternTipsControlBoxHtml = patternTipsControlBoxHtml;
-  window.kbmUpdateTipsResetLinkVisibility = updateTipsResetLinkVisibility;
+  window.kbmResetDismissedTips = resetDismissedTips;
 
   function initHatPatternTipDismiss() {
     const scope = document.getElementById("pattern-content");
     if (!(scope instanceof HTMLElement)) return;
-    bindPatternTipDismiss(scope, HAT_TIPS_STORAGE_KEY, null);
+    bindPatternTipDismiss(scope, HAT_TIPS_STORAGE_KEY);
     refreshPatternTipDismiss(scope, HAT_TIPS_STORAGE_KEY);
-    updateTipsResetLinkVisibility(scope, HAT_TIPS_STORAGE_KEY);
   }
 
   document.addEventListener("DOMContentLoaded", initHatPatternTipDismiss);
@@ -4218,9 +4204,6 @@ async function initHatBuilder() {
     if (!slot) return;
     const renderControl = window.kbmPatternTipsControlBoxHtml;
     slot.innerHTML = typeof renderControl === 'function' ? renderControl(tipsOn) : '';
-    if (typeof window.kbmUpdateTipsResetLinkVisibility === 'function') {
-      window.kbmUpdateTipsResetLinkVisibility(patternContent, 'hat-show-tips');
-    }
     window.dispatchEvent(new CustomEvent('kbm:hat-pattern-rendered'));
   }
 
@@ -4228,10 +4211,14 @@ async function initHatBuilder() {
     const toggleBtn = e.target.closest('.tips-inline-toggle');
     if (!(toggleBtn && patternContent.contains(toggleBtn))) return;
     e.preventDefault();
-    const isShowing = patternContent.dataset.showTips === 'true';
-    const newState = !isShowing;
+    const wasShowing = patternContent.dataset.showTips === 'true';
+    const newState = !wasShowing;
     patternContent.dataset.showTips = newState ? 'true' : 'false';
     localStorage.setItem('hat-show-tips', newState ? 'true' : 'false');
+    // OFF → ON: clear individual dismissals so every eligible tip returns.
+    if (newState && !wasShowing && typeof window.kbmResetDismissedTips === 'function') {
+      window.kbmResetDismissedTips('hat-show-tips');
+    }
     updatePatternTipsIntroUi(newState);
   });
 
