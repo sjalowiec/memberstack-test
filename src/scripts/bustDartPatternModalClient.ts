@@ -189,13 +189,18 @@ export function initBustDartPatternCustomization(): void {
   let context: BustDartPatternContext | null = null;
   /** When true, cup change reloads preset width/depth. Cleared after restore-from-saved. */
   let reloadPresetOnCupChange = true;
+  /** Control that opened the modal — restored on close (Cancel / × / Escape). */
+  let lastFocus: HTMLElement | null = null;
 
+  const form = modal.querySelector<HTMLFormElement>("[data-bust-dart-modal-form]");
   const cupSelect = () => modal.querySelector<HTMLSelectElement>("#bust-dart-pattern-cup");
   const removeBtn = modal.querySelector<HTMLButtonElement>("[data-bust-dart-modal-remove]");
   const addBtn = modal.querySelector<HTMLButtonElement>("[data-bust-dart-modal-add]");
+  const cancelBtn = modal.querySelector<HTMLButtonElement>("[data-bust-dart-modal-cancel]");
+  const closeBtn = modal.querySelector<HTMLButtonElement>("[data-bust-dart-modal-close]");
   const title = modal.querySelector<HTMLElement>("#bust-dart-modal-title");
 
-  function openModal(): void {
+  function openModal(opener?: Element | null): void {
     try {
       context = buildBustDartPatternContext();
     } catch (err) {
@@ -240,11 +245,18 @@ export function initBustDartPatternCustomization(): void {
     }
     setError(modal, null);
     renderPreview(modal, context, parseCupSizeInput(sel?.value));
+    lastFocus =
+      opener instanceof HTMLElement
+        ? opener
+        : document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null;
     if (typeof modal.showModal === "function") modal.showModal();
     else modal.setAttribute("open", "");
   }
 
   function closeModal(): void {
+    // Close without form submission — never run constraint or custom validation.
     if (typeof modal.close === "function") modal.close();
     else modal.removeAttribute("open");
   }
@@ -268,13 +280,26 @@ export function initBustDartPatternCustomization(): void {
     }
   }
 
+  // Cancel / × must never submit the form — required fields would block closing.
+  form?.addEventListener("submit", (ev) => {
+    ev.preventDefault();
+  });
+  cancelBtn?.addEventListener("click", (ev) => {
+    ev.preventDefault();
+    closeModal();
+  });
+  closeBtn?.addEventListener("click", (ev) => {
+    ev.preventDefault();
+    closeModal();
+  });
+
   document.addEventListener("click", (ev) => {
     const t = ev.target;
     if (!(t instanceof Element)) return;
     const openBtn = t.closest("[data-bust-dart-pattern-open]");
     if (openBtn) {
       ev.preventDefault();
-      openModal();
+      openModal(openBtn);
       return;
     }
     const removeTrigger = t.closest("[data-bust-dart-pattern-remove]");
@@ -355,5 +380,10 @@ export function initBustDartPatternCustomization(): void {
 
   modal.addEventListener("close", () => {
     setError(modal, null);
+    const restore = lastFocus;
+    lastFocus = null;
+    if (restore && typeof restore.focus === "function" && restore.isConnected) {
+      restore.focus();
+    }
   });
 }

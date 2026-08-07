@@ -2,8 +2,9 @@
  * Screen + print HTML for the Front Optional Bust Dart customization slot.
  * Does not own dart math — only presents generator output and controls.
  *
- * Inactive prompt participates in {@link refreshPatternTipDismiss} / “Restore hidden tips”
- * via a stable `data-tip-id`. Active dart instructions are never tip-dismissable.
+ * Inactive prompt participates in {@link refreshPatternTipDismiss}; Show Tips OFF→ON
+ * restores individually dismissed tips via a stable `data-tip-id`. Active dart
+ * instructions are never tip-dismissable.
  */
 
 import { renderBustDartInactivePromptHelpHtml } from "../tools/dartFormulaHelpVideo";
@@ -82,7 +83,7 @@ export function renderBustDartCustomizationScreenHtml(
         <button type="button" class="sleeveless-pattern-edit-action" data-bust-dart-pattern-open data-testid="button-optional-bust-dart" aria-haspopup="dialog" aria-label="Add bust dart">Add Bust Dart</button>
       </div>`;
 
-  // Inactive prompt: standard `.pattern-tip[data-tip-id]` so Hide / Restore hidden tips apply
+  // Inactive prompt: standard `.pattern-tip[data-tip-id]` so Hide and Show Tips OFF→ON restore apply
   // (help note + Watch live inside the same tip wrapper).
   // `pattern-print-personalization-never-print` keeps it out of browser print; print-route HTML already omits inactive slots.
   return `<div class="pattern-tip bust-dart-front-slot bust-dart-front-slot--optional pattern-print-personalization-never-print no-print sleeveless-pattern-row sleeveless-pattern-row--full" data-tip data-tip-id="${OPTIONAL_BUST_DART_TIP_ID}" data-bust-dart-front-slot data-bust-dart-active="false">

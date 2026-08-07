@@ -11,9 +11,9 @@ import {
   resetDismissedTips,
   resetPatternTipPrintSyncForTests,
   resolveDismissableTipFromDismissButton,
+  restoreAllDismissedPatternTips,
   syncPatternTipDismissBeforePrint,
   restoreTipId,
-  updateTipsResetLinkVisibility,
 } from "./patternTipDismiss";
 import { stubLocalStorage } from "./test/stubLocalStorage";
 
@@ -22,10 +22,9 @@ const KEY = "test-show-tips";
 
 /**
  * Node-safe DOM stub (the suite runs without jsdom). Implements only what
- * refreshPatternTipDismiss + updateTipsResetLinkVisibility touch: attribute
- * get/set/remove, classList.contains, querySelector(All), appendChild and a
- * mutable `hidden`. `instanceof HTMLElement` works because the class below is
- * installed as the global HTMLElement.
+ * refreshPatternTipDismiss touches: attribute get/set/remove, classList.contains,
+ * querySelector(All), appendChild. `instanceof HTMLElement` works because the
+ * class below is installed as the global HTMLElement.
  */
 class FakeClassList {
   private classes: Set<string>;
@@ -48,18 +47,16 @@ class FakeElement {
   attrs: Record<string, string> = {};
   children: FakeElement[] = [];
   classList: FakeClassList;
-  hidden = false;
   type = "";
   textContent = "";
   tagName: string;
   parentElement: FakeElement | null = null;
-  private selectorMap: Record<string, FakeElement[]>;
+  private selectorMap: Record<string, FakeElement[]> = {};
   private _className = "";
 
   constructor(opts: { classes?: string[]; tagName?: string } = {}) {
     this.classList = new FakeClassList(opts.classes ?? []);
     this.tagName = opts.tagName ?? "DIV";
-    this.selectorMap = {};
     if (opts.classes?.length) {
       this._className = opts.classes.join(" ");
     }
@@ -156,16 +153,6 @@ class FakeElement {
     }
     return found;
   }
-
-  /** Minimal descendant search for nested-tip regressions. */
-  querySelectorDescendant(className: string): FakeElement | null {
-    for (const child of this.children) {
-      if (child.classList.contains(className)) return child;
-      const nested = child.querySelectorDescendant(className);
-      if (nested) return nested;
-    }
-    return null;
-  }
 }
 
 function buildScope() {
@@ -173,18 +160,12 @@ function buildScope() {
   tipA.setAttribute("data-tip-id", "tip-a");
   const tipB = new FakeElement({ classes: ["pattern-tip"] });
   tipB.setAttribute("data-tip-id", "tip-b");
-  const restoreBtn = new FakeElement({
-    classes: ["pattern-tips-control-btn", "pattern-tips-reset-dismissed"],
-    tagName: "BUTTON",
-  });
-  restoreBtn.hidden = true;
 
   const scope = new FakeElement({ classes: ["pattern-tips-scope"] });
   scope.appendChild(tipA);
   scope.appendChild(tipB);
   scope.setSelectorResult(DISMISSABLE_TIP_SELECTOR, [tipA, tipB]);
-  scope.setSelectorResult(".pattern-tips-reset-dismissed", [restoreBtn]);
-  return { scope, tipA, tipB, restoreBtn };
+  return { scope, tipA, tipB };
 }
 
 describe("patternTipDismiss", () => {
@@ -204,38 +185,51 @@ describe("patternTipDismiss", () => {
   });
 
   describe("control box markup", () => {
-    it("renders a hidden restore button alongside the show-tips toggle", () => {
+    it("renders the Show Tips toggle without a Restore hidden tips button", () => {
       const html = patternTipsControlBoxHtml(true);
       expect(html).toContain('data-testid="link-tips-toggle"');
-      expect(html).toContain("pattern-tips-reset-dismissed");
-      expect(html).toContain('data-testid="link-tips-restore-dismissed"');
-      expect(html).toContain("Restore hidden tips");
-      // The restore button must start hidden (revealed only once tips are dismissed).
-      expect(html).toMatch(/pattern-tips-reset-dismissed[^>]*hidden/);
+      expect(html).toContain("Show Tips");
+      expect(html).not.toContain("pattern-tips-reset-dismissed");
+      expect(html).not.toContain('data-testid="link-tips-restore-dismissed"');
+      expect(html).not.toContain("Restore hidden tips");
     });
 
-    it("renders the restore button regardless of global tips state", () => {
-      expect(patternTipsControlBoxHtml(false)).toContain("pattern-tips-reset-dismissed");
-      expect(patternTipsControlBoxHtml(true)).toContain("pattern-tips-reset-dismissed");
+    it("never renders a Restore control regardless of global tips state", () => {
+      expect(patternTipsControlBoxHtml(false)).not.toContain("Restore hidden tips");
+      expect(patternTipsControlBoxHtml(true)).not.toContain("Restore hidden tips");
+      expect(patternTipsControlBoxHtml(false)).not.toContain("pattern-tips-reset-dismissed");
+      expect(patternTipsControlBoxHtml(true)).not.toContain("pattern-tips-reset-dismissed");
     });
   });
 
   describe("dismissing one tip", () => {
-    it("persists the dismissed id and applies it to the DOM", () => {
+    it("hides only that tip while Show Tips remains on", () => {
       dismissTipId(KEY, "tip-a");
 
       expect([...loadDismissedTipIds(KEY)]).toEqual(["tip-a"]);
       expect(localStorage.getItem(dismissedTipsStorageKey(KEY))).toBe(JSON.stringify(["tip-a"]));
 
-      const { scope, tipA, tipB, restoreBtn } = buildScope();
+      const { scope, tipA, tipB } = buildScope();
+      // Show Tips stays on — only tip-a is individually dismissed.
+      scope.setAttribute("data-show-tips", "true");
       refreshPatternTipDismiss(scope, KEY);
 
       expect(tipA.getAttribute("data-tip-dismissed")).toBe("true");
       expect(tipB.getAttribute("data-tip-dismissed")).toBeNull();
       expect(tipA.querySelector(".pattern-tip-dismiss")).not.toBeNull();
+    });
 
-      updateTipsResetLinkVisibility(scope, KEY);
-      expect(restoreBtn.hidden).toBe(false);
+    it("persists the individual dismissal through a normal reload", () => {
+      dismissTipId(KEY, "tip-a");
+      localStorage.setItem(KEY, "true");
+
+      const reloaded = buildScope();
+      reloaded.scope.setAttribute("data-show-tips", "true");
+      refreshPatternTipDismiss(reloaded.scope, KEY);
+
+      expect(reloaded.tipA.getAttribute("data-tip-dismissed")).toBe("true");
+      expect(reloaded.tipB.getAttribute("data-tip-dismissed")).toBeNull();
+      expect([...loadDismissedTipIds(KEY)]).toEqual(["tip-a"]);
     });
 
     it("does not inject duplicate dismiss buttons on repeated refresh", () => {
@@ -248,69 +242,76 @@ describe("patternTipDismiss", () => {
     });
   });
 
-  describe("restoring dismissed tips", () => {
-    it("clears persisted ids and un-hides every dismissed tip", () => {
+  describe("Show Tips OFF → ON restores all dismissed tips", () => {
+    it("clears individual dismissals and restores every eligible tip", () => {
       dismissTipId(KEY, "tip-a");
       dismissTipId(KEY, "tip-b");
 
-      const { scope, tipA, tipB, restoreBtn } = buildScope();
+      const { scope, tipA, tipB } = buildScope();
       refreshPatternTipDismiss(scope, KEY);
-      updateTipsResetLinkVisibility(scope, KEY);
-      expect(restoreBtn.hidden).toBe(false);
+      expect(tipA.getAttribute("data-tip-dismissed")).toBe("true");
+      expect(tipB.getAttribute("data-tip-dismissed")).toBe("true");
 
-      resetDismissedTips(KEY);
-      expect(loadDismissedTipIds(KEY).size).toBe(0);
-      expect(localStorage.getItem(dismissedTipsStorageKey(KEY))).toBeNull();
-
-      refreshPatternTipDismiss(scope, KEY);
-      expect(tipA.getAttribute("data-tip-dismissed")).toBeNull();
-      expect(tipB.getAttribute("data-tip-dismissed")).toBeNull();
-
-      updateTipsResetLinkVisibility(scope, KEY);
-      expect(restoreBtn.hidden).toBe(true);
-    });
-
-    it("keeps the restore button hidden when nothing is dismissed", () => {
-      const { scope, restoreBtn } = buildScope();
-      updateTipsResetLinkVisibility(scope, KEY);
-      expect(restoreBtn.hidden).toBe(true);
-    });
-  });
-
-  describe("global hide/show vs individually dismissed tips", () => {
-    it("toggling global tips on/off does not change which tips are dismissed", () => {
-      dismissTipId(KEY, "tip-a");
-
-      // Simulate the global toggle writing the visibility flag.
+      // Simulate Show Tips OFF → ON via the shared restore API.
       localStorage.setItem(KEY, "false");
       localStorage.setItem(KEY, "true");
+      restoreAllDismissedPatternTips(scope, KEY);
+
+      expect(loadDismissedTipIds(KEY).size).toBe(0);
+      expect(localStorage.getItem(dismissedTipsStorageKey(KEY))).toBeNull();
+      expect(tipA.getAttribute("data-tip-dismissed")).toBeNull();
+      expect(tipB.getAttribute("data-tip-dismissed")).toBeNull();
+    });
+
+    it("does not clear dismissals merely because Show Tips is already on", () => {
+      dismissTipId(KEY, "tip-a");
+      localStorage.setItem(KEY, "true");
+
+      const { scope, tipA } = buildScope();
+      refreshPatternTipDismiss(scope, KEY);
+
+      expect([...loadDismissedTipIds(KEY)]).toEqual(["tip-a"]);
+      expect(tipA.getAttribute("data-tip-dismissed")).toBe("true");
+    });
+
+    it("does not clear dismissals when Show Tips turns OFF", () => {
+      dismissTipId(KEY, "tip-a");
+      localStorage.setItem(KEY, "true");
+      localStorage.setItem(KEY, "false");
 
       expect([...loadDismissedTipIds(KEY)]).toEqual(["tip-a"]);
     });
 
-    it("restoring dismissed tips does not force global tips on", () => {
-      // Global tips are currently hidden.
+    it("resetDismissedTips alone clears storage without forcing global tips on", () => {
       localStorage.setItem(KEY, "false");
       dismissTipId(KEY, "tip-a");
 
       resetDismissedTips(KEY);
 
-      // Restore cleared the dismissals but left the global flag untouched.
       expect(loadDismissedTipIds(KEY).size).toBe(0);
       expect(localStorage.getItem(KEY)).toBe("false");
     });
+  });
 
-    it("a tip dismissed while global tips are hidden stays dismissed when they are shown again", () => {
-      localStorage.setItem(KEY, "false");
-      dismissTipId(KEY, "tip-a");
-      localStorage.setItem(KEY, "true");
+  describe("print visibility", () => {
+    it("hides optional tips when Show Tips is off or a tip is dismissed", () => {
+      const tip = new FakeElement({ classes: ["pattern-tip"] });
+      tip.setAttribute("data-tip-id", "tip-a");
+      expect(isTipHiddenForPrint(tip as unknown as HTMLElement, false)).toBe(true);
 
-      const { scope, tipA, tipB } = buildScope();
-      refreshPatternTipDismiss(scope, KEY);
+      tip.setAttribute("data-tip-dismissed", "true");
+      expect(isTipHiddenForPrint(tip as unknown as HTMLElement, true)).toBe(true);
 
-      // data-tip-dismissed is what the CSS uses to keep it hidden even when global tips are on.
-      expect(tipA.getAttribute("data-tip-dismissed")).toBe("true");
-      expect(tipB.getAttribute("data-tip-dismissed")).toBeNull();
+      tip.removeAttribute("data-tip-dismissed");
+      expect(isTipHiddenForPrint(tip as unknown as HTMLElement, true)).toBe(false);
+    });
+
+    it("keeps never-print tips excluded from print even when Show Tips is on", () => {
+      const tip = new FakeElement({
+        classes: ["pattern-tip", "pattern-print-personalization-never-print"],
+      });
+      tip.setAttribute("data-tip-id", "optional-bust-dart-front");
+      expect(isTipHiddenForPrint(tip as unknown as HTMLElement, true)).toBe(true);
     });
   });
 
@@ -379,7 +380,7 @@ describe("patternTipDismiss", () => {
       return { scope, tipOnScreen, tipPrintRegion };
     }
 
-    it("dismiss tip → print hidden → restore all → print visible (all DOM copies)", () => {
+    it("dismiss tip → print hidden → Show Tips OFF→ON restore → print visible (all DOM copies)", () => {
       const { scope, tipOnScreen, tipPrintRegion } = buildDuplicateBindOffTipScope();
 
       dismissTipId(KEY, BIND_OFF_TIP_ID);
@@ -390,8 +391,7 @@ describe("patternTipDismiss", () => {
       expect(tipPrintRegion.getAttribute("data-tip-dismissed")).toBe("true");
       expect(isTipHiddenForPrint(tipPrintRegion, true)).toBe(true);
 
-      resetDismissedTips(KEY);
-      refreshPatternTipDismiss(scope, KEY);
+      restoreAllDismissedPatternTips(scope, KEY);
 
       expect(loadDismissedTipIds(KEY).size).toBe(0);
       expect(tipOnScreen.getAttribute("data-tip-dismissed")).toBeNull();
@@ -433,28 +433,21 @@ describe("patternTipDismiss", () => {
   });
 
   describe("reload persistence", () => {
-    it("re-applies dismissed tips to freshly rendered DOM after a reload", () => {
-      dismissTipId(KEY, "tip-a");
-
-      // A reload re-reads localStorage and re-renders the tips into new DOM nodes.
-      const reloaded = buildScope();
-      refreshPatternTipDismiss(reloaded.scope, KEY);
-      updateTipsResetLinkVisibility(reloaded.scope, KEY);
-
-      expect(reloaded.tipA.getAttribute("data-tip-dismissed")).toBe("true");
-      expect(reloaded.restoreBtn.hidden).toBe(false);
-    });
-
     it("a restore performed before reload stays restored afterwards", () => {
       dismissTipId(KEY, "tip-a");
       resetDismissedTips(KEY);
 
       const reloaded = buildScope();
       refreshPatternTipDismiss(reloaded.scope, KEY);
-      updateTipsResetLinkVisibility(reloaded.scope, KEY);
 
       expect(reloaded.tipA.getAttribute("data-tip-dismissed")).toBeNull();
-      expect(reloaded.restoreBtn.hidden).toBe(true);
+    });
+
+    it("restoreTipId removes a single id without clearing others", () => {
+      dismissTipId(KEY, "tip-a");
+      dismissTipId(KEY, "tip-b");
+      restoreTipId(KEY, "tip-a");
+      expect([...loadDismissedTipIds(KEY)]).toEqual(["tip-b"]);
     });
   });
 });

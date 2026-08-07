@@ -1,5 +1,6 @@
 /**
- * Inactive Optional Bust Dart prompt reuses patternTipDismiss (Hide × + Restore hidden tips).
+ * Inactive Optional Bust Dart prompt reuses patternTipDismiss (Hide ×;
+ * Show Tips OFF→ON restores all dismissed tips).
  * Active dart instructions must never participate.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -18,11 +19,16 @@ import {
   dismissTipId,
   isTipHiddenForPrint,
   loadDismissedTipIds,
+  patternTipsControlBoxHtml,
   refreshPatternTipDismiss,
-  resetDismissedTips,
+  restoreAllDismissedPatternTips,
 } from "./patternTipDismiss";
 import { generateSleevelessBackPattern } from "./sleevelessPatternOutput";
 import { stubLocalStorage } from "./test/stubLocalStorage";
+import {
+  BUST_DART_HELP_WATCH_LABEL,
+  BUST_DART_INACTIVE_HELP_NOTE,
+} from "../tools/dartFormulaHelpVideo";
 
 const KEY = "sleeveless-show-tips";
 
@@ -221,7 +227,7 @@ describe("optional bust dart hideable tip (patternTipDismiss)", () => {
     ]);
   });
 
-  it("Restore hidden tips (resetDismissedTips) clears hide and re-shows the inactive prompt", () => {
+  it("Show Tips OFF→ON (restoreAllDismissedPatternTips) clears hide and re-shows the inactive prompt", () => {
     dismissTipId(KEY, OPTIONAL_BUST_DART_TIP_ID);
     const tip = new FakeElement({
       classes: ["pattern-tip", "bust-dart-front-slot", "pattern-print-personalization-never-print"],
@@ -231,10 +237,56 @@ describe("optional bust dart hideable tip (patternTipDismiss)", () => {
     const scope = new FakeElement();
     scope.appendChild(tip);
 
-    resetDismissedTips(KEY);
-    refreshPatternTipDismiss(scope as unknown as Element, KEY);
+    // Simulate Show Tips OFF → ON.
+    localStorage.setItem(KEY, "false");
+    localStorage.setItem(KEY, "true");
+    restoreAllDismissedPatternTips(scope as unknown as Element, KEY);
     expect(tip.hasAttribute("data-tip-dismissed")).toBe(false);
     expect(loadDismissedTipIds(KEY).size).toBe(0);
+  });
+
+  it("complete Optional Bust Dart prompt returns after Show Tips OFF→ON restore", () => {
+    const html = renderBustDartCustomizationScreenHtml(inactiveRow);
+    expect(html).toContain("Add Bust Dart");
+    expect(html).toContain(BUST_DART_INACTIVE_HELP_NOTE);
+    expect(html).toContain(BUST_DART_HELP_WATCH_LABEL);
+    expect(html).toContain(`data-tip-id="${OPTIONAL_BUST_DART_TIP_ID}"`);
+    expect(html).toContain('data-testid="button-optional-bust-dart"');
+
+    dismissTipId(KEY, OPTIONAL_BUST_DART_TIP_ID);
+    const tip = new FakeElement({
+      classes: ["pattern-tip", "bust-dart-front-slot", "pattern-print-personalization-never-print"],
+    });
+    tip.setAttribute("data-tip-id", OPTIONAL_BUST_DART_TIP_ID);
+    tip.setAttribute("data-tip-dismissed", "true");
+    const scope = new FakeElement();
+    scope.appendChild(tip);
+    restoreAllDismissedPatternTips(scope as unknown as Element, KEY);
+
+    // Tip DOM restored; interactive hide control is re-injected on the same wrapper.
+    expect(tip.hasAttribute("data-tip-dismissed")).toBe(false);
+    expect(tip.children.some((c) => c.className === "pattern-tip-dismiss")).toBe(true);
+  });
+
+  it("Show Tips control box no longer includes Restore hidden tips", () => {
+    const box = patternTipsControlBoxHtml(true);
+    expect(box).not.toContain("Restore hidden tips");
+    expect(box).not.toContain("link-tips-restore-dismissed");
+    expect(box).not.toContain("pattern-tips-reset-dismissed");
+  });
+
+  it("turning Show Tips off does not hide or alter active bust-dart instructions", () => {
+    const style = { [BUST_DART_STYLE_KEY]: { enabled: true, cupSize: "C" as string | null } };
+    const before = structuredClone(style);
+    localStorage.setItem(KEY, "true");
+    localStorage.setItem(KEY, "false");
+
+    const activeHtml = renderBustDartCustomizationScreenHtml(activeRow);
+    expect(activeHtml).toMatch(/Update Bust Dart/);
+    expect(activeHtml).toMatch(/Remove Bust Dart/);
+    expect(activeHtml).toMatch(/Add bust darts \(cup C\)/);
+    expect(activeHtml).not.toMatch(/data-tip-id=/);
+    expect(style).toEqual(before);
   });
 
   it("hiding the inactive prompt does not change style.bustDart", () => {
