@@ -2908,6 +2908,10 @@ table {
     }
   }
 
+  window.kbmInvalidateSleevelessPatternRender = () => {
+    sleevelessLastRenderedSignature = null;
+  };
+
   function logExpressNeedleFailSafeDev(failSafe) {
     if (typeof import.meta !== "undefined" && import.meta.env?.DEV) {
       console.log("[express needles fail-safe]", {
@@ -4506,10 +4510,10 @@ table {
       sleevelessPatternRefreshInFlight = false;
       if (sleevelessPatternRefreshQueued) {
         sleevelessPatternRefreshQueued = false;
-        if (sleevelessPatternRefreshExternalTrigger) {
-          sleevelessPatternRefreshExternalTrigger = false;
-          void refreshPatternTabContent();
-        }
+        // Drain every queued refresh (bust-dart Add, edit drawer, etc.) — not only cross-tab
+        // storage events. Previously non-external queued refreshes were silently dropped.
+        sleevelessPatternRefreshExternalTrigger = false;
+        void refreshPatternTabContent();
       }
     }
   }
