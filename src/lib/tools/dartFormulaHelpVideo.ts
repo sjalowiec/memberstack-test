@@ -135,7 +135,7 @@ export function renderBustDartModalHelpHtml(
   video: SleevelessHelpVideoMeta | null = resolveBustDartHelpVideo(),
 ): string {
   const button = renderBustDartHelpWatchButtonHtml(video, {
-    className: "bust-dart-pattern-modal__watch btn btn-outline-secondary",
+    className: "bust-dart-pattern-modal__watch kbm-btn kbm-btn-outline",
     testId: "button-bust-dart-modal-help-video",
   });
   if (!button) return "";

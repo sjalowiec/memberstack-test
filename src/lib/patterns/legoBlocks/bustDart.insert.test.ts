@@ -53,7 +53,8 @@ describe("insertBustDartIntoFrontBodyDisplayRows", () => {
     expect(slot?.kind).toBe("bustDartCustomization");
     if (slot?.kind === "bustDartCustomization") {
       expect(slot.active).toBe(true);
-      expect(slot.instructionParagraphs.join("\n")).toMatch(/Add bust darts/);
+      expect(slot.instructionParagraphs.join("\n")).toMatch(/Work the short-row bust darts/);
+      expect(slot.instructionParagraphs.join("\n")).toMatch(/On each side of the Front center/);
     }
 
     const bodyText = out
@@ -162,7 +163,7 @@ describe("bustDartFrontSlotHtml print/screen", () => {
       ...base,
       active: true,
       cupSize: "C",
-      instructionParagraphs: ["Add bust darts (cup C)."],
+      instructionParagraphs: ["Work the short-row bust darts, Cup C."],
     });
     expect(html).toMatch(/Update Bust Dart/);
     expect(html).toMatch(/Remove Bust Dart/);
@@ -180,10 +181,13 @@ describe("bustDartFrontSlotHtml print/screen", () => {
       ...base,
       active: true,
       cupSize: "C",
-      instructionParagraphs: ["Add bust darts (cup C).", "Place 4 needles in hold."],
+      instructionParagraphs: [
+        "Work the short-row bust darts, Cup C.",
+        "On each side of the Front center, place 4 needles in hold.",
+      ],
     });
     expect(html).toMatch(/Bust Dart \(Cup C\)/);
-    expect(html).toMatch(/Add bust darts/);
+    expect(html).toMatch(/Work the short-row bust darts/);
     expect(html).not.toMatch(/data-bust-dart-pattern-open|Update Bust Dart|Remove Bust Dart/);
   });
 });

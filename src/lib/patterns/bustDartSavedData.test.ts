@@ -96,7 +96,9 @@ describe("bust dart post-build customization", () => {
       ...base,
       style: { ...base.style, [BUST_DART_STYLE_KEY]: { enabled: true, cupSize: "C" } },
     });
-    expect(frontInstructionText(withDart.frontDisplayRows)).toMatch(/Add bust darts \(cup C\)/i);
+    expect(frontInstructionText(withDart.frontDisplayRows)).toMatch(
+      /Work the short-row bust darts, Cup C\./i,
+    );
     expect(frontInstructionText(withDart.displayRows)).not.toMatch(/bust dart/i);
     const slot = withDart.frontDisplayRows.find((r) => r.kind === "bustDartCustomization");
     expect(slot?.kind === "bustDartCustomization" && slot.active).toBe(true);

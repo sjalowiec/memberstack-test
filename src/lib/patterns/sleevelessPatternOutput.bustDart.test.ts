@@ -66,9 +66,12 @@ describe("sleeveless bust darts integration", () => {
 
     const frontBody = sectionParagraphs(r.frontDisplayRows, "BODY").join("\n");
     const backBody = sectionParagraphs(r.displayRows, "BODY").join("\n");
-    expect(frontBody).toMatch(/Add bust darts \(cup C\)/i);
+    expect(frontBody).toMatch(/Work the short-row bust darts, Cup C\./i);
+    expect(frontBody).toMatch(/On each side of the Front center/i);
     expect(frontBody).toMatch(/1″ below the armhole/i);
-    expect(frontBody).toMatch(/Place \d+ needles in hold/i);
+    expect(frontBody).toMatch(/place \d+ needles in hold/i);
+    expect(frontBody).not.toMatch(/back or sleeves/i);
+    expect(frontBody).not.toMatch(/front only/i);
     expect(backBody).not.toMatch(/bust dart/i);
 
     const armholeRc = r.debug.rowsFromCastOnToArmholeStart;
@@ -105,9 +108,10 @@ describe("sleeveless bust darts integration", () => {
     });
 
     const frontText = allParagraphs(r.frontDisplayRows).join("\n");
-    expect(frontText).toMatch(/Add bust darts \(cup B\)/i);
-    expect(frontText).toMatch(/side \(armhole\) edge/i);
+    expect(frontText).toMatch(/Work the short-row bust darts, Cup B\./i);
+    expect(frontText).toMatch(/From the side \(armhole\) edge toward the Front center/i);
     expect(frontText).toMatch(/RIGHT FRONT/i);
+    expect(frontText).not.toMatch(/On each side of the Front center/i);
     expect(allParagraphs(r.displayRows).join("\n")).not.toMatch(/bust dart/i);
   });
 
@@ -237,7 +241,9 @@ describe("sleeveless bust darts integration", () => {
     const printWith = renderSleevelessPrintPieceHtml(withDart.frontDisplayRows, "", "front");
     const printWithout = renderSleevelessPrintPieceHtml(without.frontDisplayRows, "", "front");
     expect(printWith).toMatch(/Bust Dart \(Cup C\)/);
-    expect(printWith).toMatch(/Add bust darts \(cup C\)/i);
+    expect(printWith).toMatch(/Work the short-row bust darts, Cup C\./i);
+    expect(printWith).toMatch(/On each side of the Front center/i);
+    expect(printWith).not.toMatch(/back or sleeves/i);
     expect(printWith).not.toMatch(/data-bust-dart-pattern-open|Optional Bust Dart/);
     expect(printWithout).not.toMatch(/Bust Dart|Optional Bust Dart|data-bust-dart/);
   });
