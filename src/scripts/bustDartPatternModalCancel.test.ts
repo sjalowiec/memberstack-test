@@ -13,7 +13,6 @@ const modalSource = readFileSync(
   "utf8",
 );
 const clientSource = readFileSync(join(here, "bustDartPatternModalClient.ts"), "utf8");
-const helpVideoSource = readFileSync(join(here, "../lib/tools/dartFormulaHelpVideo.ts"), "utf8");
 const sleevelessPatternPage = readFileSync(
   join(here, "../pages/patterns/sleeveless/pattern/index.astro"),
   "utf8",
@@ -142,10 +141,6 @@ describe("BustDartPatternModal mobile / styled actions", () => {
       "bust-dart-pattern-modal__btn--remove",
     );
     expect(modalSource).not.toMatch(/class="btn /);
-    expect(helpVideoSource).toContain(
-      'className: "bust-dart-pattern-modal__watch kbm-btn kbm-btn-outline"',
-    );
-    expect(helpVideoSource).not.toContain("btn btn-outline-secondary");
   });
 
   it("defines ~44px touch targets and stacks actions on a phone breakpoint", () => {

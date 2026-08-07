@@ -55,21 +55,22 @@ function syncDimLabels(modal: HTMLElement, unit: DartFormulaUnit): void {
 }
 
 function fillSummary(modal: HTMLElement, ctx: BustDartPatternContext): void {
-  const set = (attr: string, text: string) => {
-    const el = modal.querySelector(`[${attr}]`);
-    if (el) el.textContent = text || "—";
-  };
-  set("data-bust-dart-summary-construction", ctx.summary.constructionLabel);
-  set("data-bust-dart-summary-garment", ctx.summary.garmentLabel);
-  set("data-bust-dart-summary-gauge", ctx.summary.gaugeLabel);
-  set("data-bust-dart-summary-front-sts", ctx.summary.frontStitchesLabel);
-  set("data-bust-dart-summary-placement", ctx.summary.placementLabel);
+  const summaryLine = modal.querySelector("[data-bust-dart-modal-summary-line]");
+  if (summaryLine) {
+    summaryLine.textContent = ctx.summary.summaryLine || "—";
+  }
   const introPlacement = modal.querySelector("[data-bust-dart-modal-intro-placement]");
   if (introPlacement) {
     // Placement label is "N″ below…" / "N cm below…" — show only the distance token in the intro.
     const distance = ctx.summary.placementLabel.replace(/\s+below the armhole opening.*$/i, "").trim();
     introPlacement.textContent = distance || (ctx.unit === "cm" ? "2.5 cm" : "1″");
   }
+}
+
+function setDimsVisible(modal: HTMLElement, visible: boolean): void {
+  const dims = modal.querySelector<HTMLElement>("[data-bust-dart-modal-dims]");
+  if (!dims) return;
+  dims.hidden = !visible;
 }
 
 function setError(modal: HTMLElement, message: string | null): void {
@@ -283,6 +284,7 @@ export function initBustDartPatternCustomization(): void {
     if (primary) {
       primary.textContent = hasActive ? "Update Pattern" : "Add to Pattern";
     }
+    setDimsVisible(modal, !!parseCupSizeInput(sel?.value));
     setError(modal, null);
     renderPreview(modal, context, parseCupSizeInput(sel?.value));
     suppressFocusRestore = false;
@@ -373,9 +375,13 @@ export function initBustDartPatternCustomization(): void {
   cupSelect()?.addEventListener("change", () => {
     if (!context) return;
     const cup = parseCupSizeInput(cupSelect()?.value);
+    setDimsVisible(modal, !!cup);
     if (cup && reloadPresetOnCupChange) {
       const preset = bustDartPresetDisplayDimensions(cup, context.unit);
       setDimInputs(modal, preset.dartWidth, preset.dartDepth);
+    }
+    if (!cup) {
+      setDimInputs(modal, null, null);
     }
     renderPreview(modal, context, cup);
   });

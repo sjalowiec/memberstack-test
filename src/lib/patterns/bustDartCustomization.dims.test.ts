@@ -241,6 +241,7 @@ describe("bust dart custom width/depth", () => {
       summary: {
         constructionLabel: "Sleeveless",
         garmentLabel: "Pullover",
+        summaryLine: "Sleeveless Pullover • Women's 40",
         gaugeLabel: "",
         placementLabel: "",
         frontStitchesLabel: "",

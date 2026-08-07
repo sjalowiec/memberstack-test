@@ -76,6 +76,7 @@ describe("bust dart post-build customization", () => {
     expect(ctx.bodyToArmholeRows).toBeGreaterThan(0);
     expect(ctx.summary.gaugeLabel).toMatch(/sts/);
     expect(ctx.summary.placementLabel).toMatch(/1″/);
+    expect(ctx.summary.summaryLine).toMatch(/Sleeveless Pullover • Women's 40/);
   });
 
   it("preview uses shared lego math for cup C", () => {

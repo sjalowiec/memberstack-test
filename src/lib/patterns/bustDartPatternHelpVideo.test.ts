@@ -96,8 +96,9 @@ describe("bust dart pattern help video (shared content_id 643)", () => {
     expect(frontSlotSource).not.toMatch(/151859486|player\.vimeo\.com/i);
     expect(modalSource).not.toMatch(/151859486|player\.vimeo\.com/i);
     expect(frontSlotSource).toContain("renderBustDartInactivePromptHelpHtml");
-    expect(modalSource).toContain("renderBustDartModalHelpHtml");
-    expect(modalSource).toContain("resolveBustDartHelpVideo");
+    // Modal no longer embeds help — pattern-page inactive prompt owns the Watch control.
+    expect(modalSource).not.toContain("renderBustDartModalHelpHtml");
+    expect(modalSource).not.toContain("resolveBustDartHelpVideo");
   });
 
   it("inactive prompt includes help note and Watch control for KinCatalogVideoModal", () => {
@@ -171,7 +172,7 @@ describe("bust dart pattern help video (shared content_id 643)", () => {
     expect(printActive).not.toContain("Watch:");
   });
 
-  it("Add/Update modal includes the shared help control without hardcoded Vimeo ids", () => {
+  it("Add/Update modal no longer embeds help; helper still renders for other callers", () => {
     const video = resolveBustDartHelpVideo();
     expect(video).not.toBeNull();
     const help = renderBustDartModalHelpHtml(video);
@@ -181,23 +182,22 @@ describe("bust dart pattern help video (shared content_id 643)", () => {
     expect(help).toContain("kbm-kin-catalog-video");
     expect(help).toContain(`data-vimeo-id="${video!.id}"`);
     expect(help).toContain('data-testid="button-bust-dart-modal-help-video"');
-    expect(modalSource).toContain("bust-dart-pattern-modal__help-mount");
-    expect(modalSource).toContain("modalHelpHtml");
-    // Modal stays open: Watch is type=button, not method=dialog submit.
+    expect(modalSource).not.toContain("bust-dart-pattern-modal__help-mount");
+    expect(modalSource).not.toContain("modalHelpHtml");
     expect(help).toContain('type="button"');
     expect(renderBustDartModalHelpHtml(null)).toBe("");
   });
 
-  it("opening/closing video does not reset modal field wiring (form ids unchanged)", () => {
-    // Regression guard: help mount must not replace width/depth inputs or cup select.
+  it("modal field wiring stays intact without a help mount", () => {
+    // Regression guard: width/depth inputs and cup select remain in the modal.
     expect(modalSource).toContain('id="bust-dart-pattern-cup"');
     expect(modalSource).toContain('id="bust-dart-pattern-width"');
     expect(modalSource).toContain('id="bust-dart-pattern-depth"');
     expect(modalSource).toContain("data-bust-dart-modal-add");
-    const helpIdx = modalSource.indexOf("modalHelpHtml");
+    const cupIdx = modalSource.indexOf("bust-dart-pattern-cup");
     const widthIdx = modalSource.indexOf("bust-dart-pattern-width");
-    expect(helpIdx).toBeGreaterThan(-1);
-    expect(widthIdx).toBeGreaterThan(helpIdx);
+    expect(cupIdx).toBeGreaterThan(-1);
+    expect(widthIdx).toBeGreaterThan(cupIdx);
     expect(kinModalSource).toContain("lastFocus.focus");
   });
 
