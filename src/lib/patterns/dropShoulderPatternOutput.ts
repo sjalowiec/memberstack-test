@@ -1052,15 +1052,24 @@ export function buildDropShoulderSleeveDisplayRows(
   ].filter((p) => p.length > 0);
   const preShaping = dropShoulderSleevePreShapingSpan(chartInput);
   const hasSleeveShaping = shapingWrittenLines.length > 0;
+  /**
+   * Stitches actually on the needles at sleeve-body start (post-cuff cuff-up, or
+   * upper-arm cast-on top-down) — never the eventual opposite-edge / final count.
+   */
+  const stitchesOnNeedlesAtBodyStart =
+    args.direction === "top-down" ? args.topSts : args.wristSts;
+  /** Stitches after all sleeve-body shaping (upper arm cuff-up, wrist top-down). */
+  const stitchesAfterSleeveBodyShaping =
+    args.direction === "top-down" ? args.wristSts : args.topSts;
 
-  function appendSleeveBodyBlocks(stitchCount: number | undefined): void {
+  function appendSleeveBodyBlocks(currentStitchesOnNeedles: number | undefined): void {
     rows.push({ kind: "section", title: "SLEEVE BODY" });
     if (!hasSleeveShaping) {
       rows.push({
         kind: "block",
         rc: formatRcColon(preShaping.bodyStartRc),
         paragraphs: sleeveBodyTailLines,
-        stitchCount,
+        stitchCount: currentStitchesOnNeedles,
       });
       return;
     }
@@ -1070,7 +1079,7 @@ export function buildDropShoulderSleeveDisplayRows(
         kind: "block",
         rc: formatRcColon(preShaping.bodyStartRc),
         paragraphs: [knitEvenLine(preShaping.straightRows)],
-        stitchCount,
+        stitchCount: currentStitchesOnNeedles,
       });
     }
     rows.push({
@@ -1082,7 +1091,8 @@ export function buildDropShoulderSleeveDisplayRows(
         ...shapingWrittenLines,
         ...sleeveBodyTailLines,
       ],
-      stitchCount,
+      // Still the pre-shaping count: increases/decreases have not been worked yet at this RC.
+      stitchCount: currentStitchesOnNeedles,
     });
   }
 
@@ -1121,7 +1131,9 @@ export function buildDropShoulderSleeveDisplayRows(
         : {}),
       stitchCount: args.topSts > 0 ? args.topSts : undefined,
     });
-    appendSleeveBodyBlocks(args.wristSts > 0 ? args.wristSts : undefined);
+    appendSleeveBodyBlocks(
+      stitchesOnNeedlesAtBodyStart > 0 ? stitchesOnNeedlesAtBodyStart : undefined,
+    );
     appendSleeveShapingChartSection();
     rows.push({ kind: "section", title: "CUFF" });
     rows.push({
@@ -1129,7 +1141,7 @@ export function buildDropShoulderSleeveDisplayRows(
       rc: formatRcColon(args.sleeveBodyRows),
       paragraphs: [knitEvenLine(args.cuffRows)],
       trustedParagraphs: [bindOffLooselyOrScrapOffTrustedParagraph("cuff/wrist edge")],
-      stitchCount: args.wristSts,
+      stitchCount: stitchesAfterSleeveBodyShaping > 0 ? stitchesAfterSleeveBodyShaping : undefined,
     });
     return rows;
   }
@@ -1145,16 +1157,18 @@ export function buildDropShoulderSleeveDisplayRows(
     kind: "block",
     rc: formatRcColon(0),
     paragraphs: [knitEvenLine(args.cuffRows)],
-    stitchCount: args.wristSts,
+    stitchCount: args.wristSts > 0 ? args.wristSts : undefined,
   });
-  appendSleeveBodyBlocks(args.topSts);
+  appendSleeveBodyBlocks(
+    stitchesOnNeedlesAtBodyStart > 0 ? stitchesOnNeedlesAtBodyStart : undefined,
+  );
   appendSleeveShapingChartSection();
   rows.push({ kind: "section", title: "BIND OFF" });
   rows.push({
     kind: "block",
     rc: formatRcColon(args.sleeveTotalRows),
     trustedParagraphs: [bindOffLooselyOrScrapOffTrustedParagraph("upper-arm/top edge")],
-    stitchCount: args.topSts,
+    stitchCount: stitchesAfterSleeveBodyShaping > 0 ? stitchesAfterSleeveBodyShaping : undefined,
   });
   return rows;
 }

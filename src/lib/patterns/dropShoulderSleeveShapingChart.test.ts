@@ -368,6 +368,122 @@ describe("buildDropShoulderSleeveDisplayRows", () => {
     expect(printHtml).toContain(formatParentheticalShapingRowNumbers(chartRcs));
     expect(printHtml).not.toContain("Knit 0 rows even.");
   });
+
+  /**
+   * Sleeve body milestones must show stitches currently on the needles — not the eventual
+   * opposite-edge count. Reusable rule for Drop Shoulder and any future sweater sleeve consumer
+   * of {@link buildDropShoulderSleeveDisplayRows}.
+   */
+  describe("sleeve body stitchCount is current stitches on needles", () => {
+    function bindOffBlock(
+      rows: readonly SleevelessPatternDisplayRow[],
+    ): Extract<SleevelessPatternDisplayRow, { kind: "block" }> | undefined {
+      const bindOffIdx = rows.findIndex((r) => r.kind === "section" && r.title === "BIND OFF");
+      const cuffIdx = rows.findIndex((r) => r.kind === "section" && r.title === "CUFF");
+      // Cuff-up: BIND OFF is last; top-down: final cuff section holds the post-shaping count.
+      const sectionIdx = bindOffIdx >= 0 ? bindOffIdx : cuffIdx;
+      if (sectionIdx < 0) return undefined;
+      for (let i = sectionIdx + 1; i < rows.length; i++) {
+        const row = rows[i]!;
+        if (row.kind === "section") break;
+        if (row.kind === "block") return row;
+      }
+      return undefined;
+    }
+
+    it("shows wrist stitches at RC after cuff when increases later reach upper arm (customer-equivalent)", () => {
+      // Cast on 36 → cuff to RC 012 → 24 even to RC 036 → increases to 42.
+      // sleeveBodyRows 72 → interval 24, count 3 → first increase at cuffRows + 24 = 36.
+      const input = {
+        topSts: 42,
+        wristSts: 36,
+        cuffRows: 12,
+        sleeveBodyRows: 72,
+        sleeveTotalRows: 84,
+        direction: "cuff-up" as const,
+      };
+      const rows = buildDropShoulderSleeveDisplayRows({ ...input, valid: true });
+      const preShaping = dropShoulderSleevePreShapingSpan(input);
+      const chartRcs = dropShoulderSleeveShapingRcSequence(input);
+      const bodyBlocks = sleeveBodyBlocks(rows);
+      const bindOff = bindOffBlock(rows);
+      const chartRows = sleeveShapingChartRowsFromDisplay(rows);
+      const lastIncrease = [...chartRows].reverse().find((r) => /increase/i.test(r.action));
+
+      expect(preShaping).toEqual({ bodyStartRc: 12, firstShapingRc: 36, straightRows: 24 });
+      expect(bodyBlocks).toHaveLength(2);
+
+      const knitEven = bodyBlocks[0]!;
+      expect(parseRcNumber(knitEven.rc)).toBe(12);
+      expect(blockParagraphText(knitEven)).toBe("Knit 24 rows even.");
+      expect(knitEven.stitchCount).toBe(36);
+      expect(knitEven.stitchCount).not.toBe(42);
+
+      const beginShaping = bodyBlocks[1]!;
+      expect(parseRcNumber(beginShaping.rc)).toBe(36);
+      expect(blockParagraphText(beginShaping)).toContain(DROP_SHOULDER_SLEEVE_BEGIN_SHAPING_LINE);
+      expect(beginShaping.stitchCount).toBe(36);
+      expect(beginShaping.stitchCount).not.toBe(42);
+
+      expect(chartRcs).toEqual([36, 60, 84]);
+      expect(lastIncrease?.stitchesRemaining).toBe(42);
+      expect(bindOff?.stitchCount).toBe(42);
+    });
+
+    it("does not tie the current-vs-final rule to specific 36/42 stitch values", () => {
+      const input = { ...CUFF_UP_SAMPLE };
+      const rows = buildDropShoulderSleeveDisplayRows({ ...input, valid: true });
+      const bodyBlocks = sleeveBodyBlocks(rows);
+      const bindOff = bindOffBlock(rows);
+
+      expect(input.wristSts).not.toBe(input.topSts);
+      for (const block of bodyBlocks) {
+        expect(block.stitchCount).toBe(input.wristSts);
+        expect(block.stitchCount).not.toBe(input.topSts);
+      }
+      expect(bindOff?.stitchCount).toBe(input.topSts);
+    });
+
+    it("shows upper-arm stitches at body start for top-down (not the eventual wrist count)", () => {
+      const input = { ...TOP_DOWN_SAMPLE };
+      const rows = buildDropShoulderSleeveDisplayRows({ ...input, valid: true });
+      const bodyBlocks = sleeveBodyBlocks(rows);
+      const cuffEnd = bindOffBlock(rows);
+
+      expect(input.topSts).not.toBe(input.wristSts);
+      for (const block of bodyBlocks) {
+        expect(block.stitchCount).toBe(input.topSts);
+        expect(block.stitchCount).not.toBe(input.wristSts);
+      }
+      expect(cuffEnd?.stitchCount).toBe(input.wristSts);
+    });
+
+    it("keeps current stitches when shaping begins as soon as the schedule allows after the cuff", () => {
+      const input = { ...STEEP_CUFF_UP_SAMPLE };
+      const rows = buildDropShoulderSleeveDisplayRows({ ...input, valid: true });
+      const preShaping = dropShoulderSleevePreShapingSpan(input);
+      const bodyBlocks = sleeveBodyBlocks(rows);
+      const bindOff = bindOffBlock(rows);
+
+      expect(preShaping.straightRows).toBe(1);
+      expect(bodyBlocks[0]!.stitchCount).toBe(input.wristSts);
+      expect(bodyBlocks[0]!.stitchCount).not.toBe(input.topSts);
+      expect(bodyBlocks[1]!.stitchCount).toBe(input.wristSts);
+      expect(bindOff?.stitchCount).toBe(input.topSts);
+    });
+
+    it("shows cast-on stitches throughout a sleeve with no increases", () => {
+      const input = { ...CUFF_UP_SAMPLE, topSts: 40, wristSts: 40 };
+      const rows = buildDropShoulderSleeveDisplayRows({ ...input, valid: true });
+      const bodyBlocks = sleeveBodyBlocks(rows);
+      const bindOff = bindOffBlock(rows);
+
+      expect(dropShoulderSleeveNeedsShapingChart(input)).toBe(false);
+      expect(bodyBlocks).toHaveLength(1);
+      expect(bodyBlocks[0]!.stitchCount).toBe(40);
+      expect(bindOff?.stitchCount).toBe(40);
+    });
+  });
 });
 
 describe("generateDropShoulderPattern sleeve shaping chart", () => {
