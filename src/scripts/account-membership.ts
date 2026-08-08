@@ -1,9 +1,9 @@
 /**
- * Account page membership panel ? plan/status/actions from Memberstack.
+ * Account page membership panel — plan/status/actions from Memberstack.
  *
  * Prefer getAppAndMember (includes planConnections reliably); fall back to
- * getCurrentMember. Manage Membership opens Stripe Customer Portal via the
- * same Memberstack DOM method used on the membership pricing page.
+ * getCurrentMember. Manage Billing uses Memberstack's native
+ * data-ms-action="customer-portal" (no hard-coded Stripe portal URL).
  */
 
 import { isMemberLoggedIn } from "../lib/memberAccess";
@@ -12,11 +12,7 @@ import {
   type AccountMembershipPanelAction,
   type AccountMembershipPanelView,
 } from "../lib/membership/accountMembershipPanel";
-import {
-  openStripeCustomerPortal,
-  STRIPE_PORTAL_UNAVAILABLE_MESSAGE,
-} from "../lib/membership/openStripeCustomerPortal";
-import { startJoinCheckout } from "./joinCheckout";
+import { startJoinCheckout, type StartJoinCheckoutOptions } from "./joinCheckout";
 
 const ALL_PANEL_ACTIONS: AccountMembershipPanelAction[] = [
   "join",
@@ -158,51 +154,35 @@ async function populateAccountMembership(): Promise<void> {
 }
 
 /**
- * Manage Billing launches the existing Stripe Customer Portal. Switch to Annual
- * / Renew / Become Monthly reuse startJoinCheckout — no new checkout endpoints.
+ * Manage Billing uses Memberstack's native customer-portal action (no JS portal
+ * launch). Switch to Annual / Renew / Become Monthly reuse startJoinCheckout.
  */
 function bindMembershipActionButtons(root: Element): void {
-  const statusEl = root.querySelector<HTMLElement>(
-    "[data-kbm-account-membership-action-status]",
+  bindLegacyCheckoutButton(
+    root,
+    "[data-kbm-account-membership-switch-annual]",
+    "annual",
+    {
+      checkoutIntent: "switchToAnnual",
+    },
   );
-  const clearStatus = (): void => {
-    if (statusEl) {
-      statusEl.hidden = true;
-      statusEl.textContent = "";
-    }
-  };
-
-  root
-    .querySelectorAll<HTMLButtonElement>("[data-kbm-account-membership-manage-billing]")
-    .forEach((btn) => {
-      if (btn.dataset.kbmBound === "1") return;
-      btn.dataset.kbmBound = "1";
-
-      btn.addEventListener("click", () => {
-        clearStatus();
-        btn.disabled = true;
-        void openStripeCustomerPortal({ ms: window.$memberstackDom })
-          .then((opened) => {
-            if (!opened && statusEl) {
-              statusEl.hidden = false;
-              statusEl.textContent = STRIPE_PORTAL_UNAVAILABLE_MESSAGE;
-            }
-          })
-          .finally(() => {
-            btn.disabled = false;
-          });
-      });
-    });
-
-  bindLegacyCheckoutButton(root, "[data-kbm-account-membership-switch-annual]", "annual");
-  bindLegacyCheckoutButton(root, "[data-kbm-account-membership-renew-annual]", "annual");
-  bindLegacyCheckoutButton(root, "[data-kbm-account-membership-become-monthly]", "monthly");
+  bindLegacyCheckoutButton(
+    root,
+    "[data-kbm-account-membership-renew-annual]",
+    "annual",
+  );
+  bindLegacyCheckoutButton(
+    root,
+    "[data-kbm-account-membership-become-monthly]",
+    "monthly",
+  );
 }
 
 function bindLegacyCheckoutButton(
   root: Element,
   selector: string,
   planKey: "annual" | "monthly",
+  options?: { checkoutIntent?: "switchToAnnual" },
 ): void {
   root.querySelectorAll<HTMLButtonElement>(selector).forEach((btn) => {
     if (btn.dataset.kbmBound === "1") return;
@@ -210,7 +190,10 @@ function bindLegacyCheckoutButton(
 
     btn.addEventListener("click", () => {
       btn.disabled = true;
-      void startJoinCheckout(planKey).finally(() => {
+      void startJoinCheckout(
+        planKey,
+        options as StartJoinCheckoutOptions | undefined,
+      ).finally(() => {
         btn.disabled = false;
       });
     });
