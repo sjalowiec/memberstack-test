@@ -1,6 +1,6 @@
 /**
  * Server-side loader for the public membership-status summary.
- * Member id must come from a verified JWT ù never from the browser request body/query.
+ * Member id must come from a verified JWT ÔøΩ never from the browser request body/query.
  */
 
 import {

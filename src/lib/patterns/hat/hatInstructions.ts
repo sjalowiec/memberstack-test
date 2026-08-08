@@ -9,6 +9,12 @@ import {
   type HatPatternCalc,
   type HatSpiralPlan,
 } from "./hatMath";
+import { buildHatSwirlCrownVideoTipHtml } from "./hatSwirlCrownVideoTip";
+import {
+  buildHatTransferStepCalloutHtml,
+  buildHatTransferStepReminderHtml,
+  formatHatSpiralCountNeedlesPhrase,
+} from "./hatTransferStep";
 
 export type HatInstructionFormatters = {
   convertLength: (value: number, from: string, to: string) => number;
@@ -58,19 +64,33 @@ export function buildSpiralCrownInstructions(
   crownStartRowNumber: number,
   spiralPlan: HatSpiralPlan,
 ): string {
-  const transferStepDefinition =
-    '<p class="pattern-transfer-step"><span class="instruction-tag"><span class="icon">↔</span> [Transfer Step]</span> Using a garter bar or the method of your choice, transfer all stitches to fill emptied needles and knit across the row.</p>';
-  const transferMarker =
-    '<span class="instruction-tag"><span class="icon">↔</span> [Transfer]</span>';
-  const buildRowInstruction = (rowNumber: number, instruction: string) =>
-    `<p class="pattern-row-instruction"><span class="pattern-row-check" aria-hidden="true"></span><strong class="pattern-row-label">Row ${rowNumber}:</strong> ${instruction}</p>`;
+  const buildDecreaseRowWithTransfer = (
+    rowNumber: number,
+    spacing: number,
+    nextStitches: number,
+  ) => {
+    // Build the sentence in parts so the icon marks the transfer verb (not via text replace).
+    const countLead = `${formatHatSpiralCountNeedlesPhrase(spacing)}, `;
+    const transferAction =
+      `<span class="hat-transfer-step-action">` +
+      `${buildHatTransferStepReminderHtml()} transfer` +
+      `</span>`;
+    const transferRest =
+      ` the next stitch to the needle on the left, and repeat across the row. (${nextStitches} stitches)`;
+    return (
+      `<div class="pattern-row-instruction pattern-row-instruction--transfer-followup pattern-print-keep-together" data-instruction-type="swirl-decrease-row">` +
+      `<p class="pattern-row-instruction__line"><span class="pattern-row-check" aria-hidden="true"></span><strong class="pattern-row-label">Row ${rowNumber}:</strong> ${countLead}${transferAction}${transferRest}</p>` +
+      `</div>`
+    );
+  };
+
   const stitchesRemovedPerDecreaseRow = spiralPlan.decreasePoints;
   const targetFinalStitches = spiralPlan.targetStitches;
 
   let currentStitches = startStitches;
   const lines: string[] = [
-    transferStepDefinition,
-    `<p>Plan ${spiralPlan.decreaseRows} decrease rows across ${spiralPlan.crownRows} crown rows: ${spiralPlan.gradual} decreases every other row, then ${spiralPlan.rapid} decreases every row.</p>`,
+    `<p data-instruction-type="swirl-shaping-plan">Plan ${spiralPlan.decreaseRows} decrease rows across ${spiralPlan.crownRows} crown rows: ${spiralPlan.gradual} decreases every other row, then ${spiralPlan.rapid} decreases every row.</p>`,
+    buildHatTransferStepCalloutHtml(),
   ];
 
   for (let i = 0; i < spiralPlan.gradual && currentStitches > targetFinalStitches; i += 1) {
@@ -83,13 +103,7 @@ export function buildSpiralCrownInstructions(
       targetFinalStitches,
       currentStitches - stitchesRemovedPerDecreaseRow,
     );
-    const decreaseInstruction = `Count ${spacing} needles, transfer the next stitch to the needle on the left, and repeat across the row.`;
-    lines.push(
-      buildRowInstruction(
-        rowNumber,
-        `${decreaseInstruction} ${transferMarker} (${nextStitches} stitches)`,
-      ),
-    );
+    lines.push(buildDecreaseRowWithTransfer(rowNumber, spacing, nextStitches));
     currentStitches = nextStitches;
   }
   for (let i = 0; i < spiralPlan.rapid && currentStitches > targetFinalStitches; i += 1) {
@@ -102,17 +116,13 @@ export function buildSpiralCrownInstructions(
       targetFinalStitches,
       currentStitches - stitchesRemovedPerDecreaseRow,
     );
-    const decreaseInstruction = `Count ${spacing} needles, transfer the next stitch to the needle on the left, and repeat across the row.`;
-    lines.push(
-      buildRowInstruction(
-        rowNumber,
-        `${decreaseInstruction} ${transferMarker} (${nextStitches} stitches)`,
-      ),
-    );
+    lines.push(buildDecreaseRowWithTransfer(rowNumber, spacing, nextStitches));
     currentStitches = nextStitches;
   }
 
-  lines.push("<p>Gather the remaining stitches and secure.</p>");
+  lines.push(
+    '<p data-instruction-type="swirl-gather-remaining">Gather the remaining stitches and secure.</p>',
+  );
   return lines.join("\n");
 }
 
@@ -254,6 +264,7 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
       crownRows: 0,
     };
     crownInstructions = `
+      ${buildHatSwirlCrownVideoTipHtml()}
       <figure class="pattern-diagram">
         <img src="/images/hats/spiral_shaping.jpg" alt="Spiral crown shaping with 6 evenly spaced decrease points forming wedges" />
         <figcaption>Spiral crown shaping: 6 evenly spaced decrease points worked across the row.</figcaption>

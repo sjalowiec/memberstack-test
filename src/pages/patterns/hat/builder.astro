@@ -726,15 +726,6 @@ const expressNavSteps = [
                       hidden
                     >
                     </p>
-                    <p
-                      id="hat-builder-dev-success"
-                      class="hat-builder-dev-success"
-                      role="status"
-                      aria-live="polite"
-                      hidden
-                      data-testid="hat-builder-dev-success"
-                    >
-                    </p>
                   </div>
                 </section>
               </div>
@@ -808,18 +799,12 @@ const expressNavSteps = [
     cursor: not-allowed;
   }
 
-  .hat-express-builder-page .create-pattern-feedback,
-  .hat-express-builder-page .hat-builder-dev-success {
+  .hat-express-builder-page .create-pattern-feedback {
     margin: 0.75rem 0 0;
     min-height: 1.25em;
     font-size: 0.9375rem;
     color: #6b7280;
     text-align: center;
-  }
-
-  .hat-express-builder-page .hat-builder-dev-success:not([hidden]) {
-    color: var(--express-nav-green, #52682d);
-    font-weight: 600;
   }
 
   .hat-express-builder-page .express-gauge-intro {

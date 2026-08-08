@@ -24,16 +24,17 @@ import {
   type HatSizingLabelRow,
 } from "../lib/patterns/hat/hatBuilderSizingLabels";
 import {
-  HAT_BUILDER_DRAFT_READY_MESSAGE,
   HAT_BUILDER_INCOMPLETE_MESSAGE,
   hatBuilderStepComplete,
   isHatBuilderInputComplete,
   type HatBuilderFieldSnapshot,
   type HatBuilderSizeRow,
 } from "../lib/patterns/hat/hatBuilderValidation";
+import { focusFirstInputInSection } from "../lib/patterns/focusFirstInputInSection";
 
 const STEPS = 5;
 const LEGACY_HAT_UNIT_KEY = "hat-unit";
+const HAT_PATTERN_PAGE_HREF = "/patterns/hat/pattern";
 
 type SizingRow = HatBuilderSizeRow & HatSizingLabelRow;
 
@@ -134,7 +135,6 @@ function initHatBuilderPage(): void {
   const rowGaugeInput = el<HTMLInputElement>("hat-row-gauge");
   const createPatternBtn = el<HTMLButtonElement>("create-pattern-btn");
   const feedbackEl = el<HTMLElement>("create-pattern-feedback");
-  const successEl = el<HTMLElement>("hat-builder-dev-success");
   const customSizeWrap = document.querySelector<HTMLElement>("[data-hat-custom-size]");
   const customLengthWrap = document.querySelector<HTMLElement>("[data-hat-custom-length]");
 
@@ -149,6 +149,7 @@ function initHatBuilderPage(): void {
   let feedbackTimer = 0;
   let suppressPersist = false;
   let unitsListenerReady = false;
+  let isSubmitting = false;
 
   // --- Draft migration + hydrate ---
   ensureHatDraftMigrated();
@@ -447,25 +448,27 @@ function initHatBuilderPage(): void {
     }
   }
 
-  function showFeedback(message: string, asSuccess = false): void {
+  function showFeedback(message: string): void {
     window.clearTimeout(feedbackTimer);
-    if (successEl) {
-      successEl.hidden = true;
-      successEl.textContent = "";
-    }
-    if (feedbackEl) {
-      feedbackEl.hidden = true;
+    if (!feedbackEl) return;
+    feedbackEl.textContent = message;
+    feedbackEl.hidden = !message;
+    if (!message) return;
+    feedbackTimer = window.setTimeout(() => {
       feedbackEl.textContent = "";
-    }
-    const target = asSuccess ? successEl : feedbackEl;
-    if (!target) return;
-    target.textContent = message;
-    target.hidden = false;
-    if (!asSuccess) {
-      feedbackTimer = window.setTimeout(() => {
-        target.textContent = "";
-        target.hidden = true;
-      }, 4000);
+      feedbackEl.hidden = true;
+    }, 4000);
+  }
+
+  function focusFirstIncompleteStep(fields: HatBuilderFieldSnapshot): void {
+    for (let step = 1; step <= STEPS; step += 1) {
+      if (hatBuilderStepComplete(step, fields, sizingRows)) continue;
+      // Allow opening the incomplete step even if accordion lock would block it.
+      maxReachable = Math.max(maxReachable, step);
+      goToStep(step);
+      const sectionEl = stepSection(step);
+      if (sectionEl) focusFirstInputInSection(sectionEl);
+      return;
     }
   }
 
@@ -584,6 +587,8 @@ function initHatBuilderPage(): void {
   });
 
   createPatternBtn?.addEventListener("click", () => {
+    if (isSubmitting) return;
+
     if (stitchGaugeInput && rowGaugeInput) {
       gaugeSlots[activeUnit] = {
         stitch: stitchGaugeInput.value,
@@ -592,11 +597,26 @@ function initHatBuilderPage(): void {
     }
     const fields = snapshotFields();
     if (!isHatBuilderInputComplete(fields, sizingRows)) {
-      showFeedback(HAT_BUILDER_INCOMPLETE_MESSAGE, false);
+      // Stay on builder; do not write over a previously valid draft from this click.
+      showFeedback(HAT_BUILDER_INCOMPLETE_MESSAGE);
+      focusFirstIncompleteStep(fields);
       return;
     }
+
+    isSubmitting = true;
+    createPatternBtn.classList.add("button-disabled");
+    createPatternBtn.setAttribute("aria-disabled", "true");
+
     syncCanonicalDraft();
-    showFeedback(HAT_BUILDER_DRAFT_READY_MESSAGE, true);
+    const saved = readHatDraft();
+    if (!saved) {
+      isSubmitting = false;
+      updateCtaUi();
+      showFeedback(HAT_BUILDER_INCOMPLETE_MESSAGE);
+      return;
+    }
+
+    window.location.assign(HAT_PATTERN_PAGE_HREF);
   });
 
   el<HTMLButtonElement>("hat-builder-start-over")?.addEventListener("click", () => {
@@ -609,11 +629,7 @@ function initHatBuilderPage(): void {
     hydrateFromDraft(draft);
     openStep = 1;
     refreshAccordionUi();
-    showFeedback("", false);
-    if (successEl) {
-      successEl.hidden = true;
-      successEl.textContent = "";
-    }
+    showFeedback("");
   });
 
   // Hydrate after UnitToggle's DOMContentLoaded init (same tick order: toggle first).

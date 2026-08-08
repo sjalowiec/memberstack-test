@@ -9,9 +9,6 @@ export type HatBuilderAllowedCrown = (typeof HAT_BUILDER_ALLOWED_CROWNS)[number]
 export const HAT_BUILDER_INCOMPLETE_MESSAGE =
   "Finish the required sections to generate your pattern.";
 
-export const HAT_BUILDER_DRAFT_READY_MESSAGE =
-  "Draft saved. Pattern page coming next — your choices are stored in this browser.";
-
 export type HatBuilderFieldSnapshot = {
   sizeSel: string;
   customCircumference: string;

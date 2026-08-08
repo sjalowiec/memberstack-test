@@ -118,7 +118,7 @@ function setGateState(root: HTMLElement, state: PatternMembershipGateState): voi
   }
 }
 
-/** Wires `[data-sleeveless-pattern-gate]` ù membership required; fail closed while pending. */
+/** Wires `[data-sleeveless-pattern-gate]` ÔøΩ membership required; fail closed while pending. */
 export async function initPatternMembershipPageGate(root: HTMLElement): Promise<void> {
   setGateState(root, "pending");
 
