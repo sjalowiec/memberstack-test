@@ -9,6 +9,8 @@ import {
   accountMembershipPanelActions,
   billingIntervalFromActivePaidConnection,
   formatMemberstackUnixDate,
+  isPortalEligiblePaidPlanConnection,
+  memberHasStripeCustomerPortalAccess,
   resolveAccountMembershipPanelView,
 } from "./accountMembershipPanel";
 
@@ -135,7 +137,7 @@ describe("resolveAccountMembershipPanelView", () => {
       activeUntilMessage: null,
       autoRenewNote: null,
       manageBillingDescription:
-        "Update your payment method, change your subscription, or cancel your membership.",
+        "Update your payment method, view invoices, or manage your subscription.",
       annualSwitchWarning: null,
       visibleActions: ["manageBilling"],
     });
@@ -449,7 +451,7 @@ describe("resolveAccountMembershipPanelView", () => {
       activeUntilMessage: null,
       autoRenewNote: "Membership renews automatically each month.",
       manageBillingDescription:
-        "Update your payment method, change your subscription, or cancel your membership.",
+        "Update your payment method, view invoices, or manage your subscription.",
       annualSwitchWarning: null,
       visibleActions: ["manageBilling"],
     });
@@ -475,10 +477,84 @@ describe("resolveAccountMembershipPanelView", () => {
       activeUntilMessage: null,
       autoRenewNote: "Membership renews automatically each year.",
       manageBillingDescription:
-        "Update your payment method, change your subscription, or cancel your membership.",
+        "Update your payment method, view invoices, or manage your subscription.",
       annualSwitchWarning: null,
       visibleActions: ["manageBilling"],
     });
+  });
+
+  it("shows Manage Billing for a past_due monthly paid plan (Linda case)", () => {
+    const member = memberWithPlans([
+      {
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
+        status: "PAST_DUE",
+        active: true,
+        payment: {
+          priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
+          nextBillingDate: 1786838400,
+          cancelAtDate: null,
+        },
+      },
+    ]);
+    const view = resolveAccountMembershipPanelView(member);
+    expect(view).toMatchObject({
+      kind: "member",
+      planDisplayLabel: "Monthly Membership",
+      statusLabel: "Past Due",
+      billingInterval: "monthly",
+      billingLabel: "Monthly",
+      renewsLabel: null,
+      isCanceling: false,
+      autoRenewNote: null,
+      manageBillingDescription:
+        "Update your payment method, view invoices, or manage your subscription.",
+      visibleActions: ["manageBilling"],
+    });
+    expect(view.visibleActions).not.toContain("join");
+    expect(memberHasStripeCustomerPortalAccess(member)).toBe(true);
+  });
+
+  it("shows Manage Billing for past_due even when active is false", () => {
+    const member = memberWithPlans([
+      {
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
+        status: "PAST_DUE",
+        active: false,
+        payment: {
+          priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
+        },
+      },
+    ]);
+    const view = resolveAccountMembershipPanelView(member);
+    expect(view.visibleActions).toEqual(["manageBilling"]);
+    expect(view.statusLabel).toBe("Past Due");
+    expect(view.visibleActions).not.toContain("join");
+  });
+
+  it("does not show Manage Billing for legacy-only free plan members", () => {
+    const member = memberWithPlans([
+      {
+        planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+        status: "ACTIVE",
+        active: true,
+      },
+    ]);
+    const view = resolveAccountMembershipPanelView(member);
+    expect(view.visibleActions).not.toContain("manageBilling");
+    expect(memberHasStripeCustomerPortalAccess(member)).toBe(false);
+  });
+
+  it("keeps Become a Member for fully canceled paid connections", () => {
+    const member = memberWithPlans([
+      {
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
+        status: "CANCELED",
+        priceId: MEMBERSHIPS.membership.prices.monthly.memberstackPriceId,
+      },
+    ]);
+    const view = resolveAccountMembershipPanelView(member);
+    expect(view.visibleActions).toEqual(["join"]);
+    expect(memberHasStripeCustomerPortalAccess(member)).toBe(false);
   });
 
   it("treats fully inactive canceled connections as free for this panel", () => {
@@ -573,5 +649,44 @@ describe("billingIntervalFromActivePaidConnection", () => {
       },
     ]);
     expect(billingIntervalFromActivePaidConnection(member)).toBeNull();
+  });
+});
+
+describe("isPortalEligiblePaidPlanConnection", () => {
+  it("accepts ACTIVE, TRIALING, and PAST_DUE paid connections", () => {
+    expect(
+      isPortalEligiblePaidPlanConnection({
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
+        status: "ACTIVE",
+      }),
+    ).toBe(true);
+    expect(
+      isPortalEligiblePaidPlanConnection({
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
+        status: "TRIALING",
+      }),
+    ).toBe(true);
+    expect(
+      isPortalEligiblePaidPlanConnection({
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
+        status: "PAST_DUE",
+        active: false,
+      }),
+    ).toBe(true);
+  });
+
+  it("rejects free legacy plans and canceled paid plans", () => {
+    expect(
+      isPortalEligiblePaidPlanConnection({
+        planId: FREE_ACCESS_MEMBERSHIPS.legacyMembership.memberstackPlanId,
+        status: "ACTIVE",
+      }),
+    ).toBe(false);
+    expect(
+      isPortalEligiblePaidPlanConnection({
+        planId: MEMBERSHIPS.membership.memberstackPlanId,
+        status: "CANCELED",
+      }),
+    ).toBe(false);
   });
 });
