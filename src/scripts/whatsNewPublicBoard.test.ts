@@ -3,14 +3,13 @@ import path from "path";
 
 import { describe, expect, it } from "vitest";
 
-import { initWhatsNewColumnToggles } from "./whatsNewPublicBoard";
+import {
+  initWhatsNewCardStacks,
+  initWhatsNewPublicBoard,
+} from "./whatsNewPublicBoard";
 
 /**
- * Minimal DOM nodes for the public board toggle — the suite runs without jsdom.
- * Visibility is computed from the same CSS cascade that broke in the browser:
- * `.whats-new__card { display: block }` / `.kbm-card { display: flex }` beat the
- * UA `[hidden]` rule unless `.whats-new__card[hidden] { display: none !important }`
- * is present.
+ * Minimal DOM nodes for public board stack interactions — runs without jsdom.
  */
 type AttrMap = Map<string, string>;
 
@@ -20,7 +19,13 @@ type StubNode = {
   textContent: string;
   attrs: AttrMap;
   children: StubNode[];
+  style: { zIndex: string };
   listeners: Map<string, Array<() => void>>;
+  classList: {
+    contains: (name: string) => boolean;
+    add: (name: string) => void;
+    remove: (name: string) => void;
+  };
   getAttribute: (name: string) => string | null;
   setAttribute: (name: string, value: string) => void;
   removeAttribute: (name: string) => void;
@@ -41,13 +46,34 @@ function createNode(initial: {
 }): StubNode {
   const attrs: AttrMap = new Map(Object.entries(initial.attrs ?? {}));
   const listeners = new Map<string, Array<() => void>>();
+  let className = initial.className ?? "";
   const node: StubNode = {
     id: initial.id ?? "",
-    className: initial.className ?? "",
+    get className() {
+      return className;
+    },
+    set className(value: string) {
+      className = value;
+    },
     textContent: initial.textContent ?? "",
     attrs,
     children: initial.children ?? [],
+    style: { zIndex: "" },
     listeners,
+    classList: {
+      contains: (name) => className.split(/\s+/).includes(name),
+      add: (name) => {
+        if (!className.split(/\s+/).includes(name)) {
+          className = `${className} ${name}`.trim();
+        }
+      },
+      remove: (name) => {
+        className = className
+          .split(/\s+/)
+          .filter((part) => part && part !== name)
+          .join(" ");
+      },
+    },
     getAttribute: (name) => attrs.get(name) ?? null,
     setAttribute: (name, value) => {
       attrs.set(name, value);
@@ -78,11 +104,17 @@ function createNode(initial: {
     },
     matches(selector) {
       if (selector.startsWith("#")) return this.id === selector.slice(1);
-      if (selector === "[data-wn-column-toggle]") {
-        return this.attrs.has("data-wn-column-toggle");
+      if (selector === "[data-wn-stack]") {
+        return this.attrs.has("data-wn-stack");
       }
-      if (selector === "[data-wn-extra]") {
-        return this.attrs.has("data-wn-extra");
+      if (selector === "[data-wn-stack-item]") {
+        return this.attrs.has("data-wn-stack-item");
+      }
+      if (selector === "[data-wn-stack-toggle]") {
+        return this.attrs.has("data-wn-stack-toggle");
+      }
+      if (selector === "[data-wn-stack-panel]") {
+        return this.attrs.has("data-wn-stack-panel");
       }
       return false;
     },
@@ -90,127 +122,149 @@ function createNode(initial: {
   return node;
 }
 
-/** Apply the public What's New card display cascade (simplified). */
-function computedDisplayForCard(card: StubNode, pageCss: string): string {
-  const hasHiddenAttr = card.hasAttribute("hidden");
-  // Author card rules always set a visible display value.
-  const authorVisibleDisplay = card.className.includes("kbm-card") ? "flex" : "block";
-
-  const hasHiddenOverride = /\.whats-new__card\s*\[\s*hidden\s*\]\s*\{[^}]*display:\s*none\s*!important/.test(
+function isPanelHidden(panel: StubNode, pageCss: string): boolean {
+  if (!panel.hasAttribute("hidden")) return false;
+  return /\.whats-new__stack-panel\s*\[\s*hidden\s*\]\s*\{[^}]*display:\s*none\s*!important/.test(
     pageCss,
   );
-
-  if (hasHiddenAttr && hasHiddenOverride && card.className.includes("whats-new__card")) {
-    return "none";
-  }
-  // Without the override, author display wins over UA [hidden] — the reported bug.
-  if (hasHiddenAttr && !hasHiddenOverride) {
-    return authorVisibleDisplay;
-  }
-  return authorVisibleDisplay;
 }
 
-function isCardVisible(card: StubNode, pageCss: string): boolean {
-  return computedDisplayForCard(card, pageCss) !== "none";
-}
-
-function buildColumnDom(totalCards: number, initialVisible: number) {
-  const cards: StubNode[] = [];
+function buildStackDom(totalCards: number, listId = "whats-new-cards-just_added") {
+  const items: StubNode[] = [];
   for (let i = 0; i < totalCards; i += 1) {
-    const extra = i >= initialVisible;
-    cards.push(
+    const expanded = i === 0;
+    const panel = createNode({
+      id: `${listId}-panel-${i}`,
+      className: "whats-new__stack-panel",
+      attrs: {
+        "data-wn-stack-panel": "",
+        ...(expanded ? {} : { hidden: "" }),
+      },
+      children: [
+        createNode({
+          className: "whats-new__cta",
+          textContent: `CTA ${i + 1}`,
+          attrs: { href: `/go/${i}` },
+        }),
+      ],
+    });
+    const toggle = createNode({
+      id: `${listId}-toggle-${i}`,
+      className: "whats-new__stack-toggle",
+      textContent: `Title ${i + 1}`,
+      attrs: {
+        "data-wn-stack-toggle": "",
+        type: "button",
+        "aria-expanded": expanded ? "true" : "false",
+        "aria-controls": `${listId}-panel-${i}`,
+      },
+    });
+    items.push(
       createNode({
-        className: "whats-new__card kbm-card",
-        textContent: `Card ${i + 1}`,
-        attrs: {
-          ...(extra ? { "data-wn-extra": "", hidden: "" } : {}),
-        },
+        className: `whats-new__card kbm-card${expanded ? " whats-new__card--expanded" : ""}`,
+        attrs: { "data-wn-stack-item": "" },
+        children: [toggle, panel],
       }),
     );
   }
 
-  const list = createNode({
-    id: "whats-new-cards-just_added",
-    className: "whats-new__cards",
-    children: cards,
+  const stack = createNode({
+    id: listId,
+    className: "whats-new__cards whats-new__cards--stack",
+    attrs: { "data-wn-stack": "" },
+    children: items,
   });
 
-  const button = createNode({
-    className: "whats-new__toggle",
-    textContent: "Show more",
-    attrs: {
-      "data-wn-column-toggle": "",
-      "aria-expanded": "false",
-      "aria-controls": "whats-new-cards-just_added",
-      type: "button",
-    },
-  });
-
-  const root = createNode({
-    children: [list, button],
-  });
-
-  return { root, list, button, cards };
+  return { stack, items };
 }
 
-describe("whatsNewPublicBoard column toggle visibility", () => {
+describe("whatsNewPublicBoard stacked columns", () => {
   const publicPage = fs.readFileSync(path.resolve("src/pages/whats-new.astro"), "utf8");
   const styleMatch = publicPage.match(/<style>([\s\S]*?)<\/style>/);
   const pageCss = styleMatch?.[1] ?? "";
 
-  it("keeps an !important hidden override so card display rules cannot reveal extras", () => {
-    // The bug: .whats-new__card { display: block } and .kbm-card { display: flex }
-    // override the UA [hidden] stylesheet when specificity/source order wins.
-    expect(pageCss).toMatch(/\.whats-new__card\s*\{[^}]*display:\s*block/);
+  it("keeps collapsed stack panels hidden via !important so CTAs cannot remain focusable", () => {
     expect(pageCss).toMatch(
-      /\.whats-new__card\s*\[\s*hidden\s*\]\s*\{[^}]*display:\s*none\s*!important/,
+      /\.whats-new__stack-panel\s*\[\s*hidden\s*\]\s*\{[^}]*display:\s*none\s*!important/,
     );
   });
 
-  it("shows only the first 3 of 5 cards initially (actual display, not attribute alone)", () => {
-    const { cards } = buildColumnDom(5, 3);
-
-    // Attribute presence alone is not enough — compute visibility via CSS cascade.
-    expect(cards.filter((c) => c.hasAttribute("hidden"))).toHaveLength(2);
-    expect(cards.filter((c) => isCardVisible(c, pageCss))).toHaveLength(3);
-    expect(isCardVisible(cards[0]!, pageCss)).toBe(true);
-    expect(isCardVisible(cards[1]!, pageCss)).toBe(true);
-    expect(isCardVisible(cards[2]!, pageCss)).toBe(true);
-    expect(isCardVisible(cards[3]!, pageCss)).toBe(false);
-    expect(isCardVisible(cards[4]!, pageCss)).toBe(false);
-
-    // Without the page override, the same hidden attributes would still "show".
-    const cssWithoutOverride = pageCss.replace(
-      /\.whats-new__card\s*\[\s*hidden\s*\]\s*\{[^}]*\}/,
-      "",
-    );
-    expect(cards.filter((c) => isCardVisible(c, cssWithoutOverride))).toHaveLength(5);
-  });
-
-  it("Show more reveals only that column’s remaining cards; Show less hides them again", () => {
-    const { root, button, cards } = buildColumnDom(5, 3);
-    initWhatsNewColumnToggles(root);
-
-    expect(cards.filter((c) => isCardVisible(c, pageCss))).toHaveLength(3);
-    expect(button.getAttribute("aria-expanded")).toBe("false");
-    expect(button.textContent).toBe("Show more");
-
-    button.click();
-    expect(button.getAttribute("aria-expanded")).toBe("true");
-    expect(button.textContent).toBe("Show less");
-    expect(cards.every((c) => isCardVisible(c, pageCss))).toBe(true);
-    expect(cards.filter((c) => c.hasAttribute("hidden"))).toHaveLength(0);
-
-    button.click();
-    expect(button.getAttribute("aria-expanded")).toBe("false");
-    expect(button.textContent).toBe("Show more");
-    expect(cards.filter((c) => isCardVisible(c, pageCss))).toHaveLength(3);
-    expect(isCardVisible(cards[3]!, pageCss)).toBe(false);
-    expect(isCardVisible(cards[4]!, pageCss)).toBe(false);
-  });
-
-  it("wires the public page to the shared toggle module", () => {
+  it("wires the public page to the shared stack module only (no Show more)", () => {
     expect(publicPage).toContain('from "../scripts/whatsNewPublicBoard"');
-    expect(publicPage).toContain("initWhatsNewColumnToggles");
+    expect(publicPage).toContain("initWhatsNewPublicBoard");
+    expect(publicPage).not.toContain("Show more");
+    expect(publicPage).not.toContain("data-wn-column-toggle");
+  });
+
+  it("expands the newest card by default and collapses the others", () => {
+    const { stack, items } = buildStackDom(4);
+    const root = createNode({ children: [stack] });
+    initWhatsNewCardStacks(root);
+
+    const toggles = items.map((item) => item.querySelector("[data-wn-stack-toggle]")!);
+    const panels = items.map((item) => item.querySelector("[data-wn-stack-panel]")!);
+
+    expect(toggles[0]!.getAttribute("aria-expanded")).toBe("true");
+    expect(panels[0]!.hasAttribute("hidden")).toBe(false);
+    expect(items[0]!.classList.contains("whats-new__card--expanded")).toBe(true);
+
+    for (let i = 1; i < items.length; i += 1) {
+      expect(toggles[i]!.getAttribute("aria-expanded")).toBe("false");
+      expect(isPanelHidden(panels[i]!, pageCss)).toBe(true);
+      expect(items[i]!.classList.contains("whats-new__card--expanded")).toBe(false);
+    }
+  });
+
+  it("opens one card at a time and brings it to the front within a column", () => {
+    const { stack, items } = buildStackDom(3);
+    const root = createNode({ children: [stack] });
+    initWhatsNewCardStacks(root);
+
+    const secondToggle = items[1]!.querySelector("[data-wn-stack-toggle]")!;
+    secondToggle.click();
+
+    expect(items[1]!.classList.contains("whats-new__card--expanded")).toBe(true);
+    expect(items[1]!.querySelector("[data-wn-stack-toggle]")!.getAttribute("aria-expanded")).toBe(
+      "true",
+    );
+    expect(items[1]!.querySelector("[data-wn-stack-panel]")!.hasAttribute("hidden")).toBe(false);
+    expect(items[0]!.classList.contains("whats-new__card--expanded")).toBe(false);
+    expect(items[0]!.querySelector("[data-wn-stack-panel]")!.hasAttribute("hidden")).toBe(true);
+    expect(Number(items[1]!.style.zIndex)).toBeGreaterThan(Number(items[0]!.style.zIndex));
+    expect(Number(items[1]!.style.zIndex)).toBeGreaterThan(Number(items[2]!.style.zIndex));
+  });
+
+  it("keeps each column’s expanded card independent of the others", () => {
+    const colA = buildStackDom(3, "whats-new-cards-just_added");
+    const colB = buildStackDom(3, "whats-new-cards-worth_exploring");
+    const colC = buildStackDom(2, "whats-new-cards-in_the_pipeline");
+    const root = createNode({
+      children: [colA.stack, colB.stack, colC.stack],
+    });
+
+    initWhatsNewPublicBoard(root);
+
+    // Defaults: newest open in every column.
+    expect(colA.items[0]!.classList.contains("whats-new__card--expanded")).toBe(true);
+    expect(colB.items[0]!.classList.contains("whats-new__card--expanded")).toBe(true);
+    expect(colC.items[0]!.classList.contains("whats-new__card--expanded")).toBe(true);
+
+    // Open a different card in column B only.
+    colB.items[2]!.querySelector("[data-wn-stack-toggle]")!.click();
+
+    expect(colB.items[2]!.classList.contains("whats-new__card--expanded")).toBe(true);
+    expect(colB.items[0]!.classList.contains("whats-new__card--expanded")).toBe(false);
+    // Columns A and C unchanged.
+    expect(colA.items[0]!.classList.contains("whats-new__card--expanded")).toBe(true);
+    expect(colA.items[1]!.classList.contains("whats-new__card--expanded")).toBe(false);
+    expect(colC.items[0]!.classList.contains("whats-new__card--expanded")).toBe(true);
+    expect(colC.items[1]!.classList.contains("whats-new__card--expanded")).toBe(false);
+
+    // Open a different card in column A; B and C stay put.
+    colA.items[1]!.querySelector("[data-wn-stack-toggle]")!.click();
+    expect(colA.items[1]!.classList.contains("whats-new__card--expanded")).toBe(true);
+    expect(colA.items[0]!.classList.contains("whats-new__card--expanded")).toBe(false);
+    expect(colB.items[2]!.classList.contains("whats-new__card--expanded")).toBe(true);
+    expect(colC.items[0]!.classList.contains("whats-new__card--expanded")).toBe(true);
   });
 });

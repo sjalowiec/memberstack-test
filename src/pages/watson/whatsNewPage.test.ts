@@ -104,7 +104,7 @@ describe("Watson Whats New page", () => {
     );
   });
 
-  it("public page shows Bugs & Improvements label and limits columns with Show more/less", () => {
+  it("public page keeps Bugs & Improvements labeling and column meta", () => {
     const types = fs.readFileSync(path.resolve("src/lib/whatsNew/types.ts"), "utf8");
     expect(types).toContain('title: "Bugs & Improvements"');
     expect(types).toContain(
@@ -117,29 +117,43 @@ describe("Watson Whats New page", () => {
     expect(types).toContain('"worth_exploring"');
     expect(types).not.toContain('title: "Worth Exploring"');
 
-    expect(publicPage).toContain("splitPublicColumnCards");
-    expect(publicPage).toContain('data-wn-column-toggle');
-    expect(publicPage).toContain('aria-expanded="false"');
-    expect(publicPage).toContain("aria-controls={listId}");
-    expect(publicPage).toContain("Show more");
-    expect(publicPage).toContain("data-wn-extra");
-    expect(publicPage).toContain("hidden={extra || undefined}");
-    // Card display rules override UA [hidden]; page must force extras off.
-    expect(publicPage).toMatch(
-      /\.whats-new__card\s*\[\s*hidden\s*\]\s*\{[^}]*display:\s*none\s*!important/,
-    );
-    // Toggle is a real button, not a link or card click.
-    expect(publicPage).toMatch(/<button[\s\S]*?data-wn-column-toggle/);
-    expect(publicPage).toContain('type="button"');
     expect(publicPage).toContain("whatsNewPublicBoard");
-    expect(publicPage).toContain("initWhatsNewColumnToggles");
+    expect(publicPage).toContain("initWhatsNewPublicBoard");
+    expect(publicPage).toContain('type="button"');
+  });
 
-    const toggleScript = fs.readFileSync(
+  it("all three columns use the shared stacked accordion without Show more", () => {
+    expect(publicPage).toContain("data-wn-stack");
+    expect(publicPage).toContain("data-wn-stack-item");
+    expect(publicPage).toContain("data-wn-stack-toggle");
+    expect(publicPage).toContain("data-wn-stack-panel");
+    expect(publicPage).toContain("whats-new__cards--stack");
+    expect(publicPage).toContain("whats-new__column--stack");
+    expect(publicPage).toContain("whats-new__card--expanded");
+    // Newest card starts expanded; collapsed panels use hidden.
+    expect(publicPage).toContain("const expanded = index === 0");
+    expect(publicPage).toContain("hidden={expanded ? undefined : true}");
+    expect(publicPage).toMatch(
+      /\.whats-new__stack-panel\s*\[\s*hidden\s*\]\s*\{[^}]*display:\s*none\s*!important/,
+    );
+    // Accessible toggle wiring.
+    expect(publicPage).toContain("aria-controls={panelId}");
+    expect(publicPage).toContain("--wn-stack-overlap");
+    expect(publicPage).toContain("prefers-reduced-motion");
+    // No Show more / per-column reveal leftovers.
+    expect(publicPage).not.toContain("Show more");
+    expect(publicPage).not.toContain("splitPublicColumnCards");
+    expect(publicPage).not.toContain("data-wn-column-toggle");
+    expect(publicPage).not.toContain("data-wn-extra");
+    expect(publicPage).not.toContain("isJustAdded");
+
+    const boardScript = fs.readFileSync(
       path.resolve("src/scripts/whatsNewPublicBoard.ts"),
       "utf8",
     );
-    expect(toggleScript).toContain("Show less");
-    expect(toggleScript).toContain("Show more");
+    expect(boardScript).toContain("initWhatsNewCardStacks");
+    expect(boardScript).not.toContain("Show more");
+    expect(boardScript).not.toContain("data-wn-column-toggle");
   });
 
   it("uses the shared pinwheel palette helpers on public and Watson pages", () => {
