@@ -134,10 +134,23 @@ const PAID_PLAN_FALLBACK_LABEL = "Knit it Now Membership";
 
 /**
  * Memberstack statuses that still have a recoverable Stripe subscription and
- * should open the Customer Portal. PAST_DUE is intentionally included here and
- * not in access/status entitlement checks.
+ * should open the Customer Portal. PAST_DUE / REQUIRES_PAYMENT are included
+ * here only — not in access/status entitlement checks.
  */
-const PORTAL_ELIGIBLE_PAID_STATUSES = new Set(["ACTIVE", "TRIALING", "PAST_DUE"]);
+const PORTAL_ELIGIBLE_PAID_STATUSES = new Set([
+  "ACTIVE",
+  "TRIALING",
+  "PAST_DUE",
+  "REQUIRES_PAYMENT",
+]);
+
+/** Failed-payment statuses that remain portal-eligible even when active is false. */
+const PORTAL_ELIGIBLE_WHEN_INACTIVE = new Set(["PAST_DUE", "REQUIRES_PAYMENT"]);
+
+const PORTAL_STATUS_LABEL: Record<string, string> = {
+  PAST_DUE: "Past Due",
+  REQUIRES_PAYMENT: "Payment Required",
+};
 
 const MEMBERSHIP_DATE_FORMAT: Intl.DateTimeFormatOptions = {
   month: "long",
@@ -170,7 +183,8 @@ function planConnectionsFromPayload(memberOrPayload: unknown): unknown[] {
 
 /**
  * True when a paid plan connection can open Stripe Customer Portal.
- * Includes PAST_DUE. Does not grant member access or change checkout decisions.
+ * Includes PAST_DUE and REQUIRES_PAYMENT. Does not grant member access or
+ * change checkout decisions.
  */
 export function isPortalEligiblePaidPlanConnection(conn: unknown): boolean {
   const record = asRecord(conn);
@@ -179,9 +193,11 @@ export function isPortalEligiblePaidPlanConnection(conn: unknown): boolean {
     return false;
   }
 
-  // Explicit inactive (except PAST_DUE) has no recoverable Stripe subscription.
+  // Explicit inactive (except failed-payment recoverables) has no portal target.
   const status = String(record.status ?? "").trim().toUpperCase();
-  if (record.active === false && status !== "PAST_DUE") return false;
+  if (record.active === false && !PORTAL_ELIGIBLE_WHEN_INACTIVE.has(status)) {
+    return false;
+  }
 
   if (!status) {
     // Empty status: treat like entitlement connections (active unless false).
@@ -193,8 +209,8 @@ export function isPortalEligiblePaidPlanConnection(conn: unknown): boolean {
 
 /**
  * First Memberstack paid plan connection eligible for Customer Portal
- * (ACTIVE / TRIALING / PAST_DUE). Uses plan connection status from Memberstack —
- * not Watson display labels.
+ * (ACTIVE / TRIALING / PAST_DUE / REQUIRES_PAYMENT). Uses plan connection
+ * status from Memberstack — not Watson display labels.
  */
 export function portalEligiblePaidPlanConnection(
   memberOrPayload: unknown,
@@ -206,11 +222,17 @@ export function portalEligiblePaidPlanConnection(
   return null;
 }
 
-/** True when Manage Billing should appear (active or past_due paid plan). */
+/** True when Manage Billing should appear (active or recoverable paid plan). */
 export function memberHasStripeCustomerPortalAccess(
   memberOrPayload: unknown,
 ): boolean {
   return portalEligiblePaidPlanConnection(memberOrPayload) != null;
+}
+
+/** User-facing status for a portal-eligible but non-entitled paid connection. */
+export function portalEligibleStatusLabel(connection: PlanConnection): string {
+  const status = String(connection.status ?? "").trim().toUpperCase();
+  return PORTAL_STATUS_LABEL[status] ?? "Past Due";
 }
 
 /** Active paid membership connection, if any. */
@@ -346,21 +368,22 @@ export function resolveAccountMembershipPanelView(
     };
   }
 
-  // Past-due paid Stripe subscription: Memberstack still has a recoverable
-  // paid plan connection. Show Manage Billing so the member can update payment /
-  // pay invoices. Does not change access entitlement or checkout decisions.
+  // Recoverable paid Stripe subscription (past_due / requires_payment):
+  // Memberstack still has a billable connection. Show Manage Billing so the
+  // member can update payment / pay invoices. Does not change access
+  // entitlement or checkout decisions.
   const portalConnection = portalEligiblePaidPlanConnection(memberOrPayload);
   if (portalConnection) {
-    const pastDueInterval = billingIntervalFromPaidConnection(portalConnection);
+    const portalInterval = billingIntervalFromPaidConnection(portalConnection);
     return {
       kind: "member",
       planLabel: PAID_PLAN_FALLBACK_LABEL,
-      planDisplayLabel: pastDueInterval
-        ? PAID_PLAN_LABEL[pastDueInterval]
+      planDisplayLabel: portalInterval
+        ? PAID_PLAN_LABEL[portalInterval]
         : PAID_PLAN_FALLBACK_LABEL,
-      statusLabel: "Past Due",
-      billingInterval: pastDueInterval,
-      billingLabel: pastDueInterval ? BILLING_LABEL[pastDueInterval] : null,
+      statusLabel: portalEligibleStatusLabel(portalConnection),
+      billingInterval: portalInterval,
+      billingLabel: portalInterval ? BILLING_LABEL[portalInterval] : null,
       renewsLabel: null,
       isCanceling: false,
       activeUntilMessage: null,
