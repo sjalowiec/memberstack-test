@@ -7637,6 +7637,39 @@
     "vimeo_id": 1216456973
   },
   {
+    "content_id": 2209,
+    "slug": "basic-decreasing",
+    "title": "Basic Decreasing",
+    "description": "Learn the basics of decreasing stitches for shaping your knitting.",
+    "access_level": "public",
+    "posterUrl": "",
+    "category": "Shaping",
+    "subcategory": "Decreasing",
+    "vimeo_id": 1216675237
+  },
+  {
+    "content_id": 2210,
+    "slug": "mattress-stitch",
+    "title": "Mattress Stitch",
+    "description": "Learn how to seam knitted pieces with mattress stitch for a clean, nearly invisible join.",
+    "access_level": "public",
+    "posterUrl": "",
+    "category": "Finishing",
+    "subcategory": "Seams",
+    "vimeo_id": 1216656183
+  },
+  {
+    "content_id": 2211,
+    "slug": "planning-ribbing-for-a-neat-seam",
+    "title": "Planning Ribbing for a Neat Seam",
+    "description": "Learn how to plan your cast-on stitch count so ribbing meets neatly at the seam.",
+    "access_level": "public",
+    "posterUrl": "",
+    "category": "Finishing",
+    "subcategory": "Seams",
+    "vimeo_id": 216689688
+  },
+  {
     "content_id": 5001,
     "slug": "change-colors-lk150",
     "title": "Changing Colors on the LK150",

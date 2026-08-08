@@ -9,6 +9,9 @@ import {
   type HatPatternCalc,
   type HatSpiralPlan,
 } from "./hatMath";
+import { buildHatFourGoreCrownVideoTipHtml } from "./hatFourGoreCrownVideoTip";
+import { buildHatMattressStitchVideoHtml } from "./hatMattressStitchVideoTip";
+import { buildHatPlanningRibbingBrimTipHtml } from "./hatPlanningRibbingVideoTip";
 import { buildHatSwirlCrownVideoTipHtml } from "./hatSwirlCrownVideoTip";
 import {
   buildHatTransferStepCalloutHtml,
@@ -168,15 +171,8 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
     currentUnit === "inches"
       ? formatLength(brimDepth, "inches")
       : formatLength(convertLength(brimDepth, "inches", "cm"), "cm");
-  const displayCrownDepth =
-    currentUnit === "inches"
-      ? formatLength(crownPlan.crownDepth, "inches")
-      : formatLength(convertLength(crownPlan.crownDepth, "inches", "cm"), "cm");
-  const displayCrownStartLength =
-    currentUnit === "inches"
-      ? formatLength(crownPlan.bodyLength, "inches")
-      : formatLength(convertLength(crownPlan.bodyLength, "inches", "cm"), "cm");
 
+  // Continuous RC from cast-on (matches swirl crown Row N labels and four-wedge crownStartRow).
   const crownStartRow = brimRows + bodyRows;
   const unit = currentUnit === "inches" ? "inches" : "cm";
 
@@ -222,22 +218,25 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
     const rowFrequency =
       decreaseCount > 0 ? Math.max(1, Math.round(crownRowCount / decreaseCount)) : 1;
     const rowFrequencyPhrase =
-      rowFrequency === 1 ? "every 1 row" : `every ${rowFrequency} rows`;
+      rowFrequency === 1 ? "every row" : `every ${rowFrequency} rows`;
     const wedgeFinishLine = `<p>When ${finalWedgeStitchCount} ${finalWedgeStitchCount === 1 ? "stitch remains" : "stitches remain"}, break yarn and secure.</p>`;
     const wedgeShapingBlock =
       decreaseCount > 0
-        ? `<p>Decrease 1 stitch at each edge ${rowFrequencyPhrase}, ${decreaseCount} times.</p>
+        ? `<p>Decrease 1 stitch two stitches in from each edge ${rowFrequencyPhrase}, ${decreaseCount} times.</p>
       ${wedgeFinishLine}`
         : wedgeFinishLine;
     const [, w2r, w3r, w4r] = wedgeNeedleRanges;
     const wedgeCrownBody = (html: string) =>
       `<div class="pattern-wedge-crown-body">${html}</div>`;
     const scrapOffFirstUseHtml = `<span class="pattern-term" data-tooltip="${escapePatternTermAttr(scrapOffPatternTooltip)}">Scrap off</span>`;
+    const fourGoreDecreaseTipHtml = buildHatFourGoreCrownVideoTipHtml();
     const introHtml = `
       <p>The stitches are divided into 4 equal wedges of ${wedgeStitchCount} stitches each.</p>
       ${adjustNote}
       <p>${scrapOffFirstUseHtml} ${scrapOffStitchCount} stitches from needles ${scrapOffDisplayRange}.</p>`;
+    // Tip once in Wedge 1 only — immediately before decrease instructions (not repeated per wedge).
     const wedge1Html = wedgeCrownBody(`<p>Knit Wedge 1 over ${wedgeStitchCount} stitches on needles ${firstWedgeDisplayRange}.</p>
+      ${fourGoreDecreaseTipHtml}
       ${wedgeShapingBlock}`);
     const wedge2Html = wedgeCrownBody(`<p>Pick up and rehang ${wedgeStitchCount} stitches from needles ${w2r.displayRange} back onto those same needles.</p>
       ${wedgeShapingBlock}`);
@@ -294,16 +293,21 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
     );
   }
 
+  // Shared finishing inline video link (once per pattern) on the words “mattress stitch”.
+  const mattressStitchVideoHtml = buildHatMattressStitchVideoHtml();
+  // Shared brim tip (once per pattern) before cast-on — advice only; does not change stitch count.
+  const planningRibbingBrimTipHtml = buildHatPlanningRibbingBrimTipHtml();
+
   const finishingGathered = `
         <p>Block the hat to set the shape.</p>
       <p>Pull the tail tight to gather the top of the hat.</p>
-      <p>Use the tail to seam the body.</p>
+      <p>Use the tail to seam the body using ${mattressStitchVideoHtml} or your preferred method.</p>
       <p>Work in yarn ends.</p>`;
   const finishingSpiral = `
       <p>Run the end of the yarn through the remaining stitches, tighten and tie off, leaving a tail to sew the seam. Finish with a pompom or tassel if you choose.</p>
-      <p>Seam the body using <span class="pattern-term" data-tooltip="An invisible, right-side seaming method that joins two edges neatly.">mattress stitch</span> or your preferred method. <span class="pattern-term" data-tooltip="Wet or steam to set the finished shape.">Block</span> if desired and weave in all ends.</p>`;
+      <p>Seam the body using ${mattressStitchVideoHtml} or your preferred method. <span class="pattern-term" data-tooltip="Wet or steam to set the finished shape.">Block</span> if desired and weave in all ends.</p>`;
   const finishingWedgeSeamed = `
-      <p>Seam each crown wedge first, then seam the body using <span class="pattern-term" data-tooltip="An invisible, right-side seaming method that joins two edges neatly.">mattress stitch</span> or your preferred method. <span class="pattern-term" data-tooltip="Wet or steam to set the finished shape.">Block</span> if desired and weave in all ends.</p>`;
+      <p>Seam each crown wedge first, then seam the body using ${mattressStitchVideoHtml} or your preferred method. <span class="pattern-term" data-tooltip="Wet or steam to set the finished shape.">Block</span> if desired and weave in all ends.</p>`;
   const finishingHtml =
     crown === "gathered"
       ? finishingGathered
@@ -343,7 +347,8 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
       ${wrapHatPatternSection(
         "cast-on",
         "<h4>Cast-On</h4>",
-        `<p>Cast on <strong>${patternCastOnSts} stitches</strong>.</p>
+        `${planningRibbingBrimTipHtml}
+      <p>Cast on <strong>${patternCastOnSts} stitches</strong>.</p>
       <div class="pattern-tip" data-tip data-tip-id="hat-cast-on-method"><strong>Tip:</strong> Use the cast-on method of your choice.</div>`,
       )}
       ${wrapHatPatternSection(
@@ -357,10 +362,9 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
       ${bodySectionWrapped}
       ${wrapHatPatternSection(
         "crown-timing",
-        "<h4>Crown depth &amp; start</h4>",
-        `<p><strong>Calculated crown depth: ${displayCrownDepth} ${unit}.</strong></p>
-      <p><strong>Begin crown shaping when hat measures ${displayCrownStartLength} ${unit} from the cast-on edge.</strong></p>
-      <p>${crownPlan.note}</p>`,
+        "<h4>Crown start</h4>",
+        `<p>Knit ${crownStartRow} rows.</p>
+      <p><strong>Begin crown shaping at RC ${crownStartRow}.</strong></p>`,
       )}
       ${crownSectionsHtml}
       ${wrapHatPatternSection("finishing", "<h4>Finishing</h4>", finishingHtml)}
