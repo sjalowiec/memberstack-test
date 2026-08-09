@@ -1,15 +1,15 @@
 /**
  * Saved-pattern library drawer beside pattern workspace tabs.
- * View/open only — does not replace account dashboard or inline save panels.
+ * View / Edit / Copy / Delete — complements the account dashboard My Patterns list.
  */
 import { listCustomPatternProjects } from "./customPatternProjectClient";
 import type { CustomPatternProjectSummary } from "./customPatternProjectTypes";
 import { readActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
+import { deleteSavedCustomPatternProject } from "./deleteSavedCustomPatternProject";
 import { loadSavedCustomPatternProject } from "./loadSavedCustomPatternProject";
 import { copySavedCustomPatternProjectById } from "./savedCustomPatternManageActions";
 import {
   canCopySavedCustomPatternForAccess,
-  SAVED_CUSTOM_PATTERN_COPY_DISABLED_TEXT,
   syncSavedCustomPatternCopyAccessForAccess,
 } from "./savedCustomPatternCopyAccess";
 import { SAVED_CUSTOM_PATTERN_EDIT_DISABLED_TEXT } from "./accountMyPatternsList";
@@ -18,10 +18,14 @@ import {
   type SleevelessUserAccess,
 } from "./sleevelessPatternSystemAccess";
 import { resolveSleevelessUserAccessSnapshot } from "./sleevelessPatternSystemAccessClient";
-import type { PatternSystemId } from "./patternSystemId";
-import { resolvePatternSystemFromPage, patternSystemDisplayName } from "./patternSystemId";
+import { resolvePatternSystemFromPage, type PatternSystemId } from "./patternSystemId";
 import { offerPatternEditingUnlockModal } from "./patternEditingUnlockModal";
 import { formatSavedPatternGauge } from "./savedPatternGaugeDisplay";
+import {
+  freePatternDeleteBlockedText,
+  isPatternDeleteProtectedForSystem,
+} from "./sleevelessPatternDeleteGuard";
+import { promptSavedPatternDeleteConfirmation } from "./savedPatternDeleteConfirmation";
 
 const SIGN_IN_REQUIRED_ERROR = "Sign in to save Custom Pattern projects.";
 export const PATTERN_WORKSPACE_LIBRARY_DRAWER_OPEN_CLASS =
@@ -88,11 +92,52 @@ export function formatPatternCopiedDrawerMessage(projectName: string): string {
 
 let lastCopiedProjectIdInDrawer: string | null = null;
 let lastResolvedLibraryAccess: SleevelessUserAccess | null = null;
+let lastLibraryProjects: CustomPatternProjectSummary[] = [];
 
 function projectSystemFromSummary(project: CustomPatternProjectSummary): PatternSystemId {
   const raw = project.patternSystem?.trim();
   if (raw === "drop-shoulder" || raw === "sleeveless") return raw;
   return "sleeveless";
+}
+
+function countLibraryProjectsForSystem(
+  projects: readonly CustomPatternProjectSummary[],
+  patternSystem: PatternSystemId,
+): number {
+  return projects.filter((p) => projectSystemFromSummary(p) === patternSystem).length;
+}
+
+function isProtectedLibraryDeleteTarget(projectId: string): boolean {
+  if (!lastResolvedLibraryAccess) return false;
+  const project = lastLibraryProjects.find((p) => p.id === projectId);
+  const patternSystem = project ? projectSystemFromSummary(project) : "sleeveless";
+  return isPatternDeleteProtectedForSystem({
+    access: lastResolvedLibraryAccess,
+    projectId,
+    patternSystem,
+    totalSavedCountForSystem: countLibraryProjectsForSystem(lastLibraryProjects, patternSystem),
+  });
+}
+
+/**
+ * Reflects free-pattern delete protection onto drawer Delete buttons: the protected pattern's
+ * button is disabled, grayed, and given an explanatory tooltip; all others stay enabled. Never hides.
+ */
+function syncLibraryDeleteAccess(deleteButton: HTMLButtonElement | null | undefined): void {
+  if (!(deleteButton instanceof HTMLButtonElement)) return;
+  const projectId = deleteButton.dataset.projectId ?? "";
+  const protectedTarget = isProtectedLibraryDeleteTarget(projectId);
+  deleteButton.disabled = protectedTarget;
+  deleteButton.classList.toggle("is-disabled", protectedTarget);
+  if (protectedTarget) {
+    deleteButton.setAttribute("aria-disabled", "true");
+    const project = lastLibraryProjects.find((p) => p.id === projectId);
+    const system = project ? projectSystemFromSummary(project) : "sleeveless";
+    deleteButton.setAttribute("title", freePatternDeleteBlockedText(system));
+  } else {
+    deleteButton.removeAttribute("aria-disabled");
+    deleteButton.removeAttribute("title");
+  }
 }
 
 function canEditProjectFromLibrary(
@@ -128,11 +173,13 @@ function syncLibraryEditAccess(
 function syncLibraryItemAccess(
   editButton: HTMLButtonElement | null | undefined,
   copyButton: HTMLButtonElement | null | undefined,
+  deleteButton: HTMLButtonElement | null | undefined,
   access: SleevelessUserAccess | null,
   patternSystem?: PatternSystemId,
 ): void {
   syncLibraryEditAccess(editButton, access, patternSystem);
   syncSavedCustomPatternCopyAccessForAccess(copyButton, access);
+  syncLibraryDeleteAccess(deleteButton);
 }
 
 function clearDrawerCopyHighlight(): void {
@@ -143,6 +190,7 @@ function clearDrawerCopyHighlight(): void {
 export function resetPatternWorkspaceLibraryDrawerSessionState(): void {
   clearDrawerCopyHighlight();
   lastResolvedLibraryAccess = null;
+  lastLibraryProjects = [];
   const root = typeof document !== "undefined" ? document.documentElement : null;
   root?.removeAttribute(PATTERN_WORKSPACE_LIBRARY_DRAWER_INIT_ATTR);
 }
@@ -296,12 +344,66 @@ function renderLibraryItem(
     }
     await onLibraryProjectCopy(root, project.id, displayName);
   });
-  syncLibraryItemAccess(editBtn, copyBtn, lastResolvedLibraryAccess, projectSystemFromSummary(project));
 
-  actions.append(viewBtn, editBtn, copyBtn);
+  const deleteBtn = document.createElement("button");
+  deleteBtn.type = "button";
+  deleteBtn.className =
+    "pattern-workspace-library__item-action pattern-workspace-library__item-action--secondary pattern-workspace-library__item-delete";
+  deleteBtn.setAttribute("data-pattern-workspace-library-delete", "");
+  deleteBtn.dataset.projectId = project.id;
+  deleteBtn.setAttribute("aria-label", `Delete ${displayName}`);
+  deleteBtn.textContent = "Delete";
+  deleteBtn.addEventListener("click", async () => {
+    if (deleteBtn.disabled) return;
+    await onLibraryProjectDelete(root, project.id, displayName);
+  });
+
+  syncLibraryItemAccess(
+    editBtn,
+    copyBtn,
+    deleteBtn,
+    lastResolvedLibraryAccess,
+    projectSystemFromSummary(project),
+  );
+
+  actions.append(viewBtn, editBtn, copyBtn, deleteBtn);
   card.append(body, actions);
   li.append(card);
   list.append(li);
+}
+
+function renderLibraryProjectsFromState(
+  root: HTMLElement,
+  options?: { highlightProjectId?: string | null },
+): void {
+  const list = root.querySelector("[data-pattern-workspace-library-list]");
+  if (list instanceof HTMLElement) list.replaceChildren();
+
+  if (lastLibraryProjects.length === 0) {
+    setDrawerLibraryEmptyState(root);
+    setListVisible(root, false);
+    return;
+  }
+
+  const highlightProjectId =
+    options?.highlightProjectId !== undefined
+      ? options.highlightProjectId
+      : lastCopiedProjectIdInDrawer;
+
+  const sorted = [...lastLibraryProjects].sort((a, b) => {
+    if (highlightProjectId) {
+      if (a.id === highlightProjectId) return -1;
+      if (b.id === highlightProjectId) return 1;
+    }
+    return String(b.updatedAt ?? "").localeCompare(String(a.updatedAt ?? ""));
+  });
+  for (const project of sorted) {
+    renderLibraryItem(root, project, project.name || "Untitled pattern", {
+      isNewCopy: highlightProjectId !== null && project.id === highlightProjectId,
+    });
+  }
+  setDrawerStatus(root, "");
+  setListVisible(root, true);
 }
 
 async function onLibraryProjectCopy(
@@ -333,6 +435,51 @@ async function onLibraryProjectCopy(
   }
 }
 
+async function onLibraryProjectDelete(
+  root: HTMLElement,
+  projectId: string,
+  label: string,
+): Promise<void> {
+  // Guard before the confirm dialog: a free user's protected pattern can never be deleted.
+  if (isProtectedLibraryDeleteTarget(projectId)) {
+    const project = lastLibraryProjects.find((p) => p.id === projectId);
+    const system = project ? projectSystemFromSummary(project) : "sleeveless";
+    setDrawerStatus(root, freePatternDeleteBlockedText(system), true);
+    return;
+  }
+
+  const choice = await promptSavedPatternDeleteConfirmation(root);
+  if (choice !== "delete") return;
+
+  const project = lastLibraryProjects.find((p) => p.id === projectId);
+  const patternSystem = project ? projectSystemFromSummary(project) : "sleeveless";
+  const savedCountForSystem = countLibraryProjectsForSystem(lastLibraryProjects, patternSystem);
+
+  setDrawerStatus(root, `Deleting “${label}”…`);
+  setDrawerActionButtonsDisabled(root, true);
+
+  try {
+    const result = await deleteSavedCustomPatternProject(projectId, "sleeveless", {
+      totalSavedCount: savedCountForSystem,
+      patternSystem,
+    });
+    if (!result.ok) {
+      setDrawerStatus(root, result.error, true);
+      return;
+    }
+
+    lastLibraryProjects = lastLibraryProjects.filter((p) => p.id !== projectId);
+    if (lastCopiedProjectIdInDrawer === projectId) {
+      lastCopiedProjectIdInDrawer = null;
+    }
+    renderLibraryProjectsFromState(root);
+  } catch {
+    setDrawerStatus(root, "Could not delete this saved pattern. Please try again.", true);
+  } finally {
+    setDrawerActionButtonsDisabled(root, false);
+  }
+}
+
 function setDrawerActionButtonsDisabled(root: HTMLElement, disabled: boolean): void {
   root.querySelectorAll<HTMLButtonElement>("[data-pattern-workspace-library-view]").forEach((button) => {
     button.disabled = disabled;
@@ -344,6 +491,10 @@ function setDrawerActionButtonsDisabled(root: HTMLElement, disabled: boolean): v
   root.querySelectorAll<HTMLButtonElement>("[data-pattern-workspace-library-copy]").forEach((button) => {
     button.disabled = disabled;
     if (!disabled) syncSavedCustomPatternCopyAccessForAccess(button, lastResolvedLibraryAccess);
+  });
+  root.querySelectorAll<HTMLButtonElement>("[data-pattern-workspace-library-delete]").forEach((button) => {
+    button.disabled = disabled;
+    if (!disabled) syncLibraryDeleteAccess(button);
   });
 }
 
@@ -417,6 +568,7 @@ export async function refreshPatternWorkspaceLibraryList(
 
   const res = await listCustomPatternProjects("sleeveless");
   if (!res.ok) {
+    lastLibraryProjects = [];
     const message =
       res.error === SIGN_IN_REQUIRED_ERROR
         ? "Sign in to view your saved patterns."
@@ -426,31 +578,14 @@ export async function refreshPatternWorkspaceLibraryList(
   }
 
   if (res.projects.length === 0) {
+    lastLibraryProjects = [];
     setDrawerLibraryEmptyState(root);
     return;
   }
 
   lastResolvedLibraryAccess = await resolveSleevelessUserAccessSnapshot();
-
-  const highlightProjectId =
-    options?.highlightProjectId !== undefined
-      ? options.highlightProjectId
-      : lastCopiedProjectIdInDrawer;
-
-  const sorted = [...res.projects].sort((a, b) => {
-    if (highlightProjectId) {
-      if (a.id === highlightProjectId) return -1;
-      if (b.id === highlightProjectId) return 1;
-    }
-    return String(b.updatedAt ?? "").localeCompare(String(a.updatedAt ?? ""));
-  });
-  for (const project of sorted) {
-    renderLibraryItem(root, project, project.name || "Untitled pattern", {
-      isNewCopy: highlightProjectId !== null && project.id === highlightProjectId,
-    });
-  }
-  setDrawerStatus(root, "");
-  setListVisible(root, true);
+  lastLibraryProjects = [...res.projects];
+  renderLibraryProjectsFromState(root, options);
 }
 
 type LibraryDrawerTrigger = HTMLButtonElement | HTMLAnchorElement;

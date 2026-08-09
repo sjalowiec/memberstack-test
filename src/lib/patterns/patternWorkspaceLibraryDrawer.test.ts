@@ -27,7 +27,9 @@ import { testAccess } from "./patternAccessTestFixtures";
 const listCustomPatternProjectsMock = vi.fn();
 const loadSavedCustomPatternProjectMock = vi.fn();
 const copyByIdMock = vi.fn();
+const deleteSavedCustomPatternProjectMock = vi.fn();
 const resolveAccessSnapshotMock = vi.fn();
+const promptDeleteConfirmMock = vi.fn();
 
 vi.mock("./customPatternProjectClient", () => ({
   listCustomPatternProjects: (...args: unknown[]) => listCustomPatternProjectsMock(...args),
@@ -40,6 +42,16 @@ vi.mock("./loadSavedCustomPatternProject", () => ({
 vi.mock("./savedCustomPatternManageActions", () => ({
   copySavedCustomPatternProjectById: (...args: unknown[]) => copyByIdMock(...args),
   renameSavedCustomPatternProject: vi.fn(),
+}));
+
+vi.mock("./deleteSavedCustomPatternProject", () => ({
+  deleteSavedCustomPatternProject: (...args: unknown[]) =>
+    deleteSavedCustomPatternProjectMock(...args),
+}));
+
+vi.mock("./savedPatternDeleteConfirmation", () => ({
+  promptSavedPatternDeleteConfirmation: (...args: unknown[]) => promptDeleteConfirmMock(...args),
+  DELETE_SAVED_PATTERN_CONFIRM_MESSAGE: "Delete this pattern? This cannot be undone.",
 }));
 
 vi.mock("./sleevelessPatternSystemAccessClient", async (importOriginal) => {
@@ -70,7 +82,22 @@ function makeClassList() {
     add: (...names: string[]) => names.forEach((n) => classes.add(n)),
     remove: (...names: string[]) => names.forEach((n) => classes.delete(n)),
     contains: (name: string) => classes.has(name),
-    toggle: () => false,
+    toggle: (name: string, force?: boolean) => {
+      if (force === true) {
+        classes.add(name);
+        return true;
+      }
+      if (force === false) {
+        classes.delete(name);
+        return false;
+      }
+      if (classes.has(name)) {
+        classes.delete(name);
+        return false;
+      }
+      classes.add(name);
+      return true;
+    },
   };
 }
 
@@ -145,6 +172,9 @@ function makeEl(tag = "div"): MockEl {
       if (sel === "[data-pattern-workspace-library-copy]") {
         return attrs.has("data-pattern-workspace-library-copy");
       }
+      if (sel === "[data-pattern-workspace-library-delete]") {
+        return attrs.has("data-pattern-workspace-library-delete");
+      }
       return false;
     },
     closest(sel: string) {
@@ -218,7 +248,8 @@ function makeDrawerBindings(): PatternWorkspaceLibraryDrawerBindings & {
       sel === "[data-pattern-workspace-library-item-card]" ||
       sel === "[data-pattern-workspace-library-view]" ||
       sel === "[data-pattern-workspace-library-edit]" ||
-      sel === "[data-pattern-workspace-library-copy]"
+      sel === "[data-pattern-workspace-library-copy]" ||
+      sel === "[data-pattern-workspace-library-delete]"
     ) {
       return collectMatches(list._children, sel) as unknown as NodeListOf<HTMLElement>;
     }
@@ -304,6 +335,8 @@ describe("patternWorkspaceLibraryDrawer", () => {
     resetPatternWorkspaceLibraryDrawerSessionState();
     vi.clearAllMocks();
     listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: [] });
+    deleteSavedCustomPatternProjectMock.mockResolvedValue({ ok: true });
+    promptDeleteConfirmMock.mockResolvedValue("delete");
     resolveAccessSnapshotMock.mockResolvedValue({
       loggedIn: true,
       memberId: "ms_member",
@@ -314,6 +347,11 @@ describe("patternWorkspaceLibraryDrawer", () => {
       createElement: (tag: string) => makeEl(tag),
     });
   });
+
+  async function flushAsync(): Promise<void> {
+    await Promise.resolve();
+    await Promise.resolve();
+  }
 
   it("opens and closes with aria state and body scroll lock", () => {
     const bindings = makeDrawerBindings();
@@ -524,7 +562,7 @@ describe("patternWorkspaceLibraryDrawer", () => {
     expect(assign).not.toHaveBeenCalledWith("/patterns/sleeveless/pattern/?edit=1");
   });
 
-  it("renders View Pattern as the primary action plus Edit and Copy, with no Open Pattern action", async () => {
+  it("renders View Pattern as the primary action plus Edit, Copy, and Delete", async () => {
     const bindings = makeDrawerBindings();
     vi.stubGlobal("window", {});
     listCustomPatternProjectsMock.mockResolvedValue({
@@ -539,6 +577,7 @@ describe("patternWorkspaceLibraryDrawer", () => {
     const viewBtns = collectMatches(bindings.list._children, "[data-pattern-workspace-library-view]");
     const editBtns = collectMatches(bindings.list._children, "[data-pattern-workspace-library-edit]");
     const copyBtns = collectMatches(bindings.list._children, "[data-pattern-workspace-library-copy]");
+    const deleteBtns = collectMatches(bindings.list._children, "[data-pattern-workspace-library-delete]");
     expect(viewBtns.length).toBe(1);
     expect(viewBtns[0].textContent).toBe("View Pattern");
     expect(editBtns.length).toBe(1);
@@ -546,12 +585,216 @@ describe("patternWorkspaceLibraryDrawer", () => {
     expect(copyBtns.length).toBe(1);
     expect(copyBtns[0].textContent).toBe("Copy Pattern");
     expect(copyBtns[0].disabled).toBe(false);
+    expect(deleteBtns.length).toBe(1);
+    expect(deleteBtns[0].textContent).toBe("Delete");
+    expect(deleteBtns[0].disabled).toBe(false);
 
     // The misleading "Open Pattern" action (which routed to the editor) no longer exists.
-    const allText = [...viewBtns, ...editBtns, ...copyBtns].map((b) => b.textContent);
+    const allText = [...viewBtns, ...editBtns, ...copyBtns, ...deleteBtns].map((b) => b.textContent);
     expect(allText).not.toContain("Open Pattern");
     const openBtns = collectMatches(bindings.list._children, "[data-pattern-workspace-library-open]");
     expect(openBtns.length).toBe(0);
+  });
+
+  it("opens the delete confirmation and removes the pattern after confirm", async () => {
+    const bindings = makeDrawerBindings();
+    vi.stubGlobal("window", {});
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: [
+        {
+          id: "proj-a",
+          name: "Alpha pullover",
+          family: "sleeveless",
+          source: "express",
+          updatedAt: "2026-01-02T00:00:00.000Z",
+        },
+        {
+          id: "proj-b",
+          name: "Beta vest",
+          family: "sleeveless",
+          source: "express",
+          updatedAt: "2026-01-01T00:00:00.000Z",
+        },
+      ],
+    });
+    promptDeleteConfirmMock.mockResolvedValue("delete");
+
+    await refreshPatternWorkspaceLibraryList(bindings.drawer);
+    const deleteBtn = collectMatches(
+      bindings.list._children,
+      "[data-pattern-workspace-library-delete]",
+    ).find((b) => b.dataset.projectId === "proj-a");
+    await deleteBtn?._click?.();
+    await flushAsync();
+
+    expect(promptDeleteConfirmMock).toHaveBeenCalledTimes(1);
+    expect(deleteSavedCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "sleeveless", {
+      totalSavedCount: 2,
+      patternSystem: "sleeveless",
+    });
+    const cards = collectMatches(bindings.list._children, "[data-pattern-workspace-library-item-card]");
+    expect(cards.length).toBe(1);
+    expect(cards[0].dataset.projectId).toBe("proj-b");
+    expect(bindings.status.hidden).toBe(true);
+  });
+
+  it("keeps the pattern when delete confirmation is cancelled", async () => {
+    const bindings = makeDrawerBindings();
+    vi.stubGlobal("window", {});
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: [
+        {
+          id: "proj-a",
+          name: "Alpha pullover",
+          family: "sleeveless",
+          source: "express",
+          updatedAt: "2026-01-01T00:00:00.000Z",
+        },
+      ],
+    });
+    promptDeleteConfirmMock.mockResolvedValue("cancel");
+
+    await refreshPatternWorkspaceLibraryList(bindings.drawer);
+    const deleteBtn = collectMatches(
+      bindings.list._children,
+      "[data-pattern-workspace-library-delete]",
+    )[0];
+    await deleteBtn?._click?.();
+    await flushAsync();
+
+    expect(promptDeleteConfirmMock).toHaveBeenCalledTimes(1);
+    expect(deleteSavedCustomPatternProjectMock).not.toHaveBeenCalled();
+    expect(
+      collectMatches(bindings.list._children, "[data-pattern-workspace-library-item-card]").length,
+    ).toBe(1);
+  });
+
+  it("keeps the pattern and shows an error when deletion fails", async () => {
+    const bindings = makeDrawerBindings();
+    vi.stubGlobal("window", {});
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: [
+        {
+          id: "proj-a",
+          name: "Alpha pullover",
+          family: "sleeveless",
+          source: "express",
+          updatedAt: "2026-01-01T00:00:00.000Z",
+        },
+      ],
+    });
+    deleteSavedCustomPatternProjectMock.mockResolvedValue({
+      ok: false,
+      error: "Project not found.",
+    });
+    promptDeleteConfirmMock.mockResolvedValue("delete");
+
+    await refreshPatternWorkspaceLibraryList(bindings.drawer);
+    const deleteBtn = collectMatches(
+      bindings.list._children,
+      "[data-pattern-workspace-library-delete]",
+    )[0];
+    await deleteBtn?._click?.();
+    await flushAsync();
+
+    expect(deleteSavedCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "sleeveless", {
+      totalSavedCount: 1,
+      patternSystem: "sleeveless",
+    });
+    expect(
+      collectMatches(bindings.list._children, "[data-pattern-workspace-library-item-card]").length,
+    ).toBe(1);
+    expect(bindings.status.hidden).toBe(false);
+    expect(bindings.status.textContent).toBe("Project not found.");
+    expect(bindings.status.classList.contains("pattern-workspace-library__status--error")).toBe(
+      true,
+    );
+  });
+
+  it("surfaces ownership failures without removing another user's pattern from the list", async () => {
+    const bindings = makeDrawerBindings();
+    vi.stubGlobal("window", {});
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: [
+        {
+          id: "proj-other",
+          name: "Someone else's pattern",
+          family: "sleeveless",
+          source: "express",
+          updatedAt: "2026-01-01T00:00:00.000Z",
+        },
+      ],
+    });
+    // Server ownership is enforced by blob key scoping; a cross-user id resolves as not found.
+    deleteSavedCustomPatternProjectMock.mockResolvedValue({
+      ok: false,
+      error: "Project not found.",
+    });
+    promptDeleteConfirmMock.mockResolvedValue("delete");
+
+    await refreshPatternWorkspaceLibraryList(bindings.drawer);
+    const deleteBtn = collectMatches(
+      bindings.list._children,
+      "[data-pattern-workspace-library-delete]",
+    )[0];
+    await deleteBtn?._click?.();
+    await flushAsync();
+
+    expect(deleteSavedCustomPatternProjectMock).toHaveBeenCalledWith("proj-other", "sleeveless", {
+      totalSavedCount: 1,
+      patternSystem: "sleeveless",
+    });
+    expect(
+      collectMatches(bindings.list._children, "[data-pattern-workspace-library-item-card]")[0]
+        ?.dataset.projectId,
+    ).toBe("proj-other");
+    expect(bindings.status.textContent).toBe("Project not found.");
+  });
+
+  it("disables Delete on the free user's protected pattern but keeps it visible", async () => {
+    const bindings = makeDrawerBindings();
+    vi.stubGlobal("window", {});
+    resolveAccessSnapshotMock.mockResolvedValue(
+      testAccess({
+        loggedIn: true,
+        memberId: "ms_nosub",
+        hasSystemAccess: false,
+        freeClaimed: true,
+        freeClaimedPatternId: "proj-a",
+      }),
+    );
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: [
+        {
+          id: "proj-a",
+          name: "Alpha pullover",
+          family: "sleeveless",
+          source: "express",
+          updatedAt: "2026-01-01T00:00:00.000Z",
+        },
+      ],
+    });
+
+    await refreshPatternWorkspaceLibraryList(bindings.drawer);
+    const deleteBtn = collectMatches(
+      bindings.list._children,
+      "[data-pattern-workspace-library-delete]",
+    )[0];
+
+    expect(deleteBtn.textContent).toBe("Delete");
+    expect(deleteBtn.disabled).toBe(true);
+    expect(deleteBtn.getAttribute("aria-disabled")).toBe("true");
+    expect(deleteBtn.getAttribute("title")).toMatch(/free Sleeveless Pattern/i);
+
+    await deleteBtn?._click?.();
+    await flushAsync();
+    expect(promptDeleteConfirmMock).not.toHaveBeenCalled();
+    expect(deleteSavedCustomPatternProjectMock).not.toHaveBeenCalled();
   });
 
   it("copies a saved project from the drawer and highlights the new copy", async () => {

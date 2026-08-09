@@ -24,6 +24,10 @@ import {
   isPatternDeleteProtectedForSystem,
 } from "./sleevelessPatternDeleteGuard";
 import {
+  DELETE_SAVED_PATTERN_CONFIRM_MESSAGE,
+  promptSavedPatternDeleteConfirmation,
+} from "./savedPatternDeleteConfirmation";
+import {
   PATTERN_SYSTEM_IDS,
   patternSystemDisplayName,
   type PatternSystemId,
@@ -33,7 +37,7 @@ const SIGN_IN_REQUIRED_ERROR = "Sign in to save Custom Pattern projects.";
 /** Tooltip shown when Edit is disabled for a free claimed / downgraded knitter. */
 export const SAVED_CUSTOM_PATTERN_EDIT_DISABLED_TEXT =
   "Pattern editing is included with membership. You can still view, print, and knit from this pattern.";
-export const DELETE_SAVED_PATTERN_CONFIRM_MESSAGE = "Delete this saved pattern?";
+export { DELETE_SAVED_PATTERN_CONFIRM_MESSAGE };
 const EMPTY_LIST_MESSAGE =
   "You do not have any saved patterns yet. Create your first pattern to get started.";
 
@@ -371,8 +375,8 @@ async function onProjectDelete(
     return;
   }
 
-  const confirmed = window.confirm(DELETE_SAVED_PATTERN_CONFIRM_MESSAGE);
-  if (!confirmed) return;
+  const choice = await promptSavedPatternDeleteConfirmation(root);
+  if (choice !== "delete") return;
 
   const stateBefore = listStateByRoot.get(root);
   const project = stateBefore?.projects.find((p) => p.id === projectId);
