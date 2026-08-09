@@ -364,9 +364,11 @@
   cursor: wait;
 }
 
-/* Copy stays visible for free / non-owner users, but disabled + grayed. */
+/* Copy / Delete stay visible when gated, but disabled + grayed. */
 .pattern-workspace-library__item-copy.is-disabled,
-.pattern-workspace-library__item-copy:disabled {
+.pattern-workspace-library__item-copy:disabled,
+.pattern-workspace-library__item-delete.is-disabled,
+.pattern-workspace-library__item-delete:disabled {
   color: #9aa3a0;
   background: transparent;
   border: none;

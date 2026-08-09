@@ -17,6 +17,7 @@ const listCustomPatternProjectsMock = vi.fn();
 const deleteCustomPatternProjectMock = vi.fn();
 const copyByIdMock = vi.fn();
 const renameMock = vi.fn();
+const promptDeleteConfirmMock = vi.fn();
 
 vi.mock("./customPatternProjectClient", () => ({
   listCustomPatternProjects: (...args: unknown[]) => listCustomPatternProjectsMock(...args),
@@ -27,6 +28,14 @@ vi.mock("./savedCustomPatternManageActions", () => ({
   copySavedCustomPatternProjectById: (...args: unknown[]) => copyByIdMock(...args),
   renameSavedCustomPatternProject: (...args: unknown[]) => renameMock(...args),
 }));
+
+vi.mock("./savedPatternDeleteConfirmation", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./savedPatternDeleteConfirmation")>();
+  return {
+    ...actual,
+    promptSavedPatternDeleteConfirmation: (...args: unknown[]) => promptDeleteConfirmMock(...args),
+  };
+});
 
 const loadSavedCustomPatternProjectMock = vi.fn();
 vi.mock("./loadSavedCustomPatternProject", () => ({
@@ -286,12 +295,15 @@ describe("accountMyPatternsList", () => {
     vi.clearAllMocks();
     listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: [] });
     deleteCustomPatternProjectMock.mockResolvedValue({ ok: true });
+    promptDeleteConfirmMock.mockResolvedValue("delete");
     copyByIdMock.mockResolvedValue({ ok: true, project: {} });
     renameMock.mockResolvedValue({ ok: true, project: {} });
     loadSavedCustomPatternProjectMock.mockResolvedValue({
       ok: true,
       redirectHref: "/patterns/sleeveless/pattern/",
     });
+    // Reset Memberstack stubs so free-claim state from prior tests cannot leak into delete flows.
+    vi.stubGlobal("window", {});
     vi.stubGlobal("document", {
       createElement: (tag: string) => makeEl(tag),
     });
@@ -531,8 +543,7 @@ describe("accountMyPatternsList", () => {
       ok: true,
       projects: sampleProjects,
     });
-    const confirm = vi.fn(() => true);
-    vi.stubGlobal("window", { confirm });
+    promptDeleteConfirmMock.mockResolvedValue("delete");
 
     await initAccountMyPatternsList(root);
 
@@ -542,7 +553,7 @@ describe("accountMyPatternsList", () => {
     await delA?._click?.();
     await flushAsync();
 
-    expect(confirm).toHaveBeenCalledWith(DELETE_SAVED_PATTERN_CONFIRM_MESSAGE);
+    expect(promptDeleteConfirmMock).toHaveBeenCalled();
     expect(deleteCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "sleeveless");
     expect(listCustomPatternProjectsMock).toHaveBeenCalledTimes(1);
 
@@ -561,8 +572,7 @@ describe("accountMyPatternsList", () => {
       ok: true,
       projects: sampleProjects,
     });
-    const confirm = vi.fn(() => false);
-    vi.stubGlobal("window", { confirm });
+    promptDeleteConfirmMock.mockResolvedValue("cancel");
 
     await initAccountMyPatternsList(root);
 
@@ -570,8 +580,9 @@ describe("accountMyPatternsList", () => {
       (b) => b.dataset.projectId === "proj-a",
     );
     await delA?._click?.();
+    await flushAsync();
 
-    expect(confirm).toHaveBeenCalledWith(DELETE_SAVED_PATTERN_CONFIRM_MESSAGE);
+    expect(promptDeleteConfirmMock).toHaveBeenCalled();
     expect(deleteCustomPatternProjectMock).not.toHaveBeenCalled();
     expect(collectMatches(list._children, "[data-kbm-my-patterns-row]").length).toBe(2);
   });
@@ -586,8 +597,7 @@ describe("accountMyPatternsList", () => {
       ok: false,
       error: "Server refused this delete.",
     });
-    const confirm = vi.fn(() => true);
-    vi.stubGlobal("window", { confirm });
+    promptDeleteConfirmMock.mockResolvedValue("delete");
 
     await initAccountMyPatternsList(root);
 
@@ -627,8 +637,7 @@ describe("accountMyPatternsList", () => {
         },
       ],
     });
-    const confirm = vi.fn(() => true);
-    vi.stubGlobal("window", { confirm });
+    promptDeleteConfirmMock.mockResolvedValue("delete");
 
     await initAccountMyPatternsList(root);
     expect(collectMatches(list._children, "[data-kbm-my-patterns-group]").length).toBe(2);
@@ -653,8 +662,7 @@ describe("accountMyPatternsList", () => {
       ok: true,
       projects: [sampleProjects[0]],
     });
-    const confirm = vi.fn(() => true);
-    vi.stubGlobal("window", { confirm });
+    promptDeleteConfirmMock.mockResolvedValue("delete");
 
     await initAccountMyPatternsList(root);
 
@@ -677,8 +685,7 @@ describe("accountMyPatternsList", () => {
       ok: true,
       projects: sampleProjects,
     });
-    const confirm = vi.fn(() => true);
-    vi.stubGlobal("window", { confirm });
+    promptDeleteConfirmMock.mockResolvedValue("delete");
 
     await initAccountMyPatternsList(root);
     expect(readActiveCustomPatternProjectId()).toBe("proj-a");
@@ -749,8 +756,7 @@ describe("accountMyPatternsList", () => {
         },
       ],
     });
-    const confirm = vi.fn(() => true);
-    vi.stubGlobal("window", { confirm });
+    promptDeleteConfirmMock.mockResolvedValue("delete");
 
     await initAccountMyPatternsList(root);
 
@@ -760,8 +766,11 @@ describe("accountMyPatternsList", () => {
     await delDs?._click?.();
     await flushAsync();
 
-    expect(confirm).toHaveBeenCalledWith(DELETE_SAVED_PATTERN_CONFIRM_MESSAGE);
+    expect(promptDeleteConfirmMock).toHaveBeenCalled();
     expect(deleteCustomPatternProjectMock).toHaveBeenCalledWith("proj-ds", "sleeveless");
+    expect(DELETE_SAVED_PATTERN_CONFIRM_MESSAGE).toBe(
+      "Delete this pattern? This cannot be undone.",
+    );
     expect(
       collectMatches(list._children, "[data-kbm-my-patterns-row]").map(
         (r) => r._children[0]?._children[0]?.textContent,
