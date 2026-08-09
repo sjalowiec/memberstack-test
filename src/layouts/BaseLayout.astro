@@ -19,6 +19,11 @@ interface Props {
   skipGlobalPinterest?: boolean;
   /** When set (e.g. tool pages using BaseLayout directly), adds a print-only attribution line. */
   toolPrintTitle?: string;
+  /**
+   * Hide the floating membership corner CTA (Become / Manage Membership).
+   * Used by pattern workspaces so the pill never mounts (no flash).
+   */
+  hideMembershipCorner?: boolean;
 }
 
 const {
@@ -26,7 +31,8 @@ const {
   description = "Machine knitting tools and patterns",
   bodyClass = "",
   skipGlobalPinterest = false,
-  toolPrintTitle
+  toolPrintTitle,
+  hideMembershipCorner = false,
 } = Astro.props;
 
 const hostname =
@@ -248,7 +254,7 @@ const isProduction =
     <AccountPasswordResetModal />
     <KinCatalogVideoModal />
     <KinImageModal />
-    <MembershipCornerControl />
+    {!hideMembershipCorner && <MembershipCornerControl />}
 
     <script>
       import "../scripts/accountPasswordResetModal.ts";

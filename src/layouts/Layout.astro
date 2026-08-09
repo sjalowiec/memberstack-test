@@ -26,8 +26,15 @@ interface Props {
    * Pattern Builder / Edit / saved-view workspaces: compact phone header
    * (hide tall search strip; keep logo + hamburger + search icon).
    * Desktop/tablet headers are unchanged.
+   * Also hides the floating membership corner CTA (see hideMembershipCorner).
    */
   patternWorkspace?: boolean;
+  /**
+   * Hide the sitewide floating membership corner CTA.
+   * Defaults to true when patternWorkspace is set; pass explicitly for print
+   * routes that are not phone-workspace pages.
+   */
+  hideMembershipCorner?: boolean;
 }
 
 const {
@@ -39,7 +46,11 @@ const {
   onboarding = false,
   marketing = false,
   patternWorkspace = false,
+  hideMembershipCorner: hideMembershipCornerProp,
 } = Astro.props;
+
+/** Pattern workspaces hide the corner CTA by default (SSR — no flash). */
+const hideMembershipCorner = hideMembershipCornerProp ?? patternWorkspace;
 
 // Onboarding and marketing pages get a body hook so the minimal header height is
 // respected without touching the global header offset used by the rest of the site.
@@ -48,6 +59,7 @@ const resolvedBodyClass = [
   onboarding ? "page--onboarding" : "",
   marketing ? "page--marketing" : "",
   patternWorkspace ? "page--pattern-workspace page--tight-header" : "",
+  hideMembershipCorner ? "page--hide-membership-corner" : "",
 ]
   .filter(Boolean)
   .join(" ");
@@ -59,6 +71,7 @@ const resolvedBodyClass = [
   description={description}
   bodyClass={resolvedBodyClass}
   skipGlobalPinterest={skipGlobalPinterest}
+  hideMembershipCorner={hideMembershipCorner}
 >
   <slot name="head" slot="head" />
   <Header onboarding={onboarding} marketing={marketing} patternWorkspace={patternWorkspace} />
