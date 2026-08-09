@@ -355,13 +355,17 @@ function dropShoulderFrontCastOnSts(
   return d.hemCastOnStitches ?? d.backStitches ?? 0;
 }
 
-function dropShoulderVNeckEdgeNotationLines(
-  fullNecklineSts: number,
+/**
+ * V-neck JP from an already-resolved decrease count (same value written instructions pass to
+ * {@link evenShapingSchedule}). Do not pass a full neck opening here — callers must supply
+ * pullover per-side or cardigan `neckPerFront` stitches.
+ */
+function dropShoulderVNeckDecreaseNotationLines(
+  decreaseStitches: number,
   depthRows: number,
 ): string[] {
-  const perSide = neckDecreaseStitchesPerSideFromOpening(fullNecklineSts);
-  if (perSide <= 0 || depthRows <= 0) return [];
-  const sched = evenShapingSchedule(perSide, depthRows);
+  if (decreaseStitches <= 0 || depthRows <= 0) return [];
+  const sched = evenShapingSchedule(decreaseStitches, depthRows);
   if (sched.count <= 0) return [];
   return [formatShapingSegment(1, sched.interval, sched.count)];
 }
@@ -396,10 +400,15 @@ export function buildDropShoulderFrontJapaneseNotationReplacements(
   let frontRoundPlan: ReturnType<typeof calculateRoundNecklinePlan> | null = null;
 
   if (isVNeck) {
-    const neckOpening = isCardigan
+    // Match buildCardiganFrontRows / buildPulloverFrontRows: cardigan uses neckPerFront
+    // (half opening) as the decrease count; pullover halves the full opening once.
+    const decreaseStitches = isCardigan
       ? cardiganFrontNeckOpeningStitches(fullNecklineSts)
-      : fullNecklineSts;
-    necklineShapingLines = dropShoulderVNeckEdgeNotationLines(neckOpening, frontNeckDepthRows);
+      : neckDecreaseStitchesPerSideFromOpening(fullNecklineSts);
+    necklineShapingLines = dropShoulderVNeckDecreaseNotationLines(
+      decreaseStitches,
+      frontNeckDepthRows,
+    );
   } else if (fullNecklineSts > 0) {
     if (isCardigan) {
       const cardiganRound = dropShoulderCardiganRoundNeckEdgeNotationLines(
