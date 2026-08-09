@@ -229,7 +229,9 @@
   }
 
   :global(.account-my-patterns__action--edit.is-disabled),
-  :global(.account-my-patterns__action--edit[aria-disabled="true"]) {
+  :global(.account-my-patterns__action--edit[aria-disabled="true"]),
+  :global(.account-my-patterns__action--copy.is-disabled),
+  :global(.account-my-patterns__action--copy[aria-disabled="true"]) {
     opacity: 0.55;
     cursor: not-allowed;
     color: #9ca3af;
@@ -238,7 +240,9 @@
   }
 
   :global(.account-my-patterns__action--edit.is-disabled:hover),
-  :global(.account-my-patterns__action--edit[aria-disabled="true"]:hover) {
+  :global(.account-my-patterns__action--edit[aria-disabled="true"]:hover),
+  :global(.account-my-patterns__action--copy.is-disabled:hover),
+  :global(.account-my-patterns__action--copy[aria-disabled="true"]:hover) {
     background: #f3f4f6;
     border-color: #e5e7eb;
   }

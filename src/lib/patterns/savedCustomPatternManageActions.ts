@@ -32,6 +32,15 @@ export type ManageSavedCustomPatternResult =
   | { ok: true; project: CustomPatternProject }
   | { ok: false; error: string };
 
+/** Status line shown after a successful saved-pattern copy (My Patterns + library drawer). */
+export function formatPatternCopiedMessage(projectName: string): string {
+  const trimmed = projectName.trim();
+  if (trimmed) {
+    return `Pattern copied. “${trimmed}” is ready to edit.`;
+  }
+  return "Pattern copied. Your new copy is ready to edit.";
+}
+
 /**
  * Copies a stored saved project into a brand-new saved project.
  *

@@ -6,6 +6,7 @@ import {
 } from "./customPatternProjectActiveId";
 import {
   copySavedCustomPatternProjectById,
+  formatPatternCopiedMessage,
   renameSavedCustomPatternProject,
 } from "./savedCustomPatternManageActions";
 
@@ -120,6 +121,15 @@ describe("copySavedCustomPatternProjectById", () => {
 
     expect(res).toEqual({ ok: false, error: "not found" });
     expect(createCustomPatternProject).not.toHaveBeenCalled();
+  });
+
+  it("formats the shared post-copy status message used by My Patterns surfaces", () => {
+    expect(formatPatternCopiedMessage("Alpha pullover - Copy")).toBe(
+      "Pattern copied. “Alpha pullover - Copy” is ready to edit.",
+    );
+    expect(formatPatternCopiedMessage("")).toBe(
+      "Pattern copied. Your new copy is ready to edit.",
+    );
   });
 });
 

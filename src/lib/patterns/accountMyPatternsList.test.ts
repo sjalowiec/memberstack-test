@@ -24,10 +24,14 @@ vi.mock("./customPatternProjectClient", () => ({
   deleteCustomPatternProject: (...args: unknown[]) => deleteCustomPatternProjectMock(...args),
 }));
 
-vi.mock("./savedCustomPatternManageActions", () => ({
-  copySavedCustomPatternProjectById: (...args: unknown[]) => copyByIdMock(...args),
-  renameSavedCustomPatternProject: (...args: unknown[]) => renameMock(...args),
-}));
+vi.mock("./savedCustomPatternManageActions", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./savedCustomPatternManageActions")>();
+  return {
+    ...actual,
+    copySavedCustomPatternProjectById: (...args: unknown[]) => copyByIdMock(...args),
+    renameSavedCustomPatternProject: (...args: unknown[]) => renameMock(...args),
+  };
+});
 
 vi.mock("./savedPatternDeleteConfirmation", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./savedPatternDeleteConfirmation")>();
@@ -309,7 +313,7 @@ describe("accountMyPatternsList", () => {
     });
   });
 
-  it("renders accordion groups with Open, Edit, and Delete on each card", async () => {
+  it("renders accordion groups with Open, Edit, Copy, and Delete on each card", async () => {
     const { root, list, viewAllWrap } = makeAccountRoot();
     listCustomPatternProjectsMock.mockResolvedValue({
       ok: true,
@@ -331,15 +335,105 @@ describe("accountMyPatternsList", () => {
 
     expect(collectMatches(list._children, "[data-kbm-my-patterns-view]").length).toBe(2);
     expect(collectMatches(list._children, "[data-kbm-my-patterns-edit]").length).toBe(2);
+    expect(collectMatches(list._children, "[data-kbm-my-patterns-copy]").length).toBe(2);
     expect(collectMatches(list._children, "[data-kbm-my-patterns-delete]").length).toBe(2);
-    expect(collectMatches(list._children, "[data-kbm-my-patterns-copy]").length).toBe(0);
     expect(collectMatches(list._children, "[data-kbm-my-patterns-rename]").length).toBe(0);
     expect(collectMatches(list._children, "[data-kbm-my-patterns-view]")[0].textContent).toBe("Open");
+    expect(collectMatches(list._children, "[data-kbm-my-patterns-copy]")[0].textContent).toBe("Copy");
     expect(collectMatches(list._children, "[data-kbm-my-patterns-delete]")[0].textContent).toBe(
       "Delete",
     );
   });
 
+  it("offers Copy on every supported saved pattern type in the expanded list", async () => {
+    const { root, list } = makeAccountRoot();
+    const systems = ["sleeveless", "drop-shoulder", "blanket", "hat", "raglan"] as const;
+    listCustomPatternProjectsMock.mockResolvedValue({
+      ok: true,
+      projects: systems.map((patternSystem, i) => ({
+        id: `proj-${patternSystem}`,
+        name: `${patternSystem} pattern`,
+        family: "sleeveless" as const,
+        source: "express" as const,
+        patternSystem,
+        updatedAt: `2026-0${i + 1}-01T00:00:00.000Z`,
+      })),
+    });
+
+    await initAccountMyPatternsList(root);
+
+    const groups = collectMatches(list._children, "[data-kbm-my-patterns-group]");
+    expect(groups.map((g) => g.dataset.patternSystem).sort()).toEqual([...systems].sort());
+    const copyBtns = collectMatches(list._children, "[data-kbm-my-patterns-copy]");
+    expect(copyBtns.length).toBe(systems.length);
+    expect(copyBtns.every((b) => b.textContent === "Copy")).toBe(true);
+    for (const patternSystem of systems) {
+      const row = collectMatches(list._children, "[data-kbm-my-patterns-row]").find(
+        (r) => r.dataset.patternSystem === patternSystem,
+      );
+      expect(row).toBeTruthy();
+      expect(collectMatches(row!._children, "[data-kbm-my-patterns-view]").length).toBe(1);
+      expect(collectMatches(row!._children, "[data-kbm-my-patterns-edit]").length).toBe(1);
+      expect(collectMatches(row!._children, "[data-kbm-my-patterns-copy]").length).toBe(1);
+      expect(collectMatches(row!._children, "[data-kbm-my-patterns-delete]").length).toBe(1);
+    }
+  });
+
+  it("copies a Drop Shoulder pattern with the same shared Copy behavior", async () => {
+    const { root, status, list } = makeAccountRoot();
+    const original = {
+      id: "proj-ds",
+      name: "Drop shoulder pullover",
+      family: "sleeveless" as const,
+      source: "express" as const,
+      patternSystem: "drop-shoulder" as const,
+      updatedAt: "2026-02-01T00:00:00.000Z",
+    };
+    const copied = {
+      ...original,
+      id: "proj-ds-copy",
+      name: "Drop shoulder pullover - Copy",
+      updatedAt: "2026-02-02T00:00:00.000Z",
+    };
+    listCustomPatternProjectsMock
+      .mockResolvedValueOnce({ ok: true, projects: [original] })
+      .mockResolvedValueOnce({ ok: true, projects: [copied, original] });
+    copyByIdMock.mockResolvedValue({
+      ok: true,
+      project: {
+        ...copied,
+        createdAt: "2026-02-02T00:00:00.000Z",
+        version: 1,
+        customOverrides: {},
+        pattern: { id: "pat-ds", patternType: "sleeveless" },
+      },
+    });
+    vi.stubGlobal("window", {
+      $memberstackDom: {
+        getCurrentMember: async () => ({
+          data: {
+            id: "ms_member",
+            planConnections: [{ planId: "pln_kin-membership-annual-qf9g01et" }],
+          },
+        }),
+        getMemberJSON: async () => ({ data: {} }),
+      },
+    });
+
+    await initAccountMyPatternsList(root);
+
+    const copyBtn = collectMatches(list._children, "[data-kbm-my-patterns-copy]")[0];
+    await copyBtn?._click?.();
+    await flushAsync();
+
+    expect(copyByIdMock).toHaveBeenCalledWith("proj-ds", "sleeveless");
+    expect(status.textContent).toContain("Drop shoulder pullover - Copy");
+    expect(
+      collectMatches(list._children, "[data-kbm-my-patterns-row]").map(
+        (r) => r.dataset.patternSystem,
+      ),
+    ).toEqual(["drop-shoulder", "drop-shoulder"]);
+  });
   it("starts every pattern-system accordion collapsed", async () => {
     const { root, list } = makeAccountRoot();
     listCustomPatternProjectsMock.mockResolvedValue({
@@ -523,6 +617,120 @@ describe("accountMyPatternsList", () => {
       expect.objectContaining({ loggedIn: true, hasSystemAccess: false }),
       expect.objectContaining({ patternSystem: "drop-shoulder" }),
     );
+  });
+
+  it("copies via the shared copySavedCustomPatternProjectById path and refreshes with a new id", async () => {
+    const { root, status, list } = makeAccountRoot();
+    const original = {
+      id: "proj-a",
+      name: "Alpha pullover",
+      family: "sleeveless" as const,
+      source: "express" as const,
+      patternSystem: "sleeveless",
+      updatedAt: "2026-01-01T00:00:00.000Z",
+      gauge: { stitchesPerInch: 7, rowsPerInch: 11 },
+    };
+    const copied = {
+      id: "proj-a-copy",
+      name: "Alpha pullover - Copy",
+      family: "sleeveless" as const,
+      source: "express" as const,
+      patternSystem: "sleeveless",
+      updatedAt: "2026-01-03T00:00:00.000Z",
+      gauge: { stitchesPerInch: 7, rowsPerInch: 11 },
+    };
+    listCustomPatternProjectsMock
+      .mockResolvedValueOnce({ ok: true, projects: [original] })
+      .mockResolvedValueOnce({ ok: true, projects: [copied, original] });
+    copyByIdMock.mockResolvedValue({
+      ok: true,
+      project: {
+        ...copied,
+        notes: "keep notes",
+        createdAt: "2026-01-03T00:00:00.000Z",
+        version: 1,
+        customOverrides: { foo: 1 },
+        pattern: {
+          id: "pat-1",
+          patternType: "sleeveless",
+          style: { recipientCategory: "misses" },
+          fit: { sizingChart: "misses", selectedSize: "40" },
+        },
+      },
+    });
+    vi.stubGlobal("window", {
+      $memberstackDom: {
+        getCurrentMember: async () => ({
+          data: {
+            id: "ms_member",
+            planConnections: [{ planId: "pln_kin-membership-annual-qf9g01et" }],
+          },
+        }),
+        getMemberJSON: async () => ({ data: {} }),
+      },
+    });
+
+    await initAccountMyPatternsList(root);
+
+    const copyA = collectMatches(list._children, "[data-kbm-my-patterns-copy]").find(
+      (b) => b.dataset.projectId === "proj-a",
+    );
+    expect(copyA?.textContent).toBe("Copy");
+    expect(copyA?.getAttribute("aria-disabled")).not.toBe("true");
+
+    await copyA?._click?.();
+    await flushAsync();
+
+    expect(copyByIdMock).toHaveBeenCalledTimes(1);
+    expect(copyByIdMock).toHaveBeenCalledWith("proj-a", "sleeveless");
+    expect(listCustomPatternProjectsMock).toHaveBeenCalledTimes(2);
+    expect(status.textContent).toMatch(/Pattern copied\./i);
+    expect(status.textContent).toContain("Alpha pullover - Copy");
+    expect(status.textContent).toMatch(/ready to edit/i);
+
+    const rows = collectMatches(list._children, "[data-kbm-my-patterns-row]");
+    expect(rows.length).toBe(2);
+    const names = rows.map((row) => row._children[0]?._children[0]?.textContent);
+    expect(names).toContain("Alpha pullover - Copy");
+    expect(names).toContain("Alpha pullover");
+    expect(
+      collectMatches(list._children, "[data-kbm-my-patterns-copy]").some(
+        (b) => b.dataset.projectId === "proj-a-copy",
+      ),
+    ).toBe(true);
+    expect(
+      collectMatches(list._children, "[data-kbm-my-patterns-copy]").some(
+        (b) => b.dataset.projectId === "proj-a",
+      ),
+    ).toBe(true);
+  });
+
+  it("keeps accordion Copy visible but gated for free users, matching View All Patterns", async () => {
+    const { root, list } = makeAccountRoot();
+    listCustomPatternProjectsMock.mockResolvedValue({ ok: true, projects: sampleProjects });
+    vi.stubGlobal("window", {
+      $memberstackDom: {
+        getCurrentMember: async () => ({ data: { id: "ms_free" } }),
+        getMemberJSON: async () => ({
+          data: { freeSleevelessPatternClaimed: true, freeSleevelessPatternId: "proj-a" },
+        }),
+      },
+    });
+
+    await initAccountMyPatternsList(root);
+
+    const copyBtns = collectMatches(list._children, "[data-kbm-my-patterns-copy]");
+    expect(copyBtns.length).toBe(2);
+    expect(copyBtns.every((b) => b.textContent === "Copy")).toBe(true);
+    expect(copyBtns.every((b) => b.disabled === false)).toBe(true);
+    expect(copyBtns.every((b) => b.getAttribute("aria-disabled") === "true")).toBe(true);
+    expect(copyBtns[0]?.getAttribute("title")).toMatch(/included with membership/i);
+
+    await copyBtns[0]?._click?.();
+    await flushAsync();
+
+    expect(copyByIdMock).not.toHaveBeenCalled();
+    expect(offerPatternEditingUnlockModalMock).toHaveBeenCalled();
   });
 
   it("shows the empty state when there are no saved patterns", async () => {
