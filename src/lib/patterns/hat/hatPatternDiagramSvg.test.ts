@@ -28,7 +28,7 @@ function calcFor(overrides: Partial<Parameters<typeof calculateHatPattern>[0]> =
 }
 
 function expectSaneSvg(svg: string) {
-  expect(svg).toContain('viewBox="0 0 380 440"');
+  expect(svg).toContain('viewBox="0 0 430 460"');
   expect(svg).toContain("<title");
   expect(svg).toContain('data-hat-diagram="true"');
   expect(svg).not.toMatch(/\bNaN\b/);
@@ -60,13 +60,26 @@ describe("buildHatPatternDiagramSvg", () => {
     expect(svg).toContain('data-crown="wedge-4-decrease"');
     expect(svg).toContain("hat-diagram__crown--four-gore");
     expect(svg).toContain("Crown · 4 gores");
-    expect(svg).toContain("#1");
-    expect(svg).toContain("#4");
+    expect(svg).toContain(">Gore</tspan>");
+    expect(svg).toContain(">#1</tspan>");
+    expect(svg).toContain(">#4</tspan>");
     expect(svg).toContain("sts / gore");
+    expect(svg).not.toContain("textLength=");
     expect(svg).toContain(`${calc.crownRowCount} rows`);
     expect(svg).toContain(formatLengthWithUnit(calc.crownHeightInches, "inches"));
     expect(svg).not.toContain("hat-diagram__crown--gathered");
     expect(svg).not.toContain("hat-diagram__crown--swirl");
+
+    // Stitch-count sits below the wedge base (bodyTop), not over the tips.
+    const bodyTopMatch = svg.match(
+      /class="hat-diagram__body"[^>]*y="([\d.]+)"/,
+    );
+    const wedgeStsMatch = svg.match(
+      /y="([\d.]+)"[^>]*>\d+ sts \/ gore</,
+    );
+    expect(bodyTopMatch).toBeTruthy();
+    expect(wedgeStsMatch).toBeTruthy();
+    expect(Number(wedgeStsMatch![1])).toBeGreaterThan(Number(bodyTopMatch![1]));
   });
 
   it("renders swirl-specific structure for spiral", () => {
@@ -175,7 +188,36 @@ describe("buildHatPatternDiagramSvg", () => {
     expectSaneSvg(tall);
     expect(short).toContain(formatLengthWithUnit(5, "inches"));
     expect(tall).toContain(formatLengthWithUnit(22, "inches"));
-    expect(tall).toContain('viewBox="0 0 380 440"');
+    expect(tall).toContain('viewBox="0 0 430 460"');
+  });
+
+  it("embeds consistent site sans-serif typography on every diagram text node", () => {
+    const svg = buildHatPatternDiagramSvg(calcFor(), "inches", formatters);
+    expect(svg).toContain('font-family="Poppins, system-ui, Arial, sans-serif"');
+    expect(svg).toContain("<style type=\"text/css\"><![CDATA[text{font-family:Poppins, system-ui, Arial, sans-serif}]]></style>");
+    // No serif-only or Illustrator PostScript font names.
+    expect(svg).not.toMatch(/font-family="[^"]*(Times|Georgia|Minion|Myriad|ItalicMT)[^"]*"/i);
+    expect(svg).not.toMatch(/font-family="serif"/i);
+    // Body / Brim hierarchy shares the same family with heavier weight.
+    expect(svg).toMatch(
+      /font-family="Poppins, system-ui, Arial, sans-serif" font-size="23" font-weight="600">Body</,
+    );
+    expect(svg).toMatch(
+      /font-family="Poppins, system-ui, Arial, sans-serif" font-size="23" font-weight="600">Brim</,
+    );
+    // Measurement + stitch sizes are ≥50% above the prior 14/15 scale.
+    expect(svg).toMatch(/font-size="21"/);
+    expect(svg).toMatch(/font-size="23"/);
+    expect(svg).toMatch(/font-size="21" font-weight="600">Gather</);
+    expect(svg).toMatch(/font-size="20"[^>]*>Total</);
+  });
+
+  it("includes edit-measurement target anchors for the Edit Pattern drawer", () => {
+    const svg = buildHatPatternDiagramSvg(calcFor(), "inches", formatters);
+    expect(svg).toContain('id="target_hat_circumference"');
+    expect(svg).toContain('id="target_hat_length"');
+    expect(svg).toContain('id="target_hat_brim"');
+    expect(svg).toContain("hat-diagram__edit-targets");
   });
 
   it("agrees with calculateHatPattern for displayed row and stitch counts", () => {
@@ -203,8 +245,8 @@ describe("buildHatPatternDiagramSvg", () => {
     const slouchy = calcFor({ fit: "slouchy", totalHatLengthInches: 10 });
     const fittedSvg = buildHatPatternDiagramSvg(fitted, "inches", formatters);
     const slouchySvg = buildHatPatternDiagramSvg(slouchy, "inches", formatters);
-    expect(fittedSvg).toContain('viewBox="0 0 380 440"');
-    expect(slouchySvg).toContain('viewBox="0 0 380 440"');
+    expect(fittedSvg).toContain('viewBox="0 0 430 460"');
+    expect(slouchySvg).toContain('viewBox="0 0 430 460"');
     expect(fitted.bodyHeightInches).toBeLessThan(slouchy.bodyHeightInches);
     expect(fittedSvg).toContain(formatLengthWithUnit(fitted.hatHeight, "inches"));
     expect(slouchySvg).toContain(formatLengthWithUnit(slouchy.hatHeight, "inches"));

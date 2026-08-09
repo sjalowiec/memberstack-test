@@ -97,6 +97,32 @@
   color: #c2614e;
 }
 
+/* Neutral card tip — white panel, no pink tip background (hat Choose Your Brim, etc.) */
+.pattern-tip.pattern-tip--neutral {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  color: #374151;
+  padding: 0.85rem 2rem 0.85rem 1rem;
+}
+
+.pattern-tip.pattern-tip--neutral strong {
+  color: #1f2937;
+}
+
+.pattern-tip.pattern-tip--neutral .hat-choose-your-brim-tip__title {
+  margin: 0 0 0.65rem;
+  padding-right: 1.25rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.3;
+}
+
+.pattern-tip.pattern-tip--neutral .hat-choose-your-brim-tip__planning {
+  margin: 0 0 0.75rem;
+}
+
 .tips-inline-toggle {
   color: #c2614e;
   font-weight: 600;

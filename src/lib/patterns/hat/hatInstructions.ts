@@ -9,9 +9,10 @@ import {
   type HatPatternCalc,
   type HatSpiralPlan,
 } from "./hatMath";
+import { buildHatChooseYourBrimTipHtml } from "./hatChooseYourBrim";
 import { buildHatFourGoreCrownVideoTipHtml } from "./hatFourGoreCrownVideoTip";
+import { buildHatGatheredTopVideoHtml } from "./hatGatheredTopVideoTip";
 import { buildHatMattressStitchVideoHtml } from "./hatMattressStitchVideoTip";
-import { buildHatPlanningRibbingBrimTipHtml } from "./hatPlanningRibbingVideoTip";
 import { buildHatSwirlCrownVideoTipHtml } from "./hatSwirlCrownVideoTip";
 import {
   buildHatTransferStepCalloutHtml,
@@ -176,9 +177,6 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
   const crownStartRow = brimRows + bodyRows;
   const unit = currentUnit === "inches" ? "inches" : "cm";
 
-  const brimInstructionHtml =
-    'Work even in your chosen brim treatment — for example 1x1 or 2x2 ribbing or <span class="pattern-term" data-tooltip="Stitch pattern that copies knit and purl ribbing by having needles out of work. A favorite for knitters without a ribber.">mock ribbing</span>, a rolled stockinette edge, a fold-up band, or a <span class="pattern-term" data-tooltip="A folded, double-layer hem formed by hanging the cast-on stitches back onto the needles.">hung hem</span> — for the depth shown.';
-
   const patternCastOnSts = applyHatCrownCastOnAdjustment(castOnSts, crown);
 
   calc.fourWedgeCrownSetup = buildFourWedgeCrownSetup({
@@ -270,10 +268,12 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
       </figure>
       ${buildSpiralCrownInstructions(patternCastOnSts, crownStartRow, spiralPlan)}`;
   } else if (crown === "gathered") {
+    // Inline gather video once (gathered crown only) on the break-and-gather step.
+    const gatherRemainingStitchesVideoHtml = buildHatGatheredTopVideoHtml();
     crownInstructions = `
       <p>Transfer every other needle to its neighbor, leaving emptied needles out of work.</p>
       <div class="pattern-tip" data-tip data-tip-id="hat-crown-seaming-edges"><strong>Tip:</strong> Keep 2 stitches in work on each edge for seaming.</div>
-      <p>After knitting the full hat length, break the yarn, leaving ${breakYarnTailPhrase}.</p>
+      <p>After knitting the full hat length, break the yarn, leaving ${breakYarnTailPhrase}, and ${gatherRemainingStitchesVideoHtml}.</p>
       <p>Use a darning needle to run the yarn tail through the remaining live stitches and draw closed.</p>
     `;
   } else {
@@ -295,8 +295,12 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
 
   // Shared finishing inline video link (once per pattern) on the words “mattress stitch”.
   const mattressStitchVideoHtml = buildHatMattressStitchVideoHtml();
-  // Shared brim tip (once per pattern) before cast-on — advice only; does not change stitch count.
-  const planningRibbingBrimTipHtml = buildHatPlanningRibbingBrimTipHtml();
+  // Shared Choose Your Brim tip (once per pattern) — includes Planning Ribbing; never prints.
+  const chooseYourBrimTipHtml = buildHatChooseYourBrimTipHtml({
+    displayBrimDepth,
+    unit,
+    brimRows,
+  });
 
   const finishingGathered = `
         <p>Block the hat to set the shape.</p>
@@ -344,19 +348,18 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
         "<h4>Gauge (from your swatch)</h4>",
         `<p>${stitchGaugeRaw} stitches & ${rowGaugeRaw} rows per ${currentUnit === "inches" ? '4"' : "10 cm"}</p>`,
       )}
+      ${chooseYourBrimTipHtml}
       ${wrapHatPatternSection(
         "cast-on",
         "<h4>Cast-On</h4>",
-        `${planningRibbingBrimTipHtml}
-      <p>Cast on <strong>${patternCastOnSts} stitches</strong>.</p>
-      <div class="pattern-tip" data-tip data-tip-id="hat-cast-on-method"><strong>Tip:</strong> Use the cast-on method of your choice.</div>`,
+        `<p>Cast on <strong>${patternCastOnSts} stitches</strong>.</p>
+      <div class="pattern-tip" data-tip data-tip-id="hat-cast-on-method"><strong>Tip:</strong> Use the cast-on method of your choice, unless your chosen brim finish specifies one (for example, E-wrap for a rolled edge).</div>`,
       )}
       ${wrapHatPatternSection(
         "brim",
         `<h4>Visible Brim Height (${displayBrimDepth} ${unit})</h4>`,
-        `<p>Work ${brimRows} rows:</p>
+        `<p>Work ${brimRows} rows in your chosen brim finish.</p>
       ${brimType === "folded" ? '<div class="pattern-tip" data-tip data-tip-id="hat-folded-brim-length"><strong>Tip:</strong> This length includes extra rows for folding.</div>' : ""}
-      <p>${brimInstructionHtml}</p>
       ${brimDeeperBodyTipHtml}`,
       )}
       ${bodySectionWrapped}

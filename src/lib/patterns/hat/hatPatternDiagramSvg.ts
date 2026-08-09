@@ -11,6 +11,7 @@ import {
   buildFourWedgeCrownSetup,
   type HatPatternCalc,
 } from "./hatMath";
+import { HAT_EDIT_MEASUREMENT_TARGETS } from "./hatPatternEditTargets";
 
 export type HatPatternDiagramFormatters = {
   convertLength: (value: number, from: string, to: string) => number;
@@ -19,31 +20,43 @@ export type HatPatternDiagramFormatters = {
 
 export type HatPatternDiagramUnit = "inches" | "cm";
 
-const VB_W = 380;
-const VB_H = 440;
-const HAT_LEFT = 88;
-const HAT_RIGHT = 288;
+/** Canvas includes side/bottom gutters for large type; hat geometry stays fixed. */
+const VB_W = 430;
+const VB_H = 460;
+const HAT_LEFT = 96;
+const HAT_RIGHT = 296;
 const HAT_WIDTH = HAT_RIGHT - HAT_LEFT;
-const HAT_TOP = 48;
+const HAT_TOP = 52;
 const HAT_BOTTOM = 340;
 const ARROW = "#52682d";
 const STROKE = "#1a1a1a";
 const FILL = "#f4f6f1";
 const MUTED = "#4b5563";
-const FONT = "system-ui, -apple-system, Segoe UI, sans-serif";
+/** Site sans stack (`--font`); embedded on every <text> so print stays consistent. */
+const FONT = "Poppins, system-ui, Arial, sans-serif";
 
-/** Typography scale for the narrow diagram column + print. */
-const FS_SECTION = 15; // Body, Brim (~+15% from 13)
-const FS_CROWN_TITLE = 14; // Gather, Crown · … (~+17% from 12)
-const FS_MEASURE = 14; // row counts + length values (~+27% from 11)
-const FS_STITCH = 15; // cast-on primary (~+25% from 12)
-const FS_STITCH_SECONDARY = 14; // width under cast-on (~+27% from 11)
-const FS_DETAIL = 12; // sts/gore, decrease points (~+20% from 10)
-const FS_GORE = 13; // #1–#4 (~+18% from 11)
-const FS_SMALL = 12; // fold, gather (~+20% from 10)
-const FS_SUPPORT = 13; // Total caption (~+18% from 11)
-const LINE_GAP_V = 16; // stacked measurement lines
-const LINE_GAP_H = 17; // cast-on / width under hat
+/**
+ * Typography ≥50% larger than the prior diagram scale (15/14/12/13 → below).
+ * Section labels use the same family with slightly heavier weight for hierarchy.
+ */
+const FS_SECTION = 23; // Body, Brim
+const FS_CROWN_TITLE = 21; // Gather, Crown · …
+const FS_MEASURE = 21; // row counts + length values
+const FS_STITCH = 23; // cast-on primary
+const FS_STITCH_SECONDARY = 21; // width under cast-on
+const FS_DETAIL = 18; // sts/gore, decrease points
+const FS_GORE = 20; // #1–#4
+const FS_SMALL = 18; // fold, gather
+const FS_SUPPORT = 20; // Total caption
+const FW_SECTION = 600; // Body / Brim / crown titles
+const LINE_GAP_V = 24; // stacked measurement lines
+const LINE_GAP_H = 26; // cast-on / width under hat
+
+/** Shared SVG text attributes — always includes font-family for print fidelity. */
+function textFont(size: number, weight?: number): string {
+  const w = weight != null ? ` font-weight="${weight}"` : "";
+  return `font-family="${FONT}" font-size="${size}"${w}`;
+}
 
 type Frame = {
   brimTop: number;
@@ -259,7 +272,7 @@ function verticalArrow(
   labelLines.forEach((line, i) => {
     const dy = (i - (labelLines.length - 1) / 2) * LINE_GAP_V;
     parts.push(
-      `<text x="${fmtNum(labelX)}" y="${fmtNum(midY + dy)}" text-anchor="middle" dominant-baseline="middle" fill="${MUTED}" font-family="${FONT}" font-size="${FS_MEASURE}">${escapeXml(line)}</text>`,
+      `<text x="${fmtNum(labelX)}" y="${fmtNum(midY + dy)}" text-anchor="middle" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_MEASURE)}>${escapeXml(line)}</text>`,
     );
   });
   return parts.join("");
@@ -283,7 +296,7 @@ function horizontalArrow(
   labelLines.forEach((line, i) => {
     const size = i === 0 ? FS_STITCH : FS_STITCH_SECONDARY;
     parts.push(
-      `<text x="${fmtNum(midX)}" y="${fmtNum(labelY + i * LINE_GAP_H)}" text-anchor="middle" dominant-baseline="middle" fill="${MUTED}" font-family="${FONT}" font-size="${size}">${escapeXml(line)}</text>`,
+      `<text x="${fmtNum(midX)}" y="${fmtNum(labelY + i * LINE_GAP_H)}" text-anchor="middle" dominant-baseline="middle" fill="${MUTED}" ${textFont(size)}>${escapeXml(line)}</text>`,
     );
   });
   return parts.join("");
@@ -305,12 +318,12 @@ function drawBrim(frame: Frame): string {
       `<line class="hat-diagram__brim-double" x1="${fmtNum(hatLeft + 4)}" y1="${fmtNum(hatBottom - 5)}" x2="${fmtNum(hatRight - 4)}" y2="${fmtNum(hatBottom - 5)}" stroke="${STROKE}" stroke-width="1" opacity="0.55" fill="none"/>`,
     );
     parts.push(
-      `<text x="${fmtNum(frame.hatMidX)}" y="${fmtNum(foldY - 8)}" text-anchor="middle" fill="${MUTED}" font-family="${FONT}" font-size="${FS_SMALL}">fold</text>`,
+      `<text x="${fmtNum(frame.hatMidX)}" y="${fmtNum(foldY - 10)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_SMALL)}>fold</text>`,
     );
   }
 
   parts.push(
-    `<text x="${fmtNum(frame.hatMidX)}" y="${fmtNum((brimTop + hatBottom) / 2 + (isFolded ? 10 : 0))}" text-anchor="middle" dominant-baseline="middle" fill="${STROKE}" font-family="${FONT}" font-size="${FS_SECTION}">Brim</text>`,
+    `<text x="${fmtNum(frame.hatMidX)}" y="${fmtNum((brimTop + hatBottom) / 2 + (isFolded ? 12 : 0))}" text-anchor="middle" dominant-baseline="middle" fill="${STROKE}" ${textFont(FS_SECTION, FW_SECTION)}>Brim</text>`,
   );
   return parts.join("");
 }
@@ -319,7 +332,7 @@ function drawBody(frame: Frame): string {
   const { hatLeft, bodyTop, brimTop, hatMidX } = frame;
   return [
     `<rect class="hat-diagram__body" x="${fmtNum(hatLeft)}" y="${fmtNum(bodyTop)}" width="${fmtNum(HAT_WIDTH)}" height="${fmtNum(brimTop - bodyTop)}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.75"/>`,
-    `<text x="${fmtNum(hatMidX)}" y="${fmtNum((bodyTop + brimTop) / 2)}" text-anchor="middle" dominant-baseline="middle" fill="${STROKE}" font-family="${FONT}" font-size="${FS_SECTION}">Body</text>`,
+    `<text x="${fmtNum(hatMidX)}" y="${fmtNum((bodyTop + brimTop) / 2)}" text-anchor="middle" dominant-baseline="middle" fill="${STROKE}" ${textFont(FS_SECTION, FW_SECTION)}>Body</text>`,
   ].join("");
 }
 
@@ -348,13 +361,14 @@ function drawGatheredCrown(frame: Frame): string {
     `<g class="hat-diagram__crown hat-diagram__crown--gathered" data-crown-style="gathered">`,
     `<path d="${path}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.75"/>`,
     pleats,
-    `<text x="${fmtNum(hatMidX)}" y="${fmtNum(bodyTop - frame.crownVisual * 0.42)}" text-anchor="middle" fill="${STROKE}" font-family="${FONT}" font-size="${FS_CROWN_TITLE}">Gather</text>`,
+    // Sit above the tip so large type does not sit on the gather pleats.
+    `<text x="${fmtNum(hatMidX)}" y="${fmtNum(Math.max(16, crownTop - 2))}" text-anchor="middle" dominant-baseline="middle" fill="${STROKE}" ${textFont(FS_CROWN_TITLE, FW_SECTION)}>Gather</text>`,
     `</g>`,
   ].join("");
 }
 
 function drawFourGoreCrown(frame: Frame, labels: Labels): string {
-  const { hatLeft, hatRight, crownTop, bodyTop, hatMidX } = frame;
+  const { hatLeft, hatRight, crownTop, bodyTop, brimTop, hatMidX } = frame;
   const tipY = crownTop + 6;
   const valleyY = bodyTop - 4;
   // Four shaping repeats as zig-zag peaks (one piece, four decrease sections).
@@ -368,14 +382,30 @@ function drawFourGoreCrown(frame: Frame, labels: Labels): string {
     pts.push(`${fmtNum(right)},${fmtNum(i === peaks - 1 ? bodyTop : valleyY)}`);
   }
 
+  // Two-line “Gore / #n” so FS_GORE fits inside each wedge without horizontal squash.
+  const goreLabelY = tipY + (bodyTop - tipY) * 0.7;
+  const goreLineGap = FS_GORE + 1;
   const sectionLabels = [1, 2, 3, 4]
     .map((n) => {
       const left = hatLeft + (HAT_WIDTH * (n - 1)) / peaks;
       const right = hatLeft + (HAT_WIDTH * n) / peaks;
       const x = (left + right) / 2;
-      return `<text x="${fmtNum(x)}" y="${fmtNum(bodyTop - frame.crownVisual * 0.28)}" text-anchor="middle" fill="${MUTED}" font-family="${FONT}" font-size="${FS_GORE}">#${n}</text>`;
+      return (
+        `<text x="${fmtNum(x)}" y="${fmtNum(goreLabelY)}" text-anchor="middle" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_GORE)}>` +
+        `<tspan x="${fmtNum(x)}" dy="${fmtNum(-goreLineGap / 2)}">Gore</tspan>` +
+        `<tspan x="${fmtNum(x)}" dy="${fmtNum(goreLineGap)}">#${n}</tspan>` +
+        `</text>`
+      );
     })
     .join("");
+
+  const crownTitleY = Math.max(16, crownTop - 4);
+
+  // Stitch count: inside the hat, just below the wedge base — clear of tips, gore labels, and Body.
+  const bodyMidY = (bodyTop + brimTop) / 2;
+  const stitchBelowWedge = bodyTop + Math.max(34, FS_DETAIL + 16);
+  const stitchClearOfBody = bodyMidY - FS_SECTION - 14;
+  const wedgeStsY = Math.min(stitchBelowWedge, stitchClearOfBody);
 
   return [
     `<g class="hat-diagram__crown hat-diagram__crown--four-gore" data-crown-style="wedge-4-decrease">`,
@@ -383,9 +413,9 @@ function drawFourGoreCrown(frame: Frame, labels: Labels): string {
     `<line class="hat-diagram__crown-start" x1="${fmtNum(hatLeft)}" y1="${fmtNum(bodyTop)}" x2="${fmtNum(hatRight)}" y2="${fmtNum(bodyTop)}" stroke="${STROKE}" stroke-width="1.25" stroke-dasharray="6 4" fill="none"/>`,
     sectionLabels,
     labels.wedgeSts
-      ? `<text x="${fmtNum(hatMidX)}" y="${fmtNum(tipY + 16)}" text-anchor="middle" fill="${MUTED}" font-family="${FONT}" font-size="${FS_DETAIL}">${escapeXml(labels.wedgeSts)}</text>`
+      ? `<text x="${fmtNum(hatMidX)}" y="${fmtNum(wedgeStsY)}" text-anchor="middle" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_DETAIL)}>${escapeXml(labels.wedgeSts)}</text>`
       : "",
-    `<text x="${fmtNum(hatMidX)}" y="${fmtNum(crownTop - 6)}" text-anchor="middle" fill="${STROKE}" font-family="${FONT}" font-size="${FS_CROWN_TITLE}">Crown · 4 gores</text>`,
+    `<text x="${fmtNum(hatMidX)}" y="${fmtNum(crownTitleY)}" text-anchor="middle" fill="${STROKE}" ${textFont(FS_CROWN_TITLE, FW_SECTION)}>Crown · 4 gores</text>`,
     `</g>`,
   ].join("");
 }
@@ -418,12 +448,12 @@ function drawSwirlCrown(frame: Frame, labels: Labels): string {
     swirlLines,
     `<line class="hat-diagram__crown-start" x1="${fmtNum(hatLeft)}" y1="${fmtNum(bodyTop)}" x2="${fmtNum(hatRight)}" y2="${fmtNum(bodyTop)}" stroke="${STROKE}" stroke-width="1.25" stroke-dasharray="6 4" fill="none"/>`,
     labels.spiralPoints
-      ? `<text x="${fmtNum(hatMidX)}" y="${fmtNum(bodyTop - frame.crownVisual * 0.52)}" text-anchor="middle" fill="${MUTED}" font-family="${FONT}" font-size="${FS_DETAIL}">${escapeXml(labels.spiralPoints)}</text>`
+      ? `<text x="${fmtNum(hatMidX)}" y="${fmtNum(bodyTop - frame.crownVisual * 0.58)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_DETAIL)}>${escapeXml(labels.spiralPoints)}</text>`
       : "",
     labels.spiralTarget
-      ? `<text x="${fmtNum(hatMidX)}" y="${fmtNum(bodyTop - frame.crownVisual * 0.28)}" text-anchor="middle" fill="${MUTED}" font-family="${FONT}" font-size="${FS_DETAIL}">${escapeXml(labels.spiralTarget)}</text>`
+      ? `<text x="${fmtNum(hatMidX)}" y="${fmtNum(bodyTop - frame.crownVisual * 0.32)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_DETAIL)}>${escapeXml(labels.spiralTarget)}</text>`
       : "",
-    `<text x="${fmtNum(hatMidX)}" y="${fmtNum(crownTop - 6)}" text-anchor="middle" fill="${STROKE}" font-family="${FONT}" font-size="${FS_CROWN_TITLE}">Crown · Swirl</text>`,
+    `<text x="${fmtNum(hatMidX)}" y="${fmtNum(Math.max(16, crownTop - 4))}" text-anchor="middle" fill="${STROKE}" ${textFont(FS_CROWN_TITLE, FW_SECTION)}>Crown · Swirl</text>`,
     `</g>`,
   ].join("");
 }
@@ -436,15 +466,20 @@ function drawCrown(frame: Frame, labels: Labels): string {
 
 function drawMeasurements(frame: Frame, labels: Labels): string {
   const parts: string[] = [];
-  const leftX = 42;
-  const rightX = 328;
+  // Side gutters sized for FS_MEASURE / FS_STITCH so labels stay inside the viewBox.
+  const leftX = 54;
+  const rightX = 338;
+  const rightLabelX = rightX + 44;
+  const totalLabelX = 18;
+  const heightLabelX = 36;
+  const midHeightY = (frame.crownTop + frame.hatBottom) / 2;
 
-  // Total height (left).
+  // Total height (left): rotated caption clear of the numeric length.
   parts.push(
-    verticalArrow(leftX, frame.crownTop, frame.hatBottom, [labels.height], leftX - 16),
+    verticalArrow(leftX, frame.crownTop, frame.hatBottom, [labels.height], heightLabelX),
   );
   parts.push(
-    `<text x="${fmtNum(leftX - 16)}" y="${fmtNum((frame.crownTop + frame.hatBottom) / 2 - 28)}" text-anchor="middle" transform="rotate(-90 ${fmtNum(leftX - 16)} ${fmtNum((frame.crownTop + frame.hatBottom) / 2 - 28)})" fill="${MUTED}" font-family="${FONT}" font-size="${FS_SUPPORT}">Total</text>`,
+    `<text x="${fmtNum(totalLabelX)}" y="${fmtNum(midHeightY)}" text-anchor="middle" transform="rotate(-90 ${fmtNum(totalLabelX)} ${fmtNum(midHeightY)})" fill="${MUTED}" ${textFont(FS_SUPPORT)}>Total</text>`,
   );
 
   // Section heights (right).
@@ -454,7 +489,7 @@ function drawMeasurements(frame: Frame, labels: Labels): string {
       frame.brimTop,
       frame.hatBottom,
       [labels.brimRows, labels.brimDepth],
-      rightX + 28,
+      rightLabelX,
     ),
   );
   parts.push(
@@ -463,7 +498,7 @@ function drawMeasurements(frame: Frame, labels: Labels): string {
       frame.bodyTop,
       frame.brimTop,
       [labels.bodyRows, labels.bodyHeight],
-      rightX + 28,
+      rightLabelX,
     ),
   );
 
@@ -474,29 +509,43 @@ function drawMeasurements(frame: Frame, labels: Labels): string {
         frame.crownTop,
         frame.bodyTop,
         [labels.crownRows, labels.crownDepth],
-        rightX + 28,
+        rightLabelX,
       ),
     );
   } else {
     // Gathered: no crown depth — instructions gather the live stitches closed.
+    const gatherMidY = (frame.crownTop + frame.bodyTop) / 2;
     parts.push(
-      `<text x="${fmtNum(rightX + 4)}" y="${fmtNum((frame.crownTop + frame.bodyTop) / 2 - 8)}" text-anchor="start" dominant-baseline="middle" fill="${MUTED}" font-family="${FONT}" font-size="${FS_SMALL}">gather</text>`,
-      `<text x="${fmtNum(rightX + 4)}" y="${fmtNum((frame.crownTop + frame.bodyTop) / 2 + 10)}" text-anchor="start" dominant-baseline="middle" fill="${MUTED}" font-family="${FONT}" font-size="${FS_DETAIL}">${escapeXml(labels.castOn)}</text>`,
+      `<text x="${fmtNum(rightX + 8)}" y="${fmtNum(gatherMidY - 12)}" text-anchor="start" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_SMALL)}>gather</text>`,
+      `<text x="${fmtNum(rightX + 8)}" y="${fmtNum(gatherMidY + 14)}" text-anchor="start" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_DETAIL)}>${escapeXml(labels.castOn)}</text>`,
     );
   }
 
   // Cast-on + finished width under brim.
   parts.push(
     horizontalArrow(
-      frame.hatBottom + 22,
+      frame.hatBottom + 24,
       frame.hatLeft,
       frame.hatRight,
       [labels.castOn, labels.width],
-      frame.hatBottom + 40,
+      frame.hatBottom + 46,
     ),
   );
 
   return parts.join("");
+}
+
+function drawEditTargets(frame: Frame): string {
+  const circY = (frame.bodyTop + frame.brimTop) / 2;
+  const lengthY = (frame.crownTop + frame.hatBottom) / 2;
+  const brimY = (frame.brimTop + frame.hatBottom) / 2;
+  return [
+    `<g class="hat-diagram__edit-targets" aria-hidden="true">`,
+    `<circle id="${HAT_EDIT_MEASUREMENT_TARGETS.circumference}" cx="${fmtNum(frame.hatMidX)}" cy="${fmtNum(circY)}" r="5" fill="#c2614e" fill-opacity="0.35"/>`,
+    `<circle id="${HAT_EDIT_MEASUREMENT_TARGETS.length}" cx="${fmtNum(frame.hatLeft - 8)}" cy="${fmtNum(lengthY)}" r="5" fill="#c2614e" fill-opacity="0.35"/>`,
+    `<circle id="${HAT_EDIT_MEASUREMENT_TARGETS.brimDepth}" cx="${fmtNum(frame.hatRight + 8)}" cy="${fmtNum(brimY)}" r="5" fill="#c2614e" fill-opacity="0.35"/>`,
+    `</g>`,
+  ].join("");
 }
 
 /**
@@ -521,6 +570,7 @@ export function buildHatPatternDiagramSvg(
     drawBody(frame),
     drawCrown(frame, labels),
     drawMeasurements(frame, labels),
+    drawEditTargets(frame),
   ].join("");
 
   // Sanity: never emit broken numeric tokens.
@@ -533,6 +583,8 @@ export function buildHatPatternDiagramSvg(
     `<svg xmlns="http://www.w3.org/2000/svg" class="hat-pattern-diagram-svg" viewBox="0 0 ${VB_W} ${VB_H}" role="img" aria-labelledby="hat-diagram-title" data-hat-diagram="true" data-crown="${crownAttr}" data-brim="${brimAttr}" width="100%" height="auto">`,
     `<title id="hat-diagram-title">${escapeXml(labels.title)}</title>`,
     `<desc>Schematic hat diagram with brim, body, and ${escapeXml(crownAttr)} crown. Cast on ${escapeXml(labels.castOn)}, finished width ${escapeXml(labels.width)}, total length ${escapeXml(labels.height)}.</desc>`,
+    // Embedded style reinforces print/PDF when CSS variables are unavailable.
+    `<style type="text/css"><![CDATA[text{font-family:${FONT}}]]></style>`,
     `<rect x="0" y="0" width="${VB_W}" height="${VB_H}" fill="#fff"/>`,
     safeBody,
     `</svg>`,

@@ -25,9 +25,16 @@ export function buildGlossaryTooltipPlaceholderHtml(
   visibleText: string,
   escapeAttr: (s: string) => string,
   escapeText: (s: string) => string,
+  options?: { ariaLabel?: string },
 ): string {
   const label = (visibleText ?? "").trim();
-  return `<span class="glossary-tooltip-placeholder" data-glossary-id="${glossaryId}" data-term="${escapeAttr(label)}">${escapeText(label)}</span>`;
+  const ariaLabel = (options?.ariaLabel ?? "").trim();
+  const ariaAttr = ariaLabel ? ` data-aria-label="${escapeAttr(ariaLabel)}"` : "";
+  return (
+    `<span class="glossary-tooltip-placeholder" data-glossary-id="${glossaryId}" data-term="${escapeAttr(label)}"${ariaAttr}>` +
+    `${escapeText(label)}` +
+    `</span>`
+  );
 }
 
 /** Glossary entry for placing markers on the needlebed (machine knitting). */

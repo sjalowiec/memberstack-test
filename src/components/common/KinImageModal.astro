@@ -1,0 +1,196 @@
+---
+/**
+ * Site-wide modal for still images triggered by:
+ *   <button type="button" class="kbm-kin-image-modal"
+ *     data-image-src="/path/to.png"
+ *     data-image-alt="…"
+ *     data-image-title="…">
+ * Follows the same open/close conventions as KinCatalogVideoModal:
+ * Escape, visible close control, backdrop click, and focus return to the trigger.
+ */
+---
+
+<div
+  id="kbmKinImageModal"
+  class="kbm-kin-image-modal-root"
+  hidden
+  aria-hidden="true"
+>
+  <div class="kbm-kin-image-modal-root__backdrop" data-kin-image-close="true"></div>
+  <div
+    class="kbm-kin-image-modal-root__panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="kbmKinImageModalTitle"
+  >
+    <h2 id="kbmKinImageModalTitle" class="kbm-kin-image-modal-root__title">Image</h2>
+    <button
+      type="button"
+      id="kbmKinImageModalClose"
+      class="kbm-kin-image-modal-root__close"
+      aria-label="Close image"
+    >
+      ×
+    </button>
+    <div class="kbm-kin-image-modal-root__frame">
+      <img id="kbmKinImageModalImg" class="kbm-kin-image-modal-root__img" src="" alt="" decoding="async" />
+    </div>
+  </div>
+</div>
+
+<style>
+  .kbm-kin-image-modal-root {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .kbm-kin-image-modal-root[hidden],
+  .kbm-kin-image-modal-root[aria-hidden="true"] {
+    display: none !important;
+  }
+
+  .kbm-kin-image-modal-root__backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: rgba(17, 24, 39, 0.62);
+  }
+
+  .kbm-kin-image-modal-root__panel {
+    position: relative;
+    z-index: 1;
+    max-width: min(960px, 100%);
+    max-height: min(90vh, 100%);
+    width: auto;
+    margin: 0;
+    padding: 2.5rem 1rem 1rem;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 18px 48px rgba(15, 23, 42, 0.28);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .kbm-kin-image-modal-root__title {
+    margin: 0;
+    padding-right: 2.5rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #1f2937;
+  }
+
+  .kbm-kin-image-modal-root__close {
+    position: absolute;
+    top: 0.55rem;
+    right: 0.55rem;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: none;
+    border-radius: 999px;
+    background: #f3f4f6;
+    color: #111827;
+    font-size: 1.35rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .kbm-kin-image-modal-root__close:hover,
+  .kbm-kin-image-modal-root__close:focus-visible {
+    background: #e5e7eb;
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+  }
+
+  .kbm-kin-image-modal-root__frame {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-height: calc(90vh - 4.5rem);
+    overflow: hidden;
+  }
+
+  .kbm-kin-image-modal-root__img {
+    display: block;
+    max-width: 100%;
+    max-height: calc(90vh - 4.5rem);
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    var modal = document.getElementById("kbmKinImageModal");
+    var img = document.getElementById("kbmKinImageModalImg");
+    var closeBtn = document.getElementById("kbmKinImageModalClose");
+    var titleEl = document.getElementById("kbmKinImageModalTitle");
+    if (!modal || !img || !(img instanceof HTMLImageElement)) return;
+
+    var lastFocus = null;
+
+    function closeModal() {
+      modal.hidden = true;
+      modal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+      img.removeAttribute("src");
+      img.alt = "";
+      if (titleEl) titleEl.textContent = "Image";
+      if (lastFocus && typeof lastFocus.focus === "function") {
+        lastFocus.focus();
+      }
+      lastFocus = null;
+    }
+
+    function openModal(trigger) {
+      var src = (trigger.getAttribute("data-image-src") || "").trim();
+      if (!src) return;
+      var alt = (trigger.getAttribute("data-image-alt") || "").trim();
+      var title = (trigger.getAttribute("data-image-title") || "").trim() || "Image";
+      lastFocus = document.activeElement;
+      if (titleEl) titleEl.textContent = title;
+      img.alt = alt;
+      img.src = src;
+      modal.hidden = false;
+      modal.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+      if (closeBtn && typeof closeBtn.focus === "function") closeBtn.focus();
+    }
+
+    document.addEventListener(
+      "click",
+      function (e) {
+        var t = e.target;
+        if (!(t instanceof Element)) return;
+        var trigger = t.closest(".kbm-kin-image-modal");
+        if (!trigger) return;
+        if (!(trigger instanceof HTMLButtonElement) && !(trigger instanceof HTMLAnchorElement)) {
+          return;
+        }
+        var src = trigger.getAttribute("data-image-src");
+        if (!src) return;
+        e.preventDefault();
+        openModal(trigger);
+      },
+      true
+    );
+
+    if (closeBtn) closeBtn.addEventListener("click", closeModal);
+    var bd = modal.querySelector("[data-kin-image-close]");
+    if (bd) bd.addEventListener("click", closeModal);
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key !== "Escape") return;
+      if (modal.hidden) return;
+      e.preventDefault();
+      closeModal();
+    });
+  })();
+</script>

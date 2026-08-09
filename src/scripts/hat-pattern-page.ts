@@ -1,6 +1,6 @@
 /**
  * Finished Hat Pattern page — draft → calc → instructions + diagram.
- * Free / ungated. Does not use sweater storage or Edit drawer.
+ * Free / ungated. Edit Pattern drawer edits the same draft + existing hat math (no new route).
  */
 
 import {
@@ -13,6 +13,7 @@ import { buildHatSizingBuilderRows } from "../lib/patterns/hat/hatBuilderSizingL
 import { ensureHatDraftMigrated, readHatDraft } from "../lib/patterns/hat/hatDraft";
 import { buildHatPatternDiagramSvg } from "../lib/patterns/hat/hatPatternDiagramSvg";
 import { buildHatPatternHtml } from "../lib/patterns/hat/hatInstructions";
+import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate";
 import {
   buildHatPatternCalcFromDraft,
   buildHatPatternSummaryDlHtml,
@@ -23,6 +24,7 @@ import {
   waitForMemberstackDom,
   waitForMemberstackReady,
 } from "../lib/patterns/sleevelessPatternLoginGate";
+import { initHatPatternEditDrawer } from "./hat-pattern-edit-drawer.ts";
 import { triggerPatternPrint } from "./patternPrintPersonalization.ts";
 import hatSizingRows from "../data/sizing_hats.json";
 
@@ -99,9 +101,17 @@ function runHatPatternPrint(triggerEl: HTMLElement | null) {
   triggerPatternPrint(triggerEl, {});
 }
 
+function mountEditAction() {
+  const editBtn = document.querySelector("[data-hat-edit-open]");
+  if (!(editBtn instanceof HTMLElement)) return;
+  editBtn.hidden = false;
+  editBtn.style.display = "inline-flex";
+}
+
 function mountPrintAction() {
   const host = document.querySelector("[data-hat-pattern-actions]");
   if (!(host instanceof HTMLElement)) return;
+  mountEditAction();
   let printBtn = host.querySelector("#print-btn");
   if (!(printBtn instanceof HTMLButtonElement)) {
     printBtn = document.createElement("button");
@@ -146,6 +156,11 @@ function showEmptyState(message: string) {
   setVisible(results, false);
   const printBtn = document.querySelector("#print-btn");
   if (printBtn instanceof HTMLElement) printBtn.style.display = "none";
+  const editBtn = document.querySelector("[data-hat-edit-open]");
+  if (editBtn instanceof HTMLElement) {
+    editBtn.hidden = true;
+    editBtn.style.display = "none";
+  }
 }
 
 function showResultsShell() {
@@ -156,7 +171,7 @@ function showResultsShell() {
   mountPrintAction();
 }
 
-async function renderHatPattern() {
+export async function renderHatPattern() {
   ensureHatDraftMigrated();
   const draft = readHatDraft();
   const rows = sizingRows();
@@ -216,6 +231,7 @@ async function renderHatPattern() {
     formatters: { convertLength, formatLength },
   });
   mount.innerHTML = patternHTML;
+  hydrateGlossaryTooltipPlaceholders(mount);
   if (tipsScope instanceof HTMLElement) {
     tipsScope.setAttribute("data-show-tips", showTips ? "true" : "false");
   }
@@ -250,6 +266,10 @@ async function renderHatPattern() {
 export function initHatPatternPage() {
   const run = () => {
     bindInlinePrintLink();
+    initHatPatternEditDrawer({
+      sizingRows: sizingRows(),
+      onUpdated: () => renderHatPattern(),
+    });
     void syncHatPatternPersistNoticeMembership().catch(() => {
       applyHatPatternPersistNoticeMembership(document, "loggedOut");
     });

@@ -21,7 +21,7 @@ export const HAT_PLANNING_RIBBING_VIDEO_TIP_ID = "hat-planning-ribbing-brim";
 export const HAT_PLANNING_RIBBING_TIP_TITLE = "Planning a Ribbed Brim?";
 
 export const HAT_PLANNING_RIBBING_TIP_TEXT =
-  "If you plan to knit the brim in ribbing, you may need to add or subtract a stitch so the ribbing matches neatly at the seam. After completing the ribbing, increase or decrease back to the pattern stitch count.";
+  "If you plan to knit the brim in ribbing or mock ribbing, you may need to add or subtract a stitch so the ribbing matches neatly at the seam. After completing the ribbing, increase or decrease back to the pattern stitch count.";
 
 /** Accessible name for the inline video control. */
 export const HAT_PLANNING_RIBBING_WATCH_LABEL = "Watch Planning Ribbing for a Neat Seam";

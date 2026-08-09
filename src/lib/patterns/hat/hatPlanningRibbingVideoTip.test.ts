@@ -142,30 +142,34 @@ describe("hatPlanningRibbingVideoTip", () => {
     ["swirl", "spiral"],
     ["four-gore", "wedge-4-decrease"],
   ] as const)(
-    "appears exactly once before cast-on for %s hats (content_id 2211)",
+    "appears exactly once inside Choose Your Brim tip before cast-on for %s hats (content_id 2211)",
     (_label, crown) => {
       const calc = calcFor(crown);
       const html = patternHtml(crown);
       const patternCastOn = applyHatCrownCastOnAdjustment(calc.castOnSts, crown);
 
       expect(countContentId(html, HAT_PLANNING_RIBBING_VIDEO_CONTENT_ID)).toBe(1);
-      expect(html).toContain(`data-tip-id="${HAT_PLANNING_RIBBING_VIDEO_TIP_ID}"`);
       expect(html).toContain(HAT_PLANNING_RIBBING_TIP_TITLE);
       expect(html).toContain(HAT_PLANNING_RIBBING_TIP_TEXT);
       expect(html).toContain('data-testid="hat-planning-ribbing-video-watch"');
       expect(html).toContain("kbm-kin-catalog-video glossary-tooltip-trigger");
       expect(html).toContain(HAT_PLANNING_RIBBING_VISIBLE_TEXT);
+      expect(html).toContain('data-tip-id="hat-choose-your-brim"');
+      // Planning ribbing is embedded content — not its own dismissable tip wrapper.
+      expect(html).not.toContain('data-tip-id="hat-planning-ribbing-brim"');
 
       const castOnSectionIdx = html.indexOf('data-section-id="cast-on"');
-      const tipIdx = html.indexOf(`data-tip-id="${HAT_PLANNING_RIBBING_VIDEO_TIP_ID}"`);
+      const chooseTipIdx = html.indexOf('data-tip-id="hat-choose-your-brim"');
+      const videoIdx = html.indexOf(`data-content-id="${HAT_PLANNING_RIBBING_VIDEO_CONTENT_ID}"`);
       const castOnInstructionIdx = html.indexOf(
         `Cast on <strong>${patternCastOn} stitches</strong>`,
       );
       expect(castOnSectionIdx).toBeGreaterThan(-1);
-      expect(tipIdx).toBeGreaterThan(castOnSectionIdx);
-      expect(castOnInstructionIdx).toBeGreaterThan(tipIdx);
+      expect(chooseTipIdx).toBeGreaterThan(-1);
+      expect(videoIdx).toBeGreaterThan(chooseTipIdx);
+      expect(castOnSectionIdx).toBeGreaterThan(chooseTipIdx);
+      expect(castOnInstructionIdx).toBeGreaterThan(castOnSectionIdx);
 
-      // Calculated cast-on count remains unchanged by the tip.
       expect(html).toContain(
         `Cast on <strong>${patternCastOn} stitches</strong>.`,
       );
@@ -189,16 +193,13 @@ describe("hatPlanningRibbingVideoTip", () => {
     }
   });
 
-  it("wires shared brim helper once before cast-on (not duplicated per crown)", () => {
-    expect(instructionsSource).toContain("buildHatPlanningRibbingBrimTipHtml");
-    expect(instructionsSource).toMatch(
-      /planningRibbingBrimTipHtml = buildHatPlanningRibbingBrimTipHtml/,
-    );
-    expect(instructionsSource).toMatch(
-      /\$\{planningRibbingBrimTipHtml\}\s*\n\s*<p>Cast on/,
-    );
+  it("wires shared planning video helper into Choose Your Brim tip (not a separate tip)", () => {
+    expect(instructionsSource).toContain("buildHatChooseYourBrimTipHtml");
+    expect(instructionsSource).not.toContain("buildHatPlanningRibbingBrimTipHtml");
     expect(tipModuleSource).toContain("HAT_PLANNING_RIBBING_VIDEO_CONTENT_ID = 2211");
     expect(tipModuleSource).toContain("glossary-tooltip-label");
     expect(tipModuleSource).not.toContain("player.vimeo.com");
+    // Standalone tip builder remains available for unit tests of the video control.
+    expect(tipModuleSource).toContain("buildHatPlanningRibbingBrimTipHtml");
   });
 });

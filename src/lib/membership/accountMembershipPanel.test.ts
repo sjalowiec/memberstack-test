@@ -4,7 +4,9 @@ import {
   LEGACY_MEMBERSHIPS,
   MEMBERSHIPS,
   REMOVED_BASIC_MEMBERSHIP_PLAN_ID,
+  RETIRED_MONTHLY_SUBSCRIPTION_PRICE_ID,
 } from "../../config/memberships";
+import { hasMemberAccess } from "../memberAccess";
 import {
   accountMembershipPanelActions,
   billingIntervalFromActivePaidConnection,
@@ -13,12 +15,16 @@ import {
   memberHasStripeCustomerPortalAccess,
   resolveAccountMembershipPanelView,
 } from "./accountMembershipPanel";
+import { memberHasActivePaidMembership } from "./membershipCheckoutDecision";
 
 type TestPayment = {
   priceId?: string;
   nextBillingDate?: number | null;
   cancelAtDate?: number | null;
   lastBillingDate?: number | null;
+  amount?: number;
+  currency?: string;
+  status?: string;
 };
 
 function memberWithPlans(
@@ -26,6 +32,7 @@ function memberWithPlans(
     planId: string;
     status?: string;
     active?: boolean;
+    type?: string;
     priceId?: string;
     payment?: TestPayment;
   }>,
@@ -531,6 +538,39 @@ describe("resolveAccountMembershipPanelView", () => {
     expect(view.visibleActions).not.toContain("join");
   });
 
+  it("shows Manage Billing for REQUIRES_PAYMENT (Linda production shape)", () => {
+    const member = memberWithPlans([
+      {
+        active: false,
+        status: "REQUIRES_PAYMENT",
+        planId: LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId,
+        type: "SUBSCRIPTION",
+        payment: {
+          priceId: RETIRED_MONTHLY_SUBSCRIPTION_PRICE_ID,
+          amount: 19.99,
+          currency: "usd",
+          status: "REQUIRES_PAYMENT",
+          cancelAtDate: null,
+        },
+      },
+    ]);
+    const view = resolveAccountMembershipPanelView(member);
+    expect(view).toMatchObject({
+      kind: "member",
+      planDisplayLabel: "Monthly Membership",
+      statusLabel: "Payment Required",
+      billingInterval: "monthly",
+      billingLabel: "Monthly",
+      visibleActions: ["manageBilling"],
+    });
+    expect(view.visibleActions).toContain("manageBilling");
+    expect(view.visibleActions).not.toContain("join");
+    expect(memberHasStripeCustomerPortalAccess(member)).toBe(true);
+    // Access entitlement must stay locked - not an active paid membership.
+    expect(memberHasActivePaidMembership(member)).toBe(false);
+    expect(hasMemberAccess(member)).toBe(false);
+  });
+
   it("does not show Manage Billing for legacy-only free plan members", () => {
     const member = memberWithPlans([
       {
@@ -653,7 +693,7 @@ describe("billingIntervalFromActivePaidConnection", () => {
 });
 
 describe("isPortalEligiblePaidPlanConnection", () => {
-  it("accepts ACTIVE, TRIALING, and PAST_DUE paid connections", () => {
+  it("accepts ACTIVE, TRIALING, PAST_DUE, and REQUIRES_PAYMENT paid connections", () => {
     expect(
       isPortalEligiblePaidPlanConnection({
         planId: MEMBERSHIPS.membership.memberstackPlanId,
@@ -671,6 +711,14 @@ describe("isPortalEligiblePaidPlanConnection", () => {
         planId: MEMBERSHIPS.membership.memberstackPlanId,
         status: "PAST_DUE",
         active: false,
+      }),
+    ).toBe(true);
+    expect(
+      isPortalEligiblePaidPlanConnection({
+        planId: LEGACY_MEMBERSHIPS.monthlySubscription.memberstackPlanId,
+        status: "REQUIRES_PAYMENT",
+        active: false,
+        type: "SUBSCRIPTION",
       }),
     ).toBe(true);
   });
