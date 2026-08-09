@@ -88,6 +88,7 @@ type Frame = {
   hatLeft: number;
   hatRight: number;
   hatMidX: number;
+  hatWidth: number;
   brimVisual: number;
   bodyVisual: number;
   crownVisual: number;
@@ -252,14 +253,26 @@ function buildFrame(calc: HatPatternCalc): Frame {
   const bodyTop = brimTop - bodyVisual;
   const crownTop = bodyTop - crownVisual;
 
+  // Scale silhouette width with finished circumference so Summary/Edit preview
+  // (and the finished-pattern diagram) reflect size changes visually.
+  const REF_CIRC_INCHES = 20.5;
+  const circ = Number(calc.targetWidth);
+  const widthScale =
+    circ > 0 && Number.isFinite(circ) ? clamp(circ / REF_CIRC_INCHES, 0.55, 1.35) : 1;
+  const hatWidth = HAT_WIDTH * widthScale;
+  const hatMidX = (HAT_LEFT + HAT_RIGHT) / 2;
+  const hatLeft = hatMidX - hatWidth / 2;
+  const hatRight = hatMidX + hatWidth / 2;
+
   return {
     brimTop,
     bodyTop,
     crownTop,
     hatBottom,
-    hatLeft: HAT_LEFT,
-    hatRight: HAT_RIGHT,
-    hatMidX: (HAT_LEFT + HAT_RIGHT) / 2,
+    hatLeft,
+    hatRight,
+    hatMidX,
+    hatWidth,
     brimVisual,
     bodyVisual,
     crownVisual,
@@ -333,10 +346,10 @@ function horizontalArrow(
 }
 
 function drawBrim(frame: Frame): string {
-  const { hatLeft, hatRight, brimTop, hatBottom, brimType } = frame;
+  const { hatLeft, hatRight, brimTop, hatBottom, brimType, hatWidth } = frame;
   const isFolded = brimType === "folded";
   const parts: string[] = [
-    `<rect class="hat-diagram__brim" data-brim-style="${brimType}" x="${fmtNum(hatLeft)}" y="${fmtNum(brimTop)}" width="${fmtNum(HAT_WIDTH)}" height="${fmtNum(hatBottom - brimTop)}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.75"/>`,
+    `<rect class="hat-diagram__brim" data-brim-style="${brimType}" x="${fmtNum(hatLeft)}" y="${fmtNum(brimTop)}" width="${fmtNum(hatWidth)}" height="${fmtNum(hatBottom - brimTop)}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.75"/>`,
   ];
 
   if (isFolded) {
@@ -367,15 +380,15 @@ function drawBrim(frame: Frame): string {
 }
 
 function drawBody(frame: Frame): string {
-  const { hatLeft, bodyTop, brimTop, hatMidX } = frame;
+  const { hatLeft, bodyTop, brimTop, hatMidX, hatWidth } = frame;
   return [
-    `<rect class="hat-diagram__body" x="${fmtNum(hatLeft)}" y="${fmtNum(bodyTop)}" width="${fmtNum(HAT_WIDTH)}" height="${fmtNum(brimTop - bodyTop)}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.75"/>`,
+    `<rect class="hat-diagram__body" x="${fmtNum(hatLeft)}" y="${fmtNum(bodyTop)}" width="${fmtNum(hatWidth)}" height="${fmtNum(brimTop - bodyTop)}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.75"/>`,
     `<text x="${fmtNum(hatMidX)}" y="${fmtNum((bodyTop + brimTop) / 2)}" text-anchor="middle" dominant-baseline="middle" fill="${STROKE}" ${textFont(FS_SECTION, FW_SECTION)}>Body</text>`,
   ].join("");
 }
 
 function drawGatheredCrown(frame: Frame): string {
-  const { hatLeft, hatRight, crownTop, bodyTop, hatMidX } = frame;
+  const { hatLeft, hatRight, crownTop, bodyTop, hatMidX, hatWidth } = frame;
   const midY = crownTop + (bodyTop - crownTop) * 0.35;
   const tipY = crownTop + 4;
   // Soft gather pleats closing to a tip — not a shaped crown.
@@ -390,7 +403,7 @@ function drawGatheredCrown(frame: Frame): string {
 
   const pleats = [0.25, 0.4, 0.5, 0.6, 0.75]
     .map((t) => {
-      const x = hatLeft + HAT_WIDTH * t;
+      const x = hatLeft + hatWidth * t;
       return `<path d="M ${fmtNum(x)} ${fmtNum(bodyTop)} Q ${fmtNum(hatMidX + (x - hatMidX) * 0.35)} ${fmtNum(midY)} ${fmtNum(hatMidX)} ${fmtNum(tipY + 6)}" fill="none" stroke="${STROKE}" stroke-width="0.9" opacity="0.45"/>`;
     })
     .join("");
@@ -406,15 +419,15 @@ function drawGatheredCrown(frame: Frame): string {
 }
 
 function drawFourGoreCrown(frame: Frame, labels: Labels): string {
-  const { hatLeft, hatRight, crownTop, bodyTop, brimTop, hatMidX } = frame;
+  const { hatLeft, hatRight, crownTop, bodyTop, brimTop, hatMidX, hatWidth } = frame;
   const tipY = crownTop + 6;
   const valleyY = bodyTop - 4;
   // Four shaping repeats as zig-zag peaks (one piece, four decrease sections).
   const peaks = 4;
   const pts: string[] = [`${fmtNum(hatLeft)},${fmtNum(bodyTop)}`];
   for (let i = 0; i < peaks; i += 1) {
-    const left = hatLeft + (HAT_WIDTH * i) / peaks;
-    const right = hatLeft + (HAT_WIDTH * (i + 1)) / peaks;
+    const left = hatLeft + (hatWidth * i) / peaks;
+    const right = hatLeft + (hatWidth * (i + 1)) / peaks;
     const mid = (left + right) / 2;
     pts.push(`${fmtNum(mid)},${fmtNum(tipY)}`);
     pts.push(`${fmtNum(right)},${fmtNum(i === peaks - 1 ? bodyTop : valleyY)}`);
@@ -424,8 +437,8 @@ function drawFourGoreCrown(frame: Frame, labels: Labels): string {
   const goreLabelY = tipY + (bodyTop - tipY) * 0.7;
   const sectionLabels = [1, 2, 3, 4]
     .map((n) => {
-      const left = hatLeft + (HAT_WIDTH * (n - 1)) / peaks;
-      const right = hatLeft + (HAT_WIDTH * n) / peaks;
+      const left = hatLeft + (hatWidth * (n - 1)) / peaks;
+      const right = hatLeft + (hatWidth * n) / peaks;
       const x = (left + right) / 2;
       return (
         `<text x="${fmtNum(x)}" y="${fmtNum(goreLabelY)}" text-anchor="middle" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_GORE)}>#${n}</text>`
@@ -455,7 +468,7 @@ function drawFourGoreCrown(frame: Frame, labels: Labels): string {
 }
 
 function drawSwirlCrown(frame: Frame, labels: Labels): string {
-  const { hatLeft, hatRight, crownTop, bodyTop, hatMidX } = frame;
+  const { hatLeft, hatRight, crownTop, bodyTop, hatMidX, hatWidth } = frame;
   const tipY = crownTop + 8;
   // Tapered crown silhouette.
   const outline = [
@@ -470,8 +483,8 @@ function drawSwirlCrown(frame: Frame, labels: Labels): string {
   // Six directional decrease lines (schematic swirl, not stitch paths).
   const swirlLines = Array.from({ length: 6 }, (_, i) => {
     const t = (i + 0.5) / 6;
-    const x0 = hatLeft + HAT_WIDTH * t;
-    const sweep = ((i % 2 === 0 ? 1 : -1) * HAT_WIDTH) / 10;
+    const x0 = hatLeft + hatWidth * t;
+    const sweep = ((i % 2 === 0 ? 1 : -1) * hatWidth) / 10;
     const cx = clamp(x0 + sweep, hatLeft + 8, hatRight - 8);
     return `<path d="M ${fmtNum(x0)} ${fmtNum(bodyTop)} Q ${fmtNum(cx)} ${fmtNum((bodyTop + tipY) / 2)} ${fmtNum(hatMidX)} ${fmtNum(tipY)}" fill="none" stroke="${STROKE}" stroke-width="1.1" opacity="0.7"/>`;
   }).join("");

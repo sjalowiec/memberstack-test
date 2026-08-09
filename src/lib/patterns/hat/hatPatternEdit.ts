@@ -4,7 +4,12 @@
  */
 import type { HatDraft, HatDraftUnit, HatGaugeSlot } from "./hatDraft";
 import { createEmptyHatDraft } from "./hatDraft";
-import { HAT_FIT_HEIGHTS_INCHES, resolveTotalHatLengthInches, type HatPatternCalc } from "./hatMath";
+import {
+  isHatNamedFitStyle,
+  resolveNamedFitLengthInches,
+  resolveTotalHatLengthInches,
+  type HatPatternCalc,
+} from "./hatMath";
 import {
   HAT_BUILDER_ALLOWED_CROWNS,
   HAT_BUILDER_INCOMPLETE_MESSAGE,
@@ -74,7 +79,7 @@ function nearlyEqual(a: number, b: number): boolean {
 
 /**
  * Display the same total finished length the pattern engine uses
- * (chart hatLength when a size is selected, else fit preset, else custom).
+ * (named fit preset when selected, else custom, else chart fallback).
  */
 export function resolvedFinishedHatLengthDisplay(
   args: {
@@ -146,7 +151,7 @@ export function hatDraftToEditFormValues(
 /**
  * Map edit-form values onto draft size/fit semantics.
  * Changing the circumference away from a chart size becomes custom size.
- * Changing length away from the resolved finished length (chart or fit preset) becomes custom length.
+ * Changing length away from the selected fit preset becomes custom length.
  */
 export function resolveHatEditSizeAndLength(
   form: HatEditFormValues,
@@ -185,18 +190,12 @@ export function resolveHatEditSizeAndLength(
   if (!fit || fit === "custom") {
     fit = "custom";
     customHatLength = lengthRaw;
-  } else if (Object.prototype.hasOwnProperty.call(HAT_FIT_HEIGHTS_INCHES, fit)) {
-    const preset = HAT_FIT_HEIGHTS_INCHES[fit as keyof typeof HAT_FIT_HEIGHTS_INCHES];
-    const chartLen = Number(sizingRows.find((s) => s.size === sizeSel)?.hatLength);
-    const matchesPreset = lengthInches != null && nearlyEqual(lengthInches, preset);
-    const matchesChart =
-      lengthInches != null &&
-      Number.isFinite(chartLen) &&
-      chartLen > 0 &&
-      nearlyEqual(lengthInches, chartLen);
-    // Keep named fit when the displayed length matches either the fit preset or the
-    // chart finished length (calc prefers chart when a size is selected).
-    if (matchesPreset || matchesChart) {
+  } else if (isHatNamedFitStyle(fit)) {
+    const preset = resolveNamedFitLengthInches(fit, sizeSel, sizingRows);
+    const matchesPreset =
+      preset != null && lengthInches != null && nearlyEqual(lengthInches, preset);
+    // Named fit is kept only when the measurement matches that style’s size-scaled length.
+    if (matchesPreset) {
       customHatLength = "";
     } else {
       fit = "custom";
@@ -376,12 +375,19 @@ export function convertHatEditLengthDisplay(
   return inchesToDisplay(inches, toUnit);
 }
 
-export function fitPresetLengthDisplay(fit: string, unit: HatDraftUnit): string {
-  if (!Object.prototype.hasOwnProperty.call(HAT_FIT_HEIGHTS_INCHES, fit)) return "";
-  return inchesToDisplay(
-    HAT_FIT_HEIGHTS_INCHES[fit as keyof typeof HAT_FIT_HEIGHTS_INCHES],
-    unit,
-  );
+/**
+ * Display the size-scaled finished length for a named length style.
+ * Uses the same resolver as the builder / pattern calc.
+ */
+export function fitPresetLengthDisplay(
+  fit: string,
+  unit: HatDraftUnit,
+  sizeSel: string = "",
+  sizingRows: ReadonlyArray<HatEditSizingRow> = [],
+): string {
+  const inches = resolveNamedFitLengthInches(fit, sizeSel, sizingRows);
+  if (!(inches != null && inches > 0)) return "";
+  return inchesToDisplay(inches, unit);
 }
 
 export function chartSizeCircumferenceDisplay(

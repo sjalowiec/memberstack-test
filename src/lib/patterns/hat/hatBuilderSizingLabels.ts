@@ -20,7 +20,7 @@ export type HatSizingLabelRow = {
 
 export const HAT_FIT_PRESET_LABEL_NAMES: Readonly<Record<string, string>> = {
   beanie: "Beanie",
-  watchcap: "Classic",
+  watchcap: "Standard",
   slouchy: "Slouchy",
   relaxed: "Relaxed",
 };

@@ -181,7 +181,7 @@ function lengthDisplayLabel(
     return raw ? `Custom · ${raw}${unitWord}` : "Custom";
   }
   const name = HAT_FIT_PRESET_LABEL_NAMES[fit] || fit || "—";
-  // Same total finished length as calc/diagram (chart hatLength wins over fit preset).
+  // Same total finished length as calc/diagram (named fit preset wins over chart hatLength).
   const inches = resolveTotalHatLengthInches({
     fit,
     hatSizeValue: draft.sizeSel,

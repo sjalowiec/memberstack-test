@@ -14,7 +14,9 @@ import {
 import { applyHatNewSessionFromUrl } from "../lib/patterns/hat/hatFreshStart";
 import {
   hatBrimDisplayLabel,
+  HAT_NAMED_FIT_STYLES,
   nextBrimLengthAfterBrimTypeChange,
+  resolveNamedFitLengthInches,
   resolveTotalHatLengthInches,
 } from "../lib/patterns/hat/hatMath";
 import {
@@ -292,6 +294,31 @@ function initHatBuilderPage(): void {
     });
   }
 
+  /** Refresh named length picker / select labels from the selected size’s Standard length. */
+  function refreshFitLengthLabels(unit: HatDraftUnit = activeUnit): void {
+    const sizeSel = readSelectValue(hatSizeSelect);
+    for (const fitKey of HAT_NAMED_FIT_STYLES) {
+      const inches = resolveNamedFitLengthInches(fitKey, sizeSel, sizingRows);
+      if (!(inches != null && inches > 0)) continue;
+      const label = buildFitPresetOptionLabel(fitKey, inches, unit);
+      const name = HAT_FIT_PRESET_LABEL_NAMES[fitKey] || fitKey;
+      const shortLabel =
+        unit === "inches"
+          ? `${name} (${inches % 1 === 0 ? String(inches) : inches.toFixed(1)}")`
+          : `${name} (${(inches * 2.54).toFixed(1)} cm)`;
+      if (fitSelect) {
+        const opt = Array.from(fitSelect.options).find((o) => o.value === fitKey);
+        if (opt) opt.textContent = label;
+      }
+      document
+        .querySelectorAll<HTMLElement>(`[data-choice][data-field="fit"][data-value="${fitKey}"]`)
+        .forEach((btn) => {
+          const span = btn.querySelector(".hat-length-picker__option-label");
+          if (span) span.textContent = shortLabel;
+        });
+    }
+  }
+
   function applyFitChoiceUi(): void {
     const fit = readSelectValue(fitSelect);
     syncChoiceButtons("fit", fit === "custom" ? "" : fit);
@@ -361,6 +388,7 @@ function initHatBuilderPage(): void {
     syncSizeSelectCompletion();
     updateFloatingLabels(activeUnit);
     refreshHatSizeDropdownLabels(activeUnit);
+    refreshFitLengthLabels(activeUnit);
     suppressPersist = false;
   }
 
@@ -385,7 +413,7 @@ function initHatBuilderPage(): void {
             : "Custom";
         }
         const name = HAT_FIT_PRESET_LABEL_NAMES[fields.fit] || fields.fit;
-        // Chart hatLength wins over fit preset — same total finished length as calc/diagram.
+        // Named fit preset wins over chart hatLength — same total as calc/diagram.
         const inches = resolveTotalHatLengthInches({
           fit: fields.fit,
           hatSizeValue: fields.sizeSel,
@@ -551,6 +579,7 @@ function initHatBuilderPage(): void {
     applyBrimChoiceUi();
     applyCrownChoiceUi();
     syncSizeSelectCompletion();
+    refreshFitLengthLabels();
     const fields = snapshotFields();
     const prevMax = maxReachable;
     refreshAccordionUi();
@@ -644,6 +673,7 @@ function initHatBuilderPage(): void {
     if (nextU === prevU) {
       updateFloatingLabels(nextU);
       refreshHatSizeDropdownLabels(nextU);
+      refreshFitLengthLabels(nextU);
       return;
     }
     if (stitchGaugeInput && rowGaugeInput) {
@@ -658,6 +688,7 @@ function initHatBuilderPage(): void {
     applyGaugeInputsFromActiveSlot();
     updateFloatingLabels(nextU);
     refreshHatSizeDropdownLabels(nextU);
+    refreshFitLengthLabels(nextU);
     onFieldChanged();
   }) as EventListener);
 

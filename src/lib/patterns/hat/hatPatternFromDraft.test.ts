@@ -69,7 +69,7 @@ describe("hatPatternFromDraft", () => {
       stitchGaugeDisplay: 5,
       rowGaugeDisplay: 7,
       displayUnit: "inches",
-      totalHatLengthInches: Number(row!.hatLength) || 8.5,
+      totalHatLengthInches: 11, // adult_woman Standard (watchcap)
       brimDepthInches: 2,
       brimType: "single",
       crown: "gathered",
@@ -79,6 +79,7 @@ describe("hatPatternFromDraft", () => {
     expect(result.calc.castOnSts).toBe(direct.castOnSts);
     expect(result.calc.brimRows).toBe(direct.brimRows);
     expect(result.calc.bodyRows).toBe(direct.bodyRows);
+    expect(result.calc.hatHeight).toBe(11);
     expect(result.calc.crown).toBe("gathered");
     expect(result.summary.crownLabel).toBe("Gathered");
     expect(result.summary.brimLabel).toContain("Single Layer");
@@ -171,11 +172,17 @@ describe("hatPatternFromDraft", () => {
   });
 
   it("covers each standard length preset", () => {
+    const expected: Record<string, number> = {
+      beanie: 9.1,
+      watchcap: 11,
+      slouchy: 12.9,
+      relaxed: 11.6,
+    };
     for (const fit of ["beanie", "watchcap", "slouchy", "relaxed"] as const) {
       const result = buildHatPatternCalcFromDraft(completeDraft({ fit }), sizingRows);
       expect(result.ok, fit).toBe(true);
       if (!result.ok) continue;
-      expect(result.calc.hatHeight).toBeGreaterThan(0);
+      expect(result.calc.hatHeight).toBe(expected[fit]);
     }
   });
 
@@ -214,7 +221,7 @@ describe("hatPatternFromDraft", () => {
   it("builds summary DL html", () => {
     const html = buildHatPatternSummaryDlHtml({
       sizeLabel: 'Adult Woman — 20.5" finished',
-      lengthLabel: 'Classic · 8.5"',
+      lengthLabel: 'Standard · 11"',
       brimLabel: 'Single Layer · 2"',
       crownLabel: "Gathered",
       gaugeLabel: '5 sts / 7 rows per 4"',

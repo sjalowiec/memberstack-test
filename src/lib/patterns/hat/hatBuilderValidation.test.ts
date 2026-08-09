@@ -242,7 +242,7 @@ describe("hatBuilderSizingLabels", () => {
 
   it("labels fit presets with unit-aware finished length", () => {
     expect(buildFitPresetOptionLabel("watchcap", 8.5, "inches")).toBe(
-      'Classic (8.5" finished hat length)',
+      'Standard (8.5" finished hat length)',
     );
     expect(buildFitPresetOptionLabel("beanie", 7, "cm")).toMatch(/Beanie \(/);
   });

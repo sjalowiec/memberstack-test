@@ -63,12 +63,96 @@ export function nextBrimLengthAfterBrimTypeChange(args: {
 
 export type HatFitStyle = "beanie" | "watchcap" | "slouchy" | "relaxed" | "custom";
 
-/** Finished-length presets (inches) keyed by fit style. */
-export const HAT_FIT_HEIGHTS_INCHES: Readonly<Record<Exclude<HatFitStyle, "custom">, number>> = {
-  beanie: 7,
-  watchcap: 8.5,
-  slouchy: 10,
-  relaxed: 9,
+export type HatNamedFitStyle = Exclude<HatFitStyle, "custom">;
+
+/**
+ * Named length styles as multipliers of the selected size chart’s standard `hatLength`.
+ *
+ * Derived from the former adult fixed inches relative to Classic/Standard (8.5"):
+ *   Beanie 7" / 8.5" ≈ 0.824 → shorter than Standard
+ *   Standard (watchcap) 8.5" / 8.5" = 1 → 100% of chart length
+ *   Relaxed 9" / 8.5" ≈ 1.059 → modestly longer
+ *   Slouchy 10" / 8.5" ≈ 1.176 → longer still
+ */
+export const HAT_FIT_LENGTH_STYLE_MULTIPLIERS: Readonly<Record<HatNamedFitStyle, number>> = {
+  beanie: 7 / 8.5,
+  watchcap: 1,
+  relaxed: 9 / 8.5,
+  slouchy: 10 / 8.5,
+};
+
+/** Named fit keys in picker order (Beanie → Standard → Slouchy → Relaxed). */
+export const HAT_NAMED_FIT_STYLES: readonly HatNamedFitStyle[] = [
+  "beanie",
+  "watchcap",
+  "slouchy",
+  "relaxed",
+];
+
+/**
+ * Fallback Standard length when size is custom / chart length is missing.
+ * Matches Adult Woman chart `hatLength`.
+ */
+export const HAT_FIT_LENGTH_FALLBACK_STANDARD_INCHES = 11;
+
+/** Round finished hat length to the project’s 0.1" measurement precision. */
+export function roundHatFinishedLengthInches(inches: number): number {
+  if (!Number.isFinite(inches)) return inches;
+  return Math.round(inches * 10) / 10;
+}
+
+export function isHatNamedFitStyle(fit: string): fit is HatNamedFitStyle {
+  return Object.prototype.hasOwnProperty.call(HAT_FIT_LENGTH_STYLE_MULTIPLIERS, fit);
+}
+
+/** Chart Standard finished hat length for a size, or null when unavailable. */
+export function chartStandardHatLengthInches(
+  hatSizeValue: string,
+  sizingRows: ReadonlyArray<HatSizingLengthRow>,
+): number | null {
+  if (!hatSizeValue || hatSizeValue === "custom") return null;
+  const selectedSize = sizingRows.find((s) => s.size === hatSizeValue);
+  const fromChart =
+    selectedSize != null && Number(selectedSize.hatLength) > 0
+      ? Number(selectedSize.hatLength)
+      : null;
+  return fromChart;
+}
+
+/**
+ * Resolve a named length style to total finished hat length (inches) for the
+ * selected size: chart Standard × style multiplier, rounded to 0.1".
+ */
+export function resolveNamedFitLengthInches(
+  fit: string,
+  hatSizeValue: string,
+  sizingRows: ReadonlyArray<HatSizingLengthRow>,
+): number | null {
+  if (!isHatNamedFitStyle(fit)) return null;
+  const standard =
+    chartStandardHatLengthInches(hatSizeValue, sizingRows) ??
+    HAT_FIT_LENGTH_FALLBACK_STANDARD_INCHES;
+  if (!(standard > 0)) return null;
+  return roundHatFinishedLengthInches(standard * HAT_FIT_LENGTH_STYLE_MULTIPLIERS[fit]);
+}
+
+/**
+ * @deprecated Prefer `resolveNamedFitLengthInches` with a size chart row.
+ * Adult Woman lengths from the percentage model (legacy pages without size context).
+ */
+export const HAT_FIT_HEIGHTS_INCHES: Readonly<Record<HatNamedFitStyle, number>> = {
+  beanie: roundHatFinishedLengthInches(
+    HAT_FIT_LENGTH_FALLBACK_STANDARD_INCHES * HAT_FIT_LENGTH_STYLE_MULTIPLIERS.beanie,
+  ),
+  watchcap: roundHatFinishedLengthInches(
+    HAT_FIT_LENGTH_FALLBACK_STANDARD_INCHES * HAT_FIT_LENGTH_STYLE_MULTIPLIERS.watchcap,
+  ),
+  relaxed: roundHatFinishedLengthInches(
+    HAT_FIT_LENGTH_FALLBACK_STANDARD_INCHES * HAT_FIT_LENGTH_STYLE_MULTIPLIERS.relaxed,
+  ),
+  slouchy: roundHatFinishedLengthInches(
+    HAT_FIT_LENGTH_FALLBACK_STANDARD_INCHES * HAT_FIT_LENGTH_STYLE_MULTIPLIERS.slouchy,
+  ),
 };
 
 export type HatSpiralPlan = {
@@ -373,8 +457,9 @@ export function hatGaugeToPerInch(gauge: number, displayUnit: HatDisplayUnit): n
 }
 
 /**
- * Total finished hat length (inches): custom input, size chart hatLength, or fit preset.
- * Chart length wins over fit preset when a standard size is selected.
+ * Total finished hat length (inches): custom input, named fit style, or chart fallback.
+ * Named styles (Beanie / Standard / Slouchy / …) scale from the size chart’s Standard length.
+ * Chart hatLength is only a fallback when fit is empty/unknown (e.g. size-driven default).
  */
 export function resolveTotalHatLengthInches(args: {
   fit: string;
@@ -387,27 +472,18 @@ export function resolveTotalHatLengthInches(args: {
 }): number | null {
   const { fit, hatSizeValue, customLengthDisplay, displayUnit, sizingRows, convertCmToInches } =
     args;
-  if (!fit) return null;
+  if (!fit) {
+    return chartStandardHatLengthInches(hatSizeValue, sizingRows);
+  }
   if (fit === "custom") {
     const customLengthValue = Number(customLengthDisplay) || 0;
     if (customLengthValue <= 0) return null;
     if (displayUnit === "inches") return customLengthValue;
     return convertCmToInches ? convertCmToInches(customLengthValue) : customLengthValue / 2.54;
   }
-  const selectedSize =
-    hatSizeValue && hatSizeValue !== "custom"
-      ? sizingRows.find((s) => s.size === hatSizeValue)
-      : null;
-  const fromChart =
-    selectedSize != null && Number(selectedSize.hatLength) > 0
-      ? Number(selectedSize.hatLength)
-      : null;
-  const fromFit =
-    Object.prototype.hasOwnProperty.call(HAT_FIT_HEIGHTS_INCHES, fit)
-      ? HAT_FIT_HEIGHTS_INCHES[fit as Exclude<HatFitStyle, "custom">]
-      : undefined;
-  const inches = fromChart ?? fromFit;
-  return inches != null ? inches : null;
+  const fromNamed = resolveNamedFitLengthInches(fit, hatSizeValue, sizingRows);
+  if (fromNamed != null) return fromNamed;
+  return chartStandardHatLengthInches(hatSizeValue, sizingRows);
 }
 
 /** Build four-wedge crown setup attached during instruction generation. */

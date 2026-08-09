@@ -24,7 +24,12 @@ import {
   type HatDraftUnit,
   type HatGaugeSlot,
 } from "../lib/patterns/hat/hatDraft";
-import { HAT_FIT_HEIGHTS_INCHES, nextBrimLengthAfterBrimTypeChange, type HatPatternCalc } from "../lib/patterns/hat/hatMath";
+import {
+  HAT_NAMED_FIT_STYLES,
+  nextBrimLengthAfterBrimTypeChange,
+  resolveNamedFitLengthInches,
+  type HatPatternCalc,
+} from "../lib/patterns/hat/hatMath";
 import {
   buildHatPatternDiagramSvg,
   HAT_PATTERN_DIAGRAM_MODE_SUMMARY_EDIT,
@@ -35,7 +40,7 @@ import {
   chartSizeCircumferenceDisplay,
   convertHatEditLengthDisplay,
   hatDraftToEditFormValues,
-  resolvedFinishedHatLengthDisplay,
+  fitPresetLengthDisplay,
   validateHatEditForm,
   type HatEditFieldErrors,
   type HatEditFormValues,
@@ -222,12 +227,12 @@ export function initHatPatternSummaryPage(): void {
     sizeSelect.innerHTML = opts.join("");
   }
 
-  function populateFitOptions(unit: HatDraftUnit, selected: string) {
+  function populateFitOptions(unit: HatDraftUnit, selected: string, sizeSel: string) {
     if (!fitSelect) return;
-    const keys = Object.keys(HAT_FIT_HEIGHTS_INCHES);
     const opts: string[] = [`<option value="">Choose finished hat length…</option>`];
-    for (const key of keys) {
-      const inches = HAT_FIT_HEIGHTS_INCHES[key as keyof typeof HAT_FIT_HEIGHTS_INCHES];
+    for (const key of HAT_NAMED_FIT_STYLES) {
+      const inches = resolveNamedFitLengthInches(key, sizeSel, rows);
+      if (!(inches != null && inches > 0)) continue;
       const label = buildFitPresetOptionLabel(key, inches, unit);
       const sel = key === selected ? " selected" : "";
       opts.push(`<option value="${escapeAttr(key)}"${sel}>${escapeHtml(label)}</option>`);
@@ -271,7 +276,7 @@ export function initHatPatternSummaryPage(): void {
   function writeForm(values: HatEditFormValues) {
     activeUnit = values.unit === "cm" ? "cm" : "inches";
     populateSizeOptions(activeUnit, values.sizeSel);
-    populateFitOptions(activeUnit, values.fit);
+    populateFitOptions(activeUnit, values.fit, values.sizeSel);
     if (circInput) circInput.value = values.finishedCircumference;
     if (lengthInput) lengthInput.value = values.finishedHatLength;
     if (brimInput) brimInput.value = values.brimLength;
@@ -411,17 +416,10 @@ export function initHatPatternSummaryPage(): void {
     activeUnit = next;
     const sizeSel = sizeSelect?.value ?? "";
     const fit = fitSelect?.value ?? "";
+    // Keep converted circ/length — do not reload chart/fit values (would wipe a
+    // custom measurement if the dropdown still showed a chart/fit name).
     populateSizeOptions(next, sizeSel);
-    populateFitOptions(next, fit);
-    if (sizeSel && sizeSel !== "custom" && circInput) {
-      circInput.value = chartSizeCircumferenceDisplay(sizeSel, next, rows);
-    }
-    if (fit && fit !== "custom" && lengthInput) {
-      lengthInput.value = resolvedFinishedHatLengthDisplay(
-        { fit, sizeSel, unit: next },
-        rows,
-      );
-    }
+    populateFitOptions(next, fit, sizeSel);
     if (stitchInput) stitchInput.value = gaugeSlots[next].stitch;
     if (rowInput) rowInput.value = gaugeSlots[next].row;
     syncUnitChrome();
@@ -478,26 +476,20 @@ export function initHatPatternSummaryPage(): void {
       circInput.value = chartSizeCircumferenceDisplay(size, activeUnit, rows);
     }
     const fit = fitSelect?.value ?? "";
+    // Recalculate named length options for the new size. When a named style is
+    // selected, update Finished hat length; Custom keeps its physical measurement.
+    populateFitOptions(activeUnit, fit, size);
     if (fit && fit !== "custom" && lengthInput) {
-      lengthInput.value = resolvedFinishedHatLengthDisplay(
-        { fit, sizeSel: size, unit: activeUnit },
-        rows,
-      );
+      lengthInput.value = fitPresetLengthDisplay(fit, activeUnit, size, rows);
     }
     refreshLivePreview();
   });
 
   fitSelect?.addEventListener("change", () => {
     const fit = fitSelect.value;
+    const size = sizeSelect?.value ?? "";
     if (fit && fit !== "custom" && lengthInput) {
-      lengthInput.value = resolvedFinishedHatLengthDisplay(
-        {
-          fit,
-          sizeSel: sizeSelect?.value ?? "",
-          unit: activeUnit,
-        },
-        rows,
-      );
+      lengthInput.value = fitPresetLengthDisplay(fit, activeUnit, size, rows);
     }
     refreshLivePreview();
   });
@@ -533,15 +525,9 @@ export function initHatPatternSummaryPage(): void {
 
   lengthInput?.addEventListener("input", () => {
     if (fitSelect && fitSelect.value && fitSelect.value !== "custom") {
-      const resolved = resolvedFinishedHatLengthDisplay(
-        {
-          fit: fitSelect.value,
-          sizeSel: sizeSelect?.value ?? "",
-          unit: activeUnit,
-        },
-        rows,
-      );
-      if (lengthInput.value.trim() !== resolved) {
+      const size = sizeSelect?.value ?? "";
+      const preset = fitPresetLengthDisplay(fitSelect.value, activeUnit, size, rows);
+      if (lengthInput.value.trim() !== preset) {
         fitSelect.value = "custom";
       }
     }

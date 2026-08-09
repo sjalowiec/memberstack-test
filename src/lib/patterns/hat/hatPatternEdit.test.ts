@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { createEmptyHatDraft, writeHatDraft, readHatDraft } from "./hatDraft";
 import { buildHatSizingBuilderRows } from "./hatBuilderSizingLabels";
-import { calculateHatPattern } from "./hatMath";
+import { applyHatCrownCastOnAdjustment, calculateHatPattern } from "./hatMath";
 import { buildHatPatternCalcFromDraft } from "./hatPatternFromDraft";
 import { buildHatPatternDiagramSvg, HAT_PATTERN_DIAGRAM_MODE_SUMMARY_EDIT } from "./hatPatternDiagramSvg";
 import {
@@ -76,7 +76,7 @@ describe("hatPatternEdit", () => {
     const form = hatDraftToEditFormValues(draft, sizingRows);
     expect(form.brimLength).toBe("1.75");
     expect(form.fit).toBe("slouchy");
-    expect(form.finishedHatLength).toBe("11");
+    expect(form.finishedHatLength).toBe("12.9");
     expect(form.crownShaping).toBe("spiral");
     expect(form.stitchGauge).toBe("4.5");
     expect(form.rowGauge).toBe("6.5");
@@ -84,25 +84,34 @@ describe("hatPatternEdit", () => {
     expect(Number(form.finishedCircumference)).toBeGreaterThan(0);
   });
 
-  it("loads chart finished length (not bare fit preset) so Summary/Edit matches the diagram", () => {
-    // adult_woman chart hatLength is 11"; slouchy fit preset alone is 10".
+  it("loads named fit preset length (not chart hatLength) so Summary/Edit matches the diagram", () => {
+    // adult_woman Standard is 11"; slouchy scales to 12.9".
     const draft = completeDraft({ fit: "slouchy", sizeSel: "adult_woman" });
     const form = hatDraftToEditFormValues(draft, sizingRows);
     const result = buildHatPatternCalcFromDraft(draft, sizingRows);
-    expect(form.finishedHatLength).toBe("11");
+    expect(form.finishedHatLength).toBe("12.9");
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.calc.hatHeight).toBe(11);
-    expect(result.summary.lengthLabel).toContain('11"');
+    expect(result.calc.hatHeight).toBe(12.9);
+    expect(result.summary.lengthLabel).toContain('12.9"');
   });
 
-  it("keeps named fit when Summary/Edit length matches chart hatLength on update", () => {
+  it("keeps named fit when Summary/Edit length matches the fit preset on update", () => {
     const draft = completeDraft({ fit: "slouchy", sizeSel: "adult_woman" });
     const form = hatDraftToEditFormValues(draft, sizingRows);
-    expect(form.finishedHatLength).toBe("11");
+    expect(form.finishedHatLength).toBe("12.9");
     const resolved = resolveHatEditSizeAndLength(form, sizingRows);
     expect(resolved.fit).toBe("slouchy");
     expect(resolved.customHatLength).toBe("");
+  });
+
+  it("promotes to custom when length matches chart but not the selected fit preset", () => {
+    const form = formFromDraft(completeDraft({ fit: "beanie", sizeSel: "adult_woman" }), {
+      finishedHatLength: "11", // adult_woman Standard, not beanie 9.1"
+    });
+    const resolved = resolveHatEditSizeAndLength(form, sizingRows);
+    expect(resolved.fit).toBe("custom");
+    expect(resolved.customHatLength).toBe("11");
   });
 
   it("exposes circumference, length, brim, stitch gauge, and row gauge as editable inputs", () => {
@@ -277,6 +286,26 @@ describe("hatPatternEdit", () => {
     expect(resolved.customCircumference).toBe("99");
   });
 
+  it("keeps chart size when Finished hat size still matches the chart", () => {
+    const form = formFromDraft();
+    const chart = form.finishedCircumference;
+    form.finishedCircumference = chart;
+    const resolved = resolveHatEditSizeAndLength(form, sizingRows);
+    expect(resolved.sizeSel).toBe("adult_woman");
+    expect(resolved.customCircumference).toBe("");
+  });
+
+  it("stays custom when circ matches a chart size after already being custom", () => {
+    const chart = hatDraftToEditFormValues(completeDraft(), sizingRows).finishedCircumference;
+    const form = formFromDraft(completeDraft({ sizeSel: "custom", customCircumference: chart }), {
+      sizeSel: "custom",
+      finishedCircumference: chart,
+    });
+    const resolved = resolveHatEditSizeAndLength(form, sizingRows);
+    expect(resolved.sizeSel).toBe("custom");
+    expect(resolved.customCircumference).toBe(chart);
+  });
+
   it("uses shared overlay breakpoint and hat measurement targets", () => {
     expect(DESKTOP_MEASUREMENT_OVERLAY_MQ).toContain("700px");
     expect(HAT_EDIT_MEASUREMENT_TARGETS.circumference).toBe("target_hat_circumference");
@@ -399,8 +428,399 @@ describe("buildHatSummaryEditPreview (live Summary/Edit diagram)", () => {
   });
 });
 
+describe("Finished hat length preset selection on Summary/Edit", () => {
+  const formatters = {
+    convertLength: convertLength as (v: number, from: string, to: string) => number,
+    formatLengthWithUnit: formatLengthWithUnit as (v: number, unit: string) => string,
+  };
+
+  const adultWomanPresets = [
+    ["beanie", 9.1],
+    ["watchcap", 11],
+    ["relaxed", 11.6],
+    ["slouchy", 12.9],
+  ] as const;
+
+  it("Beanie displays and calculates from size-scaled length for Adult Woman", () => {
+    const saved = completeDraft({ sizeSel: "adult_woman", fit: "watchcap" });
+    const form = formFromDraft(saved, { fit: "beanie", finishedHatLength: "9.1" });
+    const preview = buildHatSummaryEditPreview(saved, form, sizingRows);
+    expect(preview.ok).toBe(true);
+    if (!preview.ok) return;
+    expect(preview.draft.fit).toBe("beanie");
+    expect(preview.draft.customHatLength).toBe("");
+    expect(preview.calc.hatHeight).toBe(9.1);
+    expect(preview.calc.bodyHeightInches).toBeCloseTo(
+      9.1 - preview.calc.crownHeightInches - Number(saved.brimLength),
+      5,
+    );
+  });
+
+  it("every named preset loads its own size-scaled finished length", () => {
+    for (const [fit, inches] of adultWomanPresets) {
+      const draft = completeDraft({ sizeSel: "adult_woman", fit });
+      const form = hatDraftToEditFormValues(draft, sizingRows);
+      expect(form.finishedHatLength, fit).toBe(String(inches));
+      const result = buildHatPatternCalcFromDraft(draft, sizingRows);
+      expect(result.ok, fit).toBe(true);
+      if (!result.ok) continue;
+      expect(result.calc.hatHeight, fit).toBe(inches);
+    }
+  });
+
+  it("changing between presets changes live preview height", () => {
+    const saved = completeDraft({ sizeSel: "adult_woman", fit: "beanie" });
+    const beanie = buildHatSummaryEditPreview(
+      saved,
+      formFromDraft(saved, { fit: "beanie", finishedHatLength: "9.1" }),
+      sizingRows,
+    );
+    const slouchy = buildHatSummaryEditPreview(
+      saved,
+      formFromDraft(saved, { fit: "slouchy", finishedHatLength: "12.9" }),
+      sizingRows,
+    );
+    expect(beanie.ok && slouchy.ok).toBe(true);
+    if (!beanie.ok || !slouchy.ok) return;
+    expect(slouchy.calc.hatHeight).toBeGreaterThan(beanie.calc.hatHeight);
+    expect(slouchy.calc.bodyRows).toBeGreaterThan(beanie.calc.bodyRows);
+    expect(slouchy.calc.bodyHeightInches).toBeGreaterThan(beanie.calc.bodyHeightInches);
+
+    const beanieSvg = buildHatPatternDiagramSvg(
+      beanie.calc,
+      beanie.unit,
+      formatters,
+      HAT_PATTERN_DIAGRAM_MODE_SUMMARY_EDIT,
+    );
+    const slouchySvg = buildHatPatternDiagramSvg(
+      slouchy.calc,
+      slouchy.unit,
+      formatters,
+      HAT_PATTERN_DIAGRAM_MODE_SUMMARY_EDIT,
+    );
+    expect(beanieSvg).toContain('data-hat-diagram-mode="summaryEdit"');
+    expect(slouchySvg).toContain('data-hat-diagram-mode="summaryEdit"');
+    expect(beanieSvg).not.toMatch(/\d+\s*rows/);
+    const beaniePattern = buildHatPatternDiagramSvg(beanie.calc, beanie.unit, formatters);
+    const slouchyPattern = buildHatPatternDiagramSvg(slouchy.calc, slouchy.unit, formatters);
+    expect(beaniePattern).toContain(formatLengthWithUnit(9.1, "inches"));
+    expect(slouchyPattern).toContain(formatLengthWithUnit(12.9, "inches"));
+    expect(slouchyPattern).toContain(`${slouchy.calc.bodyRows} rows`);
+    expect(beaniePattern).toContain(`${beanie.calc.bodyRows} rows`);
+    expect(slouchy.calc.bodyRows).not.toBe(beanie.calc.bodyRows);
+  });
+
+  it("manual length becomes Custom and size chart does not override an explicit fit", () => {
+    const saved = completeDraft({ sizeSel: "adult_woman", fit: "beanie" });
+    const manual = formFromDraft(saved, {
+      fit: "beanie",
+      finishedHatLength: "12",
+    });
+    const resolved = resolveHatEditSizeAndLength(manual, sizingRows);
+    expect(resolved.fit).toBe("custom");
+    expect(resolved.customHatLength).toBe("12");
+
+    const preview = buildHatSummaryEditPreview(saved, manual, sizingRows);
+    expect(preview.ok).toBe(true);
+    if (!preview.ok) return;
+    expect(preview.calc.hatHeight).toBe(12);
+
+    const beanieAgain = formFromDraft(saved, { fit: "beanie", finishedHatLength: "9.1" });
+    const kept = resolveHatEditSizeAndLength(beanieAgain, sizingRows);
+    expect(kept.fit).toBe("beanie");
+    expect(kept.customHatLength).toBe("");
+    const beaniePreview = buildHatSummaryEditPreview(saved, beanieAgain, sizingRows);
+    expect(beaniePreview.ok).toBe(true);
+    if (!beaniePreview.ok) return;
+    expect(beaniePreview.calc.hatHeight).toBe(9.1);
+  });
+
+  it("changing size recalculates an active named style", () => {
+    const saved = completeDraft({ sizeSel: "adult_woman", fit: "beanie" });
+    const adultForm = hatDraftToEditFormValues(saved, sizingRows);
+    expect(adultForm.finishedHatLength).toBe("9.1");
+
+    const preemieCirc = hatDraftToEditFormValues(
+      completeDraft({ sizeSel: "preemie" }),
+      sizingRows,
+    ).finishedCircumference;
+    const preemieForm = formFromDraft(saved, {
+      sizeSel: "preemie",
+      finishedCircumference: preemieCirc,
+      fit: "beanie",
+      finishedHatLength: "4.1",
+    });
+    const preview = buildHatSummaryEditPreview(saved, preemieForm, sizingRows);
+    expect(preview.ok).toBe(true);
+    if (!preview.ok) return;
+    expect(preview.draft.fit).toBe("beanie");
+    expect(preview.calc.hatHeight).toBe(4.1);
+    expect(preview.calc.hatHeight).not.toBe(9.1);
+  });
+
+  it("changing size does not overwrite a Custom finished length", () => {
+    const saved = completeDraft({
+      sizeSel: "adult_woman",
+      fit: "custom",
+      customHatLength: "7.25",
+    });
+    const preemieCirc = hatDraftToEditFormValues(
+      completeDraft({ sizeSel: "preemie" }),
+      sizingRows,
+    ).finishedCircumference;
+    const form = formFromDraft(saved, {
+      sizeSel: "preemie",
+      finishedCircumference: preemieCirc,
+      fit: "custom",
+      finishedHatLength: "7.25",
+    });
+    const resolved = resolveHatEditSizeAndLength(form, sizingRows);
+    expect(resolved.fit).toBe("custom");
+    expect(resolved.customHatLength).toBe("7.25");
+    const preview = buildHatSummaryEditPreview(saved, form, sizingRows);
+    expect(preview.ok).toBe(true);
+    if (!preview.ok) return;
+    expect(preview.calc.hatHeight).toBe(7.25);
+  });
+
+  it("builder and Summary/Edit resolve identical lengths for the same size + style", () => {
+    for (const sizeSel of ["preemie", "adult_woman"] as const) {
+      for (const fit of ["beanie", "watchcap", "relaxed", "slouchy"] as const) {
+        const draft = completeDraft({ sizeSel, fit });
+        const form = hatDraftToEditFormValues(draft, sizingRows);
+        const fromDraft = buildHatPatternCalcFromDraft(draft, sizingRows);
+        const fromEdit = buildHatSummaryEditPreview(draft, form, sizingRows);
+        expect(fromDraft.ok && fromEdit.ok, `${sizeSel}/${fit}`).toBe(true);
+        if (!fromDraft.ok || !fromEdit.ok) continue;
+        expect(fromEdit.calc.hatHeight, `${sizeSel}/${fit}`).toBe(fromDraft.calc.hatHeight);
+        expect(form.finishedHatLength, `${sizeSel}/${fit}`).toBe(String(fromDraft.calc.hatHeight));
+      }
+    }
+  });
+
+  it("folded hems do not add visible brim height twice to finished length", () => {
+    const visible = 1;
+    const folded = completeDraft({
+      sizeSel: "adult_woman",
+      fit: "beanie",
+      brimType: "folded",
+      brimLength: String(visible),
+    });
+    const single = completeDraft({
+      sizeSel: "adult_woman",
+      fit: "beanie",
+      brimType: "single",
+      brimLength: String(visible),
+    });
+    const foldedResult = buildHatPatternCalcFromDraft(folded, sizingRows);
+    const singleResult = buildHatPatternCalcFromDraft(single, sizingRows);
+    expect(foldedResult.ok && singleResult.ok).toBe(true);
+    if (!foldedResult.ok || !singleResult.ok) return;
+    expect(foldedResult.calc.hatHeight).toBe(9.1);
+    expect(singleResult.calc.hatHeight).toBe(9.1);
+    expect(foldedResult.calc.bodyHeightInches).toBeCloseTo(singleResult.calc.bodyHeightInches, 5);
+    expect(foldedResult.calc.bodyRows).toBe(singleResult.calc.bodyRows);
+    expect(foldedResult.calc.brimRows).toBe(singleResult.calc.brimRows * 2);
+  });
+
+  it("finished-pattern rows are calculated from the resolved total length", () => {
+    const saved = completeDraft({ sizeSel: "adult_woman", fit: "watchcap" });
+    const form = formFromDraft(saved, { fit: "beanie", finishedHatLength: "9.1" });
+    const updated = applyHatEditFormToDraft(saved, form, sizingRows);
+    expect(updated.fit).toBe("beanie");
+    const fromDraft = buildHatPatternCalcFromDraft(updated, sizingRows);
+    expect(fromDraft.ok).toBe(true);
+    if (!fromDraft.ok) return;
+    expect(fromDraft.calc.hatHeight).toBe(9.1);
+    expect(fromDraft.summary.lengthLabel).toMatch(/Beanie/i);
+    expect(fromDraft.summary.lengthLabel).toContain('9.1"');
+    const patternSvg = buildHatPatternDiagramSvg(fromDraft.calc, fromDraft.unit, formatters);
+    expect(patternSvg).toContain(formatLengthWithUnit(9.1, "inches"));
+    expect(fromDraft.calc.bodyRows).toBeGreaterThan(0);
+    expect(fromDraft.calc.bodyHeightInches).toBeCloseTo(
+      9.1 - fromDraft.calc.crownHeightInches - Number(updated.brimLength),
+      5,
+    );
+  });
+
+  it("Summary/Edit fit change handler loads fitPresetLengthDisplay (not chart length)", () => {
+    const summaryScript = readFileSync(
+      resolve("src/scripts/hat-pattern-summary-page.ts"),
+      "utf8",
+    );
+    expect(summaryScript).toContain("fitPresetLengthDisplay");
+    expect(summaryScript).toContain("populateFitOptions(activeUnit, fit, size)");
+    const fitStart = summaryScript.indexOf('fitSelect?.addEventListener("change"');
+    expect(fitStart).toBeGreaterThan(-1);
+    const fitFn = summaryScript.slice(fitStart, fitStart + 450);
+    expect(fitFn).toContain("fitPresetLengthDisplay");
+    expect(fitFn).toContain("sizeSelect?.value");
+  });
+});
+
+describe("Finished hat size recalculation on Summary/Edit", () => {
+  const formatters = {
+    convertLength: convertLength as (v: number, from: string, to: string) => number,
+    formatLengthWithUnit: formatLengthWithUnit as (v: number, unit: string) => string,
+  };
+
+  function bodyWidth(svg: string): number {
+    const m = svg.match(/class="hat-diagram__body"[^>]*\swidth="([\d.]+)"/);
+    expect(m).toBeTruthy();
+    return Number(m![1]);
+  }
+
+  it("changing Finished hat size recalculates cast-on, crown, needles, preview width, and pattern output", () => {
+    const saved = completeDraft({
+      crownShaping: "wedge-4-decrease",
+      availableNeedles: "200",
+    });
+    const baseForm = formFromDraft(saved);
+    const basePreview = buildHatSummaryEditPreview(saved, baseForm, sizingRows);
+    expect(basePreview.ok).toBe(true);
+    if (!basePreview.ok) return;
+
+    const largerForm = formFromDraft(saved, {
+      sizeSel: "adult_woman",
+      finishedCircumference: "28",
+    });
+    const larger = buildHatSummaryEditPreview(saved, largerForm, sizingRows);
+    expect(larger.ok).toBe(true);
+    if (!larger.ok) return;
+
+    // Custom size promotion + circumference-driven stitch math.
+    expect(larger.draft.sizeSel).toBe("custom");
+    expect(larger.draft.customCircumference).toBe("28");
+    expect(larger.calc.targetWidth).toBe(28);
+    expect(larger.calc.castOnSts).toBeGreaterThan(basePreview.calc.castOnSts);
+
+    // Crown / gore planning follows the new cast-on (÷4 after crown normalization).
+    const baseAdjusted = applyHatCrownCastOnAdjustment(
+      basePreview.calc.castOnSts,
+      "wedge-4-decrease",
+    );
+    const largerAdjusted = applyHatCrownCastOnAdjustment(
+      larger.calc.castOnSts,
+      "wedge-4-decrease",
+    );
+    const baseGore = baseAdjusted / 4;
+    const largerGore = largerAdjusted / 4;
+    expect(baseGore).toBeGreaterThan(0);
+    expect(largerGore).toBeGreaterThan(baseGore);
+    expect(larger.calc.crownPlan).toBeTruthy();
+
+    // Needle-capacity revalidation: needles that fit the chart hat fail for 28".
+    expect(largerAdjusted).toBeGreaterThan(baseAdjusted);
+    const fitsBase = formFromDraft(saved, {
+      availableNeedles: String(baseAdjusted),
+    });
+    expect(buildHatSummaryEditPreview(saved, fitsBase, sizingRows).ok).toBe(true);
+    const tooTight = formFromDraft(saved, {
+      finishedCircumference: "28",
+      availableNeedles: String(baseAdjusted),
+    });
+    const blocked = buildHatSummaryEditPreview(saved, tooTight, sizingRows);
+    expect(blocked.ok).toBe(false);
+    if (blocked.ok) return;
+    expect(blocked.errors.availableNeedles || blocked.errors.form).toMatch(/requires/i);
+
+    // Preview silhouette widens with circumference; Summary/Edit stays count-free.
+    const baseSvg = buildHatPatternDiagramSvg(
+      basePreview.calc,
+      basePreview.unit,
+      formatters,
+      HAT_PATTERN_DIAGRAM_MODE_SUMMARY_EDIT,
+    );
+    const largerSvg = buildHatPatternDiagramSvg(
+      larger.calc,
+      larger.unit,
+      formatters,
+      HAT_PATTERN_DIAGRAM_MODE_SUMMARY_EDIT,
+    );
+    expect(bodyWidth(largerSvg)).toBeGreaterThan(bodyWidth(baseSvg));
+    expect(largerSvg).not.toMatch(/\d+\s*sts/);
+    expect(largerSvg).not.toMatch(/\d+\s*rows/);
+
+    // Finished-pattern diagram + instructions use the recalculated counts.
+    const patternSvg = buildHatPatternDiagramSvg(larger.calc, larger.unit, formatters);
+    expect(patternSvg).toContain(`${larger.calc.castOnSts} sts`);
+    expect(patternSvg).toContain(`${largerGore} sts / gore`);
+
+    // Live preview must not write the draft.
+    const storage: Record<string, string> = {};
+    const mem = {
+      getItem: (k: string) => storage[k] ?? null,
+      setItem: (k: string, v: string) => {
+        storage[k] = v;
+      },
+    };
+    writeHatDraft(saved, mem);
+    void buildHatSummaryEditPreview(saved, largerForm, sizingRows);
+    expect(readHatDraft(mem)?.sizeSel).toBe("adult_woman");
+    expect(readHatDraft(mem)?.customCircumference || "").toBe("");
+
+    // Update / View My Pattern path applies the form and matches preview math.
+    const updated = applyHatEditFormToDraft(saved, largerForm, sizingRows);
+    const fromDraft = buildHatPatternCalcFromDraft(updated, sizingRows);
+    expect(fromDraft.ok).toBe(true);
+    if (!fromDraft.ok) return;
+    expect(fromDraft.calc.castOnSts).toBe(larger.calc.castOnSts);
+    expect(
+      applyHatCrownCastOnAdjustment(fromDraft.calc.castOnSts, "wedge-4-decrease") / 4,
+    ).toBe(largerGore);
+  });
+
+  it("chart size selection loads that chart’s finished circumference", () => {
+    const woman = hatDraftToEditFormValues(completeDraft({ sizeSel: "adult_woman" }), sizingRows);
+    const child = hatDraftToEditFormValues(completeDraft({ sizeSel: "child" }), sizingRows);
+    const man = hatDraftToEditFormValues(completeDraft({ sizeSel: "adult_man" }), sizingRows);
+    expect(Number(woman.finishedCircumference)).toBe(20.5);
+    expect(Number(child.finishedCircumference)).toBe(18);
+    expect(Number(man.finishedCircumference)).toBe(21.5);
+    expect(woman.finishedCircumference).not.toBe(child.finishedCircumference);
+  });
+
+  it("unit conversion preserves the underlying physical finished size", () => {
+    const inchesForm = formFromDraft();
+    const inchesCirc = Number(inchesForm.finishedCircumference);
+    const cmDisplay = convertHatEditLengthDisplay(
+      inchesForm.finishedCircumference,
+      "inches",
+      "cm",
+    );
+    const back = convertHatEditLengthDisplay(cmDisplay, "cm", "inches");
+    expect(Number(back)).toBeCloseTo(inchesCirc, 5);
+
+    const cmForm: HatEditFormValues = {
+      ...inchesForm,
+      unit: "cm",
+      sizeSel: "custom",
+      finishedCircumference: cmDisplay,
+    };
+    const preview = buildHatSummaryEditPreview(completeDraft(), cmForm, sizingRows);
+    expect(preview.ok).toBe(true);
+    if (!preview.ok) return;
+    // Display rounding to cm can introduce ~0.01" — physical size stays effectively the same.
+    expect(preview.calc.targetWidth).toBeCloseTo(inchesCirc, 1);
+  });
+
+  it("Cancel contract leaves the saved draft unchanged (no write on discard)", () => {
+    const summaryScript = readFileSync(
+      resolve("src/scripts/hat-pattern-summary-page.ts"),
+      "utf8",
+    );
+    const cancelStart = summaryScript.indexOf("function cancelEdit");
+    const cancelFn = summaryScript.slice(cancelStart, cancelStart + 120);
+    expect(cancelFn).not.toContain("writeHatDraft");
+    const navigateCancel = summaryScript.indexOf("function navigateAfterCancel");
+    const navigateFn = summaryScript.slice(navigateCancel, navigateCancel + 280);
+    expect(navigateFn).toContain("Discard");
+    expect(navigateFn).not.toContain("writeHatDraft");
+  });
+});
+
 describe("finished hat length includes visible brim once", () => {
-  const FINISHED = 11;
+  const FINISHED = 12.9; // adult_woman slouchy (size-scaled)
   const VISIBLE_BRIM = 1;
 
   const diagramFormatters = {
@@ -602,6 +1022,14 @@ describe("hat Summary/Edit page wiring", () => {
     expect(refreshFn).not.toContain("writeHatDraft");
     expect(refreshFn).toContain("mountDiagramFromCalc");
     expect(refreshFn).toContain("setPrimaryEnabled(false)");
+    // Unit switch converts displayed lengths; it must not reload chart circ/length
+    // (that would wipe a custom Finished hat size while the dropdown still named a chart).
+    const switchStart = summaryScript.indexOf("function switchUnit");
+    expect(switchStart).toBeGreaterThan(-1);
+    const switchFn = summaryScript.slice(switchStart, switchStart + 1200);
+    expect(switchFn).toContain("convertHatEditLengthDisplay");
+    expect(switchFn).not.toContain("chartSizeCircumferenceDisplay");
+    expect(switchFn).not.toContain("resolvedFinishedHatLengthDisplay");
     // Desktop stage keeps the SVG large — no oversized chip gutters.
     expect(summaryPage).not.toContain("8.5rem");
     expect(summaryPage).not.toContain("padding: 0.35rem 8.5rem 5rem");

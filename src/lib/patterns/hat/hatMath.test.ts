@@ -6,7 +6,10 @@ import {
   calculateHatPattern,
   formatHatRolledBrimDefaultLength,
   hatGaugeToPerInch,
+  HAT_FIT_LENGTH_STYLE_MULTIPLIERS,
+  HAT_NAMED_FIT_STYLES,
   nextBrimLengthAfterBrimTypeChange,
+  resolveNamedFitLengthInches,
   resolveTotalHatLengthInches,
   roundFinishedHatSizeFromHead,
   roundToEvenPreferUp,
@@ -219,9 +222,19 @@ describe("hatMath golden parity (adult woman / 5×7 per 4\")", () => {
     expect(calc.crownRowCount).toBeGreaterThan(0);
   });
 
-  it("chart hatLength wins over fit preset when resolving total length", () => {
+  it("named fit style scales from the size chart Standard length", () => {
     const inches = resolveTotalHatLengthInches({
-      fit: "beanie", // preset 7"
+      fit: "beanie",
+      hatSizeValue: "adult_woman",
+      displayUnit: "inches",
+      sizingRows: [{ size: "adult_woman", hatLength: 11 }],
+    });
+    expect(inches).toBe(9.1);
+  });
+
+  it("chart hatLength is used only when fit is empty", () => {
+    const inches = resolveTotalHatLengthInches({
+      fit: "",
       hatSizeValue: "adult_woman",
       displayUnit: "inches",
       sizingRows: [{ size: "adult_woman", hatLength: 11 }],
@@ -229,14 +242,82 @@ describe("hatMath golden parity (adult woman / 5×7 per 4\")", () => {
     expect(inches).toBe(11);
   });
 
-  it("fit preset used when size is custom", () => {
+  it("named fit uses Adult Woman fallback Standard when size is custom", () => {
     const inches = resolveTotalHatLengthInches({
       fit: "relaxed",
       hatSizeValue: "custom",
       displayUnit: "inches",
       sizingRows: [],
     });
-    expect(inches).toBe(9);
+    expect(inches).toBe(11.6);
+  });
+});
+
+describe("proportional named length styles", () => {
+  const sizingRows = [
+    { size: "preemie", hatLength: 5 },
+    { size: "child", hatLength: 8.5 },
+    { size: "adult_woman", hatLength: 11 },
+    { size: "adult_man", hatLength: 11.5 },
+  ];
+
+  it("keeps multipliers in one named configuration", () => {
+    expect(HAT_FIT_LENGTH_STYLE_MULTIPLIERS.watchcap).toBe(1);
+    expect(HAT_FIT_LENGTH_STYLE_MULTIPLIERS.beanie).toBeCloseTo(7 / 8.5, 10);
+    expect(HAT_FIT_LENGTH_STYLE_MULTIPLIERS.relaxed).toBeCloseTo(9 / 8.5, 10);
+    expect(HAT_FIT_LENGTH_STYLE_MULTIPLIERS.slouchy).toBeCloseTo(10 / 8.5, 10);
+    expect(HAT_NAMED_FIT_STYLES).toEqual(["beanie", "watchcap", "slouchy", "relaxed"]);
+  });
+
+  it("Standard equals the selected chart’s standard finished length", () => {
+    expect(resolveNamedFitLengthInches("watchcap", "preemie", sizingRows)).toBe(5);
+    expect(resolveNamedFitLengthInches("watchcap", "adult_woman", sizingRows)).toBe(11);
+  });
+
+  it("every named style produces different appropriate lengths for Preemie and Adult", () => {
+    for (const fit of HAT_NAMED_FIT_STYLES) {
+      const preemie = resolveNamedFitLengthInches(fit, "preemie", sizingRows)!;
+      const adult = resolveNamedFitLengthInches(fit, "adult_woman", sizingRows)!;
+      expect(adult, fit).toBeGreaterThan(preemie);
+    }
+    expect(resolveNamedFitLengthInches("beanie", "preemie", sizingRows)).toBe(4.1);
+    expect(resolveNamedFitLengthInches("beanie", "adult_woman", sizingRows)).toBe(9.1);
+    expect(resolveNamedFitLengthInches("slouchy", "preemie", sizingRows)).toBe(5.9);
+    expect(resolveNamedFitLengthInches("slouchy", "adult_woman", sizingRows)).toBe(12.9);
+  });
+
+  it("Beanie is shorter than Standard; Relaxed and Slouchy are longer in order", () => {
+    for (const size of ["preemie", "child", "adult_woman", "adult_man"] as const) {
+      const beanie = resolveNamedFitLengthInches("beanie", size, sizingRows)!;
+      const standard = resolveNamedFitLengthInches("watchcap", size, sizingRows)!;
+      const relaxed = resolveNamedFitLengthInches("relaxed", size, sizingRows)!;
+      const slouchy = resolveNamedFitLengthInches("slouchy", size, sizingRows)!;
+      expect(beanie).toBeLessThan(standard);
+      expect(relaxed).toBeGreaterThan(standard);
+      expect(slouchy).toBeGreaterThan(relaxed);
+    }
+  });
+
+  it("Child chart recovers the former adult fixed inches (Classic was 8.5\")", () => {
+    expect(resolveNamedFitLengthInches("beanie", "child", sizingRows)).toBe(7);
+    expect(resolveNamedFitLengthInches("watchcap", "child", sizingRows)).toBe(8.5);
+    expect(resolveNamedFitLengthInches("relaxed", "child", sizingRows)).toBe(9);
+    expect(resolveNamedFitLengthInches("slouchy", "child", sizingRows)).toBe(10);
+  });
+
+  it("inches and centimeters represent the same physical length", () => {
+    const inches = resolveNamedFitLengthInches("slouchy", "adult_woman", sizingRows);
+    expect(inches).toBe(12.9);
+    const cmDisplay = Math.round(12.9 * 2.54 * 10) / 10;
+    const backToInches = resolveTotalHatLengthInches({
+      fit: "custom",
+      hatSizeValue: "adult_woman",
+      customLengthDisplay: cmDisplay,
+      displayUnit: "cm",
+      sizingRows,
+      convertCmToInches: (cm) => cm / 2.54,
+    });
+    expect(backToInches).toBeCloseTo(12.9, 1);
   });
 });
 

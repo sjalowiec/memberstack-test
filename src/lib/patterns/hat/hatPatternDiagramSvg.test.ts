@@ -439,4 +439,27 @@ describe("buildHatPatternDiagramSvg", () => {
     expect(fittedSvg).toContain(formatLengthWithUnit(fitted.hatHeight, "inches"));
     expect(slouchySvg).toContain(formatLengthWithUnit(slouchy.hatHeight, "inches"));
   });
+
+  it("scales silhouette width with finished circumference", () => {
+    const narrow = calcFor({ finishedHatCircInches: 14 });
+    const wide = calcFor({ finishedHatCircInches: 28 });
+    const narrowSvg = buildHatPatternDiagramSvg(
+      narrow,
+      "inches",
+      formatters,
+      HAT_PATTERN_DIAGRAM_MODE_SUMMARY_EDIT,
+    );
+    const wideSvg = buildHatPatternDiagramSvg(
+      wide,
+      "inches",
+      formatters,
+      HAT_PATTERN_DIAGRAM_MODE_SUMMARY_EDIT,
+    );
+    const widthOf = (svg: string) => {
+      const m = svg.match(/class="hat-diagram__body"[^>]*\swidth="([\d.]+)"/);
+      expect(m).toBeTruthy();
+      return Number(m![1]);
+    };
+    expect(widthOf(wideSvg)).toBeGreaterThan(widthOf(narrowSvg));
+  });
 });
