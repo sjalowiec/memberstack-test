@@ -5,6 +5,7 @@ import DashboardShell from "../components/dashboard/DashboardShell.astro";
 import AccountMembershipPanel from "../components/dashboard/AccountMembershipPanel.astro";
 import MyPatternsPanel from "../components/dashboard/MyPatternsPanel.astro";
 import MyFavoritesPanel from "../components/dashboard/MyFavoritesPanel.astro";
+import MyDownloadsPanel from "../components/dashboard/MyDownloadsPanel.astro";
 import AccountSettingsPanel from "../components/dashboard/AccountSettingsPanel.astro";
 import AccountWelcomeBlock from "../components/dashboard/AccountWelcomeBlock.astro";
 import PatternEditingUnlockModal from "../components/patterns/PatternEditingUnlockModal.astro";
@@ -111,6 +112,7 @@ const description =
           <AccountMembershipPanel />
           <AccountSettingsPanel />
           <MyFavoritesPanel />
+          <MyDownloadsPanel />
           <MyPatternsPanel />
         </div>
       </DashboardShell>
@@ -123,6 +125,7 @@ const description =
   import "/src/scripts/account-login-redirect.ts";
   import "/src/scripts/account-my-patterns.ts";
   import "/src/scripts/account-favorites.ts";
+  import "/src/scripts/account-my-downloads.ts";
   import "/src/scripts/account-welcome.ts";
   import "/src/scripts/account-membership.ts";
   import "/src/scripts/account-membership-history.ts";
@@ -232,6 +235,7 @@ const description =
 
   :global(.dashboard-mini-card),
   :global(#my-favorites),
+  :global(#my-downloads),
   :global(#membership),
   :global(#account-settings),
   :global(#account),
