@@ -354,6 +354,20 @@
   text-decoration-color: rgba(82, 104, 45, 0.45);
 }
 
+/* Destructive text action — same muted red as Account My Patterns Delete. */
+.pattern-workspace-library__item-action--secondary.pattern-workspace-library__item-delete {
+  color: #b4453a;
+  text-decoration-color: rgba(180, 69, 58, 0.4);
+  opacity: 0.85;
+}
+
+.pattern-workspace-library__item-action--secondary.pattern-workspace-library__item-delete:hover:not(:disabled):not(.is-disabled) {
+  color: #99362d;
+  background: transparent;
+  text-decoration-color: rgba(153, 54, 45, 0.55);
+  opacity: 1;
+}
+
 .pattern-workspace-library__item-action:focus-visible {
   outline: 2px solid #c2614e;
   outline-offset: 2px;
@@ -364,11 +378,9 @@
   cursor: wait;
 }
 
-/* Copy / Delete stay visible when gated, but disabled + grayed. */
+/* Copy stays visible when gated, but disabled + grayed. */
 .pattern-workspace-library__item-copy.is-disabled,
-.pattern-workspace-library__item-copy:disabled,
-.pattern-workspace-library__item-delete.is-disabled,
-.pattern-workspace-library__item-delete:disabled {
+.pattern-workspace-library__item-copy:disabled {
   color: #9aa3a0;
   background: transparent;
   border: none;

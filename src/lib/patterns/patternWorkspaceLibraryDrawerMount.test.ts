@@ -39,4 +39,21 @@ describe("pattern workspace library drawer mount", () => {
     expect(backdropIdx).toBeGreaterThan(-1);
     expect(panelIdx).toBeGreaterThan(backdropIdx);
   });
+
+  it("styles Delete as muted destructive red text without icons", () => {
+    const css = readRepo("styles/pattern-workspace-library-drawer.css");
+    expect(css).toMatch(
+      /\.pattern-workspace-library__item-action--secondary\.pattern-workspace-library__item-delete\s*\{[^}]*color:\s*#b4453a/s,
+    );
+    expect(css).toMatch(
+      /\.pattern-workspace-library__item-action--secondary\.pattern-workspace-library__item-delete:hover:not\(:disabled\):not\(\.is-disabled\)\s*\{[^}]*color:\s*#99362d/s,
+    );
+    expect(css).not.toMatch(
+      /\.pattern-workspace-library__item-delete[^{]*\{[^}]*(?:trash|url\(|content:\s*["'][^"']+)/s,
+    );
+    // Free-claim Delete is no longer grayed; only Copy keeps entitlement-disabled styling.
+    expect(css).not.toMatch(
+      /\.pattern-workspace-library__item-delete\.is-disabled/,
+    );
+  });
 });
