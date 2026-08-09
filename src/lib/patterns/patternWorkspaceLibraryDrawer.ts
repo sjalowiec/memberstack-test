@@ -7,7 +7,10 @@ import type { CustomPatternProjectSummary } from "./customPatternProjectTypes";
 import { readActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
 import { deleteSavedCustomPatternProject } from "./deleteSavedCustomPatternProject";
 import { loadSavedCustomPatternProject } from "./loadSavedCustomPatternProject";
-import { copySavedCustomPatternProjectById } from "./savedCustomPatternManageActions";
+import {
+  copySavedCustomPatternProjectById,
+  formatPatternCopiedMessage,
+} from "./savedCustomPatternManageActions";
 import {
   canCopySavedCustomPatternForAccess,
   syncSavedCustomPatternCopyAccessForAccess,
@@ -78,12 +81,9 @@ export function buildCustomPatternProjectDrawerLines(project: CustomPatternProje
   };
 }
 
+/** @deprecated Prefer {@link formatPatternCopiedMessage}; kept for existing drawer tests. */
 export function formatPatternCopiedDrawerMessage(projectName: string): string {
-  const trimmed = projectName.trim();
-  if (trimmed) {
-    return `Pattern copied. “${trimmed}” is ready to edit.`;
-  }
-  return "Pattern copied. Your new copy is ready to edit.";
+  return formatPatternCopiedMessage(projectName);
 }
 
 let lastCopiedProjectIdInDrawer: string | null = null;
@@ -380,7 +380,7 @@ async function onLibraryProjectCopy(
     }
     lastCopiedProjectIdInDrawer = result.project.id;
     await refreshPatternWorkspaceLibraryList(root, { highlightProjectId: result.project.id });
-    setDrawerStatus(root, formatPatternCopiedDrawerMessage(result.project.name ?? ""));
+    setDrawerStatus(root, formatPatternCopiedMessage(result.project.name ?? ""));
   } catch {
     setDrawerStatus(root, "Could not copy this pattern. Please try again.", true);
   } finally {

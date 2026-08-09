@@ -39,10 +39,14 @@ vi.mock("./loadSavedCustomPatternProject", () => ({
   loadSavedCustomPatternProject: (...args: unknown[]) => loadSavedCustomPatternProjectMock(...args),
 }));
 
-vi.mock("./savedCustomPatternManageActions", () => ({
-  copySavedCustomPatternProjectById: (...args: unknown[]) => copyByIdMock(...args),
-  renameSavedCustomPatternProject: vi.fn(),
-}));
+vi.mock("./savedCustomPatternManageActions", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./savedCustomPatternManageActions")>();
+  return {
+    ...actual,
+    copySavedCustomPatternProjectById: (...args: unknown[]) => copyByIdMock(...args),
+    renameSavedCustomPatternProject: vi.fn(),
+  };
+});
 
 vi.mock("./deleteSavedCustomPatternProject", () => ({
   deleteSavedCustomPatternProject: (...args: unknown[]) =>

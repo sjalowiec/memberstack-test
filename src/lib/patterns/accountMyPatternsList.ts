@@ -1,5 +1,5 @@
 /**
- * Saved patterns accordion on /account — load, group by pattern system, open/edit/delete.
+ * Saved patterns accordion on /account — load, group by pattern system, open/edit/copy/delete.
  */
 import { listCustomPatternProjects } from "./customPatternProjectClient";
 import type { CustomPatternProjectSummary } from "./customPatternProjectTypes";
@@ -28,6 +28,14 @@ import {
   patternSystemDisplayName,
   type PatternSystemId,
 } from "./patternSystemId";
+import {
+  canCopySavedCustomPatternForAccess,
+  syncSavedCustomPatternCopyAccessForAccess,
+} from "./savedCustomPatternCopyAccess";
+import {
+  copySavedCustomPatternProjectById,
+  formatPatternCopiedMessage,
+} from "./savedCustomPatternManageActions";
 
 const SIGN_IN_REQUIRED_ERROR = "Sign in to save Custom Pattern projects.";
 /** Tooltip shown when Edit is disabled for a free claimed / downgraded knitter. */
@@ -151,6 +159,7 @@ function setViewAllVisible(root: HTMLElement, visible: boolean): void {
 const ROW_ACTION_SELECTORS = [
   "[data-kbm-my-patterns-view]",
   "[data-kbm-my-patterns-edit]",
+  "[data-kbm-my-patterns-copy]",
   "[data-kbm-my-patterns-delete]",
 ] as const;
 
@@ -176,6 +185,7 @@ function releaseMyPatternsListInteraction(root: HTMLElement): void {
     b.disabled = false;
   });
   syncMyPatternsEditAccess(root);
+  syncMyPatternsCopyAccess(root);
 }
 
 function showEmptyListState(root: HTMLElement): void {
@@ -234,6 +244,13 @@ function syncMyPatternsEditAccess(root: HTMLElement): void {
   root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-edit]").forEach((btn) => {
     const system = (btn.dataset.patternSystem as PatternSystemId | undefined) ?? "sleeveless";
     applyEditAccessToButton(btn, access, system);
+  });
+}
+
+function syncMyPatternsCopyAccess(root: HTMLElement): void {
+  const access = listAccess(root);
+  root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-copy]").forEach((btn) => {
+    syncSavedCustomPatternCopyAccessForAccess(btn, access);
   });
 }
 
@@ -313,6 +330,73 @@ async function onProjectEdit(root: HTMLElement, projectId: string, label: string
     console.error("[kbm] Failed to open saved pattern for editing from My Patterns.", error);
     setStatus(root, "Could not open this pattern for editing. Please try again.", true);
     perfEnd("6-account-list-action total", actionStart, { action: "open", ok: false, thrown: true });
+  } finally {
+    releaseMyPatternsListInteraction(root);
+  }
+}
+
+async function onProjectCopy(root: HTMLElement, projectId: string, label: string): Promise<void> {
+  const access = listAccess(root);
+  if (!canCopySavedCustomPatternForAccess(access)) {
+    offerPatternEditingUnlockModal(access);
+    return;
+  }
+
+  const actionStart = perfStart();
+  perfMark("6-account-list-action start", { action: "copy", projectId, label });
+  setStatus(root, `Copying “${label}”…`);
+  lockMyPatternsListInteraction(root);
+
+  try {
+    const copyStart = perfStart();
+    const result = await copySavedCustomPatternProjectById(projectId, "sleeveless");
+    perfEnd("6-account-list-action copySavedCustomPatternProjectById", copyStart, {
+      action: "copy",
+      projectId,
+      ok: result.ok,
+    });
+    if (!result.ok) {
+      setStatus(root, result.error, true);
+      perfEnd("6-account-list-action total", actionStart, { action: "copy", ok: false });
+      return;
+    }
+
+    const state = listStateByRoot.get(root);
+    if (state) {
+      const listRes = await listCustomPatternProjects("sleeveless");
+      if (listRes.ok) {
+        state.projects = listRes.projects;
+      } else {
+        const source = state.projects.find((p) => p.id === projectId);
+        state.projects = [
+          {
+            id: result.project.id,
+            name: result.project.name,
+            family: result.project.family,
+            source: result.project.source,
+            createdAt: result.project.createdAt,
+            updatedAt: result.project.updatedAt,
+            version: result.project.version,
+            patternSystem: source ? projectPatternSystem(source) : undefined,
+            gauge: source?.gauge,
+          },
+          ...state.projects,
+        ];
+      }
+      renderProjectList(root);
+    }
+
+    setStatus(root, formatPatternCopiedMessage(result.project.name ?? ""));
+    refreshOpenPatternLibraryDrawer();
+    perfEnd("6-account-list-action total", actionStart, {
+      action: "copy",
+      ok: true,
+      copyId: result.project.id,
+    });
+  } catch (error) {
+    console.error("[kbm] Failed to copy saved pattern from My Patterns.", error);
+    setStatus(root, "Could not copy this pattern. Please try again.", true);
+    perfEnd("6-account-list-action total", actionStart, { action: "copy", ok: false, thrown: true });
   } finally {
     releaseMyPatternsListInteraction(root);
   }
@@ -458,6 +542,20 @@ function renderPatternEntry(
   });
   applyEditAccessToButton(editBtn, listAccess(root), patternSystem);
 
+  const copyBtn = document.createElement("button");
+  copyBtn.type = "button";
+  copyBtn.className = "account-my-patterns__action account-my-patterns__action--copy";
+  copyBtn.setAttribute("data-kbm-my-patterns-copy", "");
+  copyBtn.dataset.projectId = project.id;
+  copyBtn.setAttribute("aria-label", `Copy ${displayName}`);
+  copyBtn.textContent = "Copy";
+  copyBtn.addEventListener("click", (event) => {
+    event?.stopPropagation?.();
+    if (copyBtn.disabled) return;
+    void onProjectCopy(root, project.id, displayName);
+  });
+  syncSavedCustomPatternCopyAccessForAccess(copyBtn, listAccess(root));
+
   const deleteBtn = document.createElement("button");
   deleteBtn.type = "button";
   deleteBtn.className =
@@ -472,7 +570,7 @@ function renderPatternEntry(
     void onProjectDelete(root, project.id, displayName);
   });
 
-  actions.append(openBtn, editBtn, deleteBtn);
+  actions.append(openBtn, editBtn, copyBtn, deleteBtn);
   item.append(main, actions);
   listEl.append(item);
 }
@@ -538,6 +636,7 @@ export function renderProjectList(root: HTMLElement): void {
   }
   wireExclusiveAccordionGroups(root);
   syncMyPatternsEditAccess(root);
+  syncMyPatternsCopyAccess(root);
   setViewAllVisible(root, state.projects.length > 0);
 }
 
