@@ -111,4 +111,23 @@ const { label = "Become a Member" } = Astro.props;
       padding-bottom: 0;
     }
   }
+
+  /*
+   * Pattern workspaces / print routes: never show the floating corner CTA.
+   * Layout also skips mounting MembershipCornerControl when hideMembershipCorner
+   * is set; these rules are belt-and-suspenders (body class from first paint).
+   */
+  :global(body.page--pattern-workspace) .membership-corner-cta,
+  :global(body.page--pattern-workspace [data-membership-corner-cta]),
+  :global(body.page--hide-membership-corner) .membership-corner-cta,
+  :global(body.page--hide-membership-corner [data-membership-corner-cta]) {
+    display: none !important;
+  }
+
+  @media print {
+    .membership-corner-cta,
+    :global([data-membership-corner-cta]) {
+      display: none !important;
+    }
+  }
 </style>

@@ -39,6 +39,9 @@ describe("membership corner CTA — phone hide contract", () => {
 
   it("is mounted sitewide via BaseLayout, not as the homepage card CTA", () => {
     expect(baseLayoutAstro).toContain("MembershipCornerControl");
+    expect(baseLayoutAstro).toMatch(
+      /\{!\s*hideMembershipCorner\s*&&\s*<MembershipCornerControl\s*\/>\s*\}/,
+    );
     expect(cornerControlAstro).toContain("MembershipCornerCta");
     // Homepage white membership card CTAs stay as normal page links.
     expect(indexAstro).toMatch(
