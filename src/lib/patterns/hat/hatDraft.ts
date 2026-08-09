@@ -37,6 +37,11 @@ export type HatDraft = {
     inches: HatGaugeSlot;
     cm: HatGaugeSlot;
   };
+  /**
+   * Working needles available on the machine (shared field name with sweater builders).
+   * Empty string when never entered — older drafts omit this key and coerce to "".
+   */
+  availableNeedles: string;
   showTips: boolean;
   /** Set when draft was created/updated from legacy keys. */
   migratedFromLegacy?: boolean;
@@ -64,10 +69,18 @@ export function createEmptyHatDraft(partial?: Partial<HatDraft>): HatDraft {
     fit: "",
     customHatLength: "",
     gaugeSlots: emptyHatGaugeSlots(),
+    availableNeedles: "",
     showTips: false,
     updatedAt: new Date().toISOString(),
     ...partial,
   };
+}
+
+/** Digits-only needle count string, or "" when missing/invalid shape (never invents a default). */
+function normalizeAvailableNeedles(raw: unknown): string {
+  if (raw == null) return "";
+  const s = String(raw).trim();
+  return s;
 }
 
 function safeParseJson(raw: string | null): unknown {
@@ -125,7 +138,9 @@ export function coerceHatDraft(raw: unknown): HatDraft | null {
   }
 
   let brimType = typeof o.brimType === "string" ? o.brimType : "";
-  if (brimType && brimType !== "single" && brimType !== "folded") brimType = "";
+  if (brimType && brimType !== "rolled" && brimType !== "single" && brimType !== "folded") {
+    brimType = "";
+  }
 
   return createEmptyHatDraft({
     unit: normalizeUnit(o.unit),
@@ -138,6 +153,7 @@ export function coerceHatDraft(raw: unknown): HatDraft | null {
     fit,
     customHatLength: typeof o.customHatLength === "string" ? o.customHatLength : "",
     gaugeSlots: normalizeGaugeSlots(o.gaugeSlots),
+    availableNeedles: normalizeAvailableNeedles(o.availableNeedles),
     showTips: o.showTips === true,
     migratedFromLegacy: o.migratedFromLegacy === true,
     updatedAt:
@@ -254,6 +270,33 @@ export function ensureHatDraftMigrated(
   return migrated;
 }
 
+const HAT_DRAFT_CLEAR_KEYS = [
+  HAT_DRAFT_STORAGE_KEY,
+  LEGACY_HAT_SIZE_STORAGE_KEY,
+  LEGACY_HAT_PATTERN_INPUTS_STORAGE_KEY,
+  LEGACY_HAT_GAUGE_SLOTS_KEY,
+  LEGACY_HAT_UNIT_KEY,
+  LEGACY_HAT_SHOW_TIPS_KEY,
+] as const;
+
+/**
+ * Remove the canonical hat draft and legacy builder keys so a later migrate cannot
+ * resurrect previous choices (used by New Pattern / `?new=1`).
+ */
+export function clearHatDraftStorage(
+  storage: Pick<Storage, "removeItem"> = typeof localStorage !== "undefined"
+    ? localStorage
+    : { removeItem: () => undefined },
+): void {
+  for (const key of HAT_DRAFT_CLEAR_KEYS) {
+    try {
+      storage.removeItem(key);
+    } catch {
+      /* private mode / quota */
+    }
+  }
+}
+
 /**
  * Snapshot current builder field values into the canonical draft (and keep writing legacy keys separately).
  */
@@ -268,6 +311,7 @@ export function syncHatDraftFromBuilderFields(
     fit: string;
     customHatLength: string;
     gaugeSlots: HatDraft["gaugeSlots"];
+    availableNeedles: string;
     showTips?: boolean;
   },
   storage?: Pick<Storage, "getItem" | "setItem">,
@@ -277,6 +321,7 @@ export function syncHatDraftFromBuilderFields(
     ...prev,
     ...fields,
     crownShaping: normalizeCrown(fields.crownShaping || ""),
+    availableNeedles: normalizeAvailableNeedles(fields.availableNeedles),
     showTips: fields.showTips ?? prev?.showTips ?? false,
     migratedFromLegacy: prev?.migratedFromLegacy,
   });

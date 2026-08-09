@@ -9,10 +9,10 @@ import {
   type HatPatternCalc,
   type HatSpiralPlan,
 } from "./hatMath";
-import { buildHatChooseYourBrimTipHtml } from "./hatChooseYourBrim";
 import { buildHatFourGoreCrownVideoTipHtml } from "./hatFourGoreCrownVideoTip";
 import { buildHatGatheredTopVideoHtml } from "./hatGatheredTopVideoTip";
 import { buildHatMattressStitchVideoHtml } from "./hatMattressStitchVideoTip";
+import { buildHatPlanningRibbingBrimTipHtml } from "./hatPlanningRibbingVideoTip";
 import { buildHatSwirlCrownVideoTipHtml } from "./hatSwirlCrownVideoTip";
 import {
   buildHatTransferStepCalloutHtml,
@@ -295,12 +295,10 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
 
   // Shared finishing inline video link (once per pattern) on the words “mattress stitch”.
   const mattressStitchVideoHtml = buildHatMattressStitchVideoHtml();
-  // Shared Choose Your Brim tip (once per pattern) — includes Planning Ribbing; never prints.
-  const chooseYourBrimTipHtml = buildHatChooseYourBrimTipHtml({
-    displayBrimDepth,
-    unit,
-    brimRows,
-  });
+  // Planning Ribbing tip — relevant when the brim may still be worked in ribbing
+  // (Single Layer / Folded Hem). Rolled Brim is stockinette-only construction.
+  const planningRibbingTipHtml =
+    brimType === "rolled" ? "" : buildHatPlanningRibbingBrimTipHtml();
 
   const finishingGathered = `
         <p>Block the hat to set the shape.</p>
@@ -321,7 +319,7 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
 
   const tipsIntroSlotHtml = `<div class="pattern-tips-intro-slot">${tipsIntroHtml}</div>`;
   const brimDeeperBodyTipHtml =
-    bodyRows > 0
+    bodyRows > 0 && brimType !== "rolled"
       ? `<div class="pattern-tip" data-tip data-tip-id="hat-deeper-brim"><strong>Tip:</strong> Want a deeper brim? Knit extra brim rows before continuing to the body.</div>`
       : "";
   const bodySectionWrapped =
@@ -329,9 +327,18 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
       ? wrapHatPatternSection(
           "body",
           "<h4>Body</h4>",
-          `<p>Work ${bodyRows} rows in pattern after the brim.</p>`,
+          brimType === "rolled"
+            ? `<p>Work ${bodyRows} rows in pattern after the rolled brim.</p>`
+            : `<p>Work ${bodyRows} rows in pattern after the brim.</p>`,
         )
       : "";
+
+  const brimSectionBody =
+    brimType === "rolled"
+      ? `<p>Work ${brimRows} rows in stockinette. The lower edge will roll naturally to form a ${displayBrimDepth} ${unit} rolled brim.</p>`
+      : `<p>Work ${brimRows} rows in your chosen brim finish.</p>
+      ${brimType === "folded" ? '<div class="pattern-tip" data-tip data-tip-id="hat-folded-brim-length"><strong>Tip:</strong> This length includes extra rows for folding.</div>' : ""}
+      ${brimDeeperBodyTipHtml}`;
 
   return `
       ${tipsIntroSlotHtml}
@@ -348,19 +355,22 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
         "<h4>Gauge (from your swatch)</h4>",
         `<p>${stitchGaugeRaw} stitches & ${rowGaugeRaw} rows per ${currentUnit === "inches" ? '4"' : "10 cm"}</p>`,
       )}
-      ${chooseYourBrimTipHtml}
+      ${planningRibbingTipHtml}
       ${wrapHatPatternSection(
         "cast-on",
         "<h4>Cast-On</h4>",
-        `<p>Cast on <strong>${patternCastOnSts} stitches</strong>.</p>
+        brimType === "rolled"
+          ? `<p>Cast on <strong>${patternCastOnSts} stitches</strong>.</p>
+      <div class="pattern-tip" data-tip data-tip-id="hat-cast-on-method"><strong>Tip:</strong> An E-wrap cast-on works well for a rolled brim.</div>`
+          : `<p>Cast on <strong>${patternCastOnSts} stitches</strong>.</p>
       <div class="pattern-tip" data-tip data-tip-id="hat-cast-on-method"><strong>Tip:</strong> Use the cast-on method of your choice, unless your chosen brim finish specifies one (for example, E-wrap for a rolled edge).</div>`,
       )}
       ${wrapHatPatternSection(
         "brim",
-        `<h4>Visible Brim Height (${displayBrimDepth} ${unit})</h4>`,
-        `<p>Work ${brimRows} rows in your chosen brim finish.</p>
-      ${brimType === "folded" ? '<div class="pattern-tip" data-tip data-tip-id="hat-folded-brim-length"><strong>Tip:</strong> This length includes extra rows for folding.</div>' : ""}
-      ${brimDeeperBodyTipHtml}`,
+        brimType === "rolled"
+          ? `<h4>Rolled Brim (${displayBrimDepth} ${unit})</h4>`
+          : `<h4>Visible Brim Height (${displayBrimDepth} ${unit})</h4>`,
+        brimSectionBody,
       )}
       ${bodySectionWrapped}
       ${wrapHatPatternSection(

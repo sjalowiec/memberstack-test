@@ -9,7 +9,57 @@ export type HatDisplayUnit = "inches" | "cm";
 
 export type HatCrownStyle = "gathered" | "wedge-4-decrease" | "wedge-4" | "spiral";
 
-export type HatBrimType = "single" | "folded";
+/** Brim construction types — order matches builder picker (Rolled, Single, Folded). */
+export type HatBrimType = "rolled" | "single" | "folded";
+
+export const HAT_BRIM_TYPES = ["rolled", "single", "folded"] as const;
+
+/** Default visible brim height when Rolled Brim is newly selected (inches). */
+export const HAT_ROLLED_BRIM_DEFAULT_DEPTH_INCHES = 1;
+
+/** True when `raw` is a known brim construction value. */
+export function isHatBrimType(raw: string): raw is HatBrimType {
+  return (HAT_BRIM_TYPES as readonly string[]).includes(raw);
+}
+
+/**
+ * Resolve brim type for calculation. Unknown / empty values fall back to `"single"`
+ * so older drafts without an explicit type keep prior behavior.
+ */
+export function resolveHatBrimType(raw: unknown): HatBrimType {
+  if (raw === "rolled" || raw === "folded" || raw === "single") return raw;
+  return "single";
+}
+
+export function hatBrimDisplayLabel(brimType: string): string {
+  if (brimType === "rolled") return "Rolled Brim";
+  if (brimType === "folded") return "Folded Hem";
+  if (brimType === "single") return "Single Layer";
+  return brimType || "—";
+}
+
+/** Display string for the Rolled Brim default height in the active unit. */
+export function formatHatRolledBrimDefaultLength(unit: HatDisplayUnit): string {
+  if (unit === "cm") {
+    return String(Math.round(HAT_ROLLED_BRIM_DEFAULT_DEPTH_INCHES * 2.54 * 10) / 10);
+  }
+  return String(HAT_ROLLED_BRIM_DEFAULT_DEPTH_INCHES);
+}
+
+/**
+ * When the user newly selects Rolled Brim, return the default height to apply.
+ * Returns `null` when already on rolled (so a user-edited height is not overwritten)
+ * or when selecting another brim type.
+ */
+export function nextBrimLengthAfterBrimTypeChange(args: {
+  previousBrimType: string;
+  nextBrimType: string;
+  unit: HatDisplayUnit;
+}): string | null {
+  if (args.nextBrimType !== "rolled") return null;
+  if (args.previousBrimType === "rolled") return null;
+  return formatHatRolledBrimDefaultLength(args.unit);
+}
 
 export type HatFitStyle = "beanie" | "watchcap" | "slouchy" | "relaxed" | "custom";
 
@@ -430,7 +480,16 @@ export function calculateHatPattern(input: HatPatternCalcInput): HatPatternCalc 
   });
 
   const crownHeightInches = Math.max(0, crownPlan.crownDepth);
-  const resolvedBrimType: HatBrimType = brimType === "folded" ? "folded" : "single";
+  const resolvedBrimType = resolveHatBrimType(brimType);
+  /**
+   * Brim rows vs finished length:
+   * - Finished hat length (hatHeight) is bottom-of-brim → crown and includes the
+   *   selected visible brim height for all constructions (rolled, single, folded).
+   * - Folded Hem doubles fabric rows for the turn-under; body math still subtracts
+   *   only the visible brim once.
+   * - Rolled Brim uses the same single-layer row formula (brimDepth × gauge) — do
+   *   not double. The rolled section is the visible brim included in total length.
+   */
   const brimRows =
     resolvedBrimType === "folded"
       ? roundToEvenPreferUp(brimDepth * 2 * rowGaugePerInch)

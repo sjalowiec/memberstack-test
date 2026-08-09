@@ -1,13 +1,14 @@
 /**
- * Pure helpers for the finished-hat Edit Pattern drawer.
+ * Pure helpers for the hat Summary/Edit form.
  * Edits flow through existing hat draft + validation + calculateHatPattern — no second math path.
  */
 import type { HatDraft, HatDraftUnit, HatGaugeSlot } from "./hatDraft";
 import { createEmptyHatDraft } from "./hatDraft";
-import { HAT_FIT_HEIGHTS_INCHES } from "./hatMath";
+import { HAT_FIT_HEIGHTS_INCHES, resolveTotalHatLengthInches, type HatPatternCalc } from "./hatMath";
 import {
   HAT_BUILDER_ALLOWED_CROWNS,
   HAT_BUILDER_INCOMPLETE_MESSAGE,
+  evaluateHatBuilderNeedleCapacity,
   isHatBuilderBrimComplete,
   isHatBuilderCrownComplete,
   isHatBuilderGaugeComplete,
@@ -17,11 +18,20 @@ import {
   type HatBuilderFieldSnapshot,
   type HatBuilderSizeRow,
 } from "./hatBuilderValidation";
+import {
+  AVAILABLE_NEEDLES_REQUIRED_MESSAGE,
+  validateAvailableNeedlesFieldValue,
+} from "./hatAvailableNeedles";
 import { HAT_EDIT_MEASUREMENT_TARGETS } from "./hatPatternEditTargets";
+import { buildHatPatternCalcFromDraft, type HatSizingPatternRow } from "./hatPatternFromDraft";
 
 export { HAT_EDIT_MEASUREMENT_TARGETS };
 
-export type HatEditSizingRow = HatBuilderSizeRow & { finishedSizeInches: number };
+export type HatEditSizingRow = HatBuilderSizeRow & {
+  finishedSizeInches: number;
+  /** Chart finished hat length (inches) when the size is from the sizing table. */
+  hatLength?: number;
+};
 
 export type HatEditFormValues = {
   unit: HatDraftUnit;
@@ -29,13 +39,17 @@ export type HatEditFormValues = {
   /** Finished hat circumference in the active unit (custom entry or chart-derived display). */
   finishedCircumference: string;
   fit: string;
-  /** Total finished hat length in the active unit (custom entry or preset-derived display). */
+  /**
+   * Total finished hat length in the active unit (bottom of brim → crown).
+   * Same value used by calculateHatPattern / diagram (`resolveTotalHatLengthInches`).
+   */
   finishedHatLength: string;
   brimType: string;
   brimLength: string;
   crownShaping: string;
   stitchGauge: string;
   rowGauge: string;
+  availableNeedles: string;
 };
 
 export type HatEditFieldErrors = Partial<Record<keyof HatEditFormValues | "form", string>>;
@@ -58,6 +72,31 @@ function nearlyEqual(a: number, b: number): boolean {
   return Math.abs(a - b) < 0.051;
 }
 
+/**
+ * Display the same total finished length the pattern engine uses
+ * (chart hatLength when a size is selected, else fit preset, else custom).
+ */
+export function resolvedFinishedHatLengthDisplay(
+  args: {
+    fit: string;
+    sizeSel: string;
+    customHatLength?: string;
+    unit: HatDraftUnit;
+  },
+  sizingRows: ReadonlyArray<HatEditSizingRow>,
+): string {
+  const unit: HatDraftUnit = args.unit === "cm" ? "cm" : "inches";
+  const inches = resolveTotalHatLengthInches({
+    fit: (args.fit ?? "").trim() || "custom",
+    hatSizeValue: (args.sizeSel ?? "").trim(),
+    customLengthDisplay: Number(args.customHatLength) || 0,
+    displayUnit: unit,
+    sizingRows,
+  });
+  if (!(inches != null && inches > 0)) return "";
+  return inchesToDisplay(inches, unit);
+}
+
 export function hatDraftToEditFormValues(
   draft: HatDraft,
   sizingRows: ReadonlyArray<HatEditSizingRow>,
@@ -76,15 +115,15 @@ export function hatDraftToEditFormValues(
     if (inches > 0) finishedCircumference = inchesToDisplay(inches, unit);
   }
 
-  let finishedHatLength = "";
-  if (fit === "custom") {
-    finishedHatLength = (draft.customHatLength ?? "").trim();
-  } else if (fit && Object.prototype.hasOwnProperty.call(HAT_FIT_HEIGHTS_INCHES, fit)) {
-    finishedHatLength = inchesToDisplay(
-      HAT_FIT_HEIGHTS_INCHES[fit as keyof typeof HAT_FIT_HEIGHTS_INCHES],
+  const finishedHatLength = resolvedFinishedHatLengthDisplay(
+    {
+      fit,
+      sizeSel,
+      customHatLength: draft.customHatLength,
       unit,
-    );
-  }
+    },
+    sizingRows,
+  );
 
   return {
     unit,
@@ -100,13 +139,14 @@ export function hatDraftToEditFormValues(
         : (draft.crownShaping ?? "").trim(),
     stitchGauge: slot.stitch ?? "",
     rowGauge: slot.row ?? "",
+    availableNeedles: draft.availableNeedles ?? "",
   };
 }
 
 /**
  * Map edit-form values onto draft size/fit semantics.
  * Changing the circumference away from a chart size becomes custom size.
- * Changing length away from a fit preset becomes custom length.
+ * Changing length away from the resolved finished length (chart or fit preset) becomes custom length.
  */
 export function resolveHatEditSizeAndLength(
   form: HatEditFormValues,
@@ -147,7 +187,16 @@ export function resolveHatEditSizeAndLength(
     customHatLength = lengthRaw;
   } else if (Object.prototype.hasOwnProperty.call(HAT_FIT_HEIGHTS_INCHES, fit)) {
     const preset = HAT_FIT_HEIGHTS_INCHES[fit as keyof typeof HAT_FIT_HEIGHTS_INCHES];
-    if (lengthInches != null && nearlyEqual(lengthInches, preset)) {
+    const chartLen = Number(sizingRows.find((s) => s.size === sizeSel)?.hatLength);
+    const matchesPreset = lengthInches != null && nearlyEqual(lengthInches, preset);
+    const matchesChart =
+      lengthInches != null &&
+      Number.isFinite(chartLen) &&
+      chartLen > 0 &&
+      nearlyEqual(lengthInches, chartLen);
+    // Keep named fit when the displayed length matches either the fit preset or the
+    // chart finished length (calc prefers chart when a size is selected).
+    if (matchesPreset || matchesChart) {
       customHatLength = "";
     } else {
       fit = "custom";
@@ -185,6 +234,7 @@ export function applyHatEditFormToDraft(
     brimLength: form.brimLength.trim(),
     crownShaping: form.crownShaping.trim(),
     gaugeSlots,
+    availableNeedles: form.availableNeedles.trim(),
   });
 }
 
@@ -202,6 +252,7 @@ export function hatEditDraftToFieldSnapshot(draft: HatDraft): HatBuilderFieldSna
     customHatLength: draft.customHatLength ?? "",
     stitchGauge: slot.stitch ?? "",
     rowGauge: slot.row ?? "",
+    availableNeedles: draft.availableNeedles ?? "",
   };
 }
 
@@ -221,7 +272,11 @@ export function validateHatEditForm(
     errors.finishedHatLength = "Enter a finished hat length greater than zero.";
   }
   if (!isHatBuilderBrimComplete(snapshot)) {
-    if (snapshot.brimType !== "single" && snapshot.brimType !== "folded") {
+    if (
+      snapshot.brimType !== "rolled" &&
+      snapshot.brimType !== "single" &&
+      snapshot.brimType !== "folded"
+    ) {
       errors.brimType = "Choose a brim type.";
     } else {
       errors.brimLength = "Enter a visible brim height greater than zero.";
@@ -233,13 +288,75 @@ export function validateHatEditForm(
   if (!isHatBuilderGaugeComplete(snapshot)) {
     if (!Number(snapshot.stitchGauge)) errors.stitchGauge = "Enter stitch gauge.";
     if (!Number(snapshot.rowGauge)) errors.rowGauge = "Enter row gauge.";
+    const needles = validateAvailableNeedlesFieldValue(snapshot.availableNeedles);
+    if (!needles.valid) errors.availableNeedles = AVAILABLE_NEEDLES_REQUIRED_MESSAGE;
+  } else {
+    const capacity = evaluateHatBuilderNeedleCapacity(snapshot, sizingRows, form.unit);
+    if (!capacity.ok) {
+      errors.availableNeedles = capacity.message;
+    }
   }
 
   if (Object.keys(errors).length > 0 || !isHatBuilderInputComplete(snapshot, sizingRows)) {
-    if (!errors.form) errors.form = HAT_BUILDER_INCOMPLETE_MESSAGE;
+    if (!errors.form) {
+      errors.form = errors.availableNeedles?.includes("requires")
+        ? errors.availableNeedles
+        : HAT_BUILDER_INCOMPLETE_MESSAGE;
+    }
     return { ok: false, errors };
   }
+  const capacity = evaluateHatBuilderNeedleCapacity(snapshot, sizingRows, form.unit);
+  if (!capacity.ok) {
+    return {
+      ok: false,
+      errors: {
+        availableNeedles: capacity.message,
+        form: capacity.message,
+      },
+    };
+  }
   return { ok: true, draft };
+}
+
+/**
+ * Live Summary/Edit preview from unsaved form values.
+ * Does not read or write `kbm_hat_draft` — callers pass the last saved draft as `previous`
+ * only so non-form draft fields (if any) are preserved when applying the form.
+ */
+export type HatSummaryEditPreviewReady = {
+  ok: true;
+  draft: HatDraft;
+  calc: HatPatternCalc;
+  unit: HatDraftUnit;
+};
+
+export type HatSummaryEditPreviewInvalid = {
+  ok: false;
+  errors: HatEditFieldErrors;
+};
+
+export function buildHatSummaryEditPreview(
+  previous: HatDraft,
+  form: HatEditFormValues,
+  sizingRows: ReadonlyArray<HatEditSizingRow>,
+): HatSummaryEditPreviewReady | HatSummaryEditPreviewInvalid {
+  const check = validateHatEditForm(form, sizingRows);
+  if (!check.ok) return { ok: false, errors: check.errors };
+
+  const draft = applyHatEditFormToDraft(previous, form, sizingRows);
+  const calcResult = buildHatPatternCalcFromDraft(
+    draft,
+    sizingRows as ReadonlyArray<HatSizingPatternRow>,
+  );
+  if (!calcResult.ok) {
+    return { ok: false, errors: { form: calcResult.message } };
+  }
+  return {
+    ok: true,
+    draft,
+    calc: calcResult.calc,
+    unit: calcResult.unit,
+  };
 }
 
 export function isAllowedHatEditCrown(crown: string): boolean {

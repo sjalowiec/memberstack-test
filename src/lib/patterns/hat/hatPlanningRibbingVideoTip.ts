@@ -4,6 +4,7 @@
  * Inline glossary-styled control opens KinCatalogVideoModal (not a tooltip).
  * Free / ungated (`access_level: public`).
  */
+import { buildGlossaryTooltipPlaceholderHtml } from "../../glossary/glossaryTooltipPrint";
 import {
   findPublicVideoByContentId,
   sleevelessHelpVideoFromCatalog,
@@ -23,6 +24,14 @@ export const HAT_PLANNING_RIBBING_TIP_TITLE = "Planning a Ribbed Brim?";
 export const HAT_PLANNING_RIBBING_TIP_TEXT =
   "If you plan to knit the brim in ribbing or mock ribbing, you may need to add or subtract a stitch so the ribbing matches neatly at the seam. After completing the ribbing, increase or decrease back to the pattern stitch count.";
 
+/** Glossary entry id for “Mock Rib” (`src/data/glossary.json`). */
+export const HAT_MOCK_RIB_GLOSSARY_ID = 291;
+
+/** Visible linked phrase in Planning Ribbing tip copy. */
+export const HAT_MOCK_RIB_GLOSSARY_VISIBLE_TEXT = "mock ribbing";
+
+export const HAT_MOCK_RIB_GLOSSARY_ARIA_LABEL = "Learn about mock ribbing";
+
 /** Accessible name for the inline video control. */
 export const HAT_PLANNING_RIBBING_WATCH_LABEL = "Watch Planning Ribbing for a Neat Seam";
 
@@ -35,6 +44,36 @@ function escapeHtml(s: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function escapeAttr(s: string): string {
+  return escapeHtml(s).replace(/'/g, "&#39;");
+}
+
+/**
+ * Inline Mock Rib glossary placeholder (entry 291). Hydrated to glossary tooltip/modal.
+ */
+export function buildHatMockRibGlossaryHtml(): string {
+  return buildGlossaryTooltipPlaceholderHtml(
+    HAT_MOCK_RIB_GLOSSARY_ID,
+    HAT_MOCK_RIB_GLOSSARY_VISIBLE_TEXT,
+    escapeAttr,
+    escapeHtml,
+    { ariaLabel: HAT_MOCK_RIB_GLOSSARY_ARIA_LABEL },
+  );
+}
+
+/**
+ * Escape tip copy and wrap only the first “mock ribbing” with the glossary placeholder.
+ * Later occurrences stay plain text. Returns escaped HTML when the phrase is absent.
+ */
+export function linkFirstHatMockRibInText(text: string): string {
+  const needle = HAT_MOCK_RIB_GLOSSARY_VISIBLE_TEXT;
+  const idx = String(text ?? "").indexOf(needle);
+  if (idx < 0) return escapeHtml(text);
+  const before = escapeHtml(text.slice(0, idx));
+  const after = escapeHtml(text.slice(idx + needle.length));
+  return `${before}${buildHatMockRibGlossaryHtml()}${after}`;
 }
 
 /** Resolve catalog row → Vimeo meta for KinCatalogVideoModal. */
@@ -100,7 +139,7 @@ export function buildHatPlanningRibbingBrimTipHtml(
   return (
     `<div class="pattern-tip" data-tip data-tip-id="${HAT_PLANNING_RIBBING_VIDEO_TIP_ID}" data-hat-planning-ribbing-brim-tip>` +
     `<strong>${escapeHtml(HAT_PLANNING_RIBBING_TIP_TITLE)}</strong> ` +
-    `${escapeHtml(HAT_PLANNING_RIBBING_TIP_TEXT)} ` +
+    `${linkFirstHatMockRibInText(HAT_PLANNING_RIBBING_TIP_TEXT)} ` +
     `${videoHtml}` +
     `</div>`
   );

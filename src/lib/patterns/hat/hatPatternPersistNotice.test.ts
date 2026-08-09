@@ -192,6 +192,7 @@ describe("Hat Pattern persist notice page wiring", () => {
   it("uses ViewerAccessState so active membership is not inferred from login alone", () => {
     expect(hatPatternPageScript).toContain("getViewerAccessState");
     expect(hatPatternPageScript).toContain("applyHatPatternPersistNoticeMembership");
+    expect(hatPatternPageScript).toContain("applyHatPatternMyPatternsAccess");
     expect(hatPatternPageScript).not.toMatch(
       /getViewerAccessState[\s\S]{0,200}isMemberLoggedIn\(\)/,
     );

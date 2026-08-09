@@ -1,6 +1,6 @@
 /**
  * Finished Hat Pattern page — draft → calc → instructions + diagram.
- * Free / ungated. Edit Pattern drawer edits the same draft + existing hat math (no new route).
+ * Free / ungated. Edit Pattern navigates to `/patterns/hat/summary/` (no on-page drawer).
  */
 
 import {
@@ -21,10 +21,14 @@ import {
 } from "../lib/patterns/hat/hatPatternFromDraft";
 import { applyHatPatternPersistNoticeMembership } from "../lib/patterns/hat/hatPatternPersistNotice";
 import {
+  applyHatPatternMyPatternsAccess,
+  bindHatPatternMyPatternsDisabledGuard,
+} from "../lib/patterns/hat/hatPatternMyPatternsAccess";
+import { initHatPatternNewPattern } from "../lib/patterns/hat/hatPatternNewPattern";
+import {
   waitForMemberstackDom,
   waitForMemberstackReady,
 } from "../lib/patterns/sleevelessPatternLoginGate";
-import { initHatPatternEditDrawer } from "./hat-pattern-edit-drawer.ts";
 import { triggerPatternPrint } from "./patternPrintPersonalization.ts";
 import hatSizingRows from "../data/sizing_hats.json";
 
@@ -45,9 +49,14 @@ async function resolveHatPatternViewerAccessState(): Promise<ViewerAccessState> 
   }
 }
 
+function applyHatPatternMembershipChrome(state: ViewerAccessState): void {
+  applyHatPatternPersistNoticeMembership(document, state);
+  applyHatPatternMyPatternsAccess(document, state);
+}
+
 async function syncHatPatternPersistNoticeMembership(): Promise<void> {
   const state = await resolveHatPatternViewerAccessState();
-  applyHatPatternPersistNoticeMembership(document, state);
+  applyHatPatternMembershipChrome(state);
 }
 
 function scrapOffPatternTooltip(): string {
@@ -257,7 +266,7 @@ export async function renderHatPattern() {
     diagramHost.innerHTML = buildHatPatternDiagramSvg(calc, unit, {
       convertLength,
       formatLengthWithUnit,
-    });
+    }); // default mode: "pattern" — keeps stitch/row construction counts
   }
 
   window.dispatchEvent(new CustomEvent("kbm:hat-pattern-rendered"));
@@ -266,12 +275,12 @@ export async function renderHatPattern() {
 export function initHatPatternPage() {
   const run = () => {
     bindInlinePrintLink();
-    initHatPatternEditDrawer({
-      sizingRows: sizingRows(),
-      onUpdated: () => renderHatPattern(),
-    });
+    bindHatPatternMyPatternsDisabledGuard(document);
+    // Fail closed until membership resolves — My Patterns stays disabled / non-navigating.
+    applyHatPatternMyPatternsAccess(document, "loggedOut");
+    initHatPatternNewPattern(document);
     void syncHatPatternPersistNoticeMembership().catch(() => {
-      applyHatPatternPersistNoticeMembership(document, "loggedOut");
+      applyHatPatternMembershipChrome("loggedOut");
     });
     void renderHatPattern().catch((err) => {
       console.error("[hat-pattern] render failed", err);
@@ -287,7 +296,7 @@ export function initHatPatternPage() {
           void syncHatPatternPersistNoticeMembership();
         });
         ms.on("member.logout", () => {
-          applyHatPatternPersistNoticeMembership(document, "loggedOut");
+          applyHatPatternMembershipChrome("loggedOut");
         });
       } catch {
         /* memberstack event wiring is best-effort */

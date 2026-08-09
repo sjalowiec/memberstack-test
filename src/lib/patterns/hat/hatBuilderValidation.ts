@@ -1,7 +1,15 @@
 /**
  * Hat Express builder validation — ported from `requiredPatternInputsComplete` in hat.astro.
- * Pure helpers; no sweater validation imports.
+ * Available-needles field/validation reuses shared sweater helpers.
  */
+
+import {
+  isValidExpressAvailableNeedles,
+  resolveHatRequiredNeedles,
+  validateHatNeedleCapacity,
+  type HatNeedleCapacityValidation,
+} from "./hatAvailableNeedles";
+import type { HatDraftUnit } from "./hatDraft";
 
 export const HAT_BUILDER_ALLOWED_CROWNS = ["gathered", "wedge-4-decrease", "spiral"] as const;
 export type HatBuilderAllowedCrown = (typeof HAT_BUILDER_ALLOWED_CROWNS)[number];
@@ -19,6 +27,8 @@ export type HatBuilderFieldSnapshot = {
   customHatLength: string;
   stitchGauge: string;
   rowGauge: string;
+  /** Shared sweater field name — working needles available on the machine. */
+  availableNeedles: string;
 };
 
 export type HatBuilderSizeRow = {
@@ -62,7 +72,7 @@ export function isHatBuilderBrimComplete(
   fields: Pick<HatBuilderFieldSnapshot, "brimType" | "brimLength">,
 ): boolean {
   const bt = fields.brimType.trim();
-  if (bt !== "single" && bt !== "folded") return false;
+  if (bt !== "rolled" && bt !== "single" && bt !== "folded") return false;
   return positiveNumber(fields.brimLength);
 }
 
@@ -75,16 +85,103 @@ export function isHatBuilderCrownComplete(
   );
 }
 
-/** True when stitch + row gauge are valid positives (accordion step 5). */
+/** True when stitch + row gauge and available needles are valid (accordion step 5 fields). */
 export function isHatBuilderGaugeComplete(
-  fields: Pick<HatBuilderFieldSnapshot, "stitchGauge" | "rowGauge">,
+  fields: Pick<HatBuilderFieldSnapshot, "stitchGauge" | "rowGauge" | "availableNeedles">,
 ): boolean {
-  return positiveNumber(fields.stitchGauge) && positiveNumber(fields.rowGauge);
+  return (
+    positiveNumber(fields.stitchGauge) &&
+    positiveNumber(fields.rowGauge) &&
+    isValidExpressAvailableNeedles(fields.availableNeedles)
+  );
 }
 
 /**
- * All required Create My Pattern inputs — same rules as hat.astro
- * `requiredPatternInputsComplete`.
+ * Finished hat circumference in inches from builder fields, or null when unknown.
+ */
+export function resolveHatBuilderFinishedCircInches(
+  fields: Pick<HatBuilderFieldSnapshot, "sizeSel" | "customCircumference">,
+  sizingRows: ReadonlyArray<HatBuilderSizeRow>,
+  unit: HatDraftUnit,
+): number | null {
+  const size = fields.sizeSel.trim();
+  if (!size) return null;
+  if (size === "custom") {
+    const raw = Number(fields.customCircumference.trim());
+    if (!(raw > 0)) return null;
+    return unit === "cm" ? raw / 2.54 : raw;
+  }
+  const selected = sizingRows.find((s) => s.size === size);
+  const inches = Number(selected?.finishedSizeInches);
+  return inches > 0 ? inches : null;
+}
+
+/**
+ * Final pattern stitch count for capacity check, or 0 when inputs are incomplete.
+ */
+export function resolveHatBuilderRequiredNeedles(
+  fields: Pick<
+    HatBuilderFieldSnapshot,
+    "sizeSel" | "customCircumference" | "stitchGauge" | "crownShaping"
+  >,
+  sizingRows: ReadonlyArray<HatBuilderSizeRow>,
+  unit: HatDraftUnit,
+): number {
+  const circ = resolveHatBuilderFinishedCircInches(fields, sizingRows, unit);
+  const stitchGauge = Number(fields.stitchGauge.trim());
+  const crown = fields.crownShaping.trim();
+  if (circ == null || !(stitchGauge > 0) || !crown) return 0;
+  return resolveHatRequiredNeedles({
+    finishedHatCircInches: circ,
+    stitchGaugeDisplay: stitchGauge,
+    displayUnit: unit,
+    crown,
+  });
+}
+
+/**
+ * Live capacity check for Create My Pattern / Edit Pattern.
+ * Skipped (ok) until size, stitch gauge, and crown are known enough to compute required stitches.
+ */
+export function evaluateHatBuilderNeedleCapacity(
+  fields: HatBuilderFieldSnapshot,
+  sizingRows: ReadonlyArray<HatBuilderSizeRow>,
+  unit: HatDraftUnit,
+):
+  | HatNeedleCapacityValidation
+  | {
+      ok: true;
+      skipped: true;
+      message: string;
+      requiredNeedles: number;
+      availableNeedles: number;
+    } {
+  const requiredNeedles = resolveHatBuilderRequiredNeedles(fields, sizingRows, unit);
+  if (!(requiredNeedles > 0)) {
+    return {
+      ok: true,
+      skipped: true,
+      message: "",
+      requiredNeedles: 0,
+      availableNeedles: parseInt(fields.availableNeedles, 10) || 0,
+    };
+  }
+  return validateHatNeedleCapacity(fields.availableNeedles, requiredNeedles);
+}
+
+/** Gauge step complete for accordion: field presence + capacity when computable. */
+export function isHatBuilderGaugeStepReady(
+  fields: HatBuilderFieldSnapshot,
+  sizingRows: ReadonlyArray<HatBuilderSizeRow>,
+  unit: HatDraftUnit,
+): boolean {
+  if (!isHatBuilderGaugeComplete(fields)) return false;
+  return evaluateHatBuilderNeedleCapacity(fields, sizingRows, unit).ok;
+}
+
+/**
+ * All required Create My Pattern *fields* (including a valid available-needles entry).
+ * Capacity vs cast-on is checked separately so callers can show the specific needles message.
  */
 export function isHatBuilderInputComplete(
   fields: HatBuilderFieldSnapshot,
@@ -99,11 +196,66 @@ export function isHatBuilderInputComplete(
   );
 }
 
+/** Fields complete and the hat fits the entered machine needle count. */
+export function isHatBuilderReadyToCreatePattern(
+  fields: HatBuilderFieldSnapshot,
+  sizingRows: ReadonlyArray<HatBuilderSizeRow>,
+  unit: HatDraftUnit = "inches",
+): boolean {
+  return (
+    isHatBuilderInputComplete(fields, sizingRows) &&
+    evaluateHatBuilderNeedleCapacity(fields, sizingRows, unit).ok
+  );
+}
+
+/** Accordion step count for the hat express builder. */
+export const HAT_BUILDER_STEPS = 5;
+
+/**
+ * Whether a picker `[data-choice]` click should auto-advance the accordion.
+ * Brim type must stay open so the visible brim height remains editable.
+ */
+export function hatBuilderChoiceFieldAdvances(field: string): boolean {
+  return field.trim() !== "brimType";
+}
+
+/**
+ * Resolve the open step after a field change.
+ * When `advance` is false, the current section stays open even if newly complete
+ * (used after brim-type picker selection).
+ */
+export function nextHatBuilderOpenStepAfterFieldChange(args: {
+  advance: boolean;
+  openStep: number;
+  maxReachableAfter: number;
+  prevMaxReachable: number;
+  currentStepComplete: boolean;
+  totalSteps?: number;
+}): number {
+  const totalSteps = args.totalSteps ?? HAT_BUILDER_STEPS;
+  const openStep = Math.max(1, Math.min(totalSteps, args.openStep));
+  if (!args.advance) return openStep;
+
+  const next = Math.min(totalSteps, openStep + 1);
+  if (
+    args.currentStepComplete &&
+    next <= args.maxReachableAfter &&
+    next > openStep
+  ) {
+    return next;
+  }
+  if (args.maxReachableAfter > args.prevMaxReachable && args.maxReachableAfter > openStep) {
+    return Math.min(openStep + 1, args.maxReachableAfter);
+  }
+  return openStep;
+}
+
 /** Per-step completion for accordion lock / checkmarks (steps 1–5). */
 export function hatBuilderStepComplete(
   step: number,
   fields: HatBuilderFieldSnapshot,
   sizingRows: ReadonlyArray<HatBuilderSizeRow>,
+  unit: HatDraftUnit = "inches",
 ): boolean {
   switch (step) {
     case 1:
@@ -115,7 +267,7 @@ export function hatBuilderStepComplete(
     case 4:
       return isHatBuilderCrownComplete(fields);
     case 5:
-      return isHatBuilderGaugeComplete(fields);
+      return isHatBuilderGaugeStepReady(fields, sizingRows, unit);
     default:
       return false;
   }

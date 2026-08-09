@@ -5,8 +5,18 @@
 
 import type { HatDraft, HatDraftUnit } from "./hatDraft";
 import {
-  HAT_FIT_HEIGHTS_INCHES,
+  isHatBuilderInputComplete,
+  type HatBuilderFieldSnapshot,
+  type HatBuilderSizeRow,
+} from "./hatBuilderValidation";
+import {
+  validateHatNeedleCapacity,
+} from "./hatAvailableNeedles";
+import {
+  applyHatCrownCastOnAdjustment,
   calculateHatPattern,
+  hatBrimDisplayLabel,
+  resolveHatBrimType,
   resolveTotalHatLengthInches,
   roundFinishedHatSizeFromHead,
   type HatPatternCalc,
@@ -17,11 +27,6 @@ import {
   buildHatSizeOptionLabel,
   type HatSizingLabelRow,
 } from "./hatBuilderSizingLabels";
-import {
-  isHatBuilderInputComplete,
-  type HatBuilderFieldSnapshot,
-  type HatBuilderSizeRow,
-} from "./hatBuilderValidation";
 
 export const HAT_PATTERN_MISSING_DRAFT_MESSAGE =
   "Create a hat pattern first, then come back to view your instructions.";
@@ -51,7 +56,7 @@ export type HatPatternCalcReady = {
 
 export type HatPatternCalcFailure = {
   ok: false;
-  reason: "missing" | "incomplete" | "calc-error";
+  reason: "missing" | "incomplete" | "calc-error" | "needles";
   message: string;
   detail?: string;
 };
@@ -117,6 +122,7 @@ function draftToFieldSnapshot(
     customHatLength: draft.customHatLength ?? "",
     stitchGauge: slot.stitch ?? "",
     rowGauge: slot.row ?? "",
+    availableNeedles: draft.availableNeedles ?? "",
   };
 }
 
@@ -160,12 +166,14 @@ function crownDisplayLabel(crown: string): string {
 }
 
 function brimDisplayLabel(brimType: string): string {
-  if (brimType === "folded") return "Folded Hem";
-  if (brimType === "single") return "Single Layer";
-  return brimType || "—";
+  return hatBrimDisplayLabel(brimType);
 }
 
-function lengthDisplayLabel(draft: HatDraft, unit: HatDraftUnit): string {
+function lengthDisplayLabel(
+  draft: HatDraft,
+  unit: HatDraftUnit,
+  sizingRows: ReadonlyArray<HatSizingPatternRow>,
+): string {
   const fit = draft.fit.trim();
   if (fit === "custom") {
     const raw = draft.customHatLength.trim();
@@ -173,8 +181,15 @@ function lengthDisplayLabel(draft: HatDraft, unit: HatDraftUnit): string {
     return raw ? `Custom · ${raw}${unitWord}` : "Custom";
   }
   const name = HAT_FIT_PRESET_LABEL_NAMES[fit] || fit || "—";
-  const inches = HAT_FIT_HEIGHTS_INCHES[fit as keyof typeof HAT_FIT_HEIGHTS_INCHES];
-  if (!Number.isFinite(inches)) return name;
+  // Same total finished length as calc/diagram (chart hatLength wins over fit preset).
+  const inches = resolveTotalHatLengthInches({
+    fit,
+    hatSizeValue: draft.sizeSel,
+    customLengthDisplay: Number(draft.customHatLength) || 0,
+    displayUnit: unit,
+    sizingRows,
+  });
+  if (!(inches != null && Number.isFinite(inches) && inches > 0)) return name;
   if (unit === "cm") {
     const cm = Math.round(inches * 2.54 * 10) / 10;
     return `${name} · ${cm} cm`;
@@ -275,7 +290,7 @@ export function buildHatPatternCalcFromDraft(
 
   const crown =
     draft.crownShaping === "wedge-4" ? "wedge-4-decrease" : draft.crownShaping;
-  const brimType = draft.brimType === "folded" ? "folded" : "single";
+  const brimType = resolveHatBrimType(draft.brimType);
 
   const selectedSizeRow =
     draft.sizeSel && draft.sizeSel !== "custom"
@@ -301,10 +316,21 @@ export function buildHatPatternCalcFromDraft(
       fit: draft.fit,
     });
 
+    const requiredNeedles = applyHatCrownCastOnAdjustment(calc.castOnSts, crown);
+    const needleCheck = validateHatNeedleCapacity(draft.availableNeedles, requiredNeedles);
+    if (!needleCheck.ok) {
+      return {
+        ok: false,
+        reason: "needles",
+        message: needleCheck.message,
+        detail: `required=${needleCheck.requiredNeedles};available=${needleCheck.availableNeedles}`,
+      };
+    }
+
     const gaugeRef = unit === "inches" ? '4"' : "10 cm";
     const summary: HatPatternSummary = {
       sizeLabel: sizeDisplayLabel(draft, sizingRows, unit),
-      lengthLabel: lengthDisplayLabel(draft, unit),
+      lengthLabel: lengthDisplayLabel(draft, unit, sizingRows),
       brimLabel: `${brimDisplayLabel(brimType)} · ${draft.brimLength.trim()}${
         unit === "cm" ? " cm" : '"'
       }`,

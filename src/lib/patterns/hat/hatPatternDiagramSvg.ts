@@ -1,14 +1,19 @@
 /**
- * Programmatic hat pattern diagram SVG for the finished /patterns/hat/pattern page.
+ * Programmatic hat pattern diagram SVG.
+ *
+ * Shared generator for:
+ * - `/patterns/hat/pattern/` (`mode: "pattern"`) — full construction diagram
+ * - `/patterns/hat/summary/` (`mode: "summaryEdit"`) — measurement-only diagram
  *
  * Intentionally separate from `hatDiagram.ts`, which still serves static SVG templates
- * for the original /patterns/hat page. This generator shares one layout frame and
- * crown-specific drawing functions — no manual SVG templates or fetch.
+ * for the original /patterns/hat page.
  */
 
 import {
   applyHatCrownCastOnAdjustment,
   buildFourWedgeCrownSetup,
+  resolveHatBrimType,
+  type HatBrimType,
   type HatPatternCalc,
 } from "./hatMath";
 import { HAT_EDIT_MEASUREMENT_TARGETS } from "./hatPatternEditTargets";
@@ -20,6 +25,15 @@ export type HatPatternDiagramFormatters = {
 
 export type HatPatternDiagramUnit = "inches" | "cm";
 
+/**
+ * `pattern` — finished-pattern construction diagram (stitches + rows).
+ * `summaryEdit` — Summary/Edit measurement diagram (no calculated sts/rows).
+ */
+export type HatPatternDiagramMode = "pattern" | "summaryEdit";
+
+export const HAT_PATTERN_DIAGRAM_MODE_PATTERN = "pattern" as const;
+export const HAT_PATTERN_DIAGRAM_MODE_SUMMARY_EDIT = "summaryEdit" as const;
+
 /** Canvas includes side/bottom gutters for large type; hat geometry stays fixed. */
 const VB_W = 430;
 const VB_H = 460;
@@ -28,12 +42,20 @@ const HAT_RIGHT = 296;
 const HAT_WIDTH = HAT_RIGHT - HAT_LEFT;
 const HAT_TOP = 52;
 const HAT_BOTTOM = 340;
+/**
+ * Extra left viewBox padding in summaryEdit so the Finished hat length chip fits
+ * entirely inside the diagram workspace (not the form column).
+ */
+const SUMMARY_EDIT_LEFT_PAD = 120;
 const ARROW = "#52682d";
 const STROKE = "#1a1a1a";
 const FILL = "#f4f6f1";
 const MUTED = "#4b5563";
 /** Site sans stack (`--font`); embedded on every <text> so print stays consistent. */
 const FONT = "Poppins, system-ui, Arial, sans-serif";
+
+/** Exported for Summary/Edit layout tests (left gutter for the length chip). */
+export const HAT_SUMMARY_EDIT_DIAGRAM_LEFT_PAD = SUMMARY_EDIT_LEFT_PAD;
 
 /**
  * Typography ≥50% larger than the prior diagram scale (15/14/12/13 → below).
@@ -72,7 +94,7 @@ type Frame = {
   isGathered: boolean;
   isWedge: boolean;
   isSpiral: boolean;
-  isFolded: boolean;
+  brimType: HatBrimType;
 };
 
 type Labels = {
@@ -124,11 +146,13 @@ function buildLabels(
   calc: HatPatternCalc,
   unit: HatPatternDiagramUnit,
   formatters: HatPatternDiagramFormatters,
+  mode: HatPatternDiagramMode,
 ): Labels {
   const crown = calc.crown;
   const isWedge = crown === "wedge-4" || crown === "wedge-4-decrease";
   const isSpiral = crown === "spiral";
   const isGathered = !isWedge && !isSpiral;
+  const summaryEdit = mode === "summaryEdit";
 
   const patternCastOn = applyHatCrownCastOnAdjustment(calc.castOnSts, crown);
   const fourWedge =
@@ -141,34 +165,40 @@ function buildLabels(
     });
 
   const wedgeSts =
-    isWedge && fourWedge
+    !summaryEdit && isWedge && fourWedge
       ? `${fourWedge.wedgeStitchCount} sts / gore`
-      : isWedge
+      : !summaryEdit && isWedge
         ? `${Math.round(patternCastOn / 4)} sts / gore`
         : "";
 
   const spiral = calc.crownPlan.spiral;
   const spiralPoints =
-    isSpiral && spiral ? `${spiral.decreasePoints} decrease points` : "";
+    !summaryEdit && isSpiral && spiral ? `${spiral.decreasePoints} decrease points` : "";
   const spiralTarget =
-    isSpiral && spiral ? `to ${spiral.targetStitches} sts` : "";
+    !summaryEdit && isSpiral && spiral ? `to ${spiral.targetStitches} sts` : "";
 
   const crownTitle = isGathered
-    ? "Gathered hat pattern diagram"
+    ? summaryEdit
+      ? "Gathered hat measurement diagram"
+      : "Gathered hat pattern diagram"
     : isWedge
-      ? "Four-gore hat pattern diagram"
-      : "Swirl-top hat pattern diagram";
+      ? summaryEdit
+        ? "Four-gore hat measurement diagram"
+        : "Four-gore hat pattern diagram"
+      : summaryEdit
+        ? "Swirl-top hat measurement diagram"
+        : "Swirl-top hat pattern diagram";
 
   return {
-    width: displayLength(calc.targetWidth, unit, formatters),
-    height: displayLength(calc.hatHeight, unit, formatters),
-    brimDepth: displayLength(calc.brimDepth, unit, formatters),
-    bodyHeight: displayLength(calc.bodyHeightInches, unit, formatters),
-    crownDepth: displayLength(calc.crownHeightInches, unit, formatters),
-    castOn: `${patternCastOn} sts`,
-    brimRows: `${calc.brimRows} rows`,
-    bodyRows: `${calc.bodyRows} rows`,
-    crownRows: `${calc.crownRowCount} rows`,
+    width: summaryEdit ? "" : displayLength(calc.targetWidth, unit, formatters),
+    height: summaryEdit ? "" : displayLength(calc.hatHeight, unit, formatters),
+    brimDepth: summaryEdit ? "" : displayLength(calc.brimDepth, unit, formatters),
+    bodyHeight: summaryEdit ? "" : displayLength(calc.bodyHeightInches, unit, formatters),
+    crownDepth: summaryEdit ? "" : displayLength(calc.crownHeightInches, unit, formatters),
+    castOn: summaryEdit ? "" : `${patternCastOn} sts`,
+    brimRows: summaryEdit ? "" : `${calc.brimRows} rows`,
+    bodyRows: summaryEdit ? "" : `${calc.bodyRows} rows`,
+    crownRows: summaryEdit ? "" : `${calc.crownRowCount} rows`,
     wedgeSts,
     spiralPoints,
     spiralTarget,
@@ -185,7 +215,7 @@ function buildFrame(calc: HatPatternCalc): Frame {
   const isWedge = crown === "wedge-4" || crown === "wedge-4-decrease";
   const isSpiral = crown === "spiral";
   const isGathered = !isWedge && !isSpiral;
-  const isFolded = calc.brimType === "folded";
+  const brimType = resolveHatBrimType(calc.brimType);
 
   const usable = HAT_BOTTOM - HAT_TOP;
   const brimIn = Math.max(0.25, calc.brimDepth || 0.25);
@@ -236,7 +266,7 @@ function buildFrame(calc: HatPatternCalc): Frame {
     isGathered,
     isWedge,
     isSpiral,
-    isFolded,
+    brimType,
   };
 }
 
@@ -303,9 +333,10 @@ function horizontalArrow(
 }
 
 function drawBrim(frame: Frame): string {
-  const { hatLeft, hatRight, brimTop, hatBottom, isFolded } = frame;
+  const { hatLeft, hatRight, brimTop, hatBottom, brimType } = frame;
+  const isFolded = brimType === "folded";
   const parts: string[] = [
-    `<rect class="hat-diagram__brim" data-brim-style="${isFolded ? "folded" : "single"}" x="${fmtNum(hatLeft)}" y="${fmtNum(brimTop)}" width="${fmtNum(HAT_WIDTH)}" height="${fmtNum(hatBottom - brimTop)}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.75"/>`,
+    `<rect class="hat-diagram__brim" data-brim-style="${brimType}" x="${fmtNum(hatLeft)}" y="${fmtNum(brimTop)}" width="${fmtNum(HAT_WIDTH)}" height="${fmtNum(hatBottom - brimTop)}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.75"/>`,
   ];
 
   if (isFolded) {
@@ -320,10 +351,17 @@ function drawBrim(frame: Frame): string {
     parts.push(
       `<text x="${fmtNum(frame.hatMidX)}" y="${fmtNum(foldY - 10)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_SMALL)}>fold</text>`,
     );
+  } else if (brimType === "rolled") {
+    // Soft curl cue at the lower edge (not a fold / hung hem).
+    const curlY = hatBottom - 8;
+    parts.push(
+      `<path class="hat-diagram__brim-roll" d="M ${fmtNum(hatLeft + 10)} ${fmtNum(curlY)} Q ${fmtNum(frame.hatMidX)} ${fmtNum(curlY + 10)} ${fmtNum(hatRight - 10)} ${fmtNum(curlY)}" fill="none" stroke="${STROKE}" stroke-width="1.1" opacity="0.5"/>`,
+    );
   }
 
+  const brimLabel = brimType === "rolled" ? "Rolled Brim" : "Brim";
   parts.push(
-    `<text x="${fmtNum(frame.hatMidX)}" y="${fmtNum((brimTop + hatBottom) / 2 + (isFolded ? 12 : 0))}" text-anchor="middle" dominant-baseline="middle" fill="${STROKE}" ${textFont(FS_SECTION, FW_SECTION)}>Brim</text>`,
+    `<text x="${fmtNum(frame.hatMidX)}" y="${fmtNum((brimTop + hatBottom) / 2 + (isFolded ? 12 : 0))}" text-anchor="middle" dominant-baseline="middle" fill="${STROKE}" ${textFont(FS_SECTION, FW_SECTION)}>${brimLabel}</text>`,
   );
   return parts.join("");
 }
@@ -382,19 +420,15 @@ function drawFourGoreCrown(frame: Frame, labels: Labels): string {
     pts.push(`${fmtNum(right)},${fmtNum(i === peaks - 1 ? bodyTop : valleyY)}`);
   }
 
-  // Two-line “Gore / #n” so FS_GORE fits inside each wedge without horizontal squash.
+  // Single-line “#n” centered in each wedge.
   const goreLabelY = tipY + (bodyTop - tipY) * 0.7;
-  const goreLineGap = FS_GORE + 1;
   const sectionLabels = [1, 2, 3, 4]
     .map((n) => {
       const left = hatLeft + (HAT_WIDTH * (n - 1)) / peaks;
       const right = hatLeft + (HAT_WIDTH * n) / peaks;
       const x = (left + right) / 2;
       return (
-        `<text x="${fmtNum(x)}" y="${fmtNum(goreLabelY)}" text-anchor="middle" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_GORE)}>` +
-        `<tspan x="${fmtNum(x)}" dy="${fmtNum(-goreLineGap / 2)}">Gore</tspan>` +
-        `<tspan x="${fmtNum(x)}" dy="${fmtNum(goreLineGap)}">#${n}</tspan>` +
-        `</text>`
+        `<text x="${fmtNum(x)}" y="${fmtNum(goreLabelY)}" text-anchor="middle" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_GORE)}>#${n}</text>`
       );
     })
     .join("");
@@ -464,8 +498,13 @@ function drawCrown(frame: Frame, labels: Labels): string {
   return drawGatheredCrown(frame);
 }
 
-function drawMeasurements(frame: Frame, labels: Labels): string {
+function drawMeasurements(
+  frame: Frame,
+  labels: Labels,
+  mode: HatPatternDiagramMode,
+): string {
   const parts: string[] = [];
+  const summaryEdit = mode === "summaryEdit";
   // Side gutters sized for FS_MEASURE / FS_STITCH so labels stay inside the viewBox.
   const leftX = 54;
   const rightX = 338;
@@ -474,15 +513,39 @@ function drawMeasurements(frame: Frame, labels: Labels): string {
   const heightLabelX = 36;
   const midHeightY = (frame.crownTop + frame.hatBottom) / 2;
 
-  // Total height (left): rotated caption clear of the numeric length.
+  // Total height (left). summaryEdit: arrow only — editable chip is the value source.
   parts.push(
-    verticalArrow(leftX, frame.crownTop, frame.hatBottom, [labels.height], heightLabelX),
+    verticalArrow(
+      leftX,
+      frame.crownTop,
+      frame.hatBottom,
+      summaryEdit ? [] : [labels.height],
+      heightLabelX,
+    ),
   );
   parts.push(
     `<text x="${fmtNum(totalLabelX)}" y="${fmtNum(midHeightY)}" text-anchor="middle" transform="rotate(-90 ${fmtNum(totalLabelX)} ${fmtNum(midHeightY)})" fill="${MUTED}" ${textFont(FS_SUPPORT)}>Total</text>`,
   );
 
-  // Section heights (right).
+  if (summaryEdit) {
+    // Only the three editable-measurement arrows (length / brim / width).
+    // No right-side "gather" — crown already shows Gather above the tip.
+    parts.push(
+      verticalArrow(rightX, frame.brimTop, frame.hatBottom, [], rightLabelX),
+    );
+    parts.push(
+      horizontalArrow(
+        frame.hatBottom + 24,
+        frame.hatLeft,
+        frame.hatRight,
+        [],
+        frame.hatBottom + 46,
+      ),
+    );
+    return parts.join("");
+  }
+
+  // Pattern mode: section heights with stitch/row counts + finished lengths.
   parts.push(
     verticalArrow(
       rightX,
@@ -516,12 +579,15 @@ function drawMeasurements(frame: Frame, labels: Labels): string {
     // Gathered: no crown depth — instructions gather the live stitches closed.
     const gatherMidY = (frame.crownTop + frame.bodyTop) / 2;
     parts.push(
-      `<text x="${fmtNum(rightX + 8)}" y="${fmtNum(gatherMidY - 12)}" text-anchor="start" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_SMALL)}>gather</text>`,
-      `<text x="${fmtNum(rightX + 8)}" y="${fmtNum(gatherMidY + 14)}" text-anchor="start" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_DETAIL)}>${escapeXml(labels.castOn)}</text>`,
+      `<text x="${fmtNum(rightX + 8)}" y="${fmtNum(gatherMidY)}" text-anchor="start" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_SMALL)}>gather</text>`,
     );
+    if (labels.castOn) {
+      parts.push(
+        `<text x="${fmtNum(rightX + 8)}" y="${fmtNum(gatherMidY + 22)}" text-anchor="start" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_DETAIL)}>${escapeXml(labels.castOn)}</text>`,
+      );
+    }
   }
 
-  // Cast-on + finished width under brim.
   parts.push(
     horizontalArrow(
       frame.hatBottom + 24,
@@ -535,42 +601,68 @@ function drawMeasurements(frame: Frame, labels: Labels): string {
   return parts.join("");
 }
 
-function drawEditTargets(frame: Frame): string {
-  const circY = (frame.bodyTop + frame.brimTop) / 2;
+function drawEditTargets(frame: Frame, mode: HatPatternDiagramMode): string {
+  /**
+   * Invisible anchors for Summary/Edit measurement chips.
+   * Frame-relative so Gathered / Four-Gore / Swirl and all brim types share them.
+   *
+   * summaryEdit expands the left viewBox gutter; the length target sits in that
+   * gutter (chip centered via transform) so it stays inside the diagram workspace.
+   */
+  const summaryEdit = mode === "summaryEdit";
+  const circX = frame.hatMidX;
+  // Pattern: below cast-on + width text. summaryEdit: just under the width arrow.
+  const circY = Math.min(
+    VB_H - 10,
+    frame.hatBottom + (summaryEdit ? 48 : 96),
+  );
+  // summaryEdit: center of the left pad (left of Total / length arrow at 54).
+  // pattern: far-left anchor (chips unused on finished pattern).
+  const lengthX = summaryEdit
+    ? -SUMMARY_EDIT_LEFT_PAD / 2
+    : 6;
   const lengthY = (frame.crownTop + frame.hatBottom) / 2;
+  // Beside the right brim arrow (rightX=338); chip translates further right.
+  const brimX = summaryEdit ? 350 : VB_W - 6;
   const brimY = (frame.brimTop + frame.hatBottom) / 2;
   return [
     `<g class="hat-diagram__edit-targets" aria-hidden="true">`,
-    `<circle id="${HAT_EDIT_MEASUREMENT_TARGETS.circumference}" cx="${fmtNum(frame.hatMidX)}" cy="${fmtNum(circY)}" r="5" fill="#c2614e" fill-opacity="0.35"/>`,
-    `<circle id="${HAT_EDIT_MEASUREMENT_TARGETS.length}" cx="${fmtNum(frame.hatLeft - 8)}" cy="${fmtNum(lengthY)}" r="5" fill="#c2614e" fill-opacity="0.35"/>`,
-    `<circle id="${HAT_EDIT_MEASUREMENT_TARGETS.brimDepth}" cx="${fmtNum(frame.hatRight + 8)}" cy="${fmtNum(brimY)}" r="5" fill="#c2614e" fill-opacity="0.35"/>`,
+    `<circle id="${HAT_EDIT_MEASUREMENT_TARGETS.circumference}" cx="${fmtNum(circX)}" cy="${fmtNum(circY)}" r="5" fill="none"/>`,
+    `<circle id="${HAT_EDIT_MEASUREMENT_TARGETS.length}" cx="${fmtNum(lengthX)}" cy="${fmtNum(lengthY)}" r="5" fill="none"/>`,
+    `<circle id="${HAT_EDIT_MEASUREMENT_TARGETS.brimDepth}" cx="${fmtNum(brimX)}" cy="${fmtNum(brimY)}" r="5" fill="none"/>`,
     `</g>`,
   ].join("");
 }
 
 /**
  * Build a safe, responsive SVG diagram from the same `HatPatternCalc` used for instructions.
+ * @param mode `pattern` (default) includes stitch/row counts and finished measurements;
+ *   `summaryEdit` keeps silhouette, section labels, and measurement arrows only
+ *   (editable chips are the value source — no sts/rows/inch/cm text on the SVG).
  */
 export function buildHatPatternDiagramSvg(
   calc: HatPatternCalc,
   unit: HatPatternDiagramUnit,
   formatters: HatPatternDiagramFormatters,
+  mode: HatPatternDiagramMode = HAT_PATTERN_DIAGRAM_MODE_PATTERN,
 ): string {
+  const resolvedMode: HatPatternDiagramMode =
+    mode === "summaryEdit" ? "summaryEdit" : "pattern";
   const frame = buildFrame(calc);
-  const labels = buildLabels(calc, unit, formatters);
+  const labels = buildLabels(calc, unit, formatters, resolvedMode);
   const crownAttr = frame.isWedge
     ? "wedge-4-decrease"
     : frame.isSpiral
       ? "spiral"
       : "gathered";
-  const brimAttr = frame.isFolded ? "folded" : "single";
+  const brimAttr = frame.brimType;
 
   const body = [
     drawBrim(frame),
     drawBody(frame),
     drawCrown(frame, labels),
-    drawMeasurements(frame, labels),
-    drawEditTargets(frame),
+    drawMeasurements(frame, labels, resolvedMode),
+    drawEditTargets(frame, resolvedMode),
   ].join("");
 
   // Sanity: never emit broken numeric tokens.
@@ -579,13 +671,23 @@ export function buildHatPatternDiagramSvg(
     .replace(/\bInfinity\b/g, "0")
     .replace(/\bundefined\b/g, "");
 
+  const desc =
+    resolvedMode === "summaryEdit"
+      ? `Schematic hat measurement diagram with brim, body, and ${crownAttr} crown. Editable length, circumference, and brim height.`
+      : `Schematic hat diagram with brim, body, and ${crownAttr} crown. Cast on ${labels.castOn}, finished width ${labels.width}, total length ${labels.height}.`;
+
+  // summaryEdit: widen the left viewBox so the length chip fits in-diagram white space.
+  const vbMinX = resolvedMode === "summaryEdit" ? -SUMMARY_EDIT_LEFT_PAD : 0;
+  const vbWidth =
+    resolvedMode === "summaryEdit" ? VB_W + SUMMARY_EDIT_LEFT_PAD : VB_W;
+
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" class="hat-pattern-diagram-svg" viewBox="0 0 ${VB_W} ${VB_H}" role="img" aria-labelledby="hat-diagram-title" data-hat-diagram="true" data-crown="${crownAttr}" data-brim="${brimAttr}" width="100%" height="auto">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" class="hat-pattern-diagram-svg" viewBox="${vbMinX} 0 ${vbWidth} ${VB_H}" role="img" aria-labelledby="hat-diagram-title" data-hat-diagram="true" data-hat-diagram-mode="${resolvedMode}" data-crown="${crownAttr}" data-brim="${brimAttr}" width="100%" height="auto">`,
     `<title id="hat-diagram-title">${escapeXml(labels.title)}</title>`,
-    `<desc>Schematic hat diagram with brim, body, and ${escapeXml(crownAttr)} crown. Cast on ${escapeXml(labels.castOn)}, finished width ${escapeXml(labels.width)}, total length ${escapeXml(labels.height)}.</desc>`,
+    `<desc>${escapeXml(desc)}</desc>`,
     // Embedded style reinforces print/PDF when CSS variables are unavailable.
     `<style type="text/css"><![CDATA[text{font-family:${FONT}}]]></style>`,
-    `<rect x="0" y="0" width="${VB_W}" height="${VB_H}" fill="#fff"/>`,
+    `<rect x="${vbMinX}" y="0" width="${vbWidth}" height="${VB_H}" fill="#fff"/>`,
     safeBody,
     `</svg>`,
   ].join("");

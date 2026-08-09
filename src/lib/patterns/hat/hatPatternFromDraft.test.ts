@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createEmptyHatDraft } from "./hatDraft";
+import { coerceHatDraft, createEmptyHatDraft, type HatDraft } from "./hatDraft";
 import { calculateHatPattern } from "./hatMath";
 import { buildHatSizingBuilderRows } from "./hatBuilderSizingLabels";
 import {
@@ -26,6 +26,7 @@ function completeDraft(
     brimLength: "2",
     crownShaping: "gathered",
     fit: "watchcap",
+    availableNeedles: "200",
     gaugeSlots: {
       inches: { stitch: "5", row: "7" },
       cm: { stitch: "", row: "" },
@@ -141,6 +142,34 @@ describe("hatPatternFromDraft", () => {
     expect(result.calc.bodyRows).toBe(direct.bodyRows);
   });
 
+  it("supports rolled brim as its own construction with default-height label", () => {
+    const draft = completeDraft({
+      brimType: "rolled",
+      brimLength: "1",
+    });
+    const result = buildHatPatternCalcFromDraft(draft, sizingRows);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.calc.brimType).toBe("rolled");
+    expect(result.summary.brimLabel).toContain("Rolled Brim");
+    expect(result.summary.brimLabel).toMatch(/1"/);
+    expect(result.calc.brimType).not.toBe("single");
+    expect(result.calc.brimType).not.toBe("folded");
+  });
+
+  it("restores rolled brim from draft storage and rejects unknown brim types", () => {
+    const rolled = completeDraft({ brimType: "rolled", brimLength: "1" });
+    const roundTrip = coerceHatDraft(JSON.parse(JSON.stringify(rolled)));
+    expect(roundTrip?.brimType).toBe("rolled");
+    expect(roundTrip?.brimLength).toBe("1");
+
+    const cleared = coerceHatDraft({
+      ...rolled,
+      brimType: "hung-hem",
+    });
+    expect(cleared?.brimType).toBe("");
+  });
+
   it("covers each standard length preset", () => {
     for (const fit of ["beanie", "watchcap", "slouchy", "relaxed"] as const) {
       const result = buildHatPatternCalcFromDraft(completeDraft({ fit }), sizingRows);
@@ -157,6 +186,29 @@ describe("hatPatternFromDraft", () => {
       if (!result.ok) continue;
       expect(result.calc.castOnSts).toBeGreaterThan(0);
     }
+  });
+
+  it("blocks pattern generation when available needles are too low", () => {
+    const result = buildHatPatternCalcFromDraft(
+      completeDraft({ availableNeedles: "10" }),
+      sizingRows,
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.reason).toBe("needles");
+    expect(result.message).toMatch(/requires \d+ needles/i);
+    expect(result.message).toMatch(/10 available/i);
+  });
+
+  it("treats older drafts without availableNeedles as incomplete", () => {
+    const draft = completeDraft();
+    const { availableNeedles: _removed, ...withoutNeedles } = draft as HatDraft & {
+      availableNeedles?: string;
+    };
+    void _removed;
+    const coerced = coerceHatDraft(withoutNeedles);
+    expect(coerced?.availableNeedles).toBe("");
+    expect(isHatDraftReadyForPattern(coerced, sizingRows)).toBe(false);
   });
 
   it("builds summary DL html", () => {

@@ -720,7 +720,9 @@
   }
 
   .sleeveless-pattern-page .sleeveless-pattern-edit-action.is-disabled,
-  .sleeveless-pattern-page .sleeveless-pattern-edit-action.is-disabled:hover {
+  .sleeveless-pattern-page .sleeveless-pattern-edit-action.is-disabled:hover,
+  .sleeveless-pattern-page .sleeveless-pattern-edit-action[aria-disabled="true"],
+  .sleeveless-pattern-page .sleeveless-pattern-edit-action[aria-disabled="true"]:hover {
     color: #9ca3af;
     background: #f9fafb;
     border-color: #e5e7eb;

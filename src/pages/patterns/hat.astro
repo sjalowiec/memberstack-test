@@ -1853,6 +1853,7 @@ select.disabled {
                     <span class="hat-select-wrap__check" aria-hidden="true"></span>
                     <select id="brimType" data-testid="select-brim-type" aria-label="Brim Type" autocomplete="off" class="sr-only">
                       <option value="" disabled selected hidden>Choose brim type</option>
+                      <option value="rolled">Rolled Brim</option>
                       <option value="single">Single Layer</option>
                       <option value="folded">Folded Hem</option>
                     </select>
@@ -1874,6 +1875,21 @@ select.disabled {
                             role="group"
                             aria-label="Brim type"
                           >
+                            <button
+                              type="button"
+                              class="hat-length-picker__option"
+                              data-brim-type-value="rolled"
+                              aria-pressed="false"
+                            >
+                              <img
+                                src="/images/hats/rolled-brim.png"
+                                alt=""
+                                class="hat-length-picker__img hat-brim-picker__img"
+                                width="120"
+                                height="120"
+                              />
+                              <span class="hat-length-picker__option-label">Rolled Brim</span>
+                            </button>
                             <button
                               type="button"
                               class="hat-length-picker__option"
@@ -2229,6 +2245,7 @@ select.disabled {
     applyHatCrownCastOnAdjustment,
     calculateHatPattern,
     HAT_FIT_HEIGHTS_INCHES,
+    nextBrimLengthAfterBrimTypeChange,
     resolveTotalHatLengthInches,
     roundFinishedHatSizeFromHead,
     roundToEvenPreferUp,
@@ -2244,6 +2261,7 @@ select.disabled {
     applyHatCrownCastOnAdjustment,
     calculateHatPattern,
     HAT_FIT_HEIGHTS_INCHES,
+    nextBrimLengthAfterBrimTypeChange,
     resolveTotalHatLengthInches,
     roundToEvenPreferUp,
     roundFinishedHatSizeFromHead,
@@ -2268,6 +2286,7 @@ async function initHatBuilder() {
     applyHatCrownCastOnAdjustment,
     calculateHatPattern,
     HAT_FIT_HEIGHTS_INCHES,
+    nextBrimLengthAfterBrimTypeChange,
     resolveTotalHatLengthInches: resolveTotalHatLengthInchesLib,
     roundFinishedHatSizeFromHead,
     roundToEvenPreferUp,
@@ -2744,11 +2763,13 @@ async function initHatBuilder() {
     const v = brimTypeSelect && brimTypeSelect instanceof HTMLSelectElement ? brimTypeSelect.value : '';
     if (summaryText) {
       summaryText.textContent =
-        v === 'single'
-          ? 'Single Layer'
-          : v === 'folded'
-            ? 'Folded Hem'
-            : 'Choose brim type';
+        v === 'rolled'
+          ? 'Rolled Brim'
+          : v === 'single'
+            ? 'Single Layer'
+            : v === 'folded'
+              ? 'Folded Hem'
+              : 'Choose brim type';
     }
     summaryBtn?.setAttribute('aria-label', `Brim Type: ${summaryText?.textContent || 'Choose brim type'}`);
 
@@ -2787,8 +2808,18 @@ async function initHatBuilder() {
     document.querySelectorAll('.hat-length-picker__option[data-brim-type-value]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const val = btn.getAttribute('data-brim-type-value');
-        if (val !== 'single' && val !== 'folded') return;
+        if (val !== 'rolled' && val !== 'single' && val !== 'folded') return;
+        const previous = brimTypeSelect.value;
         brimTypeSelect.value = val;
+        if (brimLengthInput instanceof HTMLInputElement) {
+          const unit = typeof unitStore !== 'undefined' && unitStore.get?.() === 'cm' ? 'cm' : 'inches';
+          const nextLength = nextBrimLengthAfterBrimTypeChange({
+            previousBrimType: previous,
+            nextBrimType: val,
+            unit,
+          });
+          if (nextLength != null) brimLengthInput.value = nextLength;
+        }
         brimTypeSelect.dispatchEvent(new Event('change', { bubbles: true }));
         closeBrimTypePanel();
       });
@@ -2948,7 +2979,7 @@ async function initHatBuilder() {
       const validFits = new Set(['beanie', 'watchcap', 'slouchy', 'relaxed', 'custom']);
 
       if (brimTypeSelect) {
-        if (o.brimType === 'single' || o.brimType === 'folded') {
+        if (o.brimType === 'rolled' || o.brimType === 'single' || o.brimType === 'folded') {
           brimTypeSelect.value = o.brimType;
           result.restoredBrim = true;
         } else {
@@ -3402,7 +3433,7 @@ async function initHatBuilder() {
     const allowedCrowns = new Set(['gathered', 'wedge-4-decrease', 'spiral']);
     if (!allowedCrowns.has(crownVal)) return false;
     const bt = brimTypeSelect?.value;
-    if (bt !== 'single' && bt !== 'folded') return false;
+    if (bt !== 'rolled' && bt !== 'single' && bt !== 'folded') return false;
 
     const fit = fitSelect?.value;
     if (!fit) return false;
@@ -4078,7 +4109,12 @@ async function initHatBuilder() {
     const suggestedCrownDepth = Number(
       selectedSizeRow?.suggestedCrownDepth ?? selectedSizeRow?.defaultCrownDepth
     );
-    const brimType = brimTypeSelect?.value === 'folded' ? 'folded' : 'single';
+    const brimType =
+      brimTypeSelect?.value === 'rolled'
+        ? 'rolled'
+        : brimTypeSelect?.value === 'folded'
+          ? 'folded'
+          : 'single';
 
     const patternCalc = calculateHatPattern({
       finishedHatCircInches,

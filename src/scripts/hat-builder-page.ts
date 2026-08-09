@@ -11,7 +11,12 @@ import {
   type HatDraft,
   type HatDraftUnit,
 } from "../lib/patterns/hat/hatDraft";
-import { HAT_FIT_HEIGHTS_INCHES } from "../lib/patterns/hat/hatMath";
+import { applyHatNewSessionFromUrl } from "../lib/patterns/hat/hatFreshStart";
+import {
+  hatBrimDisplayLabel,
+  nextBrimLengthAfterBrimTypeChange,
+  resolveTotalHatLengthInches,
+} from "../lib/patterns/hat/hatMath";
 import {
   draftUnitFromToggleDetail,
   maybeFillHatGaugeSlotFromOtherUnit,
@@ -25,16 +30,28 @@ import {
 } from "../lib/patterns/hat/hatBuilderSizingLabels";
 import {
   HAT_BUILDER_INCOMPLETE_MESSAGE,
+  HAT_BUILDER_STEPS,
+  evaluateHatBuilderNeedleCapacity,
+  hatBuilderChoiceFieldAdvances,
   hatBuilderStepComplete,
-  isHatBuilderInputComplete,
+  isHatBuilderReadyToCreatePattern,
+  nextHatBuilderOpenStepAfterFieldChange,
   type HatBuilderFieldSnapshot,
   type HatBuilderSizeRow,
 } from "../lib/patterns/hat/hatBuilderValidation";
+import { HAT_AVAILABLE_NEEDLES_INPUT_ID } from "../lib/patterns/hat/hatAvailableNeedles";
+import { syncExpressNeedleBlockVisibility } from "../lib/patterns/expressBuilderReviewSubmit";
+import {
+  bindAvailableNeedlesFieldValidation,
+  setAvailableNeedlesFieldErrorState,
+} from "../lib/patterns/availableNeedlesFieldValidation";
 import { focusFirstInputInSection } from "../lib/patterns/focusFirstInputInSection";
+import { isValidExpressAvailableNeedles } from "../lib/patterns/sleevelessExpressAvailableNeedles";
+import { buildHatSummaryEditFromBuilderHref } from "../lib/patterns/hat/hatPatternNavigation";
 
-const STEPS = 5;
+const STEPS = HAT_BUILDER_STEPS;
 const LEGACY_HAT_UNIT_KEY = "hat-unit";
-const HAT_PATTERN_PAGE_HREF = "/patterns/hat/pattern";
+const HAT_SUMMARY_FROM_BUILDER_HREF = buildHatSummaryEditFromBuilderHref();
 
 type SizingRow = HatBuilderSizeRow & HatSizingLabelRow;
 
@@ -133,6 +150,8 @@ function initHatBuilderPage(): void {
   const crownSelect = el<HTMLSelectElement>("crown");
   const stitchGaugeInput = el<HTMLInputElement>("hat-stitch-gauge");
   const rowGaugeInput = el<HTMLInputElement>("hat-row-gauge");
+  const availableNeedlesInput = el<HTMLInputElement>(HAT_AVAILABLE_NEEDLES_INPUT_ID);
+  const needleCapacityErrorEl = el<HTMLElement>("hat-needle-capacity-error");
   const createPatternBtn = el<HTMLButtonElement>("create-pattern-btn");
   const feedbackEl = el<HTMLElement>("create-pattern-feedback");
   const customSizeWrap = document.querySelector<HTMLElement>("[data-hat-custom-size]");
@@ -151,7 +170,8 @@ function initHatBuilderPage(): void {
   let unitsListenerReady = false;
   let isSubmitting = false;
 
-  // --- Draft migration + hydrate ---
+  // --- Fresh start (`?new=1`) then draft migration + hydrate ---
+  applyHatNewSessionFromUrl();
   ensureHatDraftMigrated();
   let draft: HatDraft = readHatDraft() ?? createEmptyHatDraft();
   if (!readHatDraft()) {
@@ -176,6 +196,7 @@ function initHatBuilderPage(): void {
       customHatLength: customHatLengthInput?.value ?? "",
       stitchGauge: stitchGaugeInput?.value ?? "",
       rowGauge: rowGaugeInput?.value ?? "",
+      availableNeedles: availableNeedlesInput?.value ?? "",
     };
   }
 
@@ -199,8 +220,29 @@ function initHatBuilderPage(): void {
       fit: fields.fit,
       customHatLength: fields.fit === "custom" ? fields.customHatLength : "",
       gaugeSlots,
+      availableNeedles: fields.availableNeedles,
       showTips: draft.showTips,
     });
+  }
+
+  function syncNeedleBlockVisibility(fields: HatBuilderFieldSnapshot = snapshotFields()): void {
+    const stitchRowOk =
+      Number(fields.stitchGauge.trim()) > 0 && Number(fields.rowGauge.trim()) > 0;
+    syncExpressNeedleBlockVisibility(document, stitchRowOk);
+  }
+
+  function syncNeedleCapacityFeedback(fields: HatBuilderFieldSnapshot = snapshotFields()): void {
+    const capacity = evaluateHatBuilderNeedleCapacity(fields, sizingRows, activeUnit);
+    const showCapacityError = !capacity.ok && Boolean(capacity.message);
+    if (needleCapacityErrorEl) {
+      needleCapacityErrorEl.textContent = showCapacityError ? capacity.message : "";
+      needleCapacityErrorEl.hidden = !showCapacityError;
+    }
+    if (availableNeedlesInput && showCapacityError) {
+      setAvailableNeedlesFieldErrorState(availableNeedlesInput, true);
+    } else if (availableNeedlesInput && isValidExpressAvailableNeedles(availableNeedlesInput.value)) {
+      setAvailableNeedlesFieldErrorState(availableNeedlesInput, false);
+    }
   }
 
   function syncCustomSizeVisibility(): void {
@@ -257,7 +299,30 @@ function initHatBuilderPage(): void {
   }
 
   function applyBrimChoiceUi(): void {
-    syncChoiceButtons("brimType", readSelectValue(brimTypeSelect));
+    const brimType = readSelectValue(brimTypeSelect);
+    syncChoiceButtons("brimType", brimType);
+    const helper = document.querySelector<HTMLElement>("[data-brim-helper]");
+    if (helper) {
+      if (brimType === "folded") {
+        helper.textContent = "We'll automatically adjust the rows for the fold.";
+      } else if (brimType === "rolled") {
+        helper.textContent =
+          "Stockinette curls at the lower edge. Default is 1 inch — you can change it.";
+      } else {
+        helper.textContent = "Enter the brim height as worn.";
+      }
+    }
+  }
+
+  function applyRolledBrimDefaultIfNeeded(previousBrimType: string, nextBrimType: string): void {
+    const nextLength = nextBrimLengthAfterBrimTypeChange({
+      previousBrimType,
+      nextBrimType,
+      unit: activeUnit,
+    });
+    if (nextLength != null && brimLengthInput) {
+      brimLengthInput.value = nextLength;
+    }
   }
 
   function applyCrownChoiceUi(): void {
@@ -287,6 +352,7 @@ function initHatBuilderPage(): void {
     if (brimLengthInput) brimLengthInput.value = d.brimLength;
     setSelectValue(crownSelect, d.crownShaping === "wedge-4" ? "wedge-4-decrease" : d.crownShaping);
     applyGaugeInputsFromActiveSlot();
+    if (availableNeedlesInput) availableNeedlesInput.value = d.availableNeedles ?? "";
 
     syncCustomSizeVisibility();
     applyFitChoiceUi();
@@ -319,19 +385,22 @@ function initHatBuilderPage(): void {
             : "Custom";
         }
         const name = HAT_FIT_PRESET_LABEL_NAMES[fields.fit] || fields.fit;
-        const presetKey = fields.fit as Exclude<keyof typeof HAT_FIT_HEIGHTS_INCHES, never>;
-        const inches =
-          presetKey in HAT_FIT_HEIGHTS_INCHES
-            ? HAT_FIT_HEIGHTS_INCHES[presetKey as "beanie" | "watchcap" | "slouchy" | "relaxed"]
-            : NaN;
-        if (Number.isFinite(inches)) {
+        // Chart hatLength wins over fit preset — same total finished length as calc/diagram.
+        const inches = resolveTotalHatLengthInches({
+          fit: fields.fit,
+          hatSizeValue: fields.sizeSel,
+          customLengthDisplay: Number(fields.customHatLength) || 0,
+          displayUnit: activeUnit,
+          sizingRows,
+        });
+        if (inches != null && Number.isFinite(inches) && inches > 0) {
           return buildFitPresetOptionLabel(fields.fit, inches, activeUnit);
         }
         return name;
       }
       case 3: {
         if (!fields.brimType) return "";
-        const label = fields.brimType === "folded" ? "Folded Hem" : "Single Layer";
+        const label = hatBrimDisplayLabel(fields.brimType);
         const h = fields.brimLength.trim();
         return h ? `${label} · ${h}` : label;
       }
@@ -344,8 +413,9 @@ function initHatBuilderPage(): void {
       case 5: {
         const st = fields.stitchGauge.trim();
         const rg = fields.rowGauge.trim();
+        const needles = fields.availableNeedles.trim();
         if (!st || !rg) return "";
-        return `${st} × ${rg}`;
+        return needles ? `${st} × ${rg} · ${needles} needles` : `${st} × ${rg}`;
       }
       default:
         return "";
@@ -359,10 +429,10 @@ function initHatBuilderPage(): void {
   function maxReachableFromChoices(fields: HatBuilderFieldSnapshot): number {
     let max = 1;
     for (let step = 1; step < STEPS; step += 1) {
-      if (!hatBuilderStepComplete(step, fields, sizingRows)) break;
+      if (!hatBuilderStepComplete(step, fields, sizingRows, activeUnit)) break;
       max = step + 1;
     }
-    if (hatBuilderStepComplete(STEPS, fields, sizingRows)) max = STEPS;
+    if (hatBuilderStepComplete(STEPS, fields, sizingRows, activeUnit)) max = STEPS;
     return max;
   }
 
@@ -370,11 +440,13 @@ function initHatBuilderPage(): void {
     const fields = snapshotFields();
     maxReachable = maxReachableFromChoices(fields);
     if (openStep > maxReachable) openStep = maxReachable;
+    syncNeedleBlockVisibility(fields);
+    syncNeedleCapacityFeedback(fields);
 
     for (let step = 1; step <= STEPS; step += 1) {
       const sectionEl = stepSection(step);
       if (!sectionEl) continue;
-      const complete = hatBuilderStepComplete(step, fields, sizingRows);
+      const complete = hatBuilderStepComplete(step, fields, sizingRows, activeUnit);
       const locked = step > maxReachable;
       const open = step === openStep && !locked;
       sectionEl.classList.toggle("express-acc--open", open);
@@ -414,7 +486,7 @@ function initHatBuilderPage(): void {
       const step = Number(btn.getAttribute("data-pill-step") || "0");
       const reachable = step <= maxReachable;
       const current = step === openStep;
-      const complete = hatBuilderStepComplete(step, fields, sizingRows);
+      const complete = hatBuilderStepComplete(step, fields, sizingRows, activeUnit);
       btn.classList.toggle("is-current", current);
       btn.classList.toggle("is-upcoming", step > maxReachable);
       btn.classList.toggle("is-complete", complete && !current);
@@ -438,7 +510,7 @@ function initHatBuilderPage(): void {
   }
 
   function updateCtaUi(fields: HatBuilderFieldSnapshot = snapshotFields()): void {
-    const ready = isHatBuilderInputComplete(fields, sizingRows);
+    const ready = isHatBuilderReadyToCreatePattern(fields, sizingRows, activeUnit);
     if (!createPatternBtn) return;
     createPatternBtn.classList.toggle("button-disabled", !ready);
     if (ready) {
@@ -462,7 +534,7 @@ function initHatBuilderPage(): void {
 
   function focusFirstIncompleteStep(fields: HatBuilderFieldSnapshot): void {
     for (let step = 1; step <= STEPS; step += 1) {
-      if (hatBuilderStepComplete(step, fields, sizingRows)) continue;
+      if (hatBuilderStepComplete(step, fields, sizingRows, activeUnit)) continue;
       // Allow opening the incomplete step even if accordion lock would block it.
       maxReachable = Math.max(maxReachable, step);
       goToStep(step);
@@ -482,14 +554,15 @@ function initHatBuilderPage(): void {
     const fields = snapshotFields();
     const prevMax = maxReachable;
     refreshAccordionUi();
-    if (opts?.advance) {
-      const next = Math.min(STEPS, openStep + 1);
-      if (hatBuilderStepComplete(openStep, fields, sizingRows) && next <= maxReachable && next > openStep) {
-        goToStep(next);
-      } else if (maxReachable > prevMax && maxReachable > openStep) {
-        goToStep(Math.min(openStep + 1, maxReachable));
-      }
-    }
+    const nextOpen = nextHatBuilderOpenStepAfterFieldChange({
+      advance: Boolean(opts?.advance),
+      openStep,
+      maxReachableAfter: maxReachable,
+      prevMaxReachable: prevMax,
+      currentStepComplete: hatBuilderStepComplete(openStep, fields, sizingRows, activeUnit),
+      totalSteps: STEPS,
+    });
+    if (nextOpen !== openStep) goToStep(nextOpen);
   }
 
   // --- Wire inputs ---
@@ -504,6 +577,9 @@ function initHatBuilderPage(): void {
   stitchGaugeInput?.addEventListener("change", () => onFieldChanged());
   rowGaugeInput?.addEventListener("input", () => onFieldChanged());
   rowGaugeInput?.addEventListener("change", () => onFieldChanged());
+  availableNeedlesInput?.addEventListener("input", () => onFieldChanged());
+  availableNeedlesInput?.addEventListener("change", () => onFieldChanged());
+  bindAvailableNeedlesFieldValidation(availableNeedlesInput);
 
   document.querySelectorAll<HTMLButtonElement>("[data-choice]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -511,9 +587,13 @@ function initHatBuilderPage(): void {
       const value = btn.getAttribute("data-value") ?? "";
       if (!field || !value) return;
       if (field === "fit") setSelectValue(fitSelect, value);
-      else if (field === "brimType") setSelectValue(brimTypeSelect, value);
-      else if (field === "crown") setSelectValue(crownSelect, value);
-      onFieldChanged({ advance: true });
+      else if (field === "brimType") {
+        const previous = readSelectValue(brimTypeSelect);
+        setSelectValue(brimTypeSelect, value);
+        applyRolledBrimDefaultIfNeeded(previous, value);
+      } else if (field === "crown") setSelectValue(crownSelect, value);
+      // Brim type stays open so height remains editable; other pickers may advance.
+      onFieldChanged({ advance: hatBuilderChoiceFieldAdvances(field) });
     });
   });
 
@@ -596,9 +676,15 @@ function initHatBuilderPage(): void {
       };
     }
     const fields = snapshotFields();
-    if (!isHatBuilderInputComplete(fields, sizingRows)) {
+    syncNeedleCapacityFeedback(fields);
+    if (!isHatBuilderReadyToCreatePattern(fields, sizingRows, activeUnit)) {
+      const capacity = evaluateHatBuilderNeedleCapacity(fields, sizingRows, activeUnit);
+      const message =
+        !capacity.ok && capacity.message
+          ? capacity.message
+          : HAT_BUILDER_INCOMPLETE_MESSAGE;
       // Stay on builder; do not write over a previously valid draft from this click.
-      showFeedback(HAT_BUILDER_INCOMPLETE_MESSAGE);
+      showFeedback(message);
       focusFirstIncompleteStep(fields);
       return;
     }
@@ -616,7 +702,7 @@ function initHatBuilderPage(): void {
       return;
     }
 
-    window.location.assign(HAT_PATTERN_PAGE_HREF);
+    window.location.assign(HAT_SUMMARY_FROM_BUILDER_HREF);
   });
 
   el<HTMLButtonElement>("hat-builder-start-over")?.addEventListener("click", () => {
@@ -642,7 +728,7 @@ function initHatBuilderPage(): void {
   maxReachable = maxReachableFromChoices(fields0);
   openStep = 1;
   for (let step = 1; step <= STEPS; step += 1) {
-    if (!hatBuilderStepComplete(step, fields0, sizingRows)) {
+    if (!hatBuilderStepComplete(step, fields0, sizingRows, activeUnit)) {
       openStep = Math.min(step, maxReachable);
       break;
     }

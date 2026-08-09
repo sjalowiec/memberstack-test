@@ -4,7 +4,12 @@ import {
   formatLengthWithUnit,
 } from "../../../components/wizards/utils/unitHelpers";
 import { calculateHatPattern } from "./hatMath";
-import { buildHatPatternDiagramSvg } from "./hatPatternDiagramSvg";
+import {
+  buildHatPatternDiagramSvg,
+  HAT_PATTERN_DIAGRAM_MODE_PATTERN,
+  HAT_PATTERN_DIAGRAM_MODE_SUMMARY_EDIT,
+  HAT_SUMMARY_EDIT_DIAGRAM_LEFT_PAD,
+} from "./hatPatternDiagramSvg";
 
 const formatters = {
   convertLength: convertLength as (v: number, from: string, to: string) => number,
@@ -60,9 +65,12 @@ describe("buildHatPatternDiagramSvg", () => {
     expect(svg).toContain('data-crown="wedge-4-decrease"');
     expect(svg).toContain("hat-diagram__crown--four-gore");
     expect(svg).toContain("Crown · 4 gores");
-    expect(svg).toContain(">Gore</tspan>");
-    expect(svg).toContain(">#1</tspan>");
-    expect(svg).toContain(">#4</tspan>");
+    expect(svg).toContain(">#1<");
+    expect(svg).toContain(">#2<");
+    expect(svg).toContain(">#3<");
+    expect(svg).toContain(">#4<");
+    expect(svg).not.toContain("Gore #");
+    expect(svg).not.toContain(">Gore<");
     expect(svg).toContain("sts / gore");
     expect(svg).not.toContain("textLength=");
     expect(svg).toContain(`${calc.crownRowCount} rows`);
@@ -97,7 +105,7 @@ describe("buildHatPatternDiagramSvg", () => {
     expect(svg).not.toContain("hat-diagram__crown--gathered");
   });
 
-  it("marks single-layer vs folded brim distinctly", () => {
+  it("marks single-layer vs folded vs rolled brim distinctly", () => {
     const single = buildHatPatternDiagramSvg(
       calcFor({ brimType: "single" }),
       "inches",
@@ -108,6 +116,11 @@ describe("buildHatPatternDiagramSvg", () => {
       "inches",
       formatters,
     );
+    const rolled = buildHatPatternDiagramSvg(
+      calcFor({ brimType: "rolled", brimDepthInches: 1 }),
+      "inches",
+      formatters,
+    );
     expect(single).toContain('data-brim="single"');
     expect(single).toContain('data-brim-style="single"');
     expect(single).not.toContain("hat-diagram__brim-fold");
@@ -115,6 +128,12 @@ describe("buildHatPatternDiagramSvg", () => {
     expect(folded).toContain('data-brim-style="folded"');
     expect(folded).toContain("hat-diagram__brim-fold");
     expect(folded).toContain(">fold<");
+    expect(rolled).toContain('data-brim="rolled"');
+    expect(rolled).toContain('data-brim-style="rolled"');
+    expect(rolled).toContain("hat-diagram__brim-roll");
+    expect(rolled).toContain(">Rolled Brim<");
+    expect(rolled).not.toContain("hat-diagram__brim-fold");
+    expect(rolled).not.toContain(">fold<");
   });
 
   it("formats inch labels with inch precision and symbol", () => {
@@ -218,11 +237,79 @@ describe("buildHatPatternDiagramSvg", () => {
     expect(svg).toContain('id="target_hat_length"');
     expect(svg).toContain('id="target_hat_brim"');
     expect(svg).toContain("hat-diagram__edit-targets");
+    // Anchors remain for chip positioning but must not paint as visible orange dots.
+    expect(svg).toMatch(
+      /id="target_hat_circumference"[^>]*fill="none"/,
+    );
+    expect(svg).toMatch(/id="target_hat_length"[^>]*fill="none"/);
+    expect(svg).toMatch(/id="target_hat_brim"[^>]*fill="none"/);
+    expect(svg).not.toMatch(/id="target_hat_[^"]+"[^>]*fill="#c2614e"/);
+    expect(svg).not.toContain('fill="#c2614e"');
   });
 
-  it("agrees with calculateHatPattern for displayed row and stitch counts", () => {
+  it("keeps measurement targets available for Summary/Edit overlays", () => {
+    for (const mode of [
+      HAT_PATTERN_DIAGRAM_MODE_PATTERN,
+      HAT_PATTERN_DIAGRAM_MODE_SUMMARY_EDIT,
+    ] as const) {
+      for (const crown of ["gathered", "wedge-4-decrease", "spiral"] as const) {
+        for (const brimType of ["rolled", "single", "folded"] as const) {
+          const svg = buildHatPatternDiagramSvg(
+            calcFor({ crown, brimType, fit: "slouchy", totalHatLengthInches: 10 }),
+            "inches",
+            formatters,
+            mode,
+          );
+          expect(svg).toContain('id="target_hat_circumference"');
+          expect(svg).toContain('id="target_hat_length"');
+          expect(svg).toContain('id="target_hat_brim"');
+          expect(svg).toContain("hat-diagram__edit-targets");
+          expect(svg).not.toContain('fill="#c2614e"');
+          const paintedTargets = svg.match(
+            /<circle id="target_hat_[^"]+"[^>]*fill="(?!none)[^"]+"/g,
+          );
+          expect(paintedTargets).toBeNull();
+
+          const hatLeft = 96;
+          const hatRight = 296;
+          const hatMidX = (hatLeft + hatRight) / 2;
+          const hatBottom = 340;
+          const circ = svg.match(
+            /id="target_hat_circumference"\s+cx="([-\d.]+)"\s+cy="([-\d.]+)"/,
+          );
+          const length = svg.match(
+            /id="target_hat_length"\s+cx="([-\d.]+)"\s+cy="([-\d.]+)"/,
+          );
+          const brim = svg.match(
+            /id="target_hat_brim"\s+cx="([-\d.]+)"\s+cy="([-\d.]+)"/,
+          );
+          expect(circ).toBeTruthy();
+          expect(length).toBeTruthy();
+          expect(brim).toBeTruthy();
+          expect(Number(circ![1])).toBeCloseTo(hatMidX, 0);
+          expect(Number(circ![2])).toBeGreaterThan(hatBottom + 40);
+          expect(Number(length![1])).toBeLessThan(hatLeft);
+          expect(Number(length![1])).toBeLessThan(54); // left of total-length arrow
+          if (mode === HAT_PATTERN_DIAGRAM_MODE_SUMMARY_EDIT) {
+            // Length chip parks in the expanded left viewBox gutter.
+            expect(Number(length![1])).toBeLessThan(0);
+            expect(Number(length![1])).toBeGreaterThanOrEqual(
+              -HAT_SUMMARY_EDIT_DIAGRAM_LEFT_PAD,
+            );
+            expect(svg).toContain(
+              `viewBox="-${HAT_SUMMARY_EDIT_DIAGRAM_LEFT_PAD} 0 ${430 + HAT_SUMMARY_EDIT_DIAGRAM_LEFT_PAD} 460"`,
+            );
+          }
+          expect(Number(brim![1])).toBeGreaterThan(hatRight);
+          expect(Number(brim![1])).toBeGreaterThan(338); // right of brim arrow
+        }
+      }
+    }
+  });
+
+  it("agrees with calculateHatPattern for displayed row and stitch counts in pattern mode", () => {
     for (const crown of ["gathered", "wedge-4-decrease", "spiral"] as const) {
-      for (const brimType of ["single", "folded"] as const) {
+      for (const brimType of ["rolled", "single", "folded"] as const) {
         const calc = calcFor({ crown, brimType, fit: "slouchy", totalHatLengthInches: 10 });
         const svg = buildHatPatternDiagramSvg(calc, "inches", formatters);
         expect(svg).toContain(`${calc.brimRows} rows`);
@@ -230,14 +317,115 @@ describe("buildHatPatternDiagramSvg", () => {
         if (crown !== "gathered") {
           expect(svg).toContain(`${calc.crownRowCount} rows`);
         }
-        const castOn = calc.castOnSts;
-        // Diagram may show crown-adjusted cast-on for spiral/wedge.
         expect(svg).toMatch(/\d+ sts/);
         expect(svg).toContain(formatLengthWithUnit(calc.targetWidth, "inches"));
         expect(svg).toContain(`data-brim="${brimType}"`);
-        void castOn;
       }
     }
+  });
+
+  it("summaryEdit mode omits stitch/row counts and inch/cm measurement text", () => {
+    for (const crown of ["gathered", "wedge-4-decrease", "spiral"] as const) {
+      for (const brimType of ["rolled", "single", "folded"] as const) {
+        for (const unit of ["inches", "cm"] as const) {
+          const calc = calcFor({
+            crown,
+            brimType,
+            fit: "slouchy",
+            totalHatLengthInches: 10,
+            displayUnit: unit,
+          });
+          const svg = buildHatPatternDiagramSvg(
+            calc,
+            unit,
+            formatters,
+            HAT_PATTERN_DIAGRAM_MODE_SUMMARY_EDIT,
+          );
+          expect(svg).toContain('data-hat-diagram-mode="summaryEdit"');
+          expect(svg).not.toMatch(/\d+\s*sts/);
+          expect(svg).not.toMatch(/\d+\s*rows/);
+          expect(svg).not.toContain("sts / gore");
+          expect(svg).not.toContain("decrease points");
+          // No finished inch or cm values in text nodes — editable chips are the only source.
+          expect(svg).not.toMatch(/>\d+(?:\.\d+)?"</);
+          expect(svg).not.toMatch(/>\d+(?:\.\d+)?\s*cm</i);
+          expect(svg).not.toContain(
+            formatLengthWithUnit(calc.hatHeight, "inches"),
+          );
+          expect(svg).not.toContain(
+            formatLengthWithUnit(calc.targetWidth, "inches"),
+          );
+          expect(svg).not.toContain(
+            formatLengthWithUnit(calc.brimDepth, "inches"),
+          );
+          // Section labels remain.
+          expect(svg).toContain(">Body<");
+          expect(svg).toMatch(/>Brim<|>Rolled Brim</);
+          expect(svg).toContain(">Total<");
+          // Three measurement arrows remain (length / brim / width).
+          expect(svg).toMatch(/x1="54"[^>]*stroke="#52682d"/);
+          expect(svg).toMatch(/x1="338"[^>]*y1="[^"]+"[^>]*y2="[^"]+"[^>]*stroke="#52682d"/);
+          expect(svg).toMatch(
+            new RegExp(`y1="${340 + 24}"[^>]*stroke="#52682d"`),
+          );
+          // Targets for the three editable fields remain.
+          expect(svg).toContain('id="target_hat_circumference"');
+          expect(svg).toContain('id="target_hat_length"');
+          expect(svg).toContain('id="target_hat_brim"');
+          if (crown === "gathered") {
+            expect(svg).toContain("Gather");
+            // No duplicate right-side construction "gather" in summaryEdit.
+            expect(svg).not.toMatch(/>gather</);
+          }
+          if (crown === "wedge-4-decrease") {
+            expect(svg).toContain("Crown · 4 gores");
+            expect(svg).toContain(">#1<");
+            expect(svg).not.toContain("decrease points");
+          }
+          if (crown === "spiral") {
+            expect(svg).toContain("Crown · Swirl");
+            expect(svg).not.toContain("decrease points");
+            expect(svg).not.toMatch(/to \d+ sts/);
+          }
+        }
+      }
+    }
+  });
+
+  it("pattern mode keeps stitch counts, row counts, and finished measurements", () => {
+    const calc = calcFor({ crown: "wedge-4-decrease", brimType: "folded" });
+    const patternSvg = buildHatPatternDiagramSvg(
+      calc,
+      "inches",
+      formatters,
+      HAT_PATTERN_DIAGRAM_MODE_PATTERN,
+    );
+    const summarySvg = buildHatPatternDiagramSvg(
+      calc,
+      "inches",
+      formatters,
+      HAT_PATTERN_DIAGRAM_MODE_SUMMARY_EDIT,
+    );
+    expect(patternSvg).toContain('data-hat-diagram-mode="pattern"');
+    expect(summarySvg).toContain('data-hat-diagram-mode="summaryEdit"');
+    expect(patternSvg).toContain(`${calc.brimRows} rows`);
+    expect(patternSvg).toContain(`${calc.bodyRows} rows`);
+    expect(patternSvg).toMatch(/\d+ sts/);
+    expect(patternSvg).toContain("sts / gore");
+    expect(patternSvg).toContain(formatLengthWithUnit(calc.hatHeight, "inches"));
+    expect(patternSvg).toContain(formatLengthWithUnit(calc.targetWidth, "inches"));
+    expect(patternSvg).toContain(formatLengthWithUnit(calc.brimDepth, "inches"));
+    expect(summarySvg).not.toMatch(/\d+\s*rows/);
+    expect(summarySvg).not.toMatch(/\d+\s*sts/);
+    expect(summarySvg).not.toMatch(/>\d+(?:\.\d+)?"</);
+    expect(summarySvg).not.toContain(formatLengthWithUnit(calc.hatHeight, "inches"));
+    // Same silhouette / generator; summaryEdit widens the left gutter for the length chip.
+    expect(patternSvg).toContain('viewBox="0 0 430 460"');
+    expect(summarySvg).toContain(
+      `viewBox="-${HAT_SUMMARY_EDIT_DIAGRAM_LEFT_PAD} 0 ${430 + HAT_SUMMARY_EDIT_DIAGRAM_LEFT_PAD} 460"`,
+    );
+    expect(patternSvg).toContain('data-crown="wedge-4-decrease"');
+    expect(summarySvg).toContain('data-crown="wedge-4-decrease"');
   });
 
   it("proportionally distinguishes fitted vs slouchy body while keeping stable viewBox", () => {

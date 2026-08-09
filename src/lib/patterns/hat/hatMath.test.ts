@@ -4,7 +4,9 @@ import {
   buildFourWedgeCrownSetup,
   buildHatCrownPlan,
   calculateHatPattern,
+  formatHatRolledBrimDefaultLength,
   hatGaugeToPerInch,
+  nextBrimLengthAfterBrimTypeChange,
   resolveTotalHatLengthInches,
   roundFinishedHatSizeFromHead,
   roundToEvenPreferUp,
@@ -99,6 +101,75 @@ describe("hatMath golden parity (adult woman / 5×7 per 4\")", () => {
     });
     // 2 * 2 * 1.75 = 7 → 8 even-up? round(7)=7 odd → 8
     expect(calc.brimRows).toBe(8);
+  });
+
+  it("rolled brim uses single-layer row math and keeps brim in finished length", () => {
+    const calc = calculateHatPattern({
+      finishedHatCircInches: finishedCirc,
+      stitchGaugeDisplay,
+      rowGaugeDisplay,
+      displayUnit,
+      totalHatLengthInches,
+      brimDepthInches: 1,
+      brimType: "rolled",
+      crown: "gathered",
+      suggestedCrownDepthInches,
+      fit: "watchcap",
+    });
+    expect(calc.brimType).toBe("rolled");
+    // 1" × 1.75 = 1.75 → round 2 (even)
+    expect(calc.brimRows).toBe(2);
+    // Visible rolled height is included in total length; body subtracts it once (not doubled).
+    expect(calc.hatHeight).toBe(totalHatLengthInches);
+    expect(calc.bodyHeightInches).toBe(totalHatLengthInches - 1);
+    expect(calc.brimRows).not.toBe(
+      calculateHatPattern({
+        finishedHatCircInches: finishedCirc,
+        stitchGaugeDisplay,
+        rowGaugeDisplay,
+        displayUnit,
+        totalHatLengthInches,
+        brimDepthInches: 1,
+        brimType: "folded",
+        crown: "gathered",
+        suggestedCrownDepthInches,
+        fit: "watchcap",
+      }).brimRows,
+    );
+  });
+
+  it("formats rolled brim default height for imperial and metric", () => {
+    expect(formatHatRolledBrimDefaultLength("inches")).toBe("1");
+    expect(formatHatRolledBrimDefaultLength("cm")).toBe("2.5");
+    expect(
+      nextBrimLengthAfterBrimTypeChange({
+        previousBrimType: "single",
+        nextBrimType: "rolled",
+        unit: "inches",
+      }),
+    ).toBe("1");
+    expect(
+      nextBrimLengthAfterBrimTypeChange({
+        previousBrimType: "",
+        nextBrimType: "rolled",
+        unit: "cm",
+      }),
+    ).toBe("2.5");
+    // Already on rolled — do not overwrite a user-edited height.
+    expect(
+      nextBrimLengthAfterBrimTypeChange({
+        previousBrimType: "rolled",
+        nextBrimType: "rolled",
+        unit: "inches",
+      }),
+    ).toBeNull();
+    expect(
+      nextBrimLengthAfterBrimTypeChange({
+        previousBrimType: "rolled",
+        nextBrimType: "single",
+        unit: "inches",
+      }),
+    ).toBeNull();
   });
 
   it("4-wedge decrease adjusts cast-on up to multiple of 4 and builds wedge setup", () => {
@@ -244,13 +315,33 @@ describe("hatDraft migration", () => {
           inches: { stitch: "", row: "" },
           cm: { stitch: "20", row: "28" },
         },
+        availableNeedles: "200",
         showTips: false,
       },
       storage,
     );
     expect(draft.patternType).toBe("hat");
     expect(draft.patternSystem).toBe("hat");
+    expect(draft.availableNeedles).toBe("200");
     expect(readHatDraft(storage)?.customCircumference).toBe("50");
+  });
+
+  it("coerceHatDraft defaults missing availableNeedles for older drafts", () => {
+    const legacy = coerceHatDraft({
+      patternType: "hat",
+      unit: "inches",
+      sizeSel: "adult_woman",
+      brimType: "single",
+      brimLength: "2",
+      crownShaping: "gathered",
+      fit: "watchcap",
+      gaugeSlots: {
+        inches: { stitch: "5", row: "7" },
+        cm: { stitch: "", row: "" },
+      },
+    });
+    expect(legacy).not.toBeNull();
+    expect(legacy?.availableNeedles).toBe("");
   });
 
   it("coerceHatDraft rejects non-hat patternType", () => {

@@ -1,0 +1,857 @@
+---
+/**
+ * Hat Summary/Edit page — full-page workspace matching the sweater Summary/Edit layout.
+ * Entry paths (sweater `generated=1` convention):
+ * - From builder (`?generated=1`): review choices → View My Pattern → finished pattern.
+ *   Back to Builder returns to the builder without writing summary edits.
+ * - From Edit Pattern (`?edit=1` or bare): Update Pattern → finished pattern.
+ *   Cancel returns to the finished pattern without writing.
+ * Free / ungated — no membership required to complete builder → summary → pattern.
+ */
+import Layout from "../../../../layouts/Layout.astro";
+import {
+  AVAILABLE_NEEDLES_HELPER_TEXT,
+  AVAILABLE_NEEDLES_LABEL,
+} from "../../../../lib/patterns/hat/hatAvailableNeedles";
+import {
+  HAT_PATTERN_BUILDER_HREF,
+  HAT_SUMMARY_CANCEL_FROM_EDIT_LABEL,
+  HAT_SUMMARY_HINT_FROM_EDIT,
+  HAT_SUMMARY_PRIMARY_FROM_EDIT_LABEL,
+} from "../../../../lib/patterns/hat/hatPatternNavigation";
+import { HAT_EDIT_MEASUREMENT_TRANSFORMS } from "../../../../lib/patterns/hat/hatPatternEditTargets";
+
+import "../../../../styles/wizard.css";
+import "../../../../styles/patterns/sleeveless-pattern-shared.css";
+import "../../../../styles/patterns/pattern-app-shell.css";
+---
+
+<Layout
+  title="Edit Hat Pattern | Knit it Now"
+  description="Edit your custom machine-knit hat pattern measurements, choices, and gauge."
+  bodyClass="pattern-print-global-footer"
+  patternWorkspace={true}
+>
+  <main
+    class="wizard-page sleeveless-pattern-page sleeveless-workspace-subpage pattern-app-shell hat-summary-page"
+    data-hat-summary-page
+    data-testid="hat-summary-edit-page"
+  >
+    <div class="wizard-container">
+      <div class="calculator-card hat-builder-inputs">
+        <div class="hat-pattern-empty" data-hat-summary-empty role="status" hidden>
+          <h1 class="hat-pattern-empty__title">Hat Pattern</h1>
+          <p class="hat-pattern-empty__message" data-hat-summary-empty-message>
+            Create a hat pattern first, then come back to edit your instructions.
+          </p>
+          <a
+            href={HAT_PATTERN_BUILDER_HREF}
+            class="kbm-btn kbm-btn-accent"
+            data-testid="hat-summary-empty-cta"
+          >
+            Go to Hat Builder
+          </a>
+        </div>
+
+        <!--
+          Full-page Summary/Edit workspace (sweater layout equivalent).
+          Left: Pattern choices + Gauge. Right: diagram with measurement overlays.
+          Actions sit in the Measurements header (sticky on narrow screens).
+        -->
+        <div
+          class="hat-summary-workspace sl-edit-drawer--workspace"
+          data-hat-summary-workspace
+          data-testid="hat-summary-workspace"
+          data-hat-summary-entry="from-finished-pattern"
+          hidden
+        >
+          <div class="sl-edit-workspace__layout">
+            <div class="sl-edit-workspace__quick">
+              <div class="sl-edit-drawer__body">
+                <section class="sl-edit-section sl-edit-units-section" aria-labelledby="hat-edit-units-heading">
+                  <h3 class="sl-edit-section__title" id="hat-edit-units-heading">Units</h3>
+                  <div
+                    class="sl-edit-units-toggle"
+                    role="group"
+                    aria-labelledby="hat-edit-units-heading"
+                    data-hat-edit-units
+                  >
+                    <button
+                      type="button"
+                      class="sl-edit-unit-btn is-active"
+                      data-hat-edit-unit="inches"
+                      aria-pressed="true"
+                    >
+                      Inches
+                    </button>
+                    <button
+                      type="button"
+                      class="sl-edit-unit-btn"
+                      data-hat-edit-unit="cm"
+                      aria-pressed="false"
+                    >
+                      Centimeters
+                    </button>
+                  </div>
+                </section>
+
+                <section class="sl-edit-section" aria-labelledby="hat-edit-choices-heading">
+                  <h3 class="sl-edit-section__title" id="hat-edit-choices-heading">
+                    Pattern choices
+                  </h3>
+
+                  <div class="sl-edit-field">
+                    <label class="sl-edit-sublabel" for="hat-edit-size">Finished hat size</label>
+                    <select
+                      id="hat-edit-size"
+                      class="sl-edit-input sl-edit-select"
+                      data-hat-edit-size
+                      data-testid="hat-edit-size"
+                    >
+                      <option value="">Loading sizes…</option>
+                    </select>
+                  </div>
+
+                  <div class="sl-edit-field">
+                    <label class="sl-edit-sublabel" for="hat-edit-fit">Finished hat length</label>
+                    <select
+                      id="hat-edit-fit"
+                      class="sl-edit-input sl-edit-select"
+                      data-hat-edit-fit
+                      data-testid="hat-edit-fit"
+                    >
+                      <option value="">Loading lengths…</option>
+                    </select>
+                  </div>
+
+                  <div class="sl-edit-field">
+                    <label class="sl-edit-sublabel" for="hat-edit-brim-type">Brim type</label>
+                    <select
+                      id="hat-edit-brim-type"
+                      class="sl-edit-input sl-edit-select"
+                      data-hat-edit-brim-type
+                      data-testid="hat-edit-brim-type"
+                    >
+                      <option value="">Choose brim type</option>
+                      <option value="rolled">Rolled Brim</option>
+                      <option value="single">Single Layer</option>
+                      <option value="folded">Folded Hem</option>
+                    </select>
+                    <p class="hat-edit-field-error" data-hat-edit-error="brimType" hidden role="alert"></p>
+                  </div>
+
+                  <div class="sl-edit-field">
+                    <label class="sl-edit-sublabel" for="hat-edit-crown">Crown style</label>
+                    <select
+                      id="hat-edit-crown"
+                      class="sl-edit-input sl-edit-select"
+                      data-hat-edit-crown
+                      data-testid="hat-edit-crown"
+                    >
+                      <option value="">Choose crown style</option>
+                      <option value="gathered">Gathered</option>
+                      <option value="wedge-4-decrease">Four-Gore</option>
+                      <option value="spiral">Swirl Top</option>
+                    </select>
+                    <p class="hat-edit-field-error" data-hat-edit-error="crownShaping" hidden role="alert"></p>
+                  </div>
+                </section>
+
+                <section class="sl-edit-section" aria-labelledby="hat-edit-gauge-heading">
+                  <h3 class="sl-edit-section__title" id="hat-edit-gauge-heading">
+                    Gauge
+                  </h3>
+                  <p class="sl-edit-ease" data-hat-edit-gauge-help>stitches / rows over 4 inches</p>
+                  <div class="hat-edit-gauge-grid">
+                    <div class="sl-edit-field">
+                      <label class="sl-edit-sublabel" for="hat-edit-stitch-gauge">Stitch gauge</label>
+                      <input
+                        id="hat-edit-stitch-gauge"
+                        class="sl-edit-input"
+                        type="number"
+                        inputmode="decimal"
+                        step="0.1"
+                        min="0"
+                        data-hat-edit-stitch-gauge
+                        data-testid="hat-edit-stitch-gauge"
+                      />
+                      <p class="hat-edit-field-error" data-hat-edit-error="stitchGauge" hidden role="alert"></p>
+                    </div>
+                    <div class="sl-edit-field">
+                      <label class="sl-edit-sublabel" for="hat-edit-row-gauge">Row gauge</label>
+                      <input
+                        id="hat-edit-row-gauge"
+                        class="sl-edit-input"
+                        type="number"
+                        inputmode="decimal"
+                        step="0.1"
+                        min="0"
+                        data-hat-edit-row-gauge
+                        data-testid="hat-edit-row-gauge"
+                      />
+                      <p class="hat-edit-field-error" data-hat-edit-error="rowGauge" hidden role="alert"></p>
+                    </div>
+                  </div>
+                  <div class="sl-edit-field hat-edit-needles-field">
+                    <label class="sl-edit-sublabel" for="hat-edit-available-needles"
+                      >{AVAILABLE_NEEDLES_LABEL}</label
+                    >
+                    <input
+                      id="hat-edit-available-needles"
+                      class="sl-edit-input"
+                      type="number"
+                      inputmode="numeric"
+                      min="1"
+                      step="1"
+                      data-hat-edit-available-needles
+                      data-testid="hat-edit-available-needles"
+                    />
+                    <p class="sl-edit-ease">{AVAILABLE_NEEDLES_HELPER_TEXT}</p>
+                    <p
+                      class="hat-edit-field-error"
+                      data-hat-edit-error="availableNeedles"
+                      hidden
+                      role="alert"
+                    ></p>
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <div class="sl-edit-workspace__measure" data-hat-measure-pane>
+              <header class="sl-edit-workspace__measure-head">
+                <div class="sl-edit-workspace__measure-headrow">
+                  <h3 class="sl-edit-workspace__measure-title">
+                    Measurements
+                  </h3>
+                  <div class="sl-edit-workspace__measure-actions" data-hat-edit-actions>
+                    <div class="sl-edit-workspace__notes">
+                      <p class="sl-edit-error-note" data-hat-edit-form-error hidden role="alert"></p>
+                    </div>
+                    <div class="sl-edit-drawer__actions">
+                      <button
+                        type="button"
+                        class="sl-edit-btn sl-edit-btn--ghost"
+                        data-hat-edit-cancel
+                        data-testid="button-edit-cancel"
+                      >
+                        {HAT_SUMMARY_CANCEL_FROM_EDIT_LABEL}
+                      </button>
+                      <button
+                        type="button"
+                        class="sl-edit-btn sl-edit-btn--primary"
+                        data-hat-edit-update
+                        data-testid="button-edit-update"
+                      >
+                        {HAT_SUMMARY_PRIMARY_FROM_EDIT_LABEL}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <p class="sl-edit-workspace__measure-hint" data-hat-summary-hint>
+                  {HAT_SUMMARY_HINT_FROM_EDIT}
+                </p>
+              </header>
+
+              <div class="hat-edit-mbp" data-testid="hat-edit-diagram-area">
+                <div class="hat-edit-mbp-stage">
+                  <div class="hat-edit-mbp-stage__inner" data-hat-edit-stage>
+                    <div class="hat-edit-mbp-art" data-hat-edit-diagram></div>
+                    <div class="hat-edit-mbp-overlay" data-hat-edit-overlay>
+                      <div
+                        class="hat-edit-mbp-box"
+                        data-measurement-target="target_hat_circumference"
+                        data-measurement-transform={HAT_EDIT_MEASUREMENT_TRANSFORMS.circumference}
+                        data-testid="hat-edit-chip-circumference"
+                      >
+                        <label class="hat-edit-mbp-box__field" for="hat-edit-circ">
+                          <span class="hat-edit-mbp-box__lab">Finished hat size</span>
+                          <span class="hat-edit-mbp-box__value">
+                            <input
+                              id="hat-edit-circ"
+                              class="hat-edit-mbp-input"
+                              type="number"
+                              inputmode="decimal"
+                              step="0.25"
+                              min="0"
+                              data-hat-edit-circ
+                              data-testid="hat-edit-circ"
+                            />
+                            <span class="hat-edit-mbp-unit" data-hat-edit-unit-suffix>"</span>
+                          </span>
+                        </label>
+                        <p
+                          class="hat-edit-field-error"
+                          data-hat-edit-error="finishedCircumference"
+                          hidden
+                          role="alert"
+                        ></p>
+                      </div>
+
+                      <div
+                        class="hat-edit-mbp-box"
+                        data-measurement-target="target_hat_length"
+                        data-measurement-transform={HAT_EDIT_MEASUREMENT_TRANSFORMS.length}
+                        data-testid="hat-edit-chip-length"
+                      >
+                        <label class="hat-edit-mbp-box__field" for="hat-edit-length">
+                          <span class="hat-edit-mbp-box__lab">Finished hat length</span>
+                          <span class="hat-edit-mbp-box__value">
+                            <input
+                              id="hat-edit-length"
+                              class="hat-edit-mbp-input"
+                              type="number"
+                              inputmode="decimal"
+                              step="0.25"
+                              min="0"
+                              data-hat-edit-length
+                              data-testid="hat-edit-length"
+                            />
+                            <span class="hat-edit-mbp-unit" data-hat-edit-unit-suffix>"</span>
+                          </span>
+                        </label>
+                        <p
+                          class="hat-edit-field-error"
+                          data-hat-edit-error="finishedHatLength"
+                          hidden
+                          role="alert"
+                        ></p>
+                      </div>
+
+                      <div
+                        class="hat-edit-mbp-box"
+                        data-measurement-target="target_hat_brim"
+                        data-measurement-transform={HAT_EDIT_MEASUREMENT_TRANSFORMS.brimDepth}
+                        data-testid="hat-edit-chip-brim"
+                      >
+                        <label class="hat-edit-mbp-box__field" for="hat-edit-brim">
+                          <span class="hat-edit-mbp-box__lab">Visible Brim Height</span>
+                          <span class="hat-edit-mbp-box__value">
+                            <input
+                              id="hat-edit-brim"
+                              class="hat-edit-mbp-input"
+                              type="number"
+                              inputmode="decimal"
+                              step="0.25"
+                              min="0"
+                              data-hat-edit-brim
+                              data-testid="hat-edit-brim"
+                            />
+                            <span class="hat-edit-mbp-unit" data-hat-edit-unit-suffix>"</span>
+                          </span>
+                        </label>
+                        <p
+                          class="hat-edit-field-error"
+                          data-hat-edit-error="brimLength"
+                          hidden
+                          role="alert"
+                        ></p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  /* —— Empty state (same as finished pattern) —— */
+  .hat-pattern-empty {
+    max-width: 36rem;
+    margin: 1.5rem auto;
+    padding: 1.5rem 1rem;
+    text-align: center;
+  }
+
+  .hat-pattern-empty__title {
+    margin: 0 0 0.65rem;
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .hat-pattern-empty__message {
+    margin: 0 0 1.1rem;
+    font-size: 0.98rem;
+    line-height: 1.5;
+    color: #4b5563;
+  }
+
+  /*
+   * Summary/Edit workspace — match sleeveless pattern/?edit=1 proportions:
+   * compact left column, diagram-sized right column, no oversized heading icons.
+   */
+  .hat-summary-workspace {
+    display: block;
+    background: color-mix(in srgb, var(--kbm-green, #52682d) 3%, #fdfcf7);
+    border-radius: 12px;
+    margin: 0;
+  }
+
+  .hat-summary-workspace[hidden] {
+    display: none;
+  }
+
+  .sl-edit-workspace__layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+    max-width: min(var(--pattern-shell-max, 1480px), 100%);
+    margin: 0 auto;
+    padding: clamp(0.75rem, 1.8vw, 1.25rem) clamp(0.85rem, 3vw, 2rem);
+    box-sizing: border-box;
+  }
+
+  .sl-edit-workspace__quick {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .sl-edit-drawer__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding: 0;
+  }
+
+  .sl-edit-section {
+    margin: 0;
+    padding: 0.85rem 0 0;
+    border: 0;
+    border-top: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 10%, #e5e7eb);
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .sl-edit-units-section {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .sl-edit-section__title,
+  .sl-edit-workspace__measure-title {
+    margin: 0;
+    padding: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.005em;
+    color: var(--kbm-green, #52682d);
+  }
+
+  .sl-edit-field {
+    margin: 0;
+  }
+
+  .sl-edit-sublabel {
+    display: block;
+    margin: 0 0 0.3rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: #6b7280;
+  }
+
+  .sl-edit-input {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.45rem 0.65rem;
+    font-family: inherit;
+    font-size: 0.92rem;
+    line-height: 1.35;
+    color: #1f2937;
+    background-color: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+  }
+
+  .sl-edit-input.sl-edit-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 12 12'%3E%3Cpath fill='%23374151' d='M6 8L1 3h10z'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 14px;
+    padding-right: 2.4rem;
+    cursor: pointer;
+  }
+
+  .sl-edit-input:focus {
+    outline: 2px solid #52682d;
+    outline-offset: 1px;
+    border-color: #52682d;
+  }
+
+  .sl-edit-ease {
+    margin: 0.2rem 0 0;
+    font-size: 0.76rem;
+    font-weight: 400;
+    line-height: 1.4;
+    color: #9ca3af;
+  }
+
+  .sl-edit-units-toggle {
+    display: inline-flex;
+    gap: 0.3rem;
+    padding: 0.18rem;
+    border-radius: 8px;
+    background: #f3f4f6;
+  }
+
+  .sl-edit-unit-btn {
+    border: 0;
+    border-radius: 6px;
+    padding: 0.35rem 0.7rem;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4b5563;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .sl-edit-unit-btn.is-active {
+    background: #fff;
+    color: #52682d;
+    box-shadow: 0 1px 2px rgba(17, 24, 39, 0.08);
+  }
+
+  .sl-edit-unit-btn:focus-visible {
+    outline: 2px solid #52682d;
+    outline-offset: 1px;
+  }
+
+  .hat-edit-gauge-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem;
+  }
+
+  .hat-edit-needles-field {
+    max-width: 14rem;
+  }
+
+  .hat-edit-field-error {
+    margin: 0.25rem 0 0;
+    font-size: 0.78rem;
+    line-height: 1.3;
+    color: #b91c1c;
+  }
+
+  .sl-edit-workspace__measure {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: visible;
+  }
+
+  .sl-edit-workspace__measure-head {
+    flex-shrink: 0;
+    margin: 0 0 0.4rem;
+  }
+
+  .sl-edit-workspace__measure-headrow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.45rem 0.85rem;
+  }
+
+  .sl-edit-workspace__measure-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.35rem;
+  }
+
+  .sl-edit-workspace__notes {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .sl-edit-error-note {
+    margin: 0;
+    padding: 0.5rem 0.65rem;
+    font-size: 0.82rem;
+    line-height: 1.35;
+    color: #991b1b;
+    background: #fff4f4;
+    border: 1px solid #f5c2c7;
+    border-radius: 8px;
+  }
+
+  .sl-edit-error-note[hidden] {
+    display: none;
+  }
+
+  .sl-edit-workspace__measure-hint {
+    margin: 0.25rem 0 0;
+    font-size: 0.76rem;
+    font-weight: 400;
+    line-height: 1.4;
+    color: #9ca3af;
+  }
+
+  .sl-edit-drawer__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  .sl-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.4rem;
+    padding: 0.45rem 1rem;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.2;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  .sl-edit-btn--ghost {
+    color: #4b5563;
+    background: #fff;
+    border: 1px solid #d1d5db;
+  }
+
+  .sl-edit-btn--ghost:hover {
+    background: #f3f4f6;
+  }
+
+  .sl-edit-btn--primary {
+    color: #fff;
+    background: var(--kbm-green, #52682d);
+    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 85%, #000);
+  }
+
+  .sl-edit-btn--primary:hover {
+    background: var(--kbm-green-hover, #445626);
+  }
+
+  .sl-edit-btn:focus-visible {
+    outline: 2px solid var(--kbm-green, #52682d);
+    outline-offset: 2px;
+  }
+
+  .sl-edit-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+
+  /*
+   * Diagram sizing mirrors sweater workspace: fit width AND viewport height so the
+   * full schematic stays visible without dominating the page.
+   */
+  .hat-edit-mbp {
+    width: 100%;
+    overflow: visible;
+  }
+
+  .hat-edit-mbp-stage {
+    position: relative;
+    width: 100%;
+    max-width: min(100%, 560px, calc(100vh - 260px));
+    margin: 0 auto;
+    overflow: visible;
+  }
+
+  .hat-edit-mbp-stage__inner {
+    position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    /*
+     * Keep padding minimal so the SVG stays large. Side/bottom chips park outside
+     * the SVG via data-measurement-transform (overflow: visible on stage/overlay).
+     */
+    padding: 0.15rem;
+    overflow: visible;
+  }
+
+  .hat-edit-mbp-art {
+    width: 100%;
+  }
+
+  .hat-edit-mbp-art :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: min(520px, calc(100vh - 280px));
+  }
+
+  .hat-edit-diagram-fallback {
+    margin: 0;
+    padding: 0.85rem;
+    font-size: 0.9rem;
+    color: #6b7280;
+  }
+
+  .hat-edit-mbp-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .hat-edit-mbp-box {
+    position: absolute;
+    z-index: 2;
+    min-width: 7.25rem;
+    max-width: 9.75rem;
+    padding: 0.35rem 0.45rem;
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, #c2614e 35%, #e5e7eb);
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: 0 2px 8px rgba(17, 24, 39, 0.12);
+    pointer-events: auto;
+  }
+
+  .hat-edit-mbp-box--invalid {
+    border-color: #b91c1c;
+  }
+
+  .hat-edit-mbp-box__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin: 0;
+  }
+
+  .hat-edit-mbp-box__lab {
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #374151;
+  }
+
+  .hat-edit-mbp-box__value {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+
+  .hat-edit-mbp-input {
+    width: 4.25rem;
+    min-width: 0;
+    padding: 0.25rem 0.35rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 0.86rem;
+    font-weight: 600;
+  }
+
+  .hat-edit-mbp-input:focus {
+    outline: 2px solid #52682d;
+    outline-offset: 1px;
+  }
+
+  .hat-edit-mbp-unit {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #4b5563;
+  }
+
+  /* Narrow screens (<700px): stack fields below the diagram. */
+  .hat-edit-mbp-stage__inner[data-measurement-overlay-mode="mobile"] {
+    padding: 0;
+  }
+
+  .hat-edit-mbp-stage__inner[data-measurement-overlay-mode="mobile"] .hat-edit-mbp-overlay,
+  .hat-edit-mbp-overlay[data-measurement-overlay-mode="mobile"] {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    pointer-events: auto;
+  }
+
+  .hat-edit-mbp-stage__inner[data-measurement-overlay-mode="mobile"] .hat-edit-mbp-box,
+  .hat-edit-mbp-overlay[data-measurement-overlay-mode="mobile"] .hat-edit-mbp-box {
+    position: static;
+    max-width: none;
+    width: 100%;
+    transform: none !important;
+    left: auto !important;
+    top: auto !important;
+  }
+
+  /* Desktop (>=1000px): side-by-side like sweater Summary/Edit. */
+  @media (min-width: 1000px) {
+    .sl-edit-workspace__layout {
+      flex-direction: row;
+      align-items: flex-start;
+      gap: clamp(1.25rem, 2.2vw, 2rem);
+      padding-block: clamp(0.75rem, 1.4vw, 1.15rem);
+    }
+
+    .sl-edit-workspace__quick {
+      flex: 0 0 clamp(300px, 24vw, 360px);
+      max-width: 360px;
+    }
+
+    .sl-edit-drawer__body {
+      gap: 0.7rem;
+    }
+
+    .sl-edit-section {
+      gap: 0.55rem;
+      padding-top: 0.75rem;
+    }
+
+    .sl-edit-workspace__measure {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+
+    .hat-edit-mbp-stage {
+      margin: 0;
+      max-width: min(100%, 560px, calc(100vh - 240px));
+    }
+  }
+
+  /* Narrow: sticky bottom action bar (sweater convention). */
+  @media (max-width: 999px) {
+    .sl-edit-workspace__layout {
+      padding-bottom: 5.75rem;
+    }
+
+    .sl-edit-workspace__measure-actions {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 40;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.45rem 0.65rem;
+      padding: 0.65rem clamp(0.85rem, 3vw, 2rem);
+      background: rgba(253, 252, 247, 0.96);
+      border-top: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 12%, #e5e7eb);
+      box-shadow: 0 -4px 16px rgba(17, 24, 39, 0.08);
+    }
+
+    .sl-edit-workspace__measure-actions .sl-edit-workspace__notes {
+      flex: 1 1 100%;
+      order: -1;
+    }
+  }
+</style>
+
+<script>
+  import "/src/scripts/hat-pattern-summary-page.ts";
+</script>
