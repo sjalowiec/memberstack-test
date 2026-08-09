@@ -1,23 +1,19 @@
 /**
- * Delete-protection rule for a free user's one saved pattern per pattern system.
+ * Delete-protection helpers for saved Custom Pattern projects.
+ *
+ * Free-claim / system-access no longer blocks deletion — every owned saved pattern may be
+ * deleted. These helpers remain as a stable API that always allows delete.
  */
-import {
-  freeClaimedPatternIdForSystem,
-  isFreeClaimedForSystem,
-} from "./patternSystemFreeClaim";
 import {
   patternSystemDisplayName,
   resolvePatternSystemFromProject,
   type PatternSystemId,
 } from "./patternSystemId";
-import {
-  hasSleevelessPatternSystemAccess,
-  type SleevelessUserAccess,
-} from "./sleevelessPatternSystemAccess";
+import type { SleevelessUserAccess } from "./sleevelessPatternSystemAccess";
 import { resolveSleevelessUserAccessSnapshot } from "./sleevelessPatternSystemAccessClient";
-import { listCustomPatternProjects } from "./customPatternProjectClient";
-import type { CustomPatternFamily, CustomPatternProjectSummary } from "./customPatternProjectTypes";
+import type { CustomPatternFamily } from "./customPatternProjectTypes";
 
+/** @deprecated Delete is no longer blocked for free claimed patterns; retained for copy references. */
 export function freePatternDeleteBlockedText(systemId: PatternSystemId): string {
   const name = patternSystemDisplayName(systemId);
   return `This is your free ${name} pattern. To keep access to it, it can't be deleted unless you unlock the full pattern system with membership.`;
@@ -33,20 +29,11 @@ export interface PatternDeleteProtectionInput {
   totalSavedCountForSystem: number;
 }
 
-export function isPatternDeleteProtectedForSystem({
-  access,
-  projectId,
-  patternSystem,
-  totalSavedCountForSystem,
-}: PatternDeleteProtectionInput): boolean {
-  if (!access?.loggedIn) return false;
-  if (hasSleevelessPatternSystemAccess(access, patternSystem)) return false;
-  if (!isFreeClaimedForSystem(access.freeClaimsBySystem, patternSystem)) return false;
-
-  const claimedId = freeClaimedPatternIdForSystem(access.freeClaimsBySystem, patternSystem);
-  if (claimedId) return projectId === claimedId;
-
-  return totalSavedCountForSystem <= 1;
+/** Always false — owned saved patterns are deletable regardless of free-claim or system access. */
+export function isPatternDeleteProtectedForSystem(
+  _input: PatternDeleteProtectionInput,
+): boolean {
+  return false;
 }
 
 /** @deprecated Use {@link isPatternDeleteProtectedForSystem}. */
@@ -70,65 +57,16 @@ export interface SleevelessPatternDeleteDecision {
   access: SleevelessUserAccess;
 }
 
-function countSummariesForSystem(
-  summaries: CustomPatternProjectSummary[],
-  patternSystem: PatternSystemId,
-): number {
-  return summaries.filter((row) => {
-    const system =
-      (row as CustomPatternProjectSummary & { patternSystem?: string }).patternSystem ??
-      "sleeveless";
-    return system === patternSystem;
-  }).length;
-}
-
 export async function resolvePatternDeleteDecision(
-  projectId: string,
-  options: {
+  _projectId: string,
+  _options: {
     family?: CustomPatternFamily;
     patternSystem?: PatternSystemId;
     totalSavedCountForSystem?: number;
   } = {},
 ): Promise<SleevelessPatternDeleteDecision> {
   const access = await resolveSleevelessUserAccessSnapshot();
-  const patternSystem = options.patternSystem ?? "sleeveless";
-
-  const allow = (): SleevelessPatternDeleteDecision => ({ blocked: false, message: null, access });
-  const block = (): SleevelessPatternDeleteDecision => ({
-    blocked: true,
-    message: freePatternDeleteBlockedText(patternSystem),
-    access,
-  });
-
-  if (
-    !access.loggedIn ||
-    hasSleevelessPatternSystemAccess(access, patternSystem) ||
-    !isFreeClaimedForSystem(access.freeClaimsBySystem, patternSystem)
-  ) {
-    return allow();
-  }
-
-  const claimedId = freeClaimedPatternIdForSystem(access.freeClaimsBySystem, patternSystem);
-  if (claimedId) {
-    return projectId === claimedId ? block() : allow();
-  }
-
-  let totalSavedCountForSystem = options.totalSavedCountForSystem;
-  if (typeof totalSavedCountForSystem !== "number") {
-    const list = await listCustomPatternProjects(options.family ?? "sleeveless");
-    totalSavedCountForSystem = list.ok
-      ? countSummariesForSystem(list.projects, patternSystem)
-      : 1;
-  }
-
-  return isPatternDeleteProtectedForSystem({
-    access,
-    projectId,
-    patternSystem,
-    totalSavedCountForSystem,
-  })
-    ? block()
-    : allow();
+  return { blocked: false, message: null, access };
 }
 
 /** @deprecated Use {@link resolvePatternDeleteDecision}. */

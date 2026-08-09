@@ -21,10 +21,6 @@ import { resolveSleevelessUserAccessSnapshot } from "./sleevelessPatternSystemAc
 import { resolvePatternSystemFromPage, type PatternSystemId } from "./patternSystemId";
 import { offerPatternEditingUnlockModal } from "./patternEditingUnlockModal";
 import { formatSavedPatternGauge } from "./savedPatternGaugeDisplay";
-import {
-  freePatternDeleteBlockedText,
-  isPatternDeleteProtectedForSystem,
-} from "./sleevelessPatternDeleteGuard";
 import { promptSavedPatternDeleteConfirmation } from "./savedPatternDeleteConfirmation";
 
 const SIGN_IN_REQUIRED_ERROR = "Sign in to save Custom Pattern projects.";
@@ -100,46 +96,6 @@ function projectSystemFromSummary(project: CustomPatternProjectSummary): Pattern
   return "sleeveless";
 }
 
-function countLibraryProjectsForSystem(
-  projects: readonly CustomPatternProjectSummary[],
-  patternSystem: PatternSystemId,
-): number {
-  return projects.filter((p) => projectSystemFromSummary(p) === patternSystem).length;
-}
-
-function isProtectedLibraryDeleteTarget(projectId: string): boolean {
-  if (!lastResolvedLibraryAccess) return false;
-  const project = lastLibraryProjects.find((p) => p.id === projectId);
-  const patternSystem = project ? projectSystemFromSummary(project) : "sleeveless";
-  return isPatternDeleteProtectedForSystem({
-    access: lastResolvedLibraryAccess,
-    projectId,
-    patternSystem,
-    totalSavedCountForSystem: countLibraryProjectsForSystem(lastLibraryProjects, patternSystem),
-  });
-}
-
-/**
- * Reflects free-pattern delete protection onto drawer Delete buttons: the protected pattern's
- * button is disabled, grayed, and given an explanatory tooltip; all others stay enabled. Never hides.
- */
-function syncLibraryDeleteAccess(deleteButton: HTMLButtonElement | null | undefined): void {
-  if (!(deleteButton instanceof HTMLButtonElement)) return;
-  const projectId = deleteButton.dataset.projectId ?? "";
-  const protectedTarget = isProtectedLibraryDeleteTarget(projectId);
-  deleteButton.disabled = protectedTarget;
-  deleteButton.classList.toggle("is-disabled", protectedTarget);
-  if (protectedTarget) {
-    deleteButton.setAttribute("aria-disabled", "true");
-    const project = lastLibraryProjects.find((p) => p.id === projectId);
-    const system = project ? projectSystemFromSummary(project) : "sleeveless";
-    deleteButton.setAttribute("title", freePatternDeleteBlockedText(system));
-  } else {
-    deleteButton.removeAttribute("aria-disabled");
-    deleteButton.removeAttribute("title");
-  }
-}
-
 function canEditProjectFromLibrary(
   access: SleevelessUserAccess | null,
   project: CustomPatternProjectSummary,
@@ -173,13 +129,11 @@ function syncLibraryEditAccess(
 function syncLibraryItemAccess(
   editButton: HTMLButtonElement | null | undefined,
   copyButton: HTMLButtonElement | null | undefined,
-  deleteButton: HTMLButtonElement | null | undefined,
   access: SleevelessUserAccess | null,
   patternSystem?: PatternSystemId,
 ): void {
   syncLibraryEditAccess(editButton, access, patternSystem);
   syncSavedCustomPatternCopyAccessForAccess(copyButton, access);
-  syncLibraryDeleteAccess(deleteButton);
 }
 
 function clearDrawerCopyHighlight(): void {
@@ -361,7 +315,6 @@ function renderLibraryItem(
   syncLibraryItemAccess(
     editBtn,
     copyBtn,
-    deleteBtn,
     lastResolvedLibraryAccess,
     projectSystemFromSummary(project),
   );
@@ -440,27 +393,17 @@ async function onLibraryProjectDelete(
   projectId: string,
   label: string,
 ): Promise<void> {
-  // Guard before the confirm dialog: a free user's protected pattern can never be deleted.
-  if (isProtectedLibraryDeleteTarget(projectId)) {
-    const project = lastLibraryProjects.find((p) => p.id === projectId);
-    const system = project ? projectSystemFromSummary(project) : "sleeveless";
-    setDrawerStatus(root, freePatternDeleteBlockedText(system), true);
-    return;
-  }
-
   const choice = await promptSavedPatternDeleteConfirmation(root);
   if (choice !== "delete") return;
 
   const project = lastLibraryProjects.find((p) => p.id === projectId);
   const patternSystem = project ? projectSystemFromSummary(project) : "sleeveless";
-  const savedCountForSystem = countLibraryProjectsForSystem(lastLibraryProjects, patternSystem);
 
   setDrawerStatus(root, `Deleting “${label}”…`);
   setDrawerActionButtonsDisabled(root, true);
 
   try {
     const result = await deleteSavedCustomPatternProject(projectId, "sleeveless", {
-      totalSavedCount: savedCountForSystem,
       patternSystem,
     });
     if (!result.ok) {
@@ -494,7 +437,6 @@ function setDrawerActionButtonsDisabled(root: HTMLElement, disabled: boolean): v
   });
   root.querySelectorAll<HTMLButtonElement>("[data-pattern-workspace-library-delete]").forEach((button) => {
     button.disabled = disabled;
-    if (!disabled) syncLibraryDeleteAccess(button);
   });
 }
 

@@ -630,7 +630,6 @@ describe("patternWorkspaceLibraryDrawer", () => {
 
     expect(promptDeleteConfirmMock).toHaveBeenCalledTimes(1);
     expect(deleteSavedCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "sleeveless", {
-      totalSavedCount: 2,
       patternSystem: "sleeveless",
     });
     const cards = collectMatches(bindings.list._children, "[data-pattern-workspace-library-item-card]");
@@ -701,7 +700,6 @@ describe("patternWorkspaceLibraryDrawer", () => {
     await flushAsync();
 
     expect(deleteSavedCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "sleeveless", {
-      totalSavedCount: 1,
       patternSystem: "sleeveless",
     });
     expect(
@@ -745,7 +743,6 @@ describe("patternWorkspaceLibraryDrawer", () => {
     await flushAsync();
 
     expect(deleteSavedCustomPatternProjectMock).toHaveBeenCalledWith("proj-other", "sleeveless", {
-      totalSavedCount: 1,
       patternSystem: "sleeveless",
     });
     expect(
@@ -755,7 +752,7 @@ describe("patternWorkspaceLibraryDrawer", () => {
     expect(bindings.status.textContent).toBe("Project not found.");
   });
 
-  it("disables Delete on the free user's protected pattern but keeps it visible", async () => {
+  it("keeps Delete enabled for a claimed free pattern without system access", async () => {
     const bindings = makeDrawerBindings();
     vi.stubGlobal("window", {});
     resolveAccessSnapshotMock.mockResolvedValue(
@@ -779,6 +776,7 @@ describe("patternWorkspaceLibraryDrawer", () => {
         },
       ],
     });
+    promptDeleteConfirmMock.mockResolvedValue("delete");
 
     await refreshPatternWorkspaceLibraryList(bindings.drawer);
     const deleteBtn = collectMatches(
@@ -787,14 +785,19 @@ describe("patternWorkspaceLibraryDrawer", () => {
     )[0];
 
     expect(deleteBtn.textContent).toBe("Delete");
-    expect(deleteBtn.disabled).toBe(true);
-    expect(deleteBtn.getAttribute("aria-disabled")).toBe("true");
-    expect(deleteBtn.getAttribute("title")).toMatch(/free Sleeveless Pattern/i);
+    expect(deleteBtn.disabled).toBe(false);
+    expect(deleteBtn.getAttribute("aria-disabled")).toBeNull();
+    expect(deleteBtn.getAttribute("title")).toBeNull();
 
     await deleteBtn?._click?.();
     await flushAsync();
-    expect(promptDeleteConfirmMock).not.toHaveBeenCalled();
-    expect(deleteSavedCustomPatternProjectMock).not.toHaveBeenCalled();
+    expect(promptDeleteConfirmMock).toHaveBeenCalledTimes(1);
+    expect(deleteSavedCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "sleeveless", {
+      patternSystem: "sleeveless",
+    });
+    expect(
+      collectMatches(bindings.list._children, "[data-pattern-workspace-library-item-card]").length,
+    ).toBe(0);
   });
 
   it("copies a saved project from the drawer and highlights the new copy", async () => {

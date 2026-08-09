@@ -293,20 +293,12 @@ export function readSleevelessEntitlementFromSaveBody(body) {
 
 /**
  * Server mirror of the client free-pattern delete rule.
+ * Always allows delete — free-claim / system-access no longer blocks owned pattern deletion.
  *
  * @param {{ hasSystemAccess?: boolean, freeClaimedForSystem?: boolean, freeClaimedPatternId?: string, projectId: string, totalSavedCountForSystem: number, patternSystem?: string }} input
  */
-export function isFreePatternDeleteBlockedForSystem(input) {
-  if (!input || typeof input !== "object") return false;
-  if (input.hasSystemAccess === true) return false;
-  if (input.freeClaimedForSystem !== true) return false;
-
-  const claimedId =
-    typeof input.freeClaimedPatternId === "string" ? input.freeClaimedPatternId.trim() : "";
-  if (claimedId) return String(input.projectId) === claimedId;
-
-  const count = Number(input.totalSavedCountForSystem);
-  return Number.isFinite(count) ? count <= 1 : true;
+export function isFreePatternDeleteBlockedForSystem(_input) {
+  return false;
 }
 
 /** @deprecated Use {@link isFreePatternDeleteBlockedForSystem}. */

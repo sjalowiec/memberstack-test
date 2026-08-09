@@ -3,7 +3,6 @@ import type { SleevelessUserAccess } from "./sleevelessPatternSystemAccess";
 import {
   isPatternDeleteProtectedForSystem,
   resolvePatternDeleteDecision,
-  freePatternDeleteBlockedText,
 } from "./sleevelessPatternDeleteGuard";
 import { testAccess } from "./patternAccessTestFixtures";
 
@@ -17,20 +16,6 @@ vi.mock("./customPatternProjectClient", () => ({
   listCustomPatternProjects: (...args: unknown[]) => listProjectsMock(...args),
 }));
 
-const loggedOut = testAccess({ loggedIn: false, hasSystemAccess: false, freeClaimed: false });
-const member = testAccess({
-  loggedIn: true,
-  memberId: "ms_member",
-  hasSystemAccess: true,
-  freeClaimed: true,
-  freeClaimedPatternId: "pat_1",
-});
-const freeUnclaimed = testAccess({
-  loggedIn: true,
-  memberId: "ms_free",
-  hasSystemAccess: false,
-  freeClaimed: false,
-});
 const freeClaimedWithId = testAccess({
   loggedIn: true,
   memberId: "ms_free",
@@ -44,64 +29,27 @@ const freeClaimedNoId = testAccess({
   hasSystemAccess: false,
   freeClaimed: true,
 });
+const member = testAccess({
+  loggedIn: true,
+  memberId: "ms_member",
+  hasSystemAccess: true,
+  freeClaimed: true,
+  freeClaimedPatternId: "pat_1",
+});
 
 describe("isPatternDeleteProtectedForSystem", () => {
-  it("never protects a logged-out visitor", () => {
-    expect(
-      isPatternDeleteProtectedForSystem({
-        access: loggedOut,
-        projectId: "x",
-        patternSystem: "sleeveless",
-        totalSavedCountForSystem: 1,
-      }),
-    ).toBe(false);
-  });
-
-  it("never protects a user with system access (member / owner)", () => {
-    expect(
-      isPatternDeleteProtectedForSystem({
-        access: member,
-        projectId: "pat_1",
-        patternSystem: "sleeveless",
-        totalSavedCountForSystem: 1,
-      }),
-    ).toBe(false);
-  });
-
-  it("does not protect a free user who has not claimed the allowance", () => {
-    expect(
-      isPatternDeleteProtectedForSystem({
-        access: freeUnclaimed,
-        projectId: "anything",
-        patternSystem: "sleeveless",
-        totalSavedCountForSystem: 1,
-      }),
-    ).toBe(false);
-  });
-
-  it("protects exactly the claimed pattern id for a free claimer", () => {
+  it("never protects a claimed free pattern without system access", () => {
     expect(
       isPatternDeleteProtectedForSystem({
         access: freeClaimedWithId,
         projectId: "pat_free",
         patternSystem: "sleeveless",
-        totalSavedCountForSystem: 5,
-      }),
-    ).toBe(true);
-  });
-
-  it("does not protect other patterns when the claimed id is known", () => {
-    expect(
-      isPatternDeleteProtectedForSystem({
-        access: freeClaimedWithId,
-        projectId: "pat_other",
-        patternSystem: "sleeveless",
-        totalSavedCountForSystem: 5,
+        totalSavedCountForSystem: 1,
       }),
     ).toBe(false);
   });
 
-  it("fallback: protects the last remaining pattern when the claimed id is unknown", () => {
+  it("never protects the last remaining pattern when the claimed id is unknown", () => {
     expect(
       isPatternDeleteProtectedForSystem({
         access: freeClaimedNoId,
@@ -109,16 +57,16 @@ describe("isPatternDeleteProtectedForSystem", () => {
         patternSystem: "sleeveless",
         totalSavedCountForSystem: 1,
       }),
-    ).toBe(true);
+    ).toBe(false);
   });
 
-  it("fallback: allows deleting when more than one pattern remains and id is unknown", () => {
+  it("never protects a member pattern either", () => {
     expect(
       isPatternDeleteProtectedForSystem({
-        access: freeClaimedNoId,
-        projectId: "one-of-many",
+        access: member,
+        projectId: "pat_1",
         patternSystem: "sleeveless",
-        totalSavedCountForSystem: 3,
+        totalSavedCountForSystem: 1,
       }),
     ).toBe(false);
   });
@@ -129,60 +77,26 @@ describe("resolvePatternDeleteDecision", () => {
     vi.clearAllMocks();
   });
 
-  it("blocks the claimed pattern by id without fetching the saved list", async () => {
+  it("allows deleting a claimed free pattern without system access", async () => {
     resolveAccessMock.mockResolvedValue(freeClaimedWithId);
 
     const decision = await resolvePatternDeleteDecision("pat_free");
 
-    expect(decision.blocked).toBe(true);
-    expect(decision.message).toBe(freePatternDeleteBlockedText("sleeveless"));
+    expect(decision.blocked).toBe(false);
+    expect(decision.message).toBeNull();
     expect(decision.access).toBe(freeClaimedWithId);
     expect(listProjectsMock).not.toHaveBeenCalled();
   });
 
-  it("allows deleting a non-claimed pattern without fetching the saved list", async () => {
-    resolveAccessMock.mockResolvedValue(freeClaimedWithId);
-
-    const decision = await resolvePatternDeleteDecision("pat_other");
-
-    expect(decision.blocked).toBe(false);
-    expect(listProjectsMock).not.toHaveBeenCalled();
-  });
-
-  it("uses the supplied count for the unknown-id fallback (no list fetch)", async () => {
+  it("allows deleting when only one free-claimed pattern remains", async () => {
     resolveAccessMock.mockResolvedValue(freeClaimedNoId);
 
     const decision = await resolvePatternDeleteDecision("only", {
       totalSavedCountForSystem: 1,
     });
 
-    expect(decision.blocked).toBe(true);
-    expect(listProjectsMock).not.toHaveBeenCalled();
-  });
-
-  it("fetches the saved list for the unknown-id fallback when no count is supplied", async () => {
-    resolveAccessMock.mockResolvedValue(freeClaimedNoId);
-    listProjectsMock.mockResolvedValue({
-      ok: true,
-      projects: [
-        { id: "a", patternSystem: "sleeveless" },
-        { id: "b", patternSystem: "sleeveless" },
-      ],
-    });
-
-    const decision = await resolvePatternDeleteDecision("a");
-
-    expect(listProjectsMock).toHaveBeenCalledWith("sleeveless");
     expect(decision.blocked).toBe(false);
-  });
-
-  it("defaults to protecting when the saved-list fetch fails", async () => {
-    resolveAccessMock.mockResolvedValue(freeClaimedNoId);
-    listProjectsMock.mockResolvedValue({ ok: false, error: "nope" });
-
-    const decision = await resolvePatternDeleteDecision("a");
-
-    expect(decision.blocked).toBe(true);
+    expect(listProjectsMock).not.toHaveBeenCalled();
   });
 
   it("allows members to delete freely", async () => {

@@ -701,12 +701,13 @@ describe("accountMyPatternsList", () => {
     expect(collectMatches(list._children, "[data-kbm-my-patterns-row]").length).toBe(1);
   });
 
-  it("disables Delete on the free user's protected pattern but keeps others deletable", async () => {
+  it("keeps Delete enabled for a claimed free pattern without system access", async () => {
     const { root, list } = makeAccountRoot();
     listCustomPatternProjectsMock.mockResolvedValue({
       ok: true,
       projects: sampleProjects,
     });
+    promptDeleteConfirmMock.mockResolvedValue("delete");
     vi.stubGlobal("window", {
       $memberstackDom: {
         getCurrentMember: async () => ({ data: { id: "ms_free" } }),
@@ -722,15 +723,16 @@ describe("accountMyPatternsList", () => {
     const delA = deleteBtns.find((b) => b.dataset.projectId === "proj-a");
     const delB = deleteBtns.find((b) => b.dataset.projectId === "proj-b");
 
-    expect(delA?.disabled).toBe(true);
-    expect(delA?.getAttribute("aria-disabled")).toBe("true");
-    expect(delA?.getAttribute("title")).toMatch(/free Sleeveless Pattern/i);
+    expect(delA?.disabled).toBe(false);
+    expect(delA?.getAttribute("aria-disabled")).toBeNull();
+    expect(delA?.getAttribute("title")).toBeNull();
     expect(delB?.disabled).toBe(false);
-    expect(delB?.getAttribute("aria-disabled")).toBeNull();
 
     await delA?._click?.();
     await flushAsync();
-    expect(deleteCustomPatternProjectMock).not.toHaveBeenCalled();
+    expect(promptDeleteConfirmMock).toHaveBeenCalled();
+    expect(deleteCustomPatternProjectMock).toHaveBeenCalledWith("proj-a", "sleeveless");
+    expect(collectMatches(list._children, "[data-kbm-my-patterns-row]").length).toBe(1);
   });
 
   it("deletes a Drop Shoulder pattern from its system group", async () => {
