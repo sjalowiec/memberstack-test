@@ -2,7 +2,8 @@
  * Drop-shoulder neckline shaping charts/timelines.
  * Front: live checklist chart + shaping-map timeline.
  * Back: shaping-map timeline only (written prose, no back checklist chart).
- * Reuses {@link buildTimeline} / {@link buildVNeckFrontFullWidthTimeline} - no duplicate neck math.
+ * Round necks reuse {@link buildTimeline}; V-necks use the same {@link evenShapingSchedule}
+ * as Drop Shoulder written instructions (not an independent V rhythm).
  */
 
 import {
@@ -16,9 +17,13 @@ import {
 } from "./neckShoulderShapingChartRows";
 import { armholeLocalRcActiveShoulderChecklistStart } from "./neckShoulderActiveSideChecklist";
 import type { NeckShoulderChartRenderOptions } from "./neckShoulderShapingChartHtml";
-import { cardiganFrontInitialNeckBindOffStitches } from "./roundNeckNotation";
+import { cardiganFrontInitialNeckBindOffStitches, cardiganFrontNeckOpeningStitches } from "./roundNeckNotation";
+import { neckDecreaseStitchesPerSideFromOpening } from "./legoBlocks/vNeckline";
+import {
+  evenShapingGarmentRowNumbers,
+  evenShapingSchedule,
+} from "./evenShapingSchedule";
 import type { RowEntry, ShapingEvent } from "./shapingTimeline";
-import { buildVNeckFrontFullWidthTimeline } from "./vNeckFrontFullWidthTimeline";
 
 export type DropShoulderFrontNeckChartInputs = {
   isCardigan: boolean;
@@ -60,6 +65,85 @@ export function dropShoulderFrontNeckShapingChartInputsReady(inputs: {
 function forceEven(n: number): number {
   const v = Math.max(0, Math.round(n));
   return v % 2 === 0 ? v : v + 1;
+}
+
+/**
+ * Drop-shoulder V-neck front timeline using the same {@link evenShapingSchedule} as written
+ * instructions (`buildCardiganFrontRows` / pullover V path). Local RC origin is the neckline
+ * reset (`firstShapingRow`); decrease RCs match {@link evenShapingGarmentRowNumbers}(0, sched).
+ */
+export function buildDropShoulderVNeckEvenScheduleTimeline(inputs: {
+  isCardigan: boolean;
+  neckSts: number;
+  shoulderStsEach: number;
+  frontNeckDepthRows: number;
+  firstShapingRow: number;
+  bustBodySts: number;
+}): RowEntry[] {
+  const firstRow = Math.floor(inputs.firstShapingRow);
+  const depth = Math.floor(inputs.frontNeckDepthRows);
+  const S = Math.max(0, Math.round(inputs.shoulderStsEach));
+  const fullNeck = Math.max(0, Math.round(inputs.neckSts));
+  const bust = Math.max(0, Math.round(inputs.bustBodySts));
+  if (!Number.isFinite(firstRow) || S <= 0 || fullNeck <= 0 || depth <= 0 || bust <= 0) {
+    return [];
+  }
+
+  const decreaseCount = inputs.isCardigan
+    ? cardiganFrontNeckOpeningStitches(fullNeck)
+    : neckDecreaseStitchesPerSideFromOpening(fullNeck);
+  if (decreaseCount <= 0) return [];
+
+  const sched = evenShapingSchedule(decreaseCount, depth);
+  if (sched.count <= 0) return [];
+
+  const decreaseLocalRcs = new Set(evenShapingGarmentRowNumbers(0, sched));
+  const frontWidth = inputs.isCardigan ? forceEven(bust / 2) : bust;
+  const startStitches = inputs.isCardigan
+    ? Math.max(S + decreaseCount, frontWidth)
+    : frontWidth;
+
+  // Cardigan half-front: CF edge on the right. Pullover: both inner edges for full-width chart;
+  // active-side rendering shows one shoulder.
+  let rightCount = inputs.isCardigan ? startStitches : Math.ceil(startStitches / 2);
+  let leftCount = inputs.isCardigan ? 0 : Math.floor(startStitches / 2);
+  const centerWidth = inputs.isCardigan ? 0 : startStitches % 2;
+
+  const rows: RowEntry[] = [];
+  for (let local = 0; local < depth; local++) {
+    const rc = firstRow + local;
+    const events: ShapingEvent[] = [];
+    let netR = 0;
+    let netL = 0;
+    if (decreaseLocalRcs.has(local)) {
+      if (rightCount > S) {
+        events.push({ kind: "decrease", side: "right", edge: "inner", amount: 1 });
+        rightCount -= 1;
+        netR = -1;
+      }
+      if (!inputs.isCardigan && leftCount > S) {
+        events.push({ kind: "decrease", side: "left", edge: "inner", amount: 1 });
+        leftCount -= 1;
+        netL = -1;
+      }
+    }
+    const rightInner = inputs.isCardigan ? 1 : leftCount + centerWidth + 1;
+    rows.push({
+      row: rc,
+      events,
+      stitchesL: leftCount,
+      stitchesR: rightCount,
+      netChangeL: netL,
+      netChangeR: netR,
+      isSplit: !inputs.isCardigan,
+      centerWidth,
+      leftOuterEdge: 1,
+      leftInnerEdge: leftCount,
+      rightInnerEdge: rightInner,
+      rightOuterEdge: leftCount + centerWidth + rightCount,
+    });
+  }
+  return rows;
 }
 
 function appendDropShoulderStraightShoulderFinish(
@@ -223,21 +307,21 @@ export function buildDropShoulderFrontNeckShapingChart(
     return null;
   }
 
-  const isCardiganRoundHalfFront = isCardigan && !isVNeck;
+  const isCardiganHalfFront = isCardigan;
   const shoulderBindoffRows = Math.max(1, Math.round(rowsPerInch));
   const timelineOpts = { straightShoulders: true as const };
 
-  const necklineOpeningStsForFrontPiece = isCardiganRoundHalfFront
+  const necklineOpeningStsForFrontPiece = isCardiganHalfFront
     ? Math.max(1, Math.round(neckSts / 2))
     : neckSts;
-  const stitchesAfterArmholeForFrontPiece = isCardiganRoundHalfFront
+  const stitchesAfterArmholeForFrontPiece = isCardiganHalfFront
     ? forceEven(bustBodySts / 2)
     : bustBodySts;
-  const shoulderStsForFrontPiece = isCardiganRoundHalfFront
+  const shoulderStsForFrontPiece = isCardiganHalfFront
     ? Math.max(1, stitchesAfterArmholeForFrontPiece - necklineOpeningStsForFrontPiece)
     : shoulderStsEach;
 
-  const neckProfile: NeckShoulderShapingPatternNumbers["neckProfile"] = isCardiganRoundHalfFront
+  const neckProfile: NeckShoulderShapingPatternNumbers["neckProfile"] = isCardiganHalfFront
     ? "cardiganHalfFront"
     : "front";
 
@@ -245,7 +329,7 @@ export function buildDropShoulderFrontNeckShapingChart(
     firstShapingRow: frontNecklineStartRC,
     shoulderStitchesPerSide: shoulderStsForFrontPiece,
     centerNeckBindOff: necklineOpeningStsForFrontPiece,
-    ...(isCardiganRoundHalfFront
+    ...(isCardiganHalfFront && !isVNeck
       ? {
           cardiganCfInitialBindOff: cardiganFrontInitialNeckBindOffStitches(
             neckSts,
@@ -261,8 +345,14 @@ export function buildDropShoulderFrontNeckShapingChart(
 
   let timeline: RowEntry[] = [];
   if (isVNeck) {
-    const vFront = buildVNeckFrontFullWidthTimeline(patternNumbers, timelineOpts);
-    timeline = vFront.timeline;
+    timeline = buildDropShoulderVNeckEvenScheduleTimeline({
+      isCardigan,
+      neckSts,
+      shoulderStsEach: isCardigan ? shoulderStsForFrontPiece : shoulderStsEach,
+      frontNeckDepthRows,
+      firstShapingRow: frontNecklineStartRC,
+      bustBodySts,
+    });
   } else {
     timeline = buildNeckShoulderTimelineAndChartRows(patternNumbers, timelineOpts).timeline;
   }
@@ -272,7 +362,7 @@ export function buildDropShoulderFrontNeckShapingChart(
   timeline = appendDropShoulderStraightShoulderFinish(
     timeline,
     totalRows,
-    isCardiganRoundHalfFront ? "cardiganHalfFront" : "pullover",
+    isCardiganHalfFront ? "cardiganHalfFront" : "pullover",
   );
 
   const chartRows = neckShoulderChartRowsFromTimeline(timeline);
@@ -281,7 +371,7 @@ export function buildDropShoulderFrontNeckShapingChart(
   const chart = neckShoulderShapingChartFromRows(chartRows, {
     timeline,
     ...(isVNeck ? { sleevelessFullWidthVNeckFront: true } : {}),
-    ...(isCardiganRoundHalfFront ? { sleevelessCardiganFront: true } : {}),
+    ...(isCardiganHalfFront ? { sleevelessCardiganFront: true } : {}),
   });
 
   return { chart, timeline, usesLiveRows: true };

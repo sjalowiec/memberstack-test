@@ -319,6 +319,7 @@ describe("drop-shoulder front neckline shaping chart", () => {
     });
     expect(result.frontNeckShoulderChartUsesLiveRows).toBe(true);
     expect(result.frontNeckShoulderShapingChart.sleevelessFullWidthVNeckFront).toBe(true);
+    expect(result.frontNeckShoulderShapingChart.sleevelessCardiganFront).toBe(true);
     expect(result.frontNeckShoulderShapingChart.rows.length).toBeGreaterThan(0);
   });
 

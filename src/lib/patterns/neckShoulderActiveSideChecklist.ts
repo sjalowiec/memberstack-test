@@ -339,14 +339,13 @@ function buildActiveSideActionsFromTimeline(
   const center = hasCenterDivide ? first : null;
   const shapingEntries = hasCenterDivide ? sorted.slice(1) : sorted;
   /**
-   * Deep round pullover only: center bind-off (not hold), not cardigan/V-neck.
-   * Align checklist RCs to the written/timeline even schedule (000 / 002 / 004…).
+   * Align checklist RCs to timeline/written row numbers when shaping may fall on consecutive
+   * rows (V-neck evenShapingSchedule, or deep round center bind-off schedules).
+   * Legacy odd/even carriage padding must not apply — it infinite-pads every-row Neck decreases.
    */
   const alignDisplayRcToTimeline =
-    hasCenterDivide &&
-    !cardiganFront &&
-    !vNeckFront &&
-    timelineHasDeepRoundCenterBindOff(timeline);
+    vNeckFront ||
+    (hasCenterDivide && !cardiganFront && timelineHasDeepRoundCenterBindOff(timeline));
 
   const relativeOriginRow =
     hasCenterDivide && center
