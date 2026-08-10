@@ -115,7 +115,7 @@ describe("finished sweater How Much Yarn? markup", () => {
       expect(page).toContain("How Much Yarn?");
       expect(page).toContain("express-yarn-drawer");
       expect(page).toContain("GarmentPatternYarnDrawer");
-      expect(page).toContain("hat-yarn-drawer-shell.css");
+      expect(page).toContain("yarn-requirement-drawer-shell.css");
     }
   });
 

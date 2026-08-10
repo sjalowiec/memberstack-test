@@ -1,6 +1,9 @@
 /**
- * Shared How Much Yarn? drawer shell (finished hat pattern, sweater review, etc.).
+ * Shared How Much Yarn? drawer shell (finished pattern pages: hat, sweater, etc.).
  * Pair with YarnRequirement presentation="drawer".
+ *
+ * Class names retain the historical `.hat-yarn-drawer*` prefix used by markup and
+ * open-state body class (`hat-yarn-drawer-open`) across pattern pages.
  */
 
 body.hat-yarn-drawer-open {
