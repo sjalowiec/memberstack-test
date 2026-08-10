@@ -11,6 +11,7 @@ import SleevelessPatternPrintNotice from "../../../../components/patterns/Sleeve
 import PatternEditingUnlockModal from "../../../../components/patterns/PatternEditingUnlockModal.astro";
 import PatternAutoSaveSuccessDialog from "../../../../components/patterns/PatternAutoSaveSuccessDialog.astro";
 import BustDartPatternModal from "../../../../components/patterns/BustDartPatternModal.astro";
+import GarmentPatternYarnDrawer from "../../../../components/patterns/GarmentPatternYarnDrawer.astro";
 import FloatingInput from "../../../../components/lego/FloatingInput.astro";
 import {
   AVAILABLE_NEEDLES_HELPER_TEXT,
@@ -30,6 +31,7 @@ import "../../../../styles/pattern-help-card.css";
 import "../../../../styles/patterns/sleeveless-pattern-shared.css";
 import "../../../../styles/patterns/pattern-app-shell.css";
 import "../../../../styles/patterns/pattern-editable-pencil.css";
+import "../../../../styles/tools/hat-yarn-drawer-shell.css";
 
 // Reused measurement editor styling (same diagram/overlay as Custom Build → Measurements).
 import "../../../../styles/sleeveless-express-measurements-confirm.css";
@@ -73,6 +75,19 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
             class="pattern-action-bar__group pattern-action-bar__group--end"
             data-sleeveless-pattern-actions
           >
+            <button
+              type="button"
+              id="express-yarn-drawer-open"
+              class="sleeveless-pattern-edit-action no-print"
+              data-garment-yarn-open
+              data-testid="garment-pattern-how-much-yarn"
+              hidden
+              aria-haspopup="dialog"
+              aria-controls="express-yarn-drawer-panel"
+              aria-expanded="false"
+            >
+              How Much Yarn?
+            </button>
             <button
               type="button"
               class="sleeveless-pattern-edit-action no-print"
@@ -429,6 +444,10 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
     </div>
 
   </main>
+
+  <!-- How Much Yarn? — page-level drawer outside Edit Pattern; dimensions from rendered pattern. -->
+  <GarmentPatternYarnDrawer lede="Quick estimate from a weighed swatch using this sleeveless sweater’s finished size." />
+
   <PatternEditingUnlockModal />
   <BustDartPatternModal />
   <PatternAutoSaveSuccessDialog />
