@@ -1,25 +1,28 @@
 /**
- * Accessible tabbed hat diagram shell (Stitches & Rows + Japanese Notation).
+ * Accessible tabbed hat diagram shell (Stitches & Rows + Shaping Notation).
  * Keyboard behavior mirrors PatternLayout tablist (arrows / Home / End).
  */
 
-import { buildHatJapaneseNotationHelpHtml } from "./hatJapaneseNotationHelp";
+import { buildHatShapingNotationHelpHtml } from "./hatShapingNotationHelp";
 
 export const HAT_DIAGRAM_TAB_STS_ROWS = "sts-rows" as const;
-export const HAT_DIAGRAM_TAB_JAPANESE = "japanese" as const;
+export const HAT_DIAGRAM_TAB_SHAPING = "shaping-notation" as const;
+
+/** @deprecated Use {@link HAT_DIAGRAM_TAB_SHAPING}. */
+export const HAT_DIAGRAM_TAB_JAPANESE = HAT_DIAGRAM_TAB_SHAPING;
 
 export type HatDiagramTabId =
   | typeof HAT_DIAGRAM_TAB_STS_ROWS
-  | typeof HAT_DIAGRAM_TAB_JAPANESE;
+  | typeof HAT_DIAGRAM_TAB_SHAPING;
 
 export const HAT_DIAGRAM_TAB_IDS: readonly HatDiagramTabId[] = [
   HAT_DIAGRAM_TAB_STS_ROWS,
-  HAT_DIAGRAM_TAB_JAPANESE,
+  HAT_DIAGRAM_TAB_SHAPING,
 ] as const;
 
 export const HAT_DIAGRAM_TAB_LABELS: Record<HatDiagramTabId, string> = {
   [HAT_DIAGRAM_TAB_STS_ROWS]: "Stitches & Rows",
-  [HAT_DIAGRAM_TAB_JAPANESE]: "Japanese Notation",
+  [HAT_DIAGRAM_TAB_SHAPING]: "Shaping Notation",
 };
 
 const TAB_ATTR = "data-hat-diagram-tab";
@@ -46,7 +49,7 @@ function panelDomId(tab: HatDiagramTabId): string {
  * Static shell HTML for the diagram panel. SVG hosts are filled by the pattern page.
  */
 export function buildHatPatternDiagramTabsShellHtml(): string {
-  const helpHtml = buildHatJapaneseNotationHelpHtml();
+  const helpHtml = buildHatShapingNotationHelpHtml();
 
   const tabsHtml = HAT_DIAGRAM_TAB_IDS.map((id, index) => {
     const selected = index === 0;
@@ -77,18 +80,18 @@ export function buildHatPatternDiagramTabsShellHtml(): string {
     `<div class="hat-pattern-diagram-panel__svg" data-hat-diagram-sts-rows-host data-hat-diagram-host></div>` +
     `</div>`;
 
-  const jpPanel =
+  const shapingPanel =
     `<div` +
-    ` id="${panelDomId(HAT_DIAGRAM_TAB_JAPANESE)}"` +
+    ` id="${panelDomId(HAT_DIAGRAM_TAB_SHAPING)}"` +
     ` class="hat-pattern-diagram-tabs__panel"` +
     ` role="tabpanel"` +
-    ` aria-labelledby="${tabDomId(HAT_DIAGRAM_TAB_JAPANESE)}"` +
-    ` ${PANEL_ATTR}="${HAT_DIAGRAM_TAB_JAPANESE}"` +
+    ` aria-labelledby="${tabDomId(HAT_DIAGRAM_TAB_SHAPING)}"` +
+    ` ${PANEL_ATTR}="${HAT_DIAGRAM_TAB_SHAPING}"` +
     ` hidden` +
-    ` data-testid="hat-diagram-panel-japanese">` +
-    `<h3 class="hat-pattern-diagram-print-heading">${escapeText(HAT_DIAGRAM_TAB_LABELS[HAT_DIAGRAM_TAB_JAPANESE])}</h3>` +
+    ` data-testid="hat-diagram-panel-shaping-notation">` +
+    `<h3 class="hat-pattern-diagram-print-heading">${escapeText(HAT_DIAGRAM_TAB_LABELS[HAT_DIAGRAM_TAB_SHAPING])}</h3>` +
     helpHtml +
-    `<div class="hat-pattern-diagram-panel__svg" data-hat-diagram-japanese-host></div>` +
+    `<div class="hat-pattern-diagram-panel__svg" data-hat-diagram-shaping-host></div>` +
     `</div>`;
 
   return (
@@ -97,7 +100,7 @@ export function buildHatPatternDiagramTabsShellHtml(): string {
     tabsHtml +
     `</div>` +
     stsPanel +
-    jpPanel +
+    shapingPanel +
     `</div>`
   );
 }

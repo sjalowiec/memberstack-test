@@ -1012,7 +1012,7 @@ describe("hat Summary/Edit page wiring", () => {
     expect(summaryScript).toContain("teardownOverlay");
     expect(summaryScript).toContain("setPrimaryEnabled");
     expect(pageScript).toContain("buildHatPatternDiagramSvg");
-    expect(pageScript).toContain("buildHatJapaneseNotationDiagramSvg");
+    expect(pageScript).toContain("buildHatShapingNotationDiagramSvg");
     expect(pageScript).toContain("buildHatPatternDiagramTabsShellHtml");
     expect(pageScript).not.toContain("HAT_PATTERN_DIAGRAM_MODE_SUMMARY_EDIT");
     expect(pageScript).not.toContain("refreshLivePreview");

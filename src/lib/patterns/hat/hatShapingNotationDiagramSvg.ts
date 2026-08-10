@@ -1,15 +1,12 @@
 /**
- * Programmatic Japanese-notation hat diagram SVG.
+ * Programmatic shaping-notation hat diagram SVG.
  *
  * Built from the same `HatPatternCalc` used by written instructions and the
- * Stitches & Rows diagram. Does not use static hat SVG templates or sweater
- * diagram geometry.
+ * Stitches & Rows diagram. Not a measurement diagram: no arrows, dimension
+ * lines, or finished-size callouts. Construction references are cast-on and
+ * row-counter labels beside horizontal section lines, plus crown shaping notation.
  */
 
-import {
-  formatBodyRowsNotation,
-  formatCastOnNotation,
-} from "../sleevelessBackJapaneseNotation";
 import { formatShapingSegment } from "../shapingNotationCompress";
 import {
   applyHatCrownCastOnAdjustment,
@@ -27,9 +24,8 @@ import type {
 
 /** Stable canvas — do not stretch via CSS to match the Stitches & Rows viewBox. */
 const VB_W = 400;
-const VB_H = 520;
+const VB_H = 480;
 
-const ARROW = "#52682d";
 const STROKE = "#1a1a1a";
 const FILL = "#f4f6f1";
 const MUTED = "#4b5563";
@@ -37,12 +33,12 @@ const FONT = "Poppins, system-ui, Arial, sans-serif";
 
 const FS_SECTION = 18;
 const FS_NOTATION = 17;
-const FS_MEASURE = 15;
 const FS_SMALL = 14;
+const FS_CONSTRUCTION = 13;
 const FW_SECTION = 600;
 
-const HAT_LEFT = 88;
-const HAT_RIGHT = 292;
+const HAT_LEFT = 108;
+const HAT_RIGHT = 312;
 const HAT_TOP = 48;
 const HAT_BOTTOM = 400;
 
@@ -68,20 +64,23 @@ function textFont(size: number, weight?: number): string {
   return `font-family="${FONT}" font-size="${size}"${w}`;
 }
 
-function displayLength(
-  inches: number,
-  unit: HatPatternDiagramUnit,
-  formatters: HatPatternDiagramFormatters,
-): string {
-  const { convertLength, formatLengthWithUnit } = formatters;
-  const value =
-    unit === "inches" ? inches : convertLength(inches, "inches", unit);
-  return formatLengthWithUnit(value, unit);
+/** User-facing cast-on construction label from finalized calc (e.g. "CO 84 sts"). */
+export function formatHatShapingCastOnLabel(stitches: number): string {
+  const n = Math.max(0, Math.round(stitches));
+  return n > 0 ? `CO ${n} sts` : "";
+}
+
+/** User-facing RC construction label (e.g. "RC 60 · Brim ends / Body begins"). */
+export function formatHatShapingRcLabel(rc: number, phrase: string): string {
+  const n = Math.max(0, Math.floor(rc));
+  const p = String(phrase ?? "").trim();
+  if (!p) return `RC ${n}`;
+  return `RC ${n} · ${p}`;
 }
 
 type CrownKind = "gathered" | "wedge" | "spiral";
 
-type JpFrame = {
+type ShapingFrame = {
   brimTop: number;
   bodyTop: number;
   crownTop: number;
@@ -97,19 +96,12 @@ type JpFrame = {
   brimType: HatBrimType;
 };
 
-type JpLabels = {
+type ShapingLabels = {
   title: string;
   castOn: string;
-  circumference: string;
-  totalLength: string;
-  brimRows: string;
-  brimDepth: string;
+  brimEndRc: string;
+  crownBeginRc: string;
   brimLabel: string;
-  bodyRows: string;
-  bodyHeight: string;
-  crownRows: string;
-  crownDepth: string;
-  crownStart: string;
   crownLines: string[];
   remaining: string;
 };
@@ -120,19 +112,14 @@ function resolveCrownKind(crown: string): CrownKind {
   return "gathered";
 }
 
-function buildJpLabels(
-  calc: HatPatternCalc,
-  unit: HatPatternDiagramUnit,
-  formatters: HatPatternDiagramFormatters,
-): JpLabels {
+function buildShapingLabels(calc: HatPatternCalc): ShapingLabels {
   const crownKind = resolveCrownKind(calc.crown);
   const brimType = resolveHatBrimType(calc.brimType);
   const patternCastOn = applyHatCrownCastOnAdjustment(calc.castOnSts, calc.crown);
-  const castOn = formatCastOnNotation(patternCastOn);
-  const brimRows = formatBodyRowsNotation(calc.brimRows);
-  const bodyRows = formatBodyRowsNotation(calc.bodyRows);
-  const crownRows =
-    crownKind === "gathered" ? "" : formatBodyRowsNotation(calc.crownRowCount);
+  const castOn = formatHatShapingCastOnLabel(patternCastOn);
+  const brimEndRc = formatHatShapingRcLabel(calc.brimRows, "Brim ends / Body begins");
+  const crownBeginRow = calc.brimRows + calc.bodyRows;
+  const crownBeginRc = formatHatShapingRcLabel(crownBeginRow, "Begin shaping");
 
   const fourWedge =
     calc.fourWedgeCrownSetup ??
@@ -145,30 +132,28 @@ function buildJpLabels(
 
   const crownLines: string[] = [];
   let remaining = "";
-  let title = "Hat Japanese notation diagram";
+  let title = "Hat shaping notation diagram";
 
   if (crownKind === "gathered") {
-    title = "Gathered hat Japanese notation diagram";
-    // Schematic labels (not invented symbols): every-other transfer, then gather.
+    title = "Gathered hat shaping notation diagram";
     crownLines.push("EO xfer");
     crownLines.push("gather");
     remaining = `${patternCastOn} sts`;
   } else if (crownKind === "wedge" && fourWedge) {
-    title = "Four-gore hat Japanese notation diagram";
+    title = "Four-gore hat shaping notation diagram";
     const schedule = buildFourWedgeDecreaseSchedule(
       fourWedge.wedgeStitchCount,
       calc.crownRowCount,
     );
     crownLines.push(`4× ${fourWedge.wedgeStitchCount} sts`);
     if (schedule.decreaseCount > 0) {
-      // Per-edge decrease: 1 stitch each edge, shared frequency from instructions.
       crownLines.push(
         `${formatShapingSegment(1, schedule.rowFrequency, schedule.decreaseCount)} ea edge`,
       );
     }
     remaining = `${schedule.remainingStitchesTotal} sts`;
   } else if (crownKind === "spiral") {
-    title = "Swirl-top hat Japanese notation diagram";
+    title = "Swirl-top hat shaping notation diagram";
     const spiral = calc.crownPlan.spiral;
     if (spiral) {
       crownLines.push(`${spiral.decreasePoints} pts`);
@@ -186,36 +171,18 @@ function buildJpLabels(
     }
   }
 
-  const crownStartRow = calc.brimRows + calc.bodyRows;
-  const crownStart =
-    crownKind === "gathered"
-      ? ""
-      : crownStartRow > 0
-        ? `rc${String(crownStartRow).padStart(3, "0")}`
-        : "";
-
   return {
     title,
     castOn,
-    circumference: displayLength(calc.targetWidth, unit, formatters),
-    totalLength: displayLength(calc.hatHeight, unit, formatters),
-    brimRows,
-    brimDepth: displayLength(calc.brimDepth, unit, formatters),
+    brimEndRc,
+    crownBeginRc,
     brimLabel: hatBrimDisplayLabel(brimType),
-    bodyRows,
-    bodyHeight: displayLength(calc.bodyHeightInches, unit, formatters),
-    crownRows,
-    crownDepth:
-      crownKind === "gathered"
-        ? ""
-        : displayLength(calc.crownHeightInches, unit, formatters),
-    crownStart,
     crownLines,
     remaining,
   };
 }
 
-function buildJpFrame(calc: HatPatternCalc): JpFrame {
+function buildShapingFrame(calc: HatPatternCalc): ShapingFrame {
   const crownKind = resolveCrownKind(calc.crown);
   const brimType = resolveHatBrimType(calc.brimType);
   const usable = HAT_BOTTOM - HAT_TOP;
@@ -276,54 +243,16 @@ function buildJpFrame(calc: HatPatternCalc): JpFrame {
   };
 }
 
-function arrowHead(x: number, y: number, dir: "up" | "down" | "left" | "right"): string {
-  const s = 4.5;
-  if (dir === "up") {
-    return `<polygon points="${fmtNum(x)},${fmtNum(y)} ${fmtNum(x - s)},${fmtNum(y + s * 1.6)} ${fmtNum(x + s)},${fmtNum(y + s * 1.6)}" fill="${ARROW}"/>`;
-  }
-  if (dir === "down") {
-    return `<polygon points="${fmtNum(x)},${fmtNum(y)} ${fmtNum(x - s)},${fmtNum(y - s * 1.6)} ${fmtNum(x + s)},${fmtNum(y - s * 1.6)}" fill="${ARROW}"/>`;
-  }
-  if (dir === "left") {
-    return `<polygon points="${fmtNum(x)},${fmtNum(y)} ${fmtNum(x + s * 1.6)},${fmtNum(y - s)} ${fmtNum(x + s * 1.6)},${fmtNum(y + s)}" fill="${ARROW}"/>`;
-  }
-  return `<polygon points="${fmtNum(x)},${fmtNum(y)} ${fmtNum(x - s * 1.6)},${fmtNum(y - s)} ${fmtNum(x - s * 1.6)},${fmtNum(y + s)}" fill="${ARROW}"/>`;
-}
-
-function verticalDim(
-  x: number,
-  y1: number,
-  y2: number,
-  lines: string[],
-  labelX: number,
-): string {
-  const top = Math.min(y1, y2);
-  const bot = Math.max(y1, y2);
-  const midY = (top + bot) / 2;
-  const parts = [
-    `<line x1="${fmtNum(x)}" y1="${fmtNum(top)}" x2="${fmtNum(x)}" y2="${fmtNum(bot)}" stroke="${ARROW}" stroke-width="1.5" fill="none"/>`,
-    arrowHead(x, top, "up"),
-    arrowHead(x, bot, "down"),
-  ];
-  lines.forEach((line, i) => {
-    const dy = (i - (lines.length - 1) / 2) * 18;
-    parts.push(
-      `<text x="${fmtNum(labelX)}" y="${fmtNum(midY + dy)}" text-anchor="middle" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_MEASURE)}>${escapeXml(line)}</text>`,
-    );
-  });
-  return parts.join("");
-}
-
-function drawBrim(frame: JpFrame, labels: JpLabels): string {
+function drawBrim(frame: ShapingFrame, labels: ShapingLabels): string {
   const { hatLeft, hatRight, brimTop, hatBottom, brimType, hatWidth, hatMidX } = frame;
   const parts: string[] = [
-    `<rect class="hat-jp-diagram__brim" data-brim-style="${brimType}" x="${fmtNum(hatLeft)}" y="${fmtNum(brimTop)}" width="${fmtNum(hatWidth)}" height="${fmtNum(hatBottom - brimTop)}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.75"/>`,
+    `<rect class="hat-shaping-diagram__brim" data-brim-style="${brimType}" x="${fmtNum(hatLeft)}" y="${fmtNum(brimTop)}" width="${fmtNum(hatWidth)}" height="${fmtNum(hatBottom - brimTop)}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.75"/>`,
   ];
 
   if (brimType === "folded") {
     const foldY = brimTop + (hatBottom - brimTop) / 2;
     parts.push(
-      `<line class="hat-jp-diagram__brim-fold" x1="${fmtNum(hatLeft)}" y1="${fmtNum(foldY)}" x2="${fmtNum(hatRight)}" y2="${fmtNum(foldY)}" stroke="${STROKE}" stroke-width="1.2" stroke-dasharray="5 4" fill="none"/>`,
+      `<line class="hat-shaping-diagram__brim-fold" x1="${fmtNum(hatLeft)}" y1="${fmtNum(foldY)}" x2="${fmtNum(hatRight)}" y2="${fmtNum(foldY)}" stroke="${STROKE}" stroke-width="1.2" stroke-dasharray="5 4" fill="none"/>`,
     );
     parts.push(
       `<text x="${fmtNum(hatMidX)}" y="${fmtNum(foldY - 9)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_SMALL)}>fold</text>`,
@@ -331,36 +260,28 @@ function drawBrim(frame: JpFrame, labels: JpLabels): string {
   } else if (brimType === "rolled") {
     const curlY = hatBottom - 7;
     parts.push(
-      `<path class="hat-jp-diagram__brim-roll" d="M ${fmtNum(hatLeft + 10)} ${fmtNum(curlY)} Q ${fmtNum(hatMidX)} ${fmtNum(curlY + 9)} ${fmtNum(hatRight - 10)} ${fmtNum(curlY)}" fill="none" stroke="${STROKE}" stroke-width="1.1" opacity="0.55"/>`,
+      `<path class="hat-shaping-diagram__brim-roll" d="M ${fmtNum(hatLeft + 10)} ${fmtNum(curlY)} Q ${fmtNum(hatMidX)} ${fmtNum(curlY + 9)} ${fmtNum(hatRight - 10)} ${fmtNum(curlY)}" fill="none" stroke="${STROKE}" stroke-width="1.1" opacity="0.55"/>`,
     );
   }
 
   const midY = (brimTop + hatBottom) / 2 + (brimType === "folded" ? 10 : 0);
   parts.push(
-    `<text x="${fmtNum(hatMidX)}" y="${fmtNum(midY - 8)}" text-anchor="middle" dominant-baseline="middle" fill="${STROKE}" ${textFont(FS_SECTION, FW_SECTION)}>${escapeXml(labels.brimLabel)}</text>`,
+    `<text x="${fmtNum(hatMidX)}" y="${fmtNum(midY)}" text-anchor="middle" dominant-baseline="middle" fill="${STROKE}" ${textFont(FS_SECTION, FW_SECTION)}>${escapeXml(labels.brimLabel)}</text>`,
   );
-  if (labels.brimRows) {
-    parts.push(
-      `<text x="${fmtNum(hatMidX)}" y="${fmtNum(midY + 12)}" text-anchor="middle" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(labels.brimRows)}</text>`,
-    );
-  }
   return parts.join("");
 }
 
-function drawBody(frame: JpFrame, labels: JpLabels): string {
+function drawBody(frame: ShapingFrame): string {
   const { hatLeft, bodyTop, brimTop, hatMidX, hatWidth } = frame;
   const midY = (bodyTop + brimTop) / 2;
   return [
-    `<rect class="hat-jp-diagram__body" x="${fmtNum(hatLeft)}" y="${fmtNum(bodyTop)}" width="${fmtNum(hatWidth)}" height="${fmtNum(brimTop - bodyTop)}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.75"/>`,
-    `<text x="${fmtNum(hatMidX)}" y="${fmtNum(midY - 8)}" text-anchor="middle" dominant-baseline="middle" fill="${STROKE}" ${textFont(FS_SECTION, FW_SECTION)}>Body</text>`,
-    labels.bodyRows
-      ? `<text x="${fmtNum(hatMidX)}" y="${fmtNum(midY + 12)}" text-anchor="middle" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(labels.bodyRows)}</text>`
-      : "",
+    `<rect class="hat-shaping-diagram__body" x="${fmtNum(hatLeft)}" y="${fmtNum(bodyTop)}" width="${fmtNum(hatWidth)}" height="${fmtNum(brimTop - bodyTop)}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.75"/>`,
+    `<text x="${fmtNum(hatMidX)}" y="${fmtNum(midY)}" text-anchor="middle" dominant-baseline="middle" fill="${STROKE}" ${textFont(FS_SECTION, FW_SECTION)}>Body</text>`,
   ].join("");
 }
 
-function drawGatheredCrown(frame: JpFrame, labels: JpLabels): string {
-  const { hatLeft, hatRight, crownTop, bodyTop, hatMidX, hatWidth } = frame;
+function drawGatheredCrown(frame: ShapingFrame, labels: ShapingLabels): string {
+  const { hatLeft, hatRight, crownTop, bodyTop, hatMidX } = frame;
   const tipY = crownTop + 6;
   const midY = crownTop + (bodyTop - crownTop) * 0.4;
   const path = [
@@ -380,7 +301,7 @@ function drawGatheredCrown(frame: JpFrame, labels: JpLabels): string {
     .join("");
 
   return [
-    `<g class="hat-jp-diagram__crown hat-jp-diagram__crown--gathered" data-crown-style="gathered">`,
+    `<g class="hat-shaping-diagram__crown hat-shaping-diagram__crown--gathered" data-crown-style="gathered">`,
     `<path d="${path}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.75"/>`,
     `<text x="${fmtNum(hatMidX)}" y="${fmtNum(Math.max(18, crownTop - 2))}" text-anchor="middle" fill="${STROKE}" ${textFont(FS_SECTION, FW_SECTION)}>Crown</text>`,
     lines,
@@ -391,7 +312,7 @@ function drawGatheredCrown(frame: JpFrame, labels: JpLabels): string {
   ].join("");
 }
 
-function drawFourGoreCrown(frame: JpFrame, labels: JpLabels): string {
+function drawFourGoreCrown(frame: ShapingFrame, labels: ShapingLabels): string {
   const { hatLeft, hatRight, crownTop, bodyTop, hatMidX, hatWidth } = frame;
   const tipY = crownTop + 8;
   const valleyY = bodyTop - 4;
@@ -416,32 +337,25 @@ function drawFourGoreCrown(frame: JpFrame, labels: JpLabels): string {
 
   const notation = labels.crownLines
     .map((line, i) => {
-      // Place primary shaping notation above the crown silhouette to avoid overlap.
       const y = Math.max(16, crownTop - 22 - (labels.crownLines.length - 1 - i) * 16);
       return `<text x="${fmtNum(hatMidX)}" y="${fmtNum(y)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(line)}</text>`;
     })
     .join("");
 
   return [
-    `<g class="hat-jp-diagram__crown hat-jp-diagram__crown--four-gore" data-crown-style="wedge-4-decrease">`,
+    `<g class="hat-shaping-diagram__crown hat-shaping-diagram__crown--four-gore" data-crown-style="wedge-4-decrease">`,
     `<polyline points="${pts.join(" ")}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.75"/>`,
-    `<line class="hat-jp-diagram__crown-start" x1="${fmtNum(hatLeft)}" y1="${fmtNum(bodyTop)}" x2="${fmtNum(hatRight)}" y2="${fmtNum(bodyTop)}" stroke="${STROKE}" stroke-width="1.25" stroke-dasharray="6 4" fill="none"/>`,
+    `<line class="hat-shaping-diagram__crown-start" x1="${fmtNum(hatLeft)}" y1="${fmtNum(bodyTop)}" x2="${fmtNum(hatRight)}" y2="${fmtNum(bodyTop)}" stroke="${STROKE}" stroke-width="1.25" stroke-dasharray="6 4" fill="none"/>`,
     goreLabels,
     notation,
-    labels.crownRows
-      ? `<text x="${fmtNum(hatMidX)}" y="${fmtNum(bodyTop + 16)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_SMALL)}>${escapeXml(labels.crownRows)}</text>`
-      : "",
     labels.remaining
-      ? `<text x="${fmtNum(hatMidX)}" y="${fmtNum(bodyTop + 34)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_SMALL)}>→ ${escapeXml(labels.remaining)}</text>`
-      : "",
-    labels.crownStart
-      ? `<text x="${fmtNum(hatLeft - 6)}" y="${fmtNum(bodyTop + 4)}" text-anchor="end" fill="${MUTED}" ${textFont(FS_SMALL)}>${escapeXml(labels.crownStart)}</text>`
+      ? `<text x="${fmtNum(hatMidX)}" y="${fmtNum(bodyTop + 16)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_SMALL)}>→ ${escapeXml(labels.remaining)}</text>`
       : "",
     `</g>`,
   ].join("");
 }
 
-function drawSwirlCrown(frame: JpFrame, labels: JpLabels): string {
+function drawSwirlCrown(frame: ShapingFrame, labels: ShapingLabels): string {
   const { hatLeft, hatRight, crownTop, bodyTop, hatMidX, hatWidth } = frame;
   const tipY = crownTop + 10;
   const outline = [
@@ -469,95 +383,65 @@ function drawSwirlCrown(frame: JpFrame, labels: JpLabels): string {
     .join("");
 
   return [
-    `<g class="hat-jp-diagram__crown hat-jp-diagram__crown--swirl" data-crown-style="spiral">`,
+    `<g class="hat-shaping-diagram__crown hat-shaping-diagram__crown--swirl" data-crown-style="spiral">`,
     `<path d="${outline}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.75"/>`,
     swirlLines,
-    `<line class="hat-jp-diagram__crown-start" x1="${fmtNum(hatLeft)}" y1="${fmtNum(bodyTop)}" x2="${fmtNum(hatRight)}" y2="${fmtNum(bodyTop)}" stroke="${STROKE}" stroke-width="1.25" stroke-dasharray="6 4" fill="none"/>`,
+    `<line class="hat-shaping-diagram__crown-start" x1="${fmtNum(hatLeft)}" y1="${fmtNum(bodyTop)}" x2="${fmtNum(hatRight)}" y2="${fmtNum(bodyTop)}" stroke="${STROKE}" stroke-width="1.25" stroke-dasharray="6 4" fill="none"/>`,
     `<text x="${fmtNum(hatMidX)}" y="${fmtNum(Math.max(18, crownTop - 4))}" text-anchor="middle" fill="${STROKE}" ${textFont(FS_SECTION, FW_SECTION)}>Crown · Swirl</text>`,
     notation,
     labels.remaining
       ? `<text x="${fmtNum(hatMidX)}" y="${fmtNum(bodyTop - 8)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_SMALL)}>→ ${escapeXml(labels.remaining)}</text>`
       : "",
-    labels.crownStart
-      ? `<text x="${fmtNum(hatLeft - 6)}" y="${fmtNum(bodyTop + 4)}" text-anchor="end" fill="${MUTED}" ${textFont(FS_SMALL)}>${escapeXml(labels.crownStart)}</text>`
-      : "",
     `</g>`,
   ].join("");
 }
 
-function drawCrown(frame: JpFrame, labels: JpLabels): string {
+function drawCrown(frame: ShapingFrame, labels: ShapingLabels): string {
   if (frame.crownKind === "wedge") return drawFourGoreCrown(frame, labels);
   if (frame.crownKind === "spiral") return drawSwirlCrown(frame, labels);
   return drawGatheredCrown(frame, labels);
 }
 
-function drawMeasurements(frame: JpFrame, labels: JpLabels): string {
-  const parts: string[] = [];
-  const leftX = 48;
-  const rightX = 318;
-  const rightLabelX = rightX + 40;
+/**
+ * Cast-on + section RC labels beside horizontal construction lines (no arrows/dimensions).
+ */
+function drawConstructionLabels(frame: ShapingFrame, labels: ShapingLabels): string {
+  const labelX = frame.hatLeft - 8;
+  const parts: string[] = [
+    `<g class="hat-shaping-diagram__construction-labels" data-hat-shaping-construction-labels="true">`,
+  ];
 
-  parts.push(
-    verticalDim(leftX, frame.crownTop, frame.hatBottom, [labels.totalLength], 28),
-  );
-  parts.push(
-    `<text x="14" y="${fmtNum((frame.crownTop + frame.hatBottom) / 2)}" text-anchor="middle" transform="rotate(-90 14 ${(frame.crownTop + frame.hatBottom) / 2})" fill="${MUTED}" ${textFont(FS_SMALL)}>Total</text>`,
-  );
-
-  parts.push(
-    verticalDim(
-      rightX,
-      frame.brimTop,
-      frame.hatBottom,
-      [labels.brimRows, labels.brimDepth].filter(Boolean),
-      rightLabelX,
-    ),
-  );
-  parts.push(
-    verticalDim(
-      rightX,
-      frame.bodyTop,
-      frame.brimTop,
-      [labels.bodyRows, labels.bodyHeight].filter(Boolean),
-      rightLabelX,
-    ),
-  );
-
-  if (frame.crownKind !== "gathered") {
+  if (labels.castOn) {
     parts.push(
-      verticalDim(
-        rightX,
-        frame.crownTop,
-        frame.bodyTop,
-        [labels.crownRows, labels.crownDepth].filter(Boolean),
-        rightLabelX,
-      ),
+      `<text class="hat-shaping-diagram__cast-on" x="${fmtNum(labelX)}" y="${fmtNum(frame.hatBottom + 4)}" text-anchor="end" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_CONSTRUCTION)}>${escapeXml(labels.castOn)}</text>`,
+    );
+  }
+  if (labels.brimEndRc) {
+    parts.push(
+      `<text class="hat-shaping-diagram__brim-body-rc" x="${fmtNum(labelX)}" y="${fmtNum(frame.brimTop + 4)}" text-anchor="end" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_CONSTRUCTION)}>${escapeXml(labels.brimEndRc)}</text>`,
+    );
+  }
+  if (labels.crownBeginRc) {
+    parts.push(
+      `<text class="hat-shaping-diagram__crown-begin-rc" x="${fmtNum(labelX)}" y="${fmtNum(frame.bodyTop + 4)}" text-anchor="end" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_CONSTRUCTION)}>${escapeXml(labels.crownBeginRc)}</text>`,
     );
   }
 
-  const bottomY = frame.hatBottom + 28;
-  parts.push(
-    `<line x1="${fmtNum(frame.hatLeft)}" y1="${fmtNum(bottomY)}" x2="${fmtNum(frame.hatRight)}" y2="${fmtNum(bottomY)}" stroke="${ARROW}" stroke-width="1.5" fill="none"/>`,
-    arrowHead(frame.hatLeft, bottomY, "left"),
-    arrowHead(frame.hatRight, bottomY, "right"),
-    `<text x="${fmtNum(frame.hatMidX)}" y="${fmtNum(bottomY + 22)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(labels.castOn)}</text>`,
-    `<text x="${fmtNum(frame.hatMidX)}" y="${fmtNum(bottomY + 42)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_MEASURE)}>${escapeXml(labels.circumference)}</text>`,
-  );
-
+  parts.push(`</g>`);
   return parts.join("");
 }
 
 /**
- * Build a responsive Japanese-notation SVG from the finalized hat calc.
- * Notation tokens reuse shared formatters (`coN`, `Nr`, `Ns-Mr-Kx`).
+ * Build a responsive shaping-notation SVG from the finalized hat calc.
+ * Crown shaping tokens reuse shared formatters (`Ns-Mr-Kx`).
  */
-export function buildHatJapaneseNotationDiagramSvg(
+export function buildHatShapingNotationDiagramSvg(
   calc: HatPatternCalc,
-  unit: HatPatternDiagramUnit,
-  formatters: HatPatternDiagramFormatters,
+  _unit: HatPatternDiagramUnit,
+  _formatters: HatPatternDiagramFormatters,
 ): string {
-  const frame = buildJpFrame(calc);
-  const labels = buildJpLabels(calc, unit, formatters);
+  const frame = buildShapingFrame(calc);
+  const labels = buildShapingLabels(calc);
   const crownAttr =
     frame.crownKind === "wedge"
       ? "wedge-4-decrease"
@@ -567,9 +451,9 @@ export function buildHatJapaneseNotationDiagramSvg(
 
   const body = [
     drawBrim(frame, labels),
-    drawBody(frame, labels),
+    drawBody(frame),
     drawCrown(frame, labels),
-    drawMeasurements(frame, labels),
+    drawConstructionLabels(frame, labels),
   ].join("");
 
   const safeBody = body
@@ -577,11 +461,11 @@ export function buildHatJapaneseNotationDiagramSvg(
     .replace(/\bInfinity\b/g, "0")
     .replace(/\bundefined\b/g, "");
 
-  const desc = `Japanese-notation schematic for a hat with ${labels.brimLabel.toLowerCase()}, body ${labels.bodyRows || "straight section"}, and ${crownAttr} crown. Cast on ${labels.castOn}, finished circumference ${labels.circumference}, total length ${labels.totalLength}.`;
+  const desc = `Shaping-notation schematic for a hat with ${labels.brimLabel.toLowerCase()} and ${crownAttr} crown. ${labels.castOn}. ${labels.brimEndRc}. ${labels.crownBeginRc}.`;
 
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" class="hat-japanese-notation-diagram-svg" viewBox="0 0 ${VB_W} ${VB_H}" role="img" aria-labelledby="hat-jp-diagram-title" data-hat-japanese-diagram="true" data-crown="${crownAttr}" data-brim="${frame.brimType}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet">`,
-    `<title id="hat-jp-diagram-title">${escapeXml(labels.title)}</title>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" class="hat-shaping-notation-diagram-svg" viewBox="0 0 ${VB_W} ${VB_H}" role="img" aria-labelledby="hat-shaping-diagram-title" data-hat-shaping-diagram="true" data-crown="${crownAttr}" data-brim="${frame.brimType}" width="100%" height="auto" preserveAspectRatio="xMidYMid meet">`,
+    `<title id="hat-shaping-diagram-title">${escapeXml(labels.title)}</title>`,
     `<desc>${escapeXml(desc)}</desc>`,
     `<style type="text/css"><![CDATA[text{font-family:${FONT}}]]></style>`,
     `<rect x="0" y="0" width="${VB_W}" height="${VB_H}" fill="#fff"/>`,
@@ -591,4 +475,4 @@ export function buildHatJapaneseNotationDiagramSvg(
 }
 
 /** Exported for tests — stable viewBox dimensions. */
-export const HAT_JAPANESE_NOTATION_VIEWBOX = { width: VB_W, height: VB_H } as const;
+export const HAT_SHAPING_NOTATION_VIEWBOX = { width: VB_W, height: VB_H } as const;

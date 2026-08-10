@@ -7,7 +7,6 @@ import {
   formatLengthWithUnit,
 } from "../../../components/wizards/utils/unitHelpers";
 import { SHAPING_NOTATION_CHART_HELP_VIMEO_ID } from "../../glossary/shapingNotationGlossary";
-import { formatBodyRowsNotation, formatCastOnNotation } from "../sleevelessBackJapaneseNotation";
 import { formatShapingSegment } from "../shapingNotationCompress";
 import {
   applyHatCrownCastOnAdjustment,
@@ -16,16 +15,18 @@ import {
   calculateHatPattern,
 } from "./hatMath";
 import {
-  buildHatJapaneseNotationDiagramSvg,
-  HAT_JAPANESE_NOTATION_VIEWBOX,
-} from "./hatJapaneseNotationDiagramSvg";
+  buildHatShapingNotationDiagramSvg,
+  formatHatShapingCastOnLabel,
+  formatHatShapingRcLabel,
+  HAT_SHAPING_NOTATION_VIEWBOX,
+} from "./hatShapingNotationDiagramSvg";
 import {
-  HAT_JAPANESE_NOTATION_HELP_LABEL,
-  HAT_JAPANESE_NOTATION_HELP_VIMEO_ID,
-  buildHatJapaneseNotationHelpHtml,
-} from "./hatJapaneseNotationHelp";
+  HAT_SHAPING_NOTATION_HELP_LABEL,
+  HAT_SHAPING_NOTATION_HELP_VIMEO_ID,
+  buildHatShapingNotationHelpHtml,
+} from "./hatShapingNotationHelp";
 import {
-  HAT_DIAGRAM_TAB_JAPANESE,
+  HAT_DIAGRAM_TAB_SHAPING,
   HAT_DIAGRAM_TAB_STS_ROWS,
   activateHatDiagramTab,
   buildHatPatternDiagramTabsShellHtml,
@@ -101,7 +102,7 @@ function makeStubEl(tag: string, attrs: Record<string, string> = {}): StubEl {
     tagName: tag.toUpperCase(),
     tabIndex: attrs.tabindex != null ? Number(attrs.tabindex) : 0,
     classList: {
-      toggle(name: string, force?: boolean) {
+      toggle(name, force?: boolean) {
         if (force === true) classes.add(name);
         else if (force === false) classes.delete(name);
         else if (classes.has(name)) classes.delete(name);
@@ -173,8 +174,8 @@ function buildTabsStubRoot(): StubEl {
     tabindex: "0",
     role: "tab",
   });
-  const jpTab = makeStubEl("button", {
-    "data-hat-diagram-tab": HAT_DIAGRAM_TAB_JAPANESE,
+  const shapingTab = makeStubEl("button", {
+    "data-hat-diagram-tab": HAT_DIAGRAM_TAB_SHAPING,
     "aria-selected": "false",
     tabindex: "-1",
     role: "tab",
@@ -183,12 +184,12 @@ function buildTabsStubRoot(): StubEl {
     "data-hat-diagram-panel": HAT_DIAGRAM_TAB_STS_ROWS,
     role: "tabpanel",
   });
-  const jpPanel = makeStubEl("div", {
-    "data-hat-diagram-panel": HAT_DIAGRAM_TAB_JAPANESE,
+  const shapingPanel = makeStubEl("div", {
+    "data-hat-diagram-panel": HAT_DIAGRAM_TAB_SHAPING,
     role: "tabpanel",
     hidden: "",
   });
-  root._children.push(stsTab, jpTab, stsPanel, jpPanel);
+  root._children.push(stsTab, shapingTab, stsPanel, shapingPanel);
   return root;
 }
 
@@ -198,19 +199,21 @@ describe("hat pattern diagram tabs", () => {
 
     expect(html).toContain('role="tablist"');
     expect(html).toContain('data-testid="hat-diagram-tab-sts-rows"');
-    expect(html).toContain('data-testid="hat-diagram-tab-japanese"');
+    expect(html).toContain('data-testid="hat-diagram-tab-shaping-notation"');
+    expect(html).toContain("Shaping Notation");
+    expect(html).not.toContain("Japanese Notation");
     expect(html).toContain('aria-controls="hat-diagram-panel-sts-rows"');
-    expect(html).toContain('aria-controls="hat-diagram-panel-japanese"');
+    expect(html).toContain('aria-controls="hat-diagram-panel-shaping-notation"');
     expect(html).toMatch(
       /data-hat-diagram-tab="sts-rows"[^>]*aria-selected="true"/,
     );
     expect(html).toMatch(
-      /data-hat-diagram-tab="japanese"[^>]*aria-selected="false"/,
+      /data-hat-diagram-tab="shaping-notation"[^>]*aria-selected="false"/,
     );
     expect(html).toContain('data-hat-diagram-panel="sts-rows"');
-    expect(html).toContain('data-hat-diagram-panel="japanese"');
+    expect(html).toContain('data-hat-diagram-panel="shaping-notation"');
     expect(html).toMatch(
-      /data-hat-diagram-panel="japanese"[^>]*\bhidden\b/,
+      /data-hat-diagram-panel="shaping-notation"[^>]*\bhidden\b/,
     );
     expect(html).not.toMatch(
       /data-hat-diagram-panel="sts-rows"[^>]*\bhidden\b/,
@@ -219,23 +222,23 @@ describe("hat pattern diagram tabs", () => {
 
   it("only shows the selected tab panel on screen", () => {
     const root = buildTabsStubRoot();
-    activateHatDiagramTab(root as unknown as ParentNode, HAT_DIAGRAM_TAB_JAPANESE);
+    activateHatDiagramTab(root as unknown as ParentNode, HAT_DIAGRAM_TAB_SHAPING);
 
     const stsPanel = root.querySelector('[data-hat-diagram-panel="sts-rows"]')!;
-    const jpPanel = root.querySelector('[data-hat-diagram-panel="japanese"]')!;
+    const shapingPanel = root.querySelector('[data-hat-diagram-panel="shaping-notation"]')!;
     const stsTab = root.querySelector('[data-hat-diagram-tab="sts-rows"]')!;
-    const jpTab = root.querySelector('[data-hat-diagram-tab="japanese"]')!;
+    const shapingTab = root.querySelector('[data-hat-diagram-tab="shaping-notation"]')!;
 
     expect(stsPanel.hasAttribute("hidden")).toBe(true);
-    expect(jpPanel.hasAttribute("hidden")).toBe(false);
+    expect(shapingPanel.hasAttribute("hidden")).toBe(false);
     expect(stsTab.getAttribute("aria-selected")).toBe("false");
-    expect(jpTab.getAttribute("aria-selected")).toBe("true");
-    expect(jpTab.tabIndex).toBe(0);
+    expect(shapingTab.getAttribute("aria-selected")).toBe("true");
+    expect(shapingTab.tabIndex).toBe(0);
     expect(stsTab.tabIndex).toBe(-1);
 
     activateHatDiagramTab(root as unknown as ParentNode, HAT_DIAGRAM_TAB_STS_ROWS);
     expect(stsPanel.hasAttribute("hidden")).toBe(false);
-    expect(jpPanel.hasAttribute("hidden")).toBe(true);
+    expect(shapingPanel.hasAttribute("hidden")).toBe(true);
   });
 
   it("supports keyboard switching between tabs", () => {
@@ -245,137 +248,204 @@ describe("hat pattern diagram tabs", () => {
     initHatPatternDiagramTabs(mount as unknown as ParentNode);
 
     const stsTab = root.querySelector('[data-hat-diagram-tab="sts-rows"]')!;
-    const jpTab = root.querySelector('[data-hat-diagram-tab="japanese"]')!;
+    const shapingTab = root.querySelector('[data-hat-diagram-tab="shaping-notation"]')!;
 
     stsTab.dispatchKey("ArrowRight");
-    expect(jpTab.getAttribute("aria-selected")).toBe("true");
-    expect(root.querySelector('[data-hat-diagram-panel="japanese"]')!.hasAttribute("hidden")).toBe(
-      false,
-    );
+    expect(shapingTab.getAttribute("aria-selected")).toBe("true");
+    expect(
+      root.querySelector('[data-hat-diagram-panel="shaping-notation"]')!.hasAttribute("hidden"),
+    ).toBe(false);
 
-    jpTab.dispatchKey("ArrowLeft");
+    shapingTab.dispatchKey("ArrowLeft");
     expect(stsTab.getAttribute("aria-selected")).toBe("true");
 
     stsTab.dispatchKey("End");
-    expect(jpTab.getAttribute("aria-selected")).toBe("true");
+    expect(shapingTab.getAttribute("aria-selected")).toBe("true");
 
-    jpTab.dispatchKey("Home");
+    shapingTab.dispatchKey("Home");
     expect(stsTab.getAttribute("aria-selected")).toBe("true");
   });
 
-  it("places the Japanese-notation help only in the Japanese panel", () => {
+  it("places the shaping-notation help only in the Shaping Notation panel", () => {
     const html = buildHatPatternDiagramTabsShellHtml();
-    const jpStart = html.indexOf('data-hat-diagram-panel="japanese"');
+    const shapingStart = html.indexOf('data-hat-diagram-panel="shaping-notation"');
     const stsStart = html.indexOf('data-hat-diagram-panel="sts-rows"');
-    expect(jpStart).toBeGreaterThan(-1);
+    expect(shapingStart).toBeGreaterThan(-1);
     expect(stsStart).toBeGreaterThan(-1);
 
-    const jpChunk = html.slice(jpStart);
-    const stsChunk = html.slice(stsStart, jpStart);
-    expect(jpChunk).toContain(HAT_JAPANESE_NOTATION_HELP_LABEL);
-    expect(jpChunk).toContain(`data-vimeo-id="${HAT_JAPANESE_NOTATION_HELP_VIMEO_ID}"`);
-    expect(stsChunk).not.toContain("data-hat-japanese-notation-help");
-    expect(HAT_JAPANESE_NOTATION_HELP_VIMEO_ID).toBe(SHAPING_NOTATION_CHART_HELP_VIMEO_ID);
-    expect(buildHatJapaneseNotationHelpHtml()).toContain("kbm-kin-catalog-video");
+    const shapingChunk = html.slice(shapingStart);
+    const stsChunk = html.slice(stsStart, shapingStart);
+    expect(shapingChunk).toContain(HAT_SHAPING_NOTATION_HELP_LABEL);
+    expect(shapingChunk).toContain("How to Read Shaping Notation");
+    expect(shapingChunk).not.toContain("Japanese Notation");
+    expect(shapingChunk).toContain(`data-vimeo-id="${HAT_SHAPING_NOTATION_HELP_VIMEO_ID}"`);
+    expect(stsChunk).not.toContain("data-hat-shaping-notation-help");
+    expect(HAT_SHAPING_NOTATION_HELP_VIMEO_ID).toBe(SHAPING_NOTATION_CHART_HELP_VIMEO_ID);
+    expect(buildHatShapingNotationHelpHtml()).toContain("kbm-kin-catalog-video");
   });
 
   it("print markup includes both labeled diagrams and excludes interactive chrome classes", () => {
     const html = buildHatPatternDiagramTabsShellHtml();
     expect(html).toContain('class="hat-pattern-diagram-tabs__list no-print"');
-    expect(html).toContain("hat-pattern-diagram-jp-help no-print");
+    expect(html).toContain("hat-pattern-diagram-shaping-help no-print");
     expect(html).toContain(
       '<h3 class="hat-pattern-diagram-print-heading">Stitches &amp; Rows</h3>',
     );
     expect(html).toContain(
-      '<h3 class="hat-pattern-diagram-print-heading">Japanese Notation</h3>',
+      '<h3 class="hat-pattern-diagram-print-heading">Shaping Notation</h3>',
     );
+    expect(html).not.toContain("Japanese Notation");
 
     const page = readFileSync(join(srcRoot, "pages/patterns/hat/pattern.astro"), "utf8");
     expect(page).toContain(".hat-pattern-diagram-tabs__panel[hidden]");
     expect(page).toContain("display: block !important");
     expect(page).toContain(".hat-pattern-diagram-print-heading");
     expect(page).toContain(".hat-pattern-diagram-tabs__list");
-    expect(page).toContain(".hat-pattern-diagram-jp-help");
+    expect(page).toContain(".hat-pattern-diagram-shaping-help");
+    expect(page).not.toContain("Japanese Notation");
   });
 });
 
-describe("buildHatJapaneseNotationDiagramSvg", () => {
+describe("buildHatShapingNotationDiagramSvg", () => {
   it("uses a stable viewBox and preserveAspectRatio distinct from Stitches & Rows", () => {
     const calc = calcFor();
-    const jp = buildHatJapaneseNotationDiagramSvg(calc, "inches", formatters);
+    const shaping = buildHatShapingNotationDiagramSvg(calc, "inches", formatters);
     const sts = buildHatPatternDiagramSvg(calc, "inches", formatters);
 
-    expect(jp).toContain(
-      `viewBox="0 0 ${HAT_JAPANESE_NOTATION_VIEWBOX.width} ${HAT_JAPANESE_NOTATION_VIEWBOX.height}"`,
+    expect(shaping).toContain(
+      `viewBox="0 0 ${HAT_SHAPING_NOTATION_VIEWBOX.width} ${HAT_SHAPING_NOTATION_VIEWBOX.height}"`,
     );
-    expect(jp).toContain('preserveAspectRatio="xMidYMid meet"');
-    expect(jp).toContain('width="100%"');
-    expect(jp).toContain('height="auto"');
-    expect(jp).toContain('data-hat-japanese-diagram="true"');
-    expect(jp).not.toContain('data-hat-diagram="true"');
+    expect(shaping).toContain('preserveAspectRatio="xMidYMid meet"');
+    expect(shaping).toContain('width="100%"');
+    expect(shaping).toContain('height="auto"');
+    expect(shaping).toContain('data-hat-shaping-diagram="true"');
+    expect(shaping).not.toContain('data-hat-diagram="true"');
     expect(sts).toContain('data-hat-diagram="true"');
     expect(sts).toContain('viewBox="0 0 430 460"');
-    expect(jp).not.toContain('viewBox="0 0 430 460"');
+    expect(shaping).not.toContain('viewBox="0 0 430 460"');
   });
 
-  it("reuses finalized calc stitch/row math and shared notation formatters", () => {
-    const calc = withFourWedge(calcFor({ crown: "wedge-4-decrease" }));
+  it("shows cast-on and section RC labels from the finalized calc", () => {
+    const calc = calcFor();
     const patternCastOn = applyHatCrownCastOnAdjustment(calc.castOnSts, calc.crown);
-    const svg = buildHatJapaneseNotationDiagramSvg(calc, "inches", formatters);
+    const svg = buildHatShapingNotationDiagramSvg(calc, "inches", formatters);
 
-    expect(svg).toContain(formatCastOnNotation(patternCastOn));
-    expect(svg).toContain(formatBodyRowsNotation(calc.brimRows));
-    expect(svg).toContain(formatBodyRowsNotation(calc.bodyRows));
-    expect(svg).toContain(formatLengthWithUnit(calc.hatHeight, "inches"));
-    expect(svg).toContain(formatLengthWithUnit(calc.targetWidth, "inches"));
+    expect(svg).toContain(formatHatShapingCastOnLabel(patternCastOn));
+    expect(svg).toContain(
+      formatHatShapingRcLabel(calc.brimRows, "Brim ends / Body begins"),
+    );
+    expect(svg).toContain(
+      formatHatShapingRcLabel(calc.brimRows + calc.bodyRows, "Begin shaping"),
+    );
+    expect(svg).toContain('data-hat-shaping-construction-labels="true"');
     expect(svg).not.toMatch(/\bNaN\b/);
   });
 
-  it("changes structure for each crown style", () => {
-    const gathered = buildHatJapaneseNotationDiagramSvg(
-      calcFor({ crown: "gathered" }),
-      "inches",
-      formatters,
+  it("updates construction labels when size or length changes", () => {
+    const adult = calcFor({ finishedHatCircInches: 22, totalHatLengthInches: 9 });
+    const custom = calcFor({
+      finishedHatCircInches: 18.5,
+      totalHatLengthInches: 7.25,
+      fit: "custom",
+    });
+    const adultSvg = buildHatShapingNotationDiagramSvg(adult, "inches", formatters);
+    const customSvg = buildHatShapingNotationDiagramSvg(custom, "inches", formatters);
+
+    const adultCo = formatHatShapingCastOnLabel(
+      applyHatCrownCastOnAdjustment(adult.castOnSts, adult.crown),
     );
-    const wedge = buildHatJapaneseNotationDiagramSvg(
+    const customCo = formatHatShapingCastOnLabel(
+      applyHatCrownCastOnAdjustment(custom.castOnSts, custom.crown),
+    );
+    expect(adultSvg).toContain(adultCo);
+    expect(customSvg).toContain(customCo);
+    expect(adultCo).not.toBe(customCo);
+
+    const adultBrimRc = formatHatShapingRcLabel(adult.brimRows, "Brim ends / Body begins");
+    const customBrimRc = formatHatShapingRcLabel(custom.brimRows, "Brim ends / Body begins");
+    expect(adultSvg).toContain(adultBrimRc);
+    expect(customSvg).toContain(customBrimRc);
+
+    const adultCrownRc = formatHatShapingRcLabel(
+      adult.brimRows + adult.bodyRows,
+      "Begin shaping",
+    );
+    const customCrownRc = formatHatShapingRcLabel(
+      custom.brimRows + custom.bodyRows,
+      "Begin shaping",
+    );
+    expect(adultSvg).toContain(adultCrownRc);
+    expect(customSvg).toContain(customCrownRc);
+    expect(adultCrownRc).not.toBe(customCrownRc);
+  });
+
+  it("omits measurement arrows, dimension lines, and finished-size callouts", () => {
+    const svg = buildHatShapingNotationDiagramSvg(
       withFourWedge(calcFor({ crown: "wedge-4-decrease" })),
       "inches",
       formatters,
     );
-    const spiral = buildHatJapaneseNotationDiagramSvg(
-      calcFor({ crown: "spiral" }),
+    // Arrowheads / dimension ticks used by the Stitches & Rows diagram.
+    expect(svg).not.toContain("<polygon");
+    expect(svg).not.toContain("Total");
+    expect(svg).not.toMatch(/\d+(\.\d+)?\s*(inches|cm)\b/i);
+    // Old measurement callouts like "6r / 1.0 inches" — not Ns-Mr-Kx crown notation.
+    expect(svg).not.toMatch(/\d+r\s*\/\s*\d/);
+    expect(svg).not.toContain(formatLengthWithUnit(8.5, "inches"));
+    expect(svg).not.toContain(formatLengthWithUnit(20.5, "inches"));
+  });
+
+  it("keeps Stitches & Rows as a measurement diagram with lengths", () => {
+    const calc = calcFor();
+    const sts = buildHatPatternDiagramSvg(calc, "inches", formatters);
+    expect(sts).toContain(formatLengthWithUnit(calc.hatHeight, "inches"));
+    expect(sts).toContain(formatLengthWithUnit(calc.targetWidth, "inches"));
+    expect(sts).toContain("<polygon");
+  });
+
+  it("changes structure for each crown style and keeps crown shaping notation", () => {
+    const gathered = buildHatShapingNotationDiagramSvg(
+      calcFor({ crown: "gathered" }),
       "inches",
       formatters,
     );
+    const wedge = buildHatShapingNotationDiagramSvg(
+      withFourWedge(calcFor({ crown: "wedge-4-decrease" })),
+      "inches",
+      formatters,
+    );
+    const spiralCalc = calcFor({ crown: "spiral" });
+    const spiralPlan = spiralCalc.crownPlan.spiral!;
+    const spiral = buildHatShapingNotationDiagramSvg(spiralCalc, "inches", formatters);
 
     expect(gathered).toContain('data-crown="gathered"');
     expect(gathered).toContain("EO xfer");
     expect(gathered).toContain("gather");
-    expect(gathered).not.toContain("hat-jp-diagram__crown--four-gore");
+    expect(gathered).not.toContain("hat-shaping-diagram__crown--four-gore");
 
     expect(wedge).toContain('data-crown="wedge-4-decrease"');
-    expect(wedge).toContain("hat-jp-diagram__crown--four-gore");
+    expect(wedge).toContain("hat-shaping-diagram__crown--four-gore");
     expect(wedge).toContain(">#1<");
     expect(wedge).toContain("ea edge");
 
     expect(spiral).toContain('data-crown="spiral"');
-    expect(spiral).toContain("hat-jp-diagram__crown--swirl");
-    expect(spiral).toContain("6 pts");
-    expect(spiral).toContain("→ 6 sts");
+    expect(spiral).toContain("hat-shaping-diagram__crown--swirl");
+    expect(spiral).toContain(`${spiralPlan.decreasePoints} pts`);
+    expect(spiral).toContain(`→ ${spiralPlan.targetStitches} sts`);
   });
 
   it("represents each brim type", () => {
-    const single = buildHatJapaneseNotationDiagramSvg(
+    const single = buildHatShapingNotationDiagramSvg(
       calcFor({ brimType: "single" }),
       "inches",
       formatters,
     );
-    const folded = buildHatJapaneseNotationDiagramSvg(
+    const folded = buildHatShapingNotationDiagramSvg(
       calcFor({ brimType: "folded" }),
       "inches",
       formatters,
     );
-    const rolled = buildHatJapaneseNotationDiagramSvg(
+    const rolled = buildHatShapingNotationDiagramSvg(
       calcFor({ brimType: "rolled" }),
       "inches",
       formatters,
@@ -385,53 +455,10 @@ describe("buildHatJapaneseNotationDiagramSvg", () => {
     expect(single).toContain("Single Layer");
     expect(folded).toContain('data-brim="folded"');
     expect(folded).toContain("Folded Hem");
-    expect(folded).toContain("hat-jp-diagram__brim-fold");
+    expect(folded).toContain("hat-shaping-diagram__brim-fold");
     expect(rolled).toContain('data-brim="rolled"');
     expect(rolled).toContain("Rolled Brim");
-    expect(rolled).toContain("hat-jp-diagram__brim-roll");
-  });
-
-  it("reflects named vs custom sizes and lengths in displayed measurements", () => {
-    const adult = buildHatJapaneseNotationDiagramSvg(
-      calcFor({ finishedHatCircInches: 22, totalHatLengthInches: 9 }),
-      "inches",
-      formatters,
-    );
-    const custom = buildHatJapaneseNotationDiagramSvg(
-      calcFor({
-        finishedHatCircInches: 18.5,
-        totalHatLengthInches: 7.25,
-        fit: "custom",
-      }),
-      "inches",
-      formatters,
-    );
-
-    expect(adult).toContain(formatLengthWithUnit(22, "inches"));
-    expect(adult).toContain(formatLengthWithUnit(9, "inches"));
-    expect(custom).toContain(formatLengthWithUnit(18.5, "inches"));
-    expect(custom).toContain(formatLengthWithUnit(7.25, "inches"));
-    expect(adult).not.toContain(formatLengthWithUnit(18.5, "inches"));
-  });
-
-  it("unit switching changes displayed measurements without changing stitch/row notation", () => {
-    const calc = calcFor();
-    const inches = buildHatJapaneseNotationDiagramSvg(calc, "inches", formatters);
-    const cm = buildHatJapaneseNotationDiagramSvg(calc, "cm", formatters);
-    const castOn = formatCastOnNotation(
-      applyHatCrownCastOnAdjustment(calc.castOnSts, calc.crown),
-    );
-    const bodyRows = formatBodyRowsNotation(calc.bodyRows);
-
-    expect(inches).toContain(castOn);
-    expect(cm).toContain(castOn);
-    expect(inches).toContain(bodyRows);
-    expect(cm).toContain(bodyRows);
-    expect(inches).toContain(formatLengthWithUnit(calc.hatHeight, "inches"));
-    expect(cm).toContain(
-      formatLengthWithUnit(convertLength(calc.hatHeight, "inches", "cm"), "cm"),
-    );
-    expect(cm).not.toContain(formatLengthWithUnit(calc.hatHeight, "inches"));
+    expect(rolled).toContain("hat-shaping-diagram__brim-roll");
   });
 
   it("four-gore notation matches the shared decrease schedule", () => {
@@ -441,7 +468,7 @@ describe("buildHatJapaneseNotationDiagramSvg", () => {
       setup.wedgeStitchCount,
       calc.crownRowCount,
     );
-    const svg = buildHatJapaneseNotationDiagramSvg(calc, "inches", formatters);
+    const svg = buildHatShapingNotationDiagramSvg(calc, "inches", formatters);
     if (schedule.decreaseCount > 0) {
       expect(svg).toContain(
         formatShapingSegment(1, schedule.rowFrequency, schedule.decreaseCount),
@@ -453,7 +480,7 @@ describe("buildHatJapaneseNotationDiagramSvg", () => {
   it("spiral notation uses crownPlan.spiral values", () => {
     const calc = calcFor({ crown: "spiral" });
     const spiral = calc.crownPlan.spiral!;
-    const svg = buildHatJapaneseNotationDiagramSvg(calc, "inches", formatters);
+    const svg = buildHatShapingNotationDiagramSvg(calc, "inches", formatters);
     if (spiral.gradual > 0) {
       expect(svg).toContain(
         formatShapingSegment(spiral.decreasePoints, 2, spiral.gradual),
@@ -465,6 +492,16 @@ describe("buildHatJapaneseNotationDiagramSvg", () => {
       );
     }
   });
+
+  it("has no user-facing Japanese Notation wording", () => {
+    const svg = buildHatShapingNotationDiagramSvg(
+      withFourWedge(calcFor({ crown: "wedge-4-decrease" })),
+      "inches",
+      formatters,
+    );
+    expect(svg.toLowerCase()).not.toContain("japanese");
+    expect(svg).toContain("shaping notation");
+  });
 });
 
 describe("hat pattern page diagram wiring", () => {
@@ -475,8 +512,10 @@ describe("hat pattern page diagram wiring", () => {
     expect(pageScript).toContain("buildHatPatternDiagramTabsShellHtml");
     expect(pageScript).toContain("initHatPatternDiagramTabs");
     expect(pageScript).toContain("buildHatPatternDiagramSvg");
-    expect(pageScript).toContain("buildHatJapaneseNotationDiagramSvg");
+    expect(pageScript).toContain("buildHatShapingNotationDiagramSvg");
+    expect(pageScript).not.toContain("buildHatJapaneseNotationDiagramSvg");
     expect(pageScript).toContain("data-hat-diagram-tabs-mount");
+    expect(pageScript).toContain("data-hat-diagram-shaping-host");
     expect(page).toContain("data-hat-diagram-tabs-mount");
     expect(page).not.toContain("data-hat-diagram-host");
   });

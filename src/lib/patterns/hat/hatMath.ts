@@ -522,7 +522,7 @@ export function buildFourWedgeCrownSetup(args: {
 
 /**
  * Per-wedge decrease schedule for four-gore crowns.
- * Shared by written instructions and the Japanese-notation diagram — not a second calc path.
+ * Shared by written instructions and the shaping-notation diagram — not a second calc path.
  */
 export type HatFourWedgeDecreaseSchedule = {
   finalWedgeStitchCount: number;

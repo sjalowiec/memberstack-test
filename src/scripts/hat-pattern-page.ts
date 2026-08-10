@@ -12,7 +12,7 @@ import { getViewerAccessState, type ViewerAccessState } from "../lib/memberAcces
 import { buildHatSizingBuilderRows } from "../lib/patterns/hat/hatBuilderSizingLabels";
 import { ensureHatDraftMigrated, readHatDraft } from "../lib/patterns/hat/hatDraft";
 import { buildHatPatternDiagramSvg } from "../lib/patterns/hat/hatPatternDiagramSvg";
-import { buildHatJapaneseNotationDiagramSvg } from "../lib/patterns/hat/hatJapaneseNotationDiagramSvg";
+import { buildHatShapingNotationDiagramSvg } from "../lib/patterns/hat/hatShapingNotationDiagramSvg";
 import {
   buildHatPatternDiagramTabsShellHtml,
   initHatPatternDiagramTabs,
@@ -368,9 +368,9 @@ export async function renderHatPattern() {
       }); // default mode: "pattern" — keeps stitch/row construction counts
     }
 
-    const jpHost = diagramHost.querySelector("[data-hat-diagram-japanese-host]");
-    if (jpHost instanceof HTMLElement) {
-      jpHost.innerHTML = buildHatJapaneseNotationDiagramSvg(calc, unit, {
+    const shapingHost = diagramHost.querySelector("[data-hat-diagram-shaping-host]");
+    if (shapingHost instanceof HTMLElement) {
+      shapingHost.innerHTML = buildHatShapingNotationDiagramSvg(calc, unit, {
         convertLength,
         formatLengthWithUnit,
       });
