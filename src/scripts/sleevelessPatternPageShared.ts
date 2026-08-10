@@ -66,6 +66,14 @@ import {
   isDropShoulderBodyJapaneseNotationSupported,
 } from "../lib/patterns/dropShoulderBodyJapaneseNotation.ts";
 import { hasAuthoritativeDropShoulderConstruction } from "../lib/patterns/patternConstructionIdentity.ts";
+import {
+  dispatchGarmentYarnDimensions,
+  garmentYarnDimensionsAreValid,
+} from "../lib/patterns/garmentYarnEstimation.ts";
+import {
+  initGarmentPatternYarnDrawer,
+  setGarmentPatternYarnActionVisible,
+} from "./garment-pattern-yarn-drawer.ts";
 import { rowCounterResetBlockHtml } from "../lib/patterns/rowCounterReset.ts";
 import {
   armholeLocalRcActiveShoulderChecklistStart,
@@ -371,6 +379,46 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       });
     }
     printBtn.style.display = "inline-flex";
+  }
+
+  /** Last successful yarn payload — re-pushed when the drawer opens. */
+  let garmentPatternLastYarnDetail = null;
+  let garmentPatternLastYarnUnit = /** @type {"in" | "cm"} */ ("in");
+  let garmentPatternLastYarnPatternData = null;
+  let garmentPatternLastYarnDropShoulderDebug = null;
+
+  function yarnLengthUnitFromDisplayUnit(unit) {
+    return unit === "cm" ? "cm" : "in";
+  }
+
+  /**
+   * Push finished garment dimensions into YarnRequirement after a successful pattern render
+   * (and again after Edit Pattern regenerates). Drop Shoulder requires sleeve debug inches.
+   */
+  function syncGarmentPatternYarnFromRender(patternData, unit, result) {
+    if (!isSleevelessWorkspacePatternPage()) return;
+    const lengthUnit = yarnLengthUnitFromDisplayUnit(unit);
+    const dropShoulderDebug = result?.isDropShoulder ? result.debug : undefined;
+    const detail = dispatchGarmentYarnDimensions(patternData, lengthUnit, {
+      dropShoulderDebug,
+    });
+    garmentPatternLastYarnDetail = detail;
+    garmentPatternLastYarnUnit = lengthUnit;
+    garmentPatternLastYarnPatternData = patternData;
+    garmentPatternLastYarnDropShoulderDebug = dropShoulderDebug ?? null;
+    setGarmentPatternYarnActionVisible(garmentYarnDimensionsAreValid(detail));
+  }
+
+  function clearGarmentPatternYarnAction() {
+    if (!isSleevelessWorkspacePatternPage()) return;
+    garmentPatternLastYarnDetail = null;
+    garmentPatternLastYarnPatternData = null;
+    garmentPatternLastYarnDropShoulderDebug = null;
+    dispatchGarmentYarnDimensions(
+      { fit: {}, style: {} },
+      garmentPatternLastYarnUnit,
+    );
+    setGarmentPatternYarnActionVisible(false);
   }
 
   function section(obj) {
@@ -4446,6 +4494,7 @@ table {
       if (mount) mount.innerHTML = "";
       syncSleevelessPatternInpageNav();
       setPatternTabsReadiness(tabsRoot, false);
+      clearGarmentPatternYarnAction();
       return;
     }
 
@@ -4482,6 +4531,7 @@ table {
 
     if (tryExpressNeedleFailSafeBlock(result, effectivePatternMerged, genInput)) {
       updateSleevelessPrintBasicsSummarySlot(patternMerged, patternData, false);
+      clearGarmentPatternYarnAction();
       return;
     }
 
@@ -4496,8 +4546,10 @@ table {
         ? readDropShoulderSleeveConstruction(String(getCurrentPattern().id || ""))
         : undefined,
     );
+    syncGarmentPatternYarnFromRender(genInput, unit, result);
     } catch (err) {
       console.error("[sleeveless] Pattern tab refresh failed:", err);
+      clearGarmentPatternYarnAction();
       const mount = document.querySelector("[data-sleeveless-mount]");
       if (mount instanceof HTMLElement) {
         mount.innerHTML =
@@ -4592,6 +4644,18 @@ table {
 
     window.kbmRefreshSleevelessPattern = refreshPatternTabContent;
     bindTabs();
+    if (isSleevelessWorkspacePatternPage()) {
+      initGarmentPatternYarnDrawer({
+        onOpen: () => {
+          if (!garmentPatternLastYarnPatternData) return;
+          dispatchGarmentYarnDimensions(
+            garmentPatternLastYarnPatternData,
+            garmentPatternLastYarnUnit,
+            { dropShoulderDebug: garmentPatternLastYarnDropShoulderDebug ?? undefined },
+          );
+        },
+      });
+    }
     void (async () => {
       await refreshPatternTabContent();
       if (hadTabPatternQuery) activateWizardTab("pattern", { skipRefresh: true });

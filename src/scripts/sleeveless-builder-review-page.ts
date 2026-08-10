@@ -15,7 +15,6 @@ import {
 } from "../lib/patterns/patternSystemId";
 import { resolveSleevelessUserAccess } from "../lib/patterns/sleevelessPatternSystemAccessClient";
 import { initSleevelessLockedBannerDismiss } from "./sleevelessLockedBannerDismiss";
-import { initExpressYarnDrawer } from "./sleeveless-express-measurements-page";
 import { initCustomBuildMeasurementsPage } from "./sleeveless-custom-build-measurements-page";
 import { flushExpressWizardToCanonicalPattern } from "../lib/patterns/flushExpressWizardToCanonicalPattern";
 import { loadExpressSweaterCharts } from "../lib/patterns/sleevelessExpressSizeChartClient";
@@ -150,7 +149,7 @@ async function initUnifiedSleevelessReviewPage(): Promise<void> {
     canEditSleevelessPatternSettings(access, resolvePatternSystemFromPage()) && !forceFree;
   applyReviewContinueButtonLabel(canEditSettings);
   configureReviewActions(advanced);
-  initExpressYarnDrawer();
+  // Yarn drawer lives on the finished pattern workspace — not on this legacy review script.
 
   if (advanced) {
     initCustomBuildMeasurementsPage({

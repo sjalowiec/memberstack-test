@@ -1,0 +1,70 @@
+---
+/**
+ * Shared How Much Yarn? drawer for finished sleeveless / drop-shoulder pattern pages.
+ * Pair with `#express-yarn-drawer-open` in the pattern action bar and hat-yarn-drawer-shell.css.
+ */
+import YarnRequirement from "../tools/YarnRequirement.astro";
+
+interface Props {
+  /** Drawer lede — construction-specific when useful. */
+  lede?: string;
+}
+
+const {
+  lede = "Quick estimate from a weighed swatch using this sweater’s finished size.",
+} = Astro.props;
+---
+
+<div
+  id="express-yarn-drawer"
+  class="hat-yarn-drawer no-print"
+  data-garment-yarn-drawer
+  aria-hidden="true"
+>
+  <div
+    id="express-yarn-drawer-panel"
+    class="hat-yarn-drawer-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="express-yarn-drawer-title"
+    aria-describedby="express-yarn-drawer-desc express-yarn-drawer-note"
+  >
+    <header class="hat-yarn-drawer-header">
+      <div class="hat-yarn-drawer-header-text">
+        <h2 id="express-yarn-drawer-title" class="hat-yarn-drawer-title">Check your yarn</h2>
+        <p id="express-yarn-drawer-desc" class="hat-yarn-drawer-lede">
+          {lede}
+        </p>
+        <p id="express-yarn-drawer-note" class="hat-yarn-drawer-note">
+          This is an estimate. Actual yarn use may vary with stitch pattern, ribbing, bands, shaping, and finishing.
+        </p>
+      </div>
+      <button type="button" class="hat-yarn-drawer-close" id="express-yarn-drawer-close" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M18 6L6 18M6 6l12 12"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          ></path>
+        </svg>
+      </button>
+    </header>
+    <div class="hat-yarn-drawer-body">
+      <YarnRequirement
+        variant="garment"
+        layout="panel"
+        presentation="drawer"
+        projectWidth={0}
+        projectLength={0}
+        lengthUnit="in"
+        source="custom"
+      />
+    </div>
+  </div>
+  <div
+    id="express-yarn-drawer-backdrop"
+    class="hat-yarn-drawer-backdrop"
+    aria-hidden="true"
+  ></div>
+</div>
