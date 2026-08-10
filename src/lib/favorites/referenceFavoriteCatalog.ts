@@ -27,6 +27,10 @@ const RAW_REFERENCE_ITEMS: RefItem[] = [
     href: "/reference/machines/silver-reed-vs-taitexma",
   },
   { title: "Machine Knitter's Bookshelf", href: "/reference/bookshelf" },
+  {
+    title: "The Best Knitting Machine Table... Ever!",
+    href: "/reference/knitting-machine-table",
+  },
   { title: "Machine Repairs", href: "/reference/repairs" },
   { title: "Machine Knitting Clubs", href: "/reference/clubs" },
   { title: "Machine Brands Worldwide", href: "/reference/machine-brands" },

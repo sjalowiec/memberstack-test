@@ -1,0 +1,259 @@
+---
+export const prerender = true;
+
+import Layout from "../../layouts/Layout.astro";
+import PageHead from "../../components/PageHead.astro";
+import FavoriteStar from "../../components/favorites/FavoriteStar.astro";
+import FavoritesRuntime from "../../components/favorites/FavoritesRuntime.astro";
+import { normalizeFavoriteHref } from "../../lib/favorites/favoriteHref";
+import "../../styles/favorites.css";
+
+const PAGE_H1 = "The Best Knitting Machine Table... Ever!";
+const SEO_TITLE = "Best Knitting Machine Table";
+const META_DESCRIPTION =
+  "A sturdy, height-adjustable knitting machine table recommendation from Knit It Now — stable enough for a bulky machine with ribber, with room for yarn and tools.";
+const CANONICAL_URL = "https://knititnow.com/reference/knitting-machine-table";
+const AMAZON_URL =
+  "https://www.amazon.com/gp/product/B071VFXPFB/ref=as_li_tl?ie=UTF8&tag=knititnow-20&camp=1789&creative=9325&linkCode=as2&creativeASIN=B071VFXPFB&linkId=3110375e7e6b40bd6e2b8763451655be";
+const FAVORITE_ID = normalizeFavoriteHref("/reference/knitting-machine-table");
+
+const PRIMARY_IMAGE = {
+  src: "/images/references/knitting-machine-table/ultra2.jpg",
+  alt: "Bulky knitting machine with green knitting on the needles, clamped to a wood-top height-adjustable workbench; yarn cones, a desk lamp, and small tools sit behind the machine.",
+};
+
+const SUPPORTING_IMAGE = {
+  src: "/images/references/knitting-machine-table/adjustable-knitting-machine-table.jpg",
+  alt: "Empty UltraHD height-adjustable workbench with a thick light-wood top and white metal legs, shown against a white background with a ghosted lower tabletop position.",
+};
+---
+
+<Layout
+  title={`${SEO_TITLE} | Knit it Now`}
+  description={META_DESCRIPTION}
+  bodyClass="page--tight-header"
+>
+  <Fragment slot="head">
+    <link rel="canonical" href={CANONICAL_URL} />
+  </Fragment>
+
+  <div class="km-table-shell">
+    <div class="page-nav">
+      <a class="page-nav__back" href="/reference">← Back to References</a>
+    </div>
+
+    <div class="page-wrap">
+      <article class="km-table-page">
+        <nav class="km-table-page__breadcrumb" aria-label="Breadcrumb">
+          <ol>
+            <li><a href="/">Home</a></li>
+            <li><span aria-hidden="true">/</span></li>
+            <li><a href="/reference">References</a></li>
+            <li><span aria-hidden="true">/</span></li>
+            <li><span aria-current="page">Knitting Machine Table</span></li>
+          </ol>
+        </nav>
+
+        <PageHead
+          title={PAGE_H1}
+          subhead="I’ve been using this table for years, and it is the sturdiest knitting machine table I’ve ever used."
+        >
+          {FAVORITE_ID ? (
+            <FavoriteStar
+              slot="after-title"
+              contentType="reference"
+              contentId={FAVORITE_ID}
+              title={PAGE_H1}
+            />
+          ) : null}
+        </PageHead>
+
+        <div class="km-table-page__lead">
+          <figure class="km-table-page__figure km-table-page__figure--primary">
+            <img
+              src={PRIMARY_IMAGE.src}
+              alt={PRIMARY_IMAGE.alt}
+              width="1200"
+              height="900"
+              loading="eager"
+              decoding="async"
+            />
+          </figure>
+
+          <div class="km-table-page__lead-copy">
+            <p>
+              Even my bulky knitting machine with a ribber won’t move it. There’s no
+              “walking,” no wobble, and the height is adjustable.
+            </p>
+            <p>
+              I’ve set mine up so I can stand while I knit. I find it easier on my
+              back and shoulders because I can use my legs as I push the carriage
+              back and forth.
+            </p>
+          </div>
+        </div>
+
+        <p>
+          An adjustable drafting chair gives me the best of both worlds. I can stand
+          while knitting rows, then sit when I’m doing hand manipulation or picking
+          up stitches.
+        </p>
+
+        <figure class="km-table-page__figure km-table-page__figure--support">
+          <img
+            src={SUPPORTING_IMAGE.src}
+            alt={SUPPORTING_IMAGE.alt}
+            width="1000"
+            height="750"
+            loading="lazy"
+            decoding="async"
+          />
+        </figure>
+
+        <aside class="kbm-intro-callout" aria-labelledby="km-table-essentials-heading">
+          <strong id="km-table-essentials-heading">Room for the Knitting Essentials</strong>
+          <p>
+            There is even room along the back for tools, accessories, and all those
+            odds and ends that seem to collect around a knitting machine.
+          </p>
+        </aside>
+
+        <div class="km-table-page__cta-block">
+          <a
+            class="kbm-btn kbm-btn-primary km-table-page__cta"
+            href={AMAZON_URL}
+            target="_blank"
+            rel="sponsored noopener noreferrer"
+          >
+            View the Table on Amazon
+          </a>
+          <p class="km-table-page__affiliate" role="note">
+            <em>Affiliate note: If you purchase through this link, Knit It Now may earn a
+            small commission at no additional cost to you.
+          </p>
+        </div>
+      </article>
+    </div>
+  </div>
+  {FAVORITE_ID ? <FavoritesRuntime contentType="reference" /> : null}
+</Layout>
+
+<style>
+  .km-table-shell :global(.page-nav) {
+    position: relative;
+    z-index: 5;
+    margin-top: 0;
+    padding-top: 1px;
+  }
+
+  .km-table-shell :global(.page-wrap) {
+    padding-top: 0;
+  }
+
+  .km-table-shell :global(.page-head) {
+    margin-top: 0;
+    margin-bottom: 1.25rem;
+    padding-top: 0;
+  }
+
+  .km-table-page {
+    margin-top: 0.25rem;
+    color: #333;
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+
+  .km-table-page p {
+    margin: 0 0 1.1rem;
+  }
+
+  .km-table-page__breadcrumb ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.5rem;
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+    font-size: 0.92rem;
+    color: #4b5563;
+  }
+
+  .km-table-page__breadcrumb a {
+    color: var(--kbm-green, #52682d);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .km-table-page__breadcrumb [aria-current="page"] {
+    color: #374151;
+    font-weight: 600;
+  }
+
+  .km-table-page__lead {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+    margin-bottom: 0.35rem;
+  }
+
+  @media (min-width: 768px) {
+    .km-table-page__lead {
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+      gap: 1.75rem;
+      align-items: start;
+    }
+  }
+
+  .km-table-page__lead-copy p:last-child {
+    margin-bottom: 0;
+  }
+
+  .km-table-page__figure {
+    margin: 0 0 1.35rem;
+  }
+
+  .km-table-page__figure--primary {
+    margin-bottom: 0;
+  }
+
+  .km-table-page__figure--support {
+    max-width: min(425px, 100%);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .km-table-page__figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+  }
+
+  .km-table-page :global(.kbm-intro-callout) {
+    margin: 1.5rem 0 1.75rem;
+  }
+
+  .km-table-page__cta-block {
+    margin: 0.5rem 0 1.5rem;
+    padding: 1.25rem 1.35rem;
+    background: #f7f8f5;
+    border: 1px solid #e4ebd6;
+    border-radius: 10px;
+  }
+
+  .km-table-page__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 48px;
+  }
+
+  .km-table-page__affiliate {
+    margin: 0.85rem 0 0 !important;
+    font-size: 0.95rem !important;
+    line-height: 1.5 !important;
+    color: #5a6350 !important;
+  }
+</style>
