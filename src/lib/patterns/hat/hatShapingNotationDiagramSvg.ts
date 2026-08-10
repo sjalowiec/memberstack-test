@@ -32,14 +32,19 @@ const MUTED = "#4b5563";
 const FONT = "Poppins, system-ui, Arial, sans-serif";
 
 const FS_SECTION = 18;
-const FS_NOTATION = 17;
+const FS_NOTATION = 16;
 const FS_SMALL = 14;
 const FS_CONSTRUCTION = 13;
 const FW_SECTION = 600;
+/** Vertical gap between stacked crown notation lines (baseline to baseline). */
+const CROWN_NOTATION_GAP = 22;
 
+/** Left gutter reserved so CO/RC labels stay inside the viewBox. */
+const LABEL_GUTTER = 72;
+const HAT_RIGHT_PAD = 24;
 const HAT_LEFT = 108;
 const HAT_RIGHT = 312;
-const HAT_TOP = 48;
+const HAT_TOP = 64;
 const HAT_BOTTOM = 400;
 
 function escapeXml(text: string): string {
@@ -70,12 +75,10 @@ export function formatHatShapingCastOnLabel(stitches: number): string {
   return n > 0 ? `CO ${n} sts` : "";
 }
 
-/** User-facing RC construction label (e.g. "RC 60 · Brim ends / Body begins"). */
-export function formatHatShapingRcLabel(rc: number, phrase: string): string {
+/** User-facing RC construction label (e.g. "RC 60"). Section meaning comes from the diagram. */
+export function formatHatShapingRcLabel(rc: number): string {
   const n = Math.max(0, Math.floor(rc));
-  const p = String(phrase ?? "").trim();
-  if (!p) return `RC ${n}`;
-  return `RC ${n} · ${p}`;
+  return `RC ${n}`;
 }
 
 type CrownKind = "gathered" | "wedge" | "spiral";
@@ -117,9 +120,9 @@ function buildShapingLabels(calc: HatPatternCalc): ShapingLabels {
   const brimType = resolveHatBrimType(calc.brimType);
   const patternCastOn = applyHatCrownCastOnAdjustment(calc.castOnSts, calc.crown);
   const castOn = formatHatShapingCastOnLabel(patternCastOn);
-  const brimEndRc = formatHatShapingRcLabel(calc.brimRows, "Brim ends / Body begins");
+  const brimEndRc = formatHatShapingRcLabel(calc.brimRows);
   const crownBeginRow = calc.brimRows + calc.bodyRows;
-  const crownBeginRc = formatHatShapingRcLabel(crownBeginRow, "Begin shaping");
+  const crownBeginRc = formatHatShapingRcLabel(crownBeginRow);
 
   const fourWedge =
     calc.fourWedgeCrownSetup ??
@@ -136,9 +139,10 @@ function buildShapingLabels(calc: HatPatternCalc): ShapingLabels {
 
   if (crownKind === "gathered") {
     title = "Gathered hat shaping notation diagram";
+    // Single stack: transfer · stitch count · gather (avoids overlapping callouts)
     crownLines.push("EO xfer");
+    crownLines.push(`${patternCastOn} sts`);
     crownLines.push("gather");
-    remaining = `${patternCastOn} sts`;
   } else if (crownKind === "wedge" && fourWedge) {
     title = "Four-gore hat shaping notation diagram";
     const schedule = buildFourWedgeDecreaseSchedule(
@@ -190,7 +194,7 @@ function buildShapingFrame(calc: HatPatternCalc): ShapingFrame {
   const bodyIn = Math.max(0.25, calc.bodyHeightInches || 0.25);
   const crownIn =
     crownKind === "gathered"
-      ? Math.max(0.4, Math.min(1.0, brimIn * 0.4))
+      ? Math.max(0.85, Math.min(1.35, brimIn * 0.55 + 0.55))
       : Math.max(0.5, calc.crownHeightInches || 0.5);
 
   const rawTotal = brimIn + bodyIn + crownIn;
@@ -200,7 +204,12 @@ function buildShapingFrame(calc: HatPatternCalc): ShapingFrame {
 
   brimVisual = clamp(brimVisual, 40, 120);
   bodyVisual = clamp(bodyVisual, 56, 180);
-  crownVisual = clamp(crownVisual, crownKind === "gathered" ? 44 : 64, 140);
+  // Gathered needs room for Crown heading + 3 notation lines without overlap.
+  crownVisual = clamp(
+    crownVisual,
+    crownKind === "gathered" ? 100 : crownKind === "spiral" ? 88 : 72,
+    150,
+  );
 
   let sum = brimVisual + bodyVisual + crownVisual;
   if (sum > usable) {
@@ -221,8 +230,9 @@ function buildShapingFrame(calc: HatPatternCalc): ShapingFrame {
   const circ = Number(calc.targetWidth);
   const widthScale =
     circ > 0 && Number.isFinite(circ) ? clamp(circ / REF_CIRC_INCHES, 0.55, 1.35) : 1;
-  const hatWidth = (HAT_RIGHT - HAT_LEFT) * widthScale;
-  const hatMidX = (HAT_LEFT + HAT_RIGHT) / 2;
+  const maxHatWidth = VB_W - LABEL_GUTTER - HAT_RIGHT_PAD;
+  const hatWidth = Math.min((HAT_RIGHT - HAT_LEFT) * widthScale, maxHatWidth);
+  const hatMidX = LABEL_GUTTER + hatWidth / 2 + (maxHatWidth - hatWidth) / 2;
   const hatLeft = hatMidX - hatWidth / 2;
   const hatRight = hatMidX + hatWidth / 2;
 
@@ -241,6 +251,22 @@ function buildShapingFrame(calc: HatPatternCalc): ShapingFrame {
     crownKind,
     brimType,
   };
+}
+
+/** Stack crown shaping lines with fixed baseline spacing; returns SVG text nodes. */
+function drawNotationStack(
+  lines: string[],
+  midX: number,
+  firstBaselineY: number,
+  gap = CROWN_NOTATION_GAP,
+  fontSize = FS_NOTATION,
+): string {
+  return lines
+    .map((line, i) => {
+      const y = firstBaselineY + i * gap;
+      return `<text x="${fmtNum(midX)}" y="${fmtNum(y)}" text-anchor="middle" fill="${MUTED}" ${textFont(fontSize)}>${escapeXml(line)}</text>`;
+    })
+    .join("");
 }
 
 function drawBrim(frame: ShapingFrame, labels: ShapingLabels): string {
@@ -282,7 +308,7 @@ function drawBody(frame: ShapingFrame): string {
 
 function drawGatheredCrown(frame: ShapingFrame, labels: ShapingLabels): string {
   const { hatLeft, hatRight, crownTop, bodyTop, hatMidX } = frame;
-  const tipY = crownTop + 6;
+  const tipY = crownTop + 8;
   const midY = crownTop + (bodyTop - crownTop) * 0.4;
   const path = [
     `M ${fmtNum(hatLeft)} ${fmtNum(bodyTop)}`,
@@ -293,21 +319,24 @@ function drawGatheredCrown(frame: ShapingFrame, labels: ShapingLabels): string {
     "Z",
   ].join(" ");
 
-  const lines = labels.crownLines
-    .map((line, i) => {
-      const y = tipY + 22 + i * 18;
-      return `<text x="${fmtNum(hatMidX)}" y="${fmtNum(y)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(line)}</text>`;
-    })
-    .join("");
+  const headingY = Math.max(22, crownTop - 10);
+  const stackCount = labels.crownLines.length;
+  const stackHeight = stackCount > 0 ? (stackCount - 1) * CROWN_NOTATION_GAP : 0;
+  // Center the notation stack in the lower 2/3 of the crown, clear of the heading.
+  const stackTopMin = headingY + FS_SECTION + 10;
+  const stackBottomMax = bodyTop - 14;
+  const available = Math.max(stackHeight, stackBottomMax - stackTopMin);
+  const firstBaseline = clamp(
+    stackTopMin + (available - stackHeight) / 2,
+    stackTopMin,
+    Math.max(stackTopMin, stackBottomMax - stackHeight),
+  );
 
   return [
     `<g class="hat-shaping-diagram__crown hat-shaping-diagram__crown--gathered" data-crown-style="gathered">`,
     `<path d="${path}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.75"/>`,
-    `<text x="${fmtNum(hatMidX)}" y="${fmtNum(Math.max(18, crownTop - 2))}" text-anchor="middle" fill="${STROKE}" ${textFont(FS_SECTION, FW_SECTION)}>Crown</text>`,
-    lines,
-    labels.remaining
-      ? `<text x="${fmtNum(hatMidX)}" y="${fmtNum(bodyTop - 10)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_SMALL)}>${escapeXml(labels.remaining)}</text>`
-      : "",
+    `<text x="${fmtNum(hatMidX)}" y="${fmtNum(headingY)}" text-anchor="middle" fill="${STROKE}" ${textFont(FS_SECTION, FW_SECTION)}>Crown</text>`,
+    drawNotationStack(labels.crownLines, hatMidX, firstBaseline),
     `</g>`,
   ].join("");
 }
@@ -335,21 +364,24 @@ function drawFourGoreCrown(frame: ShapingFrame, labels: ShapingLabels): string {
     })
     .join("");
 
-  const notation = labels.crownLines
-    .map((line, i) => {
-      const y = Math.max(16, crownTop - 22 - (labels.crownLines.length - 1 - i) * 16);
-      return `<text x="${fmtNum(hatMidX)}" y="${fmtNum(y)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(line)}</text>`;
-    })
-    .join("");
+  const stackCount = labels.crownLines.length;
+  const stackHeight = stackCount > 0 ? (stackCount - 1) * CROWN_NOTATION_GAP : 0;
+  // Keep notation above the peaks but fully inside the viewBox.
+  const firstBaseline = Math.max(
+    20,
+    crownTop - 14 - stackHeight,
+  );
+
+  const remainingY = bodyTop + 18;
 
   return [
     `<g class="hat-shaping-diagram__crown hat-shaping-diagram__crown--four-gore" data-crown-style="wedge-4-decrease">`,
     `<polyline points="${pts.join(" ")}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.75"/>`,
     `<line class="hat-shaping-diagram__crown-start" x1="${fmtNum(hatLeft)}" y1="${fmtNum(bodyTop)}" x2="${fmtNum(hatRight)}" y2="${fmtNum(bodyTop)}" stroke="${STROKE}" stroke-width="1.25" stroke-dasharray="6 4" fill="none"/>`,
     goreLabels,
-    notation,
+    drawNotationStack(labels.crownLines, hatMidX, firstBaseline),
     labels.remaining
-      ? `<text x="${fmtNum(hatMidX)}" y="${fmtNum(bodyTop + 16)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_SMALL)}>→ ${escapeXml(labels.remaining)}</text>`
+      ? `<text x="${fmtNum(hatMidX)}" y="${fmtNum(remainingY)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_SMALL)}>→ ${escapeXml(labels.remaining)}</text>`
       : "",
     `</g>`,
   ].join("");
@@ -375,23 +407,27 @@ function drawSwirlCrown(frame: ShapingFrame, labels: ShapingLabels): string {
     return `<path d="M ${fmtNum(x0)} ${fmtNum(bodyTop)} Q ${fmtNum(cx)} ${fmtNum((bodyTop + tipY) / 2)} ${fmtNum(hatMidX)} ${fmtNum(tipY)}" fill="none" stroke="${STROKE}" stroke-width="1" opacity="0.65"/>`;
   }).join("");
 
-  const notation = labels.crownLines
-    .map((line, i) => {
-      const y = tipY + 18 + i * 17;
-      return `<text x="${fmtNum(hatMidX)}" y="${fmtNum(y)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_NOTATION)}>${escapeXml(line)}</text>`;
-    })
-    .join("");
+  const headingY = Math.max(22, crownTop - 8);
+  const stackLines = labels.remaining
+    ? [...labels.crownLines, `→ ${labels.remaining}`]
+    : labels.crownLines;
+  const stackHeight = stackLines.length > 0 ? (stackLines.length - 1) * CROWN_NOTATION_GAP : 0;
+  const stackTopMin = headingY + FS_SECTION + 8;
+  const stackBottomMax = bodyTop - 12;
+  const available = Math.max(stackHeight, stackBottomMax - stackTopMin);
+  const firstBaseline = clamp(
+    stackTopMin + (available - stackHeight) / 2,
+    stackTopMin,
+    Math.max(stackTopMin, stackBottomMax - stackHeight),
+  );
 
   return [
     `<g class="hat-shaping-diagram__crown hat-shaping-diagram__crown--swirl" data-crown-style="spiral">`,
     `<path d="${outline}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.75"/>`,
     swirlLines,
     `<line class="hat-shaping-diagram__crown-start" x1="${fmtNum(hatLeft)}" y1="${fmtNum(bodyTop)}" x2="${fmtNum(hatRight)}" y2="${fmtNum(bodyTop)}" stroke="${STROKE}" stroke-width="1.25" stroke-dasharray="6 4" fill="none"/>`,
-    `<text x="${fmtNum(hatMidX)}" y="${fmtNum(Math.max(18, crownTop - 4))}" text-anchor="middle" fill="${STROKE}" ${textFont(FS_SECTION, FW_SECTION)}>Crown · Swirl</text>`,
-    notation,
-    labels.remaining
-      ? `<text x="${fmtNum(hatMidX)}" y="${fmtNum(bodyTop - 8)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_SMALL)}>→ ${escapeXml(labels.remaining)}</text>`
-      : "",
+    `<text x="${fmtNum(hatMidX)}" y="${fmtNum(headingY)}" text-anchor="middle" fill="${STROKE}" ${textFont(FS_SECTION, FW_SECTION)}>Crown · Swirl</text>`,
+    drawNotationStack(stackLines, hatMidX, firstBaseline),
     `</g>`,
   ].join("");
 }
@@ -404,26 +440,27 @@ function drawCrown(frame: ShapingFrame, labels: ShapingLabels): string {
 
 /**
  * Cast-on + section RC labels beside horizontal construction lines (no arrows/dimensions).
+ * Short "RC n" labels sit in the left gutter so they stay inside the viewBox when scaled.
  */
 function drawConstructionLabels(frame: ShapingFrame, labels: ShapingLabels): string {
-  const labelX = frame.hatLeft - 8;
+  const labelX = Math.max(8, frame.hatLeft - 10);
   const parts: string[] = [
     `<g class="hat-shaping-diagram__construction-labels" data-hat-shaping-construction-labels="true">`,
   ];
 
   if (labels.castOn) {
     parts.push(
-      `<text class="hat-shaping-diagram__cast-on" x="${fmtNum(labelX)}" y="${fmtNum(frame.hatBottom + 4)}" text-anchor="end" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_CONSTRUCTION)}>${escapeXml(labels.castOn)}</text>`,
+      `<text class="hat-shaping-diagram__cast-on" x="${fmtNum(labelX)}" y="${fmtNum(frame.hatBottom)}" text-anchor="end" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_CONSTRUCTION)}>${escapeXml(labels.castOn)}</text>`,
     );
   }
   if (labels.brimEndRc) {
     parts.push(
-      `<text class="hat-shaping-diagram__brim-body-rc" x="${fmtNum(labelX)}" y="${fmtNum(frame.brimTop + 4)}" text-anchor="end" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_CONSTRUCTION)}>${escapeXml(labels.brimEndRc)}</text>`,
+      `<text class="hat-shaping-diagram__brim-body-rc" x="${fmtNum(labelX)}" y="${fmtNum(frame.brimTop)}" text-anchor="end" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_CONSTRUCTION)}>${escapeXml(labels.brimEndRc)}</text>`,
     );
   }
   if (labels.crownBeginRc) {
     parts.push(
-      `<text class="hat-shaping-diagram__crown-begin-rc" x="${fmtNum(labelX)}" y="${fmtNum(frame.bodyTop + 4)}" text-anchor="end" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_CONSTRUCTION)}>${escapeXml(labels.crownBeginRc)}</text>`,
+      `<text class="hat-shaping-diagram__crown-begin-rc" x="${fmtNum(labelX)}" y="${fmtNum(frame.bodyTop)}" text-anchor="end" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_CONSTRUCTION)}>${escapeXml(labels.crownBeginRc)}</text>`,
     );
   }
 

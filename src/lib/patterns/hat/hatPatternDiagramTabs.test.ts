@@ -279,6 +279,7 @@ describe("hat pattern diagram tabs", () => {
     expect(shapingChunk).toContain("How to Read Shaping Notation");
     expect(shapingChunk).not.toContain("Japanese Notation");
     expect(shapingChunk).toContain(`data-vimeo-id="${HAT_SHAPING_NOTATION_HELP_VIMEO_ID}"`);
+    expect(shapingChunk).toContain("fa-circle-info");
     expect(stsChunk).not.toContain("data-hat-shaping-notation-help");
     expect(HAT_SHAPING_NOTATION_HELP_VIMEO_ID).toBe(SHAPING_NOTATION_CHART_HELP_VIMEO_ID);
     expect(buildHatShapingNotationHelpHtml()).toContain("kbm-kin-catalog-video");
@@ -302,7 +303,24 @@ describe("hat pattern diagram tabs", () => {
     expect(page).toContain(".hat-pattern-diagram-print-heading");
     expect(page).toContain(".hat-pattern-diagram-tabs__list");
     expect(page).toContain(".hat-pattern-diagram-shaping-help");
+    expect(page).toContain("min-height: 44px");
+    expect(page).toContain("var(--kbm-green, #52682d)");
     expect(page).not.toContain("Japanese Notation");
+  });
+
+  it("preserves accessible tab roles and selection semantics in the shell", () => {
+    const html = buildHatPatternDiagramTabsShellHtml();
+    expect(html).toContain('role="tablist"');
+    expect(html).toContain('role="tab"');
+    expect(html).toContain('role="tabpanel"');
+    expect(html).toMatch(
+      /data-hat-diagram-tab="sts-rows"[^>]*aria-selected="true"/,
+    );
+    expect(html).toMatch(
+      /data-hat-diagram-tab="shaping-notation"[^>]*aria-selected="false"/,
+    );
+    expect(html).toContain('aria-controls="hat-diagram-panel-sts-rows"');
+    expect(html).toContain('aria-controls="hat-diagram-panel-shaping-notation"');
   });
 });
 
@@ -325,18 +343,18 @@ describe("buildHatShapingNotationDiagramSvg", () => {
     expect(shaping).not.toContain('viewBox="0 0 430 460"');
   });
 
-  it("shows cast-on and section RC labels from the finalized calc", () => {
+  it("shows cast-on and short RC labels from the finalized calc", () => {
     const calc = calcFor();
     const patternCastOn = applyHatCrownCastOnAdjustment(calc.castOnSts, calc.crown);
     const svg = buildHatShapingNotationDiagramSvg(calc, "inches", formatters);
 
     expect(svg).toContain(formatHatShapingCastOnLabel(patternCastOn));
-    expect(svg).toContain(
-      formatHatShapingRcLabel(calc.brimRows, "Brim ends / Body begins"),
-    );
-    expect(svg).toContain(
-      formatHatShapingRcLabel(calc.brimRows + calc.bodyRows, "Begin shaping"),
-    );
+    expect(svg).toContain(formatHatShapingRcLabel(calc.brimRows));
+    expect(svg).toContain(formatHatShapingRcLabel(calc.brimRows + calc.bodyRows));
+    expect(formatHatShapingRcLabel(calc.brimRows)).toMatch(/^RC \d+$/);
+    expect(svg).not.toContain("Brim ends");
+    expect(svg).not.toContain("Begin shaping");
+    expect(svg).not.toContain("Body begins");
     expect(svg).toContain('data-hat-shaping-construction-labels="true"');
     expect(svg).not.toMatch(/\bNaN\b/);
   });
@@ -361,22 +379,36 @@ describe("buildHatShapingNotationDiagramSvg", () => {
     expect(customSvg).toContain(customCo);
     expect(adultCo).not.toBe(customCo);
 
-    const adultBrimRc = formatHatShapingRcLabel(adult.brimRows, "Brim ends / Body begins");
-    const customBrimRc = formatHatShapingRcLabel(custom.brimRows, "Brim ends / Body begins");
+    const adultBrimRc = formatHatShapingRcLabel(adult.brimRows);
+    const customBrimRc = formatHatShapingRcLabel(custom.brimRows);
     expect(adultSvg).toContain(adultBrimRc);
     expect(customSvg).toContain(customBrimRc);
 
-    const adultCrownRc = formatHatShapingRcLabel(
-      adult.brimRows + adult.bodyRows,
-      "Begin shaping",
-    );
-    const customCrownRc = formatHatShapingRcLabel(
-      custom.brimRows + custom.bodyRows,
-      "Begin shaping",
-    );
+    const adultCrownRc = formatHatShapingRcLabel(adult.brimRows + adult.bodyRows);
+    const customCrownRc = formatHatShapingRcLabel(custom.brimRows + custom.bodyRows);
     expect(adultSvg).toContain(adultCrownRc);
     expect(customSvg).toContain(customCrownRc);
     expect(adultCrownRc).not.toBe(customCrownRc);
+  });
+
+  it("spaces gathered crown notation so lines do not collide", () => {
+    const calc = calcFor({ crown: "gathered" });
+    const patternCastOn = applyHatCrownCastOnAdjustment(calc.castOnSts, calc.crown);
+    const svg = buildHatShapingNotationDiagramSvg(calc, "inches", formatters);
+    const crownGroup = svg.match(
+      /<g class="hat-shaping-diagram__crown hat-shaping-diagram__crown--gathered"[\s\S]*?<\/g>/,
+    )?.[0];
+    expect(crownGroup).toBeTruthy();
+    expect(crownGroup).toContain("EO xfer");
+    expect(crownGroup).toContain(`${patternCastOn} sts`);
+    expect(crownGroup).toContain("gather");
+    expect(crownGroup).toContain(">Crown<");
+
+    const textYs = [...crownGroup!.matchAll(/\by="([\d.]+)"/g)].map((m) => Number(m[1]));
+    expect(textYs.length).toBeGreaterThanOrEqual(4);
+    for (let i = 1; i < textYs.length; i += 1) {
+      expect(textYs[i]! - textYs[i - 1]!).toBeGreaterThanOrEqual(18);
+    }
   });
 
   it("omits measurement arrows, dimension lines, and finished-size callouts", () => {
@@ -391,8 +423,8 @@ describe("buildHatShapingNotationDiagramSvg", () => {
     expect(svg).not.toMatch(/\d+(\.\d+)?\s*(inches|cm)\b/i);
     // Old measurement callouts like "6r / 1.0 inches" — not Ns-Mr-Kx crown notation.
     expect(svg).not.toMatch(/\d+r\s*\/\s*\d/);
-    expect(svg).not.toContain(formatLengthWithUnit(8.5, "inches"));
-    expect(svg).not.toContain(formatLengthWithUnit(20.5, "inches"));
+    // Finished-size labels use unit words or inch marks after a length — not SVG attrs.
+    expect(svg).not.toMatch(/>\s*\d+(\.\d+)?\s*(inches|cm|"|″)\s*</i);
   });
 
   it("keeps Stitches & Rows as a measurement diagram with lengths", () => {

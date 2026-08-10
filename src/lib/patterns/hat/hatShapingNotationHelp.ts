@@ -33,7 +33,7 @@ export function buildHatShapingNotationHelpHtml(): string {
     ` data-video-title="${title}"` +
     ` data-testid="hat-shaping-notation-help"` +
     ` aria-haspopup="dialog">` +
-    `<i class="fa-solid fa-play" aria-hidden="true"></i> ${label}` +
+    `<i class="fa-solid fa-circle-info" aria-hidden="true"></i> ${label}` +
     `</button>` +
     `</p>`
   );
