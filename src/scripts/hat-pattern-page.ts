@@ -19,6 +19,7 @@ import {
   buildHatPatternSummaryDlHtml,
   type HatSizingPatternRow,
 } from "../lib/patterns/hat/hatPatternFromDraft";
+import { dispatchHatYarnDimensions } from "../lib/patterns/hat/hatYarnEstimation";
 import { applyHatPatternPersistNoticeMembership } from "../lib/patterns/hat/hatPatternPersistNotice";
 import {
   applyHatPatternMyPatternsAccess,
@@ -31,6 +32,7 @@ import {
 } from "../lib/patterns/sleevelessPatternLoginGate";
 import { triggerPatternPrint } from "./patternPrintPersonalization.ts";
 import hatSizingRows from "../data/sizing_hats.json";
+import type { HatDisplayUnit, HatPatternCalc } from "../lib/patterns/hat/hatMath";
 
 const HAT_ZERO_BODY_ROWS_WARNING =
   "Your current settings don't leave any room for the body of the hat. Try increasing the finished hat length, reducing the brim height, or choosing a shallower crown style.";
@@ -117,10 +119,96 @@ function mountEditAction() {
   editBtn.style.display = "inline-flex";
 }
 
+function mountYarnAction() {
+  const yarnBtn = document.querySelector("[data-hat-yarn-open]");
+  if (!(yarnBtn instanceof HTMLElement)) return;
+  yarnBtn.hidden = false;
+  yarnBtn.style.display = "inline-flex";
+}
+
+function hideYarnAction() {
+  const yarnBtn = document.querySelector("[data-hat-yarn-open]");
+  if (!(yarnBtn instanceof HTMLElement)) return;
+  yarnBtn.hidden = true;
+  yarnBtn.style.display = "none";
+  yarnBtn.setAttribute("aria-expanded", "false");
+}
+
+function yarnLengthUnitFromDraftUnit(unit: HatDisplayUnit): "in" | "cm" {
+  return unit === "cm" ? "cm" : "in";
+}
+
+function syncHatPatternYarnDimensions(calc: HatPatternCalc, unit: HatDisplayUnit) {
+  const detail = dispatchHatYarnDimensions(calc, yarnLengthUnitFromDraftUnit(unit));
+  if (typeof window !== "undefined") {
+    window.hatPatternLastYarnDimensions = detail;
+    window.hatPatternLastCalc = calc;
+  }
+  return detail;
+}
+
+/** Sweater-parity yarn drawer open/close (express-yarn-drawer ids). */
+export function initHatPatternYarnDrawer(): void {
+  const drawerRoot = document.getElementById("express-yarn-drawer");
+  const openBtn = document.getElementById("express-yarn-drawer-open");
+  const closeBtn = document.getElementById("express-yarn-drawer-close");
+  const backdrop = document.getElementById("express-yarn-drawer-backdrop");
+  let lastFocus: HTMLElement | null = null;
+
+  function openDrawer(): void {
+    if (!drawerRoot) return;
+    // Re-push dimensions so YarnRequirement picks them up even if it mounted after first render.
+    const last = window.hatPatternLastCalc;
+    if (last) {
+      const priorUnit = window.hatPatternLastYarnDimensions?.lengthUnit === "cm" ? "cm" : "in";
+      dispatchHatYarnDimensions(last, priorUnit);
+    }
+    lastFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    drawerRoot.classList.add("is-open");
+    drawerRoot.setAttribute("aria-hidden", "false");
+    document.body.classList.add("hat-yarn-drawer-open");
+    openBtn?.setAttribute("aria-expanded", "true");
+    window.setTimeout(() => {
+      closeBtn?.focus();
+    }, 0);
+  }
+
+  function closeDrawer(): void {
+    if (!drawerRoot) return;
+    drawerRoot.classList.remove("is-open");
+    drawerRoot.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("hat-yarn-drawer-open");
+    openBtn?.setAttribute("aria-expanded", "false");
+    if (lastFocus) lastFocus.focus();
+  }
+
+  if (openBtn && openBtn.dataset.hatYarnDrawerBound !== "true") {
+    openBtn.dataset.hatYarnDrawerBound = "true";
+    openBtn.addEventListener("click", () => openDrawer());
+  }
+  if (closeBtn && closeBtn.dataset.hatYarnDrawerBound !== "true") {
+    closeBtn.dataset.hatYarnDrawerBound = "true";
+    closeBtn.addEventListener("click", () => closeDrawer());
+  }
+  if (backdrop && backdrop.dataset.hatYarnDrawerBound !== "true") {
+    backdrop.dataset.hatYarnDrawerBound = "true";
+    backdrop.addEventListener("click", () => closeDrawer());
+  }
+  if (drawerRoot && drawerRoot.dataset.hatYarnEscBound !== "true") {
+    drawerRoot.dataset.hatYarnEscBound = "true";
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && drawerRoot.classList.contains("is-open")) {
+        closeDrawer();
+      }
+    });
+  }
+}
+
 function mountPrintAction() {
   const host = document.querySelector("[data-hat-pattern-actions]");
   if (!(host instanceof HTMLElement)) return;
   mountEditAction();
+  mountYarnAction();
   let printBtn = host.querySelector("#print-btn");
   if (!(printBtn instanceof HTMLButtonElement)) {
     printBtn = document.createElement("button");
@@ -170,6 +258,7 @@ function showEmptyState(message: string) {
     editBtn.hidden = true;
     editBtn.style.display = "none";
   }
+  hideYarnAction();
 }
 
 function showResultsShell() {
@@ -269,6 +358,7 @@ export async function renderHatPattern() {
     }); // default mode: "pattern" — keeps stitch/row construction counts
   }
 
+  syncHatPatternYarnDimensions(calc, unit);
   window.dispatchEvent(new CustomEvent("kbm:hat-pattern-rendered"));
 }
 
@@ -279,6 +369,7 @@ export function initHatPatternPage() {
     // Fail closed until membership resolves — My Patterns stays disabled / non-navigating.
     applyHatPatternMyPatternsAccess(document, "loggedOut");
     initHatPatternNewPattern(document);
+    initHatPatternYarnDrawer();
     void syncHatPatternPersistNoticeMembership().catch(() => {
       applyHatPatternMembershipChrome("loggedOut");
     });
@@ -315,6 +406,7 @@ initHatPatternPage();
 
 declare global {
   interface Window {
-    hatPatternLastCalc?: unknown;
+    hatPatternLastCalc?: HatPatternCalc;
+    hatPatternLastYarnDimensions?: import("../lib/tools/yarnRequirementDimensions").YarnDimensionsDetail;
   }
 }

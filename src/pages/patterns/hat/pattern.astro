@@ -11,6 +11,7 @@ import PatternPrintPersonalization from "../../../components/common/PatternPrint
 import PatternTipsToggle from "../../../components/patterns/PatternTipsToggle.astro";
 import SleevelessPatternPrintNotice from "../../../components/patterns/SleevelessPatternPrintNotice.astro";
 import WarningBox from "../../../components/ui/WarningBox.astro";
+import YarnRequirement from "../../../components/tools/YarnRequirement.astro";
 import glossaryJson from "../../../data/glossary.json";
 import {
   HAT_PATTERN_MEMBERSHIP_CTA_CLASS,
@@ -30,6 +31,7 @@ import "../../../styles/pattern-quick-tip.css";
 import "../../../styles/pattern-help-card.css";
 import "../../../styles/patterns/sleeveless-pattern-shared.css";
 import "../../../styles/patterns/pattern-app-shell.css";
+import "../../../styles/tools/hat-yarn-drawer-shell.css";
 
 type HatGlossaryRow = { glossaryId?: number; english?: string; example?: string };
 const hatGlossaryRows: HatGlossaryRow[] = Array.isArray(glossaryJson)
@@ -96,6 +98,19 @@ const hatZeroBodyRowsWarningMessage =
             data-hat-pattern-actions
             data-sleeveless-pattern-actions
           >
+            <button
+              type="button"
+              id="express-yarn-drawer-open"
+              class="sleeveless-pattern-edit-action no-print"
+              data-hat-yarn-open
+              data-testid="hat-pattern-how-much-yarn"
+              hidden
+              aria-haspopup="dialog"
+              aria-controls="express-yarn-drawer-panel"
+              aria-expanded="false"
+            >
+              How Much Yarn?
+            </button>
             <a
               href={HAT_SUMMARY_EDIT_FROM_PATTERN_HREF}
               class="sleeveless-pattern-edit-action no-print"
@@ -265,6 +280,61 @@ const hatZeroBodyRowsWarningMessage =
     </div>
 
   </main>
+
+  <!-- How Much Yarn? — same YarnRequirement drawer as sweater patterns; dimensions from in-memory draft. -->
+  <div
+    id="express-yarn-drawer"
+    class="hat-yarn-drawer no-print"
+    data-hat-yarn-drawer
+    aria-hidden="true"
+  >
+    <div
+      id="express-yarn-drawer-panel"
+      class="hat-yarn-drawer-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="express-yarn-drawer-title"
+      aria-describedby="express-yarn-drawer-desc express-yarn-drawer-note"
+    >
+      <header class="hat-yarn-drawer-header">
+        <div class="hat-yarn-drawer-header-text">
+          <h2 id="express-yarn-drawer-title" class="hat-yarn-drawer-title">Check your yarn</h2>
+          <p id="express-yarn-drawer-desc" class="hat-yarn-drawer-lede">
+            Quick estimate from a weighed swatch using this hat’s finished size and construction.
+          </p>
+          <p id="express-yarn-drawer-note" class="hat-yarn-drawer-note">
+            This is an estimate. Actual yarn use may vary with stitch pattern, ribbing, and finishing.
+          </p>
+        </div>
+        <button type="button" class="hat-yarn-drawer-close" id="express-yarn-drawer-close" aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M18 6L6 18M6 6l12 12"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+          </svg>
+        </button>
+      </header>
+      <div class="hat-yarn-drawer-body">
+        <YarnRequirement
+          variant="hat"
+          layout="panel"
+          presentation="drawer"
+          projectWidth={0}
+          projectLength={0}
+          lengthUnit="in"
+          source="custom"
+        />
+      </div>
+    </div>
+    <div
+      id="express-yarn-drawer-backdrop"
+      class="hat-yarn-drawer-backdrop"
+      aria-hidden="true"
+    ></div>
+  </div>
 </Layout>
 
 <style>

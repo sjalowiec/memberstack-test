@@ -68,6 +68,7 @@ const defaultTitle =
   data-embed-mode={isEmbedMode}
   data-project-width={projectWidth}
   data-project-length={projectLength}
+  data-project-area-sq-in="0"
   data-length-unit={lengthUnit}
   data-source={source}
   data-variant={variant}
@@ -564,6 +565,12 @@ const defaultTitle =
 </style>
 
 <script>
+  import {
+    YARN_REQUIREMENT_BUFFER,
+    estimateYarnWeightWithBuffer,
+    resolveYarnProjectAreaSquareInches,
+  } from '../../lib/tools/yarnRequirementDimensions';
+
   (function() {
     // Get DOM elements
     const yarnHeading = document.getElementById('yarn-heading');
@@ -657,6 +664,8 @@ const defaultTitle =
     let currentWeightUnit = localStorage.getItem(WEIGHT_STORAGE_KEY) || 'g';
     let blanketWidthIn = 0;
     let blanketLengthIn = 0;
+    /** Optional fabric area override (sq in); 0 = use W×L rectangle. */
+    let projectAreaSqIn = 0;
     let hasInteracted = false;
     let isCustomPattern = false;
 
@@ -947,7 +956,12 @@ const defaultTitle =
       // Validate inputs
       const swatchValid = !isNaN(swatchW) && !isNaN(swatchL) && !isNaN(swatchWt) && 
                          swatchW > 0 && swatchL > 0 && swatchWt > 0;
-      const blanketValid = blanketW > 0 && blanketL > 0;
+      const blanketArea = resolveYarnProjectAreaSquareInches({
+        widthInches: blanketW,
+        lengthInches: blanketL,
+        projectAreaSquareInches: projectAreaSqIn > 0 ? projectAreaSqIn : undefined,
+      });
+      const blanketValid = blanketArea > 0;
       
       // Check if any input has been entered
       const hasAnyInput = swatchWidth.value.trim() !== '' || 
@@ -988,38 +1002,28 @@ const defaultTitle =
         return;
       }
       
-      // Calculate swatch area (square inches)
-      const swatchArea = swatchW * swatchL;
-      
-      // Calculate density based on weight unit
-      let densityPerSqIn;
-      if (currentWeightUnit === 'oz') {
-        // Ounces per square inch
-        densityPerSqIn = swatchWt / swatchArea;
-      } else {
-        // Grams per square inch
-        densityPerSqIn = swatchWt / swatchArea;
-      }
-      
-      // Calculate blanket area (square inches)
-      const blanketArea = blanketW * blanketL;
-      
-      // Calculate estimated yarn (before buffer)
+      // Density × area × 10% buffer (shared with yarnRequirementDimensions)
       let estimatedGrams, estimatedOunces;
-      
+
       if (currentWeightUnit === 'oz') {
-        // Start with ounces
-        const estimatedOzBase = densityPerSqIn * blanketArea;
-        const estimatedOzWithBuffer = estimatedOzBase * 1.10; // 10% buffer
+        const estimatedOzWithBuffer = estimateYarnWeightWithBuffer({
+          swatchWidthInches: swatchW,
+          swatchLengthInches: swatchL,
+          swatchWeight: swatchWt,
+          projectAreaSquareInches: blanketArea,
+          buffer: YARN_REQUIREMENT_BUFFER,
+        });
         estimatedOunces = estimatedOzWithBuffer;
-        // Convert to grams: ounces × 28.349523125
         estimatedGrams = estimatedOzWithBuffer * 28.349523125;
       } else {
-        // Start with grams
-        const estimatedGramsBase = densityPerSqIn * blanketArea;
-        const estimatedGramsWithBuffer = estimatedGramsBase * 1.10; // 10% buffer
+        const estimatedGramsWithBuffer = estimateYarnWeightWithBuffer({
+          swatchWidthInches: swatchW,
+          swatchLengthInches: swatchL,
+          swatchWeight: swatchWt,
+          projectAreaSquareInches: blanketArea,
+          buffer: YARN_REQUIREMENT_BUFFER,
+        });
         estimatedGrams = estimatedGramsWithBuffer;
-        // Convert to ounces: grams / 28.349523125
         estimatedOunces = estimatedGramsWithBuffer / 28.349523125;
       }
       
@@ -1040,7 +1044,7 @@ const defaultTitle =
     if (isEmbedMode) {
       window.addEventListener('kbm:yarnDimensions', function(e: CustomEvent) {
         const detail = e.detail;
-        if (detail && (detail.projectWidth !== undefined || detail.projectLength !== undefined)) {
+        if (detail && (detail.projectWidth !== undefined || detail.projectLength !== undefined || detail.projectAreaSquareInches !== undefined)) {
           // Update props from event
           let newWidth = detail.projectWidth || 0;
           let newLength = detail.projectLength || 0;
@@ -1055,10 +1059,14 @@ const defaultTitle =
           // Update internal values (in inches) first
           blanketWidthIn = newWidth;
           blanketLengthIn = newLength;
+          const areaRaw = detail.projectAreaSquareInches;
+          projectAreaSqIn =
+            typeof areaRaw === 'number' && Number.isFinite(areaRaw) && areaRaw > 0 ? areaRaw : 0;
           
           // Update wrapper dataset
           wrapper.dataset.projectWidth = String(detail.projectWidth || 0);
           wrapper.dataset.projectLength = String(detail.projectLength || 0);
+          wrapper.dataset.projectAreaSqIn = String(projectAreaSqIn);
           wrapper.dataset.lengthUnit = eventUnit;
           
           // Update source from event if provided

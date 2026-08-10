@@ -1,0 +1,205 @@
+/**
+ * Shared How Much Yarn? drawer shell (finished hat pattern, sweater review, etc.).
+ * Pair with YarnRequirement presentation="drawer".
+ */
+
+body.hat-yarn-drawer-open {
+  overflow: hidden;
+}
+
+.hat-yarn-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 10040;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.hat-yarn-drawer.is-open {
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.hat-yarn-drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: default;
+  background: rgba(30, 41, 59, 0.38);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+
+.hat-yarn-drawer.is-open .hat-yarn-drawer-backdrop {
+  opacity: 1;
+}
+
+.hat-yarn-drawer-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  isolation: isolate;
+  pointer-events: auto;
+  width: min(30rem, 100vw);
+  max-width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  background: linear-gradient(180deg, #faf9f6 0%, #f4f3ee 100%);
+  border-radius: 20px 0 0 20px;
+  box-shadow:
+    inset 1px 0 0 rgba(255, 255, 255, 0.75),
+    -1px 0 0 rgba(82, 104, 45, 0.07),
+    -16px 0 48px rgba(15, 23, 42, 0.07),
+    -6px 0 24px rgba(15, 23, 42, 0.04);
+}
+
+.hat-yarn-drawer.is-open .hat-yarn-drawer-panel {
+  transform: translateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hat-yarn-drawer-backdrop,
+  .hat-yarn-drawer-panel {
+    transition: none;
+  }
+}
+
+.hat-yarn-drawer-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem 1.25rem;
+  padding: 1.4rem 1.25rem 1rem 1.5rem;
+  border-bottom: none;
+}
+
+.hat-yarn-drawer-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.hat-yarn-drawer-eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.hat-yarn-drawer-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.28rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: #374151;
+  line-height: 1.2;
+}
+
+.hat-yarn-drawer-lede {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  font-weight: 450;
+  color: #6b7280;
+  max-width: 42ch;
+}
+
+.hat-yarn-drawer-note {
+  margin: 0.65rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  font-weight: 450;
+  color: #6b7280;
+}
+
+.hat-yarn-drawer-close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.375rem;
+  height: 2.375rem;
+  margin-top: 0.1rem;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(55, 65, 81, 0.07);
+  color: #6b7280;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.hat-yarn-drawer-close:hover {
+  background: rgba(82, 104, 45, 0.14);
+  color: #3d4a2f;
+}
+
+.hat-yarn-drawer-close:focus-visible {
+  outline: 2px solid #52682d;
+  outline-offset: 2px;
+}
+
+.hat-yarn-drawer-close svg {
+  display: block;
+}
+
+.hat-yarn-drawer-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.35rem 1.5rem 1.75rem;
+  padding-bottom: max(1.75rem, env(safe-area-inset-bottom, 0px));
+  -webkit-overflow-scrolling: touch;
+}
+
+.hat-yarn-drawer-body .yarn-requirement-tool {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .hat-yarn-drawer-panel {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+    box-shadow: -8px 0 40px rgba(15, 23, 42, 0.08);
+  }
+
+  .hat-yarn-drawer-header {
+    padding: max(0.85rem, env(safe-area-inset-top, 0px)) 1rem 0.85rem 1.15rem;
+  }
+
+  .hat-yarn-drawer-title {
+    font-size: 1.15rem;
+  }
+
+  .hat-yarn-drawer-lede,
+  .hat-yarn-drawer-note {
+    max-width: none;
+  }
+
+  .hat-yarn-drawer-close {
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .hat-yarn-drawer-body {
+    padding: 0.25rem 1.1rem max(1.5rem, env(safe-area-inset-bottom, 0px));
+  }
+}
