@@ -10,58 +10,71 @@ interface Props {
 }
 
 const { report } = Astro.props;
-const { summary, note, asOfDateDisplay, todayLosAngeles, windowStartYmd, lookbackMonths } =
-  report;
-
-function reviewTable(
-  rows: FormerMembersNoMemberstackReport["memberstackFound"],
-  emptyMessage: string,
-) {
-  return { rows, emptyMessage };
-}
+const { summary, note, asOfDateDisplay, todayLosAngeles, windowStartYmd } = report;
 
 const reviewSections = [
+  {
+    id: "confirmed-annual",
+    title: "Confirmed annual single-payment candidates",
+    count: summary.confirmedAnnualSingle,
+    rows: report.confirmedAnnualSingle,
+    emptyMessage: "No confirmed annual single-payment candidates in this window.",
+  },
+  {
+    id: "annual-installment",
+    title: "Confirmed annual-installment candidates",
+    count: summary.annualInstallment,
+    rows: report.annualInstallment,
+    emptyMessage: "No confirmed annual-installment candidates in this window.",
+  },
+  {
+    id: "monthly-like",
+    title: "Monthly-like exclusions",
+    count: summary.monthlyLike,
+    rows: report.monthlyLike,
+    emptyMessage: "No monthly-like exclusions.",
+  },
+  {
+    id: "unresolved-type",
+    title: "Unresolved membership-type records",
+    count: summary.unresolvedMembershipType,
+    rows: report.unresolvedMembershipType,
+    emptyMessage: "No unresolved membership-type records.",
+  },
   {
     id: "memberstack-found",
     title: "Memberstack account found",
     count: summary.memberstackFound,
-    ...reviewTable(
-      report.memberstackFound,
-      "No candidates matched a unique Memberstack account.",
-    ),
+    rows: report.memberstackFound,
+    emptyMessage: "No confirmed annual/installment candidates matched a Memberstack account.",
   },
   {
     id: "ambiguous",
     title: "Ambiguous email match",
     count: summary.ambiguous,
-    ...reviewTable(
-      report.ambiguous,
-      "No ambiguous Memberstack email matches.",
-    ),
+    rows: report.ambiguous,
+    emptyMessage: "No ambiguous Memberstack email matches.",
   },
   {
     id: "lookup-error",
     title: "Lookup error",
     count: summary.lookupError,
-    ...reviewTable(report.lookupError, "No Memberstack lookup errors."),
+    rows: report.lookupError,
+    emptyMessage: "No Memberstack lookup errors.",
   },
   {
     id: "missing-email",
     title: "Missing or invalid email",
     count: summary.missingOrInvalidEmail,
-    ...reviewTable(
-      report.missingOrInvalidEmail,
-      "No candidates with missing or invalid email.",
-    ),
+    rows: report.missingOrInvalidEmail,
+    emptyMessage: "No candidates with missing or invalid email.",
   },
   {
     id: "duplicate-watson",
     title: "Duplicate Watson record",
     count: summary.duplicateWatson,
-    ...reviewTable(
-      report.duplicateWatson,
-      "No duplicate Watson emails in this window.",
-    ),
+    rows: report.duplicateWatson,
+    emptyMessage: "No duplicate Watson emails among confirmed annual/installment candidates.",
   },
 ];
 ---
@@ -76,22 +89,40 @@ const reviewSections = [
   </h2>
   <p class="watson-report__note">{note}</p>
   <p class="watson-report__meta">
-    As of {asOfDateDisplay} (America/Los_Angeles {todayLosAngeles}). Watson
-    paid-through from {windowStartYmd} through yesterday ({lookbackMonths}-month
-    lookback).
+    As of {asOfDateDisplay} (America/Los_Angeles {todayLosAngeles}). Confirmed
+    legacy annual / annual-installment paid-through from {windowStartYmd} through
+    yesterday.
   </p>
 
   <div class="watson-report__cards" data-summary-cards>
     <article class="watson-report__card">
-      <h3 class="watson-report__card-label">Watson candidates</h3>
+      <h3 class="watson-report__card-label">Watson candidates in window</h3>
       <p class="watson-report__card-value">
         {summary.watsonCandidates.toLocaleString("en-US")}
       </p>
     </article>
     <article class="watson-report__card">
-      <h3 class="watson-report__card-label">Email list (not_found)</h3>
-      <p class="watson-report__card-value" data-summary="emailList">
-        {summary.emailList.toLocaleString("en-US")}
+      <h3 class="watson-report__card-label">Confirmed annual single-payment</h3>
+      <p class="watson-report__card-value">
+        {summary.confirmedAnnualSingle.toLocaleString("en-US")}
+      </p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Confirmed annual installment</h3>
+      <p class="watson-report__card-value">
+        {summary.annualInstallment.toLocaleString("en-US")}
+      </p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Monthly-like exclusions</h3>
+      <p class="watson-report__card-value">
+        {summary.monthlyLike.toLocaleString("en-US")}
+      </p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Unresolved membership type</h3>
+      <p class="watson-report__card-value">
+        {summary.unresolvedMembershipType.toLocaleString("en-US")}
       </p>
     </article>
     <article class="watson-report__card">
@@ -101,30 +132,32 @@ const reviewSections = [
       </p>
     </article>
     <article class="watson-report__card">
-      <h3 class="watson-report__card-label">Ambiguous email match</h3>
-      <p class="watson-report__card-value">
-        {summary.ambiguous.toLocaleString("en-US")}
-      </p>
-    </article>
-    <article class="watson-report__card">
-      <h3 class="watson-report__card-label">Lookup error</h3>
-      <p class="watson-report__card-value">
-        {summary.lookupError.toLocaleString("en-US")}
-      </p>
-    </article>
-    <article class="watson-report__card">
-      <h3 class="watson-report__card-label">Missing or invalid email</h3>
-      <p class="watson-report__card-value">
-        {summary.missingOrInvalidEmail.toLocaleString("en-US")}
-      </p>
-    </article>
-    <article class="watson-report__card">
-      <h3 class="watson-report__card-label">Duplicate Watson record</h3>
-      <p class="watson-report__card-value">
-        {summary.duplicateWatson.toLocaleString("en-US")}
+      <h3 class="watson-report__card-label">Email list (not_found)</h3>
+      <p class="watson-report__card-value" data-summary="emailList">
+        {summary.emailList.toLocaleString("en-US")}
       </p>
     </article>
   </div>
+
+  {
+    summary.emailListByExpirationMonth.length > 0 ? (
+      <section aria-labelledby="email-list-by-month-heading" class="watson-report__section">
+        <h3 id="email-list-by-month-heading" class="watson__panel-title" style="font-size:1rem;">
+          Email list by expiration month
+        </h3>
+        <ul class="watson-report__type-list">
+          {
+            summary.emailListByExpirationMonth.map((item) => (
+              <li>
+                <span>{item.month}</span>
+                <span>{item.count.toLocaleString("en-US")}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+    ) : null
+  }
 
   <section aria-labelledby="email-list-heading" class="watson-report__section">
     <div class="watson-report__section-header">
@@ -143,7 +176,7 @@ const reviewSections = [
     {
       report.emailList.length === 0 ? (
         <p class="watson__placeholder">
-          No former members matched the strict no-Memberstack criteria.
+          No confirmed legacy annual members matched the strict no-Memberstack criteria.
         </p>
       ) : (
         <div class="watson__table-wrap">
@@ -186,7 +219,7 @@ const reviewSections = [
 
   <section aria-labelledby="review-heading" class="watson-report__section">
     <h3 id="review-heading" class="watson__panel-title" style="font-size:1rem;">
-      Review buckets (excluded from email CSV)
+      Review buckets (excluded from email CSV unless already listed above as inventory)
     </h3>
 
     {

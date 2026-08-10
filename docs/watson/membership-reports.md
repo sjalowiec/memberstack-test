@@ -143,21 +143,29 @@ Shown separately (never collapsed into one approximate annual total):
 
 ### Purpose
 
-Build a **strict, read-only email list** of former members whose old login will not work because they have no Memberstack account. Does not send email and does not mutate Memberstack, ActiveCampaign, Stripe, or Watson.
+Build a **strict, read-only email list** of former **confirmed legacy annual** (and annual-installment) members whose old login will not work because they have no Memberstack account. Does not send email and does not mutate Memberstack, ActiveCampaign, Stripe, or Watson.
 
 ### Watson universe
 
 ```sql
 subscriptionexpiring IS NOT NULL
 AND subscriptionexpiring::date < today_Los_Angeles
-AND subscriptionexpiring::date >= today_Los_Angeles - 8 months
+AND subscriptionexpiring::date >= '2025-11-01'
 ```
 
-Uses `legacy_members.subscriptionexpiring` only for the end-date window. Does **not** treat the free Memberstack Legacy plan as evidence that membership expired.
+Uses `legacy_members.subscriptionexpiring` for the paid-through window (on/after November 1, 2025; before today). Does **not** treat the free Memberstack Legacy plan as evidence that membership expired.
+
+### Annual product filter
+
+Reuses Remaining Annual Access classification helpers:
+
+1. Exclude obvious monthly (`monthlysubscriber = 1`, latest `monthlybilling = 1`, or monthly amount).
+2. Include only **confirmed annual single-payment** or **annual installment**.
+3. Probable / manual / unresolved types go to a **manual-review** bucket and never enter the email CSV.
 
 ### Memberstack rule (strict)
 
-Live Admin scan (`listMembers`) indexed by normalized email:
+Live Admin scan (`listMembers`) indexed by normalized email, applied only to confirmed annual / installment candidates:
 
 | Resolution | Email CSV? | Review bucket |
 |---|---|---|
@@ -172,7 +180,7 @@ Live Admin scan (`listMembers`) indexed by normalized email:
 
 ### Email CSV columns
 
-First name, Last name, Email, Old subscription end date, Watson status, Memberstack result, Qualification reason.
+First name, Last name, Email, Old subscription end date, Watson status, Memberstack result, Qualification reason (confirmed legacy annual vs confirmed legacy annual installment).
 
 ### Code
 

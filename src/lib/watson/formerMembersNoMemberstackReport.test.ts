@@ -1,234 +1,269 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { MemberstackMember } from "../membership/membershipSummary";
+import { KNOWN_ANNUAL_RATE_IDS, KNOWN_INSTALLMENT_RATE_IDS } from "./legacyMembershipReportsShared";
 import {
-  EMAIL_LIST_QUALIFICATION_REASON,
-  FORMER_MEMBERS_EMAIL_CSV_HEADERS,
-  FORMER_MEMBERS_LOOKBACK_MONTHS,
   FORMER_MEMBERS_NO_MEMBERSTACK_SQL,
+  FORMER_MEMBERS_WINDOW_START_YMD,
   FormerMembersReportIncompleteScanError,
   MEMBERSTACK_NOT_FOUND_RESULT,
+  QUALIFICATION_ANNUAL_INSTALLMENT,
+  QUALIFICATION_CONFIRMED_ANNUAL,
   classifyFormerMemberCandidates,
-  formerMemberEmailRowToCsvCells,
-  formerMembersEmailListToCsv,
-  isValidReportEmail,
+  classifyFormerMemberMembershipType,
   loadFormerMembersNoMemberstackReport,
-  subtractMonthsYmd,
-  type FormerMemberCandidateRow,
 } from "./formerMembersNoMemberstackReport";
 
-/** Fixed instant -> America/Los_Angeles calendar day 2026-08-10. */
 const NOW = new Date("2026-08-10T19:00:00Z");
+const ANNUAL_RATE = [...KNOWN_ANNUAL_RATE_IDS][0];
+const INSTALLMENT_RATE = [...KNOWN_INSTALLMENT_RATE_IDS][0];
 
-function candidate(
-  overrides: Partial<FormerMemberCandidateRow> = {},
-): FormerMemberCandidateRow {
+function sampleRow(overrides: Record<string, unknown> = {}) {
   return {
     memberid: "MEM-1",
     fristname: "Ann",
     lastname: "Example",
     email: "ann@example.com",
-    subscriptionexpiring: "2026-03-15T00:00:00.000Z",
+    subscriptiontype: "Premium Membership",
+    subscriptiondate: "2025-01-15T00:00:00.000Z",
+    subscriptionexpiring: "2026-01-15T00:00:00.000Z",
+    days_remaining: -200,
+    monthlysubscriber: 0,
+    subscriptionrenewal: 1,
+    currentsubscriber: 1,
+    stripcustomerid: "cus_123",
+    latest_subscriptionid: 10,
+    latest_amount: "228.0000",
+    latest_processor: "stripe",
+    latest_rate_id: ANNUAL_RATE,
+    latest_monthlybilling: 0,
+    latest_expirationdate: "2026-01-15T00:00:00.000Z",
+    latest_datebought: "2025-01-15T00:00:00.000Z",
+    latest_premium: 1,
+    latest_arb_id: null,
+    subscription_row_count: 1,
+    non_monthly_subscription_row_count: 1,
     ...overrides,
   };
 }
 
-describe("formerMembersNoMemberstackReport", () => {
-  it("defines an eight-month Watson paid-through window SQL", () => {
-    expect(FORMER_MEMBERS_LOOKBACK_MONTHS).toBe(8);
+describe("formerMembersNoMemberstackReport annual audience", () => {
+  it("uses Nov 1 2025 paid-through window SQL", () => {
+    expect(FORMER_MEMBERS_WINDOW_START_YMD).toBe("2025-11-01");
     expect(FORMER_MEMBERS_NO_MEMBERSTACK_SQL).toContain(
       "m.subscriptionexpiring::date < $1::date",
     );
     expect(FORMER_MEMBERS_NO_MEMBERSTACK_SQL).toContain(
       "m.subscriptionexpiring::date >= $2::date",
     );
-    expect(FORMER_MEMBERS_NO_MEMBERSTACK_SQL).toContain("legacy_members");
+    expect(FORMER_MEMBERS_NO_MEMBERSTACK_SQL).toContain("DISTINCT ON (s.memberid_fk)");
   });
 
-  it("subtracts calendar months for the lookback lower bound", () => {
-    expect(subtractMonthsYmd("2026-08-10", 8)).toBe("2025-12-10");
-    expect(subtractMonthsYmd("2026-05-15", 1)).toBe("2026-04-15");
+  it("includes confirmed annual single-payment as email-list eligible type", () => {
+    expect(classifyFormerMemberMembershipType(sampleRow() as never)).toBe(
+      "confirmed_annual_single",
+    );
   });
 
-  it("accepts only normalized email-like addresses", () => {
-    expect(isValidReportEmail("  Sue@Example.com ")).toBe("sue@example.com");
-    expect(isValidReportEmail("not-an-email")).toBeNull();
-    expect(isValidReportEmail("")).toBeNull();
-    expect(isValidReportEmail(null)).toBeNull();
+  it("includes annual installment as email-list eligible type", () => {
+    expect(
+      classifyFormerMemberMembershipType(
+        sampleRow({
+          subscriptiontype: "Basic Membership  - Three Payments",
+          latest_amount: "80.0000",
+          latest_rate_id: INSTALLMENT_RATE,
+          latest_monthlybilling: 0,
+        }) as never,
+      ),
+    ).toBe("annual_installment");
   });
 
-  it("puts strict not_found rows on the email list only", () => {
+  it("excludes monthlysubscriber = 1", () => {
+    expect(
+      classifyFormerMemberMembershipType(
+        sampleRow({ monthlysubscriber: 1, latest_monthlybilling: 1, latest_amount: "19.9900" }) as never,
+      ),
+    ).toBe("monthly_like");
+  });
+
+  it("excludes latest monthlybilling = 1", () => {
+    expect(
+      classifyFormerMemberMembershipType(
+        sampleRow({
+          monthlysubscriber: 0,
+          latest_monthlybilling: 1,
+          latest_amount: "19.9900",
+          latest_rate_id: null,
+        }) as never,
+      ),
+    ).toBe("monthly_like");
+  });
+
+  it("excludes monthly amount even when flags are non-monthly", () => {
+    expect(
+      classifyFormerMemberMembershipType(
+        sampleRow({
+          monthlysubscriber: 0,
+          latest_monthlybilling: 0,
+          latest_amount: "19.9900",
+          latest_rate_id: null,
+          subscriptiontype: "Single Payment",
+        }) as never,
+      ),
+    ).toBe("monthly_like");
+  });
+
+  it("sends unresolved non-monthly to review, not CSV", () => {
     const classified = classifyFormerMemberCandidates(
       [
-        candidate({ memberid: "A", email: "a@x.com" }),
-        candidate({ memberid: "B", email: "b@x.com" }),
-        candidate({ memberid: "C", email: "c@x.com" }),
-        candidate({ memberid: "D", email: "d@x.com" }),
-        candidate({ memberid: "E", email: null }),
-        candidate({
-          memberid: "F1",
-          email: "dup@x.com",
-          subscriptionexpiring: "2026-02-01T00:00:00.000Z",
-        }),
-        candidate({
-          memberid: "F2",
-          email: " Dup@x.com ",
-          subscriptionexpiring: "2026-01-01T00:00:00.000Z",
-        }),
+        sampleRow({
+          memberid: "U1",
+          email: "u@x.com",
+          latest_amount: "70.0000",
+          latest_rate_id: null,
+          latest_monthlybilling: 0,
+          subscriptiontype: null,
+        }) as never,
       ],
-      (email) => {
-        if (email === "a@x.com") return { status: "not_found" };
-        if (email === "b@x.com") {
-          return {
-            status: "unique",
-            member: { id: "mem_b", auth: { email: "b@x.com" } },
-          };
-        }
-        if (email === "c@x.com") return { status: "ambiguous" };
-        if (email === "d@x.com") {
-          return { status: "error", error: "admin failed" };
-        }
-        return { status: "not_found" };
-      },
-    );
-
-    expect(classified.summary.emailList).toBe(1);
-    expect(classified.emailList[0]?.memberid).toBe("A");
-    expect(classified.emailList[0]?.memberstackResult).toBe(
-      MEMBERSTACK_NOT_FOUND_RESULT,
-    );
-    expect(classified.emailList[0]?.qualificationReason).toBe(
-      EMAIL_LIST_QUALIFICATION_REASON,
-    );
-    expect(classified.emailList[0]?.watsonStatus).toBe("Expired");
-
-    expect(classified.summary.memberstackFound).toBe(1);
-    expect(classified.memberstackFound[0]?.memberstackId).toBe("mem_b");
-    expect(classified.summary.ambiguous).toBe(1);
-    expect(classified.summary.lookupError).toBe(1);
-    expect(classified.summary.missingOrInvalidEmail).toBe(1);
-    expect(classified.summary.duplicateWatson).toBe(2);
-    expect(classified.summary.watsonCandidates).toBe(7);
-  });
-
-  it("never puts unique/ambiguous/error matches on the email list", () => {
-    const classified = classifyFormerMemberCandidates(
-      [
-        candidate({ memberid: "U", email: "u@x.com" }),
-        candidate({ memberid: "M", email: "m@x.com" }),
-        candidate({ memberid: "E", email: "e@x.com" }),
-      ],
-      (email) => {
-        if (email === "u@x.com") {
-          return {
-            status: "unique",
-            member: {
-              id: "mem_u",
-              planConnections: [],
-            } as MemberstackMember,
-          };
-        }
-        if (email === "m@x.com") return { status: "ambiguous" };
-        return { status: "error", error: "boom" };
-      },
+      () => ({ status: "not_found" }),
     );
 
     expect(classified.emailList).toEqual([]);
-    expect(classified.summary.emailList).toBe(0);
+    expect(classified.summary.unresolvedMembershipType).toBe(1);
+    expect(classified.unresolvedMembershipType[0]?.bucket).toBe(
+      "unresolved_membership_type",
+    );
   });
 
-  it("exports CSV only for email-list columns", () => {
+  it("puts confirmed annual not_found on the email list with annual qualification", () => {
     const classified = classifyFormerMemberCandidates(
-      [candidate()],
+      [sampleRow({ memberid: "A1", email: "a@x.com" }) as never],
       () => ({ status: "not_found" }),
     );
-    const cells = formerMemberEmailRowToCsvCells(classified.emailList[0]!);
-    expect(cells).toHaveLength(FORMER_MEMBERS_EMAIL_CSV_HEADERS.length);
-    expect(cells[0]).toBe("Ann");
-    expect(cells[1]).toBe("Example");
-    expect(cells[2]).toBe("ann@example.com");
-    expect(cells[4]).toBe("Expired");
-    expect(cells[5]).toBe(MEMBERSTACK_NOT_FOUND_RESULT);
 
-    const csv = formerMembersEmailListToCsv(classified.emailList);
-    expect(csv).toContain("First name,Last name,Email");
-    expect(csv).toContain("ann@example.com");
+    expect(classified.summary.emailList).toBe(1);
+    expect(classified.emailList[0]?.memberstackResult).toBe(MEMBERSTACK_NOT_FOUND_RESULT);
+    expect(classified.emailList[0]?.qualificationReason).toBe(QUALIFICATION_CONFIRMED_ANNUAL);
+    expect(classified.emailList[0]?.annualKind).toBe("confirmed_annual_single");
   });
 
-  it("fails closed when the Memberstack scan is truncated", async () => {
-    const queryFn = vi.fn().mockResolvedValueOnce([candidate()]);
-    await expect(
-      loadFormerMembersNoMemberstackReport({
-        now: NOW,
-        queryFn,
-        loadMemberstackMembers: async () => ({ members: [], truncated: true }),
+  it("puts installment not_found on the email list with installment qualification", () => {
+    const classified = classifyFormerMemberCandidates(
+      [
+        sampleRow({
+          memberid: "I1",
+          email: "i@x.com",
+          subscriptiontype: "Basic Membership  - Three Payments",
+          latest_amount: "80.0000",
+          latest_rate_id: INSTALLMENT_RATE,
+        }) as never,
+      ],
+      () => ({ status: "not_found" }),
+    );
+
+    expect(classified.summary.emailList).toBe(1);
+    expect(classified.emailList[0]?.qualificationReason).toBe(
+      QUALIFICATION_ANNUAL_INSTALLMENT,
+    );
+    expect(classified.emailList[0]?.annualKind).toBe("annual_installment");
+  });
+
+  it("excludes Memberstack account found from the email CSV", () => {
+    const classified = classifyFormerMemberCandidates(
+      [sampleRow({ memberid: "F1", email: "f@x.com" }) as never],
+      () => ({
+        status: "unique",
+        member: { id: "mem_f", auth: { email: "f@x.com" }, planConnections: [] },
       }),
-    ).rejects.toBeInstanceOf(FormerMembersReportIncompleteScanError);
+    );
+
+    expect(classified.emailList).toEqual([]);
+    expect(classified.summary.memberstackFound).toBe(1);
+    expect(classified.summary.confirmedAnnualSingle).toBe(1);
+  });
+
+  it("respects the November 1 2025 cutoff via SQL bind, not expiration inference", async () => {
+    const queryFn = vi.fn().mockResolvedValueOnce([]);
+    await loadFormerMembersNoMemberstackReport({
+      now: NOW,
+      queryFn,
+      loadMemberstackMembers: async () => ({ members: [], truncated: false }),
+    });
 
     expect(queryFn).toHaveBeenCalledWith(FORMER_MEMBERS_NO_MEMBERSTACK_SQL, [
       "2026-08-10",
-      "2025-12-10",
+      "2025-11-01",
     ]);
+  });
+
+  it("groups email-list rows by expiration month", () => {
+    const classified = classifyFormerMemberCandidates(
+      [
+        sampleRow({
+          memberid: "M1",
+          email: "m1@x.com",
+          subscriptionexpiring: "2026-01-10T00:00:00.000Z",
+        }) as never,
+        sampleRow({
+          memberid: "M2",
+          email: "m2@x.com",
+          subscriptionexpiring: "2026-01-20T00:00:00.000Z",
+        }) as never,
+        sampleRow({
+          memberid: "M3",
+          email: "m3@x.com",
+          subscriptionexpiring: "2026-03-01T00:00:00.000Z",
+        }) as never,
+      ],
+      () => ({ status: "not_found" }),
+    );
+
+    expect(classified.summary.emailListByExpirationMonth).toEqual([
+      { month: "2026-01", count: 2 },
+      { month: "2026-03", count: 1 },
+    ]);
+  });
+
+  it("fails closed when the Memberstack scan is truncated", async () => {
+    await expect(
+      loadFormerMembersNoMemberstackReport({
+        now: NOW,
+        queryFn: vi.fn().mockResolvedValueOnce([sampleRow()]),
+        loadMemberstackMembers: async () => ({ members: [], truncated: true }),
+      }),
+    ).rejects.toBeInstanceOf(FormerMembersReportIncompleteScanError);
   });
 
   it("fails closed when the Memberstack scan throws", async () => {
     await expect(
       loadFormerMembersNoMemberstackReport({
         now: NOW,
-        queryFn: vi.fn().mockResolvedValueOnce([candidate()]),
+        queryFn: vi.fn().mockResolvedValueOnce([sampleRow()]),
         loadMemberstackMembers: async () => {
-          throw new Error("admin not configured");
+          throw new Error("admin unavailable");
         },
       }),
     ).rejects.toThrow(/refusing to build the email list/i);
   });
 
-  it("loads and classifies through shared Watson + Memberstack utilities", async () => {
-    const queryFn = vi
-      .fn()
-      .mockResolvedValueOnce([
-        candidate({ memberid: "OK", email: "ok@x.com" }),
-        candidate({ memberid: "HAS", email: "has@x.com" }),
-      ]);
+  it("keeps monthly-like out of Memberstack email resolution path", () => {
+    const resolve = vi.fn(() => ({ status: "not_found" as const }));
+    const classified = classifyFormerMemberCandidates(
+      [
+        sampleRow({
+          memberid: "MON",
+          email: "mon@x.com",
+          monthlysubscriber: 1,
+          latest_monthlybilling: 1,
+          latest_amount: "19.9900",
+        }) as never,
+        sampleRow({ memberid: "ANN", email: "ann@x.com" }) as never,
+      ],
+      resolve,
+    );
 
-    const report = await loadFormerMembersNoMemberstackReport({
-      now: NOW,
-      queryFn,
-      loadMemberstackMembers: async () => ({
-        members: [
-          {
-            id: "mem_has",
-            auth: { email: "has@x.com" },
-            planConnections: [],
-          },
-        ],
-        truncated: false,
-      }),
-    });
-
-    expect(report.todayLosAngeles).toBe("2026-08-10");
-    expect(report.windowStartYmd).toBe("2025-12-10");
-    expect(report.summary.emailList).toBe(1);
-    expect(report.emailList[0]?.email).toBe("ok@x.com");
-    expect(report.summary.memberstackFound).toBe(1);
-    expect(report.memberstackFound[0]?.memberstackId).toBe("mem_has");
-    expect(report.note).toContain("Read-only");
-  });
-
-  it("supports an injected async Memberstack resolver for tests", async () => {
-    const report = await loadFormerMembersNoMemberstackReport({
-      now: NOW,
-      queryFn: vi.fn().mockResolvedValueOnce([
-        candidate({ memberid: "1", email: "gone@x.com" }),
-        candidate({ memberid: "2", email: "err@x.com" }),
-      ]),
-      resolveMemberstackMemberByEmail: async (email) => {
-        if (email === "gone@x.com") return { status: "not_found" };
-        return { status: "error", error: "timeout" };
-      },
-    });
-
-    expect(report.summary.emailList).toBe(1);
-    expect(report.summary.lookupError).toBe(1);
+    expect(classified.summary.monthlyLike).toBe(1);
+    expect(classified.summary.emailList).toBe(1);
+    expect(resolve).toHaveBeenCalledTimes(1);
+    expect(resolve).toHaveBeenCalledWith("ann@x.com");
   });
 });
