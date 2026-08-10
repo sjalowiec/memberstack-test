@@ -1,0 +1,42 @@
+---
+import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
+import WatsonFormerMembersNoMemberstackReport from "../../../components/watson/WatsonFormerMembersNoMemberstackReport.astro";
+import {
+  loadFormerMembersNoMemberstackReport,
+  type FormerMembersNoMemberstackReport,
+} from "../../../lib/watson/formerMembersNoMemberstackReport";
+
+export const prerender = false;
+
+let reportError: string | null = null;
+let report: FormerMembersNoMemberstackReport | null = null;
+
+try {
+  report = await loadFormerMembersNoMemberstackReport();
+} catch (error) {
+  reportError =
+    error instanceof Error
+      ? error.message
+      : "Former members (no Memberstack) report failed to load.";
+}
+---
+
+<WatsonPageShell
+  title="Former Members — No Memberstack Account | Watson Reports"
+  description="Read-only list of former Watson members with no Memberstack account for outreach review."
+  heading="Former Members — No Memberstack Account"
+  intro="Strict read-only email list: Watson paid-through ended in the last eight months, and live Memberstack lookup returned not_found."
+>
+  <p class="watson-report__meta">
+    <a href="/watson/reports">← All reports</a>
+  </p>
+  {
+    reportError ? (
+      <p class="watson__status watson__status--error" role="alert">
+        {reportError}
+      </p>
+    ) : report ? (
+      <WatsonFormerMembersNoMemberstackReport report={report} />
+    ) : null
+  }
+</WatsonPageShell>

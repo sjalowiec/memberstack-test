@@ -144,14 +144,21 @@ describe("Watson member search pages", () => {
       path.resolve("src/pages/watson/reports/remaining-annual-access.astro"),
       "utf8",
     );
+    const formerNoMemberstack = fs.readFileSync(
+      path.resolve("src/pages/watson/reports/former-members-no-memberstack.astro"),
+      "utf8",
+    );
 
     expect(reportsIndex).toContain("/watson/reports/current-legacy-members");
     expect(reportsIndex).toContain("/watson/reports/remaining-annual-access");
+    expect(reportsIndex).toContain("/watson/reports/former-members-no-memberstack");
     expect(reportsIndex).toContain("/watson/pattern-inspector");
     expect(currentMembers).toContain("loadCurrentLegacyMembersReport");
     expect(currentMembers).toContain('export const prerender = false');
     expect(annualAccess).toContain("loadRemainingAnnualAccessReport");
     expect(annualAccess).toContain('export const prerender = false');
+    expect(formerNoMemberstack).toContain("loadFormerMembersNoMemberstackReport");
+    expect(formerNoMemberstack).toContain('export const prerender = false');
   });
 
   it("defines the read-only legacy renewals preview page and nav link", () => {

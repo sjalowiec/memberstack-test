@@ -12,9 +12,9 @@ Rules that also apply here:
 
 - Memberstack remains authoritative for live membership.
 - Unique email-linked legacy rows may supply `legacyExpirationDate` / previous plan labels as history only.
-- Ambiguous shared emails never auto-link another customerùs history.
+- Ambiguous shared emails never auto-link another customer?s history.
 - Legacy expiration never grants current access and must not be worded as current access.
-- Future/today legacy paid-through (America/Los_Angeles calendar compare) ? contact support before purchase; past ? ìended onî + purchase allowed.
+- Future/today legacy paid-through (America/Los_Angeles calendar compare) ? contact support before purchase; past ? ?ended on? + purchase allowed.
 - Checkout protection on the sales page stays independent of this summary.
 
 ## Current Legacy Members
@@ -23,7 +23,7 @@ Rules that also apply here:
 
 ### Purpose
 
-Reproduce the current-membership universe used by Matthewùs legacy ColdFusion active-subscriptions screens.
+Reproduce the current-membership universe used by Matthew?s legacy ColdFusion active-subscriptions screens.
 
 ### Universe (legacy current-state fields)
 
@@ -41,7 +41,7 @@ One row per `legacy_members` row. Active status is **not** taken from `legacy_su
 ### Display notes
 
 - Null/blank `subscriptiontype` is shown as **Membership, legacy type blank**.
-- Latest subscription amount, processor, rate ID, and expiration are enrichment from the memberùs latest `legacy_subscriptions` row (`ORDER BY datebought DESC`). They are not what the legacy screen used to decide ùactive.ù
+- Latest subscription amount, processor, rate ID, and expiration are enrichment from the member?s latest `legacy_subscriptions` row (`ORDER BY datebought DESC`). They are not what the legacy screen used to decide ?active.?
 - This report reflects imported current-state fields. It does **not** claim perfect accuracy.
 
 ### Summary cards
@@ -84,7 +84,7 @@ Applied in this order:
    Three-payment subscription types, known installment rate IDs, or amounts `$45 / $50 / $80`.
 
 4. **Probable annual, single payment**  
-   Non-monthly with annual-looking amount and/or ~300ù450 day member term, but missing/blank/inconsistent type or rate.
+   Non-monthly with annual-looking amount and/or ~300?450 day member term, but missing/blank/inconsistent type or rate.
 
 5. **Unresolved non-monthly**  
    Remaining current non-monthly members that do not fit a reliable product rule.
@@ -137,9 +137,56 @@ Shown separately (never collapsed into one approximate annual total):
 - Unresolved non-monthly
 - Expiring within 30 / 60 / 90 days
 
+## Former Members - No Memberstack Account
+
+**Route:** `/watson/reports/former-members-no-memberstack`
+
+### Purpose
+
+Build a **strict, read-only email list** of former members whose old login will not work because they have no Memberstack account. Does not send email and does not mutate Memberstack, ActiveCampaign, Stripe, or Watson.
+
+### Watson universe
+
+```sql
+subscriptionexpiring IS NOT NULL
+AND subscriptionexpiring::date < today_Los_Angeles
+AND subscriptionexpiring::date >= today_Los_Angeles - 8 months
+```
+
+Uses `legacy_members.subscriptionexpiring` only for the end-date window. Does **not** treat the free Memberstack Legacy plan as evidence that membership expired.
+
+### Memberstack rule (strict)
+
+Live Admin scan (`listMembers`) indexed by normalized email:
+
+| Resolution | Email CSV? | Review bucket |
+|---|---|---|
+| `not_found` | **Yes** | Email list |
+| `unique` | No | Memberstack account found |
+| `ambiguous` | No | Ambiguous email match |
+| `error` | No | Lookup error |
+| Missing / invalid email | No | Missing or invalid email |
+| Same email on multiple Watson member IDs | No | Duplicate Watson record |
+
+**Fail closed:** if the Memberstack member scan fails or is truncated, the report does not load an email list and never interprets an incomplete scan as `not_found`.
+
+### Email CSV columns
+
+First name, Last name, Email, Old subscription end date, Watson status, Memberstack result, Qualification reason.
+
+### Code
+
+| Piece | Path |
+|---|---|
+| Report logic | `src/lib/watson/formerMembersNoMemberstackReport.ts` |
+| UI | `src/components/watson/WatsonFormerMembersNoMemberstackReport.astro` |
+| Page | `src/pages/watson/reports/former-members-no-memberstack.astro` |
+
 ## Filters and CSV
 
-Both reports support in-page filters and CSV export of the **currently filtered** rows. Export is client-side from the loaded report.
+Current Legacy Members and Remaining Annual Access support in-page filters and CSV export of the **currently filtered** rows. Export is client-side from the loaded report.
+
+The Former Members - No Memberstack report exports CSV for the **strict email list only**.
 
 ## Code
 
@@ -148,5 +195,6 @@ Both reports support in-page filters and CSV export of the **currently filtered*
 | Shared query / helpers | `src/lib/watson/legacyMembershipReportsShared.ts` |
 | Current members report | `src/lib/watson/currentLegacyMembersReport.ts` |
 | Remaining annual report | `src/lib/watson/remainingAnnualAccessReport.ts` |
-| UI | `src/components/watson/WatsonCurrentLegacyMembersReport.astro`, `WatsonRemainingAnnualAccessReport.astro` |
-| Pages | `src/pages/watson/reports/current-legacy-members.astro`, `remaining-annual-access.astro` |
+| Former members (no Memberstack) | `src/lib/watson/formerMembersNoMemberstackReport.ts` |
+| UI | `src/components/watson/WatsonCurrentLegacyMembersReport.astro`, `WatsonRemainingAnnualAccessReport.astro`, `WatsonFormerMembersNoMemberstackReport.astro` |
+| Pages | `src/pages/watson/reports/current-legacy-members.astro`, `remaining-annual-access.astro`, `former-members-no-memberstack.astro` |

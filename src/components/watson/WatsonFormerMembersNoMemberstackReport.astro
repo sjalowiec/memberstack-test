@@ -1,0 +1,313 @@
+---
+import type { FormerMembersNoMemberstackReport } from "../../lib/watson/formerMembersNoMemberstackReport";
+import {
+  FORMER_MEMBERS_EMAIL_CSV_HEADERS,
+  formerMemberEmailRowToCsvCells,
+} from "../../lib/watson/formerMembersNoMemberstackReport";
+
+interface Props {
+  report: FormerMembersNoMemberstackReport;
+}
+
+const { report } = Astro.props;
+const { summary, note, asOfDateDisplay, todayLosAngeles, windowStartYmd, lookbackMonths } =
+  report;
+
+function reviewTable(
+  rows: FormerMembersNoMemberstackReport["memberstackFound"],
+  emptyMessage: string,
+) {
+  return { rows, emptyMessage };
+}
+
+const reviewSections = [
+  {
+    id: "memberstack-found",
+    title: "Memberstack account found",
+    count: summary.memberstackFound,
+    ...reviewTable(
+      report.memberstackFound,
+      "No candidates matched a unique Memberstack account.",
+    ),
+  },
+  {
+    id: "ambiguous",
+    title: "Ambiguous email match",
+    count: summary.ambiguous,
+    ...reviewTable(
+      report.ambiguous,
+      "No ambiguous Memberstack email matches.",
+    ),
+  },
+  {
+    id: "lookup-error",
+    title: "Lookup error",
+    count: summary.lookupError,
+    ...reviewTable(report.lookupError, "No Memberstack lookup errors."),
+  },
+  {
+    id: "missing-email",
+    title: "Missing or invalid email",
+    count: summary.missingOrInvalidEmail,
+    ...reviewTable(
+      report.missingOrInvalidEmail,
+      "No candidates with missing or invalid email.",
+    ),
+  },
+  {
+    id: "duplicate-watson",
+    title: "Duplicate Watson record",
+    count: summary.duplicateWatson,
+    ...reviewTable(
+      report.duplicateWatson,
+      "No duplicate Watson emails in this window.",
+    ),
+  },
+];
+---
+
+<section
+  class="watson__panel watson--report-wide"
+  aria-labelledby="former-members-no-ms-heading"
+  data-former-members-no-ms-report
+>
+  <h2 id="former-members-no-ms-heading" class="watson__panel-title">
+    Former Members — No Memberstack Account
+  </h2>
+  <p class="watson-report__note">{note}</p>
+  <p class="watson-report__meta">
+    As of {asOfDateDisplay} (America/Los_Angeles {todayLosAngeles}). Watson
+    paid-through from {windowStartYmd} through yesterday ({lookbackMonths}-month
+    lookback).
+  </p>
+
+  <div class="watson-report__cards" data-summary-cards>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Watson candidates</h3>
+      <p class="watson-report__card-value">
+        {summary.watsonCandidates.toLocaleString("en-US")}
+      </p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Email list (not_found)</h3>
+      <p class="watson-report__card-value" data-summary="emailList">
+        {summary.emailList.toLocaleString("en-US")}
+      </p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Memberstack account found</h3>
+      <p class="watson-report__card-value">
+        {summary.memberstackFound.toLocaleString("en-US")}
+      </p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Ambiguous email match</h3>
+      <p class="watson-report__card-value">
+        {summary.ambiguous.toLocaleString("en-US")}
+      </p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Lookup error</h3>
+      <p class="watson-report__card-value">
+        {summary.lookupError.toLocaleString("en-US")}
+      </p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Missing or invalid email</h3>
+      <p class="watson-report__card-value">
+        {summary.missingOrInvalidEmail.toLocaleString("en-US")}
+      </p>
+    </article>
+    <article class="watson-report__card">
+      <h3 class="watson-report__card-label">Duplicate Watson record</h3>
+      <p class="watson-report__card-value">
+        {summary.duplicateWatson.toLocaleString("en-US")}
+      </p>
+    </article>
+  </div>
+
+  <section aria-labelledby="email-list-heading" class="watson-report__section">
+    <div class="watson-report__section-header">
+      <h3 id="email-list-heading" class="watson__panel-title" style="font-size:1rem;">
+        Email list (strict not_found)
+      </h3>
+      <button type="button" class="watson-report__button" data-action="csv">
+        Download email CSV
+      </button>
+    </div>
+    <p class="watson-report__count">
+      {summary.emailList.toLocaleString("en-US")} people for outreach. CSV includes
+      only this list.
+    </p>
+
+    {
+      report.emailList.length === 0 ? (
+        <p class="watson__placeholder">
+          No former members matched the strict no-Memberstack criteria.
+        </p>
+      ) : (
+        <div class="watson__table-wrap">
+          <table class="watson-table" data-email-list-table>
+            <thead>
+              <tr>
+                <th scope="col">First name</th>
+                <th scope="col">Last name</th>
+                <th scope="col">Email</th>
+                <th scope="col">Old subscription end date</th>
+                <th scope="col">Watson status</th>
+                <th scope="col">Memberstack result</th>
+                <th scope="col">Qualification reason</th>
+                <th scope="col">Legacy member ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                report.emailList.map((row) => (
+                  <tr>
+                    <td>{row.firstName ?? "—"}</td>
+                    <td>{row.lastName ?? "—"}</td>
+                    <td>{row.email ?? "—"}</td>
+                    <td>{row.subscriptionExpiringDisplay ?? "—"}</td>
+                    <td>{row.watsonStatus}</td>
+                    <td>{row.memberstackResult}</td>
+                    <td>{row.qualificationReason}</td>
+                    <td>
+                      <a href={row.profileHref}>{row.memberid}</a>
+                    </td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      )
+    }
+  </section>
+
+  <section aria-labelledby="review-heading" class="watson-report__section">
+    <h3 id="review-heading" class="watson__panel-title" style="font-size:1rem;">
+      Review buckets (excluded from email CSV)
+    </h3>
+
+    {
+      reviewSections.map((section) => (
+        <details class="watson-report__details" open={section.count > 0 && section.count <= 50}>
+          <summary>
+            {section.title}
+            <span class="watson-report__details-count">
+              ({section.count.toLocaleString("en-US")})
+            </span>
+          </summary>
+          {section.rows.length === 0 ? (
+            <p class="watson__placeholder">{section.emptyMessage}</p>
+          ) : (
+            <div class="watson__table-wrap">
+              <table class="watson-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Old subscription end date</th>
+                    <th scope="col">Watson status</th>
+                    <th scope="col">Memberstack result</th>
+                    <th scope="col">Memberstack ID</th>
+                    <th scope="col">Reason</th>
+                    <th scope="col">Legacy member ID</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {section.rows.map((row) => (
+                    <tr>
+                      <td>{row.name}</td>
+                      <td>{row.email ?? "—"}</td>
+                      <td>{row.subscriptionExpiringDisplay ?? "—"}</td>
+                      <td>{row.watsonStatus}</td>
+                      <td>{row.memberstackResult}</td>
+                      <td>{row.memberstackId ?? "—"}</td>
+                      <td>{row.qualificationReason}</td>
+                      <td>
+                        <a href={row.profileHref}>{row.memberid}</a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </details>
+      ))
+    }
+  </section>
+</section>
+
+<script
+  define:vars={{
+    emailCsvHeaders: FORMER_MEMBERS_EMAIL_CSV_HEADERS,
+    emailCsvRows: report.emailList.map(formerMemberEmailRowToCsvCells),
+  }}
+>
+  const root = document.querySelector("[data-former-members-no-ms-report]");
+  if (root) {
+    function escapeCsvCell(value) {
+      const text = value == null ? "" : String(value);
+      if (/[",\n\r]/.test(text)) {
+        return `"${text.replace(/"/g, '""')}"`;
+      }
+      return text;
+    }
+
+    root.querySelector('[data-action="csv"]')?.addEventListener("click", () => {
+      const lines = [
+        emailCsvHeaders.map(escapeCsvCell).join(","),
+        ...emailCsvRows.map((row) => row.map(escapeCsvCell).join(",")),
+      ];
+      const blob = new Blob([`${lines.join("\r\n")}\r\n`], {
+        type: "text/csv;charset=utf-8",
+      });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = "former-members-no-memberstack-email-list.csv";
+      anchor.click();
+      URL.revokeObjectURL(url);
+    });
+  }
+</script>
+
+<style>
+  .watson-report__section {
+    margin-top: 1.75rem;
+  }
+
+  .watson-report__section-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .watson-report__details {
+    margin: 0.75rem 0;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--watson-border, #d6d3d1);
+    border-radius: 0.35rem;
+    background: var(--watson-panel-bg, #fff);
+  }
+
+  .watson-report__details summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .watson-report__details-count {
+    font-weight: 500;
+    opacity: 0.8;
+  }
+
+  .watson-report__details .watson__table-wrap,
+  .watson-report__details .watson__placeholder {
+    margin-top: 0.75rem;
+  }
+</style>
