@@ -1,0 +1,9 @@
+---
+export const prerender = true;
+
+/**
+ * Catalog and share links use the plural /references/ path.
+ * The guide itself lives under the site's established /reference/ tree.
+ */
+return Astro.redirect("/reference/knitting-machine-table", 301);
+---
