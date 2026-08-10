@@ -13,6 +13,7 @@ import {
   buildFourWedgeCrownSetup,
   buildFourWedgeDecreaseSchedule,
   calculateHatPattern,
+  gatheredCrownRemainingStitches,
 } from "./hatMath";
 import {
   buildHatShapingNotationDiagramSvg,
@@ -394,15 +395,19 @@ describe("buildHatShapingNotationDiagramSvg", () => {
   it("spaces gathered crown notation so lines do not collide", () => {
     const calc = calcFor({ crown: "gathered" });
     const patternCastOn = applyHatCrownCastOnAdjustment(calc.castOnSts, calc.crown);
+    const remaining = gatheredCrownRemainingStitches(patternCastOn);
     const svg = buildHatShapingNotationDiagramSvg(calc, "inches", formatters);
     const crownGroup = svg.match(
       /<g class="hat-shaping-diagram__crown hat-shaping-diagram__crown--gathered"[\s\S]*?<\/g>/,
     )?.[0];
     expect(crownGroup).toBeTruthy();
-    expect(crownGroup).toContain("EO xfer");
-    expect(crownGroup).toContain(`${patternCastOn} sts`);
-    expect(crownGroup).toContain("gather");
+    expect(crownGroup).not.toContain("EO xfer");
+    expect(crownGroup).toContain(`${remaining} sts`);
+    expect(crownGroup).not.toContain(`${patternCastOn} sts`);
+    expect(crownGroup).toContain(`Knit ${calc.crownRowCount} rows`);
+    expect(crownGroup).toContain("Gather");
     expect(crownGroup).toContain(">Crown<");
+    expect(svg).toContain(formatHatShapingCastOnLabel(patternCastOn));
 
     const textYs = [...crownGroup!.matchAll(/\by="([\d.]+)"/g)].map((m) => Number(m[1]));
     expect(textYs.length).toBeGreaterThanOrEqual(4);
@@ -436,11 +441,11 @@ describe("buildHatShapingNotationDiagramSvg", () => {
   });
 
   it("changes structure for each crown style and keeps crown shaping notation", () => {
-    const gathered = buildHatShapingNotationDiagramSvg(
-      calcFor({ crown: "gathered" }),
-      "inches",
-      formatters,
+    const gatheredCalc = calcFor({ crown: "gathered" });
+    const gatheredRemaining = gatheredCrownRemainingStitches(
+      applyHatCrownCastOnAdjustment(gatheredCalc.castOnSts, "gathered"),
     );
+    const gathered = buildHatShapingNotationDiagramSvg(gatheredCalc, "inches", formatters);
     const wedge = buildHatShapingNotationDiagramSvg(
       withFourWedge(calcFor({ crown: "wedge-4-decrease" })),
       "inches",
@@ -451,8 +456,10 @@ describe("buildHatShapingNotationDiagramSvg", () => {
     const spiral = buildHatShapingNotationDiagramSvg(spiralCalc, "inches", formatters);
 
     expect(gathered).toContain('data-crown="gathered"');
-    expect(gathered).toContain("EO xfer");
-    expect(gathered).toContain("gather");
+    expect(gathered).not.toContain("EO xfer");
+    expect(gathered).toContain(`${gatheredRemaining} sts`);
+    expect(gathered).toContain(`Knit ${gatheredCalc.crownRowCount} rows`);
+    expect(gathered).toContain("Gather");
     expect(gathered).not.toContain("hat-shaping-diagram__crown--four-gore");
 
     expect(wedge).toContain('data-crown="wedge-4-decrease"');
@@ -464,6 +471,26 @@ describe("buildHatShapingNotationDiagramSvg", () => {
     expect(spiral).toContain("hat-shaping-diagram__crown--swirl");
     expect(spiral).toContain(`${spiralPlan.decreasePoints} pts`);
     expect(spiral).toContain(`→ ${spiralPlan.targetStitches} sts`);
+  });
+
+  it("gathered crown shows post-transfer stitch count for CO 86", () => {
+    const calc = calcFor({
+      finishedHatCircInches: 86,
+      stitchGaugeDisplay: 4,
+      crown: "gathered",
+    });
+    expect(calc.castOnSts).toBe(86);
+    const remaining = gatheredCrownRemainingStitches(86);
+    expect(remaining).toBe(43);
+    const svg = buildHatShapingNotationDiagramSvg(calc, "inches", formatters);
+    const crownGroup = svg.match(
+      /<g class="hat-shaping-diagram__crown hat-shaping-diagram__crown--gathered"[\s\S]*?<\/g>/,
+    )?.[0];
+    expect(crownGroup).toContain("43 sts");
+    expect(crownGroup).not.toContain("86 sts");
+    expect(crownGroup).not.toContain("EO xfer");
+    expect(crownGroup).toContain(`Knit ${calc.crownRowCount} rows`);
+    expect(svg).toContain("CO 86 sts");
   });
 
   it("represents each brim type", () => {

@@ -5,7 +5,7 @@ import {
   convertLength,
   formatLength,
 } from "../../../components/wizards/utils/unitHelpers";
-import { calculateHatPattern } from "./hatMath";
+import { calculateHatPattern, gatheredCrownRemainingStitches, hatCrownEndingRow } from "./hatMath";
 import { buildHatPatternHtml } from "./hatInstructions";
 import {
   HAT_MATTRESS_STITCH_VIDEO_CONTENT_ID,
@@ -120,33 +120,37 @@ describe("hatGatheredTopVideoTip", () => {
 
   it("returns plain gather phrase when video cannot be resolved", () => {
     expect(buildHatGatheredTopVideoHtml(null)).toBe("gather the remaining stitches");
+    expect(buildHatGatheredTopVideoHtml(null, 43)).toBe(
+      "gather the remaining 43 stitches",
+    );
   });
 
   it("appears exactly once in gathered-crown instructions at the break-and-gather step", () => {
+    const calc = calcFor("gathered");
+    const remaining = gatheredCrownRemainingStitches(calc.castOnSts);
+    const ending = hatCrownEndingRow(calc);
     const html = patternHtml("gathered");
     expect(countContentId(html, HAT_GATHERED_TOP_VIDEO_CONTENT_ID)).toBe(1);
     expect(html).toContain('data-testid="hat-gathered-top-video-watch"');
     expect(html).toContain(`aria-label="${HAT_GATHERED_TOP_WATCH_LABEL}"`);
     expect(html).toContain("kbm-kin-catalog-video glossary-tooltip-trigger");
-    expect(html).toContain(HAT_GATHERED_TOP_VISIBLE_TEXT);
+    expect(html).toContain(`gather the remaining ${remaining} stitches`);
 
     expect(html).toContain(
-      `After knitting the full hat length, break the yarn, leaving a 12" tail, and `,
+      `Transfer every other stitch to its neighboring needle, leaving the emptied needles out of work. ${remaining} stitches remain.`,
     );
-    expect(html).toContain(
-      "Use a darning needle to run the yarn tail through the remaining live stitches and draw closed.",
-    );
+    expect(html).toContain(`Knit ${calc.crownRowCount} rows. RC is now ${ending}.`);
+    expect(html).toContain(`Break the yarn, leaving a 12" tail, and `);
+    expect(html).not.toContain("After knitting the full hat length");
 
     const crownIdx = html.indexOf('data-section-id="crown"');
     const videoIdx = html.indexOf(
       `data-content-id="${HAT_GATHERED_TOP_VIDEO_CONTENT_ID}"`,
     );
-    const darningIdx = html.indexOf(
-      "Use a darning needle to run the yarn tail through the remaining live stitches and draw closed.",
-    );
+    const knitIdx = html.indexOf(`Knit ${calc.crownRowCount} rows. RC is now ${ending}.`);
     expect(crownIdx).toBeGreaterThan(-1);
-    expect(videoIdx).toBeGreaterThan(crownIdx);
-    expect(darningIdx).toBeGreaterThan(videoIdx);
+    expect(knitIdx).toBeGreaterThan(crownIdx);
+    expect(videoIdx).toBeGreaterThan(knitIdx);
   });
 
   it("does not appear in swirl or four-gore instructions", () => {
@@ -175,7 +179,7 @@ describe("hatGatheredTopVideoTip", () => {
       /crown === "gathered"[\s\S]*buildHatGatheredTopVideoHtml/,
     );
     expect(instructionsSource).toMatch(
-      /break the yarn, leaving \$\{breakYarnTailPhrase\}, and \$\{gatherRemainingStitchesVideoHtml\}/,
+      /Break the yarn, leaving \$\{breakYarnTailPhrase\}, and \$\{gatherRemainingStitchesVideoHtml\}/,
     );
     expect(tipModuleSource).toContain("HAT_GATHERED_TOP_VIDEO_CONTENT_ID = 587");
     expect(tipModuleSource).toContain("glossary-tooltip-label");

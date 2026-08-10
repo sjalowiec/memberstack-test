@@ -12,6 +12,7 @@ import {
   applyHatCrownCastOnAdjustment,
   buildFourWedgeCrownSetup,
   buildFourWedgeDecreaseSchedule,
+  gatheredCrownRemainingStitches,
   hatBrimDisplayLabel,
   resolveHatBrimType,
   type HatBrimType,
@@ -139,10 +140,12 @@ function buildShapingLabels(calc: HatPatternCalc): ShapingLabels {
 
   if (crownKind === "gathered") {
     title = "Gathered hat shaping notation diagram";
-    // Single stack: transfer · stitch count · gather (avoids overlapping callouts)
-    crownLines.push("EO xfer");
-    crownLines.push(`${patternCastOn} sts`);
-    crownLines.push("gather");
+    const remainingStitches = gatheredCrownRemainingStitches(patternCastOn);
+    const crownRows = Math.max(0, Math.floor(calc.crownRowCount));
+    // Post-transfer count · crown rows · gather (never show cast-on in the crown).
+    crownLines.push(`${remainingStitches} sts`);
+    crownLines.push(`Knit ${crownRows} rows`);
+    crownLines.push("Gather");
   } else if (crownKind === "wedge" && fourWedge) {
     title = "Four-gore hat shaping notation diagram";
     const schedule = buildFourWedgeDecreaseSchedule(
@@ -194,7 +197,7 @@ function buildShapingFrame(calc: HatPatternCalc): ShapingFrame {
   const bodyIn = Math.max(0.25, calc.bodyHeightInches || 0.25);
   const crownIn =
     crownKind === "gathered"
-      ? Math.max(0.85, Math.min(1.35, brimIn * 0.55 + 0.55))
+      ? Math.max(0.85, calc.crownHeightInches || 0.85)
       : Math.max(0.5, calc.crownHeightInches || 0.5);
 
   const rawTotal = brimIn + bodyIn + crownIn;

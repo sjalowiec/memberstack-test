@@ -7,6 +7,9 @@ import {
   applyHatCrownCastOnAdjustment,
   buildFourWedgeCrownSetup,
   buildFourWedgeDecreaseSchedule,
+  gatheredCrownRemainingStitches,
+  hatCrownEndingRow,
+  hatCrownStartRow,
   type HatPatternCalc,
   type HatSpiralPlan,
 } from "./hatMath";
@@ -175,7 +178,12 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
       : formatLength(convertLength(brimDepth, "inches", "cm"), "cm");
 
   // Continuous RC from cast-on (matches swirl crown Row N labels and four-wedge crownStartRow).
-  const crownStartRow = brimRows + bodyRows;
+  const crownStartRow = hatCrownStartRow({ brimRows, bodyRows });
+  const crownEndingRow = hatCrownEndingRow({
+    brimRows,
+    bodyRows,
+    crownRowCount,
+  });
   const unit = currentUnit === "inches" ? "inches" : "cm";
 
   const patternCastOnSts = applyHatCrownCastOnAdjustment(castOnSts, crown);
@@ -270,13 +278,17 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
       </figure>
       ${buildSpiralCrownInstructions(patternCastOnSts, crownStartRow, spiralPlan)}`;
   } else if (crown === "gathered") {
+    const remainingStitches = gatheredCrownRemainingStitches(patternCastOnSts);
     // Inline gather video once (gathered crown only) on the break-and-gather step.
-    const gatherRemainingStitchesVideoHtml = buildHatGatheredTopVideoHtml();
+    const gatherRemainingStitchesVideoHtml = buildHatGatheredTopVideoHtml(
+      undefined,
+      remainingStitches,
+    );
     crownInstructions = `
-      <p>Transfer every other needle to its neighbor, leaving emptied needles out of work.</p>
+      <p>Transfer every other stitch to its neighboring needle, leaving the emptied needles out of work. ${remainingStitches} stitches remain.</p>
       <div class="pattern-tip" data-tip data-tip-id="hat-crown-seaming-edges"><strong>Tip:</strong> Keep 2 stitches in work on each edge for seaming.</div>
-      <p>After knitting the full hat length, break the yarn, leaving ${breakYarnTailPhrase}, and ${gatherRemainingStitchesVideoHtml}.</p>
-      <p>Use a darning needle to run the yarn tail through the remaining live stitches and draw closed.</p>
+      <p>Knit ${crownRowCount} rows. RC is now ${crownEndingRow}.</p>
+      <p>Break the yarn, leaving ${breakYarnTailPhrase}, and ${gatherRemainingStitchesVideoHtml}.</p>
     `;
   } else {
     crownInstructions = `

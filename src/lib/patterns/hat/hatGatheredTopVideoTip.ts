@@ -48,14 +48,23 @@ export function isHatGatheredTopVideoFree(
 }
 
 /**
- * Inline “gather the remaining stitches” control for gathered-crown instructions.
+ * Inline gather control for gathered-crown instructions.
  * Uses glossary label/underline treatment; opens KinCatalogVideoModal (no tooltip).
  * Returns plain text when the catalog video cannot be resolved (no dead control).
  */
+export function hatGatheredTopVisibleText(remainingStitches?: number): string {
+  const n = remainingStitches != null ? Math.max(0, Math.round(remainingStitches)) : 0;
+  return n > 0
+    ? `gather the remaining ${n} stitches`
+    : HAT_GATHERED_TOP_VISIBLE_TEXT;
+}
+
 export function buildHatGatheredTopVideoHtml(
   video: SleevelessHelpVideoMeta | null = resolveHatGatheredTopVideo(),
+  remainingStitches?: number,
 ): string {
-  if (!video) return escapeHtml(HAT_GATHERED_TOP_VISIBLE_TEXT);
+  const visible = hatGatheredTopVisibleText(remainingStitches);
+  if (!video) return escapeHtml(visible);
   const chaptersAttr =
     video.jumpLinks.length > 0
       ? ` data-video-chapters="${escapeHtml(
@@ -77,7 +86,7 @@ export function buildHatGatheredTopVideoHtml(
     ` aria-label="${escapeHtml(HAT_GATHERED_TOP_WATCH_LABEL)}"` +
     `${chaptersAttr}>` +
     `<span class="glossary-tooltip-label">` +
-    `${escapeHtml(HAT_GATHERED_TOP_VISIBLE_TEXT)}` +
+    `${escapeHtml(visible)}` +
     `<sup class="glossary-tooltip-icon" aria-hidden="true">?</sup>` +
     `</span>` +
     `</button>`

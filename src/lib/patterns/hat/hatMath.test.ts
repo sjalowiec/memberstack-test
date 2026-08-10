@@ -5,6 +5,9 @@ import {
   buildHatCrownPlan,
   calculateHatPattern,
   formatHatRolledBrimDefaultLength,
+  gatheredCrownRemainingStitches,
+  hatCrownEndingRow,
+  hatCrownStartRow,
   hatGaugeToPerInch,
   HAT_FIT_LENGTH_STYLE_MULTIPLIERS,
   HAT_NAMED_FIT_STYLES,
@@ -82,11 +85,14 @@ describe("hatMath golden parity (adult woman / 5×7 per 4\")", () => {
     expect(calc.castOnSts).toBe(26);
     expect(applyHatCrownCastOnAdjustment(calc.castOnSts, "gathered")).toBe(26);
     expect(calc.brimRows).toBe(4); // 2" * 1.75 = 3.5 → 4
-    expect(calc.crownHeightInches).toBe(0);
-    expect(calc.crownRowCount).toBe(0);
-    // gathered bodyLength = 11; bodyHeight = 11 − 2 = 9; 9 × 1.75 = 15.75 → 16 even
-    expect(calc.bodyHeightInches).toBe(9);
-    expect(calc.bodyRows).toBe(16);
+    // Suggested crown depth is reserved after the every-other transfer.
+    expect(calc.crownHeightInches).toBe(2);
+    expect(calc.crownRowCount).toBe(4); // 2" × 1.75 = 3.5 → 4 even
+    // bodyLength = 11 − 2 = 9; bodyHeight = 9 − 2 = 7; 7 × 1.75 = 12.25 → 12 even
+    expect(calc.bodyHeightInches).toBe(7);
+    expect(calc.bodyRows).toBe(12);
+    // Crown rows are included exactly once in the finished row total.
+    expect(calc.brimRows + calc.bodyRows + calc.crownRowCount).toBe(20);
   });
 
   it("folded brim doubles row budget", () => {
@@ -122,9 +128,10 @@ describe("hatMath golden parity (adult woman / 5×7 per 4\")", () => {
     expect(calc.brimType).toBe("rolled");
     // 1" × 1.75 = 1.75 → round 2 (even)
     expect(calc.brimRows).toBe(2);
-    // Visible rolled height is included in total length; body subtracts it once (not doubled).
+    // Visible rolled height is included in total length; body subtracts brim + crown once.
     expect(calc.hatHeight).toBe(totalHatLengthInches);
-    expect(calc.bodyHeightInches).toBe(totalHatLengthInches - 1);
+    expect(calc.crownHeightInches).toBe(2);
+    expect(calc.bodyHeightInches).toBe(totalHatLengthInches - 1 - 2);
     expect(calc.brimRows).not.toBe(
       calculateHatPattern({
         finishedHatCircInches: finishedCirc,
@@ -332,7 +339,7 @@ describe("hatMath helpers", () => {
     expect(hatGaugeToPerInch(5, "cm")).toBeCloseTo(5 / (10 / 2.54), 6);
   });
 
-  it("buildHatCrownPlan gathered keeps full length as body", () => {
+  it("buildHatCrownPlan gathered reserves suggested crown depth after the body", () => {
     const plan = buildHatCrownPlan({
       crown: "gathered",
       finishedHatLength: 10,
@@ -340,8 +347,46 @@ describe("hatMath helpers", () => {
       castOnStitches: 100,
       rowGaugePerInch: 2,
     });
-    expect(plan.crownDepth).toBe(0);
-    expect(plan.bodyLength).toBe(10);
+    expect(plan.crownDepth).toBe(2);
+    expect(plan.bodyLength).toBe(8);
+    expect(plan.crownRows).toBe(4);
+  });
+
+  it("gatheredCrownRemainingStitches is half of an even cast-on", () => {
+    expect(gatheredCrownRemainingStitches(86)).toBe(43);
+    expect(gatheredCrownRemainingStitches(26)).toBe(13);
+    // Defensive odd path — never imply a half stitch.
+    expect(gatheredCrownRemainingStitches(87)).toBe(43);
+    expect(applyHatCrownCastOnAdjustment(87, "gathered")).toBe(88);
+  });
+
+  it("gathered crown RC sequence places crown rows after the transfer", () => {
+    const calc = calculateHatPattern({
+      finishedHatCircInches: 86,
+      stitchGaugeDisplay: 4,
+      rowGaugeDisplay: 7,
+      displayUnit: "inches",
+      totalHatLengthInches: 11,
+      brimDepthInches: 2,
+      brimType: "single",
+      crown: "gathered",
+      suggestedCrownDepthInches: 2,
+      fit: "watchcap",
+    });
+    expect(calc.castOnSts).toBe(86);
+    const patternCastOn = applyHatCrownCastOnAdjustment(calc.castOnSts, "gathered");
+    expect(patternCastOn).toBe(86);
+    expect(gatheredCrownRemainingStitches(patternCastOn)).toBe(43);
+    const crownStart = hatCrownStartRow(calc);
+    const ending = hatCrownEndingRow(calc);
+    expect(crownStart).toBe(calc.brimRows + calc.bodyRows);
+    expect(ending).toBe(crownStart + calc.crownRowCount);
+    expect(calc.crownRowCount).toBeGreaterThan(0);
+    // Body does not include crown rows; crown appears once in the total.
+    expect(calc.bodyRows).toBe(
+      roundToEvenPreferUp(calc.bodyHeightInches * calc.rowGaugePerInch),
+    );
+    expect(calc.brimRows + calc.bodyRows + calc.crownRowCount).toBe(ending);
   });
 });
 
@@ -460,6 +505,9 @@ describe("hatInstructions + hatDiagram", () => {
       suggestedCrownDepthInches: 2,
       fit: "watchcap",
     });
+    const remaining = gatheredCrownRemainingStitches(calc.castOnSts);
+    const crownStart = hatCrownStartRow(calc);
+    const ending = hatCrownEndingRow(calc);
     const html = buildHatPatternHtml({
       calc,
       currentUnit: "inches",
@@ -472,6 +520,15 @@ describe("hatInstructions + hatDiagram", () => {
     expect(html).toContain("26 stitches");
     expect(html).toContain("Finishing");
     expect(html).toContain("gather the top");
+    expect(html).toContain(
+      `Transfer every other stitch to its neighboring needle, leaving the emptied needles out of work. ${remaining} stitches remain.`,
+    );
+    expect(html).toContain(`Knit ${calc.crownRowCount} rows. RC is now ${ending}.`);
+    expect(html).toContain(`gather the remaining ${remaining} stitches`);
+    expect(html).not.toContain("After knitting the full hat length");
+    expect(html).toContain(`Begin crown shaping at RC ${crownStart}.`);
+    expect(html).toContain(`Work ${calc.bodyRows} rows in pattern after the brim.`);
+    expect(calc.bodyRows + calc.crownRowCount).toBe(ending - calc.brimRows);
   });
 
   it("resolveHatDiagramTemplateName maps spiral to gathered", () => {

@@ -271,7 +271,7 @@ export function snapCastOnToNearestMultipleOf6(castOnStitches: number): number {
   return n;
 }
 
-/** Adjust cast-on for crown type (legacy wedge-4 trim; 4-wedge round up; spiral ÷6). */
+/** Adjust cast-on for crown type (legacy wedge-4 trim; 4-wedge round up; spiral ÷6; gathered even). */
 export function applyHatCrownCastOnAdjustment(castOnSts: number, crown: string): number {
   if (crown === "wedge-4") return castOnSts - (castOnSts % 4);
   if (crown === "wedge-4-decrease") {
@@ -279,7 +279,35 @@ export function applyHatCrownCastOnAdjustment(castOnSts: number, crown: string):
     return r === 0 ? castOnSts : castOnSts + (4 - r);
   }
   if (crown === "spiral") return snapCastOnToNearestMultipleOf6(castOnSts);
+  // Gathered every-other transfer needs an even cast-on so remaining stitches are whole.
+  if (crown === "gathered") return roundToEvenPreferUp(castOnSts);
   return castOnSts;
+}
+
+/**
+ * Stitches remaining after transferring every other stitch for a gathered crown.
+ * Even cast-on → exactly half; odd (defensive) → floor(n/2) so we never imply a half stitch.
+ */
+export function gatheredCrownRemainingStitches(patternCastOnSts: number): number {
+  const n = Math.max(0, Math.round(Number(patternCastOnSts) || 0));
+  return Math.floor(n / 2);
+}
+
+/** Continuous RC where gathered/swirl/four-gore crown shaping begins (after brim + body). */
+export function hatCrownStartRow(calc: {
+  brimRows: number;
+  bodyRows: number;
+}): number {
+  return Math.max(0, Math.floor(calc.brimRows) + Math.floor(calc.bodyRows));
+}
+
+/** RC after knitting the calculated crown rows (crownStart + crownRowCount). */
+export function hatCrownEndingRow(calc: {
+  brimRows: number;
+  bodyRows: number;
+  crownRowCount: number;
+}): number {
+  return hatCrownStartRow(calc) + Math.max(0, Math.floor(calc.crownRowCount));
 }
 
 /**
@@ -305,11 +333,13 @@ export function buildHatCrownPlan(args: {
   const safeRowGauge = Number.isFinite(rowGaugePerInch) && rowGaugePerInch > 0 ? rowGaugePerInch : 0;
 
   if (crown === "gathered") {
+    // Suggested crown depth is knitted after the every-other transfer (not part of the body).
+    const crownDepth = Math.max(0, safeSuggestedDepth);
     return {
-      crownDepth: 0,
-      bodyLength: safeLength,
-      note: "Gathered crowns are closed after the full hat length is knitted.",
-      crownRows: 0,
+      crownDepth,
+      bodyLength: Math.max(0, safeLength - crownDepth),
+      note: "Gathered crown: transfer every other stitch, knit the crown rows, then gather.",
+      crownRows: Math.max(0, Math.round(crownDepth * safeRowGauge)),
       spiral: null,
     };
   }
