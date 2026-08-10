@@ -521,6 +521,37 @@ export function buildFourWedgeCrownSetup(args: {
 }
 
 /**
+ * Per-wedge decrease schedule for four-gore crowns.
+ * Shared by written instructions and the Japanese-notation diagram — not a second calc path.
+ */
+export type HatFourWedgeDecreaseSchedule = {
+  finalWedgeStitchCount: number;
+  decreaseCount: number;
+  /** Rows between decrease rows (1 = every row). */
+  rowFrequency: number;
+  /** Remaining stitches after all four wedges finish. */
+  remainingStitchesTotal: number;
+};
+
+export function buildFourWedgeDecreaseSchedule(
+  wedgeStitchCount: number,
+  crownRowCount: number,
+): HatFourWedgeDecreaseSchedule {
+  const safeWedge = Math.max(0, Math.round(wedgeStitchCount));
+  const finalWedgeStitchCount = safeWedge % 2 === 1 ? 1 : 2;
+  const decreaseCount = Math.max(0, (safeWedge - finalWedgeStitchCount) / 2);
+  const safeCrownRows = Math.max(0, Math.round(crownRowCount));
+  const rowFrequency =
+    decreaseCount > 0 ? Math.max(1, Math.round(safeCrownRows / decreaseCount)) : 1;
+  return {
+    finalWedgeStitchCount,
+    decreaseCount,
+    rowFrequency,
+    remainingStitchesTotal: finalWedgeStitchCount * 4,
+  };
+}
+
+/**
  * Full hat pattern calculation (parity with former inline `calculate()` math).
  */
 export function calculateHatPattern(input: HatPatternCalcInput): HatPatternCalc {

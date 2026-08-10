@@ -257,11 +257,11 @@ const hatZeroBodyRowsWarningMessage =
                   aria-label="Hat dimensions diagram"
                 >
                   <div class="hat-pattern-diagram-panel pattern-print-keep-together">
-                    <h3 class="hat-pattern-diagram-panel__title">Hat Dimensions</h3>
+                    <h3 class="hat-pattern-diagram-panel__title no-print">Hat Dimensions</h3>
                     <div
-                      class="hat-pattern-diagram-panel__svg"
+                      class="hat-pattern-diagram-panel__tabs-mount"
                       id="diagram-content"
-                      data-hat-diagram-host
+                      data-hat-diagram-tabs-mount
                     ></div>
                   </div>
                 </aside>
@@ -767,6 +767,109 @@ const hatZeroBodyRowsWarningMessage =
     height: auto;
   }
 
+  .hat-pattern-diagram-tabs {
+    max-width: 100%;
+  }
+
+  .hat-pattern-diagram-tabs__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem;
+    margin: 0 0 0.75rem;
+    padding: 0;
+    border-bottom: 1px solid rgba(82, 104, 45, 0.22);
+  }
+
+  .hat-pattern-diagram-tabs__tab {
+    appearance: none;
+    margin: 0 0 -1px;
+    padding: 0.45rem 0.7rem;
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    background: transparent;
+    color: #5b6472;
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.25;
+    cursor: pointer;
+  }
+
+  .hat-pattern-diagram-tabs__tab:hover {
+    color: #3d4a2f;
+    background: rgba(82, 104, 45, 0.06);
+  }
+
+  .hat-pattern-diagram-tabs__tab[aria-selected="true"],
+  .hat-pattern-diagram-tabs__tab.is-selected {
+    color: #3d4a2f;
+    background: #fff;
+    border-color: rgba(82, 104, 45, 0.22);
+  }
+
+  .hat-pattern-diagram-tabs__tab:focus-visible {
+    outline: 2px solid #52682d;
+    outline-offset: 2px;
+  }
+
+  .hat-pattern-diagram-tabs__panel {
+    max-width: 100%;
+  }
+
+  .hat-pattern-diagram-tabs__panel[hidden] {
+    display: none !important;
+  }
+
+  .hat-pattern-diagram-print-heading {
+    display: none;
+    margin: 0 0 0.45rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111;
+  }
+
+  .hat-pattern-diagram-jp-help {
+    margin: 0 0 0.65rem;
+  }
+
+  .hat-pattern-diagram-jp-help__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #52682d;
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: rgba(82, 104, 45, 0.35);
+    text-underline-offset: 0.16em;
+    cursor: pointer;
+  }
+
+  .hat-pattern-diagram-jp-help__btn:hover {
+    color: #3d4a2f;
+    text-decoration-color: rgba(82, 104, 45, 0.55);
+  }
+
+  .hat-pattern-diagram-jp-help__btn:focus-visible {
+    outline: 2px solid #52682d;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  @media (max-width: 560px) {
+    .hat-pattern-diagram-tabs__tab {
+      flex: 1 1 auto;
+      text-align: center;
+      font-size: 0.8125rem;
+      padding: 0.5rem 0.45rem;
+    }
+  }
+
   :global(#pattern-content .hat-rolled-edge-example) {
     margin: 0.35rem 0 0.75rem;
   }
@@ -979,9 +1082,34 @@ const hatZeroBodyRowsWarningMessage =
       margin: 0 auto !important;
     }
 
-    .hat-pattern-diagram-panel__svg :global(svg) {
+    .hat-pattern-diagram-panel__svg :global(svg),
+    .hat-pattern-diagram-tabs__panel :global(svg) {
       max-width: 100% !important;
       height: auto !important;
+    }
+
+    .hat-pattern-diagram-tabs__list,
+    .hat-pattern-diagram-jp-help {
+      display: none !important;
+    }
+
+    .hat-pattern-diagram-print-heading {
+      display: block !important;
+    }
+
+    .hat-pattern-diagram-tabs__panel,
+    .hat-pattern-diagram-tabs__panel[hidden] {
+      display: block !important;
+      visibility: visible !important;
+      margin-top: 0.85rem;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .hat-pattern-diagram-tabs__panel + .hat-pattern-diagram-tabs__panel {
+      break-before: auto;
+      page-break-before: auto;
+      margin-top: 1.1rem;
     }
   }
 </style>

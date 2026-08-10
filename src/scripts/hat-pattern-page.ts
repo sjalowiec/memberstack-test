@@ -12,6 +12,11 @@ import { getViewerAccessState, type ViewerAccessState } from "../lib/memberAcces
 import { buildHatSizingBuilderRows } from "../lib/patterns/hat/hatBuilderSizingLabels";
 import { ensureHatDraftMigrated, readHatDraft } from "../lib/patterns/hat/hatDraft";
 import { buildHatPatternDiagramSvg } from "../lib/patterns/hat/hatPatternDiagramSvg";
+import { buildHatJapaneseNotationDiagramSvg } from "../lib/patterns/hat/hatJapaneseNotationDiagramSvg";
+import {
+  buildHatPatternDiagramTabsShellHtml,
+  initHatPatternDiagramTabs,
+} from "../lib/patterns/hat/hatPatternDiagramTabs";
 import { buildHatPatternHtml } from "../lib/patterns/hat/hatInstructions";
 import { hydrateGlossaryTooltipPlaceholders } from "../lib/glossary/glossaryTooltipHydrate";
 import {
@@ -350,12 +355,26 @@ export async function renderHatPattern() {
     });
   }
 
-  const diagramHost = document.querySelector("#diagram-content");
+  const diagramHost = document.querySelector("[data-hat-diagram-tabs-mount]");
   if (diagramHost instanceof HTMLElement) {
-    diagramHost.innerHTML = buildHatPatternDiagramSvg(calc, unit, {
-      convertLength,
-      formatLengthWithUnit,
-    }); // default mode: "pattern" — keeps stitch/row construction counts
+    diagramHost.innerHTML = buildHatPatternDiagramTabsShellHtml();
+    initHatPatternDiagramTabs(diagramHost);
+
+    const stsHost = diagramHost.querySelector("[data-hat-diagram-sts-rows-host]");
+    if (stsHost instanceof HTMLElement) {
+      stsHost.innerHTML = buildHatPatternDiagramSvg(calc, unit, {
+        convertLength,
+        formatLengthWithUnit,
+      }); // default mode: "pattern" — keeps stitch/row construction counts
+    }
+
+    const jpHost = diagramHost.querySelector("[data-hat-diagram-japanese-host]");
+    if (jpHost instanceof HTMLElement) {
+      jpHost.innerHTML = buildHatJapaneseNotationDiagramSvg(calc, unit, {
+        convertLength,
+        formatLengthWithUnit,
+      });
+    }
   }
 
   syncHatPatternYarnDimensions(calc, unit);

@@ -1012,6 +1012,8 @@ describe("hat Summary/Edit page wiring", () => {
     expect(summaryScript).toContain("teardownOverlay");
     expect(summaryScript).toContain("setPrimaryEnabled");
     expect(pageScript).toContain("buildHatPatternDiagramSvg");
+    expect(pageScript).toContain("buildHatJapaneseNotationDiagramSvg");
+    expect(pageScript).toContain("buildHatPatternDiagramTabsShellHtml");
     expect(pageScript).not.toContain("HAT_PATTERN_DIAGRAM_MODE_SUMMARY_EDIT");
     expect(pageScript).not.toContain("refreshLivePreview");
     // Live preview must not write the draft (only Update / View My Pattern writes).

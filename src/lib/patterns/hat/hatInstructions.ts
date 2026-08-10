@@ -6,6 +6,7 @@
 import {
   applyHatCrownCastOnAdjustment,
   buildFourWedgeCrownSetup,
+  buildFourWedgeDecreaseSchedule,
   type HatPatternCalc,
   type HatSpiralPlan,
 } from "./hatMath";
@@ -211,10 +212,11 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
     const adjustNote = castOnAdjustedFromBase
       ? "<p>The stitch count was adjusted so the crown can be divided evenly into 4 wedges.</p>"
       : "";
-    const finalWedgeStitchCount = wedgeStitchCount % 2 === 1 ? 1 : 2;
-    const decreaseCount = (wedgeStitchCount - finalWedgeStitchCount) / 2;
-    const rowFrequency =
-      decreaseCount > 0 ? Math.max(1, Math.round(crownRowCount / decreaseCount)) : 1;
+    const {
+      finalWedgeStitchCount,
+      decreaseCount,
+      rowFrequency,
+    } = buildFourWedgeDecreaseSchedule(wedgeStitchCount, crownRowCount);
     const rowFrequencyPhrase =
       rowFrequency === 1 ? "every row" : `every ${rowFrequency} rows`;
     const wedgeFinishLine = `<p>When ${finalWedgeStitchCount} ${finalWedgeStitchCount === 1 ? "stitch remains" : "stitches remain"}, break yarn and secure.</p>`;
