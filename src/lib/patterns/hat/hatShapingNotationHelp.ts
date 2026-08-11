@@ -28,12 +28,13 @@ export function buildHatShapingNotationHelpHtml(): string {
   const vimeoId = escapeHtml(HAT_SHAPING_NOTATION_HELP_VIMEO_ID);
   return (
     `<p class="hat-pattern-diagram-shaping-help no-print" data-hat-shaping-notation-help>` +
-    `<button type="button" class="kbm-kin-catalog-video hat-pattern-diagram-shaping-help__btn"` +
+    `<button type="button" class="kbm-btn kbm-btn-outline kbm-kin-catalog-video hat-pattern-diagram-shaping-help__btn"` +
     ` data-vimeo-id="${vimeoId}"` +
     ` data-video-title="${title}"` +
     ` data-testid="hat-shaping-notation-help"` +
     ` aria-haspopup="dialog">` +
-    `<i class="fa-solid fa-circle-info" aria-hidden="true"></i> ${label}` +
+    `<i class="fa-solid fa-circle-info" aria-hidden="true"></i>` +
+    `<span>${label}</span>` +
     `</button>` +
     `</p>`
   );

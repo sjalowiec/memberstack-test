@@ -17,8 +17,10 @@ import {
 } from "./hatMath";
 import {
   buildHatShapingNotationDiagramSvg,
+  formatFourGoreShapingNotationSegment,
   formatHatShapingCastOnLabel,
   formatHatShapingRcLabel,
+  formatHatShapingStitchCountLabel,
   HAT_SHAPING_NOTATION_VIEWBOX,
 } from "./hatShapingNotationDiagramSvg";
 import {
@@ -304,9 +306,28 @@ describe("hat pattern diagram tabs", () => {
     expect(page).toContain(".hat-pattern-diagram-print-heading");
     expect(page).toContain(".hat-pattern-diagram-tabs__list");
     expect(page).toContain(".hat-pattern-diagram-shaping-help");
+    // Injected tab shell is not Astro-scoped — styles must be :global to reach it.
+    expect(page).toContain(":global(.hat-pattern-diagram-tabs__tab)");
+    expect(page).toContain(":global(.hat-pattern-diagram-tabs__list)");
+    expect(page).toContain(":global(.hat-pattern-diagram-shaping-help__btn.kbm-btn)");
     expect(page).toContain("min-height: 44px");
+    expect(page).toContain("font-size: 1rem");
     expect(page).toContain("var(--kbm-green, #52682d)");
+    expect(page).toContain("flex: 1 1 0");
+    expect(page).toMatch(
+      /:global\(\.hat-pattern-diagram-tabs__tab:focus-visible\)\s*\{[^}]*outline:\s*2px solid/,
+    );
+    expect(page).toMatch(
+      /@media \(max-width: 767px\)[\s\S]*:global\(\.hat-pattern-diagram-shaping-help__btn\.kbm-btn\)\s*\{[^}]*width:\s*100%/,
+    );
     expect(page).not.toContain("Japanese Notation");
+
+    const helpHtml = buildHatShapingNotationHelpHtml();
+    expect(helpHtml).toContain("kbm-btn");
+    expect(helpHtml).toContain("kbm-btn-outline");
+    expect(helpHtml).toContain("kbm-kin-catalog-video");
+    expect(helpHtml).toContain("fa-circle-info");
+    expect(helpHtml).toContain(`<span>${HAT_SHAPING_NOTATION_HELP_LABEL}</span>`);
   });
 
   it("preserves accessible tab roles and selection semantics in the shell", () => {
@@ -465,12 +486,178 @@ describe("buildHatShapingNotationDiagramSvg", () => {
     expect(wedge).toContain('data-crown="wedge-4-decrease"');
     expect(wedge).toContain("hat-shaping-diagram__crown--four-gore");
     expect(wedge).toContain(">#1<");
-    expect(wedge).toContain("ea edge");
+    expect(wedge).not.toContain("each edge of each gore");
+    expect(wedge).not.toContain("Decrease 1 stitch");
+    expect(wedge).not.toContain("4×");
 
     expect(spiral).toContain('data-crown="spiral"');
     expect(spiral).toContain("hat-shaping-diagram__crown--swirl");
-    expect(spiral).toContain(`${spiralPlan.decreasePoints} pts`);
-    expect(spiral).toContain(`→ ${spiralPlan.targetStitches} sts`);
+    expect(spiral).toContain(`data-swirl-section-count="${spiralPlan.decreasePoints}"`);
+    expect(spiral).toContain('data-swirl-decrease-edge="trailing"');
+    expect(spiral).toContain(`>${spiralPlan.decreasePoints} sections<`);
+    expect(spiral).toContain("decrease at one edge");
+    expect(spiral).toContain("hat-shaping-diagram__swirl-instruction-icon");
+    expect(spiral).toContain("/icons/patterns/transfer-step.svg");
+    expect(spiral.match(/class="hat-shaping-diagram__swirl-instruction-icon"/g)?.length).toBe(1);
+    expect(spiral.match(/class="hat-shaping-diagram__swirl-section"/g)?.length).toBe(
+      spiralPlan.decreasePoints,
+    );
+    expect(spiral).toContain('data-swirl-representative="true"');
+    expect(spiral).toContain('fill="#eef3e6"');
+    expect(spiral).not.toContain(`${spiralPlan.decreasePoints} pts`);
+    expect(spiral).not.toMatch(/Q [\d.]+ [\d.]+ [\d.]+ [\d.]+/); // no centered quadratic crown wedges
+    // Per-section schedule (representative wedge), not whole-crown totals.
+    const perSectionEnd = Math.round(
+      spiralPlan.targetStitches / spiralPlan.decreasePoints,
+    );
+    expect(spiral).toContain(`>${formatHatShapingStitchCountLabel(perSectionEnd)}<`);
+    expect(spiral).not.toContain(`→ ${formatHatShapingStitchCountLabel(perSectionEnd)}`);
+    expect(spiral).not.toContain(`→ ${spiralPlan.targetStitches} sts`);
+    if (spiralPlan.gradual > 0) {
+      expect(spiral).toContain(formatShapingSegment(1, 2, spiralPlan.gradual));
+      expect(spiral).not.toContain(
+        formatShapingSegment(spiralPlan.decreasePoints, 2, spiralPlan.gradual),
+      );
+    }
+    if (spiralPlan.rapid > 0) {
+      expect(spiral).toContain(formatShapingSegment(1, 1, spiralPlan.rapid));
+      expect(spiral).not.toContain(
+        formatShapingSegment(spiralPlan.decreasePoints, 1, spiralPlan.rapid),
+      );
+    }
+    // Four-gore / gathered stay free of swirl construction cues.
+    expect(gathered).not.toContain("hat-shaping-diagram__swirl-section");
+    expect(gathered).not.toContain("decrease at one edge");
+    expect(wedge).not.toContain("hat-shaping-diagram__swirl-section");
+    expect(wedge).not.toContain("decrease at one edge");
+  });
+
+  it("swirl shaping notation uses one-sided trailing decrease edges", () => {
+    const calc = calcFor({ crown: "spiral" });
+    const spiralPlan = calc.crownPlan.spiral!;
+    const svg = buildHatShapingNotationDiagramSvg(calc, "inches", formatters);
+    for (let i = 1; i <= spiralPlan.decreasePoints; i += 1) {
+      expect(svg).toMatch(
+        new RegExp(
+          `hat-shaping-diagram__swirl-section"[^>]*data-section-index="${i}"[^>]*data-decrease-edge="trailing"[^>]*data-non-decrease-edge="leading"`,
+        ),
+      );
+    }
+    expect(svg).not.toContain("hat-diagram__swirl-decrease-marker");
+    expect(svg).toContain('data-swirl-label-placement="above-crown"');
+    expect(svg).toContain('data-hat-shaping-swirl-schedule="true"');
+  });
+
+  it("swirl shaping notation shows per-section schedule for the representative wedge", () => {
+    const calc = calcFor({ crown: "spiral" });
+    const spiral = calc.crownPlan.spiral!;
+    const svg = buildHatShapingNotationDiagramSvg(calc, "inches", formatters);
+    expect(spiral.decreasePoints).toBeGreaterThan(0);
+    const gradual = spiral.gradual > 0 ? formatShapingSegment(1, 2, spiral.gradual) : "";
+    const rapid = spiral.rapid > 0 ? formatShapingSegment(1, 1, spiral.rapid) : "";
+    if (gradual) {
+      expect(svg).toContain(gradual);
+      expect(svg).not.toContain(
+        formatShapingSegment(spiral.decreasePoints, 2, spiral.gradual),
+      );
+    }
+    if (rapid) {
+      expect(svg).toContain(rapid);
+      expect(svg).not.toContain(
+        formatShapingSegment(spiral.decreasePoints, 1, spiral.rapid),
+      );
+    }
+    const perSectionEnd = Math.round(spiral.targetStitches / spiral.decreasePoints);
+    expect(perSectionEnd).toBe(1);
+    const endLabel = formatHatShapingStitchCountLabel(perSectionEnd);
+    expect(svg).toContain(`>${endLabel}<`);
+    expect(svg).not.toMatch(/→\s*1 st/);
+    expect(svg).not.toContain(`→ ${spiral.targetStitches} sts`);
+    expect(svg).not.toContain("→ 6 sts");
+
+    const tipY = Number(
+      svg.match(
+        /data-swirl-representative="true"[^>]*d="M [\d.]+ [\d.]+ L [\d.]+ ([\d.]+)/,
+      )?.[1] ??
+        svg.match(
+          /hat-shaping-diagram__swirl-section"[^>]*data-section-index="2"[^>]*data-decrease-y1="([\d.]+)"/,
+        )?.[1],
+    );
+    const bodyTop = Number(
+      svg.match(/hat-shaping-diagram__crown-start"[^>]*y1="([\d.]+)"/)?.[1],
+    );
+    const bodyLabelY = Number(
+      svg.match(/hat-shaping-diagram__body-label"[^>]*y="([\d.]+)"/)?.[1],
+    );
+    expect(tipY).toBeGreaterThan(0);
+    expect(bodyTop).toBeGreaterThan(tipY);
+    expect(bodyLabelY).toBeGreaterThan(bodyTop);
+
+    const yFor = (role: string, text: string) => {
+      const escaped = text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const re = new RegExp(
+        `data-swirl-schedule-role="${role}"[^>]*y="([\\d.]+)"[^>]*>${escaped}<`,
+      );
+      const m = svg.match(re);
+      expect(m, `missing ${role} label`).toBeTruthy();
+      return Number(m![1]);
+    };
+    expect(svg).toContain('data-swirl-schedule-order="bottom-up"');
+    expect(svg).toContain('data-swirl-end-placement="above-tip"');
+    expect(svg).toContain('data-swirl-schedule-placement="body"');
+
+    const endY = yFor("end", endLabel);
+    // Final count sits above the representative tip, outside the wedge,
+    // with clear space below the construction cue.
+    const instructionY = Number(
+      svg.match(/hat-shaping-diagram__swirl-instruction-text"[^>]*y="([\d.]+)"/)?.[1],
+    );
+    expect(instructionY).toBeGreaterThan(0);
+    expect(endY).toBeGreaterThan(instructionY + 8);
+    expect(endY).toBeLessThan(tipY - 6);
+
+    const iconX = Number(
+      svg.match(/hat-shaping-diagram__swirl-instruction-icon"[^>]*x="([\d.]+)"/)?.[1],
+    );
+    const iconW = Number(
+      svg.match(
+        /hat-shaping-diagram__swirl-instruction-icon"[^>]*width="([\d.]+)"/,
+      )?.[1],
+    );
+    const textX = Number(
+      svg.match(/hat-shaping-diagram__swirl-instruction-text"[^>]*x="([\d.]+)"/)?.[1],
+    );
+    expect(textX - (iconX + iconW)).toBeGreaterThanOrEqual(8);
+
+    if (rapid) {
+      const rapidY = yFor("rapid", rapid);
+      expect(rapidY).toBeGreaterThan(bodyTop);
+      expect(rapidY).toBeLessThan(bodyLabelY);
+      if (gradual) {
+        const gradualY = yFor("gradual", gradual);
+        expect(gradualY).toBeGreaterThan(bodyTop);
+        expect(gradualY).toBeLessThan(bodyLabelY);
+        // Bottom-up: gradual lowest, rapid above it; both in Body below crown.
+        expect(rapidY).toBeLessThan(gradualY);
+        expect(endY).toBeLessThan(rapidY);
+      }
+    } else if (gradual) {
+      const gradualY = yFor("gradual", gradual);
+      expect(gradualY).toBeGreaterThan(bodyTop);
+      expect(gradualY).toBeLessThan(bodyLabelY);
+      expect(endY).toBeLessThan(gradualY);
+    }
+
+    // No schedule sequences inside the crown band (between tip and base).
+    if (rapid) {
+      const rapidY = yFor("rapid", rapid);
+      expect(rapidY < tipY || rapidY > bodyTop).toBe(true);
+      expect(rapidY).toBeGreaterThan(bodyTop);
+    }
+    if (gradual) {
+      const gradualY = yFor("gradual", gradual);
+      expect(gradualY).toBeGreaterThan(bodyTop);
+    }
   });
 
   it("gathered crown shows post-transfer stitch count for CO 86", () => {
@@ -520,7 +707,7 @@ describe("buildHatShapingNotationDiagramSvg", () => {
     expect(rolled).toContain("hat-shaping-diagram__brim-roll");
   });
 
-  it("four-gore notation matches the shared decrease schedule", () => {
+  it("four-gore notation shows shared schedule and one representative gore stitch pair", () => {
     const calc = withFourWedge(calcFor({ crown: "wedge-4-decrease" }));
     const setup = calc.fourWedgeCrownSetup!;
     const schedule = buildFourWedgeDecreaseSchedule(
@@ -528,28 +715,202 @@ describe("buildHatShapingNotationDiagramSvg", () => {
       calc.crownRowCount,
     );
     const svg = buildHatShapingNotationDiagramSvg(calc, "inches", formatters);
-    if (schedule.decreaseCount > 0) {
-      expect(svg).toContain(
-        formatShapingSegment(1, schedule.rowFrequency, schedule.decreaseCount),
+    const startLabel = formatHatShapingStitchCountLabel(setup.wedgeStitchCount);
+    const endLabel = formatHatShapingStitchCountLabel(schedule.finalWedgeStitchCount);
+    const segment = formatFourGoreShapingNotationSegment(schedule);
+    const expectedSegment = formatShapingSegment(
+      1,
+      schedule.rowFrequency,
+      schedule.decreaseCount,
+    );
+
+    expect(schedule.decreaseCount).toBeGreaterThan(0);
+    expect(segment).toBe(expectedSegment);
+    expect(svg).toContain(expectedSegment);
+    // Shared schedule appears once above the crown.
+    expect(svg.match(new RegExp(expectedSegment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g")) ?? []).toHaveLength(1);
+    expect(svg.match(/data-hat-shaping-schedule="true"/g) ?? []).toHaveLength(1);
+    expect(svg).not.toContain("Decrease 1 stitch");
+    expect(svg).not.toContain("each edge of each gore");
+
+    // Start/end stitch counts once on the same representative gore.
+    expect(svg.match(/data-gore-start-sts="true"/g) ?? []).toHaveLength(1);
+    expect(svg.match(/data-gore-end-sts="true"/g) ?? []).toHaveLength(1);
+    expect(svg.match(new RegExp(`>${startLabel}<`, "g")) ?? []).toHaveLength(1);
+    expect(svg.match(new RegExp(`>${endLabel}<`, "g")) ?? []).toHaveLength(1);
+    expect(svg).toMatch(
+      new RegExp(
+        `data-gore="(\\d+)" data-gore-end-sts="true" data-gore-representative="true"[^>]*>${endLabel.replace(/\s/g, "\\s")}<`,
+      ),
+    );
+    const endGore = svg.match(
+      /data-gore="(\d+)" data-gore-end-sts="true" data-gore-representative="true"/,
+    )?.[1];
+    const startGore = svg.match(
+      /data-gore="(\d+)" data-gore-start-sts="true" data-gore-representative="true"/,
+    )?.[1];
+    expect(endGore).toBeTruthy();
+    expect(startGore).toBe(endGore);
+    expect(endGore).toBe("2");
+
+    // Representative gore #2 is shaded; schedule/start/end share its centerline.
+    expect(svg).toContain('class="hat-shaping-diagram__gore-fill"');
+    expect(svg).toMatch(
+      /hat-shaping-diagram__gore-fill"[^>]*data-gore="2"[^>]*data-gore-representative="true"[^>]*fill="#eef3e6"/,
+    );
+    expect(svg).toContain(`fill="${"#ffffff"}"`);
+    const scheduleX = svg.match(
+      /data-hat-shaping-schedule="true" x="([\d.]+)"/,
+    )?.[1];
+    const endX = svg.match(
+      /data-gore-end-sts="true"[^>]*x="([\d.]+)"/,
+    )?.[1];
+    const startX = svg.match(
+      /data-gore-start-sts="true"[^>]*x="([\d.]+)"/,
+    )?.[1];
+    expect(scheduleX).toBeTruthy();
+    expect(endX).toBe(scheduleX);
+    expect(startX).toBe(scheduleX);
+
+    // All four gore identifiers remain.
+    for (const n of [1, 2, 3, 4]) {
+      expect(svg).toMatch(
+        new RegExp(`hat-shaping-diagram__gore-number" data-gore="${n}"[^>]*>#${n}<`),
       );
     }
-    expect(svg).toContain(`${schedule.remainingStitchesTotal} sts`);
+    expect(svg.match(/hat-shaping-diagram__gore-number"/g) ?? []).toHaveLength(4);
+
+    expect(svg).not.toContain(`4× ${setup.wedgeStitchCount}`);
+    expect(svg).not.toContain(`${startLabel} / gore`);
+    expect(svg).not.toContain(`→ ${schedule.remainingStitchesTotal} sts`);
+  });
+
+  it("formats four-gore stitch labels with correct singular and plural", () => {
+    expect(formatHatShapingStitchCountLabel(1)).toBe("1 st");
+    expect(formatHatShapingStitchCountLabel(2)).toBe("2 sts");
+    expect(formatHatShapingStitchCountLabel(21)).toBe("21 sts");
+
+    const oddWedge = withFourWedge(calcFor({ crown: "wedge-4-decrease" }));
+    const oddSchedule = buildFourWedgeDecreaseSchedule(
+      oddWedge.fourWedgeCrownSetup!.wedgeStitchCount,
+      oddWedge.crownRowCount,
+    );
+    // Default fixture ends at 1 st per gore when wedge count is odd.
+    expect(oddSchedule.finalWedgeStitchCount).toBe(1);
+    const oddSvg = buildHatShapingNotationDiagramSvg(oddWedge, "inches", formatters);
+    expect(oddSvg).toContain(">1 st<");
+    expect(oddSvg).not.toContain(">1 sts<");
+    expect(oddSvg.match(/>1 st</g) ?? []).toHaveLength(1);
+
+    const evenWedge = withFourWedge(
+      calcFor({
+        crown: "wedge-4-decrease",
+        finishedHatCircInches: 22,
+        stitchGaugeDisplay: 4,
+        rowGaugeDisplay: 6,
+        suggestedCrownDepthInches: 3,
+      }),
+    );
+    const evenSchedule = buildFourWedgeDecreaseSchedule(
+      evenWedge.fourWedgeCrownSetup!.wedgeStitchCount,
+      evenWedge.crownRowCount,
+    );
+    const evenSvg = buildHatShapingNotationDiagramSvg(evenWedge, "inches", formatters);
+    const evenEnd = formatHatShapingStitchCountLabel(evenSchedule.finalWedgeStitchCount);
+    expect(evenSvg).toContain(`>${evenEnd}<`);
+    if (evenSchedule.finalWedgeStitchCount === 1) {
+      expect(evenSvg).toContain(">1 st<");
+    } else {
+      expect(evenSvg).toContain(">2 sts<");
+      expect(evenSvg).not.toContain(">2 st<");
+    }
+  });
+
+  it("four-gore per-gore labels follow different calculated stitch counts", () => {
+    const small = withFourWedge(calcFor({ crown: "wedge-4-decrease" }));
+    const large = withFourWedge(
+      calcFor({
+        crown: "wedge-4-decrease",
+        finishedHatCircInches: 22,
+        stitchGaugeDisplay: 4,
+        rowGaugeDisplay: 6,
+        suggestedCrownDepthInches: 3,
+      }),
+    );
+    const smallSetup = small.fourWedgeCrownSetup!;
+    const largeSetup = large.fourWedgeCrownSetup!;
+    expect(Math.round(smallSetup.wedgeStitchCount)).not.toBe(
+      Math.round(largeSetup.wedgeStitchCount),
+    );
+
+    const smallSchedule = buildFourWedgeDecreaseSchedule(
+      smallSetup.wedgeStitchCount,
+      small.crownRowCount,
+    );
+    const largeSchedule = buildFourWedgeDecreaseSchedule(
+      largeSetup.wedgeStitchCount,
+      large.crownRowCount,
+    );
+
+    const smallSvg = buildHatShapingNotationDiagramSvg(small, "inches", formatters);
+    const largeSvg = buildHatShapingNotationDiagramSvg(large, "inches", formatters);
+
+    const smallStart = formatHatShapingStitchCountLabel(smallSetup.wedgeStitchCount);
+    const largeStart = formatHatShapingStitchCountLabel(largeSetup.wedgeStitchCount);
+    const smallEnd = formatHatShapingStitchCountLabel(smallSchedule.finalWedgeStitchCount);
+    const largeEnd = formatHatShapingStitchCountLabel(largeSchedule.finalWedgeStitchCount);
+    const smallSeg = formatFourGoreShapingNotationSegment(smallSchedule);
+    const largeSeg = formatFourGoreShapingNotationSegment(largeSchedule);
+
+    expect(smallSeg).toBe(
+      formatShapingSegment(1, smallSchedule.rowFrequency, smallSchedule.decreaseCount),
+    );
+    expect(largeSeg).toBe(
+      formatShapingSegment(1, largeSchedule.rowFrequency, largeSchedule.decreaseCount),
+    );
+    expect(smallSvg).toContain(smallSeg);
+    expect(largeSvg).toContain(largeSeg);
+    expect(smallSeg).not.toBe(largeSeg);
+
+    expect(smallSvg).toContain(smallStart);
+    expect(largeSvg).toContain(largeStart);
+    expect(smallSvg).toContain(smallEnd);
+    expect(largeSvg).toContain(largeEnd);
+    expect(smallSvg).not.toContain(largeStart);
+    expect(largeSvg).not.toContain(smallStart);
+
+    expect(smallSvg.match(/data-gore-start-sts="true"/g) ?? []).toHaveLength(1);
+    expect(largeSvg.match(/data-gore-start-sts="true"/g) ?? []).toHaveLength(1);
+    expect(smallSvg.match(/data-gore-end-sts="true"/g) ?? []).toHaveLength(1);
+    expect(largeSvg.match(/data-gore-end-sts="true"/g) ?? []).toHaveLength(1);
+    expect(smallSvg.match(/data-hat-shaping-schedule="true"/g) ?? []).toHaveLength(1);
+    expect(largeSvg.match(/data-hat-shaping-schedule="true"/g) ?? []).toHaveLength(1);
+    expect(smallSvg.match(/hat-shaping-diagram__gore-number"/g) ?? []).toHaveLength(4);
+    expect(largeSvg.match(/hat-shaping-diagram__gore-number"/g) ?? []).toHaveLength(4);
+
+    expect(smallSvg).not.toContain("Decrease 1 stitch");
+    expect(largeSvg).not.toContain("Decrease 1 stitch");
+    expect(smallSvg).not.toContain(`→ ${smallSchedule.remainingStitchesTotal} sts`);
+    expect(largeSvg).not.toContain(`→ ${largeSchedule.remainingStitchesTotal} sts`);
   });
 
   it("spiral notation uses crownPlan.spiral values", () => {
     const calc = calcFor({ crown: "spiral" });
     const spiral = calc.crownPlan.spiral!;
     const svg = buildHatShapingNotationDiagramSvg(calc, "inches", formatters);
+    // Diagram shows per-section tokens; times still come from the shared schedule.
     if (spiral.gradual > 0) {
-      expect(svg).toContain(
-        formatShapingSegment(spiral.decreasePoints, 2, spiral.gradual),
-      );
+      expect(svg).toContain(formatShapingSegment(1, 2, spiral.gradual));
     }
     if (spiral.rapid > 0) {
-      expect(svg).toContain(
-        formatShapingSegment(spiral.decreasePoints, 1, spiral.rapid),
-      );
+      expect(svg).toContain(formatShapingSegment(1, 1, spiral.rapid));
     }
+    expect(svg).toContain(
+      `>${formatHatShapingStitchCountLabel(
+        Math.round(spiral.targetStitches / spiral.decreasePoints),
+      )}<`,
+    );
+    expect(svg).not.toMatch(/→\s*\d+\s*sts?/);
   });
 
   it("has no user-facing Japanese Notation wording", () => {

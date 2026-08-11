@@ -17,6 +17,17 @@ import {
   type HatPatternCalc,
 } from "./hatMath";
 import { HAT_EDIT_MEASUREMENT_TARGETS } from "./hatPatternEditTargets";
+import {
+  HAT_DIAGRAM_FONT_FAMILY,
+  HAT_DIAGRAM_REFERENCE_VIEWBOX_WIDTH,
+  HAT_DIAGRAM_SECTION_WEIGHT,
+  hatDiagramTypographyForViewBox,
+} from "./hatDiagramTypography";
+import { HAT_TRANSFER_STEP_ICON_SRC } from "./hatTransferStep";
+import {
+  SWIRL_CROWN_SECTION_COUNT_FALLBACK,
+  buildSwirlCrownGeometry,
+} from "./hatSwirlCrownGeometry";
 
 export type HatPatternDiagramFormatters = {
   convertLength: (value: number, from: string, to: string) => number;
@@ -35,7 +46,7 @@ export const HAT_PATTERN_DIAGRAM_MODE_PATTERN = "pattern" as const;
 export const HAT_PATTERN_DIAGRAM_MODE_SUMMARY_EDIT = "summaryEdit" as const;
 
 /** Canvas includes side/bottom gutters for large type; hat geometry stays fixed. */
-const VB_W = 430;
+const VB_W = HAT_DIAGRAM_REFERENCE_VIEWBOX_WIDTH;
 const VB_H = 460;
 const HAT_LEFT = 96;
 const HAT_RIGHT = 296;
@@ -52,27 +63,33 @@ const STROKE = "#1a1a1a";
 const FILL = "#f4f6f1";
 const MUTED = "#4b5563";
 /** Site sans stack (`--font`); embedded on every <text> so print stays consistent. */
-const FONT = "Poppins, system-ui, Arial, sans-serif";
+const FONT = HAT_DIAGRAM_FONT_FAMILY;
 
 /** Exported for Summary/Edit layout tests (left gutter for the length chip). */
 export const HAT_SUMMARY_EDIT_DIAGRAM_LEFT_PAD = SUMMARY_EDIT_LEFT_PAD;
 
 /**
- * Typography ≥50% larger than the prior diagram scale (15/14/12/13 → below).
+ * Typography from shared hat diagram tokens (this viewBox is the visual reference).
  * Section labels use the same family with slightly heavier weight for hierarchy.
  */
-const FS_SECTION = 23; // Body, Brim
-const FS_CROWN_TITLE = 21; // Gather, Crown · …
-const FS_MEASURE = 21; // row counts + length values
-const FS_STITCH = 23; // cast-on primary
-const FS_STITCH_SECONDARY = 21; // width under cast-on
-const FS_DETAIL = 18; // sts/gore, decrease points
-const FS_GORE = 20; // #1–#4
-const FS_SMALL = 18; // fold, gather
-const FS_SUPPORT = 20; // Total caption
-const FW_SECTION = 600; // Body / Brim / crown titles
+const TYPE = hatDiagramTypographyForViewBox(VB_W);
+const FS_SECTION = TYPE.section; // Body, Brim
+const FS_CROWN_TITLE = TYPE.crownTitle; // Gather, Crown · …
+const FS_MEASURE = TYPE.measure; // row counts + length values
+const FS_STITCH = TYPE.stitch; // cast-on primary
+const FS_STITCH_SECONDARY = TYPE.stitchSecondary; // width under cast-on
+const FS_DETAIL = TYPE.detail; // sts/gore, swirl section callouts
+const FS_GORE = TYPE.gore; // #1–#4
+const FS_SMALL = TYPE.small; // fold, gather
+const FS_SUPPORT = TYPE.support; // Total caption
+const FW_SECTION = HAT_DIAGRAM_SECTION_WEIGHT; // Body / Brim / crown titles
 const LINE_GAP_V = 24; // stacked measurement lines
 const LINE_GAP_H = 26; // cast-on / width under hat
+
+/** Supporting swirl callout — smaller than Crown · Swirl, still mobile-readable. */
+const FS_SWIRL_SUPPORT = FS_SMALL;
+/** Transfer icon in the swirl instruction line (~text height, slightly larger). */
+const SWIRL_INSTRUCTION_ICON_SIZE = FS_SWIRL_SUPPORT + 4;
 
 /** Shared SVG text attributes — always includes font-family for print fidelity. */
 function textFont(size: number, weight?: number): string {
@@ -111,6 +128,8 @@ type Labels = {
   wedgeSts: string;
   spiralPoints: string;
   spiralTarget: string;
+  /** Calculated swirl sections (`HatSpiralPlan.decreasePoints`); 0 when not spiral. */
+  spiralSectionCount: number;
   title: string;
 };
 
@@ -173,10 +192,11 @@ function buildLabels(
         : "";
 
   const spiral = calc.crownPlan.spiral;
+  const spiralSectionCount = isSpiral && spiral ? spiral.decreasePoints : 0;
+  // Diagram-only callout; schedule target stitch total is not shown on this SVG.
   const spiralPoints =
-    !summaryEdit && isSpiral && spiral ? `${spiral.decreasePoints} decrease points` : "";
-  const spiralTarget =
-    !summaryEdit && isSpiral && spiral ? `to ${spiral.targetStitches} sts` : "";
+    !summaryEdit && isSpiral && spiral ? `${spiral.decreasePoints} sections` : "";
+  const spiralTarget = "";
 
   const crownTitle = isGathered
     ? summaryEdit
@@ -203,6 +223,7 @@ function buildLabels(
     wedgeSts,
     spiralPoints,
     spiralTarget,
+    spiralSectionCount,
     title: crownTitle,
   };
 }
@@ -232,9 +253,14 @@ function buildFrame(calc: HatPatternCalc): Frame {
   let crownVisual = (crownIn / rawTotal) * usable;
 
   // Clamp sections so labels remain readable.
+  // Spiral needs extra crown band for the above-crown callout + transfer icons.
   brimVisual = clamp(brimVisual, 36, 110);
   bodyVisual = clamp(bodyVisual, 48, 170);
-  crownVisual = clamp(crownVisual, isGathered ? 28 : 52, 130);
+  crownVisual = clamp(
+    crownVisual,
+    isGathered ? 28 : isSpiral ? 78 : 52,
+    130,
+  );
 
   let sum = brimVisual + bodyVisual + crownVisual;
   if (sum > usable) {
@@ -467,40 +493,81 @@ function drawFourGoreCrown(frame: Frame, labels: Labels): string {
   ].join("");
 }
 
+/**
+ * Swirl crown: six one-sided sections that all lean the same way.
+ * Leading (left) edge is vertical / non-decrease; trailing (right) edge is the
+ * sole decrease edge — that shared rotational direction creates the swirl.
+ * Geometry from {@link buildSwirlCrownGeometry}.
+ */
 function drawSwirlCrown(frame: Frame, labels: Labels): string {
-  const { hatLeft, hatRight, crownTop, bodyTop, hatMidX, hatWidth } = frame;
-  const tipY = crownTop + 8;
-  // Tapered crown silhouette.
-  const outline = [
-    `M ${fmtNum(hatLeft)} ${fmtNum(bodyTop)}`,
-    `L ${fmtNum(hatRight)} ${fmtNum(bodyTop)}`,
-    `Q ${fmtNum(hatRight - 10)} ${fmtNum((bodyTop + tipY) / 2)} ${fmtNum(hatMidX + 10)} ${fmtNum(tipY)}`,
-    `Q ${fmtNum(hatMidX)} ${fmtNum(tipY - 4)} ${fmtNum(hatMidX - 10)} ${fmtNum(tipY)}`,
-    `Q ${fmtNum(hatLeft + 10)} ${fmtNum((bodyTop + tipY) / 2)} ${fmtNum(hatLeft)} ${fmtNum(bodyTop)}`,
-    "Z",
-  ].join(" ");
+  const { hatLeft, crownTop, bodyTop, hatMidX, hatWidth } = frame;
+  const sectionCount =
+    labels.spiralSectionCount > 0
+      ? labels.spiralSectionCount
+      : SWIRL_CROWN_SECTION_COUNT_FALLBACK;
+  const hasSectionLabel = Boolean(labels.spiralPoints);
 
-  // Six directional decrease lines (schematic swirl, not stitch paths).
-  const swirlLines = Array.from({ length: 6 }, (_, i) => {
-    const t = (i + 0.5) / 6;
-    const x0 = hatLeft + hatWidth * t;
-    const sweep = ((i % 2 === 0 ? 1 : -1) * hatWidth) / 10;
-    const cx = clamp(x0 + sweep, hatLeft + 8, hatRight - 8);
-    return `<path d="M ${fmtNum(x0)} ${fmtNum(bodyTop)} Q ${fmtNum(cx)} ${fmtNum((bodyTop + tipY) / 2)} ${fmtNum(hatMidX)} ${fmtNum(tipY)}" fill="none" stroke="${STROKE}" stroke-width="1.1" opacity="0.7"/>`;
-  }).join("");
+  // Header stack above the crown drawing: title, then section count + instruction.
+  const supportGap = FS_SWIRL_SUPPORT + 4;
+  const instructionIconSize = SWIRL_INSTRUCTION_ICON_SIZE;
+  const headerStackHeight = hasSectionLabel
+    ? FS_CROWN_TITLE * 0.55 + 10 + supportGap + Math.max(FS_SWIRL_SUPPORT, instructionIconSize) * 0.55 + 14
+    : FS_CROWN_TITLE * 0.55 + 10;
+  const crownTitleY = Math.max(14, crownTop - headerStackHeight);
+  const labelFirstY = crownTitleY + FS_CROWN_TITLE * 0.55 + 10;
+  const labelSecondY = labelFirstY + supportGap;
+  const headerBottom = hasSectionLabel
+    ? labelSecondY + Math.max(FS_SWIRL_SUPPORT, instructionIconSize) * 0.45
+    : crownTitleY + FS_CROWN_TITLE * 0.35;
+  const minCrownDrawHeight = 52;
+  const tipY = clamp(
+    Math.max(crownTop + 6, headerBottom + 12),
+    crownTop + 6,
+    bodyTop - minCrownDrawHeight,
+  );
+
+  const geometry = buildSwirlCrownGeometry({
+    hatLeft,
+    hatWidth,
+    tipY,
+    bodyTop,
+    sectionCount,
+    fmt: fmtNum,
+  });
+
+  const sectionGroups = geometry.sections.map(
+    (section) =>
+      `<g class="hat-diagram__swirl-section" data-section-index="${section.index}" data-decrease-edge="${section.decreaseEdge}" data-non-decrease-edge="${section.nonDecreaseEdge}" data-decrease-x1="${fmtNum(section.left)}" data-decrease-y1="${fmtNum(section.tipY)}" data-decrease-x2="${fmtNum(section.right)}" data-decrease-y2="${fmtNum(section.bodyTop)}" data-non-decrease-x1="${fmtNum(section.left)}" data-non-decrease-y1="${fmtNum(section.tipY)}" data-non-decrease-x2="${fmtNum(section.left)}" data-non-decrease-y2="${fmtNum(section.bodyTop)}"></g>`,
+  );
+
+  const headerCallouts: string[] = [];
+  if (hasSectionLabel) {
+    const instruction = "decrease at one edge";
+    // Approximate Poppins advance to center icon + text as one unit.
+    const textWidth = instruction.length * FS_SWIRL_SUPPORT * 0.52;
+    const iconGap = 6;
+    const groupWidth = instructionIconSize + iconGap + textWidth;
+    const groupLeft = hatMidX - groupWidth / 2;
+    const iconX = groupLeft;
+    const iconY = labelSecondY - instructionIconSize / 2;
+    const textX = groupLeft + instructionIconSize + iconGap;
+
+    headerCallouts.push(
+      `<text class="hat-diagram__swirl-section-label" data-swirl-section-label="${escapeXml(labels.spiralPoints)}" data-swirl-label-placement="above-crown" x="${fmtNum(hatMidX)}" y="${fmtNum(labelFirstY)}" text-anchor="middle" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_SWIRL_SUPPORT)}>${escapeXml(`${geometry.sectionCount} sections`)}</text>`,
+      `<g class="hat-diagram__swirl-instruction" data-swirl-instruction="decrease-one-edge">`,
+      `<image class="hat-diagram__swirl-instruction-icon" href="${HAT_TRANSFER_STEP_ICON_SRC}" xlink:href="${HAT_TRANSFER_STEP_ICON_SRC}" x="${fmtNum(iconX)}" y="${fmtNum(iconY)}" width="${fmtNum(instructionIconSize)}" height="${fmtNum(instructionIconSize)}" />`,
+      `<text class="hat-diagram__swirl-instruction-text" x="${fmtNum(textX)}" y="${fmtNum(labelSecondY)}" text-anchor="start" dominant-baseline="middle" fill="${MUTED}" ${textFont(FS_SWIRL_SUPPORT)}>${escapeXml(instruction)}</text>`,
+      `</g>`,
+    );
+  }
 
   return [
-    `<g class="hat-diagram__crown hat-diagram__crown--swirl" data-crown-style="spiral">`,
-    `<path d="${outline}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.75"/>`,
-    swirlLines,
-    `<line class="hat-diagram__crown-start" x1="${fmtNum(hatLeft)}" y1="${fmtNum(bodyTop)}" x2="${fmtNum(hatRight)}" y2="${fmtNum(bodyTop)}" stroke="${STROKE}" stroke-width="1.25" stroke-dasharray="6 4" fill="none"/>`,
-    labels.spiralPoints
-      ? `<text x="${fmtNum(hatMidX)}" y="${fmtNum(bodyTop - frame.crownVisual * 0.58)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_DETAIL)}>${escapeXml(labels.spiralPoints)}</text>`
-      : "",
-    labels.spiralTarget
-      ? `<text x="${fmtNum(hatMidX)}" y="${fmtNum(bodyTop - frame.crownVisual * 0.32)}" text-anchor="middle" fill="${MUTED}" ${textFont(FS_DETAIL)}>${escapeXml(labels.spiralTarget)}</text>`
-      : "",
-    `<text x="${fmtNum(hatMidX)}" y="${fmtNum(Math.max(16, crownTop - 4))}" text-anchor="middle" fill="${STROKE}" ${textFont(FS_CROWN_TITLE, FW_SECTION)}>Crown · Swirl</text>`,
+    `<g class="hat-diagram__crown hat-diagram__crown--swirl" data-crown-style="spiral" data-swirl-section-count="${geometry.sectionCount}" data-swirl-decrease-edge="${geometry.decreaseEdge}">`,
+    `<text class="hat-diagram__swirl-title" x="${fmtNum(hatMidX)}" y="${fmtNum(crownTitleY)}" text-anchor="middle" fill="${STROKE}" ${textFont(FS_CROWN_TITLE, FW_SECTION)}>Crown · Swirl</text>`,
+    ...headerCallouts,
+    `<polyline class="hat-diagram__swirl-outline" points="${geometry.outlinePoints}" fill="${FILL}" stroke="${STROKE}" stroke-width="1.75"/>`,
+    sectionGroups.join(""),
+    `<line class="hat-diagram__crown-start" x1="${fmtNum(hatLeft)}" y1="${fmtNum(bodyTop)}" x2="${fmtNum(frame.hatRight)}" y2="${fmtNum(bodyTop)}" stroke="${STROKE}" stroke-width="1.25" stroke-dasharray="6 4" fill="none"/>`,
     `</g>`,
   ].join("");
 }
@@ -527,6 +594,7 @@ function drawMeasurements(
   const midHeightY = (frame.crownTop + frame.hatBottom) / 2;
 
   // Total height (left). summaryEdit: arrow only — editable chip is the value source.
+  // Swirl / Four-Gore: keep the arrow + value, omit the "Total" caption.
   parts.push(
     verticalArrow(
       leftX,
@@ -536,9 +604,11 @@ function drawMeasurements(
       heightLabelX,
     ),
   );
-  parts.push(
-    `<text x="${fmtNum(totalLabelX)}" y="${fmtNum(midHeightY)}" text-anchor="middle" transform="rotate(-90 ${fmtNum(totalLabelX)} ${fmtNum(midHeightY)})" fill="${MUTED}" ${textFont(FS_SUPPORT)}>Total</text>`,
-  );
+  if (!frame.isSpiral && !frame.isWedge) {
+    parts.push(
+      `<text x="${fmtNum(totalLabelX)}" y="${fmtNum(midHeightY)}" text-anchor="middle" transform="rotate(-90 ${fmtNum(totalLabelX)} ${fmtNum(midHeightY)})" fill="${MUTED}" ${textFont(FS_SUPPORT)}>Total</text>`,
+    );
+  }
 
   if (summaryEdit) {
     // Only the three editable-measurement arrows (length / brim / width).

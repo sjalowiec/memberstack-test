@@ -724,28 +724,44 @@ const hatZeroBodyRowsWarningMessage =
     color: #4b5563;
   }
 
-  /* Mobile/tablet: instructions first, diagram after (override garment-columns diagram-first order). */
-  #pattern-content .pattern-layout.hat-pattern-reading-layout {
+  /*
+   * Hat finished-pattern reading layout
+   * - < 1100px: single column — full instructions, then full Hat Dimensions
+   * - ≥ 1100px: ~62% instructions / ~38% Hat Dimensions (flexible fr tracks)
+   * Must beat shared sleeveless garment-columns grid (768px) and pattern-app-shell
+   * diagram clamp so the hat diagram is never clipped in a narrow sticky track.
+   */
+  #pattern-content .pattern-layout.pattern-layout--garment-columns.hat-pattern-reading-layout {
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
     align-items: stretch;
+    width: 100%;
+    max-width: 100%;
     min-width: 0;
+    box-sizing: border-box;
   }
 
   #pattern-content .hat-pattern-reading-layout__instructions,
   #pattern-content .hat-pattern-reading-layout__diagram {
     min-width: 0;
     max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
   }
 
+  /* Instructions first; override shared garment-columns diagram-first order. */
   #pattern-content .pattern-layout.hat-pattern-reading-layout > .hat-pattern-reading-layout__diagram {
     order: 0;
+    position: static;
+    top: auto;
   }
 
   .hat-pattern-diagram-panel {
     margin: 0;
+    width: 100%;
     max-width: 100%;
+    box-sizing: border-box;
   }
 
   .hat-pattern-diagram-panel__title {
@@ -756,8 +772,11 @@ const hatZeroBodyRowsWarningMessage =
   }
 
   .hat-pattern-diagram-panel__svg {
+    width: 100%;
     max-width: 100%;
+    margin-inline: auto;
     overflow-x: hidden;
+    box-sizing: border-box;
   }
 
   .hat-pattern-diagram-panel__svg :global(svg) {
@@ -765,76 +784,80 @@ const hatZeroBodyRowsWarningMessage =
     width: 100%;
     max-width: 100%;
     height: auto;
+    margin-inline: auto;
   }
 
-  .hat-pattern-diagram-tabs {
+  :global(.hat-pattern-diagram-tabs) {
     max-width: 100%;
   }
 
-  .hat-pattern-diagram-tabs__list {
+  :global(.hat-pattern-diagram-tabs__list) {
     display: flex;
     width: 100%;
     max-width: 100%;
     margin: 0 0 0.85rem;
     padding: 0;
-    border: 1px solid rgba(82, 104, 45, 0.35);
-    border-radius: 10px;
+    border: 2px solid var(--kbm-green, #52682d);
+    border-radius: 8px;
     overflow: hidden;
-    background: #f3f4ef;
+    background: #fff;
     gap: 0;
+    box-sizing: border-box;
   }
 
-  .hat-pattern-diagram-tabs__tab {
+  :global(.hat-pattern-diagram-tabs__tab) {
     appearance: none;
     -webkit-appearance: none;
     flex: 1 1 0;
     min-width: 0;
     min-height: 44px;
     margin: 0;
-    padding: 0.65rem 0.85rem;
+    padding: 0.7rem 1rem;
     border: none;
     border-radius: 0;
-    background: #f3f4ef;
-    color: #5b6472;
+    background: #fff;
+    color: var(--kbm-green, #52682d);
     font-family: inherit;
-    font-size: 0.9375rem;
+    font-size: 1rem;
     font-weight: 600;
-    line-height: 1.2;
-    white-space: nowrap;
+    line-height: 1.25;
+    text-align: center;
+    white-space: normal;
     cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease;
+    transition: background 0.2s ease, color 0.2s ease;
+    box-sizing: border-box;
   }
 
-  .hat-pattern-diagram-tabs__tab + .hat-pattern-diagram-tabs__tab {
-    border-left: 1px solid rgba(82, 104, 45, 0.28);
+  :global(.hat-pattern-diagram-tabs__tab + .hat-pattern-diagram-tabs__tab) {
+    border-left: 2px solid var(--kbm-green, #52682d);
   }
 
-  .hat-pattern-diagram-tabs__tab:hover:not([aria-selected="true"]) {
-    color: #3d4a2f;
-    background: #e7eadf;
+  :global(.hat-pattern-diagram-tabs__tab:hover:not([aria-selected="true"])) {
+    color: #fff;
+    background: var(--kbm-green-hover, #445826);
   }
 
-  .hat-pattern-diagram-tabs__tab[aria-selected="true"],
-  .hat-pattern-diagram-tabs__tab.is-selected {
+  :global(.hat-pattern-diagram-tabs__tab[aria-selected="true"]),
+  :global(.hat-pattern-diagram-tabs__tab.is-selected) {
     color: #fff;
     background: var(--kbm-green, #52682d);
   }
 
-  .hat-pattern-diagram-tabs__tab:focus-visible {
-    outline: 2px solid #52682d;
+  :global(.hat-pattern-diagram-tabs__tab:focus-visible) {
+    outline: 2px solid var(--kbm-green, #52682d);
     outline-offset: 2px;
     z-index: 1;
   }
 
-  .hat-pattern-diagram-tabs__panel {
+  :global(.hat-pattern-diagram-tabs__panel) {
     max-width: 100%;
   }
 
-  .hat-pattern-diagram-tabs__panel[hidden] {
+  :global(.hat-pattern-diagram-tabs__panel[hidden]) {
     display: none !important;
   }
 
-  .hat-pattern-diagram-print-heading {
+  :global(.hat-pattern-diagram-print-heading) {
     display: none;
     margin: 0 0 0.45rem;
     font-size: 1rem;
@@ -842,57 +865,49 @@ const hatZeroBodyRowsWarningMessage =
     color: #111;
   }
 
-  .hat-pattern-diagram-shaping-help {
+  :global(.hat-pattern-diagram-shaping-help) {
     margin: 0 0 0.75rem;
     max-width: 100%;
   }
 
-  .hat-pattern-diagram-shaping-help__btn {
-    appearance: none;
-    -webkit-appearance: none;
+  /* Secondary KIN button look; keeps catalog-video modal trigger behavior. */
+  :global(.hat-pattern-diagram-shaping-help__btn.kbm-btn) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    box-sizing: border-box;
-    width: 100%;
+    width: auto;
     max-width: 100%;
     min-height: 44px;
-    margin: 0;
-    padding: 0.55rem 0.9rem;
-    border: 1px solid rgba(82, 104, 45, 0.35);
-    border-radius: 8px;
-    background: #fff;
-    color: #3d4a2f;
-    font-family: inherit;
-    font-size: 0.9375rem;
+    padding: 0.65rem 1.125rem;
+    font-size: 1rem;
     font-weight: 600;
     line-height: 1.25;
     text-align: center;
-    text-decoration: none;
-    cursor: pointer;
+    white-space: normal;
   }
 
-  .hat-pattern-diagram-shaping-help__btn:hover {
-    color: #2f3a22;
-    background: #f3f4ef;
-    border-color: rgba(82, 104, 45, 0.5);
-  }
-
-  .hat-pattern-diagram-shaping-help__btn:focus-visible {
-    outline: 2px solid #52682d;
+  :global(.hat-pattern-diagram-shaping-help__btn.kbm-btn:focus-visible) {
+    outline: 2px solid var(--kbm-green, #52682d);
     outline-offset: 2px;
   }
 
-  @media (max-width: 560px) {
-    .hat-pattern-diagram-tabs__tab {
-      font-size: 0.875rem;
-      padding: 0.6rem 0.55rem;
+  :global(.hat-pattern-diagram-shaping-help__btn .fa-circle-info) {
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  @media (max-width: 767px) {
+    :global(.hat-pattern-diagram-tabs__list) {
+      width: 100%;
     }
 
-    .hat-pattern-diagram-shaping-help__btn {
-      font-size: 0.875rem;
-      padding: 0.55rem 0.7rem;
+    :global(.hat-pattern-diagram-tabs__tab) {
+      padding: 0.7rem 0.75rem;
+    }
+
+    :global(.hat-pattern-diagram-shaping-help__btn.kbm-btn) {
+      width: 100%;
     }
   }
 
@@ -938,10 +953,45 @@ const hatZeroBodyRowsWarningMessage =
     font-weight: 600;
   }
 
-  @media (min-width: 768px) {
+  /* Tablet / narrow laptop: stay stacked; diagram readable but not oversized. */
+  @media (min-width: 768px) and (max-width: 1099.98px) {
+    #pattern-content .pattern-layout.pattern-layout--garment-columns.hat-pattern-reading-layout {
+      display: flex;
+      flex-direction: column;
+      grid-template-columns: none;
+      gap: 1.25rem;
+      align-items: stretch;
+    }
+
+    #pattern-content .pattern-layout.hat-pattern-reading-layout > .hat-pattern-reading-layout__diagram {
+      order: 0;
+      position: static;
+      top: auto;
+      justify-self: stretch;
+    }
+
+    .hat-pattern-diagram-panel {
+      width: 100%;
+      max-width: 100%;
+      margin-inline: 0;
+    }
+
+    .hat-pattern-diagram-panel__svg {
+      max-width: min(100%, 36rem);
+      margin-inline: auto;
+    }
+
+    :global(.hat-pattern-diagram-tabs__list) {
+      flex-wrap: wrap;
+    }
+  }
+
+  /* Desktop / laptop: instructions ~62% · Hat Dimensions ~38%. */
+  @media (min-width: 1100px) {
+    .pattern-app-shell #pattern-content .pattern-layout.pattern-layout--garment-columns.hat-pattern-reading-layout,
     #pattern-content .pattern-layout.pattern-layout--garment-columns.hat-pattern-reading-layout {
       display: grid;
-      grid-template-columns: minmax(0, 1.5fr) minmax(280px, 0.8fr);
+      grid-template-columns: minmax(0, 62fr) minmax(0, 38fr);
       gap: clamp(1.25rem, 2.5vw, 2rem);
       align-items: start;
     }
@@ -951,11 +1001,21 @@ const hatZeroBodyRowsWarningMessage =
       position: sticky;
       top: var(--fixed-header-offset, 90px);
       align-self: start;
+      justify-self: stretch;
+      width: auto;
+      max-width: 100%;
+      min-width: 0;
     }
 
     .hat-pattern-diagram-panel {
-      max-width: 420px;
-      margin-left: auto;
+      width: 100%;
+      max-width: 100%;
+      margin-inline: auto;
+    }
+
+    .hat-pattern-diagram-panel__svg {
+      max-width: 100%;
+      margin-inline: auto;
     }
   }
 
@@ -1109,22 +1169,22 @@ const hatZeroBodyRowsWarningMessage =
     }
 
     .hat-pattern-diagram-panel__svg :global(svg),
-    .hat-pattern-diagram-tabs__panel :global(svg) {
+    :global(.hat-pattern-diagram-tabs__panel) :global(svg) {
       max-width: 100% !important;
       height: auto !important;
     }
 
-    .hat-pattern-diagram-tabs__list,
-    .hat-pattern-diagram-shaping-help {
+    :global(.hat-pattern-diagram-tabs__list),
+    :global(.hat-pattern-diagram-shaping-help) {
       display: none !important;
     }
 
-    .hat-pattern-diagram-print-heading {
+    :global(.hat-pattern-diagram-print-heading) {
       display: block !important;
     }
 
-    .hat-pattern-diagram-tabs__panel,
-    .hat-pattern-diagram-tabs__panel[hidden] {
+    :global(.hat-pattern-diagram-tabs__panel),
+    :global(.hat-pattern-diagram-tabs__panel[hidden]) {
       display: block !important;
       visibility: visible !important;
       margin-top: 0.85rem;
@@ -1132,7 +1192,7 @@ const hatZeroBodyRowsWarningMessage =
       page-break-inside: avoid;
     }
 
-    .hat-pattern-diagram-tabs__panel + .hat-pattern-diagram-tabs__panel {
+    :global(.hat-pattern-diagram-tabs__panel + .hat-pattern-diagram-tabs__panel) {
       break-before: auto;
       page-break-before: auto;
       margin-top: 1.1rem;

@@ -78,6 +78,10 @@ describe("buildHatPatternDiagramSvg", () => {
     expect(svg).not.toContain("hat-diagram__crown--gathered");
     expect(svg).not.toContain("hat-diagram__crown--swirl");
 
+    // Full-height measurement value remains; "Total" caption is omitted for four-gore.
+    expect(svg).toContain(formatLengthWithUnit(calc.hatHeight, "inches"));
+    expect(svg).not.toContain(">Total<");
+
     // Stitch-count sits below the wedge base (bodyTop), not over the tips.
     const bodyTopMatch = svg.match(
       /class="hat-diagram__body"[^>]*y="([\d.]+)"/,
@@ -97,12 +101,93 @@ describe("buildHatPatternDiagramSvg", () => {
     expect(svg).toContain('data-crown="spiral"');
     expect(svg).toContain("hat-diagram__crown--swirl");
     expect(svg).toContain("Crown · Swirl");
-    expect(svg).toContain("decrease points");
     expect(calc.crownPlan.spiral).toBeTruthy();
-    expect(svg).toContain(`${calc.crownPlan.spiral!.decreasePoints} decrease points`);
-    expect(svg).toContain(`to ${calc.crownPlan.spiral!.targetStitches} sts`);
+    const spiralPlan = calc.crownPlan.spiral!;
+    expect(spiralPlan.decreasePoints).toBe(6);
+
+    // Calculated one-sided sections; shared trailing decrease direction.
+    expect(svg).toContain(`data-swirl-section-count="${spiralPlan.decreasePoints}"`);
+    expect(svg).toContain('data-swirl-decrease-edge="trailing"');
+    const sectionMatches = svg.match(/class="hat-diagram__swirl-section"/g) ?? [];
+    expect(sectionMatches).toHaveLength(spiralPlan.decreasePoints);
+    for (let i = 1; i <= spiralPlan.decreasePoints; i += 1) {
+      expect(svg).toMatch(
+        new RegExp(
+          `hat-diagram__swirl-section"[^>]*data-section-index="${i}"[^>]*data-decrease-edge="trailing"[^>]*data-non-decrease-edge="leading"`,
+        ),
+      );
+    }
+
+    // Schedule-driven section count + one instruction-line transfer icon.
+    expect(svg).toContain(`>${spiralPlan.decreasePoints} sections<`);
+    expect(svg).toContain(
+      `data-swirl-section-label="${spiralPlan.decreasePoints} sections"`,
+    );
+    expect(svg).toContain("decrease at one edge");
+    expect(svg).not.toContain("decrease at one edge of each section");
+    expect(svg).toContain('data-swirl-label-placement="above-crown"');
+    expect(svg).toContain('data-swirl-instruction="decrease-one-edge"');
+    expect(svg).toContain("hat-diagram__swirl-instruction-icon");
+    expect(svg).toContain("/icons/patterns/transfer-step.svg");
+    // One instruction-line icon element (href + xlink:href both reference the asset).
+    expect(svg.match(/class="hat-diagram__swirl-instruction-icon"/g)?.length).toBe(1);
+    expect(svg.match(/<image[^>]*hat-diagram__swirl-instruction-icon/g)?.length).toBe(1);
+    // No per-section transfer markers on the crown drawing.
+    expect(svg).not.toContain("hat-diagram__swirl-decrease-marker");
+    expect(svg).not.toContain("decrease points");
+    expect(svg).not.toContain("6 decrease points");
+
+    // Ending stitch-total label removed from the diagram only.
+    expect(svg).not.toMatch(/to \d+ sts/);
+    expect(svg).not.toContain(`to ${spiralPlan.targetStitches} sts`);
+    expect(svg).not.toContain("hat-diagram__swirl-target");
+
+    // Full-height measurement value remains; "Total" caption is omitted for swirl.
+    expect(svg).toContain(formatLengthWithUnit(calc.hatHeight, "inches"));
+    expect(svg).not.toContain(">Total<");
+
+    // Label sits above the crown outline; title precedes the supporting callout.
+    const titleIdx = svg.indexOf("hat-diagram__swirl-title");
+    const labelIdx = svg.indexOf("hat-diagram__swirl-section-label");
+    const instructionIdx = svg.indexOf("hat-diagram__swirl-instruction");
+    const outlineIdx = svg.indexOf("hat-diagram__swirl-outline");
+    expect(titleIdx).toBeGreaterThan(-1);
+    expect(labelIdx).toBeGreaterThan(titleIdx);
+    expect(instructionIdx).toBeGreaterThan(labelIdx);
+    expect(outlineIdx).toBeGreaterThan(instructionIdx);
+
+    // Supporting text uses the smaller small-token size; heading uses crownTitle.
+    expect(svg).toMatch(/hat-diagram__swirl-title"[^>]*font-size="21"/);
+    expect(svg).toMatch(/hat-diagram__swirl-section-label"[^>]*font-size="18"/);
+    expect(svg).toMatch(/hat-diagram__swirl-instruction-text"[^>]*font-size="18"/);
+
     expect(svg).not.toContain("hat-diagram__crown--four-gore");
     expect(svg).not.toContain("hat-diagram__crown--gathered");
+  });
+
+  it("keeps four-gore and gathered crowns unchanged relative to swirl geometry", () => {
+    const gathered = buildHatPatternDiagramSvg(
+      calcFor({ crown: "gathered" }),
+      "inches",
+      formatters,
+    );
+    const fourGore = buildHatPatternDiagramSvg(
+      calcFor({ crown: "wedge-4-decrease" }),
+      "inches",
+      formatters,
+    );
+    expect(gathered).toContain("hat-diagram__crown--gathered");
+    expect(gathered).not.toContain("hat-diagram__swirl-section");
+    expect(gathered).not.toContain("hat-diagram__swirl-instruction-icon");
+    expect(gathered).not.toContain("decrease at one edge");
+    expect(gathered).toContain(">Total<");
+    expect(fourGore).toContain("hat-diagram__crown--four-gore");
+    expect(fourGore).toContain(">#1<");
+    expect(fourGore).toContain("sts / gore");
+    expect(fourGore).not.toContain("hat-diagram__swirl-section");
+    expect(fourGore).not.toContain("hat-diagram__swirl-instruction-icon");
+    expect(fourGore).not.toContain("decrease at one edge");
+    expect(fourGore).not.toContain(">Total<");
   });
 
   it("marks single-layer vs folded vs rolled brim distinctly", () => {
@@ -361,7 +446,11 @@ describe("buildHatPatternDiagramSvg", () => {
           // Section labels remain.
           expect(svg).toContain(">Body<");
           expect(svg).toMatch(/>Brim<|>Rolled Brim</);
-          expect(svg).toContain(">Total<");
+          if (crown === "spiral" || crown === "wedge-4-decrease") {
+            expect(svg).not.toContain(">Total<");
+          } else {
+            expect(svg).toContain(">Total<");
+          }
           // Three measurement arrows remain (length / brim / width).
           expect(svg).toMatch(/x1="54"[^>]*stroke="#52682d"/);
           expect(svg).toMatch(/x1="338"[^>]*y1="[^"]+"[^>]*y2="[^"]+"[^>]*stroke="#52682d"/);
