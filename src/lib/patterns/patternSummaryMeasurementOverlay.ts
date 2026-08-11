@@ -96,6 +96,10 @@ export function applyMeasurementBlueprintViewBoxAspect(
  * Drop Shoulder cuff length vs cuff circ) with enlarged edit-workspace chips and
  * longer centimeter values. Conservative model cleared at ~570px; 640px adds
  * margin for label icons, focus rings, and font metrics.
+ *
+ * Edit-workspace diagrams must be sized from available content width (see
+ * sweater-edit-measurement-diagram.css). Do not reintroduce viewport-height
+ * width caps that shrink a square diagram below this threshold on short laptops.
  */
 export const DESKTOP_MEASUREMENT_OVERLAY_MIN_STAGE_PX = 640;
 

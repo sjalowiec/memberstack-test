@@ -1,0 +1,119 @@
+/**
+ * Shared Edit Pattern measurement diagram sizing (sweater Lego contract).
+ *
+ * Used by Sleeveless and Drop Shoulder Edit Pattern workspaces.
+ * Overlay vs phone-stacked mode is owned by patternSummaryMeasurementOverlay.ts
+ * (actual stage width via ResizeObserver) — not by rules in this file.
+ *
+ * Contract:
+ * - Stage width follows available content/column width (max 1000px).
+ * - Do NOT size diagram width from viewport height (no calc(100vh - …) width caps).
+ * - Vertical scrolling of the workspace/page is preferred over separating inputs
+ *   from their diagram targets at tablet/laptop sizes.
+ * - Enlarged chips apply only when data-measurement-overlay-mode="desktop".
+ * - Tall constructions (data-express-construction="drop-shoulder") keep an inner
+ *   scrollport; near-square constructions rely on the measure pane / page scroll.
+ */
+
+.sl-measure-workspace__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.sl-measure-workspace__body.express-measurements-confirm-page {
+  /* Fallback aspect; pages / init stamp the real blueprint viewBox ratio. */
+  --pattern-summary-aspect-ratio: 1;
+  --sl-measure-workspace-scroll-max-height: calc(
+    100dvh - var(--sl-edit-panel-top, calc(var(--header-offset, 170px) + var(--kbm-env-banner-h, 0px))) -
+      14rem
+  );
+}
+
+.sl-measure-workspace__body.express-measurements-confirm-page .sleeveless-measure-review-body {
+  max-width: 100%;
+}
+
+/*
+ * Content-width stage sizing for all sweater edit diagrams.
+ * Cap at 1000px of the measure column — never by viewport height.
+ */
+.sl-measure-workspace__body.express-measurements-confirm-page .cb-measure-diagram-wrap,
+.sl-measure-workspace__body.express-measurements-confirm-page
+  .sleeveless-measure-diagram-host
+  .express-mbp,
+.sl-measure-workspace__body.express-measurements-confirm-page
+  .sleeveless-measure-diagram-host
+  .express-mbp-stage {
+  width: 100%;
+  max-width: min(100%, 1000px);
+  margin-inline: auto;
+}
+
+.sl-measure-workspace__body.express-measurements-confirm-page .express-mbp-art {
+  width: 100%;
+  height: auto;
+  aspect-ratio: var(--pattern-summary-aspect-ratio);
+}
+
+/*
+ * Near-square constructions: let the diagram grow with content width; the measure
+ * pane / workspace scrolls vertically when taller than the viewport.
+ */
+.sl-measure-workspace__body.express-measurements-confirm-page .express-mbp-scroll {
+  overflow-x: hidden;
+  overflow-y: visible;
+  padding-bottom: 0;
+}
+
+/*
+ * Tall Drop Shoulder summary: scroll inside `.express-mbp-scroll` so chips stay
+ * aligned to targets while the art moves (construction stamp, not pattern-name).
+ */
+.sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+  .express-mbp-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  max-height: var(--sl-measure-workspace-scroll-max-height);
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0;
+}
+
+/*
+ * Larger on-diagram chips only in overlay (desktop) mode. Stacked phone panel
+ * keeps shared form-field sizes from sleeveless-express-measurements-confirm.css.
+ */
+.sl-measure-workspace__body.express-measurements-confirm-page
+  .express-mbp-stage[data-measurement-overlay-mode="desktop"]
+  .measurement-chip {
+  min-width: 4rem;
+  min-height: 2.25rem;
+  padding: 0.32rem 0.48rem;
+}
+
+.sl-measure-workspace__body.express-measurements-confirm-page
+  .express-mbp-stage[data-measurement-overlay-mode="desktop"]
+  .measurement-input {
+  font-size: 1.15rem;
+  min-width: 2rem;
+  max-width: 4rem;
+}
+
+.sl-measure-workspace__body.express-measurements-confirm-page
+  .express-mbp-stage[data-measurement-overlay-mode="desktop"]
+  .measurement-unit {
+  font-size: 0.74rem;
+}
+
+.sl-measure-workspace__body.express-measurements-confirm-page
+  .express-mbp-stage[data-measurement-overlay-mode="desktop"]
+  .express-mbp-box__value {
+  min-width: 4rem;
+  max-width: 6.5rem;
+  padding: 0.32rem 0.5rem;
+  font-size: 1.15rem;
+}

@@ -18,6 +18,10 @@ const confirmCss = readFileSync(
   resolve("src/styles/sleeveless-express-measurements-confirm.css"),
   "utf8",
 );
+const editDiagramCss = readFileSync(
+  resolve("src/styles/patterns/sweater-edit-measurement-diagram.css"),
+  "utf8",
+);
 const overlaySrc = readFileSync(
   resolve("src/lib/patterns/patternSummaryMeasurementOverlay.ts"),
   "utf8",
@@ -57,17 +61,23 @@ describe("patternSummaryMeasurementOverlay — stage-width overlay mode", () => 
     expect(DESKTOP_MEASUREMENT_OVERLAY_MIN_STAGE_PX).toBeGreaterThan(570);
   });
 
-  it("treats a wide viewport with a narrow stage as stacked (not overlays)", () => {
-    // 1280 CSS px viewport can still yield a height-capped ~420px sleeveless stage.
+  it("treats a wide viewport with an artificially narrow stage as stacked", () => {
     expect(shouldUseDesktopMeasurementOverlay(420)).toBe(false);
     expect(shouldUseDesktopMeasurementOverlay(560)).toBe(false);
     expect(shouldUseDesktopMeasurementOverlay(639)).toBe(false);
   });
 
-  it("uses overlays only when the stage itself is wide enough", () => {
+  it("uses on-diagram inputs when the stage is at tablet/laptop readable width", () => {
+    // After removing the Sleeveless vh width cap, ~1280×720 two-column stages land ~750–820px.
     expect(shouldUseDesktopMeasurementOverlay(640)).toBe(true);
+    expect(shouldUseDesktopMeasurementOverlay(750)).toBe(true);
     expect(shouldUseDesktopMeasurementOverlay(800)).toBe(true);
     expect(shouldUseDesktopMeasurementOverlay(1000)).toBe(true);
+  });
+
+  it("uses stacked fallback for genuinely phone-sized stages", () => {
+    expect(shouldUseDesktopMeasurementOverlay(320)).toBe(false);
+    expect(shouldUseDesktopMeasurementOverlay(390)).toBe(false);
   });
 
   it("does not decide overlay mode solely from the legacy 700px viewport media query", () => {
@@ -75,7 +85,6 @@ describe("patternSummaryMeasurementOverlay — stage-width overlay mode", () => 
     expect(overlaySrc).toContain("shouldUseDesktopMeasurementOverlay");
     expect(overlaySrc).toContain("ResizeObserver");
     expect(overlaySrc).toContain("DESKTOP_MEASUREMENT_OVERLAY_MIN_STAGE_PX");
-    // Primary decision must use stage width, not matchMedia(DESKTOP_MEASUREMENT_OVERLAY_MQ).
     expect(overlaySrc).not.toMatch(
       /bindPatternSummaryOverlayPositioning[\s\S]*matchMedia\(\s*DESKTOP_MEASUREMENT_OVERLAY_MQ/,
     );
@@ -129,7 +138,6 @@ describe("shared stacked measurement panel CSS contract", () => {
       /data-measurement-overlay-mode="mobile"[\s\S]*\.measure-icon\s*\{[\s\S]*display:\s*none/,
     );
     expect(confirmCss).toMatch(/grid-template-columns:\s*1fr;/);
-    // Must not rely only on the old viewport max-width: 699.98px gate.
     expect(confirmCss).not.toMatch(
       /@media \(max-width:\s*699\.98px\)[\s\S]*\.express-mbp-overlay\s*\{[\s\S]*position:\s*static/,
     );
@@ -144,11 +152,62 @@ describe("shared stacked measurement panel CSS contract", () => {
     );
   });
 
-  it("Sleeveless + Drop Shoulder Edit and Custom Build fit share both measurement stylesheets", () => {
+  it("Sleeveless + Drop Shoulder Edit and Custom Build fit share measurement stylesheets", () => {
     for (const src of [sleevelessEditAstro, dropShoulderEditAstro, customBuildFitAstro]) {
       expect(src).toContain("sleeveless-express-measurements-confirm.css");
       expect(src).toContain("sleeveless-custom-build-measurements.css");
     }
+  });
+});
+
+describe("shared sweater edit measurement diagram sizing contract", () => {
+  it("both Edit Pattern pages import the shared sizing stylesheet", () => {
+    for (const src of [sleevelessEditAstro, dropShoulderEditAstro]) {
+      expect(src).toContain("sweater-edit-measurement-diagram.css");
+    }
+  });
+
+  it("sizes the diagram from content width and never from viewport height", () => {
+    expect(editDiagramCss).toMatch(/max-width:\s*min\(100%,\s*1000px\)/);
+    expect(editDiagramCss).not.toContain("calc(100vh - 300px)");
+    expect(editDiagramCss).not.toMatch(/max-width:[^;]*100vh/);
+    expect(sleevelessEditAstro).not.toContain("calc(100vh - 300px)");
+    expect(dropShoulderEditAstro).not.toContain("calc(100vh - 300px)");
+  });
+
+  it("keeps laptop/tablet-readable stages in overlay mode after the height-cap removal", () => {
+    // Content-width stages at the approved viewports exceed the phone fallback.
+    for (const stageWidth of [750, 800, 900]) {
+      expect(shouldUseDesktopMeasurementOverlay(stageWidth)).toBe(true);
+    }
+  });
+
+  it("enlarged on-diagram chips live in the shared stylesheet and require desktop overlay mode", () => {
+    expect(editDiagramCss).toContain(
+      '.express-mbp-stage[data-measurement-overlay-mode="desktop"]',
+    );
+    expect(editDiagramCss).toMatch(
+      /data-measurement-overlay-mode="desktop"[\s\S]*\.measurement-chip/,
+    );
+  });
+
+  it("preserves tall-diagram scrolling via construction stamp, not pattern-name branching", () => {
+    expect(editDiagramCss).toContain('[data-express-construction="drop-shoulder"]');
+    expect(editDiagramCss).toMatch(
+      /data-express-construction="drop-shoulder"[\s\S]*\.express-mbp-scroll[\s\S]*overflow-y:\s*auto/,
+    );
+    expect(editDiagramCss).not.toMatch(/drop-shoulder\/pattern|sleeveless\/pattern/);
+  });
+
+  it("leaves only aspect-ratio tokens on the pattern pages", () => {
+    expect(sleevelessEditAstro).toContain("--pattern-summary-aspect-ratio: 210.2 / 210.2");
+    expect(dropShoulderEditAstro).toContain("--pattern-summary-aspect-ratio: 228.87 / 423.24");
+    expect(sleevelessEditAstro).not.toMatch(
+      /\.express-mbp-stage\[data-measurement-overlay-mode="desktop"\] \.measurement-chip/,
+    );
+    expect(dropShoulderEditAstro).not.toMatch(
+      /\.express-mbp-stage\[data-measurement-overlay-mode="desktop"\] \.measurement-chip/,
+    );
   });
 });
 
@@ -163,18 +222,8 @@ describe("Edit Pattern workspace container-width contract", () => {
       expect(src).toContain("container-name: sl-edit-workspace");
       expect(src).toContain("@container sl-edit-workspace (min-width: 1100px)");
       expect(src).toContain("@container sl-edit-workspace (max-width: 1099.98px)");
-      // Viewport 1000px must not be the primary two-column switch anymore.
       expect(src).not.toMatch(/@media \(min-width:\s*1000px\)\s*\{[\s\S]*\.sl-edit-workspace__layout/);
       expect(src).not.toMatch(/@media \(max-width:\s*999px\)\s*\{[\s\S]*\.sl-edit-workspace__measure-actions/);
-    }
-  });
-
-  it("enlarged on-diagram chips apply only in desktop overlay mode", () => {
-    for (const src of [sleevelessEditAstro, dropShoulderEditAstro]) {
-      expect(src).toContain('data-measurement-overlay-mode="desktop"');
-      expect(src).toContain(
-        '.express-mbp-stage[data-measurement-overlay-mode="desktop"] .measurement-chip',
-      );
     }
   });
 });
