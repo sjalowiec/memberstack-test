@@ -2,10 +2,13 @@
  * Position HTML measurement overlay chips on pattern_summary.svg target anchors.
  * Targets are green/orange circles in the SVG (left visible intentionally).
  *
- * Desktop (≥700px): center each chip on its SVG target.
- * Mobile (<700px): clear inline coords so shared CSS stacks editable chips in a
- * labeled Measurements panel under the diagram (practical phone editing; not a
- * phone diagram editor).
+ * Mode is based on the diagram/stage width (ResizeObserver), not viewport width:
+ * - Wide stage: center each chip on its SVG target.
+ * - Narrow stage: clear inline coords so shared CSS stacks editable chips in a
+ *   labeled Measurements panel under the diagram.
+ *
+ * Threshold selected from crowded-target overlap sweeps (Sleeveless neck cluster +
+ * Drop Shoulder cuff/wrist) for inches and centimeters, plus a readability margin.
  */
 
 export const PATTERN_SUMMARY_MEASUREMENT_TARGETS = {
@@ -85,8 +88,33 @@ export function applyMeasurementBlueprintViewBoxAspect(
   return size;
 }
 
-/** Desktop: chips centered on SVG targets. Below this, mobile panel stack CSS takes over. */
+/**
+ * Minimum diagram/stage width (px) for absolute on-diagram chips.
+ * Below this, the under-diagram Measurements panel is used.
+ *
+ * Chosen from overlap sweeps of the densest targets (Sleeveless neck cluster;
+ * Drop Shoulder cuff length vs cuff circ) with enlarged edit-workspace chips and
+ * longer centimeter values. Conservative model cleared at ~570px; 640px adds
+ * margin for label icons, focus rings, and font metrics.
+ */
+export const DESKTOP_MEASUREMENT_OVERLAY_MIN_STAGE_PX = 640;
+
+/**
+ * Legacy viewport media query — not the primary overlay decision.
+ * Kept for phone-workspace / hat docs that still mention the historical 700px MQ.
+ */
 export const DESKTOP_MEASUREMENT_OVERLAY_MQ = "(min-width: 700px)";
+
+/**
+ * Edit Pattern workspace: two-column layout when the drawer body container is at
+ * least this wide (container query). Below this, Quick edits stack above the diagram.
+ */
+export const EDIT_WORKSPACE_TWO_COLUMN_MIN_PX = 1100;
+
+/** Whether the stage is wide enough for absolute overlay chips (not viewport-based). */
+export function shouldUseDesktopMeasurementOverlay(stageWidthPx: number): boolean {
+  return Number.isFinite(stageWidthPx) && stageWidthPx >= DESKTOP_MEASUREMENT_OVERLAY_MIN_STAGE_PX;
+}
 
 export type PositionMeasurementBoxOptions = {
   offsetX?: number;
@@ -178,10 +206,30 @@ export function collectOverlayAnchors(overlay: HTMLElement): MeasurementOverlayA
   return anchors;
 }
 
+function resolveOverlayStageElement(stageInner: HTMLElement): HTMLElement | null {
+  const parent = stageInner.parentElement;
+  if (parent instanceof HTMLElement && parent.classList.contains("express-mbp-stage")) {
+    return parent;
+  }
+  return null;
+}
+
+function resolveOverlayScrollElement(stage: HTMLElement | null): HTMLElement | null {
+  const parent = stage?.parentElement;
+  if (parent instanceof HTMLElement && parent.classList.contains("express-mbp-scroll")) {
+    return parent;
+  }
+  return null;
+}
+
 /**
- * Keep overlay chips attached to SVG targets on desktop (≥700px).
- * Below 700px, clear inline left/top/transform so shared CSS can stack chips
- * in the Measurements panel under the diagram.
+ * Keep overlay chips attached to SVG targets when the diagram stage is wide enough.
+ * On a narrow stage (including a wide viewport with a height-capped / column-limited
+ * diagram), clear inline left/top/transform so shared CSS can stack chips in the
+ * Measurements panel under the diagram.
+ *
+ * Starts in mobile/stacked mode to avoid a flash of overlapping absolute chips
+ * before the first stage-width measurement.
  */
 export function bindPatternSummaryOverlayPositioning(
   stageInner: HTMLElement,
@@ -189,24 +237,33 @@ export function bindPatternSummaryOverlayPositioning(
   overlay: HTMLElement,
   anchors: MeasurementOverlayAnchor[],
 ): () => void {
-  const mq = window.matchMedia(DESKTOP_MEASUREMENT_OVERLAY_MQ);
+  const stage = resolveOverlayStageElement(stageInner);
+  const scroll = resolveOverlayScrollElement(stage);
   let repositionFrame: number | null = null;
   let lastStageWidth = -1;
   let lastStageHeight = -1;
+  let lastDesktop: boolean | null = null;
 
   const applyModeClass = (desktop: boolean): void => {
-    stageInner.dataset.measurementOverlayMode = desktop ? "desktop" : "mobile";
-    overlay.dataset.measurementOverlayMode = desktop ? "desktop" : "mobile";
+    const mode = desktop ? "desktop" : "mobile";
+    stageInner.dataset.measurementOverlayMode = mode;
+    overlay.dataset.measurementOverlayMode = mode;
+    if (stage) stage.dataset.measurementOverlayMode = mode;
+    if (scroll) scroll.dataset.measurementOverlayMode = mode;
   };
 
   const runReposition = (): void => {
-    const desktop = mq.matches;
+    const width = stageInner.clientWidth;
+    const height = stageInner.clientHeight;
+    // Not laid out yet (hidden drawer, etc.): stay stacked — never assume desktop.
+    const desktop = width > 0 && shouldUseDesktopMeasurementOverlay(width);
     applyModeClass(desktop);
 
     if (!desktop) {
       for (const anchor of anchors) clearMeasurementBoxPosition(anchor.box);
-      lastStageWidth = -1;
-      lastStageHeight = -1;
+      lastStageWidth = width;
+      lastStageHeight = height;
+      lastDesktop = false;
       return;
     }
 
@@ -216,6 +273,9 @@ export function bindPatternSummaryOverlayPositioning(
         console.warn(`[pattern-summary-overlay] Missing SVG target: #${anchor.targetId}`);
       }
     }
+    lastStageWidth = width;
+    lastStageHeight = height;
+    lastDesktop = true;
   };
 
   const scheduleReposition = (force = false): void => {
@@ -224,19 +284,28 @@ export function bindPatternSummaryOverlayPositioning(
       repositionFrame = null;
       const width = stageInner.clientWidth;
       const height = stageInner.clientHeight;
+      const desktop = width > 0 && shouldUseDesktopMeasurementOverlay(width);
       if (
         !force &&
         width === lastStageWidth &&
         height === lastStageHeight &&
+        lastDesktop === desktop &&
         lastStageWidth >= 0
       ) {
         return;
       }
-      lastStageWidth = width;
-      lastStageHeight = height;
       runReposition();
     });
   };
+
+  // Stacked until the first real measurement — prevents overlapping chip flash.
+  applyModeClass(false);
+  for (const anchor of anchors) clearMeasurementBoxPosition(anchor.box);
+
+  // Sync pass when already laid out (visible host); otherwise RO / rAF will follow.
+  if (stageInner.clientWidth > 0) {
+    runReposition();
+  }
 
   // Wait for aspect-ratio / font layout to settle (avoid scrollbar width oscillation).
   window.requestAnimationFrame(() => {
@@ -244,12 +313,17 @@ export function bindPatternSummaryOverlayPositioning(
   });
 
   const onWindowResize = (): void => scheduleReposition();
-  const onMqChange = (): void => scheduleReposition(true);
   const onOrientationChange = (): void => scheduleReposition(true);
 
   window.addEventListener("resize", onWindowResize, { passive: true });
-  mq.addEventListener("change", onMqChange);
   window.addEventListener("orientationchange", onOrientationChange);
+
+  let resizeObserver: ResizeObserver | null = null;
+  if (typeof ResizeObserver !== "undefined") {
+    resizeObserver = new ResizeObserver(() => scheduleReposition());
+    resizeObserver.observe(stageInner);
+    if (stage) resizeObserver.observe(stage);
+  }
 
   return () => {
     if (repositionFrame !== null) {
@@ -257,10 +331,12 @@ export function bindPatternSummaryOverlayPositioning(
       repositionFrame = null;
     }
     window.removeEventListener("resize", onWindowResize);
-    mq.removeEventListener("change", onMqChange);
     window.removeEventListener("orientationchange", onOrientationChange);
+    resizeObserver?.disconnect();
     delete stageInner.dataset.measurementOverlayMode;
     delete overlay.dataset.measurementOverlayMode;
+    if (stage) delete stage.dataset.measurementOverlayMode;
+    if (scroll) delete scroll.dataset.measurementOverlayMode;
     for (const anchor of anchors) clearMeasurementBoxPosition(anchor.box);
   };
 }

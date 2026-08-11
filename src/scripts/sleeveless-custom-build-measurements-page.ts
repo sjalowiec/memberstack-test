@@ -1308,6 +1308,11 @@ async function renderDiagram(
   const art = await createMeasurementBlueprintArt();
   const overlay = document.createElement("div");
   overlay.className = "express-mbp-overlay";
+  // Stacked until the overlay binder measures stage width (avoids overlapping chip flash).
+  inner.dataset.measurementOverlayMode = "mobile";
+  overlay.dataset.measurementOverlayMode = "mobile";
+  stage.dataset.measurementOverlayMode = "mobile";
+  scroll.dataset.measurementOverlayMode = "mobile";
 
   const dropShoulder = isDropShoulderConstruction();
   const policyOptions = dropShoulderDiagramFieldPolicyOptions();

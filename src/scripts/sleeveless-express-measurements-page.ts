@@ -673,6 +673,10 @@ export function initExpressMeasurementsConfirmPage(options?: ExpressMeasurements
 
           const overlay = document.createElement("div");
           overlay.className = "express-mbp-overlay";
+          inner.dataset.measurementOverlayMode = "mobile";
+          overlay.dataset.measurementOverlayMode = "mobile";
+          stage.dataset.measurementOverlayMode = "mobile";
+          scroll.dataset.measurementOverlayMode = "mobile";
           overlay.append(
             blueprintReadonlyBox("neck-opening", "Neck opening", neckVal, {
               axis: "horizontal",

@@ -287,26 +287,29 @@
 }
 
 /*
- * Mobile (<700px): editable fields inherit shared form-field panel styles from
- * sleeveless-express-measurements-confirm.css. Keep chips/boxes in document flow.
- * Validation messages stay in-panel (not absolutely pinned over fields).
+ * Stacked measurement panel (narrow stage): editable fields inherit shared form-field
+ * panel styles from sleeveless-express-measurements-confirm.css. Keep chips/boxes in
+ * document flow. Validation messages stay in-panel (not absolutely pinned over fields).
  */
-@media (max-width: 699.98px) {
-  .cb-measure-page:not(.sleeveless-unified-review-page) .express-mbp-box {
-    max-width: none;
-  }
+.cb-measure-page:not(.sleeveless-unified-review-page)
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .express-mbp-box {
+  max-width: none;
+}
 
-  .cb-measure-page:not(.sleeveless-unified-review-page) .measurement-chip:focus-within {
-    border-color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #9fa59a);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--kbm-green, #52682d) 16%, transparent);
-  }
+.cb-measure-page:not(.sleeveless-unified-review-page)
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .measurement-chip:focus-within {
+  border-color: color-mix(in srgb, var(--kbm-green, #52682d) 55%, #9fa59a);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--kbm-green, #52682d) 16%, transparent);
+}
 
-  .cb-measure-page .cb-validation-overlay {
-    position: static;
-    inset: auto;
-    width: 100%;
-    max-width: none;
-    margin: 0.5rem 0 0;
-    box-sizing: border-box;
-  }
+.cb-measure-page:has(.express-mbp-stage[data-measurement-overlay-mode="mobile"])
+  .cb-validation-overlay {
+  position: static;
+  inset: auto;
+  width: 100%;
+  max-width: none;
+  margin: 0.5rem 0 0;
+  box-sizing: border-box;
 }

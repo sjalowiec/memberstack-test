@@ -63,8 +63,10 @@ class FakeBox {
 }
 
 describe("patternSummaryMeasurementOverlay — mobile panel contract", () => {
-  it("uses 700px as the desktop overlay breakpoint", () => {
+  it("keeps the legacy viewport MQ export for docs while stage width drives mode", () => {
     expect(DESKTOP_MEASUREMENT_OVERLAY_MQ).toBe("(min-width: 700px)");
+    expect(overlaySrc).toContain("shouldUseDesktopMeasurementOverlay");
+    expect(overlaySrc).toContain("DESKTOP_MEASUREMENT_OVERLAY_MIN_STAGE_PX");
   });
 
   it("clears absolute left/top/transform for the mobile Measurements panel", () => {
@@ -81,7 +83,7 @@ describe("patternSummaryMeasurementOverlay — mobile panel contract", () => {
     expect(box.dataset.measurementTarget).toBe("target_bust");
   });
 
-  it("clears overlay coords below 700px instead of side-column positioning", () => {
+  it("clears overlay coords in stacked mode instead of side-column positioning", () => {
     expect(overlaySrc).toMatch(/if\s*\(\s*!desktop\s*\)\s*\{[\s\S]*clearMeasurementBoxPosition/);
     expect(overlaySrc).not.toContain("positionMeasurementBoxesMobile");
     expect(overlaySrc).not.toContain("computeMobileChipPlacement");
@@ -89,9 +91,9 @@ describe("patternSummaryMeasurementOverlay — mobile panel contract", () => {
 });
 
 describe("shared mobile Measurements panel CSS contract", () => {
-  it("confirm CSS stacks overlay chips under the diagram below 700px", () => {
+  it("confirm CSS stacks overlay chips under the diagram via stage overlay mode", () => {
     expect(confirmCss).toMatch(
-      /@media \(max-width:\s*699\.98px\)[\s\S]*\.express-mbp-overlay\s*\{[\s\S]*position:\s*static/,
+      /data-measurement-overlay-mode="mobile"[\s\S]*\.express-mbp-overlay\s*\{[\s\S]*position:\s*static/,
     );
     expect(confirmCss).toContain('content: "Measurements"');
     expect(confirmCss).toContain("grid-template-columns: 1fr 1fr");
@@ -100,10 +102,10 @@ describe("shared mobile Measurements panel CSS contract", () => {
 
   it("custom-build CSS must not re-force absolute overlay chips on mobile", () => {
     expect(customBuildCss).not.toMatch(
-      /@media \(max-width:\s*699\.98px\)[\s\S]*\.express-mbp-overlay\s*\{[\s\S]*position:\s*absolute/,
+      /data-measurement-overlay-mode="mobile"[\s\S]*\.express-mbp-overlay\s*\{[\s\S]*position:\s*absolute/,
     );
     expect(customBuildCss).not.toMatch(
-      /@media \(max-width:\s*699\.98px\)[\s\S]*\.express-mbp-box\s*\{[\s\S]*position:\s*absolute/,
+      /data-measurement-overlay-mode="mobile"[\s\S]*\.express-mbp-box\s*\{[\s\S]*position:\s*absolute/,
     );
   });
 });
