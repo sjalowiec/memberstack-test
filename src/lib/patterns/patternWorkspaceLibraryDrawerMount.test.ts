@@ -40,6 +40,17 @@ describe("pattern workspace library drawer mount", () => {
     expect(panelIdx).toBeGreaterThan(backdropIdx);
   });
 
+  it("does not show a Manage saved patterns link (delete is available in the drawer)", () => {
+    const src = readRepo("components/patterns/PatternWorkspaceLibraryDrawer.astro");
+    const css = readRepo("styles/pattern-workspace-library-drawer.css");
+
+    expect(src).not.toContain("Manage saved patterns");
+    expect(src).not.toContain("pattern-workspace-library__manage-link");
+    expect(src).not.toContain('href="/account#my-patterns"');
+    expect(css).not.toContain(".pattern-workspace-library__manage-row");
+    expect(css).not.toContain(".pattern-workspace-library__manage-link");
+  });
+
   it("styles Delete as muted destructive red text without icons", () => {
     const css = readRepo("styles/pattern-workspace-library-drawer.css");
     expect(css).toMatch(
