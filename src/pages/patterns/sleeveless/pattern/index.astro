@@ -36,6 +36,7 @@ import "../../../../styles/tools/yarn-requirement-drawer-shell.css";
 // Reused measurement editor styling (same diagram/overlay as Custom Build → Measurements).
 import "../../../../styles/sleeveless-express-measurements-confirm.css";
 import "../../../../styles/sleeveless-custom-build-measurements.css";
+import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
 ---
 
 <Layout
@@ -1281,10 +1282,12 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
       overflow: hidden;
     }
 
-    /* Near-square sleeveless diagram: sized to fit the pane (no inner scroll). */
+    /* Near-square sleeveless diagram: measure pane scrolls when art exceeds viewport height. */
     .sl-edit-workspace__measure .sl-measure-workspace__body {
       min-height: 0;
-      overflow: visible;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     /*
@@ -1442,136 +1445,9 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
     outline-offset: 2px;
   }
 
-  /* Reused measurement editor body: vertical flow for summary + diagram host. */
-  .sl-measure-workspace__body {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-  }
-
-  /*
-   * Measurement SVG sizing: width-driven so the reused diagram is large and centered.
-   * Scoped under `.sl-measure-workspace__body`,
-   * so the shared Custom Build fit page (/custom-build/fit) and unified review page are
-   * untouched. Overlay chips re-anchor to SVG targets via the editor's ResizeObserver, so the
-   * labels stay aligned at any size. `:global()` is required for the diagram nodes that
-   * initCustomBuildMeasurementsPage() injects at runtime.
-   */
-
-  /* Match the workspace art aspect ratio to the real SVG viewBox (210.2 × 210.2, square). */
+  /* Reused measurement editor body: aspect ratio is pattern-specific; sizing is shared. */
   .sl-measure-workspace__body.express-measurements-confirm-page {
     --pattern-summary-aspect-ratio: 210.2 / 210.2;
-  }
-
-  /* Drop-shoulder summary scrollport height (stamped via data-express-construction at init). */
-  .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"] {
-    --sl-measure-workspace-scroll-max-height: calc(
-      100dvh - var(--sl-edit-panel-top, calc(var(--header-offset, 170px) + var(--kbm-env-banner-h, 0px))) -
-        14rem
-    );
-  }
-
-  @media (min-width: 700px) {
-    /*
-     * Enlarge the reused measurement SVG inside the combined Edit Pattern workspace only.
-     * The builder caps the diagram at ~550–560px AND its host uses `align-items: center`,
-     * which makes `.cb-measure-diagram-wrap` (a flex item) shrink to the SVG's intrinsic
-     * size unless it has an explicit width. We therefore give the wrap + stage a definite
-     * `width: 100%` (capped at 1000px) so the diagram fills most of the right pane. The
-     * editor's ResizeObserver re-anchors the label/input overlays to the SVG targets, so
-     * they stay aligned at the larger size — no overlay/positioning logic changes.
-     */
-    .sl-measure-workspace__body.express-measurements-confirm-page .sleeveless-measure-review-body {
-      max-width: 100%;
-    }
-
-    /*
-     * Size the (near-square) diagram by BOTH the column width and the available viewport
-     * height, so the whole garment is visible at once with no horizontal/vertical scrollbar.
-     * `calc(100vh - 300px)` reserves room for the workspace header, footer, headings, and
-     * summary line; the SVG scales down on shorter screens rather than overflowing.
-     */
-    .sl-measure-workspace__body.express-measurements-confirm-page :global(.cb-measure-diagram-wrap),
-    .sl-measure-workspace__body.express-measurements-confirm-page
-      :global(.sleeveless-measure-diagram-host .express-mbp),
-    .sl-measure-workspace__body.express-measurements-confirm-page
-      :global(.sleeveless-measure-diagram-host .express-mbp-stage) {
-      width: 100%;
-      max-width: min(100%, 1000px, calc(100vh - 300px));
-      margin-inline: auto;
-    }
-
-    /* No inner scroll area — the diagram is sized to fit, so let it show in full. */
-    .sl-measure-workspace__body.express-measurements-confirm-page :global(.express-mbp-scroll) {
-      overflow: visible;
-      padding-bottom: 0;
-    }
-
-    /* SVG/art fills the stage; aspect ratio comes from --pattern-summary-aspect-ratio (sleeveless default on shell; drop-shoulder stamped at init). */
-    .sl-measure-workspace__body.express-measurements-confirm-page :global(.express-mbp-art) {
-      width: 100%;
-      height: auto;
-      aspect-ratio: var(--pattern-summary-aspect-ratio);
-    }
-
-    /*
-     * Larger, easier-to-tap measurement inputs only when on-diagram overlay mode is active
-     * (wide stage). Stacked panel mode keeps shared form-field sizes from confirm CSS.
-     */
-    .sl-measure-workspace__body.express-measurements-confirm-page
-      :global(.express-mbp-stage[data-measurement-overlay-mode="desktop"] .measurement-chip) {
-      min-width: 4rem;
-      min-height: 2.25rem;
-      padding: 0.32rem 0.48rem;
-    }
-
-    .sl-measure-workspace__body.express-measurements-confirm-page
-      :global(.express-mbp-stage[data-measurement-overlay-mode="desktop"] .measurement-input) {
-      font-size: 1.15rem;
-      min-width: 2rem;
-      max-width: 4rem;
-    }
-
-    .sl-measure-workspace__body.express-measurements-confirm-page
-      :global(.express-mbp-stage[data-measurement-overlay-mode="desktop"] .measurement-unit) {
-      font-size: 0.74rem;
-    }
-
-    .sl-measure-workspace__body.express-measurements-confirm-page
-      :global(.express-mbp-stage[data-measurement-overlay-mode="desktop"] .express-mbp-box__value) {
-      min-width: 4rem;
-      max-width: 6.5rem;
-      padding: 0.32rem 0.5rem;
-      font-size: 1.15rem;
-    }
-
-    /*
-     * Drop-shoulder: do not cap diagram width by viewport height (that rule fits the
-     * near-square sleeveless art). Scroll inside `.express-mbp-scroll` instead.
-     */
-    .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
-      :global(.cb-measure-diagram-wrap),
-    .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
-      :global(.sleeveless-measure-diagram-host .express-mbp),
-    .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
-      :global(.sleeveless-measure-diagram-host .express-mbp-stage) {
-      width: 100%;
-      max-width: min(100%, 1000px);
-      margin-inline: auto;
-    }
-
-    .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
-      :global(.express-mbp-scroll) {
-      flex: 1 1 auto;
-      min-height: 0;
-      overflow-x: hidden;
-      overflow-y: auto;
-      scrollbar-gutter: stable;
-      max-height: var(--sl-measure-workspace-scroll-max-height);
-      overscroll-behavior: contain;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 0;
-    }
   }
 
   /*
@@ -1648,7 +1524,6 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
     outline-offset: 2px;
   }
 </style>
-
 <script>
   import "/src/scripts/sleevelessPatternOnlineProjectHeader.ts";
   import "/src/scripts/sleevelessPatternBuilderPage.ts";
