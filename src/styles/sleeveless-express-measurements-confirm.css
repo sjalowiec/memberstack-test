@@ -746,197 +746,239 @@
 /* Desktop overlay positions are set from pattern_summary.svg targets (see patternSummaryMeasurementOverlay.ts). */
 
 /*
- * --- Mobile: Measurements panel under the diagram ---
+ * --- Stacked Measurements panel under the diagram ---
  * Contract with patternSummaryMeasurementOverlay.ts:
- * below 700px JS clears left/top; chips flow as labeled form fields under the art.
- * Phones are for practical editing, not a diagram editor.
- * (Not unified review; see sleeveless-review-measurements.css)
+ * JS sets data-measurement-overlay-mode="mobile" when the diagram/stage width is
+ * below DESKTOP_MEASUREMENT_OVERLAY_MIN_STAGE_PX (not viewport width). Chips flow
+ * as labeled form fields under the art. Phones are for practical editing, not a
+ * diagram editor. (Not unified review; see sleeveless-review-measurements.css)
+ *
+ * Scope prefix: .express-mbp-stage[data-measurement-overlay-mode="mobile"]
  */
-@media (max-width: 699.98px) {
-  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-scroll {
-    overflow-x: visible;
-    padding-bottom: 0.25rem;
-  }
+.express-measurements-confirm-page:not(.sleeveless-unified-review-page)
+  .express-mbp-scroll[data-measurement-overlay-mode="mobile"] {
+  overflow-x: visible;
+  padding-bottom: 0.25rem;
+}
 
-  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-stage {
-    width: 100%;
-    max-width: 100%;
-    height: auto;
-  }
+.express-measurements-confirm-page:not(.sleeveless-unified-review-page)
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"] {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
 
-  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-overlay {
-    position: static;
-    inset: auto;
-    display: grid;
-    /* Narrow phones: one column so long labels never collide. */
-    grid-template-columns: 1fr;
-    gap: 0.65rem 0.5rem;
-    margin: 0.65rem 0 0;
-    padding: 0.65rem 0 0.1rem;
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-    pointer-events: auto;
-    border-top: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 16%, #e5e7eb);
-  }
+.express-measurements-confirm-page:not(.sleeveless-unified-review-page)
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .express-mbp-overlay {
+  position: static;
+  inset: auto;
+  display: grid;
+  /* Narrow phones: one column so long labels never collide. */
+  grid-template-columns: 1fr;
+  gap: 0.65rem 0.5rem;
+  margin: 0.65rem 0 0;
+  padding: 0.65rem 0 0.1rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  pointer-events: auto;
+  border-top: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 16%, #e5e7eb);
+}
 
-  @media (min-width: 400px) {
-    .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-overlay {
-      grid-template-columns: 1fr 1fr;
-    }
+@media (min-width: 400px) {
+  .express-measurements-confirm-page:not(.sleeveless-unified-review-page)
+    .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+    .express-mbp-overlay {
+    grid-template-columns: 1fr 1fr;
   }
+}
 
-  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-overlay::before {
-    content: "Measurements";
-    grid-column: 1 / -1;
-    margin: 0 0 0.05rem;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: color-mix(in srgb, var(--kbm-green, #52682d) 72%, #3d4a26);
-  }
+.express-measurements-confirm-page:not(.sleeveless-unified-review-page)
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .express-mbp-overlay::before {
+  content: "Measurements";
+  grid-column: 1 / -1;
+  margin: 0 0 0.05rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--kbm-green, #52682d) 72%, #3d4a26);
+}
 
-  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-stage__inner {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    padding: clamp(0.2rem, 1.25%, 0.45rem) clamp(0.25rem, 2.5%, 0.55rem)
-      clamp(0.15rem, 1.25%, 0.4rem);
-    min-height: 0;
-    overflow: visible;
-  }
+.express-measurements-confirm-page:not(.sleeveless-unified-review-page)
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .express-mbp-stage__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(0.2rem, 1.25%, 0.45rem) clamp(0.25rem, 2.5%, 0.55rem)
+    clamp(0.15rem, 1.25%, 0.4rem);
+  min-height: 0;
+  overflow: visible;
+}
 
-  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-art {
-    position: relative;
-    width: 100%;
-    max-width: 420px;
-    height: auto;
-    margin-inline: auto;
-    aspect-ratio: var(--pattern-summary-aspect-ratio);
-    flex-shrink: 0;
-  }
+.express-measurements-confirm-page:not(.sleeveless-unified-review-page)
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .express-mbp-art {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  margin-inline: auto;
+  aspect-ratio: var(--pattern-summary-aspect-ratio);
+  flex-shrink: 0;
+}
 
-  /* Document-flow form fields — not desktop overlay chips. */
-  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-box {
-    position: static;
-    left: auto;
-    top: auto;
-    transform: none;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.28rem;
-    align-self: stretch;
-    width: 100%;
-    max-width: none;
-    min-width: 0;
-    padding: 0;
-    pointer-events: auto;
-  }
+/* Document-flow form fields — not desktop overlay chips. */
+.express-measurements-confirm-page:not(.sleeveless-unified-review-page)
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .express-mbp-box {
+  position: static;
+  left: auto;
+  top: auto;
+  transform: none;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.28rem;
+  align-self: stretch;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  padding: 0;
+  pointer-events: auto;
+}
 
-  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .measure-icon {
-    display: none;
-  }
+.express-measurements-confirm-page:not(.sleeveless-unified-review-page)
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .measure-icon {
+  display: none;
+}
 
-  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-box__lab {
-    display: block;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    font-size: 0.82rem;
-    font-weight: 600;
-    line-height: 1.25;
-    letter-spacing: normal;
-    text-transform: none;
-    text-align: left;
-    text-wrap: pretty;
-    color: #3f4a36;
-    white-space: normal;
-    overflow: visible;
-    text-overflow: unset;
-  }
+.express-measurements-confirm-page:not(.sleeveless-unified-review-page)
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .express-mbp-box__lab {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: normal;
+  text-transform: none;
+  text-align: left;
+  text-wrap: pretty;
+  color: #3f4a36;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+}
 
-  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-box__lab-stack {
-    display: inline;
-    gap: 0;
-  }
+.express-measurements-confirm-page:not(.sleeveless-unified-review-page)
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .express-mbp-box__lab-stack {
+  display: inline;
+  gap: 0;
+}
 
-  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-box__lab-line {
-    display: inline;
-  }
+.express-measurements-confirm-page:not(.sleeveless-unified-review-page)
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .express-mbp-box__lab-line {
+  display: inline;
+}
 
-  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-box__lab-line + .express-mbp-box__lab-line::before {
-    content: " ";
-  }
+.express-measurements-confirm-page:not(.sleeveless-unified-review-page)
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .express-mbp-box__lab-line
+  + .express-mbp-box__lab-line::before {
+  content: " ";
+}
 
-  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-box__field {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    width: 100%;
-    gap: 0.22rem;
-  }
+.express-measurements-confirm-page:not(.sleeveless-unified-review-page)
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .express-mbp-box__field {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  gap: 0.22rem;
+}
 
-  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .measurement-chip,
-  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-box__value {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    box-sizing: border-box;
-    width: 100%;
-    max-width: none;
-    min-width: 0;
-    min-height: 2.75rem;
-    margin: 0;
-    padding: 0.45rem 0.65rem;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    background: #fff;
-    box-shadow: none;
-    align-self: stretch;
-  }
+.express-measurements-confirm-page:not(.sleeveless-unified-review-page)
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .measurement-chip,
+.express-measurements-confirm-page:not(.sleeveless-unified-review-page)
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .express-mbp-box__value {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  min-height: 2.75rem;
+  margin: 0;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: none;
+  align-self: stretch;
+}
 
-  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .measurement-input {
-    flex: 1 1 auto;
-    width: 100%;
-    min-width: 0;
-    max-width: none;
-    margin: 0;
-    padding: 0;
-    font-size: 1rem;
-    font-weight: 600;
-    text-align: left;
-    line-height: 1.3;
-  }
+.express-measurements-confirm-page:not(.sleeveless-unified-review-page)
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .measurement-input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: left;
+  line-height: 1.3;
+}
 
-  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .measurement-unit,
-  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-box__unit {
-    flex: 0 0 auto;
-    margin: 0;
-    padding: 0 0 0 0.35rem;
-    font-size: 0.78rem;
-    font-weight: 500;
-    letter-spacing: normal;
-    line-height: 1.25;
-    text-transform: none;
-    color: #6b7280;
-    white-space: normal;
-    overflow: visible;
-    text-overflow: unset;
-  }
+.express-measurements-confirm-page:not(.sleeveless-unified-review-page)
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .measurement-unit,
+.express-measurements-confirm-page:not(.sleeveless-unified-review-page)
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .express-mbp-box__unit {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0 0 0 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.25;
+  text-transform: none;
+  color: #6b7280;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+}
 
-  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-box__error {
-    display: block;
-    width: 100%;
-    margin: 0;
-    font-size: 0.75rem;
-    line-height: 1.3;
-  }
+.express-measurements-confirm-page:not(.sleeveless-unified-review-page)
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .express-mbp-box__error {
+  display: block;
+  width: 100%;
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
 
-  .express-measurements-confirm-page:not(.sleeveless-unified-review-page) .express-mbp-box__value {
-    font-size: 1rem;
-    font-weight: 700;
-    text-align: left;
-  }
+.express-measurements-confirm-page:not(.sleeveless-unified-review-page)
+  .express-mbp-stage[data-measurement-overlay-mode="mobile"]
+  .express-mbp-box__value {
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: left;
 }

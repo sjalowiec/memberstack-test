@@ -1109,7 +1109,8 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
   /*
    * Two-column body region; the shell-width inner keeps it from going edge-to-edge.
    * Mobile-first: a single scrolling column (quick edits, then the measurement SVG).
-   * Desktop (>=1000px) switches to side-by-side with independently scrolling columns.
+   * Wide drawer body (>=1100px container) switches to side-by-side with independently
+   * scrolling columns. (Was viewport 1000px — too early at high Windows scaling.)
    */
   .sl-edit-workspace__layout {
     flex: 1 1 auto;
@@ -1135,6 +1136,12 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
   .sl-edit-drawer--workspace .sl-edit-drawer__body {
     flex: 1 1 auto;
     padding: 0;
+    /*
+     * Container queries drive two-column vs stacked workspace from the drawer body's
+     * usable width (not viewport alone). Matches EDIT_WORKSPACE_TWO_COLUMN_MIN_PX.
+     */
+    container-type: inline-size;
+    container-name: sl-edit-workspace;
   }
 
   /* Measurement SVG column. */
@@ -1210,8 +1217,8 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
     min-height: 0;
   }
 
-  /* Desktop: side-by-side. Quick panel narrow; SVG gets the remaining width. */
-  @media (min-width: 1000px) {
+  /* Wide workspace container: side-by-side. Quick panel narrow; SVG gets the remaining width. */
+  @container sl-edit-workspace (min-width: 1100px) {
     .sl-edit-workspace__layout {
       flex-direction: row;
       align-items: stretch;
@@ -1508,26 +1515,30 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
     }
 
     /*
-     * Larger, easier-to-tap measurement inputs/values in the combined workspace only.
-     * Labels keep their size, so overlap is not increased beyond the current layout.
+     * Larger, easier-to-tap measurement inputs only when on-diagram overlay mode is active
+     * (wide stage). Stacked panel mode keeps shared form-field sizes from confirm CSS.
      */
-    .sl-measure-workspace__body.express-measurements-confirm-page :global(.measurement-chip) {
+    .sl-measure-workspace__body.express-measurements-confirm-page
+      :global(.express-mbp-stage[data-measurement-overlay-mode="desktop"] .measurement-chip) {
       min-width: 4rem;
       min-height: 2.25rem;
       padding: 0.32rem 0.48rem;
     }
 
-    .sl-measure-workspace__body.express-measurements-confirm-page :global(.measurement-input) {
+    .sl-measure-workspace__body.express-measurements-confirm-page
+      :global(.express-mbp-stage[data-measurement-overlay-mode="desktop"] .measurement-input) {
       font-size: 1.15rem;
       min-width: 2rem;
       max-width: 4rem;
     }
 
-    .sl-measure-workspace__body.express-measurements-confirm-page :global(.measurement-unit) {
+    .sl-measure-workspace__body.express-measurements-confirm-page
+      :global(.express-mbp-stage[data-measurement-overlay-mode="desktop"] .measurement-unit) {
       font-size: 0.74rem;
     }
 
-    .sl-measure-workspace__body.express-measurements-confirm-page :global(.express-mbp-box__value) {
+    .sl-measure-workspace__body.express-measurements-confirm-page
+      :global(.express-mbp-stage[data-measurement-overlay-mode="desktop"] .express-mbp-box__value) {
       min-width: 4rem;
       max-width: 6.5rem;
       padding: 0.32rem 0.5rem;
@@ -1564,14 +1575,11 @@ import "../../../../styles/sleeveless-custom-build-measurements.css";
   }
 
   /*
-   * Below the desktop two-column breakpoint (mobile + tablet, <1000px) the layout is a
-   * single scrolling column, so the Measurements-header action group re-pins to the bottom
-   * as a fixed bar — "Update Pattern" / Cancel stay reachable without scrolling at any
-   * height. Reusing the SAME element (not a duplicate) keeps the existing handlers attached.
-   * Desktop (>=1000px) keeps the actions in the measurements header, where the right column
-   * does not scroll, so they are always visible there too.
+   * Narrow workspace container: Measurements-header action group re-pins to the bottom
+   * as a fixed bar — "Update Pattern" / Cancel stay reachable without scrolling.
+   * Wide container keeps actions in the measurements header.
    */
-  @media (max-width: 999px) {
+  @container sl-edit-workspace (max-width: 1099.98px) {
     .sl-edit-workspace__measure-actions {
       position: fixed;
       left: 0;
