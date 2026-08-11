@@ -2835,3 +2835,14 @@ div[data-ms-modal-overlay] {
     });
   })();
 </script>
+<script>
+  import { openSiteSearchFromUrlIfRequested } from "../lib/siteSearchOpenFromUrl";
+
+  // Same open path as the header magnifying-glass: click an existing trigger.
+  openSiteSearchFromUrlIfRequested({
+    open: () => {
+      const trigger = document.querySelector("[data-open-search-modal]");
+      if (trigger instanceof HTMLElement) trigger.click();
+    },
+  });
+</script>
