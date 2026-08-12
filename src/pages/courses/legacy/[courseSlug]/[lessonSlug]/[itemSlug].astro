@@ -45,6 +45,7 @@ const courseAccess = loaderOptions.includeDrafts ? "free" : getCourseAccessBySlu
 <Layout
   title={pageTitle}
   description={`${course.course.title} — ${lesson.title} — ${sectionTitle}`}
+  hideMembershipCorner={true}
 >
   <LegacyCourseShell
     {courseSlug}
