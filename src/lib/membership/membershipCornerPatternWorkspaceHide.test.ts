@@ -44,6 +44,29 @@ const sleevelessBetaPrint = readFileSync(
   resolve("src/pages/patterns/sleeveless/beta-print.astro"),
   "utf8",
 );
+const coursesIndexAstro = readFileSync(resolve("src/pages/courses/index.astro"), "utf8");
+const courseLandingAstro = readFileSync(
+  resolve("src/pages/courses/[courseSlug].astro"),
+  "utf8",
+);
+const legacyCourseOverviewAstro = readFileSync(
+  resolve("src/pages/courses/legacy/[courseSlug]/index.astro"),
+  "utf8",
+);
+const legacyLessonAstro = readFileSync(
+  resolve("src/pages/courses/legacy/[courseSlug]/[lessonSlug].astro"),
+  "utf8",
+);
+const legacyLessonItemAstro = readFileSync(
+  resolve("src/pages/courses/legacy/[courseSlug]/[lessonSlug]/[itemSlug].astro"),
+  "utf8",
+);
+const legacyLessonHtmlCompatAstro = readFileSync(
+  resolve(
+    "src/pages/courses/legacy/[courseSlug]/[lessonSlug]/legacy-html-compat.astro",
+  ),
+  "utf8",
+);
 
 describe("membership corner CTA — pattern workspace hide", () => {
   it("is mounted from BaseLayout only when hideMembershipCorner is false", () => {
@@ -105,5 +128,23 @@ describe("membership corner CTA — pattern workspace hide", () => {
     expect(patternsIndexAstro).not.toContain("hideMembershipCorner={true}");
     expect(patternsAboutAstro).not.toContain("patternWorkspace={true}");
     expect(patternsAboutAstro).not.toContain("hideMembershipCorner={true}");
+  });
+
+  it("opts course-player lesson routes into hideMembershipCorner without patternWorkspace", () => {
+    for (const src of [
+      legacyLessonAstro,
+      legacyLessonItemAstro,
+      legacyLessonHtmlCompatAstro,
+    ]) {
+      expect(src).toContain("hideMembershipCorner={true}");
+      expect(src).not.toContain("patternWorkspace={true}");
+    }
+  });
+
+  it("keeps course catalog, landing, and legacy overview on the default (visible) corner CTA", () => {
+    for (const src of [coursesIndexAstro, courseLandingAstro, legacyCourseOverviewAstro]) {
+      expect(src).not.toContain("hideMembershipCorner={true}");
+      expect(src).not.toContain("patternWorkspace={true}");
+    }
   });
 });
