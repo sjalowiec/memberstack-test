@@ -556,12 +556,6 @@
               "html": "<style>.circle{\r\nwidth:25px;\r\nheight:25px;\r\nborder-radius:50%;\r\nbox-sizing:border-box;\r\ntext-align:center;\r\ndisplay:inline-block;\r\nline-height:25px;\r\nbackground-color:#9F2065;\r\n}\r\n.circle a{\r\ntext-decoration:none;\r\ncolor:#fff;\r\nfont-size: 16px;\r\n}\r\n.container-border1 {\r\nborder: 2px solid #ccc;\r\nborder-radius: 15px 50px;\r\npadding-top: 20px;\r\npadding-right: 20px;\r\npadding-bottom: 20px;\r\npadding-left: 20px;\r\nbackground-color: white;\r\n}</style>\r\n<style> .container-border1 {\r\nborder: 2px solid #ccc;\r\nborder-radius: 15px 50px;\r\npadding-top: 20px;\r\npadding-right: 20px;\r\npadding-bottom: 20px;\r\npadding-left: 20px;\r\nbackground-color: white;\r\nmax-width: 500px;\r\nmargin: auto;\r\nbackground-color: #DCDCDC;\r\n}\r\n</style>\r\n\r\n\r\nAlmost magical, stitch patterning on this machine can happen in 2 ways:<br><a href=\"#demo\" data-toggle=\"collapse\">\r\n<div class=\"circle\"><a href=\"#\">1</a></div> <span style=\"font-size:1.5em\"><a data-GlossaryId=\"730\" class=\"glossaryhelp\">EC1 / PE1 Pattern Controller </a><i class=\"fa fa-caret-down\" aria-hidden=\"true\"></i></span> <br><em>This course does not include instruction on using the EC1 device</em><br></a>\r\n<div id=\"demo\" class=\"collapse hidden-print\">\r\nLorem ipsum dolor text....\r\n</div>\r\n\r\n<div class=\"circle\"><a href=\"#\">2</a></div> <span style=\"font-size:1.5em\">DesignaKnit</span><br>Create and Integrate stitch patterns in DesignaKnit. Using Interactive knitting, DAK sends your pattern information to a \"translator\" SilverLink Box, which in turn send zeros and ones to your carriage instructing it to select and de-select needles.<br><h3><em>NOTE: The <a data-GlossaryId=\"728\" class=\"glossaryhelp\">N-1 Cams (Needle 1) <i class=\"fa fa-question-circle\" aria-hidden=\"true\"></i></a> are NOT used with DesignaKnit</em></h3>\r\n\r\n\r\n<div class=\"container-border1\">Textured stitch patterns and multi-color patterns can all be quickly produced with the help of automatic patterning devices. These devices select needles.<br>\r\n<span class=\"yellow_highlight\"><h3>Selected needles + Carriage settings = Stitch Patterns</h3></span></div>",
               "legacyComponentId": 9332,
               "order": 1
-            },
-            {
-              "type": "richText",
-              "html": "<style>\r\n    .blog_container {\r\n        border: 1px solid #ccc;\r\n        border-radius: 15px;\r\n        padding-top: 20px;\r\n        padding-right: 20px;\r\n        padding-bottom: 20px;\r\n        padding-left: 20px;\r\n        background-color: white;\r\n        margin: 100px 100px;\r\n    }\r\n\r\n    img.ctr {\r\n        display: block;\r\n        margin-left: auto;\r\n        margin-right: auto;\r\n    }\r\n\r\n</style>\r\n\r\n<div class=\"blog_container\">\r\n    \r\n        <div class=\"text-center\">\r\n            <img class=\"ctr\" src=\"/images/course-content/111/learn_dak_logos.png\" width=\"100\"><br><span style=\"font-size:1.5em\">LearnDesignaKnit.com <br>World Class DAK Instruction</span>\r\n        </div>\r\n        <img src=\"https://learndesignaknit.com/img/Learn_DesignAKnit.jpg\">\r\n    \r\n\r\n\r\n\r\n\r\n\r\n    <div class=\"text-center\">\r\n\r\n        <br>\r\n        <span class=\"handwriting\" style=\"font-size:2em;line-height:120%\">\r\n            Don't just watch videos!<br>Follow along and then open DesignaKnit and put it to use.<br>\r\n        </span>\r\n    </div>\r\n\r\n    \r\n        \r\n            <ul class=\"bullets margin-100px-left\">\r\n                <li>Challenge yourself</li>\r\n                <li>Learn at your own pace</li>\r\n                <li>Interactive walk-throughs</li>\r\n                <li>Checklists</li>\r\n            </ul>\r\n        \r\n        \r\n            <ul class=\"bullets margin-100px-left\">\r\n                <li>Translated Videos and Content</li>\r\n                <li>Worksheets</li>\r\n                <li>Tools Glossary and Cheat Sheets</li>\r\n                <li>Keep forever courses</li>\r\n            </ul>\r\n        \r\n    \r\n    <div class=\"text-center\"></div>\r\n</div>",
-              "legacyComponentId": 9348,
-              "order": 2
             }
           ],
           "title": "About Automatic Patterning on this Machine",
@@ -600,13 +594,13 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>\r\n    .circle {\r\n        width: 25px;\r\n        height: 25px;\r\n        border-radius: 50%;\r\n        box-sizing: border-box;\r\n        text-align: center;\r\n        display: inline-block;\r\n        line-height: 25px;\r\n        background-color: #9E2065;\r\n    }\r\n\r\n    .circle a {\r\n        text-decoration: none;\r\n        color: #fff;\r\n        font-size: 16px;\r\n    }\r\n\r\n    hr.style13 {\r\n        height: 10px;\r\n        border: 0;\r\n        box-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n    }\r\n\r\n    .tab {\r\n        Margin-left: 50px\r\n    }\r\n\r\n</style>\r\n\r\n\r\n    \r\n        <h3>What do you want to knit?</h3><br>\r\n        <h4>Use DAK to send Stitch patterns to the SK840</h4>\r\n        <br>\r\n        <a target=\"_blank\" href=\"/images/course-content/111/WORKSHEETS.pdf\"><i class=\"fa fa-download\" aria-hidden=\"true\"></i> Download printable checklists</a><br>\r\n    \r\n    \r\n        <img width=\"300\" src=\"/images/course-content/111/silverlink.jpg\"><br>\r\n    \r\n\r\n\r\n     <img src=\"/images/course-content/111/1.jpg\"> \r\n    \r\n\r\n        \r\n            <div class=\"col margin-10px-bottom\">\r\n                <div class=\"circle\"><a href=\"#\">1</a></div><span style=\"font-size:1.5em\"><b> Knit in a stitch pattern</b></span><br>\r\n                <div class=\"tab\">\r\n                    When you want to knit a rectangle or a swatch with an all-over stitch pattern.<br>\r\n                    Just let DesignaKnit position the motif repeating it to fill the stitches and rows.<br><a target=\"_blank\" href=\"/images/course-content/111/1 ALLOVER.pdf\"><i class=\"fa fa-download\" aria-hidden=\"true\"></i> Checklist </a>\r\n                    <div>\r\n                    </div>\r\n                </div>\r\n            </div>\r\n        \r\n\r\n    \r\n\r\n\r\n<hr class=\"style13\">\r\n\r\n     <img src=\"/images/course-content/111/2.jpg\"> \r\n    \r\n        \r\n            <div class=\"col margin-10px-bottom\">\r\n                <div class=\"circle\"><a href=\"#\">2</a></div><span style=\"font-size:1.5em\"><b> Position a Stitch pattern</b></span><br>\r\n                <div class=\"tab\">\r\n                    When you are knitting a rectangle (or a swatch) and you want to control where the stitch pattern is positioned.\r\n                    <ul>\r\n                        <li>Single Motif</li>\r\n                        <li>Horizontal Border</li>\r\n                        <li>Vertical Border</li>\r\n                        <li>Tile</li>\r\n                    </ul><br><a target=\"_blank\" href=\"/images/course-content/111/2 POSITION.pdf\"><i class=\"fa fa-download\" aria-hidden=\"true\"></i> Checklist </a>\r\n                </div>\r\n            </div>\r\n        \r\n    \r\n\r\n<hr class=\"style13\">\r\n\r\n     <img src=\"/images/course-content/111/3.jpg\"> \r\n    \r\n        \r\n            <div class=\"col margin-10px-bottom\">\r\n                <div class=\"circle\"><a href=\"#\">3</a></div><span style=\"font-size:1.5em\"><b> Knit a garment piece in pattern</b></span>\r\n\r\n                <br>\r\n                <div class=\"tab\"> Integrate a stitch pattern with a garment piece.\r\n                    Use Interactive knitting to both display stitch pattern instructions AND shaping instructions<br><a target=\"_blank\" href=\"/images/course-content/111/3GARMENT.pdf\"><i class=\"fa fa-download\" aria-hidden=\"true\"></i> Checklist </a>\r\n                </div>\r\n            </div>",
+              "html": "<p>DesignaKnit can be used in three different ways, depending on whether you are making an all-over stitch pattern, placing a motif, or knitting a shaped garment with a stitch pattern.</p>\n<ol>\n<li><strong>Knit a Stitch Pattern</strong> — for swatches, rectangles, and knitting with an all-over stitch pattern.</li>\n<li><strong>Position a Stitch Pattern</strong> — for isolated motifs, borders, and custom placement on the knitting.</li>\n<li><strong>Knit a Garment in Pattern</strong> — for knitting a shaped garment piece while using a stitch pattern.</li>\n</ol>",
               "legacyComponentId": 9391,
               "order": 1
             }
           ],
-          "title": "Patterning Goals",
-          "slug": "patterning-goals",
+          "title": "Stitch Patterning: Three Ways to Use DesignaKnit",
+          "slug": "stitch-patterning-three-ways",
           "order": 3,
           "legacy": {
             "assignId": 6128,
@@ -617,16 +611,16 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>.circle{\r\nwidth:25px;\r\nheight:25px;\r\nborder-radius:50%;\r\nbox-sizing:border-box;\r\ntext-align:center;\r\ndisplay:inline-block;\r\nline-height:25px;\r\nbackground-color:#9E2065;\r\n}\r\n.circle a{\r\ntext-decoration:none;\r\ncolor:#fff;\r\nfont-size: 16px;\r\n}\r\n</style>\r\n\r\n\r\n     <img src=\"/images/course-content/111/1.jpg\"> \r\n    \r\n\r\n        \r\n            <div class=\"col margin-10px-bottom\">\r\n                <div class=\"circle\"><a href=\"#\">1</a></div><span style=\"font-size:1.5em\"><b> Knit in a stitch pattern</b></span><br>\r\n\r\n                When you want to knit a rectangle or a swatch with an all-over stitch pattern.<br>\r\n                Let DesignaKnit position the motif repeating it to fill the stitches and rows.\r\n<br>\r\n<a target=\"_blank\" href=\"/images/course-content/111/1 ALLOVER.pdf\"><i class=\"fa fa-caret-down\" aria-hidden=\"true\"></i> Print Checklist </a>\r\n            </div>\r\n        \r\n    \r\n\r\n<hr class=\"style13\">\r\n\r\n <div class=\"videopopup\" data-videotitle=\"position_rectangle\" data-vimeoid=\"799677711\">\r\n\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/1612504508-fddb85f6383276c645397678871b7734a69ba748a02920fdd749660e177c0d5a-d_1280x720?r=pad\">\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div>",
-              "legacyComponentId": 9453,
+              "html": "<p>Complete these setup steps before any of the three patterning methods:</p>\n<ul>\n<li>Connect the computer, SilverLink, curl cord, and machine.</li>\n<li>Set the point cams to the edges of the knitting.</li>\n<li>Set the cam lever for the stitch type: Fair Isle, tuck, slip, etc.</li>\n<li>Follow the Interactive Knitting prompts.</li>\n</ul>",
+              "legacyComponentId": 9450,
               "order": 1
             }
           ],
-          "title": "<i class=\"fa fa-circle\" style=color:#9F2065;\" aria-hidden=\"true\"></i> Knit in a Stitch Pattern",
-          "slug": "i-class-fa-fa-circle-style-color-9f2065-aria-hidden-true-i-knit-in-a-stitch-pattern",
+          "title": "Before You Begin",
+          "slug": "before-you-begin",
           "order": 4,
           "legacy": {
-            "assignId": 6167,
+            "assignId": 6170,
             "blockType": "HTML"
           }
         },
@@ -634,71 +628,90 @@
           "components": [
             {
               "type": "richText",
-              "html": "<style>.circle{\r\nwidth:25px;\r\nheight:25px;\r\nborder-radius:50%;\r\nbox-sizing:border-box;\r\ntext-align:center;\r\ndisplay:inline-block;\r\nline-height:25px;\r\nbackground-color:#9E2065;\r\n}\r\n.circle a{\r\ntext-decoration:none;\r\ncolor:#fff;\r\nfont-size: 16px;\r\n}\r\n</style>\r\n\r\n\r\n     <img src=\"/images/course-content/111/2.jpg\"> \r\n    \r\n        \r\n            <div class=\"col margin-10px-bottom\">\r\n                <div class=\"circle\"><a href=\"#\">2</a></div><span style=\"font-size:1.5em\"><b> Position a Stitch pattern</b></span><br>\r\n\r\n                When you are knitting a rectangle (or a swatch) and you want to control where the stitch pattern is positioned.\r\n                <ul>\r\n                    <li>Single Motif</li>\r\n                    <li>Horizontal Border</li>\r\n                    <li>Vertical Border</li>\r\n                    <li>Tile</li>\r\n                </ul>\r\n<br>\r\n<a target=\"_blank\" href=\"/images/course-content/111/2 POSITION.pdf\"><i class=\"fa fa-download\" aria-hidden=\"true\"></i> Print Checklist </a>\r\n            </div>\r\n        \r\n    \r\n\r\n<hr class=\"style13\"><Br>\r\n <div class=\"videopopup\" data-videotitle=\"single_motif\" data-vimeoid=\"799905939\">\r\n\t\t<img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/1613056476-6b1039dfcf3199f41abf962d3834e0df07f3fcfc0f00e5613aee5165a154da2e-d_1280x720?r=pad\">\r\n\t\t<div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\t\t\r\n</div>",
-              "legacyComponentId": 9454,
-              "order": 1
+              "html": "<p>Use this method when you want to knit a rectangle or a swatch with an all-over stitch pattern. Let DesignaKnit position the motif, repeating it to fill the stitches and rows.</p>\n<h3>Exercise steps</h3>\n<ol>\n<li>In Interactive Knitting, set up the swatch size (widest number of needles).\n<ul>\n<li>Select a stitch pattern from the LOWER list</li>\n<li>Enter the swatch stitches and rows</li>\n</ul>\n</li>\n</ol>",
+              "legacyComponentId": 9453,
+              "order": 1,
+              "layoutRole": "textVideoLeft"
+            },
+            {
+              "type": "video",
+              "vimeoId": "799677711",
+              "title": "Position for a Rectangle",
+              "legacySlot": 1,
+              "legacyComponentId": 9379,
+              "order": 2
             }
           ],
-          "title": "<i class=\"fa fa-circle\" style=color:#9F2065;\" aria-hidden=\"true\"></i> Position a Stitch Pattern",
-          "slug": "i-class-fa-fa-circle-style-color-9f2065-aria-hidden-true-i-position-a-stitch-pattern",
+          "title": "Knit a Stitch Pattern",
+          "slug": "knit-a-stitch-pattern",
           "order": 5,
           "legacy": {
-            "assignId": 6168,
-            "blockType": "HTML"
+            "assignId": 6167,
+            "blockType": "HTML",
+            "editorLayout": "textVideo"
           }
         },
         {
           "components": [
             {
               "type": "richText",
-              "html": "<style>.circle{\r\nwidth:25px;\r\nheight:25px;\r\nborder-radius:50%;\r\nbox-sizing:border-box;\r\ntext-align:center;\r\ndisplay:inline-block;\r\nline-height:25px;\r\nbackground-color:#9E2065;\r\n}\r\n.circle a{\r\ntext-decoration:none;\r\ncolor:#fff;\r\nfont-size: 16px;\r\n}\r\n</style>\r\n\r\n\r\n     <img src=\"/images/course-content/111/3.jpg\"> \r\n    \r\n        \r\n            <div class=\"col margin-10px-bottom\">\r\n                <div class=\"circle\"><a href=\"#\">3</a></div><span style=\"font-size:1.5em\"><b>Knit a garment piece in pattern</b></span>\r\n\r\n                <br>\r\n                Integrate a stitch pattern with a garment piece.\r\n                Use Interactive knitting to both display stitch pattern instructions AND shaping instructions<Br>\r\n<a target=\"_blank\" href=\"/images/course-content/111/3GARMENT.pdf\"><i class=\"fa fa-download\" aria-hidden=\"true\"></i> Print Checklist </a>\r\n            </div>\r\n        \r\n    \r\n\r\n\r\n<hr class=\"style13\">\r\n<div class=\"videopopup\" data-videotitle=\"position_by_piece\" data-vimeoid=\"799990951\">\r\n    <img class=\"img-thumbnail\" src=\"https://i.vimeocdn.com/video/1613234959-7d3704ced03e0d0b3d578a5191a40dde2b3bb6ece4f0a698a5c6a94902b57dde-d_1280x720?r=pad\">\r\n    <div class=\"imagecenter text-center\"><button class=\"btn btn-sm\"><i class=\"fa fa-youtube-play fa-2x learn\" aria-hidden=\"true\"></i></button></div>\r\n</div>",
-              "legacyComponentId": 9455,
-              "order": 1
+              "html": "<p>Use this method when you are knitting a rectangle (or a swatch) and you want to control where the stitch pattern is positioned.</p>\n<ul>\n<li>Single Motif</li>\n<li>Horizontal Border</li>\n<li>Vertical Border</li>\n<li>Tile</li>\n</ul>\n<h3>Exercise steps</h3>\n<ol>\n<li>In DesignaKnit Stitch Designer, create a new stitch pattern:\n<ul>\n<li>File</li>\n<li>New pattern setup</li>\n<li>Set size manually</li>\n<li>Adjust the size to the stitches and rows needed</li>\n</ul>\n</li>\n<li>Import motif(s) or draw a stitch pattern with symbols and/or colors:\n<ul>\n<li>Edit</li>\n<li>Import</li>\n<li>Single Motif | Horizontal Border | Vertical Border | Tile</li>\n<li>Choose the motif</li>\n<li>Position it</li>\n</ul>\n</li>\n<li>In Interactive Knitting, set up the swatch size (widest number of needles).\n<ul>\n<li>Select a stitch pattern from the LOWER list</li>\n<li>Enter the swatch stitches and rows</li>\n</ul>\n</li>\n</ol>",
+              "legacyComponentId": 9454,
+              "order": 1,
+              "layoutRole": "textVideoLeft"
+            },
+            {
+              "type": "video",
+              "vimeoId": "799905939",
+              "title": "Position an Isolated Motif",
+              "legacySlot": 2,
+              "legacyComponentId": 9379,
+              "order": 2
             }
           ],
-          "title": "<i class=\"fa fa-circle\" style=color:#9F2065;\" aria-hidden=\"true\"></i>  Knit a Garment in Pattern",
-          "slug": "i-class-fa-fa-circle-style-color-9f2065-aria-hidden-true-i-knit-a-garment-in-pattern",
+          "title": "Position a Stitch Pattern",
+          "slug": "position-a-stitch-pattern",
           "order": 6,
           "legacy": {
-            "assignId": 6169,
-            "blockType": "HTML"
+            "assignId": 6168,
+            "blockType": "HTML",
+            "editorLayout": "textVideo"
           }
         },
         {
           "components": [
             {
-              "type": "exerciseAccordion",
-              "sections": [
-                {
-                  "title": "<span style=\"font-size:2em\">Knit in a stitch pattern</span> (good for swatches/rectangles with all-over stitch patterns)",
-                  "bodyHtml": "<div style=\"margin-left: 2.5em; font-size:2em\">\r\n\r\n<a data-popupcontentid=\"6171\" class=\"contentpopup\"> <i class=\"fa fa-spinner fa-spin\" style=\"font-size:30px;color:#9F2065\"></i> Step-by-step exercise  <i class=\"fa fa-caret-down\" style=\"color:#9F2065;\"aria-hidden=\"true\"></i></a></div>",
-                  "iconSrc": "/images/course-content/111/arrow1.png"
-                },
-                {
-                  "title": "<span style=\"font-size:2em;\">Position a Stitch pattern </span>(isolated motifs or custom pattern placement)",
-                  "bodyHtml": "<div style=\"margin-left: 2.5em; font-size:2em\">\r\n<a data-popupcontentid=\"6173\" class=\"contentpopup\"> <i class=\"fa fa-spinner fa-spin\" style=\"font-size:30px;color:#9F2065\"></i> Step-by-step exercise  <i class=\"fa fa-caret-down\" style=\"color:#9F2065;\"aria-hidden=\"true\"></i></a></div>",
-                  "iconSrc": "/images/course-content/111/arrow2.png"
-                },
-                {
-                  "title": "<span style=\"font-size:2em\">Knit a Garment Piece in Pattern</span> (all over stitch patterns and isolated motifs)",
-                  "bodyHtml": "<div style=\"margin-left: 2.5em; font-size:2em\">\r\n<a data-popupcontentid=\"6174\" class=\"contentpopup\"> <i class=\"fa fa-spinner fa-spin\" style=\"font-size:30px;color:#9F2065\"></i> Step-by-step exercise  <i class=\"fa fa-caret-down\" style=\"color:#9F2065;\"aria-hidden=\"true\"></i></a></div>",
-                  "iconSrc": "/images/course-content/111/arrow3.png"
-                }
-              ],
-              "legacy": {
-                "showText": "below",
-                "size": null
-              },
-              "legacyComponentId": 9447,
-              "order": 1
+              "type": "richText",
+              "html": "<p>Integrate a stitch pattern with a garment piece. Use Interactive Knitting to display both stitch pattern instructions and shaping instructions.</p>\n<h3>Exercise steps</h3>\n<ol>\n<li>In DesignaKnit Stitch Designer, create a new stitch pattern from a garment piece:\n<ul>\n<li>File</li>\n<li>New pattern setup</li>\n<li>Set size from Pattern Piece</li>\n</ul>\n</li>\n<li>Import motif(s) or draw a stitch pattern with symbols and/or colors:\n<ul>\n<li>Edit</li>\n<li>Import</li>\n<li>Single Motif | Horizontal Border | Vertical Border | Tile</li>\n<li>Choose the motif</li>\n<li>Position it</li>\n</ul>\n</li>\n<li>In Interactive Knitting:\n<ul>\n<li>Select a shape file from the UPPER list</li>\n<li>Select a piece</li>\n<li>Choose \"Integrated with stitch pattern\"</li>\n</ul>\n</li>\n</ol>\n<h3>Don't Skip This</h3>\n<p>Watch the shaping garment pieces demonstration before you knit a shaped piece in pattern.</p>",
+              "legacyComponentId": 9455,
+              "order": 1,
+              "layoutRole": "twoVideosIntro"
+            },
+            {
+              "type": "video",
+              "vimeoId": "799990951",
+              "title": "Integrated Stitch patterns on a Garment Piece",
+              "legacySlot": 3,
+              "legacyComponentId": 9379,
+              "order": 2,
+              "layoutRole": "twoVideosVideo1"
+            },
+            {
+              "type": "video",
+              "vimeoId": "800130992",
+              "title": "Shaping Garment Pieces",
+              "legacyComponentId": 9383,
+              "order": 3,
+              "layoutRole": "twoVideosVideo2"
             }
           ],
-          "title": "Exercises",
-          "slug": "exercises",
+          "title": "Knit a Garment in Pattern",
+          "slug": "knit-a-garment-in-pattern",
           "order": 7,
           "legacy": {
-            "assignId": 6163,
-            "blockType": "HTML"
+            "assignId": 6169,
+            "blockType": "HTML",
+            "editorLayout": "twoVideosSideBySide"
           }
         },
         {
@@ -729,71 +742,6 @@
         {
           "components": [
             {
-              "type": "video",
-              "vimeoId": "799677711",
-              "title": "Position for a Rectangle",
-              "legacySlot": 1,
-              "legacyComponentId": 9379,
-              "order": 1
-            },
-            {
-              "type": "video",
-              "vimeoId": "799905939",
-              "title": "Position an Isolated Motif",
-              "legacySlot": 2,
-              "legacyComponentId": 9379,
-              "order": 2
-            },
-            {
-              "type": "video",
-              "vimeoId": "799990951",
-              "title": "Integrated Stitch patterns on a Garment Piece",
-              "legacySlot": 3,
-              "legacyComponentId": 9379,
-              "order": 3
-            },
-            {
-              "type": "richText",
-              "html": "<style>\r\nhr.style13 {\r\nheight: 10px;\r\nborder: 0;\r\nbox-shadow: 0 10px 10px -10px #8c8b8b inset;\r\n}\r\n .container-border1 {\r\nborder: 2px solid #ccc;\r\nborder-radius: 15px 50px;\r\npadding-top: 20px;\r\npadding-right: 20px;\r\npadding-bottom: 20px;\r\npadding-left: 20px;\r\nbackground-color: white;\r\n}</style>\r\n<style> .container-border1 {\r\nborder: 2px solid #ccc;\r\nborder-radius: 15px 50px;\r\npadding-top: 20px;\r\npadding-right: 20px;\r\npadding-bottom: 20px;\r\npadding-left: 20px;\r\nbackground-color: white;\r\nmax-width: 800px;\r\nmargin: auto;\r\nbackground-color: #DCDCDC;\r\n}\r\nimg.ctr{\r\ndisplay: block;\r\nmargin-left: auto;\r\nmargin-right: auto; }\r\n</style>\r\n\r\n<br>\r\n<hr class=\"style13\">\r\n\r\n<div class=\"container-border1\">\r\n    <div class=\"align-items-center\">\r\nIt is CRITICAL to have a good understanding of DesignaKnit to work stitch patterning on this machine.<br>These videos give you an overview of the steps, but <span class=\"yellow_highlight\">we highly recommend learning more about DesignaKnit.<span><br>\r\n      <a href=\"https://learndesignaknit.com/\">  <img class=\"ctr\" src=\"/images/course-content/111/learn_dak_logos.png\" width=\"100\"></a>\r\n        <div class=\"col col sm-margin-5px-bottom xs-margin-5px-bottom text-center sm-margin-20px-top\">\r\n            <h1 class=\"text-white font-size44 md-font-size40 sm-font-size36 xs-font-size30 font-weight-600 line-height-60 md-line-height-55 sm-line-height-50 xs-line-height-45 margin-10px-bottom sm-margin-10px-bottom\">Using DesignaKnit Just Got <em>Easier</em></h1>\r\n            <h5 style=\"vertical-align: middle;\" class=\"text-white font-size19 md-font-size19 sm-font-size15 xs-font-size15 font-weight-300 line-height-40 md-line-height-44 sm-line-height-28 xs-line-height-28 margin-5px-bottom sm-margin-5px-bottom\"><br>\r\n                <span class=\"font-size12\"><i class=\"fa fa-circle\" aria-hidden=\"true\"></i></span> Videos <span class=\"font-size12\"><i class=\"fa fa-circle\" aria-hidden=\"true\"></i></span> Exercises <span class=\"font-size12\"><i class=\"fa fa-circle\" aria-hidden=\"true\"></i></span> Practice<br>\r\n\r\n            </h5>\r\n            <h1><a href=\"https://learndesignaknit.com/\"> LEARNDESIGNAKNIT.COM</a></h1>\r\n        </div>\r\n    </div>\r\n</div>",
-              "legacyComponentId": 9380,
-              "order": 4
-            }
-          ],
-          "title": "Position Pattern on Needlebed",
-          "slug": "position-pattern-on-needlebed",
-          "order": 9,
-          "legacy": {
-            "assignId": 6125,
-            "blockType": "HTML"
-          }
-        },
-        {
-          "components": [
-            {
-              "type": "richText",
-              "html": "<h1>Don't Skip This</h1>",
-              "legacyComponentId": 9384,
-              "order": 1
-            },
-            {
-              "type": "video",
-              "vimeoId": "800130992",
-              "title": null,
-              "legacyComponentId": 9383,
-              "order": 2
-            }
-          ],
-          "title": "Shaping Garment Pieces",
-          "slug": "shaping-garment-pieces",
-          "order": 10,
-          "legacy": {
-            "assignId": 6126,
-            "blockType": "HTML"
-          }
-        },
-        {
-          "components": [
-            {
               "type": "exerciseAccordion",
               "sections": [
                 {
@@ -817,7 +765,7 @@
           ],
           "title": "End Needle Selection",
           "slug": "end-needle-selection",
-          "order": 11,
+          "order": 9,
           "legacy": {
             "assignId": 6113,
             "blockType": "HTML"
@@ -834,7 +782,7 @@
           ],
           "title": "<i class=\"fa fa-ban\" aria-hidden=\"true\"></i> Wrong Way!",
           "slug": "i-class-fa-fa-ban-aria-hidden-true-i-wrong-way",
-          "order": 12,
+          "order": 10,
           "legacy": {
             "assignId": 6154,
             "blockType": "HTML"
@@ -1882,51 +1830,7 @@
         "itemId": 765,
         "lessonOrder": 21
       },
-      "blocks": [
-        {
-          "components": [
-            {
-              "type": "richText",
-              "html": "<img width=\"300\" src=\"/images/course-content/111/silverlink.jpg\"><br>\r\n<a target=\"_blank\" href=\"/images/course-content/111/patterning checklist.pdf\"><i class=\"fa fa-download\" aria-hidden=\"true\"></i> Download printable checklists</a><br>\r\nThere 3 situations where we would use to knit in pattern.\r\n<ol>\r\n    <li>Knit in a stitch pattern<br>\r\n        When you want to knit a rectangle or a swatch with an all-over stitch pattern.<br>\r\n        Just let DesignaKnit position the motif repeating it to fill the stitches and rows.\r\n    </li>\r\n    <li> Position a Stitch pattern<br>\r\n\r\n        When you are knitting a rectangle (or a swatch) and you want to control where the stitch pattern is positioned.\r\n        <ul>\r\n            <li>Single Motif</li>\r\n            <li>Horizontal Border</li>\r\n            <li>Vertical Border</li>\r\n            <li>Tile</li>\r\n        </ul>\r\n\r\n    </li>\r\n    <li>Knit a garment piece in pattern<br>\r\n        Integrate a stitch pattern with a garment piece.\r\n        Use Interactive knitting to both display stitch pattern instructions AND shaping instructions\r\n\r\n    </li>\r\n</ol>",
-              "legacyComponentId": 9450,
-              "order": 1
-            },
-            {
-              "type": "exerciseAccordion",
-              "sections": [
-                {
-                  "title": "<span style=\"font-size:2em\">Knit in a stitch pattern</span> (good for swatches/rectangles with all-over stitch patterns)",
-                  "bodyHtml": "<style>\r\n    img.ctr {\r\n        display: block;\r\n        margin-left: auto;\r\n        margin-right: auto;\r\n    }\r\n\r\n    input.larger {\r\n        width: 50px;\r\n        height: 50px;\r\n    }\r\n\r\n    .circle {\r\n        width: 25px;\r\n        height: 25px;\r\n        border-radius: 50%;\r\n        box-sizing: border-box;\r\n        text-align: center;\r\n        display: inline-block;\r\n        line-height: 25px;\r\n        background-color: #9E2065;\r\n    }\r\n\r\n    .circle a {\r\n        text-decoration: none;\r\n        color: #fff;\r\n        font-size: 18px;\r\n    }\r\n.tg  {border-collapse:collapse;border-spacing:0;margin:20px auto;}\r\n.tg td{border-color:black;border-style:solid;border-width:1px;font-size:14px;\r\n  overflow:hidden;padding:10px 5px;word-break:normal;}\r\n.tg th{border-color:black;border-style:solid;border-width:1px;font-size:14px;\r\n  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}\r\n.tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}\r\n\r\n\r\n/* The container */\r\n.container {\r\n  display: block;\r\n  position: relative;\r\n  padding-left: 35px;\r\n  margin-bottom: 12px;\r\n  cursor: pointer;\r\n  font-size: 22px;\r\n  -webkit-user-select: none;\r\n  -moz-user-select: none;\r\n  -ms-user-select: none;\r\n  user-select: none;\r\n}\r\n\r\n/* Hide the browser's default checkbox */\r\n.container input {\r\n  position: absolute;\r\n  opacity: 0;\r\n  cursor: pointer;\r\n  height: 0;\r\n  width: 0;\r\n}\r\n\r\n/* Create a custom checkbox */\r\n.checkmark {\r\n  position: absolute;\r\n  top: 0;\r\n  left: 0;\r\n  height: 25px;\r\n  width: 25px;\r\n  background-color: #eee;\r\n}\r\n\r\n/* On mouse-over, add a grey background color */\r\n.container:hover input ~ .checkmark {\r\n  background-color: #ccc;\r\n}\r\n\r\n/* When the checkbox is checked, add a blue background */\r\n.container input:checked ~ .checkmark {\r\n  background-color: #9E2065;\r\n}\r\n\r\n/* Create the checkmark/indicator (hidden when not checked) */\r\n.checkmark:after {\r\n  content: \"\";\r\n  position: absolute;\r\n  display: none;\r\n}\r\n\r\n/* Show the checkmark when checked */\r\n.container input:checked ~ .checkmark:after {\r\n  display: block;\r\n}\r\n\r\n/* Style the checkmark/indicator */\r\n.container .checkmark:after {\r\n  left: 9px;\r\n  top: 5px;\r\n  width: 5px;\r\n  height: 10px;\r\n  border: solid white;\r\n  border-width: 0 3px 3px 0;\r\n  -webkit-transform: rotate(45deg);\r\n  -ms-transform: rotate(45deg);\r\n  transform: rotate(45deg);\r\n}\r\n\r\n\r\n</style>\r\n\r\n<table class=\"tg table\">\r\n<tbody>\r\n  <tr>\r\n    <td class=\"tg-0pky\">\r\n\r\n<label class=\"container\">Connect computer, SilverLink, Curl Cord and knitting machine\r\n  <input type=\"checkbox\" checked=\"checked\">\r\n  <span class=\"checkmark\"></span>\r\n</label>\r\n\r\n\r\n\r\n </td>\r\n    <td class=\"tg-0pky\"><img width=\"300\" src=\"/images/course-content/111/silverlink.jpg\"></td>\r\n  \r\n  </tr>\r\n  <tr>\r\n    <td class=\"tg-0pky\"> \r\n\r\n\r\n<label class=\"container\">In Interactive knitting, set up the swatch size (widest number of needles)\r\n  <input type=\"checkbox\" checked=\"checked\">\r\n  <span class=\"checkmark\"></span>\r\n</label>\r\n\r\n\r\n<br><div class=\"circle\" style=\"margin-left: 2.5em;\"><a href=\"#\">A</a></div> Select a stitch pattern from the LOWER list<br><div class=\"circle\" style=\"margin-left: 2.5em;\"><a href=\"#\">B</a></div> Enter the swatch stitches and rows\r\n</td>\r\n    <td class=\"tg-0pky\"><div class=\"text-center\"><em><small>Click to zoom</small></em></div><br>\r\n\r\n\r\n<img class=\"imagepopup\" src=\"/images/course-content/111/ik3.jpg\" width=\"300\" data-imagetitle=\"Swatch size\" data-image=\"/challenge/images/v2/111/ik3.jpg\">\r\n</td>\r\n  \r\n  </tr>\r\n  <tr>\r\n    <td class=\"tg-0pky\">\r\n<label class=\"container\">Set the Point Cams to the edges of the knitting\r\n  <input type=\"checkbox\" checked=\"checked\">\r\n  <span class=\"checkmark\"></span>\r\n</label><br>\r\n<span style=\"margin-left: 2.5em;\">Move the point cams as you increase or decrease.</span>\r\n\r\n\r\n\r\n</td>\r\n    <td class=\"tg-0pky\"><img src=\"/images/course-content/111/point_cams1.jpg\" width=\"300\"></td>\r\n   \r\n  </tr>\r\n  <tr>\r\n    <td class=\"tg-0pky\">\r\n<label class=\"container\">Set the Cam lever to the desired stitch type (slip, tuck, fairisle, etc)\r\n  <input type=\"checkbox\" checked=\"checked\">\r\n  <span class=\"checkmark\"></span>\r\n</label>\r\n\r\n\r\n</td>\r\n    <td class=\"tg-0pky\">\t<img src=\"/images/course-content/111/cam_lever_gif.gif\" width=\"300\"></td>\r\n    \r\n  </tr>\r\n\r\n \r\n  <tr>\r\n    <td class=\"tg-0pky\">\r\n<label class=\"container\">Follow the Interactive Knitting prompts\r\n  <input type=\"checkbox\" checked=\"checked\">\r\n  <span class=\"checkmark\"></span>\r\n</label>\r\n\r\n\r\n</td>\r\n    <td class=\"tg-0pky\">\t<img src=\"/images/course-content/111/prompts.jpg\"width=\"300\"></td>\r\n    \r\n  </tr>\r\n\r\n\r\n</tbody>\r\n</table>",
-                  "iconSrc": "/images/course-content/111/arrow1.png"
-                },
-                {
-                  "title": "<span style=\"font-size:2em\">Position a Stitch pattern </span>(isolated motifs or custom pattern placement)",
-                  "bodyHtml": "<table class=\"tg table\">\r\n    <tbody>\r\n        <tr>\r\n            <td class=\"tg-0pky\">\r\n\r\n                <label class=\"container\">In DesignaKnit Stitch Designer create a new stitch pattern\r\n                    <input type=\"checkbox\" checked=\"checked\">\r\n                    <span class=\"checkmark\"></span>\r\n                </label>\r\n<ul style=\"margin-left: 2.5em;\">\r\n<li> File</li>\r\n<li> New pattern setup</li>\r\n<li>Set size manually</li>\r\n<li>Adjust the size to the stitches and rows needed</li>\r\n</ul>\r\n\r\n\r\n\r\n\r\n            </td>\r\n            <td class=\"tg-0pky\"><img src=\"/images/course-content/111/new pattern.jpg\" width=\"300\"></td>\r\n\r\n        </tr>\r\n\r\n <tr>\r\n            <td class=\"tg-0pky\">\r\n\r\n                <label class=\"container\">Import motif(s) or draw a stitch pattern with symbols and/or colors\r\n                    <input type=\"checkbox\" checked=\"checked\">\r\n                    <span class=\"checkmark\"></span>\r\n                </label>\r\n<ul style=\"margin-left: 2.5em;\">\r\n<li>Edit</li>\r\n<li>Import</li>\r\n<li>Single Motif | Horizontal Border | Vertical Border | Tile </li>\r\n<li>Choose the motif</li>\r\n<li>Position it</li>\r\n</ul>\r\n\r\n\r\n\r\n            </td>\r\n            <td class=\"tg-0pky\"><img src=\"/images/course-content/111/import.jpg\" width=\"300\"></td>\r\n\r\n        </tr>\r\n <tr>\r\n    <td class=\"tg-0pky\">\r\n\r\n<label class=\"container\">Connect computer, SilverLink, Curl Cord and knitting machine\r\n  <input type=\"checkbox\" checked=\"checked\">\r\n  <span class=\"checkmark\"></span>\r\n</label>\r\n\r\n\r\n\r\n </td>\r\n    <td class=\"tg-0pky\"><img width=\"300\" src=\"/images/course-content/111/silverlink.jpg\"></td>\r\n  \r\n  </tr>\r\n<tr>\r\n    <td class=\"tg-0pky\"> \r\n\r\n\r\n<label class=\"container\">In Interactive knitting, set up the swatch size (widest number of needles)\r\n  <input type=\"checkbox\" checked=\"checked\">\r\n  <span class=\"checkmark\"></span>\r\n</label>\r\n\r\n\r\n<br><div class=\"circle\" style=\"margin-left: 2.5em;\"><a href=\"#\">A</a></div> Select a stitch pattern from the LOWER list<br><div class=\"circle\" style=\"margin-left: 2.5em;\"><a href=\"#\">B</a></div> Enter the swatch stitches and rows\r\n</td>\r\n    <td class=\"tg-0pky\"><div class=\"text-center\"><em><small>Click to zoom</small></em></div><br>\r\n\r\n\r\n<img class=\"imagepopup\" src=\"/images/course-content/111/ik3.jpg\" width=\"300\" data-imagetitle=\"Swatch size\" data-image=\"/challenge/images/v2/111/ik3.jpg\">\r\n</td>\r\n  \r\n  </tr>\r\n <tr>\r\n    <td class=\"tg-0pky\">\r\n<label class=\"container\">Set the Point Cams to the edges of the knitting\r\n  <input type=\"checkbox\" checked=\"checked\">\r\n  <span class=\"checkmark\"></span>\r\n</label><br>\r\n<span style=\"margin-left: 2.5em;\">Move the point cams as you increase or decrease.</span>\r\n\r\n\r\n\r\n</td>\r\n    <td class=\"tg-0pky\"><img src=\"/images/course-content/111/point_cams1.jpg\" width=\"300\"></td>\r\n   \r\n  </tr>\r\n  <tr>\r\n    <td class=\"tg-0pky\">\r\n<label class=\"container\">Set the Cam lever to the desired stitch type (slip, tuck, fairisle, etc)\r\n  <input type=\"checkbox\" checked=\"checked\">\r\n  <span class=\"checkmark\"></span>\r\n</label>\r\n\r\n\r\n</td>\r\n    <td class=\"tg-0pky\">\t<img src=\"/images/course-content/111/cam_lever_gif.gif\" width=\"300\"></td>\r\n    \r\n  </tr>\r\n  </tr>\r\n  <tr>\r\n    <td class=\"tg-0pky\">\r\n<label class=\"container\">Follow the Interactive Knitting prompts\r\n  <input type=\"checkbox\" checked=\"checked\">\r\n  <span class=\"checkmark\"></span>\r\n</label>\r\n\r\n\r\n</td>\r\n    <td class=\"tg-0pky\">\t<img src=\"/images/course-content/111/prompts.jpg\"width=\"300\"></td>\r\n    \r\n  </tr>\r\n\r\n    </tbody>\r\n</table>",
-                  "iconSrc": "/images/course-content/111/arrow2.png"
-                },
-                {
-                  "title": "<span style=\"font-size:2em\">Knit a Garment Piece in Pattern</span> (all over stitch patterns and isolated motifs)",
-                  "bodyHtml": "<table class=\"tg table\">\r\n    <tbody>\r\n        <tr>\r\n            <td class=\"tg-0pky\">\r\n\r\n                <label class=\"container\">In DesignaKnit Stitch Designer create a new stitch pattern FROM A GARMENT PIECE\r\n                    <input type=\"checkbox\" checked=\"checked\">\r\n                    <span class=\"checkmark\"></span>\r\n                </label>\r\n<ul style=\"margin-left: 2.5em;\">\r\n<li> File</li>\r\n<li> New pattern setup</li>\r\n<li>Set size from Pattern Piece</li>\r\n</ul>\r\n\r\n\r\n\r\n\r\n            </td>\r\n            <td class=\"tg-0pky\"><img src=\"/images/course-content/111/from_pattern1.jpg\" width=\"300\"></td>\r\n\r\n        </tr>\r\n\r\n <tr>\r\n            <td class=\"tg-0pky\">\r\n\r\n                <label class=\"container\">Import motif(s) or draw a stitch pattern with symbols and/or colors\r\n                    <input type=\"checkbox\" checked=\"checked\">\r\n                    <span class=\"checkmark\"></span>\r\n                </label>\r\n<ul style=\"margin-left: 2.5em;\">\r\n<li>Edit</li>\r\n<li>Import</li>\r\n<li>Single Motif | Horizontal Border | Vertical Border | Tile </li>\r\n<li>Choose the motif</li>\r\n<li>Position it</li>\r\n</ul>\r\n\r\n\r\n\r\n            </td>\r\n            <td class=\"tg-0pky\"><img src=\"/images/course-content/111/import9.jpg\" width=\"300\"></td>\r\n\r\n        </tr>\r\n <tr>\r\n    <td class=\"tg-0pky\">\r\n\r\n<label class=\"container\">Connect computer, SilverLink, Curl Cord and knitting machine\r\n  <input type=\"checkbox\" checked=\"checked\">\r\n  <span class=\"checkmark\"></span>\r\n</label>\r\n\r\n\r\n\r\n </td>\r\n    <td class=\"tg-0pky\"><img width=\"300\" src=\"/images/course-content/111/silverlink.jpg\"></td>\r\n  \r\n  </tr>\r\n <tr>\r\n    <td class=\"tg-0pky\"> \r\n\r\n\r\n<label class=\"container\">In Interactive knitting:\r\n  <input type=\"checkbox\" checked=\"checked\">\r\n  <span class=\"checkmark\"></span>\r\n</label>\r\n\r\n\r\n<br><div class=\"circle\" style=\"margin-left: 2.5em;\"><a href=\"#\">A</a></div> Select a SHAPE FILE from the UPPER list<br><div class=\"circle\" style=\"margin-left: 2.5em;\"><a href=\"#\">B</a></div> Select a piece<br><div class=\"circle\" style=\"margin-left: 2.5em;\"><a href=\"#\">C</a></div> Choose \"Integrated with stitch pattern\"\r\n</td>\r\n    <td class=\"tg-0pky\"><div class=\"text-center\"><em><small>Click to zoom</small></em></div><br>\r\n\r\n<img class=\"imagepopup\" data-image=\"/challenge/images/v2/111/from_pattern2.jpg\" src=\"/images/course-content/111/from_pattern2.jpg\">\r\n</td>\r\n  \r\n  </tr>\r\n <tr>\r\n    <td class=\"tg-0pky\">\r\n<label class=\"container\">Set the Point Cams to the edges of the knitting\r\n  <input type=\"checkbox\" checked=\"checked\">\r\n  <span class=\"checkmark\"></span>\r\n</label><br>\r\n<span style=\"margin-left: 2.5em;\">Move the point cams as you increase or decrease.</span>\r\n\r\n\r\n\r\n</td>\r\n    <td class=\"tg-0pky\"><img src=\"/images/course-content/111/point_cams1.jpg\" width=\"300\"></td>\r\n   \r\n  </tr>\r\n  <tr>\r\n    <td class=\"tg-0pky\">\r\n<label class=\"container\">Set the Cam lever to the desired stitch type (slip, tuck, fairisle, etc)\r\n  <input type=\"checkbox\" checked=\"checked\">\r\n  <span class=\"checkmark\"></span>\r\n</label>\r\n\r\n\r\n</td>\r\n    <td class=\"tg-0pky\">\t<img src=\"/images/course-content/111/cam_lever_gif.gif\" width=\"300\"></td>\r\n    \r\n  </tr>\r\n  </tr>\r\n  <tr>\r\n    <td class=\"tg-0pky\">\r\n<label class=\"container\">Follow the Interactive Knitting prompts\r\n  <input type=\"checkbox\" checked=\"checked\">\r\n  <span class=\"checkmark\"></span>\r\n</label>\r\n\r\n\r\n</td>\r\n    <td class=\"tg-0pky\">\t<img src=\"/images/course-content/111/prompts.jpg\"width=\"300\"></td>\r\n    \r\n  </tr>\r\n\r\n    </tbody>\r\n</table>",
-                  "iconSrc": "/images/course-content/111/arrow3.png"
-                }
-              ],
-              "legacy": {
-                "showText": "right",
-                "size": null
-              },
-              "legacyComponentId": 9451,
-              "order": 2
-            }
-          ],
-          "title": "Steps for Patterning",
-          "slug": "steps-for-patterning",
-          "order": 3,
-          "legacy": {
-            "assignId": 6170,
-            "blockType": "HTML"
-          }
-        }
-      ],
+      "blocks": [],
       "published": false
     }
   ],
@@ -2009,25 +1913,25 @@
         "vimeoId": "799677711",
         "title": "Position for a Rectangle",
         "lessonSlug": "automatic-stitch-patterning",
-        "blockSlug": "position-pattern-on-needlebed"
+        "blockSlug": "knit-a-stitch-pattern"
       },
       {
         "vimeoId": "799905939",
         "title": "Position an Isolated Motif",
         "lessonSlug": "automatic-stitch-patterning",
-        "blockSlug": "position-pattern-on-needlebed"
+        "blockSlug": "position-a-stitch-pattern"
       },
       {
         "vimeoId": "799990951",
         "title": "Integrated Stitch patterns on a Garment Piece",
         "lessonSlug": "automatic-stitch-patterning",
-        "blockSlug": "position-pattern-on-needlebed"
+        "blockSlug": "knit-a-garment-in-pattern"
       },
       {
         "vimeoId": "800130992",
-        "title": null,
+        "title": "Shaping Garment Pieces",
         "lessonSlug": "automatic-stitch-patterning",
-        "blockSlug": "shaping-garment-pieces"
+        "blockSlug": "knit-a-garment-in-pattern"
       },
       {
         "vimeoId": "1104273401",

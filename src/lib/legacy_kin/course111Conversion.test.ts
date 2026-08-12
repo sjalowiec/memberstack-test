@@ -772,6 +772,174 @@ describe("Course 111 conversion invariants", () => {
     );
   });
 
+  it("keeps About Automatic Patterning as a single instructional page without LearnDAK promo", () => {
+    const block = data.lessons
+      .flatMap((lesson) => lesson.blocks ?? [])
+      .find((entry) => entry.slug === "about-automatic-patterning-on-this-machine");
+    expect(block).toBeTruthy();
+    expect(block!.title).toBe("About Automatic Patterning on this Machine");
+    expect(block!.components).toHaveLength(1);
+
+    const component = block!.components![0] as { type: string; legacyComponentId: number; html: string };
+    expect(component.type).toBe("richText");
+    expect(component.legacyComponentId).toBe(9332);
+    expect(component.html).toContain("EC1 / PE1 Pattern Controller");
+    expect(component.html).toContain("DesignaKnit");
+    expect(component.html).toContain("Selected needles + Carriage settings = Stitch Patterns");
+    expect(component.html).toContain("N-1 Cams");
+    expect(component.html).not.toContain("LearnDesignaKnit.com");
+    expect(component.html).not.toContain("learndesignaknit.com");
+    expect(component.html).not.toContain("learn_dak_logos.png");
+    expect(component.html).not.toContain("Keep forever courses");
+    expect(
+      (block!.components ?? []).some((entry) => Number(entry.legacyComponentId) === 9348),
+    ).toBe(false);
+
+    const course = getLegacyCourseBySlug(SK840_SLUG, { includeDrafts: true });
+    const lesson = course!.lessons.find((entry) => entry.slug === "automatic-stitch-patterning");
+    const items = getLessonContentItemsWithSlugs(lesson!);
+    const aboutItems = items.filter(
+      (item) => item.blockSlug === "about-automatic-patterning-on-this-machine",
+    );
+    expect(aboutItems).toHaveLength(1);
+    expect(contentItemNavTitle(lesson!, aboutItems[0]!, items)).toBe(
+      "About Automatic Patterning on this Machine",
+    );
+
+    const { prev, next } = getCourseContentItemNeighbors(
+      course!,
+      lesson!.slug,
+      aboutItems[0]!.itemSlug,
+    );
+    expect(contentItemDisplayTitle(prev!.lesson, prev!.item)).toBe("Gauge Rulers (Gauge Scales)");
+    expect(contentItemDisplayTitle(next!.lesson, next!.item)).toBe(
+      "How does Automatic Patterning Work?",
+    );
+  });
+
+  it("reorganizes Stitch Patterning into three methods with shared Before You Begin", () => {
+    const lesson = data.lessons.find((entry) => entry.slug === "automatic-stitch-patterning");
+    expect(lesson).toBeTruthy();
+
+    const blockTitles = (lesson!.blocks ?? []).map((block) => block.title);
+    expect(blockTitles).toEqual([
+      "About Automatic Patterning on this Machine",
+      "How does Automatic Patterning Work?",
+      "Stitch Patterning: Three Ways to Use DesignaKnit",
+      "Before You Begin",
+      "Knit a Stitch Pattern",
+      "Position a Stitch Pattern",
+      "Knit a Garment in Pattern",
+      "Bits and Pieces",
+      "End Needle Selection",
+      '<i class="fa fa-ban" aria-hidden="true"></i> Wrong Way!',
+    ]);
+
+    const removedSlugs = [
+      "patterning-goals",
+      "exercises",
+      "position-pattern-on-needlebed",
+      "shaping-garment-pieces",
+      "i-class-fa-fa-circle-style-color-9f2065-aria-hidden-true-i-knit-in-a-stitch-pattern",
+      "i-class-fa-fa-circle-style-color-9f2065-aria-hidden-true-i-position-a-stitch-pattern",
+      "i-class-fa-fa-circle-style-color-9f2065-aria-hidden-true-i-knit-a-garment-in-pattern",
+    ];
+    for (const slug of removedSlugs) {
+      expect((lesson!.blocks ?? []).some((block) => block.slug === slug)).toBe(false);
+    }
+
+    const lessonHtml = (lesson!.blocks ?? [])
+      .flatMap((block) => block.components ?? [])
+      .filter((component) => component.type === "richText")
+      .map((component) => ("html" in component ? String(component.html) : ""))
+      .join("\n");
+    expect(lessonHtml).not.toContain("/images/course-content/111/1.jpg");
+    expect(lessonHtml).not.toContain("/images/course-content/111/2.jpg");
+    expect(lessonHtml).not.toContain("/images/course-content/111/3.jpg");
+    expect(lessonHtml).not.toContain("1 ALLOVER.pdf");
+    expect(lessonHtml).not.toContain("2 POSITION.pdf");
+    expect(lessonHtml).not.toContain("3GARMENT.pdf");
+    expect(lessonHtml).not.toContain("WORKSHEETS.pdf");
+    expect(lessonHtml).not.toContain("learndesignaknit.com");
+    expect(lessonHtml).not.toContain("learn_dak_logos.png");
+
+    const methodHtml = (lesson!.blocks ?? [])
+      .filter((block) =>
+        [
+          "stitch-patterning-three-ways",
+          "before-you-begin",
+          "knit-a-stitch-pattern",
+          "position-a-stitch-pattern",
+          "knit-a-garment-in-pattern",
+        ].includes(String(block.slug)),
+      )
+      .flatMap((block) => block.components ?? [])
+      .filter((component) => component.type === "richText")
+      .map((component) => ("html" in component ? String(component.html) : ""))
+      .join("\n");
+    expect(methodHtml).not.toContain("videopopup");
+    expect(methodHtml).toContain("Connect the computer, SilverLink, curl cord, and machine");
+    expect(methodHtml).toContain("Set the point cams to the edges of the knitting");
+    expect(methodHtml).toContain("Set the cam lever for the stitch type");
+    expect(methodHtml).toContain("Follow the Interactive Knitting prompts");
+
+    const videoByBlock = Object.fromEntries(
+      (lesson!.blocks ?? []).map((block) => [
+        block.slug,
+        (block.components ?? [])
+          .filter((component) => component.type === "video")
+          .map((component) => ("vimeoId" in component ? String(component.vimeoId) : "")),
+      ]),
+    );
+    expect(videoByBlock["knit-a-stitch-pattern"]).toEqual(["799677711"]);
+    expect(videoByBlock["position-a-stitch-pattern"]).toEqual(["799905939"]);
+    expect(videoByBlock["knit-a-garment-in-pattern"]).toEqual(["799990951", "800130992"]);
+
+    const knitBlock = (lesson!.blocks ?? []).find((block) => block.slug === "knit-a-stitch-pattern");
+    expect(knitBlock?.legacy?.editorLayout).toBe("textVideo");
+    const positionBlock = (lesson!.blocks ?? []).find(
+      (block) => block.slug === "position-a-stitch-pattern",
+    );
+    expect(positionBlock?.legacy?.editorLayout).toBe("textVideo");
+    const garmentBlock = (lesson!.blocks ?? []).find(
+      (block) => block.slug === "knit-a-garment-in-pattern",
+    );
+    expect(garmentBlock?.legacy?.editorLayout).toBe("twoVideosSideBySide");
+
+    const temp = data.lessons.find((entry) => entry.slug === "temp-to-delete-later");
+    expect(temp?.published).toBe(false);
+    expect((temp?.blocks ?? []).some((block) => block.slug === "steps-for-patterning")).toBe(false);
+
+    const course = getLegacyCourseBySlug(SK840_SLUG, { includeDrafts: true });
+    const loaded = course!.lessons.find((entry) => entry.slug === "automatic-stitch-patterning");
+    const items = getLessonContentItemsWithSlugs(loaded!);
+    const introItem = items.find((item) => item.blockSlug === "stitch-patterning-three-ways");
+    expect(introItem).toBeTruthy();
+    expect(contentItemNavTitle(loaded!, introItem!, items)).toBe(
+      "Stitch Patterning: Three Ways to Use DesignaKnit",
+    );
+
+    const { prev, next } = getCourseContentItemNeighbors(
+      course!,
+      loaded!.slug,
+      introItem!.itemSlug,
+    );
+    expect(contentItemDisplayTitle(prev!.lesson, prev!.item)).toBe(
+      "How does Automatic Patterning Work?",
+    );
+    expect(contentItemDisplayTitle(next!.lesson, next!.item)).toBe("Before You Begin");
+
+    const garmentItem = items.find((item) => item.blockSlug === "knit-a-garment-in-pattern");
+    const garmentNeighbors = getCourseContentItemNeighbors(
+      course!,
+      loaded!.slug,
+      garmentItem!.itemSlug,
+    );
+    expect(contentItemDisplayTitle(garmentNeighbors.next!.lesson, garmentNeighbors.next!.item)).toBe(
+      "Bits and Pieces",
+    );
+  });
+
   it("removes the Weaving Cast on Checklist block from Get Knitting", () => {
     const lesson = data.lessons.find((entry) => entry.slug === "get-knitting");
     expect(lesson).toBeTruthy();

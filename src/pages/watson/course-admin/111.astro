@@ -1,0 +1,120 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { isCourseContentAdminAllowed } from "../../../lib/legacy_kin/courseContentAdmin";
+import { COURSE_111_ID } from "../../../lib/legacy_kin/course111AdminModel";
+import "../../../styles/course111-admin.css";
+
+export const prerender = false;
+
+if (
+  !isCourseContentAdminAllowed(Astro.url.hostname, {
+    isViteDev: import.meta.env.DEV,
+    publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+  })
+) {
+  return Astro.redirect("/watson/");
+}
+---
+
+<BaseLayout
+  title="Course 111 Admin | Watson"
+  description="Local editor for Legacy KIN Course 111 conversion"
+  bodyClass="course111-admin-body watson-body"
+>
+  <p id="course111-admin-loading" class="course111-admin__loading">
+    Loading Course {COURSE_111_ID}…
+  </p>
+
+  <div id="course111-admin-app" class="course111-admin" hidden>
+    <header class="course111-admin__top">
+      <div class="course111-admin__brand">
+        <h1>Course Admin · 111</h1>
+        <p class="course111-admin__meta">Local file editor · draft only</p>
+        <span id="course111-admin-dirty" class="course111-admin__dirty">Saved</span>
+      </div>
+      <div class="course111-admin__toolbar">
+        <div class="course111-admin__actions">
+          <a class="course111-admin__btn" href="/watson">Watson</a>
+          <a
+            id="course111-admin-preview"
+            class="course111-admin__btn"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Preview Saved Lesson
+          </a>
+          <button type="button" id="course111-admin-reload" class="course111-admin__btn">
+            Reload
+          </button>
+          <button
+            type="button"
+            id="course111-admin-save-lesson"
+            class="course111-admin__btn course111-admin__btn--primary"
+            disabled
+          >
+            Save Lesson
+          </button>
+          <button
+            type="button"
+            id="course111-admin-save-preview"
+            class="course111-admin__btn course111-admin__btn--primary"
+          >
+            Save &amp; Preview Lesson
+          </button>
+          <button
+            type="button"
+            id="course111-admin-save-course"
+            class="course111-admin__btn course111-admin__btn--primary"
+            disabled
+          >
+            Save Course
+          </button>
+        </div>
+        <p class="course111-admin__preview-note">
+          Preview shows the saved version of this lesson.
+        </p>
+      </div>
+    </header>
+
+    <p id="course111-admin-status" class="course111-admin__status" aria-live="polite"></p>
+
+    <div class="course111-admin__layout">
+      <aside class="course111-admin__sidebar">
+        <div class="course111-admin__sidebar-head">
+          <h2 id="course111-admin-course-title" class="course111-admin__course-title">
+            Course 111
+          </h2>
+          <label class="course111-admin__label" for="course111-admin-search">
+            Search lessons
+            <input
+              id="course111-admin-search"
+              class="course111-admin__search"
+              type="search"
+              placeholder="Filter by number, title, status…"
+              autocomplete="off"
+            />
+          </label>
+        </div>
+        <div id="course111-admin-lessons" class="course111-admin__lessons"></div>
+      </aside>
+
+      <main id="course111-admin-main" class="course111-admin__main"></main>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { initCourse111AdminEditor } from "../../../scripts/course111AdminEditor.ts";
+
+  initCourse111AdminEditor().catch((error) => {
+    const loading = document.getElementById("course111-admin-loading");
+    const message =
+      error instanceof Error ? error.message : "Course 111 admin failed to start.";
+    if (loading) {
+      loading.hidden = false;
+      loading.textContent = message;
+    }
+    console.error(error);
+  });
+</script>
