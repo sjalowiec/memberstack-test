@@ -3,6 +3,7 @@ import { isAccordionLayoutBlock } from "./courseAccordionLayout";
 import { isTextImageLayoutBlock } from "./courseTextImageLayout";
 import { isTextVideoLayoutBlock, richTextHasVisibleContent } from "./courseTextVideoLayout";
 import { isThreeVideosLayoutBlock } from "./courseThreeVideosLayout";
+import { isTwoVideosLayoutBlock } from "./courseTwoVideosLayout";
 import type { CourseBlock, CourseComponent, CourseLesson } from "./coursePreviewPoc";
 import { sortedBlocks, sortedComponents } from "./coursePreviewPoc";
 import { flattenLessonContent } from "./courseLessonContentItems";

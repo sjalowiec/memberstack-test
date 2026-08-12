@@ -10,6 +10,7 @@ import {
   TEXT_IMAGE_LAYOUT_TYPE,
   TEXT_VIDEO_LAYOUT_TYPE,
   THREE_VIDEOS_LAYOUT_TYPE,
+  TWO_VIDEOS_LAYOUT_TYPE,
   type FlatContentItem,
 } from "./courseContentEditorTypes";
 import {
@@ -25,6 +26,10 @@ import {
   getThreeVideosLayoutParts,
   isThreeVideosLayoutBlock,
 } from "./courseThreeVideosLayout";
+import {
+  getTwoVideosLayoutParts,
+  isTwoVideosLayoutBlock,
+} from "./courseTwoVideosLayout";
 import type { CourseBlock, CourseLesson, CoursePreviewData } from "./coursePreviewPoc";
 import { sortedBlocks, sortedComponents } from "./coursePreviewPoc";
 import { slugify } from "../slugify";
@@ -65,6 +70,7 @@ const ITEM_TYPE_NAV_LABELS: Record<string, string> = {
   [TEXT_VIDEO_LAYOUT_TYPE]: "Text + Video",
   [TEXT_IMAGE_LAYOUT_TYPE]: "Text + Image",
   [THREE_VIDEOS_LAYOUT_TYPE]: "Three Videos",
+  [TWO_VIDEOS_LAYOUT_TYPE]: "Two Videos",
 };
 
 function blockTitleForEditing(title: unknown): string {
@@ -194,7 +200,11 @@ export function flattenLessonContent(lesson: CourseLesson): FlatContentItem[] {
       if (!parts) continue;
       items.push({
         blockSlug: String(block.slug ?? ""),
-        legacyComponentId: Number(parts.leftText.legacyComponentId),
+        legacyComponentId: Number(
+          parts.leftText?.legacyComponentId ??
+            parts.bottomText?.legacyComponentId ??
+            parts.video.legacyComponentId,
+        ),
         type: TEXT_VIDEO_LAYOUT_TYPE,
         pairedLegacyComponentId: Number(parts.video.legacyComponentId),
         component: {
@@ -202,7 +212,7 @@ export function flattenLessonContent(lesson: CourseLesson): FlatContentItem[] {
           leftText: parts.leftText,
           video: parts.video,
           bottomText: parts.bottomText,
-          richText: parts.leftText,
+          richText: parts.leftText ?? parts.bottomText,
         },
       });
       continue;
@@ -219,6 +229,25 @@ export function flattenLessonContent(lesson: CourseLesson): FlatContentItem[] {
         type: THREE_VIDEOS_LAYOUT_TYPE,
         component: {
           type: THREE_VIDEOS_LAYOUT_TYPE,
+          intro: parts.intro,
+          slots: parts.slots,
+          outro: parts.outro,
+        },
+      });
+      continue;
+    }
+
+    if (isTwoVideosLayoutBlock(block)) {
+      const parts = getTwoVideosLayoutParts(block);
+      if (!parts) continue;
+      items.push({
+        blockSlug: String(block.slug ?? ""),
+        legacyComponentId: Number(
+          parts.intro?.legacyComponentId ?? parts.slots[0]!.video.legacyComponentId,
+        ),
+        type: TWO_VIDEOS_LAYOUT_TYPE,
+        component: {
+          type: TWO_VIDEOS_LAYOUT_TYPE,
           intro: parts.intro,
           slots: parts.slots,
           outro: parts.outro,
@@ -327,7 +356,9 @@ export function contentItemMatchesRef(
     ref.type === TEXT_IMAGE_LAYOUT_TYPE ||
     item.type === TEXT_IMAGE_LAYOUT_TYPE ||
     ref.type === THREE_VIDEOS_LAYOUT_TYPE ||
-    item.type === THREE_VIDEOS_LAYOUT_TYPE
+    item.type === THREE_VIDEOS_LAYOUT_TYPE ||
+    ref.type === TWO_VIDEOS_LAYOUT_TYPE ||
+    item.type === TWO_VIDEOS_LAYOUT_TYPE
   ) {
     return ref.blockSlug === item.blockSlug && ref.type === item.type;
   }

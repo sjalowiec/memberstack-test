@@ -666,6 +666,10 @@ main.site-content:has(.course-preview--reader) {
   margin: 1rem auto;
 }
 
+.course-preview__carousel-intro {
+  margin: 0 0 1rem;
+}
+
 .course-preview__carousel-title {
   margin: 0 0 0.75rem;
   font-size: 1.05rem;
@@ -686,7 +690,15 @@ main.site-content:has(.course-preview--reader) {
 }
 
 .course-preview__carousel-slide {
+  margin: 0 0 1.25rem;
+}
+
+.course-preview__carousel.is-enhanced .course-preview__carousel-slide {
   margin: 0;
+}
+
+.course-preview__carousel.is-enhanced .course-preview__carousel-slide:not(.is-active) {
+  display: none;
 }
 
 .course-preview__carousel-slide[hidden] {
@@ -700,7 +712,7 @@ main.site-content:has(.course-preview--reader) {
   width: 100%;
   max-height: 360px;
   margin: 0 auto;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .gallery-image,
@@ -710,17 +722,18 @@ main.site-content:has(.course-preview--reader) {
   width: auto;
   max-width: 100%;
   max-height: 360px;
+  height: auto;
   margin: 0 auto;
   object-fit: contain;
   border-radius: 6px;
 }
 
 .course-preview__carousel-slide figcaption {
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
-  line-height: 1.45;
+  margin-top: 0.65rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
   color: #444;
-  text-align: center;
+  text-align: left;
 }
 
 .course-preview__carousel-controls {
@@ -729,7 +742,35 @@ main.site-content:has(.course-preview--reader) {
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
+  margin-top: 0.85rem;
+}
+
+.course-preview__carousel-dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.45rem;
   margin-top: 0.75rem;
+}
+
+.course-preview__carousel-dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  padding: 0;
+  border: 2px solid #6b7280;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+}
+
+.course-preview__carousel-dot.is-active {
+  background: var(--kbm-green, #52682d);
+  border-color: var(--kbm-green, #52682d);
+}
+
+.course-preview__carousel-dot:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
 }
 
 @media (max-width: 768px) {
@@ -772,10 +813,84 @@ main.site-content:has(.course-preview--reader) {
 }
 
 .course-preview__carousel-count {
-  min-width: 3.5rem;
+  min-width: 6.5rem;
   font-size: 0.875rem;
   color: #555;
   text-align: center;
+}
+
+/* Course 111 — Secure Your Yarn Tail */
+.sk840-yarn-tail.course-preview__carousel,
+.sk840-yarn-tail.legacy-course__carousel {
+  max-width: min(100%, 40rem);
+}
+
+.sk840-yarn-tail .course-preview__carousel-media {
+  max-height: none;
+}
+
+.sk840-yarn-tail .course-gallery-image,
+.sk840-yarn-tail .course-preview__carousel-slide img {
+  max-height: min(70vh, 520px);
+}
+
+.sk840-yarn-tail__intro {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.sk840-yarn-tail__copy {
+  margin: 0 0 0.65rem;
+  color: #1f2937;
+  font-size: 1.02rem;
+  line-height: 1.5;
+}
+
+.sk840-yarn-tail__note {
+  display: flex;
+  gap: 0.55rem;
+  align-items: flex-start;
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.98rem;
+  line-height: 1.45;
+}
+
+.sk840-yarn-tail__note i {
+  flex: 0 0 auto;
+  margin-top: 0.1rem;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.sk840-yarn-tail__note--caution {
+  background: #f8f1f1;
+  color: #4a1f1f;
+  border: 1px solid #e4c7c7;
+}
+
+.sk840-yarn-tail__note--caution i {
+  color: #9b3b3b;
+}
+
+.sk840-yarn-tail__note--recommended {
+  background: #f2f6ee;
+  color: #24331a;
+  border: 1px solid #c9d7b8;
+}
+
+.sk840-yarn-tail__note--recommended i {
+  color: var(--kbm-green, #52682d);
+}
+
+@media (max-width: 768px) {
+  .sk840-yarn-tail .course-gallery-image,
+  .sk840-yarn-tail .course-preview__carousel-slide img {
+    max-height: min(55vh, 360px);
+  }
 }
 
 .course-preview__exercise {
@@ -1111,5 +1226,940 @@ main.site-content:has(.course-preview--reader) {
   .kin-grid-2 {
     grid-template-columns: minmax(0, 1fr);
     gap: 1rem;
+  }
+}
+
+/* Course 111 — numbered parts/tools diagrams (Terms, Tools & Accessories) */
+.sk840-parts-id {
+  max-width: min(100%, 68rem);
+}
+
+.sk840-parts-id__intro {
+  margin: 0 0 1rem;
+  color: #1f2937;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.sk840-parts-id__columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.5rem;
+  margin: 0.85rem 0 1rem;
+}
+
+.sk840-parts-id__column {
+  min-width: 0;
+}
+
+.sk840-parts-id__intro .text-center {
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 700px) {
+  .sk840-parts-id__columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sk840-parts-id__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(15rem, 0.9fr);
+  gap: 1.25rem 1.75rem;
+  align-items: start;
+}
+
+.sk840-parts-id__media {
+  margin: 0;
+  min-width: 0;
+}
+
+.sk840-parts-id__media img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+.sk840-parts-id__list {
+  min-width: 0;
+}
+
+.sk840-parts-id__ol,
+.sk840-parts-id .legacy-hotspot-labels {
+  margin: 0;
+  padding-left: 1.35rem;
+  color: #111827;
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.sk840-parts-id__ol > li,
+.sk840-parts-id .legacy-hotspot-labels > li {
+  margin: 0.22rem 0;
+}
+
+.sk840-parts-id__ol a,
+.sk840-parts-id .legacy-hotspot-labels a {
+  color: var(--kbm-green, #52682d);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.sk840-parts-id__ol a:hover,
+.sk840-parts-id .legacy-hotspot-labels a:hover {
+  color: #3f5222;
+}
+
+@media (max-width: 960px) {
+  .sk840-parts-id__layout {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* Course 111 — Setting up your machine cheat sheet */
+.sk840-setup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.sk840-setup__intro {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.sk840-setup__cheat {
+  margin: 0;
+  min-width: 0;
+}
+
+.sk840-setup__cheat-img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border: 1px solid #d8dfd0;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.sk840-setup__actions {
+  margin-top: 0.75rem;
+}
+
+.sk840-setup__print {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1.15rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #eef2e8;
+  color: #374151;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sk840-setup__print:hover {
+  background: #e2e8da;
+  border-color: var(--kbm-green, #52682d);
+  color: #1f2937;
+}
+
+.sk840-setup__print:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+}
+
+@media print {
+  .sk840-setup__print {
+    display: none !important;
+  }
+}
+
+/* Course 111 — Yarn for Your Machine */
+.sk840-yarn {
+  max-width: min(100%, 52rem);
+}
+
+.sk840-yarn__intro {
+  margin: 0 0 1rem;
+  color: #1f2937;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.sk840-yarn__weight-icons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin: 0 0 1rem;
+}
+
+.sk840-yarn__weight-icons img {
+  display: block;
+  width: 42px;
+  height: 42px;
+  max-width: 42px;
+}
+
+.sk840-yarn__skip {
+  margin: 0 0 0.75rem;
+  color: var(--kbm-green, #52682d);
+  font-size: 1.2rem;
+  line-height: 1.3;
+}
+
+.sk840-yarn__figure {
+  margin: 0 auto 1.25rem;
+  max-width: 680px;
+  width: 100%;
+}
+
+.sk840-yarn__hooks-img {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  border: 1px solid #d8dfd0;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.sk840-yarn__chart-wrap {
+  width: 100%;
+  max-width: 40rem;
+  margin: 0 auto;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sk840-yarn__chart {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  border: 1px solid #111827;
+  color: #111827;
+  font-size: 0.95rem;
+  line-height: 1.35;
+  background: #fff;
+}
+
+.sk840-yarn__chart td {
+  padding: 0.45rem 0.55rem;
+  border-bottom: 1px solid #d1d5db;
+  vertical-align: middle;
+}
+
+.sk840-yarn__chart tr:last-child td {
+  border-bottom: none;
+}
+
+.sk840-yarn__chart img {
+  display: block;
+  width: 42px;
+  height: 42px;
+  max-width: 42px;
+}
+
+.sk840-yarn .yellow_highlight {
+  background: linear-gradient(rgba(255, 255, 255, 0) 55%, #ffff00 45%, #ffff00);
+}
+
+/* Course 111 — Plain Knitting */
+.sk840-plain {
+  max-width: min(100%, 42rem);
+}
+
+.sk840-plain__intro {
+  margin: 0 0 1.1rem;
+  color: #1f2937;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.sk840-plain__checklist-wrap {
+  width: 100%;
+  max-width: 28rem;
+  margin: 0 auto 1.25rem;
+  overflow-x: auto;
+}
+
+.sk840-plain__checklist {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  border: 1px solid #c5d0b8;
+  background: #fff;
+  color: #111827;
+  font-size: 0.98rem;
+  line-height: 1.4;
+}
+
+.sk840-plain__checklist td {
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid #e2e8dc;
+  vertical-align: middle;
+}
+
+.sk840-plain__checklist tr:last-child td {
+  border-bottom: none;
+}
+
+.sk840-plain__checklist td:first-child {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.sk840-plain__checklist td:last-child {
+  text-align: center;
+}
+
+.sk840-plain__icon {
+  display: inline-block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+.sk840-plain__dial {
+  display: inline-block;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.sk840-plain__note {
+  margin-left: 0.25rem;
+  color: #374151;
+}
+
+.sk840-plain__figure {
+  margin: 0 auto;
+  max-width: 500px;
+  width: 100%;
+}
+
+.sk840-plain__photo {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  border: 1px solid #d8dfd0;
+  border-radius: 6px;
+  background: #fff;
+}
+
+/* Course 111 — The Proper Way to Knit */
+.sk840-proper {
+  min-width: 0;
+}
+
+.sk840-proper__intro {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.sk840-proper__lightbulb {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  max-width: 40px;
+  vertical-align: middle;
+  margin-right: 0.35rem;
+}
+
+.sk840-proper__handwriting {
+  font-size: 1.35em;
+  vertical-align: middle;
+}
+
+.sk840-proper__posture {
+  margin: 0 0 1.35rem;
+}
+
+.sk840-proper__silhouette-figure {
+  margin: 0 auto 0.85rem;
+  max-width: 500px;
+  width: 100%;
+}
+
+.sk840-proper__silhouette {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  border-radius: 6px;
+  background: #000;
+}
+
+.sk840-proper__heading {
+  margin: 0 0 0.55rem;
+  color: var(--kbm-green, #52682d);
+  font-size: 1.15rem;
+  line-height: 1.3;
+}
+
+.sk840-proper__copy {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.02rem;
+  line-height: 1.5;
+}
+
+.sk840-proper__tips {
+  margin: 0;
+}
+
+.sk840-proper__list {
+  margin: 0.35rem 0 0;
+  color: #1f2937;
+  font-size: 1.02rem;
+  line-height: 1.5;
+}
+
+.sk840-proper__list > li {
+  margin: 0.55rem 0;
+}
+
+.sk840-proper__lighting-video {
+  margin-top: 0.65rem;
+  max-width: 36rem;
+}
+
+.sk840-proper__lighting-video .vimeo-embed-wrapper {
+  margin: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(82, 104, 45, 0.15);
+}
+
+.sk840-proper__lighting-video .vimeo-embed-container {
+  position: relative;
+  width: 100%;
+  height: 0;
+  overflow: hidden;
+}
+
+.sk840-proper__lighting-video iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Course 111 — Electronics Set up for DAK */
+.sk840-electronics {
+  max-width: min(100%, 48rem);
+  color: #1f2937;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.sk840-electronics__intro {
+  margin: 0 0 1rem;
+}
+
+.sk840-electronics__heading {
+  margin: 0 0 0.65rem;
+  color: var(--kbm-green, #52682d);
+  font-size: 1.15rem;
+  line-height: 1.3;
+}
+
+.sk840-electronics__required {
+  margin: 0 0 1rem;
+  padding-left: 0;
+  list-style: none;
+}
+
+.sk840-electronics__required > li {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0.4rem 0;
+}
+
+.sk840-electronics__badge {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #9e2065;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.sk840-electronics__note {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+}
+
+.sk840-electronics__figure {
+  margin: 0 auto 1.15rem;
+  width: 100%;
+}
+
+.sk840-electronics__figure--kit {
+  max-width: 500px;
+}
+
+.sk840-electronics__figure--connect {
+  max-width: 720px;
+}
+
+.sk840-electronics__figure--schematic {
+  max-width: 604px;
+}
+
+.sk840-electronics__img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  border: 1px solid #d8dfd0;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.sk840-electronics__connect {
+  margin-top: 0.35rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid #d8dfd0;
+}
+
+.sk840-electronics__steps {
+  margin: 0.35rem 0 0;
+}
+
+.sk840-electronics__steps > li {
+  margin: 0.45rem 0;
+}
+
+/* Course 111 — Needles */
+.sk840-needles {
+  max-width: min(100%, 62.5rem);
+  margin: 0 auto;
+}
+
+.sk840-needles__figure {
+  margin: 0 auto;
+  max-width: 1000px;
+  width: 100%;
+}
+
+.sk840-needles__img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  border: 1px solid #d8dfd0;
+  border-radius: 6px;
+  background: #fff;
+}
+
+/* Course 111 — Point Cams */
+.sk840-point-cams {
+  min-width: 0;
+  color: #1f2937;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.sk840-point-cams__copy p {
+  margin: 0 0 0.85rem;
+}
+
+.sk840-point-cams__copy p:last-child {
+  margin-bottom: 1rem;
+}
+
+.sk840-point-cams__copy a {
+  color: var(--kbm-green, #52682d);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.sk840-point-cams__figure {
+  margin: 0 auto 0.85rem;
+  max-width: 600px;
+  width: 100%;
+}
+
+.sk840-point-cams__img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  border: 1px solid #d8dfd0;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.sk840-point-cams__glossary {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.sk840-point-cams__glossary a {
+  color: var(--kbm-green, #52682d);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Course 111 — Knit a Swatch */
+.sk840-swatch {
+  min-width: 0;
+  color: #1f2937;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.sk840-swatch__copy p {
+  margin: 0 0 0.85rem;
+}
+
+.sk840-swatch__copy h3 {
+  margin: 0.25rem 0 0.65rem;
+  font-size: 1.15rem;
+  line-height: 1.35;
+  color: var(--kbm-green, #52682d);
+}
+
+.sk840-swatch__copy ol {
+  margin: 0 0 1rem;
+  padding-left: 1.35rem;
+}
+
+.sk840-swatch__copy li {
+  margin: 0 0 0.35rem;
+}
+
+.sk840-swatch__copy a {
+  color: var(--kbm-green, #52682d);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.sk840-swatch__figure {
+  margin: 0 auto;
+  max-width: 400px;
+  width: 100%;
+}
+
+.sk840-swatch__img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  border: 1px solid #d8dfd0;
+  border-radius: 6px;
+  background: #fff;
+}
+
+/* Course 111 — Accurate Gauge Measurement (video-first stacked layout) */
+.sk840-accurate-gauge.course-preview__text-video-layout--stacked,
+.course-preview__text-video-layout--stacked {
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.course-preview__media-row--video-only {
+  display: block;
+  margin: 0 0 1.25rem;
+}
+
+.course-preview__media-row--video-only .lesson-video {
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.course-preview__media-row--video-only .vimeo-embed-wrapper {
+  margin: 0;
+  width: 100%;
+}
+
+.course-preview__media-row--stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 900px;
+  margin: 0 auto 1.25rem;
+}
+
+.course-preview__media-row--stacked .lesson-text,
+.course-preview__media-row--stacked .lesson-video {
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.course-preview__media-row--stacked .vimeo-embed-wrapper {
+  margin: 0;
+  width: 100%;
+}
+
+/* Course 111 — Gauge Rulers (Gauge Scales) */
+.sk840-gauge-rulers__intro p {
+  margin: 0 0 0.85rem;
+  color: #1f2937;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.sk840-gauge-rulers__figure {
+  margin: 0.35rem auto 0;
+  max-width: 200px;
+  width: 100%;
+}
+
+.sk840-gauge-rulers__img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  border: 1px solid #d8dfd0;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.sk840-gauge-rulers .course-preview__video-title,
+.sk840-gauge-rulers .legacy-course__media-video .course-preview__video-title {
+  margin: 0 0 0.55rem;
+  color: var(--kbm-green, #52682d);
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.sk840-gauge-rulers__resource {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem 1.15rem;
+  border: 1px solid #d8dfd0;
+  border-radius: 8px;
+  background: #f7f9f3;
+  color: #1f2937;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.sk840-gauge-rulers__resource-title {
+  margin: 0 0 0.65rem;
+  font-size: 1.15rem;
+  line-height: 1.3;
+  color: var(--kbm-green, #52682d);
+}
+
+.sk840-gauge-rulers__resource p {
+  margin: 0 0 0.75rem;
+}
+
+.sk840-gauge-rulers__resource-note {
+  font-size: 0.95rem;
+  color: #4b5563;
+}
+
+.sk840-gauge-rulers__resource-action {
+  margin: 0;
+}
+
+.sk840-gauge-rulers__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1.15rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #eef2e8;
+  color: #374151;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.sk840-gauge-rulers__action:hover {
+  background: #e2e8da;
+  border-color: var(--kbm-green, #52682d);
+  color: #1f2937;
+}
+
+.sk840-gauge-rulers__action:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+}
+
+.sk840-gauge-measure {
+  min-width: 0;
+  color: #1f2937;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.sk840-gauge-measure__figure {
+  margin: 0 auto 1.5rem;
+  max-width: 497px;
+  width: 100%;
+}
+
+.sk840-gauge-measure__img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  border: 1px solid #d8dfd0;
+  border-radius: 6px;
+  background: #111;
+}
+
+.sk840-gauge-measure__help {
+  margin: 0;
+}
+
+.sk840-gauge-measure__help-title {
+  margin: 0 0 0.85rem;
+  font-size: 1.2rem;
+  line-height: 1.3;
+  color: var(--kbm-green, #52682d);
+}
+
+.sk840-gauge-measure__cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.sk840-gauge-measure__card {
+  padding: 1rem 1.1rem;
+  border: 1px solid #d8dfd0;
+  border-radius: 8px;
+  background: #f7f9f3;
+}
+
+.sk840-gauge-measure__card-title {
+  margin: 0 0 0.45rem;
+  font-size: 1.05rem;
+  line-height: 1.3;
+  color: #1f2937;
+}
+
+.sk840-gauge-measure__card-copy {
+  margin: 0 0 0.85rem;
+}
+
+.sk840-gauge-measure__card-action {
+  margin: 0;
+}
+
+.sk840-gauge-measure__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1.15rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #eef2e8;
+  color: #374151;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.sk840-gauge-measure__action:hover {
+  background: #e2e8da;
+  border-color: var(--kbm-green, #52682d);
+  color: #1f2937;
+}
+
+.sk840-gauge-measure__action:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+}
+
+@media (min-width: 720px) {
+  .sk840-gauge-measure__cards {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.15rem;
+    align-items: stretch;
+  }
+
+  .sk840-gauge-measure__card {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sk840-gauge-measure__card-action {
+    margin-top: auto;
+  }
+}
+
+/* Course 111 — two videos side-by-side on wide screens (Thread Your Machine, Casting On Stitches) */
+.sk840-two-videos__row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin: 0.25rem 0 0;
+  min-width: 0;
+}
+
+.sk840-two-videos__column {
+  min-width: 0;
+}
+
+.sk840-two-videos__title {
+  margin: 0 0 0.55rem;
+  color: var(--kbm-green, #52682d);
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.sk840-two-videos__column .vimeo-embed-wrapper {
+  margin: 0;
+}
+
+@media (min-width: 900px) {
+  .sk840-two-videos__row {
+    grid-template-columns: 1fr 1fr;
+    gap: 1.75rem;
+    align-items: start;
   }
 }

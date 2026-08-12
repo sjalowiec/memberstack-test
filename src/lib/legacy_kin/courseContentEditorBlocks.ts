@@ -6,6 +6,7 @@ import { isEmbeddedToolLayoutBlock } from "./courseEmbeddedToolLayout";
 import { isTextImageLayoutBlock } from "./courseTextImageLayout";
 import { isTextVideoLayoutBlock } from "./courseTextVideoLayout";
 import { isThreeVideosLayoutBlock } from "./courseThreeVideosLayout";
+import { isTwoVideosLayoutBlock } from "./courseTwoVideosLayout";
 
 type LessonRecord = Record<string, unknown>;
 
@@ -116,6 +117,7 @@ export function isEditorLayoutBlock(block: LessonRecord): boolean {
     isTextVideoLayoutBlock(block) ||
     isTextImageLayoutBlock(block) ||
     isThreeVideosLayoutBlock(block) ||
+    isTwoVideosLayoutBlock(block) ||
     isAccordionLayoutBlock(block) ||
     isEmbeddedToolLayoutBlock(block)
   );

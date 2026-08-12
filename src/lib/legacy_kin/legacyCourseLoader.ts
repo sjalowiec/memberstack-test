@@ -3,6 +3,7 @@ import { join } from "node:path";
 import type { CourseLesson, CoursePreviewData } from "./coursePreviewPoc";
 import {
   isLegacyCoursePublic,
+  isLegacyLessonPublished,
   type LegacyCoursePublicationFields,
 } from "./legacyCoursePublication";
 import { isCoursePreviewProductionBlocked } from "./coursePreviewProductionAccess";
@@ -74,7 +75,10 @@ function recordIsVisible(
   return isLegacyCoursePublic(record.course as LegacyCoursePublicationFields);
 }
 
-function toSummary(record: LegacyCourseRecord): LegacyCourseSummary {
+function toSummary(
+  record: LegacyCourseRecord,
+  options: LegacyCourseLoadOptions = {},
+): LegacyCourseSummary {
   const course = record.course as LegacyCoursePublicationFields & {
     slug: string;
     title: string;
@@ -85,7 +89,7 @@ function toSummary(record: LegacyCourseRecord): LegacyCourseSummary {
     slug: course.slug,
     title: course.title,
     legacyChallengeId: course.legacyChallengeId,
-    lessonCount: record.lessons.length,
+    lessonCount: getSortedLessonsForCourse(record, options).length,
     sourceFile: record.sourceFile,
     description:
       "description" in course && typeof course.description === "string"
@@ -99,8 +103,13 @@ function toSummary(record: LegacyCourseRecord): LegacyCourseSummary {
 
 export function getSortedLessonsForCourse(
   course: CoursePreviewData,
+  options: LegacyCourseLoadOptions = {},
 ): CourseLesson[] {
-  return [...course.lessons].sort((a, b) => a.displayOrder - b.displayOrder);
+  const sorted = [...course.lessons].sort(
+    (a, b) => a.displayOrder - b.displayOrder,
+  );
+  if (options.includeDrafts) return sorted;
+  return sorted.filter((lesson) => isLegacyLessonPublished(lesson));
 }
 
 export function getLegacyCourses(
@@ -108,7 +117,7 @@ export function getLegacyCourses(
 ): LegacyCourseSummary[] {
   return loadAllCourseRecords()
     .filter((record) => recordIsVisible(record, options))
-    .map(toSummary)
+    .map((record) => toSummary(record, options))
     .sort((a, b) => a.legacyChallengeId - b.legacyChallengeId);
 }
 
@@ -136,7 +145,7 @@ export function getLegacyLessonBySlug(
   const course = getLegacyCourseBySlug(courseSlug, options);
   if (!course) return undefined;
 
-  const lessons = getSortedLessonsForCourse(course);
+  const lessons = getSortedLessonsForCourse(course, options);
   const ref = lessonRef.trim();
   if (!ref) return undefined;
 
@@ -233,7 +242,7 @@ export function getLegacyLessonNeighbors(
     return { index: -1, prev: null, next: null };
   }
 
-  const lessons = getSortedLessonsForCourse(course);
+  const lessons = getSortedLessonsForCourse(course, options);
   const index = lessons.findIndex((lesson) => lesson.slug === lessonSlug);
   if (index < 0) {
     return { index: -1, prev: null, next: null };

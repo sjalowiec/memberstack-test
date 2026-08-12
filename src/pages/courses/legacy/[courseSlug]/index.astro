@@ -20,7 +20,7 @@ if (!course) {
   return new Response("Course not found", { status: 404 });
 }
 
-const lessons = getSortedLessonsForCourse(course);
+const lessons = getSortedLessonsForCourse(course, loaderOptions);
 const description =
   "description" in course.course &&
   typeof course.course.description === "string"

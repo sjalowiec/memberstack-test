@@ -984,7 +984,11 @@ function flattenLessonContent(lesson: LessonRecord): FlatContentItem[] {
       if (!parts) continue;
       items.push({
         blockSlug: String(block.slug ?? ""),
-        legacyComponentId: Number(parts.leftText.legacyComponentId),
+        legacyComponentId: Number(
+          parts.leftText?.legacyComponentId ??
+            parts.bottomText?.legacyComponentId ??
+            parts.video.legacyComponentId,
+        ),
         type: TEXT_VIDEO_LAYOUT_TYPE,
         pairedLegacyComponentId: Number(parts.video.legacyComponentId),
         component: {
@@ -992,7 +996,7 @@ function flattenLessonContent(lesson: LessonRecord): FlatContentItem[] {
           leftText: parts.leftText,
           video: parts.video,
           bottomText: parts.bottomText,
-          richText: parts.leftText,
+          richText: parts.leftText ?? parts.bottomText,
         },
       });
       continue;
@@ -1109,6 +1113,13 @@ function contentSummary(component: Record<string, unknown>) {
     if (leftText && video) {
       return textVideoLayoutSummary({
         leftText,
+        video,
+        bottomText: bottomText ?? null,
+      });
+    }
+    if (video) {
+      return textVideoLayoutSummary({
+        leftText: leftText ?? null,
         video,
         bottomText: bottomText ?? null,
       });
@@ -2296,8 +2307,22 @@ function applyTextVideoPatch(patch: {
   if (!parts) return;
 
   if (patch.leftHtml !== undefined) {
-    parts.leftText.html = patch.leftHtml;
-    parts.leftText.layoutRole = TEXT_VIDEO_LEFT_ROLE;
+    if (!parts.leftText) {
+      // Video-first blocks may omit left text; create one when the editor supplies it.
+      const left = {
+        type: "richText",
+        html: patch.leftHtml,
+        legacyComponentId: Number(parts.video.legacyComponentId) + 1000,
+        order: 1,
+        layoutRole: TEXT_VIDEO_LEFT_ROLE,
+      };
+      const comps = Array.isArray(block.components) ? block.components : [];
+      comps.unshift(left);
+      block.components = comps;
+    } else {
+      parts.leftText.html = patch.leftHtml;
+      parts.leftText.layoutRole = TEXT_VIDEO_LEFT_ROLE;
+    }
   }
 
   if (patch.vimeoId !== undefined) parts.video.vimeoId = patch.vimeoId;
@@ -2329,7 +2354,7 @@ function updateTextVideoLayoutPreview() {
   if (!parts) return;
 
   const leftHtml = rewriteLegacyHtml(
-    unwrapTextVideoColumnHtml(String(parts.leftText.html ?? "")),
+    unwrapTextVideoColumnHtml(String(parts.leftText?.html ?? "")),
   );
   const vimeoId = String(parts.video.vimeoId ?? "").trim();
   const title = parts.video.title ? String(parts.video.title) : "";
@@ -3402,7 +3427,7 @@ function openTextVideoLayoutEdit(ref: ComponentRef) {
   const leftWrap = dom.editFields.querySelector("#ce-tv-left-editor") as HTMLElement;
   mountRichTextEditor(
     leftWrap,
-    String(parts.leftText.html ?? ""),
+    String(parts.leftText?.html ?? ""),
     (html) => applyTextVideoPatch({ leftHtml: html }),
     { tabs: ["html", "preview"] },
   );
@@ -4201,8 +4226,10 @@ function duplicateContentItem(ref: ComponentRef) {
     const parts = getTextVideoLayoutParts(clone);
     if (!parts) return;
     const leftId = maxLegacyComponentIdInCourse();
-    parts.leftText.legacyComponentId = leftId;
-    parts.leftText.layoutRole = TEXT_VIDEO_LEFT_ROLE;
+    if (parts.leftText) {
+      parts.leftText.legacyComponentId = leftId;
+      parts.leftText.layoutRole = TEXT_VIDEO_LEFT_ROLE;
+    }
     parts.video.legacyComponentId = leftId + 1;
     if (parts.bottomText) {
       parts.bottomText.legacyComponentId = leftId + 2;
@@ -4218,7 +4245,11 @@ function duplicateContentItem(ref: ComponentRef) {
 
     contentEditingRef = {
       blockSlug: String(clone.slug),
-      legacyComponentId: Number(parts.leftText.legacyComponentId),
+      legacyComponentId: Number(
+        parts.leftText?.legacyComponentId ??
+          parts.bottomText?.legacyComponentId ??
+          parts.video.legacyComponentId,
+      ),
       type: TEXT_VIDEO_LAYOUT_TYPE,
       pairedLegacyComponentId: Number(parts.video.legacyComponentId),
     };
@@ -4545,7 +4576,11 @@ function appendContentItem(kind: string) {
     if (!parts) return;
     contentEditingRef = {
       blockSlug: String(block.slug),
-      legacyComponentId: Number(parts.leftText.legacyComponentId),
+      legacyComponentId: Number(
+        parts.leftText?.legacyComponentId ??
+          parts.bottomText?.legacyComponentId ??
+          parts.video.legacyComponentId,
+      ),
       type: TEXT_VIDEO_LAYOUT_TYPE,
       pairedLegacyComponentId: Number(parts.video.legacyComponentId),
     };

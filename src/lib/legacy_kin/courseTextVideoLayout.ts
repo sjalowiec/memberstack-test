@@ -13,7 +13,7 @@ type BlockLike = {
 type ComponentLike = Record<string, unknown>;
 
 export type TextVideoLayoutParts = {
-  leftText: ComponentLike;
+  leftText: ComponentLike | null;
   video: ComponentLike;
   bottomText: ComponentLike | null;
 };
@@ -80,13 +80,18 @@ export function isTextVideoLayoutBlock(block: BlockLike): boolean {
 function resolveRichTextRoles(
   richTexts: ComponentLike[],
   video: ComponentLike,
-): { leftText: ComponentLike; bottomText: ComponentLike | null } {
+): { leftText: ComponentLike | null; bottomText: ComponentLike | null } {
   let leftText: ComponentLike | undefined;
   let bottomText: ComponentLike | null = null;
 
   for (const rt of richTexts) {
     if (rt.layoutRole === TEXT_VIDEO_BOTTOM_ROLE) bottomText = rt;
     else if (rt.layoutRole === TEXT_VIDEO_LEFT_ROLE) leftText = rt;
+  }
+
+  // Video-first stacked page: only bottom content (no left column).
+  if (!leftText && bottomText && richTexts.length === 1) {
+    return { leftText: null, bottomText };
   }
 
   if (leftText && richTexts.length === 1) {
@@ -103,7 +108,7 @@ function resolveRichTextRoles(
       ordered.length > 1 ? ordered.find((rt) => rt !== leftText) ?? null : bottomText;
   }
 
-  return { leftText: leftText!, bottomText };
+  return { leftText: leftText ?? null, bottomText };
 }
 
 export function getTextVideoLayoutParts(block: BlockLike): TextVideoLayoutParts | null {
@@ -114,7 +119,7 @@ export function getTextVideoLayoutParts(block: BlockLike): TextVideoLayoutParts 
 
   const richTexts = components.filter((c) => c.type === "richText");
   const { leftText, bottomText } = resolveRichTextRoles(richTexts, video);
-  if (!leftText) return null;
+  if (!leftText && !bottomText) return null;
 
   return { leftText, video, bottomText };
 }
@@ -126,25 +131,35 @@ export function getTextVideoPair(block: BlockLike): {
 } | null {
   const parts = getTextVideoLayoutParts(block);
   if (!parts) return null;
-  return { richText: parts.leftText, video: parts.video };
+  const richText = parts.leftText ?? parts.bottomText;
+  if (!richText) return null;
+  return { richText, video: parts.video };
 }
 
 export function textVideoLayoutSummary(parts: TextVideoLayoutParts): string {
-  const html = String(parts.leftText.html ?? "");
+  const html = String((parts.leftText ?? parts.bottomText)?.html ?? "");
   const text = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
   const textPreview = text
     ? text.length > 50
       ? `${text.slice(0, 50)}…`
       : text
-    : "Empty text";
+    : parts.leftText
+      ? "Empty text"
+      : "Video first";
   const videoLabel = parts.video.title
     ? String(parts.video.title)
     : parts.video.vimeoId
       ? `Video ${parts.video.vimeoId}`
       : "No video yet";
   const bottomNote =
-    parts.bottomText && richTextHasVisibleContent(String(parts.bottomText.html ?? ""))
+    parts.leftText &&
+    parts.bottomText &&
+    richTextHasVisibleContent(String(parts.bottomText.html ?? ""))
       ? " · + text below"
-      : "";
+      : !parts.leftText &&
+          parts.bottomText &&
+          richTextHasVisibleContent(String(parts.bottomText.html ?? ""))
+        ? " · + content below"
+        : "";
   return `${textPreview} · ${videoLabel}${bottomNote}`;
 }

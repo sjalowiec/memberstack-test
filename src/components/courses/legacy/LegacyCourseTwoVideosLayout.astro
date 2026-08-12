@@ -1,0 +1,70 @@
+---
+import VimeoEmbed from "../../media/VimeoEmbed.astro";
+import type { CourseBlock } from "../../../lib/legacy_kin/coursePreviewPoc";
+import { rewriteLegacyHtml } from "../../../lib/legacy_kin/coursePreviewPoc";
+import {
+  getTwoVideosLayoutParts,
+  richTextHasVisibleContent,
+  unwrapTextVideoColumnHtml,
+} from "../../../lib/legacy_kin/courseTwoVideosLayout";
+
+interface Props {
+  block: CourseBlock;
+}
+
+const { block } = Astro.props;
+const parts = getTwoVideosLayoutParts(block);
+---
+
+{
+  parts ? (
+    <div class="course-preview__two-videos-layout legacy-course__two-videos-layout sk840-two-videos">
+      {parts.intro && richTextHasVisibleContent(String(parts.intro.html ?? "")) ? (
+        <div
+          class="two-videos-layout__intro course-preview__richtext legacy-course__richtext"
+          set:html={rewriteLegacyHtml(
+            unwrapTextVideoColumnHtml(String(parts.intro.html ?? "")),
+          )}
+          data-legacy-component={parts.intro.legacyComponentId}
+        />
+      ) : null}
+
+      <div class="two-videos-layout__row sk840-two-videos__row">
+        {parts.slots.map((slot) => (
+          <div
+            class="two-videos-layout__column sk840-two-videos__column"
+            data-legacy-component={slot.video.legacyComponentId}
+          >
+            {slot.video.title ? (
+              <h3 class="two-videos-layout__video-title sk840-two-videos__title">
+                {String(slot.video.title)}
+              </h3>
+            ) : null}
+            {String(slot.video.vimeoId ?? "").trim() ? (
+              <VimeoEmbed
+                vimeoId={String(slot.video.vimeoId).trim()}
+                title={slot.video.title ? String(slot.video.title) : "Course video"}
+              />
+            ) : null}
+            {slot.caption &&
+            richTextHasVisibleContent(String(slot.caption.html ?? "")) ? (
+              <div
+                class="two-videos-layout__caption course-preview__richtext legacy-course__richtext"
+                set:html={rewriteLegacyHtml(String(slot.caption.html ?? ""))}
+                data-legacy-component={slot.caption.legacyComponentId}
+              />
+            ) : null}
+          </div>
+        ))}
+      </div>
+
+      {parts.outro && richTextHasVisibleContent(String(parts.outro.html ?? "")) ? (
+        <div
+          class="two-videos-layout__outro course-preview__richtext legacy-course__richtext"
+          set:html={rewriteLegacyHtml(String(parts.outro.html ?? ""))}
+          data-legacy-component={parts.outro.legacyComponentId}
+        />
+      ) : null}
+    </div>
+  ) : null
+}

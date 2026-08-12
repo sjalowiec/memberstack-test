@@ -9,21 +9,65 @@ interface Props {
   slides: ImageCarouselSlide[];
   title?: string | null;
   introHtml?: string | null;
+  /** "slide" → "1 / N"; "option" → "Option 1 of N" */
+  countFormat?: "slide" | "option";
+  /** Extra root classes (e.g. lesson-specific sizing). */
+  class?: string;
+  /** Short labels for dots / aria (one per slide). */
+  slideLabels?: string[];
 }
 
-const { legacyComponentId, slides, title = null, introHtml = null } = Astro.props;
+const {
+  legacyComponentId,
+  slides,
+  title = null,
+  introHtml = null,
+  countFormat = "slide",
+  class: className = "",
+  slideLabels = [],
+} = Astro.props;
 const galleryIntroHtml = String(introHtml ?? "");
 const galleryIntroVisible = richTextHasVisibleContent(galleryIntroHtml);
+const rootClass = ["course-preview__carousel", "legacy-course__carousel", className]
+  .filter(Boolean)
+  .join(" ");
+
+function captionLooksLikeHtml(caption: string): boolean {
+  return /<\/?[a-z][\s\S]*>/i.test(caption);
+}
+
+function slideLabel(index: number): string {
+  const custom = slideLabels[index]?.trim();
+  if (custom) return custom;
+  const alt = slides[index]?.alt?.trim();
+  if (alt) return alt;
+  return `Slide ${index + 1}`;
+}
+
+function initialCountLabel(): string {
+  if (slides.length === 0) return "";
+  return countFormat === "option"
+    ? `Option 1 of ${slides.length}`
+    : `1 / ${slides.length}`;
+}
 ---
 
 <div
-  class="course-preview__carousel legacy-course__carousel"
+  class={rootClass}
   data-legacy-component={legacyComponentId}
   data-carousel
+  data-count-format={countFormat}
+  role="region"
+  aria-roledescription="carousel"
+  aria-label={title?.trim() || "Image carousel"}
+  tabindex="0"
 >
   {
     galleryIntroVisible ? (
-      <div set:html={rewriteLegacyHtml(galleryIntroHtml)} />
+      <div
+        class="course-preview__carousel-intro"
+        set:html={rewriteLegacyHtml(galleryIntroHtml)}
+      />
     ) : title ? (
       <h4 class="course-preview__carousel-title">{title}</h4>
     ) : null
@@ -35,48 +79,85 @@ const galleryIntroVisible = richTextHasVisibleContent(galleryIntroHtml);
     ) : (
       <>
         <div class="course-preview__carousel-viewport">
-          {slides.map((slide, index) => (
-            <figure
-              class="course-preview__carousel-slide"
-              data-slide-index={index}
-              hidden={index !== 0}
-            >
-              <div class="course-preview__carousel-media">
-                <LegacyCourseLinkedImage
-                  class="course-gallery-image"
-                  src={slide.src}
-                  alt={slide.alt ?? slide.caption ?? ""}
-                  linkUrl={slide.linkUrl}
-                  loading={index === 0 ? "eager" : "lazy"}
-                />
-              </div>
-              {slide.caption ? <figcaption>{slide.caption}</figcaption> : null}
-            </figure>
-          ))}
+          {slides.map((slide, index) => {
+            const caption = slide.caption?.trim() ? String(slide.caption) : "";
+            const captionHtml = caption && captionLooksLikeHtml(caption);
+            return (
+              <figure
+                class:list={[
+                  "course-preview__carousel-slide",
+                  index === 0 ? "is-active" : null,
+                ]}
+                data-slide-index={index}
+                aria-hidden={index === 0 ? "false" : "true"}
+              >
+                <div class="course-preview__carousel-media">
+                  <LegacyCourseLinkedImage
+                    class="course-gallery-image"
+                    src={slide.src}
+                    alt={slide.alt ?? ""}
+                    linkUrl={slide.linkUrl}
+                    loading={index === 0 ? "eager" : "lazy"}
+                  />
+                </div>
+                {caption ? (
+                  captionHtml ? (
+                    <figcaption set:html={rewriteLegacyHtml(caption)} />
+                  ) : (
+                    <figcaption>{caption}</figcaption>
+                  )
+                ) : null}
+              </figure>
+            );
+          })}
         </div>
 
-        <div class="course-preview__carousel-controls">
+        <div class="course-preview__carousel-controls" hidden>
           <button
             type="button"
             class="course-preview__carousel-btn"
             data-carousel-prev
-            aria-label="Previous slide"
-            disabled={slides.length <= 1}
+            aria-label="Previous option"
           >
             Previous
           </button>
-          <span class="course-preview__carousel-count" data-carousel-count aria-live="polite">
-            1 / {slides.length}
+          <span
+            class="course-preview__carousel-count"
+            data-carousel-count
+            aria-live="polite"
+          >
+            {initialCountLabel()}
           </span>
           <button
             type="button"
             class="course-preview__carousel-btn"
             data-carousel-next
-            aria-label="Next slide"
-            disabled={slides.length <= 1}
+            aria-label="Next option"
           >
             Next
           </button>
+        </div>
+
+        <div
+          class="course-preview__carousel-dots"
+          data-carousel-dots
+          hidden
+          role="tablist"
+          aria-label="Carousel options"
+        >
+          {slides.map((_, index) => (
+            <button
+              type="button"
+              class:list={[
+                "course-preview__carousel-dot",
+                index === 0 ? "is-active" : null,
+              ]}
+              data-carousel-dot={index}
+              role="tab"
+              aria-label={`${countFormat === "option" ? "Option" : "Slide"} ${index + 1}: ${slideLabel(index)}`}
+              aria-selected={index === 0 ? "true" : "false"}
+            />
+          ))}
         </div>
       </>
     )
@@ -94,26 +175,75 @@ const galleryIntroVisible = richTextHasVisibleContent(galleryIntroHtml);
       );
       if (slideEls.length === 0) return;
 
-      let current = 0;
       const prevBtn = root.querySelector<HTMLButtonElement>("[data-carousel-prev]");
       const nextBtn = root.querySelector<HTMLButtonElement>("[data-carousel-next]");
       const countEl = root.querySelector<HTMLElement>("[data-carousel-count]");
+      const controls = root.querySelector<HTMLElement>(".course-preview__carousel-controls");
+      const dotsWrap = root.querySelector<HTMLElement>("[data-carousel-dots]");
+      const dotBtns = Array.from(
+        root.querySelectorAll<HTMLButtonElement>("[data-carousel-dot]"),
+      );
+      const countFormat = root.dataset.countFormat === "option" ? "option" : "slide";
+
+      root.classList.add("is-enhanced");
+      if (controls) controls.hidden = false;
+      if (dotsWrap) dotsWrap.hidden = false;
+
+      let current = 0;
+
+      const formatCount = (index: number) =>
+        countFormat === "option"
+          ? `Option ${index + 1} of ${slideEls.length}`
+          : `${index + 1} / ${slideEls.length}`;
 
       const show = (index: number) => {
-        current = (index + slideEls.length) % slideEls.length;
+        const max = slideEls.length - 1;
+        current = Math.max(0, Math.min(max, index));
+
         slideEls.forEach((slide, i) => {
-          slide.hidden = i !== current;
+          const active = i === current;
+          slide.classList.toggle("is-active", active);
+          slide.setAttribute("aria-hidden", active ? "false" : "true");
         });
-        if (countEl) {
-          countEl.textContent = `${current + 1} / ${slideEls.length}`;
-        }
-        const single = slideEls.length <= 1;
-        if (prevBtn) prevBtn.disabled = single;
-        if (nextBtn) nextBtn.disabled = single;
+
+        if (countEl) countEl.textContent = formatCount(current);
+
+        if (prevBtn) prevBtn.disabled = current <= 0;
+        if (nextBtn) nextBtn.disabled = current >= max;
+
+        dotBtns.forEach((dot, i) => {
+          const active = i === current;
+          dot.classList.toggle("is-active", active);
+          dot.setAttribute("aria-selected", active ? "true" : "false");
+        });
       };
 
       prevBtn?.addEventListener("click", () => show(current - 1));
       nextBtn?.addEventListener("click", () => show(current + 1));
+      dotBtns.forEach((dot) => {
+        dot.addEventListener("click", () => {
+          const index = Number(dot.dataset.carouselDot);
+          if (Number.isFinite(index)) show(index);
+        });
+      });
+
+      root.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          show(current - 1);
+        } else if (event.key === "ArrowRight") {
+          event.preventDefault();
+          show(current + 1);
+        } else if (event.key === "Home") {
+          event.preventDefault();
+          show(0);
+        } else if (event.key === "End") {
+          event.preventDefault();
+          show(slideEls.length - 1);
+        }
+      });
+
+      show(0);
     });
   }
 

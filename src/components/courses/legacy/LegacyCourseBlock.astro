@@ -71,8 +71,12 @@ const { component } = Astro.props;
   ) : component.type === "imageCarousel" ? (
     <LegacyCourseImageCarousel
       legacyComponentId={component.legacyComponentId}
+      introHtml={component.introHtml}
       title={component.title}
       slides={component.slides}
+      countFormat={component.countFormat}
+      class={component.className}
+      slideLabels={component.slideLabels}
     />
   ) : component.type === "exerciseAccordion" ? (
     <div

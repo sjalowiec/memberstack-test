@@ -9,12 +9,16 @@ export const TEXT_IMAGE_LAYOUT_TYPE = "textImageLayout";
 /** Editor-only composite: intro text, three videos, optional outro. */
 export const THREE_VIDEOS_LAYOUT_TYPE = "threeVideosLayout";
 
+/** Editor-only composite: two side-by-side videos (opt-in via legacy.editorLayout). */
+export const TWO_VIDEOS_LAYOUT_TYPE = "twoVideosLayout";
+
 export type EditorContentKind =
   | "richText"
   | "video"
   | "textVideoLayout"
   | "textImageLayout"
   | "threeVideosLayout"
+  | "twoVideosLayout"
   | "image"
   | "imageWithCaption"
   | "download"
@@ -33,6 +37,7 @@ export const EDITOR_TYPE_META: Record<
   textVideoLayout: { label: "Text + Video Layout", color: "#4a6741", abbrev: "TV" },
   textImageLayout: { label: "Text + Image Layout", color: "#4a5568", abbrev: "TI" },
   threeVideosLayout: { label: "Three Videos with Text", color: "#7a4a6b", abbrev: "3V" },
+  twoVideosLayout: { label: "Two Videos", color: "#6a5a7b", abbrev: "2V" },
   image: { label: "Image", color: "#5a7080", abbrev: "I" },
   imageWithCaption: { label: "Image with Caption", color: "#5a7080", abbrev: "IC" },
   download: { label: "Download", color: "#3f7a6a", abbrev: "D" },

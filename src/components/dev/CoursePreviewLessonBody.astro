@@ -6,6 +6,7 @@ import LegacyCourseAccordionLayout from "../courses/legacy/LegacyCourseAccordion
 import LegacyCourseTextVideoLayout from "../courses/legacy/LegacyCourseTextVideoLayout.astro";
 import LegacyCourseTextImageLayout from "../courses/legacy/LegacyCourseTextImageLayout.astro";
 import LegacyCourseThreeVideosLayout from "../courses/legacy/LegacyCourseThreeVideosLayout.astro";
+import LegacyCourseTwoVideosLayout from "../courses/legacy/LegacyCourseTwoVideosLayout.astro";
 import type { CourseLesson } from "../../lib/legacy_kin/coursePreviewPoc";
 import {
   downloadUrl,
@@ -18,6 +19,7 @@ import { isAccordionLayoutBlock } from "../../lib/legacy_kin/courseAccordionLayo
 import { isTextVideoLayoutBlock } from "../../lib/legacy_kin/courseTextVideoLayout";
 import { isTextImageLayoutBlock } from "../../lib/legacy_kin/courseTextImageLayout";
 import { isThreeVideosLayoutBlock } from "../../lib/legacy_kin/courseThreeVideosLayout";
+import { isTwoVideosLayoutBlock } from "../../lib/legacy_kin/courseTwoVideosLayout";
 
 interface Props {
   lesson: CourseLesson;
@@ -46,6 +48,8 @@ const { lesson } = Astro.props;
             <LegacyCourseTextVideoLayout block={block} />
           ) : isThreeVideosLayoutBlock(block) ? (
             <LegacyCourseThreeVideosLayout block={block} />
+          ) : isTwoVideosLayoutBlock(block) ? (
+            <LegacyCourseTwoVideosLayout block={block} />
           ) : isTextImageLayoutBlock(block) ? (
             <LegacyCourseTextImageLayout block={block} />
           ) : isAccordionLayoutBlock(block) ? (
@@ -115,8 +119,12 @@ const { lesson } = Astro.props;
               return (
                 <LegacyCourseImageCarousel
                   legacyComponentId={component.legacyComponentId}
+                  introHtml={component.introHtml}
                   title={component.title}
                   slides={component.slides}
+                  countFormat={component.countFormat}
+                  class={component.className}
+                  slideLabels={component.slideLabels}
                 />
               );
             }
