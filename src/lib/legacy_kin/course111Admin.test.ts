@@ -1,0 +1,293 @@
+import { basename } from "node:path";
+import { describe, expect, it } from "vitest";
+import {
+  addCourse111Block,
+  cloneCourse111Data,
+  COURSE_111_ID,
+  COURSE_111_POC_FILENAME,
+  course111IsDraft,
+  course111LessonPreviewHref,
+  deleteCourse111Block,
+  filterCourse111Lessons,
+  findCourse111Lesson,
+  getCourse111ContentPath,
+  listCourse111LessonSummaries,
+  loadCourse111,
+  moveCourse111Block,
+  patchCourse111Component,
+  preserveCourse111Publication,
+  readCourse111Publication,
+  resolveCourse111SelectedLessonPreview,
+  runCourse111SaveAndPreview,
+  summarizeCourse111Block,
+  updateCourse111LessonTitle,
+} from "./course111Admin";
+import type { CourseComponent, CoursePreviewData } from "./coursePreviewPoc";
+
+function sampleWithUnknownFields(): CoursePreviewData {
+  return {
+    course: {
+      legacyChallengeId: COURSE_111_ID,
+      title: "Sample 111",
+      slug: "sample-111",
+      status: "draft",
+      published: false,
+      contentStatus: "in_progress",
+      legacy: { sourceExport: "sample.json" },
+      // @ts-expect-error intentional unknown course field
+      mysteryCourseField: "keep-me",
+    },
+    lessons: [
+      {
+        title: "Lesson A",
+        slug: "lesson-a",
+        displayOrder: 1,
+        legacy: { itemId: 1, lessonOrder: 1 },
+        blocks: [
+          {
+            title: "Text block",
+            slug: "text-block",
+            order: 1,
+            legacy: { assignId: 10, blockType: "HTML" },
+            components: [
+              {
+                type: "richText",
+                html: "<p>Hello</p>",
+                legacyComponentId: 100,
+                order: 1,
+                // @ts-expect-error intentional unknown component field
+                customMarker: "preserve-rt",
+              },
+            ],
+          },
+          {
+            title: "Pending block",
+            slug: "pending-block",
+            order: 2,
+            legacy: { assignId: 11, blockType: "Unknown" },
+            components: [
+              {
+                type: "migrationPending",
+                legacyType: "Flash",
+                notes: ["needs review"],
+                legacyFields: { foo: "bar" },
+                legacyComponentId: 101,
+                order: 1,
+                // @ts-expect-error intentional unknown component field
+                oddExtra: { nested: true },
+              } as CourseComponent,
+            ],
+          },
+          {
+            title: "Video block",
+            slug: "video-block",
+            order: 3,
+            legacy: { assignId: 12, blockType: "Video" },
+            components: [
+              {
+                type: "video",
+                vimeoId: "111",
+                title: "Clip",
+                legacyComponentId: 102,
+                order: 1,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    manifest: {
+      videoCount: 1,
+      // @ts-expect-error intentional unknown manifest field
+      leftover: "yes",
+    },
+  };
+}
+
+describe("course111Admin load", () => {
+  it("loads Course 111 cleaned poc and stays draft", () => {
+    const data = loadCourse111();
+    expect(data.course.legacyChallengeId).toBe(COURSE_111_ID);
+    expect(data.course.title).toContain("Silver Reed SK840");
+    expect(course111IsDraft(data)).toBe(true);
+    expect(basename(getCourse111ContentPath())).toBe(COURSE_111_POC_FILENAME);
+    expect(listCourse111LessonSummaries(data).length).toBeGreaterThan(0);
+  });
+
+  it("builds draft preview URLs for the selected lesson with preview=true", () => {
+    const data = loadCourse111();
+    const lessons = listCourse111LessonSummaries(data);
+    const first = lessons[0]!;
+    const second = lessons[1] ?? first;
+
+    const firstHref = course111LessonPreviewHref(data, first.slug);
+    expect(firstHref).toBe(
+      `/courses/legacy/${data.course.slug}/${first.slug}?preview=true`,
+    );
+    expect(firstHref).toContain("?preview=true");
+    expect(firstHref).toContain(`/${first.slug}?`);
+
+    const resolved = resolveCourse111SelectedLessonPreview(data, second.slug);
+    expect(resolved).toEqual({
+      lessonSlug: second.slug,
+      previewHref: `/courses/legacy/${data.course.slug}/${second.slug}?preview=true`,
+    });
+    expect(resolved?.previewHref).not.toBe(
+      `/courses/legacy/${data.course.slug}?preview=true`,
+    );
+  });
+
+  it("Save & Preview saves the selected lesson before opening its preview URL", async () => {
+    const data = loadCourse111();
+    const selected = listCourse111LessonSummaries(data)[2] ?? listCourse111LessonSummaries(data)[0]!;
+    const calls: string[] = [];
+
+    const result = await runCourse111SaveAndPreview({
+      data,
+      selectedLessonSlug: selected.slug,
+      saveLesson: async (lessonSlug) => {
+        calls.push(`save:${lessonSlug}`);
+      },
+      openPreview: (href) => {
+        calls.push(`open:${href}`);
+      },
+    });
+
+    expect(result.lessonSlug).toBe(selected.slug);
+    expect(result.previewHref).toBe(
+      `/courses/legacy/${data.course.slug}/${selected.slug}?preview=true`,
+    );
+    expect(calls).toEqual([
+      `save:${selected.slug}`,
+      `open:/courses/legacy/${data.course.slug}/${selected.slug}?preview=true`,
+    ]);
+  });
+});
+
+describe("course111Admin edit / order / preserve", () => {
+  it("filters lessons by search query", () => {
+    const lessons = listCourse111LessonSummaries(sampleWithUnknownFields());
+    expect(filterCourse111Lessons(lessons, "lesson a")).toHaveLength(1);
+    expect(filterCourse111Lessons(lessons, "nope")).toHaveLength(0);
+  });
+
+  it("updates title and editable fields without dropping unknown keys", () => {
+    const data = cloneCourse111Data(sampleWithUnknownFields());
+    const lesson = findCourse111Lesson(data, "lesson-a")!;
+    updateCourse111LessonTitle(lesson, "  Lesson A renamed  ");
+    expect(lesson.title).toBe("Lesson A renamed");
+
+    expect(
+      patchCourse111Component(lesson, "text-block", 100, {
+        html: "<p>Updated</p>",
+      }),
+    ).toBe(true);
+
+    const richText = lesson.blocks[0]!.components[0] as CourseComponent & {
+      customMarker?: string;
+    };
+    expect(richText.type).toBe("richText");
+    expect(richText.html).toBe("<p>Updated</p>");
+    expect(richText.customMarker).toBe("preserve-rt");
+
+    const pending = lesson.blocks[1]!.components[0] as CourseComponent & {
+      oddExtra?: { nested: boolean };
+    };
+    expect(pending.type).toBe("migrationPending");
+    expect(pending.oddExtra).toEqual({ nested: true });
+    expect(
+      (data.course as CoursePreviewData["course"] & { mysteryCourseField?: string })
+        .mysteryCourseField,
+    ).toBe("keep-me");
+  });
+
+  it("reorders blocks with move up / move down", () => {
+    const data = cloneCourse111Data(sampleWithUnknownFields());
+    const lesson = findCourse111Lesson(data, "lesson-a")!;
+    expect(lesson.blocks.map((block) => block.slug)).toEqual([
+      "text-block",
+      "pending-block",
+      "video-block",
+    ]);
+
+    expect(moveCourse111Block(lesson, 2, -1)).toBe(true);
+    expect(lesson.blocks.map((block) => block.slug)).toEqual([
+      "text-block",
+      "video-block",
+      "pending-block",
+    ]);
+    expect(lesson.blocks.map((block) => block.order)).toEqual([1, 2, 3]);
+
+    expect(moveCourse111Block(lesson, 0, -1)).toBe(false);
+  });
+
+  it("adds editable blocks and deletes with structure intact", () => {
+    const data = cloneCourse111Data(sampleWithUnknownFields());
+    const lesson = findCourse111Lesson(data, "lesson-a")!;
+    const added = addCourse111Block(lesson, "download", data.lessons, 12345);
+    expect(added.slug).toContain("content-");
+    expect(added.components[0]?.type).toBe("download");
+    expect(lesson.blocks).toHaveLength(4);
+
+    expect(deleteCourse111Block(lesson, added.slug)).toBe(true);
+    expect(lesson.blocks).toHaveLength(3);
+    expect(lesson.blocks.map((block) => block.order)).toEqual([1, 2, 3]);
+  });
+
+  it("round-trips JSON while preserving unknowns and publication", () => {
+    const original = sampleWithUnknownFields();
+    const publication = readCourse111Publication(original.course);
+    const working = cloneCourse111Data(original);
+    const lesson = findCourse111Lesson(working, "lesson-a")!;
+
+    patchCourse111Component(lesson, "video-block", 102, {
+      vimeoId: "999999",
+      title: "Renamed clip",
+    });
+    moveCourse111Block(lesson, 0, 1);
+    addCourse111Block(lesson, "image", working.lessons, 99);
+
+    const roundTripped = JSON.parse(JSON.stringify(working)) as CoursePreviewData;
+    preserveCourse111Publication(roundTripped, publication);
+
+    expect(readCourse111Publication(roundTripped.course)).toEqual(publication);
+    expect(roundTripped.course.status).toBe("draft");
+    expect(roundTripped.course.published).toBe(false);
+    expect(
+      (roundTripped.course as CoursePreviewData["course"] & { mysteryCourseField?: string })
+        .mysteryCourseField,
+    ).toBe("keep-me");
+    expect(roundTripped.manifest).toMatchObject({ leftover: "yes" });
+
+    const pending = findCourse111Lesson(roundTripped, "lesson-a")!.blocks.find(
+      (block) => block.slug === "pending-block",
+    )!.components[0] as CourseComponent & { oddExtra?: { nested: boolean } };
+    expect(pending.type).toBe("migrationPending");
+    expect(pending.oddExtra).toEqual({ nested: true });
+    expect(pending.legacyFields).toEqual({ foo: "bar" });
+
+    const video = findCourse111Lesson(roundTripped, "lesson-a")!.blocks.find(
+      (block) => block.slug === "video-block",
+    )!.components[0]!;
+    expect(video).toMatchObject({ type: "video", vimeoId: "999999", title: "Renamed clip" });
+  });
+
+  it("marks unsupported blocks as preserved and blocks delete while allowing move", () => {
+    const data = cloneCourse111Data(sampleWithUnknownFields());
+    const lesson = findCourse111Lesson(data, "lesson-a")!;
+    const editable = summarizeCourse111Block(lesson.blocks[0]!);
+    const preserved = summarizeCourse111Block(lesson.blocks[1]!);
+
+    expect(editable.editable).toBe(true);
+    expect(editable.canDelete).toBe(true);
+    expect(editable.canMove).toBe(true);
+
+    expect(preserved.preservedOnly).toBe(true);
+    expect(preserved.canDelete).toBe(false);
+    expect(preserved.canMove).toBe(true);
+    expect(deleteCourse111Block(lesson, "pending-block")).toBe(false);
+    expect(lesson.blocks.some((block) => block.slug === "pending-block")).toBe(true);
+    expect(moveCourse111Block(lesson, 1, -1)).toBe(true);
+    expect(lesson.blocks.map((block) => block.slug)[0]).toBe("pending-block");
+  });
+});

@@ -1,0 +1,333 @@
+---
+/**
+ * TEMPORARY experiment: render allowlisted Course 111 lessons from raw KIN HTML
+ * with a route-scoped Bootstrap 3 compatibility stylesheet.
+ *
+ * Currently limited to:
+ * - learn-about-the-machine
+ * - automatic-stitch-patterning
+ *
+ * Do not expand further without approval. Do not commit without approval.
+ */
+import Layout from "../../../../../layouts/Layout.astro";
+import LegacyCourseShell from "../../../../../components/courses/legacy/LegacyCourseShell.astro";
+import LegacyCourseItemNav from "../../../../../components/courses/legacy/LegacyCourseItemNav.astro";
+import CourseAccessGate from "../../../../../components/courses/CourseAccessGate.astro";
+import { getCourseAccessBySlug } from "../../../../../lib/coursesCatalogAccess";
+import {
+  getLegacyCourseBySlug,
+  getLegacyLessonBySlug,
+  legacyCourseLoadOptionsFromPreviewRequest,
+} from "../../../../../lib/legacy_kin/legacyCourseLoader";
+import {
+  getCourseContentItemNeighbors,
+  getLessonContentNavEntries,
+} from "../../../../../lib/legacy_kin/courseLessonContentItems";
+import {
+  sanitizeLegacyCourseHtml,
+  collectUsedBootstrapishClasses,
+} from "../../../../../lib/legacy_kin/legacyCourseHtmlCompat";
+import {
+  getLegacyCompatFixture,
+  listLegacyCompatLessonSlugs,
+} from "../../../../../lib/legacy_kin/legacyCourseHtmlCompatRegistry";
+import "../../../../../styles/legacy-course-compat.css";
+
+const courseSlug = Astro.params.courseSlug ?? "";
+const lessonSlug = Astro.params.lessonSlug ?? "";
+const rawFixture = getLegacyCompatFixture(courseSlug, lessonSlug);
+
+if (!rawFixture) {
+  return new Response(
+    `This temporary legacy-HTML compat experiment is limited to Course 111 lessons: ${listLegacyCompatLessonSlugs().join(", ")}.`,
+    { status: 404 },
+  );
+}
+
+const loaderOptions = legacyCourseLoadOptionsFromPreviewRequest(
+  Astro.url.searchParams.get("preview"),
+  Astro.url.hostname,
+  {
+    isViteDev: import.meta.env.DEV,
+    publicSiteEnv: import.meta.env.PUBLIC_SITE_ENV,
+  },
+);
+const course = getLegacyCourseBySlug(courseSlug, loaderOptions);
+const lesson = getLegacyLessonBySlug(courseSlug, lessonSlug, loaderOptions);
+
+if (!course || !lesson) {
+  return new Response("Lesson not found", { status: 404 });
+}
+
+const contentNavEntries = getLessonContentNavEntries(lesson);
+const firstItemSlug = contentNavEntries[0]?.itemSlug ?? "";
+const { prev, next } = getCourseContentItemNeighbors(
+  course,
+  lesson.slug,
+  firstItemSlug,
+);
+const previewQuery = loaderOptions.includeDrafts ? "?preview=true" : "";
+const courseAccess = loaderOptions.includeDrafts
+  ? "free"
+  : getCourseAccessBySlug(courseSlug);
+
+const { html: legacyHtml, removals, repairs } = sanitizeLegacyCourseHtml(
+  String(rawFixture.combinedHtml ?? ""),
+);
+const usedClasses = collectUsedBootstrapishClasses(legacyHtml);
+const pageTitle = `Legacy HTML compat · ${lesson.title} · ${course.course.title} | Knit it Now`;
+const compatKey = `course-111-${lesson.slug}`;
+---
+
+<Layout
+  title={pageTitle}
+  description={`Temporary legacy HTML compatibility preview for ${lesson.title}`}
+>
+  <link
+    slot="head"
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Handlee&display=swap"
+  />
+
+  <LegacyCourseShell
+    {courseSlug}
+    currentLessonSlug={lesson.slug}
+    currentItemSlug={firstItemSlug}
+    includeDrafts={loaderOptions.includeDrafts}
+    {contentNavEntries}
+    {previewQuery}
+  >
+    <article class="course-preview__content legacy-course__lesson">
+      <header class="course-preview__section-header">
+        <p class="course-preview__content-lesson">
+          Lesson {lesson.displayOrder}: {lesson.title}
+        </p>
+        <h1 class="course-preview__content-title">
+          Legacy HTML compatibility experiment
+        </h1>
+        <p class="legacy-compat-banner" role="status">
+          Temporary preview of the <strong>raw KIN CSV HTML</strong> for this
+          lesson (not the cleaned POC). Scoped under
+          <code>.legacy-course-content</code>. Bootstrap is not installed.
+          Course 111 allowlist only.
+        </p>
+      </header>
+
+      <LegacyCourseItemNav
+        {courseSlug}
+        {previewQuery}
+        {prev}
+        {next}
+        placement="top"
+      />
+
+      <CourseAccessGate access={courseAccess} courseSlug={courseSlug}>
+        <div slot="content">
+          <details class="legacy-compat-report" open>
+            <summary>Sanitization, repairs & non-Bootstrap gaps</summary>
+            <ul>
+              {(rawFixture.whySelected ?? []).map((reason) => (
+                <li>
+                  <strong>why-selected</strong> — {reason}
+                </li>
+              ))}
+              {(rawFixture.nonBootstrapMarkup ?? []).map((note) => (
+                <li>
+                  <strong>{note.kind}</strong> — {note.reason}
+                  {note.blockTitle ? ` (${note.blockTitle})` : ""}
+                </li>
+              ))}
+              {removals.map((r) => (
+                <li>
+                  <strong>removed:{r.kind}</strong> — {r.detail}
+                </li>
+              ))}
+              {repairs.map((r) => (
+                <li>
+                  <strong>repaired:{r.kind}</strong> — {r.detail}
+                </li>
+              ))}
+              <li>
+                <strong>parse-isolation</strong> — Legacy HTML is injected only
+                into <code>.legacy-course-content__body</code>. Extra closing
+                tags can break out of wrappers during SSR HTML parse, so the
+                video modal is kept outside that body.
+              </li>
+            </ul>
+            <p>
+              Bootstrap version evidence:{" "}
+              {rawFixture.bootstrapEvidence?.versionGuess}. Classes found:{" "}
+              {usedClasses.join(", ")}.
+            </p>
+          </details>
+
+          <div class="legacy-course-content" data-legacy-compat={compatKey}>
+            <div class="legacy-course-content__body" set:html={legacyHtml} />
+          </div>
+
+          <div
+            class="legacy-compat-video-modal"
+            data-legacy-video-modal
+            hidden
+            aria-hidden="true"
+          >
+            <div
+              class="legacy-compat-video-modal__dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Lesson video"
+            >
+              <div class="legacy-compat-video-modal__bar">
+                <span data-legacy-video-title>Video</span>
+                <button
+                  type="button"
+                  class="legacy-compat-video-modal__close"
+                  data-legacy-video-close
+                  aria-label="Close video"
+                >
+                  ×
+                </button>
+              </div>
+              <div class="embed-responsive embed-responsive-16by9">
+                <iframe
+                  class="embed-responsive-item"
+                  data-legacy-video-frame
+                  title="Lesson video"
+                  allow="autoplay; fullscreen; picture-in-picture"
+                  allowfullscreen
+                ></iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+      </CourseAccessGate>
+
+      <LegacyCourseItemNav
+        {courseSlug}
+        {previewQuery}
+        {prev}
+        {next}
+        placement="bottom"
+      />
+    </article>
+  </LegacyCourseShell>
+</Layout>
+
+<style>
+  .legacy-compat-banner {
+    margin: 0.75rem 0 0;
+    padding: 0.75rem 1rem;
+    background: #f4f7ea;
+    border: 1px solid #c5d39a;
+    border-radius: 8px;
+    color: #3f4d22;
+    font-size: 0.95rem;
+  }
+
+  .legacy-compat-report {
+    margin: 0 0 1.25rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e0d3a8;
+    border-radius: 8px;
+    background: #fffdf5;
+  }
+
+  .legacy-compat-report ul {
+    margin: 0.5rem 0 0;
+    padding-left: 1.2rem;
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    function closest(el, selector) {
+      while (el && el.nodeType === 1) {
+        if (el.matches && el.matches(selector)) return el;
+        el = el.parentElement;
+      }
+      return null;
+    }
+
+    function getRoot() {
+      return document.querySelector(
+        ".legacy-course-content[data-legacy-compat]",
+      );
+    }
+
+    function openVideo(popup) {
+      var root = getRoot();
+      if (!root || !popup) return;
+      if (!root.contains(popup)) return;
+      var vimeoId = popup.getAttribute("data-vimeoid");
+      if (!vimeoId) return;
+      var modal = document.querySelector("[data-legacy-video-modal]");
+      var frame = document.querySelector("[data-legacy-video-frame]");
+      var titleEl = document.querySelector("[data-legacy-video-title]");
+      if (!modal || !frame) return;
+      var title = popup.getAttribute("data-videotitle") || "Lesson video";
+      if (titleEl) titleEl.textContent = title;
+      frame.src = "https://player.vimeo.com/video/" + vimeoId + "?autoplay=1";
+      modal.removeAttribute("hidden");
+      modal.hidden = false;
+      modal.classList.add("is-open");
+      modal.setAttribute("aria-hidden", "false");
+      modal.style.display = "flex";
+    }
+
+    function closeModal() {
+      var modal = document.querySelector("[data-legacy-video-modal]");
+      var frame = document.querySelector("[data-legacy-video-frame]");
+      if (!modal || !frame) return;
+      modal.classList.remove("is-open");
+      modal.hidden = true;
+      modal.setAttribute("hidden", "");
+      modal.setAttribute("aria-hidden", "true");
+      modal.style.display = "none";
+      frame.src = "";
+    }
+
+    document.addEventListener("click", function (event) {
+      var target = event.target;
+      if (!target) return;
+
+      var toggle = closest(
+        target,
+        'a[data-toggle="collapse"], button[data-toggle="collapse"]',
+      );
+      if (toggle && getRoot() && getRoot().contains(toggle)) {
+        event.preventDefault();
+        var href =
+          toggle.getAttribute("href") || toggle.getAttribute("data-target");
+        if (href && href.charAt(0) === "#") {
+          var panel = getRoot().querySelector(href);
+          if (panel) {
+            panel.classList.toggle("in");
+            panel.classList.toggle("show");
+          }
+        }
+        return;
+      }
+
+      var popup = closest(target, ".videopopup, .subvideopopup");
+      if (popup && getRoot() && getRoot().contains(popup)) {
+        event.preventDefault();
+        openVideo(popup);
+        return;
+      }
+
+      var closeBtn = closest(target, "[data-legacy-video-close]");
+      if (closeBtn) {
+        event.preventDefault();
+        closeModal();
+        return;
+      }
+
+      var modal = closest(target, "[data-legacy-video-modal]");
+      if (modal && target === modal) closeModal();
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape") closeModal();
+    });
+  })();
+</script>

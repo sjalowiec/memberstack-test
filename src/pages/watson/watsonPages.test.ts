@@ -49,6 +49,7 @@ describe("Watson member search pages", () => {
     expect(adminReport).toContain("process.env.MEMBERSTACK_SECRET_KEY");
 
     expect(shell).toContain('<a href="/watson/current">Current</a>');
+    expect(shell).toContain('<a href="/watson/course-admin/111">Course 111 Admin</a>');
     expect(shell).toContain('<a href="/watson/video-replies">Video Replies</a>');
     expect(shell).toContain('href="/watson/whats-new"');
     expect(shell).toContain('href="/watson/tip-of-the-week"');
