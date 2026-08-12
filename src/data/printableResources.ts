@@ -41,7 +41,7 @@ export const printableResources: PrintableResource[] = [
       "Unlimited printing for your personal use",
     ],
     downloadLabel: "Machine Technique Reference Cards (PDF)",
-    pdfFile: "/downloads/shop/placeholder-machine-technique-reference-cards.pdf",
+    pdfFile: "/downloads/shop/machine-technique-reference-cards.pdf",
     image: "/images/shop/downloads/machine-technique-reference-cards.webp",
   },
   {
