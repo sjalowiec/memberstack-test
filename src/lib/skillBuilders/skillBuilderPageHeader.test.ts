@@ -69,9 +69,11 @@ describe("Skill Builder page title icon", () => {
       expect(readComponent(name)).toContain("<SkillBuilderPageHeader");
     }
 
-    const practicePage = readPage("round-neckline-practice.astro");
-    expect(practicePage).toContain("SkillBuilderPageHeader");
-    expect(practicePage).not.toContain("<h1>");
+    const catalog = readFileSync(join(pagesDir, "..", "skill-builders.astro"), "utf8");
+    expect(catalog).toContain("SkillBuilderPageHeader");
+    expect(catalog).toContain('<SkillBuilderPageHeader title="Skill Builders" />');
+    expect(catalog).not.toContain(ICON_SRC);
+    expect(catalog).not.toContain("<h1>");
 
     const routeFiles = [
       readPage("join-beautiful-shoulder-seams.astro"),

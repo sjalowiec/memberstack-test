@@ -117,7 +117,9 @@ describe("Join Beautiful Shoulder Seams Skill Builder", () => {
     expect(slot?.contentId).toBe(202);
     expect(slot?.vimeoId).toBe(vimeoId);
     expect(slot?.title).toMatch(/shoulder/i);
+    expect(slot?.accessLevel).toBe("member");
     expect(getJoiningShoulderSeamsSkillBuilder().video?.contentId).toBe(202);
+    expect(getJoiningShoulderSeamsSkillBuilder().video?.accessLevel).toBe("member");
     expect(getJoiningShoulderSeamsSkillBuilder().video?.vimeoId).toBe("151860051");
   });
 });

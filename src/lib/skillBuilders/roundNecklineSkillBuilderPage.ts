@@ -113,7 +113,7 @@ export function bindShoulderTabs(page: HTMLElement): void {
 
 export function bindRoundNecklineSkillBuilderPage(): void {
   const page = document.querySelector<HTMLElement>("[data-sb-round-neckline-exercise]");
-  if (!page) return;
+  if (!page || page.dataset.sbBound === "true") return;
 
   const builderId = page.dataset.sbBuilder as RoundNecklineSkillBuilderId | undefined;
   const exerciseId = page.dataset.sbExercise as RoundNecklineSkillBuilderExerciseId | undefined;
@@ -123,6 +123,7 @@ export function bindRoundNecklineSkillBuilderPage(): void {
 
   if (!builderId || !exerciseId || !stitchInput || !rowInput || !results) return;
 
+  page.dataset.sbBound = "true";
   bindShoulderTabs(page);
 
   function calculateFromInputs(): void {

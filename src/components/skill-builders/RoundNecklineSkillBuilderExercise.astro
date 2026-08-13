@@ -1,31 +1,27 @@
 ---
-import "../../styles/shaping-map.css";
-import "../../styles/ns-shaping-chart.css";
-import "../../styles/pattern-tips.css";
 import SkillBuilderPageHeader from "./SkillBuilderPageHeader.astro";
-import SkillBuilderGaugeInput from "./SkillBuilderGaugeInput.astro";
-import PrintButton from "../common/PrintButton.astro";
-import GatedVimeoEmbed from "../videos/GatedVimeoEmbed.astro";
+import SkillBuilderMemberGate from "./SkillBuilderMemberGate.astro";
+import RoundNecklineSkillBuilderExerciseBody from "./RoundNecklineSkillBuilderExerciseBody.astro";
 import {
   ROUND_NECKLINE_SKILL_BUILDERS,
+  roundNecklineSkillBuilderIsMemberOnly,
   type RoundNecklineSkillBuilderExerciseId,
   type RoundNecklineSkillBuilderId,
 } from "../../lib/skillBuilders/roundNecklineSkillBuilders";
-import { skillBuilderVideoSlot } from "../../lib/skillBuilders/roundNecklineSkillBuilderVideos";
 
 interface Props {
   builderId: RoundNecklineSkillBuilderId;
   exerciseId: RoundNecklineSkillBuilderExerciseId;
+  memberOnly?: boolean;
 }
 
-const { builderId, exerciseId } = Astro.props;
+const { builderId, exerciseId, memberOnly = roundNecklineSkillBuilderIsMemberOnly(builderId) } =
+  Astro.props;
 const builder = ROUND_NECKLINE_SKILL_BUILDERS[builderId];
 const exercise = builder.exercises.find((item) => item.id === exerciseId);
 if (!exercise) {
   throw new Error(`Unknown Skill Builder exercise: ${builderId}/${exerciseId}`);
 }
-const video = skillBuilderVideoSlot(`${builderId}/${exerciseId}`);
-const gaugeId = `sb-${builderId}-${exerciseId}`;
 ---
 
 <div
@@ -41,110 +37,19 @@ const gaugeId = `sb-${builderId}-${exerciseId}`;
     <p class="sb-practice-hero__intro">{builder.title}</p>
   </header>
 
-  <section class="sb-worksheet__section" aria-labelledby="sb-practicing-heading">
-    <h2 id="sb-practicing-heading">What You're Practicing</h2>
-    <p>{exercise.description}</p>
-    <p>{builder.purpose}</p>
-  </section>
-
   {
-    video && (
-      <section class="sb-worksheet__section no-print" aria-label="Video">
-        <h2>Watch</h2>
-        <GatedVimeoEmbed videoId={video.vimeoId} title={video.title ?? exercise.title} access_level="open" />
-      </section>
+    memberOnly ? (
+      <SkillBuilderMemberGate>
+        <RoundNecklineSkillBuilderExerciseBody
+          builderId={builderId}
+          exerciseId={exerciseId}
+          memberOnly
+        />
+      </SkillBuilderMemberGate>
+    ) : (
+      <RoundNecklineSkillBuilderExerciseBody builderId={builderId} exerciseId={exerciseId} />
     )
   }
-
-  <section class="sb-practice-panel no-print" aria-labelledby="sb-gauge-heading">
-    <h2 id="sb-gauge-heading" class="sb-practice-panel__title">Your Gauge</h2>
-    <SkillBuilderGaugeInput id={gaugeId} />
-  </section>
-
-  <div id="sb-practice-results" class="sb-practice-results" data-sb-results hidden>
-    <p class="sb-gauge-print" data-sb-gauge-print></p>
-
-    <section class="sb-worksheet__section" aria-labelledby="sb-diagram-heading">
-      <h2 id="sb-diagram-heading">Full Practice-Piece Diagram</h2>
-      <div class="sb-practice-diagram" data-sb-diagram aria-hidden="true"></div>
-    </section>
-
-    <section class="sb-worksheet__section" aria-labelledby="sb-begin-heading">
-      <h2 id="sb-begin-heading">Before You Begin</h2>
-      <p data-sb-before-begin></p>
-    </section>
-
-    <section class="sb-card sb-shoulders" aria-labelledby="sb-shoulders-heading">
-      <h2 id="sb-shoulders-heading">Shape the Shoulders</h2>
-      <div class="sb-shoulder-tabs" data-sb-shoulder-tabs>
-        <div class="sb-shoulder-tabs__list no-print" role="tablist" aria-label="Shoulder">
-          <button
-            type="button"
-            class="sb-shoulder-tabs__tab"
-            role="tab"
-            id="sb-tab-left"
-            aria-controls="sb-panel-left"
-            aria-selected="true"
-            tabindex="0"
-          >
-            Left Shoulder
-          </button>
-          <button
-            type="button"
-            class="sb-shoulder-tabs__tab"
-            role="tab"
-            id="sb-tab-right"
-            aria-controls="sb-panel-right"
-            aria-selected="false"
-            tabindex="-1"
-          >
-            Right Shoulder
-          </button>
-        </div>
-
-        <div
-          class="sb-shoulder-tabs__panel"
-          role="tabpanel"
-          id="sb-panel-left"
-          data-sb-shoulder-panel="left"
-          aria-labelledby="sb-tab-left"
-        >
-          <h3 class="sb-shoulder-print-title">Left Shoulder</h3>
-          <p class="sb-shoulder-note">Work the left shoulder after binding off the center neck stitches.</p>
-          <div class="sb-shoulder-checklist" data-sb-shoulder-checklist="left"></div>
-        </div>
-
-        <div
-          class="sb-shoulder-tabs__panel"
-          role="tabpanel"
-          id="sb-panel-right"
-          data-sb-shoulder-panel="right"
-          aria-labelledby="sb-tab-right"
-          aria-hidden="true"
-          hidden
-        >
-          <h3 class="sb-shoulder-print-title">Right Shoulder</h3>
-          <p class="sb-shoulder-note">
-            Rehang the right shoulder. Reset the row counter to 000, then follow this reversed checklist.
-          </p>
-          <div class="sb-shoulder-checklist" data-sb-shoulder-checklist="right"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="sb-worksheet__section" aria-labelledby="sb-finish-heading">
-      <h2 id="sb-finish-heading">Finish</h2>
-      <ul class="sb-finish-list">
-        <li>Scrap off the remaining live shoulder stitches onto waste yarn.</li>
-        <li>Keep this practice piece for the shoulder-joining and neckband-finishing practice.</li>
-      </ul>
-    </section>
-
-    <section class="sb-worksheet__section no-print" aria-labelledby="sb-print-heading">
-      <h2 id="sb-print-heading">Print Worksheet</h2>
-      <PrintButton label="Print Worksheet" />
-    </section>
-  </div>
 </div>
 
 <style>
@@ -190,243 +95,24 @@ const gaugeId = `sb-${builderId}-${exerciseId}`;
     color: #4d5a48;
   }
 
-  .sb-practice-panel {
-    margin-bottom: 1.1rem;
-    padding: 1.15rem 1.25rem;
-    background: #fff;
-    border: 1px solid #d6dbc9;
-    border-radius: 10px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-  }
-
-  .sb-practice-panel__title {
-    margin: 0 0 0.75rem;
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #52682d;
-    padding-bottom: 0.4rem;
-    border-bottom: 2px solid #c7d8a4;
-  }
-
-  .sb-practice-panel :global(.gauge-input-wrapper) {
-    margin-bottom: 0;
-  }
-
-  .sb-practice-results {
-    padding: 1.25rem 1.2rem 1.4rem;
-    background: #fff;
-    border: 1px solid #d6dbc9;
-    border-radius: 10px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-  }
-
-  .sb-gauge-print {
-    display: none;
-    margin: 0 0 1rem;
-    font-size: 0.95rem;
-    color: #243015;
-  }
-
-  .sb-practice-diagram {
-    width: 100%;
-    max-width: 46rem;
-    margin: 0 auto 0.75rem;
-  }
-
-  .sb-practice-diagram :global(.shaping-map) {
-    margin: 0 0 0.5rem;
-  }
-
-  .sb-practice-diagram :global(.shaping-map__scroll) {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .sb-practice-diagram :global(.shaping-map__svg) {
-    width: 100%;
-    height: auto;
-    display: block;
-    max-width: 100%;
-    min-width: 28rem;
-  }
-
-  .sb-worksheet__section {
-    margin-bottom: 1.1rem;
-  }
-
-  .sb-worksheet__section:last-child {
-    margin-bottom: 0;
-  }
-
-  .sb-worksheet__section > h2,
-  .sb-card > h2,
-  .sb-practice-page > .sb-worksheet__section h2 {
-    margin: 0 0 0.65rem;
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #52682d;
-  }
-
-  .sb-shoulder-note {
-    margin: 0 0 0.65rem;
-    line-height: 1.55;
-    color: #243015;
-    font-size: 1rem;
-  }
-
-  .sb-worksheet__section p {
-    margin: 0 0 0.65rem;
-    line-height: 1.55;
-    color: #243015;
-    font-size: 1rem;
-  }
-
-  .sb-finish-list {
-    margin: 0;
-    padding-left: 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-  }
-
-  .sb-finish-list li {
-    line-height: 1.55;
-    color: #243015;
-    font-size: 1rem;
-  }
-
-  .sb-card {
-    margin: 0 0 1.1rem;
-    padding: 0.95rem 1rem;
-    background: #f8faf6;
-    border: 1px solid #d6dbc9;
-    border-radius: 10px;
-  }
-
-  .sb-shoulder-tabs__list {
-    display: flex;
-    gap: 0.35rem;
-    margin: 0 0 0.85rem;
-    border-bottom: 1px solid #d6dbc9;
-  }
-
-  .sb-shoulder-tabs__tab {
-    appearance: none;
-    margin: 0 0 -1px;
-    padding: 0.55rem 0.9rem;
-    border: 1px solid transparent;
-    border-bottom: none;
-    border-radius: 8px 8px 0 0;
-    background: transparent;
-    color: #4d5a48;
-    font: inherit;
-    font-weight: 700;
-    cursor: pointer;
-  }
-
-  .sb-shoulder-tabs__tab[aria-selected="true"] {
-    background: #fff;
-    border-color: #d6dbc9;
-    color: #52682d;
-  }
-
-  .sb-shoulder-tabs__tab:focus-visible {
-    outline: 2px solid #52682d;
-    outline-offset: 2px;
-  }
-
-  .sb-shoulder-tabs__panel[hidden] {
-    display: none !important;
-  }
-
-  .sb-shoulder-checklist :global(.ns-shaping-chart) {
-    margin: 0.35rem 0 0;
-  }
-
-  .sb-shoulder-print-title {
-    display: none;
-    margin: 0 0 0.5rem;
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #52682d;
-  }
-
   @media (max-width: 600px) {
     .sb-practice-page {
       padding-inline: 16px;
     }
-
-    .sb-practice-results,
-    .sb-practice-panel,
-    .sb-card {
-      padding-inline: 0.85rem;
-    }
   }
 
   @media print {
-    .no-print {
-      display: none !important;
-    }
-
     .sb-practice-page {
       max-width: none;
       padding: 0;
       overflow: visible;
-    }
-
-    .sb-practice-results {
-      border: none;
-      box-shadow: none;
-      padding: 0;
-    }
-
-    .sb-gauge-print {
-      display: block;
-    }
-
-    .sb-practice-diagram,
-    .sb-worksheet__section,
-    .sb-card {
-      break-inside: avoid;
-      page-break-inside: avoid;
-    }
-
-    .sb-shoulder-print-title {
-      display: block;
-    }
-
-    .sb-practice-diagram {
-      max-width: 100%;
-    }
-
-    .sb-practice-diagram :global(.shaping-map__scroll) {
-      overflow: visible;
-      border: none;
-      padding: 0;
-    }
-
-    .sb-practice-diagram :global(.shaping-map__svg) {
-      min-width: 0;
-      max-width: 100%;
-    }
-
-    .sb-shoulder-tabs__list {
-      display: none !important;
-    }
-
-    .sb-shoulder-tabs__panel {
-      display: block !important;
-      margin-top: 1rem;
-    }
-
-    .sb-shoulder-tabs__panel[hidden] {
-      display: block !important;
     }
   }
 </style>
 
 <script>
   import { bindRoundNecklineSkillBuilderPage } from "../../lib/skillBuilders/roundNecklineSkillBuilderPage";
+  import { SKILL_BUILDER_MEMBER_BODY_MOUNTED_EVENT } from "../../lib/skillBuilders/skillBuilderMemberGate";
 
   function start(): void {
     bindRoundNecklineSkillBuilderPage();
@@ -437,4 +123,6 @@ const gaugeId = `sb-${builderId}-${exerciseId}`;
   } else {
     start();
   }
+
+  window.addEventListener(SKILL_BUILDER_MEMBER_BODY_MOUNTED_EVENT, start);
 </script>
