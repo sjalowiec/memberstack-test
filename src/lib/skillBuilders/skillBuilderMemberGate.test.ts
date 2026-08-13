@@ -36,6 +36,7 @@ const GATED_ROUTES = [
   ["round-necklines-shaped-shoulders", "index.astro"],
   ["round-necklines-shaped-shoulders", "[exercise].astro"],
   ["join-beautiful-shoulder-seams.astro"],
+  ["e-wrap-cast-on-basics.astro"],
 ] as const;
 
 const PUBLIC_ROUTES = [
@@ -326,14 +327,16 @@ describe("Skill Builder membership gate wiring", () => {
     }
   });
 
-  it("gates every Shaped Shoulders and Shoulder Seams route", () => {
+  it("gates every Shaped Shoulders, Shoulder Seams, and E-Wrap Cast On route", () => {
     expect(readPage("round-necklines-shaped-shoulders", "index.astro")).toContain("memberOnly");
     expect(readPage("round-necklines-shaped-shoulders", "[exercise].astro")).toContain("memberOnly");
     expect(readPage("join-beautiful-shoulder-seams.astro")).toContain("JoiningShoulderSeamsSkillBuilder");
+    expect(readPage("e-wrap-cast-on-basics.astro")).toContain("EWrapCastOnSkillBuilder");
     expect(readComponent("JoiningShoulderSeamsSkillBuilder")).toContain("SkillBuilderMemberGate");
+    expect(readComponent("EWrapCastOnSkillBuilder")).toContain("SkillBuilderMemberGate");
     expect(readComponent("RoundNecklineSkillBuilderLanding")).toContain("SkillBuilderMemberGate");
     expect(readComponent("RoundNecklineSkillBuilderExercise")).toContain("SkillBuilderMemberGate");
-    expect(GATED_ROUTES).toHaveLength(3);
+    expect(GATED_ROUTES).toHaveLength(4);
   });
 });
 
