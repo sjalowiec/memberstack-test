@@ -2,6 +2,7 @@
 import "../../styles/shaping-map.css";
 import "../../styles/ns-shaping-chart.css";
 import "../../styles/pattern-tips.css";
+import SkillBuilderPageHeader from "./SkillBuilderPageHeader.astro";
 import SkillBuilderGaugeInput from "./SkillBuilderGaugeInput.astro";
 import PrintButton from "../common/PrintButton.astro";
 import GatedVimeoEmbed from "../videos/GatedVimeoEmbed.astro";
@@ -36,7 +37,7 @@ const gaugeId = `sb-${builderId}-${exerciseId}`;
   <a class="sb-practice-eyebrow" href={builder.path}>Back to practices</a>
 
   <header class="sb-practice-hero">
-    <h1>{exercise.title}</h1>
+    <SkillBuilderPageHeader title={exercise.title} />
     <p class="sb-practice-hero__intro">{builder.title}</p>
   </header>
 
@@ -174,8 +175,8 @@ const gaugeId = `sb-${builderId}-${exerciseId}`;
     margin: 0.5rem 0 1.25rem;
   }
 
-  .sb-practice-hero h1 {
-    margin: 0 0 0.4rem;
+  .sb-practice-hero :global(h1) {
+    margin: 0;
     font-size: clamp(1.45rem, 3vw, 1.9rem);
     font-weight: 600;
     color: #52682d;

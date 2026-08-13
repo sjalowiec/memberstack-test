@@ -80,6 +80,8 @@ describe("public round neckline Skill Builder pages", () => {
   });
 
   it("shows a landing with two exercises and an exercise back link", () => {
+    expect(landingComponent).toContain("SkillBuilderPageHeader");
+    expect(exerciseComponent).toContain("SkillBuilderPageHeader");
     expect(landingComponent).toContain("Choose a practice");
     expect(landingComponent).toContain("skillBuilderExercisePath");
     expect(landingComponent).toContain("prerequisiteNote");
