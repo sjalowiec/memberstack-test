@@ -5788,15 +5788,21 @@
   {
     "glossaryId": 862,
     "english": "Skill Builder",
-    "example": "A members-only feature at Knit it Now that includes quick exercises designed to challenge and inspire machine knitters.",
-    "helpinfo": "Our Skill Builder Challenges provide  bite-sized tasks that will help you master new techniques and enhance your knitting mastery.  Each challenge includes short, engaging \"how to\" videos that guide you step-by-step, making it easy to learn and apply new skills.  Perfect for busy knitters, these exercises are a fun and efficient way to exercise your fingers and mind, keeping your creativity flowing and your knitting skills sharp.  Dive in and discover the joy of continuous improvement!      Explore the Skill Builders",
+    "example": "",
+    "helpinfo": "A short, hands-on practice tool that helps you learn one machine-knitting skill at a time. Enter your gauge, follow the chart and checklist, and practice the technique on a small sample before using it in a project.",
     "image": "",
     "image_alt": "",
     "image_description": "",
-    "metaTitle": "Skill Builders – Exclusive Machine Knitting Challenges | Knit It Now",
-    "metaDescription": "Skill Builders at Knit It Now are members-only exercises designed to challenge and inspire machine knitters. Build confidence and master new techniques!",
+    "metaTitle": "Skill Builder in Machine Knitting | Knit It Now Glossary",
+    "metaDescription": "A short, hands-on practice tool that helps you learn one machine-knitting skill at a time. Enter your gauge, follow the chart and checklist, and practice the technique on a small sample before using it in a project.",
     "active": true,
-    "vimeoIds": []
+    "vimeoIds": [],
+    "relatedTools": [
+      {
+        "name": "Skill Builders",
+        "url": "/learn/skill-builders"
+      }
+    ]
   },
   {
     "glossaryId": 863,

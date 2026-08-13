@@ -5,6 +5,19 @@ const pageTitle = "Skill Builders | Knit it Now";
 const pageDescription =
   "Short, focused knitting exercises to practice one technique at a time. Enter your gauge and generate a practice worksheet.";
 
+const freePracticeItems = [
+  {
+    title: "Round Neckline Basics: Bind Off & Decrease",
+    href: "/learn/skill-builders/round-neckline-basics",
+    subtitle: "Straight shoulders, such as the Drop Shoulder pattern.",
+  },
+  {
+    title: "Round Necklines with Shaped Shoulders",
+    href: "/learn/skill-builders/round-necklines-shaped-shoulders",
+    subtitle: "Stepped shoulder bind-offs, such as the Sleeveless pattern.",
+  },
+];
+
 const availableItems = [
   {
     title: "Round Neckline Practice",
@@ -92,6 +105,30 @@ const howItWorksSteps = [
           ))
         }
       </ol>
+    </section>
+
+    <hr class="skill-builders-divider" />
+
+    <section class="skill-builders-section" aria-labelledby="skill-builders-free">
+      <h2 id="skill-builders-free" class="skill-builders-section__title">Free Practice</h2>
+      <p class="skill-builders-section__note">
+        These gauge-based practice worksheets are public. No login or membership is required.
+      </p>
+      <ul class="skill-builders-card-list">
+        {
+          freePracticeItems.map((item) => (
+            <li class="skill-builders-card-list__item">
+              <a href={item.href} class="skill-builders-card skill-builders-card--link">
+                <span class="skill-builders-card__text">
+                  <span class="skill-builders-card__title">{item.title}</span>
+                  <span class="skill-builders-card__subtitle">{item.subtitle}</span>
+                </span>
+                <span class="skill-builders-card__badge skill-builders-card__badge--available">Free</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
     </section>
 
     <hr class="skill-builders-divider" />

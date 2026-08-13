@@ -1,0 +1,25 @@
+---
+import GaugeInput from "../wizards/GaugeInput.astro";
+import {
+  SKILL_BUILDER_ROW_GAUGE_LABEL,
+  SKILL_BUILDER_STITCH_GAUGE_LABEL,
+} from "../../lib/skillBuilders/skillBuilderGaugeLabels";
+
+interface Props {
+  id: string;
+}
+
+const { id } = Astro.props;
+---
+
+<GaugeInput
+  id={id}
+  showTitle={false}
+  showToggle={false}
+  showGaugeSubLabel={false}
+  lockUnitLabels
+  stitchLabelInches={SKILL_BUILDER_STITCH_GAUGE_LABEL}
+  stitchLabelCm={SKILL_BUILDER_STITCH_GAUGE_LABEL}
+  rowLabelInches={SKILL_BUILDER_ROW_GAUGE_LABEL}
+  rowLabelCm={SKILL_BUILDER_ROW_GAUGE_LABEL}
+/>
