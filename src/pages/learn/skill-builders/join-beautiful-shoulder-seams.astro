@@ -1,0 +1,17 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import JoiningShoulderSeamsSkillBuilder from "../../../components/skill-builders/JoiningShoulderSeamsSkillBuilder.astro";
+import { getJoiningShoulderSeamsSkillBuilder } from "../../../lib/skillBuilders/joiningShoulderSeamsSkillBuilder";
+
+export const prerender = true;
+
+const builder = getJoiningShoulderSeamsSkillBuilder();
+---
+
+<Layout
+  title={`${builder.title} | Skill Builders | Knit it Now`}
+  description={builder.intro}
+  bodyClass="page--tight-header"
+>
+  <JoiningShoulderSeamsSkillBuilder />
+</Layout>

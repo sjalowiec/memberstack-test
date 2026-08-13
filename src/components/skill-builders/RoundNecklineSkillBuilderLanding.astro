@@ -5,6 +5,7 @@ import {
   type RoundNecklineSkillBuilderId,
 } from "../../lib/skillBuilders/roundNecklineSkillBuilders";
 import { skillBuilderVideoSlot } from "../../lib/skillBuilders/roundNecklineSkillBuilderVideos";
+import SkillBuilderPageHeader from "./SkillBuilderPageHeader.astro";
 import GatedVimeoEmbed from "../videos/GatedVimeoEmbed.astro";
 
 interface Props {
@@ -20,7 +21,7 @@ const video = skillBuilderVideoSlot(builderId);
   <a class="sb-landing__back" href="/learn/skill-builders">Skill Builders</a>
 
   <header class="sb-landing__hero">
-    <h1>{builder.title}</h1>
+    <SkillBuilderPageHeader title={builder.title} />
     <p class="sb-landing__purpose">{builder.purpose}</p>
     {
       builder.prerequisiteNote && (
@@ -82,8 +83,8 @@ const video = skillBuilderVideoSlot(builderId);
     margin: 0.5rem 0 1.75rem;
   }
 
-  .sb-landing h1 {
-    margin: 0 0 0.65rem;
+  .sb-landing :global(h1) {
+    margin: 0;
     font-size: clamp(1.55rem, 3vw, 1.95rem);
     font-weight: 600;
     color: #52682d;
