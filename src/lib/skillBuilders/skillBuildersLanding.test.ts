@@ -103,10 +103,14 @@ describe("Skill Builders catalog landing", () => {
     expect(freeConst).toContain("/learn/skill-builders/round-neckline-basics");
     expect(freeConst).not.toContain("round-necklines-shaped-shoulders");
     expect(freeConst).not.toContain("join-beautiful-shoulder-seams");
+    expect(freeConst).not.toContain("e-wrap-cast-on-basics");
     expect(freeConst).not.toContain("round-neckline-practice");
 
     expect(memberConst).toContain("/learn/skill-builders/round-necklines-shaped-shoulders");
     expect(memberConst).toContain("/learn/skill-builders/join-beautiful-shoulder-seams");
+    expect(memberConst).toContain("/learn/skill-builders/e-wrap-cast-on-basics");
+    expect(memberConst).toContain("E-Wrap Cast On Basics");
+    expect(memberConst).toContain("Practice a quick, stretchy cast on that works on any knitting machine.");
     expect(memberConst).not.toContain("round-neckline-practice");
     expect(memberConst).not.toContain("round-neckline-basics");
 
