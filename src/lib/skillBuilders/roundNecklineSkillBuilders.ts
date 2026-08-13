@@ -264,6 +264,13 @@ export function skillBuilderExercisePath(
   return `${ROUND_NECKLINE_SKILL_BUILDERS[builderId].path}/${exerciseId}`;
 }
 
+/** Round Neckline Basics stays public; Shaped Shoulders is members only. */
+export function roundNecklineSkillBuilderIsMemberOnly(
+  builderId: RoundNecklineSkillBuilderId,
+): boolean {
+  return builderId === "round-necklines-shaped-shoulders";
+}
+
 function clamp(n: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, n));
 }

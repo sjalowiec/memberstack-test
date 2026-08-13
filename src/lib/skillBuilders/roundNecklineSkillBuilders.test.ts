@@ -10,6 +10,7 @@ import {
   ROUND_NECKLINE_SKILL_BUILDERS,
   formatSkillBuilderRowCounter,
   PAUSE_AND_CHECK_TEXT,
+  roundNecklineSkillBuilderIsMemberOnly,
   SAVE_THIS_PRACTICE_PIECE_NOTE,
   SHAPING_ROW_COUNTER_START,
   SHOULDER_WORKFLOW_HEADING,
@@ -46,6 +47,8 @@ describe("round neckline Skill Builder catalog", () => {
     expect(ROUND_NECKLINE_SKILL_BUILDERS["round-necklines-shaped-shoulders"].prerequisiteNote).toMatch(
       /Complete Round Neckline Basics first/,
     );
+    expect(roundNecklineSkillBuilderIsMemberOnly("round-neckline-basics")).toBe(false);
+    expect(roundNecklineSkillBuilderIsMemberOnly("round-necklines-shaped-shoulders")).toBe(true);
   });
 
   it("keeps video slots configured but empty so no broken embeds are created", () => {

@@ -55,12 +55,13 @@ describe("Join Beautiful Shoulder Seams Skill Builder pages", () => {
     expect(JOINING_SHOULDER_SEAMS_PATH).toBe("/learn/skill-builders/join-beautiful-shoulder-seams");
   });
 
-  it("keeps the Skill Builder public", () => {
-    for (const source of [page, component]) {
-      expect(source).not.toContain("MemberLockOverlay");
-      expect(source).not.toContain("memberAccess");
-      expect(source).not.toContain("data-sb-member-lock");
-    }
+  it("gates the Skill Builder for logged-out and non-member visitors", () => {
+    expect(component).toContain("SkillBuilderMemberGate");
+    expect(component).toMatch(
+      /<SkillBuilderMemberGate>[\s\S]*What You'll Practice[\s\S]*Shoulder Seam Checklist[\s\S]*GatedVimeoEmbed/,
+    );
+    expect(component).not.toContain('access_level="open"');
+    expect(component).toContain("access_level={video.accessLevel}");
   });
 
   it("renders What You'll Practice, checklist, Watch, then a related Skill Builder card", () => {
@@ -74,7 +75,7 @@ describe("Join Beautiful Shoulder Seams Skill Builder pages", () => {
     expect(component).toContain("video.vimeoId");
     expect(component).toContain('data-sb-video-content-id={String(video.contentId)}');
     expect(component).toContain("Watch");
-    expect(component).toContain('access_level="open"');
+    expect(component).toContain("access_level={video.accessLevel}");
     expect(JOINING_SHOULDER_SEAMS_VIDEO_CONTENT_ID).toBe(202);
     expect(JOINING_SHOULDER_SEAMS_CHECKLIST).toHaveLength(6);
     expect(component).toMatch(
@@ -127,11 +128,11 @@ describe("Join Beautiful Shoulder Seams Skill Builder pages", () => {
     expect(page).not.toMatch(/player\.vimeo\.com\/video\/\d+/);
   });
 
-  it("lists the builder on the Skill Builders catalog with the neckline free-practice cards", () => {
+  it("lists the builder on the Skill Builders catalog with the neckline cards", () => {
     expect(catalog).toContain(JOINING_SHOULDER_SEAMS_PATH);
     expect(catalog).toContain("Join Beautiful Shoulder Seams");
     expect(catalog).toContain(JOINING_SHOULDER_SEAMS_CATALOG_SUBTITLE);
     expect(catalog).toContain("/learn/skill-builders/round-neckline-basics");
-    expect(catalog).toContain("Free Practice");
+    expect(catalog).toContain("Member Skill Builders");
   });
 });

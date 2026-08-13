@@ -1,5 +1,6 @@
 ---
 import SkillBuilderPageHeader from "./SkillBuilderPageHeader.astro";
+import SkillBuilderMemberGate from "./SkillBuilderMemberGate.astro";
 import GatedVimeoEmbed from "../videos/GatedVimeoEmbed.astro";
 import GlossaryTooltip from "../common/GlossaryTooltip.astro";
 import {
@@ -37,46 +38,48 @@ const checklistParts = joiningShoulderSeamsChecklistParts(builder.checklist);
     </p>
   </header>
 
-  <section class="sb-worksheet__section" aria-labelledby="sb-practice-heading">
-    <h2 id="sb-practice-heading">What You'll Practice</h2>
-    <p>{builder.whatYoullPractice}</p>
-  </section>
+  <SkillBuilderMemberGate>
+    <section class="sb-worksheet__section" aria-labelledby="sb-practice-heading">
+      <h2 id="sb-practice-heading">What You'll Practice</h2>
+      <p>{builder.whatYoullPractice}</p>
+    </section>
 
-  <section class="sb-card" aria-labelledby="sb-checklist-heading">
-    <h2 id="sb-checklist-heading">Shoulder Seam Checklist</h2>
-    <ol class="sb-join-steps">
-      {
-        checklistParts.map((parts) => (
-          <li class="sb-join-step">
-            {parts.map((part) =>
-              part.type === "glossary" ? (
-                <GlossaryTooltip id={part.glossaryId}>{part.text}</GlossaryTooltip>
-              ) : (
-                part.text
-              )
-            )}
-          </li>
-        ))
-      }
-    </ol>
-  </section>
+    <section class="sb-card" aria-labelledby="sb-checklist-heading">
+      <h2 id="sb-checklist-heading">Shoulder Seam Checklist</h2>
+      <ol class="sb-join-steps">
+        {
+          checklistParts.map((parts) => (
+            <li class="sb-join-step">
+              {parts.map((part) =>
+                part.type === "glossary" ? (
+                  <GlossaryTooltip id={part.glossaryId}>{part.text}</GlossaryTooltip>
+                ) : (
+                  part.text
+                )
+              )}
+            </li>
+          ))
+        }
+      </ol>
+    </section>
 
-  {
-    video && (
-      <section
-        class="sb-worksheet__section"
-        aria-label="Video"
-        data-sb-video-content-id={String(video.contentId)}
-      >
-        <h2>Watch</h2>
-        <GatedVimeoEmbed
-          videoId={video.vimeoId}
-          title={video.title ?? builder.title}
-          access_level="open"
-        />
-      </section>
-    )
-  }
+    {
+      video && (
+        <section
+          class="sb-worksheet__section"
+          aria-label="Video"
+          data-sb-video-content-id={String(video.contentId)}
+        >
+          <h2>Watch</h2>
+          <GatedVimeoEmbed
+            videoId={video.vimeoId}
+            title={video.title ?? builder.title}
+            access_level={video.accessLevel}
+          />
+        </section>
+      )
+    }
+  </SkillBuilderMemberGate>
 
   <a
     class="sb-related-card"

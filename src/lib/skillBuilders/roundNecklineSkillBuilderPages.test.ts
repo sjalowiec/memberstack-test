@@ -9,6 +9,10 @@ function readPage(...parts: string[]): string {
   return readFileSync(join(pagesDir, ...parts), "utf8");
 }
 
+function readComponent(name: string): string {
+  return readFileSync(join(componentsDir, `${name}.astro`), "utf8");
+}
+
 const REQUIRED_HEADINGS = [
   "What You're Practicing",
   "Your Gauge",
@@ -39,14 +43,10 @@ describe("public round neckline Skill Builder pages", () => {
   const basicsExercise = readPage("round-neckline-basics", "[exercise].astro");
   const shapedLanding = readPage("round-necklines-shaped-shoulders", "index.astro");
   const shapedExercise = readPage("round-necklines-shaped-shoulders", "[exercise].astro");
-  const exerciseComponent = readFileSync(
-    join(componentsDir, "RoundNecklineSkillBuilderExercise.astro"),
-    "utf8",
-  );
-  const landingComponent = readFileSync(
-    join(componentsDir, "RoundNecklineSkillBuilderLanding.astro"),
-    "utf8",
-  );
+  const exerciseComponent = readComponent("RoundNecklineSkillBuilderExercise");
+  const exerciseBody = readComponent("RoundNecklineSkillBuilderExerciseBody");
+  const landingComponent = readComponent("RoundNecklineSkillBuilderLanding");
+  const landingBody = readComponent("RoundNecklineSkillBuilderLandingBody");
   const catalog = readFileSync(join(pagesDir, "..", "skill-builders.astro"), "utf8");
   const pageScript = readFileSync(
     join(process.cwd(), "src/lib/skillBuilders/roundNecklineSkillBuilderPage.ts"),
@@ -64,71 +64,74 @@ describe("public round neckline Skill Builder pages", () => {
     expect(shapedExercise).toContain("round-necklines-shaped-shoulders");
   });
 
-  it("keeps the new Skill Builders public", () => {
-    for (const source of [
-      basicsLanding,
-      basicsExercise,
-      shapedLanding,
-      shapedExercise,
-      exerciseComponent,
-      landingComponent,
-    ]) {
+  it("keeps Round Neckline Basics fully public", () => {
+    for (const source of [basicsLanding, basicsExercise]) {
+      expect(source).not.toContain("memberOnly");
       expect(source).not.toContain("MemberLockOverlay");
-      expect(source).not.toContain("memberAccess");
       expect(source).not.toContain("data-sb-member-lock");
     }
+  });
+
+  it("gates Round Necklines with Shaped Shoulders on every landing and exercise route", () => {
+    expect(shapedLanding).toContain("memberOnly");
+    expect(shapedExercise).toContain("memberOnly");
+    expect(landingComponent).toContain("SkillBuilderMemberGate");
+    expect(exerciseComponent).toContain("SkillBuilderMemberGate");
+    expect(exerciseComponent).toContain("SKILL_BUILDER_MEMBER_BODY_MOUNTED_EVENT");
+    expect(pageScript).toContain('dataset.sbBound === "true"');
   });
 
   it("shows a landing with two exercises and an exercise back link", () => {
     expect(landingComponent).toContain("SkillBuilderPageHeader");
     expect(exerciseComponent).toContain("SkillBuilderPageHeader");
-    expect(landingComponent).toContain("Choose a practice");
-    expect(landingComponent).toContain("skillBuilderExercisePath");
-    expect(landingComponent).toContain("prerequisiteNote");
+    expect(landingBody).toContain("Choose a practice");
+    expect(landingBody).toContain("skillBuilderExercisePath");
+    expect(landingBody).toContain("prerequisiteNote");
     expect(exerciseComponent).toContain("Back to practices");
   });
 
   it("renders the required exercise sections, gauge form, and print button", () => {
     for (const heading of REQUIRED_HEADINGS) {
-      expect(exerciseComponent).toContain(heading);
+      expect(exerciseBody).toContain(heading);
     }
     for (const copy of REMOVED_COPY) {
+      expect(exerciseBody).not.toContain(copy);
       expect(exerciseComponent).not.toContain(copy);
     }
-    expect(exerciseComponent).toContain("SkillBuilderGaugeInput");
-    expect(exerciseComponent).toContain('label="Print Worksheet"');
-    expect(exerciseComponent).toContain("shaping-map.css");
-    expect(exerciseComponent).toContain("ns-shaping-chart.css");
-    expect(exerciseComponent).toContain("pattern-tips.css");
-    expect(exerciseComponent).toContain("Left Shoulder");
-    expect(exerciseComponent).toContain("Right Shoulder");
-    expect(exerciseComponent).toContain('role="tablist"');
-    expect(exerciseComponent).toContain('data-sb-diagram');
-    expect(exerciseComponent.match(/data-sb-diagram/g)?.length).toBe(1);
-    expect(exerciseComponent).toMatch(
+    expect(exerciseBody).toContain("SkillBuilderGaugeInput");
+    expect(exerciseBody).toContain('label="Print Worksheet"');
+    expect(exerciseBody).toContain("shaping-map.css");
+    expect(exerciseBody).toContain("ns-shaping-chart.css");
+    expect(exerciseBody).toContain("pattern-tips.css");
+    expect(exerciseBody).toContain("Left Shoulder");
+    expect(exerciseBody).toContain("Right Shoulder");
+    expect(exerciseBody).toContain('role="tablist"');
+    expect(exerciseBody).toContain('data-sb-diagram');
+    expect(exerciseBody.match(/data-sb-diagram/g)?.length).toBe(1);
+    expect(exerciseBody).toMatch(
       /Full Practice-Piece Diagram[\s\S]*Before You Begin[\s\S]*Shape the Shoulders[\s\S]*data-sb-shoulder-checklist="right"[\s\S]*id="sb-finish-heading"/,
     );
-    expect(exerciseComponent).toContain('data-sb-shoulder-checklist="left"');
-    expect(exerciseComponent).toContain('data-sb-shoulder-checklist="right"');
-    expect(exerciseComponent).not.toContain("data-sb-shoulder-chart");
-    expect(exerciseComponent).toContain("Work the left shoulder after binding off the center neck stitches.");
-    expect(exerciseComponent).toContain(
+    expect(exerciseBody).toContain('data-sb-shoulder-checklist="left"');
+    expect(exerciseBody).toContain('data-sb-shoulder-checklist="right"');
+    expect(exerciseBody).not.toContain("data-sb-shoulder-chart");
+    expect(exerciseBody).toContain("Work the left shoulder after binding off the center neck stitches.");
+    expect(exerciseBody).toContain(
       "Rehang the right shoulder. Reset the row counter to 000, then follow this reversed checklist.",
     );
-    expect(exerciseComponent).toContain("<ul class=\"sb-finish-list\">");
-    expect(exerciseComponent).toContain("Scrap off the remaining live shoulder stitches onto waste yarn.");
-    expect(exerciseComponent).toContain(
+    expect(exerciseBody).toContain("<ul class=\"sb-finish-list\">");
+    expect(exerciseBody).toContain("Scrap off the remaining live shoulder stitches onto waste yarn.");
+    expect(exerciseBody).toContain(
       "Keep this practice piece for the shoulder-joining and neckband-finishing practice.",
     );
-    expect(exerciseComponent).not.toContain(
+    expect(exerciseBody).not.toContain(
       "Scrap off the remaining live shoulder stitches. Keep this practice piece",
     );
-    expect(exerciseComponent).toMatch(/id="sb-panel-right"[\s\S]*\bhidden\b/);
-    expect(exerciseComponent).toContain('aria-selected="true"');
-    expect(exerciseComponent).toContain('aria-selected="false"');
-    expect(exerciseComponent).toContain(".sb-shoulder-tabs__panel[hidden]");
-    expect(exerciseComponent).toContain("display: none !important");
-    expect(exerciseComponent).toContain(".sb-shoulder-print-title");
+    expect(exerciseBody).toMatch(/id="sb-panel-right"[\s\S]*\bhidden\b/);
+    expect(exerciseBody).toContain('aria-selected="true"');
+    expect(exerciseBody).toContain('aria-selected="false"');
+    expect(exerciseBody).toContain(".sb-shoulder-tabs__panel[hidden]");
+    expect(exerciseBody).toContain("display: none !important");
+    expect(exerciseBody).toContain(".sb-shoulder-print-title");
     expect(exerciseComponent).toContain("document.readyState");
     expect(pageScript).toContain("buildRoundNecklineSkillBuilderDiagramHtml");
     expect(pageScript).toContain("[data-sb-diagram]");
@@ -138,14 +141,14 @@ describe("public round neckline Skill Builder pages", () => {
   });
 
   it("does not hard-code a video embed", () => {
-    expect(exerciseComponent).not.toMatch(/player\.vimeo\.com\/video\/\d+/);
-    expect(landingComponent).not.toMatch(/player\.vimeo\.com\/video\/\d+/);
-    expect(exerciseComponent).toContain("skillBuilderVideoSlot");
+    expect(exerciseBody).not.toMatch(/player\.vimeo\.com\/video\/\d+/);
+    expect(landingBody).not.toMatch(/player\.vimeo\.com\/video\/\d+/);
+    expect(exerciseBody).toContain("skillBuilderVideoSlot");
   });
 
   it("lists the new public builders on the Skill Builders catalog", () => {
     expect(catalog).toContain("/learn/skill-builders/round-neckline-basics");
     expect(catalog).toContain("/learn/skill-builders/round-necklines-shaped-shoulders");
-    expect(catalog).toContain("Free Practice");
+    expect(catalog).toContain("Free Skill Builder");
   });
 });
