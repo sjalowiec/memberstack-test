@@ -1,16 +1,22 @@
 import { describe, expect, it } from "vitest";
 import {
   SAMPLE_SHAPING_MAP_DATA,
+  SHAPING_MAP_KNIT_ROW_HEIGHT_RATIO,
   SHAPING_MAP_PAD_TOP_PX,
   SHAPING_MAP_ROW_NUMBER_FONT_PX,
   SHAPING_MAP_SHOULDER_LABEL_ABOVE_LINE_PX,
   SHAPING_MAP_STEP_LABEL_FONT_PX,
   SHAPING_MAP_STEP_LABEL_OUTLINE_OFFSET_PX,
+  formatCenterBindOffChartLabel,
   formatCenterStitchesLabel,
+  formatChartCompactNotation,
+  formatShapingMapCompactLegendItems,
   renderShapingMapSvg,
   stepLabelCenterY,
   stepLabelDrawX,
   stepLabelSegmentMidX,
+  SHAPING_MAP_SYMMETRICAL_NECK_LABEL_OUTLINE_OFFSET_PX,
+  symmetricalNeckOpeningLabelDrawX,
 } from "./shapingMapSvg";
 
 function viewBoxWidth(svg: string): number {
@@ -113,6 +119,14 @@ describe("renderShapingMapSvg (shared shaping-map renderer)", () => {
     const mirrorFx = (px: number) => 400 - px;
     expect(stepLabelDrawX(100, 128, mirrorFx)).toBe(
       Math.min(mirrorFx(100), mirrorFx(128)) - SHAPING_MAP_STEP_LABEL_OUTLINE_OFFSET_PX,
+    );
+
+    const fxId = (px: number) => px;
+    expect(symmetricalNeckOpeningLabelDrawX(100, 128, fxId)).toBe(
+      128 + SHAPING_MAP_SYMMETRICAL_NECK_LABEL_OUTLINE_OFFSET_PX,
+    );
+    expect(symmetricalNeckOpeningLabelDrawX(100, 114, fxId)).toBe(
+      114 + SHAPING_MAP_SYMMETRICAL_NECK_LABEL_OUTLINE_OFFSET_PX,
     );
 
     for (const mirror of [false, true]) {
@@ -309,6 +323,8 @@ describe("renderShapingMapSvg (shared shaping-map renderer)", () => {
     const svg = renderShapingMapSvg(SAMPLE_SHAPING_MAP_DATA);
     expect(svg).toContain('class="shaping-map-row-number"');
     expect(svg).toContain('dominant-baseline="central"');
+    expect(svg).not.toContain("shaping-map__svg--practice");
+    expect(svg).not.toContain('font-size="13" font-weight="400"');
   });
 
   it("aligns each row-number Y with its corresponding grid row", () => {
@@ -332,6 +348,59 @@ describe("renderShapingMapSvg (shared shaping-map renderer)", () => {
     expect(nums.some((n) => n.row === 232)).toBe(true);
     expect(nums.some((n) => n.row === 250)).toBe(true);
   });
+
+  it("does not add a completion-row band on sweater Visual Guides", () => {
+    const svg = renderShapingMapSvg(SAMPLE_SHAPING_MAP_DATA, { cell: 14 });
+    const nums = parseRowNumberPositions(svg);
+    const topLabel = nums.reduce((a, b) => (a.y <= b.y ? a : b));
+    expect(topLabel.row).toBe(250);
+    const gridBody = [...svg.matchAll(/<g class="shaping-map-grid-(?:minor|major)">([\s\S]*?)<\/g>/g)]
+      .map((m) => m[1]!)
+      .join("");
+    const horizontalYs = [
+      ...gridBody.matchAll(/<line x1="[\d.]+" y1="([\d.]+)" x2="[\d.]+" y2="([\d.]+)"/g),
+    ]
+      .filter((m) => m[1] === m[2])
+      .map((m) => Number(m[1]));
+    expect(Math.min(...horizontalYs)).toBeCloseTo(topLabel.y, 5);
+  });
+
+  it("keeps a square grid by default and shortens rows when rowHeightRatio is set", () => {
+    const cell = 14;
+    const square = renderShapingMapSvg(SAMPLE_SHAPING_MAP_DATA, { cell, rowNumberInterval: 2 });
+    const knit = renderShapingMapSvg(SAMPLE_SHAPING_MAP_DATA, {
+      cell,
+      rowNumberInterval: 2,
+      rowHeightRatio: SHAPING_MAP_KNIT_ROW_HEIGHT_RATIO,
+    });
+    const invalid = renderShapingMapSvg(SAMPLE_SHAPING_MAP_DATA, {
+      cell,
+      rowNumberInterval: 2,
+      rowHeightRatio: 0,
+    });
+
+    const squareNums = parseRowNumberPositions(square);
+    const knitNums = parseRowNumberPositions(knit);
+    const invalidNums = parseRowNumberPositions(invalid);
+    const squarePair = squareNums.filter((n) => n.row === 248 || n.row === 250);
+    const knitPair = knitNums.filter((n) => n.row === 248 || n.row === 250);
+    expect(squarePair).toHaveLength(2);
+    expect(knitPair).toHaveLength(2);
+    const squareDy = Math.abs(squarePair[0]!.y - squarePair[1]!.y);
+    const knitDy = Math.abs(knitPair[0]!.y - knitPair[1]!.y);
+    expect(squareDy).toBe(cell * 2);
+    expect(knitDy).toBeCloseTo(cell * SHAPING_MAP_KNIT_ROW_HEIGHT_RATIO * 2, 5);
+
+    const squareWidth = viewBoxWidth(square);
+    const knitWidth = viewBoxWidth(knit);
+    expect(knitWidth).toBe(squareWidth);
+    const squareHeight = Number(square.match(/viewBox="0 0 [\d.]+ ([\d.]+)"/)?.[1]);
+    const knitHeight = Number(knit.match(/viewBox="0 0 [\d.]+ ([\d.]+)"/)?.[1]);
+    expect(knitHeight).toBeLessThan(squareHeight);
+
+    const invalidPair = invalidNums.filter((n) => n.row === 248 || n.row === 250);
+    expect(Math.abs(invalidPair[0]!.y - invalidPair[1]!.y)).toBe(cell * 2);
+  });
 });
 
 describe("formatCenterStitchesLabel", () => {
@@ -340,5 +409,31 @@ describe("formatCenterStitchesLabel", () => {
     expect(formatCenterStitchesLabel(34)).toBe("Bind off 34 center stitches");
     expect(formatCenterStitchesLabel(1)).toBe("Bind off 1 center stitch");
     expect(formatCenterStitchesLabel(12)).toBe("Bind off 12 center stitches");
+  });
+});
+
+describe("formatCenterBindOffChartLabel", () => {
+  it("uses the short on-chart center bind-off wording", () => {
+    expect(formatCenterBindOffChartLabel(6)).toBe("-6 center sts");
+    expect(formatCenterBindOffChartLabel(10)).toBe("-10 center sts");
+  });
+});
+
+describe("formatChartCompactNotation", () => {
+  it("strips s/r/x suffixes for on-chart JP", () => {
+    expect(formatChartCompactNotation("2s-2r-1x")).toBe("2-2-1");
+    expect(formatChartCompactNotation("1s-2r-2x")).toBe("1-2-2");
+    expect(formatChartCompactNotation("3s-2r-3x")).toBe("3-2-3");
+  });
+});
+
+describe("formatShapingMapCompactLegendItems", () => {
+  it("returns the compact BO / Dec / Center key", () => {
+    expect(formatShapingMapCompactLegendItems(6)).toEqual({
+      bindOff: "BO = bind off",
+      decrease: "Dec = decrease",
+      center: "Center: bind off 6 stitches",
+    });
+    expect(formatShapingMapCompactLegendItems(1).center).toBe("Center: bind off 1 stitch");
   });
 });

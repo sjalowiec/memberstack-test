@@ -1,0 +1,33 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+import RoundNecklineSkillBuilderExercise from "../../../../components/skill-builders/RoundNecklineSkillBuilderExercise.astro";
+import {
+  ROUND_NECKLINE_SKILL_BUILDERS,
+  type RoundNecklineSkillBuilderExerciseId,
+} from "../../../../lib/skillBuilders/roundNecklineSkillBuilders";
+
+export const prerender = true;
+
+export function getStaticPaths() {
+  return ROUND_NECKLINE_SKILL_BUILDERS["round-neckline-basics"].exercises.map((exercise) => ({
+    params: { exercise: exercise.id },
+  }));
+}
+
+const exerciseId = Astro.params.exercise as RoundNecklineSkillBuilderExerciseId;
+const exercise = ROUND_NECKLINE_SKILL_BUILDERS["round-neckline-basics"].exercises.find(
+  (item) => item.id === exerciseId,
+)!;
+---
+
+<Layout
+  title={`${exercise.title} | Skill Builders | Knit it Now`}
+  description={exercise.description}
+  bodyClass="page--tight-header"
+  toolPrintTitle={exercise.title}
+>
+  <RoundNecklineSkillBuilderExercise
+    builderId="round-neckline-basics"
+    exerciseId={exerciseId}
+  />
+</Layout>

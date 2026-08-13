@@ -1,7 +1,7 @@
 ﻿---
 import Layout from "../../../layouts/Layout.astro";
 import WizardBackLink from "../../../components/wizards/WizardBackLink.astro";
-import GaugeInput from "../../../components/wizards/GaugeInput.astro";
+import SkillBuilderGaugeInput from "../../../components/skill-builders/SkillBuilderGaugeInput.astro";
 import PrintButton from "../../../components/common/PrintButton.astro";
 import MemberLockOverlay from "../../../components/ui/MemberLockOverlay.astro";
 
@@ -47,7 +47,7 @@ const skillBuilderThumbnail = "/images/skill-builders/skill-buider.png";
     <div class="sb-practice-tool-wrap">
     <section class="sb-practice-panel no-print" aria-label="Gauge input">
       <h2 class="sb-practice-panel__title">Your Gauge</h2>
-      <GaugeInput id="roundneck" showTitle={false} showToggle={false} showGaugeSubLabel={false} />
+      <SkillBuilderGaugeInput id="roundneck" />
     </section>
 
     <div id="sb-practice-results" class="sb-practice-results" hidden>
