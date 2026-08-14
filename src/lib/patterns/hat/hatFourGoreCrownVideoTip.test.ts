@@ -163,14 +163,8 @@ describe("hatFourGoreCrownVideoTip", () => {
     expect(fws).not.toBeNull();
     const finalWedgeStitchCount = fws!.wedgeStitchCount % 2 === 1 ? 1 : 2;
     const decreaseCount = (fws!.wedgeStitchCount - finalWedgeStitchCount) / 2;
-    const rowFrequency =
-      decreaseCount > 0
-        ? Math.max(1, Math.round(calc.crownRowCount / decreaseCount))
-        : 1;
-    const rowFrequencyPhrase =
-      rowFrequency === 1 ? "every row" : `every ${rowFrequency} rows`;
     const expected =
-      `Decrease 1 stitch two stitches in from each edge ${rowFrequencyPhrase}, ${decreaseCount} times.`;
+      `Decrease 1 stitch two stitches in from each edge every row, ${decreaseCount} times.`;
 
     expect(decreaseCount).toBeGreaterThan(0);
     expect(wedge).not.toContain("Decrease 1 stitch at each edge");

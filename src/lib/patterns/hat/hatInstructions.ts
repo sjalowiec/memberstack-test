@@ -223,14 +223,11 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
     const {
       finalWedgeStitchCount,
       decreaseCount,
-      rowFrequency,
-    } = buildFourWedgeDecreaseSchedule(wedgeStitchCount, crownRowCount);
-    const rowFrequencyPhrase =
-      rowFrequency === 1 ? "every row" : `every ${rowFrequency} rows`;
+    } = buildFourWedgeDecreaseSchedule(wedgeStitchCount);
     const wedgeFinishLine = `<p>When ${finalWedgeStitchCount} ${finalWedgeStitchCount === 1 ? "stitch remains" : "stitches remain"}, break yarn and secure.</p>`;
     const wedgeShapingBlock =
       decreaseCount > 0
-        ? `<p>Decrease 1 stitch two stitches in from each edge ${rowFrequencyPhrase}, ${decreaseCount} times.</p>
+        ? `<p>Decrease 1 stitch two stitches in from each edge every row, ${decreaseCount} times.</p>
       ${wedgeFinishLine}`
         : wedgeFinishLine;
     const [, w2r, w3r, w4r] = wedgeNeedleRanges;

@@ -16,11 +16,14 @@ import {
   buildFourWedgeCrownSetup,
   buildFourWedgeDecreaseSchedule,
   calculateHatPattern,
+  FOUR_GORE_DECREASE_ROW_FREQUENCY,
   gatheredCrownRemainingStitches,
+  hatCrownStartRow,
   HAT_BRIM_TYPES,
   HAT_NAMED_FIT_STYLES,
   resolveNamedFitLengthInches,
   roundFinishedHatSizeFromHead,
+  roundToEvenPreferUp,
   type HatBrimType,
   type HatNamedFitStyle,
   type HatPatternCalc,
@@ -46,6 +49,8 @@ const LARGEST_SIZE = ALL_SIZES[ALL_SIZES.length - 1];
 
 const PRIMARY_GAUGE = { stitch: "5", row: "7" };
 const TIGHTER_GAUGE = { stitch: "7", row: "10" };
+const DENSE_GAUGE = { stitch: "16", row: "24" };
+const FOUR_GORE_GAUGES = [PRIMARY_GAUGE, TIGHTER_GAUGE, DENSE_GAUGE] as const;
 const VISIBLE_BRIM_INCHES = 1;
 const AMPLE_NEEDLES = "400";
 
@@ -109,6 +114,41 @@ function expectNonNegativeInteger(value: number, label: string): void {
   expect(value, label).toBeGreaterThanOrEqual(0);
 }
 
+/** Visible brim rows in the finished length (folded knits twice the fabric). */
+function visibleBrimRows(calc: HatPatternCalc): number {
+  return calc.brimType === "folded" ? calc.brimRows / 2 : calc.brimRows;
+}
+
+/**
+ * Actual knitted rows that make the finished hat (visible brim + body + crown).
+ * Brim and body use even-up, so the row sum may differ from hatHeight × gauge
+ * by at most 2 rows.
+ */
+function actualKnittedRowCount(calc: HatPatternCalc): number {
+  return visibleBrimRows(calc) + calc.bodyRows + calc.crownRowCount;
+}
+
+const KNITTED_ROW_ROUNDING_TOLERANCE_PER_EVEN_UP_SECTION = 1.5;
+
+function evenUppedSectionCount(calc: HatPatternCalc): number {
+  const crownFromSchedule =
+    calc.crown === "spiral" ||
+    calc.crown === "wedge-4-decrease" ||
+    calc.crown === "wedge-4";
+  // Brim and body always even-up; gathered crown even-ups chart depth to rows.
+  return 2 + (crownFromSchedule ? 0 : 1);
+}
+
+function expectKnittedLengthWithinRounding(calc: HatPatternCalc, label: string): void {
+  const knitted = actualKnittedRowCount(calc);
+  const expected = calc.hatHeight * calc.rowGaugePerInch;
+  const bound = evenUppedSectionCount(calc) * KNITTED_ROW_ROUNDING_TOLERANCE_PER_EVEN_UP_SECTION;
+  expect(
+    Math.abs(knitted - expected),
+    `${label} knitted rows ${knitted} vs ${expected.toFixed(2)} expected`,
+  ).toBeLessThanOrEqual(bound + 1e-9);
+}
+
 /** Length identity used by calculateHatPattern when brim + crown fit in the total. */
 function expectLengthIdentity(calc: HatPatternCalc, label: string): void {
   const room = calc.hatHeight - calc.crownHeightInches - calc.brimDepth;
@@ -121,6 +161,7 @@ function expectLengthIdentity(calc: HatPatternCalc, label: string): void {
   } else {
     expect(calc.bodyHeightInches, `${label} clamped body`).toBe(0);
   }
+  expectKnittedLengthWithinRounding(calc, `${label} knitted length`);
 }
 
 function assertCalcInvariants(calc: HatPatternCalc, label: string): void {
@@ -181,8 +222,29 @@ function assertCalcInvariants(calc: HatPatternCalc, label: string): void {
     expect(setup.adjustedCastOnStitches).toBe(patternCastOn);
     expect(setup.wedgeStitchCount * 4).toBe(patternCastOn);
     expect(setup.wedgeNeedleRanges).toHaveLength(4);
-    const schedule = buildFourWedgeDecreaseSchedule(setup.wedgeStitchCount, calc.crownRowCount);
+    const schedule = buildFourWedgeDecreaseSchedule(setup.wedgeStitchCount);
+    expect(schedule.rowFrequency, `${label} four-gore every row`).toBe(
+      FOUR_GORE_DECREASE_ROW_FREQUENCY,
+    );
+    expect(schedule.rowFrequency).toBe(1);
     expectNonNegativeInteger(schedule.decreaseCount, `${label} four-gore decreases`);
+    expect(calc.crownRowCount, `${label} four-gore crown rows = shaping rows`).toBe(
+      schedule.decreaseCount,
+    );
+    expect(calc.crownRowCount, `${label} four-gore plan rows`).toBe(calc.crownPlan.crownRows);
+    expect(calc.crownHeightInches, `${label} four-gore crown height`).toBeCloseTo(
+      schedule.decreaseCount / calc.rowGaugePerInch,
+      10,
+    );
+    expect(hatCrownStartRow(calc), `${label} four-gore crown RC`).toBe(
+      calc.brimRows + calc.bodyRows,
+    );
+    expect(setup.crownStartRow, `${label} four-gore setup RC`).toBe(
+      calc.brimRows + calc.bodyRows,
+    );
+    expect(calc.bodyRows, `${label} four-gore body even-up`).toBe(
+      roundToEvenPreferUp(calc.bodyHeightInches * calc.rowGaugePerInch),
+    );
     expectPositiveInteger(schedule.remainingStitchesTotal, `${label} four-gore remaining`);
     expect(schedule.remainingStitchesTotal, `${label} four-gore remaining <= start`).toBeLessThanOrEqual(
       patternCastOn,
@@ -411,6 +473,8 @@ describe("hat math regression matrix", () => {
         if (!fromDraft.ok) continue;
         expect(preview.calc.hatHeight).toBe(fromDraft.calc.hatHeight);
         expect(preview.calc.castOnSts).toBe(fromDraft.calc.castOnSts);
+        expect(preview.calc.bodyRows).toBe(fromDraft.calc.bodyRows);
+        expect(preview.calc.crownRowCount).toBe(fromDraft.calc.crownRowCount);
         expect(form.finishedHatLength).toBe(String(fromDraft.calc.hatHeight));
 
         const nextFit: HatNamedFitStyle = fit === "slouchy" ? "beanie" : "slouchy";
@@ -425,6 +489,8 @@ describe("hat math regression matrix", () => {
         expect(switched.draft.fit).toBe(nextFit);
         expect(switched.calc.hatHeight).toBe(nextLength);
         expect(switched.calc.hatHeight).not.toBe(preview.calc.hatHeight);
+        expect(switched.calc.crownRowCount).toBe(preview.calc.crownRowCount);
+        expect(switched.calc.bodyHeightInches).not.toBe(preview.calc.bodyHeightInches);
       }
     }
   });
@@ -552,5 +618,104 @@ describe("hat math regression matrix", () => {
         expect(result).not.toBeNull();
       }
     }
+  });
+
+  it("Pre-Teen 16×24 Beanie Four-Gore uses 9 shaping rows and 1.5\" crown", () => {
+    const draft = matrixDraft({
+      sizeSel: "preteen",
+      fit: "beanie",
+      brimType: "single",
+      crown: "wedge-4-decrease",
+      stitch: DENSE_GAUGE.stitch,
+      row: DENSE_GAUGE.row,
+      brimLength: "2",
+    });
+    const result = expectDraftCalcOk(draft, "preteen 16×24 beanie four-gore");
+    expect(result).not.toBeNull();
+    if (!result) return;
+    const { calc } = result;
+    expect(calc.hatHeight).toBe(8.2);
+    expect(calc.targetWidth).toBe(19);
+    expect(calc.castOnSts).toBe(76);
+    expect(calc.brimRows).toBe(12);
+    expect(calc.crownRowCount).toBe(9);
+    expect(calc.crownHeightInches).toBeCloseTo(1.5, 10);
+    expect(calc.bodyHeightInches).toBeCloseTo(4.7, 10);
+    expect(calc.bodyRows).toBe(28);
+    expect(hatCrownStartRow(calc)).toBe(40);
+    expect(actualKnittedRowCount(calc)).toBe(12 + 28 + 9);
+
+    const reopened = coerceHatDraft(JSON.parse(JSON.stringify(draft)));
+    const again = expectDraftCalcOk(reopened!, "preteen 16×24 reopened");
+    expect(again?.calc.crownRowCount).toBe(9);
+    expect(again?.calc.bodyRows).toBe(28);
+
+    const form = hatDraftToEditFormValues(draft, sizingRows);
+    const preview = buildHatSummaryEditPreview(draft, form, sizingRows);
+    expect(preview.ok).toBe(true);
+    if (!preview.ok) return;
+    expect(preview.calc.crownRowCount).toBe(9);
+    expect(preview.calc.bodyRows).toBe(28);
+    expect(preview.calc.hatHeight).toBe(8.2);
+  });
+
+  it("Four-Gore crown rows follow the shaping sequence at every size, named length, and gauge", () => {
+    let cases = 0;
+    for (const gauge of FOUR_GORE_GAUGES) {
+      for (const sizeSel of ALL_SIZES) {
+        for (const fit of HAT_NAMED_FIT_STYLES) {
+          const label = `${sizeSel}/${fit}/${gauge.stitch}x${gauge.row} four-gore`;
+          const result = expectDraftCalcOk(
+            matrixDraft({
+              sizeSel,
+              fit,
+              brimType: "single",
+              crown: "wedge-4-decrease",
+              stitch: gauge.stitch,
+              row: gauge.row,
+              brimLength: "2",
+            }),
+            label,
+          );
+          if (!result) continue;
+          cases += 1;
+          const { calc } = result;
+          const setup = buildFourWedgeCrownSetup({
+            castOnSts: calc.castOnSts,
+            crown: calc.crown,
+            brimRows: calc.brimRows,
+            bodyRows: calc.bodyRows,
+          })!;
+          const schedule = buildFourWedgeDecreaseSchedule(setup.wedgeStitchCount);
+          expect(calc.crownRowCount).toBe(schedule.decreaseCount);
+          expect(calc.crownHeightInches).toBeCloseTo(
+            schedule.decreaseCount / calc.rowGaugePerInch,
+            10,
+          );
+          expect(hatCrownStartRow(calc)).toBe(calc.brimRows + calc.bodyRows);
+        }
+      }
+    }
+    expect(cases).toBe(FOUR_GORE_GAUGES.length * ALL_SIZES.length * HAT_NAMED_FIT_STYLES.length);
+  });
+
+  it("Four-Gore crown rows ignore chart suggestedCrownDepth", () => {
+    const base = {
+      finishedHatCircInches: 19,
+      stitchGaugeDisplay: 16,
+      rowGaugeDisplay: 24,
+      displayUnit: "inches" as const,
+      totalHatLengthInches: 8.2,
+      brimDepthInches: 2,
+      brimType: "single" as const,
+      crown: "wedge-4-decrease",
+      fit: "beanie",
+    };
+    const chart = calculateHatPattern({ ...base, suggestedCrownDepthInches: 2 });
+    const deeper = calculateHatPattern({ ...base, suggestedCrownDepthInches: 4 });
+    expect(chart.crownRowCount).toBe(9);
+    expect(deeper.crownRowCount).toBe(chart.crownRowCount);
+    expect(deeper.crownHeightInches).toBe(chart.crownHeightInches);
+    expect(deeper.bodyRows).toBe(chart.bodyRows);
   });
 });

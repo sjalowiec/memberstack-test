@@ -9,6 +9,7 @@
  * for the original /patterns/hat page.
  */
 
+import { formatHatDiagramSectionLengthFromRows } from "./hatDiagram";
 import {
   applyHatCrownCastOnAdjustment,
   buildFourWedgeCrownSetup,
@@ -213,9 +214,30 @@ function buildLabels(
   return {
     width: summaryEdit ? "" : displayLength(calc.targetWidth, unit, formatters),
     height: summaryEdit ? "" : displayLength(calc.hatHeight, unit, formatters),
-    brimDepth: summaryEdit ? "" : displayLength(calc.brimDepth, unit, formatters),
-    bodyHeight: summaryEdit ? "" : displayLength(calc.bodyHeightInches, unit, formatters),
-    crownDepth: summaryEdit ? "" : displayLength(calc.crownHeightInches, unit, formatters),
+    brimDepth: summaryEdit
+      ? ""
+      : formatHatDiagramSectionLengthFromRows(
+          calc.brimRows,
+          calc.rowGaugePerInch,
+          unit,
+          formatters,
+        ),
+    bodyHeight: summaryEdit
+      ? ""
+      : formatHatDiagramSectionLengthFromRows(
+          calc.bodyRows,
+          calc.rowGaugePerInch,
+          unit,
+          formatters,
+        ),
+    crownDepth: summaryEdit
+      ? ""
+      : formatHatDiagramSectionLengthFromRows(
+          calc.crownRowCount,
+          calc.rowGaugePerInch,
+          unit,
+          formatters,
+        ),
     castOn: summaryEdit ? "" : `${patternCastOn} sts`,
     brimRows: summaryEdit ? "" : `${calc.brimRows} rows`,
     bodyRows: summaryEdit ? "" : `${calc.bodyRows} rows`,

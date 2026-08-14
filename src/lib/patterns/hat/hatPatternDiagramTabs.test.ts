@@ -710,10 +710,7 @@ describe("buildHatShapingNotationDiagramSvg", () => {
   it("four-gore notation shows shared schedule and one representative gore stitch pair", () => {
     const calc = withFourWedge(calcFor({ crown: "wedge-4-decrease" }));
     const setup = calc.fourWedgeCrownSetup!;
-    const schedule = buildFourWedgeDecreaseSchedule(
-      setup.wedgeStitchCount,
-      calc.crownRowCount,
-    );
+    const schedule = buildFourWedgeDecreaseSchedule(setup.wedgeStitchCount);
     const svg = buildHatShapingNotationDiagramSvg(calc, "inches", formatters);
     const startLabel = formatHatShapingStitchCountLabel(setup.wedgeStitchCount);
     const endLabel = formatHatShapingStitchCountLabel(schedule.finalWedgeStitchCount);
@@ -793,7 +790,6 @@ describe("buildHatShapingNotationDiagramSvg", () => {
     const oddWedge = withFourWedge(calcFor({ crown: "wedge-4-decrease" }));
     const oddSchedule = buildFourWedgeDecreaseSchedule(
       oddWedge.fourWedgeCrownSetup!.wedgeStitchCount,
-      oddWedge.crownRowCount,
     );
     // Default fixture ends at 1 st per gore when wedge count is odd.
     expect(oddSchedule.finalWedgeStitchCount).toBe(1);
@@ -813,7 +809,6 @@ describe("buildHatShapingNotationDiagramSvg", () => {
     );
     const evenSchedule = buildFourWedgeDecreaseSchedule(
       evenWedge.fourWedgeCrownSetup!.wedgeStitchCount,
-      evenWedge.crownRowCount,
     );
     const evenSvg = buildHatShapingNotationDiagramSvg(evenWedge, "inches", formatters);
     const evenEnd = formatHatShapingStitchCountLabel(evenSchedule.finalWedgeStitchCount);
@@ -845,11 +840,9 @@ describe("buildHatShapingNotationDiagramSvg", () => {
 
     const smallSchedule = buildFourWedgeDecreaseSchedule(
       smallSetup.wedgeStitchCount,
-      small.crownRowCount,
     );
     const largeSchedule = buildFourWedgeDecreaseSchedule(
       largeSetup.wedgeStitchCount,
-      large.crownRowCount,
     );
 
     const smallSvg = buildHatShapingNotationDiagramSvg(small, "inches", formatters);

@@ -200,10 +200,7 @@ function buildShapingLabels(calc: HatPatternCalc): ShapingLabels {
     crownLines.push("Gather");
   } else if (crownKind === "wedge" && fourWedge) {
     title = "Four-gore hat shaping notation diagram";
-    const schedule = buildFourWedgeDecreaseSchedule(
-      fourWedge.wedgeStitchCount,
-      calc.crownRowCount,
-    );
+    const schedule = buildFourWedgeDecreaseSchedule(fourWedge.wedgeStitchCount);
     const startSts = Math.max(0, Math.round(fourWedge.wedgeStitchCount));
     goreStartLabel = startSts > 0 ? formatHatShapingStitchCountLabel(startSts) : "";
     goreEndLabel = formatHatShapingStitchCountLabel(schedule.finalWedgeStitchCount);

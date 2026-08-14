@@ -3,8 +3,10 @@ import {
   canonicalHatFitStyle,
   applyHatCrownCastOnAdjustment,
   buildFourWedgeCrownSetup,
+  buildFourWedgeDecreaseSchedule,
   buildHatCrownPlan,
   calculateHatPattern,
+  FOUR_GORE_DECREASE_ROW_FREQUENCY,
   formatHatRolledBrimDefaultLength,
   gatheredCrownRemainingStitches,
   hatCrownEndingRow,
@@ -37,8 +39,10 @@ import { buildHatPatternHtml, wrapHatPatternSection } from "./hatInstructions";
 import {
   applyHatDiagramTokens,
   buildHatDiagramTokens,
+  formatHatDiagramSectionLengthFromRows,
   resolveHatDiagramTemplateName,
 } from "./hatDiagram";
+import { buildHatPatternDiagramSvg } from "./hatPatternDiagramSvg";
 import {
   convertLength,
   formatLength,
@@ -209,6 +213,16 @@ describe("hatMath golden parity (adult woman / 5×7 per 4\")", () => {
     expect(setup?.wedgeStitchCount).toBe(7);
     expect(setup?.wedgeNeedleRanges).toHaveLength(4);
     expect(setup?.castOnAdjustedFromBase).toBe(true);
+    const schedule = buildFourWedgeDecreaseSchedule(setup!.wedgeStitchCount);
+    expect(schedule.decreaseCount).toBe(3);
+    expect(schedule.rowFrequency).toBe(FOUR_GORE_DECREASE_ROW_FREQUENCY);
+    expect(schedule.rowFrequency).toBe(1);
+    expect(calc.crownRowCount).toBe(3);
+    expect(calc.crownHeightInches).toBeCloseTo(3 / calc.rowGaugePerInch, 10);
+    expect(calc.crownRowCount).toBe(calc.crownPlan.crownRows);
+    expect(calc.crownPlan.note).toMatch(/shaping schedule/i);
+    expect(suggestedCrownDepthInches).toBe(2);
+    expect(calc.crownHeightInches).not.toBe(suggestedCrownDepthInches);
   });
 
   it("spiral snaps cast-on to multiple of 6 and derives crown rows from schedule", () => {
@@ -229,6 +243,60 @@ describe("hatMath golden parity (adult woman / 5×7 per 4\")", () => {
     expect(calc.crownPlan.spiral).not.toBeNull();
     expect(calc.crownRowCount).toBe(calc.crownPlan.crownRows);
     expect(calc.crownRowCount).toBeGreaterThan(0);
+  });
+
+  it("four-gore Pre-Teen 16×24 Beanie derives 9-row / 1.5\" crown from shaping", () => {
+    const calc = calculateHatPattern({
+      finishedHatCircInches: 19,
+      stitchGaugeDisplay: 16,
+      rowGaugeDisplay: 24,
+      displayUnit: "inches",
+      totalHatLengthInches: 8.2,
+      brimDepthInches: 2,
+      brimType: "single",
+      crown: "wedge-4-decrease",
+      suggestedCrownDepthInches: 2,
+      fit: "beanie",
+    });
+    expect(calc.castOnSts).toBe(76);
+    expect(applyHatCrownCastOnAdjustment(76, "wedge-4-decrease")).toBe(76);
+    const setup = buildFourWedgeCrownSetup({
+      castOnSts: calc.castOnSts,
+      crown: "wedge-4-decrease",
+      brimRows: calc.brimRows,
+      bodyRows: calc.bodyRows,
+    });
+    expect(setup?.wedgeStitchCount).toBe(19);
+    const schedule = buildFourWedgeDecreaseSchedule(setup!.wedgeStitchCount);
+    expect(schedule.decreaseCount).toBe(9);
+    expect(schedule.rowFrequency).toBe(1);
+    expect(schedule.finalWedgeStitchCount).toBe(1);
+    expect(calc.brimRows).toBe(12);
+    expect(calc.crownRowCount).toBe(9);
+    expect(calc.crownHeightInches).toBeCloseTo(1.5, 10);
+    expect(calc.bodyHeightInches).toBeCloseTo(8.2 - 2 - 1.5, 10);
+    expect(calc.bodyRows).toBe(roundToEvenPreferUp(calc.bodyHeightInches * calc.rowGaugePerInch));
+    expect(hatCrownStartRow(calc)).toBe(calc.brimRows + calc.bodyRows);
+    expect(calc.crownRowCount).not.toBe(12);
+    expect(calc.crownHeightInches).not.toBe(2);
+
+    const html = buildHatPatternHtml({
+      calc,
+      currentUnit: "inches",
+      scrapOffPatternTooltip: "Scrap Off",
+      tipsIntroHtml: "",
+      showTips: false,
+      formatters: { convertLength, formatLength },
+    });
+    expect(html).toContain("Decrease 1 stitch two stitches in from each edge every row, 9 times.");
+    expect(html).toContain(`Begin crown shaping at RC ${calc.brimRows + calc.bodyRows}`);
+    const svg = buildHatPatternDiagramSvg(calc, "inches", {
+      convertLength,
+      formatLengthWithUnit,
+    });
+    expect(svg).toContain("9 rows");
+    expect(svg).toContain(`${calc.bodyRows} rows`);
+    expect(svg).toContain(formatLengthWithUnit(1.5, "inches"));
   });
 
   it("named fit style scales from the size chart Standard length", () => {
@@ -574,7 +642,56 @@ describe("hatInstructions + hatDiagram", () => {
     const tokens = buildHatDiagramTokens(calc, "inches", formatters);
     expect(tokens["{{CAST_ON_STS}}"]).toBe("26 sts");
     expect(tokens["{{BRIM_ROWS}}"]).toMatch(/rows/);
+    expect(tokens["{{BODY_HEIGHT}}"]).toBe(
+      formatHatDiagramSectionLengthFromRows(
+        calc.bodyRows,
+        calc.rowGaugePerInch,
+        "inches",
+        formatters,
+      ),
+    );
+    expect(tokens["{{BRIM_DEPTH}}"]).toBe(
+      formatHatDiagramSectionLengthFromRows(
+        calc.brimRows,
+        calc.rowGaugePerInch,
+        "inches",
+        formatters,
+      ),
+    );
+    expect(tokens["{{CROWN_DEPTH}}"]).toBe(
+      formatHatDiagramSectionLengthFromRows(
+        calc.crownRowCount,
+        calc.rowGaugePerInch,
+        "inches",
+        formatters,
+      ),
+    );
+    expect(tokens["{{HEIGHT}}"]).toBe(formatLengthWithUnit(calc.hatHeight, "inches"));
     const applied = applyHatDiagramTokens("W={{WIDTH}} C={{CAST_ON_STS}}", tokens);
     expect(applied).toContain("26 sts");
   });
+
+  it("buildHatDiagramTokens uses row-derived section inches for the Baby Beanie example", () => {
+    const calc = calculateHatPattern({
+      finishedHatCircInches: 16,
+      stitchGaugeDisplay: 16,
+      rowGaugeDisplay: 24,
+      displayUnit: "inches",
+      totalHatLengthInches: 6.2,
+      brimDepthInches: 1,
+      brimType: "single",
+      crown: "gathered",
+      suggestedCrownDepthInches: 1,
+      fit: "beanie",
+    });
+    const tokens = buildHatDiagramTokens(calc, "inches", formatters);
+    expect(calc.bodyRows).toBe(26);
+    expect(calc.bodyHeightInches).toBeCloseTo(4.2, 10);
+    expect(tokens["{{BODY_ROWS}}"]).toBe("26 rows");
+    expect(tokens["{{BODY_HEIGHT}}"]).toBe('4.3"');
+    expect(tokens["{{BRIM_ROWS}}"]).toBe("6 rows");
+    expect(tokens["{{BRIM_DEPTH}}"]).toBe('1.0"');
+    expect(tokens["{{HEIGHT}}"]).toBe('6.2"');
+  });
 });
+

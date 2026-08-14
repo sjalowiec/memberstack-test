@@ -408,6 +408,20 @@ export function buildHatCrownPlan(args: {
     };
   }
 
+  if (crown === "wedge-4-decrease" || crown === "wedge-4") {
+    const adjustedCastOn = applyHatCrownCastOnAdjustment(safeCastOn, crown);
+    const wedgeStitchCount = adjustedCastOn > 0 && adjustedCastOn % 4 === 0 ? adjustedCastOn / 4 : 0;
+    const crownRows = buildFourWedgeDecreaseSchedule(wedgeStitchCount).decreaseCount;
+    const crownDepth = safeRowGauge > 0 ? crownRows / safeRowGauge : 0;
+    return {
+      crownDepth,
+      bodyLength: Math.max(0, safeLength - crownDepth),
+      note: "Four-gore crown depth is calculated from the shaping schedule.",
+      crownRows,
+      spiral: null,
+    };
+  }
+
   const crownDepth = safeSuggestedDepth;
   return {
     crownDepth,
@@ -583,32 +597,36 @@ export function buildFourWedgeCrownSetup(args: {
 }
 
 /**
+ * Four-gore shaping is always “decrease 1 stitch at each edge every row”
+ * until 1 or 2 stitches remain. `rowFrequency` is kept for shaping-notation
+ * tokens (`1s-1r-Nx`) and is always 1 — it is not derived from chart crown depth.
+ */
+export const FOUR_GORE_DECREASE_ROW_FREQUENCY = 1 as const;
+
+/**
  * Per-wedge decrease schedule for four-gore crowns.
- * Shared by written instructions and the shaping-notation diagram — not a second calc path.
+ * Shared by written instructions, crown-height planning, and the shaping-notation
+ * diagram — not a second calc path.
  */
 export type HatFourWedgeDecreaseSchedule = {
   finalWedgeStitchCount: number;
   decreaseCount: number;
-  /** Rows between decrease rows (1 = every row). */
-  rowFrequency: number;
+  /** Always {@link FOUR_GORE_DECREASE_ROW_FREQUENCY} (every row). */
+  rowFrequency: typeof FOUR_GORE_DECREASE_ROW_FREQUENCY;
   /** Remaining stitches after all four wedges finish. */
   remainingStitchesTotal: number;
 };
 
 export function buildFourWedgeDecreaseSchedule(
   wedgeStitchCount: number,
-  crownRowCount: number,
 ): HatFourWedgeDecreaseSchedule {
   const safeWedge = Math.max(0, Math.round(wedgeStitchCount));
   const finalWedgeStitchCount = safeWedge % 2 === 1 ? 1 : 2;
   const decreaseCount = Math.max(0, (safeWedge - finalWedgeStitchCount) / 2);
-  const safeCrownRows = Math.max(0, Math.round(crownRowCount));
-  const rowFrequency =
-    decreaseCount > 0 ? Math.max(1, Math.round(safeCrownRows / decreaseCount)) : 1;
   return {
     finalWedgeStitchCount,
     decreaseCount,
-    rowFrequency,
+    rowFrequency: FOUR_GORE_DECREASE_ROW_FREQUENCY,
     remainingStitchesTotal: finalWedgeStitchCount * 4,
   };
 }
@@ -664,7 +682,7 @@ export function calculateHatPattern(input: HatPatternCalcInput): HatPatternCalc 
       ? roundToEvenPreferUp(brimDepth * 2 * rowGaugePerInch)
       : roundToEvenPreferUp(brimDepth * rowGaugePerInch);
   const crownRowCount =
-    crown === "spiral"
+    crown === "spiral" || crown === "wedge-4-decrease" || crown === "wedge-4"
       ? Math.max(0, crownPlan.crownRows)
       : roundToEvenPreferUp(crownHeightInches * rowGaugePerInch);
 

@@ -12,6 +12,32 @@ export type HatDiagramFormatters = {
   formatLengthWithUnit: (value: number, unit: string) => string;
 };
 
+/**
+ * Inches represented by an actual generated row count at the working row gauge.
+ * Used for diagram section labels that sit beside those row counts.
+ */
+export function hatDiagramSectionInchesFromRows(
+  rows: number,
+  rowGaugePerInch: number,
+): number {
+  if (!(Number.isFinite(rows) && rows >= 0)) return 0;
+  if (!(Number.isFinite(rowGaugePerInch) && rowGaugePerInch > 0)) return 0;
+  return rows / rowGaugePerInch;
+}
+
+/** Format {@link hatDiagramSectionInchesFromRows} with the hat length-display convention. */
+export function formatHatDiagramSectionLengthFromRows(
+  rows: number,
+  rowGaugePerInch: number,
+  unit: "inches" | "cm",
+  formatters: HatDiagramFormatters,
+): string {
+  const inches = hatDiagramSectionInchesFromRows(rows, rowGaugePerInch);
+  const value =
+    unit === "inches" ? inches : formatters.convertLength(inches, "inches", unit);
+  return formatters.formatLengthWithUnit(value, unit);
+}
+
 /** Map crown style to `/diagrams/{name}.svg` template (spiral → gathered). */
 export function resolveHatDiagramTemplateName(crown: string): string {
   if (crown === "wedge-4" || crown === "wedge-4-decrease") return "hat-4-wedge";
@@ -29,16 +55,14 @@ export function buildHatDiagramTokens(
   const { convertLength, formatLengthWithUnit } = formatters;
   const {
     hatHeight,
-    brimDepth,
     targetWidth,
     castOnSts,
     brimRows,
     bodyRows,
     crown,
     crownRowCount,
-    bodyHeightInches,
-    crownHeightInches,
     stGaugePerInch,
+    rowGaugePerInch,
   } = calc;
 
   const displayWidth = formatLengthWithUnit(
@@ -51,23 +75,23 @@ export function buildHatDiagramTokens(
     currentUnit,
   );
 
-  const displayBrimDepth = formatLengthWithUnit(
-    currentUnit === "inches" ? brimDepth : convertLength(brimDepth, "inches", currentUnit),
+  const displayBrimDepth = formatHatDiagramSectionLengthFromRows(
+    brimRows,
+    rowGaugePerInch,
     currentUnit,
+    formatters,
   );
-
-  const displayBodyHeight = formatLengthWithUnit(
-    currentUnit === "inches"
-      ? bodyHeightInches
-      : convertLength(bodyHeightInches, "inches", currentUnit),
+  const displayBodyHeight = formatHatDiagramSectionLengthFromRows(
+    bodyRows,
+    rowGaugePerInch,
     currentUnit,
+    formatters,
   );
-
-  const displayCrownDepth = formatLengthWithUnit(
-    currentUnit === "inches"
-      ? crownHeightInches
-      : convertLength(crownHeightInches, "inches", currentUnit),
+  const displayCrownDepth = formatHatDiagramSectionLengthFromRows(
+    crownRowCount,
+    rowGaugePerInch,
     currentUnit,
+    formatters,
   );
 
   const displayCastOnSts = applyHatCrownCastOnAdjustment(castOnSts, crown);

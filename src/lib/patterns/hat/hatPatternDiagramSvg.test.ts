@@ -1,9 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
   convertLength,
+  formatLength,
   formatLengthWithUnit,
 } from "../../../components/wizards/utils/unitHelpers";
-import { calculateHatPattern } from "./hatMath";
+import { calculateHatPattern, hatCrownStartRow } from "./hatMath";
+import {
+  formatHatDiagramSectionLengthFromRows,
+  hatDiagramSectionInchesFromRows,
+} from "./hatDiagram";
+import { buildHatPatternHtml } from "./hatInstructions";
 import {
   buildHatPatternDiagramSvg,
   HAT_PATTERN_DIAGRAM_MODE_PATTERN,
@@ -32,6 +38,43 @@ function calcFor(overrides: Partial<Parameters<typeof calculateHatPattern>[0]> =
   });
 }
 
+function rowDerivedLength(
+  rows: number,
+  calc: ReturnType<typeof calculateHatPattern>,
+  unit: "inches" | "cm" = "inches",
+): string {
+  return formatHatDiagramSectionLengthFromRows(
+    rows,
+    calc.rowGaugePerInch,
+    unit,
+    formatters,
+  );
+}
+
+function expectRowPairedSectionLengths(
+  svg: string,
+  calc: ReturnType<typeof calculateHatPattern>,
+  unit: "inches" | "cm" = "inches",
+): void {
+  expect(svg).toContain(`${calc.brimRows} rows`);
+  expect(svg).toContain(rowDerivedLength(calc.brimRows, calc, unit));
+  expect(svg).toContain(`${calc.bodyRows} rows`);
+  expect(svg).toContain(rowDerivedLength(calc.bodyRows, calc, unit));
+  const isGathered =
+    calc.crown !== "wedge-4" &&
+    calc.crown !== "wedge-4-decrease" &&
+    calc.crown !== "spiral";
+  if (!isGathered) {
+    expect(svg).toContain(`${calc.crownRowCount} rows`);
+    expect(svg).toContain(rowDerivedLength(calc.crownRowCount, calc, unit));
+  }
+  expect(svg).toContain(
+    unit === "inches"
+      ? formatLengthWithUnit(calc.hatHeight, "inches")
+      : formatLengthWithUnit(convertLength(calc.hatHeight, "inches", "cm"), "cm"),
+  );
+}
+
 function expectSaneSvg(svg: string) {
   expect(svg).toContain('viewBox="0 0 430 460"');
   expect(svg).toContain("<title");
@@ -55,7 +98,7 @@ describe("buildHatPatternDiagramSvg", () => {
     expect(svg).not.toContain("hat-diagram__crown--swirl");
     expect(svg).toContain(`${calc.castOnSts} sts`);
     expect(svg).toContain(formatLengthWithUnit(calc.hatHeight, "inches"));
-    expect(svg).toContain(formatLengthWithUnit(calc.brimDepth, "inches"));
+    expect(svg).toContain(rowDerivedLength(calc.brimRows, calc));
   });
 
   it("renders four-gore-specific structure for wedge-4-decrease", () => {
@@ -74,7 +117,7 @@ describe("buildHatPatternDiagramSvg", () => {
     expect(svg).toContain("sts / gore");
     expect(svg).not.toContain("textLength=");
     expect(svg).toContain(`${calc.crownRowCount} rows`);
-    expect(svg).toContain(formatLengthWithUnit(calc.crownHeightInches, "inches"));
+    expect(svg).toContain(rowDerivedLength(calc.crownRowCount, calc));
     expect(svg).not.toContain("hat-diagram__crown--gathered");
     expect(svg).not.toContain("hat-diagram__crown--swirl");
 
@@ -402,6 +445,7 @@ describe("buildHatPatternDiagramSvg", () => {
         if (crown !== "gathered") {
           expect(svg).toContain(`${calc.crownRowCount} rows`);
         }
+        expectRowPairedSectionLengths(svg, calc);
         expect(svg).toMatch(/\d+ sts/);
         expect(svg).toContain(formatLengthWithUnit(calc.targetWidth, "inches"));
         expect(svg).toContain(`data-brim="${brimType}"`);
@@ -503,7 +547,7 @@ describe("buildHatPatternDiagramSvg", () => {
     expect(patternSvg).toContain("sts / gore");
     expect(patternSvg).toContain(formatLengthWithUnit(calc.hatHeight, "inches"));
     expect(patternSvg).toContain(formatLengthWithUnit(calc.targetWidth, "inches"));
-    expect(patternSvg).toContain(formatLengthWithUnit(calc.brimDepth, "inches"));
+    expect(patternSvg).toContain(rowDerivedLength(calc.brimRows, calc));
     expect(summarySvg).not.toMatch(/\d+\s*rows/);
     expect(summarySvg).not.toMatch(/\d+\s*sts/);
     expect(summarySvg).not.toMatch(/>\d+(?:\.\d+)?"</);
@@ -550,5 +594,133 @@ describe("buildHatPatternDiagramSvg", () => {
       return Number(m![1]);
     };
     expect(widthOf(wideSvg)).toBeGreaterThan(widthOf(narrowSvg));
+  });
+});
+
+const babyBeanieGathered16x24 = () =>
+  calculateHatPattern({
+    finishedHatCircInches: 16,
+    stitchGaugeDisplay: 16,
+    rowGaugeDisplay: 24,
+    displayUnit: "inches",
+    totalHatLengthInches: 6.2,
+    brimDepthInches: 1,
+    brimType: "single",
+    crown: "gathered",
+    suggestedCrownDepthInches: 1,
+    fit: "beanie",
+  });
+
+describe("hat diagram section lengths from generated rows", () => {
+  it("formats 26 rows at 6 rows/inch as 4.3\" and 6 rows as 1.0\"", () => {
+    expect(hatDiagramSectionInchesFromRows(26, 6)).toBeCloseTo(26 / 6, 10);
+    expect(formatHatDiagramSectionLengthFromRows(26, 6, "inches", formatters)).toBe(
+      '4.3"',
+    );
+    expect(formatHatDiagramSectionLengthFromRows(6, 6, "inches", formatters)).toBe(
+      '1.0"',
+    );
+    expect(formatLength(26 / 6, "inches")).toBe("4.3");
+  });
+
+  it("Baby / 16×24 / Beanie / 1\" Single / Gathered shows body 26 rows / 4.3\" with Total 6.2\"", () => {
+    const calc = babyBeanieGathered16x24();
+    expect(calc.rowGaugePerInch).toBe(6);
+    expect(calc.castOnSts).toBe(64);
+    expect(calc.bodyRows).toBe(26);
+    expect(calc.brimRows).toBe(6);
+    expect(calc.crownRowCount).toBe(6);
+    expect(calc.bodyHeightInches).toBeCloseTo(4.2, 10);
+    expect(calc.hatHeight).toBe(6.2);
+    expect(hatCrownStartRow(calc)).toBe(32);
+
+    const svg = buildHatPatternDiagramSvg(calc, "inches", formatters);
+    expectSaneSvg(svg);
+    expect(svg).toContain("26 rows");
+    expect(svg).toContain('4.3"');
+    expect(svg).toContain("6 rows");
+    expect(svg).toContain('1.0"');
+    expect(svg).toContain('6.2"');
+    expect(svg).toContain("gather");
+    expect(svg).not.toContain("12 rows");
+    expect(svg).not.toContain(`>${formatLengthWithUnit(calc.bodyHeightInches, "inches")}<`);
+    expectRowPairedSectionLengths(svg, calc);
+
+    const html = buildHatPatternHtml({
+      calc,
+      currentUnit: "inches",
+      scrapOffPatternTooltip: "Scrap Off",
+      tipsIntroHtml: "",
+      showTips: false,
+      formatters: {
+        convertLength: convertLength as (v: number, from: string, to: string) => number,
+        formatLength: formatLength as (v: number, unit: string) => string,
+      },
+    });
+    expect(html).toContain("Work 6 rows in your chosen brim finish.");
+    expect(html).toContain("Work 26 rows in pattern after the brim.");
+    expect(html).toContain("Begin crown shaping at RC 32.");
+    expect(html).toContain("Knit 6 rows. RC is now 38.");
+  });
+
+  it("pairs section inches with generated rows for Gathered, Four-Gore, and Swirl", () => {
+    const gauges = [
+      { stitchGaugeDisplay: 5, rowGaugeDisplay: 7 },
+      { stitchGaugeDisplay: 7, rowGaugeDisplay: 10 },
+      { stitchGaugeDisplay: 16, rowGaugeDisplay: 24 },
+      { stitchGaugeDisplay: 20, rowGaugeDisplay: 28 },
+    ] as const;
+    const crowns = ["gathered", "wedge-4-decrease", "spiral"] as const;
+    let evenUpMismatchCases = 0;
+
+    for (const gauge of gauges) {
+      for (const crown of crowns) {
+        const calc = calculateHatPattern({
+          finishedHatCircInches: 16,
+          stitchGaugeDisplay: gauge.stitchGaugeDisplay,
+          rowGaugeDisplay: gauge.rowGaugeDisplay,
+          displayUnit: "inches",
+          totalHatLengthInches: 6.2,
+          brimDepthInches: 1,
+          brimType: "single",
+          crown,
+          suggestedCrownDepthInches: 1,
+          fit: "beanie",
+        });
+        const svg = buildHatPatternDiagramSvg(calc, "inches", formatters);
+        expectSaneSvg(svg);
+        expectRowPairedSectionLengths(svg, calc);
+
+        const plannedBody = formatLengthWithUnit(calc.bodyHeightInches, "inches");
+        const displayedBody = rowDerivedLength(calc.bodyRows, calc);
+        if (plannedBody !== displayedBody) {
+          evenUpMismatchCases += 1;
+          expect(svg).toContain(`>${displayedBody}<`);
+          expect(svg).not.toContain(`>${plannedBody}<`);
+        }
+
+        const plannedBrim = formatLengthWithUnit(calc.brimDepth, "inches");
+        const displayedBrim = rowDerivedLength(calc.brimRows, calc);
+        if (plannedBrim !== displayedBrim) {
+          evenUpMismatchCases += 1;
+          expect(svg).toContain(`>${displayedBrim}<`);
+          expect(svg).not.toContain(`>${plannedBrim}<`);
+        }
+
+        if (crown !== "gathered") {
+          const plannedCrown = formatLengthWithUnit(calc.crownHeightInches, "inches");
+          const displayedCrown = rowDerivedLength(calc.crownRowCount, calc);
+          if (plannedCrown !== displayedCrown) {
+            evenUpMismatchCases += 1;
+            expect(svg).toContain(`>${displayedCrown}<`);
+            expect(svg).not.toContain(`>${plannedCrown}<`);
+          }
+        }
+
+        expect(svg).toContain(`>${formatLengthWithUnit(calc.hatHeight, "inches")}<`);
+      }
+    }
+
+    expect(evenUpMismatchCases).toBeGreaterThan(0);
   });
 });
