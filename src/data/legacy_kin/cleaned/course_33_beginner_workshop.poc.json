@@ -724,7 +724,7 @@
           "components": [
             {
               "type": "richText",
-              "html": "<h3>Ready to Practice?</h3>\n\n<p>Now that you understand gauge and tension, put your new skills to work by knitting a simple hat.</p>\n\n\n\n<p>The Hat Pattern Builder will help you create a custom pattern based on your machine, gauge, and measurements.</p><p>Enter YOUR gauge, choose your size - answer a couple of questions and build your hat!</p><p><br></p><p><br></p>\n\n<a href=\"/patterns/hat\" class=\"btn btn-primary\">Build Your Custom Pattern</a>\n\n",
+              "html": "<h3>Ready to Practice?</h3>\n\n<p>Now that you understand gauge and tension, put your new skills to work by knitting a simple hat.</p>\n\n\n\n<p>The Hat Pattern Builder will help you create a custom pattern based on your machine, gauge, and measurements.</p><p>Enter YOUR gauge, choose your size - answer a couple of questions and build your hat!</p><p><br></p><p><br></p>\n\n<a href=\"/patterns/hat/builder\" class=\"btn btn-primary\">Build Your Custom Pattern</a>\n\n",
               "legacyComponentId": 8521,
               "order": 3
             }

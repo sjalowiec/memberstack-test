@@ -16,6 +16,19 @@ import {
 export const HAT_PATTERN_HREF = "/patterns/hat/pattern/";
 export const HAT_PATTERN_BUILDER_HREF = "/patterns/hat/builder";
 
+/** Retired all-in-one wizard URL. Redirects to {@link HAT_PATTERN_BUILDER_HREF}. */
+export const HAT_LEGACY_ENTRY_HREF = "/patterns/hat";
+
+/**
+ * Permanent-entry redirect for `/patterns/hat` bookmarks and old links.
+ * Keeps the query string (same approach as `/patterns/sleeveless-express`).
+ */
+export function buildHatLegacyEntryRedirect(requestUrl: string): string {
+  const url = new URL(requestUrl);
+  url.pathname = HAT_PATTERN_BUILDER_HREF;
+  return `${url.pathname}${url.search}`;
+}
+
 /** Dedicated hat Summary/Edit page (full-page workspace; not a drawer). */
 export const HAT_SUMMARY_EDIT_HREF = "/patterns/hat/summary/";
 

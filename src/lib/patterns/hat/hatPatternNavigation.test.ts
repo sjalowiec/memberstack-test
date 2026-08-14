@@ -26,9 +26,13 @@ import {
 } from "./hatPatternMyPatternsAccess";
 import { initHatPatternNewPattern } from "./hatPatternNewPattern";
 import {
+  HAT_LEGACY_ENTRY_HREF,
+  HAT_PATTERN_BUILDER_HREF,
+  HAT_PATTERN_HREF,
   HAT_SUMMARY_EDIT_FROM_BUILDER_HREF,
   HAT_SUMMARY_EDIT_FROM_PATTERN_HREF,
   HAT_SUMMARY_PRIMARY_FROM_BUILDER_LABEL,
+  buildHatLegacyEntryRedirect,
   hatSummaryCancelHref,
   hatSummaryPrimaryLabel,
   resolveHatSummaryEntryPath,
@@ -54,6 +58,51 @@ function memoryStorage(seed: Record<string, string> = {}) {
     },
   };
 }
+
+describe("legacy /patterns/hat entry redirect", () => {
+  const legacyEntryPage = readFileSync(resolve("src/pages/patterns/hat.astro"), "utf8");
+  const builderPage = readFileSync(resolve("src/pages/patterns/hat/builder.astro"), "utf8");
+  const firstProjectPage = readFileSync(resolve("src/pages/first-project.astro"), "utf8");
+  const patternsIndexPage = readFileSync(resolve("src/pages/patterns/index.astro"), "utf8");
+
+  it("redirects /patterns/hat to the current Hat Builder and preserves query params", () => {
+    expect(HAT_LEGACY_ENTRY_HREF).toBe("/patterns/hat");
+    expect(HAT_PATTERN_BUILDER_HREF).toBe("/patterns/hat/builder");
+    expect(buildHatLegacyEntryRedirect("https://example.com/patterns/hat")).toBe(
+      "/patterns/hat/builder",
+    );
+    expect(buildHatLegacyEntryRedirect("https://example.com/patterns/hat?new=1")).toBe(
+      "/patterns/hat/builder?new=1",
+    );
+    expect(legacyEntryPage).toContain("buildHatLegacyEntryRedirect");
+    expect(legacyEntryPage).toContain("308");
+  });
+
+  it("does not render the legacy wizard ActionBar on /patterns/hat", () => {
+    expect(legacyEntryPage).not.toContain("ActionBar");
+    expect(legacyEntryPage).not.toContain("Edit / Regenerate");
+    expect(legacyEntryPage).not.toContain("wizard-action-bar");
+    expect(legacyEntryPage).not.toContain("button-edit-rebuild");
+  });
+
+  it("leaves the current builder and finished Hat workspace routes unchanged", () => {
+    expect(HAT_PATTERN_BUILDER_HREF).toBe("/patterns/hat/builder");
+    expect(HAT_PATTERN_HREF).toBe("/patterns/hat/pattern/");
+    expect(builderPage).toContain("patternWorkspace={true}");
+    expect(builderPage).not.toContain("ActionBar");
+    expect(patternPage).toContain("patternWorkspace={true}");
+    expect(patternPage).toContain("data-hat-pattern-page");
+    expect(patternPage).not.toContain("ActionBar");
+    expect(patternPage).not.toContain("Edit / Regenerate");
+  });
+
+  it("updates stale internal links away from the retired wizard URL", () => {
+    expect(firstProjectPage).toContain('href="/patterns/hat/builder"');
+    expect(firstProjectPage).not.toMatch(/href=["']\/patterns\/hat["']/);
+    expect(patternsIndexPage).toContain("href: '/patterns/hat/builder'");
+    expect(patternsIndexPage).not.toMatch(/href:\s*['"]\/patterns\/hat['"]/);
+  });
+});
 
 describe("hat finished-pattern navigation markup", () => {
   it("removes Back to Builder from the action bar", () => {
