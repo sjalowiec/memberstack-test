@@ -17,7 +17,10 @@ import {
 } from "../lib/patterns/hat/hatBuilderSizingLabels";
 import {
   applyHatPatternNameToDraft,
+  isEditingSavedHatProject,
+  readHatActiveProjectId,
   resolveHatSavedPatternName,
+  writeHatActiveProjectId,
 } from "../lib/patterns/hat/hatSavedProject";
 import {
   createEmptyHatDraft,
@@ -28,8 +31,6 @@ import {
   type HatDraftUnit,
   type HatGaugeSlot,
 } from "../lib/patterns/hat/hatDraft";
-import { isEditingSavedCustomPatternProject } from "../lib/patterns/customPatternEditingUx";
-import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
 import { renameSavedCustomPatternProject } from "../lib/patterns/savedCustomPatternManageActions";
 import {
   canonicalHatFitStyle,
@@ -403,7 +404,7 @@ export function initHatPatternSummaryPage(): void {
       cm: { ...draft.gaugeSlots.cm },
     };
     writeForm(hatDraftToEditFormValues(draft, rows));
-    const saved = isEditingSavedCustomPatternProject();
+    const saved = isEditingSavedHatProject();
     if (titleField) titleField.hidden = !saved;
     if (titleInput) {
       titleInput.value = saved ? resolveHatSavedPatternName(draft) : "";
@@ -453,7 +454,7 @@ export function initHatPatternSummaryPage(): void {
     }
     const previous = readHatDraft() ?? baselineDraft ?? createEmptyHatDraft();
     let next = applyHatEditFormToDraft(previous, form, rows);
-    if (isEditingSavedCustomPatternProject()) {
+    if (isEditingSavedHatProject()) {
       const requestedName = titleInput?.value?.trim() || resolveHatSavedPatternName(previous);
       if (requestedName) {
         next = applyHatPatternNameToDraft(next, requestedName);
@@ -468,7 +469,7 @@ export function initHatPatternSummaryPage(): void {
     writeHatDraft(next);
     if (updateBtn) updateBtn.disabled = true;
     try {
-      const activeId = readActiveCustomPatternProjectId();
+      const activeId = readHatActiveProjectId();
       const renamed = next.patternProject?.title?.trim();
       if (activeId && renamed) {
         const renameRes = await renameSavedCustomPatternProject(activeId, renamed, "sleeveless");
@@ -477,6 +478,7 @@ export function initHatPatternSummaryPage(): void {
           setPrimaryEnabled(true);
           return;
         }
+        writeHatActiveProjectId(activeId, renamed);
       }
       navigateAfterPrimarySuccess();
     } finally {

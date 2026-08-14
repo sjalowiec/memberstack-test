@@ -32,7 +32,7 @@ import {
 } from "../lib/patterns/hat/hatPatternMyPatternsAccess";
 import { initHatPatternNewPattern } from "../lib/patterns/hat/hatPatternNewPattern";
 import { resolveHatPatternOnlineHeading, resolveHatPatternPrintFields } from "../lib/patterns/hat/hatPatternPrintTitle";
-import { isEditingSavedCustomPatternProject } from "../lib/patterns/customPatternEditingUx";
+import { isEditingSavedHatProject } from "../lib/patterns/hat/hatSavedProject";
 import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
 import {
   waitForMemberstackDom,
@@ -322,7 +322,7 @@ export async function renderHatPattern() {
 
   const persistNotice = document.querySelector("[data-hat-pattern-persist-notice]");
   if (persistNotice instanceof HTMLElement) {
-    persistNotice.hidden = isEditingSavedCustomPatternProject();
+    persistNotice.hidden = isEditingSavedHatProject();
   }
 
   const zeroBody = document.querySelector("[data-hat-zero-body-warning]");

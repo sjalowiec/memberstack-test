@@ -28,6 +28,10 @@ import {
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
 } from "./patternStorage";
 import { HAT_DRAFT_STORAGE_KEY, readHatDraft } from "./hat/hatDraft";
+import {
+  readHatActiveProjectId,
+  readHatActiveProjectLinkedName,
+} from "./hat/hatSavedProject";
 import * as restoreModule from "./restoreSleevelessExpressBuilderFromPattern";
 
 const PROJECT_ID = "proj-aubrie";
@@ -236,7 +240,9 @@ describe("loadSavedCustomPatternProject", () => {
       redirectHref: `${HAT_OPEN_PATTERN_HREF}?project=${PROJECT_ID}`,
     });
     expect(readHatDraft()?.patternProject?.title).toBe("Sue's Hiking Hat");
-    expect(readActiveCustomPatternProjectLinkedName()).toBe("Sue's Hiking Hat");
+    expect(readHatActiveProjectId()).toBe(PROJECT_ID);
+    expect(readHatActiveProjectLinkedName()).toBe("Sue's Hiking Hat");
+    expect(readActiveCustomPatternProjectLinkedName()).not.toBe("Sue's Hiking Hat");
     expect(localStorage.getItem(HAT_DRAFT_STORAGE_KEY)).toContain("Sue's Hiking Hat");
     expect(localStorage.getItem(PATTERN_STORAGE_KEY) ?? "").not.toContain("Sue's Hiking Hat");
   });

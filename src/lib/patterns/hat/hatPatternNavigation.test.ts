@@ -17,6 +17,7 @@ import {
   HAT_BUILDER_PATH,
   startFreshHatPattern,
   startNewHatPatternFromFinishedPage,
+  startOverHatBuilderSession,
 } from "./hatFreshStart";
 import {
   applyHatPatternMyPatternsAccess,
@@ -25,6 +26,11 @@ import {
   hatPatternMyPatternsIsActive,
 } from "./hatPatternMyPatternsAccess";
 import { initHatPatternNewPattern } from "./hatPatternNewPattern";
+import {
+  isEditingSavedHatProject,
+  readHatActiveProjectId,
+  writeHatActiveProjectId,
+} from "./hatSavedProject";
 import {
   HAT_LEGACY_ENTRY_HREF,
   HAT_PATTERN_BUILDER_HREF,
@@ -302,6 +308,25 @@ describe("hat New Pattern clears draft", () => {
     expect(storage.getItem(LEGACY_HAT_SIZE_STORAGE_KEY)).toBeNull();
     expect(storage.getItem(LEGACY_HAT_PATTERN_INPUTS_STORAGE_KEY)).toBeNull();
     expect(readHatDraft(storage)).toBeNull();
+  });
+
+  it("builder Start Over uses startOverHatBuilderSession to drop saved-project identity", () => {
+    expect(builderScript).toContain("startOverHatBuilderSession");
+    expect(builderScript).toContain("hat-builder-start-over");
+    writeHatDraft(
+      createEmptyHatDraft({
+        sizeSel: "adult_man",
+        patternProject: { title: "Sue's Hiking Hat", notes: "", titleCustomized: true },
+      }),
+    );
+    writeHatActiveProjectId("proj-hat-1", "Sue's Hiking Hat");
+
+    const fresh = startOverHatBuilderSession({ unit: "inches", showTips: false });
+    expect(fresh.sizeSel).toBe("");
+    expect(fresh.patternProject).toBeUndefined();
+    expect(readHatActiveProjectId()).toBe("");
+    expect(isEditingSavedHatProject()).toBe(false);
+    expect(readHatDraft()?.patternProject).toBeUndefined();
   });
 
   it("clearHatDraftStorage prevents legacy migration from restoring choices", () => {

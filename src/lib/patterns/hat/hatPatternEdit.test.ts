@@ -996,6 +996,13 @@ describe("hat Summary/Edit page wiring", () => {
     expect(summaryPage).toContain("data-hat-edit-title-field hidden");
     expect(summaryPage).toContain("Pattern title");
     expect(summaryPage).toContain("PatternEditablePencilIcon");
+    expect(summaryPage).toContain("pattern-editable-pencil.css");
+    expect(summaryPage).toContain("pattern-editable-heading");
+    expect(sleevelessPatternPage).toContain("pattern-editable-pencil.css");
+    expect(sleevelessPatternPage).toContain("pattern-editable-heading");
+    expect(summaryScript).toContain("isEditingSavedHatProject");
+    expect(summaryScript).toContain("readHatActiveProjectId");
+    expect(summaryScript).not.toContain("isEditingSavedCustomPatternProject");
     expect(sleevelessPatternPage).toContain("sl-edit-workspace__layout");
     expect(sleevelessPatternPage).toContain("sl-edit-workspace__measure-actions");
     expect(summaryPage).toContain("sl-edit-workspace__measure-actions");

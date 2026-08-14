@@ -11,7 +11,7 @@ import {
   type HatDraft,
   type HatDraftUnit,
 } from "../lib/patterns/hat/hatDraft";
-import { applyHatNewSessionFromUrl } from "../lib/patterns/hat/hatFreshStart";
+import { applyHatNewSessionFromUrl, startOverHatBuilderSession } from "../lib/patterns/hat/hatFreshStart";
 import {
   canonicalHatFitStyle,
   hatBrimDisplayLabel,
@@ -738,8 +738,7 @@ function initHatBuilderPage(): void {
   });
 
   el<HTMLButtonElement>("hat-builder-start-over")?.addEventListener("click", () => {
-    draft = createEmptyHatDraft({ unit: activeUnit, showTips: draft.showTips });
-    writeHatDraft(draft);
+    draft = startOverHatBuilderSession({ unit: activeUnit, showTips: draft.showTips });
     gaugeSlots = {
       inches: { stitch: "", row: "" },
       cm: { stitch: "", row: "" },

@@ -9,9 +9,8 @@
  * linked saved-project name). Unsaved temporary hats print "Hat Pattern".
  */
 
-import { isEditingSavedCustomPatternProject } from "../customPatternEditingUx";
 import { readHatDraft, type HatDraft } from "./hatDraft";
-import { resolveHatSavedPatternName } from "./hatSavedProject";
+import { isEditingSavedHatProject, resolveHatSavedPatternName } from "./hatSavedProject";
 
 export const HAT_PATTERN_PRINT_TITLE = "Hat Pattern";
 
@@ -29,7 +28,7 @@ function isSavedHatSession(draft: HatDraft | null | undefined, isSaved?: boolean
   if (typeof isSaved === "boolean") return isSaved;
   const customized = draft?.patternProject?.titleCustomized === true;
   if (customized && draft?.patternProject?.title?.trim()) return true;
-  return isEditingSavedCustomPatternProject() && Boolean(resolveHatSavedPatternName(draft));
+  return isEditingSavedHatProject() && Boolean(resolveHatSavedPatternName(draft));
 }
 
 /**

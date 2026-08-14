@@ -5,6 +5,7 @@ import {
   isHatPatternPrintPage,
   resolvePatternPrintPersonalizationFields,
 } from "../patternPrintPersonalizationFields";
+import { writeHatActiveProjectId } from "./hatSavedProject";
 import { writeActiveCustomPatternProjectId } from "../customPatternProjectActiveId";
 import { saveCurrentPattern } from "../patternStorage";
 import { getPatternProjectPrintFields } from "../sleevelessPatternProjectMeta";
@@ -109,6 +110,8 @@ describe("hat pattern print title", () => {
     expect(printPersonalizationScript).toContain("resolvePatternPrintPersonalizationFields");
     expect(hatPageScript).toContain("resolveHatPatternPrintFields");
     expect(hatPageScript).toContain("applyPatternPrintPersonalizationToDom");
+    expect(hatPageScript).toContain("isEditingSavedHatProject");
+    expect(hatPageScript).not.toContain("isEditingSavedCustomPatternProject");
   });
 });
 
@@ -166,7 +169,7 @@ describe("saved vs unsaved hat print titles", () => {
       patternProject: { title: "Sue's Hiking Hat", notes: "", titleCustomized: true },
     });
     writeHatDraft(draft);
-    writeActiveCustomPatternProjectId("proj-hat-1", "Sue's Hiking Hat");
+    writeHatActiveProjectId("proj-hat-1", "Sue's Hiking Hat");
 
     expect(resolveHatPatternPrintFields({ draft, isSaved: true })).toEqual({
       title: "Sue's Hiking Hat",
@@ -192,6 +195,26 @@ describe("saved vs unsaved hat print titles", () => {
     expect(resolveHatPatternOnlineHeading("Adult woman 22\"", draft)).toBe(
       "Hat Pattern · Adult woman 22\"",
     );
+  });
+
+  it("does not print a leftover sweater title such as Walt's Men's Sleeveless", () => {
+    saveCurrentPattern({
+      patternProject: {
+        title: "Walt's Men's Sleeveless",
+        notes: "",
+        titleCustomized: true,
+      },
+    });
+    writeActiveCustomPatternProjectId("proj-walt-sleeveless", "Walt's Men's Sleeveless");
+    const draft = createEmptyHatDraft({ sizeSel: "adult_woman" });
+    writeHatDraft(draft);
+
+    expect(resolveHatPatternPrintFields({ draft }).title).toBe("Hat Pattern");
+    expect(resolveHatPatternOnlineHeading('Adult Woman — 20.5" finished', draft)).toBe(
+      'Hat Pattern · Adult Woman — 20.5" finished',
+    );
+    expect(resolveHatPatternPrintFields({ draft }).title).not.toContain("Sleeveless");
+    expect(resolveHatPatternPrintFields({ draft }).title).not.toContain("Walt");
   });
 
   it("leaves sweater print titles unchanged when not on a hat page", () => {

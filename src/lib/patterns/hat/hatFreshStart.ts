@@ -3,7 +3,8 @@
  * Mirrors sleeveless Express fresh-start: clear local draft, then land on the builder.
  */
 import { SLEEVELESS_EXPRESS_NEW_SESSION_PARAM, SLEEVELESS_EXPRESS_NEW_SESSION_VALUE } from "../patternStorage";
-import { clearHatDraftStorage } from "./hatDraft";
+import { clearHatDraftStorage, createEmptyHatDraft, writeHatDraft, type HatDraft, type HatDraftUnit } from "./hatDraft";
+import { clearHatSavedProjectIdentity } from "./hatSavedProject";
 
 export const HAT_BUILDER_PATH = "/patterns/hat/builder";
 
@@ -20,7 +21,21 @@ export function startFreshHatPattern(
     ? localStorage
     : { removeItem: () => undefined },
 ): void {
+  clearHatSavedProjectIdentity();
   clearHatDraftStorage(storage);
+}
+
+/**
+ * In-page Hat Builder Start Over: empty draft (keep unit / tips) and drop saved-project identity.
+ */
+export function startOverHatBuilderSession(args: {
+  unit: HatDraftUnit;
+  showTips: boolean;
+}): HatDraft {
+  clearHatSavedProjectIdentity();
+  const draft = createEmptyHatDraft({ unit: args.unit, showTips: args.showTips });
+  writeHatDraft(draft);
+  return draft;
 }
 
 export function isHatNewSessionSearchParams(params: URLSearchParams): boolean {
