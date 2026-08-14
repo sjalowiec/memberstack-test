@@ -156,7 +156,28 @@ describe("renameSavedCustomPatternProject", () => {
     expect(payload?.pattern.patternProject?.title).toBe("Mom's Pullover");
     // Pattern body (sizing chart) is preserved.
     expect(payload?.pattern.style).toMatchObject({ recipientCategory: "misses" });
+    expect(payload?.pattern.patternType).toBe("sleeveless");
+    expect(payload?.metadataOnly).toBe(true);
     expect(createCustomPatternProject).not.toHaveBeenCalled();
+  });
+
+  it("does not write hat draft storage when renaming a sweater", async () => {
+    localStorage.setItem(
+      "kbm_hat_draft",
+      JSON.stringify({ patternType: "hat", sizeSel: "adult_woman" }),
+    );
+    vi.mocked(loadCustomPatternProject).mockResolvedValue({ ok: true, project: womensProject });
+    vi.mocked(updateCustomPatternProject).mockImplementation(async (payload) => ({
+      ok: true,
+      project: { ...womensProject, name: payload.name },
+    }));
+
+    await renameSavedCustomPatternProject("proj-womens", "Mom's Pullover");
+
+    expect(localStorage.getItem("kbm_hat_draft")).toContain("adult_woman");
+    const payload = vi.mocked(updateCustomPatternProject).mock.calls[0]?.[0];
+    expect(payload?.pattern.patternType).toBe("sleeveless");
+    expect((payload?.pattern as { brimType?: string }).brimType).toBeUndefined();
   });
 
   it("keeps the active linked name in sync when renaming the active project", async () => {

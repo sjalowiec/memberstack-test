@@ -53,10 +53,23 @@ function section(obj: unknown): Record<string, unknown> {
     : {};
 }
 
+function isHatPatternBlob(pattern: unknown): boolean {
+  const o = section(pattern);
+  return o.patternType === "hat" || o.patternSystem === "hat";
+}
+
+/** True when a saved Custom Pattern project is a Hat Pattern. */
+export function isHatCustomPatternProject(
+  project: { pattern?: unknown } | null | undefined,
+): boolean {
+  return isHatPatternBlob(project?.pattern);
+}
+
 /** Resolve pattern system from saved project metadata. */
 export function resolvePatternSystemFromProject(
   project: Pick<CustomPatternProject, "pattern" | "customOverrides">,
 ): PatternSystemId {
+  if (isHatPatternBlob(project.pattern)) return "hat";
   if (
     hasAuthoritativeDropShoulderConstruction(
       section(project.pattern?.style),
@@ -73,6 +86,7 @@ export function resolvePatternSystemFromPatternRecord(
   pattern: SleevelessPatternRecord,
   customOverrides?: Record<string, unknown>,
 ): PatternSystemId {
+  if (isHatPatternBlob(pattern)) return "hat";
   if (hasAuthoritativeDropShoulderConstruction(section(pattern.style), customOverrides)) {
     return "drop-shoulder";
   }
@@ -99,6 +113,9 @@ function resolvePatternSystemFromPageUrlAndDom(doc?: Document): PatternSystemId 
   const pathname = readPagePathname(scope);
   if (/\/patterns\/drop-shoulder(?:\/|$)/.test(pathname)) {
     return "drop-shoulder";
+  }
+  if (/\/patterns\/hat(?:\/|$)/.test(pathname)) {
+    return "hat";
   }
   // Builder entry routes: URL intent wins over a stale cross-system working draft in localStorage.
   // (A nosub knitter with a saved Drop Shoulder pattern must still open Sleeveless with ?new=1.)

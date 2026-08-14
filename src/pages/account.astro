@@ -596,7 +596,9 @@ const description =
   :global(.account-my-patterns__action--copy.is-disabled),
   :global(.account-my-patterns__action--copy:disabled),
   :global(.account-my-patterns__action--edit.is-disabled),
-  :global(.account-my-patterns__action--edit[aria-disabled="true"]) {
+  :global(.account-my-patterns__action--edit[aria-disabled="true"]),
+  :global(.account-my-patterns__action--rename.is-disabled),
+  :global(.account-my-patterns__action--rename[aria-disabled="true"]) {
     color: #9aa3a0;
     background: var(--kbm-surface-muted, #f3f4f3);
     border-color: var(--kbm-border-subtle, #e2e6e0);
@@ -607,7 +609,9 @@ const description =
   :global(.account-my-patterns__action--copy.is-disabled:hover),
   :global(.account-my-patterns__action--copy:disabled:hover),
   :global(.account-my-patterns__action--edit.is-disabled:hover),
-  :global(.account-my-patterns__action--edit[aria-disabled="true"]:hover) {
+  :global(.account-my-patterns__action--edit[aria-disabled="true"]:hover),
+  :global(.account-my-patterns__action--rename.is-disabled:hover),
+  :global(.account-my-patterns__action--rename[aria-disabled="true"]:hover) {
     background: var(--kbm-surface-muted, #f3f4f3);
     border-color: var(--kbm-border-subtle, #e2e6e0);
   }

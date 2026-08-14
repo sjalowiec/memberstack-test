@@ -31,7 +31,9 @@ import {
   bindHatPatternMyPatternsDisabledGuard,
 } from "../lib/patterns/hat/hatPatternMyPatternsAccess";
 import { initHatPatternNewPattern } from "../lib/patterns/hat/hatPatternNewPattern";
-import { resolveHatPatternPrintFields } from "../lib/patterns/hat/hatPatternPrintTitle";
+import { resolveHatPatternOnlineHeading, resolveHatPatternPrintFields } from "../lib/patterns/hat/hatPatternPrintTitle";
+import { isEditingSavedCustomPatternProject } from "../lib/patterns/customPatternEditingUx";
+import { ensureUrlRequestedSavedPatternHydrated } from "../lib/patterns/ensureUrlRequestedSavedPattern";
 import {
   waitForMemberstackDom,
   waitForMemberstackReady,
@@ -312,11 +314,16 @@ export async function renderHatPattern() {
 
   const heading = document.querySelector("[data-hat-pattern-online-heading]");
   if (heading instanceof HTMLElement) {
-    heading.textContent = `Hat Pattern · ${summary.sizeLabel}`;
+    heading.textContent = resolveHatPatternOnlineHeading(summary.sizeLabel, readyDraft);
   }
 
-  const hatPrint = resolveHatPatternPrintFields();
+  const hatPrint = resolveHatPatternPrintFields({ draft: readyDraft });
   applyPatternPrintPersonalizationToDom(hatPrint.title, hatPrint.notes);
+
+  const persistNotice = document.querySelector("[data-hat-pattern-persist-notice]");
+  if (persistNotice instanceof HTMLElement) {
+    persistNotice.hidden = isEditingSavedCustomPatternProject();
+  }
 
   const zeroBody = document.querySelector("[data-hat-zero-body-warning]");
   if (zeroBody instanceof HTMLElement) {
@@ -399,12 +406,17 @@ export function initHatPatternPage() {
     void syncHatPatternPersistNoticeMembership().catch(() => {
       applyHatPatternMembershipChrome("loggedOut");
     });
-    void renderHatPattern().catch((err) => {
-      console.error("[hat-pattern] render failed", err);
-      showEmptyState(
-        "We couldn't calculate this hat pattern from your saved choices. Return to the builder and try again.",
-      );
-    });
+    void (async () => {
+      await ensureUrlRequestedSavedPatternHydrated();
+      try {
+        await renderHatPattern();
+      } catch (err) {
+        console.error("[hat-pattern] render failed", err);
+        showEmptyState(
+          "We couldn't calculate this hat pattern from your saved choices. Return to the builder and try again.",
+        );
+      }
+    })();
 
     const ms = window.$memberstackDom;
     if (ms && typeof ms.on === "function") {

@@ -16,6 +16,10 @@ import {
   HAT_FIT_PRESET_LABEL_NAMES,
 } from "../lib/patterns/hat/hatBuilderSizingLabels";
 import {
+  applyHatPatternNameToDraft,
+  resolveHatSavedPatternName,
+} from "../lib/patterns/hat/hatSavedProject";
+import {
   createEmptyHatDraft,
   ensureHatDraftMigrated,
   readHatDraft,
@@ -24,6 +28,9 @@ import {
   type HatDraftUnit,
   type HatGaugeSlot,
 } from "../lib/patterns/hat/hatDraft";
+import { isEditingSavedCustomPatternProject } from "../lib/patterns/customPatternEditingUx";
+import { readActiveCustomPatternProjectId } from "../lib/patterns/customPatternProjectActiveId";
+import { renameSavedCustomPatternProject } from "../lib/patterns/savedCustomPatternManageActions";
 import {
   canonicalHatFitStyle,
   HAT_NAMED_FIT_STYLES,
@@ -184,6 +191,8 @@ export function initHatPatternSummaryPage(): void {
     workspace.querySelectorAll<HTMLElement>("[data-hat-edit-unit-suffix]"),
   );
   const gaugeHelp = workspace.querySelector<HTMLElement>("[data-hat-edit-gauge-help]");
+  const titleField = workspace.querySelector<HTMLElement>("[data-hat-edit-title-field]");
+  const titleInput = workspace.querySelector<HTMLInputElement>("[data-hat-edit-title]");
 
   let activeUnit: HatDraftUnit = "inches";
   let gaugeSlots: LocalGaugeSlots = {
@@ -394,6 +403,11 @@ export function initHatPatternSummaryPage(): void {
       cm: { ...draft.gaugeSlots.cm },
     };
     writeForm(hatDraftToEditFormValues(draft, rows));
+    const saved = isEditingSavedCustomPatternProject();
+    if (titleField) titleField.hidden = !saved;
+    if (titleInput) {
+      titleInput.value = saved ? resolveHatSavedPatternName(draft) : "";
+    }
     clearFieldErrors();
     setPrimaryEnabled(true);
     mountDiagramFromDraft(draft);
@@ -438,7 +452,13 @@ export function initHatPatternSummaryPage(): void {
       return;
     }
     const previous = readHatDraft() ?? baselineDraft ?? createEmptyHatDraft();
-    const next = applyHatEditFormToDraft(previous, form, rows);
+    let next = applyHatEditFormToDraft(previous, form, rows);
+    if (isEditingSavedCustomPatternProject()) {
+      const requestedName = titleInput?.value?.trim() || resolveHatSavedPatternName(previous);
+      if (requestedName) {
+        next = applyHatPatternNameToDraft(next, requestedName);
+      }
+    }
     const preview = buildHatPatternCalcFromDraft(next, rows as HatSizingPatternRow[]);
     if (!preview.ok) {
       showFieldErrors({ form: preview.message });
@@ -448,6 +468,16 @@ export function initHatPatternSummaryPage(): void {
     writeHatDraft(next);
     if (updateBtn) updateBtn.disabled = true;
     try {
+      const activeId = readActiveCustomPatternProjectId();
+      const renamed = next.patternProject?.title?.trim();
+      if (activeId && renamed) {
+        const renameRes = await renameSavedCustomPatternProject(activeId, renamed, "sleeveless");
+        if (!renameRes.ok) {
+          showFieldErrors({ form: renameRes.error });
+          setPrimaryEnabled(true);
+          return;
+        }
+      }
       navigateAfterPrimarySuccess();
     } finally {
       if (updateBtn) updateBtn.disabled = false;

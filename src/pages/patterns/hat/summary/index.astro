@@ -20,6 +20,7 @@ import {
   HAT_SUMMARY_PRIMARY_FROM_EDIT_LABEL,
 } from "../../../../lib/patterns/hat/hatPatternNavigation";
 import { HAT_EDIT_MEASUREMENT_TRANSFORMS } from "../../../../lib/patterns/hat/hatPatternEditTargets";
+import PatternEditablePencilIcon from "../../../../components/patterns/PatternEditablePencilIcon.astro";
 
 import "../../../../styles/wizard.css";
 import "../../../../styles/patterns/sleeveless-pattern-shared.css";
@@ -68,6 +69,24 @@ import "../../../../styles/patterns/pattern-app-shell.css";
           <div class="sl-edit-workspace__layout">
             <div class="sl-edit-workspace__quick">
               <div class="sl-edit-drawer__body">
+                <div class="sl-edit-field" data-hat-edit-title-field hidden>
+                  <label class="sl-edit-label" for="hat-edit-title">
+                    <span class="pattern-editable-heading">
+                      Pattern title
+                      <PatternEditablePencilIcon />
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    id="hat-edit-title"
+                    class="sl-edit-input"
+                    data-hat-edit-title
+                    data-testid="hat-edit-title"
+                    placeholder="Hat"
+                    autocomplete="off"
+                  />
+                </div>
+
                 <section class="sl-edit-section sl-edit-units-section" aria-labelledby="hat-edit-units-heading">
                   <h3 class="sl-edit-section__title" id="hat-edit-units-heading">Units</h3>
                   <div

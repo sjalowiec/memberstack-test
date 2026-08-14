@@ -35,6 +35,7 @@ import {
 import {
   copySavedCustomPatternProjectById,
   formatPatternCopiedMessage,
+  renameSavedCustomPatternProject,
 } from "./savedCustomPatternManageActions";
 
 const SIGN_IN_REQUIRED_ERROR = "Sign in to save Custom Pattern projects.";
@@ -42,6 +43,8 @@ const SIGN_IN_REQUIRED_ERROR = "Sign in to save Custom Pattern projects.";
 export const SAVED_CUSTOM_PATTERN_EDIT_DISABLED_TEXT =
   "Pattern editing is included with membership. You can still view, print, and knit from this pattern.";
 export { DELETE_SAVED_PATTERN_CONFIRM_MESSAGE };
+/** Prompt shown by the My Patterns Rename action (hats; same helper as sweater rename). */
+export const RENAME_SAVED_PATTERN_PROMPT_MESSAGE = "Rename this saved pattern:";
 const EMPTY_LIST_MESSAGE =
   "You do not have any saved patterns yet. Create your first pattern to get started.";
 
@@ -160,6 +163,7 @@ const ROW_ACTION_SELECTORS = [
   "[data-kbm-my-patterns-view]",
   "[data-kbm-my-patterns-edit]",
   "[data-kbm-my-patterns-copy]",
+  "[data-kbm-my-patterns-rename]",
   "[data-kbm-my-patterns-delete]",
 ] as const;
 
@@ -186,6 +190,7 @@ function releaseMyPatternsListInteraction(root: HTMLElement): void {
   });
   syncMyPatternsEditAccess(root);
   syncMyPatternsCopyAccess(root);
+  syncMyPatternsRenameAccess(root);
 }
 
 function showEmptyListState(root: HTMLElement): void {
@@ -251,6 +256,19 @@ function syncMyPatternsCopyAccess(root: HTMLElement): void {
   const access = listAccess(root);
   root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-copy]").forEach((btn) => {
     syncSavedCustomPatternCopyAccessForAccess(btn, access);
+  });
+}
+
+/** Hats expose the shared Rename action; sweater rows stay without a Rename button. */
+export function shouldOfferSavedPatternRename(patternSystem: PatternSystemId): boolean {
+  return patternSystem === "hat";
+}
+
+function syncMyPatternsRenameAccess(root: HTMLElement): void {
+  const access = listAccess(root);
+  root.querySelectorAll<HTMLButtonElement>("[data-kbm-my-patterns-rename]").forEach((btn) => {
+    const system = (btn.dataset.patternSystem as PatternSystemId | undefined) ?? "sleeveless";
+    applyEditAccessToButton(btn, access, system);
   });
 }
 
@@ -397,6 +415,59 @@ async function onProjectCopy(root: HTMLElement, projectId: string, label: string
     console.error("[kbm] Failed to copy saved pattern from My Patterns.", error);
     setStatus(root, "Could not copy this pattern. Please try again.", true);
     perfEnd("6-account-list-action total", actionStart, { action: "copy", ok: false, thrown: true });
+  } finally {
+    releaseMyPatternsListInteraction(root);
+  }
+}
+
+async function onProjectRename(
+  root: HTMLElement,
+  projectId: string,
+  label: string,
+): Promise<void> {
+  const stateBefore = listStateByRoot.get(root);
+  const project = stateBefore?.projects.find((p) => p.id === projectId);
+  const patternSystem = project ? projectPatternSystem(project) : "sleeveless";
+  if (!canEditSavedPatternFromList(root, patternSystem)) {
+    offerPatternEditingUnlockModal(listAccess(root), { patternSystem });
+    return;
+  }
+
+  const next = window.prompt(RENAME_SAVED_PATTERN_PROMPT_MESSAGE, label);
+  if (next === null) return;
+  const name = next.trim();
+  if (!name) {
+    setStatus(root, "Enter a pattern name.", true);
+    return;
+  }
+
+  const actionStart = perfStart();
+  perfMark("6-account-list-action start", { action: "rename", projectId, label });
+  setStatus(root, `Renaming “${label}”…`);
+  lockMyPatternsListInteraction(root);
+
+  try {
+    const result = await renameSavedCustomPatternProject(projectId, name, "sleeveless");
+    if (!result.ok) {
+      setStatus(root, result.error, true);
+      perfEnd("6-account-list-action total", actionStart, { action: "rename", ok: false });
+      return;
+    }
+
+    const state = listStateByRoot.get(root);
+    if (state) {
+      state.projects = state.projects.map((row) =>
+        row.id === projectId ? { ...row, name: result.project.name } : row,
+      );
+      renderProjectList(root);
+    }
+    setStatus(root, `Renamed to “${result.project.name}”.`);
+    refreshOpenPatternLibraryDrawer();
+    perfEnd("6-account-list-action total", actionStart, { action: "rename", ok: true });
+  } catch (error) {
+    console.error("[kbm] Failed to rename saved pattern from My Patterns.", error);
+    setStatus(root, "Could not rename this saved pattern. Please try again.", true);
+    perfEnd("6-account-list-action total", actionStart, { action: "rename", ok: false, thrown: true });
   } finally {
     releaseMyPatternsListInteraction(root);
   }
@@ -556,6 +627,26 @@ function renderPatternEntry(
   });
   syncSavedCustomPatternCopyAccessForAccess(copyBtn, listAccess(root));
 
+  actions.append(openBtn, editBtn, copyBtn);
+
+  if (shouldOfferSavedPatternRename(patternSystem)) {
+    const renameBtn = document.createElement("button");
+    renameBtn.type = "button";
+    renameBtn.className = "account-my-patterns__action account-my-patterns__action--rename";
+    renameBtn.setAttribute("data-kbm-my-patterns-rename", "");
+    renameBtn.dataset.projectId = project.id;
+    renameBtn.dataset.patternSystem = patternSystem;
+    renameBtn.setAttribute("aria-label", `Rename ${displayName}`);
+    renameBtn.textContent = "Rename";
+    renameBtn.addEventListener("click", (event) => {
+      event?.stopPropagation?.();
+      if (renameBtn.disabled) return;
+      void onProjectRename(root, project.id, displayName);
+    });
+    applyEditAccessToButton(renameBtn, listAccess(root), patternSystem);
+    actions.append(renameBtn);
+  }
+
   const deleteBtn = document.createElement("button");
   deleteBtn.type = "button";
   deleteBtn.className =
@@ -570,7 +661,7 @@ function renderPatternEntry(
     void onProjectDelete(root, project.id, displayName);
   });
 
-  actions.append(openBtn, editBtn, copyBtn, deleteBtn);
+  actions.append(deleteBtn);
   item.append(main, actions);
   listEl.append(item);
 }
@@ -637,6 +728,7 @@ export function renderProjectList(root: HTMLElement): void {
   wireExclusiveAccordionGroups(root);
   syncMyPatternsEditAccess(root);
   syncMyPatternsCopyAccess(root);
+  syncMyPatternsRenameAccess(root);
   setViewAllVisible(root, state.projects.length > 0);
 }
 

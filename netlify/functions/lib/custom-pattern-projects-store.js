@@ -475,8 +475,8 @@ export function buildProjectRecord(data, userId, existingId) {
   if (!pattern || typeof pattern !== "object" || Array.isArray(pattern)) {
     return { ok: false, error: "pattern (kbm_current_pattern object) is required." };
   }
-  if (pattern.patternType !== "sleeveless") {
-    return { ok: false, error: "Only sleeveless pattern projects are supported in this phase." };
+  if (pattern.patternType !== "sleeveless" && pattern.patternType !== "hat") {
+    return { ok: false, error: "Only sleeveless and hat pattern projects are supported in this phase." };
   }
 
   const customOverrides =

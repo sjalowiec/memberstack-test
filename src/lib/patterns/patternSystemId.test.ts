@@ -76,10 +76,10 @@ describe("resolvePatternSystemFromPage", () => {
     expect(resolvePatternSystemFromPage(doc)).toBe("sleeveless");
   });
 
-  it("uses drop-shoulder pathname even when no working draft is present", () => {
-    const doc = stubPathname("/patterns/drop-shoulder/builder");
-
-    expect(resolvePatternSystemFromPage(doc)).toBe("drop-shoulder");
+  it("uses hat pathname for hat builder and finished pattern pages", () => {
+    expect(resolvePatternSystemFromPage(stubPathname("/patterns/hat/builder"))).toBe("hat");
+    expect(resolvePatternSystemFromPage(stubPathname("/patterns/hat/pattern/"))).toBe("hat");
+    expect(resolvePatternSystemFromPage(stubPathname("/patterns/hat/summary/"))).toBe("hat");
   });
 
   it("uses data-express-construction on drop-shoulder builder pages", () => {
@@ -210,8 +210,16 @@ describe("resolvePatternSystemFromProject", () => {
       pattern: { style: { patternMode: "express" } } as CustomPatternProject["pattern"],
       customOverrides: {},
     };
+    const hat: Pick<CustomPatternProject, "pattern" | "customOverrides"> = {
+      pattern: {
+        patternType: "hat",
+        patternSystem: "hat",
+      } as CustomPatternProject["pattern"],
+      customOverrides: {},
+    };
 
     expect(resolvePatternSystemFromProject(dropShoulder)).toBe("drop-shoulder");
     expect(resolvePatternSystemFromProject(sleeveless)).toBe("sleeveless");
+    expect(resolvePatternSystemFromProject(hat)).toBe("hat");
   });
 });

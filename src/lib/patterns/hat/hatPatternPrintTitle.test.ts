@@ -5,11 +5,14 @@ import {
   isHatPatternPrintPage,
   resolvePatternPrintPersonalizationFields,
 } from "../patternPrintPersonalizationFields";
+import { writeActiveCustomPatternProjectId } from "../customPatternProjectActiveId";
 import { saveCurrentPattern } from "../patternStorage";
 import { getPatternProjectPrintFields } from "../sleevelessPatternProjectMeta";
 import { stubLocalStorage } from "../test/stubLocalStorage";
+import { createEmptyHatDraft, writeHatDraft } from "./hatDraft";
 import {
   HAT_PATTERN_PRINT_TITLE,
+  resolveHatPatternOnlineHeading,
   resolveHatPatternPrintFields,
 } from "./hatPatternPrintTitle";
 
@@ -43,7 +46,12 @@ const SWEATER_PRINT_TITLES = [
 ] as const;
 
 describe("hat pattern print title", () => {
-  it("uses the canonical Hat Pattern title", () => {
+  beforeEach(() => {
+    stubLocalStorage();
+    localStorage.clear();
+  });
+
+  it("uses the canonical Hat Pattern title for unsaved hats", () => {
     expect(HAT_PATTERN_PRINT_TITLE).toBe("Hat Pattern");
     expect(resolveHatPatternPrintFields()).toEqual({ title: "Hat Pattern", notes: "" });
   });
@@ -144,5 +152,54 @@ describe("why Women's Sleeveless leaked into hat print", () => {
       sleevelessFields: getPatternProjectPrintFields(),
     });
     expect(hatPrint).toEqual({ title: "Hat Pattern", notes: "" });
+  });
+});
+
+describe("saved vs unsaved hat print titles", () => {
+  beforeEach(() => {
+    stubLocalStorage();
+    localStorage.clear();
+  });
+
+  it("prints the saved/custom Hat name, not Hat Pattern", () => {
+    const draft = createEmptyHatDraft({
+      patternProject: { title: "Sue's Hiking Hat", notes: "", titleCustomized: true },
+    });
+    writeHatDraft(draft);
+    writeActiveCustomPatternProjectId("proj-hat-1", "Sue's Hiking Hat");
+
+    expect(resolveHatPatternPrintFields({ draft, isSaved: true })).toEqual({
+      title: "Sue's Hiking Hat",
+      notes: "",
+    });
+    expect(
+      resolvePatternPrintPersonalizationFields({
+        isHatPatternPage: true,
+        sleevelessFields: { title: "Women's Sleeveless", notes: "" },
+      }),
+    ).toEqual({ title: "Sue's Hiking Hat", notes: "" });
+    expect(resolveHatPatternOnlineHeading("Adult woman 22\"", draft)).toBe("Sue's Hiking Hat");
+  });
+
+  it("still prints Hat Pattern for an unsaved temporary hat", () => {
+    const draft = createEmptyHatDraft({ sizeSel: "adult_woman" });
+    writeHatDraft(draft);
+
+    expect(resolveHatPatternPrintFields({ draft, isSaved: false })).toEqual({
+      title: "Hat Pattern",
+      notes: "",
+    });
+    expect(resolveHatPatternOnlineHeading("Adult woman 22\"", draft)).toBe(
+      "Hat Pattern · Adult woman 22\"",
+    );
+  });
+
+  it("leaves sweater print titles unchanged when not on a hat page", () => {
+    expect(
+      resolvePatternPrintPersonalizationFields({
+        isHatPatternPage: false,
+        sleevelessFields: { title: "Mom's Pullover", notes: "navy yarn" },
+      }),
+    ).toEqual({ title: "Mom's Pullover", notes: "navy yarn" });
   });
 });

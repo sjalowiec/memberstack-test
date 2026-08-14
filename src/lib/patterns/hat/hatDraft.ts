@@ -6,6 +6,7 @@
  */
 
 import { canonicalHatFitStyle } from "./hatMath";
+import type { SleevelessPatternProjectMeta } from "../sleevelessPatternProjectMeta";
 
 export const HAT_DRAFT_STORAGE_KEY = "kbm_hat_draft";
 export const HAT_DRAFT_VERSION = 1 as const;
@@ -45,6 +46,12 @@ export type HatDraft = {
    */
   availableNeedles: string;
   showTips: boolean;
+  /**
+   * Saved/custom pattern name + notes — same `patternProject` shape as sweater
+   * saved projects (`project.name` / `pattern.patternProject.title`).
+   * Absent on unsaved temporary hats (no custom name required).
+   */
+  patternProject?: SleevelessPatternProjectMeta;
   /** Set when draft was created/updated from legacy keys. */
   migratedFromLegacy?: boolean;
   updatedAt: string;
@@ -76,6 +83,16 @@ export function createEmptyHatDraft(partial?: Partial<HatDraft>): HatDraft {
     updatedAt: new Date().toISOString(),
     ...partial,
   };
+}
+
+function normalizeHatPatternProject(raw: unknown): SleevelessPatternProjectMeta | undefined {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+  const o = raw as Record<string, unknown>;
+  const title = typeof o.title === "string" ? o.title : "";
+  const notes = typeof o.notes === "string" ? o.notes : "";
+  const titleCustomized = o.titleCustomized === true;
+  if (!title && !notes && !titleCustomized) return undefined;
+  return { title, notes, ...(titleCustomized ? { titleCustomized: true } : {}) };
 }
 
 /** Digits-only needle count string, or "" when missing/invalid shape (never invents a default). */
@@ -144,6 +161,8 @@ export function coerceHatDraft(raw: unknown): HatDraft | null {
     brimType = "";
   }
 
+  const patternProject = normalizeHatPatternProject(o.patternProject);
+
   return createEmptyHatDraft({
     unit: normalizeUnit(o.unit),
     sizeSel: typeof o.sizeSel === "string" ? o.sizeSel : "",
@@ -157,6 +176,7 @@ export function coerceHatDraft(raw: unknown): HatDraft | null {
     gaugeSlots: normalizeGaugeSlots(o.gaugeSlots),
     availableNeedles: normalizeAvailableNeedles(o.availableNeedles),
     showTips: o.showTips === true,
+    ...(patternProject ? { patternProject } : {}),
     migratedFromLegacy: o.migratedFromLegacy === true,
     updatedAt:
       typeof o.updatedAt === "string" && o.updatedAt

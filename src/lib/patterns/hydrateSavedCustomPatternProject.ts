@@ -2,10 +2,11 @@
  * Hydrate local session state from a saved Custom Pattern project (canonical draft + Express wizard).
  * Call after loading a project from Blob storage so stale Express keys cannot overwrite another pattern.
  */
-import { writeActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
+import { hydrateHatSavedProject, isHatCustomPatternProject } from "./hat/hatSavedProject";
 import {
   syncAvailableNeedlesMirrorsFromAllSources,
 } from "./availableNeedlesMirrors";
+import { writeActiveCustomPatternProjectId } from "./customPatternProjectActiveId";
 import { loadProjectIntoWorkingDraft } from "./customPatternProjectClient";
 import type { CustomPatternProject } from "./customPatternProjectTypes";
 import {
@@ -113,6 +114,10 @@ export function hydrateSavedCustomPatternProjectSession(
   project: CustomPatternProject,
   options: RestoreSleevelessExpressBuilderOptions = {},
 ): void {
+  if (isHatCustomPatternProject(project)) {
+    hydrateHatSavedProject(project);
+    return;
+  }
   loadProjectIntoWorkingDraft(project);
   writeActiveCustomPatternProjectId(project.id, project.name);
   rehydrateExpressBuilderFromActiveSavedProject(options);

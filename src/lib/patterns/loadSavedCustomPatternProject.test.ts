@@ -13,6 +13,8 @@ import {
   DROP_SHOULDER_OPEN_PATTERN_HREF,
   EXPRESS_CONTINUE_EDITING_HREF,
   EXPRESS_EDIT_WORKSPACE_HREF,
+  HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF,
+  HAT_OPEN_PATTERN_HREF,
   OPEN_PATTERN_EDIT_WORKSPACE_HREF,
   OPEN_PATTERN_HREF,
 } from "./customPatternProjectNavigation";
@@ -25,6 +27,7 @@ import {
   PATTERN_STORAGE_KEY,
   SLEEVELESS_EXPRESS_BUILDER_STORAGE_KEY,
 } from "./patternStorage";
+import { HAT_DRAFT_STORAGE_KEY, readHatDraft } from "./hat/hatDraft";
 import * as restoreModule from "./restoreSleevelessExpressBuilderFromPattern";
 
 const PROJECT_ID = "proj-aubrie";
@@ -197,6 +200,61 @@ describe("loadSavedCustomPatternProject", () => {
     if (result.ok) {
       expect(result.redirectHref).not.toContain("/patterns/sleeveless/pattern/");
     }
+  });
+
+  it("views a saved hat on the hat pattern page and hydrates kbm_hat_draft with the saved name", async () => {
+    const hatDraft = {
+      version: 1,
+      patternType: "hat" as const,
+      patternSystem: "hat" as const,
+      unit: "inches" as const,
+      sizeSel: "adult_woman",
+      customCircumference: "",
+      brimType: "single",
+      brimLength: "2",
+      crownShaping: "gathered",
+      fit: "watchcap",
+      customHatLength: "",
+      gaugeSlots: { inches: { stitch: "7", row: "10" }, cm: { stitch: "", row: "" } },
+      availableNeedles: "200",
+      showTips: false,
+      updatedAt: "2026-01-01T00:00:00.000Z",
+      patternProject: { title: "Sue's Hiking Hat", notes: "", titleCustomized: true },
+    };
+    loadCustomPatternProjectMock.mockResolvedValue({
+      ok: true,
+      project: sampleProject({
+        name: "Sue's Hiking Hat",
+        pattern: hatDraft as unknown as CustomPatternProject["pattern"],
+      }),
+    });
+
+    const result = await loadSavedCustomPatternProject(PROJECT_ID, "view");
+
+    expect(result).toEqual({
+      ok: true,
+      redirectHref: `${HAT_OPEN_PATTERN_HREF}?project=${PROJECT_ID}`,
+    });
+    expect(readHatDraft()?.patternProject?.title).toBe("Sue's Hiking Hat");
+    expect(readActiveCustomPatternProjectLinkedName()).toBe("Sue's Hiking Hat");
+    expect(localStorage.getItem(HAT_DRAFT_STORAGE_KEY)).toContain("Sue's Hiking Hat");
+    expect(localStorage.getItem(PATTERN_STORAGE_KEY) ?? "").not.toContain("Sue's Hiking Hat");
+  });
+
+  it("opens a saved hat on the hat Summary/Edit workspace", async () => {
+    loadCustomPatternProjectMock.mockResolvedValue({
+      ok: true,
+      project: sampleProject({
+        name: "Sue's Hiking Hat",
+        pattern: {
+          patternType: "hat",
+          patternSystem: "hat",
+        } as unknown as CustomPatternProject["pattern"],
+      }),
+    });
+
+    const result = await loadSavedCustomPatternProject(PROJECT_ID, "open");
+    expect(result).toEqual({ ok: true, redirectHref: HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF });
   });
 
   it("views a saved pattern by routing to the read-only pattern page, never the edit workspace", async () => {

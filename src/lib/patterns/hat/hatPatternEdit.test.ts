@@ -992,8 +992,10 @@ describe("hat Summary/Edit page wiring", () => {
     expect(summaryPage).toContain('data-measurement-target="target_hat_length"');
     expect(summaryPage).toContain('data-measurement-target="target_hat_brim"');
     expect(summaryPage).toContain("data-measurement-transform=");
-    expect(summaryPage).not.toContain("PatternEditablePencilIcon");
-    expect(summaryPage).not.toContain("pattern-editable-pencil-icon");
+    expect(summaryPage).toContain("data-hat-edit-title");
+    expect(summaryPage).toContain("data-hat-edit-title-field hidden");
+    expect(summaryPage).toContain("Pattern title");
+    expect(summaryPage).toContain("PatternEditablePencilIcon");
     expect(sleevelessPatternPage).toContain("sl-edit-workspace__layout");
     expect(sleevelessPatternPage).toContain("sl-edit-workspace__measure-actions");
     expect(summaryPage).toContain("sl-edit-workspace__measure-actions");
@@ -1063,8 +1065,13 @@ describe("hat Summary/Edit page wiring", () => {
     expect(summaryScript).toContain("writeHatDraft");
     const updateStart = summaryScript.indexOf("async function updatePattern");
     expect(updateStart).toBeGreaterThan(-1);
-    const updateFn = summaryScript.slice(updateStart, updateStart + 900);
+    const cancelStart = summaryScript.indexOf("function cancelEdit");
+    const updateFn = summaryScript.slice(
+      updateStart,
+      cancelStart > updateStart ? cancelStart : updateStart + 2500,
+    );
     expect(updateFn).toContain("writeHatDraft");
+    expect(updateFn).toContain("applyHatPatternNameToDraft");
     expect(updateFn).toContain("navigateAfterPrimarySuccess");
   });
 

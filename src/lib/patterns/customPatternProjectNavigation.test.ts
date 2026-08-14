@@ -6,6 +6,8 @@ import {
   DROP_SHOULDER_CONTINUE_EDITING_HREF,
   DROP_SHOULDER_OPEN_PATTERN_EDIT_WORKSPACE_HREF,
   DROP_SHOULDER_OPEN_PATTERN_HREF,
+  HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF,
+  HAT_OPEN_PATTERN_HREF,
   EXPRESS_CONTINUE_EDITING_HREF,
   EXPRESS_EDIT_WORKSPACE_HREF,
   getContinueEditingHref,
@@ -104,6 +106,19 @@ describe("customPatternProjectNavigation", () => {
     expect(EXPRESS_CONTINUE_EDITING_HREF).not.toContain("/review");
   });
 
+  it("opens saved hat projects on the hat pattern and summary/edit routes", () => {
+    const project = {
+      pattern: { patternType: "hat", patternSystem: "hat" },
+      customOverrides: {},
+    };
+    expect(getOpenPatternHrefForProject(project)).toBe(HAT_OPEN_PATTERN_HREF);
+    expect(getSavedCustomPatternOpenHref("express", project)).toBe(
+      HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF,
+    );
+    expect(getContinueEditingHref("express", project)).toBe(HAT_OPEN_PATTERN_EDIT_WORKSPACE_HREF);
+    expect(getOpenPatternHrefForProject(project)).not.toBe(OPEN_PATTERN_HREF);
+  });
+
   describe("final Edit Pattern destinations across pattern type and construction", () => {
     const dropShoulderProject = {
       pattern: {
@@ -153,6 +168,12 @@ describe("customPatternProjectNavigation", () => {
       expect(getOpenPatternHrefForProject(dropShoulderProject)).not.toContain(
         "/patterns/sleeveless/",
       );
+      expect(
+        getOpenPatternHrefForProject({
+          pattern: { patternType: "hat", patternSystem: "hat" },
+          customOverrides: {},
+        }),
+      ).toBe(HAT_OPEN_PATTERN_HREF);
     });
   });
 
