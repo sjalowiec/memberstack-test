@@ -31,11 +31,15 @@ import {
   bindHatPatternMyPatternsDisabledGuard,
 } from "../lib/patterns/hat/hatPatternMyPatternsAccess";
 import { initHatPatternNewPattern } from "../lib/patterns/hat/hatPatternNewPattern";
+import { resolveHatPatternPrintFields } from "../lib/patterns/hat/hatPatternPrintTitle";
 import {
   waitForMemberstackDom,
   waitForMemberstackReady,
 } from "../lib/patterns/sleevelessPatternLoginGate";
-import { triggerPatternPrint } from "./patternPrintPersonalization.ts";
+import {
+  applyPatternPrintPersonalizationToDom,
+  triggerPatternPrint,
+} from "./patternPrintPersonalization.ts";
 import hatSizingRows from "../data/sizing_hats.json";
 import type { HatDisplayUnit, HatPatternCalc } from "../lib/patterns/hat/hatMath";
 
@@ -310,6 +314,9 @@ export async function renderHatPattern() {
   if (heading instanceof HTMLElement) {
     heading.textContent = `Hat Pattern · ${summary.sizeLabel}`;
   }
+
+  const hatPrint = resolveHatPatternPrintFields();
+  applyPatternPrintPersonalizationToDom(hatPrint.title, hatPrint.notes);
 
   const zeroBody = document.querySelector("[data-hat-zero-body-warning]");
   if (zeroBody instanceof HTMLElement) {
