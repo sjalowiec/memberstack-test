@@ -16,6 +16,7 @@ import {
   applyHatCrownCastOnAdjustment,
   calculateHatPattern,
   hatBrimDisplayLabel,
+  hatKnittedFinishedCircumferenceInches,
   hatProductionCastOnStitches,
   resolveHatBrimType,
   resolveTotalHatLengthInches,
@@ -24,8 +25,10 @@ import {
   type HatSizingLengthRow,
 } from "./hatMath";
 import {
+  HAT_BUILDER_INCH_TO_CM,
   HAT_FIT_PRESET_LABEL_NAMES,
   buildHatSizeOptionLabel,
+  formatFinishedInchesForLabel,
   type HatSizingLabelRow,
 } from "./hatBuilderSizingLabels";
 
@@ -203,16 +206,20 @@ function sizeDisplayLabel(
   draft: HatDraft,
   sizingRows: ReadonlyArray<HatSizingPatternRow>,
   unit: HatDraftUnit,
+  knittedFinishedInches: number,
 ): string {
   const sizeSel = draft.sizeSel.trim();
   if (sizeSel === "custom") {
-    const raw = draft.customCircumference.trim();
-    const unitWord = unit === "cm" ? "cm" : '"';
-    return raw ? `Custom · ${raw}${unitWord}` : "Custom";
+    const finStr =
+      unit === "cm"
+        ? String(Math.round(knittedFinishedInches * HAT_BUILDER_INCH_TO_CM))
+        : formatFinishedInchesForLabel(knittedFinishedInches);
+    if (!finStr) return "Custom";
+    return unit === "cm" ? `Custom · ${finStr} cm` : `Custom · ${finStr}"`;
   }
   const row = sizingRows.find((s) => s.size === sizeSel);
   if (!row) return sizeSel || "—";
-  return buildHatSizeOptionLabel(row, row.finishedSizeInches, unit);
+  return buildHatSizeOptionLabel(row, knittedFinishedInches, unit);
 }
 
 /**
@@ -330,7 +337,12 @@ export function buildHatPatternCalcFromDraft(
 
     const gaugeRef = unit === "inches" ? '4"' : "10 cm";
     const summary: HatPatternSummary = {
-      sizeLabel: sizeDisplayLabel(draft, sizingRows, unit),
+      sizeLabel: sizeDisplayLabel(
+        draft,
+        sizingRows,
+        unit,
+        hatKnittedFinishedCircumferenceInches(calc),
+      ),
       lengthLabel: lengthDisplayLabel(draft, unit, sizingRows),
       brimLabel: `${brimDisplayLabel(brimType)} · ${draft.brimLength.trim()}${
         unit === "cm" ? " cm" : '"'

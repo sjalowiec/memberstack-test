@@ -168,6 +168,9 @@ describe("Swirl production cast-on matches knitted circumference", () => {
     if (!result.ok) return;
     expect(result.calc.castOnSts).toBe(64);
     expect(result.summary.castOnLabel).toBe("66 stitches");
+    expect(result.summary.sizeLabel).toContain("Baby (6–12 months)");
+    expect(result.summary.sizeLabel).toContain('16.5" finished');
+    expect(result.summary.sizeLabel).not.toContain('16" finished');
   });
 
   it("pairs production cast-on with displayed circumference for any crown adjustment", () => {
