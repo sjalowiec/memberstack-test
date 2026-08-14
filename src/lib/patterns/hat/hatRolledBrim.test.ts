@@ -132,9 +132,14 @@ describe("Rolled Brim construction", () => {
     expect(calc.brimType).toBe("rolled");
     // Same row formula as single (not folded doubling).
     expect(calc.brimRows).toBe(2);
-    // Selected rolled height is included in finished length; body subtracts it once.
+    // Finished length includes visible brim; body = total − crown − brim (once).
+    // 8.5 − 2.5 crown − 1 brim = 5. (7.5 would omit the reserved crown depth.)
     expect(calc.hatHeight).toBe(8.5);
-    expect(calc.bodyHeightInches).toBe(7.5);
+    expect(calc.crownHeightInches).toBe(2.5);
+    expect(calc.bodyHeightInches).toBe(5);
+    expect(calc.bodyHeightInches + calc.crownHeightInches + calc.brimDepth).toBe(
+      calc.hatHeight,
+    );
 
     const singleCalc = calculateHatPattern({
       finishedHatCircInches: 20.5,
