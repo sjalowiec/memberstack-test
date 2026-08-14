@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  canonicalHatFitStyle,
   applyHatCrownCastOnAdjustment,
   buildFourWedgeCrownSetup,
   buildHatCrownPlan,
@@ -10,6 +11,7 @@ import {
   hatCrownStartRow,
   hatGaugeToPerInch,
   HAT_FIT_LENGTH_STYLE_MULTIPLIERS,
+  HAT_LEGACY_RELAXED_FIT_FALLBACK,
   HAT_NAMED_FIT_STYLES,
   nextBrimLengthAfterBrimTypeChange,
   resolveNamedFitLengthInches,
@@ -251,12 +253,12 @@ describe("hatMath golden parity (adult woman / 5×7 per 4\")", () => {
 
   it("named fit uses Adult Woman fallback Standard when size is custom", () => {
     const inches = resolveTotalHatLengthInches({
-      fit: "relaxed",
+      fit: "beanie",
       hatSizeValue: "custom",
       displayUnit: "inches",
       sizingRows: [],
     });
-    expect(inches).toBe(11.6);
+    expect(inches).toBe(9.1);
   });
 });
 
@@ -271,9 +273,11 @@ describe("proportional named length styles", () => {
   it("keeps multipliers in one named configuration", () => {
     expect(HAT_FIT_LENGTH_STYLE_MULTIPLIERS.watchcap).toBe(1);
     expect(HAT_FIT_LENGTH_STYLE_MULTIPLIERS.beanie).toBeCloseTo(7 / 8.5, 10);
-    expect(HAT_FIT_LENGTH_STYLE_MULTIPLIERS.relaxed).toBeCloseTo(9 / 8.5, 10);
     expect(HAT_FIT_LENGTH_STYLE_MULTIPLIERS.slouchy).toBeCloseTo(10 / 8.5, 10);
-    expect(HAT_NAMED_FIT_STYLES).toEqual(["beanie", "watchcap", "slouchy", "relaxed"]);
+    expect(HAT_NAMED_FIT_STYLES).toEqual(["beanie", "watchcap", "slouchy"]);
+    expect(HAT_LEGACY_RELAXED_FIT_FALLBACK).toBe("watchcap");
+    expect(canonicalHatFitStyle("relaxed")).toBe("watchcap");
+    expect(canonicalHatFitStyle("slouchy")).toBe("slouchy");
   });
 
   it("Standard equals the selected chart’s standard finished length", () => {
@@ -293,22 +297,25 @@ describe("proportional named length styles", () => {
     expect(resolveNamedFitLengthInches("slouchy", "adult_woman", sizingRows)).toBe(12.9);
   });
 
-  it("Beanie is shorter than Standard; Relaxed and Slouchy are longer in order", () => {
+  it("Beanie is shorter than Standard; Slouchy is longer", () => {
     for (const size of ["preemie", "child", "adult_woman", "adult_man"] as const) {
       const beanie = resolveNamedFitLengthInches("beanie", size, sizingRows)!;
       const standard = resolveNamedFitLengthInches("watchcap", size, sizingRows)!;
-      const relaxed = resolveNamedFitLengthInches("relaxed", size, sizingRows)!;
       const slouchy = resolveNamedFitLengthInches("slouchy", size, sizingRows)!;
       expect(beanie).toBeLessThan(standard);
-      expect(relaxed).toBeGreaterThan(standard);
-      expect(slouchy).toBeGreaterThan(relaxed);
+      expect(slouchy).toBeGreaterThan(standard);
     }
+  });
+
+  it("legacy Relaxed length still calculates and maps to Standard", () => {
+    expect(HAT_FIT_LENGTH_STYLE_MULTIPLIERS.relaxed).toBeCloseTo(9 / 8.5, 10);
+    expect(resolveNamedFitLengthInches("relaxed", "child", sizingRows)).toBe(9);
+    expect(canonicalHatFitStyle("relaxed")).toBe("watchcap");
   });
 
   it("Child chart recovers the former adult fixed inches (Classic was 8.5\")", () => {
     expect(resolveNamedFitLengthInches("beanie", "child", sizingRows)).toBe(7);
     expect(resolveNamedFitLengthInches("watchcap", "child", sizingRows)).toBe(8.5);
-    expect(resolveNamedFitLengthInches("relaxed", "child", sizingRows)).toBe(9);
     expect(resolveNamedFitLengthInches("slouchy", "child", sizingRows)).toBe(10);
   });
 
@@ -416,13 +423,27 @@ describe("hatDraft migration", () => {
     expect(draft!.sizeSel).toBe("adult_woman");
     expect(draft!.brimType).toBe("folded");
     expect(draft!.crownShaping).toBe("wedge-4-decrease");
-    expect(draft!.fit).toBe("relaxed");
+    expect(draft!.fit).toBe("watchcap");
     expect(draft!.gaugeSlots.inches.stitch).toBe("5");
     expect(draft!.showTips).toBe(true);
     expect(draft!.migratedFromLegacy).toBe(true);
     expect(storage.getItem(HAT_DRAFT_STORAGE_KEY)).toBeTruthy();
     // Prefer existing draft on second call
     expect(ensureHatDraftMigrated(storage)?.sizeSel).toBe("adult_woman");
+  });
+
+  it("maps a stored Relaxed named length onto Standard when the draft is reopened", () => {
+    const draft = coerceHatDraft({
+      patternType: "hat",
+      sizeSel: "adult_woman",
+      fit: "relaxed",
+      brimType: "single",
+      brimLength: "2",
+      crownShaping: "gathered",
+    });
+    expect(draft).not.toBeNull();
+    expect(draft!.fit).toBe("watchcap");
+    expect(canonicalHatFitStyle("relaxed")).toBe("watchcap");
   });
 
   it("syncHatDraftFromBuilderFields writes patternType hat", () => {

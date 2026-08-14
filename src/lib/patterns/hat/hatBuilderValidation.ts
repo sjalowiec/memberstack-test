@@ -10,6 +10,7 @@ import {
   type HatNeedleCapacityValidation,
 } from "./hatAvailableNeedles";
 import type { HatDraftUnit } from "./hatDraft";
+import { isHatSelectableNamedFitStyle } from "./hatMath";
 
 export const HAT_BUILDER_ALLOWED_CROWNS = ["gathered", "wedge-4-decrease", "spiral"] as const;
 export type HatBuilderAllowedCrown = (typeof HAT_BUILDER_ALLOWED_CROWNS)[number];
@@ -64,7 +65,9 @@ export function isHatBuilderLengthComplete(
   if (fit === "custom") {
     return positiveNumber(fields.customHatLength);
   }
-  return ["beanie", "watchcap", "slouchy", "relaxed"].includes(fit);
+  // Retired Relaxed remains complete so stored drafts still generate a pattern
+  // until they are remapped onto Standard by `canonicalHatFitStyle`.
+  return isHatSelectableNamedFitStyle(fit) || fit === "relaxed";
 }
 
 /** True when brim type + visible height are complete (accordion step 3). */

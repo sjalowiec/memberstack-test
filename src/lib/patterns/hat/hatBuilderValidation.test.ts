@@ -21,7 +21,7 @@ import {
   resolveHatRequiredNeedles,
   validateHatNeedleCapacity,
 } from "./hatAvailableNeedles";
-import { applyHatCrownCastOnAdjustment } from "./hatMath";
+import { applyHatCrownCastOnAdjustment, HAT_NAMED_FIT_STYLES, nextBrimLengthAfterBrimTypeChange, roundFinishedHatSizeFromHead } from "./hatMath";
 import {
   buildFitPresetOptionLabel,
   buildHatSizeOptionLabel,
@@ -33,7 +33,6 @@ import {
   HAT_GAUGE_IN_TO_CM_FACTOR,
   maybeFillHatGaugeSlotFromOtherUnit,
 } from "./hatBuilderGaugeUnits";
-import { nextBrimLengthAfterBrimTypeChange, roundFinishedHatSizeFromHead } from "./hatMath";
 
 const sizingRows = [
   {
@@ -82,6 +81,19 @@ describe("hatBuilderValidation", () => {
     expect(
       isHatBuilderLengthComplete({ fit: "custom", customHatLength: "0" }),
     ).toBe(false);
+    expect(isHatBuilderLengthComplete({ fit: "beanie", customHatLength: "" })).toBe(
+      true,
+    );
+    expect(isHatBuilderLengthComplete({ fit: "watchcap", customHatLength: "" })).toBe(
+      true,
+    );
+    expect(isHatBuilderLengthComplete({ fit: "slouchy", customHatLength: "" })).toBe(
+      true,
+    );
+    // Retired Relaxed stays complete so stored drafts do not fail validation.
+    expect(isHatBuilderLengthComplete({ fit: "relaxed", customHatLength: "" })).toBe(
+      true,
+    );
   });
 
   it("accepts release crowns and all three brim types", () => {
@@ -245,6 +257,23 @@ describe("hatBuilderSizingLabels", () => {
       'Standard (8.5" finished hat length)',
     );
     expect(buildFitPresetOptionLabel("beanie", 7, "cm")).toMatch(/Beanie \(/);
+    expect(HAT_NAMED_FIT_STYLES).toEqual(["beanie", "watchcap", "slouchy"]);
+  });
+});
+
+describe("hat builder finished-length picker has three named presets", () => {
+  const builderMarkup = readFileSync(
+    resolve("src/pages/patterns/hat/builder.astro"),
+    "utf8",
+  );
+
+  it("keeps Beanie, Standard, and Slouchy cards and omits Relaxed", () => {
+    expect(builderMarkup).toContain('data-value="beanie"');
+    expect(builderMarkup).toContain('data-value="watchcap"');
+    expect(builderMarkup).toContain('data-value="slouchy"');
+    expect(builderMarkup).not.toContain('data-value="relaxed"');
+    expect(builderMarkup).not.toContain('value="relaxed"');
+    expect(builderMarkup).not.toMatch(/>Relaxed</);
   });
 });
 

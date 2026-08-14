@@ -5,6 +5,8 @@
  * Phase B can move Build → Summary → Pattern without losing choices.
  */
 
+import { canonicalHatFitStyle } from "./hatMath";
+
 export const HAT_DRAFT_STORAGE_KEY = "kbm_hat_draft";
 export const HAT_DRAFT_VERSION = 1 as const;
 
@@ -126,8 +128,8 @@ export function coerceHatDraft(raw: unknown): HatDraft | null {
   const o = raw as Record<string, unknown>;
   if (o.patternType != null && o.patternType !== "hat") return null;
 
-  const validFits = new Set(["beanie", "watchcap", "slouchy", "relaxed", "custom", ""]);
-  const fit = typeof o.fit === "string" && validFits.has(o.fit) ? o.fit : "";
+  const rawFit = typeof o.fit === "string" ? o.fit : "";
+  const fit = canonicalHatFitStyle(rawFit);
 
   let crownShaping = typeof o.crownShaping === "string" ? normalizeCrown(o.crownShaping) : "";
   if (

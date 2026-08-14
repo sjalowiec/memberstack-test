@@ -5,6 +5,7 @@
 import type { HatDraft, HatDraftUnit, HatGaugeSlot } from "./hatDraft";
 import { createEmptyHatDraft } from "./hatDraft";
 import {
+  canonicalHatFitStyle,
   isHatNamedFitStyle,
   resolveNamedFitLengthInches,
   resolveTotalHatLengthInches,
@@ -109,7 +110,7 @@ export function hatDraftToEditFormValues(
   const unit: HatDraftUnit = draft.unit === "cm" ? "cm" : "inches";
   const slot: HatGaugeSlot = draft.gaugeSlots[unit] ?? { stitch: "", row: "" };
   const sizeSel = (draft.sizeSel ?? "").trim();
-  const fit = (draft.fit ?? "").trim();
+  const fit = canonicalHatFitStyle((draft.fit ?? "").trim());
 
   let finishedCircumference = "";
   if (sizeSel === "custom") {
@@ -182,7 +183,7 @@ export function resolveHatEditSizeAndLength(
     }
   }
 
-  let fit = form.fit.trim();
+  let fit = canonicalHatFitStyle(form.fit.trim());
   let customHatLength = "";
   const lengthRaw = form.finishedHatLength.trim();
   const lengthInches = displayToInches(lengthRaw, unit);

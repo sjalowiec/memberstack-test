@@ -176,14 +176,27 @@ describe("hatPatternFromDraft", () => {
       beanie: 9.1,
       watchcap: 11,
       slouchy: 12.9,
-      relaxed: 11.6,
     };
-    for (const fit of ["beanie", "watchcap", "slouchy", "relaxed"] as const) {
+    for (const fit of ["beanie", "watchcap", "slouchy"] as const) {
       const result = buildHatPatternCalcFromDraft(completeDraft({ fit }), sizingRows);
       expect(result.ok, fit).toBe(true);
       if (!result.ok) continue;
       expect(result.calc.hatHeight).toBe(expected[fit]);
     }
+  });
+
+  it("reopens a stored Relaxed draft as Standard without breaking calc", () => {
+    const stored = completeDraft({ fit: "relaxed" });
+    expect(stored.fit).toBe("relaxed");
+    const unmapped = buildHatPatternCalcFromDraft(stored, sizingRows);
+    expect(unmapped.ok).toBe(true);
+    if (unmapped.ok) expect(unmapped.calc.hatHeight).toBe(11.6);
+
+    const reopened = coerceHatDraft(stored);
+    expect(reopened?.fit).toBe("watchcap");
+    const remapped = buildHatPatternCalcFromDraft(reopened!, sizingRows);
+    expect(remapped.ok).toBe(true);
+    if (remapped.ok) expect(remapped.calc.hatHeight).toBe(11);
   });
 
   it("covers small and large chart sizes", () => {

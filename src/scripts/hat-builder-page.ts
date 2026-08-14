@@ -13,6 +13,7 @@ import {
 } from "../lib/patterns/hat/hatDraft";
 import { applyHatNewSessionFromUrl } from "../lib/patterns/hat/hatFreshStart";
 import {
+  canonicalHatFitStyle,
   hatBrimDisplayLabel,
   HAT_NAMED_FIT_STYLES,
   nextBrimLengthAfterBrimTypeChange,
@@ -373,7 +374,7 @@ function initHatBuilderPage(): void {
 
     setSelectValue(hatSizeSelect, d.sizeSel);
     if (customCircInput) customCircInput.value = d.customCircumference;
-    setSelectValue(fitSelect, d.fit);
+    setSelectValue(fitSelect, canonicalHatFitStyle(d.fit));
     if (customHatLengthInput) customHatLengthInput.value = d.customHatLength;
     setSelectValue(brimTypeSelect, d.brimType);
     if (brimLengthInput) brimLengthInput.value = d.brimLength;

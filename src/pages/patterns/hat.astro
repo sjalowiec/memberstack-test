@@ -1745,7 +1745,6 @@ select.disabled {
                     <option value="beanie">Beanie (7" finished hat length)</option>
                     <option value="watchcap">Classic (8.5" finished hat length)</option>
                     <option value="slouchy">Slouchy (10" finished hat length)</option>
-                    <option value="relaxed">Relaxed (9" finished hat length)</option>
                     <option value="custom">✏️ Enter your own finished hat length</option>
                   </select>
                   <div class="hat-length-picker__flex-row">
@@ -2976,7 +2975,7 @@ async function initHatBuilder() {
       const o = JSON.parse(raw);
       if (!o || typeof o !== 'object') return result;
 
-      const validFits = new Set(['beanie', 'watchcap', 'slouchy', 'relaxed', 'custom']);
+      const validFits = new Set(['beanie', 'watchcap', 'slouchy', 'custom']);
 
       if (brimTypeSelect) {
         if (o.brimType === 'rolled' || o.brimType === 'single' || o.brimType === 'folded') {
@@ -3011,7 +3010,8 @@ async function initHatBuilder() {
       }
 
       if (fitSelect) {
-        const fitVal = typeof o.fit === 'string' ? o.fit.trim() : '';
+        let fitVal = typeof o.fit === 'string' ? o.fit.trim() : '';
+        if (fitVal === 'relaxed') fitVal = 'watchcap';
         if (fitVal && validFits.has(fitVal)) {
           fitSelect.value = fitVal;
           result.restoredFit = true;

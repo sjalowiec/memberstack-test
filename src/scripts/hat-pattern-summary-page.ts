@@ -25,6 +25,7 @@ import {
   type HatGaugeSlot,
 } from "../lib/patterns/hat/hatDraft";
 import {
+  canonicalHatFitStyle,
   HAT_NAMED_FIT_STYLES,
   nextBrimLengthAfterBrimTypeChange,
   resolveNamedFitLengthInches,
@@ -229,16 +230,17 @@ export function initHatPatternSummaryPage(): void {
 
   function populateFitOptions(unit: HatDraftUnit, selected: string, sizeSel: string) {
     if (!fitSelect) return;
+    const selectedFit = canonicalHatFitStyle(selected);
     const opts: string[] = [`<option value="">Choose finished hat length…</option>`];
     for (const key of HAT_NAMED_FIT_STYLES) {
       const inches = resolveNamedFitLengthInches(key, sizeSel, rows);
       if (!(inches != null && inches > 0)) continue;
       const label = buildFitPresetOptionLabel(key, inches, unit);
-      const sel = key === selected ? " selected" : "";
+      const sel = key === selectedFit ? " selected" : "";
       opts.push(`<option value="${escapeAttr(key)}"${sel}>${escapeHtml(label)}</option>`);
       void HAT_FIT_PRESET_LABEL_NAMES;
     }
-    const customSel = selected === "custom" ? " selected" : "";
+    const customSel = selectedFit === "custom" ? " selected" : "";
     opts.push(
       `<option value="custom"${customSel}>✏️ Enter your own finished hat length</option>`,
     );

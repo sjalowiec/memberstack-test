@@ -63,7 +63,14 @@ export function nextBrimLengthAfterBrimTypeChange(args: {
 
 export type HatFitStyle = "beanie" | "watchcap" | "slouchy" | "relaxed" | "custom";
 
-export type HatNamedFitStyle = Exclude<HatFitStyle, "custom">;
+/** Selectable named length presets in the builder picker (Beanie / Standard / Slouchy). */
+export type HatSelectableNamedFitStyle = "beanie" | "watchcap" | "slouchy";
+
+/**
+ * Named styles that still have a length multiplier, including retired `"relaxed"`
+ * so stored drafts continue to calculate until they are remapped.
+ */
+export type HatNamedFitStyle = HatSelectableNamedFitStyle | "relaxed";
 
 /**
  * Named length styles as multipliers of the selected size chart’s standard `hatLength`.
@@ -71,8 +78,11 @@ export type HatNamedFitStyle = Exclude<HatFitStyle, "custom">;
  * Derived from the former adult fixed inches relative to Classic/Standard (8.5"):
  *   Beanie 7" / 8.5" ≈ 0.824 → shorter than Standard
  *   Standard (watchcap) 8.5" / 8.5" = 1 → 100% of chart length
- *   Relaxed 9" / 8.5" ≈ 1.059 → modestly longer
- *   Slouchy 10" / 8.5" ≈ 1.176 → longer still
+ *   Slouchy 10" / 8.5" ≈ 1.176 → longer
+ *
+ * Legacy `"relaxed"` (9" / 8.5" ≈ 1.059) is kept for stored drafts only;
+ * it is not a selectable picker preset. Reopened drafts map to Standard
+ * (`HAT_LEGACY_RELAXED_FIT_FALLBACK`), the closest remaining named style.
  */
 export const HAT_FIT_LENGTH_STYLE_MULTIPLIERS: Readonly<Record<HatNamedFitStyle, number>> = {
   beanie: 7 / 8.5,
@@ -81,13 +91,35 @@ export const HAT_FIT_LENGTH_STYLE_MULTIPLIERS: Readonly<Record<HatNamedFitStyle,
   slouchy: 10 / 8.5,
 };
 
-/** Named fit keys in picker order (Beanie → Standard → Slouchy → Relaxed). */
-export const HAT_NAMED_FIT_STYLES: readonly HatNamedFitStyle[] = [
+/** Named fit keys in picker order (Beanie → Standard → Slouchy). */
+export const HAT_NAMED_FIT_STYLES: readonly HatSelectableNamedFitStyle[] = [
   "beanie",
   "watchcap",
   "slouchy",
-  "relaxed",
 ];
+
+/**
+ * Closest remaining selectable preset for retired Relaxed
+ * (9/8.5 ≈ 1.059 is nearer Standard 1.0 than Slouchy 10/8.5 ≈ 1.176).
+ */
+export const HAT_LEGACY_RELAXED_FIT_FALLBACK: HatSelectableNamedFitStyle = "watchcap";
+
+export function isHatSelectableNamedFitStyle(
+  fit: string,
+): fit is HatSelectableNamedFitStyle {
+  return (HAT_NAMED_FIT_STYLES as readonly string[]).includes(fit);
+}
+
+/**
+ * Map a stored fit value onto a current selectable named style, custom, or empty.
+ * Retired `"relaxed"` becomes Standard so reopened drafts still have a picker match.
+ */
+export function canonicalHatFitStyle(fit: string): string {
+  const v = String(fit ?? "").trim();
+  if (v === "relaxed") return HAT_LEGACY_RELAXED_FIT_FALLBACK;
+  if (isHatSelectableNamedFitStyle(v) || v === "custom" || v === "") return v;
+  return "";
+}
 
 /**
  * Fallback Standard length when size is custom / chart length is missing.
@@ -488,7 +520,7 @@ export function hatGaugeToPerInch(gauge: number, displayUnit: HatDisplayUnit): n
 
 /**
  * Total finished hat length (inches): custom input, named fit style, or chart fallback.
- * Named styles (Beanie / Standard / Slouchy / …) scale from the size chart’s Standard length.
+ * Named styles (Beanie / Standard / Slouchy) scale from the size chart’s Standard length.
  * Chart hatLength is only a fallback when fit is empty/unknown (e.g. size-driven default).
  */
 export function resolveTotalHatLengthInches(args: {

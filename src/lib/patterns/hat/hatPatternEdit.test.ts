@@ -437,7 +437,6 @@ describe("Finished hat length preset selection on Summary/Edit", () => {
   const adultWomanPresets = [
     ["beanie", 9.1],
     ["watchcap", 11],
-    ["relaxed", 11.6],
     ["slouchy", 12.9],
   ] as const;
 
@@ -466,6 +465,13 @@ describe("Finished hat length preset selection on Summary/Edit", () => {
       if (!result.ok) continue;
       expect(result.calc.hatHeight, fit).toBe(inches);
     }
+  });
+
+  it("maps a stored Relaxed draft onto Standard in the edit form", () => {
+    const draft = completeDraft({ sizeSel: "adult_woman", fit: "relaxed" });
+    const form = hatDraftToEditFormValues(draft, sizingRows);
+    expect(form.fit).toBe("watchcap");
+    expect(form.finishedHatLength).toBe("11");
   });
 
   it("changing between presets changes live preview height", () => {
@@ -585,7 +591,7 @@ describe("Finished hat length preset selection on Summary/Edit", () => {
 
   it("builder and Summary/Edit resolve identical lengths for the same size + style", () => {
     for (const sizeSel of ["preemie", "adult_woman"] as const) {
-      for (const fit of ["beanie", "watchcap", "relaxed", "slouchy"] as const) {
+      for (const fit of ["beanie", "watchcap", "slouchy"] as const) {
         const draft = completeDraft({ sizeSel, fit });
         const form = hatDraftToEditFormValues(draft, sizingRows);
         const fromDraft = buildHatPatternCalcFromDraft(draft, sizingRows);
