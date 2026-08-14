@@ -14,6 +14,7 @@ import {
   buildFourWedgeDecreaseSchedule,
   calculateHatPattern,
   gatheredCrownRemainingStitches,
+  hatKnittedFinishedCircumferenceInches,
 } from "./hatMath";
 import {
   buildHatShapingNotationDiagramSvg,
@@ -457,7 +458,9 @@ describe("buildHatShapingNotationDiagramSvg", () => {
     const calc = calcFor();
     const sts = buildHatPatternDiagramSvg(calc, "inches", formatters);
     expect(sts).toContain(formatLengthWithUnit(calc.hatHeight, "inches"));
-    expect(sts).toContain(formatLengthWithUnit(calc.targetWidth, "inches"));
+    expect(sts).toContain(
+      formatLengthWithUnit(hatKnittedFinishedCircumferenceInches(calc), "inches"),
+    );
     expect(sts).toContain("<polygon");
   });
 

@@ -19,6 +19,8 @@ import {
   FOUR_GORE_DECREASE_ROW_FREQUENCY,
   gatheredCrownRemainingStitches,
   hatCrownStartRow,
+  hatKnittedFinishedCircumferenceInches,
+  hatProductionCastOnStitches,
   HAT_BRIM_TYPES,
   HAT_NAMED_FIT_STYLES,
   resolveNamedFitLengthInches,
@@ -191,6 +193,19 @@ function assertCalcInvariants(calc: HatPatternCalc, label: string): void {
     Math.abs(patternCastOn - calc.castOnSts),
     `${label} crown cast-on adjustment`,
   ).toBeLessThanOrEqual(4);
+  expect(hatProductionCastOnStitches(calc), `${label} production cast-on`).toBe(
+    patternCastOn,
+  );
+  const knittedCirc = hatKnittedFinishedCircumferenceInches(calc);
+  expectFiniteNumber(knittedCirc, `${label} knitted circumference`);
+  if (patternCastOn !== calc.castOnSts) {
+    expect(knittedCirc, `${label} adjusted circ from stitches`).toBeCloseTo(
+      patternCastOn / calc.stGaugePerInch,
+      10,
+    );
+  } else {
+    expect(knittedCirc, `${label} unadjusted circ is size target`).toBe(calc.targetWidth);
+  }
 
   if (calc.crown === "gathered") {
     expect(patternCastOn % 2, `${label} gathered even`).toBe(0);

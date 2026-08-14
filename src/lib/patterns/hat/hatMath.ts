@@ -316,6 +316,44 @@ export function applyHatCrownCastOnAdjustment(castOnSts: number, crown: string):
   return castOnSts;
 }
 
+export type HatCastOnCircumferenceCalc = {
+  castOnSts: number;
+  crown: string;
+  stGaugePerInch: number;
+  targetWidth: number;
+};
+
+/** Stitches actually cast on and knitted (after any crown-specific adjustment). */
+export function hatProductionCastOnStitches(calc: {
+  castOnSts: number;
+  crown: string;
+}): number {
+  return applyHatCrownCastOnAdjustment(calc.castOnSts, calc.crown);
+}
+
+/** True when crown math changed the even-upped size-target stitch count. */
+export function hatCrownCastOnWasAdjusted(calc: {
+  castOnSts: number;
+  crown: string;
+}): boolean {
+  return hatProductionCastOnStitches(calc) !== calc.castOnSts;
+}
+
+/**
+ * Finished body circumference of the fabric that will be knitted.
+ * When a crown adjustment changes stitch count, this is production stitches ÷ stitch gauge.
+ * Otherwise the selected size target (`targetWidth`) is kept.
+ */
+export function hatKnittedFinishedCircumferenceInches(
+  calc: HatCastOnCircumferenceCalc,
+): number {
+  const production = hatProductionCastOnStitches(calc);
+  if (production !== calc.castOnSts && calc.stGaugePerInch > 0) {
+    return production / calc.stGaugePerInch;
+  }
+  return calc.targetWidth;
+}
+
 /**
  * Stitches remaining after transferring every other stitch for a gathered crown.
  * Even cast-on → exactly half; odd (defensive) → floor(n/2) so we never imply a half stitch.

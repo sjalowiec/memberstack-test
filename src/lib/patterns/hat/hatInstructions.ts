@@ -8,8 +8,10 @@ import {
   buildFourWedgeCrownSetup,
   buildFourWedgeDecreaseSchedule,
   gatheredCrownRemainingStitches,
+  hatCrownCastOnWasAdjusted,
   hatCrownEndingRow,
   hatCrownStartRow,
+  hatKnittedFinishedCircumferenceInches,
   type HatPatternCalc,
   type HatSpiralPlan,
 } from "./hatMath";
@@ -148,7 +150,6 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
   } = options;
 
   const {
-    targetWidth,
     castOnSts,
     hatHeight,
     brimDepth,
@@ -162,10 +163,11 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
     crownPlan,
   } = calc;
 
+  const knittedCircumferenceInches = hatKnittedFinishedCircumferenceInches(calc);
   const displayWidth =
     currentUnit === "inches"
-      ? formatLength(targetWidth, "inches")
-      : formatLength(convertLength(targetWidth, "inches", "cm"), "cm");
+      ? formatLength(knittedCircumferenceInches, "inches")
+      : formatLength(convertLength(knittedCircumferenceInches, "inches", "cm"), "cm");
 
   const displayHeight =
     currentUnit === "inches"
@@ -187,6 +189,10 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
   const unit = currentUnit === "inches" ? "inches" : "cm";
 
   const patternCastOnSts = applyHatCrownCastOnAdjustment(castOnSts, crown);
+  const swirlCastOnAdjustNote =
+    crown === "spiral" && hatCrownCastOnWasAdjusted(calc)
+      ? "<p>The stitch count was adjusted slightly so the Swirl crown divides evenly into 6 sections.</p>"
+      : "";
 
   calc.fourWedgeCrownSetup = buildFourWedgeCrownSetup({
     castOnSts,
@@ -372,8 +378,10 @@ export function buildHatPatternHtml(options: BuildHatPatternHtmlOptions): string
         "<h4>Cast-On</h4>",
         brimType === "rolled"
           ? `<p>Cast on <strong>${patternCastOnSts} stitches</strong>.</p>
+      ${swirlCastOnAdjustNote}
       <div class="pattern-tip" data-tip data-tip-id="hat-cast-on-method"><strong>Tip:</strong> An E-wrap cast-on works well for a rolled brim.</div>`
           : `<p>Cast on <strong>${patternCastOnSts} stitches</strong>.</p>
+      ${swirlCastOnAdjustNote}
       <div class="pattern-tip" data-tip data-tip-id="hat-cast-on-method"><strong>Tip:</strong> Use the cast-on method of your choice, unless your chosen brim finish specifies one (for example, E-wrap for a rolled edge).</div>`,
       )}
       ${wrapHatPatternSection(

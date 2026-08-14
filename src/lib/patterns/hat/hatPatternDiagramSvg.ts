@@ -13,6 +13,7 @@ import { formatHatDiagramSectionLengthFromRows } from "./hatDiagram";
 import {
   applyHatCrownCastOnAdjustment,
   buildFourWedgeCrownSetup,
+  hatKnittedFinishedCircumferenceInches,
   resolveHatBrimType,
   type HatBrimType,
   type HatPatternCalc,
@@ -212,7 +213,9 @@ function buildLabels(
         : "Swirl-top hat pattern diagram";
 
   return {
-    width: summaryEdit ? "" : displayLength(calc.targetWidth, unit, formatters),
+    width: summaryEdit
+      ? ""
+      : displayLength(hatKnittedFinishedCircumferenceInches(calc), unit, formatters),
     height: summaryEdit ? "" : displayLength(calc.hatHeight, unit, formatters),
     brimDepth: summaryEdit
       ? ""
@@ -304,7 +307,7 @@ function buildFrame(calc: HatPatternCalc): Frame {
   // Scale silhouette width with finished circumference so Summary/Edit preview
   // (and the finished-pattern diagram) reflect size changes visually.
   const REF_CIRC_INCHES = 20.5;
-  const circ = Number(calc.targetWidth);
+  const circ = hatKnittedFinishedCircumferenceInches(calc);
   const widthScale =
     circ > 0 && Number.isFinite(circ) ? clamp(circ / REF_CIRC_INCHES, 0.55, 1.35) : 1;
   const hatWidth = HAT_WIDTH * widthScale;

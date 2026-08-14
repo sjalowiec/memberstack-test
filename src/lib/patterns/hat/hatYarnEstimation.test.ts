@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { calculateHatPattern } from "./hatMath";
+import { calculateHatPattern, hatKnittedFinishedCircumferenceInches } from "./hatMath";
 import {
   buildHatYarnDimensionsDetail,
   buildHatYarnEstimationSnapshot,
@@ -118,7 +118,7 @@ describe("hatYarnEstimation fabric area", () => {
       5,
     );
     const fullCrownRectangleArea =
-      wedge.targetWidth *
+      hatKnittedFinishedCircumferenceInches(wedge) *
       (wedge.brimRows / wedge.rowGaugePerInch +
         wedge.bodyRows / wedge.rowGaugePerInch +
         wedge.crownRowCount / wedge.rowGaugePerInch);

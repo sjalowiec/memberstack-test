@@ -6,7 +6,7 @@
  * naive finished rectangle when that would mis-count yarn.
  */
 
-import type { HatPatternCalc } from "./hatMath";
+import { hatKnittedFinishedCircumferenceInches, type HatPatternCalc } from "./hatMath";
 import type { YarnDimensionsDetail, YarnDimensionsLengthUnit } from "../../tools/yarnRequirementDimensions";
 
 /**
@@ -62,10 +62,11 @@ export function hatYarnFabricHeightsInches(calc: HatPatternCalc): {
 
 /** Total knitted fabric area (sq in) for YarnRequirement. */
 export function hatYarnFabricAreaSquareInches(calc: HatPatternCalc): number {
-  if (!(calc.targetWidth > 0)) return 0;
+  const circ = hatKnittedFinishedCircumferenceInches(calc);
+  if (!(circ > 0)) return 0;
   const { totalInches } = hatYarnFabricHeightsInches(calc);
   if (!(totalInches > 0)) return 0;
-  return calc.targetWidth * totalInches;
+  return circ * totalInches;
 }
 
 export type HatYarnEstimationSnapshot = {
@@ -82,7 +83,7 @@ export type HatYarnEstimationSnapshot = {
 export function buildHatYarnEstimationSnapshot(calc: HatPatternCalc): HatYarnEstimationSnapshot {
   const heights = hatYarnFabricHeightsInches(calc);
   return {
-    finishedCircumferenceInches: calc.targetWidth,
+    finishedCircumferenceInches: hatKnittedFinishedCircumferenceInches(calc),
     finishedLengthInches: calc.hatHeight,
     brimType: calc.brimType,
     visibleBrimDepthInches: calc.brimDepth,
@@ -97,7 +98,7 @@ export function buildHatYarnDimensionsDetail(
   calc: HatPatternCalc,
   lengthUnit: YarnDimensionsLengthUnit = "in",
 ): YarnDimensionsDetail {
-  const circIn = calc.targetWidth;
+  const circIn = hatKnittedFinishedCircumferenceInches(calc);
   const lenIn = calc.hatHeight;
   const areaIn = hatYarnFabricAreaSquareInches(calc);
 

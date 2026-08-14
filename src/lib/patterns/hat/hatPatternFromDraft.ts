@@ -16,6 +16,7 @@ import {
   applyHatCrownCastOnAdjustment,
   calculateHatPattern,
   hatBrimDisplayLabel,
+  hatProductionCastOnStitches,
   resolveHatBrimType,
   resolveTotalHatLengthInches,
   roundFinishedHatSizeFromHead,
@@ -336,7 +337,7 @@ export function buildHatPatternCalcFromDraft(
       }`,
       crownLabel: crownDisplayLabel(crown),
       gaugeLabel: `${stitchGaugeDisplay} sts / ${rowGaugeDisplay} rows per ${gaugeRef}`,
-      castOnLabel: `${calc.castOnSts} stitches`,
+      castOnLabel: `${hatProductionCastOnStitches(calc)} stitches`,
     };
 
     return { ok: true, draft, calc, unit, summary };

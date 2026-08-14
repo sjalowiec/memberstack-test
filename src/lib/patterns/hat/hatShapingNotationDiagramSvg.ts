@@ -15,6 +15,7 @@ import {
   buildFourWedgeDecreaseSchedule,
   gatheredCrownRemainingStitches,
   hatBrimDisplayLabel,
+  hatKnittedFinishedCircumferenceInches,
   resolveHatBrimType,
   type HatBrimType,
   type HatFourWedgeDecreaseSchedule,
@@ -286,7 +287,7 @@ function buildShapingFrame(calc: HatPatternCalc): ShapingFrame {
   const crownTop = bodyTop - crownVisual;
 
   const REF_CIRC_INCHES = 20.5;
-  const circ = Number(calc.targetWidth);
+  const circ = hatKnittedFinishedCircumferenceInches(calc);
   const widthScale =
     circ > 0 && Number.isFinite(circ) ? clamp(circ / REF_CIRC_INCHES, 0.55, 1.35) : 1;
   const maxHatWidth = VB_W - LABEL_GUTTER - HAT_RIGHT_PAD;

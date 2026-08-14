@@ -5,7 +5,7 @@
  * Spiral reuses the gathered crown diagram template for now.
  */
 
-import { applyHatCrownCastOnAdjustment, type HatPatternCalc } from "./hatMath";
+import { applyHatCrownCastOnAdjustment, hatKnittedFinishedCircumferenceInches, type HatPatternCalc } from "./hatMath";
 
 export type HatDiagramFormatters = {
   convertLength: (value: number, from: string, to: string) => number;
@@ -55,7 +55,6 @@ export function buildHatDiagramTokens(
   const { convertLength, formatLengthWithUnit } = formatters;
   const {
     hatHeight,
-    targetWidth,
     castOnSts,
     brimRows,
     bodyRows,
@@ -65,8 +64,9 @@ export function buildHatDiagramTokens(
     rowGaugePerInch,
   } = calc;
 
+  const knittedWidth = hatKnittedFinishedCircumferenceInches(calc);
   const displayWidth = formatLengthWithUnit(
-    currentUnit === "inches" ? targetWidth : convertLength(targetWidth, "inches", currentUnit),
+    currentUnit === "inches" ? knittedWidth : convertLength(knittedWidth, "inches", currentUnit),
     currentUnit,
   );
 
@@ -101,8 +101,8 @@ export function buildHatDiagramTokens(
   let wedgeWidthLabel = "";
 
   if (isWedgeCrown && castOnSts) {
-    const wedgeSts = Math.round(castOnSts / 4);
-    const finishedWidth = targetWidth || castOnSts / stGaugePerInch;
+    const wedgeSts = Math.round(displayCastOnSts / 4);
+    const finishedWidth = knittedWidth || displayCastOnSts / stGaugePerInch;
     const wedgeWidth = finishedWidth / 4;
     wedgeStsLabel = String(wedgeSts);
     wedgeWidthLabel = formatLengthWithUnit(

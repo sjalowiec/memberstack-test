@@ -4,7 +4,7 @@ import {
   formatLength,
   formatLengthWithUnit,
 } from "../../../components/wizards/utils/unitHelpers";
-import { calculateHatPattern, hatCrownStartRow } from "./hatMath";
+import { calculateHatPattern, hatCrownStartRow, hatKnittedFinishedCircumferenceInches } from "./hatMath";
 import {
   formatHatDiagramSectionLengthFromRows,
   hatDiagramSectionInchesFromRows,
@@ -21,6 +21,15 @@ const formatters = {
   convertLength: convertLength as (v: number, from: string, to: string) => number,
   formatLengthWithUnit: formatLengthWithUnit as (v: number, unit: string) => string,
 };
+
+function displayedCircumference(
+  calc: ReturnType<typeof calculateHatPattern>,
+  unit: "inches" | "cm" = "inches",
+): string {
+  const inches = hatKnittedFinishedCircumferenceInches(calc);
+  const value = unit === "inches" ? inches : convertLength(inches, "inches", "cm");
+  return formatLengthWithUnit(value, unit);
+}
 
 function calcFor(overrides: Partial<Parameters<typeof calculateHatPattern>[0]> = {}) {
   return calculateHatPattern({
@@ -447,7 +456,7 @@ describe("buildHatPatternDiagramSvg", () => {
         }
         expectRowPairedSectionLengths(svg, calc);
         expect(svg).toMatch(/\d+ sts/);
-        expect(svg).toContain(formatLengthWithUnit(calc.targetWidth, "inches"));
+        expect(svg).toContain(displayedCircumference(calc));
         expect(svg).toContain(`data-brim="${brimType}"`);
       }
     }
@@ -484,6 +493,7 @@ describe("buildHatPatternDiagramSvg", () => {
           expect(svg).not.toContain(
             formatLengthWithUnit(calc.targetWidth, "inches"),
           );
+          expect(svg).not.toContain(displayedCircumference(calc, unit));
           expect(svg).not.toContain(
             formatLengthWithUnit(calc.brimDepth, "inches"),
           );
@@ -546,7 +556,7 @@ describe("buildHatPatternDiagramSvg", () => {
     expect(patternSvg).toMatch(/\d+ sts/);
     expect(patternSvg).toContain("sts / gore");
     expect(patternSvg).toContain(formatLengthWithUnit(calc.hatHeight, "inches"));
-    expect(patternSvg).toContain(formatLengthWithUnit(calc.targetWidth, "inches"));
+    expect(patternSvg).toContain(displayedCircumference(calc));
     expect(patternSvg).toContain(rowDerivedLength(calc.brimRows, calc));
     expect(summarySvg).not.toMatch(/\d+\s*rows/);
     expect(summarySvg).not.toMatch(/\d+\s*sts/);
