@@ -32,6 +32,13 @@ import {
 import { validatePatternBuilderRequired } from "../lib/patterns/patternBuilderValidation";
 import { setPatternTabsReadiness } from "../lib/patterns/patternTabsClient.ts";
 import {
+  PATTERN_DIAGRAM_TAB_SHAPING,
+  PATTERN_DIAGRAM_TAB_STS_ROWS,
+  activatePatternDiagramTab,
+  buildPatternDiagramTabsShellHtml,
+  initPatternDiagramTabs,
+} from "../lib/patterns/patternDiagramTabs.ts";
+import {
   centerBindOffStitchesFromNeckShoulderChart,
   generateSleevelessBackPattern,
   patternTipWrapperHtml,
@@ -861,6 +868,36 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
   const BACK_DIAGRAM_NOTATION_ALT = "Sleeveless back piece shaping notation diagram";
   const FRONT_DIAGRAM_STS_ROWS_ALT = "Sleeveless front piece diagram";
   const FRONT_DIAGRAM_NOTATION_ALT = "Sleeveless front piece shaping notation diagram";
+
+  function buildGarmentFinishedDiagramTabsHtml({ idPrefix, tablistLabel, modeBtnAttr, panelHtml }) {
+    return buildPatternDiagramTabsShellHtml({
+      idPrefix,
+      tablistLabel,
+      extraRootClass: "sleeveless-back-diagram-panel",
+      extraListClass: "sleeveless-back-diagram-mode",
+      extraTabClass: "sleeveless-back-diagram-mode__btn",
+      extraPanelClass: "sleeveless-back-diagram-well",
+      sharedPanel: true,
+      sharedPanelHtml: panelHtml,
+      tabs: [
+        {
+          id: PATTERN_DIAGRAM_TAB_STS_ROWS,
+          extraTabAttrs: `${modeBtnAttr}="${PATTERN_DIAGRAM_TAB_STS_ROWS}"`,
+        },
+        {
+          id: PATTERN_DIAGRAM_TAB_SHAPING,
+          extraTabAttrs: `${modeBtnAttr}="${PATTERN_DIAGRAM_TAB_SHAPING}"`,
+        },
+      ],
+    });
+  }
+
+  function syncGarmentDiagramTabSelection(section, mode) {
+    if (!section) return;
+    const shell = section.querySelector("[data-pattern-diagram-tabs]");
+    if (shell) activatePatternDiagramTab(shell, mode);
+  }
+
   /**
    * Two-column shell for Back/Front: prose + chart (left) and static SVG (right, sticky on desktop).
    * @param {string} innerHtml
@@ -897,12 +934,9 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
     const modeBtnAttr = backModeToggle
       ? "data-sleeveless-back-diagram-mode-btn"
       : "data-sleeveless-front-diagram-mode-btn";
-    const modeToggleHtml = hasToggleUi
-      ? `<div class="sleeveless-back-diagram-mode no-print" role="group" aria-label="${modeToggleGroupLabel}">
-        <button type="button" class="sleeveless-back-diagram-mode__btn is-active" ${modeBtnAttr}="sts-rows" aria-pressed="true">Stitches &amp; Rows</button>
-        <button type="button" class="sleeveless-back-diagram-mode__btn" ${modeBtnAttr}="shaping-notation" aria-pressed="false">Shaping Notation</button>
-      </div>`
-      : "";
+    const diagramTabsIdPrefix = backModeToggle
+      ? "sleeveless-back-diagram"
+      : "sleeveless-front-diagram";
     const diagramTriggerHtml = `<button type="button" class="sleeveless-piece-split__diagram-trigger" data-sleeveless-diagram-trigger aria-label="Open larger diagram: ${alt}">
         <div class="sleeveless-piece-split__diagram-svg" data-sleeveless-diagram data-src="${src}" data-alt="${alt}"${halfAttr}${diagramModeAttrs}>
           <p class="sleeveless-pattern-boot-msg">Loading diagram…</p>
@@ -922,13 +956,12 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
         ${diagramTriggerHtml}
       </div>`;
     const diagramAsideInner = hasToggleUi
-      ? `<div class="sleeveless-back-diagram-panel">
-      ${modeToggleHtml}
-      <div class="sleeveless-back-diagram-well">
-        ${shapingNotationHelpHtml}
-        ${diagramCardHtml}
-      </div>
-    </div>`
+      ? buildGarmentFinishedDiagramTabsHtml({
+          idPrefix: diagramTabsIdPrefix,
+          tablistLabel: modeToggleGroupLabel,
+          modeBtnAttr,
+          panelHtml: `${shapingNotationHelpHtml}${diagramCardHtml}`,
+        })
       : diagramCardHtml;
     return `<div class="sleeveless-piece-layout">
   <div class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split">
@@ -1116,8 +1149,11 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       const btnMode = btn.getAttribute("data-sleeveless-back-diagram-mode-btn");
       const active = btnMode === mode;
       btn.classList.toggle("is-active", active);
-      btn.setAttribute("aria-pressed", active ? "true" : "false");
+      btn.classList.toggle("is-selected", active);
+      btn.setAttribute("aria-selected", active ? "true" : "false");
+      btn.tabIndex = active ? 0 : -1;
     });
+    syncGarmentDiagramTabSelection(backSection, mode);
     const trigger = backSection.querySelector("[data-sleeveless-diagram-trigger]");
     if (trigger instanceof HTMLElement) {
       trigger.setAttribute("aria-label", `Open larger diagram: ${backDiagramAltForMode(mode)}`);
@@ -1134,8 +1170,11 @@ const AUDIENCE_LABELS = SLEEVELESS_CHART_AUDIENCE_LABELS;
       const btnMode = btn.getAttribute("data-sleeveless-front-diagram-mode-btn");
       const active = btnMode === mode;
       btn.classList.toggle("is-active", active);
-      btn.setAttribute("aria-pressed", active ? "true" : "false");
+      btn.classList.toggle("is-selected", active);
+      btn.setAttribute("aria-selected", active ? "true" : "false");
+      btn.tabIndex = active ? 0 : -1;
     });
+    syncGarmentDiagramTabSelection(frontSection, mode);
     const trigger = frontSection.querySelector("[data-sleeveless-diagram-trigger]");
     if (trigger instanceof HTMLElement) {
       trigger.setAttribute("aria-label", `Open larger diagram: ${frontDiagramAltForMode(mode)}`);
@@ -3043,12 +3082,11 @@ table {
       : frontModeToggle
         ? "data-sleeveless-front-diagram-mode-btn"
         : "data-sleeveless-sleeve-diagram-mode-btn";
-    const modeToggleHtml = hasGarmentToggleUi
-      ? `<div class="sleeveless-back-diagram-mode no-print" role="group" aria-label="${modeToggleGroupLabel}">
-        <button type="button" class="sleeveless-back-diagram-mode__btn is-active" ${modeBtnAttr}="sts-rows" aria-pressed="true">Stitches &amp; Rows</button>
-        <button type="button" class="sleeveless-back-diagram-mode__btn" ${modeBtnAttr}="shaping-notation" aria-pressed="false">Shaping Notation</button>
-      </div>`
-      : "";
+    const diagramTabsIdPrefix = backModeToggle
+      ? "sleeveless-back-diagram"
+      : frontModeToggle
+        ? "sleeveless-front-diagram"
+        : "sleeveless-sleeve-diagram";
     const shapingNotationHelpHtml = hasGarmentToggleUi && garmentModeToggle
       ? buildShapingNotationChartHelpHtml(
           escapeGlossaryPlaceholderAttr,
@@ -3070,13 +3108,12 @@ table {
         ${diagramTriggerHtml}
       </div>`;
     const diagramAsideInner = hasGarmentToggleUi
-      ? `<div class="sleeveless-back-diagram-panel">
-      ${modeToggleHtml}
-      <div class="sleeveless-back-diagram-well">
-        ${shapingNotationHelpHtml}
-        ${diagramCardHtml}
-      </div>
-    </div>`
+      ? buildGarmentFinishedDiagramTabsHtml({
+          idPrefix: diagramTabsIdPrefix,
+          tablistLabel: modeToggleGroupLabel,
+          modeBtnAttr,
+          panelHtml: `${shapingNotationHelpHtml}${diagramCardHtml}`,
+        })
       : diagramCardHtml;
     return `<div class="sleeveless-piece-layout">
   <div class="pattern-layout pattern-layout--garment-columns sleeveless-piece-split">
@@ -3125,8 +3162,11 @@ table {
       const btnMode = btn.getAttribute("data-sleeveless-back-diagram-mode-btn");
       const active = btnMode === mode;
       btn.classList.toggle("is-active", active);
-      btn.setAttribute("aria-pressed", active ? "true" : "false");
+      btn.classList.toggle("is-selected", active);
+      btn.setAttribute("aria-selected", active ? "true" : "false");
+      btn.tabIndex = active ? 0 : -1;
     });
+    syncGarmentDiagramTabSelection(backSection, mode);
     const trigger = backSection.querySelector("[data-sleeveless-diagram-trigger]");
     if (trigger instanceof HTMLElement) {
       trigger.setAttribute("aria-label", `Open larger diagram: ${dropShoulderBackDiagramAltForMode(mode)}`);
@@ -3143,8 +3183,11 @@ table {
       const btnMode = btn.getAttribute("data-sleeveless-front-diagram-mode-btn");
       const active = btnMode === mode;
       btn.classList.toggle("is-active", active);
-      btn.setAttribute("aria-pressed", active ? "true" : "false");
+      btn.classList.toggle("is-selected", active);
+      btn.setAttribute("aria-selected", active ? "true" : "false");
+      btn.tabIndex = active ? 0 : -1;
     });
+    syncGarmentDiagramTabSelection(frontSection, mode);
     const trigger = frontSection.querySelector("[data-sleeveless-diagram-trigger]");
     if (trigger instanceof HTMLElement) {
       trigger.setAttribute(
@@ -3448,8 +3491,11 @@ table {
       const btnMode = btn.getAttribute("data-sleeveless-sleeve-diagram-mode-btn");
       const active = btnMode === mode;
       btn.classList.toggle("is-active", active);
-      btn.setAttribute("aria-pressed", active ? "true" : "false");
+      btn.classList.toggle("is-selected", active);
+      btn.setAttribute("aria-selected", active ? "true" : "false");
+      btn.tabIndex = active ? 0 : -1;
     });
+    syncGarmentDiagramTabSelection(sleeveSection, mode);
     const trigger = sleeveSection.querySelector("[data-sleeveless-diagram-trigger]");
     if (trigger instanceof HTMLElement) {
       trigger.setAttribute("aria-label", `Open larger diagram: ${dropShoulderSleeveDiagramAltForMode(mode)}`);
@@ -3972,6 +4018,7 @@ table {
     bindSleevelessDiagramZoom(mount);
     bindDropShoulderSleeveDiagramMode(mount);
     bindDropShoulderBodyDiagramMode(mount);
+    initPatternDiagramTabs(mount);
     bindDropShoulderSleeveConstructionToggle(mount);
     bindNecklineNotationPreview(mount);
     bindShapingMapEnlarge(mount);
@@ -4346,6 +4393,7 @@ table {
     bindSleevelessDiagramZoom(mount);
     bindSleevelessBackDiagramMode(mount);
     bindSleevelessFrontDiagramMode(mount);
+    initPatternDiagramTabs(mount);
     bindNecklineNotationPreview(mount);
     bindShapingMapEnlarge(mount);
     bindPatternNotationEnlarge(mount);

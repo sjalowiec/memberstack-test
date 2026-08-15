@@ -7,6 +7,7 @@ import PatternTipsToggle from "../../../../components/patterns/PatternTipsToggle
 import PatternEditablePencilIcon from "../../../../components/patterns/PatternEditablePencilIcon.astro";
 import PatternPhoneWorkspaceNotice from "../../../../components/patterns/PatternPhoneWorkspaceNotice.astro";
 import EditWorkspaceGaugeFields from "../../../../components/patterns/EditWorkspaceGaugeFields.astro";
+import PatternSummaryEditWorkspace from "../../../../components/patterns/PatternSummaryEditWorkspace.astro";
 import SleevelessPatternPrintNotice from "../../../../components/patterns/SleevelessPatternPrintNotice.astro";
 import PatternEditingUnlockModal from "../../../../components/patterns/PatternEditingUnlockModal.astro";
 import PatternAutoSaveSuccessDialog from "../../../../components/patterns/PatternAutoSaveSuccessDialog.astro";
@@ -29,6 +30,7 @@ import "../../../../styles/pattern-quick-tip.css";
 import "../../../../styles/pattern-help-card.css";
 
 import "../../../../styles/patterns/sleeveless-pattern-shared.css";
+import "../../../../styles/patterns/pattern-diagram-tabs.css";
 import "../../../../styles/patterns/pattern-app-shell.css";
 import "../../../../styles/patterns/pattern-editable-pencil.css";
 import "../../../../styles/tools/yarn-requirement-drawer-shell.css";
@@ -218,10 +220,12 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
         tabindex="-1"
       >
         <PatternPhoneWorkspaceNotice />
-        <div class="sl-edit-workspace__layout">
-          <!-- LEFT: quick edits panel (narrower). `.sl-edit-drawer__body` is the JS field scope. -->
-          <div class="sl-edit-workspace__quick">
-            <div class="sl-edit-drawer__body">
+        <PatternSummaryEditWorkspace
+          headingClass="pattern-editable-heading"
+          measurePaneAttr="data-sl-measure-pane"
+          actionsAttr="data-sl-edit-actions"
+        >
+          <Fragment slot="quick">
               <div class="sl-edit-field">
                 <label class="sl-edit-label" for="sl-edit-title">
                   <span class="pattern-editable-heading">
@@ -362,61 +366,40 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
                   </p>
                 </div>
               </section>
-            </div>
-          </div>
+          </Fragment>
 
-          <!--
-            RIGHT: measurement SVG workspace. Reuses the live Custom Build measurement editor
-            (`initCustomBuildMeasurementsPage`): same pattern_summary.svg, labels, field names,
-            and overlay positions as the builder. `data-sleeveless-review-managed` suppresses the
-            editor's auto-init so this combined workspace initialises it when Edit Pattern opens.
-            The `.sl-measure-workspace__body … express-measurements-confirm-page` classes are kept
-            so the existing scoped diagram-enlargement CSS continues to apply.
-          -->
-          <div class="sl-edit-workspace__measure" data-sl-measure-pane>
-            <header class="sl-edit-workspace__measure-head">
-              <div class="sl-edit-workspace__measure-headrow">
-                <h3 class="sl-edit-workspace__measure-title pattern-editable-heading">
-                  Measurements
-                  <PatternEditablePencilIcon />
-                </h3>
-                <!--
-                  Primary edit actions live here (next to the Measurements heading) so they are
-                  obvious without scrolling to the bottom-right. The SAME buttons/notes are reused
-                  across breakpoints (single DOM = unchanged JS handlers): desktop shows them in
-                  this header row; mobile re-pins this same group as a sticky bottom action bar.
-                -->
-                <div class="sl-edit-workspace__measure-actions" data-sl-edit-actions>
-                  <div class="sl-edit-workspace__notes">
-                    <p class="sl-edit-error-note" data-sl-edit-errors hidden role="alert"></p>
-                    <p class="sl-edit-saved-note" data-sl-edit-note hidden role="status">
-                      Pattern updated.
-                    </p>
-                  </div>
-                  <div class="sl-edit-drawer__actions">
-                    <button
-                      type="button"
-                      class="sl-edit-btn sl-edit-btn--ghost"
-                      data-sl-edit-close
-                      data-testid="button-edit-cancel"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="button"
-                      class="sl-edit-btn sl-edit-btn--primary"
-                      data-sl-edit-apply
-                      data-testid="button-edit-apply"
-                    >
-                      Save Changes
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <p class="sl-edit-workspace__measure-hint">
-                Make your changes, then click Save Changes to update your pattern.
-              </p>
-            </header>
+          <Fragment slot="heading">
+            Measurements
+            <PatternEditablePencilIcon />
+          </Fragment>
+          <Fragment slot="notes">
+            <p class="sl-edit-error-note" data-sl-edit-errors hidden role="alert"></p>
+            <p class="sl-edit-saved-note" data-sl-edit-note hidden role="status">
+              Pattern updated.
+            </p>
+          </Fragment>
+          <Fragment slot="actions">
+            <button
+              type="button"
+              class="sl-edit-btn sl-edit-btn--ghost"
+              data-sl-edit-close
+              data-testid="button-edit-cancel"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="sl-edit-btn sl-edit-btn--primary"
+              data-sl-edit-apply
+              data-testid="button-edit-apply"
+            >
+              Save Changes
+            </button>
+          </Fragment>
+          <Fragment slot="hint">
+            Make your changes, then click Save Changes to update your pattern.
+          </Fragment>
+          <Fragment slot="diagram">
             <div class="sl-measure-workspace__body cb-measure-page express-measurements-confirm-page">
               <div
                 class="sl-measure-workspace__editor"
@@ -439,8 +422,8 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </Fragment>
+        </PatternSummaryEditWorkspace>
       </section>
     </div>
 
@@ -1107,422 +1090,11 @@ import "../../../../styles/patterns/sweater-edit-measurement-diagram.css";
     transform: translateY(0);
   }
 
-  /*
-   * Two-column body region; the shell-width inner keeps it from going edge-to-edge.
-   * Mobile-first: a single scrolling column (quick edits, then the measurement SVG).
-   * Wide drawer body (>=1100px container) switches to side-by-side with independently
-   * scrolling columns. (Was viewport 1000px — too early at high Windows scaling.)
-   */
-  .sl-edit-workspace__layout {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-    width: 100%;
-    max-width: min(var(--pattern-shell-max, 1480px), 100%);
-    margin: 0 auto;
-    padding: clamp(1rem, 2.5vw, 1.75rem) clamp(1rem, 4vw, 2.5rem);
-    box-sizing: border-box;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Quick edits column — stacks on mobile (full width), scrolls on desktop. */
-  .sl-edit-workspace__quick {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .sl-edit-drawer--workspace .sl-edit-drawer__body {
-    flex: 1 1 auto;
-    padding: 0;
-    /*
-     * Container queries drive two-column vs stacked workspace from the drawer body's
-     * usable width (not viewport alone). Matches EDIT_WORKSPACE_TWO_COLUMN_MIN_PX.
-     */
-    container-type: inline-size;
-    container-name: sl-edit-workspace;
-  }
-
-  /* Measurement SVG column. */
-  .sl-edit-workspace__measure {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .sl-edit-workspace__measure-head {
-    flex-shrink: 0;
-    margin: 0 0 0.5rem;
-  }
-
-  /* Heading on the left, edit actions on the right; hint text spans below. */
-  .sl-edit-workspace__measure-headrow {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.5rem 1rem;
-  }
-
-  .sl-edit-workspace__measure-title {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin: 0;
-    font-size: 1.05rem;
-    font-weight: 700;
-    letter-spacing: -0.005em;
-    color: var(--kbm-green, #52682d);
-  }
-
-  /* Action group (notes + Cancel/Update) reused across breakpoints. */
-  .sl-edit-workspace__measure-actions {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.4rem;
-  }
-
-  .sl-edit-workspace__measure-actions .sl-edit-workspace__notes {
-    width: 100%;
-  }
-
-  .sl-edit-workspace__measure-actions .sl-edit-error-note,
-  .sl-edit-workspace__measure-actions .sl-edit-saved-note {
-    margin: 0;
-  }
-
-  .sl-edit-workspace__measure-actions .sl-edit-error-note[hidden],
-  .sl-edit-workspace__measure-actions .sl-edit-saved-note[hidden] {
-    display: none;
-  }
-
-  .sl-edit-workspace__measure-hint {
-    margin: 0.3rem 0 0;
-    font-size: 0.78rem;
-    font-weight: 400;
-    line-height: 1.5;
-    color: #9ca3af;
-  }
-
-  /* On mobile the editor body flows in the page scroll (no nested scrollbar). */
-  .sl-edit-workspace__measure .sl-measure-workspace__body {
-    flex: 1 1 auto;
-    min-height: 0;
-    padding: 0;
-  }
-
-  .sl-measure-workspace__editor {
-    width: 100%;
-    min-height: 0;
-  }
-
-  /* Wide workspace container: side-by-side. Quick panel narrow; SVG gets the remaining width. */
-  @container sl-edit-workspace (min-width: 1100px) {
-    .sl-edit-workspace__layout {
-      flex-direction: row;
-      align-items: stretch;
-      gap: clamp(1.5rem, 2.5vw, 2.5rem);
-      flex: 1 1 auto;
-      min-height: 0;
-      max-height: 100%;
-      overflow: hidden;
-      padding-block: clamp(0.85rem, 1.6vw, 1.35rem);
-    }
-
-    /*
-     * Quick edits column fits naturally on desktop — no internal scrollbar.
-     * The measurement SVG (right) keeps its own scroll, so the quick panel never
-     * needs to scroll; the spacing tweaks below keep all six controls in view.
-     */
-    .sl-edit-workspace__quick {
-      flex: 0 0 clamp(320px, 26vw, 380px);
-      max-width: 380px;
-      overflow: visible;
-    }
-
-    /* Tighten quick-edit spacing (desktop only) so the panel fits without scrolling. */
-    .sl-edit-drawer--workspace .sl-edit-drawer__body {
-      gap: 0.85rem;
-    }
-
-    .sl-edit-drawer--workspace .sl-edit-section {
-      gap: 0.7rem;
-      padding-top: 0.95rem;
-    }
-
-    .sl-edit-drawer--workspace .sl-edit-segment__pill {
-      min-height: 2.3rem;
-    }
-
-    .sl-edit-drawer--workspace .sl-edit-input {
-      padding-block: 0.45rem;
-    }
-
-    .sl-edit-drawer--workspace .sl-edit-ease {
-      margin-top: 0.3rem;
-    }
-
-    .sl-edit-drawer--workspace .sl-edit-grid {
-      gap: 0.6rem;
-    }
-
-    .sl-edit-drawer--workspace .sl-edit-label {
-      margin-bottom: 0.35rem;
-    }
-
-    .sl-edit-workspace__measure {
-      display: flex;
-      flex-direction: column;
-      flex: 1 1 0;
-      min-width: 0;
-      min-height: 0;
-      max-height: 100%;
-      overflow: hidden;
-    }
-
-    /* Near-square sleeveless diagram: measure pane scrolls when art exceeds viewport height. */
-    .sl-edit-workspace__measure .sl-measure-workspace__body {
-      min-height: 0;
-      overflow-x: hidden;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    /*
-     * Drop-shoulder summary SVG is ~2× taller than sleeveless. Flex chain + scroll on
-     * `.express-mbp-scroll` (stage + overlay) so chips stay aligned while scrolling.
-     * `data-express-construction` is stamped when the editor initializes.
-     */
-    .sl-edit-workspace__measure
-      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"] {
-      display: flex;
-      flex-direction: column;
-      flex: 1 1 auto;
-      min-height: 0;
-      overflow: hidden;
-    }
-
-    .sl-edit-workspace__measure
-      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
-      .sl-measure-workspace__editor {
-      display: flex;
-      flex: 1 1 auto;
-      flex-direction: column;
-      min-height: 0;
-      overflow: hidden;
-    }
-
-    .sl-edit-workspace__measure
-      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
-      .sl-measure-workspace__editor
-      :global(.sleeveless-measure-review-body) {
-      display: flex;
-      flex: 1 1 auto;
-      flex-direction: column;
-      min-height: 0;
-      overflow: hidden;
-    }
-
-    .sl-edit-workspace__measure
-      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
-      .sl-measure-workspace__editor
-      :global(.sleeveless-measure-review-body > .sleeveless-measure-project-summary),
-    .sl-edit-workspace__measure
-      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
-      .sl-measure-workspace__editor
-      :global(.sleeveless-measure-review-body > .cb-measure-missing) {
-      flex-shrink: 0;
-    }
-
-    .sl-edit-workspace__measure
-      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
-      .sl-measure-workspace__editor
-      :global(.sleeveless-measure-diagram-host) {
-      display: flex;
-      flex: 1 1 auto;
-      flex-direction: column;
-      min-height: 0;
-      overflow: hidden;
-    }
-
-    .sl-edit-workspace__measure
-      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
-      .sl-measure-workspace__editor
-      :global(.cb-measure-diagram-wrap) {
-      display: flex;
-      flex: 1 1 auto;
-      flex-direction: column;
-      min-height: 0;
-      overflow: hidden;
-    }
-
-    .sl-edit-workspace__measure
-      .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
-      .sl-measure-workspace__editor
-      :global(.express-mbp) {
-      display: flex;
-      flex: 1 1 auto;
-      flex-direction: column;
-      min-height: 0;
-      overflow: hidden;
-    }
-  }
-
-  .sl-edit-workspace__notes {
-    min-width: 0;
-  }
-
-  .sl-edit-workspace__notes .sl-edit-error-note,
-  .sl-edit-workspace__notes .sl-edit-saved-note {
-    margin: 0;
-  }
-
-  .sl-edit-drawer__actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.6rem;
-  }
-
-  .sl-edit-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 2.6rem;
-    padding: 0.55rem 1.1rem;
-    font-family: inherit;
-    font-size: 0.9rem;
-    font-weight: 600;
-    line-height: 1.2;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .sl-edit-btn--ghost {
-    color: #4b5563;
-    background: #fff;
-    border: 1px solid #d1d5db;
-  }
-
-  .sl-edit-btn--ghost:hover {
-    background: #f3f4f6;
-    border-color: #c4c9d1;
-  }
-
-  .sl-edit-btn--primary {
-    color: #fff;
-    background: var(--kbm-green, #52682d);
-    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 85%, #000);
-  }
-
-  .sl-edit-btn--primary:hover {
-    background: var(--kbm-green-hover, #445626);
-  }
-
-  .sl-edit-btn--secondary {
-    gap: 0.45rem;
-    color: var(--kbm-green, #52682d);
-    background: #fff;
-    border: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 40%, #d1d5db);
-  }
-
-  .sl-edit-btn--secondary:hover {
-    background: color-mix(in srgb, var(--kbm-green, #52682d) 8%, #fff);
-    border-color: var(--kbm-green, #52682d);
-    color: var(--kbm-green-hover, #445626);
-  }
-
-  .sl-edit-btn--secondary .fa-ruler-combined {
-    font-size: 0.85rem;
-    opacity: 0.9;
-  }
-
-  .sl-edit-btn:focus-visible {
-    outline: 2px solid var(--kbm-green, #52682d);
-    outline-offset: 2px;
-  }
-
-  /* Reused measurement editor body: aspect ratio is pattern-specific; sizing is shared. */
+  /* Aspect ratio is pattern-specific; layout lives in pattern-summary-edit-workspace.css. */
   .sl-measure-workspace__body.express-measurements-confirm-page {
     --pattern-summary-aspect-ratio: 210.2 / 210.2;
   }
 
-  /*
-   * Narrow workspace container: Measurements-header action group re-pins to the bottom
-   * as a fixed bar — "Update Pattern" / Cancel stay reachable without scrolling.
-   * Wide container keeps actions in the measurements header.
-   */
-  @container sl-edit-workspace (max-width: 1099.98px) {
-    .sl-edit-workspace__measure-actions {
-      position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 5;
-      flex-direction: column;
-      align-items: stretch;
-      gap: 0.5rem;
-      padding: 0.75rem clamp(1rem, 4vw, 2.5rem);
-      background: #fff;
-      border-top: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 12%, #e5e7eb);
-      box-shadow: 0 -4px 16px rgba(17, 24, 39, 0.12);
-    }
-
-    .sl-edit-workspace__measure-actions .sl-edit-drawer__actions {
-      width: 100%;
-    }
-
-    .sl-edit-workspace__measure-actions .sl-edit-drawer__actions .sl-edit-btn {
-      flex: 1 1 0;
-      min-height: 2.9rem;
-    }
-
-    /* Reserve room so the diagram/summary are never hidden behind the fixed bar. */
-    .sl-edit-workspace__layout {
-      padding-bottom: 6.5rem;
-    }
-  }
-  /* Inches / Centimeters control (Edit workspace) — compact segmented toggle. */
-  .sl-edit-units-toggle {
-    display: inline-flex;
-    border-radius: 6px;
-    overflow: hidden;
-    margin-top: 4px;
-  }
-
-  .sl-edit-unit-btn {
-    padding: 6px 14px;
-    border: 1px solid #9aa38f;
-    background: #f3f4ef;
-    color: #38412f;
-    font-weight: 600;
-    line-height: 1.2;
-    cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-  }
-
-  .sl-edit-unit-btn + .sl-edit-unit-btn {
-    border-left: none;
-  }
-
-  .sl-edit-unit-btn.is-active {
-    background: #52682d;
-    color: #ffffff;
-    border-color: #52682d;
-  }
-
-  .sl-edit-unit-btn:hover:not(.is-active) {
-    background: #e7eadf;
-    border-color: #8f987f;
-  }
-
-  .sl-edit-unit-btn:focus-visible {
-    outline: 2px solid #52682d;
-    outline-offset: 2px;
-  }
 </style>
 <script>
   import "/src/scripts/sleevelessPatternOnlineProjectHeader.ts";

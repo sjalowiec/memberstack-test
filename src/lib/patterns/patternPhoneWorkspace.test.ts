@@ -172,7 +172,7 @@ describe("pattern phone workspace — notice + compact header", () => {
 
   it("places the phone notice in Edit workspaces but not in the finished-pattern action bar", () => {
     expect(sleevelessPattern).toMatch(
-      /sl-edit-drawer__panel[\s\S]*PatternPhoneWorkspaceNotice[\s\S]*sl-edit-workspace__layout/,
+      /sl-edit-drawer__panel[\s\S]*PatternPhoneWorkspaceNotice[\s\S]*PatternSummaryEditWorkspace/,
     );
     const actionBarChunk = sleevelessPattern.slice(
       sleevelessPattern.indexOf("pattern-action-bar"),

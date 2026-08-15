@@ -1,0 +1,37 @@
+---
+/**
+ * Diagram stage + overlay host for Summary/Edit measurement chips.
+ * Pattern families inject the generated SVG into `[data-ps-measure-diagram]`
+ * (or a pattern-owned diagram attribute) and keep geometry in their renderer.
+ *
+ * Chip gutters are owned by shared CSS on `[data-measurement-overlay-mode="desktop"]`
+ * so side/bottom chips are part of the diagram composition (not overflow).
+ */
+import { PATTERN_SUMMARY_MEASURE_STAGE_CLASS } from "../../lib/patterns/patternSummaryMeasurementField";
+
+interface Props {
+  stageTestId?: string;
+  diagramAttr?: string;
+  overlayAttr?: string;
+  stageInnerAttr?: string;
+}
+
+const { stageTestId, diagramAttr, overlayAttr, stageInnerAttr } = Astro.props;
+const diagramAttrs: Record<string, string> = { "data-ps-measure-diagram": "" };
+if (diagramAttr) diagramAttrs[diagramAttr] = "";
+const overlayAttrs: Record<string, string> = { "data-ps-measure-overlay": "" };
+if (overlayAttr) overlayAttrs[overlayAttr] = "";
+const innerAttrs: Record<string, string> = { "data-ps-measure-stage": "" };
+if (stageInnerAttr) innerAttrs[stageInnerAttr] = "";
+---
+
+<div class="ps-measure" data-testid={stageTestId}>
+  <div class:list={[PATTERN_SUMMARY_MEASURE_STAGE_CLASS, "express-mbp-stage"]}>
+    <div class="ps-measure-stage__inner express-mbp-stage__inner" {...innerAttrs}>
+      <div class="ps-measure-art express-mbp-art" {...diagramAttrs}></div>
+      <div class="ps-measure-overlay express-mbp-overlay" {...overlayAttrs}>
+        <slot />
+      </div>
+    </div>
+  </div>
+</div>

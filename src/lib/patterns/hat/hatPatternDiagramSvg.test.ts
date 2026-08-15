@@ -424,21 +424,21 @@ describe("buildHatPatternDiagramSvg", () => {
           expect(length).toBeTruthy();
           expect(brim).toBeTruthy();
           expect(Number(circ![1])).toBeCloseTo(hatMidX, 0);
-          expect(Number(circ![2])).toBeGreaterThan(hatBottom + 40);
+          expect(Number(circ![2])).toBeGreaterThan(hatBottom);
           expect(Number(length![1])).toBeLessThan(hatLeft);
-          expect(Number(length![1])).toBeLessThan(54); // left of total-length arrow
           if (mode === HAT_PATTERN_DIAGRAM_MODE_SUMMARY_EDIT) {
-            // Length chip parks in the expanded left viewBox gutter.
-            expect(Number(length![1])).toBeLessThan(0);
-            expect(Number(length![1])).toBeGreaterThanOrEqual(
-              -HAT_SUMMARY_EDIT_DIAGRAM_LEFT_PAD,
-            );
+            // Anchors sit on the dimension arrows; chips translate beside the lines.
+            expect(Number(circ![2])).toBeCloseTo(hatBottom + 24, 0);
+            expect(Number(length![1])).toBeCloseTo(54, 0);
+            expect(Number(brim![1])).toBeCloseTo(338, 0);
             expect(svg).toContain(
               `viewBox="-${HAT_SUMMARY_EDIT_DIAGRAM_LEFT_PAD} 0 ${430 + HAT_SUMMARY_EDIT_DIAGRAM_LEFT_PAD} 460"`,
             );
+          } else {
+            expect(Number(circ![2])).toBeGreaterThan(hatBottom + 40);
+            expect(Number(length![1])).toBeLessThan(54);
+            expect(Number(brim![1])).toBeGreaterThan(338);
           }
-          expect(Number(brim![1])).toBeGreaterThan(hatRight);
-          expect(Number(brim![1])).toBeGreaterThan(338); // right of brim arrow
         }
       }
     }

@@ -1,0 +1,69 @@
+---
+/**
+ * Shared Summary/Edit workspace Lego block.
+ *
+ * Left slot (`quick`): units, pattern choices, gauge, and other setup controls.
+ * Right slot (`diagram`): pattern-specific schematic + measurement chips.
+ * Header/actions: common Cancel / primary buttons via the `actions` slot.
+ *
+ * Pattern families must not be branched here — pass controls and diagram through slots.
+ */
+import "../../styles/patterns/pattern-summary-edit-workspace.css";
+
+interface Props {
+  class?: string;
+  headingClass?: string;
+  measurePaneAttr?: string;
+  actionsAttr?: string;
+  testId?: string;
+}
+
+const {
+  class: className,
+  headingClass,
+  measurePaneAttr,
+  actionsAttr,
+  testId,
+} = Astro.props;
+
+const measureAttrs: Record<string, string> = {};
+if (measurePaneAttr) measureAttrs[measurePaneAttr] = "";
+const actionAttrs: Record<string, string> = {};
+if (actionsAttr) actionAttrs[actionsAttr] = "";
+---
+
+<div
+  class:list={["sl-edit-workspace", className]}
+  data-pattern-summary-edit
+  data-testid={testId}
+>
+  <div class="sl-edit-workspace__layout">
+    <div class="sl-edit-workspace__quick">
+      <div class="sl-edit-drawer__body">
+        <slot name="quick" />
+      </div>
+    </div>
+
+    <div class="sl-edit-workspace__measure" {...measureAttrs}>
+      <header class="sl-edit-workspace__measure-head">
+        <div class="sl-edit-workspace__measure-headrow">
+          <h3 class:list={["sl-edit-workspace__measure-title", headingClass]}>
+            <slot name="heading">Measurements</slot>
+          </h3>
+          <div class="sl-edit-workspace__measure-actions" {...actionAttrs}>
+            <div class="sl-edit-workspace__notes">
+              <slot name="notes" />
+            </div>
+            <div class="sl-edit-drawer__actions">
+              <slot name="actions" />
+            </div>
+          </div>
+        </div>
+        <p class="sl-edit-workspace__measure-hint">
+          <slot name="hint" />
+        </p>
+      </header>
+      <slot name="diagram" />
+    </div>
+  </div>
+</div>

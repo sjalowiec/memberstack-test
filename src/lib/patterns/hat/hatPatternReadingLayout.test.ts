@@ -67,14 +67,19 @@ describe("hat finished pattern reading layout (responsive)", () => {
     );
   });
 
-  it("preserves phone tab/help sizing and allows tablet tabs to wrap safely", () => {
+  it("preserves phone help sizing; diagram tabs stay two side-by-side tabs", () => {
+    const tabsCss = readFileSync(
+      resolve("src/styles/patterns/pattern-diagram-tabs.css"),
+      "utf8",
+    );
     expect(patternPage).toMatch(
       /@media \(max-width:\s*767px\)[\s\S]*:global\(\.hat-pattern-diagram-shaping-help__btn\.kbm-btn\)\s*\{[^}]*width:\s*100%/,
     );
-    expect(patternPage).toMatch(
-      /@media \(min-width:\s*768px\) and \(max-width:\s*1099\.98px\)[\s\S]*:global\(\.hat-pattern-diagram-tabs__list\)\s*\{[^}]*flex-wrap:\s*wrap/,
-    );
-    expect(patternPage).toContain("white-space: normal");
+    expect(patternPage).toContain("pattern-diagram-tabs.css");
+    expect(tabsCss).toContain("flex-wrap: nowrap");
+    expect(tabsCss).toContain("flex: 1 1 50%");
+    expect(tabsCss).toContain("white-space: normal");
+    expect(tabsCss).not.toContain("flex-wrap: wrap");
   });
 
   it("preserves the existing desktop column gap when two columns are active", () => {

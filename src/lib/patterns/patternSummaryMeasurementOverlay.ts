@@ -212,7 +212,11 @@ export function collectOverlayAnchors(overlay: HTMLElement): MeasurementOverlayA
 
 function resolveOverlayStageElement(stageInner: HTMLElement): HTMLElement | null {
   const parent = stageInner.parentElement;
-  if (parent instanceof HTMLElement && parent.classList.contains("express-mbp-stage")) {
+  if (!(parent instanceof HTMLElement)) return null;
+  if (
+    parent.classList.contains("express-mbp-stage") ||
+    parent.classList.contains("ps-measure-stage")
+  ) {
     return parent;
   }
   return null;

@@ -202,6 +202,9 @@ describe("hat pattern diagram tabs", () => {
     const html = buildHatPatternDiagramTabsShellHtml();
 
     expect(html).toContain('role="tablist"');
+    expect(html).toContain("pattern-diagram-tabs");
+    expect(html).toContain('data-pattern-diagram-tab="sts-rows"');
+    expect(html).toContain('data-pattern-diagram-panel="sts-rows"');
     expect(html).toContain('data-testid="hat-diagram-tab-sts-rows"');
     expect(html).toContain('data-testid="hat-diagram-tab-shaping-notation"');
     expect(html).toContain("Shaping Notation");
@@ -291,7 +294,9 @@ describe("hat pattern diagram tabs", () => {
 
   it("print markup includes both labeled diagrams and excludes interactive chrome classes", () => {
     const html = buildHatPatternDiagramTabsShellHtml();
-    expect(html).toContain('class="hat-pattern-diagram-tabs__list no-print"');
+    expect(html).toContain("hat-pattern-diagram-tabs__list");
+    expect(html).toContain("pattern-diagram-tabs__list");
+    expect(html).toContain("no-print");
     expect(html).toContain("hat-pattern-diagram-shaping-help no-print");
     expect(html).toContain(
       '<h3 class="hat-pattern-diagram-print-heading">Stitches &amp; Rows</h3>',
@@ -302,21 +307,23 @@ describe("hat pattern diagram tabs", () => {
     expect(html).not.toContain("Japanese Notation");
 
     const page = readFileSync(join(srcRoot, "pages/patterns/hat/pattern.astro"), "utf8");
+    const tabsCss = readFileSync(
+      join(srcRoot, "styles/patterns/pattern-diagram-tabs.css"),
+      "utf8",
+    );
+    expect(page).toContain("pattern-diagram-tabs.css");
     expect(page).toContain(".hat-pattern-diagram-tabs__panel[hidden]");
     expect(page).toContain("display: block !important");
     expect(page).toContain(".hat-pattern-diagram-print-heading");
     expect(page).toContain(".hat-pattern-diagram-tabs__list");
     expect(page).toContain(".hat-pattern-diagram-shaping-help");
-    // Injected tab shell is not Astro-scoped — styles must be :global to reach it.
-    expect(page).toContain(":global(.hat-pattern-diagram-tabs__tab)");
-    expect(page).toContain(":global(.hat-pattern-diagram-tabs__list)");
     expect(page).toContain(":global(.hat-pattern-diagram-shaping-help__btn.kbm-btn)");
-    expect(page).toContain("min-height: 44px");
-    expect(page).toContain("font-size: 1rem");
-    expect(page).toContain("var(--kbm-green, #52682d)");
-    expect(page).toContain("flex: 1 1 0");
-    expect(page).toMatch(
-      /:global\(\.hat-pattern-diagram-tabs__tab:focus-visible\)\s*\{[^}]*outline:\s*2px solid/,
+    expect(tabsCss).toContain("min-height: 44px");
+    expect(tabsCss).toContain("font-size: 1rem");
+    expect(tabsCss).toContain("var(--kbm-green, #52682d)");
+    expect(tabsCss).toContain("flex: 1 1 50%");
+    expect(tabsCss).toMatch(
+      /\.pattern-diagram-tabs__tab:focus-visible[\s\S]*outline:\s*2px solid/,
     );
     expect(page).toMatch(
       /@media \(max-width: 767px\)[\s\S]*:global\(\.hat-pattern-diagram-shaping-help__btn\.kbm-btn\)\s*\{[^}]*width:\s*100%/,

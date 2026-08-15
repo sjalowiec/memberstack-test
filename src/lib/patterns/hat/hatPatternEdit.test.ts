@@ -311,9 +311,9 @@ describe("hatPatternEdit", () => {
     expect(HAT_EDIT_MEASUREMENT_TARGETS.circumference).toBe("target_hat_circumference");
     expect(HAT_EDIT_MEASUREMENT_TARGETS.length).toBe("target_hat_length");
     expect(HAT_EDIT_MEASUREMENT_TARGETS.brimDepth).toBe("target_hat_brim");
-    expect(HAT_EDIT_MEASUREMENT_TRANSFORMS.circumference).toBe("translate(-50%, 8px)");
-    expect(HAT_EDIT_MEASUREMENT_TRANSFORMS.length).toBe("translate(-50%, -50%)");
-    expect(HAT_EDIT_MEASUREMENT_TRANSFORMS.brimDepth).toBe("translate(8px, -50%)");
+    expect(HAT_EDIT_MEASUREMENT_TRANSFORMS.circumference).toBe("translate(-50%, 4px)");
+    expect(HAT_EDIT_MEASUREMENT_TRANSFORMS.length).toBe("translate(calc(-100% - 6px), -50%)");
+    expect(HAT_EDIT_MEASUREMENT_TRANSFORMS.brimDepth).toBe("translate(6px, -50%)");
   });
 });
 
@@ -939,6 +939,18 @@ describe("hat Summary/Edit page wiring", () => {
     resolve("src/pages/patterns/sleeveless/pattern/index.astro"),
     "utf8",
   );
+  const summaryWorkspace = readFileSync(
+    resolve("src/components/patterns/PatternSummaryEditWorkspace.astro"),
+    "utf8",
+  );
+  const summaryWorkspaceCss = readFileSync(
+    resolve("src/styles/patterns/pattern-summary-edit-workspace.css"),
+    "utf8",
+  );
+  const hatMeasureFields = readFileSync(
+    resolve("src/lib/patterns/hat/hatPatternEditTargets.ts"),
+    "utf8",
+  );
 
   it("completing the builder opens Summary/Edit, not the finished pattern", () => {
     expect(builderPage).toContain("Review My Pattern");
@@ -971,9 +983,10 @@ describe("hat Summary/Edit page wiring", () => {
 
   it("Summary/Edit page restores every field and matches sweater workspace layout", () => {
     expect(summaryPage).toContain('data-testid="hat-summary-edit-page"');
-    expect(summaryPage).toContain("sl-edit-workspace__layout");
-    expect(summaryPage).toContain("sl-edit-workspace__quick");
-    expect(summaryPage).toContain("sl-edit-workspace__measure");
+    expect(summaryPage).toContain("PatternSummaryEditWorkspace");
+    expect(summaryWorkspace).toContain("sl-edit-workspace__layout");
+    expect(summaryWorkspace).toContain("sl-edit-workspace__quick");
+    expect(summaryWorkspace).toContain("sl-edit-workspace__measure");
     expect(summaryPage).toContain("Pattern choices");
     expect(summaryPage).toContain("Update Pattern");
     expect(summaryPage).toContain("data-hat-edit-cancel");
@@ -985,13 +998,13 @@ describe("hat Summary/Edit page wiring", () => {
     expect(summaryPage).toContain("data-hat-edit-stitch-gauge");
     expect(summaryPage).toContain("data-hat-edit-row-gauge");
     expect(summaryPage).toContain("data-hat-edit-available-needles");
-    expect(summaryPage).toContain("data-hat-edit-circ");
-    expect(summaryPage).toContain("data-hat-edit-length");
-    expect(summaryPage).toContain("data-hat-edit-brim");
-    expect(summaryPage).toContain('data-measurement-target="target_hat_circumference"');
-    expect(summaryPage).toContain('data-measurement-target="target_hat_length"');
-    expect(summaryPage).toContain('data-measurement-target="target_hat_brim"');
-    expect(summaryPage).toContain("data-measurement-transform=");
+    expect(hatMeasureFields).toContain("data-hat-edit-circ");
+    expect(hatMeasureFields).toContain("data-hat-edit-length");
+    expect(hatMeasureFields).toContain("data-hat-edit-brim");
+    expect(hatMeasureFields).toContain('target_hat_circumference');
+    expect(hatMeasureFields).toContain('target_hat_length');
+    expect(hatMeasureFields).toContain('target_hat_brim');
+    expect(hatMeasureFields).toContain("HAT_EDIT_MEASUREMENT_TRANSFORMS");
     expect(summaryPage).toContain("data-hat-edit-title");
     expect(summaryPage).toContain("data-hat-edit-title-field hidden");
     expect(summaryPage).toContain("Pattern title");
@@ -1003,20 +1016,18 @@ describe("hat Summary/Edit page wiring", () => {
     expect(summaryScript).toContain("isEditingSavedHatProject");
     expect(summaryScript).toContain("readHatActiveProjectId");
     expect(summaryScript).not.toContain("isEditingSavedCustomPatternProject");
-    expect(sleevelessPatternPage).toContain("sl-edit-workspace__layout");
-    expect(sleevelessPatternPage).toContain("sl-edit-workspace__measure-actions");
-    expect(summaryPage).toContain("sl-edit-workspace__measure-actions");
-    // Compact diagram sizing (sweater-like viewport cap), not the prior 720px stage.
-    expect(summaryPage).toContain("calc(100vh - 260px)");
-    expect(summaryPage).toContain("560px");
+    expect(sleevelessPatternPage).toContain("PatternSummaryEditWorkspace");
+    expect(summaryWorkspace).toContain("sl-edit-workspace__measure-actions");
     expect(summaryPage).not.toContain("720px");
+    expect(summaryWorkspaceCss).toContain("max-width: min(100%, 1000px)");
+    expect(summaryWorkspaceCss).not.toContain("calc(100vh -");
   });
 
   it("measurement overlays use desktop positioning; fields stack on narrow screens", () => {
     expect(DESKTOP_MEASUREMENT_OVERLAY_MQ).toContain("700px");
-    expect(summaryPage).toContain('data-measurement-overlay-mode="mobile"');
-    expect(summaryPage).toContain("@media (min-width: 1000px)");
-    expect(summaryPage).toContain("@media (max-width: 999px)");
+    expect(summaryWorkspaceCss).toContain('data-measurement-overlay-mode="mobile"');
+    expect(summaryWorkspaceCss).toContain("@container sl-edit-workspace (min-width: 1100px)");
+    expect(summaryWorkspaceCss).toContain("@container sl-edit-workspace (max-width: 1099.98px)");
     expect(summaryScript).toContain("bindPatternSummaryOverlayPositioning");
     expect(summaryScript).toContain("hatDraftToEditFormValues");
     expect(summaryScript).toContain("HAT_PATTERN_DIAGRAM_MODE_SUMMARY_EDIT");
@@ -1050,14 +1061,13 @@ describe("hat Summary/Edit page wiring", () => {
     // Desktop stage keeps the SVG large — no oversized chip gutters.
     expect(summaryPage).not.toContain("8.5rem");
     expect(summaryPage).not.toContain("padding: 0.35rem 8.5rem 5rem");
-    expect(summaryPage).toMatch(
-      /\.hat-edit-mbp-stage__inner\s*\{[^}]*padding:\s*0\.15rem;/s,
+    expect(summaryWorkspaceCss).toMatch(
+      /\.ps-measure-stage__inner\s*\{[^}]*padding:\s*0\.15rem;/s,
     );
-    // Mobile stack behavior unchanged (absolute chips cleared; static column).
-    expect(summaryPage).toMatch(
+    expect(summaryWorkspaceCss).toMatch(
       /\[data-measurement-overlay-mode="mobile"\][^{]*\{[^}]*position:\s*static/s,
     );
-    expect(summaryPage).toContain("flex-direction: column");
+    expect(summaryWorkspaceCss).toContain("flex-direction: column");
   });
 
   it("initial Summary/Edit action creates and opens the finished pattern", () => {

@@ -971,6 +971,15 @@
     box-shadow: 0 1px 2px rgba(17, 24, 39, 0.05);
   }
 
+  /* Shared tab container owns chrome; keep these classes only as family hooks. */
+  #pattern-content .sleeveless-back-diagram-panel.pattern-diagram-tabs {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
   #pattern-content .drop-shoulder-sleeve-construction-wrap {
     margin: 0 0 1rem;
   }

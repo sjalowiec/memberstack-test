@@ -117,3 +117,103 @@
   padding: 0.32rem 0.5rem;
   font-size: 1.15rem;
 }
+
+.sl-edit-workspace__measure .sl-measure-workspace__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0;
+}
+
+.sl-measure-workspace__editor {
+  width: 100%;
+  min-height: 0;
+}
+
+/*
+ * Two-column workspace: near-square diagrams scroll in the measure pane;
+ * tall constructions keep an inner scrollport (construction stamp, not pattern name).
+ */
+@container sl-edit-workspace (min-width: 1100px) {
+  .sl-edit-workspace__measure .sl-measure-workspace__body {
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sl-edit-workspace__measure
+    .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"] {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .sl-edit-workspace__measure
+    .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+    .sl-measure-workspace__editor {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .sl-edit-workspace__measure
+    .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+    .sl-measure-workspace__editor
+    .sleeveless-measure-review-body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .sl-edit-workspace__measure
+    .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+    .sl-measure-workspace__editor
+    .sleeveless-measure-review-body
+    > .sleeveless-measure-project-summary,
+  .sl-edit-workspace__measure
+    .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+    .sl-measure-workspace__editor
+    .sleeveless-measure-review-body
+    > .cb-measure-missing {
+    flex-shrink: 0;
+  }
+
+  .sl-edit-workspace__measure
+    .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+    .sl-measure-workspace__editor
+    .sleeveless-measure-diagram-host {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .sl-edit-workspace__measure
+    .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+    .sl-measure-workspace__editor
+    .cb-measure-diagram-wrap {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .sl-edit-workspace__measure
+    .sl-measure-workspace__body.express-measurements-confirm-page[data-express-construction="drop-shoulder"]
+    .sl-measure-workspace__editor
+    .express-mbp {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+}

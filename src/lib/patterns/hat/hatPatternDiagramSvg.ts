@@ -56,8 +56,8 @@ const HAT_WIDTH = HAT_RIGHT - HAT_LEFT;
 const HAT_TOP = 52;
 const HAT_BOTTOM = 340;
 /**
- * Extra left viewBox padding in summaryEdit so the Finished hat length chip fits
- * entirely inside the diagram workspace (not the form column).
+ * Extra left viewBox padding in summaryEdit so the Finished hat length chip
+ * (parked immediately left of the total-length arrow) stays in-diagram.
  */
 const SUMMARY_EDIT_LEFT_PAD = 120;
 const ARROW = "#52682d";
@@ -719,19 +719,18 @@ function drawEditTargets(frame: Frame, mode: HatPatternDiagramMode): string {
    */
   const summaryEdit = mode === "summaryEdit";
   const circX = frame.hatMidX;
-  // Pattern: below cast-on + width text. summaryEdit: just under the width arrow.
+  // Pattern: below cast-on + width text. summaryEdit: on the width arrow so the
+  // chip transform can sit immediately under the dimension line.
   const circY = Math.min(
     VB_H - 10,
-    frame.hatBottom + (summaryEdit ? 48 : 96),
+    frame.hatBottom + (summaryEdit ? 24 : 96),
   );
-  // summaryEdit: center of the left pad (left of Total / length arrow at 54).
-  // pattern: far-left anchor (chips unused on finished pattern).
-  const lengthX = summaryEdit
-    ? -SUMMARY_EDIT_LEFT_PAD / 2
-    : 6;
+  // summaryEdit: on the total-length arrow (leftX=54); chip translates left into
+  // the viewBox gutter. pattern: far-left anchor (chips unused on finished pattern).
+  const lengthX = summaryEdit ? 54 : 6;
   const lengthY = (frame.crownTop + frame.hatBottom) / 2;
-  // Beside the right brim arrow (rightX=338); chip translates further right.
-  const brimX = summaryEdit ? 350 : VB_W - 6;
+  // summaryEdit: on the brim-height arrow (rightX=338); chip translates right.
+  const brimX = summaryEdit ? 338 : VB_W - 6;
   const brimY = (frame.brimTop + frame.hatBottom) / 2;
   return [
     `<g class="hat-diagram__edit-targets" aria-hidden="true">`,

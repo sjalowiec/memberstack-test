@@ -1,0 +1,161 @@
+/**
+ * Shared finished-pattern diagram tabs.
+ * Tabs sit flush on the diagram panel so they read as one container, not action buttons.
+ */
+
+.pattern-diagram-tabs,
+#pattern-content .pattern-diagram-tabs {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.pattern-diagram-tabs__list,
+#pattern-content .pattern-diagram-tabs .pattern-diagram-tabs__list,
+#pattern-content .pattern-diagram-tabs .sleeveless-back-diagram-mode {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  align-items: stretch;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  border: 1px solid var(--kbm-green, #52682d);
+  border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 8%, #f3f4f6);
+}
+
+.pattern-diagram-tabs__tab,
+#pattern-content .pattern-diagram-tabs .pattern-diagram-tabs__tab,
+#pattern-content .pattern-diagram-tabs .sleeveless-back-diagram-mode__btn {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 1 1 50%;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 50%;
+  width: 50%;
+  max-width: 50%;
+  min-width: 0;
+  min-height: 44px;
+  margin: 0;
+  padding: 0.55rem 0.5rem;
+  border: 0;
+  border-radius: 7px 7px 0 0;
+  background: transparent;
+  color: #4b5563;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: 0;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.pattern-diagram-tabs__tab + .pattern-diagram-tabs__tab,
+#pattern-content .pattern-diagram-tabs .pattern-diagram-tabs__tab + .pattern-diagram-tabs__tab,
+#pattern-content .pattern-diagram-tabs .sleeveless-back-diagram-mode__btn + .sleeveless-back-diagram-mode__btn {
+  border-left: 1px solid color-mix(in srgb, var(--kbm-green, #52682d) 35%, #d1d5db);
+}
+
+.pattern-diagram-tabs__tab:hover:not([aria-selected="true"]),
+#pattern-content .pattern-diagram-tabs .pattern-diagram-tabs__tab:hover:not([aria-selected="true"]),
+#pattern-content .pattern-diagram-tabs .sleeveless-back-diagram-mode__btn:hover:not([aria-selected="true"]):not(.is-active) {
+  background: color-mix(in srgb, var(--kbm-green, #52682d) 12%, #fff);
+  color: #374151;
+}
+
+.pattern-diagram-tabs__tab[aria-selected="true"],
+.pattern-diagram-tabs__tab.is-selected,
+#pattern-content .pattern-diagram-tabs .pattern-diagram-tabs__tab[aria-selected="true"],
+#pattern-content .pattern-diagram-tabs .pattern-diagram-tabs__tab.is-selected,
+#pattern-content .pattern-diagram-tabs .sleeveless-back-diagram-mode__btn[aria-selected="true"],
+#pattern-content .pattern-diagram-tabs .sleeveless-back-diagram-mode__btn.is-selected,
+#pattern-content .pattern-diagram-tabs .sleeveless-back-diagram-mode__btn.is-active {
+  color: #fff;
+  background: var(--kbm-green, #52682d);
+  box-shadow: none;
+  position: relative;
+  z-index: 1;
+  margin-bottom: -1px;
+  padding-bottom: calc(0.55rem + 1px);
+}
+
+.pattern-diagram-tabs__tab:focus-visible,
+#pattern-content .pattern-diagram-tabs .pattern-diagram-tabs__tab:focus-visible,
+#pattern-content .pattern-diagram-tabs .sleeveless-back-diagram-mode__btn:focus-visible {
+  outline: 2px solid var(--kbm-green, #52682d);
+  outline-offset: 2px;
+  z-index: 2;
+}
+
+.pattern-diagram-tabs__panel,
+#pattern-content .pattern-diagram-tabs .pattern-diagram-tabs__panel,
+#pattern-content .pattern-diagram-tabs .sleeveless-back-diagram-well {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0.55rem 0.45rem 0.65rem;
+  box-sizing: border-box;
+  border: 1px solid var(--kbm-green, #52682d);
+  border-radius: 0 0 8px 8px;
+  background: #fff;
+  box-shadow: none;
+}
+
+.pattern-diagram-tabs__panel[hidden] {
+  display: none !important;
+}
+
+.pattern-diagram-tabs__print-heading {
+  display: none;
+  margin: 0 0 0.45rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111;
+}
+
+@media (max-width: 767px) {
+  .pattern-diagram-tabs__list,
+  #pattern-content .pattern-diagram-tabs .pattern-diagram-tabs__list,
+  #pattern-content .pattern-diagram-tabs .sleeveless-back-diagram-mode {
+    flex-wrap: nowrap;
+    flex-direction: row;
+    overflow-x: hidden;
+  }
+
+  .pattern-diagram-tabs__tab,
+  #pattern-content .pattern-diagram-tabs .pattern-diagram-tabs__tab,
+  #pattern-content .pattern-diagram-tabs .sleeveless-back-diagram-mode__btn {
+    flex: 1 1 50%;
+    width: 50%;
+    max-width: 50%;
+    min-width: 0;
+    padding: 0.55rem 0.4rem;
+    white-space: normal;
+  }
+
+  .pattern-diagram-tabs__panel,
+  #pattern-content .pattern-diagram-tabs .pattern-diagram-tabs__panel,
+  #pattern-content .pattern-diagram-tabs .sleeveless-back-diagram-well {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media print {
+  .pattern-diagram-tabs__list {
+    display: none !important;
+  }
+}

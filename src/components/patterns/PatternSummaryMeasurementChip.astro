@@ -1,0 +1,76 @@
+---
+/**
+ * Compact diagram-associated measurement chip for the shared Summary/Edit workspace.
+ * Pattern families supply field config (label, target, input attrs). This block
+ * owns input appearance and accessibility.
+ */
+import type { PatternSummaryMeasurementField } from "../../lib/patterns/patternSummaryMeasurementField";
+import { PATTERN_SUMMARY_MEASURE_CHIP_CLASS } from "../../lib/patterns/patternSummaryMeasurementField";
+
+interface Props {
+  field: PatternSummaryMeasurementField;
+}
+
+const { field } = Astro.props;
+const editable = field.editable !== false;
+const inputId = field.inputId || `ps-measure-${field.id}`;
+const inputDataAttrs: Record<string, string> = {};
+if (field.inputDataAttr) inputDataAttrs[field.inputDataAttr] = "";
+const unitSuffixAttrs: Record<string, string> = {};
+if (field.unitSuffixAttr) unitSuffixAttrs[field.unitSuffixAttr] = "";
+const errorAttrs: Record<string, string> = {};
+if (field.errorDataAttr && field.errorKey) {
+  errorAttrs[field.errorDataAttr] = field.errorKey;
+}
+---
+
+<div
+  class={PATTERN_SUMMARY_MEASURE_CHIP_CLASS}
+  data-measurement-target={field.targetId}
+  data-measurement-transform={field.transform}
+  data-ps-measure-id={field.id}
+  data-testid={field.testId}
+>
+  {
+    editable ? (
+      <label class="ps-measure-chip__field" for={inputId}>
+        <span class="ps-measure-chip__lab">{field.label}</span>
+        <span class="ps-measure-chip__value">
+          <input
+            id={inputId}
+            class="ps-measure-chip__input"
+            type={field.inputType ?? "number"}
+            inputmode={field.inputMode ?? "decimal"}
+            step={field.step}
+            min={field.min}
+            data-testid={field.inputTestId}
+            {...inputDataAttrs}
+          />
+          <span class="ps-measure-chip__unit" aria-hidden="true" {...unitSuffixAttrs}>
+            "
+          </span>
+        </span>
+      </label>
+    ) : (
+      <div class="ps-measure-chip__field">
+        <span class="ps-measure-chip__lab">{field.label}</span>
+        <span class="ps-measure-chip__value">
+          <span class="ps-measure-chip__readonly" data-ps-measure-readonly={field.id}></span>
+          <span class="ps-measure-chip__unit" aria-hidden="true" {...unitSuffixAttrs}>
+            "
+          </span>
+        </span>
+      </div>
+    )
+  }
+  {
+    field.secondary ? (
+      <p class="ps-measure-chip__secondary">{field.secondary}</p>
+    ) : null
+  }
+  {
+    field.errorDataAttr && field.errorKey ? (
+      <p class="ps-measure-chip__error sl-edit-field-error" hidden role="alert" {...errorAttrs}></p>
+    ) : null
+  }
+</div>

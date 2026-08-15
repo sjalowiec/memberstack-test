@@ -312,8 +312,8 @@ export function initHatPatternSummaryPage(): void {
       formError.hidden = true;
       formError.textContent = "";
     }
-    workspace.querySelectorAll(".hat-edit-mbp-box--invalid").forEach((el) => {
-      el.classList.remove("hat-edit-mbp-box--invalid");
+    workspace.querySelectorAll(".ps-measure-chip--invalid").forEach((el) => {
+      el.classList.remove("ps-measure-chip--invalid");
     });
   }
 
@@ -333,8 +333,8 @@ export function initHatPatternSummaryPage(): void {
         el.hidden = false;
         el.textContent = message;
       }
-      const box = el?.closest(".hat-edit-mbp-box");
-      if (box) box.classList.add("hat-edit-mbp-box--invalid");
+      const box = el?.closest(".ps-measure-chip");
+      if (box) box.classList.add("ps-measure-chip--invalid");
     }
   }
 

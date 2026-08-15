@@ -216,14 +216,20 @@ describe("Edit Pattern workspace container-width contract", () => {
     expect(EDIT_WORKSPACE_TWO_COLUMN_MIN_PX).toBe(1100);
   });
 
-  it("both edit workspaces use container queries for two-column vs stacked layout", () => {
+  it("shared Summary/Edit CSS uses container queries for two-column vs stacked layout", () => {
+    const sharedCss = readFileSync(
+      resolve("src/styles/patterns/pattern-summary-edit-workspace.css"),
+      "utf8",
+    );
+    expect(sharedCss).toContain("container-type: inline-size");
+    expect(sharedCss).toContain("container-name: sl-edit-workspace");
+    expect(sharedCss).toContain("@container sl-edit-workspace (min-width: 1100px)");
+    expect(sharedCss).toContain("@container sl-edit-workspace (max-width: 1099.98px)");
+    expect(sharedCss).not.toMatch(/@media \(min-width:\s*1000px\)\s*\{[\s\S]*\.sl-edit-workspace__layout/);
+    expect(sharedCss).not.toMatch(/@media \(max-width:\s*999px\)\s*\{[\s\S]*\.sl-edit-workspace__measure-actions/);
     for (const src of [sleevelessEditAstro, dropShoulderEditAstro]) {
-      expect(src).toContain("container-type: inline-size");
-      expect(src).toContain("container-name: sl-edit-workspace");
-      expect(src).toContain("@container sl-edit-workspace (min-width: 1100px)");
-      expect(src).toContain("@container sl-edit-workspace (max-width: 1099.98px)");
-      expect(src).not.toMatch(/@media \(min-width:\s*1000px\)\s*\{[\s\S]*\.sl-edit-workspace__layout/);
-      expect(src).not.toMatch(/@media \(max-width:\s*999px\)\s*\{[\s\S]*\.sl-edit-workspace__measure-actions/);
+      expect(src).toContain("PatternSummaryEditWorkspace");
+      expect(src).not.toContain("container-name: sl-edit-workspace");
     }
   });
 });

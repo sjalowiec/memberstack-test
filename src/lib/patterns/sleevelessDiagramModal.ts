@@ -33,7 +33,9 @@ function readModeAttribute(
 export function getDiagramModeFromPanel(panel: ParentNode | null): SleevelessDiagramViewMode | null {
   if (!panel) return null;
   const activeBtn = panel.querySelector(
-    ".sleeveless-back-diagram-mode__btn.is-active[data-sleeveless-back-diagram-mode-btn], " +
+    '[role="tab"][aria-selected="true"][data-sleeveless-back-diagram-mode-btn], ' +
+      '[role="tab"][aria-selected="true"][data-sleeveless-front-diagram-mode-btn], ' +
+      ".sleeveless-back-diagram-mode__btn.is-active[data-sleeveless-back-diagram-mode-btn], " +
       ".sleeveless-back-diagram-mode__btn.is-active[data-sleeveless-front-diagram-mode-btn]",
   );
   if (
