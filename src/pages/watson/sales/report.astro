@@ -1,6 +1,7 @@
 ---
 import WatsonPageShell from "../../../components/watson/WatsonPageShell.astro";
 import WatsonSalesReport from "../../../components/watson/WatsonSalesReport.astro";
+import { detectSiteEnvironment } from "../../../lib/env/siteEnvironment";
 import { loadSalesReport, type SalesReport } from "../../../lib/watson/salesReport";
 import { resolveDayRange } from "../../../lib/watson/salesReportDates";
 
@@ -10,6 +11,8 @@ const params = Astro.url.searchParams;
 const presetParam = params.get("preset")?.trim() ?? "";
 const fromParam = params.get("from")?.trim() ?? "";
 const toParam = params.get("to")?.trim() ?? "";
+const isLocalhost =
+  detectSiteEnvironment(Astro.url.hostname, { isViteDev: import.meta.env.DEV }) === "localhost";
 
 const resolved = resolveDayRange({ preset: presetParam, from: fromParam, to: toParam });
 
@@ -20,7 +23,10 @@ if (!resolved.ok) {
   rangeError = resolved.error;
 } else {
   try {
-    report = await loadSalesReport({ range: resolved.range });
+    report = await loadSalesReport({
+      range: resolved.range,
+      includeStripeDiagnostics: isLocalhost,
+    });
   } catch (error) {
     rangeError =
       error instanceof Error
@@ -32,9 +38,9 @@ if (!resolved.ok) {
 
 <WatsonPageShell
   title="Sales | Watson"
-  description="Actual revenue collected from Shopify and Stripe membership payments."
+  description="Actual revenue collected from Shopify and Stripe."
   heading="Sales"
-  intro="Read-only report of actual money collected (Shopify orders + Knit It Now membership payments). Defaults to the last 3 days in America/Los_Angeles time."
+  intro="Read-only report of actual money collected (Shopify orders + succeeded Stripe Charges, including paid invoices). Defaults to the last 3 days in America/Los_Angeles time."
 >
   <WatsonSalesReport
     report={report}

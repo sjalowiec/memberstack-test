@@ -3,8 +3,13 @@
  *
  * Read-only. Reports money that was actually collected during a range of
  * America/Los_Angeles calendar days: Shopify order revenue (from the synced
- * `watson_shopify_orders` table) and Knit It Now membership payments (from the
- * live Stripe API). It does NOT use projected subscription value / MRR.
+ * `watson_shopify_orders` table) and live Stripe Charges (succeeded, paid,
+ * live-mode USD). Stripe totals are collected revenue, not membership-only:
+ * Checkout, payment links, subscriptions, and paid invoices (including
+ * manually created invoices with no Knit It Now product) all count when they
+ * produce a succeeded Charge. Shopify-gateway Charges are excluded so the
+ * same payment is not counted in both sources. It does NOT use projected
+ * subscription value / MRR.
  *
  * The compute layer (`computeSalesReport`) is pure and fully unit-testable; the
  * `loadSalesReport` loader performs the Postgres + Stripe I/O.
@@ -15,6 +20,7 @@ import type { WatsonQueryFn } from "./memberSearch";
 import {
   civilDayKey,
   eachCivilDay,
+  formatLaTimestamp,
   SHOPIFY_STALE_HOURS,
   type DayRange,
 } from "./salesReportDates";
@@ -73,6 +79,9 @@ export interface DailyRow {
   /** LA calendar day, "YYYY-MM-DD". */
   date: string;
   shopify: RevenueTotals;
+  /** All countable Stripe collected revenue for the LA day. */
+  stripe: RevenueTotals;
+  /** Membership-classified subset of Stripe (breakdown only). */
   membership: RevenueTotals;
   refunds: number;
   netCollected: number;
@@ -87,10 +96,33 @@ export interface MembershipBreakdown {
 
 export interface SalesReportSummary {
   shopify: RevenueTotals;
+  /** All countable Stripe collected revenue (not membership-filtered). */
+  stripe: RevenueTotals;
+  /** Membership-classified subset of Stripe collected revenue. */
   membership: RevenueTotals;
   combined: RevenueTotals;
   /** True when a source is unavailable, so combined is a partial figure. */
   combinedPartial: boolean;
+}
+
+export interface StripeChargeDiagnosticRow {
+  id: string;
+  createdIso: string;
+  createdLa: string;
+  amount: number;
+  amountRequested: number;
+  amountRefunded: number;
+  description: string;
+  invoiceId: string | null;
+  paymentIntentId: string | null;
+  paymentMethodType: string | null;
+  lineSummary: string;
+  status: string;
+  paid: boolean;
+  livemode: boolean;
+  currency: string;
+  counted: boolean;
+  exclusionReason: string | null;
 }
 
 export interface SalesReport {
@@ -102,6 +134,8 @@ export interface SalesReport {
   sources: { shopify: SourceStatus; stripe: SourceStatus };
   /** Aggregated visible warnings (stale/unavailable sources, config gaps). */
   warnings: string[];
+  /** Localhost-only Charge-by-Charge decision log. Null in production. */
+  stripeDiagnostics: StripeChargeDiagnosticRow[] | null;
 }
 
 /** A Shopify order normalized for the report (money already in USD). */
@@ -147,21 +181,96 @@ export interface ComputeSalesReportInput {
   classifyConfig: StripeMembershipClassificationConfig;
   shopifySource: SourceStatus;
   stripeSource: SourceStatus;
+  includeStripeDiagnostics?: boolean;
 }
 
 /**
- * Decide whether a Stripe charge is a countable, successful, non-test payment.
- * Excludes failed/pending/test/non-USD/Shopify-origin charges.
+ * Decide whether a Stripe charge is countable collected revenue.
+ * Requires a succeeded, paid, live-mode USD Charge. Excludes failed/unpaid/
+ * test/non-USD charges and Shopify-gateway charges (those belong to Shopify
+ * revenue so the same payment is not counted twice).
  */
 export function isCountableStripeCharge(charge: NormalizedStripeCharge): boolean {
-  if (charge.status !== "succeeded") return false;
-  if (!charge.paid) return false;
-  if (!charge.livemode) return false; // exclude test-mode payments
-  if (charge.currency !== "usd") return false;
-  // Dedup safety: never count a Shopify-gateway charge as membership revenue;
-  // Shopify revenue is sourced separately from watson_shopify_orders.
-  if (charge.hasShopifyMarker) return false;
-  return true;
+  return explainStripeChargeDecision(charge).counted;
+}
+
+/**
+ * Explain whether a Charge is counted as Stripe collected revenue, and why
+ * not. Used by localhost diagnostics and by `isCountableStripeCharge`.
+ */
+export function explainStripeChargeDecision(
+  charge: NormalizedStripeCharge,
+  options: { inRangeDays?: Set<string>; seenChargeIds?: Set<string> } = {},
+): { counted: boolean; exclusionReason: string | null } {
+  if (charge.status !== "succeeded") {
+    return { counted: false, exclusionReason: `status is "${charge.status}"` };
+  }
+  if (!charge.paid) {
+    return { counted: false, exclusionReason: "paid is false" };
+  }
+  if (!charge.livemode) {
+    return { counted: false, exclusionReason: "test-mode (livemode is false)" };
+  }
+  if (charge.currency !== "usd") {
+    return { counted: false, exclusionReason: `currency is "${charge.currency}"` };
+  }
+  if (charge.hasShopifyMarker) {
+    return {
+      counted: false,
+      exclusionReason: charge.shopifyMarkerReason
+        ? `Shopify-origin: ${charge.shopifyMarkerReason}`
+        : "Shopify-origin marker",
+    };
+  }
+  if (options.seenChargeIds?.has(charge.id)) {
+    return { counted: false, exclusionReason: "duplicate charge id" };
+  }
+  if (options.inRangeDays) {
+    const key = civilDayKey(new Date(charge.createdIso));
+    if (!options.inRangeDays.has(key)) {
+      return {
+        counted: false,
+        exclusionReason: `created ${key} is outside the requested LA range`,
+      };
+    }
+  }
+  return { counted: true, exclusionReason: null };
+}
+
+export function buildStripeChargeDiagnostics(
+  charges: NormalizedStripeCharge[],
+  range: DayRange,
+): StripeChargeDiagnosticRow[] {
+  const inRangeDays = new Set(eachCivilDay(range.fromCivil, range.toCivil));
+  const seenChargeIds = new Set<string>();
+  return charges.map((charge) => {
+    const decision = explainStripeChargeDecision(charge, { inRangeDays, seenChargeIds });
+    if (decision.counted) seenChargeIds.add(charge.id);
+    return {
+      id: charge.id,
+      createdIso: charge.createdIso,
+      createdLa: formatLaTimestamp(charge.createdIso),
+      amount: charge.amount,
+      amountRequested: charge.amountRequested ?? charge.amount,
+      amountRefunded: charge.amountRefunded,
+      description: charge.description ?? "",
+      invoiceId: charge.invoiceId ?? null,
+      paymentIntentId: charge.paymentIntentId ?? null,
+      paymentMethodType: charge.paymentMethodType ?? null,
+      lineSummary:
+        charge.lines.length > 0
+          ? charge.lines
+              .map((line) => line.priceId || line.productId || "no-id")
+              .join(", ")
+          : "no invoice lines",
+      status: charge.status,
+      paid: charge.paid,
+      livemode: charge.livemode,
+      currency: charge.currency,
+      counted: decision.counted,
+      exclusionReason: decision.exclusionReason,
+    };
+  });
 }
 
 /** Pure aggregation of normalized Shopify + Stripe data into the report shape. */
@@ -169,14 +278,18 @@ export function computeSalesReport(input: ComputeSalesReportInput): SalesReport 
   const { range, now, shopifyOrders, stripeCharges, classifyConfig } = input;
 
   const dayKeys = eachCivilDay(range.fromCivil, range.toCivil);
+  const inRangeDays = new Set(dayKeys);
   const dayShopify = new Map<string, RevenueTotals>();
+  const dayStripe = new Map<string, RevenueTotals>();
   const dayMembership = new Map<string, RevenueTotals>();
   for (const key of dayKeys) {
     dayShopify.set(key, emptyTotals());
+    dayStripe.set(key, emptyTotals());
     dayMembership.set(key, emptyTotals());
   }
 
   const shopifyTotal = emptyTotals();
+  const stripeTotal = emptyTotals();
   const membershipTotal = emptyTotals();
   const breakdown: Record<MembershipCategory, RevenueTotals> = {
     monthly: emptyTotals(),
@@ -187,6 +300,7 @@ export function computeSalesReport(input: ComputeSalesReportInput): SalesReport 
   if (input.shopifySource.available) {
     for (const order of shopifyOrders) {
       const key = civilDayKey(new Date(order.processedAtIso));
+      if (!inRangeDays.has(key)) continue;
       const bucket = dayShopify.get(key);
       const gross = Number.isFinite(order.grossCollected) ? order.grossCollected : 0;
       const refunds = Number.isFinite(order.refunds) ? order.refunds : 0;
@@ -196,16 +310,25 @@ export function computeSalesReport(input: ComputeSalesReportInput): SalesReport 
   }
 
   if (input.stripeSource.available) {
+    const seenChargeIds = new Set<string>();
     for (const charge of stripeCharges) {
       if (!isCountableStripeCharge(charge)) continue;
-      const category = classifyStripeCharge(charge.lines, classifyConfig);
-      if (!isMembershipCategory(category)) continue;
+      if (seenChargeIds.has(charge.id)) continue;
+      seenChargeIds.add(charge.id);
 
       const key = civilDayKey(new Date(charge.createdIso));
-      const bucket = dayMembership.get(key);
+      if (!inRangeDays.has(key)) continue;
+
       const gross = charge.amount;
       const refunds = charge.amountRefunded;
-      if (bucket) addToTotals(bucket, gross, refunds);
+      const stripeBucket = dayStripe.get(key);
+      if (stripeBucket) addToTotals(stripeBucket, gross, refunds);
+      addToTotals(stripeTotal, gross, refunds);
+
+      const category = classifyStripeCharge(charge.lines, classifyConfig);
+      if (!isMembershipCategory(category)) continue;
+      const membershipBucket = dayMembership.get(key);
+      if (membershipBucket) addToTotals(membershipBucket, gross, refunds);
       addToTotals(membershipTotal, gross, refunds);
       addToTotals(breakdown[category], gross, refunds);
     }
@@ -213,18 +336,21 @@ export function computeSalesReport(input: ComputeSalesReportInput): SalesReport 
 
   const daily: DailyRow[] = dayKeys.map((date) => {
     const shopify = finalizeTotals(dayShopify.get(date) ?? emptyTotals());
+    const stripe = finalizeTotals(dayStripe.get(date) ?? emptyTotals());
     const membership = finalizeTotals(dayMembership.get(date) ?? emptyTotals());
     return {
       date,
       shopify,
+      stripe,
       membership,
-      refunds: roundCents(shopify.refunds + membership.refunds),
-      netCollected: roundCents(shopify.netCollected + membership.netCollected),
+      refunds: roundCents(shopify.refunds + stripe.refunds),
+      netCollected: roundCents(shopify.netCollected + stripe.netCollected),
       inProgress: date === range.todayCivil,
     };
   });
 
   const shopifyFinal = finalizeTotals(shopifyTotal);
+  const stripeFinal = finalizeTotals(stripeTotal);
   const membershipFinal = finalizeTotals(membershipTotal);
 
   const combinedPartial =
@@ -232,19 +358,19 @@ export function computeSalesReport(input: ComputeSalesReportInput): SalesReport 
   const combined: RevenueTotals = {
     grossCollected: roundCents(
       (input.shopifySource.available ? shopifyFinal.grossCollected : 0) +
-        (input.stripeSource.available ? membershipFinal.grossCollected : 0),
+        (input.stripeSource.available ? stripeFinal.grossCollected : 0),
     ),
     refunds: roundCents(
       (input.shopifySource.available ? shopifyFinal.refunds : 0) +
-        (input.stripeSource.available ? membershipFinal.refunds : 0),
+        (input.stripeSource.available ? stripeFinal.refunds : 0),
     ),
     netCollected: roundCents(
       (input.shopifySource.available ? shopifyFinal.netCollected : 0) +
-        (input.stripeSource.available ? membershipFinal.netCollected : 0),
+        (input.stripeSource.available ? stripeFinal.netCollected : 0),
     ),
     transactionCount:
       (input.shopifySource.available ? shopifyFinal.transactionCount : 0) +
-      (input.stripeSource.available ? membershipFinal.transactionCount : 0),
+      (input.stripeSource.available ? stripeFinal.transactionCount : 0),
   };
 
   const warnings: string[] = [];
@@ -258,12 +384,18 @@ export function computeSalesReport(input: ComputeSalesReportInput): SalesReport 
   } else if (input.stripeSource.stale) {
     warnings.push(`Stripe data degraded: ${input.stripeSource.detail}`);
   }
+  if (input.stripeSource.available && stripeMembershipConfigIsEmpty(classifyConfig)) {
+    warnings.push(
+      "Membership price/product ids are not configured, so the membership breakdown cannot be classified. Stripe collected totals still include all succeeded live USD charges.",
+    );
+  }
 
   return {
     range,
     generatedAtIso: now.toISOString(),
     summary: {
       shopify: shopifyFinal,
+      stripe: stripeFinal,
       membership: membershipFinal,
       combined,
       combinedPartial,
@@ -276,6 +408,9 @@ export function computeSalesReport(input: ComputeSalesReportInput): SalesReport 
     daily,
     sources: { shopify: input.shopifySource, stripe: input.stripeSource },
     warnings,
+    stripeDiagnostics: input.includeStripeDiagnostics
+      ? buildStripeChargeDiagnostics(stripeCharges, range)
+      : null,
   };
 }
 
@@ -317,9 +452,9 @@ export async function loadShopifyOrdersForRange(
     }));
 }
 
-function buildStripeStaleDetail(configEmpty: boolean): string {
+function buildStripeDetail(configEmpty: boolean): string {
   return configEmpty
-    ? "No Stripe membership price/product ids configured - membership payments cannot be classified. Set STRIPE_MEMBERSHIP_* env vars."
+    ? "Retrieved live from Stripe. Membership breakdown cannot be classified until STRIPE_MEMBERSHIP_* env vars are set; collected Stripe totals are still included."
     : "Retrieved live from Stripe.";
 }
 
@@ -329,6 +464,7 @@ export interface LoadSalesReportOptions {
   queryFn?: WatsonQueryFn;
   fetchImpl?: typeof fetch;
   env?: NodeJS.ProcessEnv;
+  includeStripeDiagnostics?: boolean;
 }
 
 /** Load and compute the full sales report (Shopify Postgres + live Stripe). */
@@ -377,7 +513,7 @@ export async function loadSalesReport(
     };
   }
 
-  // ---- Stripe (live membership payments) ----
+  // ---- Stripe (live collected Charges) ----
   const classifyConfig = readStripeMembershipConfig(env);
   const classifyConfigEmpty = stripeMembershipConfigIsEmpty(classifyConfig);
   let stripeCharges: NormalizedStripeCharge[] = [];
@@ -407,9 +543,9 @@ export async function loadSalesReport(
       stripeSource = {
         source: "stripe",
         available: true,
-        stale: classifyConfigEmpty,
+        stale: false,
         lastAt: now.toISOString(),
-        detail: buildStripeStaleDetail(classifyConfigEmpty),
+        detail: buildStripeDetail(classifyConfigEmpty),
         error: null,
       };
     } catch (error) {
@@ -422,12 +558,12 @@ export async function loadSalesReport(
         error:
           error instanceof Error
             ? error.message
-            : "Unable to query Stripe for membership payments.",
+            : "Unable to query Stripe for collected payments.",
       };
     }
   }
 
-  return computeSalesReport({
+  const report = computeSalesReport({
     range: options.range,
     now,
     shopifyOrders,
@@ -435,7 +571,14 @@ export async function loadSalesReport(
     classifyConfig,
     shopifySource,
     stripeSource,
+    includeStripeDiagnostics: options.includeStripeDiagnostics === true,
   });
+  if (options.includeStripeDiagnostics) {
+    console.info(
+      `[watson-sales] Stripe diagnostics: returned ${stripeCharges.length}, counted ${report.summary.stripe.transactionCount}, net ${report.summary.stripe.netCollected}, membership ${report.summary.membership.transactionCount}/${report.summary.membership.netCollected}`,
+    );
+  }
+  return report;
 }
 
 export function formatReportUsd(amount: number): string {

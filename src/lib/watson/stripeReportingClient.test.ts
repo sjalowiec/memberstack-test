@@ -61,20 +61,44 @@ describe("normalizeStripeCharge", () => {
     expect(normalized.currency).toBe("usd");
     expect(normalized.lines).toEqual([{ priceId: "price_a", productId: "prod_mem" }]);
     expect(normalized.hasShopifyMarker).toBe(false);
+    expect(normalized.invoiceId).toBe("in_1");
   });
 
   it("flags Shopify-origin charges via description/metadata", () => {
-    expect(
-      normalizeStripeCharge({ id: "ch_2", description: "Shopify order #1234" }).hasShopifyMarker,
-    ).toBe(true);
-    expect(
-      normalizeStripeCharge({ id: "ch_3", metadata: { shopify_order_id: "555" } }).hasShopifyMarker,
-    ).toBe(true);
+    const fromDescription = normalizeStripeCharge({
+      id: "ch_2",
+      description: "Shopify order #1234",
+    });
+    expect(fromDescription.hasShopifyMarker).toBe(true);
+    expect(fromDescription.shopifyMarkerReason).toContain("shopify");
+    const fromMetadata = normalizeStripeCharge({
+      id: "ch_3",
+      metadata: { shopify_order_id: "555" },
+    });
+    expect(fromMetadata.hasShopifyMarker).toBe(true);
+    expect(fromMetadata.shopifyMarkerReason).toContain("order_id");
   });
 
   it("returns no line refs for a charge without an expanded invoice", () => {
     expect(normalizeStripeCharge({ id: "ch_4", invoice: "in_unexpanded" }).lines).toEqual([]);
     expect(normalizeStripeCharge({ id: "ch_5", invoice: null }).lines).toEqual([]);
+  });
+
+  it("uses amount_captured when it differs from invoice/charge face value", () => {
+    const normalized = normalizeStripeCharge({
+      id: "ch_partial_capture",
+      amount: 100000,
+      amount_captured: 25000,
+      amount_refunded: 0,
+      currency: "usd",
+      created: 1_764_600_000,
+      livemode: true,
+      paid: true,
+      status: "succeeded",
+      invoice: { id: "in_manual", lines: { data: [] } },
+    });
+    expect(normalized.amount).toBe(250);
+    expect(normalized.lines).toEqual([]);
   });
 });
 

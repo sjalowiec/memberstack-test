@@ -2,8 +2,8 @@
  * Classify a Stripe charge as a Knit It Now membership payment (monthly /
  * annual / other) or a non-membership payment. Classification uses ONLY the
  * Stripe price/product ids on the charge's invoice lines - never the dollar
- * amount - so unrelated Stripe products (DesignaKnit, pattern builders, machine
- * payment links, Shopify-gateway charges) are excluded from membership revenue.
+ * amount. Non-membership Charges are still counted in Stripe collected
+ * revenue; this helper only decides the membership breakdown bucket.
  */
 
 import type { StripeMembershipClassificationConfig } from "../../config/stripeMembership";

@@ -47,7 +47,7 @@ function money(value: number, available: boolean): string {
 }
 
 const shopify = report?.summary.shopify ?? null;
-const membership = report?.summary.membership ?? null;
+const stripe = report?.summary.stripe ?? null;
 const combined = report?.summary.combined ?? null;
 const shopifyOk = report?.sources.shopify.available ?? false;
 const stripeOk = report?.sources.stripe.available ?? false;
@@ -155,7 +155,9 @@ const breakdownRows = breakdown
         <h2 id="watson-salesreport-summary-heading" class="watson__panel-title">Summary</h2>
         <p class="watson-report__note">
           Net collected equals gross collected minus refunds. Refunds are attributed to the
-          original transaction date. Read-only.
+          original transaction date. Stripe counts succeeded live USD Charges (amount
+          actually collected), including Checkout, payment links, subscriptions, and paid
+          invoices. Shopify-gateway Charges are excluded to avoid double-counting. Read-only.
         </p>
         <div class="watson-report__cards">
           <article class="watson-report__card">
@@ -168,11 +170,11 @@ const breakdownRows = breakdown
             </p>
           </article>
           <article class="watson-report__card">
-            <h3 class="watson-report__card-label">Membership revenue</h3>
-            <p class="watson-report__card-value">{money(membership?.netCollected ?? 0, stripeOk)}</p>
+            <h3 class="watson-report__card-label">Stripe revenue</h3>
+            <p class="watson-report__card-value">{money(stripe?.netCollected ?? 0, stripeOk)}</p>
             <p class="watson-sales__card-detail">
               {stripeOk
-                ? `${membership?.transactionCount ?? 0} payments - gross ${formatReportUsd(membership?.grossCollected ?? 0)}`
+                ? `${stripe?.transactionCount ?? 0} payments - gross ${formatReportUsd(stripe?.grossCollected ?? 0)}`
                 : "Source unavailable"}
             </p>
           </article>
@@ -188,14 +190,14 @@ const breakdownRows = breakdown
           <article class="watson-report__card">
             <h3 class="watson-report__card-label">Transactions</h3>
             <p class="watson-report__card-value">{combined?.transactionCount ?? 0}</p>
-            <p class="watson-sales__card-detail">Shopify orders + membership payments</p>
+            <p class="watson-sales__card-detail">Shopify orders + Stripe payments</p>
           </article>
           <article class="watson-report__card">
             <h3 class="watson-report__card-label">Refunds</h3>
             <p class="watson-report__card-value">{formatReportUsd(combined?.refunds ?? 0)}</p>
             <p class="watson-sales__card-detail">
-              Shopify {money(shopify?.refunds ?? 0, shopifyOk)} - Membership{" "}
-              {money(membership?.refunds ?? 0, stripeOk)}
+              Shopify {money(shopify?.refunds ?? 0, shopifyOk)} - Stripe{" "}
+              {money(stripe?.refunds ?? 0, stripeOk)}
             </p>
           </article>
         </div>
@@ -206,8 +208,10 @@ const breakdownRows = breakdown
           Membership breakdown
         </h2>
         <p class="watson-report__note">
-          Knit It Now membership payments only (DesignaKnit and other Stripe products excluded).
-          Monthly vs annual is classified by the configured Stripe price ids, never by amount.
+          Knit It Now membership payments only. Other collected Stripe revenue (paid invoices,
+          payment links, DesignaKnit, and charges with no catalog product) is included in
+          Stripe revenue above, not in this breakdown. Monthly vs annual is classified by
+          the configured Stripe price ids, never by amount.
         </p>
         {stripeOk ? (
           <div class="watson__table-wrap">
@@ -250,8 +254,8 @@ const breakdownRows = breakdown
                 <th data-sort="date">Date (LA)</th>
                 <th data-sort="number">Shopify revenue</th>
                 <th data-sort="number">Shopify orders</th>
-                <th data-sort="number">Membership revenue</th>
-                <th data-sort="number">Membership payments</th>
+                <th data-sort="number">Stripe revenue</th>
+                <th data-sort="number">Stripe payments</th>
                 <th data-sort="number">Refunds</th>
                 <th data-sort="number">Net collected</th>
                 <th data-sort="text">Status</th>
@@ -263,8 +267,8 @@ const breakdownRows = breakdown
                   <td data-sort-value={row.date}>{formatCivilLabel(row.date)}</td>
                   <td data-sort-value={row.shopify.netCollected}>{money(row.shopify.netCollected, shopifyOk)}</td>
                   <td data-sort-value={row.shopify.transactionCount}>{shopifyOk ? row.shopify.transactionCount : "-"}</td>
-                  <td data-sort-value={row.membership.netCollected}>{money(row.membership.netCollected, stripeOk)}</td>
-                  <td data-sort-value={row.membership.transactionCount}>{stripeOk ? row.membership.transactionCount : "-"}</td>
+                  <td data-sort-value={row.stripe.netCollected}>{money(row.stripe.netCollected, stripeOk)}</td>
+                  <td data-sort-value={row.stripe.transactionCount}>{stripeOk ? row.stripe.transactionCount : "-"}</td>
                   <td data-sort-value={row.refunds}>{formatReportUsd(row.refunds)}</td>
                   <td data-sort-value={row.netCollected}>{formatReportUsd(row.netCollected)}</td>
                   <td>
@@ -284,6 +288,55 @@ const breakdownRows = breakdown
           collecting payments and is marked "In progress".
         </p>
       </section>
+
+      {
+        report.stripeDiagnostics ? (
+          <section class="watson__panel" aria-labelledby="watson-salesreport-diag-heading">
+            <h2 id="watson-salesreport-diag-heading" class="watson__panel-title">
+              Localhost Stripe Charge diagnostics
+            </h2>
+            <p class="watson-report__note">
+              Every Charge Stripe returned for this LA range. Not shown in production.
+              Returned {report.stripeDiagnostics.length}, counted{" "}
+              {report.stripeDiagnostics.filter((row) => row.counted).length}, excluded{" "}
+              {report.stripeDiagnostics.filter((row) => !row.counted).length}. Stripe net{" "}
+              {formatReportUsd(report.summary.stripe.netCollected)} ({report.summary.stripe.transactionCount}{" "}
+              payments). Membership subset {formatReportUsd(report.summary.membership.netCollected)}{" "}
+              ({report.summary.membership.transactionCount} payments).
+            </p>
+            <div class="watson__table-wrap">
+              <table class="watson__table">
+                <thead>
+                  <tr>
+                    <th>Charge ID</th>
+                    <th>Created (LA)</th>
+                    <th>Amount</th>
+                    <th>Description</th>
+                    <th>Invoice</th>
+                    <th>Lines</th>
+                    <th>Counted</th>
+                    <th>Exclusion reason</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {report.stripeDiagnostics.map((row) => (
+                    <tr>
+                      <td>{row.id}</td>
+                      <td>{row.createdLa}</td>
+                      <td>{formatReportUsd(row.amount)}</td>
+                      <td>{row.description || "—"}</td>
+                      <td>{row.invoiceId || "—"}</td>
+                      <td>{row.lineSummary}</td>
+                      <td>{row.counted ? "yes" : "no"}</td>
+                      <td>{row.exclusionReason || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        ) : null
+      }
     </>
   ) : null
 }
